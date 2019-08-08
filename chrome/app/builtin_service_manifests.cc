@@ -30,10 +30,6 @@
 #include "components/mirroring/service/manifest.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
-#include "chrome/services/media_gallery_util/public/cpp/manifest.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "components/services/pdf_compositor/public/cpp/manifest.h"  // nogncheck
 #endif
@@ -55,9 +51,6 @@ const std::vector<service_manager::Manifest>&
 GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
       quarantine::GetQuarantineManifest(),
-#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
-      GetMediaGalleryUtilManifest(),
-#endif
 #if BUILDFLAG(ENABLE_PRINTING)
       printing::GetPdfCompositorManifest(),
 #endif

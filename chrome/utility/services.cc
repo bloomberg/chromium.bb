@@ -43,6 +43,11 @@
 #include "chrome/services/removable_storage_writer/removable_storage_writer.h"
 #endif
 
+#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
+#include "chrome/services/media_gallery_util/media_parser_factory.h"
+#include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
+#endif
+
 namespace {
 
 auto RunFilePatcher(mojo::PendingReceiver<patch::mojom::FilePatcher> receiver) {
@@ -89,6 +94,13 @@ auto RunRemovableStorageWriter(
 }
 #endif
 
+#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
+auto RunMediaParserFactory(
+    mojo::PendingReceiver<chrome::mojom::MediaParserFactory> receiver) {
+  return std::make_unique<MediaParserFactory>(std::move(receiver));
+}
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
+
 }  // namespace
 
 mojo::ServiceFactory* GetElevatedMainThreadServiceFactory() {
@@ -126,6 +138,10 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 #if BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
     // On Windows, this service runs in an elevated utility process.
     RunRemovableStorageWriter,
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
+    RunMediaParserFactory,
 #endif
   };
   // clang-format on

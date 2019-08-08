@@ -84,7 +84,6 @@ specific_include_rules = {
   "builtin_service_manifests\.cc": [
     "+chrome/services/file_util/public",
     "+chrome/services/isolated_xr_device/manifest.h",
-    "+chrome/services/media_gallery_util/public",
     "+chrome/services/printing/public",
     "+chrome/services/util_win/public",
     "+chrome/services/wifi_util_win/public",

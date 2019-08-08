@@ -53,11 +53,6 @@
 #include "chrome/services/wifi_util_win/wifi_util_win_service.h"
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
-#include "chrome/services/media_gallery_util/media_gallery_util_service.h"
-#include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/services/ime/ime_service.h"
@@ -223,11 +218,6 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
         std::move(request), content::ChildThread::Get()->GetIOTaskRunner());
   }
 #endif
-
-#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
-  if (service_name == chrome::mojom::kMediaGalleryUtilServiceName)
-    return std::make_unique<MediaGalleryUtilService>(std::move(request));
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
   if (service_name == simple_browser::mojom::kServiceName) {

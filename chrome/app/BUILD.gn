@@ -564,10 +564,6 @@ source_set("builtin_service_manifests") {
     "//services/service_manager/public/cpp",
   ]
 
-  if (enable_extensions || is_android) {
-    deps += [ "//chrome/services/media_gallery_util/public/cpp:manifest" ]
-  }
-
   if (enable_basic_printing) {
     deps += [ "//components/services/pdf_compositor/public/cpp:manifest" ]
   }
