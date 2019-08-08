@@ -643,13 +643,13 @@ class GitFilter(object):
 
   def __call__(self, line):
     # git uses an escape sequence to clear the line; elide it.
-    esc = line.find(chr(0o33).encode())
+    esc = line.find(chr(0o33))
     if esc > -1:
       line = line[:esc]
     if self.predicate and not self.predicate(line):
       return
     now = time.time()
-    match = self.PERCENT_RE.match(line.decode())
+    match = self.PERCENT_RE.match(line)
     if match:
       if match.group(1) != self.progress_prefix:
         self.progress_prefix = match.group(1)
