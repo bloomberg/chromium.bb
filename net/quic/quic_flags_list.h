@@ -302,7 +302,7 @@ QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_connection_id_use_siphash, true)
 
 // If true, when RTO fires and there is no packet to be RTOed, let connection
 // send.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_rto_retransmission, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_rto_retransmission2, true)
 
 // If true, QuicSession::GetOrCreateDynamicStream() is deprecated, and its
 // contents are moved to GetOrCreateStream().
