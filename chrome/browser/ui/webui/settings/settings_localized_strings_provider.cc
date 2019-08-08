@@ -59,6 +59,7 @@
 #include "media/base/media_switches.h"
 #include "net/base/url_util.h"
 #include "services/device/public/cpp/device_features.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -2747,6 +2748,14 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES_ASK_RECOMMENDED},
     {"siteSettingsUsbDevicesBlock",
      IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES_BLOCK},
+    {"siteSettingsNativeFileSystemWrite",
+     IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE},
+    {"siteSettingsNativeFileSystemWriteAsk",
+     IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE_ASK},
+    {"siteSettingsNativeFileSystemWriteAskRecommended",
+     IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE_ASK_RECOMMENDED},
+    {"siteSettingsNativeFileSystemWriteBlock",
+     IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE_BLOCK},
     {"siteSettingsRemoveZoomLevel",
      IDS_SETTINGS_SITE_SETTINGS_REMOVE_ZOOM_LEVEL},
     {"siteSettingsZoomLevels", IDS_SETTINGS_SITE_SETTINGS_ZOOM_LEVELS},
@@ -2974,6 +2983,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "enableBluetoothScanningContentSetting",
       cmd.HasSwitch(::switches::kEnableWebBluetoothScanning));
+
+  html_source->AddBoolean(
+      "enableNativeFileSystemWriteContentSetting",
+      base::FeatureList::IsEnabled(::blink::features::kNativeFileSystemAPI));
 }
 
 #if defined(OS_CHROMEOS)
