@@ -17730,6 +17730,7 @@ Called by update_net_error_codes.py.-->
   <int value="577" label="VmManagementCliAllowed"/>
   <int value="578" label="CheckURLsInRealTime"/>
   <int value="579" label="CACertificateManagementAllowed"/>
+  <int value="580" label="PasswordLeakDetectionEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
