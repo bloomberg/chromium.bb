@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // We must navigate somewhere first so that the render process is created.
-  EXPECT_TRUE(NavigateToURL(shell(), GURL("")));
+  NavigateToURL(shell(), GURL(""));
 
   // Create a temp directory and setup base file path.
   base::FilePath temp_dir_path;
@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 
   // Make a call.
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), url));
+  NavigateToURL(shell(), url);
   ExecuteJavascriptAndWaitForOk("call({video: true, audio: true});");
   ExecuteJavascriptAndWaitForOk("hangup();");
 
@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // We must navigate somewhere first so that the render process is created.
-  EXPECT_TRUE(NavigateToURL(shell(), GURL("")));
+  NavigateToURL(shell(), GURL(""));
 
   // Create a temp directory and setup base file path.
   base::FilePath temp_dir_path;
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 
   // Make a call.
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), url));
+  NavigateToURL(shell(), url);
   ExecuteJavascriptAndWaitForOk("call({video: true, audio: true});");
   ExecuteJavascriptAndWaitForOk("hangup();");
 
@@ -254,11 +254,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // We must navigate somewhere first so that the render process is created.
-  EXPECT_TRUE(NavigateToURL(shell(), GURL("")));
+  NavigateToURL(shell(), GURL(""));
 
   // Create a second window.
   Shell* shell2 = CreateBrowser();
-  EXPECT_TRUE(NavigateToURL(shell2, GURL("")));
+  NavigateToURL(shell2, GURL(""));
 
   // Create a temp directory and setup base file path.
   base::FilePath temp_dir_path;
@@ -272,8 +272,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 
   // Make the calls.
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-  EXPECT_TRUE(NavigateToURL(shell2, url));
+  NavigateToURL(shell(), url);
+  NavigateToURL(shell2, url);
   ExecuteJavascriptAndWaitForOk("call({video: true, audio: true});");
   std::string result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(

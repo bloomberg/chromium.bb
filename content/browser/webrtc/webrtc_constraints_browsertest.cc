@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcConstraintsBrowserTest,
                                               user_media().min_frame_rate,
                                               user_media().max_frame_rate);
   DVLOG(1) << "Calling getUserMedia: " << call;
-  EXPECT_TRUE(NavigateToURL(shell(), url));
+  NavigateToURL(shell(), url);
   ExecuteJavascriptAndWaitForOk(call);
 }
 
