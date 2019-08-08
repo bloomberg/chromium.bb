@@ -1734,6 +1734,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::string& cookie_url,
       base::circular_deque<size_t>* already_seen_url_hashes);
 
+  // Helper functions for logging crash keys when ValidateDidCommitParams()
+  // determines it cannot commit a URL or origin.
+  void LogCannotCommitUrlCrashKeys(const GURL& url,
+                                   bool is_same_document_navigation,
+                                   NavigationRequest* navigation_request);
+  void LogCannotCommitOriginCrashKeys(bool is_same_document_navigation,
+                                      NavigationRequest* navigation_request);
+
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
   // It is kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts
