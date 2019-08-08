@@ -413,22 +413,6 @@ void CookieMonster::SetCanonicalCookieAsync(
       domain);
 }
 
-void CookieMonster::SetCookieWithOptionsAsync(
-    const GURL& url,
-    const std::string& cookie_line,
-    const CookieOptions& options,
-    base::Optional<base::Time> server_time,
-    SetCookiesCallback callback) {
-  DoCookieCallbackForURL(
-      base::BindOnce(
-          // base::Unretained is safe as DoCookieCallbackForURL stores
-          // the callback on |*this|, so the callback will not outlive
-          // the object.
-          &CookieMonster::SetCookieWithOptions, base::Unretained(this), url,
-          cookie_line, options, server_time, std::move(callback)),
-      url);
-}
-
 void CookieMonster::GetCookieListWithOptionsAsync(
     const GURL& url,
     const CookieOptions& options,
@@ -671,40 +655,6 @@ void CookieMonster::DeleteAllMatchingInfo(CookieDeletionInfo delete_info,
       base::BindOnce(&MaybeRunDeleteCallback, weak_ptr_factory_.GetWeakPtr(),
                      callback ? base::BindOnce(std::move(callback), num_deleted)
                               : base::OnceClosure()));
-}
-
-void CookieMonster::SetCookieWithOptions(const GURL& url,
-                                         const std::string& cookie_line,
-                                         const CookieOptions& options,
-                                         base::Optional<base::Time> server_time,
-                                         SetCookiesCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!HasCookieableScheme(url)) {
-    MaybeRunCookieCallback(
-        std::move(callback),
-        CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME);
-    return;
-  }
-
-  DVLOG(net::cookie_util::kVlogSetCookies)
-      << "SetCookie() line: " << cookie_line;
-
-  CanonicalCookie::CookieInclusionStatus status;
-
-  std::unique_ptr<CanonicalCookie> cc(CanonicalCookie::Create(
-      url, cookie_line, Time::Now(), server_time, &status));
-
-  if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
-    DCHECK(!cc);
-    DVLOG(net::cookie_util::kVlogSetCookies)
-        << "WARNING: Failed to allocate CanonicalCookie";
-    MaybeRunCookieCallback(std::move(callback), status);
-    return;
-  }
-
-  DCHECK(cc);
-  SetCanonicalCookie(std::move(cc), url.scheme(), options, std::move(callback));
 }
 
 void CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie,
