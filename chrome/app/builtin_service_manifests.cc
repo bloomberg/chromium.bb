@@ -33,10 +33,6 @@
 #include "components/services/pdf_compositor/public/cpp/manifest.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/services/printing/public/cpp/manifest.h"
-#endif
-
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS) || \
     BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
 #include "services/content/simple_browser/public/cpp/manifest.h"  // nogncheck
@@ -48,10 +44,6 @@ GetChromeBuiltinServiceManifests() {
       quarantine::GetQuarantineManifest(),
 #if BUILDFLAG(ENABLE_PRINTING)
       printing::GetPdfCompositorManifest(),
-#endif
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
-    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
-      GetChromePrintingManifest(),
 #endif
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
       simple_browser::GetManifest(),

@@ -65,12 +65,6 @@
 #include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
-    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
-#include "chrome/services/printing/printing_service.h"
-#include "chrome/services/printing/public/mojom/constants.mojom.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN)
 #include "chrome/services/printing/pdf_to_emf_converter_factory.h"
 #endif
@@ -182,12 +176,6 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
 #if BUILDFLAG(ENABLE_PRINTING)
   if (service_name == printing::mojom::kServiceName)
     return printing::CreatePdfCompositorService(std::move(request));
-#endif
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
-    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
-  if (service_name == printing::mojom::kChromePrintingServiceName)
-    return std::make_unique<printing::PrintingService>(std::move(request));
 #endif
 
 #if defined(OS_WIN)

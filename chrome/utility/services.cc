@@ -54,6 +54,12 @@
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"      // nogncheck
 #endif
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
+    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
+#include "chrome/services/printing/printing_service.h"
+#include "chrome/services/printing/public/mojom/printing_service.mojom.h"
+#endif
+
 namespace {
 
 auto RunFilePatcher(mojo::PendingReceiver<patch::mojom::FilePatcher> receiver) {
@@ -114,6 +120,14 @@ auto RunXrDeviceService(
 }
 #endif
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
+    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
+auto RunPrintingService(
+    mojo::PendingReceiver<printing::mojom::PrintingService> receiver) {
+  return std::make_unique<printing::PrintingService>(std::move(receiver));
+}
+#endif
+
 }  // namespace
 
 mojo::ServiceFactory* GetElevatedMainThreadServiceFactory() {
@@ -159,6 +173,11 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 
 #if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
     RunXrDeviceService,
+#endif
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
+    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
+    RunPrintingService,
 #endif
   };
   // clang-format on

@@ -4214,6 +4214,8 @@ jumbo_split_static_library("browser") {
         "printing/print_preview_message_handler.h",
         "printing/print_view_manager.cc",
         "printing/print_view_manager.h",
+        "printing/printing_service.cc",
+        "printing/printing_service.h",
         "printing/pwg_raster_converter.cc",
         "printing/pwg_raster_converter.h",
       ]
