@@ -3172,9 +3172,6 @@ crbug.com/626703 crbug.com/946710 http/tests/devtools/extensions/extensions-side
 crbug.com/751952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
 crbug.com/751952 [ Win ] editing/selection/modify_extend/extend_by_character.html [ Failure Pass ]
 
-crbug.com/800898 external/wpt/FileAPI/url/url-with-fetch.any.worker.html [ Pass Failure ]
-crbug.com/800898 external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Failure ]
-
 # Websockets
 # Cannot be rebaselined because the output contains a timestamp and a random number.
 crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure ]
