@@ -3324,6 +3324,11 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-verti
 crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
+crbug.com/626703 [ Retina ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/unsafe-url/attr-referrer/same-origin/http-http/img-tag/keep-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-015.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-break/line-break-anywhere-002.html [ Failure ]
