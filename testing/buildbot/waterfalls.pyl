@@ -4173,6 +4173,15 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
+      'V8 Blink Linux Future': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'layout_ng_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
       'V8 Blink Linux Layout NG': {
         'swarming': {
           'dimension_sets': [
