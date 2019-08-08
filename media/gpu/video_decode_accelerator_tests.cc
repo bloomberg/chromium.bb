@@ -87,7 +87,9 @@ class VideoDecoderTest : public ::testing::Test {
     config.use_vd = g_env->UseVD();
 
     auto video_player = VideoPlayer::Create(
-        video, std::move(frame_renderer), std::move(frame_processors), config);
+        std::move(frame_renderer), std::move(frame_processors), config);
+    LOG_ASSERT(video_player);
+    LOG_ASSERT(video_player->Initialize(video));
 
     // Increase event timeout when outputting video frames.
     if (g_env->IsFramesOutputEnabled()) {
@@ -315,6 +317,33 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_Allocate) {
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
+}
+
+// Test video decoder re-initialization. Re-initialization is only supported by
+// the media::VideoDecoder interface, so the test will be skipped if --use_vd
+// is not specified.
+TEST_F(VideoDecoderTest, Reinitialize) {
+  if (!g_env->UseVD())
+    GTEST_SKIP();
+
+  // Create and initialize the video decoder.
+  auto tvp = CreateVideoPlayer(g_env->Video());
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kInitialized), 1u);
+
+  // Re-initialize the video decoder, without having played the video.
+  EXPECT_TRUE(tvp->Initialize(g_env->Video()));
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kInitialized), 2u);
+
+  // Play the video from start to end.
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForFlushDone());
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
+  EXPECT_TRUE(tvp->WaitForFrameProcessors());
+
+  // Try re-initializing the video decoder again.
+  EXPECT_TRUE(tvp->Initialize(g_env->Video()));
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kInitialized), 3u);
 }
 
 }  // namespace test
