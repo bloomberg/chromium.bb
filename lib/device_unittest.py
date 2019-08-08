@@ -56,6 +56,21 @@ class DeviceTester(cros_test_lib.RunCommandTestCase):
     self._device.RunCommand(['mount', '-o', 'remount,rw', '/'])
     self.assertCommandCalled(['sudo', '--', 'mount', '-o', 'remount,rw', '/'])
 
+  def testRemoteCmd(self):
+    """Verify remote command runs correctly with default arguments."""
+    self._device.RemoteCommand(['/usr/local/autotest/bin/vm_sanity'])
+    self.assertCommandContains(['/usr/local/autotest/bin/vm_sanity'])
+    self.assertCommandContains(capture_output=True, combine_stdout_stderr=True,
+                               log_output=True)
+
+  def testRemoteCmdStream(self):
+    """Verify remote command for streaming output."""
+    self._device.RemoteCommand('/usr/local/autotest/bin/vm_sanity',
+                               stream_output=True)
+    self.assertCommandContains(capture_output=False)
+    self.assertCommandContains(combine_stdout_stderr=True,
+                               log_output=True, expected=False)
+
   def testCreate(self):
     """Verify Device/VM creation."""
     # Verify a VM is created by default.
