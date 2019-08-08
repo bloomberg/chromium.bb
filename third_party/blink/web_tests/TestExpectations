@@ -5392,6 +5392,9 @@ crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesi
 crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/window-open-reload.html [ Skip ]
 crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/window-open.html [ Skip ]
 
+# When SameSiteByDefaultCookies is enabled, the Lax-allow-unsafe intervention causes POST tests to fail.
+crbug.com/990439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/form-post-blank.html?samesite-by-default-cookies.tentative [ Failure ]
+
 # CookiesWithoutSameSiteMustBeSecure tests do not pass when that feature is not enabled.
 crbug.com/961439 external/wpt/cookies/samesite-none-secure/ [ Failure ]
 crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite-none-secure/ [ Failure ]
