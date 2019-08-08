@@ -301,7 +301,10 @@ class TestTriggerHelper {
 
 class BackgroundTracingManagerBrowserTest : public ContentBrowserTest {
  public:
-  BackgroundTracingManagerBrowserTest() {}
+  BackgroundTracingManagerBrowserTest() {
+    feature_list_.InitAndDisableFeature(
+        features::kBackgroundTracingProtoOutput);
+  }
 
   void PreRunTestOnMainThread() override {
     BackgroundTracingManagerImpl::GetInstance()
@@ -311,6 +314,8 @@ class BackgroundTracingManagerBrowserTest : public ContentBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(BackgroundTracingManagerBrowserTest);
 };
 
