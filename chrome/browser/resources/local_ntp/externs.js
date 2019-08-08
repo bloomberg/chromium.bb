@@ -352,6 +352,7 @@ window.chrome.embeddedSearch.newTabPage.updateCustomLink;
 window.chrome.embeddedSearch.searchBox;
 window.chrome.embeddedSearch.searchBox.isKeyCaptureEnabled;
 window.chrome.embeddedSearch.searchBox.paste;
+window.chrome.embeddedSearch.searchBox.rtl;
 window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes;
 window.chrome.embeddedSearch.searchBox.stopCapturingKeyStrokes;
 
