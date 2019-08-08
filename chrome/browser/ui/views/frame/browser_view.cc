@@ -351,10 +351,6 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
   ~BrowserViewLayoutDelegateImpl() override {}
 
   // BrowserViewLayoutDelegate overrides:
-  views::View* GetContentsWebView() const override {
-    return browser_view_->contents_web_view_;
-  }
-
   bool DownloadShelfNeedsLayout() const override {
     DownloadShelfView* download_shelf = browser_view_->download_shelf_.get();
     // Re-layout the shelf either if it is visible or if its close animation
