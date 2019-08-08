@@ -1981,6 +1981,8 @@ jumbo_source_set("browser") {
     deps += [
       "//chromeos/resources",
       "//components/chromeos_camera:mojo_mjpeg_decode_accelerator",
+      "//services/data_decoder/public/cpp",
+      "//services/data_decoder/public/mojom",
     ]
   }
 
