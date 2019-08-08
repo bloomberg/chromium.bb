@@ -62,8 +62,15 @@
         ],
         'mixins': [
           'chrome-swarming-pool',
-          'linux-trusty',
+          'linux-xenial',
         ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'ssd': '0',
+            },
+          ],
+        },
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
         },
