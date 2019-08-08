@@ -4,7 +4,7 @@
 
 cr.define('settings', function() {
   /** @interface */
-  class PersonalizationBrowserProxy {
+  class WallpaperBrowserProxy {
     /**
      * @return {!Promise<boolean>} Whether the wallpaper setting row should be
      *     visible.
@@ -20,9 +20,9 @@ cr.define('settings', function() {
   }
 
   /**
-   * @implements {settings.PersonalizationBrowserProxy}
+   * @implements {settings.WallpaperBrowserProxy}
    */
-  class PersonalizationBrowserProxyImpl {
+  class WallpaperBrowserProxyImpl {
     /** @override */
     isWallpaperSettingVisible() {
       return cr.sendWithPromise('isWallpaperSettingVisible');
@@ -39,10 +39,10 @@ cr.define('settings', function() {
     }
   }
 
-  cr.addSingletonGetter(PersonalizationBrowserProxyImpl);
+  cr.addSingletonGetter(WallpaperBrowserProxyImpl);
 
   return {
-    PersonalizationBrowserProxy: PersonalizationBrowserProxy,
-    PersonalizationBrowserProxyImpl: PersonalizationBrowserProxyImpl,
+    WallpaperBrowserProxy: WallpaperBrowserProxy,
+    WallpaperBrowserProxyImpl: WallpaperBrowserProxyImpl,
   };
 });

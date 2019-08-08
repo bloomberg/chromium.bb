@@ -1854,6 +1854,8 @@ jumbo_split_static_library("ui") {
       "webui/settings/chromeos/parental_controls_handler.h",
       "webui/settings/chromeos/plugin_vm_handler.cc",
       "webui/settings/chromeos/plugin_vm_handler.h",
+      "webui/settings/chromeos/wallpaper_handler.cc",
+      "webui/settings/chromeos/wallpaper_handler.h",
       "webui/settings/tts_handler.cc",
       "webui/settings/tts_handler.h",
       "webui/signin/inline_login_handler_chromeos.cc",
