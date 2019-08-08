@@ -311,6 +311,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"switchAccessAutoScanLabel", IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_LABEL},
     {"switchAccessAutoScanSpeedLabel",
      IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_SPEED_LABEL},
+    {"switchAccessAutoScanKeyboardSpeedLabel",
+     IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_KEYBOARD_SPEED_LABEL},
     {"durationInSeconds", IDS_SETTINGS_DURATION_IN_SECONDS},
     {"manageAccessibilityFeatures",
      IDS_SETTINGS_ACCESSIBILITY_MANAGE_ACCESSIBILITY_FEATURES},
@@ -400,6 +402,11 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "showExperimentalAccessibilitySwitchAccess",
       cmd.HasSwitch(::switches::kEnableExperimentalAccessibilitySwitchAccess));
+
+  html_source->AddBoolean(
+      "showExperimentalAccessibilitySwitchAccessImprovedTextInput",
+      cmd.HasSwitch(
+          ::switches::kEnableExperimentalAccessibilitySwitchAccessText));
 #endif
 }
 
