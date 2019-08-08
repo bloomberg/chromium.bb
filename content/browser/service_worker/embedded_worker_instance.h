@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -357,7 +358,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   ServiceWorkerMetrics::StartSituation start_situation_ =
       ServiceWorkerMetrics::StartSituation::UNKNOWN;
 
-  std::unique_ptr<ServiceWorkerContentSettingsProxyImpl> content_settings_;
+  base::SequenceBound<ServiceWorkerContentSettingsProxyImpl> content_settings_;
 
   mojo::StrongBindingPtr<network::mojom::URLLoaderFactory>
       script_loader_factory_;

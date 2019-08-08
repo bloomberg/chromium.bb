@@ -782,9 +782,12 @@ void EmbeddedWorkerInstance::SendStartWorker(
 
   instance_host_binding_.Bind(mojo::MakeRequest(&params->instance_host));
 
-  content_settings_ = std::make_unique<ServiceWorkerContentSettingsProxyImpl>(
-      params->script_url, context_,
-      mojo::MakeRequest(&params->content_settings_proxy));
+  content_settings_ =
+      base::SequenceBound<ServiceWorkerContentSettingsProxyImpl>(
+          base::CreateSequencedTaskRunner({BrowserThread::UI}),
+          params->script_url,
+          scoped_refptr<ServiceWorkerContextWrapper>(context_->wrapper()),
+          mojo::MakeRequest(&params->content_settings_proxy));
 
   const bool is_script_streaming = !params->installed_scripts_info.is_null();
   inflight_start_task_->set_start_worker_sent_time(base::TimeTicks::Now());
