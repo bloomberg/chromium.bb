@@ -149,9 +149,6 @@ public class BottomSheet
     /** The height of the shadow that sits above the toolbar. */
     private final int mToolbarShadowHeight;
 
-    /** The radius of the rounded corner at the top of the sheet. */
-    private final int mRoundedCornerRadius;
-
     /** The {@link BottomSheetMetrics} used to record user actions and histograms. */
     private final BottomSheetMetrics mMetrics;
 
@@ -423,8 +420,7 @@ public class BottomSheet
                 getResources().getDimensionPixelSize(R.dimen.bottom_sheet_min_full_half_distance);
         mToolbarShadowHeight =
                 getResources().getDimensionPixelOffset(R.dimen.toolbar_shadow_height);
-        mRoundedCornerRadius =
-                getResources().getDimensionPixelOffset(R.dimen.bottom_sheet_corner_radius);
+
         mMetrics = new BottomSheetMetrics();
         addObserver(mMetrics);
 
@@ -1185,7 +1181,7 @@ public class BottomSheet
     @VisibleForTesting
     float getFullRatio() {
         if (mContainerHeight <= 0) return 0;
-        return (mContainerHeight + mToolbarShadowHeight - mRoundedCornerRadius) / mContainerHeight;
+        return (mContainerHeight + mToolbarShadowHeight) / mContainerHeight;
     }
 
     /**
@@ -1401,8 +1397,7 @@ public class BottomSheet
         mSheetContent.getContentView().measure(
                 MeasureSpec.makeMeasureSpec((int) mContainerWidth, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec((int) mContainerHeight, MeasureSpec.AT_MOST));
-        mContentDesiredHeight =
-                mSheetContent.getContentView().getMeasuredHeight() - mRoundedCornerRadius;
+        mContentDesiredHeight = mSheetContent.getContentView().getMeasuredHeight();
     }
 
     private float getRatioForState(int state) {
@@ -1599,10 +1594,5 @@ public class BottomSheet
 
     private void invalidateContentDesiredHeight() {
         mContentDesiredHeight = HEIGHT_UNSPECIFIED;
-    }
-
-    @VisibleForTesting
-    int getRoundedCornerRadius() {
-        return mRoundedCornerRadius;
     }
 }
