@@ -2574,8 +2574,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'isolated_scripts': 'gpu_blink_web_tests',
-          'gpu_telemetry_tests': 'gpu_fyi_linux_intel_release_experimental_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         }
       },
       'Linux FYI Experimental Release (NVIDIA)': {
