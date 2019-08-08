@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.MainThread;
@@ -178,8 +177,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         }
     }
 
-    @SuppressLint("StaticFieldLeak")
-    private static SigninManager sTestingSigninManager;
     private static int sSignInAccessPoint = SigninAccessPoint.UNKNOWN;
 
     /**
