@@ -22,9 +22,13 @@ const char kSerialSubsystem[] = "tty";
 
 const char kHostPathKey[] = "DEVNAME";
 const char kHostBusKey[] = "ID_BUS";
+const char kMajorKey[] = "MAJOR";
 const char kVendorIDKey[] = "ID_VENDOR_ID";
 const char kProductIDKey[] = "ID_MODEL_ID";
 const char kProductNameKey[] = "ID_MODEL";
+
+// The major number for an RFCOMM TTY device.
+const char kRfcommMajor[] = "216";
 
 }  // namespace
 
@@ -70,32 +74,40 @@ SerialDeviceEnumeratorLinux::GetDevices() {
     // for detecting actual devices.
     const char* path =
         udev_device_get_property_value(device.get(), kHostPathKey);
+    if (!path)
+      continue;
+
     const char* bus = udev_device_get_property_value(device.get(), kHostBusKey);
-    if (path != NULL && bus != NULL) {
-      auto info = mojom::SerialPortInfo::New();
-      info->path = base::FilePath(path);
-      info->token = GetTokenFromPath(info->path);
-
-      const char* vendor_id =
-          udev_device_get_property_value(device.get(), kVendorIDKey);
-      const char* product_id =
-          udev_device_get_property_value(device.get(), kProductIDKey);
-      const char* product_name =
-          udev_device_get_property_value(device.get(), kProductNameKey);
-
-      uint32_t int_value;
-      if (vendor_id && base::HexStringToUInt(vendor_id, &int_value)) {
-        info->vendor_id = int_value;
-        info->has_vendor_id = true;
-      }
-      if (product_id && base::HexStringToUInt(product_id, &int_value)) {
-        info->product_id = int_value;
-        info->has_product_id = true;
-      }
-      if (product_name)
-        info->display_name.emplace(product_name);
-      devices.push_back(std::move(info));
+    if (!bus) {
+      const char* major =
+          udev_device_get_property_value(device.get(), kMajorKey);
+      if (!major || strcmp(major, kRfcommMajor) != 0)
+        continue;
     }
+
+    auto info = mojom::SerialPortInfo::New();
+    info->path = base::FilePath(path);
+    info->token = GetTokenFromPath(info->path);
+
+    const char* vendor_id =
+        udev_device_get_property_value(device.get(), kVendorIDKey);
+    const char* product_id =
+        udev_device_get_property_value(device.get(), kProductIDKey);
+    const char* product_name =
+        udev_device_get_property_value(device.get(), kProductNameKey);
+
+    uint32_t int_value;
+    if (vendor_id && base::HexStringToUInt(vendor_id, &int_value)) {
+      info->vendor_id = int_value;
+      info->has_vendor_id = true;
+    }
+    if (product_id && base::HexStringToUInt(product_id, &int_value)) {
+      info->product_id = int_value;
+      info->has_product_id = true;
+    }
+    if (product_name)
+      info->display_name.emplace(product_name);
+    devices.push_back(std::move(info));
   }
   return devices;
 }

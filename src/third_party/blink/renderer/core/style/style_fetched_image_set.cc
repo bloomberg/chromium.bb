@@ -55,7 +55,7 @@ void StyleFetchedImageSet::Dispose() {
 bool StyleFetchedImageSet::IsEqual(const StyleImage& other) const {
   if (!other.IsImageResourceSet())
     return false;
-  const auto& other_image = ToStyleFetchedImageSet(other);
+  const auto& other_image = To<StyleFetchedImageSet>(other);
   if (best_fit_image_ != other_image.best_fit_image_)
     return false;
   return url_ == other_image.url_;

@@ -23,8 +23,11 @@
 
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
 
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -59,7 +62,7 @@ void StyleFetchedImage::Dispose() {
 bool StyleFetchedImage::IsEqual(const StyleImage& other) const {
   if (!other.IsImageResource())
     return false;
-  const auto& other_image = ToStyleFetchedImage(other);
+  const auto& other_image = To<StyleFetchedImage>(other);
   if (image_ != other_image.image_)
     return false;
   return url_ == other_image.url_;
@@ -163,6 +166,10 @@ void StyleFetchedImage::LoadDeferredImage(const Document& document) {
   DCHECK(is_lazyload_possibly_deferred_);
   is_lazyload_possibly_deferred_ = false;
   document_ = &document;
+  if (document.GetFrame() && document.GetFrame()->Client()) {
+    document.GetFrame()->Client()->DidObserveLazyLoadBehavior(
+        WebLocalFrameClient::LazyLoadBehavior::kLazyLoadedImage);
+  }
   image_->LoadDeferredImage(document_->Fetcher());
 }
 

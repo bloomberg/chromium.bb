@@ -17,7 +17,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
@@ -240,11 +240,9 @@ void BluetoothSocketNet::SendFrontWriteRequest() {
     return;
 
   WriteRequest* request = write_queue_.front().get();
-  net::CompletionCallback callback =
-      base::Bind(&BluetoothSocketNet::OnSocketWriteComplete,
-                 this,
-                 request->success_callback,
-                 request->error_callback);
+  net::CompletionRepeatingCallback callback =
+      base::BindRepeating(&BluetoothSocketNet::OnSocketWriteComplete, this,
+                          request->success_callback, request->error_callback);
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("bluetooth_socket", R"(
         semantics {

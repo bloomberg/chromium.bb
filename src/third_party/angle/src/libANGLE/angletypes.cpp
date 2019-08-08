@@ -59,6 +59,11 @@ BlendState::BlendState(const BlendState &other)
     memcpy(this, &other, sizeof(BlendState));
 }
 
+bool BlendState::allChannelsMasked() const
+{
+    return !colorMaskRed && !colorMaskGreen && !colorMaskBlue && !colorMaskAlpha;
+}
+
 bool operator==(const BlendState &a, const BlendState &b)
 {
     return memcmp(&a, &b, sizeof(BlendState)) == 0;
@@ -250,6 +255,11 @@ Rectangle Rectangle::removeReversal() const
         unreversed.height = -unreversed.height;
     }
     return unreversed;
+}
+
+bool Rectangle::encloses(const gl::Rectangle &inside) const
+{
+    return x0() <= inside.x0() && y0() <= inside.y0() && x1() >= inside.x1() && y1() >= inside.y1();
 }
 
 bool ClipRectangle(const Rectangle &source, const Rectangle &clip, Rectangle *intersection)

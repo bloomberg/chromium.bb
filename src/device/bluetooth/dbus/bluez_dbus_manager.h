@@ -69,13 +69,17 @@ class BluezDBusManagerSetter;
 
 class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
  public:
-  // Sets the global instance. Must be called before any calls to Get().
-  // We explicitly initialize and shut down the global object, rather than
-  // making it a Singleton, to ensure clean startup and shutdown.
-  // This will initialize real, stub, or fake DBusClients depending on
-  // command-line arguments, whether Object Manager is supported and
-  // whether this process runs in a real or test environment.
-  static void Initialize();
+  // Initializes the global instance with a real client. Must be called before
+  // any calls to Get(). We explicitly initialize and shutdown the global object
+  // rather than making it a Singleton to ensure clean startup and shutdown.
+  // * On Chrome OS, |system_bus| must not be null. It will be used as the
+  //   primary bus and a secondary bus will be created.
+  // * On Linux, |system_bus| is ignored and a primary bus only will be created
+  //   and used.
+  static void Initialize(dbus::Bus* system_bus);
+
+  // Initializes the global instance with a fake client.
+  static void InitializeFake();
 
   // Returns a BluezDBusManagerSetter instance that allows tests to
   // replace individual D-Bus clients with their own implementations.

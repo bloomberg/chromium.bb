@@ -97,9 +97,7 @@ class AwContents : public FindHelper::Listener,
       const base::android::JavaParamRef<jobject>& contents_client_bridge,
       const base::android::JavaParamRef<jobject>& io_thread_client,
       const base::android::JavaParamRef<jobject>& intercept_navigation_delegate,
-      const base::android::JavaParamRef<jobject>& autofill_provider,
-      const base::android::JavaParamRef<jobject>&
-          content_capture_receiver_manager);
+      const base::android::JavaParamRef<jobject>& autofill_provider);
   base::android::ScopedJavaLocalRef<jobject> GetWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

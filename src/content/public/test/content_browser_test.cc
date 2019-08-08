@@ -20,6 +20,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/web_test/web_test_content_renderer_client.h"
 #include "content/test/test_content_client.h"
+#include "ui/events/platform/platform_event_source.h"
 
 #if defined(OS_ANDROID)
 #include "content/shell/app/shell_main_delegate.h"
@@ -30,7 +31,7 @@
 #endif
 
 #if !defined(OS_CHROMEOS) && defined(OS_LINUX)
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -102,6 +103,8 @@ void ContentBrowserTest::SetUp() {
 #if !defined(OS_CHROMEOS) && defined(OS_LINUX)
   ui::InitializeInputMethodForTesting();
 #endif
+
+  ui::PlatformEventSource::SetIgnoreNativePlatformEvents(true);
 
   BrowserTestBase::SetUp();
 }

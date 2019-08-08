@@ -16,7 +16,7 @@ function AppManagementBrowserTest() {}
 AppManagementBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
-  browsePreload: 'chrome://apps',
+  browsePreload: 'chrome://app-management',
 
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     '../test_store.js',
@@ -125,5 +125,19 @@ AppManagementPwaPermissionViewTest.prototype = {
 };
 
 TEST_F('AppManagementPwaPermissionViewTest', 'All', function() {
+  mocha.run();
+});
+
+function AppManagementArcPermissionViewTest() {}
+
+AppManagementArcPermissionViewTest.prototype = {
+  __proto__: AppManagementBrowserTest.prototype,
+
+  extraLibraries: AppManagementBrowserTest.prototype.extraLibraries.concat([
+    'arc_permission_view_test.js',
+  ]),
+};
+
+TEST_F('AppManagementArcPermissionViewTest', 'All', function() {
   mocha.run();
 });

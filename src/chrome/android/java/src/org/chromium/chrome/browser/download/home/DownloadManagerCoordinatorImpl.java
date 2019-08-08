@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.download.DownloadPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.download.R;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -164,6 +165,11 @@ class DownloadManagerCoordinatorImpl
     public void openSettings() {
         RecordUserAction.record("Android.DownloadManager.Settings");
         PreferencesLauncher.launchSettingsPage(mActivity, DownloadPreferences.class);
+    }
+
+    @Override
+    public void setTab(Tab tab) {
+        mMainView.setTab(tab);
     }
 
     private void notifyFilterChanged(@FilterType int filter) {

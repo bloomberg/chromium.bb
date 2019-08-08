@@ -276,7 +276,7 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   CONTENT_EXPORT IFACEMETHODIMP get_docType(BSTR* doc_type) override;
 
   CONTENT_EXPORT IFACEMETHODIMP
-  get_nameSpaceURIForID(short name_space_id, BSTR* name_space_uri) override;
+  get_nameSpaceURIForID(SHORT name_space_id, BSTR* name_space_uri) override;
   CONTENT_EXPORT IFACEMETHODIMP
   put_alternateViewMediaTypes(BSTR* comma_separated_media_types) override;
 
@@ -284,36 +284,34 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // ISimpleDOMNode methods.
   //
 
-  CONTENT_EXPORT IFACEMETHODIMP
-  get_nodeInfo(BSTR* node_name,
-               short* name_space_id,
-               BSTR* node_value,
-               unsigned int* num_children,
-               unsigned int* unique_id,
-               unsigned short* node_type) override;
+  CONTENT_EXPORT IFACEMETHODIMP get_nodeInfo(BSTR* node_name,
+                                             SHORT* name_space_id,
+                                             BSTR* node_value,
+                                             unsigned int* num_children,
+                                             unsigned int* unique_id,
+                                             USHORT* node_type) override;
+
+  CONTENT_EXPORT IFACEMETHODIMP get_attributes(USHORT max_attribs,
+                                               BSTR* attrib_names,
+                                               SHORT* name_space_id,
+                                               BSTR* attrib_values,
+                                               USHORT* num_attribs) override;
 
   CONTENT_EXPORT IFACEMETHODIMP
-  get_attributes(unsigned short max_attribs,
-                 BSTR* attrib_names,
-                 short* name_space_id,
-                 BSTR* attrib_values,
-                 unsigned short* num_attribs) override;
-
-  CONTENT_EXPORT IFACEMETHODIMP
-  get_attributesForNames(unsigned short num_attribs,
+  get_attributesForNames(USHORT num_attribs,
                          BSTR* attrib_names,
-                         short* name_space_id,
+                         SHORT* name_space_id,
                          BSTR* attrib_values) override;
 
   CONTENT_EXPORT IFACEMETHODIMP
-  get_computedStyle(unsigned short max_style_properties,
+  get_computedStyle(USHORT max_style_properties,
                     boolean use_alternate_view,
                     BSTR* style_properties,
                     BSTR* style_values,
-                    unsigned short* num_style_properties) override;
+                    USHORT* num_style_properties) override;
 
   CONTENT_EXPORT IFACEMETHODIMP
-  get_computedStyleForProperties(unsigned short num_style_properties,
+  get_computedStyleForProperties(USHORT num_style_properties,
                                  boolean use_alternate_view,
                                  BSTR* style_properties,
                                  BSTR* style_values) override;
@@ -471,12 +469,11 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // Sets the selection given a start and end offset in IA2 Hypertext.
   void SetIA2HypertextSelection(LONG start_offset, LONG end_offset);
 
-  // Search forwards (direction == 1) or backwards (direction == -1)
-  // from the given offset until the given boundary is found, and
-  // return the offset of that boundary.
-  LONG FindBoundary(IA2TextBoundaryType ia2_boundary,
-                    LONG start_offset,
-                    ui::TextBoundaryDirection direction);
+  // Search forwards or backwards from the given offset until the given IA2
+  // text boundary is found, and return the offset of that boundary.
+  LONG FindIA2Boundary(IA2TextBoundaryType ia2_boundary,
+                       LONG start_offset,
+                       ui::TextBoundaryDirection direction);
 
   // Searches forward from the given offset until the start of the next style
   // is found, or searches backward from the given offset until the start of the

@@ -151,7 +151,7 @@ class PaintRecordMatcher
 
 PaintChunk::Id DefaultId() {
   DEFINE_STATIC_LOCAL(FakeDisplayItemClient, fake_client,
-                      ("FakeDisplayItemClient", LayoutRect(0, 0, 100, 100)));
+                      ("FakeDisplayItemClient", IntRect(0, 0, 100, 100)));
   return PaintChunk::Id(fake_client, DisplayItem::kDrawingFirst);
 }
 
@@ -163,7 +163,7 @@ struct TestChunks {
   void AddChunk(const TransformPaintPropertyNode& t,
                 const ClipPaintPropertyNode& c,
                 const EffectPaintPropertyNode& e,
-                const FloatRect& bounds = FloatRect(0, 0, 100, 100)) {
+                const IntRect& bounds = IntRect(0, 0, 100, 100)) {
     auto record = sk_make_sp<PaintRecord>();
     record->push<cc::DrawRectOp>(bounds, cc::PaintFlags());
     AddChunk(std::move(record), t, c, e, bounds);
@@ -174,7 +174,7 @@ struct TestChunks {
                 const TransformPaintPropertyNode& t,
                 const ClipPaintPropertyNode& c,
                 const EffectPaintPropertyNode& e,
-                const FloatRect& bounds = FloatRect(0, 0, 100, 100)) {
+                const IntRect& bounds = IntRect(0, 0, 100, 100)) {
     size_t i = items.size();
     items.AllocateAndConstruct<DrawingDisplayItem>(
         DefaultId().client, DefaultId().type, std::move(record));
@@ -187,8 +187,8 @@ TEST_F(PaintChunksToCcLayerTest, EffectGroupingSimple) {
   // This test verifies effects are applied as a group.
   auto e1 = CreateOpacityEffect(e0(), 0.5f);
   TestChunks chunks;
-  chunks.AddChunk(t0(), c0(), *e1, FloatRect(0, 0, 50, 50));
-  chunks.AddChunk(t0(), c0(), *e1, FloatRect(20, 20, 70, 70));
+  chunks.AddChunk(t0(), c0(), *e1, IntRect(0, 0, 50, 50));
+  chunks.AddChunk(t0(), c0(), *e1, IntRect(20, 20, 70, 70));
 
   sk_sp<PaintRecord> output =
       PaintChunksToCcLayer::Convert(
@@ -211,7 +211,7 @@ TEST_F(PaintChunksToCcLayerTest, EffectGroupingNested) {
   auto e3 = CreateOpacityEffect(*e1, 0.5f);
   TestChunks chunks;
   chunks.AddChunk(t0(), c0(), *e2);
-  chunks.AddChunk(t0(), c0(), *e3, FloatRect(111, 222, 333, 444));
+  chunks.AddChunk(t0(), c0(), *e3, IntRect(111, 222, 333, 444));
 
   sk_sp<PaintRecord> output =
       PaintChunksToCcLayer::Convert(
@@ -243,8 +243,8 @@ TEST_F(PaintChunksToCcLayerTest, EffectFilterGroupingNestedWithTransforms) {
   filter.AppendBlurFilter(5);
   auto e2 = CreateFilterEffect(*e1, filter, FloatPoint(60, 60));
   TestChunks chunks;
-  chunks.AddChunk(*t2, c0(), *e1, FloatRect(0, 0, 50, 50));
-  chunks.AddChunk(*t1, c0(), *e2, FloatRect(20, 20, 70, 70));
+  chunks.AddChunk(*t2, c0(), *e1, IntRect(0, 0, 50, 50));
+  chunks.AddChunk(*t1, c0(), *e2, IntRect(20, 20, 70, 70));
 
   sk_sp<PaintRecord> output =
       PaintChunksToCcLayer::Convert(
@@ -267,7 +267,7 @@ TEST_F(PaintChunksToCcLayerTest, EffectFilterGroupingNestedWithTransforms) {
            cc::PaintOpType::Restore,                           // </e2_offset>
            cc::PaintOpType::Restore,                           // </e1>
            cc::PaintOpType::Restore}));                        // </t1*t2>
-  EXPECT_TRANSFORM_MATRIX(t1->Matrix() * t2->Matrix(), *output, 1);
+  EXPECT_TRANSFORM_MATRIX(t1->Matrix() * t2->SlowMatrix(), *output, 1);
   // chunk1.bounds + e2(t2^-1(chunk2.bounds))
   EXPECT_EFFECT_BOUNDS(0, 0, 155, 155, *output, 2);
   // e2_offset
@@ -278,8 +278,8 @@ TEST_F(PaintChunksToCcLayerTest, EffectFilterGroupingNestedWithTransforms) {
   EXPECT_TRANSLATE(-e2->FiltersOrigin().X(), -e2->FiltersOrigin().Y(), *output,
                    7);
   // t2^1
-  auto translation = t2->Matrix().To2DTranslation();
-  EXPECT_TRANSLATE(-translation.Width(), -translation.Height(), *output, 9);
+  EXPECT_TRANSLATE(-t2->Translation2D().Width(), -t2->Translation2D().Height(),
+                   *output, 9);
 }
 
 TEST_F(PaintChunksToCcLayerTest, InterleavedClipEffect) {
@@ -297,8 +297,8 @@ TEST_F(PaintChunksToCcLayerTest, InterleavedClipEffect) {
   TestChunks chunks;
   chunks.AddChunk(t0(), *c2, e0());
   chunks.AddChunk(t0(), *c3, e0());
-  chunks.AddChunk(t0(), *c4, *e2, FloatRect(0, 0, 50, 50));
-  chunks.AddChunk(t0(), *c3, *e1, FloatRect(20, 20, 70, 70));
+  chunks.AddChunk(t0(), *c4, *e2, IntRect(0, 0, 50, 50));
+  chunks.AddChunk(t0(), *c3, *e1, IntRect(20, 20, 70, 70));
   chunks.AddChunk(t0(), *c4, e0());
 
   sk_sp<PaintRecord> output =

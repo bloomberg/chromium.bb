@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/block_painter.h"
+#include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
@@ -35,8 +36,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   if (layout_view_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  bool has_touch_action_rect =
-      layout_view_.HasEffectiveWhitelistedTouchAction();
+  bool has_touch_action_rect = layout_view_.HasEffectiveAllowedTouchAction();
   if (!layout_view_.HasBoxDecorationBackground() && !has_touch_action_rect)
     return;
 
@@ -50,8 +50,8 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   const DisplayItemClient* background_client = &layout_view_;
 
   base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
-  if (BoxModelObjectPainter::IsPaintingScrollingBackground(&layout_view_,
-                                                           paint_info)) {
+  if (BoxDecorationData::IsPaintingScrollingBackground(paint_info,
+                                                       layout_view_)) {
     // Layout overflow, combined with the visible content size.
     auto document_rect = layout_view_.DocumentRect();
     // DocumentRect is relative to ScrollOrigin. Add ScrollOrigin to let it be
@@ -147,8 +147,8 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
   if (!root_object || !root_object->IsBox()) {
     background_renderable = false;
   } else if (root_object->HasLayer()) {
-    if (BoxModelObjectPainter::IsPaintingScrollingBackground(&layout_view_,
-                                                             paint_info)) {
+    if (BoxDecorationData::IsPaintingScrollingBackground(paint_info,
+                                                         layout_view_)) {
       transform.Translate(layout_view_.ScrolledContentOffset().Width(),
                           layout_view_.ScrolledContentOffset().Height());
     }

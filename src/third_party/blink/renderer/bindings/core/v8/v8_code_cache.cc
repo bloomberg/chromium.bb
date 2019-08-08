@@ -7,8 +7,8 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
@@ -55,8 +55,8 @@ bool IsResourceHotForCaching(const SingleCachedMetadataHandler* cache_handler,
   if (!cached_metadata)
     return false;
   double time_stamp;
-  const int size = sizeof(time_stamp);
-  DCHECK_EQ(cached_metadata->size(), static_cast<unsigned long>(size));
+  const uint32_t size = sizeof(time_stamp);
+  DCHECK_EQ(cached_metadata->size(), size);
   memcpy(&time_stamp, cached_metadata->Data(), size);
   return (WTF::CurrentTime() - time_stamp) < hot_seconds;
 }
@@ -271,7 +271,7 @@ void V8CodeCache::ProduceCache(v8::Isolate* isolate,
 }
 
 void V8CodeCache::ProduceCache(v8::Isolate* isolate,
-                               ScriptModuleProduceCacheData* produce_cache_data,
+                               ModuleRecordProduceCacheData* produce_cache_data,
                                size_t source_text_length,
                                const KURL& source_url,
                                const TextPosition& source_start_position) {

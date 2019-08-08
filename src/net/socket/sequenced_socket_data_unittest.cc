@@ -664,7 +664,7 @@ TEST_F(SequencedSocketDataTest, SingleSyncWriteTooSmall) {
   for (int i = 0; i < gtest_failures.size(); ++i) {
     const ::testing::TestPartResult& result =
         gtest_failures.GetTestPartResult(i);
-    EXPECT_TRUE(strstr(result.message(), kExpectedFailures[i]) != NULL);
+    EXPECT_TRUE(strstr(result.message(), kExpectedFailures[i]) != nullptr);
   }
 
   set_expect_eof(false);

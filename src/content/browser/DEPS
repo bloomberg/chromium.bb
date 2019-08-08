@@ -25,8 +25,10 @@ include_rules = [
   "+components/tracing",
   "+components/ukm",
   "+components/url_formatter",
+  "+components/variations/net/variations_http_headers.h",
   "+components/viz",
   "+components/cbor",
+  "+components/os_crypt/os_crypt_switches.h",
 
   "+content/public/app",
   "+content/public/browser",
@@ -103,10 +105,7 @@ include_rules = [
   "+third_party/blink/public/platform/web_touch_event.h",
   "+third_party/blink/public/platform/web_text_input_type.h",
   "+third_party/blink/public/platform/mac/web_scrollbar_theme.h",
-  "+third_party/blink/public/platform/modules/font_unique_name_lookup/font_unique_name_lookup.mojom.h",
-  "+third_party/blink/public/platform/modules/idle/idle_manager.mojom.h",
   "+third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h",
-  "+third_party/blink/public/platform/modules/locks/lock_manager.mojom.h",
   "+third_party/blink/public/platform/modules/notifications/web_notification_constants.h",
   "+third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h",
   "+third_party/blink/public/public_buildflags.h",
@@ -128,27 +127,10 @@ include_rules = [
 
   # Allow mojo generated files in WebKit. These files use STL types and
   # don't use WTF types.
-  "+third_party/blink/public/platform/modules/background_sync/background_sync.mojom.h",
   "+third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h",
-  "+third_party/blink/public/platform/modules/broadcastchannel/broadcast_channel.mojom-test-utils.h",
-  "+third_party/blink/public/platform/modules/broadcastchannel/broadcast_channel.mojom.h",
   "+third_party/blink/public/platform/modules/cookie_store/cookie_store.mojom.h",
-  "+third_party/blink/public/platform/modules/geolocation/geolocation_service.mojom.h",
-  "+third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom.h",
-  "+third_party/blink/public/platform/modules/installedapp/related_application.mojom.h",
-  "+third_party/blink/public/platform/modules/keyboard_lock/keyboard_lock.mojom.h",
-  "+third_party/blink/public/platform/modules/mediasession/media_session.mojom.h",
   "+third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h",
-  "+third_party/blink/public/platform/modules/notifications/notification_service.mojom.h",
-  "+third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom.h",
-  "+third_party/blink/public/platform/modules/permissions/permission.mojom.h",
-  "+third_party/blink/public/platform/modules/permissions/permission_status.mojom.h",
-  "+third_party/blink/public/platform/modules/webauthn/authenticator.mojom.h",
-  "+third_party/blink/public/platform/modules/webauthn/virtual_authenticator.mojom.h",
-  "+third_party/blink/public/platform/modules/webdatabase/web_database.mojom.h",
   "+third_party/blink/public/platform/modules/websockets/websocket.mojom.h",
-  "+third_party/blink/public/web/commit_result.mojom.h",
-  "+third_party/blink/public/web/devtools_frontend.mojom.h",
 
   # DO NOT ADD ANY CHROME OR COMPONENTS INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module

@@ -2886,14 +2886,6 @@ void LoseContextCHROMIUM(GLenum current, GLenum other) {
   }
 }
 
-void InsertFenceSyncCHROMIUM(GLuint64 release_count) {
-  gles2::cmds::InsertFenceSyncCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::InsertFenceSyncCHROMIUM>();
-  if (c) {
-    c->Init(release_count);
-  }
-}
-
 void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
                                         GLuint dest_id,
                                         GLint x,
@@ -3532,14 +3524,14 @@ void SetReadbackBufferShadowAllocationINTERNAL(GLuint buffer_id,
   }
 }
 
-void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
-                                             GLenum attachment,
-                                             GLuint texture,
-                                             GLint level,
-                                             GLint baseViewIndex,
-                                             GLsizei numViews) {
-  gles2::cmds::FramebufferTextureMultiviewLayeredANGLE* c =
-      GetCmdSpace<gles2::cmds::FramebufferTextureMultiviewLayeredANGLE>();
+void FramebufferTextureMultiviewOVR(GLenum target,
+                                    GLenum attachment,
+                                    GLuint texture,
+                                    GLint level,
+                                    GLint baseViewIndex,
+                                    GLsizei numViews) {
+  gles2::cmds::FramebufferTextureMultiviewOVR* c =
+      GetCmdSpace<gles2::cmds::FramebufferTextureMultiviewOVR>();
   if (c) {
     c->Init(target, attachment, texture, level, baseViewIndex, numViews);
   }
@@ -3554,15 +3546,15 @@ void MaxShaderCompilerThreadsKHR(GLuint count) {
 }
 
 void CreateAndTexStorage2DSharedImageINTERNALImmediate(GLuint texture,
-                                                       const GLbyte* mailbox,
-                                                       GLenum internalformat) {
+                                                       GLenum internalformat,
+                                                       const GLbyte* mailbox) {
   const uint32_t size = gles2::cmds::
       CreateAndTexStorage2DSharedImageINTERNALImmediate::ComputeSize();
   gles2::cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate* c =
       GetImmediateCmdSpaceTotalSize<
           gles2::cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate>(size);
   if (c) {
-    c->Init(texture, mailbox, internalformat);
+    c->Init(texture, internalformat, mailbox);
   }
 }
 

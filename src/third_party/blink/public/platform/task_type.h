@@ -14,7 +14,7 @@ namespace blink {
 //
 // When a new task type is created, use kCount value as a new value,
 // the tools/metrics/histograms/enums.xml shall also be updated.
-enum class TaskType : unsigned {
+enum class TaskType : unsigned char {
   ///////////////////////////////////////
   // Speced tasks should use one of the following task types
   ///////////////////////////////////////
@@ -202,6 +202,9 @@ enum class TaskType : unsigned {
   // Task used for ContentCapture.
   kInternalContentCapture = 61,
 
+  // Task used for Navigations.
+  kInternalNavigation = 63,
+
   ///////////////////////////////////////
   // The following task types are only for thread-local queues.
   ///////////////////////////////////////
@@ -214,13 +217,14 @@ enum class TaskType : unsigned {
   kMainThreadTaskQueueIPC = 42,
   kMainThreadTaskQueueControl = 43,
   kMainThreadTaskQueueCleanup = 52,
+  kMainThreadTaskQueueMemoryPurge = 62,
   kCompositorThreadTaskQueueDefault = 45,
   kCompositorThreadTaskQueueInput = 49,
   kWorkerThreadTaskQueueDefault = 46,
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 62,
+  kCount = 64,
 };
 
 }  // namespace blink

@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -39,12 +38,14 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.util.concurrent.Callable;
@@ -59,8 +60,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
     private static final long HOURS_IN_MS = 60 * 60 * 1000L;
 
     @Rule
-    public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private UserActionTester mActionTester;
 
@@ -74,12 +74,9 @@ public class MainIntentBehaviorMetricsIntegrationTest {
     public void testFocusOmnibox() {
         startActivity(true);
         assertMainIntentBehavior(null);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
-                OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
+            OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
         });
         assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.FOCUS_OMNIBOX);
     }
@@ -89,14 +86,10 @@ public class MainIntentBehaviorMetricsIntegrationTest {
     public void testSwitchTabs() {
         startActivity(true);
         assertMainIntentBehavior(null);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().getTabCreator(false).createNewTab(
-                        new LoadUrlParams(ContentUrlConstants.ABOUT_BLANK_URL),
-                        TabLaunchType.FROM_RESTORE, null);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+            (Runnable) () -> mActivityTestRule.getActivity().getTabCreator(false).createNewTab(
+                                new LoadUrlParams(ContentUrlConstants.ABOUT_BLANK_URL),
+                                TabLaunchType.FROM_RESTORE, null));
         CriteriaHelper.pollUiThread(Criteria.equals(2, new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
@@ -105,12 +98,9 @@ public class MainIntentBehaviorMetricsIntegrationTest {
         }));
         assertMainIntentBehavior(null);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                TabModelUtils.setIndex(mActivityTestRule.getActivity().getCurrentTabModel(), 1);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> TabModelUtils.setIndex(
+                                mActivityTestRule.getActivity().getCurrentTabModel(), 1));
         assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.SWITCH_TABS);
     }
 
@@ -119,12 +109,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
     public void testBackgrounded() {
         startActivity(true);
         assertMainIntentBehavior(null);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().finish();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().finish());
         assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.BACKGROUNDED);
     }
 
@@ -133,12 +118,8 @@ public class MainIntentBehaviorMetricsIntegrationTest {
     public void testCreateNtp() {
         startActivity(true);
         assertMainIntentBehavior(null);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().getTabCreator(false).launchNTP();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().getTabCreator(false).launchNTP());
         assertMainIntentBehavior(MainIntentBehaviorMetrics.MainIntentActionType.NTP_CREATED);
     }
 
@@ -310,15 +291,15 @@ public class MainIntentBehaviorMetricsIntegrationTest {
     private void assertBackgroundDurationLogged(long duration, String expectedMetric) {
         startActivity(false);
         mActionTester = new UserActionTester();
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(ChromeTabbedActivity.LAST_BACKGROUNDED_TIME_MS_PREF,
-                        System.currentTimeMillis() - duration)
-                .commit();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity()
+                    .getInactivityTrackerForTesting()
+                    .setLastBackgroundedTimeInPrefs(System.currentTimeMillis() - duration);
+        });
 
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getActivity().onNewIntent(intent); });
 
         assertThat(mActionTester.toString(), mActionTester.getActions(),

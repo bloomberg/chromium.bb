@@ -6,7 +6,7 @@
 
 SessionHierarchyMatchChecker::SessionHierarchyMatchChecker(
     const fake_server::SessionsHierarchy& sessions_hierarchy,
-    browser_sync::ProfileSyncService* service,
+    syncer::ProfileSyncService* service,
     fake_server::FakeServer* fake_server)
     : SingleClientStatusChangeChecker(service),
       sessions_hierarchy_(sessions_hierarchy),

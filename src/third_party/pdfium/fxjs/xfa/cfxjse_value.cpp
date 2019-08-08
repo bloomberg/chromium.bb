@@ -82,8 +82,8 @@ CFXJSE_HostObject* CFXJSE_Value::ToHostObject() const {
   return FXJSE_RetrieveObjectBinding(pValue.As<v8::Object>());
 }
 
-void CFXJSE_Value::SetObject(CFXJSE_HostObject* lpObject,
-                             CFXJSE_Class* pClass) {
+void CFXJSE_Value::SetHostObject(CFXJSE_HostObject* lpObject,
+                                 CFXJSE_Class* pClass) {
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
   v8::Local<v8::FunctionTemplate> hClass =
       v8::Local<v8::FunctionTemplate>::New(GetIsolate(), pClass->m_hTemplate);
@@ -93,6 +93,13 @@ void CFXJSE_Value::SetObject(CFXJSE_HostObject* lpObject,
           .ToLocalChecked();
   FXJSE_UpdateObjectBinding(hObject, lpObject);
   m_hValue.Reset(GetIsolate(), hObject);
+}
+
+void CFXJSE_Value::ClearHostObject() {
+  CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
+  FXJSE_ClearObjectBinding(m_hValue.Get(GetIsolate()).As<v8::Object>());
+  v8::Local<v8::Value> hValue = v8::Null(GetIsolate());
+  m_hValue.Reset(GetIsolate(), hValue);
 }
 
 void CFXJSE_Value::SetArray(
@@ -131,6 +138,9 @@ void CFXJSE_Value::SetFloat(float fFloat) {
 bool CFXJSE_Value::SetObjectProperty(ByteStringView szPropName,
                                      CFXJSE_Value* lpPropValue) {
   ASSERT(lpPropValue);
+  if (lpPropValue->IsEmpty())
+    return false;
+
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
   v8::Local<v8::Value> hObject =
       v8::Local<v8::Value>::New(GetIsolate(), m_hValue);
@@ -144,9 +154,9 @@ bool CFXJSE_Value::SetObjectProperty(ByteStringView szPropName,
           .ToLocalChecked();
   v8::Local<v8::Value> hPropValue =
       v8::Local<v8::Value>::New(GetIsolate(), lpPropValue->DirectGetValue());
-  return hObject.As<v8::Object>()
-      ->Set(GetIsolate()->GetCurrentContext(), hPropName, hPropValue)
-      .FromJust();
+  v8::Maybe<bool> result = hObject.As<v8::Object>()->Set(
+      GetIsolate()->GetCurrentContext(), hPropName, hPropValue);
+  return result.IsJust() && result.FromJust();
 }
 
 bool CFXJSE_Value::GetObjectProperty(ByteStringView szPropName,

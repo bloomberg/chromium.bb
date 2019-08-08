@@ -18,6 +18,7 @@
 #include "rtc_base/arraysize.h"
 #include "rtc_base/numerics/safe_minmax.h"
 #include "rtc_base/task_queue.h"
+#include "rtc_base/task_queue_stdlib.h"
 #include "system_wrappers/include/field_trial.h"
 #include "test/fuzzers/audio_processing_fuzzer_helper.h"
 #include "test/fuzzers/fuzz_data_helper.h"
@@ -125,6 +126,8 @@ std::unique_ptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
   apm_config.echo_canceller.mobile_mode = use_aecm;
   apm_config.residual_echo_detector.enabled = red;
   apm_config.high_pass_filter.enabled = hpf;
+  apm_config.gain_controller1.enabled = use_agc;
+  apm_config.gain_controller1.enable_limiter = use_agc_limiter;
   apm_config.gain_controller2.enabled = use_agc2;
   apm_config.gain_controller2.fixed_digital.gain_db = gain_controller2_gain_db;
   apm_config.gain_controller2.adaptive_digital.enabled =
@@ -141,24 +144,38 @@ std::unique_ptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
   apm_config.voice_detection.enabled = use_vad;
   apm->ApplyConfig(apm_config);
 
-  apm->gain_control()->Enable(use_agc);
   apm->level_estimator()->Enable(use_le);
   apm->voice_detection()->Enable(use_vad);
-  apm->gain_control()->enable_limiter(use_agc_limiter);
 
   return apm;
 }
+
+TaskQueueFactory* GetTaskQueueFactory() {
+  // Chromium hijacked DefaultTaskQueueFactory with own implementation, but
+  // unable to use it without base::test::ScopedTaskEnvironment. Actual used
+  // task queue implementation shouldn't matter for the purpose of this fuzzer,
+  // so use stdlib implementation: that one is multiplatform.
+  // When bugs.webrtc.org/10284 is resolved and chromium stops hijacking
+  // DefaultTaskQueueFactory, Stdlib can be replaced with default one.
+  static TaskQueueFactory* const factory =
+      CreateTaskQueueStdlibFactory().release();
+  return factory;
+}
+
 }  // namespace
 
 void FuzzOneInput(const uint8_t* data, size_t size) {
+  if (size > 400000) {
+    return;
+  }
   test::FuzzDataHelper fuzz_data(rtc::ArrayView<const uint8_t>(data, size));
   // This string must be in scope during execution, according to documentation
   // for field_trial.h. Hence it's created here and not in CreateApm.
   std::string field_trial_string = "";
 
-  std::unique_ptr<rtc::TaskQueue> worker_queue(
-      new rtc::TaskQueue("rtc-low-prio", rtc::TaskQueue::Priority::LOW));
-  auto apm = CreateApm(&fuzz_data, &field_trial_string, worker_queue.get());
+  rtc::TaskQueue worker_queue(GetTaskQueueFactory()->CreateTaskQueue(
+      "rtc-low-prio", rtc::TaskQueue::Priority::LOW));
+  auto apm = CreateApm(&fuzz_data, &field_trial_string, &worker_queue);
 
   if (apm) {
     FuzzAudioProcessing(&fuzz_data, std::move(apm));

@@ -52,7 +52,7 @@ class CONTENT_EXPORT NavigationHandle {
   // some may change during navigation (e.g. due to server redirects).
 
   // Get a unique ID for this navigation.
-  virtual int64_t GetNavigationId() const = 0;
+  virtual int64_t GetNavigationId() = 0;
 
   // The URL the frame is navigating to. This may change during the navigation
   // when encountering a server redirect.
@@ -113,7 +113,7 @@ class CONTENT_EXPORT NavigationHandle {
   virtual base::TimeTicks NavigationInputStart() = 0;
 
   // Whether or not the navigation was started within a context menu.
-  virtual bool WasStartedFromContextMenu() const = 0;
+  virtual bool WasStartedFromContextMenu() = 0;
 
   // Returns the URL and encoding of an INPUT field that corresponds to a
   // searchable form request.
@@ -299,6 +299,24 @@ class CONTENT_EXPORT NavigationHandle {
   // Returns, if available, the origin of the document that has initiated the
   // navigation for this NavigationHandle.
   virtual const base::Optional<url::Origin>& GetInitiatorOrigin() = 0;
+
+  // Whether the new document will be hosted in the same process as the current
+  // document or not. Set only when the navigation commits.
+  virtual bool IsSameProcess() = 0;
+
+  // Returns the offset between the indices of the previous last committed and
+  // the newly committed navigation entries.
+  // (e.g. -1 for back navigations, 0 for reloads, 1 for forward navigations).
+  //
+  // Note that this value is computed when we create the navigation request
+  // and doesn't fully cover all corner cases.
+  // We try to approximate them with params.should_replace_entry, but in
+  // some cases it's inaccurate:
+  // - Main frame client redirects,
+  // - History navigation to the page with subframes. The subframe
+  //   navigations will return 1 here although they don't create a new
+  //   navigation entry.
+  virtual int GetNavigationEntryOffset() = 0;
 
   // Testing methods ----------------------------------------------------------
   //

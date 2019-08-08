@@ -150,8 +150,9 @@ const base::string16& NavigationItemImpl::GetTitleForDisplay() const {
   if (!cached_display_title_.empty())
     return cached_display_title_;
 
-  cached_display_title_ =
-      NavigationItemImpl::GetDisplayTitleForURL(GetVirtualURL());
+  // File urls have different display rules, so use one if it is present.
+  cached_display_title_ = NavigationItemImpl::GetDisplayTitleForURL(
+      GetURL().SchemeIsFile() ? GetURL() : GetVirtualURL());
   return cached_display_title_;
 }
 

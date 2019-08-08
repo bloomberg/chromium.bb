@@ -61,7 +61,7 @@ void DeviceOrientationController::DidAddEventListener(
                         WebFeature::kDeviceOrientationSecureOrigin);
     } else {
       Deprecation::CountDeprecation(
-          frame, WebFeature::kDeviceOrientationInsecureOrigin);
+          GetDocument(), WebFeature::kDeviceOrientationInsecureOrigin);
       HostsUsingFeatures::CountAnyWorld(
           GetDocument(),
           HostsUsingFeatures::Feature::kDeviceOrientationInsecureHost);
@@ -155,8 +155,9 @@ void DeviceOrientationController::Trace(blink::Visitor* visitor) {
 
 void DeviceOrientationController::RegisterWithOrientationEventPump(
     bool absolute) {
+  // The document's frame may be null if the document was already shut down.
+  LocalFrame* frame = GetDocument().GetFrame();
   if (!orientation_event_pump_) {
-    LocalFrame* frame = GetDocument().GetFrame();
     if (!frame)
       return;
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -164,7 +165,8 @@ void DeviceOrientationController::RegisterWithOrientationEventPump(
     orientation_event_pump_ =
         MakeGarbageCollected<DeviceOrientationEventPump>(task_runner, absolute);
   }
-  orientation_event_pump_->AddController(this);
+  // TODO(crbug.com/850619): Ensure a valid frame is passed.
+  orientation_event_pump_->AddController(this, frame);
 }
 
 // static
@@ -180,8 +182,8 @@ void DeviceOrientationController::LogToConsolePolicyFeaturesDisabled(
       "features.md#sensor-features",
       event_name.Ascii().data());
   ConsoleMessage* console_message = ConsoleMessage::Create(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
-      std::move(message));
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kWarning, std::move(message));
   frame->Console().AddMessage(console_message);
 }
 

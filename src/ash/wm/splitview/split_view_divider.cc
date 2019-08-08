@@ -51,7 +51,7 @@ constexpr int kWhiteBarCornerRadius = 1;
 constexpr SkColor kDividerBackgroundColor = SK_ColorBLACK;
 constexpr SkColor kWhiteBarBackgroundColor = SK_ColorWHITE;
 constexpr int kDividerBoundsChangeDurationMs = 250;
-constexpr int kWhiteBarBoundsChangeDurationMs = 150;
+constexpr int kWhiteBarBoundsChangeDurationMs = 250;
 
 // The distance to the divider edge in which a touch gesture will be considered
 // as a valid event on the divider.
@@ -376,7 +376,7 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
   aura::Window* root_window =
       divider_widget_->GetNativeWindow()->GetRootWindow();
   const gfx::Rect work_area_bounds_in_screen =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           root_window);
   const int divider_position = controller_->divider_position();
   const OrientationLockType screen_orientation = GetCurrentScreenOrientation();

@@ -330,13 +330,8 @@ TEST_F('ChromeVoxLiveRegionsTest', 'SimulateTreeChanges', function() {
   });
 });
 
-TEST_F_WITH_PREAMBLE(`
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_LiveStatusOff DISABLED_LiveStatusOff
-#else
-#define MAYBE_LiveStatusOff LiveStatusOff
-#endif
-`, 'ChromeVoxLiveRegionsTest', 'MAYBE_LiveStatusOff', function() {
+// Flaky: https://crbug.com/945199
+TEST_F('ChromeVoxLiveRegionsTest', 'DISABLED_LiveStatusOff', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div><input aria-live="off" type="text"></input></div>

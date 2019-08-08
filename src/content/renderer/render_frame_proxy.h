@@ -145,8 +145,9 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnZoomLevelChanged(double zoom_level);
 
   // Out-of-process child frames receive a signal from RenderWidget when the
-  // page scale factor has changed.
-  void OnPageScaleFactorChanged(float page_scale_factor);
+  // page scale factor has changed, and/or a pinch-zoom gesture starts/ends.
+  void OnPageScaleFactorChanged(float page_scale_factor,
+                                bool is_pinch_gesture_active);
 
   // Invoked by RenderWidget when a new capture sequence number was set,
   // indicating that surfaces should be synchronized.
@@ -199,11 +200,14 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
                           blink::WebSecurityOrigin target,
                           blink::WebDOMMessageEvent event,
                           bool has_user_gesture) override;
-  void Navigate(const blink::WebURLRequest& request,
-                bool should_replace_current_entry,
-                bool is_opener_navigation,
-                bool prevent_sandboxed_download,
-                mojo::ScopedMessagePipeHandle blob_url_token) override;
+  void Navigate(
+      const blink::WebURLRequest& request,
+      bool should_replace_current_entry,
+      bool is_opener_navigation,
+      bool has_download_sandbox_flag,
+      bool blocking_downloads_in_sandbox_without_user_activation_enabled,
+      bool initiator_frame_is_ad,
+      mojo::ScopedMessagePipeHandle blob_url_token) override;
   void FrameRectsChanged(const blink::WebRect& local_frame_rect,
                          const blink::WebRect& screen_space_rect) override;
   void UpdateRemoteViewportIntersection(
@@ -225,6 +229,10 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnDidStartLoading();
 
   void WasEvicted();
+
+  bool is_pinch_gesture_active_for_testing() {
+    return pending_visual_properties_.is_pinch_gesture_active;
+  }
 
  private:
   RenderFrameProxy(int routing_id);
@@ -268,6 +276,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnSetFocusedFrame();
   void OnWillEnterFullscreen();
   void OnUpdateUserActivationState(blink::UserActivationUpdateType update_type);
+  void OnTransferUserActivationFrom(int32_t source_routing_id);
   void OnScrollRectToVisible(const gfx::Rect& rect_to_scroll,
                              const blink::WebScrollIntoViewParams& params);
   void OnBubbleLogicalScroll(blink::WebScrollDirection direction,
@@ -335,7 +344,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   gfx::Rect last_intersection_rect_;
   gfx::Rect last_compositor_visible_rect_;
-  blink::FrameOcclusionState last_occlusion_state_;
+  blink::FrameOcclusionState last_occlusion_state_ =
+      blink::FrameOcclusionState::kUnknown;
 
 #if defined(USE_AURA)
   std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame_;

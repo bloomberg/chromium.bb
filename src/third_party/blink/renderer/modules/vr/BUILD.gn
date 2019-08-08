@@ -20,8 +20,6 @@ blink_modules_sources("vr") {
     "vr_field_of_view.h",
     "vr_frame_data.cc",
     "vr_frame_data.h",
-    "vr_get_devices_callback.cc",
-    "vr_get_devices_callback.h",
     "vr_pose.cc",
     "vr_pose.h",
     "vr_stage_parameters.cc",

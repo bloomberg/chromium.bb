@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -57,6 +59,7 @@ std::set<Mode> GetModesFromSetting(const base::Value* settings) {
 const char kSettingsKeyAllowPowerwash[] = "allow-user-initiated-powerwash";
 const char kSettingsKeyAllowPreserveDeviceState[] =
     "allow-user-initiated-preserve-device-state";
+const char kSettingsKeyAutoUpdateMode[] = "auto-update-mode";
 
 std::unique_ptr<base::DictionaryValue> DecodeSettingsProto(
     const enterprise_management::TPMFirmwareUpdateSettingsProto& settings) {
@@ -71,6 +74,11 @@ std::unique_ptr<base::DictionaryValue> DecodeSettingsProto(
     result->SetKey(
         kSettingsKeyAllowPreserveDeviceState,
         base::Value(settings.allow_user_initiated_preserve_device_state()));
+  }
+
+  if (settings.has_auto_update_mode()) {
+    result->SetKey(kSettingsKeyAutoUpdateMode,
+                   base::Value(settings.auto_update_mode()));
   }
 
   return result;
@@ -290,6 +298,19 @@ void GetAvailableUpdateModes(
             std::move(callback).Run(std::set<Mode>());
           },
           std::move(modes), std::move(callback)),
+      timeout);
+}
+
+void UpdateAvailable(base::OnceCallback<void(bool)> completion,
+                     base::TimeDelta timeout) {
+  // Verify if we have updates pending.
+  AvailabilityChecker::Start(
+      base::BindOnce(
+          [](base::OnceCallback<void(bool)> completion,
+             const AvailabilityChecker::Status& status) {
+            std::move(completion).Run(status.update_available);
+          },
+          std::move(completion)),
       timeout);
 }
 

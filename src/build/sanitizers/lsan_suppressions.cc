@@ -31,24 +31,6 @@ char kLSanDefaultSuppressions[] =
     // Leaks in Nvidia's libGL.
     "leak:libGL.so\n"
 
-    // TODO(eugenis): revisit NSS suppressions after the switch to BoringSSL
-    // NSS leaks in CertDatabaseNSSTest tests. http://crbug.com/51988
-    "leak:net::NSSCertDatabase::ImportFromPKCS12\n"
-    "leak:net::NSSCertDatabase::ListCerts\n"
-    "leak:net::NSSCertDatabase::DeleteCertAndKey\n"
-    "leak:crypto::ScopedTestNSSDB::ScopedTestNSSDB\n"
-    // Another leak due to not shutting down NSS properly.
-    // http://crbug.com/124445
-    "leak:error_get_my_stack\n"
-    // The NSS suppressions above will not fire when the fast stack unwinder is
-    // used, because it can't unwind through NSS libraries. Apply blanket
-    // suppressions for now.
-    "leak:libnssutil3\n"
-    "leak:libnspr4\n"
-    "leak:libnss3\n"
-    "leak:libplds4\n"
-    "leak:libnssckbi\n"
-
     // XRandR has several one time leaks.
     "leak:libxrandr\n"
 
@@ -70,16 +52,6 @@ char kLSanDefaultSuppressions[] =
     // Suppressing the leak is acceptable in some cases when reverting is
     // impossible, i.e. when enabling leak detection for the first time for a
     // test target with pre-existing leaks.
-
-    // Small test-only leak in ppapi_unittests. http://crbug.com/258113
-    "leak:ppapi::proxy::PPP_Instance_Private_ProxyTest_PPPInstancePrivate_"
-    "Test\n"
-
-    // http://crbug.com/322671
-    "leak:content::SpeechRecognitionBrowserTest::SetUpOnMainThread\n"
-
-    // http://crbug.com/355641
-    "leak:TrayAccessibilityTest\n"
 
     // http://crbug.com/356306
     "leak:service_manager::SetProcessTitleFromCommandLine\n"

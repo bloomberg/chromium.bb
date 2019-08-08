@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 """Common code generator for command buffers."""
 
+import errno
 import itertools
+import os
 import os.path
 import re
 import platform
@@ -881,9 +883,14 @@ class CWriter(object):
   """
   def __init__(self, filename, year):
     self.filename = filename
-    self._file = open(filename, 'wb')
     self._ENTER_MSG = _LICENSE % year + _DO_NOT_EDIT_WARNING % _lower_prefix
     self._EXIT_MSG = ""
+    try:
+      os.makedirs(os.path.dirname(filename))
+    except OSError as e:
+      if e.errno == errno.EEXIST:
+        pass
+    self._file = open(filename, 'wb')
 
   def __enter__(self):
     self._file.write(self._ENTER_MSG)
@@ -912,13 +919,8 @@ class CHeaderWriter(CWriter):
 
   def _get_guard(self):
     non_alnum_re = re.compile(r'[^a-zA-Z0-9]')
-    base = os.path.abspath(self.filename)
-    while os.path.basename(base) != 'src':
-      new_base = os.path.dirname(base)
-      assert new_base != base  # Prevent infinite loop.
-      base = new_base
-    hpath = os.path.relpath(self.filename, base)
-    return non_alnum_re.sub('_', hpath).upper() + '_'
+    assert self.filename.startswith("gpu/")
+    return non_alnum_re.sub('_', self.filename).upper() + '_'
 
 
 class TypeHandler(object):
@@ -6339,9 +6341,11 @@ class GLGenerator(object):
   _comment_re = re.compile(r'^//.*$')
   _function_re = re.compile(r'^GL_APICALL(.*?)GL_APIENTRY (.*?) \((.*?)\);$')
 
-  def __init__(self, verbose, year, function_info, named_type_info):
+  def __init__(self, verbose, year, function_info, named_type_info,
+               chromium_root_dir):
     self.original_functions = []
     self.functions = []
+    self.chromium_root_dir = chromium_root_dir
     self.verbose = verbose
     self.year = year
     self.errors = 0
@@ -6411,6 +6415,7 @@ class GLGenerator(object):
 
   def ParseGLH(self, filename):
     """Parses the cmd_buffer_functions.txt file and extracts the functions"""
+    filename = os.path.join(self.chromium_root_dir, filename)
     with open(filename, "r") as f:
       functions = f.read()
     for line in functions.splitlines():
@@ -7384,6 +7389,7 @@ extern const NameToFunc g_gles2_function_table[] = {
                   'third_party/khronos/GLES3/gl31.h',
                   'gpu/GLES2/gl2chromium.h',
                   'gpu/GLES2/gl2extchromium.h']:
+      fname = os.path.join(self.chromium_root_dir, fname)
       lines = open(fname).readlines()
       for line in lines:
         m = enum_re.match(line)
@@ -7615,9 +7621,13 @@ const size_t %(p)sUtil::enum_to_string_table_len_ =
     self.generated_cpp_filenames.append(filename)
 
 
-def Format(generated_files):
+def Format(generated_files, output_dir, chromium_root_dir):
+  """Format generated_files relative to output_dir using clang-format."""
   formatter = "third_party/depot_tools/clang-format"
   if platform.system() == "Windows":
     formatter = "third_party\\depot_tools\\clang-format.bat"
+  formatter = os.path.join(chromium_root_dir, formatter)
+  generated_files = map(lambda filename: os.path.join(output_dir, filename),
+                        generated_files)
   for filename in generated_files:
-    call([formatter, "-i", "-style=chromium", filename])
+    call([formatter, "-i", "-style=chromium", filename], cwd=chromium_root_dir)

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer_delegate.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "content/public/browser/navigation_handle.h"
@@ -125,6 +126,15 @@ struct UserInitiatedInfo {
         user_input_event(user_input_event) {}
 };
 
+// Information about how the page rendered during the browsing session.
+// Derived from the FrameRenderDataUpdate that is sent via UpdateTiming IPC.
+struct PageRenderData {
+  PageRenderData() : layout_jank_score(0) {}
+
+  // How much visible elements on the page shifted (bit.ly/lsm-explainer).
+  float layout_jank_score;
+};
+
 struct PageLoadExtraInfo {
   PageLoadExtraInfo(
       base::TimeTicks navigation_start,
@@ -140,7 +150,8 @@ struct PageLoadExtraInfo {
       const base::Optional<base::TimeDelta>& page_end_time,
       const mojom::PageLoadMetadata& main_frame_metadata,
       const mojom::PageLoadMetadata& subframe_metadata,
-      const mojom::PageRenderData& main_frame_render_data,
+      const PageRenderData& page_render_data,
+      const PageRenderData& main_frame_render_data,
       ukm::SourceId source_id);
 
   // Simplified version of the constructor, intended for use in tests.
@@ -215,7 +226,8 @@ struct PageLoadExtraInfo {
   // PageLoadMetadata for subframes of the current page load.
   const mojom::PageLoadMetadata subframe_metadata;
 
-  const mojom::PageRenderData main_frame_render_data;
+  const PageRenderData page_render_data;
+  const PageRenderData main_frame_render_data;
 
   // UKM SourceId for the current page load.
   const ukm::SourceId source_id;
@@ -315,6 +327,12 @@ class PageLoadMetricsObserver {
       uint64_t* largest_content_paint_size,
       LargestContentType* largest_content_type);
 
+  // Gets/Sets the delegate. The delegate must outlive the observer and is
+  // normally set when the observer is first registered for the page load. The
+  // delegate can only be set once.
+  PageLoadMetricsObserverDelegate* GetDelegate() const;
+  void SetDelegate(PageLoadMetricsObserverDelegate*);
+
   // The page load started, with the given navigation handle.
   // currently_committed_url contains the URL of the committed page load at the
   // time the navigation for navigation_handle was initiated, or the empty URL
@@ -412,7 +430,7 @@ class PageLoadMetricsObserver {
   // course of the page load.
   virtual void OnSubFrameRenderDataUpdate(
       content::RenderFrameHost* subframe_rfh,
-      const mojom::PageRenderData& render_data,
+      const mojom::FrameRenderDataUpdate& render_data,
       const PageLoadExtraInfo& extra_info) {}
 
   // Triggered when an updated CpuTiming is available at the page or subframe
@@ -463,9 +481,11 @@ class PageLoadMetricsObserver {
   virtual void OnFirstInputInPage(const mojom::PageLoadTiming& timing,
                                   const PageLoadExtraInfo& extra_info) {}
 
-  // Invoked when there is a change in either the main_frame_metadata or the
-  // subframe_metadata's loading behavior_flags.
-  virtual void OnLoadingBehaviorObserved(const PageLoadExtraInfo& extra_info) {}
+  // Invoked when there is an update to the loading behavior_flags in the given
+  // frame.
+  virtual void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
+                                         int behavior_flags,
+                                         const PageLoadExtraInfo& extra_info) {}
 
   // Invoked when new use counter features are observed across all frames.
   virtual void OnFeaturesUsageObserved(content::RenderFrameHost* rfh,
@@ -476,8 +496,14 @@ class PageLoadMetricsObserver {
   // for a given render frame host. This only contains resources that have had
   // new data use since the last callback.
   virtual void OnResourceDataUseObserved(
-      FrameTreeNodeId frame_tree_node_id,
+      content::RenderFrameHost* rfh,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources) {}
+
+  // Invoked when there is new information about lazy loaded or deferred
+  // resources. |new_deferred_resource_data| only has new deferral/lazy load
+  // events since the last update.
+  virtual void OnNewDeferredResourceCounts(
+      const mojom::DeferredResourceCounts& new_deferred_resource_data) {}
 
   // Invoked when a media element starts playing.
   virtual void MediaStartedPlaying(
@@ -546,6 +572,9 @@ class PageLoadMetricsObserver {
   // Called when the event corresponding to |event_key| occurs in this page
   // load.
   virtual void OnEventOccurred(const void* const event_key) {}
+
+ private:
+  PageLoadMetricsObserverDelegate* delegate_ = nullptr;
 };
 
 }  // namespace page_load_metrics

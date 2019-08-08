@@ -14,7 +14,7 @@ using ChromeAcceptHeaderTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(ChromeAcceptHeaderTest, Check) {
   net::EmbeddedTestServer server(net::EmbeddedTestServer::TYPE_HTTP);
-  server.ServeFilesFromSourceDirectory("chrome/test/data");
+  server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   std::string plugin_accept_header, favicon_accept_header;
   base::RunLoop plugin_loop, favicon_loop;
   server.RegisterRequestMonitor(base::BindLambdaForTesting(

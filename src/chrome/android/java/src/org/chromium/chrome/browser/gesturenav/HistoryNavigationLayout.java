@@ -5,49 +5,27 @@
 package org.chromium.chrome.browser.gesturenav;
 
 import android.content.Context;
-import android.support.annotation.IntDef;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
-import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
 /**
  * FrameLayout that supports side-wise slide gesture for history navigation. Inheriting
- * class may need to override {@link #isGestureConsumed()} if {@link #onTouchEvent} cannot
- * be relied upon to know whether the side-wise swipe related event was handled. Namely
- * {@link  android.support.v7.widget.RecyclerView}) always claims to handle touch events.
+ * class may need to override {@link #wasLastSideSwipeGestureConsumed()} if
+ * {@link #onTouchEvent} cannot be relied upon to know whether the side-swipe related
+ * event was handled. Namely {@link android.support.v7.widget.RecyclerView}) always
+ * claims to handle touch events.
  */
 public class HistoryNavigationLayout extends FrameLayout {
-    @IntDef({GestureState.NONE, GestureState.STARTED, GestureState.DRAGGED})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface GestureState {
-        int NONE = 0;
-        int STARTED = 1;
-        int DRAGGED = 2;
-    }
-
+    private final boolean mDelegateSwipes;
+    private final boolean mNavigationEnabled;
     private GestureDetector mDetector;
-
-    private SideSlideLayout mSideSlideLayout;
-
-    // Async runnable for ending the refresh animation after the page first
-    // loads a frame. This is used to provide a reasonable minimum animation time.
-    private Runnable mStopNavigatingRunnable;
-
-    // Handles removing the layout from the view hierarchy.  This is posted to ensure
-    // it does not conflict with pending Android draws.
-    private Runnable mDetachLayoutRunnable;
-
-    // Provides activity tab where the navigation should happen.
-    private ActivityTabProvider mTabProvider;
+    private NavigationHandler mNavigationHandler;
 
     public HistoryNavigationLayout(Context context) {
         this(context, null);
@@ -55,89 +33,68 @@ public class HistoryNavigationLayout extends FrameLayout {
 
     public HistoryNavigationLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION)) return;
-        if (context instanceof ChromeActivity) {
-            mTabProvider = ((ChromeActivity) context).getActivityTabProvider();
-            mDetector = new GestureDetector(getContext(), new SideNavGestureListener());
-        }
+        mDelegateSwipes = ChromeFeatureList.isEnabled(ChromeFeatureList.DELEGATE_OVERSCROLL_SWIPES);
+        mNavigationEnabled =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION)
+                && (context instanceof ChromeActivity);
     }
 
-    private void createLayout() {
-        mSideSlideLayout = new SideSlideLayout(getContext());
-        mSideSlideLayout.setLayoutParams(
-                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        mSideSlideLayout.setEnabled(false);
-        mSideSlideLayout.setOnNavigationListener((isForward) -> {
-            if (mTabProvider == null) return;
-            Tab tab = mTabProvider.getActivityTab();
-            if (isForward) {
-                tab.goForward();
-            } else {
-                tab.goBack();
-            }
-            cancelStopNavigatingRunnable();
-            mSideSlideLayout.post(getStopNavigatingRunnable());
-        });
+    /**
+     * Sets the tab which the native page for this layout is running on.
+     * @param tab Tab instance.
+     * TODO(jinsukkim): Look into replacing tab with an interface which will make this a pure
+     *     UI class. Then navigation tests will also be a pure UI one using a dummy activity.
+     */
+    public void setTab(Tab tab) {
+        if (!mNavigationEnabled) return;
+        mDetector = new GestureDetector(getContext(), new SideNavGestureListener());
+        mNavigationHandler = new NavigationHandler(this, () -> tab);
+    }
 
-        mSideSlideLayout.setOnResetListener(() -> {
-            if (mDetachLayoutRunnable != null) return;
-            mDetachLayoutRunnable = () -> {
-                mDetachLayoutRunnable = null;
-                detachSideSlideLayoutIfNecessary();
-            };
-            mSideSlideLayout.post(mDetachLayoutRunnable);
-        });
+    @Override
+    public void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        // TODO(jinsukkim): There are callsites enabling HistoryNavigationLayout but
+        //         failing to call |setNavigationDelegate| (or |setTab| before renaming).
+        //         Find when it can happen.
+        if (mNavigationHandler != null) mNavigationHandler.reset();
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent e) {
         if (mDetector != null) {
             mDetector.onTouchEvent(e);
-            if (e.getAction() == MotionEvent.ACTION_UP) {
-                if (mSideSlideLayout != null) mSideSlideLayout.release(true);
-            }
+            mNavigationHandler.onTouchEvent(e.getAction());
         }
         return super.dispatchTouchEvent(e);
     }
 
-    private class SideNavGestureListener extends GestureDetector.SimpleOnGestureListener {
-        private @GestureState int mState = GestureState.NONE;
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent e) {
+        // Do not propagate touch events down to children if navigation UI was triggered.
+        if (mDetector != null && !mDelegateSwipes && mNavigationHandler.isActive()) return true;
+        return super.onInterceptTouchEvent(e);
+    }
 
+    private class SideNavGestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDown(MotionEvent event) {
-            mState = GestureState.STARTED;
-            return true;
+            return mNavigationHandler.onDown();
         }
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            // onScroll needs handling only after the state moves away from none state.
-            if (mState == GestureState.NONE) return true;
+            // |onScroll| needs handling only after the state moves away from |NONE|. This helps
+            // invoke |wasLastSideSwipeGestureConsumed| which may be expensive less often.
+            if (mNavigationHandler.isStopped()) return true;
 
-            if (wasLastSideSwipeGestureConsumed()) {
-                reset();
-                mState = GestureState.NONE;
+            if (mDelegateSwipes && wasLastSideSwipeGestureConsumed()) {
+                mNavigationHandler.reset();
                 return true;
             }
-            if (mState == GestureState.STARTED) {
-                if (Math.abs(distanceX) > Math.abs(distanceY)) {
-                    boolean forward = distanceX > 0;
-                    if (canNavigate(forward)) {
-                        start(forward);
-                        mState = GestureState.DRAGGED;
-                    }
-                }
-                if (mState != GestureState.DRAGGED) mState = GestureState.NONE;
-            }
-            if (mState == GestureState.DRAGGED) mSideSlideLayout.pull(-distanceX);
-            return true;
+            return mNavigationHandler.onScroll(
+                    e1.getX(), distanceX, distanceY, e2.getX(), e2.getY());
         }
-    }
-
-    private boolean canNavigate(boolean forward) {
-        if (mTabProvider == null) return false;
-        Tab tab = mTabProvider.getActivityTab();
-        return forward ? tab.canGoForward() : tab.canGoBack();
     }
 
     /**
@@ -151,68 +108,10 @@ public class HistoryNavigationLayout extends FrameLayout {
         return false;
     }
 
-    private void start(boolean isForward) {
-        if (mSideSlideLayout == null) createLayout();
-        mSideSlideLayout.setEnabled(true);
-        mSideSlideLayout.setDirection(isForward);
-        attachSideSlideLayoutIfNecessary();
-        mSideSlideLayout.start();
-    }
-
-    /**
-     * Reset navigation UI in action.
-     */
-    private void reset() {
-        if (mSideSlideLayout != null) {
-            cancelStopNavigatingRunnable();
-            mSideSlideLayout.reset();
-        }
-    }
-
     /**
      * Cancel navigation UI with animation effect.
      */
     public void release() {
-        if (mSideSlideLayout != null) {
-            cancelStopNavigatingRunnable();
-            mSideSlideLayout.release(false);
-        }
-    }
-
-    private void cancelStopNavigatingRunnable() {
-        if (mStopNavigatingRunnable != null) {
-            mSideSlideLayout.removeCallbacks(mStopNavigatingRunnable);
-            mStopNavigatingRunnable = null;
-        }
-    }
-
-    private void cancelDetachLayoutRunnable() {
-        if (mDetachLayoutRunnable != null) {
-            mSideSlideLayout.removeCallbacks(mDetachLayoutRunnable);
-            mDetachLayoutRunnable = null;
-        }
-    }
-
-    private Runnable getStopNavigatingRunnable() {
-        if (mStopNavigatingRunnable == null) {
-            mStopNavigatingRunnable = () -> mSideSlideLayout.stopNavigating();
-        }
-        return mStopNavigatingRunnable;
-    }
-
-    private void attachSideSlideLayoutIfNecessary() {
-        // The animation view is attached/detached on-demand to minimize overlap
-        // with composited SurfaceView content.
-        cancelDetachLayoutRunnable();
-        if (mSideSlideLayout.getParent() == null) {
-            addView(mSideSlideLayout);
-        }
-    }
-
-    private void detachSideSlideLayoutIfNecessary() {
-        cancelDetachLayoutRunnable();
-        if (mSideSlideLayout.getParent() != null) {
-            removeView(mSideSlideLayout);
-        }
+        if (mNavigationHandler != null) mNavigationHandler.release(false);
     }
 }

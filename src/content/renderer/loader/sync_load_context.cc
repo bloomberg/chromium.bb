@@ -213,14 +213,6 @@ void SyncLoadContext::OnStartLoadingResponseBody(
   body_watcher_.ArmOrNotify();
 }
 
-void SyncLoadContext::OnReceivedData(std::unique_ptr<ReceivedData> data) {
-  if (mode_ == Mode::kInitial)
-    mode_ = Mode::kNonDataPipe;
-  DCHECK_EQ(Mode::kNonDataPipe, mode_);
-  DCHECK(!Completed());
-  response_->data.append(data->payload(), data->length());
-}
-
 void SyncLoadContext::OnTransferSizeUpdated(int transfer_size_diff) {}
 
 void SyncLoadContext::OnCompletedRequest(

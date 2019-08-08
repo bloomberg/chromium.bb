@@ -78,11 +78,6 @@ V8PerContextData::~V8PerContextData() {
   }
 }
 
-std::unique_ptr<V8PerContextData> V8PerContextData::Create(
-    v8::Local<v8::Context> context) {
-  return base::WrapUnique(new V8PerContextData(context));
-}
-
 V8PerContextData* V8PerContextData::From(v8::Local<v8::Context> context) {
   return ScriptState::From(context)->PerContextData();
 }

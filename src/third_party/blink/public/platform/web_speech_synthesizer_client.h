@@ -43,9 +43,11 @@ class WebSpeechSynthesizerClient {
   virtual void DidFinishSpeaking(const WebSpeechSynthesisUtterance&) = 0;
   virtual void SpeakingErrorOccurred(const WebSpeechSynthesisUtterance&) = 0;
   virtual void WordBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
-                                         unsigned char_index) = 0;
+                                         unsigned char_index,
+                                         unsigned char_length) = 0;
   virtual void SentenceBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
-                                             unsigned char_index) = 0;
+                                             unsigned char_index,
+                                             unsigned char_length) = 0;
 };
 
 }  // namespace blink

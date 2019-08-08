@@ -62,7 +62,7 @@ class FakeDataChannelObserver : public webrtc::DataChannelObserver {
 // TODO(deadbeef): The fact that these tests use a fake provider makes them not
 // too valuable. Should rewrite using the
 // peerconnection_datachannel_unittest.cc infrastructure.
-class SctpDataChannelTest : public testing::Test {
+class SctpDataChannelTest : public ::testing::Test {
  protected:
   SctpDataChannelTest()
       : provider_(new FakeDataChannelProvider()),
@@ -163,9 +163,11 @@ TEST_F(SctpDataChannelTest, BufferedAmountWhenBlocked) {
   SetChannelReady();
   webrtc::DataBuffer buffer("abcd");
   EXPECT_TRUE(webrtc_data_channel_->Send(buffer));
+  size_t successful_send_count = 1;
 
   EXPECT_EQ(0U, webrtc_data_channel_->buffered_amount());
-  EXPECT_EQ(0U, observer_->on_buffered_amount_change_count());
+  EXPECT_EQ(successful_send_count,
+            observer_->on_buffered_amount_change_count());
 
   provider_->set_send_blocked(true);
 
@@ -175,7 +177,13 @@ TEST_F(SctpDataChannelTest, BufferedAmountWhenBlocked) {
   }
   EXPECT_EQ(buffer.data.size() * number_of_packets,
             webrtc_data_channel_->buffered_amount());
-  EXPECT_EQ(rtc::checked_cast<size_t>(number_of_packets),
+  EXPECT_EQ(successful_send_count,
+            observer_->on_buffered_amount_change_count());
+
+  provider_->set_send_blocked(false);
+  successful_send_count += number_of_packets;
+  EXPECT_EQ(0U, webrtc_data_channel_->buffered_amount());
+  EXPECT_EQ(successful_send_count,
             observer_->on_buffered_amount_change_count());
 }
 
@@ -188,12 +196,12 @@ TEST_F(SctpDataChannelTest, QueuedDataSentWhenUnblocked) {
   provider_->set_send_blocked(true);
   EXPECT_TRUE(webrtc_data_channel_->Send(buffer));
 
-  EXPECT_EQ(1U, observer_->on_buffered_amount_change_count());
+  EXPECT_EQ(0U, observer_->on_buffered_amount_change_count());
 
   provider_->set_send_blocked(false);
   SetChannelReady();
   EXPECT_EQ(0U, webrtc_data_channel_->buffered_amount());
-  EXPECT_EQ(2U, observer_->on_buffered_amount_change_count());
+  EXPECT_EQ(1U, observer_->on_buffered_amount_change_count());
 }
 
 // Tests that no crash when the channel is blocked right away while trying to
@@ -204,18 +212,18 @@ TEST_F(SctpDataChannelTest, BlockedWhenSendQueuedDataNoCrash) {
   webrtc::DataBuffer buffer("abcd");
   provider_->set_send_blocked(true);
   EXPECT_TRUE(webrtc_data_channel_->Send(buffer));
-  EXPECT_EQ(1U, observer_->on_buffered_amount_change_count());
+  EXPECT_EQ(0U, observer_->on_buffered_amount_change_count());
 
   // Set channel ready while it is still blocked.
   SetChannelReady();
   EXPECT_EQ(buffer.size(), webrtc_data_channel_->buffered_amount());
-  EXPECT_EQ(1U, observer_->on_buffered_amount_change_count());
+  EXPECT_EQ(0U, observer_->on_buffered_amount_change_count());
 
   // Unblock the channel to send queued data again, there should be no crash.
   provider_->set_send_blocked(false);
   SetChannelReady();
   EXPECT_EQ(0U, webrtc_data_channel_->buffered_amount());
-  EXPECT_EQ(2U, observer_->on_buffered_amount_change_count());
+  EXPECT_EQ(1U, observer_->on_buffered_amount_change_count());
 }
 
 // Tests that DataChannel::messages_sent() and DataChannel::bytes_sent() are
@@ -605,7 +613,7 @@ TEST_F(SctpDataChannelTest, TransportDestroyedWhileDataBuffered) {
                  webrtc_data_channel_->state(), kDefaultTimeout);
 }
 
-class SctpSidAllocatorTest : public testing::Test {
+class SctpSidAllocatorTest : public ::testing::Test {
  protected:
   SctpSidAllocator allocator_;
 };

@@ -129,6 +129,8 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
   If a repository is already present, it will be cleansed of any local
   changes and restored to its pristine state, checking out the origin.
   """
+  logging.info('Refreshing %s from %s', manifest_dir, manifest_repo)
+
   reinitialize = True
   if os.path.exists(manifest_dir):
     result = git.RunGit(manifest_dir, ['config', 'remote.origin.url'],
@@ -781,11 +783,17 @@ class BuildSpecsManager(object):
         self._latest_build['status'] == constants.BUILDER_STATUS_PASSED):
       latest_spec_file = '%s.xml' % os.path.join(
           self.all_specs_dir, self.latest)
+      logging.info('Found previous successful build manifest: %s',
+                   latest_spec_file)
       # We've built this checkout before if the manifest isn't different than
       # the last one we've built.
-      return not self.cros_source.IsManifestDifferent(latest_spec_file)
+      to_return = not self.cros_source.IsManifestDifferent(latest_spec_file)
+      logging.info('Is this checkout the same as the last build: %s',
+                   to_return)
+      return to_return
     else:
       # We've never built this manifest before so this checkout is always new.
+      logging.info('No successful build on this branch before')
       return False
 
   def CreateManifest(self):
@@ -849,7 +857,7 @@ class BuildSpecsManager(object):
     return (self._latest_build and
             self._latest_build['status'] == constants.BUILDER_STATUS_FAILED)
 
-  def WaitForSlavesToComplete(self, master_build_id, builders_array,
+  def WaitForSlavesToComplete(self, master_build_identifier, builders_array,
                               pool=None, timeout=3 * 60,
                               ignore_timeout_exception=True):
     """Wait for all slaves to complete or timeout.
@@ -860,7 +868,7 @@ class BuildSpecsManager(object):
     in deciding whether to wait.
 
     Args:
-      master_build_id: Master build id to check.
+      master_build_identifier: Master build identifier to check.
       builders_array: The name list of the build configs to check.
       pool: An instance of ValidationPool.validation_pool used by sync stage
             to apply changes.
@@ -882,7 +890,8 @@ class BuildSpecsManager(object):
       logging.info('%s until timeout...', remaining)
 
     slave_status = build_status.SlaveStatus(
-        start_time, builders_array, master_build_id, buildstore=self.buildstore,
+        start_time, builders_array, master_build_identifier,
+        buildstore=self.buildstore,
         config=self.config,
         metadata=self.metadata,
         buildbucket_client=self.buildbucket_client,
@@ -967,21 +976,27 @@ class BuildSpecsManager(object):
         self.InitializeManifestVariables(version_info)
 
         if not self.force and self.HasCheckoutBeenBuilt():
+          logging.info('Build is not forced and this checkout already built')
           return None
 
         # If we're the master, always create a new build spec. Otherwise,
         # only create a new build spec if we've already built the existing
         # spec.
         if self.master or not self.latest_unprocessed:
+          logging.info('Build is master or build latest unprocessed is None')
           git.CreatePushBranch(PUSH_BRANCH, self.manifest_dir, sync=False)
           version = self.GetNextVersion(version_info)
           new_manifest = self.CreateManifest()
+          logging.info('Publishing the new manifest version')
           self.PublishManifest(new_manifest, version, build_id=build_id)
         else:
           version = self.latest_unprocessed
 
         self.current_version = version
-        return self.GetLocalManifest(version)
+        logging.info('current_version: %s', self.current_version)
+        to_return = self.GetLocalManifest(version)
+        logging.info('Local manifest for version: %s', to_return)
+        return to_return
       except cros_build_lib.RunCommandError as e:
         last_error = 'Failed to generate buildspec. error: %s' % e
         logging.error(last_error)

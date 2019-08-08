@@ -32,7 +32,7 @@ struct SymbolLookupState {
   int weak_count = 0;
 
   // Check a symbol entry.
-  bool CheckSymbol(const char* symbol, SharedLibrary* lib) {
+  bool CheckSymbol(const char* symbol, const SharedLibrary* lib) {
     const ELF::Sym* entry = lib->LookupSymbolEntry(symbol);
     if (!entry)
       return false;
@@ -167,8 +167,9 @@ void* LibraryList::FindSymbolFrom(const char* symbol_name,
 
   while (!work_queue.IsEmpty()) {
     const LibraryView* lib = work_queue.PopFirst();
-    if (lib->IsCrazy()) {
-      if (lookup_state.CheckSymbol(symbol_name, lib->GetCrazy()))
+    const SharedLibrary* crazy_lib = lib->GetCrazy();
+    if (crazy_lib) {
+      if (lookup_state.CheckSymbol(symbol_name, crazy_lib))
         return lookup_state.found_addr;
     } else if (lib->IsSystem()) {
       LibraryView::SearchResult sym = lib->LookupSymbol(symbol_name);
@@ -178,8 +179,8 @@ void* LibraryList::FindSymbolFrom(const char* symbol_name,
 
     // If this is a crazy library, add non-visited dependencies
     // to the work queue.
-    if (lib->IsCrazy()) {
-      SharedLibrary::DependencyIterator iter(lib->GetCrazy());
+    if (crazy_lib) {
+      SharedLibrary::DependencyIterator iter(crazy_lib);
       while (iter.GetNext()) {
         LibraryView* dependency = FindKnownLibrary(iter.GetName());
         if (dependency && !visited_set.Has(dependency)) {
@@ -254,9 +255,8 @@ void LibraryList::UnloadLibrary(LibraryView* wrap) {
     return;
 
   // If this is a crazy library, perform manual cleanup first.
-  if (wrap->IsCrazy()) {
-    SharedLibrary* lib = wrap->GetCrazy();
-
+  SharedLibrary* lib = wrap->GetCrazy();
+  if (lib) {
     // Remove from internal list of crazy libraries.
     if (lib->list_next_)
       lib->list_next_->list_prev_ = lib->list_prev_;

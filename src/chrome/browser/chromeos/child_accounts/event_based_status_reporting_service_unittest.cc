@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/common/app.mojom.h"
@@ -89,8 +89,8 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
   ~EventBasedStatusReportingServiceTest() override = default;
 
   void SetUp() override {
-    PowerManagerClient::Initialize();
-    SystemClockClient::Initialize(nullptr /* bus */);
+    PowerManagerClient::InitializeFake();
+    SystemClockClient::InitializeFake();
 
     // TODO(agawronska): To enable this we need LoginScreenClient, but it causes
     // test crashes on network connection change.

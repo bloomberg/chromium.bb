@@ -3,11 +3,11 @@
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
@@ -16,6 +16,7 @@
 <link rel="import" href="internet_config.html">
 <link rel="import" href="internet_detail_page.html">
 <link rel="import" href="internet_known_networks_page.html">
+<link rel="import" href="internet_page_browser_proxy.html">
 <link rel="import" href="internet_subpage.html">
 <link rel="import" href="network_summary.html">
 
@@ -53,31 +54,26 @@
                   <div class="start settings-box-text">
                     $i18n{internetAddWiFi}
                   </div>
-                  <paper-icon-button-light
-                      class$="[[getAddNetworkClass_('WiFi')]]">
-                    <button aria-label="$i18n{internetAddWiFi}"></button>
-                  </paper-icon-button-light>
+                  <cr-icon-button class$="[[getAddNetworkClass_('WiFi')]]"
+                      aria-label="$i18n{internetAddWiFi}"></cr-icon-button>
                 </div>
               </template>
               <div actionable class="list-item" on-click="onAddVPNTap_">
                 <div class="start settings-box-text">
                   $i18n{internetAddVPN}
                 </div>
-                <paper-icon-button-light
-                    class$="[[getAddNetworkClass_('VPN')]]">
-                  <button aria-label="$i18n{internetAddVPN}"></button>
-                </paper-icon-button-light>
+                <cr-icon-button class$="[[getAddNetworkClass_('VPN')]]"
+                    aria-label="$i18n{internetAddVPN}"></cr-icon-button>
               </div>
               <template is="dom-repeat" items="[[thirdPartyVpnProviders_]]">
                 <div actionable class="list-item"
-                    on-click="onAddThirdPartyVpnTap_" provider="[[item]]">
+                    on-click="onAddThirdPartyVpnTap_">
                   <div class="start settings-box-text">
                     [[getAddThirdPartyVpnLabel_(item)]]
                   </div>
-                  <paper-icon-button-light class="icon-external">
-                    <button aria-label$="[[getAddThirdPartyVpnLabel_(item)]]">
-                    </button>
-                  </paper-icon-button-light>
+                  <cr-icon-button class="icon-external"
+                     aria-label$="[[getAddThirdPartyVpnLabel_(item)]]">
+                  </cr-icon-button>
                 </div>
               </template>
               <template is="dom-if" if="[[arcVpnProviders_.length]]">
@@ -86,9 +82,8 @@
                   <div class="setting-box-text">
                     $i18n{internetAddArcVPN}
                   </div>
-                  <paper-icon-button-light class="icon-external">
-                    <button aria-label$="$i18n{internetAddArcVPN}"></button>
-                  </paper-icon-button-light>
+                  <cr-icon-button class="icon-external"
+                      aria-label$="$i18n{internetAddArcVPN}"></cr-icon-button>
                 </div>
               </template>
             </div>

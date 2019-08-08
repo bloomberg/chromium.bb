@@ -164,6 +164,8 @@ namespace autotestPrivate {
 
   callback SetTabletModeEnabledCallback = void(boolean enabled);
 
+  callback GetShelfAutoHideBehaviorCallback = void (DOMString behavior);
+
   callback VoidCallback = void ();
 
   interface Functions {
@@ -290,6 +292,16 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void setCrostiniEnabled(boolean enabled, VoidCallback callback);
 
+    // Export the crostini container.
+    // |path|: The path in Downloads to save the export.
+    // |callback|: Called when the operation has completed.
+    static void exportCrostini(DOMString path, VoidCallback callback);
+
+    // Import the crostini container.
+    // |path|: The path in Downloads to read the import.
+    // |callback|: Called when the operation has completed.
+    static void importCrostini(DOMString path, VoidCallback callback);
+
     // Takes a screenshot and returns the data in base64 encoded PNG format.
     static void takeScreenshot(TakeScreenshotCallback callback);
 
@@ -334,7 +346,7 @@ namespace autotestPrivate {
     static void getPrimaryDisplayScaleFactor(
         GetPrimaryDisplayScaleFactorCallback callback);
 
-    // Returns the tablet mode enabled status.
+    // Get the tablet mode enabled status.
     // |callback| is invoked with the tablet mode enablement status.
     static void isTabletModeEnabled(IsTabletModeEnabledCallback callback);
 
@@ -345,5 +357,22 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void setTabletModeEnabled(boolean enabled,
         SetTabletModeEnabledCallback callback);
+
+    // Get the shelf auto hide behavior.
+    // |displayId|: display that contains the shelf.
+    // |callback| is invoked with the shelf auto hide behavior. Possible
+    // behavior values are: "always", "never" or "hidden".
+    static void getShelfAutoHideBehavior(DOMString displayId,
+        GetShelfAutoHideBehaviorCallback callback);
+
+    // Set the shelf auto hide behavior.
+    // |displayId|: display that contains the shelf.
+    // |behavior|: an enum of "always", "never" or "hidden".
+    // |callback|: Called when the operation has completed.
+    static void setShelfAutoHideBehavior(DOMString displayId,
+        DOMString behavior, VoidCallback callback);
+
+    // Show virtual keyboard of the current input method if it's available.
+    static void showVirtualKeyboardIfEnabled();
   };
 };

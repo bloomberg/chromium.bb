@@ -8,6 +8,7 @@
 <translation id="1664224225747386870">Tidak ada yang direkam</translation>
 <translation id="1862930711583847113">Tidak dapat mengekspor <ph name="FILE" /></translation>
 <translation id="2036868001356139588">Durasi timer</translation>
+<translation id="2050339315714019657">Potret</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> aktif</translation>
 <translation id="229579744168541441">Ekspor ke disk</translation>
 <translation id="2501278716633472235">Kembali</translation>
@@ -20,14 +21,19 @@
 <translation id="3081586908890909590">Beralih ke mode merekam video</translation>
 <translation id="3183731565330012717">Jenis petak</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
+<translation id="3517926952904427380">Tidak dapat mengambil foto potret</translation>
 <translation id="3569311554794739032">Yakin ingin menghapus <ph name="FILE" />?</translation>
+<translation id="3810838688059735925">Video</translation>
 <translation id="4279490309300973883">Mencerminkan</translation>
+<translation id="4329152592498422850">Beralih ke mode mengambil foto persegi</translation>
 <translation id="4445542136948522167">Berhenti mengambil foto</translation>
+<translation id="4628948037717959914">Foto</translation>
 <translation id="4649291346448517080">Tidak dapat menyimpan file</translation>
 <translation id="4890010094662541459">3 x 3</translation>
 <translation id="5057360777601936059">Kamera tidak tersedia untuk saat ini.
         Periksa apakah kamera terhubung dengan benar.</translation>
 <translation id="5152121255775685072">Buka galeri</translation>
+<translation id="5671277269877808209">Persegi</translation>
 <translation id="5869546221129391014">Kisi</translation>
 <translation id="6073451960410192870">Berhenti merekam</translation>
 <translation id="6233780560267770709">3 kali 3</translation>
@@ -46,6 +52,7 @@
 <translation id="8145038249676204903">Beralih ke mode mengambil foto</translation>
 <translation id="8261506727792406068">Hapus</translation>
 <translation id="8428213095426709021">Setelan</translation>
+<translation id="8815966864175525708">Beralih ke mode mengambil foto potret</translation>
 <translation id="8870695351537079478">Tidak dapat memulai rekaman</translation>
 <translation id="9045155556724273246">10 detik</translation>
 <translation id="945522503751344254">Kirim masukan</translation>

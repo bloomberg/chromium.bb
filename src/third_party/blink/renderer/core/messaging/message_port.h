@@ -57,8 +57,6 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(MessagePort);
 
  public:
-  static MessagePort* Create(ExecutionContext&);
-
   explicit MessagePort(ExecutionContext&);
   ~MessagePort() override;
 

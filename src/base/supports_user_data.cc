@@ -6,6 +6,10 @@
 
 namespace base {
 
+std::unique_ptr<SupportsUserData::Data> SupportsUserData::Data::Clone() {
+  return nullptr;
+}
+
 SupportsUserData::SupportsUserData() {
   // Harmless to construct on a different execution sequence to subsequent
   // usage.
@@ -27,7 +31,10 @@ void SupportsUserData::SetUserData(const void* key,
   DCHECK(sequence_checker_.CalledOnValidSequence());
   // Avoid null keys; they are too vulnerable to collision.
   DCHECK(key);
-  user_data_[key] = std::move(data);
+  if (data.get())
+    user_data_[key] = std::move(data);
+  else
+    RemoveUserData(key);
 }
 
 void SupportsUserData::RemoveUserData(const void* key) {
@@ -37,6 +44,14 @@ void SupportsUserData::RemoveUserData(const void* key) {
 
 void SupportsUserData::DetachFromSequence() {
   sequence_checker_.DetachFromSequence();
+}
+
+void SupportsUserData::CloneDataFrom(const SupportsUserData& other) {
+  for (const auto& data_pair : other.user_data_) {
+    auto cloned_data = data_pair.second->Clone();
+    if (cloned_data)
+      SetUserData(data_pair.first, std::move(cloned_data));
+  }
 }
 
 SupportsUserData::~SupportsUserData() {

@@ -29,7 +29,8 @@
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_hosts.h"
-#include "net/dns/host_resolver_impl.h"
+#include "net/dns/host_cache.h"
+#include "net/dns/host_resolver_manager.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/mdns_client.h"
 #include "net/dns/public/util.h"
@@ -297,13 +298,13 @@ class FuzzedMdnsSocketFactory : public MDnsSocketFactory {
   base::FuzzedDataProvider* const data_provider_;
 };
 
-class FuzzedHostResolverImpl : public HostResolverImpl {
+class FuzzedHostResolverManager : public HostResolverManager {
  public:
   // |data_provider| and |net_log| must outlive the FuzzedHostResolver.
-  FuzzedHostResolverImpl(const Options& options,
-                         NetLog* net_log,
-                         base::FuzzedDataProvider* data_provider)
-      : HostResolverImpl(options, net_log),
+  FuzzedHostResolverManager(const Options& options,
+                            NetLog* net_log,
+                            base::FuzzedDataProvider* data_provider)
+      : HostResolverManager(options, net_log),
         data_provider_(data_provider),
         is_ipv6_reachable_(data_provider->ConsumeBool()),
         data_provider_weak_factory_(data_provider) {
@@ -318,10 +319,10 @@ class FuzzedHostResolverImpl : public HostResolverImpl {
         std::make_unique<FuzzedMdnsSocketFactory>(data_provider_));
   }
 
-  ~FuzzedHostResolverImpl() override = default;
+  ~FuzzedHostResolverManager() override = default;
 
  private:
-  // HostResolverImpl implementation:
+  // HostResolverManager implementation:
   bool IsGloballyReachable(const IPAddress& dest,
                            const NetLogWithSource& net_log) override {
     return is_ipv6_reachable_;
@@ -338,7 +339,7 @@ class FuzzedHostResolverImpl : public HostResolverImpl {
 
   base::WeakPtrFactory<base::FuzzedDataProvider> data_provider_weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(FuzzedHostResolverImpl);
+  DISALLOW_COPY_AND_ASSIGN(FuzzedHostResolverManager);
 };
 
 }  // namespace
@@ -346,11 +347,13 @@ class FuzzedHostResolverImpl : public HostResolverImpl {
 FuzzedContextHostResolver::FuzzedContextHostResolver(
     const Options& options,
     NetLog* net_log,
-    base::FuzzedDataProvider* data_provider)
+    base::FuzzedDataProvider* data_provider,
+    bool enable_caching)
     : ContextHostResolver(
-          std::make_unique<FuzzedHostResolverImpl>(options,
-                                                   net_log,
-                                                   data_provider)),
+          std::make_unique<FuzzedHostResolverManager>(options,
+                                                      net_log,
+                                                      data_provider),
+          enable_caching ? HostCache::CreateDefaultCache() : nullptr),
       data_provider_(data_provider),
       socket_factory_(data_provider),
       net_log_(net_log) {}

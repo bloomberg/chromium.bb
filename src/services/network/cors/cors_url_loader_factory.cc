@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "net/base/load_flags.h"
 #include "services/network/cors/cors_url_loader.h"
+#include "services/network/cors/preflight_controller.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
@@ -50,26 +51,6 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
   bindings_.AddBinding(this, std::move(request));
   bindings_.set_connection_error_handler(base::BindRepeating(
       &CorsURLLoaderFactory::DeleteIfNeeded, base::Unretained(this)));
-  preflight_controller_ = context_->cors_preflight_controller();
-}
-
-CorsURLLoaderFactory::CorsURLLoaderFactory(
-    bool disable_web_security,
-    std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory,
-    const base::RepeatingCallback<void(int)>& preflight_finalizer,
-    const OriginAccessList* origin_access_list,
-    uint32_t process_id)
-    : disable_web_security_(disable_web_security),
-      process_id_(process_id),
-      network_loader_factory_(std::move(network_loader_factory)),
-      preflight_finalizer_(preflight_finalizer),
-      origin_access_list_(origin_access_list) {
-  DCHECK(origin_access_list_);
-  factory_bound_origin_access_list_ = std::make_unique<OriginAccessList>();
-  // Ideally this should be per-profile, but per-factory would be enough for
-  // this code path that is eventually removed.
-  owned_preflight_controller_ = std::make_unique<PreflightController>();
-  preflight_controller_ = owned_preflight_controller_.get();
 }
 
 CorsURLLoaderFactory::~CorsURLLoaderFactory() = default;
@@ -99,7 +80,7 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     const ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  if (!IsSane(resource_request)) {
+  if (!IsSane(context_, resource_request)) {
     client->OnComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
     return;
   }
@@ -110,9 +91,9 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
         base::BindOnce(&CorsURLLoaderFactory::DestroyURLLoader,
                        base::Unretained(this)),
         resource_request, std::move(client), traffic_annotation,
-        network_loader_factory_.get(), preflight_finalizer_,
-        origin_access_list_, factory_bound_origin_access_list_.get(),
-        preflight_controller_);
+        network_loader_factory_.get(), origin_access_list_,
+        factory_bound_origin_access_list_.get(),
+        context_->cors_preflight_controller());
     auto* raw_loader = loader.get();
     OnLoaderCreated(std::move(loader));
     raw_loader->Start();
@@ -139,7 +120,8 @@ void CorsURLLoaderFactory::DeleteIfNeeded() {
     context_->DestroyURLLoaderFactory(this);
 }
 
-bool CorsURLLoaderFactory::IsSane(const ResourceRequest& request) {
+bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
+                                  const ResourceRequest& request) {
   // CORS needs a proper origin (including a unique opaque origin). If the
   // request doesn't have one, CORS cannot work.
   if (!request.request_initiator &&
@@ -159,6 +141,21 @@ bool CorsURLLoaderFactory::IsSane(const ResourceRequest& request) {
     LOG(WARNING) << "|fetch_credentials_mode| and |load_flags| contradict each "
                     "other.";
     return false;
+  }
+
+  if (context) {
+    net::HttpRequestHeaders::Iterator header_iterator(
+        request.cors_exempt_headers);
+    const auto& allowed_exempt_headers = context->cors_exempt_header_list();
+    while (header_iterator.GetNext()) {
+      if (allowed_exempt_headers.find(header_iterator.name()) !=
+          allowed_exempt_headers.end()) {
+        continue;
+      }
+      LOG(WARNING) << "|cors_exempt_headers| contains unexpected key: "
+                   << header_iterator.name();
+      return false;
+    }
   }
 
   // TODO(yhirano): If the request mode is "no-cors", the redirect mode should

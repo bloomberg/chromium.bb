@@ -5,6 +5,8 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -40,18 +42,6 @@ namespace resource_coordinator {
 namespace {
 
 constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromSeconds(1);
-
-class NoUnloadListenerTabStripModelDelegate : public TestTabStripModelDelegate {
- public:
-  NoUnloadListenerTabStripModelDelegate() = default;
-  bool RunUnloadListenerBeforeClosing(content::WebContents* contents) override {
-    // The default TestTabStripModelDelegate prevents tabs from being closed.
-    return false;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NoUnloadListenerTabStripModelDelegate);
-};
 
 class MockLifecycleUnitSourceObserver : public LifecycleUnitSourceObserver {
  public:
@@ -290,7 +280,7 @@ class TabLifecycleUnitSourceTest
     ExpectCanDiscardFalseTrivialAllReasons(first_lifecycle_unit);
 
     // Create a second tab strip.
-    NoUnloadListenerTabStripModelDelegate other_tab_strip_model_delegate;
+    TestTabStripModelDelegate other_tab_strip_model_delegate;
     TabStripModel other_tab_strip_model(&other_tab_strip_model_delegate,
                                         profile());
     other_tab_strip_model.AddObserver(source_);
@@ -457,7 +447,7 @@ class TabLifecycleUnitSourceTest
     return web_contents;
   }
 
-  NoUnloadListenerTabStripModelDelegate tab_strip_model_delegate_;
+  TestTabStripModelDelegate tab_strip_model_delegate_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitSourceTest);

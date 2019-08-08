@@ -32,7 +32,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/browsing_data/content/conditional_cache_counting_helper.h"
@@ -249,7 +249,7 @@ void StorageHandler::UpdateBrowsingDataSize() {
         new BrowsingDataCookieHelper(storage_partition),
         new BrowsingDataDatabaseHelper(profile_),
         new BrowsingDataLocalStorageHelper(profile_),
-        new BrowsingDataAppCacheHelper(profile_),
+        new BrowsingDataAppCacheHelper(storage_partition->GetAppCacheService()),
         new BrowsingDataIndexedDBHelper(
             storage_partition->GetIndexedDBContext()),
         BrowsingDataFileSystemHelper::Create(
@@ -363,7 +363,7 @@ void StorageHandler::UpdateOtherUsersSize() {
     if (user->is_active())
       continue;
     other_users_.push_back(user);
-    DBusThreadManager::Get()->GetCryptohomeClient()->GetAccountDiskUsage(
+    CryptohomeClient::Get()->GetAccountDiskUsage(
         cryptohome::CreateAccountIdentifierFromAccountId(user->GetAccountId()),
         base::BindOnce(&StorageHandler::OnGetOtherUserSize,
                        weak_ptr_factory_.GetWeakPtr()));

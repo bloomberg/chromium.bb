@@ -112,4 +112,24 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
   return false;
 }
 
+#if defined(OS_CHROMEOS)
+bool IsComponentExtensionWhitelistedForSignInProfile(
+    const std::string& extension_id) {
+  const char* const kAllowed[] = {
+      extension_misc::kChromeVoxExtensionId,
+      extension_misc::kEspeakSpeechSynthesisExtensionId,
+      extension_misc::kGoogleSpeechSynthesisExtensionId,
+      extension_misc::kSelectToSpeakExtensionId,
+      extension_misc::kSwitchAccessExtensionId,
+  };
+
+  for (size_t i = 0; i < base::size(kAllowed); ++i) {
+    if (extension_id == kAllowed[i])
+      return true;
+  }
+
+  return false;
+}
+#endif
+
 }  // namespace extensions

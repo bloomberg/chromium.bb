@@ -80,7 +80,8 @@ const uint32_t kMaxBackgroundFetchIntervalSeconds = 6 * 60 * 60;  // 6 hours.
 #endif
 
 // This is the default backoff policy used to communicate with the Data
-// Reduction Proxy configuration service.
+// Reduction Proxy configuration service. The policy gets overwritten based on
+// kDataReductionProxyAggressiveConfigFetch.
 const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
     0,                // num_errors_to_ignore
     10 * 1000,        // initial_delay_ms
@@ -97,13 +98,11 @@ std::vector<DataReductionProxyServer> GetProxiesForHTTP(
   std::vector<DataReductionProxyServer> proxies;
   for (const auto& server : proxy_config.http_proxy_servers()) {
     if (server.scheme() != ProxyServer_ProxyScheme_UNSPECIFIED) {
-      proxies.push_back(DataReductionProxyServer(
-          net::ProxyServer(
-              protobuf_parser::SchemeFromProxyScheme(server.scheme()),
-              net::HostPortPair(server.host(), server.port()),
-              /* HTTPS proxies are marked as trusted. */
-              server.scheme() == ProxyServer_ProxyScheme_HTTPS),
-          server.type()));
+      proxies.push_back(DataReductionProxyServer(net::ProxyServer(
+          protobuf_parser::SchemeFromProxyScheme(server.scheme()),
+          net::HostPortPair(server.host(), server.port()),
+          /* HTTPS proxies are marked as trusted. */
+          server.scheme() == ProxyServer_ProxyScheme_HTTPS)));
     }
   }
 
@@ -136,8 +135,16 @@ void RecordAuthExpiredSessionKey(bool matches) {
 
 }  // namespace
 
-const net::BackoffEntry::Policy& GetBackoffPolicy() {
-  return kDefaultBackoffPolicy;
+net::BackoffEntry::Policy GetBackoffPolicy() {
+  net::BackoffEntry::Policy policy = kDefaultBackoffPolicy;
+  if (base::FeatureList::IsEnabled(
+          features::kDataReductionProxyAggressiveConfigFetch)) {
+    // Disabling always_use_initial_delay allows no backoffs until
+    // num_errors_to_ignore failures have occurred.
+    policy.num_errors_to_ignore = 2;
+    policy.always_use_initial_delay = false;
+  }
+  return policy;
 }
 
 DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
@@ -154,7 +161,8 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       io_data_(io_data),
       network_connection_tracker_(network_connection_tracker),
       config_storer_(config_storer),
-      backoff_entry_(&backoff_policy),
+      backoff_policy_(backoff_policy),
+      backoff_entry_(&backoff_policy_),
       config_service_url_(util::AddApiKeyToUrl(params::GetConfigServiceURL())),
       enabled_(false),
       remote_config_applied_(false),
@@ -194,7 +202,10 @@ DataReductionProxyConfigServiceClient::CalculateNextConfigRefreshTime(
 
 #if defined(OS_ANDROID)
   foreground_fetch_pending_ = false;
-  if (!fetch_succeeded && IsApplicationStateBackground()) {
+  if (!fetch_succeeded &&
+      !base::FeatureList::IsEnabled(
+          features::kDataReductionProxyAggressiveConfigFetch) &&
+      IsApplicationStateBackground()) {
     // If Chromium is in background, then fetch the config when Chromium comes
     // to foreground or after max of |kMaxBackgroundFetchIntervalSeconds| and
     // |backoff_delay|.

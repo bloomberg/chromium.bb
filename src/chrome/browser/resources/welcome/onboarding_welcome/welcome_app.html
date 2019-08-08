@@ -1,11 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_view_manager/cr_view_manager.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/promise_resolver.html">
 <link rel="import" href="google_apps/nux_google_apps.html">
-<link rel="import" href="email/nux_email.html">
 <link rel="import" href="landing_view.html">
 <link rel="import" href="navigation_behavior.html">
 <link rel="import" href="ntp_background/nux_ntp_background.html">
@@ -25,8 +24,8 @@
         min-height: 100vh;
       }
 
-      #viewManager :-webkit-any(nux-email,
-          nux-google-apps, nux-ntp-background, nux-set-as-default) {
+      #viewManager :-webkit-any(nux-google-apps, nux-ntp-background,
+          nux-set-as-default) {
         /* Override cr-view-manager's default styling for view. */
         bottom: initial;
         left: initial;
@@ -35,10 +34,17 @@
         right: initial;
         top: initial;
       }
+
+      cr-toast {
+        min-width: initial;
+      }
     </style>
     <cr-view-manager id="viewManager" hidden="[[!modulesInitialized_]]">
       <landing-view id="step-landing" slot="view" class="active"></landing-view>
     </cr-view-manager>
+    <cr-toast duration="3000">
+      <div>$i18n{defaultBrowserChanged}</div>
+    </cr-toast>
   </template>
   <script src="welcome_app.js"></script>
 </dom-module>

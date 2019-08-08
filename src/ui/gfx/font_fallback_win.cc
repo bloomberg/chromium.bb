@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_gdi_object.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_fallback.h"
 #include "ui/gfx/platform_font_win.h"
@@ -125,7 +126,7 @@ void QueryLinkedFontsFromRegistry(const Font& font,
                         resolved_font.GetFontName().c_str());
   }
 
-  TRACE_EVENT1("ui", "QueryLinkedFontsFromRegistry", "results", logging_str);
+  TRACE_EVENT1("fonts", "QueryLinkedFontsFromRegistry", "results", logging_str);
 }
 
 // CachedFontLinkSettings is a singleton cache of the Windows font settings
@@ -170,7 +171,7 @@ const std::vector<Font>* CachedFontLinkSettings::GetLinkedFonts(
   if (it != cached_linked_fonts_.end())
     return &it->second;
 
-  TRACE_EVENT1("ui", "CachedFontLinkSettings::GetLinkedFonts", "font_name",
+  TRACE_EVENT1("fonts", "CachedFontLinkSettings::GetLinkedFonts", "font_name",
                font_name);
 
   SCOPED_UMA_HISTOGRAM_LONG_TIMER(
@@ -221,8 +222,22 @@ bool GetUniscribeFallbackFont(const Font& font,
   if (!meta_file_dc)
     return false;
 
-  SelectObject(meta_file_dc, font.GetNativeFont());
+  // Extracts |fonts| properties.
+  const DWORD italic = (font.GetStyle() & Font::ITALIC) ? TRUE : FALSE;
+  const DWORD underline = (font.GetStyle() & Font::UNDERLINE) ? TRUE : FALSE;
+  // The font mapper matches its absolute value against the character height of
+  // the available fonts.
+  const int height = -font.GetFontSize();
 
+  // Select the primary font which force a mapping to a physical font.
+  base::win::ScopedHFONT primary_font(::CreateFont(
+      height, 0, 0, 0, static_cast<int>(font.GetWeight()), italic, underline,
+      FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+      DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+      base::UTF8ToUTF16(font.GetFontName()).c_str()));
+  SelectObject(meta_file_dc, primary_font.get());
+
+  // Run the script analysis.
   SCRIPT_STRING_ANALYSIS script_analysis;
   HRESULT hresult =
       ScriptStringAnalyse(meta_file_dc, text, text_length, 0, -1,
@@ -292,6 +307,7 @@ void ParseFontFamilyString(const std::string& family,
 }  // namespace internal
 
 std::vector<Font> GetFallbackFonts(const Font& font) {
+  TRACE_EVENT0("fonts", "gfx::GetFallbackFonts");
   std::string font_family = font.GetFontName();
   CachedFontLinkSettings* font_link = CachedFontLinkSettings::GetInstance();
   // GetLinkedFonts doesn't care about the font size, so we always pass 10.
@@ -302,6 +318,7 @@ bool GetFallbackFont(const Font& font,
                      const base::char16* text,
                      int text_length,
                      Font* result) {
+  TRACE_EVENT0("fonts", "gfx::GetFallbackFont");
   // Creating a DirectWrite font fallback can be expensive. It's ok in the
   // browser process because we can use the shared system fallback, but in the
   // renderer this can cause hangs. Code that needs font fallback in the

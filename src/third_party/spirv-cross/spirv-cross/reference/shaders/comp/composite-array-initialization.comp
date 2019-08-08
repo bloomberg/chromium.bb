@@ -7,6 +7,11 @@ struct Data
     float b;
 };
 
+#ifndef SPIRV_CROSS_CONSTANT_ID_0
+#define SPIRV_CROSS_CONSTANT_ID_0 4.0
+#endif
+const float X = SPIRV_CROSS_CONSTANT_ID_0;
+
 layout(binding = 0, std430) buffer SSBO
 {
     Data outdata[];
@@ -23,7 +28,7 @@ Data combine(Data a, Data b)
 void main()
 {
     data = Data[](Data(1.0, 2.0), Data(3.0, 4.0));
-    data2 = Data[](Data(4.0, 2.0), Data(3.0, 5.0));
+    data2 = Data[](Data(X, 2.0), Data(3.0, 5.0));
     Data param = data[gl_LocalInvocationID.x];
     Data param_1 = data2[gl_LocalInvocationID.x];
     Data _73 = combine(param, param_1);

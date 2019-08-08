@@ -102,7 +102,7 @@ class TestURLRequestInterceptor::Delegate : public URLRequestInterceptor {
     DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
     if (request->url().scheme() != scheme_ ||
         request->url().host() != hostname_) {
-      return NULL;
+      return nullptr;
     }
 
     auto it = responses_.find(request->url());
@@ -116,7 +116,7 @@ class TestURLRequestInterceptor::Delegate : public URLRequestInterceptor {
       }
       it = ignore_query_responses_.find(url);
       if (it == ignore_query_responses_.end())
-        return NULL;
+        return nullptr;
     }
     {
       base::AutoLock auto_lock(hit_count_lock_);

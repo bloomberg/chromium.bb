@@ -5,7 +5,7 @@
 #import "ios/web/web_state/ui/wk_navigation_action_policy_util.h"
 
 #include "base/feature_list.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 #include "ios/web/web_state/ui/block_universal_links_buildflags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

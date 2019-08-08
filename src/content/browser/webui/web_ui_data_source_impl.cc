@@ -181,8 +181,10 @@ void WebUIDataSourceImpl::SetDefaultResource(int resource_id) {
 }
 
 void WebUIDataSourceImpl::SetRequestFilter(
-    const WebUIDataSource::HandleRequestCallback& callback) {
-  filter_callback_ = callback;
+    const ShouldHandleRequestCallback& should_handle_request_callback,
+    const HandleRequestCallback& handle_request_callback) {
+  should_handle_request_callback_ = should_handle_request_callback;
+  filter_callback_ = handle_request_callback;
 }
 
 void WebUIDataSourceImpl::DisableReplaceExistingSource() {
@@ -280,8 +282,9 @@ void WebUIDataSourceImpl::StartDataRequest(
     const std::string& path,
     const ResourceRequestInfo::WebContentsGetter& wc_getter,
     const URLDataSource::GotDataCallback& callback) {
-  if (!filter_callback_.is_null() &&
-      filter_callback_.Run(path, callback)) {
+  if (!should_handle_request_callback_.is_null() &&
+      should_handle_request_callback_.Run(path)) {
+    filter_callback_.Run(path, callback);
     return;
   }
 
@@ -318,6 +321,14 @@ const base::DictionaryValue* WebUIDataSourceImpl::GetLocalizedStrings() const {
 bool WebUIDataSourceImpl::IsGzipped(const std::string& path) const {
   if (!use_gzip_)
     return false;
+
+  // Note: In the hypothetical case of requests handled by |filter_callback_|
+  // that involve gzipped data, the callback itself is responsible for
+  // ungzipping, and IsGzipped will return false for such cases.
+  if (!should_handle_request_callback_.is_null() &&
+      should_handle_request_callback_.Run(path)) {
+    return false;
+  }
 
   // TODO(dbeam): does anybody care about the "dirty" path (i.e. stuff after ?).
   const std::string clean_path = CleanUpPath(path);

@@ -33,6 +33,7 @@ CONTENT_EXPORT base::string16 AccessibilityEventToString(int32_t event_id);
 CONTENT_EXPORT base::string16 UiaIdentifierToString(int32_t identifier);
 CONTENT_EXPORT base::string16 UiaOrientationToString(int32_t identifier);
 CONTENT_EXPORT base::string16 UiaLiveSettingToString(int32_t identifier);
+
 CONTENT_EXPORT std::string BstrToUTF8(BSTR bstr);
 CONTENT_EXPORT std::string UiaIdentifierToStringUTF8(int32_t id);
 

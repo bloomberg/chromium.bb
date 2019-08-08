@@ -617,7 +617,6 @@ void DownloadItemImpl::Remove() {
 
   InterruptAndDiscardPartialState(DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
   UpdateObservers();
-
   NotifyRemoved();
   delegate_->DownloadRemoved(this);
   // We have now been deleted.
@@ -653,7 +652,46 @@ void DownloadItemImpl::OpenDownload() {
 void DownloadItemImpl::ShowDownloadInShell() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  // Ideally, we want to detect errors in showing and report them, but we
+  // don't generally have the proper interface for that to the external
+  // program that opens the file.  So instead we spawn a check to update
+  // the UI if the file has been deleted in parallel with the show.
+  delegate_->CheckForFileRemoval(this);
   delegate_->ShowDownloadInShell(this);
+}
+
+void DownloadItemImpl::RenameDownloadedFileDone(RenameDownloadCallback callback,
+                                                const base::FilePath& new_path,
+                                                DownloadRenameResult result) {
+  if (result == DownloadRenameResult::SUCCESS) {
+    destination_info_.target_path = new_path;
+    destination_info_.current_path = new_path;
+    UpdateObservers();
+  }
+  std::move(callback).Run(result);
+}
+
+void DownloadItemImpl::Rename(const base::FilePath& name,
+                              DownloadItem::RenameDownloadCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (name.IsAbsolute()) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&DownloadItemImpl::RenameDownloadedFileDone,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  std::move(callback), GetFullPath(),
+                                  DownloadRenameResult::FAILURE_NAME_INVALID));
+    return;
+  }
+
+  auto full_path = base::FilePath(GetFullPath().DirName()).Append(name);
+
+  base::PostTaskAndReplyWithResult(
+      GetDownloadTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&download::RenameDownloadedFile, GetFullPath(), full_path),
+      base::BindOnce(&DownloadItemImpl::RenameDownloadedFileDone,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     full_path));
 }
 
 uint32_t DownloadItemImpl::GetId() const {
@@ -1285,6 +1323,10 @@ void DownloadItemImpl::SetDelegate(DownloadItemImplDelegate* delegate) {
 
 void DownloadItemImpl::SetDownloadId(uint32_t download_id) {
   download_id_ = download_id;
+}
+
+void DownloadItemImpl::SetAutoResumeCountForTesting(int32_t auto_resume_count) {
+  auto_resume_count_ = auto_resume_count;
 }
 
 // **** Download progression cascade

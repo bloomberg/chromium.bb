@@ -75,6 +75,8 @@
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/site_isolation/prefs_observer.h"
+#include "chrome/browser/startup_data.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -88,6 +90,7 @@
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/timer_update_scheduler.h"
@@ -195,6 +198,10 @@
 #include "chrome/browser/ui/user_manager.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/media/webrtc/system_media_capture_permissions_stats_mac.h"
+#endif
+
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 // How often to check if the persistent instance of Chrome needs to restart
 // to install an update.
@@ -221,12 +228,12 @@ rappor::RapporService* GetBrowserRapporService() {
   return nullptr;
 }
 
-BrowserProcessImpl::BrowserProcessImpl(
-    ChromeFeatureListCreator* chrome_feature_list_creator)
-    : chrome_feature_list_creator_(chrome_feature_list_creator) {
+BrowserProcessImpl::BrowserProcessImpl(StartupData* startup_data) {
   g_browser_process = this;
 
-  DCHECK(chrome_feature_list_creator_);
+  DCHECK(startup_data);
+
+  chrome_feature_list_creator_ = startup_data->chrome_feature_list_creator();
   browser_policy_connector_ =
       chrome_feature_list_creator_->TakeChromeBrowserPolicyConnector();
   created_browser_policy_connector_ = true;
@@ -284,6 +291,12 @@ void BrowserProcessImpl::Init() {
 
 #if !defined(OS_CHROMEOS)
   message_center::MessageCenter::Initialize();
+  // Set the system notification source display name ("Google Chrome" or
+  // "Chromium").
+  if (message_center::MessageCenter::Get()) {
+    message_center::MessageCenter::Get()->SetSystemNotificationAppName(
+        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  }
 #endif
 
   system_notification_helper_ = std::make_unique<SystemNotificationHelper>();
@@ -320,6 +333,10 @@ void BrowserProcessImpl::Init() {
 
   DCHECK(!webrtc_event_log_manager_);
   webrtc_event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
+
+#if defined(OS_MACOSX)
+  system_media_permissions::LogSystemMediaPermissionsStartupStats();
+#endif
 }
 
 #if !defined(OS_ANDROID)
@@ -474,7 +491,6 @@ void BrowserProcessImpl::SetMetricsServices(
   metrics_services_manager_ = std::move(manager);
   metrics_services_manager_client_ =
       static_cast<ChromeMetricsServicesManagerClient*>(client);
-  metrics_services_manager_->GetVariationsService()->OverrideCachedUIStrings();
 }
 
 namespace {
@@ -1144,6 +1160,9 @@ void BrowserProcessImpl::PreCreateThreads(
       extensions::kExtensionScheme, true);
 #endif
 
+  site_isolation_prefs_observer_ =
+      std::make_unique<SiteIsolationPrefsObserver>(local_state());
+
   if (command_line.HasSwitch(network::switches::kLogNetLog) &&
       !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     base::FilePath log_file =
@@ -1164,7 +1183,7 @@ void BrowserProcessImpl::PreCreateThreads(
   // TODO(mmenke): Once IOThread class is no longer needed (not the thread
   // itself), this can be created on first use.
   if (!SystemNetworkContextManager::GetInstance())
-    SystemNetworkContextManager::CreateInstance(local_state_.get());
+    SystemNetworkContextManager::CreateInstance(local_state());
   io_thread_ = std::make_unique<IOThread>(
       local_state(), policy_service(), net_log_.get(),
       extension_event_router_forwarder(),

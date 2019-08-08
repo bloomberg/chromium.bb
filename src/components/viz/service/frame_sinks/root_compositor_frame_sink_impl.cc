@@ -82,10 +82,21 @@ RootCompositorFrameSinkImpl::Create(
       std::move(synthetic_begin_frame_source),
       std::move(external_begin_frame_source)));
 
+  UpdateVSyncParametersCallback update_vsync_callback;
+  if (impl->synthetic_begin_frame_source_) {
+    // |impl| owns the display and will outlive it so unretained is safe.
+    update_vsync_callback = base::BindRepeating(
+        &RootCompositorFrameSinkImpl::SetDisplayVSyncParameters,
+        base::Unretained(impl.get()));
+  }
+  // TODO(kylechar): For the cases where we expect browser to providing vsync
+  // parameter updates over mojo we shouldn't create |update_vsync_callback|.
+  // I think this is always the case on mac.
+
   auto display = display_provider->CreateDisplay(
       params->frame_sink_id, params->widget, params->gpu_compositing,
-      impl->display_client_.get(), impl->external_begin_frame_source_.get(),
-      impl->synthetic_begin_frame_source_.get(), params->renderer_settings,
+      impl->display_client_.get(), impl->begin_frame_source(),
+      std::move(update_vsync_callback), params->renderer_settings,
       params->send_swap_size_notifications);
 
   // Creating a display failed. Destroy |impl| which will close the message
@@ -157,6 +168,19 @@ void RootCompositorFrameSinkImpl::UpdateRefreshRate(float refresh_rate) {
   if (external_begin_frame_source_)
     external_begin_frame_source_->UpdateRefreshRate(refresh_rate);
 }
+
+void RootCompositorFrameSinkImpl::SetSupportedRefreshRates(
+    const std::vector<float>& supported_refresh_rates) {
+  std::vector<base::TimeDelta> supported_frame_intervals(
+      supported_refresh_rates.size());
+  for (size_t i = 0; i < supported_refresh_rates.size(); ++i) {
+    supported_frame_intervals[i] =
+        base::TimeDelta::FromSecondsD(1 / supported_refresh_rates[i]);
+  }
+
+  display_->SetSupportedFrameIntervals(supported_frame_intervals);
+}
+
 #endif  // defined(OS_ANDROID)
 
 void RootCompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
@@ -294,9 +318,22 @@ void RootCompositorFrameSinkImpl::DisplayDidCompleteSwapWithSize(
 #endif
 }
 
-void RootCompositorFrameSinkImpl::DidSwapAfterSnapshotRequestReceived(
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  display_client_->DidSwapAfterSnapshotRequestReceived(latency_info);
+void RootCompositorFrameSinkImpl::SetPreferredFrameInterval(
+    base::TimeDelta interval) {
+#if defined(OS_ANDROID)
+  float refresh_rate = 1 / interval.InSecondsF();
+  if (display_client_)
+    display_client_->SetPreferredRefreshRate(refresh_rate);
+#else
+  NOTREACHED();
+#endif
+}
+
+base::TimeDelta
+RootCompositorFrameSinkImpl::GetPreferredFrameIntervalForFrameSinkId(
+    const FrameSinkId& id) {
+  return support_->frame_sink_manager()
+      ->GetPreferredFrameIntervalForFrameSinkId(id);
 }
 
 void RootCompositorFrameSinkImpl::DisplayDidDrawAndSwap() {}

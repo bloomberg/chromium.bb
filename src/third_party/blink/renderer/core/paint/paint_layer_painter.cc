@@ -25,19 +25,6 @@
 
 namespace blink {
 
-static inline bool ShouldSuppressPaintingLayer(const PaintLayer& layer) {
-  // Avoid painting descendants of the root layer when stylesheets haven't
-  // loaded. This avoids some FOUC.  It's ok not to draw, because later on, when
-  // all the stylesheets do load, Document::styleResolverMayHaveChanged() will
-  // invalidate all painted output via a call to
-  // LayoutView::invalidatePaintForViewAndCompositedLayers().  We also avoid
-  // caching subsequences in this mode; see shouldCreateSubsequence().
-  return layer.GetLayoutObject()
-             .GetDocument()
-             .DidLayoutWithPendingStylesheets() &&
-         !layer.IsRootLayer() && !layer.GetLayoutObject().IsDocumentElement();
-}
-
 void PaintLayerPainter::Paint(GraphicsContext& context,
                               const CullRect& cull_rect,
                               const GlobalPaintFlags global_paint_flags,
@@ -85,12 +72,6 @@ PaintResult PaintLayerPainter::Paint(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags paint_flags) {
-  if (paint_layer_.GetLayoutObject().PaintBlockedByDisplayLock())
-    return kFullyPainted;
-  // TODO(vmpstr): This should be called after paint succeeds, but due to
-  // multiple early outs this is more convenient. We should use RAII here.
-  paint_layer_.GetLayoutObject().NotifyDisplayLockDidPaint();
-
   if (paint_layer_.GetLayoutObject().GetFrameView()->ShouldThrottleRendering())
     return kFullyPainted;
 
@@ -112,9 +93,6 @@ PaintResult PaintLayerPainter::Paint(
   // painted as their layoutObject() should properly paint itself.
   if (!paint_layer_.IsSelfPaintingLayer() &&
       !paint_layer_.HasSelfPaintingLayerDescendant())
-    return kFullyPainted;
-
-  if (ShouldSuppressPaintingLayer(paint_layer_))
     return kFullyPainted;
 
   // If this layer is totally invisible then there is nothing to paint. In CAP
@@ -170,15 +148,6 @@ static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
     return false;
   if (paint_flags &
       (kPaintLayerPaintingOverlayScrollbars | kPaintLayerUncachedClipRects))
-    return false;
-
-  // When in FOUC-avoidance mode, don't cache any subsequences, to avoid having
-  // to invalidate all of them when leaving this mode. There is an early-out in
-  // BlockPainter::paintContents that may result in nothing getting painted in
-  // this mode, in addition to early-out logic in PaintLayerPainter.
-  if (paint_layer.GetLayoutObject()
-          .GetDocument()
-          .DidLayoutWithPendingStylesheets())
     return false;
 
   return true;
@@ -338,9 +307,15 @@ PaintResult PaintLayerPainter::PaintLayerContents(
          paint_layer_.HasSelfPaintingLayerDescendant());
 
   PaintResult result = kFullyPainted;
-
   if (paint_layer_.GetLayoutObject().GetFrameView()->ShouldThrottleRendering())
     return result;
+
+  // If we're blocked from painting by the display lock, return early.
+  if (paint_layer_.GetLayoutObject().PaintBlockedByDisplayLock())
+    return result;
+  // TODO(vmpstr): This should be called after paint succeeds, but due to
+  // multiple early outs this is more convenient. We should use RAII here.
+  paint_layer_.GetLayoutObject().NotifyDisplayLockDidPaint();
 
   // A paint layer should always have LocalBorderBoxProperties when it's ready
   // for paint.
@@ -520,6 +495,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     bool should_paint_normal_flow_and_pos_z_order_lists =
         is_painting_composited_foreground;
     bool should_paint_overlay_scrollbars = is_painting_overlay_scrollbars;
+    bool is_video = paint_layer_.GetLayoutObject().IsVideo();
 
     base::Optional<ScopedPaintChunkProperties>
         subsequence_forced_chunk_properties;
@@ -541,8 +517,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         context.GetPaintController().ForceNewChunk(
             paint_layer_, DisplayItem::kLayerChunkBackground);
       }
-      PaintBackgroundForFragments(layer_fragments, context,
-                                  local_painting_info, paint_flags);
+      PaintBackgroundForFragments(layer_fragments, context, local_painting_info,
+                                  paint_flags);
     }
 
     if (should_paint_neg_z_order_list) {
@@ -561,7 +537,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
           !!subsequence_forced_chunk_properties, paint_flags);
     }
 
-    if (should_paint_self_outline) {
+    if (!is_video && should_paint_self_outline) {
       PaintSelfOutlineForFragments(layer_fragments, context,
                                    local_painting_info, paint_flags);
     }
@@ -580,6 +556,13 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     if (should_paint_overlay_scrollbars) {
       PaintOverflowControlsForFragments(layer_fragments, context,
                                         local_painting_info, paint_flags);
+    }
+
+    if (is_video && should_paint_self_outline) {
+      // We paint outlines for video later so that they aren't obscured by the
+      // video controls.
+      PaintSelfOutlineForFragments(layer_fragments, context,
+                                   local_painting_info, paint_flags);
     }
 
     if (!is_painting_overlay_scrollbars && paint_layer_.PaintsWithFilters() &&
@@ -791,18 +774,12 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   new_cull_rect.MoveBy(
       RoundedIntPoint(fragment.root_fragment_data->PaintOffset()));
 
-  // If we had pending stylesheets, we should avoid painting descendants of
-  // layout view to avoid FOUC.
-  bool suppress_painting_descendants = paint_layer_.GetLayoutObject()
-                                           .GetDocument()
-                                           .DidLayoutWithPendingStylesheets();
   PaintInfo paint_info(context, PixelSnappedIntRect(new_cull_rect), phase,
                        painting_info.GetGlobalPaintFlags(), paint_flags,
                        &painting_info.root_layer->GetLayoutObject(),
                        fragment.fragment_data
                            ? fragment.fragment_data->LogicalTopInFlowThread()
-                           : LayoutUnit(),
-                       suppress_painting_descendants);
+                           : LayoutUnit());
   paint_layer_.GetLayoutObject().Paint(paint_info);
 }
 
@@ -877,14 +854,14 @@ void PaintLayerPainter::PaintForegroundForFragmentsWithPhase(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& local_painting_info,
     PaintLayerFlags paint_flags) {
-  ForAllFragments(
-      context, layer_fragments, [&](const PaintLayerFragment& fragment) {
-        if (!fragment.foreground_rect.IsEmpty()) {
-          PaintFragmentWithPhase(phase, fragment, context,
-                                 fragment.foreground_rect, local_painting_info,
-                                 paint_flags);
-        }
-      });
+  ForAllFragments(context, layer_fragments,
+                  [&](const PaintLayerFragment& fragment) {
+                    if (!fragment.foreground_rect.IsEmpty()) {
+                      PaintFragmentWithPhase(phase, fragment, context,
+                                             fragment.foreground_rect,
+                                             local_painting_info, paint_flags);
+                    }
+                  });
 }
 
 void PaintLayerPainter::PaintSelfOutlineForFragments(

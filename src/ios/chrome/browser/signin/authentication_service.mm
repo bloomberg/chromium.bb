@@ -18,6 +18,7 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "components/unified_consent/feature.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -112,14 +113,13 @@ void AuthenticationService::Initialize(
   HandleForgottenIdentity(nil, true /* should_prompt */);
 
   bool is_signed_in = IsAuthenticated();
-  if (is_signed_in) {
-    if (!sync_setup_service_->HasFinishedInitialSetup()) {
-      // Sign out the user if sync was not configured after signing
-      // in (see PM comments in http://crbug.com/339831 ).
-      SignOut(signin_metrics::ABORT_SIGNIN, nil);
-      SetPromptForSignIn(true);
-      is_signed_in = false;
-    }
+  if (is_signed_in && !unified_consent::IsUnifiedConsentFeatureEnabled() &&
+      !sync_setup_service_->HasFinishedInitialSetup()) {
+    // Sign out the user if sync was not configured after signing
+    // in (see PM comments in http://crbug.com/339831 ).
+    SignOut(signin_metrics::ABORT_SIGNIN, nil);
+    SetPromptForSignIn(true);
+    is_signed_in = false;
   }
   breakpad_helper::SetCurrentlySignedIn(is_signed_in);
 
@@ -160,20 +160,17 @@ void AuthenticationService::OnApplicationEnterForeground() {
     return;
   }
 
-  // A change might have happened while in background, and SSOAuth didn't send
-  // the corresponding notifications yet. Reload the credentials to catch up
-  // with potentials changes.
-  ReloadCredentialsFromIdentities(true /* should_prompt */);
+  // As the SSO library does not send notification when the app is in the
+  // background, reload the credentials and check whether any accounts have
+  // changed (both are done by calling ComputeHaveAccountsChanged). After
+  // that, save the current list of accounts.
+  ComputeHaveAccountsChanged();
+  StoreAccountsInPrefs();
 
   // Set |is_in_foreground_| only after handling forgotten identity.
   // This ensures that any changes made to the SSOAuth identities before this
   // are correctly seen as made while in background.
   is_in_foreground_ = true;
-
-  // Accounts might have changed while the AuthenticationService was in
-  // background. Check whether they changed, then store the current accounts.
-  ComputeHaveAccountsChanged();
-  StoreAccountsInPrefs();
 
   if (IsAuthenticated()) {
     bool sync_enabled = sync_setup_service_->IsSyncEnabled();
@@ -322,10 +319,11 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
              ->GetChromeIdentityService()
              ->IsValidIdentity(identity));
 
+  SetPromptForSignIn(false);
+  sync_setup_service_->PrepareForFirstSyncSetup();
+
   // The account info needs to be seeded for the primary account id before
   // signing in.
-  // TODO(msarda): http://crbug.com/478770 Seed account information for
-  // all secondary accounts.
   AccountInfo info;
   info.gaia = base::SysNSStringToUTF8([identity gaiaID]);
   info.email = GetCanonicalizedEmailForIdentity(identity);
@@ -340,9 +338,6 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
   // between the old and the new authenticated accounts.
   if (!old_authenticated_account_id.empty())
     CHECK_EQ(new_authenticated_account_id, old_authenticated_account_id);
-
-  SetPromptForSignIn(false);
-  sync_setup_service_->PrepareForFirstSyncSetup();
 
   // Update the SigninManager with the new logged in identity.
   auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
@@ -551,14 +546,6 @@ void AuthenticationService::HandleForgottenIdentity(
   }
 
   // Sign the user out.
-  //
-  // The authenticated id is removed from the device (either by the user or
-  // when an invalid credentials is received from the server). There is no
-  // upstream entry in enum |signin_metrics::ProfileSignout| for this event. The
-  // temporary solution is to map this to |ABORT_SIGNIN|.
-  //
-  // TODO(msarda): http://crbug.com/416823 Add another entry in Chromium
-  // upstream for |signin_metrics| that matches the device identity was lost.
   SignOut(signin_metrics::ABORT_SIGNIN, nil);
   SetPromptForSignIn(should_prompt);
 }
@@ -598,7 +585,12 @@ NSString* AuthenticationService::GetAuthenticatedUserEmail() {
 }
 
 bool AuthenticationService::IsAuthenticatedIdentityManaged() {
-  std::string hosted_domain =
-      identity_manager_->GetPrimaryAccountInfo().hosted_domain;
-  return !hosted_domain.empty() && hosted_domain != kNoHostedDomainFound;
+  base::Optional<AccountInfo> primary_account_info =
+      identity_manager_->FindExtendedAccountInfoForAccount(
+          identity_manager_->GetPrimaryAccountInfo());
+  if (!primary_account_info)
+    return false;
+
+  const std::string& hosted_domain = primary_account_info->hosted_domain;
+  return hosted_domain != kNoHostedDomainFound && !hosted_domain.empty();
 }

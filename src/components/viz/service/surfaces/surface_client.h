@@ -5,13 +5,25 @@
 #ifndef COMPONENTS_VIZ_SERVICE_SURFACES_SURFACE_CLIENT_H_
 #define COMPONENTS_VIZ_SERVICE_SURFACES_SURFACE_CLIENT_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "components/viz/service/viz_service_export.h"
 
+namespace base {
+class TimeTicks;
+}  // namespace base
+
+namespace gfx {
+class Rect;
+}  // namespace gfx
+
 namespace viz {
 struct ReturnedResource;
+class CompositorFrame;
+class CopyOutputRequest;
+class LocalSurfaceId;
 class Surface;
 struct TransferableResource;
 
@@ -25,7 +37,7 @@ class VIZ_SERVICE_EXPORT SurfaceClient {
   virtual void OnSurfaceActivated(Surface* surface) = 0;
 
   // Called when |surface| is about to be destroyed.
-  virtual void OnSurfaceDiscarded(Surface* surface) = 0;
+  virtual void OnSurfaceDestroyed(Surface* surface) = 0;
 
   // Called when a |surface| is about to be drawn.
   virtual void OnSurfaceDrawn(Surface* surface) = 0;

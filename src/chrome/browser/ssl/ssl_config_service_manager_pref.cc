@@ -150,7 +150,6 @@ class SSLConfigServiceManagerPref : public SSLConfigServiceManager {
   // The local_state prefs.
   BooleanPrefMember rev_checking_enabled_;
   BooleanPrefMember rev_checking_required_local_anchors_;
-  BooleanPrefMember symantec_legacy_infrastructure_enabled_;
   StringPrefMember ssl_version_min_;
   StringPrefMember ssl_version_max_;
   StringListPrefMember h2_client_cert_coalescing_host_patterns_;
@@ -176,9 +175,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
   rev_checking_required_local_anchors_.Init(
       prefs::kCertRevocationCheckingRequiredLocalAnchors, local_state,
       local_state_callback);
-  symantec_legacy_infrastructure_enabled_.Init(
-      prefs::kCertEnableSymantecLegacyInfrastructure, local_state,
-      local_state_callback);
   ssl_version_min_.Init(prefs::kSSLVersionMin, local_state,
                         local_state_callback);
   ssl_version_max_.Init(prefs::kSSLVersionMax, local_state,
@@ -203,9 +199,6 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       prefs::kCertRevocationCheckingRequiredLocalAnchors,
       default_verifier_config.require_rev_checking_local_anchors);
-  registry->RegisterBooleanPref(
-      prefs::kCertEnableSymantecLegacyInfrastructure,
-      default_verifier_config.disable_symantec_enforcement);
   registry->RegisterStringPref(prefs::kSSLVersionMin, std::string());
   registry->RegisterStringPref(prefs::kSSLVersionMax, std::string());
   registry->RegisterListPref(prefs::kCipherSuiteBlacklist);
@@ -255,8 +248,6 @@ SSLConfigServiceManagerPref::GetSSLConfigFromPrefs() const {
     config->rev_checking_enabled = false;
   config->rev_checking_required_local_anchors =
       rev_checking_required_local_anchors_.GetValue();
-  config->symantec_enforcement_disabled =
-      symantec_legacy_infrastructure_enabled_.GetValue();
   std::string version_min_str = ssl_version_min_.GetValue();
   std::string version_max_str = ssl_version_max_.GetValue();
 

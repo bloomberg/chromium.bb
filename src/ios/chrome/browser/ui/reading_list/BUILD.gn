@@ -186,6 +186,7 @@ source_set("eg_tests") {
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/third_party/material_components_ios",
     "//ios/web",
+    "//ios/web/common:common",
     "//ios/web/public",
     "//ios/web/public/test",
     "//ios/web/public/test/http_server",

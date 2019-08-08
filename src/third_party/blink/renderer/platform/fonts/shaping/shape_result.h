@@ -134,6 +134,11 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
       float position,
       unsigned start_index,
       unsigned length);
+  static scoped_refptr<ShapeResult> CreateForSpaces(const Font* font,
+                                                    TextDirection direction,
+                                                    unsigned start_index,
+                                                    unsigned length,
+                                                    float width);
   ~ShapeResult();
 
   // Returns a mutable unique instance. If |this| has more than 1 ref count,

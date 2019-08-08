@@ -44,7 +44,7 @@ LossNotificationController::LossNotificationController(
 LossNotificationController::~LossNotificationController() = default;
 
 void LossNotificationController::OnReceivedPacket(const VCMPacket& packet) {
-  RTC_DCHECK_CALLED_SEQUENTIALLY(&sequenced_task_checker_);
+  RTC_DCHECK_RUN_ON(&sequence_checker_);
 
   if (!packet.generic_descriptor) {
     RTC_LOG(LS_WARNING) << "Generic frame descriptor missing. Buggy remote? "
@@ -69,7 +69,7 @@ void LossNotificationController::OnReceivedPacket(const VCMPacket& packet) {
 
   if (packet.generic_descriptor->FirstPacketInSubFrame()) {
     const uint16_t frame_id = packet.generic_descriptor->FrameId();
-    const uint64_t unwrapped_frame_id = frame_id_unwrapper_.Unwrap(frame_id);
+    const int64_t unwrapped_frame_id = frame_id_unwrapper_.Unwrap(frame_id);
 
     // Ignore repeated or reordered frames.
     // TODO(TODO(bugs.webrtc.org/10336): Handle frame reordering.
@@ -90,6 +90,10 @@ void LossNotificationController::OnReceivedPacket(const VCMPacket& packet) {
     const bool key_frame = intra_frame;
     if (key_frame) {
       // Subsequent frames may not rely on frames before the key frame.
+      // Note that upon receiving a key frame, we do not issue a loss
+      // notification on RTP sequence number gap, unless that gap spanned
+      // the key frame itself. This is because any loss which occurred before
+      // the key frame is no longer relevant.
       decodable_unwrapped_frame_ids_.clear();
       current_frame_potentially_decodable_ = true;
     } else {
@@ -116,7 +120,7 @@ void LossNotificationController::OnAssembledFrame(
     uint16_t frame_id,
     bool discardable,
     rtc::ArrayView<const uint16_t> frame_dependency_diffs) {
-  RTC_DCHECK_CALLED_SEQUENTIALLY(&sequenced_task_checker_);
+  RTC_DCHECK_RUN_ON(&sequence_checker_);
 
   DiscardOldInformation();  // Prevent memory overconsumption.
 
@@ -124,7 +128,7 @@ void LossNotificationController::OnAssembledFrame(
     return;
   }
 
-  const uint64_t unwrapped_frame_id = frame_id_unwrapper_.Unwrap(frame_id);
+  const int64_t unwrapped_frame_id = frame_id_unwrapper_.Unwrap(frame_id);
   if (!AllDependenciesDecodable(unwrapped_frame_id, frame_dependency_diffs)) {
     return;
   }
@@ -142,9 +146,9 @@ void LossNotificationController::DiscardOldInformation() {
 }
 
 bool LossNotificationController::AllDependenciesDecodable(
-    uint64_t unwrapped_frame_id,
+    int64_t unwrapped_frame_id,
     rtc::ArrayView<const uint16_t> frame_dependency_diffs) const {
-  RTC_DCHECK_CALLED_SEQUENTIALLY(&sequenced_task_checker_);
+  RTC_DCHECK_RUN_ON(&sequence_checker_);
 
   // Due to packet reordering, frame buffering and asynchronous decoders, it is
   // infeasible to make reliable conclusions on the decodability of a frame
@@ -154,8 +158,7 @@ bool LossNotificationController::AllDependenciesDecodable(
   // One possibility that is ignored, is that the packet may be corrupt.
 
   for (uint16_t frame_dependency_diff : frame_dependency_diffs) {
-    RTC_DCHECK_GT(unwrapped_frame_id, frame_dependency_diff);
-    const uint64_t unwrapped_ref_frame_id =
+    const int64_t unwrapped_ref_frame_id =
         unwrapped_frame_id - frame_dependency_diff;
 
     const auto ref_frame_it =
@@ -171,7 +174,7 @@ bool LossNotificationController::AllDependenciesDecodable(
 
 void LossNotificationController::HandleLoss(uint16_t last_received_seq_num,
                                             bool decodability_flag) {
-  RTC_DCHECK_CALLED_SEQUENTIALLY(&sequenced_task_checker_);
+  RTC_DCHECK_RUN_ON(&sequence_checker_);
 
   if (last_decodable_non_discardable_) {
     RTC_DCHECK(AheadOf(last_received_seq_num,

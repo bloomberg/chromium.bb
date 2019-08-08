@@ -19,6 +19,7 @@
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #include "ios/testing/embedded_test_server_handlers.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
@@ -30,7 +31,6 @@
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OpenLinkInNewTabButton;
-using web::test::ElementSelector;
 using web::WebViewInWebState;
 
 namespace {
@@ -189,7 +189,7 @@ bool WaitForDownloadButton() {
   // Open context menu for download link.
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        ElementSelector::ElementSelectorId("download"),
+                        [ElementSelector selectorWithElementID:"download"],
                         /*menu_should_appear=*/true)];
 
   // Tap "Open In New Tab".

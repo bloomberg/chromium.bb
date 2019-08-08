@@ -98,6 +98,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="1616111909442424068">Wheat</translation>
 <translation id="1618597272655350600">Announces a complete description of the current position</translation>
 <translation id="1627222324347828322">Ghost White</translation>
+<translation id="1630688379087270943">Indicate italic:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{greater than}other{# greater than signs}}</translation>
 <translation id="1653266918374749391">Previous level 3 heading</translation>
 <translation id="1657616855184033958">Show event stream filters</translation>
@@ -212,6 +213,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="2626530649491650971">clickable</translation>
 <translation id="2628764385451019380">No previous combo box.</translation>
 <translation id="2637227747952042642">Math</translation>
+<translation id="2638785836053527382">Download resumed <ph name="FILE_NAME" /></translation>
 <translation id="2639750663247012216">ChromeVox modifier</translation>
 <translation id="2644542693584024604">misspelled</translation>
 <translation id="2661530546602071611">Notice</translation>
@@ -251,6 +253,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="287383510823843610">Dark Orange</translation>
 <translation id="2879867157561757640">Swipe three fingers down</translation>
 <translation id="288178314850623291">Use jump commands to skip to specific types of elements. To jump forward between headings, press Search + H, or to jump backward, press Search + Shift + H.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{minute}other{minutes}}</translation>
 <translation id="2894654529758326923">Information</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{left brace}other{# left braces}}</translation>
 <translation id="2911433807131383493">Open ChromeVox tutorial</translation>
@@ -285,6 +288,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3084806535845658316">no typing echo</translation>
 <translation id="3086746722712840547">note</translation>
 <translation id="308895241372589742">No next math expression.</translation>
+<translation id="3090227230165225418">Announce download notifications</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Next landmark</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -319,6 +323,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3286390186030710347">Slider</translation>
 <translation id="3299925995433437805">No next visited link.</translation>
 <translation id="3300348286427369683">Rich text support. ChromeVox now supports rich text fields including jump commands, braille cursor routing, selection and more.</translation>
+<translation id="3304756947457041303">Customise rich text indication</translation>
 <translation id="3307886118343381874">Go to end of table</translation>
 <translation id="3311969765485641742">Press Alt+Shift+A to review alerts</translation>
 <translation id="3312997241656799641">Next visited link</translation>
@@ -405,6 +410,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3930498801443296724">Pullquote</translation>
 <translation id="3936394396199829062">Lavender Blush</translation>
 <translation id="3941269780691800708">Speak text under the mouse.</translation>
+<translation id="394953087167197343">Indicate misspell:</translation>
 <translation id="3962990492275676168">Start reading from current location</translation>
 <translation id="3970951409746498040">Sandy Brown</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -435,6 +441,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4148180433151187540">{COUNT,plural, =1{right brace}other{# right braces}}</translation>
 <translation id="4158704014418536539">Case sensitive.</translation>
 <translation id="4159784952369912983">Purple</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{second}other{seconds}}</translation>
 <translation id="4161663686871496107">ChromeVox spoken feedback is ready</translation>
 <translation id="4173994908659439270">No next editable text field.</translation>
 <translation id="4176463684765177261">Disabled</translation>
@@ -451,6 +458,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="42164919740161077">Cadet Blue</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{dash}other{# dashes}}</translation>
 <translation id="421884353938374759">colour picker</translation>
+<translation id="4221071177874897997">Indicate bold:</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">Light Slate Grey</translation>
 <translation id="4231102694147661229">Enable developer options</translation>
@@ -613,6 +621,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="5349770431644471053">Back link</translation>
 <translation id="536031132345979795">Skip backward during continuous reading</translation>
 <translation id="5368000168321181111">Earcons off</translation>
+<translation id="5368505757342402527">Download <ph name="PROGRESS" />% complete <ph name="FILE_NAME" />. About <ph name="TIME" /> <ph name="UNITS" /> remaining.</translation>
 <translation id="5374320867641260420">No next button.</translation>
 <translation id="5376407118396657359">Press Search+Ctrl+Alt with arrows to navigate by cell.</translation>
 <translation id="5382299583965267720">No next level 1 heading.</translation>
@@ -646,6 +655,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="5574412348552378458">ChromeVox Learn Mode</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">Edit text, email entry</translation>
+<translation id="5586942249556966598">Do nothing</translation>
 <translation id="5597170376237141345">Next tick box</translation>
 <translation id="5597933780944041114">No next heading.</translation>
 <translation id="5598905979683743333"><ph name="NAME" />, radio button unselected</translation>
@@ -750,6 +760,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6348869651006731065">Dim Grey</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{bullet}other{# bullets}}</translation>
 <translation id="6355910664415701303">No previous list item.</translation>
+<translation id="6360318852623800555">Rich Text Attributes</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Previous heading</translation>
 <translation id="6376999910001533545">Maroon</translation>
@@ -791,6 +802,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="667999046851023355">Document</translation>
 <translation id="6688209025607531203">A non-modal alert</translation>
 <translation id="6689672606256159458">Dark Salmon</translation>
+<translation id="669617842401078250">Download paused <ph name="FILE_NAME" /></translation>
 <translation id="6696967141280706829">Preface</translation>
 <translation id="6697092096875747123">Previous combo box</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{exclamation}other{# exclamations}}</translation>
@@ -924,10 +936,12 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="762020119231868829">Pauses all currently playing media widgets</translation>
 <translation id="7625690649919402823">Next table</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Grade <ph name="GRADE" /></translation>
+<translation id="763535765081585392">Indicate underline:</translation>
 <translation id="7639968568612851608">Dark grey</translation>
 <translation id="7641134354185483015">No previous level 3 heading.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, text box</translation>
 <translation id="7663318257180412551">Heading 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{hour}other{hours}}</translation>
 <translation id="7674576868851035240">Next link</translation>
 <translation id="7674768236845044097">mark</translation>
 <translation id="7684431668231950609">Edit text, URL entry</translation>
@@ -942,6 +956,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912">Download started <ph name="FILE_NAME" /></translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, password text box</translation>
 <translation id="7776293189010177726">Open ChromeVox menus</translation>
 <translation id="7800558923657349506">Epilogue</translation>
@@ -1066,6 +1081,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8096975275316362544">Mint Cream</translation>
 <translation id="8098587210054821856">Slate Grey</translation>
 <translation id="8110647606445335195">No ARIA landmarks.</translation>
+<translation id="812886159861361726">Download stopped <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Tap</translation>
 <translation id="8153880621934657047">Not inside table.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
@@ -1135,6 +1151,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8743786158317878347">enter structured content, such as tables</translation>
 <translation id="8747966237988593539">Ordered List</translation>
 <translation id="8749988712346667988">Silver</translation>
+<translation id="875769700429317857">Download completed <ph name="FILE_NAME" /></translation>
 <translation id="8759334257841767240">No next link.</translation>
 <translation id="8767968232364267681">Next level 4 heading</translation>
 <translation id="8770473310765924354">exit structured content, such as tables</translation>
@@ -1159,6 +1176,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8943175951035496220">No cell right.</translation>
 <translation id="8943282376843390568">Lime</translation>
 <translation id="8946628535652548639">r<ph name="TABLECELLROWINDEX" />c<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">Announce</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Forget</translation>
 <translation id="900114243503212879">file</translation>

@@ -3,8 +3,8 @@
 <link rel="import" href="shared_style.html">
 <link rel="import" href="store_client.html">
 <link rel="import" href="util.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 
 <dom-module id="app-management-chrome-app-permission-view">
@@ -44,9 +44,8 @@
         <paper-button class="native-settings-button secondary-text"
             on-click="onClickExtensionsSettingsButton_">
           $i18n{openExtensionsSettings}
-          <paper-icon-button-light class="native-settings-icon icon-external">
-            <button></button>
-          </paper-icon-button-light>
+          <cr-icon-button class="native-settings-icon icon-external" noink>
+          </cr-icon-button>
         </paper-button>
       </div>
     </app-management-permission-view-header>

@@ -105,9 +105,7 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
     QuitIfFinished();
   }
 
-  void ReceivedProcessInfos(
-      std::vector<resource_coordinator::mojom::ProcessInfoPtr> process_infos)
-      override {
+  void ReceivedProcessInfos(std::vector<ProcessInfo> process_infos) override {
     ProcessMemoryMetricsEmitter::ReceivedProcessInfos(std::move(process_infos));
     finished_process_info_ = true;
     QuitIfFinished();
@@ -176,8 +174,9 @@ void CheckExperimentalMemoryMetrics(
     CheckMemoryMetric("Memory.Experimental.Renderer2.PartitionAlloc",
                       histogram_tester, count, ValueRestriction::NONE,
                       number_of_renderer_processes);
+    // V8 memory footprint can be below 1 MB, which is reported as zero.
     CheckMemoryMetric("Memory.Experimental.Renderer2.V8", histogram_tester,
-                      count, ValueRestriction::ABOVE_ZERO,
+                      count, ValueRestriction::NONE,
                       number_of_renderer_processes);
   }
   if (number_of_extension_processes) {
@@ -584,8 +583,9 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 #define MAYBE_FetchAndEmitMetricsWithHostedApps \
   DISABLED_FetchAndEmitMetricsWithHostedApps
 #else
+// TODO(crbug.com/943207): Re-enable this test once it's not flaky anymore.
 #define MAYBE_FetchAndEmitMetricsWithHostedApps \
-  FetchAndEmitMetricsWithHostedApps
+  DISABLED_FetchAndEmitMetricsWithHostedApps
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                        MAYBE_FetchAndEmitMetricsWithHostedApps) {
@@ -775,8 +775,9 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 }
 
 // Test is flaky on chromeos and linux. https://crbug.com/938054.
+// Test is flaky on mac: https://crbug.com/948674.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(OS_CHROMEOS) || defined(OS_LINUX)
+    defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_ForegroundAndBackgroundPages DISABLED_ForegroundAndBackgroundPages
 #else
 #define MAYBE_ForegroundAndBackgroundPages ForegroundAndBackgroundPages

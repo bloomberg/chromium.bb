@@ -1,0 +1,239 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Darwin Huang <huangdarwin@chromium.org>
+Date: Mon, 15 Apr 2019 14:10:58 -0700
+Subject: [PATCH 15/15] Use 64-bit memory allocator in extensions
+
+This backports https://www.sqlite.org/src/ci/07ee06fd390bfebe
+
+Bug: 952406
+---
+ .../sqlite/patched/ext/fts3/fts3_snippet.c    |  7 ++++---
+ .../sqlite/patched/ext/fts3/fts3_test.c       |  6 +++---
+ .../patched/ext/fts3/fts3_tokenize_vtab.c     |  2 +-
+ .../sqlite/patched/ext/fts3/fts3_tokenizer.c  |  4 ++--
+ .../sqlite/patched/ext/fts3/fts3_write.c      | 19 +++++++++---------
+ .../sqlite/patched/ext/fts5/fts5_tokenize.c   |  2 +-
+ .../sqlite/patched/ext/rtree/geopoly.c        | 20 +++++++++----------
+ 7 files changed, 31 insertions(+), 29 deletions(-)
+
+diff --git a/third_party/sqlite/patched/ext/fts3/fts3_snippet.c b/third_party/sqlite/patched/ext/fts3/fts3_snippet.c
+index 953dd1954da1..80ee237ce5fc 100644
+--- a/third_party/sqlite/patched/ext/fts3/fts3_snippet.c
++++ b/third_party/sqlite/patched/ext/fts3/fts3_snippet.c
+@@ -130,10 +130,11 @@ struct StrBuffer {
+ */
+ static MatchinfoBuffer *fts3MIBufferNew(int nElem, const char *zMatchinfo){
+   MatchinfoBuffer *pRet;
+-  int nByte = sizeof(u32) * (2*nElem + 1) + sizeof(MatchinfoBuffer);
+-  int nStr = (int)strlen(zMatchinfo);
++  sqlite3_int64 nByte = sizeof(u32) * (2*(sqlite3_int64)nElem + 1)
++                           + sizeof(MatchinfoBuffer);
++  sqlite3_int64 nStr = strlen(zMatchinfo);
+ 
+-  pRet = sqlite3_malloc(nByte + nStr+1);
++  pRet = sqlite3_malloc64(nByte + nStr+1);
+   if( pRet ){
+     memset(pRet, 0, nByte);
+     pRet->aMatchinfo[0] = (u8*)(&pRet->aMatchinfo[1]) - (u8*)pRet;
+diff --git a/third_party/sqlite/patched/ext/fts3/fts3_test.c b/third_party/sqlite/patched/ext/fts3/fts3_test.c
+index 01aa8e96fd46..6d1be6a1193b 100644
+--- a/third_party/sqlite/patched/ext/fts3/fts3_test.c
++++ b/third_party/sqlite/patched/ext/fts3/fts3_test.c
+@@ -448,14 +448,14 @@ static int testTokenizerNext(
+   }else{
+     /* Advance to the end of the token */
+     const char *pToken = p;
+-    int nToken;
++    sqlite3_int64 nToken;
+     while( p<pEnd && testIsTokenChar(*p) ) p++;
+-    nToken = (int)(p-pToken);
++    nToken = (sqlite3_int64)(p-pToken);
+ 
+     /* Copy the token into the buffer */
+     if( nToken>pCsr->nBuffer ){
+       sqlite3_free(pCsr->aBuffer);
+-      pCsr->aBuffer = sqlite3_malloc(nToken);
++      pCsr->aBuffer = sqlite3_malloc64(nToken);
+     }
+     if( pCsr->aBuffer==0 ){
+       rc = SQLITE_NOMEM;
+diff --git a/third_party/sqlite/patched/ext/fts3/fts3_tokenize_vtab.c b/third_party/sqlite/patched/ext/fts3/fts3_tokenize_vtab.c
+index 6dfde7b91b66..73412ff3b4bb 100644
+--- a/third_party/sqlite/patched/ext/fts3/fts3_tokenize_vtab.c
++++ b/third_party/sqlite/patched/ext/fts3/fts3_tokenize_vtab.c
+@@ -346,7 +346,7 @@ static int fts3tokFilterMethod(
+   if( idxNum==1 ){
+     const char *zByte = (const char *)sqlite3_value_text(apVal[0]);
+     int nByte = sqlite3_value_bytes(apVal[0]);
+-    pCsr->zInput = sqlite3_malloc(nByte+1);
++    pCsr->zInput = sqlite3_malloc64(nByte+1);
+     if( pCsr->zInput==0 ){
+       rc = SQLITE_NOMEM;
+     }else{
+diff --git a/third_party/sqlite/patched/ext/fts3/fts3_tokenizer.c b/third_party/sqlite/patched/ext/fts3/fts3_tokenizer.c
+index c8900fb3c331..30441dfcc7cf 100644
+--- a/third_party/sqlite/patched/ext/fts3/fts3_tokenizer.c
++++ b/third_party/sqlite/patched/ext/fts3/fts3_tokenizer.c
+@@ -194,8 +194,8 @@ int sqlite3Fts3InitTokenizer(
+     int iArg = 0;
+     z = &z[n+1];
+     while( z<zEnd && (NULL!=(z = (char *)sqlite3Fts3NextToken(z, &n))) ){
+-      int nNew = sizeof(char *)*(iArg+1);
+-      char const **aNew = (const char **)sqlite3_realloc((void *)aArg, nNew);
++      sqlite3_int64 nNew = sizeof(char *)*(iArg+1);
++      char const **aNew = (const char **)sqlite3_realloc64((void *)aArg, nNew);
+       if( !aNew ){
+         sqlite3_free(zCopy);
+         sqlite3_free((void *)aArg);
+diff --git a/third_party/sqlite/patched/ext/fts3/fts3_write.c b/third_party/sqlite/patched/ext/fts3/fts3_write.c
+index e368c09247d6..2de4b2cc0612 100644
+--- a/third_party/sqlite/patched/ext/fts3/fts3_write.c
++++ b/third_party/sqlite/patched/ext/fts3/fts3_write.c
+@@ -1750,8 +1750,9 @@ int sqlite3Fts3SegReaderPending(
+   }
+ 
+   if( nElem>0 ){
+-    int nByte = sizeof(Fts3SegReader) + (nElem+1)*sizeof(Fts3HashElem *);
+-    pReader = (Fts3SegReader *)sqlite3_malloc(nByte);
++    sqlite3_int64 nByte;
++    nByte = sizeof(Fts3SegReader) + (nElem+1)*sizeof(Fts3HashElem *);
++    pReader = (Fts3SegReader *)sqlite3_malloc64(nByte);
+     if( !pReader ){
+       rc = SQLITE_NOMEM;
+     }else{
+@@ -3363,7 +3364,7 @@ static void fts3InsertDocsize(
+   int rc;                  /* Result code from subfunctions */
+ 
+   if( *pRC ) return;
+-  pBlob = sqlite3_malloc( 10*p->nColumn );
++  pBlob = sqlite3_malloc64( 10*(sqlite3_int64)p->nColumn );
+   if( pBlob==0 ){
+     *pRC = SQLITE_NOMEM;
+     return;
+@@ -3413,7 +3414,7 @@ static void fts3UpdateDocTotals(
+   const int nStat = p->nColumn+2;
+ 
+   if( *pRC ) return;
+-  a = sqlite3_malloc( (sizeof(u32)+10)*nStat );
++  a = sqlite3_malloc64( (sizeof(u32)+10)*(sqlite3_int64)nStat );
+   if( a==0 ){
+     *pRC = SQLITE_NOMEM;
+     return;
+@@ -3534,8 +3535,8 @@ static int fts3DoRebuild(Fts3Table *p){
+     }
+ 
+     if( rc==SQLITE_OK ){
+-      int nByte = sizeof(u32) * (p->nColumn+1)*3;
+-      aSz = (u32 *)sqlite3_malloc(nByte);
++      sqlite3_int64 nByte = sizeof(u32) * ((sqlite3_int64)p->nColumn+1)*3;
++      aSz = (u32 *)sqlite3_malloc64(nByte);
+       if( aSz==0 ){
+         rc = SQLITE_NOMEM;
+       }else{
+@@ -3601,12 +3602,12 @@ static int fts3IncrmergeCsr(
+ ){
+   int rc;                         /* Return Code */
+   sqlite3_stmt *pStmt = 0;        /* Statement used to read %_segdir entry */
+-  int nByte;                      /* Bytes allocated at pCsr->apSegment[] */
++  sqlite3_int64 nByte;            /* Bytes allocated at pCsr->apSegment[] */
+ 
+   /* Allocate space for the Fts3MultiSegReader.aCsr[] array */
+   memset(pCsr, 0, sizeof(*pCsr));
+   nByte = sizeof(Fts3SegReader *) * nSeg;
+-  pCsr->apSegment = (Fts3SegReader **)sqlite3_malloc(nByte);
++  pCsr->apSegment = (Fts3SegReader **)sqlite3_malloc64(nByte);
+ 
+   if( pCsr->apSegment==0 ){
+     rc = SQLITE_NOMEM;
+@@ -5586,7 +5587,7 @@ int sqlite3Fts3UpdateMethod(
+   }
+ 
+   /* Allocate space to hold the change in document sizes */
+-  aSzDel = sqlite3_malloc( sizeof(aSzDel[0])*(p->nColumn+1)*2 );
++  aSzDel = sqlite3_malloc64(sizeof(aSzDel[0])*((sqlite3_int64)p->nColumn+1)*2);
+   if( aSzDel==0 ){
+     rc = SQLITE_NOMEM;
+     goto update_out;
+diff --git a/third_party/sqlite/patched/ext/fts5/fts5_tokenize.c b/third_party/sqlite/patched/ext/fts5/fts5_tokenize.c
+index b39221bc2533..42b1e0447d8b 100644
+--- a/third_party/sqlite/patched/ext/fts5/fts5_tokenize.c
++++ b/third_party/sqlite/patched/ext/fts5/fts5_tokenize.c
+@@ -369,7 +369,7 @@ static int fts5UnicodeCreate(
+ 
+       p->eRemoveDiacritic = FTS5_REMOVE_DIACRITICS_SIMPLE;
+       p->nFold = 64;
+-      p->aFold = sqlite3_malloc(p->nFold * sizeof(char));
++      p->aFold = sqlite3_malloc64(p->nFold * sizeof(char));
+       if( p->aFold==0 ){
+         rc = SQLITE_NOMEM;
+       }
+diff --git a/third_party/sqlite/patched/ext/rtree/geopoly.c b/third_party/sqlite/patched/ext/rtree/geopoly.c
+index 3652d14a1f37..e4bb5798972b 100644
+--- a/third_party/sqlite/patched/ext/rtree/geopoly.c
++++ b/third_party/sqlite/patched/ext/rtree/geopoly.c
+@@ -269,7 +269,7 @@ static GeoPoly *geopolyParseJson(const unsigned char *z, int *pRc){
+       GeoPoly *pOut;
+       int x = 1;
+       s.nVertex--;  /* Remove the redundant vertex at the end */
+-      pOut = sqlite3_malloc64( GEOPOLY_SZ(s.nVertex) );
++      pOut = sqlite3_malloc64( GEOPOLY_SZ((sqlite3_int64)s.nVertex) );
+       x = 1;
+       if( pOut==0 ) goto parse_json_err;
+       pOut->nVertex = s.nVertex;
+@@ -655,7 +655,7 @@ static GeoPoly *geopolyBBox(
+     if( pRc ) *pRc = SQLITE_OK;
+     if( aCoord==0 ){
+       geopolyBboxFill:
+-      pOut = sqlite3_realloc(p, GEOPOLY_SZ(4));
++      pOut = sqlite3_realloc64(p, GEOPOLY_SZ(4));
+       if( pOut==0 ){
+         sqlite3_free(p);
+         if( context ) sqlite3_result_error_nomem(context);
+@@ -1051,9 +1051,9 @@ static GeoSegment *geopolySortSegmentsByYAndC(GeoSegment *pList){
+ ** Determine the overlap between two polygons
+ */
+ static int geopolyOverlap(GeoPoly *p1, GeoPoly *p2){
+-  int nVertex = p1->nVertex + p2->nVertex + 2;
++  sqlite3_int64 nVertex = p1->nVertex + p2->nVertex + 2;
+   GeoOverlap *p;
+-  int nByte;
++  sqlite3_int64 nByte;
+   GeoEvent *pThisEvent;
+   double rX;
+   int rc = 0;
+@@ -1065,7 +1065,7 @@ static int geopolyOverlap(GeoPoly *p1, GeoPoly *p2){
+   nByte = sizeof(GeoEvent)*nVertex*2
+            + sizeof(GeoSegment)*nVertex
+            + sizeof(GeoOverlap);
+-  p = sqlite3_malloc( nByte );
++  p = sqlite3_malloc64( nByte );
+   if( p==0 ) return -1;
+   p->aEvent = (GeoEvent*)&p[1];
+   p->aSegment = (GeoSegment*)&p->aEvent[nVertex*2];
+@@ -1224,8 +1224,8 @@ static int geopolyInit(
+ ){
+   int rc = SQLITE_OK;
+   Rtree *pRtree;
+-  int nDb;              /* Length of string argv[1] */
+-  int nName;            /* Length of string argv[2] */
++  sqlite3_int64 nDb;              /* Length of string argv[1] */
++  sqlite3_int64 nName;            /* Length of string argv[2] */
+   sqlite3_str *pSql;
+   char *zSql;
+   int ii;
+@@ -1233,9 +1233,9 @@ static int geopolyInit(
+   sqlite3_vtab_config(db, SQLITE_VTAB_CONSTRAINT_SUPPORT, 1);
+ 
+   /* Allocate the sqlite3_vtab structure */
+-  nDb = (int)strlen(argv[1]);
+-  nName = (int)strlen(argv[2]);
+-  pRtree = (Rtree *)sqlite3_malloc(sizeof(Rtree)+nDb+nName+2);
++  nDb = strlen(argv[1]);
++  nName = strlen(argv[2]);
++  pRtree = (Rtree *)sqlite3_malloc64(sizeof(Rtree)+nDb+nName+2);
+   if( !pRtree ){
+     return SQLITE_NOMEM;
+   }
+-- 
+2.21.0.392.gf8f6787159e-goog
+

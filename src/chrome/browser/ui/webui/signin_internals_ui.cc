@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"

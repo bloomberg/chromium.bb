@@ -40,11 +40,8 @@ struct RendererPreferences {
   // positions for glyphs.  Currently only used by Linux.
   bool use_subpixel_positioning = false;
 
+  // The color of the focus ring. Currently only used on Linux.
   uint32 focus_ring_color = 0xFFE59700;
-  [EnableIf=is_android]
-  float minimum_stroke_width_for_focus_ring = 1.0;
-  [EnableIf=is_android]
-  bool is_focus_ring_outset = false;
 
   // The colors used in selection text. Currently only used on Linux and Ash.
   uint32 active_selection_bg_color = 0xFF1E90FF;

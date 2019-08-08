@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -17,11 +18,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -29,7 +32,6 @@
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/login/localized_values_builder.h"
@@ -44,8 +46,6 @@
 
 namespace chromeos {
 namespace {
-
-const char kJsScreenPath[] = "login.OAuthEnrollmentScreen";
 
 // Enrollment step names.
 const char kEnrollmentStepSignin[] = "signin";
@@ -139,21 +139,21 @@ constexpr struct {
      IDS_AD_ENCRYPTION_LEGACY_SUBTITLE,
      authpolicy::KerberosEncryptionTypes::ENC_TYPES_LEGACY}};
 
-std::unique_ptr<base::ListValue> GetEncryptionTypesList() {
+base::ListValue GetEncryptionTypesList() {
   const authpolicy::KerberosEncryptionTypes default_types =
       authpolicy::KerberosEncryptionTypes::ENC_TYPES_STRONG;
-  auto encryption_list = std::make_unique<base::ListValue>();
+  base::ListValue encryption_list;
   for (const auto& enc_types : kEncryptionTypes) {
-    auto enc_option = std::make_unique<base::DictionaryValue>();
-    enc_option->SetKey(
+    base::DictionaryValue enc_option;
+    enc_option.SetKey(
         "title", base::Value(l10n_util::GetStringUTF16(enc_types.title_id)));
-    enc_option->SetKey(
+    enc_option.SetKey(
         "subtitle",
         base::Value(l10n_util::GetStringUTF16(enc_types.subtitle_id)));
-    enc_option->SetKey("value", base::Value(enc_types.id));
-    enc_option->SetKey(
-        "selected", base::Value(default_types == enc_types.encryption_types));
-    encryption_list->Append(std::move(enc_option));
+    enc_option.SetKey("value", base::Value(enc_types.id));
+    enc_option.SetKey("selected",
+                      base::Value(default_types == enc_types.encryption_types));
+    encryption_list.GetList().emplace_back(std::move(enc_option));
   }
   return encryption_list;
 }
@@ -181,8 +181,6 @@ EnrollmentScreenHandler::EnrollmentScreenHandler(
       error_screen_(error_screen),
       histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")),
       weak_ptr_factory_(this) {
-  set_call_js_prefix(kJsScreenPath);
-  set_async_assets_load_id(GetOobeScreenName(kScreenId));
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_);
   network_state_informer_->AddObserver(this);
@@ -262,7 +260,6 @@ void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
 
   if (!domain_join_config.empty()) {
     active_directory_domain_join_config_ = domain_join_config;
-    show_unlock_password_ = true;
     active_directory_join_type_ =
         ActiveDirectoryDomainJoinType::NOT_USING_CONFIGURATION;
   }
@@ -271,7 +268,8 @@ void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
       CallJS("login.OAuthEnrollmentScreen.setAdJoinParams",
              std::string() /* machineName */, std::string() /* userName */,
              static_cast<int>(ActiveDirectoryErrorState::NONE),
-             show_unlock_password_);
+             !active_directory_domain_join_config_
+                  .empty() /* show_unlock_password */);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     }
@@ -284,28 +282,28 @@ void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
       CallJS("login.OAuthEnrollmentScreen.setAdJoinParams", machine_name,
              username,
              static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME),
-             show_unlock_password_);
+             false /* show_unlock_password */);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_BAD_PASSWORD:
       CallJS("login.OAuthEnrollmentScreen.setAdJoinParams", machine_name,
              username,
              static_cast<int>(ActiveDirectoryErrorState::BAD_AUTH_PASSWORD),
-             show_unlock_password_);
+             false /* show_unlock_password */);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_MACHINE_NAME_TOO_LONG:
       CallJS("login.OAuthEnrollmentScreen.setAdJoinParams", machine_name,
              username,
              static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_TOO_LONG),
-             show_unlock_password_);
+             false /* show_unlock_password */);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_INVALID_MACHINE_NAME:
       CallJS("login.OAuthEnrollmentScreen.setAdJoinParams", machine_name,
              username,
              static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_INVALID),
-             show_unlock_password_);
+             false /* show_unlock_password */);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_PASSWORD_EXPIRED:
@@ -619,7 +617,7 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
 
 void EnrollmentScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* parameters) {
-  parameters->Set("encryptionTypesList", GetEncryptionTypesList());
+  parameters->SetKey("encryptionTypesList", GetEncryptionTypesList());
 }
 
 bool EnrollmentScreenHandler::IsOnEnrollmentScreen() const {
@@ -637,17 +635,18 @@ void EnrollmentScreenHandler::OnAdConfigurationUnlocked(
     CallJS("login.OAuthEnrollmentScreen.setAdJoinParams",
            std::string() /* machineName */, std::string() /* userName */,
            static_cast<int>(ActiveDirectoryErrorState::BAD_UNLOCK_PASSWORD),
-           show_unlock_password_);
+           true /* show_unlock_password */);
     return;
   }
-  std::unique_ptr<base::ListValue> options =
-      base::ListValue::From(base::JSONReader::ReadDeprecated(
-          unlocked_data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS));
-  if (!options) {
+  active_directory_domain_join_config_.clear();
+  base::Optional<base::Value> options = base::JSONReader::Read(
+      unlocked_data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+  if (!options || !options->is_list()) {
     ShowError(IDS_AD_JOIN_CONFIG_NOT_PARSED, true);
-    show_unlock_password_ = false;
-    CallJS("login.OAuthEnrollmentScreen.setAdJoinConfiguration",
-           base::ListValue());
+    CallJS("login.OAuthEnrollmentScreen.setAdJoinParams",
+           std::string() /* machineName */, std::string() /* userName */,
+           static_cast<int>(ActiveDirectoryErrorState::NONE),
+           false /* show_unlock_password */);
     return;
   }
   base::DictionaryValue custom;
@@ -655,7 +654,6 @@ void EnrollmentScreenHandler::OnAdConfigurationUnlocked(
       "name",
       base::Value(l10n_util::GetStringUTF8(IDS_AD_CONFIG_SELECTION_CUSTOM)));
   options->GetList().push_back(std::move(custom));
-  show_unlock_password_ = false;
   active_directory_join_type_ =
       ActiveDirectoryDomainJoinType::USING_CONFIGURATION;
   CallJS("login.OAuthEnrollmentScreen.setAdJoinConfiguration", *options);
@@ -805,7 +803,8 @@ void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user) {
 
 void EnrollmentScreenHandler::OnGetCookiesForCompleteLogin(
     const std::string& user,
-    const std::vector<net::CanonicalCookie>& cookies) {
+    const std::vector<net::CanonicalCookie>& cookies,
+    const net::CookieStatusList& excluded_cookies) {
   std::string auth_code;
   for (const auto& cookie : cookies) {
     if (cookie.Name() == "oauth_code") {
@@ -827,7 +826,6 @@ void EnrollmentScreenHandler::HandleAdCompleteLogin(
     const std::string& user_name,
     const std::string& password) {
   observe_network_failure_ = false;
-  show_unlock_password_ = false;
   DCHECK(controller_);
   controller_->OnActiveDirectoryCredsProvided(
       machine_name, distinguished_name,
@@ -836,7 +834,7 @@ void EnrollmentScreenHandler::HandleAdCompleteLogin(
 
 void EnrollmentScreenHandler::HandleAdUnlockConfiguration(
     const std::string& password) {
-  AuthPolicyLoginHelper::DecryptConfiguration(
+  AuthPolicyHelper::DecryptConfiguration(
       active_directory_domain_join_config_, password,
       base::BindOnce(&EnrollmentScreenHandler::OnAdConfigurationUnlocked,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -862,7 +860,8 @@ void EnrollmentScreenHandler::HandleDeviceAttributesProvided(
 
 void EnrollmentScreenHandler::HandleOnLearnMore() {
   if (!help_app_.get())
-    help_app_ = new HelpAppLauncher(GetNativeWindow());
+    help_app_ = new HelpAppLauncher(
+        LoginDisplayHost::default_host()->GetNativeWindow());
   help_app_->ShowHelpTopic(HelpAppLauncher::HELP_DEVICE_ATTRIBUTES);
 }
 

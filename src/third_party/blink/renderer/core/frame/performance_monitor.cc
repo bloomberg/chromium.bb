@@ -209,10 +209,9 @@ void PerformanceMonitor::Did(const probe::ExecuteScript& probe) {
 
   if (probe.Duration() <= kLongTaskSubTaskThreshold)
     return;
-  std::unique_ptr<SubTaskAttribution> sub_task_attribution =
-      SubTaskAttribution::Create(AtomicString("script-run"),
-                                 probe.context->Url().GetString(),
-                                 probe.CaptureStartTime(), probe.Duration());
+  auto sub_task_attribution = std::make_unique<SubTaskAttribution>(
+      AtomicString("script-run"), probe.context->Url().GetString(),
+      probe.CaptureStartTime(), probe.Duration());
   sub_task_attributions_.push_back(std::move(sub_task_attribution));
 }
 
@@ -266,12 +265,11 @@ void PerformanceMonitor::Did(const probe::V8Compile& probe) {
       return;
   }
 
-  std::unique_ptr<SubTaskAttribution> sub_task_attribution =
-      SubTaskAttribution::Create(
-          AtomicString("script-compile"),
-          String::Format("%s(%d, %d)", probe.file_name.Utf8().data(),
-                         probe.line, probe.column),
-          v8_compile_start_time_, v8_compile_duration);
+  auto sub_task_attribution = std::make_unique<SubTaskAttribution>(
+      AtomicString("script-compile"),
+      String::Format("%s(%d, %d)", probe.file_name.Utf8().data(), probe.line,
+                     probe.column),
+      v8_compile_start_time_, v8_compile_duration);
   sub_task_attributions_.push_back(std::move(sub_task_attribution));
 }
 

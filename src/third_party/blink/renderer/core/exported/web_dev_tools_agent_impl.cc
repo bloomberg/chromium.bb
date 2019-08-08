@@ -76,7 +76,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_resource_container.h"
 #include "third_party/blink/renderer/core/inspector/inspector_resource_content_loader.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
-#include "third_party/blink/renderer/core/inspector/inspector_testing_agent.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -238,8 +237,8 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
       isolate, inspected_frames, session->V8Session());
   session->Append(dom_agent);
 
-  InspectorLayerTreeAgent* layer_tree_agent =
-      InspectorLayerTreeAgent::Create(inspected_frames, this);
+  auto* layer_tree_agent =
+      MakeGarbageCollected<InspectorLayerTreeAgent>(inspected_frames, this);
   session->Append(layer_tree_agent);
 
   InspectorNetworkAgent* network_agent =
@@ -247,7 +246,7 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
                                                   session->V8Session());
   session->Append(network_agent);
 
-  InspectorCSSAgent* css_agent = InspectorCSSAgent::Create(
+  auto* css_agent = MakeGarbageCollected<InspectorCSSAgent>(
       dom_agent, inspected_frames, network_agent,
       resource_content_loader_.Get(), resource_container_.Get());
   session->Append(css_agent);
@@ -257,19 +256,21 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
                                                       session->V8Session());
   session->Append(dom_debugger_agent);
 
-  session->Append(
-      InspectorDOMSnapshotAgent::Create(inspected_frames, dom_debugger_agent));
+  session->Append(MakeGarbageCollected<InspectorDOMSnapshotAgent>(
+      inspected_frames, dom_debugger_agent));
 
   session->Append(MakeGarbageCollected<InspectorAnimationAgent>(
       inspected_frames, css_agent, session->V8Session()));
 
-  session->Append(InspectorMemoryAgent::Create(inspected_frames));
+  session->Append(MakeGarbageCollected<InspectorMemoryAgent>(inspected_frames));
 
-  session->Append(InspectorPerformanceAgent::Create(inspected_frames));
+  session->Append(
+      MakeGarbageCollected<InspectorPerformanceAgent>(inspected_frames));
 
-  session->Append(InspectorApplicationCacheAgent::Create(inspected_frames));
+  session->Append(
+      MakeGarbageCollected<InspectorApplicationCacheAgent>(inspected_frames));
 
-  InspectorPageAgent* page_agent = InspectorPageAgent::Create(
+  auto* page_agent = MakeGarbageCollected<InspectorPageAgent>(
       inspected_frames, this, resource_content_loader_.Get(),
       session->V8Session());
   session->Append(page_agent);
@@ -294,9 +295,6 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
   // we have to store the frame which will become the main frame later.
   session->Append(MakeGarbageCollected<InspectorEmulationAgent>(
       web_local_frame_impl_.Get()));
-
-  session->Append(
-      MakeGarbageCollected<InspectorTestingAgent>(inspected_frames));
 
   // Call session init callbacks registered from higher layers.
   CoreInitializer::GetInstance().InitInspectorAgentSession(
@@ -337,8 +335,9 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     : worker_client_(worker_client),
       web_local_frame_impl_(web_local_frame_impl),
       probe_sink_(web_local_frame_impl_->GetFrame()->GetProbeSink()),
-      resource_content_loader_(InspectorResourceContentLoader::Create(
-          web_local_frame_impl_->GetFrame())),
+      resource_content_loader_(
+          MakeGarbageCollected<InspectorResourceContentLoader>(
+              web_local_frame_impl_->GetFrame())),
       inspected_frames_(MakeGarbageCollected<InspectedFrames>(
           web_local_frame_impl_->GetFrame())),
       resource_container_(
@@ -476,9 +475,9 @@ String WebDevToolsAgentImpl::EvaluateInOverlayForTesting(const String& script) {
   return result;
 }
 
-void WebDevToolsAgentImpl::UpdateOverlays() {
+void WebDevToolsAgentImpl::UpdateOverlaysPrePaint() {
   for (auto& it : overlay_agents_)
-    it.value->UpdateAllOverlayLifecyclePhases();
+    it.value->UpdatePrePaint();
 }
 
 void WebDevToolsAgentImpl::PaintOverlays(GraphicsContext& context) {
@@ -492,12 +491,14 @@ void WebDevToolsAgentImpl::DispatchBufferedTouchEvents() {
     it.value->DispatchBufferedTouchEvents();
 }
 
-bool WebDevToolsAgentImpl::HandleInputEvent(const WebInputEvent& event) {
+WebInputEventResult WebDevToolsAgentImpl::HandleInputEvent(
+    const WebInputEvent& event) {
   for (auto& it : overlay_agents_) {
-    if (it.value->HandleInputEvent(event))
-      return true;
+    auto result = it.value->HandleInputEvent(event);
+    if (result != WebInputEventResult::kNotHandled)
+      return result;
   }
-  return false;
+  return WebInputEventResult::kNotHandled;
 }
 
 String WebDevToolsAgentImpl::NavigationInitiatorInfo(LocalFrame* frame) {

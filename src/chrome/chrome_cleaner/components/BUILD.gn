@@ -63,6 +63,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/constants:uws_id",
     "//chrome/chrome_cleaner/http:mock_http_agent_factory",
     "//chrome/chrome_cleaner/logging:cleaner_logging",
+    "//chrome/chrome_cleaner/logging:common",
     "//chrome/chrome_cleaner/logging/proto:chrome_cleaner_report_proto",
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",

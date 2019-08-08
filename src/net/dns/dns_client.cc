@@ -45,11 +45,11 @@ class DnsClientImpl : public DnsClient {
   }
 
   const DnsConfig* GetConfig() const override {
-    return session_.get() ? &session_->config() : NULL;
+    return session_.get() ? &session_->config() : nullptr;
   }
 
   DnsTransactionFactory* GetTransactionFactory() override {
-    return session_.get() ? factory_.get() : NULL;
+    return session_.get() ? factory_.get() : nullptr;
   }
 
   AddressSorter* GetAddressSorter() override { return address_sorter_.get(); }

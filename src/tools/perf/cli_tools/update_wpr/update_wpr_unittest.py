@@ -26,7 +26,6 @@ class UpdateWprTest(unittest.TestCase):
     self._check_call = mock.patch('subprocess.check_call').start()
     self._info = mock.patch('core.cli_helpers.Info').start()
     self._comment = mock.patch('core.cli_helpers.Comment').start()
-    self._ask = mock.patch('core.cli_helpers.Ask').start()
     self._open = mock.patch('__builtin__.open').start()
     datetime = mock.patch('datetime.datetime').start()
     datetime.now.return_value.strftime.return_value = '<tstamp>'
@@ -54,8 +53,8 @@ class UpdateWprTest(unittest.TestCase):
   def tearDown(self):
     mock.patch.stopall()
 
-  def testMain(self):
-    wpr_updater_cls = mock.patch(WPR_UPDATER + 'WprUpdater').start()
+  @mock.patch(WPR_UPDATER + 'WprUpdater')
+  def testMain(self, wpr_updater_cls):
     update_wpr.Main([
       '-s', 'foo:bar:story:2019',
       '-d', 'H2345234FC33',
@@ -74,18 +73,20 @@ class UpdateWprTest(unittest.TestCase):
       mock.call().Cleanup(),
     ])
 
-  def testCleanupManual(self):
-    mock.patch('core.cli_helpers.Ask', return_value=False).start()
-    rmtree = mock.patch('shutil.rmtree').start()
+  @mock.patch('shutil.rmtree')
+  @mock.patch('core.cli_helpers.Ask', return_value=False)
+  def testCleanupManual(self, ask, rmtree):
+    del ask  # Unused.
     self.wpr_updater.Cleanup()
     self._comment.assert_called_once_with(
         'No problem. All logs will remain in /tmp/dir - feel free to remove '
         'that directory when done.')
     rmtree.assert_not_called()
 
-  def testCleanupAutomatic(self):
-    mock.patch('core.cli_helpers.Ask', return_value=True).start()
-    rmtree = mock.patch('shutil.rmtree').start()
+  @mock.patch('shutil.rmtree')
+  @mock.patch('core.cli_helpers.Ask', return_value=True)
+  def testCleanupAutomatic(self, ask, rmtree):
+    del ask  # Unused.
     self.wpr_updater.Cleanup()
     rmtree.assert_called_once_with('/tmp/dir', ignore_errors=True)
 
@@ -110,39 +111,35 @@ class UpdateWprTest(unittest.TestCase):
   @mock.patch('os.dup2')
   @mock.patch('webbrowser.open')
   def testOpenBrowser(self, webbrowser_open, os_dup2, os_close, os_dup):
-    del os_dup2, os_close, os_dup  # unused
+    del os_dup2, os_close, os_dup  # Unused.
     update_wpr._OpenBrowser('<url>')
     webbrowser_open.assert_called_once_with('<url>')
 
-  def testAutoRun(self):
-    # Mock low-level methods tested above.
-    mock.patch(WPR_UPDATER + '_GetBranchName', return_value='HEAD').start()
-    mock.patch(
-        WPR_UPDATER + 'WprUpdater._GetBranchIssueUrl',
-        return_value='<issue-url>').start()
-    mock.patch(WPR_UPDATER + 'WprUpdater._CreateBranch').start()
-    send_cl_for_review = mock.patch(WPR_UPDATER + '_SendCLForReview').start()
-    open_browser = mock.patch(WPR_UPDATER + '_OpenBrowser').start()
-
-    # Mock high-level methods tested below.
-    live_run = mock.patch(WPR_UPDATER + 'WprUpdater.LiveRun').start()
-    record_wpr = mock.patch(WPR_UPDATER + 'WprUpdater.RecordWpr').start()
-    replay_wpr = mock.patch(WPR_UPDATER + 'WprUpdater.ReplayWpr').start()
-    upload_wpr = mock.patch(
-        WPR_UPDATER + 'WprUpdater.UploadWpr', return_value=True).start()
-    upload_cl = mock.patch(
-        WPR_UPDATER + 'WprUpdater.UploadCL', return_value=0).start()
-    start_pinpoint_jobs = mock.patch(
-        WPR_UPDATER + 'WprUpdater.StartPinpointJobs',
-        return_value=(['<url1>', '<url2>', '<url3>'], [])).start()
-
-    # Mock user interaction.
-    mock.patch('core.cli_helpers.Ask', side_effect=[
-        True,        # Should script create a new branch automatically?
-        'continue',  # Should I continue with recording, ...?
-        'continue',  # Should I record and replay again, ...?
-    ]).start()
-
+  # Mock low-level methods tested above.
+  @mock.patch(WPR_UPDATER + '_GetBranchName', return_value='HEAD')
+  @mock.patch(WPR_UPDATER + 'WprUpdater._GetBranchIssueUrl',
+              return_value='<issue-url>')
+  @mock.patch(WPR_UPDATER + 'WprUpdater._CreateBranch')
+  @mock.patch(WPR_UPDATER + '_SendCLForReview')
+  @mock.patch(WPR_UPDATER + '_OpenBrowser')
+  # Mock high-level methods tested below.
+  @mock.patch(WPR_UPDATER + 'WprUpdater.LiveRun')
+  @mock.patch(WPR_UPDATER + 'WprUpdater.RecordWpr')
+  @mock.patch(WPR_UPDATER + 'WprUpdater.ReplayWpr')
+  @mock.patch(WPR_UPDATER + 'WprUpdater.UploadWpr', return_value=True)
+  @mock.patch(WPR_UPDATER + 'WprUpdater.UploadCL', return_value=0)
+  @mock.patch(WPR_UPDATER + 'WprUpdater.StartPinpointJobs',
+              return_value=(['<url1>', '<url2>', '<url3>'], []))
+  # Mock user interaction.
+  @mock.patch('core.cli_helpers.Ask', side_effect=[
+      True,         # Should script create a new branch automatically?
+      'continue',   # Should I continue with recording, ...?
+      'continue'])  # Should I record and replay again, ...?
+  def testAutoRun(
+      self, ask, start_pinpoint_jobs, upload_cl, upload_wpr, replay_wpr,
+      record_wpr, live_run, open_browser, send_cl_for_review, create_branch,
+      get_branch_issue_url, get_branch_name):
+    del ask, create_branch, get_branch_issue_url, get_branch_name  # Unused.
     self.wpr_updater.AutoRun()
 
     # Run once to make sure story works.
@@ -166,18 +163,16 @@ class UpdateWprTest(unittest.TestCase):
     # Open the CL in browser,
     open_browser.assert_called_once_with('<issue-url>')
 
-  def testLiveRun(self):
-    run_benchmark = mock.patch(
-        WPR_UPDATER + 'WprUpdater._RunSystemHealthMemoryBenchmark',
-        return_value='<out-file>').start()
-    print_run_info = mock.patch(
-        WPR_UPDATER + 'WprUpdater._PrintRunInfo').start()
+  @mock.patch(WPR_UPDATER + 'WprUpdater._RunSystemHealthMemoryBenchmark',
+              return_value='<out-file>')
+  @mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo')
+  def testLiveRun(self, print_run_info, run_benchmark):
     self.wpr_updater.LiveRun()
     run_benchmark.assert_called_once_with(log_name='live', live=True)
     print_run_info.assert_called_once_with('<out-file>')
 
-  def testRunBenchmark(self):
-    rename = mock.patch('os.rename').start()
+  @mock.patch('os.rename')
+  def testRunBenchmark(self, rename):
     self._check_output.return_value = '  <chrome-log>'
 
     self.wpr_updater._RunSystemHealthMemoryBenchmark('<log_name>', True)
@@ -207,14 +202,14 @@ class UpdateWprTest(unittest.TestCase):
         'console:error:js,foo,bar',
         'console:error:security,foo,bar',
     ]
-    self.wpr_updater._PrintResultsHTMLInfo('<outfile>')
+    update_wpr._PrintResultsHTMLInfo('<outfile>')
     self.assertListEqual(self._run.mock_calls, [
       mock.call(
         ['.../results2json', '<outfile>.results.html', '<outfile>.hist.json'],
-        env={'LC_ALL': 'en_US.UTF-8'}, ok_fail=False),
+        env={'LC_ALL': 'en_US.UTF-8'}),
       mock.call(
         ['.../histograms2csv', '<outfile>.hist.json', '<outfile>.hist.csv'],
-        env={'LC_ALL': 'en_US.UTF-8'}, ok_fail=False),
+        env={'LC_ALL': 'en_US.UTF-8'}),
     ])
     self._open.assert_called_once_with('<outfile>.hist.csv')
     self.assertListEqual(self._info.mock_calls, [
@@ -225,10 +220,8 @@ class UpdateWprTest(unittest.TestCase):
       mock.call('    [console:error:security]: bar')
     ])
 
-  def testPrintRunInfo(self):
-    print_results = mock.patch(
-        WPR_UPDATER + 'WprUpdater._PrintResultsHTMLInfo',
-        side_effect=[Exception()]).start()
+  @mock.patch(WPR_UPDATER + '_PrintResultsHTMLInfo', side_effect=[Exception()])
+  def testPrintRunInfo(self, print_results):
     self._check_output.return_value = '0\n'
     self.wpr_updater._PrintRunInfo('<outfile>', True)
     print_results.assert_called_once_with('<outfile>')
@@ -247,7 +240,7 @@ class UpdateWprTest(unittest.TestCase):
 
   @mock.patch('json.load', return_value={'issue_url': '<url>'})
   def testGetBranchIssueUrl(self, json_load):
-    del json_load  # unused
+    del json_load  # Unused.
     self.assertEqual(self.wpr_updater._GetBranchIssueUrl(), '<url>')
     self._check_output.assert_called_once_with([
       'git', 'cl', 'issue', '--json', '/tmp/dir/git_cl_issue.json'])
@@ -262,18 +255,28 @@ class UpdateWprTest(unittest.TestCase):
       mock.call('.../data/dir/<archive>.sha1'),
     ])
 
-  def testRecordWprDesktop(self):
-    mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo').start()
-    mock.patch(WPR_UPDATER + 'WprUpdater._DeleteExistingWpr').start()
+  @mock.patch('os.remove')
+  def testDoesNotDeleteReusedWpr(self, os_remove):
+    self._open.return_value.__enter__.return_value.read.return_value = (
+        '{"archives": {"<story>": {"DEFAULT": "<archive>"}, '
+        '"<other>": {"DEFAULT": "foo", "linux": "<arhive>"}}}')
+    self.wpr_updater._DeleteExistingWpr()
+    os_remove.assert_not_called()
+
+  @mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo')
+  @mock.patch(WPR_UPDATER + 'WprUpdater._DeleteExistingWpr')
+  def testRecordWprDesktop(self, delete_existing_wpr, print_run_info):
+    del delete_existing_wpr, print_run_info  # Unused.
     self.wpr_updater.RecordWpr()
     self._check_log.assert_called_once_with([
       '.../record_wpr', '--story-filter=^\\<story\\>$',
       '--browser=system', 'desktop_system_health_story_set'
     ], env={'LC_ALL': 'en_US.UTF-8'}, log_path='/tmp/dir/record_<tstamp>')
 
-  def testRecordWprMobile(self):
-    mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo').start()
-    mock.patch(WPR_UPDATER + 'WprUpdater._DeleteExistingWpr').start()
+  @mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo')
+  @mock.patch(WPR_UPDATER + 'WprUpdater._DeleteExistingWpr')
+  def testRecordWprMobile(self, delete_existing_wpr, print_run_info):
+    del delete_existing_wpr, print_run_info  # Unused.
     self.wpr_updater.device_id = '<serial>'
     self.wpr_updater.RecordWpr()
     self._check_log.assert_called_once_with([
@@ -282,20 +285,18 @@ class UpdateWprTest(unittest.TestCase):
       'mobile_system_health_story_set'
     ], env={'LC_ALL': 'en_US.UTF-8'}, log_path='/tmp/dir/record_<tstamp>')
 
-  def testReplayWpr(self):
-    print_run_info = mock.patch(
-        WPR_UPDATER + 'WprUpdater._PrintRunInfo').start()
-    run_benchmark = mock.patch(
-        WPR_UPDATER + 'WprUpdater._RunSystemHealthMemoryBenchmark',
-        return_value='<out-file>').start()
+  @mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo')
+  @mock.patch(WPR_UPDATER + 'WprUpdater._RunSystemHealthMemoryBenchmark',
+              return_value='<out-file>')
+  def testReplayWpr(self, run_benchmark, print_run_info):
     self.wpr_updater.ReplayWpr()
     run_benchmark.assert_called_once_with(log_name='replay', live=False)
     print_run_info.assert_called_once_with('<out-file>')
 
-  def testUploadWPR(self):
-    mock.patch(
-        WPR_UPDATER + 'WprUpdater._ExistingWpr',
-        return_value='<archive>').start()
+  @mock.patch(WPR_UPDATER + 'WprUpdater._ExistingWpr',
+              return_value=('<archive>', False))
+  def testUploadWPR(self, existing_wpr):
+    del existing_wpr  # Unused.
     self.wpr_updater.UploadWpr()
     self.assertListEqual(self._run.mock_calls, [
       mock.call(['upload_to_google_storage.py',
@@ -303,7 +304,9 @@ class UpdateWprTest(unittest.TestCase):
       mock.call(['git', 'add', '<archive>.sha1'])
     ])
 
-  def testUploadCL(self):
+  @mock.patch('subprocess.call', return_value=1)
+  def testUploadCL(self, subprocess_call):
+    del subprocess_call  # Unused.
     self._run.return_value = 42
     self.assertEqual(self.wpr_updater.UploadCL(), 42)
     self.assertListEqual(self._run.mock_calls, [
@@ -317,13 +320,12 @@ class UpdateWprTest(unittest.TestCase):
       ], ok_fail=True),
     ])
 
-  def testStartPinPointJobsDesktop(self):
-    mock.patch(
-        WPR_UPDATER + 'WprUpdater._GetBranchIssueUrl',
-        return_value='<issue-url>').start()
-    new_job = mock.patch(
-        'core.services.pinpoint_service.NewJob',
-        return_value={'jobUrl': '<url>'}).start()
+  @mock.patch(WPR_UPDATER + 'WprUpdater._GetBranchIssueUrl',
+              return_value='<issue-url>')
+  @mock.patch('core.services.pinpoint_service.NewJob',
+              return_value={'jobUrl': '<url>'})
+  def testStartPinPointJobsDesktop(self, new_job, get_branch_issue_url):
+    del get_branch_issue_url  # Unused.
     self.assertEqual(
         self.wpr_updater.StartPinpointJobs(),
         (['<url>', '<url>', '<url>'], []))
@@ -339,15 +341,14 @@ class UpdateWprTest(unittest.TestCase):
         benchmark='system_health.common_desktop')
     self.assertEqual(new_job.call_count, 3)
 
-  def testStartPinPointJobsMobileFail(self):
-    mock.patch(
-        WPR_UPDATER + 'WprUpdater._GetBranchIssueUrl',
-        return_value='<issue-url>').start()
+  @mock.patch(WPR_UPDATER + 'WprUpdater._GetBranchIssueUrl',
+              return_value='<issue-url>')
+  @mock.patch('core.services.pinpoint_service.NewJob',
+              side_effect=request.ServerError(
+                  mock.Mock(), mock.Mock(status=500), ''))
+  def testStartPinPointJobsMobileFail(self, new_job, get_branch_issue_url):
+    del get_branch_issue_url  # Unused.
     self.wpr_updater.device_id = '<serial>'
-    new_job = mock.patch(
-        'core.services.pinpoint_service.NewJob',
-        side_effect=request.ServerError(
-            mock.Mock(), mock.Mock(status=500), '')).start()
     self.assertEqual(
         self.wpr_updater.StartPinpointJobs(['<config>']), ([], ['<config>']))
     new_job.assert_called_once_with(

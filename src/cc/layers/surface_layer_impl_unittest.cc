@@ -243,13 +243,8 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   AppendQuadsData data;
   surface_layer_impl->AppendQuads(render_pass.get(), &data);
-  // As the primary and fallback SurfaceInfos match, there is no reason to
-  // add the primary surface ID to |activation_dependencies| because it is not
-  // an unresolved dependency. The fallback surface will already be added as a
-  // reference in referenced_surfaces. Since the primary and fallback surface
-  // IDs match, there is no reason to propagate the deadline.
-  EXPECT_THAT(data.activation_dependencies, testing::IsEmpty());
-  EXPECT_EQ(base::nullopt, data.deadline_in_frames);
+  EXPECT_THAT(data.activation_dependencies, UnorderedElementsAre(surface_id1));
+  EXPECT_EQ(2u, data.deadline_in_frames);
 
   ASSERT_EQ(1u, render_pass->quad_list.size());
   const viz::SurfaceDrawQuad* surface_draw_quad1 =

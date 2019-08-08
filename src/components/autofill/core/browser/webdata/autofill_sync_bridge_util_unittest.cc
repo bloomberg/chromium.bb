@@ -45,11 +45,12 @@ class TestAutofillTable : public AutofillTable {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillTable);
 };
 
-EntityData SpecificsToEntity(const sync_pb::AutofillWalletSpecifics& specifics,
-                             const std::string& client_tag) {
-  EntityData data;
-  *data.specifics.mutable_autofill_wallet() = specifics;
-  data.client_tag_hash =
+std::unique_ptr<EntityData> SpecificsToEntity(
+    const sync_pb::AutofillWalletSpecifics& specifics,
+    const std::string& client_tag) {
+  auto data = std::make_unique<syncer::EntityData>();
+  *data->specifics.mutable_autofill_wallet() = specifics;
+  data->client_tag_hash =
       syncer::GenerateSyncableHash(syncer::AUTOFILL_WALLET_DATA, client_tag);
   return data;
 }
@@ -72,20 +73,17 @@ TEST_F(AutofillSyncBridgeUtilTest, PopulateWalletTypesFromSyncData) {
   entity_data.push_back(EntityChange::CreateAdd(
       address_id,
       SpecificsToEntity(CreateAutofillWalletSpecificsForAddress(address_id),
-                        /*client_tag=*/"address-address1")
-          .PassToPtr()));
+                        /*client_tag=*/"address-address1")));
   entity_data.push_back(EntityChange::CreateAdd(
       "card1",
       SpecificsToEntity(CreateAutofillWalletSpecificsForCard(
                             /*id=*/"card1", /*billing_address_id=*/address_id),
-                        /*client_tag=*/"card-card1")
-          .PassToPtr()));
+                        /*client_tag=*/"card-card1")));
   entity_data.push_back(EntityChange::CreateAdd(
       "deadbeef",
       SpecificsToEntity(CreateAutofillWalletSpecificsForPaymentsCustomerData(
                             /*specifics_id=*/"deadbeef"),
-                        /*client_tag=*/"customer-deadbeef")
-          .PassToPtr()));
+                        /*client_tag=*/"customer-deadbeef")));
 
   std::vector<CreditCard> wallet_cards;
   std::vector<AutofillProfile> wallet_addresses;

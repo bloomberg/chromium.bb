@@ -5,6 +5,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -17,6 +18,7 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -32,6 +34,25 @@
 namespace views {
 
 namespace {
+
+// Override base functionality of Widget to give bubble dialogs access to the
+// theme provider of the window they're anchored to.
+class BubbleWidget : public Widget {
+ public:
+  BubbleWidget() = default;
+
+  // Widget:
+  const ui::ThemeProvider* GetThemeProvider() const override {
+    BubbleDialogDelegateView* const bubble_delegate =
+        static_cast<BubbleDialogDelegateView*>(widget_delegate());
+    if (!bubble_delegate || !bubble_delegate->anchor_widget())
+      return Widget::GetThemeProvider();
+    return bubble_delegate->anchor_widget()->GetThemeProvider();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BubbleWidget);
+};
 
 // The frame view for bubble dialog widgets. These are not user-sizable so have
 // simplified logic for minimum and maximum sizes to avoid repeated calls to
@@ -59,7 +80,7 @@ bool CustomShadowsSupported() {
 
 // Create a widget to host the bubble.
 Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
-  Widget* bubble_widget = new Widget();
+  Widget* bubble_widget = new BubbleWidget();
   Widget::InitParams bubble_params(Widget::InitParams::TYPE_BUBBLE);
   bubble_params.delegate = bubble;
   bubble_params.opacity = CustomShadowsSupported()
@@ -153,10 +174,10 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
   std::unique_ptr<BubbleBorder> border =
       std::make_unique<BubbleBorder>(adjusted_arrow, GetShadow(), color());
   if (CustomShadowsSupported() && ShouldHaveRoundCorners()) {
-    // TODO(sajadm): Remove when fixing https://crbug.com/822075 and use
-    // EMPHASIS_HIGH metric values from the LayoutProvider to get the
-    // corner radius.
-    border->SetCornerRadius(2);
+    border->SetCornerRadius(
+        base::FeatureList::IsEnabled(features::kEnableMDRoundedCornersOnDialogs)
+            ? provider->GetCornerRadiusMetric(views::EMPHASIS_HIGH)
+            : 2);
   }
 
   frame->SetBubbleBorder(std::move(border));
@@ -179,7 +200,7 @@ void BubbleDialogDelegateView::OnWidgetClosing(Widget* widget) {
 
 void BubbleDialogDelegateView::OnWidgetDestroying(Widget* widget) {
   if (anchor_widget() == widget)
-    SetAnchorView(NULL);
+    SetAnchorView(nullptr);
 }
 
 void BubbleDialogDelegateView::OnWidgetVisibilityChanging(Widget* widget,
@@ -203,7 +224,7 @@ void BubbleDialogDelegateView::OnWidgetActivationChanged(Widget* widget,
                                                          bool active) {
 #if defined(OS_MACOSX)
   // Install |mac_bubble_closer_| the first time the widget becomes active.
-  if (active && !mac_bubble_closer_ && GetWidget()) {
+  if (widget == GetWidget() && active && !mac_bubble_closer_) {
     mac_bubble_closer_ = std::make_unique<ui::BubbleCloser>(
         GetWidget()->GetNativeWindow().GetNativeNSWindow(),
         base::BindRepeating(&BubbleDialogDelegateView::OnDeactivate,
@@ -313,12 +334,17 @@ gfx::Rect BubbleDialogDelegateView::GetBubbleBounds() {
   gfx::Rect anchor_rect = GetAnchorRect();
   bool has_anchor = GetAnchorView() || anchor_rect != gfx::Rect();
   return GetBubbleFrameView()->GetUpdatedWindowBounds(
-      anchor_rect, GetWidget()->client_view()->GetPreferredSize(),
+      anchor_rect, arrow(), GetWidget()->client_view()->GetPreferredSize(),
       adjust_if_offscreen_ && !anchor_minimized && has_anchor);
 }
 
-ax::mojom::Role BubbleDialogDelegateView::GetAccessibleWindowRole() const {
-  // We return |ax::mojom::Role::kAlertDialog| which will make screen
+ax::mojom::Role BubbleDialogDelegateView::GetAccessibleWindowRole() {
+  // If something in the dialog has initial focus, use the dialog role.
+  // Screen readers understand what to announce when focus moves within one.
+  if (GetInitiallyFocusedView())
+    return ax::mojom::Role::kDialog;
+
+  // Otherwise, return |ax::mojom::Role::kAlertDialog| which will make screen
   // readers announce the contents of the bubble dialog as soon as it appears,
   // as long as we also fire |ax::mojom::Event::kAlert|.
   return ax::mojom::Role::kAlertDialog;
@@ -355,7 +381,7 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
         UpdateHighlightedButton(false);
       }
       anchor_widget_->RemoveObserver(this);
-      anchor_widget_ = NULL;
+      anchor_widget_ = nullptr;
     }
     if (anchor_view) {
       anchor_widget_ = anchor_view->GetWidget();
@@ -407,8 +433,8 @@ void BubbleDialogDelegateView::SizeToContents() {
 
 BubbleFrameView* BubbleDialogDelegateView::GetBubbleFrameView() const {
   const NonClientView* view =
-      GetWidget() ? GetWidget()->non_client_view() : NULL;
-  return view ? static_cast<BubbleFrameView*>(view->frame_view()) : NULL;
+      GetWidget() ? GetWidget()->non_client_view() : nullptr;
+  return view ? static_cast<BubbleFrameView*>(view->frame_view()) : nullptr;
 }
 
 void BubbleDialogDelegateView::UpdateColorsFromTheme(
@@ -452,8 +478,10 @@ void BubbleDialogDelegateView::OnDeactivate() {
 }
 
 void BubbleDialogDelegateView::UpdateAnchorWidgetRenderState(bool visible) {
-  if (!anchor_widget() || !anchor_widget()->GetTopLevelWidget())
+  if (!anchor_widget() || !anchor_widget()->GetTopLevelWidget() ||
+      !CanActivate()) {
     return;
+  }
 
   anchor_widget()->GetTopLevelWidget()->SetAlwaysRenderAsActive(visible);
 }

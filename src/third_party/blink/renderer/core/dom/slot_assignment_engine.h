@@ -14,10 +14,6 @@ class ShadowRoot;
 class SlotAssignmentEngine final
     : public GarbageCollected<SlotAssignmentEngine> {
  public:
-  static SlotAssignmentEngine* Create() {
-    return MakeGarbageCollected<SlotAssignmentEngine>();
-  }
-
   explicit SlotAssignmentEngine();
 
   void AddShadowRootNeedingRecalc(ShadowRoot&);

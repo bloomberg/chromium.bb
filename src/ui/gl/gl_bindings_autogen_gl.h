@@ -128,6 +128,22 @@ typedef void(GL_BINDING_CALL* glClearColorProc)(GLclampf red,
 typedef void(GL_BINDING_CALL* glClearDepthProc)(GLclampd depth);
 typedef void(GL_BINDING_CALL* glClearDepthfProc)(GLclampf depth);
 typedef void(GL_BINDING_CALL* glClearStencilProc)(GLint s);
+typedef void(GL_BINDING_CALL* glClearTexImageProc)(GLuint texture,
+                                                   GLint level,
+                                                   GLenum format,
+                                                   GLenum type,
+                                                   const GLvoid* data);
+typedef void(GL_BINDING_CALL* glClearTexSubImageProc)(GLuint texture,
+                                                      GLint level,
+                                                      GLint xoffset,
+                                                      GLint yoffset,
+                                                      GLint zoffset,
+                                                      GLint width,
+                                                      GLint height,
+                                                      GLint depth,
+                                                      GLenum format,
+                                                      GLenum type,
+                                                      const GLvoid* data);
 typedef GLenum(GL_BINDING_CALL* glClientWaitSyncProc)(GLsync sync,
                                                       GLbitfield flags,
                                                       GLuint64 timeout);
@@ -446,7 +462,7 @@ typedef void(GL_BINDING_CALL* glFramebufferTextureLayerProc)(GLenum target,
                                                              GLuint texture,
                                                              GLint level,
                                                              GLint layer);
-typedef void(GL_BINDING_CALL* glFramebufferTextureMultiviewLayeredANGLEProc)(
+typedef void(GL_BINDING_CALL* glFramebufferTextureMultiviewOVRProc)(
     GLenum target,
     GLenum attachment,
     GLuint texture,
@@ -1824,7 +1840,6 @@ struct ExtensionsGL {
   bool b_GL_ANGLE_framebuffer_multisample;
   bool b_GL_ANGLE_instanced_arrays;
   bool b_GL_ANGLE_multi_draw;
-  bool b_GL_ANGLE_multiview;
   bool b_GL_ANGLE_request_extension;
   bool b_GL_ANGLE_robust_client_memory;
   bool b_GL_ANGLE_translated_shader_source;
@@ -1832,6 +1847,7 @@ struct ExtensionsGL {
   bool b_GL_APPLE_vertex_array_object;
   bool b_GL_ARB_ES2_compatibility;
   bool b_GL_ARB_blend_func_extended;
+  bool b_GL_ARB_clear_texture;
   bool b_GL_ARB_draw_buffers;
   bool b_GL_ARB_draw_instanced;
   bool b_GL_ARB_framebuffer_object;
@@ -1857,6 +1873,7 @@ struct ExtensionsGL {
   bool b_GL_CHROMIUM_glgetstringi_hack;
   bool b_GL_CHROMIUM_path_rendering;
   bool b_GL_EXT_blend_func_extended;
+  bool b_GL_EXT_clear_texture;
   bool b_GL_EXT_debug_marker;
   bool b_GL_EXT_direct_state_access;
   bool b_GL_EXT_discard_framebuffer;
@@ -1899,6 +1916,8 @@ struct ExtensionsGL {
   bool b_GL_OES_mapbuffer;
   bool b_GL_OES_texture_buffer;
   bool b_GL_OES_vertex_array_object;
+  bool b_GL_OVR_multiview;
+  bool b_GL_OVR_multiview2;
 };
 
 struct ProcsGL {
@@ -1945,6 +1964,8 @@ struct ProcsGL {
   glClearDepthProc glClearDepthFn;
   glClearDepthfProc glClearDepthfFn;
   glClearStencilProc glClearStencilFn;
+  glClearTexImageProc glClearTexImageFn;
+  glClearTexSubImageProc glClearTexSubImageFn;
   glClientWaitSyncProc glClientWaitSyncFn;
   glColorMaskProc glColorMaskFn;
   glCompileShaderProc glCompileShaderFn;
@@ -2031,8 +2052,7 @@ struct ProcsGL {
   glFramebufferTexture2DMultisampleEXTProc
       glFramebufferTexture2DMultisampleEXTFn;
   glFramebufferTextureLayerProc glFramebufferTextureLayerFn;
-  glFramebufferTextureMultiviewLayeredANGLEProc
-      glFramebufferTextureMultiviewLayeredANGLEFn;
+  glFramebufferTextureMultiviewOVRProc glFramebufferTextureMultiviewOVRFn;
   glFrontFaceProc glFrontFaceFn;
   glGenBuffersARBProc glGenBuffersARBFn;
   glGenerateMipmapEXTProc glGenerateMipmapEXTFn;
@@ -2500,6 +2520,22 @@ class GL_EXPORT GLApi {
   virtual void glClearDepthFn(GLclampd depth) = 0;
   virtual void glClearDepthfFn(GLclampf depth) = 0;
   virtual void glClearStencilFn(GLint s) = 0;
+  virtual void glClearTexImageFn(GLuint texture,
+                                 GLint level,
+                                 GLenum format,
+                                 GLenum type,
+                                 const GLvoid* data) = 0;
+  virtual void glClearTexSubImageFn(GLuint texture,
+                                    GLint level,
+                                    GLint xoffset,
+                                    GLint yoffset,
+                                    GLint zoffset,
+                                    GLint width,
+                                    GLint height,
+                                    GLint depth,
+                                    GLenum format,
+                                    GLenum type,
+                                    const GLvoid* data) = 0;
   virtual GLenum glClientWaitSyncFn(GLsync sync,
                                     GLbitfield flags,
                                     GLuint64 timeout) = 0;
@@ -2778,13 +2814,12 @@ class GL_EXPORT GLApi {
                                            GLuint texture,
                                            GLint level,
                                            GLint layer) = 0;
-  virtual void glFramebufferTextureMultiviewLayeredANGLEFn(
-      GLenum target,
-      GLenum attachment,
-      GLuint texture,
-      GLint level,
-      GLint baseViewIndex,
-      GLsizei numViews) = 0;
+  virtual void glFramebufferTextureMultiviewOVRFn(GLenum target,
+                                                  GLenum attachment,
+                                                  GLuint texture,
+                                                  GLint level,
+                                                  GLint baseViewIndex,
+                                                  GLsizei numViews) = 0;
   virtual void glFrontFaceFn(GLenum mode) = 0;
   virtual void glGenBuffersARBFn(GLsizei n, GLuint* buffers) = 0;
   virtual void glGenerateMipmapEXTFn(GLenum target) = 0;
@@ -4067,6 +4102,8 @@ class GL_EXPORT GLApi {
 #define glClearDepth ::gl::g_current_gl_context->glClearDepthFn
 #define glClearDepthf ::gl::g_current_gl_context->glClearDepthfFn
 #define glClearStencil ::gl::g_current_gl_context->glClearStencilFn
+#define glClearTexImage ::gl::g_current_gl_context->glClearTexImageFn
+#define glClearTexSubImage ::gl::g_current_gl_context->glClearTexSubImageFn
 #define glClientWaitSync ::gl::g_current_gl_context->glClientWaitSyncFn
 #define glColorMask ::gl::g_current_gl_context->glColorMaskFn
 #define glCompileShader ::gl::g_current_gl_context->glCompileShaderFn
@@ -4188,8 +4225,8 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glFramebufferTexture2DMultisampleEXTFn
 #define glFramebufferTextureLayer \
   ::gl::g_current_gl_context->glFramebufferTextureLayerFn
-#define glFramebufferTextureMultiviewLayeredANGLE \
-  ::gl::g_current_gl_context->glFramebufferTextureMultiviewLayeredANGLEFn
+#define glFramebufferTextureMultiviewOVR \
+  ::gl::g_current_gl_context->glFramebufferTextureMultiviewOVRFn
 #define glFrontFace ::gl::g_current_gl_context->glFrontFaceFn
 #define glGenBuffersARB ::gl::g_current_gl_context->glGenBuffersARBFn
 #define glGenerateMipmapEXT ::gl::g_current_gl_context->glGenerateMipmapEXTFn

@@ -36,8 +36,8 @@ function EntryLocationImpl(volumeInfo, rootType, isRootEntry, isReadOnly) {
       this.rootType === VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME ||
       this.rootType === VolumeManagerCommon.RootType.DRIVE_RECENT ||
       this.rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE ||
-      this.rootType === VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT ||
-      this.rootType === VolumeManagerCommon.RootType.TEAM_DRIVE ||
+      this.rootType === VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT ||
+      this.rootType === VolumeManagerCommon.RootType.SHARED_DRIVE ||
       this.rootType === VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
       this.rootType === VolumeManagerCommon.RootType.COMPUTER;
 
@@ -46,7 +46,7 @@ function EntryLocationImpl(volumeInfo, rootType, isRootEntry, isReadOnly) {
 
   /** @type{boolean} */
   this.hasFixedLabel = this.isRootEntry &&
-      (rootType !== VolumeManagerCommon.RootType.TEAM_DRIVE &&
+      (rootType !== VolumeManagerCommon.RootType.SHARED_DRIVE &&
        rootType !== VolumeManagerCommon.RootType.COMPUTER &&
        rootType !== VolumeManagerCommon.RootType.REMOVABLE);
 

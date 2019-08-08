@@ -11,7 +11,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
 #include "net/base/network_change_notifier.h"
@@ -102,7 +102,7 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
 
   mojo::core::Init();
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("It2Me");
+  base::ThreadPool::CreateAndStartWithDefaultParams("It2Me");
 
   remoting::LoadResources("");
 
@@ -232,7 +232,7 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
   run_loop.Run();
 
   // Block until tasks blocking shutdown have completed their execution.
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
 
   return kSuccessExitCode;
 }

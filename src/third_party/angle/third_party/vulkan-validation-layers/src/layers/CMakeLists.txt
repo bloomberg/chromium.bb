@@ -156,14 +156,7 @@ if(WIN32)
     # Applies to all configurations
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     # Avoid: fatal error C1128: number of sections exceeded object file format limit: compile with /bigobj
-    set_source_files_properties(core_validation.cpp
-                                core_dispatch.cpp
-                                thread_safety.cpp
-                                parameter_validation_utils.cpp
-                                chassis.cpp
-                                PROPERTIES
-                                COMPILE_FLAGS
-                                "/bigobj")
+    add_compile_options("/bigobj")
     # Turn off transitional "changed behavior" warning message for Visual Studio versions prior to 2015. The changed behavior is
     # that constructor initializers are now fixed to clear the struct members.
     add_compile_options("$<$<AND:$<CXX_COMPILER_ID:MSVC>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,19>>:/wd4351>")
@@ -199,7 +192,7 @@ set_target_properties(VulkanVL_generate_chassis_files PROPERTIES FOLDER ${LAYERS
 
 # Inter-layer dependencies are temporarily necessary to serialize layer builds which avoids contention for common generated files
 if(BUILD_LAYERS)
-    AddVkLayer(core_validation "" core_dispatch.cpp core_validation.cpp convert_to_renderpass2.cpp descriptor_sets.cpp buffer_validation.cpp shader_validation.cpp gpu_validation.cpp xxhash.c)
+    AddVkLayer(core_validation "BUILD_CORE_VALIDATION" chassis.cpp layer_chassis_dispatch.cpp core_validation.cpp convert_to_renderpass2.cpp descriptor_sets.cpp buffer_validation.cpp shader_validation.cpp gpu_validation.cpp xxhash.c)
     add_dependencies(VkLayer_core_validation VulkanVL_generate_chassis_files)
     AddVkLayer(object_lifetimes "BUILD_OBJECT_TRACKER" object_tracker.cpp object_tracker.h object_tracker_utils.cpp chassis.cpp layer_chassis_dispatch.cpp)
     add_dependencies(VkLayer_object_lifetimes VkLayer_core_validation)

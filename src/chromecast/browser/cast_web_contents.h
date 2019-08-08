@@ -28,6 +28,70 @@ struct RendererFeature {
 };
 
 // Simplified WebContents wrapper class for Cast platforms.
+//
+// Proper usage of content::WebContents relies on understanding the meaning
+// behind various WebContentsObserver methods, and then translating those
+// signals into some concrete state. CastWebContents does *not* own the
+// underlying WebContents (usually whatever class implements
+// content::WebContentsDelegate is the actual owner).
+//
+// =============================================================================
+// Lifetime
+// =============================================================================
+// CastWebContents *must* be created before WebContents begins loading any
+// content. Once content begins loading (via CWC::LoadUrl() or one of the
+// WebContents navigation APIs), CastWebContents will calculate its state based
+// on the status of the WebContents' *main* RenderFrame. Events from sub-frames
+// (e.g. iframes) are ignored, since we expect the web app to take care of
+// sub-frame errors.
+//
+// We consider the CastWebContents to be in a LOADED state when the content of
+// the main frame is fully loaded and running (all resources fetched, JS is
+// running). Iframes might still be loading in this case, but in general we
+// consider the page to be in a presentable state at this stage. It is
+// appropriate to display the WebContents to the user.
+//
+// During or after the page is loaded, there are multiple error conditions that
+// can occur. The following events will cause the page to enter an ERROR state:
+//
+// 1. If the main frame is served an HTTP error page (such as a 404 page), then
+//    it means the desired content wasn't loaded.
+//
+// 2. If the main frame fails to load, such as when the browser blocked the URL
+//    request, we treat this as an error.
+//
+// 3. The RenderProcess for the main frame could crash, so the page is not in a
+//    usable state.
+//
+// The CastWebContents user can respond to these errors in a few ways: The
+// content can be reloaded, or the entire page activity can be cancelled. If we
+// totally cancel the activity, we prefer to notify the user with an error
+// screen or visible/audible error message. Otherwise, a silent retry is
+// preferred.
+//
+// CastWebContents can be used to close the underlying WebContents gracefully
+// via CWC::Close(). This initiates web page tear-down logic so that the web
+// app has a chance to perform its own finalization logic in JS. Next, we call
+// WebContents::ClosePage(), which defers the page closure logic to the
+// content::WebContentsDelegate. Usually, it will run its own finalization
+// logic and then destroy the WebContents. CastWebContents will be notified of
+// the WebContents destruction and enter the DESTROYED state. In the event
+// the page isn't destroyed, the page will enter the CLOSED state automatically
+// after a timeout. CastWebContents users should not try to reload the page, as
+// page closure is intentional.
+//
+// The web app may decide to close itself (such as via "window.close()" in JS).
+// This is similar to initiating the close flow via CWC::Close(), with the end
+// result being the same. We consider this an intentional closure, and should
+// not attempt to reload the page.
+//
+// Once CastWebContents is in the DESTROYED state, it is not really usable
+// anymore; most of the methods will simply no-op, and no more observer signals
+// will be emitted.
+//
+// CastWebContents can be deleted at any time, *except* during Observer
+// notifications. If the owner wants to destroy CastWebContents as a result of
+// an Observer event, it should post a task to destroy CastWebContents.
 class CastWebContents {
  public:
   class Delegate {
@@ -39,17 +103,19 @@ class CastWebContents {
     // Called when the page has stopped. e.g.: A 404 occurred when loading the
     // page or if the render process for the main frame crashes. |error_code|
     // will return a net::Error describing the failure, or net::OK if the page
-    // closed naturally.
+    // closed intentionally.
     //
     // After this method, the page state will be one of the following:
-    // CLOSED: Page was closed as expected and the WebContents exists.
+    // CLOSED: Page was closed as expected and the WebContents exists. The page
+    //     should generally not be reloaded, since the page closure was
+    //     triggered intentionally.
+    // ERROR: Page is in an error state. It should be reloaded or deleted.
     // DESTROYED: Page was closed due to deletion of WebContents. The
     //     CastWebContents instance is no longer usable and should be deleted.
-    // ERROR: Page is in an error state. It should be reloaded or deleted.
     virtual void OnPageStopped(CastWebContents* cast_web_contents,
                                int error_code) = 0;
 
-    // Notify that a inner WebContents was created. |inner_contents| is created
+    // Notify that an inner WebContents was created. |inner_contents| is created
     // in a default-initialized state with no delegate, and can be safely
     // initialized by the delegate.
     virtual void InnerContentsCreated(CastWebContents* inner_contents,
@@ -65,6 +131,9 @@ class CastWebContents {
 
     virtual void RenderFrameCreated(int render_process_id,
                                     int render_frame_id) {}
+
+    // Notifies that a resource for the main frame failed to load.
+    virtual void ResourceLoadFailed(CastWebContents* cast_web_contents) {}
 
     // Adds |this| to the ObserverList in the implementation of
     // |cast_web_contents|.
@@ -83,10 +152,16 @@ class CastWebContents {
     CastWebContents* cast_web_contents_;
   };
 
+  // Initialization parameters for CastWebContents.
   struct InitParams {
     Delegate* delegate;
+    // Whether the underlying WebContents is exposed to the remote debugger.
     bool enabled_for_dev;
+    // Chooses a media renderer for the WebContents.
     bool use_cma_renderer;
+    // Whether the WebContents is a root native window, or if it is embedded in
+    // another WebContents (see Delegate::InnerContentsCreated()).
+    bool is_root_window = false;
   };
 
   // Page state for the main frame.
@@ -99,8 +174,15 @@ class CastWebContents {
     ERROR,      // Main frame is in an error state.
   };
 
+  static std::vector<CastWebContents*>& GetAll();
+
   CastWebContents() = default;
   virtual ~CastWebContents() = default;
+
+  // Tab identifier for the WebContents, mainly used by the tabs extension API.
+  // Tab IDs may be re-used, but no two live CastWebContents should have the
+  // same tab ID at any given time.
+  virtual int tab_id() const = 0;
 
   // TODO(seantopping): Hide this, clients shouldn't use WebContents directly.
   virtual content::WebContents* web_contents() const = 0;
@@ -134,8 +216,8 @@ class CastWebContents {
 
   // Stop the page immediately. This will automatically invoke
   // Delegate::OnPageStopped(error_code), allowing the delegate to delete or
-  // reload the page without waiting for page teardown, which may be handled
-  // independently.
+  // reload the page without waiting for the WebContents owner to tear down the
+  // page.
   virtual void Stop(int error_code) = 0;
 
   // Used to add or remove |observer| to the ObserverList in the implementation.

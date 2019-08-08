@@ -130,7 +130,7 @@ class ProfileMetrics {
     // User opened the user menu, and opened the user manager.
     PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER,
     // User opened the user menu, and selected Go Incognito.
-    PROFILE_DESKTOP_MENU_GO_INCOGNITO,
+    DEPRECATED_PROFILE_DESKTOP_MENU_GO_INCOGNITO,
     NUM_PROFILE_DESKTOP_MENU_METRICS,
   };
 
@@ -166,7 +166,6 @@ class ProfileMetrics {
   };
 #endif  // defined(OS_ANDROID)
 
-  static void UpdateReportedProfilesStatistics(ProfileManager* manager);
   // Count and return summary information about the profiles currently in the
   // |manager|. This information is returned in the output variable |counts|.
   static bool CountProfileInformation(ProfileManager* manager,
@@ -174,11 +173,6 @@ class ProfileMetrics {
 
 #if !defined(OS_ANDROID)
   static void LogNumberOfProfileSwitches();
-#endif
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // Update OS level tracking of profile counts.
-  static void UpdateReportedOSProfileStatistics(size_t active, size_t signedin);
 #endif
 
   static void LogNumberOfProfiles(ProfileManager* manager);

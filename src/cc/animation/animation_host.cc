@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
@@ -130,6 +129,11 @@ void AnimationHost::RemoveAnimationTimeline(
   SetNeedsPushProperties();
 }
 
+void AnimationHost::InitClientAnimationState() {
+  for (auto map_entry : element_to_animations_map_)
+    map_entry.second->InitClientAnimationState();
+}
+
 void AnimationHost::RegisterElement(ElementId element_id,
                                     ElementListType list_type) {
   scoped_refptr<ElementAnimations> element_animations =
@@ -195,6 +199,8 @@ void AnimationHost::SetMutatorHostClient(MutatorHostClient* client) {
     return;
 
   mutator_host_client_ = client;
+  if (mutator_host_client_ && needs_push_properties_)
+    mutator_host_client_->SetMutatorsNeedCommit();
 }
 
 void AnimationHost::SetNeedsCommit() {
@@ -206,6 +212,8 @@ void AnimationHost::SetNeedsCommit() {
 
 void AnimationHost::SetNeedsPushProperties() {
   needs_push_properties_ = true;
+  if (mutator_host_client_)
+    mutator_host_client_->SetMutatorsNeedCommit();
 }
 
 void AnimationHost::PushPropertiesTo(MutatorHost* mutator_host_impl) {
@@ -330,8 +338,8 @@ void AnimationHost::TickMutator(base::TimeTicks monotonic_time,
       weak_factory_.GetWeakPtr(), tree_type);
 
   MutateQueuingStrategy queuing_strategy =
-      is_active_tree ? MutateQueuingStrategy::kDrop
-                     : MutateQueuingStrategy::kQueueAndReplace;
+      is_active_tree ? MutateQueuingStrategy::kQueueAndReplaceNormalPriority
+                     : MutateQueuingStrategy::kQueueHighPriority;
   if (mutator_->Mutate(std::move(state), queuing_strategy,
                        std::move(on_done))) {
     mutator_host_client_->NotifyAnimationWorkletStateChange(
@@ -409,8 +417,8 @@ void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time,
   TickMutator(monotonic_time, scroll_tree, true /* is_active_tree */);
 }
 
-void AnimationHost::TickWorkletAnimations(base::TimeTicks monotonic_time) {
-  TickAnimationsIf(ticking_animations_, monotonic_time,
+void AnimationHost::TickWorkletAnimations() {
+  TickAnimationsIf(ticking_animations_, base::TimeTicks(),
                    [](const Animation& animation) {
                      return animation.IsWorkletAnimation();
                    });
@@ -591,24 +599,18 @@ bool AnimationHost::AnimationsPreserveAxisAlignment(
              : true;
 }
 
-bool AnimationHost::MaximumTargetScale(ElementId element_id,
-                                       ElementListType list_type,
-                                       float* max_scale) const {
-  *max_scale = 0.f;
+float AnimationHost::MaximumTargetScale(ElementId element_id,
+                                        ElementListType list_type) const {
   auto element_animations = GetElementAnimationsForElementId(element_id);
-  return element_animations
-             ? element_animations->MaximumTargetScale(list_type, max_scale)
-             : true;
+  return element_animations ? element_animations->MaximumTargetScale(list_type)
+                            : kNotScaled;
 }
 
-bool AnimationHost::AnimationStartScale(ElementId element_id,
-                                        ElementListType list_type,
-                                        float* start_scale) const {
-  *start_scale = 0.f;
+float AnimationHost::AnimationStartScale(ElementId element_id,
+                                         ElementListType list_type) const {
   auto element_animations = GetElementAnimationsForElementId(element_id);
-  return element_animations
-             ? element_animations->AnimationStartScale(list_type, start_scale)
-             : true;
+  return element_animations ? element_animations->AnimationStartScale(list_type)
+                            : kNotScaled;
 }
 
 bool AnimationHost::IsElementAnimating(ElementId element_id) const {
@@ -656,6 +658,11 @@ void AnimationHost::ScrollAnimationAbort() {
   DCHECK(scroll_offset_animations_impl_);
   scroll_offset_animations_impl_->ScrollAnimationAbort(
       false /* needs_completion */);
+}
+
+bool AnimationHost::IsImplOnlyScrollAnimating() const {
+  DCHECK(scroll_offset_animations_impl_);
+  return scroll_offset_animations_impl_->IsAnimating();
 }
 
 void AnimationHost::AddToTicking(scoped_refptr<Animation> animation) {

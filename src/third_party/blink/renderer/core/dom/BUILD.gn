@@ -16,6 +16,8 @@ blink_core_sources("dom") {
     "attr.h",
     "attribute.h",
     "attribute_collection.h",
+    "beforeunload_event_listener.cc",
+    "beforeunload_event_listener.h",
     "cdata_section.cc",
     "cdata_section.h",
     "character_data.cc",

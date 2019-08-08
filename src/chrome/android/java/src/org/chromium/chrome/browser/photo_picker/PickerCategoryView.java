@@ -155,7 +155,7 @@ public class PickerCategoryView extends RelativeLayout
         int titleId = multiSelectionAllowed ? R.string.photo_picker_select_images
                                             : R.string.photo_picker_select_image;
         PhotoPickerToolbar toolbar = (PhotoPickerToolbar) mSelectableListLayout.initializeToolbar(
-                R.layout.photo_picker_toolbar, mSelectionDelegate, titleId, null, 0, 0, null, false,
+                R.layout.photo_picker_toolbar, mSelectionDelegate, titleId, 0, 0, null, false,
                 false);
         toolbar.setNavigationOnClickListener(this);
         Button doneButton = (Button) toolbar.findViewById(R.id.done);
@@ -185,7 +185,11 @@ public class PickerCategoryView extends RelativeLayout
         mSpacingDecoration = new GridSpacingItemDecoration(mColumns, mPadding);
         mRecyclerView.addItemDecoration(mSpacingDecoration);
 
-        mPickerAdapter.notifyDataSetChanged();
+        // Configuration change can happen at any time, even before the photos have been
+        // enumerated (when mPickerBitmaps is null, causing: https://crbug.com/947657). There's no
+        // need to call notifyDataSetChanged in that case because it will be called once the photo
+        // list becomes ready.
+        if (mPickerBitmaps != null) mPickerAdapter.notifyDataSetChanged();
     }
 
     /**

@@ -55,7 +55,7 @@ class SharedProtoDatabase
  private:
   friend class base::RefCountedThreadSafe<SharedProtoDatabase>;
   friend class ProtoDatabaseProvider;
-
+  template <typename T>
   friend class ProtoDatabaseImplTest;
   friend class SharedProtoDatabaseTest;
   friend class SharedProtoDatabaseClientTest;

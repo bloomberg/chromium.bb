@@ -398,7 +398,6 @@ const PrepopulatedEngine* const engines_IR[] = {
     &google,
     &bing,
     &yahoo,
-    &parsijoo,
 };
 
 // Iceland
@@ -902,7 +901,6 @@ const PrepopulatedEngine* const kAllEngines[] = {
     &google,
     &mail_ru,
     &naver,
-    &parsijoo,
     &qwant,
     &seznam,
     &sogou,

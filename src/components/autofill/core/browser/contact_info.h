@@ -13,6 +13,8 @@
 
 namespace autofill {
 
+class AutofillProfile;
+
 // A form group that stores name information.
 class NameInfo : public FormGroup {
  public:
@@ -91,6 +93,7 @@ class CompanyInfo : public FormGroup {
  public:
   CompanyInfo();
   CompanyInfo(const CompanyInfo& info);
+  explicit CompanyInfo(const AutofillProfile* profile);
   ~CompanyInfo() override;
 
   CompanyInfo& operator=(const CompanyInfo& info);
@@ -100,12 +103,15 @@ class CompanyInfo : public FormGroup {
   // FormGroup:
   base::string16 GetRawInfo(ServerFieldType type) const override;
   void SetRawInfo(ServerFieldType type, const base::string16& value) override;
+  void set_profile(const AutofillProfile* profile) { profile_ = profile; }
 
  private:
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
+  bool IsValidOrVerified(const base::string16& value) const;
 
   base::string16 company_name_;
+  const AutofillProfile* profile_ = nullptr;
 };
 
 }  // namespace autofill

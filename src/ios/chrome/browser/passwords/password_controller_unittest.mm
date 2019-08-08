@@ -15,11 +15,13 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -31,6 +33,7 @@
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
+#include "ios/chrome/browser/passwords/password_manager_features.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
@@ -60,6 +63,7 @@ using password_manager::PasswordStoreConsumer;
 using test_helpers::SetPasswordFormFillData;
 using testing::NiceMock;
 using testing::Return;
+using base::ASCIIToUTF16;
 using base::test::ios::kWaitForActionTimeout;
 using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
@@ -84,6 +88,8 @@ class MockPasswordManagerClient
   ~MockPasswordManagerClient() override = default;
 
   MOCK_CONST_METHOD0(GetLogManager, password_manager::LogManager*(void));
+  MOCK_CONST_METHOD0(GetPasswordSyncState, password_manager::SyncState());
+  MOCK_CONST_METHOD0(IsIncognito, bool());
 
   PrefService* GetPrefs() const override { return prefs_.get(); }
 
@@ -128,8 +134,8 @@ PasswordForm CreatePasswordForm(const char* origin_url,
   form.scheme = PasswordForm::SCHEME_HTML;
   form.origin = GURL(origin_url);
   form.signon_realm = origin_url;
-  form.username_value = base::ASCIIToUTF16(username_value);
-  form.password_value = base::ASCIIToUTF16(password_value);
+  form.username_value = ASCIIToUTF16(username_value);
+  form.password_value = ASCIIToUTF16(password_value);
   return form;
 }
 
@@ -203,6 +209,14 @@ class PasswordControllerTest : public ChromeWebTest {
 
   void SetUp() override {
     ChromeWebTest::SetUp();
+
+    // When waiting for predictions is on, it makes tests more complicated.
+    // Disable wating, since most tests have nothing to do with predictions. All
+    // tests that test working with prediction should explicitly turn
+    // predictions on.
+    password_manager::NewPasswordFormManager::
+        set_wait_for_server_predictions_for_filling(false);
+
     passwordController_ =
         CreatePasswordController(web_state(), store_.get(), &weak_client_);
     @autoreleasepool {
@@ -219,7 +233,7 @@ class PasswordControllerTest : public ChromeWebTest {
                                            personalDataManager:NULL
                                                  passwordStore:NULL];
       [accessoryMediator_ injectWebState:web_state()];
-      [accessoryMediator_ injectProviders:@[ suggestionController_ ]];
+      [accessoryMediator_ injectProvider:suggestionController_];
     }
   }
 
@@ -400,9 +414,9 @@ TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
         }));
     if (data.expected_form_found) {
       ASSERT_EQ(1U, forms.size());
-      EXPECT_EQ(base::ASCIIToUTF16(data.expected_username_element),
+      EXPECT_EQ(ASCIIToUTF16(data.expected_username_element),
                 forms[0].username_element);
-      EXPECT_EQ(base::ASCIIToUTF16(data.expected_password_element),
+      EXPECT_EQ(ASCIIToUTF16(data.expected_password_element),
                 forms[0].password_element);
     } else {
       ASSERT_TRUE(forms.empty());
@@ -486,7 +500,7 @@ TEST_F(PasswordControllerTest, FLAKY_GetSubmittedPasswordForm) {
       block_was_called = YES;
       ASSERT_EQ(data.expected_form_found, found);
       if (data.expected_form_found) {
-        EXPECT_EQ(base::ASCIIToUTF16(data.expected_username_element),
+        EXPECT_EQ(ASCIIToUTF16(data.expected_username_element),
                   form.username_element);
       }
     };
@@ -868,6 +882,14 @@ static NSString* kHtmlWithPasswordForm =
      "<input id='pw' type='password' name=\"p'\">"
      "</form>";
 
+static NSString* kHtmlWithNewPasswordForm =
+    @"<form>"
+     "<input id='un' type='text' name=\"u'\" autocomplete=\"username\""
+     "  onkeyup='window.onKeyUpCalled_=true'"
+     "  onchange='window.onChangeCalled_=true'>"
+     "<input id='pw' type='password' name=\"p'\" autocomplete=\"new-password\">"
+     "</form>";
+
 // An HTML page containing two password forms.
 static NSString* kHtmlWithTwoPasswordForms =
     @"<form id='f1'>"
@@ -946,7 +968,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
   PasswordFormFillData form_data;
   SetPasswordFormFillData(base_url, base_url, "un", "user0", "pw", "password0",
                           "abc", "def", true, &form_data);
-  form_data.name = base::ASCIIToUTF16(FormName(0));
+  form_data.name = ASCIIToUTF16(FormName(0));
 
   __block BOOL block_was_called = NO;
   [passwordController_ fillPasswordForm:form_data
@@ -1044,7 +1066,7 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
     SetPasswordFormFillData(base_url, base_url, test_data.username_element,
                             "user0", test_data.password_element, "password0",
                             "abc", "def", true, &form_data);
-    form_data.name = base::ASCIIToUTF16(test_data.form_name);
+    form_data.name = ASCIIToUTF16(test_data.form_name);
 
     __block BOOL block_was_called = NO;
     [passwordController_ fillPasswordForm:form_data
@@ -1188,8 +1210,10 @@ TEST_F(PasswordControllerTest, SendingToStoreDynamicallyAddedFormsOnFocus) {
   password_manager::PasswordStore::FormDigest expected_form_digest(
       autofill::PasswordForm::SCHEME_HTML, "https://chromium.test/",
       GURL("https://chromium.test/"));
+  // TODO(crbug.com/949519): replace WillRepeatedly with WillOnce when the old
+  // parser is gone.
   EXPECT_CALL(*store_, GetLogins(expected_form_digest, _))
-      .WillOnce(testing::Invoke(
+      .WillRepeatedly(testing::Invoke(
           [&get_logins_called](
               const password_manager::PasswordStore::FormDigest&,
               password_manager::PasswordStoreConsumer*) {
@@ -1315,8 +1339,10 @@ TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
 
     if (store_has_credentials) {
       PasswordForm form(CreatePasswordForm(BaseUrl().c_str(), "user", "pw"));
+      // TODO(crbug.com/949519): replace WillRepeatedly with WillOnce when the
+      // old parser is gone.
       EXPECT_CALL(*store_, GetLogins(_, _))
-          .WillOnce(WithArg<1>(InvokeConsumer(form)));
+          .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
     } else {
       EXPECT_CALL(*store_, GetLogins(_, _))
           .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
@@ -1357,8 +1383,10 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNonUsernameField) {
   __block BOOL completion_handler_called = NO;
 
   PasswordForm form(CreatePasswordForm(BaseUrl().c_str(), "user", "pw"));
+  // TODO(crbug.com/949519): replace WillRepeatedly with WillOnce when the old
+  // parser is gone.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(form)));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
   std::string mainFrameID = web::GetMainWebFrameId(web_state());
   [passwordController_
       checkIfSuggestionsAvailableForForm:@"dynamic_form"
@@ -1412,4 +1440,125 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNoPasswordForms) {
   }));
 
   EXPECT_FALSE(completion_handler_success);
+}
+
+// Tests password generation suggestion is shown properly.
+TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
+  TearDown();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPasswordGeneration);
+  SetUp();
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  EXPECT_CALL(*weak_client_, GetPasswordSyncState())
+      .WillRepeatedly(
+          Return(password_manager::SyncState::SYNCING_NORMAL_ENCRYPTION));
+
+  LoadHtml(kHtmlWithNewPasswordForm);
+  const std::string base_url = BaseUrl();
+  ExecuteJavaScript(
+      [NSString stringWithFormat:kUsernameAndPasswordTestPreparationScript,
+                                 @"un", @"pw"]);
+
+  // Initialize |form_data| with test data and an indicator that autofill
+  // should not be performed while the user is entering the username so that
+  // we can test with an initially-empty username field. Testing with a
+  // username field that contains input is performed by a specific test below.
+  PasswordFormFillData form_data;
+  SetPasswordFormFillData(base_url, base_url, "un", "user0", "pw", "password0",
+                          "abc", "def", true, &form_data);
+  form_data.name = ASCIIToUTF16(FormName(0));
+
+  __block BOOL block_was_called = NO;
+  [passwordController_ fillPasswordForm:form_data
+                      completionHandler:^(BOOL success) {
+                        block_was_called = YES;
+                        // Verify that the fill reports failed.
+                        EXPECT_FALSE(success);
+                      }];
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
+    return block_was_called;
+  }));
+
+  // Verify that the form has not been autofilled.
+  EXPECT_NSEQ(@"[]=, onkeyup=false, onchange=false",
+              ExecuteJavaScript(kUsernamePasswordVerificationScript));
+
+  NSString* showAll = @"Show All\u2026";
+  // clang-format off
+  SuggestionTestData test_data[] = {
+    {
+      "Should not show suggest password when focusing username field",
+      @[(@"var evt = document.createEvent('Events');"
+         "username_.focus();"),
+        @""],
+      @[@"user0 ••••••••", @"abc ••••••••", showAll],
+      @"[]=, onkeyup=false, onchange=false"
+    },
+    {
+      "Should show suggest password when focusing password field",
+      @[(@"var evt = document.createEvent('Events');"
+         "password_.focus();"),
+        @""],
+      @[@"user0 ••••••••", @"abc ••••••••", @"Suggest  Password\u2026", showAll],
+      @"[]=, onkeyup=false, onchange=false"
+    },
+  };
+  // clang-format on
+
+  for (const SuggestionTestData& data : test_data) {
+    SCOPED_TRACE(testing::Message()
+                 << "for description=" << data.description
+                 << " and eval_scripts=" << data.eval_scripts);
+    // Prepare the test.
+    ExecuteJavaScript(
+        [NSString stringWithFormat:kUsernameAndPasswordTestPreparationScript,
+                                   @"un", @"pw"]);
+
+    for (NSString* script in data.eval_scripts) {
+      // Trigger events.
+      ExecuteJavaScript(script);
+
+      // Pump the run loop so that the host can respond.
+      WaitForBackgroundTasks();
+    }
+    // Wait until suggestions are received.
+    EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+      return [GetSuggestionValues() count] > 0;
+    }));
+
+    EXPECT_NSEQ(data.expected_suggestions, GetSuggestionValues());
+    EXPECT_NSEQ(data.expected_result,
+                ExecuteJavaScript(kUsernamePasswordVerificationScript));
+    // Clear all suggestions.
+    [suggestionController_ setSuggestions:nil];
+  }
+}
+
+
+// Check that if the PasswordController is told (by the PasswordManagerClient)
+// that this is Incognito, it won't enable password generation.
+TEST_F(PasswordControllerTest, IncognitoPasswordGenerationDisabled) {
+    TearDown();
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(features::kPasswordGeneration);
+    ChromeWebTest::SetUp();
+    
+    password_manager::NewPasswordFormManager::
+    set_wait_for_server_predictions_for_filling(false);
+    
+    auto client =
+    std::make_unique<NiceMock<MockPasswordManagerClient>>(store_.get());
+    weak_client_ = client.get();
+    
+    EXPECT_CALL(*weak_client_, GetPasswordSyncState())
+    .WillRepeatedly(
+                    Return(password_manager::SyncState::SYNCING_NORMAL_ENCRYPTION));
+    EXPECT_CALL(*weak_client_, IsIncognito()).WillRepeatedly(Return(true));
+    
+    passwordController_ =
+    [[PasswordController alloc] initWithWebState:web_state()
+                                          client:std::move(client)];
+    
+    EXPECT_FALSE([passwordController_ passwordGenerationHelper]);
 }

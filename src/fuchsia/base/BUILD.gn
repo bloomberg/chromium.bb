@@ -27,6 +27,10 @@ source_set("modular") {
   sources = [
     "agent_impl.cc",
     "agent_impl.h",
+    "agent_manager.cc",
+    "agent_manager.h",
+    "lifecycle_impl.cc",
+    "lifecycle_impl.h",
   ]
   deps = [
     "//base",
@@ -42,12 +46,19 @@ source_set("test_support") {
     "fake_component_context.cc",
     "fake_component_context.h",
     "fit_adapter.h",
+    "frame_test_util.cc",
+    "frame_test_util.h",
     "result_receiver.h",
+    "test_navigation_listener.cc",
+    "test_navigation_listener.h",
   ]
   public_deps = [
+    ":base",
     ":modular",
     "//base",
     "//third_party/fuchsia-sdk/sdk:modular",
+    "//third_party/fuchsia-sdk/sdk:web",
+    "//url",
   ]
 }
 

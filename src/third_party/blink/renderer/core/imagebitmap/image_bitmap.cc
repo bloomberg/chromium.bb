@@ -5,8 +5,10 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 
 #include <memory>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
+#include "base/numerics/clamped_math.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
@@ -20,7 +22,6 @@
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
-#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -52,11 +53,11 @@ static inline IntRect NormalizeRect(const IntRect& rect) {
   int width = rect.Width();
   int height = rect.Height();
   if (width < 0) {
-    x = ClampAdd(x, width);
+    x = base::ClampAdd(x, width);
     width = -width;
   }
   if (height < 0) {
-    y = ClampAdd(y, height);
+    y = base::ClampAdd(y, height);
     height = -height;
   }
   return IntRect(x, y, width, height);
@@ -969,7 +970,7 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
                                        Document* document,
                                        ScriptState* script_state,
                                        const ImageBitmapOptions* options) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   scoped_refptr<Image> input = image->CachedImage()->GetImage();

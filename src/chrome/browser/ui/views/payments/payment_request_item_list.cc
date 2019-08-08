@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/payments/payment_request_item_list.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
@@ -97,8 +98,7 @@ void PaymentRequestItemList::Item::Init() {
   content->set_can_process_events_within_subtree(false);
   layout->AddView(content.release());
 
-  checkmark_ = CreateCheckmark(selected() && clickable());
-  layout->AddView(checkmark_.get());
+  layout->AddView(CreateCheckmark(selected() && clickable()).release());
 
   if (extra_view)
     layout->AddView(extra_view.release());
@@ -124,10 +124,11 @@ void PaymentRequestItemList::Item::Init() {
 void PaymentRequestItemList::Item::SetSelected(bool selected, bool notify) {
   selected_ = selected;
 
-  // This could be called before CreateItemView, so before |checkmark_| is
-  // instantiated.
-  if (checkmark_)
-    checkmark_->SetVisible(selected_);
+  for (views::View* child : children())
+    if (child->id() == static_cast<int>(DialogViewID::CHECKMARK_VIEW)) {
+      child->SetVisible(selected);
+      break;
+    }
 
   UpdateAccessibleName();
 
@@ -141,7 +142,6 @@ std::unique_ptr<views::ImageView> PaymentRequestItemList::Item::CreateCheckmark(
       std::make_unique<views::ImageView>();
   checkmark->set_id(static_cast<int>(DialogViewID::CHECKMARK_VIEW));
   checkmark->set_can_process_events_within_subtree(false);
-  checkmark->set_owned_by_client();
   checkmark->SetImage(
       gfx::CreateVectorIcon(views::kMenuCheckIcon, kCheckmarkColor));
   checkmark->SetVisible(selected);

@@ -14,7 +14,6 @@
 
 #include "PixelProcessor.hpp"
 
-#include "Surface.hpp"
 #include "Primitive.hpp"
 #include "Pipeline/PixelProgram.hpp"
 #include "Pipeline/Constants.hpp"
@@ -25,7 +24,6 @@
 
 namespace sw
 {
-	extern bool complementaryDepthBuffer;
 	extern TransparencyAntialiasing transparencyAntialiasing;
 	extern bool perspectiveCorrection;
 
@@ -118,92 +116,6 @@ namespace sw
 	void PixelProcessor::setColorWriteMask(int index, int rgbaMask)
 	{
 		context->setColorWriteMask(index, rgbaMask);
-	}
-
-	void PixelProcessor::setStencilEnable(bool stencilEnable)
-	{
-		context->stencilEnable = stencilEnable;
-	}
-
-	void PixelProcessor::setStencilCompare(VkCompareOp stencilCompareMode)
-	{
-		context->stencilCompareMode = stencilCompareMode;
-	}
-
-	void PixelProcessor::setStencilReference(int stencilReference)
-	{
-		context->stencilReference = stencilReference;
-		stencil.set(stencilReference, context->stencilMask, context->stencilWriteMask);
-	}
-
-	void PixelProcessor::setStencilReferenceCCW(int stencilReferenceCCW)
-	{
-		context->stencilReferenceCCW = stencilReferenceCCW;
-		stencilCCW.set(stencilReferenceCCW, context->stencilMaskCCW, context->stencilWriteMaskCCW);
-	}
-
-	void PixelProcessor::setStencilMask(int stencilMask)
-	{
-		context->stencilMask = stencilMask;
-		stencil.set(context->stencilReference, stencilMask, context->stencilWriteMask);
-	}
-
-	void PixelProcessor::setStencilMaskCCW(int stencilMaskCCW)
-	{
-		context->stencilMaskCCW = stencilMaskCCW;
-		stencilCCW.set(context->stencilReferenceCCW, stencilMaskCCW, context->stencilWriteMaskCCW);
-	}
-
-	void PixelProcessor::setStencilFailOperation(VkStencilOp stencilFailOperation)
-	{
-		context->stencilFailOperation = stencilFailOperation;
-	}
-
-	void PixelProcessor::setStencilPassOperation(VkStencilOp stencilPassOperation)
-	{
-		context->stencilPassOperation = stencilPassOperation;
-	}
-
-	void PixelProcessor::setStencilZFailOperation(VkStencilOp stencilZFailOperation)
-	{
-		context->stencilZFailOperation = stencilZFailOperation;
-	}
-
-	void PixelProcessor::setStencilWriteMask(int stencilWriteMask)
-	{
-		context->stencilWriteMask = stencilWriteMask;
-		stencil.set(context->stencilReference, context->stencilMask, stencilWriteMask);
-	}
-
-	void PixelProcessor::setStencilWriteMaskCCW(int stencilWriteMaskCCW)
-	{
-		context->stencilWriteMaskCCW = stencilWriteMaskCCW;
-		stencilCCW.set(context->stencilReferenceCCW, context->stencilMaskCCW, stencilWriteMaskCCW);
-	}
-
-	void PixelProcessor::setTwoSidedStencil(bool enable)
-	{
-		context->twoSidedStencil = enable;
-	}
-
-	void PixelProcessor::setStencilCompareCCW(VkCompareOp stencilCompareMode)
-	{
-		context->stencilCompareModeCCW = stencilCompareMode;
-	}
-
-	void PixelProcessor::setStencilFailOperationCCW(VkStencilOp stencilFailOperation)
-	{
-		context->stencilFailOperationCCW = stencilFailOperation;
-	}
-
-	void PixelProcessor::setStencilPassOperationCCW(VkStencilOp stencilPassOperation)
-	{
-		context->stencilPassOperationCCW = stencilPassOperation;
-	}
-
-	void PixelProcessor::setStencilZFailOperationCCW(VkStencilOp stencilZFailOperation)
-	{
-		context->stencilZFailOperationCCW = stencilZFailOperation;
 	}
 
 	void PixelProcessor::setBlendConstant(const Color<float> &blendConstant)
@@ -354,7 +266,7 @@ namespace sw
 	void PixelProcessor::setRoutineCacheSize(int cacheSize)
 	{
 		delete routineCache;
-		routineCache = new RoutineCache<State>(clamp(cacheSize, 1, 65536), precachePixel ? "sw-pixel" : 0);
+		routineCache = new RoutineCache<State>(clamp(cacheSize, 1, 65536));
 	}
 
 	const PixelProcessor::State PixelProcessor::update() const
@@ -380,29 +292,17 @@ namespace sw
 		if(context->stencilActive())
 		{
 			state.stencilActive = true;
-			state.stencilCompareMode = context->stencilCompareMode;
-			state.stencilFailOperation = context->stencilFailOperation;
-			state.stencilPassOperation = context->stencilPassOperation;
-			state.stencilZFailOperation = context->stencilZFailOperation;
-			state.noStencilMask = (context->stencilMask == 0xFF);
-			state.noStencilWriteMask = (context->stencilWriteMask == 0xFF);
-			state.stencilWriteMasked = (context->stencilWriteMask == 0x00);
-
 			state.twoSidedStencil = context->twoSidedStencil;
-			state.stencilCompareModeCCW = context->twoSidedStencil ? context->stencilCompareModeCCW : state.stencilCompareMode;
-			state.stencilFailOperationCCW = context->twoSidedStencil ? context->stencilFailOperationCCW : state.stencilFailOperation;
-			state.stencilPassOperationCCW = context->twoSidedStencil ? context->stencilPassOperationCCW : state.stencilPassOperation;
-			state.stencilZFailOperationCCW = context->twoSidedStencil ? context->stencilZFailOperationCCW : state.stencilZFailOperation;
-			state.noStencilMaskCCW = context->twoSidedStencil ? (context->stencilMaskCCW == 0xFF) : state.noStencilMask;
-			state.noStencilWriteMaskCCW = context->twoSidedStencil ? (context->stencilWriteMaskCCW == 0xFF) : state.noStencilWriteMask;
-			state.stencilWriteMaskedCCW = context->twoSidedStencil ? (context->stencilWriteMaskCCW == 0x00) : state.stencilWriteMasked;
+			state.frontStencil = context->frontStencil;
+			state.backStencil = context->backStencil;
 		}
 
 		if(context->depthBufferActive())
 		{
 			state.depthTestActive = true;
 			state.depthCompareMode = context->depthCompareMode;
-			state.quadLayoutDepthBuffer = Surface::hasQuadLayout(context->depthBuffer->getFormat());
+			state.quadLayoutDepthBuffer = context->depthBuffer->getFormat().hasQuadLayout();
+			state.depthFormat = context->depthBuffer->getFormat();
 		}
 
 		state.occlusionEnabled = context->occlusionEnabled;
@@ -427,7 +327,7 @@ namespace sw
 			state.targetFormat[i] = context->renderTargetInternalFormat(i);
 		}
 
-		state.writeSRGB	= context->writeSRGB && context->renderTarget[0] && Surface::isSRGBwritable(context->renderTarget[0]->getFormat());
+		state.writeSRGB	= context->writeSRGB && context->renderTarget[0] && context->renderTarget[0]->getFormat().isSRGBwritable();
 		state.multiSample = context->sampleCount;
 		state.multiSampleMask = context->multiSampleMask;
 
@@ -449,7 +349,7 @@ namespace sw
 
 		if(!routine)
 		{
-			QuadRasterizer *generator = new PixelProgram(state, context->pipelineLayout, context->pixelShader);
+			QuadRasterizer *generator = new PixelProgram(state, context->pipelineLayout, context->pixelShader, context->descriptorSets);
 			generator->generate();
 			routine = (*generator)("PixelRoutine_%0.8X", state.shaderID);
 			delete generator;

@@ -333,7 +333,7 @@ SegmentID HistoryDatabase::GetSegmentID(VisitID visit_id) {
       "SELECT segment_id FROM visits WHERE id = ?"));
   s.BindInt64(0, visit_id);
 
-  if (!s.Step() || s.ColumnType(0) == sql::COLUMN_TYPE_NULL)
+  if (!s.Step() || s.GetColumnType(0) == sql::ColumnType::kNull)
     return 0;
   return s.ColumnInt64(0);
 }

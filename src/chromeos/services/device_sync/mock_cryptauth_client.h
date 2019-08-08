@@ -9,6 +9,7 @@
 #include "base/observer_list.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
+#include "chromeos/services/device_sync/proto/cryptauth_devicesync.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_enrollment.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -61,6 +62,26 @@ class MockCryptAuthClient : public CryptAuthClient {
   MOCK_METHOD3(EnrollKeys,
                void(const cryptauthv2::EnrollKeysRequest& request,
                     const EnrollKeysCallback& callback,
+                    const ErrorCallback& error_callback));
+  MOCK_METHOD3(SyncMetadata,
+               void(const cryptauthv2::SyncMetadataRequest& request,
+                    const SyncMetadataCallback& callback,
+                    const ErrorCallback& error_callback));
+  MOCK_METHOD3(ShareGroupPrivateKey,
+               void(const cryptauthv2::ShareGroupPrivateKeyRequest& request,
+                    const ShareGroupPrivateKeyCallback& callback,
+                    const ErrorCallback& error_callback));
+  MOCK_METHOD3(BatchNotifyGroupDevices,
+               void(const cryptauthv2::BatchNotifyGroupDevicesRequest& request,
+                    const BatchNotifyGroupDevicesCallback& callback,
+                    const ErrorCallback& error_callback));
+  MOCK_METHOD3(BatchGetFeatureStatuses,
+               void(const cryptauthv2::BatchGetFeatureStatusesRequest& request,
+                    const BatchGetFeatureStatusesCallback& callback,
+                    const ErrorCallback& error_callback));
+  MOCK_METHOD3(BatchSetFeatureStatuses,
+               void(const cryptauthv2::BatchSetFeatureStatusesRequest& request,
+                    const BatchSetFeatureStatusesCallback& callback,
                     const ErrorCallback& error_callback));
   MOCK_METHOD0(GetAccessTokenUsed, std::string());
 

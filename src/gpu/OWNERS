@@ -10,4 +10,7 @@ sunnyps@chromium.org
 per-file *gpu_memory_buffer*=reveman@chromium.org
 per-file *gpu_memory_buffer*=dcastagna@chromium.org
 
+# Passthrough command decoder
+per-file *passthrough*=geofflang@chromium.org
+
 # COMPONENT: Internals>GPU>Internals

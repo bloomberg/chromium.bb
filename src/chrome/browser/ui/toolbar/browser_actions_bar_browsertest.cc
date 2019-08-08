@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -43,7 +42,6 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
@@ -398,19 +396,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
     EXPECT_FALSE(first_controller->IsShowingPopup());
     EXPECT_TRUE(second_controller->IsShowingPopup());
   }
-
-  {
-    // Clicking on the second extension's browser action a second time should
-    // result in closing the popup.
-    content::WindowedNotificationObserver observer(
-        extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-        content::NotificationService::AllSources());
-    browser_actions_bar()->Press(1);
-    observer.Wait();
-    EXPECT_FALSE(browser_actions_bar()->HasPopup());
-    EXPECT_FALSE(first_controller->IsShowingPopup());
-    EXPECT_FALSE(second_controller->IsShowingPopup());
-  }
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
@@ -693,12 +678,6 @@ class BrowserActionsBarRuntimeHostPermissionsBrowserTest
   BrowserActionsBarRuntimeHostPermissionsBrowserTest() = default;
   ~BrowserActionsBarRuntimeHostPermissionsBrowserTest() override = default;
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    BrowserActionsBarBrowserTest::SetUpCommandLine(command_line);
-    scoped_feature_list_.InitAndEnableFeature(
-        extensions_features::kRuntimeHostPermissions);
-  }
-
   void SetUpOnMainThread() override {
     BrowserActionsBarBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -752,7 +731,6 @@ class BrowserActionsBarRuntimeHostPermissionsBrowserTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   extensions::TestExtensionDir extension_dir_;
   scoped_refptr<const extensions::Extension> extension_;
 

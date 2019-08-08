@@ -76,9 +76,7 @@ class PLATFORM_EXPORT FetchClientSettingsObject
       const = 0;
 
   // https://wicg.github.io/cors-rfc1918/#address-space
-  // TODO(yhirano): Make this non-Optional when https://crbug.com/855189 is
-  // fixed.
-  virtual base::Optional<mojom::IPAddressSpace> GetAddressSpace() const = 0;
+  virtual mojom::IPAddressSpace GetAddressSpace() const = 0;
 
   virtual void Trace(Visitor*) {}
 };

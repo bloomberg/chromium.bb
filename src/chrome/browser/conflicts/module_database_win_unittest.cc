@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
+#include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -41,7 +41,7 @@ class ModuleDatabaseTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME),
         scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
         module_database_(std::make_unique<ModuleDatabase>(
-            base::SequencedTaskRunnerHandle::Get())) {}
+            /* third_party_blocking_policy_enabled = */ false)) {}
 
   ~ModuleDatabaseTest() override {
     module_database_ = nullptr;
@@ -56,10 +56,6 @@ class ModuleDatabaseTest : public testing::Test {
   }
 
   ModuleDatabase* module_database() { return module_database_.get(); }
-
-  static uint32_t ProcessTypeToBit(content::ProcessType process_type) {
-    return ModuleDatabase::ProcessTypeToBit(process_type);
-  }
 
   void RunSchedulerUntilIdle() { test_browser_thread_bundle_.RunUntilIdle(); }
 
@@ -81,22 +77,6 @@ class ModuleDatabaseTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(ModuleDatabaseTest);
 };
-
-TEST_F(ModuleDatabaseTest, TasksAreBounced) {
-  // Run a task on the current thread. This should not be bounced, so their
-  // results should be immediately available.
-  module_database()->OnModuleLoad(kProcessType1, dll1_, kSize1, kTime1);
-  EXPECT_EQ(1u, modules().size());
-
-  // Run similar tasks on another thread with another module. These should be
-  // bounced.
-  base::PostTask(FROM_HERE, base::Bind(&ModuleDatabase::OnModuleLoad,
-                                       base::Unretained(module_database()),
-                                       kProcessType2, dll2_, kSize1, kTime1));
-  EXPECT_EQ(1u, modules().size());
-  RunSchedulerUntilIdle();
-  EXPECT_EQ(2u, modules().size());
-}
 
 TEST_F(ModuleDatabaseTest, DatabaseIsConsistent) {
   EXPECT_EQ(0u, modules().size());

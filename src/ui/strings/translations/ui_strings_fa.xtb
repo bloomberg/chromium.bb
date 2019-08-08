@@ -21,6 +21,7 @@
 <translation id="169515659049020177">تبدیل</translation>
 <translation id="1710340000377843106">اکنون</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{۱ دقیقه}one{# دقیقه}other{# دقیقه}}</translation>
+<translation id="1756116796893109054">درحال ارسال برگه…</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> بایت</translation>
 <translation id="1801827354178857021">نقطه</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{۱ ماه}one{# ماه}other{# ماه}}</translation>
@@ -34,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />٪</translation>
 <translation id="1901303067676059328">انتخاب &amp;همه</translation>
 <translation id="1938451708255335766">برای تنظیم تراکم نمایشگر پنجره، برنامه را بازراه‌اندازی کنید.</translation>
+<translation id="208586643495776849">لطفاً دوباره امتحان کنید</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{۱ روز}one{# روز}other{# روز}}</translation>
 <translation id="2148716181193084225">امروز</translation>
 <translation id="2168039046890040389">صفحه بالا</translation>
@@ -51,11 +53,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">کالیبراسیون تمام شد</translation>
 <translation id="252373100621549798">نمایش ناشناس</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{تا ۱ ساعت دیگر}one{تا # ساعت دیگر}other{تا # ساعت دیگر}}</translation>
 <translation id="2583543531130364912">کالیبراسیون صفحه لمسی</translation>
 <translation id="2666092431469916601">بالا</translation>
+<translation id="2701330563083355633">هم‌رسانی‌شده از <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">کپی در بریده‌دان</translation>
 <translation id="2803313416453193357">بازکردن پوشه</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{۱ سال قبل}one{# سال قبل}other{# سال قبل}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{تا ۱ روز دیگر}one{تا # روز دیگر}other{تا # روز دیگر}}</translation>
 <translation id="2931838996092594335">کلیک کنید</translation>
 <translation id="3036649622769666520">باز کردن فایل‌ها</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> مگابایت</translation>
@@ -67,6 +72,7 @@
 <translation id="3234408098842461169">پیکان پایین</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{۱ روز}one{# روز}other{# روز}}</translation>
 <translation id="335581015389089642">صدا</translation>
+<translation id="3443810440409579745">برگه دریافت شد.</translation>
 <translation id="3479552764303398839">اکنون نه</translation>
 <translation id="348799646910989694">پنهان شدن خودکار قفسه</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{۱ روز باقی مانده است}one{# روز باقی مانده است}other{# روز باقی مانده است}}</translation>
@@ -96,6 +102,7 @@
 <translation id="4730374152663651037">مکرراً استفاده‌شده</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{۱ ماه باقی مانده است}one{# ماه باقی مانده است}other{# ماه باقی مانده است}}</translation>
 <translation id="4841881773802181781">درج</translation>
+<translation id="4881695831933465202">باز کردن</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{۱ ثانیه}one{# ثانیه}other{# ثانیه}}</translation>
 <translation id="4971687151119236543">آهنگ قبلی رسانه</translation>
 <translation id="5046499563572181734">در اینجا ضربه بزنید</translation>
@@ -103,6 +110,7 @@
 <translation id="5137751499640340777">‏شروع به کار «دستیار Google»</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> پتابایت</translation>
 <translation id="5266161281976477809">مثلث افشا</translation>
+<translation id="5278860589123563674">ارسال نشد</translation>
 <translation id="528468243742722775">پایان</translation>
 <translation id="5329858601952122676">&amp;حذف</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> موجود در بالای <ph name="IN_PLACE_APP" />، برای ایجاد پوشه رها کنید.</translation>
@@ -114,6 +122,7 @@
 <translation id="5613020302032141669">پیکان چپ</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{۱ دقیقه}one{# دقیقه}other{# دقیقه}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{۱ روز و }one{# روز و }other{# روز و }}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{تا ۱ سال دیگر}one{تا # سال دیگر}other{تا # سال دیگر}}</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{۱ ثانیه باقی مانده است}one{# ثانیه باقی مانده است}other{# ثانیه باقی مانده است}}</translation>
 <translation id="5941711191222866238">کوچک کردن</translation>
@@ -145,7 +154,6 @@
 <translation id="6808150112686056157">توقف رسانه</translation>
 <translation id="6845383723252244143">انتخاب پوشه</translation>
 <translation id="6845533974506654842">فشار دادن</translation>
-<translation id="686304767576508198">هم‌رسانی‌شده از</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{۱ ساعت باقی مانده است}one{# ساعت باقی مانده است}other{# ساعت باقی مانده است}}</translation>
 <translation id="688711909580084195">صفحهٔ وب بدون عنوان</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> پتابایت/ثانیه</translation>
@@ -170,6 +178,7 @@
 <translation id="7907591526440419938">باز کردن فایل</translation>
 <translation id="7969046989155602842">فرمان</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{بیش از ۱ اعلان خوانده‌نشده}one{بیش از # اعلان خوانده‌نشده}other{بیش از # اعلان خوانده‌نشده}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{تا ۱ دقیقه دیگر}one{تا # دقیقه دیگر}other{تا # دقیقه دیگر}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{۱ ساعت قبل}one{# ساعت قبل}other{# ساعت قبل}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{۱ ثانیه باقی مانده است}one{# ثانیه باقی مانده است}other{# ثانیه باقی مانده است}}</translation>
@@ -198,6 +207,7 @@
 <translation id="8806053966018712535">پوشه <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">حاشیه‌نویسی تصویر</translation>
 <translation id="8841375032071747811">دکمه برگشت</translation>
+<translation id="8876215549894133151">قالب:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> کیلوبایت</translation>
 <translation id="8926951137623668982">قفسه همیشه پنهان می‌شود</translation>
 <translation id="9002566407876343676">باز کنید</translation>

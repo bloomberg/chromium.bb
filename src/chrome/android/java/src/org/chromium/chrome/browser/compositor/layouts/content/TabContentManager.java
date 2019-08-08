@@ -140,6 +140,24 @@ public class TabContentManager {
     }
 
     /**
+     * Attach the given Tab's cc layer to this {@link TabContentManager}.
+     * @param tab Tab whose cc layer will be attached.
+     */
+    public void attachTab(Tab tab) {
+        if (mNativeTabContentManager == 0) return;
+        nativeAttachTab(mNativeTabContentManager, tab, tab.getId());
+    }
+
+    /**
+     * Detach the given Tab's cc layer from this {@link TabContentManager}.
+     * @param tab Tab whose cc layer will be detached.
+     */
+    public void detachTab(Tab tab) {
+        if (mNativeTabContentManager == 0) return;
+        nativeDetachTab(mNativeTabContentManager, tab, tab.getId());
+    }
+
+    /**
      * Add a listener to thumbnail changes.
      * @param listener The listener of thumbnail change events.
      */
@@ -351,6 +369,8 @@ public class TabContentManager {
     // Class Object Methods
     private native long nativeInit(int defaultCacheSize, int approximationCacheSize,
             int compressionQueueMaxSize, int writeQueueMaxSize, boolean useApproximationThumbnail);
+    private native void nativeAttachTab(long nativeTabContentManager, Tab tab, int tabId);
+    private native void nativeDetachTab(long nativeTabContentManager, Tab tab, int tabId);
     private native boolean nativeHasFullCachedThumbnail(long nativeTabContentManager, int tabId);
     private native void nativeCacheTab(long nativeTabContentManager, Object tab,
             float thumbnailScale, Callback<Bitmap> callback);

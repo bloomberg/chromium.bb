@@ -30,12 +30,12 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/common/pref_names.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
@@ -614,6 +614,17 @@ void GetLocaleAndPreferredLanguages(const Profile* profile,
   // first one is taken) in ARC.
   *out_preferred_languages =
       profile->GetPrefs()->GetString(::language::prefs::kPreferredLanguages);
+}
+
+void GetAndroidId(
+    base::OnceCallback<void(bool ok, int64_t android_id)> callback) {
+  auto* app_instance = GET_APP_INSTANCE(GetAndroidId);
+  if (!app_instance) {
+    std::move(callback).Run(false, 0);
+    return;
+  }
+
+  app_instance->GetAndroidId(base::BindOnce(std::move(callback), true));
 }
 
 Intent::Intent() = default;

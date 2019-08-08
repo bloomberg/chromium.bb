@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "base/win/current_module.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_com_initializer.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
@@ -172,17 +173,38 @@ void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
   // Don't log |buffer| since it contains sensitive info like password.
 
   HRESULT hr = S_OK;
-  base::DictionaryValue* dict = nullptr;
-  std::unique_ptr<base::Value> properties = base::JSONReader::ReadDeprecated(
-      buffer, base::JSON_ALLOW_TRAILING_COMMAS);
-  if (!properties || !properties->GetAsDictionary(&dict)) {
+  base::Optional<base::Value> properties =
+      base::JSONReader::Read(buffer, base::JSON_ALLOW_TRAILING_COMMAS);
+
+  ::RtlSecureZeroMemory(buffer, base::size(buffer));
+
+  if (!properties || !properties->is_dict()) {
     LOGFN(ERROR) << "base::JSONReader::Read failed length=" << buffer_len_bytes;
     hr = E_FAIL;
   }
 
-  hr = credential_provider::CGaiaCredentialBase::SaveAccountInfo(*dict);
+  hr = credential_provider::CGaiaCredentialBase::SaveAccountInfo(*properties);
   if (FAILED(hr))
     LOGFN(ERROR) << "SaveAccountInfoW hr=" << putHR(hr);
+
+  // Make sure COM is initialized in this thread. This thread must be
+  // initialized as an MTA or the call to enroll with MDM causes a crash in COM.
+  base::win::ScopedCOMInitializer com_initializer(
+      base::win::ScopedCOMInitializer::kMTA);
+  if (!com_initializer.Succeeded()) {
+    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+    LOGFN(ERROR) << "ScopedCOMInitializer failed hr=" << putHR(hr);
+  } else {
+    // Try to enroll the machine to MDM here. MDM requires a user to be signed
+    // on to an interactive session to succeed and when we call this function
+    // the user should have been successfully signed on at that point and able
+    // to finish the enrollment.
+    HRESULT hr = credential_provider::EnrollToGoogleMdmIfNeeded(*properties);
+    if (FAILED(hr))
+      LOGFN(ERROR) << "EnrollToGoogleMdmIfNeeded hr=" << putHR(hr);
+  }
+
+  credential_provider::SecurelyClearDictionaryValue(&properties);
 
   LOGFN(INFO) << "Done";
 }

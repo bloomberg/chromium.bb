@@ -63,7 +63,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       should_check_backface_visibility_(false),
       draws_content_(false),
       contributes_to_drawn_render_surface_(false),
-      hit_testable_without_draws_content_(false),
+      hit_testable_(false),
       is_resized_by_browser_controls_(false),
       viewport_layer_type_(NOT_VIEWPORT_LAYER),
       background_color_(0),
@@ -139,12 +139,14 @@ void LayerImpl::PopulateSharedQuadState(viz::SharedQuadState* state,
                                         bool contents_opaque) const {
   EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
   state->SetAll(draw_properties_.target_space_transform, gfx::Rect(bounds()),
-                draw_properties_.visible_layer_rect, draw_properties_.clip_rect,
-                draw_properties_.is_clipped, contents_opaque,
-                draw_properties_.opacity,
+                draw_properties_.visible_layer_rect,
+                draw_properties_.rounded_corner_bounds,
+                draw_properties_.clip_rect, draw_properties_.is_clipped,
+                contents_opaque, draw_properties_.opacity,
                 effect_node->has_render_surface ? SkBlendMode::kSrcOver
                                                 : effect_node->blend_mode,
                 GetSortingContextId());
+  state->is_fast_rounded_corner = draw_properties_.is_fast_rounded_corner;
 }
 
 void LayerImpl::PopulateScaledSharedQuadState(viz::SharedQuadState* state,
@@ -163,12 +165,14 @@ void LayerImpl::PopulateScaledSharedQuadState(viz::SharedQuadState* state,
 
   EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
   state->SetAll(scaled_draw_transform, gfx::Rect(scaled_bounds),
-                scaled_visible_layer_rect, draw_properties().clip_rect,
-                draw_properties().is_clipped, contents_opaque,
-                draw_properties().opacity,
+                scaled_visible_layer_rect,
+                draw_properties().rounded_corner_bounds,
+                draw_properties().clip_rect, draw_properties().is_clipped,
+                contents_opaque, draw_properties().opacity,
                 effect_node->has_render_surface ? SkBlendMode::kSrcOver
                                                 : effect_node->blend_mode,
                 GetSortingContextId());
+  state->is_fast_rounded_corner = draw_properties().is_fast_rounded_corner;
 }
 
 bool LayerImpl::WillDraw(DrawMode draw_mode,
@@ -177,6 +181,16 @@ bool LayerImpl::WillDraw(DrawMode draw_mode,
       draw_properties().occlusion_in_content_space.IsOccluded(
           visible_layer_rect())) {
     return false;
+  }
+
+  // Resourceless mode does not support non-default blend mode. If we draw,
+  // the result will be just like kSrcOver which is not too bad for blend modes
+  // other than kDstIn. For kDstIn mode, we should ignore the source because
+  // otherwise we would draw a bad black mask over the destination.
+  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE) {
+    const auto* effect_node = GetEffectTree().Node(effect_tree_index());
+    if (effect_node && effect_node->blend_mode == SkBlendMode::kDstIn)
+      return false;
   }
 
   current_draw_mode_ = draw_mode;
@@ -320,8 +334,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->use_parent_backface_visibility_ = use_parent_backface_visibility_;
   layer->should_check_backface_visibility_ = should_check_backface_visibility_;
   layer->draws_content_ = draws_content_;
-  layer->hit_testable_without_draws_content_ =
-      hit_testable_without_draws_content_;
+  layer->hit_testable_ = hit_testable_;
   layer->non_fast_scrollable_region_ = non_fast_scrollable_region_;
   layer->touch_action_region_ = touch_action_region_;
   layer->wheel_event_handler_region_ = wheel_event_handler_region_;
@@ -409,8 +422,7 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() const {
   result->Set("Transform", std::move(list));
 
   result->SetBoolean("DrawsContent", draws_content_);
-  result->SetBoolean("HitTestableWithoutDrawsContent",
-                     hit_testable_without_draws_content_);
+  result->SetBoolean("HitTestable", hit_testable_);
   result->SetBoolean("Is3dSorted", Is3dSorted());
   result->SetDouble("Opacity", Opacity());
   result->SetBoolean("ContentsOpaque", contents_opaque_);
@@ -603,20 +615,25 @@ void LayerImpl::SetDrawsContent(bool draws_content) {
   NoteLayerPropertyChanged();
 }
 
-void LayerImpl::SetHitTestableWithoutDrawsContent(bool should_hit_test) {
-  if (hit_testable_without_draws_content_ == should_hit_test)
+void LayerImpl::SetHitTestable(bool should_hit_test) {
+  if (hit_testable_ == should_hit_test)
     return;
 
-  hit_testable_without_draws_content_ = should_hit_test;
+  hit_testable_ = should_hit_test;
   NoteLayerPropertyChanged();
 }
 
-bool LayerImpl::ShouldHitTest() const {
-  bool should_hit_test = draws_content_;
-  if (GetEffectTree().Node(effect_tree_index()))
-    should_hit_test &=
-        !GetEffectTree().Node(effect_tree_index())->subtree_hidden;
-  should_hit_test |= hit_testable_without_draws_content_;
+bool LayerImpl::HitTestable() const {
+  EffectTree& effect_tree = GetEffectTree();
+  bool should_hit_test = hit_testable_;
+  // TODO(sunxd): remove or refactor SetHideLayerAndSubtree, or move this logic
+  // to subclasses of Layer. See https://crbug.com/595843 and
+  // https://crbug.com/931865.
+  // The bit |subtree_hidden| can only be true for ui::Layers. Other layers are
+  // not supposed to set this bit.
+  if (effect_tree.Node(effect_tree_index())) {
+    should_hit_test &= !effect_tree.Node(effect_tree_index())->subtree_hidden;
+  }
   return should_hit_test;
 }
 
@@ -859,6 +876,9 @@ bool LayerImpl::CanUseLCDText() const {
     return false;
   if (static_cast<int>(offset_to_transform_parent().y()) !=
       offset_to_transform_parent().y())
+    return false;
+
+  if (has_will_change_transform_hint())
     return false;
   return true;
 }

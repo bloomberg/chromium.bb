@@ -24,6 +24,7 @@ class DownloadPermissionRequest : public PermissionRequest {
   // PermissionRequest:
   IconId GetIconId() const override;
 #if defined(OS_ANDROID)
+  base::string16 GetTitleText() const override;
   base::string16 GetMessageText() const override;
 #endif
   base::string16 GetMessageTextFragment() const override;

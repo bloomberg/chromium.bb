@@ -20,9 +20,11 @@
 
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h"
@@ -60,7 +62,7 @@ StyleImage* CSSImageValue::CacheImage(
     if (absolute_url_.IsEmpty())
       ReResolveURL(document);
     ResourceRequest resource_request(absolute_url_);
-    resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
+    resource_request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
         referrer_.referrer_policy, resource_request.Url(), referrer_.referrer));
     ResourceLoaderOptions options;
     options.initiator_info.name = initiator_name_.IsEmpty()
@@ -82,11 +84,16 @@ StyleImage* CSSImageValue::CacheImage(
         image_request_optimization == FetchParameters::kDeferImageLoad &&
         // Only http/https images are eligible to be lazily loaded.
         params.Url().ProtocolIsInHTTPFamily();
-    if (is_lazily_loaded)
+    if (is_lazily_loaded) {
+      if (document.GetFrame() && document.GetFrame()->Client()) {
+        document.GetFrame()->Client()->DidObserveLazyLoadBehavior(
+            WebLocalFrameClient::LazyLoadBehavior::kDeferredImage);
+      }
       params.SetLazyImageDeferred();
+    }
 
-    cached_image_ =
-        StyleFetchedImage::Create(document, params, is_lazily_loaded);
+    cached_image_ = MakeGarbageCollected<StyleFetchedImage>(document, params,
+                                                            is_lazily_loaded);
   }
   return cached_image_.Get();
 }

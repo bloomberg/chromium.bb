@@ -77,9 +77,6 @@ bool WarnIfNoDataReductionProxy();
 // proxy server as quic://proxy.googlezip.net.
 bool IsIncludedInQuicFieldTrial();
 
-// Returns true if QUIC is enabled for non core data reduction proxies.
-bool IsQuicEnabledForNonCoreProxies();
-
 const char* GetQuicFieldTrialName();
 
 // If the Data Reduction Proxy is used for a page load, the URL for the
@@ -137,13 +134,6 @@ bool IsWarmupURL(const GURL& url);
 // unsuccessful.
 bool IsWhitelistedHttpResponseCodeForProbes(int http_response_code);
 
-// Returns the experiment parameter name to disable missing via header bypasses.
-const char* GetMissingViaBypassParamName();
-
-// Returns if site-breakdown metrics should be recorded using the page load
-// metrics harness.
-bool IsDataSaverSiteBreakdownUsingPLMEnabled();
-
 // Returns whether network service is enabled and data reduction proxy should be
 // used.
 bool IsEnabledWithNetworkService();
@@ -151,10 +141,6 @@ bool IsEnabledWithNetworkService();
 // Returns the experiment parameter name to discard the cached result for canary
 // check probe.
 const char* GetDiscardCanaryCheckResultParam();
-
-// Returns true if canary check result should not be cached or reused across
-// network changes.
-bool ShouldDiscardCanaryCheckResult();
 
 // Helper function to locate |proxy_server| in |proxies| if it exists. This
 // function is exposed publicly so that DataReductionProxyParams can use it.

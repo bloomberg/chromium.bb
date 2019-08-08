@@ -33,7 +33,10 @@ function recomputeLayoutWidth() {
   content.style.maxWidth = maxWidth + 'px';
 }
 
-window.addEventListener('load', recomputeLayoutWidth);
+window.addEventListener('load', function() {
+  recomputeLayoutWidth();
+  chrome.send('observeThemeChanges');
+});
 
 // Handle the bookmark bar, theme, and font size change requests
 // from the C++ side.

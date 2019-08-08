@@ -1,11 +1,11 @@
 region
-++document IsKeyboardFocusable=true
-++++button Name='InnerText0' IsKeyboardFocusable=true IsDataValidForForm=true
-++++button Name='InnerText1' IsKeyboardFocusable=true IsDataValidForForm=true FullDescription='Title1'
-++++button Name='AriaLabel2' IsKeyboardFocusable=true IsDataValidForForm=true FullDescription='Title2'
-++++button Name='LabelledBy3' IsKeyboardFocusable=true IsDataValidForForm=true FullDescription='Title3'
-++++button Name='LabelledBy4' IsKeyboardFocusable=true IsDataValidForForm=true FullDescription='DescribedBy4'
-++++button Name='InnerText5' IsKeyboardFocusable=true IsDataValidForForm=true FullDescription='DescribedBy5'
-++++button Name='Outer inner' IsKeyboardFocusable=true IsDataValidForForm=true
-++++button Name='Outer inner1' IsKeyboardFocusable=true IsDataValidForForm=true
-++++button Name='Outer grandchild' IsKeyboardFocusable=true IsDataValidForForm=true
+++document
+++++button Name='InnerText0'
+++++button Name='InnerText1' FullDescription='Title1'
+++++button Name='AriaLabel2' FullDescription='Title2'
+++++button Name='LabelledBy3' FullDescription='Title3'
+++++button Name='LabelledBy4' FullDescription='DescribedBy4'
+++++button Name='InnerText5' FullDescription='DescribedBy5'
+++++button Name='Outer inner'
+++++button Name='Outer inner1'
+++++button Name='Outer grandchild'

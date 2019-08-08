@@ -32,7 +32,7 @@ rtc_source_set("control_handler") {
     "../../../rtc_base:checks",
     "../../../rtc_base:rate_limiter",
     "../../../rtc_base:safe_minmax",
-    "../../../rtc_base:sequenced_task_checker",
+    "../../../rtc_base/synchronization:sequence_checker",
     "../../../system_wrappers",
     "../../../system_wrappers:field_trial",
     "../../pacing",
@@ -43,7 +43,7 @@ rtc_source_set("control_handler") {
   ]
 
   if (!build_with_mozilla) {
-    deps += [ "../../../rtc_base:rtc_base" ]
+    deps += [ "../../../rtc_base" ]
   }
 }
 rtc_static_library("transport_feedback") {
@@ -85,17 +85,16 @@ if (rtc_include_tests) {
       "../:mock_congestion_controller",
       "../../../api/transport:network_control",
       "../../../logging:mocks",
+      "../../../rtc_base",
       "../../../rtc_base:checks",
-      "../../../rtc_base:rtc_base",
       "../../../rtc_base:rtc_base_approved",
       "../../../rtc_base/network:sent_packet",
       "../../../system_wrappers",
       "../../../test:field_trial",
       "../../../test:test_support",
-      "../../bitrate_controller:mocks",
+      "../../pacing",
       "../../pacing:mock_paced_sender",
-      "../../pacing:pacing",
-      "../../remote_bitrate_estimator:remote_bitrate_estimator",
+      "../../remote_bitrate_estimator",
       "../../rtp_rtcp:rtp_rtcp_format",
       "//testing/gmock",
     ]

@@ -34,7 +34,6 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -78,6 +77,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetDeviceScaleAdjustment(float) override;
 
   void SetDisableReadingFromCanvas(bool) override;
+  void SetDontSendKeyEventsToJavascript(bool) override;
   void SetDoubleTapToZoomEnabled(bool) override;
   void SetDownloadableBinaryFontsEnabled(bool) override;
   void SetEditingBehavior(EditingBehavior) override;
@@ -217,6 +217,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetLazyImageLoadingDistanceThresholdPx4G(int) override;
 
   void SetForceDarkModeEnabled(bool) override;
+  void SetPreferredColorScheme(PreferredColorScheme) override;
 
   bool RenderVSyncNotificationEnabled() const {
     return render_v_sync_notification_enabled_;

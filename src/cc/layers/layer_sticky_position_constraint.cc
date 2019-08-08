@@ -17,9 +17,7 @@ LayerStickyPositionConstraint::LayerStickyPositionConstraint()
       left_offset(0.f),
       right_offset(0.f),
       top_offset(0.f),
-      bottom_offset(0.f),
-      nearest_element_shifting_sticky_box(kInvalidElementId),
-      nearest_element_shifting_containing_block(kInvalidElementId) {}
+      bottom_offset(0.f) {}
 
 LayerStickyPositionConstraint::LayerStickyPositionConstraint(
     const LayerStickyPositionConstraint& other) = default;

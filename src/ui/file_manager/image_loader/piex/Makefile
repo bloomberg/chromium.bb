@@ -16,10 +16,14 @@ WASM = -s WASM=1 -fno-exceptions -Wall
 WOPT = -Os --llvm-opts 3 \
   -s STRICT=1 \
   -s ALLOW_MEMORY_GROWTH=1 \
+  -s ENVIRONMENT='web' \
+  -s NO_DYNAMIC_EXECUTION=1 \
   -s EXTRA_EXPORTED_RUNTIME_METHODS='$(WAPI)' \
-  -s RESERVED_FUNCTION_POINTERS=2
+  -s RESERVED_FUNCTION_POINTERS=$(shell echo $$((10*2))) \
+  -s TOTAL_STACK=$(shell echo $$((8*1024)))
 
 all: a.out.js
+	$(shell cp a.out.* extension)
 
 a.out.js: piex.cpp.bc piex.src.bc
 	em++ --bind --std=c++11 $(WASM) $(WOPT) $^
@@ -33,4 +37,5 @@ piex.src.bc: $(PSRC) Makefile
 .PHONY: clean
 
 clean:
-	$(shell rm -f tests.hash tests.log package-lock* *.bc a.out.*)
+	$(shell rm -f tests.{result*,log} package-lock* *.bc a.out.*)
+	$(shell rm -f extension/a.out.*)

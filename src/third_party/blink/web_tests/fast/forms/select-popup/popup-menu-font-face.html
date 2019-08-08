@@ -24,7 +24,7 @@ async_test(function(test) {
     assert_equals(face2.status, "unloaded", "face2 should be unloaded");
 
     openPicker(document.querySelector('select'), function() {
-        setTimeout(test.step_func(function() {
+        document.fonts.ready.then(test.step_func(function() {
             assert_equals(face1.status, "loaded", "face1 should be loaded");
             assert_equals(face2.status, "loaded", "face2 should be loaded");
             test.done();

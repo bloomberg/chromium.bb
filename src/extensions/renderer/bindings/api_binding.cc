@@ -631,6 +631,11 @@ void APIBinding::HandleCall(const std::string& name,
         DCHECK(try_catch.HasCaught());
         try_catch.ReThrow();
         return;
+      case APIBindingHooks::RequestResult::CONTEXT_INVALIDATED:
+        DCHECK(!binding::IsContextValid(context));
+        // The context was invalidated during the course of running the custom
+        // hooks. Bail.
+        return;
       case APIBindingHooks::RequestResult::HANDLED:
         if (!hooks_result.return_value.IsEmpty())
           arguments->Return(hooks_result.return_value);

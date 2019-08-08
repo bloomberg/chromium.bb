@@ -37,8 +37,8 @@ struct CONTENT_EXPORT BackgroundFetchInitializationData {
   blink::mojom::BackgroundFetchOptionsPtr options =
       blink::mojom::BackgroundFetchOptions::New();
   SkBitmap icon;
-  blink::mojom::BackgroundFetchRegistrationPtr registration =
-      blink::mojom::BackgroundFetchRegistration::New();
+  blink::mojom::BackgroundFetchRegistrationDataPtr registration_data =
+      blink::mojom::BackgroundFetchRegistrationData::New();
   size_t num_requests;
   size_t num_completed_requests;
   std::vector<scoped_refptr<BackgroundFetchRequestInfo>> active_fetch_requests;

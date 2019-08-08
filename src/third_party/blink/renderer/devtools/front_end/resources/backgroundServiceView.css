@@ -2,3 +2,8 @@
     background-color: var(--toolbar-bg-color);
     border-bottom: var(--divider-border);
 }
+
+.data-grid {
+    flex: auto;
+    border: none;
+}

@@ -22,7 +22,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/after_startup_task_utils.h"
 #include "components/certificate_transparency/sth_observer.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -223,11 +222,10 @@ void STHSetComponentInstallerPolicy::ConfigureNetworkService() {
   // Load and parse the STH JSON on a background task runner, then
   // dispatch back to the current task runner with all of the successfully
   // parsed results.
-  auto background_runner = base::MakeRefCounted<AfterStartupTaskUtils::Runner>(
-      base::CreateTaskRunnerWithTraits(
-          {base::TaskPriority::BEST_EFFORT, base::MayBlock()}));
-  background_runner->PostTask(
-      FROM_HERE,
+  auto background_runner = base::CreateTaskRunnerWithTraits(
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock()});
+  content::BrowserThread::PostAfterStartupTask(
+      FROM_HERE, background_runner,
       base::BindOnce(&LoadSTHsFromDisk, GetInstalledPath(GetInstallDir()),
                      base::SequencedTaskRunnerHandle::Get(),
                      base::BindRepeating(OnSTHLoaded)));

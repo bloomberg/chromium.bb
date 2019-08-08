@@ -107,6 +107,11 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
   unsigned UpdateGpuFence() override { return 0; }
 };
 
+base::TimeDelta SynchronousLayerTreeFrameSink::StubDisplayClient::
+    GetPreferredFrameIntervalForFrameSinkId(const viz::FrameSinkId& id) {
+  return viz::BeginFrameArgs::MinInterval();
+}
+
 SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> context_provider,
     scoped_refptr<viz::RasterContextProvider> worker_context_provider,
@@ -309,9 +314,9 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
         embed_render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
     shared_quad_state->SetAll(
         child_transform, gfx::Rect(child_size), gfx::Rect(child_size),
-        gfx::Rect() /* clip_rect */, false /* is_clipped */,
-        are_contents_opaque /* are_contents_opaque */, 1.f /* opacity */,
-        SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
+        gfx::RRectF() /* rounded_corner_bounds */, gfx::Rect() /* clip_rect */,
+        false /* is_clipped */, are_contents_opaque /* are_contents_opaque */,
+        1.f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
     surface_quad->SetNew(
         shared_quad_state, gfx::Rect(child_size), gfx::Rect(child_size),
         viz::SurfaceRange(
@@ -526,7 +531,7 @@ void SynchronousLayerTreeFrameSink::DidReceiveCompositorFrameAck(
 
 void SynchronousLayerTreeFrameSink::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {}
+    const viz::PresentationFeedbackMap& feedbacks) {}
 
 void SynchronousLayerTreeFrameSink::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
@@ -540,6 +545,15 @@ void SynchronousLayerTreeFrameSink::OnNeedsBeginFrames(
     bool needs_begin_frames) {
   if (sync_client_) {
     sync_client_->SetNeedsBeginFrames(needs_begin_frames);
+  }
+}
+
+void SynchronousLayerTreeFrameSink::DidPresentCompositorFrame(
+    const viz::PresentationFeedbackMap& presentation_feedbacks) {
+  if (!client_)
+    return;
+  for (const auto& pair : presentation_feedbacks) {
+    client_->DidPresentCompositorFrame(pair.first, pair.second);
   }
 }
 

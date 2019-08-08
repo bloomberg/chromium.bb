@@ -38,6 +38,7 @@ from chromite.lib import portage_util
 from chromite.lib import results_lib
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
+from chromite.lib.buildstore import BuildIdentifier
 
 
 class BuilderStage(object):
@@ -384,12 +385,12 @@ class BuilderStage(object):
     failure_msg_manager = failure_message_lib.FailureMessageManager()
     failure_messages = failure_msg_manager.ConstructStageFailureMessages(
         stage_failures)
-    master_build_id = None
-    if stage_failures:
-      master_build_id = stage_failures[0].master_build_id
+    master_build_identifier = BuildIdentifier(
+        self._run.options.master_build_id,
+        self._run.options.master_buildbucket_id)
     aborted = builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
         buildstore, build_identifier.buildbucket_id,
-        master_build_id)
+        master_build_identifier)
 
     return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
         self._run.config.name,
@@ -424,11 +425,9 @@ class BuilderStage(object):
     build_id = build_identifier.cidb_id
     job_keyvals = {
         constants.JOB_KEYVAL_DATASTORE_PARENT_KEY: (
-            'Build', build_id, 'BuildStage', self._build_stage_id),
+            'Build', build_id),
         constants.JOB_KEYVAL_CIDB_BUILD_ID:
-            build_id,
-        constants.JOB_KEYVAL_CIDB_BUILD_STAGE_ID:
-            self._build_stage_id,
+            build_id
     }
     return job_keyvals
 
@@ -761,7 +760,7 @@ class BuilderStage(object):
           prefix=self._prefix,
           board=board,
           time=elapsed_time,
-          build_stage_id=self._build_stage_id)
+          build_stage_id=None)
       self._FinishBuildStageInCIDBAndMonarch(result, cidb_result, elapsed_time)
 
       try:
@@ -1136,9 +1135,10 @@ class ArchivingStageMixin(object):
     Returns:
       True is the build should not be copied to this moblab url
     """
-    bot_filter_list = ['paladin', 'trybot', 'pfq', 'pre-cq', 'tryjob']
-    if (url.find('moblab') != -1 and
-        any(bot_id.find(filter) != -1 for filter in bot_filter_list)):
+    bot_filter_list = ['paladin', 'trybot', 'pfq', 'pre-cq', 'tryjob',
+                       'postsubmit']
+    if ('moblab' in url and
+        any(filter in bot_id for filter in bot_filter_list)):
       return True
     return False
 

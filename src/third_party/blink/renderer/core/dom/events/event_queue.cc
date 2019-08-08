@@ -31,12 +31,9 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
-
-EventQueue* EventQueue::Create(ExecutionContext* context, TaskType task_type) {
-  return MakeGarbageCollected<EventQueue>(context, task_type);
-}
 
 EventQueue::EventQueue(ExecutionContext* context, TaskType task_type)
     : ContextLifecycleObserver(context),

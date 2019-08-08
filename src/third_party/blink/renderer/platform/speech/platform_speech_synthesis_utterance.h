@@ -45,9 +45,6 @@ class PlatformSpeechSynthesisUtteranceClient : public GarbageCollectedMixin {
 class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance final
     : public GarbageCollectedFinalized<PlatformSpeechSynthesisUtterance> {
  public:
-  static PlatformSpeechSynthesisUtterance* Create(
-      PlatformSpeechSynthesisUtteranceClient*);
-
   explicit PlatformSpeechSynthesisUtterance(
       PlatformSpeechSynthesisUtteranceClient*);
 

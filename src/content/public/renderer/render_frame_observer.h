@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -21,6 +22,7 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_meaningful_layout.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "ui/base/page_transition_types.h"
@@ -102,9 +104,6 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // These match the Blink API notifications
   virtual void DidCreateNewDocument() {}
   virtual void DidCreateDocumentElement() {}
-  // Called when a provisional load is about to commit in a frame. This is
-  // dispatched just before the Javascript unload event.
-  virtual void WillCommitProvisionalLoad() {}
   // TODO(dgozman): replace next two methods with DidFinishNavigation.
   virtual void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                         ui::PageTransition transition) {}
@@ -173,14 +172,24 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // summing the jank fractions.
   virtual void DidObserveLayoutJank(double jank_fraction) {}
 
+  // Reports lazy loaded behavior when the frame or image is fully deferred or
+  // if the frame or image is loaded after being deferred by lazy load.
+  // Called every time the behavior occurs. This does not apply to image
+  // requests for placeholder images.
+  virtual void DidObserveLazyLoadBehavior(
+      blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {}
+
   // Notification when the renderer a response started, completed or canceled.
   // Complete or Cancel is guaranteed to be called for a response that started.
   // |request_id| uniquely identifies the request within this render frame.
+  // |previews_state| is the PreviewsState if the request is a sub-resource. For
+  // Document resources, |previews_state| should be reported as PREVIEWS_OFF.
   virtual void DidStartResponse(
       const GURL& response_url,
       int request_id,
       const network::ResourceResponseHead& response_head,
-      content::ResourceType resource_type) {}
+      content::ResourceType resource_type,
+      PreviewsState previews_state) {}
   virtual void DidCompleteResponse(
       int request_id,
       const network::URLLoaderCompletionStatus& status) {}

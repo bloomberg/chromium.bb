@@ -62,7 +62,7 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
   bool SupportsGetClientTag() const override;
   bool SupportsGetStorageKey() const override;
   ConflictResolution ResolveConflict(
-      const EntityData& local_data,
+      const std::string& storage_key,
       const EntityData& remote_data) const override;
   void ApplyStopSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list) override;

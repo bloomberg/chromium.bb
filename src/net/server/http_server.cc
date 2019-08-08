@@ -73,7 +73,7 @@ void HttpServer::AcceptWebSocket(
     const HttpServerRequestInfo& request,
     NetworkTrafficAnnotationTag traffic_annotation) {
   HttpConnection* connection = FindConnection(connection_id);
-  if (connection == NULL)
+  if (connection == nullptr)
     return;
   DCHECK(connection->web_socket());
   connection->web_socket()->Accept(request, traffic_annotation);
@@ -81,10 +81,10 @@ void HttpServer::AcceptWebSocket(
 
 void HttpServer::SendOverWebSocket(
     int connection_id,
-    const std::string& data,
+    base::StringPiece data,
     NetworkTrafficAnnotationTag traffic_annotation) {
   HttpConnection* connection = FindConnection(connection_id);
-  if (connection == NULL)
+  if (connection == nullptr)
     return;
   DCHECK(connection->web_socket());
   connection->web_socket()->Send(data, traffic_annotation);
@@ -94,7 +94,7 @@ void HttpServer::SendRaw(int connection_id,
                          const std::string& data,
                          NetworkTrafficAnnotationTag traffic_annotation) {
   HttpConnection* connection = FindConnection(connection_id);
-  if (connection == NULL)
+  if (connection == nullptr)
     return;
 
   bool writing_in_progress = !connection->write_buf()->IsEmpty();
@@ -257,7 +257,7 @@ int HttpServer::HandleReadResult(HttpConnection* connection, int rv) {
         Close(connection->id());
         return ERR_CONNECTION_CLOSED;
       }
-      delegate_->OnWebSocketMessage(connection->id(), message);
+      delegate_->OnWebSocketMessage(connection->id(), std::move(message));
       if (HasClosedConnection(connection))
         return ERR_CONNECTION_CLOSED;
       continue;

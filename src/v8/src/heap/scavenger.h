@@ -27,6 +27,10 @@ using SurvivingNewLargeObjectsMap =
     std::unordered_map<HeapObject, Map, Object::Hasher>;
 using SurvivingNewLargeObjectMapEntry = std::pair<HeapObject, Map>;
 
+constexpr int kEphemeronTableListSegmentSize = 128;
+using EphemeronTableList =
+    Worklist<EphemeronHashTable, kEphemeronTableListSegmentSize>;
+
 class ScavengerCollector {
  public:
   static const int kMaxScavengerTasks = 8;
@@ -42,6 +46,9 @@ class ScavengerCollector {
 
   int NumberOfScavengeTasks();
 
+  void ProcessWeakReferences(EphemeronTableList* ephemeron_table_list);
+  void ClearYoungEphemerons(EphemeronTableList* ephemeron_table_list);
+  void ClearOldEphemerons();
   void HandleSurvivingNewLargeObjects();
 
   Isolate* const isolate_;
@@ -109,10 +116,9 @@ class Scavenger {
   static const int kCopiedListSegmentSize = 256;
 
   using CopiedList = Worklist<ObjectAndSize, kCopiedListSegmentSize>;
-
   Scavenger(ScavengerCollector* collector, Heap* heap, bool is_logging,
             CopiedList* copied_list, PromotionList* promotion_list,
-            int task_id);
+            EphemeronTableList* ephemeron_table_list, int task_id);
 
   // Entry point for scavenging an old generation page. For scavenging single
   // objects see RootScavengingVisitor and ScavengeVisitor below.
@@ -124,6 +130,8 @@ class Scavenger {
 
   // Finalize the Scavenger. Needs to be called from the main thread.
   void Finalize();
+
+  void AddEphemeronHashTable(EphemeronHashTable table);
 
   size_t bytes_copied() const { return copied_size_; }
   size_t bytes_promoted() const { return promoted_size_; }
@@ -194,16 +202,20 @@ class Scavenger {
                                                       int object_size);
 
   void IterateAndScavengePromotedObject(HeapObject target, Map map, int size);
+  void RememberPromotedEphemeron(EphemeronHashTable table, int index);
 
   ScavengerCollector* const collector_;
   Heap* const heap_;
   PromotionList::View promotion_list_;
   CopiedList::View copied_list_;
+  EphemeronTableList::View ephemeron_table_list_;
   Heap::PretenuringFeedbackMap local_pretenuring_feedback_;
   size_t copied_size_;
   size_t promoted_size_;
   LocalAllocator allocator_;
   SurvivingNewLargeObjectsMap surviving_new_large_objects_;
+
+  EphemeronRememberedSet ephemeron_remembered_set_;
   const bool is_logging_;
   const bool is_incremental_marking_;
   const bool is_compacting_;
@@ -242,6 +254,7 @@ class ScavengeVisitor final : public NewSpaceVisitor<ScavengeVisitor> {
 
   V8_INLINE void VisitCodeTarget(Code host, RelocInfo* rinfo) final;
   V8_INLINE void VisitEmbeddedPointer(Code host, RelocInfo* rinfo) final;
+  V8_INLINE int VisitEphemeronHashTable(Map map, EphemeronHashTable object);
 
  private:
   template <typename TSlot>

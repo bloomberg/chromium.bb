@@ -61,7 +61,7 @@ TEST(HttpAuthSSPITest, DetermineMaxTokenLength_Normal) {
 TEST(HttpAuthSSPITest, DetermineMaxTokenLength_InvalidPackage) {
   MockSSPILibrary mock_library;
   mock_library.ExpectQuerySecurityPackageInfo(L"Foo", SEC_E_SECPKG_NOT_FOUND,
-                                              NULL);
+                                              nullptr);
   ULONG max_token_length = kMaxTokenLength;
   int rv = DetermineMaxTokenLength(&mock_library, L"Foo", &max_token_length);
   EXPECT_THAT(rv, IsError(ERR_UNSUPPORTED_AUTH_SCHEME));
@@ -97,7 +97,7 @@ TEST(HttpAuthSSPITest, ParseChallenge_TwoRounds) {
   // Generate an auth token and create another thing.
   std::string auth_token;
   EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(
-                    NULL, "HTTP/intranet.google.com", std::string(),
+                    nullptr, "HTTP/intranet.google.com", std::string(),
                     &auth_token, base::BindOnce(&UnexpectedCallback)));
 
   std::string second_challenge_text = "Negotiate Zm9vYmFy";
@@ -134,7 +134,7 @@ TEST(HttpAuthSSPITest, ParseChallenge_MissingTokenSecondRound) {
 
   std::string auth_token;
   EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(
-                    NULL, "HTTP/intranet.google.com", std::string(),
+                    nullptr, "HTTP/intranet.google.com", std::string(),
                     &auth_token, base::BindOnce(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
@@ -157,7 +157,7 @@ TEST(HttpAuthSSPITest, ParseChallenge_NonBase64EncodedToken) {
 
   std::string auth_token;
   EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(
-                    NULL, "HTTP/intranet.google.com", std::string(),
+                    nullptr, "HTTP/intranet.google.com", std::string(),
                     &auth_token, base::BindOnce(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate =happyjoy=";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),

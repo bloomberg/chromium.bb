@@ -8,6 +8,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/base/assistant_button.h"
+#include "ash/assistant/ui/dialog_plate/mic_view.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -364,7 +365,7 @@ void DialogPlate::InitVoiceLayoutContainer() {
 
   // Animated voice input toggle.
   animated_voice_input_toggle_ =
-      new ActionView(this, delegate_, AssistantButtonId::kVoiceInputToggle);
+      new MicView(this, delegate_, AssistantButtonId::kVoiceInputToggle);
   animated_voice_input_toggle_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME));
   voice_layout_container_->AddChildView(animated_voice_input_toggle_);

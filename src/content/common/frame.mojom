@@ -20,19 +20,23 @@ import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
+import "third_party/blink/public/mojom/commit_result/commit_result.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
 import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 import "third_party/blink/public/mojom/frame/navigation_initiator.mojom";
+import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
+import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
 import "third_party/blink/public/mojom/referrer.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
-import "third_party/blink/public/web/commit_result.mojom";
+import "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom";
 import "third_party/blink/public/mojom/devtools/devtools_agent.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
-import "third_party/blink/public/web/window_features.mojom";
+import "third_party/blink/public/mojom/window_features/window_features.mojom";
 import "ui/base/mojo/window_open_disposition.mojom";
 import "url/mojom/url.mojom";
+import "url/mojom/origin.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the
@@ -54,10 +58,6 @@ interface Frame {
 
   // Cancels blocked requests. BlockRequests must have been called before.
   CancelBlockedRequests();
-
-  // Called on the main frame of a page embedded in a Portal when it is
-  // activated.
-  OnPortalActivated();
 
   // Set the lifecycle state.
   SetLifecycleState(blink.mojom.FrameLifecycleState state);
@@ -99,6 +99,8 @@ interface FrameNavigationControl {
   // |controller_service_worker_info| may also be provided by the browser if the
   // frame that is being navigated is supposed to be controlled by a Service
   // Worker.
+  // |provider_info| may also be provided if the browser has created a
+  // ServiceWorkerProviderHost for this navigation.
   // |prefetch_loader_factory| is populated only when Network Service is
   // enabled. The pointer is used to start a prefetch loading via the browser
   // process.
@@ -121,6 +123,7 @@ interface FrameNavigationControl {
       blink.mojom.URLLoaderFactoryBundle? subresource_loader_factories,
       array<TransferrableURLLoader>? subresource_overrides,
       blink.mojom.ControllerServiceWorkerInfo? controller_service_worker_info,
+      blink.mojom.ServiceWorkerProviderInfoForWindow? provider_info,
       network.mojom.URLLoaderFactory? prefetch_loader_factory,
       mojo_base.mojom.UnguessableToken devtools_navigation_token)
       => (blink.mojom.CommitResult commit_result);
@@ -179,31 +182,62 @@ interface FrameNavigationControl {
   // |javascript| is the string containing the JavaScript to be executed in the
   // target frame's context.
   //
-  // If |notify_result| is true the result is sent back to the browser using
-  // the message FrameHost::JavaScriptExecuteResponse.
-  // FrameHost::JavaScriptExecuteResponse is passed the ID parameter so that the
-  // host can uniquely identify the request.
+  // |wants_result| is true if the result of this execution is required by the
+  // caller. If it is false, a reply is still required by Mojo, but a null value
+  // should be returned to avoid issues serializing a large, unwanted reply.
   //
   // TODO(hajimehoshi): This requires navigate association to keep the message
   // order with other navigation-related messages. Fix this and move this to a
   // non-navigate-related interface if possible.
-  JavaScriptExecuteRequest(mojo_base.mojom.String16 javascript,
-                           int32 id,
-                           bool notify_result);
+  JavaScriptExecuteRequest(
+      mojo_base.mojom.String16 javascript,
+      bool wants_result) => (mojo_base.mojom.Value result);
 
-  // ONLY FOR TESTS: Same as above but adds a fake UserGestureindicator around
+  // ONLY FOR TESTS: Same as above but adds a fake UserGestureIndicator around
   // execution. (crbug.com/408426)
-  JavaScriptExecuteRequestForTests(mojo_base.mojom.String16 javascript,
-                                   int32 id,
-                                   bool notify_result,
-                                   bool has_user_gesture);
+  JavaScriptExecuteRequestForTests(
+      mojo_base.mojom.String16 javascript,
+      bool wants_result,
+      bool has_user_gesture)
+      => (mojo_base.mojom.Value result);
 
   // Same as JavaScriptExecuteRequest above except the script is run in the
   // isolated world specified by the fourth parameter.
-  JavaScriptExecuteRequestInIsolatedWorld(mojo_base.mojom.String16 javascript,
-                                          int32 id,
-                                          bool notify_result,
-                                          int32 world_id);
+  JavaScriptExecuteRequestInIsolatedWorld(
+      mojo_base.mojom.String16 javascript,
+      bool wants_result,
+      int32 world_id) => (mojo_base.mojom.Value result);
+
+  // Posts a message from a frame in another process to the current renderer.
+  // |source_routing_id| is the routing ID of the source frame in the source
+  // process when sent to the browser. The browser replaces it with the routing
+  // ID of the equivalent frame proxy in the destination process.
+  // |source_origin| is the origin of the source frame when the message was
+  // sent, and |target_origin| specifies what the origin of the target frame
+  // must be for the message to be dispatched. An empty string allows the
+  // message to be dispatched to any origin.
+  // |message| is the encoded data, and any extra properties such as
+  // transferred ports or blobs.
+  PostMessageEvent(int32 source_routing_id,
+                   mojo_base.mojom.String16 source_origin,
+                   mojo_base.mojom.String16 target_origin,
+                   blink.mojom.TransferableMessage message);
+
+  // Forwards message to the portal's main frame.
+  ForwardMessageToPortalHost(blink.mojom.TransferableMessage message,
+                             url.mojom.Origin source_origin,
+                             url.mojom.Origin? target_origin);
+
+  // Called on the main frame of a page embedded in a Portal when it is
+  // activated. The frame has the option to adopt the previous page as a portal
+  // identified by |portal_token| with the interface |portal|. The activation
+  // can optionally include a message |data| dispatched with the
+  // PortalActivateEvent. The return value |was_adopted| indicates if the portal
+  // for the predecessor (identified by |portal_token|) was adopted by the
+  // current frame.
+  OnPortalActivated(mojo_base.mojom.UnguessableToken portal_token,
+                    associated blink.mojom.Portal portal,
+                    blink.mojom.TransferableMessage data) => (bool was_adopted);
 };
 
 // Implemented by the frame (e.g. renderer processes).
@@ -312,12 +346,18 @@ interface FrameHost {
       => (CreateNewWindowStatus status, CreateNewWindowReply? reply);
 
   // Sent by the renderer process to request the creation of a new portal.
-  // |pipe| is the pipe to be used for the Portal object. Returns
+  // |portal| is the interface to be used for the Portal object. Returns
   // |proxy_routing_id|, which is the routing id of the RenderFrameProxy and
   // |portal_token|, which is the unique identifier for the portal.
-  [Sync] CreatePortal(blink.mojom.Portal& portal)
+  [Sync] CreatePortal(associated blink.mojom.Portal& portal)
       => (int32 proxy_routing_id,
           mojo_base.mojom.UnguessableToken portal_token);
+
+  // Requests that this frame adopts the portal identified by |portal_token|.
+  // Returns |proxy_routing_id|, which is the routing id of the portal's
+  // RenderFrameProxy.
+  [Sync] AdoptPortal(mojo_base.mojom.UnguessableToken portal_token)
+      => (int32 proxy_routing_id);
 
   // Creates and returns a KeepAliveHandle.
   IssueKeepAliveHandle(KeepAliveHandle& keep_alive_handle);
@@ -430,9 +470,14 @@ interface FrameHost {
   [EnableIf=is_android]
   UpdateUserGestureCarryoverInfo();
 
-  // Response for JavaScriptExecuteRequest, sent when a reply was requested.
-  // The ID is the parameter supplied to
-  // Frame::JavaScriptExecuteRequest. The result is the value returned by the
-  // script, one of Null, Boolean, Integer, Real, or String.
-  JavaScriptExecuteResponse(int32 id, mojo_base.mojom.Value result);
+  // Sent after the onload handler has been invoked for the document
+  // in this frame. Sent for top-level frames.
+  DocumentOnLoadCompleted();
+
+  // Sent by the blink's FrameScheduler when a list of active features
+  // the scheduler tracks changes.
+  // See blink::scheduler::SchedulingPolicy::Feature for the meaning
+  // of the individual bits.
+  // TODO(altimin): Move into a separate scheduling interface.
+  UpdateActiveSchedulerTrackedFeatures(uint64 features_mask);
 };

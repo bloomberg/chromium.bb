@@ -32,8 +32,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFullscreenVideoStatus,
 // Messages from the browser to the renderer requesting playback state changes.
 // ----------------------------------------------------------------------------
 
-IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_Pause,
-                    int /* delegate_id, distinguishes instances */)
+IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_Pause,
+                    int /* delegate_id, distinguishes instances */,
+                    bool /* triggered_by_user */)
 
 IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_Play,
                     int /* delegate_id, distinguishes instances */)

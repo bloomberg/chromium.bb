@@ -32,6 +32,7 @@
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_CLOSE" file="infobar_close.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_RESTORE_SESSION" file="infobar_restore_session.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_SAVE_PASSWORD" file="infobar_save_password.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_SEND_TAB_TO_SELF" file="infobar_send_tab_to_self.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_TRANSLATE" file="infobar_translate.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_LOCATION_BAR_HTTP" file="omnibox_http.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_CALCULATOR" file="omnibox_calculator.png" />

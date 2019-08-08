@@ -47,11 +47,6 @@ class CORE_EXPORT ColorChooserUIController
   USING_PRE_FINALIZER(ColorChooserUIController, Dispose);
 
  public:
-  static ColorChooserUIController* Create(LocalFrame* frame,
-                                          blink::ColorChooserClient* client) {
-    return MakeGarbageCollected<ColorChooserUIController>(frame, client);
-  }
-
   ColorChooserUIController(LocalFrame*, blink::ColorChooserClient*);
   ~ColorChooserUIController() override;
   void Trace(Visitor*) override;

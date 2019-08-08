@@ -60,11 +60,11 @@ class VoiceInteractionControllerClientTest : public ChromeAshTestBase {
   }
 
   void TearDown() override {
-    arc_session_manager_->Shutdown();
-    arc_session_manager_.reset();
     voice_interaction_controller_.reset();
     voice_interaction_controller_client_.reset();
     profile_.reset();
+    arc_session_manager_->Shutdown();
+    arc_session_manager_.reset();
     ChromeAshTestBase::TearDown();
   }
 

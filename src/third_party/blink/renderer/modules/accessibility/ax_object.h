@@ -628,6 +628,11 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // present and if it wasn't already exposed by one of the two functions above.
   virtual String Placeholder(ax::mojom::NameFrom) const { return String(); }
 
+  // Takes the result of nameFrom and retrieves the HTML Title of the object,
+  // if present and if it wasn't already exposed by |GetName| above.
+  // HTML Title is typically used as a tooltip.
+  virtual String Title(ax::mojom::NameFrom) const { return String(); }
+
   // Internal functions used by name and description, above.
   typedef HeapHashSet<Member<const AXObject>> AXObjectSet;
   virtual String TextAlternative(bool recursive,
@@ -668,6 +673,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual AtomicString FontFamily() const { return g_null_atom; }
   // Font size is in pixels.
   virtual float FontSize() const { return 0.0f; }
+  virtual float FontWeight() const { return 0.0f; }
   // Value should be 1-based. 0 means not supported.
   virtual int HeadingLevel() const { return 0; }
   // Value should be 1-based. 0 means not supported.
@@ -680,6 +686,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   }
   virtual AXObject* InPageLinkTarget() const { return nullptr; }
   virtual AccessibilityOrientation Orientation() const;
+  virtual ax::mojom::ListStyle GetListStyle() const {
+    return ax::mojom::ListStyle::kNone;
+  }
   virtual String GetText() const { return String(); }
   virtual ax::mojom::TextDirection GetTextDirection() const {
     return ax::mojom::TextDirection::kLtr;
@@ -689,8 +698,16 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   }
   virtual int TextLength() const { return 0; }
 
-  // Bitmask from ax::mojom::TextStyle.
-  virtual int32_t GetTextStyle() const { return 0; }
+  virtual void GetTextStyleAndTextDecorationStyle(
+      int32_t* text_style,
+      ax::mojom::TextDecorationStyle* text_overline_style,
+      ax::mojom::TextDecorationStyle* text_strikethrough_style,
+      ax::mojom::TextDecorationStyle* text_underline_style) const {
+    *text_style = 0;
+    *text_overline_style = ax::mojom::TextDecorationStyle::kNone;
+    *text_strikethrough_style = ax::mojom::TextDecorationStyle::kNone;
+    *text_underline_style = ax::mojom::TextDecorationStyle::kNone;
+  }
 
   virtual AXObjectVector RadioButtonsInGroup() const {
     return AXObjectVector();
@@ -989,9 +1006,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   // Text metrics. Most of these should be deprecated, needs major cleanup.
   virtual VisiblePosition VisiblePositionForIndex(int) const;
-  int LineForPosition(const VisiblePosition&) const;
   virtual int Index(const VisiblePosition&) const { return -1; }
-  virtual void LineBreaks(Vector<int>&) const {}
 
   // Static helper functions.
   static bool IsARIAControl(ax::mojom::Role);

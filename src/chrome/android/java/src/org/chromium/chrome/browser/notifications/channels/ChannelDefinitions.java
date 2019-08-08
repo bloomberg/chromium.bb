@@ -26,36 +26,36 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Contains the properties of all our pre-definable notification channels on Android O+. In
- * practice this is all our channels except site channels, which are defined dynamically by the
- * {@link SiteChannelsManager}.
- * <br/><br/>
+ * Contains the properties of all our pre-definable notification channels on Android O+. In practice
+ * this is all our channels except site channels, which are defined dynamically by the
+ * {@link SiteChannelsManager}. <br/>
+ * <br/>
  * PLEASE NOTE: Notification channels appear in system UI and their properties are persisted forever
  * by Android, so should not be added or removed lightly, and the proper deprecation and versioning
- * steps must be taken when doing so.
- * <br/><br/>
+ * steps must be taken when doing so. <br/>
+ * <br/>
  * See the README.md in this directory for more information before adding or changing any channels.
  */
 @TargetApi(Build.VERSION_CODES.O)
 public class ChannelDefinitions {
     public static final String CHANNEL_ID_PREFIX_SITES = "web:";
     /**
-     * Version number identifying the current set of channels. This must be incremented whenever
-     * the set of channels returned by {@link #getStartupChannelIds()} or
-     * {@link #getLegacyChannelIds()} changes.
+     * Version number identifying the current set of channels. This must be incremented whenever the
+     * set of channels returned by {@link #getStartupChannelIds()} or {@link #getLegacyChannelIds()}
+     * changes.
      */
     static final int CHANNELS_VERSION = 2;
 
     /**
      * To define a new channel, add the channel ID to this StringDef and add a new entry to
-     * PredefinedChannels.MAP below with the appropriate channel parameters.
-     * To remove an existing channel, remove the ID from this StringDef, remove its entry from
-     * Predefined Channels.MAP, and add the ID to the LEGACY_CHANNELS_ID array below.
-     * See the README in this directory for more detailed instructions.
+     * PredefinedChannels.MAP below with the appropriate channel parameters. To remove an existing
+     * channel, remove the ID from this StringDef, remove its entry from Predefined Channels.MAP,
+     * and add the ID to the LEGACY_CHANNELS_ID array below. See the README in this directory for
+     * more detailed instructions.
      */
     @StringDef({ChannelId.BROWSER, ChannelId.DOWNLOADS, ChannelId.INCOGNITO, ChannelId.MEDIA,
             ChannelId.SCREEN_CAPTURE, ChannelId.CONTENT_SUGGESTIONS, ChannelId.WEBAPP_ACTIONS,
-            ChannelId.SITES})
+            ChannelId.SITES, ChannelId.SHARING, ChannelId.UPDATES})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelId {
         String BROWSER = "browser";
@@ -68,9 +68,13 @@ public class ChannelDefinitions {
         // TODO(crbug.com/700377): Deprecate the 'sites' channel.
         String SITES = "sites";
         String VR = "vr";
+        String SHARING = "sharing";
+        String UPDATES = "updates";
     }
 
-    @StringDef({ChannelGroupId.GENERAL, ChannelGroupId.SITES})
+    @StringDef({
+            ChannelGroupId.GENERAL, ChannelGroupId.SITES
+    })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelGroupId {
         String SITES = "sites";
@@ -88,10 +92,10 @@ public class ChannelDefinitions {
 
         /**
          * The set of predefined channels to be initialized on startup.
-         *
-         * <p>CHANNELS_VERSION must be incremented every time an entry is added to or removed from
-         * this set, or when the definition of one of a channel in this set is changed. If an entry
-         * is removed from here then it must be added to the LEGACY_CHANNEL_IDs array.
+         * <p>
+         * CHANNELS_VERSION must be incremented every time an entry is added to or removed from this
+         * set, or when the definition of one of a channel in this set is changed. If an entry is
+         * removed from here then it must be added to the LEGACY_CHANNEL_IDs array.
          */
         static final Set<String> STARTUP;
 
@@ -128,6 +132,9 @@ public class ChannelDefinitions {
                             R.string.notification_category_screen_capture,
                             NotificationManager.IMPORTANCE_HIGH, ChannelGroupId.GENERAL));
 
+            map.put(ChannelId.SHARING,
+                    new PredefinedChannel(ChannelId.SHARING, R.string.notification_category_sharing,
+                            NotificationManager.IMPORTANCE_HIGH, ChannelGroupId.GENERAL));
             // Not adding sites channel to startup channels because notifications may be posted to
             // this channel if no site-specific channel could be found.
             // TODO(crbug.com/802380) Stop using this channel as a fallback and fully deprecate it.
@@ -157,6 +164,10 @@ public class ChannelDefinitions {
                     new PredefinedChannel(ChannelId.VR, R.string.notification_category_vr,
                             NotificationManager.IMPORTANCE_HIGH, ChannelGroupId.GENERAL));
 
+            map.put(ChannelId.UPDATES,
+                    new PredefinedChannel(ChannelId.UPDATES, R.string.notification_category_updates,
+                            NotificationManager.IMPORTANCE_HIGH, ChannelGroupId.GENERAL));
+
             MAP = Collections.unmodifiableMap(map);
             STARTUP = Collections.unmodifiableSet(startup);
         }
@@ -164,10 +175,12 @@ public class ChannelDefinitions {
 
     /**
      * When channels become deprecated they should be removed from PredefinedChannels and their ids
-     * added to this array so they can be deleted on upgrade.
-     * We also want to keep track of old channel ids so they aren't accidentally reused.
+     * added to this array so they can be deleted on upgrade. We also want to keep track of old
+     * channel ids so they aren't accidentally reused.
      */
-    private static final String[] LEGACY_CHANNEL_IDS = {ChannelDefinitions.ChannelId.SITES};
+    private static final String[] LEGACY_CHANNEL_IDS = {
+            ChannelDefinitions.ChannelId.SITES
+    };
 
     // Map defined in static inner class so it's only initialized lazily.
     private static class PredefinedChannelGroups {
@@ -219,7 +232,7 @@ public class ChannelDefinitions {
 
     /**
      * @return An array of old ChannelIds that may have been returned by
-     * {@link #getStartupChannelIds} in the past, but are no longer in use.
+     *         {@link #getStartupChannelIds} in the past, but are no longer in use.
      */
     static List<String> getLegacyChannelIds() {
         List<String> legacyChannels = new ArrayList<>(Arrays.asList(LEGACY_CHANNEL_IDS));
@@ -267,8 +280,8 @@ public class ChannelDefinitions {
     }
 
     /**
-     * Helper class for storing predefined channel group properties while allowing the group name
-     * to be lazily evaluated only when it is converted to an actual NotificationChannelGroup.
+     * Helper class for storing predefined channel group properties while allowing the group name to
+     * be lazily evaluated only when it is converted to an actual NotificationChannelGroup.
      */
     public static class PredefinedChannelGroup {
         @ChannelGroupId

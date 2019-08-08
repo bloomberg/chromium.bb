@@ -228,6 +228,8 @@ GaiaAuthFetcher::GaiaAuthFetcher(
       list_accounts_gurl_(
           GaiaUrls::GetInstance()->ListAccountsURLWithSource(source_)),
       logout_gurl_(GaiaUrls::GetInstance()->LogOutURLWithSource(source_)),
+      logout_with_continue_gurl_(
+          GaiaUrls::GetInstance()->LogOutURLWithSourceAndContinueURL(source_)),
       get_check_connection_info_url_(
           GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(
               source_)) {}
@@ -751,7 +753,8 @@ void GaiaAuthFetcher::StartListAccounts() {
 }
 
 void GaiaAuthFetcher::StartOAuthMultilogin(
-    const std::vector<MultiloginTokenIDPair>& accounts) {
+    const std::vector<MultiloginTokenIDPair>& accounts,
+    const std::string& external_cc_result) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
   UMA_HISTOGRAM_COUNTS_100("Signin.Multilogin.NumberOfAccounts",
@@ -767,8 +770,13 @@ void GaiaAuthFetcher::StartOAuthMultilogin(
       kOAuthMultiBearerHeaderFormat,
       base::JoinString(authorization_header_parts, ",").c_str());
 
-  std::string parameters = base::StringPrintf(
-      "?source=%s", net::EscapeUrlEncodedData(source_, true).c_str());
+  std::string source_string = net::EscapeUrlEncodedData(source_, true);
+  std::string parameters =
+      external_cc_result.empty()
+          ? base::StringPrintf("?source=%s", source_string.c_str())
+          : base::StringPrintf(
+                "?source=%s&externalCcResult=%s", source_string.c_str(),
+                net::EscapeUrlEncodedData(external_cc_result, true).c_str());
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("gaia_auth_multilogin", R"(
@@ -805,6 +813,14 @@ void GaiaAuthFetcher::StartOAuthMultilogin(
 }
 
 void GaiaAuthFetcher::StartLogOut() {
+  StartLogOutInternal(logout_gurl_);
+}
+
+void GaiaAuthFetcher::StartLogOutWithBlankContinueURL() {
+  StartLogOutInternal(logout_with_continue_gurl_);
+}
+
+void GaiaAuthFetcher::StartLogOutInternal(const GURL& logout_gurl) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -834,7 +850,7 @@ void GaiaAuthFetcher::StartLogOut() {
             }
           }
         })");
-  CreateAndStartGaiaFetcher(std::string(), std::string(), logout_gurl_,
+  CreateAndStartGaiaFetcher(std::string(), std::string(), logout_gurl,
                             net::LOAD_NORMAL, traffic_annotation);
 }
 
@@ -1138,7 +1154,7 @@ void GaiaAuthFetcher::DispatchFetchedRequest(
     OnOAuth2RevokeTokenFetched(data, net_error, response_code);
   } else if (url == list_accounts_gurl_) {
     OnListAccountsFetched(data, net_error, response_code);
-  } else if (url == logout_gurl_) {
+  } else if (url == logout_gurl_ || url == logout_with_continue_gurl_) {
     OnLogOutFetched(data, net_error, response_code);
   } else if (url == get_check_connection_info_url_) {
     OnGetCheckConnectionInfoFetched(data, net_error, response_code);

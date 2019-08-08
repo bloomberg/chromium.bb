@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.infobar;
 import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 
 /**
@@ -29,7 +30,8 @@ public class SavePasswordInfoBar extends ConfirmInfoBar {
     private SavePasswordInfoBar(int iconDrawbleId, String message, int titleLinkStart,
             int titleLinkEnd, String detailsMessage, String primaryButtonText,
             String secondaryButtonText) {
-        super(iconDrawbleId, null, message, null, primaryButtonText, secondaryButtonText);
+        super(iconDrawbleId, R.color.infobar_icon_drawable_color, null, message, null,
+                primaryButtonText, secondaryButtonText);
         mTitleLinkRangeStart = titleLinkStart;
         mTitleLinkRangeEnd = titleLinkEnd;
         mDetailsMessage = detailsMessage;

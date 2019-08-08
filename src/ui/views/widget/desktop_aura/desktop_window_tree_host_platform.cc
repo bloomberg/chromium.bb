@@ -54,6 +54,18 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
   if (params.parent && params.parent->GetHost())
     properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();
 
+  switch (params.opacity) {
+    case Widget::InitParams::WindowOpacity::INFER_OPACITY:
+      properties.opacity = ui::PlatformWindowOpacity::kInferOpacity;
+      break;
+    case Widget::InitParams::WindowOpacity::OPAQUE_WINDOW:
+      properties.opacity = ui::PlatformWindowOpacity::kOpaqueWindow;
+      break;
+    case Widget::InitParams::WindowOpacity::TRANSLUCENT_WINDOW:
+      properties.opacity = ui::PlatformWindowOpacity::kTranslucentWindow;
+      break;
+  }
+
   return properties;
 }
 
@@ -537,7 +549,6 @@ void DesktopWindowTreeHostPlatform::Relayout() {
     non_client_view->client_view()->InvalidateLayout();
     non_client_view->InvalidateLayout();
   }
-  widget->GetRootView()->Layout();
 }
 
 void DesktopWindowTreeHostPlatform::RemoveNonClientEventFilter() {

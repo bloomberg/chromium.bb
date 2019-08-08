@@ -63,7 +63,8 @@ TreeScope::TreeScope(ContainerNode& root_node, Document& document)
     : root_node_(&root_node),
       document_(&document),
       parent_tree_scope_(&document),
-      id_target_observer_registry_(IdTargetObserverRegistry::Create()) {
+      id_target_observer_registry_(
+          MakeGarbageCollected<IdTargetObserverRegistry>()) {
   DCHECK_NE(root_node, document);
   root_node_->SetTreeScope(this);
 }
@@ -72,7 +73,8 @@ TreeScope::TreeScope(Document& document)
     : root_node_(document),
       document_(&document),
       parent_tree_scope_(nullptr),
-      id_target_observer_registry_(IdTargetObserverRegistry::Create()) {
+      id_target_observer_registry_(
+          MakeGarbageCollected<IdTargetObserverRegistry>()) {
   root_node_->SetTreeScope(this);
 }
 
@@ -82,8 +84,7 @@ void TreeScope::ResetTreeScope() {
   selection_ = nullptr;
 }
 
-bool TreeScope::IsInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(
-    const TreeScope& scope) const {
+bool TreeScope::IsInclusiveAncestorTreeScopeOf(const TreeScope& scope) const {
   for (const TreeScope* current = &scope; current;
        current = current->ParentTreeScope()) {
     if (current == this)
@@ -103,7 +104,7 @@ void TreeScope::SetParentTreeScope(TreeScope& new_parent_scope) {
 ScopedStyleResolver& TreeScope::EnsureScopedStyleResolver() {
   CHECK(this);
   if (!scoped_style_resolver_)
-    scoped_style_resolver_ = ScopedStyleResolver::Create(*this);
+    scoped_style_resolver_ = MakeGarbageCollected<ScopedStyleResolver>(*this);
   return *scoped_style_resolver_;
 }
 
@@ -139,7 +140,7 @@ const HeapVector<Member<Element>>& TreeScope::GetAllElementsById(
 void TreeScope::AddElementById(const AtomicString& element_id,
                                Element& element) {
   if (!elements_by_id_)
-    elements_by_id_ = TreeOrderedMap::Create();
+    elements_by_id_ = MakeGarbageCollected<TreeOrderedMap>();
   elements_by_id_->Add(element_id, element);
   id_target_observer_registry_->NotifyObservers(element_id);
 }
@@ -170,7 +171,7 @@ void TreeScope::AddImageMap(HTMLMapElement& image_map) {
   if (!name)
     return;
   if (!image_maps_by_name_)
-    image_maps_by_name_ = TreeOrderedMap::Create();
+    image_maps_by_name_ = MakeGarbageCollected<TreeOrderedMap>();
   image_maps_by_name_->Add(name, image_map);
 }
 
@@ -208,7 +209,7 @@ static bool PointInFrameContentIfVisible(Document& document,
     return false;
 
   // The VisibleContentRect check below requires that scrollbars are up-to-date.
-  document.UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document.UpdateStyleAndLayout();
 
   auto* scrollable_area = frame_view->LayoutViewport();
   IntRect visible_frame_rect(IntPoint(),
@@ -384,7 +385,7 @@ DOMSelection* TreeScope::GetSelection() const {
   // FIXME: The correct selection in Shadow DOM requires that Position can have
   // a ShadowRoot as a container.  See
   // https://bugs.webkit.org/show_bug.cgi?id=82697
-  selection_ = DOMSelection::Create(this);
+  selection_ = MakeGarbageCollected<DOMSelection>(this);
   return selection_.Get();
 }
 

@@ -22,6 +22,7 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "device/fido/public_key_credential_user_entity.h"
 #include "net/cert/x509_util.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
@@ -50,6 +51,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     std::unique_ptr<crypto::ECPrivateKey> private_key;
     std::array<uint8_t, kRpIdHashLength> application_parameter;
     uint32_t counter = 0;
+    bool is_resident = false;
+    // is_u2f is true if the credential was created via a U2F interface.
+    bool is_u2f = false;
+
+    // user is only valid if |is_resident| is true.
+    base::Optional<device::PublicKeyCredentialUserEntity> user;
 
     DISALLOW_COPY_AND_ASSIGN(RegistrationData);
   };
@@ -105,6 +112,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // itself.
     uint8_t pin_token[32];
 
+    // Whether a device with internal-UV support has fingerprints enrolled.
+    bool fingerprints_enrolled = false;
+
+    // pending_assertions contains the second and subsequent assertions
+    // resulting from a GetAssertion call. These values are awaiting a
+    // GetNextAssertion request.
+    std::vector<std::vector<uint8_t>> pending_assertions;
+
     FidoTransportProtocol transport =
         FidoTransportProtocol::kUsbHumanInterfaceDevice;
 
@@ -116,6 +131,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // with the given ID or if private-key generation fails.
     bool InjectRegistration(const std::vector<uint8_t>& credential_id,
                             const std::string& relying_party_id);
+
+    // InjectResidentKey adds a resident credential with the specified values.
+    // Returns false if there already exists a resident credential for the same
+    // (RP ID, user ID) pair, or for the same credential ID. Otherwise returns
+    // true.
+    bool InjectResidentKey(const std::vector<uint8_t>& credential_id,
+                           const std::string& relying_party_id,
+                           const std::vector<uint8_t>& user_id,
+                           const std::string& name,
+                           const std::string& display_name);
 
    private:
     friend class base::RefCounted<State>;
@@ -134,10 +159,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
   ~VirtualFidoDevice() override;
 
-  State* mutable_state() { return state_.get(); }
+  State* mutable_state() const { return state_.get(); }
 
  protected:
   static std::vector<uint8_t> GetAttestationKey();
+
+  scoped_refptr<State> NewReferenceToState() const { return state_; }
 
   static bool Sign(crypto::ECPrivateKey* private_key,
                    base::span<const uint8_t> sign_buffer,
@@ -149,17 +176,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
   base::Optional<std::vector<uint8_t>> GenerateAttestationCertificate(
       bool individual_attestation_requested) const;
 
-  void StoreNewKey(
-      base::span<const uint8_t, kRpIdHashLength> application_parameter,
-      base::span<const uint8_t> key_handle,
-      std::unique_ptr<crypto::ECPrivateKey> private_key);
+  void StoreNewKey(base::span<const uint8_t> key_handle,
+                   VirtualFidoDevice::RegistrationData registration_data);
 
   RegistrationData* FindRegistrationData(
       base::span<const uint8_t> key_handle,
       base::span<const uint8_t, kRpIdHashLength> application_parameter);
 
   // FidoDevice:
-  void TryWink(WinkCallback cb) override;
   std::string GetId() const override;
   FidoTransportProtocol DeviceTransport() const override;
 

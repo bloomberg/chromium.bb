@@ -5,9 +5,132 @@
 'use strict';
 tr.exportTo('cp', () => {
   class TimeseriesDescriptor extends cp.ElementBase {
-    ready() {
+    static get template() {
+      return Polymer.html`
+        <style>
+          :host {
+            display: flex;
+          }
+          menu-input {
+            margin-right: 8px;
+          }
+          .error {
+            color: var(--error-color, red);
+            position: absolute;
+            visibility: hidden;
+          }
+          .error[visible] {
+            visibility: visible;
+          }
+          cp-checkbox[hidden] {
+            visibility: hidden;
+          }
+        </style>
+
+        <div>
+          <menu-input
+              state-path="[[statePath]].suite"
+              on-option-select="onSuiteSelect_">
+            <recommended-options slot="top" state-path="[[statePath]].suite">
+            </recommended-options>
+          </menu-input>
+
+          <div class="error" visible$="[[isEmpty_(suite.selectedOptions)]]">
+            At least one required
+          </div>
+
+          <template is="dom-if" if="[[suite.canAggregate]]">
+            <cp-checkbox
+                hidden$="[[isEmpty_(suite.selectedOptions)]]"
+                disabled$="[[!isMultiple_(suite.selectedOptions)]]"
+                checked="[[suite.isAggregated]]"
+                on-change="onSuiteAggregateChange_">
+              Aggregate
+            </cp-checkbox>
+          </template>
+        </div>
+
+        <div>
+          <menu-input
+              state-path="[[statePath]].measurement"
+              on-option-select="onMeasurementSelect_">
+            <div slot="top">
+              <recommended-options state-path="[[statePath]].measurement">
+              </recommended-options>
+              <memory-components state-path="[[statePath]].measurement">
+              </memory-components>
+            </div>
+          </menu-input>
+
+          <template is="dom-if" if="[[!measurement.requireSingle]]">
+            <div class="error"
+                 visible$="[[isEmpty_(measurement.selectedOptions)]]">
+              At least one required
+            </div>
+          </template>
+
+          <template is="dom-if" if="[[measurement.requireSingle]]">
+            <div class="error"
+                 visible$="[[showExactlyOneRequiredMeasurement_(measurement)]]">
+              Exactly one required
+            </div>
+          </template>
+        </div>
+
+        <div>
+          <menu-input
+              state-path="[[statePath]].bot"
+              on-option-select="onBotSelect_">
+            <recommended-options slot="top" state-path="[[statePath]].bot">
+            </recommended-options>
+          </menu-input>
+
+          <div class="error" visible$="[[isEmpty_(bot.selectedOptions)]]">
+            At least one required
+          </div>
+
+          <template is="dom-if" if="[[bot.canAggregate]]">
+            <cp-checkbox
+                hidden$="[[isEmpty_(bot.selectedOptions)]]"
+                disabled$="[[!isMultiple_(bot.selectedOptions)]]"
+                checked="[[bot.isAggregated]]"
+                on-change="onBotAggregateChange_">
+              Aggregate
+            </cp-checkbox>
+          </template>
+        </div>
+
+        <div>
+          <menu-input
+              state-path="[[statePath]].case"
+              on-option-select="onCaseSelect_">
+            <recommended-options slot="top" state-path="[[statePath]].case">
+            </recommended-options>
+
+            <tag-filter slot="left" state-path="[[statePath]].case">
+            </tag-filter>
+          </menu-input>
+
+          <template is="dom-if" if="[[case.canAggregate]]">
+            <cp-checkbox
+                disabled$="[[!isMultiple_(case.selectedOptions)]]"
+                checked="[[case.isAggregated]]"
+                on-change="onCaseAggregateChange_">
+              Aggregate
+            </cp-checkbox>
+          </template>
+        </div>
+      `;
+    }
+
+    async ready() {
       super.ready();
-      this.dispatch('ready', this.statePath);
+      await this.dispatch('ready', this.statePath);
+      this.dispatchMatrixChange_();
+    }
+
+    showExactlyOneRequiredMeasurement_(measurement) {
+      return measurement && (1 !== measurement.selectedOptions.length);
     }
 
     dispatchMatrixChange_() {
@@ -56,26 +179,32 @@ tr.exportTo('cp', () => {
     suite: options => {
       const suite = (options || {}).suite || {};
       suite.label = 'Suite';
+      suite.required = true;
       if (!suite.options) suite.options = [];
       return {
         isAggregated: suite.isAggregated !== false,
+        canAggregate: suite.canAggregate !== false,
         ...cp.MenuInput.buildState(suite),
       };
     },
     measurement: options => {
       const measurement = (options || {}).measurement || {};
       measurement.label = 'Measurement';
+      measurement.required = true;
       if (!measurement.options) measurement.options = [];
       return {
+        ...cp.MemoryComponents.buildState(measurement),
         ...cp.MenuInput.buildState(measurement),
       };
     },
     bot: options => {
       const bot = (options || {}).bot || {};
       bot.label = 'Bot';
+      bot.required = true;
       if (!bot.options) bot.options = [];
       return {
         isAggregated: bot.isAggregated !== false,
+        canAggregate: bot.canAggregate !== false,
         ...cp.MenuInput.buildState(bot),
       };
     },
@@ -87,6 +216,7 @@ tr.exportTo('cp', () => {
       if (!cas.tags.options) cas.tags.options = [];
       return {
         isAggregated: cas.isAggregated !== false,
+        canAggregate: cas.canAggregate !== false,
         ...cp.MenuInput.buildState(cas),
         ...cp.TagFilter.buildState(cas.tags),
       };
@@ -102,6 +232,25 @@ tr.exportTo('cp', () => {
 
   TimeseriesDescriptor.actions = {
     ready: statePath => async(dispatch, getState) => {
+      const suitesLoaded = TimeseriesDescriptor.actions.loadSuites(
+          statePath)(dispatch, getState);
+
+      const state = Polymer.Path.get(getState(), statePath);
+      if (state && state.suite && state.suite.selectedOptions &&
+          state.suite.selectedOptions.length) {
+        await Promise.all([
+          suitesLoaded,
+          TimeseriesDescriptor.actions.describeSuites(statePath)(
+              dispatch, getState),
+        ]);
+      } else {
+        await suitesLoaded,
+        cp.MenuInput.actions.focus(`${statePath}.suite`)(
+            dispatch, getState);
+      }
+    },
+
+    loadSuites: statePath => async(dispatch, getState) => {
       const request = new cp.TestSuitesRequest({});
       const suites = await request.response;
       dispatch({
@@ -171,6 +320,7 @@ tr.exportTo('cp', () => {
 
   TimeseriesDescriptor.reducers = {
     receiveTestSuites: (state, {suites}, rootState) => {
+      if (!state) return state;
       const suite = TimeseriesDescriptor.State.suite({suite: {
         ...state.suite,
         options: suites,
@@ -207,7 +357,7 @@ tr.exportTo('cp', () => {
         });
       }
 
-      state.case = cp.TagFilter.reducers.filter({
+      state.case = {
         ...state.case,
         optionValues: descriptor.cases,
         options: caseOptions,
@@ -218,7 +368,7 @@ tr.exportTo('cp', () => {
           optionValues: new Set(descriptor.caseTags.keys()),
           options: cp.OptionGroup.groupValues(descriptor.caseTags.keys()),
         },
-      });
+      };
 
       return state;
     },
@@ -249,6 +399,10 @@ tr.exportTo('cp', () => {
         selectedOptions: state.case.selectedOptions.filter(t =>
           state.case.optionValues.has(t)),
       };
+      if (state.case.tags && state.case.tags.selectedOptions &&
+          state.case.tags.selectedOptions.length) {
+        state.case = cp.TagFilter.reducers.filter(state.case);
+      }
 
       return state;
     },
@@ -266,6 +420,11 @@ tr.exportTo('cp', () => {
     // names like [[a, b, c]].
     // Unaggregated parameters contain multiple arrays that contain a single
     // name like [[a], [b], [c]].
+
+    if (!suite || !measurement || !bot || !cas) {
+      return {suites: [], measurements: [], bots: [], cases: []};
+    }
+
     let suites = suite.selectedOptions;
     if (suite.isAggregated) {
       suites = [suites];
@@ -290,6 +449,34 @@ tr.exportTo('cp', () => {
 
     const measurements = measurement.selectedOptions;
     return {suites, measurements, bots, cases};
+  };
+
+  TimeseriesDescriptor.createLineDescriptors = ({
+    suiteses, measurements, botses, caseses, statistics,
+    buildTypes,
+  }) => {
+    const lineDescriptors = [];
+    for (const suites of suiteses) {
+      for (const measurement of measurements) {
+        for (const bots of botses) {
+          for (const cases of caseses) {
+            for (const statistic of statistics) {
+              for (const buildType of buildTypes) {
+                lineDescriptors.push({
+                  suites,
+                  measurement,
+                  bots,
+                  cases,
+                  statistic,
+                  buildType,
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+    return lineDescriptors;
   };
 
   cp.ElementBase.register(TimeseriesDescriptor);

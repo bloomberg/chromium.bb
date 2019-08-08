@@ -121,6 +121,7 @@ void WebFaviconDriver::OnFaviconUpdated(
   web::FaviconStatus& favicon_status = item->GetFavicon();
   favicon_status.valid = true;
   favicon_status.image = image;
+  favicon_status.url = icon_url;
 
   NotifyFaviconUpdatedObservers(notification_icon_type, icon_url,
                                 icon_url_changed, image);

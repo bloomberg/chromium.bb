@@ -38,8 +38,8 @@ class PrepopulatedComputedStylePropertyMapTest : public PageTestBase {
 
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    declaration_ =
-        CSSComputedStyleDeclaration::Create(GetDocument().documentElement());
+    declaration_ = MakeGarbageCollected<CSSComputedStyleDeclaration>(
+        GetDocument().documentElement());
   }
 
   Node* PageNode() { return GetDocument().documentElement(); }
@@ -50,7 +50,7 @@ class PrepopulatedComputedStylePropertyMapTest : public PageTestBase {
 
 TEST_F(PrepopulatedComputedStylePropertyMapTest, NativePropertyAccessors) {
   Vector<CSSPropertyID> native_properties(
-      {CSSPropertyColor, CSSPropertyAlignItems});
+      {CSSPropertyID::kColor, CSSPropertyID::kAlignItems});
   Vector<AtomicString> empty_custom_properties;
 
   UpdateAllLifecyclePhasesForTest();
@@ -127,7 +127,7 @@ TEST_F(PrepopulatedComputedStylePropertyMapTest, CustomPropertyAccessors) {
 
 TEST_F(PrepopulatedComputedStylePropertyMapTest, WidthBeingAuto) {
   SetElementWithStyle("width:auto");
-  const CSSValue* value = GetNativeValue(CSSPropertyWidth);
+  const CSSValue* value = GetNativeValue(CSSPropertyID::kWidth);
   EXPECT_EQ("auto", value->CssText());
 }
 

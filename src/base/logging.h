@@ -300,10 +300,10 @@ BASE_EXPORT void SetShowErrorDialogs(bool enable_dialogs);
 // however clients can use this function to override with their own handling
 // (e.g. a silent one for Unit Tests)
 using LogAssertHandlerFunction =
-    base::Callback<void(const char* file,
-                        int line,
-                        const base::StringPiece message,
-                        const base::StringPiece stack_trace)>;
+    base::RepeatingCallback<void(const char* file,
+                                 int line,
+                                 const base::StringPiece message,
+                                 const base::StringPiece stack_trace)>;
 
 class BASE_EXPORT ScopedLogAssertHandler {
  public:
@@ -659,26 +659,6 @@ class CheckOpResult {
 
 #else  // !(OFFICIAL_BUILD && NDEBUG)
 
-#if defined(_PREFAST_) && defined(OS_WIN)
-// Use __analysis_assume to tell the VC++ static analysis engine that
-// assert conditions are true, to suppress warnings.  The LAZY_STREAM
-// parameter doesn't reference 'condition' in /analyze builds because
-// this evaluation confuses /analyze. The !! before condition is because
-// __analysis_assume gets confused on some conditions:
-// http://randomascii.wordpress.com/2011/09/13/analyze-for-visual-studio-the-ugly-part-5/
-
-#define CHECK(condition)                    \
-  __analysis_assume(!!(condition)),         \
-      LAZY_STREAM(LOG_STREAM(FATAL), false) \
-          << "Check failed: " #condition ". "
-
-#define PCHECK(condition)                    \
-  __analysis_assume(!!(condition)),          \
-      LAZY_STREAM(PLOG_STREAM(FATAL), false) \
-          << "Check failed: " #condition ". "
-
-#else  // _PREFAST_
-
 // Do as much work as possible out of line to reduce inline code size.
 #define CHECK(condition)                                                      \
   LAZY_STREAM(::logging::LogMessage(__FILE__, __LINE__, #condition).stream(), \
@@ -687,8 +667,6 @@ class CheckOpResult {
 #define PCHECK(condition)                                           \
   LAZY_STREAM(PLOG_STREAM(FATAL), !ANALYZER_ASSUME_TRUE(condition)) \
       << "Check failed: " #condition ". "
-
-#endif  // _PREFAST_
 
 // Helper macro for binary operators.
 // Don't use this macro directly in your code, use CHECK_EQ et al below.
@@ -885,21 +863,6 @@ const LogSeverity LOG_DCHECK = LOG_FATAL;
 // DCHECK_IS_ON() is true. When DCHECK_IS_ON() is false, the macros use
 // EAT_STREAM_PARAMETERS to avoid expressions that would create temporaries.
 
-#if defined(_PREFAST_) && defined(OS_WIN)
-// See comments on the previous use of __analysis_assume.
-
-#define DCHECK(condition)                    \
-  __analysis_assume(!!(condition)),          \
-      LAZY_STREAM(LOG_STREAM(DCHECK), false) \
-          << "Check failed: " #condition ". "
-
-#define DPCHECK(condition)                    \
-  __analysis_assume(!!(condition)),           \
-      LAZY_STREAM(PLOG_STREAM(DCHECK), false) \
-          << "Check failed: " #condition ". "
-
-#else  // !(defined(_PREFAST_) && defined(OS_WIN))
-
 #if DCHECK_IS_ON()
 
 #define DCHECK(condition)                                           \
@@ -915,8 +878,6 @@ const LogSeverity LOG_DCHECK = LOG_FATAL;
 #define DPCHECK(condition) EAT_STREAM_PARAMETERS << !(condition)
 
 #endif  // DCHECK_IS_ON()
-
-#endif  // defined(_PREFAST_) && defined(OS_WIN)
 
 // Helper macro for binary operators.
 // Don't use this macro directly in your code, use DCHECK_EQ et al below.

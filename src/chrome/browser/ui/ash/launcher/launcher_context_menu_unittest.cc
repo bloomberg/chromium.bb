@@ -227,7 +227,6 @@ TEST_F(LauncherContextMenuTest,
 
 // Verifies context menu and app menu items for ARC app.
 TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
-  arc_test().app_instance()->RefreshAppList();
   arc_test().app_instance()->SendRefreshAppList(
       std::vector<arc::mojom::AppInfo>(arc_test().fake_apps().begin(),
                                        arc_test().fake_apps().begin() + 1));
@@ -357,7 +356,6 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
 TEST_F(LauncherContextMenuTest, ArcLauncherSuspendAppMenu) {
   arc::mojom::AppInfo app = arc_test().fake_apps()[0];
   app.suspended = true;
-  arc_test().app_instance()->RefreshAppList();
   arc_test().app_instance()->SendRefreshAppList({app});
   const std::string app_id = ArcAppTest::GetAppId(app);
 
@@ -382,7 +380,6 @@ TEST_F(LauncherContextMenuTest, ArcLauncherSuspendAppMenu) {
 }
 
 TEST_F(LauncherContextMenuTest, ArcDeferredLauncherContextMenuItemCheck) {
-  arc_test().app_instance()->RefreshAppList();
   arc_test().app_instance()->SendRefreshAppList(
       std::vector<arc::mojom::AppInfo>(arc_test().fake_apps().begin(),
                                        arc_test().fake_apps().begin() + 2));
@@ -448,7 +445,6 @@ TEST_F(LauncherContextMenuTest, ArcContextMenuOptions) {
   // adding a context menu option ensure that you have added the enum to
   // tools/metrics/enums.xml and that you haven't modified the order of the
   // existing enums.
-  arc_test().app_instance()->RefreshAppList();
   arc_test().app_instance()->SendRefreshAppList(
       std::vector<arc::mojom::AppInfo>(arc_test().fake_apps().begin(),
                                        arc_test().fake_apps().begin() + 1));

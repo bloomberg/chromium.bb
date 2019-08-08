@@ -47,10 +47,7 @@ MetadataParser.prototype.vlog = function(var_args) {
  * @return {Object} Metadata object with the minimal set of properties.
  */
 MetadataParser.prototype.createDefaultMetadata = function() {
-  return {
-    type: this.type,
-    mimeType: this.mimeType
-  };
+  return {type: this.type, mimeType: this.mimeType};
 };
 
 /**
@@ -67,8 +64,10 @@ MetadataParser.readFileBytes = (file, begin, end, callback, onError) => {
     onError(event.type);
   };
   fileReader.onloadend = () => {
-    callback(file, new ByteReader(
-        /** @type {ArrayBuffer} */ (fileReader.result)));
+    callback(
+        file,
+        new ByteReader(
+            /** @type {ArrayBuffer} */ (fileReader.result)));
   };
   fileReader.readAsArrayBuffer(file.slice(begin, end));
 };
@@ -87,4 +86,6 @@ function ImageParser(parent, type, urlFilter) {
   this.mimeType = 'image/' + this.type;
 }
 
-ImageParser.prototype = {__proto__: MetadataParser.prototype};
+ImageParser.prototype = {
+  __proto__: MetadataParser.prototype
+};

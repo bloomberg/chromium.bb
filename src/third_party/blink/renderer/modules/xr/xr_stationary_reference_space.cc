@@ -6,7 +6,6 @@
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
-#include "third_party/blink/renderer/modules/xr/xr_stage_bounds.h"
 
 namespace blink {
 
@@ -42,12 +41,12 @@ void XRStationaryReferenceSpace::UpdateFloorLevelTransform() {
     // Use the transform given by xrDisplayInfo's stageParameters if available.
     const WTF::Vector<float>& m =
         display_info->stageParameters->standingTransform;
-    floor_level_transform_ = TransformationMatrix::Create(
+    floor_level_transform_ = std::make_unique<TransformationMatrix>(
         m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
         m[11], m[12], m[13], m[14], m[15]);
   } else {
     // Otherwise, create a transform based on the default emulated height.
-    floor_level_transform_ = TransformationMatrix::Create();
+    floor_level_transform_ = std::make_unique<TransformationMatrix>();
     floor_level_transform_->Translate3d(0, kDefaultEmulationHeight, 0);
   }
 
@@ -67,7 +66,7 @@ XRStationaryReferenceSpace::TransformBasePose(
   switch (subtype_) {
     case kSubtypeEyeLevel:
       // Currently all base poses are 'eye-level' poses, so return directly.
-      return TransformationMatrix::Create(base_pose);
+      return std::make_unique<TransformationMatrix>(base_pose);
       break;
     case kSubtypeFloorLevel:
       // Currently all base poses are 'eye-level' space, so use of 'floor-level'
@@ -83,7 +82,7 @@ XRStationaryReferenceSpace::TransformBasePose(
       // Apply the floor-level transform to the base pose.
       if (floor_level_transform_) {
         std::unique_ptr<TransformationMatrix> pose(
-            TransformationMatrix::Create(*floor_level_transform_));
+            std::make_unique<TransformationMatrix>(*floor_level_transform_));
         pose->Multiply(base_pose);
         return pose;
       }
@@ -93,7 +92,7 @@ XRStationaryReferenceSpace::TransformBasePose(
       // and as a result the space the base pose is originally in doesn't matter
       // much. Strip out translation component and return.
       std::unique_ptr<TransformationMatrix> pose(
-          TransformationMatrix::Create(base_pose));
+          std::make_unique<TransformationMatrix>(base_pose));
       pose->SetM41(0.0);
       pose->SetM42(0.0);
       pose->SetM43(0.0);
@@ -124,7 +123,7 @@ XRStationaryReferenceSpace::TransformBaseInputPose(
       // Translate the controller by the same delta so that it shows up in the
       // right relative position.
       std::unique_ptr<TransformationMatrix> pose(
-          TransformationMatrix::Create(base_input_pose));
+          std::make_unique<TransformationMatrix>(base_input_pose));
       pose->SetM41(pose->M41() + dx);
       pose->SetM42(pose->M42() + dy);
       pose->SetM43(pose->M43() + dz);

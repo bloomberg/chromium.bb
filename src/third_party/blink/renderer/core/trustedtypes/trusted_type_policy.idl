@@ -8,7 +8,7 @@ typedef (DOMString or TrustedHTML or TrustedScript or TrustedScriptURL or Truste
 
 [
     Exposed=Window,
-    OriginTrialEnabled=TrustedDOMTypes
+    RuntimeEnabled=TrustedDOMTypes
 ] interface TrustedTypePolicy {
     [Unforgeable] readonly attribute DOMString name;
     [CallWith=ScriptState, RaisesException, Unforgeable] TrustedHTML createHTML(DOMString input);

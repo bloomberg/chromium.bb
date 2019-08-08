@@ -114,6 +114,9 @@ public class RoundedCornerImageView extends ImageView {
         mShader = null;
         mApplyShader = false;
 
+        // Reset shader in Paint to avoid retaining the old Bitmap.
+        if (mPaint != null) mPaint.setShader(null);
+
         maybeCreateShader();
 
         updateApplyShader();
@@ -151,8 +154,7 @@ public class RoundedCornerImageView extends ImageView {
      */
     private void updateApplyShader() {
         Drawable drawable = getDrawable();
-        if ((drawable == null) || !(drawable instanceof BitmapDrawable) || (mShader == null)
-                || (mPaint == null)) {
+        if (!(drawable instanceof BitmapDrawable) || (mShader == null) || (mPaint == null)) {
             // In this state we wouldn't use the shader anyway.
             mApplyShader = false;
             return;
@@ -170,8 +172,8 @@ public class RoundedCornerImageView extends ImageView {
 
         boolean drawFill = mFillPaint != null && localRoundedRect != null
                 && !(drawable instanceof ColorDrawable);
-        boolean drawContent = drawable != null && localPaint != null && localRoundedRect != null
-                && isSupportedDrawable(drawable);
+        boolean drawContent =
+                localPaint != null && localRoundedRect != null && isSupportedDrawable(drawable);
 
         if (drawFill || drawContent) localRoundedRect.resize(getWidth(), getHeight());
 
@@ -191,7 +193,9 @@ public class RoundedCornerImageView extends ImageView {
             localPaint.setColor(colorDrawable.getColor());
         }
 
-        if (mShader != null && mApplyShader) {
+        if (mApplyShader) {
+            assert mShader != null;
+
             // Apply the matrix to the bitmap shader.
             mShader.setLocalMatrix(getImageMatrix());
             localPaint.setShader(mShader);

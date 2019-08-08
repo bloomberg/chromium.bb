@@ -105,6 +105,21 @@ void CryptAuthEnrollmentManagerImpl::Factory::SetInstanceForTesting(
 
 CryptAuthEnrollmentManagerImpl::Factory::~Factory() = default;
 
+// static
+void CryptAuthEnrollmentManagerImpl::RegisterPrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kCryptAuthEnrollmentIsRecoveringFromFailure, false);
+  registry->RegisterDoublePref(
+      prefs::kCryptAuthEnrollmentLastEnrollmentTimeSeconds, 0.0);
+  registry->RegisterIntegerPref(prefs::kCryptAuthEnrollmentReason,
+                                cryptauth::INVOCATION_REASON_UNKNOWN);
+  registry->RegisterStringPref(prefs::kCryptAuthEnrollmentUserPublicKey,
+                               std::string());
+  registry->RegisterStringPref(prefs::kCryptAuthEnrollmentUserPrivateKey,
+                               std::string());
+}
+
 std::unique_ptr<CryptAuthEnrollmentManager>
 CryptAuthEnrollmentManagerImpl::Factory::BuildInstance(
     base::Clock* clock,

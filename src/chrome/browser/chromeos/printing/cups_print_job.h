@@ -51,6 +51,9 @@ class CupsPrintJob {
   // Returns weak pointer to |this| CupsPrintJob
   base::WeakPtr<CupsPrintJob> GetWeakPtr();
 
+  // Returns whether this print_job has timed out or not.
+  bool IsExpired() const;
+
   // Getters.
   const Printer& printer() const { return printer_; }
   int job_id() const { return job_id_; }

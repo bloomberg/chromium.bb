@@ -9,9 +9,9 @@ import android.content.Context;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.datareduction.DataReductionBrandingResourceProvider;
+import org.chromium.chrome.browser.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionBrandingResourceProvider;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.widget.Toast;
 

@@ -17,6 +17,7 @@
 
 class ChromeMetricsServiceClient;
 class ChromePasswordManagerClient;
+class NavigationMetricsRecorder;
 class PrefService;
 class Profile;
 
@@ -115,8 +116,10 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ChromeMetricsServiceClient;
   friend class ChromePasswordManagerClient;
   friend bool nux::IsNuxOnboardingEnabled(Profile* profile);
+  friend class NavigationMetricsRecorder;
 
   // Testing related friends.
+  friend class ForceFieldTrialsBrowserTest;
   friend class MetricsReportingStateTest;
   friend class metrics::UkmConsentParamBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,

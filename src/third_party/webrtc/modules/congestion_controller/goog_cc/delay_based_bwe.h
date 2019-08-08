@@ -17,6 +17,8 @@
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "api/network_state_predictor.h"
+#include "api/transport/network_types.h"
 #include "api/transport/webrtc_key_value_config.h"
 #include "modules/congestion_controller/goog_cc/delay_increase_detector_interface.h"
 #include "modules/congestion_controller/goog_cc/probe_bitrate_estimator.h"
@@ -44,13 +46,15 @@ class DelayBasedBwe {
   };
 
   explicit DelayBasedBwe(const WebRtcKeyValueConfig* key_value_config,
-                         RtcEventLog* event_log);
+                         RtcEventLog* event_log,
+                         NetworkStatePredictor* network_state_predictor);
   virtual ~DelayBasedBwe();
 
   Result IncomingPacketFeedbackVector(
       const std::vector<PacketFeedback>& packet_feedback_vector,
       absl::optional<DataRate> acked_bitrate,
       absl::optional<DataRate> probe_bitrate,
+      absl::optional<NetworkStateEstimate> network_estimate,
       bool in_alr,
       Timestamp at_time);
   void OnRttUpdate(TimeDelta avg_rtt);
@@ -64,11 +68,13 @@ class DelayBasedBwe {
   friend class GoogCcStatePrinter;
   void IncomingPacketFeedback(const PacketFeedback& packet_feedback,
                               Timestamp at_time);
-  Result MaybeUpdateEstimate(absl::optional<DataRate> acked_bitrate,
-                             absl::optional<DataRate> probe_bitrate,
-                             bool recovered_from_overuse,
-                             bool in_alr,
-                             Timestamp at_time);
+  Result MaybeUpdateEstimate(
+      absl::optional<DataRate> acked_bitrate,
+      absl::optional<DataRate> probe_bitrate,
+      absl::optional<NetworkStateEstimate> state_estimate,
+      bool recovered_from_overuse,
+      bool in_alr,
+      Timestamp at_time);
   // Updates the current remote rate estimate and returns true if a valid
   // estimate exists.
   bool UpdateEstimate(Timestamp now,
@@ -88,6 +94,7 @@ class DelayBasedBwe {
   DataRate prev_bitrate_;
   BandwidthUsage prev_state_;
   bool alr_limited_backoff_enabled_;
+  NetworkStatePredictor* network_state_predictor_;
 
   RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(DelayBasedBwe);
 };

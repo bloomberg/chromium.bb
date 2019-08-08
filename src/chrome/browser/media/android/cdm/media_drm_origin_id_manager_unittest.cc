@@ -39,9 +39,10 @@ using MediaDrmOriginId = MediaDrmOriginIdManager::MediaDrmOriginId;
 const char kMediaDrmOriginIds[] = "media.media_drm_origin_ids";
 const char kExpirableToken[] = "expirable_token";
 const char kAvailableOriginIds[] = "origin_ids";
-constexpr size_t kExpectedPreferenceListSize = 5;
+constexpr size_t kExpectedPreferenceListSize = 2;
 constexpr base::TimeDelta kExpirationDelta = base::TimeDelta::FromHours(24);
 constexpr size_t kConnectionAttempts = 5;
+constexpr base::TimeDelta kStartupDelay = base::TimeDelta::FromMinutes(1);
 
 }  // namespace
 
@@ -196,8 +197,59 @@ TEST_F(MediaDrmOriginIdManagerTest, PreProvisionAtStartup) {
   // that support it).
   EXPECT_CALL(*this, GetProvisioningResult()).WillRepeatedly(Return(true));
   Initialize(true);
+
+  DVLOG(1) << "Advancing Time";
+  test_browser_thread_bundle_.FastForwardBy(kStartupDelay);
   test_browser_thread_bundle_.RunUntilIdle();
 
+  CheckPreferenceForPreProvisioning();
+}
+
+TEST_F(MediaDrmOriginIdManagerTest, PreProvisionFailAtStartup) {
+  // Initialize without disabling kMediaDrmPreprovisioningAtStartup. Have
+  // provisioning fail at startup, if it is attempted.
+  if (media::MediaDrmBridge::IsPerApplicationProvisioningSupported()) {
+    EXPECT_CALL(*this, GetProvisioningResult()).WillOnce(Return(false));
+  } else {
+    // If per-application provisioning is NOT supported, no attempt will be made
+    // to pre-provision any origin IDs at startup.
+    EXPECT_CALL(*this, GetProvisioningResult()).Times(0);
+  }
+
+  Initialize(true);
+
+  DVLOG(1) << "Advancing Time";
+  test_browser_thread_bundle_.FastForwardBy(kStartupDelay);
+  test_browser_thread_bundle_.RunUntilIdle();
+
+  // Pre-provisioning should have failed.
+  DVLOG(1) << "Checking preference " << kMediaDrmOriginIds;
+  auto* dict = GetDictionary(kMediaDrmOriginIds);
+  DVLOG(1) << DisplayPref(dict);
+
+  // After failure the preference should not contain |kExpireableToken| as that
+  // should only be set if the user requested an origin ID on devices that
+  // support per-application provisioning.
+  EXPECT_FALSE(dict->FindKey(kExpirableToken));
+
+  // There should be no pre-provisioned origin IDs.
+  EXPECT_FALSE(dict->FindKey(kAvailableOriginIds));
+
+  // Now let provisioning succeed.
+  if (media::MediaDrmBridge::IsPerApplicationProvisioningSupported()) {
+    // If per-application provisioning is NOT supported, no attempt will be made
+    // to pre-provision any origin IDs. So only expect calls if per-application
+    // provisioning is supported.
+    EXPECT_CALL(*this, GetProvisioningResult()).WillRepeatedly(Return(true));
+  }
+
+  // Trigger a network connection to force pre-provisioning to run again.
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
+  test_browser_thread_bundle_.RunUntilIdle();
+
+  // Pre-provisioning should have run again. Should return the same result as if
+  // pre-provisioning had succeeded at startup.
   CheckPreferenceForPreProvisioning();
 }
 

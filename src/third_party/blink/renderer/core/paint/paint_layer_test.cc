@@ -17,7 +17,8 @@ namespace blink {
 
 class PaintLayerTest : public PaintTestConfigurations, public RenderingTest {
  public:
-  PaintLayerTest() : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+  PaintLayerTest()
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
   void SetUp() override {
     RenderingTest::SetUp();
@@ -780,16 +781,16 @@ TEST_P(PaintLayerTest, PaintInvalidationOnNonCompositedScroll) {
   LayoutBox* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
   LayoutObject* content_layer = GetLayoutObjectByElementId("content-layer");
   LayoutObject* content = GetLayoutObjectByElementId("content");
-  EXPECT_EQ(LayoutRect(0, 30, 50, 10),
+  EXPECT_EQ(IntRect(0, 30, 50, 10),
             content_layer->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
 
   scroller->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 20),
                                                  kProgrammaticScroll);
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(LayoutRect(0, 30, 50, 10),
+  EXPECT_EQ(IntRect(0, 30, 50, 10),
             content_layer->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
 }
 
 TEST_P(PaintLayerTest, PaintInvalidationOnCompositedScroll) {
@@ -809,16 +810,16 @@ TEST_P(PaintLayerTest, PaintInvalidationOnCompositedScroll) {
   LayoutBox* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
   LayoutObject* content_layer = GetLayoutObjectByElementId("content-layer");
   LayoutObject* content = GetLayoutObjectByElementId("content");
-  EXPECT_EQ(LayoutRect(0, 30, 50, 10),
+  EXPECT_EQ(IntRect(0, 30, 50, 10),
             content_layer->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
 
   scroller->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 20),
                                                  kProgrammaticScroll);
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(LayoutRect(0, 30, 50, 10),
+  EXPECT_EQ(IntRect(0, 30, 50, 10),
             content_layer->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
 }
 
 TEST_P(PaintLayerTest, CompositingContainerStackedFloatUnderStackingInline) {
@@ -1894,6 +1895,69 @@ TEST_P(PaintLayerTest,
   EXPECT_TRUE(target->GetLayoutObject().NeedsPaintPropertyUpdate());
   // See the TODO in PaintLayer::SetNeedsCompositingInputsUpdate().
   EXPECT_TRUE(target->Parent()->GetLayoutObject().NeedsPaintPropertyUpdate());
+}
+
+TEST_P(PaintLayerTest, PaintLayerCommonAncestor) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        position: relative;
+      }
+    </style>
+    <div id='wrapper'>
+      <div id='target1'>
+        <div id='target1x1'></div>
+      </div>
+      <div id='target2'></div>
+      <div>
+        <div id='target3'></div>
+      </div>
+    </div>
+  )HTML");
+
+  PaintLayer* wrapper = GetPaintLayerByElementId("wrapper");
+  PaintLayer* target1 = GetPaintLayerByElementId("target1");
+  PaintLayer* target1x1 = GetPaintLayerByElementId("target1x1");
+  PaintLayer* target2 = GetPaintLayerByElementId("target2");
+  PaintLayer* target3 = GetPaintLayerByElementId("target3");
+
+  EXPECT_EQ(target1->CommonAncestor(target1), target1);
+  EXPECT_EQ(target1->CommonAncestor(target1x1), target1);
+  EXPECT_EQ(target1->CommonAncestor(target2), wrapper);
+  EXPECT_EQ(target1->CommonAncestor(target3), wrapper);
+
+  EXPECT_EQ(target1x1->CommonAncestor(target1), target1);
+  EXPECT_EQ(target1x1->CommonAncestor(target1x1), target1x1);
+  EXPECT_EQ(target1x1->CommonAncestor(target2), wrapper);
+  EXPECT_EQ(target1x1->CommonAncestor(target3), wrapper);
+
+  EXPECT_EQ(target2->CommonAncestor(target1), wrapper);
+  EXPECT_EQ(target2->CommonAncestor(target1x1), wrapper);
+  EXPECT_EQ(target2->CommonAncestor(target2), target2);
+  EXPECT_EQ(target2->CommonAncestor(target3), wrapper);
+
+  EXPECT_EQ(target3->CommonAncestor(target1), wrapper);
+  EXPECT_EQ(target3->CommonAncestor(target1x1), wrapper);
+  EXPECT_EQ(target3->CommonAncestor(target2), wrapper);
+  EXPECT_EQ(target3->CommonAncestor(target3), target3);
+}
+
+TEST_P(PaintLayerTest, PaintLayerCommonAncestorBody) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body, div {
+        position: relative;
+      }
+    </style>
+    <div id='target1'></div>
+    <div id='target2'></div>
+  )HTML");
+
+  PaintLayer* target1 = GetPaintLayerByElementId("target1");
+  PaintLayer* target2 = GetPaintLayerByElementId("target2");
+
+  EXPECT_EQ(target1->CommonAncestor(target2)->GetLayoutObject(),
+            GetDocument().body()->GetLayoutObject());
 }
 
 }  // namespace blink

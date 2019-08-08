@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
@@ -27,7 +28,8 @@ using testing::MatchesRegex;
 
 class LayoutObjectTest : public RenderingTest {
  public:
-  LayoutObjectTest() : RenderingTest(EmptyLocalFrameClient::Create()) {}
+  LayoutObjectTest()
+      : RenderingTest(MakeGarbageCollected<EmptyLocalFrameClient>()) {}
 
  protected:
   template <bool should_have_wrapper>
@@ -241,7 +243,7 @@ TEST_F(LayoutObjectTest, PaintingLayerOfOverflowClipLayerUnderColumnSpanAll) {
 
   LayoutObject* overflow_clip_object =
       GetLayoutObjectByElementId("overflow-clip-layer");
-  LayoutBlock* columns = ToLayoutBlock(GetLayoutObjectByElementId("columns"));
+  LayoutBlock* columns = To<LayoutBlock>(GetLayoutObjectByElementId("columns"));
   EXPECT_EQ(columns->Layer(), overflow_clip_object->PaintingLayer());
 }
 
@@ -584,7 +586,7 @@ TEST_F(LayoutObjectTest, DisplayContentsAddInlineWrapper) {
   ASSERT_TRUE(text);
   ExpectAnonymousInlineWrapperFor<false>(text);
 
-  div->SetInlineStyleProperty(CSSPropertyColor, "pink");
+  div->SetInlineStyleProperty(CSSPropertyID::kColor, "pink");
   UpdateAllLifecyclePhasesForTest();
   ExpectAnonymousInlineWrapperFor<true>(text);
 }
@@ -597,7 +599,7 @@ TEST_F(LayoutObjectTest, DisplayContentsRemoveInlineWrapper) {
   ASSERT_TRUE(text);
   ExpectAnonymousInlineWrapperFor<true>(text);
 
-  div->RemoveInlineStyleProperty(CSSPropertyColor);
+  div->RemoveInlineStyleProperty(CSSPropertyID::kColor);
   UpdateAllLifecyclePhasesForTest();
   ExpectAnonymousInlineWrapperFor<false>(text);
 }
@@ -637,7 +639,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTable) {
 
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
-  none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  none->SetInlineStyleProperty(CSSPropertyID::kDisplay, "inline");
   UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
@@ -663,7 +665,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableSection) {
 
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
-  none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  none->SetInlineStyleProperty(CSSPropertyID::kDisplay, "inline");
   UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
@@ -689,7 +691,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableRow) {
 
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
-  none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  none->SetInlineStyleProperty(CSSPropertyID::kDisplay, "inline");
   UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
@@ -716,7 +718,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableCell) {
 
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
-  none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  none->SetInlineStyleProperty(CSSPropertyID::kDisplay, "inline");
   UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   EXPECT_EQ(cell->GetLayoutObject(), none->GetLayoutObject()->Parent());
@@ -759,7 +761,7 @@ TEST_F(LayoutObjectTest, DisplayContentsSVGGElementInHTML) {
   )HTML");
 
   Element* span = GetDocument().getElementById("span");
-  SVGGElement* svg_element = SVGGElement::Create(GetDocument());
+  auto* svg_element = MakeGarbageCollected<SVGGElement>(GetDocument());
   Text* text = Text::Create(GetDocument(), "text");
   svg_element->appendChild(text);
   span->appendChild(svg_element);
@@ -938,7 +940,7 @@ TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
   EXPECT_EQ(result.InnerNode(), target);
 
   Element* occluder = GetDocument().getElementById("occluder");
-  occluder->SetInlineStyleProperty(CSSPropertyMarginTop, "-150px");
+  occluder->SetInlineStyleProperty(CSSPropertyID::kMarginTop, "-150px");
   GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
   result = target->GetLayoutObject()->HitTestForOcclusion();

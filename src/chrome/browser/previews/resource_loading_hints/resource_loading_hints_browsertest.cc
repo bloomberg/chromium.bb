@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -29,6 +29,7 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/previews/content/previews_decider_impl.h"
+#include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_black_list.h"
@@ -48,7 +49,7 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
                                         const std::string& histogram_name,
                                         size_t count) {
   while (true) {
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
 
     content::FetchHistogramsFromChildProcesses();
@@ -121,6 +122,22 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     ASSERT_EQ(http_hint_setup_url_.host(), http_url_.host());
 
     InProcessBrowserTest::SetUpOnMainThread();
+  }
+
+  void InitializeOptimizationHints() {
+    std::unique_ptr<optimization_guide::proto::Configuration> config =
+        std::make_unique<optimization_guide::proto::Configuration>();
+    std::unique_ptr<previews::PreviewsHints> hints =
+        previews::PreviewsHints::CreateFromHintsConfiguration(std::move(config),
+                                                              nullptr);
+
+    PreviewsService* previews_service =
+        PreviewsServiceFactory::GetForProfile(browser()->profile());
+
+    previews_service->previews_ui_service()
+        ->previews_decider_impl()
+        ->previews_opt_guide()
+        ->UpdateHints(base::DoNothing(), std::move(hints));
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -608,12 +625,13 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttpsNoWhitelisted)) {
+    DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttpsNotWhitelisted)) {
   GURL url = https_url();
 
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
   ResetResourceLoadingHintInterventionHeaderSeen();
+  InitializeOptimizationHints();
 
   base::HistogramTester histogram_tester;
 

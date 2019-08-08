@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/arc/arc_session.h"
-#include "components/arc/arc_stop_reason.h"
+#include "components/arc/session/arc_session.h"
+#include "components/arc/session/arc_stop_reason.h"
 
 namespace arc {
 

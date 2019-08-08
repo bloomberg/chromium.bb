@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sessions/content/content_record_password_state.h"
+#include "components/sessions/content/content_record_task_id.h"
 #include "components/sessions/content/content_serialized_navigation_driver.h"
 #include "components/sessions/content/extended_info_handler.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
@@ -26,24 +27,31 @@ const char kExtendedInfoValue1[] = "Value 1";
 const char kExtendedInfoKey2[] = "Key 2";
 const char kExtendedInfoValue2[] = "Value 2";
 
+struct TestData : public base::SupportsUserData::Data {
+  explicit TestData(const std::string& string) : string(string) {}
+  ~TestData() override = default;
+
+  std::string string;
+};
+
 class TestExtendedInfoHandler : public ExtendedInfoHandler {
  public:
-  explicit TestExtendedInfoHandler(const std::string& key) : key_(key) {}
+  explicit TestExtendedInfoHandler(const char* key) : key_(key) {}
   ~TestExtendedInfoHandler() override {}
 
+  // ExtendedInfoHandler:
   std::string GetExtendedInfo(content::NavigationEntry* entry) const override {
-    base::string16 data;
-    entry->GetExtraData(key_, &data);
-    return base::UTF16ToASCII(data);
+    TestData* test_data = static_cast<TestData*>(entry->GetUserData(key_));
+    return test_data ? test_data->string : std::string();
   }
 
   void RestoreExtendedInfo(const std::string& info,
                            content::NavigationEntry* entry) override {
-    entry->SetExtraData(key_, base::ASCIIToUTF16(info));
+    entry->SetUserData(key_, std::make_unique<TestData>(info));
   }
 
  private:
-  std::string key_;
+  const char* key_;
 
   DISALLOW_COPY_AND_ASSIGN(TestExtendedInfoHandler);
 };
@@ -76,14 +84,22 @@ std::unique_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   redirect_chain.push_back(test_data::kRedirectURL1);
   redirect_chain.push_back(test_data::kVirtualURL);
   navigation_entry->SetRedirectChain(redirect_chain);
+  ContextRecordTaskId::Get(navigation_entry.get())
+      ->set_task_id(test_data::kTaskId);
+  ContextRecordTaskId::Get(navigation_entry.get())
+      ->set_parent_task_id(test_data::kParentTaskId);
+  ContextRecordTaskId::Get(navigation_entry.get())
+      ->set_root_task_id(test_data::kRootTaskId);
+  ContextRecordTaskId::Get(navigation_entry.get())
+      ->set_children_task_ids(test_data::kChildrenTaskIds);
   return navigation_entry;
 }
 
 void SetExtendedInfoForTest(content::NavigationEntry* entry) {
-  entry->SetExtraData(kExtendedInfoKey1,
-                      base::ASCIIToUTF16(kExtendedInfoValue1));
-  entry->SetExtraData(kExtendedInfoKey2,
-                      base::ASCIIToUTF16(kExtendedInfoValue2));
+  entry->SetUserData(kExtendedInfoKey1,
+                     std::make_unique<TestData>(kExtendedInfoValue1));
+  entry->SetUserData(kExtendedInfoKey2,
+                     std::make_unique<TestData>(kExtendedInfoValue2));
 }
 
 }  // namespace
@@ -156,6 +172,11 @@ TEST_F(ContentSerializedNavigationBuilderTest, FromNavigationEntry) {
   ASSERT_EQ(1U, navigation.extended_info_map().count(kExtendedInfoKey2));
   EXPECT_EQ(kExtendedInfoValue2,
             navigation.extended_info_map().at(kExtendedInfoKey2));
+
+  EXPECT_EQ(test_data::kTaskId, navigation.task_id());
+  EXPECT_EQ(test_data::kParentTaskId, navigation.parent_task_id());
+  EXPECT_EQ(test_data::kRootTaskId, navigation.root_task_id());
+  EXPECT_EQ(test_data::kChildrenTaskIds, navigation.children_task_ids());
 }
 
 // Test effect of the navigation serialization options.
@@ -220,13 +241,14 @@ TEST_F(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
   EXPECT_EQ(test_data::kVirtualURL,
             new_navigation_entry->GetRedirectChain()[2]);
 
-  base::string16 extra_data;
-  EXPECT_TRUE(
-      new_navigation_entry->GetExtraData(kExtendedInfoKey1, &extra_data));
-  EXPECT_EQ(kExtendedInfoValue1, base::UTF16ToASCII(extra_data));
-  EXPECT_TRUE(
-      new_navigation_entry->GetExtraData(kExtendedInfoKey2, &extra_data));
-  EXPECT_EQ(kExtendedInfoValue2, base::UTF16ToASCII(extra_data));
+  TestData* test_data = static_cast<TestData*>(
+      new_navigation_entry->GetUserData(kExtendedInfoKey1));
+  ASSERT_TRUE(test_data);
+  EXPECT_EQ(kExtendedInfoValue1, test_data->string);
+  test_data = static_cast<TestData*>(
+      new_navigation_entry->GetUserData(kExtendedInfoKey2));
+  ASSERT_TRUE(test_data);
+  EXPECT_EQ(kExtendedInfoValue2, test_data->string);
 }
 
 TEST_F(ContentSerializedNavigationBuilderTest, SetPasswordState) {

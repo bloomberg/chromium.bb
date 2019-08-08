@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
 #include "third_party/blink/renderer/core/svg/svg_length_tear_off.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -48,7 +49,7 @@ class SVGAnimatedLength : public ScriptWrappable,
       const QualifiedName& attribute_name,
       SVGLengthMode mode,
       SVGLength::Initial initial_value,
-      CSSPropertyID css_property_id = CSSPropertyInvalid) {
+      CSSPropertyID css_property_id = CSSPropertyID::kInvalid) {
     return MakeGarbageCollected<SVGAnimatedLength>(
         context_element, attribute_name, mode, initial_value, css_property_id);
   }
@@ -57,12 +58,13 @@ class SVGAnimatedLength : public ScriptWrappable,
                     const QualifiedName& attribute_name,
                     SVGLengthMode mode,
                     SVGLength::Initial initial_value,
-                    CSSPropertyID css_property_id = CSSPropertyInvalid)
-      : SVGAnimatedProperty<SVGLength>(context_element,
-                                       attribute_name,
-                                       SVGLength::Create(initial_value, mode),
-                                       css_property_id,
-                                       static_cast<unsigned>(initial_value)) {}
+                    CSSPropertyID css_property_id = CSSPropertyID::kInvalid)
+      : SVGAnimatedProperty<SVGLength>(
+            context_element,
+            attribute_name,
+            MakeGarbageCollected<SVGLength>(initial_value, mode),
+            css_property_id,
+            static_cast<unsigned>(initial_value)) {}
 
   SVGParsingError AttributeChanged(const String&) override;
 

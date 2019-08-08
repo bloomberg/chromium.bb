@@ -30,146 +30,66 @@ namespace {
 
 using security_state::GetSecurityStyle;
 
-// Tests that SecurityInfo flags for subresources with certificate
-// errors are reflected in the SecurityStyleExplanations produced by
-// GetSecurityStyle.
-TEST(SecurityStateContentUtilsTest, GetSecurityStyleForContentWithCertErrors) {
-  content::SecurityStyleExplanations explanations;
-  security_state::SecurityInfo security_info;
-  security_info.cert_status = 0;
-  security_info.scheme_is_cryptographic = true;
-
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
-  GetSecurityStyle(security_info, &explanations);
-  EXPECT_TRUE(explanations.ran_content_with_cert_errors);
-  EXPECT_TRUE(explanations.displayed_content_with_cert_errors);
-
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_RAN;
-  GetSecurityStyle(security_info, &explanations);
-  EXPECT_TRUE(explanations.ran_content_with_cert_errors);
-  EXPECT_FALSE(explanations.displayed_content_with_cert_errors);
-
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_DISPLAYED;
-  GetSecurityStyle(security_info, &explanations);
-  EXPECT_FALSE(explanations.ran_content_with_cert_errors);
-  EXPECT_TRUE(explanations.displayed_content_with_cert_errors);
-
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_NONE;
-  GetSecurityStyle(security_info, &explanations);
-  EXPECT_FALSE(explanations.ran_content_with_cert_errors);
-  EXPECT_FALSE(explanations.displayed_content_with_cert_errors);
-}
-
-// Tests that SecurityStyleExplanations for subresources with cert
-// errors are *not* set when the main resource has major certificate
-// errors. If the main resource has certificate errors, it would be
-// duplicative/confusing to also report subresources with cert errors.
-TEST(SecurityStateContentUtilsTest,
-     SubresourcesAndMainResourceWithMajorCertErrors) {
-  content::SecurityStyleExplanations explanations;
-  security_state::SecurityInfo security_info;
-  security_info.cert_status = net::CERT_STATUS_DATE_INVALID;
-  security_info.scheme_is_cryptographic = true;
-
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
-  GetSecurityStyle(security_info, &explanations);
-  EXPECT_FALSE(explanations.ran_content_with_cert_errors);
-  EXPECT_FALSE(explanations.displayed_content_with_cert_errors);
-
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_RAN;
-  GetSecurityStyle(security_info, &explanations);
-  EXPECT_FALSE(explanations.ran_content_with_cert_errors);
-  EXPECT_FALSE(explanations.displayed_content_with_cert_errors);
-
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_DISPLAYED;
-  GetSecurityStyle(security_info, &explanations);
-  EXPECT_FALSE(explanations.ran_content_with_cert_errors);
-  EXPECT_FALSE(explanations.displayed_content_with_cert_errors);
-
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_NONE;
-  GetSecurityStyle(security_info, &explanations);
-  EXPECT_FALSE(explanations.ran_content_with_cert_errors);
-  EXPECT_FALSE(explanations.displayed_content_with_cert_errors);
-}
-
-// Tests that SecurityStyleExplanations for subresources with cert
-// errors are set when the main resource has only minor certificate
-// errors. Minor errors on the main resource should not hide major
-// errors on subresources.
-TEST(SecurityStateContentUtilsTest,
-     SubresourcesAndMainResourceWithMinorCertErrors) {
-  content::SecurityStyleExplanations explanations;
-  security_state::SecurityInfo security_info;
-  security_info.cert_status = net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
-  security_info.scheme_is_cryptographic = true;
-
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
-  GetSecurityStyle(security_info, &explanations);
-  EXPECT_TRUE(explanations.ran_content_with_cert_errors);
-  EXPECT_TRUE(explanations.displayed_content_with_cert_errors);
-
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_RAN;
-  GetSecurityStyle(security_info, &explanations);
-  EXPECT_TRUE(explanations.ran_content_with_cert_errors);
-  EXPECT_FALSE(explanations.displayed_content_with_cert_errors);
-
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_DISPLAYED;
-  GetSecurityStyle(security_info, &explanations);
-  EXPECT_FALSE(explanations.ran_content_with_cert_errors);
-  EXPECT_TRUE(explanations.displayed_content_with_cert_errors);
-
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_NONE;
-  GetSecurityStyle(security_info, &explanations);
-  EXPECT_FALSE(explanations.ran_content_with_cert_errors);
-  EXPECT_FALSE(explanations.displayed_content_with_cert_errors);
-}
-
-// Tests that SecurityInfo flags for mixed content are reflected in the
-// SecurityStyleExplanations produced by GetSecurityStyle.
-TEST(SecurityStateContentUtilsTest, GetSecurityStyleForMixedContent) {
-  content::SecurityStyleExplanations explanations;
-  security_state::SecurityInfo security_info;
-  security_info.cert_status = 0;
-  security_info.scheme_is_cryptographic = true;
-
-  security_info.contained_mixed_form = true;
-  GetSecurityStyle(security_info, &explanations);
-  EXPECT_TRUE(explanations.contained_mixed_form);
-  EXPECT_FALSE(explanations.ran_mixed_content);
-  EXPECT_FALSE(explanations.displayed_mixed_content);
-
-  security_info.contained_mixed_form = false;
-  security_info.mixed_content_status = security_state::CONTENT_STATUS_DISPLAYED;
-  GetSecurityStyle(security_info, &explanations);
-  EXPECT_FALSE(explanations.contained_mixed_form);
-  EXPECT_TRUE(explanations.displayed_mixed_content);
-}
-
-// Tests that malicious safe browsing data in SecurityInfo triggers an
+// Tests that malicious safe browsing data in VisibleSecurityState triggers an
 // appropriate summary in SecurityStyleExplanations.
 TEST(SecurityStateContentUtilsTest, GetSecurityStyleForSafeBrowsing) {
   content::SecurityStyleExplanations explanations;
-  security_state::SecurityInfo security_info;
-  security_info.cert_status = 0;
-  security_info.scheme_is_cryptographic = true;
-  security_info.malicious_content_status =
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.cert_status = 0;
+  visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
+  visible_security_state.malicious_content_status =
       security_state::MALICIOUS_CONTENT_STATUS_MALWARE;
 
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
-  GetSecurityStyle(security_info, &explanations);
+  visible_security_state.displayed_mixed_content = true;
+  visible_security_state.ran_mixed_content = true;
+  GetSecurityStyle(security_state::DANGEROUS, visible_security_state,
+                   &explanations);
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING),
+            explanations.summary);
+}
+
+// Tests that a non-cryptographic secure origin triggers an appropriate summary
+// in SecurityStyleExplanations.
+TEST(SecurityStateContentUtilsTest,
+     GetSecurityStyleForNonCryptographicSecureOrigin) {
+  content::SecurityStyleExplanations explanations;
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.cert_status = 0;
+  visible_security_state.url = GURL("chrome://test");
+  GetSecurityStyle(security_state::NONE, visible_security_state, &explanations);
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_NON_CRYPTO_SECURE_SUMMARY),
+            explanations.summary);
+}
+
+// Tests that non cert errors result in an appropriate summary in
+// SecurityStyleExplanations.
+TEST(SecurityStateContentUtilsTest, GetSecurityStyleForNonCertErrors) {
+  content::SecurityStyleExplanations explanations;
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.cert_status = 0;
+  visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
+
+  visible_security_state.is_error_page = true;
+  GetSecurityStyle(security_state::NONE, visible_security_state, &explanations);
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_ERROR_PAGE_SUMMARY),
+            explanations.summary);
+}
+
+// Tests that malicious safe browsing data triggers the Safe Browsing warning
+// summary when |is_error_page| is set to true.
+TEST(SecurityStateContentUtilsTest,
+     GetSecurityStyleForSafeBrowsingNonCertError) {
+  content::SecurityStyleExplanations explanations;
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.cert_status = 0;
+  visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
+
+  visible_security_state.is_error_page = true;
+  visible_security_state.malicious_content_status =
+      security_state::MALICIOUS_CONTENT_STATUS_MALWARE;
+
+  GetSecurityStyle(security_state::DANGEROUS, visible_security_state,
+                   &explanations);
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING),
             explanations.summary);
 }
@@ -193,22 +113,24 @@ bool FindSecurityStyleExplanation(
 // are not translated and so will be the same in any locale.
 TEST(SecurityStateContentUtilsTest, ConnectionExplanation) {
   // Test a modern configuration with a key exchange group.
-  security_state::SecurityInfo security_info;
-  security_info.cert_status = net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
-  security_info.scheme_is_cryptographic = true;
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.cert_status =
+      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
+  visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
   net::SSLConnectionStatusSetCipherSuite(
       0xcca8 /* TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 */,
-      &security_info.connection_status);
+      &visible_security_state.connection_status);
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
-                                     &security_info.connection_status);
-  security_info.key_exchange_group = 29;  // X25519
+                                     &visible_security_state.connection_status);
+  visible_security_state.key_exchange_group = 29;  // X25519
 
   std::string connection_title =
       l10n_util::GetStringUTF8(IDS_SSL_CONNECTION_TITLE);
 
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::NONE, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     ASSERT_TRUE(FindSecurityStyleExplanation(
         explanations.secure_explanations, connection_title,
@@ -221,10 +143,11 @@ TEST(SecurityStateContentUtilsTest, ConnectionExplanation) {
 
   // Some older cache entries may be missing the key exchange group, despite
   // having a cipher which should supply one.
-  security_info.key_exchange_group = 0;
+  visible_security_state.key_exchange_group = 0;
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::NONE, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     ASSERT_TRUE(FindSecurityStyleExplanation(
         explanations.secure_explanations, connection_title,
@@ -236,14 +159,16 @@ TEST(SecurityStateContentUtilsTest, ConnectionExplanation) {
   }
 
   // TLS 1.3 ciphers use the key exchange group exclusively.
-  net::SSLConnectionStatusSetCipherSuite(0x1301 /* TLS_AES_128_GCM_SHA256 */,
-                                         &security_info.connection_status);
+  net::SSLConnectionStatusSetCipherSuite(
+      0x1301 /* TLS_AES_128_GCM_SHA256 */,
+      &visible_security_state.connection_status);
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_3,
-                                     &security_info.connection_status);
-  security_info.key_exchange_group = 29;  // X25519
+                                     &visible_security_state.connection_status);
+  visible_security_state.key_exchange_group = 29;  // X25519
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::NONE, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
 
     ASSERT_TRUE(FindSecurityStyleExplanation(
@@ -254,11 +179,6 @@ TEST(SecurityStateContentUtilsTest, ConnectionExplanation) {
         "1.3, X25519, and AES_128_GCM.",
         explanation.description);
   }
-}
-
-void UpdateObsoleteSSLStatus(security_state::SecurityInfo* info) {
-  info->obsolete_ssl_status = net::ObsoleteSSLStatus(
-      info->connection_status, info->peer_signature_algorithm);
 }
 
 bool IsProtocolRecommendation(const std::string& recommendation,
@@ -286,19 +206,20 @@ bool IsSignatureRecommendation(const std::string& recommendation) {
 // Test that obsolete connection explanations are formatted as expected.
 TEST(SecurityStateContentUtilsTest, ObsoleteConnectionExplanation) {
   // Obsolete cipher.
-  security_state::SecurityInfo security_info;
-  security_info.cert_status = net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
-  security_info.scheme_is_cryptographic = true;
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.cert_status =
+      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
+  visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
   net::SSLConnectionStatusSetCipherSuite(
       0xc013 /* TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA */,
-      &security_info.connection_status);
+      &visible_security_state.connection_status);
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
-                                     &security_info.connection_status);
-  security_info.key_exchange_group = 29;  // X25519
-  UpdateObsoleteSSLStatus(&security_info);
+                                     &visible_security_state.connection_status);
+  visible_security_state.key_exchange_group = 29;  // X25519
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::SECURE, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     ASSERT_TRUE(FindSecurityStyleExplanation(
         explanations.info_explanations,
@@ -316,11 +237,11 @@ TEST(SecurityStateContentUtilsTest, ObsoleteConnectionExplanation) {
   }
 
   // Obsolete cipher and signature.
-  security_info.peer_signature_algorithm = 0x0201;  // rsa_pkcs1_sha1
-  UpdateObsoleteSSLStatus(&security_info);
+  visible_security_state.peer_signature_algorithm = 0x0201;  // rsa_pkcs1_sha1
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::SECURE, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     ASSERT_TRUE(FindSecurityStyleExplanation(
         explanations.info_explanations,
@@ -336,14 +257,14 @@ TEST(SecurityStateContentUtilsTest, ObsoleteConnectionExplanation) {
   }
 
   // Obsolete protocol version and cipher.
-  security_info.peer_signature_algorithm = 0;  // TLS 1.0 doesn't negotiate a
-                                               // signature algorithm.
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1,
-                                     &security_info.connection_status);
-  UpdateObsoleteSSLStatus(&security_info);
+                                     &visible_security_state.connection_status);
+  // TLS 1.0 doesn't negotiate a signature algorithm.
+  visible_security_state.peer_signature_algorithm = 0;
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::SECURE, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     ASSERT_TRUE(FindSecurityStyleExplanation(
         explanations.info_explanations,
@@ -362,11 +283,11 @@ TEST(SecurityStateContentUtilsTest, ObsoleteConnectionExplanation) {
   // Obsolete protocol version, cipher, and key exchange.
   net::SSLConnectionStatusSetCipherSuite(
       0x000a /* TLS_RSA_WITH_3DES_EDE_CBC_SHA */,
-      &security_info.connection_status);
-  UpdateObsoleteSSLStatus(&security_info);
+      &visible_security_state.connection_status);
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::SECURE, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     ASSERT_TRUE(FindSecurityStyleExplanation(
         explanations.info_explanations,
@@ -387,14 +308,15 @@ TEST(SecurityStateContentUtilsTest, ObsoleteConnectionExplanation) {
   // Obsolete key exchange.
   net::SSLConnectionStatusSetCipherSuite(
       0x009c /* TLS_RSA_WITH_AES_128_GCM_SHA256 */,
-      &security_info.connection_status);
+      &visible_security_state.connection_status);
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
-                                     &security_info.connection_status);
-  security_info.peer_signature_algorithm = 0x0804;  // rsa_pss_rsae_sha256
-  UpdateObsoleteSSLStatus(&security_info);
+                                     &visible_security_state.connection_status);
+  visible_security_state.peer_signature_algorithm =
+      0x0804;  // rsa_pss_rsae_sha256
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::SECURE, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     ASSERT_TRUE(FindSecurityStyleExplanation(
         explanations.info_explanations,
@@ -409,12 +331,12 @@ TEST(SecurityStateContentUtilsTest, ObsoleteConnectionExplanation) {
   // Obsolete signature.
   net::SSLConnectionStatusSetCipherSuite(
       0xc02f /* TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 */,
-      &security_info.connection_status);
-  security_info.peer_signature_algorithm = 0x0201;  // rsa_pkcs1_sha1
-  UpdateObsoleteSSLStatus(&security_info);
+      &visible_security_state.connection_status);
+  visible_security_state.peer_signature_algorithm = 0x0201;  // rsa_pkcs1_sha1
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::SECURE, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     ASSERT_TRUE(FindSecurityStyleExplanation(
         explanations.info_explanations,
@@ -430,19 +352,21 @@ TEST(SecurityStateContentUtilsTest, ObsoleteConnectionExplanation) {
 // Test that a secure content explanation is added as expected.
 TEST(SecurityStateContentUtilsTest, SecureContentExplanation) {
   // Test a modern configuration with a key exchange group.
-  security_state::SecurityInfo security_info;
-  security_info.cert_status = net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
-  security_info.scheme_is_cryptographic = true;
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.cert_status =
+      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
+  visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
   net::SSLConnectionStatusSetCipherSuite(
       0xcca8 /* TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 */,
-      &security_info.connection_status);
+      &visible_security_state.connection_status);
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
-                                     &security_info.connection_status);
-  security_info.key_exchange_group = 29;  // X25519
+                                     &visible_security_state.connection_status);
+  visible_security_state.key_exchange_group = 29;  // X25519
 
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::SECURE, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     EXPECT_TRUE(FindSecurityStyleExplanation(
         explanations.secure_explanations,
@@ -456,24 +380,26 @@ TEST(SecurityStateContentUtilsTest, SecureContentExplanation) {
 // Test that mixed content explanations are added as expected.
 TEST(SecurityStateContentUtilsTest, MixedContentExplanations) {
   // Test a modern configuration with a key exchange group.
-  security_state::SecurityInfo security_info;
-  security_info.cert_status = net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
-  security_info.scheme_is_cryptographic = true;
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.cert_status =
+      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
+  visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
   net::SSLConnectionStatusSetCipherSuite(
       0xcca8 /* TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 */,
-      &security_info.connection_status);
+      &visible_security_state.connection_status);
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
-                                     &security_info.connection_status);
-  security_info.key_exchange_group = 29;  // X25519
+                                     &visible_security_state.connection_status);
+  visible_security_state.key_exchange_group = 29;  // X25519
 
   std::string content_title =
       l10n_util::GetStringUTF8(IDS_RESOURCE_SECURITY_TITLE);
 
-  security_info.mixed_content_status =
-      security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
+  visible_security_state.displayed_mixed_content = true;
+  visible_security_state.ran_mixed_content = true;
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::DANGEROUS, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     EXPECT_TRUE(FindSecurityStyleExplanation(
         explanations.neutral_explanations, content_title,
@@ -489,10 +415,12 @@ TEST(SecurityStateContentUtilsTest, MixedContentExplanations) {
               explanation.description);
   }
 
-  security_info.mixed_content_status = security_state::CONTENT_STATUS_DISPLAYED;
+  visible_security_state.displayed_mixed_content = true;
+  visible_security_state.ran_mixed_content = false;
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::NONE, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     EXPECT_TRUE(FindSecurityStyleExplanation(
         explanations.neutral_explanations, content_title,
@@ -504,10 +432,12 @@ TEST(SecurityStateContentUtilsTest, MixedContentExplanations) {
         &explanation));
   }
 
-  security_info.mixed_content_status = security_state::CONTENT_STATUS_RAN;
+  visible_security_state.displayed_mixed_content = false;
+  visible_security_state.ran_mixed_content = true;
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::DANGEROUS, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     EXPECT_FALSE(FindSecurityStyleExplanation(
         explanations.neutral_explanations, content_title,
@@ -519,10 +449,11 @@ TEST(SecurityStateContentUtilsTest, MixedContentExplanations) {
         &explanation));
   }
 
-  security_info.contained_mixed_form = true;
+  visible_security_state.contained_mixed_form = true;
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::DANGEROUS, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     EXPECT_TRUE(FindSecurityStyleExplanation(
         explanations.neutral_explanations, content_title,
@@ -535,24 +466,26 @@ TEST(SecurityStateContentUtilsTest, MixedContentExplanations) {
 // Test that cert error explanations are formatted as expected.
 TEST(SecurityStateContentUtilsTest, CertErrorContentExplanations) {
   // Test a modern configuration with a key exchange group.
-  security_state::SecurityInfo security_info;
-  security_info.cert_status = net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
-  security_info.scheme_is_cryptographic = true;
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.cert_status =
+      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
+  visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
   net::SSLConnectionStatusSetCipherSuite(
       0xcca8 /* TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 */,
-      &security_info.connection_status);
+      &visible_security_state.connection_status);
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
-                                     &security_info.connection_status);
-  security_info.key_exchange_group = 29;  // X25519
+                                     &visible_security_state.connection_status);
+  visible_security_state.key_exchange_group = 29;  // X25519
 
   std::string content_title =
       l10n_util::GetStringUTF8(IDS_RESOURCE_SECURITY_TITLE);
 
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
+  visible_security_state.displayed_content_with_cert_errors = true;
+  visible_security_state.ran_content_with_cert_errors = true;
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::DANGEROUS, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     EXPECT_TRUE(FindSecurityStyleExplanation(
         explanations.neutral_explanations, content_title,
@@ -570,11 +503,12 @@ TEST(SecurityStateContentUtilsTest, CertErrorContentExplanations) {
         explanation.description);
   }
 
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_DISPLAYED;
+  visible_security_state.displayed_content_with_cert_errors = true;
+  visible_security_state.ran_content_with_cert_errors = false;
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::NONE, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     EXPECT_TRUE(FindSecurityStyleExplanation(
         explanations.neutral_explanations, content_title,
@@ -586,11 +520,12 @@ TEST(SecurityStateContentUtilsTest, CertErrorContentExplanations) {
         &explanation));
   }
 
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_RAN;
+  visible_security_state.displayed_content_with_cert_errors = false;
+  visible_security_state.ran_content_with_cert_errors = true;
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::DANGEROUS, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     ASSERT_FALSE(FindSecurityStyleExplanation(
         explanations.neutral_explanations, content_title,
@@ -609,26 +544,28 @@ TEST(SecurityStateContentUtilsTest, CertErrorContentExplanations) {
 // Test that all mixed content explanations can appear together.
 TEST(SecurityStateContentUtilsTest, MixedContentAndCertErrorExplanations) {
   // Test a modern configuration with a key exchange group.
-  security_state::SecurityInfo security_info;
-  security_info.cert_status = net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
-  security_info.scheme_is_cryptographic = true;
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.cert_status =
+      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
+  visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
   net::SSLConnectionStatusSetCipherSuite(
       0xcca8 /* TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 */,
-      &security_info.connection_status);
+      &visible_security_state.connection_status);
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
-                                     &security_info.connection_status);
-  security_info.key_exchange_group = 29;  // X25519
+                                     &visible_security_state.connection_status);
+  visible_security_state.key_exchange_group = 29;  // X25519
 
   std::string content_title =
       l10n_util::GetStringUTF8(IDS_RESOURCE_SECURITY_TITLE);
 
-  security_info.mixed_content_status =
-      security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_DISPLAYED_AND_RAN;
+  visible_security_state.displayed_mixed_content = true;
+  visible_security_state.ran_mixed_content = true;
+  visible_security_state.displayed_content_with_cert_errors = true;
+  visible_security_state.ran_content_with_cert_errors = true;
   {
     content::SecurityStyleExplanations explanations;
-    GetSecurityStyle(security_info, &explanations);
+    GetSecurityStyle(security_state::DANGEROUS, visible_security_state,
+                     &explanations);
     content::SecurityStyleExplanation explanation;
     EXPECT_TRUE(FindSecurityStyleExplanation(
         explanations.neutral_explanations, content_title,
@@ -650,28 +587,27 @@ TEST(SecurityStateContentUtilsTest, MixedContentAndCertErrorExplanations) {
 }
 
 // Tests that a security level of HTTP_SHOW_WARNING produces
-// blink::WebSecurityStyleNeutral and an explanation if appropriate.
+// blink::WebSecurityStyleNeutral.
 TEST(SecurityStateContentUtilsTest, HTTPWarning) {
-  security_state::SecurityInfo security_info;
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.url = GURL("http://scheme-is-not-cryptographic.test");
   content::SecurityStyleExplanations explanations;
-  security_info.security_level = security_state::HTTP_SHOW_WARNING;
-  blink::WebSecurityStyle security_style =
-      GetSecurityStyle(security_info, &explanations);
+  blink::WebSecurityStyle security_style = GetSecurityStyle(
+      security_state::HTTP_SHOW_WARNING, visible_security_state, &explanations);
   EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
-  // Verify no explanation was shown, because Form Not Secure was not triggered.
+  // Verify no explanation was shown.
   EXPECT_EQ(0u, explanations.neutral_explanations.size());
 }
 
 // Tests that a security level of DANGEROUS on an HTTP page with insecure form
 // edits produces blink::WebSecurityStyleInsecure and an explanation.
 TEST(SecurityStateContentUtilsTest, HTTPDangerous) {
-  security_state::SecurityInfo security_info;
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.url = GURL("http://scheme-is-not-cryptographic.test");
   content::SecurityStyleExplanations explanations;
-  security_info.security_level = security_state::DANGEROUS;
-  security_info.scheme_is_cryptographic = false;
-  security_info.insecure_input_events.insecure_field_edited = true;
-  blink::WebSecurityStyle security_style =
-      GetSecurityStyle(security_info, &explanations);
+  visible_security_state.insecure_input_events.insecure_field_edited = true;
+  blink::WebSecurityStyle security_style = GetSecurityStyle(
+      security_state::DANGEROUS, visible_security_state, &explanations);
   // Verify that the security style was downgraded and an explanation shown
   // because a form was edited.
   EXPECT_EQ(blink::kWebSecurityStyleInsecure, security_style);
@@ -681,39 +617,39 @@ TEST(SecurityStateContentUtilsTest, HTTPDangerous) {
 // Tests that an explanation is provided if a certificate is missing a
 // subjectAltName extension containing a domain name or IP address.
 TEST(SecurityStateContentUtilsTest, SubjectAltNameWarning) {
-  security_state::SecurityInfo security_info;
-  security_info.cert_status = 0;
-  security_info.scheme_is_cryptographic = true;
-
-  security_info.certificate = net::ImportCertFromFile(
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.cert_status = 0;
+  visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
+  visible_security_state.certificate = net::ImportCertFromFile(
       net::GetTestCertsDirectory(), "salesforce_com_test.pem");
-  ASSERT_TRUE(security_info.certificate);
+  ASSERT_TRUE(visible_security_state.certificate);
 
   content::SecurityStyleExplanations explanations;
-  security_info.cert_missing_subject_alt_name = true;
-  GetSecurityStyle(security_info, &explanations);
+  GetSecurityStyle(security_state::DANGEROUS, visible_security_state,
+                   &explanations);
   // Verify that an explanation was shown for a missing subjectAltName.
   EXPECT_EQ(1u, explanations.insecure_explanations.size());
 
   explanations.insecure_explanations.clear();
-  security_info.cert_missing_subject_alt_name = false;
-  GetSecurityStyle(security_info, &explanations);
+  visible_security_state.certificate =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  GetSecurityStyle(security_state::SECURE, visible_security_state,
+                   &explanations);
   // Verify that no explanation is shown if the subjectAltName is present.
   EXPECT_EQ(0u, explanations.insecure_explanations.size());
 }
 
-// Tests that malicious safe browsing data in SecurityInfo causes an insecure
-// explanation to be set.
+// Tests that malicious safe browsing data in VisibleSecurityState causes an
+// insecure explanation to be set.
 TEST(SecurityStateContentUtilsTest, SafeBrowsingExplanation) {
-  security_state::SecurityInfo security_info;
-  security_info.cert_status = 0;
-  security_info.scheme_is_cryptographic = true;
-  security_info.malicious_content_status =
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.cert_status = 0;
+  visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
+  visible_security_state.malicious_content_status =
       security_state::MALICIOUS_CONTENT_STATUS_MALWARE;
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_NONE;
   content::SecurityStyleExplanations explanations;
-  GetSecurityStyle(security_info, &explanations);
+  GetSecurityStyle(security_state::DANGEROUS, visible_security_state,
+                   &explanations);
   EXPECT_EQ(1u, explanations.insecure_explanations.size());
 }
 
@@ -740,36 +676,37 @@ scoped_refptr<net::X509Certificate> CreateFakeCert(
 // Tests that an info explanation is provided only if the certificate is
 // expiring soon.
 TEST(SecurityStateContentUtilsTest, ExpiringCertificateWarning) {
-  security_state::SecurityInfo security_info;
-  security_info.cert_status = 0;
-  security_info.scheme_is_cryptographic = true;
-  security_info.content_with_cert_errors_status =
-      security_state::CONTENT_STATUS_NONE;
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.cert_status = 0;
+  visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
 
   // Check that an info explanation is provided if the certificate is expiring
   // in less than 48 hours.
   content::SecurityStyleExplanations explanations;
-  security_info.certificate = scoped_refptr<net::X509Certificate>(
+  visible_security_state.certificate = scoped_refptr<net::X509Certificate>(
       CreateFakeCert(base::TimeDelta::FromHours(30)));
-  ASSERT_TRUE(security_info.certificate);
-  GetSecurityStyle(security_info, &explanations);
+  ASSERT_TRUE(visible_security_state.certificate);
+  GetSecurityStyle(security_state::SECURE, visible_security_state,
+                   &explanations);
   EXPECT_EQ(1u, explanations.info_explanations.size());
 
   // Check that no explanation is set if the certificate is expiring in more
   // than 48 hours.
   explanations.info_explanations.clear();
-  security_info.certificate = scoped_refptr<net::X509Certificate>(
+  visible_security_state.certificate = scoped_refptr<net::X509Certificate>(
       CreateFakeCert(base::TimeDelta::FromHours(72)));
-  ASSERT_TRUE(security_info.certificate);
-  GetSecurityStyle(security_info, &explanations);
+  ASSERT_TRUE(visible_security_state.certificate);
+  GetSecurityStyle(security_state::SECURE, visible_security_state,
+                   &explanations);
   EXPECT_EQ(0u, explanations.info_explanations.size());
 
   // Check that no explanation is set if the certificate has already expired.
   explanations.info_explanations.clear();
-  security_info.certificate = scoped_refptr<net::X509Certificate>(
+  visible_security_state.certificate = scoped_refptr<net::X509Certificate>(
       CreateFakeCert(base::TimeDelta::FromHours(-10)));
-  ASSERT_TRUE(security_info.certificate);
-  GetSecurityStyle(security_info, &explanations);
+  ASSERT_TRUE(visible_security_state.certificate);
+  GetSecurityStyle(security_state::SECURE, visible_security_state,
+                   &explanations);
   EXPECT_EQ(0u, explanations.info_explanations.size());
 }
 

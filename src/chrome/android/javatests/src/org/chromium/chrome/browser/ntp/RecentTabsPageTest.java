@@ -15,7 +15,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -26,6 +25,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
 
@@ -84,14 +84,11 @@ public class RecentTabsPageTest {
      */
     private List<RecentlyClosedTab> setRecentlyClosedTabs(final int tabCount) {
         final List<RecentlyClosedTab> tabs = new ArrayList<>();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < tabCount; i++) {
-                    tabs.add(new RecentlyClosedTab(i, "RecentlyClosedTab title " + i, "url " + i));
-                }
-                mManager.setRecentlyClosedTabs(tabs);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            for (int i = 0; i < tabCount; i++) {
+                tabs.add(new RecentlyClosedTab(i, "RecentlyClosedTab title " + i, "url " + i));
             }
+            mManager.setRecentlyClosedTabs(tabs);
         });
         return tabs;
     }

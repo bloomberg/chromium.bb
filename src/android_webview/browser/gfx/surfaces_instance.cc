@@ -8,8 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "android_webview/browser/gfx/aw_gl_surface.h"
 #include "android_webview/browser/gfx/aw_render_thread_context_provider.h"
+#include "android_webview/browser/gfx/aw_vulkan_context_provider.h"
 #include "android_webview/browser/gfx/deferred_gpu_command_service.h"
 #include "android_webview/browser/gfx/parent_output_surface.h"
 #include "android_webview/common/aw_switches.h"
@@ -23,11 +23,9 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
-#include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl_non_ddl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "gpu/command_buffer/service/shared_context_state.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -85,46 +83,53 @@ SurfacesInstance::SurfacesInstance()
       this, frame_sink_manager_.get(), frame_sink_id_, is_root,
       needs_sync_points);
 
+  // Android WebView always uses non-DDL regardless of RendererSetting.
+  const bool use_skia_renderer =
+      settings.use_skia_renderer || settings.use_skia_renderer_non_ddl;
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  const bool enable_vulkan =
+      command_line->HasSwitch(switches::kWebViewEnableVulkan);
+  const bool enable_shared_image =
+      command_line->HasSwitch(switches::kWebViewEnableSharedImage);
+  LOG_IF(FATAL, enable_vulkan && !enable_shared_image)
+      << "--webview-enable-vulkan only works with shared image "
+         "(--webview-enable-shared-image).";
+  LOG_IF(FATAL, enable_vulkan && !use_skia_renderer)
+      << "--webview-enable-vulkan only works with skia renderer "
+         "(--enable-features=UseSkiaRenderer or UseSkiaRendererNonDDL).";
+
+  auto vulkan_context_provider =
+      enable_vulkan ? AwVulkanContextProvider::GetOrCreateInstance() : nullptr;
   std::unique_ptr<viz::OutputSurface> output_surface;
   viz::SkiaOutputSurface* skia_output_surface = nullptr;
-  if (settings.use_skia_renderer || settings.use_skia_renderer_non_ddl) {
+  gl_surface_ = base::MakeRefCounted<AwGLSurface>();
+  if (use_skia_renderer) {
     auto* task_executor = DeferredGpuCommandService::GetInstance();
     if (!shared_context_state_) {
-      auto surface = base::MakeRefCounted<AwGLSurface>();
       auto gl_context =
           gl::init::CreateGLContext(task_executor->share_group().get(),
-                                    surface.get(), gl::GLContextAttribs());
-      gl_context->MakeCurrent(surface.get());
+                                    gl_surface_.get(), gl::GLContextAttribs());
+      gl_context->MakeCurrent(gl_surface_.get());
       shared_context_state_ = base::MakeRefCounted<gpu::SharedContextState>(
-          task_executor->share_group(), std::move(surface),
-          std::move(gl_context), false /* use_virtualized_gl_contexts */,
-          base::BindOnce(&OnContextLost),
-          nullptr /* vulkan_context_provider */);
+          task_executor->share_group(), gl_surface_, std::move(gl_context),
+          false /* use_virtualized_gl_contexts */,
+          base::BindOnce(&OnContextLost), vulkan_context_provider.get());
       shared_context_state_->InitializeGrContext(
           gpu::GpuDriverBugWorkarounds(task_executor->gpu_feature_info()
                                            .enabled_gpu_driver_bug_workarounds),
           nullptr /* gr_shader_cache */);
     }
-    if (settings.use_skia_renderer_non_ddl) {
-      output_surface = std::make_unique<viz::SkiaOutputSurfaceImplNonDDL>(
-          base::MakeRefCounted<AwGLSurface>(), shared_context_state_,
-          task_executor->mailbox_manager(),
-          task_executor->shared_image_manager(),
-          task_executor->sync_point_manager(),
-          false /* need_swapbuffers_ack */);
-    } else {
-      output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
-          task_executor, base::MakeRefCounted<AwGLSurface>(),
-          shared_context_state_);
-    }
+    output_surface = std::make_unique<viz::SkiaOutputSurfaceImplNonDDL>(
+        gl_surface_, shared_context_state_, task_executor->mailbox_manager(),
+        task_executor->shared_image_manager(),
+        task_executor->sync_point_manager(), false /* need_swapbuffers_ack */);
     skia_output_surface =
         static_cast<viz::SkiaOutputSurface*>(output_surface.get());
   } else {
     auto context_provider = AwRenderThreadContextProvider::Create(
-        base::MakeRefCounted<AwGLSurface>(),
-        DeferredGpuCommandService::GetInstance());
-    output_surface =
-        std::make_unique<ParentOutputSurface>(std::move(context_provider));
+        gl_surface_, DeferredGpuCommandService::GetInstance());
+    output_surface = std::make_unique<ParentOutputSurface>(
+        gl_surface_, std::move(context_provider));
   }
 
   begin_frame_source_ = std::make_unique<viz::StubBeginFrameSource>();
@@ -135,9 +140,6 @@ SurfacesInstance::SurfacesInstance()
       nullptr /* shared_bitmap_manager */, settings, frame_sink_id_,
       std::move(output_surface), std::move(scheduler),
       nullptr /* current_task_runner */, skia_output_surface);
-  const bool enable_shared_image =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebViewEnableSharedImage);
   display_->Initialize(this, frame_sink_manager_->surface_manager(),
                        enable_shared_image);
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),
@@ -236,7 +238,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   display_->Resize(viewport);
   display_->DrawAndSwap();
   display_->DidReceiveSwapBuffersAck();
-  display_->DidReceivePresentationFeedback(gfx::PresentationFeedback(
+  gl_surface_->MaybeDidPresent(gfx::PresentationFeedback(
       base::TimeTicks::Now(), base::TimeDelta(), 0 /* flags */));
 }
 
@@ -264,8 +266,9 @@ void SurfacesInstance::SetSolidColorRootFrame() {
   render_pass->SetNew(1, rect, rect, gfx::Transform());
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  quad_state->SetAll(gfx::Transform(), rect, rect, rect, is_clipped,
-                     are_contents_opaque, 1.f, SkBlendMode::kSrcOver, 0);
+  quad_state->SetAll(gfx::Transform(), rect, rect, gfx::RRectF(), rect,
+                     is_clipped, are_contents_opaque, 1.f,
+                     SkBlendMode::kSrcOver, 0);
   viz::SolidColorDrawQuad* solid_quad =
       render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
   solid_quad->SetNew(quad_state, rect, rect, SK_ColorBLACK, false);
@@ -295,7 +298,7 @@ std::vector<viz::SurfaceRange> SurfacesInstance::GetChildIdsRanges() {
 
 void SurfacesInstance::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {}
+    const viz::PresentationFeedbackMap& feedbacks) {}
 
 void SurfacesInstance::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
@@ -304,5 +307,10 @@ void SurfacesInstance::ReclaimResources(
 }
 
 void SurfacesInstance::OnBeginFramePausedChanged(bool paused) {}
+
+base::TimeDelta SurfacesInstance::GetPreferredFrameIntervalForFrameSinkId(
+    const viz::FrameSinkId& id) {
+  return frame_sink_manager_->GetPreferredFrameIntervalForFrameSinkId(id);
+}
 
 }  // namespace android_webview

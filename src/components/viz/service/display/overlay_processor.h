@@ -28,6 +28,12 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   using FilterOperationsMap =
       base::flat_map<RenderPassId, cc::FilterOperations*>;
 
+  static void RecordOverlayDamageRectHistograms(
+      bool is_overlay,
+      bool has_occluding_surface_damage,
+      bool zero_damage_rect,
+      bool occluding_damage_equal_to_damage_rect);
+
   class VIZ_SERVICE_EXPORT Strategy {
    public:
     virtual ~Strategy() {}

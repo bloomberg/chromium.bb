@@ -94,7 +94,6 @@ source_set("libjingle_webrtc_common") {
     ":webrtc",
     "//third_party/webrtc/media:rtc_media",
     "//third_party/webrtc/media:rtc_media_base",
-    "//third_party/webrtc/modules/video_capture",
     "//third_party/webrtc/pc:libjingle_peerconnection",
     "//third_party/webrtc/pc:rtc_pc",
     "//third_party/webrtc/system_wrappers",
@@ -110,7 +109,7 @@ source_set("task_queue_impl") {
   configs += [ "//third_party/webrtc:library_impl_config" ]
   deps = [
     ":task_queue_factory",
-    "//third_party/webrtc/api/task_queue:global_task_queue_factory",
+    "//third_party/webrtc/api/task_queue",
   ]
 }
 
@@ -122,6 +121,5 @@ source_set("task_queue_factory") {
   deps = [
     "//base",
     "//third_party/webrtc/api/task_queue",
-    "//third_party/webrtc/api/task_queue:task_queue_factory",
   ]
 }

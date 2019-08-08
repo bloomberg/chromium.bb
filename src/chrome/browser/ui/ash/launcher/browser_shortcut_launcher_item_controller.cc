@@ -331,8 +331,10 @@ void BrowserShortcutLauncherItemController::ExecuteCommand(
 
   const uint16_t browser_index = GetBrowserIndex(command_id);
   // Check that the index is valid and the browser has not been closed.
+  // It's unclear why, but the browser's window may be null: crbug.com/937088
   if (browser_index < browser_menu_items_.size() &&
-      browser_menu_items_[browser_index]) {
+      browser_menu_items_[browser_index] &&
+      browser_menu_items_[browser_index]->window()) {
     Browser* browser = browser_menu_items_[browser_index];
     TabStripModel* tab_strip = browser->tab_strip_model();
     const uint16_t tab_index = GetWebContentsIndex(command_id);

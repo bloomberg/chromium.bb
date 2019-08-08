@@ -103,6 +103,12 @@ class AutofillDataModel : public FormGroup {
   // the subject of user interaction (usually, when it's used to fill a form).
   void RecordUse();
 
+  // Returns a score based on both the recency (relative to |time|) and
+  // frequency for the model. The score is a negative number where a higher
+  // value is more relevant. |time| is passed as a parameter to ensure
+  // consistent results.
+  double GetFrecencyScore(base::Time time) const;
+
  private:
   // A globally unique ID for this object.
   std::string guid_;
@@ -125,12 +131,6 @@ class AutofillDataModel : public FormGroup {
   // The last time data in the model was modified, rounded in seconds. Any
   // change should use set_previous_modification_date()
   base::Time modification_date_;
-
-  // Returns a score based on both the recency (relative to |time|) and
-  // frequency for the model. The score is a negative number where a higher
-  // value is more relevant. |time| is passed as a parameter to ensure
-  // consistent results.
-  double GetFrecencyScore(base::Time time) const;
 };
 
 }  // namespace autofill

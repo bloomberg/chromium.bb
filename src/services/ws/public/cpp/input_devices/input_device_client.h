@@ -39,6 +39,7 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
       const override;
   const std::vector<ui::InputDevice>& GetMouseDevices() const override;
   const std::vector<ui::InputDevice>& GetTouchpadDevices() const override;
+  const std::vector<ui::InputDevice>& GetUncategorizedDevices() const override;
   bool AreDeviceListsComplete() const override;
   bool AreTouchscreensEnabled() const override;
   bool AreTouchscreenTargetDisplaysValid() const override;
@@ -61,11 +62,14 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
       const std::vector<ui::InputDevice>& devices) override;
   void OnTouchpadDeviceConfigurationChanged(
       const std::vector<ui::InputDevice>& devices) override;
+  void OnUncategorizedDeviceConfigurationChanged(
+      const std::vector<ui::InputDevice>& devices) override;
   void OnDeviceListsComplete(
       const std::vector<ui::InputDevice>& keyboard_devices,
       const std::vector<ui::TouchscreenDevice>& touchscreen_devices,
       const std::vector<ui::InputDevice>& mouse_devices,
       const std::vector<ui::InputDevice>& touchpad_devices,
+      const std::vector<ui::InputDevice>& uncategorized_devices,
       bool are_touchscreen_target_displays_valid) override;
   void OnStylusStateChanged(ui::StylusState state) override;
 
@@ -76,6 +80,7 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
   void NotifyObserversKeyboardDeviceConfigurationChanged();
   void NotifyObserversTouchscreenDeviceConfigurationChanged();
   void NotifyObserversTouchpadDeviceConfigurationChanged();
+  void NotifyObserversUncategorizedDeviceConfigurationChanged();
 
   mojo::Binding<mojom::InputDeviceObserverMojo> binding_;
 
@@ -87,6 +92,7 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
   std::vector<ui::TouchscreenDevice> touchscreen_devices_;
   std::vector<ui::InputDevice> mouse_devices_;
   std::vector<ui::InputDevice> touchpad_devices_;
+  std::vector<ui::InputDevice> uncategorized_devices_;
   bool device_lists_complete_ = false;
   bool are_touchscreen_target_displays_valid_ = false;
 

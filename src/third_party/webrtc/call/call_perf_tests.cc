@@ -318,7 +318,10 @@ void CallPerfTest::TestAudioVideoSync(FecMode fec,
 
   // In quick test synchronization may not be achieved in time.
   if (!field_trial::IsEnabled("WebRTC-QuickPerfTest")) {
+// TODO(bugs.webrtc.org/10417): Reenable this for iOS
+#if !defined(WEBRTC_IOS)
     EXPECT_EQ(1, metrics::NumSamples("WebRTC.Video.AVSyncOffsetInMs"));
+#endif
   }
 }
 
@@ -637,7 +640,7 @@ void CallPerfTest::TestMinTransmitBitrate(bool pad_to_min_bitrate) {
     // TODO(holmer): Run this with a timer instead of once per packet.
     Action OnSendRtp(const uint8_t* packet, size_t length) override {
       VideoSendStream::Stats stats = send_stream_->GetStats();
-      if (stats.substreams.size() > 0) {
+      if (!stats.substreams.empty()) {
         RTC_DCHECK_EQ(1, stats.substreams.size());
         int bitrate_kbps =
             stats.substreams.begin()->second.total_bitrate_bps / 1000;
@@ -771,14 +774,13 @@ TEST_F(CallPerfTest, MAYBE_KeepsHighBitrateWhenReconfiguringSender) {
       return FakeEncoder::InitEncode(config, number_of_cores, max_payload_size);
     }
 
-    int32_t SetRateAllocation(const VideoBitrateAllocation& rate_allocation,
-                              uint32_t framerate) override {
-      last_set_bitrate_kbps_ = rate_allocation.get_sum_kbps();
+    void SetRates(const RateControlParameters& parameters) override {
+      last_set_bitrate_kbps_ = parameters.bitrate.get_sum_kbps();
       if (encoder_inits_ == 1 &&
-          rate_allocation.get_sum_kbps() > kReconfigureThresholdKbps) {
+          parameters.bitrate.get_sum_kbps() > kReconfigureThresholdKbps) {
         time_to_reconfigure_.Set();
       }
-      return FakeEncoder::SetRateAllocation(rate_allocation, framerate);
+      FakeEncoder::SetRates(parameters);
     }
 
     void ModifySenderBitrateConfig(

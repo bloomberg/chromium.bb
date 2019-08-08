@@ -204,7 +204,6 @@
     "infra_step": true,
     "name": "my repo rebase",
     "~followup_annotations": [
-      "step returned non-zero exit code: 1",
       "@@@STEP_EXCEPTION@@@"
     ]
   },

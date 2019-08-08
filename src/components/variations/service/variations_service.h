@@ -198,6 +198,9 @@ class VariationsService
   // Cancels the currently pending fetch request.
   void CancelCurrentRequestForTesting();
 
+  // Exposes StartRepeatedVariationsSeedFetch for testing.
+  void StartRepeatedVariationsSeedFetchForTesting();
+
  protected:
   // Starts the fetching process once, where |OnURLFetchComplete| is called with
   // the response. This calls DoFetchToURL with the set url.

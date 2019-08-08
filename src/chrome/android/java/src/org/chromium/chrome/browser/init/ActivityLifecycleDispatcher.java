@@ -21,6 +21,8 @@ import org.chromium.chrome.browser.lifecycle.WindowFocusChangedObserver;
 /**
  * Dispatches lifecycle events of activities extending {@link AsyncInitializationActivity} to
  * registered observers.
+ *
+ * All observers will be automatically cleared when the backing activity is destroyed.
  */
 public class ActivityLifecycleDispatcher {
     private final ObserverList<InflationObserver> mInflationObservers = new ObserverList<>();
@@ -147,6 +149,18 @@ public class ActivityLifecycleDispatcher {
         for (Destroyable destroyable : mDestroyables) {
             destroyable.destroy();
         }
+
+        // Drain observers to prevent possible memory leaks.
+        // TODO(twellington): Add some state to this class to prevent observers from being
+        //                    registered after the activity has been destroyed.
+        mInflationObservers.clear();
+        mPauseResumeObservers.clear();
+        mStartStopObservers.clear();
+        mNativeInitObservers.clear();
+        mSaveInstanceStateObservers.clear();
+        mWindowFocusChangesObservers.clear();
+        mActivityResultWithNativeObservers.clear();
+        mDestroyables.clear();
     }
 
     void dispatchOnSaveInstanceState(Bundle outBundle) {

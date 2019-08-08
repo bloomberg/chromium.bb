@@ -26,21 +26,20 @@ struct RUNTIME_FUNCTION {
 using PRUNTIME_FUNCTION = RUNTIME_FUNCTION*;
 #endif  // !defined(_WIN64)
 
-#if defined(ARCH_CPU_64_BITS)
 inline ULONG64 ContextPC(CONTEXT* context) {
 #if defined(ARCH_CPU_X86_64)
   return context->Rip;
+#elif defined(ARCH_CPU_X86)
+  return context->Eip;
 #elif defined(ARCH_CPU_ARM64)
   return context->Pc;
 #else
-#error Unsupported Windows 64-bit Arch
+#error Unsupported Windows Arch
 #endif
 }
-#endif
 
-// Instances of this class are expected to be created and destroyed for each
-// stack unwinding. This class is not used while the target thread is suspended,
-// so may allocate from the default heap.
+// This class is not used while the target thread is suspended, so may allocate
+// from the default heap.
 class BASE_EXPORT Win32StackFrameUnwinder {
  public:
   // Interface for Win32 unwind-related functionality this class depends
@@ -56,11 +55,6 @@ class BASE_EXPORT Win32StackFrameUnwinder {
                                PRUNTIME_FUNCTION runtime_function,
                                CONTEXT* context) = 0;
 
-    // Returns the module containing |program_counter|. Can return null if the
-    // module has been unloaded.
-    virtual const ModuleCache::Module* GetModuleForProgramCounter(
-        DWORD64 program_counter) = 0;
-
    protected:
     UnwindFunctions();
 
@@ -68,22 +62,20 @@ class BASE_EXPORT Win32StackFrameUnwinder {
     DISALLOW_COPY_AND_ASSIGN(UnwindFunctions);
   };
 
-  explicit Win32StackFrameUnwinder(ModuleCache* module_cache);
+  explicit Win32StackFrameUnwinder();
   ~Win32StackFrameUnwinder();
 
-  // Attempts to unwind the frame represented by the stack and instruction
-  // pointers in |context|. If successful, updates |context| and provides the
-  // module associated with the frame in *|module|.
-  bool TryUnwind(CONTEXT* context, const ModuleCache::Module** module);
+  // Attempts to unwind the frame represented by |context|, where the
+  // instruction pointer is known to be in |module|. Updates |context| if
+  // successful.
+  bool TryUnwind(bool at_top_frame,
+                 CONTEXT* context,
+                 const ModuleCache::Module* module);
 
  private:
   // This function is for internal and test purposes only.
   Win32StackFrameUnwinder(std::unique_ptr<UnwindFunctions> unwind_functions);
   friend class Win32StackFrameUnwinderTest;
-
-  // State associated with each stack unwinding.
-  bool at_top_frame_;
-  bool unwind_info_present_for_all_frames_;
 
   std::unique_ptr<UnwindFunctions> unwind_functions_;
 

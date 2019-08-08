@@ -14,7 +14,7 @@
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios_bridge.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/net/cookies/system_cookie_util.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "net/cookies/cookie_store.h"
 #include "testing/platform_test.h"
@@ -259,9 +259,13 @@ void GaiaAuthFetcherIOSNSURLSessionBridgeTest::AddCookiesToCookieManager(
   network::mojom::CookieManager* cookie_manager =
       browser_state_->GetCookieManager();
   for (NSHTTPCookie* cookie in cookies) {
+    net::CookieOptions options;
+    options.set_include_httponly();
+    options.set_same_site_cookie_context(
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
     cookie_manager->SetCanonicalCookie(
         net::CanonicalCookieFromSystemCookie(cookie, base::Time::Now()),
-        "https", /*modify_http_only=*/true, base::DoNothing());
+        "https", options, base::DoNothing());
   }
   WaitForBackgroundTasks();
 }

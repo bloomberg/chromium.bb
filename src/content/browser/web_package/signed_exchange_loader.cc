@@ -20,8 +20,10 @@
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_request_matcher.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
+#include "content/browser/web_package/signed_exchange_validity_pinger.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
@@ -45,7 +47,8 @@ constexpr char kNoSniffHeaderValue[] = "nosniff";
 net::RedirectInfo CreateRedirectInfo(
     const GURL& new_url,
     const network::ResourceRequest& outer_request,
-    const network::ResourceResponseHead& outer_response) {
+    const network::ResourceResponseHead& outer_response,
+    bool is_fallback_redirect) {
   // https://wicg.github.io/webpackage/loading.html#mp-http-fetch
   // Step 3. Set actualResponse's status to 303. [spec text]
   return net::RedirectInfo::ComputeRedirectInfo(
@@ -58,7 +61,8 @@ net::RedirectInfo CreateRedirectInfo(
       outer_request.referrer_policy, outer_request.referrer.spec(), 303,
       new_url,
       net::RedirectUtil::GetReferrerPolicyHeader(outer_response.headers.get()),
-      false /* insecure_scheme_was_upgraded */);
+      false /* insecure_scheme_was_upgraded */, true /* copy_fragment */,
+      is_fallback_redirect);
 }
 
 bool HasNoSniffHeader(const network::ResourceResponseHead& response) {
@@ -76,19 +80,35 @@ SignedExchangeHandlerFactory* g_signed_exchange_factory_for_testing_ = nullptr;
 
 }  // namespace
 
-class SignedExchangeLoader::ResponseTimingInfo {
+class SignedExchangeLoader::OuterResponseInfo {
  public:
-  explicit ResponseTimingInfo(const network::ResourceResponseHead& response)
+  explicit OuterResponseInfo(const network::ResourceResponseHead& response)
       : request_start_(response.request_start),
         response_start_(response.response_start),
         request_time_(response.request_time),
         response_time_(response.response_time),
-        load_timing_(response.load_timing) {}
+        load_timing_(response.load_timing) {
+    if (base::FeatureList::IsEnabled(
+            features::kSignedExchangeSubresourcePrefetch) &&
+        response.headers) {
+      response.headers->GetNormalizedHeader("link", &link_header_);
+    }
+  }
 
   network::ResourceResponseHead CreateRedirectResponseHead() const {
     network::ResourceResponseHead response_head;
     response_head.encoded_data_length = 0;
-    std::string buf(base::StringPrintf("HTTP/1.1 %d %s\r\n", 303, "See Other"));
+    std::string buf;
+    if (link_header_.empty()) {
+      buf = base::StringPrintf("HTTP/1.1 %d %s\r\n", 303, "See Other");
+    } else {
+      DCHECK(base::FeatureList::IsEnabled(
+          features::kSignedExchangeSubresourcePrefetch));
+      buf = base::StringPrintf(
+          "HTTP/1.1 %d %s\r\n"
+          "link: %s\r\n",
+          303, "See Other", link_header_.c_str());
+    }
     response_head.headers = new net::HttpResponseHeaders(
         net::HttpUtil::AssembleRawHeaders(buf.c_str(), buf.size()));
     response_head.encoded_data_length = 0;
@@ -106,8 +126,9 @@ class SignedExchangeLoader::ResponseTimingInfo {
   const base::Time request_time_;
   const base::Time response_time_;
   const net::LoadTimingInfo load_timing_;
+  std::string link_header_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResponseTimingInfo);
+  DISALLOW_COPY_AND_ASSIGN(OuterResponseInfo);
 };
 
 SignedExchangeLoader::SignedExchangeLoader(
@@ -125,8 +146,7 @@ SignedExchangeLoader::SignedExchangeLoader(
     scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
     const std::string& accept_langs)
     : outer_request_(outer_request),
-      outer_response_timing_info_(
-          std::make_unique<ResponseTimingInfo>(outer_response)),
+      outer_response_info_(std::make_unique<OuterResponseInfo>(outer_response)),
       outer_response_(outer_response),
       forwarding_client_(std::move(forwarding_client)),
       url_loader_client_binding_(this),
@@ -140,7 +160,6 @@ SignedExchangeLoader::SignedExchangeLoader(
       metric_recorder_(std::move(metric_recorder)),
       accept_langs_(accept_langs),
       weak_factory_(this) {
-  DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   DCHECK(outer_request_.url.is_valid());
 
   // |metric_recorder_| could be null in some tests.
@@ -212,11 +231,12 @@ void SignedExchangeLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 void SignedExchangeLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   auto cert_fetcher_factory = SignedExchangeCertFetcherFactory::Create(
-      std::move(url_loader_factory_), std::move(url_loader_throttles_getter_),
+      url_loader_factory_, url_loader_throttles_getter_,
       outer_request_.throttling_profile_id);
 
   if (g_signed_exchange_factory_for_testing_) {
     signed_exchange_handler_ = g_signed_exchange_factory_for_testing_->Create(
+        outer_request_.url,
         std::make_unique<DataPipeToSourceStream>(std::move(body)),
         base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                        weak_factory_.GetWeakPtr()),
@@ -252,11 +272,7 @@ void SignedExchangeLoader::FollowRedirect(
 }
 
 void SignedExchangeLoader::ProceedWithResponse() {
-  DCHECK(body_data_pipe_adapter_);
-  DCHECK(pending_body_consumer_.is_valid());
-
-  body_data_pipe_adapter_->Start();
-  client_->OnStartLoadingResponseBody(std::move(pending_body_consumer_));
+  StartReadingBody();
 }
 
 void SignedExchangeLoader::SetPriority(net::RequestPriority priority,
@@ -300,20 +316,22 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     // Make a fallback redirect to |request_url|.
     DCHECK(!fallback_url_);
     fallback_url_ = request_url;
-    DCHECK(outer_response_timing_info_);
+    DCHECK(outer_response_info_);
     forwarding_client_->OnReceiveRedirect(
-        CreateRedirectInfo(request_url, outer_request_, outer_response_),
-        std::move(outer_response_timing_info_)->CreateRedirectResponseHead());
+        CreateRedirectInfo(request_url, outer_request_, outer_response_,
+                           true /* is_fallback_redirect */),
+        std::move(outer_response_info_)->CreateRedirectResponseHead());
     forwarding_client_.reset();
     return;
   }
   DCHECK_EQ(result, SignedExchangeLoadResult::kSuccess);
   inner_request_url_ = request_url;
 
-  DCHECK(outer_response_timing_info_);
+  DCHECK(outer_response_info_);
   forwarding_client_->OnReceiveRedirect(
-      CreateRedirectInfo(request_url, outer_request_, outer_response_),
-      std::move(outer_response_timing_info_)->CreateRedirectResponseHead());
+      CreateRedirectInfo(request_url, outer_request_, outer_response_,
+                         false /* is_fallback_redirect */),
+      std::move(outer_response_info_)->CreateRedirectResponseHead());
   forwarding_client_.reset();
 
   const base::Optional<net::SSLInfo>& ssl_info = resource_response.ssl_info;
@@ -354,9 +372,40 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     return;
   }
 
+  StartReadingBody();
+}
+
+void SignedExchangeLoader::StartReadingBody() {
+  DCHECK(body_data_pipe_adapter_);
+  DCHECK(pending_body_consumer_.is_valid());
+
+  // If it's not for prefetch, kSignedHTTPExchangePingValidity is enabled
+  // and validity_pinger_ is not initialized yet, create a validity pinger
+  // and start it to ping the validity URL before start reading the inner
+  // response body.
+  if (!(outer_request_.load_flags & net::LOAD_PREFETCH) &&
+      base::FeatureList::IsEnabled(features::kSignedHTTPExchangePingValidity) &&
+      !validity_pinger_) {
+    DCHECK(url_loader_factory_);
+    DCHECK(url_loader_throttles_getter_);
+    DCHECK(inner_request_url_);
+    // For now we just use the fallback (request) URL to ping.
+    // TODO(kinuko): Use the validity URL extracted from the exchange.
+    validity_pinger_ = SignedExchangeValidityPinger::CreateAndStart(
+        *inner_request_url_, url_loader_factory_,
+        url_loader_throttles_getter_.Run(),
+        outer_request_.throttling_profile_id,
+        base::BindOnce(&SignedExchangeLoader::StartReadingBody,
+                       weak_factory_.GetWeakPtr()));
+    DCHECK(validity_pinger_);
+    return;
+  }
+
+  validity_pinger_.reset();
+
   // Start reading.
-  body_data_pipe_adapter_->Start();
   client_->OnStartLoadingResponseBody(std::move(pending_body_consumer_));
+  body_data_pipe_adapter_->Start();
 }
 
 void SignedExchangeLoader::FinishReadingBody(int result) {

@@ -80,7 +80,7 @@ class PrerenderManager : public content::NotificationObserver,
  public:
   enum PrerenderManagerMode {
     // Deprecated: Enables all types of prerendering for any origin.
-    PRERENDER_MODE_ENABLED,
+    DEPRECATED_PRERENDER_MODE_ENABLED,
 
     // For each request to prerender performs a NoStatePrefetch for the same URL
     // instead.
@@ -126,7 +126,8 @@ class PrerenderManager : public content::NotificationObserver,
   // child or route id, or a referrer. This method uses sensible values for
   // those. The |session_storage_namespace| matches the namespace of the active
   // tab at the time the prerender is generated from the omnibox. Returns a
-  // PrerenderHandle or NULL.
+  // PrerenderHandle or NULL. If the prerender fails, the prerender manager may
+  // fallback and initiate a preconnect to |url|.
   std::unique_ptr<PrerenderHandle> AddPrerenderFromOmnibox(
       const GURL& url,
       content::SessionStorageNamespace* session_storage_namespace,
@@ -439,7 +440,7 @@ class PrerenderManager : public content::NotificationObserver,
   // prerender was added. If |bounds| is empty, then
   // PrerenderContents::StartPrerendering will instead use a default from
   // PrerenderConfig. Returns a PrerenderHandle or NULL.
-  std::unique_ptr<PrerenderHandle> AddPrerender(
+  std::unique_ptr<PrerenderHandle> AddPrerenderWithPreconnectFallback(
       Origin origin,
       const GURL& url,
       const content::Referrer& referrer,
@@ -527,10 +528,11 @@ class PrerenderManager : public content::NotificationObserver,
   void DestroyAllContents(FinalStatus final_status);
 
   // Records the final status a prerender in the case that a PrerenderContents
-  // was never created, and also adds a PrerenderHistory entry.
-  void RecordFinalStatusWithoutCreatingPrerenderContents(
-      const GURL& url, Origin origin, FinalStatus final_status) const;
-
+  // was never created, adds a PrerenderHistory entry, and may also initiate a
+  // preconnect to |url|.
+  void SkipPrerenderContentsAndMaybePreconnect(const GURL& url,
+                                               Origin origin,
+                                               FinalStatus final_status) const;
 
   // Swaps a prerender |prerender_data| for |url| into the tab, replacing
   // |web_contents|.  Returns the new WebContents that was swapped in, or NULL
@@ -540,6 +542,9 @@ class PrerenderManager : public content::NotificationObserver,
                                      content::WebContents* web_contents,
                                      PrerenderData* prerender_data,
                                      bool should_replace_current_entry);
+
+  // May initiate a preconnect to |url_arg| based on |origin|.
+  void MaybePreconnect(Origin origin, const GURL& url_arg) const;
 
   // The configuration.
   Config config_;

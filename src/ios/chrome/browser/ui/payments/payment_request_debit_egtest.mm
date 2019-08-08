@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
+
 #include <memory>
 #include <vector>
 
@@ -74,7 +76,9 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   [super setUp];
   _profile = std::make_unique<autofill::AutofillProfile>(
       autofill::test::GetFullProfile());
-  [self addAutofillProfile:*_profile];
+  NSError* autofillProfileError = [self addAutofillProfile:*_profile];
+  GREYAssertNil(autofillProfileError,
+                autofillProfileError.localizedDescription);
 
   // Allow canMakePayment to return a truthful value by default.
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
@@ -178,7 +182,8 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   // All local cards have "unknown" card type by design.
   autofill::CreditCard card = autofill::test::GetCreditCard();
   card.set_billing_address_id(_profile->guid());
-  [self addCreditCard:card];
+  NSError* creditCardError = [self addCreditCard:card];
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)];
 

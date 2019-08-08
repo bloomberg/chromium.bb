@@ -42,6 +42,10 @@
         border: 1px dashed var(--google-blue-500);
       }
 
+      :host-context([dark]) #line {
+        border-color: var(--google-blue-refresh-300);
+      }
+
       :host([side=top]) #line,
       :host([side=bottom]) #line {
         width: 100%;
@@ -53,19 +57,27 @@
       }
 
       #textbox {
-        --cr-input-background-color: var(--google-grey-900);
-        --cr-input-color: white;
         --cr-input-error-display: none;
         --cr-input-row-container: {
           min-height: 25px;
         }
         box-sizing: border-box;
-        color: white;
         font-size: 0.8rem;
         padding: 1px;
         position: absolute;
         text-align: center;
         width: 60px;
+      }
+
+      :host-context(html:not([dark])) #textbox {
+        --cr-input-background-color: var(--cr-primary-text-color);
+        --cr-input-color: white;
+        color: white;
+      }
+
+      :host-context([dark]) #textbox {
+        --cr-input-background-color: #1b1c1e;  /* GG900 + 30% black */
+        --cr-input-color: var(--cr-primary-text-color);
       }
 
       :host([side=top]) #textbox {

@@ -56,9 +56,9 @@ const char kRunWebTests[] = "run-web-tests";
 // http://dev.chromium.org/blink/runtime-enabled-features.
 const char kStableReleaseMode[] = "stable-release-mode";
 
-// Enable pixel dumps via "real" surface readbacks, instead of synchronously
-// compositing and reading back pixels.
-const char kEnableDisplayCompositorPixelDump[] =
-    "enable-display-compositor-pixel-dump";
+// Disables the shell from beginning in headless mode. Tests will then attempt
+// to use the hardware GPU for rendering. This is only followed when
+// kRunWebTests is set.
+const char kDisableHeadlessMode[] = "disable-headless-mode";
 
 }  // namespace switches

@@ -513,7 +513,7 @@ void NotifierSettingsView::OnNotifierListUpdated(
 
   buttons_.clear();
 
-  views::View* contents_view = new ScrollContentsView();
+  auto contents_view = std::make_unique<ScrollContentsView>();
   contents_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(0, kHorizontalMargin)));
 
@@ -531,9 +531,10 @@ void NotifierSettingsView::OnNotifierListUpdated(
   no_notifiers_view_->SetVisible(notifier_count == 0);
   top_label_->InvalidateLayout();
 
-  scroller_->SetContents(contents_view);
+  auto* contents_view_ptr = scroller_->SetContents(std::move(contents_view));
 
-  contents_view->SetBoundsRect(gfx::Rect(contents_view->GetPreferredSize()));
+  contents_view_ptr->SetBoundsRect(
+      gfx::Rect(contents_view_ptr->GetPreferredSize()));
   Layout();
 }
 

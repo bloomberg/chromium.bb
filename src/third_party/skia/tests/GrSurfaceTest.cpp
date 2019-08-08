@@ -22,7 +22,7 @@
 
 // Tests that GrSurface::asTexture(), GrSurface::asRenderTarget(), and static upcasting of texture
 // and render targets to GrSurface all work as expected.
-DEF_GPUTEST_FOR_NULLGL_CONTEXT(GrSurface, reporter, ctxInfo) {
+DEF_GPUTEST_FOR_MOCK_CONTEXT(GrSurface, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
     auto resourceProvider = context->priv().resourceProvider();
     GrGpu* gpu = context->priv().getGpu();
@@ -33,7 +33,8 @@ DEF_GPUTEST_FOR_NULLGL_CONTEXT(GrSurface, reporter, ctxInfo) {
     desc.fHeight = 256;
     desc.fConfig = kRGBA_8888_GrPixelConfig;
     desc.fSampleCnt = 1;
-    sk_sp<GrSurface> texRT1 = resourceProvider->createTexture(desc, SkBudgeted::kNo);
+    sk_sp<GrSurface> texRT1 = resourceProvider->createTexture(
+        desc, SkBudgeted::kNo, GrResourceProvider::Flags::kNoPendingIO);
 
     REPORTER_ASSERT(reporter, texRT1.get() == texRT1->asRenderTarget());
     REPORTER_ASSERT(reporter, texRT1.get() == texRT1->asTexture());
@@ -45,7 +46,8 @@ DEF_GPUTEST_FOR_NULLGL_CONTEXT(GrSurface, reporter, ctxInfo) {
                     static_cast<GrSurface*>(texRT1->asTexture()));
 
     desc.fFlags = kNone_GrSurfaceFlags;
-    sk_sp<GrTexture> tex1 = resourceProvider->createTexture(desc, SkBudgeted::kNo);
+    sk_sp<GrTexture> tex1 = resourceProvider->createTexture(
+        desc, SkBudgeted::kNo, GrResourceProvider::Flags::kNoPendingIO);
     REPORTER_ASSERT(reporter, nullptr == tex1->asRenderTarget());
     REPORTER_ASSERT(reporter, tex1.get() == tex1->asTexture());
     REPORTER_ASSERT(reporter, static_cast<GrSurface*>(tex1.get()) == tex1->asTexture());
@@ -99,6 +101,7 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(GrSurfaceRenderability, reporter, ctxInfo) {
         kAlpha_half_GrPixelConfig,
         kAlpha_half_as_Red_GrPixelConfig,
         kRGBA_half_GrPixelConfig,
+        kRGBA_half_Clamped_GrPixelConfig,
         kRGB_ETC1_GrPixelConfig,
     };
     GR_STATIC_ASSERT(kGrPixelConfigCnt == SK_ARRAY_COUNT(configs));
@@ -113,7 +116,8 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(GrSurfaceRenderability, reporter, ctxInfo) {
             desc.fConfig = config;
             desc.fSampleCnt = 1;
 
-            sk_sp<GrSurface> tex = resourceProvider->createTexture(desc, SkBudgeted::kNo);
+            sk_sp<GrSurface> tex = resourceProvider->createTexture(
+                desc, SkBudgeted::kNo, GrResourceProvider::Flags::kNoPendingIO);
             bool ict = caps->isConfigTexturable(desc.fConfig);
             REPORTER_ASSERT(reporter, SkToBool(tex) == ict,
                             "config:%d, tex:%d, isConfigTexturable:%d", config, SkToBool(tex), ict);
@@ -130,14 +134,16 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(GrSurfaceRenderability, reporter, ctxInfo) {
                              caps->mipMapSupport()));
 
             desc.fFlags = kRenderTarget_GrSurfaceFlag;
-            tex = resourceProvider->createTexture(desc, SkBudgeted::kNo);
+            tex = resourceProvider->createTexture(desc, SkBudgeted::kNo,
+                                                  GrResourceProvider::Flags::kNoPendingIO);
             bool isRenderable = caps->isConfigRenderable(config);
             REPORTER_ASSERT(reporter, SkToBool(tex) == isRenderable,
                             "config:%d, tex:%d, isRenderable:%d", config, SkToBool(tex),
                             isRenderable);
 
             desc.fSampleCnt = 2;
-            tex = resourceProvider->createTexture(desc, SkBudgeted::kNo);
+            tex = resourceProvider->createTexture(desc, SkBudgeted::kNo,
+                                                  GrResourceProvider::Flags::kNoPendingIO);
             isRenderable = SkToBool(caps->getRenderTargetSampleCount(2, config));
             REPORTER_ASSERT(reporter, SkToBool(tex) == isRenderable,
                             "config:%d, tex:%d, isRenderable:%d", config, SkToBool(tex),
@@ -370,7 +376,8 @@ static sk_sp<GrTexture> make_normal_texture(GrContext* context, bool renderable)
     desc.fConfig = kRGBA_8888_GrPixelConfig;
     desc.fWidth = desc.fHeight = 10;
     desc.fFlags = renderable ? kRenderTarget_GrSurfaceFlag : kNone_GrSurfaceFlags;
-    return context->priv().resourceProvider()->createTexture(desc, SkBudgeted::kNo);
+    return context->priv().resourceProvider()->createTexture(
+        desc, SkBudgeted::kNo, GrResourceProvider::Flags::kNoPendingIO);
 }
 
 DEF_GPUTEST(TextureIdleProcTest, reporter, options) {
@@ -444,7 +451,11 @@ DEF_GPUTEST(TextureIdleProcTest, reporter, options) {
                 auto rt = SkSurface::MakeRenderTarget(context, SkBudgeted::kNo, info, 0, nullptr);
                 auto rtc = rt->getCanvas()->internal_private_accessTopLayerRenderTargetContext();
                 auto singleUseLazyCB = [&texture](GrResourceProvider* rp) {
-                    return std::move(texture);
+                    auto mode = GrSurfaceProxy::LazyInstantiationKeyMode::kSynced;
+                    if (texture->getUniqueKey().isValid()) {
+                        mode = GrSurfaceProxy::LazyInstantiationKeyMode::kUnsynced;
+                    }
+                    return GrSurfaceProxy::LazyInstantiationResult{std::move(texture), mode};
                 };
                 GrSurfaceDesc desc;
                 desc.fWidth = w;
@@ -487,6 +498,33 @@ DEF_GPUTEST(TextureIdleProcTest, reporter, options) {
                 // Now that the draw is fully consumed by the GPU, the texture should be idle.
                 REPORTER_ASSERT(reporter, idleIDs.find(2) != idleIDs.end());
 
+                // Make a proxy that should deinstantiate even if we keep a ref on it.
+                auto deinstantiateLazyCB = [&make, &context](GrResourceProvider* rp) {
+                    auto texture = make(context, 3);
+                    auto mode = GrSurfaceProxy::LazyInstantiationKeyMode::kSynced;
+                    if (texture->getUniqueKey().isValid()) {
+                        mode = GrSurfaceProxy::LazyInstantiationKeyMode::kUnsynced;
+                    }
+                    return GrSurfaceProxy::LazyInstantiationResult{std::move(texture), mode};
+                };
+                proxy = context->priv().proxyProvider()->createLazyProxy(
+                        deinstantiateLazyCB, backendFormat, desc,
+                        GrSurfaceOrigin::kTopLeft_GrSurfaceOrigin, GrMipMapped::kNo,
+                        GrInternalSurfaceFlags ::kNone, SkBackingFit::kExact, budgeted,
+                        GrSurfaceProxy::LazyInstantiationType::kDeinstantiate);
+                rtc->drawTexture(GrNoClip(), std::move(proxy), GrSamplerState::Filter::kNearest,
+                                 SkBlendMode::kSrcOver, SkPMColor4f(), SkRect::MakeWH(w, h),
+                                 SkRect::MakeWH(w, h), GrAA::kNo, GrQuadAAFlags::kNone,
+                                 SkCanvas::kFast_SrcRectConstraint, SkMatrix::I(), nullptr);
+                // At this point the proxy shouldn't even be instantiated, there is no texture with
+                // id 3.
+                REPORTER_ASSERT(reporter, idleIDs.find(3) == idleIDs.end());
+                context->flush();
+                context->priv().getGpu()->testingOnly_flushGpuAndSync();
+                // Now that the draw is fully consumed, we should have deinstantiated the proxy and
+                // the texture it made should be idle.
+                REPORTER_ASSERT(reporter, idleIDs.find(3) != idleIDs.end());
+
                 // Make sure we make the call during various shutdown scenarios where the texture
                 // might persist after context is destroyed, abandoned, etc. We test three
                 // variations of each scenario. One where the texture is just created. Another,
@@ -500,7 +538,7 @@ DEF_GPUTEST(TextureIdleProcTest, reporter, options) {
                 if (api == GrBackendApi::kVulkan) {
                     continue;
                 }
-                int id = 3;
+                int id = 4;
                 enum class DrawType {
                     kNoDraw,
                     kDraw,

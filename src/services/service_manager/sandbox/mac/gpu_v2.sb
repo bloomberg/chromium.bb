@@ -15,6 +15,7 @@
   (global-name "com.apple.coreservices.launchservicesd")
   (global-name "com.apple.cvmsServ")
   (global-name "com.apple.gpumemd.source")
+  (global-name "com.apple.lsd.mapdb")
   (global-name "com.apple.system.notification_center")
   (global-name "com.apple.tsm.uiserver")
   (global-name "com.apple.windowserver.active")
@@ -69,9 +70,12 @@
 )
 
 (allow file-read-data
+  (path "/Library/MessageTracer/SubmitDiagInfo.default.domains.searchtree")
   (regex (user-homedir-path #"/Library/Preferences/ByHost/com.apple.AppleGVA.*"))
 )
 
 (allow file-read*
   (subpath "/Library/GPUBundles")
+  (subpath "/Library/Video/Plug-Ins")
+  (subpath "/System/Library/Video/Plug-Ins")
 )

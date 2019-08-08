@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
 #include "ui/base/models/list_selection_model.h"
 
@@ -32,7 +33,14 @@ class WebContents;
 ////////////////////////////////////////////////////////////////////////////////
 class TabStripModelChange {
  public:
-  enum Type { kSelectionOnly, kInserted, kRemoved, kMoved, kReplaced };
+  enum Type {
+    kSelectionOnly,
+    kInserted,
+    kRemoved,
+    kMoved,
+    kReplaced,
+    kGroupChanged
+  };
 
   // A WebContents was inserted at |index|. This implicitly changes the existing
   // selection model by calling IncrementFrom(index).
@@ -70,12 +78,32 @@ class TabStripModelChange {
     int index;
   };
 
+  // A WebContents' group affiliation changed from |old_group| to |new_group|.
+  struct GroupChange {
+    // Constructor and destructor required due to Optional.
+    GroupChange(content::WebContents* contents,
+                int index,
+                base::Optional<int> old_group,
+                base::Optional<int> new_group);
+    ~GroupChange();
+
+    content::WebContents* contents;
+    int index;
+    base::Optional<int> old_group;
+    base::Optional<int> new_group;
+  };
+
   struct Delta {
+    // Constructor and destructor required due to GroupChange.
+    Delta();
+    ~Delta();
+
     union {
       Insert insert;
       Remove remove;
       Move move;
       Replace replace;
+      GroupChange group_change;
     };
   };
 
@@ -90,6 +118,10 @@ class TabStripModelChange {
   static Delta CreateReplaceDelta(content::WebContents* old_contents,
                                   content::WebContents* new_contents,
                                   int index);
+  static Delta CreateGroupChangeDelta(content::WebContents* contents,
+                                      int index,
+                                      base::Optional<int> old_group,
+                                      base::Optional<int> new_group);
 
   TabStripModelChange();
   TabStripModelChange(Type type, const Delta& delta);

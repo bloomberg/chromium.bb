@@ -28,15 +28,13 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace update_client {
 
 class ActivityDataService;
 class NetworkFetcherFactory;
+class PatchChromiumFactory;
 class ProtocolHandlerFactory;
+class UnzipChromiumFactory;
 
 #define POST_INTERCEPT_SCHEME "https"
 #define POST_INTERCEPT_HOSTNAME "localhost2"
@@ -92,8 +90,8 @@ class TestConfigurator : public Configurator {
   base::flat_map<std::string, std::string> ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
   scoped_refptr<NetworkFetcherFactory> GetNetworkFetcherFactory() override;
-  std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
-      const override;
+  scoped_refptr<UnzipperFactory> GetUnzipperFactory() override;
+  scoped_refptr<PatcherFactory> GetPatcherFactory() override;
   bool EnabledDeltas() const override;
   bool EnabledComponentUpdates() const override;
   bool EnabledBackgroundDownloader() const override;
@@ -116,7 +114,6 @@ class TestConfigurator : public Configurator {
   void SetUpdateCheckUrl(const GURL& url);
   void SetPingUrl(const GURL& url);
   void SetAppGuid(const std::string& app_guid);
-  void SetUseJSON(bool use_JSON);
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
   }
@@ -136,10 +133,10 @@ class TestConfigurator : public Configurator {
   GURL update_check_url_;
   GURL ping_url_;
   std::string app_guid_;
-  bool use_JSON_;
 
   service_manager::TestConnectorFactory connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  scoped_refptr<update_client::UnzipChromiumFactory> unzip_factory_;
+  scoped_refptr<update_client::PatchChromiumFactory> patch_factory_;
 
   unzip::UnzipService unzip_service_;
   patch::PatchService patch_service_;

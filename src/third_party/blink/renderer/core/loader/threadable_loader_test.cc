@@ -60,11 +60,10 @@ class MockThreadableLoaderClient final
  public:
   MockThreadableLoaderClient() = default;
   MOCK_METHOD2(DidSendData, void(uint64_t, uint64_t));
-  MOCK_METHOD2(DidReceiveResponse,
-               void(unsigned long, const ResourceResponse&));
+  MOCK_METHOD2(DidReceiveResponse, void(uint64_t, const ResourceResponse&));
   MOCK_METHOD2(DidReceiveData, void(const char*, unsigned));
   MOCK_METHOD2(DidReceiveCachedMetadata, void(const char*, int));
-  MOCK_METHOD1(DidFinishLoading, void(unsigned long));
+  MOCK_METHOD1(DidFinishLoading, void(uint64_t));
   MOCK_METHOD1(DidFail, void(const ResourceError&));
   MOCK_METHOD0(DidFailRedirectCheck, void());
   MOCK_METHOD1(DidReceiveResourceTiming, void(const ResourceTimingInfo&));
@@ -121,8 +120,8 @@ void SetUpRedirectURL() {
   response.SetCurrentRequestUrl(url);
   response.SetHttpStatusCode(301);
   response.SetLoadTiming(timing);
-  response.AddHTTPHeaderField("Location", SuccessURL().GetString());
-  response.AddHTTPHeaderField("Access-Control-Allow-Origin", "http://fake.url");
+  response.AddHttpHeaderField("Location", SuccessURL().GetString());
+  response.AddHttpHeaderField("Access-Control-Allow-Origin", "http://fake.url");
 
   url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
       url, test::CoreTestDataPath(kFileName), response);
@@ -138,8 +137,8 @@ void SetUpRedirectLoopURL() {
   response.SetCurrentRequestUrl(url);
   response.SetHttpStatusCode(301);
   response.SetLoadTiming(timing);
-  response.AddHTTPHeaderField("Location", RedirectLoopURL().GetString());
-  response.AddHTTPHeaderField("Access-Control-Allow-Origin", "http://fake.url");
+  response.AddHttpHeaderField("Location", RedirectLoopURL().GetString());
+  response.AddHttpHeaderField("Access-Control-Allow-Origin", "http://fake.url");
 
   url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
       url, test::CoreTestDataPath(kFileName), response);
@@ -160,7 +159,7 @@ enum ThreadableLoaderToTest {
 class ThreadableLoaderTestHelper final {
  public:
   ThreadableLoaderTestHelper()
-      : dummy_page_holder_(DummyPageHolder::Create(IntSize(1, 1))) {
+      : dummy_page_holder_(std::make_unique<DummyPageHolder>(IntSize(1, 1))) {
     GetDocument().SetURL(KURL("http://fake.url/"));
     GetDocument().SetSecurityOrigin(
         SecurityOrigin::Create(KURL("http://fake.url/")));
@@ -243,7 +242,7 @@ class ThreadableLoaderTest : public testing::Test {
     helper_->OnTearDown();
     client_ = nullptr;
     // We need GC here to avoid gmock flakiness.
-    ThreadState::Current()->CollectAllGarbage();
+    ThreadState::Current()->CollectAllGarbageForTesting();
   }
   Persistent<MockThreadableLoaderClient> client_;
   std::unique_ptr<ThreadableLoaderTestHelper> helper_;
@@ -636,11 +635,11 @@ TEST_F(ThreadableLoaderTest, GetResponseSynchronously) {
 
 TEST(ThreadableLoaderCreatePreflightRequestTest, LexicographicalOrder) {
   ResourceRequest request;
-  request.AddHTTPHeaderField("Orange", "Orange");
-  request.AddHTTPHeaderField("Apple", "Red");
-  request.AddHTTPHeaderField("Kiwifruit", "Green");
-  request.AddHTTPHeaderField("Content-Type", "application/octet-stream");
-  request.AddHTTPHeaderField("Strawberry", "Red");
+  request.AddHttpHeaderField("Orange", "Orange");
+  request.AddHttpHeaderField("Apple", "Red");
+  request.AddHttpHeaderField("Kiwifruit", "Green");
+  request.AddHttpHeaderField("Content-Type", "application/octet-stream");
+  request.AddHttpHeaderField("Strawberry", "Red");
 
   std::unique_ptr<ResourceRequest> preflight =
       ThreadableLoader::CreateAccessControlPreflightRequestForTesting(request);
@@ -651,10 +650,10 @@ TEST(ThreadableLoaderCreatePreflightRequestTest, LexicographicalOrder) {
 
 TEST(ThreadableLoaderCreatePreflightRequestTest, ExcludeSimpleHeaders) {
   ResourceRequest request;
-  request.AddHTTPHeaderField("Accept", "everything");
-  request.AddHTTPHeaderField("Accept-Language", "everything");
-  request.AddHTTPHeaderField("Content-Language", "everything");
-  request.AddHTTPHeaderField("Save-Data", "on");
+  request.AddHttpHeaderField("Accept", "everything");
+  request.AddHttpHeaderField("Accept-Language", "everything");
+  request.AddHttpHeaderField("Content-Language", "everything");
+  request.AddHttpHeaderField("Save-Data", "on");
 
   std::unique_ptr<ResourceRequest> preflight =
       ThreadableLoader::CreateAccessControlPreflightRequestForTesting(request);
@@ -669,7 +668,7 @@ TEST(ThreadableLoaderCreatePreflightRequestTest, ExcludeSimpleHeaders) {
 TEST(ThreadableLoaderCreatePreflightRequestTest,
      ExcludeSimpleContentTypeHeader) {
   ResourceRequest request;
-  request.AddHTTPHeaderField("Content-Type", "text/plain");
+  request.AddHttpHeaderField("Content-Type", "text/plain");
 
   std::unique_ptr<ResourceRequest> preflight =
       ThreadableLoader::CreateAccessControlPreflightRequestForTesting(request);
@@ -681,7 +680,7 @@ TEST(ThreadableLoaderCreatePreflightRequestTest,
 
 TEST(ThreadableLoaderCreatePreflightRequestTest, IncludeNonSimpleHeader) {
   ResourceRequest request;
-  request.AddHTTPHeaderField("X-Custom-Header", "foobar");
+  request.AddHttpHeaderField("X-Custom-Header", "foobar");
 
   std::unique_ptr<ResourceRequest> preflight =
       ThreadableLoader::CreateAccessControlPreflightRequestForTesting(request);
@@ -693,7 +692,7 @@ TEST(ThreadableLoaderCreatePreflightRequestTest, IncludeNonSimpleHeader) {
 TEST(ThreadableLoaderCreatePreflightRequestTest,
      IncludeNonSimpleContentTypeHeader) {
   ResourceRequest request;
-  request.AddHTTPHeaderField("Content-Type", "application/octet-stream");
+  request.AddHttpHeaderField("Content-Type", "application/octet-stream");
 
   std::unique_ptr<ResourceRequest> preflight =
       ThreadableLoader::CreateAccessControlPreflightRequestForTesting(request);

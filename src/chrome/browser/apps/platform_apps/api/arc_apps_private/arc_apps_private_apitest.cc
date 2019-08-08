@@ -12,11 +12,10 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
-#include "components/arc/arc_bridge_service.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "extensions/common/switches.h"
@@ -57,11 +56,9 @@ class ArcAppsPrivateApiTest : public extensions::ExtensionApiTest {
   void SetUpInProcessBrowserTestFixture() override {
     extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     arc::ArcSessionManager::SetUiEnabledForTesting(false);
-    std::unique_ptr<chromeos::FakeSessionManagerClient> session_manager_client =
-        std::make_unique<chromeos::FakeSessionManagerClient>();
-    session_manager_client->set_arc_available(true);
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::move(session_manager_client));
+    // SessionManagerClient will be destroyed in ChromeBrowserMain.
+    chromeos::SessionManagerClient::InitializeFakeInMemory();
+    chromeos::FakeSessionManagerClient::Get()->set_arc_available(true);
   }
 
   void SetUpOnMainThread() override {

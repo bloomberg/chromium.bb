@@ -253,6 +253,10 @@ const char kLoginAuthenticationBehavior[] =
 // device.
 const char kAllowBluetooth[] = "cros.device.allow_bluetooth";
 
+// A boolean pref that indicates whether WiFi should be allowed on the
+// device.
+const char kDeviceWiFiAllowed[] = "cros.device.wifi_allowed";
+
 // A boolean pref to enable any pings or requests to the Quirks Server.
 const char kDeviceQuirksDownloadEnabled[] =
     "cros.device.quirks_download_enabled";
@@ -262,11 +266,11 @@ const char kDeviceQuirksDownloadEnabled[] =
 const char kLoginVideoCaptureAllowedUrls[] =
     "cros.device.login_video_capture_allowed_urls";
 
-// A list pref storing the apps to install on the login page. It is a list of
-// strings, each string contains an extension ID and an update URL, delimited by
-// a semicolon. This preference is set by an admin policy.
-const char kDeviceLoginScreenAppInstallList[] =
-    "cros.device.login_screen_app_install_list";
+// A list pref storing the apps or extensions to install on the login page. It
+// is a list of strings, each string contains an extension ID and an update URL,
+// delimited by a semicolon. This preference is set by an admin policy.
+const char kDeviceLoginScreenExtensions[] =
+    "cros.device.login_screen_extensions";
 
 // A list pref specifying the locales allowed on the login screen. Currently
 // only the first value is used, as the single locale allowed on the login
@@ -372,4 +376,7 @@ const char kDeviceRebootOnUserSignout[] = "cros.device.reboot_on_user_signout";
 // controller on Chrome OS is allowed.
 const char kDeviceWilcoDtcAllowed[] = "cros.device.wilco_dtc_allowed";
 
+// An enum pref that specifies the device dock MAC address source.
+const char kDeviceDockMacAddressSource[] =
+    "cros.device.device_dock_mac_address_source";
 }  // namespace chromeos

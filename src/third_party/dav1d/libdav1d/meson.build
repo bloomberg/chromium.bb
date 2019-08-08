@@ -23,18 +23,18 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 project('dav1d', ['c'],
-    version: '0.2.1',
+    version: '0.3.0',
     default_options: ['c_std=c99',
                       'warning_level=2',
                       'buildtype=release',
                       'b_ndebug=if-release'],
     meson_version: '>= 0.47.0')
 
-dav1d_soname_version   = '1.0.0'
-dav1d_version_array    = dav1d_soname_version.split('.')
-dav1d_version_major    = dav1d_version_array[0]
-dav1d_version_minor    = dav1d_version_array[1]
-dav1d_version_revision = dav1d_version_array[2]
+dav1d_soname_version   = '1.1.0'
+dav1d_api_version_array    = dav1d_soname_version.split('.')
+dav1d_api_version_major    = dav1d_api_version_array[0]
+dav1d_api_version_minor    = dav1d_api_version_array[1]
+dav1d_api_version_revision = dav1d_api_version_array[2]
 
 dav1d_src_root = meson.current_source_dir()
 cc = meson.get_compiler('c')
@@ -81,6 +81,8 @@ cdata.set10('CONFIG_LOG', get_option('logging'))
 # Arguments in test_args will be used even on feature tests
 test_args = []
 
+optional_arguments = []
+
 # Define _POSIX_C_SOURCE to POSIX.1–2001 (IEEE Std 1003.1-2001)
 test_args  += '-D_POSIX_C_SOURCE=200112L'
 add_project_arguments('-D_POSIX_C_SOURCE=200112L', language: 'c')
@@ -96,10 +98,12 @@ if host_machine.system() == 'windows'
         cdata.set('fseeko', '_fseeki64')
         cdata.set('ftello', '_ftelli64')
     endif
-endif
 
-# On Windows, we use a compatibility layer to emulate pthread
-if host_machine.system() == 'windows'
+    if (host_machine.cpu_family() == 'x86_64' and cc.get_id() == 'gcc')
+        optional_arguments += '-mcmodel=small'
+    endif
+
+    # On Windows, we use a compatibility layer to emulate pthread
     thread_dependency = []
     thread_compat_dep = declare_dependency(sources : files('src/win32/thread.c'))
 else
@@ -176,7 +180,7 @@ endif
 # Compiler flags that should be set
 # But when the compiler does not supports them
 # it is not an error and silently tolerated
-optional_arguments = [
+optional_arguments += [
   '-Wundef',
   '-Werror=vla',
   '-Wno-maybe-uninitialized',
@@ -213,6 +217,8 @@ endif
 
 stackalign_flag = []
 stackrealign_flag = []
+
+cdata.set10('ENDIANNESS_BIG', host_machine.endian() == 'big')
 
 if host_machine.cpu_family().startswith('x86')
     if get_option('stack_alignment') > 0

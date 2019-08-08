@@ -22,7 +22,6 @@ class SyncEngineHostStub : public SyncEngineHost {
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const std::string& cache_guid,
-      const std::string& session_name,
       const std::string& birthday,
       const std::string& bag_of_chips,
       bool success) override;
@@ -38,7 +37,6 @@ class SyncEngineHostStub : public SyncEngineHost {
                                       const StatusCounters& counters) override;
   void OnConnectionStatusChange(ConnectionStatus status) override;
   void OnMigrationNeededForTypes(ModelTypeSet types) override;
-  void OnExperimentsChanged(const Experiments& experiments) override;
   void OnActionableError(const SyncProtocolError& error) override;
 };
 

@@ -117,10 +117,6 @@ class CORE_EXPORT HTMLCollection : public ScriptWrappable,
  protected:
   class NamedItemCache final : public GarbageCollected<NamedItemCache> {
    public:
-    static NamedItemCache* Create() {
-      return MakeGarbageCollected<NamedItemCache>();
-    }
-
     NamedItemCache();
 
     const HeapVector<Member<Element>>* GetElementsById(

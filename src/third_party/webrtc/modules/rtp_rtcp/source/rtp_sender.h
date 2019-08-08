@@ -22,7 +22,6 @@
 #include "api/array_view.h"
 #include "api/call/transport.h"
 #include "api/transport/webrtc_key_value_config.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/rtp_rtcp/include/flexfec_sender.h"
 #include "modules/rtp_rtcp/include/rtp_header_extension_map.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
@@ -171,7 +170,6 @@ class RTPSender {
   RtpState GetRtxRtpState() const;
 
   int64_t LastTimestampTimeMs() const;
-  void SendKeepAlive(uint8_t payload_type);
 
   void SetRtt(int64_t rtt_ms);
 

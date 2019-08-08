@@ -52,8 +52,10 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
   }
 
   if (url.SchemeIs(kChromeUIScheme)) {
+    base::string16 spec(base::UTF8ToUTF16(url.spec()));
+
     sections_.push_back(
-        SectionInfo(ICON_STATE_INTERNAL_PAGE, base::string16(),
+        SectionInfo(ICON_STATE_INTERNAL_PAGE, spec,
                     l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE),
                     SECTION_INFO_INTERNAL_PAGE, BUTTON_NONE));
     return;

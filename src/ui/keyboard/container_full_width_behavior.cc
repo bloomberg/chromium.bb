@@ -85,12 +85,6 @@ void ContainerFullWidthBehavior::SavePosition(const gfx::Rect& keyboard_bounds,
   // No-op. Nothing to save.
 }
 
-bool ContainerFullWidthBehavior::IsDragHandle(
-    const gfx::Vector2d& offset,
-    const gfx::Size& keyboard_size) const {
-  return false;
-}
-
 bool ContainerFullWidthBehavior::HandlePointerEvent(
     const ui::LocatedEvent& event,
     const display::Display& current_display) {

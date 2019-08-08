@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <xf86drmMode.h>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"

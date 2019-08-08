@@ -13,19 +13,6 @@ if (is_android) {
 
 static_library("ntp_snippets") {
   sources = [
-    "bookmarks/bookmark_last_visit_utils.cc",
-    "bookmarks/bookmark_last_visit_utils.h",
-    "bookmarks/bookmark_suggestions_provider.cc",
-    "bookmarks/bookmark_suggestions_provider.h",
-    "breaking_news/breaking_news_listener.h",
-    "breaking_news/breaking_news_metrics.cc",
-    "breaking_news/breaking_news_metrics.h",
-    "breaking_news/subscription_json_request.cc",
-    "breaking_news/subscription_json_request.h",
-    "breaking_news/subscription_manager.cc",
-    "breaking_news/subscription_manager.h",
-    "breaking_news/subscription_manager_impl.cc",
-    "breaking_news/subscription_manager_impl.h",
     "callbacks.h",
     "category.cc",
     "category.h",
@@ -127,13 +114,6 @@ static_library("ntp_snippets") {
     "user_classifier.h",
   ]
 
-  if (is_android) {
-    sources += [
-      "breaking_news/breaking_news_gcm_app_handler.cc",
-      "breaking_news/breaking_news_gcm_app_handler.h",
-    ]
-  }
-
   public_deps = [
     "//base",
     "//components/keyed_service/core",
@@ -149,11 +129,9 @@ static_library("ntp_snippets") {
 
   deps = [
     ":explore_protos",
-    "//components/bookmarks/browser",
     "//components/data_use_measurement/core",
     "//components/favicon/core",
     "//components/favicon_base",
-    "//components/gcm_driver",
     "//components/history/core/browser",
     "//components/image_fetcher/core",
     "//components/language/core/browser",
@@ -202,10 +180,6 @@ proto_library("explore_protos") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "bookmarks/bookmark_last_visit_utils_unittest.cc",
-    "bookmarks/bookmark_suggestions_provider_unittest.cc",
-    "breaking_news/subscription_json_request_unittest.cc",
-    "breaking_news/subscription_manager_impl_unittest.cc",
     "category_rankers/click_based_category_ranker_unittest.cc",
     "category_rankers/constant_category_ranker_unittest.cc",
     "category_unittest.cc",
@@ -238,20 +212,12 @@ source_set("unit_tests") {
     "user_classifier_unittest.cc",
   ]
 
-  if (is_android) {
-    sources += [ "breaking_news/breaking_news_gcm_app_handler_unittest.cc" ]
-  }
-
   deps = [
     ":explore_protos",
     ":ntp_snippets",
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//components/bookmarks/browser",
-    "//components/bookmarks/test",
-    "//components/gcm_driver",
-    "//components/gcm_driver/instance_id",
     "//components/image_fetcher/core",
     "//components/image_fetcher/core:test_support",
     "//components/leveldb_proto:test_support",
@@ -268,7 +234,6 @@ source_set("unit_tests") {
     "//components/variations:test_support",
     "//components/variations/net",
     "//components/web_resource:web_resource",
-    "//google_apis/gcm",
     "//net:test_support",
     "//services/identity/public/cpp",
     "//services/identity/public/cpp:test_support",

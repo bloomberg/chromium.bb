@@ -52,7 +52,7 @@ sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(
 // available on the server.
 class ServerNigoriChecker : public SingleClientStatusChangeChecker {
  public:
-  ServerNigoriChecker(browser_sync::ProfileSyncService* service,
+  ServerNigoriChecker(syncer::ProfileSyncService* service,
                       fake_server::FakeServer* fake_server,
                       syncer::PassphraseType expected_passphrase_type);
 
@@ -67,7 +67,7 @@ class ServerNigoriChecker : public SingleClientStatusChangeChecker {
 // Checker used to block until Sync requires or stops requiring a passphrase.
 class PassphraseRequiredStateChecker : public SingleClientStatusChangeChecker {
  public:
-  PassphraseRequiredStateChecker(browser_sync::ProfileSyncService* service,
+  PassphraseRequiredStateChecker(syncer::ProfileSyncService* service,
                                  bool desired_state);
 
   bool IsExitConditionSatisfied() override;

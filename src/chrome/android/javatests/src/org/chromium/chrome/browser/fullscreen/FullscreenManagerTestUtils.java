@@ -8,7 +8,7 @@ import android.os.SystemClock;
 
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.tab.Tab;
@@ -16,9 +16,11 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.RenderCoordinates;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 
@@ -225,27 +227,16 @@ public class FullscreenManagerTestUtils {
      * Disable any browser visibility overrides for testing.
      */
     public static void disableBrowserOverrides() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                BrowserStateBrowserControlsVisibilityDelegate.disableForTesting();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> BrowserStateBrowserControlsVisibilityDelegate.disableForTesting());
     }
 
     public static void fling(ChromeTabbedActivityTestRule testRule, final int vx, final int vy) {
-        try {
-            ThreadUtils.runOnUiThread(new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
+        PostTask.runOrPostTask(
+                UiThreadTaskTraits.DEFAULT, () -> {
                     testRule.getWebContents().getEventForwarder().startFling(
                             SystemClock.uptimeMillis(), vx, vy, /*synthetic_scroll*/ false,
                             /*prevent_boosting*/ false);
-                    return true;
-                }
-            });
-        } catch (Throwable e) {
-            Assert.fail("Failed to fling");
-        }
+                });
     }
 }

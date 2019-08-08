@@ -5,7 +5,10 @@
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 
 #include "base/unguessable_token.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/site_instance.h"
@@ -48,6 +51,8 @@ void WebAppTabHelperBase::DidFinishNavigation(
 
   const AppId app_id = FindAppIdInScopeOfUrl(navigation_handle->GetURL());
   SetAppId(app_id);
+
+  ReinstallPlaceholderAppIfNecessary(navigation_handle->GetURL());
 }
 
 void WebAppTabHelperBase::DidCloneToNewWebContents(
@@ -96,6 +101,18 @@ void WebAppTabHelperBase::UpdateAudioFocusGroupId() {
 
   content::MediaSession::Get(web_contents())
       ->SetAudioFocusGroupId(audio_focus_group_id_);
+}
+
+void WebAppTabHelperBase::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  DCHECK(provider);
+
+  // WebAppPolicyManager might be nullptr in the non-extensions implementation.
+  if (!provider->policy_manager())
+    return;
+
+  provider->policy_manager()->ReinstallPlaceholderAppIfNecessary(url);
 }
 
 }  // namespace web_app

@@ -41,8 +41,6 @@ class SVGImage;
 
 class CORE_EXPORT SVGImageChromeClient final : public EmptyChromeClient {
  public:
-  static SVGImageChromeClient* Create(SVGImage*);
-
   explicit SVGImageChromeClient(SVGImage*);
 
   bool IsSVGImageChromeClient() const override;

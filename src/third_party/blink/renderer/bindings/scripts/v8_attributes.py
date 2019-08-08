@@ -48,11 +48,10 @@ import v8_types
 import v8_utilities
 from v8_utilities import (cpp_name_or_partial, capitalize, cpp_name, has_extended_attribute,
                           has_extended_attribute_value, scoped_name, strip_suffix,
-                          uncapitalize, extended_attribute_value_as_list, is_unforgeable,
-                          is_legacy_interface_type_checking)
+                          uncapitalize, extended_attribute_value_as_list, is_unforgeable)
 
 
-def attribute_context(interface, attribute, interfaces):
+def attribute_context(interface, attribute, interfaces, component_info):
     """Creates a Jinja template context for an attribute of an interface.
 
     Args:
@@ -60,6 +59,7 @@ def attribute_context(interface, attribute, interfaces):
         attribute: An attribute to create the context for
         interfaces: A dict which maps an interface name to the definition
             which can be referred if needed
+        component_info: A dict containing component wide information
 
     Returns:
         A Jinja template context for |attribute|
@@ -136,6 +136,8 @@ def attribute_context(interface, attribute, interfaces):
         (constructor_type and not (measure_as or deprecate_as)) or \
         (str(idl_type) == 'Window' and attribute.name in ('frames', 'self', 'window'))
 
+    runtime_features = component_info['runtime_enabled_features']
+
     context = {
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
@@ -195,7 +197,7 @@ def attribute_context(interface, attribute, interfaces):
         'on_instance': v8_utilities.on_instance(interface, attribute),
         'on_interface': v8_utilities.on_interface(interface, attribute),
         'on_prototype': v8_utilities.on_prototype(interface, attribute),
-        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(attribute),  # [OriginTrialEnabled]
+        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(attribute, runtime_features),  # [OriginTrialEnabled]
         'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
         'measure_as': measure_as,
         'name': attribute.name,
@@ -204,7 +206,7 @@ def attribute_context(interface, attribute, interfaces):
         'reflect_invalid': extended_attributes.get('ReflectInvalid', ''),
         'reflect_missing': extended_attributes.get('ReflectMissing'),
         'reflect_only': extended_attribute_value_as_list(attribute, 'ReflectOnly'),
-        'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(attribute),  # [RuntimeEnabled]
+        'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(attribute, runtime_features),  # [RuntimeEnabled]
         'secure_context_test': v8_utilities.secure_context(attribute, interface),  # [SecureContext]
         'cached_accessor_name': '%s%sCachedAccessor' % (interface.name, attribute.name.capitalize()),
         'world_suffixes': (
@@ -461,10 +463,8 @@ def setter_context(interface, attribute, interfaces, context):
     is_setter_raises_exception = (
         'RaisesException' in extended_attributes and
         extended_attributes['RaisesException'] in [None, 'Setter'])
-    # [LegacyInterfaceTypeChecking]
-    has_type_checking_interface = (
-        not is_legacy_interface_type_checking(interface, attribute) and
-        idl_type.is_wrapper_type)
+
+    has_type_checking_interface = idl_type.is_wrapper_type
 
     context.update({
         'has_setter_exception_state':

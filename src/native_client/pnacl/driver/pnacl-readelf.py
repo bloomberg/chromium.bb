@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 from driver_env import env
 from driver_log import Log
 import driver_tools
@@ -39,7 +41,7 @@ def main(argv):
       # TODO(sehr): we may want to implement a whole readelf on bitcode.
       flags = env.get('FLAGS')
       if len(flags) == 1 and flags[0] == '-S':
-        print 'INIT_ARRAY'
+        print('INIT_ARRAY')
         return 0
       Log.Fatal('Cannot handle pnacl-readelf %s' % str(argv))
       return 1

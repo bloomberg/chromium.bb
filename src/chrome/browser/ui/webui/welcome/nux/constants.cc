@@ -14,7 +14,7 @@ const base::Feature kNuxOnboardingFeature{"NuxOnboarding",
 // nux-ntp-background should not be added here until we can guarantee that
 // kUseGoogleLocalNtp is enabled
 const char kDefaultNewUserModules[] =
-    "nux-google-apps,nux-email,nux-set-as-default,signin-view";
+    "nux-google-apps,nux-set-as-default,signin-view";
 const char kDefaultReturningUserModules[] = "nux-set-as-default";
 
 // The value of these FeatureParam values should be a comma-delimited list
@@ -25,7 +25,8 @@ const base::FeatureParam<std::string> kNuxOnboardingNewUserModules{
 const base::FeatureParam<std::string> kNuxOnboardingReturningUserModules{
     &kNuxOnboardingFeature, "returning-user-modules",
     kDefaultReturningUserModules};
-const base::FeatureParam<bool> kNuxOnboardingShowEmailInterstitial{
-    &kNuxOnboardingFeature, "show-email-interstitial", false};
+
+const base::FeatureParam<bool> kNuxOnboardingShowGoogleApp{
+    &kNuxOnboardingFeature, "app-variation-enabled", false};
 
 }  // namespace nux

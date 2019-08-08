@@ -28,9 +28,9 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/ime/constants.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -391,14 +391,7 @@ namespace views {
 
 class TextfieldTest : public ViewsTestBase, public TextfieldController {
  public:
-  TextfieldTest()
-      : widget_(NULL),
-        textfield_(NULL),
-        model_(NULL),
-        input_method_(NULL),
-        on_before_user_action_(0),
-        on_after_user_action_(0),
-        copied_to_clipboard_(ui::CLIPBOARD_TYPE_LAST) {
+  TextfieldTest() {
     input_method_ = new MockInputMethod();
     ui::SetUpInputMethodForTesting(input_method_);
   }
@@ -464,7 +457,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     container->AddChildView(textfield_);
     textfield_->SetBoundsRect(params.bounds);
     textfield_->set_id(1);
-    test_api_.reset(new TextfieldTestApi(textfield_));
+    test_api_ = std::make_unique<TextfieldTestApi>(textfield_);
 
     for (int i = 1; i < count; i++) {
       Textfield* textfield = new Textfield();
@@ -781,27 +774,27 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   void MoveMouseTo(const gfx::Point& where) { mouse_position_ = where; }
 
   // We need widget to populate wrapper class.
-  Widget* widget_;
+  Widget* widget_ = nullptr;
 
-  TestTextfield* textfield_;
+  TestTextfield* textfield_ = nullptr;
   std::unique_ptr<TextfieldTestApi> test_api_;
-  TextfieldModel* model_;
+  TextfieldModel* model_ = nullptr;
 
   // The string from Controller::ContentsChanged callback.
   base::string16 last_contents_;
 
   // For testing input method related behaviors.
-  MockInputMethod* input_method_;
+  MockInputMethod* input_method_ = nullptr;
 
   // Indicates how many times OnBeforeUserAction() is called.
-  int on_before_user_action_;
+  int on_before_user_action_ = 0;
 
   // Indicates how many times OnAfterUserAction() is called.
-  int on_after_user_action_;
+  int on_after_user_action_ = 0;
 
   // Position of the mouse for synthetic mouse events.
   gfx::Point mouse_position_;
-  ui::ClipboardType copied_to_clipboard_;
+  ui::ClipboardType copied_to_clipboard_ = ui::CLIPBOARD_TYPE_LAST;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
  private:
@@ -1389,8 +1382,8 @@ TEST_F(TextfieldTest, OnKeyPressBinding) {
   // Install a TextEditKeyBindingsDelegateAuraLinux that does nothing.
   class TestDelegate : public ui::TextEditKeyBindingsDelegateAuraLinux {
    public:
-    TestDelegate() {}
-    ~TestDelegate() override {}
+    TestDelegate() = default;
+    ~TestDelegate() override = default;
 
     bool MatchEvent(
         const ui::Event& event,
@@ -1424,7 +1417,7 @@ TEST_F(TextfieldTest, OnKeyPressBinding) {
   textfield_->clear();
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  ui::SetTextEditKeyBindingsDelegate(NULL);
+  ui::SetTextEditKeyBindingsDelegate(nullptr);
 #endif
 }
 
@@ -1738,7 +1731,7 @@ TEST_F(TextfieldTest, DragAndDrop_AcceptDrop) {
   bad_data.SetPickledData(fmt, base::Pickle());
   bad_data.SetFileContents(base::FilePath(L"x"), "x");
   bad_data.SetHtml(base::string16(ASCIIToUTF16("x")), GURL("x.org"));
-  ui::OSExchangeData::DownloadFileInfo download(base::FilePath(), NULL);
+  ui::OSExchangeData::DownloadFileInfo download(base::FilePath(), nullptr);
   bad_data.SetDownloadFileInfo(download);
   EXPECT_FALSE(textfield_->CanDrop(bad_data));
 }
@@ -1754,36 +1747,36 @@ TEST_F(TextfieldTest, DragAndDrop_InitiateDrag) {
   const gfx::Range kStringRange(6, 12);
   textfield_->SelectRange(kStringRange);
   const gfx::Point kStringPoint(GetCursorPositionX(9), GetCursorYForTesting());
-  textfield_->WriteDragDataForView(NULL, kStringPoint, &data);
+  textfield_->WriteDragDataForView(nullptr, kStringPoint, &data);
   EXPECT_TRUE(data.GetString(&string));
   EXPECT_EQ(textfield_->GetSelectedText(), string);
 
   // Ensure that disabled textfields do not support drag operations.
   textfield_->SetEnabled(false);
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
-            textfield_->GetDragOperationsForView(NULL, kStringPoint));
+            textfield_->GetDragOperationsForView(nullptr, kStringPoint));
   textfield_->SetEnabled(true);
   // Ensure that textfields without selections do not support drag operations.
   textfield_->ClearSelection();
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
-            textfield_->GetDragOperationsForView(NULL, kStringPoint));
+            textfield_->GetDragOperationsForView(nullptr, kStringPoint));
   textfield_->SelectRange(kStringRange);
   // Ensure that password textfields do not support drag operations.
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
-            textfield_->GetDragOperationsForView(NULL, kStringPoint));
+            textfield_->GetDragOperationsForView(nullptr, kStringPoint));
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
   MoveMouseTo(kStringPoint);
   PressLeftMouseButton();
   // Ensure that textfields only initiate drag operations inside the selection.
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
-            textfield_->GetDragOperationsForView(NULL, gfx::Point()));
-  EXPECT_FALSE(textfield_->CanStartDragForView(NULL, gfx::Point(),
-                                               gfx::Point()));
+            textfield_->GetDragOperationsForView(nullptr, gfx::Point()));
+  EXPECT_FALSE(
+      textfield_->CanStartDragForView(nullptr, gfx::Point(), gfx::Point()));
   EXPECT_EQ(ui::DragDropTypes::DRAG_COPY,
-            textfield_->GetDragOperationsForView(NULL, kStringPoint));
-  EXPECT_TRUE(textfield_->CanStartDragForView(NULL, kStringPoint,
-                                              gfx::Point()));
+            textfield_->GetDragOperationsForView(nullptr, kStringPoint));
+  EXPECT_TRUE(
+      textfield_->CanStartDragForView(nullptr, kStringPoint, gfx::Point()));
   // Ensure that textfields support local moves.
   EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY,
       textfield_->GetDragOperationsForView(textfield_, kStringPoint));
@@ -3021,8 +3014,8 @@ TEST_F(TextfieldTest, TestLongPressInitiatesDragDrop) {
       kStringPoint.y(),
       ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   textfield_->OnGestureEvent(&long_press);
-  EXPECT_TRUE(textfield_->CanStartDragForView(NULL, kStringPoint,
-                                              kStringPoint));
+  EXPECT_TRUE(
+      textfield_->CanStartDragForView(nullptr, kStringPoint, kStringPoint));
 }
 
 TEST_F(TextfieldTest, GetTextfieldBaseline_FontFallbackTest) {
@@ -3363,7 +3356,7 @@ TEST_F(TextfieldTest, TextfieldInitialization) {
 
   new_textfield->SetBoundsRect(params.bounds);
   new_textfield->set_id(1);
-  test_api_.reset(new TextfieldTestApi(new_textfield));
+  test_api_ = std::make_unique<TextfieldTestApi>(new_textfield);
   widget->Show();
   EXPECT_FALSE(new_textfield->HasFocus());
   EXPECT_FALSE(test_api_->IsCursorVisible());

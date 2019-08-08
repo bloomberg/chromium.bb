@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/android/feature_utilities.h"
+#include "chrome/browser/android/locale/locale_manager.h"
 
 namespace {
 
@@ -55,4 +56,5 @@ void AndroidMetricsProvider::ProvideCurrentSessionData(
       "Android.MultiWindowMode.Active",
       chrome::android::GetIsInMultiWindowModeValue());
   EmitAppNotificationStatusHistogram();
+  LocaleManager::RecordUserTypeMetrics();
 }

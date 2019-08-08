@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "ui/gfx/geometry/rect.h"
 
 struct v4l2_ext_controls;
@@ -72,6 +73,8 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
  protected:
   virtual ~V4L2DecodeSurface();
   friend class base::RefCounted<V4L2DecodeSurface>;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
  private:
   // The index of the corresponding input record.

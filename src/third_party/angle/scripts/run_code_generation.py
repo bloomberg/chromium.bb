@@ -13,7 +13,7 @@ import os
 import subprocess
 import sys
 
-script_dir = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
+script_dir = sys.path[0]
 root_dir = os.path.abspath(os.path.join(script_dir, '..'))
 
 # auto_script is a standard way for scripts to return their inputs and outputs.
@@ -26,140 +26,70 @@ def get_child_script_dirname(script):
 def clean_path_slashes(path):
     return path.replace("\\", "/")
 
-# Takes a script input file name which is relative to the code generation script's directory and
+# Takes a script file name which is relative to the code generation script's directory and
 # changes it to be relative to the angle root directory
-def rebase_script_input_path(script_path, input_file_path):
-    return os.path.relpath(os.path.join(os.path.dirname(script_path), input_file_path), root_dir);
+def rebase_script_path(script_path, relative_path):
+    return os.path.relpath(os.path.join(os.path.dirname(script_path), relative_path), root_dir)
 
 def grab_from_script(script, param):
     res = subprocess.check_output(['python', script, param]).strip()
-    return [clean_path_slashes(rebase_script_input_path(script, name)) for name in res.split(',')]
+    if res == '':
+        return []
+    return [clean_path_slashes(rebase_script_path(script, name)) for name in res.split(',')]
 
 def auto_script(script):
     # Set the CWD to the script directory.
     os.chdir(get_child_script_dirname(script))
     base_script = os.path.basename(script)
-    return {
-        'script': script,
+    info = {
         'inputs': grab_from_script(base_script, 'inputs'),
+        'outputs': grab_from_script(base_script, 'outputs')
     }
+    # Reset the CWD to the root ANGLE directory.
+    os.chdir(root_dir)
+    return info
 
 hash_fname = "run_code_generation_hashes.json"
 
-# TODO(jmadill): Convert everyting to auto-script.
 generators = {
-    'ANGLE format': {
-        'inputs': [
-            'src/libANGLE/renderer/angle_format.py',
-            'src/libANGLE/renderer/angle_format_data.json',
-            'src/libANGLE/renderer/angle_format_map.json',
-        ],
-        'script': 'src/libANGLE/renderer/gen_angle_format_table.py',
-    },
-    'ANGLE load functions table': {
-        'inputs': [
-            'src/libANGLE/renderer/load_functions_data.json',
-        ],
-        'script': 'src/libANGLE/renderer/gen_load_functions_table.py',
-    },
-    'D3D11 blit shader selection': {
-        'inputs': [],
-        'script': 'src/libANGLE/renderer/d3d/d3d11/gen_blit11helper.py',
-    },
-    'D3D11 format': {
-        'inputs': [
-            'src/libANGLE/renderer/angle_format.py',
-            'src/libANGLE/renderer/d3d/d3d11/texture_format_data.json',
-            'src/libANGLE/renderer/d3d/d3d11/texture_format_map.json',
-        ],
-        'script': 'src/libANGLE/renderer/d3d/d3d11/gen_texture_format_table.py',
-    },
-    'DXGI format': {
-        'inputs': [
-            'src/libANGLE/renderer/angle_format.py',
-            'src/libANGLE/renderer/angle_format_map.json',
-            'src/libANGLE/renderer/d3d/d3d11/dxgi_format_data.json',
-            'src/libANGLE/renderer/gen_angle_format_table.py',
-        ],
-        'script': 'src/libANGLE/renderer/d3d/d3d11/gen_dxgi_format_table.py',
-    },
-    'DXGI format support': {
-        'inputs': [
-            'src/libANGLE/renderer/d3d/d3d11/dxgi_support_data.json',
-        ],
-        'script': 'src/libANGLE/renderer/d3d/d3d11/gen_dxgi_support_tables.py',
-    },
+    'ANGLE format':
+        'src/libANGLE/renderer/gen_angle_format_table.py',
+    'ANGLE load functions table':
+        'src/libANGLE/renderer/gen_load_functions_table.py',
+    'D3D11 blit shader selection':
+        'src/libANGLE/renderer/d3d/d3d11/gen_blit11helper.py',
+    'D3D11 format':
+        'src/libANGLE/renderer/d3d/d3d11/gen_texture_format_table.py',
+    'DXGI format':
+        'src/libANGLE/renderer/d3d/d3d11/gen_dxgi_format_table.py',
+    'DXGI format support':
+        'src/libANGLE/renderer/d3d/d3d11/gen_dxgi_support_tables.py',
+    'GL copy conversion table':
+        'src/libANGLE/gen_copy_conversion_table.py',
     'GL/EGL/WGL loader':
-        auto_script('scripts/generate_loader.py'),
+        'scripts/generate_loader.py',
     'GL/EGL entry points':
-        auto_script('scripts/generate_entry_points.py'),
-    'GL copy conversion table': {
-        'inputs': [
-            'src/libANGLE/es3_copy_conversion_formats.json',
-        ],
-        'script': 'src/libANGLE/gen_copy_conversion_table.py',
-    },
-    'GL format map': {
-        'inputs': [
-            'src/libANGLE/es3_format_type_combinations.json',
-            'src/libANGLE/format_map_data.json',
-        ],
-        'script': 'src/libANGLE/gen_format_map.py',
-    },
-    'uniform type': {
-        'inputs': [],
-        'script': 'src/common/gen_uniform_type_table.py',
-    },
-    'OpenGL dispatch table': {
-        'inputs': [
-            'scripts/gl.xml',
-        ],
-        'script': 'src/libANGLE/renderer/gl/generate_gl_dispatch_table.py',
-    },
-    'packed enum': {
-        'inputs': [
-            'src/common/packed_gl_enums.json',
-            'src/common/packed_egl_enums.json',
-        ],
-        'script': 'src/common/gen_packed_gl_enums.py',
-    },
-    'proc table': {
-        'inputs': [
-            'src/libGLESv2/proc_table_data.json',
-        ],
-        'script': 'src/libGLESv2/gen_proc_table.py',
-    },
-    'Vulkan format': {
-        'inputs': [
-            'src/libANGLE/renderer/angle_format.py',
-            'src/libANGLE/renderer/angle_format_map.json',
-            'src/libANGLE/renderer/vulkan/vk_format_map.json',
-        ],
-        'script': 'src/libANGLE/renderer/vulkan/gen_vk_format_table.py',
-    },
-    'Vulkan mandatory format support table': {
-        'inputs': [
-            'src/libANGLE/renderer/angle_format.py',
-            'third_party/vulkan-headers/src/registry/vk.xml',
-            'src/libANGLE/renderer/vulkan/vk_mandatory_format_support_data.json',
-        ],
-        'script': 'src/libANGLE/renderer/vulkan/gen_vk_mandatory_format_support_table.py',
-    },
+        'scripts/generate_entry_points.py',
+    'GL format map':
+        'src/libANGLE/gen_format_map.py',
+    'uniform type':
+        'src/common/gen_uniform_type_table.py',
+    'OpenGL dispatch table':
+        'src/libANGLE/renderer/gl/generate_gl_dispatch_table.py',
+    'packed enum':
+        'src/common/gen_packed_gl_enums.py',
+    'proc table':
+        'src/libGLESv2/gen_proc_table.py',
+    'Vulkan format':
+        'src/libANGLE/renderer/vulkan/gen_vk_format_table.py',
+    'Vulkan mandatory format support table':
+        'src/libANGLE/renderer/vulkan/gen_vk_mandatory_format_support_table.py',
     'Vulkan internal shader programs':
-        auto_script('src/libANGLE/renderer/vulkan/gen_vk_internal_shaders.py'),
-    'Emulated HLSL functions': {
-        'inputs': [
-            'src/compiler/translator/emulated_builtin_function_data_hlsl.json'
-        ],
-        'script': 'src/compiler/translator/gen_emulated_builtin_function_tables.py'
-    },
-    'ESSL static builtins': {
-        'inputs': [
-            'src/compiler/translator/builtin_function_declarations.txt',
-            'src/compiler/translator/builtin_variables.json',
-        ],
-        'script': 'src/compiler/translator/gen_builtin_symbols.py',
-    },
+        'src/libANGLE/renderer/vulkan/gen_vk_internal_shaders.py',
+    'Emulated HLSL functions':
+        'src/compiler/translator/gen_emulated_builtin_function_tables.py',
+    'ESSL static builtins':
+        'src/compiler/translator/gen_builtin_symbols.py',
 }
 
 
@@ -171,25 +101,42 @@ def md5(fname):
     return hash_md5.hexdigest()
 
 
-def any_input_dirty(name, inputs, new_hashes, old_hashes):
-    found_dirty_input = False
-    for finput in inputs:
-        key = name + ":" + finput
-        new_hashes[key] = md5(finput)
-        if (not key in old_hashes) or (old_hashes[key] != new_hashes[key]):
-            found_dirty_input = True
-    return found_dirty_input
+def any_hash_dirty(name, filenames, new_hashes, old_hashes):
+    found_dirty_hash = False
+    for filename in filenames:
+        key = name + ":" + filename
+        if not os.path.isfile(filename):
+            print('Could not find %s for %s' % (filename, name))
+            found_dirty_hash = True
+        else:
+            new_hashes[key] = md5(filename)
+            if (not key in old_hashes) or (old_hashes[key] != new_hashes[key]):
+                found_dirty_hash = True
+    return found_dirty_hash
 
 
 def any_old_hash_missing(new_hashes, old_hashes):
+    result = False
     for name, _ in old_hashes.iteritems():
         if name not in new_hashes:
-            return True
-    return False
+            script, file = name.split(':')
+            print('%s missing from generated hashes for %s.' % (file, script))
+            result = True
+    return result
+
+
+def update_output_hashes(script, outputs, new_hashes):
+    for output in outputs:
+        if not os.path.isfile(output):
+            print('Output is missing from %s: %s' % (script, output))
+            sys.exit(1)
+        key = script + ":" + output
+        new_hashes[key] = md5(output)
 
 
 def main():
     os.chdir(script_dir)
+
     old_hashes = json.load(open(hash_fname))
     new_hashes = {}
     any_dirty = False
@@ -198,13 +145,10 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == '--verify-no-dirty':
         verify_only = True
 
-    for name, info in sorted(generators.iteritems()):
-
-        # Reset the CWD to the root ANGLE directory.
-        os.chdir(root_dir)
-        script = info['script']
-
-        if any_input_dirty(name, info['inputs'] + [script], new_hashes, old_hashes):
+    for name, script in sorted(generators.iteritems()):
+        info = auto_script(script)
+        filenames = info['inputs'] + info['outputs'] + [script]
+        if any_hash_dirty(name, filenames, new_hashes, old_hashes):
             any_dirty = True
 
             if not verify_only:
@@ -232,6 +176,11 @@ def main():
         args += ['cl', 'format', '--full']
         print('Calling git cl format')
         subprocess.call(args)
+
+        # Update the output hashes again since they can be formatted.
+        for name, script in sorted(generators.iteritems()):
+            info = auto_script(script)
+            update_output_hashes(name, info['outputs'], new_hashes)
 
         os.chdir(script_dir)
         json.dump(new_hashes, open(hash_fname, "w"), indent=2, sort_keys=True,

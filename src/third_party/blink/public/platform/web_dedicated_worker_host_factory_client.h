@@ -19,6 +19,11 @@ class WebDedicatedWorkerHostFactoryClient {
   virtual ~WebDedicatedWorkerHostFactoryClient() = default;
 
   // Requests the creation of DedicatedWorkerHost in the browser process.
+  // For non-PlzDedicatedWorker. This will be removed once PlzDedicatedWorker is
+  // enabled by default.
+  virtual void CreateWorkerHostDeprecated(
+      const blink::WebSecurityOrigin& script_origin) = 0;
+  // For PlzDedicatedWorker.
   virtual void CreateWorkerHost(
       const blink::WebURL& script_url,
       const blink::WebSecurityOrigin& script_origin,

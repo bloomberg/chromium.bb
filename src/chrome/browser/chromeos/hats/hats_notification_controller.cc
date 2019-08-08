@@ -178,6 +178,8 @@ void HatsNotificationController::Click(
   HatsDialog::CreateAndShow(IsGoogleUser(profile_->GetProfileUserName()));
 
   // Remove the notification.
+  network_portal_detector::GetInstance()->RemoveObserver(this);
+  notification_.reset(nullptr);
   NotificationDisplayService::GetForProfile(profile_)->Close(
       NotificationHandler::Type::TRANSIENT, kNotificationId);
 }
@@ -186,8 +188,11 @@ void HatsNotificationController::Click(
 void HatsNotificationController::Close(bool by_user) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (by_user)
+  if (by_user) {
     UpdateLastInteractionTime();
+    network_portal_detector::GetInstance()->RemoveObserver(this);
+    notification_.reset(nullptr);
+  }
 }
 
 // NetworkPortalDetector::Observer override:
@@ -199,15 +204,10 @@ void HatsNotificationController::OnPortalDetectionCompleted(
           << "network=" << (network ? network->path() : "") << ", "
           << "state.status=" << state.status << ", "
           << "state.response_code=" << state.response_code;
-  // Return if device is not connected to the internet.
-  if (state.status != NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE)
-    return;
-  // Remove self as an observer to no longer receive network change updates.
-  network_portal_detector::GetInstance()->RemoveObserver(this);
-
-  // Create and display the notification for the user.
-  std::unique_ptr<message_center::Notification> notification =
-      ash::CreateSystemNotification(
+  if (state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
+    // Create and display the notification for the user.
+    if (!notification_) {
+      notification_ = ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_TITLE),
           l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_BODY),
@@ -218,9 +218,16 @@ void HatsNotificationController::OnPortalDetectionCompleted(
           message_center::RichNotificationData(), this,
           ash::kNotificationGoogleIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
+    }
 
-  NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+    NotificationDisplayService::GetForProfile(profile_)->Display(
+        NotificationHandler::Type::TRANSIENT, *notification_,
+        /*metadata=*/nullptr);
+  } else if (notification_) {
+    // Hide the notification if device loses its connection to the internet.
+    NotificationDisplayService::GetForProfile(profile_)->Close(
+        NotificationHandler::Type::TRANSIENT, kNotificationId);
+  }
 }
 
 void HatsNotificationController::UpdateLastInteractionTime() {

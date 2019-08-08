@@ -15,8 +15,8 @@ namespace apps {
 // AppIconSource serves app icons through the AppServiceProxy.
 // Icons can be retrieved for any installed app.
 //
-// To request an icon a call must first be made to chrome://apps
-// as the URLDataSource is first initialised in that page's handler.
+// To request an icon the AppIconSource must have been initialized via
+// content::URLDataSource::Add().
 //
 // The format for requesting an icon is as follows:
 //   chrome://app-icon/<app_id>/<icon_size>
@@ -35,13 +35,14 @@ class AppIconSource : public content::URLDataSource {
   ~AppIconSource() override;
 
   // content::URLDataSource implementation.
-  bool AllowCaching() const override;
-  std::string GetMimeType(const std::string&) const override;
   std::string GetSource() const override;
   void StartDataRequest(
       const std::string& path,
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
+  std::string GetMimeType(const std::string&) const override;
+  bool AllowCaching() const override;
+  bool ShouldReplaceExistingSource() const override;
 
  private:
   Profile* profile_;

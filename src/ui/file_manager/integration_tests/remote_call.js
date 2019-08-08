@@ -364,8 +364,8 @@ RemoteCallFilesApp.prototype.__proto__ = RemoteCall.prototype;
  * @return {Promise} Promise to be fulfilled when the file list turns to the
  *     given contents.
  */
-RemoteCallFilesApp.prototype.waitForFiles =
-    function(windowId, expected, opt_options) {
+RemoteCallFilesApp.prototype.waitForFiles = function(
+    windowId, expected, opt_options) {
   var options = opt_options || {};
   var caller = getCaller();
   return repeatUntil(async () => {
@@ -617,8 +617,8 @@ RemoteCallGallery.prototype.__proto__ = RemoteCall.prototype;
  * @param {string|null} name Expected name of the image.
  * @return {Promise} Promsie to be fulfilled when the check is passed.
  */
-RemoteCallGallery.prototype.waitForSlideImage =
-    function(windowId, width, height, name) {
+RemoteCallGallery.prototype.waitForSlideImage = function(
+    windowId, width, height, name) {
   var expected = {};
   if (width) {
     expected.width = width;
@@ -683,6 +683,7 @@ RemoteCallGallery.prototype.waitForPressEnterMessage = async function(appId) {
  *     thumbnail has actually selected or not.
  */
 RemoteCallGallery.prototype.selectImageInThumbnailMode = function(appId, name) {
-  return this.callRemoteTestUtil('fakeMouseClick', appId,
+  return this.callRemoteTestUtil(
+      'fakeMouseClick', appId,
       ['.thumbnail-view > ul > li[title="' + name + '"] > .selection.frame']);
 };

@@ -17,7 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
@@ -37,6 +36,7 @@ import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServerRule;
 
@@ -360,35 +360,22 @@ public class AddToHomescreenManagerTest {
     }
 
     private void startManagerOnUiThread(final AddToHomescreenManager manager) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                manager.start();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { manager.start(); });
     }
 
     private void destroyManagerOnUiThread(final AddToHomescreenManager manager) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                manager.destroy();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { manager.destroy(); });
     }
 
     /**
      * Spawns popup via window.open() at {@link url}.
      */
     private Tab spawnPopupInBackground(final String url) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mTab.getWebContents().evaluateJavaScriptForTests("(function() {"
-                                + "window.open('" + url + "');"
-                                + "})()",
-                        null);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mTab.getWebContents().evaluateJavaScriptForTests("(function() {"
+                            + "window.open('" + url + "');"
+                            + "})()",
+                    null);
         });
 
         CriteriaHelper.pollUiThread(Criteria.equals(2, new Callable<Integer>() {

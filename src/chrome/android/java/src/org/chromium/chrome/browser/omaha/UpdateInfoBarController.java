@@ -73,7 +73,7 @@ public class UpdateInfoBarController implements Destroyable {
     private void showRestartInfobar() {
         if (mActivity == null) return;
 
-        Tab tab = mActivity.getActivityTabProvider().getActivityTab();
+        Tab tab = mActivity.getActivityTabProvider().get();
         if (tab == null) return;
 
         SimpleConfirmInfoBarBuilder.create(tab,
@@ -103,7 +103,7 @@ public class UpdateInfoBarController implements Destroyable {
     private void showFailedInfobar() {
         if (mActivity == null) return;
 
-        Tab tab = mActivity.getActivityTabProvider().getActivityTab();
+        Tab tab = mActivity.getActivityTabProvider().get();
         if (tab == null) return;
 
         SimpleConfirmInfoBarBuilder.create(tab,

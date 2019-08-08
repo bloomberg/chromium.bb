@@ -68,7 +68,7 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   profile_observer_.Add(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 
-  if (!IsIncognito() && !profile_->IsGuestSession()) {
+  if (profile_->IsRegularProfile()) {
     identity_manager_observer_.Add(
         IdentityManagerFactory::GetForProfile(profile_));
   }
@@ -91,7 +91,7 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   // and Guest sessions. It should not be instantiated for regular profiles and
   // it should not be enabled as there's no profile switcher to trigger / show,
   // unless incognito window counter is available.
-  DCHECK(IsIncognito() || profile_->IsGuestSession());
+  DCHECK(!profile_->IsRegularProfile());
   SetEnabled(IsIncognitoCounterActive());
 #else
   // The profile switcher is only available outside incognito or if incognito
@@ -165,9 +165,7 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
     return;
 
   browser_->window()->ShowAvatarBubbleFromAvatarButton(
-      IsIncognito() ? BrowserWindow::AVATAR_BUBBLE_MODE_INCOGNITO
-                    : BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-      signin::ManageAccountsParams(),
+      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT, signin::ManageAccountsParams(),
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
       event.IsKeyEvent());
 }
@@ -248,23 +246,18 @@ void AvatarToolbarButton::OnTouchUiChanged() {
 }
 
 bool AvatarToolbarButton::IsIncognito() const {
-  return profile_->IsOffTheRecord() && !profile_->IsGuestSession();
+  return profile_->IsIncognito();
 }
 
 bool AvatarToolbarButton::IsIncognitoCounterActive() const {
-#if defined(OS_CHROMEOS)
-  return false;
-#else
   return IsIncognito() &&
          base::FeatureList::IsEnabled(features::kEnableIncognitoWindowCounter);
-#endif  // defined(OS_CHROMEOS)
 }
 
 bool AvatarToolbarButton::ShouldShowGenericIcon() const {
   // This function should only be used for regular profiles. Guest and Incognito
   // sessions should be handled separately and never call this function.
-  DCHECK(!profile_->IsGuestSession());
-  DCHECK(!profile_->IsOffTheRecord());
+  DCHECK(profile_->IsRegularProfile());
 #if !defined(OS_CHROMEOS)
   if (!signin_ui_util::GetAccountsForDicePromos(profile_).empty())
     return false;
@@ -275,7 +268,7 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
     // This can happen if the user deletes the current profile.
     return true;
   }
-  return entry->IsUsingDefaultAvatar() &&
+  return entry->GetAvatarIconIndex() == 0 &&
          g_browser_process->profile_manager()
                  ->GetProfileAttributesStorage()
                  .GetNumberOfProfiles() == 1 &&
@@ -310,7 +303,10 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
 }
 
 gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
-  const int icon_size = ui::MaterialDesignController::touch_ui() ? 24 : 20;
+  // Note that the non-touchable icon size is larger than the default to
+  // make the avatar icon easier to read.
+  const int icon_size =
+      ui::MaterialDesignController::touch_ui() ? kDefaultTouchableIconSize : 20;
 
   SkColor icon_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);

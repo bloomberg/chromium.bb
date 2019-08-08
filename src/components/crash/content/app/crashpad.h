@@ -184,12 +184,6 @@ void GetPlatformCrashpadAnnotations(
 // target process.
 DWORD WINAPI DumpProcessForHungInputThread(void* param);
 
-#if defined(ARCH_CPU_X86_64)
-// V8 support functions.
-void RegisterNonABICompliantCodeRangeImpl(void* start, size_t size_in_bytes);
-void UnregisterNonABICompliantCodeRangeImpl(void* start);
-#endif  // defined(ARCH_CPU_X86_64)
-
 #endif  // defined(OS_WIN)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

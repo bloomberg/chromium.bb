@@ -136,6 +136,7 @@ class AutocompleteMediator
     private float mMaxRequiredWidth;
     private float mMaxMatchContentsWidth;
     private boolean mUseDarkColors = true;
+    private boolean mShowSuggestionFavicons;
     private int mLayoutDirection;
 
     private WindowAndroid mWindowAndroid;
@@ -266,10 +267,11 @@ class AutocompleteMediator
     /**
      * Specifies the visual state to be used by the suggestions.
      * @param useDarkColors Whether dark colors should be used for fonts and icons.
+     * @param isIncognito Whether the UI is for incognito mode or not.
      */
-    void setUseDarkColors(boolean useDarkColors) {
+    void updateVisualsForState(boolean useDarkColors, boolean isIncognito) {
         mUseDarkColors = useDarkColors;
-        mListPropertyModel.set(SuggestionListProperties.USE_DARK_BACKGROUND, !useDarkColors);
+        mListPropertyModel.set(SuggestionListProperties.IS_INCOGNITO, isIncognito);
         for (int i = 0; i < mCurrentModels.size(); i++) {
             PropertyModel model = mCurrentModels.get(i).model;
             model.set(SuggestionCommonProperties.USE_DARK_COLORS, useDarkColors);
@@ -305,6 +307,9 @@ class AutocompleteMediator
             mEditUrlProcessor.destroy();
             mEditUrlProcessor = null;
         }
+
+        mShowSuggestionFavicons =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS);
 
         for (Runnable deferredRunnable : mDeferredNativeRunnables) {
             mHandler.post(deferredRunnable);
@@ -368,6 +373,7 @@ class AutocompleteMediator
      */
     void setAutocompleteProfile(Profile profile) {
         mAutocomplete.setProfile(profile);
+        mBasicSuggestionProcessor.setProfile(profile);
     }
 
     /**
@@ -753,6 +759,9 @@ class AutocompleteMediator
             PropertyModel model = processor.createModelForSuggestion(suggestion);
             model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, mLayoutDirection);
             model.set(SuggestionCommonProperties.USE_DARK_COLORS, mUseDarkColors);
+            model.set(SuggestionCommonProperties.SHOW_SUGGESTION_ICONS,
+                    mShowSuggestionFavicons
+                            || DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext));
 
             // Before populating the model, add it to the list of current models.  If the suggestion
             // has an image and the image was already cached, it will be updated synchronously and

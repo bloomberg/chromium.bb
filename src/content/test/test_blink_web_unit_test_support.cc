@@ -13,7 +13,7 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/null_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -169,7 +169,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
         blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler(
             base::MessageLoop::CreateMessagePumpForType(
                 base::MessageLoop::TYPE_DEFAULT));
-    base::TaskScheduler::CreateAndStartWithDefaultParams("BlinkTestSupport");
+    base::ThreadPool::CreateAndStartWithDefaultParams("BlinkTestSupport");
   }
 
   // Initialize mojo firstly to enable Blink initialization to use it.
@@ -320,14 +320,14 @@ class TestWebRTCCertificateGenerator
     : public blink::WebRTCCertificateGenerator {
   void GenerateCertificate(
       const blink::WebRTCKeyParams& key_params,
-      std::unique_ptr<blink::WebRTCCertificateCallback> callback,
+      blink::WebRTCCertificateCallback completion_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
     NOTIMPLEMENTED();
   }
   void GenerateCertificateWithExpiration(
       const blink::WebRTCKeyParams& key_params,
       uint64_t expires_ms,
-      std::unique_ptr<blink::WebRTCCertificateCallback> callback,
+      blink::WebRTCCertificateCallback completion_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
     NOTIMPLEMENTED();
   }

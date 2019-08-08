@@ -24,6 +24,10 @@ struct CookieManagerParams {
 
   // Schemes that unconditionally allow third party cookies.
   array<string> third_party_cookies_allowed_schemes;
+
+  // Whether or not to allow cookies for file:// URLs. Can be overridden by
+  // CookieManager.AllowFileSchemeCookies().
+  bool allow_file_scheme_cookies = false;
 };
 
 enum CookiePriority {
@@ -35,26 +39,30 @@ enum CookiePriority {
 // See https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00
 // and https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis for
 // information about same site cookie restrictions.
+// Note: Don't renumber, as these values are persisted to a database.
 enum CookieSameSite {
-  NO_RESTRICTION,
-  LAX_MODE,
-  STRICT_MODE
+  UNSPECIFIED = -1,
+  NO_RESTRICTION = 0,
+  LAX_MODE = 1,
+  STRICT_MODE = 2,
+  EXTENDED_MODE = 3
 };
 
-enum CookieSameSiteFilter {
-  INCLUDE_STRICT_AND_LAX,
-  INCLUDE_LAX,
-  DO_NOT_INCLUDE
+enum CookieSameSiteContext {
+  CROSS_SITE,
+  SAME_SITE_LAX,
+  SAME_SITE_STRICT
 };
 
 // Keep defaults here in sync with net/cookies/cookie_options.cc.
 struct CookieOptions {
   bool exclude_httponly = true;
-  CookieSameSiteFilter cookie_same_site_filter = DO_NOT_INCLUDE;
+  CookieSameSiteContext same_site_cookie_context = CROSS_SITE;
   bool update_access_time = true;
   // TODO(rdsmith): Remove this element from the mojo structure?  It's only
   // used in the underlying net:: structure in CanonicalCookie::Create().
   mojo_base.mojom.Time? server_time;
+  bool return_excluded_cookies = false;
 };
 
 // See net/cookies/canonical_cookie.{h,cc} for documentation.
@@ -71,6 +79,37 @@ struct CanonicalCookie {
   bool httponly = false;
   CookieSameSite site_restrictions = NO_RESTRICTION;
   CookiePriority priority = MEDIUM;
+};
+
+// Keep values here in sync with net::CanonicalCookie::CookieInclusionStatus.
+enum CookieInclusionStatus {
+  INCLUDE,
+  EXCLUDE_HTTP_ONLY,
+  EXCLUDE_SECURE_ONLY,
+  EXCLUDE_DOMAIN_MISMATCH,
+  EXCLUDE_NOT_ON_PATH,
+  EXCLUDE_SAMESITE_STRICT,
+  EXCLUDE_SAMESITE_LAX,
+  EXCLUDE_SAMESITE_EXTENDED,
+  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
+  EXCLUDE_SAMESITE_NONE_INSECURE,
+  EXCLUDE_USER_PREFERENCES,
+
+  // Statuses specific to setting cookies
+  EXCLUDE_FAILURE_TO_STORE,
+  EXCLUDE_NONCOOKIEABLE_SCHEME,
+  EXCLUDE_OVERWRITE_SECURE,
+  EXCLUDE_OVERWRITE_HTTP_ONLY,
+  EXCLUDE_INVALID_DOMAIN,
+  EXCLUDE_INVALID_PREFIX,
+
+  // Please keep last
+  EXCLUDE_UNKNOWN_ERROR
+};
+
+struct CookieWithStatus {
+  CanonicalCookie cookie;
+  CookieInclusionStatus status;
 };
 
 // Keep values here in sync with net::CookieStore::ChangeCause.
@@ -177,18 +216,24 @@ interface CookieManager {
 
   // Get all cookies for the specified URL and cookie options.
   // Returned cookie list is sorted first by path length (longest first)
-  // and second by creation time.
-  GetCookieList(url.mojom.Url url, CookieOptions cookie_options) =>
-      (array<CanonicalCookie> cookies);
+  // and second by creation time. If the |return_excluded_cookies| option is set
+  // in the options, |excluded_cookies| with be a list of cookies that were
+  // blocked from being sent along with the reason each cookie was blocked. By
+  // default, that option is not set and |excluded_cookies| is an empty list.
+  GetCookieList(url.mojom.Url url, CookieOptions cookie_options)
+      => (array<CanonicalCookie> cookies,
+          array<CookieWithStatus> excluded_cookies);
 
   // Set a cookie.  |source_scheme| is used to check whether existing secure
   // cookies can be overwritten (secure cookies may be created from a
   // non-secure source), and whether the scheme is permitted to use cookies in
-  // the first place.  |modify_http_only| indicates whether http_only
-  // cookies may be overwritten.
-  SetCanonicalCookie(
-      CanonicalCookie cookie, string source_scheme, bool modify_http_only) =>
-      (bool success);
+  // the first place.  |cookie_options| indicates whether http_only
+  // or SameSite cookies may be overwritten. If a cookie is not permitted to be
+  // set, |status| will indicate why it was blocked. If the cookie is permitted,
+  // |status| will be set to INCLUDE.
+  SetCanonicalCookie(CanonicalCookie cookie, string source_scheme,
+                     CookieOptions cookie_options)
+      => (CookieInclusionStatus status);
 
   // Delete a cookie. Returns true if a cookie was deleted.
   DeleteCanonicalCookie(CanonicalCookie cookie) => (bool success);
@@ -230,6 +275,13 @@ interface CookieManager {
 
   // Flush the backing store (if any) to disk.
   FlushCookieStore() => ();
+
+  // Configure this CookieManager to allow/disallow setting cookies for file://
+  // URLs. If this is not called, the CookieManager follows
+  // CookieManagerParams.allow_file_scheme_cookies. This should be called before
+  // the first use of the backing store, otherwise this will have no effect on
+  // the CookieManager, returning false to indicate so.
+  AllowFileSchemeCookies(bool allow) => (bool success);
 
   // Sets content settings for cookies. These are used to determine cookie
   // access and cookie deletion behavior.

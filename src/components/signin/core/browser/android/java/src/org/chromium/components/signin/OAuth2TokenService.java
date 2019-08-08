@@ -79,8 +79,7 @@ public final class OAuth2TokenService
     private final AccountTrackerService mAccountTrackerService;
     private final ObserverList<OAuth2TokenServiceObserver> mObservers = new ObserverList<>();
 
-    private boolean mPendingValidation;
-    private boolean mPendingValidationForceNotifications;
+    private boolean mPendingUpdate;
 
     private OAuth2TokenService(
             long nativeOAuth2TokenServiceDelegate, AccountTrackerService accountTrackerService) {
@@ -141,7 +140,7 @@ public final class OAuth2TokenService
     /**
      * Called by native to list the accounts Id with OAuth2 refresh tokens.
      * This can differ from getSystemAccountNames as the user add/remove accounts
-     * from the OS. validateAccounts should be called to keep these two
+     * from the OS. updateAccountList should be called to keep these two
      * in sync.
      */
     @CalledByNative
@@ -323,35 +322,24 @@ public final class OAuth2TokenService
      */
     @Override
     public void onSystemAccountsSeedingComplete() {
-        if (mPendingValidation) {
-            validateAccountsWithSignedInAccountName(mPendingValidationForceNotifications);
-            mPendingValidation = false;
-            mPendingValidationForceNotifications = false;
+        if (mPendingUpdate) {
+            updateAccountListInternal();
+            mPendingUpdate = false;
         }
-    }
-
-    /**
-     * Clear pending accounts validation when system accounts in AccountTrackerService were
-     * refreshed.
-     */
-    @Override
-    public void onSystemAccountsChanged() {
-        mPendingValidationForceNotifications = false;
     }
 
     @CalledByNative
-    public void validateAccounts(boolean forceNotifications) {
+    public void updateAccountList() {
         ThreadUtils.assertOnUiThread();
         if (!mAccountTrackerService.checkAndSeedSystemAccounts()) {
-            mPendingValidation = true;
-            mPendingValidationForceNotifications = forceNotifications;
+            mPendingUpdate = true;
             return;
         }
 
-        validateAccountsWithSignedInAccountName(forceNotifications);
+        updateAccountListInternal();
     }
 
-    private void validateAccountsWithSignedInAccountName(boolean forceNotifications) {
+    private void updateAccountListInternal() {
         String currentlySignedInAccount = ChromeSigninController.get().getSignedInAccountName();
         if (currentlySignedInAccount != null
                 && isSignedInAccountChanged(currentlySignedInAccount)) {
@@ -363,8 +351,7 @@ public final class OAuth2TokenService
             // change (re-signin or sign out signed-in account).
             currentlySignedInAccount = null;
         }
-        nativeValidateAccounts(
-                mNativeOAuth2TokenServiceDelegate, currentlySignedInAccount, forceNotifications);
+        nativeUpdateAccountList(mNativeOAuth2TokenServiceDelegate, currentlySignedInAccount);
     }
 
     private boolean isSignedInAccountChanged(String signedInAccountName) {
@@ -495,6 +482,6 @@ public final class OAuth2TokenService
 
     private static native void nativeOAuth2TokenFetched(
             String authToken, boolean isTransientError, long nativeCallback);
-    private native void nativeValidateAccounts(long nativeOAuth2TokenServiceDelegateAndroid,
-            String currentlySignedInAccount, boolean forceNotifications);
+    private native void nativeUpdateAccountList(
+            long nativeOAuth2TokenServiceDelegateAndroid, String currentlySignedInAccount);
 }

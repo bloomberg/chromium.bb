@@ -11,9 +11,9 @@
 
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_legacy_view_controller.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_provider.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
 
 class OmniboxEditModel;
 @class OmniboxPopupMediator;
@@ -45,6 +45,8 @@ class OmniboxPopupViewIOS : public OmniboxPopupView,
 
   // OmniboxPopupProvider implemetation.
   void SetTextAlignment(NSTextAlignment alignment) override;
+  void SetSemanticContentAttribute(
+      UISemanticContentAttribute semanticContentAttribute) override;
   bool IsPopupOpen() override;
 
   // OmniboxPopupViewControllerDelegate implementation.

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/android/autofill/card_name_fix_flow_view_android.h"
 
 #include "chrome/browser/android/resource_mapper.h"
-#include "components/autofill/core/browser/ui/card_name_fix_flow_view_delegate_mobile.h"
+#include "components/autofill/core/browser/ui/payments/card_name_fix_flow_view_delegate_mobile.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AutofillNameFixFlowBridge_jni.h"
 #include "ui/android/view_android.h"

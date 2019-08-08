@@ -161,8 +161,6 @@ Polymer({
   onAddressMenuTap_: function(e) {
     const menuEvent = /** @type {!{model: !{item: !Object}}} */ (e);
 
-    /* TODO(scottchen): drop the [dataHost][dataHost] once this bug is fixed:
-     https://github.com/Polymer/polymer/issues/2574 */
     // TODO(dpapad): The [dataHost][dataHost] workaround is only necessary for
     // Polymer 1. Remove once migration to Polymer 2 has completed.
     const item = Polymer.DomIf ? menuEvent.model.item :

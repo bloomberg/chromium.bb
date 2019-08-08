@@ -62,6 +62,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/origin_util.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/device/public/cpp/device_features.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -215,14 +216,20 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
        IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
       {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_MESSAGE},
       {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_BLOCKED_CLIPBOARD_MESSAGE},
-      {CONTENT_SETTINGS_TYPE_SENSORS, IDS_BLOCKED_SENSORS_MESSAGE},
+      {CONTENT_SETTINGS_TYPE_SENSORS,
+       base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)
+           ? IDS_BLOCKED_SENSORS_MESSAGE
+           : IDS_BLOCKED_MOTION_SENSORS_MESSAGE},
   };
   // Fields as for kBlockedMessageIDs, above.
   static const ContentSettingsTypeIdEntry kAccessedMessageIDs[] = {
       {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ACCESSED_COOKIES_MESSAGE},
       {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_MESSAGE},
       {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_MESSAGE},
-      {CONTENT_SETTINGS_TYPE_SENSORS, IDS_ALLOWED_SENSORS_MESSAGE},
+      {CONTENT_SETTINGS_TYPE_SENSORS,
+       base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)
+           ? IDS_ALLOWED_SENSORS_MESSAGE
+           : IDS_ALLOWED_MOTION_SENSORS_MESSAGE},
   };
   const ContentSettingsTypeIdEntry* message_ids = kBlockedMessageIDs;
   size_t num_message_ids = base::size(kBlockedMessageIDs);
@@ -669,15 +676,8 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
   if (!managed_by_user)
     set_manage_text_style(ContentSettingBubbleModel::ManageTextStyle::kNone);
 
-  // The user cannot manually run Flash on the BLOCK setting when either holds:
-  //  - The setting is from Policy. User cannot override admin intent.
-  //  - HTML By Default is on - Flash has been hidden from the plugin list, so
-  //    it's impossible to dynamically run the nonexistent plugin.
-  bool run_blocked =
-      setting == CONTENT_SETTING_BLOCK &&
-      (!managed_by_user || PluginUtils::ShouldPreferHtmlOverPlugins(map));
-
-  if (!run_blocked) {
+  // The user can only load Flash dynamically if not on the BLOCK setting.
+  if (setting != CONTENT_SETTING_BLOCK) {
     set_custom_link(l10n_util::GetStringUTF16(IDS_BLOCKED_PLUGINS_LOAD_ALL));
     // Disable the "Run all plugins this time" link if the user already clicked
     // on the link and ran all plugins.

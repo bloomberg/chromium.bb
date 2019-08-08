@@ -42,7 +42,7 @@ Polymer({
 
     /**
      * Dictionary defining page visibility.
-     * @type {!GuestModePageVisibility}
+     * @type {!PageVisibility}
      */
     pageVisibility: {
       type: Object,

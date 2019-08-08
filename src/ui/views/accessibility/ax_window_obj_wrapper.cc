@@ -42,7 +42,7 @@ Widget* GetWidgetForWindow(aura::Window* window) {
 
 AXWindowObjWrapper::AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache,
                                        aura::Window* window)
-    : aura_obj_cache_(aura_obj_cache),
+    : AXAuraObjWrapper(aura_obj_cache),
       window_(window),
       is_root_window_(AXAuraWindowUtils::Get()->IsRootWindow(window)) {
   window->AddObserver(this);
@@ -52,9 +52,6 @@ AXWindowObjWrapper::AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache,
 }
 
 AXWindowObjWrapper::~AXWindowObjWrapper() {
-  if (is_root_window_)
-    aura_obj_cache_->OnRootWindowObjDestroyed(window_);
-
   window_->RemoveObserver(this);
 }
 
@@ -135,6 +132,9 @@ void AXWindowObjWrapper::OnWindowDestroying(aura::Window* window) {
   Widget* widget = GetWidgetForWindow(window);
   if (widget)
     aura_obj_cache_->Remove(widget);
+
+  if (is_root_window_)
+    aura_obj_cache_->OnRootWindowObjDestroyed(window_);
 }
 
 void AXWindowObjWrapper::OnWindowHierarchyChanged(

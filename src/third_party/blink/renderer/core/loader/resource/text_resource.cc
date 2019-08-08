@@ -16,7 +16,7 @@ TextResource::TextResource(const ResourceRequest& resource_request,
                            const ResourceLoaderOptions& options,
                            const TextResourceDecoderOptions& decoder_options)
     : Resource(resource_request, type, options),
-      decoder_(TextResourceDecoder::Create(decoder_options)) {}
+      decoder_(std::make_unique<TextResourceDecoder>(decoder_options)) {}
 
 TextResource::~TextResource() = default;
 

@@ -43,6 +43,8 @@ void AssistantStateProxy::AddObserver(
     observer->OnAssistantFeatureAllowedChanged(allowed_state_.value());
   if (locale_.has_value())
     observer->OnLocaleChanged(locale_.value());
+  if (arc_play_store_enabled_.has_value())
+    observer->OnArcPlayStoreEnabledChanged(arc_play_store_enabled_.value());
 
   observers_.AddObserver(observer);
 }
@@ -101,6 +103,12 @@ void AssistantStateProxy::OnLocaleChanged(const std::string& locale) {
   locale_ = locale;
   for (auto& observer : observers_)
     observer.OnLocaleChanged(locale_.value());
+}
+
+void AssistantStateProxy::OnArcPlayStoreEnabledChanged(bool enabled) {
+  arc_play_store_enabled_ = enabled;
+  for (auto& observer : observers_)
+    observer.OnArcPlayStoreEnabledChanged(arc_play_store_enabled_.value());
 }
 
 }  // namespace ash

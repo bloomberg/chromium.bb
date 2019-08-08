@@ -10,11 +10,11 @@
 #include <deque>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/range/range.h"
 
@@ -99,10 +99,11 @@ class TextInputClient;
 //
 // More information about TSF can be found here:
 //   http://msdn.microsoft.com/en-us/library/ms629032
-class UI_BASE_IME_EXPORT TSFTextStore : public ITextStoreACP,
-                                        public ITfContextOwnerCompositionSink,
-                                        public ITfKeyTraceEventSink,
-                                        public ITfTextEditSink {
+class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFTextStore
+    : public ITextStoreACP,
+      public ITfContextOwnerCompositionSink,
+      public ITfKeyTraceEventSink,
+      public ITfTextEditSink {
  public:
   TSFTextStore();
   virtual ~TSFTextStore();
@@ -233,6 +234,10 @@ class UI_BASE_IME_EXPORT TSFTextStore : public ITextStoreACP,
   STDMETHOD(OnKeyTraceUp)
   (WPARAM wParam, LPARAM lParam) override;
 
+  // Called after |TSFBridgeImpl::CreateDocumentManager| to tell that the
+  // text-store is successfully associated with a Context.
+  void OnContextInitialized(ITfContext* context);
+
   // Sets currently focused TextInputClient.
   void SetFocusedTextInputClient(HWND focused_window,
                                  TextInputClient* text_input_client);
@@ -257,6 +262,9 @@ class UI_BASE_IME_EXPORT TSFTextStore : public ITextStoreACP,
  private:
   friend class TSFTextStoreTest;
   friend class TSFTextStoreTestCallback;
+
+  // Terminate an active composition for this text store.
+  bool TerminateComposition();
 
   // Compare our cached text buffer and selection with the up-to-date
   // text buffer and selection from TextInputClient. We also update
@@ -339,9 +347,13 @@ class UI_BASE_IME_EXPORT TSFTextStore : public ITextStoreACP,
   // edit session during same composition. |previous_composition_start_|
   // indicates composition start in last session during same composition. If
   // RequestLock() is called during two edit sessions, we don't want to set same
-  // composition string twice.
+  // composition string twice. |previous_composition_selection_range_| indicates
+  // the selection range during composition. We want to send the selection
+  // change to blink if IME only change the selection range but not the
+  // composition text.
   base::string16 previous_composition_string_;
   size_t previous_composition_start_ = 0;
+  gfx::Range previous_composition_selection_range_ = gfx::Range::InvalidRange();
 
   // |new_text_inserted_| indicates there is text to be inserted
   // into blink during ITextStoreACP::SetText().
@@ -408,6 +420,7 @@ class UI_BASE_IME_EXPORT TSFTextStore : public ITextStoreACP,
   // attributes of the composition string.
   Microsoft::WRL::ComPtr<ITfCategoryMgr> category_manager_;
   Microsoft::WRL::ComPtr<ITfDisplayAttributeMgr> display_attribute_manager_;
+  Microsoft::WRL::ComPtr<ITfContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(TSFTextStore);
 };

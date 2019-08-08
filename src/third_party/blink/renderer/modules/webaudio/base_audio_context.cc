@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
@@ -33,10 +34,8 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/modules/webaudio/analyser_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_node.h"
@@ -47,6 +46,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_messaging_proxy.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context_tracker.h"
 #include "third_party/blink/renderer/modules/webaudio/biquad_filter_node.h"
 #include "third_party/blink/renderer/modules/webaudio/channel_merger_node.h"
 #include "third_party/blink/renderer/modules/webaudio/channel_splitter_node.h"
@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/modules/webaudio/dynamics_compressor_node.h"
 #include "third_party/blink/renderer/modules/webaudio/gain_node.h"
 #include "third_party/blink/renderer/modules/webaudio/iir_filter_node.h"
+#include "third_party/blink/renderer/modules/webaudio/inspector_web_audio_agent.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_completion_event.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_destination_node.h"
@@ -63,6 +64,7 @@
 #include "third_party/blink/renderer/modules/webaudio/panner_node.h"
 #include "third_party/blink/renderer/modules/webaudio/periodic_wave.h"
 #include "third_party/blink/renderer/modules/webaudio/periodic_wave_constraints.h"
+#include "third_party/blink/renderer/modules/webaudio/realtime_audio_destination_node.h"
 #include "third_party/blink/renderer/modules/webaudio/script_processor_node.h"
 #include "third_party/blink/renderer/modules/webaudio/stereo_panner_node.h"
 #include "third_party/blink/renderer/modules/webaudio/wave_shaper_node.h"
@@ -121,7 +123,7 @@ void BaseAudioContext::Initialize() {
 
   FFTFrame::Initialize();
 
-  audio_worklet_ = AudioWorklet::Create(this);
+  audio_worklet_ = MakeGarbageCollected<AudioWorklet>(this);
 
   if (destination_node_) {
     destination_node_->Handler().Initialize();
@@ -135,7 +137,10 @@ void BaseAudioContext::Initialize() {
 
     // The AudioParams in the listener need access to the destination node, so
     // only create the listener if the destination node exists.
-    listener_ = AudioListener::Create(*this);
+    listener_ = MakeGarbageCollected<AudioListener>(*this);
+
+    if (Tracker())
+      Tracker()->DidCreateBaseAudioContext(this);
   }
 }
 
@@ -170,6 +175,9 @@ void BaseAudioContext::Uninitialize() {
   listener_->WaitForHRTFDatabaseLoaderThreadCompletion();
 
   Clear();
+
+  if (Tracker())
+    Tracker()->DidDestroyBaseAudioContext(this);
 
   DCHECK(!is_resolving_resume_promises_);
   DCHECK_EQ(resume_resolvers_.size(), 0u);
@@ -211,17 +219,19 @@ void BaseAudioContext::WarnIfContextClosed(const AudioHandler* handler) const {
   DCHECK(handler);
 
   if (IsContextClosed() && GetDocument()) {
-    GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
-        "Construction of " + handler->NodeTypeName() +
-            " is not useful when context is closed."));
+    GetDocument()->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kOther,
+                               mojom::ConsoleMessageLevel::kWarning,
+                               "Construction of " + handler->NodeTypeName() +
+                                   " is not useful when context is closed."));
   }
 }
 
 void BaseAudioContext::WarnForConnectionIfContextClosed() const {
   if (IsContextClosed() && GetDocument()) {
     GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kOther,
+        mojom::ConsoleMessageLevel::kWarning,
         "Connecting nodes after the context has been closed is not useful."));
   }
 }
@@ -306,7 +316,7 @@ ScriptPromise BaseAudioContext::decodeAudioData(
   DCHECK(IsMainThread());
   DCHECK(audio_data);
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   v8::Isolate* isolate = script_state->GetIsolate();
@@ -632,6 +642,9 @@ void BaseAudioContext::SetContextState(AudioContextState new_state) {
         ->GetTaskRunner(TaskType::kMediaElementEvent)
         ->PostTask(FROM_HERE, WTF::Bind(&BaseAudioContext::NotifyStateChange,
                                         WrapPersistent(this)));
+
+    if (Tracker())
+      Tracker()->DidChangeBaseAudioContext(this);
   }
 }
 
@@ -812,10 +825,11 @@ void BaseAudioContext::NotifyWorkletIsReady() {
         audioWorklet()->GetMessagingProxy()->GetBackingWorkerThread();
   }
 
-  // If the context is running or suspended, restart the destination to switch
-  // the render thread with the worklet thread. Note that restarting can happen
-  // right after the context construction.
-  if (ContextState() != kClosed) {
+  // If the context is running, restart the destination to switch the render
+  // thread with the worklet thread. When the context is suspended, the next
+  // resume() call will start rendering with the worklet thread.
+  // Note that restarting can happen right after the context construction.
+  if (ContextState() == kRunning) {
     destination()->GetAudioDestinationHandler().RestartRendering();
   }
 }
@@ -833,6 +847,36 @@ void BaseAudioContext::UpdateWorkletGlobalScopeOnRenderingThread() {
 
     unlock();
   }
+}
+
+int32_t BaseAudioContext::MaxChannelCount() {
+  DCHECK(IsMainThread());
+
+  AudioDestinationNode* destination_node = destination();
+  if (!destination_node ||
+      !destination_node->GetAudioDestinationHandler().IsInitialized())
+    return -1;
+
+  return destination_node->GetAudioDestinationHandler().MaxChannelCount();
+}
+
+int32_t BaseAudioContext::CallbackBufferSize() {
+  DCHECK(IsMainThread());
+
+  AudioDestinationNode* destination_node = destination();
+  if (!destination_node ||
+      !destination_node->GetAudioDestinationHandler().IsInitialized() ||
+      !HasRealtimeConstraint())
+    return -1;
+
+  RealtimeAudioDestinationHandler& destination_handler =
+      static_cast<RealtimeAudioDestinationHandler&>(
+          destination_node->GetAudioDestinationHandler());
+  return destination_handler.GetCallbackBufferSize();
+}
+
+BaseAudioContextTracker* BaseAudioContext::Tracker() {
+  return BaseAudioContextTracker::FromDocument(*GetDocument());
 }
 
 }  // namespace blink

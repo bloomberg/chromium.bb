@@ -18,7 +18,6 @@
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
 #include "chrome/browser/translate/translate_ranker_factory.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -34,9 +33,6 @@
 #include "components/language/core/browser/language_model_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/protocol/user_event_specifics.pb.h"
-#include "components/sync/user_events/user_event_service.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
@@ -79,37 +75,6 @@ TranslateEventProto::EventType BubbleResultToTranslateEvent(
     default:
       NOTREACHED();
       return metrics::TranslateEventProto::UNKNOWN;
-  }
-}
-
-// ========== LOG TRANSLATE EVENT ==============
-
-void LogTranslateEvent(content::WebContents* const web_contents,
-                       const metrics::TranslateEventProto& translate_event) {
-  if (!FeatureList::IsEnabled(switches::kSyncUserTranslationEvents))
-    return;
-  DCHECK(web_contents);
-  auto* const profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
-  syncer::UserEventService* const user_event_service =
-      browser_sync::UserEventServiceFactory::GetForProfile(profile);
-
-  auto* const entry = web_contents->GetController().GetLastCommittedEntry();
-
-  // If entry is null, we don't record the page.
-  // The navigation entry can be null in situations like download or initial
-  // blank page.
-  if (entry == nullptr)
-    return;
-
-  auto specifics = std::make_unique<sync_pb::UserEventSpecifics>();
-  // We only log the event we care about.
-  const bool needs_logging = translate::ConstructTranslateEvent(
-      entry->GetTimestamp().ToInternalValue(), translate_event,
-      specifics.get());
-  if (needs_logging) {
-    user_event_service->RecordUserEvent(std::move(specifics));
   }
 }
 
@@ -212,11 +177,6 @@ void ChromeTranslateClient::GetTranslateLanguages(
                                  ->GetPrimaryModel());
 }
 
-void ChromeTranslateClient::RecordTranslateEvent(
-    const TranslateEventProto& translate_event) {
-  LogTranslateEvent(web_contents(), translate_event);
-}
-
 translate::TranslateManager* ChromeTranslateClient::GetTranslateManager() {
   return translate_manager_.get();
 }
@@ -309,31 +269,6 @@ void ChromeTranslateClient::SetPredefinedTargetLanguage(
   manager->SetPredefinedTargetLanguage(translate_language_code);
 }
 
-void ChromeTranslateClient::RecordLanguageDetectionEvent(
-    const translate::LanguageDetectionDetails& details) const {
-  if (!FeatureList::IsEnabled(switches::kSyncUserLanguageDetectionEvents))
-    return;
-
-  DCHECK(web_contents());
-  auto* const profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-
-  syncer::UserEventService* const user_event_service =
-      browser_sync::UserEventServiceFactory::GetForProfile(profile);
-
-  auto* const entry = web_contents()->GetController().GetLastCommittedEntry();
-
-  // If entry is null, we don't record the page.
-  // The navigation entry can be null in situations like download or initial
-  // blank page.
-  if (entry != nullptr &&
-      TranslateService::IsTranslatableURL(entry->GetVirtualURL())) {
-    user_event_service->RecordUserEvent(
-        translate::ConstructLanguageDetectionEvent(
-            entry->GetTimestamp().ToInternalValue(), details));
-  }
-}
-
 bool ChromeTranslateClient::IsTranslatableURL(const GURL& url) {
   return TranslateService::IsTranslatableURL(url);
 }
@@ -373,8 +308,6 @@ void ChromeTranslateClient::OnLanguageDetermined(
       chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
       content::Source<content::WebContents>(web_contents()),
       content::Details<const translate::LanguageDetectionDetails>(&details));
-
-  RecordLanguageDetectionEvent(details);
 
 #if defined(OS_ANDROID)
   // See ChromeTranslateClient::ManualTranslateOnReady

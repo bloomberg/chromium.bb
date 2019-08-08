@@ -10,7 +10,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/traced_value.h"
@@ -286,7 +287,7 @@ class SynchronousCompositorHost::ScopedSendZeroMemory {
 };
 
 struct SynchronousCompositorHost::SharedMemoryWithSize {
-  base::SharedMemory shm;
+  base::WritableSharedMemoryMapping shared_memory;
   const size_t stride;
   const size_t buffer_size;
 
@@ -343,8 +344,10 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
   UpdateFrameMetaData(metadata_version, std::move(*metadata));
 
   SkBitmap bitmap;
-  if (!bitmap.installPixels(info, software_draw_shm_->shm.memory(), stride))
+  if (!bitmap.installPixels(info, software_draw_shm_->shared_memory.memory(),
+                            stride)) {
     return false;
+  }
 
   {
     TRACE_EVENT0("browser", "DrawBitmap");
@@ -364,19 +367,19 @@ void SynchronousCompositorHost::SetSoftwareDrawSharedMemoryIfNeeded(
       software_draw_shm_->buffer_size == buffer_size)
     return;
   software_draw_shm_.reset();
-  std::unique_ptr<SharedMemoryWithSize> software_draw_shm(
-      new SharedMemoryWithSize(stride, buffer_size));
+  auto software_draw_shm =
+      std::make_unique<SharedMemoryWithSize>(stride, buffer_size);
+  base::WritableSharedMemoryRegion shm_region;
   {
     TRACE_EVENT1("browser", "AllocateSharedMemory", "buffer_size", buffer_size);
-    if (!software_draw_shm->shm.CreateAndMapAnonymous(buffer_size))
+    shm_region = base::WritableSharedMemoryRegion::Create(buffer_size);
+    if (!shm_region.IsValid())
+      return;
+
+    software_draw_shm->shared_memory = shm_region.Map();
+    if (!software_draw_shm->shared_memory.IsValid())
       return;
   }
-
-  SyncCompositorSetSharedMemoryParams set_shm_params;
-  set_shm_params.buffer_size = buffer_size;
-  set_shm_params.shm_handle = software_draw_shm->shm.handle().Duplicate();
-  if (!set_shm_params.shm_handle.IsValid())
-    return;
 
   bool success = false;
   SyncCompositorCommonRendererParams common_renderer_params;
@@ -385,8 +388,8 @@ void SynchronousCompositorHost::SetSoftwareDrawSharedMemoryIfNeeded(
     base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
         allow_base_sync_primitives;
     if (!IsReadyForSynchronousCall() ||
-        !GetSynchronousCompositor()->SetSharedMemory(set_shm_params, &success,
-                                                     &common_renderer_params) ||
+        !GetSynchronousCompositor()->SetSharedMemory(
+            std::move(shm_region), &success, &common_renderer_params) ||
         !success) {
       return;
     }
@@ -407,6 +410,11 @@ void SynchronousCompositorHost::ReturnResources(
   DCHECK(!resources.empty());
   if (mojom::SynchronousCompositor* compositor = GetSynchronousCompositor())
     compositor->ReclaimResources(layer_tree_frame_sink_id, resources);
+}
+
+void SynchronousCompositorHost::DidPresentCompositorFrames(
+    viz::PresentationFeedbackMap feedbacks) {
+  rwhva_->DidPresentCompositorFrames(feedbacks);
 }
 
 void SynchronousCompositorHost::SetMemoryPolicy(size_t bytes_limit) {
@@ -456,6 +464,14 @@ void SynchronousCompositorHost::OnComputeScroll(
   compute_scroll_needs_synchronous_draw_ = true;
 }
 
+ui::ViewAndroid::CopyViewCallback
+SynchronousCompositorHost::GetCopyViewCallback() {
+  // Unretained is safe since callback is helped by ViewAndroid which has same
+  // lifetime as this, and client outlives this.
+  return base::BindRepeating(&SynchronousCompositorClient::CopyOutput,
+                             base::Unretained(client_), this);
+}
+
 void SynchronousCompositorHost::DidOverscroll(
     const ui::DidOverscrollParams& over_scroll_params) {
   client_->DidOverscroll(this, over_scroll_params.accumulated_overscroll,
@@ -463,14 +479,16 @@ void SynchronousCompositorHost::DidOverscroll(
                          over_scroll_params.current_fling_velocity);
 }
 
-void SynchronousCompositorHost::BeginFrame(ui::WindowAndroid* window_android,
-                                           const viz::BeginFrameArgs& args) {
+void SynchronousCompositorHost::BeginFrame(
+    ui::WindowAndroid* window_android,
+    const viz::BeginFrameArgs& args,
+    const viz::PresentationFeedbackMap& feedbacks) {
   compute_scroll_needs_synchronous_draw_ = false;
   if (!bridge_->WaitAfterVSyncOnUIThread(window_android))
     return;
   mojom::SynchronousCompositor* compositor = GetSynchronousCompositor();
   DCHECK(compositor);
-  compositor->BeginFrame(args);
+  compositor->BeginFrame(args, feedbacks);
 }
 
 void SynchronousCompositorHost::SetBeginFramePaused(bool paused) {

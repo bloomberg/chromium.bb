@@ -108,7 +108,7 @@ class MetricsWebContentsObserver
   void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
-      const content::WebContentsObserver::MediaPlayerId& id) override;
+      const content::MediaPlayerId& id) override;
   void WebContentsDestroyed() override;
   void ResourceLoadComplete(
       content::RenderFrameHost* render_frame_host,
@@ -165,8 +165,9 @@ class MetricsWebContentsObserver
       mojom::PageLoadMetadataPtr metadata,
       mojom::PageLoadFeaturesPtr new_features,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-      mojom::PageRenderDataPtr render_data,
-      mojom::CpuTimingPtr cpu_timing);
+      mojom::FrameRenderDataUpdatePtr render_data,
+      mojom::CpuTimingPtr cpu_timing,
+      mojom::DeferredResourceCountsPtr new_deferred_resource_data);
 
   // Informs the observers of the currently committed load that the event
   // corresponding to |event_key| has occurred. This should not be called within
@@ -178,12 +179,14 @@ class MetricsWebContentsObserver
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
 
   // page_load_metrics::mojom::PageLoadMetrics implementation.
-  void UpdateTiming(mojom::PageLoadTimingPtr timing,
-                    mojom::PageLoadMetadataPtr metadata,
-                    mojom::PageLoadFeaturesPtr new_features,
-                    std::vector<mojom::ResourceDataUpdatePtr> resources,
-                    mojom::PageRenderDataPtr render_data,
-                    mojom::CpuTimingPtr cpu_timing) override;
+  void UpdateTiming(
+      mojom::PageLoadTimingPtr timing,
+      mojom::PageLoadMetadataPtr metadata,
+      mojom::PageLoadFeaturesPtr new_features,
+      std::vector<mojom::ResourceDataUpdatePtr> resources,
+      mojom::FrameRenderDataUpdatePtr render_data,
+      mojom::CpuTimingPtr cpu_timing,
+      mojom::DeferredResourceCountsPtr new_deferred_resource_data) override;
 
   void HandleFailedNavigationForTrackedLoad(
       content::NavigationHandle* navigation_handle,

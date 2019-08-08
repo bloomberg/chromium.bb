@@ -17,18 +17,6 @@
 class GoogleURLTracker;
 class GURL;
 
-enum class Status {
-  // Received a valid response.
-  OK,
-  // Some transient error occurred, e.g. the network request failed because
-  // there is no network connectivity. A previously cached response may still
-  // be used.
-  TRANSIENT_ERROR,
-  // A fatal error occurred, such as the server responding with an error code
-  // or with invalid data. Any previously cached response should be cleared.
-  FATAL_ERROR
-};
-
 namespace network {
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
@@ -39,6 +27,20 @@ class SharedURLLoaderFactory;
 // called.
 class PromoService : public KeyedService {
  public:
+  enum class Status {
+    // Received a valid response and there is a promo running.
+    OK_WITH_PROMO,
+    // Received a valid response but there is no promo running.
+    OK_WITHOUT_PROMO,
+    // Some transient error occurred, e.g. the network request failed because
+    // there is no network connectivity. A previously cached response may still
+    // be used.
+    TRANSIENT_ERROR,
+    // A fatal error occurred, such as the server responding with an error code
+    // or with invalid data. Any previously cached response should be cleared.
+    FATAL_ERROR
+  };
+
   PromoService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       GoogleURLTracker* google_url_tracker);

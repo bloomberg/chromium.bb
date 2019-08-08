@@ -39,6 +39,7 @@ namespace {
 struct CheckReauthParams {
   base::string16 sid;
   base::string16 token_handle;
+  std::unique_ptr<WinHttpUrlFetcher> fetcher;
 };
 
 // Queries google to see whether the user's token handle is no longer valid or
@@ -48,16 +49,13 @@ unsigned __stdcall CheckReauthStatus(void* param) {
   std::unique_ptr<CheckReauthParams> reauth_info(
       reinterpret_cast<CheckReauthParams*>(param));
 
-  auto fetcher =
-      WinHttpUrlFetcher::Create(GURL(AssociatedUserValidator::kTokenInfoUrl));
-
-  if (fetcher) {
-    fetcher->SetRequestHeader("Content-Type",
-                              "application/x-www-form-urlencoded");
+  if (reauth_info->fetcher) {
+    reauth_info->fetcher->SetRequestHeader("Content-Type",
+                                           "application/x-www-form-urlencoded");
 
     std::string body = base::StringPrintf("token_handle=%ls",
                                           reauth_info->token_handle.c_str());
-    HRESULT hr = fetcher->SetRequestBody(body.c_str());
+    HRESULT hr = reauth_info->fetcher->SetRequestBody(body.c_str());
     if (FAILED(hr)) {
       LOGFN(ERROR) << "fetcher.SetRequestBody sid=" << reauth_info->sid
                    << " hr=" << putHR(hr);
@@ -65,25 +63,23 @@ unsigned __stdcall CheckReauthStatus(void* param) {
     }
 
     std::vector<char> response;
-    hr = fetcher->Fetch(&response);
+    hr = reauth_info->fetcher->Fetch(&response);
     if (FAILED(hr)) {
       LOGFN(INFO) << "fetcher.Fetch sid=" << reauth_info->sid
                   << " hr=" << putHR(hr);
       return 1;
     }
 
-    base::DictionaryValue* dict = nullptr;
     base::StringPiece response_string(response.data(), response.size());
     base::Optional<base::Value> properties(base::JSONReader::Read(
         response_string, base::JSON_ALLOW_TRAILING_COMMAS));
-    if (!properties || !properties->GetAsDictionary(&dict)) {
+    if (!properties || !properties->is_dict()) {
       LOGFN(ERROR) << "base::JSONReader::Read failed forcing reauth";
       return 0;
     }
 
-    int expires_in;
-    if (dict->HasKey("error") || !dict->GetInteger("expires_in", &expires_in) ||
-        expires_in < 0) {
+    base::Optional<int> expires_in = properties->FindIntKey("expires_in");
+    if (properties->FindKey("error") || !expires_in || expires_in.value() < 0) {
       LOGFN(INFO) << "Needs reauth sid=" << reauth_info->sid;
       return 0;
     }
@@ -127,46 +123,17 @@ HRESULT ModifyUserAccess(const std::unique_ptr<ScopedLsaPolicy>& policy,
                          bool allow) {
   OSUserManager* manager = OSUserManager::Get();
   wchar_t username[kWindowsUsernameBufferLength];
+  wchar_t domain[kWindowsDomainBufferLength];
 
-  HRESULT hr = manager->FindUserBySID(sid.c_str(), username,
-                                      base::size(username), nullptr, 0);
+  HRESULT hr = manager->FindUserBySID(
+      sid.c_str(), username, base::size(username), domain, base::size(domain));
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "FindUserBySID sid=" << sid << " hr=" << putHR(hr);
     return hr;
   }
 
-  PSID psid;
-  if (!::ConvertStringSidToSidW(sid.c_str(), &psid)) {
-    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
-    LOGFN(ERROR) << "ConvertStringSidToSidW sid=" << sid << " hr=" << putHR(hr);
-    return hr;
-  }
-
-  bool should_write_user_list_reg_key = true;
-  if (allow) {
-    hr = policy->RemoveAccountRights(psid, SE_DENY_INTERACTIVE_LOGON_NAME);
-    if (FAILED(hr) && hr != HRESULT_FROM_NT(STATUS_OBJECT_NAME_NOT_FOUND))
-      LOGFN(ERROR) << "RemoveAccountRights sid=" << sid << " hr=" << putHR(hr);
-  } else {
-    hr = policy->AddAccountRights(psid, SE_DENY_INTERACTIVE_LOGON_NAME);
-    if (FAILED(hr)) {
-      should_write_user_list_reg_key = false;
-      LOGFN(ERROR) << "AddAccountRights sid=" << sid << " hr=" << putHR(hr);
-    }
-  }
-
-  ::LocalFree(psid);
-
-  if (should_write_user_list_reg_key) {
-    hr = SetUserWinlogonUserListEntry(username, allow);
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "SetUserWinlogonUserListEntry username=" << username
-                   << " hr=" << putHR(hr);
-    }
-  }
-
-  return hr;
+  return manager->ModifyUserAccessWithLogonHours(domain, username, allow);
 }
 
 }  // namespace
@@ -185,6 +152,18 @@ AssociatedUserValidator::TokenHandleInfo::TokenHandleInfo(
     : queried_token_handle(token_handle),
       last_update(update_time),
       pending_query_thread(thread_handle) {}
+
+AssociatedUserValidator::ScopedBlockDenyAccessUpdate::
+    ScopedBlockDenyAccessUpdate(AssociatedUserValidator* validator)
+    : validator_(validator) {
+  DCHECK(validator_);
+  validator_->BlockDenyAccessUpdate();
+}
+
+AssociatedUserValidator::ScopedBlockDenyAccessUpdate::
+    ~ScopedBlockDenyAccessUpdate() {
+  validator_->UnblockDenyAccessUpdate();
+}
 
 // static
 AssociatedUserValidator* AssociatedUserValidator::Get() {
@@ -248,14 +227,12 @@ HRESULT AssociatedUserValidator::UpdateAssociatedSids(
   return S_OK;
 }
 
-std::set<base::string16> AssociatedUserValidator::GetUpdatedAssociatedSids() {
+size_t AssociatedUserValidator::GetAssociatedUsersCount() {
+  base::AutoLock locker(validator_lock_);
+
   UpdateAssociatedSids(nullptr);
 
-  std::set<base::string16> associated_sids;
-  for (const auto& it : user_to_token_handle_info_)
-    associated_sids.insert(it.first);
-
-  return associated_sids;
+  return user_to_token_handle_info_.size();
 }
 
 bool AssociatedUserValidator::IsUserAccessBlockingEnforced(
@@ -272,37 +249,48 @@ bool AssociatedUserValidator::IsUserAccessBlockingEnforced(
   return true;
 }
 
-void AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
+bool AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
     CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
+  base::AutoLock locker(validator_lock_);
+
+  if (block_deny_access_update_)
+    return false;
+
   if (!IsUserAccessBlockingEnforced(cpus))
-    return;
+    return false;
 
   HRESULT hr = UpdateAssociatedSids(nullptr);
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetUserTokenHandles hr=" << putHR(hr);
-    return;
+    LOGFN(ERROR) << "UpdateAssociatedSids hr=" << putHR(hr);
+    return false;
   }
 
   auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
 
+  bool user_denied_signin = false;
   for (const auto& user_info : user_to_token_handle_info_) {
     const base::string16& sid = user_info.first;
     if (locked_user_sids_.find(sid) != locked_user_sids_.end())
       continue;
 
-    if (!IsTokenHandleValidForUser(sid)) {
+    if (!IsTokenHandleValidForUserInternal(sid)) {
       LOGFN(INFO) << "Revoking access for sid=" << sid;
       HRESULT hr = ModifyUserAccess(policy, sid, false);
       if (FAILED(hr)) {
         LOGFN(ERROR) << "ModifyUserAccess sid=" << sid << " hr=" << putHR(hr);
       } else {
         locked_user_sids_.insert(sid);
+        user_denied_signin = true;
       }
     }
   }
+
+  return user_denied_signin;
 }
 
 HRESULT AssociatedUserValidator::RestoreUserAccess(const base::string16& sid) {
+  base::AutoLock locker(validator_lock_);
+
   if (locked_user_sids_.erase(sid)) {
     auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
     return ModifyUserAccess(policy, sid, true);
@@ -311,7 +299,31 @@ HRESULT AssociatedUserValidator::RestoreUserAccess(const base::string16& sid) {
   return S_OK;
 }
 
+void AssociatedUserValidator::AllowSigninForAllAssociatedUsers(
+    CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
+  base::AutoLock locker(validator_lock_);
+
+  if (!MdmEnrollmentEnabled() ||
+      !CGaiaCredentialProvider::IsUsageScenarioSupported(cpus))
+    return;
+
+  std::map<base::string16, base::string16> sids_to_handle;
+  HRESULT hr = UpdateAssociatedSids(&sids_to_handle);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "UpdateAssociatedSids hr=" << putHR(hr);
+    return;
+  }
+
+  auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
+  for (const auto& sid_to_handle : sids_to_handle)
+    ModifyUserAccess(policy, sid_to_handle.first, true);
+
+  locked_user_sids_.clear();
+}
+
 void AssociatedUserValidator::AllowSigninForUsersWithInvalidTokenHandles() {
+  base::AutoLock locker(validator_lock_);
+
   LOGFN(INFO);
   auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
   for (auto& sid : locked_user_sids_) {
@@ -323,6 +335,8 @@ void AssociatedUserValidator::AllowSigninForUsersWithInvalidTokenHandles() {
 }
 
 void AssociatedUserValidator::StartRefreshingTokenHandleValidity() {
+  base::AutoLock locker(validator_lock_);
+
   std::map<base::string16, base::string16> sid_to_handle;
   HRESULT hr = UpdateAssociatedSids(&sid_to_handle);
 
@@ -398,7 +412,9 @@ void AssociatedUserValidator::StartTokenValidityQuery(
   // running and finish its execution without worrying about notifying anything
   // about the result.
   unsigned wait_thread_id;
-  CheckReauthParams* params = new CheckReauthParams{sid, token_handle};
+  CheckReauthParams* params = new CheckReauthParams{
+      sid, token_handle,
+      WinHttpUrlFetcher::Create(GURL(AssociatedUserValidator::kTokenInfoUrl))};
   uintptr_t wait_thread =
       _beginthreadex(nullptr, 0, CheckReauthStatus,
                      reinterpret_cast<void*>(params), 0, &wait_thread_id);
@@ -414,6 +430,12 @@ void AssociatedUserValidator::StartTokenValidityQuery(
 }
 
 bool AssociatedUserValidator::IsTokenHandleValidForUser(
+    const base::string16& sid) {
+  base::AutoLock locker(validator_lock_);
+  return IsTokenHandleValidForUserInternal(sid);
+}
+
+bool AssociatedUserValidator::IsTokenHandleValidForUserInternal(
     const base::string16& sid) {
   // All token handles are valid when no internet connection is available.
   if (!HasInternetConnection())
@@ -478,6 +500,28 @@ bool AssociatedUserValidator::IsTokenHandleValidForUser(
   }
 
   return validity_it->second->is_valid;
+}
+
+void AssociatedUserValidator::BlockDenyAccessUpdate() {
+  base::AutoLock locker(validator_lock_);
+  ++block_deny_access_update_;
+}
+
+void AssociatedUserValidator::UnblockDenyAccessUpdate() {
+  base::AutoLock locker(validator_lock_);
+  DCHECK(block_deny_access_update_ > 0);
+  --block_deny_access_update_;
+}
+
+bool AssociatedUserValidator::IsDenyAccessUpdateBlocked() const {
+  base::AutoLock locker(validator_lock_);
+  return block_deny_access_update_ > 0;
+}
+
+bool AssociatedUserValidator::IsUserAccessBlocked(
+    const base::string16& sid) const {
+  base::AutoLock locker(validator_lock_);
+  return locked_user_sids_.find(sid) != locked_user_sids_.end();
 }
 
 }  // namespace credential_provider

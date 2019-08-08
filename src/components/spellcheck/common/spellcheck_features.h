@@ -10,6 +10,10 @@
 
 namespace spellcheck {
 
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+extern const base::Feature kSpellingServiceRestApi;
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
+
 #if BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_ANDROID)
 extern const base::Feature kAndroidSpellChecker;
 extern const base::Feature kAndroidSpellCheckerNonLowEnd;

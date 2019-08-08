@@ -136,7 +136,7 @@ std::map<int, SkColor> BrowserThemePackTest::GetDefaultColorMap() {
 
   // For the rest, use default colors.
   for (int i = TP::COLOR_FRAME_INCOGNITO_INACTIVE + 1;
-       i <= TP::COLOR_BUTTON_BACKGROUND; ++i) {
+       i <= TP::COLOR_CONTROL_BUTTON_BACKGROUND; ++i) {
     colors[i] = GetDefaultColor(i);
   }
 
@@ -161,7 +161,7 @@ void BrowserThemePackTest::LoadColorJSON(const std::string& json) {
 
 void BrowserThemePackTest::LoadColorDictionary(base::DictionaryValue* value) {
   theme_pack_->SetColorsFromJSON(value);
-  theme_pack_->GenerateFrameColors();
+  theme_pack_->GenerateFrameColorsFromTints();
 }
 
 void BrowserThemePackTest::LoadTintJSON(const std::string& json) {
@@ -338,9 +338,8 @@ void BrowserThemePackTest::VerifyStarGazing(BrowserThemePack* pack) {
       pack->GetImageNamed(IDR_THEME_TAB_BACKGROUND_INCOGNITO_INACTIVE)
           .IsEmpty());
 
-    // Make sure we don't have phantom data.
-    EXPECT_FALSE(pack->GetColor(TP::COLOR_CONTROL_BACKGROUND, &color));
-    EXPECT_FALSE(pack->GetTint(TP::TINT_FRAME, &actual));
+  // Make sure we don't have phantom data.
+  EXPECT_FALSE(pack->GetTint(TP::TINT_FRAME, &actual));
 }
 
 // static
@@ -939,7 +938,7 @@ TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_ButtonBGColor) {
 
   SkColor button_bg_color;
   const bool has_button_bg_color =
-      pack->GetColor(TP::COLOR_BUTTON_BACKGROUND, &button_bg_color);
+      pack->GetColor(TP::COLOR_CONTROL_BUTTON_BACKGROUND, &button_bg_color);
   ASSERT_TRUE(has_button_bg_color);
   SkAlpha button_bg_alpha = SkColorGetA(button_bg_color);
 
@@ -1011,19 +1010,15 @@ TEST_F(BrowserThemePackTest, TestToolbarColorPropagation) {
                           pack.get());
 
   SkColor infobar_color;
-  SkColor bookmark_bar_color;
   SkColor download_shelf_color;
   SkColor status_bubble_color;
 
   EXPECT_TRUE(pack->GetColor(TP::COLOR_INFOBAR, &infobar_color));
-  EXPECT_TRUE(pack->GetColor(TP::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
-                             &bookmark_bar_color));
   EXPECT_TRUE(pack->GetColor(TP::COLOR_DOWNLOAD_SHELF, &download_shelf_color));
   EXPECT_TRUE(pack->GetColor(TP::COLOR_STATUS_BUBBLE, &status_bubble_color));
 
   constexpr SkColor kExpectedColor = SkColorSetRGB(0, 255, 0);
   EXPECT_EQ(infobar_color, kExpectedColor);
-  EXPECT_EQ(infobar_color, bookmark_bar_color);
   EXPECT_EQ(infobar_color, download_shelf_color);
   EXPECT_EQ(infobar_color, status_bubble_color);
 }
@@ -1036,26 +1031,21 @@ TEST_F(BrowserThemePackTest, TestToolbarColorPropagationNoImage) {
   BuildTestExtensionTheme("theme_test_toolbar_color_no_image", pack.get());
 
   SkColor infobar_color;
-  SkColor bookmark_bar_color;
   SkColor download_shelf_color;
   SkColor status_bubble_color;
 
   EXPECT_TRUE(pack->GetColor(TP::COLOR_INFOBAR, &infobar_color));
-  EXPECT_TRUE(pack->GetColor(TP::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
-                             &bookmark_bar_color));
   EXPECT_TRUE(pack->GetColor(TP::COLOR_DOWNLOAD_SHELF, &download_shelf_color));
   EXPECT_TRUE(pack->GetColor(TP::COLOR_STATUS_BUBBLE, &status_bubble_color));
 
   constexpr SkColor kExpectedColor = SkColorSetRGB(0, 255, 0);
   EXPECT_EQ(infobar_color, kExpectedColor);
-  EXPECT_EQ(infobar_color, bookmark_bar_color);
   EXPECT_EQ(infobar_color, download_shelf_color);
   EXPECT_EQ(infobar_color, status_bubble_color);
 }
 
 // Ensure that, given an explicit toolbar color and a toolbar image, the output
-// color in COLOR_TOOLBAR reflects the color of the image (not the explicit
-// color).
+// color in COLOR_TOOLBAR reflects the explicit color.
 TEST_F(BrowserThemePackTest,
        TestToolbarColorComputedFromImageOverridesInputColor) {
   scoped_refptr<BrowserThemePack> pack(
@@ -1067,12 +1057,11 @@ TEST_F(BrowserThemePackTest,
   EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR, &toolbar_color));
 
   constexpr SkColor kExplicitColor = SkColorSetRGB(0, 255, 0);
-  EXPECT_NE(toolbar_color, kExplicitColor);
+  EXPECT_EQ(toolbar_color, kExplicitColor);
 }
 
 // Ensure that, given an explicit frame color and a frame image, the output
-// color in COLOR_FRAME reflects the color of the image (not the explicit
-// color).
+// color in COLOR_FRAME reflects the explicit color.
 TEST_F(BrowserThemePackTest,
        TestFrameColorComputedFromImageOverridesInputColor) {
   scoped_refptr<BrowserThemePack> pack(
@@ -1084,7 +1073,7 @@ TEST_F(BrowserThemePackTest,
   EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
 
   constexpr SkColor kExplicitColor = SkColorSetRGB(255, 0, 255);
-  EXPECT_NE(frame_color, kExplicitColor);
+  EXPECT_EQ(frame_color, kExplicitColor);
 }
 
 // Test theme generation for a given color.
@@ -1096,8 +1085,135 @@ TEST_F(BrowserThemePackTest, TestBuildFromColor) {
 
   SkColor frame_color;
   EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
-  EXPECT_EQ(frame_color, color);
-
   EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR, &frame_color));
   EXPECT_TRUE(pack->GetColor(TP::COLOR_NTP_BACKGROUND, &frame_color));
+}
+
+TEST_F(BrowserThemePackTest, BuildFromColor_BasicTestColors) {
+  constexpr SkColor backgrounds[] = {SK_ColorBLACK,
+                                     SK_ColorWHITE,
+                                     SkColorSetRGB(50, 0, 50),
+                                     SkColorSetRGB(0, 130, 130),
+                                     SkColorSetRGB(0, 180, 180),
+                                     SkColorSetRGB(0, 200, 200),
+                                     SkColorSetRGB(120, 120, 120),
+                                     SkColorSetRGB(125, 125, 125),
+                                     SkColorSetRGB(128, 128, 128),
+                                     SkColorSetRGB(240, 255, 255)};
+  auto has_readable_contrast = [](SkColor foreground_color,
+                                  SkColor background_color) {
+    return color_utils::GetContrastRatio(foreground_color, background_color) >=
+           kPreferredReadableContrastRatio;
+  };
+
+  for (SkColor color : backgrounds) {
+    scoped_refptr<BrowserThemePack> pack(
+        new BrowserThemePack(CustomThemeSupplier::ThemeType::AUTOGENERATED));
+    BrowserThemePack::BuildFromColor(color, pack.get());
+
+    SkColor frame_color, background_tab, background_tab_text;
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_BACKGROUND_TAB, &background_tab));
+    EXPECT_TRUE(
+        pack->GetColor(TP::COLOR_BACKGROUND_TAB_TEXT, &background_tab_text));
+    EXPECT_EQ(frame_color, background_tab);
+    EXPECT_TRUE(has_readable_contrast(background_tab_text, background_tab));
+
+    SkColor toolbar_color, ntp_background, tab_text, bookmark_text,
+        toolbar_button_icon;
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR, &toolbar_color));
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_NTP_BACKGROUND, &ntp_background));
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_TAB_TEXT, &tab_text));
+    EXPECT_TRUE(
+        pack->GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, &toolbar_button_icon));
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_BOOKMARK_TEXT, &bookmark_text));
+
+    EXPECT_EQ(toolbar_color, ntp_background);
+    EXPECT_EQ(tab_text, toolbar_button_icon);
+    EXPECT_EQ(tab_text, bookmark_text);
+    EXPECT_TRUE(has_readable_contrast(tab_text, toolbar_color));
+
+    EXPECT_NE(frame_color, toolbar_color);
+    EXPECT_GE(color_utils::GetContrastRatio(frame_color, toolbar_color),
+              kActiveTabMinContrast);
+  }
+}
+
+TEST_F(BrowserThemePackTest, BuildFromColor_TestAdjustedFrameColor) {
+  // Colors close to midpoint that don't have sufficient contrast with white or
+  // dark grey should be adjusted.
+  constexpr SkColor dark_backgrounds[] = {SkColorSetRGB(0, 130, 130),
+                                          SkColorSetRGB(120, 120, 120)};
+  constexpr SkColor light_backgrounds[] = {SkColorSetRGB(0, 180, 180),
+                                           SkColorSetRGB(128, 128, 128)};
+
+  for (SkColor color : dark_backgrounds) {
+    scoped_refptr<BrowserThemePack> pack(
+        new BrowserThemePack(CustomThemeSupplier::ThemeType::AUTOGENERATED));
+    BrowserThemePack::BuildFromColor(color, pack.get());
+
+    SkColor frame_color;
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
+
+    // Dark backgrounds should get even darker.
+    EXPECT_GT(color_utils::GetRelativeLuminance(color),
+              color_utils::GetRelativeLuminance(frame_color));
+  }
+
+  for (SkColor color : light_backgrounds) {
+    scoped_refptr<BrowserThemePack> pack(
+        new BrowserThemePack(CustomThemeSupplier::ThemeType::AUTOGENERATED));
+    BrowserThemePack::BuildFromColor(color, pack.get());
+
+    SkColor frame_color;
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
+
+    // Light backgrounds should get even lighter.
+    EXPECT_LT(color_utils::GetRelativeLuminance(color),
+              color_utils::GetRelativeLuminance(frame_color));
+  }
+}
+
+TEST_F(BrowserThemePackTest, BuildFromColor_TestPreferredActiveTabContrast) {
+  constexpr SkColor dark_backgrounds[] = {SkColorSetRGB(0, 130, 130),
+                                          SkColorSetRGB(120, 120, 120)};
+  constexpr SkColor light_backgrounds[] = {SK_ColorWHITE,
+                                           SkColorSetRGB(240, 255, 255)};
+
+  for (SkColor color : dark_backgrounds) {
+    scoped_refptr<BrowserThemePack> pack(
+        new BrowserThemePack(CustomThemeSupplier::ThemeType::AUTOGENERATED));
+    BrowserThemePack::BuildFromColor(color, pack.get());
+
+    SkColor frame_color, toolbar_color;
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR, &toolbar_color));
+    EXPECT_GE(color_utils::GetContrastRatio(frame_color, toolbar_color),
+              kActiveTabPreferredContrast);
+  }
+
+  for (SkColor color : light_backgrounds) {
+    scoped_refptr<BrowserThemePack> pack(
+        new BrowserThemePack(CustomThemeSupplier::ThemeType::AUTOGENERATED));
+    BrowserThemePack::BuildFromColor(color, pack.get());
+
+    SkColor frame_color, toolbar_color;
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR, &toolbar_color));
+    EXPECT_GE(color_utils::GetContrastRatio(frame_color, toolbar_color),
+              kActiveTabMinContrast);
+  }
+}
+
+TEST_F(BrowserThemePackTest, TestToolbarButtonColor) {
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_test_toolbar_button_color", pack.get());
+
+  SkColor button_color;
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, &button_color));
+  EXPECT_EQ(button_color, SkColorSetRGB(255, 0, 0));
+
+  color_utils::HSL hsl;
+  EXPECT_TRUE(pack->GetTint(TP::TINT_BUTTONS, &hsl));
 }

@@ -430,22 +430,20 @@ Resources.IndexedDBModel = class extends SDK.SDKModel {
   /**
    * @param {!Resources.IndexedDBModel.DatabaseId} databaseId
    * @param {!Resources.IndexedDBModel.ObjectStore} objectStore
-   * @return {!Promise<?number>}
+   * @return {!Promise<?Resources.IndexedDBModel.ObjectStoreMetadata>}
    */
-  async getKeyGeneratorValue(databaseId, objectStore) {
-    if (!objectStore.autoIncrement)
-      return null;
+  async getMetadata(databaseId, objectStore) {
     const databaseOrigin = databaseId.securityOrigin;
     const databaseName = databaseId.name;
     const objectStoreName = objectStore.name;
-    const response = await this._indexedDBAgent.invoke_getKeyGeneratorCurrentNumber(
-        {securityOrigin: databaseOrigin, databaseName, objectStoreName});
+    const response =
+        await this._indexedDBAgent.invoke_getMetadata({securityOrigin: databaseOrigin, databaseName, objectStoreName});
 
     if (response[Protocol.Error]) {
       console.error('IndexedDBAgent error: ' + response[Protocol.Error]);
       return null;
     }
-    return response.currentNumber;
+    return {entriesCount: response.entriesCount, keyGeneratorValue: response.keyGeneratorValue};
   }
 
   /**
@@ -501,7 +499,7 @@ Resources.IndexedDBModel = class extends SDK.SDKModel {
   }
 };
 
-SDK.SDKModel.register(Resources.IndexedDBModel, SDK.Target.Capability.None, false);
+SDK.SDKModel.register(Resources.IndexedDBModel, SDK.Target.Capability.DOM, false);
 
 Resources.IndexedDBModel.KeyTypes = {
   NumberType: 'number',
@@ -602,6 +600,14 @@ Resources.IndexedDBModel.ObjectStore = class {
         Resources.IndexedDBModel.keyPathStringFromIDBKeyPath(/** @type {string}*/ (this.keyPath)));
   }
 };
+
+/**
+ * @typedef {{
+ *      entriesCount: number,
+ *      keyGeneratorValue: number
+ * }}
+ */
+Resources.IndexedDBModel.ObjectStoreMetadata;
 
 /**
  * @unrestricted

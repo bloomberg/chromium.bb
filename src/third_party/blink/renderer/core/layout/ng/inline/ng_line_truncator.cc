@@ -118,21 +118,28 @@ LayoutUnit NGLineTruncator::TruncateLine(
 void NGLineTruncator::HideChild(NGLineBoxFragmentBuilder::Child* child) {
   DCHECK(child->HasInFlowFragment());
 
+  const NGPhysicalFragment* fragment = nullptr;
+  if (const NGLayoutResult* layout_result = child->layout_result.get()) {
+    // Need to propagate OOF descendants in this inline-block child.
+    if (!layout_result->OutOfFlowPositionedDescendants().IsEmpty()) {
+      return;
+    }
+    fragment = layout_result->PhysicalFragment();
+  } else {
+    fragment = child->fragment.get();
+  }
+  DCHECK(fragment);
+
   // If this child has self painting layer, not producing fragments will not
   // suppress painting because layers are painted separately. Move it out of the
   // clipping area.
-  const NGPhysicalFragment* fragment = child->PhysicalFragment();
-  DCHECK(fragment);
-  if (const NGPhysicalBoxFragment* box_fragment =
-          ToNGPhysicalBoxFragmentOrNull(fragment)) {
-    if (box_fragment->HasSelfPaintingLayer()) {
-      // |avilable_width_| may not be enough when the contaning block has
-      // paddings, because clipping is at the content box but ellipsizing is at
-      // the padding box. Just move to the max because we don't know paddings,
-      // and max should do what we need.
-      child->offset.inline_offset = LayoutUnit::NearlyMax();
-      return;
-    }
+  if (fragment->HasSelfPaintingLayer()) {
+    // |available_width_| may not be enough when the containing block has
+    // paddings, because clipping is at the content box but ellipsizing is at
+    // the padding box. Just move to the max because we don't know paddings,
+    // and max should do what we need.
+    child->offset.inline_offset = LayoutUnit::NearlyMax();
+    return;
   }
 
   // TODO(kojii): Not producing fragments is the most clean and efficient way to
@@ -203,7 +210,7 @@ bool NGLineTruncator::TruncateChild(LayoutUnit space_for_child,
   // Only text fragments can be truncated.
   if (!child->fragment)
     return is_first_child;
-  auto& fragment = ToNGPhysicalTextFragment(*child->fragment);
+  auto& fragment = To<NGPhysicalTextFragment>(*child->fragment);
   // TODO(layout-dev): Add support for OffsetToFit to ShapeResultView to avoid
   // this copy.
   scoped_refptr<blink::ShapeResult> shape_result =

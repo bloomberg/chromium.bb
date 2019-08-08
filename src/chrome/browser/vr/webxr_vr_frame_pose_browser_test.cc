@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
+#include "chrome/browser/vr/test/ui_utils.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 
 #include <memory>
@@ -97,7 +98,7 @@ void MyXRMock::OnFrameSubmitted(
     wait_loop_ = nullptr;
   }
 
-  EXPECT_TRUE(!!last_immersive_frame_data)
+  ASSERT_TRUE(!!last_immersive_frame_data)
       << "Frame submitted without any frame data provided";
 
   // We expect a waitGetPoses, then 2 submits (one for each eye), so after 2
@@ -161,6 +162,8 @@ std::string GetPoseAsString(const Frame& frame) {
 // out. Validates that submitted frames used expected pose.
 void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
                                std::string filename) {
+  // Disable frame-timeout UI to test what WebXR renders.
+  UiUtils::DisableFrameTimeoutForTesting();
   MyXRMock my_mock;
 
   // Load the test page, and enter presentation.
@@ -168,7 +171,7 @@ void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
   t->EnterSessionWithUserGestureOrFail();
 
   // Wait for JavaScript to submit at least one frame.
-  EXPECT_TRUE(
+  ASSERT_TRUE(
       t->PollJavaScriptBoolean("hasPresentedFrame", t->kPollTimeoutShort))
       << "No frame submitted";
 
@@ -199,27 +202,27 @@ void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
     // Validate that each frame is only seen once for each eye.
     DLOG(ERROR) << "Frame id: " << frame_id;
     if (data->eye == device_test::mojom::Eye::LEFT) {
-      EXPECT_TRUE(seen_left.find(frame_id) == seen_left.end())
+      ASSERT_TRUE(seen_left.find(frame_id) == seen_left.end())
           << "Frame for left eye submitted more than once";
       seen_left.insert(frame_id);
     } else {
-      EXPECT_TRUE(seen_right.find(frame_id) == seen_right.end())
+      ASSERT_TRUE(seen_right.find(frame_id) == seen_right.end())
           << "Frame for right eye submitted more than once";
       seen_right.insert(frame_id);
     }
 
     // Validate that frames arrive in order.
-    EXPECT_TRUE(frame_id >= max_frame_id) << "Frame received out of order";
+    ASSERT_TRUE(frame_id >= max_frame_id) << "Frame received out of order";
     max_frame_id = std::max(frame_id, max_frame_id);
 
     // Validate that the JavaScript-side cache of frames contains our submitted
     // frame.
-    EXPECT_TRUE(t->RunJavaScriptAndExtractBoolOrFail(
+    ASSERT_TRUE(t->RunJavaScriptAndExtractBoolOrFail(
         base::StringPrintf("checkFrameOccurred(%d)", frame_id)))
         << "JavaScript-side frame cache does not contain submitted frame";
 
     // Validate that the JavaScript-side cache of frames has the correct pose.
-    EXPECT_TRUE(t->RunJavaScriptAndExtractBoolOrFail(base::StringPrintf(
+    ASSERT_TRUE(t->RunJavaScriptAndExtractBoolOrFail(base::StringPrintf(
         "checkFramePose(%d, %s)", frame_id, GetPoseAsString(frame).c_str())))
         << "JavaScript-side frame cache has incorrect pose";
   }

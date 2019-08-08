@@ -82,8 +82,8 @@ class ChromeDataUseAscriberTest : public testing::Test {
     // TODO(kundaji): Allow request_id to be specified in AllocateForTesting.
     content::ResourceRequestInfo::AllocateForTesting(
         request.get(),
-        is_main_frame ? content::RESOURCE_TYPE_MAIN_FRAME
-                      : content::RESOURCE_TYPE_SCRIPT,
+        is_main_frame ? content::ResourceType::kMainFrame
+                      : content::ResourceType::kScript,
         /*resource_context*/ nullptr, render_process_id,
         /*render_view_id=*/-1, render_frame_id, is_main_frame,
         content::ResourceInterceptPolicy::kAllowNone,

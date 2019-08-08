@@ -44,7 +44,8 @@
           <template is="dom-repeat" items="[[licenses]]" id="repeatTemplate">
             <cr-radio-button class="license-radio-button"
                 disabled="[[or_(item.disabled, disabled)]]"
-                hidden$="[[item.hidden]]" name="[[item.id]]">
+                hidden$="[[item.hidden]]" name="[[item.id]]"
+                id="license-option-[[item.id]]">
               [[formatTitle_(item)]]
             </cr-radio-button>
           </template>
@@ -52,7 +53,7 @@
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal end-justified">
         <oobe-next-button disabled="[[disabled]]" on-tap="buttonClicked_"
-            class="focus-on-show"></oobe-next-button>
+                          id="next" class="focus-on-show"></oobe-next-button>
       </div>
     </oobe-dialog>
   </template>

@@ -91,7 +91,7 @@
   {                                                                  \
     const std::string my_name =                                      \
         CACHE_UMA_BACKEND_IMPL_OBJ->HistogramName(name, experiment); \
-    switch (CACHE_UMA_BACKEND_IMPL_OBJ->cache_type()) {              \
+    switch (CACHE_UMA_BACKEND_IMPL_OBJ->GetCacheType()) {            \
       default:                                                       \
         NOTREACHED();                                                \
         FALLTHROUGH;                                                 \

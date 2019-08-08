@@ -67,6 +67,13 @@ public interface ImeAdapter {
     void setInputMethodManagerWrapper(InputMethodManagerWrapper immw);
 
     /**
+     * Advances the focus to next input field in the current form.
+     *
+     * @param focusType indicates whether to advance forward or backward direction.
+     */
+    void advanceFocusInForm(int focusType);
+
+    /**
      * @return a newly instantiated {@link ResultReceiver} used to scroll to the editable
      *     node at the right timing.
      */

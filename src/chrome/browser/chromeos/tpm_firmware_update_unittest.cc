@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -15,11 +17,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/fake_statistics_provider.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,6 +32,9 @@ TEST(TPMFirmwareUpdateTest, DecodeSettingsProto) {
   enterprise_management::TPMFirmwareUpdateSettingsProto settings;
   settings.set_allow_user_initiated_powerwash(true);
   settings.set_allow_user_initiated_preserve_device_state(true);
+  settings.set_auto_update_mode(
+      enterprise_management::
+          TPMFirmwareUpdateSettingsProto_AutoUpdateMode_USER_ACKNOWLEDGMENT);
   auto dict = DecodeSettingsProto(settings);
   ASSERT_TRUE(dict);
   bool value = false;
@@ -38,9 +43,12 @@ TEST(TPMFirmwareUpdateTest, DecodeSettingsProto) {
   EXPECT_TRUE(
       dict->GetBoolean("allow-user-initiated-preserve-device-state", &value));
   EXPECT_TRUE(value);
+  int update_mode_value = 0;
+  EXPECT_TRUE(dict->GetInteger("auto-update-mode", &update_mode_value));
+  EXPECT_EQ(2, update_mode_value);
 }
 
-class TPMFirmwareUpdateModesTest : public testing::Test {
+class TPMFirmwareUpdateTest : public testing::Test {
  public:
   enum class Availability {
     kPending,
@@ -49,12 +57,10 @@ class TPMFirmwareUpdateModesTest : public testing::Test {
     kAvailable,
   };
 
-  TPMFirmwareUpdateModesTest() = default;
-
-  void SetUp() override {
+  TPMFirmwareUpdateTest() {
     feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
     feature_list_->InitAndEnableFeature(features::kTPMFirmwareUpdate);
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    CHECK(temp_dir_.CreateUniqueTempDir());
     base::FilePath update_location_path =
         temp_dir_.GetPath().AppendASCII("tpm_firmware_update_location");
     path_override_location_ = std::make_unique<base::ScopedPathOverride>(
@@ -68,13 +74,6 @@ class TPMFirmwareUpdateModesTest : public testing::Test {
             srk_vulnerable_roca_path, srk_vulnerable_roca_path.IsAbsolute(),
             false);
     SetUpdateAvailability(Availability::kAvailable);
-    callback_ = base::BindOnce(&TPMFirmwareUpdateModesTest::RecordResponse,
-                               base::Unretained(this));
-  }
-
-  void RecordResponse(const std::set<Mode>& modes) {
-    callback_received_ = true;
-    callback_modes_ = modes;
   }
 
   void SetUpdateAvailability(Availability availability) {
@@ -123,6 +122,19 @@ class TPMFirmwareUpdateModesTest : public testing::Test {
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::system::ScopedFakeStatisticsProvider statistics_provider_;
+};
+
+class TPMFirmwareUpdateModesTest : public TPMFirmwareUpdateTest {
+ public:
+  TPMFirmwareUpdateModesTest() {
+    callback_ = base::BindOnce(&TPMFirmwareUpdateModesTest::RecordResponse,
+                               base::Unretained(this));
+  }
+
+  void RecordResponse(const std::set<Mode>& modes) {
+    callback_received_ = true;
+    callback_modes_ = modes;
+  }
 
   const std::set<Mode> kAllModes{Mode::kPowerwash, Mode::kPreserveDeviceState};
 
@@ -221,8 +233,7 @@ TEST_F(TPMFirmwareUpdateModesTest, Timeout) {
 
 class TPMFirmwareUpdateModesEnterpriseTest : public TPMFirmwareUpdateModesTest {
  public:
-  void SetUp() override {
-    TPMFirmwareUpdateModesTest::SetUp();
+  TPMFirmwareUpdateModesEnterpriseTest() {
     cros_settings_test_helper_.ReplaceDeviceSettingsProviderWithStub();
     cros_settings_test_helper_.InstallAttributes()->SetCloudManaged(
         "example.com", "fake-device-id");
@@ -301,6 +312,46 @@ TEST_F(TPMFirmwareUpdateModesEnterpriseTest, VulnerableSRK) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_EQ(std::set<Mode>({Mode::kCleanup}), callback_modes_);
+}
+
+class TPMFirmwareAutoUpdateTest : public TPMFirmwareUpdateTest {
+ public:
+  TPMFirmwareAutoUpdateTest() {
+    callback_ = base::BindOnce(&TPMFirmwareAutoUpdateTest::RecordResponse,
+                               base::Unretained(this));
+  }
+
+  void RecordResponse(bool update_available) {
+    callback_received_ = true;
+    update_available_ = update_available;
+  }
+
+  bool callback_received_ = false;
+  bool update_available_;
+  base::OnceCallback<void(bool)> callback_;
+};
+
+TEST_F(TPMFirmwareAutoUpdateTest, AutoUpdateAvaiable) {
+  UpdateAvailable(std::move(callback_), base::TimeDelta());
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_TRUE(callback_received_);
+  EXPECT_TRUE(update_available_);
+}
+
+TEST_F(TPMFirmwareAutoUpdateTest, VulnerableSRKNoStatePreservingUpdate) {
+  SetUpdateAvailability(Availability::kUnavailableROCAVulnerable);
+  UpdateAvailable(std::move(callback_), base::TimeDelta());
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_TRUE(callback_received_);
+  EXPECT_FALSE(update_available_);
+}
+
+TEST_F(TPMFirmwareAutoUpdateTest, NoUpdate) {
+  SetUpdateAvailability(Availability::kUnavailable);
+  UpdateAvailable(std::move(callback_), base::TimeDelta());
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_TRUE(callback_received_);
+  EXPECT_FALSE(update_available_);
 }
 
 }  // namespace tpm_firmware_update

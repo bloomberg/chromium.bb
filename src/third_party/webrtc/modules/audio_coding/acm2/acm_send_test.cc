@@ -44,7 +44,7 @@ AcmSendTestOldApi::AcmSendTestOldApi(InputAudioFile* audio_source,
           static_cast<size_t>(source_rate_hz_ * kBlockSizeMs / 1000)),
       codec_registered_(false),
       test_duration_ms_(test_duration_ms),
-      frame_type_(kAudioFrameSpeech),
+      frame_type_(AudioFrameType::kAudioFrameSpeech),
       payload_type_(0),
       timestamp_(0),
       sequence_number_(0) {
@@ -123,7 +123,7 @@ std::unique_ptr<Packet> AcmSendTestOldApi::NextPacket() {
 
 // This method receives the callback from ACM when a new packet is produced.
 int32_t AcmSendTestOldApi::SendData(
-    FrameType frame_type,
+    AudioFrameType frame_type,
     uint8_t payload_type,
     uint32_t timestamp,
     const uint8_t* payload_data,

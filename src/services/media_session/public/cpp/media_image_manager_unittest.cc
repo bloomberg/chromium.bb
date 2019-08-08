@@ -4,7 +4,7 @@
 
 #include "services/media_session/public/cpp/media_image_manager.h"
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"

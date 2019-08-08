@@ -246,7 +246,7 @@ void ThreadManager::ExecuteSetQueueEnabledAction(
   }
 
   size_t voter_index = action.voter_id() % chosen_task_queue->voters.size();
-  chosen_task_queue->voters[voter_index]->SetQueueEnabled(action.enabled());
+  chosen_task_queue->voters[voter_index]->SetVoteToEnable(action.enabled());
 }
 
 void ThreadManager::ExecuteCreateQueueVoterAction(

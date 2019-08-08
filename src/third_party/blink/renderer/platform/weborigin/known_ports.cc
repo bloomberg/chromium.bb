@@ -79,8 +79,7 @@ bool IsPortAllowedForScheme(const KURL& url) {
   if (!effective_port)
     effective_port = DefaultPortForProtocol(protocol);
   StringUTF8Adaptor utf8(protocol);
-  return net::IsPortAllowedForScheme(effective_port,
-                                     std::string(utf8.Data(), utf8.length()));
+  return net::IsPortAllowedForScheme(effective_port, utf8.AsStringPiece());
 }
 
 }  // namespace blink

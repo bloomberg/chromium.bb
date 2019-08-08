@@ -18,7 +18,7 @@ std::string BoundsString(const ViewModel& model) {
   for (int i = 0; i < model.view_size(); ++i) {
     if (i != 0)
       result += " ";
-    result += base::IntToString(model.ideal_bounds(i).x());
+    result += base::NumberToString(model.ideal_bounds(i).x());
   }
   return result;
 }
@@ -29,7 +29,7 @@ std::string ViewIDsString(const ViewModel& model) {
   for (int i = 0; i < model.view_size(); ++i) {
     if (i != 0)
       result += " ";
-    result += base::IntToString(model.view_at(i)->id());
+    result += base::NumberToString(model.view_at(i)->id());
   }
   return result;
 }

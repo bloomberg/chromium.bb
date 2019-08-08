@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -34,8 +34,8 @@ class StaticRangeTest : public testing::Test {
 
 void StaticRangeTest::SetUp() {
   document_ = HTMLDocument::CreateForTest();
-  HTMLHtmlElement* html = HTMLHtmlElement::Create(*document_);
-  html->AppendChild(HTMLBodyElement::Create(*document_));
+  auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document_);
+  html->AppendChild(MakeGarbageCollected<HTMLBodyElement>(*document_));
   document_->AppendChild(html);
 }
 

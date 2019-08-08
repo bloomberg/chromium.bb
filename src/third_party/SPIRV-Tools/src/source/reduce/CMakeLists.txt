@@ -24,13 +24,21 @@ set(SPIRV_TOOLS_REDUCE_SOURCES
         reduction_opportunity_finder.h
         reduction_pass.h
         reduction_util.h
+        remove_block_reduction_opportunity.h
+        remove_block_reduction_opportunity_finder.h
         remove_instruction_reduction_opportunity.h
         remove_function_reduction_opportunity.h
         remove_function_reduction_opportunity_finder.h
         remove_opname_instruction_reduction_opportunity_finder.h
+        remove_selection_reduction_opportunity.h
+        remove_selection_reduction_opportunity_finder.h
         remove_unreferenced_instruction_reduction_opportunity_finder.h
         structured_loop_to_selection_reduction_opportunity.h
         structured_loop_to_selection_reduction_opportunity_finder.h
+        conditional_branch_to_simple_conditional_branch_opportunity_finder.h
+        conditional_branch_to_simple_conditional_branch_reduction_opportunity.h
+        simple_conditional_branch_to_branch_opportunity_finder.h
+        simple_conditional_branch_to_branch_reduction_opportunity.h
 
         change_operand_reduction_opportunity.cpp
         change_operand_to_undef_reduction_opportunity.cpp
@@ -43,14 +51,22 @@ set(SPIRV_TOOLS_REDUCE_SOURCES
         reduction_opportunity.cpp
         reduction_pass.cpp
         reduction_util.cpp
+        remove_block_reduction_opportunity.cpp
+        remove_block_reduction_opportunity_finder.cpp
         remove_function_reduction_opportunity.cpp
         remove_function_reduction_opportunity_finder.cpp
         remove_instruction_reduction_opportunity.cpp
+        remove_selection_reduction_opportunity.cpp
+        remove_selection_reduction_opportunity_finder.cpp
         remove_unreferenced_instruction_reduction_opportunity_finder.cpp
         remove_opname_instruction_reduction_opportunity_finder.cpp
         structured_loop_to_selection_reduction_opportunity.cpp
         structured_loop_to_selection_reduction_opportunity_finder.cpp
-        )
+        conditional_branch_to_simple_conditional_branch_opportunity_finder.cpp
+        conditional_branch_to_simple_conditional_branch_reduction_opportunity.cpp
+        simple_conditional_branch_to_branch_opportunity_finder.cpp
+        simple_conditional_branch_to_branch_reduction_opportunity.cpp
+)
 
 if(MSVC)
   # Enable parallel builds across four cores for this lib

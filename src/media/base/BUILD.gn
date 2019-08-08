@@ -314,6 +314,7 @@ jumbo_source_set("base") {
     "//skia",
     "//third_party/libyuv",
     "//third_party/widevine/cdm:headers",
+    "//ui/base/mpris/buildflags",
     "//ui/display:display",
     "//ui/events:events_base",
     "//url:url",

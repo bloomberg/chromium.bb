@@ -296,6 +296,10 @@ message AutoUpdateSettingsProto {
   // details and examples, see "DeviceUpdateStagingSchedule" in
   // policy_templates.json.
   optional string staging_schedule = 14;
+
+  // This token is forwarded to omaha by update_engine. If it is set, omaha may
+  // serve a quick fix build identified by the token.
+  optional string device_quick_fix_build_token = 15;
 }
 
 message OBSOLETE_StartUpUrlsProto {
@@ -325,7 +329,7 @@ message SystemTimezoneProto {
     IP_ONLY = 2;
     SEND_WIFI_ACCESS_POINTS = 3;
     SEND_ALL_LOCATION_INFO = 4;
-  };
+  }
 
   optional AutomaticTimezoneDetectionType timezone_detection_type = 2;
 }
@@ -407,7 +411,7 @@ message DeviceLocalAccountInfoProto {
     // An account that serves as a container for a single full-screen
     // Android app.
     ACCOUNT_TYPE_KIOSK_ANDROID_APP = 2;
-  };
+  }
 
   // The account type.
   optional AccountType type = 3;
@@ -555,7 +559,7 @@ message AccessibilitySettingsProto {
     SCREEN_MAGNIFIER_TYPE_NONE = 0;
     // Full-screen magnifier enabled.
     SCREEN_MAGNIFIER_TYPE_FULL = 1;
-  };
+  }
 
   // Sets the default type of screen magnifier that is enabled on the login
   // screen. If this policy is set, it controls the type of screen magnifier
@@ -760,7 +764,7 @@ message DisplayRotationDefaultProto {
     ROTATE_90 = 1;
     ROTATE_180 = 2;
     ROTATE_270 = 3;
-  };
+  }
   optional Rotation display_rotation_default = 1;
 }
 
@@ -796,7 +800,7 @@ message LoginAuthenticationBehaviorProto {
   enum LoginBehavior {
     GAIA = 0;
     SAML_INTERSTITIAL = 1;
-  };
+  }
 
   optional LoginBehavior login_authentication_behavior = 1 [default = GAIA];
 }
@@ -819,6 +823,11 @@ message UsbDetachableWhitelistProto {
 message AllowBluetoothProto {
   // Policy which controls whether Bluetooth is available.
   optional bool allow_bluetooth = 1 [default = true];
+}
+
+message DeviceWiFiAllowedProto {
+  // Policy which controls the ability to connect to wireless networks.
+  optional bool device_wifi_allowed = 1 [default = true];
 }
 
 // Settings that control whether a device can download hardware configuration
@@ -846,11 +855,11 @@ message NetworkThrottlingEnabledProto {
   optional int32 download_rate_kbits = 3 [default = 0];
 }
 
-// A list of apps to install from the webstore on the login page. It is a list
-// of strings, each string contains an extension ID and an update URL, delimited
-// by a semicolon.
-message DeviceLoginScreenAppInstallListProto {
-  repeated string device_login_screen_app_install_list = 1;
+// A list of apps or extensions to install from the webstore on the login page.
+// It is a list of strings, each string contains an extension ID and an update
+// URL, delimited by a semicolon.
+message DeviceLoginScreenExtensionsProto {
+  repeated string device_login_screen_extensions = 1;
 }
 
 // A list of allowed locales on the login screen.
@@ -879,7 +888,7 @@ message DeviceEcryptfsMigrationStrategyProto {
     DISALLOW_ARC = 1;
     // The data migration is allowed, opening the possibility to use ARC.
     ALLOW_MIGRATION = 2;
-  };
+  }
 
   optional MigrationStrategy migration_strategy = 1;
 }
@@ -898,7 +907,7 @@ message DeviceSecondFactorAuthenticationProto {
     U2F = 2;
     // U2F plus extensions for individual attestation certificate.
     U2F_EXTENDED = 3;
-  };
+  }
 
   optional U2fMode mode = 1;
 }
@@ -997,6 +1006,23 @@ message TPMFirmwareUpdateSettingsProto {
   // clears the TPM to install the firmware update, but preserves device-wide
   // state (including enrollment). User data will not be preserved in this flow.
   optional bool allow_user_initiated_preserve_device_state = 2;
+
+  enum AutoUpdateMode {
+    // No value set. Default is NEVER.
+    AUTO_UPDATE_MODE_UNSPECIFIED = 0;
+    // Don't auto update TPM firmware.
+    NEVER = 1;
+    // Update firmware at the next reboot after user acknowledges the update.
+    USER_ACKNOWLEDGMENT = 2;
+    // Update firmware at the next reboot.
+    WITHOUT_ACKNOWLEDGMENT = 3;
+    // Update firmware after enrollment.
+    ENROLLMENT = 4;
+  }
+
+  // Controls how automatic firmware updates are enforced for vulnerable
+  // firmware. All flows preserve local device state.
+  optional AutoUpdateMode auto_update_mode = 3 [default = NEVER];
 }
 
 // Settings to control the minimum version that is allowed to sign in / stay
@@ -1021,7 +1047,7 @@ message DeviceLoginScreenAutoSelectCertificateForUrls {
   // CommonName $ISSUER_CN. If $FILTER is the empty dictionary {}, the selection
   // of client certificates is not additionally restricted.
   repeated string login_screen_auto_select_certificate_rules = 1;
-};
+}
 
 // Setting that controls whether unaffiliated users are allowed to use ARC
 // (true by default)
@@ -1078,7 +1104,7 @@ message DeviceLoginScreenSitePerProcessProto {
 
 // Setting to control if running virtual machines on Chrome OS is allowed.
 message VirtualMachinesAllowedProto {
-  optional bool virtual_machines_allowed = 1 [default = true];
+  optional bool virtual_machines_allowed = 1;
 }
 
 // Specifies if and how often Active Directory machine (computer) account
@@ -1153,6 +1179,105 @@ message DeviceWilcoDtcAllowedProto {
   optional bool device_wilco_dtc_allowed = 1;
 }
 
+// Setting that specifies wilco diagnostics and telemetry controller
+// configuration for this device.
+message DeviceWilcoDtcConfigurationProto {
+  optional string device_wilco_dtc_configuration = 1;
+}
+
+// Settings that control power peak shift policy.
+message DevicePowerPeakShiftProto {
+  // Setting that controls whether power peak shift is enabled on this device.
+  // For details see "DevicePowerPeakShiftEnabled" in policy_templates.json.
+  optional bool enabled = 1;
+
+  // Setting that controls power peak shift battery threshold on this device.
+  // For details see "DevicePowerPeakShiftBatteryThreshold" in
+  // policy_templates.json.
+  optional int32 battery_threshold = 2;
+
+  // Setting that controls power peak shift day configs on this device.
+  // This is a JSON string, for details see "DevicePowerPeakShiftDayConfig" in
+  // policy_templates.json.
+  optional string day_configs = 3;
+}
+
+// Settings that control boot on AC policy.
+message DeviceBootOnAcProto {
+  // Setting that controls whether boot on AC is enabled on this device.
+  optional bool enabled = 1;
+}
+
+// Settings that control device's dock MAC address source.
+message DeviceDockMacAddressSourceProto {
+  enum Source {
+    SOURCE_UNSPECIFIED = 0;
+    // Device's designated dock MAC address.
+    DEVICE_DOCK_MAC_ADDRESS = 1;
+    // Device's built-in NIC MAC address.
+    DEVICE_NIC_MAC_ADDRESS = 2;
+    // Dock's built-in NIC MAC address.
+    DOCK_NIC_MAC_ADDRESS = 3;
+  }
+  optional Source source = 1;
+}
+
+// Settings that control advanced battery charge mode policy.
+message DeviceAdvancedBatteryChargeModeProto {
+  // Setting that controls whether advanced battery charge mode is enabled on
+  // this device.
+  // For details see "DeviceAdvancedBatteryChargeModeEnabled" in
+  // policy_templates.json.
+  optional bool enabled = 1;
+
+  // Setting that controls advanced battery charge mode day config on this
+  // device.
+  // This is a JSON string, for details see
+  // "DeviceAdvancedBatteryChargeModeDayConfig" in policy_templates.json.
+  optional string day_configs = 2;
+}
+
+// Settings that control battery charge mode policy.
+message DeviceBatteryChargeModeProto {
+  enum BatteryChargeMode {
+    MODE_UNSPECIFIED = 0;
+    STANDARD = 1;
+    EXPRESS_CHARGE = 2;
+    PRIMARILY_AC_USE = 3;
+    ADAPTIVE = 4;
+    CUSTOM = 5;
+  }
+
+  // Setting that controls battery charge mode on this device.
+  // For details see "DeviceBatteryChargeMode" in policy_templates.json.
+  optional BatteryChargeMode battery_charge_mode = 1;
+
+  // Percent at which charging starts when using CUSTOM.
+  // For details see "DeviceBatteryChargeCustomStartCharging" in
+  // policy_templates.json.
+  optional int32 custom_charge_start = 2;
+
+  // Percent at which charging stops when using CUSTOM.
+  // For details see "DeviceBatteryChargeCustomStopCharging" in
+  // policy_templates.json.
+  optional int32 custom_charge_stop = 3;
+}
+
+// Settings that control USB power share policy.
+message DeviceUsbPowerShareProto {
+  // Setting that controls whether USB power share is enabled on this device.
+  optional bool enabled = 1;
+}
+
+// Settings that control when a device will wake up and check for updates. These
+// checks are recurring. In order to disable a set schedule the policy must be
+// removed.
+message DeviceScheduledUpdateCheckProto {
+  // This is a JSON string, for details see "DeviceScheduledUpdateCheck" in
+  // policy_templates.json.
+  optional string device_scheduled_update_check_settings = 1;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1206,8 +1331,7 @@ message ChromeDeviceSettingsProto {
   optional DeviceQuirksDownloadEnabledProto quirks_download_enabled = 44;
   optional LoginVideoCaptureAllowedUrlsProto login_video_capture_allowed_urls =
       45;
-  optional DeviceLoginScreenAppInstallListProto
-      device_login_screen_app_install_list = 46;
+  optional DeviceLoginScreenExtensionsProto device_login_screen_extensions = 46;
   optional NetworkThrottlingEnabledProto network_throttling = 47;
   optional DeviceWallpaperImageProto device_wallpaper_image = 48;
   optional LoginScreenLocalesProto login_screen_locales = 49;
@@ -1255,4 +1379,14 @@ message ChromeDeviceSettingsProto {
   optional PluginVmLicenseKeyProto plugin_vm_license_key = 78;
   optional DeviceRebootOnUserSignoutProto device_reboot_on_user_signout = 79;
   optional DeviceWilcoDtcAllowedProto device_wilco_dtc_allowed = 80;
+  optional DeviceWilcoDtcConfigurationProto device_wilco_dtc_configuration = 81;
+  optional DeviceWiFiAllowedProto device_wifi_allowed = 82;
+  optional DevicePowerPeakShiftProto device_power_peak_shift = 83;
+  optional DeviceBootOnAcProto device_boot_on_ac = 84;
+  optional DeviceDockMacAddressSourceProto device_dock_mac_address_source = 85;
+  optional DeviceAdvancedBatteryChargeModeProto
+      device_advanced_battery_charge_mode = 86;
+  optional DeviceBatteryChargeModeProto device_battery_charge_mode = 87;
+  optional DeviceUsbPowerShareProto device_usb_power_share = 88;
+  optional DeviceScheduledUpdateCheckProto device_scheduled_update_check = 89;
 }

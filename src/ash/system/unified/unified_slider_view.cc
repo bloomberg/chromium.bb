@@ -5,13 +5,16 @@
 #include "ash/system/unified/unified_slider_view.h"
 
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -50,9 +53,18 @@ UnifiedSliderButton::UnifiedSliderButton(views::ButtonListener* listener,
                                          int accessible_name_id)
     : TopShortcutButton(listener, accessible_name_id) {
   SetVectorIcon(icon);
+  SetBorder(views::CreateEmptyBorder(kUnifiedCircularButtonFocusPadding));
+  auto path = std::make_unique<SkPath>();
+  path->addOval(gfx::RectToSkRect(gfx::Rect(CalculatePreferredSize())));
+  SetProperty(views::kHighlightPathKey, path.release());
 }
 
 UnifiedSliderButton::~UnifiedSliderButton() = default;
+
+gfx::Size UnifiedSliderButton::CalculatePreferredSize() const {
+  return gfx::Size(kTrayItemSize + kUnifiedCircularButtonFocusPadding.width(),
+                   kTrayItemSize + kUnifiedCircularButtonFocusPadding.height());
+}
 
 void UnifiedSliderButton::SetVectorIcon(const gfx::VectorIcon& icon) {
   SetImage(views::Button::STATE_NORMAL,
@@ -78,6 +90,13 @@ void UnifiedSliderButton::PaintButtonContents(gfx::Canvas* canvas) {
   views::ImageButton::PaintButtonContents(canvas);
 }
 
+std::unique_ptr<views::InkDropMask> UnifiedSliderButton::CreateInkDropMask()
+    const {
+  gfx::Rect bounds = GetContentsBounds();
+  return std::make_unique<views::CircleInkDropMask>(
+      size(), bounds.CenterPoint(), bounds.width() / 2);
+}
+
 void UnifiedSliderButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (!enabled())
     return;
@@ -94,8 +113,8 @@ UnifiedSliderView::UnifiedSliderView(UnifiedSliderListener* listener,
     : button_(new UnifiedSliderButton(listener, icon, accessible_name_id)),
       slider_(CreateSlider(listener, readonly)) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, kUnifiedMenuItemPadding,
-      kUnifiedTopShortcutSpacing));
+      views::BoxLayout::kHorizontal, kUnifiedSliderRowPadding,
+      kUnifiedSliderViewSpacing));
 
   AddChildView(button_);
   AddChildView(slider_);

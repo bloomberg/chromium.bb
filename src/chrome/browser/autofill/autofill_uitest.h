@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/test_event_waiter.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/dom/dom_key.h"
@@ -56,7 +57,8 @@ class AutofillManagerTestDelegateImpl
   DISALLOW_COPY_AND_ASSIGN(AutofillManagerTestDelegateImpl);
 };
 
-class AutofillUiTest : public InProcessBrowserTest {
+class AutofillUiTest : public InProcessBrowserTest,
+                       public content::WebContentsObserver {
  protected:
   AutofillUiTest();
   ~AutofillUiTest() override;
@@ -98,6 +100,10 @@ class AutofillUiTest : public InProcessBrowserTest {
   content::RenderWidgetHost::KeyPressEventCallback key_press_event_sink();
 
  private:
+  // WebContentsObserver override:
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override;
+  content::RenderFrameHost* current_main_rfh_ = nullptr;
   AutofillManagerTestDelegateImpl test_delegate_;
 
   // KeyPressEventCallback that serves as a sink to ensure that every key press

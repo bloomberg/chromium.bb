@@ -337,6 +337,23 @@ TEST_F(LayoutTableTest, VisualOverflowCleared) {
   EXPECT_EQ(LayoutRect(0, 0, 50, 50), table->SelfVisualOverflowRect());
 }
 
+TEST_F(LayoutTableTest, HasNonCollapsedBorderDecoration) {
+  SetBodyInnerHTML("<table id='table'></table>");
+  auto* table = GetTableByElementId("table");
+  EXPECT_FALSE(table->HasNonCollapsedBorderDecoration());
+
+  ToElement(table->GetNode())
+      ->setAttribute(html_names::kStyleAttr, "border: 1px solid black");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(table->HasNonCollapsedBorderDecoration());
+
+  ToElement(table->GetNode())
+      ->setAttribute(html_names::kStyleAttr,
+                     "border: 1px solid black; border-collapse: collapse");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_FALSE(table->HasNonCollapsedBorderDecoration());
+}
+
 }  // anonymous namespace
 
 }  // namespace blink

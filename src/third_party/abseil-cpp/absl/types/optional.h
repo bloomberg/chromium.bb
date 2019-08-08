@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,11 +36,12 @@
 #define ABSL_TYPES_OPTIONAL_H_
 
 #include "absl/base/config.h"
+#include "absl/memory/memory.h"
 #include "absl/utility/utility.h"
 
 #ifdef ABSL_HAVE_STD_OPTIONAL
 
-#include <optional>
+#include <optional>  // IWYU pragma: export
 
 namespace absl {
 using std::bad_optional_access;
@@ -60,7 +61,6 @@ using std::nullopt;
 #include <utility>
 
 #include "absl/base/attributes.h"
-#include "absl/memory/memory.h"
 #include "absl/meta/type_traits.h"
 #include "absl/types/bad_optional_access.h"
 
@@ -114,10 +114,6 @@ namespace absl {
 //      need the inline variable support in C++17 for external linkage.
 //    * Throws `absl::bad_optional_access` instead of
 //      `std::bad_optional_access`.
-//    * `optional::swap()` and `absl::swap()` relies on
-//      `std::is_(nothrow_)swappable()`, which has been introduced in C++17.
-//      As a workaround, we assume `is_swappable()` is always `true`
-//      and `is_nothrow_swappable()` is the same as `std::is_trivial()`.
 //    * `make_optional()` cannot be declared `constexpr` due to the absence of
 //      guaranteed copy elision.
 //    * The move constructor's `noexcept` specification is stronger, i.e. if the
@@ -404,23 +400,24 @@ class optional_assign_base<copy_traits::non_movable> {
 };
 
 template <typename T>
-constexpr copy_traits get_ctor_copy_traits() {
-  return std::is_copy_constructible<T>::value
-             ? copy_traits::copyable
-             : std::is_move_constructible<T>::value ? copy_traits::movable
-                                                    : copy_traits::non_movable;
-}
+struct ctor_copy_traits {
+  static constexpr copy_traits traits =
+      std::is_copy_constructible<T>::value
+          ? copy_traits::copyable
+          : std::is_move_constructible<T>::value ? copy_traits::movable
+                                                 : copy_traits::non_movable;
+};
 
 template <typename T>
-constexpr copy_traits get_assign_copy_traits() {
-  return absl::is_copy_assignable<T>::value &&
-                 std::is_copy_constructible<T>::value
-             ? copy_traits::copyable
-             : absl::is_move_assignable<T>::value &&
-                       std::is_move_constructible<T>::value
-                   ? copy_traits::movable
-                   : copy_traits::non_movable;
-}
+struct assign_copy_traits {
+  static constexpr copy_traits traits =
+      absl::is_copy_assignable<T>::value && std::is_copy_constructible<T>::value
+          ? copy_traits::copyable
+          : absl::is_move_assignable<T>::value &&
+                    std::is_move_constructible<T>::value
+                ? copy_traits::movable
+                : copy_traits::non_movable;
+};
 
 // Whether T is constructible or convertible from optional<U>.
 template <typename T, typename U>
@@ -486,9 +483,9 @@ struct optional_hash_base<T, decltype(std::hash<absl::remove_const_t<T> >()(
 template <typename T>
 class optional : private optional_internal::optional_data<T>,
                  private optional_internal::optional_ctor_base<
-                     optional_internal::get_ctor_copy_traits<T>()>,
+                     optional_internal::ctor_copy_traits<T>::traits>,
                  private optional_internal::optional_assign_base<
-                     optional_internal::get_assign_copy_traits<T>()> {
+                     optional_internal::assign_copy_traits<T>::traits> {
   using data_base = optional_internal::optional_data<T>;
 
  public:
@@ -513,10 +510,11 @@ class optional : private optional_internal::optional_data<T>,
   // the arguments `std::forward<Args>(args)...`  within the `optional`.
   // (The `in_place_t` is a tag used to indicate that the contained object
   // should be constructed in-place.)
-  //
-  // TODO(absl-team): Add std::is_constructible<T, Args&&...> SFINAE.
-  template <typename... Args>
-  constexpr explicit optional(in_place_t, Args&&... args)
+  template <typename InPlaceT, typename... Args,
+            absl::enable_if_t<absl::conjunction<
+                std::is_same<InPlaceT, in_place_t>,
+                std::is_constructible<T, Args&&...> >::value>* = nullptr>
+  constexpr explicit optional(InPlaceT, Args&&... args)
       : data_base(in_place_t(), absl::forward<Args>(args)...) {}
 
   // Constructs a non-empty `optional` direct-initialized value of type `T` from
@@ -752,11 +750,10 @@ class optional : private optional_internal::optional_data<T>,
   // Swap, standard semantics
   void swap(optional& rhs) noexcept(
       std::is_nothrow_move_constructible<T>::value&&
-          std::is_trivial<T>::value) {
+          type_traits_internal::IsNothrowSwappable<T>::value) {
     if (*this) {
       if (rhs) {
-        using std::swap;
-        swap(**this, *rhs);
+        type_traits_internal::Swap(**this, *rhs);
       } else {
         rhs.construct(std::move(**this));
         this->destruct();
@@ -908,12 +905,10 @@ class optional : private optional_internal::optional_data<T>,
 //
 // Performs a swap between two `absl::optional` objects, using standard
 // semantics.
-//
-// NOTE: we assume `is_swappable()` is always `true`. A compile error will
-// result if this is not the case.
-template <typename T,
-          typename std::enable_if<std::is_move_constructible<T>::value,
-                                  bool>::type = false>
+template <typename T, typename std::enable_if<
+                          std::is_move_constructible<T>::value &&
+                              type_traits_internal::IsSwappable<T>::value,
+                          bool>::type = false>
 void swap(optional<T>& a, optional<T>& b) noexcept(noexcept(a.swap(b))) {
   a.swap(b);
 }

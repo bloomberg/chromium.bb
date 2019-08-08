@@ -139,6 +139,7 @@ jumbo_source_set("common_sources") {
     "content_switches.h",
     "context_menu_params.cc",
     "context_menu_params.h",
+    "cursor_info.cc",
     "cursor_info.h",
     "drop_data.cc",
     "drop_data.h",
@@ -154,8 +155,6 @@ jumbo_source_set("common_sources") {
     "isolated_world_ids.h",
     "javascript_dialog_type.h",
     "main_function_params.h",
-    "manifest_util.cc",
-    "manifest_util.h",
     "menu_item.cc",
     "menu_item.h",
     "mhtml_generation_params.cc",
@@ -188,7 +187,6 @@ jumbo_source_set("common_sources") {
     "resource_request_body_android.cc",
     "resource_request_body_android.h",
     "resource_type.cc",
-    "resource_type.h",
     "resource_usage_reporter_type_converters.cc",
     "resource_usage_reporter_type_converters.h",
     "result_codes.h",
@@ -234,6 +232,7 @@ jumbo_source_set("common_sources") {
 
   public_deps = [
     ":interfaces",
+    ":resource_type_header",
     ":service_names",
     "//content/common",
     "//ipc",
@@ -311,6 +310,24 @@ jumbo_source_set("common_sources") {
       "pepper_plugin_info.h",
     ]
   }
+}
+
+# This target exists because mojo bindings use this header and depending
+# on the whole of content/common would create a dependency cycle
+# //content/public/common:resource_type_bindings ->
+# //content/public/common:common ->
+# //content:content
+# //content/public/app:both_sources ->
+# //content/public/common:common_sources ->
+# //content/public/common:interfaces ->
+# //content/public/common:resource_type_bindings ->
+source_set("resource_type_header") {
+  sources = [
+    "resource_type.h",
+  ]
+  public_deps = [
+    "//content:export",
+  ]
 }
 
 buildflag_header("buildflags") {

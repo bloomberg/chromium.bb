@@ -282,7 +282,7 @@ void MenuScrollViewContainer::OnBoundsChanged(
   gfx::Size content_pref = scroll_view_->GetContents()->GetPreferredSize();
   scroll_up_button_->SetVisible(content_pref.height() > height());
   scroll_down_button_->SetVisible(content_pref.height() > height());
-  Layout();
+  InvalidateLayout();
 }
 
 void MenuScrollViewContainer::CreateBorder() {
@@ -357,17 +357,9 @@ void MenuScrollViewContainer::CreateBubbleBorder() {
 BubbleBorder::Arrow MenuScrollViewContainer::BubbleBorderTypeFromAnchor(
     MenuAnchorPosition anchor) {
   switch (anchor) {
-    case MENU_ANCHOR_BUBBLE_LEFT:
-      return BubbleBorder::RIGHT_CENTER;
-    case MENU_ANCHOR_BUBBLE_RIGHT:
-      return BubbleBorder::LEFT_CENTER;
-    case MENU_ANCHOR_BUBBLE_ABOVE:
-      return BubbleBorder::BOTTOM_CENTER;
-    case MENU_ANCHOR_BUBBLE_BELOW:
-      return BubbleBorder::TOP_CENTER;
-    case MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE:
-    case MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT:
-    case MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT:
+    case MenuAnchorPosition::kBubbleAbove:
+    case MenuAnchorPosition::kBubbleLeft:
+    case MenuAnchorPosition::kBubbleRight:
       return BubbleBorder::FLOAT;
     default:
       return BubbleBorder::NONE;

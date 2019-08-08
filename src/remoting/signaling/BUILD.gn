@@ -8,20 +8,29 @@ static_library("signaling") {
   sources = [
     "delegating_signal_strategy.cc",
     "delegating_signal_strategy.h",
-    "ftl_client.cc",
-    "ftl_client.h",
-    "grpc_async_call_data.cc",
-    "grpc_async_call_data.h",
-    "grpc_async_dispatcher.cc",
-    "grpc_async_dispatcher.h",
+    "ftl_device_id_provider.h",
+    "ftl_grpc_context.cc",
+    "ftl_grpc_context.h",
+    "ftl_host_device_id_provider.cc",
+    "ftl_host_device_id_provider.h",
+    "ftl_message_reception_channel.cc",
+    "ftl_message_reception_channel.h",
+    "ftl_messaging_client.cc",
+    "ftl_messaging_client.h",
+    "ftl_registration_manager.cc",
+    "ftl_registration_manager.h",
+    "ftl_signal_strategy.cc",
+    "ftl_signal_strategy.h",
     "iq_sender.cc",
     "iq_sender.h",
     "jid_util.cc",
     "jid_util.h",
     "log_to_server.cc",
     "log_to_server.h",
+    "message_reception_channel.h",
     "push_notification_subscriber.cc",
     "push_notification_subscriber.h",
+    "registration_manager.h",
     "server_log_entry.cc",
     "server_log_entry.h",
     "signal_strategy.h",
@@ -55,23 +64,31 @@ static_library("signaling") {
     "//jingle:jingle_glue",
     "//net",
     "//remoting/base",
+    "//remoting/base/grpc_support",
     "//third_party/grpc:grpcpp",
   ]
 
   if (is_nacl) {
     sources -= [
-      "ftl_client.cc",
-      "ftl_client.h",
-      "grpc_async_call_data.cc",
-      "grpc_async_call_data.h",
-      "grpc_async_dispatcher.cc",
-      "grpc_async_dispatcher.h",
+      "ftl_grpc_context.cc",
+      "ftl_grpc_context.h",
+      "ftl_host_device_id_provider.cc",
+      "ftl_host_device_id_provider.h",
+      "ftl_message_reception_channel.cc",
+      "ftl_message_reception_channel.h",
+      "ftl_messaging_client.cc",
+      "ftl_messaging_client.h",
+      "ftl_registration_manager.cc",
+      "ftl_registration_manager.h",
+      "ftl_signal_strategy.cc",
+      "ftl_signal_strategy.h",
       "log_to_server.cc",
       "server_log_entry.cc",
       "xmpp_signal_strategy.cc",
     ]
     deps -= [
       "//google_apis",
+      "//remoting/base/grpc_support",
       "//third_party/grpc:grpcpp",
     ]
     public_deps -= [ ":ftl_grpc_library" ]
@@ -80,6 +97,7 @@ static_library("signaling") {
 
 cc_grpc_library("ftl_grpc_library") {
   sources = [
+    "chromoting_message.proto",
     "ftl.proto",
     "ftl_services.proto",
   ]
@@ -105,7 +123,8 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "grpc_async_dispatcher_unittest.cc",
+    "ftl_message_reception_channel_unittest.cc",
+    "ftl_messaging_client_unittest.cc",
     "iq_sender_unittest.cc",
     "jid_util_unittest.cc",
     "log_to_server_unittest.cc",
@@ -120,15 +139,9 @@ source_set("unit_tests") {
 
   deps = [
     ":test_support",
-    ":unit_tests_grpc_library",
     "//net:test_support",
+    "//remoting/base/grpc_support:unit_tests",
     "//testing/gmock",
     "//testing/gtest",
-  ]
-}
-
-cc_grpc_library("unit_tests_grpc_library") {
-  sources = [
-    "grpc_async_dispatcher_test_services.proto",
   ]
 }

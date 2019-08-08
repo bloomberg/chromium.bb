@@ -15,12 +15,12 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class TabBuilder {
     private int mId = Tab.INVALID_TAB_ID;
-    private int mParentId = Tab.INVALID_TAB_ID;
+    private Tab mParent;
     private boolean mIncognito;
     private WindowAndroid mWindow;
     private Integer mLaunchType;
     private Integer mCreationType;
-    private TabState mFrozenState;
+    private boolean mFromFrozenState;
     private LoadUrlParams mLoadUrlParams;
 
     /**
@@ -34,12 +34,12 @@ public class TabBuilder {
     }
 
     /**
-     * Sets the id of the tab from which the new one is opened.
-     * @param parentId The id of the parent Tab.
+     * Sets the tab from which the new one is opened.
+     * @param parent The parent Tab.
      * @return {@link TabBuilder} creating the Tab.
      */
-    public TabBuilder setParentId(int parentId) {
-        mParentId = parentId;
+    public TabBuilder setParent(Tab parent) {
+        mParent = parent;
         return this;
     }
 
@@ -76,18 +76,18 @@ public class TabBuilder {
     public Tab build() {
         // Pre-condition check
         if (mCreationType != null) {
-            if (mFrozenState == null) {
+            if (!mFromFrozenState) {
                 assert mCreationType != TabCreationState.FROZEN_ON_RESTORE;
             } else {
                 assert mLaunchType == TabLaunchType.FROM_RESTORE
                         && mCreationType == TabCreationState.FROZEN_ON_RESTORE;
             }
         } else {
-            if (mFrozenState != null) assert mLaunchType == TabLaunchType.FROM_RESTORE;
+            if (mFromFrozenState) assert mLaunchType == TabLaunchType.FROM_RESTORE;
         }
 
-        return new Tab(mId, mParentId, mIncognito, mWindow, mLaunchType, mCreationType,
-                mFrozenState, mLoadUrlParams);
+        return new Tab(
+                mId, mParent, mIncognito, mWindow, mLaunchType, mCreationType, mLoadUrlParams);
     }
 
     private TabBuilder setCreationType(@TabCreationState int type) {
@@ -95,8 +95,8 @@ public class TabBuilder {
         return this;
     }
 
-    private TabBuilder setFrozenState(TabState frozenState) {
-        mFrozenState = frozenState;
+    private TabBuilder setFromFrozenState(boolean frozenState) {
+        mFromFrozenState = frozenState;
         return this;
     }
 
@@ -109,14 +109,12 @@ public class TabBuilder {
      * Creates a TabBuilder for a new, "frozen" tab from a saved state. This can be used for
      * background tabs restored on cold start that should be loaded when switched to. initialize()
      * needs to be called afterwards to complete the second level initialization.
-     * @param state Frozen state from which the tab will be created.
      */
-    public static TabBuilder createFromFrozenState(TabState state) {
-        assert state != null;
+    public static TabBuilder createFromFrozenState() {
         return new TabBuilder()
                 .setLaunchType(TabLaunchType.FROM_RESTORE)
                 .setCreationType(TabCreationState.FROZEN_ON_RESTORE)
-                .setFrozenState(state);
+                .setFromFrozenState(true);
     }
 
     /**

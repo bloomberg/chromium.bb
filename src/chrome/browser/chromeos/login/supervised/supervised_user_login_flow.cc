@@ -66,10 +66,6 @@ bool SupervisedUserLoginFlow::HandleLoginFailure(const AuthFailure& failure) {
   return false;
 }
 
-bool SupervisedUserLoginFlow::HandlePasswordChangeDetected() {
-  return false;
-}
-
 void SupervisedUserLoginFlow::OnSyncSetupDataLoaded(const std::string& token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ConfigureSync(token);

@@ -67,7 +67,8 @@ class TextFieldInputType : public InputType,
                 TextFieldEventBehavior,
                 TextControlSetValueSelection) override;
   void UpdateView() override;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) const override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&,
+                                   LegacyLayout) const override;
 
   virtual bool NeedsContainer() const { return false; }
   virtual String ConvertFromVisibleValue(const String&) const;

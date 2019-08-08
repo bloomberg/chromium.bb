@@ -35,7 +35,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/transform.h"
-#include "ui/views/accessibility/ax_aura_obj_cache.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_mask.h"
@@ -126,7 +126,7 @@ class TrayBackground : public views::Background {
     cc::PaintFlags background_flags;
     background_flags.setAntiAlias(true);
     int border_radius = kTrayRoundedBorderRadius;
-    background_flags.setColor(kShelfControlPermanentHighlightBackground);
+    background_flags.setColor(tray_background_view_->GetBackgroundColor());
     border_radius = ShelfConstants::control_border_radius();
 
     gfx::Rect bounds = tray_background_view_->GetBackgroundBounds();
@@ -163,7 +163,7 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBackground(std::unique_ptr<views::Background>(background_));
   SetInstallFocusRingOnFocus(true);
-  focus_ring()->SetColor(kFocusBorderColor);
+  focus_ring()->SetColor(kShelfFocusBorderColor);
   SetFocusPainter(nullptr);
 
   AddChildView(tray_container_);
@@ -308,16 +308,12 @@ void TrayBackgroundView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(GetAccessibleNameForTray());
 
   if (LockScreen::HasInstance()) {
-    int next_id = views::AXAuraObjCache::GetInstance()->GetID(
-        LockScreen::Get()->widget());
-    node_data->AddIntAttribute(ax::mojom::IntAttribute::kNextFocusId, next_id);
+    GetViewAccessibility().OverrideNextFocus(LockScreen::Get()->widget());
   }
 
   Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
   ShelfWidget* shelf_widget = shelf->shelf_widget();
-  int previous_id = views::AXAuraObjCache::GetInstance()->GetID(shelf_widget);
-  node_data->AddIntAttribute(ax::mojom::IntAttribute::kPreviousFocusId,
-                             previous_id);
+  GetViewAccessibility().OverridePreviousFocus(shelf_widget);
 }
 
 void TrayBackgroundView::ChildPreferredSizeChanged(views::View* child) {
@@ -419,14 +415,6 @@ void TrayBackgroundView::HideTransformation() {
   layer()->SetTransform(transform);
 }
 
-TrayBubbleView::AnchorAlignment TrayBackgroundView::GetAnchorAlignment() const {
-  if (shelf_->alignment() == SHELF_ALIGNMENT_LEFT)
-    return TrayBubbleView::ANCHOR_ALIGNMENT_LEFT;
-  if (shelf_->alignment() == SHELF_ALIGNMENT_RIGHT)
-    return TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT;
-  return TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
-}
-
 void TrayBackgroundView::SetIsActive(bool is_active) {
   if (is_active_ == is_active)
     return;
@@ -447,7 +435,8 @@ views::View* TrayBackgroundView::GetBubbleAnchor() const {
 gfx::Insets TrayBackgroundView::GetBubbleAnchorInsets() const {
   gfx::Insets anchor_insets = GetBubbleAnchor()->GetInsets();
   gfx::Insets tray_bg_insets = GetInsets();
-  if (GetAnchorAlignment() == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
+  if (shelf_->alignment() == SHELF_ALIGNMENT_BOTTOM ||
+      shelf_->alignment() == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
     return gfx::Insets(-tray_bg_insets.top(), anchor_insets.left(),
                        -tray_bg_insets.bottom(), anchor_insets.right());
   } else {
@@ -466,6 +455,12 @@ gfx::Rect TrayBackgroundView::GetBackgroundBounds() const {
   gfx::Rect bounds = GetLocalBounds();
   bounds.Inset(GetBackgroundInsets());
   return bounds;
+}
+
+SkColor TrayBackgroundView::GetBackgroundColor() const {
+  return shelf_->shelf_layout_manager()->IsShowingStatusAreaWithoutShelf()
+             ? kStandaloneStatusAreaBackground
+             : kShelfControlPermanentHighlightBackground;
 }
 
 void TrayBackgroundView::OnBoundsChanged(const gfx::Rect& previous_bounds) {

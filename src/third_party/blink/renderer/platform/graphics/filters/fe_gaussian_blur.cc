@@ -59,10 +59,6 @@ IntSize CalculateKernelSize(const FloatSize& std) {
 FEGaussianBlur::FEGaussianBlur(Filter* filter, float x, float y)
     : FilterEffect(filter), std_x_(x), std_y_(y) {}
 
-FEGaussianBlur* FEGaussianBlur::Create(Filter* filter, float x, float y) {
-  return MakeGarbageCollected<FEGaussianBlur>(filter, x, y);
-}
-
 FloatRect FEGaussianBlur::MapEffect(const FloatSize& std_deviation,
                                     const FloatRect& rect) {
   IntSize kernel_size = CalculateKernelSize(std_deviation);

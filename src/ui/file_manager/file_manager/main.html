@@ -6,7 +6,7 @@
   -->
 <html dir="$i18n{textdirection}" lang="$i18n{language}">
   <head>
-    <title></title>
+    <title>$i18n{FILEMANAGER_APP_NAME}</title>
 
     <meta name="google" value="notranslate">
     <script src="chrome://resources/polymer/v1_0/html-imports/html-imports.min.js"></script>
@@ -30,7 +30,7 @@
     <script src="foreground/js/main_scripts.js" defer></script>
   </head>
 
-  <body tabindex="-1">
+  <body aria-label="$i18n{FILEMANAGER_APP_NAME}" tabindex="-1">
     <custom-style>
       <style is="custom-style">
         #search-box cr-input {
@@ -173,6 +173,9 @@
       <command id="share-with-linux" label="$i18n{SHARE_WITH_LINUX_BUTTON_LABEL}" disabled hidden>
       <command id="manage-linux-sharing" label="$i18n{MANAGE_LINUX_SHARING_BUTTON_LABEL}" disabled hidden>
       <command id="manage-linux-sharing-gear" label="$i18n{MANAGE_LINUX_SHARING_BUTTON_LABEL}" disabled hidden>
+      <command id="share-with-plugin-vm" label="$i18n{SHARE_WITH_PLUGIN_VM_BUTTON_LABEL}" disabled hidden>
+      <command id="manage-plugin-vm-sharing" label="$i18n{MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL}" disabled hidden>
+      <command id="manage-plugin-vm-sharing-gear" label="$i18n{MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL}" disabled hidden>
 
       <command id="zoom-in" shortcut="=|Ctrl">
       <command id="zoom-out" shortcut="-|Ctrl">
@@ -197,7 +200,8 @@
     </commands>
 
     <cr-menu id="file-context-menu" class="chrome-menu files-menu"
-             menu-item-selector="cr-menu-item,hr" showShortcuts>
+             menu-item-selector="cr-menu-item,hr" showShortcuts
+             aria-label="$i18n{CONTEXT_MENU_LABEL}">
       <cr-menu-item id="default-task-menu-item" command="#default-task"
                 visibleif="full-page" class="hide-on-toolbar" hidden></cr-menu-item>
       <cr-menu-item command="#open-with"
@@ -218,6 +222,8 @@
       <cr-menu-item command="#zip-selection"></cr-menu-item>
       <cr-menu-item command="#share-with-linux"></cr-menu-item>
       <cr-menu-item command="#manage-linux-sharing"></cr-menu-item>
+      <cr-menu-item command="#share-with-plugin-vm"></cr-menu-item>
+      <cr-menu-item command="#manage-plugin-vm-sharing"></cr-menu-item>
       <cr-menu-item command="#set-wallpaper"></cr-menu-item>
       <hr visibleif="saveas-file full-page" class="hide-on-toolbar">
       <cr-menu-item command="#new-folder" visibleif="saveas-file full-page"
@@ -225,7 +231,8 @@
     </cr-menu>
 
     <cr-menu id="roots-context-menu" class="chrome-menu files-menu"
-             menu-item-selector="cr-menu-item">
+             menu-item-selector="cr-menu-item"
+             aria-label="$i18n{CONTEXT_MENU_LABEL}">
       <cr-menu-item command="#configure"></cr-menu-item>
       <cr-menu-item command="#unmount"></cr-menu-item>
       <cr-menu-item command="#format"></cr-menu-item>
@@ -233,15 +240,20 @@
       <cr-menu-item command="#remove-folder-shortcut"></cr-menu-item>
       <cr-menu-item command="#share-with-linux"></cr-menu-item>
       <cr-menu-item command="#manage-linux-sharing"></cr-menu-item>
+      <cr-menu-item command="#share-with-plugin-vm"></cr-menu-item>
+      <cr-menu-item command="#manage-plugin-vm-sharing"></cr-menu-item>
     </cr-menu>
 
     <cr-menu id="directory-tree-context-menu" class="chrome-menu files-menu"
-             menu-item-selector="cr-menu-item,hr">
+             menu-item-selector="cr-menu-item,hr"
+             aria-label="$i18n{CONTEXT_MENU_LABEL}">
       <cr-menu-item command="#cut" visibleif="full-page"></cr-menu-item>
       <cr-menu-item command="#copy" visibleif="full-page"></cr-menu-item>
       <cr-menu-item command="#paste-into-folder" visibleif="full-page"></cr-menu-item>
       <cr-menu-item command="#share-with-linux"></cr-menu-item>
       <cr-menu-item command="#manage-linux-sharing"></cr-menu-item>
+      <cr-menu-item command="#share-with-plugin-vm"></cr-menu-item>
+      <cr-menu-item command="#manage-plugin-vm-sharing"></cr-menu-item>
       <hr visibleif="full-page">
       <cr-menu-item command="#format"></cr-menu-item>
       <cr-menu-item command="#rename"></cr-menu-item>
@@ -252,6 +264,7 @@
     </cr-menu>
 
     <cr-menu id="sort-menu" class="chrome-menu files-menu"
+             aria-label="$i18n{SORT_BUTTON_TOOLTIP}"
              menu-item-selector="cr-menu-item">
       <cr-menu-item id="sort-menu-sort-by-name"
                     command="#sort-by-name"></cr-menu-item>
@@ -264,6 +277,7 @@
     </cr-menu>
 
     <cr-menu id="gear-menu" class="chrome-menu files-menu" showShortcuts
+             aria-label="$i18n{GEAR_BUTTON_TOOLTIP}"
              menu-item-selector="cr-menu-item, hr">
       <cr-menu-item command="#paste-into-current-folder" visibleif="full-page"></cr-menu-item>
       <hr visibleif="full-page">
@@ -279,6 +293,8 @@
                     command="#toggle-hidden-android-folders"></cr-menu-item>
       <cr-menu-item id="gear-menu-manage-linux-sharing"
                     command="#manage-linux-sharing-gear"></cr-menu-item>
+      <cr-menu-item id="gear-menu-manage-plugin-vm-sharing"
+                    command="#manage-plugin-vm-sharing-gear"></cr-menu-item>
       <cr-menu-item id="gear-menu-drive-sync-settings"
                     command="#drive-sync-settings"></cr-menu-item>
       <hr id="help-separator">
@@ -304,14 +320,18 @@
     </cr-menu>
 
     <cr-menu id="tasks-menu" class="chrome-menu files-menu"
+             aria-label="$i18n{OPEN_WITH_BUTTON_LABEL}"
              menu-item-selector="cr-menu-item, hr">
     </cr-menu>
 
     <cr-menu id="share-menu" class="chrome-menu files-menu"
+             aria-label="$i18n{MORE_ACTIONS_BUTTON_LABEL}"
              menu-item-selector="cr-menu-item, hr">
       <cr-menu-item command="#share"></cr-menu-item>
       <cr-menu-item command="#share-with-linux"></cr-menu-item>
       <cr-menu-item command="#manage-linux-sharing"></cr-menu-item>
+      <cr-menu-item command="#share-with-plugin-vm"></cr-menu-item>
+      <cr-menu-item command="#manage-plugin-vm-sharing"></cr-menu-item>
       <hr id="drive-share-separator">
       <hr id="more-actions-separator">
       <cr-menu-item command="#show-submenu"
@@ -325,7 +345,8 @@
     </cr-menu>
 
     <cr-menu id="text-context-menu" class="chrome-menu files-menu" showShortcuts
-             menu-item-selector="cr-menu-item">
+             menu-item-selector="cr-menu-item"
+             aria-label="$i18n{CONTEXT_MENU_LABEL}">
       <cr-menu-item command="#cut"></cr-menu-item>
       <cr-menu-item command="#copy"></cr-menu-item>
       <cr-menu-item command="#paste"></cr-menu-item>
@@ -336,7 +357,7 @@
              menu-item-selector="cr-menu-item">
     </cr-menu>
 
-    <div class="dialog-header">
+    <div class="dialog-header" role="contentinfo">
       <div id="location-breadcrumbs" class="breadcrumbs"></div>
       <div id="cancel-selection-button-wrapper">
         <paper-button id="cancel-selection-button" class="menu-button" tabindex="8"
@@ -502,7 +523,7 @@
                 <div class="drive-text" id="drive-auth-failed-warning-text"></div>
               </div>
               <div class="downloads-warning" hidden></div>
-              <div id="list-container">
+              <div id="list-container" role="main">
                 <div id="more-actions-info" hidden>$i18n{SEE_MENU_FOR_ACTIONS}</div>
                 <div id="empty-folder" hidden>
                   <div class="image"></div>
@@ -510,7 +531,7 @@
                 </div>
                 <div class="detail-table" id="detail-table" tabindex="1" autofocus>
                 </div>
-                <grid class="thumbnail-grid" tabindex="2"></grid>
+                <grid class="thumbnail-grid" tabindex="2" hidden></grid>
                 <paper-progress class="loading-indicator" indeterminate hidden></paper-progress>
                 <div class="drive-welcome page"></div>
               </div>

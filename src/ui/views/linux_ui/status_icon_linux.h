@@ -53,7 +53,7 @@ class VIEWS_EXPORT StatusIconLinux {
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
  private:
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 };
 
 }  // namespace views

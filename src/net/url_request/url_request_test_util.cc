@@ -103,8 +103,7 @@ void TestURLRequestContext::Init() {
   // In-memory cookie store.
   if (!cookie_store()) {
     context_storage_.set_cookie_store(std::make_unique<CookieMonster>(
-        nullptr /* store */, nullptr /* channel_id_service */,
-        nullptr /* netlog */));
+        nullptr /* store */, nullptr /* netlog */));
   }
 
   // In-memory Channel ID service.  Must be created before the
@@ -112,6 +111,11 @@ void TestURLRequestContext::Init() {
   if (!channel_id_service()) {
     context_storage_.set_channel_id_service(
         std::make_unique<ChannelIDService>(new DefaultChannelIDStore(nullptr)));
+  }
+  if (!http_user_agent_settings() && create_default_http_user_agent_settings_) {
+    context_storage_.set_http_user_agent_settings(
+        std::make_unique<StaticHttpUserAgentSettings>("en-us,fr",
+                                                      std::string()));
   }
   if (http_transaction_factory()) {
     // Make sure we haven't been passed an object we're not going to use.
@@ -132,11 +136,11 @@ void TestURLRequestContext::Init() {
     session_context.transport_security_state = transport_security_state();
     session_context.proxy_resolution_service = proxy_resolution_service();
     session_context.proxy_delegate = proxy_delegate();
+    session_context.http_user_agent_settings = http_user_agent_settings();
     session_context.ssl_config_service = ssl_config_service();
     session_context.http_auth_handler_factory = http_auth_handler_factory();
     session_context.http_server_properties = http_server_properties();
     session_context.net_log = net_log();
-    session_context.channel_id_service = channel_id_service();
 #if BUILDFLAG(ENABLE_REPORTING)
     session_context.network_error_logging_service =
         network_error_logging_service();
@@ -146,11 +150,6 @@ void TestURLRequestContext::Init() {
     context_storage_.set_http_transaction_factory(std::make_unique<HttpCache>(
         context_storage_.http_network_session(),
         HttpCache::DefaultBackend::InMemory(0), true /* is_main_cache */));
-  }
-  if (!http_user_agent_settings() && create_default_http_user_agent_settings_) {
-    context_storage_.set_http_user_agent_settings(
-        std::make_unique<StaticHttpUserAgentSettings>("en-us,fr",
-                                                      std::string()));
   }
   if (!job_factory()) {
     context_storage_.set_job_factory(
@@ -249,7 +248,7 @@ void TestDelegate::OnReceivedRedirect(URLRequest* request,
 }
 
 void TestDelegate::OnAuthRequired(URLRequest* request,
-                                  AuthChallengeInfo* auth_info) {
+                                  const AuthChallengeInfo& auth_info) {
   auth_required_ = true;
   if (on_auth_required_) {
     std::move(on_auth_required_).Run();

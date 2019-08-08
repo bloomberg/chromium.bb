@@ -56,13 +56,6 @@ class MacPortTest(port_testcase.PortTestCase):
 
     def test_path_to_apache_config_file(self):
         port = self.make_port()
-        port._apache_version = lambda: '2.2'  # pylint: disable=protected-access
-        self.assertEqual(
-            port.path_to_apache_config_file(),
-            '/mock-checkout/third_party/blink/tools/apache_config/apache2-httpd-2.2.conf')
-
-    def test_path_to_apache_config_file_on_10_13(self):
-        port = self.make_port(os_version='mac10.13', port_name='mac')
         port._apache_version = lambda: '2.4'  # pylint: disable=protected-access
         self.assertEqual(
             port.path_to_apache_config_file(),

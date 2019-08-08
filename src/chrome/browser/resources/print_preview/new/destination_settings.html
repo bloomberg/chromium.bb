@@ -3,8 +3,11 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/event_tracker.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="../cloud_print_interface.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/destination_store.html">
 <link rel="import" href="../data/invitation_store.html">
@@ -13,6 +16,7 @@
 <link rel="import" href="destination_select.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="throbber_css.html">
+<link rel="import" href="settings_behavior.html">
 <link rel="import" href="settings_section.html">
 <link rel="import" href="state.html">
 <link rel="import" href="strings.html">
@@ -20,6 +24,12 @@
 <dom-module id="print-preview-destination-settings">
   <template>
     <style include="print-preview-shared throbber cr-hidden-style">
+<if expr="chromeos">
+      :host([has-pin-setting_]) {
+        margin-bottom: 0 !important;
+      }
+</if>
+
       .throbber-container {
         align-items: center;
         display: flex;
@@ -27,7 +37,7 @@
       }
 
       .destination-status {
-        color: var(--google-grey-700);
+        color: var(--cr-secondary-text-color);
         font-size: calc(12/13 * 1em);
         overflow: hidden;
         padding-top: 4px;
@@ -45,6 +55,10 @@
         min-height: 0;
       }
     </style>
+    <print-preview-user-info id="userInfo" active-user="{{activeUser_}}"
+        users="{{users_}}" destination-store="[[destinationStore_]]"
+        invitation-store="[[invitationStore_]]">
+    </print-preview-user-info>
     <print-preview-settings-section>
       <span slot="title">$i18n{destinationLabel}</span>
       <div slot="controls">
@@ -53,13 +67,13 @@
         </div>
         <print-preview-destination-select id="destinationSelect"
             hidden$="[[!shouldHideSpinner_]]"
-            active-user="[[activeUser]]"
+            active-user="[[activeUser_]]"
             app-kiosk-mode="[[appKioskMode]]"
-            cloud-print-state="[[cloudPrintState]]"
+            cloud-print-state="[[cloudPrintState_]]" dark="[[dark]]"
             destination="[[destination]]"
-            disabled="[[shouldDisableDropdown_(destinationStore, disabled,
-                                               shouldHideSpinner_, state)]]"
-            no-destinations-found="[[noDestinationsFound]]"
+            disabled="[[shouldDisableDropdown_(
+                            destinationState, state, disabled)]]"
+            no-destinations="[[noDestinations_]]"
             recent-destination-list="[[recentDestinationList_]]"
             on-selected-option-change="onSelectedDestinationOptionChange_">
         </print-preview-destination-select>
@@ -75,13 +89,13 @@
     <cr-lazy-render id="destinationDialog">
       <template>
         <print-preview-destination-dialog
-            cloud-print-state="[[cloudPrintState]]"
-            destination-store="[[destinationStore]]"
-            invitation-store="[[invitationStore]]"
+            cloud-print-state="[[cloudPrintState_]]"
+            destination-store="[[destinationStore_]]"
+            invitation-store="[[invitationStore_]]"
             recent-destination-list="[[recentDestinationList_]]"
-            active-user="[[activeUser]]" users="[[users]]"
+            active-user="[[activeUser_]]" users="[[users_]]"
             current-destination-account="[[destination.account]]"
-            on-close="onDialogClose_">
+            on-account-change="onAccountChange_" on-close="onDialogClose_">
         </print-preview-destination-dialog>
       </template>
     </cr-lazy-render>

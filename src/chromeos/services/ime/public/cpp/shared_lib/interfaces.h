@@ -59,12 +59,80 @@
 namespace chromeos {
 namespace ime {
 
+// Callback upon async completion of DownloadToFile(), passing the originally
+// issued |request_id| (as returned by DownloadToFile()) and an |error_code| (as
+// defined at
+// https://cs.chromium.org/chromium/src/net/base/net_error_list.h?rcl=f9c935b73381772d508eebba1e216c437139d475).
+typedef void (*DownloadCallback)(int request_id, int status_code);
+
+// Based on RequestPriority defined at
+// https://cs.chromium.org/chromium/src/net/base/request_priority.h?rcl=f9c935b73381772d508eebba1e216c437139d475
+enum DownloadPriority {
+  THROTTLED = 0,
+  MINIMUM_PRIORITY = THROTTLED,
+  IDLE = 1,
+  LOWEST = 2,
+  DEFAULT_PRIORITY = LOWEST,
+  LOW = 3,
+  MEDIUM = 4,
+  HIGHEST = 5,
+  MAXIMUM_PRIORITY = HIGHEST,
+};
+
+// Extendable extra options for a download.
+struct DownloadOptions {
+  // Duration (in milliseconds) to wait before giving up on the download and
+  // considering it an error. Negative value means it can take indefinitely.
+  long timeout_ms;
+
+  // Priority level for the download.
+  DownloadPriority priority;
+
+  // Max number of times to retry a download (exclusive of the initial attempt).
+  unsigned int max_retries;
+
+  // Always add more stuff at the end only. Just like protobuf, refrain from
+  // deleting or re-ordering for maximal API stability and backward
+  // compatibility. Simply mark fields as "deprecated" if need be.
+};
+
+// Provides CrOS network download service to the shared library.
+class Downloader {
+ protected:
+  virtual ~Downloader() = default;
+
+ public:
+  // Download data from the given |url| and store into a file located at the
+  // given |file_path|, using the specified download |options|. The method
+  // returns a |request_id| (unique among those issued by the same Downloader),
+  // while actual download operation takes place asynchronously. Upon async
+  // completion of the download (either success or failure), the given
+  // |callback| function will be invoked, passing a matching |request_id| and
+  // the status via an |error_code|. All arguments are const and completely
+  // owned by the caller at all times; they should remain alive till the sync
+  // return of this method.
+  virtual int DownloadToFile(const char* url,
+                             const DownloadOptions& options,
+                             const char* file_path,
+                             DownloadCallback callback) = 0;
+
+  // Cancel the download whose |request_id| is given (|request_id| is issued
+  // in the return value of each DownloadToFile() call). The callback of a
+  // cancelled download will never be invoked. If the |request_id| is invalid
+  // or belongs to an already completed download (either success or failure),
+  // this method will just no-op.
+  virtual void Cancel(int request_id) = 0;
+};
+
 // This defines the `Platform` interface, which is used throughout the shared
 // library to manage platform-specific data/operations.
 //
 // This class should be provided by the IME service before creating an
 // `ImeEngineMainEntry` and be always owned by the IME service.
 class Platform {
+ protected:
+  virtual ~Platform() = default;
+
  public:
   // The three methods below are Getters of the local data directories on the
   // platform. It's possible for the IME service to be running in a mode where
@@ -76,14 +144,19 @@ class Platform {
   // Get the local IME bundle directory, which is read-only.
   virtual const char* GetImeBundleDir() = 0;
 
-  // Get the local IME global directory, which is accessible to all users.
+  // Get the IME global directory, which is accessible to all users.
   virtual const char* GetImeGlobalDir() = 0;
 
-  // Get the local IME directory in the acitve user's home, which is only
-  // accessible to that user.
+  // Get the local IME directory in home directory of the active user, which
+  // is only accessible to the user itself.
   virtual const char* GetImeUserHomeDir() = 0;
 
-  // TODO(https://crbug.com/837156): Provide Downloader/Logger for main entry.
+  // Get the Downloader that provides CrOS network download service. Ownership
+  // of the returned Downloader instance is never transferred, i.e. it remains
+  // owned by the IME service / Platform at all times.
+  virtual Downloader* GetDownloader() = 0;
+  
+  // TODO(https://crbug.com/837156): Provide Logger for main entry.
 };
 
 // The wrapper of Mojo InterfacePtr on an IME client.
@@ -91,6 +164,9 @@ class Platform {
 // This is used to send messages to connected IME client from an IME engine.
 // IME service will create then pass it to the engine.
 class ImeClientDelegate {
+ protected:
+  virtual ~ImeClientDelegate() = default;
+
  public:
   // Returns the c_str() of the internal IME specification of ImeClientDelegate.
   // The IME specification will be invalidated by its `Destroy` method.
@@ -103,9 +179,6 @@ class ImeClientDelegate {
   // Destroy the `ImeClientDelegate` instance, which is called in the shared
   // library when the bound engine is destroyed.
   virtual void Destroy() = 0;
-
- protected:
-  ~ImeClientDelegate();
 };
 
 // The main entry point of an IME shared library.
@@ -114,6 +187,9 @@ class ImeClientDelegate {
 // clients of the IME service. The shared library will exposes its create
 // function to the IME service.
 class ImeEngineMainEntry {
+ protected:
+  virtual ~ImeEngineMainEntry() = default;
+
  public:
   // Returns whether a specific IME is supported by this IME shared library.
   // The argument is the specfiation name of an IME, and the caller should
@@ -133,9 +209,6 @@ class ImeEngineMainEntry {
   // Destroy the `ImeEngineMainEntry` instance, which is called in IME service
   // on demand.
   virtual void Destroy() = 0;
-
- protected:
-  ~ImeEngineMainEntry();
 };
 
 // Create ImeEngineMainEntry instance from the IME engine shared library.

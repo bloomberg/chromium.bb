@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/card_unmask_delegate.h"
+#include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 
 namespace autofill {

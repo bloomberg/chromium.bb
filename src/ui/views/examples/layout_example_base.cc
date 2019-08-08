@@ -36,8 +36,8 @@ constexpr gfx::Size kLayoutExampleDefaultChildSize(180, 90);
 // 25%.
 class FullPanel : public View {
  public:
-  FullPanel() {}
-  ~FullPanel() override {}
+  FullPanel() = default;
+  ~FullPanel() override = default;
 
   // View
   void Layout() override;
@@ -47,7 +47,7 @@ class FullPanel : public View {
 };
 
 void FullPanel::Layout() {
-  DCHECK_EQ(child_count(), 2);
+  DCHECK_EQ(2u, children().size());
   View* left_panel = child_at(0);
   View* right_panel = child_at(1);
   gfx::Rect bounds = GetContentsBounds();
@@ -61,7 +61,7 @@ void FullPanel::Layout() {
 
 LayoutExampleBase::ChildPanel::ChildPanel(LayoutExampleBase* example,
                                           const gfx::Size& preferred_size)
-    : View(), example_(example), preferred_size_(preferred_size) {
+    : example_(example), preferred_size_(preferred_size) {
   SetBorder(CreateSolidBorder(1, SK_ColorGRAY));
   for (unsigned i = 0; i < sizeof(margin_) / sizeof(margin_[0]); ++i)
     margin_[i] = CreateTextfield();
@@ -120,12 +120,9 @@ void LayoutExampleBase::ChildPanel::SetSelected(bool value) {
     selected_ = value;
     SetBorder(CreateSolidBorder(1, selected_ ? SK_ColorBLACK : SK_ColorGRAY));
     if (selected_ && parent()) {
-      for (int i = 0; i < parent()->child_count(); ++i) {
-        View* child = parent()->child_at(i);
-        if (child != this && child->GetGroup() == GetGroup()) {
-          ChildPanel* child_panel = static_cast<ChildPanel*>(child);
-          child_panel->SetSelected(false);
-        }
+      for (View* child : parent()->children()) {
+        if (child != this && child->GetGroup() == GetGroup())
+          static_cast<ChildPanel*>(child)->SetSelected(false);
       }
     }
     for (Textfield* textfield : margin_)
@@ -167,7 +164,7 @@ Textfield* LayoutExampleBase::ChildPanel::CreateTextfield() {
 
 LayoutExampleBase::LayoutExampleBase(const char* title) : ExampleBase(title) {}
 
-LayoutExampleBase::~LayoutExampleBase() {}
+LayoutExampleBase::~LayoutExampleBase() = default;
 
 Combobox* LayoutExampleBase::CreateCombobox(const base::string16& label_text,
                                             const char* const* items,
@@ -278,9 +275,9 @@ void LayoutExampleBase::CreateExampleView(View* container) {
         (add_button_->height() - child_panel_size_[i]->height()) / 2);
   }
   child_panel_size_[0]->SetText(
-      base::IntToString16(kLayoutExampleDefaultChildSize.width()));
+      base::NumberToString16(kLayoutExampleDefaultChildSize.width()));
   child_panel_size_[1]->SetText(
-      base::IntToString16(kLayoutExampleDefaultChildSize.height()));
+      base::NumberToString16(kLayoutExampleDefaultChildSize.height()));
 
   CreateAdditionalControls(add_button_->y() + add_button_->height() +
                            kLayoutExampleVerticalSpacing);
@@ -313,7 +310,7 @@ void LayoutExampleBase::ButtonPressedImpl(Button* sender) {}
 void LayoutExampleBase::RefreshLayoutPanel(bool update_layout) {
   if (update_layout)
     UpdateLayoutManager();
-  layout_panel_->Layout();
+  layout_panel_->InvalidateLayout();
   layout_panel_->SchedulePaint();
 }
 

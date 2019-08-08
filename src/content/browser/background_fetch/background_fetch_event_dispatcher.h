@@ -16,7 +16,9 @@
 
 namespace content {
 
+class BackgroundFetchContext;
 class BackgroundFetchRegistrationId;
+class DevToolsBackgroundServicesContext;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerRegistration;
 class ServiceWorkerVersion;
@@ -35,22 +37,24 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
     DISPATCH_RESULT_COUNT
   };
 
-  explicit BackgroundFetchEventDispatcher(
-      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
+  BackgroundFetchEventDispatcher(
+      BackgroundFetchContext* background_fetch_context,
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+      DevToolsBackgroundServicesContext* devtools_context);
   ~BackgroundFetchEventDispatcher();
 
   // Dispatches one of the update, fail, or success events depending on the
   // provided registration.
   void DispatchBackgroundFetchCompletionEvent(
       const BackgroundFetchRegistrationId& registration_id,
-      blink::mojom::BackgroundFetchRegistrationPtr registration,
+      blink::mojom::BackgroundFetchRegistrationDataPtr registration_data,
       base::OnceClosure finished_closure);
 
   // Dispatches the `backgroundfetchclick` event, which indicates that the user
   // interface displayed for an active background fetch was activated.
   void DispatchBackgroundFetchClickEvent(
       const BackgroundFetchRegistrationId& registration_id,
-      blink::mojom::BackgroundFetchRegistrationPtr registration,
+      blink::mojom::BackgroundFetchRegistrationDataPtr registration_data,
       base::OnceClosure finished_closure);
 
  private:
@@ -134,7 +138,18 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
       int request_id);
 
+  // Informs the DevToolsBackgroundServicesContext of the completion event.
+  void LogBackgroundFetchCompletionForDevTools(
+      const BackgroundFetchRegistrationId& registration_id,
+      ServiceWorkerMetrics::EventType event_type,
+      blink::mojom::BackgroundFetchFailureReason failure_reason);
+
+  // |background_fetch_context_| indirectly owns |this|.
+  BackgroundFetchContext* background_fetch_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+
+  // Owned by BackgroundFetchContext.
+  DevToolsBackgroundServicesContext* devtools_context_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchEventDispatcher);
 };

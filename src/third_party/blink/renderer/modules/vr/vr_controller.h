@@ -14,12 +14,11 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/vr/vr_display.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
 
 class NavigatorVR;
-class VRGetDevicesCallback;
 
 class VRController final : public GarbageCollectedFinalized<VRController>,
                            public device::mojom::blink::VRServiceClient,
@@ -42,8 +41,9 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
   void Trace(blink::Visitor*) override;
 
  private:
-  void OnDisplaysSynced();
   void OnGetDisplays();
+
+  void OnGetDevicesSuccess(ScriptPromiseResolver*, VRDisplayVector);
 
   // Initial callback for requesting the device when VR boots up.
   void OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr);
@@ -69,7 +69,7 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
   bool pending_listening_for_activate_ = false;
   bool listening_for_activate_ = false;
 
-  Deque<std::unique_ptr<VRGetDevicesCallback>> pending_get_devices_callbacks_;
+  HeapDeque<Member<ScriptPromiseResolver>> pending_promise_resolvers_;
   device::mojom::blink::VRServicePtr service_;
   mojo::Binding<device::mojom::blink::VRServiceClient> binding_;
 

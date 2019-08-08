@@ -153,6 +153,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="4240294130679914010">Program do odinstalowywania hosta funkcji Chromoting</translation>
 <translation id="4277463233460010382">Ten komputer jest skonfigurowany do zezwalania jednemu lub wielu klientom na łączenie się bez podawania kodu PIN.</translation>
 <translation id="4277736576214464567">Kod dostępu jest nieprawidłowy. Spróbuj ponownie.</translation>
+<translation id="4281844954008187215">Warunki korzystania z usługi</translation>
 <translation id="4361728918881830843">Aby umożliwić zdalne połączenia z innym komputerem, zainstaluj na nim Pulpit zdalny Chrome i kliknij „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="4394049700291259645">Wyłącz</translation>
 <translation id="4405930547258349619">Biblioteka główna</translation>
@@ -345,6 +346,7 @@ Aby włączyć tę funkcję, kliknij „<ph name="BUTTON_NAME" />” w celu wy�
 <translation id="8747048596626351634">Sesja została zerwana lub nie udało się jej rozpocząć. Jeśli sesja ~/.chrome-remote-desktop-session istnieje na komputerze zdalnym, upewnij się, że spowodowała ona uruchomienie długotrwałego procesu na pierwszym planie, takiego jak środowisko pulpitu lub menedżer okien.</translation>
 <translation id="8759753423332885148">Więcej informacji.</translation>
 <translation id="8791202241915690908">Pobierz instalatora hosta funkcji Chromoting</translation>
+<translation id="8804164990146287819">Polityka prywatności</translation>
 <translation id="894763922177556086">Dobra</translation>
 <translation id="895780780740011433">Windows 7 lub nowszy</translation>
 <translation id="897805526397249209">Aby umożliwić zdalne połączenia z innym komputerem, zainstaluj na nim Chromoting i kliknij „<ph name="BUTTON_NAME" />”.</translation>

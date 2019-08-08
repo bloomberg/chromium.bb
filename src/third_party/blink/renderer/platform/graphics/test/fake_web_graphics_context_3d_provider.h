@@ -14,7 +14,7 @@
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
+#include "third_party/skia/include/gpu/mock/GrMockTypes.h"
 
 namespace blink {
 
@@ -24,8 +24,10 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
                                    cc::ImageDecodeCache* cache = nullptr)
       : gl_(gl),
         image_decode_cache_(cache ? cache : &stub_image_decode_cache_) {
-    sk_sp<const GrGLInterface> gl_interface(GrGLCreateNullInterface());
-    gr_context_ = GrContext::MakeGL(std::move(gl_interface));
+    GrMockOptions mockOptions;
+    mockOptions.fConfigOptions[kBGRA_8888_GrPixelConfig] =
+        mockOptions.fConfigOptions[kRGBA_8888_GrPixelConfig];
+    gr_context_ = GrContext::MakeMock(&mockOptions);
     // enable all gpu features.
     for (unsigned feature = 0; feature < gpu::NUMBER_OF_GPU_FEATURE_TYPES;
          ++feature) {
@@ -49,10 +51,6 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
 
   gpu::gles2::GLES2Interface* ContextGL() override { return gl_; }
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override { return nullptr; }
-  gpu::SharedImageInterface* GetSharedImageInterface() const override {
-    NOTREACHED();
-    return nullptr;
-  }
 
   bool BindToCurrentThread() override { return false; }
   void SetLostContextCallback(base::Closure) override {}
@@ -69,7 +67,6 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
 
  private:
   cc::StubDecodeCache stub_image_decode_cache_;
-
   viz::TestSharedImageInterface test_shared_image_interface_;
   gpu::gles2::GLES2Interface* gl_;
   sk_sp<GrContext> gr_context_;

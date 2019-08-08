@@ -233,8 +233,7 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
         net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->RegisterRequestHandler(base::BindRepeating(
         &BackgroundFetchBrowserTest::HandleRequest, base::Unretained(this)));
-    https_server_->AddDefaultHandlers(
-        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    https_server_->AddDefaultHandlers(GetChromeTestDataDir());
     ASSERT_TRUE(https_server_->Start());
 
     Profile* profile = browser()->profile();

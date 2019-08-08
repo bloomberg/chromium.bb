@@ -24,6 +24,7 @@ import android.view.View;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.security.Principal;
@@ -398,6 +399,10 @@ public abstract class AwContentsClient {
             onReceivedError(error.errorCode, error.description, request.url);
         }
         onReceivedError2(request, error);
+
+        // Record UMA on error code distribution here.
+        RecordHistogram.recordSparseHistogram(
+                "Android.WebView.onReceivedError.ErrorCode", error.errorCode);
     }
 
     protected abstract void onReceivedError(int errorCode, String description, String failingUrl);

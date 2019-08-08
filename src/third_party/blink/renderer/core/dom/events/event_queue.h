@@ -42,8 +42,6 @@ class CORE_EXPORT EventQueue final
   USING_GARBAGE_COLLECTED_MIXIN(EventQueue);
 
  public:
-  static EventQueue* Create(ExecutionContext*, TaskType);
-
   EventQueue(ExecutionContext*, TaskType);
   ~EventQueue();
 

@@ -106,9 +106,20 @@ static const UChar32 kIsCJKIdeographOrSymbolRanges[] = {
     // Modifiers
     0x1F3FB, 0x1F3FF,
 
+    // Colored circles and squares for use with emoji.
+    0x1F7E0, 0x1F7EB,
+
     0x1F900, 0x1F90F,
     // ZIPPER-MOUTH FACE...SIGN OF THE HORNS
-    0x1F910, 0x1F918, 0x1F919, 0x1F97F, 0x1F980, 0x1F9BF, 0x1F9C0, 0x1F9FF};
+    0x1F910, 0x1F918, 0x1F919, 0x1F97F, 0x1F980, 0x1F9BF, 0x1F9C0, 0x1F9FF,
+    // Clothing
+    0x1FA70, 0x1FA73,
+    // Medical symbols
+    0x1FA78, 0x1FA7A,
+    // Toys and sport symbols
+    0x1FA80, 0x1FA82,
+    // Miscellaneous objects
+    0x1FA90, 0x1FA95};
 
 // Individual codepoints needed for Unicode vertical text layout according to
 // http://www.unicode.org/reports/tr50/

@@ -2,6 +2,27 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("engine_settings_header") {
+  sources = [
+    "engine_settings.h",
+  ]
+
+  public_deps = [
+    "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
+    "//components/chrome_cleaner/public/constants:constants",
+  ]
+}
+
+source_set("dummy_engine_settings") {
+  sources = [
+    "dummy_engine_settings.cc",
+  ]
+
+  deps = [
+    ":engine_settings_header",
+  ]
+}
+
 source_set("settings_types") {
   sources = [
     "settings_types.h",
@@ -15,15 +36,15 @@ source_set("settings") {
   ]
 
   deps = [
-    ":settings_definitions",
     ":settings_types",
     "//base:base",
     "//chrome/chrome_cleaner/constants:common_strings",
-    "//chrome/chrome_cleaner/engines:resources",
     "//components/chrome_cleaner/public/constants:constants",
   ]
 
   public_deps = [
+    ":engine_settings_header",
+    ":settings_definitions",
     "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
     "//mojo/public/cpp/platform",
   ]
@@ -32,6 +53,39 @@ source_set("settings") {
 source_set("settings_definitions") {
   sources = [
     "settings_definitions.h",
+  ]
+}
+
+# Settings definitions that must only by linked into the cleaner executable.
+source_set("cleaner_settings_definitions") {
+  sources = [
+    "cleaner_settings_definitions.cc",
+  ]
+
+  deps = [
+    ":settings_definitions",
+  ]
+}
+
+# Settings definitions that must only by linked into the reporter executable.
+source_set("reporter_settings_definitions") {
+  sources = [
+    "reporter_settings_definitions.cc",
+  ]
+
+  deps = [
+    ":settings_definitions",
+  ]
+}
+
+# Settings definitions that are linked into all other executables.
+source_set("other_settings_definitions") {
+  sources = [
+    "other_settings_definitions.cc",
+  ]
+
+  deps = [
+    ":settings_definitions",
   ]
 }
 
@@ -67,6 +121,7 @@ source_set("unittest_sources") {
   ]
 
   deps = [
+    ":engine_settings_header",
     ":settings",
     ":settings_definitions",
     "//base:base",

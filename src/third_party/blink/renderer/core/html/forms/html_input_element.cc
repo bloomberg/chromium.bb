@@ -158,7 +158,7 @@ bool HTMLInputElement::HasPendingActivity() const {
 
 HTMLImageLoader& HTMLInputElement::EnsureImageLoader() {
   if (!image_loader_)
-    image_loader_ = HTMLImageLoader::Create(this);
+    image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
   return *image_loader_;
 }
 
@@ -440,6 +440,10 @@ void HTMLInputElement::UpdateType() {
 
   has_been_password_field_ |= new_type_name == input_type_names::kPassword;
 
+  // 7. Let previouslySelectable be true if setRangeText() previously applied
+  // to the element, and false otherwise.
+  const bool previously_selectable = input_type_->SupportsSelectionAPI();
+
   input_type_ = new_type;
   input_type_view_ = input_type_->CreateView();
   if (input_type_view_->NeedsShadowSubtree()) {
@@ -544,12 +548,24 @@ void HTMLInputElement::UpdateType() {
   // UA Shadow tree was recreated. We need to set selection again. We do it
   // later in order to avoid force layout.
   if (GetDocument().FocusedElement() == this)
-    GetDocument().UpdateFocusAppearanceLater();
+    GetDocument().UpdateFocusAppearanceAfterLayout();
 
   // TODO(tkent): Should we dispatch a change event?
   ClearValueBeforeFirstUserEdit();
 
+  // 5. Signal a type change for the element. (The Radio Button state uses
+  // this, in particular.)
   AddToRadioButtonGroup();
+
+  // 8. Let nowSelectable be true if setRangeText() now applies to the element,
+  // and false otherwise.
+  const bool now_selectable = input_type_->SupportsSelectionAPI();
+
+  // 9. If previouslySelectable is false and nowSelectable is true, set the
+  // element's text entry cursor position to the beginning of the text control,
+  // and set its selection direction to "none".
+  if (!previously_selectable && now_selectable)
+    SetSelectionRange(0, 0, kSelectionHasNoDirection);
 
   SetNeedsValidityCheck();
   if ((could_be_successful_submit_button || CanBeSuccessfulSubmitButton()) &&
@@ -707,20 +723,20 @@ void HTMLInputElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kVspaceAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
-    AddHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginTop, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginBottom, value);
   } else if (name == kHspaceAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
-    AddHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginLeft, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginRight, value);
   } else if (name == kAlignAttr) {
     if (input_type_->ShouldRespectAlignAttribute())
       ApplyAlignmentAttributeToStyle(value, style);
   } else if (name == kWidthAttr) {
     if (input_type_->ShouldRespectHeightAndWidthAttributes())
-      AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
+      AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
   } else if (name == kHeightAttr) {
     if (input_type_->ShouldRespectHeightAndWidthAttributes())
-      AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
+      AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
   } else if (name == kBorderAttr &&
              type() == input_type_names::kImage) {  // FIXME: Remove type check.
     ApplyBorderAttributeToStyle(value, style);
@@ -877,8 +893,9 @@ bool HTMLInputElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
          TextControlElement::LayoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLInputElement::CreateLayoutObject(const ComputedStyle& style) {
-  return input_type_view_->CreateLayoutObject(style);
+LayoutObject* HTMLInputElement::CreateLayoutObject(const ComputedStyle& style,
+                                                   LegacyLayout legacy) {
+  return input_type_view_->CreateLayoutObject(style, legacy);
 }
 
 void HTMLInputElement::AttachLayoutTree(AttachContext& context) {
@@ -1142,6 +1159,23 @@ void HTMLInputElement::setValue(const String& value,
 
   if (value_changed)
     NotifyFormStateChanged();
+
+  if (isConnected()) {
+    if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
+      auto* page = GetDocument().GetPage();
+      auto* view = GetDocument().View();
+      // Run the document lifecycle to ensure AX notifications fire,
+      // even if the value didn't change.
+      if (page && view) {
+        // TODO(aboxhall): add a lifecycle phase for accessibility updates.
+        if (!view->CanThrottleRendering())
+          page->Animator().ScheduleVisualUpdate(GetDocument().GetFrame());
+
+        GetDocument().Lifecycle().EnsureStateAtMost(
+            DocumentLifecycle::kVisualUpdatePending);
+      }
+    }
+  }
 }
 
 void HTMLInputElement::SetNonAttributeValue(const String& sanitized_value) {

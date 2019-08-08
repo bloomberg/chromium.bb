@@ -431,7 +431,7 @@ double NetworkStateNotifier::GetRandomMultiplier(const String& host) const {
   return random_multiplier;
 }
 
-unsigned long NetworkStateNotifier::RoundRtt(
+uint32_t NetworkStateNotifier::RoundRtt(
     const String& host,
     const base::Optional<TimeDelta>& rtt) const {
   // Limit the size of the buckets and the maximum reported value to reduce

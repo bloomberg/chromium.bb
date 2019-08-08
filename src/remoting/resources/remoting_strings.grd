@@ -653,6 +653,12 @@
         <message name="IDS_SERVER_COMMUNICATION_ERROR" desc="Message shown when the client fails to communicate with the back end server.">
           Failed to communicate with the server: <ph name="ERROR">$1<ex>Server Unavailable</ex></ph>
         </message>
+        <message name="IDS_TERMS_OF_SERVICE" desc="The label to access the terms of service, displayed in navigation menu." formatter_data="android_java">
+          Terms of Service
+        </message>
+        <message name="IDS_PRIVACY_POLICY" desc="The label to access the privacy policy, displayed in navigation menu." formatter_data="android_java">
+          Privacy Policy
+        </message>
 
 <!-- Play Store listings text. These Android-specific strings are not marked
      with formatter_data="android_java" since they are used only for the Play

@@ -152,9 +152,9 @@ function sendEvents(targetX, targetY, documents, multiTapNotification)
     });
 
     logCounts('DoubleFingerTouch', documents, multiTapNotification, function() {
-        eventSender.addTouchPoint(targetX+1, targetY+1);
+        eventSender.addTouchPoint(targetX+1, targetY+1, 15, 15);
         eventSender.touchStart();
-        eventSender.addTouchPoint(targetX+4, targetY+4);
+        eventSender.addTouchPoint(targetX+4, targetY+4, 15, 15);
         eventSender.touchStart();
         eventSender.releaseTouchPoint(0);
         eventSender.releaseTouchPoint(1);

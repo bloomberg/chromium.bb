@@ -29,7 +29,7 @@
 
       :host cr-expand-button {
         margin-inline-end: 4px;
-        --cr-icon-button-icon-padding: 4px;
+        --cr-expand-button-size: 28px;
       }
 
       :host([hidden]) {
@@ -37,14 +37,13 @@
       }
 
       #label {
-        color: var(--google-grey-900);
+        color: var(--cr-primary-text-color);
         flex: 1;
         text-align: start;
       }
 
       :host([disabled]) #label {
-        color: var(--paper-grey-600);
-        opacity: .65;
+        @apply --print-preview-disabled-label;
       }
     </style>
     <div on-click="toggleExpandButton_" actionable>

@@ -23,9 +23,13 @@ extern const char kIppMedia[];
 extern const char kIppDuplex[];
 extern const char kIppDocumentName[];
 extern const char kIppRequestingUserName[];
+extern const char kIppPin[];
+extern const char kIppPinEncryption[];
 
 extern const char kCollated[];
 extern const char kUncollated[];
+
+extern const char kPinEncryptionNone[];
 
 // Smart ptr wrapper for CUPS ipp_t
 using ScopedIppPtr = std::unique_ptr<ipp_t, void (*)(ipp_t*)>;

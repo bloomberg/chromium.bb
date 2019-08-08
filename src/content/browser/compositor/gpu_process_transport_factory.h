@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
-#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -71,6 +70,9 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
       base::WeakPtr<ui::Compositor> compositor) override;
   scoped_refptr<viz::ContextProvider> SharedMainThreadContextProvider()
       override;
+  scoped_refptr<viz::RasterContextProvider>
+  SharedMainThreadRasterContextProvider() override;
+
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   void AddObserver(ui::ContextFactoryObserver* observer) override;
@@ -151,7 +153,6 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
       PerCompositorDataMap;
   PerCompositorDataMap per_compositor_data_;
 
-  const viz::RendererSettings renderer_settings_;
   scoped_refptr<ws::ContextProviderCommandBuffer> shared_main_thread_contexts_;
   base::ObserverList<ui::ContextFactoryObserver>::Unchecked observer_list_;
   scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner_;

@@ -87,6 +87,8 @@ class SDKFetcher(object):
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
   QEMU_BIN_PATH = 'app-emulation/qemu'
   SEABIOS_BIN_PATH = 'sys-firmware/seabios'
+  TAST_CMD_PATH = 'chromeos-base/tast-cmd'
+  TAST_REMOTE_TESTS_PATH = 'chromeos-base/tast-remote-tests-cros'
 
   CANARIES_PER_DAY = 3
   DAYS_TO_CONSIDER = 14
@@ -205,6 +207,48 @@ class SDKFetcher(object):
     logging.debug('Read LKGM version from %s: %s', lkgm_file, version)
     return version
 
+  @classmethod
+  def GetCachePath(cls, key, cache_dir, board):
+    """Gets the path to an item in the cache.
+
+    This should be used when inspecting an SDK that's already been initialized
+    elsewhere.
+
+    Args:
+      key: Key of item in the cache.
+      cache_dir: The toplevel cache dir to search in.
+      board: The board to search for.
+
+    Returns:
+      Path to the item, or None if the item is missing.
+    """
+    # The board is always known in the simple chrome SDK shell.
+    if board is None:
+      return None
+
+    # Get the version by looking at the env var if we're in the SDK shell, and
+    # failing that, look at the misc cache.
+    sdk_version = os.environ.get(cls.SDK_VERSION_ENV)
+    if not sdk_version:
+      misc_cache_path = os.path.join(
+          cache_dir, COMMAND_NAME, cls.MISC_CACHE)
+      misc_cache = cache.DiskCache(misc_cache_path)
+      with misc_cache.Lookup((board, 'latest')) as ref:
+        if ref.Exists(lock=True):
+          sdk_version = osutils.ReadFile(ref.path).strip()
+      if not sdk_version:
+        return None
+
+    # Look up the cache entry in the tarball cache.
+    tarball_cache_path = os.path.join(
+        cache_dir, COMMAND_NAME, cls.TARBALL_CACHE)
+    tarball_cache = cache.TarballCache(tarball_cache_path)
+    cache_key = (board, sdk_version, key)
+    with tarball_cache.Lookup(cache_key) as ref:
+      if ref.Exists():
+        return ref.path
+    return None
+
   @memoize.Memoize
   def _GetSDKVersion(self, version):
     """Get SDK version from metadata.
@@ -250,6 +294,9 @@ class SDKFetcher(object):
       GS path, for e.g. gs://chromeos-prebuilt/board/amd64-host/
       chroot-2018.10.23.171742/packages/app-emulation/qemu-3.0.0.tbz2
     """
+    if not version or not key:
+      # A version and key is needed to locate the package in Google Storage.
+      return None
     package_version = self._GetManifest(version)['packages'][key][0][0]
     return gs.GetGsURL(
         bucket='chromeos-prebuilt',
@@ -522,6 +569,16 @@ class SDKFetcher(object):
       fetch_urls[self.TARGET_TOOLCHAIN_KEY] = os.path.join(
           self.toolchain_path, toolchain_url % {'target': target_tc})
       components.remove(self.TARGET_TOOLCHAIN_KEY)
+
+    # Fetch the Tast binary.
+    tast_cmd_path = self._GetBinPackageGSPath(version, self.TAST_CMD_PATH)
+    tast_remote_tests_path = self._GetBinPackageGSPath(
+        version, self.TAST_REMOTE_TESTS_PATH)
+    if tast_cmd_path and tast_remote_tests_path:
+      fetch_urls[self.TAST_CMD_PATH] = tast_cmd_path
+      fetch_urls[self.TAST_REMOTE_TESTS_PATH] = tast_remote_tests_path
+    else:
+      logging.warning('Failed to find Tast binaries to download.')
 
     # Also fetch QEMU binary if VM_IMAGE_TAR is specified.
     if constants.VM_IMAGE_TAR in components:
@@ -883,8 +940,9 @@ class ChromeSDKCommand(command.CliCommand):
       env['CXXFLAGS'] = ' '.join(env['CXXFLAGS'].split() + clang_append_flags)
       env['LD'] = env['CXX']
 
-    # Use cros readelf for the target builds. TODO: Delete it after Jan 2019 since
-    # READELF env variable should already be set, https://crbug.com/917193.
+    # Use cros readelf for the target builds. TODO: Delete it after Jan 2019
+    # since READELF env variable should already be set,
+    # https://crbug.com/917193.
     env.setdefault('READELF', sdk_ctx.target_tc + '-readelf')
 
     # For host compiler, we use the compiler that comes with Chrome

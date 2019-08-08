@@ -33,6 +33,7 @@ public final class TaskIds {
     public static final int EXPLORE_SITES_REFRESH_JOB_ID = 101;
     public static final int BACKGROUND_SYNC_ONE_SHOT_JOB_ID = 102;
     public static final int NOTIFICATION_SCHEDULER_JOB_ID = 103;
+    public static final int NOTIFICATION_TRIGGER_JOB_ID = 104;
 
     private TaskIds() {}
 }

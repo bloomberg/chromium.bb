@@ -32,22 +32,6 @@ using extensions::PermissionsData;
 
 namespace {
 
-// Describes the different cases pertaining to permissions check for the
-// initiator.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class InitiatorAccess {
-  kAbsent = 0,
-  kOpaque = 1,
-  kNoAccess = 2,
-  kHasAccess = 3,
-  kMaxValue = kHasAccess,
-};
-
-void LogInitiatorAccess(InitiatorAccess access) {
-  UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.InitiatorAccess2", access);
-}
-
 // Returns true if the scheme is one we want to allow extensions to have access
 // to. Extensions still need specific permissions for a given URL, which is
 // covered by CanExtensionAccessURL.
@@ -166,17 +150,8 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
       if (request_access == PermissionsData::PageAccess::kDenied)
         return request_access;
 
-      // For cases, where an extension has (allowed or withheld) access to the
-      // request url, log if it has access to the request initiator.
-      if (!initiator) {
-        LogInitiatorAccess(InitiatorAccess::kAbsent);
+      if (!initiator || initiator->opaque())
         return request_access;
-      }
-
-      if (initiator->opaque()) {
-        LogInitiatorAccess(InitiatorAccess::kOpaque);
-        return request_access;
-      }
 
       DCHECK(request_access == PermissionsData::PageAccess::kWithheld ||
              request_access == PermissionsData::PageAccess::kAllowed);
@@ -198,13 +173,7 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
       // with webRequest to work well with runtime host permissions. See
       // crbug.com/851722.
 
-      PermissionsData::PageAccess initiator_access =
-          GetHostAccessForURL(*extension, initiator->GetURL(), tab_id);
-      LogInitiatorAccess(initiator_access ==
-                                 PermissionsData::PageAccess::kDenied
-                             ? InitiatorAccess::kNoAccess
-                             : InitiatorAccess::kHasAccess);
-      return initiator_access;
+      return GetHostAccessForURL(*extension, initiator->GetURL(), tab_id);
       break;
     }
     case WebRequestPermissions::REQUIRE_ALL_URLS:
@@ -286,19 +255,19 @@ bool WebRequestPermissions::HideRequest(
   if (is_request_from_browser) {
     // Hide all non-navigation requests made by the browser. crbug.com/884932.
     if (!request.is_browser_side_navigation &&
-        request.type != content::RESOURCE_TYPE_NAVIGATION_PRELOAD) {
+        request.type != content::ResourceType::kNavigationPreload) {
       return true;
     }
 
-    DCHECK(request.type == content::RESOURCE_TYPE_MAIN_FRAME ||
-           request.type == content::RESOURCE_TYPE_SUB_FRAME ||
-           request.type == content::RESOURCE_TYPE_NAVIGATION_PRELOAD);
+    DCHECK(request.type == content::ResourceType::kMainFrame ||
+           request.type == content::ResourceType::kSubFrame ||
+           request.type == content::ResourceType::kNavigationPreload);
 
     // Hide sub-frame requests to clientsX.google.com.
     // TODO(crbug.com/890006): Determine if the code here can be cleaned up
     // since browser initiated non-navigation requests are now hidden from
     // extensions.
-    if (request.type != content::RESOURCE_TYPE_MAIN_FRAME &&
+    if (request.type != content::ResourceType::kMainFrame &&
         IsSensitiveGoogleClientUrl(request)) {
       return true;
     }

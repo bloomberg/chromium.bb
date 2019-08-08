@@ -30,6 +30,7 @@
 <translation id="1929939181775079593">Chromium không phản hồi. Chạy lại ngay bây giờ?</translation>
 <translation id="1966382378801805537">Chromium không thể xác định hoặc đặt trình duyệt mặc định</translation>
 <translation id="2008474315282236005">Thao tác này sẽ xóa 1 mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chromium dưới dạng <ph name="USER_EMAIL" />.</translation>
+<translation id="2037988709973327241"><ph name="FILE_NAME" /> nguy hiểm nên đã bị Chromium chặn. Tính năng Bảo vệ nâng cao giữ an toàn cho bạn.</translation>
 <translation id="2117378023188580026">Quản trị viên của bạn yêu cầu bạn chạy lại Chromium để áp dụng bản cập nhật này</translation>
 <translation id="2119636228670142020">Giới thiệu về &amp;Chromium OS</translation>
 <translation id="2178765360243863853">Bạn cần khởi động lại Chromium ngay bây giờ</translation>
@@ -50,6 +51,7 @@
 <translation id="2718390899429598676">Để bảo mật hơn, Chromium sẽ mã hóa dữ liệu của bạn.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
 <translation id="2799223571221894425">Chạy lại</translation>
+<translation id="2838154144102149890">Để cập nhật, bạn cần ngừng chạy Chromium trên máy tính này. Nếu ngừng chạy, những người dùng khác đăng nhập vào máy tính này có thể bị mất các thay đổi chưa lưu.</translation>
 <translation id="2847479871509788944">Xóa khỏi Chromium...</translation>
 <translation id="2886012850691518054">Tùy chọn: giúp cải thiện Chromium bằng cách tự động gửi thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="2898082584336937987">Cài đặt Chromium trên điện thoại của bạn. Chúng tôi sẽ gửi SMS tới điện thoại của bạn: <ph name="PHONE_NUMBER" /></translation>
@@ -61,6 +63,7 @@
 <translation id="3068515742935458733">Giúp cải thiện Chromium bằng cách gửi báo cáo sự cố và <ph name="UMA_LINK" /> tới Google</translation>
 <translation id="3103660991484857065">Trình cài đặt không thể giải nén tệp lưu trữ. Hãy tải xuống Chromium lại lần nữa.</translation>
 <translation id="3130323860337406239">Chromium đang sử dụng micrô của bạn.</translation>
+<translation id="3154325651427862069"><ph name="FILE_NAME" /> có thể nguy hiểm nên đã bị Chromium chặn. Tính năng Bảo vệ nâng cao giữ an toàn cho bạn.</translation>
 <translation id="3155163173539279776">Chạy lại Chromium</translation>
 <translation id="3179665906251668410">Mở liên kết trong cửa sổ ẩn danh của Chromium</translation>
 <translation id="3190315855212034486">Rất tiếc! Chromium đã gặp sự cố. Chạy lại ngay bây giờ?</translation>
@@ -88,6 +91,7 @@
 <translation id="388648406173476553">Tùy chỉnh và kiểm soát Chromium. Bạn cần lưu ý - nhấp để xem thông tin chi tiết.</translation>
 <translation id="3889543394854987837">Nhấp vào tên của bạn để mở Chromium và bắt đầu duyệt web.</translation>
 <translation id="3898493977366060150">Duyệt web bằng Google smarts</translation>
+<translation id="3931244652999881512">Tệp này nguy hiểm nên đã bị Chromium chặn. Tính năng Bảo vệ nâng cao giữ an toàn cho bạn.</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS sẽ khởi động lại sau một giờ}other{Chromium OS sẽ khởi động lại sau # giờ}}</translation>
 <translation id="4036079820698952681">Giúp cải thiện Chromium bằng cách báo cáo <ph name="BEGIN_LINK" />cài đặt hiện tại<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Cải thiện bảo mật quan trọng và tính năng mới có trong phiên bản mới nhất.</translation>
@@ -138,6 +142,7 @@
 <translation id="5680901439334282664">đăng nhập vào Chromium</translation>
 <translation id="5698481217667032250">Hiển thị Chromium bằng ngôn ngữ này</translation>
 <translation id="5712253116097046984">Quản trị viên yêu cầu bạn khởi động lại Chromium OS để áp dụng bản cập nhật này</translation>
+<translation id="5726979195371243087">Tệp này có thể nguy hiểm nên đã bị Chromium chặn. Tính năng Bảo vệ nâng cao giữ an toàn cho bạn.</translation>
 <translation id="5756484659843248772">Ngôn ngữ này dùng để hiển thị giao diện người dùng của Chromium OS</translation>
 <translation id="5768914737813585044">Hiển thị Chromium OS bằng ngôn ngữ này</translation>
 <translation id="5796460469508169315">Chromium gần như đã sẵn sàng.</translation>
@@ -183,6 +188,7 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="6810143991807788455">Giúp cải thiện Chromium bằng cách báo cáo cài đặt hiện tại</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (đã sao chép vào Chromium)</translation>
+<translation id="6868056391275687737">Các bản sao khác của Chromium đang chạy. Để cập nhật, hãy đóng các bản sao này.</translation>
 <translation id="6893813176749746474">Chromium đã được cập nhật nhưng bạn đã không sử dụng trình duyệt này trong ít nhất 30 ngày.</translation>
 <translation id="6964305034639999644">Mở liên kết trong cửa sổ ẩn danh của Chromium</translation>
 <translation id="6970811910055250180">Đang cập nhật thiết bị của bạn...</translation>
@@ -190,7 +196,6 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="705851970750939768">Cập nhật Chromium</translation>
 <translation id="7066436765290594559">Chromium OS không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
 <translation id="7067091210845072982">Chromium sẽ cố gắng mô tả cho bạn những hình ảnh không có nội dung mô tả hữu ích. Để tạo nội dung mô tả, các hình ảnh sẽ được gửi đến Google.</translation>
-<translation id="7162152143154757523">Chromium có thể cung cấp tính năng kiểm tra chính tả thông minh hơn bằng cách gửi những gì bạn nhập vào trình duyệt tới máy chủ Google, cho phép bạn sử dụng cùng một công nghệ kiểm tra chính tả mà tìm kiếm của Google sử dụng.</translation>
 <translation id="7196312274710523067">Không thể mở Chromium. Hãy thử lại.</translation>
 <translation id="7205698830395646142">Ẩn trong menu Chromium</translation>
 <translation id="7223968959479464213">Trình quản lý tác vụ - Chromium</translation>
@@ -209,6 +214,7 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <ph name="BEGIN_LINK_2" />Tìm hiểu thêm<ph name="END_LINK_2" />
 
 Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được hướng dẫn thêm.</translation>
+<translation id="7349591376906416160">Quản trị viên hệ thống đã định cấu hình Chromium để mở <ph name="ALTERNATIVE_BROWSER_NAME" /> khi truy cập vào <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Khởi động lại Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium dành cho nhà phát triển</translation>
 <translation id="7451052299415159299">Chromium cần có quyền truy cập vào máy ảnh của bạn cho trang web này</translation>
@@ -252,6 +258,8 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> của bạn đã cập nhật.</translation>
 <translation id="8697124171261953979">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chromium hoặc tìm kiếm từ Thanh địa chỉ.</translation>
 <translation id="8704119203788522458">Đây là Chromium của bạn</translation>
+<translation id="8704255848199359374">Dịch vụ này sử dụng cùng một trình kiểm tra lỗi chính tả dùng trong Google Tìm kiếm. Chrome gửi cho Google văn bản mà bạn nhập vào trình duyệt. Bạn luôn có thể thay đổi hành động này trong các tùy chọn cài đặt.</translation>
+<translation id="8748383401829947534">Thoát khỏi tất cả các bản sao của Chromium.</translation>
 <translation id="8796602469536043152">Chromium cần có quyền truy cập vào máy ảnh và micrô của bạn cho trang web này</translation>
 <translation id="8803635938069941624">Điều khoản Chromium OS</translation>
 <translation id="8821041990367117597">Chromium không thể đồng bộ hóa dữ liệu của bạn vì chi tiết đăng nhập tài khoản của bạn đã cũ.</translation>

@@ -13,7 +13,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "content/public/common/service_manager_connection.h"
-#include "media/audio/sounds/sounds_manager.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -52,7 +52,7 @@ VolumeController::VolumeController() : binding_(this) {
 
   if (VolumeAdjustSoundEnabled()) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    media::SoundsManager::Get()->Initialize(
+    audio::SoundsManager::Get()->Initialize(
         chromeos::SOUND_VOLUME_ADJUST,
         bundle.GetRawDataResource(IDR_SOUND_VOLUME_ADJUST_WAV));
   }

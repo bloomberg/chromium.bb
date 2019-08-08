@@ -86,20 +86,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       let checkTexture = new UrlTexture('../../media/textures/check-button.png');
       let xTexture = new UrlTexture('../../media/textures/x-button.png');
+      let waitTexture = new UrlTexture('../test-media/third-party/hourglass-button.png');
 
       function initXR() {
         xrButton = new XRDeviceButton({
           onRequestSession: onRequestSession,
-          onEndSession: onEndSession
+          onEndSession: onEndSession,
+          supportedSessionTypes: ['immersive-vr']
         });
         document.querySelector('header').appendChild(xrButton.domElement);
 
         if (navigator.xr) {
-          navigator.xr.supportsSessionMode('immersive-vr').then(() => {
-            xrButton.enabled = true;
-          });
-
-          navigator.xr.requestSession().then(onSessionStarted);
+          navigator.xr.requestSession('inline').then(onSessionStarted);
         } else {
           initFallback();
         }
@@ -126,6 +124,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         function addPermissionButton(iconUrl, callback, yAngle, yOffset) {
           let button = new ButtonNode(new UrlTexture(iconUrl), () => {
+            button.iconTexture = waitTexture;
             callback(
               () => { button.iconTexture = checkTexture; }, // Success callback
               () => { button.iconTexture = xTexture; } // Failure callback
@@ -193,11 +192,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               .then(success, fail);
             }
           },
+          {
+            icon: '../test-media/third-party/midi-button.png',
+            callback: (success, fail) => {
+              navigator.requestMIDIAccess({ sysex: true })
+              .then(success, fail);
+            }
+          },
+          {
+            icon: '../test-media/third-party/screen-share-button.png',
+            callback: (success, fail) => {
+              navigator.mediaDevices.getDisplayMedia()
+              .then(success, fail);
+            }
+          },
         ]);
       }
 
       function onRequestSession() {
-        navigator.xr.requestSession({ mode: 'immersive-vr' }).then((session) => {
+        navigator.xr.requestSession('immersive-vr').then((session) => {
           xrButton.setSession(session);
           onSessionStarted(session);
         });
@@ -224,6 +237,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         });
 
         session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).then((refSpace) => {
+          return refSpace;
+        }, (e) => {
+          if (!session.mode.startsWith('immersive')) {
+            // If we're in inline mode, our underlying platform may not support
+            // the stationary reference space, but an identity space is guaranteed.
+            return session.requestReferenceSpace({ type: 'identity' });
+          } else {
+            throw e;
+          }
+        }).then((refSpace) => {
           if (session.mode.startsWith('immersive')) {
             xrImmersiveRefSpace = refSpace;
           } else {

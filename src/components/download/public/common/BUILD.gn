@@ -15,6 +15,7 @@ config("components_download_implementation") {
 
 component("public") {
   sources = [
+    "all_download_event_notifier.h",
     "auto_resumption_handler.cc",
     "auto_resumption_handler.h",
     "base_file.h",
@@ -59,6 +60,8 @@ component("public") {
     "parallel_download_configs.h",
     "rate_estimator.h",
     "resume_mode.h",
+    "simple_download_manager.h",
+    "simple_download_manager_coordinator.h",
     "stream_handle_input_stream.h",
     "url_download_handler_factory.h",
     "url_download_request_handle.h",
@@ -97,7 +100,7 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
-      "//third_party/android_deps:android_support_annotations_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
     ]
   }
 

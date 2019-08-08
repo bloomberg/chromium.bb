@@ -76,8 +76,6 @@ class CORE_EXPORT ScrollingCoordinator final
     cc::ScrollbarLayerInterface* scrollbar_layer = nullptr;
   };
 
-  static ScrollingCoordinator* Create(Page*);
-
   explicit ScrollingCoordinator(Page*);
   ~ScrollingCoordinator();
   void Trace(blink::Visitor*);
@@ -131,8 +129,9 @@ class CORE_EXPORT ScrollingCoordinator final
   // and if successful, returns true. Otherwise returns false.
   bool UpdateCompositedScrollOffset(ScrollableArea* scrollable_area);
 
-  // Updates the compositor layers and returns true if the scrolling coordinator
-  // handled this change.
+  // Updates composited layers after changes to scrollable area  properties
+  // like content and container sizes, scrollbar existence, scrollability, etc.
+  // Scroll offset changes are updated by UpdateCompositedScrollOffset.
   // TODO(pdr): Factor the container bounds change out of this function. The
   // compositor tracks scroll container bounds on the scroll layer whereas
   // blink uses a separate layer. To ensure the compositor scroll layer has the
@@ -149,8 +148,21 @@ class CORE_EXPORT ScrollingCoordinator final
                                           const PaintLayer* parent);
   void UpdateClipParentForGraphicsLayer(GraphicsLayer* child,
                                         const PaintLayer* parent);
-  Region ComputeShouldHandleScrollGestureOnMainThreadRegion(
-      const LocalFrame*) const;
+
+  // Computes the NonFastScrollableRegions for the given local root frame. It
+  // outputs a separate region for areas that scroll with the viewport and
+  // those that are fixed to it since these regions will need to go on separate
+  // layers.
+  // |scrolling_region| is for rects that scroll with the main frame. Since
+  // they they will be stored on the root frame's scrolling contents layer,
+  // they must be specified in the root frame's document coordinates.
+  // |fixed_region| is for rects that are fixed to the main frame. Since they
+  // are stored on the visual viewport's scrolling contents layer, they must be
+  // specified in root frame coordinates.
+  void ComputeShouldHandleScrollGestureOnMainThreadRegion(
+      const LocalFrame*,
+      Region* scrolling_region,
+      Region* fixed_region) const;
 
   void UpdateTouchEventTargetRectsIfNeeded(LocalFrame*);
 
@@ -191,7 +203,7 @@ class CORE_EXPORT ScrollingCoordinator final
       MainThreadScrollingReasons);
 
   void SetShouldHandleScrollGestureOnMainThreadRegion(const Region&,
-                                                      LocalFrameView*);
+                                                      GraphicsLayer*);
 
   void AddScrollbarLayerGroup(ScrollableArea*,
                               ScrollbarOrientation,

@@ -53,12 +53,6 @@ class UsageStatsDatabase {
   // Initializes the database with user |profile|.
   explicit UsageStatsDatabase(Profile* profile);
 
-  // Initializes the database with a |ProtoDatabase|. Useful for testing.
-  explicit UsageStatsDatabase(
-      std::unique_ptr<ProtoDatabase<WebsiteEvent>> website_event_db,
-      std::unique_ptr<ProtoDatabase<Suspension>> suspension_db,
-      std::unique_ptr<ProtoDatabase<TokenMapping>> token_mapping_db);
-
   ~UsageStatsDatabase();
 
   void GetAllEvents(EventsCallback callback);
@@ -97,6 +91,13 @@ class UsageStatsDatabase {
   // Persists all the mappings in |mappings| and deletes any mappings *not* in
   // |mappings|. The map's key is the token, and its value is the FQDN.
   void SetTokenMappings(TokenMap mappings, StatusCallback callback);
+
+ protected:
+  // For testing only.
+  UsageStatsDatabase(
+      std::unique_ptr<ProtoDatabase<WebsiteEvent>> website_event_db,
+      std::unique_ptr<ProtoDatabase<Suspension>> suspension_db,
+      std::unique_ptr<ProtoDatabase<TokenMapping>> token_mapping_db);
 
  private:
   void InitializeDBs();

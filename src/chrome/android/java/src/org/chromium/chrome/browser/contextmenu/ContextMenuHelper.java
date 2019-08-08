@@ -21,6 +21,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
@@ -121,6 +122,31 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
                 nativeOnContextMenuClosed(mNativeContextMenuHelper);
             }
         };
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.REVAMPED_CONTEXT_MENU)
+                && params.getSourceType() != MenuSourceType.MENU_SOURCE_MOUSE) {
+            List<Pair<Integer, List<ContextMenuItem>>> items =
+                    mPopulator.buildContextMenu(null, mActivity, mCurrentContextMenuParams);
+            if (items.isEmpty()) {
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, mOnMenuClosed);
+                return;
+            }
+
+            final RevampedContextMenuController menuController =
+                    new RevampedContextMenuController(topContentOffsetPx);
+            menuController.displayMenu(mActivity, mCurrentContextMenuParams, items, mCallback,
+                    mOnMenuShown, mOnMenuClosed);
+            // TODO(sinansahin): This could be pushed in to the menuController.
+            if (mCurrentContextMenuParams.isImage()) {
+                getThumbnail(menuController, new Callback<Bitmap>() {
+                    @Override
+                    public void onResult(Bitmap result) {
+                        menuController.onImageThumbnailRetrieved(result);
+                    }
+                });
+            }
+            return;
+        }
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CUSTOM_CONTEXT_MENU)
                 && params.getSourceType() != MenuSourceType.MENU_SOURCE_MOUSE) {
@@ -235,13 +261,23 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      * Gets the thumbnail of the current image that triggered the context menu.
      * @param callback Called once the the thumbnail is received.
      */
-    private void getThumbnail(TabularContextMenuUi menuUi, final Callback<Bitmap> callback) {
+    private void getThumbnail(ContextMenuUi menuUi, final Callback<Bitmap> callback) {
         if (mNativeContextMenuHelper == 0) return;
 
         Resources res = mActivity.getResources();
 
-        int maxWidthPx = menuUi.getMaxThumbnailWidthPx(res);
-        int maxHeightPx = menuUi.getMaxThumbnailHeightPx(res);
+        int maxWidthPx;
+        int maxHeightPx;
+
+        if (menuUi instanceof TabularContextMenuUi) {
+            maxWidthPx = ((TabularContextMenuUi) menuUi).getMaxThumbnailWidthPx(res);
+            maxHeightPx = ((TabularContextMenuUi) menuUi).getMaxThumbnailHeightPx(res);
+        } else {
+            maxHeightPx =
+                    res.getDimensionPixelSize(R.dimen.revamped_context_menu_header_image_max_size);
+            maxWidthPx =
+                    res.getDimensionPixelSize(R.dimen.revamped_context_menu_header_image_max_size);
+        }
 
         Callback<Bitmap> bitmapCallback = new Callback<Bitmap>() {
             @Override

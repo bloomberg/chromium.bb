@@ -21,7 +21,7 @@ TEST_IS_ENABLED = True
 MINIMUM_EXPECTED_NUMBER_OF_ANNOTATIONS = 260
 
 class TrafficAnnotationTestsChecker():
-  def __init__(self, build_path=None):
+  def __init__(self, build_path=None, annotations_filename=None):
     """Initializes a TrafficAnnotationTestsChecker object.
 
     Args:
@@ -30,7 +30,12 @@ class TrafficAnnotationTestsChecker():
     """
     self.tools = NetworkTrafficAnnotationTools(build_path)
     self.last_result = None
-
+    self.persist_annotations = bool(annotations_filename)
+    if not annotations_filename:
+      annotations_file = tempfile.NamedTemporaryFile()
+      annotations_filename = annotations_file.name
+      annotations_file.close()
+    self.annotations_filename = annotations_filename
 
   def RunAllTests(self):
     """Runs all tests and returns the result."""
@@ -97,24 +102,27 @@ class TrafficAnnotationTestsChecker():
     """
 
     print("Running auditor using config: %s" % args)
-    temp_file = tempfile.NamedTemporaryFile()
-    temp_filename = temp_file.name
-    temp_file.close()
+
+    try:
+      os.remove(self.annotations_filename)
+    except OSError:
+      pass
 
     _, stderr_text, return_code = self.tools.RunAuditor(
-        args + ["--annotations-file=%s" % temp_filename])
+        args + ["--annotations-file=%s" % self.annotations_filename])
 
-    if os.path.exists(temp_filename):
+    annotations = None
+    if os.path.exists(self.annotations_filename):
       # When tests are run on all files (without filtering), there might be some
       # compile errors in irrelevant files on Windows that can be ignored.
       if (return_code and "--no-filtering" in args and
           sys.platform.startswith(('win', 'cygwin'))):
         print("Ignoring return code: %i" % return_code)
         return_code = 0
-      annotations = None if return_code else open(temp_filename).read()
-      os.remove(temp_filename)
-    else:
-      annotations = None
+      if not return_code:
+        annotations = open(self.annotations_filename).read()
+      if not self.persist_annotations:
+        os.remove(self.annotations_filename)
 
     if annotations:
       print("Test PASSED.")
@@ -135,9 +143,13 @@ def main():
       help='Specifies a compiled build directory, e.g. out/Debug. If not '
            'specified, the script tries to guess it. Will not proceed if not '
            'found.')
+  parser.add_argument(
+      '--annotations-file',
+      help='Optional path to a TSV output file with all annotations.')
 
   args = parser.parse_args()
-  checker = TrafficAnnotationTestsChecker(args.build_path)
+  checker = TrafficAnnotationTestsChecker(args.build_path,
+                                          args.annotations_file)
   return 0 if checker.RunAllTests() else 1
 
 

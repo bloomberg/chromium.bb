@@ -21,6 +21,7 @@
 #include "base/strings/string_split.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
+#include "base/win/win_util.h"
 #include "chrome/chrome_cleaner/ipc/sandbox.h"
 #include "chrome/chrome_cleaner/logging/scoped_logging.h"
 #include "sandbox/win/src/sandbox_factory.h"
@@ -43,7 +44,8 @@ class MojoSandboxSetupHooks : public SandboxSetupHooks {
 
   ResultCode UpdateSandboxPolicy(sandbox::TargetPolicy* policy,
                                  base::CommandLine* command_line) override {
-    base::HandlesToInheritVector handles_to_inherit;
+    base::HandlesToInheritVector handles_to_inherit =
+        parent_process_->extra_handles_to_inherit();
     parent_process_->CreateMojoPipe(command_line, &handles_to_inherit);
     for (HANDLE handle : handles_to_inherit)
       policy->AddHandleToShare(handle);
@@ -146,6 +148,13 @@ void ParentProcess::AppendSwitchPath(const std::string& switch_string,
   command_line_.AppendSwitchPath(switch_string, value);
 }
 
+void ParentProcess::AppendSwitchHandleToShare(const std::string& switch_string,
+                                              HANDLE handle) {
+  extra_handles_to_inherit_.push_back(handle);
+  command_line_.AppendSwitchNative(
+      switch_string, base::NumberToString16(base::win::HandleToUint32(handle)));
+}
+
 bool ParentProcess::LaunchConnectedChildProcess(
     const std::string& child_main_function,
     int32_t* exit_code) {
@@ -181,6 +190,7 @@ bool ParentProcess::LaunchConnectedChildProcess(
 bool ParentProcess::PrepareAndLaunchTestChildProcess(
     const std::string& child_main_function) {
   base::LaunchOptions launch_options;
+  launch_options.handles_to_inherit = extra_handles_to_inherit_;
   CreateMojoPipe(&command_line_, &launch_options.handles_to_inherit);
 
   base::Process child_process = base::SpawnMultiProcessTestChild(

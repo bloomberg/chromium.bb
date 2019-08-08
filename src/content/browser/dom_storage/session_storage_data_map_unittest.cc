@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/services/leveldb/public/cpp/util.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_leveldb_database.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -90,7 +91,7 @@ class SessionStorageDataMapTest : public testing::Test {
   ~SessionStorageDataMapTest() override {}
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  TestBrowserThreadBundle test_browser_thread_bundle_;
   testing::StrictMock<MockListener> listener_;
   url::Origin test_origin_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;

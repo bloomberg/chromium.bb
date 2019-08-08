@@ -12,28 +12,37 @@ WebView reads flags from a specific file during startup. To enable flags, write
 to the file with:
 
 ```sh
-$ # Overwrites all flags (and prints the new flag state):
-$ build/android/adb_system_webview_command_line \
+# Overwrite flags (supports multiple)
+build/android/adb_system_webview_command_line \
     --show-composited-layer-borders \
-    --log-net-log=foo.json # Supports multiple flags
-$ # Simply prints the existing flag state:
-$ build/android/adb_system_webview_command_line
-$ # Passing empty string clears all flags:
-$ build/android/adb_system_webview_command_line ""
+    --log-net-log=foo.json
+# Clear flags
+build/android/adb_system_webview_command_line ""
+# Print flags
+build/android/adb_system_webview_command_line
+```
+
+Or, for a locally compiled APK:
+
+```sh
+autoninja -C out/Default system_webview_apk
+# Overwrite flags (supports multiple)
+out/Default/bin/system_webview_apk argv --args='--show-composited-layer-borders --log-net-log=foo.json'
+# Clear flags
+out/Default/bin/system_webview_apk argv --args=''
+# Print flags
+out/Default/bin/system_webview_apk argv
 ```
 
 Or, you can use the `adb` in your `$PATH` like so:
 
 ```sh
-$ FLAG_FILE=/data/local/tmp/webview-command-line
-$ adb shell "echo '_ --show-composited-layer-borders' > ${FLAG_FILE}"
-$ # The first token is ignored. We use '_' as a convenient placeholder, but any
-$ # token is acceptable.
+FLAG_FILE=/data/local/tmp/webview-command-line
+# Overwrite flags
+adb shell "echo '_ --show-composited-layer-borders' > ${FLAG_FILE}"
+# The first token is ignored. We use '_' as a convenient placeholder, but any
+# token is acceptable.
 ```
-
-*** note
-**Note:** either set of commands will overwrite existing flags.
-***
 
 ### Applying Features with flags
 

@@ -30,6 +30,7 @@
 #include "content/browser/devtools/protocol/io_handler.h"
 #include "content/browser/devtools/protocol/memory_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
+#include "content/browser/devtools/protocol/overlay_handler.h"
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
 #include "content/browser/devtools/protocol/schema_handler.h"
@@ -283,16 +284,30 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(std::make_unique<protocol::DOMHandler>(
       session->client()->MayReadLocalFiles()));
   session->AddHandler(std::move(emulation_handler));
-  session->AddHandler(std::make_unique<protocol::InputHandler>());
+  auto input_handler = std::make_unique<protocol::InputHandler>();
+  input_handler->OnPageScaleFactorChanged(page_scale_factor_);
+  session->AddHandler(std::move(input_handler));
   session->AddHandler(std::make_unique<protocol::InspectorHandler>());
   session->AddHandler(std::make_unique<protocol::IOHandler>(GetIOContext()));
   session->AddHandler(std::make_unique<protocol::MemoryHandler>());
+  if (!frame_tree_node_ || !frame_tree_node_->parent())
+    session->AddHandler(std::make_unique<protocol::OverlayHandler>());
   session->AddHandler(std::make_unique<protocol::NetworkHandler>(
       GetId(),
       frame_tree_node_ ? frame_tree_node_->devtools_frame_token()
                        : base::UnguessableToken(),
-      GetIOContext()));
-  session->AddHandler(std::make_unique<protocol::FetchHandler>(GetIOContext()));
+      GetIOContext(),
+      base::BindRepeating(
+          &RenderFrameDevToolsAgentHost::UpdateResourceLoaderFactories,
+          base::Unretained(this))));
+  session->AddHandler(std::make_unique<protocol::FetchHandler>(
+      GetIOContext(), base::BindRepeating(
+                          [](RenderFrameDevToolsAgentHost* self,
+                             base::OnceClosure done_callback) {
+                            self->UpdateResourceLoaderFactories();
+                            std::move(done_callback).Run();
+                          },
+                          base::Unretained(this))));
   session->AddHandler(std::make_unique<protocol::SchemaHandler>());
   session->AddHandler(std::make_unique<protocol::ServiceWorkerHandler>());
   session->AddHandler(std::make_unique<protocol::StorageHandler>());
@@ -306,8 +321,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(std::make_unique<protocol::SecurityHandler>());
   if (!frame_tree_node_ || !frame_tree_node_->parent()) {
     session->AddHandler(std::make_unique<protocol::TracingHandler>(
-        frame_tree_node_, GetIOContext(),
-        session->client()->UsesBinaryProtocol()));
+        frame_tree_node_, GetIOContext(), session->UsesBinaryProtocol()));
   }
 
   if (sessions().empty()) {
@@ -396,7 +410,8 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
   if (handle->frame_tree_node() != frame_tree_node_)
     return;
   navigation_handles_.erase(handle);
-  NotifyNavigated();
+  if (handle->HasCommitted())
+    NotifyNavigated();
 
   // UpdateFrameHost may destruct |this|.
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
@@ -566,6 +581,7 @@ void RenderFrameDevToolsAgentHost::OnVisibilityChanged(
 
 void RenderFrameDevToolsAgentHost::OnPageScaleFactorChanged(
     float page_scale_factor) {
+  page_scale_factor_ = page_scale_factor;
   for (auto* input : protocol::InputHandler::ForAgentHost(this))
     input->OnPageScaleFactorChanged(page_scale_factor);
 }
@@ -761,6 +777,23 @@ bool RenderFrameDevToolsAgentHost::ShouldAllowSession(
   if (!session->client()->MayAttachToRenderer(frame_host_, is_webui))
     return false;
   return true;
+}
+
+void RenderFrameDevToolsAgentHost::UpdateResourceLoaderFactories() {
+  if (!frame_tree_node_)
+    return;
+  base::queue<FrameTreeNode*> queue;
+  queue.push(frame_tree_node_);
+  while (!queue.empty()) {
+    FrameTreeNode* node = queue.front();
+    queue.pop();
+    RenderFrameHostImpl* host = node->current_frame_host();
+    if (node != frame_tree_node_ && host->IsCrossProcessSubframe())
+      continue;
+    host->UpdateSubresourceLoaderFactories();
+    for (size_t i = 0; i < node->child_count(); ++i)
+      queue.push(node->child_at(i));
+  }
 }
 
 }  // namespace content

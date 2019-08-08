@@ -429,3 +429,73 @@ template("proto_library") {
     }
   }
 }
+
+# Convert a protocol buffer between text and binary formats.
+# This can be used to run protoc with the --encode or --decode options.
+# Parameters:
+#
+#   sources: list of string
+#       The sources to loop over and run protoc on
+#
+#   inputs: list of string
+#       The file dependencies for the action. This should be the list of .proto
+#       files involved in the conversion operation.
+#
+#   output_pattern: string
+#       A path pattern with source expansion variables (like source_name_part)
+#       for where the result of conversion should be placed.
+#
+#   deps: (optional) list of label
+#       Additional dependencies for the target.
+#
+#   args: list of string
+#       Arguments to pass to the protoc tool. This could include -I for include
+#       paths, as well as the name of the proto file.
+#
+#
+# Example to convert a .textproto to a .binarybp:
+#   protoc_convert("convert_foo") {
+#     sources = [
+#       "test/data/example1.textproto",
+#       "test/data/example2.textproto",
+#     ]
+#     inputs = [
+#       "//component/core/foo.proto",
+#     ]
+#     output_pattern = "$target_gen_dir/foo_data/{{source_name_part}}.binarypb"
+#     args = [
+#       "--encode=foo.FooMessage",
+#       "-I",
+#       rebase_path("//component/core"),
+#       "foo.proto",
+#     ]
+#   }
+template("protoc_convert") {
+  action_foreach(target_name) {
+    script = "//tools/protoc_wrapper/protoc_convert.py"
+
+    sources = invoker.sources
+
+    inputs = invoker.inputs
+
+    deps = [
+      "//third_party/protobuf:protoc",
+    ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+
+    outputs = [
+      invoker.output_pattern,
+    ]
+
+    args = [
+             "--protoc",
+             rebase_path("$root_out_dir/protoc"),
+             "--infile",
+             "{{source}}",
+             "--outfile",
+             rebase_path(invoker.output_pattern),
+           ] + invoker.args
+  }
+}

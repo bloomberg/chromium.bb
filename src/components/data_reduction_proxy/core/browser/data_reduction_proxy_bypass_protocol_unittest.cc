@@ -29,7 +29,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
@@ -444,10 +443,12 @@ class DataReductionProxyProtocolTest : public testing::Test {
     base::RunLoop().Run();
 
     if (!expected_error) {
-      EXPECT_EQ(net::OK, d.request_status());
+      EXPECT_EQ(net::OK, d.request_status())
+          << " method=" << method << " content=" << content;
       if (network_delegate_) {
         EXPECT_EQ(initial_headers_received_count + expect_response_header_count,
-                  network_delegate_->headers_received_count());
+                  network_delegate_->headers_received_count())
+            << " method=" << method << " content=" << content;
       }
       EXPECT_EQ(content, d.data_received());
       return;
@@ -632,6 +633,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassRetryOnPostConnectionErrors) {
 TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
   // The test manually controls the fetch of warmup URL and the response.
   test_context_->DisableWarmupURLFetchCallback();
+  test_context_->DisableWarmupURLFetch();
 
   const struct {
     const char* method;
@@ -1053,11 +1055,14 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
         tests[i].generate_response_error, tests[i].expected_bad_proxy_count,
         tests[i].expect_response_body, net::ERR_INTERNET_DISCONNECTED,
         tests[i].generate_response_error, tests[i].expected_retry ? 2 : 1);
-    EXPECT_EQ(tests[i].expected_bypass_type, bypass_stats_->GetBypassType());
+    EXPECT_EQ(tests[i].expected_bypass_type, bypass_stats_->GetBypassType())
+        << " i=" << i << " method=" << *tests[i].method
+        << " first_response=" << *tests[i].first_response;
     // We should also observe the bad proxy in the retry list.
     TestBadProxies(tests[i].expected_bad_proxy_count,
                    tests[i].expected_duration,
                    primary, fallback);
+    context_->proxy_resolution_service()->ClearBadProxiesCache();
   }
 }
 

@@ -162,13 +162,6 @@ void ModelTypeController::Stop(ShutdownReason shutdown_reason,
   SyncStopMetadataFate metadata_fate = KEEP_METADATA;
   switch (shutdown_reason) {
     case STOP_SYNC:
-      // Special case: For AUTOFILL_WALLET_DATA, we want to clear all data even
-      // when Sync is stopped temporarily.
-      // TODO(crbug.com/890361,crbug.com/890737): Move this into the
-      // Wallet-specific ModelTypeController once we have one.
-      if (type() == AUTOFILL_WALLET_DATA) {
-        metadata_fate = CLEAR_METADATA;
-      }
       break;
     case DISABLE_SYNC:
       metadata_fate = CLEAR_METADATA;
@@ -299,7 +292,7 @@ void ModelTypeController::RecordStartFailure() const {
   // defines quite a different order from the type() enum.
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures2",
                             ModelTypeToHistogramInt(type()),
-                            static_cast<int>(MODEL_TYPE_COUNT));
+                            static_cast<int>(ModelType::NUM_ENTRIES));
 }
 
 void ModelTypeController::RecordRunFailure() const {
@@ -309,7 +302,7 @@ void ModelTypeController::RecordRunFailure() const {
   // defines quite a different order from the type() enum.
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures2",
                             ModelTypeToHistogramInt(type()),
-                            static_cast<int>(MODEL_TYPE_COUNT));
+                            static_cast<int>(ModelType::NUM_ENTRIES));
 }
 
 void ModelTypeController::OnDelegateStarted(

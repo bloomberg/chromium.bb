@@ -18,6 +18,8 @@ Optional arguments may be passed on the command line in key-value pairs.
 These parameters will be passed through to the config's main method.
 """
 
+from __future__ import print_function
+
 import json
 import optparse
 import os
@@ -62,13 +64,22 @@ class Checkout(object):
     pass
 
   def run(self, cmd, return_stdout=False, **kwargs):
-    print 'Running: %s' % (' '.join(pipes.quote(x) for x in cmd))
+    print('Running: %s' % (' '.join(pipes.quote(x) for x in cmd)))
     if self.options.dry_run:
       return ''
     if return_stdout:
       return subprocess.check_output(cmd, **kwargs)
     else:
-      subprocess.check_call(cmd, **kwargs)
+      try:
+        subprocess.check_call(cmd, **kwargs)
+      except subprocess.CalledProcessError as e:
+        # If the subprocess failed, it likely emitted its own distress message
+        # already - don't scroll that message off the screen with a stack trace
+        # from this program as well. Emit a terse message and bail out here;
+        # otherwise a later step will try doing more work and may hide the
+        # subprocess message.
+        print('Subprocess failed with return code %d.' % e.returncode)
+        sys.exit(e.returncode)
       return ''
 
 
@@ -94,7 +105,7 @@ class GclientCheckout(Checkout):
 class GitCheckout(Checkout):
 
   def run_git(self, *cmd, **kwargs):
-    print 'Running: git %s' % (' '.join(pipes.quote(x) for x in cmd))
+    print('Running: git %s' % (' '.join(pipes.quote(x) for x in cmd)))
     if self.options.dry_run:
       return ''
     return git_common.run(*cmd, **kwargs)
@@ -108,15 +119,16 @@ class GclientGitCheckout(GclientCheckout, GitCheckout):
 
   def _format_spec(self):
     def _format_literal(lit):
-      if isinstance(lit, basestring):
+      if isinstance(lit, str) or (sys.version_info.major == 2 and
+                                  isinstance(lit, unicode)):
         return '"%s"' % lit
       if isinstance(lit, list):
         return '[%s]' % ', '.join(_format_literal(i) for i in lit)
       return '%r' % lit
     soln_strings = []
     for soln in self.spec['solutions']:
-      soln_string= '\n'.join('    "%s": %s,' % (key, _format_literal(value))
-                             for key, value in soln.iteritems())
+      soln_string = '\n'.join('    "%s": %s,' % (key, _format_literal(value))
+                              for key, value in soln.items())
       soln_strings.append('  {\n%s\n  },' % soln_string)
     gclient_spec = 'solutions = [\n%s\n]\n' % '\n'.join(soln_strings)
     extra_keys = ['target_os', 'target_os_only', 'cache_dir']
@@ -139,7 +151,7 @@ class GclientGitCheckout(GclientCheckout, GitCheckout):
     # Configure git.
     wd = os.path.join(self.base, self.root)
     if self.options.dry_run:
-      print 'cd %s' % wd
+      print('cd %s' % wd)
     self.run_git(
         'submodule', 'foreach',
         'git config -f $toplevel/.git/config submodule.$name.ignore all',
@@ -172,9 +184,9 @@ def CheckoutFactory(type_name, options, spec, root):
 def usage(msg=None):
   """Print help and exit."""
   if msg:
-    print 'Error:', msg
+    print('Error:', msg)
 
-  print textwrap.dedent("""\
+  print(textwrap.dedent("""\
     usage: %s [options] <config> [--property=value [--property2=value2 ...]]
 
     This script can be used to download the Chromium sources. See
@@ -188,13 +200,13 @@ def usage(msg=None):
        -n, --dry-run      Don't run commands, only print them.
        --no-history       Perform shallow clones, don't fetch the full git history.
 
-    Valid fetch configs:""") % os.path.basename(sys.argv[0])
+    Valid fetch configs:""") % os.path.basename(sys.argv[0]))
 
   configs_dir = os.path.join(SCRIPT_PATH, 'fetch_configs')
   configs = [f[:-3] for f in os.listdir(configs_dir) if f.endswith('.py')]
   configs.sort()
   for fname in configs:
-    print '  ' + fname
+    print('  ' + fname)
 
   sys.exit(bool(msg))
 
@@ -251,7 +263,7 @@ def run_config_fetch(config, props, aliased=False):
   config_path = os.path.abspath(
       os.path.join(SCRIPT_PATH, 'fetch_configs', config))
   if not os.path.exists(config_path + '.py'):
-    print "Could not find a config for %s" % config
+    print("Could not find a config for %s" % config)
     sys.exit(1)
 
   cmd = [sys.executable, config_path + '.py', 'fetch'] + props
@@ -285,12 +297,12 @@ def run(options, spec, root):
   except KeyError:
     return 1
   if not options.force and checkout.exists():
-    print 'Your current directory appears to already contain, or be part of, '
-    print 'a checkout. "fetch" is used only to get new checkouts. Use '
-    print '"gclient sync" to update existing checkouts.'
-    print
-    print 'Fetch also does not yet deal with partial checkouts, so if fetch'
-    print 'failed, delete the checkout and start over (crbug.com/230691).'
+    print('Your current directory appears to already contain, or be part of, ')
+    print('a checkout. "fetch" is used only to get new checkouts. Use ')
+    print('"gclient sync" to update existing checkouts.')
+    print()
+    print('Fetch also does not yet deal with partial checkouts, so if fetch')
+    print('failed, delete the checkout and start over (crbug.com/230691).')
     return 1
   return checkout.init()
 

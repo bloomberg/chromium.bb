@@ -17,15 +17,14 @@ void FakeApplicationConfigManager::GetConfig(std::string id,
                                              GetConfigCallback callback) {
   if (id_to_url_.find(id) == id_to_url_.end()) {
     LOG(ERROR) << "Unknown Cast App ID: " << id;
-    callback(chromium::cast::ApplicationConfigPtr());
+    callback(chromium::cast::ApplicationConfig());
     return;
   }
 
-  chromium::cast::ApplicationConfigPtr app_config =
-      chromium::cast::ApplicationConfig::New();
-  app_config->id = id;
-  app_config->display_name = "Dummy test app";
-  app_config->web_url = id_to_url_[id].spec();
+  chromium::cast::ApplicationConfig app_config;
+  app_config.set_id(id);
+  app_config.set_display_name("Dummy test app");
+  app_config.set_web_url(id_to_url_[id].spec());
 
   callback(std::move(app_config));
 }

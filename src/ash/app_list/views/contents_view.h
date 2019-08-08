@@ -58,6 +58,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
    public:
     // Called when search box bounds is updated.
     virtual void OnSearchBoxBoundsUpdated() = 0;
+
+    // Called when the search box is cleaded and deactivated.
+    virtual void OnSearchBoxClearAndDeactivated() = 0;
   };
 
   explicit ContentsView(AppListView* app_list_view);
@@ -74,6 +77,10 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // operations outside the application list.
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);
+
+  // Called when the target state of AppListView changes.
+  void OnAppListViewTargetStateChanged(
+      ash::mojom::AppListViewState target_state);
 
   // Shows/hides the search results. Hiding the search results will cause the
   // app list to return to the page that was displayed before
@@ -191,6 +198,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // and tablet mode is enabled.
   void SetExpandArrowViewVisibility(bool show);
 
+  void NotifySearchBoxBoundsUpdated();
+
   void AddSearchBoxUpdateObserver(SearchBoxUpdateObserver* observer);
   void RemoveSearchBoxUpdateObserver(SearchBoxUpdateObserver* observer);
 
@@ -221,8 +230,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
                                 ash::AppListState current_state,
                                 ash::AppListState target_state);
 
-  // Updates the expand arrow's focus behavior based on the current state.
-  void UpdateExpandArrowFocusBehavior(ash::AppListState current_state);
+  // Updates the expand arrow's focus behavior based on AppListViewState.
+  void UpdateExpandArrowFocusBehavior(
+      ash::mojom::AppListViewState target_state);
 
   // Updates search box visibility based on the current state.
   void UpdateSearchBoxVisibility(ash::AppListState current_state);

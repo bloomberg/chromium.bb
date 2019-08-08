@@ -11,9 +11,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.echo.mojom.Echo;
@@ -66,24 +66,19 @@ public class ServiceManagerConnectionImplTest {
         mCallbackHelper = new CallbackHelper();
         final int callCount = mCallbackHelper.getCallCount();
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                MessagePipeHandle handle =
-                        ServiceManagerConnectionImpl.getConnectorMessagePipeHandle();
-                Core core = CoreImpl.getInstance();
-                Pair<Echo.Proxy, InterfaceRequest<Echo>> pair =
-                        Echo.MANAGER.getInterfaceRequest(core);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            MessagePipeHandle handle = ServiceManagerConnectionImpl.getConnectorMessagePipeHandle();
+            Core core = CoreImpl.getInstance();
+            Pair<Echo.Proxy, InterfaceRequest<Echo>> pair = Echo.MANAGER.getInterfaceRequest(core);
 
-                // Connect the Echo service via Connector.
-                Connector connector = new Connector(handle);
-                connector.bindInterface(
-                        EchoConstants.SERVICE_NAME, Echo.MANAGER.getName(), pair.second);
+            // Connect the Echo service via Connector.
+            Connector connector = new Connector(handle);
+            connector.bindInterface(
+                    EchoConstants.SERVICE_NAME, Echo.MANAGER.getName(), pair.second);
 
-                // Fire the echoString() mojo call.
-                EchoStringResponse callback = new EchoStringResponseImpl();
-                pair.first.echoString(TEST_STRING, callback);
-            }
+            // Fire the echoString() mojo call.
+            EchoStringResponse callback = new EchoStringResponseImpl();
+            pair.first.echoString(TEST_STRING, callback);
         });
 
         // Wait the response from Echo service.

@@ -238,6 +238,7 @@ Context::~Context()
 	mState.pixelPackBuffer = nullptr;
 	mState.pixelUnpackBuffer = nullptr;
 	mState.genericUniformBuffer = nullptr;
+	mState.genericTransformFeedbackBuffer = nullptr;
 
 	for(int i = 0; i < MAX_UNIFORM_BUFFER_BINDINGS; i++) {
 		mState.uniformBuffers[i].set(nullptr, 0, 0);
@@ -1171,12 +1172,7 @@ void Context::bindTransformFeedbackBuffer(GLuint buffer)
 {
 	mResourceManager->checkBufferAllocation(buffer);
 
-	TransformFeedback* transformFeedback = getTransformFeedback(mState.transformFeedback);
-
-	if(transformFeedback)
-	{
-		transformFeedback->setGenericBuffer(getBuffer(buffer));
-	}
+	mState.genericTransformFeedbackBuffer = getBuffer(buffer);
 }
 
 void Context::bindTexture(TextureType type, GLuint texture)
@@ -1259,7 +1255,7 @@ void Context::bindGenericTransformFeedbackBuffer(GLuint buffer)
 {
 	mResourceManager->checkBufferAllocation(buffer);
 
-	getTransformFeedback()->setGenericBuffer(getBuffer(buffer));
+	mState.genericTransformFeedbackBuffer = getBuffer(buffer);
 }
 
 void Context::bindIndexedTransformFeedbackBuffer(GLuint buffer, GLuint index, GLintptr offset, GLsizeiptr size)
@@ -1268,6 +1264,7 @@ void Context::bindIndexedTransformFeedbackBuffer(GLuint buffer, GLuint index, GL
 
 	Buffer* bufferObject = getBuffer(buffer);
 	getTransformFeedback()->setBuffer(index, bufferObject, offset, size);
+	mState.genericTransformFeedbackBuffer = bufferObject;
 }
 
 void Context::bindTransformFeedback(GLuint id)
@@ -1621,10 +1618,7 @@ bool Context::getBuffer(GLenum target, es2::Buffer **buffer) const
 		*buffer = getPixelUnpackBuffer();
 		break;
 	case GL_TRANSFORM_FEEDBACK_BUFFER:
-		{
-			TransformFeedback* transformFeedback = getTransformFeedback();
-			*buffer = transformFeedback ? static_cast<es2::Buffer*>(transformFeedback->getGenericBuffer()) : nullptr;
-		}
+		*buffer = static_cast<es2::Buffer*>(mState.genericTransformFeedbackBuffer);
 		break;
 	case GL_UNIFORM_BUFFER:
 		*buffer = getGenericUniformBuffer();
@@ -1643,6 +1637,27 @@ TransformFeedback *Context::getTransformFeedback() const
 Program *Context::getCurrentProgram() const
 {
 	return mResourceManager->getProgram(mState.currentProgram);
+}
+
+Texture *Context::getTargetTexture(GLenum target) const
+{
+	Texture *texture = nullptr;
+
+	switch(target)
+	{
+	case GL_TEXTURE_2D:            texture = getTexture2D();       break;
+	case GL_TEXTURE_2D_ARRAY:      texture = getTexture2DArray();  break;
+	case GL_TEXTURE_3D:            texture = getTexture3D();       break;
+	case GL_TEXTURE_CUBE_MAP:      texture = getTextureCubeMap();  break;
+	case GL_TEXTURE_EXTERNAL_OES:  texture = getTextureExternal(); break;
+	case GL_TEXTURE_RECTANGLE_ARB: texture = getTexture2DRect();   break;
+	default:
+		return error(GL_INVALID_ENUM, nullptr);
+	}
+
+	ASSERT(texture);  // Must always have a default texture to fall back to.
+
+	return texture;
 }
 
 Texture2D *Context::getTexture2D() const
@@ -2362,7 +2377,7 @@ template<typename T> bool Context::getIntegerv(GLenum pname, T *params) const
 			TransformFeedback* transformFeedback = getTransformFeedback(mState.transformFeedback);
 			if(transformFeedback)
 			{
-				*params = transformFeedback->getGenericBufferName();
+				*params = mState.genericTransformFeedbackBuffer.name();
 			}
 			else
 			{
@@ -3839,6 +3854,10 @@ void Context::detachBuffer(GLuint buffer)
 	if(mState.genericUniformBuffer.name() == buffer)
 	{
 		mState.genericUniformBuffer = nullptr;
+	}
+	if (mState.genericTransformFeedbackBuffer.name() == buffer)
+	{
+		mState.genericTransformFeedbackBuffer = nullptr;
 	}
 
 	if(getArrayBufferName() == buffer)

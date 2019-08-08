@@ -87,9 +87,9 @@ class PLATFORM_EXPORT SecurityPolicy {
   static bool IsOriginAccessToURLAllowed(const SecurityOrigin* active_origin,
                                          const KURL&);
 
-  static void AddOriginTrustworthyWhiteList(const String&);
-  static bool IsOriginWhiteListedTrustworthy(const SecurityOrigin&);
-  static bool IsUrlWhiteListedTrustworthy(const KURL&);
+  static void AddOriginToTrustworthySafelist(const String&);
+  static bool IsOriginTrustworthySafelisted(const SecurityOrigin&);
+  static bool IsUrlTrustworthySafelisted(const KURL&);
 
   static bool ReferrerPolicyFromString(const String& policy,
                                        ReferrerPolicyLegacyKeywordsSupport,

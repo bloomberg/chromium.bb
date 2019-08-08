@@ -23,10 +23,11 @@ FakeNavigableContents::FakeNavigableContents() {
 
 FakeNavigableContents::~FakeNavigableContents() = default;
 
-void FakeNavigableContents::Bind(mojom::NavigableContentsRequest request,
-                                 mojom::NavigableContentsClientPtr client) {
-  binding_.Bind(std::move(request));
-  client_ = std::move(client);
+void FakeNavigableContents::Bind(
+    mojo::PendingReceiver<mojom::NavigableContents> receiver,
+    mojo::PendingRemote<mojom::NavigableContentsClient> client) {
+  receiver_.Bind(std::move(receiver));
+  client_.Bind(std::move(client));
 }
 
 void FakeNavigableContents::Navigate(const GURL& url,

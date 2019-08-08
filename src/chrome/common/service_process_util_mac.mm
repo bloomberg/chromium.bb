@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
@@ -28,6 +29,7 @@
 #include "chrome/common/mac/launchd.h"
 #include "chrome/common/service_process_util_posix.h"
 #include "components/version_info/version_info.h"
+#include "mojo/public/cpp/platform/features.h"
 
 using ::base::FilePathWatcher;
 
@@ -95,9 +97,19 @@ base::FilePath GetServiceProcessSocketName() {
   return socket_name;
 }
 
+NSString* GetServiceProcessMachName() {
+  base::scoped_nsobject<NSString> name(
+      base::mac::CFToNSCast(CopyServiceProcessLaunchDName()));
+  return [name stringByAppendingFormat:@".service_process.%lu",
+                                       [GetServiceProcessLaunchDLabel() hash]];
+}
+
 }  // namespace
 
 mojo::NamedPlatformChannel::ServerName GetServiceProcessServerName() {
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    return base::SysNSStringToUTF8(GetServiceProcessMachName());
+  }
   base::FilePath socket_name = GetServiceProcessSocketName();
   VLOG(1) << "ServiceProcessChannel: " << socket_name.value();
   return socket_name.value();
@@ -156,7 +168,19 @@ bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
 }
 
 bool ServiceProcessState::Initialize() {
-  mac::services::JobCheckinInfo info;
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    mac::services::JobInfo info;
+    // The Mach service will be checked when GetServiceProcessServerEndpoint()
+    // is called.
+    bool ok = Launchd::GetInstance()->GetJobInfo(
+        base::SysNSStringToUTF8(GetServiceProcessLaunchDLabel()), &info);
+    if (!ok) {
+      DLOG(ERROR) << "Failed to look up job info.";
+      return false;
+    }
+    state_->job_info.program = info.program;
+    return true;
+  }
   std::string socket_key =
       base::SysNSStringToUTF8(GetServiceProcessLaunchDSocketKey());
   if (!Launchd::GetInstance()->CheckIn(socket_key, &state_->job_info)) {
@@ -169,6 +193,11 @@ bool ServiceProcessState::Initialize() {
 
 mojo::PlatformChannelServerEndpoint
 ServiceProcessState::GetServiceProcessServerEndpoint() {
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    mojo::NamedPlatformChannel::Options options;
+    options.server_name = base::SysNSStringToUTF8(GetServiceProcessMachName());
+    return mojo::NamedPlatformChannel(options).TakeServerEndpoint();
+  }
   return mojo::PlatformChannelServerEndpoint(
       mojo::PlatformHandle(base::ScopedFD(state_->job_info.socket)));
 }
@@ -208,9 +237,14 @@ mac::services::JobOptions GetServiceProcessJobOptions(
   options.label = base::SysNSStringToUTF8(GetServiceProcessLaunchDLabel());
   options.executable_path = cmd_line->GetProgram().value();
   options.arguments = cmd_line->argv();
-  options.socket_name = GetServiceProcessSocketName().value();
-  options.socket_key =
-      base::SysNSStringToUTF8(GetServiceProcessLaunchDSocketKey());
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    options.mach_service_name =
+        base::SysNSStringToUTF8(GetServiceProcessMachName());
+  } else {
+    options.socket_name = GetServiceProcessSocketName().value();
+    options.socket_key =
+        base::SysNSStringToUTF8(GetServiceProcessLaunchDSocketKey());
+  }
 
   options.run_at_load = for_auto_launch;
   options.auto_launch = for_auto_launch;
@@ -251,6 +285,13 @@ CFDictionaryRef CreateServiceProcessLaunchdPlist(base::CommandLine* cmd_line,
     @LAUNCH_JOBKEY_PROGRAMARGUMENTS : ns_args,
     @LAUNCH_JOBKEY_SOCKETS : sockets,
   } mutableCopy];
+
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    NSString* mach_service_name = GetServiceProcessMachName();
+    [launchd_plist setObject:mach_service_name
+                      forKey:@LAUNCH_JOBKEY_MACHSERVICES];
+    [launchd_plist removeObjectForKey:@LAUNCH_JOBKEY_SOCKETS];
+  }
 
   if (for_auto_launch) {
     // We want the service process to be able to exit if there are no services

@@ -133,12 +133,13 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
             final StripLayoutTab st = stripTabs[i];
             boolean isSelected = st.getId() == selectedTabId;
             nativePutStripTabLayer(mNativePtr, st.getId(), st.getCloseButton().getResourceId(),
-                    st.getResourceId(isSelected), isSelected, st.getClosePressed(),
-                    layoutHelper.getWidth() * mDpToPx, st.getDrawX() * mDpToPx,
-                    st.getDrawY() * mDpToPx, st.getWidth() * mDpToPx, st.getHeight() * mDpToPx,
-                    st.getContentOffsetX() * mDpToPx, st.getCloseButton().getOpacity(),
-                    st.isLoading(), st.getLoadingSpinnerRotation(), layerTitleCache,
-                    resourceManager);
+                    st.getResourceId(), st.getOutlineResourceId(), st.getCloseButton().getTint(),
+                    st.getTint(isSelected), st.getOutlineTint(isSelected), isSelected,
+                    st.getClosePressed(), layoutHelper.getWidth() * mDpToPx,
+                    st.getDrawX() * mDpToPx, st.getDrawY() * mDpToPx, st.getWidth() * mDpToPx,
+                    st.getHeight() * mDpToPx, st.getContentOffsetX() * mDpToPx,
+                    st.getCloseButton().getOpacity(), st.isLoading(),
+                    st.getLoadingSpinnerRotation(), layerTitleCache, resourceManager);
         }
     }
 
@@ -165,7 +166,8 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
     private native void nativeUpdateTabStripRightFade(long nativeTabStripSceneLayer,
             int resourceId, float opacity, ResourceManager resourceManager);
     private native void nativePutStripTabLayer(long nativeTabStripSceneLayer, int id,
-            int closeResourceId, int handleResourceId, boolean foreground, boolean closePressed,
+            int closeResourceId, int handleResourceId, int handleOutlineResourceId, int closeTint,
+            int handleTint, int handleOutlineTint, boolean foreground, boolean closePressed,
             float toolbarWidth, float x, float y, float width, float height, float contentOffsetX,
             float closeButtonAlpha, boolean isLoading, float spinnerRotation,
             LayerTitleCache layerTitleCache, ResourceManager resourceManager);

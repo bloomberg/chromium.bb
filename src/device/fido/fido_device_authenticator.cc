@@ -59,30 +59,6 @@ void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
                                              MakeCredentialCallback callback) {
   DCHECK(device_->SupportedProtocolIsInitialized())
       << "InitializeAuthenticator() must be called first.";
-  DCHECK(Options());
-
-  // When PIN support is enabled, the mapping from Webauthn's ternary user-
-  // verification preference to CTAP2's binary option is done inside the request
-  // handler instead.
-  if (!base::FeatureList::IsEnabled(device::kWebAuthPINSupport) ||
-      request.user_verification() == UserVerificationRequirement::kPreferred) {
-    // If the authenticator has UV configured then UV will be required in
-    // order to create a credential (as specified by CTAP 2.0), even if
-    // user-verification is "discouraged". However, if the request is U2F-only
-    // then that doesn't apply and UV must be set to discouraged so that the
-    // request can be translated to U2F.
-    if (Options()->user_verification_availability ==
-            AuthenticatorSupportedOptions::UserVerificationAvailability::
-                kSupportedAndConfigured &&
-        !request.is_u2f_only()) {
-      request.SetUserVerification(UserVerificationRequirement::kRequired);
-    } else {
-      request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
-    }
-  }
-
-  // TODO(martinkr): Change FidoTasks to take all request parameters by const
-  // reference, so we can avoid copying these from the RequestHandler.
   task_ = std::make_unique<MakeCredentialTask>(
       device_.get(), std::move(request), std::move(callback));
 }
@@ -91,84 +67,38 @@ void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
                                            GetAssertionCallback callback) {
   DCHECK(device_->SupportedProtocolIsInitialized())
       << "InitializeAuthenticator() must be called first.";
-  DCHECK(Options());
-  const bool pin_support =
-      base::FeatureList::IsEnabled(device::kWebAuthPINSupport);
-
-  // Update the request to the "effective" user verification requirement.
-  // https://w3c.github.io/webauthn/#effective-user-verification-requirement-for-assertion
-  if (!pin_support ||
-      request.user_verification() == UserVerificationRequirement::kPreferred) {
-    if (Options()->user_verification_availability ==
-            AuthenticatorSupportedOptions::UserVerificationAvailability::
-                kSupportedAndConfigured ||
-        (pin_support && Options()->client_pin_availability ==
-                            AuthenticatorSupportedOptions::
-                                ClientPinAvailability::kSupportedAndPinSet)) {
-      request.SetUserVerification(UserVerificationRequirement::kRequired);
-    } else {
-      request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
-    }
-  }
-
   task_ = std::make_unique<GetAssertionTask>(device_.get(), std::move(request),
                                              std::move(callback));
 }
 
-void FidoDeviceAuthenticator::GetTouch(base::OnceCallback<void()> callback) {
-  // We want to flash and wait for a touch. With a U2F device, that can be
-  // achieved by requesting a signature for a dummy credential ID, but CTAP2
-  // devices will return an error immediately. Newer versions of the CTAP2 spec
-  // include a provision for blocking for a touch when an empty pinAuth is
-  // specified, but devices may exist that predate this part of the spec and
-  // also the spec says that devices need only do that if they implement PIN
-  // support. Therefore, in order to portably wait for a touch a dummy
-  // credential is created. This does assume that the device supports ECDSA
-  // P-256, however.
-  if (device_->supported_protocol() == ProtocolVersion::kU2f) {
-    CtapGetAssertionRequest req(".dummy", "");
-    req.SetAllowList(
-        {PublicKeyCredentialDescriptor(CredentialType::kPublicKey, {0})});
-    GetAssertion(
-        std::move(req),
-        base::BindOnce(
-            [](base::OnceCallback<void()> callback, CtapDeviceResponseCode,
-               base::Optional<AuthenticatorGetAssertionResponse>) {
-              std::move(callback).Run();
-            },
-            std::move(callback)));
-  } else {
-    PublicKeyCredentialUserEntity user({1} /* user ID */);
-    // The user name is incorrectly marked as optional in the CTAP2 spec.
-    user.SetUserName("dummy");
-    CtapMakeCredentialRequest req(
-        "" /* client_data_json */, PublicKeyCredentialRpEntity(".dummy"),
-        std::move(user),
-        PublicKeyCredentialParams(
-            {{CredentialType::kPublicKey,
-              base::strict_cast<int>(CoseAlgorithmIdentifier::kCoseEs256)}}));
-    req.SetExcludeList({});
-    // Set an empty pinAuth in case the device is a newer CTAP2 and understands
-    // this to mean to block for touch.
-    req.SetPinAuth({});
+void FidoDeviceAuthenticator::GetNextAssertion(GetAssertionCallback callback) {
+  DCHECK(device_->SupportedProtocolIsInitialized())
+      << "InitializeAuthenticator() must be called first.";
 
-    MakeCredential(
-        std::move(req),
-        base::BindOnce(
-            [](base::OnceCallback<void()> callback,
-               CtapDeviceResponseCode status,
-               base::Optional<AuthenticatorMakeCredentialResponse>) {
-              // If the device didn't understand/process the request it may
-              // fail immediately. Rather than count that as a touch, ignore
-              // those cases completely.
-              if (status == CtapDeviceResponseCode::kSuccess ||
-                  status == CtapDeviceResponseCode::kCtap2ErrPinNotSet ||
-                  status == CtapDeviceResponseCode::kCtap2ErrPinInvalid) {
-                std::move(callback).Run();
-              }
-            },
-            std::move(callback)));
-  }
+  operation_ =
+      std::make_unique<Ctap2DeviceOperation<CtapGetNextAssertionRequest,
+                                            AuthenticatorGetAssertionResponse>>(
+          device_.get(), CtapGetNextAssertionRequest(), std::move(callback),
+          base::BindOnce(&ReadCTAPGetAssertionResponse));
+  operation_->Start();
+}
+
+void FidoDeviceAuthenticator::GetTouch(base::OnceCallback<void()> callback) {
+  MakeCredential(
+      MakeCredentialTask::GetTouchRequest(device()),
+      base::BindOnce(
+          [](base::OnceCallback<void()> callback, CtapDeviceResponseCode status,
+             base::Optional<AuthenticatorMakeCredentialResponse>) {
+            // If the device didn't understand/process the request it may
+            // fail immediately. Rather than count that as a touch, ignore
+            // those cases completely.
+            if (status == CtapDeviceResponseCode::kSuccess ||
+                status == CtapDeviceResponseCode::kCtap2ErrPinNotSet ||
+                status == CtapDeviceResponseCode::kCtap2ErrPinInvalid) {
+              std::move(callback).Run();
+            }
+          },
+          std::move(callback)));
 }
 
 void FidoDeviceAuthenticator::GetRetries(GetRetriesCallback callback) {
@@ -253,6 +183,119 @@ void FidoDeviceAuthenticator::ChangePIN(const std::string& old_pin,
   operation_->Start();
 }
 
+FidoAuthenticator::MakeCredentialPINDisposition
+FidoDeviceAuthenticator::WillNeedPINToMakeCredential(
+    const CtapMakeCredentialRequest& request,
+    const FidoRequestHandlerBase::Observer* observer) {
+  using ClientPinAvailability =
+      AuthenticatorSupportedOptions::ClientPinAvailability;
+
+  // Authenticators with built-in UV can use that. (Fallback to PIN is not yet
+  // implemented.)
+  if (Options()->user_verification_availability ==
+      AuthenticatorSupportedOptions::UserVerificationAvailability::
+          kSupportedAndConfigured) {
+    return MakeCredentialPINDisposition::kNoPIN;
+  }
+
+  const auto device_support = Options()->client_pin_availability;
+  const bool can_collect_pin = observer && observer->SupportsPIN();
+
+  // CTAP 2.0 requires a PIN for credential creation once a PIN has been set.
+  // Thus, if fallback to U2F isn't possible, a PIN will be needed if set.
+  const bool supports_u2f =
+      device()->device_info() &&
+      device()->device_info()->versions().contains(ProtocolVersion::kU2f);
+  if (device_support == ClientPinAvailability::kSupportedAndPinSet &&
+      !supports_u2f) {
+    if (can_collect_pin) {
+      return MakeCredentialPINDisposition::kUsePIN;
+    } else {
+      return MakeCredentialPINDisposition::kUnsatisfiable;
+    }
+  }
+
+  // If a PIN cannot be collected, and UV is required, then this request cannot
+  // be met.
+  if (request.user_verification() == UserVerificationRequirement::kRequired &&
+      (!can_collect_pin ||
+       device_support == ClientPinAvailability::kNotSupported)) {
+    return MakeCredentialPINDisposition::kUnsatisfiable;
+  }
+
+  // If UV is required and a PIN can be set, set it during the MakeCredential
+  // process.
+  if (device_support == ClientPinAvailability::kSupportedButPinNotSet &&
+      request.user_verification() == UserVerificationRequirement::kRequired) {
+    return MakeCredentialPINDisposition::kSetPIN;
+  }
+
+  // If discouraged, then either a PIN isn't set (thus we don't use one), or
+  // else the device supports U2F (because the alternative was handled above)
+  // and we'll use a U2F fallback to create a credential without a PIN.
+  DCHECK(device_support != ClientPinAvailability::kSupportedAndPinSet ||
+         supports_u2f);
+  // TODO(agl): perhaps CTAP2 is indicated when, for example, hmac-secret is
+  // requested?
+  if (request.user_verification() ==
+      UserVerificationRequirement::kDiscouraged) {
+    return MakeCredentialPINDisposition::kNoPIN;
+  }
+
+  // Otherwise, a PIN will be used only if set.
+  if (device_support == ClientPinAvailability::kSupportedAndPinSet &&
+      can_collect_pin) {
+    return MakeCredentialPINDisposition::kUsePIN;
+  }
+
+  return MakeCredentialPINDisposition::kNoPIN;
+}
+
+FidoAuthenticator::GetAssertionPINDisposition
+FidoDeviceAuthenticator::WillNeedPINToGetAssertion(
+    const CtapGetAssertionRequest& request,
+    const FidoRequestHandlerBase::Observer* observer) {
+  // Authenticators with built-in UV can use that. (Fallback to PIN is not yet
+  // implemented.)
+  if (Options()->user_verification_availability ==
+      AuthenticatorSupportedOptions::UserVerificationAvailability::
+          kSupportedAndConfigured) {
+    return GetAssertionPINDisposition::kNoPIN;
+  }
+
+  const bool can_use_pin = (Options()->client_pin_availability ==
+                            AuthenticatorSupportedOptions::
+                                ClientPinAvailability::kSupportedAndPinSet) &&
+                           // The PIN is effectively unavailable if there's no
+                           // UI support for collecting it.
+                           observer && observer->SupportsPIN();
+  const bool resident_key_request =
+      !request.allow_list() || request.allow_list()->empty();
+
+  if (resident_key_request) {
+    if (can_use_pin) {
+      return GetAssertionPINDisposition::kUsePIN;
+    }
+    return GetAssertionPINDisposition::kUnsatisfiable;
+  }
+
+  // If UV is required then the PIN must be used if set, or else this request
+  // cannot be satisfied.
+  if (request.user_verification() == UserVerificationRequirement::kRequired) {
+    if (can_use_pin) {
+      return GetAssertionPINDisposition::kUsePIN;
+    }
+    return GetAssertionPINDisposition::kUnsatisfiable;
+  }
+
+  // If UV is preferred and a PIN is set, use it.
+  if (request.user_verification() == UserVerificationRequirement::kPreferred &&
+      can_use_pin) {
+    return GetAssertionPINDisposition::kUsePIN;
+  }
+  return GetAssertionPINDisposition::kNoPIN;
+}
+
 void FidoDeviceAuthenticator::Reset(ResetCallback callback) {
   DCHECK(device_->SupportedProtocolIsInitialized())
       << "InitializeAuthenticator() must be called first.";
@@ -265,10 +308,12 @@ void FidoDeviceAuthenticator::Reset(ResetCallback callback) {
 }
 
 void FidoDeviceAuthenticator::Cancel() {
-  if (!task_)
-    return;
-
-  task_->CancelTask();
+  if (operation_) {
+    operation_->Cancel();
+  }
+  if (task_) {
+    task_->Cancel();
+  }
 }
 
 std::string FidoDeviceAuthenticator::GetId() const {

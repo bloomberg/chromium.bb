@@ -6,7 +6,18 @@
 #define UI_BASE_IME_INPUT_METHOD_DELEGATE_H_
 
 #include "base/callback_forward.h"
-#include "ui/base/ime/ui_base_ime_export.h"
+#include "base/component_export.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+
+namespace ime {
+namespace mojom {
+
+class ImeEngine;
+class ImeEngineClient;
+
+}  // namespace mojom
+}  // namespace ime
 
 namespace ui {
 
@@ -18,7 +29,7 @@ namespace internal {
 
 // An interface implemented by the object that handles events sent back from an
 // ui::InputMethod implementation.
-class UI_BASE_IME_EXPORT InputMethodDelegate {
+class COMPONENT_EXPORT(UI_BASE_IME) InputMethodDelegate {
  public:
   virtual ~InputMethodDelegate() {}
 
@@ -33,6 +44,10 @@ class UI_BASE_IME_EXPORT InputMethodDelegate {
   virtual EventDispatchDetails DispatchKeyEventPostIME(
       KeyEvent* key_event,
       DispatchKeyEventPostIMECallback callback) = 0;
+
+  virtual bool ConnectToImeEngine(
+      mojo::InterfaceRequest<::ime::mojom::ImeEngine> engine_request,
+      mojo::InterfacePtr<::ime::mojom::ImeEngineClient> client);
 
  protected:
   static void RunDispatchKeyEventPostIMECallback(

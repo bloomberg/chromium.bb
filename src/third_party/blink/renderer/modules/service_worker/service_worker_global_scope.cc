@@ -53,9 +53,11 @@
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
+#include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -71,11 +73,13 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -106,7 +110,7 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
           creation_params->script_url)) {
     // CSP headers, referrer policy, and origin trial tokens will be provided by
     // the InstalledScriptsManager in EvaluateClassicScript().
-    DCHECK(creation_params->content_security_policy_parsed_headers.IsEmpty());
+    DCHECK(creation_params->outside_content_security_policy_headers.IsEmpty());
     DCHECK_EQ(network::mojom::ReferrerPolicy::kDefault,
               creation_params->referrer_policy);
     DCHECK(creation_params->origin_trial_tokens->IsEmpty());
@@ -138,25 +142,123 @@ bool ServiceWorkerGlobalScope::ShouldInstallV8Extensions() const {
       WebSecurityOrigin(GetSecurityOrigin()));
 }
 
-void ServiceWorkerGlobalScope::ImportModuleScript(
+// https://w3c.github.io/ServiceWorker/#update
+void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
+    const KURL& script_url,
+    const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    const v8_inspector::V8StackTraceId& stack_id) {
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kOffMainThreadServiceWorkerScriptFetch));
+  DCHECK(!IsContextPaused());
+
+  // Step 9. "Switching on job's worker type, run these substeps with the
+  // following options:"
+  // "classic: Fetch a classic worker script given job's serialized script url,
+  // job's client, "serviceworker", and the to-be-created environment settings
+  // object for this service worker."
+  auto destination = mojom::RequestContextType::SERVICE_WORKER;
+
+  // "To perform the fetch given request, run the following steps:"
+  // Step 9.1. "Append `Service-Worker`/`script` to request's header list."
+  // Step 9.2. "Set request's cache mode to "no-cache" if any of the following
+  // are true:"
+  // Step 9.3. "Set request's service-workers mode to "none"."
+  // The browser process takes care of these steps.
+
+  // Step 9.4. "If the is top-level flag is unset, then return the result of
+  // fetching request."
+  // This step makes sense only when the worker type is "module". For classic
+  // script fetch, the top-level flag is always set.
+
+  // Step 9.5. "Set request's redirect mode to "error"."
+  // The browser process takes care of this step.
+
+  // Step 9.6. "Fetch request, and asynchronously wait to run the remaining
+  // steps as part of fetch's process response for the response response."
+  WorkerClassicScriptLoader* classic_script_loader =
+      MakeGarbageCollected<WorkerClassicScriptLoader>();
+  classic_script_loader->LoadTopLevelScriptAsynchronously(
+      *this, CreateOutsideSettingsFetcher(outside_settings_object), script_url,
+      destination, network::mojom::FetchRequestMode::kSameOrigin,
+      network::mojom::FetchCredentialsMode::kSameOrigin,
+      outside_settings_object.GetAddressSpace(),
+      WTF::Bind(&ServiceWorkerGlobalScope::DidReceiveResponseForClassicScript,
+                WrapWeakPersistent(this),
+                WrapPersistent(classic_script_loader)),
+      WTF::Bind(&ServiceWorkerGlobalScope::DidFetchClassicScript,
+                WrapWeakPersistent(this), WrapPersistent(classic_script_loader),
+                stack_id));
+}
+
+void ServiceWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
-  Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
+  DCHECK(IsContextThread());
+  FetchModuleScript(module_url_record, outside_settings_object,
+                    mojom::RequestContextType::SERVICE_WORKER, credentials_mode,
+                    ModuleScriptCustomFetchType::kWorkerConstructor,
+                    MakeGarbageCollected<ServiceWorkerModuleTreeClient>(
+                        Modulator::From(ScriptController()->GetScriptState())));
+}
 
-  ModuleScriptCustomFetchType fetch_type =
-      ModuleScriptCustomFetchType::kWorkerConstructor;
+void ServiceWorkerGlobalScope::RunInstalledClassicScript(
+    const KURL& script_url,
+    const v8_inspector::V8StackTraceId& stack_id) {
+  DCHECK(IsContextThread());
+
   InstalledScriptsManager* installed_scripts_manager =
       GetThread()->GetInstalledScriptsManager();
-  if (installed_scripts_manager &&
-      installed_scripts_manager->IsScriptInstalled(module_url_record)) {
-    fetch_type = ModuleScriptCustomFetchType::kInstalledServiceWorker;
+  DCHECK(installed_scripts_manager);
+  DCHECK(installed_scripts_manager->IsScriptInstalled(script_url));
+
+  // GetScriptData blocks until the script is received from the browser.
+  std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
+      installed_scripts_manager->GetScriptData(script_url);
+  if (!script_data) {
+    ReportingProxy().DidFailToLoadClassicScript();
+    // This will eventually initiate worker thread termination. See
+    // ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() for details.
+    close();
+    return;
+  }
+  ReportingProxy().DidLoadClassicScript();
+
+  std::unique_ptr<Vector<String>> origin_trial_tokens =
+      script_data->CreateOriginTrialTokens();
+  OriginTrialContext::AddTokens(this, origin_trial_tokens.get());
+
+  auto referrer_policy = network::mojom::ReferrerPolicy::kDefault;
+  if (!script_data->GetReferrerPolicy().IsNull()) {
+    SecurityPolicy::ReferrerPolicyFromHeaderValue(
+        script_data->GetReferrerPolicy(),
+        kDoNotSupportReferrerPolicyLegacyKeywords, &referrer_policy);
   }
 
-  FetchModuleScript(
-      module_url_record, outside_settings_object,
-      mojom::RequestContextType::SERVICE_WORKER, credentials_mode, fetch_type,
-      MakeGarbageCollected<ServiceWorkerModuleTreeClient>(modulator));
+  // Construct a ContentSecurityPolicy object to convert
+  // ContentSecurityPolicyResponseHeaders to CSPHeaderAndType.
+  // TODO(nhiroki): Find an efficient way to do this.
+  auto* content_security_policy = MakeGarbageCollected<ContentSecurityPolicy>();
+  content_security_policy->DidReceiveHeaders(
+      script_data->GetContentSecurityPolicyResponseHeaders());
+
+  RunClassicScript(
+      script_url, referrer_policy, content_security_policy->Headers(),
+      script_data->TakeSourceText(), script_data->TakeMetaData(), stack_id);
+}
+
+void ServiceWorkerGlobalScope::RunInstalledModuleScript(
+    const KURL& module_url_record,
+    const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    network::mojom::FetchCredentialsMode credentials_mode) {
+  DCHECK(IsContextThread());
+  // The installed scripts will be read from the service worker script storage
+  // during module script fetch.
+  FetchModuleScript(module_url_record, outside_settings_object,
+                    mojom::RequestContextType::SERVICE_WORKER, credentials_mode,
+                    ModuleScriptCustomFetchType::kInstalledServiceWorker,
+                    MakeGarbageCollected<ServiceWorkerModuleTreeClient>(
+                        Modulator::From(ScriptController()->GetScriptState())));
 }
 
 void ServiceWorkerGlobalScope::Dispose() {
@@ -225,6 +327,111 @@ void ServiceWorkerGlobalScope::DidEvaluateScript() {
   }
 }
 
+void ServiceWorkerGlobalScope::DidReceiveResponseForClassicScript(
+    WorkerClassicScriptLoader* classic_script_loader) {
+  DCHECK(IsContextThread());
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kOffMainThreadServiceWorkerScriptFetch));
+  probe::DidReceiveScriptResponse(this, classic_script_loader->Identifier());
+}
+
+// https://w3c.github.io/ServiceWorker/#update
+void ServiceWorkerGlobalScope::DidFetchClassicScript(
+    WorkerClassicScriptLoader* classic_script_loader,
+    const v8_inspector::V8StackTraceId& stack_id) {
+  DCHECK(IsContextThread());
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kOffMainThreadServiceWorkerScriptFetch));
+
+  // Step 9. "If the algorithm asynchronously completes with null, then:"
+  if (classic_script_loader->Failed()) {
+    // Step 9.1. "Invoke Reject Job Promise with job and TypeError."
+    // Step 9.2. "If newestWorker is null, invoke Clear Registration algorithm
+    // passing registration as its argument."
+    // Step 9.3. "Invoke Finish Job with job and abort these steps."
+    // The browser process takes care of these steps.
+    ReportingProxy().DidFailToFetchClassicScript();
+    return;
+  }
+  ReportingProxy().DidFetchScript();
+  probe::ScriptImported(this, classic_script_loader->Identifier(),
+                        classic_script_loader->SourceText());
+
+  // Step 10. "If hasUpdatedResources is false, then:"
+  //   Step 10.1. "Invoke Resolve Job Promise with job and registration."
+  //   Steo 10.2. "Invoke Finish Job with job and abort these steps."
+  // Step 11. "Let worker be a new service worker."
+  // Step 12. "Set worker's script url to job's script url, worker's script
+  // resource to script, worker's type to job's worker type, and worker's
+  // script resource map to updatedResourceMap."
+  // Step 13. "Append url to worker's set of used scripts."
+  // The browser process takes care of these steps.
+
+  // Step 14. "Set worker's script resource's HTTPS state to httpsState."
+  // This is done in the constructor of WorkerGlobalScope.
+
+  // Step 15. "Set worker's script resource's referrer policy to
+  // referrerPolicy."
+  auto referrer_policy = network::mojom::ReferrerPolicy::kDefault;
+  if (!classic_script_loader->GetReferrerPolicy().IsNull()) {
+    SecurityPolicy::ReferrerPolicyFromHeaderValue(
+        classic_script_loader->GetReferrerPolicy(),
+        kDoNotSupportReferrerPolicyLegacyKeywords, &referrer_policy);
+  }
+
+  // Step 16. "Invoke Run Service Worker algorithm given worker, with the force
+  // bypass cache for importscripts flag set if job’s force bypass cache flag
+  // is set, and with the following callback steps given evaluationStatus:"
+  RunClassicScript(
+      classic_script_loader->ResponseURL(), referrer_policy,
+      classic_script_loader->GetContentSecurityPolicy()
+          ? classic_script_loader->GetContentSecurityPolicy()->Headers()
+          : Vector<CSPHeaderAndType>(),
+      classic_script_loader->SourceText(),
+      classic_script_loader->ReleaseCachedMetadata(), stack_id);
+}
+
+// https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
+void ServiceWorkerGlobalScope::RunClassicScript(
+    const KURL& response_url,
+    network::mojom::ReferrerPolicy referrer_policy,
+    const Vector<CSPHeaderAndType> csp_headers,
+    const String& source_code,
+    std::unique_ptr<Vector<uint8_t>> cached_meta_data,
+    const v8_inspector::V8StackTraceId& stack_id) {
+  // Step 4.5. "Set workerGlobalScope's url to serviceWorker's script url."
+  InitializeURL(response_url);
+
+  // Step 4.6. "Set workerGlobalScope's HTTPS state to serviceWorker's script
+  // resource's HTTPS state."
+  // This is done in the constructor of WorkerGlobalScope.
+
+  // Step 4.7. "Set workerGlobalScope's referrer policy to serviceWorker's
+  // script resource's referrer policy."
+  SetReferrerPolicy(referrer_policy);
+
+  // TODO(nhiroki): Clarify mappings between the steps 4.8-4.11 and
+  // implementation.
+
+  // This is quoted from the "Content Security Policy" algorithm:
+  // "Whenever a user agent invokes Run Service Worker algorithm with a service
+  // worker serviceWorker:
+  // - If serviceWorker's script resource was delivered with a
+  //   Content-Security-Policy HTTP header containing the value policy, the
+  //   user agent must enforce policy for serviceWorker.
+  // - If serviceWorker's script resource was delivered with a
+  //   Content-Security-Policy-Report-Only HTTP header containing the value
+  //   policy, the user agent must monitor policy for serviceWorker."
+  InitContentSecurityPolicyFromVector(csp_headers);
+  BindContentSecurityPolicyToExecutionContext();
+
+  // Step 4.12. "Let evaluationStatus be the result of running the classic
+  // script script if script is a classic script, otherwise, the result of
+  // running the module script script if script is a module script."
+  EvaluateClassicScript(response_url, source_code, std::move(cached_meta_data),
+                        stack_id);
+}
+
 void ServiceWorkerGlobalScope::CountScriptInternal(
     size_t script_size,
     size_t cached_metadata_size) {
@@ -250,7 +457,7 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* script_state) {
   if (!execution_context)
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ServiceWorkerGlobalScopeClient::From(execution_context)
       ->SkipWaiting(WTF::Bind(&DidSkipWaiting, WrapPersistent(resolver)));
   return resolver->Promise();
@@ -268,6 +475,16 @@ void ServiceWorkerGlobalScope::SetRegistration(
     return;
   registration_ = MakeGarbageCollected<ServiceWorkerRegistration>(
       GetExecutionContext(), std::move(info));
+}
+
+void ServiceWorkerGlobalScope::SetFetchHandlerExistence(
+    FetchHandlerExistence fetch_handler_existence) {
+  DCHECK(IsContextThread());
+  if (fetch_handler_existence == FetchHandlerExistence::EXISTS &&
+      base::FeatureList::IsEnabled(
+          features::kServiceWorkerIsolateInForeground)) {
+    GetThread()->GetIsolate()->IsolateInForegroundNotification();
+  }
 }
 
 ServiceWorker* ServiceWorkerGlobalScope::GetOrCreateServiceWorker(
@@ -291,8 +508,9 @@ bool ServiceWorkerGlobalScope::AddEventListenerInternal(
         "Event handler of '%s' event must be added on the initial evaluation "
         "of worker script.",
         event_type.Utf8().data());
-    AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+    AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning, message));
   }
   return WorkerGlobalScope::AddEventListenerInternal(event_type, listener,
                                                      options);
@@ -304,61 +522,14 @@ void ServiceWorkerGlobalScope::EvaluateClassicScriptInternal(
     std::unique_ptr<Vector<uint8_t>> cached_meta_data) {
   DCHECK(IsContextThread());
 
+  // TODO(nhiroki): Move this mechanism to
+  // WorkerGlobalScope::EvaluateClassicScriptInternal().
   if (!evaluate_script_ready_) {
     evaluate_script_ =
         WTF::Bind(&ServiceWorkerGlobalScope::EvaluateClassicScriptInternal,
                   WrapWeakPersistent(this), script_url, std::move(source_code),
                   std::move(cached_meta_data));
     return;
-  }
-
-  // Receive the main script via script streaming if needed.
-  // TODO(nhiroki): Merge script loading from the installed script manager
-  // into regular off-the-main-thread script fetch path so that we can remove
-  // this special casing.
-  InstalledScriptsManager* installed_scripts_manager =
-      GetThread()->GetInstalledScriptsManager();
-  if (installed_scripts_manager &&
-      installed_scripts_manager->IsScriptInstalled(script_url)) {
-    // GetScriptData blocks until the script is received from the browser.
-    std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
-        installed_scripts_manager->GetScriptData(script_url);
-    if (!script_data) {
-      ReportingProxy().DidFailToLoadClassicScript();
-      // This will eventually initiate worker thread termination. See
-      // ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() for details.
-      close();
-      return;
-    }
-
-    if (base::FeatureList::IsEnabled(
-            features::kOffMainThreadServiceWorkerScriptFetch)) {
-      // WorkerGlobalScope sets the URL in DidImportClassicScript() when
-      // off-the-main-thread fetch is enabled. Since we bypass calling
-      // DidImportClassicScript(), set the URL here.
-      InitializeURL(script_url);
-    }
-
-    DCHECK(source_code.IsEmpty());
-    DCHECK(!cached_meta_data);
-    source_code = script_data->TakeSourceText();
-    cached_meta_data = script_data->TakeMetaData();
-
-    base::Optional<ContentSecurityPolicyResponseHeaders>
-        content_security_policy_raw_headers =
-            script_data->GetContentSecurityPolicyResponseHeaders();
-    ApplyContentSecurityPolicyFromHeaders(
-        content_security_policy_raw_headers.value());
-
-    String referrer_policy = script_data->GetReferrerPolicy();
-    if (!referrer_policy.IsNull())
-      ParseAndSetReferrerPolicy(referrer_policy);
-
-    std::unique_ptr<Vector<String>> origin_trial_tokens =
-        script_data->CreateOriginTrialTokens();
-    OriginTrialContext::AddTokens(this, origin_trial_tokens.get());
-
-    ReportingProxy().DidLoadClassicScript();
   }
 
   WorkerGlobalScope::EvaluateClassicScriptInternal(script_url, source_code,
@@ -433,9 +604,9 @@ void ServiceWorkerGlobalScope::importScripts(
 SingleCachedMetadataHandler*
 ServiceWorkerGlobalScope::CreateWorkerScriptCachedMetadataHandler(
     const KURL& script_url,
-    const Vector<uint8_t>* meta_data) {
+    std::unique_ptr<Vector<uint8_t>> meta_data) {
   return ServiceWorkerScriptCachedMetadataHandler::Create(this, script_url,
-                                                          meta_data);
+                                                          std::move(meta_data));
 }
 
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* script_state,
@@ -450,11 +621,6 @@ void ServiceWorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
   if (WorkerThreadDebugger* debugger =
           WorkerThreadDebugger::From(GetThread()->GetIsolate()))
     debugger->ExceptionThrown(GetThread(), event);
-}
-
-mojom::RequestContextType
-ServiceWorkerGlobalScope::GetDestinationForMainScript() {
-  return mojom::RequestContextType::SERVICE_WORKER;
 }
 
 void ServiceWorkerGlobalScope::CountCacheStorageInstalledScript(

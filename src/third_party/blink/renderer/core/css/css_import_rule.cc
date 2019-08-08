@@ -41,9 +41,10 @@ String CSSImportRule::href() const {
 }
 
 MediaList* CSSImportRule::media() const {
-  if (!media_cssom_wrapper_)
-    media_cssom_wrapper_ = MediaList::Create(import_rule_->MediaQueries(),
-                                             const_cast<CSSImportRule*>(this));
+  if (!media_cssom_wrapper_) {
+    media_cssom_wrapper_ = MakeGarbageCollected<MediaList>(
+        import_rule_->MediaQueries(), const_cast<CSSImportRule*>(this));
+  }
   return media_cssom_wrapper_.Get();
 }
 

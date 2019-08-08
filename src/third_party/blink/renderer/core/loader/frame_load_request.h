@@ -26,11 +26,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 
+#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
+#include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 
@@ -54,6 +57,13 @@ struct CORE_EXPORT FrameLoadRequest {
 
   Document* OriginDocument() const { return origin_document_.Get(); }
 
+  network::mojom::RequestContextFrameType GetFrameType() const {
+    return frame_type_;
+  }
+  void SetFrameType(network::mojom::RequestContextFrameType frame_type) {
+    frame_type_ = frame_type;
+  }
+
   ResourceRequest& GetResourceRequest() { return resource_request_; }
   const ResourceRequest& GetResourceRequest() const {
     return resource_request_;
@@ -64,9 +74,21 @@ struct CORE_EXPORT FrameLoadRequest {
     frame_name_ = frame_name;
   }
 
-  ClientRedirectPolicy ClientRedirect() const { return client_redirect_; }
-  void SetClientRedirect(ClientRedirectPolicy client_redirect) {
-    client_redirect_ = client_redirect;
+  // TODO(japhet): This is only used from frame_loader.cc, and can probably be
+  // an implementation detail there.
+  ClientRedirectPolicy ClientRedirect() const;
+
+  void SetClientRedirectReason(ClientNavigationReason reason) {
+    client_navigation_reason_ = reason;
+  }
+
+  ClientNavigationReason ClientRedirectReason() const {
+    return client_navigation_reason_;
+  }
+
+  NavigationPolicy GetNavigationPolicy() const { return navigation_policy_; }
+  void SetNavigationPolicy(NavigationPolicy navigation_policy) {
+    navigation_policy_ = navigation_policy;
   }
 
   WebTriggeringEventInfo TriggeringEventInfo() const {
@@ -85,11 +107,6 @@ struct CORE_EXPORT FrameLoadRequest {
   }
   void SetShouldSendReferrer(ShouldSendReferrer should_send_referrer) {
     should_send_referrer_ = should_send_referrer;
-  }
-
-  ShouldSetOpener GetShouldSetOpener() const { return should_set_opener_; }
-  void SetShouldSetOpener(ShouldSetOpener should_set_opener) {
-    should_set_opener_ = should_set_opener;
   }
 
   const AtomicString& HrefTranslate() const { return href_translate_; }
@@ -132,22 +149,38 @@ struct CORE_EXPORT FrameLoadRequest {
 
   base::TimeTicks GetInputStartTime() const { return input_start_time_; }
 
+  const WebWindowFeatures& GetWindowFeatures() const {
+    return window_features_;
+  }
+  void SetFeaturesForWindowOpen(const WebWindowFeatures& features) {
+    window_features_ = features;
+    is_window_open_ = true;
+  }
+  bool IsWindowOpen() const { return is_window_open_; }
+
+  void SetNoOpener() { window_features_.noopener = true; }
+
  private:
   Member<Document> origin_document_;
   ResourceRequest resource_request_;
   AtomicString frame_name_;
   AtomicString href_translate_;
-  ClientRedirectPolicy client_redirect_;
+  ClientNavigationReason client_navigation_reason_ =
+      ClientNavigationReason::kNone;
+  NavigationPolicy navigation_policy_ = kNavigationPolicyCurrentTab;
   WebTriggeringEventInfo triggering_event_info_ =
       WebTriggeringEventInfo::kNotFromEvent;
   Member<HTMLFormElement> form_;
   ShouldSendReferrer should_send_referrer_;
-  ShouldSetOpener should_set_opener_;
   ContentSecurityPolicyDisposition
       should_check_main_world_content_security_policy_;
   scoped_refptr<base::RefCountedData<mojom::blink::BlobURLTokenPtr>>
       blob_url_token_;
   base::TimeTicks input_start_time_;
+  network::mojom::RequestContextFrameType frame_type_ =
+      network::mojom::RequestContextFrameType::kNone;
+  WebWindowFeatures window_features_;
+  bool is_window_open_ = false;
 };
 
 }  // namespace blink

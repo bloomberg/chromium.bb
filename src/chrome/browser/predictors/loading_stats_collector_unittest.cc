@@ -86,7 +86,7 @@ void LoadingStatsCollectorTest::TestRedirectStatusHistogram(
   resources.push_back(
       CreateResourceLoadInfoWithRedirects({initial_url, navigation_url}));
   resources.push_back(
-      CreateResourceLoadInfo(script_url, content::RESOURCE_TYPE_SCRIPT));
+      CreateResourceLoadInfo(script_url, content::ResourceType::kScript));
   PageRequestSummary summary =
       CreatePageRequestSummary(navigation_url, initial_url, resources);
 
@@ -120,9 +120,9 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallHistograms) {
   std::vector<content::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfo(main_frame_url));
   resources.push_back(
-      CreateResourceLoadInfo(gen(1), content::RESOURCE_TYPE_SCRIPT));
+      CreateResourceLoadInfo(gen(1), content::ResourceType::kScript));
   resources.push_back(
-      CreateResourceLoadInfo(gen(100), content::RESOURCE_TYPE_SCRIPT));
+      CreateResourceLoadInfo(gen(100), content::ResourceType::kScript));
   PageRequestSummary summary =
       CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
 
@@ -192,11 +192,11 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistograms) {
     std::vector<content::mojom::ResourceLoadInfoPtr> resources;
     resources.push_back(CreateResourceLoadInfo(main_frame_url));
     resources.push_back(
-        CreateResourceLoadInfo(gen(1), content::RESOURCE_TYPE_SCRIPT));
+        CreateResourceLoadInfo(gen(1), content::ResourceType::kScript));
     resources.push_back(
-        CreateResourceLoadInfo(gen(2), content::RESOURCE_TYPE_SCRIPT));
+        CreateResourceLoadInfo(gen(2), content::ResourceType::kScript));
     resources.push_back(
-        CreateResourceLoadInfo(gen(100), content::RESOURCE_TYPE_SCRIPT));
+        CreateResourceLoadInfo(gen(100), content::ResourceType::kScript));
     PageRequestSummary summary =
         CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
 
@@ -227,7 +227,7 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsEmpty) {
   std::vector<content::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfo(main_frame_url));
   resources.push_back(CreateResourceLoadInfo("http://cdn.google.com/script.js",
-                                             content::RESOURCE_TYPE_SCRIPT));
+                                             content::ResourceType::kScript));
   PageRequestSummary summary =
       CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
   stats_collector_->RecordPageRequestSummary(summary);
@@ -275,11 +275,11 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsPreresolvesOnly) {
     std::vector<content::mojom::ResourceLoadInfoPtr> resources;
     resources.push_back(CreateResourceLoadInfo(main_frame_url));
     resources.push_back(
-        CreateResourceLoadInfo(gen(1), content::RESOURCE_TYPE_SCRIPT));
+        CreateResourceLoadInfo(gen(1), content::ResourceType::kScript));
     resources.push_back(
-        CreateResourceLoadInfo(gen(2), content::RESOURCE_TYPE_SCRIPT));
+        CreateResourceLoadInfo(gen(2), content::ResourceType::kScript));
     resources.push_back(
-        CreateResourceLoadInfo(gen(100), content::RESOURCE_TYPE_SCRIPT));
+        CreateResourceLoadInfo(gen(100), content::ResourceType::kScript));
     PageRequestSummary summary =
         CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
 

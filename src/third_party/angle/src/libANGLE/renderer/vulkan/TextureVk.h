@@ -96,6 +96,14 @@ class TextureVk : public TextureImpl
                              GLenum internalFormat,
                              const gl::Extents &size) override;
 
+    angle::Result setStorageExternalMemory(const gl::Context *context,
+                                           gl::TextureType type,
+                                           size_t levels,
+                                           GLenum internalFormat,
+                                           const gl::Extents &size,
+                                           gl::MemoryObject *memoryObject,
+                                           GLuint64 offset) override;
+
     angle::Result setEGLImageTarget(const gl::Context *context,
                                     gl::TextureType type,
                                     egl::Image *image) override;
@@ -189,7 +197,8 @@ class TextureVk : public TextureImpl
                                   const gl::InternalFormat &formatInfo,
                                   GLenum type,
                                   const gl::PixelUnpackState &unpack,
-                                  const uint8_t *pixels);
+                                  const uint8_t *pixels,
+                                  const vk::Format &vkFormat);
 
     angle::Result copyImageDataToBuffer(ContextVk *contextVk,
                                         size_t sourceLevel,
@@ -240,6 +249,7 @@ class TextureVk : public TextureImpl
                                            const gl::Offset &destOffset,
                                            const vk::Format &destFormat,
                                            size_t sourceLevel,
+                                           size_t sourceLayer,
                                            const gl::Rectangle &sourceArea,
                                            bool isSrcFlipY,
                                            bool unpackFlipY,

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.mojo;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.blink.mojom.Authenticator;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.installedapp.InstalledAppProviderFactory;
 import org.chromium.chrome.browser.payments.PaymentRequestFactory;
 import org.chromium.chrome.browser.webauth.AuthenticatorFactory;
@@ -34,6 +35,7 @@ class ChromeInterfaceRegistrar {
         public void registerInterfaces(InterfaceRegistry registry, final WebContents webContents) {
             registry.addInterface(
                     ShareService.MANAGER, new ShareServiceImplementationFactory(webContents));
+            AppHooks.get().registerChromeWebContentsInterfaces(registry, webContents);
         }
     }
 
@@ -47,6 +49,7 @@ class ChromeInterfaceRegistrar {
             registry.addInterface(
                     InstalledAppProvider.MANAGER, new InstalledAppProviderFactory(renderFrameHost));
             registry.addInterface(Authenticator.MANAGER, new AuthenticatorFactory(renderFrameHost));
+            AppHooks.get().registerChromeRenderFrameHostInterfaces(registry, renderFrameHost);
         }
     }
 }

@@ -20,12 +20,13 @@ import shutil
 import sys
 import tempfile
 
+from chromite.cbuildbot import swarming_lib
+from chromite.cbuildbot import topology
+
 from chromite.lib import buildbot_annotations
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import failures_lib
-from chromite.cbuildbot import swarming_lib
-from chromite.cbuildbot import topology
 from chromite.lib import cipd
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -40,7 +41,12 @@ from chromite.lib import portage_util
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
+
 from chromite.lib.paygen import filelib
+from chromite.lib.paygen import partition_lib
+from chromite.lib.paygen import paygen_payload_lib
+from chromite.lib.paygen import paygen_stateful_payload_lib
+
 from chromite.scripts import pushimage
 
 
@@ -193,13 +199,19 @@ def WipeOldOutput(buildroot):
   osutils.RmDir(image_dir, ignore_missing=True, sudo=True)
 
 
-def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None,
-               use_image=False, cache_dir=None):
+def MakeChroot(buildroot, replace, use_sdk, self_bootstrap=False,
+               chrome_root=None, extra_env=None, use_image=False,
+               cache_dir=None):
   """Wrapper around make_chroot."""
   cmd = ['cros_sdk', '--buildbot-log-version']
   if not use_image:
     cmd.append('--nouse-image')
-  cmd.append('--create' if use_sdk else '--bootstrap')
+  if use_sdk:
+    cmd.append('--create')
+  else:
+    cmd.append('--bootstrap')
+    if self_bootstrap:
+      cmd.append('--self-bootstrap')
 
   if replace:
     cmd.append('--replace')
@@ -295,8 +307,51 @@ def SetupBoard(buildroot, board, usepkg,
       date, you can specify chroot_upgrade=False.
     chroot_args: The args to the chroot.
   """
-  cmd = ['./setup_board', '--board=%s' % board,
-         '--accept_licenses=@CHROMEOS']
+  cmd = ['setup_board', '--board=%s' % board, '--accept-licenses=@CHROMEOS']
+
+  # This isn't the greatest thing, but emerge's dependency calculation
+  # isn't the speediest thing, so let callers skip this step when they
+  # know the system is up-to-date already.
+  if not chroot_upgrade:
+    cmd.append('--skip-chroot-upgrade')
+
+  if profile:
+    cmd.append('--profile=%s' % profile)
+
+  if not usepkg:
+    # TODO(crbug.com/922144): Uses the underscore variant of an argument, will
+    #  require updating tests when the arguments are cleaned up.
+    cmd.extend(LOCAL_BUILD_FLAGS)
+
+  if force:
+    cmd.append('--force')
+
+  RunBuildScript(buildroot, cmd, chromite_cmd=True, extra_env=extra_env,
+                 enter_chroot=True, chroot_args=chroot_args)
+
+
+def LegacySetupBoard(buildroot, board, usepkg, extra_env=None, force=False,
+                     profile=None, chroot_upgrade=True, chroot_args=None):
+  """Wrapper around setup_board for the workspace stage only.
+
+  This wrapper supports the old version of setup_board, and is only meant to be
+  used for the workspace builders so they can support old firmware/factory
+  branches.
+
+  This function should not need to be changed until it's deleted.
+
+  Args:
+    buildroot: The buildroot of the current build.
+    board: The board to set up.
+    usepkg: Whether to use binary packages when setting up the board.
+    extra_env: A dictionary of environmental variables to set during generation.
+    force: Whether to remove the board prior to setting it up.
+    profile: The profile to use with this board.
+    chroot_upgrade: Whether to update the chroot. If the chroot is already up to
+      date, you can specify chroot_upgrade=False.
+    chroot_args: The args to the chroot.
+  """
+  cmd = ['./setup_board', '--board=%s' % board, '--accept_licenses=@CHROMEOS']
 
   # This isn't the greatest thing, but emerge's dependency calculation
   # isn't the speediest thing, so let callers skip this step when they
@@ -308,8 +363,6 @@ def SetupBoard(buildroot, board, usepkg,
     cmd.append('--profile=%s' % profile)
 
   if not usepkg:
-    # TODO(crbug.com/922144): Uses the underscore variant of an argument, will
-    #  require updating tests when the arguments are cleaned up.
     cmd.extend(LOCAL_BUILD_FLAGS)
 
   if force:
@@ -1023,7 +1076,8 @@ def _GetRunSkylabSuiteArgs(
     retry=None,
     max_retries=None,
     suite_args=None,
-    job_keyvals=None):
+    job_keyvals=None,
+    quota_account=None):
   """Get a list of args for run_suite.
 
   TODO (xixuan): Add other features as required, e.g.
@@ -1042,6 +1096,7 @@ def _GetRunSkylabSuiteArgs(
   # HACK(pwang): Delete this once better solution is out.
   board = board.replace('-arcnext', '')
   board = board.replace('-arcvm', '')
+  board = board.replace('-kernelnext', '')
   args = ['--build', build, '--board', board]
 
   if model:
@@ -1070,6 +1125,9 @@ def _GetRunSkylabSuiteArgs(
 
   if job_keyvals is not None:
     args += ['--job_keyvals', repr(job_keyvals)]
+
+  if quota_account is not None:
+    args += ['--quota_account', quota_account]
 
   # Use fallback request for every skylab suite.
   args += ['--use_fallback']
@@ -1316,7 +1374,8 @@ def RunSkylabHWTestSuite(
     retry=None,
     max_retries=None,
     suite_args=None,
-    job_keyvals=None):
+    job_keyvals=None,
+    quota_account=None):
   """Run the test suite in the Autotest lab using Skylab.
 
   Args:
@@ -1339,7 +1398,8 @@ def RunSkylabHWTestSuite(
       retry=retry,
       max_retries=max_retries,
       suite_args=suite_args,
-      job_keyvals=job_keyvals)
+      job_keyvals=job_keyvals,
+      quota_account=quota_account)
   swarming_args = _CreateSwarmingArgs(build, suite, board, priority_str,
                                       timeout_mins, run_skylab=True)
   try:
@@ -1387,6 +1447,7 @@ def _GetRunSuiteArgs(
   # HACK(pwang): Delete this once better solution is out.
   board = board.replace('-arcnext', '')
   board = board.replace('-arcvm', '')
+  board = board.replace('-kernelnext', '')
   args = ['--build', build, '--board', board]
 
   if model:
@@ -1553,8 +1614,7 @@ def _HWTestCreate(cmd, debug=False, **kwargs):
     for output in result.GetValue('outputs', ''):
       sys.stdout.write(output)
     sys.stdout.flush()
-    m = re.search(r'Created suite job:.*object_id=(?P<job_id>\d*)',
-                  result.output)
+    m = re.search(r'Created task id: (?P<job_id>.*)', result.output)
     if m:
       return m.group('job_id')
   return None
@@ -1882,8 +1942,7 @@ def MarkAndroidAsStable(buildroot, tracking_branch, android_package,
     # Android we just unmasked.
     try:
       command = ['emerge-%s' % board, '-p', '--quiet', '=%s' % android_atom]
-      RunBuildScript(buildroot, command, enter_chroot=True,
-                     combine_stdout_stderr=True, capture_output=True)
+      RunBuildScript(buildroot, command, enter_chroot=True)
     except failures_lib.BuildScriptFailure:
       logging.error('Cannot emerge-%s =%s\nIs Android pinned to an older '
                     'version?', board, android_atom)
@@ -1942,7 +2001,7 @@ def MarkChromeAsStable(buildroot,
     try:
       cros_build_lib.RunCommand(
           ['emerge-%s' % board, '-p', '--quiet', '=%s' % chrome_atom],
-          enter_chroot=True, combine_stdout_stderr=True, capture_output=True)
+          enter_chroot=True)
     except cros_build_lib.RunCommandError:
       logging.error('Cannot emerge-%s =%s\nIs Chrome pinned to an older '
                     'version?', board, chrome_atom)
@@ -2152,7 +2211,8 @@ def GenerateAndroidBreakpadSymbols(
 
 
 def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols,
-                         archive_name='debug.tgz'):
+                         archive_name='debug.tgz',
+                         chroot_compression=True):
   """Generates a debug tarball in the archive_dir.
 
   Args:
@@ -2161,6 +2221,8 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols,
     archive_path: Directory where tarball should be stored.
     gdb_symbols: Include *.debug files for debugging core files with gdb.
     archive_name: Name of the tarball to generate.
+    chroot_compression: Whether to use compression tools in the chroot if
+                        they're available.
 
   Returns:
     The filename of the created debug tarball.
@@ -2181,10 +2243,14 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols,
   else:
     inputs = ['debug/breakpad']
 
+  compression_chroot = None
+  if chroot_compression:
+    compression_chroot = chroot
+
   compression = cros_build_lib.CompressionExtToType(debug_tarball)
   cros_build_lib.CreateTarball(
       debug_tarball, board_dir, sudo=True, compression=compression,
-      chroot=chroot, inputs=inputs, extra_args=extra_args)
+      chroot=compression_chroot, inputs=inputs, extra_args=extra_args)
 
   # Fix permissions and ownership on debug tarball.
   cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), debug_tarball])
@@ -2789,6 +2855,38 @@ def BuildTastBundleTarball(buildroot, cwd, tarball_dir):
   return tarball
 
 
+def BuildPinnedGuestImagesTarball(buildroot, board, tarball_dir):
+  """Create a tarball of Guest VM and Container images for testing.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    board: Board name of build target.
+    tarball_dir: Location for storing the images and tarball.
+
+  Returns:
+    Path of the generated tarball, or None if there are no images.
+  """
+  pins_root = os.path.abspath(os.path.join(buildroot, 'chroot', 'build', board,
+                                           constants.GUEST_IMAGES_PINS_PATH))
+  gs_context = gs.GSContext()
+  files = []
+  for pin_file in sorted(glob.iglob(os.path.join(pins_root, '*.json'))):
+    with open(pin_file) as f:
+      pin = json.load(f)
+      try:
+        filename = os.path.join(tarball_dir, pin[constants.PIN_KEY_FILENAME])
+        gs_context.Copy(pin[constants.PIN_KEY_GSURI], filename)
+        files.append(pin[constants.PIN_KEY_FILENAME])
+      except KeyError as e:
+        logging.warning('Skipping invalid pin file \'%s\': %r', pin_file, e)
+
+  if not files:
+    return None
+  tarball = os.path.join(tarball_dir, 'guest_images.tar')
+  BuildTarball(buildroot, files, tarball, cwd=tarball_dir, compressed=False)
+  return tarball
+
+
 def BuildFullAutotestTarball(buildroot, board, tarball_dir):
   """Tar up the full autotest directory into image_dir.
 
@@ -2894,12 +2992,15 @@ def BuildStandaloneArchive(archive_dir, image_dir, artifact_info):
     # Copy the file in 'paths' as is to the archive directory.
     if len(artifact_info['paths']) > 1:
       raise ValueError('default archive type does not support multiple inputs')
-    src_image = os.path.join(image_dir, artifact_info['paths'][0])
-    tgt_image = os.path.join(archive_dir, artifact_info['paths'][0])
-    if not os.path.exists(tgt_image):
+    src_path = os.path.join(image_dir, artifact_info['paths'][0])
+    tgt_path = os.path.join(archive_dir, artifact_info['paths'][0])
+    if not os.path.exists(tgt_path):
       # The image may have already been copied into place. If so, overwriting it
       # can affect parallel processes.
-      shutil.copy(src_image, tgt_image)
+      if os.path.isdir(src_path):
+        shutil.copytree(src_path, tgt_path)
+      else:
+        shutil.copy(src_path, tgt_path)
     return artifact_info['paths']
 
   inputs = artifact_info['paths']
@@ -3154,12 +3255,31 @@ def CreateTestRoot(build_root):
   return os.path.sep + os.path.relpath(test_root, start=chroot)
 
 
-def GeneratePayloads(build_root, target_image_path, archive_dir, full=False,
-                     delta=False, stateful=False):
+def GenerateQuickProvisionPayloads(target_image_path, archive_dir):
+  """Generates payloads needed for quick_provision script.
+
+  Args:
+    target_image_path: The path to the image to extract the partitions.
+    archive_dir: Where to store partitions when generated.
+  """
+  with osutils.TempDir() as temp_dir:
+    # These partitions are mainly used by quick_provision.
+    partition_lib.ExtractKernel(
+        target_image_path, os.path.join(temp_dir, 'full_dev_part_KERN.bin'))
+    partition_lib.ExtractRoot(
+        target_image_path, os.path.join(temp_dir, 'full_dev_part_ROOT.bin'),
+        truncate=False)
+    for partition in ('KERN', 'ROOT'):
+      source = os.path.join(temp_dir, 'full_dev_part_%s.bin' % partition)
+      dest = os.path.join(archive_dir, 'full_dev_part_%s.bin.gz' % partition)
+      cros_build_lib.CompressFile(source, dest)
+
+
+def GeneratePayloads(target_image_path, archive_dir, full=False, delta=False,
+                     stateful=False):
   """Generates the payloads for hw testing.
 
   Args:
-    build_root: The root of the chromium os checkout.
     target_image_path: The path to the image to generate payloads to.
     archive_dir: Where to store payloads we generated.
     full: Generate full payloads.
@@ -3173,56 +3293,25 @@ def GeneratePayloads(build_root, target_image_path, archive_dir, full=False,
   prefix = 'chromeos'
   suffix = 'dev.bin'
 
-  cwd = os.path.join(build_root, 'src', 'scripts')
-  chroot_dir = os.path.join(build_root, 'chroot')
-  chroot_tmp = os.path.join(chroot_dir, 'tmp')
-  chroot_target = path_util.ToChrootPath(target_image_path)
+  if full:
+    # Names for full payloads look something like this:
+    # chromeos_R37-5952.0.2014_06_12_2302-a1_link_full_dev.bin
+    name = '_'.join([prefix, os_version, board, 'full', suffix])
+    payload_path = os.path.join(archive_dir, name)
+    paygen_payload_lib.GenerateUpdatePayload(target_image_path, payload_path)
 
-  with osutils.TempDir(base_dir=chroot_tmp,
-                       prefix='generate_payloads') as temp_dir:
-    chroot_temp_dir = temp_dir.replace(chroot_dir, '', 1)
+  if delta:
+    # Names for delta payloads look something like this:
+    # chromeos_R37-5952.0.2014_06_12_2302-a1_R37-
+    # 5952.0.2014_06_12_2302-a1_link_delta_dev.bin
+    name = '_'.join([prefix, os_version, os_version, board, 'delta', suffix])
+    payload_path = os.path.join(archive_dir, name)
+    paygen_payload_lib.GenerateUpdatePayload(target_image_path, payload_path,
+                                             src_image=target_image_path)
 
-    cmd = [
-        'cros_generate_update_payload',
-        '--image', chroot_target,
-        '--output', os.path.join(chroot_temp_dir, 'update.gz')
-    ]
-    if full:
-      cmd_full = cmd
-      cmd_full.extend(['--kern_path',
-                       os.path.join(chroot_temp_dir, 'full_dev_part_KERN.bin'),
-                       '--root_pretruncate_path',
-                       os.path.join(chroot_temp_dir, 'full_dev_part_ROOT.bin')])
-      cros_build_lib.RunCommand(cmd_full, enter_chroot=True, cwd=cwd)
-      name = '_'.join([prefix, os_version, board, 'full', suffix])
-      # Names for full payloads look something like this:
-      # chromeos_R37-5952.0.2014_06_12_2302-a1_link_full_dev.bin
-      shutil.move(os.path.join(temp_dir, 'update.gz'),
-                  os.path.join(archive_dir, name))
-      for partition in ['KERN', 'ROOT']:
-        source = os.path.join(temp_dir, 'full_dev_part_%s.bin' % partition)
-        dest = os.path.join(archive_dir, 'full_dev_part_%s.bin.gz' % partition)
-        cros_build_lib.CompressFile(source, dest)
-
-    cmd.extend(['--src_image', chroot_target])
-    if delta:
-      cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=cwd)
-      # Names for delta payloads look something like this:
-      # chromeos_R37-5952.0.2014_06_12_2302-a1_R37-
-      # 5952.0.2014_06_12_2302-a1_link_delta_dev.bin
-      name = '_'.join([prefix, os_version, os_version, board, 'delta', suffix])
-      shutil.move(os.path.join(temp_dir, 'update.gz'),
-                  os.path.join(archive_dir, name))
-
-    if stateful:
-      cmd = [
-          'cros_generate_stateful_update_payload',
-          '--image', chroot_target,
-          '--output', chroot_temp_dir
-      ]
-      cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=cwd)
-      shutil.move(os.path.join(temp_dir, STATEFUL_FILE),
-                  os.path.join(archive_dir, STATEFUL_FILE))
+  if stateful:
+    paygen_stateful_payload_lib.GenerateStatefulPayload(target_image_path,
+                                                        archive_dir)
 
 
 def GetChromeLKGM(revision):

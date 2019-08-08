@@ -26,10 +26,10 @@
 #include "test/gmock.h"
 #include "test/gtest.h"
 
-using testing::_;
-using testing::Exactly;
-using testing::Invoke;
-using testing::Return;
+using ::testing::_;
+using ::testing::Exactly;
+using ::testing::Invoke;
+using ::testing::Return;
 
 namespace webrtc {
 
@@ -63,7 +63,7 @@ AudioFrame frame_for_mixing;
 
 }  // namespace
 
-class MockMixerAudioSource : public testing::NiceMock<AudioMixer::Source> {
+class MockMixerAudioSource : public ::testing::NiceMock<AudioMixer::Source> {
  public:
   MockMixerAudioSource()
       : fake_audio_frame_info_(AudioMixer::Source::AudioFrameInfo::kNormal) {
@@ -296,7 +296,7 @@ TEST(AudioMixer, ShouldNotCauseQualityLossForMultipleSources) {
     const auto sample_rate = source_sample_rates[i];
     EXPECT_CALL(source, PreferredSampleRate()).WillOnce(Return(sample_rate));
 
-    EXPECT_CALL(source, GetAudioFrameWithInfo(testing::Ge(sample_rate), _));
+    EXPECT_CALL(source, GetAudioFrameWithInfo(::testing::Ge(sample_rate), _));
   }
   mixer->Mix(1, &frame_for_mixing);
 }
@@ -372,7 +372,7 @@ TEST(AudioMixer, RampedOutSourcesShouldNotBeMarkedMixed) {
 // This test checks that the initialization and participant addition
 // can be done on a different thread.
 TEST(AudioMixer, ConstructFromOtherThread) {
-  rtc::test::TaskQueueForTest init_queue("init");
+  TaskQueueForTest init_queue("init");
   rtc::scoped_refptr<AudioMixer> mixer;
   init_queue.SendTask([&mixer]() { mixer = AudioMixerImpl::Create(); });
 
@@ -382,7 +382,7 @@ TEST(AudioMixer, ConstructFromOtherThread) {
 
   ResetFrame(participant.fake_frame());
 
-  rtc::test::TaskQueueForTest participant_queue("participant");
+  TaskQueueForTest participant_queue("participant");
   participant_queue.SendTask(
       [&mixer, &participant]() { mixer->AddSource(&participant); });
 

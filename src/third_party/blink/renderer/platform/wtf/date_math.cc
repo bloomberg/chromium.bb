@@ -81,12 +81,12 @@
 
 #include "base/stl_util.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/string_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 #include <unicode/basictz.h>
@@ -271,10 +271,10 @@ double DateToDaysFrom1970(int year, int month, int day) {
 }
 
 static inline double YmdhmsToSeconds(int year,
-                                     long mon,
-                                     long day,
-                                     long hour,
-                                     long minute,
+                                     int64_t mon,
+                                     int64_t day,
+                                     int64_t hour,
+                                     int64_t minute,
                                      double second) {
   double days =
       (day - 32075) + floor(1461 * (year + 4800.0 + (mon - 14) / 12) / 4) +
@@ -337,25 +337,27 @@ static bool ParseInt(const char* string,
                      char** stop_position,
                      int base,
                      int* result) {
-  long long_result = strtol(string, stop_position, base);
+  int64_t int64_result = strtol(string, stop_position, base);
   // Avoid the use of errno as it is not available on Windows CE
   if (string == *stop_position ||
-      long_result <= std::numeric_limits<int>::min() ||
-      long_result >= std::numeric_limits<int>::max())
+      int64_result <= std::numeric_limits<int>::min() ||
+      int64_result >= std::numeric_limits<int>::max())
     return false;
-  *result = static_cast<int>(long_result);
+  *result = static_cast<int>(int64_result);
   return true;
 }
 
-static bool ParseLong(const char* string,
-                      char** stop_position,
-                      int base,
-                      long* result) {
-  *result = strtol(string, stop_position, base);
+static bool ParseInt64(const char* string,
+                       char** stop_position,
+                       int base,
+                       int64_t* result) {
+  int64_t int64_result = strtoll(string, stop_position, base);
   // Avoid the use of errno as it is not available on Windows CE
-  if (string == *stop_position || *result == std::numeric_limits<long>::min() ||
-      *result == std::numeric_limits<long>::max())
+  if (string == *stop_position ||
+      int64_result == std::numeric_limits<int64_t>::min() ||
+      int64_result == std::numeric_limits<int64_t>::max())
     return false;
+  *result = int64_result;
   return true;
 }
 
@@ -383,7 +385,7 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
   // Skip leading space
   SkipSpacesAndComments(date_string);
 
-  long month = -1;
+  int64_t month = -1;
   const char* word_start = date_string;
   // Check contents of first words if not number
   while (*date_string && !IsASCIIDigit(*date_string)) {
@@ -408,8 +410,8 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
 
   // ' 09-Nov-99 23:12:40 GMT'
   char* new_pos_str;
-  long day;
-  if (!ParseLong(date_string, &new_pos_str, 10, &day))
+  int64_t day;
+  if (!ParseInt64(date_string, &new_pos_str, 10, &day))
     return std::numeric_limits<double>::quiet_NaN();
   date_string = new_pos_str;
 
@@ -431,20 +433,20 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
         day >= std::numeric_limits<int>::max())
       return std::numeric_limits<double>::quiet_NaN();
     year = static_cast<int>(day);
-    if (!ParseLong(date_string, &new_pos_str, 10, &month))
+    if (!ParseInt64(date_string, &new_pos_str, 10, &month))
       return std::numeric_limits<double>::quiet_NaN();
     month -= 1;
     date_string = new_pos_str;
     if (*date_string++ != '/' || !*date_string)
       return std::numeric_limits<double>::quiet_NaN();
-    if (!ParseLong(date_string, &new_pos_str, 10, &day))
+    if (!ParseInt64(date_string, &new_pos_str, 10, &day))
       return std::numeric_limits<double>::quiet_NaN();
     date_string = new_pos_str;
   } else if (*date_string == '/' && month == -1) {
     date_string++;
     // This looks like a MM/DD/YYYY date, not an RFC date.
     month = day - 1;  // 0-based
-    if (!ParseLong(date_string, &new_pos_str, 10, &day))
+    if (!ParseInt64(date_string, &new_pos_str, 10, &day))
       return std::numeric_limits<double>::quiet_NaN();
     if (day < 1 || day > 31)
       return std::numeric_limits<double>::quiet_NaN();
@@ -492,9 +494,9 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
   }
 
   // Don't fail if the time is missing.
-  long hour = 0;
-  long minute = 0;
-  long second = 0;
+  int64_t hour = 0;
+  int64_t minute = 0;
+  int64_t second = 0;
   if (!*new_pos_str) {
     date_string = new_pos_str;
   } else {
@@ -510,7 +512,7 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
       SkipSpacesAndComments(date_string);
     }
 
-    ParseLong(date_string, &new_pos_str, 10, &hour);
+    ParseInt64(date_string, &new_pos_str, 10, &hour);
     // Do not check for errno here since we want to continue
     // even if errno was set because we are still looking
     // for the timezone!
@@ -529,7 +531,7 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
       if (*date_string++ != ':')
         return std::numeric_limits<double>::quiet_NaN();
 
-      if (!ParseLong(date_string, &new_pos_str, 10, &minute))
+      if (!ParseInt64(date_string, &new_pos_str, 10, &minute))
         return std::numeric_limits<double>::quiet_NaN();
       date_string = new_pos_str;
 
@@ -544,7 +546,7 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
       if (*date_string == ':') {
         date_string++;
 
-        if (!ParseLong(date_string, &new_pos_str, 10, &second))
+        if (!ParseInt64(date_string, &new_pos_str, 10, &second))
           return std::numeric_limits<double>::quiet_NaN();
         date_string = new_pos_str;
 
@@ -554,14 +556,15 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
 
       SkipSpacesAndComments(date_string);
 
-      if (strncasecmp(date_string, "AM", 2) == 0) {
+      String date_wtf_string(date_string);
+      if (date_wtf_string.StartsWithIgnoringASCIICase("AM")) {
         if (hour > 12)
           return std::numeric_limits<double>::quiet_NaN();
         if (hour == 12)
           hour = 0;
         date_string += 2;
         SkipSpacesAndComments(date_string);
-      } else if (strncasecmp(date_string, "PM", 2) == 0) {
+      } else if (date_wtf_string.StartsWithIgnoringASCIICase("PM")) {
         if (hour > 12)
           return std::numeric_limits<double>::quiet_NaN();
         if (hour != 12)
@@ -583,8 +586,9 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
   // Don't fail if the time zone is missing.
   // Some websites omit the time zone (4275206).
   if (*date_string) {
-    if (strncasecmp(date_string, "GMT", 3) == 0 ||
-        strncasecmp(date_string, "UTC", 3) == 0) {
+    String date_wtf_string(date_string);
+    if (date_wtf_string.StartsWithIgnoringASCIICase("GMT") ||
+        date_wtf_string.StartsWithIgnoringASCIICase("UTC")) {
       date_string += 3;
       have_tz = true;
     }
@@ -615,9 +619,10 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
       }
       have_tz = true;
     } else {
+      date_wtf_string = String(date_string);
       for (size_t i = 0; i < base::size(known_zones); ++i) {
-        if (0 == strncasecmp(date_string, known_zones[i].tz_name,
-                             strlen(known_zones[i].tz_name))) {
+        if (date_wtf_string.StartsWithIgnoringASCIICase(
+                known_zones[i].tz_name)) {
           offset = known_zones[i].tz_offset;
           date_string += strlen(known_zones[i].tz_name);
           have_tz = true;

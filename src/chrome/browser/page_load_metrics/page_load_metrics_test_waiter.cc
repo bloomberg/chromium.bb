@@ -108,7 +108,7 @@ void PageLoadMetricsTestWaiter::OnLoadedResource(
     return;
 
   if (extra_request_complete_info.resource_type !=
-      content::RESOURCE_TYPE_MAIN_FRAME) {
+      content::ResourceType::kMainFrame) {
     // The waiter confirms loading timing for the main frame only.
     return;
   }
@@ -124,18 +124,11 @@ void PageLoadMetricsTestWaiter::OnLoadedResource(
 }
 
 void PageLoadMetricsTestWaiter::OnResourceDataUseObserved(
-    FrameTreeNodeId frame_tree_node_id,
+    content::RenderFrameHost* rfh,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   for (auto const& resource : resources) {
-    auto it = page_resources_.find(resource->request_id);
-    if (it != page_resources_.end()) {
-      it->second = resource.Clone();
-    } else {
-      page_resources_.emplace(std::piecewise_construct,
-                              std::forward_as_tuple(resource->request_id),
-                              std::forward_as_tuple(resource->Clone()));
-    }
+    HandleResourceUpdate(resource);
     if (resource->is_complete) {
       current_complete_resources_++;
       if (!resource->was_fetched_via_cache)
@@ -286,11 +279,11 @@ void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnLoadedResource(
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::
     OnResourceDataUseObserved(
-        FrameTreeNodeId frame_tree_node_id,
+        content::RenderFrameHost* rfh,
         const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
             resources) {
   if (waiter_)
-    waiter_->OnResourceDataUseObserved(frame_tree_node_id, resources);
+    waiter_->OnResourceDataUseObserved(rfh, resources);
 }
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnFeaturesUsageObserved(

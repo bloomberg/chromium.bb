@@ -87,6 +87,8 @@ struct WorkaroundsD3D
     // In Intel driver, the data with format DXGI_FORMAT_B5G6R5_UNORM will be parsed incorrectly.
     // This workaroud will disable B5G6R5 support when it's Intel driver. By default, it will use
     // R8G8B8A8 format. This bug is fixed in version 4539 on Intel drivers.
+    // On older AMD drivers, the data in DXGI_FORMAT_B5G6R5_UNORM becomes corrupted for unknown
+    // reasons.
     bool disableB5G6R5Support = false;
 
     // On some Intel drivers, evaluating unary minus operator on integer may get wrong answer in
@@ -131,6 +133,13 @@ struct WorkaroundsD3D
     // This is targeted to work around a bug in NVIDIA D3D driver version 388.59 where in very
     // specific cases the driver would not handle constant register zero correctly.
     bool skipVSConstantRegisterZero = false;
+
+    // Forces the value returned from an atomic operations to be always be resolved. This is
+    // targeted to workaround a bug in NVIDIA D3D driver where the return value from
+    // RWByteAddressBuffer.InterlockedAdd does not get resolved when used in the .yzw components of
+    // a RWByteAddressBuffer.Store operation. Only has an effect on HLSL translation.
+    // http://anglebug.com/3246
+    bool forceAtomicValueResolution = false;
 };
 
 inline WorkaroundsD3D::WorkaroundsD3D()                            = default;

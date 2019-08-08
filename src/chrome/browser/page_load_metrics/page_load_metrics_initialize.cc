@@ -32,16 +32,15 @@
 #include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/offline_page_previews_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/page_capping_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_lite_page_redirect_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_ukm_observer.h"
 #include "chrome/browser/page_load_metrics/observers/protocol_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/resource_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/scheme_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/security_state_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/signed_exchange_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/stale_while_revalidate_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/tab_restore_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
@@ -115,12 +114,11 @@ void PageLoadMetricsEmbedder::RegisterObservers(
         std::make_unique<
             previews::OfflinePagePreviewsPageLoadMetricsObserver>());
     tracker->AddObserver(
-        std::make_unique<PageCappingPageLoadMetricsObserver>());
-    tracker->AddObserver(
         std::make_unique<PreviewsLitePageRedirectMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<previews::PreviewsPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<previews::PreviewsUKMObserver>());
+    tracker->AddObserver(std::make_unique<ResourceMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<ServiceWorkerPageLoadMetricsObserver>());
     tracker->AddObserver(
@@ -150,8 +148,7 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     if (no_state_prefetch_observer)
       tracker->AddObserver(std::move(no_state_prefetch_observer));
 #if defined(OS_ANDROID)
-    tracker->AddObserver(
-        std::make_unique<AndroidPageLoadMetricsObserver>(web_contents_));
+    tracker->AddObserver(std::make_unique<AndroidPageLoadMetricsObserver>());
 #endif  // OS_ANDROID
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
         loading_predictor_observer =
@@ -165,8 +162,6 @@ void PageLoadMetricsEmbedder::RegisterObservers(
 #endif
     tracker->AddObserver(
         std::make_unique<LocalNetworkRequestsPageLoadMetricsObserver>());
-    tracker->AddObserver(
-        std::make_unique<StaleWhileRevalidatePageLoadMetricsObserver>());
   }
   tracker->AddObserver(
       std::make_unique<OmniboxSuggestionUsedMetricsObserver>(IsPrerendering()));

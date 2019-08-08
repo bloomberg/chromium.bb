@@ -12,6 +12,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 import java.lang.annotation.Retention;
@@ -55,6 +56,14 @@ public final class SuggestionsConfig {
         if (AccessibilityUtil.isAccessibilityEnabled()) return false;
 
         return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD);
+    }
+
+    /**
+     * @return Whether currently running in touchless mode/device. When in touchless, some features
+     *         or UI elements may want to change to better support this configuration.
+     */
+    public static boolean isTouchless() {
+        return !FeatureUtilities.isNoTouchModeEnabled();
     }
 
     /**

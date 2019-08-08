@@ -37,8 +37,7 @@ namespace blink {
 //   This contains the inner circle with the actual play/pause icon.
 MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
     MediaControlsImpl& media_controls)
-    : MediaControlInputElement(media_controls, kMediaIgnore),
-      internal_button_(nullptr) {
+    : MediaControlInputElement(media_controls), internal_button_(nullptr) {
   EnsureUserAgentShadowRoot();
   setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-overlay-play-button"));
@@ -95,8 +94,8 @@ void MediaControlOverlayPlayButtonElement::MaybePlayPause() {
 }
 
 void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event& event) {
-  if (event.type() == event_type_names::kClick ||
-      event.type() == event_type_names::kGesturetap) {
+  if (!IsDisabled() && (event.type() == event_type_names::kClick ||
+                        event.type() == event_type_names::kGesturetap)) {
     event.SetDefaultHandled();
     MaybePlayPause();
   }

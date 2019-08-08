@@ -22,7 +22,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -91,6 +90,10 @@ using testing::Return;
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
+
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/ui/webui/welcome/nux_helper.h"
+#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 using testing::_;
 using extensions::Extension;
@@ -399,11 +402,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {
   EXPECT_EQ(2, tab_strip->count());
   EXPECT_EQ(tab_strip->GetActiveWebContents(), tab_strip->GetWebContentsAt(1));
 
-  // If new bookmark apps are enabled, it should be a standard tabbed window,
-  // not an app window; otherwise the reverse should be true.
-  bool new_bookmark_apps_enabled = extensions::util::IsNewBookmarkAppsEnabled();
-  EXPECT_EQ(!new_bookmark_apps_enabled, browser()->is_app());
-  EXPECT_EQ(new_bookmark_apps_enabled, browser()->is_type_tabbed());
+  // It should be a standard tabbed window, not an app window.
+  EXPECT_FALSE(browser()->is_app());
+  EXPECT_TRUE(browser()->is_type_tabbed());
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {
@@ -1251,8 +1252,13 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
   TabStripModel* tab_strip = browser->tab_strip_model();
 
   // Windows 10 has its own Welcome page; the standard Welcome page does not
-  // appear until second run.
-  if (IsWindows10OrNewer()) {
+  // appear until second run.  However, if NuxOnboarding is enabled, the
+  // standard welcome URL should still be used.
+  bool is_navi_enabled = false;
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  is_navi_enabled = nux::IsNuxOnboardingEnabled(profile1);
+#endif
+  if (IsWindows10OrNewer() && !is_navi_enabled) {
     ASSERT_EQ(1, tab_strip->count());
     EXPECT_EQ("chrome://welcome-win10/",
               tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());

@@ -32,10 +32,6 @@ class CORE_EXPORT InspectorPerformanceAgent final
  public:
   void Trace(blink::Visitor*) override;
 
-  static InspectorPerformanceAgent* Create(InspectedFrames* inspected_frames) {
-    return MakeGarbageCollected<InspectorPerformanceAgent>(inspected_frames);
-  }
-
   explicit InspectorPerformanceAgent(InspectedFrames*);
   ~InspectorPerformanceAgent() override;
 
@@ -86,8 +82,8 @@ class CORE_EXPORT InspectorPerformanceAgent final
   TimeDelta v8compile_duration_;
   TimeTicks v8compile_start_ticks_;
   TimeTicks thread_time_origin_;
-  unsigned long long layout_count_ = 0;
-  unsigned long long recalc_style_count_ = 0;
+  uint64_t layout_count_ = 0;
+  uint64_t recalc_style_count_ = 0;
   int script_call_depth_ = 0;
   int layout_depth_ = 0;
   InspectorAgentState::Boolean enabled_;

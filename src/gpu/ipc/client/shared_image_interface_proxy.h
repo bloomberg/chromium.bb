@@ -38,6 +38,7 @@ class SharedImageInterfaceProxy : public SharedImageInterface {
 
   void DestroySharedImage(const SyncToken& sync_token,
                           const Mailbox& mailbox) override;
+  SyncToken GenVerifiedSyncToken() override;
   SyncToken GenUnverifiedSyncToken() override;
 
  private:

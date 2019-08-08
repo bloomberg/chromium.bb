@@ -6,11 +6,15 @@ import logging
 
 from telemetry.testing import serially_executed_browser_test_case
 from telemetry.util import screenshot
+from typ import json_results
 
 from gpu_tests import exception_formatter
 from gpu_tests import gpu_test_expectations
+from gpu_tests import gpu_helper
 
 _START_BROWSER_RETRIES = 3
+
+ResultType = json_results.ResultType
 
 # Please expand the following lists when we expand to new bot configs.
 _SUPPORTED_WIN_VERSIONS = ['win7', 'win10']
@@ -163,8 +167,60 @@ class GpuIntegrationTest(
     cls.SetBrowserOptions(cls._finder_options)
     cls.StartBrowser()
 
+  def _RunGpuTestWithExpectationsFiles(self, url, test_name, *args):
+    expected_results, should_retry_on_failure = (
+        self.GetExpectationsForTest())
+    try:
+      # TODO(nednguyen): For some reason the arguments are getting wrapped
+      # in another tuple sometimes (like in the WebGL extension tests).
+      # Perhaps only if multiple arguments are yielded in the test
+      # generator?
+      if len(args) == 1 and isinstance(args[0], tuple):
+        args = args[0]
+      self.RunActualGpuTest(url, *args)
+    except Exception:
+      if ResultType.Failure in expected_results or should_retry_on_failure:
+        if should_retry_on_failure:
+          # For robustness, shut down the browser and restart it
+          # between flaky test failures, to make sure any state
+          # doesn't propagate to the next iteration.
+          self._RestartBrowser('flaky test failure')
+        else:
+          msg = 'Expected exception while running %s' % test_name
+          exception_formatter.PrintFormattedException(msg=msg)
+          # Even though this is a known failure, the browser might still
+          # be in a bad state; for example, certain kinds of timeouts
+          # will affect the next test. Restart the browser to prevent
+          # these kinds of failures propagating to the next test.
+          self._RestartBrowser('expected test failure')
+      else:
+        # This is not an expected exception or test failure, so print
+        # the detail to the console.
+        exception_formatter.PrintFormattedException()
+        # Symbolize any crash dump (like from the GPU process) that
+        # might have happened but wasn't detected above. Note we don't
+        # do this for either 'fail' or 'flaky' expectations because
+        # there are still quite a few flaky failures in the WebGL test
+        # expectations, and since minidump symbolization is slow
+        # (upwards of one minute on a fast laptop), symbolizing all the
+        # stacks could slow down the tests' running time unacceptably.
+        self.browser.LogSymbolizedUnsymbolizedMinidumps(logging.ERROR)
+        # This failure might have been caused by a browser or renderer
+        # crash, so restart the browser to make sure any state doesn't
+        # propagate to the next test iteration.
+        self._RestartBrowser('unexpected test failure')
+      self.fail()
+    else:
+      if ResultType.Failure in expected_results:
+        logging.warning(
+          '%s was expected to fail, but passed.\n', test_name)
+
   def _RunGpuTest(self, url, test_name, *args):
-    expectations = self.__class__.GetExpectations()
+    cls = self.__class__
+    if cls.ExpectationsFiles():
+      self._RunGpuTestWithExpectationsFiles(url, test_name, *args)
+      return
+    expectations = cls.GetExpectations()
     expectation = expectations.GetExpectationForTest(
       self.browser, url, test_name)
     if expectation == 'skip':
@@ -319,6 +375,50 @@ class GpuIntegrationTest(
     raise NotImplementedError
 
   @classmethod
+  def GenerateTags(cls, finder_options, possible_browser):
+    # If no expectations file paths are returned from cls.ExpectationsFiles()
+    # then an empty list will be returned from this function. If tags are
+    # returned and there are no expectations files, then Typ will raise
+    # an exception.
+    if not cls.ExpectationsFiles():
+      return []
+    with possible_browser.BrowserSession(
+        finder_options.browser_options) as browser:
+      return cls.GetPlatformTags(browser)
+
+  @classmethod
+  def GetPlatformTags(cls, browser):
+    """This function will take a Browser instance as an argument.
+    It will call the super classes implementation of GetPlatformTags() to get
+    a list of tags. Then it will add the gpu vendor, gpu device id,
+    angle renderer, and command line decoder tags to that list before
+    returning it.
+    """
+    tags = super(GpuIntegrationTest, cls).GetPlatformTags(browser)
+    system_info = browser.GetSystemInfo()
+    if system_info:
+      gpu_info = system_info.gpu
+      gpu_vendor = gpu_helper.GetGpuVendorString(gpu_info)
+      gpu_device_id = gpu_helper.GetGpuDeviceId(gpu_info)
+      # The gpu device id tag will contain both the vendor and device id
+      # separated by a '-'.
+      try:
+        # If the device id is an integer then it will be added as
+        # a hexadecimal to the tag
+        gpu_device_tag = '%s-0x%x' % (gpu_vendor, gpu_device_id)
+      except TypeError:
+        # if the device id is not an integer it will be added as
+        # a string to the tag.
+        gpu_device_tag = '%s-%s' % (gpu_vendor, gpu_device_id)
+      angle_renderer = gpu_helper.GetANGLERenderer(gpu_info)
+      cmd_decoder = gpu_helper.GetCommandDecoder(gpu_info)
+      # all spaces in the tag will be replaced by '-', and all letters will
+      # be converted to its lower case form.
+      tags.extend([tag.lower().replace(' ', '-').replace('_', '-') for tag in [
+          gpu_vendor, gpu_device_tag, angle_renderer, cmd_decoder]])
+    return tags
+
+  @classmethod
   def _EnsureTabIsAvailable(cls):
     try:
       cls.tab = cls.browser.tabs[0]
@@ -331,6 +431,10 @@ class GpuIntegrationTest(
 
   def setUp(self):
     self._EnsureTabIsAvailable()
+
+  @staticmethod
+  def GetJSONResultsDelimiter():
+    return '/'
 
 def LoadAllTestsInModule(module):
   # Just delegates to serially_executed_browser_test_case to reduce the

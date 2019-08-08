@@ -308,7 +308,7 @@ void DeviceService::BindSensorProviderRequest(
   if (io_task_runner_) {
     io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&device::SensorProviderImpl::Create,
-                                  file_task_runner_, std::move(request)));
+                                  std::move(request)));
   }
 }
 

@@ -5,9 +5,15 @@
 
 """The frontend for the Mojo bindings system."""
 
+from __future__ import print_function
 
 import argparse
-import cPickle
+
+try:
+  import cPickle as pickle
+except ImportError:
+  import pickle
+
 import hashlib
 import importlib
 import json
@@ -62,7 +68,7 @@ def LoadGenerators(generators_string):
   for generator_name in [s.strip() for s in generators_string.split(",")]:
     language = generator_name.lower()
     if language not in _BUILTIN_GENERATORS:
-      print "Unknown generator name %s" % generator_name
+      print("Unknown generator name %s" % generator_name)
       sys.exit(1)
     generator_module = importlib.import_module(
         "generators.%s" % _BUILTIN_GENERATORS[language])
@@ -158,7 +164,7 @@ class MojomProcessor(object):
     for filename in typemaps:
       with open(filename) as f:
         typemaps = json.loads("".join(filter(no_comments, f.readlines())))
-        for language, typemap in typemaps.iteritems():
+        for language, typemap in typemaps.items():
           language_map = self._typemap.get(language, {})
           language_map.update(typemap)
           self._typemap[language] = language_map
@@ -170,8 +176,8 @@ class MojomProcessor(object):
       return self._processed_files[rel_filename.path]
 
     if rel_filename.path in imported_filename_stack:
-      print "%s: Error: Circular dependency" % rel_filename.path + \
-          MakeImportStackMessage(imported_filename_stack + [rel_filename.path])
+      print("%s: Error: Circular dependency" % rel_filename.path + \
+          MakeImportStackMessage(imported_filename_stack + [rel_filename.path]))
       sys.exit(1)
 
     tree = _UnpickleAST(_FindPicklePath(rel_filename, args.gen_directories +
@@ -202,7 +208,7 @@ class MojomProcessor(object):
 
     if self._should_generate(rel_filename.path):
       AddComputedData(module)
-      for language, generator_module in generator_modules.iteritems():
+      for language, generator_module in generator_modules.items():
         generator = generator_module.Generator(
             module, args.output_dir, typemap=self._typemap.get(language, {}),
             variant=args.variant, bytecode_path=args.bytecode_path,
@@ -215,7 +221,8 @@ class MojomProcessor(object):
             disallow_native_types=args.disallow_native_types,
             disallow_interfaces=args.disallow_interfaces,
             generate_message_ids=args.generate_message_ids,
-            generate_fuzzing=args.generate_fuzzing)
+            generate_fuzzing=args.generate_fuzzing,
+            enable_kythe_annotations=args.enable_kythe_annotations)
         filtered_args = []
         if hasattr(generator_module, 'GENERATOR_PREFIX'):
           prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
@@ -278,32 +285,33 @@ def _PickleAST(ast, output_file):
   fileutil.EnsureDirectoryExists(full_dir)
 
   try:
-    WriteFile(cPickle.dumps(ast), output_file)
-  except (IOError, cPickle.PicklingError) as e:
-    print "%s: Error: %s" % (output_file, str(e))
+    WriteFile(pickle.dumps(ast), output_file)
+  except (IOError, pickle.PicklingError) as e:
+    print("%s: Error: %s" % (output_file, str(e)))
     sys.exit(1)
 
 def _UnpickleAST(input_file):
-    try:
-      with open(input_file, "rb") as f:
-        return cPickle.load(f)
-    except (IOError, cPickle.UnpicklingError) as e:
-      print "%s: Error: %s" % (input_file, str(e))
-      sys.exit(1)
+  try:
+    with open(input_file, "rb") as f:
+      return pickle.load(f)
+  except (IOError, pickle.UnpicklingError) as e:
+    print("%s: Error: %s" % (input_file, str(e)))
+    sys.exit(1)
+
 
 def _ParseFile(args, rel_filename):
   try:
     with open(rel_filename.path) as f:
       source = f.read()
   except IOError as e:
-    print "%s: Error: %s" % (rel_filename.path, e.strerror)
+    print("%s: Error: %s" % (rel_filename.path, e.strerror))
     sys.exit(1)
 
   try:
     tree = Parse(source, rel_filename.path)
     RemoveDisabledDefinitions(tree, args.enabled_features)
   except Error as e:
-    print "%s: Error: %s" % (rel_filename.path, str(e))
+    print("%s: Error: %s" % (rel_filename.path, str(e)))
     sys.exit(1)
   _PickleAST(tree, _GetPicklePath(rel_filename, args.output_dir))
 
@@ -371,16 +379,16 @@ def _VerifyImportDeps(args, __):
       full_target_name = "//" + target_prefix_without_gen_dir.rsplit(
         "/", 1)[0] + ":" + target_name
 
-      print ">>> File \"%s\"" % (filename)
-      print ">>> from target \"%s\"" % (full_target_name)
-      print ">>> is missing dependencies for the following imports:\n%s" % \
-        list(mojom_imports.difference(sources))
+      print(">>> File \"%s\"" % filename)
+      print(">>> from target \"%s\"" % full_target_name)
+      print(">>> is missing dependencies for the following imports:\n%s" % list(
+          mojom_imports.difference(sources)))
       sys.exit(1)
 
     source_filename, _ = os.path.splitext(rel_path.relative_path())
     output_file = source_filename + '.v'
     output_file_path = os.path.join(args.gen_dir, output_file)
-    WriteFile("", output_file_path)
+    WriteFile(b"", output_file_path)
 
   return 0
 
@@ -497,6 +505,11 @@ def main():
       "--generate_fuzzing",
       action="store_true",
       help="Generates additional bindings for fuzzing in JS.")
+  generate_parser.add_argument(
+      "--enable_kythe_annotations",
+      action="store_true",
+      help="Adds annotations for kythe metadata generation.")
+
   generate_parser.set_defaults(func=_Generate)
 
   precompile_parser = subparsers.add_parser("precompile",

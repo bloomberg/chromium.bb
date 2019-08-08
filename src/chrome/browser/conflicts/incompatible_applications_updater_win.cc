@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
@@ -27,6 +28,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -184,6 +186,38 @@ void EnumerateAndTrimIncompatibleApplications(UnaryFunction function) {
   RemoveStaleApplications(stale_application_names);
 }
 
+// Updates the kIncompatibleApplications pref with those contained in
+// |incompatible_applications|.
+void UpdateIncompatibleApplications(
+    bool should_clear_pref,
+    std::vector<IncompatibleApplicationsUpdater::IncompatibleApplication>
+        incompatible_applications) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Clear pref if requested.
+  if (should_clear_pref) {
+    g_browser_process->local_state()->ClearPref(
+        prefs::kIncompatibleApplications);
+  }
+
+  // If there is no new incompatible application, there is nothing to do.
+  if (incompatible_applications.empty())
+    return;
+
+  // The conversion of the accumulated applications to a json dictionary takes
+  // care of eliminating duplicates.
+  base::Value new_applications = ConvertToDictionary(incompatible_applications);
+
+  // Update the existing dictionary.
+  DictionaryPrefUpdate update(g_browser_process->local_state(),
+                              prefs::kIncompatibleApplications);
+  base::Value* existing_applications = update.Get();
+  for (auto&& element : new_applications.DictItems()) {
+    existing_applications->SetKey(std::move(element.first),
+                                  std::move(element.second));
+  }
+}
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -220,11 +254,12 @@ IncompatibleApplicationsUpdater::IncompatibleApplicationsUpdater(
       module_list_filter_(std::move(module_list_filter)),
       installed_applications_(installed_applications),
       module_analysis_disabled_(module_analysis_disabled) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   module_database_event_source_->AddObserver(this);
 }
 
 IncompatibleApplicationsUpdater::~IncompatibleApplicationsUpdater() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   module_database_event_source_->RemoveObserver(this);
 }
 
@@ -238,7 +273,6 @@ void IncompatibleApplicationsUpdater::RegisterLocalStatePrefs(
 // static
 bool IncompatibleApplicationsUpdater::IsWarningEnabled() {
   return base::win::GetVersion() >= base::win::VERSION_WIN10 &&
-         ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() &&
          base::FeatureList::IsEnabled(
              features::kIncompatibleApplicationsWarning);
 }
@@ -246,6 +280,11 @@ bool IncompatibleApplicationsUpdater::IsWarningEnabled() {
 // static
 bool IncompatibleApplicationsUpdater::HasCachedApplications() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() ||
+      !IsWarningEnabled()) {
+    return false;
+  }
 
   bool found_valid_application = false;
 
@@ -265,6 +304,8 @@ bool IncompatibleApplicationsUpdater::HasCachedApplications() {
 std::vector<IncompatibleApplicationsUpdater::IncompatibleApplication>
 IncompatibleApplicationsUpdater::GetCachedApplications() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(ModuleDatabase::IsThirdPartyBlockingPolicyEnabled());
+  DCHECK(IsWarningEnabled());
 
   std::vector<IncompatibleApplication> valid_applications;
 
@@ -283,7 +324,7 @@ IncompatibleApplicationsUpdater::GetCachedApplications() {
 void IncompatibleApplicationsUpdater::OnNewModuleFound(
     const ModuleInfoKey& module_key,
     const ModuleInfoData& module_data) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // This is meant to create the element in the map if it doesn't exist yet.
   ModuleWarningDecision& warning_decision =
@@ -293,6 +334,13 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   if ((module_data.module_properties & ModuleInfoData::kPropertyLoadedModule) ==
       0) {
     warning_decision = ModuleWarningDecision::kNotLoaded;
+    return;
+  }
+
+  // Don't check modules if they were never loaded in a process where blocking
+  // is enabled.
+  if (!IsBlockingEnabledInProcessTypes(module_data.process_types)) {
+    warning_decision = ModuleWarningDecision::kAllowedInProcessType;
     return;
   }
 
@@ -400,48 +448,38 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
 void IncompatibleApplicationsUpdater::OnKnownModuleLoaded(
     const ModuleInfoKey& module_key,
     const ModuleInfoData& module_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Analyze the module again.
   OnNewModuleFound(module_key, module_data);
 }
 
 void IncompatibleApplicationsUpdater::OnModuleDatabaseIdle() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // On the first call to OnModuleDatabaseIdle(), the previous value must always
-  // be overwritten.
-  if (before_first_idle_)
-    g_browser_process->local_state()->ClearPref(
-        prefs::kIncompatibleApplications);
-  before_first_idle_ = false;
-
-  // If there is no new incompatible application, there is nothing to do.
-  if (incompatible_applications_.empty())
-    return;
-
-  // The conversion of the accumulated applications to a json dictionary takes
-  // care of eliminating duplicates.
-  base::Value new_applications =
-      ConvertToDictionary(incompatible_applications_);
+  // Update the list of incompatible applications on the UI thread. On the first
+  // call to UpdateIncompatibleApplications(), the previous value must always be
+  // overwritten.
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&UpdateIncompatibleApplications, before_first_idle_,
+                     std::move(incompatible_applications_)));
   incompatible_applications_.clear();
-
-  // Update the existing dictionary.
-  DictionaryPrefUpdate update(g_browser_process->local_state(),
-                              prefs::kIncompatibleApplications);
-  base::Value* existing_applications = update.Get();
-  for (auto&& element : new_applications.DictItems()) {
-    existing_applications->SetKey(std::move(element.first),
-                                  std::move(element.second));
-  }
+  before_first_idle_ = false;
 }
 
 IncompatibleApplicationsUpdater::ModuleWarningDecision
 IncompatibleApplicationsUpdater::GetModuleWarningDecision(
     const ModuleInfoKey& module_key) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   auto it = module_warning_decisions_.find(module_key);
   DCHECK(it != module_warning_decisions_.end());
   return it->second;
 }
 
 void IncompatibleApplicationsUpdater::DisableModuleAnalysis() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   module_analysis_disabled_ = true;
 }

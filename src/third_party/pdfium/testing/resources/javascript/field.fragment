@@ -2,7 +2,7 @@
   /Type /Catalog
   /Pages 2 0 R
   /AcroForm 4 0 R
-  /OpenAction 10 0 R
+  /OpenAction 15 0 R
 >>
 endobj
 {{object 2 0}} <<
@@ -24,6 +24,8 @@ endobj
     7 0 R
     8 0 R
     9 0 R
+    10 0 R
+    11 0 R
   ]
 >>
 endobj
@@ -43,13 +45,15 @@ endobj
     7 0 R
     8 0 R
     9 0 R
+    10 0 R
+    11 0 R
   ]
 >>
 endobj
 {{object 6 0}} <<
   /FT /Tx
   /Parent 5 0 R
-  /T (Sub_X)
+  /T (MyText)
   /Type /Annot
   /Subtype /Widget
   /Rect [200 200 220 220]
@@ -59,7 +63,7 @@ endobj
   /FT /Btn
   /Ff 65536
   /Parent 5 0 R
-  /T (Sub_A)
+  /T (MyPushButton)
   /Type /Annot
   /Subtype /Widget
   /Rect [220 220 240 240]
@@ -69,7 +73,7 @@ endobj
   /FT /Btn
   /Ff 32768
   /Parent 5 0 R
-  /T (Sub_Z)
+  /T (MyRadio)
   /Type /Annot
   /Subtype /Widget
   /Rect [240 240 260 260]
@@ -79,16 +83,44 @@ endobj
   /FT /Btn
   /Ff 0
   /Parent 5 0 R
-  /T (Sub_B)
+  /T (MyCheckBox)
   /Type /Annot
   /Subtype /Widget
   /Rect [260 260 280 280]
 >>
 endobj
-% OpenAction action
 {{object 10 0}} <<
+  /FT /Ch
+  /Ff 2097152
+  /Parent 5 0 R
+  /T (MyMultiSelect)
+  /Type /Annot
+  /Subtype /Widget
+  /Rect [ 280 280 300 300 ]
+  /Opt [ (foo) (bar) (qux) ]
+  /V (qux)
+>>
+endobj
+{{object 11 0}} <<
+  /FT /Ch
+  /Ff 0
+  /Parent 5 0 R
+  /T (MySingleSelect)
+  /Type /Annot
+  /Subtype /Widget
+  /Rect [ 300 300 320 320 ]
+  /Opt [
+    [ (foo) (Foo) ]
+    [ (bar) (Bar) ]
+    [ (qux) (Qux) ]
+  ]
+>>
+endobj
+
+% OpenAction action
+{{object 15 0}} <<
   /Type /Action
   /S /JavaScript
-  /JS 11 0 R
+  /JS 16 0 R
 >>
 endobj

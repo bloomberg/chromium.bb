@@ -12,7 +12,7 @@ import sys
 
 from py_utils import cloud_storage  # pylint: disable=import-error
 
-from telemetry import compact_mode_options
+from telemetry import compat_mode_options
 from telemetry.core import platform
 from telemetry.core import util
 from telemetry.internal.browser import browser_finder
@@ -33,6 +33,8 @@ class BrowserFinderOptions(optparse.Values):
 
     self.browser_type = browser_type
     self.browser_executable = None
+    # The set of possible platforms the browser should run on.
+    self.target_platforms = None
     self.chrome_root = None  # Path to src/
     self.chromium_output_dir = None  # E.g.: out/Debug
     self.device = None
@@ -100,20 +102,21 @@ class BrowserFinderOptions(optparse.Values):
         default=socket.getservbyname('ssh'),
         dest='cros_remote_ssh_port',
         help='The SSH port of the remote ChromeOS device (requires --remote).')
-    compact_mode_options_list = [
-        compact_mode_options.NO_FIELD_TRIALS,
-        compact_mode_options.IGNORE_CERTIFICATE_ERROR,
-        compact_mode_options.LEGACY_COMMAND_LINE_PATH,
-        compact_mode_options.GPU_BENCHMARKING_FALLBACKS]
+    compat_mode_options_list = [
+        compat_mode_options.NO_FIELD_TRIALS,
+        compat_mode_options.IGNORE_CERTIFICATE_ERROR,
+        compat_mode_options.LEGACY_COMMAND_LINE_PATH,
+        compat_mode_options.GPU_BENCHMARKING_FALLBACKS,
+        compat_mode_options.DONT_REQUIRE_ROOTED_DEVICE]
     parser.add_option(
         '--compatibility-mode',
         action='append',
         dest='compatibility_mode',
-        choices=compact_mode_options_list,
+        choices=compat_mode_options_list,
         default=[],
         help='Select the compatibility change that you want to enforce when '
              'running benchmarks. The options are: %s' % ', '.join(
-                 compact_mode_options_list))
+                 compat_mode_options_list))
     identity = None
     testing_rsa = os.path.join(
         util.GetTelemetryThirdPartyDir(), 'chromite', 'ssh_keys', 'testing_rsa')
@@ -174,6 +177,12 @@ class BrowserFinderOptions(optparse.Values):
         'If not specified, only 0 or 1 connected devices are supported. '
         'If specified as "android", all available Android devices are '
         'used.')
+    group.add_option(
+        '--install-bundle-module', dest='modules_to_install', action='append',
+        default=['base'],
+        help='Specify Android App Bundle modules to install in addition to the '
+             'base module. Ignored on Non-Android platforms or if using a '
+             'standard APK instead of bundles.')
     parser.add_option_group(group)
 
     # CPU profiling on Android/Linux/ChromeOS.
@@ -382,16 +391,17 @@ class BrowserOptions(object):
 
     self.logging_verbosity = self._DEFAULT_LOGGING_LEVEL
 
+    # Whether to log verbose browser details like the full commandline used to
+    # start the browser. This variable can be changed from one run to another
+    # in order to cut back on log sizes. See crbug.com/943650.
+    self.trim_logs = False
+
     # The cloud storage bucket & path for uploading logs data produced by the
     # browser to.
     # If logs_cloud_remote_path is None, a random remote path is generated every
     # time the logs data is uploaded.
     self.logs_cloud_bucket = cloud_storage.TELEMETRY_OUTPUT
     self.logs_cloud_remote_path = None
-
-    # TODO(danduong): Find a way to store target_os here instead of
-    # finder_options.
-    self._finder_options = None
 
     # Whether to take screen shot for failed page & put them in telemetry's
     # profiling results.
@@ -408,11 +418,7 @@ class BrowserOptions(object):
     self.compatibility_mode = []
 
   def __repr__(self):
-    # This works around the infinite loop caused by the introduction of a
-    # circular reference with _finder_options.
-    obj = self.__dict__.copy()
-    del obj['_finder_options']
-    return str(sorted(obj.items()))
+    return str(sorted(self.__dict__.items()))
 
   def Copy(self):
     return copy.deepcopy(self)
@@ -496,7 +502,6 @@ class BrowserOptions(object):
         delattr(finder_options, o)
 
     self.browser_type = finder_options.browser_type
-    self._finder_options = finder_options
 
     if hasattr(self, 'extra_browser_args_as_string'):
       tmp = shlex.split(
@@ -536,10 +541,6 @@ class BrowserOptions(object):
     # This deferred import is necessary because browser_options is imported in
     # telemetry/telemetry/__init__.py.
     finder_options.browser_options = CreateChromeBrowserOptions(self)
-
-  @property
-  def finder_options(self):
-    return self._finder_options
 
   @property
   def extra_browser_args(self):
@@ -595,6 +596,8 @@ class CrosBrowserOptions(ChromeBrowserOptions):
     self.expect_policy_fetch = False
     # Disable GAIA/enterprise services.
     self.disable_gaia_services = True
+    # Mute audio.
+    self.mute_audio = True
 
     # TODO(cywang): crbug.com/760414
     # Add login delay for ARC container boot time measurement for now.

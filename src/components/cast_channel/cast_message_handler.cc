@@ -371,8 +371,8 @@ void CastMessageHandler::SendCastMessage(CastSocket* socket,
   // can be sent.
   DoEnsureConnection(socket, message.source_id(), message.destination_id());
   socket->transport()->SendMessage(
-      message, base::BindRepeating(&CastMessageHandler::OnMessageSent,
-                                   weak_ptr_factory_.GetWeakPtr()));
+      message, base::BindOnce(&CastMessageHandler::OnMessageSent,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CastMessageHandler::DoEnsureConnection(CastSocket* socket,
@@ -393,8 +393,8 @@ void CastMessageHandler::DoEnsureConnection(CastSocket* socket,
       user_agent_, browser_version_);
   socket->transport()->SendMessage(
       virtual_connection_request,
-      base::BindRepeating(&CastMessageHandler::OnMessageSent,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&CastMessageHandler::OnMessageSent,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   // We assume the virtual connection request will succeed; otherwise this
   // will eventually self-correct.

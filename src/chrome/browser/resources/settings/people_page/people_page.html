@@ -1,6 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -9,7 +12,6 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="profile_info_browser_proxy.html">
 <link rel="import" href="sync_browser_proxy.html">
@@ -83,7 +85,7 @@
 
       cr-link-row {
         --cr-link-row-icon-width: 40px;
-        border-top: var(--settings-separator-line);
+        border-top: var(--cr-separator-line);
       }
 
       .settings-box[actionable].sync-error #syncSecondary {
@@ -124,9 +126,6 @@
           font-size: 1.1rem;
           line-height: 1.625rem;
         }
-        --promo-separator: {
-          display: none;
-        }
       }
 </if>
     </style>
@@ -164,16 +163,14 @@
                   </div>
                 </div>
 <if expr="not chromeos">
-                <paper-icon-button-light class="subpage-arrow">
-                  <button aria-label="$i18n{editPerson}"
-                      aria-describedby="profile-name"></button>
-                </paper-icon-button-light>
+                <cr-icon-button class="subpage-arrow"
+                    aria-label="$i18n{editPerson}"
+                    aria-describedby="profile-name"></cr-icon-button>
 </if>
 <if expr="chromeos">
-                <paper-icon-button-light class="subpage-arrow">
-                  <button aria-label="$i18n{changePictureTitle}"
-                      aria-describedby="profile-name"></button>
-                </paper-icon-button-light>
+                <cr-icon-button class="subpage-arrow"
+                    aria-label="$i18n{changePictureTitle}"
+                    aria-describedby="profile-name"></cr-icon-button>
 </if>
               </div>
 <if expr="not chromeos">
@@ -234,10 +231,8 @@
                 [[syncStatus.statusText]]
               </div>
             </div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label="$i18n{sync}"
-                  aria-describedby="syncSecondary"></button>
-            </paper-icon-button-light>
+            <cr-icon-button class="subpage-arrow" aria-label="$i18n{sync}"
+                aria-describedby="syncSecondary"></cr-icon-button>
           </div>
         </template>
 
@@ -259,40 +254,23 @@
             <div class="start settings-box-text">
               $i18n{profileNameAndPicture}
             </div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label="$i18n{editPerson}"></button>
-            </paper-icon-button-light>
+            <cr-icon-button class="subpage-arrow"
+                aria-label="$i18n{editPerson}"></cr-icon-button>
           </div>
         </template>
 </if>
 
 <if expr="chromeos">
-        <div id="lock-screen-subpage-trigger" class="settings-box two-line"
-            actionable on-click="onConfigureLockTap_">
-          <div class="start settings-box-text">
-            [[selectLockScreenTitleString(hasPinLogin)]]
-            <div class="secondary" id="lockScreenSecondary">
-              [[getPasswordState_(hasPin,
-                                  prefs.settings.enable_screen_lock.value)]]
-            </div>
-          </div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button
-                aria-label$="[[selectLockScreenTitleString(hasPinLogin)]]"
-                aria-describedby="lockScreenSecondary"></button>
-          </paper-icon-button-light>
-        </div>
+        <cr-link-row id="lock-screen-subpage-trigger" class="hr"
+            on-click="onConfigureLockTap_"
+            label="[[selectLockScreenTitleString(hasPinLogin)]]"
+            sub-label="[[getPasswordState_(hasPin,
+                prefs.settings.enable_screen_lock.value)]]"></cr-link-row>
 
         <template is="dom-if" if="[[isAccountManagerEnabled_]]">
-          <div id="account-manager-subpage-trigger" class="settings-box"
-              actionable on-click="onAccountManagerTap_">
-            <div class="start settings-box-text">
-              $i18n{accountManagerSubMenuLabel}
-            </div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label="$i18n{accountManagerSubMenuLabel}"></button>
-            </paper-icon-button-light>
-          </div>
+          <cr-link-row id="account-manager-subpage-trigger" class="hr"
+              on-click="onAccountManagerTap_"
+              label="$i18n{accountManagerSubMenuLabel}"></cr-link-row>
         </template>
 
         <cr-link-row id="manage-other-people-subpage-trigger"
@@ -301,16 +279,9 @@
 </if>
 
 <if expr="not chromeos">
-        <div class="settings-box" on-click="onImportDataTap_" actionable>
-          <div class="start settings-box-text">
-            $i18n{importTitle}
-          </div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button id="importDataDialogTrigger"
-                aria-label="$i18n{importTitle}">
-            </button>
-          </paper-icon-button-light>
-        </div>
+        <cr-link-row id="importDataDialogTrigger"
+            label="$i18n{importTitle}"
+            on-click="onImportDataTap_"></cr-link-row>
 </if>
 
       </div>
@@ -352,14 +323,15 @@
             page-title="[[selectLockScreenTitleString(hasPinLogin)]]"
             associated-control="[[$$('#lock-screen-subpage-trigger')]]">
           <settings-lock-screen
-            prefs="{{prefs}}">
+              prefs="{{prefs}}" auth-token="{{authToken_}}">
           </settings-lock-screen>
         </settings-subpage>
       </template>
       <template is="dom-if" if="[[fingerprintUnlockEnabled_]]">
         <template is="dom-if" route-path="/lockScreen/fingerprint" no-search>
           <settings-subpage page-title="$i18n{lockScreenFingerprintTitle}">
-            <settings-fingerprint-list></settings-fingerprint-list>
+            <settings-fingerprint-list auth-token="[[authToken_]]">
+            </settings-fingerprint-list>
           </settings-subpage>
         </template>
       </template>

@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
+
 def GetItem(data, depth=0):
   if isinstance(data, str):
     return  '  ' * depth + '"%s"' % data
@@ -9,16 +12,16 @@ def GetItem(data, depth=0):
 
 def PrintData(data, depth=0):
   if isinstance(data, dict):
-    print '  ' * depth + '{'
+    print('  ' * depth + '{')
     for key in data:
-      print GetItem(key, depth + 1) + ':'
+      print(GetItem(key, depth + 1) + ':')
       PrintData(data[key], depth + 2)
-    print '  ' * depth + '}'
+    print('  ' * depth + '}')
     return
   if isinstance(data, list):
-    print '  ' * depth + '['
+    print('  ' * depth + '[')
     for item in data:
       PrintData(item, depth + 1)
-    print '  ' * depth + ']'
+    print('  ' * depth + ']')
     return
-  print GetItem(data, depth)
+  print(GetItem(data, depth))

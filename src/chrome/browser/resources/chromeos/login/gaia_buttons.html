@@ -4,8 +4,8 @@
 
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
 <!--
@@ -51,10 +51,9 @@
   <link rel="stylesheet" href="gaia_icon_button.css">
 
   <template>
-    <div on-click="onClick_" on-tap="onClick_">
-      <paper-icon-button id="iconButton" icon="[[icon]]" disabled="[[disabled]]"
-          aria-label$="[[ariaLabel]]">
-      </paper-icon-button>
+    <div>
+      <cr-icon-button id="iconButton" iron-icon="[[icon]]" on-click="onClick_"
+          disabled="[[disabled]]" aria-label$="[[ariaLabel]]"></cr-icon-button>
     </div>
   </template>
 </dom-module>

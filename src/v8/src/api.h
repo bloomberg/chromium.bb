@@ -71,20 +71,14 @@ class ApiFunction {
 
 class RegisteredExtension {
  public:
-  static void Register(Extension*);
   static void Register(std::unique_ptr<Extension>);
   static void UnregisterAll();
-  Extension* extension() const {
-    return legacy_unowned_extension_ ? legacy_unowned_extension_
-                                     : extension_.get();
-  }
+  Extension* extension() const { return extension_.get(); }
   RegisteredExtension* next() const { return next_; }
   static RegisteredExtension* first_extension() { return first_extension_; }
  private:
   explicit RegisteredExtension(Extension*);
   explicit RegisteredExtension(std::unique_ptr<Extension>);
-  // TODO(clemensh): Remove this after the 7.4 branch.
-  Extension* legacy_unowned_extension_ = nullptr;
   std::unique_ptr<Extension> extension_;
   RegisteredExtension* next_ = nullptr;
   static RegisteredExtension* first_extension_;
@@ -381,8 +375,9 @@ class HandleScopeImplementer {
   void FreeThreadResources();
 
   // Garbage collection support.
-  void Iterate(v8::internal::RootVisitor* v);
-  static char* Iterate(v8::internal::RootVisitor* v, char* data);
+  V8_EXPORT_PRIVATE void Iterate(v8::internal::RootVisitor* v);
+  V8_EXPORT_PRIVATE static char* Iterate(v8::internal::RootVisitor* v,
+                                         char* data);
 
   inline internal::Address* GetSpareOrNewBlock();
   inline void DeleteExtensions(internal::Address* prev_limit);

@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -281,6 +282,20 @@ bool GetDeviceProperty(const base::FilePath& device_path,
 
   *value = device::UdevDeviceGetPropertyValue(device.get(), key);
   return true;
+}
+
+// Returns whether |key_code| appears as one of the key codes that might be
+// remapped by table mappings.
+bool IsKeyCodeInMappings(ui::KeyboardCode key_code,
+                         const KeyboardRemapping* mappings,
+                         size_t num_mappings) {
+  for (size_t i = 0; i < num_mappings; ++i) {
+    const KeyboardRemapping& map = mappings[i];
+    if (key_code == map.condition.key_code) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -1069,21 +1084,26 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const ui::KeyEvent& key_event,
   CHECK(key_event.type() == ui::ET_KEY_PRESSED ||
         key_event.type() == ui::ET_KEY_RELEASED);
 
-  if ((state->key_code >= ui::VKEY_F1) && (state->key_code <= ui::VKEY_F12)) {
-    // By default the top row (F1-F12) keys are system keys for back, forward,
-    // brightness, volume, etc. However, windows for v2 apps can optionally
-    // request raw function keys for these keys.
-    const bool top_row_keys_are_function_keys =
-        delegate_ && delegate_->TopRowKeysAreFunctionKeys();
-    const bool search_is_pressed = (state->flags & ui::EF_COMMAND_DOWN) != 0;
+  const auto iter = device_id_to_info_.find(key_event.source_device_id());
+  KeyboardTopRowLayout layout = kKbdTopRowLayoutDefault;
+  if (iter != device_id_to_info_.end()) {
+    layout = iter->second.top_row_layout;
+  }
 
+  const bool search_is_pressed = (state->flags & ui::EF_COMMAND_DOWN) != 0;
+  if (layout == kKbdTopRowLayoutWilco) {
+    if (RewriteTopRowKeysForLayoutWilco(key_event, search_is_pressed, state)) {
+      return;
+    }
+  } else if ((state->key_code >= ui::VKEY_F1) &&
+             (state->key_code <= ui::VKEY_F12)) {
     //  Search? Top Row   Result
     //  ------- --------  ------
     //  No      Fn        Unchanged
     //  No      System    Fn -> System
     //  Yes     Fn        Fn -> System
     //  Yes     System    Search+Fn -> Fn
-    if (top_row_keys_are_function_keys == search_is_pressed) {
+    if (ForceTopRowAsFunctionKeys() == search_is_pressed) {
       // Rewrite the F1-F12 keys on a Chromebook keyboard to system keys.
       // This is the original Chrome OS layout.
       static const KeyboardRemapping kFkeysToSystemKeys1[] = {
@@ -1151,11 +1171,6 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const ui::KeyEvent& key_event,
            {ui::EF_NONE, ui::DomCode::VOLUME_UP, ui::DomKey::AUDIO_VOLUME_UP,
             ui::VKEY_VOLUME_UP}},
       };
-
-      const auto iter = device_id_to_info_.find(key_event.source_device_id());
-      KeyboardTopRowLayout layout = kKbdTopRowLayoutDefault;
-      if (iter != device_id_to_info_.end())
-        layout = iter->second.top_row_layout;
 
       const KeyboardRemapping* mapping = nullptr;
       size_t mappingSize = 0u;
@@ -1247,10 +1262,12 @@ int EventRewriterChromeOS::RewriteModifierClick(
       IsFromTouchpadDevice(mouse_event)) {
     *flags &= ~kAltLeftButton;
     *flags |= ui::EF_RIGHT_MOUSE_BUTTON;
-    if (mouse_event.type() == ui::ET_MOUSE_PRESSED)
+    if (mouse_event.type() == ui::ET_MOUSE_PRESSED) {
       pressed_device_ids_.insert(mouse_event.source_device_id());
-    else
+      base::RecordAction(base::UserMetricsAction("AltClickMappedToRightClick"));
+    } else {
       pressed_device_ids_.erase(mouse_event.source_device_id());
+    }
     return ui::EF_RIGHT_MOUSE_BUTTON;
   }
   return ui::EF_NONE;
@@ -1373,6 +1390,166 @@ void EventRewriterChromeOS::RewriteKeyEventInContext(
   }
 }
 
+// The keyboard layout for Wilco has a slightly different top-row layout, emits
+// both Fn and action keys from kernel and has key events with Dom codes and no
+// VKey value == VKEY_UNKNOWN. Depending on the state of the search key and
+// force-function-key preference, function keys have to be mapped to action keys
+// or vice versa.
+//
+//  Search  force function keys key code   Result
+//  ------- ------------------- --------   ------
+//  No        No                Function   Unchanged
+//  Yes       No                Function   Fn -> Action
+//  No        Yes               Function   Unchanged
+//  Yes       Yes               Function   Fn -> Action
+//  No        No                Action     Unchanged
+//  Yes       No                Action     Action -> Fn
+//  No        Yes               Action     Action -> Fn
+//  Yes       Yes               Action     Unchanged
+bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
+    const ui::KeyEvent& key_event,
+    bool search_is_pressed,
+    ui::EventRewriterChromeOS::MutableKeyState* state) {
+  // When the kernel issues an function key (Fn modifier help down) and the
+  // search key is pressed, the function key needs to be mapped to its
+  // corresponding action key. This table defines those function-to-action
+  // mappings.
+  static const KeyboardRemapping kFnkeysToActionKeys[] = {
+      {{ui::EF_NONE, ui::VKEY_F1},
+       {ui::EF_NONE, ui::DomCode::BROWSER_BACK, ui::DomKey::BROWSER_BACK,
+        ui::VKEY_BROWSER_BACK}},
+      {{ui::EF_NONE, ui::VKEY_F2},
+       {ui::EF_NONE, ui::DomCode::BROWSER_REFRESH, ui::DomKey::BROWSER_REFRESH,
+        ui::VKEY_BROWSER_REFRESH}},
+      // Map F3 to VKEY_MEDIA_LAUNCH_APP2 + EF_NONE == toggle full screen:
+      {{ui::EF_NONE, ui::VKEY_F3},
+       {ui::EF_NONE, ui::DomCode::ZOOM_TOGGLE, ui::DomKey::ZOOM_TOGGLE,
+        ui::VKEY_MEDIA_LAUNCH_APP2}},
+      // Map F4 to VKEY_MEDIA_LAUNCH_APP1 + EF_NONE == overview:
+      {{ui::EF_NONE, ui::VKEY_F4},
+       {ui::EF_NONE, ui::DomCode::F4, ui::DomKey::F4,
+        ui::VKEY_MEDIA_LAUNCH_APP1}},
+      {{ui::EF_NONE, ui::VKEY_F5},
+       {ui::EF_NONE, ui::DomCode::BRIGHTNESS_DOWN, ui::DomKey::BRIGHTNESS_DOWN,
+        ui::VKEY_BRIGHTNESS_DOWN}},
+      {{ui::EF_NONE, ui::VKEY_F6},
+       {ui::EF_NONE, ui::DomCode::BRIGHTNESS_UP, ui::DomKey::BRIGHTNESS_UP,
+        ui::VKEY_BRIGHTNESS_UP}},
+      {{ui::EF_NONE, ui::VKEY_F7},
+       {ui::EF_NONE, ui::DomCode::VOLUME_MUTE, ui::DomKey::AUDIO_VOLUME_MUTE,
+        ui::VKEY_VOLUME_MUTE}},
+      {{ui::EF_NONE, ui::VKEY_F8},
+       {ui::EF_NONE, ui::DomCode::VOLUME_DOWN, ui::DomKey::AUDIO_VOLUME_DOWN,
+        ui::VKEY_VOLUME_DOWN}},
+      {{ui::EF_NONE, ui::VKEY_F9},
+       {ui::EF_NONE, ui::DomCode::VOLUME_UP, ui::DomKey::AUDIO_VOLUME_UP,
+        ui::VKEY_VOLUME_UP}},
+      // Note: F10 and F11 are left as-is since no action is associated with
+      // these keys.
+      {{ui::EF_NONE, ui::VKEY_F10},
+       {ui::EF_NONE, ui::DomCode::F10, ui::DomKey::F10, ui::VKEY_F10}},
+      {{ui::EF_NONE, ui::VKEY_F11},
+       {ui::EF_NONE, ui::DomCode::F11, ui::DomKey::F11, ui::VKEY_F11}},
+      {{ui::EF_NONE, ui::VKEY_F12},
+       // Map F12 to VKEY_MEDIA_LAUNCH_APP2 + EF_CONTROL_DOWN == toggle mirror
+       // mode:
+       {ui::EF_CONTROL_DOWN, ui::DomCode::F12, ui::DomKey::F12,
+        ui::VKEY_MEDIA_LAUNCH_APP2}},
+  };
+
+  // When the kernel issues an action key (default mode) and the search key is
+  // pressed, the action key needs to be mapped back to its corresponding
+  // action key. This table defines those action-to-function mappings. Note:
+  // this table is essentially the dual of kFnToActionLeys above.
+  static const KeyboardRemapping kActionToFnKeys[] = {
+      {{ui::EF_NONE, ui::VKEY_BROWSER_BACK},
+       {ui::EF_NONE, ui::DomCode::F1, ui::DomKey::F1, ui::VKEY_F1}},
+      {{ui::EF_NONE, ui::VKEY_BROWSER_REFRESH},
+       {ui::EF_NONE, ui::DomCode::F2, ui::DomKey::F2, ui::VKEY_F2}},
+      {{ui::EF_NONE, ui::VKEY_MEDIA_LAUNCH_APP1},
+       {ui::EF_NONE, ui::DomCode::F4, ui::DomKey::F4, ui::VKEY_F4}},
+      {{ui::EF_NONE, ui::VKEY_BRIGHTNESS_DOWN},
+       {ui::EF_NONE, ui::DomCode::F5, ui::DomKey::F5, ui::VKEY_F5}},
+      {{ui::EF_NONE, ui::VKEY_BRIGHTNESS_UP},
+       {ui::EF_NONE, ui::DomCode::F6, ui::DomKey::F6, ui::VKEY_F6}},
+      {{ui::EF_NONE, ui::VKEY_VOLUME_MUTE},
+       {ui::EF_NONE, ui::DomCode::F7, ui::DomKey::F7, ui::VKEY_F7}},
+      {{ui::EF_NONE, ui::VKEY_VOLUME_DOWN},
+       {ui::EF_NONE, ui::DomCode::F8, ui::DomKey::F8, ui::VKEY_F8}},
+      {{ui::EF_NONE, ui::VKEY_VOLUME_UP},
+       {ui::EF_NONE, ui::DomCode::F9, ui::DomKey::F9, ui::VKEY_F9}},
+      // Do not change the order of the next two entries. The remapping of
+      // VKEY_MEDIA_LAUNCH_APP2 with Control held down must appear before
+      // VKEY_MEDIA_LAUNCH_APP2 by itself to be considered.
+      {{ui::EF_CONTROL_DOWN, ui::VKEY_MEDIA_LAUNCH_APP2},
+       {ui::EF_NONE, ui::DomCode::F12, ui::DomKey::F12, ui::VKEY_F12}},
+      {{ui::EF_NONE, ui::VKEY_MEDIA_LAUNCH_APP2},
+       {ui::EF_NONE, ui::DomCode::F3, ui::DomKey::F3, ui::VKEY_F3}},
+  };
+
+  // Some action key codes are mapped to standard VKEY and DomCode values
+  // during event to KeyEvent translation. However, in Chrome, different VKEY
+  // combinations trigger those actions. This table maps event VKEYs to the
+  // right action VKEYs.
+  static const KeyboardRemapping kActionToActionKeys[] = {
+      // Zoom toggle is actually through VKEY_MEDIA_LAUNCH_APP2.
+      {{ui::EF_NONE, ui::VKEY_ZOOM},
+       {ui::EF_NONE, ui::DomCode::ZOOM_TOGGLE, ui::DomKey::ZOOM_TOGGLE,
+        ui::VKEY_MEDIA_LAUNCH_APP2}},
+      // Next keyboard layout IME is through space + control + shift
+      {{ui::EF_NONE, ui::VKEY_MODECHANGE},
+       {ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+        ui::DomCode::KEYBOARD_LAYOUT_SELECT, ui::DomKey::MODE_CHANGE,
+        ui::VKEY_SPACE}},
+  };
+
+  // Some key codes have a Dom code but no VKEY value assigned. They're mapped
+  // to VKEY values here.
+  if (state->key_code == ui::VKEY_UNKNOWN) {
+    if (state->code == ui::DomCode::SHOW_ALL_WINDOWS) {
+      // Show all windows is through VKEY_MEDIA_LAUNCH_APP1.
+      state->key_code = ui::VKEY_MEDIA_LAUNCH_APP1;
+      state->key = ui::DomKey::F4;
+    } else if (state->code == ui::DomCode::DISPLAY_TOGGLE_INT_EXT) {
+      // Display toggle is through control + VKEY_MEDIA_LAUNCH_APP2.
+      state->flags |= ui::EF_CONTROL_DOWN;
+      state->key_code = ui::VKEY_MEDIA_LAUNCH_APP2;
+      state->key = ui::DomKey::F12;
+    }
+  }
+
+  ui::EventRewriterChromeOS::MutableKeyState incoming_without_command = *state;
+  incoming_without_command.flags &= ~ui::EF_COMMAND_DOWN;
+
+  // Map certain action keys to the right VKey and modifier.
+  RewriteWithKeyboardRemappings(kActionToActionKeys,
+                                base::size(kActionToActionKeys),
+                                incoming_without_command, state);
+
+  if ((state->key_code >= ui::VKEY_F1) && (state->key_code <= ui::VKEY_F12)) {
+    // Incoming key code is a Fn key. Check if it needs to be mapped back to its
+    // corresponding action key.
+    if (search_is_pressed) {
+      return RewriteWithKeyboardRemappings(kFnkeysToActionKeys,
+                                           base::size(kFnkeysToActionKeys),
+                                           incoming_without_command, state);
+    }
+    return true;
+  } else if (IsKeyCodeInMappings(state->key_code, kActionToFnKeys,
+                                 base::size(kActionToFnKeys))) {
+    // Incoming key code is an action key. Check if it needs to be mapped back
+    // to its corresponding function key.
+    if (search_is_pressed != ForceTopRowAsFunctionKeys()) {
+      return RewriteWithKeyboardRemappings(kActionToFnKeys,
+                                           base::size(kActionToFnKeys),
+                                           incoming_without_command, state);
+    }
+    return true;
+  }
+
+  return false;
+}
+
 void EventRewriterChromeOS::KeyboardDeviceAddedInternal(
     int device_id,
     DeviceType type,
@@ -1380,6 +1557,10 @@ void EventRewriterChromeOS::KeyboardDeviceAddedInternal(
   // Always overwrite the existing device_id since the X server may reuse a
   // device id for an unattached device.
   device_id_to_info_[device_id] = {type, layout};
+}
+
+bool EventRewriterChromeOS::ForceTopRowAsFunctionKeys() const {
+  return delegate_ && delegate_->TopRowKeysAreFunctionKeys();
 }
 
 EventRewriterChromeOS::DeviceType EventRewriterChromeOS::KeyboardDeviceAdded(

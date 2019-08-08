@@ -15,17 +15,24 @@ namespace media {
 RequestBuilder::RequestBuilder(CameraDeviceContext* device_context,
                                RequestBufferCallback request_buffer_callback)
     : device_context_(device_context),
+      frame_number_(0),
       request_buffer_callback_(std::move(request_buffer_callback)) {}
 
 RequestBuilder::~RequestBuilder() = default;
 
 cros::mojom::Camera3CaptureRequestPtr RequestBuilder::BuildRequest(
     std::set<StreamType> stream_types,
-    cros::mojom::CameraMetadataPtr settings) {
+    cros::mojom::CameraMetadataPtr settings,
+    base::Optional<uint64_t> input_buffer_id) {
   auto capture_request = cros::mojom::Camera3CaptureRequest::New();
   for (StreamType stream_type : stream_types) {
-    base::Optional<BufferInfo> buffer_info =
-        request_buffer_callback_.Run(stream_type);
+    base::Optional<BufferInfo> buffer_info;
+    if (IsInputStream(stream_type)) {
+      DCHECK(input_buffer_id.has_value());
+      buffer_info = request_buffer_callback_.Run(stream_type, input_buffer_id);
+    } else {
+      buffer_info = request_buffer_callback_.Run(stream_type, {});
+    }
     if (!buffer_info) {
       return capture_request;
     }
@@ -33,10 +40,15 @@ cros::mojom::Camera3CaptureRequestPtr RequestBuilder::BuildRequest(
     auto buffer_handle = CreateCameraBufferHandle(stream_type, *buffer_info);
     auto stream_buffer =
         CreateStreamBuffer(stream_type, buffer_id, std::move(buffer_handle));
-    capture_request->output_buffers.push_back(std::move(stream_buffer));
+    if (IsInputStream(stream_type)) {
+      capture_request->input_buffer = std::move(stream_buffer);
+    } else {
+      capture_request->output_buffers.push_back(std::move(stream_buffer));
+    }
   }
-
   capture_request->settings = std::move(settings);
+  capture_request->frame_number = frame_number_++;
+
   return capture_request;
 }
 
@@ -55,16 +67,10 @@ cros::mojom::CameraBufferHandlePtr RequestBuilder::CreateCameraBufferHandle(
       buffer_info.gpu_memory_buffer->CloneHandle().native_pixmap_handle;
 
   size_t num_planes = native_pixmap_handle.planes.size();
-  DCHECK_EQ(num_planes, native_pixmap_handle.fds.size());
-  // Take ownership of fds.
-  std::vector<base::ScopedFD> fds(num_planes);
-  for (size_t i = 0; i < num_planes; ++i)
-    fds[i] = base::ScopedFD(native_pixmap_handle.fds[i].fd);
-
   std::vector<StreamCaptureInterface::Plane> planes(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
-    mojo::ScopedHandle mojo_fd =
-        mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fds[i])));
+    mojo::ScopedHandle mojo_fd = mojo::WrapPlatformHandle(
+        mojo::PlatformHandle(std::move(native_pixmap_handle.planes[i].fd)));
     if (!mojo_fd.is_valid()) {
       device_context_->SetErrorState(
           media::VideoCaptureError::

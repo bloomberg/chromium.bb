@@ -50,11 +50,12 @@ HTMLProgressElement* HTMLProgressElement::Create(Document& document) {
 }
 
 LayoutObject* HTMLProgressElement::CreateLayoutObject(
-    const ComputedStyle& style) {
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
   if (!style.HasAppearance()) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kProgressElementWithNoneAppearance);
-    return LayoutObject::CreateObject(this, style);
+    return LayoutObject::CreateObject(this, style, legacy);
   }
   UseCounter::Count(GetDocument(),
                     WebFeature::kProgressElementWithProgressBarAppearance);
@@ -157,7 +158,7 @@ void HTMLProgressElement::Trace(Visitor* visitor) {
 }
 
 void HTMLProgressElement::SetValueWidthPercentage(double width) const {
-  value_->SetInlineStyleProperty(CSSPropertyWidth, width,
+  value_->SetInlineStyleProperty(CSSPropertyID::kWidth, width,
                                  CSSPrimitiveValue::UnitType::kPercentage);
 }
 

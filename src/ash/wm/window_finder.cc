@@ -105,7 +105,8 @@ aura::Window* GetToplevelWindowInOverviewAtPoint(
   if (!grid)
     return nullptr;
 
-  aura::Window* window = grid->GetTargetWindowOnLocation(screen_point);
+  aura::Window* window = grid->GetTargetWindowOnLocation(
+      gfx::PointF(screen_point), /*ignored_item=*/nullptr);
   if (!window)
     return nullptr;
 

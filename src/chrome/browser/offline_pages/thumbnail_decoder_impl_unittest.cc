@@ -38,8 +38,8 @@ TEST_F(ThumbnailDecoderImplTest, Success) {
       gfx::test::CreateImage(kImageWidth, kImageHeight);
   EXPECT_CALL(*image_decoder, DecodeImage(kImageData, _, _))
       .WillOnce(testing::WithArg<2>(
-          Invoke([&](const image_fetcher::ImageDecodedCallback& callback) {
-            callback.Run(kDecodedImage);
+          Invoke([&](image_fetcher::ImageDecodedCallback callback) {
+            std::move(callback).Run(kDecodedImage);
           })));
   base::MockCallback<ThumbnailDecoder::DecodeComplete> complete_callback;
   EXPECT_CALL(complete_callback, Run(_))
@@ -55,8 +55,8 @@ TEST_F(ThumbnailDecoderImplTest, DecodeFail) {
   const gfx::Image kDecodedImage = gfx::Image();
   EXPECT_CALL(*image_decoder, DecodeImage(kImageData, _, _))
       .WillOnce(testing::WithArg<2>(
-          Invoke([&](const image_fetcher::ImageDecodedCallback& callback) {
-            callback.Run(kDecodedImage);
+          Invoke([&](image_fetcher::ImageDecodedCallback callback) {
+            std::move(callback).Run(kDecodedImage);
           })));
   base::MockCallback<ThumbnailDecoder::DecodeComplete> complete_callback;
   EXPECT_CALL(complete_callback, Run(_))

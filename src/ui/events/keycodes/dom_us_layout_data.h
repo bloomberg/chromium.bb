@@ -170,6 +170,7 @@ const struct NonPrintableCodeEntry {
     {DomCode::INSERT, DomKey::INSERT},
     // {DomCode::INTL_RO, DomKey::_}
     {DomCode::KANA_MODE, DomKey::KANA_MODE},
+    {DomCode::KEYBOARD_LAYOUT_SELECT, DomKey::MODE_CHANGE},
     {DomCode::LANG1, DomKey::HANGUL_MODE},
     {DomCode::LANG2, DomKey::HANJA_MODE},
     {DomCode::LANG3, DomKey::KATAKANA},
@@ -416,10 +417,6 @@ const struct DomCodeToKeyboardCodeEntry {
     // DomCode::SUSPEND                            0x000014 Suspend
     // DomCode::RESUME                             0x000015 Resume
     // DomCode::TURBO                              0x000016 Turbo
-#if defined(OS_POSIX)
-    {DomCode::LAUNCH_ASSISTANT,
-     VKEY_ASSISTANT},                          // 0x000017 Launch Assistant
-#endif
     {DomCode::SLEEP, VKEY_SLEEP},               // 0x010082 Sleep
     // DomCode::WAKE_UP                            0x010083 WakeUp
     {DomCode::US_A, VKEY_A},                   // 0x070004 KeyA
@@ -604,6 +601,8 @@ const struct DomCodeToKeyboardCodeEntry {
 #if defined(OS_POSIX)
     {DomCode::LAUNCH_CONTROL_PANEL,
      VKEY_SETTINGS},                            // 0x0C019F Launch Assistant
+    {DomCode::LAUNCH_ASSISTANT,
+     VKEY_ASSISTANT},                           // 0x0C01CB Launch Assistant
 #endif
     {DomCode::BROWSER_SEARCH,
      VKEY_BROWSER_SEARCH},                      // 0x0C0221 BrowserSearch

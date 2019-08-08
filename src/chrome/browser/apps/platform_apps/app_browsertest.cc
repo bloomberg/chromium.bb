@@ -67,7 +67,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif
 
@@ -123,22 +123,22 @@ class TabsAddedNotificationObserver
 };
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-class ScopedPreviewTestingDelegate : printing::PrintPreviewUI::TestingDelegate {
+class ScopedPreviewTestDelegate : printing::PrintPreviewUI::TestDelegate {
  public:
-  ScopedPreviewTestingDelegate() {
+  ScopedPreviewTestDelegate() {
     printing::PrintPreviewUI::SetDelegateForTesting(this);
   }
 
-  ~ScopedPreviewTestingDelegate() {
-    printing::PrintPreviewUI::SetDelegateForTesting(NULL);
+  ~ScopedPreviewTestDelegate() override {
+    printing::PrintPreviewUI::SetDelegateForTesting(nullptr);
   }
 
-  // PrintPreviewUI::TestingDelegate implementation.
+  // PrintPreviewUI::TestDelegate implementation.
   void DidGetPreviewPageCount(int page_count) override {
     total_page_count_ = page_count;
   }
 
-  // PrintPreviewUI::TestingDelegate implementation.
+  // PrintPreviewUI::TestDelegate implementation.
   void DidRenderPreviewPage(content::WebContents* preview_dialog) override {
     dialog_size_ = preview_dialog->GetContainerBounds().size();
     ++rendered_page_count_;
@@ -1143,7 +1143,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_WebContentsHasFocus) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        WindowDotPrintShouldBringUpPrintPreview) {
-  ScopedPreviewTestingDelegate preview_delegate;
+  ScopedPreviewTestDelegate preview_delegate;
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/print_api")) << message_;
   preview_delegate.WaitUntilPreviewIsReady();
 }
@@ -1151,7 +1151,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 // This test verifies that http://crbug.com/297179 is fixed.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        DISABLED_ClosingWindowWhilePrintingShouldNotCrash) {
-  ScopedPreviewTestingDelegate preview_delegate;
+  ScopedPreviewTestDelegate preview_delegate;
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/print_api")) << message_;
   preview_delegate.WaitUntilPreviewIsReady();
   GetFirstAppWindow()->GetBaseWindow()->Close();
@@ -1389,7 +1389,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   const gfx::Point pinch_position(contents_rect.width() / 2,
                                   contents_rect.height() / 2);
   content::SimulateGesturePinchSequence(web_contents, pinch_position, 1.23,
-                                        blink::kWebGestureDeviceTouchpad);
+                                        blink::WebGestureDevice::kTouchpad);
 
   ASSERT_TRUE(synthetic_wheel_listener.WaitUntilSatisfied());
 }

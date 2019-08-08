@@ -174,6 +174,8 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   void InvalidateRect(const gfx::Rect& rect) final;
   void OnOverlayConnectionLost(VideoCaptureOverlay* overlay) final;
 
+  void InvalidateEntireSource();
+
   // Returns a list of the overlays in rendering order.
   std::vector<VideoCaptureOverlay*> GetOverlaysInOrder() const;
 
@@ -189,6 +191,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // |content_rect| region of a [possibly letterboxed] video |frame|.
   void DidCopyFrame(int64_t capture_frame_number,
                     OracleFrameNumber oracle_frame_number,
+                    int64_t content_version,
                     const gfx::Rect& content_rect,
                     VideoCaptureOverlay::OnceRenderer overlay_renderer,
                     scoped_refptr<media::VideoFrame> frame,
@@ -197,10 +200,10 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // Places the frame in the |delivery_queue_| and calls MaybeDeliverFrame(),
   // one frame at a time, in-order. |frame| may be null to indicate a
   // completed, but unsuccessful capture.
-  void DidCaptureFrame(int64_t capture_frame_number,
-                       OracleFrameNumber oracle_frame_number,
-                       const gfx::Rect& content_rect,
-                       scoped_refptr<media::VideoFrame> frame);
+  void OnFrameReadyForDelivery(int64_t capture_frame_number,
+                               OracleFrameNumber oracle_frame_number,
+                               const gfx::Rect& content_rect,
+                               scoped_refptr<media::VideoFrame> frame);
 
   // Delivers a |frame| to the consumer, if the VideoCaptureOracle allows
   // it. |frame| can be null to indicate a completed, but unsuccessful capture.
@@ -280,6 +283,12 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // processes. The size of this pool is used to limit the maximum number of
   // frames in-flight at any one time.
   InterprocessFramePool frame_pool_;
+
+  // Increased every time the source content changes or a forced refresh is
+  // requested.
+  int64_t content_version_ = 0;
+
+  int64_t content_version_in_marked_frame_ = -1;
 
   // A queue of captured frames pending delivery. This queue is used to re-order
   // frames, if they should happen to be captured out-of-order.

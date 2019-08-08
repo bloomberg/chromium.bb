@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
+
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -56,10 +58,12 @@ const char kContactDetailsFreeShippingPage[] =
 // Sets up a credit card with an associated billing address.
 - (void)setUpCreditCard {
   autofill::AutofillProfile billingAddress = autofill::test::GetFullProfile();
-  [self addAutofillProfile:billingAddress];
+  NSError* billingAddressError = [self addAutofillProfile:billingAddress];
+  GREYAssertNil(billingAddressError, billingAddressError.localizedDescription);
   autofill::CreditCard card = autofill::test::GetCreditCard();  // visa
   card.set_billing_address_id(billingAddress.guid());
-  [self addCreditCard:card];
+  NSError* creditCardError = [self addCreditCard:card];
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
 }
 
 // Completes the Payment Request.
@@ -93,10 +97,13 @@ const char kContactDetailsFreeShippingPage[] =
 
   // Setup a credit card with an associated billing address.
   autofill::AutofillProfile billingAddress = autofill::test::GetFullProfile();
-  [self addAutofillProfile:billingAddress];
+  NSError* billingAddressError = [self addAutofillProfile:billingAddress];
+  GREYAssertNil(billingAddressError, billingAddressError.localizedDescription);
+
   autofill::CreditCard card = autofill::test::GetCreditCard();  // visa
   card.set_billing_address_id(billingAddress.guid());
-  [self addCreditCard:card];
+  NSError* creditCardError = [self addCreditCard:card];
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
 
   // Check that the initial use stats were set correctly.
   autofill::CreditCard* initialCard =
@@ -139,7 +146,9 @@ const char kContactDetailsFreeShippingPage[] =
   // selected as the default shipping address.
   autofill::AutofillProfile shippingAddress = autofill::test::GetFullProfile2();
   shippingAddress.set_use_count(3);
-  [self addAutofillProfile:shippingAddress];
+  NSError* shippingAddressError = [self addAutofillProfile:shippingAddress];
+  GREYAssertNil(shippingAddressError,
+                shippingAddressError.localizedDescription);
 
   // Check that the initial use stats were set correctly.
   autofill::AutofillProfile* initialShipping =
@@ -171,7 +180,8 @@ const char kContactDetailsFreeShippingPage[] =
   // selected as the default shipping address.
   autofill::AutofillProfile contactAddress = autofill::test::GetFullProfile2();
   contactAddress.set_use_count(3);
-  [self addAutofillProfile:contactAddress];
+  NSError* contactAddressError = [self addAutofillProfile:contactAddress];
+  GREYAssertNil(contactAddressError, contactAddressError.localizedDescription);
 
   // Check that the initial use stats were set correctly.
   autofill::AutofillProfile* initialContact =
@@ -203,7 +213,8 @@ const char kContactDetailsFreeShippingPage[] =
   // the default shipping and contact address.
   autofill::AutofillProfile multiAddress = autofill::test::GetFullProfile2();
   multiAddress.set_use_count(3);
-  [self addAutofillProfile:multiAddress];
+  NSError* multiAddressError = [self addAutofillProfile:multiAddress];
+  GREYAssertNil(multiAddressError, multiAddressError.localizedDescription);
 
   // Check that the initial use stats were set correctly.
   autofill::AutofillProfile* initialAddress =

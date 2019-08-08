@@ -20,6 +20,7 @@
 #include "libANGLE/renderer/vulkan/CompilerVk.h"
 #include "libANGLE/renderer/vulkan/FenceNVVk.h"
 #include "libANGLE/renderer/vulkan/FramebufferVk.h"
+#include "libANGLE/renderer/vulkan/MemoryObjectVk.h"
 #include "libANGLE/renderer/vulkan/ProgramPipelineVk.h"
 #include "libANGLE/renderer/vulkan/ProgramVk.h"
 #include "libANGLE/renderer/vulkan/QueryVk.h"
@@ -27,6 +28,7 @@
 #include "libANGLE/renderer/vulkan/RendererVk.h"
 #include "libANGLE/renderer/vulkan/SamplerVk.h"
 #include "libANGLE/renderer/vulkan/ShaderVk.h"
+#include "libANGLE/renderer/vulkan/SurfaceVk.h"
 #include "libANGLE/renderer/vulkan/SyncVk.h"
 #include "libANGLE/renderer/vulkan/TextureVk.h"
 #include "libANGLE/renderer/vulkan/TransformFeedbackVk.h"
@@ -72,6 +74,7 @@ ContextVk::ContextVk(const gl::State &state, gl::ErrorSet *errorSet, RendererVk 
       vk::Context(renderer),
       mCurrentPipeline(nullptr),
       mCurrentDrawMode(gl::PrimitiveMode::InvalidEnum),
+      mCurrentWindowSurface(nullptr),
       mVertexArray(nullptr),
       mDrawFramebuffer(nullptr),
       mProgram(nullptr),
@@ -116,6 +119,9 @@ ContextVk::~ContextVk() = default;
 
 void ContextVk::onDestroy(const gl::Context *context)
 {
+    // Force a flush on destroy.
+    (void)finishImpl();
+
     mDriverUniformsSetLayout.reset();
     mIncompleteTextures.onDestroy(context);
     mDriverUniformsBuffer.destroy(getDevice());
@@ -187,12 +193,38 @@ angle::Result ContextVk::initialize()
 
 angle::Result ContextVk::flush(const gl::Context *context)
 {
-    return mRenderer->flush(this);
+    return flushImpl();
+}
+
+angle::Result ContextVk::flushImpl()
+{
+    const vk::Semaphore *waitSemaphore   = nullptr;
+    const vk::Semaphore *signalSemaphore = nullptr;
+    if (mCurrentWindowSurface && !mRenderer->getCommandGraph()->empty())
+    {
+        ANGLE_TRY(mCurrentWindowSurface->generateSemaphoresForFlush(this, &waitSemaphore,
+                                                                    &signalSemaphore));
+    }
+
+    return mRenderer->flush(this, waitSemaphore, signalSemaphore);
 }
 
 angle::Result ContextVk::finish(const gl::Context *context)
 {
-    return mRenderer->finish(this);
+    return finishImpl();
+}
+
+angle::Result ContextVk::finishImpl()
+{
+    const vk::Semaphore *waitSemaphore   = nullptr;
+    const vk::Semaphore *signalSemaphore = nullptr;
+    if (mCurrentWindowSurface && !mRenderer->getCommandGraph()->empty())
+    {
+        ANGLE_TRY(mCurrentWindowSurface->generateSemaphoresForFlush(this, &waitSemaphore,
+                                                                    &signalSemaphore));
+    }
+
+    return mRenderer->finish(this, waitSemaphore, signalSemaphore);
 }
 
 angle::Result ContextVk::setupDraw(const gl::Context *context,
@@ -228,10 +260,13 @@ angle::Result ContextVk::setupDraw(const gl::Context *context,
     if (!mCommandBuffer)
     {
         mDirtyBits |= mNewCommandBufferDirtyBits;
+
+        gl::Rectangle scissoredRenderArea = mDrawFramebuffer->getScissoredRenderArea(this);
         if (!mDrawFramebuffer->appendToStartedRenderPass(mRenderer->getCurrentQueueSerial(),
-                                                         &mCommandBuffer))
+                                                         scissoredRenderArea, &mCommandBuffer))
         {
-            ANGLE_TRY(mDrawFramebuffer->startNewRenderPass(this, &mCommandBuffer));
+            ANGLE_TRY(
+                mDrawFramebuffer->startNewRenderPass(this, scissoredRenderArea, &mCommandBuffer));
         }
     }
 
@@ -366,9 +401,7 @@ angle::Result ContextVk::handleDirtyPipeline(const gl::Context *context,
 
         mGraphicsPipelineTransition.reset();
     }
-
-    commandBuffer->bindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, mCurrentPipeline->getPipeline());
-
+    commandBuffer->bindGraphicsPipeline(mCurrentPipeline->getPipeline());
     // Update the queue serial for the pipeline object.
     ASSERT(mCurrentPipeline && mCurrentPipeline->valid());
     mCurrentPipeline->updateSerial(mRenderer->getCurrentQueueSerial());
@@ -419,7 +452,7 @@ angle::Result ContextVk::handleDirtyIndexBuffer(const gl::Context *context,
     vk::BufferHelper *elementArrayBuffer = mVertexArray->getCurrentElementArrayBuffer();
     ASSERT(elementArrayBuffer != nullptr);
 
-    commandBuffer->bindIndexBuffer(elementArrayBuffer->getBuffer().getHandle(),
+    commandBuffer->bindIndexBuffer(elementArrayBuffer->getBuffer(),
                                    mVertexArray->getCurrentElementArrayBufferOffset(),
                                    gl_vk::kIndexTypeMap[mCurrentDrawElementsType]);
 
@@ -435,9 +468,9 @@ angle::Result ContextVk::handleDirtyDescriptorSets(const gl::Context *context,
     ANGLE_TRY(mProgram->updateDescriptorSets(this, commandBuffer));
 
     // Bind the graphics descriptor sets.
-    commandBuffer->bindDescriptorSets(
-        VK_PIPELINE_BIND_POINT_GRAPHICS, mProgram->getPipelineLayout(),
-        kDriverUniformsDescriptorSetIndex, 1, &mDriverUniformsDescriptorSet, 0, nullptr);
+    commandBuffer->bindGraphicsDescriptorSets(mProgram->getPipelineLayout(),
+                                              kDriverUniformsDescriptorSetIndex, 1,
+                                              &mDriverUniformsDescriptorSet, 0, nullptr);
     return angle::Result::Continue;
 }
 
@@ -459,7 +492,7 @@ angle::Result ContextVk::drawArrays(const gl::Context *context,
     {
         ANGLE_TRY(setupDraw(context, mode, first, count, 1, gl::DrawElementsType::InvalidEnum,
                             nullptr, mNonIndexedDirtyBitsMask, &commandBuffer));
-        commandBuffer->draw(clampedVertexCount, 1, first, 0);
+        commandBuffer->draw(clampedVertexCount, first);
     }
 
     return angle::Result::Continue;
@@ -481,7 +514,7 @@ angle::Result ContextVk::drawArraysInstanced(const gl::Context *context,
     vk::CommandBuffer *commandBuffer = nullptr;
     ANGLE_TRY(setupDraw(context, mode, first, count, instances, gl::DrawElementsType::InvalidEnum,
                         nullptr, mNonIndexedDirtyBitsMask, &commandBuffer));
-    commandBuffer->draw(gl::GetClampedVertexCount<uint32_t>(count), instances, first, 0);
+    commandBuffer->drawInstanced(gl::GetClampedVertexCount<uint32_t>(count), instances, first);
     return angle::Result::Continue;
 }
 
@@ -500,7 +533,7 @@ angle::Result ContextVk::drawElements(const gl::Context *context,
     else
     {
         ANGLE_TRY(setupIndexedDraw(context, mode, count, 1, type, indices, &commandBuffer));
-        commandBuffer->drawIndexed(count, 1, 0, 0, 0);
+        commandBuffer->drawIndexed(count);
     }
 
     return angle::Result::Continue;
@@ -522,7 +555,7 @@ angle::Result ContextVk::drawElementsInstanced(const gl::Context *context,
 
     vk::CommandBuffer *commandBuffer = nullptr;
     ANGLE_TRY(setupIndexedDraw(context, mode, count, instances, type, indices, &commandBuffer));
-    commandBuffer->drawIndexed(count, instances, 0, 0, 0);
+    commandBuffer->drawIndexedInstanced(count, instances);
     return angle::Result::Continue;
 }
 
@@ -560,17 +593,17 @@ angle::Result ContextVk::drawElementsIndirect(const gl::Context *context,
     return angle::Result::Stop;
 }
 
-GLenum ContextVk::getResetStatus()
+gl::GraphicsResetStatus ContextVk::getResetStatus()
 {
     if (mRenderer->isDeviceLost())
     {
         // TODO(geofflang): It may be possible to track which context caused the device lost and
         // return either GL_GUILTY_CONTEXT_RESET or GL_INNOCENT_CONTEXT_RESET.
         // http://anglebug.com/2787
-        return GL_UNKNOWN_CONTEXT_RESET;
+        return gl::GraphicsResetStatus::UnknownContextReset;
     }
 
-    return GL_NO_ERROR;
+    return gl::GraphicsResetStatus::NoError;
 }
 
 std::string ContextVk::getVendorString() const
@@ -655,13 +688,12 @@ void ContextVk::updateDepthRange(float nearPlane, float farPlane)
 
 void ContextVk::updateScissor(const gl::State &glState)
 {
-    FramebufferVk *framebufferVk = vk::GetImpl(glState.getDrawFramebuffer());
-    gl::Box dimensions           = framebufferVk->getState().getDimensions();
-    gl::Rectangle renderArea(0, 0, dimensions.width, dimensions.height);
-
-    VkRect2D scissor;
-    gl_vk::GetScissor(glState, isViewportFlipEnabledForDrawFBO(), renderArea, &scissor);
+    FramebufferVk *framebufferVk      = vk::GetImpl(glState.getDrawFramebuffer());
+    gl::Rectangle scissoredRenderArea = framebufferVk->getScissoredRenderArea(this);
+    VkRect2D scissor                  = gl_vk::GetRect(scissoredRenderArea);
     mGraphicsPipelineDesc->updateScissor(&mGraphicsPipelineTransition, scissor);
+
+    framebufferVk->onScissorChange(this);
 }
 
 angle::Result ContextVk::syncState(const gl::Context *context,
@@ -958,6 +990,15 @@ angle::Result ContextVk::onMakeCurrent(const gl::Context *context)
         drawSurface != nullptr && mRenderer->getFeatures().flipViewportY &&
         !IsMaskFlagSet(drawSurface->getOrientation(), EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE);
 
+    if (drawSurface && drawSurface->getType() == EGL_WINDOW_BIT)
+    {
+        mCurrentWindowSurface = GetImplAs<WindowSurfaceVk>(drawSurface);
+    }
+    else
+    {
+        mCurrentWindowSurface = nullptr;
+    }
+
     const gl::State &glState = context->getState();
     updateFlipViewportDrawFramebuffer(glState);
     updateFlipViewportReadFramebuffer(glState);
@@ -1072,6 +1113,11 @@ ProgramPipelineImpl *ContextVk::createProgramPipeline(const gl::ProgramPipelineS
 std::vector<PathImpl *> ContextVk::createPaths(GLsizei)
 {
     return std::vector<PathImpl *>();
+}
+
+MemoryObjectImpl *ContextVk::createMemoryObject()
+{
+    return new MemoryObjectVk();
 }
 
 void ContextVk::invalidateCurrentTextures()

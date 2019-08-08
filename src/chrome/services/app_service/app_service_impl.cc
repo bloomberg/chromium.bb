@@ -63,17 +63,19 @@ void AppServiceImpl::RegisterSubscriber(apps::mojom::SubscriberPtr subscriber,
   subscribers_.AddPtr(std::move(subscriber));
 }
 
-void AppServiceImpl::LoadIcon(apps::mojom::IconKeyPtr icon_key,
+void AppServiceImpl::LoadIcon(apps::mojom::AppType app_type,
+                              const std::string& app_id,
+                              apps::mojom::IconKeyPtr icon_key,
                               apps::mojom::IconCompression icon_compression,
                               int32_t size_hint_in_dip,
                               bool allow_placeholder_icon,
                               LoadIconCallback callback) {
-  auto iter = publishers_.find(icon_key->app_type);
+  auto iter = publishers_.find(app_type);
   if (iter == publishers_.end()) {
     std::move(callback).Run(apps::mojom::IconValue::New());
     return;
   }
-  iter->second->LoadIcon(std::move(icon_key), icon_compression,
+  iter->second->LoadIcon(app_id, std::move(icon_key), icon_compression,
                          size_hint_in_dip, allow_placeholder_icon,
                          std::move(callback));
 }

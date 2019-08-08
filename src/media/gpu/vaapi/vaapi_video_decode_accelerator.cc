@@ -64,28 +64,9 @@ void ReportToUMA(VAVDADecoderFailure failure) {
                             VAVDA_DECODER_FAILURES_MAX + 1);
 }
 
-#if defined(USE_OZONE)
-void CloseGpuMemoryBufferHandle(const gfx::GpuMemoryBufferHandle& handle) {
-  for (const auto& fd : handle.native_pixmap_handle.fds) {
-    // Close the fd by wrapping it in a ScopedFD and letting
-    // it fall out of scope.
-    base::ScopedFD scoped_fd(fd.fd);
-  }
-}
-#endif
-
-// Returns true if the CPU is an Intel Kaby/Gemini/Sky Lake or later.
-// Cpu platform id's are referenced from the following file in kernel source
-// arch/x86/include/asm/intel-family.h
-bool IsKabyLakeOrLater() {
-  constexpr int kPentiumAndLaterFamily = 0x06;
-  constexpr int kFirstKabyLakeModelId = 0x8E;
-  static base::CPU cpuid;
-  static bool is_kaby_lake_or_later =
-      cpuid.family() == kPentiumAndLaterFamily &&
-      cpuid.model() >= kFirstKabyLakeModelId;
-  return is_kaby_lake_or_later;
-}
+// Returns true if the CPU is an Intel Gemini Lake or later (including Kaby
+// Lake) Cpu platform id's are referenced from the following file in kernel
+// source arch/x86/include/asm/intel-family.h
 bool IsGeminiLakeOrLater() {
   constexpr int kPentiumAndLaterFamily = 0x06;
   constexpr int kGeminiLakeModelId = 0x7A;
@@ -299,10 +280,12 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   if (!client_)
     return;
 
+  Picture client_picture(output_id, input_id, visible_rect,
+                         picture_color_space.ToGfxColorSpace(),
+                         picture->AllowOverlay());
+  client_picture.set_read_lock_fences_enabled(true);
   // Notify the |client_| a picture is ready to be consumed.
-  client_->PictureReady(Picture(output_id, input_id, visible_rect,
-                                picture_color_space.ToGfxColorSpace(),
-                                picture->AllowOverlay()));
+  client_->PictureReady(client_picture);
 }
 
 void VaapiVideoDecodeAccelerator::TryOutputPicture() {
@@ -537,7 +520,7 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
     requested_num_pics_ = num_pics - num_reference_frames + 1;
   } else {
     requested_num_reference_frames_ = 0;
-    requested_num_pics_ = num_pics;
+    requested_num_pics_ = num_pics + num_extra_pics_;
   }
 
   VLOGF(2) << " |requested_num_pics_| = " << requested_num_pics_
@@ -725,12 +708,11 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
 void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     int32_t picture_buffer_id,
     VideoPixelFormat pixel_format,
-    const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
+    gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) {
   VLOGF(2) << "Importing picture id: " << picture_buffer_id;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (output_mode_ != Config::OutputMode::IMPORT) {
-    CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
     VLOGF(1) << "Cannot import in non-import mode";
     NotifyError(INVALID_ARGUMENT);
     return;
@@ -739,8 +721,6 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
   {
     base::AutoLock auto_lock(lock_);
     if (!pictures_.count(picture_buffer_id)) {
-      CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
-
       // It's possible that we've already posted a DismissPictureBuffer for this
       // picture, but it has not yet executed when this ImportBufferForPicture
       // was posted to us by the client. In that case just ignore this (we've
@@ -753,7 +733,7 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     VaapiPicture* picture = pictures_[picture_buffer_id].get();
     if (!picture->ImportGpuMemoryBufferHandle(
             VideoPixelFormatToGfxBufferFormat(pixel_format),
-            gpu_memory_buffer_handle)) {
+            std::move(gpu_memory_buffer_handle))) {
       // ImportGpuMemoryBufferHandle will close the handles even on failure, so
       // we don't need to do this ourselves.
       VLOGF(1) << "Failed to import GpuMemoryBufferHandle";
@@ -1082,19 +1062,23 @@ VaapiVideoDecodeAccelerator::GetSupportedProfiles() {
 }
 
 VaapiVideoDecodeAccelerator::BufferAllocationMode
-VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() const {
+VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
   // TODO(crbug.com/912295): Enable a better BufferAllocationMode for IMPORT
   // |output_mode_| as well.
   if (output_mode_ == VideoDecodeAccelerator::Config::OutputMode::IMPORT)
     return BufferAllocationMode::kNormal;
 
-  // On KabyLake, GeminiLake and later we can pass to libva the client's
+  // On Gemini Lake, Kaby Lake and later we can pass to libva the client's
   // PictureBuffers to decode onto, which skips the use of the Vpp unit and its
   // associated format reconciliation copy, avoiding all internal buffer
-  // allocations.
-  // TODO(crbug.com/822346,crbug.com/910986): Enable other codecs/platforms.
-  if ((IsKabyLakeOrLater() || IsGeminiLakeOrLater()) &&
-      profile_ == VP9PROFILE_PROFILE0) {
+  // allocations.  This only works for H264, VP8 and VP9.
+  // TODO(crbug.com/911754): Enable for VP9 Profile 2.
+  if (IsGeminiLakeOrLater() && profile_ != VP9PROFILE_PROFILE2) {
+    // Add one to the reference frames for the one being currently egressed, and
+    // an extra allocation for both |client_| and |decoder_|, see
+    // crrev.com/c/1576560.
+    if (profile_ != VP9PROFILE_PROFILE0)
+      num_extra_pics_ = 3;
     return BufferAllocationMode::kNone;
   }
 

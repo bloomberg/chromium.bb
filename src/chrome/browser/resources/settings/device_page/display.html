@@ -11,7 +11,6 @@
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
 <link rel="import" href="display_layout.html">
 <link rel="import" href="display_overscan_dialog.html">
@@ -210,9 +209,9 @@
               aria-labelledby="displayOrientation"
               on-change="onOrientationChange_">
             <option value="0">$i18n{displayOrientationStandard}</option>
-            <option value="90">90</option>
-            <option value="180">180</option>
-            <option value="270">270</option>
+            <option value="90">90&deg;</option>
+            <option value="180">180&deg;</option>
+            <option value="270">270&deg;</option>
           </select>
         </div>
       </template>

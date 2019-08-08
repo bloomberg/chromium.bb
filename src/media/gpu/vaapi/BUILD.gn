@@ -37,16 +37,18 @@ source_set("vaapi") {
     "va_surface.h",
     "vaapi_common.cc",
     "vaapi_common.h",
+    "vaapi_dmabuf_video_frame_mapper.cc",
+    "vaapi_dmabuf_video_frame_mapper.h",
     "vaapi_h264_accelerator.cc",
     "vaapi_h264_accelerator.h",
-    "vaapi_jpeg_decode_accelerator.cc",
-    "vaapi_jpeg_decode_accelerator.h",
     "vaapi_jpeg_decoder.cc",
     "vaapi_jpeg_decoder.h",
     "vaapi_jpeg_encode_accelerator.cc",
     "vaapi_jpeg_encode_accelerator.h",
     "vaapi_jpeg_encoder.cc",
     "vaapi_jpeg_encoder.h",
+    "vaapi_mjpeg_decode_accelerator.cc",
+    "vaapi_mjpeg_decode_accelerator.h",
     "vaapi_picture.cc",
     "vaapi_picture.h",
     "vaapi_picture_factory.cc",
@@ -77,12 +79,14 @@ source_set("vaapi") {
     "//gpu/ipc/service",
     "//media",
     "//media/gpu:common",
+    "//media/gpu:video_frame_mapper_common",
     "//third_party/libyuv",
     "//ui/gfx/geometry",
   ]
 
   if (is_linux) {
     configs += [ "//build/config/linux/libva" ]
+    deps += [ "//media/gpu/linux" ]
   }
 
   if (use_x11) {
@@ -143,8 +147,10 @@ source_set("jpeg_decoder_unit_test") {
     "//base",
     "//base/test:test_support",
     "//media:test_support",
+    "//skia",
     "//testing/gtest",
     "//third_party/libyuv:libyuv",
+    "//ui/gfx/codec",
     "//ui/gfx/geometry",
   ]
 }

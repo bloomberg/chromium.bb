@@ -12,6 +12,7 @@
 #include <ostream>  // no-presubmit-check TODO(webrtc:8982)
 
 #include "absl/algorithm/container.h"
+#include "absl/memory/memory.h"
 #include "p2p/base/basic_packet_socket_factory.h"
 #include "p2p/base/p2p_constants.h"
 #include "p2p/base/stun_port.h"
@@ -22,6 +23,7 @@
 #include "p2p/base/test_turn_server.h"
 #include "p2p/client/basic_port_allocator.h"
 #include "rtc_base/fake_clock.h"
+#include "rtc_base/fake_mdns_responder.h"
 #include "rtc_base/fake_network.h"
 #include "rtc_base/firewall_socket_server.h"
 #include "rtc_base/gunit.h"
@@ -145,7 +147,7 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-class BasicPortAllocatorTestBase : public testing::Test,
+class BasicPortAllocatorTestBase : public ::testing::Test,
                                    public sigslot::has_slots<> {
  public:
   BasicPortAllocatorTestBase()
@@ -2256,7 +2258,8 @@ TEST_F(BasicPortAllocatorTest, HostCandidateAddressIsReplacedByHostname) {
   AddTurnServers(kTurnUdpIntIPv6Addr, kTurnTcpIntIPv6Addr);
 
   ASSERT_EQ(&network_manager_, allocator().network_manager());
-  network_manager_.CreateMdnsResponder(rtc::Thread::Current());
+  network_manager_.set_mdns_responder(
+      absl::make_unique<webrtc::FakeMdnsResponder>(rtc::Thread::Current()));
   AddInterface(kClientAddr);
   ASSERT_TRUE(CreateSession(ICE_CANDIDATE_COMPONENT_RTP));
   session_->StartGettingPorts();

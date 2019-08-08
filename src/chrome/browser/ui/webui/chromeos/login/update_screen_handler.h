@@ -25,6 +25,14 @@ class UpdateScreenHandler : public UpdateView, public BaseScreenHandler {
   void Hide() override;
   void Bind(UpdateScreen* screen) override;
   void Unbind() override;
+  void SetEstimatedTimeLeft(int value) override;
+  void SetShowEstimatedTimeLeft(bool value) override;
+  void SetUpdateCompleted(bool value) override;
+  void SetShowCurtain(bool value) override;
+  void SetProgressMessage(const base::string16& value) override;
+  void SetProgress(int value) override;
+  void SetRequiresPermissionForCellular(bool value) override;
+  void SetCancelUpdateShortcutEnabled(bool value) override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(

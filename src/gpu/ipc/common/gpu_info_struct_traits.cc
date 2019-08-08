@@ -259,6 +259,8 @@ EnumTraits<gpu::mojom::ImageDecodeAcceleratorSubsampling,
       return gpu::mojom::ImageDecodeAcceleratorSubsampling::k420;
     case gpu::ImageDecodeAcceleratorSubsampling::k422:
       return gpu::mojom::ImageDecodeAcceleratorSubsampling::k422;
+    case gpu::ImageDecodeAcceleratorSubsampling::k444:
+      return gpu::mojom::ImageDecodeAcceleratorSubsampling::k444;
   }
 }
 
@@ -273,6 +275,9 @@ bool EnumTraits<gpu::mojom::ImageDecodeAcceleratorSubsampling,
       return true;
     case gpu::mojom::ImageDecodeAcceleratorSubsampling::k422:
       *out = gpu::ImageDecodeAcceleratorSubsampling::k422;
+      return true;
+    case gpu::mojom::ImageDecodeAcceleratorSubsampling::k444:
+      *out = gpu::ImageDecodeAcceleratorSubsampling::k444;
       return true;
   }
   NOTREACHED() << "Invalid ImageDecodeAcceleratorSubsampling: " << input;
@@ -351,7 +356,6 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
   out->amd_switchable = data.amd_switchable();
   out->gl_reset_notification_strategy = data.gl_reset_notification_strategy();
   out->software_rendering = data.software_rendering();
-  out->direct_rendering = data.direct_rendering();
   out->sandboxed = data.sandboxed();
   out->in_process_gpu = data.in_process_gpu();
   out->passthrough_cmd_decoder = data.passthrough_cmd_decoder();
@@ -386,6 +390,7 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
          data.ReadGlWsVendor(&out->gl_ws_vendor) &&
          data.ReadGlWsVersion(&out->gl_ws_version) &&
          data.ReadGlWsExtensions(&out->gl_ws_extensions) &&
+         data.ReadDirectRenderingVersion(&out->direct_rendering_version) &&
 #if defined(OS_WIN)
          data.ReadOverlayCapabilities(&out->overlay_capabilities) &&
          data.ReadDxDiagnostics(&out->dx_diagnostics) &&

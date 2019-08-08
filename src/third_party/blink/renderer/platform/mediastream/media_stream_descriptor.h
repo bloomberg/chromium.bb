@@ -61,22 +61,13 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
 
  public:
   // Only used for AudioDestinationNode.
-  static MediaStreamDescriptor* Create(
-      const MediaStreamSourceVector& audio_sources,
-      const MediaStreamSourceVector& video_sources);
-
-  static MediaStreamDescriptor* Create(
-      const MediaStreamComponentVector& audio_components,
-      const MediaStreamComponentVector& video_components);
-
-  static MediaStreamDescriptor* Create(
-      const String& id,
-      const MediaStreamComponentVector& audio_components,
-      const MediaStreamComponentVector& video_components);
-
+  MediaStreamDescriptor(const MediaStreamSourceVector& audio_sources,
+                        const MediaStreamSourceVector& video_sources);
   MediaStreamDescriptor(const String& id,
                         const MediaStreamSourceVector& audio_sources,
                         const MediaStreamSourceVector& video_sources);
+  MediaStreamDescriptor(const MediaStreamComponentVector& audio_components,
+                        const MediaStreamComponentVector& video_components);
   MediaStreamDescriptor(const String& id,
                         const MediaStreamComponentVector& audio_components,
                         const MediaStreamComponentVector& video_components);

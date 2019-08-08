@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 12
+// Next MinVersion: 14
 
 module arc.mojom;
 
@@ -37,6 +37,27 @@ struct Document {
   // This value is available in limited DocumentsProviders only. If the
   // provider does not expose real VFS paths, this field is always set to null.
   [MinVersion=5] string? android_file_system_path;
+
+  // Flag indicating that a document is deletable.
+  [MinVersion=12] bool supports_delete;
+
+  // Flag indicating that a document can be renamed.
+  [MinVersion=12] bool supports_rename;
+
+  // Flag indicating that a document supports writing.
+  [MinVersion=12] bool supports_write;
+
+  // Flag indicating that a document is a directory that supports creation of
+  // new files within it.
+  [MinVersion=12] bool dir_supports_create;
+
+  // Flag indicating that a document can be copied to another location within
+  // the same document provider.
+  [MinVersion=12] bool supports_copy;
+
+  // Flag indicating that a document can be moved to another location within
+  // the same document provider.
+  [MinVersion=12] bool supports_move;
 };
 
 // Represents a root in Android DocumentsProvider.
@@ -60,6 +81,13 @@ struct Root {
 
   // Icon for the root, represented in a ARGB_8888 bitmap.
   ArcBitmap? icon;
+
+  // Flag indicating that at least one directory under this root supports
+  // creating contents.
+  [MinVersion=12] bool supports_create;
+
+  // Mime types supported by this root.
+  [MinVersion=12] array<string>? mime_types;
 };
 
 // Describes the type of a change made to a document.
@@ -131,6 +159,21 @@ struct SelectFilesRequest {
   // Directory path to be initially opened when the file selector is launched.
   // Corresponds to DocumentsContract.EXTRA_INITIAL_URI.
   string initial_content_uri;
+
+  // DocumentPath representation for initial URI.
+  // Filled only when DocumentsContract.EXTRA_INITIAL_URI points to a document
+  // served by a DocumentsProvider.
+  DocumentPath? initial_document_path;
+};
+
+// Represents a path to a document served by a DocumentsProvider.
+struct DocumentPath {
+  // Authority of the document provider.
+  string authority;
+
+  // List of document ID from the root document to the child document.
+  // This should at least contain root document ID.
+  array<string> path;
 };
 
 // Result for SelectFilesRequest.
@@ -214,7 +257,7 @@ interface FileSystemHost {
       (FileSelectorElements elements);
 };
 
-// Next method ID: 13
+// Next method ID: 19
 interface FileSystemInstance {
   // Notes about Android Documents Provider:
   //
@@ -287,6 +330,36 @@ interface FileSystemInstance {
   // value is returned.
   [MinVersion=10] GetRoots@12() => (array<Root>? roots);
 
+  // Deletes the given document.
+  [MinVersion=12] DeleteDocument@13(string authority, string document_id) =>
+      (bool success);
+
+  // Changes the display name of an existing document.
+  [MinVersion=12] RenameDocument@14(string authority,
+                                    string document_id,
+                                    string display_name) =>
+                                        (Document? document);
+
+  // Creates a new document with given MIME type and display name.
+  [MinVersion=12] CreateDocument@15(string authority,
+                                    string parent_document_id,
+                                    string mime_type,
+                                    string display_name) =>
+                                        (Document? document);
+
+  // Copies the given document.
+  [MinVersion=12] CopyDocument@16(string authority,
+                                  string source_document_id,
+                                  string target_parent_document_id) =>
+                                      (Document? document);
+
+  // Moves the given document under a new parent.
+  [MinVersion=12] MoveDocument@17(string authority,
+                                  string source_document_id,
+                                  string source_parent_document_id,
+                                  string target_parent_document_id) =>
+                                      (Document? document);
+
   // DEPRECATED: Please use Init@10 instead.
   [MinVersion=3] InitDeprecated@5(FileSystemHost host_ptr);
 
@@ -296,6 +369,10 @@ interface FileSystemInstance {
   // Asks the ContentResolver to get a FD to read the file specified by the
   // URL.
   [MinVersion=1] OpenFileToRead@2(string url) => (handle? fd);
+
+  // Asks the ContentResolver to get a FD to write the file specified by the
+  // URL.
+  [MinVersion=13] OpenFileToWrite@18(string url) => (handle? fd);
 
   // Uninstalls a document watcher.
   //

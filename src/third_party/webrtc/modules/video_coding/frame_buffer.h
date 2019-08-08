@@ -15,7 +15,6 @@
 #include <stdint.h>
 #include <vector>
 
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/video_coding/codecs/h264/include/h264_globals.h"
 #include "modules/video_coding/codecs/vp9/include/vp9_globals.h"
 #include "modules/video_coding/encoded_frame.h"
@@ -70,7 +69,7 @@ class VCMFrameBuffer : public VCMEncodedFrame {
 
   int64_t LatestPacketTimeMs() const;
 
-  webrtc::FrameType FrameType() const;
+  webrtc::VideoFrameType FrameType() const;
 
  private:
   void SetState(VCMFrameBufferStateEnum state);  // Set state of frame

@@ -212,9 +212,7 @@ TEST_F(ToolbarActionViewUnitTest, BasicToolbarActionViewTest) {
 
   // Check that the tooltip and accessible state of the view match the
   // controller's.
-  base::string16 tooltip_test;
-  EXPECT_TRUE(view.GetTooltipText(gfx::Point(), &tooltip_test));
-  EXPECT_EQ(tooltip, tooltip_test);
+  EXPECT_EQ(tooltip, view.GetTooltipText(gfx::Point()));
   ui::AXNodeData ax_node_data;
   view.GetAccessibleNodeData(&ax_node_data);
   EXPECT_EQ(name, ax_node_data.GetString16Attribute(

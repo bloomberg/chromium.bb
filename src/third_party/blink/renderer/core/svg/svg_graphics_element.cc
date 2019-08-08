@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/svg/svg_matrix_tear_off.h"
 #include "third_party/blink/renderer/core/svg/svg_rect_tear_off.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
 namespace blink {
@@ -36,9 +37,10 @@ SVGGraphicsElement::SVGGraphicsElement(const QualifiedName& tag_name,
                                        ConstructionType construction_type)
     : SVGElement(tag_name, document, construction_type),
       SVGTests(this),
-      transform_(SVGAnimatedTransformList::Create(this,
-                                                  svg_names::kTransformAttr,
-                                                  CSSPropertyTransform)) {
+      transform_(MakeGarbageCollected<SVGAnimatedTransformList>(
+          this,
+          svg_names::kTransformAttr,
+          CSSPropertyID::kTransform)) {
   AddToPropertyMap(transform_);
 }
 
@@ -88,15 +90,16 @@ AffineTransform SVGGraphicsElement::ComputeCTM(
 }
 
 SVGMatrixTearOff* SVGGraphicsElement::getCTM() {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
-  return SVGMatrixTearOff::Create(ComputeCTM(kNearestViewportScope));
+  return MakeGarbageCollected<SVGMatrixTearOff>(
+      ComputeCTM(kNearestViewportScope));
 }
 
 SVGMatrixTearOff* SVGGraphicsElement::getScreenCTM() {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
-  return SVGMatrixTearOff::Create(ComputeCTM(kScreenScope));
+  return MakeGarbageCollected<SVGMatrixTearOff>(ComputeCTM(kScreenScope));
 }
 
 void SVGGraphicsElement::CollectStyleForPresentationAttribute(
@@ -105,7 +108,8 @@ void SVGGraphicsElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == svg_names::kTransformAttr) {
     AddPropertyToPresentationAttributeStyle(
-        style, CSSPropertyTransform, *transform_->CurrentValue()->CssValue());
+        style, CSSPropertyID::kTransform,
+        *transform_->CurrentValue()->CssValue());
     return;
   }
   SVGElement::CollectStyleForPresentationAttribute(name, value, style);
@@ -167,7 +171,7 @@ FloatRect SVGGraphicsElement::GetBBox() {
 }
 
 SVGRectTearOff* SVGGraphicsElement::getBBoxFromJavascript() {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   // FIXME: Eventually we should support getBBox for detached elements.
   FloatRect boundingBox;

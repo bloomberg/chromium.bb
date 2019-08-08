@@ -26,6 +26,11 @@ ForceInstalledExtensionScannerImpl::~ForceInstalledExtensionScannerImpl() =
 std::unique_ptr<UwEMatchers>
 ForceInstalledExtensionScannerImpl::CreateUwEMatchersFromResource(
     int resource_id) {
+  if (!resource_id) {
+    // Use empty matchers.
+    LOG(WARNING) << "No UwE matchers set";
+    return std::make_unique<chrome_cleaner::UwEMatchers>();
+  }
   base::StringPiece serialized_matcher_pb;
   if (!chrome_cleaner::LoadResourceOfKind(resource_id, L"TEXT",
                                           &serialized_matcher_pb)) {
@@ -33,9 +38,9 @@ ForceInstalledExtensionScannerImpl::CreateUwEMatchersFromResource(
                 << resource_id;
     return nullptr;
   }
-  chrome_cleaner::UwEMatchers matcher;
-  matcher.ParseFromString(serialized_matcher_pb.as_string());
-  return std::make_unique<chrome_cleaner::UwEMatchers>(matcher);
+  auto uwe_matchers = std::make_unique<chrome_cleaner::UwEMatchers>();
+  uwe_matchers->ParseFromString(serialized_matcher_pb.as_string());
+  return uwe_matchers;
 }
 
 std::vector<ForceInstalledExtension>

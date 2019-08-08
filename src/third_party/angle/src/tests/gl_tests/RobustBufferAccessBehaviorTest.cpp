@@ -29,6 +29,9 @@ class RobustBufferAccessBehaviorTest : public ANGLETest
         setConfigGreenBits(8);
         setConfigBlueBits(8);
         setConfigAlphaBits(8);
+
+        // Test flakiness was noticed when reusing displays.
+        forceNewDisplay();
     }
 
     void TearDown() override
@@ -308,7 +311,7 @@ TEST_P(RobustBufferAccessBehaviorTest, VeryLargeVertexCountWithDynamicVertexData
 TEST_P(RobustBufferAccessBehaviorTest, NoBufferData)
 {
     // http://crbug.com/889303: Possible driver bug on NVIDIA Shield TV.
-    // http://anglebug.com/2861: Fails abnormally on Pixel XL
+    // http://anglebug.com/2861: Fails abnormally on Android
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
 
     ANGLE_SKIP_TEST_IF(!initExtension());
@@ -440,7 +443,7 @@ TEST_P(RobustBufferAccessBehaviorTest, EmptyBuffer)
     // AMD GL does not support robustness. http://anglebug.com/3099
     ANGLE_SKIP_TEST_IF(IsAMD() && IsOpenGL());
 
-    // http://anglebug.com/2861: Fails abnormally on Pixel XL
+    // http://anglebug.com/2861: Fails abnormally on Android
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
 
     ANGLE_GL_PROGRAM(program, kWebGLVS, kWebGLFS);

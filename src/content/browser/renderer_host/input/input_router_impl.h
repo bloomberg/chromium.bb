@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "cc/input/touch_action.h"
 #include "content/browser/renderer_host/input/fling_scheduler.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
@@ -81,6 +82,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void SetFrameTreeNodeId(int frame_tree_node_id) override;
   void SetForceEnableZoom(bool enabled) override;
   base::Optional<cc::TouchAction> AllowedTouchAction() override;
+  base::Optional<cc::TouchAction> ActiveTouchAction() override;
   void BindHost(mojom::WidgetInputHandlerHostRequest request,
                 bool frame_handler) override;
   void StopFling() override;
@@ -89,6 +91,13 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void ForceSetTouchActionAuto() override;
 
   // InputHandlerHost impl
+#if defined(OS_ANDROID)
+  void FallbackCursorModeLockCursor(bool left,
+                                    bool right,
+                                    bool up,
+                                    bool down) override;
+  void FallbackCursorModeSetCursorVisibility(bool visible) override;
+#endif
   void SetTouchActionFromMain(cc::TouchAction touch_action) override;
   void SetWhiteListedTouchAction(cc::TouchAction touch_action,
                                  uint32_t unique_touch_event_id,

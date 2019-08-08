@@ -98,7 +98,8 @@ def _ParseManifestFromApk(apk):
       manifest_key = m.group(1)
       if manifest_key in node:
         raise base_error.BaseError(
-            "A single attribute should have one key and one value")
+            "A single attribute should have one key and one value: {}"
+            .format(line))
       else:
         node[manifest_key] = m.group(2) or m.group(3)
       continue
@@ -279,6 +280,53 @@ class ApkHelper(object):
       return [(x.get('android:name'), x.get('android:value')) for x in metadata]
     except KeyError:
       return []
+
+  def GetVersionCode(self):
+    """Returns the versionCode as an integer, or None if not available."""
+    manifest_info = self._GetManifest()
+    try:
+      version_code = manifest_info['manifest'][0]['android:versionCode']
+      return int(version_code, 16)
+    except KeyError:
+      return None
+
+  def GetVersionName(self):
+    """Returns the versionName as a string."""
+    manifest_info = self._GetManifest()
+    try:
+      version_name = manifest_info['manifest'][0]['android:versionName']
+      return version_name
+    except KeyError:
+      return ''
+
+  def GetMinSdkVersion(self):
+    """Returns the minSdkVersion as an integer, or None if not available."""
+    manifest_info = self._GetManifest()
+    try:
+      uses_sdk = manifest_info['manifest'][0]['uses-sdk'][0]
+      min_sdk_version = uses_sdk['android:minSdkVersion']
+      return int(min_sdk_version, 16)
+    except KeyError:
+      return None
+
+  def GetTargetSdkVersion(self):
+    """Returns the targetSdkVersion as a string."""
+    manifest_info = self._GetManifest()
+    try:
+      uses_sdk = manifest_info['manifest'][0]['uses-sdk'][0]
+      target_sdk_version = uses_sdk['android:targetSdkVersion']
+      try:
+        # The common case is for this to be an integer. Convert to decimal
+        # notation (rather than hexadecimal) for readability, but convert back
+        # to a string for type consistency with the general case.
+        return str(int(target_sdk_version, 16))
+      except ValueError:
+        # In general (ex. apps targeting pre-release Android versions),
+        # targetSdkVersion can be a string (usually, the OS codename letter).
+        # For simplicity, don't do any validation on the value.
+        return target_sdk_version
+    except KeyError:
+      return ''
 
   def _GetManifest(self):
     if not self._manifest:

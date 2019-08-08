@@ -125,13 +125,14 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_policy_controller_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
-#include "components/arc/arc_supervision_transition.h"
+#include "components/arc/session/arc_supervision_transition.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -586,8 +587,6 @@ void ProfileManager::CreateProfileAsync(const base::FilePath& profile_path,
           profile_path, name, std::string(), base::string16(), icon_index,
           /*supervised_user_id=*/std::string(), EmptyAccountId());
     }
-
-    ProfileMetrics::UpdateReportedProfilesStatistics(this);
   }
 
   // Call or enqueue the callback.
@@ -1120,7 +1119,7 @@ void ProfileManager::Observe(
       // TODO(davemoore) Once we have better api this check should ensure that
       // our profile directory is the one that's mounted, and that it's mounted
       // as the current user.
-      chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->IsMounted(
+      chromeos::CryptohomeClient::Get()->IsMounted(
           base::BindOnce(&CheckCryptohomeIsMounted));
 
       // Confirm that we hadn't loaded the new profile previously.
@@ -1366,6 +1365,11 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 #endif
 
   AccessibilityLabelsServiceFactory::GetForProfile(profile)->Init();
+
+#if defined(OS_CHROMEOS)
+  chromeos::AccountManagerPolicyControllerFactory::GetForBrowserContext(
+      profile);
+#endif
 }
 
 void ProfileManager::DoFinalInitLogging(Profile* profile) {
@@ -1603,7 +1607,6 @@ void ProfileManager::OnLoadProfileForProfileDeletion(
   }
 
   storage.RemoveProfile(profile_dir);
-  ProfileMetrics::UpdateReportedProfilesStatistics(this);
 }
 
 void ProfileManager::FinishDeletingProfile(

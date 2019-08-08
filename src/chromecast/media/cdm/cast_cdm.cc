@@ -48,7 +48,7 @@ class CastCdmContextImpl : public CastCdmContext {
 
   std::unique_ptr<DecryptContextImpl> GetDecryptContext(
       const std::string& key_id,
-      const EncryptionScheme& encryption_scheme) override {
+      EncryptionScheme encryption_scheme) override {
     return cast_cdm_->GetDecryptContext(key_id, encryption_scheme);
   }
 

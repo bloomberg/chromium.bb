@@ -33,9 +33,17 @@ struct CORE_EXPORT BlinkTransferableMessage : BlinkCloneableMessage {
 
   mojom::blink::UserActivationSnapshotPtr user_activation;
 
+  bool transfer_user_activation = false;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BlinkTransferableMessage);
 };
+
+CORE_EXPORT scoped_refptr<blink::StaticBitmapImage> ToStaticBitmapImage(
+    const SkBitmap& sk_bitmap);
+
+CORE_EXPORT base::Optional<SkBitmap> ToSkBitmap(
+    const scoped_refptr<blink::StaticBitmapImage>& static_bitmap_image);
 
 CORE_EXPORT BlinkTransferableMessage
     ToBlinkTransferableMessage(TransferableMessage);

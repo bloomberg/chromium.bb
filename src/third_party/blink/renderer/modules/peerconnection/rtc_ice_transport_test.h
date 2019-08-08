@@ -51,7 +51,7 @@ class RTCIceTransportTest : public testing::Test {
   // letting it pass.
   MockEventListener* CreateMockEventListener();
 
- private:
+ protected:
   scoped_refptr<base::TestSimpleTaskRunner> main_thread_;
   scoped_refptr<base::TestSimpleTaskRunner> worker_thread_;
   std::vector<Persistent<MockEventListener>> mock_event_listeners_;

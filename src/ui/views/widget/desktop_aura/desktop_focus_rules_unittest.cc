@@ -33,7 +33,7 @@ TEST_F(DesktopFocusRulesTest, DontFocusWindowsInOtherHierarchies) {
   aura::client::GetFocusClient(w2->GetNativeView())->FocusWindow(w2_child);
   aura::Window* focused =
       aura::client::GetFocusClient(w2->GetNativeView())->GetFocusedWindow();
-  EXPECT_TRUE((focused == NULL) || w2->GetNativeView()->Contains(focused));
+  EXPECT_TRUE((focused == nullptr) || w2->GetNativeView()->Contains(focused));
   wm::RemoveTransientChild(w1->GetNativeView(), w2_child);
 
   w1->CloseNow();

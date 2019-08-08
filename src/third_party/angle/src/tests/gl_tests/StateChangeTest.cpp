@@ -383,6 +383,81 @@ void main (void)
     EXPECT_PIXEL_COLOR_NEAR(w - 1, h - 1, GLColor::black, kPixelTolerance);
 }
 
+// Tests that vertex attribute value is preserved across context switches.
+TEST_P(StateChangeTest, MultiContextVertexAttribute)
+{
+    EGLWindow *window   = getEGLWindow();
+    EGLDisplay display  = window->getDisplay();
+    EGLConfig config    = window->getConfig();
+    EGLSurface surface  = window->getSurface();
+    EGLContext context1 = window->getContext();
+
+    // Set up program in primary context
+    ANGLE_GL_PROGRAM(program1, kSimpleAttributeVS, kSimpleAttributeFS);
+    glUseProgram(program1);
+    GLint attribLoc   = glGetAttribLocation(program1, "testAttrib");
+    GLint positionLoc = glGetAttribLocation(program1, "position");
+    ASSERT_NE(-1, attribLoc);
+    ASSERT_NE(-1, positionLoc);
+
+    // Set up the position attribute in primary context
+    setupQuadVertexBuffer(0.5f, 1.0f);
+    glEnableVertexAttribArray(positionLoc);
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    // Set primary context attribute to green and draw quad
+    glVertexAttrib4f(attribLoc, 0.0f, 1.0f, 0.0f, 1.0f);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Set up and switch to secondary context
+    EGLint contextAttributes[] = {
+        EGL_CONTEXT_MAJOR_VERSION_KHR,
+        GetParam().majorVersion,
+        EGL_CONTEXT_MINOR_VERSION_KHR,
+        GetParam().minorVersion,
+        EGL_NONE,
+    };
+    EGLContext context2 = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttributes);
+    ASSERT_NE(context2, EGL_NO_CONTEXT);
+    eglMakeCurrent(display, surface, surface, context2);
+
+    // Set up program in secondary context
+    ANGLE_GL_PROGRAM(program2, kSimpleAttributeVS, kSimpleAttributeFS);
+    glUseProgram(program2);
+    ASSERT_EQ(attribLoc, glGetAttribLocation(program2, "testAttrib"));
+    ASSERT_EQ(positionLoc, glGetAttribLocation(program2, "position"));
+
+    // Set up the position attribute in secondary context
+    setupQuadVertexBuffer(0.5f, 1.0f);
+    glEnableVertexAttribArray(positionLoc);
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    // attribLoc current value should be default - (0,0,0,1)
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+
+    // Restore primary context
+    eglMakeCurrent(display, surface, surface, context1);
+    // ReadPixels to ensure context is switched
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+
+    // Switch to secondary context second time
+    eglMakeCurrent(display, surface, surface, context2);
+    // Check that it still draws black
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+
+    // Restore primary context second time
+    eglMakeCurrent(display, surface, surface, context1);
+    // Check if it still draws green
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Clean up
+    eglDestroyContext(display, context2);
+}
+
 // Ensure that CopyTexSubImage3D syncs framebuffer changes.
 TEST_P(StateChangeTestES3, CopyTexSubImage3DSync)
 {
@@ -1071,7 +1146,7 @@ class LineLoopStateChangeTest : public StateChangeTest
         setConfigAlphaBits(8);
     }
 
-    void validateSquareAndHourglass()
+    void validateSquareAndHourglass() const
     {
         ASSERT_GL_NO_ERROR();
 
@@ -1094,25 +1169,26 @@ class LineLoopStateChangeTest : public StateChangeTest
         // Verify line is closed between the 2 last vertices
         EXPECT_PIXEL_COLOR_EQ((quarterWidth * 2), quarterHeight, GLColor::blue);
     }
-
-    GLint mPositionLocation;
 };
 
 // Draw an hourglass with a drawElements call followed by a square with drawArrays.
 TEST_P(LineLoopStateChangeTest, DrawElementsThenDrawArrays)
 {
+    // http://anglebug.com/3361
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsVulkan() && IsWindows());
+
     ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::Blue());
     glUseProgram(program);
 
     // We expect to draw a square with these 4 vertices with a drawArray call.
     std::vector<Vector3> vertices;
-    CreatePixelCenterWindowCoords({{8, 8}, {8, 24}, {24, 8}, {24, 24}}, getWindowWidth(),
+    CreatePixelCenterWindowCoords({{8, 8}, {8, 24}, {24, 24}, {24, 8}}, getWindowWidth(),
                                   getWindowHeight(), &vertices);
 
     // If we use these indices to draw however, we should be drawing an hourglass.
     auto indices = std::vector<GLushort>{0, 2, 1, 3};
 
-    mPositionLocation = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
+    GLint mPositionLocation = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
     ASSERT_NE(-1, mPositionLocation);
 
     GLBuffer vertexBuffer;
@@ -1147,13 +1223,13 @@ TEST_P(LineLoopStateChangeTest, DrawArraysThenDrawElements)
 
     // We expect to draw a square with these 4 vertices with a drawArray call.
     std::vector<Vector3> vertices;
-    CreatePixelCenterWindowCoords({{8, 8}, {8, 24}, {24, 8}, {24, 24}}, getWindowWidth(),
+    CreatePixelCenterWindowCoords({{8, 8}, {8, 24}, {24, 24}, {24, 8}}, getWindowWidth(),
                                   getWindowHeight(), &vertices);
 
     // If we use these indices to draw however, we should be drawing an hourglass.
     auto indices = std::vector<GLushort>{0, 2, 1, 3};
 
-    mPositionLocation = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
+    GLint mPositionLocation = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
     ASSERT_NE(-1, mPositionLocation);
 
     GLBuffer vertexBuffer;
@@ -1305,9 +1381,6 @@ void SimpleStateChangeTest::simpleDrawWithColor(const GLColor &color)
 // frame.
 TEST_P(SimpleStateChangeTest, DrawArraysThenDrawElements)
 {
-    // http://anglebug.com/3124: Flaky on Nexus5X.
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
-
     ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::Blue());
     glUseProgram(program);
 
@@ -1404,6 +1477,8 @@ TEST_P(SimpleStateChangeTest, RedefineBufferInUse)
 // Tests updating a buffer's contents while in use, without redefining it.
 TEST_P(SimpleStateChangeTest, UpdateBufferInUse)
 {
+    // tobine: Started failing w/ custom cmd buffers. http://anglebug.com/3255
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsWindows() && IsVulkan());
     std::vector<GLColor> redColorData(6, GLColor::red);
 
     GLBuffer buffer;
@@ -2387,7 +2462,6 @@ TEST_P(SimpleStateChangeTestES31, UpdateImageTextureInUse)
     glDispatchCompute(1, 1, 1);
 
     // Update the texture to be YBGR, while the Texture is in-use. Should not affect the dispatch.
-    glBindTexture(GL_TEXTURE_2D, texRead);
     std::array<GLColor, 4> ybgr = {{GLColor::yellow, GLColor::blue, GLColor::green, GLColor::red}};
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, ybgr.data());
     ASSERT_GL_NO_ERROR();
@@ -3085,8 +3159,6 @@ void main()
 // Test sampler format validation caching works.
 TEST_P(WebGL2ValidationStateChangeTest, SamplerFormatCache)
 {
-    // TODO(jdarpinian): Re-enable this test when fixing http://crbug.com/940080
-    ANGLE_SKIP_TEST_IF(true);
     constexpr char kFS[] = R"(#version 300 es
 precision mediump float;
 uniform sampler2D sampler;
@@ -3368,6 +3440,57 @@ TEST_P(ValidationStateChangeTest, MapElementArrayBuffer)
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
 }
 
+// Tests that deleting a non-active texture does not reset the current texture cache.
+TEST_P(SimpleStateChangeTest, DeleteNonActiveTextureThenDraw)
+{
+    constexpr char kFS[] =
+        "uniform sampler2D us; void main() { gl_FragColor = texture2D(us, vec2(0)); }";
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), kFS);
+    glUseProgram(program);
+    GLint loc = glGetUniformLocation(program, "us");
+    ASSERT_EQ(0, loc);
+
+    auto quadVertices = GetQuadVertices();
+    GLint posLoc      = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
+    ASSERT_EQ(0, posLoc);
+
+    GLBuffer buffer;
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, quadVertices.size() * sizeof(quadVertices[0]),
+                 quadVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(posLoc);
+
+    constexpr size_t kSize = 2;
+    std::vector<GLColor> red(kSize * kSize, GLColor::red);
+
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kSize, kSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, red.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glUniform1i(loc, 0);
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+
+    // Deleting TEXTURE_CUBE_MAP[0] should not affect TEXTURE_2D[0].
+    GLTexture tex2;
+    glBindTexture(GL_TEXTURE_CUBE_MAP, tex2);
+    tex2.reset();
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+
+    // Deleting TEXTURE_2D[0] should start "sampling" from the default/zero texture.
+    tex.reset();
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+}
+
 // Tests that deleting a texture successfully binds the zero texture.
 TEST_P(SimpleStateChangeTest, DeleteTextureThenDraw)
 {
@@ -3418,7 +3541,7 @@ ANGLE_INSTANTIATE_TEST(StateChangeRenderTest,
                        ES2_D3D11_FL9_3(),
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(StateChangeTestES3, ES3_D3D11(), ES3_OPENGL());
-ANGLE_INSTANTIATE_TEST(SimpleStateChangeTest, ES2_VULKAN(), ES2_OPENGL());
+ANGLE_INSTANTIATE_TEST(SimpleStateChangeTest, ES2_D3D11(), ES2_VULKAN(), ES2_OPENGL());
 ANGLE_INSTANTIATE_TEST(SimpleStateChangeTestES3, ES3_OPENGL(), ES3_D3D11());
 ANGLE_INSTANTIATE_TEST(SimpleStateChangeTestES31, ES31_OPENGL(), ES31_D3D11());
 ANGLE_INSTANTIATE_TEST(ValidationStateChangeTest, ES3_D3D11(), ES3_OPENGL());

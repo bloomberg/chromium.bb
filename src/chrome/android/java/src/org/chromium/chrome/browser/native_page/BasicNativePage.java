@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -111,7 +112,7 @@ public abstract class BasicNativePage
      */
     private void updateMargins() {
         final @BrowserControlsState int constraints = mHost.getActiveTab() != null
-                ? mHost.getActiveTab().getBrowserControlsStateConstraints()
+                ? TabBrowserControlsState.getConstraints(mHost.getActiveTab())
                 : BrowserControlsState.SHOWN;
         int topMargin = mFullscreenManager.getTopControlsHeight();
         int bottomMargin = mFullscreenManager.getBottomControlsHeight();

@@ -189,6 +189,16 @@ void SearchIPCRouter::UndoAllMostVisitedDeletions(int page_seq_no) {
   delegate_->OnUndoAllMostVisitedDeletions();
 }
 
+void SearchIPCRouter::ToggleMostVisitedOrCustomLinks(int page_seq_no) {
+  if (page_seq_no != commit_counter_)
+    return;
+
+  if (!policy_->ShouldProcessToggleMostVisitedOrCustomLinks())
+    return;
+
+  delegate_->OnToggleMostVisitedOrCustomLinks();
+}
+
 void SearchIPCRouter::AddCustomLink(int page_seq_no,
                                     const GURL& url,
                                     const std::string& title,
@@ -269,6 +279,20 @@ void SearchIPCRouter::LogEvent(int page_seq_no,
     return;
 
   delegate_->OnLogEvent(event, time);
+}
+
+void SearchIPCRouter::LogSuggestionEventWithValue(
+    int page_seq_no,
+    NTPSuggestionsLoggingEventType event,
+    int data,
+    base::TimeDelta time) {
+  if (page_seq_no != commit_counter_)
+    return;
+
+  if (!policy_->ShouldProcessLogSuggestionEventWithValue())
+    return;
+
+  delegate_->OnLogSuggestionEventWithValue(event, data, time);
 }
 
 void SearchIPCRouter::LogMostVisitedImpression(

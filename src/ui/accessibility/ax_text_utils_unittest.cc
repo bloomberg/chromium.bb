@@ -182,4 +182,71 @@ TEST(AXTextUtils, FindAccessibleTextBoundarySentence) {
   EXPECT_EQ(18UL, boundaries.second);
 }
 
+TEST(AXTextUtils, FindAccessibleTextBoundaryCharacter) {
+  static const wchar_t* kCharacters[] = {
+      // An English word consisting of four ASCII characters.
+      L"w",
+      L"o",
+      L"r",
+      L"d",
+      L" ",
+      // A Hindi word (which means "Hindi") consisting of three Devanagari
+      // characters.
+      L"\x0939\x093F",
+      L"\x0928\x094D",
+      L"\x0926\x0940",
+      L" ",
+      // A Thai word (which means "feel") consisting of three Thai characters.
+      L"\x0E23\x0E39\x0E49",
+      L"\x0E2A\x0E36",
+      L"\x0E01",
+      L" ",
+  };
+
+  std::vector<base::string16> characters;
+  base::string16 text;
+  for (auto*& i : kCharacters) {
+    characters.push_back(base::WideToUTF16(i));
+    text.append(characters.back());
+  }
+
+  auto verify_boundaries_at_offset = [&text](int offset, size_t start,
+                                             size_t end) {
+    testing::Message message;
+    message << "Testing character bounds at index " << offset;
+    SCOPED_TRACE(message);
+
+    std::vector<int> line_start_offsets;
+    size_t backwards = FindAccessibleTextBoundary(
+        text, line_start_offsets, CHAR_BOUNDARY, offset, BACKWARDS_DIRECTION,
+        ax::mojom::TextAffinity::kDownstream);
+    EXPECT_EQ(backwards, start);
+
+    size_t forwards = FindAccessibleTextBoundary(
+        text, line_start_offsets, CHAR_BOUNDARY, offset, FORWARDS_DIRECTION,
+        ax::mojom::TextAffinity::kDownstream);
+    EXPECT_EQ(forwards, end);
+  };
+
+  verify_boundaries_at_offset(0, 0UL, 1UL);
+  verify_boundaries_at_offset(1, 1UL, 2UL);
+  verify_boundaries_at_offset(2, 2UL, 3UL);
+  verify_boundaries_at_offset(3, 3UL, 4UL);
+  verify_boundaries_at_offset(4, 4UL, 5UL);
+  verify_boundaries_at_offset(5, 5UL, 7UL);
+  verify_boundaries_at_offset(6, 5UL, 7UL);
+  verify_boundaries_at_offset(7, 7UL, 9UL);
+  verify_boundaries_at_offset(8, 7UL, 9UL);
+  verify_boundaries_at_offset(9, 9UL, 11UL);
+  verify_boundaries_at_offset(10, 9UL, 11UL);
+  verify_boundaries_at_offset(11, 11L, 12UL);
+  verify_boundaries_at_offset(12, 12L, 15UL);
+  verify_boundaries_at_offset(13, 12L, 15UL);
+  verify_boundaries_at_offset(14, 12L, 15UL);
+  verify_boundaries_at_offset(15, 15L, 17UL);
+  verify_boundaries_at_offset(16, 15L, 17UL);
+  verify_boundaries_at_offset(17, 17L, 18UL);
+  verify_boundaries_at_offset(18, 18L, 19UL);
+}
+
 }  // namespace ui

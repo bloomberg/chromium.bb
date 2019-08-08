@@ -150,6 +150,8 @@ class BranchMapper(object):
         continue
 
       parent = branch_info.upstream
+      if self.__check_cycle(branch):
+        continue
       if not self.__branches_info[parent]:
         branch_upstream = upstream(branch)
         # If git can't find the upstream, mark the upstream as gone.
@@ -173,6 +175,20 @@ class BranchMapper(object):
       no_branches = OutputLine()
       no_branches.append('No User Branches')
       self.output.append(no_branches)
+
+  def __check_cycle(self, branch):
+    # Maximum length of the cycle is `num_branches`. This limit avoids running
+    # into a cycle which does *not* contain `branch`.
+    num_branches = len(self.__branches_info)
+    cycle = [branch]
+    while len(cycle) < num_branches and self.__branches_info[cycle[-1]]:
+      parent = self.__branches_info[cycle[-1]].upstream
+      cycle.append(parent)
+      if parent == branch:
+        print >> sys.stderr, 'Warning: Detected cycle in branches: {}'.format(
+            ' -> '.join(cycle))
+        return True
+    return False
 
   def __is_invalid_parent(self, parent):
     return not parent or parent in self.__gone_branches

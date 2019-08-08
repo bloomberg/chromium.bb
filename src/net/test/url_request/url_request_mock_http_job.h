@@ -28,7 +28,7 @@ namespace net {
 
 class URLRequestMockHTTPJob : public URLRequestFileJob {
  public:
-  // Note that all file I/O is done using TaskScheduler.
+  // Note that all file I/O is done using ThreadPool.
   URLRequestMockHTTPJob(URLRequest* request,
                         NetworkDelegate* network_delegate,
                         const base::FilePath& file_path);

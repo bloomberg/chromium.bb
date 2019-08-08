@@ -62,13 +62,6 @@ class IdentityTestEnvironmentProfileAdaptor {
   // not require any other testing factory than the ones specified in here.
   static TestingProfile::TestingFactories GetIdentityTestEnvironmentFactories();
 
-  // Returns the set of testing factories that identity::IdentityTestEnvironment
-  // requires, plus an extra testing factories that creates an IdentityManager
-  // instance with its primary account set.
-  static TestingProfile::TestingFactories
-  GetIdentityTestEnvironmentFactoriesWithPrimaryAccountSet(
-      const std::string& email);
-
   // Constructs an adaptor that associates an IdentityTestEnvironment instance
   // with |profile| via the relevant backing objects. Note that
   // |profile| must have been configured with the IdentityTestEnvironment
@@ -87,6 +80,11 @@ class IdentityTestEnvironmentProfileAdaptor {
   }
 
  private:
+  // Testing factory that creates an IdentityManager
+  // with a FakeProfileOAuth2TokenService.
+  static std::unique_ptr<KeyedService> BuildIdentityManagerForTests(
+      content::BrowserContext* context);
+
   identity::IdentityTestEnvironment identity_test_env_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityTestEnvironmentProfileAdaptor);

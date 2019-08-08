@@ -34,8 +34,6 @@ class BluetoothRemoteGATTServer
  public:
   BluetoothRemoteGATTServer(ExecutionContext*, BluetoothDevice*);
 
-  static BluetoothRemoteGATTServer* Create(ExecutionContext*, BluetoothDevice*);
-
   // ContextLifecycleObserver:
   void ContextDestroyed(ExecutionContext*) override;
 

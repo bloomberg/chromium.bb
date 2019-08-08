@@ -19,6 +19,11 @@
 
 #include <vulkan/vulkan.h>
 
+#ifdef __ANDROID__
+#include <cerrno>
+#include <hardware/hwvulkan.h>
+#endif
+
 namespace vk
 {
 
@@ -74,14 +79,18 @@ static const std::unordered_map<std::string, PFN_vkVoidFunction> instanceFunctio
 	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceQueueFamilyProperties2KHR),
 	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceMemoryProperties2KHR),
 	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceSparseImageFormatProperties2KHR),
+#ifndef __ANDROID__
+	// VK_KHR_surface
 	MAKE_VULKAN_INSTANCE_ENTRY(vkDestroySurfaceKHR),
-#ifdef VK_USE_PLATFORM_XLIB_KHR
-	MAKE_VULKAN_INSTANCE_ENTRY(vkCreateXlibSurfaceKHR),
-#endif
 	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceSurfaceSupportKHR),
 	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceSurfaceCapabilitiesKHR),
 	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceSurfaceFormatsKHR),
 	MAKE_VULKAN_INSTANCE_ENTRY(vkGetPhysicalDeviceSurfacePresentModesKHR),
+#endif
+#ifdef VK_USE_PLATFORM_XLIB_KHR
+	// VK_KHR_xlib_surface
+	MAKE_VULKAN_INSTANCE_ENTRY(vkCreateXlibSurfaceKHR),
+#endif
 };
 #undef MAKE_VULKAN_INSTANCE_ENTRY
 
@@ -248,9 +257,16 @@ static const std::unordered_map<std::string, PFN_vkVoidFunction> deviceFunctionP
 	MAKE_VULKAN_DEVICE_ENTRY(vkGetImageSparseMemoryRequirements2KHR),
 	// VK_KHR_maintenance3
 	MAKE_VULKAN_DEVICE_ENTRY(vkGetDescriptorSetLayoutSupportKHR),
+#ifndef __ANDROID__
+	// VK_KHR_swapchain
 	MAKE_VULKAN_DEVICE_ENTRY(vkCreateSwapchainKHR),
 	MAKE_VULKAN_DEVICE_ENTRY(vkDestroySwapchainKHR),
 	MAKE_VULKAN_DEVICE_ENTRY(vkGetSwapchainImagesKHR),
+	MAKE_VULKAN_DEVICE_ENTRY(vkAcquireNextImageKHR),
+	MAKE_VULKAN_DEVICE_ENTRY(vkQueuePresentKHR),
+	MAKE_VULKAN_DEVICE_ENTRY(vkGetDeviceGroupPresentCapabilitiesKHR),
+	MAKE_VULKAN_DEVICE_ENTRY(vkGetDeviceGroupSurfacePresentModesKHR),
+#endif
 };
 #undef MAKE_VULKAN_DEVICE_ENTRY
 
@@ -292,3 +308,50 @@ PFN_vkVoidFunction GetDeviceProcAddr(VkDevice device, const char* pName)
 }
 
 }
+
+#ifdef __ANDROID__
+
+extern "C" hwvulkan_module_t HAL_MODULE_INFO_SYM;
+
+namespace {
+
+	int CloseDevice(struct hw_device_t *) { return 0; }
+
+	hwvulkan_device_t hal_device = {
+		.common = {
+			.tag = HARDWARE_DEVICE_TAG,
+			.version = HWVULKAN_DEVICE_API_VERSION_0_1,
+			.module = &HAL_MODULE_INFO_SYM.common,
+			.close = CloseDevice,
+		},
+		.EnumerateInstanceExtensionProperties = vkEnumerateInstanceExtensionProperties,
+		.CreateInstance = vkCreateInstance,
+		.GetInstanceProcAddr = vk::GetInstanceProcAddr,
+	};
+
+	int OpenDevice(const hw_module_t *module, const char *id, hw_device_t **device)
+	{
+		if (strcmp(id, HWVULKAN_DEVICE_0) != 0) return -ENOENT;
+		*device = &hal_device.common;
+		return 0;
+	}
+
+	hw_module_methods_t module_methods = { .open = OpenDevice };
+
+}
+
+extern "C" hwvulkan_module_t HAL_MODULE_INFO_SYM =
+{
+	.common =
+	{
+		.tag = HARDWARE_MODULE_TAG,
+		.module_api_version = HWVULKAN_MODULE_API_VERSION_0_1,
+		.hal_api_version = HARDWARE_HAL_API_VERSION,
+		.id = HWVULKAN_HARDWARE_MODULE_ID,
+		.name = "Swiftshader Pastel",
+		.author = "Google",
+		.methods = &module_methods,
+	}
+};
+
+#endif

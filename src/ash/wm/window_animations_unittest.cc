@@ -335,25 +335,61 @@ TEST_F(WindowAnimationsTest, SlideOutAnimationPlaysTwiceForPipWindow) {
 
   window->Show();
   EXPECT_TRUE(window->layer()->visible());
-  EXPECT_EQ("8,8 100x100", window->layer()->GetTargetBounds().ToString());
+  EXPECT_EQ(gfx::Rect(8, 8, 100, 100), window->layer()->GetTargetBounds());
 
   window->Hide();
   EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
   EXPECT_FALSE(window->layer()->GetTargetVisibility());
   EXPECT_FALSE(window->layer()->visible());
-  EXPECT_EQ("-142,8 100x100", window->layer()->GetTargetBounds().ToString());
+  EXPECT_EQ(gfx::Rect(-142, 8, 100, 100), window->layer()->GetTargetBounds());
 
   // Reset the position and try again.
   window->Show();
   window->SetBounds(gfx::Rect(8, 8, 100, 100));
   EXPECT_TRUE(window->layer()->visible());
-  EXPECT_EQ("8,8 100x100", window->layer()->GetTargetBounds().ToString());
+  EXPECT_EQ(gfx::Rect(8, 8, 100, 100), window->layer()->GetTargetBounds());
 
   window->Hide();
   EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
   EXPECT_FALSE(window->layer()->GetTargetVisibility());
   EXPECT_FALSE(window->layer()->visible());
-  EXPECT_EQ("-142,8 100x100", window->layer()->GetTargetBounds().ToString());
+  EXPECT_EQ(gfx::Rect(-142, 8, 100, 100), window->layer()->GetTargetBounds());
+}
+
+TEST_F(WindowAnimationsTest, ResetAnimationAfterDismissingArcPip) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  window->SetBounds(gfx::Rect(8, 8, 100, 100));
+
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+  EXPECT_TRUE(window_state->IsPip());
+
+  window->Show();
+  EXPECT_TRUE(window->layer()->visible());
+  EXPECT_EQ(gfx::Rect(8, 8, 100, 100), window->layer()->GetTargetBounds());
+
+  // Ensure the window is slided out.
+  wm::GetWindowState(window.get())->Minimize();
+  EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
+  EXPECT_FALSE(window->layer()->GetTargetVisibility());
+  EXPECT_FALSE(window->layer()->visible());
+  EXPECT_EQ(gfx::Rect(-142, 8, 100, 100), window->layer()->GetTargetBounds());
+
+  wm::GetWindowState(window.get())->Maximize();
+  EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
+  EXPECT_TRUE(window->layer()->visible());
+  EXPECT_EQ(gfx::Rect(0, 0, 800, 544), window->layer()->GetTargetBounds());
+
+  // Ensure the window is not slided out.
+  window->Hide();
+  EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
+  EXPECT_FALSE(window->layer()->GetTargetVisibility());
+  EXPECT_FALSE(window->layer()->visible());
+  EXPECT_EQ(gfx::Rect(0, 0, 800, 544), window->layer()->GetTargetBounds());
 }
 
 }  // namespace ash

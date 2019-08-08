@@ -19,22 +19,29 @@
 #include "net/base/privacy_mode.h"
 #include "net/base/request_priority.h"
 #include "net/log/net_log_with_source.h"
+#include "net/socket/connection_attempts.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/third_party/quiche/src/quic/core/quic_versions.h"
 
 namespace net {
 
 class ClientSocketFactory;
-class ClientSocketHandle;
 class HostResolver;
+class HttpAuthCache;
 class HttpAuthController;
+class HttpAuthHandlerFactory;
 class HttpResponseInfo;
+class HttpUserAgentSettings;
 class NetLog;
 class NetworkQualityEstimator;
 class ProxyDelegate;
 class SocketPerformanceWatcherFactory;
 class StreamSocket;
 class WebSocketEndpointLockManager;
+class QuicStreamFactory;
+class SpdySessionPool;
+class SSLCertRequestInfo;
 
 // Immutable socket parameters intended for shared use by all ConnectJob types.
 // Excludes priority because it can be modified over the lifetime of a
@@ -43,10 +50,15 @@ class WebSocketEndpointLockManager;
 // those.
 struct NET_EXPORT_PRIVATE CommonConnectJobParams {
   CommonConnectJobParams(
-      const SocketTag& socket_tag,
       ClientSocketFactory* client_socket_factory,
       HostResolver* host_resolver,
+      HttpAuthCache* http_auth_cache,
+      HttpAuthHandlerFactory* http_auth_handler_factory,
+      SpdySessionPool* spdy_session_pool,
+      const quic::QuicTransportVersionVector* quic_supported_versions,
+      QuicStreamFactory* quic_stream_factory,
       ProxyDelegate* proxy_delegate,
+      const HttpUserAgentSettings* http_user_agent_settings,
       const SSLClientSocketContext& ssl_client_socket_context,
       const SSLClientSocketContext& ssl_client_socket_context_privacy_mode,
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
@@ -58,12 +70,15 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
 
   CommonConnectJobParams& operator=(const CommonConnectJobParams& other);
 
-  // Tag applied to any created socket.
-  SocketTag socket_tag;
-
   ClientSocketFactory* client_socket_factory;
   HostResolver* host_resolver;
+  HttpAuthCache* http_auth_cache;
+  HttpAuthHandlerFactory* http_auth_handler_factory;
+  SpdySessionPool* spdy_session_pool;
+  const quic::QuicTransportVersionVector* quic_supported_versions;
+  QuicStreamFactory* quic_stream_factory;
   ProxyDelegate* proxy_delegate;
+  const HttpUserAgentSettings* http_user_agent_settings;
   SSLClientSocketContext ssl_client_socket_context;
   SSLClientSocketContext ssl_client_socket_context_privacy_mode;
   SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
@@ -119,8 +134,9 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // |net_log_connect_event_type| is the NetLog event type logged on Connect()
   // and connect completion.
   ConnectJob(RequestPriority priority,
+             const SocketTag& socket_tag,
              base::TimeDelta timeout_duration,
-             const CommonConnectJobParams& common_connect_job_params,
+             const CommonConnectJobParams* common_connect_job_params,
              Delegate* delegate,
              const NetLogWithSource* net_log,
              NetLogSourceType net_log_source_type,
@@ -168,14 +184,24 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // Not safe to call after NotifyComplete() is invoked.
   virtual bool HasEstablishedConnection() const = 0;
 
-  // If Connect returns an error (or OnConnectJobComplete reports an error
-  // result) this method will be called, allowing a SocketPool to add additional
-  // error state to the ClientSocketHandle (post late-binding).
-  //
-  // TODO(mmenke): This is a layering violation. Consider refactoring it to not
-  // depend on ClientSocketHandle. Fixing this will need to wait until after
-  // proxy tunnel auth has been refactored.
-  virtual void GetAdditionalErrorState(ClientSocketHandle* handle) {}
+  // If the ConnectJobFailed, this method returns a list of failed attempts to
+  // connect to the destination server. Returns an empty list if connecting to a
+  // proxy.
+  virtual ConnectionAttempts GetConnectionAttempts() const;
+
+  // On connect failure, returns the nested proxy socket, if there is one.
+  // Returns nullptr otherwise. Only returns a non-null value for SSL sockets on
+  // top of proxy sockets.
+  virtual std::unique_ptr<StreamSocket> PassProxySocketOnFailure();
+
+  // If the ConnectJob failed, returns true if the failure occurred after SSL
+  // negotiation started. If the ConnectJob succeeded, the returned value is
+  // undefined.
+  virtual bool IsSSLError() const;
+
+  // If the ConnectJob failed with ERR_SSL_CLIENT_AUTH_CERT_NEEDED, returns the
+  // SSLCertRequestInfo received. Otherwise, returns nullptr.
+  virtual scoped_refptr<SSLCertRequestInfo> GetCertRequestInfo();
 
   const LoadTimingInfo::ConnectTiming& connect_timing() const {
     return connect_timing_;
@@ -184,31 +210,32 @@ class NET_EXPORT_PRIVATE ConnectJob {
   const NetLogWithSource& net_log() const { return net_log_; }
 
  protected:
-  const SocketTag& socket_tag() const {
-    return common_connect_job_params_.socket_tag;
-  }
+  const SocketTag& socket_tag() const { return socket_tag_; }
   ClientSocketFactory* client_socket_factory() {
-    return common_connect_job_params_.client_socket_factory;
+    return common_connect_job_params_->client_socket_factory;
   }
   HostResolver* host_resolver() {
-    return common_connect_job_params_.host_resolver;
+    return common_connect_job_params_->host_resolver;
+  }
+  const HttpUserAgentSettings* http_user_agent_settings() const {
+    return common_connect_job_params_->http_user_agent_settings;
   }
   const SSLClientSocketContext& ssl_client_socket_context() {
-    return common_connect_job_params_.ssl_client_socket_context;
+    return common_connect_job_params_->ssl_client_socket_context;
   }
   const SSLClientSocketContext& ssl_client_socket_context_privacy_mode() {
-    return common_connect_job_params_.ssl_client_socket_context_privacy_mode;
+    return common_connect_job_params_->ssl_client_socket_context_privacy_mode;
   }
   SocketPerformanceWatcherFactory* socket_performance_watcher_factory() {
-    return common_connect_job_params_.socket_performance_watcher_factory;
+    return common_connect_job_params_->socket_performance_watcher_factory;
   }
   NetworkQualityEstimator* network_quality_estimator() {
-    return common_connect_job_params_.network_quality_estimator;
+    return common_connect_job_params_->network_quality_estimator;
   }
   WebSocketEndpointLockManager* websocket_endpoint_lock_manager() {
-    return common_connect_job_params_.websocket_endpoint_lock_manager;
+    return common_connect_job_params_->websocket_endpoint_lock_manager;
   }
-  const CommonConnectJobParams& common_connect_job_params() {
+  const CommonConnectJobParams* common_connect_job_params() {
     return common_connect_job_params_;
   }
 
@@ -217,7 +244,15 @@ class NET_EXPORT_PRIVATE ConnectJob {
   void NotifyDelegateOfProxyAuth(const HttpResponseInfo& response,
                                  HttpAuthController* auth_controller,
                                  base::OnceClosure restart_with_auth_callback);
+
+  // If |remaining_time| is base::TimeDelta(), stops the timeout timer, if it's
+  // running. Otherwise, Starts / restarts the timeout timer to trigger in the
+  // specified amount of time.
   void ResetTimer(base::TimeDelta remaining_time);
+
+  // Returns whether or not the timeout timer is running. Only intended for use
+  // by DCHECKs.
+  bool TimerIsRunning() const;
 
   // Connection establishment timing information.
   // TODO(mmenke): This should be private.
@@ -234,9 +269,13 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // Alerts the delegate that the ConnectJob has timed out.
   void OnTimeout();
 
+  // Invoked to notify subclasses that the has request timed out.
+  virtual void OnTimedOutInternal();
+
   const base::TimeDelta timeout_duration_;
   RequestPriority priority_;
-  const CommonConnectJobParams common_connect_job_params_;
+  const SocketTag socket_tag_;
+  const CommonConnectJobParams* common_connect_job_params_;
   // Timer to abort jobs that take too long.
   base::OneShotTimer timer_;
   Delegate* delegate_;

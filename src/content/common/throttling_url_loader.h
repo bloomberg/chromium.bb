@@ -73,6 +73,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
   // datapipe endpoints.
   network::mojom::URLLoaderClientEndpointsPtr Unbind();
 
+  void CancelWithError(int error_code, base::StringPiece custom_reason);
+
   // Sets the forwarding client to receive all subsequent notifications.
   void set_forwarding_client(network::mojom::URLLoaderClient* client) {
     forwarding_client_ = client;
@@ -130,9 +132,10 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   void OnClientConnectionError();
 
-  void CancelWithError(int error_code, base::StringPiece custom_reason);
   void Resume();
   void SetPriority(net::RequestPriority priority);
+  void UpdateDeferredRequestHeaders(
+      const net::HttpRequestHeaders& modified_request_headers);
   void UpdateDeferredResponseHead(
       const network::ResourceResponseHead& new_response_head);
   void PauseReadingBodyFromNet(URLLoaderThrottle* throttle);

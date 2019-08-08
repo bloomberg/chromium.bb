@@ -19,6 +19,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/hash/sha1.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -27,7 +28,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -406,7 +406,7 @@ bool AllowExtensionResourceLoad(const GURL& url,
                                 bool extension_enabled_in_incognito,
                                 const ExtensionSet& extensions,
                                 const ProcessMap& process_map) {
-  const bool is_main_frame = resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
+  const bool is_main_frame = resource_type == content::ResourceType::kMainFrame;
   if (is_incognito &&
       !ExtensionCanLoadInIncognito(is_main_frame, extension,
                                    extension_enabled_in_incognito)) {

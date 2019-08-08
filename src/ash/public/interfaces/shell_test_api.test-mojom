@@ -4,6 +4,13 @@
 
 module ash.mojom;
 
+import "ash/public/interfaces/app_list_view.mojom";
+
+enum OverviewAnimationState {
+  kEnterAnimationComplete,
+  kExitAnimationComplete,
+};
+
 interface ShellTestApi {
   // Returns true if a system modal window is open (e.g. the Wi-Fi network
   // password dialog).
@@ -27,10 +34,29 @@ interface ShellTestApi {
   // Enters or exits overview mode.
   ToggleOverviewMode() => ();
 
+  // Returns true if it is in overview selecting mode.
+  IsOverviewSelecting() => (bool is_selecting);
+
   // Used to emulate display change when run in a desktop environment instead
   // of on a device.
   AddRemoveDisplay();
 
   // Set the minimum velocity to cause fling gesture.
   SetMinFlingVelocity(float velocity);
+
+  // Runs the callback when the WindowTreeHost of the primary display is no
+  // longer holding pointer events. See
+  // |aura::WindowTreeHost::holding_pointer_moves_| for details.
+  WaitForNoPointerHoldLock() => ();
+
+  // Runs the callback when the compositor of the primary display has presented
+  // a frame on screen.
+  WaitForNextFrame() => ();
+
+  // Runs the callback when the overview state becomes |state|.
+  WaitForOverviewAnimationState(OverviewAnimationState state) => ();
+
+  // Runs the callback when the launcher state becomes |state| after
+  // state transition animation.
+  WaitForLauncherAnimationState(AppListViewState state) => ();
 };

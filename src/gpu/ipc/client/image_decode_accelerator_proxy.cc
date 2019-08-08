@@ -47,7 +47,7 @@ ImageDecodeAcceleratorType GetImageType(
 bool GetJpegSubsampling(const media::JpegParseResult& parse_result,
                         ImageDecodeAcceleratorSubsampling* subsampling) {
   static_assert(
-      static_cast<int>(ImageDecodeAcceleratorSubsampling::kMaxValue) == 1,
+      static_cast<int>(ImageDecodeAcceleratorSubsampling::kMaxValue) == 2,
       "GetJpegSubsampling() must be adapted to support all "
       "subsampling factors in ImageDecodeAcceleratorSubsampling");
 
@@ -69,17 +69,19 @@ bool GetJpegSubsampling(const media::JpegParseResult& parse_result,
   const uint8_t comp2_v =
       parse_result.frame_header.components[2].vertical_sampling_factor;
 
-  if (comp0_h == 2u && (comp1_h == 1u && comp1_v == 1u) &&
-      (comp2_h == 1u && comp2_v == 1u)) {
-    if (comp0_v == 2u) {
-      *subsampling = ImageDecodeAcceleratorSubsampling::k420;
-      return true;
-    } else if (comp0_v == 1u) {
-      *subsampling = ImageDecodeAcceleratorSubsampling::k422;
-      return true;
-    }
-  }
+  if (comp1_h != 1u || comp1_v != 1u || comp2_h != 1u || comp2_v != 1u)
+    return false;
 
+  if (comp0_h == 2u && comp0_v == 2u) {
+    *subsampling = ImageDecodeAcceleratorSubsampling::k420;
+    return true;
+  } else if (comp0_h == 2u && comp0_v == 1u) {
+    *subsampling = ImageDecodeAcceleratorSubsampling::k422;
+    return true;
+  } else if (comp0_h == 1u && comp0_v == 1u) {
+    *subsampling = ImageDecodeAcceleratorSubsampling::k444;
+    return true;
+  }
   return false;
 }
 

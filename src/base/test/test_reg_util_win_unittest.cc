@@ -62,7 +62,7 @@ class RegistryOverrideManagerTest : public testing::Test {
 
   base::string16 FakeOverrideManagerPath(const base::Time& time) {
     return fake_test_key_root_ + STRING16_LITERAL("\\") +
-           base::Int64ToString16(time.ToInternalValue());
+           base::NumberToString16(time.ToInternalValue());
   }
 
   void CreateManager(const base::Time& timestamp) {

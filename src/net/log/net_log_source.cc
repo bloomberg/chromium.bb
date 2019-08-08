@@ -57,8 +57,8 @@ NetLogParametersCallback NetLogSource::ToEventParametersCallback() const {
 // static
 bool NetLogSource::FromEventParameters(base::Value* event_params,
                                        NetLogSource* source) {
-  base::DictionaryValue* dict = NULL;
-  base::DictionaryValue* source_dict = NULL;
+  base::DictionaryValue* dict = nullptr;
+  base::DictionaryValue* source_dict = nullptr;
   int source_id = -1;
   int source_type = static_cast<int>(NetLogSourceType::COUNT);
   if (!event_params || !event_params->GetAsDictionary(&dict) ||

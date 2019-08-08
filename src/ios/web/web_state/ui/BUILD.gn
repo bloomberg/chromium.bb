@@ -23,6 +23,7 @@ source_set("ui") {
     "//ios/net",
     "//ios/web:core",
     "//ios/web/browsing_data",
+    "//ios/web/common",
     "//ios/web/find_in_page",
     "//ios/web/interstitials",
     "//ios/web/navigation",
@@ -57,7 +58,6 @@ source_set("ui") {
     "crw_web_controller.mm",
     "crw_web_controller_container_view.h",
     "crw_web_controller_container_view.mm",
-    "crw_web_view_content_view.mm",
     "crw_web_view_proxy_impl.h",
     "crw_web_view_proxy_impl.mm",
     "crw_web_view_scroll_view_proxy.mm",
@@ -131,6 +131,7 @@ source_set("wk_web_view_configuration_provider") {
   deps = [
     ":crw_wk_script_message_router",
     "//base",
+    "//ios/web/common",
     "//ios/web/public",
     "//ios/web/web_state/js",
     "//ios/web/web_state/js:script_util",
@@ -140,6 +141,7 @@ source_set("wk_web_view_configuration_provider") {
   sources = [
     "wk_web_view_configuration_provider.h",
     "wk_web_view_configuration_provider.mm",
+    "wk_web_view_configuration_provider_observer.h",
   ]
 
   libs = [ "WebKit.framework" ]

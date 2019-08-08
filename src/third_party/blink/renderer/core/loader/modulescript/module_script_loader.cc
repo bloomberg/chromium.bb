@@ -159,7 +159,7 @@ void ModuleScriptLoader::FetchInternal(
   fetch_params.SetContentSecurityPolicyNonce(options_.Nonce());
 
   // [SMSR] "... its referrer policy to options's referrer policy." [spec text]
-  // Note: For now this is done below with SetHTTPReferrer()
+  // Note: For now this is done below with SetHttpReferrer()
   network::mojom::ReferrerPolicy referrer_policy =
       module_request.Options().GetReferrerPolicy();
   if (referrer_policy == network::mojom::ReferrerPolicy::kDefault)
@@ -173,14 +173,14 @@ void ModuleScriptLoader::FetchInternal(
       options_.CredentialsMode());
 
   // Step 5. "... referrer is referrer, ..." [spec text]
-  // Note: For now this is done below with SetHTTPReferrer()
+  // Note: For now this is done below with SetHttpReferrer()
   String referrer_string = module_request.ReferrerString();
   if (referrer_string == Referrer::ClientReferrerString())
     referrer_string = fetch_client_settings_object.GetOutgoingReferrer();
 
   // TODO(domfarolino): Stop storing ResourceRequest's referrer as a
   // blink::Referrer (https://crbug.com/850813).
-  fetch_params.MutableResourceRequest().SetHTTPReferrer(
+  fetch_params.MutableResourceRequest().SetHttpReferrer(
       SecurityPolicy::GenerateReferrer(referrer_policy,
                                        fetch_params.GetResourceRequest().Url(),
                                        referrer_string));

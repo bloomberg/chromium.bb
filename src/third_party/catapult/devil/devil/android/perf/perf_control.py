@@ -28,11 +28,39 @@ _PERFORMANCE_MODE_DEFINITIONS = {
   'AFTKMST12': {
     'default_mode_governor': 'interactive',
   },
+  # Pixel 3
+  'blueline': {
+     'high_perf_mode': {
+       'bring_cpu_cores_online': True,
+       # The SoC is Arm big.LITTLE. The cores 0..3 are LITTLE, the 4..7 are big.
+       'cpu_max_freq': {'0..3': 1228800, '4..7': 1536000},
+       'gpu_max_freq': 520000000,
+     },
+     'default_mode': {
+       'cpu_max_freq': {'0..3': 1766400, '4..7': 2649600},
+       'gpu_max_freq': 710000000,
+     },
+    'default_mode_governor': 'schedutil',
+  },
   'GT-I9300': {
     'default_mode_governor': 'pegasusq',
   },
   'Galaxy Nexus': {
     'default_mode_governor': 'interactive',
+  },
+  # Pixel
+  'msm8996': {
+     'high_perf_mode': {
+       'bring_cpu_cores_online': True,
+       'cpu_max_freq': 1209600,
+       'gpu_max_freq': 315000000,
+     },
+     'default_mode': {
+       # The SoC is Arm big.LITTLE. The cores 0..1 are LITTLE, the 2..3 are big.
+       'cpu_max_freq': {'0..1': 1593600, '2..3': 2150400},
+       'gpu_max_freq': 624000000,
+     },
+    'default_mode_governor': 'sched',
   },
   'Nexus 7': {
     'default_mode_governor': 'interactive',
@@ -78,6 +106,10 @@ _PERFORMANCE_MODE_DEFINITIONS = {
   },
 }
 
+def _GetPerfModeDefinitions(product_model):
+  if product_model.startswith('AOSP on '):
+    product_model = product_model.replace('AOSP on ', '')
+  return _PERFORMANCE_MODE_DEFINITIONS.get(product_model)
 
 def _NoisyWarning(message):
   message += ' Results may be NOISY!!'
@@ -148,8 +180,7 @@ class PerfControl(object):
     except device_errors.CommandFailedError:
       _NoisyWarning('Need root for performance mode.')
       return
-    mode_definitions = _PERFORMANCE_MODE_DEFINITIONS.get(
-        self._device.product_model)
+    mode_definitions = _GetPerfModeDefinitions(self._device.product_model)
     if not mode_definitions:
       self.SetScalingGovernor('performance')
       return
@@ -170,8 +201,7 @@ class PerfControl(object):
     """Sets the performance mode for the device to its default mode."""
     if not self._device.HasRoot():
       return
-    mode_definitions = _PERFORMANCE_MODE_DEFINITIONS.get(
-        self._device.product_model)
+    mode_definitions = _GetPerfModeDefinitions(self._device.product_model)
     if not mode_definitions:
       self.SetScalingGovernor('ondemand')
     else:

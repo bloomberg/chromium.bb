@@ -167,7 +167,7 @@ class DeviceSyncCryptAuthEnrollmentManagerImplTest
         secure_message_delegate_->GetPrivateKeyForPublicKey(public_key_);
     secure_message_delegate_->set_next_public_key(public_key_);
 
-    CryptAuthEnrollmentManager::RegisterPrefs(pref_service_.registry());
+    CryptAuthEnrollmentManagerImpl::RegisterPrefs(pref_service_.registry());
     pref_service_.SetUserPref(
         prefs::kCryptAuthEnrollmentIsRecoveringFromFailure,
         std::make_unique<base::Value>(false));
@@ -265,7 +265,7 @@ class DeviceSyncCryptAuthEnrollmentManagerImplTest
 
 TEST_F(DeviceSyncCryptAuthEnrollmentManagerImplTest, RegisterPrefs) {
   TestingPrefServiceSimple pref_service;
-  CryptAuthEnrollmentManager::RegisterPrefs(pref_service.registry());
+  CryptAuthEnrollmentManagerImpl::RegisterPrefs(pref_service.registry());
   EXPECT_TRUE(pref_service.FindPreference(
       prefs::kCryptAuthEnrollmentLastEnrollmentTimeSeconds));
   EXPECT_TRUE(pref_service.FindPreference(
@@ -304,7 +304,7 @@ TEST_F(DeviceSyncCryptAuthEnrollmentManagerImplTest, InitWithDefaultPrefs) {
   base::TimeDelta elapsed_time = clock.Now() - base::Time::FromDoubleT(0);
 
   TestingPrefServiceSimple pref_service;
-  CryptAuthEnrollmentManager::RegisterPrefs(pref_service.registry());
+  CryptAuthEnrollmentManagerImpl::RegisterPrefs(pref_service.registry());
 
   TestCryptAuthEnrollmentManager enrollment_manager(
       &clock, std::make_unique<MockCryptAuthEnrollerFactory>(),

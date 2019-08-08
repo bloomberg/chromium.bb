@@ -8,7 +8,7 @@
 
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/platform_test.h"
 
@@ -37,6 +37,7 @@ TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
               initWithBrowserState:chrome_browser_state_.get()
                   tabModelObserver:nil
         applicationCommandEndpoint:(id<ApplicationCommands>)nil
+              appURLLoadingService:nil
                    storageSwitcher:nil];
     [wrangler createMainBrowser];
     // Test that BVC is created on demand.

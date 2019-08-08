@@ -16,9 +16,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwProxyController;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Executor;
@@ -212,7 +212,7 @@ public class AwProxyControllerTest {
             throws Exception {
         CallbackHelper ch = new CallbackHelper();
         int callCount = ch.getCallCount();
-        String result = ThreadUtils.runOnUiThreadBlocking(() -> {
+        String result = TestThreadUtils.runOnUiThreadBlocking(() -> {
             return mAwProxyController.setProxyOverride(proxyRules, bypassRules, new Runnable() {
                 @Override
                 public void run() {
@@ -229,7 +229,7 @@ public class AwProxyControllerTest {
     private void clearProxyOverrideSync() throws Exception {
         CallbackHelper ch = new CallbackHelper();
         int callCount = ch.getCallCount();
-        String result = ThreadUtils.runOnUiThreadBlocking(() -> {
+        String result = TestThreadUtils.runOnUiThreadBlocking(() -> {
             return mAwProxyController.clearProxyOverride(new Runnable() {
                 @Override
                 public void run() {

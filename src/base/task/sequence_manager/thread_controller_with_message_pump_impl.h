@@ -12,9 +12,11 @@
 #include "base/run_loop.h"
 #include "base/task/common/task_annotator.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
+#include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/thread_controller.h"
 #include "base/task/sequence_manager/work_deduplicator.h"
+#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_map.h"
@@ -43,10 +45,10 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 
   // ThreadController implementation:
   void SetSequencedTaskSource(SequencedTaskSource* task_source) override;
-  void BindToCurrentThread(MessageLoopBase* message_loop_base) override;
   void BindToCurrentThread(std::unique_ptr<MessagePump> message_pump) override;
   void SetWorkBatchSize(int work_batch_size) override;
-  void WillQueueTask(PendingTask* pending_task) override;
+  void WillQueueTask(PendingTask* pending_task,
+                     const char* task_queue_name) override;
   void ScheduleWork() override;
   void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) override;
   void SetTimerSlack(TimerSlack timer_slack) override;
@@ -82,7 +84,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   bool DoIdleWork() override;
 
   // RunLoop::Delegate implementation.
-  void Run(bool application_tasks_allowed) override;
+  void Run(bool application_tasks_allowed, TimeDelta timeout) override;
   void Quit() override;
   void EnsureWorkScheduled() override;
 
@@ -120,6 +122,9 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
     // When the next scheduled delayed work should run, if any.
     TimeTicks next_delayed_do_work = TimeTicks::Max();
 
+    // The time after which the runloop should quit.
+    TimeTicks quit_runloop_after = TimeTicks::Max();
+
     bool task_execution_allowed = true;
   };
 
@@ -137,7 +142,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   scoped_refptr<AssociatedThreadId> associated_thread_;
   MainThreadOnly main_thread_only_;
 
-  mutable Lock task_runner_lock_;
+  mutable base::internal::SchedulerLock task_runner_lock_;
   scoped_refptr<SingleThreadTaskRunner> task_runner_
       GUARDED_BY(task_runner_lock_);
 

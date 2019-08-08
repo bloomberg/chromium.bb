@@ -51,6 +51,7 @@ js_type_check("closure_compile_module") {
     ":media_import_handler",
     ":media_scanner",
     ":metadata_proxy",
+    ":mount_metrics",
     ":progress_center",
     ":runtime_loaded_test_util",
     ":task_queue",
@@ -124,6 +125,7 @@ js_library("background") {
     ":launcher",
     ":launcher_search",
     ":media_import_handler",
+    ":mount_metrics",
     ":progress_center",
     "../../common/js:files_app_entry_types",
     "../../common/js:metrics",
@@ -490,6 +492,21 @@ js_library("volume_info_list_impl") {
   externs_list = [ "../../../externs/volume_info_list.js" ]
 }
 
+js_library("mount_metrics") {
+  deps = [
+    "../../common/js:metrics",
+  ]
+}
+
+js_unittest("mount_metrics_unittest") {
+  deps = [
+    ":mount_metrics",
+    "//ui/file_manager/base/js:mock_chrome",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/base/js:volume_manager_types",
+  ]
+}
+
 js_library("volume_manager_impl") {
   deps = [
     ":entry_location_impl",
@@ -535,6 +552,7 @@ js_unit_tests("unit_tests") {
     ":import_history_unittest",
     ":media_import_handler_unittest",
     ":media_scanner_unittest",
+    ":mount_metrics_unittest",
     ":task_queue_unittest",
     ":volume_manager_unittest",
   ]

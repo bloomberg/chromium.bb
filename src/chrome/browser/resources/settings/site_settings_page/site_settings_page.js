@@ -52,20 +52,20 @@ Polymer({
     },
 
     /** @private */
-    enableClipboardContentSetting_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableClipboardContentSetting');
-      }
-    },
-
-    /** @private */
     enableSensorsContentSetting_: {
       type: Boolean,
       readOnly: true,
       value: function() {
         return loadTimeData.getBoolean('enableSensorsContentSetting');
       }
+    },
+
+    /** @private */
+    enableExperimentalWebPlatformFeatures_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures');
+      },
     },
 
     /** @private */
@@ -124,6 +124,10 @@ Polymer({
 
     if (this.enablePaymentHandlerContentSetting_) {
       pairs.push([R.SITE_SETTINGS_PAYMENT_HANDLER, 'paymentHandler']);
+    }
+
+    if (this.enableExperimentalWebPlatformFeatures_) {
+      pairs.push([R.SITE_SETTINGS_SERIAL_PORTS, 'serial-ports']);
     }
 
     pairs.forEach(([route, id]) => {

@@ -44,7 +44,6 @@
 #include "chromeos/constants/chromeos_switches.h"
 #else
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -188,8 +187,7 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
         PolicyBuilder::kFakeUsername);
 
     UserCloudPolicyManager* policy_manager =
-        UserCloudPolicyManagerFactory::GetForBrowserContext(
-            browser()->profile());
+        browser()->profile()->GetUserCloudPolicyManager();
     ASSERT_TRUE(policy_manager);
     policy_manager->SetSigninAccountId(
         PolicyBuilder::GetFakeAccountIdForTesting());

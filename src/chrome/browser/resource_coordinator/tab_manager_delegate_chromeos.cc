@@ -26,6 +26,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
@@ -36,9 +37,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -56,6 +57,10 @@ using content::BrowserThread;
 
 namespace resource_coordinator {
 namespace {
+
+// The default interval after which to adjust OOM scores.
+constexpr base::TimeDelta kAdjustmentInterval =
+    base::TimeDelta::FromSeconds(10);
 
 // When switching to a new tab the tab's renderer's OOM score needs to be
 // updated to reflect its front-most status and protect it from discard.
@@ -77,11 +82,6 @@ void OnSetOomScoreAdj(bool success, const std::string& output) {
     LOG(WARNING) << "Set OOM score: " << output;
 }
 
-bool IsNewProcessTypesEnabled() {
-  return base::FeatureList::IsEnabled(features::kNewProcessTypes) &&
-         !base::FeatureList::IsEnabled(features::kTabRanker);
-}
-
 }  // namespace
 
 // static
@@ -93,14 +93,6 @@ std::ostream& operator<<(std::ostream& os, const ProcessType& type) {
       return os << "FOCUSED_TAB";
     case ProcessType::FOCUSED_APP:
       return os << "FOCUSED_APP";
-    case ProcessType::IMPORTANT_APP:
-      return os << "IMPORTANT_APP";
-    case ProcessType::BACKGROUND_APP:
-      return os << "BACKGROUND_APP";
-    case ProcessType::BACKGROUND_TAB:
-      return os << "BACKGROUND_TAB";
-    case ProcessType::PROTECTED_BACKGROUND_TAB:
-      return os << "PROTECTED_BACKGROUND_TAB";
     case ProcessType::UNKNOWN_TYPE:
       return os << "UNKNOWN_TYPE";
     case ProcessType::BACKGROUND:
@@ -133,39 +125,13 @@ bool TabManagerDelegate::Candidate::operator<(
     const TabManagerDelegate::Candidate& rhs) const {
   if (process_type() != rhs.process_type())
     return process_type() < rhs.process_type();
-  if (app() && rhs.app())
-    return *app() < *rhs.app();
-  if (lifecycle_unit() && rhs.lifecycle_unit())
-    return lifecycle_unit_sort_key_ > rhs.lifecycle_unit_sort_key_;
-  // When NewProcessTypes feature is turned off and using old ProcessType
-  // categories, tabs and apps are in separate categories so this is an
-  // impossible case. Otherwise, tabs and apps are compared using last active
-  // time.
-  if ((lifecycle_unit() && rhs.app()) || (app() && rhs.lifecycle_unit()))
-    return GetLastActiveTime() < rhs.GetLastActiveTime();
-
-  NOTREACHED() << "Undefined comparison between apps and tabs: process_type="
-               << process_type();
-  return app();
-}
-
-TimeTicks TabManagerDelegate::Candidate::GetLastActiveTime() const {
-  if (app())
-    return TimeTicks::FromUptimeMillis(app()->last_activity_time());
-  if (lifecycle_unit())
-    return lifecycle_unit()->GetLastFocusedTime();
-  return TimeTicks();
+  return lifecycle_unit_sort_key_ > rhs.lifecycle_unit_sort_key_;
 }
 
 ProcessType TabManagerDelegate::Candidate::GetProcessTypeInternal() const {
-  const bool use_new_proc_types = IsNewProcessTypesEnabled();
   if (app()) {
     if (app()->is_focused())
       return ProcessType::FOCUSED_APP;
-    if (!use_new_proc_types) {
-      return app()->IsImportant() ? ProcessType::IMPORTANT_APP
-                                  : ProcessType::BACKGROUND_APP;
-    }
     if (app()->IsBackgroundProtected())
       return ProcessType::PROTECTED_BACKGROUND;
     if (app()->IsCached())
@@ -179,11 +145,9 @@ ProcessType TabManagerDelegate::Candidate::GetProcessTypeInternal() const {
     if (!lifecycle_unit()->CanDiscard(
             ::mojom::LifecycleUnitDiscardReason::PROACTIVE,
             &decision_details)) {
-      return use_new_proc_types ? ProcessType::PROTECTED_BACKGROUND
-                                : ProcessType::PROTECTED_BACKGROUND_TAB;
+      return ProcessType::PROTECTED_BACKGROUND;
     }
-    return use_new_proc_types ? ProcessType::BACKGROUND
-                              : ProcessType::BACKGROUND_TAB;
+    return ProcessType::BACKGROUND;
   }
   return ProcessType::UNKNOWN_TYPE;
 }
@@ -358,6 +322,12 @@ void TabManagerDelegate::OnWindowActivated(
   }
 }
 
+void TabManagerDelegate::StartPeriodicOOMScoreUpdate() {
+  DCHECK(!adjust_oom_priorities_timer_.IsRunning());
+  adjust_oom_priorities_timer_.Start(FROM_HERE, kAdjustmentInterval, this,
+                                     &TabManagerDelegate::AdjustOomPriorities);
+}
+
 void TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AdjustOomPriorities();
@@ -503,6 +473,10 @@ void TabManagerDelegate::Observe(int type,
 // 2) last time a tab was selected
 // 3) is the tab currently selected
 void TabManagerDelegate::AdjustOomPriorities() {
+  // If Chrome is shutting down, do not do anything
+  if (g_browser_process->IsShuttingDown())
+    return;
+
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
   if (arc_process_service) {
     arc_process_service->RequestAppProcessList(
@@ -618,17 +592,11 @@ void TabManagerDelegate::LowMemoryKillImpl(
 
     const ProcessType process_type = it->process_type();
 
-    // Never kill selected tab, foreground app, and important apps regardless of
-    // whether they're in the active window. Since the user experience would be
-    // bad.
+    // Never kill selected tab and foreground app regardless of whether they're
+    // in the active window. Since the user experience would be bad.
     if (it->app()) {
       if (process_type == ProcessType::FOCUSED_APP) {
         MEMORY_LOG(ERROR) << "Skipped killing focused app "
-                          << it->app()->process_name();
-        continue;
-      }
-      if (process_type == ProcessType::IMPORTANT_APP) {
-        MEMORY_LOG(ERROR) << "Skipped killing important app "
                           << it->app()->process_name();
         continue;
       }
@@ -730,12 +698,11 @@ void TabManagerDelegate::AdjustOomPrioritiesImpl(
   int range_middle =
       (chrome::kLowestRendererOomScore + chrome::kHighestRendererOomScore) / 2;
 
-  // Find some pivot point. For now (roughly) apps are in the first half and
-  // tabs are in the second half.
+  // Find some pivot point. FOCUSED_TAB, FOCUSED_APP, and PROTECTED_BACKGROUND
+  // processes are in the first half and BACKGROUND and CACHED_APP processes
+  // are in the second half.
   auto lower_priority_part = candidates.end();
-  bool use_new_proc_types = IsNewProcessTypesEnabled();
-  ProcessType pivot_type = use_new_proc_types ? ProcessType::BACKGROUND
-                                              : ProcessType::BACKGROUND_TAB;
+  ProcessType pivot_type = ProcessType::BACKGROUND;
   for (auto it = candidates.begin(); it != candidates.end(); ++it) {
     if (it->process_type() >= pivot_type) {
       lower_priority_part = it;

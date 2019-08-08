@@ -25,11 +25,10 @@ ViewsTestHelperAura::ViewsTestHelperAura(
     ui::ContextFactoryPrivate* context_factory_private)
     : context_factory_(context_factory),
       context_factory_private_(context_factory_private) {
-  aura_test_helper_.reset(new aura::test::AuraTestHelper());
+  aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>();
 }
 
-ViewsTestHelperAura::~ViewsTestHelperAura() {
-}
+ViewsTestHelperAura::~ViewsTestHelperAura() = default;
 
 void ViewsTestHelperAura::EnableMusWithWindowTreeClient(
     aura::WindowTreeClient* window_tree_client) {
@@ -47,7 +46,8 @@ void ViewsTestHelperAura::SetUp() {
   new wm::DefaultActivationClient(root_window);
 
   if (!aura::client::GetScreenPositionClient(root_window)) {
-    screen_position_client_.reset(new wm::DefaultScreenPositionClient);
+    screen_position_client_ =
+        std::make_unique<wm::DefaultScreenPositionClient>();
     aura::client::SetScreenPositionClient(root_window,
                                           screen_position_client_.get());
   }

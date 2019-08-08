@@ -28,7 +28,6 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 
 using autofill::AccessorySheetData;
 using autofill::FooterCommand;
@@ -45,10 +44,8 @@ bool PasswordAccessoryController::AllowedForWebContents(
   if (vr::VrTabHelper::IsInVr(web_contents)) {
     return false;  // TODO(crbug.com/865749): Reenable if works for VR keyboard.
   }
-  // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
   return base::FeatureList::IsEnabled(
-             password_manager::features::kPasswordsKeyboardAccessory) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
+      password_manager::features::kPasswordsKeyboardAccessory);
 }
 
 // static

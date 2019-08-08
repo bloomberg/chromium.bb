@@ -94,6 +94,9 @@ api::processes::ProcessType GetProcessType(
     case task_manager::Task::NACL:
       return api::processes::PROCESS_TYPE_NACL;
 
+    case task_manager::Task::SERVICE_WORKER:
+      return api::processes::PROCESS_TYPE_SERVICE_WORKER;
+
     case task_manager::Task::UTILITY:
       return api::processes::PROCESS_TYPE_UTILITY;
 
@@ -681,7 +684,7 @@ void ProcessesGetProcessInfoFunction::GatherDataAndRespond(
   // Report the invalid host ids sent in the arguments.
   for (const auto& host_id : process_host_ids_) {
     WriteToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR,
+        blink::mojom::ConsoleMessageLevel::kError,
         ErrorUtils::FormatErrorMessage(errors::kProcessNotFound,
                                        base::NumberToString(host_id)));
   }

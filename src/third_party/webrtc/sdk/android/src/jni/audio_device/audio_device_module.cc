@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "absl/memory/memory.h"
+#include "api/task_queue/global_task_queue_factory.h"
 #include "modules/audio_device/audio_device_buffer.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
@@ -68,7 +69,7 @@ class AndroidAudioDeviceModule : public AudioDeviceModule {
     RTC_CHECK(input_);
     RTC_CHECK(output_);
     RTC_LOG(INFO) << __FUNCTION__;
-    thread_checker_.DetachFromThread();
+    thread_checker_.Detach();
   }
 
   ~AndroidAudioDeviceModule() override { RTC_LOG(INFO) << __FUNCTION__; }
@@ -87,8 +88,9 @@ class AndroidAudioDeviceModule : public AudioDeviceModule {
 
   int32_t Init() override {
     RTC_LOG(INFO) << __FUNCTION__;
-    RTC_DCHECK(thread_checker_.CalledOnValidThread());
-    audio_device_buffer_ = absl::make_unique<AudioDeviceBuffer>();
+    RTC_DCHECK(thread_checker_.IsCurrent());
+    audio_device_buffer_ =
+        absl::make_unique<AudioDeviceBuffer>(&GlobalTaskQueueFactory());
     AttachAudioBuffer();
     if (initialized_) {
       return 0;
@@ -117,11 +119,11 @@ class AndroidAudioDeviceModule : public AudioDeviceModule {
     RTC_LOG(INFO) << __FUNCTION__;
     if (!initialized_)
       return 0;
-    RTC_DCHECK(thread_checker_.CalledOnValidThread());
+    RTC_DCHECK(thread_checker_.IsCurrent());
     int32_t err = input_->Terminate();
     err |= output_->Terminate();
     initialized_ = false;
-    thread_checker_.DetachFromThread();
+    thread_checker_.Detach();
     audio_device_buffer_.reset(nullptr);
     RTC_DCHECK_EQ(err, 0);
     return err;
@@ -615,7 +617,8 @@ int GetDefaultSampleRate(JNIEnv* env, const JavaRef<jobject>& j_audio_manager) {
 void GetAudioParameters(JNIEnv* env,
                         const JavaRef<jobject>& j_context,
                         const JavaRef<jobject>& j_audio_manager,
-                        int sample_rate,
+                        int input_sample_rate,
+                        int output_sample_rate,
                         bool use_stereo_input,
                         bool use_stereo_output,
                         AudioParameters* input_parameters,
@@ -623,12 +626,14 @@ void GetAudioParameters(JNIEnv* env,
   const int output_channels = use_stereo_output ? 2 : 1;
   const int input_channels = use_stereo_input ? 2 : 1;
   const size_t output_buffer_size = Java_WebRtcAudioManager_getOutputBufferSize(
-      env, j_context, j_audio_manager, sample_rate, output_channels);
+      env, j_context, j_audio_manager, output_sample_rate, output_channels);
   const size_t input_buffer_size = Java_WebRtcAudioManager_getInputBufferSize(
-      env, j_context, j_audio_manager, sample_rate, input_channels);
-  output_parameters->reset(sample_rate, static_cast<size_t>(output_channels),
+      env, j_context, j_audio_manager, input_sample_rate, input_channels);
+  output_parameters->reset(output_sample_rate,
+                           static_cast<size_t>(output_channels),
                            static_cast<size_t>(output_buffer_size));
-  input_parameters->reset(sample_rate, static_cast<size_t>(input_channels),
+  input_parameters->reset(input_sample_rate,
+                          static_cast<size_t>(input_channels),
                           static_cast<size_t>(input_buffer_size));
   RTC_CHECK(input_parameters->is_valid());
   RTC_CHECK(output_parameters->is_valid());

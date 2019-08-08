@@ -682,8 +682,8 @@
       },
       "vendor_id": "0x8086",
       "driver_version": {
-        "op": "<",
-        "value": "8.16"
+        "op": "<=",
+        "value": "9.18"
       },
       "features": [
         "disable_d3d11"
@@ -1612,23 +1612,19 @@
       "id": 172,
       "description": "Use GL_INTEL_framebuffer_CMAA on ChromeOS",
       "cr_bugs": [535198],
-      "exceptions" : [
-        {
-          "os": {
-            "type" : "chromeos"
-          },
-          "vendor_id": "0x8086",
-          "driver_vendor": "Mesa",
-          "gl_vendor": "Intel.*",
-          "gl_type": "gles",
-          "gl_version": {
-            "op": ">=",
-            "value": "3.1"
-          }
-        }
-      ],
+      "os": {
+        "type" : "chromeos"
+      },
+      "vendor_id": "0x8086",
+      "driver_vendor": "Mesa",
+      "gl_vendor": "Intel.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": ">=",
+        "value": "3.1"
+      },
       "features": [
-        "disable_framebuffer_cmaa"
+        "use_framebuffer_cmaa"
       ]
     },
     {
@@ -1869,6 +1865,10 @@
       },
       "gl_type": "gl",
       "gl_version_string": ".*Mesa.*",
+      "direct_rendering_version": {
+        "op" : "<",
+        "value": "2.3"
+      },
       "features": [
         "disable_post_sub_buffers_for_onscreen_surfaces"
       ]
@@ -2413,7 +2413,7 @@
     {
       "id": 233,
       "description": "Delayed copy NV12 displays incorrect colors on NVIDIA drivers.",
-      "cr_bugs": [727216],
+      "cr_bugs": [728670],
       "os": {
         "type": "win"
       },
@@ -2581,19 +2581,6 @@
       "gl_renderer": "Mali-T880",
       "disabled_extensions": [
         "GL_EXT_disjoint_timer_query"
-      ]
-    },
-    {
-      "id": 248,
-      "description": "Direct composition causes slow presents on Intel Sandybridge",
-      "cr_bugs": [775898, 785648],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x8086",
-      "device_id": ["0x0116"],
-      "features": [
-        "disable_direct_composition"
       ]
     },
     {
@@ -3257,6 +3244,67 @@
       "gl_renderer": "PowerVR Rogue GE8.*",
       "features": [
         "exit_on_context_lost"
+      ]
+    },
+    {
+      "id": 300,
+      "cr_bugs": [775898, 785648, 9245627],
+      "description": "Direct composition causes rendering issues on Intel SandyBridge and IvyBridge GPUs",
+      "os": {
+        "type" : "win"
+      },
+      "gpu_series": [
+        "intel_sandybridge",
+        "intel_ivybridge"
+      ],
+      "features": [
+        "disable_direct_composition"
+      ]
+    },
+    {
+      "id": 301,
+      "description": "Mesa hangs the system when allocating large textures",
+      "cr_bugs": [927470],
+      "os": {
+        "type" : "linux"
+      },
+      "driver_vendor": "Mesa",
+      "driver_version": {
+        "op": ">=",
+        "value": "18"
+      },
+      "features": [
+        "max_texture_size_limit_4096",
+        "max_3d_array_texture_size_1024"
+      ]
+    },
+    {
+      "id": 302,
+      "description": "glCopyTexImage2D on Mali-T820 fails in certain cases if source is GL_RGB10_A2.",
+      "cr_bugs": [953771],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": "Mali-T820",
+      "features": [
+        "disable_copy_tex_image_2d_rgb10_a2_mali"
+      ]
+    },
+    {
+      "id": 303,
+      "cr_bugs": [890227],
+      "description": "Dynamic texture map crashes on Intel drivers less than version 24",
+      "os": {
+        "type" : "win"
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "<",
+        "value": "24"
+      },
+      "features": [
+        "disable_nv12_dynamic_textures"
       ]
     }
   ]

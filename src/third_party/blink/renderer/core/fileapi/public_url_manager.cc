@@ -99,10 +99,6 @@ SecurityOrigin* BlobOriginMap::GetOrigin(const KURL& url) {
 
 }  // namespace
 
-PublicURLManager* PublicURLManager::Create(ExecutionContext* context) {
-  return MakeGarbageCollected<PublicURLManager>(context);
-}
-
 PublicURLManager::PublicURLManager(ExecutionContext* context)
     : ContextLifecycleObserver(context), is_stopped_(false) {}
 

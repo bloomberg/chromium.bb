@@ -190,6 +190,9 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     video_frame->metadata()->SetTimeTicks(
         media::VideoFrameMetadata::REFERENCE_TIME, render_time);
   }
+  video_frame->metadata()->SetTimeTicks(
+      media::VideoFrameMetadata::DECODE_COMPLETE_TIMESTAMP,
+      base::TimeTicks::Now());
 
   io_task_runner_->PostTask(
       FROM_HERE,
@@ -244,7 +247,7 @@ void MediaStreamRemoteVideoSource::StopSourceImpl() {
   // longer receives the video track.
   if (!observer_)
     return;
-  DCHECK(state() != MediaStreamVideoSource::ENDED);
+  DCHECK(state() != blink::MediaStreamVideoSource::ENDED);
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
   video_track->RemoveSink(delegate_.get());

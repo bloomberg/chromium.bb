@@ -1773,6 +1773,23 @@ Default value is 2 milliseconds.
 @item r
 Set research radius duration. Allowed range is from 2 to 300 milliseconds.
 Default value is 6 milliseconds.
+
+@item o
+Set the output mode.
+
+It accepts the following values:
+@table @option
+@item i
+Pass input unchanged.
+
+@item o
+Pass noise filtered out.
+
+@item n
+Pass only noise.
+
+Default value is @var{o}.
+@end table
 @end table
 
 @section anull
@@ -2139,6 +2156,17 @@ For description what each key means read below.
 @item reset
 Set number of frame after which stats are going to be recalculated.
 Default is disabled.
+
+@item measure_perchannel
+Select the entries which need to be measured per channel. The metadata keys can
+be used as flags, default is @option{all} which measures everything.
+@option{none} disables all per channel measurement.
+
+@item measure_overall
+Select the entries which need to be measured overall. The metadata keys can
+be used as flags, default is @option{all} which measures everything.
+@option{none} disables all overall measurement.
+
 @end table
 
 A description of each shown parameter follows:
@@ -5650,6 +5678,11 @@ Set factor to amplify difference. Default is 2. Allowed range is from 0 to 65535
 @item threshold
 Set threshold for difference amplification. Any difference greater or equal to
 this value will not alter source pixel. Default is 10.
+Allowed range is from 0 to 65535.
+
+@item tolerance
+Set tolerance for difference amplification. Any difference lower to
+this value will not alter source pixel. Default is 0.
 Allowed range is from 0 to 65535.
 
 @item low
@@ -11383,6 +11416,15 @@ The focus distance of the image/video (expected constant for video). Note that
 focus distance is only used for vignetting and only slightly affects the
 vignetting correction process. If unknown, leave it at the default value (which
 is 1000).
+
+@item scale
+The scale factor which is applied after transformation. After correction the
+video is no longer necessarily rectangular. This parameter controls how much of
+the resulting image is visible. The value 0 means that a value will be chosen
+automatically such that there is little or no unmapped area in the output
+image. 1.0 means that no additional scaling is done. Lower values may result
+in more of the corrected image being visible, while higher values may avoid
+unmapped areas in the output.
 
 @item target_geometry
 The target geometry of the output image/video. The following values are valid
@@ -18326,7 +18368,7 @@ This filter accepts the following options:
 
 @table @option
 @item zoom, z
-Set the zoom expression. Default is 1.
+Set the zoom expression. Range is 1-10. Default is 1.
 
 @item x
 @item y
@@ -20545,10 +20587,15 @@ ebur128=metadata=1,adrawgraph=lavfi.r128.M:min=-120:max=5
 @anchor{ebur128}
 @section ebur128
 
-EBU R128 scanner filter. This filter takes an audio stream as input and outputs
-it unchanged. By default, it logs a message at a frequency of 10Hz with the
+EBU R128 scanner filter. This filter takes an audio stream and analyzes its loudness
+level. By default, it logs a message at a frequency of 10Hz with the
 Momentary loudness (identified by @code{M}), Short-term loudness (@code{S}),
 Integrated loudness (@code{I}) and Loudness Range (@code{LRA}).
+
+The filter can only analyze streams which have a sampling rate of 48000 Hz and whose
+sample format is double-precision floating point. The input stream will be converted to
+this specification, if needed. Users may need to insert aformat and/or aresample filters
+after this filter to obtain the original parameters.
 
 The filter also has a video output (see the @var{video} option) with a real
 time graph to observe the loudness evolution. The graphic contains the logged

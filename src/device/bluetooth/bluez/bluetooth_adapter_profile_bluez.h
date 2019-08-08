@@ -82,9 +82,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterProfileBlueZ
       const dbus::ObjectPath& device_path,
       base::ScopedFD fd,
       const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
-      const ConfirmationCallback& callback) override;
+      ConfirmationCallback callback) override;
   void RequestDisconnection(const dbus::ObjectPath& device_path,
-                            const ConfirmationCallback& callback) override;
+                            ConfirmationCallback callback) override;
   void Cancel() override;
 
   // Called by dbus:: on completion of the D-Bus method to unregister a profile.

@@ -24,8 +24,8 @@ namespace views {
 
 class TestNode : public TreeNode<TestNode> {
  public:
-  TestNode() {}
-  ~TestNode() override {}
+  TestNode() = default;
+  ~TestNode() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestNode);
@@ -130,7 +130,7 @@ TestNode* TreeViewTest::GetNodeByTitleImpl(TestNode* node,
     if (child)
       return child;
   }
-  return NULL;
+  return nullptr;
 }
 
 std::string TreeViewTest::InternalNodeAsString(
@@ -162,7 +162,7 @@ TEST_F(TreeViewTest, SetSelectedNode) {
   EXPECT_EQ("root", GetSelectedNodeTitle());
 
   // NULL should clear the selection.
-  tree_.SetSelectedNode(NULL);
+  tree_.SetSelectedNode(nullptr);
   EXPECT_EQ(std::string(), GetSelectedNodeTitle());
 
   // Select 'c'.
@@ -416,8 +416,8 @@ TEST_F(TreeViewTest, CommitOnFocusLost) {
   tree_.SetEditable(true);
   tree_.StartEditing(GetNodeByTitle("a"));
   tree_.editor()->SetText(ASCIIToUTF16("a changed"));
-  tree_.OnDidChangeFocus(NULL, NULL);
-  EXPECT_TRUE(GetNodeByTitle("a changed") != NULL);
+  tree_.OnDidChangeFocus(nullptr, nullptr);
+  EXPECT_TRUE(GetNodeByTitle("a changed") != nullptr);
 }
 
 }  // namespace views

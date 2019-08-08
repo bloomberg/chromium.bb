@@ -25,7 +25,8 @@ extern const base::Feature kSlowPageTriggering;
 extern const base::Feature kHTTPSServerPreviewsUsingURLLoader;
 extern const base::Feature kDataSaverLiteModeRebranding;
 extern const base::Feature kPreviewsReloadsAreSoftOptOuts;
-extern const base::Feature kPreviewsOnePlatformHints;
+extern const base::Feature kOptimizationHintsFetching;
+extern const base::Feature kCoinFlipHoldback;
 
 }  // namespace features
 }  // namespace previews

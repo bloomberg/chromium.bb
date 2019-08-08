@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsActivityLogTest, TestActivityLogVisible) {
   // The querySelectors and shadowRoots are used here in order to penetrate
   // multiple nested shadow DOMs created by Polymer components
   // in the chrome://extensions page.
-  // See chrome/browser/resources/md_extensions for the Polymer code.
+  // See chrome/browser/resources/extensions for the Polymer code.
   // This test only serves as an end to end test, and most of the functionality
   // is covered in the JS unit tests.
   bool has_api_call = false;

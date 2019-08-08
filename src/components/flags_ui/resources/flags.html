@@ -1,5 +1,6 @@
 <!doctype html>
-<html dir="ltr" lang="en">
+<html dir="ltr" lang="en"
+    <if expr="not is_ios and not is_android">$i18n{dark}</if>>
 <head>
 <meta charset="utf-8">
 <if expr="not is_ios">
@@ -27,7 +28,8 @@
       <div class="search-container">
         <input type="text" id="search" placeholder="Search flags" tabindex="1"
             autocomplete="off" spellcheck="false">
-        <button class="clear-search" title="Clear search" tabindex="2"></button>
+        <input type="button" class="clear-search" title="Clear search"
+            tabindex="2">
       </div>
     </div>
     <div class="flex">
@@ -40,7 +42,7 @@
 <div id="body-container" style="visibility:hidden">
   <div id="flagsTemplate">
     <div class="flex-container">
-      <div class="flex"><h2 class="section-header-title">Experiments</h2></div>
+      <div class="flex"><h1 class="section-header-title">Experiments</h1></div>
       <span id="version" class="flex">$i18n{version}</span>
     </div>
     <div class="blurb-container">
@@ -58,7 +60,7 @@
       </p>
 </if>
     </div>
-    <p class="promo">
+    <p id="promos" hidden>
       <span id="channel-promo-beta" hidden>
         Interested in cool new Chrome features? Try our
         <a href="https://chrome.com/beta">beta channel</a>.
@@ -209,7 +211,7 @@
         <div class="flex restart-notice" jstcache="0">$i18n{flagsRestartNotice}</div>
         <div class="flex">
 <if expr="not is_ios">
-          <button id="experiment-restart-button" type="button" tabindex="9">
+          <button id="experiment-restart-button" class="primary" tabindex="9">
 <if expr="not chromeos">
           Relaunch Now
 </if>

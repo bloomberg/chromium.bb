@@ -60,10 +60,6 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(PerformanceTiming);
 
  public:
-  static PerformanceTiming* Create(LocalFrame* frame) {
-    return MakeGarbageCollected<PerformanceTiming>(frame);
-  }
-
   explicit PerformanceTiming(LocalFrame*);
 
   uint64_t navigationStart() const;
@@ -115,22 +111,12 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // are the time and size of it.
   uint64_t LargestImagePaint() const;
   uint64_t LargestImagePaintSize() const;
-  // Last Image Paint is the first paint after the last image within viewport
-  // being fully loaded. LastImagePaint and LastImagePaintSize are the time and
-  // size of it.
-  uint64_t LastImagePaint() const;
-  uint64_t LastImagePaintSize() const;
   // The time of the first paint of the largest text within viewport.
   // Largest Text Paint is the first paint after the largest text within
   // viewport being painted. LargestTextPaint and LargestTextPaintSize
   // are the time and size of it.
   uint64_t LargestTextPaint() const;
   uint64_t LargestTextPaintSize() const;
-  // Last Text Paint is the first paint after the last text within viewport
-  // being painted. LastTextPaint and LastTextPaintSize are the time and
-  // size of it.
-  uint64_t LastTextPaint() const;
-  uint64_t LastTextPaintSize() const;
   // The first time the page is considered 'interactive'. This is determined
   // using heuristics based on main thread and network activity.
   uint64_t PageInteractive() const;

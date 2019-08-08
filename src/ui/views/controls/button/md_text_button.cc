@@ -52,7 +52,7 @@ MdTextButton* MdTextButton::Create(ButtonListener* listener,
   return button;
 }
 
-MdTextButton::~MdTextButton() {}
+MdTextButton::~MdTextButton() = default;
 
 void MdTextButton::SetProminent(bool is_prominent) {
   if (is_prominent_ == is_prominent)
@@ -118,8 +118,8 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
     const {
   bool is_dark_mode = GetNativeTheme()->SystemDarkModeEnabled();
   // The prominent button hover effect is a shadow.
-  const int kYOffset = 1;
-  const int kSkiaBlurRadius = 2;
+  constexpr int kYOffset = 1;
+  constexpr int kSkiaBlurRadius = 2;
   const int shadow_alpha = is_prominent_ ? 0x3D : 0x1A;
   const SkColor shadow_color =
       is_dark_mode && is_prominent_ ? gfx::kGoogleBlue300 : SK_ColorBLACK;
@@ -128,9 +128,9 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
   // Skia counts the number of pixels outside the mask area whereas
   // gfx::ShadowValue counts together the number of pixels inside and outside
   // the mask bounds.
-  shadows.push_back(gfx::ShadowValue(
+  shadows.emplace_back(
       gfx::Vector2d(0, kYOffset), 2 * kSkiaBlurRadius,
-      SkColorSetA(shadow_color, is_dark_mode ? 0x7F : shadow_alpha)));
+      SkColorSetA(shadow_color, is_dark_mode ? 0x7F : shadow_alpha));
   const SkColor fill_color =
       SkColorSetA(SK_ColorWHITE, is_prominent_ ? 0x0D : 0x05);
   return std::make_unique<InkDropHighlight>(

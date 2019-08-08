@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -243,8 +244,16 @@ std::unique_ptr<views::ImageView> CreateInstrumentIconView(
   icon_view->set_can_process_events_within_subtree(false);
   if (img) {
     icon_view->SetImage(*img);
-    // We support max 32x32 for other instrument icons.
-    icon_view->SetImageSize(gfx::Size(32, 32));
+    float width = base::checked_cast<float>(img->width());
+    float height = base::checked_cast<float>(img->height());
+    float ratio = 1;
+    if (width && height)
+      ratio = width / height;
+    // Other instrument icons should be 32 pixels high while preserving the
+    // image ratio.
+    constexpr int kPaymentHandlerIconHeight = 32;
+    icon_view->SetImageSize(gfx::Size(ratio * kPaymentHandlerIconHeight,
+                                      kPaymentHandlerIconHeight));
   } else {
     icon_view->SetImage(ui::ResourceBundle::GetSharedInstance()
                             .GetImageNamed(icon_resource_id)
@@ -411,6 +420,45 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
   }
 
   return container;
+}
+
+std::unique_ptr<views::View> CreateWarningView(const base::string16& message,
+                                               bool show_icon) {
+  auto header_view = std::make_unique<views::View>();
+  // 8 pixels between the warning icon view (if present) and the text.
+  constexpr int kRowHorizontalSpacing = 8;
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal,
+      gfx::Insets(0, kPaymentRequestRowHorizontalInsets),
+      kRowHorizontalSpacing);
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+  header_view->SetLayoutManager(std::move(layout));
+
+  auto label = std::make_unique<views::Label>(message);
+  // If the warning message comes from the websites, then align label
+  // according to the language of the website's text.
+  label->SetHorizontalAlignment(message.empty() ? gfx::ALIGN_LEFT
+                                                : gfx::ALIGN_TO_HEAD);
+  label->set_id(static_cast<int>(DialogViewID::WARNING_LABEL));
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+  if (show_icon) {
+    auto warning_icon = std::make_unique<views::ImageView>();
+    warning_icon->set_can_process_events_within_subtree(false);
+    warning_icon->SetImage(gfx::CreateVectorIcon(
+        vector_icons::kWarningIcon, 16,
+        warning_icon->GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_AlertSeverityHigh)));
+    header_view->AddChildView(warning_icon.release());
+    label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_AlertSeverityHigh));
+  }
+
+  header_view->AddChildView(label.release());
+  return header_view;
 }
 
 }  // namespace payments

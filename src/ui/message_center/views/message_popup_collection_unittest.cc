@@ -254,7 +254,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase,
   }
 
   std::string AddNotification() {
-    std::string id = base::IntToString(id_++);
+    std::string id = base::NumberToString(id_++);
     MessageCenter::Get()->AddNotification(CreateNotification(id));
     return id;
   }
@@ -268,8 +268,9 @@ class MessagePopupCollectionTest : public views::ViewsTestBase,
   bool IsAnimating() const { return popup_collection_->IsAnimating(); }
 
   void AnimateUntilIdle() {
-    while (popup_collection_->IsAnimating())
+    while (popup_collection_->IsAnimating()) {
       popup_collection_->SetAnimationValue(1.0);
+    }
   }
 
   void AnimateToMiddle() {
@@ -448,6 +449,7 @@ TEST_F(MessagePopupCollectionTest, UpdateContents) {
 TEST_F(MessagePopupCollectionTest, UpdateContentsCausesPopupClose) {
   std::string id = AddNotification();
   AnimateToEnd();
+  RunPendingMessages();
   EXPECT_FALSE(IsAnimating());
   EXPECT_EQ(1u, GetPopupCounts());
   EXPECT_FALSE(GetPopup(id)->updated());
@@ -457,6 +459,7 @@ TEST_F(MessagePopupCollectionTest, UpdateContentsCausesPopupClose) {
   auto updated_notification = CreateNotification(id);
   updated_notification->set_message(base::ASCIIToUTF16("updated"));
   MessageCenter::Get()->UpdateNotification(id, std::move(updated_notification));
+  RunPendingMessages();
   EXPECT_EQ(0u, GetPopupCounts());
 }
 
@@ -838,6 +841,7 @@ TEST_F(MessagePopupCollectionTest, PopupResizedAndOverflown) {
   GetPopup(id1)->SetPreferredHeight(changed_height);
 
   AnimateUntilIdle();
+  RunPendingMessages();
 
   EXPECT_TRUE(GetPopup(id0));
   EXPECT_TRUE(work_area().Contains(GetPopup(id0)->GetBoundsInScreen()));

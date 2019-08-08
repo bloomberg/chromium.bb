@@ -74,6 +74,8 @@
 #include "net/reporting/reporting_service.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+namespace net {
+
 namespace {
 
 // Max number of |retry_attempts| (excluding the initial request) after which
@@ -90,9 +92,18 @@ const size_t kMaxRetryAttempts = 2;
 // looping forever, bound the number of restarts.
 const size_t kMaxRestarts = 32;
 
-}  // namespace
+void SetProxyInfoInReponse(const ProxyInfo& proxy_info,
+                           HttpResponseInfo* response_info) {
+  response_info->was_fetched_via_proxy = !proxy_info.is_direct();
+  if (response_info->was_fetched_via_proxy && !proxy_info.is_empty())
+    response_info->proxy_server = proxy_info.proxy_server();
+  else if (!response_info->was_fetched_via_proxy && proxy_info.is_direct())
+    response_info->proxy_server = ProxyServer::Direct();
+  else
+    response_info->proxy_server = ProxyServer();
+}
 
-namespace net {
+}  // namespace
 
 const int HttpNetworkTransaction::kDrainBodyBufferSize;
 
@@ -102,7 +113,7 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       io_callback_(base::BindRepeating(&HttpNetworkTransaction::OnIOComplete,
                                        base::Unretained(this))),
       session_(session),
-      request_(NULL),
+      request_(nullptr),
       priority_(priority),
       headers_valid_(false),
       can_send_early_data_(false),
@@ -119,7 +130,7 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       establishing_tunnel_(false),
       enable_ip_based_pooling_(true),
       enable_alternative_services_(true),
-      websocket_handshake_stream_base_create_helper_(NULL),
+      websocket_handshake_stream_base_create_helper_(nullptr),
       net_error_details_(),
       retry_attempts_(0),
       num_restarts_(0),
@@ -154,6 +165,9 @@ HttpNetworkTransaction::~HttpNetworkTransaction() {
 int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
                                   CompletionOnceCallback callback,
                                   const NetLogWithSource& net_log) {
+  if (request_info->load_flags & LOAD_ONLY_FROM_CACHE)
+    return ERR_CACHE_MISS;
+
   DCHECK(request_info->traffic_annotation.is_valid());
   net_log_ = net_log;
   request_ = request_info;
@@ -275,14 +289,14 @@ int HttpNetworkTransaction::RestartWithAuth(const AuthCredentials& credentials,
     // In this case, we've gathered credentials for use with proxy
     // authentication of a tunnel.
     DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);
-    DCHECK(stream_request_ != NULL);
-    auth_controllers_[target] = NULL;
+    DCHECK(stream_request_ != nullptr);
+    auth_controllers_[target] = nullptr;
     ResetStateForRestart();
     rv = stream_request_->RestartTunnelWithProxyAuth();
   } else {
     // In this case, we've gathered credentials for the server or the proxy
     // but it is not during the tunneling phase.
-    DCHECK(stream_request_ == NULL);
+    DCHECK(stream_request_ == nullptr);
     PrepareForAuthRestart(target);
     rv = DoLoop(OK);
     // Note: If an error is encountered while draining the old response body, no
@@ -335,7 +349,7 @@ void HttpNetworkTransaction::DidDrainBodyForAuthRestart(bool keep_alive) {
   if (stream_.get()) {
     total_received_bytes_ += stream_->GetTotalReceivedBytes();
     total_sent_bytes_ += stream_->GetTotalSentBytes();
-    HttpStream* new_stream = NULL;
+    HttpStream* new_stream = nullptr;
     if (keep_alive && stream_->CanReuseConnection()) {
       // We should call connection_->set_idle_time(), but this doesn't occur
       // often enough to be worth the trouble.
@@ -547,13 +561,7 @@ void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
   response_.alpn_negotiated_protocol =
       NextProtoToString(stream_request_->negotiated_protocol());
   response_.was_fetched_via_spdy = stream_request_->using_spdy();
-  response_.was_fetched_via_proxy = !proxy_info_.is_direct();
-  if (response_.was_fetched_via_proxy && !proxy_info_.is_empty())
-    response_.proxy_server = proxy_info_.proxy_server();
-  else if (!response_.was_fetched_via_proxy && proxy_info_.is_direct())
-    response_.proxy_server = ProxyServer::Direct();
-  else
-    response_.proxy_server = ProxyServer();
+  SetProxyInfoInReponse(used_proxy_info, &response_);
   OnIOComplete(OK);
 }
 
@@ -574,13 +582,16 @@ void HttpNetworkTransaction::OnWebSocketHandshakeStreamReady(
 void HttpNetworkTransaction::OnStreamFailed(
     int result,
     const NetErrorDetails& net_error_details,
-    const SSLConfig& used_ssl_config) {
+    const SSLConfig& used_ssl_config,
+    const ProxyInfo& used_proxy_info) {
   DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);
   DCHECK_NE(OK, result);
   DCHECK(stream_request_.get());
   DCHECK(!stream_.get());
   server_ssl_config_ = used_ssl_config;
   net_error_details_ = net_error_details;
+  proxy_info_ = used_proxy_info;
+  SetProxyInfoInReponse(used_proxy_info, &response_);
 
   OnIOComplete(result);
 }
@@ -617,6 +628,7 @@ void HttpNetworkTransaction::OnNeedsProxyAuth(
   establishing_tunnel_ = true;
   response_.headers = proxy_response.headers;
   response_.auth_challenge = proxy_response.auth_challenge;
+  response_.did_use_http_auth = proxy_response.did_use_http_auth;
 
   if (response_.headers.get() && !ContentEncodingsValid()) {
     DoCallback(ERR_CONTENT_DECODING_FAILED);
@@ -1279,7 +1291,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
 int HttpNetworkTransaction::DoReadBody() {
   DCHECK(read_buf_.get());
   DCHECK_GT(read_buf_len_, 0);
-  DCHECK(stream_ != NULL);
+  DCHECK(stream_ != nullptr);
 
   next_state_ = STATE_READ_BODY_COMPLETE;
   return stream_->ReadResponseBody(
@@ -1329,7 +1341,7 @@ int HttpNetworkTransaction::DoReadBodyComplete(int result) {
   }
 
   // Clear these to avoid leaving around old state.
-  read_buf_ = NULL;
+  read_buf_ = nullptr;
   read_buf_len_ = 0;
 
   return result;
@@ -1595,8 +1607,8 @@ int HttpNetworkTransaction::HandleHttp11Required(int error) {
 }
 
 int HttpNetworkTransaction::HandleSSLClientAuthError(int error) {
-  // TODO(davidben): This does handle client certificate errors from the
-  // proxy. https://crbug.com/814911.
+  // Client certificate errors from the proxy are handled in the
+  // HttpStreamFactory and below. See discussion in https://crbug.com/828965.
   if (server_ssl_config_.send_client_cert &&
       (error == ERR_SSL_PROTOCOL_ERROR || IsClientCertificateError(error))) {
     session_->ssl_client_auth_cache()->Remove(
@@ -1736,7 +1748,7 @@ void HttpNetworkTransaction::ResetStateForAuthRestart() {
   send_end_time_ = base::TimeTicks();
 
   pending_auth_target_ = HttpAuth::AUTH_NONE;
-  read_buf_ = NULL;
+  read_buf_ = nullptr;
   read_buf_len_ = 0;
   headers_valid_ = false;
   request_headers_.Clear();
@@ -1763,7 +1775,7 @@ HttpResponseHeaders* HttpNetworkTransaction::GetResponseHeaders() const {
 
 bool HttpNetworkTransaction::ShouldResendRequest() const {
   bool connection_is_proven = stream_->IsConnectionReused();
-  bool has_received_headers = GetResponseHeaders() != NULL;
+  bool has_received_headers = GetResponseHeaders() != nullptr;
 
   // NOTE: we resend a request only if we reused a keep-alive connection.
   // This automatically prevents an infinite resend loop because we'll run
@@ -1799,6 +1811,8 @@ void HttpNetworkTransaction::ResetConnectionAndRequestForResend() {
   network_error_logging_report_generated_ = false;
   start_timeticks_ = base::TimeTicks::Now();
 #endif  // BUILDFLAG(ENABLE_REPORTING)
+
+  ResetStateForRestart();
 }
 
 bool HttpNetworkTransaction::ShouldApplyProxyAuth() const {
@@ -1835,10 +1849,7 @@ int HttpNetworkTransaction::HandleAuthChallenge() {
   if (auth_controllers_[target]->HaveAuthHandler())
     pending_auth_target_ = target;
 
-  scoped_refptr<AuthChallengeInfo> auth_info =
-      auth_controllers_[target]->auth_info();
-  if (auth_info.get())
-      response_.auth_challenge = auth_info;
+  auth_controllers_[target]->TakeAuthInfo(&response_.auth_challenge);
 
   return rv;
 }
@@ -1948,10 +1959,8 @@ GetTunnelRedirectHistogramValue(bool is_main_frame, bool was_auto_detected) {
 }
 
 // TODO(https://crbug.com/928551): Support for redirect on CONNECT is
-// deprecated, and support will be removed.
-//
-// The code in this method handles the temporary histogramming and
-// compatibility-mode policy during the phase-out.
+// deprecated. Should remove the ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT error
+// code and supporting plumbing + histogram once this change sticks on Stable.
 int HttpNetworkTransaction::DoCreateStreamCompletedTunnelResponseRedirect() {
   bool is_main_frame = (request_->load_flags & LOAD_MAIN_FRAME_DEPRECATED) ==
                        LOAD_MAIN_FRAME_DEPRECATED;
@@ -1961,18 +1970,7 @@ int HttpNetworkTransaction::DoCreateStreamCompletedTunnelResponseRedirect() {
       "Net.Proxy.RedirectDuringConnect",
       GetTunnelRedirectHistogramValue(is_main_frame, was_auto_detected));
 
-  // For legacy compatibility, the proxy is allowed to redirect CONNECT
-  // if:
-  //      (a) the request was for a top-level frame
-  //      (b) the proxy server was explicitly configured (i.e. not
-  //          auto-detected).
-  if (is_main_frame && !was_auto_detected) {
-    // Return OK and let the caller read the proxy's error page
-    next_state_ = STATE_NONE;
-    return OK;
-  }
-
-  // Otherwise let the request fail.
+  // Fail the request.
   stream_.reset();
   return ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT;
 }

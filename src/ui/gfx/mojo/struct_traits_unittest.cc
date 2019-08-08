@@ -169,7 +169,7 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
   base::UnsafeSharedMemoryRegion output_memory = std::move(output.region);
   EXPECT_TRUE(output_memory.Map().IsValid());
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(USE_OZONE)
   gfx::GpuMemoryBufferHandle handle2;
   const uint64_t kSize = kOffset + kStride;
   const uint64_t kModifier = 2;
@@ -177,8 +177,13 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
   handle2.id = kId;
   handle2.offset = kOffset;
   handle2.stride = kStride;
-  handle2.native_pixmap_handle.planes.emplace_back(kOffset, kStride, kSize,
-                                                   kModifier);
+#if defined(OS_LINUX)
+  base::ScopedFD buffer_handle;
+#elif defined(OS_FUCHSIA)
+  zx::vmo buffer_handle;
+#endif
+  handle2.native_pixmap_handle.planes.emplace_back(
+      kOffset, kStride, kSize, std::move(buffer_handle), kModifier);
   proxy->EchoGpuMemoryBufferHandle(std::move(handle2), &output);
   EXPECT_EQ(gfx::NATIVE_PIXMAP, output.type);
   EXPECT_EQ(kId, output.id);

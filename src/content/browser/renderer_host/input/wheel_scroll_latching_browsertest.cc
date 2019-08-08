@@ -284,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
       blink::WebGestureEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchpad);
+      blink::WebGestureDevice::kTouchpad);
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
       precise ? blink::WebGestureEvent::ScrollUnits::kPrecisePixels
               : blink::WebGestureEvent::ScrollUnits::kPixels;

@@ -108,6 +108,9 @@ class EventRouter : public KeyedService,
                                     const std::string& extension_id,
                                     events::HistogramValue histogram_value,
                                     const std::string& event_name,
+                                    int render_process_id,
+                                    int worker_thread_id,
+                                    int64_t service_worker_version_id,
                                     std::unique_ptr<base::ListValue> event_args,
                                     UserGestureState user_gesture,
                                     const EventFilteringInfo& info);
@@ -338,15 +341,19 @@ class EventRouter : public KeyedService,
   // Track the dispatched events that have not yet sent an ACK from the
   // renderer.
   void IncrementInFlightEvents(content::BrowserContext* context,
+                               content::RenderProcessHost* process,
                                const Extension* extension,
                                int event_id,
-                               const std::string& event_name);
+                               const std::string& event_name,
+                               int64_t service_worker_version_id);
 
   // static
   static void DoDispatchEventToSenderBookkeepingOnUI(
       void* browser_context_id,
       const std::string& extension_id,
       int event_id,
+      int render_process_id,
+      int64_t service_worker_version_id,
       events::HistogramValue histogram_value,
       const std::string& event_name);
 
@@ -466,17 +473,29 @@ struct Event {
 };
 
 struct EventListenerInfo {
+  // Constructor for a listener from a non-ServiceWorker context (background
+  // page, popup, tab, etc)
   EventListenerInfo(const std::string& event_name,
                     const std::string& extension_id,
                     const GURL& listener_url,
                     content::BrowserContext* browser_context);
+
+  // Constructor for a listener from a ServiceWorker context.
+  EventListenerInfo(const std::string& event_name,
+                    const std::string& extension_id,
+                    const GURL& listener_url,
+                    content::BrowserContext* browser_context,
+                    int worker_thread_id,
+                    int64_t service_worker_version_id);
+
   // The event name including any sub-event, e.g. "runtime.onStartup" or
   // "webRequest.onCompleted/123".
   const std::string event_name;
-
   const std::string extension_id;
   const GURL listener_url;
   content::BrowserContext* const browser_context;
+  const int worker_thread_id;
+  const int64_t service_worker_version_id;
 };
 
 }  // namespace extensions

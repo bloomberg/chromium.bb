@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/cache_storage/cache_storage_cache.h"
+#include "content/browser/cache_storage/legacy/legacy_cache_storage_cache.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -98,12 +98,11 @@ void SizeCallback(base::RunLoop* run_loop,
 class DelayableBackend : public disk_cache::Backend {
  public:
   explicit DelayableBackend(std::unique_ptr<disk_cache::Backend> backend)
-      : backend_(std::move(backend)), delay_open_entry_(false) {}
+      : Backend(backend->GetCacheType()),
+        backend_(std::move(backend)),
+        delay_open_entry_(false) {}
 
   // disk_cache::Backend overrides
-  net::CacheType GetCacheType() const override {
-    return backend_->GetCacheType();
-  }
   int32_t GetEntryCount() const override { return backend_->GetEntryCount(); }
   net::Error OpenEntry(const std::string& key,
                        net::RequestPriority request_priority,
@@ -309,25 +308,25 @@ void OnBadMessage(std::string* result) {
 }
 
 // A CacheStorageCache that can optionally delay during backend creation.
-class TestCacheStorageCache : public CacheStorageCache {
+class TestCacheStorageCache : public LegacyCacheStorageCache {
  public:
   TestCacheStorageCache(
       const url::Origin& origin,
       const std::string& cache_name,
       const base::FilePath& path,
-      CacheStorage* cache_storage,
+      LegacyCacheStorage* cache_storage,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context)
-      : CacheStorageCache(origin,
-                          CacheStorageOwner::kCacheAPI,
-                          cache_name,
-                          path,
-                          cache_storage,
-                          quota_manager_proxy,
-                          blob_context,
-                          0 /* cache_size */,
-                          0 /* cache_padding */,
-                          CreateTestPaddingKey()),
+      : LegacyCacheStorageCache(origin,
+                                CacheStorageOwner::kCacheAPI,
+                                cache_name,
+                                path,
+                                cache_storage,
+                                quota_manager_proxy,
+                                blob_context,
+                                0 /* cache_size */,
+                                0 /* cache_padding */,
+                                CreateTestPaddingKey()),
         delay_backend_creation_(false) {}
 
   ~TestCacheStorageCache() override { base::RunLoop().RunUntilIdle(); }
@@ -340,7 +339,8 @@ class TestCacheStorageCache : public CacheStorageCache {
   }
 
   void ContinueCreateBackend() {
-    CacheStorageCache::CreateBackend(std::move(backend_creation_callback_));
+    LegacyCacheStorageCache::CreateBackend(
+        std::move(backend_creation_callback_));
   }
 
   void set_delay_backend_creation(bool delay) {
@@ -370,16 +370,37 @@ class TestCacheStorageCache : public CacheStorageCache {
   }
 
  private:
-  CacheStorageCacheHandle CreateHandle() override {
-    // Returns an empty handle. There is no need for CacheStorage and its
-    // handles in these tests.
-    return CacheStorageCacheHandle();
-  }
-
   bool delay_backend_creation_;
   ErrorCallback backend_creation_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCacheStorageCache);
+};
+
+class MockLegacyCacheStorage : public LegacyCacheStorage {
+ public:
+  MockLegacyCacheStorage(
+      const base::FilePath& origin_path,
+      bool memory_only,
+      base::SequencedTaskRunner* cache_task_runner,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+      base::WeakPtr<storage::BlobStorageContext> blob_context,
+      CacheStorageManager* cache_storage_manager,
+      const url::Origin& origin,
+      CacheStorageOwner owner)
+      : LegacyCacheStorage(origin_path,
+                           memory_only,
+                           cache_task_runner,
+                           std::move(quota_manager_proxy),
+                           std::move(blob_context),
+                           cache_storage_manager,
+                           std::move(origin),
+                           owner) {}
+
+  void CacheUnreferenced(LegacyCacheStorageCache* cache) override {
+    // Normally the LegacyCacheStorage will attempt to delete the cache
+    // from its map when the cache has become unreferenced.  Since we are
+    // using detached cache objects we instead override to do nothing here.
+  }
 };
 
 class CacheStorageCacheTest : public testing::Test {
@@ -431,8 +452,17 @@ class CacheStorageCacheTest : public testing::Test {
         std::make_unique<storage::BlobDataHandle>(*blob_handle_),
         MakeRequest(&blob_ptr_));
 
+    // Use a mock LegacyCacheStorage object so we can use real
+    // CacheStorageCacheHandle reference counting.  A LegacyCacheStorage
+    // must be present to be notified when a cache becomes unreferenced.
+    mock_cache_storage_ = std::make_unique<MockLegacyCacheStorage>(
+        temp_dir_path, MemoryOnly(), base::ThreadTaskRunnerHandle::Get().get(),
+        quota_manager_proxy_, blob_storage_context_->AsWeakPtr(),
+        /* cache_storage_manager = */ nullptr, kOrigin,
+        CacheStorageOwner::kCacheAPI);
+
     cache_ = std::make_unique<TestCacheStorageCache>(
-        kOrigin, kCacheName, temp_dir_path, nullptr /* CacheStorage */,
+        kOrigin, kCacheName, temp_dir_path, mock_cache_storage_.get(),
         quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr());
     cache_->Init();
   }
@@ -515,12 +545,11 @@ class CacheStorageCacheTest : public testing::Test {
   }
 
   CacheStorageError BatchOperation(
-      std::vector<blink::mojom::BatchOperationPtr> operations,
-      bool fail_on_duplicates = true) {
+      std::vector<blink::mojom::BatchOperationPtr> operations) {
     std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
 
     cache_->BatchOperation(
-        std::move(operations), fail_on_duplicates,
+        std::move(operations), /* trace_id = */ 0,
         base::BindOnce(&CacheStorageCacheTest::VerboseErrorTypeCallback,
                        base::Unretained(this), base::Unretained(loop.get())),
         base::BindOnce(&OnBadMessage, base::Unretained(&bad_message_reason_)));
@@ -565,6 +594,7 @@ class CacheStorageCacheTest : public testing::Test {
 
     cache_->Match(
         CopyFetchRequest(request), std::move(match_options),
+        /* trace_id = */ 0,
         base::BindOnce(&CacheStorageCacheTest::ResponseAndErrorCallback,
                        base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
@@ -580,6 +610,7 @@ class CacheStorageCacheTest : public testing::Test {
     base::RunLoop loop;
     cache_->MatchAll(
         CopyFetchRequest(request), std::move(match_options),
+        /* trace_id = */ 0,
         base::BindOnce(&CacheStorageCacheTest::ResponsesAndErrorCallback,
                        base::Unretained(this), loop.QuitClosure(), responses));
     loop.Run();
@@ -593,6 +624,7 @@ class CacheStorageCacheTest : public testing::Test {
     base::RunLoop loop;
     cache_->GetAllMatchedEntries(
         nullptr /* request */, nullptr /* options */,
+        /* trace_id = */ 0,
         base::BindOnce(&CacheStorageCacheTest::CacheEntriesAndErrorCallback,
                        base::Unretained(this), loop.QuitClosure(),
                        cache_entries));
@@ -629,6 +661,7 @@ class CacheStorageCacheTest : public testing::Test {
 
     cache_->Keys(
         CopyFetchRequest(request), std::move(match_options),
+        /* trace_id = */ 0,
         base::BindOnce(&CacheStorageCacheTest::RequestsCallback,
                        base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
@@ -659,7 +692,7 @@ class CacheStorageCacheTest : public testing::Test {
     cache_->WriteSideData(
         base::BindOnce(&CacheStorageCacheTest::ErrorTypeCallback,
                        base::Unretained(this), base::Unretained(&run_loop)),
-        url, expected_response_time, buffer, buf_len);
+        url, expected_response_time, /* trace_id = */ 0, buffer, buf_len);
     run_loop.Run();
     if (callback_error_ == CacheStorageError::kSuccess)
       CheckOpHistograms(histogram_tester, "WriteSideData");
@@ -795,7 +828,7 @@ class CacheStorageCacheTest : public testing::Test {
 
   size_t EstimatedResponseSizeWithoutBlob(
       const blink::mojom::FetchAPIResponse& response) {
-    return CacheStorageCache::EstimatedResponseSizeWithoutBlob(response);
+    return LegacyCacheStorageCache::EstimatedResponseSizeWithoutBlob(response);
   }
 
  protected:
@@ -807,6 +840,7 @@ class CacheStorageCacheTest : public testing::Test {
   scoped_refptr<MockQuotaManager> mock_quota_manager_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   storage::BlobStorageContext* blob_storage_context_;
+  std::unique_ptr<MockLegacyCacheStorage> mock_cache_storage_;
 
   std::unique_ptr<TestCacheStorageCache> cache_;
 
@@ -891,8 +925,9 @@ TEST_P(CacheStorageCacheTestP, MatchLimit) {
   EXPECT_TRUE(Put(no_body_request_, CreateNoBodyResponse()));
   EXPECT_TRUE(Match(no_body_request_));
 
-  size_t max_size = CacheStorageCache::EstimatedStructSize(no_body_request_) +
-                    EstimatedResponseSizeWithoutBlob(*callback_response_);
+  size_t max_size =
+      LegacyCacheStorageCache::EstimatedStructSize(no_body_request_) +
+      EstimatedResponseSizeWithoutBlob(*callback_response_);
   SetMaxQuerySizeBytes(max_size);
   EXPECT_TRUE(Match(no_body_request_));
 
@@ -907,10 +942,10 @@ TEST_P(CacheStorageCacheTestP, MatchAllLimit) {
   EXPECT_TRUE(Match(body_request_));
 
   size_t body_request_size =
-      CacheStorageCache::EstimatedStructSize(body_request_) +
+      LegacyCacheStorageCache::EstimatedStructSize(body_request_) +
       EstimatedResponseSizeWithoutBlob(*callback_response_);
   size_t query_request_size =
-      CacheStorageCache::EstimatedStructSize(body_request_with_query_) +
+      LegacyCacheStorageCache::EstimatedStructSize(body_request_with_query_) +
       EstimatedResponseSizeWithoutBlob(*callback_response_);
 
   std::vector<blink::mojom::FetchAPIResponsePtr> responses;
@@ -941,13 +976,14 @@ TEST_P(CacheStorageCacheTestP, KeysLimit) {
   EXPECT_TRUE(Put(no_body_request_, CreateNoBodyResponse()));
   EXPECT_TRUE(Put(body_request_, CreateBlobBodyResponse()));
 
-  size_t max_size = CacheStorageCache::EstimatedStructSize(no_body_request_) +
-                    CacheStorageCache::EstimatedStructSize(body_request_);
+  size_t max_size =
+      LegacyCacheStorageCache::EstimatedStructSize(no_body_request_) +
+      LegacyCacheStorageCache::EstimatedStructSize(body_request_);
   SetMaxQuerySizeBytes(max_size);
   EXPECT_TRUE(Keys());
 
   SetMaxQuerySizeBytes(
-      CacheStorageCache::EstimatedStructSize(no_body_request_));
+      LegacyCacheStorageCache::EstimatedStructSize(no_body_request_));
   EXPECT_FALSE(Keys());
   EXPECT_EQ(CacheStorageError::kErrorQueryTooLarge, callback_error_);
 }
@@ -990,7 +1026,7 @@ TEST_P(CacheStorageCacheTestP, PutBodyDropBlobRef) {
   operations.emplace_back(std::move(operation));
   std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
   cache_->BatchOperation(
-      std::move(operations), true /* fail_on_duplicate */,
+      std::move(operations), /* trace_id = */ 0,
       base::BindOnce(&CacheStorageCacheTestP::VerboseErrorTypeCallback,
                      base::Unretained(this), base::Unretained(loop.get())),
       CacheStorageCache::BadMessageCallback());
@@ -1075,39 +1111,6 @@ TEST_P(CacheStorageCacheTestP, PutReplaceInBatchFails) {
 
   // Neither operation should have completed.
   EXPECT_FALSE(Match(body_request_));
-}
-
-TEST_P(CacheStorageCacheTestP, PutReplaceInBatchWithDuplicateCheckingDisabled) {
-  blink::mojom::BatchOperationPtr operation1 =
-      blink::mojom::BatchOperation::New();
-  operation1->operation_type = blink::mojom::OperationType::kPut;
-  operation1->request =
-      BackgroundFetchSettledFetch::CloneRequest(body_request_);
-  operation1->response = CreateNoBodyResponse();
-
-  blink::mojom::BatchOperationPtr operation2 =
-      blink::mojom::BatchOperation::New();
-  operation2->operation_type = blink::mojom::OperationType::kPut;
-  operation2->request =
-      BackgroundFetchSettledFetch::CloneRequest(body_request_);
-  operation2->response = CreateBlobBodyResponse();
-
-  std::vector<blink::mojom::BatchOperationPtr> operations;
-  operations.push_back(std::move(operation1));
-  operations.push_back(std::move(operation2));
-
-  EXPECT_EQ(
-      CacheStorageError::kSuccess,
-      BatchOperation(std::move(operations), false /* fail_on_duplicates */));
-
-  // Even when we don't fail on duplicates we should still provide an
-  // informative message to the user that includes the duplicate URLs.
-  ASSERT_TRUE(callback_message_);
-  EXPECT_NE(std::string::npos, callback_message_.value().find(kBodyUrl.spec()));
-
-  // |operation2| should win.
-  EXPECT_TRUE(Match(body_request_));
-  EXPECT_TRUE(callback_response_->blob);
 }
 
 TEST_P(CacheStorageCacheTestP, MatchNoBody) {
@@ -1234,7 +1237,7 @@ TEST_P(CacheStorageCacheTestP, Match_IgnoreVary) {
 TEST_P(CacheStorageCacheTestP, GetAllMatchedEntries_RequestsIncluded) {
   EXPECT_TRUE(Put(body_request_, CreateBlobBodyResponse()));
 
-  std::vector<CacheStorageCache::CacheEntry> cache_entries;
+  std::vector<LegacyCacheStorageCache::CacheEntry> cache_entries;
   EXPECT_TRUE(GetAllMatchedEntries(&cache_entries));
 
   ASSERT_EQ(1u, cache_entries.size());
@@ -2069,7 +2072,7 @@ TEST_F(CacheStorageCacheTest, VerifyOpaqueSizePadding) {
   blink::mojom::FetchAPIResponsePtr non_opaque_response =
       CreateBlobBodyResponse();
   non_opaque_response->response_time = response_time;
-  EXPECT_EQ(0, CacheStorageCache::CalculateResponsePadding(
+  EXPECT_EQ(0, LegacyCacheStorageCache::CalculateResponsePadding(
                    *non_opaque_response, CreateTestPaddingKey().get(),
                    0 /* side_data_size */));
   EXPECT_TRUE(Put(non_opaque_request, std::move(non_opaque_response)));
@@ -2089,7 +2092,7 @@ TEST_F(CacheStorageCacheTest, VerifyOpaqueSizePadding) {
   blink::mojom::FetchAPIResponsePtr non_opaque_response_clone =
       CreateBlobBodyResponse();
   non_opaque_response_clone->response_time = response_time;
-  EXPECT_EQ(0, CacheStorageCache::CalculateResponsePadding(
+  EXPECT_EQ(0, LegacyCacheStorageCache::CalculateResponsePadding(
                    *non_opaque_response_clone, CreateTestPaddingKey().get(),
                    unpadded_side_data_size));
 
@@ -2252,7 +2255,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   std::vector<blink::mojom::BatchOperationPtr> operations1;
   operations1.emplace_back(std::move(operation1));
   cache_->BatchOperation(
-      std::move(operations1), true /* fail_on_duplicate */,
+      std::move(operations1), /* trace_id = */ 0,
       base::BindOnce(&CacheStorageCacheTest::SequenceCallback,
                      base::Unretained(this), 1, &sequence_out,
                      close_loop1.get()),
@@ -2273,7 +2276,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   std::vector<blink::mojom::BatchOperationPtr> operations2;
   operations2.emplace_back(std::move(operation2));
   cache_->BatchOperation(
-      std::move(operations2), true /* fail_on_duplicate */,
+      std::move(operations2), /* trace_id = */ 0,
       base::BindOnce(&CacheStorageCacheTest::SequenceCallback,
                      base::Unretained(this), 2, &sequence_out,
                      close_loop2.get()),
@@ -2310,6 +2313,221 @@ TEST_P(CacheStorageCacheTestP, MAYBE_KeysWithManyCacheEntries) {
 
   EXPECT_TRUE(Keys());
   EXPECT_EQ(expected_keys, callback_strings_);
+}
+
+TEST_P(CacheStorageCacheTestP, SelfRefsDuringMatch) {
+  EXPECT_TRUE(Put(body_request_, CreateBlobBodyResponse()));
+
+  // When there are no operations outstanding and we're not holding an
+  // explicit reference the cache should consider itself unreferenced.
+  EXPECT_TRUE(cache_->IsUnreferenced());
+
+  DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
+  delayable_backend->set_delay_open_entry(true);
+
+  std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
+  cache_->Match(CopyFetchRequest(body_request_), /* match_options = */ nullptr,
+                /* trace_id = */ 0,
+                base::BindOnce(&CacheStorageCacheTest::ResponseAndErrorCallback,
+                               base::Unretained(this), loop.get()));
+
+  // Blocks on opening the cache entry.
+  base::RunLoop().RunUntilIdle();
+
+  // Since an operation is outstanding the cache should consider itself
+  // referenced.
+  EXPECT_FALSE(cache_->IsUnreferenced());
+
+  // Allow the operation to continue.
+  EXPECT_TRUE(delayable_backend->OpenEntryContinue());
+  loop->Run();
+
+  // The operation should succeed.
+  EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, SelfRefsDuringMatchAll) {
+  EXPECT_TRUE(Put(body_request_, CreateBlobBodyResponse()));
+
+  // When there are no operations outstanding and we're not holding an
+  // explicit reference the cache should consider itself unreferenced.
+  EXPECT_TRUE(cache_->IsUnreferenced());
+
+  DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
+  delayable_backend->set_delay_open_entry(true);
+
+  std::vector<blink::mojom::FetchAPIResponsePtr> responses;
+
+  std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
+  cache_->MatchAll(
+      CopyFetchRequest(body_request_), /* match_options = */ nullptr,
+      /* trace_id = */ 0,
+      base::BindOnce(&CacheStorageCacheTest::ResponsesAndErrorCallback,
+                     base::Unretained(this), loop->QuitClosure(), &responses));
+
+  // Blocks on opening the cache entry.
+  base::RunLoop().RunUntilIdle();
+
+  // Since an operation is outstanding the cache should consider itself
+  // referenced.
+  EXPECT_FALSE(cache_->IsUnreferenced());
+
+  // Allow the operation to continue.
+  EXPECT_TRUE(delayable_backend->OpenEntryContinue());
+  loop->Run();
+
+  // The operation should succeed.
+  EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
+  EXPECT_EQ(1u, responses.size());
+}
+
+TEST_P(CacheStorageCacheTestP, SelfRefsDuringWriteSideData) {
+  base::Time response_time(base::Time::Now());
+  blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
+  response->response_time = response_time;
+  EXPECT_TRUE(Put(body_request_, std::move(response)));
+
+  // When there are no operations outstanding and we're not holding an
+  // explicit reference the cache should consider itself unreferenced.
+  EXPECT_TRUE(cache_->IsUnreferenced());
+
+  DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
+  delayable_backend->set_delay_open_entry(true);
+
+  const std::string expected_side_data = "SideDataSample";
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(expected_side_data);
+
+  std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
+  cache_->WriteSideData(
+      base::BindOnce(&CacheStorageCacheTest::ErrorTypeCallback,
+                     base::Unretained(this), base::Unretained(loop.get())),
+      kBodyUrl, response_time, /* trace_id = */ 0, buffer,
+      expected_side_data.length());
+
+  // Blocks on opening the cache entry.
+  base::RunLoop().RunUntilIdle();
+
+  // Since an operation is outstanding the cache should consider itself
+  // referenced.
+  EXPECT_FALSE(cache_->IsUnreferenced());
+
+  // Allow the operation to continue.
+  EXPECT_TRUE(delayable_backend->OpenEntryContinue());
+  loop->Run();
+
+  // The operation should succeed.
+  EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, SelfRefsDuringBatchOperation) {
+  // Open the backend
+  EXPECT_TRUE(Keys());
+
+  blink::mojom::BatchOperationPtr operation =
+      blink::mojom::BatchOperation::New();
+  operation->operation_type = blink::mojom::OperationType::kPut;
+  operation->request = BackgroundFetchSettledFetch::CloneRequest(body_request_);
+  operation->request->url = GURL("http://example.com/1");
+  operation->response = CreateBlobBodyResponse();
+  operation->response->url_list.push_back(GURL("http://example.com/1"));
+
+  std::vector<blink::mojom::BatchOperationPtr> operations;
+  operations.push_back(std::move(operation));
+
+  // When there are no operations outstanding and we're not holding an
+  // explicit reference the cache should consider itself unreferenced.
+  EXPECT_TRUE(cache_->IsUnreferenced());
+
+  DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
+  delayable_backend->set_delay_open_entry(true);
+
+  std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
+  cache_->BatchOperation(
+      std::move(operations), /* trace_id = */ 0,
+      base::BindOnce(&CacheStorageCacheTest::VerboseErrorTypeCallback,
+                     base::Unretained(this), base::Unretained(loop.get())),
+      base::BindOnce(&OnBadMessage, base::Unretained(&bad_message_reason_)));
+
+  // Blocks on opening the cache entry.
+  base::RunLoop().RunUntilIdle();
+
+  // Since an operation is outstanding the cache should consider itself
+  // referenced.
+  EXPECT_FALSE(cache_->IsUnreferenced());
+
+  // Allow the operation to continue.
+  EXPECT_TRUE(delayable_backend->OpenEntryContinue());
+  loop->Run();
+
+  // The operation should succeed.
+  EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, SelfRefsDuringKeys) {
+  EXPECT_TRUE(Put(body_request_, CreateBlobBodyResponse()));
+
+  // When there are no operations outstanding and we're not holding an
+  // explicit reference the cache should consider itself unreferenced.
+  EXPECT_TRUE(cache_->IsUnreferenced());
+
+  DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
+  delayable_backend->set_delay_open_entry(true);
+
+  std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
+  cache_->Keys(
+      BackgroundFetchSettledFetch::CloneRequest(body_request_),
+      /* match_options = */ nullptr,
+      /* trace_id = */ 0,
+      base::BindOnce(&CacheStorageCacheTest::RequestsCallback,
+                     base::Unretained(this), base::Unretained(loop.get())));
+
+  // Blocks on opening the cache entry.
+  base::RunLoop().RunUntilIdle();
+
+  // Since an operation is outstanding the cache should consider itself
+  // referenced.
+  EXPECT_FALSE(cache_->IsUnreferenced());
+
+  // Allow the operation to continue.
+  EXPECT_TRUE(delayable_backend->OpenEntryContinue());
+  loop->Run();
+
+  // The operation should succeed.
+  EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, SelfRefsDuringPut) {
+  // Open the backend
+  EXPECT_TRUE(Keys());
+
+  // When there are no operations outstanding and we're not holding an
+  // explicit reference the cache should consider itself unreferenced.
+  EXPECT_TRUE(cache_->IsUnreferenced());
+
+  DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
+  delayable_backend->set_delay_open_entry(true);
+
+  std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
+  cache_->Put(
+      BackgroundFetchSettledFetch::CloneRequest(body_request_),
+      CreateBlobBodyResponse(), /* trace_id = */ 0,
+      base::BindOnce(&CacheStorageCacheTest::ErrorTypeCallback,
+                     base::Unretained(this), base::Unretained(loop.get())));
+
+  // Blocks on opening the cache entry.
+  base::RunLoop().RunUntilIdle();
+
+  // Since an operation is outstanding the cache should consider itself
+  // referenced.
+  EXPECT_FALSE(cache_->IsUnreferenced());
+
+  // Allow the operation to continue.
+  EXPECT_TRUE(delayable_backend->OpenEntryContinue());
+  loop->Run();
+
+  // The operation should succeed.
+  EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
 }
 
 INSTANTIATE_TEST_SUITE_P(CacheStorageCacheTest,

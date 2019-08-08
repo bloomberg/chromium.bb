@@ -276,12 +276,13 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
 
   void SimulateCpuTimingUpdate(const mojom::CpuTiming& timing,
                                content::RenderFrameHost* render_frame_host) {
-    observer()->OnTimingUpdated(render_frame_host, previous_timing_->Clone(),
-                                mojom::PageLoadMetadataPtr(base::in_place),
-                                mojom::PageLoadFeaturesPtr(base::in_place),
-                                std::vector<mojom::ResourceDataUpdatePtr>(),
-                                mojom::PageRenderDataPtr(base::in_place),
-                                timing.Clone());
+    observer()->OnTimingUpdated(
+        render_frame_host, previous_timing_->Clone(),
+        mojom::PageLoadMetadataPtr(base::in_place),
+        mojom::PageLoadFeaturesPtr(base::in_place),
+        std::vector<mojom::ResourceDataUpdatePtr>(),
+        mojom::FrameRenderDataUpdatePtr(base::in_place), timing.Clone(),
+        mojom::DeferredResourceCountsPtr(base::in_place));
   }
 
   void SimulateTimingUpdate(const mojom::PageLoadTiming& timing,
@@ -299,12 +300,14 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
       const mojom::PageLoadTiming& timing,
       content::RenderFrameHost* render_frame_host) {
     previous_timing_ = timing.Clone();
-    observer()->OnTimingUpdated(render_frame_host, timing.Clone(),
-                                mojom::PageLoadMetadataPtr(base::in_place),
-                                mojom::PageLoadFeaturesPtr(base::in_place),
-                                std::vector<mojom::ResourceDataUpdatePtr>(),
-                                mojom::PageRenderDataPtr(base::in_place),
-                                mojom::CpuTimingPtr(base::in_place));
+    observer()->OnTimingUpdated(
+        render_frame_host, timing.Clone(),
+        mojom::PageLoadMetadataPtr(base::in_place),
+        mojom::PageLoadFeaturesPtr(base::in_place),
+        std::vector<mojom::ResourceDataUpdatePtr>(),
+        mojom::FrameRenderDataUpdatePtr(base::in_place),
+        mojom::CpuTimingPtr(base::in_place),
+        mojom::DeferredResourceCountsPtr(base::in_place));
   }
 
   void AttachObserver() {
@@ -1535,9 +1538,8 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_MainFrame) {
 
   observer()->OnRequestComplete(
       main_resource_url, net::IPEndPoint(), frame_tree_node_id, request_id,
-      web_contents()->GetMainFrame(),
-      content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, false, nullptr, 0, 0,
-      base::TimeTicks::Now(), net::OK, nullptr);
+      web_contents()->GetMainFrame(), content::ResourceType::kMainFrame, false,
+      nullptr, 0, 0, base::TimeTicks::Now(), net::OK, nullptr);
   EXPECT_EQ(1u, loaded_resources().size());
   EXPECT_EQ(main_resource_url, loaded_resources().back().url);
 
@@ -1547,9 +1549,8 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_MainFrame) {
   // specified |request_id| is no longer associated with any tracked page loads.
   observer()->OnRequestComplete(
       main_resource_url, net::IPEndPoint(), frame_tree_node_id, request_id,
-      web_contents()->GetMainFrame(),
-      content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, false, nullptr, 0, 0,
-      base::TimeTicks::Now(), net::OK, nullptr);
+      web_contents()->GetMainFrame(), content::ResourceType::kMainFrame, false,
+      nullptr, 0, 0, base::TimeTicks::Now(), net::OK, nullptr);
   EXPECT_EQ(1u, loaded_resources().size());
   EXPECT_EQ(main_resource_url, loaded_resources().back().url);
 }
@@ -1563,7 +1564,7 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_Subresource) {
       loaded_resource_url, net::IPEndPoint(),
       web_contents()->GetMainFrame()->GetFrameTreeNodeId(),
       content::GlobalRequestID(), web_contents()->GetMainFrame(),
-      content::RESOURCE_TYPE_SCRIPT, false, nullptr, 0, 0,
+      content::ResourceType::kScript, false, nullptr, 0, 0,
       base::TimeTicks::Now(), net::OK, nullptr);
 
   EXPECT_EQ(1u, loaded_resources().size());
@@ -1589,7 +1590,7 @@ TEST_F(MetricsWebContentsObserverTest,
       GURL("http://www.other.com/"), net::IPEndPoint(),
       other_web_contents->GetMainFrame()->GetFrameTreeNodeId(),
       content::GlobalRequestID(), other_web_contents->GetMainFrame(),
-      content::RESOURCE_TYPE_SCRIPT, false, nullptr, 0, 0,
+      content::ResourceType::kScript, false, nullptr, 0, 0,
       base::TimeTicks::Now(), net::OK, nullptr);
 
   EXPECT_TRUE(loaded_resources().empty());
@@ -1605,7 +1606,7 @@ TEST_F(MetricsWebContentsObserverTest,
       loaded_resource_url, net::IPEndPoint(),
       web_contents()->GetMainFrame()->GetFrameTreeNodeId(),
       content::GlobalRequestID(), web_contents()->GetMainFrame(),
-      content::RESOURCE_TYPE_SCRIPT, false, nullptr, 0, 0,
+      content::ResourceType::kScript, false, nullptr, 0, 0,
       base::TimeTicks::Now(), net::OK, nullptr);
 
   EXPECT_TRUE(loaded_resources().empty());

@@ -25,6 +25,7 @@
 #include "ash/cast_config_controller.h"
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/custom_tab/arc_custom_tab_controller.h"
+#include "ash/dbus/ash_dbus_helper.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/detachable_base/detachable_base_notification_controller.h"
@@ -57,6 +58,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_engine_factory_registry.h"
 #include "ash/ime/ime_focus_handler.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
@@ -110,7 +112,6 @@
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/palette/palette_welcome_bubble.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
-#include "ash/system/power/notification_reporter.h"
 #include "ash/system/power/peripheral_battery_notifier.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/power_event_observer.h"
@@ -167,18 +168,19 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/trace_event/trace_event.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/system/devicemode.h"
 #include "components/exo/file_helper.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "dbus/bus.h"
 #include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -254,7 +256,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   BluetoothPowerController::RegisterProfilePrefs(registry);
   CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);
   DockedMagnifierController::RegisterProfilePrefs(registry, for_test);
-  KioskNextShellController::RegisterProfilePrefs(registry);
+  KioskNextShellController::RegisterProfilePrefs(registry, for_test);
   LoginScreenController::RegisterProfilePrefs(registry, for_test);
   LogoutButtonTray::RegisterProfilePrefs(registry);
   MessageCenterController::RegisterProfilePrefs(registry);
@@ -278,11 +280,11 @@ Shell* Shell::instance_ = nullptr;
 Shell* Shell::CreateInstance(ShellInitParams init_params) {
   CHECK(!instance_);
   instance_ = new Shell(std::move(init_params.delegate), init_params.connector);
-  instance_->Init(init_params.context_factory,
-                  init_params.context_factory_private,
-                  std::move(init_params.initial_display_prefs),
-                  std::move(init_params.gpu_interface_provider),
-                  std::move(init_params.keyboard_ui_factory));
+  instance_->Init(
+      init_params.context_factory, init_params.context_factory_private,
+      std::move(init_params.initial_display_prefs),
+      std::move(init_params.gpu_interface_provider),
+      std::move(init_params.keyboard_ui_factory), init_params.dbus_bus);
   return instance_;
 }
 
@@ -406,6 +408,7 @@ void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry,
   WallpaperController::RegisterLocalStatePrefs(registry);
   BluetoothPowerController::RegisterLocalStatePrefs(registry);
   DetachableBaseHandler::RegisterPrefs(registry);
+  PowerPrefs::RegisterLocalStatePrefs(registry);
   // Note: DisplayPrefs are registered in chrome in AshShellInit::RegisterPrefs
   // (see comment there for details).
   if (for_test)
@@ -485,16 +488,6 @@ void Shell::OnDictationEnded() {
     observer.OnDictationEnded();
 }
 
-void Shell::EnableKeyboard() {
-  // The keyboard controller is persistent; this will create or recreate the
-  // keyboard window as necessary.
-  ash_keyboard_controller_->EnableKeyboard();
-}
-
-void Shell::DisableKeyboard() {
-  ash_keyboard_controller_->DisableKeyboard();
-}
-
 bool Shell::ShouldSaveDisplaySettings() {
   return !(
       screen_orientation_controller_->ignore_display_configuration_updates() ||
@@ -549,9 +542,10 @@ void Shell::SetCursorCompositingEnabled(bool enabled) {
 }
 
 void Shell::DoInitialWorkspaceAnimation() {
-  return GetPrimaryRootWindowController()
-      ->workspace_controller()
-      ->DoInitialAnimation();
+  // Uses the active desk's workspace.
+  auto* workspace = GetActiveWorkspaceController(GetPrimaryRootWindow());
+  DCHECK(workspace);
+  workspace->DoInitialAnimation();
 }
 
 bool Shell::IsSplitViewModeActive() const {
@@ -571,6 +565,12 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
   aura::Window* root = wm::GetRootWindowAt(location_in_screen);
   RootWindowController::ForWindow(root)->ShowContextMenu(location_in_screen,
                                                          source_type);
+}
+
+void Shell::RemoveAppListController() {
+  // AppListController must no longer be the HomeScreenController delegate.
+  DCHECK_NE(home_screen_controller_->delegate(), app_list_controller_.get());
+  app_list_controller_.reset();
 }
 
 void Shell::AddShellObserver(ShellObserver* observer) {
@@ -602,14 +602,19 @@ void Shell::NotifySplitViewModeEnded() {
 }
 
 void Shell::NotifyFullscreenStateChanged(bool is_fullscreen,
-                                         aura::Window* root_window) {
+                                         aura::Window* container) {
   for (auto& observer : shell_observers_)
-    observer.OnFullscreenStateChanged(is_fullscreen, root_window);
+    observer.OnFullscreenStateChanged(is_fullscreen, container);
 }
 
 void Shell::NotifyPinnedStateChanged(aura::Window* pinned_window) {
   for (auto& observer : shell_observers_)
     observer.OnPinnedStateChanged(pinned_window);
+}
+
+void Shell::NotifyUserWorkAreaInsetsChanged(aura::Window* root_window) {
+  for (auto& observer : shell_observers_)
+    observer.OnUserWorkAreaInsetsChanged(root_window);
 }
 
 void Shell::NotifyShelfAlignmentChanged(aura::Window* root_window) {
@@ -646,11 +651,11 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       first_run_helper_(std::make_unique<FirstRunHelper>()),
       focus_cycler_(std::make_unique<FocusCycler>()),
       ime_controller_(std::make_unique<ImeController>()),
+      ime_engine_factory_registry_(
+          std::make_unique<ImeEngineFactoryRegistry>()),
       immersive_context_(std::make_unique<ImmersiveContextAsh>()),
       keyboard_brightness_control_delegate_(
           std::make_unique<KeyboardBrightnessController>()),
-      kiosk_next_shell_controller_(
-          std::make_unique<KioskNextShellController>()),
       locale_update_controller_(std::make_unique<LocaleUpdateController>()),
       media_controller_(std::make_unique<MediaController>(connector)),
       new_window_controller_(std::make_unique<NewWindowController>()),
@@ -757,6 +762,9 @@ Shell::~Shell() {
   // the former may use the latter before destruction.
   app_list_controller_.reset();
 
+  // Accelerometer file reader stops listening to tablet mode controller.
+  AccelerometerReader::GetInstance()->StopListenToTabletModeController();
+
   // Destroy |assistant_controller_| earlier than |tablet_mode_controller_| so
   // that the former will destroy the Assistant view hierarchy which has a
   // dependency on the latter.
@@ -766,10 +774,7 @@ Shell::~Shell() {
   // Destroy tablet mode controller early on since it has some observers which
   // need to be removed.
   tablet_mode_controller_.reset();
-
-  // Destroy the keyboard before closing the shelf, since it will invoke a shelf
-  // layout.
-  DisableKeyboard();
+  kiosk_next_shell_controller_.reset();
 
   toast_manager_.reset();
 
@@ -871,6 +876,7 @@ Shell::~Shell() {
   accessibility_focus_ring_controller_.reset();
   policy_recommendation_restorer_.reset();
   ime_controller_.reset();
+  ime_engine_factory_registry_.reset();
 
   // Balances the Install() in Initialize().
   views::FocusManagerFactory::Install(nullptr);
@@ -925,7 +931,6 @@ Shell::~Shell() {
   PowerStatus::Shutdown();
   // Depends on SessionController.
   power_event_observer_.reset();
-  notification_reporter_.reset();
 
   session_controller_->RemoveObserver(this);
   // BluetoothPowerController depends on the PrefService and must be destructed
@@ -951,6 +956,11 @@ Shell::~Shell() {
   local_state_.reset();
   shell_delegate_.reset();
 
+  if (!::features::IsMultiProcessMash()) {
+    // Must be shut down after detachable_base_handler_.
+    chromeos::HammerdClient::Shutdown();
+  }
+
   for (auto& observer : shell_observers_)
     observer.OnShellDestroyed();
 
@@ -963,7 +973,8 @@ void Shell::Init(
     ui::ContextFactoryPrivate* context_factory_private,
     std::unique_ptr<base::Value> initial_display_prefs,
     std::unique_ptr<ws::GpuInterfaceProvider> gpu_interface_provider,
-    std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory) {
+    std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory,
+    scoped_refptr<dbus::Bus> dbus_bus) {
   if (::features::IsSingleProcessMash()) {
     // In SingleProcessMash mode ScreenMus is not created, which means Ash needs
     // to set the WindowManagerFrameValues.
@@ -977,6 +988,18 @@ void Shell::Init(
     // Accessibility node tree serialization needs to "jump the fence" and
     // convert between ash proxy and mus client windows.
     views::AXAuraWindowUtils::Set(std::make_unique<AXAshWindowUtils>());
+  }
+
+  if (!::features::IsMultiProcessMash()) {
+    // DBus clients only needed in Ash. For MultiProcessMash these are
+    // initialized in AshService::InitializeDBusClients.
+    if (dbus_bus) {
+      // Required by DetachableBaseHandler.
+      chromeos::HammerdClient::Initialize(dbus_bus.get());
+    } else {
+      // Required by DetachableBaseHandler.
+      chromeos::HammerdClient::InitializeFake();
+    }
   }
 
   // This creates the MessageCenter object which is used by some other objects
@@ -1013,7 +1036,7 @@ void Shell::Init(
                    weak_factory_.GetWeakPtr()),
         prefs::mojom::kLocalStateServiceName);
   }
-
+  kiosk_next_shell_controller_ = std::make_unique<KioskNextShellController>();
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
 
   accessibility_focus_ring_controller_ =
@@ -1021,6 +1044,9 @@ void Shell::Init(
   accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
   accessibility_controller_ = std::make_unique<AccessibilityController>();
   toast_manager_ = std::make_unique<ToastManager>();
+
+  // Accelerometer file reader starts listening to tablet mode controller.
+  AccelerometerReader::GetInstance()->StartListenToTabletModeController();
 
   // Install the custom factory early on so that views::FocusManagers for Tray,
   // Shelf, and WallPaper could be created by the factory.
@@ -1066,7 +1092,7 @@ void Shell::Init(
   AddPreTargetHandler(env_filter_.get());
 
   // FocusController takes ownership of AshFocusRules.
-  focus_rules_ = new wm::AshFocusRules();
+  focus_rules_ = new AshFocusRules();
   focus_controller_ = std::make_unique<::wm::FocusController>(focus_rules_);
   focus_controller_->AddObserver(this);
 
@@ -1224,10 +1250,13 @@ void Shell::Init(
   system_notification_controller_ =
       std::make_unique<SystemNotificationController>();
 
+  window_tree_host_manager_->InitHosts();
+
+  // Create virtual keyboard after WindowTreeHostManager::InitHosts() since
+  // it may enable the virtual keyboard immediately, which requires a
+  // WindowTreeHostManager to host the keyboard window.
   ash_keyboard_controller_->CreateVirtualKeyboard(
       std::move(keyboard_ui_factory));
-
-  window_tree_host_manager_->InitHosts();
 
   cursor_manager_->HideCursor();  // Hide the mouse cursor on startup.
   cursor_manager_->SetCursor(ui::CursorType::kPointer);
@@ -1284,19 +1313,14 @@ void Shell::Init(
 
   user_metrics_recorder_->OnShellInitialized();
 
-  notification_reporter_ = std::make_unique<NotificationReporter>();
+  // Initialize the D-Bus bus and services for ash.
+  if (!::features::IsMultiProcessMash())
+    ash_dbus_helper_ = AshDBusHelper::CreateWithExistingBus(dbus_bus);
+  ash_dbus_services_ = std::make_unique<AshDBusServices>(dbus_bus.get());
 
-  // Initialize the D-Bus thread and services for ash.
-  ash_dbus_services_ = std::make_unique<AshDBusServices>();
   // By this point ash shell should have initialized its D-Bus signal
-  // listeners, so emit ash-initialized upstart signal to start Chrome OS tasks
-  // that expect that ash is listening to D-Bus signals they emit. For example,
-  // hammerd, which handles detachable base state, communicates the base state
-  // purely by emitting D-Bus signals, and thus has to be run whenever ash is
-  // started so ash (DetachableBaseHandler in particular) gets the proper view
-  // of the current detachable base state.
-  // TODO(stevenjb): Move this and other D-Bus dependencies to AshDBusServices.
-  ash_dbus_services_->EmitAshInitialized();
+  // listeners, so inform the session manager that Ash is initialized.
+  session_controller_->EmitAshInitialized();
 }
 
 void Shell::InitializeDisplayManager() {
@@ -1435,9 +1459,6 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
   // Disable drag-and-drop during OOBE and GAIA login screens by only enabling
   // the controller when the session is active. https://crbug.com/464118
   drag_drop_controller_->set_enabled(is_session_active);
-
-  if (is_session_active)
-    kiosk_next_shell_controller_->LaunchKioskNextShellIfEnabled();
 }
 
 void Shell::OnLoginStatusChanged(LoginStatus login_status) {

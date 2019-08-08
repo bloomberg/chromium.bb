@@ -412,7 +412,7 @@ void Job::Cancel() {
   event_.Signal();
 
   bindings_.reset();
-  owned_self_reference_ = NULL;
+  owned_self_reference_ = nullptr;
 }
 
 LoadState Job::GetLoadState() const {
@@ -452,7 +452,7 @@ void Job::ReleaseCallback() {
   callback_.Reset();
 
   // For good measure, clear this other user-owned pointer.
-  user_results_ = NULL;
+  user_results_ = nullptr;
 }
 
 ProxyResolverV8* Job::v8_resolver() {
@@ -499,7 +499,7 @@ void Job::NotifyCallerOnOriginLoop(int result) {
   std::move(callback).Run(result);
 
   bindings_.reset();
-  owned_self_reference_ = NULL;
+  owned_self_reference_ = nullptr;
 }
 
 void Job::Start(Operation op,
@@ -632,7 +632,7 @@ bool Job::ResolveDnsBlocking(const std::string& host,
     return false;
   }
 
-  if (!PostDnsOperationAndWait(host, op, NULL))
+  if (!PostDnsOperationAndWait(host, op, nullptr))
     return false;  // Was cancelled.
 
   CHECK(GetDnsFromLocalCache(host, op, output, &rv));

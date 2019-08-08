@@ -33,6 +33,7 @@
 #include "chrome/browser/guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
+#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
@@ -101,8 +102,10 @@ void ChromeExtensionsAPIClient::AttachWebContentsHelpers(
       web_contents);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
-  performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
-      web_contents);
+  if (performance_manager::PerformanceManager::GetInstance()) {
+    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+        web_contents);
+  }
 }
 
 bool ChromeExtensionsAPIClient::ShouldHideResponseHeader(
@@ -128,7 +131,7 @@ bool ChromeExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
   // requests.
   // Exclude main frame navigation requests.
   bool is_browser_request = request.render_process_id == -1 &&
-                            request.type != content::RESOURCE_TYPE_MAIN_FRAME;
+                            request.type != content::ResourceType::kMainFrame;
 
   // Hide requests made by the Devtools frontend.
   bool is_sensitive_request =

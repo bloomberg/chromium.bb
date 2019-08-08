@@ -21,6 +21,13 @@ bool SharedWorkerContentSettingsProxy::AllowIndexedDB(
   return result;
 }
 
+bool SharedWorkerContentSettingsProxy::AllowCacheStorage(
+    const WebSecurityOrigin&) {
+  bool result = false;
+  GetService()->AllowCacheStorage(&result);
+  return result;
+}
+
 bool SharedWorkerContentSettingsProxy::RequestFileSystemAccessSync() {
   bool result = false;
   GetService()->RequestFileSystemAccessSync(&result);

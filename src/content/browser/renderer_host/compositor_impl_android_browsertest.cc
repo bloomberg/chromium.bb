@@ -68,7 +68,7 @@ class CompositorImplBrowserTest
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
     net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-    https_server.ServeFilesFromSourceDirectory("content/test/data");
+    https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(https_server.Start());
     GURL http_url(embedded_test_server()->GetURL("/title1.html"));
     ASSERT_TRUE(NavigateToURL(shell(), http_url));

@@ -72,7 +72,8 @@ CSSMathSum* CSSMathSum::Create(CSSNumericValueVector values) {
       CSSMathVariadic::TypeCheck(values, CSSNumericValueType::Add, error);
   return error ? nullptr
                : MakeGarbageCollected<CSSMathSum>(
-                     CSSNumericArray::Create(std::move(values)), final_type);
+                     MakeGarbageCollected<CSSNumericArray>(std::move(values)),
+                     final_type);
 }
 
 base::Optional<CSSNumericSumValue> CSSMathSum::SumValue() const {

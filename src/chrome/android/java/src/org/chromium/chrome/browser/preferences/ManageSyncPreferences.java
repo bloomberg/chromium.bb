@@ -8,8 +8,6 @@ import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
@@ -71,8 +69,6 @@ public class ManageSyncPreferences extends PreferenceFragment
     private static final String PREF_ENCRYPTION = "encryption";
     private static final String PREF_SYNC_MANAGE_DATA = "sync_manage_data";
 
-    private static final String DASHBOARD_URL = "https://www.google.com/settings/chrome/sync";
-
     private final ProfileSyncService mProfileSyncService = ProfileSyncService.get();
 
     private ChromeSwitchPreference mSyncEverything;
@@ -119,7 +115,7 @@ public class ManageSyncPreferences extends PreferenceFragment
                 SyncPreferenceUtils.toOnClickListener(this, this::onSyncEncryptionClicked));
         mManageSyncData = findPreference(PREF_SYNC_MANAGE_DATA);
         mManageSyncData.setOnPreferenceClickListener(SyncPreferenceUtils.toOnClickListener(
-                this, this::openDashboardTabInNewActivityStack));
+                this, () -> SyncPreferenceUtils.openSyncDashboard(getActivity())));
 
         mSyncTypePreferences =
                 new CheckBoxPreference[] {mSyncAutofill, mSyncBookmarks, mSyncPaymentsIntegration,
@@ -395,14 +391,6 @@ public class ManageSyncPreferences extends PreferenceFragment
         } else {
             displayPassphraseTypeDialog();
         }
-    }
-
-    /** Opens the Google Dashboard where the user can control the data stored for the account. */
-    private void openDashboardTabInNewActivityStack() {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(DASHBOARD_URL));
-        intent.setPackage(getActivity().getPackageName());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
     }
 
     /**

@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -76,6 +77,26 @@ class CSSVariableResolverTest : public PageTestBase {
 
   const CSSValue* CreatePxValue(double px) {
     return CSSPrimitiveValue::Create(px, CSSPrimitiveValue::UnitType::kPixels);
+  }
+
+  size_t MaxSubstitutionTokens() const {
+    return CSSVariableResolver::kMaxSubstitutionTokens;
+  }
+
+  void SetTestHTMLWithReferencedVariableValue(const String& referenced) {
+    StringBuilder builder;
+    builder.Append("<style>\n");
+    builder.Append("#target {\n");
+    builder.Append("  --x:var(--referenced);\n");
+    builder.Append("  --referenced:");
+    builder.Append(referenced);
+    builder.Append(";\n");
+    builder.Append("}\n");
+    builder.Append("</style>\n");
+    builder.Append("<div id=target></div>\n");
+
+    GetDocument().body()->SetInnerHTMLFromString(builder.ToString());
+    UpdateAllLifecyclePhasesForTest();
   }
 };
 
@@ -148,8 +169,7 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_WhenNested_WillFallback) {
 TEST_F(CSSVariableResolverTest, NoResolutionWithoutVar) {
   scoped_refptr<StyleInheritedVariables> inherited_variables =
       StyleInheritedVariables::Create();
-  std::unique_ptr<StyleNonInheritedVariables> non_inherited_variables =
-      StyleNonInheritedVariables::Create();
+  auto non_inherited_variables = std::make_unique<StyleNonInheritedVariables>();
 
   EXPECT_FALSE(inherited_variables->NeedsResolution());
   EXPECT_FALSE(non_inherited_variables->NeedsResolution());
@@ -166,8 +186,7 @@ TEST_F(CSSVariableResolverTest, NoResolutionWithoutVar) {
 TEST_F(CSSVariableResolverTest, VarNeedsResolution) {
   scoped_refptr<StyleInheritedVariables> inherited_variables =
       StyleInheritedVariables::Create();
-  std::unique_ptr<StyleNonInheritedVariables> non_inherited_variables =
-      StyleNonInheritedVariables::Create();
+  auto non_inherited_variables = std::make_unique<StyleNonInheritedVariables>();
 
   EXPECT_FALSE(inherited_variables->NeedsResolution());
   EXPECT_FALSE(non_inherited_variables->NeedsResolution());
@@ -198,29 +217,10 @@ TEST_F(CSSVariableResolverTest, VarNeedsResolution) {
   EXPECT_FALSE(non_inherited_variables->NeedsResolution());
 }
 
-TEST_F(CSSVariableResolverTest, UrlNeedsResolution) {
-  scoped_refptr<StyleInheritedVariables> inherited_variables =
-      StyleInheritedVariables::Create();
-  std::unique_ptr<StyleNonInheritedVariables> non_inherited_variables =
-      StyleNonInheritedVariables::Create();
-
-  EXPECT_FALSE(inherited_variables->NeedsResolution());
-  EXPECT_FALSE(non_inherited_variables->NeedsResolution());
-
-  const auto* prop = CreateCustomProperty("url(a)");
-
-  inherited_variables->SetVariable("--prop", prop->Value());
-  non_inherited_variables->SetVariable("--prop", prop->Value());
-
-  EXPECT_TRUE(inherited_variables->NeedsResolution());
-  EXPECT_TRUE(non_inherited_variables->NeedsResolution());
-}
-
 TEST_F(CSSVariableResolverTest, CopiedVariablesRetainNeedsResolution) {
   scoped_refptr<StyleInheritedVariables> inherited_variables =
       StyleInheritedVariables::Create();
-  std::unique_ptr<StyleNonInheritedVariables> non_inherited_variables =
-      StyleNonInheritedVariables::Create();
+  auto non_inherited_variables = std::make_unique<StyleNonInheritedVariables>();
 
   const auto* prop = CreateCustomProperty("var(--x)");
 
@@ -267,7 +267,7 @@ TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
   PropertyRegistration* registration =
       MakeGarbageCollected<PropertyRegistration>(
           "--prop3", *token_syntax, false, initial_value,
-          ToCSSVariableReferenceValue(*initial_value).VariableDataValue());
+          To<CSSVariableReferenceValue>(*initial_value).VariableDataValue());
   ASSERT_TRUE(GetDocument().GetPropertyRegistry());
   GetDocument().GetPropertyRegistry()->RegisterProperty("--prop3",
                                                         *registration);
@@ -348,8 +348,7 @@ TEST_F(CSSVariableResolverTest, RemoveVariableInheritedViaRoot) {
 }
 
 TEST_F(CSSVariableResolverTest, RemoveNonInheritedVariable) {
-  std::unique_ptr<StyleNonInheritedVariables> non_inherited_variables =
-      StyleNonInheritedVariables::Create();
+  auto non_inherited_variables = std::make_unique<StyleNonInheritedVariables>();
 
   AtomicString name("--prop");
   const auto* prop = CreateCustomProperty("test");
@@ -375,11 +374,136 @@ TEST_F(CSSVariableResolverTest, DontCrashWhenSettingInheritedNullVariable) {
 }
 
 TEST_F(CSSVariableResolverTest, DontCrashWhenSettingNonInheritedNullVariable) {
-  std::unique_ptr<StyleNonInheritedVariables> inherited_variables =
-      StyleNonInheritedVariables::Create();
+  auto inherited_variables = std::make_unique<StyleNonInheritedVariables>();
   AtomicString name("--test");
   inherited_variables->SetVariable(name, nullptr);
   inherited_variables->SetRegisteredVariable(name, nullptr);
+}
+
+TEST_F(CSSVariableResolverTest, TokenCountAboveLimitIsInValidForSubstitution) {
+  StringBuilder builder;
+  for (size_t i = 0; i < MaxSubstitutionTokens(); ++i)
+    builder.Append(":");
+  builder.Append(":");
+  builder.Append(";");
+  SetTestHTMLWithReferencedVariableValue(builder.ToString());
+
+  Element* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+
+  // A custom property with more than MaxSubstitutionTokens() is valid ...
+  const CSSVariableData* referenced =
+      target->ComputedStyleRef().GetVariable("--referenced");
+  ASSERT_TRUE(referenced);
+  EXPECT_EQ(MaxSubstitutionTokens() + 1, referenced->Tokens().size());
+
+  // ... it is not valid for substitution, however.
+  EXPECT_FALSE(target->ComputedStyleRef().GetVariable("--x"));
+}
+
+TEST_F(CSSVariableResolverTest, TokenCountAtLimitIsValidForSubstitution) {
+  StringBuilder builder;
+  for (size_t i = 0; i < MaxSubstitutionTokens(); ++i)
+    builder.Append(":");
+  builder.Append(";");
+  SetTestHTMLWithReferencedVariableValue(builder.ToString());
+
+  Element* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+
+  const CSSVariableData* referenced =
+      target->ComputedStyleRef().GetVariable("--referenced");
+  ASSERT_TRUE(referenced);
+  EXPECT_EQ(MaxSubstitutionTokens(), referenced->Tokens().size());
+
+  const CSSVariableData* x = target->ComputedStyleRef().GetVariable("--x");
+  ASSERT_TRUE(x);
+  EXPECT_EQ(MaxSubstitutionTokens(), x->Tokens().size());
+
+  EXPECT_EQ(*referenced, *x);
+}
+
+TEST_F(CSSVariableResolverTest, BillionLaughs) {
+  StringBuilder builder;
+  builder.Append("<style>\n");
+  builder.Append("#target {\n");
+
+  // Produces:
+  //
+  // --x1:lol;
+  // --x2:var(--x1)var(--x1);
+  // --x4:var(--x2)var(--x2);
+  // --x8:var(--x4)var(--x4);
+  // .. etc
+  builder.Append("  --x1:lol;\n");
+
+  size_t tokens = 1;
+  while (tokens <= MaxSubstitutionTokens()) {
+    tokens *= 2;
+    builder.Append("--x");
+    builder.AppendNumber(tokens);
+    builder.Append(":var(--x");
+    builder.AppendNumber(tokens / 2);
+    builder.Append(")");
+    builder.Append("var(--x");
+    builder.AppendNumber(tokens / 2);
+    builder.Append(")");
+    builder.Append(";");
+  }
+
+  builder.AppendNumber(tokens);
+  builder.Append(");\n");
+
+  builder.Append("--ref-last:var(--x");
+  builder.AppendNumber(tokens);
+  builder.Append(");");
+
+  builder.Append("--ref-next-to-last:var(--x");
+  builder.AppendNumber(tokens / 2);
+  builder.Append(");");
+
+  builder.Append("}\n");
+  builder.Append("</style>\n");
+  builder.Append("<div id=target></div>\n");
+
+  GetDocument().body()->SetInnerHTMLFromString(builder.ToString());
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+
+  // The last --x2^N variable is over the limit. Any reference to that
+  // should be invalid.
+  const CSSVariableData* ref_last =
+      target->ComputedStyleRef().GetVariable("--ref-last");
+  EXPECT_FALSE(ref_last);
+
+  // The next-to-last (--x2^(N-1)) variable is not over the limit. A reference
+  // to that is still valid.
+  const CSSVariableData* ref_next_to_last =
+      target->ComputedStyleRef().GetVariable("--ref-next-to-last");
+  ASSERT_TRUE(ref_next_to_last);
+  EXPECT_EQ(tokens / 2, ref_next_to_last->Tokens().size());
+
+  // Ensure that there are a limited number of unique backing strings.
+  // Each variable will have many backing strings, but should point to
+  // a small number of StringImpls.
+
+  HashSet<const StringImpl*> impls;
+  for (const String& string : ref_next_to_last->BackingStrings())
+    impls.insert(string.Impl());
+
+  size_t expected_unique_strings = 0;
+
+  // Each --x2^N property has a unique backing string (for its var-tokens, etc).
+  // For --x1, that unique string is of course "lol".
+  for (size_t i = (tokens / 2); i != 0; i = i >> 1)
+    expected_unique_strings += 1;
+
+  // --ref-next-to-last also has a backing string.
+  expected_unique_strings += 1;
+
+  EXPECT_EQ(expected_unique_strings, impls.size());
 }
 
 }  // namespace blink

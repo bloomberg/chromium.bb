@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/web/public/web_state/ui/crw_content_view.h"
+#import "ios/web/common/crw_content_view.h"
 
 @class CRWWebControllerContainerView;
 @class CRWWebViewContentView;
@@ -25,6 +25,15 @@
 // content.
 - (UIEdgeInsets)nativeContentInsetsForContainerView:
     (CRWWebControllerContainerView*)containerView;
+
+// Returns |YES| if the delegate wants to keep the render process alive.
+- (BOOL)shouldKeepRenderProcessAliveForContainerView:
+    (CRWWebControllerContainerView*)containerView;
+
+// Instructs the delegate to add the |viewToStash| to the view hieararchy to
+// keep the render process alive.
+- (void)containerView:(CRWWebControllerContainerView*)containerView
+    storeWebViewInWindow:(UIView*)viewToStash;
 
 @end
 
@@ -60,6 +69,11 @@
 // Removes all subviews and resets state to default.
 - (void)resetContent;
 
+// Disconnects and reconnects the scroll proxy to prevent extra calls to
+// WKebView.
+- (void)disconnectScrollProxy;
+- (void)reconnectScrollProxy;
+
 // Replaces the currently displayed content with |webViewContentView|.
 - (void)displayWebViewContentView:(CRWWebViewContentView*)webViewContentView;
 
@@ -71,6 +85,12 @@
 
 // Removes the transient content view, if one is displayed.
 - (void)clearTransientContentView;
+
+// Updates the |webViewContentView|'s view hierarchy status based on the the
+// container view window status. If the current webView is active but the window
+// is nil, store the webView in the view hierarchy keyWindow so WKWebView
+// doesn't suspend it's counterpart process.
+- (void)updateWebViewContentViewForContainerWindow:(UIWindow*)window;
 
 @end
 

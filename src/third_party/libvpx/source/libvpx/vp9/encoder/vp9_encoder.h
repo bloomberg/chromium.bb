@@ -567,6 +567,14 @@ typedef struct FEATURE_SCORE_LOC {
 } FEATURE_SCORE_LOC;
 #endif
 
+#define MAX_KMEANS_GROUPS 8
+
+typedef struct KMEANS_DATA {
+  double value;
+  int pos;
+  int group_idx;
+} KMEANS_DATA;
+
 typedef struct VP9_COMP {
   QUANTS quants;
   ThreadData td;
@@ -594,6 +602,17 @@ typedef struct VP9_COMP {
   TplDepFrame tpl_stats[MAX_ARF_GOP_SIZE];
   YV12_BUFFER_CONFIG *tpl_recon_frames[REF_FRAMES];
   EncFrameBuf enc_frame_buf[REF_FRAMES];
+#if CONFIG_MULTITHREAD
+  pthread_mutex_t kmeans_mutex;
+#endif
+  int kmeans_data_arr_alloc;
+  KMEANS_DATA *kmeans_data_arr;
+  int kmeans_data_size;
+  int kmeans_data_stride;
+  double kmeans_ctr_ls[MAX_KMEANS_GROUPS];
+  double kmeans_boundary_ls[MAX_KMEANS_GROUPS];
+  int kmeans_count_ls[MAX_KMEANS_GROUPS];
+  int kmeans_ctr_num;
 #if CONFIG_NON_GREEDY_MV
   int tpl_ready;
   int feature_score_loc_alloc;
@@ -627,6 +646,11 @@ typedef struct VP9_COMP {
 
   int ext_refresh_frame_context_pending;
   int ext_refresh_frame_context;
+
+  int64_t norm_wiener_variance;
+  int64_t *mb_wiener_variance;
+  double *mi_ssim_rdmult_scaling_factors;
+  int *stack_rank_buffer;
 
   YV12_BUFFER_CONFIG last_frame_uf;
 

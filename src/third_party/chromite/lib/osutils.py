@@ -332,13 +332,12 @@ class BadPathsException(Exception):
   """Raised by various osutils path manipulation functions on bad input."""
 
 
-def CopyDirContents(from_dir, to_dir, symlink=False):
+def CopyDirContents(from_dir, to_dir, symlink=False, allow_nonempty=False):
   """Copy contents of from_dir to to_dir. Both should exist.
 
   shutil.copytree allows one to copy a rooted directory tree along with the
   containing directory. OTOH, this function copies the contents of from_dir to
-  an existing directory. The target directory must be empty. For example, for
-  the given paths:
+  an existing directory. For example, for the given paths:
 
   from/
     inside/x.py
@@ -362,17 +361,18 @@ def CopyDirContents(from_dir, to_dir, symlink=False):
     from_dir: The directory whose contents should be copied. Must exist.
     to_dir: The directory to which contents should be copied. Must exist.
     symlink: Whether symlinks should be copied.
+    allow_nonempty: If True, do not die when to_dir is nonempty.
 
   Raises:
     BadPathsException: if the source / target directories don't exist, or if
-        target directory is non-empty.
+        target directory is non-empty when allow_nonempty=False.
     OSError: on esoteric permission errors.
   """
   if not os.path.isdir(from_dir):
     raise BadPathsException('Source directory %s does not exist.' % from_dir)
   if not os.path.isdir(to_dir):
     raise BadPathsException('Destination directory %s does not exist.' % to_dir)
-  if os.listdir(to_dir):
+  if os.listdir(to_dir) and not allow_nonempty:
     raise BadPathsException('Destination directory %s is not empty.' % to_dir)
 
   for name in os.listdir(from_dir):

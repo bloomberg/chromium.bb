@@ -7,6 +7,7 @@
 
 #include "src/globals.h"
 #include "src/objects/code.h"
+#include "src/objects/compressed-slots.h"
 #include "src/objects/foreign.h"
 #include "src/objects/slots.h"
 
@@ -116,6 +117,12 @@ class ObjectVisitor {
   }
   virtual void VisitCustomWeakPointer(HeapObject host, ObjectSlot p) {
     VisitCustomWeakPointers(host, p, p + 1);
+  }
+
+  virtual void VisitEphemeron(HeapObject host, int index, ObjectSlot key,
+                              ObjectSlot value) {
+    VisitPointer(host, key);
+    VisitPointer(host, value);
   }
 
   // To allow lazy clearing of inline caches the visitor has

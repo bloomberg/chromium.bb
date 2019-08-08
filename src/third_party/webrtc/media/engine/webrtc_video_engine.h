@@ -29,6 +29,7 @@
 #include "call/video_receive_stream.h"
 #include "call/video_send_stream.h"
 #include "media/base/media_engine.h"
+#include "media/engine/unhandled_packets_buffer.h"
 #include "rtc_base/async_invoker.h"
 #include "rtc_base/critical_section.h"
 #include "rtc_base/network_route.h"
@@ -83,9 +84,7 @@ class WebRtcVideoEngine : public VideoEngineInterface {
   // and external hardware codecs.
   WebRtcVideoEngine(
       std::unique_ptr<webrtc::VideoEncoderFactory> video_encoder_factory,
-      std::unique_ptr<webrtc::VideoDecoderFactory> video_decoder_factory,
-      std::unique_ptr<webrtc::VideoBitrateAllocatorFactory>
-          video_bitrate_allocator_factory);
+      std::unique_ptr<webrtc::VideoDecoderFactory> video_decoder_factory);
 
   ~WebRtcVideoEngine() override;
 
@@ -93,7 +92,9 @@ class WebRtcVideoEngine : public VideoEngineInterface {
       webrtc::Call* call,
       const MediaConfig& config,
       const VideoOptions& options,
-      const webrtc::CryptoOptions& crypto_options) override;
+      const webrtc::CryptoOptions& crypto_options,
+      webrtc::VideoBitrateAllocatorFactory* video_bitrate_allocator_factory)
+      override;
 
   std::vector<VideoCodec> codecs() const override;
   RtpCapabilities GetCapabilities() const override;
@@ -118,8 +119,6 @@ class WebRtcVideoChannel : public VideoMediaChannel, public webrtc::Transport {
   ~WebRtcVideoChannel() override;
 
   // VideoMediaChannel implementation
-  rtc::DiffServCodePoint PreferredDscp() const override;
-
   bool SetSendParameters(const VideoSendParameters& params) override;
   bool SetRecvParameters(const VideoRecvParameters& params) override;
   webrtc::RtpParameters GetRtpSendParameters(uint32_t ssrc) const override;
@@ -146,9 +145,9 @@ class WebRtcVideoChannel : public VideoMediaChannel, public webrtc::Transport {
   void FillBitrateInfo(BandwidthEstimationInfo* bwe_info) override;
   bool GetStats(VideoMediaInfo* info) override;
 
-  void OnPacketReceived(rtc::CopyOnWriteBuffer* packet,
+  void OnPacketReceived(rtc::CopyOnWriteBuffer packet,
                         int64_t packet_time_us) override;
-  void OnRtcpReceived(rtc::CopyOnWriteBuffer* packet,
+  void OnRtcpReceived(rtc::CopyOnWriteBuffer packet,
                       int64_t packet_time_us) override;
   void OnReadyToSend(bool ready) override;
   void OnNetworkRouteChanged(const std::string& transport_name,
@@ -200,6 +199,10 @@ class WebRtcVideoChannel : public VideoMediaChannel, public webrtc::Transport {
   static constexpr int kDefaultQpMax = 56;
 
   std::vector<webrtc::RtpSource> GetSources(uint32_t ssrc) const override;
+
+  // Take the buffered packets for |ssrcs| and feed them into DeliverPacket.
+  // This method does nothing unless unknown_ssrc_packet_buffer_ is configured.
+  void BackfillBufferedPackets(rtc::ArrayView<const uint32_t> ssrcs);
 
  private:
   class WebRtcVideoReceiveStream;
@@ -377,6 +380,7 @@ class WebRtcVideoChannel : public VideoMediaChannel, public webrtc::Transport {
       : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
    public:
     WebRtcVideoReceiveStream(
+        WebRtcVideoChannel* channel,
         webrtc::Call* call,
         const StreamParams& sp,
         webrtc::VideoReceiveStream::Config config,
@@ -427,6 +431,7 @@ class WebRtcVideoChannel : public VideoMediaChannel, public webrtc::Transport {
 
     std::string GetCodecNameFromPayloadType(int payload_type);
 
+    WebRtcVideoChannel* const channel_;
     webrtc::Call* const call_;
     const StreamParams stream_params_;
 
@@ -529,7 +534,6 @@ class WebRtcVideoChannel : public VideoMediaChannel, public webrtc::Transport {
   // TODO(deadbeef): Don't duplicate information between
   // send_params/recv_params, rtp_extensions, options, etc.
   VideoSendParameters send_params_ RTC_GUARDED_BY(thread_checker_);
-  rtc::DiffServCodePoint preferred_dscp_ RTC_GUARDED_BY(thread_checker_);
   VideoOptions default_send_options_ RTC_GUARDED_BY(thread_checker_);
   VideoRecvParameters recv_params_ RTC_GUARDED_BY(thread_checker_);
   int64_t last_stats_log_ms_ RTC_GUARDED_BY(thread_checker_);
@@ -542,6 +546,10 @@ class WebRtcVideoChannel : public VideoMediaChannel, public webrtc::Transport {
   // Per peer connection crypto options that last for the lifetime of the peer
   // connection.
   const webrtc::CryptoOptions crypto_options_ RTC_GUARDED_BY(thread_checker_);
+
+  // Buffer for unhandled packets.
+  std::unique_ptr<UnhandledPacketsBuffer> unknown_ssrc_packet_buffer_
+      RTC_GUARDED_BY(thread_checker_);
 };
 
 class EncoderStreamFactory

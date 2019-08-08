@@ -55,10 +55,6 @@ class ScopedFetcherForTests final
   USING_GARBAGE_COLLECTED_MIXIN(ScopedFetcherForTests);
 
  public:
-  static ScopedFetcherForTests* Create() {
-    return MakeGarbageCollected<ScopedFetcherForTests>();
-  }
-
   ScopedFetcherForTests() : fetch_count_(0), expected_url_(nullptr) {}
 
   ScriptPromise Fetch(ScriptState* script_state,
@@ -75,8 +71,8 @@ class ScopedFetcherForTests final
     }
 
     if (response_) {
-      ScriptPromiseResolver* resolver =
-          ScriptPromiseResolver::Create(script_state);
+      auto* resolver =
+          MakeGarbageCollected<ScriptPromiseResolver>(script_state);
       const ScriptPromise promise = resolver->Promise();
       resolver->Resolve(response_);
       response_ = nullptr;
@@ -143,6 +139,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
 
   void Match(mojom::blink::FetchAPIRequestPtr fetch_api_request,
              mojom::blink::CacheQueryOptionsPtr query_options,
+             int64_t trace_id,
              MatchCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchMatch";
     CheckUrlIfProvided(fetch_api_request->url);
@@ -153,6 +150,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
   }
   void MatchAll(mojom::blink::FetchAPIRequestPtr fetch_api_request,
                 mojom::blink::CacheQueryOptionsPtr query_options,
+                int64_t trace_id,
                 MatchAllCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchMatchAll";
     if (fetch_api_request)
@@ -165,6 +163,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
   }
   void Keys(mojom::blink::FetchAPIRequestPtr fetch_api_request,
             mojom::blink::CacheQueryOptionsPtr query_options,
+            int64_t trace_id,
             KeysCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchKeys";
     if (fetch_api_request && !fetch_api_request->url.IsEmpty()) {
@@ -177,7 +176,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
     std::move(callback).Run(std::move(result));
   }
   void Batch(Vector<mojom::blink::BatchOperationPtr> batch_operations,
-             bool fail_on_duplicates,
+             int64_t trace_id,
              BatchCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchBatch";
     CheckBatchOperationsIfProvided(batch_operations);
@@ -186,6 +185,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
   void SetSideData(const KURL& url,
                    base::Time response_time,
                    const Vector<uint8_t>& side_data,
+                   int64_t trace_id,
                    SetSideDataCallback callback) override {
     std::move(callback).Run(
         blink::mojom::CacheStorageError::kErrorNotImplemented);
@@ -277,8 +277,8 @@ class CacheStorageTest : public PageTestBase {
     binding_ = std::make_unique<
         mojo::AssociatedBinding<mojom::blink::CacheStorageCache>>(
         cache_.get(), std::move(request));
-    return Cache::Create(
-        fetcher, nullptr /* cache_storage */, cache_ptr.PassInterface(),
+    return MakeGarbageCollected<Cache>(
+        fetcher, cache_ptr.PassInterface(),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
@@ -398,7 +398,7 @@ RequestInfo RequestToRequestInfo(Request* value) {
 TEST_F(CacheStorageTest, Basics) {
   ScriptState::Scope scope(GetScriptState());
   NonThrowableExceptionState exception_state;
-  ScopedFetcherForTests* fetcher = ScopedFetcherForTests::Create();
+  auto* fetcher = MakeGarbageCollected<ScopedFetcherForTests>();
   Cache* cache =
       CreateCache(fetcher, std::make_unique<NotImplementedErrorCache>());
   DCHECK(cache);
@@ -430,7 +430,7 @@ TEST_F(CacheStorageTest, Basics) {
 TEST_F(CacheStorageTest, BasicArguments) {
   ScriptState::Scope scope(GetScriptState());
   NonThrowableExceptionState exception_state;
-  ScopedFetcherForTests* fetcher = ScopedFetcherForTests::Create();
+  auto* fetcher = MakeGarbageCollected<ScopedFetcherForTests>();
   Cache* cache =
       CreateCache(fetcher, std::make_unique<NotImplementedErrorCache>());
   DCHECK(cache);
@@ -509,7 +509,7 @@ TEST_F(CacheStorageTest, BasicArguments) {
 TEST_F(CacheStorageTest, BatchOperationArguments) {
   ScriptState::Scope scope(GetScriptState());
   NonThrowableExceptionState exception_state;
-  ScopedFetcherForTests* fetcher = ScopedFetcherForTests::Create();
+  auto* fetcher = MakeGarbageCollected<ScopedFetcherForTests>();
   Cache* cache =
       CreateCache(fetcher, std::make_unique<NotImplementedErrorCache>());
   DCHECK(cache);
@@ -589,6 +589,7 @@ class MatchTestCache : public NotImplementedErrorCache {
   // From WebServiceWorkerCache:
   void Match(mojom::blink::FetchAPIRequestPtr fetch_api_request,
              mojom::blink::CacheQueryOptionsPtr query_options,
+             int64_t trace_id,
              MatchCallback callback) override {
     mojom::blink::MatchResultPtr result = mojom::blink::MatchResult::New();
     result->set_response(std::move(response_));
@@ -602,7 +603,7 @@ class MatchTestCache : public NotImplementedErrorCache {
 TEST_F(CacheStorageTest, MatchResponseTest) {
   ScriptState::Scope scope(GetScriptState());
   NonThrowableExceptionState exception_state;
-  ScopedFetcherForTests* fetcher = ScopedFetcherForTests::Create();
+  auto* fetcher = MakeGarbageCollected<ScopedFetcherForTests>();
   const String request_url = "http://request.url/";
   const String response_url = "http://match.response.test/";
 
@@ -634,6 +635,7 @@ class KeysTestCache : public NotImplementedErrorCache {
 
   void Keys(mojom::blink::FetchAPIRequestPtr fetch_api_request,
             mojom::blink::CacheQueryOptionsPtr query_options,
+            int64_t trace_id,
             KeysCallback callback) override {
     mojom::blink::CacheKeysResultPtr result =
         mojom::blink::CacheKeysResult::New();
@@ -648,7 +650,7 @@ class KeysTestCache : public NotImplementedErrorCache {
 TEST_F(CacheStorageTest, KeysResponseTest) {
   ScriptState::Scope scope(GetScriptState());
   NonThrowableExceptionState exception_state;
-  ScopedFetcherForTests* fetcher = ScopedFetcherForTests::Create();
+  auto* fetcher = MakeGarbageCollected<ScopedFetcherForTests>();
   const String url1 = "http://first.request/";
   const String url2 = "http://second.request/";
 
@@ -690,6 +692,7 @@ class MatchAllAndBatchTestCache : public NotImplementedErrorCache {
 
   void MatchAll(mojom::blink::FetchAPIRequestPtr fetch_api_request,
                 mojom::blink::CacheQueryOptionsPtr query_options,
+                int64_t trace_id,
                 MatchAllCallback callback) override {
     mojom::blink::MatchAllResultPtr result =
         mojom::blink::MatchAllResult::New();
@@ -697,7 +700,7 @@ class MatchAllAndBatchTestCache : public NotImplementedErrorCache {
     std::move(callback).Run(std::move(result));
   }
   void Batch(Vector<mojom::blink::BatchOperationPtr> batch_operations,
-             bool fail_on_duplicates,
+             int64_t trace_id,
              BatchCallback callback) override {
     std::move(callback).Run(CacheStorageVerboseError::New(
         mojom::blink::CacheStorageError::kSuccess, String()));
@@ -710,7 +713,7 @@ class MatchAllAndBatchTestCache : public NotImplementedErrorCache {
 TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest) {
   ScriptState::Scope scope(GetScriptState());
   NonThrowableExceptionState exception_state;
-  ScopedFetcherForTests* fetcher = ScopedFetcherForTests::Create();
+  auto* fetcher = MakeGarbageCollected<ScopedFetcherForTests>();
   const String url1 = "http://first.response/";
   const String url2 = "http://second.response/";
 
@@ -763,7 +766,7 @@ TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest) {
 TEST_F(CacheStorageTest, Add) {
   ScriptState::Scope scope(GetScriptState());
   NonThrowableExceptionState exception_state;
-  ScopedFetcherForTests* fetcher = ScopedFetcherForTests::Create();
+  auto* fetcher = MakeGarbageCollected<ScopedFetcherForTests>();
   const String url = "http://www.cacheadd.test/";
   const String content_type = "text/plain";
   const String content = "hello cache";

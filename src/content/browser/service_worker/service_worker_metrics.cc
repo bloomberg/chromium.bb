@@ -20,7 +20,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "net/url_request/url_request.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -159,31 +158,6 @@ ServiceWorkerMetrics::WorkerPreparationType GetWorkerPreparationType(
   }
   NOTREACHED() << static_cast<int>(initial_worker_status);
   return Preparation::UNKNOWN;
-}
-
-const char* GetWorkerPreparationSuffix(
-    ServiceWorkerMetrics::WorkerPreparationType status) {
-  using Preparation = ServiceWorkerMetrics::WorkerPreparationType;
-  switch (status) {
-    case Preparation::UNKNOWN:
-      break;
-    case Preparation::START_DURING_STARTUP:
-      return "_StartWorkerDuringStartup";
-    case Preparation::START_IN_NEW_PROCESS:
-      return "_StartWorkerNewProcess";
-    case Preparation::START_IN_EXISTING_UNREADY_PROCESS:
-      return "_StartWorkerExistingUnreadyProcess";
-    case Preparation::START_IN_EXISTING_READY_PROCESS:
-      return "_StartWorkerExistingReadyProcess";
-    case Preparation::STARTING:
-      return "_StartingWorker";
-    case Preparation::RUNNING:
-      return "_RunningWorker";
-    case Preparation::STOPPING:
-      return "_StoppingWorker";
-  }
-  NOTREACHED();
-  return "_UNKNOWN";
 }
 
 void RecordURLMetricOnUI(const std::string& metric_name, const GURL& url) {
@@ -470,36 +444,6 @@ void ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
         "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type_"
         "NavigationPreloadEnabled",
         preparation);
-  }
-
-  // Don't record .Time if S13nServiceWorker is enabled.
-  // https://crbug.com/852664
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return;
-
-  // Record the preparation time.
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time", time);
-
-  // Record the preparation time using the worker preparation suffix.
-  base::UmaHistogramMediumTimes(
-      base::StrCat({"ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time",
-                    GetWorkerPreparationSuffix(preparation)}),
-      time);
-
-  // Record the preparation time using the navigation preload suffix.
-  if (did_navigation_preload) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time_"
-        "NavigationPreloadEnabled",
-        time);
-    // We're mostly interested in when the worker needed to start up.
-    if (initial_worker_status != EmbeddedWorkerStatus::RUNNING) {
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time_"
-          "WorkerStartOccurred_NavigationPreloadEnabled",
-          time);
-    }
   }
 }
 
@@ -788,9 +732,9 @@ void ServiceWorkerMetrics::RecordNavigationPreloadResponse(
     ResourceType resource_type) {
   DCHECK_GE(worker_start.ToInternalValue(), 0);
   DCHECK_GE(response_start.ToInternalValue(), 0);
-  DCHECK(resource_type == RESOURCE_TYPE_MAIN_FRAME ||
-         resource_type == RESOURCE_TYPE_SUB_FRAME);
-  const bool is_main_frame = (resource_type == RESOURCE_TYPE_MAIN_FRAME);
+  DCHECK(resource_type == ResourceType::kMainFrame ||
+         resource_type == ResourceType::kSubFrame);
+  const bool is_main_frame = (resource_type == ResourceType::kMainFrame);
   // TODO(falken): Log sub-frame navigations also.
   if (!is_main_frame) {
     return;
@@ -838,36 +782,6 @@ void ServiceWorkerMetrics::RecordNavigationPreloadResponse(
           "ServiceWorker.NavPreload.WorkerWaitTime_MainFrame_"
           "WorkerStartOccurred",
           worker_wait_time);
-    }
-  }
-}
-
-void ServiceWorkerMetrics::RecordContextRequestHandlerStatus(
-    ServiceWorkerContextRequestHandler::CreateJobStatus status,
-    bool is_installed,
-    bool is_main_script) {
-  if (is_installed) {
-    if (is_main_script) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.ContextRequestHandlerStatus.InstalledWorker."
-          "MainScript",
-          status);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.ContextRequestHandlerStatus.InstalledWorker."
-          "ImportedScript",
-          status);
-    }
-  } else {
-    if (is_main_script) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.ContextRequestHandlerStatus.NewWorker.MainScript",
-          status);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.ContextRequestHandlerStatus.NewWorker."
-          "ImportedScript",
-          status);
     }
   }
 }

@@ -8,7 +8,6 @@ import android.graphics.Rect;
 
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.tab.Tab;
@@ -16,6 +15,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.test.util.Coordinates;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.Callable;
 
@@ -28,7 +28,7 @@ public class PrerenderTestHelper {
     private static final int SHORT_TIMEOUT_MS = 200;
 
     private static boolean hasTabPrerenderedUrl(final Tab tab, final String url) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return tab.hasPrerenderedUrl(url);
@@ -89,8 +89,9 @@ public class PrerenderTestHelper {
     public static ExternalPrerenderHandler prerenderUrl(final String testUrl, Tab tab) {
         final Tab currentTab = tab;
         final Coordinates coord = Coordinates.createFor(currentTab.getWebContents());
-        ExternalPrerenderHandler prerenderHandler = ThreadUtils.runOnUiThreadBlockingNoException(
-                new Callable<ExternalPrerenderHandler>() {
+        ExternalPrerenderHandler prerenderHandler =
+                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<
+                        ExternalPrerenderHandler>() {
                     @Override
                     public ExternalPrerenderHandler call() throws Exception {
                         ExternalPrerenderHandler prerenderHandler = new ExternalPrerenderHandler();

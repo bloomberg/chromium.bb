@@ -26,7 +26,8 @@ class DeviceInfo {
              const std::string& chrome_version,
              const std::string& sync_user_agent,
              const sync_pb::SyncEnums::DeviceType device_type,
-             const std::string& signin_scoped_device_id);
+             const std::string& signin_scoped_device_id,
+             bool send_tab_to_self_receiving_enabled);
   ~DeviceInfo();
 
   // Sync specific unique identifier for the device. Note if a device
@@ -56,6 +57,9 @@ class DeviceInfo {
   // annotating login scoped refresh token.
   const std::string& signin_scoped_device_id() const;
 
+  // Whether the receiving side of the SendTabToSelf feature is enabled.
+  bool send_tab_to_self_receiving_enabled() const;
+
   // Gets the OS in string form.
   std::string GetOSString() const;
 
@@ -70,6 +74,8 @@ class DeviceInfo {
   // would lead to a stable unique id for a device which can potentially
   // be used for tracking.
   void set_public_id(const std::string& id);
+
+  void set_send_tab_to_self_receiving_enabled(bool new_value);
 
   // Converts the |DeviceInfo| values to a JS friendly DictionaryValue,
   // which extension APIs can expose to third party apps.
@@ -93,6 +99,8 @@ class DeviceInfo {
   // ids in that the same device will have different id for different apps
   // and they are also reset when app/extension is uninstalled.
   std::string public_id_;
+
+  bool send_tab_to_self_receiving_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceInfo);
 };

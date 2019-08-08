@@ -13,7 +13,7 @@ TestPaintWorkletLayerPainter::TestPaintWorkletLayerPainter() = default;
 
 TestPaintWorkletLayerPainter::~TestPaintWorkletLayerPainter() = default;
 
-sk_sp<PaintRecord> TestPaintWorkletLayerPainter::Paint() {
+sk_sp<PaintRecord> TestPaintWorkletLayerPainter::Paint(PaintWorkletInput*) {
   auto manual_record = sk_make_sp<PaintOpBuffer>();
   scoped_refptr<TestPaintWorkletInput> input =
       base::MakeRefCounted<TestPaintWorkletInput>(gfx::SizeF(100, 100));

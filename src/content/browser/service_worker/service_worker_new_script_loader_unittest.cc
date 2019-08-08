@@ -12,9 +12,11 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -28,6 +30,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -227,7 +230,9 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
 
   void DoRequest(const GURL& url,
                  std::unique_ptr<network::TestURLLoaderClient>* out_client,
-                 std::unique_ptr<ServiceWorkerNewScriptLoader>* out_loader) {
+                 std::unique_ptr<ServiceWorkerNewScriptLoader>* out_loader,
+                 ServiceWorkerNewScriptLoader::Type type =
+                     ServiceWorkerNewScriptLoader::Type::kNetworkOnly) {
     DCHECK(registration_);
     DCHECK(version_);
 
@@ -239,12 +244,18 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
     network::ResourceRequest request;
     request.url = url;
     request.method = "GET";
-    request.resource_type = (url == version_->script_url())
-                                ? RESOURCE_TYPE_SERVICE_WORKER
-                                : RESOURCE_TYPE_SCRIPT;
+    request.resource_type = static_cast<int>((url == version_->script_url())
+                                                 ? ResourceType::kServiceWorker
+                                                 : ResourceType::kScript);
 
     *out_client = std::make_unique<network::TestURLLoaderClient>();
-    *out_loader = std::make_unique<ServiceWorkerNewScriptLoader>(
+    if (type == ServiceWorkerNewScriptLoader::Type::kResume) {
+      *out_loader = ServiceWorkerNewScriptLoader::CreateForResume(
+          options, request, (*out_client)->CreateInterfacePtr(), version_);
+      return;
+    }
+
+    *out_loader = ServiceWorkerNewScriptLoader::CreateForNetworkOnly(
         routing_id, request_id, options, request,
         (*out_client)->CreateInterfacePtr(), version_,
         helper_->url_loader_factory_getter()->GetNetworkFactory(),
@@ -253,44 +264,9 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
 
   // Returns false if the entry for |url| doesn't exist in the storage.
   bool VerifyStoredResponse(const GURL& url) {
-    int64_t cache_resource_id = LookupResourceId(url);
-    if (cache_resource_id == kInvalidServiceWorkerResourceId)
-      return false;
-
-    // Verify the response status.
-    size_t response_data_size = 0;
-    {
-      std::unique_ptr<ServiceWorkerResponseReader> reader =
-          context()->storage()->CreateResponseReader(cache_resource_id);
-      auto info_buffer = base::MakeRefCounted<HttpResponseInfoIOBuffer>();
-      net::TestCompletionCallback cb;
-      reader->ReadInfo(info_buffer.get(), cb.callback());
-      int rv = cb.WaitForResult();
-      if (rv < 0)
-        return false;
-      EXPECT_LT(0, rv);
-      EXPECT_EQ("OK", info_buffer->http_info->headers->GetStatusText());
-      response_data_size = info_buffer->response_data_size;
-    }
-
-    // Verify the response body.
-    {
-      const std::string& expected_body = mock_server_->Get(url).body;
-      std::unique_ptr<ServiceWorkerResponseReader> reader =
-          context()->storage()->CreateResponseReader(cache_resource_id);
-      auto buffer =
-          base::MakeRefCounted<net::IOBufferWithSize>(response_data_size);
-      net::TestCompletionCallback cb;
-      reader->ReadData(buffer.get(), buffer->size(), cb.callback());
-      int rv = cb.WaitForResult();
-      if (rv < 0)
-        return false;
-      EXPECT_EQ(static_cast<int>(expected_body.size()), rv);
-
-      std::string received_body(buffer->data(), rv);
-      EXPECT_EQ(expected_body, received_body);
-    }
-    return true;
+    return ServiceWorkerUpdateCheckTestUtils::VerifyStoredResponse(
+        LookupResourceId(url), context()->storage(),
+        mock_server_->Get(url).body);
   }
 
   int64_t LookupResourceId(const GURL& url) {
@@ -898,6 +874,277 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, AccessedNetwork) {
   client->RunUntilComplete();
   EXPECT_EQ(net::OK, client->completion_status().error_code);
   EXPECT_FALSE(version_->embedded_worker()->network_accessed_for_script());
+}
+
+// ServiceWorkerNewScriptLoaderResumeTest is for testing operations for
+// resuming paused download of scripts when ImportedScriptUpdateCheck
+// is enabled.
+class ServiceWorkerNewScriptLoaderResumeTest
+    : public ServiceWorkerNewScriptLoaderTest {
+ public:
+  ServiceWorkerNewScriptLoaderResumeTest() : kScriptURL(kNormalScriptURL) {
+    feature_list_.InitAndEnableFeature(
+        blink::features::kServiceWorkerImportedScriptUpdateCheck);
+  }
+  ~ServiceWorkerNewScriptLoaderResumeTest() override = default;
+
+  void SetUp() override {
+    ServiceWorkerNewScriptLoaderTest::SetUp();
+    SetUpRegistration(kScriptURL);
+    // Create the old script resource in storage.
+    WriteToDiskCacheSync(context()->storage(), kScriptURL, kOldResourceId,
+                         kOldHeaders, kOldData, std::string());
+  }
+
+  void SetUpComparedScriptInfo(
+      size_t bytes_compared,
+      const std::string& new_headers,
+      const std::string& diff_data_block,
+      ServiceWorkerNewScriptLoader::NetworkLoaderState network_loader_state,
+      ServiceWorkerNewScriptLoader::WriterState body_writer_state) {
+    // Create a data pipe which has the new block sent from the network.
+    ASSERT_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, &network_producer_,
+                                                   &network_consumer_));
+    ServiceWorkerUpdateCheckTestUtils::CreateAndSetComparedScriptInfoForVersion(
+        kScriptURL, bytes_compared, new_headers, diff_data_block,
+        kOldResourceId, kNewResourceId, helper_.get(), network_loader_state,
+        body_writer_state, std::move(network_consumer_),
+        ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent,
+        version_.get());
+  }
+
+  void NotifyLoaderCompletion(net::Error error) {
+    network::URLLoaderCompletionStatus status;
+    status.error_code = error;
+    loader_->OnComplete(status);
+  }
+
+  // Verify the received response.
+  void CheckReceivedResponse(bool has_body, const std::string& expected_body) {
+    EXPECT_TRUE(client_->has_received_response());
+    EXPECT_EQ(has_body, client_->response_body().is_valid());
+
+    // The response should also be stored in the storage.
+    EXPECT_TRUE(ServiceWorkerUpdateCheckTestUtils::VerifyStoredResponse(
+        LookupResourceId(kScriptURL), context()->storage(),
+        has_body ? expected_body : ""));
+
+    if (!has_body)
+      return;
+
+    std::string response;
+    EXPECT_TRUE(mojo::BlockingCopyToString(client_->response_body_release(),
+                                           &response));
+    EXPECT_EQ(expected_body, response);
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+  const GURL kScriptURL;
+  std::unique_ptr<network::TestURLLoaderClient> client_;
+  std::unique_ptr<ServiceWorkerNewScriptLoader> loader_;
+  const std::vector<std::pair<std::string, std::string>> kOldHeaders = {
+      {"Content-Type", "text/javascript"},
+      {"Content-Length", "14"}};
+  const std::string kOldData = "old-block-data";
+  const int64_t kOldResourceId = 1;
+  const int64_t kNewResourceId = 2;
+  mojo::ScopedDataPipeProducerHandle network_producer_;
+  mojo::ScopedDataPipeConsumerHandle network_consumer_;
+};
+
+// Tests resume type loader when the first script data block is different.
+TEST_F(ServiceWorkerNewScriptLoaderResumeTest, FirstBlockDifferent) {
+  const std::string kNewHeaders =
+      "HTTP/1.0 200 OK\0Content-Type: text/javascript\0Content-Length: 24\0\0";
+  const std::string kDiffBlock = "diff-block-";
+  const std::string kNetworkBlock = "network-block";
+  const std::string kNewData = kDiffBlock + kNetworkBlock;
+
+  SetUpComparedScriptInfo(
+      0, kNewHeaders, kDiffBlock,
+      ServiceWorkerNewScriptLoader::NetworkLoaderState::kLoadingBody,
+      ServiceWorkerNewScriptLoader::WriterState::kWriting);
+
+  DoRequest(kScriptURL, &client_, &loader_,
+            ServiceWorkerNewScriptLoader::Type::kResume);
+
+  // Send network data.
+  ASSERT_TRUE(mojo::BlockingCopyFromString(kNetworkBlock, network_producer_));
+  network_producer_.reset();
+
+  // Notify the completion of network loader.
+  NotifyLoaderCompletion(net::OK);
+  client_->RunUntilComplete();
+
+  EXPECT_EQ(net::OK, client_->completion_status().error_code);
+
+  // The client should have received the response.
+  CheckReceivedResponse(true, kNewData);
+}
+
+// Tests resume type loader when the script data block in the middle is
+// different.
+TEST_F(ServiceWorkerNewScriptLoaderResumeTest, MiddleBlockDifferent) {
+  const std::string kNewHeaders =
+      "HTTP/1.0 200 OK\0Content-Type: text/javascript\0Content-Length: 34\0\0";
+  const std::string kSameBlock = "old-block";
+  const std::string kDiffBlock = "|diff-block|";
+  const std::string kNetworkBlock = "network-block";
+  const std::string kNewData = kSameBlock + kDiffBlock + kNetworkBlock;
+
+  SetUpComparedScriptInfo(
+      kSameBlock.length(), kNewHeaders, kDiffBlock,
+      ServiceWorkerNewScriptLoader::NetworkLoaderState::kLoadingBody,
+      ServiceWorkerNewScriptLoader::WriterState::kWriting);
+
+  DoRequest(kScriptURL, &client_, &loader_,
+            ServiceWorkerNewScriptLoader::Type::kResume);
+
+  // Send network data.
+  ASSERT_TRUE(mojo::BlockingCopyFromString(kNetworkBlock, network_producer_));
+  network_producer_.reset();
+
+  // Notify the completion of network loader.
+  NotifyLoaderCompletion(net::OK);
+  client_->RunUntilComplete();
+
+  EXPECT_EQ(net::OK, client_->completion_status().error_code);
+
+  // The client should have received the response.
+  CheckReceivedResponse(true, kNewData);
+}
+
+// Tests resume type loader when the last script data block is different.
+TEST_F(ServiceWorkerNewScriptLoaderResumeTest, LastBlockDifferent) {
+  const std::string kNewHeaders =
+      "HTTP/1.0 200 OK\0Content-Type: text/javascript\0Content-Length: 21\0\0";
+  const std::string kSameBlock = "old-block";
+  const std::string kDiffBlock = "|diff-block|";
+  const std::string kNewData = kSameBlock + kDiffBlock;
+
+  SetUpComparedScriptInfo(
+      kSameBlock.length(), kNewHeaders, kDiffBlock,
+      ServiceWorkerNewScriptLoader::NetworkLoaderState::kLoadingBody,
+      ServiceWorkerNewScriptLoader::WriterState::kWriting);
+
+  DoRequest(kScriptURL, &client_, &loader_,
+            ServiceWorkerNewScriptLoader::Type::kResume);
+  network_producer_.reset();
+
+  // Notify the completion of network loader.
+  NotifyLoaderCompletion(net::OK);
+  client_->RunUntilComplete();
+
+  EXPECT_EQ(net::OK, client_->completion_status().error_code);
+
+  // The client should have received the response.
+  CheckReceivedResponse(true, kNewData);
+}
+
+// Tests resume type loader when the last script data block is different and
+// OnCompleted() has been called during update check.
+TEST_F(ServiceWorkerNewScriptLoaderResumeTest, LastBlockDifferentCompleted) {
+  const std::string kNewHeaders =
+      "HTTP/1.0 200 OK\0Content-Type: text/javascript\0Content-Length: 21\0\0";
+  const std::string kSameBlock = "old-block";
+  const std::string kDiffBlock = "|diff-block|";
+  const std::string kNewData = kSameBlock + kDiffBlock;
+
+  SetUpComparedScriptInfo(
+      kSameBlock.length(), kNewHeaders, kDiffBlock,
+      ServiceWorkerNewScriptLoader::NetworkLoaderState::kCompleted,
+      ServiceWorkerNewScriptLoader::WriterState::kWriting);
+
+  DoRequest(kScriptURL, &client_, &loader_,
+            ServiceWorkerNewScriptLoader::Type::kResume);
+  network_producer_.reset();
+  client_->RunUntilComplete();
+
+  EXPECT_EQ(net::OK, client_->completion_status().error_code);
+
+  // The client should have received the response.
+  CheckReceivedResponse(true, kNewData);
+}
+
+// Tests resume type loader when the new script has more data appended.
+TEST_F(ServiceWorkerNewScriptLoaderResumeTest, NewScriptLargerThanOld) {
+  const std::string kNewHeaders =
+      "HTTP/1.0 200 OK\0Content-Type: text/javascript\0Content-Length: 39\0\0";
+  const std::string kSameBlock = kOldData;
+  const std::string kDiffBlock = "|diff-block|";
+  const std::string kNetworkBlock = "network-block";
+  const std::string kNewData = kSameBlock + kDiffBlock + kNetworkBlock;
+
+  SetUpComparedScriptInfo(
+      kSameBlock.length(), kNewHeaders, kDiffBlock,
+      ServiceWorkerNewScriptLoader::NetworkLoaderState::kLoadingBody,
+      ServiceWorkerNewScriptLoader::WriterState::kWriting);
+
+  DoRequest(kScriptURL, &client_, &loader_,
+            ServiceWorkerNewScriptLoader::Type::kResume);
+
+  // Send network data.
+  ASSERT_TRUE(mojo::BlockingCopyFromString(kNetworkBlock, network_producer_));
+  network_producer_.reset();
+
+  // Notify the completion of network loader.
+  NotifyLoaderCompletion(net::OK);
+  client_->RunUntilComplete();
+
+  EXPECT_EQ(net::OK, client_->completion_status().error_code);
+
+  // The client should have received the response.
+  CheckReceivedResponse(true, kNewData);
+}
+
+// Tests resume type loader when the script changed to have no body.
+TEST_F(ServiceWorkerNewScriptLoaderResumeTest, NewScriptEmptyBody) {
+  const std::string kNewHeaders =
+      "HTTP/1.0 200 OK\0Content-Type: text/javascript\0Content-Length: 0\0\0";
+  const std::string kNewData = "";
+
+  SetUpComparedScriptInfo(
+      0, kNewHeaders, kNewData,
+      ServiceWorkerNewScriptLoader::NetworkLoaderState::kCompleted,
+      ServiceWorkerNewScriptLoader::WriterState::kCompleted);
+
+  DoRequest(kScriptURL, &client_, &loader_,
+            ServiceWorkerNewScriptLoader::Type::kResume);
+
+  network_producer_.reset();
+  client_->RunUntilComplete();
+
+  EXPECT_EQ(net::OK, client_->completion_status().error_code);
+
+  CheckReceivedResponse(false, kNewData);
+}
+
+// Tests resume type loader could report error when the resumed network
+// download completed with error.
+TEST_F(ServiceWorkerNewScriptLoaderResumeTest, CompleteFailed) {
+  const std::string kNewHeaders =
+      "HTTP/1.0 200 OK\0Content-Type: text/javascript\0Content-Length: 34\0\0";
+  const std::string kSameBlock = "old-block";
+  const std::string kDiffBlock = "|diff-block|";
+  const std::string kNetworkBlock = "network-block";
+  const std::string kNewData = kSameBlock + kDiffBlock + kNetworkBlock;
+
+  SetUpComparedScriptInfo(
+      kSameBlock.length(), kNewHeaders, kDiffBlock,
+      ServiceWorkerNewScriptLoader::NetworkLoaderState::kLoadingBody,
+      ServiceWorkerNewScriptLoader::WriterState::kWriting);
+
+  DoRequest(kScriptURL, &client_, &loader_,
+            ServiceWorkerNewScriptLoader::Type::kResume);
+  network_producer_.reset();
+
+  // Notify the failed completion of network loader.
+  NotifyLoaderCompletion(net::ERR_FAILED);
+  client_->RunUntilComplete();
+
+  EXPECT_EQ(net::ERR_FAILED, client_->completion_status().error_code);
+  EXPECT_EQ(kInvalidServiceWorkerResourceId, LookupResourceId(kScriptURL));
 }
 
 }  // namespace service_worker_new_script_loader_unittest

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
 #include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio_tear_off.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -56,7 +57,7 @@ class SVGAnimatedPreserveAspectRatio
       : SVGAnimatedProperty<SVGPreserveAspectRatio>(
             context_element,
             attribute_name,
-            SVGPreserveAspectRatio::Create()) {}
+            MakeGarbageCollected<SVGPreserveAspectRatio>()) {}
 
   void Trace(blink::Visitor* visitor) override {
     SVGAnimatedProperty<SVGPreserveAspectRatio>::Trace(visitor);

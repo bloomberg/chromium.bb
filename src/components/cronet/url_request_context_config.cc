@@ -34,7 +34,7 @@
 #include "net/reporting/reporting_policy.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_key_logger_impl.h"
-#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/url_request/url_request_context_builder.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -672,13 +672,15 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       disable_ipv6_on_wifi) {
     CHECK(net_log) << "All DNS-related experiments require NetLog.";
     std::unique_ptr<net::HostResolver> host_resolver;
+    // TODO(crbug.com/934402): Consider using a shared HostResolverManager for
+    // Cronet HostResolvers.
     if (stale_dns_enable) {
       DCHECK(!disable_ipv6_on_wifi);
       host_resolver.reset(new StaleHostResolver(
-          net::HostResolver::CreateDefaultResolverImpl(net_log),
+          net::HostResolver::CreateStandaloneContextResolver(net_log),
           stale_dns_options));
     } else {
-      host_resolver = net::HostResolver::CreateDefaultResolver(net_log);
+      host_resolver = net::HostResolver::CreateStandaloneResolver(net_log);
     }
     if (disable_ipv6_on_wifi)
       host_resolver->SetNoIPv6OnWifi(true);

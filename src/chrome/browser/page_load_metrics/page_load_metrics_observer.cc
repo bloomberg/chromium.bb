@@ -22,7 +22,8 @@ PageLoadExtraInfo::PageLoadExtraInfo(
     const base::Optional<base::TimeDelta>& page_end_time,
     const mojom::PageLoadMetadata& main_frame_metadata,
     const mojom::PageLoadMetadata& subframe_metadata,
-    const mojom::PageRenderData& main_frame_render_data,
+    const PageRenderData& page_render_data,
+    const PageRenderData& main_frame_render_data,
     ukm::SourceId source_id)
     : navigation_start(navigation_start),
       first_background_time(first_background_time),
@@ -37,6 +38,7 @@ PageLoadExtraInfo::PageLoadExtraInfo(
       page_end_time(page_end_time),
       main_frame_metadata(main_frame_metadata),
       subframe_metadata(subframe_metadata),
+      page_render_data(page_render_data),
       main_frame_render_data(main_frame_render_data),
       source_id(source_id) {}
 
@@ -57,8 +59,8 @@ PageLoadExtraInfo PageLoadExtraInfo::CreateForTesting(
       page_load_metrics::END_NONE,
       page_load_metrics::UserInitiatedInfo::NotUserInitiated(),
       base::TimeDelta(), page_load_metrics::mojom::PageLoadMetadata(),
-      page_load_metrics::mojom::PageLoadMetadata(),
-      page_load_metrics::mojom::PageRenderData(), 0 /* source_id */);
+      page_load_metrics::mojom::PageLoadMetadata(), PageRenderData(),
+      PageRenderData(), 0 /* source_id */);
 }
 
 ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
@@ -186,6 +188,15 @@ bool PageLoadMetricsObserver::AssignTimeAndSizeForLargestContentfulPaint(
     *largest_content_type = LargestContentType::kImage;
   }
   return true;
+}
+
+PageLoadMetricsObserverDelegate* PageLoadMetricsObserver::GetDelegate() const {
+  return delegate_;
+}
+
+void PageLoadMetricsObserver::SetDelegate(
+    PageLoadMetricsObserverDelegate* delegate) {
+  delegate_ = delegate;
 }
 
 }  // namespace page_load_metrics

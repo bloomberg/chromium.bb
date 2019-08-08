@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
+#include "base/ios/ios_util.h"
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -193,6 +195,10 @@ id<GREYMatcher> NavigationBarEditButton() {
 // Test that editing country names is followed by validating the value and
 // replacing it with a canonical one.
 - (void)testAutofillProfileEditing {
+  // TODO (crbug.com/946891) Re-enable once fixed on iOS12.2
+  if (base::ios::IsRunningOnOrLater(12, 2, 0)) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 12,2.");
+  }
   autofill::AutofillProfile profile = [self addAutofillProfile];
   [self openEditProfile:kProfileLabel];
 
@@ -263,6 +269,7 @@ id<GREYMatcher> NavigationBarEditButton() {
 // profiles switch is disabled.
 - (void)testListViewEditMode {
   autofill::AutofillProfile profile = [self addAutofillProfile];
+
   [self openAutofillProfilesSettings];
 
   // Switch on edit mode.

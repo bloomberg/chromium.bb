@@ -29,7 +29,7 @@ cr.define('cr.filebrowser', () => {
 
     // The OK button normally dismisses the dialog, so add a button we can
     // customize.
-    this.installButton_ = this.okButton_.cloneNode();
+    this.installButton_ = this.okButton_.cloneNode(false /* deep */);
     this.installButton_.textContent =
         str('INSTALL_LINUX_PACKAGE_INSTALL_BUTTON');
     this.installButton_.addEventListener(

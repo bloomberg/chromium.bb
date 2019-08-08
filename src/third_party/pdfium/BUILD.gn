@@ -83,9 +83,6 @@ config("pdfium_core_config") {
   defines = []
   if (is_clang) {
     cflags += [ "-Wshadow" ]
-
-    # TODO(thakis): Remove once this is on globally, https://crbug.com/926235
-    cflags += [ "-Wextra-semi" ]
   }
   if (is_linux) {
     if (current_cpu == "x64") {
@@ -319,7 +316,6 @@ test("pdfium_embeddertests") {
   deps = [
     ":pdfium",
     "core/fpdfapi/edit:embeddertests",
-    "core/fpdfapi/page:embeddertests",
     "core/fpdfapi/parser:embeddertests",
     "core/fpdfapi/render:embeddertests",
     "core/fxcodec:embeddertests",
@@ -349,6 +345,7 @@ test("pdfium_embeddertests") {
 
   if (pdf_enable_xfa) {
     deps += [
+      "fpdfsdk/fpdfxfa:embeddertests",
       "xfa/fwl:embeddertests",
       "xfa/fxfa/parser:embeddertests",
     ]

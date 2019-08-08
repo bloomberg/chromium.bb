@@ -32,7 +32,7 @@ namespace {
 class PreviewsResourceLoadingHintsTest : public PageTestBase {
  public:
   PreviewsResourceLoadingHintsTest() {
-    dummy_page_holder_ = DummyPageHolder::Create(IntSize(1, 1));
+    dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   }
 
  protected:

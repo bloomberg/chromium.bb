@@ -22,12 +22,20 @@ DedicatedWorkerHostFactoryClient::DedicatedWorkerHostFactoryClient(
     blink::WebDedicatedWorker* worker,
     service_manager::InterfaceProvider* interface_provider)
     : worker_(worker), binding_(this) {
-  DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
   DCHECK(interface_provider);
   interface_provider->GetInterface(mojo::MakeRequest(&factory_));
 }
 
 DedicatedWorkerHostFactoryClient::~DedicatedWorkerHostFactoryClient() = default;
+
+void DedicatedWorkerHostFactoryClient::CreateWorkerHostDeprecated(
+    const blink::WebSecurityOrigin& script_origin) {
+  DCHECK(!blink::features::IsPlzDedicatedWorkerEnabled());
+  service_manager::mojom::InterfaceProviderPtr interface_provider_ptr;
+  factory_->CreateWorkerHost(script_origin,
+                             mojo::MakeRequest(&interface_provider_ptr));
+  OnWorkerHostCreated(std::move(interface_provider_ptr));
+}
 
 void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
     const blink::WebURL& script_url,
@@ -63,7 +71,6 @@ DedicatedWorkerHostFactoryClient::CreateWorkerFetchContext(
 
 void DedicatedWorkerHostFactoryClient::OnWorkerHostCreated(
     service_manager::mojom::InterfaceProviderPtr interface_provider) {
-  DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
   worker_->OnWorkerHostCreated(interface_provider.PassInterface().PassHandle());
 }
 
@@ -90,7 +97,6 @@ void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
   DCHECK(!service_worker_provider_context_);
   service_worker_provider_context_ =
       base::MakeRefCounted<ServiceWorkerProviderContext>(
-          service_worker_provider_info->provider_id,
           blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
           std::move(service_worker_provider_info->client_request),
           std::move(service_worker_provider_info->host_ptr_info),

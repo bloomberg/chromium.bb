@@ -128,8 +128,17 @@ void FakeFontCollection::MapCharacters(
                                          DWRITE_FONT_STRETCH_NORMAL)));
 }
 
+void FakeFontCollection::MatchUniqueFont(const base::string16& unique_font_name,
+                                         MatchUniqueFontCallback callback) {}
+
+void FakeFontCollection::GetUniqueFontLookupMode(
+    GetUniqueFontLookupModeCallback callback) {}
+
 void FakeFontCollection::GetUniqueNameLookupTable(
     GetUniqueNameLookupTableCallback callback) {}
+
+void FakeFontCollection::GetUniqueNameLookupTableIfAvailable(
+    GetUniqueNameLookupTableIfAvailableCallback callback) {}
 
 FakeFontCollection::~FakeFontCollection() = default;
 

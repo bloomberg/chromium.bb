@@ -17,7 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -25,6 +24,7 @@ import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests for IME (input method editor) on Android WebView.
@@ -56,7 +56,7 @@ public class AwImeTest {
     @Before
     public void setUp() throws Exception {
         mContentsClient = new TestAwContentsClient();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Use detached container view to avoid focus request.
             mTestContainerView =
                     mActivityTestRule.createDetachedAwTestContainerView(mContentsClient);
@@ -82,7 +82,7 @@ public class AwImeTest {
     }
 
     private void focusOnEditTextAndShowKeyboard() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mEditText.requestFocus();
             InputMethodManager imm =
                     (InputMethodManager) mActivityTestRule.getActivity().getSystemService(
@@ -92,7 +92,7 @@ public class AwImeTest {
     }
 
     private void focusOnWebViewAndEnableEditing() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> mTestContainerView.requestFocus());
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> mTestContainerView.requestFocus());
 
         AwActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
         // View focus may not have been propagated to the renderer process yet. If document is not
@@ -163,7 +163,7 @@ public class AwImeTest {
             }
         });
 
-        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
             getInputConnection().sendKeyEvent(
                     new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP));
         });
@@ -195,7 +195,7 @@ public class AwImeTest {
             }
         });
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTestContainerView.dispatchKeyEvent(
                     new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP));
         });

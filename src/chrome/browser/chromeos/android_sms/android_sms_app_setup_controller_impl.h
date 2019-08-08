@@ -42,6 +42,11 @@ class AndroidSmsAppSetupControllerImpl : public AndroidSmsAppSetupController {
 
  private:
   friend class AndroidSmsAppSetupControllerImplTest;
+  FRIEND_TEST_ALL_PREFIXES(AndroidSmsAppSetupControllerImplTest,
+                           SetUpApp_Retry);
+
+  static const base::TimeDelta kInstallRetryDelay;
+  static const size_t kMaxInstallRetryCount;
 
   // Thin wrapper around static PWA functions which is stubbed out for tests.
   class PwaDelegate {
@@ -71,15 +76,23 @@ class AndroidSmsAppSetupControllerImpl : public AndroidSmsAppSetupController {
                  const GURL& migrated_to_app_url,
                  SuccessCallback callback) override;
 
-  void OnSetRememberDeviceByDefaultCookieResult(const GURL& app_url,
-                                                const GURL& install_url,
-                                                SuccessCallback callback,
-                                                bool succeeded);
-  void OnSetMigrationCookieResult(const GURL& app_url,
-                                  SuccessCallback callback,
-                                  bool succeeded);
+  void OnSetRememberDeviceByDefaultCookieResult(
+      const GURL& app_url,
+      const GURL& install_url,
+      SuccessCallback callback,
+      net::CanonicalCookie::CookieInclusionStatus status);
+  void OnSetMigrationCookieResult(
+      const GURL& app_url,
+      SuccessCallback callback,
+      net::CanonicalCookie::CookieInclusionStatus status);
+
+  void TryInstallApp(const GURL& install_url,
+                     const GURL& app_url,
+                     size_t num_attempts_so_far,
+                     SuccessCallback callback);
 
   void OnAppInstallResult(SuccessCallback callback,
+                          size_t num_attempts_so_far,
                           const GURL& app_url,
                           const GURL& install_url,
                           web_app::InstallResultCode code);

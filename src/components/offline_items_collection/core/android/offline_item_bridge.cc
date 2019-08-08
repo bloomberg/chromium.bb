@@ -45,7 +45,7 @@ JNI_OfflineItemBridge_createOfflineItemAndMaybeAddToList(
       static_cast<jint>(item.pending_state), item.is_resumable,
       item.allow_metered, item.received_bytes, item.progress.value,
       item.progress.max.value_or(-1), static_cast<jint>(item.progress.unit),
-      item.time_remaining_ms, item.is_dangerous);
+      item.time_remaining_ms, item.is_dangerous, item.can_rename);
 }
 
 }  // namespace
@@ -64,10 +64,8 @@ ScopedJavaLocalRef<jobject> OfflineItemBridge::CreateOfflineItemList(
     const std::vector<OfflineItem>& items) {
   ScopedJavaLocalRef<jobject> jlist =
       Java_OfflineItemBridge_createArrayList(env);
-
   for (const auto& item : items)
     JNI_OfflineItemBridge_createOfflineItemAndMaybeAddToList(env, jlist, item);
-
   return jlist;
 }
 

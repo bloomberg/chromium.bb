@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_LIST_PROPERTY_TEAR_OFF_HELPER_H_
 
 #include "third_party/blink/renderer/core/svg/properties/svg_property_tear_off.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace blink {
@@ -74,7 +75,8 @@ class ListItemPropertyTraits {
       ItemPropertyType* value,
       SVGAnimatedPropertyBase* binding,
       PropertyIsAnimValType property_is_anim_val) {
-    return ItemTearOffType::Create(value, binding, property_is_anim_val);
+    return MakeGarbageCollected<ItemTearOffType>(value, binding,
+                                                 property_is_anim_val);
   }
 };
 

@@ -117,14 +117,14 @@ TEST_F(LiveNodeListRegistryTest, ImplicitRemove) {
   registry.Add(a, kInvalidateOnNameAttrChange);
   registry.Add(b, kInvalidateOnClassAttrChange);
   registry.Add(a, kInvalidateOnIdNameAttrChange);
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_FALSE(registry.IsEmpty());
   EXPECT_TRUE(registry.ContainsInvalidationType(kInvalidateOnNameAttrChange));
   EXPECT_TRUE(registry.ContainsInvalidationType(kInvalidateOnClassAttrChange));
   EXPECT_TRUE(registry.ContainsInvalidationType(kInvalidateOnIdNameAttrChange));
 
   a.Clear();
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_FALSE(registry.IsEmpty());
   EXPECT_FALSE(registry.ContainsInvalidationType(kInvalidateOnNameAttrChange));
   EXPECT_TRUE(registry.ContainsInvalidationType(kInvalidateOnClassAttrChange));
@@ -132,7 +132,7 @@ TEST_F(LiveNodeListRegistryTest, ImplicitRemove) {
       registry.ContainsInvalidationType(kInvalidateOnIdNameAttrChange));
 
   b.Clear();
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_TRUE(registry.IsEmpty());
   EXPECT_FALSE(registry.ContainsInvalidationType(kInvalidateOnNameAttrChange));
   EXPECT_FALSE(registry.ContainsInvalidationType(kInvalidateOnClassAttrChange));

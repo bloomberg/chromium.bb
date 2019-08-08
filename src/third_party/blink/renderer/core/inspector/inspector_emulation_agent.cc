@@ -201,9 +201,9 @@ Response InspectorEmulationAgent::setTouchEmulationEnabled(
     return response;
   int max_points = max_touch_points.fromMaybe(1);
   if (max_points < 1 || max_points > WebTouchEvent::kTouchesLengthCap) {
-    return Response::InvalidParams(
-        "Touch points must be between 1 and " +
-        String::Number(WebTouchEvent::kTouchesLengthCap));
+    return Response::InvalidParams("Touch points must be between 1 and " +
+                                   String::Number(static_cast<uint16_t>(
+                                       WebTouchEvent::kTouchesLengthCap)));
   }
   touch_event_emulation_enabled_.Set(enabled);
   max_touch_points_.Set(max_points);
@@ -357,7 +357,7 @@ void InspectorEmulationAgent::PrepareRequest(
     ResourceType resource_type) {
   if (!accept_language_override_.Get().IsEmpty() &&
       request.HttpHeaderField("Accept-Language").IsEmpty()) {
-    request.SetHTTPHeaderField(
+    request.SetHttpHeaderField(
         "Accept-Language",
         AtomicString(network_utils::GenerateAcceptLanguageHeader(
             accept_language_override_.Get())));

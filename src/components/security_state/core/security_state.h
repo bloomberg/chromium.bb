@@ -21,8 +21,8 @@
 // Provides helper methods and data types that are used to determine the
 // high-level security information about a page or request.
 //
-// SecurityInfo is the main data structure, describing a page's or request's
-// security state. It is computed by the platform-independent GetSecurityInfo()
+// SecurityLevel is the main result, describing a page's or request's
+// security state. It is computed by the platform-independent GetSecurityLevel()
 // helper method, which receives platform-specific inputs from its callers in
 // the form of a VisibleSecurityState struct.
 namespace security_state {
@@ -95,60 +95,8 @@ enum MaliciousContentStatus {
   MALICIOUS_CONTENT_STATUS_BILLING,
 };
 
-// Describes the security status of a page or request. This is the
-// main data structure provided by this class. SecurityInfo contains a
-// SecurityLevel (which
-// is a single value describing the overall security state) along with
-// information that a consumer might want to display in UI to explain or
-// elaborate on the SecurityLevel.
-struct SecurityInfo {
-  SecurityInfo();
-  ~SecurityInfo();
-  // Whether the connection security fields are initialized.
-  bool connection_info_initialized;
-  // Describes the overall security state of the page.
-  SecurityLevel security_level;
-  // Describes the nature of the page's malicious content, if any.
-  MaliciousContentStatus malicious_content_status;
-  // True if a SHA1 signature was observed anywhere in the certificate chain.
-  bool sha1_in_chain;
-  // |mixed_content_status| describes the presence of content that was
-  // loaded over a nonsecure (HTTP) connection.
-  ContentStatus mixed_content_status;
-  // |content_with_cert_errors_status| describes the presence of
-  // content that was loaded over an HTTPS connection with
-  // certificate errors.
-  ContentStatus content_with_cert_errors_status;
-  bool scheme_is_cryptographic;
-  net::CertStatus cert_status;
-  scoped_refptr<net::X509Certificate> certificate;
-  // Information about the SSL connection, such as protocol and
-  // ciphersuite. See ssl_connection_flags.h in net.
-  int connection_status;
-  // The ID of the (EC)DH group used by the key exchange. The value is zero if
-  // unknown (older cache entries may not store the value) or not applicable.
-  uint16_t key_exchange_group;
-  // The signature algorithm used by the peer in the TLS handshake, or zero if
-  // unknown (older cache entries may not store the value) or not applicable.
-  uint16_t peer_signature_algorithm;
-  // A mask that indicates which of the protocol version,
-  // key exchange, or cipher for the connection is considered
-  // obsolete. See net::ObsoleteSSLMask for specific mask values.
-  int obsolete_ssl_status;
-  // True if pinning was bypassed due to a local trust anchor.
-  bool pkp_bypassed;
-  // True if the secure page contained a form with a nonsecure target.
-  bool contained_mixed_form;
-  // True if the server's certificate does not contain a
-  // subjectAltName extension with a domain name or IP address.
-  bool cert_missing_subject_alt_name;
-  // Contains information about input events that may impact the security
-  // level of the page.
-  InsecureInputEventData insecure_input_events;
-};
-
-// Contains the security state relevant to computing the SecurityInfo
-// for a page. This is the input to GetSecurityInfo().
+// Contains the security state relevant to computing the SecurityLevel
+// for a page. This is the input to GetSecurityLevel().
 struct VisibleSecurityState {
   VisibleSecurityState();
   ~VisibleSecurityState();
@@ -201,17 +149,16 @@ constexpr SecurityLevel kRanInsecureContentLevel = DANGEROUS;
 // Returns true if the given |url|'s origin should be considered secure.
 using IsOriginSecureCallback = base::Callback<bool(const GURL& url)>;
 
-// Populates |result| to describe the current page.
+// Returns a SecurityLevel to describe the current page.
 // |visible_security_state| contains the relevant security state.
 // |used_policy_installed_certificate| indicates whether the page or request
 // is known to be loaded with a certificate installed by the system admin.
 // |is_origin_secure_callback| determines whether a URL's origin should be
 // considered secure.
-void GetSecurityInfo(
-    std::unique_ptr<VisibleSecurityState> visible_security_state,
+SecurityLevel GetSecurityLevel(
+    const VisibleSecurityState& visible_security_state,
     bool used_policy_installed_certificate,
-    IsOriginSecureCallback is_origin_secure_callback,
-    SecurityInfo* result);
+    IsOriginSecureCallback is_origin_secure_callback);
 
 // Returns true for a valid |url| with a cryptographic scheme, e.g., HTTPS, WSS.
 bool IsSchemeCryptographic(const GURL& url);
@@ -226,6 +173,8 @@ bool IsSslCertificateValid(security_state::SecurityLevel security_level);
 // Returns the given prefix suffixed with a dot and the current security level.
 std::string GetSecurityLevelHistogramName(
     const std::string& prefix, security_state::SecurityLevel level);
+
+bool IsSHA1InChain(const VisibleSecurityState& visible_security_state);
 
 }  // namespace security_state
 

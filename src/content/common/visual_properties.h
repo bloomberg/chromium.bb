@@ -83,6 +83,10 @@ struct CONTENT_EXPORT VisualProperties {
   // This represents the page's scale factor, which changes during pinch zoom.
   // It needs to be shared with subframes.
   float page_scale_factor = 1.f;
+
+  // Indicates whether a pinch gesture is currently active. Originates in the
+  // main frame's renderer, and needs to be shared with subframes.
+  bool is_pinch_gesture_active = false;
 };
 
 }  // namespace content

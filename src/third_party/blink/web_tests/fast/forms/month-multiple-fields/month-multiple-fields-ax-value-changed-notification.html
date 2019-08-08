@@ -12,6 +12,8 @@ async_test((t) => {
     var expected = [
         [ "Focus", "Month", "October" ],
         [ "Focus", "Year", "2012" ],
+        [ "ValueChanged", "Year", "0004" ],
+        [ "ValueChanged", "Year", "0004" ],
         [ "ValueChanged", "Year", "0005" ],
         [ "ValueChanged", "Year", "0005" ] ];
 
@@ -20,8 +22,6 @@ async_test((t) => {
         t.step_func((element, notification) => {
             if (notification == 'Focus' || notification == 'ValueChanged') {
                 var next_expectation = expected.shift();
-                console.log('next_expectation: ' + JSON.stringify(next_expectation));
-                console.log('actual: [' + notification + ', ' + element.name.trim() + ', ' + element.valueDescription.substr(20) + ']');
                 assert_equals(notification, next_expectation[0]);
                 assert_equals(element.name.trim(), next_expectation[1]);
                 assert_equals(element.valueDescription.substr(20), next_expectation[2]);

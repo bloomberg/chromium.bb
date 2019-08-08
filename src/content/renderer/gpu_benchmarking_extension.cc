@@ -497,7 +497,7 @@ static void PrintDocumentTofile(v8::Isolate* isolate,
 }
 
 void OnSwapCompletedHelper(CallbackAndContext* callback_and_context,
-                           blink::WebLayerTreeView::SwapResult,
+                           blink::WebWidgetClient::SwapResult,
                            base::TimeTicks) {
   RunCallbackHelper(callback_and_context);
 }
@@ -544,7 +544,10 @@ void GpuBenchmarking::Install(RenderFrameImpl* frame) {
     return;
 
   v8::Local<v8::Object> chrome = GetOrCreateChromeObject(isolate, context);
-  chrome->Set(gin::StringToV8(isolate, "gpuBenchmarking"), controller.ToV8());
+  chrome
+      ->Set(context, gin::StringToV8(isolate, "gpuBenchmarking"),
+            controller.ToV8())
+      .Check();
 }
 
 GpuBenchmarking::GpuBenchmarking(RenderFrameImpl* frame)
@@ -968,7 +971,7 @@ float GpuBenchmarking::VisualViewportY() {
     return 0.0;
   float y = context.web_view()->VisualViewportOffset().y;
   blink::WebRect rect(0, y, 0, 0);
-  context.render_view_impl()->WidgetClient()->ConvertViewportToWindow(&rect);
+  context.render_view_impl()->GetWidget()->ConvertViewportToWindow(&rect);
   return rect.y;
 }
 
@@ -978,7 +981,7 @@ float GpuBenchmarking::VisualViewportX() {
     return 0.0;
   float x = context.web_view()->VisualViewportOffset().x;
   blink::WebRect rect(x, 0, 0, 0);
-  context.render_view_impl()->WidgetClient()->ConvertViewportToWindow(&rect);
+  context.render_view_impl()->GetWidget()->ConvertViewportToWindow(&rect);
   return rect.x;
 }
 
@@ -988,7 +991,7 @@ float GpuBenchmarking::VisualViewportHeight() {
     return 0.0;
   float height = context.web_view()->VisualViewportSize().height;
   blink::WebRect rect(0, 0, 0, height);
-  context.render_view_impl()->WidgetClient()->ConvertViewportToWindow(&rect);
+  context.render_view_impl()->GetWidget()->ConvertViewportToWindow(&rect);
   return rect.height;
 }
 
@@ -998,7 +1001,7 @@ float GpuBenchmarking::VisualViewportWidth() {
     return 0.0;
   float width = context.web_view()->VisualViewportSize().width;
   blink::WebRect rect(0, 0, width, 0);
-  context.render_view_impl()->WidgetClient()->ConvertViewportToWindow(&rect);
+  context.render_view_impl()->GetWidget()->ConvertViewportToWindow(&rect);
   return rect.width;
 }
 
@@ -1066,10 +1069,17 @@ bool GpuBenchmarking::PointerActionSequence(gin::Arguments* args) {
       context.web_frame()->MainWorldScriptContext();
   std::unique_ptr<base::Value> value =
       V8ValueConverter::Create()->FromV8Value(obj, v8_context);
+  if (!value.get()) {
+    // TODO(dtapuska): Throw an error here, some web tests start
+    // failing when this is done though.
+    // args->ThrowTypeError(actions_parser.error_message());
+    return false;
+  }
 
   // Get all the pointer actions from the user input and wrap them into a
   // SyntheticPointerActionListParams object.
-  ActionsParser actions_parser(value.get());
+  ActionsParser actions_parser(
+      base::Value::FromUniquePtrValue(std::move(value)));
   if (!actions_parser.ParsePointerActionSequence()) {
     // TODO(dtapuska): Throw an error here, some web tests start
     // failing when this is done though.
@@ -1232,17 +1242,14 @@ bool GpuBenchmarking::AddSwapCompletionEventListener(gin::Arguments* args) {
     return false;
   if (!render_frame_)
     return false;
-  LayerTreeView* layer_tree_view =
-      render_frame_->GetLocalRootRenderWidget()->layer_tree_view();
-  if (!layer_tree_view)
-    return false;
+  RenderWidget* render_widget = render_frame_->GetLocalRootRenderWidget();
   GpuBenchmarkingContext context;
   if (!context.Init(true))
     return false;
 
   auto callback_and_context = base::MakeRefCounted<CallbackAndContext>(
       args->isolate(), callback, context.web_frame()->MainWorldScriptContext());
-  layer_tree_view->NotifySwapTime(base::BindOnce(
+  render_widget->NotifySwapTime(base::BindOnce(
       &OnSwapCompletedHelper, base::RetainedRef(callback_and_context)));
   return true;
 }

@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 
 namespace ash {
 
@@ -26,6 +27,13 @@ constexpr int kShelfControlSize = 40;
 ASH_EXPORT constexpr SkColor kShelfControlPermanentHighlightBackground =
     SkColorSetA(SK_ColorWHITE, 26);  // 10%
 
+// Color used as the background for status area trays when status area widget is
+// shown in a standalone mode without the shelf.
+ASH_EXPORT constexpr SkColor kStandaloneStatusAreaBackground =
+    gfx::kGoogleGrey400;
+
+constexpr SkColor kShelfFocusBorderColor = gfx::kGoogleBlue300;
+
 // We reserve a small area on the edge of the workspace area to ensure that
 // the resize handle at the edge of the window can be hit.
 constexpr int kWorkspaceAreaVisibleInset = 2;
@@ -39,7 +47,7 @@ ASH_EXPORT constexpr int kHiddenShelfInScreenPortion = 3;
 
 // The default base color of the shelf to which different alpha values are
 // applied based on the desired shelf opacity level.
-ASH_EXPORT constexpr SkColor kShelfDefaultBaseColor = SK_ColorBLACK;
+ASH_EXPORT constexpr SkColor kShelfDefaultBaseColor = gfx::kGoogleGrey900;
 
 // Size allocated for each app button on the shelf.
 ASH_EXPORT constexpr int kShelfButtonSize = kShelfSize;
@@ -59,7 +67,7 @@ ASH_EXPORT constexpr SkColor kShelfIconColor = SK_ColorWHITE;
 
 // The alpha value for the shelf background.
 ASH_EXPORT constexpr int kShelfTranslucentOverAppList = 51;            // 20%
-ASH_EXPORT constexpr int kShelfTranslucentAlpha = 153;                 // 60%
+ASH_EXPORT constexpr int kShelfTranslucentAlpha = 189;                 // 74%
 // Using 0xFF causes clipping on the overlay candidate content, which prevent
 // HW overlay, probably due to a bug in compositor. Fix it and use 0xFF.
 // crbug.com/901538
@@ -74,6 +82,12 @@ constexpr int kShelfOpaqueColorDarkenAlpha = 178;
 
 // The distance between the edge of the shelf and the status indicators.
 constexpr int kStatusIndicatorOffsetFromShelfEdge = 1;
+
+// Dimensions for hover previews.
+constexpr int kShelfTooltipPreviewHeight = 128;
+constexpr int kShelfTooltipPreviewMaxWidth = 192;
+constexpr float kShelfTooltipPreviewMaxRatio = 1.5;    // = 3/2
+constexpr float kShelfTooltipPreviewMinRatio = 0.666;  // = 2/3
 
 class ShelfConstants {
  public:

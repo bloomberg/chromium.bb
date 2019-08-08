@@ -94,6 +94,7 @@ blink_core_sources("frame") {
     "local_frame_view.h",
     "location.cc",
     "location.h",
+    "location_report_body.h",
     "message_report_body.h",
     "navigation_rate_limiter.cc",
     "navigation_rate_limiter.h",

@@ -124,8 +124,8 @@ _COMMANDS = {
     (Method.GET, "/session/:sessionId/local_storage"),
     "GetLocalStorageSize":
     (Method.GET, "/session/:sessionId/local_storage/size"),
-    "GetLog": (Method.POST, "/session/:sessionId/log"),
-    "GetLogTypes": (Method.GET, "/session/:sessionId/log/types"),
+    "GetLog": (Method.POST, "/session/:sessionId/se/log"),
+    "GetLogTypes": (Method.GET, "/session/:sessionId/se/log/types"),
     "GetNamedCookie": (Method.GET, "/session/:sessionId/cookie/:name"),
     "GetNetworkConditions":
     (Method.GET, "/session/:sessionId/chromium/network_conditions"),

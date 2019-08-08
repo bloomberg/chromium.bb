@@ -296,8 +296,9 @@ void BookmarkAppHelper::Create(const CreateBookmarkAppCallback& callback) {
       // Do not wait for a service worker if it doesn't exist.
       params.has_worker = !bypass_service_worker_check_;
       installable_manager_->GetData(
-          params, base::Bind(&BookmarkAppHelper::OnDidPerformInstallableCheck,
-                             weak_factory_.GetWeakPtr()));
+          params,
+          base::BindOnce(&BookmarkAppHelper::OnDidPerformInstallableCheck,
+                         weak_factory_.GetWeakPtr()));
     }
   } else {
     for_installable_site_ = web_app::ForInstallableSite::kNo;
@@ -319,10 +320,9 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
     return;
   }
 
-  for_installable_site_ =
-      data.error_code == NO_ERROR_DETECTED && !shortcut_app_requested_
-          ? web_app::ForInstallableSite::kYes
-          : web_app::ForInstallableSite::kNo;
+  for_installable_site_ = data.errors.empty() && !shortcut_app_requested_
+                              ? web_app::ForInstallableSite::kYes
+                              : web_app::ForInstallableSite::kNo;
 
   web_app::UpdateWebAppInfoFromManifest(*data.manifest, &web_app_info_,
                                         for_installable_site_);
@@ -378,13 +378,22 @@ void BookmarkAppHelper::OnIconsDownloaded(
     return;
   }
 
+  // TODO(alancutter): Get user confirmation before entering the install flow,
+  // installation code shouldn't have to perform UI work.
   if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
       for_installable_site_ == web_app::ForInstallableSite::kYes) {
     web_app_info_.open_as_window = true;
-    chrome::ShowPWAInstallDialog(
-        contents_, web_app_info_,
-        base::BindOnce(&BookmarkAppHelper::OnBubbleCompleted,
-                       weak_factory_.GetWeakPtr()));
+    if (install_source_ == WebappInstallSource::OMNIBOX_INSTALL_ICON) {
+      chrome::ShowPWAInstallBubble(
+          contents_, web_app_info_,
+          base::BindOnce(&BookmarkAppHelper::OnBubbleCompleted,
+                         weak_factory_.GetWeakPtr()));
+    } else {
+      chrome::ShowPWAInstallDialog(
+          contents_, web_app_info_,
+          base::BindOnce(&BookmarkAppHelper::OnBubbleCompleted,
+                         weak_factory_.GetWeakPtr()));
+    }
   } else {
     chrome::ShowBookmarkAppDialog(
         contents_, web_app_info_,
@@ -463,9 +472,11 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
 
   web_app::RecordAppBanner(contents_, web_app_info_.app_url);
 
-  if (create_shortcuts_ && CanBookmarkAppCreateOsShortcuts()) {
+  // TODO(ortuno): Make adding a shortcut to the applications menu independent
+  // from adding a shortcut to desktop.
+  if (add_to_applications_menu_ && CanBookmarkAppCreateOsShortcuts()) {
     BookmarkAppCreateOsShortcuts(
-        profile_, extension,
+        profile_, extension, add_to_desktop_,
         base::BindOnce(&BookmarkAppHelper::OnShortcutCreationCompleted,
                        weak_factory_.GetWeakPtr(), extension->id()));
   } else {
@@ -486,7 +497,7 @@ void BookmarkAppHelper::OnShortcutCreationCompleted(
     return;
   }
 
-  if (create_shortcuts_ && CanBookmarkAppBePinnedToShelf())
+  if (add_to_quick_launch_bar_ && CanBookmarkAppBePinnedToShelf())
     BookmarkAppPinToShelf(extension);
 
   // If there is a browser, it means that the app is being installed in the

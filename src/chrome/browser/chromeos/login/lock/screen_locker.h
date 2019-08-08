@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/public/interfaces/login_user_info.mojom.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -89,12 +90,14 @@ class ScreenLocker : public AuthStatusConsumer,
   // unlock the device.
   void OnPasswordAuthSuccess(const UserContext& user_context);
 
-  // Enables or disables authentication for the user with |account_id|. Notifies
-  // lock screen UI. |auth_reenabled_time| is used to display informaton in the
-  // UI.
-  void SetAuthEnabledForUser(const AccountId& account_id,
-                             bool is_enabled,
-                             base::Optional<base::Time> auth_reenabled_time);
+  // Disables authentication for the user with |account_id|. Notifies lock
+  // screen UI.
+  void EnableAuthForUser(const AccountId& account_id);
+
+  // Enables authentication for the user with |account_id|. Notifies lock screen
+  // UI. |auth_disabled_data| is used to display information in the UI.
+  void DisableAuthForUser(const AccountId& account_id,
+                          ash::mojom::AuthDisabledDataPtr auth_disabled_data);
 
   // Authenticates the user with given |user_context|.
   void Authenticate(const UserContext& user_context,

@@ -50,12 +50,15 @@ class DocumentsProviderRootManager : public arc::ArcFileSystemBridge::Observer {
     // Called when a new available root is found. When an existing root is
     // modified, both RootRemoved() and RootAdded() will be called in this
     // order.
-    virtual void OnDocumentsProviderRootAdded(const std::string& authority,
-                                              const std::string& root_id,
-                                              const std::string& document_id,
-                                              const std::string& title,
-                                              const std::string& summary,
-                                              const GURL& icon_url) = 0;
+    virtual void OnDocumentsProviderRootAdded(
+        const std::string& authority,
+        const std::string& root_id,
+        const std::string& document_id,
+        const std::string& title,
+        const std::string& summary,
+        const GURL& icon_url,
+        bool read_only,
+        const std::vector<std::string>& mime_types) = 0;
 
     // Called when an existing root is not available anymore. When an existing
     // root is modified, both RootRemoved() and RootAdded() will be called in
@@ -87,6 +90,8 @@ class DocumentsProviderRootManager : public arc::ArcFileSystemBridge::Observer {
     std::string title;
     std::string summary;
     SkBitmap icon;
+    bool supports_create;
+    std::vector<std::string> mime_types;
 
     RootInfo();
     RootInfo(const RootInfo& that);

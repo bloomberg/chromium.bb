@@ -35,7 +35,6 @@ struct PageNavigationIdentity {
 // PageSignalGenerator::AddReceiver.
 interface PageSignalReceiver {
   NotifyPageAlmostIdle(PageNavigationIdentity page_navigation_id);
-  NotifyRendererIsBloated(PageNavigationIdentity page_navigation_id);
   SetExpectedTaskQueueingDuration(PageNavigationIdentity page_navigation_id,
                                   mojo_base.mojom.TimeDelta duration);
   SetLifecycleState(PageNavigationIdentity page_navigation_id,

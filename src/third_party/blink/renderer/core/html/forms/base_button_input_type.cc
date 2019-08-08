@@ -76,8 +76,8 @@ bool BaseButtonInputType::ShouldSaveAndRestoreFormControlState() const {
 
 void BaseButtonInputType::AppendToFormData(FormData&) const {}
 
-LayoutObject* BaseButtonInputType::CreateLayoutObject(
-    const ComputedStyle&) const {
+LayoutObject* BaseButtonInputType::CreateLayoutObject(const ComputedStyle&,
+                                                      LegacyLayout) const {
   return new LayoutButton(&GetElement());
 }
 

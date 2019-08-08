@@ -11,7 +11,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/performance_manager/page_resource_coordinator.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/performance_manager/web_contents_proxy.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -19,8 +20,8 @@
 
 namespace performance_manager {
 
-class FrameResourceCoordinator;
-class PageResourceCoordinator;
+class FrameNodeImpl;
+class PageNodeImpl;
 class PerformanceManager;
 
 // This tab helper maintains a page node, and its associated tree of frame nodes
@@ -30,22 +31,26 @@ class PerformanceManager;
 // host to the frame graph entity.
 class PerformanceManagerTabHelper
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<PerformanceManagerTabHelper> {
+      public content::WebContentsUserData<PerformanceManagerTabHelper>,
+      public WebContentsProxy {
  public:
   // TODO(siggi): Remove this once the PageSignalGenerator has been abolished.
   static bool GetCoordinationIDForWebContents(
       content::WebContents* web_contents,
       resource_coordinator::CoordinationUnitID* id);
 
+  // Detaches all instances from their WebContents and destroys them.
+  static void DetachAndDestroyAll();
+
   ~PerformanceManagerTabHelper() override;
 
-  PageResourceCoordinator* page_resource_coordinator() {
-    return &page_resource_coordinator_;
-  }
+  PageNodeImpl* page_node() { return page_node_.get(); }
 
   // WebContentsObserver overrides.
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
   void OnVisibilityChanged(content::Visibility visibility) override;
@@ -59,20 +64,32 @@ class PerformanceManagerTabHelper
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
+  // WebContentsProxy overrides.
+  content::WebContents* GetWebContents() const override;
+  int64_t LastNavigationId() const override;
+
   void SetUkmSourceIdForTesting(ukm::SourceId id) { ukm_source_id_ = id; }
 
  private:
+  friend class content::WebContentsUserData<PerformanceManagerTabHelper>;
+  friend class WebContentsProxy;
+
   explicit PerformanceManagerTabHelper(content::WebContents* web_contents);
+
+  // Post a task to run in the performance manager sequence. The |node| will be
+  // passed as unretained, and the closure will be created with BindOnce.
+  template <typename Functor, typename NodeType, typename... Args>
+  void PostToGraph(const base::Location& from_here,
+                   Functor&& functor,
+                   NodeType* node,
+                   Args&&... args);
 
   void OnMainFrameNavigation(int64_t navigation_id);
   void UpdatePageNodeVisibility(content::Visibility visibility);
 
-  friend class content::WebContentsUserData<PerformanceManagerTabHelper>;
-
   // The performance manager for this process, if any.
   PerformanceManager* const performance_manager_;
-
-  PageResourceCoordinator page_resource_coordinator_;
+  std::unique_ptr<PageNodeImpl> page_node_;
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
   // Favicon and title are set when a page is loaded, we only want to send
@@ -82,11 +99,23 @@ class PerformanceManagerTabHelper
   bool first_time_favicon_set_ = false;
   bool first_time_title_set_ = false;
 
-  // Maps from RenderFrameHost to the associated RC node.
-  std::map<content::RenderFrameHost*, std::unique_ptr<FrameResourceCoordinator>>
-      frames_;
+  // The last navigation ID that was committed to a main frame in this web
+  // contents.
+  int64_t last_navigation_id_ = 0;
+
+  // Maps from RenderFrameHost to the associated PM node.
+  std::map<content::RenderFrameHost*, std::unique_ptr<FrameNodeImpl>> frames_;
+
+  // All instances are linked together in a doubly linked list to allow orderly
+  // destruction at browser shutdown time.
+  static PerformanceManagerTabHelper* first_;
+
+  PerformanceManagerTabHelper* next_ = nullptr;
+  PerformanceManagerTabHelper* prev_ = nullptr;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
+
+  base::WeakPtrFactory<PerformanceManagerTabHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceManagerTabHelper);
 };

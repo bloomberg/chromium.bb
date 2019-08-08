@@ -9,19 +9,17 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/app_downloading_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 
 namespace chromeos {
 
-class BaseScreenDelegate;
+class AppDownloadingScreenView;
 
 // This is App Downloading screen that tells the user the selected Android apps
 // are being downloaded.
 class AppDownloadingScreen : public BaseScreen {
  public:
-  AppDownloadingScreen(BaseScreenDelegate* base_screen_delegate,
-                       AppDownloadingScreenView* view,
+  AppDownloadingScreen(AppDownloadingScreenView* view,
                        const base::RepeatingClosure& exit_callback);
   ~AppDownloadingScreen() override;
 

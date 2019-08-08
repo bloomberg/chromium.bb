@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -62,10 +64,7 @@ namespace views {
 class TouchSelectionControllerImplTest : public ViewsTestBase {
  public:
   TouchSelectionControllerImplTest()
-      : textfield_widget_(nullptr),
-        widget_(nullptr),
-        textfield_(nullptr),
-        views_tsc_factory_(new ViewsTouchEditingControllerFactory) {
+      : views_tsc_factory_(new ViewsTouchEditingControllerFactory) {
     ui::TouchEditingControllerFactory::SetInstance(views_tsc_factory_.get());
   }
 
@@ -75,7 +74,8 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
 
   void SetUp() override {
     ViewsTestBase::SetUp();
-    test_cursor_client_.reset(new aura::test::TestCursorClient(GetContext()));
+    test_cursor_client_ =
+        std::make_unique<aura::test::TestCursorClient>(GetContext());
   }
 
   void TearDown() override {
@@ -103,7 +103,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     textfield_widget_->Show();
 
     textfield_->RequestFocus();
-    textfield_test_api_.reset(new TextfieldTestApi(textfield_));
+    textfield_test_api_ = std::make_unique<TextfieldTestApi>(textfield_);
   }
 
   void CreateWidget() {
@@ -303,10 +303,10 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
               textfield_->GetSelectedRange());
   }
 
-  Widget* textfield_widget_;
-  Widget* widget_;
+  Widget* textfield_widget_ = nullptr;
+  Widget* widget_ = nullptr;
 
-  Textfield* textfield_;
+  Textfield* textfield_ = nullptr;
   std::unique_ptr<TextfieldTestApi> textfield_test_api_;
   std::unique_ptr<ViewsTouchEditingControllerFactory> views_tsc_factory_;
   std::unique_ptr<aura::test::TestCursorClient> test_cursor_client_;
@@ -648,7 +648,7 @@ class TestTouchEditable : public ui::TouchEditable {
     cursor_bound_.set_type(gfx::SelectionBound::Type::CENTER);
   }
 
-  ~TestTouchEditable() override {}
+  ~TestTouchEditable() override = default;
 
  private:
   // Overridden from ui::TouchEditable.

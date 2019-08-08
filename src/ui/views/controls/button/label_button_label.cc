@@ -9,7 +9,7 @@ namespace views {
 LabelButtonLabel::LabelButtonLabel(const base::string16& text, int text_context)
     : Label(text, text_context, style::STYLE_PRIMARY) {}
 
-LabelButtonLabel::~LabelButtonLabel() {}
+LabelButtonLabel::~LabelButtonLabel() = default;
 
 void LabelButtonLabel::SetDisabledColor(SkColor color) {
   requested_disabled_color_ = color;

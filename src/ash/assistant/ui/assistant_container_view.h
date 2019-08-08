@@ -31,13 +31,13 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerView
   // views::BubbleDialogDelegateView:
   const char* GetClassName() const override;
   void AddedToWidget() override;
-  ax::mojom::Role GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
   base::string16 GetAccessibleWindowTitle() const override;
   int GetDialogButtons() const override;
   views::FocusTraversable* GetFocusTraversable() override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
   void SizeToContents() override;
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override;

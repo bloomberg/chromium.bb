@@ -62,7 +62,9 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     request = stage._CreateRequestBuild('child', config, 0, 'master_bb_0', None)
     self.assertEqual(request.build_config, 'child')
     self.assertEqual(request.master_buildbucket_id, 'master_bb_0')
-    self.assertEqual(request.extra_args, ['--buildbot'])
+    self.assertEqual(request.extra_args, ['--buildbot',
+                                          '--master-buildbucket-id',
+                                          'master_bb_0'])
 
   def testRequestBuildWithSnapshotRev(self):
     config = config_lib.BuildConfig(
@@ -79,7 +81,9 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     request = stage._CreateRequestBuild('child', config, 0, 'master_bb_1', None)
     self.assertEqual(request.build_config, 'child')
     self.assertEqual(request.master_buildbucket_id, 'master_bb_1')
-    expected_extra_args = ['--buildbot', '--cbb_snapshot_revision', 'hash1234']
+    expected_extra_args = ['--buildbot',
+                           '--master-buildbucket-id', 'master_bb_1',
+                           '--cbb_snapshot_revision', 'hash1234']
     self.assertEqual(request.extra_args, expected_extra_args)
 
   def testPerformStage(self):

@@ -4,9 +4,6 @@ kenrb@chromium.org
 # for *aura*
 per-file *aura*=sadrul@chromium.org
 
-# for *mac*
-asvitkine@chromium.org
-
 # for GPU-related stuff in *mac*
 kbr@chromium.org
 ccameron@chromium.org

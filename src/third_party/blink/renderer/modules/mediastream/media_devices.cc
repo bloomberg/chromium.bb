@@ -32,10 +32,6 @@ namespace {
 
 class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
  public:
-  static PromiseResolverCallbacks* Create(ScriptPromiseResolver* resolver) {
-    return MakeGarbageCollected<PromiseResolverCallbacks>(resolver);
-  }
-
   explicit PromiseResolverCallbacks(ScriptPromiseResolver* resolver)
       : resolver_(resolver) {}
   ~PromiseResolverCallbacks() override = default;
@@ -60,10 +56,6 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
 
 }  // namespace
 
-MediaDevices* MediaDevices::Create(ExecutionContext* context) {
-  return MakeGarbageCollected<MediaDevices>(context);
-}
-
 MediaDevices::MediaDevices(ExecutionContext* context)
     : ContextLifecycleObserver(context), stopped_(false), binding_(this) {}
 
@@ -79,13 +71,14 @@ ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
                                            "Current frame is detached."));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   requests_.insert(resolver);
 
   GetDispatcherHost(frame)->EnumerateDevices(
       true /* audio input */, true /* video input */, true /* audio output */,
       true /* request_video_input_capabilities */,
+      true /* request_audio_input_capabilities */,
       WTF::Bind(&MediaDevices::DevicesEnumerated, WrapPersistent(this),
                 WrapPersistent(resolver)));
   return promise;
@@ -108,9 +101,8 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
     WebUserMediaRequest::MediaType media_type,
     const MediaStreamConstraints* options,
     ExceptionState& exception_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  PromiseResolverCallbacks* callbacks =
-      PromiseResolverCallbacks::Create(resolver);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto* callbacks = MakeGarbageCollected<PromiseResolverCallbacks>(resolver);
 
   Document* document = To<Document>(ExecutionContext::From(script_state));
   UserMediaController* user_media =
@@ -267,7 +259,9 @@ void MediaDevices::DevicesEnumerated(
     ScriptPromiseResolver* resolver,
     Vector<Vector<mojom::blink::MediaDeviceInfoPtr>> enumeration,
     Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>
-        video_input_capabilities) {
+        video_input_capabilities,
+    Vector<mojom::blink::AudioInputDeviceCapabilitiesPtr>
+        audio_input_capabilities) {
   if (!requests_.Contains(resolver))
     return;
 
@@ -286,6 +280,12 @@ void MediaDevices::DevicesEnumerated(
         enumeration[static_cast<wtf_size_t>(MediaDeviceType::MEDIA_VIDEO_INPUT)]
             .size(),
         video_input_capabilities.size());
+  }
+  if (!audio_input_capabilities.IsEmpty()) {
+    DCHECK_EQ(
+        enumeration[static_cast<wtf_size_t>(MediaDeviceType::MEDIA_AUDIO_INPUT)]
+            .size(),
+        audio_input_capabilities.size());
   }
 
   MediaDeviceInfoVector media_devices;
@@ -306,11 +306,16 @@ void MediaDevices::DevicesEnumerated(
           input_device_info->SetVideoInputCapabilities(
               std::move(video_input_capabilities[j]));
         }
+        if (device_type == MediaDeviceType::MEDIA_AUDIO_INPUT &&
+            !audio_input_capabilities.IsEmpty()) {
+          input_device_info->SetAudioInputCapabilities(
+              std::move(audio_input_capabilities[j]));
+        }
         media_devices.push_back(input_device_info);
       } else {
-        media_devices.push_back(
-            MediaDeviceInfo::Create(device_info->device_id, device_info->label,
-                                    device_info->group_id, device_type));
+        media_devices.push_back(MakeGarbageCollected<MediaDeviceInfo>(
+            device_info->device_id, device_info->label, device_info->group_id,
+            device_type));
       }
     }
   }

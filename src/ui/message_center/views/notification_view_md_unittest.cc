@@ -23,6 +23,7 @@
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/padded_button.h"
 #include "ui/message_center/views/proportional_image_view.h"
+#include "ui/views/animation/ink_drop_observer.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/radio_button.h"
@@ -103,7 +104,8 @@ class DummyEvent : public ui::Event {
 };
 
 class NotificationViewMDTest
-    : public views::ViewsTestBase,
+    : public views::InkDropObserver,
+      public views::ViewsTestBase,
       public views::ViewObserver,
       public message_center::MessageView::SlideObserver,
       public message_center::MessageCenterObserver {
@@ -133,6 +135,10 @@ class NotificationViewMDTest
   void OnNotificationRemoved(const std::string& notification_id,
                              bool by_user) override;
 
+  // Overridden from views::InkDropObserver:
+  void InkDropAnimationStarted() override;
+  void InkDropRippleAnimationEnded(views::InkDropState ink_drop_state) override;
+
   void set_delete_on_preferred_size_changed(
       bool delete_on_preferred_size_changed) {
     delete_on_preferred_size_changed_ = delete_on_preferred_size_changed;
@@ -141,6 +147,8 @@ class NotificationViewMDTest
   void set_delete_on_notification_removed(bool delete_on_notification_removed) {
     delete_on_notification_removed_ = delete_on_notification_removed;
   }
+
+  bool ink_drop_stopped() const { return ink_drop_stopped_; }
 
  protected:
   const gfx::Image CreateTestImage(int width, int height) const;
@@ -161,6 +169,7 @@ class NotificationViewMDTest
   void ScrollBy(int dx);
   views::View* GetCloseButton();
 
+  bool ink_drop_stopped_ = false;
   bool delete_on_preferred_size_changed_ = false;
   bool delete_on_notification_removed_ = false;
   std::set<std::string> removed_ids_;
@@ -359,6 +368,13 @@ void NotificationViewMDTest::ScrollBy(int dx) {
 
 views::View* NotificationViewMDTest::GetCloseButton() {
   return notification_view()->GetControlButtonsView()->close_button();
+}
+
+void NotificationViewMDTest::InkDropAnimationStarted() {}
+
+void NotificationViewMDTest::InkDropRippleAnimationEnded(
+    views::InkDropState ink_drop_state) {
+  ink_drop_stopped_ = true;
 }
 
 /* Unit tests *****************************************************************/
@@ -1033,6 +1049,31 @@ TEST_F(NotificationViewMDTest, NotificationWithoutIcon) {
   EXPECT_FALSE(notification_view()->right_content_->visible());
 }
 
+TEST_F(NotificationViewMDTest, UpdateAddingIcon) {
+  const int kNotificationIconSize = 30;
+
+  // Create a notification without an icon.
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification->set_icon(gfx::Image());
+  notification->set_image(gfx::Image());
+  UpdateNotificationViews(*notification);
+
+  // Capture the width of the left content without an icon.
+  const int left_content_width = notification_view()->left_content_->width();
+
+  // Update the notification, adding an icon.
+  notification->set_icon(
+      CreateTestImage(kNotificationIconSize, kNotificationIconSize));
+  UpdateNotificationViews(*notification);
+
+  // Notification should now have an icon.
+  EXPECT_TRUE(notification_view()->icon_view_->visible());
+  EXPECT_TRUE(notification_view()->right_content_->visible());
+
+  // There should be some space now to show the icon.
+  EXPECT_LT(notification_view()->left_content_->width(), left_content_width);
+}
+
 TEST_F(NotificationViewMDTest, InlineSettings) {
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
   notification->set_type(NOTIFICATION_TYPE_SIMPLE);
@@ -1088,6 +1129,38 @@ TEST_F(NotificationViewMDTest, InlineSettings) {
 
   EXPECT_FALSE(notification_view()->settings_row_->visible());
   EXPECT_TRUE(delegate_->disable_notification_called());
+}
+
+TEST_F(NotificationViewMDTest, InlineSettingsInkDropAnimation) {
+  ui::ScopedAnimationDurationScaleMode zero_duration_scope(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification->set_type(NOTIFICATION_TYPE_SIMPLE);
+  UpdateNotificationViews(*notification);
+
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
+
+  // Inline settings will be shown by clicking settings button.
+  EXPECT_FALSE(notification_view()->settings_row_->visible());
+  gfx::Point settings_cursor_location(1, 1);
+  views::View::ConvertPointToTarget(
+      notification_view()->control_buttons_view_->settings_button(),
+      notification_view(), &settings_cursor_location);
+  generator.MoveMouseTo(settings_cursor_location);
+  generator.ClickLeftButton();
+  EXPECT_TRUE(notification_view()->settings_row_->visible());
+
+  notification_view()->GetInkDrop()->AddObserver(this);
+
+  // Resize the widget by 1px to simulate the expand animation.
+  gfx::Rect size = widget()->GetWindowBoundsInScreen();
+  size.Inset(0, 0, 0, 1);
+  widget()->SetBounds(size);
+
+  notification_view()->GetInkDrop()->RemoveObserver(this);
+
+  // The ink drop animation should still be running.
+  EXPECT_FALSE(ink_drop_stopped());
 }
 
 TEST_F(NotificationViewMDTest, TestClick) {

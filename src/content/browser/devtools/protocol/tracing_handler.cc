@@ -24,6 +24,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "base/trace_event/tracing_agent.h"
+#include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
@@ -41,7 +42,10 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_config.h"
+#include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
+#include "services/tracing/public/mojom/perfetto_service.mojom.h"
 
 #ifdef OS_ANDROID
 #include "content/browser/renderer_host/compositor_impl_android.h"
@@ -122,7 +126,7 @@ class DevToolsTraceEndpointProxy : public TracingController::TraceDataEndpoint {
   }
 
  private:
-  ~DevToolsTraceEndpointProxy() override {}
+  ~DevToolsTraceEndpointProxy() override = default;
 
   base::WeakPtr<TracingHandler> tracing_handler_;
 };
@@ -160,7 +164,7 @@ class DevToolsStreamEndpoint : public TracingController::TraceDataEndpoint {
   }
 
  private:
-  ~DevToolsStreamEndpoint() override {}
+  ~DevToolsStreamEndpoint() override = default;
 
   scoped_refptr<DevToolsStreamFile> stream_;
   base::WeakPtr<TracingHandler> tracing_handler_;
@@ -208,7 +212,269 @@ void FillFrameData(base::trace_event::TracedValue* data,
   }
 }
 
+// We currently don't support concurrent tracing sessions, but are planning to.
+// For the time being, we're using this flag as a workaround to prevent devtools
+// users from accidentally starting two concurrent sessions.
+// TODO(eseckler): Remove once we add support for concurrent sessions to the
+// perfetto backend.
+static bool g_any_agent_tracing = false;
+
 }  // namespace
+
+class TracingHandler::TracingSession {
+ public:
+  TracingSession() = default;
+  virtual ~TracingSession() = default;
+
+  virtual void EnableTracing(
+      const base::trace_event::TraceConfig& chrome_config,
+      base::OnceClosure on_recording_enabled_callback) = 0;
+  virtual void AdoptStartupTracingSession() = 0;
+  virtual void ChangeTraceConfig(
+      const base::trace_event::TraceConfig& chrome_config) = 0;
+  virtual void DisableTracing(
+      bool use_proto_format,
+      const std::string& agent_label,
+      const scoped_refptr<TracingController::TraceDataEndpoint>& endpoint) = 0;
+  virtual void GetBufferUsage(
+      base::OnceCallback<void(float percent_full,
+                              size_t approximate_event_count)>
+          on_buffer_usage_callback) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TracingSession);
+};
+
+class TracingHandler::LegacyTracingSession
+    : public TracingHandler::TracingSession {
+ public:
+  void EnableTracing(const base::trace_event::TraceConfig& chrome_config,
+                     base::OnceClosure on_recording_enabled_callback) override {
+    DCHECK(!TracingController::GetInstance()->IsTracing());
+    TracingController::GetInstance()->StartTracing(
+        chrome_config, std::move(on_recording_enabled_callback));
+  }
+
+  void AdoptStartupTracingSession() override {
+    // Nothing to do for legacy tracing here (tracing is already active).
+    DCHECK(TracingController::GetInstance()->IsTracing());
+  }
+
+  void ChangeTraceConfig(
+      const base::trace_event::TraceConfig& chrome_config) override {
+    TracingController::GetInstance()->StartTracing(
+        chrome_config, TracingController::StartTracingDoneCallback());
+  }
+
+  void DisableTracing(bool use_proto_format,
+                      const std::string& agent_label,
+                      const scoped_refptr<TracingController::TraceDataEndpoint>&
+                          endpoint) override {
+    DCHECK(!use_proto_format);
+    TracingController::GetInstance()->StopTracing(endpoint, agent_label);
+  }
+
+  void GetBufferUsage(base::OnceCallback<void(float percent_full,
+                                              size_t approximate_event_count)>
+                          on_buffer_usage_callback) override {
+    TracingController::GetInstance()->GetTraceBufferUsage(
+        std::move(on_buffer_usage_callback));
+  }
+};
+
+class TracingHandler::PerfettoTracingSession
+    : public TracingHandler::TracingSession,
+      public tracing::mojom::TracingSession,
+      public mojo::DataPipeDrainer::Client {
+ public:
+  ~PerfettoTracingSession() override {
+#if DCHECK_IS_ON()
+    DCHECK(!tracing_active_);
+#endif
+  }
+
+  // TracingHandler::TracingSession implementation:
+  void EnableTracing(const base::trace_event::TraceConfig& chrome_config,
+                     base::OnceClosure on_recording_enabled_callback) override {
+#if DCHECK_IS_ON()
+    DCHECK(!tracing_active_);
+    tracing_active_ = true;
+#endif
+    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+        tracing::mojom::kServiceName, &consumer_host_);
+
+    perfetto::TraceConfig perfetto_config =
+        CreatePerfettoConfiguration(chrome_config);
+
+    tracing::mojom::TracingSessionPtr tracing_session;
+    binding_.Bind(mojo::MakeRequest(&tracing_session));
+    binding_.set_connection_error_handler(
+        base::BindOnce(&PerfettoTracingSession::OnTracingSessionEnded,
+                       base::Unretained(this)));
+
+    on_recording_enabled_callback_ = std::move(on_recording_enabled_callback);
+    consumer_host_->EnableTracing(std::move(tracing_session),
+                                  std::move(perfetto_config));
+  }
+
+  void AdoptStartupTracingSession() override {
+    // Start a perfetto tracing session, which will claim startup tracing data.
+    DCHECK(!TracingController::GetInstance()->IsTracing());
+    waiting_for_startup_tracing_enabled_ = true;
+    EnableTracing(
+        tracing::TraceStartupConfig::GetInstance()->GetTraceConfig(),
+        base::BindOnce(&PerfettoTracingSession::OnStartupTracingEnabled,
+                       base::Unretained(this)));
+  }
+
+  void ChangeTraceConfig(
+      const base::trace_event::TraceConfig& chrome_config) override {
+    auto perfetto_config = CreatePerfettoConfiguration(chrome_config);
+    consumer_host_->ChangeTraceConfig(perfetto_config);
+  }
+
+  void DisableTracing(bool use_proto_format,
+                      const std::string& agent_label,
+                      const scoped_refptr<TracingController::TraceDataEndpoint>&
+                          endpoint) override {
+    if (waiting_for_startup_tracing_enabled_) {
+      pending_disable_tracing_task_ = base::BindOnce(
+          &PerfettoTracingSession::DisableTracing, base::Unretained(this),
+          use_proto_format, agent_label, endpoint);
+      return;
+    }
+    use_proto_format_ = use_proto_format;
+    agent_label_ = agent_label;
+    endpoint_ = endpoint;
+#if DCHECK_IS_ON()
+    tracing_active_ = false;
+#endif
+
+    if (!use_proto_format_) {
+      mojo::DataPipe data_pipe;
+      drainer_ = std::make_unique<mojo::DataPipeDrainer>(
+          this, std::move(data_pipe.consumer_handle));
+      consumer_host_->DisableTracingAndEmitJson(
+          agent_label_, std::move(data_pipe.producer_handle),
+          base::BindOnce(&PerfettoTracingSession::OnReadBuffersComplete,
+                         base::Unretained(this)));
+    } else {
+      // The host will close the TracingSession connection, calling
+      // OnTracingSessionEnded(), once tracing was disabled.
+      consumer_host_->DisableTracing();
+    }
+  }
+
+  void GetBufferUsage(base::OnceCallback<void(float percent_full,
+                                              size_t approximate_event_count)>
+                          on_buffer_usage_callback) override {
+    DCHECK(on_buffer_usage_callback);
+    consumer_host_->RequestBufferUsage(base::BindOnce(
+        &PerfettoTracingSession::OnBufferUsage, base::Unretained(this),
+        std::move(on_buffer_usage_callback)));
+  }
+
+  void OnBufferUsage(base::OnceCallback<void(float percent_full,
+                                             size_t approximate_event_count)>
+                         on_buffer_usage_callback,
+                     bool success,
+                     float percent_full) {
+    if (!success) {
+      std::move(on_buffer_usage_callback).Run(0.0f, 0);
+      return;
+    }
+    std::move(on_buffer_usage_callback).Run(percent_full, 0);
+  }
+
+  // tracing::mojom::TracingSession implementation:
+  void OnTracingEnabled() override {
+    if (on_recording_enabled_callback_) {
+      std::move(on_recording_enabled_callback_).Run();
+    }
+  }
+
+ private:
+  perfetto::TraceConfig CreatePerfettoConfiguration(
+      const base::trace_event::TraceConfig& chrome_config) {
+#if DCHECK_IS_ON()
+    base::trace_event::TraceConfig processfilter_stripped_config(chrome_config);
+    processfilter_stripped_config.SetProcessFilterConfig(
+        base::trace_event::TraceConfig::ProcessFilterConfig());
+
+    // Ensure that the process filter is the only thing that gets changed
+    // in a configuration during a tracing session.
+    DCHECK((last_config_for_perfetto_.ToString() ==
+            base::trace_event::TraceConfig().ToString()) ||
+           (last_config_for_perfetto_.ToString() ==
+            processfilter_stripped_config.ToString()));
+    last_config_for_perfetto_ = std::move(processfilter_stripped_config);
+#endif
+
+    return tracing::GetDefaultPerfettoConfig(chrome_config);
+  }
+
+  void OnStartupTracingEnabled() {
+    waiting_for_startup_tracing_enabled_ = false;
+    if (pending_disable_tracing_task_)
+      std::move(pending_disable_tracing_task_).Run();
+  }
+
+  void OnTracingSessionEnded() {
+    // If we're converting to JSON, we will receive the data via
+    // ConsumerHost::DisableTracingAndEmitJson().
+    if (!use_proto_format_)
+      return;
+
+    DCHECK(agent_label_.empty());
+    mojo::DataPipe data_pipe;
+    drainer_ = std::make_unique<mojo::DataPipeDrainer>(
+        this, std::move(data_pipe.consumer_handle));
+    consumer_host_->ReadBuffers(
+        std::move(data_pipe.producer_handle),
+        base::BindOnce(&PerfettoTracingSession::OnReadBuffersComplete,
+                       base::Unretained(this)));
+  }
+
+  // mojo::DataPipeDrainer::Client implementation:
+  void OnDataAvailable(const void* data, size_t num_bytes) override {
+    auto data_string = std::make_unique<std::string>(
+        reinterpret_cast<const char*>(data), num_bytes);
+    endpoint_->ReceiveTraceChunk(std::move(data_string));
+  }
+
+  void OnDataComplete() override {
+    data_complete_ = true;
+    MaybeTraceComplete();
+  }
+
+  void OnReadBuffersComplete() {
+    read_buffers_complete_ = true;
+    MaybeTraceComplete();
+  }
+
+  void MaybeTraceComplete() {
+    if (read_buffers_complete_ && data_complete_)
+      endpoint_->ReceiveTraceFinalContents(nullptr);
+  }
+
+  mojo::Binding<tracing::mojom::TracingSession> binding_{this};
+  tracing::mojom::ConsumerHostPtr consumer_host_;
+
+  bool use_proto_format_;
+  std::string agent_label_;
+  base::OnceClosure on_recording_enabled_callback_;
+  base::OnceClosure pending_disable_tracing_task_;
+  bool waiting_for_startup_tracing_enabled_ = false;
+  scoped_refptr<TracingController::TraceDataEndpoint> endpoint_;
+  std::unique_ptr<mojo::DataPipeDrainer> drainer_;
+  bool data_complete_ = false;
+  bool read_buffers_complete_ = false;
+
+#if DCHECK_IS_ON()
+  bool tracing_active_ = false;
+  base::trace_event::TraceConfig last_config_for_perfetto_;
+#endif
+};
 
 TracingHandler::TracingHandler(FrameTreeNode* frame_tree_node_,
                                DevToolsIOContext* io_context,
@@ -233,6 +499,20 @@ TracingHandler::TracingHandler(FrameTreeNode* frame_tree_node_,
         std::make_unique<DevToolsVideoConsumer>(base::BindRepeating(
             &TracingHandler::OnFrameFromVideoConsumer, base::Unretained(this)));
   }
+
+  auto* startup_config = tracing::TraceStartupConfig::GetInstance();
+  // Check if we should adopt the startup tracing session. Only the first
+  // session connected to the browser endpoint can own it.
+  if (frame_tree_node_ != nullptr ||
+      !startup_config->AttemptAdoptBySessionOwner(
+          tracing::TraceStartupConfig::SessionOwner::kDevToolsTracingHandler)) {
+    return;
+  }
+
+  DCHECK(tracing::TracingUsesPerfettoBackend());
+  session_ = std::make_unique<PerfettoTracingSession>();
+  session_->AdoptStartupTracingSession();
+  g_any_agent_tracing = true;
 }
 
 TracingHandler::~TracingHandler() = default;
@@ -257,7 +537,7 @@ void TracingHandler::Wire(UberDispatcher* dispatcher) {
 }
 
 Response TracingHandler::Disable() {
-  if (did_initiate_recording_)
+  if (session_)
     StopTracing(nullptr, "");
   return Response::OK();
 }
@@ -297,6 +577,7 @@ void TracingHandler::OnTraceComplete() {
   DCHECK(!trace_data_buffer_state_.in_string);
   DCHECK(!trace_data_buffer_state_.slashed);
 
+  session_.reset();
   frontend_->TracingComplete();
 }
 
@@ -359,16 +640,20 @@ std::string TracingHandler::UpdateTraceDataBuffer(
 }
 
 void TracingHandler::OnTraceToStreamComplete(const std::string& stream_handle) {
+  session_.reset();
+  std::string stream_format = (proto_format_ ? Tracing::StreamFormatEnum::Proto
+                                             : Tracing::StreamFormatEnum::Json);
   std::string stream_compression =
       (gzip_compression_ ? Tracing::StreamCompressionEnum::Gzip
                          : Tracing::StreamCompressionEnum::None);
-  frontend_->TracingComplete(stream_handle, stream_compression);
+  frontend_->TracingComplete(stream_handle, stream_format, stream_compression);
 }
 
 void TracingHandler::Start(Maybe<std::string> categories,
                            Maybe<std::string> options,
                            Maybe<double> buffer_usage_reporting_interval,
                            Maybe<std::string> transfer_mode,
+                           Maybe<std::string> transfer_format,
                            Maybe<std::string> transfer_compression,
                            Maybe<Tracing::TraceConfig> config,
                            std::unique_ptr<StartCallback> callback) {
@@ -376,13 +661,29 @@ void TracingHandler::Start(Maybe<std::string> categories,
       Tracing::Start::TransferModeEnum::ReturnAsStream;
   bool gzip_compression = transfer_compression.fromMaybe("") ==
                           Tracing::StreamCompressionEnum::Gzip;
+  bool proto_format =
+      transfer_format.fromMaybe("") == Tracing::StreamFormatEnum::Proto;
+
+  if (proto_format && !tracing::TracingUsesPerfettoBackend()) {
+    callback->sendFailure(Response::Error(
+        "Proto format is only supported with the perfetto backend."));
+    return;
+  }
+
+  if (proto_format && !return_as_stream) {
+    callback->sendFailure(Response::Error(
+        "Proto format is only supported when using stream transfer mode."));
+    return;
+  }
+
   if (IsTracing()) {
     if (!did_initiate_recording_ && IsStartupTracingActive()) {
       // If tracing is already running because it was initiated by startup
-      // tracing, honor the transfer mode update, as that's the only way
+      // tracing, honor the transfer mode/format update, as that's the only way
       // for the client to communicate it.
       return_as_stream_ = return_as_stream;
       gzip_compression_ = gzip_compression;
+      proto_format_ = proto_format;
     }
     callback->sendFailure(Response::Error("Tracing is already started"));
     return;
@@ -398,6 +699,7 @@ void TracingHandler::Start(Maybe<std::string> categories,
   did_initiate_recording_ = true;
   return_as_stream_ = return_as_stream;
   gzip_compression_ = gzip_compression;
+  proto_format_ = proto_format;
   buffer_usage_reporting_interval_ =
       buffer_usage_reporting_interval.fromMaybe(0);
 
@@ -439,10 +741,16 @@ void TracingHandler::StartTracingWithGpuPid(
 
   SetupProcessFilter(gpu_pid, nullptr);
 
-  TracingController::GetInstance()->StartTracing(
+  if (tracing::TracingUsesPerfettoBackend()) {
+    session_ = std::make_unique<PerfettoTracingSession>();
+  } else {
+    session_ = std::make_unique<LegacyTracingSession>();
+  }
+  session_->EnableTracing(
       trace_config_,
       base::BindOnce(&TracingHandler::OnRecordingEnabled,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
+  g_any_agent_tracing = true;
 }
 
 void TracingHandler::SetupProcessFilter(
@@ -492,15 +800,21 @@ void TracingHandler::OnProcessReady(RenderProcessHost* process_host) {
   trace_config_.SetProcessFilterConfig(
       base::trace_event::TraceConfig::ProcessFilterConfig(
           included_process_ids));
-  TracingController::GetInstance()->StartTracing(
-      trace_config_, TracingController::StartTracingDoneCallback());
+  session_->ChangeTraceConfig(trace_config_);
 }
 
 Response TracingHandler::End() {
   // Startup tracing triggered by --trace-config-file is a special case, where
   // tracing is started automatically upon browser startup and can be stopped
   // via DevTools.
-  if (!did_initiate_recording_ && !IsStartupTracingActive())
+  // TODO(eseckler): Remove this when we remove the legacy tracing backend.
+  if (!tracing::TracingUsesPerfettoBackend() && IsStartupTracingActive()) {
+    DCHECK(!session_ && !did_initiate_recording_);
+    session_ = std::make_unique<LegacyTracingSession>();
+    session_->AdoptStartupTracingSession();
+  }
+
+  if (!session_)
     return Response::Error("Tracing is not started");
 
   scoped_refptr<TracingController::TraceDataEndpoint> endpoint;
@@ -526,6 +840,7 @@ Response TracingHandler::End() {
 
 void TracingHandler::GetCategories(
     std::unique_ptr<GetCategoriesCallback> callback) {
+  // TODO(eseckler): Support this via the perfetto service too.
   TracingController::GetInstance()->GetCategories(
       base::BindOnce(&TracingHandler::OnCategoriesReceived,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -638,24 +953,29 @@ void TracingHandler::SetupTimer(double usage_reporting_interval) {
   buffer_usage_poll_timer_.reset(new base::RepeatingTimer());
   buffer_usage_poll_timer_->Start(
       FROM_HERE, interval,
-      base::Bind(base::IgnoreResult(&TracingController::GetTraceBufferUsage),
-                 base::Unretained(TracingController::GetInstance()),
-                 base::Bind(&TracingHandler::OnBufferUsage,
-                            weak_factory_.GetWeakPtr())));
+      base::BindRepeating(&TracingHandler::UpdateBufferUsage,
+                          weak_factory_.GetWeakPtr()));
+}
+
+void TracingHandler::UpdateBufferUsage() {
+  session_->GetBufferUsage(base::BindOnce(&TracingHandler::OnBufferUsage,
+                                          weak_factory_.GetWeakPtr()));
 }
 
 void TracingHandler::StopTracing(
     const scoped_refptr<TracingController::TraceDataEndpoint>& endpoint,
     const std::string& agent_label) {
+  DCHECK(session_);
   buffer_usage_poll_timer_.reset();
-  TracingController::GetInstance()->StopTracing(endpoint, agent_label);
+  session_->DisableTracing(proto_format_, agent_label, endpoint);
   did_initiate_recording_ = false;
+  g_any_agent_tracing = false;
   if (video_consumer_)
     video_consumer_->StopCapture();
 }
 
 bool TracingHandler::IsTracing() const {
-  return TracingController::GetInstance()->IsTracing();
+  return TracingController::GetInstance()->IsTracing() || g_any_agent_tracing;
 }
 
 void TracingHandler::EmitFrameTree() {
@@ -693,8 +1013,7 @@ void TracingHandler::ReadyToCommitNavigation(
 
   SetupProcessFilter(base::kNullProcessId,
                      navigation_handle->GetRenderFrameHost());
-  TracingController::GetInstance()->StartTracing(
-      trace_config_, TracingController::StartTracingDoneCallback());
+  session_->ChangeTraceConfig(trace_config_);
 }
 
 void TracingHandler::FrameDeleted(RenderFrameHostImpl* frame_host) {

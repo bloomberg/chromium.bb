@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <tuple>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
@@ -159,11 +160,10 @@ std::string SizeBounds::ToString() const {
 
 // FlexSpecification -----------------------------------------------------------
 
-FlexSpecification::FlexSpecification()
-    : rule_(GetDefaultFlexRule()), order_(1), weight_(0) {}
+FlexSpecification::FlexSpecification() : rule_(GetDefaultFlexRule()) {}
 
-FlexSpecification FlexSpecification::ForCustomRule(const FlexRule& rule) {
-  return FlexSpecification(rule, 1, 1);
+FlexSpecification FlexSpecification::ForCustomRule(FlexRule rule) {
+  return FlexSpecification(std::move(rule), 1, 1);
 }
 
 FlexSpecification FlexSpecification::ForSizeRule(
@@ -173,21 +173,13 @@ FlexSpecification FlexSpecification::ForSizeRule(
       GetDefaultFlexRule(minimum_size_rule, maximum_size_rule), 1, 1);
 }
 
-FlexSpecification::FlexSpecification(const FlexRule& rule,
-                                     int order,
-                                     int weight)
-    : rule_(rule), order_(order), weight_(weight) {}
+FlexSpecification::FlexSpecification(FlexRule rule, int order, int weight)
+    : rule_(std::move(rule)), order_(order), weight_(weight) {}
 
-FlexSpecification::FlexSpecification(const FlexSpecification& other)
-    : rule_(other.rule_), order_(other.order_), weight_(other.weight_) {}
+FlexSpecification::FlexSpecification(const FlexSpecification& other) = default;
 
 FlexSpecification& FlexSpecification::operator=(
-    const FlexSpecification& other) {
-  rule_ = other.rule_;
-  order_ = other.order_;
-  weight_ = other.weight_;
-  return *this;
-}
+    const FlexSpecification& other) = default;
 
 FlexSpecification::~FlexSpecification() = default;
 

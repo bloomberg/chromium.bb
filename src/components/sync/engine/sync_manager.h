@@ -54,7 +54,6 @@ class SyncCycleSnapshot;
 class SyncEncryptionHandler;
 class TypeDebugInfoObserver;
 class UnrecoverableErrorHandler;
-struct Experiments;
 struct UserShare;
 
 // SyncManager encapsulates syncable::Directory and serves as the parent of all
@@ -220,8 +219,7 @@ class SyncManager {
     // Must outlive SyncManager.
     ChangeDelegate* change_delegate;
 
-    // Credentials to be used when talking to the sync server.
-    SyncCredentials credentials;
+    std::string authenticated_account_id;
 
     // Unqiuely identifies this client to the invalidation notification server.
     std::string invalidator_client_id;
@@ -247,9 +245,8 @@ class SyncManager {
     // Optional nigori state to be restored.
     std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
 
-    // Define the polling intervals. Must not be zero.
-    base::TimeDelta short_poll_interval;
-    base::TimeDelta long_poll_interval;
+    // Define the polling interval. Must not be zero.
+    base::TimeDelta poll_interval;
 
     // Non-authoritative values from prefs, to be compared with the Directory's
     // counterparts.
@@ -359,11 +356,6 @@ class SyncManager {
   // Returns the cache_guid of the currently open database.
   // Requires that the SyncManager be initialized.
   virtual const std::string cache_guid() = 0;
-
-  // Reads the nigori node to determine if any experimental features should
-  // be enabled.
-  // Note: opens a transaction.  May be called on any thread.
-  virtual bool ReceivedExperiment(Experiments* experiments) = 0;
 
   // Returns whether there are remaining unsynced items.
   virtual bool HasUnsyncedItemsForTest() = 0;

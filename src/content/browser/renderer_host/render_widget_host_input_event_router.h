@@ -171,6 +171,10 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   size_t TouchEventAckQueueLengthForTesting() const;
   size_t RegisteredViewCountForTesting() const;
 
+  void set_route_to_root_for_devtools(bool route) {
+    route_to_root_for_devtools_ = route;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserSideFlingBrowserTest,
                            InertialGSUBubblingStopsWhenParentCannotScroll);
@@ -361,6 +365,10 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   float last_device_scale_factor_;
 
   int active_touches_;
+
+  // Route all input events into the root view while devtools is showing a full
+  // page overlay.
+  bool route_to_root_for_devtools_ = false;
 
   // Touchscreen gesture pinch events must be routed to the main frame. This
   // keeps track of ongoing scroll and pinch gestures so we know when to divert

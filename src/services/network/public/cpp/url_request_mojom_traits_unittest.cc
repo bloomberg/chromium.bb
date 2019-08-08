@@ -57,8 +57,7 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
       net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
   original.is_prerendering = false;
   original.headers.SetHeader("Accept", "text/xml");
-  original.requested_with_header = "dummy_requested_with_header";
-  original.client_data_header = "dummy_client_data_header";
+  original.cors_exempt_headers.SetHeader("X-Requested-With", "ForTesting");
   original.load_flags = 3;
   original.allow_credentials = true;
   original.plugin_child_id = 5;
@@ -69,7 +68,6 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.is_external_request = false;
   original.cors_preflight_policy =
       mojom::CorsPreflightPolicy::kConsiderPreflight;
-  original.service_worker_provider_id = -1;
   original.originated_from_service_worker = false;
   original.skip_service_worker = false;
   original.fetch_request_mode = mojom::FetchRequestMode::kNoCors;
@@ -95,7 +93,6 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.throttling_profile_id = base::UnguessableToken::Create();
   original.custom_proxy_pre_cache_headers.SetHeader("pre_x", "x_value");
   original.custom_proxy_post_cache_headers.SetHeader("post_y", "y_value");
-  original.custom_proxy_use_alternate_proxy_list = true;
   original.fetch_window_id = base::UnguessableToken::Create();
 
   network::ResourceRequest copied;

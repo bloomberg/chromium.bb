@@ -102,7 +102,7 @@ class SetContentDecryptionModuleResult final
   }
 
   void CompleteWithError(WebContentDecryptionModuleException code,
-                         unsigned long system_code,
+                         uint32_t system_code,
                          const WebString& message) override {
     // Non-zero |systemCode| is appended to the |message|. If the |message|
     // is empty, we'll report "Rejected with system code (systemCode)".
@@ -400,7 +400,8 @@ static Event* CreateEncryptedEvent(WebEncryptedMediaInitDataType init_data_type,
   initializer->setBubbles(false);
   initializer->setCancelable(false);
 
-  return MediaEncryptedEvent::Create(event_type_names::kEncrypted, initializer);
+  return MakeGarbageCollected<MediaEncryptedEvent>(event_type_names::kEncrypted,
+                                                   initializer);
 }
 
 void HTMLMediaElementEncryptedMedia::Encrypted(
@@ -418,7 +419,7 @@ void HTMLMediaElementEncryptedMedia::Encrypted(
     event = CreateEncryptedEvent(WebEncryptedMediaInitDataType::kUnknown,
                                  nullptr, 0);
     media_element_->GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource,
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
                                mojom::ConsoleMessageLevel::kWarning,
                                "Media element must be CORS-same-origin with "
                                "the embedding page. If cross-origin, you "

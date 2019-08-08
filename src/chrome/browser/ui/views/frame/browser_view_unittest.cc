@@ -33,14 +33,13 @@
 namespace {
 
 // Tab strip bounds depend on the window frame sizes.
-gfx::Point ExpectedTabStripOrigin(BrowserView* browser_view) {
-  gfx::Rect tabstrip_bounds(
-      browser_view->frame()->GetBoundsForTabStrip(browser_view->tabstrip()));
-  gfx::Point tabstrip_origin(tabstrip_bounds.origin());
-  views::View::ConvertPointToTarget(browser_view->parent(),
-                                    browser_view,
-                                    &tabstrip_origin);
-  return tabstrip_origin;
+gfx::Point ExpectedTabStripRegionOrigin(BrowserView* browser_view) {
+  gfx::Rect tabstrip_bounds(browser_view->frame()->GetBoundsForTabStripRegion(
+      browser_view->tabstrip()));
+  gfx::Point tabstrip_region_origin(tabstrip_bounds.origin());
+  views::View::ConvertPointToTarget(browser_view->parent(), browser_view,
+                                    &tabstrip_region_origin);
+  return tabstrip_region_origin;
 }
 
 // Helper function to take a printf-style format string and substitute the
@@ -80,6 +79,7 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   Browser* browser = browser_view()->browser();
   TopContainerView* top_container = browser_view()->top_container();
   TabStrip* tabstrip = browser_view()->tabstrip();
+  views::View* tabstrip_region = browser_view()->tabstrip()->parent();
   ToolbarView* toolbar = browser_view()->toolbar();
   views::View* contents_container =
       browser_view()->GetContentsContainerForTest();
@@ -91,30 +91,32 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   AddTab(browser, GURL("about:blank"));
 
   // Verify the view hierarchy.
-  EXPECT_EQ(top_container, browser_view()->tabstrip()->parent());
+  EXPECT_EQ(top_container, tabstrip_region->parent());
+  EXPECT_EQ(tabstrip_region, tabstrip->parent());
   EXPECT_EQ(top_container, browser_view()->toolbar()->parent());
   EXPECT_EQ(top_container, browser_view()->GetBookmarkBarView()->parent());
   EXPECT_EQ(browser_view(), browser_view()->infobar_container()->parent());
 
   // Find bar host is at the front of the view hierarchy, followed by the
   // infobar container and then top container.
-  EXPECT_EQ(browser_view()->child_count() - 1,
-            browser_view()->GetIndexOf(browser_view()->find_bar_host_view()));
-  EXPECT_EQ(browser_view()->child_count() - 2,
-            browser_view()->GetIndexOf(browser_view()->infobar_container()));
+  ASSERT_GE(browser_view()->children().size(), 2U);
+  auto child = browser_view()->children().crbegin();
+  EXPECT_EQ(browser_view()->find_bar_host_view(), *child++);
+  EXPECT_EQ(browser_view()->infobar_container(), *child);
 
   // Verify basic layout.
   EXPECT_EQ(0, top_container->x());
   EXPECT_EQ(0, top_container->y());
   EXPECT_EQ(browser_view()->width(), top_container->width());
   // Tabstrip layout varies based on window frame sizes.
-  gfx::Point expected_tabstrip_origin = ExpectedTabStripOrigin(browser_view());
-  EXPECT_EQ(expected_tabstrip_origin.x(), tabstrip->x());
-  EXPECT_EQ(expected_tabstrip_origin.y(), tabstrip->y());
+  gfx::Point expected_tabstrip_region_origin =
+      ExpectedTabStripRegionOrigin(browser_view());
+  EXPECT_EQ(expected_tabstrip_region_origin.x(), tabstrip_region->x());
+  EXPECT_EQ(expected_tabstrip_region_origin.y(), tabstrip_region->y());
   EXPECT_EQ(0, toolbar->x());
-  EXPECT_EQ(
-      tabstrip->bounds().bottom() - GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP),
-      toolbar->y());
+  EXPECT_EQ(tabstrip_region->bounds().bottom() -
+                GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP),
+            toolbar->y());
   EXPECT_EQ(0, contents_container->x());
   EXPECT_EQ(toolbar->bounds().bottom(), contents_container->y());
   EXPECT_EQ(top_container->bounds().bottom(), contents_container->y());
@@ -126,48 +128,36 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   // Verify bookmark bar visibility.
   BookmarkBarView* bookmark_bar = browser_view()->GetBookmarkBarView();
   EXPECT_FALSE(bookmark_bar->visible());
-  EXPECT_FALSE(bookmark_bar->IsDetached());
   EXPECT_EQ(devtools_web_view->y(), bookmark_bar->height());
   EXPECT_EQ(GetLayoutConstant(BOOKMARK_BAR_HEIGHT),
             bookmark_bar->GetMinimumSize().height());
   chrome::ExecuteCommand(browser, IDC_SHOW_BOOKMARK_BAR);
   EXPECT_TRUE(bookmark_bar->visible());
-  EXPECT_FALSE(bookmark_bar->IsDetached());
   chrome::ExecuteCommand(browser, IDC_SHOW_BOOKMARK_BAR);
   EXPECT_FALSE(bookmark_bar->visible());
-  EXPECT_FALSE(bookmark_bar->IsDetached());
 
-  // Bookmark bar is reparented to BrowserView on NTP.
+  // The NTP should be treated the same as any other page.
   NavigateAndCommitActiveTabWithTitle(browser,
                                       GURL(chrome::kChromeUINewTabURL),
                                       base::string16());
-  EXPECT_TRUE(bookmark_bar->visible());
-  EXPECT_TRUE(bookmark_bar->IsDetached());
-  EXPECT_EQ(browser_view(), bookmark_bar->parent());
+  EXPECT_FALSE(bookmark_bar->visible());
+  EXPECT_EQ(top_container, bookmark_bar->parent());
 
   // Find bar host is still at the front of the view hierarchy, followed by the
   // infobar container and then top container.
-  EXPECT_EQ(browser_view()->child_count() - 1,
-            browser_view()->GetIndexOf(browser_view()->find_bar_host_view()));
-  EXPECT_EQ(browser_view()->child_count() - 2,
-            browser_view()->GetIndexOf(browser_view()->infobar_container()));
+  ASSERT_GE(browser_view()->children().size(), 2U);
+  child = browser_view()->children().crbegin();
+  EXPECT_EQ(browser_view()->find_bar_host_view(), *child++);
+  EXPECT_EQ(browser_view()->infobar_container(), *child);
 
   // Bookmark bar layout on NTP.
   EXPECT_EQ(0, bookmark_bar->x());
-  EXPECT_EQ(tabstrip->bounds().bottom() + toolbar->height() -
+  EXPECT_EQ(tabstrip_region->bounds().bottom() + toolbar->height() -
                 GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP),
             bookmark_bar->y());
   EXPECT_EQ(bookmark_bar->height() + bookmark_bar->y(),
             contents_container->y());
   EXPECT_EQ(contents_web_view->y(), devtools_web_view->y());
-
-  // Bookmark bar is parented back to top container on normal page.
-  NavigateAndCommitActiveTabWithTitle(browser,
-                                      GURL("about:blank"),
-                                      base::string16());
-  EXPECT_FALSE(bookmark_bar->visible());
-  EXPECT_FALSE(bookmark_bar->IsDetached());
-  EXPECT_EQ(top_container, bookmark_bar->parent());
 
   BookmarkBarView::DisableAnimationsForTesting(false);
 }

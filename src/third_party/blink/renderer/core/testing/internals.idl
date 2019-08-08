@@ -250,7 +250,7 @@
     // |node| should be Document, HTMLIFrameElement, or unspecified.
     // If |node| is an HTMLIFrameElement, it assumes node.contentDocument is
     // specified without security checks. Unspecified means this document.
-    [RaisesException] void updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(optional Node? node = null);
+    [RaisesException] void updateLayoutAndRunPostLayoutTasks(optional Node? node = null);
 
     [RaisesException] void forceFullRepaint(Document document);
 
@@ -284,6 +284,7 @@
     long selectPopupItemStyleFontHeight(Node select, long itemIndex);
     void resetTypeAheadSession(HTMLSelectElement select);
 
+    StaticSelection getDragCaret();
     [RaisesException] StaticSelection getSelectionInFlatTree(Window window);
     // TODO(editing-dev): We should change |visibleSelection*| to
     // |StaticSelection|.
@@ -317,8 +318,6 @@
     void setFocused(boolean focused);
     void setInitialFocus(boolean reverse);
 
-    boolean ignoreLayoutWithPendingStylesheets(Document document);
-
     // When the FocuslessSpatialNavigation feature is enabled, spatial
     // navigation moves "interest" around a page, rather than focus. This
     // attribute returns the currently interested element on the page.
@@ -336,14 +335,12 @@
     UnionTypesTest unionTypesTest();
     CallbackFunctionTest callbackFunctionTest();
     [RaisesException] void setScrollChain(ScrollState scrollState, sequence<Element> elements);
-    void forceBlinkGCWithoutV8GC();
+    void scheduleBlinkGC();
 
     DOMString selectedHTMLForClipboard();
     DOMString selectedTextForClipboard();
 
     void setVisualViewportOffset(long x, long y);
-
-    boolean magnifyScaleAroundAnchor(float offset, float x, float y);
 
     boolean isUseCounted(Document document, unsigned long feature);
     boolean isCSSPropertyUseCounted(Document document, DOMString propertyName);
@@ -428,4 +425,7 @@
     // Throws TypeError on error.
     // Used for testing Import Maps https://github.com/domenic/import-maps
     [RaisesException] DOMString resolveModuleSpecifier(DOMString specifier, DOMString base_url, Document document);
+
+    // Sets the scale for devtools device emulation.
+    [RaisesException] void setDeviceEmulationScale(float scale);
 };

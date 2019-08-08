@@ -16,6 +16,12 @@
 
 namespace credential_provider {
 
+#define DECLARE_IUNKOWN_NOQI_WITH_REF()                            \
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv) override; \
+  ULONG STDMETHODCALLTYPE AddRef() override;                       \
+  ULONG STDMETHODCALLTYPE Release(void) override;                  \
+  ULONG ref_count_ = 1;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // Fake the CredentialProviderUserArray COM object.
@@ -26,9 +32,7 @@ class FakeCredentialProviderUser : public ICredentialProviderUser {
 
  private:
   // ICredentialProviderUser
-  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
-  ULONG STDMETHODCALLTYPE AddRef() override;
-  ULONG STDMETHODCALLTYPE Release(void) override;
+  DECLARE_IUNKOWN_NOQI_WITH_REF()
   HRESULT STDMETHODCALLTYPE GetSid(wchar_t** sid) override;
   HRESULT STDMETHODCALLTYPE GetProviderID(GUID* providerID) override;
   HRESULT STDMETHODCALLTYPE GetStringValue(REFPROPERTYKEY key,
@@ -58,9 +62,7 @@ class FakeCredentialProviderUserArray : public ICredentialProviderUserArray {
 
  private:
   // ICredentialProviderUserArray
-  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
-  ULONG STDMETHODCALLTYPE AddRef() override;
-  ULONG STDMETHODCALLTYPE Release(void) override;
+  DECLARE_IUNKOWN_NOQI_WITH_REF()
   IFACEMETHODIMP SetProviderFilter(REFGUID guidProviderToFilterTo) override;
   IFACEMETHODIMP GetAccountOptions(
       CREDENTIAL_PROVIDER_ACCOUNT_OPTIONS* cpao) override;
@@ -80,10 +82,11 @@ class FakeCredentialProviderEvents : public ICredentialProviderEvents {
   virtual ~FakeCredentialProviderEvents();
 
   // ICredentialProviderEvents
-  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
-  ULONG STDMETHODCALLTYPE AddRef() override;
-  ULONG STDMETHODCALLTYPE Release(void) override;
+  DECLARE_IUNKOWN_NOQI_WITH_REF()
   IFACEMETHODIMP CredentialsChanged(UINT_PTR upAdviseContext) override;
+
+  bool CredentialsChangedReceived() const { return did_change_; }
+  void ResetCredentialsChangedReceived() { did_change_ = false; }
 
  private:
   bool did_change_ = false;
@@ -108,9 +111,7 @@ class FakeGaiaCredentialProvider : public IGaiaCredentialProvider {
 
   // IGaiaCredentialProvider
   IFACEMETHODIMP GetUsageScenario(DWORD* cpus) override;
-  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
-  ULONG STDMETHODCALLTYPE AddRef() override;
-  ULONG STDMETHODCALLTYPE Release(void) override;
+  DECLARE_IUNKOWN_NOQI_WITH_REF()
   IFACEMETHODIMP OnUserAuthenticated(IUnknown* credential,
                                      BSTR username,
                                      BSTR password,

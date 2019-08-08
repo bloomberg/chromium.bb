@@ -22,17 +22,17 @@ using content::BrowserThread;
 
 namespace {
 
-SQLiteCursor::JavaColumnType ToJavaColumnType(sql::ColType type) {
+SQLiteCursor::JavaColumnType ToJavaColumnType(sql::ColumnType type) {
   switch (type) {
-    case sql::COLUMN_TYPE_INTEGER:
+    case sql::ColumnType::kInteger:
       return SQLiteCursor::NUMERIC;
-    case sql::COLUMN_TYPE_FLOAT:
+    case sql::ColumnType::kFloat:
       return SQLiteCursor::DOUBLE;
-    case sql::COLUMN_TYPE_TEXT:
+    case sql::ColumnType::kText:
       return SQLiteCursor::LONG_VAR_CHAR;
-    case sql::COLUMN_TYPE_BLOB:
+    case sql::ColumnType::kBlob:
       return SQLiteCursor::BLOB;
-    case sql::COLUMN_TYPE_NULL:
+    case sql::ColumnType::kNull:
       return SQLiteCursor::NULL_TYPE;
     default:
       NOTREACHED();
@@ -238,7 +238,7 @@ SQLiteCursor::JavaColumnType SQLiteCursor::GetColumnTypeInternal(int column) {
   if (column == statement_->favicon_index())
     return SQLiteCursor::BLOB;
 
-  return ToJavaColumnType(statement_->statement()->ColumnType(column));
+  return ToJavaColumnType(statement_->statement()->GetColumnType(column));
 }
 
 void SQLiteCursor::RunMoveStatementOnUIThread(int pos) {

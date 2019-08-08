@@ -17,6 +17,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/metrics/expired_histogram_util.h"
 #include "components/metrics/metrics_service.h"
@@ -26,6 +27,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/ukm/ios/features.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/synthetic_trials_active_group_id_provider.h"
@@ -95,7 +97,7 @@ void IOSChromeMainParts::PreCreateThreads() {
 
   // The initial read is done synchronously, the TaskPriority is thus only used
   // for flushes to disks and BACKGROUND is therefore appropriate. Priority of
-  // remaining BACKGROUND+BLOCK_SHUTDOWN tasks is bumped by the TaskScheduler on
+  // remaining BACKGROUND+BLOCK_SHUTDOWN tasks is bumped by the ThreadPool on
   // shutdown.
   scoped_refptr<base::SequencedTaskRunner> local_state_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
@@ -183,7 +185,8 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
 
   TranslateServiceIOS::Initialize();
   language_usage_metrics::LanguageUsageMetrics::RecordAcceptLanguages(
-      last_used_browser_state->GetPrefs()->GetString(prefs::kAcceptLanguages));
+      last_used_browser_state->GetPrefs()->GetString(
+          language::prefs::kAcceptLanguages));
   language_usage_metrics::LanguageUsageMetrics::RecordApplicationLanguage(
       application_context_->GetApplicationLocale());
 
@@ -246,10 +249,15 @@ void IOSChromeMainParts::SetupMetrics() {
 }
 
 void IOSChromeMainParts::StartMetricsRecording() {
-  bool wifiOnly = local_state_->GetBoolean(prefs::kMetricsReportingWifiOnly);
   bool isConnectionCellular = net::NetworkChangeNotifier::IsConnectionCellular(
       net::NetworkChangeNotifier::GetConnectionType());
-  bool mayUpload = !wifiOnly || !isConnectionCellular;
+  bool mayUpload = false;
+  if (base::FeatureList::IsEnabled(kUmaCellular)) {
+    mayUpload = !isConnectionCellular;
+  } else {
+    bool wifiOnly = local_state_->GetBoolean(prefs::kMetricsReportingWifiOnly);
+    mayUpload = !wifiOnly || !isConnectionCellular;
+  }
 
   application_context_->GetMetricsServicesManager()->UpdateUploadPermissions(
       mayUpload);

@@ -313,6 +313,7 @@ static void emit_subset_type0(const SkPDFFont& font, SkPDFDocument* doc) {
                     SkASSERT(font.firstGlyphID() == 1);
                     sk_sp<SkData> subsetFontData = SkPDFSubsetFont(
                             stream_to_data(std::move(fontAsset)), font.glyphUsage(),
+                            doc->metadata().fSubsetter,
                             metrics.fFontName.c_str(), ttcIndex);
                     if (subsetFontData) {
                         std::unique_ptr<SkPDFDict> tmp = SkPDFMakeDict();
@@ -559,8 +560,7 @@ struct ImageAndOffset {
 };
 static ImageAndOffset to_image(SkGlyphID gid, SkStrike* cache) {
     (void)cache->findImage(cache->getGlyphIDMetrics(gid));
-    SkMask mask;
-    cache->getGlyphIDMetrics(gid).toMask(&mask);
+    SkMask mask = cache->getGlyphIDMetrics(gid).mask();
     if (!mask.fImage) {
         return {nullptr, {0, 0}};
     }

@@ -11,6 +11,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/service_discovery_client_impl.h"
+#include "net/base/net_errors.h"
 #include "net/dns/mdns_client_impl.h"
 #include "net/dns/mock_mdns_socket_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -69,7 +70,7 @@ const uint8_t kSamplePacketAAAA[] = {
 class LocalDomainResolverTest : public testing::Test {
  public:
   void SetUp() override {
-    mdns_client_.StartListening(&socket_factory_);
+    EXPECT_EQ(net::OK, mdns_client_.StartListening(&socket_factory_));
   }
 
   std::string IPAddressToStringWithInvalid(const net::IPAddress& address) {

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/desks/desks_util.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
@@ -76,6 +77,7 @@ class Shelf;
 class TestScreenshotDelegate;
 class TestSessionControllerClient;
 class UnifiedSystemTray;
+class WorkAreaInsets;
 
 class AshTestBase : public testing::Test {
  public:
@@ -91,6 +93,9 @@ class AshTestBase : public testing::Test {
 
   // Returns the unified system tray on the primary display.
   static UnifiedSystemTray* GetPrimaryUnifiedSystemTray();
+
+  // Returns WorkAreaInsets for the primary display.
+  static WorkAreaInsets* GetPrimaryWorkAreaInsets();
 
   // AshTestBase creates a ScopedTaskEnvironment. This may not be appropriate in
   // some environments. Use this to destroy it.
@@ -115,8 +120,9 @@ class AshTestBase : public testing::Test {
   // values for |container_id|.
   static std::unique_ptr<views::Widget> CreateTestWidget(
       views::WidgetDelegate* delegate = nullptr,
-      int container_id = kShellWindowId_DefaultContainer,
-      const gfx::Rect& bounds = gfx::Rect());
+      int container_id = desks_util::GetActiveDeskContainerId(),
+      const gfx::Rect& bounds = gfx::Rect(),
+      bool show = true);
 
   // Returns the set of properties for creating a proxy window.
   std::map<std::string, std::vector<uint8_t>> CreatePropertiesForProxyWindow(
@@ -229,6 +235,10 @@ class AshTestBase : public testing::Test {
 
   // Simulates kiosk mode. |user_type| must correlate to a kiosk type user.
   void SimulateKioskMode(user_manager::UserType user_type);
+
+  // Simulates setting height of the accessibility panel.
+  // Note: Accessibility panel widget needs to be setup first.
+  void SetAccessibilityPanelHeight(int panel_height);
 
   // Clears all user sessions and resets to the primary login screen state.
   void ClearLogin();

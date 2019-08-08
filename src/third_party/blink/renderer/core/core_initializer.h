@@ -116,7 +116,8 @@ class CORE_EXPORT CoreInitializer {
   virtual void ProvideModulesToPage(Page&, WebViewClient*) const = 0;
   virtual void ForceNextWebGLContextCreationToFail() const = 0;
 
-  virtual void CollectAllGarbageForAnimationAndPaintWorklet() const = 0;
+  virtual void CollectAllGarbageForAnimationAndPaintWorkletForTesting()
+      const = 0;
 
   virtual void CloneSessionStorage(
       Page* clone_from_page,

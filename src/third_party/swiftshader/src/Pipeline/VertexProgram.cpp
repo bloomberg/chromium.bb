@@ -20,28 +20,43 @@
 #include "System/Half.hpp"
 #include "Vulkan/VkDebug.hpp"
 
+#include "Vulkan/VkPipelineLayout.hpp"
+
 namespace sw
 {
 	VertexProgram::VertexProgram(
 			const VertexProcessor::State &state,
 			vk::PipelineLayout const *pipelineLayout,
-			SpirvShader const *spirvShader)
-		: VertexRoutine(state, pipelineLayout, spirvShader)
+			SpirvShader const *spirvShader,
+			const vk::DescriptorSet::Bindings &descriptorSets)
+		: VertexRoutine(state, pipelineLayout, spirvShader),
+		  descriptorSets(descriptorSets)
 	{
-		ifDepth = 0;
-		loopRepDepth = 0;
-		currentLabel = -1;
-		whileTest = false;
-
-		enableStack[0] = Int4(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
-
 		auto it = spirvShader->inputBuiltins.find(spv::BuiltInInstanceIndex);
 		if (it != spirvShader->inputBuiltins.end())
 		{
 			// TODO: we could do better here; we know InstanceIndex is uniform across all lanes
 			assert(it->second.SizeInComponents == 1);
-			routine.getValue(it->second.Id)[it->second.FirstComponent] =
+			routine.getVariable(it->second.Id)[it->second.FirstComponent] =
 					As<Float4>(Int4((*Pointer<Int>(data + OFFSET(DrawData, instanceID)))));
+		}
+
+		routine.descriptorSets = data + OFFSET(DrawData, descriptorSets);
+		routine.descriptorDynamicOffsets = data + OFFSET(DrawData, descriptorDynamicOffsets);
+		routine.pushConstants = data + OFFSET(DrawData, pushConstants);
+
+		it = spirvShader->inputBuiltins.find(spv::BuiltInSubgroupSize);
+		if (it != spirvShader->inputBuiltins.end())
+		{
+			ASSERT(it->second.SizeInComponents == 1);
+			routine.getVariable(it->second.Id)[it->second.FirstComponent] = As<SIMD::Float>(Int(SIMD::Width));
+		}
+
+		it = spirvShader->inputBuiltins.find(spv::BuiltInSubgroupLocalInvocationId);
+		if (it != spirvShader->inputBuiltins.end())
+		{
+			ASSERT(it->second.SizeInComponents == 1);
+			routine.getVariable(it->second.Id)[it->second.FirstComponent] = As<SIMD::Float>(SIMD::Int(0, 1, 2, 3));
 		}
 	}
 
@@ -51,49 +66,17 @@ namespace sw
 
 	void VertexProgram::program(UInt &index)
 	{
-		//	shader->print("VertexShader-%0.8X.txt", state.shaderID);
-
-		enableIndex = 0;
-
 		auto it = spirvShader->inputBuiltins.find(spv::BuiltInVertexIndex);
 		if (it != spirvShader->inputBuiltins.end())
 		{
 			assert(it->second.SizeInComponents == 1);
-			routine.getValue(it->second.Id)[it->second.FirstComponent] =
-					As<Float4>(Int4(index) + Int4(0, 1, 2, 3));
+			routine.getVariable(it->second.Id)[it->second.FirstComponent] =
+					As<Float4>(Int4(As<Int>(index) + *Pointer<Int>(data + OFFSET(DrawData, baseVertex))) + Int4(0, 1, 2, 3));
 		}
 
-		spirvShader->emit(&routine);
-
-		if(currentLabel != -1)
-		{
-			Nucleus::setInsertBlock(returnBlock);
-		}
+		auto activeLaneMask = SIMD::Int(0xFFFFFFFF); // TODO: Control this.
+		spirvShader->emit(&routine, activeLaneMask, descriptorSets);
 
 		spirvShader->emitEpilog(&routine);
 	}
-
-	RValue<Pointer<Byte>> VertexProgram::uniformAddress(int bufferIndex, unsigned int index)
-	{
-		if(bufferIndex == -1)
-		{
-			return data + OFFSET(DrawData, vs.c[index]);
-		}
-		else
-		{
-			return *Pointer<Pointer<Byte>>(data + OFFSET(DrawData, vs.u[bufferIndex])) + index;
-		}
-	}
-
-	RValue<Pointer<Byte>> VertexProgram::uniformAddress(int bufferIndex, unsigned int index, Int &offset)
-	{
-		return uniformAddress(bufferIndex, index) + offset * sizeof(float4);
-	}
-
-	Int4 VertexProgram::enableMask()
-	{
-		Int4 enable = true ? Int4(enableStack[enableIndex]) : Int4(0xFFFFFFFF);
-		return enable;
-	}
-
 }

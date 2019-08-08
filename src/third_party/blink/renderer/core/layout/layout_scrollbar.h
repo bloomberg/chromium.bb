@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -76,7 +77,7 @@ class LayoutScrollbar final : public Scrollbar {
 
   void InvalidateDisplayItemClientsOfScrollbarParts();
 
-  void SetVisualRect(const LayoutRect&) final;
+  void SetVisualRect(const IntRect&) final;
 
   void Trace(blink::Visitor*) override;
 
@@ -104,11 +105,12 @@ class LayoutScrollbar final : public Scrollbar {
   HashMap<unsigned, LayoutScrollbarPart*> parts_;
 };
 
-DEFINE_TYPE_CASTS(LayoutScrollbar,
-                  Scrollbar,
-                  scrollbar,
-                  scrollbar->IsCustomScrollbar(),
-                  scrollbar.IsCustomScrollbar());
+template <>
+struct DowncastTraits<LayoutScrollbar> {
+  static bool AllowFrom(const Scrollbar& scrollbar) {
+    return scrollbar.IsCustomScrollbar();
+  }
+};
 
 }  // namespace blink
 

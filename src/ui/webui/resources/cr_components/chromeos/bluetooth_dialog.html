@@ -128,7 +128,7 @@
            [[i18n('cancel')]]
           </paper-button>
           <paper-button hidden$="[[!showAcceptReject_(pairingEvent_)]]"
-              class="action-button" on-tap="onAcceptTap_">
+              id="accept-button" class="action-button" on-tap="onAcceptTap_">
             [[i18n('bluetoothAccept')]]
           </paper-button>
           <paper-button hidden$="[[!showAcceptReject_(pairingEvent_)]]"

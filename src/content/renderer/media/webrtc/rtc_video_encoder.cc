@@ -21,6 +21,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/common/content_features.h"
@@ -327,7 +328,7 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
   input_visible_size_ = input_visible_size;
   const media::VideoEncodeAccelerator::Config config(
       media::PIXEL_FORMAT_I420, input_visible_size_, profile, bitrate * 1000,
-      base::nullopt, base::nullopt, base::nullopt,
+      base::nullopt, base::nullopt, base::nullopt, base::nullopt,
       video_content_type_ == webrtc::VideoContentType::SCREENSHARE
           ? media::VideoEncodeAccelerator::Config::ContentType::kDisplay
           : media::VideoEncodeAccelerator::Config::ContentType::kCamera);
@@ -571,7 +572,8 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
   image.SetTimestamp(rtp_timestamp.value());
   image.capture_time_ms_ = capture_timestamp_ms.value();
   image._frameType =
-      (metadata.key_frame ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta);
+      (metadata.key_frame ? webrtc::VideoFrameType::kVideoFrameKey
+                          : webrtc::VideoFrameType::kVideoFrameDelta);
   image.content_type_ = video_content_type_;
   image._completeFrame = true;
 
@@ -801,7 +803,7 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
   if (video_codec_type_ == webrtc::kVideoCodecVP8) {
     info.codecSpecific.VP8.keyIdx = -1;
   } else if (video_codec_type_ == webrtc::kVideoCodecVP9) {
-    bool key_frame = image._frameType == webrtc::kVideoFrameKey;
+    bool key_frame = image._frameType == webrtc::VideoFrameType::kVideoFrameKey;
     info.codecSpecific.VP9.inter_pic_predicted = key_frame ? false : true;
     info.codecSpecific.VP9.flexible_mode = false;
     info.codecSpecific.VP9.ss_data_available = key_frame ? true : false;
@@ -888,6 +890,9 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
                    ? webrtc::VideoContentType::SCREENSHARE
                    : webrtc::VideoContentType::UNSPECIFIED);
 
+  // This wait is necessary because this task is completed in GPU process
+  // asynchronously but WebRTC API is synchronous.
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::WaitableEvent initialization_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -907,16 +912,17 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
 
 int32_t RTCVideoEncoder::Encode(
     const webrtc::VideoFrame& input_image,
-    const webrtc::CodecSpecificInfo* codec_specific_info,
-    const std::vector<webrtc::FrameType>* frame_types) {
+    const std::vector<webrtc::VideoFrameType>* frame_types) {
   DVLOG(3) << __func__;
   if (!impl_.get()) {
     DVLOG(3) << "Encoder is not initialized";
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
 
-  const bool want_key_frame = frame_types && frame_types->size() &&
-                              frame_types->front() == webrtc::kVideoFrameKey;
+  const bool want_key_frame =
+      frame_types && frame_types->size() &&
+      frame_types->front() == webrtc::VideoFrameType::kVideoFrameKey;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::WaitableEvent encode_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -940,6 +946,7 @@ int32_t RTCVideoEncoder::RegisterEncodeCompleteCallback(
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
 
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::WaitableEvent register_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -957,6 +964,7 @@ int32_t RTCVideoEncoder::Release() {
   if (!impl_.get())
     return WEBRTC_VIDEO_CODEC_OK;
 
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::WaitableEvent release_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);

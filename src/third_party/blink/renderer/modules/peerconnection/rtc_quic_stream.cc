@@ -225,8 +225,8 @@ ScriptPromise RTCQuicStream::waitForReadable(ScriptState* script_state,
         String::Number(kReadBufferSize) + ".");
     return ScriptPromise();
   }
-  ScriptPromiseResolver* promise_resolver =
-      ScriptPromiseResolver::Create(script_state);
+  auto* promise_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = promise_resolver->Promise();
   if (received_fin_ || receive_buffer_.size() >= amount) {
     promise_resolver->Resolve();
@@ -245,8 +245,8 @@ ScriptPromise RTCQuicStream::waitForWriteBufferedAmountBelow(
   if (RaiseIfNotWritable(exception_state)) {
     return ScriptPromise();
   }
-  ScriptPromiseResolver* promise_resolver =
-      ScriptPromiseResolver::Create(script_state);
+  auto* promise_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = promise_resolver->Promise();
   if (write_buffered_amount_ <= threshold) {
     promise_resolver->Resolve();

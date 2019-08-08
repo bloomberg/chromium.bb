@@ -1,0 +1,19 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dist="http://schemas.android.com/apk/distribution"
+    featureSplit="autofill_assistant"
+    package="{{manifest_package}}">
+
+    <!-- For Chrome Modern use android:minSdkVersion="21". -->
+    <uses-sdk
+        android:minSdkVersion="24"
+        android:targetSdkVersion="{{target_sdk_version}}" />
+
+    <dist:module
+        dist:onDemand="true"
+        dist:title="@string/autofill_assistant_module_title">
+        <dist:fusing dist:include="false" />
+    </dist:module>
+
+    <application>
+    </application>
+</manifest>

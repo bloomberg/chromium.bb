@@ -44,7 +44,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "ui/gfx/platform_font_win.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -1084,6 +1083,46 @@ TEST_F(RenderTextTest, MultilineElideWrapStress) {
     }
   }
 }
+
+TEST_F(RenderTextTest, ElidedStyledTextRtl) {
+  static const char* kInputTexts[] = {
+      "http://ar.wikipedia.com/فحص",
+      "testحص,",
+      "حص,test",
+      "…",
+      "…test",
+      "test…",
+      "حص,test…",
+      "ٱ",
+      "\uFEFF",  // BOM: Byte Order Marker
+      "…\u200F",  // Right to left marker.
+  };
+
+  for (const auto* raw_text : kInputTexts) {
+    SCOPED_TRACE(
+        base::StringPrintf("ElidedStyledTextRtl text = %s", raw_text));
+    base::string16 input_text(UTF8ToUTF16(raw_text));
+
+    RenderText* render_text = GetRenderText();
+    render_text->SetText(input_text);
+    render_text->SetElideBehavior(ELIDE_TAIL);
+    render_text->SetStyle(TEXT_STYLE_STRIKE, true);
+    render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_LTR);
+
+    constexpr int kMaxContentWidth = 2000;
+    for (int i = 0; i < kMaxContentWidth; ++i) {
+      SCOPED_TRACE(base::StringPrintf("ElidedStyledTextRtl width = %d", i));
+      render_text->SetDisplayRect(Rect(i, 20));
+      render_text->GetStringSize();
+      base::string16 display_text = render_text->GetDisplayText();
+      EXPECT_LE(display_text.size(), input_text.size());
+
+      // Every size of content width was tried.
+      if (display_text == input_text)
+        break;
+    }
+  }
+}  // namespace gfx
 
 TEST_F(RenderTextTest, ElidedEmail) {
   RenderText* render_text = GetRenderText();
@@ -4189,12 +4228,35 @@ TEST_F(RenderTextTest, HarfBuzz_FontListFallback) {
 // Ensure that the fallback fonts of the Uniscribe font are tried for shaping.
 #if defined(OS_WIN)
 TEST_F(RenderTextTest, HarfBuzz_UniscribeFallback) {
+  std::string font_name;
+  std::string localized_font_name;
+
+  base::win::Version version = base::win::GetVersion();
+  if (version < base::win::VERSION_WIN10) {
+    // The font 'Meiryo' exists on windows 7 and windows 8. see:
+    // https://docs.microsoft.com/en-us/typography/fonts/windows_7_font_list
+    // https://docs.microsoft.com/en-us/typography/fonts/windows_8_font_list
+    font_name = "Meiryo";
+    // Japanese name for Meiryo.
+    localized_font_name = "\u30e1\u30a4\u30ea\u30aa";
+  } else {
+    ASSERT_GE(version, base::win::VERSION_WIN10);
+    // The font 'Malgun Gothic' exists on windows 10. see:
+    // https://docs.microsoft.com/en-us/typography/fonts/windows_10_font_list
+    font_name = "Malgun Gothic";
+    // Korean name for Malgun Gothic.
+    localized_font_name = "\ub9d1\uc740 \uace0\ub515";
+  }
+
+  // The localized name won't be found in the system's linked fonts, forcing
+  // RTHB to try the Uniscribe font and its fallbacks.
   RenderTextHarfBuzz* render_text = GetRenderText();
-  PlatformFontWin* font_win = new PlatformFontWin("Meiryo", 12);
-  // Japanese name for Meiryo. This name won't be found in the system's linked
-  // fonts, forcing RTHB to try the Uniscribe font and its fallbacks.
-  font_win->font_ref_->font_name_ = "\u30e1\u30a4\u30ea\u30aa";
-  FontList font_list((Font(font_win)));
+  Font font(localized_font_name, 12);
+  FontList font_list(font);
+
+  // Ensures the font didn't got substituted.
+  EXPECT_NE(font.GetFontName(), font_name);
+  EXPECT_EQ(font.GetActualFontNameForTesting(), localized_font_name);
 
   render_text->SetFontList(font_list);
   // An invalid Unicode character that somehow yields Korean character "han".

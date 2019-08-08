@@ -228,7 +228,7 @@ std::string
 MimeSniffingResourceHandlerTest::TestAcceptHeaderSettingWithURLRequest(
     ResourceType request_resource_type,
     net::URLRequest* request) {
-  bool is_main_frame = request_resource_type == RESOURCE_TYPE_MAIN_FRAME;
+  bool is_main_frame = request_resource_type == ResourceType::kMainFrame;
   ResourceRequestInfo::AllocateForTesting(request, request_resource_type,
                                           nullptr,        // context
                                           0,              // render_process_id
@@ -265,7 +265,7 @@ bool MimeSniffingResourceHandlerTest::TestStreamIsIntercepted(
   std::unique_ptr<net::URLRequest> request(context.CreateRequest(
       GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
-  bool is_main_frame = request_resource_type == RESOURCE_TYPE_MAIN_FRAME;
+  bool is_main_frame = request_resource_type == ResourceType::kMainFrame;
   ResourceRequestInfo::AllocateForTesting(request.get(), request_resource_type,
                                           nullptr,        // context
                                           0,              // render_process_id
@@ -329,7 +329,7 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
       GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
   ResourceRequestInfo::AllocateForTesting(request.get(),
-                                          RESOURCE_TYPE_MAIN_FRAME,
+                                          ResourceType::kMainFrame,
                                           nullptr,  // context
                                           0,        // render_process_id
                                           0,        // render_view_id
@@ -493,7 +493,7 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
       GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
   ResourceRequestInfo::AllocateForTesting(request.get(),
-                                          RESOURCE_TYPE_MAIN_FRAME,
+                                          ResourceType::kMainFrame,
                                           nullptr,  // context
                                           0,        // render_process_id
                                           0,        // render_view_id
@@ -645,7 +645,7 @@ TEST_F(MimeSniffingResourceHandlerTest, StreamHandling) {
   // intercepted.
   resource_intercept_policy = ResourceInterceptPolicy::kAllowNone;
   must_download = false;
-  resource_type = RESOURCE_TYPE_MAIN_FRAME;
+  resource_type = ResourceType::kMainFrame;
   EXPECT_FALSE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
                                        resource_type));
 
@@ -653,21 +653,21 @@ TEST_F(MimeSniffingResourceHandlerTest, StreamHandling) {
   // checked. Stream should be intercepted.
   resource_intercept_policy = ResourceInterceptPolicy::kAllowPluginOnly;
   must_download = false;
-  resource_type = RESOURCE_TYPE_MAIN_FRAME;
+  resource_type = ResourceType::kMainFrame;
   EXPECT_TRUE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
                                       resource_type));
 
   // Main frame request with download allowed. Stream should be intercepted.
   resource_intercept_policy = ResourceInterceptPolicy::kAllowAll;
   must_download = false;
-  resource_type = RESOURCE_TYPE_MAIN_FRAME;
+  resource_type = ResourceType::kMainFrame;
   EXPECT_TRUE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
                                       resource_type));
 
   // Main frame request with download forced. Stream shouldn't be intercepted.
   resource_intercept_policy = ResourceInterceptPolicy::kAllowAll;
   must_download = true;
-  resource_type = RESOURCE_TYPE_MAIN_FRAME;
+  resource_type = ResourceType::kMainFrame;
   EXPECT_FALSE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
                                        resource_type));
 
@@ -675,7 +675,7 @@ TEST_F(MimeSniffingResourceHandlerTest, StreamHandling) {
   // intercepted.
   resource_intercept_policy = ResourceInterceptPolicy::kAllowNone;
   must_download = false;
-  resource_type = RESOURCE_TYPE_SUB_RESOURCE;
+  resource_type = ResourceType::kSubResource;
   EXPECT_FALSE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
                                        resource_type));
 
@@ -683,14 +683,14 @@ TEST_F(MimeSniffingResourceHandlerTest, StreamHandling) {
   // intercepted.
   resource_intercept_policy = ResourceInterceptPolicy::kAllowNone;
   must_download = false;
-  resource_type = RESOURCE_TYPE_PLUGIN_RESOURCE;
+  resource_type = ResourceType::kPluginResource;
   EXPECT_FALSE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
                                        resource_type));
 
   // Object request with download not allowed. Stream should be intercepted.
   resource_intercept_policy = ResourceInterceptPolicy::kAllowNone;
   must_download = false;
-  resource_type = RESOURCE_TYPE_OBJECT;
+  resource_type = ResourceType::kObject;
   EXPECT_TRUE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
                                       resource_type));
 
@@ -699,7 +699,7 @@ TEST_F(MimeSniffingResourceHandlerTest, StreamHandling) {
   set_stream_has_handler(false);
   resource_intercept_policy = ResourceInterceptPolicy::kAllowNone;
   must_download = false;
-  resource_type = RESOURCE_TYPE_OBJECT;
+  resource_type = ResourceType::kObject;
   EXPECT_FALSE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
                                        resource_type));
 
@@ -710,7 +710,7 @@ TEST_F(MimeSniffingResourceHandlerTest, StreamHandling) {
   set_plugin_available(false);
   resource_intercept_policy = ResourceInterceptPolicy::kAllowNone;
   must_download = false;
-  resource_type = RESOURCE_TYPE_OBJECT;
+  resource_type = ResourceType::kObject;
   EXPECT_TRUE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
                                       resource_type));
 
@@ -720,7 +720,7 @@ TEST_F(MimeSniffingResourceHandlerTest, StreamHandling) {
   set_plugin_stale(true);
   resource_intercept_policy = ResourceInterceptPolicy::kAllowNone;
   must_download = false;
-  resource_type = RESOURCE_TYPE_OBJECT;
+  resource_type = ResourceType::kObject;
   EXPECT_TRUE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
                                       resource_type));
 }
@@ -843,7 +843,7 @@ TEST_F(MimeSniffingResourceHandlerTest, 304Handling) {
       GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
   ResourceRequestInfo::AllocateForTesting(request.get(),
-                                          RESOURCE_TYPE_MAIN_FRAME,
+                                          ResourceType::kMainFrame,
                                           nullptr,  // context
                                           0,        // render_process_id
                                           0,        // render_view_id
@@ -894,7 +894,7 @@ TEST_F(MimeSniffingResourceHandlerTest, FetchShouldDisableMimeSniffing) {
       GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
   ResourceRequestInfo::AllocateForTesting(request.get(),
-                                          RESOURCE_TYPE_MAIN_FRAME,
+                                          ResourceType::kMainFrame,
                                           nullptr,  // context
                                           0,        // render_process_id
                                           0,        // render_view_id
@@ -954,7 +954,7 @@ TEST_F(MimeSniffingResourceHandlerTest, NonEmptyPayloadEndsBeforeDecision) {
   std::unique_ptr<net::URLRequest> request(context.CreateRequest(
       GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
-  ResourceRequestInfo::AllocateForTesting(request.get(), RESOURCE_TYPE_SCRIPT,
+  ResourceRequestInfo::AllocateForTesting(request.get(), ResourceType::kScript,
                                           nullptr,  // context
                                           0,        // render_process_id
                                           0,        // render_view_id
@@ -1032,7 +1032,7 @@ TEST_F(MimeSniffingResourceHandlerTest, EmptyPayload) {
   std::unique_ptr<net::URLRequest> request(context.CreateRequest(
       GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
-  ResourceRequestInfo::AllocateForTesting(request.get(), RESOURCE_TYPE_SCRIPT,
+  ResourceRequestInfo::AllocateForTesting(request.get(), ResourceType::kScript,
                                           nullptr,  // context
                                           0,        // render_process_id
                                           0,        // render_view_id

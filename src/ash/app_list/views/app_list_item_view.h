@@ -66,6 +66,9 @@ class APP_LIST_EXPORT AppListItemView
 
   void SetAsAttemptedFolderTarget(bool is_target_folder);
 
+  // Sets focus without a11y announcements or focus ring.
+  void SilentlyRequestFocus();
+
   AppListItem* item() const { return item_weak_; }
 
   views::Label* title() { return title_; }
@@ -111,8 +114,7 @@ class APP_LIST_EXPORT AppListItemView
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // views::View overrides:
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
 
   // When a dragged view enters this view, a preview circle is shown for
   // non-folder item while the icon is enlarged for folder item. When a
@@ -122,6 +124,8 @@ class APP_LIST_EXPORT AppListItemView
 
   // Enables background blur for folder icon if |enabled| is true.
   void SetBackgroundBlurEnabled(bool enabled);
+
+  bool is_folder() const { return is_folder_; }
 
  private:
   class IconImageView;
@@ -235,6 +239,10 @@ class APP_LIST_EXPORT AppListItemView
   bool mouse_dragging_ = false;
   // True if the drag host proxy is crated for mouse dragging.
   bool mouse_drag_proxy_created_ = false;
+
+  // Whether AppsGridView should not be notified of a focus event, triggering
+  // A11y alerts and a focus ring.
+  bool focus_silently_ = false;
 
   // The animation that runs when dragged view enters or exits this view.
   std::unique_ptr<gfx::SlideAnimation> dragged_view_hover_animation_;

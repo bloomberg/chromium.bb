@@ -205,12 +205,25 @@ void FakeCiceroneClient::StartLxdContainer(
         base::BindOnce(&FakeCiceroneClient::NotifyLxdContainerStarting,
                        base::Unretained(this), std::move(signal)));
   }
+  if (lxd_container_starting_signal_status_ ==
+      vm_tools::cicerone::LxdContainerStartingSignal::STARTED) {
+    // Trigger CiceroneClient::Observer::NotifyContainerStartedSignal.
+    vm_tools::cicerone::ContainerStartedSignal signal;
+    signal.set_owner_id(request.owner_id());
+    signal.set_vm_name(request.vm_name());
+    signal.set_container_name(request.container_name());
+    signal.set_container_username(last_container_username_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&FakeCiceroneClient::NotifyContainerStarted,
+                                  base::Unretained(this), std::move(signal)));
+  }
 }
 
 void FakeCiceroneClient::GetLxdContainerUsername(
     const vm_tools::cicerone::GetLxdContainerUsernameRequest& request,
     DBusMethodCallback<vm_tools::cicerone::GetLxdContainerUsernameResponse>
         callback) {
+  last_container_username_ = get_lxd_container_username_response_.username();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback),
                                 get_lxd_container_username_response_));
@@ -220,19 +233,10 @@ void FakeCiceroneClient::SetUpLxdContainerUser(
     const vm_tools::cicerone::SetUpLxdContainerUserRequest& request,
     DBusMethodCallback<vm_tools::cicerone::SetUpLxdContainerUserResponse>
         callback) {
+  last_container_username_ = request.container_username();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), setup_lxd_container_user_response_));
-
-  // Trigger CiceroneClient::Observer::NotifyContainerStartedSignal.
-  vm_tools::cicerone::ContainerStartedSignal signal;
-  signal.set_owner_id(request.owner_id());
-  signal.set_vm_name(request.vm_name());
-  signal.set_container_name(request.container_name());
-  signal.set_container_username(request.container_username());
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeCiceroneClient::NotifyContainerStarted,
-                                base::Unretained(this), std::move(signal)));
 }
 
 void FakeCiceroneClient::SearchApp(

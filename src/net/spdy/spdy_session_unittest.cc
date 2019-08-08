@@ -33,6 +33,7 @@
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
+#include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
@@ -443,7 +444,7 @@ TEST_F(SpdySessionTest, PendingStreamCancellingAnother) {
   StreamRequestDestroyingCallback callback1;
   ASSERT_EQ(ERR_IO_PENDING,
             request1.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_,
-                                  test_url_, MEDIUM, SocketTag(),
+                                  test_url_, false, MEDIUM, SocketTag(),
                                   NetLogWithSource(), callback1.MakeCallback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -451,7 +452,7 @@ TEST_F(SpdySessionTest, PendingStreamCancellingAnother) {
   TestCompletionCallback callback2;
   ASSERT_EQ(ERR_IO_PENDING,
             request2->StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_,
-                                   test_url_, MEDIUM, SocketTag(),
+                                   test_url_, false, MEDIUM, SocketTag(),
                                    NetLogWithSource(), callback2.callback(),
                                    TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -878,8 +879,8 @@ TEST_F(SpdySessionTest, CreateStreamAfterGoAway) {
 
   SpdyStreamRequest stream_request;
   int rv = stream_request.StartRequest(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, SocketTag(),
-      NetLogWithSource(), CompletionOnceCallback(),
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, false, MEDIUM,
+      SocketTag(), NetLogWithSource(), CompletionOnceCallback(),
       TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_THAT(rv, IsError(ERR_FAILED));
 
@@ -1304,7 +1305,7 @@ TEST_F(SpdySessionTest, StreamIdSpaceExhausted) {
   TestCompletionCallback callback4;
   EXPECT_EQ(ERR_IO_PENDING,
             request4.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                  test_url_, MEDIUM, SocketTag(),
+                                  test_url_, false, MEDIUM, SocketTag(),
                                   NetLogWithSource(), callback4.callback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -1410,9 +1411,10 @@ TEST_F(SpdySessionTest, MaxConcurrentStreamsZero) {
   // Start request.
   SpdyStreamRequest request;
   TestCompletionCallback callback;
-  int rv = request.StartRequest(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, SocketTag(),
-      NetLogWithSource(), callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
+  int rv =
+      request.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
+                           false, MEDIUM, SocketTag(), NetLogWithSource(),
+                           callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Stream is stalled.
@@ -1478,7 +1480,7 @@ TEST_F(SpdySessionTest, UnstallRacesWithStreamCreation) {
   TestCompletionCallback callback2;
   EXPECT_EQ(ERR_IO_PENDING,
             request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                  test_url_, MEDIUM, SocketTag(),
+                                  test_url_, false, MEDIUM, SocketTag(),
                                   NetLogWithSource(), callback2.callback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -1999,12 +2001,11 @@ TEST_F(SpdySessionTest, OnSettings) {
   SpdyStreamRequest request;
   ASSERT_EQ(ERR_IO_PENDING,
             request.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
-                                 MEDIUM, SocketTag(), NetLogWithSource(),
+                                 false, MEDIUM, SocketTag(), NetLogWithSource(),
                                  stream_releaser.MakeCallback(&request),
                                  TRAFFIC_ANNOTATION_FOR_TESTS));
 
   base::RunLoop().RunUntilIdle();
-
   EXPECT_THAT(stream_releaser.WaitForResult(), IsOk());
 
   data.Resume();
@@ -2055,7 +2056,7 @@ TEST_F(SpdySessionTest, CancelPendingCreateStream) {
   SpdyStreamRequest request;
   ASSERT_THAT(
       request.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
-                           MEDIUM, SocketTag(), NetLogWithSource(),
+                           false, MEDIUM, SocketTag(), NetLogWithSource(),
                            callback->callback(), TRAFFIC_ANNOTATION_FOR_TESTS),
       IsError(ERR_IO_PENDING));
 
@@ -2088,14 +2089,14 @@ TEST_F(SpdySessionTest, ChangeStreamRequestPriority) {
   TestCompletionCallback callback1;
   SpdyStreamRequest request1;
   ASSERT_EQ(OK, request1.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                      test_url_, LOWEST, SocketTag(),
+                                      test_url_, false, LOWEST, SocketTag(),
                                       NetLogWithSource(), callback1.callback(),
                                       TRAFFIC_ANNOTATION_FOR_TESTS));
   TestCompletionCallback callback2;
   SpdyStreamRequest request2;
   ASSERT_EQ(ERR_IO_PENDING,
             request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                  test_url_, LOWEST, SocketTag(),
+                                  test_url_, false, LOWEST, SocketTag(),
                                   NetLogWithSource(), callback2.callback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -2780,22 +2781,6 @@ TEST_F(SpdySessionTest, VerifyDomainAuthentication) {
   EXPECT_FALSE(session_->VerifyDomainAuthentication("mail.google.com"));
 }
 
-TEST_F(SpdySessionTest, ConnectionPooledWithTlsChannelId) {
-  SequencedSocketData data;
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  ssl_.ssl_info.channel_id_sent = true;
-  AddSSLSocketData();
-
-  CreateNetworkSession();
-  CreateSpdySession();
-
-  EXPECT_TRUE(session_->VerifyDomainAuthentication("www.example.org"));
-  EXPECT_TRUE(session_->VerifyDomainAuthentication("mail.example.org"));
-  EXPECT_FALSE(session_->VerifyDomainAuthentication("mail.example.com"));
-  EXPECT_FALSE(session_->VerifyDomainAuthentication("mail.google.com"));
-}
-
 TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
   // TODO(rtenneti): Define a helper class/methods and move the common code in
   // this file.
@@ -2871,7 +2856,7 @@ TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
   SpdyStreamRequest request2;
   ASSERT_EQ(ERR_IO_PENDING,
             request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                  test_url_, LOWEST, SocketTag(),
+                                  test_url_, false, LOWEST, SocketTag(),
                                   NetLogWithSource(), callback2.callback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -2879,7 +2864,7 @@ TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
   SpdyStreamRequest request3;
   ASSERT_EQ(ERR_IO_PENDING,
             request3.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                  test_url_, LOWEST, SocketTag(),
+                                  test_url_, false, LOWEST, SocketTag(),
                                   NetLogWithSource(), callback3.callback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -2984,7 +2969,7 @@ TEST_F(SpdySessionTest, CancelTwoStalledCreateStream) {
   SpdyStreamRequest request2;
   ASSERT_EQ(ERR_IO_PENDING,
             request2.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_,
-                                  test_url_, LOWEST, SocketTag(),
+                                  test_url_, false, LOWEST, SocketTag(),
                                   NetLogWithSource(), callback2.callback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -2992,7 +2977,7 @@ TEST_F(SpdySessionTest, CancelTwoStalledCreateStream) {
   SpdyStreamRequest request3;
   ASSERT_EQ(ERR_IO_PENDING,
             request3.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_,
-                                  test_url_, LOWEST, SocketTag(),
+                                  test_url_, false, LOWEST, SocketTag(),
                                   NetLogWithSource(), callback3.callback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -3535,7 +3520,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
 
   CreateNetworkSession();
 
-  TransportClientSocketPool* pool = http_session_->GetSocketPool(
+  ClientSocketPool* pool = http_session_->GetSocketPool(
       HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct());
 
   // Create an idle SPDY session.
@@ -3547,17 +3532,19 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
   TestCompletionCallback callback2;
   HostPortPair host_port2("2.com", 80);
   scoped_refptr<TransportSocketParams> params2(
-      new TransportSocketParams(host_port2, false, OnHostResolutionCallback()));
+      new TransportSocketParams(host_port2, OnHostResolutionCallback()));
   auto connection2 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection2->Init(host_port2.ToString(),
-                              TransportClientSocketPool::SocketParams::
-                                  CreateFromTransportSocketParams(params2),
-                              DEFAULT_PRIORITY, SocketTag(),
-                              ClientSocketPool::RespectLimits::ENABLED,
-                              callback2.callback(),
-                              ClientSocketPool::ProxyAuthCallback(), pool,
-                              NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      connection2->Init(
+          ClientSocketPool::GroupId(host_port2,
+                                    ClientSocketPool::SocketType::kHttp,
+                                    false /* privacy_mode */),
+          ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+              params2),
+          DEFAULT_PRIORITY, SocketTag(),
+          ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
+          ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // The socket pool should close the connection asynchronously and establish a
@@ -3596,7 +3583,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
 
   CreateNetworkSession();
 
-  TransportClientSocketPool* pool = http_session_->GetSocketPool(
+  ClientSocketPool* pool = http_session_->GetSocketPool(
       HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct());
 
   // Create an idle SPDY session.
@@ -3630,17 +3617,19 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   TestCompletionCallback callback3;
   HostPortPair host_port3("3.com", 80);
   scoped_refptr<TransportSocketParams> params3(
-      new TransportSocketParams(host_port3, false, OnHostResolutionCallback()));
+      new TransportSocketParams(host_port3, OnHostResolutionCallback()));
   auto connection3 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection3->Init(host_port3.ToString(),
-                              TransportClientSocketPool::SocketParams::
-                                  CreateFromTransportSocketParams(params3),
-                              DEFAULT_PRIORITY, SocketTag(),
-                              ClientSocketPool::RespectLimits::ENABLED,
-                              callback3.callback(),
-                              ClientSocketPool::ProxyAuthCallback(), pool,
-                              NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      connection3->Init(
+          ClientSocketPool::GroupId(host_port3,
+                                    ClientSocketPool::SocketType::kHttp,
+                                    false /* privacy_mode */),
+          ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+              params3),
+          DEFAULT_PRIORITY, SocketTag(),
+          ClientSocketPool::RespectLimits::ENABLED, callback3.callback(),
+          ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // The socket pool should close the connection asynchronously and establish a
@@ -3682,7 +3671,7 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
 
   CreateNetworkSession();
 
-  TransportClientSocketPool* pool = http_session_->GetSocketPool(
+  ClientSocketPool* pool = http_session_->GetSocketPool(
       HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct());
 
   // Create a SPDY session.
@@ -3711,17 +3700,19 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   TestCompletionCallback callback2;
   HostPortPair host_port2("2.com", 80);
   scoped_refptr<TransportSocketParams> params2(
-      new TransportSocketParams(host_port2, false, OnHostResolutionCallback()));
+      new TransportSocketParams(host_port2, OnHostResolutionCallback()));
   auto connection2 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection2->Init(host_port2.ToString(),
-                              TransportClientSocketPool::SocketParams::
-                                  CreateFromTransportSocketParams(params2),
-                              DEFAULT_PRIORITY, SocketTag(),
-                              ClientSocketPool::RespectLimits::ENABLED,
-                              callback2.callback(),
-                              ClientSocketPool::ProxyAuthCallback(), pool,
-                              NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      connection2->Init(
+          ClientSocketPool::GroupId(host_port2,
+                                    ClientSocketPool::SocketType::kHttp,
+                                    false /* privacy_mode */),
+          ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+              params2),
+          DEFAULT_PRIORITY, SocketTag(),
+          ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
+          ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // Running the message loop should cause the socket pool to ask the SPDY
@@ -6780,25 +6771,6 @@ TEST(CanPoolTest, CanNotPoolWithClientCerts) {
 
   EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
                                     "www.example.org", "mail.example.org"));
-}
-
-TEST(CanPoolTest, CanNotPoolAcrossETLDsWithChannelID) {
-  // Load a cert that is valid for:
-  //   www.example.org
-  //   mail.example.org
-  //   mail.example.com
-
-  TransportSecurityState tss;
-  TestSSLConfigService ssl_config_service;
-  SSLInfo ssl_info;
-  ssl_info.cert = ImportCertFromFile(GetTestCertsDirectory(),
-                                     "spdy_pooling.pem");
-  ssl_info.channel_id_sent = true;
-
-  EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                   "www.example.org", "mail.example.org"));
-  EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                    "www.example.org", "www.example.com"));
 }
 
 TEST(CanPoolTest, CanNotPoolWithBadPins) {

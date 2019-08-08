@@ -20,8 +20,6 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
-import java.util.Calendar;
-
 /**
  * Prompt that asks users to confirm the expiration date before saving card to Google.
  * TODO(crbug.com/848955)
@@ -133,11 +131,8 @@ public class AutofillExpirationDateFixFlowPrompt
         if (buttonType == ModalDialogProperties.ButtonType.POSITIVE) {
             String monthString = mMonthInput.getText().toString().trim();
             String yearString = mYearInput.getText().toString().trim();
-            if (isValidExpirationDate(monthString, yearString)) {
-                mDelegate.onUserAccept(monthString, yearString);
-                mModalDialogManager.dismissDialog(
-                        model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
-            }
+            mDelegate.onUserAccept(monthString, yearString);
+            mModalDialogManager.dismissDialog(model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
         } else if (buttonType == ModalDialogProperties.ButtonType.NEGATIVE) {
             mModalDialogManager.dismissDialog(model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
         }
@@ -151,36 +146,6 @@ public class AutofillExpirationDateFixFlowPrompt
                 && dismissalCause != DialogDismissalCause.DISMISSED_BY_NATIVE) {
             mDelegate.onPromptDismissed();
         }
-    }
-
-    private boolean isValidExpirationDate(String monthString, String yearString) {
-        if (monthString.isEmpty() || yearString.isEmpty()) {
-            return false;
-        }
-
-        Calendar calendar = Calendar.getInstance();
-        int currentMonth = calendar.get(Calendar.MONTH);
-        int currentYear = calendar.get(Calendar.YEAR) % 100;
-        int year, month;
-        try {
-            year = Integer.valueOf(yearString.trim());
-            month = Integer.valueOf(monthString.trim());
-        } catch (NumberFormatException e) {
-            return false;
-        }
-
-        if (month <= 0 || month > 12) {
-            return false;
-        }
-
-        if (year < currentYear) {
-            return false;
-        }
-
-        if (year == currentYear) {
-            return month >= currentMonth;
-        }
-        return true;
     }
 
     /**

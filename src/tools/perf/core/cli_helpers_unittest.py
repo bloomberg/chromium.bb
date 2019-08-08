@@ -17,38 +17,28 @@ class CLIHelpersTest(unittest.TestCase):
       cli_helpers.Colored('message', 'pink')
 
   @mock.patch('__builtin__.print')
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
   def testPrintsInfo(self, print_mock):
     cli_helpers.Info('foo {sval} {ival}', sval='s', ival=42)
     print_mock.assert_called_once_with('foo s 42')
 
   @mock.patch('__builtin__.print')
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
   def testPrintsComment(self, print_mock):
     cli_helpers.Comment('foo')
     print_mock.assert_called_once_with('\033[93mfoo\033[0m')
 
   @mock.patch('__builtin__.print')
   @mock.patch('sys.exit')
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
   def testFatal(self, sys_exit_mock, print_mock):
     cli_helpers.Fatal('foo')
     print_mock.assert_called_once_with('\033[91mfoo\033[0m')
     sys_exit_mock.assert_called_once()
 
   @mock.patch('__builtin__.print')
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
   def testPrintsError(self, print_mock):
     cli_helpers.Error('foo')
     print_mock.assert_called_once_with('\033[91mfoo\033[0m')
 
   @mock.patch('__builtin__.print')
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
   def testPrintsStep(self, print_mock):
     long_step_name = 'foobar' * 15
     cli_helpers.Step(long_step_name)
@@ -60,8 +50,8 @@ class CLIHelpersTest(unittest.TestCase):
 
   @mock.patch('__builtin__.print')
   @mock.patch('__builtin__.raw_input')
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
+  # https://crbug.com/938575.
+  @decorators.Disabled('chromeos')
   def testAskAgainOnInvalidAnswer(self, raw_input_mock, print_mock):
     raw_input_mock.side_effect = ['foobar', 'y']
     self.assertTrue(cli_helpers.Ask('Ready?'))
@@ -73,8 +63,8 @@ class CLIHelpersTest(unittest.TestCase):
 
   @mock.patch('__builtin__.print')
   @mock.patch('__builtin__.raw_input')
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
+  # https://crbug.com/938575.
+  @decorators.Disabled('chromeos')
   def testAskWithCustomAnswersAndDefault(self, raw_input_mock, print_mock):
     raw_input_mock.side_effect = ['']
     self.assertFalse(
@@ -84,8 +74,8 @@ class CLIHelpersTest(unittest.TestCase):
 
   @mock.patch('__builtin__.print')
   @mock.patch('__builtin__.raw_input')
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
+  # https://crbug.com/938575.
+  @decorators.Disabled('chromeos')
   def testAskNoDefaultCustomAnswersAsList(self, raw_input_mock, print_mock):
     raw_input_mock.side_effect = ['', 'FoO']
     self.assertEqual(cli_helpers.Ask('Ready?', ['foo', 'bar']), 'foo')
@@ -95,8 +85,6 @@ class CLIHelpersTest(unittest.TestCase):
       mock.call('\033[96mReady? [foo/bar] \033[0m', end=' ')
     ])
 
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
   def testAskWithInvalidDefaultAnswer(self):
     with self.assertRaises(ValueError):
       cli_helpers.Ask('Ready?', ['foo', 'bar'], 'baz')
@@ -105,8 +93,6 @@ class CLIHelpersTest(unittest.TestCase):
   @mock.patch('subprocess.check_call')
   @mock.patch('__builtin__.open')
   @mock.patch('datetime.datetime')
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
   def testCheckLog(
       self, dt_mock, open_mock, check_call_mock, print_mock):
     file_mock = mock.Mock()
@@ -133,8 +119,6 @@ class CLIHelpersTest(unittest.TestCase):
   @mock.patch('subprocess.check_call')
   @mock.patch('subprocess.call')
   @mock.patch('__builtin__.open')
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
   def testCheckLogError(
       self, open_mock, call_mock, check_call_mock, error_mock, print_mock):
     del print_mock, open_mock  # Unused.
@@ -153,8 +137,6 @@ class CLIHelpersTest(unittest.TestCase):
 
   @mock.patch('__builtin__.print')
   @mock.patch('subprocess.check_call')
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
   def testRun(self, check_call_mock, print_mock):
     check_call_mock.side_effect = [subprocess.CalledProcessError(87, ['cmd'])]
     with self.assertRaises(subprocess.CalledProcessError):
@@ -165,23 +147,17 @@ class CLIHelpersTest(unittest.TestCase):
 
   @mock.patch('__builtin__.print')
   @mock.patch('subprocess.check_call')
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
   def testRunOkFail(self, check_call_mock, print_mock):
     del print_mock  # Unused.
     check_call_mock.side_effect = [subprocess.CalledProcessError(87, ['cmd'])]
     cli_helpers.Run(['cmd'], ok_fail=True)
 
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
   def testRunWithNonListCommand(self):
     with self.assertRaises(ValueError):
       cli_helpers.Run('cmd with args')
 
   @mock.patch('__builtin__.print')
   @mock.patch('__builtin__.raw_input')
-  # https://crbug.com/938487
-  @decorators.Disabled('all')
   def testPrompt(self, raw_input_mock, print_mock):
     raw_input_mock.side_effect = ['', '42']
     self.assertEqual(cli_helpers.Prompt(

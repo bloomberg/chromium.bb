@@ -17,17 +17,17 @@ function SortMenuController(sortButton, toggleRipple, fileListModel) {
   this.fileListModel_ = fileListModel;
 
   /** @private {!HTMLElement} */
-  this.sortByNameButton_ = queryRequiredElement(
-      '#sort-menu-sort-by-name', sortButton.menu);
+  this.sortByNameButton_ =
+      queryRequiredElement('#sort-menu-sort-by-name', sortButton.menu);
   /** @private {!HTMLElement} */
-  this.sortBySizeButton_ = queryRequiredElement(
-      '#sort-menu-sort-by-size', sortButton.menu);
+  this.sortBySizeButton_ =
+      queryRequiredElement('#sort-menu-sort-by-size', sortButton.menu);
   /** @private {!HTMLElement} */
-  this.sortByTypeButton_ = queryRequiredElement(
-      '#sort-menu-sort-by-type', sortButton.menu);
+  this.sortByTypeButton_ =
+      queryRequiredElement('#sort-menu-sort-by-type', sortButton.menu);
   /** @private {!HTMLElement} */
-  this.sortByDateButton_ = queryRequiredElement(
-      '#sort-menu-sort-by-date', sortButton.menu);
+  this.sortByDateButton_ =
+      queryRequiredElement('#sort-menu-sort-by-date', sortButton.menu);
 
   sortButton.addEventListener('menushow', this.updateCheckmark_.bind(this));
   sortButton.addEventListener('menuhide', this.onHideSortMenu_.bind(this));
@@ -44,8 +44,8 @@ SortMenuController.prototype.updateCheckmark_ = function() {
   this.setCheckStatus_(this.sortByNameButton_, sortField === 'name');
   this.setCheckStatus_(this.sortBySizeButton_, sortField === 'size');
   this.setCheckStatus_(this.sortByTypeButton_, sortField === 'type');
-  this.setCheckStatus_(this.sortByDateButton_,
-                       sortField === 'modificationTime');
+  this.setCheckStatus_(
+      this.sortByDateButton_, sortField === 'modificationTime');
 };
 
 /**

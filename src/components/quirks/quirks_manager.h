@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -120,7 +121,7 @@ class QUIRKS_EXPORT QuirksManager {
   void SetLastServerCheck(int64_t product_id, const base::Time& last_check);
 
   // Set of active clients, each created to download a different Quirks file.
-  std::set<std::unique_ptr<QuirksClient>> clients_;
+  std::set<std::unique_ptr<QuirksClient>, base::UniquePtrComparator> clients_;
 
   // Don't start downloads before first session login.
   bool waiting_for_login_;

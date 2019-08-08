@@ -42,6 +42,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/base/escape.h"
+#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/mock_host_resolver.h"
@@ -60,6 +61,11 @@ using prerender::test_utils::TestPrerender;
 namespace {
 
 const char kExpectedPurposeHeaderOnPrefetch[] = "Purpose";
+
+std::string CreateServerRedirect(const std::string& dest_url) {
+  const char* const kServerRedirectBase = "/server-redirect?";
+  return kServerRedirectBase + net::EscapeQueryParamValue(dest_url, false);
+}
 
 }  // namespace
 
@@ -86,6 +92,7 @@ const char kPrefetchResponseHeaderCSP[] =
     "/prerender/prefetch_response_csp.html";
 const char kPrefetchScript[] = "/prerender/prefetch.js";
 const char kPrefetchScript2[] = "/prerender/prefetch2.js";
+const char kPrefetchDownloadFile[] = "/download-test1.lib";
 const char kPrefetchSubresourceRedirectPage[] =
     "/prerender/prefetch_subresource_redirect.html";
 const char kServiceWorkerLoader[] = "/prerender/service_worker.html";
@@ -131,6 +138,14 @@ class NoStatePrefetchBrowserTest
   }
 
  protected:
+  // Loads kPrefetchLoaderPath and specifies |target_url| as a query param. The
+  // |loader_url| looks something like:
+  // http://127.0.0.1:port_number/prerender/prefetch_loader.html?replace_text=\
+  // UkVQTEFDRV9XSVRIX1BSRUZFVENIX1VSTA==:aHR0cDovL3d3dy52dlci5odG1s.
+  // When the embedded test server receives the request, it uses the specified
+  // query params to replace the "REPLACE_WITH_PREFETCH_URL" string in the HTML
+  // response with |target_url|. See method UpdateReplacedText() from embedded
+  // test server.
   std::unique_ptr<TestPrerender> PrefetchFromURL(
       const GURL& target_url,
       FinalStatus expected_final_status) {
@@ -197,6 +212,29 @@ class NoStatePrefetchBrowserTest
   DISALLOW_COPY_AND_ASSIGN(NoStatePrefetchBrowserTest);
 };
 
+class NoStatePrefetchBrowserTestHttpCache
+    : public NoStatePrefetchBrowserTest,
+      public testing::WithParamInterface<bool> {
+ protected:
+  void SetUp() override {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          net::features::kSplitCacheByTopFrameOrigin);
+    }
+    NoStatePrefetchBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(DefaultKeyedHttpCache,
+                         NoStatePrefetchBrowserTestHttpCache,
+                         ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(DoubleKeyedHttpCache,
+                         NoStatePrefetchBrowserTestHttpCache,
+                         ::testing::Values(true));
+
 // Checks that a page is correctly prefetched in the case of a
 // <link rel=prerender> tag and the JavaScript on the page is not executed.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchSimple) {
@@ -225,24 +263,49 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchBigger) {
   WaitForRequestCount(src_server()->GetURL(kPrefetchPngRedirect), 1);
 }
 
-// Checks that a page load following a prefetch reuses preload-scanned
-// resources from cache without failing over to network.
-IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, LoadAfterPrefetch) {
+// Checks that a page load following a prefetch reuses preload-scanned resources
+// and link rel 'prerender' main resource from cache without failing over to
+// network.
+IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTestHttpCache, LoadAfterPrefetch) {
   {
     std::unique_ptr<TestPrerender> test_prerender = PrefetchFromFile(
         kPrefetchPageBigger, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+    WaitForRequestCount(src_server()->GetURL(kPrefetchPageBigger), 1);
     WaitForRequestCount(src_server()->GetURL(kPrefetchJpeg), 1);
     WaitForRequestCount(src_server()->GetURL(kPrefetchPng2), 1);
   }
   ui_test_utils::NavigateToURL(current_browser(),
                                src_server()->GetURL(kPrefetchPageBigger));
   // Check that the request counts did not increase.
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPageBigger), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchJpeg), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPng2), 1);
+}
+
+// Checks that a page load following a cross origin prefetch reuses
+// preload-scanned resources and link rel 'prerender' main resource
+// from cache without failing over to network.
+IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTestHttpCache,
+                       LoadAfterPrefetchCrossOrigin) {
+  static const std::string kSecondaryDomain = "www.foo.com";
+  GURL cross_domain_url =
+      embedded_test_server()->GetURL(kSecondaryDomain, kPrefetchPageBigger);
+
+  PrefetchFromURL(cross_domain_url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPageBigger), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchJpeg), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPng2), 1);
+
+  ui_test_utils::NavigateToURL(current_browser(), cross_domain_url);
+  // Check that the request counts did not increase.
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPageBigger), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchJpeg), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchPng2), 1);
 }
 
 void GetCookieCallback(base::RepeatingClosure callback,
-                       const net::CookieList& cookie_list) {
+                       const net::CookieList& cookie_list,
+                       const net::CookieStatusList& excluded_cookies) {
   bool found_chocolate = false;
   bool found_oatmeal = false;
   for (const auto& c : cookie_list) {
@@ -511,10 +574,18 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchNonexisting) {
 
 // Checks that a 301 redirect is followed.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Prefetch301Redirect) {
-  PrefetchFromFile(
-      "/server-redirect/?" + net::EscapeQueryParamValue(kPrefetchPage, false),
-      FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  PrefetchFromFile(CreateServerRedirect(kPrefetchPage),
+                   FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
+}
+
+// Checks that non-HTTP(S) main resource redirects are marked as unsupported
+// scheme.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
+                       PrefetchRedirectUnsupportedScheme) {
+  PrefetchFromFile(
+      CreateServerRedirect("invalidscheme://www.google.com/test.html"),
+      FINAL_STATUS_UNSUPPORTED_SCHEME);
 }
 
 // Checks that a 302 redirect is followed.
@@ -526,8 +597,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Prefetch302Redirect) {
 // Checks that the load flags are set correctly for all resources in a 301
 // redirect chain.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Prefetch301LoadFlags) {
-  std::string redirect_path =
-      "/server-redirect/?" + net::EscapeQueryParamValue(kPrefetchPage, false);
+  std::string redirect_path = CreateServerRedirect(kPrefetchPage);
   GURL redirect_url = src_server()->GetURL(redirect_path);
   GURL page_url = src_server()->GetURL(kPrefetchPage);
   content::URLLoaderInterceptor interceptor(base::BindRepeating(
@@ -558,11 +628,38 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchClientRedirect) {
       FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   ui_test_utils::NavigateToURL(current_browser(),
                                src_server()->GetURL(kPrefetchPage2));
-  // A complete load of kPrefetchPage2 is used as a sentinal. Otherwise the test
+  // A complete load of kPrefetchPage2 is used as a sentinel. Otherwise the test
   // ends before script_counter would reliably see the load of kPrefetchScript,
   // were it to happen.
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 0);
+}
+
+// Prefetches a page that contains an automatic download triggered through an
+// iframe. The request to download should not reach the server.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchDownloadIframe) {
+  PrefetchFromFile("/prerender/prerender_download_iframe.html",
+                   FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  // A complete load of kPrefetchPage2 is used as a sentinel as in test
+  // |PrefetchClientRedirect| above.
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchDownloadFile), 0);
+}
+
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
+                       PrefetchDownloadViaClientRedirect) {
+  PrefetchFromFile("/prerender/prerender_download_refresh.html",
+                   FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  // A complete load of kPrefetchPage2 is used as a sentinel as in test
+  // |PrefetchClientRedirect| above.
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchDownloadFile), 0);
+}
+
+// Checks that a prefetch of a CRX will result in a cancellation due to
+// download.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCrx) {
+  PrefetchFromFile("/prerender/extension.crx", FINAL_STATUS_DOWNLOAD);
 }
 
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchHttps) {
@@ -577,7 +674,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, SSLError) {
   // Only send the loaded page, not the loader, through SSL.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
   std::unique_ptr<TestPrerender> prerender = PrefetchFromURL(
       https_server.GetURL(kPrefetchPage), FINAL_STATUS_SSL_ERROR);
@@ -594,7 +691,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, SSLSubresourceError) {
   // non-HTTPS.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("/prerender/image.jpeg");
   GURL main_page_url = GetURLWithReplacement(
@@ -736,6 +833,9 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, HistoryUntouchedByPrefetch) {
 
 // Checks that prefetch requests have net::IDLE priority.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, IssuesIdlePriorityRequests) {
+  // TODO(pasko): Figure out how to test that while a prefetched URL is in IDLE
+  // priority state, a high-priority request with the same URL from a foreground
+  // navigation hits the server.
   GURL script_url = src_server()->GetURL(kPrefetchScript);
   content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
       [=](content::URLLoaderInterceptor::RequestParams* params) {

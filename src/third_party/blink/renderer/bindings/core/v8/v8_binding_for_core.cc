@@ -620,8 +620,8 @@ XPathNSResolver* ToXPathNSResolver(ScriptState* script_state,
   if (V8XPathNSResolver::HasInstance(value, script_state->GetIsolate())) {
     resolver = V8XPathNSResolver::ToImpl(v8::Local<v8::Object>::Cast(value));
   } else if (value->IsObject()) {
-    resolver =
-        V8CustomXPathNSResolver::Create(script_state, value.As<v8::Object>());
+    resolver = MakeGarbageCollected<V8CustomXPathNSResolver>(
+        script_state, value.As<v8::Object>());
   }
   return resolver;
 }

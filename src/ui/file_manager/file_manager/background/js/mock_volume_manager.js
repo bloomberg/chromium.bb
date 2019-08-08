@@ -113,10 +113,10 @@ MockVolumeManager.prototype.getLocationInfo = function(entry) {
     var isRootEntry = entry.fullPath === '/root';
     if (entry.fullPath.startsWith('/team_drives')) {
       if (entry.fullPath === '/team_drives') {
-        rootType = VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT;
+        rootType = VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT;
         isRootEntry = true;
       } else {
-        rootType = VolumeManagerCommon.RootType.TEAM_DRIVE;
+        rootType = VolumeManagerCommon.RootType.SHARED_DRIVE;
         isRootEntry = util.isTeamDriveRoot(entry);
       }
     } else if (entry.fullPath.startsWith('/Computers')) {
@@ -178,37 +178,41 @@ MockVolumeManager.prototype.getDriveConnectionState = function() {
  * @param {string=} providerId Provider id.
  * @return {!VolumeInfo} Created mock VolumeInfo.
  */
-MockVolumeManager.createMockVolumeInfo = (type, volumeId, label, devicePath, providerId) => {
-  const fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
+MockVolumeManager.createMockVolumeInfo =
+    (type, volumeId, label, devicePath, providerId) => {
+      const fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
 
-  // If there's no label set it to volumeId to make it shorter to write tests.
-  const volumeInfo = new VolumeInfoImpl(
-      type, volumeId, fileSystem,
-      '',                                          // error
-      '',                                          // deviceType
-      devicePath || '',                            // devicePath
-      false,                                       // isReadOnly
-      false,                                       // isReadOnlyRemovableDevice
-      {isCurrentProfile: true, displayName: ''},   // profile
-      label || volumeId,                           // label
-      providerId,                                  // providerId
-      false,                                       // hasMedia
-      false,                                       // configurable
-      false,                                       // watchable
-      VolumeManagerCommon.Source.NETWORK,          // source
-      VolumeManagerCommon.FileSystemType.UNKNOWN,  // diskFileSystemType
-      {},                                          // iconSet
-      '');                                         // driveLabel
+      // If there's no label set it to volumeId to make it shorter to write
+      // tests.
+      const volumeInfo = new VolumeInfoImpl(
+          type, volumeId, fileSystem,
+          '',                // error
+          '',                // deviceType
+          devicePath || '',  // devicePath
+          false,             // isReadOnly
+          false,             // isReadOnlyRemovableDevice
+          {isCurrentProfile: true, displayName: ''},   // profile
+          label || volumeId,                           // label
+          providerId,                                  // providerId
+          false,                                       // hasMedia
+          false,                                       // configurable
+          false,                                       // watchable
+          VolumeManagerCommon.Source.NETWORK,          // source
+          VolumeManagerCommon.FileSystemType.UNKNOWN,  // diskFileSystemType
+          {},                                          // iconSet
+          '');                                         // driveLabel
 
-  return volumeInfo;
-};
+      return volumeInfo;
+    };
 
-MockVolumeManager.prototype.mountArchive = (fileUrl, successCallback, errorCallback) => {
-  throw new Error('Not implemented.');
-};
-MockVolumeManager.prototype.unmount = (volumeInfo, successCallback, errorCallback) => {
-  throw new Error('Not implemented.');
-};
+MockVolumeManager.prototype.mountArchive =
+    (fileUrl, successCallback, errorCallback) => {
+      throw new Error('Not implemented.');
+    };
+MockVolumeManager.prototype.unmount =
+    (volumeInfo, successCallback, errorCallback) => {
+      throw new Error('Not implemented.');
+    };
 MockVolumeManager.prototype.configure = volumeInfo => {
   throw new Error('Not implemented.');
 };

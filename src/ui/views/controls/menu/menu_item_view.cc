@@ -8,7 +8,9 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <numeric>
 
+#include "base/containers/adapters.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,6 +19,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -59,10 +63,9 @@ class EmptyMenuMenuItem : public MenuItemView {
     SetEnabled(false);
   }
 
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override {
+  base::string16 GetTooltipText(const gfx::Point& p) const override {
     // Empty menu items shouldn't have a tooltip.
-    return false;
+    return base::string16();
   }
 
  private:
@@ -72,7 +75,7 @@ class EmptyMenuMenuItem : public MenuItemView {
 }  // namespace
 
 // Padding between child views.
-static const int kChildXPadding = 8;
+static constexpr int kChildXPadding = 8;
 
 // MenuItemView ---------------------------------------------------------------
 
@@ -100,17 +103,17 @@ const char MenuItemView::kViewClassName[] = "MenuItemView";
 
 MenuItemView::MenuItemView(MenuDelegate* delegate)
     : delegate_(delegate),
-      controller_(NULL),
+      controller_(nullptr),
       canceled_(false),
-      parent_menu_item_(NULL),
+      parent_menu_item_(nullptr),
       type_(SUBMENU),
       selected_(false),
       command_(0),
-      submenu_(NULL),
+      submenu_(nullptr),
       has_mnemonics_(false),
       show_mnemonics_(false),
       has_icons_(false),
-      icon_view_(NULL),
+      icon_view_(nullptr),
       top_margin_(-1),
       bottom_margin_(-1),
       left_icon_margin_(0),
@@ -120,7 +123,7 @@ MenuItemView::MenuItemView(MenuDelegate* delegate)
       use_right_margin_(true) {
   // NOTE: don't check the delegate for NULL, UpdateMenuPartSizes() supplies a
   // NULL delegate.
-  Init(NULL, 0, SUBMENU, delegate);
+  Init(nullptr, 0, SUBMENU, delegate);
 }
 
 void MenuItemView::ChildPreferredSizeChanged(View* child) {
@@ -128,20 +131,18 @@ void MenuItemView::ChildPreferredSizeChanged(View* child) {
   PreferredSizeChanged();
 }
 
-bool MenuItemView::GetTooltipText(const gfx::Point& p,
-                                  base::string16* tooltip) const {
-  *tooltip = tooltip_;
-  if (!tooltip->empty())
-    return true;
+base::string16 MenuItemView::GetTooltipText(const gfx::Point& p) const {
+  if (!tooltip_.empty())
+    return tooltip_;
 
-  if (GetType() == SEPARATOR)
-    return false;
+  if (type_ == SEPARATOR)
+    return base::string16();
 
   const MenuController* controller = GetMenuController();
   if (!controller || controller->exit_type() != MenuController::EXIT_NONE) {
     // Either the menu has been closed or we're in the process of closing the
     // menu. Don't attempt to query the delegate as it may no longer be valid.
-    return false;
+    return base::string16();
   }
 
   const MenuItemView* root_menu_item = GetRootMenuItem();
@@ -149,20 +150,19 @@ bool MenuItemView::GetTooltipText(const gfx::Point& p,
     // TODO(sky): if |canceled_| is true, controller->exit_type() should be
     // something other than EXIT_NONE, but crash reports seem to indicate
     // otherwise. Figure out why this is needed.
-    return false;
+    return base::string16();
   }
 
   const MenuDelegate* delegate = GetDelegate();
   CHECK(delegate);
   gfx::Point location(p);
   ConvertPointToScreen(this, &location);
-  *tooltip = delegate->GetTooltipText(command_, location);
-  return !tooltip->empty();
+  return delegate->GetTooltipText(command_, location);
 }
 
 void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Set the role based on the type of menu item.
-  switch (GetType()) {
+  switch (type_) {
     case CHECKBOX:
       node_data->role = ax::mojom::Role::kMenuItemCheckBox;
       break;
@@ -188,7 +188,7 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
   node_data->SetName(GetAccessibleNameForMenuItem(item_text, GetMinorText()));
 
-  switch (GetType()) {
+  switch (type_) {
     case SUBMENU:
     case ACTIONABLE_SUBMENU:
       node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
@@ -218,19 +218,24 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 bool MenuItemView::HandleAccessibleAction(const ui::AXActionData& action_data) {
   if (action_data.action != ax::mojom::Action::kDoDefault)
     return View::HandleAccessibleAction(action_data);
-  GetMenuController()->Accept(this, ui::EF_NONE);
+
+  // kDoDefault in View would simulate a mouse click in the center of this
+  // MenuItemView. However, mouse events for menus are dispatched via
+  // Widget::SetCapture() to the MenuController rather than to MenuItemView, so
+  // there is no effect. VKEY_RETURN provides a better UX anyway, since it will
+  // move focus to a submenu.
+  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::DomCode::ENTER,
+                     ui::EF_NONE, ui::DomKey::ENTER, ui::EventTimeForNow());
+  GetMenuController()->SetSelection(this, MenuController::SELECTION_DEFAULT);
+  GetMenuController()->OnWillDispatchKeyEvent(&event);
   return true;
 }
 
 // static
 bool MenuItemView::IsBubble(MenuAnchorPosition anchor) {
-  return anchor == MENU_ANCHOR_BUBBLE_LEFT ||
-         anchor == MENU_ANCHOR_BUBBLE_RIGHT ||
-         anchor == MENU_ANCHOR_BUBBLE_ABOVE ||
-         anchor == MENU_ANCHOR_BUBBLE_BELOW ||
-         anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE ||
-         anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT ||
-         anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT;
+  return anchor == MenuAnchorPosition::kBubbleAbove ||
+         anchor == MenuAnchorPosition::kBubbleLeft ||
+         anchor == MenuAnchorPosition::kBubbleRight;
 }
 
 // static
@@ -278,13 +283,13 @@ MenuItemView* MenuItemView::AddMenuItemAt(
     Type type,
     ui::MenuSeparatorType separator_style) {
   DCHECK_NE(type, EMPTY);
-  DCHECK_LE(0, index);
+  DCHECK_GE(index, 0);
   if (!submenu_)
     CreateSubmenu();
-  DCHECK_GE(submenu_->child_count(), index);
+  DCHECK_LE(size_t{index}, submenu_->children().size());
   if (type == SEPARATOR) {
     submenu_->AddChildViewAt(new MenuSeparator(separator_style), index);
-    return NULL;
+    return nullptr;
   }
   MenuItemView* item = new MenuItemView(this, item_id, type);
   if (label.empty() && GetDelegate())
@@ -311,17 +316,23 @@ MenuItemView* MenuItemView::AddMenuItemAt(
 
 void MenuItemView::RemoveMenuItemAt(int index) {
   DCHECK(submenu_);
-  DCHECK_LE(0, index);
-  DCHECK_GT(submenu_->child_count(), index);
+  DCHECK_GE(index, 0);
+  DCHECK_LT(size_t{index}, submenu_->children().size());
 
   View* item = submenu_->child_at(index);
   DCHECK(item);
-  submenu_->RemoveChildView(item);
-
-  // RemoveChildView() does not delete the item, which is a good thing
-  // in case a submenu is being displayed while items are being removed.
-  // Deletion will be done by ChildrenChanged() or at destruction.
   removed_items_.push_back(item);
+
+  submenu_->RemoveChildView(item);
+}
+
+void MenuItemView::RemoveAllMenuItems() {
+  DCHECK(submenu_);
+
+  removed_items_.insert(removed_items_.end(), submenu_->children().begin(),
+                        submenu_->children().end());
+
+  submenu_->RemoveAllChildViews(false);
 }
 
 MenuItemView* MenuItemView::AppendMenuItem(int item_id,
@@ -386,7 +397,7 @@ MenuItemView* MenuItemView::AppendMenuItemImpl(
     const gfx::ImageSkia& icon,
     Type type,
     ui::MenuSeparatorType separator_style) {
-  const int index = submenu_ ? submenu_->child_count() : 0;
+  const int index = submenu_ ? int{submenu_->children().size()} : 0;
   return AddMenuItemAt(index, item_id, label, sublabel, minor_text, minor_icon,
                        icon, type, separator_style);
 }
@@ -404,7 +415,7 @@ SubmenuView* MenuItemView::CreateSubmenu() {
 }
 
 bool MenuItemView::HasSubmenu() const {
-  return (submenu_ != NULL);
+  return (submenu_ != nullptr);
 }
 
 SubmenuView* MenuItemView::GetSubmenu() const {
@@ -467,7 +478,7 @@ void MenuItemView::SetIcon(const gfx::ImageSkia& icon, int item_id) {
 
 void MenuItemView::SetIcon(const gfx::ImageSkia& icon) {
   if (icon.isNull()) {
-    SetIconView(NULL);
+    SetIconView(nullptr);
     return;
   }
 
@@ -480,13 +491,13 @@ void MenuItemView::SetIconView(View* icon_view) {
   if (icon_view_) {
     RemoveChildView(icon_view_);
     delete icon_view_;
-    icon_view_ = NULL;
+    icon_view_ = nullptr;
   }
   if (icon_view) {
     AddChildView(icon_view);
     icon_view_ = icon_view;
   }
-  Layout();
+  InvalidateLayout();
   SchedulePaint();
 }
 
@@ -586,17 +597,13 @@ MenuItemView* MenuItemView::GetMenuItemByID(int id) {
   if (GetCommand() == id)
     return this;
   if (!HasSubmenu())
-    return NULL;
-  for (int i = 0; i < GetSubmenu()->child_count(); ++i) {
-    View* child = GetSubmenu()->child_at(i);
-    if (child->id() == MenuItemView::kMenuItemViewID) {
-      MenuItemView* result = static_cast<MenuItemView*>(child)->
-          GetMenuItemByID(id);
-      if (result)
-        return result;
-    }
+    return nullptr;
+  for (MenuItemView* item : GetSubmenu()->GetMenuItems()) {
+    MenuItemView* result = item->GetMenuItemByID(id);
+    if (result)
+      return result;
   }
-  return NULL;
+  return nullptr;
 }
 
 void MenuItemView::ChildrenChanged() {
@@ -611,9 +618,10 @@ void MenuItemView::ChildrenChanged() {
     controller->MenuChildrenChanged(this);
 
     if (submenu_) {
-      // Force a paint and layout. This handles the case of the top
-      // level window's size remaining the same, resulting in no
-      // change to the submenu's size and no layout.
+      // Force a paint and a synchronous layout. This needs a synchronous layout
+      // as UpdateSubmenuSelection() looks at bounds. This handles the case of
+      // the top level window's size remaining the same, resulting in no change
+      // to the submenu's size and no layout.
       submenu_->Layout();
       submenu_->SchedulePaint();
       // Update the menu selection after layout.
@@ -627,7 +635,7 @@ void MenuItemView::ChildrenChanged() {
 }
 
 void MenuItemView::Layout() {
-  if (!has_children())
+  if (children().empty())
     return;
 
   if (IsContainer()) {
@@ -642,8 +650,7 @@ void MenuItemView::Layout() {
     // Child views are laid out right aligned and given the full height. To
     // right align start with the last view and progress to the first.
     int x = width() - (use_right_margin_ ? item_right_margin_ : 0);
-    for (int i = child_count() - 1; i >= 0; --i) {
-      View* child = child_at(i);
+    for (View* child : base::Reversed(children())) {
       if (icon_view_ == child)
         continue;
       if (radio_check_image_view_ == child)
@@ -718,7 +725,7 @@ void MenuItemView::SetForcedVisualSelection(bool selected) {
 }
 
 void MenuItemView::SetCornerRadius(int radius) {
-  DCHECK_EQ(GetType(), HIGHLIGHTED);
+  DCHECK_EQ(HIGHLIGHTED, type_);
   corner_radius_ = radius;
   invalidate_dimensions();  // Triggers preferred size recalculation.
 }
@@ -731,18 +738,18 @@ void MenuItemView::SetAlerted() {
 MenuItemView::MenuItemView(MenuItemView* parent,
                            int command,
                            MenuItemView::Type type)
-    : delegate_(NULL),
-      controller_(NULL),
+    : delegate_(nullptr),
+      controller_(nullptr),
       canceled_(false),
       parent_menu_item_(parent),
       type_(type),
       selected_(false),
       command_(command),
-      submenu_(NULL),
+      submenu_(nullptr),
       has_mnemonics_(false),
       show_mnemonics_(false),
       has_icons_(false),
-      icon_view_(NULL),
+      icon_view_(nullptr),
       top_margin_(-1),
       bottom_margin_(-1),
       left_icon_margin_(0),
@@ -750,7 +757,7 @@ MenuItemView::MenuItemView(MenuItemView* parent,
       requested_menu_position_(POSITION_BEST_FIT),
       actual_menu_position_(requested_menu_position_),
       use_right_margin_(true) {
-  Init(parent, command, type, NULL);
+  Init(parent, command, type, nullptr);
 }
 
 MenuItemView::~MenuItemView() {
@@ -918,21 +925,18 @@ void MenuItemView::AddEmptyMenus() {
   if (!submenu_->HasVisibleChildren() && !submenu_->HasEmptyMenuItemView()) {
     submenu_->AddChildViewAt(new EmptyMenuMenuItem(this), 0);
   } else {
-    for (int i = 0, item_count = submenu_->GetMenuItemCount(); i < item_count;
-         ++i) {
-      MenuItemView* child = submenu_->GetMenuItemAt(i);
-      if (child->HasSubmenu())
-        child->AddEmptyMenus();
+    for (MenuItemView* item : submenu_->GetMenuItems()) {
+      if (item->HasSubmenu())
+        item->AddEmptyMenus();
     }
   }
 }
 
 void MenuItemView::RemoveEmptyMenus() {
   DCHECK(HasSubmenu());
-  // Iterate backwards as we may end up removing views, which alters the child
-  // view count.
-  for (int i = submenu_->child_count() - 1; i >= 0; --i) {
-    View* child = submenu_->child_at(i);
+  // Copy the children, since we may mutate them as we go.
+  const Views children = submenu_->children();
+  for (View* child : children) {
     if (child->id() == MenuItemView::kMenuItemViewID) {
       MenuItemView* menu_item = static_cast<MenuItemView*>(child);
       if (menu_item->HasSubmenu())
@@ -940,7 +944,6 @@ void MenuItemView::RemoveEmptyMenus() {
     } else if (child->id() == EmptyMenuMenuItem::kEmptyMenuItemViewID) {
       submenu_->RemoveChildView(child);
       delete child;
-      child = NULL;
     }
   }
 }
@@ -1020,12 +1023,12 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 void MenuItemView::PaintBackground(gfx::Canvas* canvas,
                                    PaintButtonMode mode,
                                    bool render_selection) {
-  if (GetType() == HIGHLIGHTED || is_alerted_) {
+  if (type_ == HIGHLIGHTED || is_alerted_) {
     SkColor color = gfx::kPlaceholderColor;
 
     // Highligted items always have a different-colored background, and ignore
     // system theme.
-    if (GetType() == HIGHLIGHTED) {
+    if (type_ == HIGHLIGHTED) {
       const ui::NativeTheme::ColorId color_id =
           render_selection
               ? ui::NativeTheme::
@@ -1136,7 +1139,7 @@ SkColor MenuItemView::GetTextColor(bool minor, bool render_selection) const {
   if (GetMenuController() && GetMenuController()->use_touchable_layout())
     color_id = ui::NativeTheme::kColorId_TouchableMenuItemLabelColor;
 
-  if (GetType() == HIGHLIGHTED)
+  if (type_ == HIGHLIGHTED)
     color_id = ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor;
 
   return GetNativeTheme()->GetSystemColor(color_id);
@@ -1147,10 +1150,8 @@ void MenuItemView::DestroyAllMenuHosts() {
     return;
 
   submenu_->Close();
-  for (int i = 0, item_count = submenu_->GetMenuItemCount(); i < item_count;
-       ++i) {
-    submenu_->GetMenuItemAt(i)->DestroyAllMenuHosts();
-  }
+  for (MenuItemView* item : submenu_->GetMenuItems())
+    item->DestroyAllMenuHosts();
 }
 
 int MenuItemView::GetTopMargin() const {
@@ -1178,33 +1179,27 @@ int MenuItemView::GetBottomMargin() const {
 }
 
 gfx::Size MenuItemView::GetChildPreferredSize() const {
-  if (!has_children())
+  if (children().empty())
     return gfx::Size();
 
   if (IsContainer())
     return child_at(0)->GetPreferredSize();
 
-  int width = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    const View* child = child_at(i);
-    if (icon_view_ == child)
-      continue;
-    if (radio_check_image_view_ == child)
-      continue;
-    if (submenu_arrow_image_view_ == child)
-      continue;
-    if (vertical_separator_ == child)
-      continue;
-    if (i)
+  const auto add_width = [this](int width, const View* child) {
+    if (child == icon_view_ || child == radio_check_image_view_ ||
+        child == submenu_arrow_image_view_ || child == vertical_separator_)
+      return width;
+    if (width)
       width += kChildXPadding;
-    width += child->GetPreferredSize().width();
-  }
-  int height = 0;
-  if (icon_view_)
-    height = icon_view_->GetPreferredSize().height();
+    return width + child->GetPreferredSize().width();
+  };
+  const int width =
+      std::accumulate(children().cbegin(), children().cend(), 0, add_width);
 
   // If there is no icon view it returns a height of 0 to indicate that
   // we should use the title height instead.
+  const int height = icon_view_ ? icon_view_->GetPreferredSize().height() : 0;
+
   return gfx::Size(width, height);
 }
 
@@ -1228,7 +1223,7 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
     dimensions.standard_width = menu_config.touchable_menu_width;
 
     if (icon_view_) {
-      dimensions.height = icon_view_->height() +
+      dimensions.height = icon_view_->GetPreferredSize().height() +
                           2 * menu_config.vertical_touchable_menu_item_padding;
     }
     return dimensions;
@@ -1304,7 +1299,7 @@ void MenuItemView::ApplyMinimumDimensions(MenuItemDimensions* dims) const {
   // TODO(nicolaso): PaintBackground() doesn't cover the whole area in footnotes
   // when minimum height is set too high. For now, just ignore minimum height
   // for HIGHLIGHTED elements.
-  if (GetType() == HIGHLIGHTED)
+  if (type_ == HIGHLIGHTED)
     return;
 
   int used =
@@ -1373,47 +1368,44 @@ gfx::Insets MenuItemView::GetContainerMargins() const {
 }
 
 int MenuItemView::NonIconChildViewsCount() const {
-  // Note that what child_count() returns is the number of children,
-  // not the number of menu items.
-  return child_count() - (icon_view_ ? 1 : 0) -
+  return int{children().size()} - (icon_view_ ? 1 : 0) -
          (radio_check_image_view_ ? 1 : 0) -
          (submenu_arrow_image_view_ ? 1 : 0) - (vertical_separator_ ? 1 : 0);
 }
 
 int MenuItemView::GetMaxIconViewWidth() const {
-  int width = 0;
-  for (int i = 0; i < submenu_->GetMenuItemCount(); ++i) {
-    MenuItemView* menu_item = submenu_->GetMenuItemAt(i);
-    int temp_width = 0;
-    if (menu_item->GetType() == CHECKBOX ||
-        menu_item->GetType() == RADIO) {
+  DCHECK(submenu_);
+  const auto menu_items = submenu_->GetMenuItems();
+  if (menu_items.empty())
+    return 0;
+
+  std::vector<int> widths(menu_items.size());
+  const auto get_width = [](MenuItemView* item) {
+    if (item->type_ == CHECKBOX || item->type_ == RADIO) {
       // If this item has a radio or checkbox, the icon will not affect
       // alignment of other items.
-      continue;
-    } else if (menu_item->HasSubmenu()) {
-      temp_width = menu_item->GetMaxIconViewWidth();
-    } else if (menu_item->icon_view() &&
-               !MenuConfig::instance().icons_in_label) {
-      temp_width = menu_item->icon_view()->GetPreferredSize().width();
+      return 0;
     }
-    width = std::max(width, temp_width);
-  }
-  return width;
+    if (item->HasSubmenu())
+      return item->GetMaxIconViewWidth();
+    return (item->icon_view() && !MenuConfig::instance().icons_in_label)
+               ? item->icon_view()->GetPreferredSize().width()
+               : 0;
+  };
+  std::transform(menu_items.cbegin(), menu_items.cend(), widths.begin(),
+                 get_width);
+  return *std::max_element(widths.cbegin(), widths.cend());
 }
 
 bool MenuItemView::HasChecksOrRadioButtons() const {
-  for (int i = 0; i < submenu_->GetMenuItemCount(); ++i) {
-    MenuItemView* menu_item = submenu_->GetMenuItemAt(i);
-    if (menu_item->HasSubmenu()) {
-      if (menu_item->HasChecksOrRadioButtons())
-        return true;
-    } else {
-      const Type& type = menu_item->GetType();
-      if (type == CHECKBOX || type == RADIO)
-        return true;
-    }
-  }
-  return false;
+  if (type_ == CHECKBOX || type_ == RADIO)
+    return true;
+  if (!HasSubmenu())
+    return false;
+  const auto menu_items = submenu_->GetMenuItems();
+  return std::any_of(
+      menu_items.cbegin(), menu_items.cend(),
+      [](const auto* item) { return item->HasChecksOrRadioButtons(); });
 }
 
 }  // namespace views

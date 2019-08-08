@@ -319,22 +319,9 @@ using content::DropData;
   [self updateWebContentsVisibility];
 }
 
-- (void)setAccessibilityParentElement:(id)accessibilityParent {
-  accessibilityParent_.reset([accessibilityParent retain]);
-}
-
 // ViewsHostable protocol implementation.
 - (ui::ViewsHostableView*)viewsHostableView {
   return viewsHostableView_;
-}
-
-// NSAccessibility informal protocol implementation.
-- (id)accessibilityAttributeValue:(NSString*)attribute {
-  if (accessibilityParent_ &&
-      [attribute isEqualToString:NSAccessibilityParentAttribute]) {
-    return accessibilityParent_;
-  }
-  return [super accessibilityAttributeValue:attribute];
 }
 
 @end

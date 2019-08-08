@@ -6,8 +6,6 @@
 
 namespace policy {
 
-const char kMetricToken[] = "Enterprise.DMToken";
-const char kMetricPolicy[] = "Enterprise.Policy";
 const char kMetricUserPolicyRefresh[] = "Enterprise.PolicyRefresh";
 const char kMetricUserPolicyInvalidations[] = "Enterprise.PolicyInvalidations";
 const char kMetricUserPolicyChromeOSSessionAbort[] =

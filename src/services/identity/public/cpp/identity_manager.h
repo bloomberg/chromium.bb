@@ -31,31 +31,21 @@
 #include "base/android/jni_android.h"
 #endif
 
-// Necessary to declare this class as a friend.
-namespace arc {
-class ArcTermsOfServiceDefaultNegotiatorTest;
-}
-
-// Necessary to declare these classes as friends.
-namespace chromeos {
-class ChromeSessionManager;
-class UserSessionManager;
-}  // namespace chromeos
-
 namespace network {
 class SharedURLLoaderFactory;
 class TestURLLoaderFactory;
 }  // namespace network
 
 // Necessary to declare these classes as friends.
-class ArcSupportHostTest;
-class IdentityManagerFactory;
 class PrefRegistrySimple;
+class SigninManagerAndroid;
 
 namespace identity {
 
 class AccountsMutator;
 class AccountsCookieMutator;
+class IdentityManagerTest;
+class IdentityTestEnvironment;
 class DiagnosticsProvider;
 class PrimaryAccountMutator;
 enum class ClearPrimaryAccountPolicy;
@@ -86,11 +76,6 @@ class IdentityManager : public SigninManagerBase::Observer,
     // longer having a primary account.
     virtual void OnPrimaryAccountCleared(
         const CoreAccountInfo& previous_primary_account_info) {}
-
-    // Called when the user attempts but fails to set their primary
-    // account. |error| gives the reason for the failure.
-    virtual void OnPrimaryAccountSigninFailed(
-        const GoogleServiceAuthError& error) {}
 
     // Called when a new refresh token is associated with |account_info|.
     // NOTE: On a signin event, the ordering of this callback wrt the
@@ -209,23 +194,32 @@ class IdentityManager : public SigninManagerBase::Observer,
   };
 
   IdentityManager(
-      SigninManagerBase* signin_manager,
-      ProfileOAuth2TokenService* token_service,
-      AccountFetcherService* account_fetcher_service,
+      std::unique_ptr<ProfileOAuth2TokenService> token_service,
+      std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
+      std::unique_ptr<SigninManagerBase> signin_manager,
+      std::unique_ptr<AccountFetcherService> account_fetcher_service,
       AccountTrackerService* account_tracker_service,
-      GaiaCookieManagerService* gaia_cookie_manager_service,
       std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
       std::unique_ptr<AccountsMutator> accounts_mutator,
       std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator,
       std::unique_ptr<DiagnosticsProvider> diagnostics_provider);
   ~IdentityManager() override;
 
+  // Provides access to the core information of the user's primary account.
+  // Returns an empty struct if no such info is available, either because there
+  // is no primary account or because the extended information for the primary
+  // account has been removed (this happens when the refresh token is revoked,
+  // for example).
+  CoreAccountInfo GetPrimaryAccountInfo() const;
+
   // Provides access to the extended information of the user's primary account.
   // Returns an empty struct if no such info is available, either because there
   // is no primary account or because the extended information for the primary
   // account has been removed (this happens when the refresh token is revoked,
   // for example).
-  AccountInfo GetPrimaryAccountInfo() const;
+  // TODO(crbug.com/926204): remove once all client have been converted to use
+  // GetPrimaryAccountInfo() instead.
+  AccountInfo GetPrimaryAccountInfoDeprecated() const;
 
   // Provides access to the account ID of the user's primary account. Note that
   // this may return a valid string even in cases where GetPrimaryAccountInfo()
@@ -359,11 +353,18 @@ class IdentityManager : public SigninManagerBase::Observer,
   // supported for the current platform.
   static bool IsAccountIdMigrationSupported();
 
-  // Registers local state prefs used by this class.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
+  // Registers per-install prefs used by this class.
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
-  // Marks the migration state for account IDs as finished.
-  void LegacySetAccountIdMigrationDone();
+  // Registers per-profile prefs used by this class.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // Picks the correct account_id for the specified account depending on the
+  // migration state.
+  // TODO(https://crbug.com/883272): Remove once all platform have migrated to
+  // the new account_id based on gaia (currently, only Chrome OS remains).
+  std::string PickAccountIdForAccount(const std::string& gaia,
+                                      const std::string& email) const;
 
   // Returns the currently saved state for the migration of accounts IDs.
   AccountIdMigrationState GetAccountIdMigrationState() const;
@@ -385,31 +386,25 @@ class IdentityManager : public SigninManagerBase::Observer,
   // Performs initalization that is dependent on the network being initialized.
   void OnNetworkInitialized();
 
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
   // Explicitly triggers the loading of accounts in the context of supervised
   // users.
-  // TODO(https://crbug.com/860492): Eliminate the need to expose this.
-  void LegacyLoadCredentialsForSupervisedUser(
+  // TODO(https://crbug.com/860492): Remove this method when supervised users
+  // support is eliminated.
+  void DeprecatedLoadCredentialsForSupervisedUser(
       const std::string& primary_account_id);
+#endif
 
   // Returns pointer to the object used to obtain diagnostics about the internal
   // state of IdentityManager.
   DiagnosticsProvider* GetDiagnosticsProvider();
 
-  // Picks the correct account_id for the specified account depending on the
-  // migration state.
-  // NOTE: This method is added temporarily until when the delegate is moved
-  // inside the component. So, do not call this method in normal usage.
-  // TODO(https://crbug.com/922471): Remove the need to expose this method.
-  std::string LegacyPickAccountIdForAccount(const std::string& gaia,
-                                            const std::string& email) const;
-
-  // Seeds the account whose account_id is given by
-  // AccountTrackerService::PickAccountIdForAccount() with its corresponding
-  // account information. Returns the same value PickAccountIdForAccount()
-  // when given the same arguments.
-  // NOTE: In normal usage, this method SHOULD NOT be called for getting the
-  // account id. It's only for replacement of production code.
-  std::string LegacySeedAccountInfo(const AccountInfo& info);
+#if defined(OS_CHROMEOS)
+  // Sets the primary account info with IdentityManager.
+  // TODO(https://crbug.com/814787): Eliminate this method.
+  void LegacySetPrimaryAccount(const std::string& gaia_id,
+                               const std::string& email_address);
+#endif
 
 #if defined(OS_IOS)
   // Forces the processing of GaiaCookieManagerService::OnCookieChange. On
@@ -419,6 +414,15 @@ class IdentityManager : public SigninManagerBase::Observer,
   // TODO(https://crbug.com/930582) : Remove the need to expose this method
   // or move it to the network::CookieManager.
   void ForceTriggerOnCookieChange();
+
+  // Seeds the account whose account_id is given by
+  // AccountTrackerService::PickAccountIdForAccount() with its corresponding
+  // account information. Returns the same value PickAccountIdForAccount()
+  // when given the same arguments.
+  // NOTE: In normal usage, this method SHOULD NOT be called for getting the
+  // account id. It's only for replacement of production code.
+  // TODO(https://crbug.com/926940): Eliminate the need to expose this.
+  std::string LegacySeedAccountInfo(const AccountInfo& info);
 
   // Adds a given account to the token service from a system account. This
   // API calls OAuth2TokenServiceDelegate::AddAccountFromSystem and it
@@ -464,6 +468,9 @@ class IdentityManager : public SigninManagerBase::Observer,
   void RemoveObserver(Observer* observer);
   void AddDiagnosticsObserver(DiagnosticsObserver* observer);
   void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
+
+  // Shut down IdentityManager and its owned dependencies.
+  void Shutdown();
 
  private:
   // These test helpers need to use some of the private methods below.
@@ -511,46 +518,92 @@ class IdentityManager : public SigninManagerBase::Observer,
       network::TestURLLoaderFactory* test_url_loader_factory,
       const std::vector<identity::CookieParams>& cookie_accounts);
 
-  // These clients needs to call SetPrimaryAccountSynchronously().
-  friend ArcSupportHostTest;
-  friend arc::ArcTermsOfServiceDefaultNegotiatorTest;
-  friend chromeos::ChromeSessionManager;
-  friend chromeos::UserSessionManager;
-  friend IdentityManagerFactory;
+  friend void SimulateSuccessfulFetchOfAccountInfo(
+      IdentityManager* identity_manager,
+      const std::string& account_id,
+      const std::string& email,
+      const std::string& gaia,
+      const std::string& hosted_domain,
+      const std::string& full_name,
+      const std::string& given_name,
+      const std::string& locale,
+      const std::string& picture_url);
+
+  // These friends are temporary during the conversion process.
+  // TODO(https://crbug.com/889902): Delete this when conversion is done.
+  friend SigninManagerAndroid;
+
+  // Temporary access to getters (e.g. GetTokenService()).
+  // TODO(https://crbug.com/944127): Remove this friendship by
+  // extending identity_test_utils.h as needed.
+  friend IdentityTestEnvironment;
+
+  // IdentityManagerTest reaches into IdentityManager internals in
+  // order to drive its behavior.
+  // TODO(https://crbug.com/943135): Find a better way to accomplish this.
+  friend IdentityManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest, RemoveAccessTokenFromCache);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CreateAccessTokenFetcherWithCustomURLLoaderFactory);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest, ObserveAccessTokenFetch);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           ObserveAccessTokenRequestCompletionWithRefreshToken);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           BatchChangeObserversAreNotifiedOnCredentialsUpdate);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest, RemoveAccessTokenFromCache);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CreateAccessTokenFetcherWithCustomURLLoaderFactory);
+  FRIEND_TEST_ALL_PREFIXES(
+      IdentityManagerTest,
+      CallbackSentOnUpdateToAccountsInCookieWithNoAccounts);
+  FRIEND_TEST_ALL_PREFIXES(
+      IdentityManagerTest,
+      CallbackSentOnUpdateToAccountsInCookieWithOneAccount);
+  FRIEND_TEST_ALL_PREFIXES(
+      IdentityManagerTest,
+      CallbackSentOnUpdateToAccountsInCookieWithTwoAccounts);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CallbackSentOnUpdateToSignOutAccountsInCookie);
+  FRIEND_TEST_ALL_PREFIXES(
+      IdentityManagerTest,
+      CallbackSentOnUpdateToAccountsInCookieWithStaleAccounts);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CallbackSentOnSuccessfulAdditionOfAccountToCookie);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CallbackSentOnFailureAdditionOfAccountToCookie);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CallbackSentOnSetAccountsInCookieCompleted_Success);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CallbackSentOnSetAccountsInCookieCompleted_Failure);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CallbackSentOnAccountsCookieDeletedByUserAction);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest, OnNetworkInitialized);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           ForceRefreshOfExtendedAccountInfo);
 
   // Private getters used for testing only (i.e. see identity_test_utils.h).
   SigninManagerBase* GetSigninManager();
   ProfileOAuth2TokenService* GetTokenService();
   AccountTrackerService* GetAccountTrackerService();
+  AccountFetcherService* GetAccountFetcherService();
   GaiaCookieManagerService* GetGaiaCookieManagerService();
-
-  // Sets the primary account info synchronously with both the IdentityManager
-  // and its backing SigninManager/ProfileOAuth2TokenService instances.
-  // Prefer using the methods in identity_test_{environment, utils}.h to using
-  // this method directly.
-  void SetPrimaryAccountSynchronouslyForTests(const std::string& gaia_id,
-                                              const std::string& email_address,
-                                              const std::string& refresh_token);
-
-  // Sets the primary account info synchronously with both the IdentityManager
-  // and its backing SigninManager instance. If |refresh_token| is not empty,
-  // sets the refresh token with the backing ProfileOAuth2TokenService
-  // instance. This method should not be used directly; it exists only to serve
-  // one legacy use case at this point.
-  // TODO(https://crbug.com/814787): Eliminate the need for this method.
-  void SetPrimaryAccountSynchronously(const std::string& gaia_id,
-                                      const std::string& email_address,
-                                      const std::string& refresh_token);
 
   // Populates and returns an AccountInfo object corresponding to |account_id|,
   // which must be an account with a refresh token.
   AccountInfo GetAccountInfoForAccountWithRefreshToken(
       const std::string& account_id) const;
 
+  // Fires the IdentityManager::Observer::OnPrimaryAccountSet() notification
+  // to observers.
+  // TODO(https://crbug.com/944012): Unify the firing of this observer
+  // notification between ChromeOS and other platforms and eliminate the need
+  // for this helper method.
+  void FireOnPrimaryAccountSetNotification(
+      const CoreAccountInfo& primary_account_info);
+
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
   void GoogleSignedOut(const AccountInfo& account_info) override;
-  void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
 
   // OAuth2TokenService::Observer:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
@@ -593,11 +646,11 @@ class IdentityManager : public SigninManagerBase::Observer,
   // these classes in the IdentityManager implementation, as all such
   // synchronous access will become impossible when IdentityManager is
   // backed by the Identity Service.
-  SigninManagerBase* signin_manager_;
-  ProfileOAuth2TokenService* token_service_;
-  AccountFetcherService* account_fetcher_service_;
+  std::unique_ptr<ProfileOAuth2TokenService> token_service_;
+  std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service_;
+  std::unique_ptr<SigninManagerBase> signin_manager_;
+  std::unique_ptr<AccountFetcherService> account_fetcher_service_;
   AccountTrackerService* account_tracker_service_;
-  GaiaCookieManagerService* gaia_cookie_manager_service_;
 
   // PrimaryAccountMutator instance. May be null if mutation of the primary
   // account state is not supported on the current platform.

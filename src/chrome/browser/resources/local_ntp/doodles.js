@@ -275,7 +275,7 @@ doodles.logDoodleImpression = function(logUrl, isAnimated) {
           console.log(error);
           return;
         }
-        doodles.handleDdllogResponse(json.ddllog, isAnimated);
+        doodles.handleDdllogResponse(json['ddllog'], isAnimated);
       })
       .catch(function(error) {
         console.log('Error logging doodle impression to "' + logUrl + '":');
@@ -291,11 +291,10 @@ doodles.logDoodleImpression = function(logUrl, isAnimated) {
 
 
 /**
- * TODO(896461): Add more click tracking parameters and testing.
  * Logs a doodle sharing event.
  * Uses the ct param provided in metadata.onClickUrl to track the doodle.
  *
- * @param {string} platform Social media platform the doodle will be shared to.
+ * @param {number} platform Social media platform the doodle will be shared to.
  */
 doodles.logDoodleShare = function(platform) {
   if (doodles.targetDoodle.metadata.onClickUrl) {
@@ -306,7 +305,7 @@ doodles.logDoodleShare = function(platform) {
       url.searchParams.append('atyp', 'i');
       url.searchParams.append('ct', 'doodle');
       url.searchParams.append('cad', 'sh,' + platform + ',ct:' + ct);
-      url.searchParams.append('ntp', 1);
+      url.searchParams.append('ntp', '1');
       if (doodles.ei && doodles.ei != '') {
         url.searchParams.append('ei', doodles.ei);
       }
@@ -423,17 +422,17 @@ doodles.showLogoOrDoodle = function(fromCache) {
  * Starts fading out the given element, which should be either the default logo
  * or the doodle.
  *
- * @param {HTMLElement} element
+ * @param {?Element} element
  */
 doodles.startFadeOut = function(element) {
-  if (!element.classList.contains(doodles.CLASSES.SHOW_LOGO)) {
+  if (!element || !element.classList.contains(doodles.CLASSES.SHOW_LOGO)) {
     return;
   }
 
   // Compute style now, to ensure that the transition from 1 -> 0 is properly
   // recognized. Otherwise, if a 0 -> 1 -> 0 transition is too fast, the
   // element might stay invisible instead of appearing then fading out.
-  window.getComputedStyle(element).opacity;
+  const style = window.getComputedStyle(element).opacity;
 
   element.classList.add(doodles.CLASSES.FADE);
   element.classList.remove(doodles.CLASSES.SHOW_LOGO);
@@ -476,7 +475,8 @@ doodles.onDoodleFadeOutComplete = function(e) {
   $(doodles.IDS.LOGO_DEFAULT).classList.add(doodles.CLASSES.FADE);
   doodles.showLogoOrDoodle(/*fromCache=*/ false);
 
-  this.removeEventListener('transitionend', doodles.onDoodleFadeOutComplete);
+  e.target.removeEventListener(
+      'transitionend', doodles.onDoodleFadeOutComplete);
 };
 
 
@@ -499,7 +499,8 @@ doodles.applyDoodleMetadata = function() {
 
         // Ping the static interaction_log_url if there is one.
         if (doodles.targetDoodle.staticInteractionLogUrl) {
-          navigator.sendBeacon(doodles.targetDoodle.staticInteractionLogUrl);
+          navigator.sendBeacon(
+              doodles.targetDoodle.staticInteractionLogUrl.href);
           doodles.targetDoodle.staticInteractionLogUrl = null;
         }
 
@@ -521,7 +522,8 @@ doodles.applyDoodleMetadata = function() {
 
         // Ping the static interaction_log_url if there is one.
         if (doodles.targetDoodle.staticInteractionLogUrl) {
-          navigator.sendBeacon(doodles.targetDoodle.staticInteractionLogUrl);
+          navigator.sendBeacon(
+              doodles.targetDoodle.staticInteractionLogUrl.href);
           doodles.targetDoodle.staticInteractionLogUrl = null;
         }
 
@@ -542,7 +544,7 @@ doodles.applyDoodleMetadata = function() {
           // Ping the animated interaction_log_url if there is one.
           if (doodles.targetDoodle.animatedInteractionLogUrl) {
             navigator.sendBeacon(
-                doodles.targetDoodle.animatedInteractionLogUrl);
+                doodles.targetDoodle.animatedInteractionLogUrl.href);
             doodles.targetDoodle.animatedInteractionLogUrl = null;
           }
 

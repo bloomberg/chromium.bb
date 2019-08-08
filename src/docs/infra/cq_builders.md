@@ -112,6 +112,7 @@ builder.
     * [`//services/viz/.+`](https://cs.chromium.org/chromium/src/services/viz/)
     * [`//testing/trigger_scripts/.+`](https://cs.chromium.org/chromium/src/testing/trigger_scripts/)
     * [`//third_party/blink/renderer/modules/webgl/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgl/)
+    * [`//third_party/blink/renderer/platform/graphics/gpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/gpu/)
     * [`//ui/gl/.+`](https://cs.chromium.org/chromium/src/ui/gl/)
 
 * [chromeos-kevin-compile-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/chromeos-kevin-compile-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/chromeos-kevin-compile-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+chromeos-kevin-compile-rel))
@@ -119,10 +120,51 @@ builder.
   Path regular expressions:
     * [`//chromeos/CHROMEOS_LKGM`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:chromeos/CHROMEOS_LKGM)
 
+* [chromeos-kevin-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/chromeos-kevin-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/chromeos-kevin-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+chromeos-kevin-rel))
+
+  Path regular expressions:
+    * [`//build/chromeos/.+`](https://cs.chromium.org/chromium/src/build/chromeos/)
+
 * [closure_compilation](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/closure_compilation) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/closure_compilation)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+closure_compilation))
 
   Path regular expressions:
     * [`//third_party/closure_compiler/.+`](https://cs.chromium.org/chromium/src/third_party/closure_compiler/)
+
+* [dawn-linux-x64-deps-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/dawn-linux-x64-deps-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/dawn-linux-x64-deps-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+dawn-linux-x64-deps-rel))
+
+  Path regular expressions:
+    * [`//testing/buildbot/chromium.dawn.json`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:testing/buildbot/chromium.dawn.json)
+    * [`//third_party/blink/renderer/modules/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgpu/)
+    * [`//third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu)
+    * [`//third_party/blink/web_tests/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/webgpu/)
+    * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
+
+* [dawn-mac-x64-deps-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/dawn-mac-x64-deps-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/dawn-mac-x64-deps-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+dawn-mac-x64-deps-rel))
+
+  Path regular expressions:
+    * [`//testing/buildbot/chromium.dawn.json`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:testing/buildbot/chromium.dawn.json)
+    * [`//third_party/blink/renderer/modules/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgpu/)
+    * [`//third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu)
+    * [`//third_party/blink/web_tests/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/webgpu/)
+    * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
+
+* [dawn-win10-x64-deps-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/dawn-win10-x64-deps-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/dawn-win10-x64-deps-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+dawn-win10-x64-deps-rel))
+
+  Path regular expressions:
+    * [`//testing/buildbot/chromium.dawn.json`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:testing/buildbot/chromium.dawn.json)
+    * [`//third_party/blink/renderer/modules/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgpu/)
+    * [`//third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu)
+    * [`//third_party/blink/web_tests/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/webgpu/)
+    * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
+
+* [dawn-win10-x86-deps-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/dawn-win10-x86-deps-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/dawn-win10-x86-deps-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+dawn-win10-x86-deps-rel))
+
+  Path regular expressions:
+    * [`//testing/buildbot/chromium.dawn.json`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:testing/buildbot/chromium.dawn.json)
+    * [`//third_party/blink/renderer/modules/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgpu/)
+    * [`//third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu)
+    * [`//third_party/blink/web_tests/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/webgpu/)
+    * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
 
 * [ios-simulator-cronet](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/ios-simulator-cronet) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/ios-simulator-cronet)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+ios-simulator-cronet))
 
@@ -150,7 +192,6 @@ builder.
 
   Path regular expressions:
     * [`//build/.*check_gn_headers.*`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:build/.*check_gn_headers.*)
-    * [`//chrome/browser/resources/.+`](https://cs.chromium.org/chromium/src/chrome/browser/resources/)
 
 * [linux_layout_tests_composite_after_paint](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_layout_tests_composite_after_paint) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux_layout_tests_composite_after_paint)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_layout_tests_composite_after_paint))
 
@@ -191,6 +232,7 @@ builder.
     * [`//media/gpu/.+`](https://cs.chromium.org/chromium/src/media/gpu/)
     * [`//testing/trigger_scripts/.+`](https://cs.chromium.org/chromium/src/testing/trigger_scripts/)
     * [`//third_party/blink/renderer/modules/webgl/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgl/)
+    * [`//third_party/blink/renderer/platform/graphics/gpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/gpu/)
     * [`//ui/gl/.+`](https://cs.chromium.org/chromium/src/ui/gl/)
 
 * [linux_vr](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_vr) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux_vr)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_vr))
@@ -210,6 +252,7 @@ builder.
     * [`//services/shape_detection/.+`](https://cs.chromium.org/chromium/src/services/shape_detection/)
     * [`//testing/trigger_scripts/.+`](https://cs.chromium.org/chromium/src/testing/trigger_scripts/)
     * [`//third_party/blink/renderer/modules/webgl/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgl/)
+    * [`//third_party/blink/renderer/platform/graphics/gpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/gpu/)
     * [`//ui/gl/.+`](https://cs.chromium.org/chromium/src/ui/gl/)
 
 * [win_optional_gpu_tests_rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win_optional_gpu_tests_rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/win_optional_gpu_tests_rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win_optional_gpu_tests_rel))
@@ -255,12 +298,6 @@ as required builders.
   * Experimental percentage: 10
 
 * [linux-coverage-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-coverage-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux-coverage-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-coverage-rel))
-
-  * Experimental percentage: 10
-
-* [linux-dcheck-off-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-dcheck-off-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux-dcheck-off-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-dcheck-off-rel))
-
-  https://crbug.com/833482
 
   * Experimental percentage: 10
 

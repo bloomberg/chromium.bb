@@ -33,10 +33,12 @@ class GetRequestBlobTask : public DatabaseTask {
   void Start() override;
 
  private:
-  void DidOpenCache(CacheStorageCacheHandle handle,
+  void DidOpenCache(int64_t trace_id,
+                    CacheStorageCacheHandle handle,
                     blink::mojom::CacheStorageError error);
 
   void DidMatchRequest(CacheStorageCacheHandle handle,
+                       int64_t trace_id,
                        blink::mojom::CacheStorageError error,
                        std::vector<CacheStorageCache::CacheEntry> entries);
 

@@ -39,7 +39,8 @@ class MenuControllerUITest : public InProcessBrowserTest {
     menu_item->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
     // Run the menu, so that the menu item size will be calculated.
     menu_runner_->RunMenuAt(widget, nullptr, gfx::Rect(),
-                            views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
+                            views::MenuAnchorPosition::kTopLeft,
+                            ui::MENU_SOURCE_NONE);
     RunPendingMessages();
     // Figure out the middle of the first menu item.
     mouse_pos_.set_x(first_item_->width() / 2);
@@ -88,7 +89,8 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, TestMouseOverShownMenu) {
   // when we run the menu.
   SetupMenu(widget);
   menu_runner_->RunMenuAt(widget, nullptr, gfx::Rect(),
-                          views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
+                          views::MenuAnchorPosition::kTopLeft,
+                          ui::MENU_SOURCE_NONE);
   // One or two mouse events are posted by the menu being shown.
   // Process event(s), and check what's selected in the menu.
   RunPendingMessages();
@@ -123,7 +125,8 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, FocusOnOrphanMenu) {
       menu_item->AppendMenuItemWithLabel(1, base::ASCIIToUTF16("One"));
   menu_item->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
   menu_runner->RunMenuAt(nullptr, nullptr, gfx::Rect(),
-                         views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
+                         views::MenuAnchorPosition::kTopLeft,
+                         ui::MENU_SOURCE_NONE);
   base::RunLoop loop;
   // SendKeyPress fails if the window doesn't have focus.
   ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(

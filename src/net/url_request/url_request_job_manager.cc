@@ -99,15 +99,15 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptRedirect(
   DCHECK(IsAllowedThread());
   if (!request->url().is_valid() ||
       request->status().status() == URLRequestStatus::CANCELED) {
-    return NULL;
+    return nullptr;
   }
 
-  const URLRequestJobFactory* job_factory = NULL;
+  const URLRequestJobFactory* job_factory = nullptr;
   job_factory = request->context()->job_factory();
 
   const std::string& scheme = request->url().scheme();  // already lowercase
   if (!job_factory->IsHandledProtocol(scheme))
-    return NULL;
+    return nullptr;
 
   URLRequestJob* job =
       request->context()->job_factory()->MaybeInterceptRedirect(
@@ -115,7 +115,7 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptRedirect(
   if (job)
     return job;
 
-  return NULL;
+  return nullptr;
 }
 
 URLRequestJob* URLRequestJobManager::MaybeInterceptResponse(
@@ -123,15 +123,15 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptResponse(
   DCHECK(IsAllowedThread());
   if (!request->url().is_valid() ||
       request->status().status() == URLRequestStatus::CANCELED) {
-    return NULL;
+    return nullptr;
   }
 
-  const URLRequestJobFactory* job_factory = NULL;
+  const URLRequestJobFactory* job_factory = nullptr;
   job_factory = request->context()->job_factory();
 
   const std::string& scheme = request->url().scheme();  // already lowercase
   if (!job_factory->IsHandledProtocol(scheme))
-    return NULL;
+    return nullptr;
 
   URLRequestJob* job =
       request->context()->job_factory()->MaybeInterceptResponse(
@@ -139,7 +139,7 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptResponse(
   if (job)
     return job;
 
-  return NULL;
+  return nullptr;
 }
 
 // static

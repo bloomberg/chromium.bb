@@ -47,8 +47,8 @@ class CachedImageFetcherImageMetadataStoreLevelDBTest : public testing::Test {
     // Setup the fake db and the class under test.
     auto db = std::make_unique<FakeDB<CachedImageMetadataProto>>(&db_store_);
     db_ = db.get();
-    metadata_store_ = std::make_unique<ImageMetadataStoreLevelDB>(
-        base::FilePath(), std::move(db), clock_.get());
+    metadata_store_ = std::make_unique<ImageMetadataStoreLevelDB>(std::move(db),
+                                                                  clock_.get());
   }
 
   void InitializeDatabase() {
@@ -56,7 +56,7 @@ class CachedImageFetcherImageMetadataStoreLevelDBTest : public testing::Test {
     metadata_store()->Initialize(base::BindOnce(
         &CachedImageFetcherImageMetadataStoreLevelDBTest::OnInitialized,
         base::Unretained(this)));
-    db()->InitCallback(true);
+    db()->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
 
     RunUntilIdle();
   }

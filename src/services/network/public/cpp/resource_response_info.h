@@ -111,7 +111,12 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // The proxy server used for this request, if any.
   net::ProxyServer proxy_server;
 
-  // True if the response was fetched by a ServiceWorker.
+  // True if a service worker responded to the request. If the service worker
+  // received a fetch event and did not call respondWith(), or was bypassed due
+  // to absence of a fetch event handler, this function typically returns false
+  // but returns true if "fallback to renderer" was required (however in this
+  // case the response is not an actual resource and the request will be
+  // reissued by the renderer).
   bool was_fetched_via_service_worker;
 
   // True when a request whose mode is |CORS| or |CORS-with-forced-preflight|
@@ -120,8 +125,14 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // considering the CORS preflight logic.
   bool was_fallback_required_by_service_worker;
 
-  // The URL list of the response which was served by the ServiceWorker. See
-  // ServiceWorkerResponseInfo::url_list_via_service_worker().
+  // The URL list of the Response object the service worker passed to
+  // respondWith() to create this response. For example, if the service worker
+  // calls respondWith(fetch('http://example.com/a')) and http://example.com/a
+  // redirects to http://example.net/b which redirects to http://example.org/c,
+  // the URL list is the vector <"http://example.com/a", "http://example.net/b",
+  // "http://example.org/c">. This is empty if the response was programmatically
+  // generated as in respondWith(new Response()). It is also empty if a service
+  // worker did not respond to the request or did not call respondWith().
   std::vector<GURL> url_list_via_service_worker;
 
   // https://fetch.spec.whatwg.org/#concept-response-type

@@ -16,7 +16,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -28,6 +27,7 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/webdata/common/web_database.h"
 
 using autofill::AutofillChangeList;
@@ -211,8 +211,13 @@ AutofillProfile CreateUniqueAutofillProfile() {
 }
 
 PersonalDataManager* GetPersonalDataManager(int index) {
-  return autofill::PersonalDataManagerFactory::GetForProfile(
+  auto* pdm = autofill::PersonalDataManagerFactory::GetForProfile(
       test()->GetProfile(index));
+  // Hook the sync service up to the personal data manager.
+  // This is normally done by autofill_manager, which we don't
+  // have in our tests.
+  pdm->OnSyncServiceInitialized(test()->GetSyncService(index));
+  return pdm;
 }
 
 void AddKeys(int profile, const std::set<AutofillKey>& keys) {
@@ -404,6 +409,7 @@ AutofillProfileChecker::~AutofillProfileChecker() {
 }
 
 bool AutofillProfileChecker::Wait() {
+  DLOG(WARNING) << "AutofillProfileChecker::Wait() started";
   PersonalDataLoadedObserverMock personal_data_observer;
   base::RunLoop run_loop_a;
   base::RunLoop run_loop_b;
@@ -434,7 +440,7 @@ bool AutofillProfileChecker::Wait() {
 
   pdm_a->RemoveObserver(&personal_data_observer);
   pdm_b->RemoveObserver(&personal_data_observer);
-
+  DLOG(WARNING) << "AutofillProfileChecker::Wait() completed";
   return StatusChangeChecker::Wait();
 }
 

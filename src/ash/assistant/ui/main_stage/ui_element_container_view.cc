@@ -165,7 +165,7 @@ void UiElementContainerView::OnResponseChanged(
 
   // If we don't have any pre-existing content, there is nothing to animate off
   // stage so we we can proceed to add the new response.
-  if (!content_view()->has_children()) {
+  if (content_view()->children().empty()) {
     OnResponseAdded(std::move(pending_response_));
     return;
   }
@@ -257,9 +257,8 @@ void UiElementContainerView::OnCardElementAdded(
     // The first card requires a top margin of |GetFirstCardMarginTopDip()|, but
     // we need to account for child spacing because the first card is not
     // necessarily the first UI element.
-    const int top_margin_dip = child_count() == 0
-                                   ? GetFirstCardMarginTopDip()
-                                   : GetFirstCardMarginTopDip() - kSpacingDip;
+    const int top_margin_dip =
+        GetFirstCardMarginTopDip() - (children().empty() ? 0 : kSpacingDip);
 
     // We effectively create a top margin by applying an empty border.
     card_element_view->SetBorder(
@@ -339,9 +338,14 @@ bool UiElementContainerView::OnAllUiElementsExitAnimationEnded(
   // clearing of their views and managed resources.
   OnResponseCleared();
 
-  // It is safe to add our pending response to the view hierarchy now that we've
-  // cleared the previous response from the stage.
-  OnResponseAdded(std::move(pending_response_));
+  // It is safe to add our pending response, if one exists, to the view
+  // hierarchy now that we've cleared the previous response from the stage. The
+  // only known case where a pending response may not exist is if the animation
+  // sequence was aborted due to the associated view hierarchy being destroyed.
+  // When that occurs, the entire UiElementContainerView hierarchy will soon be
+  // destroyed so we can simply take no action here. (See crbug/952996).
+  if (pending_response_)
+    OnResponseAdded(std::move(pending_response_));
 
   // Return false to prevent the observer from destroying itself.
   return false;

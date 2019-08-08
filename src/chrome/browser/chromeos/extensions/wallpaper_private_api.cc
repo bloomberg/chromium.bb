@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
@@ -291,10 +292,10 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
   }
 
   if (sync_service->GetUserSettings()->IsFirstSetupComplete()) {
-    // Sync is set up. Report whether the user has chosen to sync themes.
+    // Sync is set up. Report whether the user has selected to sync themes.
     dict->SetBoolean(kSyncThemes,
-                     sync_service->GetUserSettings()->GetChosenDataTypes().Has(
-                         syncer::THEMES));
+                     sync_service->GetUserSettings()->GetSelectedTypes().Has(
+                         syncer::UserSelectableType::kThemes));
     Respond(OneArgument(std::move(dict)));
     return;
   }

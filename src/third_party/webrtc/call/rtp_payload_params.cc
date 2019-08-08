@@ -16,7 +16,6 @@
 #include "absl/container/inlined_vector.h"
 #include "absl/types/variant.h"
 #include "api/video/video_timing.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/video_coding/codecs/h264/include/h264_globals.h"
 #include "modules/video_coding/codecs/interface/common_constants.h"
 #include "modules/video_coding/codecs/vp8/include/vp8_globals.h"
@@ -172,7 +171,7 @@ RTPVideoHeader RtpPayloadParams::GetRtpVideoHeader(
                                      : absl::nullopt;
   SetVideoTiming(image, &rtp_video_header.video_timing);
 
-  const bool is_keyframe = image._frameType == kVideoFrameKey;
+  const bool is_keyframe = image._frameType == VideoFrameType::kVideoFrameKey;
   const bool first_frame_in_picture =
       (codec_specific_info && codec_specific_info->codecType == kVideoCodecVP9)
           ? codec_specific_info->codecSpecific.VP9.first_frame_in_picture

@@ -48,7 +48,7 @@ class ProtectedBufferManager
       base::ScopedFD dummy_fd);
 
   // Return a protected NativePixmap for a dummy |handle|, if one exists, or
-  // nullptr otherwise. On success, the |handle| is closed.
+  // nullptr otherwise.
   scoped_refptr<gfx::NativePixmap> GetProtectedNativePixmapFor(
       const gfx::NativePixmapHandle& handle);
 

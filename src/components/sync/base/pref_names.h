@@ -13,8 +13,7 @@ namespace prefs {
 
 extern const char kSyncLastSyncedTime[];
 extern const char kSyncLastPollTime[];
-extern const char kSyncShortPollIntervalSeconds[];
-extern const char kSyncLongPollIntervalSeconds[];
+extern const char kSyncPollIntervalSeconds[];
 extern const char kSyncFirstSetupComplete[];
 extern const char kSyncKeepEverythingSynced[];
 
@@ -67,12 +66,6 @@ extern const char kSyncKeystoreEncryptionBootstrapToken[];
 extern const char kSyncCacheGuid[];
 extern const char kSyncBirthday[];
 extern const char kSyncBagOfChips[];
-
-#if defined(OS_CHROMEOS)
-extern const char kSyncSpareBootstrapToken[];
-#endif  // defined(OS_CHROMEOS)
-
-extern const char kSyncFirstSyncTime[];
 
 extern const char kSyncPassphrasePrompted[];
 

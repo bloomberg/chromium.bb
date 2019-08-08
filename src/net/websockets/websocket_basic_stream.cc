@@ -107,7 +107,7 @@ WebSocketBasicStream::WebSocketBasicStream(
       generate_websocket_masking_key_(&GenerateWebSocketMaskingKey) {
   // http_read_buffer_ should not be set if it contains no data.
   if (http_read_buffer_.get() && http_read_buffer_->offset() == 0)
-    http_read_buffer_ = NULL;
+    http_read_buffer_ = nullptr;
   DCHECK(connection_->is_initialized());
 }
 
@@ -321,10 +321,10 @@ int WebSocketBasicStream::ConvertChunksToFrames(
 int WebSocketBasicStream::ConvertChunkToFrame(
     std::unique_ptr<WebSocketFrameChunk> chunk,
     std::unique_ptr<WebSocketFrame>* frame) {
-  DCHECK(frame->get() == NULL);
+  DCHECK(frame->get() == nullptr);
   bool is_first_chunk = false;
   if (chunk->header) {
-    DCHECK(current_frame_header_ == NULL)
+    DCHECK(current_frame_header_ == nullptr)
         << "Received the header for a new frame without notification that "
         << "the previous frame was complete (bug in WebSocketFrameParser?)";
     is_first_chunk = true;
@@ -384,7 +384,7 @@ int WebSocketBasicStream::ConvertChunkToFrame(
       memcpy(body->data(),
              incomplete_control_frame_body_->StartOfBuffer(),
              body_size);
-      incomplete_control_frame_body_ = NULL;  // Frame now complete.
+      incomplete_control_frame_body_ = nullptr;  // Frame now complete.
       DCHECK(is_final_chunk);
       *frame = CreateFrame(is_final_chunk, body);
       return OK;

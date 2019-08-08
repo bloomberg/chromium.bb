@@ -26,9 +26,9 @@
 #include "ash/system/toast/toast_manager.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
+#include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,6 +42,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
@@ -79,6 +80,9 @@ constexpr SkColor kOnlineSignInMessageColor = SkColorSetRGB(0xE6, 0x7C, 0x73);
 constexpr SkColor kDisabledAuthMessageBubbleColor =
     SkColorSetRGB(0x20, 0x21, 0x24);
 
+// Date time format containing only the day of the week, for example: "Tuesday".
+constexpr char kDayOfWeekOnlyTimeFormat[] = "EEEE";
+
 constexpr int kFingerprintIconSizeDp = 32;
 constexpr int kResetToDefaultIconDelayMs = 1300;
 constexpr int kFingerprintIconTopSpacingDp = 20;
@@ -88,8 +92,8 @@ constexpr int kDistanceBetweenPasswordFieldAndFingerprintViewDp = 90;
 constexpr int kFingerprintFailedAnimationDurationMs = 700;
 constexpr int kFingerprintFailedAnimationNumFrames = 45;
 
-constexpr int kDisabledAuthMessageVerticalBorderDp = 14;
-constexpr int kDisabledAuthMessageHorizontalBorderDp = 0;
+constexpr int kDisabledAuthMessageVerticalBorderDp = 16;
+constexpr int kDisabledAuthMessageHorizontalBorderDp = 16;
 constexpr int kDisabledAuthMessageChildrenSpacingDp = 4;
 constexpr int kDisabledAuthMessageWidthDp = 204;
 constexpr int kDisabledAuthMessageHeightDp = 98;
@@ -217,6 +221,101 @@ class FingerprintLabel : public views::Label {
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintLabel);
 };
+
+// The content needed to render the disabled auth message view.
+struct LockScreenMessage {
+  base::string16 title;
+  base::string16 content;
+  const gfx::VectorIcon* icon;
+};
+
+// Returns the message used when the device was locked due to a time window
+// limit.
+LockScreenMessage GetWindowLimitMessage(const base::Time& unlock_time) {
+  LockScreenMessage message;
+  message.title = l10n_util::GetStringUTF16(IDS_ASH_LOGIN_TIME_FOR_BED_MESSAGE);
+
+  base::Time local_midnight = base::Time::Now().LocalMidnight();
+  const std::string time_of_day = TimeOfDay::FromTime(unlock_time).ToString();
+
+  if (unlock_time < local_midnight + base::TimeDelta::FromDays(1)) {
+    // Unlock time is today.
+    message.content = l10n_util::GetStringFUTF16(
+        IDS_ASH_LOGIN_COME_BACK_MESSAGE, base::UTF8ToUTF16(time_of_day));
+  } else if (unlock_time < local_midnight + base::TimeDelta::FromDays(2)) {
+    // Unlock time is tomorrow.
+    message.content =
+        l10n_util::GetStringFUTF16(IDS_ASH_LOGIN_COME_BACK_TOMORROW_MESSAGE,
+                                   base::UTF8ToUTF16(time_of_day));
+  } else {
+    message.content = l10n_util::GetStringFUTF16(
+        IDS_ASH_LOGIN_COME_BACK_DAY_OF_WEEK_MESSAGE,
+        base::TimeFormatWithPattern(unlock_time, kDayOfWeekOnlyTimeFormat),
+        base::UTF8ToUTF16(time_of_day));
+  }
+  message.icon = &kLockScreenTimeLimitMoonIcon;
+  return message;
+}
+
+// Returns the message used when the device was locked due to a time usage
+// limit.
+LockScreenMessage GetUsageLimitMessage(const base::TimeDelta& used_time) {
+  LockScreenMessage message;
+
+  // 1 minute is used instead of 0, because the device is used for a few
+  // milliseconds before locking.
+  if (used_time < base::TimeDelta::FromMinutes(1)) {
+    // The device was locked all day.
+    message.title = l10n_util::GetStringUTF16(IDS_ASH_LOGIN_TAKE_BREAK_MESSAGE);
+    message.content =
+        l10n_util::GetStringUTF16(IDS_ASH_LOGIN_LOCKED_ALL_DAY_MESSAGE);
+  } else {
+    // The usage limit is over.
+    message.title = l10n_util::GetStringUTF16(IDS_ASH_LOGIN_TIME_IS_UP_MESSAGE);
+
+    // TODO(933973): Stop displaying the hours part of the string when duration
+    // is less than 1 hour. Example: change "0 hours, 7 minutes" to "7 minutes".
+    base::string16 used_time_string;
+    if (!base::TimeDurationFormat(
+            used_time, base::DurationFormatWidth::DURATION_WIDTH_WIDE,
+            &used_time_string)) {
+      LOG(ERROR) << "Failed to generate time duration string.";
+      return message;
+    }
+
+    message.content = l10n_util::GetStringFUTF16(
+        IDS_ASH_LOGIN_SCREEN_TIME_USED_MESSAGE, used_time_string);
+  }
+  message.icon = &kLockScreenTimeLimitTimerIcon;
+  return message;
+}
+
+// Returns the message used when the device was locked due to a time limit
+// override.
+LockScreenMessage GetOverrideMessage() {
+  LockScreenMessage message;
+  message.title =
+      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_TIME_FOR_A_BREAK_MESSAGE);
+  message.content =
+      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_MANUAL_LOCK_MESSAGE);
+  message.icon = &kLockScreenTimeLimitLockIcon;
+  return message;
+}
+
+LockScreenMessage GetLockScreenMessage(mojom::AuthDisabledReason lock_reason,
+                                       const base::Time& unlock_time,
+                                       const base::TimeDelta& used_time) {
+  switch (lock_reason) {
+    case mojom::AuthDisabledReason::TIME_WINDOW_LIMIT:
+      return GetWindowLimitMessage(unlock_time);
+    case mojom::AuthDisabledReason::TIME_USAGE_LIMIT:
+      return GetUsageLimitMessage(used_time);
+    case mojom::AuthDisabledReason::TIME_LIMIT_OVERRIDE:
+      return GetOverrideMessage();
+    default:
+      NOTREACHED();
+  }
+}
 
 }  // namespace
 
@@ -351,12 +450,13 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
     SetPreferredSize(
         gfx::Size(kDisabledAuthMessageWidthDp, kDisabledAuthMessageHeightDp));
     SetFocusBehavior(FocusBehavior::ALWAYS);
-    views::ImageView* alarm_clock_icon = new views::ImageView();
-    alarm_clock_icon->SetPreferredSize(gfx::Size(
-        kDisabledAuthMessageIconSizeDp, kDisabledAuthMessageIconSizeDp));
-    alarm_clock_icon->SetImage(
-        gfx::CreateVectorIcon(kLockScreenTimeLimitAlarmIcon, SK_ColorWHITE));
-    AddChildView(alarm_clock_icon);
+    message_icon_ = new views::ImageView();
+    message_icon_->SetPreferredSize(gfx::Size(kDisabledAuthMessageIconSizeDp,
+                                              kDisabledAuthMessageIconSizeDp));
+    message_icon_->SetImage(
+        gfx::CreateVectorIcon(kLockScreenTimeLimitMoonIcon,
+                              kDisabledAuthMessageIconSizeDp, SK_ColorWHITE));
+    AddChildView(message_icon_);
 
     auto decorate_label = [](views::Label* label) {
       label->SetSubpixelRenderingEnabled(false);
@@ -364,9 +464,9 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
       label->SetEnabledColor(SK_ColorWHITE);
       label->SetFocusBehavior(FocusBehavior::ALWAYS);
     };
-    message_title_ = new views::Label(
-        l10n_util::GetStringUTF16(IDS_ASH_LOGIN_TAKE_BREAK_MESSAGE),
-        views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY);
+    message_title_ =
+        new views::Label(base::string16(), views::style::CONTEXT_LABEL,
+                         views::style::STYLE_PRIMARY);
     message_title_->SetFontList(
         gfx::FontList().Derive(kDisabledAuthMessageTitleFontSizeDeltaDp,
                                gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
@@ -380,18 +480,22 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
         gfx::FontList().Derive(kDisabledAuthMessageContentsFontSizeDeltaDp,
                                gfx::Font::NORMAL, gfx::Font::Weight::NORMAL));
     decorate_label(message_contents_);
+    message_contents_->SetMultiLine(true);
     AddChildView(message_contents_);
   }
 
   ~DisabledAuthMessageView() override = default;
 
-  // Set the time when auth will be reenabled. It will be included in the
-  // message.
-  void SetAuthReenabledTime(const base::Time& auth_reenabled_time) {
-    const std::string time_of_day =
-        TimeOfDay::FromTime(auth_reenabled_time).ToString();
-    message_contents_->SetText(l10n_util::GetStringFUTF16(
-        IDS_ASH_LOGIN_COME_BACK_MESSAGE, base::UTF8ToUTF16(time_of_day)));
+  // Set the parameters needed to render the message.
+  void SetAuthDisabledMessage(
+      const ash::mojom::AuthDisabledDataPtr& auth_disabled_data) {
+    LockScreenMessage message = GetLockScreenMessage(
+        auth_disabled_data->reason, auth_disabled_data->auth_reenabled_time,
+        auth_disabled_data->device_used_time);
+    message_icon_->SetImage(gfx::CreateVectorIcon(
+        *message.icon, kDisabledAuthMessageIconSizeDp, SK_ColorWHITE));
+    message_title_->SetText(message.title);
+    message_contents_->SetText(message.content);
     Layout();
   }
 
@@ -415,6 +519,7 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
  private:
   views::Label* message_title_;
   views::Label* message_contents_;
+  views::ImageView* message_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(DisabledAuthMessageView);
 };
@@ -842,9 +947,10 @@ void LoginAuthUserView::NotifyFingerprintAuthResult(bool success) {
   fingerprint_view_->NotifyFingerprintAuthResult(success);
 }
 
-void LoginAuthUserView::SetAuthReenabledTime(
-    const base::Time& auth_reenabled_time) {
-  disabled_auth_message_->SetAuthReenabledTime(auth_reenabled_time);
+void LoginAuthUserView::SetAuthDisabledMessage(
+    const ash::mojom::AuthDisabledDataPtr& auth_disabled_data) {
+  disabled_auth_message_->SetAuthDisabledMessage(auth_disabled_data);
+  Layout();
 }
 
 const mojom::LoginUserInfoPtr& LoginAuthUserView::current_user() const {

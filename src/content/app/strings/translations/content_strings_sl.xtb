@@ -176,7 +176,9 @@
 <translation id="6941933287844615239">prenos predstavnosti</translation>
 <translation id="6981594929165378967">vstavljanje</translation>
 <translation id="6989848892321993519">Podaljšajte to besedilo na toliko znakov ali več: <ph name="MIN_CHARACTERS" /> (trenutno uporabljate en znak).</translation>
+<translation id="7033340931668032222">navzgor in navzdol za spreminjanje glasnosti</translation>
 <translation id="709897737746224366">Poskrbite za ujemanje z zahtevano obliko.</translation>
+<translation id="7118469954320184356">Ni opisa.</translation>
 <translation id="7139483182332611405">predgovor</translation>
 <translation id="7263440858009898357">Izberite element s seznama.</translation>
 <translation id="727747134524199931">glava stolpca</translation>
@@ -226,6 +228,7 @@
 <translation id="8550857728288566671">grafični simbol</translation>
 <translation id="8583702881314752957">seznam opredelitev</translation>
 <translation id="8597182159515967513">naslov</translation>
+<translation id="8603553056539299761">levo in desno za iskanje</translation>
 <translation id="860475260694818407">kazalo</translation>
 <translation id="8613126697340063924">upravljanje oddaljenega predvajanja</translation>
 <translation id="862370744433916922">podnaslov</translation>

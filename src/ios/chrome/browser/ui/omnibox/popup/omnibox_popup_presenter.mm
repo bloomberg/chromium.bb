@@ -67,10 +67,10 @@ const CGFloat kVerticalOffset = 6;
 }
 
 - (void)updatePopup {
-  BOOL popupSizeIsZero = CGSizeEqualToSize(
-      [self.viewController.view intrinsicContentSize], CGSizeZero);
+  BOOL popupHeightIsZero =
+      self.viewController.view.intrinsicContentSize.height == 0;
   BOOL popupIsOnscreen = self.popupContainerView.superview != nil;
-  if (popupSizeIsZero && popupIsOnscreen) {
+  if (popupHeightIsZero && popupIsOnscreen) {
     // If intrinsic size is 0 and popup is onscreen, we want to remove the
     // popup view.
     if (!IsIPadIdiom()) {
@@ -83,7 +83,7 @@ const CGFloat kVerticalOffset = 6;
 
     self.open = NO;
     [self.delegate popupDidCloseForPresenter:self];
-  } else if (!popupSizeIsZero && !popupIsOnscreen) {
+  } else if (!popupHeightIsZero && !popupIsOnscreen) {
     // If intrinsic size is nonzero and popup is offscreen, we want to add it.
     UIViewController* parentVC =
         [self.delegate popupParentViewControllerForPresenter:self];

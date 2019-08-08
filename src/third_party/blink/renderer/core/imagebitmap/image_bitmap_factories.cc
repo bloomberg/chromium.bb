@@ -257,7 +257,7 @@ ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(
           this,
           GetExecutionContext()->GetTaskRunner(TaskType::kFileReading))),
       factory_(&factory),
-      resolver_(ScriptPromiseResolver::Create(script_state)),
+      resolver_(MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
       crop_rect_(crop_rect),
       options_(options) {}
 
@@ -337,11 +337,11 @@ void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
   if (color_space_conversion_option == "none")
     ignore_color_space = true;
   const bool data_complete = true;
-  std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
+  std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
       SegmentReader::CreateFromSkData(SkData::MakeWithoutCopy(
           array_buffer->Data(), array_buffer->ByteLength())),
       data_complete, alpha_op, ImageDecoder::kDefaultBitDepth,
-      ignore_color_space ? ColorBehavior::Ignore() : ColorBehavior::Tag()));
+      ignore_color_space ? ColorBehavior::Ignore() : ColorBehavior::Tag());
   sk_sp<SkImage> frame;
   if (decoder) {
     frame = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));

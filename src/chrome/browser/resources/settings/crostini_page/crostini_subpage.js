@@ -69,32 +69,26 @@ Polymer({
     }
   },
 
+  /** @private */
+  onExportImportClick_: function() {
+    settings.navigateTo(settings.routes.CROSTINI_EXPORT_IMPORT);
+  },
+
   /**
    * Shows a confirmation dialog when removing crostini.
-   * @param {!Event} event
    * @private
    */
-  onRemoveTap_: function(event) {
+  onRemoveClick_: function() {
     settings.CrostiniBrowserProxyImpl.getInstance().requestRemoveCrostini();
   },
 
   /** @private */
-  onSharedPathsTap_: function(event) {
+  onSharedPathsClick_: function() {
     settings.navigateTo(settings.routes.CROSTINI_SHARED_PATHS);
   },
 
   /** @private */
-  onExportClick_: function(event) {
-    settings.CrostiniBrowserProxyImpl.getInstance().exportCrostiniContainer();
-  },
-
-  /** @private */
-  onImportClick_: function(event) {
-    settings.CrostiniBrowserProxyImpl.getInstance().importCrostiniContainer();
-  },
-
-  /** @private */
-  onSharedUsbDevicesTap_: function(event) {
+  onSharedUsbDevicesClick_: function() {
     settings.navigateTo(settings.routes.CROSTINI_SHARED_USB_DEVICES);
   },
 });

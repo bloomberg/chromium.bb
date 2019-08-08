@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
@@ -18,6 +17,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -79,7 +79,8 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
   Image::ImageDecodingMode decode_mode =
       image_element->GetDecodingModeForPainting(image->paint_image_id());
   paint_info.context.DrawImage(image.get(), decode_mode, dest_rect, &src_rect);
-  if (origin_trials::ElementTimingEnabled(&layout_svg_image_.GetDocument()) &&
+  if (RuntimeEnabledFeatures::ElementTimingEnabled(
+          &layout_svg_image_.GetDocument()) &&
       !paint_info.context.ContextDisabled() && image_resource->CachedImage() &&
       image_resource->CachedImage()->IsLoaded()) {
     LocalDOMWindow* window = layout_svg_image_.GetDocument().domWindow();
@@ -87,12 +88,12 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
     DCHECK(paint_info.PaintContainer());
     ImageElementTiming::From(*window).NotifyImagePainted(
         &layout_svg_image_, image_resource->CachedImage(),
-        paint_info.PaintContainer()->Layer());
+        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
   }
 
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
     PaintTimingDetector::NotifyImagePaint(
-        layout_svg_image_,
+        layout_svg_image_, image->Size(), image_resource->CachedImage(),
         paint_info.context.GetPaintController().CurrentPaintChunkProperties());
   }
 }

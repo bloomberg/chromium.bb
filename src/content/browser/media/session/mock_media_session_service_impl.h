@@ -7,7 +7,7 @@
 
 #include "content/browser/media/session/media_session_service_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
+#include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 
 namespace content {
 

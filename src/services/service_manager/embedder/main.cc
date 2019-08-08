@@ -20,7 +20,7 @@
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_log.h"
@@ -136,17 +136,6 @@ void CommonSubprocessInit() {
   MSG msg;
   PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
 #endif
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-  // Various things break when you're using a locale where the decimal
-  // separator isn't a period.  See e.g. bugs 22782 and 39964.  For
-  // all processes except the browser process (where we call system
-  // APIs that may rely on the correct locale for formatting numbers
-  // when presenting them to the user), reset the locale for numeric
-  // formatting.
-  // Note that this is not correct for plugin processes -- they can
-  // surface UI -- but it's likely they get this wrong too so why not.
-  setlocale(LC_NUMERIC, "C");
-#endif
 
 #if !defined(OFFICIAL_BUILD) && defined(OS_WIN)
   base::RouteStdioToConsole(false);
@@ -175,7 +164,7 @@ void NonEmbedderProcessInit() {
   }
 #endif
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("ServiceManagerProcess");
+  base::ThreadPool::CreateAndStartWithDefaultParams("ServiceManagerProcess");
 }
 
 int RunServiceManager(MainDelegate* delegate) {
@@ -199,7 +188,7 @@ int RunServiceManager(MainDelegate* delegate) {
   run_loop.Run();
 
   ipc_thread.Stop();
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
 
   return 0;
 }
@@ -319,9 +308,19 @@ int Main(const MainParams& params) {
 // On Android setlocale() is not supported, and we don't override the signal
 // handlers so we can get a stack trace when crashing.
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
-    // Set C library locale to make sure CommandLine can parse argument values
-    // in the correct encoding.
+    // Set C library locale to make sure CommandLine can parse
+    // argument values in the correct encoding and to make sure
+    // generated file names (think downloads) are in the file system's
+    // encoding.
     setlocale(LC_ALL, "");
+    // For numbers we never want the C library's locale sensitive
+    // conversion from number to string because the only thing it
+    // changes is the decimal separator which is not good enough for
+    // the UI and can be harmful elsewhere. User interface number
+    // conversions need to go through ICU. Other conversions need to
+    // be locale insensitive so we force the number locale back to the
+    // default, "C", locale.
+    setlocale(LC_NUMERIC, "C");
 
     SetupSignalHandlers();
 #endif

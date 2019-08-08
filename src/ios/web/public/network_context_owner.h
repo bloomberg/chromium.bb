@@ -6,7 +6,10 @@
 #define IOS_WEB_PUBLIC_NETWORK_CONTEXT_OWNER_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_getter_observer.h"
@@ -31,6 +34,7 @@ class NetworkContextOwner : public net::URLRequestContextGetterObserver {
   // connects the pipe in |network_context_client| to it.
   NetworkContextOwner(
       net::URLRequestContextGetter* request_context,
+      const std::vector<std::string>& cors_exempt_header_list,
       network::mojom::NetworkContextPtr* network_context_client);
 
   ~NetworkContextOwner() override;
@@ -40,6 +44,7 @@ class NetworkContextOwner : public net::URLRequestContextGetterObserver {
 
  private:
   void InitializeOnIOThread(
+      const std::vector<std::string> cors_exempt_header_list,
       network::mojom::NetworkContextRequest network_context_request);
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;

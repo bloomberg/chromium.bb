@@ -77,7 +77,7 @@ bool DataURL::Parse(const GURL& url,
     mime_type->assign("text/plain");
     if (charset->empty())
       charset->assign("US-ASCII");
-  } else if (!ParseMimeTypeWithoutParameter(*mime_type, NULL, NULL)) {
+  } else if (!ParseMimeTypeWithoutParameter(*mime_type, nullptr, nullptr)) {
     // Fallback to the default as recommended in RFC2045 when the mediatype
     // value is invalid. For this case, we don't respect |charset| but force it
     // set to "US-ASCII".

@@ -17,6 +17,10 @@
 // Adds the identity (if not already added), and perform a sign-in.
 + (void)signinWithIdentity:(ChromeIdentity*)identity;
 
+// Taps on the settings link in the sign-in view. The sign-in view has to be
+// opened before calling this method.
++ (void)tapSettingsLink;
+
 // Selects an identity when the identity chooser dialog is presented. The dialog
 // is confirmed, but it doesn't validated the user consent page.
 + (void)selectIdentityWithEmail:(NSString*)userEmail;

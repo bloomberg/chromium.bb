@@ -18,7 +18,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/media/webrtc/webrtc_rtp_dump_writer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -102,7 +102,7 @@ class WebRtcRtpDumpHandlerTest : public testing::Test {
   }
 
   void FlushTaskRunners() {
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }
 

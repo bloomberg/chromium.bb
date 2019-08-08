@@ -87,6 +87,10 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
       !child.PhysicalFragment()->IsOutOfFlowPositioned())
     has_child_that_depends_on_percentage_block_size_ = true;
 
+  if (child.MayHaveDescendantAboveBlockStart() &&
+      !child.PhysicalFragment()->IsBlockFormattingContextRoot())
+    may_have_descendant_above_block_start_ = true;
+
   return AddChild(child.PhysicalFragment(), child_offset);
 }
 
@@ -98,7 +102,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     switch (child->Type()) {
       case NGPhysicalFragment::kFragmentBox:
       case NGPhysicalFragment::kFragmentRenderedLegend:
-        if (ToNGBlockBreakToken(child_break_token)->HasLastResortBreak())
+        if (To<NGBlockBreakToken>(child_break_token)->HasLastResortBreak())
           has_last_resort_break_ = true;
         child_break_tokens_.push_back(child_break_token);
         break;
@@ -119,11 +123,16 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   if (!has_floating_descendants_) {
     if (child->IsFloating()) {
       has_floating_descendants_ = true;
-    } else if (child->IsContainer() && !child->IsBlockFormattingContextRoot() &&
-               ToNGPhysicalContainerFragment(*child).HasFloatingDescendants()) {
-      has_floating_descendants_ = true;
+    } else {
+      auto* child_container = DynamicTo<NGPhysicalContainerFragment>(*child);
+      if (child_container && !child->IsBlockFormattingContextRoot() &&
+          child_container->HasFloatingDescendants())
+        has_floating_descendants_ = true;
     }
   }
+
+  if (child_offset.block_offset < LayoutUnit())
+    may_have_descendant_above_block_start_ = true;
 
   if (!IsParallelWritingMode(child->Style().GetWritingMode(),
                              Style().GetWritingMode()))
@@ -146,7 +155,7 @@ NGLogicalOffset NGContainerFragmentBuilder::GetChildOffset(
     // something with split inlines, and nested oof/fixed descendants maybe.
     if (children_[i]->IsLineBox()) {
       const auto& line_box_fragment =
-          ToNGPhysicalLineBoxFragment(*children_[i]);
+          To<NGPhysicalLineBoxFragment>(*children_[i]);
       for (const auto& line_box_child : line_box_fragment.Children()) {
         if (line_box_child->GetLayoutObject() == child) {
           return offsets_[i] + line_box_child.Offset().ConvertToLogical(
@@ -250,19 +259,13 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
   oof_positioned_candidates_.Shrink(0);
 }
 
-void NGContainerFragmentBuilder::
-    MoveOutOfFlowDescendantCandidatesToDescendants() {
-  GetAndClearOutOfFlowDescendantCandidates(&oof_positioned_descendants_,
-                                           nullptr);
-}
-
 #ifndef NDEBUG
 
 String NGContainerFragmentBuilder::ToString() const {
   StringBuilder builder;
-  builder.Append(String::Format("ContainerFragment %.2fx%.2f, Children %u\n",
-                                InlineSize().ToFloat(), BlockSize().ToFloat(),
-                                children_.size()));
+  builder.AppendFormat("ContainerFragment %.2fx%.2f, Children %u\n",
+                       InlineSize().ToFloat(), BlockSize().ToFloat(),
+                       children_.size());
   for (auto& child : children_) {
     builder.Append(child->DumpFragmentTree(
         NGPhysicalFragment::DumpAll & ~NGPhysicalFragment::DumpHeaderText));

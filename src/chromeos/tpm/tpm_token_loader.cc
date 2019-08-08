@@ -13,7 +13,6 @@
 #include "base/system/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/tpm/tpm_token_info_getter.h"
 #include "crypto/nss_util.h"
 
@@ -65,10 +64,9 @@ bool TPMTokenLoader::IsInitialized() {
 TPMTokenLoader::TPMTokenLoader(bool for_test)
     : initialized_for_test_(for_test),
       tpm_token_state_(TPM_STATE_UNKNOWN),
-      tpm_token_info_getter_(
-          TPMTokenInfoGetter::CreateForSystemToken(
-              DBusThreadManager::Get()->GetCryptohomeClient(),
-              base::ThreadTaskRunnerHandle::Get())),
+      tpm_token_info_getter_(TPMTokenInfoGetter::CreateForSystemToken(
+          CryptohomeClient::Get(),
+          base::ThreadTaskRunnerHandle::Get())),
       tpm_token_slot_id_(-1),
       can_start_before_login_(false),
       weak_factory_(this) {

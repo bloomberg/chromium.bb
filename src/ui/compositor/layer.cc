@@ -213,8 +213,11 @@ std::unique_ptr<Layer> Layer::Clone() const {
   clone->SetMasksToBounds(GetMasksToBounds());
   clone->SetOpacity(GetTargetOpacity());
   clone->SetVisible(GetTargetVisibility());
+  clone->SetAcceptEvents(accept_events());
   clone->SetFillsBoundsOpaquely(fills_bounds_opaquely_);
   clone->SetFillsBoundsCompletely(fills_bounds_completely_);
+  clone->SetRoundedCornerRadius(rounded_corner_radii());
+  clone->SetIsFastRoundedCorner(is_fast_rounded_corner());
   clone->set_name(name_);
 
   return clone;
@@ -553,6 +556,13 @@ void Layer::SetVisible(bool visible) {
   GetAnimator()->SetVisibility(visible);
 }
 
+void Layer::SetAcceptEvents(bool accept_events) {
+  if (accept_events_ == accept_events)
+    return;
+  accept_events_ = accept_events;
+  cc_layer_->SetHitTestable(visible_ && accept_events_);
+}
+
 bool Layer::GetTargetVisibility() const {
   if (animator_ && animator_->IsAnimatingProperty(
       LayerAnimationElement::VISIBILITY))
@@ -575,6 +585,17 @@ void Layer::SetRoundedCornerRadius(
     const std::array<uint32_t, 4>& corner_radii) {
   cc_layer_->SetRoundedCorner(corner_radii);
   ScheduleDraw();
+
+  for (const auto& mirror : mirrors_)
+    mirror->dest()->SetRoundedCornerRadius(corner_radii);
+}
+
+void Layer::SetIsFastRoundedCorner(bool enable) {
+  cc_layer_->SetIsFastRoundedCorner(enable);
+  ScheduleDraw();
+
+  for (const auto& mirror : mirrors_)
+    mirror->dest()->SetIsFastRoundedCorner(enable);
 }
 
 // static
@@ -646,6 +667,8 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
       cc_layer_->SafeOpaqueBackgroundColor());
   new_layer->SetCacheRenderSurface(cc_layer_->cache_render_surface());
   new_layer->SetTrilinearFiltering(cc_layer_->trilinear_filtering());
+  new_layer->SetRoundedCorner(cc_layer_->corner_radii());
+  new_layer->SetIsFastRoundedCorner(cc_layer_->is_fast_rounded_corner());
 
   cc_layer_ = new_layer.get();
   if (content_layer_) {
@@ -664,6 +687,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   cc_layer_->SetTransformOrigin(gfx::Point3F());
   cc_layer_->SetContentsOpaque(fills_bounds_opaquely_);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
+  cc_layer_->SetHitTestable(visible_ && accept_events_);
   cc_layer_->SetHideLayerAndSubtree(!visible_);
   cc_layer_->SetBackdropFilterQuality(backdrop_filter_quality_);
   cc_layer_->SetElementId(cc::ElementId(cc_layer_->id()));
@@ -973,6 +997,8 @@ void Layer::ScheduleDraw() {
 void Layer::SendDamagedRects() {
   if (layer_mask_)
     layer_mask_->SendDamagedRects();
+  if (delegate_)
+    delegate_->UpdateVisualState();
 
   if (damaged_region_.IsEmpty())
     return;
@@ -998,6 +1024,37 @@ void Layer::CompleteAllAnimations() {
        ++it) {
     (*it)->StopAnimating();
   }
+}
+
+void Layer::StackChildrenAtBottom(
+    const std::vector<Layer*>& new_leading_children) {
+  std::vector<Layer*> new_children_order;
+  new_children_order.reserve(children_.size());
+
+  cc::LayerList new_cc_children_order;
+  new_cc_children_order.reserve(cc_layer_->children().size());
+
+  for (Layer* leading_child : new_leading_children) {
+    DCHECK_EQ(leading_child->cc_layer_->parent(), cc_layer_);
+    DCHECK_EQ(leading_child->parent(), this);
+    new_children_order.emplace_back(leading_child);
+    new_cc_children_order.emplace_back(
+        scoped_refptr<cc::Layer>(leading_child->cc_layer_));
+  }
+
+  base::flat_set<Layer*> reordered_children(new_children_order);
+
+  const cc::LayerList& old_cc_children_order = cc_layer_->children();
+
+  for (size_t i = 0; i < children_.size(); ++i) {
+    if (reordered_children.count(children_.at(i)) > 0)
+      continue;
+    new_children_order.emplace_back(children_.at(i));
+    new_cc_children_order.emplace_back(old_cc_children_order.at(i));
+  }
+
+  children_ = std::move(new_children_order);
+  cc_layer_->ReorderChildren(&new_cc_children_order);
 }
 
 void Layer::SuppressPaint() {
@@ -1034,8 +1091,8 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
 }
 
 void Layer::SetDidScrollCallback(
-    base::Callback<void(const gfx::ScrollOffset&, const cc::ElementId&)>
-        callback) {
+    base::RepeatingCallback<void(const gfx::ScrollOffset&,
+                                 const cc::ElementId&)> callback) {
   cc_layer_->set_did_scroll_callback(std::move(callback));
 }
 
@@ -1231,6 +1288,7 @@ void Layer::SetVisibilityFromAnimation(bool visible,
 
   visible_ = visible;
   cc_layer_->SetHideLayerAndSubtree(!visible_);
+  cc_layer_->SetHitTestable(visible_ && accept_events_);
 }
 
 void Layer::SetBrightnessFromAnimation(float brightness,
@@ -1334,6 +1392,9 @@ void Layer::CreateCcLayer() {
   cc_layer_->SetContentsOpaque(true);
   cc_layer_->SetSafeOpaqueBackgroundColor(SK_ColorWHITE);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
+  // TODO(sunxd): Allow ui::Layers to set if they accept events or not. See
+  // https://crbug.com/924294.
+  cc_layer_->SetHitTestable(type_ != LAYER_NOT_DRAWN);
   cc_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
   cc_layer_->SetElementId(cc::ElementId(cc_layer_->id()));
   RecomputePosition();

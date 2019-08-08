@@ -72,7 +72,7 @@ PaintController::DisplayItemListAsJSON::SubsequenceAsJSONObjectRecursive() {
   const auto& subsequence = *current_subsequence_;
   ++current_subsequence_;
 
-  auto json_object = JSONObject::Create();
+  auto json_object = std::make_unique<JSONObject>();
 
   json_object->SetString("subsequence",
                          String::Format("client: %p ", subsequence.client) +
@@ -87,7 +87,7 @@ std::unique_ptr<JSONArray>
 PaintController::DisplayItemListAsJSON::SubsequenceAsJSONArrayRecursive(
     size_t start_item,
     size_t end_item) {
-  std::unique_ptr<JSONArray> array = JSONArray::Create();
+  auto array = std::make_unique<JSONArray>();
   size_t item_index = start_item;
 
   while (current_subsequence_ != subsequences_.end() &&
@@ -115,7 +115,7 @@ void PaintController::DisplayItemListAsJSON::AppendSubsequenceAsJSON(
   DCHECK(end_item > start_item);
   if (current_chunk_ == chunks_.end()) {
     // We are in the middle of painting with incomplete chunks.
-    auto json_object = JSONObject::Create();
+    auto json_object = std::make_unique<JSONObject>();
     json_object->SetString("chunk", "incomplete");
     json_object->SetArray(
         "displayItems", list_.SubsequenceAsJSON(start_item, end_item, flags_));
@@ -127,7 +127,7 @@ void PaintController::DisplayItemListAsJSON::AppendSubsequenceAsJSON(
   while (current_chunk_ != chunks_.end() &&
          current_chunk_->end_index <= end_item) {
     const auto& chunk = *current_chunk_;
-    auto json_object = JSONObject::Create();
+    auto json_object = std::make_unique<JSONObject>();
 
     json_object->SetString(
         "chunk", ClientName(chunk.id.client) + " " + chunk.id.ToString());

@@ -25,6 +25,7 @@
 #include "ui/views/controls/label.h"
 
 using content::WebContents;
+using security_state::SecurityLevel;
 
 LocationIconView::LocationIconView(const gfx::FontList& font_list,
                                    Delegate* delegate)
@@ -58,8 +59,11 @@ bool LocationIconView::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 SkColor LocationIconView::GetTextColor() const {
-  return delegate_->GetSecurityChipColor(
-      delegate_->GetLocationBarModel()->GetSecurityLevel(false));
+  SecurityLevel security_level = SecurityLevel::NONE;
+  if (!delegate_->IsEditingOrEmpty())
+    security_level = delegate_->GetLocationBarModel()->GetSecurityLevel();
+
+  return delegate_->GetSecurityChipColor(security_level);
 }
 
 bool LocationIconView::ShouldShowSeparator() const {
@@ -115,14 +119,15 @@ int LocationIconView::GetMinimumLabelTextWidth() const {
 }
 
 bool LocationIconView::ShouldShowText() const {
-  const auto* location_bar_model = delegate_->GetLocationBarModel();
+  if (delegate_->IsEditingOrEmpty())
+    return false;
 
-  if (!location_bar_model->input_in_progress()) {
-    const GURL& url = location_bar_model->GetURL();
-    if (url.SchemeIs(content::kChromeUIScheme) ||
-        url.SchemeIs(extensions::kExtensionScheme) ||
-        url.SchemeIs(url::kFileScheme))
-      return true;
+  const auto* location_bar_model = delegate_->GetLocationBarModel();
+  const GURL& url = location_bar_model->GetURL();
+  if (url.SchemeIs(content::kChromeUIScheme) ||
+      url.SchemeIs(extensions::kExtensionScheme) ||
+      url.SchemeIs(url::kFileScheme)) {
+    return true;
   }
 
   return !location_bar_model->GetSecureDisplayText().empty();
@@ -133,6 +138,9 @@ const views::InkDrop* LocationIconView::get_ink_drop_for_testing() {
 }
 
 base::string16 LocationIconView::GetText() const {
+  if (delegate_->IsEditingOrEmpty())
+    return base::string16();
+
   if (delegate_->GetLocationBarModel()->GetURL().SchemeIs(
           content::kChromeUIScheme))
     return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
@@ -158,9 +166,10 @@ base::string16 LocationIconView::GetText() const {
 }
 
 bool LocationIconView::ShouldAnimateTextVisibilityChange() const {
-  using SecurityLevel = security_state::SecurityLevel;
-  SecurityLevel level =
-      delegate_->GetLocationBarModel()->GetSecurityLevel(false);
+  if (delegate_->IsEditingOrEmpty())
+    return false;
+
+  SecurityLevel level = delegate_->GetLocationBarModel()->GetSecurityLevel();
   // Do not animate transitions from HTTP_SHOW_WARNING to DANGEROUS, since the
   // transition can look confusing/messy.
   if (level == SecurityLevel::DANGEROUS &&
@@ -232,8 +241,11 @@ void LocationIconView::Update(bool suppress_animations) {
     }
   }
 
-  last_update_security_level_ =
-      delegate_->GetLocationBarModel()->GetSecurityLevel(false);
+  last_update_security_level_ = SecurityLevel::NONE;
+  if (!is_editing_or_empty) {
+    last_update_security_level_ =
+        delegate_->GetLocationBarModel()->GetSecurityLevel();
+  }
   was_editing_or_empty_ = is_editing_or_empty;
 }
 

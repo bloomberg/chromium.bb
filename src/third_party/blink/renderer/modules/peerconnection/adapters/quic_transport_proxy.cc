@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_host.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_proxy.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_host.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_proxy.h"
@@ -106,6 +107,15 @@ QuicStreamProxy* QuicTransportProxy::CreateStream() {
   return stream_proxy_ptr;
 }
 
+void QuicTransportProxy::SendDatagram(Vector<uint8_t> datagram) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  PostCrossThreadTask(
+      *host_thread(), FROM_HERE,
+      CrossThreadBind(&QuicTransportHost::SendDatagram,
+                      CrossThreadUnretained(host_.get()), std::move(datagram)));
+}
+
 void QuicTransportProxy::GetStats(uint32_t request_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -124,9 +134,10 @@ void QuicTransportProxy::OnRemoveStream(
   stream_proxies_.erase(it);
 }
 
-void QuicTransportProxy::OnConnected() {
+void QuicTransportProxy::OnConnected(
+    P2PQuicNegotiatedParams negotiated_params) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  delegate_->OnConnected();
+  delegate_->OnConnected(negotiated_params);
 }
 
 void QuicTransportProxy::OnRemoteStopped() {
@@ -159,6 +170,18 @@ void QuicTransportProxy::OnStats(uint32_t request_id,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   delegate_->OnStats(request_id, stats);
+}
+
+void QuicTransportProxy::OnDatagramSent() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  delegate_->OnDatagramSent();
+}
+
+void QuicTransportProxy::OnDatagramReceived(Vector<uint8_t> datagram) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  delegate_->OnDatagramReceived(std::move(datagram));
 }
 
 }  // namespace blink

@@ -212,21 +212,27 @@ function testMetadataModelNotUpdateCachedResultAfterRequest(callback) {
   provider = /** @type {!ManualTestMetadataProvider} */ (model.getProvider());
   provider.callback[0]([{propertyA: 'valueA1'}]);
 
-  reportPromise(promise.then(() => {
-    // 'propertyA' is cached here.
-    const promise1 = model.get([entryA], ['propertyA', 'propertyB']);
-    const promise2 = model.get([entryA], ['propertyC']);
-    // Returns propertyC.
-    provider = /** @type {!ManualTestMetadataProvider} */ (model.getProvider());
-    provider.callback[2]([{propertyA: 'valueA2', propertyC: 'valueC'}]);
-    provider.callback[1]([{propertyB: 'valueB'}]);
-    return Promise.all([promise1, promise2]);
-  }).then(results => {
-    // The result should be cached value at the time when get was called.
-    assertEquals('valueA1', getProperty(results[0][0], 'propertyA'));
-    assertEquals('valueB', getProperty(results[0][0], 'propertyB'));
-    assertEquals('valueC', getProperty(results[1][0], 'propertyC'));
-  }), callback);
+  reportPromise(
+      promise
+          .then(() => {
+            // 'propertyA' is cached here.
+            const promise1 = model.get([entryA], ['propertyA', 'propertyB']);
+            const promise2 = model.get([entryA], ['propertyC']);
+            // Returns propertyC.
+            provider = /** @type {!ManualTestMetadataProvider} */ (
+                model.getProvider());
+            provider.callback[2]([{propertyA: 'valueA2', propertyC: 'valueC'}]);
+            provider.callback[1]([{propertyB: 'valueB'}]);
+            return Promise.all([promise1, promise2]);
+          })
+          .then(results => {
+            // The result should be cached value at the time when get was
+            // called.
+            assertEquals('valueA1', getProperty(results[0][0], 'propertyA'));
+            assertEquals('valueB', getProperty(results[0][0], 'propertyB'));
+            assertEquals('valueC', getProperty(results[1][0], 'propertyC'));
+          }),
+      callback);
 }
 
 function testMetadataModelGetCache(callback) {
@@ -237,12 +243,15 @@ function testMetadataModelGetCache(callback) {
   const cache = model.getCache([entryA], ['property']);
   assertEquals(null, getProperty(cache[0], 'property'));
 
-  reportPromise(promise.then(() => {
-    const cache = model.getCache([entryA], ['property']);
-    provider = /** @type {!TestMetadataProvider} */ (model.getProvider());
-    assertEquals(1, provider.requestCount);
-    assertEquals('filesystem://A:property', getProperty(cache[0], 'property'));
-  }), callback);
+  reportPromise(
+      promise.then(() => {
+        const cache = model.getCache([entryA], ['property']);
+        provider = /** @type {!TestMetadataProvider} */ (model.getProvider());
+        assertEquals(1, provider.requestCount);
+        assertEquals(
+            'filesystem://A:property', getProperty(cache[0], 'property'));
+      }),
+      callback);
 }
 
 function testMetadataModelUnknownProperty() {

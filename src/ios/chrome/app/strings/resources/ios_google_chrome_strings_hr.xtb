@@ -8,7 +8,6 @@
 <translation id="1984705450038014246">Sinkroniziraj podatke iz Chromea</translation>
 <translation id="2147651015520127414">Chrome je potvrdio da je <ph name="ISSUER" /> izdao certifikat web-lokacije.</translation>
 <translation id="2199719347983604670">Podaci s Chrome sinkronizacije</translation>
-<translation id="2334084861041072223">Autorska prava <ph name="YEAR" />. Google Inc. Sva prava pridržana.</translation>
 <translation id="2342981853652716282">Prijavite se na Chrome kako biste mogli pristupati svojim oznakama, zaporkama i ostalom na svim svojim uređajima.</translation>
 <translation id="2347208864470321755">Kada je ta značajka uključena, Chrome će ponuditi prijevod stranica napisanih na drugim jezicima pomoću Google prevoditelja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Da biste spremili slike, dodirnite Postavke i omogućite Chromeu upotrebu fotografija</translation>
@@ -22,7 +21,6 @@
 <translation id="3282568296779691940">Prijavite se u Chrome</translation>
 <translation id="3345341804167540816">Upotrebljavajte Chrome svugdje</translation>
 <translation id="384394811301901750">Google Chrome trenutačno ne može upotrebljavati vaš fotoaparat</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3980220367029651214">Prebacujete sinkronizaciju s računa <ph name="USER_EMAIL1" /> na račun <ph name="USER_EMAIL2" />. Vašim postojećim podacima na Chromeu upravlja <ph name="DOMAIN" />. Vaši će se podaci izbrisati s ovog uređaja, no ostat će na računu <ph name="USER_EMAIL1" />.</translation>
 <translation id="3988789688219830639">Chrome nema pristup fotografijama ni videozapisima. Omogućite pristup u Postavkama iOS-a &gt; Privatnost &gt; Fotografije.</translation>
 <translation id="4099578267706723511">Poboljšajte Chrome šaljući Googleu statistike upotrebe i izvješća o rušenju.</translation>
@@ -34,6 +32,7 @@
 <translation id="5389212809648216794">Google Chrome ne može upotrebljavati vaš fotoaparat jer ga upotrebljava neka druga aplikacija</translation>
 <translation id="5639704535586432836">Otvorite Postavke &gt; Privatnost &gt; Fotoaparat &gt; Google Chrome i uključite fotoaparat.</translation>
 <translation id="5642200033778930880">Google Chrome ne može upotrebljavati vaš fotoaparat u načinu podijeljenog prikaza</translation>
+<translation id="5690427481109656848">Google LLC</translation>
 <translation id="5854621639439811139">Savjet za Chrome. Neki se gumbi sada nalaze pri dnu zaslona, primjerice za natrag, naprijed i pretraživanje.</translation>
 <translation id="6036420186814142909">Google Chrome ima značajke koje vam mogu pomoći u upravljanju internetskim podacima i brzinom kojom se učitavaju web-stranice.
 <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
@@ -51,6 +50,7 @@
 <translation id="7437998757836447326">Odjava s Chromea</translation>
 <translation id="756809126120519699">Chromeovi su podaci izbrisani</translation>
 <translation id="7626032353295482388">Dobro došli u Chrome</translation>
+<translation id="8370517070665726704">Autorska prava <ph name="YEAR" />. Google LLC. Sva prava pridržana.</translation>
 <translation id="840168496893712993">Neki programski dodaci uzrokuju rušenje preglednika Chrome. Pokušajte ih deinstalirati.</translation>
 <translation id="8459495907675268833">Odabrani podaci uklonjeni su iz Chromea i sa sinkroniziranih uređaja. Na Google računu možda postoje drugi oblici povijesti pregledavanja, primjerice pretraživanja i aktivnosti s drugih Googleovih usluga, na stranici history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

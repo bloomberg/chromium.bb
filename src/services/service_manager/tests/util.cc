@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -85,8 +86,13 @@ mojom::ConnectResult LaunchAndConnectToProcess(
 #if defined(OS_WIN)
   options.handles_to_inherit = handle_passing_info;
 #elif defined(OS_FUCHSIA)
-
   options.handles_to_transfer = handle_passing_info;
+#elif defined(OS_MACOSX)
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    options.mach_ports_for_rendezvous = handle_passing_info;
+  } else {
+    options.fds_to_remap = handle_passing_info;
+  }
 #elif defined(OS_POSIX)
   options.fds_to_remap = handle_passing_info;
 #endif

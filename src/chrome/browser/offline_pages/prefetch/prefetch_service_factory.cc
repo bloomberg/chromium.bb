@@ -11,9 +11,9 @@
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/cached_image_fetcher/cached_image_fetcher_service_factory.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/prefetch/offline_metrics_collector_impl.h"
@@ -25,8 +25,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/image_fetcher/core/cached_image_fetcher.h"
-#include "components/image_fetcher/core/cached_image_fetcher_service.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
+#include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader_impl.h"
@@ -47,9 +47,7 @@ PrefetchServiceFactory::PrefetchServiceFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(DownloadServiceFactory::GetInstance());
   DependsOn(OfflinePageModelFactory::GetInstance());
-  // TODO(hanxi): add
-  // DependsOn(image_fetcher::CachedImageFetcherServiceFactory::GetInstance());
-  // when the PrefetchServiceFactory becomes a SimpleKeyedServiceFactory.
+  DependsOn(ImageFetcherServiceFactory::GetInstance());
 }
 
 // static
@@ -101,17 +99,17 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer;
   std::unique_ptr<ThumbnailFetcherImpl> thumbnail_fetcher;
   // Conditional components for Feed. Not created when using Zine.
-  image_fetcher::ImageFetcher* thumbnail_image_fetcher = nullptr;
+  image_fetcher::ImageFetcher* image_fetcher = nullptr;
   if (!feed_enabled) {
     suggested_articles_observer = std::make_unique<SuggestedArticlesObserver>();
     thumbnail_fetcher = std::make_unique<ThumbnailFetcherImpl>();
   } else {
-    SimpleFactoryKey* simple_factory_key = profile->GetSimpleFactoryKey();
-    image_fetcher::CachedImageFetcherService* image_fetcher_service =
-        image_fetcher::CachedImageFetcherServiceFactory::GetForKey(
-            simple_factory_key, profile->GetPrefs());
+    SimpleFactoryKey* simple_factory_key = profile->GetProfileKey();
+    image_fetcher::ImageFetcherService* image_fetcher_service =
+        ImageFetcherServiceFactory::GetForKey(simple_factory_key);
     DCHECK(image_fetcher_service);
-    thumbnail_image_fetcher = image_fetcher_service->GetCachedImageFetcher();
+    image_fetcher = image_fetcher_service->GetImageFetcher(
+        image_fetcher::ImageFetcherConfig::kDiskCacheOnly);
   }
 
   auto prefetch_downloader = std::make_unique<PrefetchDownloaderImpl>(
@@ -131,7 +129,7 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
       std::move(prefetch_store), std::move(suggested_articles_observer),
       std::move(prefetch_downloader), std::move(prefetch_importer),
       std::move(prefetch_background_task_handler), std::move(thumbnail_fetcher),
-      thumbnail_image_fetcher);
+      image_fetcher);
 }
 
 }  // namespace offline_pages

@@ -9,10 +9,12 @@
 #include "base/bind.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/no_destructor.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/task_scheduler/post_task_android.h"
@@ -226,6 +228,35 @@ void BrowserTaskExecutor::ResetForTesting() {
   }
 }
 
+// static
+void BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(
+    BrowserThread::ID identifier) {
+  DCHECK(g_browser_task_executor);
+  DCHECK(g_browser_task_executor->browser_ui_thread_scheduler_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  switch (identifier) {
+    case BrowserThread::UI:
+      g_browser_task_executor->browser_ui_thread_scheduler_
+          ->RunAllPendingTasksForTesting();
+      break;
+
+    case BrowserThread::IO: {
+      // TODO(https://crbug/863341): Do something more clever once we have a
+      // scheduler
+      base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+      base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                               run_loop.QuitClosure());
+      run_loop.Run();
+      break;
+    }
+
+    case BrowserThread::ID_COUNT:
+      NOTREACHED();
+      break;
+  }
+}
+
 bool BrowserTaskExecutor::PostDelayedTaskWithTraits(
     const base::Location& from_here,
     const base::TaskTraits& traits,
@@ -296,11 +327,15 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
   DCHECK_LT(task_type, BrowserTaskType::kBrowserTaskType_Last);
   switch (task_type) {
     case BrowserTaskType::kBootstrap:
-      // TODO(alexclarke): Lets do this at compile time instead.
-      DCHECK(!traits.priority_set_explicitly())
-          << "Combining BrowserTaskType and TaskPriority is not currently"
-             " supported.";
+      // Note we currently ignore the priority for bootstrap tasks.
       return browser_ui_thread_scheduler_->GetTaskRunner(QueueType::kBootstrap);
+
+    case BrowserTaskType::kNavigation:
+    case BrowserTaskType::kPreconnect:
+      // Note we currently ignore the priority for navigation and preconnection
+      // tasks.
+      return browser_ui_thread_scheduler_->GetTaskRunner(
+          QueueType::kNavigationAndPreconnection);
 
     case BrowserTaskType::kDefault:
       // Defer to traits.priority() below.
@@ -312,10 +347,8 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
 
   switch (traits.priority()) {
     case base::TaskPriority::BEST_EFFORT:
-      // TODO(eseckler): For now, make BEST_EFFORT tasks run after startup. Once
-      // the BrowserUIThreadScheduler is in place, this should be handled by its
-      // policies instead.
-      return GetAfterStartupTaskRunnerForThread(thread_id);
+      return browser_ui_thread_scheduler_->GetTaskRunner(
+          QueueType::kBestEffort);
 
     case base::TaskPriority::USER_VISIBLE:
       return browser_ui_thread_scheduler_->GetTaskRunner(QueueType::kDefault);
@@ -336,6 +369,13 @@ BrowserTaskExecutor::GetProxyTaskRunnerForThread(BrowserThread::ID id) {
 scoped_refptr<base::SingleThreadTaskRunner>
 BrowserTaskExecutor::GetAfterStartupTaskRunnerForThread(BrowserThread::ID id) {
   return GetAfterStartupTaskRunnerForThreadImpl(id);
+}
+
+// static
+void BrowserTaskExecutor::NotifyBrowserStartupCompleted() {
+  DCHECK(g_browser_task_executor);
+  g_browser_task_executor->browser_ui_thread_scheduler_
+      ->EnableBestEffortQueues();
 }
 
 }  // namespace content

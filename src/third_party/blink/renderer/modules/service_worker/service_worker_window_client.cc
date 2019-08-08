@@ -71,7 +71,7 @@ String ServiceWorkerWindowClient::visibilityState() const {
 }
 
 ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!ExecutionContext::From(script_state)->IsWindowInteractionAllowed()) {
@@ -88,7 +88,7 @@ ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* script_state) {
 
 ScriptPromise ServiceWorkerWindowClient::navigate(ScriptState* script_state,
                                                   const String& url) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   ExecutionContext* context = ExecutionContext::From(script_state);
 

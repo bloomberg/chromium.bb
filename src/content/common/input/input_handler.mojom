@@ -8,8 +8,8 @@ import "content/common/input/synchronous_compositor.mojom";
 import "content/common/native_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "services/ws/public/mojom/ime/ime.mojom";
-import "third_party/blink/public/web/selection_menu_behavior.mojom";
+import "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom";
+import "ui/base/ime/mojo/ime_types.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/events/mojo/event_constants.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -76,7 +76,6 @@ struct MouseData {
 struct ScrollUpdate {
   float velocity_x;
   float velocity_y;
-  bool previous_update_in_sequence_prevented;
 };
 
 struct ScrollData {
@@ -156,6 +155,12 @@ struct TouchActionOptional {
 // contained in here are state changes that the renderer has taken
 // that the browser must be aware of.
 interface WidgetInputHandlerHost {
+  // Call platform Fallback Cursor Mode APIs.
+  [EnableIf=is_android]
+  FallbackCursorModeLockCursor(bool left, bool right, bool up, bool down);
+  [EnableIf=is_android]
+  FallbackCursorModeSetCursorVisibility(bool visible);
+
   // When the renderer's main thread computes the touch action, send this to the
   // browser.
   SetTouchActionFromMain(TouchAction touch_action);
@@ -220,15 +225,18 @@ interface WidgetInputHandler {
   // Sends the cursor visibility state to the render widget.
   CursorVisibilityChanged(bool visible);
 
+  // Notifies the RenderWidget when toggle fallback cursor mode on/off.
+  FallbackCursorModeToggled(bool is_on);
+
   // This message sends a string being composed with an input method.
   ImeSetComposition(mojo_base.mojom.String16 text,
-                    array<ws.mojom.ImeTextSpan> ime_text_spans,
+                    array<ui.mojom.ImeTextSpan> ime_text_spans,
                     gfx.mojom.Range range, int32 start, int32 end);
 
   // This message deletes the current composition, inserts specified text, and
   // moves the cursor.
   ImeCommitText(mojo_base.mojom.String16 text,
-                array<ws.mojom.ImeTextSpan> ime_text_spans,
+                array<ui.mojom.ImeTextSpan> ime_text_spans,
                 gfx.mojom.Range range, int32 relative_cursor_position) => ();
 
   // This message inserts the ongoing composition.
@@ -284,7 +292,7 @@ interface FrameInputHandler {
   // Sets the text composition to be between the given start and end offsets in
   // the currently focused editable field.
   SetCompositionFromExistingText(
-      int32 start, int32 end, array<ws.mojom.ImeTextSpan> ime_text_spans);
+      int32 start, int32 end, array<ui.mojom.ImeTextSpan> ime_text_spans);
 
   // Deletes the current selection plus the specified number of characters
   // before and after the selection or caret.

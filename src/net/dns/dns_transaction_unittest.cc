@@ -303,8 +303,7 @@ class TransactionHelper {
         base::Bind(&TransactionHelper::OnTransactionComplete,
                    base::Unretained(this)),
         NetLogWithSource::Make(&net_log_, net::NetLogSourceType::NONE),
-        secure_dns_mode_);
-    transaction_->SetRequestContext(&request_context_);
+        secure_dns_mode_, &request_context_);
     transaction_->SetRequestPriority(DEFAULT_PRIORITY);
     EXPECT_EQ(hostname_, transaction_->GetHostname());
     EXPECT_EQ(qtype_, transaction_->GetType());
@@ -312,8 +311,8 @@ class TransactionHelper {
   }
 
   void Cancel() {
-    ASSERT_TRUE(transaction_.get() != NULL);
-    transaction_.reset(NULL);
+    ASSERT_TRUE(transaction_.get() != nullptr);
+    transaction_.reset(nullptr);
   }
 
   void OnTransactionComplete(DnsTransaction* t,
@@ -339,7 +338,7 @@ class TransactionHelper {
 
     if (expected_answer_count_ >= 0) {
       ASSERT_THAT(rv, IsOk());
-      ASSERT_TRUE(response != NULL);
+      ASSERT_TRUE(response != nullptr);
       EXPECT_EQ(static_cast<unsigned>(expected_answer_count_),
                 response->answer_count());
       EXPECT_EQ(qtype_, response->qtype());
@@ -593,7 +592,7 @@ class DnsTransactionTestBase : public testing::Test {
         DnsSocketPool::CreateNull(socket_factory_.get(),
                                   base::Bind(base::RandInt)),
         base::Bind(&DnsTransactionTestBase::GetNextId, base::Unretained(this)),
-        NULL /* NetLog */);
+        nullptr /* NetLog */);
     transaction_factory_ = DnsTransactionFactory::CreateFactory(session_.get());
   }
 
@@ -982,7 +981,7 @@ TEST_F(DnsTransactionTest, DestroyFactory) {
   helper0.StartTransaction(transaction_factory_.get());
 
   // Destroying the client does not affect running requests.
-  transaction_factory_.reset(NULL);
+  transaction_factory_.reset(nullptr);
 
   base::RunLoop().RunUntilIdle();
 
@@ -2001,12 +2000,14 @@ TEST_F(DnsTransactionTest, HttpsPostWithNoType) {
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
 }
 
-TEST_F(DnsTransactionTest, HttpsCantLookupDohServers) {
-  ConfigDohServers(true /* clear_udp */, true /* use_post */, 2);
-  TransactionHelper helper0(kMockHostname, kT0Qtype, ERR_CONNECTION_REFUSED,
+TEST_F(DnsTransactionTest, CanLookupDohServerName) {
+  config_.search.push_back("http");
+  ConfigDohServers(true /* clear_udp */, true /* use_post */);
+  AddQueryAndErrorResponse(0, kMockHostname, dns_protocol::kTypeA,
+                           ERR_NAME_NOT_RESOLVED, SYNCHRONOUS,
+                           Transport::HTTPS);
+  TransactionHelper helper0("mock", dns_protocol::kTypeA, ERR_NAME_NOT_RESOLVED,
                             true /* expected_secure */);
-  transaction_ids_.push_back(0);
-  transaction_ids_.push_back(1);
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
 }
 

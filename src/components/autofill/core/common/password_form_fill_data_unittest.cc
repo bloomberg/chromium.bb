@@ -49,36 +49,26 @@ TEST(PasswordFormFillDataTest, TestSinglePreferredMatch) {
 
   std::map<base::string16, const PasswordForm*> matches;
 
-  PasswordFormFillData result;
-  InitPasswordFormFillData(form_on_page,
-                           matches,
-                           &preferred_match,
-                           true,
-                           &result);
+  PasswordFormFillData result(form_on_page, matches, preferred_match, true);
 
-  // |wait_for_username| should reflect the |wait_for_username_before_autofill|
-  // argument of InitPasswordFormFillData which in this case is true.
+  // |wait_for_username| should reflect the |wait_for_username| argument passed
+  // to the constructor, which in this case is true.
   EXPECT_TRUE(result.wait_for_username);
   // The preferred realm should be empty since it's the same as the realm of
   // the form.
   EXPECT_EQ(std::string(), result.preferred_realm);
 
-  PasswordFormFillData result2;
-  InitPasswordFormFillData(form_on_page,
-                           matches,
-                           &preferred_match,
-                           false,
-                           &result2);
+  PasswordFormFillData result2(form_on_page, matches, preferred_match, false);
 
-  // |wait_for_username| should reflect the |wait_for_username_before_autofill|
-  // argument of InitPasswordFormFillData which in this case is false.
+  // |wait_for_username| should reflect the |wait_for_username| argument passed
+  // to the constructor, which in this case is false.
   EXPECT_FALSE(result2.wait_for_username);
 }
 
-// Tests that the InitPasswordFormFillData behaves correctly when there is a
-// preferred match that was found using public suffix matching, an additional
-// result that also used public suffix matching, and a third result that was
-// found without using public suffix matching.
+// Tests that constructing a PasswordFormFillData behaves correctly when there
+// is a preferred match that was found using public suffix matching, an
+// additional result that also used public suffix matching, and a third result
+// that was found without using public suffix matching.
 TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   // Create the current form on the page.
   PasswordForm form_on_page;
@@ -142,12 +132,7 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   matches.insert(
       std::make_pair(public_suffix_match.username_value, &public_suffix_match));
 
-  PasswordFormFillData result;
-  InitPasswordFormFillData(form_on_page,
-                           matches,
-                           &preferred_match,
-                           true,
-                           &result);
+  PasswordFormFillData result(form_on_page, matches, preferred_match, true);
   EXPECT_TRUE(result.wait_for_username);
   // The preferred realm should match the signon realm from the
   // preferred match so the user can see where the result came from.
@@ -164,9 +149,9 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   EXPECT_EQ(iter->second.realm, public_suffix_match.signon_realm);
 }
 
-// Tests that the InitPasswordFormFillData behaves correctly when there is a
-// preferred match that was found using affiliation based matching, an
-// additional result that also used affiliation based matching, and a third
+// Tests that the constructing a PasswordFormFillData behaves correctly when
+// there is a preferred match that was found using affiliation based matching,
+// an additional result that also used affiliation based matching, and a third
 // result that was found without using affiliation based matching.
 TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   // Create the current form on the page.
@@ -222,9 +207,7 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   matches.insert(
       std::make_pair(affiliated_match.username_value, &affiliated_match));
 
-  PasswordFormFillData result;
-  InitPasswordFormFillData(form_on_page, matches, &preferred_match, false,
-                           &result);
+  PasswordFormFillData result(form_on_page, matches, preferred_match, false);
   EXPECT_FALSE(result.wait_for_username);
   // The preferred realm should match the signon realm from the
   // preferred match so the user can see where the result came from.
@@ -268,9 +251,7 @@ TEST(PasswordFormFillDataTest, RendererIDs) {
 
   std::map<base::string16, const PasswordForm*> matches;
 
-  PasswordFormFillData result;
-  InitPasswordFormFillData(form_on_page, matches, &preferred_match, true,
-                           &result);
+  PasswordFormFillData result(form_on_page, matches, preferred_match, true);
 
   EXPECT_EQ(form_data.unique_renderer_id, result.form_renderer_id);
   EXPECT_EQ(form_on_page.has_renderer_ids, result.has_renderer_ids);

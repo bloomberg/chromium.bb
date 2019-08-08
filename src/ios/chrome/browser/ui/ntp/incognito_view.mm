@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -348,8 +349,8 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
 // Triggers a navigation to the help page.
 - (void)learnMoreButtonPressed {
-  ChromeLoadParams params(GetUrlWithLang(GURL(kLearnMoreIncognitoUrl)));
-  _urlLoadingService->LoadUrlInCurrentTab(params);
+  _urlLoadingService->Load(UrlLoadParams::InCurrentTab(
+      GetUrlWithLang(GURL(kLearnMoreIncognitoUrl))));
 }
 
 // Adds views containing the text of the incognito page to |_stackView|.

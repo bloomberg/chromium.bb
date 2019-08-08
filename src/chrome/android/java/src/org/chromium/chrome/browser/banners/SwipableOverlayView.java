@@ -117,7 +117,7 @@ public abstract class SwipableOverlayView extends FrameLayout {
         }
     }
 
-    protected WebContents getWebContents() {
+    public WebContents getWebContents() {
         return mWebContents;
     }
 

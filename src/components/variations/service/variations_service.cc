@@ -698,7 +698,7 @@ void VariationsService::OnSimpleLoaderCompleteOrRedirect(
   initial_request_completed_ = true;
 
   bool is_success = false;
-  int net_error = net::ERR_ABORTED;
+  int net_error = net::ERR_INVALID_REDIRECT;
   scoped_refptr<net::HttpResponseHeaders> headers;
 
   int response_code = -1;
@@ -710,7 +710,7 @@ void VariationsService::OnSimpleLoaderCompleteOrRedirect(
 
   // Variations seed fetches should not follow redirects, so if this request was
   // redirected, keep the default values for |net_error| and |is_success| (treat
-  // it as a net::ERR_ABORTED), and the fetch will be cancelled when
+  // it as a net::ERR_INVALID_REDIRECT), and the fetch will be cancelled when
   // pending_seed_request is reset.
   if (!was_redirect) {
     final_url_was_https =
@@ -922,6 +922,11 @@ void VariationsService::OverrideCachedUIStrings() {
 
 void VariationsService::CancelCurrentRequestForTesting() {
   pending_seed_request_.reset();
+}
+
+void VariationsService::StartRepeatedVariationsSeedFetchForTesting() {
+  InitResourceRequestedAllowedNotifier();
+  return StartRepeatedVariationsSeedFetch();
 }
 
 std::string VariationsService::GetStoredPermanentCountry() {

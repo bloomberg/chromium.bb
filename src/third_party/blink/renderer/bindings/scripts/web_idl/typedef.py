@@ -2,21 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .utilities import assert_no_extra_args
+import exceptions
+from .common import WithCodeGeneratorInfo
+from .common import WithComponent
+from .common import WithDebugInfo
+from .common import WithIdentifier
 
 
-# https://heycam.github.io/webidl/#idl-typedefs
-class Typedef(object):
-
-    def __init__(self, **kwargs):
-        self._identifier = kwargs.pop('identifier')
-        self._type = kwargs.pop('type')
-        assert_no_extra_args(kwargs)
-
-    @property
-    def identifier(self):
-        return self._identifier
+class Typedef(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
+              WithDebugInfo):
+    """https://heycam.github.io/webidl/#idl-typedefs"""
 
     @property
-    def type(self):
-        return self._type
+    def idl_type(self):
+        """
+        Returns the type to have an alias.
+        @return IdlType
+        """
+        raise exceptions.NotImplementedError()

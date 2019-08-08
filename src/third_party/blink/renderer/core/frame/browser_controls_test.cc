@@ -109,7 +109,7 @@ class BrowserControlsTest : public testing::Test {
                                        int delta_y = 0) {
     WebGestureEvent event(type, WebInputEvent::kNoModifiers,
                           WebInputEvent::GetStaticTimeStampForTests(),
-                          kWebGestureDeviceTouchscreen);
+                          WebGestureDevice::kTouchscreen);
     event.SetPositionInWidget(FloatPoint(100, 100));
     if (type == WebInputEvent::kGestureScrollUpdate) {
       event.data.scroll_update.delta_x = delta_x;
@@ -178,7 +178,7 @@ class BrowserControlsSimTest : public SimTest {
                                        int delta_y = 0) {
     WebGestureEvent event(type, WebInputEvent::kNoModifiers,
                           WebInputEvent::GetStaticTimeStampForTests(),
-                          kWebGestureDeviceTouchscreen);
+                          WebGestureDevice::kTouchscreen);
     event.SetPositionInWidget(FloatPoint(100, 100));
     if (type == WebInputEvent::kGestureScrollUpdate) {
       event.data.scroll_update.delta_x = delta_x;

@@ -5,10 +5,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_native.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -30,13 +32,6 @@ void V8ReadableStream::ConstructorCustom(
   ScriptValue strategy = ScriptValue(ScriptState::Current(info.GetIsolate()),
                                      v8::Undefined(info.GetIsolate()));
   int num_args = info.Length();
-  // TODO(ricea): Switch implementation based on StreamsNative feature flag
-  // here.
-  auto* impl = MakeGarbageCollected<ReadableStreamWrapper>();
-  v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->AssociateWithWrapper(
-      info.GetIsolate(), V8ReadableStream::GetWrapperTypeInfo(), wrapper);
-
   if (num_args >= 1) {
     underlying_source =
         ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
@@ -44,9 +39,24 @@ void V8ReadableStream::ConstructorCustom(
   if (num_args >= 2)
     strategy = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
 
-  impl->Init(script_state, underlying_source, strategy, exception_state);
-  if (exception_state.HadException()) {
-    return;
+  v8::Local<v8::Object> wrapper = info.Holder();
+  if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
+    auto* impl = MakeGarbageCollected<ReadableStreamNative>(
+        script_state, underlying_source, strategy, false, exception_state);
+    if (exception_state.HadException()) {
+      return;
+    }
+    wrapper = impl->AssociateWithWrapper(
+        info.GetIsolate(), V8ReadableStream::GetWrapperTypeInfo(), wrapper);
+  } else {
+    auto* impl = MakeGarbageCollected<ReadableStreamWrapper>();
+    wrapper = impl->AssociateWithWrapper(
+        info.GetIsolate(), V8ReadableStream::GetWrapperTypeInfo(), wrapper);
+
+    impl->Init(script_state, underlying_source, strategy, exception_state);
+    if (exception_state.HadException()) {
+      return;
+    }
   }
   V8SetReturnValue(info, wrapper);
 }

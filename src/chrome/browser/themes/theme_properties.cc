@@ -46,9 +46,12 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
     case ThemeProperties::COLOR_STATUS_BUBBLE:
     case ThemeProperties::COLOR_INFOBAR:
     case ThemeProperties::COLOR_TOOLBAR:
-    case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
     case ThemeProperties::COLOR_NTP_BACKGROUND:
       return SkColorSetRGB(0x32, 0x36, 0x39);
+    case ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND:
+      return gfx::kGoogleGrey700;
+    case ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND:
+      return gfx::kGoogleGrey900;
     case ThemeProperties::COLOR_BOOKMARK_TEXT:
     case ThemeProperties::COLOR_TAB_TEXT:
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_ACTIVE:
@@ -68,10 +71,10 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
       return gfx::kGoogleGrey700;
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED:
       return gfx::kGoogleGrey600;
-    case ThemeProperties::COLOR_CONTROL_BACKGROUND:
-      return SK_ColorWHITE;
     case ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
       return SkColorSetRGB(0x28, 0x28, 0x28);
+    case ThemeProperties::COLOR_NTP_LINK:
+      return gfx::kGoogleBlue300;
     default:
       return base::nullopt;
   }
@@ -217,6 +220,10 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     case COLOR_TOOLBAR:
     case COLOR_STATUS_BUBBLE:
       return SK_ColorWHITE;
+    case COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND:
+      return gfx::kGoogleGrey300;
+    case COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND:
+      return gfx::kGoogleGrey050;
     case COLOR_BACKGROUND_TAB_TEXT:
     case COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
     case COLOR_BOOKMARK_TEXT:
@@ -230,13 +237,16 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
       return kDefaultColorNTPLink;
     case COLOR_NTP_HEADER:
       return SkColorSetRGB(0x96, 0x96, 0x96);
-    case COLOR_BUTTON_BACKGROUND:
+    case COLOR_CONTROL_BUTTON_BACKGROUND:
       return SK_ColorTRANSPARENT;
+    case COLOR_TOOLBAR_BUTTON_ICON:
+      // If color is not explicitly specified, it should be calculated from
+      // TINT_BUTTONS.
+      NOTREACHED();
+      return gfx::kPlaceholderColor;
 
     // Properties not stored in theme pack.
     case COLOR_TAB_CLOSE_BUTTON_ACTIVE:
-    case COLOR_TOOLBAR_BUTTON_ICON:
-      return gfx::kChromeIconGrey;
     case COLOR_TAB_CLOSE_BUTTON_INACTIVE:
     case COLOR_TAB_ALERT_AUDIO:
       return gfx::kChromeIconGrey;
@@ -249,15 +259,6 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     case COLOR_TAB_ALERT_CAPTURING:
     case COLOR_TAB_PIP_PLAYING:
       return gfx::kGoogleBlue600;
-    case COLOR_CONTROL_BACKGROUND:
-      return SK_ColorWHITE;
-    case COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
-      // We shouldn't reach this case because the color is calculated from
-      // others.
-      NOTREACHED();
-      return gfx::kPlaceholderColor;
-    case COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
-      return SK_ColorWHITE;
     case COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
       return SkColorSetRGB(0xB6, 0xB4, 0xB6);
     case COLOR_TOOLBAR_TOP_SEPARATOR:

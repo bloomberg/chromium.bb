@@ -58,8 +58,9 @@ struct HarfBuzzRunGlyphData {
   // LayoutUnit like fixed-point values, with 6 fractional and 10 integear bits.
   // Can represent values between -1023.98 and 1023.96 which should be enough in
   // the vast majority of cases. Max value is reserved to indicate invalid.
-  int16_t bounds_before_raw_value;
-  int16_t bounds_after_raw_value;
+  // Logical coordinate space.
+  int16_t bounds_x_raw_value;
+  int16_t bounds_width_raw_value;
   float advance;
   FloatSize offset;
 
@@ -68,21 +69,34 @@ struct HarfBuzzRunGlyphData {
                             float advance,
                             const FloatSize& offset,
                             bool safe_to_break_before);
-  void SetGlyphBounds(LayoutUnit bounds_before, LayoutUnit bounds_after);
+  void SetGlyphBounds(LayoutUnit bounds_logical_x, LayoutUnit bounds_logical_w);
   bool HasValidGlyphBounds() const {
-    return bounds_before_raw_value != std::numeric_limits<int16_t>::max() &&
-           bounds_after_raw_value != std::numeric_limits<int16_t>::max();
+    return bounds_x_raw_value != std::numeric_limits<int16_t>::max() &&
+           bounds_width_raw_value != std::numeric_limits<int16_t>::max();
   }
 
-  LayoutUnit GlyphBoundsBefore() const {
+  LayoutUnit GlyphBoundsLogicalX() const {
     LayoutUnit bounds;
-    bounds.SetRawValue(static_cast<int>(bounds_before_raw_value));
+    bounds.SetRawValue(static_cast<int>(bounds_x_raw_value));
     return bounds;
   }
-  LayoutUnit GlyphBoundsAfter() const {
+  LayoutUnit GlyphBoundsLogicalWidth() const {
     LayoutUnit bounds;
-    bounds.SetRawValue(static_cast<int>(bounds_after_raw_value));
+    bounds.SetRawValue(static_cast<int>(bounds_width_raw_value));
     return bounds;
+  }
+
+  template <bool is_horizontal_run>
+  FloatRect GlyphBounds() const {
+    // We only cache the logical left and right edges, the logical y-axis is set
+    // at the end of the computation.
+    // Bounds are united which requires a non-zero height. The correct height is
+    // set at the end, so pick a small non-zero number here.
+    float height = 0.1f;
+    return is_horizontal_run ? FloatRect(GlyphBoundsLogicalX(), 0.0f,
+                                         GlyphBoundsLogicalWidth(), height)
+                             : FloatRect(0.0f, GlyphBoundsLogicalX(), height,
+                                         GlyphBoundsLogicalWidth());
   }
 };
 

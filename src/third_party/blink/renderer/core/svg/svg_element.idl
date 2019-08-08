@@ -36,6 +36,6 @@ interface SVGElement : Element {
     void blur();
 };
 
-SVGElement implements GlobalEventHandlers;
-SVGElement implements DocumentAndElementEventHandlers;
-SVGElement implements NoncedElement;
+SVGElement includes GlobalEventHandlers;
+SVGElement includes DocumentAndElementEventHandlers;
+SVGElement includes NoncedElement;

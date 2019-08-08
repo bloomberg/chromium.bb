@@ -29,7 +29,7 @@ void AddErrorMessageToConsoleOnUI(
   if (!web_contents)
     return;
   web_contents->GetMainFrame()->AddMessageToConsole(
-      content::CONSOLE_MESSAGE_LEVEL_ERROR, error_message);
+      blink::mojom::ConsoleMessageLevel::kError, error_message);
 }
 
 void CertificateRequestSentOnUI(

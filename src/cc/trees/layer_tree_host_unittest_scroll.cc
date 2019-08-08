@@ -599,6 +599,7 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
 
     child_layer_->SetIsDrawable(true);
     child_layer_->SetScrollable(root_layer->bounds());
+    child_layer_->SetHitTestable(true);
     child_layer_->SetElementId(
         LayerIdToElementIdForTesting(child_layer_->id()));
     child_layer_->SetBounds(root_scroll_layer_->bounds());
@@ -1130,6 +1131,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
         scroll_layer->SetScrollable(root->bounds());
+        scroll_layer->SetHitTestable(true);
         // Set max_scroll_offset = (100, 100).
         scroll_layer->SetBounds(gfx::Size(root->bounds().width() + 100,
                                           root->bounds().height() + 100));
@@ -1410,6 +1412,7 @@ class LayerTreeHostScrollTestLayerStructureChange
     scroll_layer->SetPosition(gfx::PointF());
     scroll_layer->SetIsDrawable(true);
     scroll_layer->SetScrollable(parent->bounds());
+    scroll_layer->SetHitTestable(true);
     scroll_layer->SetElementId(
         LayerIdToElementIdForTesting(scroll_layer->id()));
     scroll_layer->SetBounds(gfx::Size(parent->bounds().width() + 100,

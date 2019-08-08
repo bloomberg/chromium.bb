@@ -108,19 +108,19 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(
   input_format_.dwChannelMask =
       CoreAudioUtil::GetChannelConfig(device_id, eCapture);
   input_format_.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+  DVLOG(1) << "Input: " << CoreAudioUtil::WaveFormatToString(&input_format_);
 
   // Set up the fixed output format based on |params|. Will not be changed and
   // does not required an extended wave format structure since any multi-channel
   // input will be converted to stereo.
   output_format_.wFormatTag = WAVE_FORMAT_PCM;
   output_format_.nChannels = format->nChannels;
-  ;
   output_format_.nSamplesPerSec = format->nSamplesPerSec;
   output_format_.wBitsPerSample = format->wBitsPerSample;
   output_format_.nBlockAlign = format->nBlockAlign;
   output_format_.nAvgBytesPerSec = format->nAvgBytesPerSec;
   output_format_.cbSize = 0;
-  DVLOG(1) << CoreAudioUtil::WaveFormatToString(&output_format_);
+  DVLOG(1) << "Output: " << CoreAudioUtil::WaveFormatToString(&output_format_);
 
   // Size in bytes of each audio frame.
   frame_size_bytes_ = format->nBlockAlign;
@@ -515,10 +515,7 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
     // If the device position has not changed we assume this data belongs to the
     // previous chunk, and only update the expected next device position.
     if (device_position != last_device_position) {
-      ReportDelayStatsAndUpdateGlitchCount(
-          flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY, device_position,
-          base::TimeTicks() +
-              CoreAudioUtil::ReferenceTimeToTimeDelta(capture_time_100ns));
+      UpdateGlitchCount(device_position);
       last_device_position = device_position;
       expected_next_device_position_ = device_position + num_frames_to_read;
     } else {
@@ -699,6 +696,8 @@ bool WASAPIAudioInputStream::DesiredFormatIsSupported(HRESULT* hr) {
       reinterpret_cast<const WAVEFORMATEX*>(&input_format_), &closest_match);
   DLOG_IF(ERROR, hresult == S_FALSE)
       << "Format is not supported but a closest match exists.";
+  if (FAILED(hresult))
+    LOG(ERROR) << "Input format is not supported: " << std::hex << hresult;
 
   if (hresult == S_FALSE) {
     // Change the format we're going to ask for to better match with what the OS
@@ -828,15 +827,12 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
     open_result_ = OPEN_RESULT_GET_BUFFER_SIZE_FAILED;
     return hr;
   }
+
+#ifndef NDEBUG
   const int endpoint_buffer_size_ms =
       static_cast<double>(endpoint_buffer_size_frames_ * 1000) /
           input_format_.Format.nSamplesPerSec +
       0.5;  // Round to closest integer
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      "Media.Audio.Capture.Win.EndpointBufferSize",
-      base::TimeDelta::FromMilliseconds(endpoint_buffer_size_ms),
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(1),
-      50);
   DVLOG(1) << "Endpoint buffer size: " << endpoint_buffer_size_frames_
            << " frames (" << endpoint_buffer_size_ms << " ms)";
 
@@ -852,11 +848,6 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   if (SUCCEEDED(hr_dbg)) {
     // The 5000 addition is to round end result to closest integer.
     const int device_period_ms = (device_period_shared_mode + 5000) / 10000;
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Media.Audio.Capture.Win.DevicePeriod",
-        base::TimeDelta::FromMilliseconds(device_period_ms),
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(1),
-        50);
     DVLOG(1) << "Device period: " << device_period_ms << " ms";
   }
 
@@ -865,12 +856,9 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   if (SUCCEEDED(hr_dbg)) {
     // The 5000 addition is to round end result to closest integer.
     const int latency_ms = (device_period_shared_mode + 5000) / 10000;
-    UMA_HISTOGRAM_CUSTOM_TIMES("Media.Audio.Capture.Win.StreamLatency",
-                               base::TimeDelta::FromMilliseconds(latency_ms),
-                               base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromSeconds(1), 50);
     DVLOG(1) << "Stream latency: " << latency_ms << " ms";
   }
+#endif
 
   // Set the event handle that the audio engine will signal each time a buffer
   // becomes ready to be processed by the client.
@@ -989,23 +977,7 @@ double WASAPIAudioInputStream::ProvideInput(AudioBus* audio_bus,
   return 1.0;
 }
 
-void WASAPIAudioInputStream::ReportDelayStatsAndUpdateGlitchCount(
-    bool discontinuity_flagged,
-    UINT64 device_position,
-    base::TimeTicks capture_time) {
-  // Report delay. Don't report if no valid capture time.
-  // Unreasonably large delays are clamped at 1 second. Some devices sometimes
-  // have capture timestamps way off.
-  if (capture_time > base::TimeTicks()) {
-    base::TimeDelta delay = base::TimeTicks::Now() - capture_time;
-    UMA_HISTOGRAM_CUSTOM_TIMES("Media.Audio.Capture.DeviceLatency", delay,
-                               base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromSeconds(1), 50);
-  }
-
-  // Detect glitch. Detect and count separately based on expected device
-  // position and the discontinuity flag since they have showed to not always
-  // be consistent with each other.
+void WASAPIAudioInputStream::UpdateGlitchCount(UINT64 device_position) {
   if (expected_next_device_position_ != 0) {
     if (device_position > expected_next_device_position_) {
       ++total_glitches_;
@@ -1013,39 +985,18 @@ void WASAPIAudioInputStream::ReportDelayStatsAndUpdateGlitchCount(
       total_lost_frames_ += lost_frames;
       if (lost_frames > largest_glitch_frames_)
         largest_glitch_frames_ = lost_frames;
-    } else if (device_position < expected_next_device_position_) {
-      ++total_device_position_less_than_expected_;
-    }
-    if (discontinuity_flagged)
-      ++total_discontinuities_;
-    if (device_position > expected_next_device_position_ &&
-        discontinuity_flagged) {
-      ++total_concurrent_glitch_and_discontinuities_;
     }
   }
 }
 
 void WASAPIAudioInputStream::ReportAndResetGlitchStats() {
   UMA_HISTOGRAM_COUNTS_1M("Media.Audio.Capture.Glitches", total_glitches_);
-  UMA_HISTOGRAM_COUNTS_1M(
-      "Media.Audio.Capture.Win.DevicePositionLessThanExpected",
-      total_device_position_less_than_expected_);
-  UMA_HISTOGRAM_COUNTS_1M("Media.Audio.Capture.Win.Discontinuities",
-                          total_discontinuities_);
-  UMA_HISTOGRAM_COUNTS_1M(
-      "Media.Audio.Capture.Win.ConcurrentGlitchAndDiscontinuities",
-      total_concurrent_glitch_and_discontinuities_);
 
   double lost_frames_ms =
       (total_lost_frames_ * 1000) / input_format_.Format.nSamplesPerSec;
   std::string log_message = base::StringPrintf(
-      "WASAPIAIS: Total glitches=%d. Total frames lost=%llu (%.0lf ms). Total "
-      "discontinuities=%d. Total concurrent glitch and discont=%d. Total low "
-      "device "
-      "positions=%d.",
-      total_glitches_, total_lost_frames_, lost_frames_ms,
-      total_discontinuities_, total_concurrent_glitch_and_discontinuities_,
-      total_device_position_less_than_expected_);
+      "WASAPIAIS: Total glitches=%d. Total frames lost=%llu (%.0lf ms).",
+      total_glitches_, total_lost_frames_, lost_frames_ms);
   log_callback_.Run(log_message);
 
   if (total_glitches_ != 0) {
@@ -1063,9 +1014,6 @@ void WASAPIAudioInputStream::ReportAndResetGlitchStats() {
 
   expected_next_device_position_ = 0;
   total_glitches_ = 0;
-  total_device_position_less_than_expected_ = 0;
-  total_discontinuities_ = 0;
-  total_concurrent_glitch_and_discontinuities_ = 0;
   total_lost_frames_ = 0;
   largest_glitch_frames_ = 0;
 }

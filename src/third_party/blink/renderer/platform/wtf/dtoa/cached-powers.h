@@ -28,6 +28,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_CACHED_POWERS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_CACHED_POWERS_H_
 
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/diy-fp.h"
 
 namespace WTF {
@@ -35,6 +36,8 @@ namespace WTF {
 namespace double_conversion {
 
 class PowersOfTenCache {
+  STATIC_ONLY(PowersOfTenCache);
+
  public:
   // Not all powers of ten are cached. The decimal exponent of two neighboring
   // cached numbers will differ by kDecimalExponentDistance.

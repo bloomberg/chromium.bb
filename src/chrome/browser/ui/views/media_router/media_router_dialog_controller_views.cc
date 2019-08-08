@@ -10,6 +10,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_webui_impl.h"
@@ -59,19 +60,28 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog() {
   base::Time dialog_creation_time = base::Time::Now();
   MediaRouterDialogControllerImplBase::CreateMediaRouterDialog();
 
-  Browser* browser = chrome::FindBrowserWithWebContents(initiator());
-  if (!browser)
-    return;
-
+  Profile* profile =
+      Profile::FromBrowserContext(initiator()->GetBrowserContext());
   ui_ = std::make_unique<MediaRouterViewsUI>();
   InitializeMediaRouterUI(ui_.get());
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  if (browser_view->toolbar()->cast_button()) {
-    CastDialogView::ShowDialogWithToolbarAction(ui_.get(), browser,
-                                                dialog_creation_time);
+
+  Browser* browser = chrome::FindBrowserWithWebContents(initiator());
+  if (browser) {
+    BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+    if (browser_view->toolbar()->cast_button()) {
+      CastDialogView::ShowDialogWithToolbarAction(ui_.get(), browser,
+                                                  dialog_creation_time);
+    } else {
+      CastDialogView::ShowDialogCenteredForBrowserWindow(ui_.get(), browser,
+                                                         dialog_creation_time);
+    }
   } else {
-    CastDialogView::ShowDialogTopCentered(ui_.get(), browser,
-                                          dialog_creation_time);
+    gfx::Rect anchor_bounds = initiator()->GetContainerBounds();
+    // Set the height to 0 so that the dialog gets anchored to the top of the
+    // window.
+    anchor_bounds.set_height(0);
+    CastDialogView::ShowDialogCentered(anchor_bounds, ui_.get(), profile,
+                                       dialog_creation_time);
   }
   dialog_widget_ = CastDialogView::GetCurrentDialogWidget();
   dialog_widget_->AddObserver(this);

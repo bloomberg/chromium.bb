@@ -166,7 +166,6 @@
     "infra_step": true,
     "name": "git status cannot_fail_build",
     "~followup_annotations": [
-      "step returned non-zero exit code: 1",
       "@@@STEP_EXCEPTION@@@"
     ]
   },

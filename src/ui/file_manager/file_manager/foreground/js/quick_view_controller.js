@@ -138,6 +138,7 @@ QuickViewController.LOCAL_VOLUME_TYPES_ = [
   VolumeManagerCommon.VolumeType.ANDROID_FILES,
   VolumeManagerCommon.VolumeType.CROSTINI,
   VolumeManagerCommon.VolumeType.MEDIA_VIEW,
+  VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER,
 ];
 
 /**
@@ -166,7 +167,8 @@ QuickViewController.prototype.init_ = function(quickView) {
   quickView.onOpenInNewButtonTap = this.onOpenInNewButtonTap_.bind(this);
 
   const toolTip = this.quickView_.$$('files-tooltip');
-  const elems = this.quickView_.$$('#toolbar').querySelectorAll('[has-tooltip]');
+  const elems =
+      this.quickView_.$$('#toolbar').querySelectorAll('[has-tooltip]');
   toolTip.addTargets(elems);
 };
 
@@ -340,18 +342,17 @@ QuickViewController.prototype.updateQuickView_ = function() {
  */
 QuickViewController.prototype.onMetadataLoaded_ = function(
     entry, items, tasks) {
-  return this.getQuickViewParameters_(entry, items, tasks)
-      .then(params => {
-        this.quickView_.type = params.type || '';
-        this.quickView_.subtype = params.subtype || '';
-        this.quickView_.filePath = params.filePath || '';
-        this.quickView_.hasTask = params.hasTask || false;
-        this.quickView_.contentUrl = params.contentUrl || '';
-        this.quickView_.videoPoster = params.videoPoster || '';
-        this.quickView_.audioArtwork = params.audioArtwork || '';
-        this.quickView_.autoplay = params.autoplay || false;
-        this.quickView_.browsable = params.browsable || false;
-      });
+  return this.getQuickViewParameters_(entry, items, tasks).then(params => {
+    this.quickView_.type = params.type || '';
+    this.quickView_.subtype = params.subtype || '';
+    this.quickView_.filePath = params.filePath || '';
+    this.quickView_.hasTask = params.hasTask || false;
+    this.quickView_.contentUrl = params.contentUrl || '';
+    this.quickView_.videoPoster = params.videoPoster || '';
+    this.quickView_.audioArtwork = params.audioArtwork || '';
+    this.quickView_.autoplay = params.autoplay || false;
+    this.quickView_.browsable = params.browsable || false;
+  });
 };
 
 /**
@@ -391,30 +392,28 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
   };
 
   const volumeInfo = this.volumeManager_.getVolumeInfo(entry);
-  const localFile =
-      volumeInfo &&
-      QuickViewController.LOCAL_VOLUME_TYPES_.indexOf(
-          volumeInfo.volumeType) >= 0;
+  const localFile = volumeInfo &&
+      QuickViewController.LOCAL_VOLUME_TYPES_.indexOf(volumeInfo.volumeType) >=
+          0;
 
   if (!localFile) {
     // For Drive files, display a thumbnail if there is one.
     if (item.thumbnailUrl) {
-      return this.loadThumbnailFromDrive_(item.thumbnailUrl)
-          .then(result => {
-            if (result.status === 'success') {
-              if (params.type == 'video') {
-                params.videoPoster = result.data;
-              } else if (params.type == 'image') {
-                params.contentUrl = result.data;
-              } else {
-                // TODO(sashab): Rather than re-use 'image', create a new type
-                // here, e.g. 'thumbnail'.
-                params.type = 'image';
-                params.contentUrl = result.data;
-              }
-            }
-            return params;
-          });
+      return this.loadThumbnailFromDrive_(item.thumbnailUrl).then(result => {
+        if (result.status === 'success') {
+          if (params.type == 'video') {
+            params.videoPoster = result.data;
+          } else if (params.type == 'image') {
+            params.contentUrl = result.data;
+          } else {
+            // TODO(sashab): Rather than re-use 'image', create a new type
+            // here, e.g. 'thumbnail'.
+            params.type = 'image';
+            params.contentUrl = result.data;
+          }
+        }
+        return params;
+      });
     }
 
     // We ask user to open it with external app.

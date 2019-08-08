@@ -12,7 +12,7 @@ namespace blink {
 TEST(FontStyleResolverTest, Simple) {
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
-  CSSParser::ParseValue(style, CSSPropertyFont, "15px Ahem", true,
+  CSSParser::ParseValue(style, CSSPropertyID::kFont, "15px Ahem", true,
                         SecureContextMode::kInsecureContext);
 
   FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
@@ -25,7 +25,7 @@ TEST(FontStyleResolverTest, Simple) {
 TEST(FontStyleResolverTest, InvalidSize) {
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
-  CSSParser::ParseValue(style, CSSPropertyFont, "-1px Ahem", true,
+  CSSParser::ParseValue(style, CSSPropertyID::kFont, "-1px Ahem", true,
                         SecureContextMode::kInsecureContext);
 
   FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
@@ -38,7 +38,7 @@ TEST(FontStyleResolverTest, InvalidSize) {
 TEST(FontStyleResolverTest, InvalidWeight) {
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
-  CSSParser::ParseValue(style, CSSPropertyFont, "wrong 1px Ahem", true,
+  CSSParser::ParseValue(style, CSSPropertyID::kFont, "wrong 1px Ahem", true,
                         SecureContextMode::kInsecureContext);
 
   FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
@@ -51,8 +51,9 @@ TEST(FontStyleResolverTest, InvalidWeight) {
 TEST(FontStyleResolverTest, InvalidEverything) {
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
-  CSSParser::ParseValue(style, CSSPropertyFont, "wrong wrong wrong 1px Ahem",
-                        true, SecureContextMode::kInsecureContext);
+  CSSParser::ParseValue(style, CSSPropertyID::kFont,
+                        "wrong wrong wrong 1px Ahem", true,
+                        SecureContextMode::kInsecureContext);
 
   FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
 
@@ -64,7 +65,7 @@ TEST(FontStyleResolverTest, InvalidEverything) {
 TEST(FontStyleResolverTest, RelativeSize) {
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
-  CSSParser::ParseValue(style, CSSPropertyFont, "italic 2ex Ahem", true,
+  CSSParser::ParseValue(style, CSSPropertyID::kFont, "italic 2ex Ahem", true,
                         SecureContextMode::kInsecureContext);
 
   FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);

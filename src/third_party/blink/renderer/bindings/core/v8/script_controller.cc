@@ -232,7 +232,7 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(
   if (!GetFrame()->GetPage() ||
       (!should_bypass_main_world_content_security_policy &&
        !GetFrame()->GetDocument()->GetContentSecurityPolicy()->AllowInline(
-           ContentSecurityPolicy::InlineType::kJavaScriptURL, element,
+           ContentSecurityPolicy::InlineType::kNavigation, element,
            script_source, String() /* nonce */,
            GetFrame()->GetDocument()->Url(), EventHandlerPosition().line_))) {
     return true;
@@ -241,9 +241,6 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(
   script_source = script_source.Substring(kJavascriptSchemeLength);
 
   Document* owner_document = GetFrame()->GetDocument();
-
-  bool location_change_before =
-      GetFrame()->GetNavigationScheduler().LocationChangePending();
 
   v8::HandleScope handle_scope(GetIsolate());
 
@@ -269,13 +266,6 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(
   if (result.IsEmpty() || !result->IsString())
     return true;
   String script_result = ToCoreString(v8::Local<v8::String>::Cast(result));
-
-  // We're still in a frame, so there should be a DocumentLoader.
-  DCHECK(GetFrame()->GetDocument()->Loader());
-  if (!location_change_before &&
-      GetFrame()->GetNavigationScheduler().LocationChangePending())
-    return true;
-
   GetFrame()->Loader().ReplaceDocumentWhileExecutingJavaScriptURL(
       script_result, owner_document);
   return true;

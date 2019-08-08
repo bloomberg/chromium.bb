@@ -103,17 +103,6 @@
 #   include <windows.h>
 #   include "unicode/uloc.h"
 #   include "wintz.h"
-#if U_PLATFORM_HAS_WINUWP_API
-typedef PVOID LPMSG; // TODO: figure out how to get rid of this typedef
-#include <Windows.Globalization.h>
-#include <windows.system.userprofile.h>
-#include <wrl/wrappers/corewrappers.h>
-#include <wrl/client.h>
-
-using namespace ABI::Windows::Foundation;
-using namespace Microsoft::WRL;
-using namespace Microsoft::WRL::Wrappers;
-#endif
 #elif U_PLATFORM == U_PF_OS400
 #   include <float.h>
 #   include <qusec.h>       /* error code structure */
@@ -252,7 +241,6 @@ u_signBit(double d) {
 UDate fakeClock_t0 = 0; /** Time to start the clock from **/
 UDate fakeClock_dt = 0; /** Offset (fake time - real time) **/
 UBool fakeClock_set = FALSE; /** True if fake clock has spun up **/
-static UMutex fakeClockMutex = U_MUTEX_INTIALIZER;
 
 static UDate getUTCtime_real() {
     struct timeval posixTime;
@@ -261,6 +249,7 @@ static UDate getUTCtime_real() {
 }
 
 static UDate getUTCtime_fake() {
+    static UMutex fakeClockMutex = U_MUTEX_INTIALIZER;
     umtx_lock(&fakeClockMutex);
     if(!fakeClock_set) {
         UDate real = getUTCtime_real();
@@ -997,7 +986,8 @@ static char* searchForTZFile(const char* path, DefaultTZInfo* tzInfo) {
     /* Check each entry in the directory. */
     while((dirEntry = readdir(dirp)) != NULL) {
         const char* dirName = dirEntry->d_name;
-        if (uprv_strcmp(dirName, SKIP1) != 0 && uprv_strcmp(dirName, SKIP2) != 0) {
+        if (uprv_strcmp(dirName, SKIP1) != 0 && uprv_strcmp(dirName, SKIP2) != 0
+            && uprv_strcmp(TZFILE_SKIP, dirName) != 0 && uprv_strcmp(TZFILE_SKIP2, dirName) != 0) {
             /* Create a newpath with the new entry to test each entry in the directory. */
             CharString newpath(curpath, status);
             newpath.append(dirName, -1, status);
@@ -1024,7 +1014,7 @@ static char* searchForTZFile(const char* path, DefaultTZInfo* tzInfo) {
                 */
                 if (result != NULL)
                     break;
-            } else if (uprv_strcmp(TZFILE_SKIP, dirName) != 0 && uprv_strcmp(TZFILE_SKIP2, dirName) != 0) {
+            } else {
                 if(compareBinaryFiles(TZDEFAULT, newpath.data(), tzInfo)) {
                     int32_t amountToSkip = sizeof(TZZONEINFO) - 1;
                     if (amountToSkip > newpath.length()) {
@@ -1078,7 +1068,7 @@ uprv_tzname(int n)
     // the other code path returns a pointer to a heap location.
     // If we don't have a name already, then tzname wouldn't be any
     // better, so just fall back.
-    return uprv_strdup("Etc/UTC");
+    return uprv_strdup("");
 #endif // !U_TZNAME
 
 #else
@@ -1317,9 +1307,9 @@ uprv_pathIsAbsolute(const char *path)
   return FALSE;
 }
 
-/* Temporary backup setting of ICU_DATA_DIR_PREFIX_ENV_VAR
-   until some client wrapper makefiles are updated */
-#if U_PLATFORM_IS_DARWIN_BASED && TARGET_IPHONE_SIMULATOR
+/* Backup setting of ICU_DATA_DIR_PREFIX_ENV_VAR
+   (needed for some Darwin ICU build environments) */
+#if U_PLATFORM_IS_DARWIN_BASED && TARGET_OS_SIMULATOR
 # if !defined(ICU_DATA_DIR_PREFIX_ENV_VAR)
 #  define ICU_DATA_DIR_PREFIX_ENV_VAR "IPHONE_SIMULATOR_ROOT"
 # endif
@@ -1430,12 +1420,7 @@ static void U_CALLCONV dataDirectoryInitFn() {
 
     if(path==NULL) {
         /* It looks really bad, set it to something. */
-#if U_PLATFORM_HAS_WIN32_API
-        // Windows UWP will require icudtl.dat file in same directory as icuuc.dll
-        path = ".\\";
-#else
         path = "";
-#endif
     }
 
     u_setDataDirectory(path);

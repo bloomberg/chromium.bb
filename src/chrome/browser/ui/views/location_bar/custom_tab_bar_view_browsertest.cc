@@ -6,9 +6,9 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ssl/chrome_mock_cert_verifier.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/web_app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
@@ -19,9 +19,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
-
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
 
 namespace {
 
@@ -143,7 +140,7 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
         {features::kDesktopPWAsStayInWindow, features::kDesktopPWAWindowing,
          features::kDesktopPWAsCustomTabUI},
         {});
-    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
     // Everything should be redirected to the http server.
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -175,7 +172,7 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
   BrowserView* browser_view_;
   LocationBarView* location_bar_;
   CustomTabBarView* custom_tab_bar_;
-  extensions::HostedAppBrowserController* hosted_app_controller_;
+  WebAppBrowserController* web_app_controller_;
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
@@ -191,8 +188,8 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
     DCHECK(app_browser_);
     DCHECK(app_browser_ != browser());
 
-    hosted_app_controller_ = app_browser_->hosted_app_controller();
-    DCHECK(hosted_app_controller_);
+    web_app_controller_ = app_browser_->web_app_controller();
+    DCHECK(web_app_controller_);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -267,8 +264,10 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest, TitleAndLocationUpdate) {
   SetTitleAndLocation(app_view->GetActiveWebContents(),
                       base::ASCIIToUTF16("FooBar"), navigate_to);
 
-  EXPECT_EQ(base::ASCIIToUTF16(navigate_to.spec()),
-            app_view->toolbar()->custom_tab_bar()->location_for_testing());
+  std::string expected_origin = navigate_to.GetOrigin().spec();
+  EXPECT_EQ(base::ASCIIToUTF16(expected_origin),
+            app_view->toolbar()->custom_tab_bar()->location_for_testing() +
+                base::ASCIIToUTF16("/"));
   EXPECT_EQ(base::ASCIIToUTF16("FooBar"),
             app_view->toolbar()->custom_tab_bar()->title_for_testing());
 }
@@ -313,11 +312,11 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
   const GURL& other_app_url =
       https_server()->GetURL("app.com", "/ssl/blank_page.html");
   NavigateAndWait(web_contents, other_app_url);
-  EXPECT_FALSE(hosted_app_controller_->ShouldShowToolbar());
+  EXPECT_FALSE(web_app_controller_->ShouldShowToolbar());
 
   // Navigate out of scope.
   NavigateAndWait(web_contents, GURL("http://example.test/"));
-  EXPECT_TRUE(hosted_app_controller_->ShouldShowToolbar());
+  EXPECT_TRUE(web_app_controller_->ShouldShowToolbar());
 
   // Simulate clicking the close button and wait for navigation to finish.
   content::TestNavigationObserver nav_observer(web_contents);
@@ -348,12 +347,12 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
   const GURL& other_app_url =
       https_server()->GetURL("app.com", "/ssl/blank_page.html");
   NavigateAndWait(web_contents, other_app_url);
-  EXPECT_FALSE(hosted_app_controller_->ShouldShowToolbar());
+  EXPECT_FALSE(web_app_controller_->ShouldShowToolbar());
 
   // Navigate above the scope of the app, on the same origin.
   NavigateAndWait(web_contents, https_server()->GetURL(
                                     "app.com", "/accessibility_fail.html"));
-  EXPECT_TRUE(hosted_app_controller_->ShouldShowToolbar());
+  EXPECT_TRUE(web_app_controller_->ShouldShowToolbar());
 
   // Simulate clicking the close button and wait for navigation to finish.
   content::TestNavigationObserver nav_observer(web_contents);
@@ -387,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_TRUE(content::ExecuteScript(
         web_contents, "window.location.replace('http://example.com');"));
     nav_observer.Wait();
-    EXPECT_TRUE(hosted_app_controller_->ShouldShowToolbar());
+    EXPECT_TRUE(web_app_controller_->ShouldShowToolbar());
   }
   {
     // Simulate clicking the close button and wait for navigation to finish.
@@ -399,7 +398,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(app_url, web_contents->GetLastCommittedURL());
 }
 
-IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest, URLsWithEmojiArePunyCoded) {
+IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
+                       OriginsWithEmojiArePunyCoded) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL& app_url = https_server()->GetURL("app.com", "/ssl/google.html");
@@ -415,14 +415,14 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest, URLsWithEmojiArePunyCoded) {
   SetTitleAndLocation(app_view->GetActiveWebContents(),
                       base::ASCIIToUTF16("FooBar"), navigate_to);
 
-  EXPECT_EQ(base::UTF8ToUTF16("https://xn--lv8h.example/ssl/blank_page.html"),
+  EXPECT_EQ(base::UTF8ToUTF16("https://xn--lv8h.example"),
             app_view->toolbar()->custom_tab_bar()->location_for_testing());
   EXPECT_EQ(base::ASCIIToUTF16("FooBar"),
             app_view->toolbar()->custom_tab_bar()->title_for_testing());
 }
 
 IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
-                       URLsWithNonASCIICharactersDisplayNormally) {
+                       OriginsWithNonASCIICharactersDisplayNormally) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL& app_url = https_server()->GetURL("app.com", "/ssl/google.html");
@@ -438,30 +438,7 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
   SetTitleAndLocation(app_view->GetActiveWebContents(),
                       base::ASCIIToUTF16("FooBar"), navigate_to);
 
-  EXPECT_EQ(base::UTF8ToUTF16("https://ΐ.example/ssl/blank_page.html"),
-            app_view->toolbar()->custom_tab_bar()->location_for_testing());
-  EXPECT_EQ(base::ASCIIToUTF16("FooBar"),
-            app_view->toolbar()->custom_tab_bar()->title_for_testing());
-}
-
-IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
-                       BannedCharactersAreURLEncoded) {
-  ASSERT_TRUE(https_server()->Start());
-
-  const GURL& app_url = https_server()->GetURL("app.com", "/ssl/google.html");
-  const GURL& navigate_to = GURL("https://ΐ.example/🔒/blank_page.html");
-
-  InstallPWA(app_url);
-
-  EXPECT_TRUE(app_browser_);
-
-  BrowserView* app_view = BrowserView::GetBrowserViewForBrowser(app_browser_);
-  EXPECT_NE(app_view, browser_view_);
-
-  SetTitleAndLocation(app_view->GetActiveWebContents(),
-                      base::ASCIIToUTF16("FooBar"), navigate_to);
-
-  EXPECT_EQ(base::UTF8ToUTF16("https://ΐ.example/%F0%9F%94%92/blank_page.html"),
+  EXPECT_EQ(base::UTF8ToUTF16("https://ΐ.example"),
             app_view->toolbar()->custom_tab_bar()->location_for_testing());
   EXPECT_EQ(base::ASCIIToUTF16("FooBar"),
             app_view->toolbar()->custom_tab_bar()->title_for_testing());

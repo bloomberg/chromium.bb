@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
@@ -110,7 +111,7 @@ class BrowserTabStripController::TabContextMenuContents
   void RunMenuAt(const gfx::Point& point, ui::MenuSourceType source_type) {
     menu_runner_->RunMenuAt(tab_->GetWidget(), NULL,
                             gfx::Rect(point, gfx::Size()),
-                            views::MENU_ANCHOR_TOPLEFT, source_type);
+                            views::MenuAnchorPosition::kTopLeft, source_type);
   }
 
   // Overridden from ui::SimpleMenuModel::Delegate:
@@ -322,23 +323,6 @@ bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
   return other_profile == GetProfile();
 }
 
-NewTabButtonPosition BrowserTabStripController::GetNewTabButtonPosition()
-    const {
-  const std::string switch_value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kNewTabButtonPosition);
-  if (switch_value == switches::kNewTabButtonPositionOppositeCaption)
-    return GetFrameView()->CaptionButtonsOnLeadingEdge() ? TRAILING : LEADING;
-  if (switch_value == switches::kNewTabButtonPositionLeading)
-    return LEADING;
-  if (switch_value == switches::kNewTabButtonPositionAfterTabs)
-    return AFTER_TABS;
-  if (switch_value == switches::kNewTabButtonPositionTrailing)
-    return TRAILING;
-
-  return AFTER_TABS;
-}
-
 void BrowserTabStripController::CreateNewTab() {
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   // This must be called before AddTabAt() so that OmniboxFocused is called
@@ -413,6 +397,15 @@ void BrowserTabStripController::OnStoppedDraggingTabs() {
     browser_view_->TabDraggingStatusChanged(/*is_dragging=*/false);
   if (source_browser_view && !TabDragController::IsActive())
     source_browser_view->TabDraggingStatusChanged(/*is_dragging=*/false);
+}
+
+const TabGroupData* BrowserTabStripController::GetDataForGroup(
+    int group) const {
+  return model_->GetDataForGroup(group);
+}
+
+std::vector<int> BrowserTabStripController::ListTabsInGroup(int group) const {
+  return model_->ListTabsInGroup(group);
 }
 
 bool BrowserTabStripController::IsFrameCondensed() const {
@@ -508,6 +501,14 @@ void BrowserTabStripController::OnTabStripModelChanged(
         SetTabDataAt(delta.replace.new_contents, delta.replace.index);
       break;
     }
+    case TabStripModelChange::kGroupChanged: {
+      for (const auto& delta : change.deltas()) {
+        tabstrip_->ChangeTabGroup(delta.group_change.index,
+                                  delta.group_change.old_group,
+                                  delta.group_change.new_group);
+      }
+      break;
+    }
     case TabStripModelChange::kSelectionOnly:
       break;
   }
@@ -568,8 +569,12 @@ TabRendererData BrowserTabStripController::TabRendererDataFromModel(
     int model_index,
     TabStatus tab_status) {
   TabRendererData data;
-  TabUIHelper* tab_ui_helper = TabUIHelper::FromWebContents(contents);
+  TabUIHelper* const tab_ui_helper = TabUIHelper::FromWebContents(contents);
   data.favicon = tab_ui_helper->GetFavicon().AsImageSkia();
+  ThumbnailTabHelper* const thumbnail_tab_helper =
+      ThumbnailTabHelper::FromWebContents(contents);
+  if (thumbnail_tab_helper)
+    data.thumbnail = thumbnail_tab_helper->thumbnail();
   data.network_state = TabNetworkStateForWebContents(contents);
   data.title = tab_ui_helper->GetTitle();
   data.url = contents->GetURL();

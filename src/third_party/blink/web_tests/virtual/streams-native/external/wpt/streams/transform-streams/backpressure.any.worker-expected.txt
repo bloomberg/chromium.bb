@@ -1,18 +1,17 @@
 This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = Failed to execute 'pipeTo' on 'ReadableStream': pipeTo disabled because StreamsNative feature is enabled
-PASS backpressure allows no transforms with a default identity transform and no reader
-PASS backpressure only allows one transform() with a identity transform with a readable HWM of 1 and no reader
-PASS transform() should keep being called as long as there is no backpressure
-PASS writes should resolve as soon as transform completes
-PASS calling pull() before the first write() with backpressure should work
-PASS transform() should be able to read the chunk it just enqueued
-PASS blocking transform() should cause backpressure
-PASS writer.closed should resolve after readable is canceled during start
-PASS writer.closed should resolve after readable is canceled with backpressure
-PASS writer.closed should resolve after readable is canceled with no backpressure
-PASS cancelling the readable should cause a pending write to resolve
-FAIL cancelling the readable side of a TransformStream should abort an empty pipe assert_throws: promise returned from pipeTo() should be rejected function "function() { throw e }" threw object "TypeError: Failed to execute 'pipeTo' on 'ReadableStream': pipeTo disabled because StreamsNative feature is enabled" ("TypeError") expected object "error1: error1 message" ("error1")
-FAIL cancelling the readable side of a TransformStream should abort an empty pipe after startup assert_throws: promise returned from pipeTo() should be rejected function "function() { throw e }" threw object "TypeError: Failed to execute 'pipeTo' on 'ReadableStream': pipeTo disabled because StreamsNative feature is enabled" ("TypeError") expected object "error1: error1 message" ("error1")
-FAIL cancelling the readable side of a TransformStream should abort a full pipe assert_throws: promise returned from pipeTo() should be rejected function "function() { throw e }" threw object "TypeError: Failed to execute 'pipeTo' on 'ReadableStream': pipeTo disabled because StreamsNative feature is enabled" ("TypeError") expected object "error1: error1 message" ("error1")
+FAIL backpressure allows no transforms with a default identity transform and no reader Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL backpressure only allows one transform() with a identity transform with a readable HWM of 1 and no reader Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL transform() should keep being called as long as there is no backpressure Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL writes should resolve as soon as transform completes Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL calling pull() before the first write() with backpressure should work Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL transform() should be able to read the chunk it just enqueued Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL blocking transform() should cause backpressure Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL writer.closed should resolve after readable is canceled during start Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL writer.closed should resolve after readable is canceled with backpressure Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL writer.closed should resolve after readable is canceled with no backpressure Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL cancelling the readable should cause a pending write to resolve Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL cancelling the readable side of a TransformStream should abort an empty pipe Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL cancelling the readable side of a TransformStream should abort an empty pipe after startup Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL cancelling the readable side of a TransformStream should abort a full pipe Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
 Harness: the test ran to completion.
 

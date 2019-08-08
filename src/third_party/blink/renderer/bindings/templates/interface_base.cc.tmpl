@@ -3,6 +3,8 @@
 {% include 'copyright_block.txt' %}
 #include "{{this_include_header_path}}"
 
+#include <algorithm>
+
 {% for filename in cpp_includes if filename != '%s.h' % cpp_class_or_partial %}
 #include "{{filename}}"
 {% endfor %}

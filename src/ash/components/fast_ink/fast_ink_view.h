@@ -66,7 +66,7 @@ class FastInkView : public views::View {
   };
 
   // Update content and damage rectangles for surface. |auto_refresh| should
-  // be set to true if continous updates are expected within content rectangle.
+  // be set to true if continuous updates are expected within content rectangle.
   void UpdateSurface(const gfx::Rect& content_rect,
                      const gfx::Rect& damage_rect,
                      bool auto_refresh);

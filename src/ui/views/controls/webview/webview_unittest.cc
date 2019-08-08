@@ -50,13 +50,13 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
 
   ~WebViewTestWebContentsObserver() override {
     if (web_contents_)
-      content::WebContentsObserver::Observe(NULL);
+      content::WebContentsObserver::Observe(nullptr);
   }
 
   void WebContentsDestroyed() override {
     DCHECK(web_contents_);
-    content::WebContentsObserver::Observe(NULL);
-    web_contents_ = NULL;
+    content::WebContentsObserver::Observe(nullptr);
+    web_contents_ = nullptr;
   }
 
   void OnVisibilityChanged(content::Visibility visibility) override {
@@ -64,7 +64,7 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
       case content::Visibility::VISIBLE: {
 #if defined(USE_AURA)
         valid_root_while_shown_ =
-            web_contents()->GetNativeView()->GetRootWindow() != NULL;
+            web_contents()->GetNativeView()->GetRootWindow() != nullptr;
 #endif
         was_shown_ = true;
         ++shown_count_;
@@ -104,8 +104,8 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
 // Fakes the fullscreen browser state reported to WebContents and WebView.
 class WebViewTestWebContentsDelegate : public content::WebContentsDelegate {
  public:
-  WebViewTestWebContentsDelegate() : is_fullscreened_(false) {}
-  ~WebViewTestWebContentsDelegate() override {}
+  WebViewTestWebContentsDelegate() = default;
+  ~WebViewTestWebContentsDelegate() override = default;
 
   void set_is_fullscreened(bool fs) { is_fullscreened_ = fs; }
 
@@ -116,7 +116,7 @@ class WebViewTestWebContentsDelegate : public content::WebContentsDelegate {
   }
 
  private:
-  bool is_fullscreened_;
+  bool is_fullscreened_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTestWebContentsDelegate);
 };
@@ -146,7 +146,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
         std::make_unique<views::WebView::ScopedWebContentsCreatorForTesting>(
             creator);
     set_views_delegate(base::WrapUnique(new views::TestViewsDelegate));
-    browser_context_.reset(new content::TestBrowserContext);
+    browser_context_ = std::make_unique<content::TestBrowserContext>();
     WidgetTest::SetUp();
     // Set the test content browser client to avoid pulling in needless
     // dependencies from content.
@@ -173,7 +173,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
     top_level_widget_->Close();  // Deletes all children and itself.
     RunPendingMessages();
 
-    browser_context_.reset(NULL);
+    browser_context_.reset(nullptr);
     // Flush the message loop to execute pending relase tasks as this would
     // upset ASAN and Valgrind.
     RunPendingMessages();
@@ -297,7 +297,7 @@ TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
 // capture.
 TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_Layout) {
   web_view()->SetEmbedFullscreenWidgetMode(true);
-  ASSERT_EQ(1, web_view()->child_count());
+  ASSERT_EQ(1u, web_view()->children().size());
 
   const std::unique_ptr<content::WebContents> web_contents(CreateWebContents());
   WebViewTestWebContentsDelegate delegate;
@@ -360,7 +360,7 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_Layout) {
 // them is embedding a fullscreen widget during WebContents screen capture.
 TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_Switching) {
   web_view()->SetEmbedFullscreenWidgetMode(true);
-  ASSERT_EQ(1, web_view()->child_count());
+  ASSERT_EQ(1u, web_view()->children().size());
   const gfx::NativeView unset_native_view = holder()->native_view();
 
   // Create two WebContentses to switch between.
@@ -424,7 +424,7 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_ClickToFocus) {
   top_level_widget()->GetContentsView()->AddChildView(something_to_focus);
 
   web_view()->SetEmbedFullscreenWidgetMode(true);
-  ASSERT_EQ(1, web_view()->child_count());
+  ASSERT_EQ(1u, web_view()->children().size());
 
   const std::unique_ptr<content::WebContents> web_contents(CreateWebContents());
   WebViewTestWebContentsDelegate delegate;

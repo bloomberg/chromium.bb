@@ -20,8 +20,8 @@ namespace views {
 // Default button size if no image is set. This is ignored if there is an image,
 // and exists for historical reasons (any number of clients could depend on this
 // behaviour).
-static const int kDefaultWidth = 16;
-static const int kDefaultHeight = 14;
+static constexpr int kDefaultWidth = 16;
+static constexpr int kDefaultHeight = 14;
 
 const char ImageButton::kViewClassName[] = "ImageButton";
 
@@ -39,8 +39,7 @@ ImageButton::ImageButton(ButtonListener* listener)
   EnableCanvasFlippingForRTLUI(true);
 }
 
-ImageButton::~ImageButton() {
-}
+ImageButton::~ImageButton() = default;
 
 const gfx::ImageSkia& ImageButton::GetImage(ButtonState state) const {
   return images_[state];
@@ -66,7 +65,7 @@ void ImageButton::SetImage(ButtonState for_state, const gfx::ImageSkia& image) {
 void ImageButton::SetBackgroundImage(SkColor color,
                                      const gfx::ImageSkia* image,
                                      const gfx::ImageSkia* mask) {
-  if (image == NULL || mask == NULL) {
+  if (image == nullptr || mask == nullptr) {
     background_image_ = gfx::ImageSkia();
     return;
   }
@@ -221,8 +220,7 @@ ToggleImageButton::ToggleImageButton(ButtonListener* listener)
       toggled_(false) {
 }
 
-ToggleImageButton::~ToggleImageButton() {
-}
+ToggleImageButton::~ToggleImageButton() = default;
 
 void ToggleImageButton::SetToggled(bool toggled) {
   if (toggled == toggled_)
@@ -279,20 +277,15 @@ void ToggleImageButton::SetImage(ButtonState image_state,
 ////////////////////////////////////////////////////////////////////////////////
 // ToggleImageButton, View overrides:
 
-bool ToggleImageButton::GetTooltipText(const gfx::Point& p,
-                                       base::string16* tooltip) const {
-  if (!toggled_ || toggled_tooltip_text_.empty())
-    return Button::GetTooltipText(p, tooltip);
-
-  *tooltip = toggled_tooltip_text_;
-  return true;
+base::string16 ToggleImageButton::GetTooltipText(const gfx::Point& p) const {
+  return (!toggled_ || toggled_tooltip_text_.empty())
+             ? Button::GetTooltipText(p)
+             : toggled_tooltip_text_;
 }
 
 void ToggleImageButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ImageButton::GetAccessibleNodeData(node_data);
-  base::string16 name;
-  GetTooltipText(gfx::Point(), &name);
-  node_data->SetName(name);
+  node_data->SetName(GetTooltipText(gfx::Point()));
 
   // Use the visual pressed image as a cue for making this control into an
   // accessible toggle button.

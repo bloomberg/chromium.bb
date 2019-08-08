@@ -136,11 +136,6 @@ declare_args() {
   # See http://clang.llvm.org/docs/SanitizerCoverage.html .
   rtc_sanitize_coverage = ""
 
-  # Links a default implementation of task queues to targets
-  # that depend on the target rtc_task_queue. Set to false to
-  # use an external implementation.
-  rtc_link_task_queue_impl = true
-
   if (current_cpu == "arm" || current_cpu == "arm64") {
     rtc_prefer_fixed_point = true
   }
@@ -192,6 +187,14 @@ declare_args() {
   # (they will still be included in libjingle_peerconnection_so.so and
   # WebRTC.framework)
   rtc_include_builtin_video_codecs = true
+
+  # When set to true and in a standalone build, it will undefine UNICODE and
+  # _UNICODE (which are always defined globally by the Chromium Windows
+  # toolchain).
+  # This is only needed for testing purposes, WebRTC wants to be sure it
+  # doesn't assume /DUNICODE and /D_UNICODE but that it explicitly uses
+  # wide character functions.
+  rtc_win_undef_unicode = false
 }
 
 if (!build_with_mozilla) {
@@ -218,8 +221,6 @@ declare_args() {
   rtc_build_usrsctp = !build_with_mozilla
 
   # Enable libevent task queues on platforms that support it.
-  # rtc_link_task_queue_impl must be set to true for this to
-  # have an effect.
   if (is_win || is_mac || is_ios || is_nacl || is_fuchsia) {
     rtc_enable_libevent = false
     rtc_build_libevent = false

@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="1002439864875515590">If this policy is set to a blank string or not configured, <ph name="PRODUCT_OS_NAME" /> will not show an auto-complete option during user sign-in flow.
+      If this policy is set to a string representing a domain name, <ph name="PRODUCT_OS_NAME" /> will show an auto-complete option during user sign-in allowing the user to type in only their user name without the domain name extension.  The user will be able to overwrite this domain name extension.
+      If the value of the policy is not a valid domain, the policy will not be applied.</translation>
 <translation id="101438888985615157">Rotate screen by 180 degrees</translation>
 <translation id="1016912092715201525">Configures the default browser checks in <ph name="PRODUCT_NAME" /> and prevents users from changing them.
 
@@ -51,6 +54,13 @@
 <translation id="1049138910114524876">Configures the locale which is enforced on the <ph name="PRODUCT_OS_NAME" /> sign-in screen.
 
       If this policy is set, the sign-in screen will always be displayed in the locale which is given by the first value of this policy (the policy is defined as a list for forward compatibility).  If this policy is not set or is set to an empty list, the sign-in screen will be displayed in the locale of the last user session.  If this policy is set to a value which is not a valid locale, the sign-in screen will be displayed in a fallback locale (currently, en-US).</translation>
+<translation id="1052499923181221200">This policy has no effect unless SamlInSessionPasswordChangeEnabled is true.
+      If that policy is true, and this policy is set to (for example) 14, that means that SAML users will be notified 14 days in advance that their password is due to expire on a certain date.
+      Then they can deal with this immediately by doing an in-session password change and updating their password before it expires.
+      But these notifications will only be shown if password expiry information is sent to the device by the SAML identity provider during the SAML login flow.
+      Setting this policy to zero means that the users will not be notified in advance – they will only be notified once the password has already expired.
+
+      If this policy is set, the user cannot change or override it.</translation>
 <translation id="1062011392452772310">Enable remote attestation for the device</translation>
 <translation id="1062407476771304334">Replace</translation>
 <translation id="1079801999187584280">Disallow usage of the Developer Tools</translation>
@@ -87,6 +97,14 @@
       If the policy is unset, cached GPOs may be reused for up to 25 hours.
 
       If the policy is set to 0, GPO caching is turned off. Note that this increases server load since GPOs are re-downloaded on every policy fetch, even if they did not change.</translation>
+<translation id="1117462881884985156"><ph name="PRODUCT_NAME" /> will bypass any proxy for the list of hosts given here.
+
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings' and if the <ph name="PROXY_SETTINGS_POLICY_NAME" /> policy has not been specified.
+
+          You should leave this policy not set if you have selected any other mode for setting proxy policies.
+
+          For more detailed examples, visit:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">The protocol handlers set via this policy are not used when handling Android intents.</translation>
 <translation id="1118093128235245168">Allow sites to ask the user to grant access to a connected USB device</translation>
 <translation id="1128903365609589950">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing cached files on the disk.
@@ -140,6 +158,7 @@
       If this policy is unset, the default frequency is 3 hours. The minimum
       allowed frequency is 60 seconds.</translation>
 <translation id="1204263402976895730">Enabled enterprise printers</translation>
+<translation id="1216919699175573511">Enable Signed HTTP Exchange (SXG) support</translation>
 <translation id="1219695476179627719">Specifies whether the device should roll back to the version set by <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> if it's already running a later version.
 
       Default is RollbackDisabled.</translation>
@@ -188,7 +207,6 @@
       Coalescing requests to different hosts over connections that use client certificates can create security and privacy issues, as the ambient authority will be conveyed to all requests, even if the user did not explicitly authorise this. This policy is temporary and will be removed in a future release. See https://crbug.com/855690.
 
       If this policy is left unset, then the default behaviour of not allowing any HTTP/2 connection coalescing on connections using client certificates will be used.</translation>
-<translation id="1353966721814789986">Startup pages:</translation>
 <translation id="1354424209129232709">Maximum:</translation>
 <translation id="1354452738176731363">When this policy is set to false, audio output will not be available on the device while the user is logged in.
 
@@ -203,6 +221,7 @@
       If the policy is enabled, Google Assistant will be allowed to access screen context.
       If the policy is disabled, Google Assistant will not be allowed to access screen context.
       If not set, users can decide whether to allow Google Assistant to access screen context or not</translation>
+<translation id="1376119291123231789">Enable advanced battery charge mode</translation>
 <translation id="1383493480903114193">This policy forces networking code to run in the browser process.
 
       This policy is disabled by default, and if enabled, leaves users open to the security issues once the networking process is sandboxed.
@@ -212,7 +231,6 @@
       If this policy is not set, networking code may run out of the browser process depending on field trials of the Network Service experiment.</translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1384653327213929024">Allow users to manage installed certificates.</translation>
-<translation id="1387596372902085462">Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
 <translation id="1404043648050567997">The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially malicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
@@ -299,16 +317,20 @@
       disabled. In this case, the user cannot enable the feature.</translation>
 <translation id="1474273443907024088">Disable TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> will bypass any proxy for the list of hosts given here.
-
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
-
-          You should leave this policy unset if you have selected any other mode for setting proxy policies.
-
-          For more detailed examples, visit:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Enable third-party software injection blocking</translation>
 <translation id="1504431521196476721">Remote Attestation</translation>
+<translation id="1507382822467487898">
+          Configures which MAC (media access control) address will be used when a dock is connected to the device.
+
+          When a dock is connected to some device models, the device's designated dock MAC address is used to identify the device on Ethernet by default. This policy allows the administrator to change the source of the MAC address while docked.
+
+          If 'DeviceDockMacAddress' is selected or the policy is left unset, the device's designated dock MAC address will be used.
+
+          If 'DeviceNicMacAddress' is selected, the device's NIC (network interface controller) MAC address will be used.
+
+          If 'DockNicMacAddress' is selected, the dock's NIC MAC address will be used.
+
+          This setting cannot be changed by the user.</translation>
 <translation id="1507957856411744193">If this policy is set to true, <ph name="PRODUCT_NAME" /> will connect to Cast devices on all IP addresses, not just RFC1918/RFC4193 private addresses.
 
           If this policy is set to false, <ph name="PRODUCT_NAME" /> will connect to Cast devices on RFC1918/RFC4193 private addresses only.
@@ -345,14 +367,15 @@
       See https://developers.google.com/safe-browsing for more info on Safe Browsing.</translation>
 <translation id="1583248206450240930">Use <ph name="PRODUCT_FRAME_NAME" /> by default</translation>
 <translation id="1599424828227887013">Enable Site Isolation for specified origins on Android devices</translation>
-<translation id="1608259529294767544">This policy gives Google Assistant permission to listen for the voice activation phrase.
-
-      If the policy is enabled, Google Assistant would listen for the voice activation phrase.
-      If the policy is disabled, Google Assistant would not listen for the voice activation phrase.
-      If not set, users can decide whether to allow Google Assistant to listen to the voice activation phrase.
-      </translation>
 <translation id="1608755754295374538">URLs that will be granted access to audio capture devices without prompt</translation>
 <translation id="1615221548356595305">Allow coalescing of HTTP/2 connections for these hosts even when client certificates are used</translation>
+<translation id="1615855314789673708">Provides a wilco DTC (diagnostics and telemetry controller) configuration.
+
+      This policy allows to provide wilco DTC configuration that is allowed to be applied if wilco DTC is available on the given device and allowed by policy. The size of the configuration must not exceed 1 MB (1000000 bytes) and must be encoded in JSON. The wilco DTC is responsible for handling it. The cryptographic hash is used to verify the integrity of the download.
+
+      The configuration is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      If you set this policy, users cannot change or override it.</translation>
 <translation id="1617235075406854669">Enable deleting browser and download history</translation>
 <translation id="163200210584085447">Patterns in this list will be matched against the security
       origin of the requesting URL.  If a match is found, access to video
@@ -378,6 +401,22 @@
       Warning: It is not recommended to delegate control of the <ph name="PRODUCT_OS_NAME" /> version to a kiosk app as it may prevent the device from receiving software updates and critical security fixes. Delegating control of the <ph name="PRODUCT_OS_NAME" /> version might leave users at risk.</translation>
 <translation id="1675002386741412210">Supported on:</translation>
 <translation id="1689963000958717134">Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
+<translation id="1704516734140344991">Configures availability and behaviour of <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update functionality.
+
+      Individual settings can be specified in JSON properties:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, users will be able to trigger the powerwash flow to install a <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, users will be able to invoke the <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update flow that preserves device-wide state (including enterprise enrolment), but loses user data. This update flow is available starting from version 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Controls how automatic <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware updates are enforced for vulnerable <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware. All flows preserve local device state.
+        If set to 1 or left not set, TPM firmware updates are not enforced.
+        If set to 2, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware will be updated at the next reboot after user acknowledges the update.
+        If set to 3, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware will be updated at the next reboot.
+        If set to 4, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware will be updated after enrolment, before user sign-in.
+        This option is available starting from version 74.
+
+      If the policy is not set, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update functionality will not be available.</translation>
 <translation id="1708496595873025510">Set the restriction on the fetching of the Variations seed</translation>
 <translation id="1717817358640580294">If unset, should Chrome Clean-Up detect unwanted software, it may report metadata about the scan to Google, in accordance with policy set by SafeBrowsingExtendedReportingEnabled. Chrome Clean-Up will then ask the user if they wish to clean up the unwanted software. The user can choose to share results of the clean up with Google to assist with future unwanted software detection. These results contain file metadata, automatically installed extensions and registry keys as described by the Chrome Privacy Whitepaper.
 
@@ -387,7 +426,6 @@
 
       This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="172374442286684480">Allow all sites to set local data.</translation>
-<translation id="1734716591049455502">Configure remote access options</translation>
 <translation id="1736269219679256369">Allow proceeding from the SSL warning page</translation>
 <translation id="1745780278307622857">Identify if <ph name="PRODUCT_NAME" /> can allow download without Safe Browsing checks when it's from a trusted source.
 
@@ -456,8 +494,6 @@
       If this policy is not configured or if it is set to "tls1.2" then <ph name="PRODUCT_NAME" /> no longer performs this fallback. Note that this does not disable support for older TLS versions, only whether <ph name="PRODUCT_NAME" /> will work around buggy servers which cannot negotiate versions correctly.
 
       Otherwise, if compatibility with a buggy server must be maintained, this policy may be set to "tls1.1". This is a stopgap measure and the server should be rapidly fixed.</translation>
-<translation id="1864269674877167562">If this policy is set to a blank string or not configured, <ph name="PRODUCT_OS_NAME" /> will not show an auto-complete option during user sign-in flow.
-      If this policy is set to a string representing a domain name, <ph name="PRODUCT_OS_NAME" /> will show an auto-complete option during user sign-in allowing the user to type in only their user name without the domain name extension. The user will be able to overwrite this domain name extension.</translation>
 <translation id="1864382791685519617">Enables network prediction in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
 
       This controls DNS pre-fetching, TCP and SSL pre-connection and pre-rendering of web pages.
@@ -527,7 +563,6 @@
       If this setting is disabled, AutoFill will never suggest, or fill address information, nor will it save additional address information that the user might submit while browsing the web.
 
       If this setting is enabled or has no value, the user will be able to control AutoFill for addresses in the UI.</translation>
-<translation id="1960840544413786116">Whether to allow certificates issued by local trust anchors that are missing the subjectAlternativeName extension</translation>
 <translation id="1962273523772270623">Allow collection of WebRTC event logs from Google services</translation>
 <translation id="1964634611280150550">Incognito mode disabled.</translation>
 <translation id="1964802606569741174">This policy has no effect on the Android YouTube app. If Safety Mode on YouTube should be enforced, installation of the Android YouTube app should be disallowed.</translation>
@@ -557,15 +592,6 @@
       Leaving this policy not set will make <ph name="PRODUCT_NAME" /> use the default value of 3 hours.
 
       Note that if the platform supports policy notifications, the refresh delay will be set to 24 hours (ignoring all defaults and the value of this policy) because it is expected that policy notifications will force a refresh automatically whenever policy changes, making more frequent refreshes unnecessary.</translation>
-<translation id="2024149678078029009">This policy controls the command to use to open URLs in <ph name="PRODUCT_NAME" /> when switching from Internet Explorer.
-
-      If the 'Legacy Browser Support' add-in for Internet Explorer is not installed, this policy has no effect.
-
-      When this policy is left unset, Internet Explorer will auto-detect <ph name="PRODUCT_NAME" />'s own executable path when launching <ph name="PRODUCT_NAME" /> from Internet Explorer.
-
-      When this policy is set, it will be used to launch <ph name="PRODUCT_NAME" /> when switching launching <ph name="PRODUCT_NAME" /> from Internet Explorer.
-
-      This policy can be set to an executable file path, or ${chrome} to auto-detect Chrome's install location.</translation>
 <translation id="2024476116966025075">Configure the required domain name for remote access clients</translation>
 <translation id="2030905906517501646">Default search provider keyword</translation>
 <translation id="203096360153626918">This policy has no effect on the Android apps. They will be able to enter full screen mode even if this policy is set to <ph name="FALSE" />.</translation>
@@ -606,7 +632,6 @@
       When this policy is set to False, information that can be used to identify users is not gathered.
 
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Restricts PIN printing mode. Unset policy is treated as no restriction. If the mode is unavailable, this policy is ignored.</translation>
 <translation id="2127599828444728326">Allow notifications on these sites</translation>
 <translation id="2131902621292742709">Screen dim delay when running on battery power</translation>
 <translation id="2134437727173969994">Permit locking the screen</translation>
@@ -716,13 +741,6 @@
       If you set this policy, users cannot change or override it. However, users will still be able to enable/disable an accessibility on-screen keyboard which takes precedence over the virtual keyboard controlled by this policy. See the |VirtualKeyboardEnabled| policy for controlling the accessibility on-screen keyboard.
 
       If this policy is left unset, the on-screen keyboard is disabled initially but can be enabled by the user anytime. Heuristic rules may also be used to decide when to display the keyboard.</translation>
-<translation id="228659285074633994">Specifies the length of time without user input after which a warning dialogue is shown when running on AC power.
-
-          When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> shows a warning dialogue telling the user that the idle action is about to be taken.
-
-          When this policy is unset, no warning dialogue is shown.
-
-          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> can use a Google web service to help resolve spelling errors. If this setting is enabled, then this service is always used. If this setting is disabled, then this service is never used.
 
       Spell checking can still be performed using a downloaded dictionary; this policy only controls the usage of the online service.
@@ -744,14 +762,21 @@
       For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE" /> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE" />, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> would be replaced by the 4 characters starting after the 6th position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Note that the position is zero-based.
       </translation>
 <translation id="2294382669900758280">Video playing in Android apps is not taken into consideration, even if this policy is set to <ph name="TRUE" />.</translation>
-<translation id="2298647742290373702">Configure the default New Tab page in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Specify a list of enabled plug-ins</translation>
 <translation id="2303795211377219696">Enable AutoFill for credit cards</translation>
 <translation id="2309390639296060546">Default geolocation setting</translation>
-<translation id="2312134445771258233">Allows you to configure the pages that are loaded on start-up.
-
-The contents of the list 'URLs to open at start-up' are ignored unless you select 'Open a list of URLs' in 'Action on start-up'.</translation>
 <translation id="2327252517317514801">Define domains allowed to access G Suite</translation>
+<translation id="2356878440219553005">Specifies battery charge mode power management policy.
+
+          Dynamically control battery charging to minimise battery wear-out due to battery stress and extend battery life.
+
+          If custom battery charge mode is selected then DeviceBatteryChargeCustomStartCharging and DeviceBatteryChargeCustomStopCharging must be specified.
+
+          If this policy is set then battery charge mode will be applied if supported on the device.
+
+          If this policy is left unset and policy is supported on the device, the standard battery charge mode will be applied and cannot be changed by the user.
+
+          Note: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> overrides this policy if the former is specified.</translation>
 <translation id="237494535617297575">Allows you to set a list of url patterns that specify sites which are allowed to display notifications.
 
           If this policy is left unset, the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -789,6 +814,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is set to False, zero-delay auto-login (if configured) cannot be bypassed.</translation>
 <translation id="2454228136871844693">Optimise for stability.</translation>
+<translation id="2463034609187171371">Enable DHE cipher suites in TLS</translation>
 <translation id="2463365186486772703">Application locale</translation>
 <translation id="2466131534462628618">Captive portal authentication ignores proxy</translation>
 <translation id="2482676533225429905">Native Messaging</translation>
@@ -941,12 +967,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is disabled, web pages cannot use JavaScript and the user cannot change that setting.
 
       If this setting is enabled or not set, web pages can use JavaScript but the user can change that setting.</translation>
+<translation id="2747157663401642394">Configures extension management settings for <ph name="PRODUCT_NAME" />.
+
+          This policy controls multiple settings, including settings controlled by any existing extension-related policies. This policy will override any legacy policies if both are set.
+
+          This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID <ph name="DEFAULT_SCOPE" />, which will apply to all extensions that don't have a custom configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          For Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
+
+          For a full description of possible settings and structure of this policy, please visit https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">Restrict the range of local UDP ports used by WebRTC</translation>
-<translation id="2755385841634849932">This policy controls the availability of Android backup and restore.
-
-      When this policy is not configured or set to <ph name="BR_DISABLED" />, Android backup and restore is disabled and cannot be enabled by the user.
-
-      When this policy is set to <ph name="BR_UNDER_USER_CONTROL" />, the user is asked to choose whether they want to use Android backup and restore. If the user enables backup and restore, Android app data is uploaded to Android backup servers and restored from them upon app re-installations for compatible apps.</translation>
 <translation id="2757054304033424106">Types of extensions/apps that are allowed to be installed</translation>
 <translation id="2758084448533744848">Specifies the enforced timezone to be used for the device. When this policy is set, users on the device cannot override the specified timezone. If an invalid value is provided, the policy is still activated using "GMT" instead. If an empty string is provided, the policy is ignored.
 
@@ -965,6 +996,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2769952903507981510">Configure the required domain name for remote access hosts</translation>
 <translation id="2787173078141616821">Report information about status of Android</translation>
 <translation id="2799297758492717491">Allow media auto-play on a whitelist of URL patterns</translation>
+<translation id="2801155097555584385">Set battery charge custom start charging in per cent</translation>
 <translation id="2801230735743888564">Allow users to play dinosaur easter egg game when device is offline.
 
       If this policy is set to False, users will not be able to play the dinosaur Easter egg game when device is offline. If this setting is set to True, users are allowed to play the dinosaur game. If this policy is not set, users are not allowed to play the dinosaur Easter egg game on enrolled Chrome OS, but are allowed to play it under other circumstances.</translation>
@@ -1038,6 +1070,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If you disable this setting or do not set a value, Print Preview will use the most recently used printer as the default destination choice.
 
       If you enable this setting, Print Preview will use the OS system default printer as the default destination choice.</translation>
+<translation id="285627849510728211">Set advanced battery charge mode day config</translation>
 <translation id="2856674246949497058">Roll back and stay on target version if OS version is newer than target. Do a powerwash during the process.</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2873651257716068683">Overrides default printing page size. If the page size is unavailable, this policy is ignored.</translation>
@@ -1069,6 +1102,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is not set, <ph name="PRINTERS_ALLOW_ALL" /> is assumed.
       </translation>
 <translation id="2908277604670530363">Maximum number of concurrent connections to the proxy server</translation>
+<translation id="2948463916588961959">Force-enables spellcheck languages. Unrecognised languages in that list will be ignored.
+
+      If you enable this policy, spellcheck will be enabled for the languages specified, in addition to the languages for which the user has enabled spellcheck.
+
+      If you do not set this policy, or disable it, there will be no change to the user's spellcheck preferences.
+
+      If the SpellcheckEnabled policy is set to disabled, this policy will have no effect.
+
+      If a language is included in both this policy and the SpellcheckLanguageBlacklist policy, this policy is prioritised and the spellcheck language is enabled.
+
+      The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Restrictions:</translation>
 <translation id="2956777931324644324">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 36.
 
@@ -1081,7 +1125,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2959898425599642200">Proxy bypass rules</translation>
 <translation id="2960128438010718932">The staging schedule for applying a new update</translation>
 <translation id="2960691910306063964">Enable or disable PIN-less authentication for remote access hosts</translation>
-<translation id="2972261849442778817">Ask the user if they would like to migrate or skip migration and disallow ARC.</translation>
 <translation id="2976002782221275500">Specifies the length of time without user input after which the screen is dimmed when running on battery power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> dims the screen.
@@ -1115,6 +1158,14 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3021562480854470924">Number of milestones roll-back is allowed</translation>
 <translation id="3023572080620427845">URL of an XML file that contains URLs to load in an alternative browser.</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
+<translation id="3033660238345063904">You can specify the URL of the proxy server here.
+
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings' and if the <ph name="PROXY_SETTINGS_POLICY_NAME" /> policy has not been specified.
+
+          You should leave this policy not set if you have selected any other mode for setting proxy policies.
+
+          For more options and detailed examples, visit:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3034580675120919256">Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.
 
           If this policy is left unset, 'AllowJavaScript' will be used and the user will be able to change it.</translation>
@@ -1154,12 +1205,26 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3072045631333522102">Screen saver to be used on the sign-in screen in retail mode</translation>
 <translation id="3072847235228302527">Set the Terms of Service for a device-local account</translation>
 <translation id="3077183141551274418">Enables or disables tab lifecycles</translation>
+<translation id="3079417254871857650">Specifies the action that should be taken when the user's home directory was created with ecryptfs encryption.
+
+      If you set this policy to 'DisallowArc', Android apps will be disabled for the user and no migration from ecryptfs to ext4 encryption will be performed. Android apps will not be prevented from running when the home directory is already ext4-encrypted.
+
+      If you set this policy to 'Migrate', ecryptfs-encrypted home directories will be automatically migrated to ext4 encryption on sign-in without asking for user consent.
+
+      If you set this policy to 'Wipe', ecryptfs-encrypted home directories will be deleted on sign-in and new ext4-encrypted home directories will be created instead. Warning: This removes the user's local data.
+
+      If you set this policy to 'MinimalMigrate', ecryptfs-encrypted home directories will be deleted on sign-in and new ext4-encrypted home directories will be created instead. However, it will be attempted to preserve login tokens so that the user does not have to sign in again. Warning: This removes the user's local data.
+
+      If you set this policy to an option that is no longer supported ('AskUser' or 'AskForEcryptfsArcUsers'), it will be treated as if you had selected 'Migrate' instead.
+
+      This policy does not apply to kiosk users. If this policy is left not set, the device will behave as if 'DisallowArc' was chosen.</translation>
 <translation id="3086995894968271156">Configure the cast receiver in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Allows you to set a list of URL patterns that specify sites which are allowed to display images.
 
           If this policy is left not set, the global default value will be used for all sites, either from the 'DefaultImagesSetting' policy if it is set, or from the user's personal configuration.
 
           Note: This policy was erroneously enabled on Android, but this functionality has never been fully supported on Android.</translation>
+<translation id="3091832372132789233">Charge battery for devices that are primarily connected to an external power source.</translation>
 <translation id="3096595567015595053">List of enabled plug-ins</translation>
 <translation id="3101501961102569744">Choose how to specify proxy server settings</translation>
 <translation id="3101709781009526431">Date and time</translation>
@@ -1185,26 +1250,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this setting is disabled, then <ph name="PRODUCT_NAME" /> will only use Native Messaging hosts installed on system level.
 
           If this setting is left not set, <ph name="PRODUCT_NAME" /> will allow usage of user-level Native Messaging hosts.</translation>
+<translation id="3177802893484440532">Require online OCSP/CRL checks for local trust anchors</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android apps cannot get access to corporate keys. This policy has no effect on them.</translation>
-<translation id="3201273385265130876">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
-
-          If you choose to never use a proxy server and always connect directly, all other options are ignored.
-
-          If you choose to use system proxy settings, all other options are ignored.
-
-          If you choose to auto detect the proxy server, all other options are ignored.
-
-          If you choose fixed server proxy mode, you can specify further options in 'Address or URL of proxy server' and 'Comma-separated list of proxy bypass rules'. Only the HTTP proxy server with the highest priority is available for ARC-apps.
-
-          If you choose to use a .pac proxy script, you must specify the URL to the script in 'URL to a proxy .pac file'.
-
-          For detailed examples, visit:
-          <ph name="PROXY_HELP_URL" />.
-
-          If you enable this setting, <ph name="PRODUCT_NAME" /> and ARC-apps ignore all proxy-related options specified from the command line.
-
-          Leaving this policy unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="3205825995289802549">Maximise the first browser window on first run</translation>
 <translation id="3211426942294667684">Browser sign in settings</translation>
 <translation id="3214164532079860003">This policy forces the home page to be imported from the current default browser if enabled.
@@ -1216,6 +1264,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3220624000494482595">If the kiosk app is an Android app, it will have no control over the <ph name="PRODUCT_OS_NAME" /> version, even if this policy is set to <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">URL patterns to allow extension, app, and user script installs from</translation>
 <translation id="3240609035816615922">Printer configuration access policy.</translation>
+<translation id="3240655340884151271">Dock's built-in NIC MAC address</translation>
 <translation id="3243309373265599239">Specifies the length of time without user input after which the screen is dimmed when running on AC power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> dims the screen.
@@ -1237,15 +1286,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google Account.
 
       If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3307746730474515290">Controls which app/extension types are allowed to be installed and limits runtime access.
+<translation id="3312206664202507568">Enables a page at chrome://password-change that lets SAML users change their SAML passwords while in-session, which ensures that the SAML password and the device lock-screen password are kept in sync.
 
-          This setting white-lists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME" /> and which hosts they can interact with. The value is a list of strings, each of which should be one of the following: 'extension', 'theme', 'user_script', 'hosted_app', 'legacy_packaged_app', 'platform_app'. See the <ph name="PRODUCT_NAME" /> extensions documentation for more information on these types.
+      This policy also enables notifications that warn SAML users if their SAML passwords are soon to expire so that they can deal with this immediately by doing an in-session password change.
+      But these notifications will only be shown if password expiry information is sent to the device by the SAML identity provider during the SAML login flow.
 
-          Note that this policy also affects extensions and apps to be force-installed via ExtensionInstallForcelist.
-
-          If this setting is configured, extensions/apps which have a type that is not on the list will not be installed.
-
-          If this setting is left non-configured, no restrictions on the acceptable extension/app types are enforced.</translation>
+      If this policy is set, the user cannot change or override it.</translation>
 <translation id="3322771899429619102">Allows you to set a list of URL patterns that specify sites which are allowed to use key generation. If a URL pattern is in 'KeygenBlockedForUrls', that overrides these exceptions.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set or the user's personal configuration otherwise.</translation>
@@ -1274,6 +1320,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       This policy can only be set as recommended. You can use this policy to move a set of recommended locales to the top but users are always allowed to choose any locale supported by <ph name="PRODUCT_OS_NAME" /> for their session.
       </translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
+<translation id="3384115339826100753">Enable the power peak shift power-management policy.
+
+          Peak shift is a power-saving policy that minimises alternating current usage during the peak usage times during the day. For each weekday, a start and end time to run in power peak shift mode can be set. During these times the system will run from the battery even if the alternating current is attached, as long as the battery stays above the threshold specified. After the end time specified, the system will run from alternating current if attached but will not charge the battery. The system will again function normally using alternating current and recharging the battery after the specified charge start time.
+
+          If this policy is set to true, and DevicePowerPeakShiftBatteryThreshold, DevicePowerPeakShiftDayConfig are set, then power peak shift will always be enabled if supported on the device.
+
+          If this policy is set to false, power peak shift will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, power peak shift is disabled initially and cannot be enabled by the user.</translation>
 <translation id="3388153794103186066">Allows you to set a list of URLs that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs. Each item in the list must contain both devices and URLs in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid and will be ignored.
 
         The USB permission model uses the URL of the requesting site ('requesting URL') and the URL of the top-level frame site ('embedding URL') to grant permission to the requesting URL to access the USB device. The requesting URL may be different from the embedding URL when the requesting site is loaded in an iframe. Therefore, the 'urls' field can contain up to two URL strings delimited by a comma to specify the requesting and embedding URL respectively. If only one URL is specified, then access to the corresponding USB devices will be granted when the requesting site's URL matches this URL regardless of embedding status. The URLs in 'urls' must be valid URLs, otherwise the policy will be ignored.
@@ -1307,9 +1364,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       The experimental setting will be removed in the future when the inline sign-in fully supports all SSO sign-in flows.</translation>
 <translation id="3437924696598384725">Allow the user to manage VPN connections</translation>
-<translation id="3449886121729668969">Configures the proxy settings for <ph name="PRODUCT_NAME" />. These proxy settings will be available for ARC-apps too.
-
-      This policy isn't ready for usage yet, please don't use it.</translation>
 <translation id="3459509316159669723">Printing</translation>
 <translation id="3460784402832014830">Specifies the URL that a search engine uses to provide a new tab page.
 
@@ -1323,6 +1377,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If this policy is set to False or left unset, power management delays and the session length limit start running immediately on session start.</translation>
 <translation id="3478024346823118645">Wipe user data on sign-out</translation>
+<translation id="3480961938508521469">Fully charge battery at a standard rate.</translation>
 <translation id="348495353354674884">Enable virtual keyboard</translation>
 <translation id="3487623755010328395">
         If this policy is set, <ph name="PRODUCT_NAME" /> will try to register itself and apply associated cloud policy for all profiles.
@@ -1350,7 +1405,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="350797926066071931">Enable Translate</translation>
-<translation id="3512226956150568738">If the client device model already supported ARC before migration to ext4 was necessary to run ARC and if the ArcEnabled policy is set to true, this option will behave as AskUser (value 3). In all other cases (if the device model did not support ARC before, or if ArcEnabled policy is set to false), this value is equivalent to DisallowArc (value 0).</translation>
 <translation id="3513655665999652754">The Quirks Server provides hardware-specific configuration files, such as ICC display profiles to adjust monitor calibration.
 
       When this policy is set to false, the device will not attempt to contact the Quirks Server to download configuration files.
@@ -1365,7 +1419,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is set to 'DeveloperToolsAllowed' (value 1), the Developer Tools and the JavaScript console can be accessed and used in all contexts, including the context of extensions installed by enterprise policy.
       If this policy is set to 'DeveloperToolsDisallowed' (value 2), the Developer Tools cannot be accessed and website elements can no longer be inspected. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
+<translation id="3550875587920006460">Allows setting a custom schedule to check for updates. This applies to all users, and to all interfaces on the device. Once set, the device will check for updates according to the schedule. The policy must be removed to cancel any more scheduled update checks.</translation>
 <translation id="355118380775352753">Websites to open in alternative browser</translation>
+<translation id="3554984410014457319">Allow Google Assistant to listen for the voice activation phrase</translation>
+<translation id="356579196325389849">Users may configure the Chrome OS release channel</translation>
+<translation id="3575011234198230041">HTTP authentication</translation>
 <translation id="3577251398714997599">Ads setting for sites with intrusive ads</translation>
 <translation id="357917253161699596">Allow users to manage user certificates</translation>
 <translation id="3583230441447348508">Specifies a list of pre-configured network file shares.
@@ -1477,6 +1535,16 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this policy is left unset, the on-screen keyboard is disabled initially but can be enabled by the user at any time.</translation>
 <translation id="382476126209906314">Configure the TalkGadget prefix for remote access hosts</translation>
 <translation id="3824972131618513497">Controls settings related to power management and rebooting.</translation>
+<translation id="3826475866868158882">Google location services enabled</translation>
+<translation id="3831054243924627613">This policy controls the initial state of Android backup and restore.
+
+      When this policy is not configured or set to <ph name="BR_DISABLED" />, Android backup and restore is initially disabled.
+
+      When this policy is set to <ph name="BR_ENABLED" />, Android backup and restore is initially enabled.
+
+      When this policy is set to <ph name="BR_UNDER_USER_CONTROL" />, the user is asked to choose whether to use Android backup and restore. If the user enables backup and restore, Android app data is uploaded to Android backup servers and restored from them upon app re-installations for compatible apps.
+
+      Note that this policy controls the state of Android backup and restore during initial setup only. The user can open Android settings afterwards and turn Android backup and restore on/off.</translation>
 <translation id="3831376478177535007">When this setting is enabled, <ph name="PRODUCT_NAME" /> allows certificates issued by Symantec Corporation's Legacy PKI operations to be trusted if they otherwise successfully validate and chain to a recognised CA certificate.
 
       Note that this policy depends on the operating system still recognising certificates from Symantec's legacy infrastructure. If an OS update changes the OS handling of such certificates, this policy no longer has effect. Further, this policy is intended as a temporary workaround to give enterprises more time to transition away from legacy Symantec certificates. This policy will be removed on or around 1 January 2019.
@@ -1489,6 +1557,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           A blacklist value of * means that all native messaging hosts are blacklisted and only native messaging hosts listed in the whitelist will be loaded.
 
           By default, all native messaging hosts are whitelisted, but if all native messaging hosts have been blacklisted by policy, the whitelist can be used to override that policy.</translation>
+<translation id="3835692988507803626">Force disable spellcheck languages</translation>
 <translation id="3837424079837455272">This policy controls whether new users can be added to <ph name="PRODUCT_OS_NAME" />. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> policy as part of <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
 <translation id="384743459174066962">Allows you to set a list of url patterns that specify sites which are not allowed to open pop-ups.
 
@@ -1537,7 +1606,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Setting this policy to disabled will allow the usage of SPDY.
 
       If this policy is left unset, SPDY will be available.</translation>
-<translation id="3890999316834333174">Quick unlock policies</translation>
 <translation id="3891357445869647828">Enable JavaScript</translation>
 <translation id="3895557476567727016">Configures the default directory that <ph name="PRODUCT_NAME" /> will use for downloading files.
 
@@ -1560,6 +1628,15 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If not set or set to False, then users will be able to transfer files to Google Drive.</translation>
 <translation id="3915395663995367577">URL to a proxy .pac file</translation>
+<translation id="3920892052017026701">Set battery charge custom start charging in per cent.
+
+          Battery starts charging when it depletes the battery charge custom start charging value.
+
+          DeviceBatteryChargeCustomStartCharging must be less than DeviceBatteryChargeCustomStopCharging.
+
+          This policy is only used if DeviceBatteryChargeMode is set to custom.
+
+          If this policy is not configured or left unset, the standard battery charge mode will be applied.</translation>
 <translation id="3925377537407648234">Set display resolution and scale factor</translation>
 <translation id="3939893074578116847">Send network packets to the management server to monitor online status, to allow
       the server to detect if the device is offline.
@@ -1588,6 +1665,29 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is set to true or left not set, users will be able to redeem offers through Chrome OS Registration.
 
       If this policy is set to false, user will not be able to redeem offers.</translation>
+<translation id="4008233182078913897">Specifies a list of apps and extensions that are installed silently,
+          without user interaction, and which cannot be uninstalled nor
+          disabled by the user. All permissions requested by the
+          apps/extensions are granted implicitly, without user interaction,
+          including any additional permissions requested by future versions of
+          the app/extension. Furthermore, permissions are granted for the
+          enterprise.deviceAttributes and enterprise.platformKeys extension
+          APIs. (These two APIs are not available to apps/extensions that are
+          not force-installed.)
+
+          This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME" />.
+
+          For Windows, instances that are not joined to a <ph name="MS_AD_NAME" /> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
+
+          Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> policy should be set.
+
+          Each list item of the policy is a string that contains an extension ID and, optionally, an 'update' URL separated by a semicolon (<ph name="SEMICOLON" />). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK" /> when in developer mode. The 'update' URL, if specified, should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1" />. By default, the Chrome Web Store's update URL is used (which currently is "https://clients2.google.com/service/update2/crx"). Note that the 'update' URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest. Note: Specifying the 'update' URL explicitly was mandatory in <ph name="PRODUCT_NAME" /> versions up to and including 67.
+
+          For example, <ph name="EXTENSION_POLICY_EXAMPLE" /> installs the extension with ID <ph name="EXTENSION_ID_SAMPLE" /> from the standard Chrome Web Store 'update' URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME" />.
+
+          Note that this policy doesn't apply to incognito mode.</translation>
 <translation id="4008507541867797979">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will show existing users on the login screen and allow to pick one.
 
       If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will not show existing users on the login screen. The normal sign-in screen (prompting for the user email and password or phone) or the SAML interstitial screen (if enabled via the <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> policy) will be shown, unless a Managed Session is configured. When a Managed Session is configured, only the Managed Session accounts will be shown, allowing to pick one of them.
@@ -1599,6 +1699,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       <ph name="PRODUCT_OS_NAME" /> devices automatically check for updates when this setting is not configured or set to False.
 
       Warning: It is recommended to keep auto-updates enabled so that users receive software updates and critical security fixes. Turning off auto-updates might leave users at risk.</translation>
+<translation id="4018000735882846261">This policy gives Google Assistant permission to listen for the voice activation phrase.
+
+      If the policy is enabled, Google Assistant would listen for the voice activation phrase.
+      If the policy is disabled, Google Assistant would not listen for the voice activation phrase.
+      If the policy is not set, Google Assistant would not listen for the voice activation phrase.
+      </translation>
 <translation id="4020682745012723568">Cookies transferred to the user's profile are not accessible to Android apps.</translation>
 <translation id="402759845255257575">Do not allow any site to run JavaScript</translation>
 <translation id="4027608872760987929">Enable the default search provider</translation>
@@ -1606,13 +1712,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           Typically this is disabled as a phishing defence. If this policy is not set, this is disabled and third-party sub-content will not be allowed to pop up a HTTP Basic Auth dialogue box.</translation>
 <translation id="4056910949759281379">Disable SPDY protocol</translation>
-<translation id="4059515172917655545">This policy controls the availability of Google Location services.
-
-      When this policy is not configured or set to <ph name="GLS_DISABLED" />, Google Location services are disabled and cannot be facilitated by the user.
-
-      When this policy is set to <ph name="GLS_UNDER_USER_CONTROL" />, the user is asked to choose whether they want to use Google Location services. This will allow Android apps to use the services to query the device location, and will also enable submitting of anonymous location data to Google.
-
-      Note: When the <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> policy is set to <ph name="BLOCK_GEOLOCATION_SETTING" />, this policy is ignored and Google Location services are always disabled.</translation>
 <translation id="408029843066770167">Allow queries to a Google time service</translation>
 <translation id="408076456549153854">Enable browser sign-in</translation>
 <translation id="4088589230932595924">Incognito mode forced.</translation>
@@ -1629,6 +1728,13 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           When this policy is unset, a default length of time is used.
 
           The policy value should be specified in milliseconds.</translation>
+<translation id="4105884561459127998">Configures the type of authentication for SAML logins.
+
+      When this policy is unset or set to Default (value 0), the behaviour of SAML logins is determined by the browser depending on other factors. In the most basic scenario, the user authentication and the protection of the cached user data are based on passwords manually entered by users.
+
+      When this policy is set to ClientCertificate (value 1), client certificate authentication is used for newly added users which log in via SAML. No passwords are used for such users, and their cached local data is protected using corresponding cryptographic keys. For instance, this setting allows configuring smart card-based user authentication (note that smart card middleware apps have to be installed via the DeviceLoginScreenExtensions policy).
+
+      This policy affects only users who authenticate using SAML.</translation>
 <translation id="4105989332710272578">Disable Certificate Transparency enforcement for a list of URLs</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
 <translation id="4125606414556046117">This policy allows you to configure the wallpaper image that is shown on the desktop and on the login screen background for the user. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME" /> can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, and its file size must not exceed 16 MB. The URL must be accessible without any authentication.
@@ -1657,9 +1763,34 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If the policy is left not set, the user can choose an image to be shown on the desktop and on the login screen background.</translation>
 <translation id="412697421478384751">Enable users to set weak PINs for the lock screen PIN</translation>
 <translation id="4138655880188755661">Time Limit</translation>
+<translation id="4144164749344898721">This policy controls multiple settings for the power management strategy when the user becomes idle.
+
+          There are four types of action:
+          * The screen will be dimmed if the user remains idle for the time specified by |ScreenDim|.
+          * The screen will be turned off if the user remains idle for the time specified by |ScreenOff|.
+          * A warning dialogue will be shown if the user remains idle for the time specified by |IdleWarning|, telling the user that the idle action is about to be taken. The warning message is only shown if the idle action is to log out or shut down.
+          * The action specified by |IdleAction| will be taken if the user remains idle for the time specified by |Idle|.
+
+          For each of above actions, the delay should be specified in milliseconds, and needs to be set to a value greater than zero to trigger the corresponding action. In case the delay is set to zero, <ph name="PRODUCT_OS_NAME" /> will not take the corresponding action.
+
+          For each of the above delays, when the length of time is unset, a default value will be used.
+
+          Note that |ScreenDim| values will be clamped to be less than or equal to |ScreenOff|, |ScreenOff| and |IdleWarning| will be clamped to be less than or equal to |Idle|.
+
+          |IdleAction| can be one of four possible actions:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          When the |IdleAction| is unset, the default action is taken, which is suspend.
+
+          There are also separate settings for AC power and battery.
+          </translation>
 <translation id="4150201353443180367">Display</translation>
 <translation id="4157003184375321727">Report OS and firmware version</translation>
 <translation id="4157594634940419685">Allow access to native CUPS printers</translation>
+<translation id="4160962198980004898">Device MAC address source when docked</translation>
 <translation id="4163705126749612234">Configures the required client domain names that will be imposed on remote access clients and prevents users from changing it.
 
           If this setting is enabled, then only clients from one of the specified domains can connect to the host.
@@ -1671,6 +1802,10 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           See also RemoteAccessHostDomainList.</translation>
 <translation id="4183229833636799228">Default <ph name="FLASH_PLUGIN_NAME" /> setting</translation>
 <translation id="4192388905594723944">URL for validating remote access client authentication token</translation>
+<translation id="4197038214024763371">If this policy is not set or enabled, the user is allowed to use spellcheck.
+
+      If this policy is disabled, the user is not allowed to use spellcheck. The SpellcheckLanguage and SpellcheckLanguageBlacklist policies will also be ignored when this policy is disabled.
+      </translation>
 <translation id="4203389617541558220">Limit the device uptime by scheduling automatic reboots.
 
       When this policy is set, it specifies the length of device uptime after which an automatic reboot is scheduled.
@@ -1722,7 +1857,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is optional. If not set, image search request will be sent using the GET method.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
-<translation id="427706009709857238">"Allow Google Assistant to listen for the voice activation phrase"</translation>
 <translation id="4285674129118156176">Allow unaffiliated users to use ARC</translation>
 <translation id="4298509794364745131">Specifies list of apps that can be enabled as a note-taking app on the <ph name="PRODUCT_OS_NAME" /> lock screen.
 
@@ -1734,10 +1868,19 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Note that the policy containing an app ID does not necessarily mean that the user will be able to enable the app as a note-taking app on the lock screen - for example, on Chrome 61, the set of available apps is additionally restricted by the platform.
 
       If the policy is left unset, there will be no restrictions on the set of apps the user can enable on the lock screen imposed by the policy.</translation>
-<translation id="4309640770189628899">Whether DHE cipher suites in TLS are enabled</translation>
+<translation id="4313767483634435271">Device's designated dock MAC address</translation>
 <translation id="4322842393287974810">Allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME" /> version</translation>
 <translation id="4325690621216251241">Add a logout button to the system tray</translation>
 <translation id="4332177773549877617">Log events for Android app installs</translation>
+<translation id="4335292026668105285">Specifies the length of time without user input after which a warning dialogue is shown when running on AC power.
+
+          When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> shows a warning dialogue telling the user that the idle action is about to be taken.
+
+          When this policy is unset, no warning dialogue is shown.
+
+          The policy value should be specified in milliseconds. Values are clamped to be less than or equal to the idle delay.
+
+          The warning message is only shown if the idle action is to log out or shut down.</translation>
 <translation id="4346674324214534449">Allows you to set whether ads should be blocked on sites with intrusive ads.
 
       If this policy is set to 2, ads will be blocked on sites with intrusive ads.
@@ -1757,6 +1900,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4360826270668210664">If this policy is set, the remote access host will require authenticating clients to obtain an authentication token from this URL in order to connect. Must be used in conjunction with RemoteAccessHostTokenValidationUrl.
 
           This feature is currently disabled server-side.</translation>
+<translation id="4363057787588706121">Allow merging list policies from different sources</translation>
 <translation id="436581050240847513">Report device network interfaces</translation>
 <translation id="4372704773119750918">Do not allow enterprise user to be part of multiprofile (primary or secondary)</translation>
 <translation id="4377599627073874279">Allow all sites to show all images</translation>
@@ -1791,6 +1935,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       While the policy itself is supported on the above platforms, the feature that it is enabling may be available on fewer platforms. Not all deprecated Web Platform features can be re-enabled. Only the ones explicitly listed below can be for a limited period of time, which is different per feature. The general format of the string tag will be [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. As reference, you can find the intent behind the Web Platform feature changes at https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Enable lock when the device become idle or suspended</translation>
+<translation id="4449469846627734399">Set power peak shift day config</translation>
 <translation id="4449545651113180484">Rotate screen clockwise by 270 degrees</translation>
 <translation id="445270821089253489">Controls what kind of user and device information is reported.</translation>
 <translation id="4454820008017317557">Show the <ph name="PRODUCT_NAME" /> toolbar icon</translation>
@@ -1837,14 +1982,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4534500438517478692">Android restriction name:</translation>
 <translation id="4541530620466526913">Device-local accounts</translation>
 <translation id="4543502256674577024">Device update settings</translation>
-<translation id="4544079461524242527">Configures extension management settings for <ph name="PRODUCT_NAME" />.
-
-          This policy controls multiple settings, including settings controlled by any existing extension-related policies. This policy will override any legacy policies if both are set.
-
-          This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID <ph name="DEFAULT_SCOPE" />, which will apply to all extensions that don't have a custom configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          For a full description of possible settings and structure of this policy please visit https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">User policy loopback processing mode</translation>
 <translation id="4554841826517980623">This policy controls whether the Network File Shares feature for <ph name="PRODUCT_NAME" /> should use the <ph name="NETBIOS_PROTOCOL" /> to discover shares on the network.
       When this policy is set to True, share discovery will use the <ph name="NETBIOS_PROTOCOL" /> protocol to discover shares on the network.
@@ -1862,17 +1999,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4613508646038788144">If the policy is set to false then third-party software will be allowed to inject executable code into Chrome's processes. If the policy is unset or set to true then third-party software will be prevented from injecting executable code into Chrome's processes.</translation>
 <translation id="4617338332148204752">Skip the meta tag check in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configure extension installation whitelist</translation>
-<translation id="463224920692183755">Specifies the action that should be taken when the user's home directory was created with ecryptfs encryption and needs to transition to ext4 encryption.
-
-      If you set this policy to 'DisallowArc', Android apps will be disabled for the user and no migration from ecryptfs to ext4 encryption will be performed. Android apps will not be prevented from running when the home directory is already ext4-encrypted.
-
-      If you set this policy to 'Migrate', ecryptfs-encrypted home directories will be automatically migrated to ext4 encryption on sign-in without asking for user consent.
-
-      If you set this policy to 'Wipe', ecryptfs-encrypted home directories will be deleted on sign-in and new ext4-encrypted home directories will be created instead. Warning: This removes the user's local data.
-
-      If you set this policy to 'AskUser', users with ecryptfs-encrypted home directories will be offered to migrate.
-
-      This policy does not apply to kiosk users. If this policy is left not set, the device will behave as if 'DisallowArc' was chosen.</translation>
 <translation id="4632343302005518762">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the listed content types</translation>
 <translation id="4632566332417930481">Disallow usage of the Developer Tools on extensions installed by enterprise policy; allow usage of the Developer Tools in other contexts</translation>
 <translation id="4633786464238689684">Changes the default behaviour of the top row keys to function keys.
@@ -1944,26 +2070,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4802905909524200151">Configure <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update behaviour</translation>
 <translation id="4804828344300125154">Always reboot on user sign-out.</translation>
 <translation id="4807950475297505572">Least recently used users are removed until there is enough free space</translation>
-<translation id="4815725774537609998">This policy is deprecated, use ProxyMode instead.
-
-          Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
-
-          If you choose to never use a proxy server and always connect directly, all other options are ignored.
-
-          If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
-
-          If you choose manual proxy settings, you can specify further options in 'Address or URL of proxy server', 'URL to a proxy .pac file' and 'Comma-separated list of proxy bypass rules'. Only the HTTP proxy server with the highest priority is available for ARC-apps.
-
-          For detailed examples, visit:
-          <ph name="PROXY_HELP_URL" />.
-
-          If you enable this setting, <ph name="PRODUCT_NAME" /> ignores all proxy-related options specified from the command line.
-
-          Leaving this policy unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="4816674326202173458">Allow enterprise user to be both primary and secondary  (Default behaviour for non-managed users)</translation>
 <translation id="4826326557828204741">Action to take when the idle delay is reached while running on battery power</translation>
 <translation id="4832852360828533362">User and device reporting</translation>
 <translation id="4834526953114077364">Least recently used users who have not logged in within the last 3 months are removed until there is enough free space</translation>
+<translation id="4835622243021053389">Enable NTLMv2 authentication.</translation>
 <translation id="4858735034935305895">Allow fullscreen mode</translation>
 <translation id="4861767323695239729">Configure the allowed input methods in a user session</translation>
 <translation id="487460824085252184">Migrate automatically, don’t ask for user consent.</translation>
@@ -1998,17 +2109,47 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4983201894483989687">Allow running plug-ins that are outdated</translation>
 <translation id="4986560318567565414">Path to Chrome for switching from the alternative browser.</translation>
 <translation id="4988291787868618635">Action to take when the idle delay is reached</translation>
-<translation id="4995548127349206948">Whether NTLMv2 authentication is enabled.</translation>
+<translation id="5034604678285451405">Set power peak shift battery threshold in per cent.
+
+          This policy is only used if DevicePowerPeakShiftEnabled is set to true.
+
+          If this policy is not configured or left unset, power peak shift will always be disabled.</translation>
 <translation id="5047604665028708335">Allow access to sites outside of content packs</translation>
 <translation id="5052081091120171147">This policy forces the browsing history to be imported from the current default browser, if enabled. If enabled, this policy also affects the import dialogue.
 
       If disabled, no browsing history is imported.
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
+<translation id="5055312535952606505">Configures the proxy settings for <ph name="PRODUCT_NAME" />. These proxy settings will be available for ARC apps too.
+
+          If you enable this setting, <ph name="PRODUCT_NAME" /> and ARC apps ignore all proxy-related options specified from the command line.
+
+          Leaving this policy not set will allow the users to choose the proxy settings on their own.
+
+          If the <ph name="PROXY_SETTINGS_POLICY_NAME" /> policy is set, it will override any of the individual policies <ph name="PROXY_MODE_POLICY_NAME" />, <ph name="PROXY_PAC_URL_POLICY_NAME" />, <ph name="PROXY_SERVER_POLICY_NAME" />, <ph name="PROXY_BYPASS_POLICY_NAME" /> and <ph name="PROXY_SERVER_MODE_POLICY_NAME" />.
+
+          The <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> field allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
+
+          The <ph name="PROXY_PAC_URL_PROXY_SETTINGS_FIELD" /> field is a URL to a proxy .pac file.
+
+          The <ph name="PROXY_SERVER_PROXY_SETTINGS_FIELD" /> field is a URL of the proxy server.
+
+          The <ph name="PROXY_BYPASS_LIST_PROXY_SETTINGS_FIELD" /> field is a list of proxy hosts that <ph name="PRODUCT_NAME" /> will bypass.
+
+          The <ph name="PROXY_SERVER_MODE_PROXY_SETTINGS_FIELD" /> field is deprecated in favour of the field 'ProxyMode'. It allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
+
+          If you choose the value 'direct' as 'ProxyMode', a proxy will never be used and all other fields will be ignored.
+
+          If you choose the value 'system' as 'ProxyMode', the systems's proxy will be used and all other fields will be ignored.
+
+          If you choose the value 'auto_detect' as 'ProxyMode', all other fields will be ignored.
+
+          If you choose the value 'fixed_server' as 'ProxyMode', the 'ProxyServer' and 'ProxyBypassList' fields will be used.
+
+          If you choose the value 'pac_script' as 'ProxyMode', the 'ProxyPacUrl' and 'ProxyBypassList' fields will be used.</translation>
 <translation id="5056708224511062314">Screen magnifier disabled</translation>
 <translation id="5058573563327660283">Select the strategy used to free up disk space during automatic clean-up (deprecated)</translation>
 <translation id="5067143124345820993">Login user white list</translation>
-<translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> cloud policy overrides Machine policy.</translation>
 <translation id="5075834892754086022">If the policy is set, the configured minimal PIN length is enforced. (The absolute minimum PIN length is 1; values less than 1 are treated as 1.)
 
           If the policy is not set, a minimal PIN length of 6 digits is enforced. This is the recommended minimum.</translation>
@@ -2052,7 +2193,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       When this policy is set, each item is treated as a rule, similar to the <ph name="URL_LIST_POLICY_NAME" /> policy. However, the logic is reversed: rules that match will not open an alternative browser.
 
       Unlike <ph name="URL_LIST_POLICY_NAME" />, rules apply to both directions. That is, when the Internet Explorer add-in is present and enabled, it also controls whether <ph name="IE_PRODUCT_NAME" /> should open these URLs in <ph name="PRODUCT_NAME" />.</translation>
-<translation id="5130288486815037971">Whether RC4 cipher suites in TLS are enabled</translation>
+<translation id="5124368997194894978">Enable boot on AC (alternating current)</translation>
+<translation id="5131211790949066746">Enables merging of the extension install list policies <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> and <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
+
+      If you enable this setting, the values from machine platform policy, machine cloud policy and user platform policy are merged into a single list and used as a whole instead of only using the values from the single source with highest priority.
+
+      If you disable this setting or leave it unset, only list entries from the highest priority source are taken and all other sources are shown as conflicts but ignored.</translation>
 <translation id="5141670636904227950">Set the default screen magnifier type enabled on the login screen</translation>
 <translation id="5142301680741828703">Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Allows you to specify additional parameters that are used when <ph name="PRODUCT_FRAME_NAME" /> launches <ph name="PRODUCT_NAME" />.
@@ -2064,6 +2210,24 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       interval is 30 seconds and the maximum interval is 24 hours – values
       outside of this range will be clamped to this range.</translation>
 <translation id="5163002264923337812">Enable the old web-based sign-in flow</translation>
+<translation id="5168529971295111207">This policy is deprecated, use ProxyMode instead.
+
+          Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
+
+          This policy only takes effect if the <ph name="PROXY_SETTINGS_POLICY_NAME" /> policy has not been specified.
+
+          If you choose to never use a proxy server and always connect directly, all other options are ignored.
+
+          If you choose to use system proxy settings or auto-detect the proxy server, all other options are ignored.
+
+          If you choose manual proxy settings, you can specify further options in 'Address or URL of proxy server', 'URL to a proxy .pac file' and 'Comma-separated list of proxy bypass rules'. Only the HTTP proxy server with the highest priority is available for ARC-apps.
+
+          For detailed examples, visit:
+          <ph name="PROXY_HELP_URL" />.
+
+          If you enable this setting, <ph name="PRODUCT_NAME" /> ignores all proxy-related options specified from the command line.
+
+          Leaving this policy not set will allow the users to choose the proxy settings on their own.</translation>
 <translation id="5182055907976889880">Configure Google Drive in <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5183383917553127163">Allows you to specify which extensions are not subject to the blacklist.
 
@@ -2158,13 +2322,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If the policy is not set, or if it is set to the empty string or an invalid port range, WebRTC is allowed to use any available local UDP port.</translation>
 <translation id="5290940294294002042">Specify a list of plug-ins that the user can enable or disable</translation>
-<translation id="5304269353650269372">Specifies the length of time without user input after which a warning dialogue is shown when running on battery power.
-
-          When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> shows a warning dialogue telling the user that the idle action is about to be taken.
-
-          When this policy is unset, no warning dialogue is shown.
-
-          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.</translation>
+<translation id="5306186200045823863">Enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="5307432759655324440">Incognito mode availability</translation>
 <translation id="5318185076587284965">Enable the use of relay servers by the remote access host</translation>
 <translation id="5323128137188992869">Allow content to be cast to the device using <ph name="PRODUCT_NAME" />.
@@ -2176,6 +2334,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       Otherwise it may be set to one of the following values: 'tls1.2' or 'tls1.3'. When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions greater than the specified version. An unrecognised value will be ignored.</translation>
 <translation id="5330684698007383292">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the following content types</translation>
+<translation id="5331746669335642668"><ph name="PRODUCT_NAME" /> cloud policy overrides Platform policy.</translation>
 <translation id="5365476955714838841">Command-line parameters for the alternative browser.</translation>
 <translation id="5365946944967967336">Show Home button on the toolbar</translation>
 <translation id="5366745336748853475">Allows you to specify a list of URL patterns that specify sites for which a client certificate is automatically selected on the sign-in screen in the frame hosting the SAML flow, if the site requests a certificate. An example usage is to configure a device-wide certificate to be presented to the SAML IdP.
@@ -2245,6 +2404,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="5457065417344056871">Enable guest mode in browser</translation>
 <translation id="5457924070961220141">Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME" /> is installed.
           The default setting used when this policy is left unset is to allow the host browser do the rendering, but you can optionally override this and have <ph name="PRODUCT_FRAME_NAME" /> render HTML pages by default.</translation>
+<translation id="5458584148602890023">Enable power peak shift</translation>
 <translation id="5464816904705580310">Configure settings for managed users.</translation>
 <translation id="546726650689747237">Screen dim delay when running on AC power</translation>
 <translation id="5469143988693423708">User is enabled to run Crostini</translation>
@@ -2262,6 +2422,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If rules contradict each other, <ph name="PRODUCT_NAME" /> uses the most specific rule.</translation>
 <translation id="5475361623548884387">Enable printing</translation>
 <translation id="547601067149622666">Do not allow ads on sites with intrusive ads</translation>
+<translation id="5483065054530244863">Allow SHA-1 signed certificates issued by local trust anchors</translation>
 <translation id="5483777239978559943">This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> to control the availability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> to control whether the integrated PDF viewer should be used for opening PDF files.
 
       Specifies a list of plugins that user can enable or disable in <ph name="PRODUCT_NAME" />.
@@ -2378,6 +2539,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If you enable or do not set this policy, users can view their passwords in clear text in the password manager.</translation>
 <translation id="5620392548325769024">Enable showing the welcome page on the first browser launch following OS upgrade</translation>
 <translation id="5630352020869108293">Restore the last session</translation>
+<translation id="5643906875497889108">Controls which app/extension types are allowed to be installed and limits runtime access.
+
+          This setting white-lists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME" /> and which hosts they can interact with. The value is a list of strings, each of which should be one of the following: 'extension', 'theme', 'user_script', 'hosted_app', 'legacy_packaged_app', 'platform_app'. See the <ph name="PRODUCT_NAME" /> extensions documentation for more information on these types.
+
+          Note that this policy also affects extensions and apps to be force-installed via ExtensionInstallForcelist.
+
+          If this setting is configured, extensions/apps which have a type that is not on the list will not be installed.
+
+          If this setting is left unconfigured, no restrictions on the acceptable extension/app types are enforced.
+
+          Prior to version 75 using multiple comma-separated extension IDs is not supported and will be skipped. The rest of the policy will continue to apply.</translation>
 <translation id="5645779841392247734">Allow cookies on these sites</translation>
 <translation id="5689430183304951538">Default printing page size</translation>
 <translation id="5693469654327063861">Allow data migration</translation>
@@ -2417,6 +2589,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="5765780083710877561">Description:</translation>
 <translation id="5770738360657678870">Dev channel (may be unstable)</translation>
 <translation id="5774856474228476867">Default search provider search URL</translation>
+<translation id="5775235485119094648">Charge battery while it is within a fixed range.</translation>
 <translation id="5776485039795852974">Ask every time a site wants to show desktop notifications</translation>
 <translation id="5781412041848781654">Specifies which GSSAPI library to use for HTTP authentication. You can set either just a library name or a full path.
 
@@ -2484,6 +2657,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="5893553533827140852">If this setting is enabled, then gnubby authentication requests will be proxied across a remote host connection.
 
           If this setting is disabled or not configured, gnubby authentication requests will not be proxied.</translation>
+<translation id="5897913798715600338">Charge battery using fast charging technology.</translation>
 <translation id="5898486742390981550">When multiple users are logged in, only the primary user can use Android apps.</translation>
 <translation id="5900196529149231477">
       This policy applies to the sign-in screen. Please see also the <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
@@ -2492,12 +2666,20 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
       </translation>
 <translation id="5901427587865226597">Duplex printing only</translation>
+<translation id="5903898512448364160">
+      If the policy is set to true, cloud policy takes precedence if it conflicts with platform policy.
+      If the policy is set to false or not configured, platform policy takes precedence if it conflicts with cloud policy.
+
+      This policy is only available as a mandatory machine platform policy and it only affects machine scope cloud policies.
+      </translation>
+<translation id="5905473632148429217">Enable online OCSP/CRL checks</translation>
 <translation id="5906199912611534122">Allows enabling or disabling network throttling.
       This applies to all users, and to all interfaces on the device. Once set,
       the throttling persists until the policy is changed to disable it.
 
       If set to false, there is no throttling.
       If set to true, the system is throttled to achieve the provided upload and download rates (in kbits/s).</translation>
+<translation id="591088232153082363">Adaptive charge battery based on battery usage pattern.</translation>
 <translation id="5921713479449475707">Allow autoupdate downloads via HTTP</translation>
 <translation id="5921888683953999946">Set the default state of the large cursor accessibility feature on the login screen.
 
@@ -2516,9 +2698,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If you disable this setting or do not set a value, SafeSearch in Google Search is not enforced.</translation>
 <translation id="5946082169633555022">Beta channel</translation>
+<translation id="5946329690214660966">Set custom schedule to check for updates</translation>
 <translation id="5950205771952201658">In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME" /> version 19 and later. By setting this policy to true, the previous behaviour is restored and online OCSP/CRL checks will be performed.
 
       If the policy is not set, or is set to false, then <ph name="PRODUCT_NAME" /> will not perform online revocation checks in <ph name="PRODUCT_NAME" /> 19 and later.</translation>
+<translation id="5961137303188584693">Device's built-in NIC MAC address</translation>
 <translation id="5966615072639944554">Extensions allowed to to use the remote attestation API</translation>
 <translation id="5983708779415553259">Default behaviour for sites not in any content pack</translation>
 <translation id="5997543603646547632">Use 24 hour clock by default</translation>
@@ -2581,6 +2765,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="6034341625190551415">Controls public session and kiosk account types.</translation>
 <translation id="6034603289689965535">Allows a page to show pop-ups during its unloading</translation>
 <translation id="6036523166753287175">Enable firewall traversal from remote access host</translation>
+<translation id="605475635122964053">Restricts PIN printing mode. Unset policy is treated as no restriction. If the mode is unavailable this policy is ignored. Note that PIN printing feature is enabled only for printers that use one of IPPS, USB or IPP-over-USB protocols </translation>
 <translation id="6070667616071269965">Device sign-in screen keyboard layouts</translation>
 <translation id="6074963268421707432">Do not allow any site to show desktop notifications</translation>
 <translation id="6074964551275531965">Set the time period for update notifications</translation>
@@ -2588,6 +2773,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is not configured, the list of a detachable USB devices is empty.</translation>
 <translation id="6083631234867522991">Windows (Windows clients):</translation>
+<translation id="608788685013546076">Set power peak shift battery threshold in per cent</translation>
 <translation id="6089679180657323464">Controls wilco diagnostics and telemetry controller settings.</translation>
 <translation id="6091233616732024397">Force users to sign-in to use the browser</translation>
 <translation id="6093156968240188330">Allow remote users to interact with elevated windows in remote assistance sessions</translation>
@@ -2608,6 +2794,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="6111936128861357925">Allow Dinosaur Easter Egg Game</translation>
 <translation id="6114416803310251055">deprecated</translation>
 <translation id="6133088669883929098">Allow all sites to use key generation</translation>
+<translation id="6136537398661737682">This policy controls the initial state of Google location services.
+
+      When this policy is not configured or set to <ph name="GLS_DISABLED" />, Google location services are initially disabled.
+
+      When this policy is set to <ph name="GLS_ENABLED" />, Google location services are initially enabled.
+
+      When this policy is set to <ph name="GLS_UNDER_USER_CONTROL" />, the user is asked to choose whether to use Google location services. This will allow Android apps to use the services to query the device location, and also will enable submitting of anonymous location data to Google.
+
+      Note that this policy controls the state of Google location services during initial setup only. The user can open Android settings afterwards and turn Google location services on/off.
+
+      Note that this policy is ignored and Google location services are always disabled when the <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> policy is set to <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="6141402445226505817">Always use coarse timezone detection</translation>
 <translation id="6145799962557135888">Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
 
@@ -2648,6 +2845,14 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="6155936611791017817">Set default state of the large cursor on the login screen</translation>
 <translation id="6157537876488211233">Comma-separated list of proxy bypass rules</translation>
 <translation id="6158324314836466367">Enterprise web store name (deprecated)</translation>
+<translation id="6158817306788002298">You can specify a URL to a proxy .pac file here.
+
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings' and if the <ph name="PROXY_SETTINGS_POLICY_NAME" /> policy has not been specified.
+
+          You should leave this policy not set if you have selected any other mode for setting proxy policies.
+
+          For detailed examples, visit:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="6178075938488052838">This policy controls who may start a <ph name="PRODUCT_OS_NAME" /> session. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> policy as part of <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
 <translation id="6181608880636987460">Allows you to set a list of URL patterns that specify sites which are not allowed to run the <ph name="FLASH_PLUGIN_NAME" /> plug-in.
 
@@ -2675,14 +2880,33 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If disabled, the auto-fill form data is not imported.
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
+<translation id="6221175752766085998">Allow certificates issued by local trust anchors without subjectAlternativeName extension</translation>
 <translation id="6224304369267200483">URLs/domains automatically permitted direct Security Key attestation</translation>
 <translation id="6233173491898450179">Set download directory</translation>
 <translation id="6244210204546589761">URLs to open on start-up</translation>
+<translation id="6255387031094435995">Allows the selected policies to be merged when they come from different sources, with the same scopes and level.
+
+        If a policy is in the list, in case there is conflict between two sources, given that they have the same scopes and level, the values will be merged into a new policy list.
+
+        If a policy is in the list, in case there is conflict between two sources but also between different scopes and/or level, the policy with the highest priority will be applied.
+
+        If a policy is not in the list, in case there is any conflict between sources, scopes and/or level, the policy with the highest priority will be applied.</translation>
 <translation id="6258193603492867656">Specifies whether the generated Kerberos SPN should include a non-standard port. If you enable this setting, and a non-standard port (i.e. a port other than 80 or 443) is entered, it will be included in the generated Kerberos SPN. If you disable this setting, the generated Kerberos SPN will not include a port in any case.</translation>
 <translation id="6261643884958898336">Report machine identification information</translation>
 <translation id="6281043242780654992">Configures policies for Native Messaging. Blacklisted native messaging hosts won't be allowed unless they are whitelisted.</translation>
 <translation id="6282799760374509080">Allow or deny audio capture</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6306608379445125648">Force-disables spellcheck languages. Unrecognised languages in that list will be ignored.
+
+      If you enable this policy, spellcheck will be disabled for the languages specified. The user can still enable or disable spellcheck for languages not in the list.
+
+      If you do not set this policy, or disable it, there will be no change to the user's spellcheck preferences.
+
+      If the SpellcheckEnabled policy is set to disabled, this policy will have no effect.
+
+      If a language is included in both this policy and the SpellcheckLanguage policy, the SpellcheckLanguage policy is prioritised and the spellcheck language will be enabled.
+
+      The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Enable domain name autocomplete during user sign in</translation>
 <translation id="6315673513957120120">Chrome shows a warning page when users navigate to sites that have SSL errors. By default or when this policy is set to true, users are allowed to click through these warning pages.
       Setting this policy to false disallows users to click through any warning page.</translation>
@@ -2696,7 +2920,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is optional. If not set, search request will be sent using the GET method.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
-<translation id="6367755442345892511">Whether the release channel should be configurable by the user</translation>
 <translation id="6368011194414932347">Configure the home page URL</translation>
 <translation id="6368403635025849609">Allow JavaScript on these sites</translation>
 <translation id="6376659517206731212">Can Be Mandatory</translation>
@@ -2816,6 +3039,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this policy is left not set, '3' will be used, and the user will be able to change it.</translation>
 <translation id="663685822663765995">Restrict printing colour mode</translation>
 <translation id="6641981670621198190">Disable support for 3D graphics APIs</translation>
+<translation id="6646056064606561298">Enable the boot on AC power management policy.
+
+          Boot on AC provides an opportunity for system to automatically boot up from OFF/Hibernate state when line power is inserted.
+
+          If this policy is set to true then boot on AC will always be enabled if supported on the device.
+
+          If this policy is set to false, boot on AC will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, boot on AC is disabled and cannot be enabled by the user.</translation>
 <translation id="6647965994887675196">If set to true, supervised users can be created and used.
 
           If set to false or not configured, supervised-user creation and login will be disabled. All existing supervised users will be hidden.
@@ -2851,18 +3085,10 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       In case signing in to a different account shouldn't be allowed via the Incognito mode, consider blocking that mode using the IncognitoModeAvailability policy.
 
       Note that users will be able to access Google services in an unauthenticated state by blocking their cookies.</translation>
-<translation id="6738326937072482736">Configures availability and behaviour of <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update functionality.
-
-      Individual settings can be specified in JSON properties:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, users will be able to trigger the powerwash flow to install a <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, users will be able to invoke the <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update flow that preserves device-wide state (including enterprise enrolment), but loses user data. This update flow is available starting from version 68.
-
-      If the policy is not set, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update functionality will not be available.</translation>
 <translation id="6757438632136860443">Allows you to set a list of URL patterns that specify sites which are allowed to run the <ph name="FLASH_PLUGIN_NAME" /> plug-in.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.</translation>
+<translation id="6757613329154374267">Backup and restore enabled</translation>
 <translation id="6762235610019366960">Allows you to control the presentation of full-tab promotional and/or educational content in <ph name="PRODUCT_NAME" />.
 
       If not configured or enabled (set to true), <ph name="PRODUCT_NAME" /> may show full-tab content to users to provide product information.
@@ -2885,6 +3111,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       The string can contain variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
 
       If this policy is not set, or the value after substitution is not a valid hostname, no hostname will be set in DHCP request. </translation>
+<translation id="6833988859168635883">Startup, Home page and New Tab page</translation>
 <translation id="6835883744948188639">Show a recurring prompt to the user indicating that a relaunch is recommended</translation>
 <translation id="6837480141980366278">Controls whether the built-in DNS client is used in <ph name="PRODUCT_NAME" />.
 
@@ -2998,7 +3225,19 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       When the screen is about to be dimmed, the smart dim model evaluates if dimming the screen should be deferred. If the smart dim model defers dimming the screen, it effectively extends the time until the screen is dimmed. In this case, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
       If this policy is set to True or left not set, the smart dim model will be enabled and allowed to extend the time until the screen is dimmed. If this policy is set to False, the smart dim model will not influence screen dimming.</translation>
+<translation id="6967394885063085697">Enable the advanced battery charge mode power management policy.
+
+          Advanced Battery Charging Mode allows the user to maximise the battery health. In Advanced Charging Mode the system will use standard charging algorithm and other techniques during non-work hours to maximise battery health. During work hours, an express charge is used. This express charge allows the battery to be charged faster; therefore, the battery is at full charge sooner. For each day, the time in which the system will be most heavily used is specified by the start time and the duration.
+
+          If this policy is set to true, and DeviceAdvancedBatteryChargeModeDayConfig is set, then advanced battery charge mode will always be enabled if supported on the device.
+
+          If this policy is set to false, advanced battery charge mode will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, advanced battery charge mode is disabled and cannot be enabled by the user.</translation>
 <translation id="6972540544240464302">Select task scheduler configuration</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6994082778848658360">Specifies how the on-board secure element hardware can be used to provide a second-factor authentication if it is compatible with this feature. The machine power button is used to detect the user physical presence.
 
       If 'Disabled' is selected, no second factor is provided.
@@ -3006,7 +3245,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If 'U2F' is selected, the integrated second factor will behave according the FIDO U2F specification.
 
       If 'U2F_EXTENDED' is selected, the integrated second factor will provide the U2F functions plus some extensions for individual attestation.</translation>
-<translation id="6997592395211691850">Whether online OCSP/CRL checks are required for local trust anchors</translation>
 <translation id="7003334574344702284">This policy forces the saved passwords to be imported from the previous default browser, if enabled. If enabled, this policy also affects the import dialogue.
 
       If disabled, the saved passwords are not imported.
@@ -3075,6 +3313,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If you enable or disable this setting, users cannot change or override it.
 
       If the policy is left not set the user can choose whether they want to be asked for password to unlock the device or not.</translation>
+<translation id="7107148737865880402">Enable the USB power share power management policy.
+
+          Certain devices have a specific USB port marked with a lightning bolt or battery icon that can be used to charge devices like a mobile phone using the system battery. This policy affects the charging behaviour of this port while the system is in the sleep and shutdown modes. This policy does not affect the other USB ports and the charging behaviour while the system is awake.
+
+          When awake, the USB port will always provide power.
+
+          When sleeping, if this policy is set to true, then power will be supplied to the USB port when the device is plugged into the wall charger or if the battery level is &gt; 50%. Otherwise no power is supplied.
+
+          When shut down, if this policy is set to true, then power will be supplied to the USB port when the device is plugged into the wall charger. Otherwise no power is supplied.
+
+          If this policy is left unset, the policy is enabled and cannot be disabled by the user.</translation>
 <translation id="7115494316187648452">Determines whether a <ph name="PRODUCT_NAME" /> process is started on OS login and keeps running when the last browser window is closed, allowing background apps and the current browsing session to remain active, including any session cookies. The background process displays an icon in the system tray and can always be closed from there.
 
       If this policy is set to True, background mode is enabled and cannot be controlled by the user in the browser settings.
@@ -3125,6 +3374,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this policy is set to true or left not set, screen wake locks will be honoured for power management, unless AllowWakeLocks is set to false.
 
           If this policy is set to false, screen wake lock requests will be demoted to system wake lock requests.</translation>
+<translation id="7177857088692019405">Quick unlock</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Connection types allowed for updates</translation>
 <translation id="7194407337890404814">Default search provider name</translation>
@@ -3188,6 +3438,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="7273823081800296768">If this setting is enabled or not configured, then users can opt to pair clients and hosts at connection time, eliminating the need to enter a PIN every time.
 
           If this setting is disabled, then this feature will not be available.</translation>
+<translation id="7274077256421167535">Enable USB power share</translation>
 <translation id="7275334191706090484">Managed Bookmarks</translation>
 <translation id="7291084543582732020">If you enable this setting, users will be allowed to use Smart Lock if the requirements for the feature are satisfied.
 
@@ -3201,6 +3452,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="7302043767260300182">Screen lock delay when running on AC power</translation>
+<translation id="7305262223970835999">Enables a page for in-session change of password for SAML users.</translation>
 <translation id="7311458740754205918">If this is set to true or not set, the New Tab page may show content suggestions based on the user's browsing history, interests or location.
 
       If this is set to false, automatically-generated content suggestions are not shown on the New Tab page.</translation>
@@ -3241,9 +3493,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="7339315111520512972">Force networking code to run in the browser process</translation>
 <translation id="7340034977315324840">Report device activity times</translation>
 <translation id="7343497214039883642">Enterprise printer configuration file for devices</translation>
-<translation id="7349338075015720646">Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled or disabled by the user.
-
-      Each list item of the policy is an object with two members: 'url' and 'launch_container'. 'url' should be the URL of the web app to install and 'launch_container' should be either 'window' or 'tab' to indicate how the web app will be opened once installed. If 'launch_container' is omitted, the app will launch in a window if Chrome considers it a progressive web app, and in a tab otherwise.</translation>
 <translation id="735902178936442460">This policy controls whether to report information that can be used to identify machines, such as machine name and network addresses.
 
       When this policy is left unset or set to True, information that can be used to identify machines is gathered.
@@ -3262,15 +3511,10 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If the policy is not set or is set to false, then <ph name="TLS_FALSE_START" /> will be enabled. If it is set to true, <ph name="TLS_FALSE_START" /> will be disabled.</translation>
 <translation id="7433714841194914373">Enable Instant</translation>
 <translation id="7434202861148928348">Configure the required domain names for remote access clients</translation>
-<translation id="7443061725198440541">If this policy is not set or enabled, the user is allowed to use spellcheck.
-
-      If this policy is disabled, the user is not allowed to use spellcheck. The SpellcheckLanguage policy will also be ignored when this policy is disabled.
-      </translation>
 <translation id="7443616896860707393">Cross-origin HTTP Basic Auth prompts</translation>
 <translation id="7458437477941640506">Do not roll back to target version if OS version is newer than target. Updates are also disabled.</translation>
 <translation id="7464991223784276288">Limit cookies from matching URLs to the current session</translation>
 <translation id="7469554574977894907">Enable search suggestions</translation>
-<translation id="7474249562477552702">Whether SHA-1 signed certificates issued by local trust anchors are allowed</translation>
 <translation id="7485481791539008776">Default printer selection rules</translation>
 <translation id="7485730741952775732">If this policy is set, the remote access host will use this URL to validate authentication tokens from remote access clients, in order to accept connections. Must be used in conjunction with RemoteAccessHostTokenUrl.
 
@@ -3284,6 +3528,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is used, all printers are provided to the user except for the ids listed in this policy. The ids must correspond to the 'id' or 'guid' fields in the file specified in <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Enable support for Signed HTTP Exchange (SXG).
+
+          If this policy is unset or set to Enabled, Google Chrome will accept web contents served as Signed HTTP Exchanges.
+
+          If this policy is set to Disabled, Signed HTTP Exchanges cannot be loaded.</translation>
 <translation id="7511361072385293666">If this policy is set to true or not set usage of QUIC protocol in <ph name="PRODUCT_NAME" /> is allowed.
       If this policy is set to false usage of QUIC protocol is disallowed.</translation>
 <translation id="7517845714620372896">Specifies screen brightness per cent.
@@ -3330,6 +3579,15 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If the value of this policy is 0, the default cache size will be used but the user will not be able to change it.
 
       If this policy is not set, the default size will be used and the user will be able to override it with the --disk-cache-size flag.</translation>
+<translation id="759389052790680884">Set battery charge custom stop charging in per cent.
+
+          Battery stops charging when it reaches the battery charge custom stop charging value.
+
+          DeviceBatteryChargeCustomStartCharging must be less than DeviceBatteryChargeCustomStopCharging.
+
+          This policy is only used if DeviceBatteryChargeMode is set to custom.
+
+          If this policy is not configured or left unset, the standard battery charge mode will be applied.</translation>
 <translation id="759957074386651883">Safe Browsing settings</translation>
 <translation id="7604169113182304895">Android apps may voluntarily choose to honour this list. You cannot force them to honour it.</translation>
 <translation id="7612157962821894603">System wide flags to be applied on <ph name="PRODUCT_NAME" /> startup</translation>
@@ -3408,6 +3666,15 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="7712109699186360774">Ask every time a site wants to access the camera and/or microphone</translation>
 <translation id="7713608076604149344">Download restrictions</translation>
 <translation id="7715711044277116530">Percentage by which to scale the screen dim delay in presentation mode</translation>
+<translation id="7716781462866245042">Set advanced battery charge mode day config.
+
+          This policy is only used if DeviceAdvancedBatteryChargeModeEnabled is set to true.
+
+          If this policy is not configured or left unset, advanced battery charge mode will always be disabled.
+
+          Note: <ph name="CHARGE_START_TIME_FIELD_NAME" /> must be less than <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+
+          Note: allowed values for <ph name="MINUTE_FIELD_NAME" /> field in <ph name="CHARGE_START_TIME_FIELD_NAME" /> and <ph name="CHARGE_END_TIME_FIELD_NAME" /> are 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Configure <ph name="PRODUCT_OS_NAME" /> accessibility features.</translation>
 <translation id="7724994675283793633">This policy enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
 
@@ -3430,17 +3697,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       The recognised connection type identifiers are "ethernet", "wifi", "wimax", "bluetooth" and "cellular".</translation>
 <translation id="7763614521440615342">Show content suggestions on the New Tab page</translation>
 <translation id="7765879851993224640">Allow Smart Lock Sign-in to be used.</translation>
+<translation id="7772346342637974431">Specifies the length of time without user input after which a warning dialogue is shown when running on battery power.
+
+          When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> shows a warning dialogue telling the user that the idle action is about to be taken.
+
+          When this policy is unset, no warning dialogue is shown.
+
+          The policy value should be specified in milliseconds. Values are clamped to be less than or equal to the idle delay.
+
+          The warning message is only shown if the idle action is to log out or shut down.</translation>
 <translation id="7774768074957326919">Use system proxy settings</translation>
-<translation id="7775831859772431793">You can specify the URL of the proxy server here.
-
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
-
-          You should leave this policy not set if you have selected any other mode for setting proxy policies.
-
-          For more options and detailed examples, visit:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7777535871204167559">Treat external storage devices as read-only</translation>
-<translation id="7781069478569868053">New Tab Page</translation>
 <translation id="7788511847830146438">Per Profile</translation>
 <translation id="780603170519840350">Disables enforcing Certificate Transparency requirements for a list of subjectPublicKeyInfo hashes.
 
@@ -3468,7 +3735,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       Leaving this policy not set will make <ph name="PRODUCT_NAME" /> use the default value of 5,000 milliseconds.</translation>
 <translation id="7841880500990419427">Minimum TLS version to fallback to</translation>
-<translation id="7842869978353666042">Configure Google Drive options</translation>
 <translation id="7858404742201086014">If you enable this setting, outdated plugins are used as normal plugins.
 
       If you disable this setting, outdated plugins will not be used and users will not be asked for permission to run them.
@@ -3482,26 +3748,25 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the DeviceAppPack policy.</translation>
 <translation id="7882857838942884046">Disabling Google Sync will cause Android Backup and Restore to not function properly.</translation>
 <translation id="7882890448959833986">Suppress the unsupported OS warning</translation>
+<translation id="7895553628261067384">Remote access</translation>
 <translation id="7902255855035461275">Patterns in this list will be matched against the security
       origin of the requesting URL. If a match is found, access to video
       capture devices will be granted without prompt.
 
       NOTE: Until version 45, this policy was only supported in Kiosk mode.</translation>
 <translation id="7912255076272890813">Configure allowed app/extension types</translation>
-<translation id="7915236031252389808">You can specify a URL to a proxy .pac file here.
-
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
-
-          You should leave this policy unset if you have selected any other mode for setting proxy policies.
-
-          For detailed examples, visit:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7922358664346625612">Keep last tab open in Chrome.</translation>
 <translation id="793134539373873765">Specifies whether p2p is to be used for OS update payloads. If set to True, devices will share and attempt to consume update payloads on the LAN, potentially reducing Internet bandwidth usage and congestion. If the update payload is not available on the LAN, the device will fall back to downloading from an update server. If set to False or not configured, p2p will not be used.</translation>
 <translation id="7933141401888114454">Enable creation of supervised users</translation>
 <translation id="793473937901685727">Set certificate availability for ARC-apps</translation>
+<translation id="7937491150792971922">Merge extension install list policies from multiple sources</translation>
 <translation id="7937766917976512374">Allow or deny video capture</translation>
 <translation id="7941975817681987555">Do not predict network actions on any network connection</translation>
+<translation id="7952007677054834789">Configure the pages to load on startup, the default home page and the default new tab page in <ph name="PRODUCT_NAME" /> and prevents users from changing them.
+
+      The user's home page settings are only completely locked down if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.
+
+      The policy 'URLs to open on startup' is ignored unless you select 'Open a list of URLs' in 'Action on startup'.</translation>
 <translation id="7952958573604504839">This policy is deprecated in M48 in favour of <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" />, and removed in M54.
 
       Enables network prediction in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
@@ -3645,6 +3910,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="8176035528522326671">Allow enterprise user to be primary multi-profile user only (Default behaviour for enterprise-managed users)</translation>
 <translation id="8214600119442850823">Configures the password manager.</translation>
 <translation id="8217516105848565518">This policy is deprecated. Please use RemoteAccessHostDomainList instead.</translation>
+<translation id="8244171102276095471">Enable RC4 cipher suites in TLS</translation>
 <translation id="8244525275280476362">Maximum fetch delay after a policy invalidation</translation>
 <translation id="8256688113167012935">Controls the account name <ph name="PRODUCT_OS_NAME" /> shows on the login screen for the corresponding device-local account.
 
@@ -3663,29 +3929,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8259592978873597235">If this policy is set to true or is unset, the user is not considered to be idle while video is playing. This prevents the idle delay, screen dim delay, screen off delay and screen lock delay from being reached, and the corresponding actions from being taken.
 
           If this policy is set to false, video activity does not prevent the user from being considered idle.</translation>
-<translation id="8264653492961233132">Specifies a list of apps and extensions that are installed silently,
-          without user interaction, and which cannot be uninstalled nor
-          disabled by the user. All permissions requested by the
-          apps/extensions are granted implicitly, without user interaction,
-          including any additional permissions requested by future versions of
-          the app/extension. Furthermore, permissions are granted for the
-          enterprise.deviceAttributes and enterprise.platformKeys extension
-          APIs. (These two APIs are not available to apps/extensions that are
-          not force-installed.)
-
-          This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME" />.
-
-          For Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
-
-          Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> policy should be set.
-
-          Each list item of the policy is a string that contains an extension ID and, optionally, an 'update' URL separated by a semi-colon (<ph name="SEMICOLON" />). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK" /> when in developer mode. The 'update' URL, if specified, should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1" />. By default, the Chrome Web Store's update URL is used (which currently is 'https://clients2.google.com/service/update2/crx'). Note that the 'update' URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest. Note also that specifying the 'update' URL explicitly was mandatory in <ph name="PRODUCT_NAME" /> versions up to and including 67.
-
-          For example, <ph name="EXTENSION_POLICY_EXAMPLE" /> installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app from the standard Chrome Web Store 'update' URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME" />.
-
-          Note that this policy doesn't apply to incognito mode.</translation>
 <translation id="8274603902181597201">Wipe the user’s eCryptfs home directory and start with a fresh ext4-encrypted home directory.</translation>
 <translation id="8285435910062771358">Full-screen magnifier enabled</translation>
 <translation id="8288199156259560552">Enable Android Google Location Service</translation>
@@ -3708,6 +3951,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8312129124898414409">Allows you to set whether websites are allowed to use key generation. Using key generation can be either allowed for all websites or denied for all websites.
 
           If this policy is left not set, 'BlockKeygen' will be used and the user will be able to change it.</translation>
+<translation id="8320149248919453401">Battery charge mode</translation>
 <translation id="8329984337216493753">This policy is active in retail mode only.
 
       When DeviceIdleLogoutTimeout is specified, this policy defines the duration of the warning box with a count down timer that is shown to the user before the logout is executed.
@@ -3724,12 +3968,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       If the policy is set to false, the statistics will not be reported.
       If set to true or left unset, statistics will be reported.</translation>
-<translation id="8377433219608936819">
-      If the policy is set to true, cloud  policy takes precedence if it conflicts with machine policy.
-      If the policy is set to false or not configured, machine policy takes precedence if it conflicts with cloud policy.
-      For more details about policy priority, please visit: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="8380490658357556620">Enables usage of relay servers when remote clients are trying to establish a connection to this machine.
 
           If this setting is enabled, then remote clients can use relay servers to connect to this machine when a direct connection is not available (e.g. due to firewall restrictions).
@@ -3751,7 +3989,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       For more information on Internet Explorer's <ph name="IEEM_SITELIST_POLICY" /> policy: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Always Open PDF files externally</translation>
-<translation id="8412312801707973447">Whether online OCSP/CRL checks are performed</translation>
 <translation id="8417305981081876834">Set the maximum length of the lock screen PIN</translation>
 <translation id="841977920223099909">Password protection warning trigger</translation>
 <translation id="8424255554404582727">Set default display rotation, reapplied on every reboot</translation>
@@ -3819,6 +4056,9 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8548832052135586762">Sets printing to colour only, monochrome only or no colour mode restriction. Unset policy is treated as no restriction.</translation>
 <translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
 <translation id="8566842294717252664">Hide the web store from the New Tab Page and app launcher</translation>
+<translation id="8569734380847633643">
+          If the policy is set to false, <ph name="PRODUCT_OS_NAME" /> will disable Wi-Fi and users cannot re-enable it.
+          If the policy is set to true or left unset, users will be able to enable or disable Wi-Fi as they wish.</translation>
 <translation id="857369585509260201">This policy is deprecated. Consider using BrowserSignin instead.
 
       If this policy is set to true, the user has to sign in to <ph name="PRODUCT_NAME" /> with their profile before using the browser. And the default value of BrowserGuestModeEnabled will be set to false. Note: Existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help centre article.
@@ -3877,7 +4117,15 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME" /> devices and 604800000 milliseconds (one week) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Password protection warning is triggered by password reuse</translation>
 <translation id="8693243869659262736">Use built-in DNS client</translation>
+<translation id="8698286761337647563">How many days in advance to notify SAML users when their password is due to expire</translation>
 <translation id="8703488928438047864">Report board status</translation>
+<translation id="8703872185032220081">Set power peak shift day config.
+
+          This policy is only used if DevicePowerPeakShiftEnabled is set to true.
+
+          If this policy is not configured or left unset, power peak shift will always be disabled.
+
+          Note: Allowed values for <ph name="MINUTE_FIELD_NAME" /> field in <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> and <ph name="CHARGE_START_TIME_FIELD_NAME" /> are 0, 15, 30, 45.</translation>
 <translation id="8704831857353097849">List of disabled plug-ins</translation>
 <translation id="8711086062295757690">Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider.
 
@@ -3906,6 +4154,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If this setting is enabled or not set, browsing and download history can be deleted.
 
       If this setting is disabled, browsing and download history cannot be deleted.</translation>
+<translation id="8757552286070680084">Wilco DTC configuration</translation>
 <translation id="8758831693895931466">Enable mandatory cloud management enrolment</translation>
 <translation id="8759829385824155666">Allowed Kerberos encryption types</translation>
 <translation id="8764119899999036911">Specifies whether the generated Kerberos SPN is based on the canonical DNS name or the original name entered.
@@ -3921,6 +4170,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If this setting is disabled or not set, then password protection service will send users to https://myaccounts.google.com to change their password.
       This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="8798099450830957504">Default</translation>
+<translation id="8800453707696044281">Set battery charge custom stop charging in per cent</translation>
 <translation id="8801680448782904838">Notify a user that a browser relaunch or device restart is recommended or required</translation>
 <translation id="8818173863808665831">Report the geographic location of the device.
 
@@ -3928,12 +4178,29 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8818768076343557335">Predict network actions on any network that is not cellular.
           (Deprecated in 50, removed in 52. After 52, if value 1 is set, it will be treated as 0 – predict network actions on any network connection.)</translation>
 <translation id="8825782996899863372">Password protection warning is triggered by password reuse on phishing page</translation>
-<translation id="8828766846428537606">Configure the default home page in <ph name="PRODUCT_NAME" /> and prevent users from changing it.
-
-      The user's home page settings are only completely locked down, if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.</translation>
 <translation id="8833109046074170275">Authentication via the default GAIA flow</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> caches Apps and Extensions for installation by multiple users of a single device to avoid re-downloading them for each user.
       If this policy is not configured or the value is lower than 1 MB, <ph name="PRODUCT_OS_NAME" /> will use the default cache size.</translation>
+<translation id="8851325571441692315">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
+
+          This policy only takes effect if the <ph name="PROXY_SETTINGS_POLICY_NAME" /> policy has not been specified.
+
+          If you choose to never use a proxy server and always connect directly, all other options are ignored.
+
+          If you choose to use system proxy settings, all other options are ignored.
+
+          If you choose to auto-detect the proxy server, all other options are ignored.
+
+          If you choose fixed server proxy mode, you can specify further options in 'Address or URL of proxy server' and 'Comma-separated list of proxy bypass rules'. Only the HTTP proxy server with the highest priority is available for ARC-apps.
+
+          If you choose to use a .pac proxy script, you must specify the URL to the script in 'URL to a proxy .pac file'.
+
+          For detailed examples, visit:
+          <ph name="PROXY_HELP_URL" />.
+
+          If you enable this setting, <ph name="PRODUCT_NAME" /> and ARC apps ignore all proxy-related options specified from the command line.
+
+          Leaving this policy not set will allow the users to choose the proxy settings on their own.</translation>
 <translation id="8858642179038618439">Force YouTube Safety Mode</translation>
 <translation id="8860342862142842017">Disable Certificate Transparency enforcement for a list of subjectPublicKeyInfo hashes</translation>
 <translation id="8864975621965365890">Suppresses the turn-down prompt that appears when a site is rendered by <ph name="PRODUCT_FRAME_NAME" />.</translation>
@@ -3946,18 +4213,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
 
       If this setting is left not set the user can decide to use this function or not.</translation>
-<translation id="8870318296973696995">Homepage</translation>
 <translation id="8876188741456358123">Overrides default printing duplex mode. If the mode is unavailable, this policy is ignored.</translation>
 <translation id="8882006618241293596">Block the <ph name="FLASH_PLUGIN_NAME" /> plug-in on these sites</translation>
-<translation id="890403179930035128">Force-enables spellcheck languages. Unrecognised languages in that list will be ignored.
-
-      If you enable this policy, spellcheck will be enabled for the languages specified, in addition to the languages for which the user has enabled spellcheck.
-
-      If you do not set this policy, or disable it, there will be no change to the user's spellcheck preferences.
-
-      If the SpellcheckEnabled policy is set to disabled, this policy will have no effect.
-
-      The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Enable guest mode</translation>
 <translation id="8908294717014659003">Allows you to set whether websites are allowed to get access to media capture devices. Access to media capture devices can be allowed by default, or the user can be asked every time a website wants to get access to media capture devices.
 
@@ -4007,6 +4264,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       For more information on secure contexts, see
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Provide users with Quick Fix Build.</translation>
 <translation id="8942616385591203339">This policy controls if Sync Consent can be shown to the user during first sign-in. It should be set to false if Sync Consent is never needed for the user.
       If set to false, Sync Consent will not be displayed.
       If set to true or unset, Sync Consent can be displayed.</translation>
@@ -4066,6 +4324,10 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       If the policy is left not set, the user can choose the avatar image representing them on the login screen.</translation>
 <translation id="9035964157729712237">Extension IDs to exempt from the blacklist</translation>
+<translation id="9038058011835642205">Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled nor disabled by the user.
+
+      Each list item of the policy is an object with a mandatory member: 'url' and two optional members: 'default_launch_container' and 'create_desktop_shortcut'. 'url' should be the URL of the web app to install, 'launch_container' should be either 'window' or 'tab' to indicate how the Web App will be opened once installed, and 'create_desktop_shortcut' should be true if a desktop shortcut should be created on Linux and Windows. If 'default_launch_container' is omitted, the app will open in a tab by default. Regardless of the value of 'default_launch_container', users are able to change which container the app will open in. If 'create_desktop_shortcuts' is omitted, no desktop shortcuts will be created.</translation>
+<translation id="9038839118379817310">Enable Wi-Fi</translation>
 <translation id="9039822628127365650">When this policy is set, it specifies the length of time after which a user is automatically logged out, terminating the session. The user is informed about the remaining time by a countdown timer shown in the system tray.
 
       When this policy is not set, the session length is not limited.
@@ -4074,6 +4336,11 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       The policy value should be specified in milliseconds. Values are clamped to a range of 30 seconds to 24 hours.</translation>
 <translation id="9042911395677044526">Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">This policy controls whether or not the device should be updated to a Quick Fix Build.
+
+      If policy value is set to a token that maps to a Quick Fix Build, the device will be updated to the corresponding Quick Fix Build if the update is not blocked by another policy.
+
+      If this policy is not set, or if its value does not map to a Quick Fix Build, then the device won't be updated to a Quick Fix Build. If the device is already running a Quick Fix Build and the policy is not set anymore or its value does not map to a Quick Fix Build anymore, then the device will be updated to a regular build if the update is not blocked by another policy.</translation>
 <translation id="906631898352326790">
       If the policy is enabled, each of the named origins in a
       comma-separated list will run in its own process. This will also isolate
@@ -4102,31 +4369,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="9094064873808699479">Roll back and stay on target version if OS version is newer than target. Try to carry over device-level configuration (including network credentials) through the rollback process, if possible, but do the rollback with full powerwash even if restoring the data is not possible (because the target version doesn't support restoring data or because of a backward-incompatible change).
           Supported on <ph name="PRODUCT_OS_NAME" /> version 70 and higher. For older clients, this value means that rollback is disabled.</translation>
 <translation id="9096086085182305205">Authentication server whitelist</translation>
-<translation id="9098553063150791878">Policies for HTTP authentication</translation>
-<translation id="9103061223348895346">This policy controls multiple settings for the power management strategy when the user becomes idle.
-
-          There are four types of action:
-          * The screen will be dimmed if the user remains idle for the time specified by |ScreenDim|.
-          * The screen will be turned off if the user remains idle for the time specified by |ScreenOff|.
-          * A warning dialogue will be shown if the user remains idle for the time specified by |IdleWarning|, telling the user that the idle action is about to be taken.
-          * The action specified by |IdleAction| will be taken if the user remains idle for the time specified by |Idle|.
-
-          For each of above actions, the delay should be specified in milliseconds, and needs to be set to a value greater than zero to trigger the corresponding action. In case the delay is set to zero, <ph name="PRODUCT_OS_NAME" /> will not take the corresponding action.
-
-          For each of the above delays, when the length of time is unset, a default value will be used.
-
-          Note that |ScreenDim| values will be clamped to be less than or equal to |ScreenOff|, |ScreenOff| and |IdleWarning| will be clamped to be less than or equal to |Idle|.
-
-          |IdleAction| can be one of four possible actions:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          When the |IdleAction| is unset, the default action is taken, which is suspend.
-
-          There are also separate settings for AC power and battery.
-          </translation>
 <translation id="9105265795073104888">Only a subset of proxy configuration options are made available to Android apps. Android apps may voluntarily choose to use the proxy. You cannot force them to use a proxy.</translation>
 <translation id="9106865192244721694">Allow WebUSB on these sites</translation>
 <translation id="9112727953998243860">Enterprise printer configuration file</translation>
@@ -4185,13 +4427,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If the policy is set to false, 'Headers and footers' is not selected in the print preview dialogue and the user cannot change it.
 
       If the policy is set to true, 'Headers and footers' is selected in the print preview dialogue and the user cannot change it.</translation>
-<translation id="9210953373038593554">Configures the type of authentication for SAML logins.
-
-      When this policy is unset or set to Default (value 0), the behaviour of SAML logins is determined by the browser depending on other factors. In the most basic scenario, the user authentication and the protection of the cached user data are based on passwords manually entered by users.
-
-      When this policy is set to ClientCertificate (value 1), client certificate authentication is used for newly added users which log in via SAML. No passwords are used for such users, and their cached local data is protected using corresponding cryptographic keys. For instance, this setting allows configuring smart card-based user authentication (note that smart card middleware apps have to be installed via the DeviceLoginScreenAppInstallList policy).
-
-      This policy only affects users who authenticate using SAML.</translation>
 <translation id="9213347477683611358">Configure device-level wallpaper image that is shown on the login screen if no user has yet signed in to the device. The policy is set by specifying the URL from which the Chrome OS device can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16 MB. The URL must be accessible without any authentication. The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
       The policy should be specified as a string that expresses the URL and hash in JSON format, e.g.,
@@ -4206,6 +4441,15 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="9217154963008402249">Frequency of monitoring network packets</translation>
 <translation id="922540222991413931">Configure extension, app, and user script install sources</translation>
 <translation id="924557436754151212">Import saved passwords from default browser on first run</translation>
+<translation id="926146562923985266">This policy controls the command to use to open URLs in <ph name="PRODUCT_NAME" /> when switching from Internet Explorer.
+
+      If the 'Legacy Browser Support' add-in for Internet Explorer is not installed, this policy has no effect.
+
+      When this policy is left unset, Internet Explorer will auto-detect <ph name="PRODUCT_NAME" />'s own executable path when launching <ph name="PRODUCT_NAME" /> from Internet Explorer.
+
+      When this policy is set, it will be used to launch <ph name="PRODUCT_NAME" /> when launching <ph name="PRODUCT_NAME" /> from Internet Explorer.
+
+      This policy can be set to an executable file path, or ${chrome} to auto-detect Chrome's install location.</translation>
 <translation id="930930237275114205">Set <ph name="PRODUCT_FRAME_NAME" /> user data directory</translation>
 <translation id="943865157632139008">Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME" /> is installed.
       The default setting is to allow the host browser do the rendering, but you can optionally override this and have <ph name="PRODUCT_FRAME_NAME" /> render HTML pages by default.</translation>

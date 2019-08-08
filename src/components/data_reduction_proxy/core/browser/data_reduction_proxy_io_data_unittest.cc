@@ -79,9 +79,6 @@ std::string CreateEncodedConfig(
     config_proxy->set_scheme(ProxyServer_ProxyScheme_HTTP);
     config_proxy->set_host(host_port_pair.host());
     config_proxy->set_port(host_port_pair.port());
-    config_proxy->set_type(proxy_server.IsCoreProxy()
-                               ? ProxyServer_ProxyType_CORE
-                               : ProxyServer_ProxyType_UNSPECIFIED_TYPE);
   }
   return EncodeConfig(config);
 }
@@ -197,7 +194,7 @@ TEST_F(DataReductionProxyIODataTest, TestResetBadProxyListOnDisableDataSaver) {
   EXPECT_EQ(2UL, bad_proxy_list.size());
 
   // Turn Data Saver off.
-  drp_test_context->settings()->SetDataReductionProxyEnabled(false);
+  drp_test_context->SetDataReductionProxyEnabled(false);
   base::RunLoop().RunUntilIdle();
 
   // Verify that bad proxy list is empty.
@@ -274,8 +271,6 @@ TEST_F(DataReductionProxyIODataTest, TestCustomProxyConfigClient) {
       client.config->post_cache_headers.HasHeader(chrome_proxy_header()));
   EXPECT_TRUE(
       client.config->pre_cache_headers.HasHeader(chrome_proxy_ect_header()));
-  // Alternate proxy list should be empty because there are no core proxies.
-  EXPECT_TRUE(client.config->alternate_proxy_list.IsEmpty());
 }
 
 TEST_F(DataReductionProxyIODataTest, TestCustomProxyConfigUpdatedOnECTChange) {
@@ -353,8 +348,8 @@ TEST_F(DataReductionProxyIODataTest,
   io_data.config()->UpdateConfigForTesting(true, true, true);
 
   auto proxy_server1 = net::ProxyServer::FromPacString("PROXY foo");
-  io_data.config_client()->ApplySerializedConfig(CreateEncodedConfig(
-      {DataReductionProxyServer(proxy_server1, ProxyServer_ProxyType_CORE)}));
+  io_data.config_client()->ApplySerializedConfig(
+      CreateEncodedConfig({DataReductionProxyServer(proxy_server1)}));
 
   network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
   TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
@@ -365,8 +360,8 @@ TEST_F(DataReductionProxyIODataTest,
 
   auto proxy_server2 = net::ProxyServer::FromPacString("PROXY bar");
   io_data.config_client()->SetRemoteConfigAppliedForTesting(false);
-  io_data.config_client()->ApplySerializedConfig(CreateEncodedConfig(
-      {DataReductionProxyServer(proxy_server2, ProxyServer_ProxyType_CORE)}));
+  io_data.config_client()->ApplySerializedConfig(
+      CreateEncodedConfig({DataReductionProxyServer(proxy_server2)}));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(client.config->rules.proxies_for_http.Get(), proxy_server2);
@@ -390,19 +385,48 @@ TEST_F(DataReductionProxyIODataTest,
   io_data.config()->UpdateConfigForTesting(true, true, true);
 
   auto core_proxy_server = net::ProxyServer::FromPacString("PROXY foo");
-  io_data.config_client()->ApplySerializedConfig(CreateEncodedConfig(
-      {DataReductionProxyServer(core_proxy_server, ProxyServer_ProxyType_CORE),
-       DataReductionProxyServer(net::ProxyServer::FromPacString("PROXY bar"),
-                                ProxyServer_ProxyType_UNSPECIFIED_TYPE)}));
+  auto second_proxy_server = net::ProxyServer::FromPacString("PROXY bar");
+  io_data.config_client()->ApplySerializedConfig(
+      CreateEncodedConfig({DataReductionProxyServer(core_proxy_server),
+                           DataReductionProxyServer(second_proxy_server)}));
 
   network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
   TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
   io_data.SetCustomProxyConfigClient(std::move(client_ptr_info));
   base::RunLoop().RunUntilIdle();
 
-  net::ProxyList expected_proxy_list;
-  expected_proxy_list.SetSingleProxyServer(core_proxy_server);
-  EXPECT_TRUE(client.config->alternate_proxy_list.Equals(expected_proxy_list));
+  net::ProxyConfig::ProxyRules expected_rules;
+  expected_rules.type =
+      net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
+  expected_rules.proxies_for_http.AddProxyServer(core_proxy_server);
+  expected_rules.proxies_for_http.AddProxyServer(second_proxy_server);
+  expected_rules.proxies_for_http.AddProxyServer(net::ProxyServer::Direct());
+  EXPECT_TRUE(client.config->rules.Equals(expected_rules));
+}
+
+TEST_F(DataReductionProxyIODataTest, TestCustomProxyConfigProperties) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableDataReductionProxyWarmupURLFetch);
+  DataReductionProxyIOData io_data(
+      Client::UNKNOWN, prefs(),
+      network::TestNetworkConnectionTracker::GetInstance(),
+      scoped_task_environment_.GetMainThreadTaskRunner(),
+      scoped_task_environment_.GetMainThreadTaskRunner(), false /* enabled */,
+      std::string() /* user_agent */, std::string() /* channel */);
+  NetworkPropertiesManager network_properties_manager(
+      base::DefaultClock::GetInstance(), prefs(),
+      scoped_task_environment_.GetMainThreadTaskRunner());
+  io_data.config()->SetNetworkPropertiesManagerForTesting(
+      &network_properties_manager);
+  io_data.config()->UpdateConfigForTesting(true, true, true);
+
+  network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
+  TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
+  io_data.SetCustomProxyConfigClient(std::move(client_ptr_info));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(client.config->assume_https_proxies_support_quic);
+  EXPECT_FALSE(client.config->can_use_proxy_on_http_url_redirect_cycles);
 }
 
 }  // namespace data_reduction_proxy

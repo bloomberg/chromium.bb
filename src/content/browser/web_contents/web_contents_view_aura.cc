@@ -357,97 +357,10 @@ aura::Window* GetHostWindow(aura::Window* window) {
 
 }  // namespace
 
-// A class to observe windows that are mirroring the WebContentsView's host
-// window. It keeps track of the occlusion state for each of these mirror
-// windows and requests an update for the webcontent visibility if any of their
-// occlusion state changes.
-class WebContentsViewAura::MirrorWindowObserver : public aura::WindowObserver {
- public:
-  explicit MirrorWindowObserver(WebContentsViewAura* view) : view_(view) {}
-  ~MirrorWindowObserver() override {
-    for (auto* mirror_window : mirror_windows_) {
-      DCHECK(mirror_window->HasObserver(this));
-      mirror_window->RemoveObserver(this);
-    }
-  }
-
-  // Starts observing the list of windows provided by |mirror_windows|. Results
-  // in removing itself as an observer from all other windows. Triggers a
-  // request to update web content visibilty based on the occlusion state of the
-  // newly added windows.
-  void UpdateMirrorWindowList(
-      const std::vector<aura::Window*>* mirror_windows) {
-    for (auto* mirror_window : mirror_windows_) {
-      DCHECK(mirror_window->HasObserver(this));
-      mirror_window->RemoveObserver(this);
-    }
-
-    mirror_windows_.clear();
-    visible_mirror_windows_.clear();
-
-    if (!mirror_windows) {
-      view_->UpdateWebContentsVisibility();
-      return;
-    }
-
-    // Add self as an observer to the list of mirror windows.
-    for (auto* mirror_window : *mirror_windows) {
-      auto insert_result = mirror_windows_.insert(mirror_window);
-      if (insert_result.second)
-        mirror_window->AddObserver(this);
-
-      if (mirror_window->occlusion_state() ==
-          aura::Window::OcclusionState::VISIBLE) {
-        visible_mirror_windows_.insert(mirror_window);
-      }
-    }
-    view_->UpdateWebContentsVisibility();
-  }
-
-  // Returns true if there are any mirror windows that this class is observing
-  // that has their occlusion state set to VISIBLE.
-  bool HasVisibleMirrorWindow() const { return visible_mirror_windows_.size(); }
-
- private:
-  // aura::WindowObserver:
-  void OnWindowDestroyed(aura::Window* mirror_window) override {
-    mirror_windows_.erase(mirror_window);
-    visible_mirror_windows_.erase(mirror_window);
-  }
-
-  // aura::WindowObserver:
-  void OnWindowOcclusionChanged(aura::Window* mirror_window) override {
-    auto it = visible_mirror_windows_.find(mirror_window);
-    if (mirror_window->occlusion_state() ==
-            aura::Window::OcclusionState::VISIBLE &&
-        it == visible_mirror_windows_.end()) {
-      visible_mirror_windows_.insert(mirror_window);
-    } else if (mirror_window->occlusion_state() !=
-                   aura::Window::OcclusionState::VISIBLE &&
-               it != visible_mirror_windows_.end()) {
-      visible_mirror_windows_.erase(it);
-    } else {
-      return;
-    }
-    view_->UpdateWebContentsVisibility();
-  }
-
-  // Subset of |mirror_windows_| that are currently VISIBLE.
-  base::flat_set<aura::Window*> visible_mirror_windows_;
-
-  // Set of mirror windows that this class is observing.
-  base::flat_set<aura::Window*> mirror_windows_;
-
-  WebContentsViewAura* view_;
-
-  DISALLOW_COPY_AND_ASSIGN(MirrorWindowObserver);
-};
-
 class WebContentsViewAura::WindowObserver
     : public aura::WindowObserver, public aura::WindowTreeHostObserver {
  public:
-  explicit WindowObserver(WebContentsViewAura* view)
-      : view_(view), host_window_(nullptr) {
+  explicit WindowObserver(WebContentsViewAura* view) : view_(view) {
     view_->window_->AddObserver(this);
   }
 
@@ -478,15 +391,14 @@ class WebContentsViewAura::WindowObserver
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override {
-    if (window == host_window_ || window == view_->window_.get()) {
-      SendScreenRects();
-      if (old_bounds.origin() != new_bounds.origin()) {
-        TouchSelectionControllerClientAura* selection_controller_client =
-            view_->GetSelectionControllerClient();
-        if (selection_controller_client)
-          selection_controller_client->OnWindowMoved();
-      }
+    DCHECK(window == host_window_ || window == view_->window_.get());
+    if (pending_window_changes_) {
+      pending_window_changes_->window_bounds_changed = true;
+      if (old_bounds.origin() != new_bounds.origin())
+        pending_window_changes_->window_origin_changed = true;
+      return;
     }
+    ProcessWindowBoundsChange(old_bounds.origin() != new_bounds.origin());
   }
 
   void OnWindowDestroying(aura::Window* window) override {
@@ -503,44 +415,86 @@ class WebContentsViewAura::WindowObserver
 
   void OnWindowRemovingFromRootWindow(aura::Window* window,
                                       aura::Window* new_root) override {
-    if (window == view_->window_.get())
+    if (window == view_->window_.get()) {
       window->GetHost()->RemoveObserver(this);
-  }
-
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override {
-    if (key == aura::client::kMirrorWindowList) {
-      if (!view_->mirror_window_observer_) {
-        view_->mirror_window_observer_ =
-            std::make_unique<MirrorWindowObserver>(view_);
-      }
-      const std::vector<aura::Window*>* mirror_window_list =
-          window->GetProperty(aura::client::kMirrorWindowList);
-      view_->mirror_window_observer_->UpdateMirrorWindowList(
-          mirror_window_list);
+      pending_window_changes_.reset();
     }
   }
 
   // Overridden WindowTreeHostObserver:
+  void OnHostWillProcessBoundsChange(aura::WindowTreeHost* host) override {
+    DCHECK(!pending_window_changes_);
+    pending_window_changes_ = std::make_unique<PendingWindowChanges>();
+  }
+
+  void OnHostDidProcessBoundsChange(aura::WindowTreeHost* host) override {
+    if (!pending_window_changes_)
+      return;  // Happens if added to a new host during bounds change.
+
+    if (pending_window_changes_->window_bounds_changed)
+      ProcessWindowBoundsChange(pending_window_changes_->window_origin_changed);
+    else if (pending_window_changes_->host_moved)
+      ProcessHostMovedInPixels();
+    pending_window_changes_.reset();
+  }
+
   void OnHostMovedInPixels(aura::WindowTreeHost* host,
                            const gfx::Point& new_origin_in_pixels) override {
-    TRACE_EVENT1("ui",
-                 "WebContentsViewAura::WindowObserver::OnHostMovedInPixels",
-                 "new_origin_in_pixels", new_origin_in_pixels.ToString());
-
-    // This is for the desktop case (i.e. Aura desktop).
-    SendScreenRects();
+    if (pending_window_changes_) {
+      pending_window_changes_->host_moved = true;
+      return;
+    }
+    ProcessHostMovedInPixels();
   }
 
  private:
+  // Used to avoid multiple calls to SendScreenRects(). In particular, when
+  // WindowTreeHost changes its size, it's entirely likely the aura::Windows
+  // will change as well. When OnHostWillProcessBoundsChange() is called,
+  // |pending_window_changes_| is created and any changes are set in it.
+  // In OnHostDidProcessBoundsChange() is called, all accumulated changes are
+  // applied.
+  struct PendingWindowChanges {
+    // Set to true if OnWindowBoundsChanged() is called.
+    bool window_bounds_changed = false;
+
+    // Set to true if OnWindowBoundsChanged() is called *and* the origin of the
+    // window changed.
+    bool window_origin_changed = false;
+
+    // Set to true if OnHostMovedInPixels() is called.
+    bool host_moved = false;
+  };
+
+  void ProcessWindowBoundsChange(bool did_origin_change) {
+    SendScreenRects();
+    if (did_origin_change) {
+      TouchSelectionControllerClientAura* selection_controller_client =
+          view_->GetSelectionControllerClient();
+      if (selection_controller_client)
+        selection_controller_client->OnWindowMoved();
+    }
+  }
+
+  void ProcessHostMovedInPixels() {
+    // NOTE: this function is *not* called if OnHostWillProcessBoundsChange()
+    // *and* the bounds changes (OnWindowBoundsChanged() is called).
+    TRACE_EVENT1(
+        "ui", "WebContentsViewAura::WindowObserver::OnHostMovedInPixels",
+        "new_origin_in_pixels",
+        view_->window_->GetHost()->GetBoundsInPixels().origin().ToString());
+    SendScreenRects();
+  }
+
   void SendScreenRects() { view_->web_contents_->SendScreenRects(); }
 
   WebContentsViewAura* view_;
 
   // The parent window that hosts the constrained windows. We cache the old host
   // view so that we can unregister when it's not the parent anymore.
-  aura::Window* host_window_;
+  aura::Window* host_window_ = nullptr;
+
+  std::unique_ptr<PendingWindowChanges> pending_window_changes_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserver);
 };
@@ -834,11 +788,8 @@ void WebContentsViewAura::UpdateWebContentsVisibility() {
 }
 
 Visibility WebContentsViewAura::GetVisibility() const {
-  if (window_->occlusion_state() == aura::Window::OcclusionState::VISIBLE ||
-      (mirror_window_observer_ &&
-       mirror_window_observer_->HasVisibleMirrorWindow())) {
+  if (window_->occlusion_state() == aura::Window::OcclusionState::VISIBLE)
     return Visibility::VISIBLE;
-  }
 
   if (window_->occlusion_state() == aura::Window::OcclusionState::OCCLUDED)
     return Visibility::OCCLUDED;

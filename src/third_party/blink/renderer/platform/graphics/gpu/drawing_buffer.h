@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/webgl_image_conversion.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types_3d.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -224,6 +225,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   bool CopyToPlatformTexture(gpu::gles2::GLES2Interface*,
                              GLenum dst_target,
                              GLuint dst_texture,
+                             GLint dst_level,
                              bool premultiply_alpha,
                              bool flip_y,
                              const IntPoint& dst_texture_offset,
@@ -248,6 +250,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // when the DrawingBuffer is using a CHROMIUM image for its backing
   // store and RGB emulation is in use (basically, macOS only).
   class PLATFORM_EXPORT ScopedRGBEmulationForBlitFramebuffer {
+    STACK_ALLOCATED();
+
    public:
     ScopedRGBEmulationForBlitFramebuffer(DrawingBuffer*,
                                          bool is_user_draw_framebuffer_bound);
@@ -298,6 +302,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // This structure should wrap all public entrypoints that may modify GL state.
   // It will restore all state when it drops out of scope.
   class ScopedStateRestorer {
+    USING_FAST_MALLOC(ScopedStateRestorer);
+
    public:
     ScopedStateRestorer(DrawingBuffer*);
     ~ScopedStateRestorer();

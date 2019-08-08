@@ -31,6 +31,16 @@ class HIDDetectionView {
   // Calls corresponding set of actions based on the bool result.
   virtual void CheckIsScreenRequired(
       const base::Callback<void(bool)>& on_check_done) = 0;
+
+  virtual void SetKeyboardState(const std::string& value) = 0;
+  virtual void SetMouseState(const std::string& value) = 0;
+  virtual void SetKeyboardPinCode(const std::string& value) = 0;
+  virtual void SetNumKeysEnteredExpected(bool value) = 0;
+  virtual void SetNumKeysEnteredPinCode(int value) = 0;
+  virtual void SetMouseDeviceName(const std::string& value) = 0;
+  virtual void SetKeyboardDeviceName(const std::string& value) = 0;
+  virtual void SetKeyboardDeviceLabel(const std::string& value) = 0;
+  virtual void SetContinueButtonEnabled(bool value) = 0;
 };
 
 }  // namespace chromeos

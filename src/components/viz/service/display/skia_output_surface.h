@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_SKIA_OUTPUT_SURFACE_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_SKIA_OUTPUT_SURFACE_H_
 
+#include <memory>
+#include <vector>
+
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/service/display/output_surface.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -49,7 +52,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
   // |metadata| is satisfied. The SwapBuffers should take care of this by
   // scheduling a GPU task with all resource sync tokens recorded by
   // MakePromiseSkImage for the current frame.
-  virtual sk_sp<SkImage> MakePromiseSkImage(ResourceMetadata metadata) = 0;
+  virtual sk_sp<SkImage> MakePromiseSkImage(
+      const ResourceMetadata& metadata) = 0;
 
   // Make a promise SkImage from the given |metadata| and the |yuv_color_space|.
   // For YUV format, at least three resource metadatas should be provided.
@@ -59,15 +63,15 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
   // pixels from y panel, metadatas[1] contains pixels from u and v panels. If
   // has_alpha is true, the last item in metadatas contains alpha panel.
   virtual sk_sp<SkImage> MakePromiseSkImageFromYUV(
-      std::vector<ResourceMetadata> metadatas,
+      const std::vector<ResourceMetadata>& metadatas,
       SkYUVColorSpace yuv_color_space,
+      sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) = 0;
 
   // Release SkImages created by MakePromiseSkImage on the thread on which
   // it was fulfilled. SyncToken represents point after which SkImage is
   // released.
-  virtual gpu::SyncToken ReleasePromiseSkImages(
-      std::vector<sk_sp<SkImage>> images) = 0;
+  virtual void ReleaseCachedPromiseSkImages(std::vector<ResourceId> ids) = 0;
 
   // Swaps the current backbuffer to the screen.
   virtual void SkiaSwapBuffers(OutputSurfaceFrame frame) = 0;

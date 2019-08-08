@@ -192,7 +192,7 @@ std::unique_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
                    static_cast<Action::ActionType>(query.ColumnInt(2)),
                    query.ColumnString(3), query.ColumnInt64(9));
 
-    if (query.ColumnType(4) != sql::COLUMN_TYPE_NULL) {
+    if (query.GetColumnType(4) != sql::ColumnType::kNull) {
       std::unique_ptr<base::Value> parsed_value =
           base::JSONReader::ReadDeprecated(query.ColumnString(4));
       if (parsed_value && parsed_value->is_list()) {
@@ -205,7 +205,7 @@ std::unique_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
     action->set_page_title(query.ColumnString(6));
     action->ParseArgUrl(query.ColumnString(7));
 
-    if (query.ColumnType(8) != sql::COLUMN_TYPE_NULL) {
+    if (query.GetColumnType(8) != sql::ColumnType::kNull) {
       std::unique_ptr<base::Value> parsed_value =
           base::JSONReader::ReadDeprecated(query.ColumnString(8));
       if (parsed_value && parsed_value->is_dict()) {

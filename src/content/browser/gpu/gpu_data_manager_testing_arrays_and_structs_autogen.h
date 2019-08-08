@@ -18,6 +18,22 @@ const int kFeatureListForGpuManagerTestingEntry1[1] = {
     GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
 };
 
+const GpuControlList::More kMoreForEntry1_572251052 = {
+    GpuControlList::kGLTypeNone,  // gl_type
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // pixel_shader_version
+    false,      // in_process_gpu
+    0,          // gl_reset_notification_strategy
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // direct_rendering_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
+};
+
 const int kFeatureListForGpuManagerTestingEntry2[1] = {
     GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
 };
@@ -29,8 +45,40 @@ const GpuControlList::GLStrings kGLStringsForGpuManagerTestingEntry2 = {
     nullptr,
 };
 
+const GpuControlList::More kMoreForEntry2_572251052 = {
+    GpuControlList::kGLTypeNone,  // gl_type
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // pixel_shader_version
+    false,      // in_process_gpu
+    0,          // gl_reset_notification_strategy
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // direct_rendering_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
+};
+
 const int kFeatureListForGpuManagerTestingEntry3[1] = {
     GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
+};
+
+const GpuControlList::More kMoreForEntry3_572251052 = {
+    GpuControlList::kGLTypeNone,  // gl_type
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // pixel_shader_version
+    false,      // in_process_gpu
+    0,          // gl_reset_notification_strategy
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // direct_rendering_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
 };
 
 const int kFeatureListForGpuManagerTestingEntry4[2] = {
@@ -45,8 +93,40 @@ const GpuControlList::GLStrings kGLStringsForGpuManagerTestingEntry4 = {
     nullptr,
 };
 
+const GpuControlList::More kMoreForEntry4_572251052 = {
+    GpuControlList::kGLTypeNone,  // gl_type
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // pixel_shader_version
+    false,      // in_process_gpu
+    0,          // gl_reset_notification_strategy
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // direct_rendering_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
+};
+
 const int kFeatureListForGpuManagerTestingEntry5[1] = {
     GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
+};
+
+const GpuControlList::More kMoreForEntry5_572251052 = {
+    GpuControlList::kGLTypeNone,  // gl_type
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // pixel_shader_version
+    false,      // in_process_gpu
+    0,          // gl_reset_notification_strategy
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // direct_rendering_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
 };
 
 const GpuControlList::GLStrings kGLStringsForGpuManagerTestingEntry5Exception0 =
@@ -55,6 +135,22 @@ const GpuControlList::GLStrings kGLStringsForGpuManagerTestingEntry5Exception0 =
         ".*GeForce.*",
         nullptr,
         nullptr,
+};
+
+const GpuControlList::More kMoreForEntry5_572251052Exception0 = {
+    GpuControlList::kGLTypeNone,  // gl_type
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // pixel_shader_version
+    false,      // in_process_gpu
+    0,          // gl_reset_notification_strategy
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // direct_rendering_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
 };
 
 const int kFeatureListForGpuManagerTestingEntry6[12] = {
@@ -72,8 +168,40 @@ const int kFeatureListForGpuManagerTestingEntry6[12] = {
     GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE,
 };
 
+const GpuControlList::More kMoreForEntry6_572251052 = {
+    GpuControlList::kGLTypeNone,  // gl_type
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // pixel_shader_version
+    false,      // in_process_gpu
+    0,          // gl_reset_notification_strategy
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // direct_rendering_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
+};
+
 const int kFeatureListForGpuManagerTestingEntry7[1] = {
     GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
+};
+
+const GpuControlList::More kMoreForEntry7_572251052 = {
+    GpuControlList::kGLTypeNone,  // gl_type
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // pixel_shader_version
+    false,      // in_process_gpu
+    0,          // gl_reset_notification_strategy
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},  // direct_rendering_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+     nullptr},                  // gpu_count
+    GpuControlList::kDontCare,  // hardware_overlay
+    0,                          // test_group
 };
 
 }  // namespace gpu

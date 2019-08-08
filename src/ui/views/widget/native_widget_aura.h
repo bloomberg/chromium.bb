@@ -134,6 +134,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
                     int operation,
                     ui::DragDropTypes::DragEventSource source) override;
   void SchedulePaintInRect(const gfx::Rect& rect) override;
+  void ScheduleLayout() override;
   void SetCursor(gfx::NativeCursor cursor) override;
   bool IsMouseEventsEnabled() const override;
   bool IsMouseButtonDown() const override;
@@ -173,6 +174,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   void OnWindowTargetVisibilityChanged(bool visible) override;
   bool HasHitTestMask() const override;
   void GetHitTestMask(SkPath* mask) const override;
+  void UpdateVisualState() override;
 
   // Overridden from aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,

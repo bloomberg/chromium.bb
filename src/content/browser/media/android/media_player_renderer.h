@@ -16,6 +16,8 @@
 #include "media/base/media_resource.h"
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
+#include "media/mojo/interfaces/renderer_extensions.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -29,22 +31,25 @@ class MediaPlayerRendererWebContentsObserver;
 //
 // Each MediaPlayerRenderer is associated with one MediaPlayerRendererClient,
 // living in WMPI in the Renderer process.
-//
-// N.B: MediaPlayerRenderer implements MediaPlayerManager, since
-// MediaPlayerBridge is tightly coupled with the manager abstraction.
-// |player_id| is ignored in all MediaPlayerManager calls, as there is only one
-// MediaPlayer per MediaPlayerRenderer.
 class CONTENT_EXPORT MediaPlayerRenderer
     : public media::Renderer,
+      public media::mojom::MediaPlayerRendererExtension,
       public media::MediaPlayerBridge::Client {
  public:
+  using RendererExtensionRequest =
+      media::mojom::MediaPlayerRendererExtensionRequest;
+  using ClientExtensionPtr =
+      media::mojom::MediaPlayerRendererClientExtensionPtr;
+
   // Permits embedders to handle custom urls.
   static void RegisterMediaUrlInterceptor(
       media::MediaUrlInterceptor* media_url_interceptor);
 
   MediaPlayerRenderer(int process_id,
                       int routing_id,
-                      WebContents* web_contents);
+                      WebContents* web_contents,
+                      RendererExtensionRequest renderer_extension_request,
+                      ClientExtensionPtr client_extension_ptr);
 
   ~MediaPlayerRenderer() override;
 
@@ -76,6 +81,8 @@ class CONTENT_EXPORT MediaPlayerRenderer
   void OnUpdateAudioMutingState(bool muted);
   void OnWebContentsDestroyed();
 
+  // media::mojom::MediaPlayerRendererExtension implementation.
+  //
   // Registers a request in the content::ScopedSurfaceRequestManager, and
   // returns the token associated to the request. The token can then be used to
   // complete the request via the gpu::ScopedSurfaceRequestConduit.
@@ -83,7 +90,9 @@ class CONTENT_EXPORT MediaPlayerRenderer
   //
   // NOTE: If a request is already pending, calling this method again will
   // safely cancel the pending request before registering a new one.
-  base::UnguessableToken InitiateScopedSurfaceRequest();
+  void InitiateScopedSurfaceRequest(
+      InitiateScopedSurfaceRequestCallback callback) override;
+
   void OnScopedSurfaceRequestCompleted(gl::ScopedJavaSurface surface);
 
  private:
@@ -95,6 +104,8 @@ class CONTENT_EXPORT MediaPlayerRenderer
   void CancelScopedSurfaceRequest();
 
   void UpdateVolume();
+
+  ClientExtensionPtr client_extension_;
 
   // Identifiers to find the RenderFrameHost that created |this|.
   // NOTE: We store these IDs rather than a RenderFrameHost* because we do not
@@ -121,6 +132,8 @@ class CONTENT_EXPORT MediaPlayerRenderer
   bool web_contents_muted_;
   MediaPlayerRendererWebContentsObserver* web_contents_observer_;
   float volume_;
+
+  mojo::Binding<MediaPlayerRendererExtension> renderer_extension_binding_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaPlayerRenderer> weak_factory_;

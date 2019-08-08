@@ -34,7 +34,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLLIElement::HTMLLIElement(Document& document)
+HTMLLIElement::HTMLLIElement(Document& document)
     : HTMLElement(kLiTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLLIElement)
@@ -47,24 +47,24 @@ bool HTMLLIElement::IsPresentationAttribute(const QualifiedName& name) const {
 
 CSSValueID ListTypeToCSSValueID(const AtomicString& value) {
   if (value == "a")
-    return CSSValueLowerAlpha;
+    return CSSValueID::kLowerAlpha;
   if (value == "A")
-    return CSSValueUpperAlpha;
+    return CSSValueID::kUpperAlpha;
   if (value == "i")
-    return CSSValueLowerRoman;
+    return CSSValueID::kLowerRoman;
   if (value == "I")
-    return CSSValueUpperRoman;
+    return CSSValueID::kUpperRoman;
   if (value == "1")
-    return CSSValueDecimal;
+    return CSSValueID::kDecimal;
   if (DeprecatedEqualIgnoringCase(value, "disc"))
-    return CSSValueDisc;
+    return CSSValueID::kDisc;
   if (DeprecatedEqualIgnoringCase(value, "circle"))
-    return CSSValueCircle;
+    return CSSValueID::kCircle;
   if (DeprecatedEqualIgnoringCase(value, "square"))
-    return CSSValueSquare;
+    return CSSValueID::kSquare;
   if (DeprecatedEqualIgnoringCase(value, "none"))
-    return CSSValueNone;
-  return CSSValueInvalid;
+    return CSSValueID::kNone;
+  return CSSValueID::kInvalid;
 }
 
 void HTMLLIElement::CollectStyleForPresentationAttribute(
@@ -73,9 +73,10 @@ void HTMLLIElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == kTypeAttr) {
     CSSValueID type_value = ListTypeToCSSValueID(value);
-    if (type_value != CSSValueInvalid)
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              type_value);
+    if (IsValidCSSValueID(type_value)) {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kListStyleType, type_value);
+    }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }

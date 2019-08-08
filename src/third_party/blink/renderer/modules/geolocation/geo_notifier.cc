@@ -22,7 +22,7 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation,
       success_callback_(success_callback),
       error_callback_(error_callback),
       options_(options),
-      timer_(Timer::Create(
+      timer_(MakeGarbageCollected<Timer>(
           geolocation->GetDocument()->GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
           &GeoNotifier::TimerFired)),
@@ -132,8 +132,8 @@ void GeoNotifier::TimerFired(TimerBase*) {
 
   if (error_callback_) {
     error_callback_->InvokeAndReportException(
-        nullptr,
-        PositionError::Create(PositionError::kTimeout, "Timeout expired"));
+        nullptr, MakeGarbageCollected<PositionError>(PositionError::kTimeout,
+                                                     "Timeout expired"));
   }
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, timeout_expired_histogram,

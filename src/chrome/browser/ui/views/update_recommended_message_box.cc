@@ -17,7 +17,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/first_run/upgrade_util_mac.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,6 +51,11 @@ UpdateRecommendedMessageBox::~UpdateRecommendedMessageBox() {
 }
 
 bool UpdateRecommendedMessageBox::Accept() {
+#if defined(OS_MACOSX)
+  if (!upgrade_util::ShouldContinueToRelaunchForUpgrade())
+    return false;  // Leave the dialog up for the user to return to.
+#endif             // OS_MACOSX
+
   chrome::AttemptRelaunch();
   return true;
 }

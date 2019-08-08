@@ -29,7 +29,7 @@ namespace examples {
 
 FlexLayoutExample::FlexLayoutExample() : LayoutExampleBase("Flex Layout") {}
 
-FlexLayoutExample::~FlexLayoutExample() {}
+FlexLayoutExample::~FlexLayoutExample() = default;
 
 void FlexLayoutExample::CreateAdditionalControls(int vertical_pos) {
   static const char* const orientation_values[2] = {"Horizontal", "Vertical"};
@@ -93,8 +93,8 @@ void FlexLayoutExample::ButtonPressedImpl(Button* sender) {
 }
 
 void FlexLayoutExample::UpdateLayoutManager() {
-  for (int i = 0; i < layout_panel()->child_count(); ++i) {
-    ChildPanel* panel = static_cast<ChildPanel*>(layout_panel()->child_at(i));
+  for (View* child : layout_panel()->children()) {
+    ChildPanel* panel = static_cast<ChildPanel*>(child);
     int flex = panel->GetFlex();
     if (flex < 0)
       layout_->ClearFlexForView(panel);

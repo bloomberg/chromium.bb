@@ -5,8 +5,10 @@
 #ifndef UI_AURA_NATIVE_WINDOW_OCCLUSION_TRACKER_WIN_H_
 #define UI_AURA_NATIVE_WINDOW_OCCLUSION_TRACKER_WIN_H_
 
+#include <shobjidl.h>
 #include <windows.h>
 #include <winuser.h>
+#include <wrl/client.h>
 
 #include <memory>
 #include <vector>
@@ -84,8 +86,8 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
     static void CALLBACK EventHookCallback(HWINEVENTHOOK hWinEventHook,
                                            DWORD event,
                                            HWND hwnd,
-                                           LONG idObject,
-                                           LONG idChild,
+                                           LONG id_object,
+                                           LONG id_child,
                                            DWORD dwEventThread,
                                            DWORD dwmsEventTime);
 
@@ -151,6 +153,17 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
     // processes hosting fully visible, opaque windows.
     void ProcessUpdateVisibleWindowProcessIdsCallback(HWND hwnd);
 
+    // Returns true if the window is visible, fully opaque, and on the current
+    // virtual desktop, false otherwise.
+    bool WindowCanOccludeOtherWindowsOnCurrentVirtualDesktop(
+        HWND hwnd,
+        gfx::Rect* window_rect);
+
+    // Returns true if |hwnd| is definitely on the current virtual desktop,
+    // false if it's definitely not on the current virtual desktop, and nullopt
+    // if we we can't tell for sure.
+    base::Optional<bool> IsWindowOnCurrentVirtualDesktop(HWND hwnd);
+
     // Task runner for our thread.
     scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -183,6 +196,9 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
     // calculating window occlusion.
     bool window_is_moving_ = false;
 
+    // Only used on Win10+.
+    Microsoft::WRL::ComPtr<IVirtualDesktopManager> virtual_desktop_manager_;
+
     SEQUENCE_CHECKER(sequence_checker_);
 
     DISALLOW_COPY_AND_ASSIGN(WindowOcclusionCalculator);
@@ -192,9 +208,9 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
   ~NativeWindowOcclusionTrackerWin() override;
 
   // Returns true if we are interested in |hwnd| for purposes of occlusion
-  // calculation. We are interested in |hwnd| if it is a window that is visible,
-  // opaque, and bounded. If we are interested in |hwnd|, stores the window
-  // rectangle in |window_rect|.
+  // calculation. We are interested in |hwnd| if it is a window that is
+  // visible, opaque, and bounded. If we are interested in |hwnd|, stores the
+  // window rectangle in |window_rect|.
   static bool IsWindowVisibleAndFullyOpaque(HWND hwnd, gfx::Rect* window_rect);
 
   // Updates root windows occclusion state.

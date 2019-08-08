@@ -88,8 +88,7 @@ void ErrorAndRegistrationListCallback(
 class BackgroundSyncServiceImplTest : public testing::Test {
  public:
   BackgroundSyncServiceImplTest()
-      : thread_bundle_(
-            new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP)) {
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
     default_sync_registration_ = blink::mojom::SyncRegistrationOptions::New();
   }
 
@@ -118,10 +117,10 @@ class BackgroundSyncServiceImplTest : public testing::Test {
 
   // SetUp helper methods
   void CreateTestHelper() {
-    embedded_worker_helper_.reset(
-        new EmbeddedWorkerTestHelper(base::FilePath()));
-    std::unique_ptr<MockPermissionManager> mock_permission_manager(
-        new testing::NiceMock<MockPermissionManager>());
+    embedded_worker_helper_ =
+        std::make_unique<EmbeddedWorkerTestHelper>((base::FilePath()));
+    std::unique_ptr<MockPermissionManager> mock_permission_manager =
+        std::make_unique<testing::NiceMock<MockPermissionManager>>();
     ON_CALL(*mock_permission_manager,
             GetPermissionStatus(PermissionType::BACKGROUND_SYNC, _, _))
         .WillByDefault(
@@ -133,8 +132,9 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   void CreateStoragePartition() {
     // Creates a StoragePartition so that the BackgroundSyncManager can
     // use it to access the BrowserContext.
-    storage_partition_impl_.reset(new StoragePartitionImpl(
-        embedded_worker_helper_->browser_context(), base::FilePath(), nullptr));
+    storage_partition_impl_ = StoragePartitionImpl::Create(
+        embedded_worker_helper_->browser_context(), /* in_memory= */ true,
+        base::FilePath(), /* partition_domain= */ "");
     embedded_worker_helper_->context_wrapper()->set_storage_partition(
         storage_partition_impl_.get());
   }
@@ -144,7 +144,9 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     // main frame. Use a test context that allows control over that check.
     background_sync_context_ =
         base::MakeRefCounted<TestBackgroundSyncContext>();
-    background_sync_context_->Init(embedded_worker_helper_->context_wrapper());
+    background_sync_context_->Init(
+        embedded_worker_helper_->context_wrapper(),
+        storage_partition_impl_->GetDevToolsBackgroundServicesContext());
 
     // Tests do not expect the sync event to fire immediately after
     // register (and cleanup up the sync registrations).  Prevent the sync
@@ -208,7 +210,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
+  TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
   std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;

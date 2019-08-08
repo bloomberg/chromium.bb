@@ -227,8 +227,8 @@ bool StructTraits<blink::mojom::IDBValueDataView,
     return false;
 
   if (value_bits.IsEmpty()) {
-    *out = blink::IDBValue::Create(scoped_refptr<blink::SharedBuffer>(),
-                                   Vector<blink::WebBlobInfo>());
+    *out = std::make_unique<blink::IDBValue>(
+        scoped_refptr<blink::SharedBuffer>(), Vector<blink::WebBlobInfo>());
     return true;
   }
 
@@ -254,8 +254,8 @@ bool StructTraits<blink::mojom::IDBValueDataView,
     }
   }
 
-  *out = blink::IDBValue::Create(std::move(value_buffer),
-                                 std::move(value_blob_info));
+  *out = std::make_unique<blink::IDBValue>(std::move(value_buffer),
+                                           std::move(value_blob_info));
   return true;
 }
 

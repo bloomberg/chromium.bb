@@ -34,9 +34,9 @@ class Widget;
 }
 
 namespace ash {
-
-class ScopedOverviewAnimationSettings;
 class OverviewItem;
+class ScopedOverviewAnimationSettings;
+class ScopedOverviewHideWindows;
 
 // Manages a window, and its transient children, in the overview mode. This
 // class allows transforming the windows with a helper to determine the best
@@ -184,7 +184,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   friend class OverviewSessionTest;
   class LayerCachingAndFilteringObserver;
   class WindowMask;
-  FRIEND_TEST_ALL_PREFIXES(ScopedOverviewTransformWindowTest,
+  FRIEND_TEST_ALL_PREFIXES(ScopedOverviewTransformWindowWithMaskTest,
                            WindowBoundsChangeTest);
 
   // Closes the window managed by |this|.
@@ -203,9 +203,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   // A weak pointer to the real window in the overview.
   aura::Window* window_;
-
-  // Tracks if this window was ignored by the shelf.
-  bool ignored_by_shelf_;
 
   // True if the window has been transformed for overview mode.
   bool overview_started_ = false;
@@ -240,6 +237,8 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   // The original mask layer of the window before entering overview mode.
   ui::Layer* original_mask_layer_ = nullptr;
+
+  std::unique_ptr<ScopedOverviewHideWindows> hidden_transient_children_;
 
   base::WeakPtrFactory<ScopedOverviewTransformWindow> weak_ptr_factory_;
 

@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/http_user_agent_settings.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/do_nothing_ct_verifier.h"
@@ -250,8 +251,9 @@ base::WeakPtr<SpdyStream> CreateStreamSynchronously(
     const NetLogWithSource& net_log) {
   SpdyStreamRequest stream_request;
   int rv = stream_request.StartRequest(
-      type, session, url, priority, SocketTag(), net_log,
-      CompletionOnceCallback(), TRAFFIC_ANNOTATION_FOR_TESTS);
+      type, session, url, false /* no early data */, priority, SocketTag(),
+      net_log, CompletionOnceCallback(), TRAFFIC_ANNOTATION_FOR_TESTS);
+
   return
       (rv == OK) ? stream_request.ReleaseStream() : base::WeakPtr<SpdyStream>();
 }
@@ -322,7 +324,6 @@ SpdySessionDependencies::SpdySessionDependencies(
     std::unique_ptr<ProxyResolutionService> proxy_resolution_service)
     : host_resolver(std::make_unique<MockCachingHostResolver>()),
       cert_verifier(std::make_unique<MockCertVerifier>()),
-      channel_id_service(nullptr),
       transport_security_state(std::make_unique<TransportSecurityState>()),
       cert_transparency_verifier(std::make_unique<DoNothingCTVerifier>()),
       ct_policy_enforcer(std::make_unique<DefaultCTPolicyEnforcer>()),
@@ -342,7 +343,8 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_websocket_over_http2(false),
       net_log(nullptr),
       http_09_on_non_default_ports_enabled(false),
-      disable_idle_sockets_close_on_memory_pressure(false) {
+      disable_idle_sockets_close_on_memory_pressure(false),
+      enable_early_data(false) {
   http2_settings[spdy::SETTINGS_INITIAL_WINDOW_SIZE] =
       kDefaultInitialWindowSize;
 }
@@ -395,6 +397,7 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
       session_deps->http_09_on_non_default_ports_enabled;
   params.disable_idle_sockets_close_on_memory_pressure =
       session_deps->disable_idle_sockets_close_on_memory_pressure;
+  params.enable_early_data = session_deps->enable_early_data;
   return params;
 }
 
@@ -404,7 +407,6 @@ HttpNetworkSession::Context SpdySessionDependencies::CreateSessionContext(
   context.client_socket_factory = session_deps->socket_factory.get();
   context.host_resolver = session_deps->GetHostResolver();
   context.cert_verifier = session_deps->cert_verifier.get();
-  context.channel_id_service = session_deps->channel_id_service.get();
   context.transport_security_state =
       session_deps->transport_security_state.get();
   context.cert_transparency_verifier =
@@ -412,6 +414,8 @@ HttpNetworkSession::Context SpdySessionDependencies::CreateSessionContext(
   context.ct_policy_enforcer = session_deps->ct_policy_enforcer.get();
   context.proxy_resolution_service =
       session_deps->proxy_resolution_service.get();
+  context.http_user_agent_settings =
+      session_deps->http_user_agent_settings.get();
   context.ssl_config_service = session_deps->ssl_config_service.get();
   context.http_auth_handler_factory =
       session_deps->http_auth_handler_factory.get();
@@ -487,8 +491,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
       /* is_websocket = */ false, NetLogWithSource()));
 
   auto transport_params = base::MakeRefCounted<TransportSocketParams>(
-      key.host_port_pair(), /* disable_resolver_cache = */ false,
-      OnHostResolutionCallback());
+      key.host_port_pair(), OnHostResolutionCallback());
 
   auto connection = std::make_unique<ClientSocketHandle>();
   TestCompletionCallback callback;
@@ -498,9 +501,10 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
       transport_params, nullptr, nullptr, key.host_port_pair(), ssl_config,
       key.privacy_mode());
   int rv = connection->Init(
-      key.host_port_pair().ToString(),
-      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
-          ssl_params),
+      ClientSocketPool::GroupId(key.host_port_pair(),
+                                ClientSocketPool::SocketType::kSsl,
+                                key.privacy_mode()),
+      ClientSocketPool::SocketParams::CreateFromSSLSocketParams(ssl_params),
       MEDIUM, key.socket_tag(), ClientSocketPool::RespectLimits::ENABLED,
       callback.callback(), ClientSocketPool::ProxyAuthCallback(),
       http_session->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,

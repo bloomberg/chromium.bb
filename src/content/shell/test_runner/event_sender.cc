@@ -1952,7 +1952,7 @@ void EventSender::DumpFilenameBeingDragged() {
 void EventSender::GestureFlingCancel() {
   WebGestureEvent event(WebInputEvent::kGestureFlingCancel,
                         WebInputEvent::kNoModifiers, GetCurrentEventTime(),
-                        blink::kWebGestureDeviceTouchpad);
+                        blink::WebGestureDevice::kTouchpad);
   // Generally it won't matter what device we use here, and since it might
   // be cumbersome to expect all callers to specify a device, we'll just
   // choose Touchpad here.
@@ -1976,9 +1976,9 @@ void EventSender::GestureFlingStart(float x,
     args->GetNext(&device_string);
 
   if (device_string == kSourceDeviceStringTouchpad) {
-    event.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
+    event.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
   } else if (device_string == kSourceDeviceStringTouchscreen) {
-    event.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+    event.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
   } else {
     args->ThrowError();
     return;
@@ -2367,7 +2367,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
 void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
   WebGestureEvent event(type, WebInputEvent::kNoModifiers,
                         GetCurrentEventTime(),
-                        blink::kWebGestureDeviceTouchscreen);
+                        blink::WebGestureDevice::kTouchscreen);
 
   // If the first argument is a string, it is to specify the device, otherwise
   // the device is assumed to be a touchscreen (since most tests were written
@@ -2379,9 +2379,9 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
       return;
     }
     if (device_string == kSourceDeviceStringTouchpad) {
-      event.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
+      event.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
     } else if (device_string == kSourceDeviceStringTouchscreen) {
-      event.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+      event.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
     } else {
       args->ThrowError();
       return;
@@ -2848,7 +2848,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
     const WebMouseWheelEvent wheel_event) {
   WebGestureEvent begin_event(WebInputEvent::kGestureScrollBegin,
                               wheel_event.GetModifiers(), GetCurrentEventTime(),
-                              blink::kWebGestureDeviceTouchpad);
+                              blink::WebGestureDevice::kTouchpad);
   InitGestureEventFromMouseWheel(wheel_event, &begin_event);
   begin_event.data.scroll_begin.delta_x_hint = wheel_event.delta_x;
   begin_event.data.scroll_begin.delta_y_hint = wheel_event.delta_y;
@@ -2877,7 +2877,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
 
   WebGestureEvent update_event(
       WebInputEvent::kGestureScrollUpdate, wheel_event.GetModifiers(),
-      GetCurrentEventTime(), blink::kWebGestureDeviceTouchpad);
+      GetCurrentEventTime(), blink::WebGestureDevice::kTouchpad);
   InitGestureEventFromMouseWheel(wheel_event, &update_event);
   update_event.data.scroll_update.delta_x =
       begin_event.data.scroll_begin.delta_x_hint;
@@ -2892,7 +2892,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
 
   WebGestureEvent end_event(WebInputEvent::kGestureScrollEnd,
                             wheel_event.GetModifiers(), GetCurrentEventTime(),
-                            blink::kWebGestureDeviceTouchpad);
+                            blink::WebGestureDevice::kTouchpad);
   InitGestureEventFromMouseWheel(wheel_event, &end_event);
   end_event.data.scroll_end.delta_units =
       begin_event.data.scroll_begin.delta_hint_units;
@@ -2923,6 +2923,9 @@ blink::WebWidget* EventSender::widget() {
 }
 
 blink::WebFrameWidget* EventSender::mainFrameWidget() {
+  DCHECK(view()->MainFrame()->IsWebLocalFrame())
+      << "Event Sender doesn't support being run in a remote frame for this "
+         "operation.";
   return view()->MainFrame()->ToWebLocalFrame()->FrameWidget();
 }
 

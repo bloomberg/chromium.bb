@@ -9,16 +9,21 @@
 #include <utility>
 #include <vector>
 
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_package/mock_signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,9 +32,20 @@ using testing::_;
 
 namespace content {
 
-class SignedExchangeLoaderTest : public testing::Test {
+// Test params used for kSignedHTTPExchangePingValidity, which can be
+// removed once we're done with crbug.com/952811.
+class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
  public:
-  SignedExchangeLoaderTest() = default;
+  SignedExchangeLoaderTest() {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          features::kSignedHTTPExchangePingValidity);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          features::kSignedHTTPExchangePingValidity);
+    }
+  }
+
   ~SignedExchangeLoaderTest() override = default;
 
  protected:
@@ -81,13 +97,57 @@ class SignedExchangeLoaderTest : public testing::Test {
     DISALLOW_COPY_AND_ASSIGN(MockURLLoader);
   };
 
+  // Used only when kSignedHTTPExchangePingValidity is enabled.
+  class MockValidityPingURLLoaderFactory
+      : public network::mojom::URLLoaderFactory {
+   public:
+    MockValidityPingURLLoaderFactory() = default;
+    ~MockValidityPingURLLoaderFactory() override = default;
+
+    void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
+                              int32_t routing_id,
+                              int32_t request_id,
+                              uint32_t options,
+                              const network::ResourceRequest& url_request,
+                              network::mojom::URLLoaderClientPtr client,
+                              const net::MutableNetworkTrafficAnnotationTag&
+                                  traffic_annotation) override {
+      ASSERT_FALSE(bool{ping_loader_});
+      ping_loader_ = std::make_unique<MockURLLoader>(std::move(request));
+      ping_loader_client_ = std::move(client);
+    }
+    void Clone(network::mojom::URLLoaderFactoryRequest request) override {}
+
+    std::unique_ptr<MockURLLoader> ping_loader_;
+    network::mojom::URLLoaderClientPtr ping_loader_client_;
+  };
+
+  network::mojom::URLLoaderClient* ping_loader_client() {
+    return ping_loader_factory_.ping_loader_client_.get();
+  }
+
+  static std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+  ThrottlesGetter() {
+    return std::vector<std::unique_ptr<content::URLLoaderThrottle>>();
+  }
+
+  scoped_refptr<network::SharedURLLoaderFactory> CreateMockPingLoaderFactory() {
+    return base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+        &ping_loader_factory_);
+  }
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedFeatureList feature_list_;
+
+  // For kSignedHTTPExchangePingValidity.
+  ResourceDispatcherHostImpl resource_dispatcher_host_;
+  MockValidityPingURLLoaderFactory ping_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeLoaderTest);
 };
 
-TEST_F(SignedExchangeLoaderTest, Simple) {
+TEST_P(SignedExchangeLoaderTest, Simple) {
   network::mojom::URLLoaderPtr loader;
   network::mojom::URLLoaderClientPtr loader_client;
   MockURLLoader mock_loader(mojo::MakeRequest(&loader));
@@ -106,9 +166,9 @@ TEST_F(SignedExchangeLoaderTest, Simple) {
   response.headers = new net::HttpResponseHeaders(
       net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
 
-  MockSignedExchangeHandlerFactory factory(
-      SignedExchangeLoadResult::kSuccess, net::OK,
-      GURL("https://publisher.example.com/"), "text/html", {});
+  MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
+      resource_request.url, SignedExchangeLoadResult::kSuccess, net::OK,
+      GURL("https://publisher.example.com/"), "text/html", {})});
 
   SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(&factory);
   std::unique_ptr<SignedExchangeLoader> signed_exchange_loader =
@@ -116,8 +176,8 @@ TEST_F(SignedExchangeLoaderTest, Simple) {
           resource_request, response, std::move(client), std::move(endpoints),
           network::mojom::kURLLoadOptionNone,
           false /* should_redirect_to_fallback */, nullptr /* devtools_proxy */,
-          nullptr /* reporter */, nullptr /* url_loader_factory */,
-          SignedExchangeLoader::URLLoaderThrottlesGetter(),
+          nullptr /* reporter */, CreateMockPingLoaderFactory(),
+          base::BindRepeating(&SignedExchangeLoaderTest::ThrottlesGetter),
           base::RepeatingCallback<int(void)>(), nullptr /* metric_recorder */,
           std::string() /* accept_langs */);
 
@@ -161,11 +221,32 @@ TEST_F(SignedExchangeLoaderTest, Simple) {
   MockURLLoaderClient mock_client_after_redirect(
       mojo::MakeRequest(&client_after_redirect));
   EXPECT_CALL(mock_client_after_redirect, OnReceiveResponse(_));
-  EXPECT_CALL(mock_client_after_redirect, OnStartLoadingResponseBody(_));
-  EXPECT_CALL(mock_client_after_redirect, OnComplete(_));
+
+  if (!base::FeatureList::IsEnabled(
+          features::kSignedHTTPExchangePingValidity)) {
+    EXPECT_CALL(mock_client_after_redirect, OnStartLoadingResponseBody(_));
+    EXPECT_CALL(mock_client_after_redirect, OnComplete(_));
+  }
 
   signed_exchange_loader->ConnectToClient(std::move(client_after_redirect));
   base::RunLoop().RunUntilIdle();
+
+  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchangePingValidity)) {
+    // When kSignedHTTPExchangePingValidity is enabled, the
+    // client-after-redirect will be called only after the ping loader returns
+    // something.
+    ASSERT_TRUE(ping_loader_client());
+    EXPECT_CALL(mock_client_after_redirect, OnStartLoadingResponseBody(_));
+    EXPECT_CALL(mock_client_after_redirect, OnComplete(_));
+    ping_loader_client()->OnReceiveResponse(network::ResourceResponseHead());
+    ping_loader_client()->OnComplete(
+        network::URLLoaderCompletionStatus(net::OK));
+    base::RunLoop().RunUntilIdle();
+  }
 }
+
+INSTANTIATE_TEST_SUITE_P(,
+                         SignedExchangeLoaderTest,
+                         ::testing::Values(false, true));
 
 }  // namespace content

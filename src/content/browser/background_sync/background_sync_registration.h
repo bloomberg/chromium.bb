@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "content/browser/background_sync/background_sync.pb.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/modules/background_sync/background_sync.mojom.h"
+#include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 
 namespace content {
 
@@ -49,6 +49,13 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   // after the registration resolves.
   bool resolved() const { return resolved_; }
   void set_resolved() { resolved_ = true; }
+
+  // Whether the registration is periodic or one-shot.
+  blink::mojom::BackgroundSyncType sync_type() const {
+    return options_.min_interval >= 0
+               ? blink::mojom::BackgroundSyncType::PERIODIC
+               : blink::mojom::BackgroundSyncType::ONE_SHOT;
+  }
 
  private:
   blink::mojom::SyncRegistrationOptions options_;

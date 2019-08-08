@@ -24,6 +24,8 @@
 #include "third_party/blink/renderer/core/svg/svg_path.h"
 
 #include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg/svg_path_blender.h"
 #include "third_party/blink/renderer/core/svg/svg_path_byte_stream.h"
@@ -31,6 +33,7 @@
 #include "third_party/blink/renderer/core/svg/svg_path_byte_stream_source.h"
 #include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -43,7 +46,7 @@ std::unique_ptr<SVGPathByteStream> BlendPathByteStreams(
     const SVGPathByteStream& to_stream,
     float progress) {
   std::unique_ptr<SVGPathByteStream> result_stream =
-      SVGPathByteStream::Create();
+      std::make_unique<SVGPathByteStream>();
   SVGPathByteStreamBuilder builder(*result_stream);
   SVGPathByteStreamSource from_source(from_stream);
   SVGPathByteStreamSource to_source(to_stream);
@@ -57,7 +60,7 @@ std::unique_ptr<SVGPathByteStream> AddPathByteStreams(
     const SVGPathByteStream& by_stream,
     unsigned repeat_count = 1) {
   std::unique_ptr<SVGPathByteStream> result_stream =
-      SVGPathByteStream::Create();
+      std::make_unique<SVGPathByteStream>();
   SVGPathByteStreamBuilder builder(*result_stream);
   SVGPathByteStreamSource from_source(from_stream);
   SVGPathByteStreamSource by_source(by_stream);
@@ -90,11 +93,12 @@ String SVGPath::ValueAsString() const {
 }
 
 SVGPath* SVGPath::Clone() const {
-  return SVGPath::Create(path_value_);
+  return MakeGarbageCollected<SVGPath>(path_value_);
 }
 
 SVGParsingError SVGPath::SetValueAsString(const String& string) {
-  std::unique_ptr<SVGPathByteStream> byte_stream = SVGPathByteStream::Create();
+  std::unique_ptr<SVGPathByteStream> byte_stream =
+      std::make_unique<SVGPathByteStream>();
   SVGParsingError parse_status =
       BuildByteStreamFromString(string, *byte_stream);
   path_value_ = CSSPathValue::Create(std::move(byte_stream));
@@ -102,9 +106,11 @@ SVGParsingError SVGPath::SetValueAsString(const String& string) {
 }
 
 SVGPropertyBase* SVGPath::CloneForAnimation(const String& value) const {
-  std::unique_ptr<SVGPathByteStream> byte_stream = SVGPathByteStream::Create();
+  std::unique_ptr<SVGPathByteStream> byte_stream =
+      std::make_unique<SVGPathByteStream>();
   BuildByteStreamFromString(value, *byte_stream);
-  return SVGPath::Create(CSSPathValue::Create(std::move(byte_stream)));
+  return MakeGarbageCollected<SVGPath>(
+      CSSPathValue::Create(std::move(byte_stream)));
 }
 
 void SVGPath::Add(SVGPropertyBase* other, SVGElement*) {

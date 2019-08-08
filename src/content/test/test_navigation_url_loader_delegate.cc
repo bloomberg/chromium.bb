@@ -69,7 +69,7 @@ void TestNavigationURLLoaderDelegate::OnResponseStarted(
   url_loader_client_endpoints_ = std::move(url_loader_client_endpoints);
   if (response->head.ssl_info.has_value())
     ssl_info_ = *response->head.ssl_info;
-  is_download_ = is_download && IsNavigationDownloadAllowed(download_policy);
+  is_download_ = is_download && download_policy.IsDownloadAllowed();
   if (response_started_)
     response_started_->Quit();
 }

@@ -202,13 +202,12 @@ void ArcScreenCaptureSession::SetOutputBuffer(
     std::move(callback).Run();
     return;
   }
-  base::ScopedFD scoped_fd(platform_file);
-  handle.native_pixmap_handle.fds.emplace_back(std::move(scoped_fd));
   handle.native_pixmap_handle.planes.emplace_back(
-      stride * kBytesPerPixel, 0, stride * kBytesPerPixel * size_.height(), 0);
+      stride * kBytesPerPixel, 0, stride * kBytesPerPixel * size_.height(),
+      base::ScopedFD(platform_file), 0);
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
       gpu::GpuMemoryBufferImplNativePixmap::CreateFromHandle(
-          client_native_pixmap_factory_.get(), handle, size_,
+          client_native_pixmap_factory_.get(), std::move(handle), size_,
           gfx::BufferFormat::RGBX_8888, gfx::BufferUsage::SCANOUT,
           gpu::GpuMemoryBufferImpl::DestructionCallback());
   if (!gpu_memory_buffer) {
@@ -284,9 +283,10 @@ void ArcScreenCaptureSession::OnDesktopCaptured(
     return;
 
   // Get the source texture
-  GLuint src_texture = gl_helper_->ConsumeMailboxToTexture(
-      result->GetTextureResult()->mailbox,
-      result->GetTextureResult()->sync_token);
+  gl->WaitSyncTokenCHROMIUM(
+      result->GetTextureResult()->sync_token.GetConstData());
+  GLuint src_texture = gl->CreateAndConsumeTextureCHROMIUM(
+      result->GetTextureResult()->mailbox.name);
   std::unique_ptr<viz::SingleReleaseCallback> release_callback =
       result->TakeTextureOwnership();
 

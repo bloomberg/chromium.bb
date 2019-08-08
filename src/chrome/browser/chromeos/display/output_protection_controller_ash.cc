@@ -7,29 +7,29 @@
 
 #include "ash/shell.h"  // mash-ok
 
+namespace {
+
+display::DisplayConfigurator* configurator() {
+  return ash::Shell::Get()->display_configurator();
+}
+
+}  // namespace
+
 namespace chromeos {
 
 OutputProtectionControllerAsh::OutputProtectionControllerAsh()
-    : client_id_(ash::Shell::Get()
-                     ->display_configurator()
-                     ->RegisterContentProtectionClient()) {}
+    : client_id_(configurator()->RegisterContentProtectionClient()) {}
 
 OutputProtectionControllerAsh::~OutputProtectionControllerAsh() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (client_id_ != display::DisplayConfigurator::INVALID_CLIENT_ID) {
-    display::DisplayConfigurator* configurator =
-        ash::Shell::Get()->display_configurator();
-    configurator->UnregisterContentProtectionClient(client_id_);
-  }
+  configurator()->UnregisterContentProtectionClient(client_id_);
 }
 
 void OutputProtectionControllerAsh::QueryStatus(
     int64_t display_id,
     const OutputProtectionDelegate::QueryStatusCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  display::DisplayConfigurator* configurator =
-      ash::Shell::Get()->display_configurator();
-  configurator->QueryContentProtectionStatus(client_id_, display_id, callback);
+  configurator()->QueryContentProtection(client_id_, display_id, callback);
 }
 
 void OutputProtectionControllerAsh::SetProtection(
@@ -37,10 +37,8 @@ void OutputProtectionControllerAsh::SetProtection(
     uint32_t desired_method_mask,
     const OutputProtectionDelegate::SetProtectionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  display::DisplayConfigurator* configurator =
-      ash::Shell::Get()->display_configurator();
-  configurator->SetContentProtection(client_id_, display_id,
-                                     desired_method_mask, callback);
+  configurator()->ApplyContentProtection(client_id_, display_id,
+                                         desired_method_mask, callback);
 }
 
 }  // namespace chromeos

@@ -32,7 +32,7 @@ struct CachedImageFetcherRequest;
 // cache.
 class CachedImageFetcher : public ImageFetcher {
  public:
-  CachedImageFetcher(std::unique_ptr<ImageFetcher> image_fetcher,
+  CachedImageFetcher(ImageFetcher* image_fetcher,
                      scoped_refptr<ImageCache> image_cache,
                      bool read_only);
   ~CachedImageFetcher() override;
@@ -77,16 +77,15 @@ class CachedImageFetcher : public ImageFetcher {
                                      const RequestMetadata& request_metadata);
   void StoreData(CachedImageFetcherRequest request, std::string image_data);
 
-  // Whether the ImageChache is allowed to be modified in any way from requests
+  // Owned by ImageFetcherService.
+  ImageFetcher* image_fetcher_;
+  scoped_refptr<ImageCache> image_cache_;
+
+  // Whether the ImageCache is allowed to be modified in any way from requests
   // made by this CachedImageFetcher. This includes updating last used times,
   // writing new data to the cache, or cleaning up unreadable data. Note that
   // the ImageCache may still decide to perform eviction/reconciliation even
   // when only read only CachedImageFetchers are using it.
-  std::unique_ptr<ImageFetcher> image_fetcher_;
-
-  scoped_refptr<ImageCache> image_cache_;
-
-  // When true, operations won't affect the longeivity of valid cache items.
   bool read_only_;
 
   // Used to ensure that operations are performed on the sequence that this

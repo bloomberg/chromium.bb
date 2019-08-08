@@ -8,7 +8,6 @@
 <translation id="1984705450038014246">Синхронизировать данные Chrome</translation>
 <translation id="2147651015520127414">Chrome определил, что сертификат сайта выпущен компанией <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Данные, сохраненные с помощью синхронизации Chrome</translation>
-<translation id="2334084861041072223">© Google Inc, <ph name="YEAR" />. Все права защищены.</translation>
 <translation id="2342981853652716282">Войдите в Chrome, чтобы синхронизировать закладки, пароли и другую информацию на всех ваших устройствах.</translation>
 <translation id="2347208864470321755">Когда эта функция включена, Chrome будет предлагать перевести страницы с помощью Переводчика Google. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Чтобы открыть Chrome доступ к фотографиям, нажмите "Настройки".</translation>
@@ -22,7 +21,6 @@
 <translation id="3282568296779691940">Войдите в Chrome</translation>
 <translation id="3345341804167540816">Возьмите Chrome с собой</translation>
 <translation id="384394811301901750">Google Chrome не может получить доступ к камере.</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3980220367029651214">Вы переключаетесь с синхронизируемого аккаунта <ph name="USER_EMAIL1" /> на <ph name="USER_EMAIL2" />. Сейчас данными Chrome управляет администратор домена <ph name="DOMAIN" />. После переключения они будут удалены с устройства, но данные аккаунта <ph name="USER_EMAIL1" /> сохранятся.</translation>
 <translation id="3988789688219830639">У Google Chrome нет доступа к вашим фото и видео. Чтобы предоставить его, нажмите "Настройки &gt; Конфиденциальность &gt; Фотографии".</translation>
 <translation id="4099578267706723511">Отправлять в Google статистику использования и отчеты о сбоях</translation>
@@ -34,6 +32,7 @@
 <translation id="5389212809648216794">Google Chrome не может получить доступ к камере, поскольку она используется другим приложением.</translation>
 <translation id="5639704535586432836">Откройте "Настройки &gt; Конфиденциальность &gt; Камера &gt; Chrome" и включите камеру.</translation>
 <translation id="5642200033778930880">Google Chrome не может использовать камеру в режиме Split View.</translation>
+<translation id="5690427481109656848">Google LLC</translation>
 <translation id="5854621639439811139">Совет для Chrome. Некоторые кнопки, например "Назад", "Вперед" и "Поиск", теперь расположены в нижней части экрана.</translation>
 <translation id="6036420186814142909">В Google Chrome можно устанавливать параметры обработки данных в Интернете и скорости загрузки веб-страниц.
 <ph name="BEGIN_LINK" />Подробнее...<ph name="END_LINK" /></translation>
@@ -51,6 +50,7 @@
 <translation id="7437998757836447326">Выход из Chrome</translation>
 <translation id="756809126120519699">Данные Chrome удалены</translation>
 <translation id="7626032353295482388">Добро пожаловать в Chrome!</translation>
+<translation id="8370517070665726704">© Google LLC, <ph name="YEAR" />. Все права защищены.</translation>
 <translation id="840168496893712993">Некоторые дополнения вызывают сбой Chrome. Попробуйте удалить их.</translation>
 <translation id="8459495907675268833">Выбранные данные удалены из Chrome и с синхронизированных устройств. Остальная история ваших действий в Интернете может храниться в аккаунте Google, например в виде поисковых запросов и сведений из наших сервисов. Она доступна на странице history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

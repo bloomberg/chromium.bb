@@ -355,27 +355,48 @@ class CookieSetter {
 // TODO(skyostil): This test currently relies on being able to run a shell
 // script.
 #if defined(OS_POSIX)
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, RendererCommandPrefixTest) {
-  base::ThreadRestrictions::SetIOAllowed(true);
-  base::FilePath launcher_stamp;
-  base::CreateTemporaryFile(&launcher_stamp);
+class HeadlessBrowserRendererCommandPrefixTest : public HeadlessBrowserTest {
+ public:
+  const base::FilePath& launcher_stamp() const { return launcher_stamp_; }
 
-  base::FilePath launcher_script;
-  FILE* launcher_file = base::CreateAndOpenTemporaryFile(&launcher_script);
-  fprintf(launcher_file, "#!/bin/sh\n");
-  fprintf(launcher_file, "echo $@ > %s\n", launcher_stamp.value().c_str());
-  fprintf(launcher_file, "exec $@\n");
-  fclose(launcher_file);
+  void SetUp() override {
+    base::ThreadRestrictions::SetIOAllowed(true);
+    base::CreateTemporaryFile(&launcher_stamp_);
+
+    FILE* launcher_file = base::CreateAndOpenTemporaryFile(&launcher_script_);
+    fprintf(launcher_file, "#!/bin/sh\n");
+    fprintf(launcher_file, "echo $@ > %s\n", launcher_stamp_.value().c_str());
+    fprintf(launcher_file, "exec $@\n");
+    fclose(launcher_file);
 #if !defined(OS_FUCHSIA)
-  base::SetPosixFilePermissions(launcher_script,
-                                base::FILE_PERMISSION_READ_BY_USER |
-                                    base::FILE_PERMISSION_EXECUTE_BY_USER);
+    base::SetPosixFilePermissions(launcher_script_,
+                                  base::FILE_PERMISSION_READ_BY_USER |
+                                      base::FILE_PERMISSION_EXECUTE_BY_USER);
 #endif  // !defined(OS_FUCHSIA)
 
-  base::CommandLine::ForCurrentProcess()->AppendSwitch("--no-sandbox");
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "--renderer-cmd-prefix", launcher_script.value());
+    HeadlessBrowserTest::SetUp();
+  }
 
+  void TearDown() override {
+    if (!launcher_script_.empty())
+      base::DeleteFile(launcher_script_, false);
+    if (!launcher_stamp_.empty())
+      base::DeleteFile(launcher_stamp_, false);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch("--no-sandbox");
+    command_line->AppendSwitchASCII("--renderer-cmd-prefix",
+                                    launcher_script_.value());
+  }
+
+ private:
+  base::FilePath launcher_stamp_;
+  base::FilePath launcher_script_;
+};
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserRendererCommandPrefixTest, Prefix) {
+  base::ThreadRestrictions::SetIOAllowed(true);
   EXPECT_TRUE(embedded_test_server()->Start());
 
   HeadlessBrowserContext* browser_context =
@@ -389,11 +410,8 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, RendererCommandPrefixTest) {
 
   // Make sure the launcher was invoked when starting the renderer.
   std::string stamp;
-  EXPECT_TRUE(base::ReadFileToString(launcher_stamp, &stamp));
+  EXPECT_TRUE(base::ReadFileToString(launcher_stamp(), &stamp));
   EXPECT_GE(stamp.find("--type=renderer"), 0u);
-
-  base::DeleteFile(launcher_script, false);
-  base::DeleteFile(launcher_stamp, false);
 }
 #endif  // defined(OS_POSIX)
 
@@ -598,15 +616,20 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, WindowPrint) {
       EvaluateScript(web_contents, "window.print()")->HasExceptionDetails());
 }
 
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, AllowInsecureLocalhostFlag) {
+class HeadlessBrowserAllowInsecureLocalhostTest : public HeadlessBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kAllowInsecureLocalhost);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserAllowInsecureLocalhostTest,
+                       AllowInsecureLocalhostFlag) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
   https_server.ServeFilesFromSourceDirectory("headless/test/data");
   ASSERT_TRUE(https_server.Start());
   GURL test_url = https_server.GetURL("/hello.html");
-
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAllowInsecureLocalhost);
 
   HeadlessBrowserContext* browser_context =
       browser()->CreateBrowserContextBuilder().Build();

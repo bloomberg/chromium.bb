@@ -288,6 +288,9 @@ typedef struct SPEED_FEATURES {
   // level within a frame.
   int allow_skip_recode;
 
+  // Enable Wiener filter based block complexity analysis.
+  int enable_wiener_variance;
+
   // Coefficient probability model approximation step size
   int coeff_prob_appx_step;
 
@@ -602,12 +605,17 @@ typedef struct SPEED_FEATURES {
 
   // Use machine learning based partition search.
   int nonrd_use_ml_partition;
+
+  // Multiplier for base thresold for variance partitioning.
+  int variance_part_thresh_mult;
 } SPEED_FEATURES;
 
 struct VP9_COMP;
 
-void vp9_set_speed_features_framesize_independent(struct VP9_COMP *cpi);
-void vp9_set_speed_features_framesize_dependent(struct VP9_COMP *cpi);
+void vp9_set_speed_features_framesize_independent(struct VP9_COMP *cpi,
+                                                  int speed);
+void vp9_set_speed_features_framesize_dependent(struct VP9_COMP *cpi,
+                                                int speed);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -34,7 +34,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/cors_util.h"
 #include "extensions/common/extension_api.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_client.h"
@@ -63,31 +62,27 @@
 #include "extensions/renderer/dispatcher_delegate.h"
 #include "extensions/renderer/display_source_custom_bindings.h"
 #include "extensions/renderer/dom_activity_logger.h"
-#include "extensions/renderer/event_bindings.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/file_system_natives.h"
 #include "extensions/renderer/guest_view/guest_view_internal_custom_bindings.h"
 #include "extensions/renderer/id_generator_custom_bindings.h"
 #include "extensions/renderer/ipc_message_sender.h"
-#include "extensions/renderer/js_extension_bindings_system.h"
 #include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/messaging_bindings.h"
 #include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
+#include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/process_info_native_handler.h"
 #include "extensions/renderer/render_frame_observer_natives.h"
 #include "extensions/renderer/renderer_extension_registry.h"
-#include "extensions/renderer/renderer_messaging_service.h"
-#include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/runtime_custom_bindings.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/script_injection.h"
 #include "extensions/renderer/script_injection_manager.h"
-#include "extensions/renderer/send_request_natives.h"
 #include "extensions/renderer/set_icon_natives.h"
 #include "extensions/renderer/static_v8_external_one_byte_string_resource.h"
 #include "extensions/renderer/test_features_native_handler.h"
@@ -417,7 +412,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     ModuleSystem* module_system = context->module_system();
     // Enable natives in startup.
     ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system);
-    ExtensionBindingsSystem* worker_bindings_system =
+    NativeExtensionBindingsSystem* worker_bindings_system =
         WorkerThreadDispatcher::GetBindingsSystem();
     RegisterNativeHandlers(module_system, context, worker_bindings_system,
                            WorkerThreadDispatcher::GetV8SchemaRegistry());
@@ -525,7 +520,7 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     // TODO(lazyboy/devlin): Should this cleanup happen in a worker class, like
     // WorkerThreadDispatcher? If so, we should move the initialization as well.
     ScriptContext* script_context = WorkerThreadDispatcher::GetScriptContext();
-    ExtensionBindingsSystem* worker_bindings_system =
+    NativeExtensionBindingsSystem* worker_bindings_system =
         WorkerThreadDispatcher::GetBindingsSystem();
     worker_bindings_system->WillReleaseScriptContext(script_context);
     WorkerThreadDispatcher::Get()->DidStopContext(service_worker_scope,
@@ -624,7 +619,7 @@ void Dispatcher::DispatchEvent(const std::string& extension_id,
                                const EventFilteringInfo* filtering_info) const {
   script_context_set_->ForEach(
       extension_id, nullptr,
-      base::Bind(&ExtensionBindingsSystem::DispatchEventInContext,
+      base::Bind(&NativeExtensionBindingsSystem::DispatchEventInContext,
                  base::Unretained(bindings_system_.get()), event_name,
                  &event_args, filtering_info));
 }
@@ -711,24 +706,6 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       {"platformApp", IDR_PLATFORM_APP_JS},
   };
 
-  if (!base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings)) {
-    resources.push_back({"binding", IDR_BINDING_JS});
-    resources.push_back({kEventBindings, IDR_EVENT_BINDINGS_JS});
-    resources.push_back({"lastError", IDR_LAST_ERROR_JS});
-    resources.push_back({"sendRequest", IDR_SEND_REQUEST_JS});
-    resources.push_back({kSchemaUtils, IDR_SCHEMA_UTILS_JS});
-    resources.push_back({"json_schema", IDR_JSON_SCHEMA_JS});
-
-    resources.push_back({"messaging", IDR_MESSAGING_JS});
-    resources.push_back({"messaging_utils", IDR_MESSAGING_UTILS_JS});
-    resources.push_back({"extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS});
-    resources.push_back({"i18n", IDR_I18N_CUSTOM_BINDINGS_JS});
-    resources.push_back({"runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS});
-
-    // Custom types sources.
-    resources.push_back({"StorageArea", IDR_STORAGE_AREA_JS});
-  }
-
   if (base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames)) {
     resources.push_back({"guestViewIframe", IDR_GUEST_VIEW_IFRAME_JS});
     resources.push_back(
@@ -744,7 +721,7 @@ void Dispatcher::RegisterNativeHandlers(
     ModuleSystem* module_system,
     ScriptContext* context,
     Dispatcher* dispatcher,
-    ExtensionBindingsSystem* bindings_system,
+    NativeExtensionBindingsSystem* bindings_system,
     V8SchemaRegistry* v8_schema_registry) {
   module_system->RegisterNativeHandler(
       "chrome",
@@ -769,22 +746,10 @@ void Dispatcher::RegisterNativeHandlers(
       "v8_context",
       std::unique_ptr<NativeHandler>(new V8ContextNativeHandler(context)));
   module_system->RegisterNativeHandler(
-      "event_natives",
-      std::make_unique<EventBindings>(
-          context,
-          // Note: |bindings_system| can be null in unit tests.
-          bindings_system ? bindings_system->GetIPCMessageSender() : nullptr));
-  module_system->RegisterNativeHandler(
       "messaging_natives", std::make_unique<MessagingBindings>(context));
   module_system->RegisterNativeHandler(
       "apiDefinitions", std::unique_ptr<NativeHandler>(
                             new ApiDefinitionsNatives(dispatcher, context)));
-  module_system->RegisterNativeHandler(
-      "sendRequest",
-      std::make_unique<SendRequestNatives>(
-          // Note: |bindings_system| can be null in unit tests.
-          bindings_system ? bindings_system->GetRequestSender() : nullptr,
-          context));
   module_system->RegisterNativeHandler(
       "setIcon", std::unique_ptr<NativeHandler>(new SetIconNatives(context)));
   module_system->RegisterNativeHandler(
@@ -900,12 +865,9 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
   // use the old web APIs.
   // After completion of the migration, we should remove this.
   // See crbug.com/924031 for detail.
-  if (extension_id == extension_misc::kPdfExtensionId ||
-      // chrome/common/extensions/extension_constants.h::kZipArchiverExtensionId
-      extension_id == "dmboannefpncccogfdikhmhpmdnddgoe") {
+  if (extension_id == extension_misc::kPdfExtensionId) {
     blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
     blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
-    blink::WebRuntimeFeatures::EnableHTMLImports(true);
   }
   // FilesApp support. crbug.com/924873
   // For Polymer1, we still need v0 APIs.
@@ -937,7 +899,7 @@ void Dispatcher::OnDeliverMessage(int worker_thread_id,
                                   const PortId& target_port_id,
                                   const Message& message) {
   DCHECK_EQ(kMainThreadId, worker_thread_id);
-  bindings_system_->GetMessagingService()->DeliverMessage(
+  bindings_system_->messaging_service()->DeliverMessage(
       script_context_set_.get(), target_port_id, message,
       NULL);  // All render frames.
 }
@@ -951,7 +913,7 @@ void Dispatcher::OnDispatchOnConnect(
   DCHECK_EQ(kMainThreadId, worker_thread_id);
   DCHECK(!target_port_id.is_opener);
 
-  bindings_system_->GetMessagingService()->DispatchOnConnect(
+  bindings_system_->messaging_service()->DispatchOnConnect(
       script_context_set_.get(), target_port_id, channel_name, source, info,
       NULL);  // All render frames.
 }
@@ -960,7 +922,7 @@ void Dispatcher::OnDispatchOnDisconnect(int worker_thread_id,
                                         const PortId& port_id,
                                         const std::string& error_message) {
   DCHECK_EQ(kMainThreadId, worker_thread_id);
-  bindings_system_->GetMessagingService()->DispatchOnDisconnect(
+  bindings_system_->messaging_service()->DispatchOnDisconnect(
       script_context_set_.get(), port_id, error_message,
       NULL);  // All render frames.
 }
@@ -1140,7 +1102,7 @@ void Dispatcher::OnUnloaded(const std::string& id) {
   // themselves.
   script_context_set_->ForEach(
       id, nullptr,
-      base::Bind(&ExtensionBindingsSystem::WillReleaseScriptContext,
+      base::Bind(&NativeExtensionBindingsSystem::WillReleaseScriptContext,
                  base::Unretained(bindings_system_.get())));
   script_context_set_->OnExtensionUnloaded(id);
 
@@ -1333,7 +1295,7 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
 void Dispatcher::RegisterNativeHandlers(
     ModuleSystem* module_system,
     ScriptContext* context,
-    ExtensionBindingsSystem* bindings_system,
+    NativeExtensionBindingsSystem* bindings_system,
     V8SchemaRegistry* v8_schema_registry) {
   RegisterNativeHandlers(module_system, context, this, bindings_system,
                          v8_schema_registry);
@@ -1454,18 +1416,11 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   }
 }
 
-std::unique_ptr<ExtensionBindingsSystem> Dispatcher::CreateBindingsSystem(
+std::unique_ptr<NativeExtensionBindingsSystem> Dispatcher::CreateBindingsSystem(
     std::unique_ptr<IPCMessageSender> ipc_sender) {
-  std::unique_ptr<ExtensionBindingsSystem> bindings_system;
-  if (base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings)) {
-    auto system =
-        std::make_unique<NativeExtensionBindingsSystem>(std::move(ipc_sender));
-    delegate_->InitializeBindingsSystem(this, system.get());
-    bindings_system = std::move(system);
-  } else {
-    bindings_system = std::make_unique<JsExtensionBindingsSystem>(
-        &source_map_, std::move(ipc_sender));
-  }
+  auto bindings_system =
+      std::make_unique<NativeExtensionBindingsSystem>(std::move(ipc_sender));
+  delegate_->InitializeBindingsSystem(this, bindings_system.get());
   return bindings_system;
 }
 

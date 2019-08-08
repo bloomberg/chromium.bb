@@ -155,7 +155,8 @@ class RTCRtpTransceiverTest : public ::testing::Test {
         blink::WebString::FromUTF8(id), blink::WebMediaStreamSource::kTypeAudio,
         blink::WebString::FromUTF8("local_audio_track"), false);
     blink::MediaStreamAudioSource* audio_source =
-        new blink::MediaStreamAudioSource(true);
+        new blink::MediaStreamAudioSource(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true);
     // Takes ownership of |audio_source|.
     web_source.SetPlatformSource(base::WrapUnique(audio_source));
 
@@ -305,7 +306,8 @@ TEST_F(RTCRtpTransceiverTest, ModifyTransceiver) {
   EXPECT_FALSE(transceiver.FiredDirection());
 
   // Setting the state should make the transceiver state up-to-date.
-  transceiver.set_state(std::move(modified_transceiver_state));
+  transceiver.set_state(std::move(modified_transceiver_state),
+                        TransceiverStateUpdateMode::kAll);
   EXPECT_EQ(transceiver.Mid(), "MidyMacMidface");
   EXPECT_TRUE(transceiver.Sender());
   EXPECT_TRUE(transceiver.Receiver());
@@ -356,10 +358,65 @@ TEST_F(RTCRtpTransceiverTest, ShallowCopy) {
     EXPECT_FALSE(transceiver_state.is_initialized());
     transceiver_state.Initialize();
     // Set the state of the shallow copy.
-    shallow_copy->set_state(std::move(transceiver_state));
+    shallow_copy->set_state(std::move(transceiver_state),
+                            TransceiverStateUpdateMode::kAll);
   }
   EXPECT_TRUE(shallow_copy->Stopped());
   EXPECT_TRUE(transceiver->Stopped());
+}
+
+TEST_F(RTCRtpTransceiverTest, TransceiverStateUpdateModeSetDescription) {
+  auto local_track_adapter = CreateLocalTrackAndAdapter("local_track");
+  auto remote_track_adapter = CreateRemoteTrackAndAdapter("remote_track");
+  auto webrtc_sender =
+      CreateWebRtcSender(local_track_adapter->webrtc_track(), "local_stream");
+  auto webrtc_receiver = CreateWebRtcReceiver(
+      remote_track_adapter->webrtc_track(), "remote_stream");
+  auto webrtc_transceiver = CreateWebRtcTransceiver(
+      webrtc_sender, webrtc_receiver, base::nullopt, false,
+      webrtc::RtpTransceiverDirection::kSendRecv, base::nullopt);
+
+  // Create initial state.
+  RtpTransceiverState initial_transceiver_state =
+      CreateTransceiverState(webrtc_transceiver, local_track_adapter->Copy(),
+                             remote_track_adapter->Copy());
+  EXPECT_FALSE(initial_transceiver_state.is_initialized());
+  initial_transceiver_state.Initialize();
+
+  // Modify the webrtc transceiver and create a new state object for the
+  // modified state.
+  webrtc_sender->SetTrack(nullptr);
+  *webrtc_transceiver =
+      *CreateWebRtcTransceiver(webrtc_sender, webrtc_receiver, "MidyMacMidface",
+                               true, webrtc::RtpTransceiverDirection::kInactive,
+                               webrtc::RtpTransceiverDirection::kSendRecv);
+  RtpTransceiverState modified_transceiver_state =
+      CreateTransceiverState(webrtc_transceiver, local_track_adapter->Copy(),
+                             remote_track_adapter->Copy());
+  EXPECT_FALSE(modified_transceiver_state.is_initialized());
+  modified_transceiver_state.Initialize();
+
+  // Construct a transceiver from the initial state.
+  RTCRtpTransceiver transceiver(peer_connection_.get(), track_map_,
+                                std::move(initial_transceiver_state));
+  // Setting the state with TransceiverStateUpdateMode::kSetDescription should
+  // make the transceiver state up-to-date, except leaving
+  // "transceiver.direction" and "transceiver.sender.track" unmodified.
+  transceiver.set_state(std::move(modified_transceiver_state),
+                        TransceiverStateUpdateMode::kSetDescription);
+  EXPECT_EQ(transceiver.Mid(), "MidyMacMidface");
+  EXPECT_TRUE(transceiver.Sender());
+  EXPECT_TRUE(transceiver.Receiver());
+  EXPECT_TRUE(transceiver.Stopped());
+  EXPECT_TRUE(transceiver.CurrentDirection() ==
+              webrtc::RtpTransceiverDirection::kSendRecv);
+  EXPECT_FALSE(transceiver.FiredDirection());
+  // The sender still has a track, even though the modified state doesn't.
+  EXPECT_FALSE(transceiver.Sender()->Track().IsNull());
+  // The direction still "sendrecv", even though the modified state has
+  // "inactive".
+  EXPECT_EQ(transceiver.Direction(),
+            webrtc::RtpTransceiverDirection::kSendRecv);
 }
 
 }  // namespace content

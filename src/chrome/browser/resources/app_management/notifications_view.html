@@ -3,13 +3,13 @@
 <link rel="import" href="expandable_app_list.html">
 <link rel="import" href="shared_style.html">
 <link rel="import" href="store_client.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 
 <dom-module id="app-management-notifications-view">
   <template>
     <style include="app-management-shared-css">
-      paper-icon-button-light {
-        margin-inline-start: 0;
+      cr-icon-button {
+        margin: 0;
       }
 
       app-management-permission-toggle {
@@ -30,12 +30,9 @@
     <!-- TODO(crbug.com/906508): Implement display when there is no apps at
     all  -->
     <div id="notification-view-header">
-      <paper-icon-button-light class="icon-arrow-back">
-        <button id="closeButton" on-click="onClickBackButton_"
-            aria-label="$i18n{back}">
-          <paper-ripple class="circle"></paper-ripple>
-        </button>
-      </paper-icon-button-light>
+      <cr-icon-button class="icon-arrow-back" id="closeButton"
+          on-click="onClickBackButton_" aria-label="$i18n{back}">
+      </cr-icon-button>
       <div id="notification-title" class="page-title">$i18n{notifications}</div>
     </div>
     <app-management-expandable-app-list

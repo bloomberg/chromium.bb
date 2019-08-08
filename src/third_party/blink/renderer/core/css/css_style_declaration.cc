@@ -41,8 +41,8 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -81,7 +81,7 @@ bool HasCSSPropertyNamePrefix(const AtomicString& property_name,
 CSSPropertyID ParseCSSPropertyID(const AtomicString& property_name) {
   unsigned length = property_name.length();
   if (!length)
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
 
   StringBuilder builder;
   builder.ReserveCapacity(length);
@@ -92,7 +92,7 @@ CSSPropertyID ParseCSSPropertyID(const AtomicString& property_name) {
   if (HasCSSPropertyNamePrefix(property_name, "webkit"))
     builder.Append('-');
   else if (IsASCIIUpper(property_name[0]))
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
 
   bool has_seen_upper = IsASCIIUpper(property_name[i]);
 
@@ -114,7 +114,7 @@ CSSPropertyID ParseCSSPropertyID(const AtomicString& property_name) {
   // Reject names containing both dashes and upper-case characters, such as
   // "border-rightColor".
   if (has_seen_dash && has_seen_upper)
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
 
   String prop_name = builder.ToString();
   return unresolvedCSSPropertyID(prop_name);
@@ -137,11 +137,11 @@ CSSPropertyID CssPropertyInfo(const AtomicString& name) {
     return iter->value;
 
   CSSPropertyID unresolved_property = ParseCSSPropertyID(name);
-  if (unresolved_property == CSSPropertyVariable)
-    unresolved_property = CSSPropertyInvalid;
+  if (unresolved_property == CSSPropertyID::kVariable)
+    unresolved_property = CSSPropertyID::kInvalid;
   map.insert(name, unresolved_property);
   DCHECK(
-      !unresolved_property ||
+      !isValidCSSPropertyID(unresolved_property) ||
       CSSProperty::Get(resolveCSSPropertyID(unresolved_property)).IsEnabled());
   return unresolved_property;
 }
@@ -153,7 +153,7 @@ String CSSStyleDeclaration::AnonymousNamedGetter(const AtomicString& name) {
   CSSPropertyID unresolved_property = CssPropertyInfo(name);
 
   // Do not handle non-property names.
-  if (!unresolved_property)
+  if (!isValidCSSPropertyID(unresolved_property))
     return String();
 
   return GetPropertyValueInternal(resolveCSSPropertyID(unresolved_property));
@@ -167,7 +167,7 @@ bool CSSStyleDeclaration::AnonymousNamedSetter(ScriptState* script_state,
   if (!execution_context)
     return false;
   CSSPropertyID unresolved_property = CssPropertyInfo(name);
-  if (!unresolved_property)
+  if (!isValidCSSPropertyID(unresolved_property))
     return false;
   // We create the ExceptionState manually due to performance issues: adding
   // [RaisesException] to the IDL causes the bindings layer to expensively
@@ -192,8 +192,7 @@ void CSSStyleDeclaration::NamedPropertyEnumerator(Vector<String>& names,
   DEFINE_STATIC_LOCAL(PreAllocatedPropertyVector, property_names, ());
 
   if (property_names.IsEmpty()) {
-    for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
-      CSSPropertyID property_id = static_cast<CSSPropertyID>(id);
+    for (CSSPropertyID property_id : CSSPropertyIDList()) {
       const CSSProperty& property_class =
           CSSProperty::Get(resolveCSSPropertyID(property_id));
       if (property_class.IsEnabled())
@@ -213,7 +212,7 @@ void CSSStyleDeclaration::NamedPropertyEnumerator(Vector<String>& names,
 
 bool CSSStyleDeclaration::NamedPropertyQuery(const AtomicString& name,
                                              ExceptionState&) {
-  return CssPropertyInfo(name);
+  return isValidCSSPropertyID(CssPropertyInfo(name));
 }
 
 }  // namespace blink

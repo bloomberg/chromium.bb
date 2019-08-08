@@ -10,7 +10,6 @@ import android.content.res.Resources;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.JsonWriter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -22,6 +21,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BitmapCache;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
@@ -30,8 +30,6 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.ContactsPickerListener;
 import org.chromium.ui.UiUtils;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -148,8 +146,8 @@ public class PickerCategoryView extends RelativeLayout
         int titleId = multiSelectionAllowed ? R.string.contacts_picker_select_contacts
                                             : R.string.contacts_picker_select_contact;
         mToolbar = (ContactsPickerToolbar) mSelectableListLayout.initializeToolbar(
-                R.layout.contacts_picker_toolbar, mSelectionDelegate, titleId, null, 0, 0, null,
-                false, false);
+                R.layout.contacts_picker_toolbar, mSelectionDelegate, titleId, 0, 0, null, false,
+                false);
         mToolbar.setNavigationOnClickListener(this);
         mToolbar.initializeSearchView(this, R.string.contacts_picker_search, 0);
 
@@ -166,7 +164,7 @@ public class PickerCategoryView extends RelativeLayout
         // available memory, but cap it at 5MB.
         final long maxMemory = ConversionUtils.bytesToKilobytes(Runtime.getRuntime().maxMemory());
         int iconCacheSizeKb = (int) (maxMemory / 8); // 1/8th of the available memory.
-        mBitmapCache = new BitmapCache(mActivity.getChromeApplication().getReferencePool(),
+        mBitmapCache = new BitmapCache(ChromeApplication.getReferencePool(),
                 Math.min(iconCacheSizeKb, 5 * ConversionUtils.BYTES_PER_MEGABYTE));
     }
 
@@ -182,7 +180,7 @@ public class PickerCategoryView extends RelativeLayout
         mDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
-                executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null, null);
+                executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null);
             }
         });
 
@@ -263,12 +261,12 @@ public class PickerCategoryView extends RelativeLayout
             mSelectionDelegate.setSelectedItems(
                     new HashSet<ContactDetails>(mPickerAdapter.getAllContacts()));
             mListener.onContactsPickerUserAction(
-                    ContactsPickerListener.ContactsPickerAction.SELECT_ALL, null, null);
+                    ContactsPickerListener.ContactsPickerAction.SELECT_ALL, null);
         } else {
             mSelectionDelegate.setSelectedItems(new HashSet<ContactDetails>());
             mPreviousSelection = null;
             mListener.onContactsPickerUserAction(
-                    ContactsPickerListener.ContactsPickerAction.UNDO_SELECT_ALL, null, null);
+                    ContactsPickerListener.ContactsPickerAction.UNDO_SELECT_ALL, null);
         }
     }
 
@@ -282,7 +280,7 @@ public class PickerCategoryView extends RelativeLayout
         } else if (id == R.id.search) {
             onStartSearch();
         } else {
-            executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null, null);
+            executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null);
         }
     }
 
@@ -319,27 +317,16 @@ public class PickerCategoryView extends RelativeLayout
         List<ContactDetails> selectedContacts = mSelectionDelegate.getSelectedItemsAsList();
         Collections.sort(selectedContacts);
 
-        StringWriter out = new StringWriter();
-        final JsonWriter writer = new JsonWriter(out);
         List<ContactsPickerListener.Contact> contacts =
                 new ArrayList<ContactsPickerListener.Contact>();
 
-        try {
-            writer.beginArray();
-            for (ContactDetails contactDetails : selectedContacts) {
-                contactDetails.appendJson(writer);
-                contacts.add(new ContactsPickerListener.Contact(
-                        includeNames ? contactDetails.getDisplayNames() : null,
-                        includeEmails ? contactDetails.getEmails() : null,
-                        includeTel ? contactDetails.getPhoneNumbers() : null));
-            }
-            writer.endArray();
-            executeAction(ContactsPickerListener.ContactsPickerAction.CONTACTS_SELECTED,
-                    out.toString(), contacts);
-        } catch (IOException e) {
-            assert false;
-            executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null, null);
+        for (ContactDetails contactDetails : selectedContacts) {
+            contacts.add(new ContactsPickerListener.Contact(
+                    includeNames ? contactDetails.getDisplayNames() : null,
+                    includeEmails ? contactDetails.getEmails() : null,
+                    includeTel ? contactDetails.getPhoneNumbers() : null));
         }
+        executeAction(ContactsPickerListener.ContactsPickerAction.CONTACTS_SELECTED, contacts);
     }
 
     /**
@@ -348,8 +335,8 @@ public class PickerCategoryView extends RelativeLayout
      * @param contacts The contacts that were selected (if any).
      */
     private void executeAction(@ContactsPickerListener.ContactsPickerAction int action,
-            String contactsJson, List<ContactsPickerListener.Contact> contacts) {
-        mListener.onContactsPickerUserAction(action, contactsJson, contacts);
+            List<ContactsPickerListener.Contact> contacts) {
+        mListener.onContactsPickerUserAction(action, contacts);
         mDialog.dismiss();
         UiUtils.onContactsPickerDismissed();
     }

@@ -6,6 +6,7 @@
  */
 
 #include "Benchmark.h"
+#include "SkRect.h"
 #include "SkPolyUtils.h"
 
 class PolyUtilsBench : public Benchmark {
@@ -70,9 +71,13 @@ protected:
             case Type::kOffsetSimple:
                 if (SkIsSimplePolygon(poly.begin(), poly.count())) {
                     SkTDArray<SkPoint> result;
+                    SkRect bounds;
+                    bounds.setBounds(poly.begin(), poly.count());
                     for (int i = 0; i < loops; i++) {
-                        (void)SkOffsetSimplePolygon(poly.begin(), poly.count(), 10, &result);
-                        (void)SkOffsetSimplePolygon(poly.begin(), poly.count(), -10, &result);
+                        (void)SkOffsetSimplePolygon(poly.begin(), poly.count(), bounds, 10,
+                                                    &result);
+                        (void)SkOffsetSimplePolygon(poly.begin(), poly.count(), bounds, -10,
+                                                    &result);
                     }
                 }
                 break;
@@ -115,11 +120,9 @@ public:
         SkScalar rad = 0;
         const SkScalar drad = SK_ScalarPI / n;
         for (int i = 0; i < n; i++) {
-            SkScalar cosV, sinV = SkScalarSinCos(rad, &cosV);
-            *poly->push() = SkPoint::Make(c + cosV * r1, c + sinV * r1);
+            *poly->push() = SkPoint::Make(c + SkScalarCos(rad) * r1, c + SkScalarSin(rad) * r1);
             rad += drad;
-            sinV = SkScalarSinCos(rad, &cosV);
-            *poly->push() = SkPoint::Make(c + cosV * r2, c + sinV * r2);
+            *poly->push() = SkPoint::Make(c + SkScalarCos(rad) * r2, c + SkScalarSin(rad) * r2);
             rad += drad;
         }
     }
@@ -142,8 +145,7 @@ public:
         SkScalar rad = 0;
         const SkScalar drad = 2 * SK_ScalarPI / n;
         for (int i = 0; i < n; i++) {
-            SkScalar cosV, sinV = SkScalarSinCos(rad, &cosV);
-            *poly->push() = SkPoint::Make(c + cosV * r, c + sinV * r);
+            *poly->push() = SkPoint::Make(c + SkScalarCos(rad) * r, c + SkScalarSin(rad) * r);
             rad += drad;
         }
     }
@@ -169,8 +171,7 @@ public:
         *poly->push() = SkPoint::Make(c, c - r);
         for (int i = 1; i < n; i++) {
             rad += drad;
-            SkScalar cosV, sinV = SkScalarSinCos(rad, &cosV);
-            *poly->push() = SkPoint::Make(c + cosV * r, c + sinV * r);
+            *poly->push() = SkPoint::Make(c + SkScalarCos(rad) * r, c + SkScalarSin(rad) * r);
         }
     }
 private:
@@ -193,8 +194,7 @@ public:
         SkScalar rad = 0;
         const SkScalar drad = 3 * SK_ScalarPI / (2*n);
         for (int i = 0; i < n; i++) {
-            SkScalar cosV, sinV = SkScalarSinCos(rad, &cosV);
-            *poly->push() = SkPoint::Make(c + cosV * r, c + sinV * r);
+            *poly->push() = SkPoint::Make(c + SkScalarCos(rad) * r, c + SkScalarSin(rad) * r);
             rad += drad;
         }
         // and the mouth
@@ -219,8 +219,7 @@ public:
         SkScalar rad = 0;
         const SkScalar drad = 3 * SK_ScalarPI / (2*n);
         for (int i = 0; i < n; i++) {
-            SkScalar cosV, sinV = SkScalarSinCos(rad, &cosV);
-            *poly->push() = SkPoint::Make(c + cosV * r, c + sinV * r);
+            *poly->push() = SkPoint::Make(c + SkScalarCos(rad) * r, c + SkScalarSin(rad) * r);
             rad += drad;
         }
         // and the tip of the cone

@@ -560,6 +560,11 @@ unsigned int RasterImplementation::GetTransferBufferFreeSize() const {
   return transfer_buffer_->GetFreeSize();
 }
 
+bool RasterImplementation::CanDecodeWithHardwareAcceleration(
+    base::span<const uint8_t> encoded_data) const {
+  return image_decode_accelerator_->IsImageSupported(encoded_data);
+}
+
 const std::string& RasterImplementation::GetLogPrefix() const {
   const std::string& prefix(debug_marker_manager_.GetMarker());
   return prefix.empty() ? this_in_hex_ : prefix;
@@ -773,6 +778,22 @@ void RasterImplementation::Flush() {
   FlushHelper();
 }
 
+// InterfaceBase implementation.
+void RasterImplementation::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
+  ImplementationBase::GenSyncToken(sync_token);
+}
+void RasterImplementation::GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) {
+  ImplementationBase::GenUnverifiedSyncToken(sync_token);
+}
+void RasterImplementation::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
+                                                    GLsizei count) {
+  ImplementationBase::VerifySyncTokens(sync_tokens, count);
+}
+void RasterImplementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
+  ImplementationBase::WaitSyncToken(sync_token);
+}
+
+// ImplementationBase implementation.
 void RasterImplementation::IssueShallowFlush() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glShallowFlushCHROMIUM()");
@@ -898,74 +919,6 @@ void RasterImplementation::GetQueryObjectuivEXT(GLuint id,
   GLuint64 result = 0;
   if (GetQueryObjectValueHelper("glGetQueryObjectuivEXT", id, pname, &result))
     *params = base::saturated_cast<GLuint>(result);
-}
-
-void RasterImplementation::GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) {
-  if (!sync_token) {
-    SetGLError(GL_INVALID_VALUE, "glGenUnverifiedSyncTokenCHROMIUM",
-               "empty sync_token");
-    return;
-  }
-
-  uint64_t fence_sync = gpu_control_->GenerateFenceSyncRelease();
-  helper_->InsertFenceSyncCHROMIUM(fence_sync);
-  helper_->CommandBufferHelper::OrderingBarrier();
-
-  // Copy the data over after setting the data to ensure alignment.
-  SyncToken sync_token_data(gpu_control_->GetNamespaceID(),
-                            gpu_control_->GetCommandBufferID(), fence_sync);
-  memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
-}
-
-void RasterImplementation::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
-                                                    GLsizei count) {
-  bool requires_synchronization = false;
-  for (GLsizei i = 0; i < count; ++i) {
-    if (sync_tokens[i]) {
-      SyncToken sync_token;
-      memcpy(&sync_token, sync_tokens[i], sizeof(sync_token));
-
-      if (sync_token.HasData() && !sync_token.verified_flush()) {
-        if (!GetVerifiedSyncTokenForIPC(sync_token, &sync_token)) {
-          SetGLError(GL_INVALID_VALUE, "glVerifySyncTokensCHROMIUM",
-                     "Cannot verify sync token using this context.");
-          return;
-        }
-        requires_synchronization = true;
-        DCHECK(sync_token.verified_flush());
-      }
-
-      // Set verify bit on empty sync tokens too.
-      sync_token.SetVerifyFlush();
-
-      memcpy(sync_tokens[i], &sync_token, sizeof(sync_token));
-    }
-  }
-
-  // Ensure all the fence syncs are visible on GPU service.
-  if (requires_synchronization)
-    gpu_control_->EnsureWorkVisible();
-}
-
-void RasterImplementation::WaitSyncTokenCHROMIUM(
-    const GLbyte* sync_token_data) {
-  if (!sync_token_data)
-    return;
-
-  // Copy the data over before data access to ensure alignment.
-  SyncToken sync_token, verified_sync_token;
-  memcpy(&sync_token, sync_token_data, sizeof(SyncToken));
-
-  if (!sync_token.HasData())
-    return;
-
-  if (!GetVerifiedSyncTokenForIPC(sync_token, &verified_sync_token)) {
-    SetGLError(GL_INVALID_VALUE, "glWaitSyncTokenCHROMIUM",
-               "Cannot wait on sync_token which has not been verified");
-    return;
-  }
-
-  gpu_control_->WaitSyncToken(verified_sync_token);
 }
 
 void* RasterImplementation::MapRasterCHROMIUM(uint32_t size,
@@ -1181,11 +1134,6 @@ void RasterImplementation::EndRasterCHROMIUM() {
     ClearPaintCache();
   else
     FlushPaintCachePurgedEntries();
-}
-
-bool RasterImplementation::CanDecodeWithHardwareAcceleration(
-    base::span<const uint8_t> encoded_data) {
-  return image_decode_accelerator_->IsImageSupported(encoded_data);
 }
 
 SyncToken RasterImplementation::ScheduleImageDecode(

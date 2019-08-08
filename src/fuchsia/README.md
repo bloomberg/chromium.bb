@@ -1,74 +1,113 @@
-# Chromium web_runner
-This directory contains the web_runner implementation. Web_runner enables
-Fuchsia applications to embed Chrome frames for rendering web content.
+# Chromium-based Fuchsia services
+This directory contains implementation code for various Fuchsia services living
+in the Chromium repository.
 
+[TOC]
 
-### Building and deploying web_runner
-When you build web_runner, Chromium will automatically generate scripts for
+## Code organization
+Each of the following subdirectories contain code for a specific Fuchsia
+service:
+* `./engine` contains the WebEngine implementation. The WebEngine enables
+Fuchsia applications to embed Chromium frames for rendering web content.
+* `./http` contains an implementation for the Fuchsia HTTP service.
+* `./runners`contains implementations of Fuchsia `sys.runner`.
+    * `./runners/cast` Enables the Fuchsia system to launch cast applications.
+    * `./runners/web` Enables the Fuchsia system to launch HTTP or HTTPS URLs.
+
+When writing a new Fuchsia service, it is recommended to create a new
+subdirectory under `//fuchsia` or a new subdirectory under `//fuchsia/runners`
+depending on the use case.
+
+The `./base` subdirectory contains common utilities used by more than one of
+the aforementioned Fuchsia services.
+
+The `./cipd` and `./fidl` subdirectories contain CIPD definitions and FIDL
+interface definitions, respectfully.
+
+### Test-only code
+
+Test-only code should live in the same directory as the code under test.
+There is one exception to this rule for fake implementations of interfaces and
+shared test fixtures. When the number of source files containing code related
+to these has reached a certain threshold, they should be moved to a `test`
+subdirectory. For instance, see the `//fuchsia/engine/test` directory.
+
+### Namespacing
+
+Code that is not shared across multiple targets should live in the global
+namespace. Code that is shared across multiple targets should live in the
+`cr_fuchsia` namespace.
+
+### Running test suites
+
+Building test suites generate a launcher script to run them on a QEMU instance.
+These scripts are generated at `out/fuchsia/bin`. For instance,to run the
+`base_unittests` target, launch:
+
+```bash
+$ out/fuchsia/bin/run_base_unittests
+```
+
+## Building and deploying the WebRunner service
+
+When you build `web_runner`, Chromium will automatically generate scripts for
 you that will automatically provision a device with Fuchsia and then install
 `web_runner` and its dependencies.
 
-To build and run web_runner, follow these steps:
+To build and run `web_runner`, follow these steps:
 
-0. Ensure that you have a device ready to boot into Fuchsia.
+1. (Optional) Ensure that you have a device ready to boot into Fuchsia.
 
-   If you wish to have WebRunner manage the OS deployment process, then you
-   should have the device booting into
-   [Zedboot](https://fuchsia.googlesource.com/zircon/+/master/docs/targets/bootloader_setup.md).
+    If you wish to have `web_runner` manage the OS deployment process, then you
+    should have the device booting into
+    [Zedboot](https://fuchsia.googlesource.com/zircon/+/master/docs/targets/usb_setup.md).
 
-1. Build web_runner.
+2. Build `web_runner`.
 
-   ```
-   $ autoninja -C out/Debug webrunner
-   ```
+    ```bash
+    $ autoninja -C out/fuchsia web_runner
+    ```
 
-2. Install web_runner.
+3. Install `web_runner`.
 
-    * **For devices running Zedboot**
+    * For devices running Zedboot:
 
-          ```
-          $ out/Debug/bin/install_webrunner -d
-          ```
+        ```bash
+        $ out/fuchsia/bin/install_web_runner -d
+        ```
 
-    * **For devices already running Fuchsia**
+    * For devices already booted into Fuchsia:
 
-          You will need to add command line flags specifying the device's IP
-          address and the path to the `ssh_config` used by the device
-          (located at `FUCHSIA_OUT_DIR/ssh-keys/ssh_config`):
+        You will need to add command line flags specifying the device's IP
+        address and the path to the `ssh_config` used by the device
+        (located at `$FUCHSIA_OUT_DIR/ssh-keys/ssh_config`):
 
-          ```
-          $ out/Debug/bin/install_webrunner -d --ssh-config PATH_TO_SSH_CONFIG
-          --host DEVICE_IP
-          ```
+        ```bash
+        $ out/fuchsia/bin/install_web_runner -d --ssh-config $PATH_TO_SSH_CONFIG
+        ```
 
-3. Run "tiles" on the device.
-
-   ```
-   $ run tiles&
-   ```
-
-4. Press the OS key on your device to switch back to terminal mode.
-   (Also known as the "Windows key" or "Super key" on many keyboards).
+4. Press Alt-Esc key on your device to switch back to terminal mode or run
+`fx shell` from the host.
 
 5. Launch a webpage.
 
-   ```
-   $ tiles_ctl add https://www.chromium.org/
-   ```
+    ```bash
+    $ tiles_ctl add https://www.chromium.org/
+    ```
 
-6. Press the OS key to switch back to graphical view. The browser window should
-   be displayed and ready to use.
+6. Press Alt-Esc to switch back to graphical view if needed. The browser
+window should be displayed and ready to use.
 
 7. You can deploy and run new versions of Chromium without needing to reboot.
 
-   First kill any running processes:
+    First kill any running processes:
 
-      ```
-      $ killall chromium; killall web_runner
-      ```
+    ```bash
+    $ killall chromium.cmx; killall web_runner.cmx
+    ```
 
-   Then repeat steps 1 through 6 from the installation instructions, excluding
-   step #3 (running Tiles).
+    Then repeat steps 1 through 6 from the installation instructions, excluding
+    step #3 (running Tiles).
 
 
 ### Closing a webpage
@@ -76,39 +115,40 @@ To build and run web_runner, follow these steps:
 1. Press the Windows key to return to the terminal.
 
 2. Instruct tiles_ctl to remove the webpage's window tile. The tile's number is
-   reported by step 6, or it can be found by running `tiles_ctl list` and
-   noting the ID of the "url" entry.
+    reported by step 6, or it can be found by running `tiles_ctl list` and
+    noting the ID of the "url" entry.
 
-   ```shell
-   $ tiles_ctl remove TILE_NUMBER
-   ```
+    ```bash
+    $ tiles_ctl remove TILE_NUMBER
+    ```
 
-### Debugging
+## Debugging
 
 Rudimentary debugging is now possible with zxdb which is included in the SDK.
 It is still early and fairly manual to set up. After following the steps above:
 
-1. On device, run `sysinfo` to see your device's IP address.
+1. To get your device IP address, run `ifconfig` on the device or `fx netaddr`
+on the host.
 
-1. On device, run `debug_agent --port=2345`.
+2. On the device, run `run debug_agent --port=2345`.
 
-1. On the host, run
+3. On the host, run
 
-```
-third_party/fuchsia_sdk/sdk/tools/zxdb -s out/Debug/exe.unstripped -s out/Debug/lib.unstripped
-```
+    ```bash
+    third_party/fuchsia_sdk/sdk/tools/zxdb -s out/fuchsia/exe.unstripped -s out/fuchsia/lib.unstripped
+    ```
 
-1. In zxdb, `connect <ip-from-sysinfo-above> 2345`.
+4. In zxdb, `connect <ip-from-sysinfo-above> 2345`.
 
-1. On the host, run `ps` and find the pid of the process you want to debug, e.g.
-   `web_runner`.
+5. On the device, run `ps` and find the pid of the process you want to debug,
+e.g. `web_runner`.
 
-1. In zxdb, `attach <pid>`. You should be able to attach to multiple processes.
+6. In zxdb, `attach <pid>`. You should be able to attach to multiple processes.
 
-1. In zxdb, `b ComponentControllerImpl::CreateForRequest` to set a breakpoint.
+7. In zxdb, `b ComponentControllerImpl::CreateForRequest` to set a breakpoint.
 
-1. On device, do something to make your breakpoint be hit. In this case
-   `tiles_ctl add https://www.google.com/` should cause a new request.
+8. On device, do something to make your breakpoint be hit. In this case
+`tiles_ctl add https://www.google.com/` should cause a new request.
 
 At this point, you should hit the breakpoint in zxdb.
 
@@ -149,6 +189,7 @@ At this point, you should hit the breakpoint in zxdb.
 [zxdb]
 ```
 
-https://fuchsia.googlesource.com/garnet/+/master/docs/debugger.md#diagnosing-symbol-problems
+This
+[documentation](https://fuchsia.googlesource.com/garnet/+/master/docs/debugger.md#diagnosing-symbol-problems)
 maybe be a useful reference if you do not see symbols. That page also has
 general help on using the debugger.

@@ -112,14 +112,6 @@ bool FatalMessageHandler(int severity,
   return false;
 }
 
-// Caches the uploading flag in NSUserDefaults, so that we can access the value
-// in safe mode.
-void CacheUploadingEnabled(bool uploading_enabled) {
-  NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
-  [user_defaults setBool:uploading_enabled ? YES : NO
-                  forKey:kCrashReportsUploadingEnabledKey];
-}
-
 }  // namespace
 
 void Start(const std::string& channel_name) {
@@ -155,16 +147,21 @@ void SetEnabled(bool enabled) {
     [[BreakpadController sharedInstance] start:NO];
   } else {
     [[BreakpadController sharedInstance] stop];
-    CacheUploadingEnabled(false);
   }
 }
 
 void SetBreakpadUploadingEnabled(bool enabled) {
-  CacheUploadingEnabled(g_crash_reporter_enabled && enabled);
-
   if (!g_crash_reporter_enabled)
     return;
   [[BreakpadController sharedInstance] setUploadingEnabled:enabled];
+}
+
+// Caches the uploading flag in NSUserDefaults, so that we can access the value
+// in safe mode.
+void SetUserEnabledUploading(bool uploading_enabled) {
+  [[NSUserDefaults standardUserDefaults]
+      setBool:uploading_enabled ? YES : NO
+       forKey:kCrashReportsUploadingEnabledKey];
 }
 
 void SetUploadingEnabled(bool enabled) {
@@ -185,8 +182,7 @@ void SetUploadingEnabled(bool enabled) {
   }
 }
 
-bool IsUploadingEnabled() {
-  // Return the value cached by CacheUploadingEnabled().
+bool UserEnabledUploading() {
   return [[NSUserDefaults standardUserDefaults]
       boolForKey:kCrashReportsUploadingEnabledKey];
 }

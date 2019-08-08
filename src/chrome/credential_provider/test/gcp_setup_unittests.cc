@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "base/base_paths.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
 #include "base/file_version_info.h"
@@ -410,6 +411,73 @@ TEST_F(GcpSetupTest, ValidLsaWithNoExistingUser) {
   EXPECT_EQ(
       expected_gaia_username,
       fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaUsername]);
+}
+
+TEST_F(GcpSetupTest, EnableStats) {
+  // Make sure usagestats does not exist.
+  base::win::RegKey key;
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_LOCAL_MACHINE,
+                       credential_provider::kRegUpdaterClientStateAppPath,
+                       KEY_ALL_ACCESS | KEY_WOW64_32KEY));
+  DWORD value;
+  EXPECT_NE(ERROR_SUCCESS,
+            key.ReadValueDW(credential_provider::kRegUsageStatsName, &value));
+
+  // Enable stats.
+  base::CommandLine cmdline(base::CommandLine::NO_PROGRAM);
+  cmdline.AppendSwitch(credential_provider::switches::kEnableStats);
+  EXPECT_EQ(0, EnableStatsCollection(cmdline));
+
+  // Stats should be enabled.
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.ReadValueDW(credential_provider::kRegUsageStatsName, &value));
+  EXPECT_EQ(1u, value);
+}
+
+TEST_F(GcpSetupTest, DisableStats) {
+  // Make sure usagestats does not exist.
+  base::win::RegKey key;
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_LOCAL_MACHINE,
+                       credential_provider::kRegUpdaterClientStateAppPath,
+                       KEY_ALL_ACCESS | KEY_WOW64_32KEY));
+  DWORD value;
+  EXPECT_NE(ERROR_SUCCESS,
+            key.ReadValueDW(credential_provider::kRegUsageStatsName, &value));
+
+  // Disable stats.
+  base::CommandLine cmdline(base::CommandLine::NO_PROGRAM);
+  cmdline.AppendSwitch(credential_provider::switches::kDisableStats);
+  EXPECT_EQ(0, EnableStatsCollection(cmdline));
+
+  // Stats should be disabled.
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.ReadValueDW(credential_provider::kRegUsageStatsName, &value));
+  EXPECT_EQ(0u, value);
+}
+
+TEST_F(GcpSetupTest, EnableDisableStats) {
+  // Make sure usagestats does not exist.
+  base::win::RegKey key;
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_LOCAL_MACHINE,
+                       credential_provider::kRegUpdaterClientStateAppPath,
+                       KEY_ALL_ACCESS | KEY_WOW64_32KEY));
+  DWORD value;
+  EXPECT_NE(ERROR_SUCCESS,
+            key.ReadValueDW(credential_provider::kRegUsageStatsName, &value));
+
+  // Enable and disable stats.
+  base::CommandLine cmdline(base::CommandLine::NO_PROGRAM);
+  cmdline.AppendSwitch(credential_provider::switches::kEnableStats);
+  cmdline.AppendSwitch(credential_provider::switches::kDisableStats);
+  EXPECT_EQ(0, EnableStatsCollection(cmdline));
+
+  // Stats should be disabled.
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.ReadValueDW(credential_provider::kRegUsageStatsName, &value));
+  EXPECT_EQ(0u, value);
 }
 
 // This test checks the expect success / failure of DLL registration when

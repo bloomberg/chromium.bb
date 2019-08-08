@@ -62,7 +62,7 @@ void CredentialManagerImpl::Store(const CredentialInfo& credential,
   // without fetching of suppressed HTTPS credentials on HTTP origins as the API
   // is only available on HTTPS origins.
   auto form_fetcher = std::make_unique<FormFetcherImpl>(
-      PasswordStore::FormDigest(*observed_form), client_, false, false);
+      PasswordStore::FormDigest(*observed_form), client_, false);
   form_manager_ = std::make_unique<CredentialManagerPasswordFormManager>(
       client_, *observed_form, std::move(form), this, nullptr,
       std::move(form_fetcher));

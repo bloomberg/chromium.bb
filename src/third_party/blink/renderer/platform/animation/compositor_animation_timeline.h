@@ -23,10 +23,7 @@ class PLATFORM_EXPORT CompositorAnimationTimeline {
   USING_FAST_MALLOC(CompositorAnimationTimeline);
 
  public:
-  static std::unique_ptr<CompositorAnimationTimeline> Create() {
-    return base::WrapUnique(new CompositorAnimationTimeline());
-  }
-
+  CompositorAnimationTimeline();
   ~CompositorAnimationTimeline();
 
   cc::AnimationTimeline* GetAnimationTimeline() const;
@@ -35,8 +32,6 @@ class PLATFORM_EXPORT CompositorAnimationTimeline {
   void AnimationDestroyed(const CompositorAnimationClient&);
 
  private:
-  CompositorAnimationTimeline();
-
   scoped_refptr<cc::AnimationTimeline> animation_timeline_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorAnimationTimeline);

@@ -65,9 +65,6 @@ enum IDCollectionKey {
   // server side experimental behavior, transmitted through the
   // X-Client-Data header.
   GOOGLE_WEB_PROPERTIES_TRIGGER,
-  // This collection is used by Chrome Sync services, transmitted through the
-  // Sync Event Logger.
-  CHROME_SYNC_EVENT_LOGGER,
   // The total count of collections.
   ID_COLLECTION_COUNT,
 };

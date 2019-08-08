@@ -44,7 +44,7 @@ void BackgroundFetchUpdateUIEvent::Trace(blink::Visitor* visitor) {
 ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
     ScriptState* script_state,
     const BackgroundFetchUIOptions* ui_options) {
-  if (observer_ && !observer_->IsEventActive(script_state)) {
+  if (observer_ && !observer_->IsEventActive()) {
     // Return a rejected promise as the event is no longer active.
     return ScriptPromise::RejectWithDOMException(
         script_state,
@@ -68,14 +68,13 @@ ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
     // vs reacting eagerly.
     return ScriptPromise();
   }
-  DCHECK(!registration_->unique_id().IsEmpty());
 
   if (!ui_options->hasTitle() && ui_options->icons().IsEmpty()) {
     // Nothing to update, just return a resolved promise.
     return ScriptPromise::CastUndefined(script_state);
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (ui_options->icons().IsEmpty()) {
@@ -100,10 +99,10 @@ void BackgroundFetchUpdateUIEvent::DidGetIcon(
     const String& title,
     const SkBitmap& icon,
     int64_t ideal_to_chosen_icon_size) {
-  BackgroundFetchBridge::From(service_worker_registration_)
-      ->UpdateUI(registration_->id(), registration_->unique_id(), title, icon,
-                 WTF::Bind(&BackgroundFetchUpdateUIEvent::DidUpdateUI,
-                           WrapPersistent(this), WrapPersistent(resolver)));
+  registration()->GetRegistrationService()->UpdateUI(
+      title, icon,
+      WTF::Bind(&BackgroundFetchUpdateUIEvent::DidUpdateUI,
+                WrapPersistent(this), WrapPersistent(resolver)));
 }
 
 void BackgroundFetchUpdateUIEvent::DidUpdateUI(

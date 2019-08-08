@@ -11,10 +11,10 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_base.h"
-#include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "services/resource_coordinator/public/mojom/lifecycle.mojom.h"
 
 class PrefChangeRegistrar;
 class PrefService;
@@ -29,28 +29,27 @@ namespace resource_coordinator {
 class InterventionPolicyDatabase;
 class TabLifecylesEnterprisePreferenceMonitor;
 class TabLifecycleObserver;
+class TabLifecycleStateObserver;
 class TabLifecycleUnitExternal;
 class UsageClock;
 
 // Creates and destroys LifecycleUnits as tabs are created and destroyed.
 class TabLifecycleUnitSource : public BrowserListObserver,
                                public LifecycleUnitSourceBase,
-                               public PageSignalObserver,
                                public TabStripModelObserver {
  public:
   class TabLifecycleUnit;
+  class LifecycleStateObserver;
 
-  // |page_signal_receiver| might be null.
   TabLifecycleUnitSource(
       InterventionPolicyDatabase* intervention_policy_database,
-      UsageClock* usage_clock,
-      PageSignalReceiver* page_signal_receiver);
+      UsageClock* usage_clock);
   ~TabLifecycleUnitSource() override;
 
   // Returns the TabLifecycleUnitExternal instance associated with
   // |web_contents|, or nullptr if |web_contents| isn't a tab.
-  TabLifecycleUnitExternal* GetTabLifecycleUnitExternal(
-      content::WebContents* web_contents) const;
+  static TabLifecycleUnitExternal* GetTabLifecycleUnitExternal(
+      content::WebContents* web_contents);
 
   // Adds / removes an observer that is notified when the discarded or auto-
   // discardable state of a tab changes.
@@ -78,6 +77,7 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   void OnAllLifecycleUnitsDestroyed() override;
 
  private:
+  friend class TabLifecycleStateObserver;
   friend class TabLifecycleUnitTest;
   friend class TabManagerTest;
   FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitSourceTest,
@@ -96,8 +96,8 @@ class TabLifecycleUnitSource : public BrowserListObserver,
 
   // Returns the TabLifecycleUnit instance associated with |web_contents|, or
   // nullptr if |web_contents| isn't a tab.
-  TabLifecycleUnit* GetTabLifecycleUnit(
-      content::WebContents* web_contents) const;
+  static TabLifecycleUnit* GetTabLifecycleUnit(
+      content::WebContents* web_contents);
 
   // Returns the TabStripModel of the focused browser window, if any.
   TabStripModel* GetFocusedTabStripModel() const;
@@ -133,10 +133,10 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   void OnBrowserSetLastActive(Browser* browser) override;
   void OnBrowserNoLongerActive(Browser* browser) override;
 
-  // PageSignalObserver:
-  void OnLifecycleStateChanged(content::WebContents* web_contents,
-                               const PageNavigationIdentity& page_navigation_id,
-                               mojom::LifecycleState state) override;
+  // This is called indirectly from the corresponding event on a PageNode in the
+  // performance_manager Graph.
+  static void OnLifecycleStateChanged(content::WebContents* web_contents,
+                                      mojom::LifecycleState state);
 
   // Callback for TabLifecyclesEnterprisePreferenceMonitor.
   void SetTabLifecyclesEnterprisePolicy(bool enabled);
@@ -153,10 +153,6 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // Observers notified when the discarded or auto-discardable state of a tab
   // changes.
   base::ObserverList<TabLifecycleObserver>::Unchecked tab_lifecycle_observers_;
-
-  // PageSignalReceiver is a static singleton so it outlives this object.
-  ScopedObserver<PageSignalReceiver, PageSignalObserver>
-      page_signal_receiver_observer_;
 
   // The intervention policy database used to assist freezing/discarding
   // decisions.
@@ -196,6 +192,8 @@ class TabLifecylesEnterprisePreferenceMonitor {
   PrefService* pref_service_;
   OnPreferenceChangedCallback callback_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabLifecylesEnterprisePreferenceMonitor);
 };
 
 }  // namespace resource_coordinator

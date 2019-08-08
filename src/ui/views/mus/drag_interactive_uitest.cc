@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -49,13 +51,13 @@ class TargetView : public views::View {
   TargetView() : dropped_(false) {}
   ~TargetView() override {}
 
-  void WaitForDropped(base::Closure quit_closure) {
+  void WaitForDropped(base::OnceClosure quit_closure) {
     if (dropped_) {
-      quit_closure.Run();
+      std::move(quit_closure).Run();
       return;
     }
 
-    quit_closure_ = quit_closure;
+    quit_closure_ = std::move(quit_closure);
   }
 
   // views::View overrides:
@@ -73,7 +75,7 @@ class TargetView : public views::View {
   int OnPerformDrop(const ui::DropTargetEvent& event) override {
     dropped_ = true;
     if (quit_closure_)
-      quit_closure_.Run();
+      std::move(quit_closure_).Run();
     return ui::DragDropTypes::DRAG_MOVE;
   }
 
@@ -82,7 +84,7 @@ class TargetView : public views::View {
  private:
   bool dropped_;
 
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetView);
 };
@@ -115,7 +117,7 @@ using DragTestInteractive = ViewsInteractiveUITestBase;
 // consists of callback functions which will perform an action after the
 // previous action has completed.
 void DragTest_Part3(int64_t display_id,
-                    const base::Closure& quit_closure,
+                    base::RepeatingClosure quit_closure,
                     bool result) {
   EXPECT_TRUE(result);
   quit_closure.Run();
@@ -123,7 +125,7 @@ void DragTest_Part3(int64_t display_id,
 
 void DragTest_Part2(ws::mojom::EventInjector* event_injector,
                     int64_t display_id,
-                    const base::Closure& quit_closure,
+                    base::RepeatingClosure quit_closure,
                     bool result) {
   EXPECT_TRUE(result);
   if (!result)
@@ -131,12 +133,12 @@ void DragTest_Part2(ws::mojom::EventInjector* event_injector,
 
   event_injector->InjectEvent(
       display_id, CreateMouseUpEvent(30, 30),
-      base::BindOnce(&DragTest_Part3, display_id, quit_closure));
+      base::BindOnce(&DragTest_Part3, display_id, std::move(quit_closure)));
 }
 
 void DragTest_Part1(ws::mojom::EventInjector* event_injector,
                     int64_t display_id,
-                    const base::Closure& quit_closure,
+                    base::RepeatingClosure quit_closure,
                     bool result) {
   EXPECT_TRUE(result);
   if (!result)
@@ -145,7 +147,7 @@ void DragTest_Part1(ws::mojom::EventInjector* event_injector,
   event_injector->InjectEvent(
       display_id, CreateMouseMoveEvent(30, 30),
       base::BindOnce(&DragTest_Part2, base::Unretained(event_injector),
-                     display_id, quit_closure));
+                     display_id, std::move(quit_closure)));
 }
 
 TEST_F(DragTestInteractive, DragTest) {

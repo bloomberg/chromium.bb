@@ -6,7 +6,7 @@ library chromium.web;
 
 using fuchsia.mem;
 using fuchsia.sys;
-using fuchsia.ui.gfx;
+using fuchsia.ui.views;
 
 enum ExecuteMode {
   /// Evaluate the script immediately.
@@ -34,7 +34,7 @@ protocol Frame {
   /// to a the view tree.
   ///
   /// |view_token|: Token for the new view.
-  CreateView(fuchsia.ui.gfx.ExportToken view_token);
+  CreateView(fuchsia.ui.views.ViewToken view_token);
 
   // Deprecated.
   // TODO(crbug.com/899348): Update all code to use CreateView()
@@ -58,6 +58,8 @@ protocol Frame {
   /// If |mode| is NOW, then the script is evaluated immediately.
   /// If |mode| is ON_PAGE_LOAD, then the script is evaluated on every future
   /// document load prior to the page's script's execution.
+  //  Note: ON_PAGE_LOAD is deprecated, please use AddJavaScriptBindings()
+  //  instead.
   ///
   /// Multiple scripts can be registered by calling ExecuteJavascript()
   /// repeatedly.
@@ -65,15 +67,40 @@ protocol Frame {
   /// Note that scripts share the same execution context as the document,
   /// meaning that document may modify variables, classes, or objects set by the
   /// script in arbitrary or unpredictable ways.
-  // TODO(crbug.com/900391): Investigate if we can run the scripts in isolated
-  // JS worlds.
   ///
   /// Returns |true| if the script was executed, |false| if the script was
   /// rejected due to injection being blocked by the parent Context, or because
   /// the script's text encoding was invalid.
+  //
+  // TODO(crbug.com/900391): Investigate if we can run the scripts in isolated
+  // JS worlds.
+  // TODO(crbug.com/939064): Replace this with a method focused exclusively on
+  // immediate JS execution.
   ExecuteJavaScript(
      vector<string> origins, fuchsia.mem.Buffer script, ExecuteMode mode) ->
      (bool success);
+
+  /// Executes |script| for every subsequent page load where the frame's
+  /// URL has an origin reflected in |origins|. The script is executed early,
+  /// prior to the execution of the document's scripts.
+  ///
+  /// Scripts are identified by a the client-managed identifier |id|. Any
+  /// script previously injected using the same |id| will be replaced.
+  ///
+  /// The order in which multiple bindings are executed is the same as the
+  /// order in which the bindings were Added. If a script is added which
+  /// clobbers an existing script of the same |id|, the previous script's
+  /// precedence in the injection order will be preserved.
+  ///
+  /// At least one |origins| entry must be specified.
+  /// If a wildcard "*" is specified in |origins|, then the script will be
+  /// evaluated for all documents.
+  AddJavaScriptBindings(uint64 id, vector<string> origins,
+                        fuchsia.mem.Buffer script) -> (bool success);
+
+  /// Removes a previously added JavaScript snippet identified by |id|.
+  /// Always returns |true|, it is safe to ignore the return value.
+  RemoveJavaScriptBindings(uint64 id) -> (bool removed);
 
   /// Posts a message to the frame's onMessage handler.
   ///

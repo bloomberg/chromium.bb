@@ -46,6 +46,7 @@ struct RTC_EXPORT EchoCanceller3Config {
       int initial;
       int converged;
     } delay_selection_thresholds = {5, 20};
+    bool use_external_delay_estimator = false;
   } delay;
 
   struct Filter {
@@ -75,6 +76,7 @@ struct RTC_EXPORT EchoCanceller3Config {
     float initial_state_seconds = 2.5f;
     bool conservative_initial_phase = false;
     bool enable_shadow_filter_output_usage = true;
+    bool use_linear_filter = true;
   } filter;
 
   struct Erle {
@@ -125,10 +127,6 @@ struct RTC_EXPORT EchoCanceller3Config {
     float noise_gate_slope = 0.3f;
     size_t render_pre_window_size = 1;
     size_t render_post_window_size = 1;
-    size_t render_pre_window_size_init = 10;
-    size_t render_post_window_size_init = 10;
-    float nonlinear_hold = 1;
-    float nonlinear_release = 0.001f;
   } echo_model;
 
   struct Suppressor {

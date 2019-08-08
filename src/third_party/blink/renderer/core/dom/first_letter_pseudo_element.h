@@ -38,10 +38,6 @@ class LayoutTextFragment;
 
 class CORE_EXPORT FirstLetterPseudoElement final : public PseudoElement {
  public:
-  static FirstLetterPseudoElement* Create(Element* parent) {
-    return MakeGarbageCollected<FirstLetterPseudoElement>(parent);
-  }
-
   explicit FirstLetterPseudoElement(Element*);
   ~FirstLetterPseudoElement() override;
 

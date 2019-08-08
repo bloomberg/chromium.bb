@@ -60,15 +60,6 @@ PerfUI.LineLevelProfile.Performance = class {
     }
     this._helper.scheduleUpdate();
   }
-
-  /**
-   * @return {!PerfUI.LineLevelProfile.Performance}
-   */
-  static instance() {
-    if (!PerfUI.LineLevelProfile.Performance._instance)
-      PerfUI.LineLevelProfile.Performance._instance = new PerfUI.LineLevelProfile.Performance();
-    return PerfUI.LineLevelProfile.Performance._instance;
-  }
 };
 
 PerfUI.LineLevelProfile.Memory = class {
@@ -102,15 +93,6 @@ PerfUI.LineLevelProfile.Memory = class {
       const line = node.callFrame.lineNumber + 1;
       helper.addLineData(target, script, line, node.selfSize);
     }
-  }
-
-  /**
-   * @return {!PerfUI.LineLevelProfile.Memory}
-   */
-  static instance() {
-    if (!PerfUI.LineLevelProfile.Memory._instance)
-      PerfUI.LineLevelProfile.Memory._instance = new PerfUI.LineLevelProfile.Memory();
-    return PerfUI.LineLevelProfile.Memory._instance;
   }
 };
 
@@ -260,9 +242,20 @@ PerfUI.LineLevelProfile.LineDecorator = class {
       element.createChild('span', 'line-marker-units').textContent = ls`ms`;
     } else {
       const intensity = Number.constrain(Math.log10(1 + 2e-3 * value) / 5, 0.02, 1);
-      element.textContent = Common.UIString('%.0f', value / 1024);
       element.style.backgroundColor = `hsla(217, 100%, 70%, ${intensity.toFixed(3)})`;
-      element.createChild('span', 'line-marker-units').textContent = ls`KB`;
+      value /= 1e3;
+      let units;
+      let fractionDigits;
+      if (value >= 1e3) {
+        units = ls`MB`;
+        value /= 1e3;
+        fractionDigits = value >= 20 ? 0 : 1;
+      } else {
+        units = ls`KB`;
+        fractionDigits = 0;
+      }
+      element.textContent = Common.UIString(`%.${fractionDigits}f`, value);
+      element.createChild('span', 'line-marker-units').textContent = units;
     }
     return element;
   }

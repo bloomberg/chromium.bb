@@ -50,9 +50,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // left in LTR mode, or the right in RTL mode).
   virtual bool CaptionButtonsOnLeadingEdge() const;
 
-  // Retrieves the bounds, in non-client view coordinates within which the
+  // Retrieves the bounds in non-client view coordinates within which the
   // TabStrip should be laid out.
-  virtual gfx::Rect GetBoundsForTabStrip(const views::View* tabstrip) const = 0;
+  virtual gfx::Rect GetBoundsForTabStripRegion(
+      const views::View* tabstrip) const = 0;
 
   // Returns the inset of the topmost view in the client view from the top of
   // the non-client view. The topmost view depends on the window type. The
@@ -93,9 +94,17 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns whether tab strokes can be drawn.
   virtual bool CanDrawStrokes() const;
 
+  // Returns the color to use for text, caption buttons, and other title bar
+  // elements.
+  virtual SkColor GetCaptionColor(ActiveState active_state = kUseCurrent) const;
+
   // Returns the color of the browser frame, which is also the color of the
   // tabstrip background.
   SkColor GetFrameColor(ActiveState active_state = kUseCurrent) const;
+
+  // Called by BrowserView to signal the frame color has changed and needs
+  // to be repainted.
+  void UpdateFrameColor();
 
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
@@ -113,9 +122,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
 
-  // Provided for mus. Updates the client-area of the WindowTreeHostMus.
-  virtual void UpdateClientArea();
-
   // Provided for mus and macOS to update the minimum window size property.
   virtual void UpdateMinimumSize();
 
@@ -130,10 +136,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   }
 
  protected:
-  // Returns the color to use for text, caption buttons, and other title bar
-  // elements.
-  virtual SkColor GetCaptionColor(ActiveState active_state = kUseCurrent) const;
-
   // Converts an ActiveState to a bool representing whether the frame should be
   // treated as active.
   bool ShouldPaintAsActive(ActiveState active_state) const;

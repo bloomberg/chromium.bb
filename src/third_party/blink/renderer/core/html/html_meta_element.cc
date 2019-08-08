@@ -43,7 +43,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLMetaElement::HTMLMetaElement(Document& document)
+HTMLMetaElement::HTMLMetaElement(Document& document)
     : HTMLElement(kMetaTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLMetaElement)
@@ -130,7 +130,7 @@ void HTMLMetaElement::ParseContentAttribute(
         "Error parsing a meta element's content: ';' is not a valid key-value "
         "pair separator. Please use ',' instead.";
     document->AddConsoleMessage(
-        ConsoleMessage::Create(kRenderingMessageSource,
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
                                mojom::ConsoleMessageLevel::kWarning, message));
   }
 }
@@ -434,8 +434,9 @@ void HTMLMetaElement::ReportViewportWarning(Document* document,
 
   // FIXME: This message should be moved off the console once a solution to
   // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-  document->AddConsoleMessage(ConsoleMessage::Create(
-      kRenderingMessageSource, ViewportErrorMessageLevel(error_code), message));
+  document->AddConsoleMessage(
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                             ViewportErrorMessageLevel(error_code), message));
 }
 
 void HTMLMetaElement::GetViewportDescriptionFromContentAttribute(
@@ -478,6 +479,9 @@ void HTMLMetaElement::ProcessViewportContentAttribute(
 
 void HTMLMetaElement::ProcessSupportedColorSchemes(
     const AtomicString& content) {
+  if (!RuntimeEnabledFeatures::MetaSupportedColorSchemesEnabled())
+    return;
+
   SpaceSplitString supported_schemes_strings(content.LowerASCII());
   size_t count = supported_schemes_strings.size();
   ColorSchemeSet supported_schemes;

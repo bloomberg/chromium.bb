@@ -22,7 +22,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -30,6 +29,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
 
@@ -96,7 +96,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         final ItemChooserDialog.ItemChooserLabels labels =
                 new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound, statusActive,
                         statusIdleNoneFound, statusIdleSomeFound, positiveButton);
-        ItemChooserDialog dialog = ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+        ItemChooserDialog dialog = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             ItemChooserDialog dialog1 = new ItemChooserDialog(
                     mActivityTestRule.getActivity(), ItemChooserDialogTest.this, labels);
             return dialog1;
@@ -155,7 +155,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testAddItemsWithNoIcons() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
 
@@ -183,7 +183,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testAddItemsWithIcons() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
 
@@ -219,7 +219,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testAddItemWithIconAfterItemWithNoIcon() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
 
@@ -250,7 +250,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testAddItemWithNoIconAfterItemWithIcon() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
 
@@ -281,7 +281,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testRemoveItemWithIconNoItemsWithIconsLeft() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
 
@@ -318,7 +318,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testRemoveItemWithIconOneItemWithIconLeft() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
 
@@ -368,7 +368,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testUpdateItemWithIconToNoIcon() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
             ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
@@ -402,7 +402,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testUpdateItemWithNoIconToIcon() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
             ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
@@ -436,7 +436,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testUpdateItemIcon() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
             ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
@@ -487,7 +487,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         Assert.assertFalse(button.isEnabled());
         Assert.assertEquals(View.GONE, items.getVisibility());
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mChooserDialog.addOrUpdateItem("key1", "desc1");
             mChooserDialog.addOrUpdateItem("key2", "desc2");
         });
@@ -499,7 +499,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         Assert.assertEquals("statusActive", statusView.getText().toString());
         Assert.assertFalse(button.isEnabled());
 
-        ThreadUtils.runOnUiThreadBlocking(() -> { mChooserDialog.setIdleState(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mChooserDialog.setIdleState(); });
 
         // After discovery stops the list should be visible with two items,
         // it should not show the empty view and the button should not be enabled.
@@ -533,7 +533,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         Assert.assertFalse(button.isEnabled());
         Assert.assertEquals(View.GONE, items.getVisibility());
 
-        ThreadUtils.runOnUiThreadBlocking(() -> { mChooserDialog.setIdleState(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mChooserDialog.setIdleState(); });
 
         // Listview should now be showing empty, with an empty view visible to
         // drive home the point and a status message at the bottom.
@@ -551,7 +551,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         Dialog dialog = mChooserDialog.getDialogForTesting();
         Assert.assertTrue(dialog.isShowing());
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mChooserDialog.addOrUpdateItem("key1", "desc1");
             mChooserDialog.addOrUpdateItem("key2", "desc2");
         });
@@ -568,7 +568,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testSelectOneItemThenDisableTheSelectedItem() throws Throwable {
-        final Dialog dialog = ThreadUtils.runOnUiThreadBlocking(() -> {
+        final Dialog dialog = TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog1 = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog1.isShowing());
 
@@ -578,7 +578,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         });
 
         selectItem(dialog, 1, "key1", true);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
             Assert.assertEquals("key1", itemAdapter.getSelectedItemKey());
             mChooserDialog.setEnabled("key1", false);
@@ -596,7 +596,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @LargeTest
     public void testPairButtonDisabledOrEnabledAfterSelectedItemDisabledOrEnabled()
             throws Throwable {
-        final Dialog dialog = ThreadUtils.runOnUiThreadBlocking(() -> {
+        final Dialog dialog = TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog1 = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog1.isShowing());
 
@@ -606,7 +606,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         });
 
         selectItem(dialog, 1, "key1", true);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             final Button button = (Button) dialog.findViewById(R.id.positive);
             Assert.assertTrue(button.isEnabled());
 
@@ -625,7 +625,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testPairButtonDisabledAfterSelectedItemRemoved() throws Throwable {
-        final Dialog dialog = ThreadUtils.runOnUiThreadBlocking(() -> {
+        final Dialog dialog = TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog1 = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog1.isShowing());
 
@@ -637,7 +637,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
         selectItem(dialog, 1, "key1", true);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             final Button button = (Button) dialog.findViewById(R.id.positive);
             Assert.assertTrue(button.isEnabled());
 
@@ -651,7 +651,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testSelectAnItemAndRemoveAnotherItem() throws Throwable {
-        final Dialog dialog = ThreadUtils.runOnUiThreadBlocking(() -> {
+        final Dialog dialog = TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog1 = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog1.isShowing());
 
@@ -661,7 +661,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
             return dialog1;
         });
         selectItem(dialog, 2, "key2", true);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             final Button button = (Button) dialog.findViewById(R.id.positive);
             ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
 
@@ -684,7 +684,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testSelectAnItemAndRemoveTheSelectedItem() throws Throwable {
-        final Dialog dialog = ThreadUtils.runOnUiThreadBlocking(() -> {
+        final Dialog dialog = TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog1 = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog1.isShowing());
 
@@ -695,7 +695,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         });
 
         selectItem(dialog, 2, "key2", true);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Button button = (Button) dialog.findViewById(R.id.positive);
             ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
             Assert.assertTrue(button.isEnabled());
@@ -712,7 +712,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testUpdateItemAndRemoveItemFromList() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
 
@@ -764,7 +764,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testAddItemAndRemoveItemFromList() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
 
@@ -836,7 +836,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     @Test
     @LargeTest
     public void testAddItemWithSameNameToListAndRemoveItemFromList() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
 

@@ -54,6 +54,7 @@ void ContextualSearchLayer::SetProperties(
     bool search_promo_visible,
     float search_promo_height,
     float search_promo_opacity,
+    int search_promo_background_color,
     bool search_bar_banner_visible,
     float search_bar_banner_height,
     float search_bar_banner_padding,
@@ -282,6 +283,8 @@ void ContextualSearchLayer::SetProperties(
       search_promo_container_->SetBounds(search_promo_size);
       search_promo_container_->SetPosition(gfx::PointF(0.f, search_bar_bottom));
       search_promo_container_->SetMasksToBounds(true);
+      search_promo_container_->SetBackgroundColor(
+          search_promo_background_color);
 
       // Search Promo
       if (search_promo_->parent() != search_promo_container_)
@@ -305,61 +308,13 @@ void ContextualSearchLayer::SetProperties(
   // ---------------------------------------------------------------------------
   // Progress Bar
   // ---------------------------------------------------------------------------
-  if (should_render_progress_bar) {
-    // Grabs Progress Bar resources.
-    ui::NinePatchResource* progress_bar_background_resource =
-        ui::NinePatchResource::From(resource_manager_->GetResource(
-            ui::ANDROID_RESOURCE_TYPE_STATIC,
-            progress_bar_background_resource_id));
-    ui::NinePatchResource* progress_bar_resource =
-        ui::NinePatchResource::From(resource_manager_->GetResource(
-            ui::ANDROID_RESOURCE_TYPE_STATIC, progress_bar_resource_id));
-
-    DCHECK(progress_bar_background_resource);
-    DCHECK(progress_bar_resource);
-
-    // Progress Bar Background
-    if (progress_bar_background_->parent() != layer_)
-      layer_->AddChild(progress_bar_background_);
-
-    float progress_bar_y = search_bar_bottom - progress_bar_height;
-    gfx::Size progress_bar_background_size(search_panel_width,
-                                           progress_bar_height);
-
-    progress_bar_background_->SetUIResourceId(
-        progress_bar_background_resource->ui_resource()->id());
-    progress_bar_background_->SetBorder(
-        progress_bar_background_resource->Border(progress_bar_background_size));
-    progress_bar_background_->SetAperture(
-        progress_bar_background_resource->aperture());
-    progress_bar_background_->SetBounds(progress_bar_background_size);
-    progress_bar_background_->SetPosition(gfx::PointF(0.f, progress_bar_y));
-    progress_bar_background_->SetOpacity(progress_bar_opacity);
-
-    // Progress Bar
-    if (progress_bar_->parent() != layer_)
-      layer_->AddChild(progress_bar_);
-
-    float progress_bar_width =
-        floor(search_panel_width * progress_bar_completion / 100.f);
-    gfx::Size progress_bar_size(progress_bar_width, progress_bar_height);
-    progress_bar_->SetUIResourceId(progress_bar_resource->ui_resource()->id());
-    progress_bar_->SetBorder(progress_bar_resource->Border(progress_bar_size));
-    progress_bar_->SetAperture(progress_bar_resource->aperture());
-    progress_bar_->SetBounds(progress_bar_size);
-    progress_bar_->SetPosition(gfx::PointF(0.f, progress_bar_y));
-    progress_bar_->SetOpacity(progress_bar_opacity);
-  } else {
-    // Removes Progress Bar and its Background from the Layer Tree.
-    if (progress_bar_background_.get() && progress_bar_background_->parent())
-      progress_bar_background_->RemoveFromParent();
-
-    if (progress_bar_.get() && progress_bar_->parent())
-      progress_bar_->RemoveFromParent();
-  }
+  OverlayPanelLayer::SetProgressBar(
+      progress_bar_background_resource_id, progress_bar_resource_id,
+      progress_bar_visible, search_bar_bottom, progress_bar_height,
+      progress_bar_opacity, progress_bar_completion, search_panel_width);
 
   // ---------------------------------------------------------------------------
-  // Divider Line
+  // Divider Line separator
   // ---------------------------------------------------------------------------
   if (divider_line_visibility_percentage > 0.f) {
     if (divider_line_->parent() != layer_)
@@ -726,8 +681,6 @@ ContextualSearchLayer::ContextualSearchLayer(
       bar_banner_container_(cc::SolidColorLayer::Create()),
       bar_banner_ripple_(cc::NinePatchLayer::Create()),
       bar_banner_text_(cc::UIResourceLayer::Create()),
-      progress_bar_(cc::NinePatchLayer::Create()),
-      progress_bar_background_(cc::NinePatchLayer::Create()),
       search_caption_(cc::UIResourceLayer::Create()),
       text_layer_(cc::UIResourceLayer::Create()),
       divider_line_(cc::SolidColorLayer::Create()),
@@ -755,14 +708,6 @@ ContextualSearchLayer::ContextualSearchLayer(
   search_promo_container_->SetIsDrawable(true);
   search_promo_container_->SetBackgroundColor(kSearchBackgroundColor);
   search_promo_->SetIsDrawable(true);
-
-  // Progress Bar Background
-  progress_bar_background_->SetIsDrawable(true);
-  progress_bar_background_->SetFillCenter(true);
-
-  // Progress Bar
-  progress_bar_->SetIsDrawable(true);
-  progress_bar_->SetFillCenter(true);
 
   // Icon - holds thumbnail, search provider icon and/or quick action icon
   icon_layer_->SetIsDrawable(true);

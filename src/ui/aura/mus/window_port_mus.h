@@ -148,6 +148,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     REMOVE,
     REMOVE_TRANSIENT,
     REORDER,
+    SET_TRANSPARENT,
     TRANSFORM,
     VISIBLE,
   };
@@ -164,6 +165,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     std::string property_name;
     // Applies to TRANSFORM.
     gfx::Transform transform;
+    // Applies to SET_TRANSPARENT.
+    bool transparent;
   };
 
   // Used to identify a change the server.
@@ -250,7 +253,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetBoundsFromServer(const gfx::Rect& bounds) override;
   void SetTransformFromServer(const gfx::Transform& transform) override;
   void SetVisibleFromServer(bool visible) override;
-  void SetOpacityFromServer(float opacity) override;
   void SetCursorFromServer(const ui::Cursor& cursor) override;
   void SetPropertyFromServer(
       const std::string& property_name,
@@ -264,8 +266,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void RemoveTransientChildFromServer(WindowMus* child) override;
   ChangeSource OnTransientChildAdded(WindowMus* child) override;
   ChangeSource OnTransientChildRemoved(WindowMus* child) override;
-  std::unique_ptr<WindowMusChangeData> PrepareForServerBoundsChange(
-      const gfx::Rect& bounds) override;
   std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(
       bool value) override;
   void PrepareForDestroy() override;
@@ -281,6 +281,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void OnWillRemoveChild(Window* child) override;
   void OnWillMoveChild(size_t current_index, size_t dest_index) override;
   void OnVisibilityChanged(bool visible) override;
+  void OnTransparentChanged(bool transparent) override;
   void OnDidChangeBounds(const gfx::Rect& old_bounds,
                          const gfx::Rect& new_bounds) override;
   void OnDidChangeTransform(const gfx::Transform& old_transform,

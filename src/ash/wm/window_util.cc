@@ -339,7 +339,7 @@ bool IsDraggingTabs(const aura::Window* window) {
   return window->GetProperty(ash::kIsDraggingTabsKey);
 }
 
-bool ShouldExcludeForBothCycleListAndOverview(const aura::Window* window) {
+bool ShouldExcludeForCycleList(const aura::Window* window) {
   // Exclude windows:
   // - non user positionable windows, such as extension popups.
   // - windows being dragged
@@ -348,38 +348,35 @@ bool ShouldExcludeForBothCycleListAndOverview(const aura::Window* window) {
   if (!state->IsUserPositionable() || state->is_dragged() || state->IsPip())
     return true;
 
-  return window->GetProperty(kHideInOverviewKey);
-}
-
-bool ShouldExcludeForCycleList(const aura::Window* window) {
   // Exclude the AppList window, which will hide as soon as cycling starts
   // anyway. It doesn't make sense to count it as a "switchable" window, yet
   // a lot of code relies on the MRU list returning the app window. If we
   // don't manually remove it, the window cycling UI won't crash or misbehave,
   // but there will be a flicker as the target window changes. Also exclude
   // unselectable windows such as extension popups.
-  // TODO(sammiequon): Investigate if this is needed.
   for (auto* parent = window->parent(); parent; parent = parent->parent()) {
     if (parent->id() == kShellWindowId_AppListContainer)
       return true;
   }
 
-  return ShouldExcludeForBothCycleListAndOverview(window);
+  return window->GetProperty(kHideInOverviewKey);
 }
 
 bool ShouldExcludeForOverview(const aura::Window* window) {
-  // Remove the default snapped window from the window list. The default
-  // snapped window occupies one side of the screen, while the other windows
-  // occupy the other side of the screen in overview mode. The default snap
-  // position is the position where the window was first snapped. See
-  // |default_snap_position_| in SplitViewController for more detail.
-  if (Shell::Get()->IsSplitViewModeActive() &&
-      window ==
-          Shell::Get()->split_view_controller()->GetDefaultSnappedWindow()) {
+  // If we're currently in tablet splitview, remove the default snapped window
+  // from the window list. The default snapped window occupies one side of the
+  // screen, while the other windows occupy the other side of the screen in
+  // overview mode. The default snap position is the position where the window
+  // was first snapped. See |default_snap_position_| in SplitViewController for
+  // more detail.
+  auto* split_view_controller = Shell::Get()->split_view_controller();
+  if (split_view_controller->InTabletSplitViewMode() &&
+      window == split_view_controller->GetDefaultSnappedWindow()) {
     return true;
   }
 
-  return ShouldExcludeForBothCycleListAndOverview(window);
+  // Remove everything cycle list should not have.
+  return ShouldExcludeForCycleList(window);
 }
 
 void RemoveTransientDescendants(std::vector<aura::Window*>* out_window_list) {
@@ -399,12 +396,14 @@ void HideAndMaybeMinimizeWithoutAnimation(std::vector<aura::Window*> windows,
   for (auto* window : windows) {
     ScopedAnimationDisabler disable(window);
 
-    // ARC windows are minimized asynchronously, so hide here now.
+    // ARC windows are minimized asynchronously, so we hide them after
+    // minimization. We minimize ARC windows first so they receive occlusion
+    // updates before losing focus from being hidden. See crbug.com/910304.
     // TODO(oshima): Investigate better way to handle ARC apps immediately.
-    window->Hide();
-
     if (minimize)
       wm::GetWindowState(window)->Minimize();
+
+    window->Hide();
   }
   if (windows.size()) {
     // Disable the animations using |disable|. However, doing so will skip

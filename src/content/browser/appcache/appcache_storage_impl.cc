@@ -14,13 +14,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -32,7 +30,6 @@
 #include "content/browser/appcache/appcache_quota_client.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_service_impl.h"
-#include "content/public/common/content_switches.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 #include "sql/database.h"
@@ -381,7 +378,8 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
       blink::mojom::AppCacheInfo info;
       info.manifest_url = group.manifest_url;
       info.creation_time = group.creation_time;
-      info.size = cache_record.cache_size;
+      info.response_sizes = cache_record.cache_size;
+      info.padding_sizes = cache_record.padding_size;
       info.last_access_time = group.last_access_time;
       info.last_update_time = cache_record.update_time;
       info.cache_id = cache_record.cache_id;
@@ -631,7 +629,6 @@ class AppCacheStorageImpl::StoreGroupAndCacheTask : public StoreOrLoadTask {
   bool would_exceed_quota_;
   int64_t space_available_;
   int64_t new_origin_usage_;
-  int64_t max_appcache_origin_cache_size_;
   std::vector<int64_t> newly_deletable_response_ids_;
 };
 
@@ -645,10 +642,7 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
       success_(false),
       would_exceed_quota_(false),
       space_available_(-1),
-      new_origin_usage_(-1),
-      // TODO(crbug.com/895825): Remove max_appcache_origin_cache_size_ in Feb
-      // 2019.
-      max_appcache_origin_cache_size_(kDefaultQuota) {
+      new_origin_usage_(-1) {
   group_record_.group_id = group->group_id();
   group_record_.manifest_url = group->manifest_url();
   group_record_.origin = url::Origin::Create(group_record_.manifest_url);
@@ -662,15 +656,6 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
       &intercept_namespace_records_,
       &fallback_namespace_records_,
       &online_whitelist_records_);
-
-  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kMaxAppCacheOriginCacheSizeMb)) {
-    if (base::StringToInt64(command_line.GetSwitchValueASCII(
-                                switches::kMaxAppCacheOriginCacheSizeMb),
-                            &max_appcache_origin_cache_size_)) {
-      max_appcache_origin_cache_size_ *= kMB;
-    }
-  }
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
@@ -792,10 +777,9 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
     return;
   }
 
-  // Use the value in --max-appcache-disk-cache-size-mb (or a hard-coded
-  // default) when no QuotaManager is wired in.
+  // Use a simple hard-coded value when not using quota management.
   if (space_available_ == -1) {
-    if (new_origin_usage_ > max_appcache_origin_cache_size_) {
+    if (new_origin_usage_ > kDefaultQuota) {
       would_exceed_quota_ = true;
       success_ = false;
       return;
@@ -1911,20 +1895,9 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
     } else {
       expecting_cleanup_complete_on_disable_ = true;
 
-      const base::CommandLine& command_line =
-          *base::CommandLine::ForCurrentProcess();
-      int64_t max_appcache_disk_cache_size = kMaxAppCacheDiskCacheSize;
-      if (command_line.HasSwitch(switches::kMaxAppCacheDiskCacheSizeMb)) {
-        if (base::StringToInt64(command_line.GetSwitchValueASCII(
-                                    switches::kMaxAppCacheDiskCacheSizeMb),
-                                &max_appcache_disk_cache_size)) {
-          max_appcache_disk_cache_size *= kMB;
-        }
-      }
-
       rv = disk_cache_->InitWithDiskBackend(
           cache_directory_.Append(kDiskCacheDirectoryName),
-          max_appcache_disk_cache_size, false,
+          kMaxAppCacheDiskCacheSize, false,
           base::BindOnce(&AppCacheStorageImpl::OnDiskCacheCleanupComplete,
                          weak_factory_.GetWeakPtr()),
           base::BindOnce(&AppCacheStorageImpl::OnDiskCacheInitialized,

@@ -4,17 +4,25 @@
 
 """Generic utils."""
 
+from __future__ import print_function
+
 import codecs
 import collections
 import contextlib
-import cStringIO
 import datetime
+import functools
+import io
 import logging
 import operator
 import os
 import pipes
 import platform
-import Queue
+
+try:
+  import Queue as queue
+except ImportError:  # For Py3 compatibility
+  import queue
+
 import re
 import stat
 import subprocess
@@ -22,9 +30,18 @@ import sys
 import tempfile
 import threading
 import time
-import urlparse
+
+try:
+  import urlparse
+except ImportError:  # For Py3 compatibility
+  import urllib.parse as urlparse
 
 import subprocess2
+
+if sys.version_info.major == 2:
+  from cStringIO import StringIO
+else:
+  from io import StringIO
 
 
 RETRY_MAX = 3
@@ -41,6 +58,18 @@ _WARNINGS = []
 THREADED_INDEX_PACK_BLACKLIST = [
   'https://chromium.googlesource.com/chromium/reference_builds/chrome_win.git'
 ]
+
+"""To support rethrowing exceptions with tracebacks on both Py2 and 3."""
+if sys.version_info.major == 2:
+  # We have to use exec to avoid a SyntaxError in Python 3.
+  exec("def reraise(typ, value, tb=None):\n  raise typ, value, tb\n")
+else:
+  def reraise(typ, value, tb=None):
+    if value is None:
+      value = typ()
+    if value.__traceback__ is not tb:
+      raise value.with_traceback(tb)
+    raise value
 
 
 class Error(Exception):
@@ -61,9 +90,9 @@ def Elapsed(until=None):
 def PrintWarnings():
   """Prints any accumulated warnings."""
   if _WARNINGS:
-    print >> sys.stderr, '\n\nWarnings:'
+    print('\n\nWarnings:', file=sys.stderr)
     for warning in _WARNINGS:
-      print >> sys.stderr, warning
+      print(warning, file=sys.stderr)
 
 
 def AddWarning(msg):
@@ -142,7 +171,8 @@ def FileRead(filename, mode='rU'):
     s = f.read()
     try:
       return s.decode('utf-8')
-    except UnicodeDecodeError:
+    # AttributeError is for Py3 compatibility
+    except (UnicodeDecodeError, AttributeError):
       return s
 
 
@@ -225,12 +255,12 @@ def rmtree(path):
   if sys.platform == 'win32':
     # Give up and use cmd.exe's rd command.
     path = os.path.normcase(path)
-    for _ in xrange(3):
+    for _ in range(3):
       exitcode = subprocess.call(['cmd.exe', '/c', 'rd', '/q', '/s', path])
       if exitcode == 0:
         return
       else:
-        print >> sys.stderr, 'rd exited with code %d' % exitcode
+        print('rd exited with code %d' % exitcode, file=sys.stderr)
       time.sleep(3)
     raise Exception('Failed to remove path %s' % path)
 
@@ -268,7 +298,7 @@ def safe_makedirs(tree):
     count += 1
     try:
       os.makedirs(tree)
-    except OSError, e:
+    except OSError as e:
       # 17 POSIX, 183 Windows
       if e.errno not in (17, 183):
         raise
@@ -491,9 +521,9 @@ class GClientChildren(object):
 
     with GCLIENT_CHILDREN_LOCK:
       if GCLIENT_CHILDREN:
-        print >> sys.stderr, 'Could not kill the following subprocesses:'
+        print('Could not kill the following subprocesses:', file=sys.stderr)
         for zombie in GCLIENT_CHILDREN:
-          print >> sys.stderr, '  ', zombie.pid
+          print('  ', zombie.pid, file=sys.stderr)
 
 
 def CheckCallAndFilter(args, stdout=None, filter_fn=None,
@@ -514,12 +544,12 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
   """
   assert print_stdout or filter_fn
   stdout = stdout or sys.stdout
-  output = cStringIO.StringIO()
+  output = io.BytesIO()
   filter_fn = filter_fn or (lambda x: None)
 
   sleep_interval = RETRY_INITIAL_SLEEP
   run_cwd = kwargs.get('cwd', os.getcwd())
-  for _ in xrange(RETRY_MAX + 1):
+  for _ in range(RETRY_MAX + 1):
     kid = subprocess2.Popen(
         args, bufsize=0, stdout=subprocess2.PIPE, stderr=subprocess2.STDOUT,
         **kwargs)
@@ -539,7 +569,7 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
       if in_byte:
         if call_filter_on_first_line:
           filter_fn(None)
-        in_line = ''
+        in_line = b''
         while in_byte:
           output.write(in_byte)
           if print_stdout:
@@ -548,7 +578,7 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
             in_line += in_byte
           else:
             filter_fn(in_line)
-            in_line = ''
+            in_line = b''
           in_byte = kid.stdout.read(1)
         # Flush the rest of buffered output. This is only an issue with
         # stdout/stderr not ending with a \n.
@@ -561,15 +591,15 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
       GClientChildren.remove(kid)
 
     except KeyboardInterrupt:
-      print >> sys.stderr, 'Failed while running "%s"' % ' '.join(args)
+      print('Failed while running "%s"' % ' '.join(args), file=sys.stderr)
       raise
 
     if rv == 0:
       return output.getvalue()
     if not retry:
       break
-    print ("WARNING: subprocess '%s' in %s failed; will retry after a short "
-           'nap...' % (' '.join('"%s"' % x for x in args), run_cwd))
+    print("WARNING: subprocess '%s' in %s failed; will retry after a short "
+          'nap...' % (' '.join('"%s"' % x for x in args), run_cwd))
     time.sleep(sleep_interval)
     sleep_interval *= 2
   raise subprocess2.CalledProcessError(
@@ -602,13 +632,13 @@ class GitFilter(object):
 
   def __call__(self, line):
     # git uses an escape sequence to clear the line; elide it.
-    esc = line.find(unichr(033))
+    esc = line.find(chr(0o33).encode())
     if esc > -1:
       line = line[:esc]
     if self.predicate and not self.predicate(line):
       return
     now = time.time()
-    match = self.PERCENT_RE.match(line)
+    match = self.PERCENT_RE.match(line.decode())
     if match:
       if match.group(1) != self.progress_prefix:
         self.progress_prefix = match.group(1)
@@ -616,60 +646,7 @@ class GitFilter(object):
         return
     self.last_time = now
     self.out_fh.write('[%s] ' % Elapsed())
-    print >> self.out_fh, line
-
-
-def FindGclientRoot(from_dir, filename='.gclient'):
-  """Tries to find the gclient root."""
-  real_from_dir = os.path.realpath(from_dir)
-  path = real_from_dir
-  while not os.path.exists(os.path.join(path, filename)):
-    split_path = os.path.split(path)
-    if not split_path[1]:
-      return None
-    path = split_path[0]
-
-  # If we did not find the file in the current directory, make sure we are in a
-  # sub directory that is controlled by this configuration.
-  if path != real_from_dir:
-    entries_filename = os.path.join(path, filename + '_entries')
-    if not os.path.exists(entries_filename):
-      # If .gclient_entries does not exist, a previous call to gclient sync
-      # might have failed. In that case, we cannot verify that the .gclient
-      # is the one we want to use. In order to not to cause too much trouble,
-      # just issue a warning and return the path anyway.
-      print >> sys.stderr, ("%s missing, %s file in parent directory %s might "
-          "not be the file you want to use." %
-          (entries_filename, filename, path))
-      return path
-    scope = {}
-    try:
-      exec(FileRead(entries_filename), scope)
-    except SyntaxError, e:
-      SyntaxErrorToError(filename, e)
-    all_directories = scope['entries'].keys()
-    path_to_check = real_from_dir[len(path)+1:]
-    while path_to_check:
-      if path_to_check in all_directories:
-        return path
-      path_to_check = os.path.dirname(path_to_check)
-    return None
-
-  logging.info('Found gclient root at ' + path)
-  return path
-
-
-def PathDifference(root, subpath):
-  """Returns the difference subpath minus root."""
-  root = os.path.realpath(root)
-  subpath = os.path.realpath(subpath)
-  if not subpath.startswith(root):
-    return None
-  # If the root does not have a trailing \ or /, we add it so the returned
-  # path starts immediately after the seperator regardless of whether it is
-  # provided.
-  root = os.path.join(root, '')
-  return subpath[len(root):]
+    print(line, file=self.out_fh)
 
 
 def FindFileUpwards(filename, path=None):
@@ -701,95 +678,12 @@ def GetMacWinOrLinux():
   raise Error('Unknown platform: ' + sys.platform)
 
 
-def GetPrimarySolutionPath():
-  """Returns the full path to the primary solution. (gclient_root + src)"""
-
-  gclient_root = FindGclientRoot(os.getcwd())
-  if not gclient_root:
-    # Some projects might not use .gclient. Try to see whether we're in a git
-    # checkout.
-    top_dir = [os.getcwd()]
-    def filter_fn(line):
-      repo_root_path = os.path.normpath(line.rstrip('\n'))
-      if os.path.exists(repo_root_path):
-        top_dir[0] = repo_root_path
-    try:
-      CheckCallAndFilter(["git", "rev-parse", "--show-toplevel"],
-                         print_stdout=False, filter_fn=filter_fn)
-    except Exception:
-      pass
-    top_dir = top_dir[0]
-    if os.path.exists(os.path.join(top_dir, 'buildtools')):
-      return top_dir
-    return None
-
-  # Some projects' top directory is not named 'src'.
-  source_dir_name = GetGClientPrimarySolutionName(gclient_root) or 'src'
-  return os.path.join(gclient_root, source_dir_name)
-
-
-def GetBuildtoolsPath():
-  """Returns the full path to the buildtools directory.
-  This is based on the root of the checkout containing the current directory."""
-
-  # Overriding the build tools path by environment is highly unsupported and may
-  # break without warning.  Do not rely on this for anything important.
-  override = os.environ.get('CHROMIUM_BUILDTOOLS_PATH')
-  if override is not None:
-    return override
-
-  primary_solution = GetPrimarySolutionPath()
-  if not primary_solution:
-    return None
-  buildtools_path = os.path.join(primary_solution, 'buildtools')
-  if not os.path.exists(buildtools_path):
-    # Buildtools may be in the gclient root.
-    gclient_root = FindGclientRoot(os.getcwd())
-    buildtools_path = os.path.join(gclient_root, 'buildtools')
-  return buildtools_path
-
-
-def GetBuildtoolsPlatformBinaryPath():
-  """Returns the full path to the binary directory for the current platform."""
-  buildtools_path = GetBuildtoolsPath()
-  if not buildtools_path:
-    return None
-
-  if sys.platform.startswith(('cygwin', 'win')):
-    subdir = 'win'
-  elif sys.platform == 'darwin':
-    subdir = 'mac'
-  elif sys.platform.startswith('linux'):
-      subdir = 'linux64'
-  else:
-    raise Error('Unknown platform: ' + sys.platform)
-  return os.path.join(buildtools_path, subdir)
-
-
-def GetExeSuffix():
-  """Returns '' or '.exe' depending on how executables work on this platform."""
-  if sys.platform.startswith(('cygwin', 'win')):
-    return '.exe'
-  return ''
-
-
-def GetGClientPrimarySolutionName(gclient_root_dir_path):
-  """Returns the name of the primary solution in the .gclient file specified."""
-  gclient_config_file = os.path.join(gclient_root_dir_path, '.gclient')
-  env = {}
-  execfile(gclient_config_file, env)
-  solutions = env.get('solutions', [])
-  if solutions:
-    return solutions[0].get('name')
-  return None
-
-
 def GetGClientRootAndEntries(path=None):
   """Returns the gclient root and the dict of entries."""
   config_file = '.gclient_entries'
   root = FindFileUpwards(config_file, path)
   if not root:
-    print "Can't find %s" % config_file
+    print("Can't find %s" % config_file)
     return None
   config_path = os.path.join(root, config_file)
   env = {}
@@ -805,7 +699,7 @@ def lockedmethod(method):
       try:
         self.lock.acquire()
       except KeyboardInterrupt:
-        print >> sys.stderr, 'Was deadlocked'
+        print('Was deadlocked', file=sys.stderr)
         raise
       return method(self, *args, **kwargs)
     finally:
@@ -823,7 +717,7 @@ class WorkItem(object):
   def __init__(self, name):
     # A unique string representing this work item.
     self._name = name
-    self.outbuf = cStringIO.StringIO()
+    self.outbuf = StringIO()
     self.start = self.finish = None
     self.resources = []  # List of resources this work item requires.
 
@@ -860,7 +754,7 @@ class ExecutionQueue(object):
     # List of items currently running.
     self.running = []
     # Exceptions thrown if any.
-    self.exceptions = Queue.Queue()
+    self.exceptions = queue.Queue()
     # Progress status
     self.progress = progress
     if self.progress:
@@ -938,7 +832,7 @@ class ExecutionQueue(object):
             break
 
           # Check for new tasks to start.
-          for i in xrange(len(self.queued)):
+          for i in range(len(self.queued)):
             # Verify its requirements.
             if (self.ignore_requirements or
                 not (set(self.queued[i].requirements) - set(self.ran))):
@@ -962,28 +856,28 @@ class ExecutionQueue(object):
           if (now - self.last_join > datetime.timedelta(seconds=60) and
               self.last_subproc_output > self.last_join):
             if self.progress:
-              print >> sys.stdout, ''
+              print('')
               sys.stdout.flush()
             elapsed = Elapsed()
-            print >> sys.stdout, '[%s] Still working on:' % elapsed
+            print('[%s] Still working on:' % elapsed)
             sys.stdout.flush()
             for task in self.running:
-              print >> sys.stdout, '[%s]   %s' % (elapsed, task.item.name)
+              print('[%s]   %s' % (elapsed, task.item.name))
               sys.stdout.flush()
         except KeyboardInterrupt:
           # Help debugging by printing some information:
-          print >> sys.stderr, (
+          print(
               ('\nAllowed parallel jobs: %d\n# queued: %d\nRan: %s\n'
-                'Running: %d') % (
-              self.jobs,
-              len(self.queued),
-              ', '.join(self.ran),
-              len(self.running)))
+               'Running: %d') % (self.jobs, len(self.queued), ', '.join(
+                   self.ran), len(self.running)),
+              file=sys.stderr)
           for i in self.queued:
-            print >> sys.stderr, '%s (not started): %s' % (
-                i.name, ', '.join(i.requirements))
+            print(
+                '%s (not started): %s' % (i.name, ', '.join(i.requirements)),
+                file=sys.stderr)
           for i in self.running:
-            print >> sys.stderr, self.format_task_output(i.item, 'interrupted')
+            print(
+                self.format_task_output(i.item, 'interrupted'), file=sys.stderr)
           raise
         # Something happened: self.enqueue() or a thread terminated. Loop again.
     finally:
@@ -992,12 +886,12 @@ class ExecutionQueue(object):
     assert not self.running, 'Now guaranteed to be single-threaded'
     if not self.exceptions.empty():
       if self.progress:
-        print >> sys.stdout, ''
+        print('')
       # To get back the stack location correctly, the raise a, b, c form must be
       # used, passing a tuple as the first argument doesn't work.
       e, task = self.exceptions.get()
-      print >> sys.stderr, self.format_task_output(task.item, 'ERROR')
-      raise e[0], e[1], e[2]
+      print(self.format_task_output(task.item, 'ERROR'), file=sys.stderr)
+      reraise(e[0], e[1], e[2])
     elif self.progress:
       self.progress.end()
 
@@ -1013,7 +907,7 @@ class ExecutionQueue(object):
         self.last_join = datetime.datetime.now()
         sys.stdout.flush()
         if self.verbose:
-          print >> sys.stdout, self.format_task_output(t.item)
+          print(self.format_task_output(t.item))
         if self.progress:
           self.progress.update(1, t.item.name)
         if t.item.name in self.ran:
@@ -1035,22 +929,24 @@ class ExecutionQueue(object):
       # exception.
       try:
         task_item.start = datetime.datetime.now()
-        print >> task_item.outbuf, '[%s] Started.' % Elapsed(task_item.start)
+        print('[%s] Started.' % Elapsed(task_item.start), file=task_item.outbuf)
         task_item.run(*args, **kwargs)
         task_item.finish = datetime.datetime.now()
-        print >> task_item.outbuf, '[%s] Finished.' % Elapsed(task_item.finish)
+        print(
+            '[%s] Finished.' % Elapsed(task_item.finish), file=task_item.outbuf)
         self.ran.append(task_item.name)
         if self.verbose:
           if self.progress:
-            print >> sys.stdout, ''
-          print >> sys.stdout, self.format_task_output(task_item)
+            print('')
+          print(self.format_task_output(task_item))
         if self.progress:
           self.progress.update(1, ', '.join(t.item.name for t in self.running))
       except KeyboardInterrupt:
-        print >> sys.stderr, self.format_task_output(task_item, 'interrupted')
+        print(
+            self.format_task_output(task_item, 'interrupted'), file=sys.stderr)
         raise
       except Exception:
-        print >> sys.stderr, self.format_task_output(task_item, 'ERROR')
+        print(self.format_task_output(task_item, 'ERROR'), file=sys.stderr)
         raise
 
 
@@ -1071,10 +967,11 @@ class ExecutionQueue(object):
       work_queue = self.kwargs['work_queue']
       try:
         self.item.start = datetime.datetime.now()
-        print >> self.item.outbuf, '[%s] Started.' % Elapsed(self.item.start)
+        print('[%s] Started.' % Elapsed(self.item.start), file=self.item.outbuf)
         self.item.run(*self.args, **self.kwargs)
         self.item.finish = datetime.datetime.now()
-        print >> self.item.outbuf, '[%s] Finished.' % Elapsed(self.item.finish)
+        print(
+            '[%s] Finished.' % Elapsed(self.item.finish), file=self.item.outbuf)
       except KeyboardInterrupt:
         logging.info('Caught KeyboardInterrupt in thread %s', self.item.name)
         logging.info(str(sys.exc_info()))
@@ -1125,8 +1022,8 @@ def RunEditor(content, git, git_editor=None):
   file_handle, filename = tempfile.mkstemp(text=True, prefix='cl_description')
   # Make sure CRLF is handled properly by requiring none.
   if '\r' in content:
-    print >> sys.stderr, (
-        '!! Please remove \\r from your change description !!')
+    print(
+        '!! Please remove \\r from your change description !!', file=sys.stderr)
   fileobj = os.fdopen(file_handle, 'w')
   # Still remove \r if present.
   content = re.sub('\r?\n', '\n', content)
@@ -1279,7 +1176,7 @@ def freeze(obj):
   Will raise TypeError if you pass an object which is not hashable.
   """
   if isinstance(obj, collections.Mapping):
-    return FrozenDict((freeze(k), freeze(v)) for k, v in obj.iteritems())
+    return FrozenDict((freeze(k), freeze(v)) for k, v in obj.items())
   elif isinstance(obj, (list, tuple)):
     return tuple(freeze(i) for i in obj)
   elif isinstance(obj, set):
@@ -1299,8 +1196,8 @@ class FrozenDict(collections.Mapping):
 
     # Calculate the hash immediately so that we know all the items are
     # hashable too.
-    self._hash = reduce(operator.xor,
-                        (hash(i) for i in enumerate(self._d.iteritems())), 0)
+    self._hash = functools.reduce(
+        operator.xor, (hash(i) for i in enumerate(self._d.items())), 0)
 
   def __eq__(self, other):
     if not isinstance(other, collections.Mapping):

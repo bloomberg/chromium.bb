@@ -248,6 +248,29 @@ Status GetElementBorder(
   return Status(kOk);
 }
 
+Status GetElementLocationInViewCenterHelper(const std::string& frame,
+                                            WebView* web_view,
+                                            const std::string& element_id,
+                                            bool center,
+                                            WebPoint* location) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+  args.AppendBoolean(center);
+  std::unique_ptr<base::Value> result;
+  status =
+      web_view->CallFunction(frame, kGetElementLocationScript, args, &result);
+  if (status.IsError())
+    return status;
+  if (!ParseFromValue(result.get(), location)) {
+    return Status(kUnknownError,
+                  "failed to parse value of getElementLocationInViewCenter");
+  }
+  return Status(kOk);
+}
+
 }  // namespace
 
 std::string GetElementKey() {
@@ -379,11 +402,17 @@ Status GetActiveElement(Session* session,
                         WebView* web_view,
                         std::unique_ptr<base::Value>* value) {
   base::ListValue args;
-  return web_view->CallFunction(
+  Status status = web_view->CallFunction(
       session->GetCurrentFrameId(),
-      "function() { return document.activeElement || document.body }",
-      args,
+      "function() { return document.activeElement || document.body }", args,
       value);
+  if (status.IsError()) {
+    return status;
+  }
+  if (value->get()->is_none()) {
+    return Status(kNoSuchElement);
+  }
+  return status;
 }
 
 Status IsElementFocused(
@@ -796,5 +825,57 @@ Status ScrollElementRegionIntoView(
       return status;
   }
   *location = region_offset;
+  return Status(kOk);
+}
+
+Status GetElementLocationInViewCenter(Session* session,
+                                      WebView* web_view,
+                                      const std::string& element_id,
+                                      WebPoint* location) {
+  WebPoint center_location;
+  Status status = GetElementLocationInViewCenterHelper(
+      session->GetCurrentFrameId(), web_view, element_id, true,
+      &center_location);
+  if (status.IsError())
+    return status;
+  const char kFindSubFrameScript[] =
+      "function(xpath) {"
+      "  return document.evaluate(xpath, document, null,"
+      "      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
+      "}";
+  for (auto rit = session->frames.rbegin(); rit != session->frames.rend();
+       ++rit) {
+    base::ListValue args;
+    args.AppendString(base::StringPrintf("//*[@cd_frame_id_ = '%s']",
+                                         rit->chromedriver_frame_id.c_str()));
+    std::unique_ptr<base::Value> result;
+    status = web_view->CallFunction(rit->parent_frame_id, kFindSubFrameScript,
+                                    args, &result);
+    if (status.IsError())
+      return status;
+    const base::DictionaryValue* element_dict;
+    if (!result->GetAsDictionary(&element_dict))
+      return Status(kUnknownError, "no element reference returned by script");
+    std::string frame_element_id;
+    if (!element_dict->GetString(GetElementKey(), &frame_element_id))
+      return Status(kUnknownError, "failed to locate a sub frame");
+
+    // Modify |center_location| by the frame's border.
+    int border_left = -1;
+    int border_top = -1;
+    status = GetElementBorder(rit->parent_frame_id, web_view, frame_element_id,
+                              &border_left, &border_top);
+    if (status.IsError())
+      return status;
+    center_location.Offset(border_left, border_top);
+
+    WebPoint frame_offset;
+    status = GetElementLocationInViewCenterHelper(
+        rit->parent_frame_id, web_view, frame_element_id, false, &frame_offset);
+    if (status.IsError())
+      return status;
+    center_location.Offset(frame_offset.x, frame_offset.y);
+  }
+  *location = center_location;
   return Status(kOk);
 }

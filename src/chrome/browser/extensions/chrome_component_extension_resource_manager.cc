@@ -17,6 +17,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_string_util.h"
+#include "chrome/grit/component_extension_resources.h"
 #include "extensions/common/constants.h"
 #include "third_party/ink/grit/ink_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -36,6 +37,11 @@ ChromeComponentExtensionResourceManager() {
 #else
     {"web_store/webstore_icon_128.png", IDR_WEBSTORE_ICON},
     {"web_store/webstore_icon_16.png", IDR_WEBSTORE_ICON_16},
+#endif
+
+#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+    {"chromeos/kiosk_next_home/kiosk_next_home.mojom.js",
+     IDR_KIOSK_NEXT_HOME_MOJOM_JS},
 #endif
 
 #if defined(OS_CHROMEOS)

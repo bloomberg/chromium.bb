@@ -189,10 +189,6 @@ std::string ChangeToDescription(const Change& change,
                                 change.change_id,
                                 WindowIdToString(change.window_id).c_str(),
                                 change.bool_value ? "true" : "false");
-    case CHANGE_TYPE_OPACITY:
-      return base::StringPrintf("OpacityChanged window_id=%s opacity=%.2f",
-                                WindowIdToString(change.window_id).c_str(),
-                                change.float_value);
     case CHANGE_TYPE_REQUEST_CLOSE:
       return "RequestClose";
     case CHANGE_TYPE_TRANSFORM_CHANGED:
@@ -360,12 +356,14 @@ void TestChangeTracker::OnEmbeddedAppDisconnected(Id window_id) {
 void TestChangeTracker::OnWindowBoundsChanged(
     Id window_id,
     const gfx::Rect& new_bounds,
+    ui::WindowShowState new_state,
     const base::Optional<viz::LocalSurfaceIdAllocation>&
         local_surface_id_allocation) {
   Change change;
   change.type = CHANGE_TYPE_NODE_BOUNDS_CHANGED;
   change.window_id = window_id;
   change.bounds = new_bounds;
+  change.state = new_state;
   change.local_surface_id_allocation = local_surface_id_allocation;
   AddChange(change);
 }
@@ -458,14 +456,6 @@ void TestChangeTracker::OnWindowVisibilityChanged(Id window_id, bool visible) {
   change.type = CHANGE_TYPE_NODE_VISIBILITY_CHANGED;
   change.window_id = window_id;
   change.bool_value = visible;
-  AddChange(change);
-}
-
-void TestChangeTracker::OnWindowOpacityChanged(Id window_id, float opacity) {
-  Change change;
-  change.type = CHANGE_TYPE_OPACITY;
-  change.window_id = window_id;
-  change.float_value = opacity;
   AddChange(change);
 }
 

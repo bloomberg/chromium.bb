@@ -103,12 +103,9 @@ void ChromeStabilityMetricsProvider::Observe(
       break;
     }
 
-    case content::NOTIFICATION_RENDER_WIDGET_HOST_HANG: {
-      const metrics::RendererHangCause* hang_cause =
-          content::Details<metrics::RendererHangCause>(details).ptr();
-      helper_.LogRendererHang(*hang_cause);
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_HANG:
+      helper_.LogRendererHang();
       break;
-    }
 
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       bool was_extension_process = false;

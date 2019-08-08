@@ -98,7 +98,7 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
 
   bool IsMainFrame() const override {
     return throttle_->request_resource_type_ ==
-           content::RESOURCE_TYPE_MAIN_FRAME;
+           content::ResourceType::kMainFrame;
   }
 
   GURL GetOrigin() const override {
@@ -111,6 +111,16 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
 
   void RemoveHeader(const std::string& name) override {
     headers_->RemoveHeader(name);
+  }
+
+  base::SupportsUserData::Data* GetUserData(const void* key) const override {
+    return throttle_->GetUserData(key);
+  }
+
+  void SetUserData(
+      const void* key,
+      std::unique_ptr<base::SupportsUserData::Data> data) override {
+    throttle_->SetUserData(key, std::move(data));
   }
 
  private:

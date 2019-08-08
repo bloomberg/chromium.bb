@@ -38,10 +38,6 @@ namespace blink {
 
 class EmptyNodeList final : public NodeList {
  public:
-  static EmptyNodeList* Create(Node& root_node) {
-    return MakeGarbageCollected<EmptyNodeList>(root_node);
-  }
-
   explicit EmptyNodeList(Node& root_node) : owner_(root_node) {}
   ~EmptyNodeList() override;
 

@@ -515,9 +515,7 @@ base::string16 BrowserAccessibilityAndroid::GetHint() const {
       strings.push_back(name);
   }
 
-  if (GetData().GetNameFrom() != ax::mojom::NameFrom::kPlaceholder &&
-      GetData().GetIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom) !=
-          static_cast<int32_t>(ax::mojom::DescriptionFrom::kPlaceholder)) {
+  if (GetData().GetNameFrom() != ax::mojom::NameFrom::kPlaceholder) {
     base::string16 placeholder =
         GetString16Attribute(ax::mojom::StringAttribute::kPlaceholder);
     if (!placeholder.empty())
@@ -1217,18 +1215,18 @@ bool BrowserAccessibilityAndroid::Scroll(int direction) const {
     // If this is a web area inside of an iframe, try to use the bounds of
     // the containing element.
     BrowserAccessibility* parent = PlatformGetParent();
-    while (parent && (parent->GetPageBoundsRect().width() == 0 ||
-                      parent->GetPageBoundsRect().height() == 0)) {
+    while (parent && (parent->GetClippedRootFrameBoundsRect().width() == 0 ||
+                      parent->GetClippedRootFrameBoundsRect().height() == 0)) {
       parent = parent->PlatformGetParent();
     }
     if (parent)
-      bounds = parent->GetPageBoundsRect();
+      bounds = parent->GetClippedRootFrameBoundsRect();
     else
-      bounds = GetPageBoundsRect();
+      bounds = GetClippedRootFrameBoundsRect();
   } else {
     // Otherwise this is something like a scrollable div, just use the
     // bounds of this object itself.
-    bounds = GetPageBoundsRect();
+    bounds = GetClippedRootFrameBoundsRect();
   }
 
   // Scroll by 80% of one page.
@@ -1528,7 +1526,7 @@ void BrowserAccessibilityAndroid::GetLineBoundaries(
       CHECK_EQ(ax::mojom::Role::kInlineTextBox, child->GetRole());
       // TODO(dmazzoni): replace this with a proper API to determine
       // if two inline text boxes are on the same line. http://crbug.com/421771
-      int y = child->GetPageBoundsRect().y();
+      int y = child->GetClippedRootFrameBoundsRect().y();
       if (i == 0) {
         line_starts->push_back(offset);
       } else if (y != last_y) {

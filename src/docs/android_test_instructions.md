@@ -24,7 +24,7 @@ Operation not permitted".
 The adb executable exists within the Android SDK:
 
 ```shell
-third_party/android_tools/sdk/platform-tools/adb
+third_party/android_sdk/public/platform-tools/adb
 ```
 
 In order to allow the ADB to connect to the device, you must enable USB

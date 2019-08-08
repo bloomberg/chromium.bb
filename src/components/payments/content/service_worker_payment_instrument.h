@@ -62,6 +62,7 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
 
   // PaymentInstrument:
   void InvokePaymentApp(Delegate* delegate) override;
+  void OnPaymentAppWindowClosed() override;
   bool IsCompleteForPayment() const override;
   bool IsExactlyMatchingMerchantRequest() const override;
   base::string16 GetMissingInfoLabel() const override;

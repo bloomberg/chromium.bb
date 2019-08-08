@@ -15,9 +15,9 @@ const char kSyncLastSyncedTime[] = "sync.last_synced_time";
 const char kSyncLastPollTime[] = "sync.last_poll_time";
 
 // 64-bit integer serialization of base::TimeDelta storing poll intervals
-// received by the server (in seconds).
-const char kSyncShortPollIntervalSeconds[] = "sync.short_poll_interval";
-const char kSyncLongPollIntervalSeconds[] = "sync.long_poll_interval";
+// received by the server (in seconds). For historic reasons, this is called
+// "short_poll_interval", but it's worth the hassle to rename it.
+const char kSyncPollIntervalSeconds[] = "sync.short_poll_interval";
 
 // Boolean specifying whether the user finished setting up sync at least once.
 const char kSyncFirstSetupComplete[] = "sync.has_setup_completed";
@@ -88,18 +88,9 @@ const char kSyncEncryptionBootstrapToken[] = "sync.encryption_bootstrap_token";
 const char kSyncKeystoreEncryptionBootstrapToken[] =
     "sync.keystore_encryption_bootstrap_token";
 
-#if defined(OS_CHROMEOS)
-// A string that is used to store first-time sync startup after once sync is
-// disabled. This will be refreshed every sign-in.
-const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
-#endif  // defined(OS_CHROMEOS)
-
 const char kSyncCacheGuid[] = "sync.cache_guid";
 const char kSyncBirthday[] = "sync.birthday";
 const char kSyncBagOfChips[] = "sync.bag_of_chips";
-
-// Stores the timestamp of first sync.
-const char kSyncFirstSyncTime[] = "sync.first_sync_time";
 
 // Stores whether a platform specific passphrase error prompt has been shown to
 // the user (e.g. an Android system notification). Used for out of band prompts

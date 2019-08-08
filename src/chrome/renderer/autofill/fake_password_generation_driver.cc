@@ -19,12 +19,3 @@ void FakePasswordGenerationDriver::Flush() {
   if (binding_.is_bound())
     binding_.FlushForTesting();
 }
-
-void FakePasswordGenerationDriver::GenerationAvailableForForm(
-    const autofill::PasswordForm& form) {
-  called_generation_available_for_form_ = true;
-}
-
-void FakePasswordGenerationDriver::PasswordGenerationRejectedByTyping() {
-  called_password_generation_rejected_by_typing_ = true;
-}

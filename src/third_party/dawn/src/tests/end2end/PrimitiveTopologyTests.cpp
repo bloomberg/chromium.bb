@@ -165,22 +165,6 @@ class PrimitiveTopologyTest : public DawnTest {
                     fragColor = vec4(0.0, 1.0, 0.0, 1.0);
                 })");
 
-            dawn::VertexAttributeDescriptor attribute;
-            attribute.shaderLocation = 0;
-            attribute.inputSlot = 0;
-            attribute.offset = 0;
-            attribute.format = dawn::VertexFormat::FloatR32G32B32A32;
-
-            dawn::VertexInputDescriptor input;
-            input.inputSlot = 0;
-            input.stride = 4 * sizeof(float);
-            input.stepMode = dawn::InputStepMode::Vertex;
-
-            inputState = device.CreateInputStateBuilder()
-                             .SetAttribute(&attribute)
-                             .SetInput(&input)
-                             .GetResult();
-
             vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices), dawn::BufferUsageBit::Vertex);
         }
 
@@ -197,17 +181,19 @@ class PrimitiveTopologyTest : public DawnTest {
 
         // Draw the vertices with the given primitive topology and check the pixel values of the test locations
         void DoTest(dawn::PrimitiveTopology primitiveTopology, const std::vector<LocationSpec> &locationSpecs) {
-
             utils::ComboRenderPipelineDescriptor descriptor(device);
             descriptor.cVertexStage.module = vsModule;
             descriptor.cFragmentStage.module = fsModule;
             descriptor.primitiveTopology = primitiveTopology;
-            descriptor.inputState = inputState;
+            descriptor.cInputState.numInputs = 1;
+            descriptor.cInputState.cInputs[0].stride = 4 * sizeof(float);
+            descriptor.cInputState.numAttributes = 1;
+            descriptor.cInputState.cAttributes[0].format = dawn::VertexFormat::Float4;
             descriptor.cColorStates[0]->format = renderPass.colorFormat;
 
             dawn::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
 
-            static const uint32_t zeroOffset = 0;
+            static const uint64_t zeroOffset = 0;
             dawn::CommandEncoder encoder = device.CreateCommandEncoder();
             {
                 dawn::RenderPassEncoder pass = encoder.BeginRenderPass(
@@ -234,7 +220,6 @@ class PrimitiveTopologyTest : public DawnTest {
         utils::BasicRenderPass renderPass;
         dawn::ShaderModule vsModule;
         dawn::ShaderModule fsModule;
-        dawn::InputState inputState;
         dawn::Buffer vertexBuffer;
 };
 

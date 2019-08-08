@@ -13,12 +13,15 @@ import android.webkit.URLUtil;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.content_public.browser.NavigationHandle;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -30,6 +33,7 @@ import java.lang.reflect.Method;
 @SuppressLint("NewApi")
 public class PageViewObserver {
     private static final String TAG = "PageViewObserver";
+    private static final String AMP_QUERY_PARAM = "amp_js_v";
 
     private final Activity mActivity;
     private final TabModelSelectorTabModelObserver mTabModelObserver;
@@ -54,7 +58,7 @@ public class PageViewObserver {
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {
                 if (!tab.isLoading() && !tab.isBeingRestored()) {
-                    updateUrl(tab.getUrl());
+                    updateUsingCanonicalUrl(tab);
                 }
             }
 
@@ -66,21 +70,48 @@ public class PageViewObserver {
             @Override
             public void onUpdateUrl(Tab tab, String url) {
                 assert tab == mCurrentTab;
+                String newFqdn = getValidFqdnOrEmptyString(url);
+                // We don't call updateUrl() here to avoid reporting start events for domains
+                // that never paint, e.g. link shorteners. We still need to check the SuspendedTab
+                // state because a tab that's suspended can't paint, and the user could be
+                // navigating away from a suspended domain.
+                checkSuspendedTabState(mSuspensionTracker.isWebsiteSuspended(newFqdn), newFqdn);
+            }
 
-                updateUrl(url);
+            @Override
+            public void didFirstVisuallyNonEmptyPaint(Tab tab) {
+                assert tab == mCurrentTab;
+
+                updateUsingCanonicalUrl(tab);
+            }
+
+            @Override
+            public void onCrash(Tab tab) {
+                updateUrl(null);
+            }
+
+            @Override
+            public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
+                // We only check isLikelySubframeAmpNavigation here because this is the only
+                // observer method that fires for subframe navigations. The reason we have the
+                // isLikelySubframeAmpNavigation at all is that onDidFinishNavigation triggers very
+                // often, and we only want to bother getting the canonical URL if we think there's a
+                // good chance that it will actually be present.
+                if (isLikelySubframeAmpNavigation(navigation)) {
+                    updateUsingCanonicalUrl(tab);
+                }
             }
         };
 
         mTabModelObserver = new TabModelSelectorTabModelObserver(tabModelSelector) {
             @Override
             public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
-                assert tab != null;
-                if (tab == mCurrentTab) return;
+                activeTabChanged(tab);
+            }
 
-                switchObserverToTab(tab);
-                if (mCurrentTab != null) {
-                    updateUrl(mCurrentTab.getUrl());
-                }
+            @Override
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
+                activeTabChanged(tab);
             }
 
             @Override
@@ -107,45 +138,102 @@ public class PageViewObserver {
 
     /** Notify PageViewObserver that {@code fqdn} was just suspended or un-suspended. */
     public void notifySiteSuspensionChanged(String fqdn, boolean isSuspended) {
-        if (mLastFqdn != null && mLastFqdn.equals(fqdn)) {
-            if (isSuspended) {
-                SuspendedTab.from(mCurrentTab).show(fqdn);
-                return;
-            }
-
-            SuspendedTab suspendedTab = SuspendedTab.get(mCurrentTab);
-            if (suspendedTab != null && !isSuspended && suspendedTab.getFqdn().equals(fqdn)) {
-                suspendedTab.removeIfPresent();
-                mCurrentTab.reload();
+        SuspendedTab suspendedTab = SuspendedTab.from(mCurrentTab);
+        if (fqdn.equals(mLastFqdn) || fqdn.equals(suspendedTab.getFqdn())) {
+            if (checkSuspendedTabState(isSuspended, fqdn)) {
+                reportStop();
             }
         }
     }
 
+    private void updateUsingCanonicalUrl(Tab tab) {
+        if (tab.getWebContents() == null || tab.getWebContents().getMainFrame() == null) {
+            updateUrl(tab.getUrl());
+            return;
+        }
+
+        tab.getWebContents().getMainFrame().getCanonicalUrlForSharing((canonicalUrl) -> {
+            if (tab != mCurrentTab) return;
+            String urlToUse = tab.getUrl();
+            if (canonicalUrl != null && canonicalUrl.length() > 0) {
+                urlToUse = canonicalUrl;
+            }
+            updateUrl(urlToUse);
+        });
+    }
+
+    /**
+     * Updates our state from the previous url to {@code newUrl}. This can result in any/all of the
+     * following:
+     * 1. Suspension or un-suspension of mCurrentTab.
+     * 2. Reporting a stop event for mLastFqdn.
+     * 3. Reporting a start event for the fqdn of {@code newUrl}.
+     */
     private void updateUrl(String newUrl) {
-        String newFqdn = newUrl == null ? "" : Uri.parse(newUrl).getHost();
-        boolean didSuspend = false;
-        boolean sameDomain = mLastFqdn != null && mLastFqdn.equals(newFqdn);
+        String newFqdn = getValidFqdnOrEmptyString(newUrl);
+        boolean isSameDomain = newFqdn.equals(mLastFqdn);
+        boolean isValidProtocol = URLUtil.isHttpUrl(newUrl) || URLUtil.isHttpsUrl(newUrl);
 
-        if (newFqdn != null && mSuspensionTracker.isWebsiteSuspended(newFqdn)) {
-            SuspendedTab.from(mCurrentTab).show(newFqdn);
-            didSuspend = true;
+        boolean didSuspend =
+                checkSuspendedTabState(mSuspensionTracker.isWebsiteSuspended(newFqdn), newFqdn);
+
+        if (mLastFqdn != null && (didSuspend || !isSameDomain)) {
+            reportStop();
         }
 
-        if (sameDomain) return;
-
-        if (mLastFqdn != null) {
+        if (isValidProtocol && !didSuspend && !isSameDomain) {
+            mLastFqdn = newFqdn;
             mEventTracker.addWebsiteEvent(new WebsiteEvent(
-                    System.currentTimeMillis(), mLastFqdn, WebsiteEvent.EventType.STOP));
-            reportToPlatformIfDomainIsTracked("reportUsageStop", mLastFqdn);
+                    System.currentTimeMillis(), mLastFqdn, WebsiteEvent.EventType.START));
+            reportToPlatformIfDomainIsTracked("reportUsageStart", mLastFqdn);
         }
+    }
 
-        mLastFqdn = newFqdn;
+    /**
+     * Hides or shows the SuspendedTab for mCurrentTab, based on:
+     * 1. If it is currently shown or hidden
+     * 2. Its current fqdn, if any.
+     * 3. If fqdn is newly suspended or not.
+     * There are really only two important cases; either the SuspendedTab is showing and should be
+     * hidden, or it's hidden and should be shown.
+     */
+    private boolean checkSuspendedTabState(boolean isNewlySuspended, String fqdn) {
+        SuspendedTab suspendedTab = SuspendedTab.from(mCurrentTab);
+        // We don't need to do anything in situations where the current state matches the desired;
+        // i.e. either the suspended tab is already showing with the correct fqdn, or the suspended
+        // tab is hidden and should be hidden.
+        if (isNewlySuspended && fqdn.equals(suspendedTab.getFqdn())) return false;
+        if (!isNewlySuspended && !suspendedTab.isShowing()) return false;
 
-        if (!URLUtil.isHttpUrl(newUrl) && !URLUtil.isHttpsUrl(newUrl) || didSuspend) return;
+        if (isNewlySuspended) {
+            suspendedTab.show(fqdn);
+            return true;
+        } else {
+            suspendedTab.removeIfPresent();
+            if (!mCurrentTab.isLoading() && !SadTab.isShowing(mCurrentTab)) {
+                mCurrentTab.reload();
+            }
+        }
+        return false;
+    }
 
+    private void reportStop() {
         mEventTracker.addWebsiteEvent(new WebsiteEvent(
-                System.currentTimeMillis(), mLastFqdn, WebsiteEvent.EventType.START));
-        reportToPlatformIfDomainIsTracked("reportUsageStart", mLastFqdn);
+                System.currentTimeMillis(), mLastFqdn, WebsiteEvent.EventType.STOP));
+        reportToPlatformIfDomainIsTracked("reportUsageStop", mLastFqdn);
+        mLastFqdn = null;
+    }
+
+    private void activeTabChanged(Tab tab) {
+        assert tab != null;
+        if (tab == mCurrentTab || mTabModelSelector.getCurrentTab() != tab) return;
+
+        switchObserverToTab(tab);
+        // If the newly active tab is hidden, we don't want to check its URL yet; we'll wait until
+        // the onShown event fires.
+        if (mCurrentTab != null && !tab.isHidden()) {
+            updateUsingCanonicalUrl(tab);
+        }
     }
 
     private void switchObserverToTab(Tab tab) {
@@ -179,5 +267,25 @@ public class PageViewObserver {
                 Log.e(TAG, "Failed to report to platform API", e);
             }
         });
+    }
+
+    private static String getValidFqdnOrEmptyString(String url) {
+        if (url == null) return "";
+        String host = Uri.parse(url).getHost();
+        return host == null ? "" : host;
+    }
+
+    private boolean isLikelySubframeAmpNavigation(NavigationHandle navigation) {
+        if (navigation.isInMainFrame()) return false;
+        String subframeUrl = navigation.getUrl();
+        if (subframeUrl == null || subframeUrl.length() == 0) return false;
+
+        // Our heuristic for AMP pages, based on AMPPageLoadMetricsObserver, is to look for a
+        // subframe navigation that contains "amp_js_v" in the query. This might produce a false
+        // positive, but we're OK with that; we'll just call updateUrl an extra time. This is a
+        // no-op if the URL hasn't actually changed.
+        String query = Uri.parse(subframeUrl).getQuery();
+        if (query == null) return false;
+        return query.contains(AMP_QUERY_PARAM);
     }
 }

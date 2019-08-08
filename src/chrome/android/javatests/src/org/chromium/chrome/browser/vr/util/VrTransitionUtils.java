@@ -7,10 +7,10 @@ package org.chromium.chrome.browser.vr.util;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.VrShellDelegate;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Class containing utility functions for transitioning between different
@@ -28,7 +28,7 @@ public class VrTransitionUtils {
      * Forces Chrome out of VR mode.
      */
     public static void forceExitVr() {
-        ThreadUtils.runOnUiThreadBlocking(() -> { VrShellDelegate.forceExitVrImmediately(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { VrShellDelegate.forceExitVrImmediately(); });
     }
 
     /**

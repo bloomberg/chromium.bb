@@ -236,7 +236,8 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
   }
 
   static LayoutTableCell* CreateAnonymous(Document*,
-                                          scoped_refptr<ComputedStyle>);
+                                          scoped_refptr<ComputedStyle>,
+                                          LegacyLayout);
   static LayoutTableCell* CreateAnonymousWithParent(const LayoutObject*);
   LayoutBox* CreateAnonymousBoxWithSameTypeAs(
       const LayoutObject* parent) const override {
@@ -271,10 +272,6 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
   void InvalidateCollapsedBorderValues() {
     collapsed_border_values_valid_ = false;
   }
-
-  LayoutRect DebugRect() const override;
-
-  void AdjustChildDebugRect(LayoutRect&) const override;
 
   // A table cell's location is relative to its containing section.
   LayoutBox* LocationContainer() const override { return Section(); }

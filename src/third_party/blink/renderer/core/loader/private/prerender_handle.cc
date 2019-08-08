@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/prerenderer_client.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/prerender.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
@@ -50,7 +51,7 @@ PrerenderHandle* PrerenderHandle::Create(Document& document,
   if (!document.GetFrame())
     return nullptr;
 
-  Prerender* prerender = Prerender::Create(
+  auto* prerender = MakeGarbageCollected<Prerender>(
       client, url, prerender_rel_types,
       SecurityPolicy::GenerateReferrer(document.GetReferrerPolicy(), url,
                                        document.OutgoingReferrer()));

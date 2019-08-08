@@ -83,6 +83,17 @@ bool IsSystemLibraryPath(const char* lib_path) {
 
 namespace crazy {
 
+FileDescriptor& FileDescriptor::operator=(FileDescriptor&& other) noexcept {
+  if (this != &other) {
+    if (fd_ != kEmptyFD) {
+      DoClose(fd_);
+    }
+    fd_ = other.fd_;
+    other.fd_ = kEmptyFD;
+  }
+  return *this;
+}
+
 ssize_t FileDescriptor::Read(void* buffer, size_t buffer_size) {
   return TEMP_FAILURE_RETRY(::read(fd_, buffer, buffer_size));
 }

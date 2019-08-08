@@ -5,6 +5,7 @@
 #include "components/viz/common/features.h"
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "components/viz/common/switches.h"
 
@@ -13,6 +14,10 @@
 #endif
 
 namespace features {
+
+constexpr char kProvider[] = "provider";
+constexpr char kDrawQuad[] = "draw_quad";
+constexpr char kSurfaceLayer[] = "surface_layer";
 
 #if defined(USE_AURA) || defined(OS_MACOSX)
 const base::Feature kEnableSurfaceSynchronization{
@@ -35,12 +40,16 @@ const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-// Enables running the Viz-assisted hit-test logic.
+// Enables running the Viz-assisted hit-test logic. We still need to keep the
+// VizHitTestDrawQuad and VizHitTestSurfaceLayer features for finch launch.
 const base::Feature kEnableVizHitTestDrawQuad{"VizHitTestDrawQuad",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableVizHitTestSurfaceLayer{
     "VizHitTestSurfaceLayer", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableVizHitTest{"VizHitTest",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use the SkiaRenderer.
 const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
@@ -75,30 +84,56 @@ bool IsVizHitTestingDebugEnabled() {
              switches::kEnableVizHitTestDebug);
 }
 
-bool IsVizHitTestingDrawQuadEnabled() {
-  if (IsVizHitTestingSurfaceLayerEnabled())
-    return false;
-  return base::FeatureList::IsEnabled(kEnableVizHitTestDrawQuad) ||
+// VizHitTest is considered enabled when any of its variant is turned on, or
+// when VizDisplayCompositor is turned on.
+bool IsVizHitTestingEnabled() {
+  return base::FeatureList::IsEnabled(features::kEnableVizHitTest) ||
          base::FeatureList::IsEnabled(kVizDisplayCompositor);
 }
 
-bool IsVizHitTestingEnabled() {
-  return IsVizHitTestingDrawQuadEnabled() ||
-         IsVizHitTestingSurfaceLayerEnabled();
+// VizHitTestDrawQuad is enabled when this feature is explicitly enabled on
+// chrome://flags, or when VizHitTest is enabled but VizHitTestSurfaceLayer is
+// turned off.
+bool IsVizHitTestingDrawQuadEnabled() {
+  return GetFieldTrialParamValueByFeature(features::kEnableVizHitTest,
+                                          kProvider) == kDrawQuad ||
+         (IsVizHitTestingEnabled() && !IsVizHitTestingSurfaceLayerEnabled());
 }
 
+// VizHitTestSurfaceLayer is enabled when this feature is explicitly enabled on
+// chrome://flags, or when it is enabled by finch and chrome://flags does not
+// conflict.
 bool IsVizHitTestingSurfaceLayerEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kUseVizHitTestSurfaceLayer) ||
-         base::FeatureList::IsEnabled(kEnableVizHitTestSurfaceLayer);
+  return GetFieldTrialParamValueByFeature(features::kEnableVizHitTest,
+                                          kProvider) == kSurfaceLayer ||
+         (IsVizHitTestingEnabled() &&
+          GetFieldTrialParamValueByFeature(features::kEnableVizHitTest,
+                                           kProvider) != kDrawQuad &&
+          base::FeatureList::IsEnabled(kEnableVizHitTestSurfaceLayer));
 }
 
 bool IsUsingSkiaRenderer() {
-  return base::FeatureList::IsEnabled(kUseSkiaRenderer);
+  // We require OOP-D everywhere but WebView.
+  bool enabled = base::FeatureList::IsEnabled(kUseSkiaRenderer);
+#if !defined(OS_ANDROID)
+  if (enabled && !IsVizDisplayCompositorEnabled()) {
+    DLOG(ERROR) << "UseSkiaRenderer requires VizDisplayCompositor.";
+    return false;
+  }
+#endif  // !defined(OS_ANDROID)
+  return enabled;
 }
 
 bool IsUsingSkiaRendererNonDDL() {
-  return base::FeatureList::IsEnabled(kUseSkiaRendererNonDDL);
+  // We require OOP-D everywhere but WebView.
+  bool enabled = base::FeatureList::IsEnabled(kUseSkiaRendererNonDDL);
+#if !defined(OS_ANDROID)
+  if (enabled && !IsVizDisplayCompositorEnabled()) {
+    DLOG(ERROR) << "UseSkiaRendererNonDDL requires VizDisplayCompositor.";
+    return false;
+  }
+#endif  // !defined(OS_ANDROID)
+  return enabled;
 }
 
 bool IsRecordingSkPicture() {

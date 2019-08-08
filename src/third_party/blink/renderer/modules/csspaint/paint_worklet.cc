@@ -4,18 +4,30 @@
 
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet.h"
 
+#include "base/atomic_sequence_num.h"
 #include "base/rand_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/css/cssom/prepopulated_computed_style_property_map.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_messaging_proxy.h"
-#include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
-#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/paint_generated_image.h"
 
 namespace blink {
+
+namespace {
+base::AtomicSequenceNumber g_next_worklet_id;
+int NextId() {
+  // Start id from 1. This way it safe to use it as key in hashmap with default
+  // key traits.
+  return g_next_worklet_id.GetNext() + 1;
+}
+}  // namespace
 
 const wtf_size_t PaintWorklet::kNumGlobalScopes = 2u;
 const size_t kMaxPaintCountToSwitch = 30u;
@@ -26,22 +38,18 @@ PaintWorklet* PaintWorklet::From(LocalDOMWindow& window) {
   PaintWorklet* supplement =
       Supplement<LocalDOMWindow>::From<PaintWorklet>(window);
   if (!supplement && window.GetFrame()) {
-    supplement = Create(window.GetFrame());
+    supplement = MakeGarbageCollected<PaintWorklet>(window.GetFrame());
     ProvideTo(window, supplement);
   }
   return supplement;
-}
-
-// static
-PaintWorklet* PaintWorklet::Create(LocalFrame* frame) {
-  return MakeGarbageCollected<PaintWorklet>(frame);
 }
 
 PaintWorklet::PaintWorklet(LocalFrame* frame)
     : Worklet(frame->GetDocument()),
       Supplement<LocalDOMWindow>(*frame->DomWindow()),
       pending_generator_registry_(
-          MakeGarbageCollected<PaintWorkletPendingGeneratorRegistry>()) {}
+          MakeGarbageCollected<PaintWorkletPendingGeneratorRegistry>()),
+      worklet_id_(NextId()) {}
 
 PaintWorklet::~PaintWorklet() = default;
 
@@ -110,7 +118,21 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
   CSSPaintDefinition* paint_definition = proxy->FindDefinition(name);
   if (!paint_definition)
     return nullptr;
-  return paint_definition->Paint(observer, container_size, data);
+  // TODO(crbug.com/946515): Break dependency on LayoutObject.
+  const LayoutObject& layout_object =
+      static_cast<const LayoutObject&>(observer);
+  float zoom = layout_object.StyleRef().EffectiveZoom();
+  StylePropertyMapReadOnly* style_map =
+      MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
+          layout_object.GetDocument(), layout_object.StyleRef(),
+          layout_object.GetNode(),
+          paint_definition->NativeInvalidationProperties(),
+          paint_definition->CustomInvalidationProperties());
+  sk_sp<PaintRecord> paint_record =
+      paint_definition->Paint(container_size, zoom, style_map, data);
+  if (!paint_record)
+    return nullptr;
+  return PaintGeneratedImage::Create(paint_record, container_size);
 }
 
 // static
@@ -119,6 +141,7 @@ const char PaintWorklet::kSupplementName[] = "PaintWorklet";
 void PaintWorklet::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_generator_registry_);
   visitor->Trace(document_definition_map_);
+  visitor->Trace(proxy_client_);
   Worklet::Trace(visitor);
   Supplement<LocalDOMWindow>::Trace(visitor);
 }
@@ -135,9 +158,13 @@ WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
         pending_generator_registry_, GetNumberOfGlobalScopes() + 1);
   }
 
-  PaintWorkletProxyClient* proxy_client = PaintWorkletProxyClient::Create();
-  WorkerClients* worker_clients = WorkerClients::Create();
-  ProvidePaintWorkletProxyClientTo(worker_clients, proxy_client);
+  if (!proxy_client_) {
+    proxy_client_ = PaintWorkletProxyClient::Create(
+        To<Document>(GetExecutionContext()), worklet_id_);
+  }
+
+  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
+  ProvidePaintWorkletProxyClientTo(worker_clients, proxy_client_);
 
   PaintWorkletMessagingProxy* proxy =
       MakeGarbageCollected<PaintWorkletMessagingProxy>(GetExecutionContext());

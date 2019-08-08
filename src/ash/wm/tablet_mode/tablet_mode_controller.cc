@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/root_window_controller.h"
@@ -17,6 +18,7 @@
 #include "ash/wm/tablet_mode/internal_input_devices_event_blocker.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
+#include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -25,7 +27,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -154,6 +156,9 @@ TabletModeController::TabletModeController()
             &TabletModeController::OnBluetoothAdapterOrDeviceChanged,
             base::Unretained(this)));
   }
+
+  Shell::Get()->kiosk_next_shell_controller()->AddObserver(this);
+
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::PowerManagerClient::Get();
   power_manager_client->AddObserver(this);
@@ -177,6 +182,8 @@ TabletModeController::~TabletModeController() {
                             tab_drag_in_splitview_count_);
 
   Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->kiosk_next_shell_controller()->RemoveObserver(this);
+
   if (IsEnabled()) {
     Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
     AccelerometerReader::GetInstance()->RemoveObserver(this);
@@ -346,6 +353,15 @@ void TabletModeController::OnAccelerometerUpdated(
   if (!AllowUiModeChange())
     return;
 
+  // When ChromeOS EC lid angle driver is present, EC can handle lid angle
+  // calculation, thus Chrome side lid angle calculation is disabled. In this
+  // case, TabletModeController no longer listens to accelerometer events.
+  if (update->HasLidAngleDriver(ACCELEROMETER_SOURCE_SCREEN) ||
+      update->HasLidAngleDriver(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)) {
+    AccelerometerReader::GetInstance()->RemoveObserver(this);
+    return;
+  }
+
   have_seen_accelerometer_data_ = true;
   can_detect_lid_angle_ = update->has(ACCELEROMETER_SOURCE_SCREEN) &&
                           update->has(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD);
@@ -399,9 +415,12 @@ void TabletModeController::TabletModeEventReceived(
   if (!HasActiveInternalDisplay())
     return;
 
-  // The tablet mode switch activates at 300 degrees, so it is always reliable
-  // when |on|. However we wish to exit tablet mode at a smaller angle, so
-  // when |on| is false we ignore if it is possible to calculate the lid angle.
+  // For updated EC, the tablet mode switch activates at 200 degrees, and
+  // deactivates at 160 degrees.
+  // For old EC, the tablet mode switch activates at 300 degrees, so it's
+  // always reliable when |on|. However we wish to exit tablet mode at a
+  // smaller angle, so when |on| is false we ignore if it is possible to
+  // calculate the lid angle.
   if (on && !IsTabletModeWindowManagerEnabled()) {
     AttemptEnterTabletMode();
   } else if (!on && IsTabletModeWindowManagerEnabled() &&
@@ -420,11 +439,33 @@ void TabletModeController::SuspendImminent(
   // The system is about to suspend, so record TabletMode usage interval metrics
   // based on whether TabletMode mode is currently active.
   RecordTabletModeUsageInterval(CurrentTabletModeIntervalType());
+
+  // Stop listening to any incoming input device changes during suspend as the
+  // input devices may be removed during suspend and cause the device enter/exit
+  // tablet mode unexpectedly.
+  if (IsEnabled()) {
+    ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+    bluetooth_devices_observer_.reset();
+  }
 }
 
 void TabletModeController::SuspendDone(const base::TimeDelta& sleep_duration) {
   // We do not want TabletMode usage metrics to include time spent in suspend.
   tablet_mode_usage_interval_start_time_ = base::Time::Now();
+
+  // Start listening to the input device changes again.
+  if (IsEnabled()) {
+    bluetooth_devices_observer_ =
+        std::make_unique<BluetoothDevicesObserver>(base::BindRepeating(
+            &TabletModeController::OnBluetoothAdapterOrDeviceChanged,
+            base::Unretained(this)));
+    ui::InputDeviceManager::GetInstance()->AddObserver(this);
+    // Call HandlePointingDeviceAddedOrRemoved() to iterate all available input
+    // devices just in case we have missed all the notifications from
+    // InputDeviceManager and  BluetoothDevicesObserver when SuspendDone() is
+    // called.
+    HandlePointingDeviceAddedOrRemoved();
+  }
 }
 
 void TabletModeController::OnInputDeviceConfigurationChanged(
@@ -617,7 +658,7 @@ void TabletModeController::SetTabletModeEnabledForTesting(
 }
 
 bool TabletModeController::AllowUiModeChange() const {
-  return force_ui_mode_ == UiMode::kNone;
+  return force_ui_mode_ == UiMode::kNone && !kiosk_next_enabled_;
 }
 
 void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
@@ -729,4 +770,8 @@ void TabletModeController::ResetPauser() {
   occlusion_tracker_pauser_.reset();
 }
 
+void TabletModeController::OnKioskNextEnabled() {
+  kiosk_next_enabled_ = true;
+  AttemptEnterTabletMode();
+}
 }  // namespace ash

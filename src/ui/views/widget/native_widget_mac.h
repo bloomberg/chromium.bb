@@ -80,6 +80,11 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
                               WindowOpenDisposition window_open_disposition,
                               bool is_before_first_responder);
 
+  ui::Compositor* GetCompositor() {
+    return const_cast<ui::Compositor*>(
+        const_cast<const NativeWidgetMac*>(this)->GetCompositor());
+  }
+
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;
   void OnWidgetInitDone() override;
@@ -151,6 +156,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
                     int operation,
                     ui::DragDropTypes::DragEventSource source) override;
   void SchedulePaintInRect(const gfx::Rect& rect) override;
+  void ScheduleLayout() override;
   void SetCursor(gfx::NativeCursor cursor) override;
   void ShowEmojiPanel() override;
   bool IsMouseEventsEnabled() const override;
@@ -174,7 +180,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // Calls |callback| with the newly created NativeWidget whenever a
   // NativeWidget is created.
   static void SetInitNativeWidgetCallback(
-      const base::RepeatingCallback<void(NativeWidgetMac*)>& callback);
+      base::RepeatingCallback<void(NativeWidgetMac*)> callback);
 
  protected:
   virtual void PopulateCreateWindowParams(
@@ -201,10 +207,6 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
 
   // Optional hook for subclasses invoked by WindowDestroying().
   virtual void OnWindowDestroying(gfx::NativeWindow window) {}
-
-  // Redispatch a keyboard event using the widget's window's CommandDispatcher.
-  // Return true if the event is handled.
-  bool RedispatchKeyEvent(NSEvent* event);
 
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
   views_bridge_mac::mojom::BridgedNativeWidget* bridge() const;

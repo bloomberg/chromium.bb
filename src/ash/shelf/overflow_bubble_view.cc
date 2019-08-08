@@ -179,6 +179,8 @@ void OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {
 gfx::Rect OverflowBubbleView::GetBubbleBounds() {
   const gfx::Size content_size = GetPreferredSize();
   const gfx::Rect anchor_rect = GetAnchorRect();
+  const int distance_to_overflow_button =
+      kDistanceToMainShelf + (kShelfSize - kShelfControlSize) / 2;
   gfx::Rect monitor_rect =
       display::Screen::GetScreen()
           ->GetDisplayNearestPoint(anchor_rect.CenterPoint())
@@ -191,7 +193,7 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
         base::i18n::IsRTL()
             ? anchor_rect.x() - kEndPadding
             : anchor_rect.right() - content_size.width() - kEndPadding,
-        anchor_rect.y() - kDistanceToMainShelf - content_size.height(),
+        anchor_rect.y() - distance_to_overflow_button - content_size.height(),
         content_size.width() + 2 * kEndPadding, content_size.height());
     if (bounds.x() < monitor_rect.x())
       bounds.Offset(monitor_rect.x() - bounds.x(), 0);
@@ -203,9 +205,10 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
       0, anchor_rect.bottom() - content_size.height() - kEndPadding,
       content_size.width(), content_size.height() + 2 * kEndPadding);
   if (shelf_->alignment() == SHELF_ALIGNMENT_LEFT)
-    bounds.set_x(anchor_rect.right() + kDistanceToMainShelf);
+    bounds.set_x(anchor_rect.right() + distance_to_overflow_button);
   else
-    bounds.set_x(anchor_rect.x() - kDistanceToMainShelf - content_size.width());
+    bounds.set_x(anchor_rect.x() - distance_to_overflow_button -
+                 content_size.width());
   if (bounds.y() < monitor_rect.y())
     bounds.Offset(0, monitor_rect.y() - bounds.y());
   if (bounds.bottom() > monitor_rect.bottom())

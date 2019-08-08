@@ -7,7 +7,6 @@ import("//third_party/closure_compiler/compile_js.gni")
 group("closure_compile") {
   deps = [
     ":welcome_files",
-    "./email:closure_compile",
     "./google_apps:closure_compile",
     "./ntp_background:closure_compile",
     "./set_as_default:closure_compile",
@@ -16,26 +15,10 @@ group("closure_compile") {
 
 js_type_check("welcome_files") {
   deps = [
-    ":email_interstitial",
     ":landing_view",
     ":signin_view",
     ":welcome_app",
   ]
-}
-
-js_library("email_interstitial") {
-  deps = [
-    ":email_interstitial_proxy",
-    ":welcome_browser_proxy",
-    "./email/:email_app_proxy",
-  ]
-}
-
-js_library("email_interstitial_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
-  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 js_library("landing_view") {
@@ -43,6 +26,7 @@ js_library("landing_view") {
     ":landing_view_proxy",
     ":navigation_behavior",
     ":welcome_browser_proxy",
+    "//ui/webui/resources/js:load_time_data",
   ]
 }
 
@@ -58,7 +42,6 @@ js_library("signin_view") {
     ":navigation_behavior",
     ":signin_view_proxy",
     ":welcome_browser_proxy",
-    "./email/:email_app_proxy",
   ]
 }
 
@@ -83,7 +66,7 @@ js_library("welcome_app") {
     "./shared:bookmark_proxy",
     "./shared:nux_types",
     "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager",
-    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:promise_resolver",
   ]
 }

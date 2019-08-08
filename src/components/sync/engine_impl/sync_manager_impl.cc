@@ -16,7 +16,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "components/sync/base/cancelation_signal.h"
-#include "components/sync/base/experiments.h"
 #include "components/sync/base/invalidation_interface.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/nigori.h"
@@ -149,7 +148,7 @@ SyncManagerImpl::SyncManagerImpl(
       observing_network_connectivity_changes_(false),
       weak_ptr_factory_(this) {
   // Pre-fill |notification_info_map_|.
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; ++i) {
     notification_info_map_.insert(
         std::make_pair(ModelTypeFromInt(i), NotificationInfo()));
   }
@@ -262,10 +261,9 @@ void SyncManagerImpl::Init(InitArgs* args) {
   DCHECK(!initialized_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(args->post_factory);
-  DCHECK(!args->short_poll_interval.is_zero());
-  DCHECK(!args->long_poll_interval.is_zero());
+  DCHECK(!args->poll_interval.is_zero());
   if (!args->enable_local_sync_backend) {
-    DCHECK(!args->credentials.account_id.empty());
+    DCHECK(!args->authenticated_account_id.empty());
   }
   DCHECK(args->cancelation_signal);
   DVLOG(1) << "SyncManager starting Init...";
@@ -300,24 +298,18 @@ void SyncManagerImpl::Init(InitArgs* args) {
   std::unique_ptr<syncable::DirectoryBackingStore> backing_store =
       args->engine_components_factory->BuildDirectoryBackingStore(
           EngineComponentsFactory::STORAGE_ON_DISK,
-          args->credentials.account_id, absolute_db_path);
+          args->authenticated_account_id, absolute_db_path);
 
   DCHECK(backing_store);
   share_.directory = std::make_unique<syncable::Directory>(
       std::move(backing_store), args->unrecoverable_error_handler,
       report_unrecoverable_error_function_, sync_encryption_handler_.get(),
       sync_encryption_handler_->GetCryptographerUnsafe());
-  share_.sync_credentials = args->credentials;
 
-  // UserShare is accessible to a lot of code that doesn't need access to the
-  // sync token so clear sync_token from the UserShare.
-  share_.sync_credentials.sync_token = "";
-
-  DVLOG(1) << "Username: " << args->credentials.email;
-  DVLOG(1) << "AccountId: " << args->credentials.account_id;
+  DVLOG(1) << "AccountId: " << args->authenticated_account_id;
   if (!OpenDirectory(args)) {
     NotifyInitializationFailure();
-    LOG(ERROR) << "Sync manager initialization failed!";
+    DLOG(ERROR) << "Sync manager initialization failed!";
     return;
   }
 
@@ -353,7 +345,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   model_type_registry_ = std::make_unique<ModelTypeRegistry>(
       args->workers, &share_, this, base::Bind(&MigrateDirectoryData),
-      args->cancelation_signal);
+      args->cancelation_signal, sync_encryption_handler_.get());
   sync_encryption_handler_->AddObserver(model_type_registry_.get());
 
   // Build a SyncCycleContext and store the worker in it.
@@ -364,8 +356,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   cycle_context_ = args->engine_components_factory->BuildContext(
       connection_manager_.get(), directory(), args->extensions_activity,
       listeners, &debug_info_event_listener_, model_type_registry_.get(),
-      args->invalidator_client_id, args->short_poll_interval,
-      args->long_poll_interval);
+      args->invalidator_client_id, args->poll_interval);
   scheduler_ = args->engine_components_factory->BuildScheduler(
       name_, cycle_context_.get(), args->cancelation_signal,
       args->enable_local_sync_backend);
@@ -376,9 +367,6 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   if (!args->enable_local_sync_backend) {
     network_connection_tracker_->AddNetworkConnectionObserver(this);
-    observing_network_connectivity_changes_ = true;
-
-    UpdateCredentials(args->credentials);
   } else {
     scheduler_->OnCredentialsUpdated();
   }
@@ -467,14 +455,8 @@ const SyncScheduler* SyncManagerImpl::scheduler() const {
   return scheduler_.get();
 }
 
-bool SyncManagerImpl::GetHasInvalidAuthTokenForTest() const {
-  return connection_manager_->HasInvalidAuthToken();
-}
-
 bool SyncManagerImpl::OpenDirectory(const InitArgs* args) {
   DCHECK(!initialized_) << "Should only happen once";
-
-  const std::string& account_id = args->credentials.account_id;
 
   // Set before Open().
   change_observer_ = MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr());
@@ -482,10 +464,12 @@ bool SyncManagerImpl::OpenDirectory(const InitArgs* args) {
       MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr()));
 
   syncable::DirOpenResult open_result = syncable::NOT_INITIALIZED;
-  open_result = directory()->Open(account_id, this, transaction_observer);
+  open_result = directory()->Open(args->authenticated_account_id, this,
+                                  transaction_observer);
   if (open_result != syncable::OPENED_NEW &&
       open_result != syncable::OPENED_EXISTING) {
-    LOG(ERROR) << "Could not open share for:" << account_id;
+    DLOG(ERROR) << "Could not open share for: "
+                << args->authenticated_account_id;
     return false;
   }
 
@@ -541,7 +525,7 @@ void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
   cycle_context_->set_account_name(credentials.email);
 
   observing_network_connectivity_changes_ = true;
-  if (!connection_manager_->SetAuthToken(credentials.sync_token))
+  if (!connection_manager_->SetAccessToken(credentials.access_token))
     return;  // Auth token is known to be invalid, so exit early.
 
   scheduler_->OnCredentialsUpdated();
@@ -551,7 +535,7 @@ void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
 
 void SyncManagerImpl::InvalidateCredentials() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  connection_manager_->SetAuthToken(std::string());
+  connection_manager_->SetAccessToken(std::string());
 }
 
 void SyncManagerImpl::AddObserver(SyncManager::Observer* observer) {
@@ -786,7 +770,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
   LOG_IF(WARNING, !change_records_.empty())
       << "CALCULATE_CHANGES called with unapplied old changes.";
 
-  ChangeReorderBuffer change_buffers[MODEL_TYPE_COUNT];
+  ChangeReorderBuffer change_buffers[ModelType::NUM_ENTRIES];
 
   Cryptographer* crypto = directory()->GetCryptographer(trans);
   const syncable::ImmutableEntryKernelMutationMap& mutations =
@@ -815,7 +799,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
   }
 
   ReadTransaction read_trans(GetUserShare(), trans);
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; ++i) {
     if (!change_buffers[i].IsEmpty()) {
       if (change_buffers[i].GetAllChangesInTreeOrder(&read_trans,
                                                      &(change_records_[i]))) {
@@ -962,39 +946,6 @@ SyncManagerImpl::GetModelTypeConnectorProxy() {
 const std::string SyncManagerImpl::cache_guid() {
   DCHECK(initialized_);
   return directory()->cache_guid();
-}
-
-bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
-  ReadTransaction trans(FROM_HERE, GetUserShare());
-  ReadNode nigori_node(&trans);
-  if (nigori_node.InitTypeRoot(NIGORI) != BaseNode::INIT_OK) {
-    DVLOG(1) << "Couldn't find Nigori node.";
-    return false;
-  }
-  bool found_experiment = false;
-
-  ReadNode favicon_sync_node(&trans);
-  if (favicon_sync_node.InitByClientTagLookup(EXPERIMENTS, kFaviconSyncTag) ==
-      BaseNode::INIT_OK) {
-    experiments->favicon_sync_limit =
-        favicon_sync_node.GetExperimentsSpecifics()
-            .favicon_sync()
-            .favicon_sync_limit();
-    found_experiment = true;
-  }
-
-  ReadNode pre_commit_update_avoidance_node(&trans);
-  if (pre_commit_update_avoidance_node.InitByClientTagLookup(
-          EXPERIMENTS, kPreCommitUpdateAvoidanceTag) == BaseNode::INIT_OK) {
-    cycle_context_->set_server_enabled_pre_commit_update_avoidance(
-        pre_commit_update_avoidance_node.GetExperimentsSpecifics()
-            .pre_commit_update_avoidance()
-            .enabled());
-    // We don't bother setting found_experiment.  The frontend doesn't need to
-    // know about this.
-  }
-
-  return found_experiment;
 }
 
 bool SyncManagerImpl::HasUnsyncedItemsForTest() {

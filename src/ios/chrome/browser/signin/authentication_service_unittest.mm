@@ -6,11 +6,11 @@
 
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "components/sync/driver/mock_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -26,7 +26,6 @@
 #import "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_client.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
@@ -80,6 +79,10 @@ std::unique_ptr<KeyedService> BuildFakeTestSigninClient(
           chrome_browser_state));
 }
 
+std::unique_ptr<KeyedService> BuildMockSyncService(web::BrowserState* context) {
+  return std::make_unique<syncer::MockSyncService>();
+}
+
 std::unique_ptr<KeyedService> BuildMockSyncSetupService(
     web::BrowserState* context) {
   ios::ChromeBrowserState* browser_state =
@@ -113,9 +116,8 @@ class AuthenticationServiceTest : public PlatformTest,
     builder.SetPrefService(CreatePrefService());
     builder.AddTestingFactory(SigninClientFactory::GetInstance(),
                               base::BindRepeating(&BuildFakeTestSigninClient));
-    builder.AddTestingFactory(
-        ProfileSyncServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildMockProfileSyncService));
+    builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
+                              base::BindRepeating(&BuildMockSyncService));
     builder.AddTestingFactory(SyncSetupServiceFactory::GetInstance(),
                               base::BindRepeating(&BuildMockSyncSetupService));
     builder.SetPrefService(CreatePrefService());
@@ -131,10 +133,8 @@ class AuthenticationServiceTest : public PlatformTest,
         std::make_unique<IdentityTestEnvironmentChromeBrowserStateAdaptor>(
             browser_state_.get());
 
-    profile_sync_service_mock_ =
-        static_cast<browser_sync::ProfileSyncServiceMock*>(
-            ProfileSyncServiceFactory::GetForBrowserState(
-                browser_state_.get()));
+    mock_sync_service_ = static_cast<syncer::MockSyncService*>(
+        ProfileSyncServiceFactory::GetForBrowserState(browser_state_.get()));
     sync_setup_service_mock_ = static_cast<SyncSetupServiceMock*>(
         SyncSetupServiceFactory::GetForBrowserState(browser_state_.get()));
     CreateAuthenticationService();
@@ -161,7 +161,7 @@ class AuthenticationServiceTest : public PlatformTest,
   }
 
   void SetExpectationsForSignIn() {
-    EXPECT_CALL(*profile_sync_service_mock_->GetUserSettingsMock(),
+    EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
                 SetSyncRequested(true));
     EXPECT_CALL(*sync_setup_service_mock_, PrepareForFirstSyncSetup());
   }
@@ -241,7 +241,7 @@ class AuthenticationServiceTest : public PlatformTest,
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   ios::FakeChromeIdentityService* identity_service_;
-  browser_sync::ProfileSyncServiceMock* profile_sync_service_mock_;
+  syncer::MockSyncService* mock_sync_service_;
   SyncSetupServiceMock* sync_setup_service_mock_;
   std::unique_ptr<AuthenticationService> authentication_service_;
   std::unique_ptr<IdentityTestEnvironmentChromeBrowserStateAdaptor>
@@ -309,7 +309,7 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncDisabled) {
       .WillOnce(Invoke(
           sync_setup_service_mock_,
           &SyncSetupServiceMock::SyncSetupServiceHasFinishedInitialSetup));
-  EXPECT_CALL(*profile_sync_service_mock_, GetDisableReasons())
+  EXPECT_CALL(*mock_sync_service_, GetDisableReasons())
       .WillOnce(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
 
   CreateAuthenticationService();
@@ -330,7 +330,7 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncNotConfigured) {
   EXPECT_CALL(*sync_setup_service_mock_, HasFinishedInitialSetup())
       .WillOnce(Return(false));
   // Expect a call to disable sync as part of the sign out process.
-  EXPECT_CALL(*profile_sync_service_mock_, StopAndClear());
+  EXPECT_CALL(*mock_sync_service_, StopAndClear());
 
   CreateAuthenticationService();
 

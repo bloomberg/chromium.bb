@@ -13,11 +13,17 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import image_lib
+from chromite.lib import osutils
 from chromite.service import image
 
 
-class BuildImageTest(cros_test_lib.RunCommandTestCase):
+class BuildImageTest(cros_test_lib.RunCommandTempDirTestCase):
   """Build Image tests."""
+
+  def setUp(self):
+    osutils.Touch(os.path.join(self.tempdir,
+                               image.PARALLEL_EMERGE_STATUS_FILE_NAME))
+    self.PatchObject(osutils.TempDir, '__enter__', return_value=self.tempdir)
 
   def testInsideChrootCommand(self):
     """Test the build_image command when called from inside the chroot."""

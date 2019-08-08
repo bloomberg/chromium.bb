@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 
+#include <map>
 #include <vector>
 
 #include "base/callback.h"
@@ -30,7 +31,7 @@ class FaviconService;
 
 class GURL;
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
 namespace safe_browsing {
 class PasswordProtectionService;
 }
@@ -123,6 +124,12 @@ class PasswordManagerClient {
   // fallback for password saving should be not available.
   virtual void HideManualFallbackForSaving() = 0;
 
+  // Informs the embedder that the focus changed to a different input in the
+  // same frame (e.g. tabbed from email to password field).
+  virtual void FocusedInputChanged(const url::Origin& last_committed_origin,
+                                   bool is_fillable,
+                                   bool is_password_field) = 0;
+
   // Informs the embedder of a password forms that the user should choose from.
   // Returns true if the prompt is indeed displayed. If the prompt is not
   // displayed, returns false and does not call |callback|.
@@ -177,6 +184,13 @@ class PasswordManagerClient {
       const std::vector<const autofill::PasswordForm*>* federated_matches)
       const;
 
+  // Sends username/password from |preferred_match| for filling in the http auth
+  // prompt.
+  virtual void AutofillHttpAuth(
+      const std::map<base::string16, const autofill::PasswordForm*>&
+          best_matches,
+      const autofill::PasswordForm& preferred_match) const;
+
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;
 
@@ -224,7 +238,7 @@ class PasswordManagerClient {
   // Returns the current best guess as to the page's display language.
   virtual std::string GetPageLanguage() const;
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
   // Return the PasswordProtectionService associated with this instance.
   virtual safe_browsing::PasswordProtectionService*
   GetPasswordProtectionService() const = 0;
@@ -280,6 +294,8 @@ class PasswordManagerClient {
   // Causes a navigation to the manage passwords page.
   virtual void NavigateToManagePasswordsPage(ManagePasswordsReferrer referrer) {
   }
+
+  virtual bool IsIsolationForPasswordSitesEnabled() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

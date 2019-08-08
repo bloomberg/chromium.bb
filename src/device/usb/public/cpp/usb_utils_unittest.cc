@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/usb/mock_usb_device.h"
+#include "device/usb/mojo/type_converters.h"
 #include "device/usb/public/cpp/usb_utils.h"
 #include "device/usb/public/mojom/device_enumeration_options.mojom.h"
 #include "device/usb/usb_descriptors.h"
@@ -19,11 +20,20 @@ namespace {
 
 using testing::Return;
 
+const uint8_t kEndpointAddress_1 = 0x81;
+const uint8_t kEndpointAddress_2 = 0x02;
+
 class UsbUtilsTest : public testing::Test {
  public:
   void SetUp() override {
     UsbConfigDescriptor config(1, false, false, 0);
-    config.interfaces.emplace_back(1, 0, 0xff, 0x42, 0x01);
+    UsbInterfaceDescriptor interface(1, 0, 0xff, 0x42, 0x01);
+    // Endpoint 1 IN
+    interface.endpoints.emplace_back(kEndpointAddress_1, 0x01, 0x0400, 0x08);
+    // Endpoint 2 OUT
+    interface.endpoints.emplace_back(kEndpointAddress_2, 0x11, 0x0400, 0x08);
+
+    config.interfaces.push_back(interface);
 
     android_phone_ = new MockUsbDevice(0x18d1, 0x4ee2, "Google Inc.", "Nexus 5",
                                        "ABC123", {config});
@@ -157,6 +167,29 @@ TEST_F(UsbUtilsTest, MatchesAnyVendorIdNegative) {
   filters.back()->has_vendor_id = true;
   filters.back()->vendor_id = 0x1d6b;
   ASSERT_FALSE(UsbDeviceFilterMatchesAny(filters, *android_phone_));
+}
+
+TEST_F(UsbUtilsTest, EndpointDirectionNumberConversion) {
+  UsbInterfaceDescriptor native_interface =
+      android_phone_->configurations()[0].interfaces[0];
+  EXPECT_EQ(2u, native_interface.endpoints.size());
+
+  // Check Endpoint 1 IN
+  auto& native_endpoint_1 = native_interface.endpoints[0];
+  auto mojo_endpoint_1 =
+      device::mojom::UsbEndpointInfo::From(native_endpoint_1);
+
+  ASSERT_EQ(ConvertEndpointAddressToNumber(native_endpoint_1), 0x01);
+  ASSERT_EQ(ConvertEndpointNumberToAddress(*mojo_endpoint_1),
+            kEndpointAddress_1);
+
+  // Check Endpoint 2 OUT
+  auto& native_endpoint_2 = native_interface.endpoints[1];
+  auto mojo_endpoint_2 =
+      device::mojom::UsbEndpointInfo::From(native_endpoint_2);
+  ASSERT_EQ(ConvertEndpointAddressToNumber(native_endpoint_2), 0x02);
+  ASSERT_EQ(ConvertEndpointNumberToAddress(*mojo_endpoint_2),
+            kEndpointAddress_2);
 }
 
 }  // namespace

@@ -105,6 +105,7 @@ viz::CompositorFrame DemoClient::CreateFrame(const viz::BeginFrameArgs& args) {
         transform,
         /*quad_layer_rect=*/child_bounds,
         /*visible_quad_layer_rect=*/child_bounds,
+        /*rounded_corner_bounds=*/gfx::RRectF(),
         /*clip_rect=*/gfx::Rect(),
         /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
         /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
@@ -130,6 +131,7 @@ viz::CompositorFrame DemoClient::CreateFrame(const viz::BeginFrameArgs& args) {
       gfx::Transform(),
       /*quad_layer_rect=*/output_rect,
       /*visible_quad_layer_rect=*/output_rect,
+      /*rounded_corner_bounds=*/gfx::RRectF(),
       /*clip_rect=*/gfx::Rect(),
       /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
       /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
@@ -168,9 +170,8 @@ void DemoClient::DidReceiveCompositorFrameAck(
   // See documentation in mojom for how this can be used.
 }
 
-void DemoClient::OnBeginFrame(
-    const viz::BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+void DemoClient::OnBeginFrame(const viz::BeginFrameArgs& args,
+                              const viz::PresentationFeedbackMap& feedbacks) {
   // Generate a new compositor-frame for each begin-frame. This demo client
   // generates and submits the compositor-frame immediately. But it is possible
   // for the client to delay sending the compositor-frame. |args| includes the

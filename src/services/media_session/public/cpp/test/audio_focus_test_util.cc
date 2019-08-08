@@ -41,12 +41,6 @@ void TestAudioFocusObserver::OnFocusLost(
     run_loop_.Quit();
 }
 
-void TestAudioFocusObserver::OnActiveSessionChanged(
-    media_session::mojom::AudioFocusRequestStatePtr session) {
-  active_session_ = std::move(session);
-  notifications_.push_back(NotificationType::kActiveSessionChanged);
-}
-
 void TestAudioFocusObserver::WaitForGainedEvent() {
   if (!focus_gained_session_.is_null())
     return;

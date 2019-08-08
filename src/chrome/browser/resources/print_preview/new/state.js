@@ -11,21 +11,40 @@ print_preview_new.State = {
   HIDDEN: 2,
   PRINTING: 3,
   SYSTEM_DIALOG: 4,
-  INVALID_TICKET: 5,
-  INVALID_PRINTER: 6,
-  FATAL_ERROR: 7,
-  CLOSING: 8,
+  ERROR: 5,
+  FATAL_ERROR: 6,
+  CLOSING: 7,
+};
+
+/** @enum {number} */
+print_preview_new.Error = {
+  NONE: 0,
+  INVALID_TICKET: 1,
+  INVALID_PRINTER: 2,
+  UNSUPPORTED_PRINTER: 3,
+  NO_DESTINATIONS: 4,
+  NO_PLUGIN: 5,
+  PREVIEW_FAILED: 6,
+  PRINT_FAILED: 7,
+  CLOUD_PRINT_ERROR: 8,
 };
 
 Polymer({
   is: 'print-preview-state',
 
   properties: {
-    /** @type {print_preview_new.State} */
+    /** @type {!print_preview_new.State} */
     state: {
       type: Number,
       notify: true,
       value: print_preview_new.State.NOT_READY,
+    },
+
+    /** @type {!print_preview_new.Error} */
+    error: {
+      type: Number,
+      notify: true,
+      value: print_preview_new.Error.NONE,
     },
   },
 
@@ -36,11 +55,11 @@ Polymer({
         assert(
             this.state == print_preview_new.State.NOT_READY ||
             this.state == print_preview_new.State.READY ||
-            this.state == print_preview_new.State.INVALID_PRINTER);
+            this.state == print_preview_new.State.ERROR);
         break;
       case (print_preview_new.State.READY):
         assert(
-            this.state == print_preview_new.State.INVALID_TICKET ||
+            this.state == print_preview_new.State.ERROR ||
             this.state == print_preview_new.State.NOT_READY ||
             this.state == print_preview_new.State.PRINTING);
         break;
@@ -58,12 +77,9 @@ Polymer({
             this.state != print_preview_new.State.PRINTING &&
             this.state != print_preview_new.State.CLOSING);
         break;
-      case (print_preview_new.State.INVALID_TICKET):
-        assert(this.state == print_preview_new.State.READY);
-        break;
-      case (print_preview_new.State.INVALID_PRINTER):
+      case (print_preview_new.State.ERROR):
         assert(
-            this.state == print_preview_new.State.INVALID_PRINTER ||
+            this.state == print_preview_new.State.ERROR ||
             this.state == print_preview_new.State.NOT_READY ||
             this.state == print_preview_new.State.READY);
         break;
@@ -72,5 +88,9 @@ Polymer({
         break;
     }
     this.state = newState;
+    if (newState !== print_preview_new.State.ERROR &&
+        newState !== print_preview_new.State.FATAL_ERROR) {
+      this.error = print_preview_new.Error.NONE;
+    }
   },
 });

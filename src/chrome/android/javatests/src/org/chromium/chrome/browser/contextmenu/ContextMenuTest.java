@@ -22,13 +22,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.download.DownloadTestRule;
@@ -42,12 +43,14 @@ import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.policy.test.annotations.Policies;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -79,13 +82,13 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
     @Before
     public void setUp() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
+        TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
     }
 
     @After
     public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
-        ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
+        TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
         deleteTestFiles();
     }
 
@@ -284,6 +287,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @LargeTest
     @Feature({"Browser"})
     @RetryOnFailure
+    @DisabledTest(message = "https://crbug.com/947695")
     public void testSaveVideo()
             throws InterruptedException, TimeoutException, SecurityException, IOException {
         // Click the video to enable playback
@@ -359,9 +363,12 @@ public class ContextMenuTest implements CustomMainActivityStart {
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testLink");
 
         Integer[] expectedItems = {R.id.contextmenu_open_in_new_tab,
-                R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_open_in_ephemeral_tab,
-                R.id.contextmenu_save_link_as, R.id.contextmenu_copy_link_text,
-                R.id.contextmenu_copy_link_address, R.id.contextmenu_share_link};
+                R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_save_link_as,
+                R.id.contextmenu_copy_link_text, R.id.contextmenu_copy_link_address,
+                R.id.contextmenu_share_link};
+        Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab};
+        expectedItems =
+                addItemsIfEnabled(ChromeFeatureList.EPHEMERAL_TAB, expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -375,9 +382,11 @@ public class ContextMenuTest implements CustomMainActivityStart {
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
 
         Integer[] expectedItems = {R.id.contextmenu_save_image,
-                R.id.contextmenu_open_image_in_new_tab,
-                R.id.contextmenu_open_image_in_ephemeral_tab, R.id.contextmenu_search_by_image,
+                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_by_image,
                 R.id.contextmenu_share_image};
+        Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
+        expectedItems =
+                addItemsIfEnabled(ChromeFeatureList.EPHEMERAL_TAB, expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -392,8 +401,10 @@ public class ContextMenuTest implements CustomMainActivityStart {
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
 
         Integer[] expectedItems = {R.id.contextmenu_save_image,
-                R.id.contextmenu_open_image_in_new_tab,
-                R.id.contextmenu_open_image_in_ephemeral_tab, R.id.contextmenu_share_image};
+                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image};
+        Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
+        expectedItems =
+                addItemsIfEnabled(ChromeFeatureList.EPHEMERAL_TAB, expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -407,11 +418,14 @@ public class ContextMenuTest implements CustomMainActivityStart {
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImageLink");
 
         Integer[] expectedItems = {R.id.contextmenu_open_in_new_tab,
-                R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_open_in_ephemeral_tab,
-                R.id.contextmenu_copy_link_address, R.id.contextmenu_save_link_as,
-                R.id.contextmenu_save_image, R.id.contextmenu_open_image_in_new_tab,
-                R.id.contextmenu_open_image_in_ephemeral_tab, R.id.contextmenu_search_by_image,
+                R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_copy_link_address,
+                R.id.contextmenu_save_link_as, R.id.contextmenu_save_image,
+                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_by_image,
                 R.id.contextmenu_share_image, R.id.contextmenu_share_link};
+        Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab,
+                R.id.contextmenu_open_image_in_ephemeral_tab};
+        expectedItems =
+                addItemsIfEnabled(ChromeFeatureList.EPHEMERAL_TAB, expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -419,6 +433,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
     @RetryOnFailure
+    @DisabledTest(message = "https://crbug.com/947695")
     public void testContextMenuRetrievesVideoOptions()
             throws TimeoutException, InterruptedException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
@@ -445,6 +460,23 @@ public class ContextMenuTest implements CustomMainActivityStart {
         }
 
         Assert.assertThat(actualItems, Matchers.containsInAnyOrder(expectedItems));
+    }
+
+    /**
+     * Adds items to the give baseItems if the given feature is enabled.
+     * @param featureName The feature to check for whether to add items or not.
+     * @param baseItems The base list of items to add to.
+     * @param additionalItems The additional items to add.
+     * @return An array of items that has the additional items added if the feature is enabled.
+     */
+    private Integer[] addItemsIfEnabled(
+            String featureName, Integer[] baseItems, Integer[] additionalItems) {
+        List<Integer> variableItems = new ArrayList<Integer>();
+        variableItems.addAll(Arrays.asList(baseItems));
+        if (ChromeFeatureList.isEnabled(featureName)) {
+            for (int i = 0; i < additionalItems.length; i++) variableItems.add(additionalItems[i]);
+        }
+        return variableItems.toArray(baseItems);
     }
 
     private void saveMediaFromContextMenu(String mediaDOMElement, int saveMenuID,

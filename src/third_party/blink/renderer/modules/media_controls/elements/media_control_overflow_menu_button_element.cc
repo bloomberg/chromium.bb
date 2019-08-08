@@ -14,7 +14,7 @@ namespace blink {
 
 MediaControlOverflowMenuButtonElement::MediaControlOverflowMenuButtonElement(
     MediaControlsImpl& media_controls)
-    : MediaControlInputElement(media_controls, kMediaIgnore) {
+    : MediaControlInputElement(media_controls) {
   setType(input_type_names::kButton);
   setAttribute(html_names::kAriaLabelAttr,
                WTF::AtomicString(GetLocale().QueryString(
@@ -41,9 +41,8 @@ const char* MediaControlOverflowMenuButtonElement::GetNameForHistograms()
 
 void MediaControlOverflowMenuButtonElement::DefaultEventHandler(Event& event) {
   // Only respond to a click event if we are not disabled.
-  if (!hasAttribute(html_names::kDisabledAttr) &&
-      (event.type() == event_type_names::kClick ||
-       event.type() == event_type_names::kGesturetap)) {
+  if (!IsDisabled() && (event.type() == event_type_names::kClick ||
+                        event.type() == event_type_names::kGesturetap)) {
     if (GetMediaControls().OverflowMenuVisible()) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.OverflowClose"));

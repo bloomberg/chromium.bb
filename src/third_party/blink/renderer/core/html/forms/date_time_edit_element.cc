@@ -659,7 +659,7 @@ void DateTimeEditElement::FieldValueChanged() {
 }
 
 bool DateTimeEditElement::FocusOnNextFocusableField(wtf_size_t start_index) {
-  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayoutTree();
   for (wtf_size_t field_index = start_index; field_index < fields_.size();
        ++field_index) {
     if (fields_[field_index]->IsFocusable()) {
@@ -682,7 +682,7 @@ bool DateTimeEditElement::FocusOnPreviousField(
   const wtf_size_t start_field_index = FieldIndexOf(field);
   if (start_field_index == kInvalidFieldIndex)
     return false;
-  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayoutTree();
   wtf_size_t field_index = start_field_index;
   while (field_index > 0) {
     --field_index;

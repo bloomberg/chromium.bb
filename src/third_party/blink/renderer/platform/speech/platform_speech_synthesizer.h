@@ -52,7 +52,8 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizerClient
   virtual void SpeakingErrorOccurred(PlatformSpeechSynthesisUtterance*) = 0;
   virtual void BoundaryEventOccurred(PlatformSpeechSynthesisUtterance*,
                                      SpeechBoundary,
-                                     unsigned char_index) = 0;
+                                     unsigned char_index,
+                                     unsigned char_length) = 0;
   virtual void VoicesDidChange() = 0;
 
  protected:

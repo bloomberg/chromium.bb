@@ -59,21 +59,7 @@ class CounterCollection {
   Counter counters_[kMaxCounters];
 };
 
-struct CStringHasher {
-  std::size_t operator()(const char* name) const {
-    size_t h = 0;
-    size_t c;
-    while ((c = *name++) != 0) {
-      h += h << 5;
-      h += c;
-    }
-    return h;
-  }
-};
-
-typedef std::unordered_map<const char*, Counter*, CStringHasher,
-                           i::StringEquals>
-    CounterMap;
+typedef std::unordered_map<std::string, Counter*> CounterMap;
 
 class SourceGroup {
  public:
@@ -344,6 +330,7 @@ class ShellOptions {
         code_cache_options(CodeCacheOptions::kNoProduceCache),
         isolate_sources(nullptr),
         icu_data_file(nullptr),
+        icu_locale(nullptr),
         natives_blob(nullptr),
         snapshot_blob(nullptr),
         trace_enabled(false),
@@ -376,6 +363,7 @@ class ShellOptions {
   CodeCacheOptions code_cache_options;
   SourceGroup* isolate_sources;
   const char* icu_data_file;
+  const char* icu_locale;
   const char* natives_blob;
   const char* snapshot_blob;
   bool trace_enabled;
@@ -441,6 +429,8 @@ class Shell : public i::AllStatic {
   static void RealmCreate(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void RealmNavigate(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void RealmCreateAllowCrossRealmAccess(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void RealmDetachGlobal(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void RealmDispose(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void RealmSwitch(const v8::FunctionCallbackInfo<v8::Value>& args);

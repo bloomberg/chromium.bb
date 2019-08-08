@@ -8,6 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "absl/algorithm/container.h"
 #include "absl/memory/memory.h"
 #include "api/test/simulated_network.h"
 #include "api/test/video/function_video_encoder_factory.h"
@@ -126,8 +127,7 @@ TEST_F(StatsEndToEndTest, GetStats) {
             stats.rtp_stats.transmitted.padding_bytes != 0 ||
             stats.rtp_stats.retransmitted.packets != 0;
 
-        receive_stats_filled_["CodecStats"] |=
-            stats.target_delay_ms != 0 || stats.discarded_packets != 0;
+        receive_stats_filled_["CodecStats"] |= stats.target_delay_ms != 0;
 
         receive_stats_filled_["FrameCounts"] |=
             stats.frame_counts.key_frames != 0 ||
@@ -161,7 +161,8 @@ TEST_F(StatsEndToEndTest, GetStats) {
           stats.substreams.size() == expected_num_streams;
 
       send_stats_filled_["CpuOveruseMetrics"] |=
-          stats.avg_encode_time_ms != 0 && stats.encode_usage_percent != 0;
+          stats.avg_encode_time_ms != 0 && stats.encode_usage_percent != 0 &&
+          stats.total_encode_time_ms != 0;
 
       send_stats_filled_["EncoderImplementationName"] |=
           stats.encoder_implementation_name ==
@@ -629,8 +630,7 @@ TEST_F(StatsEndToEndTest, VerifyNackStats) {
       test::RtcpPacketParser rtcp_parser;
       rtcp_parser.Parse(packet, length);
       const std::vector<uint16_t>& nacks = rtcp_parser.nack()->packet_ids();
-      if (!nacks.empty() && std::find(nacks.begin(), nacks.end(),
-                                      dropped_rtp_packet_) != nacks.end()) {
+      if (!nacks.empty() && absl::c_linear_search(nacks, dropped_rtp_packet_)) {
         dropped_rtp_packet_requested_ = true;
       }
       return SEND_PACKET;

@@ -8,8 +8,10 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/metrics/perf/cpu_identity.h"
 #include "chrome/browser/metrics/perf/perf_output.h"
+#include "chrome/browser/metrics/perf/process_type_collector.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "components/variations/variations_associated_data.h"
@@ -171,6 +173,19 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
   cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
   cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
   return cmds;
+}
+
+void OnCollectProcessTypes(SampledProfile* sampled_profile) {
+  std::map<uint32_t, Process> process_types =
+      ProcessTypeCollector::ChromeProcessTypes();
+  std::map<uint32_t, Thread> thread_types =
+      ProcessTypeCollector::ChromeThreadTypes();
+  if (!process_types.empty() && !thread_types.empty()) {
+    sampled_profile->mutable_process_types()->insert(process_types.begin(),
+                                                     process_types.end());
+    sampled_profile->mutable_thread_types()->insert(thread_types.begin(),
+                                                    thread_types.end());
+  }
 }
 
 }  // namespace
@@ -350,7 +365,14 @@ void PerfCollector::ParseOutputProtoIfValid(
     AddToUmaHistogram(CollectionAttemptStatus::INCOGNITO_LAUNCHED);
     return;
   }
-  SaveSerializedPerfProto(std::move(sampled_profile), type, perf_stdout);
+
+  bool posted = base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&OnCollectProcessTypes, sampled_profile.get()),
+      base::BindOnce(&PerfCollector::SaveSerializedPerfProto,
+                     base::AsWeakPtr<PerfCollector>(this),
+                     base::Passed(&sampled_profile), type, perf_stdout));
+  DCHECK(posted);
 }
 
 bool PerfCollector::ShouldCollect() const {

@@ -58,6 +58,9 @@ class RemoteDeviceRef {
 
   const std::string& user_id() const { return remote_device_->user_id; }
   const std::string& name() const { return remote_device_->name; }
+  const std::string& pii_free_name() const {
+    return remote_device_->pii_free_name;
+  }
   const std::string& public_key() const { return remote_device_->public_key; }
   const std::string& persistent_symmetric_key() const {
     return remote_device_->persistent_symmetric_key;

@@ -112,9 +112,6 @@ AutofillProfile GetIncompleteProfile2();
 // Returns a verified profile full of dummy info.
 AutofillProfile GetVerifiedProfile();
 
-// Returns a verified profile full of dummy info, different to the above.
-AutofillProfile GetVerifiedProfile2();
-
 // Returns a server profile full of dummy info.
 AutofillProfile GetServerProfile();
 
@@ -126,12 +123,6 @@ CreditCard GetCreditCard();
 
 // Returns a credit card full of dummy info, different to the above.
 CreditCard GetCreditCard2();
-
-// Returns a verified credit card full of dummy info.
-CreditCard GetVerifiedCreditCard();
-
-// Returns a verified credit card full of dummy info, different to the above.
-CreditCard GetVerifiedCreditCard2();
 
 // Returns a masked server card full of dummy info.
 CreditCard GetMaskedServerCard();

@@ -4,10 +4,14 @@
 
 #include "components/arc/clipboard/arc_clipboard_bridge.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/clipboard.mojom.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_clipboard_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"

@@ -288,7 +288,7 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest', 'TextFieldFullySelected',
       'range.setEnd(body, 2);';
   this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
       '<p>paragraph</p>' +
-      '<input type="text" value="text field"></input>'), function() {
+      '<input type="text" value="text field">'), function() {
         this.triggerReadSelectedText();
         assertTrue(this.mockTts.currentlySpeaking());
         assertEquals(this.mockTts.pendingUtterances().length, 2);

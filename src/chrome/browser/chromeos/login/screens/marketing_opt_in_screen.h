@@ -11,15 +11,13 @@
 
 namespace chromeos {
 
-class BaseScreenDelegate;
 class MarketingOptInScreenView;
 
 // This is Sync settings screen that is displayed as a part of user first
 // sign-in flow.
 class MarketingOptInScreen : public BaseScreen {
  public:
-  MarketingOptInScreen(BaseScreenDelegate* base_screen_delegate,
-                       MarketingOptInScreenView* view,
+  MarketingOptInScreen(MarketingOptInScreenView* view,
                        const base::RepeatingClosure& exit_callback);
   ~MarketingOptInScreen() override;
 

@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/card_unmask_delegate.h"
+#include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 
 namespace autofill {
 class CreditCard;

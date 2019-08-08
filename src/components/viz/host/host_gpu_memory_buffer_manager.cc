@@ -16,6 +16,7 @@
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/buffer_usage_util.h"
 
 namespace viz {
 
@@ -288,6 +289,14 @@ void HostGpuMemoryBufferManager::OnConnectionError() {
   for (auto& client_pair : pending_buffers) {
     for (auto& buffer_pair : client_pair.second) {
       auto& buffer = buffer_pair.second;
+      LOG(WARNING) << "Retrying allocation of GpuMemoryBuffer with id = "
+                   << buffer_pair.first.id
+                   << ", client_id = " << client_pair.first
+                   << ", size = " << buffer.size.ToString()
+                   << ", format = " << gfx::BufferFormatToString(buffer.format)
+                   << ", usage = " << gfx::BufferUsageToString(buffer.usage)
+                   << ", surface_handle = " << buffer.surface_handle
+                   << " due to connection error";
       AllocateGpuMemoryBuffer(
           buffer_pair.first, client_pair.first, buffer.size, buffer.format,
           buffer.usage, buffer.surface_handle, std::move(buffer.callback));

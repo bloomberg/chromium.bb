@@ -1,10 +1,11 @@
 <link rel="import" href="../../html/polymer.html">
 
-<link rel="import" href="../hidden_style_css.html">
-<link rel="import" href="../cr_icons_css.html">
-<link rel="import" href="../shared_vars_css.html">
 <link rel="import" href="../../html/assert.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="../cr_container_shadow_behavior.html">
+<link rel="import" href="../cr_icon_button/cr_icon_button.html">
+<link rel="import" href="../cr_icons_css.html">
+<link rel="import" href="../hidden_style_css.html">
+<link rel="import" href="../shared_vars_css.html">
 
 <dom-module id="cr-dialog">
   <template>
@@ -127,10 +128,6 @@
       }
 
       .body-container {
-        /* Prevent layout moving when border does appear. */
-        border-bottom: 1px solid transparent;
-        border-top: 1px solid transparent;
-
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
@@ -140,12 +137,29 @@
         @apply --cr-dialog-body-container;
       }
 
-      .body-container.bottom-scrollable {
-        border-bottom: var(--scroll-border);
+      :host {
+        --transparent-border: 1px solid transparent;
+        --cr-container-shadow: {
+          box-shadow: none;
+          height: 0;
+          margin: 0;
+        };
       }
 
-      .body-container.top-scrollable {
-        border-top: var(--scroll-border);
+      /* Cr Dialog uses borders instead of box-shadows. */
+      #cr-container-shadow-top {
+        border-bottom: var(--cr-dialog-body-border-top,
+            var(--transparent-border));
+      }
+
+      #cr-container-shadow-bottom {
+        border-bottom: var(--cr-dialog-body-border-bottom,
+            var(--transparent-border));
+      }
+
+      #cr-container-shadow-top.has-shadow,
+      #cr-container-shadow-bottom.has-shadow {
+        border-bottom: var(--scroll-border);
       }
 
       .top-container {
@@ -160,9 +174,7 @@
         outline: none;
       }
 
-      /* TODO (rbpotter): Remove all the --cr-dialog-close-* mixins below, */
-      /* when Print Preview is updated to Material Design. */
-      #closeContainer {
+      #close {
         --layout-inline: {
           display: flex;
         };
@@ -170,24 +182,6 @@
         align-self: flex-start;
         margin-inline-end: 4px;
         margin-top: 4px;
-
-        @apply --cr-dialog-close-image;
-      }
-
-      #closeContainer:hover {
-        @apply --cr-dialog-close-image-hover;
-      }
-
-      #closeContainer:focus-within {
-        @apply --cr-dialog-close-image-focus;
-      }
-
-      #closeContainer:active {
-        @apply --cr-dialog-close-image-active;
-      }
-
-      #closeContainer paper-ripple {
-        @apply --cr-dialog-close-ripple;
       }
     </style>
     <dialog id="dialog" on-close="onNativeDialogClose_"
@@ -199,18 +193,14 @@
           <div class="title-container" tabindex="-1">
             <slot name="title"></slot>
           </div>
-          <paper-icon-button-light id="closeContainer" class="icon-clear"
-              hidden$="[[!showCloseButton]]">
-            <button id="close" aria-label$="[[closeText]]"
-                on-tap="cancel" on-keypress="onCloseKeypress_">
-            </button>
-          </paper-icon-button-light>
+          <cr-icon-button id="close" class="icon-clear"
+              hidden$="[[!showCloseButton]]" aria-label$="[[closeText]]"
+              on-click="cancel" on-keypress="onCloseKeypress_">
+          </cr-icon-button>
         </div>
         <slot name="header"></slot>
-        <div class="body-container">
-          <span id="bodyTopMarker"></span>
+        <div class="body-container" id="container" show-bottom-shadow>
           <slot name="body"></slot>
-          <span id="bodyBottomMarker"></span>
         </div>
         <slot name="button-container"></slot>
         <slot name="footer"></slot>

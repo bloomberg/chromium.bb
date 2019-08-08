@@ -212,7 +212,7 @@ cr.define('destination_search_test', function() {
         capabilities:
             print_preview_test_utils.getCddTemplate(destId).capabilities,
         policies: {
-          allowedColorModes: print_preview.ColorMode.GRAY,
+          allowedColorModes: print_preview.ColorModeRestriction.MONOCHROME,
           allowedDuplexModes: print_preview.DuplexModeRestriction.DUPLEX,
         },
         success: true,
@@ -227,7 +227,7 @@ cr.define('destination_search_test', function() {
         assertNotEquals(null, selectedDestination.capabilities);
         assertNotEquals(null, selectedDestination.policies);
         assertEquals(
-            print_preview.ColorMode.GRAY,
+            print_preview.ColorModeRestriction.MONOCHROME,
             selectedDestination.policies.allowedColorModes);
         assertEquals(
             print_preview.DuplexModeRestriction.DUPLEX,

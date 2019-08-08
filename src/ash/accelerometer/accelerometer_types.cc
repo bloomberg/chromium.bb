@@ -18,7 +18,7 @@ constexpr float kMeanGravity = 9.80665f;
 
 }  // namespace
 
-AccelerometerReading::AccelerometerReading() : present(false) {}
+AccelerometerReading::AccelerometerReading() = default;
 
 AccelerometerReading::~AccelerometerReading() = default;
 

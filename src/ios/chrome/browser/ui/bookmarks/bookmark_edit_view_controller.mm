@@ -226,10 +226,10 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
 
   self.navigationItem.hidesBackButton = YES;
 
-  UIBarButtonItem* cancelItem =
-      [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon closeIcon]
-                                          target:self
-                                          action:@selector(cancel)];
+  UIBarButtonItem* cancelItem = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+                           target:self
+                           action:@selector(cancel)];
   cancelItem.accessibilityIdentifier = @"Cancel";
   self.navigationItem.leftBarButtonItem = cancelItem;
   self.cancelItem = cancelItem;

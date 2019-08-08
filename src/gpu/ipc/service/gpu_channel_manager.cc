@@ -105,8 +105,12 @@ GpuChannelManager::GpuChannelManager(
 }
 
 GpuChannelManager::~GpuChannelManager() {
-  // Destroy channels before anything else because of dependencies.
+  // Clear |gpu_channels_| first to prevent reentrancy problems from GpuChannel
+  // destructor.
+  auto gpu_channels = std::move(gpu_channels_);
   gpu_channels_.clear();
+  gpu_channels.clear();
+
   if (default_offscreen_surface_.get()) {
     default_offscreen_surface_->Destroy();
     default_offscreen_surface_ = nullptr;
@@ -158,7 +162,7 @@ GpuChannel* GpuChannelManager::EstablishChannel(int client_id,
   if (gr_shader_cache_ && cache_shaders_on_disk)
     gr_shader_cache_->CacheClientIdOnDisk(client_id);
 
-  std::unique_ptr<GpuChannel> gpu_channel = std::make_unique<GpuChannel>(
+  std::unique_ptr<GpuChannel> gpu_channel = GpuChannel::Create(
       this, scheduler_, sync_point_manager_, share_group_, task_runner_,
       io_task_runner_, client_id, client_tracing_id, is_gpu_host,
       image_decode_accelerator_worker_);
@@ -209,7 +213,11 @@ void GpuChannelManager::LoseAllContexts() {
 }
 
 void GpuChannelManager::DestroyAllChannels() {
+  // Clear |gpu_channels_| first to prevent reentrancy problems from GpuChannel
+  // destructor.
+  auto gpu_channels = std::move(gpu_channels_);
   gpu_channels_.clear();
+  gpu_channels.clear();
 }
 
 void GpuChannelManager::GetVideoMemoryUsageStats(
@@ -361,6 +369,9 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   scoped_refptr<gl::GLShareGroup> share_group;
   if (use_passthrough_decoder) {
     share_group = new gl::GLShareGroup();
+    // Virtualized contexts don't work with passthrough command decoder.
+    // See https://crbug.com/914976
+    use_virtualized_gl_contexts = false;
   } else {
     share_group = share_group_;
   }

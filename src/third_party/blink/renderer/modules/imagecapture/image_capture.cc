@@ -122,7 +122,7 @@ void ImageCapture::ContextDestroyed(ExecutionContext*) {
 }
 
 ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!service_) {
@@ -148,7 +148,7 @@ ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* script_state) {
 }
 
 ScriptPromise ImageCapture::getPhotoSettings(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!service_) {
@@ -178,7 +178,7 @@ ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
                                        bool trigger_take_photo /* = false */) {
   TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
                        "ImageCapture::setOptions", TRACE_EVENT_SCOPE_PROCESS);
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (TrackIsInactive(*stream_track_)) {
@@ -259,7 +259,7 @@ ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
 ScriptPromise ImageCapture::takePhoto(ScriptState* script_state) {
   TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
                        "ImageCapture::takePhoto", TRACE_EVENT_SCOPE_PROCESS);
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (TrackIsInactive(*stream_track_)) {
@@ -300,7 +300,7 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* script_state,
 }
 
 ScriptPromise ImageCapture::grabFrame(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (TrackIsInactive(*stream_track_)) {
@@ -700,7 +700,7 @@ void ImageCapture::OnMojoGetPhotoState(
   photo_settings_->setImageWidth(photo_state->width->current);
   // TODO(mcasas): collect the remaining two entries https://crbug.com/732521.
 
-  photo_capabilities_ = PhotoCapabilities::Create();
+  photo_capabilities_ = MakeGarbageCollected<PhotoCapabilities>();
   photo_capabilities_->SetRedEyeReduction(photo_state->red_eye_reduction);
   // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
   // mojo::StructTraits supports garbage-collected mappings,

@@ -40,9 +40,6 @@ class AXObjectCacheImpl;
 
 class AXInlineTextBox final : public AXObject {
  public:
-  static AXInlineTextBox* Create(scoped_refptr<AbstractInlineTextBox>,
-                                 AXObjectCacheImpl&);
-
   AXInlineTextBox(scoped_refptr<AbstractInlineTextBox>, AXObjectCacheImpl&);
 
  protected:

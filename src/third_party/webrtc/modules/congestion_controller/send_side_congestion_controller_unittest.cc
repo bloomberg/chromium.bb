@@ -24,13 +24,13 @@
 #include "test/gmock.h"
 #include "test/gtest.h"
 
-using testing::_;
-using testing::AtLeast;
-using testing::Ge;
-using testing::NiceMock;
-using testing::Return;
-using testing::SaveArg;
-using testing::StrictMock;
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::Ge;
+using ::testing::NiceMock;
+using ::testing::Return;
+using ::testing::SaveArg;
+using ::testing::StrictMock;
 
 namespace webrtc {
 
@@ -216,7 +216,7 @@ TEST_F(LegacySendSideCongestionControllerTest, SignalNetworkState) {
 
 TEST_F(LegacySendSideCongestionControllerTest, OnNetworkRouteChanged) {
   int new_bitrate = 200000;
-  testing::Mock::VerifyAndClearExpectations(pacer_.get());
+  ::testing::Mock::VerifyAndClearExpectations(pacer_.get());
   EXPECT_CALL(observer_, OnNetworkChanged(new_bitrate, _, _, _));
   EXPECT_CALL(*pacer_, SetEstimatedBitrate(new_bitrate));
   rtc::NetworkRoute route;
@@ -236,7 +236,7 @@ TEST_F(LegacySendSideCongestionControllerTest, OnNetworkRouteChanged) {
 
 TEST_F(LegacySendSideCongestionControllerTest, OldFeedback) {
   int new_bitrate = 200000;
-  testing::Mock::VerifyAndClearExpectations(pacer_.get());
+  ::testing::Mock::VerifyAndClearExpectations(pacer_.get());
   EXPECT_CALL(observer_, OnNetworkChanged(new_bitrate, _, _, _));
   EXPECT_CALL(*pacer_, SetEstimatedBitrate(new_bitrate));
 
@@ -326,7 +326,7 @@ TEST_F(LegacySendSideCongestionControllerTest, GetProbingInterval) {
   clock_.AdvanceTimeMilliseconds(25);
   controller_->Process();
 
-  EXPECT_CALL(observer_, OnNetworkChanged(_, _, _, testing::Ne(0)));
+  EXPECT_CALL(observer_, OnNetworkChanged(_, _, _, ::testing::Ne(0)));
   EXPECT_CALL(*pacer_, SetEstimatedBitrate(_));
   bandwidth_observer_->OnReceivedEstimatedBitrate(kInitialBitrateBps * 2);
   clock_.AdvanceTimeMilliseconds(25);
@@ -334,7 +334,7 @@ TEST_F(LegacySendSideCongestionControllerTest, GetProbingInterval) {
 }
 
 TEST_F(LegacySendSideCongestionControllerTest, ProbeOnRouteChange) {
-  testing::Mock::VerifyAndClearExpectations(pacer_.get());
+  ::testing::Mock::VerifyAndClearExpectations(pacer_.get());
   EXPECT_CALL(*pacer_, CreateProbeCluster(kInitialBitrateBps * 6, _));
   EXPECT_CALL(*pacer_, CreateProbeCluster(kInitialBitrateBps * 12, _));
   EXPECT_CALL(observer_, OnNetworkChanged(kInitialBitrateBps * 2, _, _, _));
@@ -363,44 +363,6 @@ TEST_F(LegacySendSideCongestionControllerTest, UpdatesDelayBasedEstimate) {
   uint32_t bitrate_before_delay = *target_bitrate_bps_;
   PacketTransmissionAndFeedbackBlock(&seq_num, kRunTimeMs, 50);
   EXPECT_LT(*target_bitrate_bps_, bitrate_before_delay);
-}
-
-TEST_F(LegacySendSideCongestionControllerTest, PacerQueueEncodeRatePushback) {
-  ScopedFieldTrials pushback_field_trial(
-      "WebRTC-PacerPushbackExperiment/Enabled/");
-  SetUp();
-
-  EXPECT_CALL(*pacer_, ExpectedQueueTimeMs()).WillOnce(Return(0));
-  controller_->Process();
-
-  EXPECT_CALL(*pacer_, ExpectedQueueTimeMs()).WillOnce(Return(100));
-  EXPECT_CALL(observer_, OnNetworkChanged(kInitialBitrateBps * 0.9, _, _, _));
-  controller_->Process();
-
-  EXPECT_CALL(*pacer_, ExpectedQueueTimeMs()).WillOnce(Return(50));
-  controller_->Process();
-
-  EXPECT_CALL(*pacer_, ExpectedQueueTimeMs()).WillOnce(Return(0));
-  EXPECT_CALL(observer_, OnNetworkChanged(kInitialBitrateBps, _, _, _));
-  controller_->Process();
-
-  const uint32_t kMinAdjustedBps = 50000;
-  int expected_queue_threshold =
-      1000 - kMinAdjustedBps * 1000.0 / kInitialBitrateBps;
-
-  EXPECT_CALL(*pacer_, ExpectedQueueTimeMs())
-      .WillOnce(Return(expected_queue_threshold));
-  EXPECT_CALL(observer_, OnNetworkChanged(Ge(kMinAdjustedBps), _, _, _));
-  controller_->Process();
-
-  EXPECT_CALL(*pacer_, ExpectedQueueTimeMs())
-      .WillOnce(Return(expected_queue_threshold + 1));
-  EXPECT_CALL(observer_, OnNetworkChanged(0, _, _, _));
-  controller_->Process();
-
-  EXPECT_CALL(*pacer_, ExpectedQueueTimeMs()).WillOnce(Return(0));
-  EXPECT_CALL(observer_, OnNetworkChanged(kInitialBitrateBps, _, _, _));
-  controller_->Process();
 }
 
 }  // namespace test

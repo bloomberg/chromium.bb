@@ -8,7 +8,7 @@ import android.view.View;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.base.ThreadUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Exposes helper functions to be used in tests to instrument tab interaction.
@@ -73,7 +73,7 @@ public class TabTestUtils {
                     return new View(tab.getThemedApplicationContext());
                 }
             };
-            ThreadUtils.runOnUiThreadBlocking(() -> {
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
                 SadTab.initForTesting(tab, sadTab);
                 sadTab.show();
             });
@@ -88,5 +88,14 @@ public class TabTestUtils {
     public static void simulateChangeThemeColor(Tab tab, int color) {
         RewindableIterator<TabObserver> observers = tab.getTabObservers();
         while (observers.hasNext()) observers.next().onDidChangeThemeColor(tab, color);
+    }
+
+    /**
+     * Restore tab's internal states from a given {@link TabState}.
+     * @param tab {@link Tab} to restore.
+     * @param state {@link TabState} containing the state info to restore the tab with.
+     */
+    public static void restoreFieldsFromState(Tab tab, TabState state) {
+        tab.restoreFieldsFromState(state);
     }
 }

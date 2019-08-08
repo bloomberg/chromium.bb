@@ -261,7 +261,7 @@ constexpr char kHighResAvatarFolderName[] = "Avatars";
 
 // The size of the function-static kDefaultAvatarIconResources array below.
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-constexpr size_t kDefaultAvatarIconsCount = 38;
+constexpr size_t kDefaultAvatarIconsCount = 56;
 #else
 constexpr size_t kDefaultAvatarIconsCount = 27;
 #endif
@@ -455,6 +455,42 @@ const IconResourceInfo* GetDefaultAvatarIconResourceInfo(size_t index) {
      IDS_DEFAULT_AVATAR_LABEL_36},
     {IDR_PROFILE_AVATAR_37, "avatar_origami_unicorn.png",
      IDS_DEFAULT_AVATAR_LABEL_37},
+    {IDR_PROFILE_AVATAR_38, "avatar_illustration_basketball.png",
+     IDS_DEFAULT_AVATAR_LABEL_38},
+    {IDR_PROFILE_AVATAR_39, "avatar_illustration_bike.png",
+     IDS_DEFAULT_AVATAR_LABEL_39},
+    {IDR_PROFILE_AVATAR_40, "avatar_illustration_bird.png",
+     IDS_DEFAULT_AVATAR_LABEL_40},
+    {IDR_PROFILE_AVATAR_41, "avatar_illustration_cheese.png",
+     IDS_DEFAULT_AVATAR_LABEL_41},
+    {IDR_PROFILE_AVATAR_42, "avatar_illustration_football.png",
+     IDS_DEFAULT_AVATAR_LABEL_42},
+    {IDR_PROFILE_AVATAR_43, "avatar_illustration_ramen.png",
+     IDS_DEFAULT_AVATAR_LABEL_43},
+    {IDR_PROFILE_AVATAR_44, "avatar_illustration_sunglasses.png",
+     IDS_DEFAULT_AVATAR_LABEL_44},
+    {IDR_PROFILE_AVATAR_45, "avatar_illustration_sushi.png",
+     IDS_DEFAULT_AVATAR_LABEL_45},
+    {IDR_PROFILE_AVATAR_46, "avatar_illustration_tamagotchi.png",
+     IDS_DEFAULT_AVATAR_LABEL_46},
+    {IDR_PROFILE_AVATAR_47, "avatar_illustration_vinyl.png",
+     IDS_DEFAULT_AVATAR_LABEL_47},
+    {IDR_PROFILE_AVATAR_48, "avatar_abstract_avocado.png",
+     IDS_DEFAULT_AVATAR_LABEL_48},
+    {IDR_PROFILE_AVATAR_49, "avatar_abstract_cappuccino.png",
+     IDS_DEFAULT_AVATAR_LABEL_49},
+    {IDR_PROFILE_AVATAR_50, "avatar_abstract_icecream.png",
+     IDS_DEFAULT_AVATAR_LABEL_50},
+    {IDR_PROFILE_AVATAR_51, "avatar_abstract_icewater.png",
+     IDS_DEFAULT_AVATAR_LABEL_51},
+    {IDR_PROFILE_AVATAR_52, "avatar_abstract_melon.png",
+     IDS_DEFAULT_AVATAR_LABEL_52},
+    {IDR_PROFILE_AVATAR_53, "avatar_abstract_onigiri.png",
+     IDS_DEFAULT_AVATAR_LABEL_53},
+    {IDR_PROFILE_AVATAR_54, "avatar_abstract_pizza.png",
+     IDS_DEFAULT_AVATAR_LABEL_54},
+    {IDR_PROFILE_AVATAR_55, "avatar_abstract_sandwich.png",
+     IDS_DEFAULT_AVATAR_LABEL_55},
 #endif
   };
   return &resource_info[index];

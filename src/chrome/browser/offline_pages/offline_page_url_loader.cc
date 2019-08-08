@@ -10,6 +10,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -45,8 +46,12 @@ net::RedirectInfo CreateRedirectInfo(const GURL& redirected_url,
 }
 
 bool ShouldCreateLoader(const network::ResourceRequest& resource_request) {
+  if (!IsOfflinePagesEnabled())
+    return false;
+
   // Ignore the requests not for the main frame.
-  if (resource_request.resource_type != content::RESOURCE_TYPE_MAIN_FRAME)
+  if (resource_request.resource_type !=
+      static_cast<int>(content::ResourceType::kMainFrame))
     return false;
 
   // Ignore non-http/https requests.

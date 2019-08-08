@@ -6,7 +6,7 @@
 // TODO(majidvp): Get rid of this in favor using KeyframeEffect interface directly.
 [
     Exposed=AnimationWorklet,
-    OriginTrialEnabled=AnimationWorklet
+    RuntimeEnabled=AnimationWorklet
 ] interface EffectProxy {
   attribute unrestricted double? localTime;
 };

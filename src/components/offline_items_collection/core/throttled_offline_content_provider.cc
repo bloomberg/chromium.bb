@@ -107,6 +107,12 @@ void ThrottledOfflineContentProvider::GetShareInfoForItem(
   wrapped_provider_->GetShareInfoForItem(id, std::move(callback));
 }
 
+void ThrottledOfflineContentProvider::RenameItem(const ContentId& id,
+                                                 const std::string& name,
+                                                 RenameCallback callback) {
+  wrapped_provider_->RenameItem(id, name, std::move(callback));
+}
+
 void ThrottledOfflineContentProvider::AddObserver(
     OfflineContentProvider::Observer* observer) {
   DCHECK(observer);

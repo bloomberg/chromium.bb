@@ -97,11 +97,13 @@ void MediaStreamCenter::DidSetContentHint(MediaStreamComponent* track) {
 
 std::unique_ptr<AudioSourceProvider>
 MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
-    MediaStreamComponent* track) {
+    MediaStreamComponent* track,
+    int context_sample_rate) {
   DCHECK(track);
   if (private_) {
-    return MediaStreamWebAudioSource::Create(base::WrapUnique(
-        private_->CreateWebAudioSourceFromMediaStreamTrack(track)));
+    return std::make_unique<MediaStreamWebAudioSource>(
+        base::WrapUnique(private_->CreateWebAudioSourceFromMediaStreamTrack(
+            track, context_sample_rate)));
   }
 
   return nullptr;

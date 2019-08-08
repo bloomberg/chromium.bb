@@ -56,8 +56,11 @@ class TestAnnotator : public ia_mojom::Annotator {
   }
 
   void AnnotateImage(const std::string& source_id,
+                     const std::string& description_language_tag,
                      ia_mojom::ImageProcessorPtr image_processor,
                      AnnotateImageCallback callback) override {
+    CHECK_EQ(description_language_tag, std::string());
+
     source_ids_.push_back(source_id);
 
     image_processors_.push_back(std::move(image_processor));

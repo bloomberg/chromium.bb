@@ -45,6 +45,7 @@
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/in_memory_history_backend.h"
 #include "components/history/core/browser/keyword_search_term.h"
+#include "components/history/core/browser/sync/delete_directive_handler.h"
 #include "components/history/core/browser/visit_database.h"
 #include "components/history/core/browser/visit_delegate.h"
 #include "components/history/core/browser/web_history_service.h"
@@ -943,6 +944,10 @@ bool HistoryService::Init(
                base::BindOnce(&HistoryBackend::Init, history_backend_, no_db,
                               history_database_params));
 
+  delete_directive_handler_ = std::make_unique<DeleteDirectiveHandler>(
+      base::BindRepeating(base::IgnoreResult(&HistoryService::ScheduleDBTask),
+                          base::Unretained(this)));
+
   if (visit_delegate_ && !visit_delegate_->Init(this))
     return false;
 
@@ -978,37 +983,11 @@ base::WeakPtr<HistoryService> HistoryService::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-syncer::SyncMergeResult HistoryService::MergeDataAndStartSyncing(
-    syncer::ModelType type,
-    const syncer::SyncDataList& initial_sync_data,
-    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
-    std::unique_ptr<syncer::SyncErrorFactory> error_handler) {
+base::WeakPtr<syncer::SyncableService>
+HistoryService::GetDeleteDirectivesSyncableService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(type, syncer::HISTORY_DELETE_DIRECTIVES);
-  delete_directive_handler_.Start(this, initial_sync_data,
-                                  std::move(sync_processor));
-  return syncer::SyncMergeResult(type);
-}
-
-void HistoryService::StopSyncing(syncer::ModelType type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(type, syncer::HISTORY_DELETE_DIRECTIVES);
-  delete_directive_handler_.Stop();
-}
-
-syncer::SyncDataList HistoryService::GetAllSyncData(
-    syncer::ModelType type) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(type, syncer::HISTORY_DELETE_DIRECTIVES);
-  // TODO(akalin): Keep track of existing delete directives.
-  return syncer::SyncDataList();
-}
-
-syncer::SyncError HistoryService::ProcessSyncChanges(
-    const base::Location& from_here,
-    const syncer::SyncChangeList& change_list) {
-  delete_directive_handler_.ProcessSyncChanges(this, change_list);
-  return syncer::SyncError();
+  DCHECK(delete_directive_handler_);
+  return delete_directive_handler_->AsWeakPtr();
 }
 
 std::unique_ptr<syncer::ModelTypeControllerDelegate>
@@ -1023,11 +1002,10 @@ HistoryService::GetTypedURLSyncControllerDelegate() {
                           base::Unretained(history_backend_.get())));
 }
 
-syncer::SyncError HistoryService::ProcessLocalDeleteDirective(
+void HistoryService::ProcessLocalDeleteDirective(
     const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return delete_directive_handler_.ProcessLocalDeleteDirective(
-      delete_directive);
+  delete_directive_handler_->ProcessLocalDeleteDirective(delete_directive);
 }
 
 void HistoryService::SetInMemoryBackend(
@@ -1114,8 +1092,8 @@ void HistoryService::DeleteLocalAndRemoteHistoryBetween(
   // TODO(crbug.com/929111): This should be factored out into a separate class
   // that dispatches deletions to the proper places.
   if (web_history) {
-    delete_directive_handler_.CreateDeleteDirectives(std::set<int64_t>(),
-                                                     begin_time, end_time);
+    delete_directive_handler_->CreateDeleteDirectives(std::set<int64_t>(),
+                                                      begin_time, end_time);
 
     // Attempt online deletion from the history server, but ignore the result.
     // Deletion directives ensure that the results will eventually be deleted.
@@ -1160,7 +1138,7 @@ void HistoryService::DeleteLocalAndRemoteUrl(WebHistoryService* web_history,
   // TODO(crbug.com/929111): This should be factored out into a separate class
   // that dispatches deletions to the proper places.
   if (web_history) {
-    delete_directive_handler_.CreateUrlDeleteDirective(url);
+    delete_directive_handler_->CreateUrlDeleteDirective(url);
 
     // Attempt online deletion from the history server, but ignore the result.
     // Deletion directives ensure that the results will eventually be deleted.
@@ -1195,6 +1173,7 @@ void HistoryService::DeleteLocalAndRemoteUrl(WebHistoryService* web_history,
 void HistoryService::OnDBLoaded() {
   DCHECK(thread_checker_.CalledOnValidThread());
   backend_loaded_ = true;
+  delete_directive_handler_->OnBackendLoaded();
   NotifyHistoryServiceLoaded();
 }
 

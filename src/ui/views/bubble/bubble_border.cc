@@ -33,10 +33,6 @@ namespace {
 // key the cache.
 typedef std::tuple<int, SkColor> ShadowCacheKey;
 
-// The border is stroked at 1px, but for the purposes of reserving space we have
-// to deal in dip coordinates, so round up to 1dip.
-constexpr int kBorderThicknessDip = 1;
-
 // Utility functions for getting alignment points on the edge of a rectangle.
 gfx::Point CenterTop(const gfx::Rect& rect) {
   return gfx::Point(rect.CenterPoint().x(), rect.y());
@@ -56,8 +52,6 @@ gfx::Point RightCenter(const gfx::Rect& rect) {
 
 }  // namespace
 
-const int BubbleBorder::kStroke = 1;
-
 BubbleBorder::BubbleBorder(Arrow arrow, Shadow shadow, SkColor color)
     : arrow_(arrow),
       arrow_offset_(0),
@@ -67,7 +61,7 @@ BubbleBorder::BubbleBorder(Arrow arrow, Shadow shadow, SkColor color)
   DCHECK(shadow_ < SHADOW_COUNT);
 }
 
-BubbleBorder::~BubbleBorder() {}
+BubbleBorder::~BubbleBorder() = default;
 
 // static
 gfx::Insets BubbleBorder::GetBorderAndShadowInsets(

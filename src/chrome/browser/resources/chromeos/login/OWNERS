@@ -1,4 +1,11 @@
+# (in PST)
 achuith@chromium.org
 alemate@chromium.org
 jdufault@chromium.org
+tbarzic@chromium.org
+
+# (in CET)
+antrim@chromium.org
 per-file *active_directory*=rsorokin@chromium.org
+
+# COMPONENT: UI>Shell>OOBE

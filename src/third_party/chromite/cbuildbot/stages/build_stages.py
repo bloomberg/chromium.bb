@@ -449,6 +449,7 @@ class InitSDKStage(generic_stages.BuilderStage):
           buildroot=self._build_root,
           replace=replace,
           use_sdk=use_sdk,
+          self_bootstrap = self._run.config.self_bootstrap,
           chrome_root=self._run.options.chrome_root,
           extra_env=self._portage_extra_env,
           use_image=self._run.config.chroot_use_image,
@@ -719,10 +720,9 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       creds_file = topology.topology.get(topology.DATASTORE_WRITER_CREDS_KEY)
 
       build_identifier, db = self._run.GetCIDBHandle()
-      build_id = build_identifier.cidb_id
+      buildbucket_id = build_identifier.buildbucket_id
       if db and creds_file:
-        parent_key = ('Build', build_id, 'BuildStage', self._build_stage_id)
-
+        parent_key = ('Build', buildbucket_id)
         commands.ExportToGCloud(
             self._build_root,
             creds_file,
@@ -743,11 +743,11 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                                                        update_dict)
 
       # Write board metadata update to cidb
-      build_identifier, db = self._run.GetCIDBHandle()
+      build_identifier, _ = self._run.GetCIDBHandle()
       build_id = build_identifier.cidb_id
-      if db:
-        db.UpdateBoardPerBuildMetadata(build_id, self._current_board,
-                                       update_dict)
+      if self.buildstore.AreClientsReady():
+        self.buildstore.InsertBoardPerBuild(build_id, self._current_board,
+                                            update_dict)
 
       # Get a list of models supported by this board.
       models = commands.GetModels(
@@ -769,7 +769,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
             model_arg = '--model=' + model
             key_id_list = commands.RunCrosConfigHost(
                 self._build_root, self._current_board,
-                [model_arg, 'get', '/firmware', 'key-id'])
+                [model_arg, 'get', '/firmware-signing', 'key-id'])
             key_id = None
             if len(key_id_list) == 1:
               key_id = key_id_list[0]

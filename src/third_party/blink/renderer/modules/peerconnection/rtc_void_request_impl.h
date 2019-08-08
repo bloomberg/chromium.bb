@@ -51,13 +51,6 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
   USING_GARBAGE_COLLECTED_MIXIN(RTCVoidRequestImpl);
 
  public:
-  static RTCVoidRequestImpl* Create(
-      ExecutionContext*,
-      base::Optional<RTCSetSessionDescriptionOperation>,
-      RTCPeerConnection*,
-      V8VoidFunction*,
-      V8RTCPeerConnectionErrorCallback*);
-
   RTCVoidRequestImpl(ExecutionContext*,
                      base::Optional<RTCSetSessionDescriptionOperation>,
                      RTCPeerConnection*,

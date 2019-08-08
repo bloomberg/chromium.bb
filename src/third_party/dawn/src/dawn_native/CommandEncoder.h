@@ -27,11 +27,7 @@
 namespace dawn_native {
 
     struct BeginRenderPassCmd;
-    class CommandBufferBuilder;
 
-    // CommandEncoder is temporarily a wrapper around CommandBufferBuilder so the two can coexist
-    // while code is migrated to the new shiny CommandEncoder interface. It captures any command
-    // buffer builder error and defers to trigger a device error when "Finish" is called.
     class CommandEncoderBase : public ObjectBase {
       public:
         CommandEncoderBase(DeviceBase* device);
@@ -44,16 +40,19 @@ namespace dawn_native {
         ComputePassEncoderBase* BeginComputePass();
         RenderPassEncoderBase* BeginRenderPass(const RenderPassDescriptor* info);
         void CopyBufferToBuffer(BufferBase* source,
-                                uint32_t sourceOffset,
+                                uint64_t sourceOffset,
                                 BufferBase* destination,
-                                uint32_t destinationOffset,
-                                uint32_t size);
+                                uint64_t destinationOffset,
+                                uint64_t size);
         void CopyBufferToTexture(const BufferCopyView* source,
                                  const TextureCopyView* destination,
                                  const Extent3D* copySize);
         void CopyTextureToBuffer(const TextureCopyView* source,
                                  const BufferCopyView* destination,
                                  const Extent3D* copySize);
+        void CopyTextureToTexture(const TextureCopyView* source,
+                                  const TextureCopyView* destination,
+                                  const Extent3D* copySize);
         CommandBufferBase* Finish();
 
         // Functions to interact with the encoders

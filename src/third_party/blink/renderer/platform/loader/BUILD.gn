@@ -69,6 +69,7 @@ blink_platform_sources("loader") {
     "fetch/resource_fetcher_properties.h",
     "fetch/resource_finish_observer.h",
     "fetch/resource_load_info.h",
+    "fetch/resource_load_observer.h",
     "fetch/resource_load_priority.h",
     "fetch/resource_load_scheduler.cc",
     "fetch/resource_load_scheduler.h",
@@ -178,7 +179,6 @@ jumbo_source_set("test_support") {
   sources = [
     "testing/bytes_consumer_test_reader.cc",
     "testing/bytes_consumer_test_reader.h",
-    "testing/crypto_testing_platform_support.h",
     "testing/fetch_testing_platform_support.cc",
     "testing/fetch_testing_platform_support.h",
     "testing/mock_fetch_context.h",

@@ -7,7 +7,6 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/win/visual_studio_version.gni")
 import("//build/toolchain/cc_wrapper.gni")
-import("//build/toolchain/clang_static_analyzer.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
 
@@ -91,25 +90,7 @@ template("msvc_toolchain") {
 
     env = invoker.environment
 
-    # When the invoker has explicitly overridden use_goma or cc_wrapper in the
-    # toolchain args, use those values, otherwise default to the global one.
-    # This works because the only reasonable override that toolchains might
-    # supply for these values are to force-disable them.
-    if (defined(toolchain_args.is_clang)) {
-      toolchain_uses_clang = toolchain_args.is_clang
-    } else {
-      toolchain_uses_clang = is_clang
-    }
-
     cl = invoker.cl
-
-    if (toolchain_uses_clang && use_clang_static_analyzer) {
-      analyzer_prefix =
-          "$python_path " +
-          rebase_path("//build/toolchain/clang_static_analyzer_wrapper.py",
-                      root_build_dir) + " --mode=cl"
-      cl = "${analyzer_prefix} ${cl}"
-    }
 
     if (use_lld) {
       if (host_os == "win") {
@@ -141,7 +122,8 @@ template("msvc_toolchain") {
       sys_include_flags = "${invoker.sys_include_flags} "  # Note trailing space.
     } else {
       # clang-cl doesn't need this env hoop, so omit it there.
-      assert(!toolchain_uses_clang)
+      assert((defined(toolchain_args.is_clang) && !toolchain_args.is_clang) ||
+             !is_clang)
       env_wrapper = "ninja -t msvc -e $env -- "  # Note trailing space.
       sys_include_flags = ""
     }
@@ -165,13 +147,6 @@ template("msvc_toolchain") {
       sys_lib_flags = ""
     }
 
-    clflags = ""
-
-    # Pass /FC flag to the compiler if needed.
-    if (msvc_use_absolute_paths) {
-      clflags += "/FC "
-    }
-
     tool("cc") {
       precompiled_header_type = "msvc"
       pdbname = "{{target_out_dir}}/{{label_name}}_c.pdb"
@@ -185,7 +160,7 @@ template("msvc_toolchain") {
         "$object_subdir/{{source_name_part}}.obj",
       ]
 
-      command = "$env_wrapper$cl /nologo /showIncludes ${clflags} $sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
+      command = "$env_wrapper$cl /nologo /showIncludes $sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
     }
 
     tool("cxx") {
@@ -201,7 +176,7 @@ template("msvc_toolchain") {
         "$object_subdir/{{source_name_part}}.obj",
       ]
 
-      command = "$env_wrapper$cl /nologo /showIncludes ${clflags} $sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
+      command = "$env_wrapper$cl /nologo /showIncludes $sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
     }
 
     tool("rc") {
@@ -217,12 +192,14 @@ template("msvc_toolchain") {
       if (toolchain_args.current_cpu == "arm64") {
         prefix = rebase_path("$clang_base_path/bin", root_build_dir)
         ml = "${clang_prefix}${prefix}/${clang_cl} --target=arm64-windows"
+        ml += " -c -o{{output}}"
       } else {
         if (toolchain_args.current_cpu == "x64") {
-          ml = "ml64.exe /nologo"
+          ml = "ml64.exe"
         } else {
-          ml = "ml.exe /nologo"
+          ml = "ml.exe"
         }
+        ml += " /nologo /c /Fo{{output}}"
         if (use_lld) {
           # Wrap ml(64).exe with a script that makes its output deterministic.
           # It's lld only because the script zaps obj Timestamp which
@@ -234,12 +211,7 @@ template("msvc_toolchain") {
           ml = "$python_path $ml_py $ml"
         }
       }
-      command = "$python_path $tool_wrapper_path asm-wrapper $env $ml {{defines}} {{include_dirs}} {{asmflags}} "
-      if (toolchain_args.current_cpu == "arm64") {
-        command += "-c -o{{output}} {{source}}"
-      } else {
-        command += "/c /Fo{{output}} {{source}}"
-      }
+      command = "$python_path $tool_wrapper_path asm-wrapper $env $ml {{defines}} {{include_dirs}} {{asmflags}} {{source}}"
       description = "ASM {{output}}"
       outputs = [
         "$object_subdir/{{source_name_part}}.obj",
@@ -457,9 +429,6 @@ template("win_64bit_toolchains") {
     environment = "environment." + toolchain_arch
     prefix = rebase_path("$clang_base_path/bin", root_build_dir)
     cl = "${clang_prefix}$prefix/${clang_cl}"
-    if (toolchain_arch == "arm64") {
-      cl += " --target=arm64-windows"
-    }
     sys_include_flags = "${win_64bit_toolchain_data.include_flags_imsvc}"
     if (host_os != "win") {
       # For win cross build
@@ -479,17 +448,11 @@ template("win_64bit_toolchains") {
 
 win_64bit_toolchains("x64") {
   toolchain_arch = "x64"
-  toolchain_args = {
-    # Use the defaults.
-  }
 }
 
 if (target_cpu == "arm64") {
   win_64bit_toolchains("arm64") {
     toolchain_arch = "arm64"
-    toolchain_args = {
-      # Use the defaults.
-    }
   }
 }
 

@@ -56,7 +56,7 @@ class WebGLRenderbufferAttachment final
                 GLenum target,
                 GLenum attachment) override;
 
-  TraceWrapperMember<WebGLRenderbuffer> renderbuffer_;
+  Member<WebGLRenderbuffer> renderbuffer_;
 };
 
 WebGLFramebuffer::WebGLAttachment* WebGLRenderbufferAttachment::Create(
@@ -132,7 +132,7 @@ class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
                 GLenum target,
                 GLenum attachment) override;
 
-  TraceWrapperMember<WebGLTexture> texture_;
+  Member<WebGLTexture> texture_;
   GLenum target_;
   GLint level_;
   GLint layer_;
@@ -251,7 +251,7 @@ void WebGLFramebuffer::SetAttachmentForBoundFramebuffer(GLenum target,
       case GL_TEXTURE_2D_ARRAY:
         if (num_views > 0) {
           DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D_ARRAY), tex_target);
-          Context()->ContextGL()->FramebufferTextureMultiviewLayeredANGLE(
+          Context()->ContextGL()->FramebufferTextureMultiviewOVR(
               target, attachment, texture_id, level, layer, num_views);
         } else {
           Context()->ContextGL()->FramebufferTextureLayer(

@@ -176,7 +176,9 @@
 <translation id="6941933287844615239">завантажити медіафайл</translation>
 <translation id="6981594929165378967">вставлення</translation>
 <translation id="6989848892321993519">У тексті має бути не менше стількох символів: <ph name="MIN_CHARACTERS" />. Наразі ви ввели 1 символ.</translation>
+<translation id="7033340931668032222">угору та вниз, щоб змінити гучність</translation>
 <translation id="709897737746224366">Виберіть потрібний формат.</translation>
+<translation id="7118469954320184356">Немає опису.</translation>
 <translation id="7139483182332611405">передмова</translation>
 <translation id="7263440858009898357">Виберіть елемент зі списку.</translation>
 <translation id="727747134524199931">заголовок стовпця</translation>
@@ -226,6 +228,7 @@
 <translation id="8550857728288566671">графічний символ</translation>
 <translation id="8583702881314752957">список визначень</translation>
 <translation id="8597182159515967513">заголовок</translation>
+<translation id="8603553056539299761">уліво та вправо, щоб шукати</translation>
 <translation id="860475260694818407">зміст</translation>
 <translation id="8613126697340063924">керувати віддаленим відтворенням</translation>
 <translation id="862370744433916922">підзаголовок</translation>

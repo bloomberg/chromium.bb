@@ -29,7 +29,10 @@ class CC_EXPORT DecodedImageTracker {
   explicit DecodedImageTracker(
       ImageController* controller,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
+  DecodedImageTracker(const DecodedImageTracker&) = delete;
   ~DecodedImageTracker();
+
+  DecodedImageTracker& operator=(const DecodedImageTracker&) = delete;
 
   // Request that the given image be decoded. This issues a callback upon
   // completion. The callback takes a bool indicating whether the decode was
@@ -71,14 +74,16 @@ class CC_EXPORT DecodedImageTracker {
     ImageLock(DecodedImageTracker* tracker,
               ImageController::ImageDecodeRequestId request_id,
               base::TimeTicks lock_time);
+    ImageLock(const ImageLock&) = delete;
     ~ImageLock();
+
+    ImageLock& operator=(const ImageLock&) = delete;
     base::TimeTicks lock_time() const { return lock_time_; }
 
    private:
     DecodedImageTracker* tracker_;
     ImageController::ImageDecodeRequestId request_id_;
     base::TimeTicks lock_time_;
-    DISALLOW_COPY_AND_ASSIGN(ImageLock);
   };
   base::flat_map<PaintImage::Id, std::unique_ptr<ImageLock>> locked_images_;
   bool timeout_pending_ = false;
@@ -88,8 +93,6 @@ class CC_EXPORT DecodedImageTracker {
   const base::TickClock* tick_clock_;
 
   base::WeakPtrFactory<DecodedImageTracker> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(DecodedImageTracker);
 };
 
 }  // namespace cc

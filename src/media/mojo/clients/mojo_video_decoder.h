@@ -38,6 +38,7 @@ class MojoVideoDecoder final : public VideoDecoder,
                    GpuVideoAcceleratorFactories* gpu_factories,
                    MediaLog* media_log,
                    mojom::VideoDecoderPtr remote_decoder,
+                   VideoDecoderImplementation implementation,
                    const RequestOverlayInfoCB& request_overlay_info_cb,
                    const gfx::ColorSpace& target_color_space);
   ~MojoVideoDecoder() final;
@@ -122,6 +123,8 @@ class MojoVideoDecoder final : public VideoDecoder,
   bool needs_bitstream_conversion_ = false;
   bool can_read_without_stalling_ = true;
   int32_t max_decode_requests_ = 1;
+
+  VideoDecoderImplementation video_decoder_implementation_;
 
   base::WeakPtr<MojoVideoDecoder> weak_this_;
   base::WeakPtrFactory<MojoVideoDecoder> weak_factory_;

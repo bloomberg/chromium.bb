@@ -193,7 +193,7 @@ TEST_F(BandwidthEndToEndTest, RembWithSendSideBwe) {
       config.clock = clock_;
       config.outgoing_transport = receive_transport_;
       config.retransmission_rate_limiter = &retransmission_rate_limiter_;
-      rtp_rtcp_.reset(RtpRtcp::CreateRtpRtcp(config));
+      rtp_rtcp_ = RtpRtcp::Create(config);
       rtp_rtcp_->SetRemoteSSRC((*receive_configs)[0].rtp.remote_ssrc);
       rtp_rtcp_->SetSSRC((*receive_configs)[0].rtp.local_ssrc);
       rtp_rtcp_->SetRTCPStatus(RtcpMode::kReducedSize);
@@ -307,15 +307,13 @@ TEST_F(BandwidthEndToEndTest, ReportsSetEncoderRates) {
       RTC_DCHECK_EQ(1, encoder_config->number_of_streams);
     }
 
-    int32_t SetRateAllocation(const VideoBitrateAllocation& rate_allocation,
-                              uint32_t framerate) override {
+    void SetRates(const RateControlParameters& parameters) override {
       // Make sure not to trigger on any default zero bitrates.
-      if (rate_allocation.get_sum_bps() == 0)
-        return 0;
+      if (parameters.bitrate.get_sum_bps() == 0)
+        return;
       rtc::CritScope lock(&crit_);
-      bitrate_kbps_ = rate_allocation.get_sum_kbps();
+      bitrate_kbps_ = parameters.bitrate.get_sum_kbps();
       observation_complete_.Set();
-      return 0;
     }
 
     void PerformTest() override {

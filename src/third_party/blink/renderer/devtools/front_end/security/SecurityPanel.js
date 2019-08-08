@@ -90,32 +90,15 @@ Security.SecurityPanel = class extends UI.PanelWithSidebar {
     return highlightedUrl;
   }
 
-
-  /**
-   * @param {!Protocol.Security.SecurityState} securityState
-   */
-  setRanInsecureContentStyle(securityState) {
-    this._ranInsecureContentStyle = securityState;
-  }
-
-  /**
-   * @param {!Protocol.Security.SecurityState} securityState
-   */
-  setDisplayedInsecureContentStyle(securityState) {
-    this._displayedInsecureContentStyle = securityState;
-  }
-
   /**
    * @param {!Protocol.Security.SecurityState} newSecurityState
    * @param {boolean} schemeIsCryptographic
    * @param {!Array<!Protocol.Security.SecurityStateExplanation>} explanations
-   * @param {?Protocol.Security.InsecureContentStatus} insecureContentStatus
    * @param {?string} summary
    */
-  _updateSecurityState(newSecurityState, schemeIsCryptographic, explanations, insecureContentStatus, summary) {
+  _updateSecurityState(newSecurityState, schemeIsCryptographic, explanations, summary) {
     this._sidebarMainViewElement.setSecurityState(newSecurityState);
-    this._mainView.updateSecurityState(
-        newSecurityState, schemeIsCryptographic, explanations, insecureContentStatus, summary);
+    this._mainView.updateSecurityState(newSecurityState, schemeIsCryptographic, explanations, summary);
   }
 
   /**
@@ -126,9 +109,8 @@ Security.SecurityPanel = class extends UI.PanelWithSidebar {
     const securityState = /** @type {!Protocol.Security.SecurityState} */ (data.securityState);
     const schemeIsCryptographic = /** @type {boolean} */ (data.schemeIsCryptographic);
     const explanations = /** @type {!Array<!Protocol.Security.SecurityStateExplanation>} */ (data.explanations);
-    const insecureContentStatus = /** @type {?Protocol.Security.InsecureContentStatus} */ (data.insecureContentStatus);
     const summary = /** @type {?string} */ (data.summary);
-    this._updateSecurityState(securityState, schemeIsCryptographic, explanations, insecureContentStatus, summary);
+    this._updateSecurityState(securityState, schemeIsCryptographic, explanations, summary);
   }
 
   selectAndSwitchToMainView() {
@@ -200,12 +182,9 @@ Security.SecurityPanel = class extends UI.PanelWithSidebar {
 
     let securityState = /** @type {!Protocol.Security.SecurityState} */ (request.securityState());
 
-    if (request.mixedContentType === Protocol.Security.MixedContentType.Blockable && this._ranInsecureContentStyle)
-      securityState = this._ranInsecureContentStyle;
-    else if (
-        request.mixedContentType === Protocol.Security.MixedContentType.OptionallyBlockable &&
-        this._displayedInsecureContentStyle)
-      securityState = this._displayedInsecureContentStyle;
+    if (request.mixedContentType === Protocol.Security.MixedContentType.Blockable ||
+        request.mixedContentType === Protocol.Security.MixedContentType.OptionallyBlockable)
+      securityState = Protocol.Security.SecurityState.Insecure;
 
     if (this._origins.has(origin)) {
       const originState = this._origins.get(origin);
@@ -663,10 +642,9 @@ Security.SecurityMainView = class extends UI.VBox {
    * @param {!Protocol.Security.SecurityState} newSecurityState
    * @param {boolean} schemeIsCryptographic
    * @param {!Array<!Protocol.Security.SecurityStateExplanation>} explanations
-   * @param {?Protocol.Security.InsecureContentStatus} insecureContentStatus
    * @param {?string} summary
    */
-  updateSecurityState(newSecurityState, schemeIsCryptographic, explanations, insecureContentStatus, summary) {
+  updateSecurityState(newSecurityState, schemeIsCryptographic, explanations, summary) {
     // Remove old state.
     // It's safe to call this even when this._securityState is undefined.
     this._summarySection.classList.remove('security-summary-' + this._securityState);
@@ -684,11 +662,8 @@ Security.SecurityMainView = class extends UI.VBox {
     // Use override summary if present, otherwise use base explanation
     this._summaryText.textContent = summary || summaryExplanationStrings[this._securityState];
 
-    this._explanations = explanations, this._insecureContentStatus = insecureContentStatus;
+    this._explanations = explanations;
     this._schemeIsCryptographic = schemeIsCryptographic;
-
-    this._panel.setRanInsecureContentStyle(insecureContentStatus.ranInsecureContentStyle);
-    this._panel.setDisplayedInsecureContentStyle(insecureContentStatus.displayedInsecureContentStyle);
 
     this.refreshExplanations();
   }
@@ -922,6 +897,13 @@ Security.SecurityOriginView = class extends UI.VBox {
       }
       noteSection.createChild('div').textContent =
           Common.UIString('The security details above are from the first inspected response.');
+    } else if (originState.securityState === Protocol.Security.SecurityState.Secure) {
+      // If the security state is secure but there are no security details,
+      // this means that the origin is a non-cryptographic secure origin, e.g.
+      // chrome:// or about:.
+      const secureSection = this.element.createChild('div', 'origin-view-section');
+      secureSection.createChild('div', 'origin-view-section-title').textContent = Common.UIString('Secure');
+      secureSection.createChild('div').textContent = Common.UIString('This origin is a non-HTTPS secure origin.');
     } else if (originState.securityState !== Protocol.Security.SecurityState.Unknown) {
       const notSecureSection = this.element.createChild('div', 'origin-view-section');
       notSecureSection.createChild('div', 'origin-view-section-title').textContent = Common.UIString('Not secure');

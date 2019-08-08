@@ -37,16 +37,19 @@ class PaintTestConfigurations
 #define INSTANTIATE_PAINT_TEST_SUITE_P(test_class) \
   INSTANTIATE_TEST_SUITE_P(                        \
       All, test_class,                             \
-      ::testing::Values(0, kBlinkGenPropertyTrees, kCompositeAfterPaint))
+      ::testing::Values(0, kBlinkGenPropertyTrees, \
+                        kBlinkGenPropertyTrees | kCompositeAfterPaint))
 
 #define INSTANTIATE_CAP_TEST_SUITE_P(test_class) \
-  INSTANTIATE_TEST_SUITE_P(All, test_class,      \
-                           ::testing::Values(kCompositeAfterPaint))
+  INSTANTIATE_TEST_SUITE_P(                      \
+      All, test_class,                           \
+      ::testing::Values(kBlinkGenPropertyTrees | kCompositeAfterPaint))
 
 #define INSTANTIATE_LAYER_LIST_TEST_SUITE_P(test_class) \
   INSTANTIATE_TEST_SUITE_P(                             \
       All, test_class,                                  \
-      ::testing::Values(kBlinkGenPropertyTrees, kCompositeAfterPaint))
+      ::testing::Values(kBlinkGenPropertyTrees,         \
+                        kBlinkGenPropertyTrees | kCompositeAfterPaint))
 
 }  // namespace blink
 

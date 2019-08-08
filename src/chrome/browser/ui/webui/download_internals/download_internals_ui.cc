@@ -36,7 +36,6 @@ DownloadInternalsUI::DownloadInternalsUI(content::WebUI* web_ui)
   html_source->UseGzip();
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  html_source->AddBoolean("isIncognito", profile->IsOffTheRecord());
 
   content::WebUIDataSource::Add(profile, html_source);
 

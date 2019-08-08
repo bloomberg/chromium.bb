@@ -4,7 +4,7 @@
 
 #include "base/ios/ios_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"

@@ -115,6 +115,9 @@ void MessagePopupView::Show() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.keep_on_top = true;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Make the widget explicitly activatable as TYPE_POPUP is not activatable by
+  // default but we need focus for the inline reply textarea.
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
   params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
 #else
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;

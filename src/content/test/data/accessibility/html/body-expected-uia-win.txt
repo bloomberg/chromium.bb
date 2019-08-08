@@ -1,4 +1,4 @@
 region
-++document IsKeyboardFocusable=true
+++document
 ++++group
 ++++++description Name='This test is for body tag'

@@ -9,12 +9,12 @@
 #include "base/fuchsia/service_directory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "fuchsia/http/http_service_impl.h"
 
 int main(int argc, char** argv) {
   // Instantiate various global structures.
-  base::TaskScheduler::CreateAndStartWithDefaultParams("HTTP Service");
+  base::ThreadPool::CreateAndStartWithDefaultParams("HTTP Service");
   base::CommandLine::Init(argc, argv);
   base::MessageLoopForIO loop;
   base::AtExitManager exit_manager;

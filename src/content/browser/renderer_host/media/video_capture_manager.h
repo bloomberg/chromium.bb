@@ -189,13 +189,6 @@ class CONTENT_EXPORT VideoCaptureManager
   void OnDeviceLaunchAborted() override;
   void OnDeviceConnectionLost(VideoCaptureController* controller) override;
 
-  // Retrieves camera calibration information for a particular device. Returns
-  // nullopt_t if the |device_id| is not found or camera calibration information
-  // is not available for the device.  Camera calibration is cached during
-  // device(s) enumeration.
-  base::Optional<blink::CameraCalibration> GetCameraCalibration(
-      const std::string& device_id);
-
  private:
   class CaptureDeviceStartRequest;
 

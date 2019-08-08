@@ -100,11 +100,6 @@ class PLATFORM_EXPORT Font {
                 const NGTextFragmentPaintInfo&,
                 const FloatPoint&,
                 float device_scale_factor,
-                const cc::PaintFlags&) const;
-  void DrawText(cc::PaintCanvas*,
-                const NGTextFragmentPaintInfo&,
-                const FloatPoint&,
-                float device_scale_factor,
                 const cc::NodeHolder&,
                 const cc::PaintFlags&) const;
   bool DrawBidiText(cc::PaintCanvas*,

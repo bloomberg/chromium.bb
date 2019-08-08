@@ -206,7 +206,6 @@ class CombinedReaders {
         this.currentReader_ = this.readers_.pop();
         this.readEntries(success, error);
       }
-
     }, error);
   }
 }
@@ -263,7 +262,8 @@ class EntryList {
   constructor(label, rootType, devicePath = '') {
     /**
      * @private {string} label: Label to be used when displaying to user, it
-     *      should be already translated. */
+     *      should be already translated.
+     */
     this.label_ = label;
 
     /** @private {VolumeManagerCommon.RootType} rootType root type. */
@@ -720,7 +720,8 @@ class FakeEntry {
   constructor(label, rootType, opt_sourceRestriction) {
     /**
      * @public {string} label: Label to be used when displaying to user, it
-     *      should be already translated. */
+     *      should be already translated.
+     */
     this.label = label;
 
     /** @public {string} Name for this volume. */

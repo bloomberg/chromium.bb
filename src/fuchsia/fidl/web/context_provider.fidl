@@ -15,26 +15,10 @@ protocol ContextProvider {
   ///
   /// context: An interface request which will receive a bound Context
   ///          service.
-  // DEPRECATED Use Create2 instead.
   Create(CreateContextParams params, request<Context> context);
-
-  Create2(CreateContextParams2 params, request<Context> context);
 };
 
-// DEPRECATED Use CreateContextParams2 instead.
-struct CreateContextParams {
-  /// Service directory to be used by the context.
-  // TODO(https://crbug.com/870057): Document required and optional services
-  // that Context needs.
-  handle<channel> service_directory;
-
-  /// Handle to the directory that will contain the Context's
-  /// persistent data. If it is left unset, then the created Context will be
-  /// stateless, with all of its data discarded upon Context destruction.
-  handle<channel>? data_directory;
-};
-
-table CreateContextParams2 {
+table CreateContextParams {
   /// Service directory to be used by the context.
   // TODO(https://crbug.com/870057): Document required and optional services
   // that Context needs.

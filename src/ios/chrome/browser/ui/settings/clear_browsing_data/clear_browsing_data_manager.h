@@ -7,11 +7,13 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/browsing_data/browsing_data_remover_observer_bridge.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_consumer.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_table_view_controller.h"
 
 @class ListModel;
 @class ActionSheetCoordinator;
+@protocol CollectionViewFooterLinkDelegate;
 
 // Clear Browswing Data Section Identifiers.
 enum ClearBrowsingDataSectionIdentifier {
@@ -68,7 +70,8 @@ enum class ClearBrowsingDataListType {
 // Manager that serves as the bulk of the logic for
 // ClearBrowsingDataConsumer.
 @interface ClearBrowsingDataManager
-    : NSObject <TimeRangeSelectorCollectionViewControllerDelegate>
+    : NSObject <BrowsingDataRemoverObserving,
+                TimeRangeSelectorTableViewControllerDelegate>
 
 // The manager's consumer.
 @property(nonatomic, assign) id<ClearBrowsingDataConsumer> consumer;
@@ -84,8 +87,14 @@ enum class ClearBrowsingDataListType {
 
 // Fills |model| with appropriate sections and items.
 - (void)loadModel:(ListModel*)model;
+
+// Restarts browsing data counters, which in turn updates UI, with those data
+// types specified by |mask|.
+- (void)restartCounters:(BrowsingDataRemoveMask)mask;
+
 // Returns a ActionSheetCoordinator that has action block to clear data of type
 // |dataTypeMaskToRemove|.
+// When action triggered by a UIButton.
 - (ActionSheetCoordinator*)
     actionSheetCoordinatorWithDataTypesToRemove:
         (BrowsingDataRemoveMask)dataTypeMaskToRemove
@@ -93,6 +102,15 @@ enum class ClearBrowsingDataListType {
                                  (UIViewController*)baseViewController
                                      sourceRect:(CGRect)sourceRect
                                      sourceView:(UIView*)sourceView;
+// When action triggered by a UIBarButtonItem.
+- (ActionSheetCoordinator*)
+    actionSheetCoordinatorWithDataTypesToRemove:
+        (BrowsingDataRemoveMask)dataTypeMaskToRemove
+                             baseViewController:
+                                 (UIViewController*)baseViewController
+                            sourceBarButtonItem:
+                                (UIBarButtonItem*)sourceBarButtonItem;
+
 // Get the text to be displayed by a counter from the given |result|
 - (NSString*)counterTextFromResult:
     (const browsing_data::BrowsingDataCounter::Result&)result;

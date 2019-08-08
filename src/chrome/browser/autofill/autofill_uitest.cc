@@ -74,8 +74,10 @@ void AutofillUiTest::SetUpOnMainThread() {
   // Don't want Keychain coming up on Mac.
   test::DisableSystemServices(browser()->profile()->GetPrefs());
 
-  // Inject the test delegate into the AutofillManager.
-  GetAutofillManager()->SetTestDelegate(test_delegate());
+  // Inject the test delegate into the AutofillManager of the main frame.
+  RenderFrameHostChanged(/* old_host = */ nullptr,
+                         /* new_host = */ GetWebContents()->GetMainFrame());
+  Observe(GetWebContents());
 
   // If the mouse happened to be over where the suggestions are shown, then
   // the preview will show up and will fail the tests. We need to give it a
@@ -218,10 +220,18 @@ content::RenderViewHost* AutofillUiTest::GetRenderViewHost() {
 }
 
 AutofillManager* AutofillUiTest::GetAutofillManager() {
-  content::WebContents* web_contents = GetWebContents();
-  return ContentAutofillDriverFactory::FromWebContents(web_contents)
-      ->DriverForFrame(web_contents->GetMainFrame())
+  return ContentAutofillDriverFactory::FromWebContents(GetWebContents())
+      ->DriverForFrame(current_main_rfh_)
       ->autofill_manager();
+}
+
+void AutofillUiTest::RenderFrameHostChanged(
+    content::RenderFrameHost* old_frame,
+    content::RenderFrameHost* new_frame) {
+  if (current_main_rfh_ != old_frame)
+    return;
+  current_main_rfh_ = new_frame;
+  GetAutofillManager()->SetTestDelegate(test_delegate());
 }
 
 }  // namespace autofill

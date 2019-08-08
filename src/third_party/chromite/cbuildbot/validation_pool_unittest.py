@@ -574,7 +574,7 @@ class TestCoreLogic(_Base):
     patch_series.PatchSeries.Apply.configure_mock(
         return_value=([patches[2]], [error], []))
 
-    git_repo_returns = [None] + ['foo_repo'] * (len(patches) - 1)
+    git_repo_returns = ['foo_repo', 'foo_repo', None]
     self.PatchObject(patch_series.PatchSeries, 'GetGitRepoForChange',
                      side_effect=git_repo_returns)
 
@@ -1546,8 +1546,13 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     for p in self.patches[:-1]:
       self.patch_mock.SetGerritDependencies(p, [])
     self.patch_mock.SetGerritDependencies(self.patches[4], self.patches[::-1])
-    self.pool_mock.max_submits.value = 1
-    submitted = [self.patches[2], self.patches[1], self.patches[3],
+    self.pool_mock.submit_results = {self.patches[0]: False,
+                                     self.patches[1]: False,
+                                     self.patches[2]: True,
+                                     self.patches[3]: False,
+                                     self.patches[4]: False,}
+    # This numbers are dependant on hash iteration order. :(
+    submitted = [self.patches[3], self.patches[2], self.patches[1],
                  self.patches[0]]
     rejected = self.patches[:2] + self.patches[3:]
     self.SubmitPool(submitted=submitted, rejected=rejected)
@@ -1556,7 +1561,7 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
           p, validation_pool.ValidationPool.INCONSISTENT_SUBMIT_MSG)
       self.assertEqualNotifyArg(p_failed_submit, p, 'error')
     failed_submit = validation_pool.PatchFailedToSubmit(
-        self.patches[1], validation_pool.ValidationPool.INCONSISTENT_SUBMIT_MSG)
+        self.patches[3], validation_pool.ValidationPool.INCONSISTENT_SUBMIT_MSG)
     dep_failed = cros_patch.DependencyError(self.patches[4], failed_submit)
     self.assertEqualNotifyArg(dep_failed, self.patches[4], 'error')
 
@@ -1621,15 +1626,16 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     def _ReloadPatches(patches):
       reloaded = copy.deepcopy(patches)
       approvals = {('VRIF', '1'): False}
+      # Depends on hash iteration order. :(
       backup = reloaded[1].HasApproval
       self.PatchObject(
-          reloaded[1], 'HasApproval',
+          reloaded[0], 'HasApproval',
           side_effect=lambda *args: approvals.get(args, backup(*args)))
       return reloaded
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
                      _ReloadPatches)
     self.SubmitPool(submitted=self.patches[:1], rejected=self.patches[1:])
-    message = 'CL:2 is not marked Verified=+1.'
+    message = 'chromium:2 is not marked Verified=+1.'
     self.assertEqualNotifyArg(message, self.patches[1], 'error')
 
   def testAlreadyMerged(self):
@@ -1641,7 +1647,8 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     """Test that a CL that was modified during the run is rejected."""
     def _ReloadPatches(patches):
       reloaded = copy.deepcopy(patches)
-      reloaded[1].patch_number += 1
+      # Depends on hash iteration order. :(
+      reloaded[0].patch_number += 1
       return reloaded
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
                      _ReloadPatches)

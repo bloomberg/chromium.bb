@@ -2,20 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/features.gni")
 import("//ios/web/js_compile.gni")
 import("//rlz/buildflags/buildflags.gni")
-
-source_set("feature_flags") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "feature_flags.cc",
-    "feature_flags.h",
-  ]
-  deps = [
-    "//base",
-  ]
-}
 
 source_set("search_engines") {
   sources = [

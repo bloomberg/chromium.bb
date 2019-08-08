@@ -60,12 +60,8 @@
     }
     
   </style>
+  <script src="../../resources/run-after-layout-and-paint.js"></script>
   <script type="text/javascript" charset="utf-8">
-    if (window.testRunner) {
-      testRunner.dumpAsTextWithPixelResults();
-      testRunner.waitUntilDone();
-    }
-
     function repaint()
     {
       var imagesToRepaint = document.querySelectorAll('.repainted');
@@ -73,13 +69,10 @@
         var currImage = imagesToRepaint[i];
         currImage.style.backgroundColor = 'orange';
       }
-
-      if (window.testRunner)
-        testRunner.notifyDone();
     }
     
     window.addEventListener('load', function() {
-      window.setTimeout(repaint, 0);
+      runAfterLayoutAndPaint(repaint, true);
     }, false);
   </script>
 </head>

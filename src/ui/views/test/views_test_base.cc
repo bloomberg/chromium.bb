@@ -114,15 +114,15 @@ void ViewsTestBase::SetUp() {
   ui::MaterialDesignController::Initialize();
   setup_called_ = true;
   if (!views_delegate_for_setup_)
-    views_delegate_for_setup_.reset(new TestViewsDelegate());
+    views_delegate_for_setup_ = std::make_unique<TestViewsDelegate>();
 
 #if BUILDFLAG(ENABLE_MUS)
   if (is_mus()) {
     // Set the mash feature flag, but don't override single process mash.
-    if (!features::IsSingleProcessMash()) {
-      feature_list_.InitAndEnableFeature(features::kMash);
+    if (!::features::IsSingleProcessMash()) {
+      feature_list_.InitAndEnableFeature(::features::kMash);
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kEnableFeatures, features::kMash.name);
+          switches::kEnableFeatures, ::features::kMash.name);
     }
 
     PlatformTestHelper::set_factory(
@@ -143,8 +143,8 @@ void ViewsTestBase::SetUp() {
   }
 #endif
 
-  test_helper_.reset(
-      new ScopedViewsTestHelper(std::move(views_delegate_for_setup_)));
+  test_helper_ = std::make_unique<ScopedViewsTestHelper>(
+      std::move(views_delegate_for_setup_));
 }
 
 void ViewsTestBase::TearDown() {
@@ -244,6 +244,11 @@ NativeWidget* ViewsTestBase::CreateNativeWidgetForTest(
   NOTREACHED();
   return nullptr;
 #endif
+}
+
+void ViewsTestBaseWithNativeWidgetType::SetUp() {
+  set_native_widget_type(GetParam());
+  ViewsTestBase::SetUp();
 }
 
 void ViewsTestWithDesktopNativeWidget::SetUp() {

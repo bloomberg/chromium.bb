@@ -22,13 +22,6 @@ enum CloseTabSource {
   CLOSE_TAB_FROM_TOUCH,
 };
 
-// Returned from GetNewTabButtonPosition().
-enum NewTabButtonPosition {
-  LEADING,     // Pinned to the leading edge of the tabstrip region.
-  AFTER_TABS,  // After the last tab.
-  TRAILING,    // Pinned to the trailing edge of the tabstrip region.
-};
-
 // Enum passed to GetTabForegroundColor and GetTabBackgroundColor to indicate
 // whether the tab is active or not.
 enum TabState {

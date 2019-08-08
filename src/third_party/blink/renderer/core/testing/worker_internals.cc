@@ -18,7 +18,7 @@ WorkerInternals::~WorkerInternals() = default;
 WorkerInternals::WorkerInternals() = default;
 
 OriginTrialsTest* WorkerInternals::originTrialsTest() const {
-  return OriginTrialsTest::Create();
+  return MakeGarbageCollected<OriginTrialsTest>();
 }
 
 void WorkerInternals::countFeature(ScriptState* script_state,

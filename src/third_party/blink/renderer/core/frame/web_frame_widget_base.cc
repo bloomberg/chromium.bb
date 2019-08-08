@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -103,13 +104,6 @@ WebRect WebFrameWidgetBase::ComputeBlockBound(
     return frame->View()->ConvertToRootFrame(absolute_rect);
   }
   return WebRect();
-}
-
-void WebFrameWidgetBase::UpdateAllLifecyclePhasesAndCompositeForTesting(
-    bool do_raster) {
-  if (WebLayerTreeView* layer_tree_view = GetLayerTreeView()) {
-    layer_tree_view->UpdateAllLifecyclePhasesAndCompositeForTesting(do_raster);
-  }
 }
 
 WebDragOperation WebFrameWidgetBase::DragTargetDragEnter(
@@ -348,11 +342,10 @@ void WebFrameWidgetBase::RequestDecode(
     base::OnceCallback<void(bool)> callback) {
   // If we have a LayerTreeView, propagate the request, otherwise fail it since
   // otherwise it would remain in a unresolved and unrejected state.
-  if (WebLayerTreeView* layer_tree_view = GetLayerTreeView()) {
-    layer_tree_view->RequestDecode(image, std::move(callback));
-  } else {
+  // TODO(danakj): This should be based on |does_composite| instead.
+  if (!GetLayerTreeView())
     std::move(callback).Run(false);
-  }
+  Client()->RequestDecode(image, std::move(callback));
 }
 
 void WebFrameWidgetBase::Trace(blink::Visitor* visitor) {
@@ -455,7 +448,7 @@ base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
 WebFrameWidgetBase::EnsureCompositorMutatorDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
   if (!mutator_task_runner_) {
-    GetLayerTreeView()->SetMutatorClient(
+    Client()->SetLayerTreeMutator(
         AnimationWorkletMutatorDispatcherImpl::CreateCompositorThreadClient(
             &mutator_dispatcher_, &mutator_task_runner_));
   }
@@ -463,6 +456,16 @@ WebFrameWidgetBase::EnsureCompositorMutatorDispatcher(
   DCHECK(mutator_task_runner_);
   *mutator_task_runner = mutator_task_runner_;
   return mutator_dispatcher_;
+}
+
+scoped_refptr<PaintWorkletPaintDispatcher>
+WebFrameWidgetBase::EnsureCompositorPaintDispatcher() {
+  if (!paint_dispatcher_) {
+    Client()->SetPaintWorkletLayerPainterClient(
+        PaintWorkletPaintDispatcher::CreateCompositorThreadPainter(
+            paint_dispatcher_));
+  }
+  return paint_dispatcher_;
 }
 
 }  // namespace blink

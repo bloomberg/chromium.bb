@@ -27,7 +27,7 @@ constexpr int HTMLImageElementTest::kViewportWidth;
 constexpr int HTMLImageElementTest::kViewportHeight;
 
 TEST_F(HTMLImageElementTest, width) {
-  auto* image = HTMLImageElement::Create(GetDocument());
+  auto* image = MakeGarbageCollected<HTMLImageElement>(GetDocument());
   image->setAttribute(html_names::kWidthAttr, "400");
   // TODO(yoav): `width` does not impact resourceWidth until we resolve
   // https://github.com/ResponsiveImagesCG/picture-element/issues/268
@@ -37,7 +37,7 @@ TEST_F(HTMLImageElementTest, width) {
 }
 
 TEST_F(HTMLImageElementTest, sourceSize) {
-  auto* image = HTMLImageElement::Create(GetDocument());
+  auto* image = MakeGarbageCollected<HTMLImageElement>(GetDocument());
   image->setAttribute(html_names::kWidthAttr, "400");
   EXPECT_EQ(kViewportWidth, image->SourceSize(*image));
   image->setAttribute(html_names::kSizesAttr, "50vw");

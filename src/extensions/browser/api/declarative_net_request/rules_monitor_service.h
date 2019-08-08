@@ -7,10 +7,13 @@
 
 #include <memory>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -26,7 +29,15 @@ class ExtensionPrefs;
 class ExtensionRegistry;
 class WarningService;
 
+namespace api {
 namespace declarative_net_request {
+struct Rule;
+}  // namespace declarative_net_request
+}  // namespace api
+
+namespace declarative_net_request {
+enum class DynamicRuleUpdateAction;
+struct LoadRequestData;
 
 // Observes loading and unloading of extensions to load and unload their
 // rulesets for the Declarative Net Request API. Lives on the UI thread. Note: A
@@ -58,9 +69,16 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Updates the dynamic rules for the |extension| and then invokes
+  // |callback| with an optional error.
+  using DynamicRuleUpdateUICallback =
+      base::OnceCallback<void(base::Optional<std::string> error)>;
+  void UpdateDynamicRules(const Extension& extension,
+                          std::vector<api::declarative_net_request::Rule> rules,
+                          DynamicRuleUpdateAction action,
+                          DynamicRuleUpdateUICallback callback);
+
  private:
-  struct LoadRequestData;
-  class FileSequenceState;
   class FileSequenceBridge;
 
   friend class BrowserContextKeyedAPIFactory<RulesMonitorService>;
@@ -81,9 +99,17 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              UninstallReason reason) override;
 
   // Invoked when we have loaded the ruleset on |file_task_runner_|.
   void OnRulesetLoaded(LoadRequestData load_data);
+
+  // Invoked when the dynamic rules for the extension have been updated.
+  void OnDynamicRulesUpdated(DynamicRuleUpdateUICallback callback,
+                             LoadRequestData load_data,
+                             base::Optional<std::string> error);
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;
@@ -100,6 +126,8 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   WarningService* const warning_service_;
 
   base::ObserverList<Observer>::Unchecked observers_;
+
+  content::BrowserContext* const context_;
 
   // Must be the last member variable. See WeakPtrFactory documentation for
   // details.

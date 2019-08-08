@@ -143,6 +143,15 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
       const std::vector<std::pair<uint32_t, uint32_t>>& entries) override;
   void DeleteTransferCacheEntry(uint32_t type, uint32_t id) override;
   unsigned int GetTransferBufferFreeSize() const override;
+  bool CanDecodeWithHardwareAcceleration(
+      base::span<const uint8_t> encoded_data) const override;
+
+  // InterfaceBase implementation.
+  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
+  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
+
   void GetProgramInfoCHROMIUMHelper(GLuint program,
                                     std::vector<int8_t>* result);
   GLint GetAttribLocationHelper(GLuint program, const char* name);

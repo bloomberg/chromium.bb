@@ -12,7 +12,6 @@
 #include "url/gurl.h"
 
 namespace content {
-
 namespace background_fetch {
 
 GetMetadataTask::GetMetadataTask(DatabaseTaskHost* host,
@@ -103,5 +102,4 @@ void GetMetadataTask::FinishWithError(
 }
 
 }  // namespace background_fetch
-
 }  // namespace content

@@ -39,8 +39,8 @@ DevToolsURLRequestInterceptor::MaybeCreate(BrowserContext* browser_context) {
 // static
 bool DevToolsURLRequestInterceptor::IsNavigationRequest(
     ResourceType resource_type) {
-  return resource_type == RESOURCE_TYPE_MAIN_FRAME ||
-         resource_type == RESOURCE_TYPE_SUB_FRAME;
+  return resource_type == ResourceType::kMainFrame ||
+         resource_type == ResourceType::kSubFrame;
 }
 
 DevToolsURLRequestInterceptor::DevToolsURLRequestInterceptor(

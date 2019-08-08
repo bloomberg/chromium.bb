@@ -35,7 +35,6 @@ class TaskQueue;
 }  // namespace rtc
 namespace webrtc {
 
-class CallStats;
 class CallStatsObserver;
 class FrameEncryptorInterface;
 class TargetTransferRateObserver;
@@ -48,7 +47,6 @@ class RtpVideoSenderInterface;
 class RateLimiter;
 class RtcpBandwidthObserver;
 class RtpPacketSender;
-struct RtpKeepAliveConfig;
 class SendDelayStats;
 class SendStatisticsProxy;
 class TransportFeedbackObserver;
@@ -56,6 +54,7 @@ class TransportFeedbackObserver;
 struct RtpSenderObservers {
   RtcpRttStats* rtcp_rtt_stats;
   RtcpIntraFrameObserver* intra_frame_callback;
+  RtcpLossNotificationObserver* rtcp_loss_notification_observer;
   RtcpStatisticsCallback* rtcp_stats;
   StreamDataCountersCallback* rtp_stats;
   BitrateStatisticsObserver* bitrate_observer;
@@ -106,7 +105,6 @@ class RtpTransportControllerSendInterface {
       const RtpConfig& rtp_config,
       int rtcp_report_interval_ms,
       Transport* send_transport,
-      bool is_svc,
       const RtpSenderObservers& observers,
       RtcEventLog* event_log,
       std::unique_ptr<FecController> fec_controller,

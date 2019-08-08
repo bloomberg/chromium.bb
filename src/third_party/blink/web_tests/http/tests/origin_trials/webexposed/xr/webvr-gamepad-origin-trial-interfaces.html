@@ -20,8 +20,10 @@ interfaces_to_check = [
   'GamepadPose'
 ];
 
-// Skip this test if flags are not set properly.
-if(!self.internals.runtimeFlags.webVRGamepadSupportEnabled) {
+// Check that the interfaces and properties are not present without the token.
+// Experimental web platform features are always enabled when this test is run
+// normally, so do not check them in that case.
+if (!self.internals.runtimeFlags.webVREnabled) {
   test(t => {
     OriginTrialsHelper.check_properties_missing(this, properties_to_check);
   }, "The WebVR-specific Gamepad properties are not available without a token.");
@@ -53,5 +55,4 @@ test(t => {
     ]
   });
 }, 'The WebVR-specific Gamepad interfaces and their properties are available.');
-
 </script>

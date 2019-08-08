@@ -33,6 +33,14 @@ namespace declarativeNetRequest {
     thirdParty
   };
 
+  // This describes the headers which can be removed from the network request.
+  [nodoc]
+  enum RemoveHeaderType {
+    cookie,
+    referer,
+    setCookie
+  };
+
   // Describes the kind of action to take if a given RuleCondition matches.
   enum RuleActionType {
     // Block the network request.
@@ -41,7 +49,9 @@ namespace declarativeNetRequest {
     redirect,
     // Allow the network request. The request won't be blocked even if there
     // is a blocking rule which matches it.
-    allow
+    allow,
+    // Remove request/response headers from the network request.
+    [nodoc] removeHeaders
   };
 
   dictionary RuleCondition {
@@ -118,6 +128,10 @@ namespace declarativeNetRequest {
 
     // The redirect url. Only valid if RuleActionType is "redirect".
     DOMString? redirectUrl;
+
+    // The headers to remove from the request. Only valid if RuleActionType is
+    // "removeHeaders".
+    [nodoc] RemoveHeaderType[]? removeHeadersList;
   };
 
   dictionary Rule {
@@ -187,5 +201,8 @@ namespace declarativeNetRequest {
     // resources file. Any excess rules will be ignored and an install warning
     // will be raised.
     [value=30000] static long MAX_NUMBER_OF_RULES();
+
+    // The maximum number of dynamic rules that an extension can add.
+    [value=5000] static long MAX_NUMBER_OF_DYNAMIC_RULES();
   };
 };

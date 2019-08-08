@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuchsia/modular/cpp/fidl.h>
 #include <fuchsia/sys/cpp/fidl.h>
 
 #include "base/bind.h"
@@ -79,6 +80,38 @@ TEST_F(WebRunnerSmokeTest, RequestHtmlAndImage) {
 
   EXPECT_TRUE(test_html_requested_);
   EXPECT_TRUE(test_image_requested_);
+}
+
+TEST_F(WebRunnerSmokeTest, LifecycleTerminate) {
+  fidl::InterfaceHandle<fuchsia::io::Directory> directory;
+
+  fuchsia::sys::LaunchInfo launch_info;
+  launch_info.url = test_server_.GetURL("/test.html").spec();
+  launch_info.directory_request = directory.NewRequest().TakeChannel();
+
+  auto launcher = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
+                      ->ConnectToServiceSync<fuchsia::sys::Launcher>();
+
+  fuchsia::sys::ComponentControllerPtr controller;
+  launcher->CreateComponent(std::move(launch_info), controller.NewRequest());
+
+  base::fuchsia::ServiceDirectoryClient component_services(
+      std::move(directory));
+  auto lifecycle =
+      component_services.ConnectToService<fuchsia::modular::Lifecycle>();
+  ASSERT_TRUE(lifecycle);
+
+  // Terminate() the component, and expect that |controller| disconnects us.
+  base::RunLoop loop;
+  controller.set_error_handler(
+      [quit_loop = loop.QuitClosure()](zx_status_t status) {
+        EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
+        quit_loop.Run();
+      });
+  lifecycle->Terminate();
+  loop.Run();
+
+  EXPECT_FALSE(controller);
 }
 
 }  // anonymous namespace

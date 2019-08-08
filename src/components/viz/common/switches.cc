@@ -15,6 +15,12 @@ namespace switches {
 const char kDeadlineToSynchronizeSurfaces[] =
     "deadline-to-synchronize-surfaces";
 
+// Enable compositing individual elements via hardware overlays when
+// permitted by device.
+// Setting the flag to "single-fullscreen" will try to promote a single
+// fullscreen overlay and use it as main framebuffer where possible.
+const char kEnableHardwareOverlays[] = "enable-hardware-overlays";
+
 // Enables multi-client Surface synchronization. In practice, this indicates
 // that LayerTreeHost expects to be given a valid viz::LocalSurfaceId provided
 // by the parent compositor.

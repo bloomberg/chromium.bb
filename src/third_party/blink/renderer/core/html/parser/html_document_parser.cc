@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/html_parser_script_runner.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
@@ -60,6 +59,7 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -132,7 +132,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
                  ? std::make_unique<HTMLToken>()
                  : nullptr),
       tokenizer_(sync_policy == kForceSynchronousParsing
-                     ? HTMLTokenizer::Create(options_)
+                     ? std::make_unique<HTMLTokenizer>(options_)
                      : nullptr),
       loading_task_runner_(document.GetTaskRunner(TaskType::kNetworking)),
       parser_scheduler_(
@@ -305,20 +305,6 @@ bool HTMLDocumentParser::CanTakeNextToken() {
     RunScriptsForPausedTreeBuilder();
   if (IsStopped() || IsPaused())
     return false;
-
-  // FIXME: It's wrong for the HTMLDocumentParser to reach back to the
-  // LocalFrame, but this approach is how the old parser handled stopping when
-  // the page assigns window.location.  What really should happen is that
-  // assigning window.location causes the parser to stop parsing cleanly.  The
-  // problem is we're not perpared to do that at every point where we run
-  // JavaScript.
-  if (!IsParsingFragment() && GetDocument()->GetFrame() &&
-      GetDocument()
-          ->GetFrame()
-          ->GetNavigationScheduler()
-          .LocationChangePending())
-    return false;
-
   return true;
 }
 
@@ -521,22 +507,6 @@ size_t HTMLDocumentParser::ProcessTokenizedChunkFromBackgroundParser(
     if (!chunk->starting_script && (it->GetType() == HTMLToken::kStartTag ||
                                     it->GetType() == HTMLToken::kEndTag))
       element_token_count++;
-
-    if (GetDocument()->GetFrame() && GetDocument()
-                                         ->GetFrame()
-                                         ->GetNavigationScheduler()
-                                         .LocationChangePending()) {
-      // To match main-thread parser behavior (which never checks
-      // locationChangePending on the EOF path) we peek to see if this chunk has
-      // an EOF and process it anyway.
-      if (tokens.back().GetType() == HTMLToken::kEndOfFile) {
-        DCHECK(
-            speculations_
-                .IsEmpty());  // There should never be any chunks after the EOF.
-        PrepareToStopParsing();
-      }
-      break;
-    }
 
     text_position_ = it->GetTextPosition();
 
@@ -776,7 +746,7 @@ void HTMLDocumentParser::insert(const String& source) {
     DCHECK(!InPumpSession());
     DCHECK(have_background_parser_ || WasCreatedByScript());
     token_ = std::make_unique<HTMLToken>();
-    tokenizer_ = HTMLTokenizer::Create(options_);
+    tokenizer_ = std::make_unique<HTMLTokenizer>(options_);
   }
 
   SegmentedString excluded_line_number_source(source);
@@ -833,10 +803,11 @@ void HTMLDocumentParser::StartBackgroundParser() {
   // the status of the Priority Hints Origin Trial, and has no way of figuring
   // this out on its own. See https://crbug.com/821464.
   bool priority_hints_origin_trial_enabled =
-      origin_trials::PriorityHintsEnabled(GetDocument());
+      RuntimeEnabledFeatures::PriorityHintsEnabled(GetDocument());
 
   background_parser_->Init(
-      GetDocument()->Url(), CachedDocumentParameters::Create(GetDocument()),
+      GetDocument()->Url(),
+      std::make_unique<CachedDocumentParameters>(GetDocument()),
       MediaValuesCached::MediaValuesCachedData(*GetDocument()),
       priority_hints_origin_trial_enabled);
 }
@@ -985,7 +956,7 @@ void HTMLDocumentParser::Finish() {
     // We're finishing before receiving any data. Rather than booting up the
     // background parser just to spin it down, we finish parsing synchronously.
     token_ = std::make_unique<HTMLToken>();
-    tokenizer_ = HTMLTokenizer::Create(options_);
+    tokenizer_ = std::make_unique<HTMLTokenizer>(options_);
   }
 
   // We're not going to get any more data off the network, so we tell the input
@@ -1053,7 +1024,7 @@ void HTMLDocumentParser::ResumeParsingAfterPause() {
   DCHECK(!IsPaused());
 
   CheckIfBodyStylesheetAdded();
-  if (IsPaused())
+  if (IsStopped() || IsPaused())
     return;
 
   if (have_background_parser_) {
@@ -1120,14 +1091,13 @@ void HTMLDocumentParser::ExecuteScriptsWaitingForResources() {
 }
 
 void HTMLDocumentParser::DidAddPendingStylesheetInBody() {
-  // When in-body CSS doesn't block painting, the parser needs to pause so that
+  // In-body CSS doesn't block painting. The parser needs to pause so that
   // the DOM doesn't include any elements that may depend on the CSS for style.
   // The stylesheet can be added and removed during the parsing of a single
   // token so don't actually set the bit to block parsing here, just track
   // the state of the added sheet in case it does persist beyond a single
   // token.
-  if (RuntimeEnabledFeatures::CSSInBodyDoesNotBlockPaintEnabled())
-    added_pending_stylesheet_in_body_ = true;
+  added_pending_stylesheet_in_body_ = true;
 }
 
 void HTMLDocumentParser::DidLoadAllBodyStylesheets() {
@@ -1207,7 +1177,7 @@ void HTMLDocumentParser::Flush() {
     if (!have_background_parser_) {
       should_use_threading_ = false;
       token_ = std::make_unique<HTMLToken>();
-      tokenizer_ = HTMLTokenizer::Create(options_);
+      tokenizer_ = std::make_unique<HTMLTokenizer>(options_);
       DecodedDataDocumentParser::Flush();
       return;
     }
@@ -1270,9 +1240,9 @@ void HTMLDocumentParser::DocumentElementAvailable() {
 
 std::unique_ptr<HTMLPreloadScanner> HTMLDocumentParser::CreatePreloadScanner(
     TokenPreloadScanner::ScannerType scanner_type) {
-  return HTMLPreloadScanner::Create(
+  return std::make_unique<HTMLPreloadScanner>(
       options_, GetDocument()->Url(),
-      CachedDocumentParameters::Create(GetDocument()),
+      std::make_unique<CachedDocumentParameters>(GetDocument()),
       MediaValuesCached::MediaValuesCachedData(*GetDocument()), scanner_type);
 }
 

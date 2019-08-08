@@ -41,6 +41,7 @@
 namespace blink {
 
 class SharedWorkerThread;
+class WorkerClassicScriptLoader;
 
 class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
@@ -57,7 +58,11 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
   const AtomicString& InterfaceName() const override;
 
   // WorkerGlobalScope
-  void ImportModuleScript(
+  void FetchAndRunClassicScript(
+      const KURL& script_url,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      const v8_inspector::V8StackTraceId& stack_id) override;
+  void FetchAndRunModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode) override;
@@ -71,8 +76,12 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
   void Trace(blink::Visitor*) override;
 
  private:
+  void DidReceiveResponseForClassicScript(
+      WorkerClassicScriptLoader* classic_script_loader);
+  void DidFetchClassicScript(WorkerClassicScriptLoader* classic_script_loader,
+                             const v8_inspector::V8StackTraceId& stack_id);
+
   void ExceptionThrown(ErrorEvent*) override;
-  mojom::RequestContextType GetDestinationForMainScript() override;
 };
 
 template <>

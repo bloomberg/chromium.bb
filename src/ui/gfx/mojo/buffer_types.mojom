@@ -36,9 +36,8 @@ enum BufferUsage {
   SCANOUT_CPU_READ_WRITE,
   SCANOUT_VDA_WRITE,
   GPU_READ_CPU_READ_WRITE,
-  GPU_READ_CPU_READ_WRITE_PERSISTENT,
 
-  LAST = GPU_READ_CPU_READ_WRITE_PERSISTENT
+  LAST = GPU_READ_CPU_READ_WRITE
 };
 
 struct BufferUsageAndFormat {
@@ -58,14 +57,14 @@ struct NativePixmapPlane {
   int32 offset;
   uint64 size;
   uint64 modifier;
+
+  // A platform-specific handle the underlying memory object.
+  handle buffer_handle;
 };
 
 // gfx::NativePixmapHandle
 [EnableIf=supports_native_pixmap]
 struct NativePixmapHandle {
-  // A file descriptor for the underlying memory object (usually dmabuf).
-  array<handle> fds;
-
   array<NativePixmapPlane> planes;
 };
 

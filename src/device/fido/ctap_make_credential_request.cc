@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/numerics/safe_conversions.h"
-#include "components/cbor/writer.h"
+#include "components/cbor/values.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 
@@ -41,11 +41,13 @@ CtapMakeCredentialRequest& CtapMakeCredentialRequest::operator=(
 
 CtapMakeCredentialRequest::~CtapMakeCredentialRequest() = default;
 
-std::vector<uint8_t> CtapMakeCredentialRequest::EncodeAsCBOR() const {
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+CtapMakeCredentialRequest::EncodeAsCBOR() const {
   cbor::Value::MapValue cbor_map;
   cbor_map[cbor::Value(1)] = cbor::Value(client_data_hash_);
   cbor_map[cbor::Value(2)] = rp_.ConvertToCBOR();
-  cbor_map[cbor::Value(3)] = user_.ConvertToCBOR();
+  cbor_map[cbor::Value(3)] =
+      PublicKeyCredentialUserEntity::ConvertToCBOR(user_);
   cbor_map[cbor::Value(4)] = public_key_credential_params_.ConvertToCBOR();
   if (exclude_list_) {
     cbor::Value::ArrayValue exclude_list_array;
@@ -86,14 +88,8 @@ std::vector<uint8_t> CtapMakeCredentialRequest::EncodeAsCBOR() const {
     cbor_map[cbor::Value(7)] = cbor::Value(std::move(option_map));
   }
 
-  auto serialized_param = cbor::Writer::Write(cbor::Value(std::move(cbor_map)));
-  DCHECK(serialized_param);
-
-  std::vector<uint8_t> cbor_request({base::strict_cast<uint8_t>(
-      CtapRequestCommand::kAuthenticatorMakeCredential)});
-  cbor_request.insert(cbor_request.end(), serialized_param->begin(),
-                      serialized_param->end());
-  return cbor_request;
+  return std::make_pair(CtapRequestCommand::kAuthenticatorMakeCredential,
+                        cbor::Value(std::move(cbor_map)));
 }
 
 CtapMakeCredentialRequest&

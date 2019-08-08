@@ -84,7 +84,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   ~LayoutText() override;
 
   static LayoutText* CreateEmptyAnonymous(Document&,
-                                          scoped_refptr<ComputedStyle>);
+                                          scoped_refptr<ComputedStyle>,
+                                          LegacyLayout);
 
   const char* GetName() const override { return "LayoutText"; }
 
@@ -200,10 +201,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                          unsigned len,
                          bool force = false);
 
-  // TODO(kojii): setTextInternal() is temporarily public for NGInlineNode.
-  // This will be back to protected when NGInlineNode can paint directly.
-  virtual void SetTextInternal(scoped_refptr<StringImpl>);
-
   virtual void TransformText();
 
   LayoutRect LocalSelectionRect() const final;
@@ -298,6 +295,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
     // The font size is changing, so we need to make sure to rebuild everything.
     valid_ng_items_ = false;
+    SetNeedsCollectInlines();
   }
 
   OnlyWhitespaceOrNbsp ContainsOnlyWhitespaceOrNbsp() const;
@@ -335,6 +333,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
   void InLayoutNGInlineFormattingContextWillChange(bool) final;
+
+  virtual void SetTextInternal(scoped_refptr<StringImpl>);
 
   virtual InlineTextBox* CreateTextBox(int start,
                                        uint16_t length);  // Subclassed by SVG.

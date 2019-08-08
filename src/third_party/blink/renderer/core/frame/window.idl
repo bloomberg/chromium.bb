@@ -215,9 +215,9 @@
     attribute DOMMatrixConstructor WebKitCSSMatrix;
 
     // TrustedTypes API: http://github.com/wicg/trusted-types
-    [OriginTrialEnabled=TrustedDOMTypes, Unforgeable] readonly attribute TrustedTypePolicyFactory TrustedTypes;
+    [RuntimeEnabled=TrustedDOMTypes, Unforgeable] readonly attribute TrustedTypePolicyFactory TrustedTypes;
 };
 
-Window implements GlobalEventHandlers;
-Window implements WindowEventHandlers;
-Window implements WindowOrWorkerGlobalScope;
+Window includes GlobalEventHandlers;
+Window includes WindowEventHandlers;
+Window includes WindowOrWorkerGlobalScope;

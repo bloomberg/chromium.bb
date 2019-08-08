@@ -39,6 +39,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/gl_in_process_context_export.h"
+#include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -84,8 +85,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       public DecoderClient,
       public ImageTransportSurfaceDelegate {
  public:
-  explicit InProcessCommandBuffer(
-      scoped_refptr<CommandBufferTaskExecutor> task_executer);
+  InProcessCommandBuffer(CommandBufferTaskExecutor* task_executor,
+                         const GURL& active_url);
   ~InProcessCommandBuffer() override;
 
   // If |surface| is not null, use it directly; in this case, the command
@@ -96,7 +97,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   gpu::ContextResult Initialize(
       scoped_refptr<gl::GLSurface> surface,
       bool is_offscreen,
-      SurfaceHandle window,
+      SurfaceHandle surface_handle,
       const ContextCreationAttribs& attribs,
       InProcessCommandBuffer* share_group,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -185,7 +186,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   int GetRasterDecoderIdForTest() const;
 
   CommandBufferTaskExecutor* service_for_testing() const {
-    return task_executor_.get();
+    return task_executor_;
   }
 
   gpu::SharedImageInterface* GetSharedImageInterface() const;
@@ -194,8 +195,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   class SharedImageInterface;
 
   struct InitializeOnGpuThreadParams {
-    bool is_offscreen;
-    SurfaceHandle window;
+    SurfaceHandle surface_handle;
     const ContextCreationAttribs& attribs;
     Capabilities* capabilities;  // Ouptut.
     InProcessCommandBuffer* share_command_buffer;
@@ -203,16 +203,14 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     gpu::raster::GrShaderCache* gr_shader_cache;
     GpuProcessActivityFlags* activity_flags;
 
-    InitializeOnGpuThreadParams(bool is_offscreen,
-                                SurfaceHandle window,
+    InitializeOnGpuThreadParams(SurfaceHandle surface_handle,
                                 const ContextCreationAttribs& attribs,
                                 Capabilities* capabilities,
                                 InProcessCommandBuffer* share_command_buffer,
                                 ImageFactory* image_factory,
                                 gpu::raster::GrShaderCache* gr_shader_cache,
                                 GpuProcessActivityFlags* activity_flags)
-        : is_offscreen(is_offscreen),
-          window(window),
+        : surface_handle(surface_handle),
           attribs(attribs),
           capabilities(capabilities),
           share_command_buffer(share_command_buffer),
@@ -299,6 +297,10 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
                                     const SyncToken& sync_token);
   void DestroySharedImageOnGpuThread(const Mailbox& mailbox);
 
+  // Sets |active_url_| as the active GPU process URL. Should be called on GPU
+  // thread only.
+  void UpdateActiveUrl();
+
   // Callbacks on the gpu thread.
   void PerformDelayedWorkOnGpuThread();
 
@@ -312,6 +314,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void HandleReturnDataOnOriginThread(std::vector<uint8_t> data);
 
   const CommandBufferId command_buffer_id_;
+  const ContextUrl active_url_;
+
+  bool is_offscreen_ = false;
 
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):
@@ -353,7 +358,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   // Accessed on both threads:
   base::WaitableEvent flush_event_;
-  scoped_refptr<CommandBufferTaskExecutor> task_executor_;
+  CommandBufferTaskExecutor* const task_executor_;
   std::unique_ptr<CommandBufferTaskExecutor::Sequence> task_sequence_;
   std::unique_ptr<SharedImageInterface> shared_image_interface_;
 

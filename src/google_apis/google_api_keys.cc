@@ -97,7 +97,7 @@
 namespace google_apis {
 
 const char kAPIKeysDevelopersHowToURL[] =
-    "http://www.chromium.org/developers/how-tos/api-keys";
+    "https://www.chromium.org/developers/how-tos/api-keys";
 
 // This is used as a lazy instance to determine keys once and cache them.
 class APIKeyCache {
@@ -107,7 +107,7 @@ class APIKeyCache {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
     api_key_ = CalculateKeyValue(
-        GOOGLE_API_KEY, STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY), NULL,
+        GOOGLE_API_KEY, STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY), nullptr,
         std::string(), environment.get(), command_line);
 
 // A special non-stable key is at the moment defined only for Android Chrome.
@@ -120,30 +120,24 @@ class APIKeyCache {
     api_key_non_stable_ = api_key_;
 #endif
 
-    api_key_remoting_ftl_ =
-        CalculateKeyValue(GOOGLE_API_KEY_REMOTING_FTL,
-                          STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_REMOTING_FTL),
-                          NULL, std::string(), environment.get(), command_line);
+    api_key_remoting_ftl_ = CalculateKeyValue(
+        GOOGLE_API_KEY_REMOTING_FTL,
+        STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_REMOTING_FTL), nullptr,
+        std::string(), environment.get(), command_line);
 
-    metrics_key_ =
-        CalculateKeyValue(GOOGLE_METRICS_SIGNING_KEY,
-                          STRINGIZE_NO_EXPANSION(GOOGLE_METRICS_SIGNING_KEY),
-                          NULL, std::string(), environment.get(), command_line);
+    metrics_key_ = CalculateKeyValue(
+        GOOGLE_METRICS_SIGNING_KEY,
+        STRINGIZE_NO_EXPANSION(GOOGLE_METRICS_SIGNING_KEY), nullptr,
+        std::string(), environment.get(), command_line);
 
-    std::string default_client_id =
-        CalculateKeyValue(GOOGLE_DEFAULT_CLIENT_ID,
-                          STRINGIZE_NO_EXPANSION(GOOGLE_DEFAULT_CLIENT_ID),
-                          NULL,
-                          std::string(),
-                          environment.get(),
-                          command_line);
-    std::string default_client_secret =
-        CalculateKeyValue(GOOGLE_DEFAULT_CLIENT_SECRET,
-                          STRINGIZE_NO_EXPANSION(GOOGLE_DEFAULT_CLIENT_SECRET),
-                          NULL,
-                          std::string(),
-                          environment.get(),
-                          command_line);
+    std::string default_client_id = CalculateKeyValue(
+        GOOGLE_DEFAULT_CLIENT_ID,
+        STRINGIZE_NO_EXPANSION(GOOGLE_DEFAULT_CLIENT_ID), nullptr,
+        std::string(), environment.get(), command_line);
+    std::string default_client_secret = CalculateKeyValue(
+        GOOGLE_DEFAULT_CLIENT_SECRET,
+        STRINGIZE_NO_EXPANSION(GOOGLE_DEFAULT_CLIENT_SECRET), nullptr,
+        std::string(), environment.get(), command_line);
 
     // We currently only allow overriding the baked-in values for the
     // default OAuth2 client ID and secret using a command-line
@@ -168,48 +162,30 @@ class APIKeyCache {
 
     client_ids_[CLIENT_CLOUD_PRINT] = CalculateKeyValue(
         GOOGLE_CLIENT_ID_CLOUD_PRINT,
-        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_ID_CLOUD_PRINT),
-        NULL,
-        default_client_id,
-        environment.get(),
-        command_line);
+        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_ID_CLOUD_PRINT), nullptr,
+        default_client_id, environment.get(), command_line);
     client_secrets_[CLIENT_CLOUD_PRINT] = CalculateKeyValue(
         GOOGLE_CLIENT_SECRET_CLOUD_PRINT,
-        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_SECRET_CLOUD_PRINT),
-        NULL,
-        default_client_secret,
-        environment.get(),
-        command_line);
+        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_SECRET_CLOUD_PRINT), nullptr,
+        default_client_secret, environment.get(), command_line);
 
     client_ids_[CLIENT_REMOTING] = CalculateKeyValue(
         GOOGLE_CLIENT_ID_REMOTING,
-        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_ID_REMOTING),
-        NULL,
-        default_client_id,
-        environment.get(),
-        command_line);
+        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_ID_REMOTING), nullptr,
+        default_client_id, environment.get(), command_line);
     client_secrets_[CLIENT_REMOTING] = CalculateKeyValue(
         GOOGLE_CLIENT_SECRET_REMOTING,
-        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_SECRET_REMOTING),
-        NULL,
-        default_client_secret,
-        environment.get(),
-        command_line);
+        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_SECRET_REMOTING), nullptr,
+        default_client_secret, environment.get(), command_line);
 
     client_ids_[CLIENT_REMOTING_HOST] = CalculateKeyValue(
         GOOGLE_CLIENT_ID_REMOTING_HOST,
-        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_ID_REMOTING_HOST),
-        NULL,
-        default_client_id,
-        environment.get(),
-        command_line);
+        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_ID_REMOTING_HOST), nullptr,
+        default_client_id, environment.get(), command_line);
     client_secrets_[CLIENT_REMOTING_HOST] = CalculateKeyValue(
         GOOGLE_CLIENT_SECRET_REMOTING_HOST,
-        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_SECRET_REMOTING_HOST),
-        NULL,
-        default_client_secret,
-        environment.get(),
-        command_line);
+        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_SECRET_REMOTING_HOST), nullptr,
+        default_client_secret, environment.get(), command_line);
   }
 
   std::string api_key() const { return api_key_; }

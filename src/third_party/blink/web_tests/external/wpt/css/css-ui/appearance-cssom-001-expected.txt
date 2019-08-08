@@ -1,17 +1,17 @@
 This is a testharness.js-based test.
-Found 344 tests; 157 PASS, 187 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 344 tests; 165 PASS, 179 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS -webkit-appearance: none
 FAIL -webkit-appearance: auto assert_equals: style.WebkitAppearance (uppercase W) expected "auto" but got ""
 PASS -webkit-appearance: button
-PASS -webkit-appearance: button-bevel
-PASS -webkit-appearance: caret
+FAIL -webkit-appearance: button-bevel assert_equals: style.WebkitAppearance (uppercase W) expected "button-bevel" but got ""
+FAIL -webkit-appearance: caret assert_equals: style.WebkitAppearance (uppercase W) expected "caret" but got ""
 PASS -webkit-appearance: checkbox
 PASS -webkit-appearance: listbox
-PASS -webkit-appearance: listitem
+FAIL -webkit-appearance: listitem assert_equals: style.WebkitAppearance (uppercase W) expected "listitem" but got ""
 PASS -webkit-appearance: menulist
 PASS -webkit-appearance: menulist-button
-PASS -webkit-appearance: menulist-text
-PASS -webkit-appearance: menulist-textfield
+FAIL -webkit-appearance: menulist-text assert_equals: style.WebkitAppearance (uppercase W) expected "menulist-text" but got ""
+FAIL -webkit-appearance: menulist-textfield assert_equals: style.WebkitAppearance (uppercase W) expected "menulist-textfield" but got ""
 PASS -webkit-appearance: meter
 PASS -webkit-appearance: progress-bar
 PASS -webkit-appearance: push-button
@@ -42,31 +42,31 @@ PASS -webkit-appearance: groupbox (invalid)
 FAIL -webkit-appearance: inner-spin-button (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "inner-spin-button"
 PASS -webkit-appearance: image-controls-button (invalid)
 PASS -webkit-appearance: list-button (invalid)
-FAIL -webkit-appearance: listitem (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "listitem"
-FAIL -webkit-appearance: media-enter-fullscreen-button (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-enter-fullscreen-button"
-FAIL -webkit-appearance: media-exit-fullscreen-button (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-exit-fullscreen-button"
+PASS -webkit-appearance: listitem (invalid)
+PASS -webkit-appearance: media-enter-fullscreen-button (invalid)
+PASS -webkit-appearance: media-exit-fullscreen-button (invalid)
 PASS -webkit-appearance: media-fullscreen-volume-slider (invalid)
 PASS -webkit-appearance: media-fullscreen-volume-slider-thumb (invalid)
-FAIL -webkit-appearance: media-mute-button (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-mute-button"
-FAIL -webkit-appearance: media-play-button (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-play-button"
-FAIL -webkit-appearance: media-overlay-play-button (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-overlay-play-button"
+PASS -webkit-appearance: media-mute-button (invalid)
+PASS -webkit-appearance: media-play-button (invalid)
+PASS -webkit-appearance: media-overlay-play-button (invalid)
 PASS -webkit-appearance: media-return-to-realtime-button (invalid)
 PASS -webkit-appearance: media-rewind-button (invalid)
 PASS -webkit-appearance: media-seek-back-button (invalid)
 PASS -webkit-appearance: media-seek-forward-button (invalid)
-FAIL -webkit-appearance: media-toggle-closed-captions-button (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-toggle-closed-captions-button"
+PASS -webkit-appearance: media-toggle-closed-captions-button (invalid)
 FAIL -webkit-appearance: media-slider (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-slider"
 FAIL -webkit-appearance: media-sliderthumb (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-sliderthumb"
-FAIL -webkit-appearance: media-volume-slider-container (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-volume-slider-container"
+PASS -webkit-appearance: media-volume-slider-container (invalid)
 PASS -webkit-appearance: media-volume-slider-mute-button (invalid)
 FAIL -webkit-appearance: media-volume-slider (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-volume-slider"
 FAIL -webkit-appearance: media-volume-sliderthumb (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-volume-sliderthumb"
-FAIL -webkit-appearance: media-controls-background (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-controls-background"
+PASS -webkit-appearance: media-controls-background (invalid)
 PASS -webkit-appearance: media-controls-dark-bar-background (invalid)
-FAIL -webkit-appearance: media-controls-fullscreen-background (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-controls-fullscreen-background"
+PASS -webkit-appearance: media-controls-fullscreen-background (invalid)
 PASS -webkit-appearance: media-controls-light-bar-background (invalid)
-FAIL -webkit-appearance: media-current-time-display (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-current-time-display"
-FAIL -webkit-appearance: media-time-remaining-display (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "media-time-remaining-display"
+PASS -webkit-appearance: media-current-time-display (invalid)
+PASS -webkit-appearance: media-time-remaining-display (invalid)
 PASS -webkit-appearance: menuarrow (invalid)
 PASS -webkit-appearance: menubar (invalid)
 PASS -webkit-appearance: menucheckbox (invalid)
@@ -79,7 +79,7 @@ PASS -webkit-appearance: menuseparator (invalid)
 PASS -webkit-appearance: meterbar (invalid)
 PASS -webkit-appearance: meterchunk (invalid)
 PASS -webkit-appearance: number-input (invalid)
-FAIL -webkit-appearance: progress-bar-value (invalid) assert_equals: style.WebkitAppearance (uppercase W) expected "" but got "progress-bar-value"
+PASS -webkit-appearance: progress-bar-value (invalid)
 PASS -webkit-appearance: progressbar (invalid)
 PASS -webkit-appearance: progressbar-vertical (invalid)
 PASS -webkit-appearance: progresschunk (invalid)

@@ -15,6 +15,7 @@ enum PixelResourceTestCase {
   GPU,
   ONE_COPY,
   ZERO_COPY,
+  SKIA_GL,
 };
 
 class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {

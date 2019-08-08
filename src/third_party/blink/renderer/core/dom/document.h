@@ -65,8 +65,6 @@
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
-#include "third_party/blink/renderer/platform/graphics/color_scheme.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -89,6 +87,7 @@ class AnimationClock;
 class AXContext;
 class AXObjectCache;
 class Attr;
+class BeforeUnloadEventListener;
 class CDATASection;
 class CSSStyleSheet;
 class CanvasFontCache;
@@ -105,6 +104,7 @@ class DOMWindow;
 class DocumentFragment;
 class DocumentInit;
 class DocumentLoader;
+class DocumentLoadTiming;
 class DocumentMarkerController;
 class DocumentNameCollection;
 class DocumentOutliveTimeReporter;
@@ -139,7 +139,6 @@ class HitTestRequest;
 class IdleRequestOptions;
 class IntersectionObserverController;
 class LayoutPoint;
-class ReattachLegacyLayoutObjectList;
 class LayoutView;
 class LazyLoadImageObserver;
 class LiveNodeListBase;
@@ -458,7 +457,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) override;
-  bool IsRenderingReady() const;
   bool IsScriptExecutionReady() const {
     return HaveImportsLoaded() && HaveScriptBlockingStylesheetsLoaded();
   }
@@ -512,20 +510,16 @@ class CORE_EXPORT Document : public ContainerNode,
   // Update ComputedStyles and attach LayoutObjects if necessary, but don't
   // lay out.
   void UpdateStyleAndLayoutTree();
-  // Same as updateStyleAndLayoutTree() except ignoring pending stylesheets.
-  void UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
   void UpdateStyleAndLayoutTreeForNode(const Node*);
-  void UpdateStyleAndLayout();
+
+  enum ForcedLayoutStatus { IsForcedLayout, IsNotForcedLayout };
+  void UpdateStyleAndLayout(ForcedLayoutStatus = IsForcedLayout);
   void LayoutUpdated();
   enum RunPostLayoutTasks {
     kRunPostLayoutTasksAsynchronously,
     kRunPostLayoutTasksSynchronously,
   };
-  void UpdateStyleAndLayoutIgnorePendingStylesheets();
-  // Same as UpdateStyleAndLayoutIgnorePendingStyleSheets()
-  // but allows style & layout tree calculation for invisible nodes.
-  void UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes();
-  void UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(const Node*);
+  void UpdateStyleAndLayoutForNode(const Node*);
   scoped_refptr<ComputedStyle> StyleForPage(int page_index);
 
   // Ensures that location-based data will be valid for a given node.
@@ -610,7 +604,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Corresponds to "9. Abort the active document of browsingContext."
   // https://html.spec.whatwg.org/C/#navigate
-  void Abort();
+  void Abort(bool for_form_submission);
 
   void CheckCompleted();
 
@@ -636,7 +630,11 @@ class CORE_EXPORT Document : public ContainerNode,
   bool DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
                                  bool is_reload,
                                  bool& did_allow_navigation);
-  void DispatchUnloadEvents();
+
+  // Dispatches "pagehide", "visibilitychange" and "unload" events, if not
+  // dispatched already. Fills unload timing in the next document's load timing
+  // if present.
+  void DispatchUnloadEvents(DocumentLoadTiming*);
 
   void DispatchFreezeEvent();
 
@@ -795,7 +793,16 @@ class CORE_EXPORT Document : public ContainerNode,
   void HoveredElementDetached(Element&);
   void ActiveChainNodeDetached(Element&);
 
-  void UpdateHoverActiveState(const HitTestRequest&, Element*);
+  // Updates hover and active state of elements in the Document. The
+  // |is_active| param specifies whether the active state should be set or
+  // unset. |update_active_chain| is used to prevent updates to elements
+  // outside the frozen active chain; passing false will only refresh the
+  // active state of elements in the existing chain, but not outside of it. The
+  // given element is the inner-most element whose state is being modified.
+  // Hover is always applied.
+  void UpdateHoverActiveState(bool is_active,
+                              bool update_active_chain,
+                              Element*);
 
   // Updates for :target (CSS3 selector).
   void SetCSSTarget(Element*);
@@ -1033,23 +1040,9 @@ class CORE_EXPORT Document : public ContainerNode,
     kIgnoreLayoutWithPendingSheets
   };
 
-  bool DidLayoutWithPendingStylesheets() const {
-    return pending_sheet_layout_ == kDidLayoutWithPendingSheets;
-  }
-  bool IgnoreLayoutWithPendingStylesheets() const {
-    return pending_sheet_layout_ == kIgnoreLayoutWithPendingSheets;
-  }
-
-  bool HasNodesWithPlaceholderStyle() const {
-    return has_nodes_with_placeholder_style_;
-  }
-  void SetHasNodesWithPlaceholderStyle() {
-    has_nodes_with_placeholder_style_ = true;
-  }
-
   Vector<IconURL> IconURLs(int icon_types_mask);
 
-  Color ThemeColor() const;
+  base::Optional<Color> ThemeColor() const;
 
   // Returns the HTMLLinkElement currently in use for the Web Manifest.
   // Returns null if there is no such element.
@@ -1059,8 +1052,11 @@ class CORE_EXPORT Document : public ContainerNode,
   // there is no such element.
   HTMLLinkElement* LinkCanonical() const;
 
-  void UpdateFocusAppearanceLater();
+  void UpdateFocusAppearanceAfterLayout();
   void CancelFocusAppearanceUpdate();
+  // Return true after UpdateFocusAppearanceAfterLayout() call and before
+  // updating focus appearance.
+  bool WillUpdateFocusAppearance() const;
 
   bool IsDNSPrefetchEnabled() const { return is_dns_prefetch_enabled_; }
   void ParseDNSPrefetchControlHeader(const String&);
@@ -1100,14 +1096,12 @@ class CORE_EXPORT Document : public ContainerNode,
   void InitContentSecurityPolicy(ContentSecurityPolicy* = nullptr,
                                  const ContentSecurityPolicy* = nullptr);
 
-  bool IsSecureTransitionTo(const KURL&) const;
-
   bool AllowInlineEventHandler(Node*,
                                EventListener*,
                                const String& context_url,
                                const WTF::OrdinalNumber& context_line);
 
-  void EnforceSandboxFlags(SandboxFlags mask) override;
+  void EnforceSandboxFlags(WebSandboxFlags mask) override;
 
   void StatePopped(scoped_refptr<SerializedScriptValue>);
 
@@ -1134,7 +1128,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool ProcessingBeforeUnload() const {
     return load_event_progress_ == kBeforeUnloadEventInProgress;
   }
-  void SuppressLoadEvent();
 
   void SetContainsPlugins() { contains_plugins_ = true; }
   bool ContainsPlugins() const { return contains_plugins_; }
@@ -1431,9 +1424,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   const AtomicString& RequiredCSP();
 
-  // TODO(layout-dev): Once everything are LayoutNG, we can get rid of this.
-  ReattachLegacyLayoutObjectList& GetReattachLegacyLayoutObjectList();
-
   StylePropertyMapReadOnly* ComputedStyleMap(Element*);
   void AddComputedStyleMapItem(Element*, StylePropertyMapReadOnly*);
   StylePropertyMapReadOnly* RemoveComputedStyleMapItem(Element*);
@@ -1473,6 +1463,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool IsVerticalScrollEnforced() const { return is_vertical_scroll_enforced_; }
   bool IsLazyLoadPolicyEnforced() const;
+  bool IsFocusAllowed() const;
 
   void SendViolationReport(
       mojom::blink::CSPViolationParamsPtr violation_params) override;
@@ -1513,7 +1504,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void IncrementNumberOfCanvases();
 
   void ProcessJavaScriptUrl(const KURL&, ContentSecurityPolicyDisposition);
-  void CancelPendingJavaScriptUrl();
+  void CancelPendingJavaScriptUrls();
 
   // Functions to keep count of display locks in this document.
   void AddActivationBlockingDisplayLock();
@@ -1524,17 +1515,30 @@ class CORE_EXPORT Document : public ContainerNode,
   void RemoveLockedDisplayLock();
   int LockedDisplayLockCount() const;
 
+  // Deferred compositor commits are disallowed by default, and are only allowed
+  // for same-origin navigations to an html document fetched with http.
+  bool DeferredCompositorCommitIsAllowed() {
+    return deferred_compositor_commit_is_allowed_;
+  }
+  void SetDeferredCompositorCommitIsAllowed(bool new_value) {
+    deferred_compositor_commit_is_allowed_ = new_value;
+  }
+
   // Returns whether the document is inside the scope specified in the Web App
   // Manifest. If the document doesn't run in a context of a Web App or has no
   // associated Web App Manifest, it will return false.
   bool IsInWebAppScope() const;
 
-  ColorScheme GetColorScheme() const { return color_scheme_; }
-  void SetColorScheme(ColorScheme);
-
   ComputedAccessibleNode* GetOrCreateComputedAccessibleNode(
       AXID ax_id,
       WebComputedAXTree* tree);
+
+  bool HaveRenderBlockingResourcesLoaded() const;
+
+  // Sets a beforeunload handler for documents which are embedding plugins. This
+  // includes PluginDocument as well as an HTMLDocument which embeds a plugin
+  // inside a cross-process frame (MimeHandlerView).
+  void SetShowBeforeUnloadDialog(bool show_dialog);
 
  protected:
   void DidUpdateSecurityOrigin() final;
@@ -1618,11 +1622,11 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void UpdateTitle(const String&);
   void DispatchDidReceiveTitle();
-  void UpdateFocusAppearanceTimerFired(TimerBase*);
+  void UpdateFocusAppearance();
   void UpdateBaseURL();
 
   void ExecuteScriptsWaitingForResources();
-  void ExecuteJavaScriptUrl(const KURL&, ContentSecurityPolicyDisposition);
+  void ExecuteJavaScriptUrls();
 
   void LoadEventDelayTimerFired(TimerBase*);
   void PluginLoadingTimerFired(TimerBase*);
@@ -1638,8 +1642,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void ClearFocusedElementTimerFired(TimerBase*);
 
   bool HaveScriptBlockingStylesheetsLoaded() const;
-  bool HaveRenderBlockingResourcesLoaded() const;
-  void StyleResolverMayHaveChanged();
 
   void SetHoverElement(Element*);
 
@@ -1658,8 +1660,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool HaveImportsLoaded() const;
   void ViewportDefiningElementDidChange();
 
-  void UpdateActiveState(const HitTestRequest&, Element*);
-  void UpdateHoverState(const HitTestRequest&, Element*);
+  void UpdateActiveState(bool is_active, bool update_active_chain, Element*);
+  void UpdateHoverState(Element*);
 
   const AtomicString& BodyAttributeValue(const QualifiedName&) const;
   void SetBodyAttribute(const QualifiedName&, const AtomicString&);
@@ -1682,9 +1684,11 @@ class CORE_EXPORT Document : public ContainerNode,
     is_freezing_in_progress_ = is_freezing_in_progress;
   }
 
+  void NotifyFocusedElementChanged(Node* old_focused_element,
+                                   Node* new_focused_element);
+
   DocumentLifecycle lifecycle_;
 
-  bool has_nodes_with_placeholder_style_;
   bool evaluate_media_queries_on_style_recalc_;
 
   // If we do ignore the pending stylesheet count, then we need to add a boolean
@@ -1693,15 +1697,15 @@ class CORE_EXPORT Document : public ContainerNode,
   PendingSheetLayout pending_sheet_layout_;
 
   Member<LocalFrame> frame_;
-  TraceWrapperMember<LocalDOMWindow> dom_window_;
-  TraceWrapperMember<HTMLImportsController> imports_controller_;
+  Member<LocalDOMWindow> dom_window_;
+  Member<HTMLImportsController> imports_controller_;
 
   // The document of creator browsing context for frame-less documents such as
   // documents created by DOMParser and DOMImplementation.
   WeakMember<Document> context_document_;
 
   Member<ResourceFetcher> fetcher_;
-  TraceWrapperMember<DocumentParser> parser_;
+  Member<DocumentParser> parser_;
   Member<ContextFeatures> context_features_;
 
   bool well_formed_;
@@ -1726,7 +1730,7 @@ class CORE_EXPORT Document : public ContainerNode,
   AtomicString mime_type_;
 
   Member<DocumentType> doc_type_;
-  TraceWrapperMember<DOMImplementation> implementation_;
+  Member<DOMImplementation> implementation_;
 
   Member<CSSStyleSheet> elem_sheet_;
 
@@ -1738,6 +1742,15 @@ class CORE_EXPORT Document : public ContainerNode,
 
   TaskHandle execute_scripts_waiting_for_resources_task_handle_;
   TaskHandle javascript_url_task_handle_;
+  struct PendingJavascriptUrl {
+   public:
+    PendingJavascriptUrl(const KURL& input_url,
+                         ContentSecurityPolicyDisposition input_disposition)
+        : url(input_url), disposition(input_disposition) {}
+    KURL url;
+    ContentSecurityPolicyDisposition disposition;
+  };
+  Vector<PendingJavascriptUrl> pending_javascript_urls_;
 
   bool has_autofocused_;
   WebFocusType last_focus_type_;
@@ -1765,14 +1778,13 @@ class CORE_EXPORT Document : public ContainerNode,
 
   MutationObserverOptions mutation_observer_types_;
 
-  TraceWrapperMember<StyleEngine> style_engine_;
-  TraceWrapperMember<StyleSheetList> style_sheet_list_;
+  Member<StyleEngine> style_engine_;
+  Member<StyleSheetList> style_sheet_list_;
 
   Member<FormController> form_controller_;
 
   TextLinkColors text_link_colors_;
   const Member<VisitedLinkState> visited_link_state_;
-  ColorScheme color_scheme_ = ColorScheme::kLight;
 
   bool visually_ordered_;
 
@@ -1803,7 +1815,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<AXObjectCache> ax_object_cache_;
   Member<DocumentMarkerController> markers_;
 
-  TaskRunnerTimer<Document> update_focus_appearance_timer_;
+  bool update_focus_appearance_after_layout_ = false;
 
   Member<Element> css_target_;
 
@@ -1815,7 +1827,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   double start_time_;
 
-  TraceWrapperMember<ScriptRunner> script_runner_;
+  Member<ScriptRunner> script_runner_;
 
   HeapVector<Member<ScriptElementBase>> current_script_stack_;
 
@@ -1878,9 +1890,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool write_recursion_is_too_deep_;
   unsigned write_recursion_depth_;
 
-  TraceWrapperMember<ScriptedAnimationController>
-      scripted_animation_controller_;
-  TraceWrapperMember<ScriptedIdleTaskController> scripted_idle_task_controller_;
+  Member<ScriptedAnimationController> scripted_animation_controller_;
+  Member<ScriptedIdleTaskController> scripted_idle_task_controller_;
   Member<TextAutosizer> text_autosizer_;
 
   Member<V0CustomElementRegistrationContext> registration_context_;
@@ -1916,8 +1927,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<CanvasFontCache> canvas_font_cache_;
 
-  TraceWrapperMember<IntersectionObserverController>
-      intersection_observer_controller_;
+  Member<IntersectionObserverController> intersection_observer_controller_;
   Member<ResizeObserverController> resize_observer_controller_;
 
   int node_count_;
@@ -1941,28 +1951,21 @@ class CORE_EXPORT Document : public ContainerNode,
 
   std::unique_ptr<DocumentOutliveTimeReporter> document_outlive_time_reporter_;
 
-  // |mojo_ukm_recorder_| and |source_id_| will allow objects that are part of
-  // the |ukm_recorder_| and |source_id_| will allow objects that are part of
+  // |ukm_recorder_| and |source_id_| will allow objects that are part of
   // the document to recorde UKM.
   std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
   int64_t ukm_source_id_;
+  bool needs_to_record_ukm_outlive_time_;
 
 #if DCHECK_IS_ON()
-  unsigned slot_assignment_recalc_forbidden_recursion_depth_;
+  unsigned slot_assignment_recalc_forbidden_recursion_depth_ = 0;
 #endif
   unsigned slot_assignment_recalc_depth_ = 0;
-  unsigned flat_tree_traversal_forbidden_recursion_depth_;
-
-  bool needs_to_record_ukm_outlive_time_;
+  unsigned flat_tree_traversal_forbidden_recursion_depth_ = 0;
 
   Member<DOMFeaturePolicy> policy_;
 
   Member<SlotAssignmentEngine> slot_assignment_engine_;
-
-  friend class ReattachLegacyLayoutObjectList;
-  // TODO(layout-dev): Once everything are LayoutNG, we can get rid of this.
-  // Used for legacy layout tree fallback
-  ReattachLegacyLayoutObjectList* reattach_legacy_object_list_;
 
   // TODO(tkent): Should it be moved to LocalFrame or LocalFrameView?
   Member<ViewportData> viewport_data_;
@@ -1977,6 +1980,8 @@ class CORE_EXPORT Document : public ContainerNode,
   int activation_blocking_display_lock_count_ = 0;
   // Number of locked display locks in the document.
   int locked_display_lock_count_ = 0;
+
+  bool deferred_compositor_commit_is_allowed_ = false;
 
   // A list of all the navigation_initiator bindings owned by this document.
   // Used to report CSP violations that result from CSP blocking
@@ -2005,6 +2010,21 @@ class CORE_EXPORT Document : public ContainerNode,
   // Used to keep track of which ComputedAccessibleNodes have already been
   // instantiated in this document to avoid constructing duplicates.
   HeapHashMap<AXID, Member<ComputedAccessibleNode>> computed_node_mapping_;
+
+  // When the document contains MimeHandlerView, this variable might hold a
+  // beforeunload handler. This will be set by the blink embedder when
+  // necessary.
+  Member<BeforeUnloadEventListener>
+      mime_handler_view_before_unload_event_listener_;
+
+  // A dummy scheduler to return when the document is detached.
+  // All operations on it result in no-op, but due to this it's safe to
+  // use the returned value of GetScheduler() without additional checks.
+  // A task posted to a task runner obtained from one of its task runners
+  // will be forwarded to the default task runner.
+  // TODO(altimin): We should be able to remove it after we complete
+  // frame:document lifetime refactoring.
+  std::unique_ptr<FrameOrWorkerScheduler> detached_scheduler_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

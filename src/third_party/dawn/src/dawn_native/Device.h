@@ -30,7 +30,6 @@ namespace dawn_native {
     using ErrorCallback = void (*)(const char* errorMessage, void* userData);
 
     class AdapterBase;
-    class BufferBuilder;
     class FenceSignalTracker;
     class DynamicUploader;
     class StagingBufferBase;
@@ -60,7 +59,6 @@ namespace dawn_native {
         FenceSignalTracker* GetFenceSignalTracker() const;
 
         virtual CommandBufferBase* CreateCommandBuffer(CommandEncoderBase* encoder) = 0;
-        virtual InputStateBase* CreateInputState(InputStateBuilder* builder) = 0;
 
         virtual Serial GetCompletedCommandSerial() const = 0;
         virtual Serial GetLastSubmittedCommandSerial() const = 0;
@@ -68,7 +66,7 @@ namespace dawn_native {
         virtual void TickImpl() = 0;
 
         // Many Dawn objects are completely immutable once created which means that if two
-        // builders are given the same arguments, they can return the same object. Reusing
+        // creations are given the same arguments, they can return the same object. Reusing
         // objects will help make comparisons between objects by a single pointer comparison.
         //
         // Technically no object is immutable as they have a reference count, and an
@@ -77,10 +75,10 @@ namespace dawn_native {
         // the client-server wire every creation will get a different proxy object, with a
         // different reference count.
         //
-        // When trying to create an object, we give both the builder and an example of what
-        // the built object will be, the "blueprint". The blueprint is just a FooBase object
+        // When trying to create an object, we give both the descriptor and an example of what
+        // the created object will be, the "blueprint". The blueprint is just a FooBase object
         // instead of a backend Foo object. If the blueprint doesn't match an object in the
-        // cache, then the builder is used to make a new object.
+        // cache, then the descriptor is used to make a new object.
         ResultOrError<BindGroupLayoutBase*> GetOrCreateBindGroupLayout(
             const BindGroupLayoutDescriptor* descriptor);
         void UncacheBindGroupLayout(BindGroupLayoutBase* obj);
@@ -91,7 +89,6 @@ namespace dawn_native {
         BufferBase* CreateBuffer(const BufferDescriptor* descriptor);
         CommandEncoderBase* CreateCommandEncoder();
         ComputePipelineBase* CreateComputePipeline(const ComputePipelineDescriptor* descriptor);
-        InputStateBuilder* CreateInputStateBuilder();
         PipelineLayoutBase* CreatePipelineLayout(const PipelineLayoutDescriptor* descriptor);
         QueueBase* CreateQueue();
         RenderPipelineBase* CreateRenderPipeline(const RenderPipelineDescriptor* descriptor);
@@ -108,17 +105,13 @@ namespace dawn_native {
         void Reference();
         void Release();
 
-        BufferBuilder* CreateBufferBuilderForTesting() {
-            return nullptr;
-        }
-
         virtual ResultOrError<std::unique_ptr<StagingBufferBase>> CreateStagingBuffer(
             size_t size) = 0;
         virtual MaybeError CopyFromStagingToBuffer(StagingBufferBase* source,
-                                                   uint32_t sourceOffset,
+                                                   uint64_t sourceOffset,
                                                    BufferBase* destination,
-                                                   uint32_t destinationOffset,
-                                                   uint32_t size) = 0;
+                                                   uint64_t destinationOffset,
+                                                   uint64_t size) = 0;
 
         ResultOrError<DynamicUploader*> GetDynamicUploader() const;
 

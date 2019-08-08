@@ -4,6 +4,8 @@
 
 #include "ash/system/tray/tray_detailed_view.h"
 
+#include <utility>
+
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/detailed_view_delegate.h"
@@ -85,15 +87,13 @@ class ScrollContentsView : public views::View {
       clip_rect.Inset(clip_insets.Scale(paint_info.paint_recording_scale_x(),
                                         paint_info.paint_recording_scale_y()));
       clip_recorder.ClipRect(clip_rect);
-      for (int i = 0; i < child_count(); ++i) {
-        auto* child = child_at(i);
+      for (auto* child : children()) {
         if (child->id() != VIEW_ID_STICKY_HEADER && !child->layer())
           child->Paint(paint_info);
       }
     }
     // Paint sticky headers.
-    for (int i = 0; i < child_count(); ++i) {
-      auto* child = child_at(i);
+    for (auto* child : children()) {
       if (child->id() == VIEW_ID_STICKY_HEADER && !child->layer())
         child->Paint(paint_info);
     }
@@ -116,32 +116,25 @@ class ScrollContentsView : public views::View {
   void Layout() override {
     views::View::Layout();
     headers_.clear();
-    for (int i = 0; i < child_count(); ++i) {
-      views::View* view = child_at(i);
-      if (view->id() == VIEW_ID_STICKY_HEADER)
-        headers_.emplace_back(view);
+    for (auto* child : children()) {
+      if (child->id() == VIEW_ID_STICKY_HEADER)
+        headers_.emplace_back(child);
     }
     PositionHeaderRows();
   }
 
   View::Views GetChildrenInZOrder() override {
-    View::Views children;
-    // Iterate over regular children and later over the sticky headers to keep
-    // the sticky headers above in Z-order.
-    for (int i = 0; i < child_count(); ++i) {
-      if (child_at(i)->id() != VIEW_ID_STICKY_HEADER)
-        children.push_back(child_at(i));
-    }
-    for (int i = 0; i < child_count(); ++i) {
-      if (child_at(i)->id() == VIEW_ID_STICKY_HEADER)
-        children.push_back(child_at(i));
-    }
-    DCHECK_EQ(child_count(), static_cast<int>(children.size()));
-    return children;
+    // Place sticky headers last in the child order so that they wind up on top
+    // in Z order.
+    View::Views children_in_z_order = children();
+    std::stable_partition(
+        children_in_z_order.begin(), children_in_z_order.end(),
+        [](const View* child) { return child->id() != VIEW_ID_STICKY_HEADER; });
+    return children_in_z_order;
   }
 
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override {
+      const views::ViewHierarchyChangedDetails& details) override {
     if (!details.is_add && details.parent == this) {
       headers_.erase(std::remove_if(headers_.begin(), headers_.end(),
                                     [details](const Header& header) {
@@ -313,11 +306,11 @@ void TrayDetailedView::CreateTitleRow(int string_id) {
 
 void TrayDetailedView::CreateScrollableList() {
   DCHECK(!scroller_);
-  scroll_content_ = new ScrollContentsView(delegate_);
+  auto scroll_content = std::make_unique<ScrollContentsView>(delegate_);
   scroller_ = new views::ScrollView;
   scroller_->set_draw_overflow_indicator(
       delegate_->IsOverflowIndicatorEnabled());
-  scroller_->SetContents(scroll_content_);
+  scroll_content_ = scroller_->SetContents(std::move(scroll_content));
   // TODO(varkha): Make the sticky rows work with EnableViewPortLayer().
   scroller_->SetBackgroundColor(
       delegate_->GetBackgroundColor(GetNativeTheme()));

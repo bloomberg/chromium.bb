@@ -171,73 +171,33 @@ class ShippingProfileViewController : public ProfileListViewController,
     return DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW;
   }
 
-  // Creates a warning message when address is not valid or an informational
-  // message when the user has not selected their shipping address yet. The
-  // warning icon is displayed only for warning messages.
-  // ---------------------------------------------
-  // | Warning icon | Warning message            |
-  // ---------------------------------------------
   std::unique_ptr<views::View> CreateHeaderView() override {
     if (!spec()->GetShippingOptions().empty() &&
         spec()->selected_shipping_option_error().empty()) {
       return nullptr;
     }
 
-    auto header_view = std::make_unique<views::View>();
-    // 8 pixels between the warning icon view (if present) and the text.
-    constexpr int kRowHorizontalSpacing = 8;
-    auto layout = std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal,
-        gfx::Insets(0, kPaymentRequestRowHorizontalInsets),
-        kRowHorizontalSpacing);
-    layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-    layout->set_cross_axis_alignment(
-        views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-    header_view->SetLayoutManager(std::move(layout));
-
-    auto label = std::make_unique<views::Label>(
+    return CreateWarningView(
         spec()->selected_shipping_option_error().empty()
             ? GetShippingAddressSelectorInfoMessage(spec()->shipping_type())
-            : spec()->selected_shipping_option_error());
-    // If the warning message comes from the websites, then align label
-    // according to the language of the website's text.
-    label->SetHorizontalAlignment(
-        spec()->selected_shipping_option_error().empty() ? gfx::ALIGN_LEFT
-                                                         : gfx::ALIGN_TO_HEAD);
-    label->set_id(
-        static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SECTION_HEADER_LABEL));
-    label->SetMultiLine(true);
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-    if (!spec()->selected_shipping_option_error().empty()) {
-      auto warning_icon = std::make_unique<views::ImageView>();
-      warning_icon->set_can_process_events_within_subtree(false);
-      warning_icon->SetImage(gfx::CreateVectorIcon(
-          vector_icons::kWarningIcon, 16,
-          warning_icon->GetNativeTheme()->GetSystemColor(
-              ui::NativeTheme::kColorId_AlertSeverityHigh)));
-      header_view->AddChildView(warning_icon.release());
-      label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_AlertSeverityHigh));
-    }
-
-    header_view->AddChildView(label.release());
-    return header_view;
+            : spec()->selected_shipping_option_error(),
+        !spec()->selected_shipping_option_error().empty());
   }
 
   base::string16 GetSheetTitle() override {
     return GetShippingAddressSectionString(spec()->shipping_type());
   }
 
-  int GetSecondaryButtonTextId() override { return IDS_PAYMENTS_ADD_ADDRESS; }
+  int GetExtraFooterViewButtonTextId() override {
+    return IDS_PAYMENTS_ADD_ADDRESS;
+  }
 
-  int GetSecondaryButtonTag() override {
+  int GetExtraFooterViewButtonTag() override {
     return static_cast<int>(
         ProfileListViewControllerTags::ADD_SHIPPING_ADDRESS_BUTTON);
   }
 
-  int GetSecondaryButtonViewId() override {
+  int GetExtraFooterViewButtonViewId() override {
     return static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_SHIPPING_BUTTON);
   }
 
@@ -328,13 +288,15 @@ class ContactProfileViewController : public ProfileListViewController {
         IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME);
   }
 
-  int GetSecondaryButtonTextId() override { return IDS_PAYMENTS_ADD_CONTACT; }
+  int GetExtraFooterViewButtonTextId() override {
+    return IDS_PAYMENTS_ADD_CONTACT;
+  }
 
-  int GetSecondaryButtonTag() override {
+  int GetExtraFooterViewButtonTag() override {
     return static_cast<int>(ProfileListViewControllerTags::ADD_CONTACT_BUTTON);
   }
 
-  int GetSecondaryButtonViewId() override {
+  int GetExtraFooterViewButtonViewId() override {
     return static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_CONTACT_BUTTON);
   }
 
@@ -413,9 +375,9 @@ ProfileListViewController::CreateExtraFooterView() {
       kPaymentRequestButtonSpacing));
 
   views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(GetSecondaryButtonTextId()));
-  button->set_tag(GetSecondaryButtonTag());
-  button->set_id(GetSecondaryButtonViewId());
+      this, l10n_util::GetStringUTF16(GetExtraFooterViewButtonTextId()));
+  button->set_tag(GetExtraFooterViewButtonTag());
+  button->set_id(GetExtraFooterViewButtonViewId());
   button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   extra_view->AddChildView(button);
 
@@ -424,7 +386,7 @@ ProfileListViewController::CreateExtraFooterView() {
 
 void ProfileListViewController::ButtonPressed(views::Button* sender,
                                               const ui::Event& event) {
-  if (sender->tag() == GetSecondaryButtonTag())
+  if (sender->tag() == GetExtraFooterViewButtonTag())
     ShowEditor(nullptr);
   else
     PaymentRequestSheetController::ButtonPressed(sender, event);

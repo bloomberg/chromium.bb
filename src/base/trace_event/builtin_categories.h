@@ -124,7 +124,7 @@
   X("startup")                                                           \
   X("sync")                                                              \
   X("sync_lock_contention")                                              \
-  X("task_scheduler")                                                    \
+  X("thread_pool")                                                       \
   X("test_gpu")                                                          \
   X("test_tracing")                                                      \
   X("toplevel")                                                          \
@@ -141,9 +141,11 @@
   X("webaudio")                                                          \
   X("WebCore")                                                           \
   X("webrtc")                                                            \
+  X("xr")                                                                \
   X(TRACE_DISABLED_BY_DEFAULT("animation-worklet"))                      \
   X(TRACE_DISABLED_BY_DEFAULT("audio-worklet"))                          \
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug"))                            \
+  X(TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"))               \
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"))                     \
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.trees"))               \
   X(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"))                    \
@@ -168,6 +170,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.layers"))               \
   X(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.picture"))              \
   X(TRACE_DISABLED_BY_DEFAULT("file"))                                   \
+  X(TRACE_DISABLED_BY_DEFAULT("fonts"))                                  \
   X(TRACE_DISABLED_BY_DEFAULT("gpu_cmd_queue"))                          \
   X(TRACE_DISABLED_BY_DEFAULT("gpu.debug"))                              \
   X(TRACE_DISABLED_BY_DEFAULT("gpu_decoder"))                            \
@@ -192,7 +195,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("skia.gpu.cache"))                         \
   X(TRACE_DISABLED_BY_DEFAULT("SyncFileSystem"))                         \
   X(TRACE_DISABLED_BY_DEFAULT("system_stats"))                           \
-  X(TRACE_DISABLED_BY_DEFAULT("task_scheduler_diagnostics"))             \
+  X(TRACE_DISABLED_BY_DEFAULT("thread_pool_diagnostics"))                \
   X(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"))                          \
   X(TRACE_DISABLED_BY_DEFAULT("v8.compile"))                             \
   X(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profiler"))                        \
@@ -203,6 +206,8 @@
   X(TRACE_DISABLED_BY_DEFAULT("v8.runtime"))                             \
   X(TRACE_DISABLED_BY_DEFAULT("v8.runtime_stats"))                       \
   X(TRACE_DISABLED_BY_DEFAULT("v8.runtime_stats_sampling"))              \
+  X(TRACE_DISABLED_BY_DEFAULT("v8.turbofan"))                            \
+  X(TRACE_DISABLED_BY_DEFAULT("v8.wasm"))                                \
   X(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"))                \
   X(TRACE_DISABLED_BY_DEFAULT("viz.debug.overlay_planes"))               \
   X(TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"))                   \

@@ -536,7 +536,7 @@ def main(argv):
     ])
 
   if options.chromium_code:
-    javac_cmd.extend(['-Xlint:unchecked', '-Werror'])
+    javac_cmd.extend(['-Werror'])
   else:
     # XDignore.symbol.file makes javac compile against rt.jar instead of
     # ct.sym. This means that using a java internal package/class will not

@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/usb/public/cpp/fake_usb_device.h"
+#include "device/usb/public/cpp/mock_usb_mojo_device.h"
 #include "device/usb/public/cpp/usb_utils.h"
 #include "device/usb/public/mojom/device_enumeration_options.mojom.h"
 #include "device/usb/public/mojom/device_manager_client.mojom.h"
@@ -56,6 +57,20 @@ void FakeUsbDeviceManager::GetDevice(const std::string& guid,
   FakeUsbDevice::Create(it->second, std::move(device_request),
                         std::move(device_client));
 }
+
+#if defined(OS_ANDROID)
+void FakeUsbDeviceManager::RefreshDeviceInfo(
+    const std::string& guid,
+    RefreshDeviceInfoCallback callback) {
+  auto it = devices_.find(guid);
+  if (it == devices_.end()) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  std::move(callback).Run(it->second->GetDeviceInfo().Clone());
+}
+#endif
 
 #if defined(OS_CHROMEOS)
 void FakeUsbDeviceManager::CheckAccess(const std::string& guid,
@@ -103,6 +118,7 @@ void FakeUsbDeviceManager::RemoveDevice(
     scoped_refptr<FakeUsbDeviceInfo> device) {
   DCHECK(device);
   DCHECK(base::ContainsKey(devices_, device->guid()));
+
   auto device_info = device->GetDeviceInfo().Clone();
   devices_.erase(device->guid());
 
@@ -117,7 +133,27 @@ void FakeUsbDeviceManager::RemoveDevice(
 
 void FakeUsbDeviceManager::RemoveDevice(const std::string& guid) {
   DCHECK(ContainsKey(devices_, guid));
+
   RemoveDevice(devices_[guid]);
+}
+
+void FakeUsbDeviceManager::RemoveAllDevices() {
+  std::vector<scoped_refptr<FakeUsbDeviceInfo>> device_list;
+  for (const auto& pair : devices_) {
+    device_list.push_back(pair.second);
+  }
+  for (const auto& device : device_list) {
+    RemoveDevice(device);
+  }
+}
+
+bool FakeUsbDeviceManager::SetMockForDevice(const std::string& guid,
+                                            MockUsbMojoDevice* mock_device) {
+  if (!base::ContainsKey(devices_, guid))
+    return false;
+
+  devices_[guid]->SetMockDevice(mock_device);
+  return true;
 }
 
 }  // namespace device

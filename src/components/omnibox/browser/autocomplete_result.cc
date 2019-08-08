@@ -31,6 +31,8 @@
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using metrics::OmniboxEventProto;
+
 typedef AutocompleteMatchType ACMatchType;
 
 struct MatchGURLHash {
@@ -174,9 +176,15 @@ void AutocompleteResult::SortAndCull(
   std::sort(matches_.begin(), matches_.end(), comparing_object);
   // Top match is not allowed to be the default match.  Find the most
   // relevant legal match and shift it to the front.
-  auto it = FindTopMatch(&matches_);
+  auto it = FindTopMatch(input.current_page_classification(), &matches_);
   if (it != matches_.end())
     std::rotate(matches_.begin(), it, it + 1);
+
+  size_t max_url_count = 0;
+  if (OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() &&
+      (max_url_count = OmniboxFieldTrial::GetMaxURLMatches()) != 0)
+    LimitNumberOfURLsShown(max_url_count, comparing_object);
+
   // In the process of trimming, drop all matches with a demoted relevance
   // score of 0.
   const size_t max_num_matches = std::min(GetMaxMatches(), matches_.size());
@@ -186,11 +194,17 @@ void AutocompleteResult::SortAndCull(
        ++num_matches) {}
   matches_.resize(num_matches);
 
+  if (OmniboxFieldTrial::IsGroupSuggestionsBySearchVsUrlFeatureEnabled() &&
+      matches_.size() > 2) {
+    // "Bunch" first by search type, then all others.
+    std::stable_sort(std::next(matches_.begin()), matches_.end(),
+                     CompareBySearchVsUrl());
+  }
+
   // There is no default match for chromeOS launcher zero prefix query
   // suggestions.
-  if ((input.text().empty() &&
-       input.current_page_classification() ==
-           metrics::OmniboxEventProto::CHROMEOS_APP_LIST)) {
+  if (input.text().empty() && (input.current_page_classification() ==
+                               metrics::OmniboxEventProto::CHROMEOS_APP_LIST)) {
     default_match_ = end();
     alternate_nav_url_ = GURL();
     return;
@@ -361,19 +375,32 @@ bool AutocompleteResult::TopMatchIsStandaloneVerbatimMatch() const {
 
 // static
 ACMatches::const_iterator AutocompleteResult::FindTopMatch(
+    OmniboxEventProto::PageClassification page_classification,
     const ACMatches& matches) {
-  auto it = matches.begin();
-  while ((it != matches.end()) && !it->allowed_to_be_default_match)
-    ++it;
-  return it;
+  return FindTopMatch(page_classification, const_cast<ACMatches*>(&matches));
 }
 
 // static
-ACMatches::iterator AutocompleteResult::FindTopMatch(ACMatches* matches) {
-  auto it = matches->begin();
-  while ((it != matches->end()) && !it->allowed_to_be_default_match)
-    ++it;
-  return it;
+ACMatches::iterator AutocompleteResult::FindTopMatch(
+    OmniboxEventProto::PageClassification page_classification,
+    ACMatches* matches) {
+  if (page_classification !=
+          OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS &&
+      OmniboxFieldTrial::IsPreserveDefaultMatchScoreEnabled()) {
+    auto best = matches->end();
+    for (auto it = matches->begin(); it != matches->end(); ++it) {
+      if (it->allowed_to_be_default_match &&
+          (best == matches->end() ||
+           AutocompleteMatch::MoreRelevant(*it, *best))) {
+        best = it;
+      }
+    }
+    return best;
+  } else {
+    return std::find_if(matches->begin(), matches->end(), [](const auto& m) {
+      return m.allowed_to_be_default_match;
+    });
+  }
 }
 
 void AutocompleteResult::Reset() {
@@ -461,11 +488,14 @@ void AutocompleteResult::SortAndDedupMatches(
     // For each duplicate match, append its duplicates to that of the best
     // match, then append it, before we erase it.
     for (auto i = std::next(best_match); i != duplicate_matches.end(); ++i) {
-      (*best_match)->duplicate_matches.insert(
-          (*best_match)->duplicate_matches.end(),
-          (*i)->duplicate_matches.begin(),
-          (*i)->duplicate_matches.end());
-      (*best_match)->duplicate_matches.push_back(**i);
+      auto& match = **i;
+      for (auto& dup_match : match.duplicate_matches)
+        (*best_match)->duplicate_matches.push_back(std::move(dup_match));
+      // Erase the duplicates before copying it. We don't need them any more.
+      match.duplicate_matches.erase(match.duplicate_matches.begin(),
+                                    match.duplicate_matches.end());
+      // Copy, don't move, because we need these below.
+      (*best_match)->duplicate_matches.push_back(match);
     }
   }
 
@@ -624,7 +654,9 @@ void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
   // unlikely, as we normally would expect the search-what-you-typed suggestion
   // as a default match (and that's a non-tail suggestion).
   if (non_tail_default == matches->end()) {
-    base::EraseIf(*matches, std::not1(is_tail));
+    base::EraseIf(*matches, [&is_tail](const AutocompleteMatch& match) {
+      return !is_tail(match);
+    });
     return;
   }
   // Determine if there are both tail and non-tail matches, excluding the
@@ -699,7 +731,7 @@ void AutocompleteResult::MergeMatchesByProvider(
       AutocompleteMatch match = *i;
       match.relevance = std::min(max_relevance, match.relevance);
       match.from_previous = true;
-      matches_.push_back(match);
+      matches_.push_back(std::move(match));
       delta--;
     }
   }
@@ -709,4 +741,32 @@ std::pair<GURL, bool> AutocompleteResult::GetMatchComparisonFields(
     const AutocompleteMatch& match) {
   return std::make_pair(match.stripped_destination_url,
                         match.type == ACMatchType::CALCULATOR);
+}
+
+void AutocompleteResult::LimitNumberOfURLsShown(
+    size_t max_url_count,
+    const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
+  size_t search_count = std::count_if(
+      matches_.begin(), matches_.end(), [&](const AutocompleteMatch& m) {
+        return AutocompleteMatch::IsSearchType(m.type) &&
+               // Don't count if would be removed.
+               comparing_object.GetDemotedRelevance(m) > 0;
+      });
+  // Display more than GetMaxURLMatches() if there are no non-URL suggestions
+  // to replace them. Avoid signed math.
+  if (GetMaxMatches() > search_count &&
+      GetMaxMatches() - search_count > max_url_count)
+    max_url_count = GetMaxMatches() - search_count;
+  size_t url_count = 0, total_count = 0;
+  // Erase URL suggestions past the count of allowed ones, or anything past
+  // maximum.
+  matches_.erase(
+      std::remove_if(matches_.begin(), matches_.end(),
+                     [&url_count, max_url_count,
+                      &total_count](const AutocompleteMatch& m) {
+                       return (!AutocompleteMatch::IsSearchType(m.type) &&
+                               ++url_count > max_url_count) ||
+                              ++total_count > GetMaxMatches();
+                     }),
+      matches_.end());
 }

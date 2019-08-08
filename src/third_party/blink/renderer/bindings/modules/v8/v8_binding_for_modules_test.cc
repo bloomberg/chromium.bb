@@ -179,8 +179,7 @@ std::unique_ptr<IDBValue> CreateIDBValue(v8::Isolate* isolate,
                                          const String& key_path) {
   WebData web_data(SharedBuffer::AdoptVector(wire_bytes));
   scoped_refptr<SharedBuffer> data(web_data);
-  std::unique_ptr<IDBValue> value =
-      IDBValue::Create(data, Vector<WebBlobInfo>());
+  auto value = std::make_unique<IDBValue>(data, Vector<WebBlobInfo>());
   value->SetInjectedPrimaryKey(IDBKey::CreateNumber(primary_key),
                                IDBKeyPath(key_path));
 

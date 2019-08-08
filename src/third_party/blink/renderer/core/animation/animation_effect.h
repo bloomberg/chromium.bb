@@ -118,6 +118,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   double TimeToReverseEffectChange() const {
     return EnsureCalculated().time_to_reverse_effect_change;
   }
+  double LocalTime() const { return EnsureCalculated().local_time; }
 
   AnimationTimeDelta IterationDuration() const;
   double RepeatedDuration() const;
@@ -187,7 +188,6 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   } calculated_;
   mutable bool needs_update_;
   mutable double last_update_time_;
-  String name_;
 
   const CalculatedTiming& EnsureCalculated() const;
 };

@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -260,6 +259,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool IsProvisional() const override;
   WebLocalFrameImpl* LocalRoot() override;
   WebFrame* FindFrameByName(const WebString& name) override;
+  bool ScrollTo(const gfx::Point& scrollPosition,
+                bool animate,
+                base::OnceClosure on_finish) override;
   void SendPings(const WebURL& destination_url) override;
   void ReportContentSecurityPolicyViolation(
       const blink::WebContentSecurityPolicyViolation&) override;
@@ -274,7 +276,8 @@ class CORE_EXPORT WebLocalFrameImpl final
                          bool had_redirect,
                          const WebSourceLocation&) override;
   void SendOrientationChangeEvent() override;
-  WebSandboxFlags EffectiveSandboxFlags() const override;
+  WebSandboxFlags EffectiveSandboxFlagsForTesting() const override;
+  bool IsAllowedToDownloadWithoutUserActivation() const override;
   void DidCallAddSearchProvider() override;
   void DidCallIsSearchProviderInstalled() override;
   void ReplaceSelection(const WebString&) override;
@@ -301,7 +304,14 @@ class CORE_EXPORT WebLocalFrameImpl final
   void AdvanceFocusInForm(WebFocusType) override;
   void PerformMediaPlayerAction(const WebPoint&,
                                 const WebMediaPlayerAction&) override;
-  void OnPortalActivated() override;
+  void OnPortalActivated(const base::UnguessableToken& portal_token,
+                         mojo::ScopedInterfaceEndpointHandle portal_pipe,
+                         TransferableMessage data,
+                         OnPortalActivatedCallback callback) override;
+  void ForwardMessageToPortalHost(
+      TransferableMessage message,
+      const WebSecurityOrigin& source_origin,
+      const base::Optional<WebSecurityOrigin>& target_origin) override;
 
   // WebNavigationControl methods:
   bool DispatchBeforeUnloadEvent(bool) override;
@@ -350,15 +360,14 @@ class CORE_EXPORT WebLocalFrameImpl final
   static WebLocalFrameImpl* CreateProvisional(WebLocalFrameClient*,
                                               InterfaceRegistry*,
                                               mojo::ScopedMessagePipeHandle,
-                                              WebRemoteFrame*,
-                                              WebSandboxFlags,
-                                              ParsedFeaturePolicy);
+                                              WebFrame*,
+                                              const FramePolicy&);
 
   WebLocalFrameImpl(WebTreeScopeType,
                     WebLocalFrameClient*,
                     blink::InterfaceRegistry*,
                     mojo::ScopedMessagePipeHandle);
-  WebLocalFrameImpl(WebRemoteFrame*,
+  WebLocalFrameImpl(WebFrame*,
                     WebLocalFrameClient*,
                     blink::InterfaceRegistry*,
                     mojo::ScopedMessagePipeHandle);
@@ -368,12 +377,13 @@ class CORE_EXPORT WebLocalFrameImpl final
                                HTMLFrameOwnerElement*);
   std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
-      mojom::blink::PortalRequest);
+      mojom::blink::PortalAssociatedRequest);
+  RemoteFrame* AdoptPortal(HTMLPortalElement*);
 
   void DidChangeContentsSize(const IntSize&);
 
   bool HasDevToolsOverlays() const;
-  void UpdateDevToolsOverlays();
+  void UpdateDevToolsOverlaysPrePaint();
   void PaintDevToolsOverlays(GraphicsContext&);  // For CompositeAfterPaint.
 
   void CreateFrameView();
@@ -439,10 +449,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   // Returns true if our print context suggests using printing layout.
   bool UsePrintingLayout() const;
 
-  const FeaturePolicy::FeatureState& OpenerFeatureState() const {
-    return opener_feature_state_;
-  }
-
   virtual void Trace(blink::Visitor*);
 
  private:
@@ -504,10 +510,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebTextCheckClient* text_check_client_;
 
   WebSpellCheckPanelHostClient* spell_check_panel_host_client_;
-
-  // Feature policy state inherited from an opener. It is always empty for child
-  // frames.
-  FeaturePolicy::FeatureState opener_feature_state_;
 
   // Oilpan: WebLocalFrameImpl must remain alive until close() is called.
   // Accomplish that by keeping a self-referential Persistent<>. It is

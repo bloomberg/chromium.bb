@@ -81,6 +81,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SetIsFormSubmission(bool is_form_submission) override;
   void SetReferrer(const Referrer& referrer) override;
   void SetSocketAddress(const net::IPEndPoint& remote_endpoint) override;
+  void SetWasFetchedViaCache(bool was_fetched_via_cache) override;
   void SetIsSignedExchangeInnerResponse(
       bool is_signed_exchange_inner_response) override;
   void SetInterfaceProviderRequest(
@@ -110,15 +111,41 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   // Set DidCommit*Params history_list_was_cleared flag to |history_cleared|.
   void set_history_list_was_cleared(bool history_cleared);
 
-  // Manually force the value of did_create_new__entry flag in DidCommit*Params
+  // Manually force the value of did_create_new_entry flag in DidCommit*Params
   // to |did_create_new_entry|.
   void set_did_create_new_entry(bool did_create_new_entry);
+
+  // Manually force the value of should_replace_current_entry flag in
+  // DidCommit*Params to |should_replace_current_entry|.
+  void set_should_replace_current_entry(bool should_replace_current_entry) {
+    should_replace_current_entry_ = should_replace_current_entry;
+  }
+
+  // Manually force the value of intended_as_new_entry flag in DidCommit*Params
+  // to |intended_as_new_entry|.
+  void set_intended_as_new_entry(bool intended_as_new_entry) {
+    intended_as_new_entry_ = intended_as_new_entry;
+  }
 
   void set_http_connection_info(net::HttpResponseInfo::ConnectionInfo info) {
     http_connection_info_ = info;
   }
 
   void set_ssl_info(net::SSLInfo ssl_info) { ssl_info_ = ssl_info; }
+
+  // Whether to drop the swap out ack of the previous RenderFrameHost during
+  // cross-process navigations. By default this is false, set to true if you
+  // want the old RenderFrameHost to be left in a pending swap out state.
+  void set_drop_swap_out_ack(bool drop_swap_out_ack) {
+    drop_swap_out_ack_ = drop_swap_out_ack;
+  }
+
+  // Whether to drop the BeforeUnloadACK of the current RenderFrameHost at the
+  // beginning of a browser-initiated navigation. By default this is false, set
+  // to true if you want to simulate the BeforeUnloadACK manually.
+  void set_block_on_before_unload_ack(bool block_on_before_unload_ack) {
+    block_on_before_unload_ack_ = block_on_before_unload_ack;
+  }
 
  private:
   NavigationSimulatorImpl(const GURL& original_url,
@@ -220,8 +247,10 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   // Note: additional parameters to modify the navigation should be properly
   // initialized (if needed) in InitializeFromStartedRequest.
+  GURL original_url_;
   GURL navigation_url_;
   net::IPEndPoint remote_endpoint_;
+  bool was_fetched_via_cache_ = false;
   bool is_signed_exchange_inner_response_ = false;
   std::string initial_method_;
   bool is_form_submission_ = false;
@@ -244,13 +273,17 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   base::Optional<net::SSLInfo> ssl_info_;
 
   bool auto_advance_ = true;
+  bool drop_swap_out_ack_ = false;
+  bool block_on_before_unload_ack_ = false;
 
   // Generic params structure used for fully customized browser initiated
   // navigation requests. Only valid if explicitely provided.
   NavigationController::LoadURLParams* load_url_params_;
 
   bool history_list_was_cleared_ = false;
+  bool should_replace_current_entry_ = false;
   base::Optional<bool> did_create_new_entry_;
+  base::Optional<bool> intended_as_new_entry_;
 
   // These are used to sanity check the content/public/ API calls emitted as
   // part of the navigation.

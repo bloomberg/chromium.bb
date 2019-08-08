@@ -15,16 +15,17 @@ namespace blink {
 
 CustomProperty::CustomProperty(const AtomicString& name,
                                const Document& document)
-    : name_(name), registration_(PropertyRegistration::From(&document, name)) {}
+    : CustomProperty(name, PropertyRegistration::From(&document, name)) {}
 
 CustomProperty::CustomProperty(const AtomicString& name,
                                const PropertyRegistry* registry)
-    : name_(name),
-      registration_(registry ? registry->Registration(name) : nullptr) {}
+    : CustomProperty(name, registry ? registry->Registration(name) : nullptr) {}
 
-bool CustomProperty::IsInherited() const {
-  return !registration_ || registration_->Inherits();
-}
+CustomProperty::CustomProperty(const AtomicString& name,
+                               const PropertyRegistration* registration)
+    : Variable(!registration || registration->Inherits()),
+      name_(name),
+      registration_(registration) {}
 
 const AtomicString& CustomProperty::GetPropertyNameAtomicString() const {
   return name_;
@@ -62,8 +63,7 @@ void CustomProperty::ApplyInherit(StyleResolverState& state) const {
 
 void CustomProperty::ApplyValue(StyleResolverState& state,
                                 const CSSValue& value) const {
-  const CSSCustomPropertyDeclaration& declaration =
-      ToCSSCustomPropertyDeclaration(value);
+  const auto& declaration = To<CSSCustomPropertyDeclaration>(value);
 
   bool is_inherited_property = IsInherited();
   bool initial = declaration.IsInitial(is_inherited_property);
@@ -124,7 +124,7 @@ const CSSValue* CustomProperty::CSSValueFromComputedStyleInternal(
   if (!data)
     return nullptr;
 
-  return CSSCustomPropertyDeclaration::Create(name_, data);
+  return MakeGarbageCollected<CSSCustomPropertyDeclaration>(name_, data);
 }
 
 const CSSValue* CustomProperty::ParseUntyped(

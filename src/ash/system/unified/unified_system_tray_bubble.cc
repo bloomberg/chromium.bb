@@ -5,6 +5,7 @@
 #include "ash/system/unified/unified_system_tray_bubble.h"
 
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -16,6 +17,7 @@
 #include "ash/wm/container_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/widget_finder.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/window_util.h"
@@ -42,11 +44,15 @@ class ContainerView : public views::View {
   void Layout() override { unified_view_->SetBoundsRect(GetContentsBounds()); }
 
   gfx::Size CalculatePreferredSize() const override {
-    // If transform is used, always return the maximum height. Otherwise, return
-    // the actual height.
-    return gfx::Size(kTrayMenuWidth, unified_view_->IsTransformEnabled()
-                                         ? unified_view_->GetExpandedHeight()
-                                         : unified_view_->GetCurrentHeight());
+    // If transform is used, always return the maximum expanded height.
+    // Otherwise, return the actual height.
+    // Note that transforms are currently only supported when there are not
+    // notifications, so we only consider the system tray height (excluding the
+    // message center) for now.
+    return gfx::Size(kTrayMenuWidth,
+                     unified_view_->IsTransformEnabled()
+                         ? unified_view_->GetExpandedSystemTrayHeight()
+                         : unified_view_->GetCurrentHeight());
   }
 
   void ChildPreferredSizeChanged(views::View* child) override {
@@ -70,7 +76,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
     time_shown_by_click_ = base::TimeTicks::Now();
 
   TrayBubbleView::InitParams init_params;
-  init_params.anchor_alignment = tray_->GetAnchorAlignment();
+  init_params.shelf_alignment = tray_->shelf()->alignment();
   init_params.min_width = kTrayMenuWidth;
   init_params.max_width = kTrayMenuWidth;
   init_params.delegate = tray;
@@ -80,9 +86,9 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   init_params.anchor_rect = tray->shelf()->GetSystemTrayAnchorRect();
   // Decrease bottom and right insets to compensate for the adjustment of
   // the respective edges in Shelf::GetSystemTrayAnchorRect().
-  init_params.insets =
-      gfx::Insets(kUnifiedMenuPadding, kUnifiedMenuPadding,
-                  kUnifiedMenuPadding - 1, kUnifiedMenuPadding - 1);
+  init_params.insets = gfx::Insets(
+      kUnifiedMenuPadding, kUnifiedMenuPadding, kUnifiedMenuPadding - 1,
+      kUnifiedMenuPadding - (base::i18n::IsRTL() ? 0 : 1));
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
   init_params.show_by_click = show_by_click;
@@ -199,8 +205,11 @@ void UnifiedSystemTrayBubble::UpdateTransform() {
 
   SetFrameVisible(false);
 
-  const int y_offset =
-      unified_view_->GetExpandedHeight() - unified_view_->GetCurrentHeight();
+  // Note: currently transforms are only enabled when there are no
+  // notifications, so we can consider only the system tray height (excluding
+  // the message center) for now.
+  const int y_offset = unified_view_->GetExpandedSystemTrayHeight() -
+                       unified_view_->GetCurrentHeight();
 
   gfx::Transform transform;
   transform.Translate(0, y_offset);
@@ -232,8 +241,10 @@ int UnifiedSystemTrayBubble::CalculateMaxHeight() const {
       tray_->shelf()->GetSystemTrayAnchorView()->GetBoundsInScreen();
   int bottom = tray_->shelf()->IsHorizontalAlignment() ? anchor_bounds.y()
                                                        : anchor_bounds.bottom();
+  WorkAreaInsets* work_area =
+      WorkAreaInsets::ForWindow(tray_->shelf()->GetWindow()->GetRootWindow());
   int free_space_height_above_anchor =
-      bottom - tray_->shelf()->GetUserWorkAreaBounds().y();
+      bottom - work_area->user_work_area_bounds().y();
   return free_space_height_above_anchor - kUnifiedMenuPadding * 2;
 }
 
@@ -295,7 +306,7 @@ void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
   int max_height = CalculateMaxHeight();
   unified_view_->SetMaxHeight(max_height);
   bubble_view_->SetMaxHeight(max_height);
-  bubble_view_->ChangeAnchorAlignment(tray_->GetAnchorAlignment());
+  bubble_view_->ChangeAnchorAlignment(tray_->shelf()->alignment());
   bubble_view_->ChangeAnchorRect(tray_->shelf()->GetSystemTrayAnchorRect());
 }
 
@@ -310,8 +321,18 @@ void UnifiedSystemTrayBubble::CreateBlurLayerForAnimation() {
 
   bubble_widget_->client_view()->layer()->SetBackgroundBlur(0);
 
-  blur_layer_ = views::Painter::CreatePaintedLayer(
-      views::Painter::CreateSolidRoundRectPainter(SK_ColorTRANSPARENT, 0));
+  if (features::ShouldUseShaderRoundedCorner()) {
+    blur_layer_ = std::make_unique<ui::LayerOwner>(
+        std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR));
+    blur_layer_->layer()->SetColor(SK_ColorTRANSPARENT);
+    blur_layer_->layer()->SetRoundedCornerRadius(
+        {kUnifiedTrayCornerRadius, kUnifiedTrayCornerRadius,
+         kUnifiedTrayCornerRadius, kUnifiedTrayCornerRadius});
+  } else {
+    blur_layer_ = views::Painter::CreatePaintedLayer(
+        views::Painter::CreateSolidRoundRectPainter(SK_ColorTRANSPARENT, 0));
+  }
+
   blur_layer_->layer()->SetFillsBoundsOpaquely(false);
 
   bubble_widget_->GetLayer()->Add(blur_layer_->layer());

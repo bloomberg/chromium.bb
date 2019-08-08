@@ -6,8 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler.h"
 #include "dbus/object_proxy.h"
@@ -43,13 +42,12 @@ void NetworkActivationHandler::CallShillActivate(
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) {
   NET_LOG_USER("Activation Request", service_path + ": '" + carrier + "'");
-  DBusThreadManager::Get()->GetShillServiceClient()->ActivateCellularModem(
-      dbus::ObjectPath(service_path),
-      carrier,
-      base::Bind(&NetworkActivationHandler::HandleShillSuccess,
-                 AsWeakPtr(), service_path, success_callback),
-      base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 kErrorShillError, service_path, error_callback));
+  ShillServiceClient::Get()->ActivateCellularModem(
+      dbus::ObjectPath(service_path), carrier,
+      base::Bind(&NetworkActivationHandler::HandleShillSuccess, AsWeakPtr(),
+                 service_path, success_callback),
+      base::Bind(&network_handler::ShillErrorCallbackFunction, kErrorShillError,
+                 service_path, error_callback));
 }
 
 void NetworkActivationHandler::CallShillCompleteActivation(
@@ -57,12 +55,12 @@ void NetworkActivationHandler::CallShillCompleteActivation(
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) {
   NET_LOG_USER("CompleteActivation Request", service_path);
-  DBusThreadManager::Get()->GetShillServiceClient()->CompleteCellularActivation(
+  ShillServiceClient::Get()->CompleteCellularActivation(
       dbus::ObjectPath(service_path),
-      base::Bind(&NetworkActivationHandler::HandleShillSuccess,
-                 AsWeakPtr(), service_path, success_callback),
-      base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 kErrorShillError, service_path, error_callback));
+      base::Bind(&NetworkActivationHandler::HandleShillSuccess, AsWeakPtr(),
+                 service_path, success_callback),
+      base::Bind(&network_handler::ShillErrorCallbackFunction, kErrorShillError,
+                 service_path, error_callback));
 }
 
 void NetworkActivationHandler::HandleShillSuccess(

@@ -49,6 +49,7 @@ tr.exportTo('cp', () => {
   }
 
   function deepFreeze(o) {
+    if (!o) return o;
     Object.freeze(o);
     for (const [name, value] of Object.entries(o)) {
       if (typeof(value) !== 'object') continue;
@@ -305,6 +306,10 @@ tr.exportTo('cp', () => {
     return dict;
   }
 
+  function denormalize(objects, columnNames) {
+    return objects.map(obj => columnNames.map(col => obj[col]));
+  }
+
   async function* asGenerator(promise) {
     yield await promise;
   }
@@ -477,8 +482,82 @@ tr.exportTo('cp', () => {
     return colors;
   }
 
+  let nextGUID = 0;
+  function simpleGUID() {
+    return ++nextGUID;
+  }
+
+  function* enumerate(iter) {
+    let i = -1;
+    for (const value of iter) {
+      yield [++i, value];
+    }
+  }
+
+  const IS_MAC = navigator.platform.startsWith('Mac');
+  const CTRL_KEY_NAME = IS_MAC ? 'command' : 'Ctrl';
+
+  function hasCtrlKey(event) {
+    return IS_MAC ? event.metaKey : event.ctrlKey;
+  }
+
+  function transformAlert(alert) {
+    let deltaValue = alert.median_after_anomaly -
+      alert.median_before_anomaly;
+    const percentDeltaValue = deltaValue / alert.median_before_anomaly;
+
+    let improvementDirection = tr.b.ImprovementDirection.BIGGER_IS_BETTER;
+    if (alert.improvement === (deltaValue < 0)) {
+      improvementDirection = tr.b.ImprovementDirection.SMALLER_IS_BETTER;
+    }
+    const unitSuffix = tr.b.Unit.nameSuffixForImprovementDirection(
+        improvementDirection);
+
+    let baseUnit = tr.b.Unit.byName[alert.units];
+    if (!baseUnit ||
+        baseUnit.improvementDirection !== improvementDirection) {
+      let unitName = 'unitlessNumber';
+      if (tr.b.Unit.byName[alert.units + unitSuffix]) {
+        unitName = alert.units;
+      } else {
+        const info = tr.v.LEGACY_UNIT_INFO.get(alert.units);
+        if (info) {
+          unitName = info.name;
+          deltaValue *= info.conversionFactor || 1;
+        }
+      }
+      baseUnit = tr.b.Unit.byName[unitName + unitSuffix];
+    }
+    const [master, bot] = alert.descriptor.bot.split(':');
+
+    return {
+      baseUnit,
+      bot,
+      bugComponents: alert.bug_components,
+      bugId: alert.bug_id === undefined ? '' : alert.bug_id,
+      bugLabels: alert.bug_labels,
+      deltaUnit: baseUnit.correspondingDeltaUnit,
+      deltaValue,
+      key: alert.key,
+      improvement: alert.improvement,
+      isSelected: false,
+      master,
+      measurement: alert.descriptor.measurement,
+      statistic: alert.descriptor.statistic,
+      percentDeltaUnit: tr.b.Unit.byName[
+          'normalizedPercentageDelta' + unitSuffix],
+      percentDeltaValue,
+      startRevision: alert.start_revision,
+      endRevision: alert.end_revision,
+      case: alert.descriptor.testCase,
+      suite: alert.descriptor.testSuite,
+      v1ReportLink: alert.dashboard_link,
+    };
+  }
+
   return {
     BatchIterator,
+    CTRL_KEY_NAME,
     NON_BREAKING_SPACE,
     ZERO_WIDTH_SPACE,
     afterRender,
@@ -487,8 +566,11 @@ tr.exportTo('cp', () => {
     buildProperties,
     buildState,
     deepFreeze,
+    denormalize,
+    enumerate,
     generateColors,
     getActiveElement,
+    hasCtrlKey,
     idle,
     isElementChildOf,
     measureElement,
@@ -500,6 +582,8 @@ tr.exportTo('cp', () => {
     plural,
     setImmutable,
     sha,
+    simpleGUID,
     timeout,
+    transformAlert,
   };
 });

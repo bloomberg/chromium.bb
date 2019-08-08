@@ -16,6 +16,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "net/http/http_request_headers.h"
@@ -40,6 +41,7 @@ class PrefRegistrySyncable;
 // triggering decision to |PreviewsLitePageNavigationThrottle|.
 class PreviewsLitePageDecider
     : public PreviewsLitePageNavigationThrottleManager,
+      public PreviewsHTTPSNotificationInfoBarDecider,
       public data_reduction_proxy::DataReductionProxySettingsObserver {
  public:
   explicit PreviewsLitePageDecider(content::BrowserContext* browser_context);
@@ -78,26 +80,24 @@ class PreviewsLitePageDecider
   // Sets that the user has seen the UI notification.
   void SetUserHasSeenUINotification();
 
-  uint64_t GeneratePageID() override;
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageDeciderTest, TestServerUnavailable);
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageDeciderTest, TestSingleBypass);
+  // PreviewsHTTPSNotificationInfoBarDecider:
+  bool NeedsToNotifyUser() override;
+  void NotifyUser(content::WebContents* web_contents) override;
 
   // PreviewsLitePageNavigationThrottleManager:
   void SetServerUnavailableFor(base::TimeDelta retry_after) override;
   bool IsServerUnavailable() override;
   void AddSingleBypass(std::string url) override;
   bool CheckSingleBypass(std::string url) override;
+  uint64_t GeneratePageID() override;
   void ReportDataSavings(int64_t network_bytes,
                          int64_t original_bytes,
                          const std::string& host) override;
-  bool NeedsToNotifyUser() override;
-  void NotifyUser(content::WebContents* web_contents) override;
   void BlacklistBypassedHost(const std::string& host,
                              base::TimeDelta duration) override;
   bool HostBlacklistedFromBypass(const std::string& host) override;
 
+ private:
   // data_reduction_proxy::DataReductionProxySettingsObserver:
   void OnProxyRequestHeadersChanged(
       const net::HttpRequestHeaders& headers) override;

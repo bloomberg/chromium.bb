@@ -102,9 +102,17 @@ class WebStateImpl;
 @property(nonatomic, strong, readonly)
     CRWJSInjectionReceiver* jsInjectionReceiver;
 
+// Whether the WebController should attempt to keep the render process alive.
+@property(nonatomic, assign, getter=shouldKeepRenderProcessAlive)
+    BOOL keepsRenderProcessAlive;
+
 // Designated initializer. Initializes web controller with |webState|. The
 // calling code must retain the ownership of |webState|.
 - (instancetype)initWithWebState:(web::WebStateImpl*)webState;
+
+// Returns the latest navigation item created for new navigation, which is
+// stored in navigation context.
+- (web::NavigationItemImpl*)lastPendingItemForNewNavigation;
 
 // Replaces the currently displayed content with |contentView|.  The content
 // view will be dismissed for the next navigation.
@@ -162,6 +170,7 @@ class WebStateImpl;
 
 // Loads |data| of type |MIMEType| and replaces last committed URL with the
 // given |URL|.
+// If a load is in progress, it will be stopped before the data is loaded.
 - (void)loadData:(NSData*)data
         MIMEType:(NSString*)MIMEType
           forURL:(const GURL&)URL;
@@ -174,8 +183,11 @@ class WebStateImpl;
 - (void)stopLoading;
 
 // Executes |script| in the web view, registering user interaction.
+// |result| will be backed up by different classes depending on resulting JS
+// type: NSString (string), NSNumber (number or boolean), NSDictionary (object),
+// NSArray (array), NSNull (null), NSDate (Date), nil (undefined).
 - (void)executeUserJavaScript:(NSString*)script
-            completionHandler:(web::JavaScriptResultBlock)completion;
+            completionHandler:(void (^)(id result, NSError*))completion;
 
 // Requires that the next load rebuild the web view. This is expensive, and
 // should be used only in the case where something has changed that the web view
@@ -191,11 +203,6 @@ class WebStateImpl;
 
 // Notifies the CRWWebController that it has been hidden.
 - (void)wasHidden;
-
-// Adds |recognizer| as a gesture recognizer to the web view.
-- (void)addGestureRecognizerToWebView:(UIGestureRecognizer*)recognizer;
-// Removes |recognizer| from the web view.
-- (void)removeGestureRecognizerFromWebView:(UIGestureRecognizer*)recognizer;
 
 // Returns the native controller (if any) current mananging the content.
 - (id<CRWNativeContent>)nativeController;

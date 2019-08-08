@@ -62,11 +62,6 @@ class SQLTransactionBackend final
     : public GarbageCollectedFinalized<SQLTransactionBackend>,
       public SQLTransactionStateMachine<SQLTransactionBackend> {
  public:
-  static SQLTransactionBackend* Create(Database*,
-                                       SQLTransaction*,
-                                       SQLTransactionWrapper*,
-                                       bool read_only);
-
   SQLTransactionBackend(Database*,
                         SQLTransaction*,
                         SQLTransactionWrapper*,

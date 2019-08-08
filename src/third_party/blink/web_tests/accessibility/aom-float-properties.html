@@ -2,7 +2,6 @@
 <script src="../resources/gc.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <!--
 
@@ -20,7 +19,7 @@ if (window.internals)
 <div role="slider" id="slider" aria-valuenow="5"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("slider");
     var axNode = accessibilityController.accessibleElementById("slider");
     assert_equals(axNode.intValue, 5);
@@ -36,7 +35,7 @@ test_after_layout_and_paint(function(t) {
 <div role="slider" id="slider2"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("slider2");
     var axNode = accessibilityController.accessibleElementById("slider2");
     assert_equals(axNode.intValue, 50);
@@ -54,7 +53,7 @@ test_after_layout_and_paint(function(t) {
 <div role="spinbutton" id="spinbutton"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("spinbutton");
     var axNode = accessibilityController.accessibleElementById("spinbutton");
     assert_equals(axNode.intValue, 0);

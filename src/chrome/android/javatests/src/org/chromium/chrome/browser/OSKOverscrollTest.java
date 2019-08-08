@@ -12,7 +12,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -25,6 +24,7 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
@@ -120,7 +120,7 @@ public class OSKOverscrollTest {
         mActivityTestRule.startMainActivityWithURL(FIXED_FOOTER_PAGE);
 
         final AtomicReference<WebContents> webContentsRef = new AtomicReference<WebContents>();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { webContentsRef.set(mActivityTestRule.getWebContents()); });
 
         DOMUtils.waitForNonZeroNodeBounds(webContentsRef.get(), "fn");
@@ -151,7 +151,7 @@ public class OSKOverscrollTest {
                 int viewportHeightAfterCss = getViewportHeight(webContentsRef.get());
                 int keyboardHeight = mActivityTestRule.getActivity()
                                              .getActivityTabProvider()
-                                             .getActivityTab()
+                                             .get()
                                              .getWebContents()
                                              .getViewAndroidDelegate()
                                              .getSystemWindowInsetBottom();

@@ -42,6 +42,7 @@ namespace blink {
 class FetchParameters;
 class KURL;
 class ResourceFetcher;
+class ResponseBodyLoaderClient;
 
 // ScriptResource is a resource representing a JavaScript script. It is only
 // used for "classic" scripts, i.e. not modules.
@@ -54,6 +55,8 @@ class ResourceFetcher;
 // See also:
 // https://docs.google.com/document/d/143GOPl_XVgLPFfO-31b_MdBcnjklLEX2OIg_6eN6fQ4
 class CORE_EXPORT ScriptResource final : public TextResource {
+  USING_PRE_FINALIZER(ScriptResource, Prefinalize);
+
  public:
   // For scripts fetched with kAllowStreaming, the ScriptResource expects users
   // to call StartStreaming to start streaming the loaded data, and
@@ -89,6 +92,10 @@ class CORE_EXPORT ScriptResource final : public TextResource {
                  const ResourceLoaderOptions&,
                  const TextResourceDecoderOptions&);
   ~ScriptResource() override;
+
+  void ResponseBodyReceived(
+      ResponseBodyLoaderDrainableInterface& body_loader,
+      scoped_refptr<base::SingleThreadTaskRunner> loader_task_runner) override;
 
   void Trace(blink::Visitor*) override;
 
@@ -155,8 +162,6 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   void DestroyDecodedDataForFailedRevalidation() override;
 
-  void NotifyDataReceived(const char* data, size_t size) override;
-
   // ScriptResources are considered finished when either:
   //   1. Loading + streaming completes, or
   //   2. Loading completes + streaming was never started + someone called
@@ -193,6 +198,8 @@ class CORE_EXPORT ScriptResource final : public TextResource {
     }
   };
 
+  void Prefinalize();
+
   bool CanUseCacheValidator() const override;
 
   void AdvanceStreamingState(StreamingState new_state);
@@ -200,7 +207,15 @@ class CORE_EXPORT ScriptResource final : public TextResource {
   // Check that invariants for the state hold.
   void CheckStreamingState() const;
 
+  void OnDataPipeReadable(MojoResult result,
+                          const mojo::HandleSignalsState& state);
+
   ParkableString source_text_;
+
+  mojo::ScopedDataPipeConsumerHandle data_pipe_;
+  std::unique_ptr<mojo::SimpleWatcher> watcher_;
+  Member<ResponseBodyLoaderClient> response_body_loader_client_;
+
   Member<ScriptStreamer> streamer_;
   ScriptStreamer::NotStreamingReason not_streaming_reason_ =
       ScriptStreamer::kDidntTryToStartStreaming;

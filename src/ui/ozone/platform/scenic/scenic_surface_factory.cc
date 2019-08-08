@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/scenic/scenic_surface_factory.h"
 
 #include <lib/zx/event.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
@@ -137,6 +138,7 @@ GLOzone* ScenicSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
 std::unique_ptr<PlatformWindowSurface>
 ScenicSurfaceFactory::CreatePlatformWindowSurface(
     gfx::AcceleratedWidget widget) {
+  DCHECK(gpu_host_);
   auto surface =
       std::make_unique<ScenicSurface>(this, widget, CreateScenicSession());
   main_thread_task_runner_->PostTask(
@@ -202,11 +204,20 @@ ScenicSurfaceFactory::CreateScenicSession() {
   fuchsia::ui::scenic::SessionPtr session;
   fidl::InterfaceHandle<fuchsia::ui::scenic::SessionListener> listener_handle;
   auto listener_request = listener_handle.NewRequest();
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
+  auto create_session_task =
       base::BindOnce(&ScenicSurfaceFactory::CreateScenicSessionOnMainThread,
                      weak_ptr_factory_.GetWeakPtr(), session.NewRequest(),
-                     listener_handle.Bind()));
+                     listener_handle.Bind());
+  if (main_thread_task_runner_->BelongsToCurrentThread()) {
+    // In a single threaded environment, we need to connect the session
+    // before returning so that synchronous calls do not deadlock the
+    // current thread.
+    std::move(create_session_task).Run();
+  } else {
+    main_thread_task_runner_->PostTask(FROM_HERE,
+                                       std::move(create_session_task));
+  }
+
   return {std::move(session), std::move(listener_request)};
 }
 

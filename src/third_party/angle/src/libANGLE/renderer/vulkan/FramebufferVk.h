@@ -100,20 +100,29 @@ class FramebufferVk : public FramebufferImpl
                                  RenderTargetVk *renderTarget,
                                  void *pixels);
 
-    const gl::Extents &getReadImageExtents() const;
+    gl::Extents getReadImageExtents() const;
+    gl::Rectangle getCompleteRenderArea() const;
+    gl::Rectangle getScissoredRenderArea(ContextVk *contextVk) const;
+
+    void onScissorChange(ContextVk *contextVk);
 
     const gl::DrawBufferMask &getEmulatedAlphaAttachmentMask() const;
     RenderTargetVk *getColorReadRenderTarget() const;
 
     // This will clear the current write operation if it is complete.
-    bool appendToStartedRenderPass(Serial currentQueueSerial, vk::CommandBuffer **commandBufferOut)
+    bool appendToStartedRenderPass(Serial currentQueueSerial,
+                                   const gl::Rectangle &renderArea,
+                                   vk::CommandBuffer **commandBufferOut)
     {
-        return mFramebuffer.appendToStartedRenderPass(currentQueueSerial, commandBufferOut);
+        return mFramebuffer.appendToStartedRenderPass(currentQueueSerial, renderArea,
+                                                      commandBufferOut);
     }
 
     vk::FramebufferHelper *getFramebuffer() { return &mFramebuffer; }
 
-    angle::Result startNewRenderPass(ContextVk *context, vk::CommandBuffer **commandBufferOut);
+    angle::Result startNewRenderPass(ContextVk *context,
+                                     const gl::Rectangle &renderArea,
+                                     vk::CommandBuffer **commandBufferOut);
 
     RenderTargetVk *getFirstRenderTarget() const;
     GLint getSamples() const;
@@ -124,11 +133,6 @@ class FramebufferVk : public FramebufferImpl
     FramebufferVk(RendererVk *renderer,
                   const gl::FramebufferState &state,
                   WindowSurfaceVk *backbuffer);
-
-    // Helper for appendToStarted/else startNewRenderPass.
-    angle::Result getCommandBufferForDraw(ContextVk *contextVk,
-                                          vk::CommandBuffer **commandBufferOut,
-                                          vk::RecordingMode *modeOut);
 
     // The 'in' rectangles must be clipped to the scissor and FBO. The clipping is done in 'blit'.
     angle::Result blitWithCommand(ContextVk *contextVk,
@@ -159,12 +163,27 @@ class FramebufferVk : public FramebufferImpl
 
     angle::Result getFramebuffer(ContextVk *contextVk, vk::Framebuffer **framebufferOut);
 
-    angle::Result clearWithClearAttachments(ContextVk *contextVk,
-                                            bool clearColor,
-                                            bool clearDepth,
-                                            bool clearStencil,
-                                            const VkClearDepthStencilValue &clearDepthStencilValue);
-    angle::Result clearWithDraw(ContextVk *contextVk, VkColorComponentFlags colorMaskFlags);
+    angle::Result clearImpl(const gl::Context *context,
+                            gl::DrawBufferMask clearColorBuffers,
+                            bool clearDepth,
+                            bool clearStencil,
+                            const VkClearColorValue &clearColorValue,
+                            const VkClearDepthStencilValue &clearDepthStencilValue);
+    angle::Result clearWithRenderPassOp(ContextVk *contextVk,
+                                        const gl::Rectangle &clearArea,
+                                        gl::DrawBufferMask clearColorBuffers,
+                                        bool clearDepth,
+                                        bool clearStencil,
+                                        const VkClearColorValue &clearColorValue,
+                                        const VkClearDepthStencilValue &clearDepthStencilValue);
+    angle::Result clearWithDraw(ContextVk *contextVk,
+                                const gl::Rectangle &clearArea,
+                                gl::DrawBufferMask clearColorBuffers,
+                                bool clearStencil,
+                                VkColorComponentFlags colorMaskFlags,
+                                uint8_t stencilMask,
+                                const VkClearColorValue &clearColorValue,
+                                uint8_t clearStencilValue);
     void updateActiveColorMasks(size_t colorIndex, bool r, bool g, bool b, bool a);
     void updateRenderPassDesc();
 

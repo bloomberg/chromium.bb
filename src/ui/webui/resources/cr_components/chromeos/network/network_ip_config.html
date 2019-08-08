@@ -23,16 +23,17 @@
           networkProperties, 'IPAddressConfigType')]]">
       </cr-policy-indicator>
       <cr-toggle checked="{{automatic_}}"
-          disabled="[[!canChangeIPConfigType_(editable, networkProperties)]]"
+          disabled="[[!canChangeIPConfigType_(networkProperties)]]"
           on-change="onAutomaticChange_"
           aria-labelledby="autoIPConfigLabel">
       </cr-toggle>
     </div>
     <template is="dom-if" if="[[hasIpConfigFields_(ipConfig_)]]">
       <div class="property-box single-column indented stretch">
-        <network-property-list editable
-            fields="[[ipConfigFields_]]" property-dict="[[ipConfig_]]"
-            edit-field-types="[[getIPEditFields_(editable, automatic_)]]"
+        <network-property-list fields="[[ipConfigFields_]]"
+            property-dict="[[ipConfig_]]"
+            edit-field-types="[[getIPEditFields_(automatic_,
+                networkProperties)]]"
             on-property-change="onIPChange_">
         </network-property-list>
       </div>

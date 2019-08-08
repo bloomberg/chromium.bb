@@ -108,12 +108,15 @@ void DesktopMediaListAsh::EnumerateSources(
 
       CaptureThumbnail(screen_source.id, root_windows[i]);
     } else {
-      EnumerateWindowsForRoot(
-          sources, root_windows[i], ash::kShellWindowId_DefaultContainer);
-      EnumerateWindowsForRoot(
-          sources, root_windows[i], ash::kShellWindowId_AlwaysOnTopContainer);
-      EnumerateWindowsForRoot(
-        sources, root_windows[i], ash::kShellWindowId_PipContainer);
+      constexpr int kContainersIds[] = {
+          ash::kShellWindowId_DefaultContainerDeprecated,
+          // TODO(afakhry): Add rest of desks containers.
+          ash::kShellWindowId_AlwaysOnTopContainer,
+          ash::kShellWindowId_PipContainer,
+      };
+
+      for (int id : kContainersIds)
+        EnumerateWindowsForRoot(sources, root_windows[i], id);
     }
   }
 }

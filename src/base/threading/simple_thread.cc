@@ -70,7 +70,7 @@ void SimpleThread::ThreadMain() {
   // Construct our full name of the form "name_prefix_/TID".
   std::string name(name_prefix_);
   name.push_back('/');
-  name.append(IntToString(tid_));
+  name.append(NumberToString(tid_));
   PlatformThread::SetName(name);
 
   // We've initialized our new thread, signal that we're done to Start().

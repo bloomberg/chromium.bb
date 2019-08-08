@@ -23,6 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Subzero</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -224,6 +225,7 @@
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="ExecutableMemory.cpp" />
     <ClCompile Include="Optimizer.cpp" />
+    <ClCompile Include="Reactor.cpp" />
     <ClCompile Include="Routine.cpp" />
     <ClCompile Include="SubzeroReactor.cpp" />
   </ItemGroup>

@@ -14,6 +14,12 @@ class NavigationHandle;
 
 namespace previews {
 
+// This bit mask is all the preview types that are fully decided
+// before commit.
+static const content::PreviewsState kPreCommitPreviews =
+    content::SERVER_LOFI_ON | content::SERVER_LITE_PAGE_ON |
+    content::OFFLINE_PAGE_ON | content::LITE_PAGE_REDIRECT_ON;
+
 // Returns whether |previews_state| has any enabled previews.
 bool HasEnabledPreviews(content::PreviewsState previews_state);
 
@@ -34,6 +40,14 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle);
 
+// If this Chrome session is in a coin flip holdback, possibly modify the
+// previews state of the navigation according to a random coin flip. This method
+// should only be called before commit (at navigation start or redirect) and
+// will only impact previews that are decided before commit.
+content::PreviewsState MaybeCoinFlipHoldbackBeforeCommit(
+    content::PreviewsState initial_state,
+    content::NavigationHandle* navigation_handle);
+
 // Returns an updated PreviewsState given |previews_state| that has already
 // been updated wrt server previews. This should be called at Navigation Commit
 // time. It will defer to any server preview set, otherwise it chooses which
@@ -43,6 +57,15 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     const GURL& url,
     content::PreviewsState previews_state,
     const previews::PreviewsDecider* previews_decider,
+    content::NavigationHandle* navigation_handle);
+
+// If this Chrome session is in a coin flip holdback, possibly modify the
+// previews state of the navigation according to a random coin flip. This method
+// should only be called after commit and may impact all preview types. This
+// method assume |MaybeCoinFlipHoldbackBeforeCommit| has already been called
+// with the same |navigation_handle|.
+content::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
+    content::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle);
 
 // Returns the effective PreviewsType known on a main frame basis given the

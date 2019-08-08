@@ -43,11 +43,10 @@ class BlinkTestSuite : public base::TestSuite {
   void Initialize() override {
     base::TestSuite::Initialize();
     content::SetUpBlinkTestEnvironment();
-    blink::ThreadState::Current()->RegisterTraceDOMWrappers(nullptr, nullptr,
-                                                            nullptr, nullptr);
+    blink::ThreadState::Current()->RegisterTraceDOMWrappers(nullptr, nullptr);
   }
   void Shutdown() override {
-    blink::ThreadState::Current()->CollectAllGarbage();
+    blink::ThreadState::Current()->CollectAllGarbageForTesting();
     content::TearDownBlinkTestEnvironment();
     base::TestSuite::Shutdown();
   }

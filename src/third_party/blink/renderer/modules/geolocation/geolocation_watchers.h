@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_WATCHERS_H_
 
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -33,11 +32,10 @@ class GeolocationWatchers : public GarbageCollected<GeolocationWatchers>,
 
   auto& Notifiers() { return id_to_notifier_map_.Values(); }
 
-  void CopyNotifiersToVector(
-      HeapVector<TraceWrapperMember<GeoNotifier>>&) const;
+  void CopyNotifiersToVector(HeapVector<Member<GeoNotifier>>&) const;
 
  private:
-  typedef HeapHashMap<int, TraceWrapperMember<GeoNotifier>> IdToNotifierMap;
+  typedef HeapHashMap<int, Member<GeoNotifier>> IdToNotifierMap;
   typedef HeapHashMap<Member<GeoNotifier>, int> NotifierToIdMap;
 
   IdToNotifierMap id_to_notifier_map_;

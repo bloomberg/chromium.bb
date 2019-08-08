@@ -21,7 +21,6 @@ import time
 import test_runner
 
 LOGGER = logging.getLogger(__name__)
-READLINE_TIMEOUT = 300
 
 
 class LaunchCommandCreationError(test_runner.TestRunnerError):
@@ -49,7 +48,7 @@ def terminate_process(proc):
   try:
     proc.terminate()
   except OSError as ex:
-    print 'Error while killing a process: %s' % ex
+    LOGGER.info('Error while killing a process: %s' % ex)
 
 
 def test_status_summary(summary_plist):
@@ -59,24 +58,22 @@ def test_status_summary(summary_plist):
     summary_plist: (str) A path to plist-file.
 
   Returns:
-    A dict that contains all passed and failed tests from each egtests.app.
+    A dict that contains all passed and failed tests from the egtests.app.
     e.g.
     {
-        'passed': {
-            'egtests.app': [passed_tests]
-        },
+        'passed': [passed_tests],
         'failed': {
-            'egtests.app': [failed_tests]
+            'failed_test': ['StackTrace']
         }
     }
   """
   root_summary = plistlib.readPlist(summary_plist)
   status_summary = {
-      'passed': {},
+      'passed': [],
       'failed': {}
   }
   for summary in root_summary['TestableSummaries']:
-    failed_egtests = []
+    failed_egtests = {}  # Contains test identifier and message
     passed_egtests = []
     if not summary['Tests']:
       continue
@@ -85,35 +82,35 @@ def test_status_summary(summary_plist):
         if test['TestStatus'] == 'Success':
           passed_egtests.append(test['TestIdentifier'])
         else:
-          failed_egtests.append(test['TestIdentifier'])
-    module = summary['TargetName'].replace('_module', '.app')
+          message = []
+          for failure_summary in test['FailureSummaries']:
+            message.append('%s: line %s' % (failure_summary['FileName'],
+                                            failure_summary['LineNumber']))
+            message.extend(failure_summary['Message'].splitlines())
+          failed_egtests[test['TestIdentifier']] = message
     if failed_egtests:
-      status_summary['failed'][module] = failed_egtests
+      status_summary['failed'] = failed_egtests
     if passed_egtests:
-      status_summary['passed'][module] = passed_egtests
+      status_summary['passed'] = passed_egtests
   return status_summary
 
 
-def collect_test_results(plist_path, output):
-  """Gets test result data from Info.plist and from test output.
+def collect_test_results(plist_path):
+  """Gets test result data from Info.plist.
 
   Args:
     plist_path: (str) A path to plist-file.
-    output: (str) An output of command.
   Returns:
     Test result as a map:
       {
-        'passed': {
-            'egtests.app': [passed_tests]
-        },
+        'passed': [passed_tests],
         'failed': {
-            'egtests.app': [failed_tests]
-        },
-        'output': ['Command output']
+            'failed_test': ['StackTrace']
+        }
     }
   """
   test_results = {
-      'passed': {},
+      'passed': [],
       'failed': {}
   }
   root = plistlib.readPlist(plist_path)
@@ -124,13 +121,16 @@ def collect_test_results(plist_path, output):
          root['TestsFailedCount'] == 0)
         or 'TestSummaryPath' not in action_result):
       test_results['failed']['TESTS_DID_NOT_START'] = []
+      if 'ErrorSummaries' in action_result and action_result['ErrorSummaries']:
+        test_results['failed']['TESTS_DID_NOT_START'].append('\n'.join(
+            error_summary['Message']
+            for error_summary in action_result['ErrorSummaries']))
     else:
       summary_plist = os.path.join(os.path.dirname(plist_path),
                                    action_result['TestSummaryPath'])
       summary = test_status_summary(summary_plist)
       test_results['failed'] = summary['failed']
       test_results['passed'] = summary['passed']
-  test_results['output'] = output
   return test_results
 
 
@@ -275,7 +275,7 @@ class LaunchCommand(object):
       failed_results: Map of failed tests, where key is name of egtests_app and
         value is a list of failed_test_case/test_methods:
           {
-              'egtests_app_name': [failed_test_case/test_methods]
+              'failed_test_case/test_methods': ['StackTrace']
           }
       out_dir: (str) An output path.
       test_args: List of strings to pass as arguments to the test when
@@ -288,9 +288,7 @@ class LaunchCommand(object):
     """
     eg_app = EgtestsApp(
         egtests_app=self.egtests_app.egtests_path,
-        filtered_tests=[test.replace(' ', '/') for test in
-                        failed_results[os.path.basename(
-                            self.egtests_app.egtests_path)]],
+        filtered_tests=[test.replace(' ', '/') for test in failed_results],
         test_args=test_args,
         env_vars=env_vars)
     # Regenerates xctest run and gets a command.
@@ -305,7 +303,7 @@ class LaunchCommand(object):
     """
     plist = plistlib.readPlist(info_plist_path)
     if 'TestFailureSummaries' not in plist or not plist['TestFailureSummaries']:
-      print 'No failures in %s' % info_plist_path
+      LOGGER.info('No failures in %s' % info_plist_path)
       return
 
     screenshot_regex = re.compile(r'Screenshots:\s\{(\n.*)+?\n}')
@@ -319,15 +317,14 @@ class LaunchCommand(object):
       if not os.path.exists(test_case_folder):
         os.makedirs(test_case_folder)
       if screenshots:
-        print 'Screenshots for failure "%s" in "%s"' % (
-            failure_summary['TestCase'], test_case_folder)
+        LOGGER.info('Screenshots for failure "%s" in "%s"' % (
+            failure_summary['TestCase'], test_case_folder))
         d = json.loads(screenshots.group().replace('Screenshots:', '').strip())
         for f in d.values():
           if not os.path.exists(f):
-            print 'File %s does not exist!' % f
+            LOGGER.warning('File %s does not exist!' % f)
             continue
           screenshot = os.path.join(test_case_folder, os.path.basename(f))
-          print screenshot
           shutil.copyfile(f, screenshot)
 
   def summary_log(self):
@@ -346,13 +343,11 @@ class LaunchCommand(object):
       for test_status in test_statuses:
         if test_status not in test_attempt_results:
           continue
-        results = test_attempt_results[test_status]
-        for _, destinations_egtests in results.iteritems():
-          if test_status == 'passed' or (
-              # Number of failed tests is taken only from last run.
-              test_status == 'failed' and index == len(
-                  self.test_results['attempts']) - 1):
-            self.logs[test_status] += len(destinations_egtests)
+        if (test_status == 'passed'
+            # Number of failed tests is taken only from last run.
+            or (test_status == 'failed'
+                and index == len(self.test_results['attempts']) - 1)):
+          self.logs[test_status] += len(test_attempt_results[test_status])
 
   def launch_attempt(self, cmd, out_dir):
     """Launch a process and do logging simultaneously.
@@ -362,12 +357,9 @@ class LaunchCommand(object):
       out_dir: (str) Output directory given to the command. Used in tests only.
 
     Returns:
-      A tuple (cmd, returncode, output) where:
-      - returncode: return code of command run.
-      - output: command output as list of strings.
+      returncode - return code of command run.
     """
-    print 'Launching %s with env %s' % (cmd, self.env)
-    output = []
+    LOGGER.info('Launching %s with env %s' % (cmd, self.env))
     proc = subprocess.Popen(
         cmd,
         env=self.env,
@@ -378,28 +370,27 @@ class LaunchCommand(object):
     while True:
       # It seems that subprocess.stdout.readline() is stuck from time to time
       # and tests fail because of TIMEOUT.
-      # Try to fix the issue by adding timer-thread for 5 mins
+      # Try to fix the issue by adding timer-thread for 3 mins
       # that will kill `frozen` running process if no new line is read
       # and will finish test attempt.
-      # If new line appears in 5 mins, just cancel timer.
-      timer = threading.Timer(READLINE_TIMEOUT, terminate_process, [proc])
+      # If new line appears in 3 mins, just cancel timer.
+      timer = threading.Timer(test_runner.READLINE_TIMEOUT,
+                              terminate_process, [proc])
       timer.start()
       line = proc.stdout.readline()
       timer.cancel()
       if not line:
         break
       line = line.rstrip()
-      print line
-      output.append(line)
+      LOGGER.info(line)
       sys.stdout.flush()
 
     proc.wait()
-    print 'Command %s finished with %d' % (cmd, proc.returncode)
-    return proc.returncode, output
+    LOGGER.info('Command %s finished with %d' % (cmd, proc.returncode))
+    return proc.returncode
 
   def launch(self):
     """Launches tests using xcodebuild."""
-    initial_command = []
     cmd_list = []
     self.test_results['attempts'] = []
 
@@ -415,8 +406,6 @@ class LaunchCommand(object):
                                 outdir_attempt,
                                 self.destination,
                                 self.shards)
-        if attempt == 0:
-          initial_command = list(cmd_list)
       # Re-init the command based on list of failed tests.
       else:
         cmd_list = self._make_cmd_list_for_failed_tests(
@@ -426,12 +415,11 @@ class LaunchCommand(object):
             env_vars=self.egtests_app.env_vars)
 
       # TODO(crbug.com/914878): add heartbeat logging to xcodebuild_runner.
-      print 'Start test attempt #%d for command [%s]' % (
-          attempt, ' '.join(cmd_list))
-      _, output = self.launch_attempt(cmd_list, outdir_attempt)
+      LOGGER.info('Start test attempt #%d for command [%s]' % (
+          attempt, ' '.join(cmd_list)))
+      self.launch_attempt(cmd_list, outdir_attempt)
       self.test_results['attempts'].append(
-          collect_test_results(os.path.join(outdir_attempt, 'Info.plist'),
-                               output))
+          collect_test_results(os.path.join(outdir_attempt, 'Info.plist')))
       if self.retries == attempt or not self.test_results[
           'attempts'][-1]['failed']:
         break
@@ -442,7 +430,6 @@ class LaunchCommand(object):
     self.summary_log()
 
     return {
-        'cmd': initial_command,
         'test_results': self.test_results,
         'logs': self.logs
     }
@@ -622,20 +609,44 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
           env=self.get_launch_env()))
 
     pool = multiprocessing.pool.ThreadPool(len(launch_commands))
-    self.test_results['commands'] = []
+    attempts_results = []
     for result in pool.imap_unordered(LaunchCommand.launch, launch_commands):
-      self.logs[' '.join(result['cmd'])] = result['test_results']
-      self.test_results['commands'].append(
-          {'cmd': ' '.join(result['cmd']), 'logs': result['logs']})
+      attempts_results.append(result['test_results']['attempts'])
     self.test_results['end_run'] = int(time.time())
-    LOGGER.debug('Test ended.')
+
+    # Gets passed tests
+    self.logs['passed'] = []
+    for shard_attempts in attempts_results:
+      for attempt in shard_attempts:
+        self.logs['passed'].extend(attempt['passed'])
+
+    # If the last attempt does not have failures, mark failed as empty
+    self.logs['failed'] = []
+    for shard_attempts in attempts_results:
+      if shard_attempts[-1]['failed']:
+        self.logs['failed'].extend(shard_attempts[-1]['failed'].keys())
+
+    # Gets all failures/flakes and lists them in bot summary
+    all_failures = set()
+    for shard_attempts in attempts_results:
+      for attempt, attempt_results in enumerate(shard_attempts):
+        for failure in attempt_results['failed']:
+          if failure not in self.logs:
+            self.logs[failure] = []
+          self.logs[failure].append('%s: attempt # %d' % (failure, attempt))
+          self.logs[failure].extend(attempt_results['failed'][failure])
+          all_failures.add(failure)
+
+    # Gets only flaky(not failed) tests.
+    self.logs['flaked'] = list(all_failures - set(self.logs['failed']))
+
     # Test is failed if there are failures for the last run.
-    return not self.test_results['commands'][-1]['logs']['failed']
+    return not self.logs['failed']
 
   def erase_all_simulators(self):
     """Erases all simulator devices.
 
     Fix for DVTCoreSimulatorAdditionsErrorDomain error.
     """
-    print 'Erasing all simulators.'
+    LOGGER.info('Erasing all simulators.')
     subprocess.call(['xcrun', 'simctl', 'erase', 'all'])

@@ -54,21 +54,21 @@ public class TabDelegate extends TabCreator {
      */
     @Override
     public Tab createFrozenTab(TabState state, int id, int index) {
-        return TabBuilder.createFromFrozenState(state)
+        return TabBuilder.createFromFrozenState()
                 .setId(id)
                 .setIncognito(state.isIncognito())
                 .build();
     }
 
     @Override
-    public boolean createTabWithWebContents(Tab parent, WebContents webContents, int parentId,
-            @TabLaunchType int type, String url) {
+    public boolean createTabWithWebContents(
+            Tab parent, WebContents webContents, @TabLaunchType int type, String url) {
         if (url == null) url = "";
 
         AsyncTabCreationParams asyncParams =
                 new AsyncTabCreationParams(
                         new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL), webContents);
-        createNewTab(asyncParams, type, parentId);
+        createNewTab(asyncParams, type, parent != null ? parent.getId() : Tab.INVALID_TAB_ID);
         return true;
     }
 
@@ -80,8 +80,8 @@ public class TabDelegate extends TabCreator {
      * @param activity      The current {@link Activity}
      * @param parentId      The ID of the parent tab, or {@link Tab#INVALID_TAB_ID}.
      */
-    public void createTabInOtherWindow(LoadUrlParams loadUrlParams, Activity activity,
-            int parentId) {
+    public void createTabInOtherWindow(
+            LoadUrlParams loadUrlParams, Activity activity, int parentId) {
         Intent intent = createNewTabIntent(
                 new AsyncTabCreationParams(loadUrlParams), parentId, false);
 

@@ -48,7 +48,6 @@ LabelButton::LabelButton(ButtonListener* listener,
           style::GetFont(button_context, style::STYLE_PRIMARY)),
       cached_default_button_font_list_(
           style::GetFont(button_context, style::STYLE_DIALOG_BUTTON_DEFAULT)),
-      button_state_images_(),
       button_state_colors_(),
       explicitly_set_colors_(),
       is_default_(false),
@@ -73,7 +72,7 @@ LabelButton::LabelButton(ButtonListener* listener,
   label_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
 }
 
-LabelButton::~LabelButton() {}
+LabelButton::~LabelButton() = default;
 
 gfx::ImageSkia LabelButton::GetImage(ButtonState for_state) const {
   if (for_state != STATE_NORMAL && button_state_images_[for_state].isNull())
@@ -386,7 +385,8 @@ void LabelButton::StateChanged(ButtonState old_state) {
   ResetLabelEnabledColor();
   label_->SetEnabled(state() != STATE_DISABLED);
   if (image_->GetPreferredSize() != previous_image_size)
-    Layout();
+    InvalidateLayout();
+  Button::StateChanged(old_state);
 }
 
 void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
@@ -480,7 +480,6 @@ void LabelButton::SetTextInternal(const base::string16& text) {
 void LabelButton::ChildPreferredSizeChanged(View* child) {
   ResetCachedPreferredSize();
   PreferredSizeChanged();
-  Layout();
 }
 
 ui::NativeTheme::Part LabelButton::GetThemePart() const {

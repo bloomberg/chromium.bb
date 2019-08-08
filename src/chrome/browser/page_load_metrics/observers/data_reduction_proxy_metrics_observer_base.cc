@@ -113,7 +113,6 @@ DataReductionProxyMetricsObserverBase::OnCommit(
                                 ->GetMainFrame()
                                 ->GetProcess()
                                 ->GetID();
-  navigation_start_ = navigation_handle->NavigationStart();
 
   return OnCommitCalled(navigation_handle, source_id);
 }
@@ -265,9 +264,9 @@ void DataReductionProxyMetricsObserverBase::SendPingback(
           timing.parse_timing->parse_stop, info)) {
     parse_stop = timing.parse_timing->parse_stop;
   }
-  if (navigation_start_ && main_frame_fetch_start_) {
+  if (GetDelegate()->DidCommit() && main_frame_fetch_start_) {
     main_frame_fetch_start =
-        main_frame_fetch_start_.value() - navigation_start_.value();
+        main_frame_fetch_start_.value() - GetDelegate()->GetNavigationStart();
   }
   if (info.started_in_foreground && info.page_end_time.has_value()) {
     // This should be reported even when the app goes into the background which
@@ -348,14 +347,14 @@ void DataReductionProxyMetricsObserverBase::OnLoadedResource(
   }
 
   if (extra_request_complete_info.resource_type ==
-      content::RESOURCE_TYPE_MAIN_FRAME) {
+      content::ResourceType::kMainFrame) {
     main_frame_fetch_start_ =
         extra_request_complete_info.load_timing_info->request_start;
   }
 }
 
 void DataReductionProxyMetricsObserverBase::OnResourceDataUseObserved(
-    FrameTreeNodeId frame_tree_node_id,
+    content::RenderFrameHost* rfh,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -7,9 +7,12 @@
 
 #include <windows.h>
 
+#include <vector>
+
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/wincrypt_shim.h"
+#include "chrome/chrome_cleaner/os/scoped_service_handle.h"
 
 namespace chrome_cleaner {
 
@@ -37,6 +40,14 @@ class CertificateEnumerator {
   PCCERT_CONTEXT context_ = nullptr;
 };
 
+// Based on ENUM_SERVICE_STATUS_PROCESSW from
+// https://docs.microsoft.com/en-us/windows/desktop/api/winsvc/ns-winsvc-_enum_service_status_processw
+struct ServiceStatus {
+  base::string16 service_name;
+  base::string16 display_name;
+  SERVICE_STATUS_PROCESS service_status_process;
+};
+
 // Set |medium_integrity_token| with a medium integrity level token duplicated
 // from the current process token. Return false on failures or if called when
 // running on a Windows version before Vista.
@@ -60,6 +71,15 @@ bool IsX64Architecture();
 
 // Return whether the current process is 64-bit.
 bool IsX64Process();
+
+// Fills |services| with services from the given |service_manager| that match
+// |service_type| and |service_state|. Returns false on error. The possible
+// values of |service_type| and |service_state| are given at
+// https://docs.microsoft.com/en-us/windows/desktop/api/winsvc/nf-winsvc-enumservicesstatusexa.
+bool EnumerateServices(const ScopedScHandle& service_manager,
+                       DWORD service_type,
+                       DWORD service_state,
+                       std::vector<ServiceStatus>* services);
 
 }  // namespace chrome_cleaner
 

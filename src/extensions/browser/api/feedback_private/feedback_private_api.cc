@@ -22,6 +22,7 @@
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/feedback/feedback_report.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "components/feedback/tracing_manager.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -60,6 +61,11 @@ constexpr base::FilePath::CharType kBluetoothLogsFilePath[] =
 
 constexpr char kBluetoothLogsAttachmentName[] = "bluetooth_logs.bz2";
 
+bool IsGoogleEmail(const std::string& email) {
+  return base::EndsWith(email, "@google.com",
+                        base::CompareCase::INSENSITIVE_ASCII);
+}
+
 // Getting the filename of a blob prepends a "C:\fakepath" to the filename.
 // This is undesirable, strip it if it exists.
 std::string StripFakepath(const std::string& path) {
@@ -79,10 +85,8 @@ feedback_private::LandingPageType GetLandingPageType(const std::string& email) {
   if (board.find("eve") == std::string::npos)
     return feedback_private::LANDING_PAGE_TYPE_NORMAL;
 
-  if (!base::EndsWith(email, "@google.com",
-                      base::CompareCase::INSENSITIVE_ASCII)) {
+  if (!IsGoogleEmail(email))
     return feedback_private::LANDING_PAGE_TYPE_NORMAL;
-  }
 
   return feedback_private::LANDING_PAGE_TYPE_TECHSTOP;
 #else
@@ -229,7 +233,21 @@ void FeedbackPrivateGetSystemInformationFunction::OnCompleted(
   SystemInformationList sys_info_list;
   if (sys_info) {
     sys_info_list.reserve(sys_info->size());
+    const bool google_email =
+        IsGoogleEmail(ExtensionsAPIClient::Get()
+                          ->GetFeedbackPrivateDelegate()
+                          ->GetSignedInUserEmail(browser_context()));
     for (auto& itr : *sys_info) {
+      // We only send the list of all the crash report IDs if the user has a
+      // @google.com email. We strip this here so that the system information
+      // view properly reflects what we will be uploading to the server. It is
+      // also stripped later on in the feedback processing for other code paths
+      // that don't go through this.
+      if (itr.first == feedback::FeedbackReport::kAllCrashReportIdsKey &&
+          !google_email) {
+        continue;
+      }
+
       SystemInformation sys_info_entry;
       sys_info_entry.key = std::move(itr.first);
       sys_info_entry.value = std::move(itr.second);
@@ -316,13 +334,10 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
     feedback_data->set_screenshot_uuid(*feedback_info.screenshot_blob_uuid);
   }
 
-  auto sys_logs = std::make_unique<FeedbackData::SystemLogsMap>();
-  const SystemInformationList* sys_info =
-      feedback_info.system_information.get();
-  if (sys_info) {
-    for (const SystemInformation& info : *sys_info)
-      sys_logs->emplace(info.key, info.value);
-  }
+  const bool send_histograms =
+      feedback_info.send_histograms && *feedback_info.send_histograms;
+  const bool send_bluetooth_logs =
+      feedback_info.send_bluetooth_logs && *feedback_info.send_bluetooth_logs;
 
 #if defined(OS_CHROMEOS)
   feedback_data->set_from_assistant(feedback_info.from_assistant &&
@@ -330,45 +345,43 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
   feedback_data->set_assistant_debug_info_allowed(
       feedback_info.assistant_debug_info_allowed &&
       *feedback_info.assistant_debug_info_allowed);
-
-  delegate->FetchAndMergeIwlwifiDumpLogsIfPresent(
-      std::move(sys_logs), browser_context(),
-      base::BindOnce(
-          &FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched, this,
-          feedback_data,
-          feedback_info.send_histograms && *feedback_info.send_histograms,
-          feedback_info.send_bluetooth_logs &&
-              *feedback_info.send_bluetooth_logs));
-#else
-  OnAllLogsFetched(feedback_data, false /* send_histograms */,
-                   false /* send_bluetooth_logs */, std::move(sys_logs));
 #endif  // defined(OS_CHROMEOS)
+
+  if (params->feedback.system_information) {
+    for (SystemInformation& info : *params->feedback.system_information)
+      feedback_data->AddLog(std::move(info.key), std::move(info.value));
+#if defined(OS_CHROMEOS)
+    delegate->FetchExtraLogs(
+        feedback_data,
+        base::BindOnce(&FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched,
+                       this, send_histograms, send_bluetooth_logs));
+    return RespondLater();
+#endif  // defined(OS_CHROMEOS)
+  }
+
+  OnAllLogsFetched(send_histograms, send_bluetooth_logs, feedback_data);
 
   return RespondLater();
 }
 
 void FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched(
-    scoped_refptr<FeedbackData> feedback_data,
     bool send_histograms,
     bool send_bluetooth_logs,
-    std::unique_ptr<system_logs::SystemLogsResponse> sys_logs) {
+    scoped_refptr<feedback::FeedbackData> feedback_data) {
   VLOG(1) << "All logs have been fetched. Proceeding with sending the report.";
 
-  feedback_data->SetAndCompressSystemInfo(std::move(sys_logs));
+  feedback_data->CompressSystemInfo();
 
   if (send_histograms) {
-    auto histograms = std::make_unique<std::string>();
-    *histograms =
+    std::string histograms =
         base::StatisticsRecorder::ToJSON(base::JSON_VERBOSITY_LEVEL_FULL);
-    if (!histograms->empty())
-      feedback_data->SetAndCompressHistograms(std::move(histograms));
+    feedback_data->SetAndCompressHistograms(std::move(histograms));
   }
 
   if (send_bluetooth_logs) {
-    std::unique_ptr<std::string> bluetooth_logs =
-        std::make_unique<std::string>();
+    std::string bluetooth_logs;
     if (base::ReadFileToString(base::FilePath(kBluetoothLogsFilePath),
-                               bluetooth_logs.get())) {
+                               &bluetooth_logs)) {
       feedback_data->AddFile(kBluetoothLogsAttachmentName,
                              std::move(bluetooth_logs));
     }
@@ -401,26 +414,12 @@ void FeedbackPrivateSendFeedbackFunction::OnCompleted(
 }
 
 ExtensionFunction::ResponseAction
-FeedbackPrivateLogSrtPromptResultFunction::Run() {
-  std::unique_ptr<feedback_private::LogSrtPromptResult::Params> params(
-      feedback_private::LogSrtPromptResult::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  const feedback_private::SrtPromptResult result = params->result;
-
-  switch (result) {
-    case feedback_private::SRT_PROMPT_RESULT_ACCEPTED:
-      base::RecordAction(base::UserMetricsAction("Feedback.SrtPromptAccepted"));
-      break;
-    case feedback_private::SRT_PROMPT_RESULT_DECLINED:
-      base::RecordAction(base::UserMetricsAction("Feedback.SrtPromptDeclined"));
-      break;
-    case feedback_private::SRT_PROMPT_RESULT_CLOSED:
-      base::RecordAction(base::UserMetricsAction("Feedback.SrtPromptClosed"));
-      break;
-    default:
-      return RespondNow(Error("Invalid arugment."));
-  }
+FeedbackPrivateLoginFeedbackCompleteFunction::Run() {
+#if defined(OS_CHROMEOS)
+  FeedbackPrivateDelegate* feedback_private_delegate =
+      ExtensionsAPIClient::Get()->GetFeedbackPrivateDelegate();
+  feedback_private_delegate->UnloadFeedbackExtension(browser_context());
+#endif
   return RespondNow(NoArguments());
 }
 

@@ -100,12 +100,15 @@ interface DriveFsDelegate {
   OnHeartbeat();
 };
 
-// Next MinVersion: 2
+// Next MinVersion: 3
 struct DriveFsConfiguration {
   string user_email;
 
   [MinVersion=1]
   string? access_token;
+
+  [MinVersion=2]
+  bool enable_metrics = false;
 };
 
 enum AccessTokenStatus {

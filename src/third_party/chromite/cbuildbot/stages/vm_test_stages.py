@@ -28,7 +28,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cts_helper
 from chromite.lib import failures_lib
-from chromite.lib import git
 from chromite.lib import moblab_vm
 from chromite.lib import osutils
 from chromite.lib import path_util
@@ -610,18 +609,13 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
       # moblab VM will chown this folder upon boot, so once again permission
       # bits from the host don't matter.
       osutils.SafeMakedirsNonRoot(payloads_dir)
-      source_dir = git.FindRepoCheckoutRoot(__file__)
-      commands.GeneratePayloads(
-          build_root=source_dir,
-          target_image_path=os.path.join(
-              self.GetImageDirSymlink(),
-              constants.TEST_IMAGE_BIN,
-          ),
-          archive_dir=payloads_dir,
-          full=True,
-          delta=False,
-          stateful=True,
-      )
+      target_image_path = os.path.join(self.GetImageDirSymlink(),
+                                       constants.TEST_IMAGE_BIN)
+      commands.GeneratePayloads(target_image_path=target_image_path,
+                                archive_dir=payloads_dir,
+                                full=True, delta=False, stateful=True)
+      commands.GenerateQuickProvisionPayloads(
+          target_image_path=target_image_path, archive_dir=payloads_dir)
       cwd = os.path.abspath(
           os.path.join(self._build_root, 'chroot', 'build', self._current_board,
                        constants.AUTOTEST_BUILD_PATH, '..'))

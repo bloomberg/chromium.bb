@@ -33,10 +33,6 @@ source_set("lib") {
   if (is_linux && enable_plugins) {
     deps += [ ":ppapi_fontconfig_matching" ]
   }
-
-  if (is_linux) {
-    deps += [ "//base/test:fontconfig_util_linux" ]
-  }
 }
 
 if (is_linux && enable_plugins) {

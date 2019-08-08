@@ -143,9 +143,8 @@ bool CreateCache(const base::FilePath& path,
   int size = 1024 * 1024;
   disk_cache::BackendImpl* backend = new disk_cache::BackendImpl(
       path, /* cleanup_tracker = */ nullptr, thread->task_runner().get(),
-      /* net_log = */ nullptr);
+      net::DISK_CACHE, /* net_log = */ nullptr);
   backend->SetMaxSize(size);
-  backend->SetType(net::DISK_CACHE);
   backend->SetFlags(disk_cache::kNoRandom);
   int rv = backend->Init(cb->callback());
   *cache = backend;
@@ -272,7 +271,7 @@ int LoadOperations(const base::FilePath& path, RankCrashes action,
 
   // Work with a tiny index table (16 entries).
   disk_cache::BackendImpl* cache = new disk_cache::BackendImpl(
-      path, 0xf, cache_thread->task_runner().get(), NULL);
+      path, 0xf, cache_thread->task_runner().get(), net::DISK_CACHE, nullptr);
   if (!cache->SetMaxSize(0x100000))
     return GENERIC;
 

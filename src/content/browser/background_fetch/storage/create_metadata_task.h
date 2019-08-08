@@ -17,16 +17,15 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
-
 namespace background_fetch {
 
 // Checks if the registration can be created, then writes the Background
 // Fetch metadata in the SW database with corresponding entries in the cache.
 class CreateMetadataTask : public DatabaseTask {
  public:
-  using CreateMetadataCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              blink::mojom::BackgroundFetchRegistrationPtr)>;
+  using CreateMetadataCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      blink::mojom::BackgroundFetchRegistrationDataPtr)>;
 
   CreateMetadataTask(DatabaseTaskHost* host,
                      const BackgroundFetchRegistrationId& registration_id,
@@ -59,7 +58,8 @@ class CreateMetadataTask : public DatabaseTask {
 
   void InitializeMetadataProto();
 
-  void DidOpenCache(CacheStorageCacheHandle handle,
+  void DidOpenCache(int64_t trace_id,
+                    CacheStorageCacheHandle handle,
                     blink::mojom::CacheStorageError error);
 
   void DidStoreRequests(CacheStorageCacheHandle handle,
@@ -86,7 +86,6 @@ class CreateMetadataTask : public DatabaseTask {
 };
 
 }  // namespace background_fetch
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_CREATE_METADATA_TASK_H_

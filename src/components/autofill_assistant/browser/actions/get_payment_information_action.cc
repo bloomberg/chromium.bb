@@ -50,6 +50,20 @@ void GetPaymentInformationAction::InternalProcessAction(
 
   payment_options->request_shipping =
       !get_payment_information.shipping_address_name().empty();
+  payment_options->request_payment_method =
+      get_payment_information.ask_for_payment();
+  switch (get_payment_information.terms_and_conditions_state()) {
+    case GetPaymentInformationProto::NOT_SELECTED:
+      payment_options->initial_terms_and_conditions = NOT_SELECTED;
+      break;
+    case GetPaymentInformationProto::ACCEPTED:
+      payment_options->initial_terms_and_conditions = ACCEPTED;
+      break;
+    case GetPaymentInformationProto::REVIEW_REQUIRED:
+      payment_options->initial_terms_and_conditions = REQUIRES_REVIEW;
+      break;
+  }
+
   payment_options->callback =
       base::BindOnce(&GetPaymentInformationAction::OnGetPaymentInformation,
                      weak_ptr_factory_.GetWeakPtr(), delegate,
@@ -77,6 +91,13 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
           ->set_card_issuer_network(card_issuer_network);
       delegate->GetClientMemory()->set_selected_card(
           std::move(payment_information->card));
+
+      if (!get_payment_information.billing_address_name().empty()) {
+        DCHECK(payment_information->billing_address);
+        delegate->GetClientMemory()->set_selected_address(
+            get_payment_information.billing_address_name(),
+            std::move(payment_information->billing_address));
+      }
     }
 
     if (!get_payment_information.shipping_address_name().empty()) {
@@ -84,13 +105,6 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
       delegate->GetClientMemory()->set_selected_address(
           get_payment_information.shipping_address_name(),
           std::move(payment_information->shipping_address));
-    }
-
-    if (!get_payment_information.billing_address_name().empty()) {
-      DCHECK(payment_information->billing_address);
-      delegate->GetClientMemory()->set_selected_address(
-          get_payment_information.billing_address_name(),
-          std::move(payment_information->billing_address));
     }
 
     if (get_payment_information.has_contact_details()) {
@@ -119,7 +133,8 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
     }
     processed_action_proto_->mutable_payment_details()
         ->set_is_terms_and_conditions_accepted(
-            payment_information->is_terms_and_conditions_accepted);
+            payment_information->terms_and_conditions ==
+            TermsAndConditionsState::ACCEPTED);
     processed_action_proto_->mutable_payment_details()->set_payer_email(
         payment_information->payer_email);
   }

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
@@ -42,17 +43,16 @@ class TestResizeAreaDelegate : public ResizeAreaDelegate {
   bool on_resize_called() { return on_resize_called_; }
 
  private:
-  int resize_amount_;
-  bool done_resizing_;
-  bool on_resize_called_;
+  int resize_amount_ = 0;
+  bool done_resizing_ = false;
+  bool on_resize_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestResizeAreaDelegate);
 };
 
-TestResizeAreaDelegate::TestResizeAreaDelegate()
-    : resize_amount_(0), done_resizing_(false), on_resize_called_(false) {}
+TestResizeAreaDelegate::TestResizeAreaDelegate() = default;
 
-TestResizeAreaDelegate::~TestResizeAreaDelegate() {}
+TestResizeAreaDelegate::~TestResizeAreaDelegate() = default;
 
 void TestResizeAreaDelegate::OnResize(int resize_amount, bool done_resizing) {
   resize_amount_ = resize_amount;
@@ -94,9 +94,9 @@ class ResizeAreaTest : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(ResizeAreaTest);
 };
 
-ResizeAreaTest::ResizeAreaTest() {}
+ResizeAreaTest::ResizeAreaTest() = default;
 
-ResizeAreaTest::~ResizeAreaTest() {}
+ResizeAreaTest::~ResizeAreaTest() = default;
 
 void ResizeAreaTest::ProcessGesture(ui::EventType type,
                                     const gfx::Vector2dF& delta) {
@@ -117,7 +117,7 @@ void ResizeAreaTest::ProcessGesture(ui::EventType type,
 void ResizeAreaTest::SetUp() {
   views::ViewsTestBase::SetUp();
 
-  delegate_.reset(new TestResizeAreaDelegate);
+  delegate_ = std::make_unique<TestResizeAreaDelegate>();
   resize_area_ = new ResizeArea(delegate_.get());
 
   gfx::Size size(10, 10);
@@ -187,7 +187,8 @@ TEST_F(ResizeAreaTest, SuccessfulGestureDrag) {
   event_generator()->GestureScrollSequenceWithCallback(
       start, gfx::Point(start.x() + kGestureScrollDistance, start.y()),
       base::TimeDelta::FromMilliseconds(200), kGestureScrollSteps,
-      base::Bind(&ResizeAreaTest::ProcessGesture, base::Unretained(this)));
+      base::BindRepeating(&ResizeAreaTest::ProcessGesture,
+                          base::Unretained(this)));
 }
 
 // Verifies that no resize is performed on a gesture tap.

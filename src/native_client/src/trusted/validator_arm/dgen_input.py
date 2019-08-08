@@ -76,6 +76,8 @@ table_desc     ::= '+' '-' '-' id citation?
 violation      ::= bit_expr '=>' 'error' '(' quoted_string (',' bit_expr)* ')'
 """
 
+from __future__ import print_function
+
 import re
 import dgen_core
 # The following import adds type information for decoder actions corresponding
@@ -539,9 +541,9 @@ class Parser(object):
       args.append(self._bit_expr(context))
     self._read_token(')')
     if len(args) == 1 and name in dgen_core.DGEN_TYPE_TO_CPP_TYPE.keys():
-        return dgen_core.TypeCast(name, args[0])
+      return dgen_core.TypeCast(name, args[0])
     else:
-        return dgen_core.FunctionCall(name, args)
+      return dgen_core.FunctionCall(name, args)
 
   def _citation(self):
     """ citation ::= '(' word+ ')' """
@@ -594,10 +596,10 @@ class Parser(object):
     return starred_actions
 
   def _decoder_defn_end(self, action):
-      """Called when at end of a decoder definition. Used to
+    """Called when at end of a decoder definition. Used to
          turn off type checking."""
-      action.force_type_checking(False)
-      return action
+    action.force_type_checking(False)
+    return action
 
   def _decoder_defn(self, starred_actions):
     """decoder_defn ::=  fields? action_option*
@@ -1098,7 +1100,7 @@ class Parser(object):
       self._unexpected('Expected "%s" but found "%s"'
                        % (kind, token.kind))
     if _TRACE_TOKENS:
-      print "Read %s" % token
+      print("Read %s" % token)
     return token
 
   def _is_next_tokens(self, tokens):
@@ -1223,7 +1225,7 @@ class Parser(object):
   def _pushback_token(self, token):
     """Puts token back on to the input stream."""
     if _TRACE_TOKENS:
-      print "pushback %s" % token
+      print("pushback %s" % token)
     if self._token:
       self._pushed_tokens.append(self._token)
       self._token = token

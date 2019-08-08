@@ -50,11 +50,11 @@ content::ResourceType GetResourceTypeFromMimeType(
   if (mime_type.empty()) {
     return fallback;
   } else if (blink::IsSupportedImageMimeType(mime_type)) {
-    return content::RESOURCE_TYPE_IMAGE;
+    return content::ResourceType::kImage;
   } else if (blink::IsSupportedJavascriptMimeType(mime_type)) {
-    return content::RESOURCE_TYPE_SCRIPT;
+    return content::ResourceType::kScript;
   } else if (net::MatchesMimeType("text/css", mime_type)) {
-    return content::RESOURCE_TYPE_STYLESHEET;
+    return content::ResourceType::kStylesheet;
   } else {
     bool found =
         std::any_of(std::begin(kFontMimeTypes), std::end(kFontMimeTypes),
@@ -62,7 +62,7 @@ content::ResourceType GetResourceTypeFromMimeType(
                       return net::MatchesMimeType(mime, mime_type);
                     });
     if (found)
-      return content::RESOURCE_TYPE_FONT_RESOURCE;
+      return content::ResourceType::kFontResource;
   }
   return fallback;
 }
@@ -74,11 +74,11 @@ content::ResourceType GetResourceType(content::ResourceType resource_type,
   // Restricts content::RESOURCE_TYPE_{PREFETCH,SUB_RESOURCE,XHR} to a small set
   // of mime types, because these resource types don't communicate how the
   // resources will be used.
-  if (resource_type == content::RESOURCE_TYPE_PREFETCH ||
-      resource_type == content::RESOURCE_TYPE_SUB_RESOURCE ||
-      resource_type == content::RESOURCE_TYPE_XHR) {
+  if (resource_type == content::ResourceType::kPrefetch ||
+      resource_type == content::ResourceType::kSubResource ||
+      resource_type == content::ResourceType::kXhr) {
     return GetResourceTypeFromMimeType(mime_type,
-                                       content::RESOURCE_TYPE_LAST_TYPE);
+                                       content::ResourceType::kSubResource);
   }
   return resource_type;
 }
@@ -249,11 +249,11 @@ bool LoadingDataCollector::IsHandledResourceType(
     const std::string& mime_type) {
   content::ResourceType actual_resource_type =
       GetResourceType(resource_type, mime_type);
-  return actual_resource_type == content::RESOURCE_TYPE_MAIN_FRAME ||
-         actual_resource_type == content::RESOURCE_TYPE_STYLESHEET ||
-         actual_resource_type == content::RESOURCE_TYPE_SCRIPT ||
-         actual_resource_type == content::RESOURCE_TYPE_IMAGE ||
-         actual_resource_type == content::RESOURCE_TYPE_FONT_RESOURCE;
+  return actual_resource_type == content::ResourceType::kMainFrame ||
+         actual_resource_type == content::ResourceType::kStylesheet ||
+         actual_resource_type == content::ResourceType::kScript ||
+         actual_resource_type == content::ResourceType::kImage ||
+         actual_resource_type == content::ResourceType::kFontResource;
 }
 
 void LoadingDataCollector::CleanupAbandonedNavigations(

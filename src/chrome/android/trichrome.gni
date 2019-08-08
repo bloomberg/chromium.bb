@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import("//base/android/proguard/proguard.gni")
-import("//build/config/android/chrome_version.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/util/version.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
 
 if (!defined(default_trichrome_certdigest)) {
@@ -21,6 +21,10 @@ declare_args() {
   # Android. You can use "apksigner verify --print-certs" on the signed APK to
   # calculate the correct digest.
   trichrome_certdigest = default_trichrome_certdigest
+
+  # WIP: Enable synchronized proguard for Trichrome. (http://crbug.com/901465)
+  # Only affects trichrome targets when !is_java_debug.
+  enable_trichrome_synchronized_proguard = false
 }
 
 trichrome_jinja_variables = [
@@ -33,6 +37,9 @@ trichrome_jinja_variables = [
   "use32bitAbi=android:use32bitAbi=\"true\"",
 ]
 
+trichrome_synchronized_proguard =
+    enable_trichrome_synchronized_proguard && !is_java_debug
+
 template("trichrome_library_apk_tmpl") {
   android_apk(target_name) {
     forward_variables_from(invoker,
@@ -40,6 +47,7 @@ template("trichrome_library_apk_tmpl") {
                              "apk_name",
                              "android_manifest",
                              "android_manifest_dep",
+                             "static_library_dependent_targets",
                            ])
 
     # TODO(torne): this contains the list of locales amongst other things.
@@ -59,6 +67,7 @@ template("trichrome_library_apk_tmpl") {
     uncompress_dex = use_uncompressed_dex
     version_name = chrome_version_name
     version_code = trichrome_version_code
+    min_sdk_version = 28
 
     # TODO(torne): using system_webview_resources just to get a temporary icon
     deps = [

@@ -27,6 +27,7 @@
 #include "ui/base/models/table_model_observer.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
@@ -287,7 +288,7 @@ void TaskManagerView::ShowContextMenuForViewImpl(
                                            views::MenuRunner::CONTEXT_MENU));
 
   menu_runner_->RunMenuAt(GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
-                          views::MENU_ANCHOR_TOPLEFT, source_type);
+                          views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 bool TaskManagerView::IsCommandIdChecked(int id) const {
@@ -332,17 +333,19 @@ void TaskManagerView::Init() {
   }
 
   // Create the table view.
-  tab_table_ =
-      new views::TableView(nullptr, columns_, views::ICON_AND_TEXT, false);
+  auto tab_table = std::make_unique<views::TableView>(
+      nullptr, columns_, views::ICON_AND_TEXT, false);
+  tab_table_ = tab_table.get();
   table_model_.reset(new TaskManagerTableModel(this));
-  tab_table_->SetModel(table_model_.get());
-  tab_table_->SetGrouper(this);
-  tab_table_->set_observer(this);
-  tab_table_->set_context_menu_controller(this);
+  tab_table->SetModel(table_model_.get());
+  tab_table->SetGrouper(this);
+  tab_table->set_sort_on_paint(true);
+  tab_table->set_observer(this);
+  tab_table->set_context_menu_controller(this);
   set_context_menu_controller(this);
 
-  tab_table_parent_ = tab_table_->CreateParentIfNecessary();
-  AddChildView(tab_table_parent_);
+  tab_table_parent_ = AddChildView(
+      views::TableView::CreateScrollViewWithTable(std::move(tab_table)));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 

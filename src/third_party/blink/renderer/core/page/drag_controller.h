@@ -57,8 +57,6 @@ class CORE_EXPORT DragController final
   USING_GARBAGE_COLLECTED_MIXIN(DragController);
 
  public:
-  static DragController* Create(Page*);
-
   explicit DragController(Page*);
 
   DragOperation DragEnteredOrUpdated(DragData*, LocalFrame& local_root);

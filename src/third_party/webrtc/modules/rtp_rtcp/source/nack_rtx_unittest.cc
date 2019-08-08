@@ -8,18 +8,17 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include <algorithm>
 #include <iterator>
 #include <list>
 #include <memory>
 #include <set>
 
+#include "absl/algorithm/container.h"
 #include "absl/memory/memory.h"
 #include "api/call/transport.h"
 #include "api/transport/field_trial_based_config.h"
 #include "call/rtp_stream_receiver_controller.h"
 #include "call/rtx_receive_stream.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/rtp_rtcp/include/receive_statistics.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
@@ -136,7 +135,7 @@ class RtpRtcpRtxNackTest : public ::testing::Test {
     configuration.receive_statistics = receive_statistics_.get();
     configuration.outgoing_transport = &transport_;
     configuration.retransmission_rate_limiter = &retransmission_rate_limiter_;
-    rtp_rtcp_module_ = absl::WrapUnique(RtpRtcp::CreateRtpRtcp(configuration));
+    rtp_rtcp_module_ = RtpRtcp::Create(configuration);
     rtp_sender_video_ = absl::make_unique<RTPSenderVideo>(
         &fake_clock, rtp_rtcp_module_->RtpSender(), nullptr,
         &playout_delay_oracle_, nullptr, false, FieldTrialBasedConfig());
@@ -189,14 +188,11 @@ class RtpRtcpRtxNackTest : public ::testing::Test {
 
   bool ExpectedPacketsReceived() {
     std::list<uint16_t> received_sorted;
-    std::copy(media_stream_.sequence_numbers_.begin(),
-              media_stream_.sequence_numbers_.end(),
-              std::back_inserter(received_sorted));
+    absl::c_copy(media_stream_.sequence_numbers_,
+                 std::back_inserter(received_sorted));
     received_sorted.sort();
-    return received_sorted.size() ==
-               transport_.expected_sequence_numbers_.size() &&
-           std::equal(received_sorted.begin(), received_sorted.end(),
-                      transport_.expected_sequence_numbers_.begin());
+    return absl::c_equal(received_sorted,
+                         transport_.expected_sequence_numbers_);
   }
 
   void RunRtxTest(RtxMode rtx_method, int loss) {
@@ -212,8 +208,9 @@ class RtpRtcpRtxNackTest : public ::testing::Test {
       EXPECT_TRUE(rtp_rtcp_module_->OnSendingRtpFrame(timestamp, timestamp / 90,
                                                       kPayloadType, false));
       EXPECT_TRUE(rtp_sender_video_->SendVideo(
-          webrtc::kVideoFrameDelta, kPayloadType, timestamp, timestamp / 90,
-          payload_data, payload_data_length, nullptr, &video_header, 0));
+          VideoFrameType::kVideoFrameDelta, kPayloadType, timestamp,
+          timestamp / 90, payload_data, payload_data_length, nullptr,
+          &video_header, 0));
       // Min required delay until retransmit = 5 + RTT ms (RTT = 0).
       fake_clock.AdvanceTimeMilliseconds(5);
       int length = BuildNackList(nack_list);
@@ -263,8 +260,9 @@ TEST_F(RtpRtcpRtxNackTest, LongNackList) {
     EXPECT_TRUE(rtp_rtcp_module_->OnSendingRtpFrame(timestamp, timestamp / 90,
                                                     kPayloadType, false));
     EXPECT_TRUE(rtp_sender_video_->SendVideo(
-        webrtc::kVideoFrameDelta, kPayloadType, timestamp, timestamp / 90,
-        payload_data, payload_data_length, nullptr, &video_header, 0));
+        VideoFrameType::kVideoFrameDelta, kPayloadType, timestamp,
+        timestamp / 90, payload_data, payload_data_length, nullptr,
+        &video_header, 0));
     // Prepare next frame.
     timestamp += 3000;
     fake_clock.AdvanceTimeMilliseconds(33);

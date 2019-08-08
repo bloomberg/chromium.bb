@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
+#include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/common/resource_type.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -49,7 +50,7 @@ class ChromeContentBrowserClientExtensionsPart
   static bool ShouldUseSpareRenderProcessHost(Profile* profile,
                                               const GURL& site_url);
   static bool DoesSiteRequireDedicatedProcess(
-      content::BrowserContext* browser_context,
+      content::BrowserOrResourceContext browser_or_resource_context,
       const GURL& effective_site_url);
   static bool ShouldLockToOrigin(content::BrowserContext* browser_context,
                                  const GURL& effective_site_url);

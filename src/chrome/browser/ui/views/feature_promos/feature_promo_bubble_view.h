@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FEATURE_PROMOS_FEATURE_PROMO_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FEATURE_PROMOS_FEATURE_PROMO_BUBBLE_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_timeout.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
@@ -51,18 +54,22 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
       ActivationAction activation_action,
       int string_specifier,
       base::Optional<int> screenreader_string_specifier = base::nullopt,
-      base::Optional<ui::Accelerator> feature_accelerator = base::nullopt);
+      base::Optional<ui::Accelerator> feature_accelerator = base::nullopt,
+      std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout =
+          nullptr);
 
   // Closes the promo bubble.
   void CloseBubble();
 
  private:
-  FeaturePromoBubbleView(views::View* anchor_view,
-                         views::BubbleBorder::Arrow arrow,
-                         ActivationAction activation_action,
-                         int string_specifier,
-                         base::Optional<int> screenreader_string_specifier,
-                         base::Optional<ui::Accelerator> feature_accelerator);
+  FeaturePromoBubbleView(
+      views::View* anchor_view,
+      views::BubbleBorder::Arrow arrow,
+      ActivationAction activation_action,
+      int string_specifier,
+      base::Optional<int> screenreader_string_specifier,
+      base::Optional<ui::Accelerator> feature_accelerator,
+      std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout);
 
   // BubbleDialogDelegateView:
   int GetDialogButtons() const override;
@@ -70,20 +77,17 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   gfx::Rect GetBubbleBounds() override;
-  ax::mojom::Role GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
   base::string16 GetAccessibleWindowTitle() const override;
   void UpdateHighlightedButton(bool highlighted) override {
     // Do nothing: the anchor for promo bubbles should not highlight.
   }
 
-  // Starts a timer to close the promo bubble.
-  void StartAutoCloseTimer(base::TimeDelta auto_close_duration);
-
-  // Timer used to auto close the bubble.
-  base::OneShotTimer timer_;
   const ActivationAction activation_action_;
 
   base::string16 accessible_name_;
+
+  std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(FeaturePromoBubbleView);
 };

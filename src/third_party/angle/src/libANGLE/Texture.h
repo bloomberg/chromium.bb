@@ -43,6 +43,7 @@ class TextureGL;
 namespace gl
 {
 class Framebuffer;
+class MemoryObject;
 class Sampler;
 class State;
 class Texture;
@@ -111,11 +112,14 @@ class TextureState final : private angle::NonCopyable
 
     bool isCubeComplete() const;
 
-    ANGLE_INLINE bool compatibleWithSamplerFormat(SamplerFormat format) const
+    ANGLE_INLINE bool compatibleWithSamplerFormat(SamplerFormat format,
+                                                  const SamplerState &samplerState) const
     {
-        if (!mCachedSamplerFormatValid)
+        if (!mCachedSamplerFormatValid ||
+            mCachedSamplerCompareMode != samplerState.getCompareMode())
         {
-            mCachedSamplerFormat      = computeRequiredSamplerFormat();
+            mCachedSamplerFormat      = computeRequiredSamplerFormat(samplerState);
+            mCachedSamplerCompareMode = samplerState.getCompareMode();
             mCachedSamplerFormatValid = true;
         }
         // Incomplete textures are compatible with any sampler format.
@@ -152,7 +156,7 @@ class TextureState final : private angle::NonCopyable
     bool computeSamplerCompleteness(const SamplerState &samplerState, const State &data) const;
     bool computeMipmapCompleteness() const;
     bool computeLevelCompleteness(TextureTarget target, size_t level) const;
-    SamplerFormat computeRequiredSamplerFormat() const;
+    SamplerFormat computeRequiredSamplerFormat(const SamplerState &samplerState) const;
 
     TextureTarget getBaseImageTarget() const;
 
@@ -200,6 +204,7 @@ class TextureState final : private angle::NonCopyable
     InitState mInitState;
 
     mutable SamplerFormat mCachedSamplerFormat;
+    mutable GLenum mCachedSamplerCompareMode;
     mutable bool mCachedSamplerFormatValid;
 };
 
@@ -345,8 +350,7 @@ class Texture final : public RefCountObject,
                             GLenum internalFormat,
                             Framebuffer *source);
     angle::Result copySubImage(Context *context,
-                               TextureTarget target,
-                               GLint level,
+                               const ImageIndex &index,
                                const Offset &destOffset,
                                const Rectangle &sourceArea,
                                Framebuffer *source);
@@ -385,6 +389,14 @@ class Texture final : public RefCountObject,
                                         GLint internalformat,
                                         const Extents &size,
                                         bool fixedSampleLocations);
+
+    angle::Result setStorageExternalMemory(Context *context,
+                                           TextureType type,
+                                           GLsizei levels,
+                                           GLenum internalFormat,
+                                           const Extents &size,
+                                           MemoryObject *memoryObject,
+                                           GLuint64 offset);
 
     angle::Result setEGLImageTarget(Context *context, TextureType type, egl::Image *imageTarget);
 

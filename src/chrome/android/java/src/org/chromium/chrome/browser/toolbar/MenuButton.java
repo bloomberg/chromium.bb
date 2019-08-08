@@ -14,10 +14,12 @@ import android.support.annotation.DrawableRes;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -26,6 +28,7 @@ import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuButtonState;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -52,6 +55,12 @@ public class MenuButton extends FrameLayout implements TintObserver {
     /** A provider that notifies components when the theme color changes.*/
     private ThemeColorProvider mThemeColorProvider;
 
+    /** The menu button text label. */
+    private TextView mLabel;
+
+    /** The wrapper View that contains the menu button and the label. */
+    private View mWrapper;
+
     public MenuButton(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -65,8 +74,10 @@ public class MenuButton extends FrameLayout implements TintObserver {
 
     public void setAppMenuButtonHelper(AppMenuButtonHelper appMenuButtonHelper) {
         mAppMenuButtonHelper = appMenuButtonHelper;
+        View touchView = mWrapper != null ? mWrapper : mMenuImageButton;
+        if (mWrapper != null) mWrapper.setOnTouchListener(mAppMenuButtonHelper);
         mMenuImageButton.setOnTouchListener(mAppMenuButtonHelper);
-        mMenuImageButton.setAccessibilityDelegate(mAppMenuButtonHelper);
+        touchView.setAccessibilityDelegate(mAppMenuButtonHelper);
     }
 
     public AppMenuButtonHelper getAppMenuButtonHelper() {
@@ -79,6 +90,16 @@ public class MenuButton extends FrameLayout implements TintObserver {
 
     public ImageButton getImageButton() {
         return mMenuImageButton;
+    }
+
+    /**
+     * @param wrapper The wrapping View of this button.
+     */
+    public void setWrapperView(ViewGroup wrapper) {
+        mWrapper = wrapper;
+        mWrapper.setOnClickListener(null);
+        mLabel = mWrapper.findViewById(R.id.menu_button_label);
+        if (FeatureUtilities.isLabeledBottomToolbarEnabled()) mLabel.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -269,6 +290,8 @@ public class MenuButton extends FrameLayout implements TintObserver {
         ApiCompatibilityUtils.setImageTintList(mMenuImageButton, tintList);
         mUseLightDrawables = useLight;
         updateImageResources();
+
+        if (mLabel != null) mLabel.setTextColor(tintList);
     }
 
     public void destroy() {

@@ -74,7 +74,7 @@ class CORE_EXPORT DocumentInit final {
   bool HasSecurityContext() const { return MasterDocumentLoader(); }
   bool IsSrcdocDocument() const;
   bool ShouldSetURL() const;
-  SandboxFlags GetSandboxFlags() const;
+  WebSandboxFlags GetSandboxFlags() const;
   bool IsHostedInReservedIPRange() const;
   WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
   SecurityContext::InsecureNavigationsSet* InsecureNavigationsToUpgrade() const;

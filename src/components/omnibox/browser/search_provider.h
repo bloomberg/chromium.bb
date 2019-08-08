@@ -131,7 +131,6 @@ class SearchProvider : public BaseSearchProvider,
       keyword_provider_ = keyword_provider;
     }
 
-    TemplateURLService* template_url_service() { return template_url_service_; }
     const base::string16& default_provider() const { return default_provider_; }
     const base::string16& keyword_provider() const { return keyword_provider_; }
 

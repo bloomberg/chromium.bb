@@ -18,8 +18,8 @@
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/process/process_metrics.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/scheduler_worker_pool_params.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/scheduler_worker_pool_params.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #import "ios/web/net/cookie_notification_bridge.h"
 #include "ios/web/public/app/web_main_parts.h"
@@ -92,7 +92,7 @@ void WebMainLoop::MainMessageLoopStart() {
 }
 
 void WebMainLoop::CreateStartupTasks(
-    TaskSchedulerInitParamsCallback init_params_callback) {
+    ThreadPoolInitParamsCallback init_params_callback) {
   int result = 0;
   result = PreCreateThreads();
   if (result > 0)
@@ -120,12 +120,12 @@ int WebMainLoop::PreCreateThreads() {
 }
 
 int WebMainLoop::CreateThreads(
-    TaskSchedulerInitParamsCallback init_params_callback) {
-  std::unique_ptr<base::TaskScheduler::InitParams> init_params;
+    ThreadPoolInitParamsCallback init_params_callback) {
+  std::unique_ptr<base::ThreadPool::InitParams> init_params;
   if (!init_params_callback.is_null()) {
     init_params = std::move(init_params_callback).Run();
   }
-  ios_global_state::StartTaskScheduler(init_params.get());
+  ios_global_state::StartThreadPool(init_params.get());
 
   base::Thread::Options io_message_loop_options;
   io_message_loop_options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -170,7 +170,7 @@ void WebMainLoop::ShutdownThreadsAndCleanUp() {
   // Also allow waiting to join threads.
   // TODO(crbug.com/800808): Ideally this (and the above SetIOAllowed()
   // would be scoped allowances). That would be one of the first step to ensure
-  // no persistent work is being done after TaskScheduler::Shutdown() in order
+  // no persistent work is being done after ThreadPool::Shutdown() in order
   // to move towards atomic shutdown.
   base::ThreadRestrictions::SetWaitAllowed(true);
   base::PostTaskWithTraits(
@@ -190,13 +190,13 @@ void WebMainLoop::ShutdownThreadsAndCleanUp() {
   // is the main thread).
   static_assert(WebThread::ID_COUNT == 2, "Unhandled WebThread");
 
-  // Shutdown TaskScheduler after the other threads. Other threads such as the
+  // Shutdown ThreadPool after the other threads. Other threads such as the
   // I/O thread may need to schedule work like closing files or flushing data
-  // during shutdown, so TaskScheduler needs to be available. There may also be
+  // during shutdown, so ThreadPool needs to be available. There may also be
   // slow operations pending that will block shutdown, so closing it here (which
   // will block until required operations are complete) gives more head start
   // for those operations to finish.
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
 
   URLDataManagerIOS::DeleteDataSources();
 

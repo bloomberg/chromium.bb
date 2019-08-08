@@ -61,6 +61,11 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(bindings::V8ValueOrScriptW
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
+  if (UNLIKELY(ScriptForbiddenScope::IsScriptForbidden())) {
+    ScriptForbiddenScope::ThrowScriptForbiddenException(GetIsolate());
+    return v8::Nothing<void>();
+  }
+
   v8::Local<v8::Function> function;
   // callback function's invoke:
   // step 4. If ! IsCallable(F) is false:

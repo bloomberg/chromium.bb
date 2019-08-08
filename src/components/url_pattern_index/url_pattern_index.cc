@@ -767,6 +767,10 @@ UrlPatternIndexMatcher::UrlPatternIndexMatcher(
 }
 
 UrlPatternIndexMatcher::~UrlPatternIndexMatcher() = default;
+UrlPatternIndexMatcher::UrlPatternIndexMatcher(UrlPatternIndexMatcher&&) =
+    default;
+UrlPatternIndexMatcher& UrlPatternIndexMatcher::operator=(
+    UrlPatternIndexMatcher&&) = default;
 
 const flat::UrlRule* UrlPatternIndexMatcher::FindMatch(
     const GURL& url,

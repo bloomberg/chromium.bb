@@ -20,12 +20,8 @@ struct DragDescriptor {
   gfx::Point original_keyboard_location;
   gfx::Vector2d original_click_offset;
 
-  // Distinguish whether the current drag is from a touch event or mouse event,
-  // so drag/move events can be filtered accordingly
-  bool is_touch_drag;
-
   // The pointer ID provided by the touch event to disambiguate multiple
-  // touch points. If this is a mouse event, then this value is -1.
+  // touch points. If this is a mouse event, then this value is kMousePointerId.
   ui::PointerId pointer_id;
 };
 

@@ -6,6 +6,9 @@
 
 namespace chrome {
 
+const char kAccessibilityLabelsLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=image_descriptions";
+
 const char kAutomaticSettingsResetLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_automatic_settings_reset";
 
@@ -143,6 +146,9 @@ const char kGoogleAccountActivityControlsURL[] =
 
 const char kGoogleAccountURL[] = "https://myaccount.google.com";
 
+const char kGoogleAccountChooserURL[] =
+    "https://accounts.google.com/AccountChooser";
+
 const char kGooglePasswordManagerURL[] = "https://passwords.google.com";
 
 const char kLearnMoreReportingURL[] =
@@ -154,7 +160,11 @@ const char kLegacySupervisedUserManagementURL[] =
     "https://www.chrome.com/manage";
 
 const char kManagedUiLearnMoreUrl[] =
+#if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook/?p=is_chrome_managed";
+#else
+    "https://support.google.com/chrome/?p=is_chrome_managed";
+#endif
 
 const char kMyActivityUrlInClearBrowsingData[] =
     "https://myactivity.google.com/myactivity/?utm_source=chrome_cbd";

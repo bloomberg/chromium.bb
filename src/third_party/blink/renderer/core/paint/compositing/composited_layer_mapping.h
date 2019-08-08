@@ -245,6 +245,9 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // position.
   GraphicsLayer* DetachLayerForOverflowControls();
 
+  // We may similarly need to reattach the layer for outlines and decorations.
+  GraphicsLayer* DetachLayerForDecorationOutline();
+
   void UpdateFilters();
   void UpdateBackdropFilters();
 
@@ -435,7 +438,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // Result is transform origin in pixels.
   FloatPoint3D ComputeTransformOrigin(const IntRect& border_box) const;
 
-  void UpdateHitTestableWithoutDrawsContent(const bool&);
   void UpdateOpacity(const ComputedStyle&);
   void UpdateTransform(const ComputedStyle&);
   void UpdateLayerBlendMode(const ComputedStyle&);
@@ -666,6 +668,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // We keep track of the scrolling contents offset, so that when it changes we
   // can notify the ScrollingCoordinator, which passes on main-thread scrolling
   // updates to the compositor.
+  // TODO(bokan): scrolling_contents_offset_ can be removed when BGPT ships.
   DoubleSize scrolling_contents_offset_;
 
   const PaintLayer* clip_inheritance_ancestor_;

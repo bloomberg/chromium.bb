@@ -119,6 +119,9 @@ void TestDataReductionProxyConfig::SetInFlightWarmupProxyDetails(
     base::Optional<
         std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
         in_flight_warmup_proxy_details) {
+  // |is_core_proxy| should be true since all proxies are now marked as core.
+  DCHECK(!in_flight_warmup_proxy_details ||
+         in_flight_warmup_proxy_details->second);
   in_flight_warmup_proxy_details_ = in_flight_warmup_proxy_details;
 }
 

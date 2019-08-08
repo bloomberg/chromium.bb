@@ -53,7 +53,7 @@ class SpdySessionPoolTest : public TestWithScopedTaskEnvironment {
     SPDY_POOL_CLOSE_IDLE_SESSIONS,
   };
 
-  SpdySessionPoolTest() : spdy_session_pool_(NULL) {}
+  SpdySessionPoolTest() : spdy_session_pool_(nullptr) {}
 
   void CreateNetworkSession() {
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
@@ -733,14 +733,6 @@ TEST_F(SpdySessionPoolTest, IPPoolingClientCert) {
       reinterpret_cast<const char*>(webkit_der), sizeof(webkit_der));
   ASSERT_TRUE(ssl.ssl_info.cert);
   ssl.ssl_info.client_cert_sent = true;
-  ssl.next_proto = kProtoHTTP2;
-  RunIPPoolingDisabledTest(&ssl);
-}
-
-// Verifies that an SSL connection with channel ID disables SPDY IP pooling.
-TEST_F(SpdySessionPoolTest, IPPoolingChannelID) {
-  SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.ssl_info.channel_id_sent = true;
   ssl.next_proto = kProtoHTTP2;
   RunIPPoolingDisabledTest(&ssl);
 }

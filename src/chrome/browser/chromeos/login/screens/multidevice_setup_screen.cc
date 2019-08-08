@@ -25,10 +25,9 @@ constexpr const char kDeclinedSetupUserAction[] = "setup-declined";
 }  // namespace
 
 MultiDeviceSetupScreen::MultiDeviceSetupScreen(
-    BaseScreenDelegate* base_screen_delegate,
     MultiDeviceSetupScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_MULTIDEVICE_SETUP),
+    : BaseScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

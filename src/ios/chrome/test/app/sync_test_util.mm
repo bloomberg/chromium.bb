@@ -14,12 +14,12 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/local_device_info_provider.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/net/http_bridge_network_resources.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
@@ -54,7 +54,7 @@ void OverrideSyncNetworkResources(
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   DCHECK(browser_state);
-  browser_sync::ProfileSyncService* service =
+  syncer::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
           browser_state);
   service->OverrideNetworkResourcesForTest(std::move(resources));
@@ -183,8 +183,8 @@ void InjectAutofillProfileOnFakeSyncServer(std::string guid,
 
   std::unique_ptr<syncer::LoopbackServerEntity> entity =
       syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
-          /*non_unique_name=*/std::string(), /*client_tag=*/guid,
-          entity_specifics, 12345, 12345);
+          /*non_unique_name=*/guid, /*client_tag=*/guid, entity_specifics,
+          12345, 12345);
   gSyncFakeServer->InjectEntity(std::move(entity));
 }
 
@@ -193,17 +193,19 @@ void DeleteAutofillProfileOnFakeSyncServer(std::string guid) {
   std::vector<sync_pb::SyncEntity> autofill_profiles =
       gSyncFakeServer->GetSyncEntitiesByModelType(syncer::AUTOFILL_PROFILE);
   std::string entity_id;
+  std::string client_tag_hash;
   for (const sync_pb::SyncEntity& autofill_profile : autofill_profiles) {
     if (autofill_profile.specifics().autofill_profile().guid() == guid) {
       entity_id = autofill_profile.id_string();
+      client_tag_hash = autofill_profile.client_defined_unique_tag();
       break;
     }
   }
   // Delete the entity if it exists.
   if (!entity_id.empty()) {
     std::unique_ptr<syncer::LoopbackServerEntity> entity;
-    entity =
-        syncer::PersistentTombstoneEntity::CreateNew(entity_id, std::string());
+    entity = syncer::PersistentTombstoneEntity::CreateNew(entity_id,
+                                                          client_tag_hash);
     gSyncFakeServer->InjectEntity(std::move(entity));
   }
 }

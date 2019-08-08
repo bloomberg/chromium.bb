@@ -34,6 +34,7 @@
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_bindings.h"
@@ -137,9 +138,7 @@ ContextResult CommandBufferProxyImpl::Initialize(
 }
 
 bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
-  base::Optional<base::AutoLock> lock;
-  if (lock_)
-    lock.emplace(*lock_);
+  base::AutoLockMaybe lock(lock_);
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(CommandBufferProxyImpl, message)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Destroyed, OnDestroyed);
@@ -164,9 +163,7 @@ bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void CommandBufferProxyImpl::OnChannelError() {
-  base::Optional<base::AutoLock> lock;
-  if (lock_)
-    lock.emplace(*lock_);
+  base::AutoLockMaybe lock(lock_);
   base::AutoLock last_state_lock(last_state_lock_);
 
   gpu::error::ContextLostReason context_lost_reason =
@@ -439,9 +436,11 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
     image_fence_sync = GenerateFenceSyncRelease();
 
   DCHECK(gpu::IsImageFromGpuMemoryBufferFormatSupported(
-      gpu_memory_buffer->GetFormat(), capabilities_));
+      gpu_memory_buffer->GetFormat(), capabilities_))
+      << gfx::BufferFormatToString(gpu_memory_buffer->GetFormat());
   DCHECK(gpu::IsImageSizeValidForGpuMemoryBufferFormat(
-      gfx::Size(width, height), gpu_memory_buffer->GetFormat()));
+      gfx::Size(width, height), gpu_memory_buffer->GetFormat()))
+      << gfx::BufferFormatToString(gpu_memory_buffer->GetFormat());
 
   GpuCommandBufferMsg_CreateImage_Params params;
   params.id = new_id;
@@ -848,9 +847,7 @@ void CommandBufferProxyImpl::DisconnectChannelInFreshCallStack() {
 }
 
 void CommandBufferProxyImpl::LockAndDisconnectChannel() {
-  base::Optional<base::AutoLock> hold;
-  if (lock_)
-    hold.emplace(*lock_);
+  base::AutoLockMaybe lock(lock_);
   DisconnectChannel();
 }
 

@@ -148,7 +148,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
 
     @Override
     public boolean doesProcessSuggestion(OmniboxSuggestion suggestion) {
-        Tab activeTab = mTabProvider != null ? mTabProvider.getActivityTab() : null;
+        Tab activeTab = mTabProvider != null ? mTabProvider.get() : null;
 
         // The what-you-typed suggestion can potentially appear as the second suggestion in some
         // cases. If the first suggestion isn't the one we want, ignore all subsequent suggestions.
@@ -208,7 +208,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         }
         model.set(EditUrlSuggestionProperties.BUTTON_CLICK_LISTENER, this);
 
-        if (mOriginalTitle == null) mOriginalTitle = mTabProvider.getActivityTab().getTitle();
+        if (mOriginalTitle == null) mOriginalTitle = mTabProvider.get().getTitle();
         model.set(EditUrlSuggestionProperties.TITLE_TEXT, mOriginalTitle);
         model.set(EditUrlSuggestionProperties.URL_TEXT, mLastProcessedSuggestion.getUrl());
     }
@@ -256,7 +256,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
 
     @Override
     public void onClick(View view) {
-        Tab activityTab = mTabProvider.getActivityTab();
+        Tab activityTab = mTabProvider.get();
         assert activityTab != null : "A tab is required to make changes to the location bar.";
 
         if (R.id.url_copy_icon == view.getId()) {

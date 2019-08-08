@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/after_startup_task_utils.h"
 #include "components/certificate_transparency/sth_observer.h"
 #include "components/certificate_transparency/sth_reporter.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -43,8 +42,6 @@ class STHSetComponentInstallerTest : public PlatformTest {
  public:
   STHSetComponentInstallerTest()
       : network_service_(std::make_unique<network::NetworkService>(nullptr)) {
-    AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
-
     network_service_->sth_reporter()->RegisterObserver(&observer_);
   }
 

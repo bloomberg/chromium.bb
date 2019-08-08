@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "services/tracing/public/cpp/base_agent.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
@@ -76,9 +76,9 @@ void TracedProcessImpl::ConnectToTracingService(
     mojom::ConnectToTracingRequestPtr request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Tracing requires a running TaskScheduler; disable tracing
+  // Tracing requires a running ThreadPool; disable tracing
   // for processes without it.
-  if (!base::TaskScheduler::GetInstance()) {
+  if (!base::ThreadPool::GetInstance()) {
     return;
   }
 

@@ -204,9 +204,11 @@ void WebContentsObserverProxy::DidDetachInterstitialPage() {
   Java_WebContentsObserverProxy_didDetachInterstitialPage(env, java_observer_);
 }
 
-void WebContentsObserverProxy::DidChangeThemeColor(SkColor color) {
+void WebContentsObserverProxy::DidChangeThemeColor(
+    base::Optional<SkColor> color) {
   JNIEnv* env = AttachCurrentThread();
-  Java_WebContentsObserverProxy_didChangeThemeColor(env, java_observer_, color);
+  Java_WebContentsObserverProxy_didChangeThemeColor(
+      env, java_observer_, color.value_or(SK_ColorTRANSPARENT));
 }
 
 void WebContentsObserverProxy::MediaEffectivelyFullscreenChanged(
@@ -270,6 +272,16 @@ void WebContentsObserverProxy::ViewportFitChanged(
 void WebContentsObserverProxy::DidReloadLoFiImages() {
   JNIEnv* env = AttachCurrentThread();
   Java_WebContentsObserverProxy_didReloadLoFiImages(env, java_observer_);
+}
+
+void WebContentsObserverProxy::OnWebContentsFocused(RenderWidgetHost*) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_onWebContentsFocused(env, java_observer_);
+}
+
+void WebContentsObserverProxy::OnWebContentsLostFocus(RenderWidgetHost*) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_onWebContentsLostFocus(env, java_observer_);
 }
 
 }  // namespace content

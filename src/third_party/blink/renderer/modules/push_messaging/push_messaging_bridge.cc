@@ -71,7 +71,7 @@ ScriptPromise PushMessagingBridge::GetPermissionState(
                                mojo::MakeRequest(&permission_service_));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // The `userVisibleOnly` flag on |options| must be set, as it's intended to be

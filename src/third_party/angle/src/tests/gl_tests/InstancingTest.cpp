@@ -51,6 +51,8 @@ class InstancingTest : public ANGLETest
         glDeleteBuffers(1, &mInstanceBuffer);
         glDeleteProgram(mProgram[0]);
         glDeleteProgram(mProgram[1]);
+
+        ANGLETest::TearDown();
     }
 
     void SetUp() override
@@ -113,7 +115,7 @@ class InstancingTest : public ANGLETest
 
         // TODO: Fix these.  http://anglebug.com/3129
         ANGLE_SKIP_TEST_IF(IsD3D9() && draw == Indexed && geometry == Point);
-        ANGLE_SKIP_TEST_IF(IsD3D9() && IsAMD() && geometry == Point);
+        ANGLE_SKIP_TEST_IF(IsD3D9() && IsAMD());
 
         // D3D11 FL9_3 has a special codepath that emulates instanced points rendering
         // but it has bugs and was only implemented for vertex positions in a buffer object,
@@ -210,7 +212,7 @@ class InstancingTest : public ANGLETest
     GLuint mInstanceBuffer;
 
     static constexpr unsigned kMaxDrawn = 16;
-    static constexpr float kDrawSize = 2.0 / kMaxDrawn;
+    static constexpr float kDrawSize    = 2.0 / kMaxDrawn;
     GLfloat mInstanceData[kMaxDrawn];
 
     // clang-format off

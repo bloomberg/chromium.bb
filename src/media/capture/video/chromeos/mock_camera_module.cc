@@ -59,6 +59,13 @@ void MockCameraModule::SetTorchMode(int32_t camera_id,
   std::move(callback).Run(0);
 }
 
+void MockCameraModule::GetVendorTagOps(
+    cros::mojom::VendorTagOpsRequest vendor_tag_ops_request,
+    GetVendorTagOpsCallback callback) {
+  DoGetVendorTagOps(vendor_tag_ops_request, callback);
+  std::move(callback).Run();
+}
+
 cros::mojom::CameraModulePtrInfo MockCameraModule::GetInterfacePtrInfo() {
   base::WaitableEvent done(base::WaitableEvent::ResetPolicy::MANUAL,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);

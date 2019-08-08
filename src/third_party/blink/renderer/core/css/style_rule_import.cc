@@ -32,11 +32,6 @@
 
 namespace blink {
 
-StyleRuleImport* StyleRuleImport::Create(const String& href,
-                                         scoped_refptr<MediaQuerySet> media) {
-  return MakeGarbageCollected<StyleRuleImport>(href, media);
-}
-
 StyleRuleImport::StyleRuleImport(const String& href,
                                  scoped_refptr<MediaQuerySet> media)
     : StyleRuleBase(kImport),

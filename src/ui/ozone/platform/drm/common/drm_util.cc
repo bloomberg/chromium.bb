@@ -11,6 +11,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/containers/flat_map.h"

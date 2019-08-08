@@ -98,6 +98,20 @@ class IterateAndScavengePromotedObjectsVisitor final : public ObjectVisitor {
     HandleSlot(host, FullHeapObjectSlot(&heap_object), heap_object);
   }
 
+  inline void VisitEphemeron(HeapObject obj, int entry, ObjectSlot key,
+                             ObjectSlot value) override {
+    DCHECK(Heap::IsLargeObject(obj) || obj->IsEphemeronHashTable());
+    VisitPointer(obj, value);
+
+    if (ObjectInYoungGeneration(*key)) {
+      // We cannot check the map here, as it might be a large object.
+      scavenger_->RememberPromotedEphemeron(
+          EphemeronHashTable::unchecked_cast(obj), entry);
+    } else {
+      VisitPointer(obj, key);
+    }
+  }
+
  private:
   template <typename TSlot>
   V8_INLINE void VisitPointersImpl(HeapObject host, TSlot start, TSlot end) {
@@ -151,10 +165,24 @@ class IterateAndScavengePromotedObjectsVisitor final : public ObjectVisitor {
   const bool record_slots_;
 };
 
-static bool IsUnscavengedHeapObject(Heap* heap, FullObjectSlot p) {
-  return Heap::InFromPage(*p) &&
-         !HeapObject::cast(*p)->map_word().IsForwardingAddress();
+namespace {
+
+V8_INLINE bool IsUnscavengedHeapObject(Heap* heap, Object object) {
+  return Heap::InFromPage(object) &&
+         !HeapObject::cast(object)->map_word().IsForwardingAddress();
 }
+
+// Same as IsUnscavengedHeapObject() above but specialized for HeapObjects.
+V8_INLINE bool IsUnscavengedHeapObject(Heap* heap, HeapObject heap_object) {
+  return Heap::InFromPage(heap_object) &&
+         !heap_object->map_word().IsForwardingAddress();
+}
+
+bool IsUnscavengedHeapObjectSlot(Heap* heap, FullObjectSlot p) {
+  return IsUnscavengedHeapObject(heap, *p);
+}
+
+}  // namespace
 
 class ScavengeWeakObjectRetainer : public WeakObjectRetainer {
  public:
@@ -185,9 +213,10 @@ void ScavengerCollector::CollectGarbage() {
   OneshotBarrier barrier(base::TimeDelta::FromMilliseconds(kMaxWaitTimeMs));
   Scavenger::CopiedList copied_list(num_scavenge_tasks);
   Scavenger::PromotionList promotion_list(num_scavenge_tasks);
+  EphemeronTableList ephemeron_table_list(num_scavenge_tasks);
   for (int i = 0; i < num_scavenge_tasks; i++) {
     scavengers[i] = new Scavenger(this, heap_, is_logging, &copied_list,
-                                  &promotion_list, i);
+                                  &promotion_list, &ephemeron_table_list, i);
     job.AddTask(new ScavengingTask(heap_, scavengers[i], &barrier));
   }
 
@@ -235,7 +264,7 @@ void ScavengerCollector::CollectGarbage() {
       TRACE_GC(heap_->tracer(),
                GCTracer::Scope::SCAVENGER_SCAVENGE_WEAK_GLOBAL_HANDLES_PROCESS);
       isolate_->global_handles()->MarkYoungWeakUnmodifiedObjectsPending(
-          &IsUnscavengedHeapObject);
+          &IsUnscavengedHeapObjectSlot);
       isolate_->global_handles()->IterateYoungWeakUnmodifiedRootsForFinalizers(
           &root_scavenge_visitor);
       scavengers[kMainThreadId]->Process();
@@ -244,7 +273,7 @@ void ScavengerCollector::CollectGarbage() {
       DCHECK(promotion_list.IsEmpty());
       isolate_->global_handles()
           ->IterateYoungWeakUnmodifiedRootsForPhantomHandles(
-              &root_scavenge_visitor, &IsUnscavengedHeapObject);
+              &root_scavenge_visitor, &IsUnscavengedHeapObjectSlot);
     }
 
     {
@@ -280,8 +309,7 @@ void ScavengerCollector::CollectGarbage() {
     }
   }
 
-  ScavengeWeakObjectRetainer weak_object_retainer;
-  heap_->ProcessYoungWeakReferences(&weak_object_retainer);
+  ProcessWeakReferences(&ephemeron_table_list);
 
   // Set age mark.
   heap_->new_space_->set_age_mark(heap_->new_space()->top());
@@ -349,11 +377,12 @@ int ScavengerCollector::NumberOfScavengeTasks() {
 
 Scavenger::Scavenger(ScavengerCollector* collector, Heap* heap, bool is_logging,
                      CopiedList* copied_list, PromotionList* promotion_list,
-                     int task_id)
+                     EphemeronTableList* ephemeron_table_list, int task_id)
     : collector_(collector),
       heap_(heap),
       promotion_list_(promotion_list, task_id),
       copied_list_(copied_list, task_id),
+      ephemeron_table_list_(ephemeron_table_list, task_id),
       local_pretenuring_feedback_(kInitialLocalPretenuringFeedbackCapacity),
       copied_size_(0),
       promoted_size_(0),
@@ -375,6 +404,12 @@ void Scavenger::IterateAndScavengePromotedObject(HeapObject target, Map map,
       heap()->incremental_marking()->atomic_marking_state()->IsBlack(target);
   IterateAndScavengePromotedObjectsVisitor visitor(this, record_slots);
   target->IterateBodyFast(map, size, &visitor);
+}
+
+void Scavenger::RememberPromotedEphemeron(EphemeronHashTable table, int entry) {
+  auto indices =
+      ephemeron_remembered_set_.insert({table, std::unordered_set<int>()});
+  indices.first->second.insert(entry);
 }
 
 void Scavenger::AddPageToSweeperIfNecessary(MemoryChunk* page) {
@@ -440,12 +475,88 @@ void Scavenger::Process(OneshotBarrier* barrier) {
   } while (!done);
 }
 
+void ScavengerCollector::ProcessWeakReferences(
+    EphemeronTableList* ephemeron_table_list) {
+  ScavengeWeakObjectRetainer weak_object_retainer;
+  heap_->ProcessYoungWeakReferences(&weak_object_retainer);
+  ClearYoungEphemerons(ephemeron_table_list);
+  ClearOldEphemerons();
+}
+
+// Clear ephemeron entries from EphemeronHashTables in new-space whenever the
+// entry has a dead new-space key.
+void ScavengerCollector::ClearYoungEphemerons(
+    EphemeronTableList* ephemeron_table_list) {
+  ephemeron_table_list->Iterate([this](EphemeronHashTable table) {
+    for (int i = 0; i < table->Capacity(); i++) {
+      // Keys in EphemeronHashTables must be heap objects.
+      HeapObjectSlot key_slot(
+          table->RawFieldOfElementAt(EphemeronHashTable::EntryToIndex(i)));
+      HeapObject key = key_slot.ToHeapObject();
+      if (IsUnscavengedHeapObject(heap_, key)) {
+        table->RemoveEntry(i);
+      } else {
+        HeapObject forwarded = ForwardingAddress(key);
+        key_slot.StoreHeapObject(forwarded);
+      }
+    }
+  });
+  ephemeron_table_list->Clear();
+}
+
+// Clear ephemeron entries from EphemeronHashTables in old-space whenever the
+// entry has a dead new-space key.
+void ScavengerCollector::ClearOldEphemerons() {
+  for (auto it = heap_->ephemeron_remembered_set_.begin();
+       it != heap_->ephemeron_remembered_set_.end();) {
+    EphemeronHashTable table = it->first;
+    auto& indices = it->second;
+    for (auto iti = indices.begin(); iti != indices.end();) {
+      // Keys in EphemeronHashTables must be heap objects.
+      HeapObjectSlot key_slot(
+          table->RawFieldOfElementAt(EphemeronHashTable::EntryToIndex(*iti)));
+      HeapObject key = key_slot.ToHeapObject();
+      if (IsUnscavengedHeapObject(heap_, key)) {
+        table->RemoveEntry(*iti);
+        iti = indices.erase(iti);
+      } else {
+        HeapObject forwarded = ForwardingAddress(key);
+        key_slot.StoreHeapObject(forwarded);
+        if (!Heap::InYoungGeneration(forwarded)) {
+          iti = indices.erase(iti);
+        } else {
+          ++iti;
+        }
+      }
+    }
+
+    if (indices.size() == 0) {
+      it = heap_->ephemeron_remembered_set_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+}
+
 void Scavenger::Finalize() {
   heap()->MergeAllocationSitePretenuringFeedback(local_pretenuring_feedback_);
   heap()->IncrementSemiSpaceCopiedObjectSize(copied_size_);
   heap()->IncrementPromotedObjectsSize(promoted_size_);
   collector_->MergeSurvivingNewLargeObjects(surviving_new_large_objects_);
   allocator_.Finalize();
+  ephemeron_table_list_.FlushToGlobal();
+  for (auto it = ephemeron_remembered_set_.begin();
+       it != ephemeron_remembered_set_.end(); ++it) {
+    auto insert_result = heap()->ephemeron_remembered_set_.insert(
+        {it->first, std::unordered_set<int>()});
+    for (int entry : it->second) {
+      insert_result.first->second.insert(entry);
+    }
+  }
+}
+
+void Scavenger::AddEphemeronHashTable(EphemeronHashTable table) {
+  ephemeron_table_list_.Push(table);
 }
 
 void RootScavengeVisitor::VisitRootPointer(Root root, const char* description,

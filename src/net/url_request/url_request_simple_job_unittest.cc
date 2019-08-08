@@ -143,7 +143,7 @@ class URLRequestSimpleJobTest : public TestWithScopedTaskEnvironment {
 }  // namespace
 
 TEST_F(URLRequestSimpleJobTest, SimpleRequest) {
-  StartRequest(NULL);
+  StartRequest(nullptr);
   EXPECT_THAT(delegate_.request_status(), IsOk());
   EXPECT_EQ(kTestData, delegate_.data_received());
 }

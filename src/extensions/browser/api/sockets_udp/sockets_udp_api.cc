@@ -210,7 +210,7 @@ void SocketsUdpBindFunction::AsyncWorkStart() {
     return;
   }
   socket->Bind(params_->address, params_->port,
-               base::BindRepeating(&SocketsUdpBindFunction::OnCompleted, this));
+               base::BindOnce(&SocketsUdpBindFunction::OnCompleted, this));
 }
 
 void SocketsUdpBindFunction::OnCompleted(int net_result) {
@@ -404,7 +404,7 @@ void SocketsUdpJoinGroupFunction::AsyncWorkStart() {
 
   socket->JoinGroup(
       params_->address,
-      base::BindRepeating(&SocketsUdpJoinGroupFunction::OnCompleted, this));
+      base::BindOnce(&SocketsUdpJoinGroupFunction::OnCompleted, this));
 }
 
 void SocketsUdpJoinGroupFunction::OnCompleted(int net_result) {
@@ -443,7 +443,7 @@ void SocketsUdpLeaveGroupFunction::AsyncWorkStart() {
   }
   socket->LeaveGroup(
       params_->address,
-      base::BindRepeating(&SocketsUdpLeaveGroupFunction::OnCompleted, this));
+      base::BindOnce(&SocketsUdpLeaveGroupFunction::OnCompleted, this));
 }
 
 void SocketsUdpLeaveGroupFunction::OnCompleted(int result) {
@@ -555,7 +555,7 @@ void SocketsUdpSetBroadcastFunction::AsyncWorkStart() {
 
   socket->SetBroadcast(
       params_->enabled,
-      base::BindRepeating(&SocketsUdpSetBroadcastFunction::OnCompleted, this));
+      base::BindOnce(&SocketsUdpSetBroadcastFunction::OnCompleted, this));
 }
 
 void SocketsUdpSetBroadcastFunction::OnCompleted(int net_result) {

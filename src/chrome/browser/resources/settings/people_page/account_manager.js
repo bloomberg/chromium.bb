@@ -61,6 +61,15 @@ Polymer({
   },
 
   /**
+   * @return {boolean} True if secondary account sign-ins are allowed, false
+   *    otherwise.
+   * @private
+   */
+  isSecondaryGoogleAccountSigninAllowed_: function() {
+    return loadTimeData.getBoolean('secondaryGoogleAccountSigninAllowed');
+  },
+
+  /**
    * @param {string} iconUrl
    * @return {string} A CSS image-set for multiple scale factors.
    * @private
@@ -89,6 +98,21 @@ Polymer({
     // invalidation) and we do not have a mechanism to change the cryptohome
     // password in-session.
     return !account.isDeviceAccount && !account.isSignedIn;
+  },
+
+  /**
+   * @param {!settings.Account} account
+   * @return {string} An appropriate management status label. e.g.
+   *    "Primary account" for unmanaged accounts, "Managed by <Domain>"
+   *    for Enterprise managed accounts etc.
+   * @private
+   */
+  getManagementLabel_: function(account) {
+    if (account.organization) {
+      return this.i18n('accountManagerManagedLabel', account.organization);
+    }
+
+    return this.i18n('accountManagerUnmanagedLabel');
   },
 
   /**

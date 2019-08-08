@@ -11,6 +11,18 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "SunOS")
   list(APPEND LIBCXX_SOURCES ${LIBCXX_SOLARIS_SOURCES})
 endif()
 
+if (LIBCXX_ENABLE_FILESYSTEM)
+  list(APPEND LIBCXX_SOURCES ../src/filesystem/operations.cpp
+                             ../src/filesystem/directory_iterator.cpp)
+  # Filesystem uses __int128_t, which requires a definition of __muloi4 when
+  # compiled with UBSAN. This definition is not provided by libgcc_s, but is
+  # provided by compiler-rt. So we need to disable it to avoid having multiple
+  # definitions. See filesystem/int128_builtins.cpp.
+  if (NOT LIBCXX_USE_COMPILER_RT)
+    list(APPEND LIBCXX_SOURCES ../src/filesystem/int128_builtins.cpp)
+  endif()
+endif()
+
 # Add all the headers to the project for IDEs.
 if (LIBCXX_CONFIGURE_IDE)
   file(GLOB_RECURSE LIBCXX_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../include/*)
@@ -38,21 +50,6 @@ if (LIBCXX_GENERATE_COVERAGE AND NOT LIBCXX_COVERAGE_LIBRARY)
   find_compiler_rt_library(profile LIBCXX_COVERAGE_LIBRARY)
 endif()
 add_library_flags_if(LIBCXX_COVERAGE_LIBRARY "${LIBCXX_COVERAGE_LIBRARY}")
-
-if (APPLE AND (LIBCXX_CXX_ABI_LIBNAME STREQUAL "libcxxabi" OR
-               LIBCXX_CXX_ABI_LIBNAME STREQUAL "default"))
-  set(LIBCXX_OSX_REEXPORT_LIBCXXABI_SYMBOLS ON)
-endif()
-
-if (LIBCXX_STATICALLY_LINK_ABI_IN_SHARED_LIBRARY)
-  add_library_flags("-Wl,--whole-archive" "-Wl,-Bstatic")
-  add_library_flags("${LIBCXX_CXX_ABI_LIBRARY}")
-  add_library_flags("-Wl,-Bdynamic" "-Wl,--no-whole-archive")
-elseif (LIBCXX_OSX_REEXPORT_LIBCXXABI_SYMBOLS)
-  add_library_flags("${LIBCXX_CXX_ABI_LIBRARY}")
-else ()
- add_interface_library("${LIBCXX_CXX_ABI_LIBRARY}")
-endif()
 
 if (APPLE AND LLVM_USE_SANITIZER)
   if (("${LLVM_USE_SANITIZER}" STREQUAL "Address") OR
@@ -105,10 +102,6 @@ if (LIBCXXABI_USE_LLVM_UNWINDER)
 endif()
 
 # Setup flags.
-if (NOT WIN32)
-  add_flags_if_supported(-fPIC)
-endif()
-
 add_link_flags_if_supported(-nodefaultlibs)
 
 if (LIBCXX_TARGETING_MSVC)
@@ -129,51 +122,7 @@ if (LIBCXX_TARGETING_MSVC)
   add_library_flags(iso_stdio_wide_specifiers)
 endif()
 
-if (LIBCXX_OSX_REEXPORT_LIBCXXABI_SYMBOLS)
-  if (NOT DEFINED LIBCXX_LIBCPPABI_VERSION)
-    set(LIBCXX_LIBCPPABI_VERSION "2") # Default value
-    execute_process(
-      COMMAND xcrun --show-sdk-version
-      OUTPUT_VARIABLE sdk_ver
-      RESULT_VARIABLE res
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
-    if (res EQUAL 0)
-      message(STATUS "Found SDK version ${sdk_ver}")
-      string(REPLACE "10." "" sdk_ver "${sdk_ver}")
-      if (sdk_ver LESS 9)
-        set(LIBCXX_LIBCPPABI_VERSION "")
-      else()
-        set(LIBCXX_LIBCPPABI_VERSION "2")
-      endif()
-    endif()
-  endif()
-
-  if ("armv7" IN_LIST CMAKE_OSX_ARCHITECTURES)
-    set(RE_EXPORT_LIST "${CMAKE_CURRENT_SOURCE_DIR}/libc++sjlj-abi.exp")
-  else()
-    set(RE_EXPORT_LIST "${CMAKE_CURRENT_SOURCE_DIR}/libc++abi${LIBCXX_LIBCPPABI_VERSION}.exp")
-  endif()
-  add_link_flags(
-    "-compatibility_version 1"
-    "-install_name /usr/lib/libc++.1.dylib"
-    "-Wl,-unexported_symbols_list,\"${CMAKE_CURRENT_SOURCE_DIR}/libc++unexp.exp\""
-    "-Wl,-reexported_symbols_list,\"${RE_EXPORT_LIST}\""
-    "-Wl,-force_symbols_not_weak_list,\"${CMAKE_CURRENT_SOURCE_DIR}/notweak.exp\""
-    "-Wl,-force_symbols_weak_list,\"${CMAKE_CURRENT_SOURCE_DIR}/weak.exp\"")
-
-  if (NOT LIBCXX_ENABLE_NEW_DELETE_DEFINITIONS)
-    add_link_flags("-Wl,-reexported_symbols_list,\"${CMAKE_CURRENT_SOURCE_DIR}/libc++abi-new-delete.exp\"")
-  endif()
-endif()
-
-split_list(LIBCXX_COMPILE_FLAGS)
-split_list(LIBCXX_LINK_FLAGS)
-
-macro(cxx_object_library name)
-  cmake_parse_arguments(ARGS "" "" "DEFINES;FLAGS" ${ARGN})
-
-  # Add an object library that contains the compiled source files.
-  add_library(${name} OBJECT ${exclude_from_all} ${LIBCXX_SOURCES} ${LIBCXX_HEADERS})
+function(cxx_set_common_defines name)
   if(LIBCXX_CXX_ABI_HEADER_TARGET)
     add_dependencies(${name} ${LIBCXX_CXX_ABI_HEADER_TARGET})
   endif()
@@ -199,50 +148,92 @@ macro(cxx_object_library name)
                                  # in printf, scanf.
                                  _CRT_STDIO_ISO_WIDE_SPECIFIERS)
   endif()
+endfunction()
 
-  if(ARGS_DEFINES)
-    target_compile_definitions(${name} PRIVATE ${ARGS_DEFINES})
-  endif()
-
-  set_target_properties(${name}
-    PROPERTIES
-      COMPILE_FLAGS ${LIBCXX_COMPILE_FLAGS}
-  )
-
-  if(ARGS_FLAGS)
-    target_compile_options(${name} PRIVATE ${ARGS_FLAGS})
-  endif()
-endmacro()
-
-if(LIBCXX_HERMETIC_STATIC_LIBRARY)
-  append_flags_if_supported(CXX_STATIC_OBJECTS_FLAGS -fvisibility=hidden)
-  append_flags_if_supported(CXX_STATIC_OBJECTS_FLAGS -fvisibility-global-new-delete-hidden)
-  cxx_object_library(cxx_static_objects
-    DEFINES _LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS
-    FLAGS ${CXX_STATIC_OBJECTS_FLAGS})
-  cxx_object_library(cxx_shared_objects)
-  set(cxx_static_sources $<TARGET_OBJECTS:cxx_static_objects>)
-  set(cxx_shared_sources $<TARGET_OBJECTS:cxx_shared_objects>)
-else()
-  cxx_object_library(cxx_objects)
-  set(cxx_static_sources $<TARGET_OBJECTS:cxx_objects>)
-  set(cxx_shared_sources $<TARGET_OBJECTS:cxx_objects>)
-endif()
+split_list(LIBCXX_COMPILE_FLAGS)
+split_list(LIBCXX_LINK_FLAGS)
 
 # Build the shared library.
 if (LIBCXX_ENABLE_SHARED)
-  add_library(cxx_shared SHARED ${cxx_shared_sources})
+  add_library(cxx_shared SHARED ${exclude_from_all} ${LIBCXX_SOURCES} ${LIBCXX_HEADERS})
   if(COMMAND llvm_setup_rpath)
     llvm_setup_rpath(cxx_shared)
   endif()
   target_link_libraries(cxx_shared PRIVATE ${LIBCXX_LIBRARIES})
   set_target_properties(cxx_shared
     PROPERTIES
+      COMPILE_FLAGS "${LIBCXX_COMPILE_FLAGS}"
       LINK_FLAGS    "${LIBCXX_LINK_FLAGS}"
       OUTPUT_NAME   "c++"
       VERSION       "${LIBCXX_ABI_VERSION}.0"
       SOVERSION     "${LIBCXX_ABI_VERSION}"
+      DEFINE_SYMBOL ""
   )
+  cxx_set_common_defines(cxx_shared)
+
+  # Link against libc++abi
+  if (LIBCXX_STATICALLY_LINK_ABI_IN_SHARED_LIBRARY)
+    if (APPLE)
+      target_link_libraries(cxx_shared PRIVATE "-Wl,-force_load" "${LIBCXX_CXX_STATIC_ABI_LIBRARY}")
+    else()
+      target_link_libraries(cxx_shared PRIVATE "-Wl,--whole-archive,-Bstatic" "${LIBCXX_CXX_STATIC_ABI_LIBRARY}" "-Wl,-Bdynamic,--no-whole-archive")
+    endif()
+  else()
+    target_link_libraries(cxx_shared PRIVATE "${LIBCXX_CXX_SHARED_ABI_LIBRARY}")
+    list(APPEND LIBCXX_INTERFACE_LIBRARIES "${LIBCXX_CXX_SHARED_ABI_LIBRARY}") # For the linker script
+    list(APPEND LIBCXX_LIBRARIES "${LIBCXX_CXX_SHARED_ABI_LIBRARY}") # For the benchmarks
+  endif()
+
+  # Maybe re-export symbols from libc++abi
+  if (APPLE AND (LIBCXX_CXX_ABI_LIBNAME STREQUAL "libcxxabi" OR
+                 LIBCXX_CXX_ABI_LIBNAME STREQUAL "default")
+            AND NOT DEFINED LIBCXX_OSX_REEXPORT_LIBCXXABI_SYMBOLS)
+    set(LIBCXX_OSX_REEXPORT_LIBCXXABI_SYMBOLS ON)
+  endif()
+
+  if (LIBCXX_OSX_REEXPORT_LIBCXXABI_SYMBOLS)
+    if ("${CMAKE_OSX_ARCHITECTURES}" MATCHES "^(armv6|armv7|armv7s)$")
+      set(RE_EXPORT_LIST "${CMAKE_CURRENT_SOURCE_DIR}/libc++sjlj-abi.v${LIBCXX_LIBCPPABI_VERSION}.exp")
+    else()
+      set(RE_EXPORT_LIST "${CMAKE_CURRENT_SOURCE_DIR}/libc++abi.v${LIBCXX_LIBCPPABI_VERSION}.exp")
+    endif()
+    target_link_libraries(cxx_shared PRIVATE
+      "-Wl,-unexported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/libc++unexp.exp"
+      "-Wl,-reexported_symbols_list,${RE_EXPORT_LIST}"
+      "-Wl,-force_symbols_not_weak_list,${CMAKE_CURRENT_SOURCE_DIR}/notweak.exp"
+      "-Wl,-force_symbols_weak_list,${CMAKE_CURRENT_SOURCE_DIR}/weak.exp")
+
+    if (NOT LIBCXX_ENABLE_NEW_DELETE_DEFINITIONS)
+      target_link_libraries(cxx_shared PRIVATE "-Wl,-reexported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/libc++abi-new-delete.exp")
+    endif()
+  endif()
+
+  # Generate a linker script in place of a libc++.so symlink. Rerun this command
+  # after cxx builds.
+  if (LIBCXX_ENABLE_ABI_LINKER_SCRIPT)
+    # Get the name of the ABI library and handle the case where CXXABI_LIBNAME
+    # is a target name and not a library. Ex cxxabi_shared.
+    set(LIBCXX_INTERFACE_LIBRARY_NAMES)
+    foreach(lib ${LIBCXX_INTERFACE_LIBRARIES})
+      # FIXME: Handle cxxabi_static and unwind_static.
+      if (TARGET ${lib} OR
+          (${lib} MATCHES "cxxabi(_static|_shared)?" AND HAVE_LIBCXXABI) OR
+          (${lib} MATCHES "unwind(_static|_shared)?" AND HAVE_LIBUNWIND))
+        list(APPEND LIBCXX_INTERFACE_LIBRARY_NAMES "$<TARGET_PROPERTY:${lib},OUTPUT_NAME>")
+      else()
+        list(APPEND LIBCXX_INTERFACE_LIBRARY_NAMES "${lib}")
+      endif()
+    endforeach()
+    add_custom_command(TARGET cxx_shared POST_BUILD
+      COMMAND
+        ${PYTHON_EXECUTABLE} ${LIBCXX_SOURCE_DIR}/utils/gen_link_script.py
+      ARGS
+        "$<TARGET_LINKER_FILE:cxx_shared>"
+        ${LIBCXX_INTERFACE_LIBRARY_NAMES}
+      WORKING_DIRECTORY ${LIBCXX_BUILD_DIR}
+    )
+  endif()
+
   list(APPEND LIBCXX_BUILD_TARGETS "cxx_shared")
   if (LIBCXX_INSTALL_SHARED_LIBRARY)
     list(APPEND LIBCXX_INSTALL_TARGETS "cxx_shared")
@@ -258,14 +249,24 @@ endif()
 
 # Build the static library.
 if (LIBCXX_ENABLE_STATIC)
-  add_library(cxx_static STATIC ${cxx_static_sources})
+  add_library(cxx_static STATIC ${exclude_from_all} ${LIBCXX_SOURCES} ${LIBCXX_HEADERS})
   target_link_libraries(cxx_static PRIVATE ${LIBCXX_LIBRARIES})
   set(CMAKE_STATIC_LIBRARY_PREFIX "lib")
   set_target_properties(cxx_static
     PROPERTIES
+      COMPILE_FLAGS "${LIBCXX_COMPILE_FLAGS}"
       LINK_FLAGS    "${LIBCXX_LINK_FLAGS}"
       OUTPUT_NAME   "c++"
   )
+  cxx_set_common_defines(cxx_static)
+
+  if (LIBCXX_HERMETIC_STATIC_LIBRARY)
+    append_flags_if_supported(CXX_STATIC_LIBRARY_FLAGS -fvisibility=hidden)
+    append_flags_if_supported(CXX_STATIC_LIBRARY_FLAGS -fvisibility-global-new-delete-hidden)
+    target_compile_options(cxx_static PRIVATE ${CXX_STATIC_LIBRARY_FLAGS})
+    target_compile_definitions(cxx_static PRIVATE _LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS)
+  endif()
+
   list(APPEND LIBCXX_BUILD_TARGETS "cxx_static")
   if (LIBCXX_INSTALL_STATIC_LIBRARY)
     list(APPEND LIBCXX_INSTALL_TARGETS "cxx_static")
@@ -276,12 +277,11 @@ if (LIBCXX_ENABLE_STATIC)
     if (LIBCXX_CXX_ABI_LIBRARY_PATH)
       set(MERGE_ARCHIVES_SEARCH_PATHS "-L${LIBCXX_CXX_ABI_LIBRARY_PATH}")
     endif()
-    if ((TARGET ${LIBCXX_CXX_ABI_LIBRARY}) OR
-        (${LIBCXX_CXX_ABI_LIBRARY} MATCHES "cxxabi(_static|_shared)?" AND HAVE_LIBCXXABI))
-      set(MERGE_ARCHIVES_ABI_TARGET "$<TARGET_LINKER_FILE:cxxabi_static>")
+    if (TARGET "${LIBCXX_CXX_STATIC_ABI_LIBRARY}" OR HAVE_LIBCXXABI)
+      set(MERGE_ARCHIVES_ABI_TARGET "$<TARGET_LINKER_FILE:${LIBCXX_CXX_STATIC_ABI_LIBRARY}>")
     else()
       set(MERGE_ARCHIVES_ABI_TARGET
-          "${CMAKE_STATIC_LIBRARY_PREFIX}${LIBCXX_CXX_ABI_LIBRARY}${CMAKE_STATIC_LIBRARY_SUFFIX}")
+        "${CMAKE_STATIC_LIBRARY_PREFIX}${LIBCXX_CXX_STATIC_ABI_LIBRARY}${CMAKE_STATIC_LIBRARY_SUFFIX}")
     endif()
     add_custom_command(TARGET cxx_static POST_BUILD
     COMMAND
@@ -299,39 +299,6 @@ endif()
 
 # Add a meta-target for both libraries.
 add_custom_target(cxx DEPENDS cxx-headers ${LIBCXX_BUILD_TARGETS})
-
-if (LIBCXX_ENABLE_FILESYSTEM)
-  set(LIBCXX_FILESYSTEM_SOURCES
-      ../src/filesystem/operations.cpp
-      ../src/filesystem/directory_iterator.cpp)
-
-  # Filesystem uses __int128_t, which requires a definition of __muloi4 when
-  # compiled with UBSAN. This definition is not provided by libgcc_s, but is
-  # provided by compiler-rt. So we need to disable it to avoid having multiple
-  # definitions. See filesystem/int128_builtins.cpp.
-  if (NOT LIBCXX_USE_COMPILER_RT)
-    list(APPEND LIBCXX_FILESYSTEM_SOURCES ../src/filesystem/int128_builtins.cpp)
-  endif()
-
-  add_library(cxx_filesystem STATIC ${LIBCXX_FILESYSTEM_SOURCES})
-  if (LIBCXX_ENABLE_SHARED)
-    target_link_libraries(cxx_filesystem cxx_shared)
-  else()
-    target_link_libraries(cxx_filesystem cxx_static)
-  endif()
-
-  set(filesystem_flags "${LIBCXX_COMPILE_FLAGS}")
-  check_flag_supported(-std=c++14)
-  if (NOT MSVC AND LIBCXX_SUPPORTS_STD_EQ_CXX14_FLAG AND LIBCXX_STANDARD_VER STREQUAL "c++11")
-    string(REPLACE "-std=c++11" "-std=c++14" filesystem_flags "${LIBCXX_COMPILE_FLAGS}")
-  endif()
-  set_target_properties(cxx_filesystem
-    PROPERTIES
-      COMPILE_FLAGS "${filesystem_flags}"
-      OUTPUT_NAME   "c++fs"
-  )
-endif()
-
 
 if (LIBCXX_ENABLE_EXPERIMENTAL_LIBRARY)
   file(GLOB LIBCXX_EXPERIMENTAL_SOURCES ../src/experimental/*.cpp)
@@ -371,43 +338,11 @@ if (LIBCXX_BUILD_EXTERNAL_THREAD_LIBRARY)
   )
 endif()
 
-# Generate a linker script inplace of a libc++.so symlink. Rerun this command
-# after cxx builds.
-if (LIBCXX_ENABLE_SHARED AND LIBCXX_ENABLE_ABI_LINKER_SCRIPT)
-  # Get the name of the ABI library and handle the case where CXXABI_LIBNAME
-  # is a target name and not a library. Ex cxxabi_shared.
-  set(LIBCXX_INTERFACE_LIBRARY_NAMES)
-  foreach(lib ${LIBCXX_INTERFACE_LIBRARIES})
-    # FIXME: Handle cxxabi_static and unwind_static.
-    if (TARGET ${lib} OR
-        (${lib} MATCHES "cxxabi(_static|_shared)?" AND HAVE_LIBCXXABI) OR
-        (${lib} MATCHES "unwind(_static|_shared)?" AND HAVE_LIBUNWIND))
-      list(APPEND LIBCXX_INTERFACE_LIBRARY_NAMES "$<TARGET_PROPERTY:${lib},OUTPUT_NAME>")
-    else()
-      list(APPEND LIBCXX_INTERFACE_LIBRARY_NAMES "${lib}")
-    endif()
-  endforeach()
-  #split_list(LIBCXX_INTERFACE_LIBRARY_NAMES)
-  # Generate a linker script inplace of a libc++.so symlink. Rerun this command
-  # after cxx builds.
-  add_custom_command(TARGET cxx_shared POST_BUILD
-    COMMAND
-      ${PYTHON_EXECUTABLE} ${LIBCXX_SOURCE_DIR}/utils/gen_link_script.py
-    ARGS
-      "$<TARGET_LINKER_FILE:cxx_shared>"
-      ${LIBCXX_INTERFACE_LIBRARY_NAMES}
-    WORKING_DIRECTORY ${LIBCXX_BUILD_DIR}
-  )
-endif()
-
 if (LIBCXX_INSTALL_LIBRARY)
-  if (LIBCXX_INSTALL_FILESYSTEM_LIBRARY)
-    set(filesystem_lib cxx_filesystem)
-  endif()
   if (LIBCXX_INSTALL_EXPERIMENTAL_LIBRARY)
     set(experimental_lib cxx_experimental)
   endif()
-  install(TARGETS ${LIBCXX_INSTALL_TARGETS} ${filesystem_lib} ${experimental_lib}
+  install(TARGETS ${LIBCXX_INSTALL_TARGETS} ${experimental_lib}
     LIBRARY DESTINATION ${LIBCXX_INSTALL_PREFIX}lib${LIBCXX_LIBDIR_SUFFIX} COMPONENT cxx
     ARCHIVE DESTINATION ${LIBCXX_INSTALL_PREFIX}lib${LIBCXX_LIBDIR_SUFFIX} COMPONENT cxx
     )
@@ -427,9 +362,6 @@ if (NOT CMAKE_CONFIGURATION_TYPES AND (LIBCXX_INSTALL_LIBRARY OR
     if(LIBCXX_INSTALL_LIBRARY)
       set(lib_install_target cxx)
     endif()
-    if (LIBCXX_INSTALL_FILESYSTEM_LIBRARY)
-      set(filesystem_lib_install_target cxx_filesystem)
-    endif()
     if (LIBCXX_INSTALL_EXPERIMENTAL_LIBRARY)
       set(experimental_lib_install_target cxx_experimental)
     endif()
@@ -439,7 +371,6 @@ if (NOT CMAKE_CONFIGURATION_TYPES AND (LIBCXX_INSTALL_LIBRARY OR
     add_custom_target(install-cxx
                       DEPENDS ${lib_install_target}
                               ${experimental_lib_install_target}
-                              ${filesystem_lib_install_target}
                               ${header_install_target}
                       COMMAND "${CMAKE_COMMAND}"
                       -DCMAKE_INSTALL_COMPONENT=cxx
@@ -447,7 +378,6 @@ if (NOT CMAKE_CONFIGURATION_TYPES AND (LIBCXX_INSTALL_LIBRARY OR
     add_custom_target(install-cxx-stripped
                       DEPENDS ${lib_install_target}
                               ${experimental_lib_install_target}
-                              ${filesystem_lib_install_target}
                               ${header_install_target}
                       COMMAND "${CMAKE_COMMAND}"
                       -DCMAKE_INSTALL_COMPONENT=cxx

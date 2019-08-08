@@ -269,12 +269,25 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // and is not completely obscured by a child.
   bool ShouldDraw() const;
 
+  // If set to true, this layer can receive hit test events, this property does
+  // not affect the layer's descendants.
+  void SetAcceptEvents(bool accept_events);
+  bool accept_events() const { return accept_events_; }
+
   // Sets a rounded corner clip radius on the layer. This will clip the layer to
   // bounds. The ordering for the array is:
   //    top left, top right, bottom right, bottom left
   void SetRoundedCornerRadius(const std::array<uint32_t, 4>& corner_radii);
   const std::array<uint32_t, 4>& rounded_corner_radii() const {
     return cc_layer_->corner_radii();
+  }
+
+  // If set to true, this layer would not trigger a render surface (if possible)
+  // due to having a rounded corner resulting in a better performance at the
+  // cost of maybe having some blending artifacts.
+  void SetIsFastRoundedCorner(bool enable);
+  bool is_fast_rounded_corner() const {
+    return cc_layer_->is_fast_rounded_corner();
   }
 
   // Converts a point from the coordinates of |source| to the coordinates of
@@ -343,6 +356,12 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Show a solid color instead of delegated or surface contents.
   void SetShowSolidColorContent();
 
+  // Reorder the children to have all children inside |new_leading_children| to
+  // be at the front of the children vector, and the remaining children will
+  // stay in their relative order. |this| must be a parent of all the Layer*
+  // inside |new_leading_children|.
+  void StackChildrenAtBottom(const std::vector<Layer*>& new_leading_children);
+
   // Sets the layer's fill color.  May only be called for LAYER_SOLID_COLOR.
   void SetColor(SkColor color);
   SkColor GetTargetColor() const;
@@ -386,8 +405,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Invoked when scrolling performed by the cc::InputHandler is committed. This
   // will only occur if the Layer has set scroll container bounds.
   void SetDidScrollCallback(
-      base::Callback<void(const gfx::ScrollOffset&, const cc::ElementId&)>
-          callback);
+      base::RepeatingCallback<void(const gfx::ScrollOffset&,
+                                   const cc::ElementId&)> callback);
 
   cc::ElementId element_id() const { return cc_layer_->element_id(); }
 
@@ -559,6 +578,11 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   // Visibility of this layer. See SetVisible/IsDrawn for more details.
   bool visible_;
+
+  // Whether or not the layer wants to receive hit testing events. When set to
+  // false, the layer will be ignored in hit testing even if it is visible. It
+  // does not affect the layer's descendants.
+  bool accept_events_ = true;
 
   // See SetFillsBoundsOpaquely(). Defaults to true.
   bool fills_bounds_opaquely_;

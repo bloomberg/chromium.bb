@@ -89,11 +89,20 @@ void SetCommonCrashKeys(const base::CommandLine& command_line) {
 }
 
 bool GetGCPWCollectStatsConsent() {
+  // This value is provided by Omaha during install based on how the installer
+  // is tagged. The installer is tagged based on the consent checkbox found
+  // on the download page.
+  //
+  // This value can also be changed after install by running the setup
+  // program with --enable-stats or --disable-stats.
+  //
+  // This consent is different from chrome's consent in that each products
+  // stores the consent in its own part of the registry.
   DWORD collect_stats = 0;
   base::win::RegKey key(HKEY_LOCAL_MACHINE,
                         credential_provider::kRegUpdaterClientStateAppPath,
                         KEY_QUERY_VALUE | KEY_WOW64_32KEY);
-  key.ReadValueDW(L"usagestats", &collect_stats);
+  key.ReadValueDW(kRegUsageStatsName, &collect_stats);
   return collect_stats == 1;
 }
 

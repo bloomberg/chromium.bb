@@ -219,6 +219,8 @@ enum AccountReconcilorState {
   ACCOUNT_RECONCILOR_RUNNING,
   // The AccountReconcilor encountered an error and stopped.
   ACCOUNT_RECONCILOR_ERROR,
+  // The account reconcilor will start running soon.
+  ACCOUNT_RECONCILOR_SCHEDULED,
   // Always the last enumerated type.
   ACCOUNT_RECONCILOR_HISTOGRAM_COUNT,
 };

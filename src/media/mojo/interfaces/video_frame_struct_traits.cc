@@ -11,6 +11,7 @@
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/base/values_mojom_traits.h"
+#include "ui/gfx/mojo/color_space_mojom_traits.h"
 
 namespace mojo {
 

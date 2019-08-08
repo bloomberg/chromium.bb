@@ -26,10 +26,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "components/session_manager/core/session_manager.h"
 #include "extensions/common/constants.h"
 #include "services/ws/public/cpp/property_type_converters.h"
@@ -69,6 +71,13 @@ bool IsLoginFeedbackModalDialog(const AppWindow* app_window) {
   SessionState state = session_manager::SessionManager::Get()->session_state();
   return state == SessionState::OOBE || state == SessionState::LOGIN_PRIMARY ||
          state == SessionState::LOGIN_SECONDARY;
+}
+
+// Return true if |app_window| is a Kiosk Next Home app in a KioskNext session.
+bool IsKioskNextHomeWindow(const AppWindow* app_window) {
+  return KioskNextShellClient::Get() &&
+         KioskNextShellClient::Get()->has_launched() &&
+         app_window->extension_id() == extension_misc::kKioskNextHomeAppId;
 }
 
 }  // namespace
@@ -143,6 +152,8 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
     container_id = ash::kShellWindowId_ImeWindowParentContainer;
   else if (create_params.show_on_lock_screen)
     container_id = ash::kShellWindowId_LockActionHandlerContainer;
+  else if (IsKioskNextHomeWindow(app_window()))
+    container_id = ash::kShellWindowId_HomeScreenContainer;
 
   if (container_id.has_value()) {
     ash_util::SetupWidgetInitParamsForContainer(init_params, *container_id);
@@ -284,7 +295,7 @@ void ChromeNativeAppWindowViewsAuraAsh::ShowContextMenuForViewImpl(
                    base::Unretained(this)));
     menu_runner_->RunMenuAt(source->GetWidget(), NULL,
                             gfx::Rect(p, gfx::Size(0, 0)),
-                            views::MENU_ANCHOR_TOPLEFT, source_type);
+                            views::MenuAnchorPosition::kTopLeft, source_type);
   } else {
     menu_model_.reset();
   }

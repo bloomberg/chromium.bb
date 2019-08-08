@@ -12,6 +12,10 @@
 
 class ProtocolDialogDelegate;
 
+namespace content {
+class WebContents;
+}
+
 namespace test {
 class ExternalProtocolDialogTestApi;
 }
@@ -24,8 +28,7 @@ class ExternalProtocolDialog : public views::DialogDelegateView {
  public:
   // Show by calling ExternalProtocolHandler::RunExternalProtocolDialog().
   ExternalProtocolDialog(std::unique_ptr<const ProtocolDialogDelegate> delegate,
-                         int render_process_host_id,
-                         int routing_id);
+                         content::WebContents* web_contents);
 
   ~ExternalProtocolDialog() override;
 
@@ -45,10 +48,6 @@ class ExternalProtocolDialog : public views::DialogDelegateView {
   const std::unique_ptr<const ProtocolDialogDelegate> delegate_;
 
   views::Checkbox* remember_decision_checkbox_;
-
-  // IDs of the associated WebContents.
-  int render_process_host_id_;
-  int routing_id_;
 
   // The time at which this dialog was created.
   base::TimeTicks creation_time_;

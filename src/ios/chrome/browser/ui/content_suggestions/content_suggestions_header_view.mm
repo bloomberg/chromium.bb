@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
@@ -55,6 +54,8 @@ CGFloat ToolbarHeight() {
 @interface ContentSuggestionsHeaderView ()
 
 @property(nonatomic, strong, readwrite) UIButton* voiceSearchButton;
+
+@property(nonatomic, strong) UIView* separator;
 
 // Layout constraints for fake omnibox background image and blur.
 @property(nonatomic, strong) NSLayoutConstraint* fakeLocationBarTopConstraint;
@@ -220,6 +221,25 @@ CGFloat ToolbarHeight() {
   ]];
 }
 
+- (void)addSeparatorToSearchField:(UIView*)searchField {
+  DCHECK(searchField.superview == self);
+
+  self.separator = [[UIView alloc] init];
+  self.separator.backgroundColor =
+      [UIColor colorWithWhite:0 alpha:kToolbarSeparatorAlpha];
+  self.separator.alpha = 0;
+  self.separator.translatesAutoresizingMaskIntoConstraints = NO;
+  [searchField addSubview:self.separator];
+  [NSLayoutConstraint activateConstraints:@[
+    [self.separator.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [self.separator.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    [self.separator.topAnchor constraintEqualToAnchor:searchField.bottomAnchor],
+    [self.separator.heightAnchor
+        constraintEqualToConstant:ui::AlignValueToUpperPixel(
+                                      kToolbarSeparatorHeight)],
+  ]];
+}
+
 - (CGFloat)searchFieldProgressForOffset:(CGFloat)offset
                          safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
   // The scroll offset at which point searchField's frame should stop growing.
@@ -272,9 +292,12 @@ CGFloat ToolbarHeight() {
     self.fakeLocationBarTrailingConstraint.constant = 0;
     self.fakeLocationBarTopConstraint.constant = 0;
 
+    self.separator.alpha = 0;
+
     return;
   } else {
     self.alpha = 1;
+    self.separator.alpha = percent;
   }
 
   // Grow the blur to cover the safeArea top.

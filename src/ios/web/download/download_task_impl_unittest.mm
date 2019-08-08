@@ -544,25 +544,23 @@ TEST_F(DownloadTaskImplTest, FailureInTheMiddle) {
 // Tests that CreateSession is called with the correct cookies from the cookie
 // store.
 TEST_F(DownloadTaskImplTest, Cookie) {
-  if (@available(iOS 11, *)) {
-    // Add a cookie to BrowserState.
-    NSURL* cookie_url = [NSURL URLWithString:@(kUrl)];
-    NSHTTPCookie* cookie = [NSHTTPCookie cookieWithProperties:@{
-      NSHTTPCookieName : @"name",
-      NSHTTPCookieValue : @"value",
-      NSHTTPCookiePath : cookie_url.path,
-      NSHTTPCookieDomain : cookie_url.host,
-      NSHTTPCookieVersion : @1,
-    }];
-    ASSERT_TRUE(SetCookie(cookie));
+  // Add a cookie to BrowserState.
+  NSURL* cookie_url = [NSURL URLWithString:@(kUrl)];
+  NSHTTPCookie* cookie = [NSHTTPCookie cookieWithProperties:@{
+    NSHTTPCookieName : @"name",
+    NSHTTPCookieValue : @"value",
+    NSHTTPCookiePath : cookie_url.path,
+    NSHTTPCookieDomain : cookie_url.host,
+    NSHTTPCookieVersion : @1,
+  }];
+  ASSERT_TRUE(SetCookie(cookie));
 
-    // Start the download and make sure that all cookie from BrowserState were
-    // picked up.
-    EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
-    ASSERT_TRUE(Start());
-    EXPECT_EQ(1U, task_delegate_.cookies().count);
-    EXPECT_NSEQ(cookie, task_delegate_.cookies().firstObject);
-  }
+  // Start the download and make sure that all cookie from BrowserState were
+  // picked up.
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  ASSERT_TRUE(Start());
+  EXPECT_EQ(1U, task_delegate_.cookies().count);
+  EXPECT_NSEQ(cookie, task_delegate_.cookies().firstObject);
   EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 

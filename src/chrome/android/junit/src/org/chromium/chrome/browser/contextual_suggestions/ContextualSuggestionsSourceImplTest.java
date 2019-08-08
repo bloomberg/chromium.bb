@@ -27,12 +27,12 @@ import org.robolectric.shadows.ShadowLooper;
 import org.chromium.base.Callback;
 import org.chromium.base.task.test.BackgroundShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulatorTest.ShadowUrlUtilities;
+import org.chromium.chrome.browser.image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
 /**
- * Unit tests for CachedImageFetcherImpl.
+ * Unit tests for ContextualSuggestionsSourceImplTest.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,

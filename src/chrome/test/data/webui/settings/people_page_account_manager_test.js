@@ -29,6 +29,7 @@ cr.define('settings_people_page_account_manager', function() {
             fullName: 'Device Account',
             email: 'admin@domain.com',
             pic: 'data:image/png;base64,abc123',
+            organization: 'Family Link',
           },
           {
             id: '456',
@@ -73,6 +74,39 @@ cr.define('settings_people_page_account_manager', function() {
     }
   }
 
+  /** @implements {settings.AccountManagerBrowserProxy} */
+  class TestAccountManagerBrowserProxyForUnmanagedAccounts extends
+      TestAccountManagerBrowserProxy {
+    constructor() {
+      super([
+        'getAccounts',
+        'addAccount',
+        'reauthenticateAccount',
+        'removeAccount',
+        'showWelcomeDialogIfRequired',
+      ]);
+    }
+
+    /** @override */
+    getAccounts() {
+      this.methodCalled('getAccounts');
+
+      return new Promise((resolve) => {
+        resolve([
+          {
+            id: '123',
+            accountType: 1,
+            isDeviceAccount: true,
+            isSignedIn: true,
+            fullName: 'Device Account',
+            email: 'admin@domain.com',
+            pic: 'data:image/png;base64,abc123',
+          },
+        ]);
+      });
+    }
+  }
+
   suite('AccountManagerTests', function() {
     let browserProxy = null;
     let accountManager = null;
@@ -106,6 +140,8 @@ cr.define('settings_people_page_account_manager', function() {
     });
 
     test('AddAccount', function() {
+      assertFalse(accountManager.$$('#add-account-button').disabled);
+      assertTrue(accountManager.$$('cr-policy-indicator').hidden);
       accountManager.$$('#add-account-button').click();
       assertEquals(1, browserProxy.getCallCount('addAccount'));
     });
@@ -125,10 +161,9 @@ cr.define('settings_people_page_account_manager', function() {
     test('RemoveAccount', function() {
       return browserProxy.whenCalled('getAccounts').then(() => {
         Polymer.dom.flush();
-        // Click on 'More Actions' for the second account
-        accountManager.root.querySelectorAll('paper-icon-button-light')[1]
-            .querySelector('button')
-            .click();
+        // Click on 'More Actions' for the second account (First one (index 0)
+        // to have the hamburger menu).
+        accountManager.root.querySelectorAll('cr-icon-button')[0].click();
         // Click on 'Remove account'
         accountManager.$$('cr-action-menu').querySelector('button').click();
 
@@ -148,6 +183,83 @@ cr.define('settings_people_page_account_manager', function() {
       // We have navigated to |settings.routes.ACCOUNT_MANAGER| in |setup|. A
       // welcome screen should be shown if required.
       assertGT(browserProxy.getCallCount('showWelcomeDialogIfRequired'), 0);
+    });
+
+    test('ManagementStatusForManagedAccounts', function() {
+      return browserProxy.whenCalled('getAccounts').then(() => {
+        Polymer.dom.flush();
+
+        const managementLabel =
+            accountManager.root.querySelectorAll('.management-status')[0]
+                .innerHTML.trim();
+        assertEquals('Managed by Family Link', managementLabel);
+      });
+    });
+  });
+
+  suite('AccountManagerUnmanagedAccountTests', function() {
+    let browserProxy = null;
+    let accountManager = null;
+    let accountList = null;
+
+    setup(function() {
+      browserProxy = new TestAccountManagerBrowserProxyForUnmanagedAccounts();
+      settings.AccountManagerBrowserProxyImpl.instance_ = browserProxy;
+      PolymerTest.clearBody();
+
+      accountManager = document.createElement('settings-account-manager');
+      document.body.appendChild(accountManager);
+      accountList = accountManager.$$('#account-list');
+      assertTrue(!!accountList);
+
+      settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
+    });
+
+    teardown(function() {
+      accountManager.remove();
+    });
+
+    test('ManagementStatusForUnmanagedAccounts', function() {
+      return browserProxy.whenCalled('getAccounts').then(() => {
+        Polymer.dom.flush();
+
+        const managementLabel =
+            accountManager.root.querySelectorAll('.management-status')[0]
+                .innerHTML.trim();
+        assertEquals('Primary account', managementLabel);
+      });
+    });
+  });
+
+  suite('AccountManagerAccountAdditionDisabledTests', function() {
+    let browserProxy = null;
+    let accountManager = null;
+    let accountList = null;
+
+    suiteSetup(function() {
+      loadTimeData.overrideValues({secondaryGoogleAccountSigninAllowed: false});
+    });
+
+    setup(function() {
+      browserProxy = new TestAccountManagerBrowserProxy();
+      settings.AccountManagerBrowserProxyImpl.instance_ = browserProxy;
+      PolymerTest.clearBody();
+
+      accountManager = document.createElement('settings-account-manager');
+      document.body.appendChild(accountManager);
+      accountList = accountManager.$$('#account-list');
+      assertTrue(!!accountList);
+
+      settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
+    });
+
+    teardown(function() {
+      accountManager.remove();
+    });
+
+    test('AddAccountCanBeDisabledByPolicy', function() {
+      assertTrue(accountManager.$$('#add-account-button').disabled);
+      assertFalse(accountManager.$$('cr-policy-indicator').hidden);
     });
   });
 });

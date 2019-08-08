@@ -184,7 +184,7 @@ public class OmniboxUrlEmphasizer {
                         if (UrlConstants.DATA_SCHEME.equals(
                                     emphasizeResponse.extractScheme(urlString))) {
                             colorId = useDarkColors ? R.color.default_text_color_dark
-                                                    : R.color.url_emphasis_light_default_text;
+                                                    : R.color.default_text_color_light;
                         }
                         break;
                     case ConnectionSecurityLevel.DANGEROUS:

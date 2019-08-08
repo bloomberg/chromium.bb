@@ -242,6 +242,8 @@ class DeviceListController {
         'state', remoteDevice['connectionStatus']);
     t.querySelector('.device-name').textContent =
         remoteDevice['friendlyDeviceName'];
+    t.querySelector('.no-pii-name').textContent =
+        remoteDevice['noPiiName'];
     t.querySelector('.device-id').textContent =
         remoteDevice['publicKeyTruncated'];
     t.querySelector('.software-features').textContent =

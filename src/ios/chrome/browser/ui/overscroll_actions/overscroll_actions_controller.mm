@@ -11,12 +11,11 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
-#import "ios/chrome/browser/ui/location_bar_notification_names.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_gesture_recognizer.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_view.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
@@ -26,7 +25,7 @@
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -393,10 +392,8 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   CGFloat contentOffsetFromExpandedHeader =
       contentOffsetFromTheTop + self.initialHeaderInset;
   CGFloat topMargin = 0;
-  if (!_webViewProxy && base::FeatureList::IsEnabled(
-                            web::features::kBrowserContainerFullscreen)) {
+  if (!_webViewProxy)
     topMargin = self.scrollView.safeAreaInsets.top;
-  }
   if (contentOffsetFromExpandedHeader >= 0) {
     // Record initial content offset and dispatch delegate on state change.
     self.overscrollState = OverscrollState::NO_PULL_STARTED;

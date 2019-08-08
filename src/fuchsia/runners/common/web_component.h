@@ -7,6 +7,7 @@
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/ui/app/cpp/fidl.h>
+#include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <memory>
@@ -18,13 +19,13 @@
 #include "base/fuchsia/service_directory_client.h"
 #include "base/fuchsia/startup_context.h"
 #include "base/logging.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
+#include "fuchsia/base/lifecycle_impl.h"
 #include "url/gurl.h"
 
 class WebContentRunner;
 
 // Base component implementation for web-based content Runners. Each instance
-// manages the lifetime of its own chromium::web::Frame, including associated
+// manages the lifetime of its own fuchsia::web::Frame, including associated
 // resources and service bindings.  Runners for specialized web-based content
 // (e.g. Cast applications) can extend this class to configure the Frame to
 // their needs, publish additional APIs, etc.
@@ -46,7 +47,7 @@ class WebComponent : public fuchsia::sys::ComponentController,
   // Navigates this component's Frame to |url|.
   void LoadUrl(const GURL& url);
 
-  chromium::web::Frame* frame() const { return frame_.get(); }
+  fuchsia::web::Frame* frame() const { return frame_.get(); }
 
  protected:
   // fuchsia::sys::ComponentController implementation.
@@ -75,9 +76,11 @@ class WebComponent : public fuchsia::sys::ComponentController,
   WebContentRunner* const runner_ = nullptr;
   const std::unique_ptr<base::fuchsia::StartupContext> startup_context_;
 
-  chromium::web::FramePtr frame_;
+  fuchsia::web::FramePtr frame_;
 
+  // Bindings used to manage the lifetime of this component instance.
   fidl::Binding<fuchsia::sys::ComponentController> controller_binding_;
+  std::unique_ptr<cr_fuchsia::LifecycleImpl> lifecycle_;
 
   // Incoming services provided at component creation.
   std::unique_ptr<base::fuchsia::ServiceDirectoryClient> additional_services_;

@@ -441,7 +441,10 @@ static_library("util") {
       "Foundation.framework",
       "IOKit.framework",
     ]
-    deps += [ ":mig" ]
+    deps += [
+      ":mig",
+      "../third_party/apple_cf:apple_cf",
+    ]
     include_dirs += [ "$root_build_dir/gen" ]
   }
 
@@ -464,7 +467,7 @@ static_library("util") {
   }
 
   if (crashpad_is_fuchsia) {
-    public_deps += [ "../third_party/fuchsia:zx" ]
+    public_deps += [ "../third_party/fuchsia" ]
   }
 }
 

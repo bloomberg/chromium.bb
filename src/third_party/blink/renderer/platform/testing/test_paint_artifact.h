@@ -96,7 +96,8 @@ class TestPaintArtifact {
   TestPaintArtifact& ScrollHitTest(
       const TransformPaintPropertyNode& scroll_offset);
 
-  TestPaintArtifact& ForeignLayer(scoped_refptr<cc::Layer> layer);
+  TestPaintArtifact& ForeignLayer(scoped_refptr<cc::Layer> layer,
+                                  const FloatPoint& offset);
 
   // Add display item with the specified client in the chunk.
   TestPaintArtifact& RectDrawing(FakeDisplayItemClient&,
@@ -109,7 +110,7 @@ class TestPaintArtifact {
   // Sets fake bounds for the last paint chunk. Note that the bounds will be
   // overwritten when the PaintArtifact is constructed if the chunk has any
   // display items.
-  TestPaintArtifact& Bounds(const FloatRect&);
+  TestPaintArtifact& Bounds(const IntRect&);
 
   TestPaintArtifact& KnownToBeOpaque();
   TestPaintArtifact& Uncacheable();

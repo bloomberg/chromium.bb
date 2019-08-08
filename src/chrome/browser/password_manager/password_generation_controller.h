@@ -50,14 +50,15 @@ class PasswordGenerationController {
   // Methods called by the ChromePasswordManagerClient:
   // --------------------------------------------------
 
-  // Notifies the UI that the automatic password generation status changed.
-  // If |available| is true, then a button should be displayed in the accessory
-  // bar. The button should be removed from the bar when |available| is false.
-  virtual void OnAutomaticGenerationStatusChanged(
-      bool available,
-      const base::Optional<
-          autofill::password_generation::PasswordGenerationUIData>& ui_data,
+  // Notifies the UI that automatic password generation is available.
+  // A button should be displayed in the accessory bar.
+  virtual void OnAutomaticGenerationAvailable(
+      const autofill::password_generation::PasswordGenerationUIData& ui_data,
       const base::WeakPtr<password_manager::PasswordManagerDriver>& driver) = 0;
+
+  // Notifies the UI that the generation element lost focus so that it can
+  // hide the generation button if it was shown.
+  virtual void OnGenerationElementLostFocus() = 0;
 
   // -------------------------
   // Methods called by the UI:
@@ -68,7 +69,10 @@ class PasswordGenerationController {
   virtual void OnGenerationRequested() = 0;
 
   // Called from the modal dialog if the user accepted the generated password.
-  virtual void GeneratedPasswordAccepted(const base::string16& password) = 0;
+  // |driver| is used to communicate the message back to the renderer.
+  virtual void GeneratedPasswordAccepted(
+      const base::string16& password,
+      base::WeakPtr<password_manager::PasswordManagerDriver> driver) = 0;
 
   // Called from the modal dialog if the user rejected the generated password.
   virtual void GeneratedPasswordRejected() = 0;

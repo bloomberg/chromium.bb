@@ -118,11 +118,11 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
-  icon_view_ = new views::ImageView();
-  icon_view_->SetPreferredSize(gfx::Size(kArcAppIconSize, kArcAppIconSize));
-  AddChildView(icon_view_);
+  auto icon_view = std::make_unique<views::ImageView>();
+  icon_view->SetPreferredSize(gfx::Size(kArcAppIconSize, kArcAppIconSize));
+  icon_view_ = AddChildView(std::move(icon_view));
 
-  views::View* text_container = new views::View();
+  auto text_container = std::make_unique<views::View>();
   auto text_container_layout =
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   text_container_layout->set_main_axis_alignment(
@@ -131,11 +131,11 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   text_container->SetLayoutManager(std::move(text_container_layout));
 
-  AddChildView(text_container);
+  auto* text_container_ptr = AddChildView(std::move(text_container));
   DCHECK(!heading_text.empty());
-  AddMultiLineLabel(text_container, heading_text);
+  AddMultiLineLabel(text_container_ptr, heading_text);
   if (!subheading_text.empty())
-    AddMultiLineLabel(text_container, subheading_text);
+    AddMultiLineLabel(text_container_ptr, subheading_text);
 
   icon_loader_ = std::make_unique<ArcAppIconLoader>(
       profile_, kIconSourceSize, this);
@@ -151,11 +151,11 @@ ArcAppDialogView::~ArcAppDialogView() {
 
 void ArcAppDialogView::AddMultiLineLabel(views::View* parent,
                                          const base::string16& label_text) {
-  views::Label* label = new views::Label(label_text);
+  auto label = std::make_unique<views::Label>(label_text);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetAllowCharacterBreak(true);
-  parent->AddChildView(label);
+  parent->AddChildView(std::move(label));
 }
 
 void ArcAppDialogView::ConfirmOrCancelForTest(bool confirm) {

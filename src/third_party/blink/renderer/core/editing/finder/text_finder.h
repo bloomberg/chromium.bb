@@ -54,8 +54,6 @@ struct WebRect;
 class CORE_EXPORT TextFinder final
     : public GarbageCollectedFinalized<TextFinder> {
  public:
-  static TextFinder* Create(WebLocalFrameImpl& owner_frame);
-
   bool Find(int identifier,
             const WebString& search_text,
             const mojom::blink::FindOptions& options,

@@ -163,7 +163,10 @@ typedef NS_ENUM(NSInteger, ConfirmInfoBarUITags) {
     return;
 
   DCHECK(tag == ConfirmInfoBarUITags::TITLE_LINK);
-  self.infoBarDelegate->LinkClicked(WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  if (self.infoBarDelegate->LinkClicked(
+          WindowOpenDisposition::NEW_FOREGROUND_TAB)) {
+    self.delegate->RemoveInfoBar();
+  }
 }
 
 @end

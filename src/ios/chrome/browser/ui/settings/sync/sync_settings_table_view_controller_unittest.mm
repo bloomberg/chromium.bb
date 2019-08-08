@@ -10,9 +10,9 @@
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/unified_consent/feature.h"
@@ -20,7 +20,6 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -47,9 +46,13 @@
 
 namespace {
 
-using testing::DefaultValue;
 using testing::NiceMock;
 using testing::Return;
+
+std::unique_ptr<KeyedService> CreateTestSyncService(
+    web::BrowserState* context) {
+  return std::make_unique<syncer::TestSyncService>();
+}
 
 class SyncSetupServiceMockThatFails : public SyncSetupServiceMock {
  public:
@@ -88,8 +91,7 @@ class SyncSetupServiceMockThatSucceeds : public SyncSetupServiceMockThatFails {
 class SyncSettingsTableViewControllerTest
     : public ChromeTableViewControllerTest {
  public:
-  SyncSettingsTableViewControllerTest()
-      : default_auth_error_(GoogleServiceAuthError::NONE) {}
+  SyncSettingsTableViewControllerTest() {}
 
   static std::unique_ptr<KeyedService> CreateSyncSetupService(
       web::BrowserState* context) {
@@ -118,15 +120,6 @@ class SyncSettingsTableViewControllerTest
         ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state);
     return std::make_unique<NiceMock<SyncSetupServiceMockThatFails>>(
         sync_service);
-  }
-
-  static std::unique_ptr<KeyedService> CreateProfileSyncService(
-      web::BrowserState* context) {
-    browser_sync::ProfileSyncService::InitParams init_params =
-        CreateProfileSyncServiceParamsForTest(
-            ios::ChromeBrowserState::FromBrowserState(context));
-    return std::make_unique<NiceMock<browser_sync::ProfileSyncServiceMock>>(
-        std::move(init_params));
   }
 
   std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {
@@ -168,13 +161,10 @@ class SyncSettingsTableViewControllerTest
         base::BindRepeating(&CreateSyncSetupService));
     test_cbs_builder.AddTestingFactory(
         ProfileSyncServiceFactory::GetInstance(),
-        base::BindRepeating(&CreateProfileSyncService));
+        base::BindRepeating(&CreateTestSyncService));
     test_cbs_builder.SetPrefService(CreatePrefService());
     chrome_browser_state_ = test_cbs_builder.Build();
     ChromeTableViewControllerTest::SetUp();
-
-    DefaultValue<const GoogleServiceAuthError&>::Set(default_auth_error_);
-    DefaultValue<syncer::SyncCycleSnapshot>::Set(default_sync_cycle_snapshot_);
 
     mock_sync_setup_service_ = static_cast<NiceMock<SyncSetupServiceMock>*>(
         SyncSetupServiceFactory::GetForBrowserState(
@@ -183,19 +173,6 @@ class SyncSettingsTableViewControllerTest
     // will by default return false.   |syncServiceState|, however, returns an
     // enum, and thus always needs its default value set.
     TurnSyncErrorOff();
-
-    mock_profile_sync_service_ =
-        static_cast<browser_sync::ProfileSyncServiceMock*>(
-            ProfileSyncServiceFactory::GetForBrowserState(
-                chrome_browser_state_.get()));
-    ON_CALL(*mock_profile_sync_service_, GetTransportState())
-        .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
-    ON_CALL(*mock_profile_sync_service_, GetRegisteredDataTypes())
-        .WillByDefault(Return(syncer::ModelTypeSet()));
-    mock_profile_sync_service_->Initialize();
-    EXPECT_CALL(*mock_profile_sync_service_->GetUserSettingsMock(),
-                GetChosenDataTypes())
-        .WillRepeatedly(Return(syncer::UserSelectableTypes()));
   }
 
   ChromeTableViewController* InstantiateController() override {
@@ -228,11 +205,6 @@ class SyncSettingsTableViewControllerTest
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   // Weak, owned by |profile_|.
   NiceMock<SyncSetupServiceMock>* mock_sync_setup_service_;
-  // Weak, owned by |profile_|.
-  browser_sync::ProfileSyncServiceMock* mock_profile_sync_service_;
-  // Default return values for ProfileSyncServiceMock.
-  GoogleServiceAuthError default_auth_error_;
-  syncer::SyncCycleSnapshot default_sync_cycle_snapshot_;
 };
 
 TEST_F(SyncSettingsTableViewControllerTest, TestModel) {

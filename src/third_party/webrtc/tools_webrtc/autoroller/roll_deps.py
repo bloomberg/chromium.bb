@@ -44,7 +44,6 @@ WEBRTC_ONLY_DEPS = [
   'src/third_party',
   'src/third_party/findbugs',
   'src/third_party/gtest-parallel',
-  'src/third_party/winsdk_samples',
   'src/third_party/yasm/binaries',
   'src/tools',
 ]
@@ -452,7 +451,7 @@ def GenerateCommitMessage(rev_update, current_commit_pos, new_commit_pos,
                                                     c.current_rev[0:10],
                                                     c.new_rev[0:10]))
       if 'libvpx' in c.path:
-        tbr_authors += 'marpan@webrtc.org, '
+        tbr_authors += 'marpan@webrtc.org, jianj@chromium.org, '
 
   if added_deps_paths:
     Section('Added', added_deps_paths)

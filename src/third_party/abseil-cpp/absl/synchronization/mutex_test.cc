@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -1032,9 +1032,9 @@ class ScopedDisableBazelTestWarnings {
   ScopedDisableBazelTestWarnings() {
 #ifdef WIN32
     char file[MAX_PATH];
-    if (GetEnvironmentVariable(kVarName, file, sizeof(file)) < sizeof(file)) {
+    if (GetEnvironmentVariableA(kVarName, file, sizeof(file)) < sizeof(file)) {
       warnings_output_file_ = file;
-      SetEnvironmentVariable(kVarName, nullptr);
+      SetEnvironmentVariableA(kVarName, nullptr);
     }
 #else
     const char *file = getenv(kVarName);
@@ -1048,7 +1048,7 @@ class ScopedDisableBazelTestWarnings {
   ~ScopedDisableBazelTestWarnings() {
     if (!warnings_output_file_.empty()) {
 #ifdef WIN32
-      SetEnvironmentVariable(kVarName, warnings_output_file_.c_str());
+      SetEnvironmentVariableA(kVarName, warnings_output_file_.c_str());
 #else
       setenv(kVarName, warnings_output_file_.c_str(), 0);
 #endif

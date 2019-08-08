@@ -18,12 +18,10 @@ bool SslValidityChecker::IsSslCertificateValid(
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  return security_info.security_level == security_state::EV_SECURE ||
-         security_info.security_level == security_state::SECURE ||
-         security_info.security_level ==
-             security_state::SECURE_WITH_POLICY_INSTALLED_CERT;
+  security_state::SecurityLevel security_level = helper->GetSecurityLevel();
+  return security_level == security_state::EV_SECURE ||
+         security_level == security_state::SECURE ||
+         security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT;
 }
 
 }  // namespace payments

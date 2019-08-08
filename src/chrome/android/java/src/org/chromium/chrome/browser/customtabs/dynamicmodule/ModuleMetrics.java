@@ -169,11 +169,13 @@ public final class ModuleMetrics {
 
     /**
      * Records the size of the memory occupied by a custom tabs dynamic module's code.
+     *
      * @param packageName package name of the module for which the memory footprint is recorded.
+     * @param suffix Histogram suffix.
      */
-    public static void recordCodeMemoryFootprint(String packageName) {
-        nativeRecordCodeMemoryFootprint(packageName);
+    public static void recordCodeMemoryFootprint(String packageName, String suffix) {
+        nativeRecordCodeMemoryFootprint(packageName, suffix);
     }
 
-    private static native void nativeRecordCodeMemoryFootprint(String packageName);
+    private static native void nativeRecordCodeMemoryFootprint(String packageName, String suffix);
 }

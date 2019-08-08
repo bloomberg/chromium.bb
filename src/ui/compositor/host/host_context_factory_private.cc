@@ -36,7 +36,6 @@ HostContextFactoryPrivate::HostContextFactoryPrivate(
     scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner)
     : frame_sink_id_allocator_(client_id),
       host_frame_sink_manager_(host_frame_sink_manager),
-      renderer_settings_(viz::CreateRendererSettings()),
       resize_task_runner_(std::move(resize_task_runner)) {
   DCHECK(host_frame_sink_manager_);
 }
@@ -95,7 +94,7 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   root_params->widget = compositor->widget();
 #endif
   root_params->gpu_compositing = gpu_compositing;
-  root_params->renderer_settings = renderer_settings_;
+  root_params->renderer_settings = viz::CreateRendererSettings();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableFrameRateLimit))

@@ -65,15 +65,14 @@ FootnoteContainerView::FootnoteContainerView(const gfx::Insets& margins,
 FootnoteContainerView::~FootnoteContainerView() = default;
 
 void FootnoteContainerView::SetCornerRadius(float corner_radius) {
-  SkColor background_color = GetNativeTheme()->SystemDarkModeEnabled()
-                                 ? SkColorSetRGB(0x32, 0x36, 0x39)
-                                 : gfx::kGoogleGrey050;
+  SkColor background_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_BubbleFooterBackground);
   SetBackground(std::make_unique<HalfRoundedRectBackground>(background_color,
                                                             corner_radius));
 }
 
 void FootnoteContainerView::ChildVisibilityChanged(View* child) {
-  DCHECK_EQ(child_count(), 1);
+  DCHECK_EQ(1u, children().size());
   SetVisible(child->visible());
 }
 

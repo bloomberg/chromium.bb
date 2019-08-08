@@ -9,6 +9,7 @@
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
+#include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fxcrt/cfx_bitstream.h"
 #include "core/fxcrt/cfx_fixedbufgrow.h"
 #include "core/fxcrt/fx_safe_types.h"
@@ -172,3 +173,9 @@ bool CPDF_SampledFunc::v_Call(const float* inputs, float* results) const {
   }
   return true;
 }
+
+#if defined _SKIA_SUPPORT_ || defined _SKIA_SUPPORT_PATHS_
+RetainPtr<CPDF_StreamAcc> CPDF_SampledFunc::GetSampleStream() const {
+  return m_pSampleStream;
+}
+#endif

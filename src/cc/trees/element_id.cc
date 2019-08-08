@@ -14,6 +14,8 @@
 
 namespace cc {
 
+const ElementIdType ElementId::kInvalidElementId = 0;
+
 ElementId LayerIdToElementIdForTesting(int layer_id) {
   return ElementId(std::numeric_limits<int>::max() - layer_id);
 }

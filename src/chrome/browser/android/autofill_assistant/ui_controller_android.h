@@ -11,7 +11,6 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_overlay_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_payment_request_delegate.h"
 #include "components/autofill_assistant/browser/chip.h"
@@ -53,8 +52,10 @@ class UiControllerAndroid : public UiController {
               UiDelegate* ui_delegate);
 
   // Called by ClientAndroid.
-  void ShowOnboarding(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& on_accept);
+  void ShowOnboarding(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jstring>& jexperiment_ids,
+      const base::android::JavaParamRef<jobject>& on_accept);
 
   // Overrides UiController:
   void OnStateChanged(AutofillAssistantState new_state) override;
@@ -68,19 +69,25 @@ class UiControllerAndroid : public UiController {
   void OnProgressChanged(int progress) override;
   void OnProgressVisibilityChanged(bool visible) override;
   void OnTouchableAreaChanged(const std::vector<RectF>& areas) override;
+  void OnResizeViewportChanged(bool resize_viewport) override;
+  void OnPeekModeChanged(
+      ConfigureBottomSheetProto::PeekMode peek_mode) override;
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();
   void UpdateTouchableArea();
   void OnUserInteractionInsideTouchableArea();
 
-  // Called by AssistantHeaderDelegate:
-  void OnFeedbackButtonClicked();
-
   // Called by AssistantPaymentRequestDelegate:
-  void OnGetPaymentInformation(
-      std::unique_ptr<PaymentInformation> payment_info);
-  void OnCancelButtonClicked();
+  void OnShippingAddressChanged(
+      std::unique_ptr<autofill::AutofillProfile> address);
+  void OnBillingAddressChanged(
+      std::unique_ptr<autofill::AutofillProfile> address);
+  void OnContactInfoChanged(std::string name,
+                            std::string phone,
+                            std::string email);
+  void OnCreditCardChanged(std::unique_ptr<autofill::CreditCard> card);
+  void OnTermsAndConditionsChanged(TermsAndConditionsState state);
 
   // Called by Java.
   void SnackbarResult(JNIEnv* env,
@@ -109,6 +116,9 @@ class UiControllerAndroid : public UiController {
   void OnCloseButtonClicked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
+  void SetVisible(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& jcaller,
+                  jboolean visible);
 
  private:
   // A pointer to the client. nullptr until Attach() is called.
@@ -117,7 +127,6 @@ class UiControllerAndroid : public UiController {
   // A pointer to the ui_delegate. nullptr until Attach() is called.
   UiDelegate* ui_delegate_ = nullptr;
   AssistantOverlayDelegate overlay_delegate_;
-  AssistantHeaderDelegate header_delegate_;
   AssistantPaymentRequestDelegate payment_request_delegate_;
 
   // What to do if undo is not pressed on the current snackbar.
@@ -134,8 +143,6 @@ class UiControllerAndroid : public UiController {
   void AllowShowingSoftKeyboard(bool enabled);
   void ExpandBottomSheet();
   void SetSpinPoodle(bool enabled);
-  void SetAllowSwipingSheet(bool allow);
-  std::string GetDebugContext();
   void DestroySelf();
   void Shutdown(Metrics::DropOutReason reason);
   void UpdateActions();
@@ -144,12 +151,15 @@ class UiControllerAndroid : public UiController {
   // action after a short delay unless the user taps the undo button.
   void ShowSnackbar(const std::string& message,
                     base::OnceCallback<void()> action);
+  void OnCancelButtonClicked();
   void OnCancelButtonWithActionIndexClicked(int action_index);
   void OnCancel(int action_index);
 
-  // Debug context captured previously. If non-empty, GetDebugContext() returns
-  // this context.
-  std::string captured_debug_context_;
+  // Updates the state of the UI to reflect the UIDelegate's state.
+  void SetupForState();
+
+  // Makes the whole of AA invisible or visible again.
+  void SetVisible(bool visible);
 
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

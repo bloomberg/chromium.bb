@@ -110,8 +110,8 @@ ExampleVector GetExamplesToShow(ExampleVector extra) {
 // Model for the examples that are being added via AddExample().
 class ComboboxModelExampleList : public ui::ComboboxModel {
  public:
-  ComboboxModelExampleList() {}
-  ~ComboboxModelExampleList() override {}
+  ComboboxModelExampleList() = default;
+  ~ComboboxModelExampleList() override = default;
 
   void SetExamples(ExampleVector examples) {
     example_list_ = std::move(examples);
@@ -191,7 +191,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
     return base::ASCIIToUTF16("Views Examples");
   }
   void WindowClosing() override {
-    instance_ = NULL;
+    instance_ = nullptr;
     if (on_close_)
       std::move(on_close_).Run();
   }
@@ -208,7 +208,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
         combobox_model_->GetItemViewAt(combobox->selected_index()));
     example_shown_->RequestFocus();
     SetStatus(std::string());
-    Layout();
+    InvalidateLayout();
   }
 
   static ExamplesWindowContents* instance_;
@@ -223,7 +223,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
 };
 
 // static
-ExamplesWindowContents* ExamplesWindowContents::instance_ = NULL;
+ExamplesWindowContents* ExamplesWindowContents::instance_ = nullptr;
 
 void ShowExamplesWindow(base::OnceClosure on_close,
                         gfx::NativeWindow window_context,

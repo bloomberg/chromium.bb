@@ -7,11 +7,16 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/ios/block_types.h"
+
 // Delegate to handle InfobarModal actions.
 @protocol InfobarModalDelegate
 
 // Asks the delegate to dismiss the InfobarModal.
-- (void)dismissInfobarModal:(UIViewController*)sender;
+- (void)dismissInfobarModal:(id)sender completion:(ProceduralBlock)completion;
+
+// Called when the InfobarModal "Accept" button was pressed.
+- (void)modalInfobarButtonWasPressed:(UIButton*)sender;
 
 @end
 

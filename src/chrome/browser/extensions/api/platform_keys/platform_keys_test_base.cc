@@ -14,10 +14,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -94,21 +93,20 @@ void PlatformKeysTestBase::SetUpCommandLine(base::CommandLine* command_line) {
 void PlatformKeysTestBase::SetUpInProcessBrowserTestFixture() {
   extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
-  chromeos::FakeSessionManagerClient* fake_session_manager_client =
-      new chromeos::FakeSessionManagerClient;
-  chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-      std::unique_ptr<chromeos::SessionManagerClient>(
-          fake_session_manager_client));
+  chromeos::SessionManagerClient::InitializeFakeInMemory();
 
   policy::AffiliationTestHelper affiliation_helper =
       policy::AffiliationTestHelper::CreateForCloud(
-          fake_session_manager_client);
+          chromeos::FakeSessionManagerClient::Get());
 
   if (enrollment_status() == EnrollmentStatus::ENROLLED) {
     std::set<std::string> device_affiliation_ids;
     device_affiliation_ids.insert(kAffiliationID);
     ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetDeviceAffiliationIDs(
         &device_policy_test_helper_, device_affiliation_ids));
+    install_attributes_.Get()->SetCloudManaged(
+        policy::PolicyBuilder::kFakeDomain,
+        policy::PolicyBuilder::kFakeDeviceId);
   }
 
   if (user_status() == UserStatus::MANAGED_AFFILIATED_DOMAIN) {

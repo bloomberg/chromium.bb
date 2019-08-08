@@ -118,10 +118,10 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
 
   const wtf_size_t final_length =
       MatchLengths(start_length, end_length, length_matching_strategy);
-  std::unique_ptr<InterpolableList> result_start_interpolable_list =
-      InterpolableList::Create(final_length);
-  std::unique_ptr<InterpolableList> result_end_interpolable_list =
-      InterpolableList::Create(final_length);
+  auto result_start_interpolable_list =
+      std::make_unique<InterpolableList>(final_length);
+  auto result_end_interpolable_list =
+      std::make_unique<InterpolableList>(final_length);
   Vector<scoped_refptr<NonInterpolableValue>> result_non_interpolable_values(
       final_length);
 
@@ -190,8 +190,7 @@ static void RepeatToLength(InterpolationValue& value, wtf_size_t length) {
   if (current_length == length)
     return;
   DCHECK_LT(current_length, length);
-  std::unique_ptr<InterpolableList> new_interpolable_list =
-      InterpolableList::Create(length);
+  auto new_interpolable_list = std::make_unique<InterpolableList>(length);
   Vector<scoped_refptr<NonInterpolableValue>> new_non_interpolable_values(
       length);
   for (wtf_size_t i = length; i-- > 0;) {
@@ -222,8 +221,8 @@ static void PadToSameLength(InterpolationValue& value,
       ToNonInterpolableList(*length_value.non_interpolable_value);
   const wtf_size_t target_length = target_interpolable_list.length();
   DCHECK_LT(current_length, target_length);
-  std::unique_ptr<InterpolableList> new_interpolable_list =
-      InterpolableList::Create(target_length);
+  auto new_interpolable_list =
+      std::make_unique<InterpolableList>(target_length);
   Vector<scoped_refptr<NonInterpolableValue>> new_non_interpolable_values(
       target_length);
   wtf_size_t index = 0;

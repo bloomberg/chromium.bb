@@ -76,31 +76,17 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
       ErrorCB error_cb);
 
  private:
-  // Record for output buffers.
-  struct OutputRecord {
-    OutputRecord();
-    OutputRecord(OutputRecord&&);
-    ~OutputRecord();
-    bool at_device;
-    // The exported FDs of the frame will be stored here if
-    // |output_memory_type_| is V4L2_MEMORY_MMAP
-    std::vector<base::ScopedFD> dmabuf_fds;
-  };
-
-  // Job record. Jobs are processed in a FIFO order. This is separate from
-  // InputRecord, because an InputRecord may be returned before we dequeue
-  // the corresponding output buffer. The processed frame will be stored in
-  // |output_buffer_index| output buffer. If |output_memory_type_| is
-  // V4L2_MEMORY_DMABUF, the processed frame will be stored in
-  // |output_dmabuf_fds|.
+  // Job record. Jobs are processed in a FIFO order. |input_frame| will be
+  // processed and the result written into |output_frame|. Once processing is
+  // complete, |ready_cb| or |legacy_ready_cb| will be called depending on which
+  // Process() method has been used to create that JobRecord.
   struct JobRecord {
     JobRecord();
     ~JobRecord();
     scoped_refptr<VideoFrame> input_frame;
-    int output_buffer_index;
-    std::vector<base::ScopedFD> output_dmabuf_fds;
     FrameReadyCB ready_cb;
     LegacyFrameReadyCB legacy_ready_cb;
+    scoped_refptr<VideoFrame> output_frame;
   };
 
   V4L2ImageProcessor(scoped_refptr<V4L2Device> device,
@@ -124,15 +110,13 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   bool EnqueueOutputRecord(const JobRecord* job_record);
   bool CreateInputBuffers();
   bool CreateOutputBuffers();
-  void DestroyInputBuffers();
-  void DestroyOutputBuffers();
+
+  void V4L2VFDestructionObserver(V4L2ReadableBufferRef buf);
 
   void NotifyError();
 
   // ImageProcessor implementation.
   bool ProcessInternal(scoped_refptr<VideoFrame> frame,
-                       int output_buffer_index,
-                       std::vector<base::ScopedFD> output_dmabuf_fds,
                        LegacyFrameReadyCB cb) override;
   bool ProcessInternal(scoped_refptr<VideoFrame> input_frame,
                        scoped_refptr<VideoFrame> output_frame,
@@ -188,10 +172,6 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   scoped_refptr<V4L2Queue> input_queue_;
   scoped_refptr<V4L2Queue> output_queue_;
 
-  // Number of output buffers enqueued to the device.
-  int output_buffer_queued_count_;
-  // Mapping of int index to an output buffer record.
-  std::vector<OutputRecord> output_buffer_map_;
   // The number of input or output buffers.
   const size_t num_buffers_;
 
@@ -202,6 +182,9 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   SEQUENCE_CHECKER(client_sequence_checker_);
   // Checker for the device thread owned by this V4L2ImageProcessor.
   THREAD_CHECKER(device_thread_checker_);
+
+  // Keep at the end so it is destroyed first.
+  base::WeakPtrFactory<V4L2ImageProcessor> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(V4L2ImageProcessor);
 };

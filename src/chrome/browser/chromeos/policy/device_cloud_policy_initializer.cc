@@ -12,16 +12,17 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
+#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
@@ -43,6 +44,16 @@ class ActiveDirectoryJoinDelegate;
 }
 
 namespace policy {
+
+namespace {
+
+// Format MAC address from AA:AA:AA:AA:AA:AA into AAAAAAAAAAAA (12 digit string)
+void FormatMacAddress(std::string* mac_address) {
+  base::ReplaceChars(*mac_address, ":", "", mac_address);
+  DCHECK(mac_address->empty() || mac_address->size() == 12);
+}
+
+}  // namespace
 
 DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     PrefService* local_state,
@@ -75,6 +86,11 @@ void DeviceCloudPolicyInitializer::SetSigningServiceForTesting(
 void DeviceCloudPolicyInitializer::SetSystemURLLoaderFactoryForTesting(
     scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory) {
   system_url_loader_factory_for_testing_ = system_url_loader_factory;
+}
+
+void DeviceCloudPolicyInitializer::SetAttestationFlowForTesting(
+    std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow) {
+  attestation_flow_ = std::move(attestation_flow);
 }
 
 DeviceCloudPolicyInitializer::~DeviceCloudPolicyInitializer() {
@@ -305,10 +321,24 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
   std::string brand_code;
   statistics_provider_->GetMachineStatistic(chromeos::system::kRlzBrandCodeKey,
                                             &brand_code);
+  // The :'s should be removed from MAC addresses to match the format of
+  // reporting MAC addresses and corresponding VPD fields.
+  std::string ethernet_mac_address;
+  statistics_provider_->GetMachineStatistic(
+      chromeos::system::kEthernetMacAddressKey, &ethernet_mac_address);
+  FormatMacAddress(&ethernet_mac_address);
+  std::string dock_mac_address;
+  statistics_provider_->GetMachineStatistic(
+      chromeos::system::kDockMacAddressKey, &dock_mac_address);
+  FormatMacAddress(&dock_mac_address);
+  std::string manufacture_date;
+  statistics_provider_->GetMachineStatistic(
+      chromeos::system::kManufactureDateKey, &manufacture_date);
   // DeviceDMToken callback is empty here because for device policies this
   // DMToken is already provided in the policy fetch requests.
   return std::make_unique<CloudPolicyClient>(
       statistics_provider_->GetEnterpriseMachineID(), machine_model, brand_code,
+      ethernet_mac_address, dock_mac_address, manufacture_date,
       device_management_service,
       system_url_loader_factory_for_testing_
           ? system_url_loader_factory_for_testing_
@@ -317,10 +347,8 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
 }
 
 void DeviceCloudPolicyInitializer::TryToCreateClient() {
-  if (!device_store_->is_initialized() ||
-      !device_store_->has_policy() ||
-      state_keys_broker_->pending() ||
-      enrollment_handler_ ||
+  if (!device_store_->is_initialized() || !device_store_->has_policy() ||
+      !state_keys_broker_->available() || enrollment_handler_ ||
       install_attributes_->IsActiveDirectoryManaged()) {
     return;
   }

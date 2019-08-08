@@ -70,6 +70,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-aat-ltag-table.hh",
       "src/src/hb-aat-map.cc",
       "src/src/hb-aat-map.hh",
+      "src/src/hb-algs.hh",
       "src/src/hb-array.hh",
       "src/src/hb-atomic.hh",
       "src/src/hb-blob.cc",
@@ -87,7 +88,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-cff2-interp-cs.hh",
       "src/src/hb-common.cc",
       "src/src/hb-debug.hh",
-      "src/src/hb-dsalgs.hh",
+      "src/src/hb-dispatch.hh",
       "src/src/hb-face.cc",
       "src/src/hb-face.hh",
       "src/src/hb-font.cc",
@@ -96,6 +97,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-icu.cc",
       "src/src/hb-map.cc",
       "src/src/hb-map.hh",
+      "src/src/hb-meta.hh",
       "src/src/hb-mutex.hh",
       "src/src/hb-object.hh",
       "src/src/hb-open-file.hh",
@@ -173,6 +175,8 @@ if (use_system_harfbuzz) {
       "src/src/hb-ot-var-hvar-table.hh",
       "src/src/hb-ot-var-mvar-table.hh",
       "src/src/hb-ot-var.cc",
+      "src/src/hb-sanitize.hh",
+      "src/src/hb-serialize.hh",
       "src/src/hb-set-digest.hh",
       "src/src/hb-set.cc",
       "src/src/hb-set.hh",
@@ -211,6 +215,9 @@ if (use_system_harfbuzz) {
       "HAVE_ICU_BUILTIN",
       "HAVE_INTEL_ATOMIC_PRIMITIVES",
       "HB_NO_MMAP",
+
+      # TODO(https://crbug.com/949962): Remove once this is fixed upstream.
+      "U_DISABLE_VERSION_SUFFIX=0",
     ]
 
     if (is_component_build) {
@@ -247,20 +254,6 @@ if (use_system_harfbuzz) {
     deps = [
       "//third_party/icu:icuuc",
     ]
-
-    # TODO(https://crbug.com/894354): Change this to is_mac to revert to
-    # CoreText AAT. Remove this backstop and the whole hb-coretext build clause
-    # here once we have reliably switched to HarfBuzz AAT for one stable cycle.
-    if (false) {
-      public += [ "src/src/hb-coretext.h" ]
-      sources += [ "src/src/hb-coretext.cc" ]
-      defines += [ "HAVE_CORETEXT" ]
-      libs = [
-        "CoreFoundation.framework",
-        "CoreGraphics.framework",
-        "CoreText.framework",
-      ]
-    }
 
     if (use_glib) {
       configs += [ "//build/config/linux:glib" ]

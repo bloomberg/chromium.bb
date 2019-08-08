@@ -25,6 +25,7 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import repo_manifest
 from chromite.lib import repo_util
+from chromite.lib import retry_util
 
 
 # A ProjectBranch is, simply, a git branch on a project.
@@ -368,14 +369,18 @@ class CrosCheckout(object):
     """
     return self.AbsolutePath(project.Path(), *args)
 
-  def RunGit(self, project, cmd):
+  def RunGit(self, project, cmd, retries=3):
     """Run a git command inside the given project.
 
     Args:
       project: repo_manifest.Project to run the command in.
       cmd: Command as a list of arguments. Callers should exclude 'git'.
+      retries: Maximum number of retries for the git command.
     """
-    git.RunGit(self.AbsoluteProjectPath(project), cmd, print_cmd=True)
+    retry_util.RetryCommand(
+        git.RunGit, retries,
+        self.AbsoluteProjectPath(project), cmd,
+        print_cmd=True, sleep=2, log_retries=True)
 
   def GitBranch(self, project):
     """Returns the project's current branch on disk.

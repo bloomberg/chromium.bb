@@ -250,7 +250,7 @@ int HttpStreamParser::SendRequest(
   std::string request = request_line + headers.ToString();
   request_headers_length_ = request.size();
 
-  if (request_->upload_data_stream != NULL) {
+  if (request_->upload_data_stream != nullptr) {
     request_body_send_buf_ =
         base::MakeRefCounted<SeekableIOBuffer>(kRequestBodyBufferSize);
     if (request_->upload_data_stream->is_chunked()) {
@@ -318,6 +318,15 @@ int HttpStreamParser::SendRequest(
     callback_ = std::move(callback);
 
   return result > 0 ? OK : result;
+}
+
+int HttpStreamParser::ConfirmHandshake(CompletionOnceCallback callback) {
+  int ret = stream_socket_->ConfirmHandshake(
+      base::BindOnce(&HttpStreamParser::RunConfirmHandshakeCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
+  if (ret == ERR_IO_PENDING)
+    confirm_handshake_callback_ = std::move(callback);
+  return ret;
 }
 
 int HttpStreamParser::ReadResponseHeaders(CompletionOnceCallback callback) {
@@ -488,10 +497,10 @@ int HttpStreamParser::DoSendHeadersComplete(int result) {
     return OK;
   }
 
-  if (request_->upload_data_stream != NULL &&
+  if (request_->upload_data_stream != nullptr &&
       (request_->upload_data_stream->is_chunked() ||
-      // !IsEOF() indicates that the body wasn't merged.
-      (request_->upload_data_stream->size() > 0 &&
+       // !IsEOF() indicates that the body wasn't merged.
+       (request_->upload_data_stream->size() > 0 &&
         !request_->upload_data_stream->IsEOF()))) {
     net_log_.AddEvent(NetLogEventType::HTTP_TRANSACTION_SEND_REQUEST_BODY,
                       base::Bind(&NetLogSendRequestBodyCallback,
@@ -789,7 +798,7 @@ int HttpStreamParser::DoReadBodyComplete(int result) {
     read_buf_unused_offset_ = 0;
   } else {
     // Now waiting for more of the body to be read.
-    user_read_buf_ = NULL;
+    user_read_buf_ = nullptr;
     user_read_buf_len_ = 0;
   }
 
@@ -930,6 +939,10 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
     // Now waiting for the body to be read.
   }
   return OK;
+}
+
+void HttpStreamParser::RunConfirmHandshakeCallback(int rv) {
+  std::move(confirm_handshake_callback_).Run(rv);
 }
 
 int HttpStreamParser::FindAndParseResponseHeaders(int new_bytes) {
@@ -1164,10 +1177,9 @@ int HttpStreamParser::EncodeChunk(const base::StringPiece& payload,
 bool HttpStreamParser::ShouldMergeRequestHeadersAndBody(
     const std::string& request_headers,
     const UploadDataStream* request_body) {
-  if (request_body != NULL &&
+  if (request_body != nullptr &&
       // IsInMemory() ensures that the request body is not chunked.
-      request_body->IsInMemory() &&
-      request_body->size() > 0) {
+      request_body->IsInMemory() && request_body->size() > 0) {
     uint64_t merged_size = request_headers.size() + request_body->size();
     if (merged_size <= kMaxMergedHeaderAndBodySize)
       return true;

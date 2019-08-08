@@ -912,7 +912,7 @@ java_library("shadows_multidex_java") {
     ":robolectric_utils_java",
     ":shadows_core_java",
     "//build/android:sun_tools_java",
-    "//third_party/android_deps:android_support_multidex_java",
+    "//third_party/android_deps:com_android_support_multidex_java",
     "//third_party/gson:gson_java",
     "//third_party/guava:guava_java",
   ]

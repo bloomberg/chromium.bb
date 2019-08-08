@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "ToolUtils.h"
 #include "gm.h"
-#include "sk_tool_utils.h"
 
 #include "Resources.h"
 #include "SkCanvas.h"
@@ -40,14 +40,12 @@ protected:
     } fEmojiFont;
 
     void onOnceBeforeDraw() override {
-        fEmojiFont.fTypeface = sk_tool_utils::emoji_typeface();
-        fEmojiFont.fText = sk_tool_utils::emoji_sample_text();
+        fEmojiFont.fTypeface = ToolUtils::emoji_typeface();
+        fEmojiFont.fText     = ToolUtils::emoji_sample_text();
     }
 
     SkString onShortName() override {
-        SkString name("scaledemoji");
-        name.append(sk_tool_utils::platform_font_manager());
-        return name;
+        return SkString("scaledemoji");
     }
 
     SkISize onISize() override { return SkISize::Make(1200, 1200); }
@@ -92,14 +90,12 @@ protected:
     } fEmojiFont;
 
     void onOnceBeforeDraw() override {
-        fEmojiFont.fTypeface = sk_tool_utils::emoji_typeface();
-        fEmojiFont.fText = sk_tool_utils::emoji_sample_text();
+        fEmojiFont.fTypeface = ToolUtils::emoji_typeface();
+        fEmojiFont.fText     = ToolUtils::emoji_sample_text();
     }
 
     SkString onShortName() override {
-        SkString name("scaledemojipos");
-        name.append(sk_tool_utils::platform_font_manager());
-        return name;
+        return SkString("scaledemojipos");
     }
 
     SkISize onISize() override { return SkISize::Make(1200, 1200); }

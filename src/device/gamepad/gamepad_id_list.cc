@@ -446,6 +446,8 @@ constexpr struct GamepadInfo {
     {0x1781, 0x057e, kXInputTypeNone},
     // Google Inc.
     {0x18d1, 0x2c40, kXInputTypeNone},
+    {0x18d1, 0x502e, kXInputTypeNone},
+    {0x18d1, 0x9400, kXInputTypeNone},
     // Lab126, Inc.
     {0x1949, 0x0402, kXInputTypeNone},
     // Gampaq Co.Ltd

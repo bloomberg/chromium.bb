@@ -93,7 +93,11 @@ class ConcurrentMarkingVisitor final
         task_id_(task_id),
         embedder_tracing_enabled_(embedder_tracing_enabled),
         mark_compact_epoch_(mark_compact_epoch),
-        is_forced_gc_(is_forced_gc) {}
+        is_forced_gc_(is_forced_gc) {
+    // It is not safe to access flags from concurrent marking visitor. So
+    // set the bytecode flush mode based on the flags here
+    bytecode_flush_mode_ = Heap::GetBytecodeFlushMode();
+  }
 
   template <typename T>
   static V8_INLINE T Cast(HeapObject object) {
@@ -228,8 +232,7 @@ class ConcurrentMarkingVisitor final
       if (marking_state_.IsBlackOrGrey(target)) {
         // Record the slot inside the JSWeakRef, since the
         // VisitJSObjectSubclass above didn't visit it.
-        ObjectSlot slot =
-            HeapObject::RawField(weak_ref, JSWeakRef::kTargetOffset);
+        ObjectSlot slot = weak_ref.RawField(JSWeakRef::kTargetOffset);
         MarkCompactCollector::RecordSlot(weak_ref, slot, target);
       } else {
         // JSWeakRef points to a potentially dead object. We have to process
@@ -251,8 +254,7 @@ class ConcurrentMarkingVisitor final
       if (marking_state_.IsBlackOrGrey(target)) {
         // Record the slot inside the WeakCell, since the IterateBody above
         // didn't visit it.
-        ObjectSlot slot =
-            HeapObject::RawField(weak_cell, WeakCell::kTargetOffset);
+        ObjectSlot slot = weak_cell.RawField(WeakCell::kTargetOffset);
         MarkCompactCollector::RecordSlot(weak_cell, slot, target);
       } else {
         // WeakCell points to a potentially dead object. We have to process
@@ -328,25 +330,14 @@ class ConcurrentMarkingVisitor final
     marking_state_.GreyToBlack(object);
     int size = FixedArray::BodyDescriptor::SizeOf(map, object);
     size_t current_progress_bar = chunk->ProgressBar();
-    if (current_progress_bar == 0) {
-      // Try to move the progress bar forward to start offset. This solves the
-      // problem of not being able to observe a progress bar reset when
-      // processing the first kProgressBarScanningChunk.
-      if (!chunk->TrySetProgressBar(0,
-                                    FixedArray::BodyDescriptor::kStartOffset))
-        return 0;
-      current_progress_bar = FixedArray::BodyDescriptor::kStartOffset;
-    }
     int start = static_cast<int>(current_progress_bar);
+    if (start == 0) start = FixedArray::BodyDescriptor::kStartOffset;
     int end = Min(size, start + kProgressBarScanningChunk);
     if (start < end) {
-      VisitPointers(object, HeapObject::RawField(object, start),
-                    HeapObject::RawField(object, end));
-      // Setting the progress bar can fail if the object that is currently
-      // scanned is also revisited. In this case, there may be two tasks racing
-      // on the progress counter. The looser can bail out because the progress
-      // bar is reset before the tasks race on the object.
-      if (chunk->TrySetProgressBar(current_progress_bar, end) && (end < size)) {
+      VisitPointers(object, object.RawField(start), object.RawField(end));
+      bool success = chunk->TrySetProgressBar(current_progress_bar, end);
+      CHECK(success);
+      if (end < size) {
         // The object can be pushed back onto the marking worklist only after
         // progress bar was updated.
         shared_.Push(object);
@@ -382,7 +373,7 @@ class ConcurrentMarkingVisitor final
 
     // If the SharedFunctionInfo has old bytecode, mark it as flushable,
     // otherwise visit the function data field strongly.
-    if (shared_info->ShouldFlushBytecode()) {
+    if (shared_info->ShouldFlushBytecode(bytecode_flush_mode_)) {
       weak_objects_->bytecode_flushing_candidates.Push(task_id_, shared_info);
     } else {
       VisitPointer(shared_info, shared_info->RawField(
@@ -406,7 +397,8 @@ class ConcurrentMarkingVisitor final
     int size = VisitJSObjectSubclass(map, object);
 
     // Check if the JSFunction needs reset due to bytecode being flushed.
-    if (object->NeedsResetDueToFlushedBytecode()) {
+    if (bytecode_flush_mode_ != BytecodeFlushMode::kDoNotFlushBytecode &&
+        object->NeedsResetDueToFlushedBytecode()) {
       weak_objects_->flushed_js_functions.Push(task_id_, object);
     }
 
@@ -520,7 +512,7 @@ class ConcurrentMarkingVisitor final
 
   // Implements ephemeron semantics: Marks value if key is already reachable.
   // Returns true if value was actually marked.
-  bool VisitEphemeron(HeapObject key, HeapObject value) {
+  bool ProcessEphemeron(HeapObject key, HeapObject value) {
     if (marking_state_.IsBlackOrGrey(key)) {
       if (marking_state_.WhiteToGrey(value)) {
         shared_.Push(value);
@@ -691,6 +683,7 @@ class ConcurrentMarkingVisitor final
   bool embedder_tracing_enabled_;
   const unsigned mark_compact_epoch_;
   bool is_forced_gc_;
+  BytecodeFlushMode bytecode_flush_mode_;
 };
 
 // Strings can change maps due to conversion to thin string or external strings.
@@ -788,7 +781,7 @@ void ConcurrentMarking::Run(int task_id, TaskState* task_state) {
       Ephemeron ephemeron;
 
       while (weak_objects_->current_ephemerons.Pop(task_id, &ephemeron)) {
-        if (visitor.VisitEphemeron(ephemeron.key, ephemeron.value)) {
+        if (visitor.ProcessEphemeron(ephemeron.key, ephemeron.value)) {
           ephemeron_marked = true;
         }
       }
@@ -833,7 +826,7 @@ void ConcurrentMarking::Run(int task_id, TaskState* task_state) {
       Ephemeron ephemeron;
 
       while (weak_objects_->discovered_ephemerons.Pop(task_id, &ephemeron)) {
-        if (visitor.VisitEphemeron(ephemeron.key, ephemeron.value)) {
+        if (visitor.ProcessEphemeron(ephemeron.key, ephemeron.value)) {
           ephemeron_marked = true;
         }
       }

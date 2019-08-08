@@ -101,17 +101,18 @@ CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout(
   box->SetOverridePercentageResolutionBlockSize(
       percentage_resolution_logical_height);
 
-  if (box->IsLayoutCustom())
-    ToLayoutCustom(box)->SetConstraintData(constraint_data_);
-
-  box->ForceLayout();
+  auto* layout_custom = DynamicTo<LayoutCustom>(box);
+  if (layout_custom)
+    layout_custom->SetConstraintData(constraint_data_);
+  // TODO(cbiesinger): Can this just be ForceLayout()?
+  box->ForceLayoutWithPaintInvalidation();
 
   box->ClearOverrideContainingBlockContentSize();
   box->ClearOverridePercentageResolutionBlockSize();
   box->ClearOverrideSize();
 
-  if (box->IsLayoutCustom())
-    ToLayoutCustom(box)->ClearConstraintData();
+  if (layout_custom)
+    layout_custom->ClearConstraintData();
 
   LayoutUnit fragment_inline_size =
       is_parallel_writing_mode ? box->LogicalWidth() : box->LogicalHeight();

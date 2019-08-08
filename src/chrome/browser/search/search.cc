@@ -128,13 +128,19 @@ bool IsMatchingServiceWorker(const GURL& my_url, const GURL& document_url) {
 
 // Returns true if |url| matches the NTP URL or the URL of the NTP's associated
 // service worker.
-bool IsNTPOrServiceWorkerURL(const GURL& url, Profile* profile) {
+bool IsNTPOrRelatedURLHelper(const GURL& url, Profile* profile) {
   if (!url.is_valid())
     return false;
 
   const GURL new_tab_url(GetNewTabPageURL(profile));
   return new_tab_url.is_valid() && (MatchesOriginAndPath(url, new_tab_url) ||
                                     IsMatchingServiceWorker(url, new_tab_url));
+}
+
+GURL RemoveQueryParam(const GURL& url) {
+  url::Replacements<char> replacements;
+  replacements.ClearQuery();
+  return url.ReplaceComponents(replacements);
 }
 
 bool IsURLAllowedForSupervisedUser(const GURL& url, Profile* profile) {
@@ -258,16 +264,16 @@ bool DefaultSearchProviderIsGoogle(
          SearchEngineType::SEARCH_ENGINE_GOOGLE;
 }
 
-bool IsNTPURL(const GURL& url, Profile* profile) {
+bool IsNTPOrRelatedURL(const GURL& url, Profile* profile) {
   if (!url.is_valid())
     return false;
 
   if (!IsInstantExtendedAPIEnabled())
     return url == chrome::kChromeUINewTabURL;
 
-  // TODO(treib,sfiera): Tolerate query params when detecting local NTPs.
-  return profile && (IsNTPOrServiceWorkerURL(url, profile) ||
-                     url == chrome::kChromeSearchLocalNtpUrl);
+  GURL url_no_params = RemoveQueryParam(url);
+  return profile && (IsNTPOrRelatedURLHelper(url, profile) ||
+                     url_no_params == chrome::kChromeSearchLocalNtpUrl);
 }
 
 bool IsInstantNTP(content::WebContents* contents) {
@@ -300,8 +306,8 @@ bool IsInstantNTPURL(const GURL& url, Profile* profile) {
   if (!IsInstantExtendedAPIEnabled())
     return false;
 
-  // TODO(treib,sfiera): Tolerate query params when detecting local NTPs.
-  if (url == chrome::kChromeSearchLocalNtpUrl)
+  GURL url_no_params = RemoveQueryParam(url);
+  if (url_no_params == chrome::kChromeSearchLocalNtpUrl)
     return true;
 
   GURL new_tab_url(GetNewTabPageURL(profile));
@@ -317,7 +323,7 @@ GURL GetNewTabPageURL(Profile* profile) {
 bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
   return url.is_valid() && profile && IsInstantExtendedAPIEnabled() &&
          (url.SchemeIs(chrome::kChromeSearchScheme) ||
-          IsNTPOrServiceWorkerURL(url, profile));
+          IsNTPOrRelatedURLHelper(url, profile));
 }
 
 bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile) {

@@ -8,7 +8,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/bookmark_app_navigation_browsertest.h"
 #include "chrome/browser/extensions/bookmark_app_navigation_throttle_utils.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -845,7 +844,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        PrerenderLinks) {
   prerender::PrerenderManager::SetMode(
-      prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
+      prerender::PrerenderManager::DEPRECATED_PRERENDER_MODE_ENABLED);
 
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();

@@ -49,30 +49,24 @@
 
 namespace blink {
 
-class FormSubmission;
 class LocalFrame;
 class ScheduledNavigation;
 
 class CORE_EXPORT NavigationScheduler final
     : public GarbageCollectedFinalized<NavigationScheduler> {
  public:
-  static NavigationScheduler* Create(LocalFrame* frame) {
-    return MakeGarbageCollected<NavigationScheduler>(frame);
-  }
-
   explicit NavigationScheduler(LocalFrame*);
   ~NavigationScheduler();
 
-  bool LocationChangePending();
   bool IsNavigationScheduledWithin(double interval_in_seconds) const;
 
   void ScheduleRedirect(double delay, const KURL&, Document::HttpRefreshType);
   void ScheduleFrameNavigation(Document*, const KURL&, WebFrameLoadType);
-  void SchedulePageBlock(Document*, int reason);
-  void ScheduleFormSubmission(Document*, FormSubmission*);
 
   void StartTimer();
   void Cancel();
+
+  static bool MustReplaceCurrentItem(LocalFrame* target_frame);
 
   void Trace(blink::Visitor*);
 
@@ -80,9 +74,10 @@ class CORE_EXPORT NavigationScheduler final
   bool ShouldScheduleNavigation(const KURL&) const;
 
   void NavigateTask();
-  void Schedule(ScheduledNavigation*);
 
-  static bool MustReplaceCurrentItem(LocalFrame* target_frame);
+  enum CancelParsingPolicy { kCancelParsing, kDoNotCancelParsing };
+  void Schedule(ScheduledNavigation*, CancelParsingPolicy);
+
   base::TimeTicks InputTimestamp();
 
   Member<LocalFrame> frame_;

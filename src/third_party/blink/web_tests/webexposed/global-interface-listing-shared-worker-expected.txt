@@ -43,6 +43,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method matchAll
 [Worker]     setter onprogress
 [Worker] interface BarcodeDetector
+[Worker]     static method getSupportedFormats
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method detect
@@ -1228,6 +1229,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute ACTIVE_VARIABLES
 [Worker]     attribute ALIASED_LINE_WIDTH_RANGE
 [Worker]     attribute ALIASED_POINT_SIZE_RANGE
+[Worker]     attribute ALL_BARRIER_BITS
 [Worker]     attribute ALPHA
 [Worker]     attribute ALPHA_BITS
 [Worker]     attribute ALREADY_SIGNALED
@@ -3459,7 +3461,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter connection
 [Worker]     getter deviceMemory
 [Worker]     getter hardwareConcurrency
-[Worker]     getter idle
 [Worker]     getter language
 [Worker]     getter languages
 [Worker]     getter locks

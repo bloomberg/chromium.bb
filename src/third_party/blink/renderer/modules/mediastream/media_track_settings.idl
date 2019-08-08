@@ -21,17 +21,12 @@ dictionary MediaTrackSettings {
     long channelCount;
     DOMString deviceId;
     DOMString groupId;
-    [OriginTrialEnabled=ExperimentalHardwareEchoCancellation] DOMString echoCancellationType;
     // Media Capture Depth Stream Extensions
     // https://w3c.github.io/mediacapture-depth/#mediatracksettings-dictionary
-    // TODO(aleksandar.stojiljkovic): videoKind, depthNear, depthFar,
-    // focalLengthX and focalLengthY attributes should be declared as partial
+    // TODO(riju): videoKind attribute should be declared as partial
     // dictionary but IDL parser can't support it yet. http://crbug.com/579896.
     [RuntimeEnabled=MediaCaptureDepthVideoKind] DOMString videoKind;
-    [RuntimeEnabled=MediaCaptureDepth] double depthNear;
-    [RuntimeEnabled=MediaCaptureDepth] double depthFar;
-    [RuntimeEnabled=MediaCaptureDepth] double focalLengthX;
-    [RuntimeEnabled=MediaCaptureDepth] double focalLengthY;
+
     // W3C Image Capture API
     // https://w3c.github.io/mediacapture-image/#mediatracksettings-section
     // TODO(mcasas) move out when partial dictionaries are supported

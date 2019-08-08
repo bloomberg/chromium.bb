@@ -18,6 +18,7 @@
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_types.h"
+#include "components/offline_pages/core/offline_page_visuals.h"
 #include "url/gurl.h"
 
 using ContentId = offline_items_collection::ContentId;
@@ -102,6 +103,9 @@ class DownloadUIAdapter : public OfflineContentProvider,
                          VisualsCallback callback) override;
   void GetShareInfoForItem(const ContentId& id,
                            ShareCallback share_callback) override;
+  void RenameItem(const ContentId& id,
+                  const std::string& name,
+                  RenameCallback callback) override;
   void AddObserver(OfflineContentProvider::Observer* observer) override;
   void RemoveObserver(OfflineContentProvider::Observer* observer) override;
 
@@ -112,7 +116,8 @@ class DownloadUIAdapter : public OfflineContentProvider,
   void OfflinePageDeleted(
       const OfflinePageModel::DeletedPageInfo& page_info) override;
   void ThumbnailAdded(OfflinePageModel* model,
-                      const OfflinePageThumbnail& thumbnail) override;
+                      const int64_t offline_id,
+                      const std::string& thumbnail) override;
 
   // RequestCoordinator::Observer
   void OnAdded(const SavePageRequest& request) override;
@@ -139,25 +144,25 @@ class DownloadUIAdapter : public OfflineContentProvider,
       OfflineContentProvider::MultipleItemCallback callback,
       std::unique_ptr<OfflineContentProvider::OfflineItemList> offline_items,
       const MultipleOfflinePageItemResult& pages);
-  void OnThumbnailLoaded(VisualResultCallback callback,
-                         std::unique_ptr<OfflinePageThumbnail> thumbnail);
+  void OnVisualsLoaded(VisualResultCallback callback,
+                       std::unique_ptr<OfflinePageVisuals> visuals);
   void OnRequestsLoaded(
       OfflineContentProvider::MultipleItemCallback callback,
       std::unique_ptr<OfflineContentProvider::OfflineItemList> offline_items,
       std::vector<std::unique_ptr<SavePageRequest>> requests);
   void OnPageGetForVisuals(const ContentId& id,
                            VisualsCallback visuals_callback,
-                           const OfflinePageItem* page);
+                           const std::vector<OfflinePageItem>& pages);
   void OnPageGetForGetItem(const ContentId& id,
                            OfflineContentProvider::SingleItemCallback callback,
-                           const OfflinePageItem* page);
+                           const std::vector<OfflinePageItem>& pages);
   void OnAllRequestsGetForGetItem(
       const ContentId& id,
       OfflineContentProvider::SingleItemCallback callback,
       std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   void OnPageGetForOpenItem(LaunchLocation location,
-                            const OfflinePageItem* page);
+                            const std::vector<OfflinePageItem>& pages);
   void OnPageGetForThumbnailAdded(const OfflinePageItem* page);
 
   void OnDeletePagesDone(DeletePageResult result);
@@ -189,4 +194,4 @@ class DownloadUIAdapter : public OfflineContentProvider,
 
 }  // namespace offline_pages
 
-#endif  // COMPONENTS_OFFLINE_PAGE_DOWNLOADS_DOWNLOAD_UI_ADAPTER_H_
+#endif  // COMPONENTS_OFFLINE_PAGES_CORE_DOWNLOADS_DOWNLOAD_UI_ADAPTER_H_

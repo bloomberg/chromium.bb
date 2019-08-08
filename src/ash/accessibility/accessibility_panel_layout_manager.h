@@ -65,7 +65,7 @@ class ASH_EXPORT AccessibilityPanelLayoutManager
 
   // ShellObserver:
   void OnFullscreenStateChanged(bool is_fullscreen,
-                                aura::Window* root_window) override;
+                                aura::Window* container) override;
 
   aura::Window* panel_window_for_test() { return panel_window_; }
 
@@ -73,8 +73,8 @@ class ASH_EXPORT AccessibilityPanelLayoutManager
   // Updates the panel window bounds.
   void UpdateWindowBounds();
 
-  // Updates the display work area to account for the panel.
-  void UpdateWorkArea();
+  // Sets cached height of the accessibility panel.
+  void UpdateWorkAreaForPanelHeight();
 
   // The panel being managed (e.g. the ChromeVoxPanel's native aura window).
   aura::Window* panel_window_ = nullptr;

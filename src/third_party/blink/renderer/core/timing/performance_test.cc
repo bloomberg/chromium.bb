@@ -176,7 +176,7 @@ TEST_F(PerformanceTest, AllowsTimingRedirect) {
                                     GetExecutionContext()));
 
   // When cross-origin redirect opts in.
-  redirect_chain.back().SetHTTPHeaderField(http_names::kTimingAllowOrigin,
+  redirect_chain.back().SetHttpHeaderField(http_names::kTimingAllowOrigin,
                                            origin_domain);
   EXPECT_TRUE(AllowsTimingRedirect(redirect_chain, final_response,
                                    *security_origin.get(),
@@ -249,16 +249,47 @@ TEST_F(PerformanceTest, MeasureParameters_NavigationTiming) {
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   Initialize(scope.GetScriptState());
-  base_->measure(
-      scope.GetScriptState(), "name",
-      StringOrPerformanceMeasureOptions::FromString("unloadEventStart"),
-      exception_state);
-  histograms.ExpectBucketCount(
-      "Performance.MeasureParameter.StartMark",
-      Performance::MeasureParameterType::kUnloadEventStart, 1);
-  histograms.ExpectBucketCount("Performance.MeasureParameter.EndMark",
-                               Performance::MeasureParameterType::kUnprovided,
-                               1);
+  struct {
+    String keyword;
+    Performance::MeasureParameterType measure_type;
+  } const test_cases[] = {
+      {"unloadEventStart",
+       Performance::MeasureParameterType::kUnloadEventStart},
+      {"unloadEventEnd", Performance::MeasureParameterType::kUnloadEventEnd},
+      {"domInteractive", Performance::MeasureParameterType::kDomInteractive},
+      {"domContentLoadedEventStart",
+       Performance::MeasureParameterType::kDomContentLoadedEventStart},
+      {"domContentLoadedEventEnd",
+       Performance::MeasureParameterType::kDomContentLoadedEventEnd},
+      {"domComplete", Performance::MeasureParameterType::kDomComplete},
+      {"loadEventStart", Performance::MeasureParameterType::kLoadEventStart},
+      {"loadEventEnd", Performance::MeasureParameterType::kLoadEventEnd},
+      {"navigationStart", Performance::MeasureParameterType::kNavigationStart},
+      {"redirectStart", Performance::MeasureParameterType::kRedirectStart},
+      {"fetchStart", Performance::MeasureParameterType::kFetchStart},
+      {"domainLookupStart",
+       Performance::MeasureParameterType::kDomainLookupStart},
+      {"domainLookupEnd", Performance::MeasureParameterType::kDomainLookupEnd},
+      {"connectStart", Performance::MeasureParameterType::kConnectStart},
+      {"connectEnd", Performance::MeasureParameterType::kConnectEnd},
+      {"secureConnectionStart",
+       Performance::MeasureParameterType::kSecureConnectionStart},
+      {"requestStart", Performance::MeasureParameterType::kRequestStart},
+      {"responseStart", Performance::MeasureParameterType::kResponseStart},
+      {"responseEnd", Performance::MeasureParameterType::kResponseEnd},
+      {"domLoading", Performance::MeasureParameterType::kDomLoading},
+  };
+  int count = 0;
+  for (const auto& test : test_cases) {
+    base_->measure(scope.GetScriptState(), "name",
+                   StringOrPerformanceMeasureOptions::FromString(test.keyword),
+                   exception_state);
+    histograms.ExpectBucketCount("Performance.MeasureParameter.StartMark",
+                                 test.measure_type, 1);
+    histograms.ExpectBucketCount("Performance.MeasureParameter.EndMark",
+                                 Performance::MeasureParameterType::kUnprovided,
+                                 ++count);
+  }
 }
 
 TEST_F(PerformanceTest, MeasureParameters_Other) {

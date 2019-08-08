@@ -40,10 +40,13 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
+#include "extensions/common/manifest_handlers/replacement_web_app.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
+#include "url/gurl.h"
+#include "url/url_constants.h"
 
 using content::BrowserThread;
 
@@ -82,15 +85,7 @@ std::vector<management::LaunchType> GetAvailableLaunchTypes(
   }
 
   launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB);
-
-  // TODO(dominickn): remove check when hosted apps can open in windows on Mac.
-  if (delegate->CanHostedAppsOpenInWindows())
-    launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_WINDOW);
-
-  if (!delegate->IsNewBookmarkAppsEnabled()) {
-    launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_PINNED_TAB);
-    launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_FULL_SCREEN);
-  }
+  launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_WINDOW);
   return launch_type_list;
 }
 
@@ -764,20 +759,29 @@ ExtensionFunction::ResponseAction ManagementSetLaunchTypeFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-ManagementGenerateAppForLinkFunction::ManagementGenerateAppForLinkFunction() {
-}
+ManagementGenerateAppForLinkFunction::ManagementGenerateAppForLinkFunction() {}
 
-ManagementGenerateAppForLinkFunction::~ManagementGenerateAppForLinkFunction() {
-}
+ManagementGenerateAppForLinkFunction::~ManagementGenerateAppForLinkFunction() {}
 
-void ManagementGenerateAppForLinkFunction::FinishCreateBookmarkApp(
-    const Extension* extension,
-    const WebApplicationInfo& web_app_info) {
-  ResponseValue response =
-      extension
-          ? ArgumentList(management::GenerateAppForLink::Results::Create(
-                CreateExtensionInfo(nullptr, *extension, browser_context())))
-          : Error(keys::kGenerateAppForLinkInstallError);
+void ManagementGenerateAppForLinkFunction::FinishCreateWebApp(
+    const std::string& web_app_id,
+    bool install_success) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
+  const Extension* extension =
+      registry->enabled_extensions().GetByID(web_app_id);
+
+  // |extension| is nullptr here if install succeeds with
+  // kDesktopPWAsWithoutExtensions mode enabled: there is no underlying
+  // extension for |web_app_id|.
+  // TODO(loyso): Rework generateAppForLink API: crbug.com/945205.
+  ResponseValue response;
+  if (install_success && extension) {
+    response = ArgumentList(management::GenerateAppForLink::Results::Create(
+        CreateExtensionInfo(nullptr, *extension, browser_context())));
+  } else {
+    response = Error(keys::kGenerateAppForLinkInstallError);
+  }
+
   Respond(std::move(response));
   Release();  // Balanced in Run().
 }
@@ -809,10 +813,62 @@ ExtensionFunction::ResponseAction ManagementGenerateAppForLinkFunction::Run() {
           ->GenerateAppForLinkFunctionDelegate(this, browser_context(),
                                                params->title, launch_url);
 
-  // Matched with a Release() in FinishCreateBookmarkApp().
+  // Matched with a Release() in FinishCreateWebApp().
   AddRef();
 
-  // Response is sent async in FinishCreateBookmarkApp().
+  // Response is sent async in FinishCreateWebApp().
+  return RespondLater();
+}
+
+ManagementInstallReplacementWebAppFunction::
+    ManagementInstallReplacementWebAppFunction() {}
+
+ManagementInstallReplacementWebAppFunction::
+    ~ManagementInstallReplacementWebAppFunction() {}
+
+ExtensionFunction::ResponseAction
+ManagementInstallReplacementWebAppFunction::Run() {
+  if (ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode())
+    return RespondNow(Error(keys::kNotAllowedInKioskError));
+
+  if (!extension()->from_webstore()) {
+    return RespondNow(
+        Error(keys::kInstallReplacementWebAppNotFromWebstoreError));
+  }
+
+  if (!user_gesture()) {
+    return RespondNow(
+        Error(keys::kGestureNeededForInstallReplacementWebAppError));
+  }
+
+  DCHECK(ReplacementWebAppInfo::HasReplacementWebApp(extension()));
+  const GURL& web_app_url =
+      ReplacementWebAppInfo::GetReplacementWebApp(extension());
+
+  DCHECK(web_app_url.is_valid());
+  DCHECK(web_app_url.SchemeIs(url::kHttpsScheme));
+
+  auto* api_delegate = ManagementAPI::GetFactoryInstance()
+                           ->Get(browser_context())
+                           ->GetDelegate();
+  if (!api_delegate->CanContextInstallWebApps(browser_context())) {
+    return RespondNow(
+        Error(keys::kInstallReplacementWebAppInvalidContextError));
+  }
+
+  if (api_delegate->IsWebAppInstalled(browser_context(), web_app_url)) {
+    return RespondNow(
+        Error(keys::kInstallReplacementWebAppAlreadyInstalledError));
+  }
+
+  // Adds a ref-count.
+  api_delegate->InstallReplacementWebApp(
+      browser_context(), web_app_url,
+      base::BindOnce(
+          &ManagementInstallReplacementWebAppFunction::FinishCreateWebApp,
+          this));
+
+  // Response is sent async in FinishCreateWebApp().
   return RespondLater();
 }
 
@@ -822,6 +878,22 @@ ManagementEventRouter::ManagementEventRouter(content::BrowserContext* context)
 }
 
 ManagementEventRouter::~ManagementEventRouter() {
+}
+
+void ManagementInstallReplacementWebAppFunction::FinishCreateWebApp(
+    ManagementAPIDelegate::InstallWebAppResult result) {
+  ResponseValue response;
+  switch (result) {
+    case ManagementAPIDelegate::InstallWebAppResult::kSuccess:
+      response = NoArguments();
+      break;
+    case ManagementAPIDelegate::InstallWebAppResult::kInvalidWebApp:
+      response = Error(keys::kInstallReplacementWebAppInvalidWebAppError);
+      break;
+    case ManagementAPIDelegate::InstallWebAppResult::kUnknownError:
+      response = Error(keys::kGenerateAppForLinkInstallError);
+  }
+  Respond(std::move(response));
 }
 
 void ManagementEventRouter::OnExtensionLoaded(

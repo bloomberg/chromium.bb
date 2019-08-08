@@ -5,6 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_REPRESENTATION_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_REPRESENTATION_H_
 
+#include <dawn/dawn.h>
+
 #include "base/callback_helpers.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
@@ -14,7 +16,6 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
-class GrContext;
 typedef unsigned int GLenum;
 class SkPromiseImageTexture;
 
@@ -53,9 +54,9 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
   bool has_context() const { return has_context_; }
 
  private:
-  SharedImageManager* manager_;
-  SharedImageBacking* backing_;
-  MemoryTypeTracker* tracker_;
+  SharedImageManager* const manager_;
+  SharedImageBacking* const backing_;
+  MemoryTypeTracker* const tracker_;
   bool has_context_ = true;
 };
 
@@ -150,13 +151,22 @@ class SharedImageRepresentationSkia : public SharedImageRepresentation {
       : SharedImageRepresentation(manager, backing, tracker) {}
 
   virtual sk_sp<SkSurface> BeginWriteAccess(
-      GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) = 0;
   virtual void EndWriteAccess(sk_sp<SkSurface> surface) = 0;
-  virtual sk_sp<SkPromiseImageTexture> BeginReadAccess(
-      SkSurface* sk_surface) = 0;
+  virtual sk_sp<SkPromiseImageTexture> BeginReadAccess() = 0;
   virtual void EndReadAccess() = 0;
+};
+
+class SharedImageRepresentationDawn : public SharedImageRepresentation {
+ public:
+  SharedImageRepresentationDawn(SharedImageManager* manager,
+                                SharedImageBacking* backing,
+                                MemoryTypeTracker* tracker)
+      : SharedImageRepresentation(manager, backing, tracker) {}
+
+  virtual DawnTexture BeginAccess(DawnTextureUsageBit usage) = 0;
+  virtual void EndAccess() = 0;
 };
 
 }  // namespace gpu

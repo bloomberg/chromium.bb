@@ -42,6 +42,7 @@
 <translation id="152234381334907219">常に保存しない</translation>
 <translation id="1540800554400757039">住所1行目</translation>
 <translation id="1545749641540134597">QR コードをスキャンします</translation>
+<translation id="1552525382687785070">同期は管理者により無効にされています</translation>
 <translation id="1558704936695638228">押し続けて他のタブオプションを見る</translation>
 <translation id="1580783302095112590">メールを送信しました。</translation>
 <translation id="1582732959743469162">この操作を行うと、現在進行中のダウンロードは停止します。</translation>
@@ -84,6 +85,7 @@
 <translation id="213900355088104901">シークレット モードで閲覧するにはシークレット タブを開きます</translation>
 <translation id="2139867232736819575">コピーしたテキストを検索</translation>
 <translation id="2149973817440762519">ブックマークを編集</translation>
+<translation id="2179182049312275900">同期は設定でいつでもオンにできます。</translation>
 <translation id="2198757192731523470">検索、広告、その他の Google サービスをカスタマイズする目的で、Google が履歴を使用することがあります。</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> 件のリーディング リストの記事が未読です。</translation>
 <translation id="2230173723195178503">ウェブページを読み込みました</translation>
@@ -96,12 +98,14 @@
 <translation id="2320166752086256636">キーボードを非表示</translation>
 <translation id="2339560363438331454">同期と Google サービス</translation>
 <translation id="2351097562818989364">翻訳設定をリセットしました。</translation>
+<translation id="2359043044084662842">翻訳</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="2360196772093551345">モバイルサイトをリクエスト</translation>
 <translation id="2381405137052800939">基本設定</translation>
 <translation id="2386793615875593361">1 枚選択されています</translation>
 <translation id="2435457462613246316">パスワードを表示</translation>
 <translation id="2481538920734869610">アカウントを追加</translation>
+<translation id="2497852260688568942">同期は管理者により無効にされています</translation>
 <translation id="2523184218357549926">アクセスしたページの URL を Google に送信します</translation>
 <translation id="2523363575747517183">このウェブサイトは別のアプリケーションを繰り返し開こうとしています。</translation>
 <translation id="2529021024822217800">すべて開く</translation>
@@ -124,6 +128,7 @@
 <translation id="2800683595868705743">タブ切り替えモードを終了</translation>
 <translation id="2830972654601096923">住所を管理...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />、<ph name="STATE" />、<ph name="URL" /></translation>
+<translation id="2840687315230832938">最初の同期設定が終了していません</translation>
 <translation id="2843803966603263712">翻訳設定をリセット</translation>
 <translation id="2858204748079866344">プライバシー保護のため、Chrome ではこの欄のパスワードの自動入力は行われません。</translation>
 <translation id="285960592395650245">ダウンロードを再試行</translation>
@@ -200,9 +205,9 @@
 <translation id="4038354071007134711">このデバイスのアプリケーションではファイルを開けません。</translation>
 <translation id="4042870976416480368">ページ内を検索</translation>
 <translation id="4049507953662678203">ネットワークに接続していることを確認してから、もう一度お試しください。</translation>
+<translation id="4071530748369333746">同期をキャンセルしますか？</translation>
 <translation id="4082688844002261427">検索、広告などのカスタマイズを目的とした閲覧履歴の使用方法を設定</translation>
 <translation id="408404951701638773">検索バーをより手軽に使用できるようになりました</translation>
-<translation id="4084682180776658562">ブックマーク</translation>
 <translation id="411254640334432676">ダウンロードできませんでした。</translation>
 <translation id="4112644173421521737">検索</translation>
 <translation id="4121993058175073134">エクスポート データのみを送信するには、設定アプリでメール アカウントを設定してください。</translation>
@@ -214,7 +219,6 @@
 <translation id="4272631900155121838">QR コードをスキャンするには、設定でカメラを有効にしてください</translation>
 <translation id="4281844954008187215">利用規約</translation>
 <translation id="430793432425771671">すべて同期</translation>
-<translation id="4342284590510997375">新規</translation>
 <translation id="4359125752503270327">このページは別のアプリケーションで開かれます。</translation>
 <translation id="4370827530403103842">同期が機能していません。修正するにはタップしてください。</translation>
 <translation id="4375040482473363939">QR コード検索</translation>
@@ -270,6 +274,7 @@
 <translation id="5197255632782567636">インターネット</translation>
 <translation id="5228579091201413441">同期を有効にする</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> に同期しています</translation>
+<translation id="5245322853195994030">同期をキャンセル</translation>
 <translation id="5300589172476337783">表示</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名前</translation>
@@ -288,6 +293,7 @@
 <translation id="5659593005791499971">メール</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">バージョン <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5711039611392265845">プライバシー、セキュリティ、データ収集に関連するその他の設定については、<ph name="BEGIN_LINK" />同期と Google サービス<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="5728700505257787410">アカウントへのログイン中に問題が発生しました。</translation>
 <translation id="5737974891429562743">アカウントのログイン情報が古くなっています。同期を開始するには更新してください。</translation>
 <translation id="5738887413654608789">この機能を使用すると、周囲で発信されているデータを受信して関連のあるウェブページを表示することができます。</translation>
@@ -363,9 +369,9 @@
 <translation id="6643016212128521049">削除</translation>
 <translation id="6656103420185847513">フォルダの編集</translation>
 <translation id="6657585470893396449">パスワード</translation>
+<translation id="6668619169535738264">ブックマークを編集</translation>
 <translation id="667999046851023355">ドキュメント</translation>
 <translation id="6691331417640343772">Google ダッシュボードで同期データを管理</translation>
-<translation id="6709334795756764830">ブックマークを編集</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">パスワードをエクスポートできません</translation>
 <translation id="6780034285637185932">郵便番号</translation>
@@ -385,6 +391,7 @@
 <translation id="6979158407327259162">Google ドライブ</translation>
 <translation id="7004499039102548441">最近使ったタブ</translation>
 <translation id="7006788746334555276">コンテンツの設定</translation>
+<translation id="7015203776128479407">最初の同期設定が終了していません。同期は無効です。</translation>
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="7031882061095297553">同期先</translation>
 <translation id="7053983685419859001">ブロック</translation>
@@ -396,6 +403,7 @@
 <translation id="7136892417564438900">カメラを使用できません</translation>
 <translation id="7159472599653637159">モバイルサイトをリクエスト</translation>
 <translation id="7167621057293532233">データの種類</translation>
+<translation id="7173114856073700355">設定を開く</translation>
 <translation id="7189598951263744875">共有...</translation>
 <translation id="7192050974311852563">ログ記録を開始</translation>
 <translation id="7203585745079012652">回答を音声で聞く</translation>
@@ -404,8 +412,10 @@
 <translation id="7280856130494094142">同期を開始するにはパスフレーズを入力してください</translation>
 <translation id="7285236536143823449">利用する</translation>
 <translation id="7291368939935408496">パスワードの準備中...</translation>
+<translation id="7293171162284876153">同期を開始するには、[Chrome データを同期] をオンにしてください。</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />%ダウンロード</translation>
 <translation id="7346909386216857016">OK</translation>
+<translation id="7348502496356775519">ブックマーク</translation>
 <translation id="7383797227493018512">リーディング リスト</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7425346204213733349">今後、ブックマーク、履歴、パスワード、その他の設定に行った変更は Google アカウントに同期されません。ただし、既存のデータは Google アカウントに保存されたままとなります。</translation>
@@ -453,6 +463,7 @@
 <translation id="8073670137947914548">ダウンロードが完了しました</translation>
 <translation id="8076014560081431679">保存済みのサイト設定は削除されず、普段の閲覧行動を反映した設定などが残る場合があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">ファイルのダウンロードが利用可能です。画面の下の方にオプションがあります。</translation>
+<translation id="8131740175452115882">確認</translation>
 <translation id="8205564605687841303">キャンセル</translation>
 <translation id="8225985093977202398">キャッシュされた画像とファイル</translation>
 <translation id="8261506727792406068">削除</translation>
@@ -470,6 +481,7 @@
 <translation id="850600235656508448">シークレット モードで開く</translation>
 <translation id="8517375800490286174">オープンソースライセンス</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />タブ: <ph name="FIRST_VISIBLE_TAB" />～<ph name="LAST_VISIBLE_TAB" />/<ph name="NUMBER_OF_OPEN_TABS" /></translation>
+<translation id="8529767659511976195">新規</translation>
 <translation id="8532105204136943229">有効期限（年）</translation>
 <translation id="8534481786647257214">Google+への投稿が完了しました。</translation>
 <translation id="8548878600947630424">ページ内を検索...</translation>

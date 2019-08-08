@@ -37,12 +37,14 @@
 #include "third_party/blink/renderer/core/frame/csp/execution_context_csp_delegate.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -98,6 +100,17 @@ void ExecutionContext::NotifyContextDestroyed() {
   ContextLifecycleNotifier::NotifyContextDestroyed();
 }
 
+bool ExecutionContext::FeatureEnabled(OriginTrialFeature feature) const {
+  const OriginTrialContext* context = OriginTrialContext::From(this);
+  return context && context->IsFeatureEnabled(feature);
+}
+
+void ExecutionContext::AddConsoleMessage(mojom::ConsoleMessageSource source,
+                                         mojom::ConsoleMessageLevel level,
+                                         const String& message) {
+  AddConsoleMessage(ConsoleMessage::Create(source, level, message));
+}
+
 void ExecutionContext::DispatchErrorEvent(
     ErrorEvent* error_event,
     SanitizeScriptErrors sanitize_script_errors) {
@@ -146,7 +159,7 @@ int ExecutionContext::CircularSequentialID() {
 
 PublicURLManager& ExecutionContext::GetPublicURLManager() {
   if (!public_url_manager_)
-    public_url_manager_ = PublicURLManager::Create(this);
+    public_url_manager_ = MakeGarbageCollected<PublicURLManager>(this);
   return *public_url_manager_;
 }
 
@@ -211,7 +224,8 @@ void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
                                   : kDoNotSupportReferrerPolicyLegacyKeywords,
           &referrer_policy)) {
     AddConsoleMessage(ConsoleMessage::Create(
-        kRenderingMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kRendering,
+        mojom::ConsoleMessageLevel::kError,
         "Failed to set referrer policy: The value '" + policies +
             "' is not one of " +
             (support_legacy_keywords
@@ -248,7 +262,7 @@ void ExecutionContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_exceptions_);
   visitor->Trace(csp_delegate_);
   ContextLifecycleNotifier::Trace(visitor);
-  ConsoleLoggerImplBase::Trace(visitor);
+  ConsoleLogger::Trace(visitor);
   Supplementable<ExecutionContext>::Trace(visitor);
 }
 

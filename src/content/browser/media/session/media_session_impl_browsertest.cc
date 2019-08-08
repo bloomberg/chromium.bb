@@ -2174,7 +2174,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
   media_session::MediaMetadata expected_metadata;
-  expected_metadata.source_title = GetExpectedSourceTitle();
+  expected_metadata.title = shell()->web_contents()->GetTitle();
+  expected_metadata.artist = GetExpectedSourceTitle();
   observer.WaitForExpectedMetadata(expected_metadata);
 }
 

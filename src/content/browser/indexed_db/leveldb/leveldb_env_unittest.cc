@@ -20,7 +20,7 @@ namespace {
 TEST(LevelDBEnvTest, TestInMemory) {
   DefaultLevelDBFactory default_factory;
   scoped_refptr<LevelDBState> state;
-  std::tie(state, std::ignore, std::ignore) = default_factory.OpenLevelDB(
+  std::tie(state, std::ignore, std::ignore) = default_factory.OpenLevelDBState(
       base::FilePath(), GetDefaultIndexedDBComparator(),
       GetDefaultLevelDBComparator());
   EXPECT_TRUE(state);

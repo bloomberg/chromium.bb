@@ -53,7 +53,10 @@ class CC_EXPORT SnapFlingController {
       SnapFlingClient* client,
       std::unique_ptr<SnapFlingCurve> curve);
 
+  SnapFlingController(const SnapFlingController&) = delete;
   ~SnapFlingController();
+
+  SnapFlingController& operator=(const SnapFlingController&) = delete;
 
   // Returns true if the event should be consumed for snapping and should not be
   // processed further.
@@ -97,8 +100,6 @@ class CC_EXPORT SnapFlingController {
   SnapFlingClient* client_;
   State state_ = State::kIdle;
   std::unique_ptr<SnapFlingCurve> curve_;
-
-  DISALLOW_COPY_AND_ASSIGN(SnapFlingController);
 };
 
 }  // namespace cc

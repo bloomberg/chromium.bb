@@ -56,7 +56,7 @@ function setUp() {
       executeTask: function(taskId, entries, onViewFiles) {
         onViewFiles('failed');
       },
-      sharePathsWithCrostini: function(entries, persist, callback) {
+      sharePathsWithCrostini: function(vmName, entries, persist, callback) {
         callback();
       },
     },
@@ -215,8 +215,10 @@ function testToOpenExeFile(callback) {
   const mockFileSystem = new MockFileSystem('volumeId');
   const mockEntry = new MockFileEntry(mockFileSystem, '/test.exe');
 
-  reportPromise(showHtmlOfAlertDialogIsCalled(
-      [mockEntry], 'test.exe', 'NO_TASK_FOR_EXECUTABLE'), callback);
+  reportPromise(
+      showHtmlOfAlertDialogIsCalled(
+          [mockEntry], 'test.exe', 'NO_TASK_FOR_EXECUTABLE'),
+      callback);
 }
 
 /**
@@ -226,8 +228,9 @@ function testToOpenDmgFile(callback) {
   const mockFileSystem = new MockFileSystem('volumeId');
   const mockEntry = new MockFileEntry(mockFileSystem, '/test.dmg');
 
-  reportPromise(showHtmlOfAlertDialogIsCalled(
-      [mockEntry], 'test.dmg', 'NO_TASK_FOR_DMG'), callback);
+  reportPromise(
+      showHtmlOfAlertDialogIsCalled([mockEntry], 'test.dmg', 'NO_TASK_FOR_DMG'),
+      callback);
 }
 
 /**
@@ -237,8 +240,10 @@ function testToOpenCrxFile(callback) {
   const mockFileSystem = new MockFileSystem('volumeId');
   const mockEntry = new MockFileEntry(mockFileSystem, '/test.crx');
 
-  reportPromise(showHtmlOfAlertDialogIsCalled(
-      [mockEntry], 'NO_TASK_FOR_CRX_TITLE', 'NO_TASK_FOR_CRX'), callback);
+  reportPromise(
+      showHtmlOfAlertDialogIsCalled(
+          [mockEntry], 'NO_TASK_FOR_CRX_TITLE', 'NO_TASK_FOR_CRX'),
+      callback);
 }
 
 /**
@@ -248,8 +253,9 @@ function testToOpenRtfFile(callback) {
   const mockFileSystem = new MockFileSystem('volumeId');
   const mockEntry = new MockFileEntry(mockFileSystem, '/test.rtf');
 
-  reportPromise(openSuggestAppsDialogIsCalled(
-      [mockEntry], ['application/rtf']), callback);
+  reportPromise(
+      openSuggestAppsDialogIsCalled([mockEntry], ['application/rtf']),
+      callback);
 }
 
 /**
@@ -281,8 +287,7 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
             [mockEntry], ['application/rtf'], mockTaskHistory,
             fileManager.namingController, fileManager.crostini)
         .then(tasks => {
-          tasks.openSuggestAppsDialog(
-              () => {}, () => {}, () => {});
+          tasks.openSuggestAppsDialog(() => {}, () => {}, () => {});
         });
   });
 
@@ -396,10 +401,11 @@ function testOpenWithMostRecentlyExecuted(callback) {
   });
 
   let executedTask = null;
-  window.chrome.fileManagerPrivate.executeTask = (taskId, entries, onViewFiles) => {
-    executedTask = taskId;
-    onViewFiles('success');
-  };
+  window.chrome.fileManagerPrivate.executeTask =
+      (taskId, entries, onViewFiles) => {
+        executedTask = taskId;
+        onViewFiles('success');
+      };
 
   const mockFileSystem = new MockFileSystem('volumeId');
   const mockEntry = new MockFileEntry(mockFileSystem, '/test.tiff');
@@ -467,10 +473,11 @@ function testOpenZipWithZipArchiver(callback) {
   });
 
   let executedTask = null;
-  window.chrome.fileManagerPrivate.executeTask = (taskId, entries, onViewFiles) => {
-    executedTask = taskId;
-    onViewFiles('success');
-  };
+  window.chrome.fileManagerPrivate.executeTask =
+      (taskId, entries, onViewFiles) => {
+        executedTask = taskId;
+        onViewFiles('success');
+      };
 
   const mockFileSystem = new MockFileSystem('volumeId');
   const mockEntry = new MockFileEntry(mockFileSystem, '/test.zip');
@@ -569,8 +576,8 @@ function testMaybeShareCrostiniOrShowDialog() {
 
   const crostini = createCrostiniForTest();
   crostini.init(volumeManagerDownloads);
-  crostini.setEnabled(true);
-  crostini.registerSharedPath(sharedDir);
+  crostini.setEnabled('termina', true);
+  crostini.registerSharedPath('termina', sharedDir);
 
   const notShared1 = new MockFileEntry(mockFsDownloads, '/notShared/file1');
   const notShared2 = new MockFileEntry(mockFsDownloads, '/notShared/file2');
@@ -620,12 +627,12 @@ function testMaybeShareCrostiniOrShowDialog() {
 
   expect('No entries', [], true, '', '');
 
-  crostini.setEnabled(false);
+  crostini.setEnabled('termina', false);
   expect(
       'Single entry, crostini-files not enabled', [notShared1], false,
       'UNABLE_TO_OPEN_CROSTINI_TITLE', 'UNABLE_TO_OPEN_CROSTINI');
 
-  crostini.setEnabled(true);
+  crostini.setEnabled('termina', true);
 
   expect('Single entry, not shared', [notShared1], true, '', '');
 
@@ -635,7 +642,7 @@ function testMaybeShareCrostiniOrShowDialog() {
       '2 entries, not shared, same dir', [notShared1, notShared2], true, '',
       '');
   // Non-persistent shares should not be registered.
-  assertFalse(crostini.isPathShared(notShared1));
+  assertFalse(crostini.isPathShared('termina', notShared1));
 
   expect(
       '2 entries, not shared, different dir', [notShared1, otherNotShared],

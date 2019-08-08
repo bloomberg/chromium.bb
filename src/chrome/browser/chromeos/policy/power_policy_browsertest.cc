@@ -36,12 +36,12 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -129,7 +129,6 @@ class PowerPolicyBrowserTestBase : public DevicePolicyCrosBrowserTest {
   PowerPolicyBrowserTestBase();
 
   // DevicePolicyCrosBrowserTest:
-  void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
 
   void InstallUserKey();
@@ -183,14 +182,6 @@ class PowerPolicyInSessionBrowserTest : public PowerPolicyBrowserTestBase {
 };
 
 PowerPolicyBrowserTestBase::PowerPolicyBrowserTestBase() = default;
-
-void PowerPolicyBrowserTestBase::SetUpInProcessBrowserTestFixture() {
-  DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-
-  // Initialize device policy.
-  InstallOwnerKey();
-  MarkAsEnterpriseOwned();
-}
 
 void PowerPolicyBrowserTestBase::SetUpOnMainThread() {
   DevicePolicyCrosBrowserTest::SetUpOnMainThread();

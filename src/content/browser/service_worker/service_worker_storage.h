@@ -47,10 +47,6 @@ class ServiceWorkerResponseReader;
 class ServiceWorkerResponseWriter;
 struct ServiceWorkerRegistrationInfo;
 
-namespace service_worker_write_to_cache_job_unittest {
-class ServiceWorkerWriteToCacheJobTest;
-}  // namespace service_worker_write_to_cache_job_unittest
-
 namespace service_worker_storage_unittest {
 class ServiceWorkerStorageTest;
 class ServiceWorkerResourceStorageTest;
@@ -286,8 +282,6 @@ class CONTENT_EXPORT ServiceWorkerStorage
   friend class service_worker_storage_unittest::ServiceWorkerStorageTest;
   friend class service_worker_storage_unittest::
       ServiceWorkerResourceStorageTest;
-  friend class service_worker_write_to_cache_job_unittest::
-      ServiceWorkerWriteToCacheJobTest;
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_storage_unittest::ServiceWorkerResourceStorageDiskTest,
       CleanupOnRestart);

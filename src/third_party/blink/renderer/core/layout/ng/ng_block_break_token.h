@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -138,11 +139,12 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   NGBreakToken* child_break_tokens_[];
 };
 
-DEFINE_TYPE_CASTS(NGBlockBreakToken,
-                  NGBreakToken,
-                  token,
-                  token->IsBlockType(),
-                  token.IsBlockType());
+template <>
+struct DowncastTraits<NGBlockBreakToken> {
+  static bool AllowFrom(const NGBreakToken& token) {
+    return token.IsBlockType();
+  }
+};
 
 }  // namespace blink
 

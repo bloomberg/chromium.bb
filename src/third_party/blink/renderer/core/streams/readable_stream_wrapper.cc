@@ -7,8 +7,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
+#include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
-#include "third_party/blink/renderer/core/streams/retain_wrapper_during_construction.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
@@ -84,13 +84,6 @@ void ReadableStreamWrapper::InitWithInternalStream(
           .IsNothing()) {
     exception_state.RethrowV8Exception(block.Exception());
     return;
-  }
-
-  // This is needed because sometimes a ReadableStream can be detached from
-  // the owner object such as Response.
-  if (!RetainWrapperDuringConstruction(this, script_state)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Cannot queue task to retain wrapper");
   }
 }
 
@@ -195,35 +188,8 @@ ScriptValue ReadableStreamWrapper::getReader(ScriptState* script_state,
 ScriptValue ReadableStreamWrapper::getReader(ScriptState* script_state,
                                              ScriptValue options,
                                              ExceptionState& exception_state) {
-  v8::TryCatch block(script_state->GetIsolate());
-  v8::Local<v8::Value> mode;
-  v8::Local<v8::String> mode_string;
-  v8::Local<v8::Context> context = script_state->GetContext();
-  if (options.V8Value()->IsUndefined()) {
-    mode = v8::Undefined(script_state->GetIsolate());
-  } else {
-    v8::Local<v8::Object> v8_options;
-    if (!options.V8Value()->ToObject(context).ToLocal(&v8_options)) {
-      exception_state.RethrowV8Exception(block.Exception());
-      return ScriptValue();
-    }
-    if (!v8_options->Get(context, V8String(script_state->GetIsolate(), "mode"))
-             .ToLocal(&mode)) {
-      exception_state.RethrowV8Exception(block.Exception());
-      return ScriptValue();
-    }
-  }
-
-  if (!mode->ToString(context).ToLocal(&mode_string)) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return ScriptValue();
-  }
-  if (ToCoreString(mode_string) == "byob") {
-    exception_state.ThrowTypeError("invalid mode");
-    return ScriptValue();
-  }
-  if (!mode->IsUndefined()) {
-    exception_state.ThrowRangeError("invalid mode");
+  GetReaderValidateOptions(script_state, options, exception_state);
+  if (exception_state.HadException()) {
     return ScriptValue();
   }
   return ReadableStreamOperations::GetReader(
@@ -246,98 +212,25 @@ ScriptValue ReadableStreamWrapper::pipeThrough(
     ScriptValue transform_stream,
     ScriptValue options,
     ExceptionState& exception_state) {
-  v8::Local<v8::Value> pair_value = transform_stream.V8Value();
-  v8::Local<v8::Context> context = script_state->GetContext();
-
-  constexpr char kWritableIsNotWritableStream[] =
-      "parameter 1's 'writable' property is not a WritableStream.";
-  constexpr char kReadableIsNotReadableStream[] =
-      "parameter 1's 'readable' property is not a ReadableStream.";
-  constexpr char kWritableIsLocked[] = "parameter 1's 'writable' is locked.";
-
-  v8::Local<v8::Object> pair;
-  if (!pair_value->ToObject(context).ToLocal(&pair)) {
-    exception_state.ThrowTypeError(kWritableIsNotWritableStream);
-    return ScriptValue();
-  }
-
-  v8::Isolate* isolate = script_state->GetIsolate();
-  v8::Local<v8::Value> writable, readable;
-  {
-    v8::TryCatch block(isolate);
-    if (!pair->Get(context, V8String(isolate, "writable")).ToLocal(&writable)) {
-      exception_state.RethrowV8Exception(block.Exception());
-      return ScriptValue();
-    }
-    DCHECK(!block.HasCaught());
-
-    if (!pair->Get(context, V8String(isolate, "readable")).ToLocal(&readable)) {
-      exception_state.RethrowV8Exception(block.Exception());
-      return ScriptValue();
-    }
-    DCHECK(!block.HasCaught());
-  }
-
-  // 2. If ! IsWritableStream(_writable_) is *false*, throw a *TypeError*
-  //    exception.
-  WritableStream* dom_writable =
-      V8WritableStream::ToImplWithTypeCheck(isolate, writable);
-  if (!dom_writable) {
-    exception_state.ThrowTypeError(kWritableIsNotWritableStream);
-    return ScriptValue();
-  }
-
-  // 3. If ! IsReadableStream(_readable_) is *false*, throw a *TypeError*
-  //    exception.
-  if (!V8ReadableStream::HasInstance(readable, isolate)) {
-    exception_state.ThrowTypeError(kReadableIsNotReadableStream);
-    return ScriptValue();
-  }
-
-  // TODO(ricea): When aborting pipes is supported, implement step 5:
-  // 5. If _signal_ is not *undefined*, and _signal_ is not an instance of the
-  //    `AbortSignal` interface, throw a *TypeError* exception.
-
-  // 6. If ! IsReadableStreamLocked(*this*) is *true*, throw a *TypeError*
-  //    exception.
-  if (IsLocked(script_state, exception_state).value_or(false)) {
-    exception_state.ThrowTypeError("Cannot pipe a locked stream");
-    return ScriptValue();
-  }
+  ScriptValue readable;
+  WritableStream* writable = nullptr;
+  PipeThroughExtractReadableWritable(script_state, this, transform_stream,
+                                     &readable, &writable, exception_state);
   if (exception_state.HadException()) {
     return ScriptValue();
   }
 
-  // 7. If ! IsWritableStreamLocked(_writable_) is *true*, throw a *TypeError*
-  //    exception.
-  if (dom_writable->IsLocked(script_state, exception_state).value_or(false)) {
-    exception_state.ThrowTypeError(kWritableIsLocked);
-    return ScriptValue();
-  }
-  if (exception_state.HadException()) {
-    return ScriptValue();
-  }
-
-  if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
-    // TODO(ricea): Replace this with a DCHECK once ReadableStreamNative is
-    // implemented.
-    exception_state.ThrowTypeError(
-        "pipeThrough disabled because StreamsNative feature is enabled");
-    return ScriptValue();
-  }
+  DCHECK(!RuntimeEnabledFeatures::StreamsNativeEnabled());
 
   // This cast is safe because the following code will only be run when the
   // native version of WritableStream is not in use.
   WritableStreamWrapper* writable_wrapper =
-      static_cast<WritableStreamWrapper*>(dom_writable);
+      static_cast<WritableStreamWrapper*>(writable);
 
   // 8. Let _promise_ be ! ReadableStreamPipeTo(*this*, _writable_,
   //    _preventClose_, _preventAbort_, _preventCancel_,
   //   _signal_).
 
-  // TODO(ricea): Maybe change the parameters to
-  // ReadableStreamOperations::PipeTo to match ReadableStreamPipeTo() in the
-  // standard?
   ScriptPromise promise = ReadableStreamOperations::PipeTo(
       script_state, GetInternalStream(script_state),
       writable_wrapper->GetInternalStream(script_state), options,
@@ -350,7 +243,7 @@ ScriptValue ReadableStreamWrapper::pipeThrough(
   promise.MarkAsHandled();
 
   // 10. Return _readable_.
-  return ScriptValue(script_state, readable);
+  return readable;
 }
 
 ScriptPromise ReadableStreamWrapper::pipeTo(ScriptState* script_state,
@@ -366,35 +259,14 @@ ScriptPromise ReadableStreamWrapper::pipeTo(ScriptState* script_state,
                                             ScriptValue destination_value,
                                             ScriptValue options,
                                             ExceptionState& exception_state) {
-  WritableStream* destination = V8WritableStream::ToImplWithTypeCheck(
-      script_state->GetIsolate(), destination_value.V8Value());
+  WritableStream* destination = PipeToCheckSourceAndDestination(
+      script_state, this, destination_value, exception_state);
+  if (exception_state.HadException()) {
+    return ScriptPromise();
+  }
+  DCHECK(destination);
 
-  if (!destination) {
-    exception_state.ThrowTypeError("Illegal invocation");
-    return ScriptPromise();
-  }
-  if (locked(script_state, exception_state) &&
-      !exception_state.HadException()) {
-    exception_state.ThrowTypeError("Cannot pipe a locked stream");
-    return ScriptPromise();
-  }
-  if (exception_state.HadException())
-    return ScriptPromise();
-  if (destination->locked(script_state, exception_state) &&
-      !exception_state.HadException()) {
-    exception_state.ThrowTypeError("Cannot pipe to a locked stream");
-    return ScriptPromise();
-  }
-  if (exception_state.HadException())
-    return ScriptPromise();
-
-  if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
-    // TODO(ricea): Replace this with a DCHECK once ReadableStreamNative is
-    // implemented.
-    exception_state.ThrowTypeError(
-        "pipeTo disabled because StreamsNative feature is enabled");
-    return ScriptPromise();
-  }
+  DCHECK(!RuntimeEnabledFeatures::StreamsNativeEnabled());
 
   // This cast is safe because the following code will only be run when the
   // native version of WritableStream is not in use.
@@ -409,41 +281,7 @@ ScriptPromise ReadableStreamWrapper::pipeTo(ScriptState* script_state,
 
 ScriptValue ReadableStreamWrapper::tee(ScriptState* script_state,
                                        ExceptionState& exception_state) {
-  v8::Isolate* isolate = script_state->GetIsolate();
-  ReadableStream* branch1 = nullptr;
-  ReadableStream* branch2 = nullptr;
-
-  Tee(script_state, &branch1, &branch2, exception_state);
-
-  if (!branch1 || !branch2)
-    return ScriptValue();
-
-  DCHECK(!exception_state.HadException());
-
-  v8::TryCatch block(isolate);
-  v8::Local<v8::Context> context = script_state->GetContext();
-  v8::Local<v8::Array> array = v8::Array::New(isolate, 2);
-  v8::Local<v8::Object> global = context->Global();
-
-  v8::Local<v8::Value> v8_branch1 = ToV8(branch1, global, isolate);
-  if (v8_branch1.IsEmpty()) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return ScriptValue();
-  }
-  v8::Local<v8::Value> v8_branch2 = ToV8(branch2, global, isolate);
-  if (v8_branch1.IsEmpty()) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return ScriptValue();
-  }
-  if (array->Set(context, V8String(isolate, "0"), v8_branch1).IsNothing()) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return ScriptValue();
-  }
-  if (array->Set(context, V8String(isolate, "1"), v8_branch2).IsNothing()) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return ScriptValue();
-  }
-  return ScriptValue(script_state, array);
+  return CallTeeAndReturnBranchArray(script_state, this, exception_state);
 }
 
 void ReadableStreamWrapper::Tee(ScriptState* script_state,

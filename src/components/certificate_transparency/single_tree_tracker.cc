@@ -410,8 +410,8 @@ void SingleTreeTracker::ProcessPendingEntries() {
     net::Error result = dns_client_->QueryAuditProof(
         ct_log_->dns_domain(), leaf_hash, it->first.lookup_securely,
         verified_sth_.tree_size, &(it->second.audit_proof_query),
-        base::Bind(&SingleTreeTracker::OnAuditProofObtained,
-                   base::Unretained(this), it->first));
+        base::BindOnce(&SingleTreeTracker::OnAuditProofObtained,
+                       base::Unretained(this), it->first));
     // Handling proofs returned synchronously is not implemeted.
     DCHECK_NE(result, net::OK);
     if (result == net::ERR_IO_PENDING) {

@@ -154,7 +154,7 @@ int HttpAuthController::MaybeGenerateAuthToken(
   bool needs_auth = HaveAuth() || SelectPreemptiveAuth(net_log);
   if (!needs_auth)
     return OK;
-  const AuthCredentials* credentials = NULL;
+  const AuthCredentials* credentials = nullptr;
   if (identity_.source != HttpAuth::IDENT_SRC_DEFAULT_CREDENTIALS)
     credentials = &identity_.credentials;
   DCHECK(auth_token_.empty());
@@ -353,7 +353,7 @@ void HttpAuthController::ResetAuth(const AuthCredentials& credentials) {
     identity_.credentials = credentials;
 
     // auth_info_ is no longer necessary.
-    auth_info_ = nullptr;
+    auth_info_ = base::nullopt;
   }
 
   DCHECK(identity_.source != HttpAuth::IDENT_SRC_PATH_LOOKUP);
@@ -385,7 +385,7 @@ void HttpAuthController::ResetAuth(const AuthCredentials& credentials) {
 }
 
 bool HttpAuthController::HaveAuthHandler() const {
-  return handler_.get() != NULL;
+  return handler_.get() != nullptr;
 }
 
 bool HttpAuthController::HaveAuth() const {
@@ -508,7 +508,7 @@ void HttpAuthController::PopulateAuthChallenge() {
   // Populates response_.auth_challenge with the authentication challenge info.
   // This info is consumed by URLRequestHttpJob::GetAuthChallengeInfo().
 
-  auth_info_ = new AuthChallengeInfo;
+  auth_info_ = AuthChallengeInfo();
   auth_info_->is_proxy = (target_ == HttpAuth::AUTH_PROXY);
   auth_info_->challenger = url::Origin::Create(auth_origin_);
   auth_info_->scheme = HttpAuth::SchemeToString(handler_->auth_scheme());
@@ -572,9 +572,10 @@ void HttpAuthController::OnGenerateAuthTokenDone(int result) {
   }
 }
 
-scoped_refptr<AuthChallengeInfo> HttpAuthController::auth_info() {
+void HttpAuthController::TakeAuthInfo(
+    base::Optional<AuthChallengeInfo>* other) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return auth_info_;
+  auth_info_.swap(*other);
 }
 
 bool HttpAuthController::IsAuthSchemeDisabled(HttpAuth::Scheme scheme) const {

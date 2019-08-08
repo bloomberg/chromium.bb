@@ -92,8 +92,7 @@ Image::Image(ImageObserver* observer, bool is_multipart)
     : image_observer_disabled_(false),
       image_observer_(observer),
       stable_image_id_(PaintImage::GetNextId()),
-      is_multipart_(is_multipart),
-      dark_mode_classification_(DarkModeClassification::kNotClassified) {}
+      is_multipart_(is_multipart) {}
 
 Image::~Image() = default;
 
@@ -201,8 +200,8 @@ sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
                                        SkFilterQuality quality_to_use,
                                        bool should_antialias,
                                        const FloatSize& spacing,
-                                       SkShader::TileMode tmx,
-                                       SkShader::TileMode tmy) {
+                                       SkTileMode tmx,
+                                       SkTileMode tmy) {
   if (spacing.IsZero()) {
     return PaintShader::MakeImage(image, tmx, tmy, &shader_matrix);
   }
@@ -223,13 +222,9 @@ sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
                                       tile_rect, tmx, tmy, &shader_matrix);
 }
 
-SkShader::TileMode ComputeTileMode(float left,
-                                   float right,
-                                   float min,
-                                   float max) {
+SkTileMode ComputeTileMode(float left, float right, float min, float max) {
   DCHECK(left < right);
-  return left >= min && right <= max ? SkShader::kClamp_TileMode
-                                     : SkShader::kRepeat_TileMode;
+  return left >= min && right <= max ? SkTileMode::kClamp : SkTileMode::kRepeat;
 }
 
 }  // anonymous namespace
@@ -338,9 +333,8 @@ bool Image::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {
   if (!image)
     return false;
 
-  flags.setShader(PaintShader::MakeImage(image, SkShader::kRepeat_TileMode,
-                                         SkShader::kRepeat_TileMode,
-                                         &local_matrix));
+  flags.setShader(PaintShader::MakeImage(image, SkTileMode::kRepeat,
+                                         SkTileMode::kRepeat, &local_matrix));
   if (!flags.HasShader())
     return false;
 
@@ -373,6 +367,46 @@ SkBitmap Image::AsSkBitmapForCurrentFrame(
   SkBitmap bitmap;
   sk_image->asLegacyBitmap(&bitmap);
   return bitmap;
+}
+
+DarkModeClassification Image::GetDarkModeClassification(
+    const FloatRect& src_rect) {
+  // Assuming that multiple uses of the same sprite region all have the same
+  // size, only the top left corner coordinates of the src_rect are used to
+  // generate the key for caching and retrieving the classification.
+  ClassificationKey key(src_rect.X(), src_rect.Y());
+  std::map<ClassificationKey, DarkModeClassification>::iterator result =
+      dark_mode_classifications_.find(key);
+  if (result == dark_mode_classifications_.end())
+    return DarkModeClassification::kNotClassified;
+
+  return result->second;
+}
+
+void Image::AddDarkModeClassification(
+    const FloatRect& src_rect,
+    DarkModeClassification dark_mode_classification) {
+  // Add the classification in the map only if the image is not classified yet.
+  DCHECK(GetDarkModeClassification(src_rect) ==
+         DarkModeClassification::kNotClassified);
+  ClassificationKey key(src_rect.X(), src_rect.Y());
+  dark_mode_classifications_[key] = dark_mode_classification;
+}
+
+bool Image::ShouldApplyDarkModeFilter(const FloatRect& src_rect) {
+  // Check if the image has already been classified.
+  DarkModeClassification result = GetDarkModeClassification(src_rect);
+  if (result != DarkModeClassification::kNotClassified)
+    return result == DarkModeClassification::kApplyDarkModeFilter;
+
+  result = ClassifyImageForDarkMode(src_rect);
+
+  // Store the classification result using src_rect's location
+  // as a key for the map.
+  if (ShouldCacheDarkModeClassification())
+    AddDarkModeClassification(src_rect, result);
+
+  return result == DarkModeClassification::kApplyDarkModeFilter;
 }
 
 }  // namespace blink

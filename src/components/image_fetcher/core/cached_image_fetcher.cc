@@ -12,9 +12,9 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
-#include "components/image_fetcher/core/cache/cached_image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
 #include "components/image_fetcher/core/image_decoder.h"
+#include "components/image_fetcher/core/image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
@@ -66,8 +66,8 @@ std::string EncodeSkBitmapToPNG(const std::string& uma_client_name,
       static_cast<int>(bitmap.rowBytes()), /* discard_transparency */ false,
       std::vector<gfx::PNGCodec::Comment>(), &encoded_data);
   if (!result) {
-    CachedImageFetcherMetricsReporter::ReportEvent(
-        uma_client_name, CachedImageFetcherEvent::kTranscodingError);
+    ImageFetcherMetricsReporter::ReportEvent(
+        uma_client_name, ImageFetcherEvent::kTranscodingError);
     return "";
   } else {
     return std::string(encoded_data.begin(), encoded_data.end());
@@ -76,11 +76,10 @@ std::string EncodeSkBitmapToPNG(const std::string& uma_client_name,
 
 }  // namespace
 
-CachedImageFetcher::CachedImageFetcher(
-    std::unique_ptr<ImageFetcher> image_fetcher,
-    scoped_refptr<ImageCache> image_cache,
-    bool read_only)
-    : image_fetcher_(std::move(image_fetcher)),
+CachedImageFetcher::CachedImageFetcher(ImageFetcher* image_fetcher,
+                                       scoped_refptr<ImageCache> image_cache,
+                                       bool read_only)
+    : image_fetcher_(image_fetcher),
       image_cache_(image_cache),
       read_only_(read_only),
       weak_ptr_factory_(this) {
@@ -107,16 +106,21 @@ void CachedImageFetcher::FetchImageAndData(
       /* cache_hit_before_network_request */ false,
       /* start_time */ base::Time::Now()};
 
-  CachedImageFetcherMetricsReporter::ReportEvent(
-      request.params.uma_client_name(), CachedImageFetcherEvent::kImageRequest);
+  ImageFetcherMetricsReporter::ReportEvent(request.params.uma_client_name(),
+                                           ImageFetcherEvent::kImageRequest);
 
-  // First, try to load the image from the cache, then try the network.
-  image_cache_->LoadImage(
-      read_only_, image_url.spec(),
-      base::BindOnce(&CachedImageFetcher::OnImageFetchedFromCache,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(request),
-                     std::move(image_data_callback),
-                     std::move(image_callback)));
+  if (params.skip_disk_cache_read()) {
+    EnqueueFetchImageFromNetwork(request, std::move(image_data_callback),
+                                 std::move(image_callback));
+  } else {
+    // First, try to load the image from the cache, then try the network.
+    image_cache_->LoadImage(
+        read_only_, image_url.spec(),
+        base::BindOnce(&CachedImageFetcher::OnImageFetchedFromCache,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(request),
+                       std::move(image_data_callback),
+                       std::move(image_callback)));
+  }
 }
 
 void CachedImageFetcher::OnImageFetchedFromCache(
@@ -125,8 +129,8 @@ void CachedImageFetcher::OnImageFetchedFromCache(
     ImageFetcherCallback image_callback,
     std::string image_data) {
   if (image_data.empty()) {
-    CachedImageFetcherMetricsReporter::ReportEvent(
-        request.params.uma_client_name(), CachedImageFetcherEvent::kCacheMiss);
+    ImageFetcherMetricsReporter::ReportEvent(request.params.uma_client_name(),
+                                             ImageFetcherEvent::kCacheMiss);
 
     // Fetching from the DB failed, start a network fetch.
     EnqueueFetchImageFromNetwork(std::move(request),
@@ -135,8 +139,8 @@ void CachedImageFetcher::OnImageFetchedFromCache(
   } else {
     DataCallbackIfPresent(std::move(image_data_callback), image_data,
                           RequestMetadata());
-    CachedImageFetcherMetricsReporter::ReportEvent(
-        request.params.uma_client_name(), CachedImageFetcherEvent::kCacheHit);
+    ImageFetcherMetricsReporter::ReportEvent(request.params.uma_client_name(),
+                                             ImageFetcherEvent::kCacheHit);
 
     // Only continue with decoding if the user actually asked for an image.
     if (!image_callback.is_null()) {
@@ -163,12 +167,12 @@ void CachedImageFetcher::OnImageDecodedFromCache(
                                  std::move(image_data_callback),
                                  std::move(image_callback));
 
-    CachedImageFetcherMetricsReporter::ReportEvent(
+    ImageFetcherMetricsReporter::ReportEvent(
         request.params.uma_client_name(),
-        CachedImageFetcherEvent::kCacheDecodingError);
+        ImageFetcherEvent::kCacheDecodingError);
   } else {
     ImageCallbackIfPresent(std::move(image_callback), image, RequestMetadata());
-    CachedImageFetcherMetricsReporter::ReportImageLoadFromCacheTime(
+    ImageFetcherMetricsReporter::ReportImageLoadFromCacheTime(
         request.params.uma_client_name(), request.start_time);
   }
 }
@@ -226,9 +230,8 @@ void CachedImageFetcher::StoreImageDataWithoutTranscoding(
                         request_metadata);
 
   if (image_data.empty()) {
-    CachedImageFetcherMetricsReporter::ReportEvent(
-        request.params.uma_client_name(),
-        CachedImageFetcherEvent::kTotalFailure);
+    ImageFetcherMetricsReporter::ReportEvent(request.params.uma_client_name(),
+                                             ImageFetcherEvent::kTotalFailure);
   }
 
   StoreData(std::move(request), image_data);
@@ -243,10 +246,10 @@ void CachedImageFetcher::StoreImageDataWithTranscoding(
 
   // Report to different histograms depending upon if there was a cache hit.
   if (request.cache_hit_before_network_request) {
-    CachedImageFetcherMetricsReporter::ReportImageLoadFromNetworkAfterCacheHit(
+    ImageFetcherMetricsReporter::ReportImageLoadFromNetworkAfterCacheHit(
         request.params.uma_client_name(), request.start_time);
   } else {
-    CachedImageFetcherMetricsReporter::ReportImageLoadFromNetworkTime(
+    ImageFetcherMetricsReporter::ReportImageLoadFromNetworkTime(
         request.params.uma_client_name(), request.start_time);
   }
 
@@ -254,9 +257,8 @@ void CachedImageFetcher::StoreImageDataWithTranscoding(
   const SkBitmap* bitmap = image.IsEmpty() ? nullptr : image.ToSkBitmap();
   // If the bitmap is null or otherwise not ready, skip encoding.
   if (bitmap == nullptr || bitmap->isNull() || !bitmap->readyToDraw()) {
-    CachedImageFetcherMetricsReporter::ReportEvent(
-        request.params.uma_client_name(),
-        CachedImageFetcherEvent::kTotalFailure);
+    ImageFetcherMetricsReporter::ReportEvent(request.params.uma_client_name(),
+                                             ImageFetcherEvent::kTotalFailure);
     StoreData(std::move(request), "");
   } else {
     std::string uma_client_name = request.params.uma_client_name();

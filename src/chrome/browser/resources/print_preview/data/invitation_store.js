@@ -94,6 +94,11 @@ cr.define('print_preview', function() {
           this.onCloudPrintProcessInviteDone_.bind(this));
     }
 
+    /** Removes all events being tracked from the tracker. */
+    resetTracker() {
+      this.tracker_.removeAll();
+    }
+
     /**
      * Initiates loading of cloud printer sharing invitations for the user
      * account given by |user|.

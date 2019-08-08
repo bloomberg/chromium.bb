@@ -15,6 +15,7 @@
 namespace blink {
 
 class Document;
+class PortalActivateOptions;
 class RemoteFrame;
 class ScriptState;
 
@@ -29,14 +30,26 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
  public:
   static HTMLElement* Create(Document&);
 
-  explicit HTMLPortalElement(Document&);
+  explicit HTMLPortalElement(
+      Document& document,
+      const base::UnguessableToken& portal_token = base::UnguessableToken(),
+      mojom::blink::PortalAssociatedPtr portal_ptr = nullptr);
   ~HTMLPortalElement() override;
 
   // ScriptWrappable overrides.
   void Trace(Visitor* visitor) override;
 
   // idl implementation.
-  ScriptPromise activate(ScriptState*);
+  ScriptPromise activate(ScriptState*, PortalActivateOptions*);
+  void postMessage(ScriptState* script_state,
+                   const ScriptValue& message,
+                   const String& target_origin,
+                   const Vector<ScriptValue>& transfer,
+                   ExceptionState& exception_state);
+  void postMessage(ScriptState* script_state,
+                   const ScriptValue& message,
+                   const WindowPostMessageOptions* options,
+                   ExceptionState& exception_state);
 
   const base::UnguessableToken& GetToken() const { return portal_token_; }
 
@@ -44,9 +57,16 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
     return FrameOwnerElementType::kPortal;
   }
 
+  bool IsActivating() { return is_activating_; }
+
  private:
   // Navigates the portal to |url_|.
   void Navigate();
+
+  // Consumes the portal interface. When a Portal is activated, or if the
+  // renderer receives a connection error, this function will gracefully
+  // terminate the portal interface.
+  void ConsumePortal();
 
   // Node overrides
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
@@ -55,7 +75,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   // Element overrides
   bool IsURLAttribute(const Attribute&) const override;
   void ParseAttribute(const AttributeModificationParams&) override;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   // HTMLFrameOwnerElement overrides
   ParsedFeaturePolicy ConstructContainerPolicy(Vector<String>*) const override {
@@ -69,7 +89,11 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
 
   Member<RemoteFrame> portal_frame_;
 
-  mojom::blink::PortalPtr portal_ptr_;
+  // Set to true after activate() is called on the portal. It is set to false
+  // right before the promise returned by activate() is resolved or rejected.
+  bool is_activating_ = false;
+
+  mojom::blink::PortalAssociatedPtr portal_ptr_;
 };
 
 }  // namespace blink

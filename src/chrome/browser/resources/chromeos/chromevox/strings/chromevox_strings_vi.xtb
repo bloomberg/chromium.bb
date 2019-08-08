@@ -98,6 +98,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="1616111909442424068">Màu lúa mì</translation>
 <translation id="1618597272655350600">Thông báo mô tả đầy đủ của vị trí hiện tại</translation>
 <translation id="1627222324347828322">Màu trắng tinh</translation>
+<translation id="1630688379087270943">Biểu thị chữ in nghiêng:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{dấu lớn hơn}other{# dấu lớn hơn}}</translation>
 <translation id="1653266918374749391">Tiêu đề cấp 3 trước</translation>
 <translation id="1657616855184033958">Hiển thị các bộ lọc luồng sự kiện</translation>
@@ -212,6 +213,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="2626530649491650971">có thể nhấp được</translation>
 <translation id="2628764385451019380">Không có hộp kết hợp trước nào.</translation>
 <translation id="2637227747952042642">Toán học</translation>
+<translation id="2638785836053527382">Đã tiếp tục tải <ph name="FILE_NAME" /> xuống</translation>
 <translation id="2639750663247012216">Phím bổ trợ ChromeVox</translation>
 <translation id="2644542693584024604">sai chính tả</translation>
 <translation id="2661530546602071611">Lưu ý</translation>
@@ -251,6 +253,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="287383510823843610">Màu cam đậm</translation>
 <translation id="2879867157561757640">Vuốt xuống dưới bằng ba ngón tay</translation>
 <translation id="288178314850623291">Sử dụng các lệnh chuyển để bỏ qua các loại thành phần cụ thể. Để chuyển tiếp giữa các tiêu đề, nhấn phím Tìm kiếm + H hoặc để quay lại, nhấn phím Tìm kiếm + Shift + H.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{phút}other{phút}}</translation>
 <translation id="2894654529758326923">Thông tin</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{dấu mở ngoặc nhọn}other{# dấu mở ngoặc nhọn}}</translation>
 <translation id="2911433807131383493">Mở hướng dẫn ChromeVox</translation>
@@ -285,6 +288,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3084806535845658316">không nói khi nhập</translation>
 <translation id="3086746722712840547">ghi chú</translation>
 <translation id="308895241372589742">Không có biểu thức toán tiếp theo nào.</translation>
+<translation id="3090227230165225418">Công bố các thông báo tải xuống</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Điểm mốc tiếp theo</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -319,6 +323,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3286390186030710347">Thanh trượt</translation>
 <translation id="3299925995433437805">Không có liên kết đã truy cập tiếp theo nào.</translation>
 <translation id="3300348286427369683">Hỗ trợ văn bản đa dạng thức. ChromeVox hiện hỗ trợ các trường văn bản đa dạng thức, bao gồm cả lệnh di chuyển, định tuyến con trỏ chữ nổi, lựa chọn và các trường khác.</translation>
+<translation id="3304756947457041303">Tùy chỉnh tùy chọn chỉ báo văn bản đa dạng thức</translation>
 <translation id="3307886118343381874">Đi tới cuối bảng</translation>
 <translation id="3311969765485641742">Nhấn Alt+Shift+A để xem lại thông báo</translation>
 <translation id="3312997241656799641">Liên kết đã truy cập tiếp theo</translation>
@@ -405,6 +410,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3930498801443296724">Đoạn trích dẫn</translation>
 <translation id="3936394396199829062">Màu hồng tím oải hương</translation>
 <translation id="3941269780691800708">Nói văn bản bên dưới con chuột.</translation>
+<translation id="394953087167197343">Biểu thị lỗi chính tả:</translation>
 <translation id="3962990492275676168">Bắt đầu đọc từ vị trí hiện tại</translation>
 <translation id="3970951409746498040">Màu nâu cát</translation>
 <translation id="3989324057180830702">nút bật/tắt</translation>
@@ -435,6 +441,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="4148180433151187540">{COUNT,plural, =1{dấu đóng ngoặc nhọn}other{# dấu đóng ngoặc nhọn}}</translation>
 <translation id="4158704014418536539">Phân biệt chữ hoa / chữ thường.</translation>
 <translation id="4159784952369912983">Tím</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{giây}other{giây}}</translation>
 <translation id="4161663686871496107">Tính năng phản hồi bằng giọng nói ChromeVox đã sẵn sàng</translation>
 <translation id="4173994908659439270">Không có trường văn bản có thể chỉnh sửa tiếp theo nào.</translation>
 <translation id="4176463684765177261">Đã bị vô hiệu</translation>
@@ -451,6 +458,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="42164919740161077">Màu xanh lơ</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{dấu gạch ngang}other{# dấu gạch ngang}}</translation>
 <translation id="421884353938374759">công cụ chọn màu</translation>
+<translation id="4221071177874897997">Biểu thị chữ in đậm:</translation>
 <translation id="4229646983878045487">ngày giờ</translation>
 <translation id="4230834257931120629">Màu xám đen nhạt</translation>
 <translation id="4231102694147661229">Bật Tùy chọn của nhà phát triển</translation>
@@ -613,6 +621,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5349770431644471053">Liên kết ngược</translation>
 <translation id="536031132345979795">Lùi lại đoạn trước đó trong khi tiếp tục đọc</translation>
 <translation id="5368000168321181111">Tắt kết nối tai nghe</translation>
+<translation id="5368505757342402527">Đã tải <ph name="FILE_NAME" /> được <ph name="PROGRESS" />%. Còn khoảng <ph name="TIME" /> <ph name="UNITS" /> nữa.</translation>
 <translation id="5374320867641260420">Không có nút tiếp theo nào.</translation>
 <translation id="5376407118396657359">Nhấn tổ hợp phím Tìm kiếm+Ctrl+Alt cùng với các mũi tên để di chuyển theo ô.</translation>
 <translation id="5382299583965267720">Không có tiêu đề cấp 1 tiếp theo nào.</translation>
@@ -646,6 +655,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5574412348552378458">Chế độ học ChromeVox</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">Chỉnh sửa văn bản, mục nhập email</translation>
+<translation id="5586942249556966598">Không làm gì</translation>
 <translation id="5597170376237141345">Hộp kiểm tiếp theo</translation>
 <translation id="5597933780944041114">Không có tiêu đề nào tiếp theo.</translation>
 <translation id="5598905979683743333"><ph name="NAME" />, nút radio bị bỏ chọn</translation>
@@ -750,6 +760,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="6348869651006731065">Màu xám mờ</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{dấu chấm tròn}other{# dấu chấm tròn}}</translation>
 <translation id="6355910664415701303">Không có mục danh sách trước nào.</translation>
+<translation id="6360318852623800555">Thuộc tính của văn bản đa dạng thức</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Tiêu đề trước</translation>
 <translation id="6376999910001533545">Màu nâu sẫm</translation>
@@ -791,6 +802,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="667999046851023355">Tài liệu</translation>
 <translation id="6688209025607531203">Thông báo phi thể thức</translation>
 <translation id="6689672606256159458">Màu hồng cam đậm</translation>
+<translation id="669617842401078250">Đã tạm dừng tải <ph name="FILE_NAME" /> xuống</translation>
 <translation id="6696967141280706829">Lời nói đầu</translation>
 <translation id="6697092096875747123">Hộp kết hợp trước</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{dấu chấm than}other{# dấu chấm than}}</translation>
@@ -924,10 +936,12 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="762020119231868829">Tạm dừng tất cả các tiện ích con phương tiện hiện đang phát</translation>
 <translation id="7625690649919402823">Bảng tiếp theo</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Lớp <ph name="GRADE" /></translation>
+<translation id="763535765081585392">Biểu thị chữ gạch dưới:</translation>
 <translation id="7639968568612851608">Xám đen</translation>
 <translation id="7641134354185483015">Không có tiêu đề cấp 3 trước nào.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, hộp văn bản</translation>
 <translation id="7663318257180412551">Tiêu đề 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{giờ}other{giờ}}</translation>
 <translation id="7674576868851035240">Liên kết tiếp theo</translation>
 <translation id="7674768236845044097">đánh dấu</translation>
 <translation id="7684431668231950609">Chỉnh sửa văn bản, mục nhập URL</translation>
@@ -942,6 +956,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912">Đã bắt đầu tải <ph name="FILE_NAME" /> xuống</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, hộp văn bản nhập mật khẩu</translation>
 <translation id="7776293189010177726">Mở menu ChromeVox</translation>
 <translation id="7800558923657349506">Lời kết</translation>
@@ -1066,6 +1081,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8096975275316362544">Màu kem bạc hà</translation>
 <translation id="8098587210054821856">Màu xám đen</translation>
 <translation id="8110647606445335195">Không có mốc ARIA nào.</translation>
+<translation id="812886159861361726">Đã dừng tải <ph name="FILE_NAME" /> xuống</translation>
 <translation id="8138880386467279117">Cảm ứng</translation>
 <translation id="8153880621934657047">Không phải bên trong bảng.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{dấu gạch dưới}other{# dấu gạch dưới}}</translation>
@@ -1135,6 +1151,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8743786158317878347">vào nội dung có cấu trúc, chẳng hạn như bảng</translation>
 <translation id="8747966237988593539">Danh sách theo thứ tự</translation>
 <translation id="8749988712346667988">Màu bạc</translation>
+<translation id="875769700429317857">Đã hoàn tất việc tải <ph name="FILE_NAME" /> xuống</translation>
 <translation id="8759334257841767240">Không có liên kết tiếp theo nào.</translation>
 <translation id="8767968232364267681">Tiêu đề cấp 4 tiếp theo</translation>
 <translation id="8770473310765924354">thoát nội dung có cấu trúc, chẳng hạn như bảng</translation>
@@ -1159,6 +1176,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8943175951035496220">Không có ô nào bên phải.</translation>
 <translation id="8943282376843390568">Vàng chanh</translation>
 <translation id="8946628535652548639">h<ph name="TABLECELLROWINDEX" />c<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">Thông báo</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Quên</translation>
 <translation id="900114243503212879">tệp</translation>

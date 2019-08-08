@@ -67,16 +67,17 @@ class ScriptWrappable;
 // Provides access to V8's private properties.
 //
 // Usage 1) Fast path to use a pre-registered symbol.
-//   auto private = V8PrivateProperty::getMessageEventCachedData(isolate);
+//   auto private_property = V8PrivateProperty::GetDOMExceptionError(isolate);
 //   v8::Local<v8::Object> object = ...;
 //   v8::Local<v8::Value> value;
-//   if (!private.GetOrUndefined(object).ToLocal(&value)) return;
+//   if (!private_property.GetOrUndefined(object).ToLocal(&value)) return;
 //   value = ...;
-//   private.set(object, value);
+//   private_property.set(object, value);
 //
 // Usage 2) Slow path to create a global private symbol.
-//   const char symbolName[] = "Interface#PrivateKeyName";
-//   auto private = V8PrivateProperty::createSymbol(isolate, symbolName);
+//   const char symbol_name[] = "Interface#PrivateKeyName";
+//   auto private_property =
+//       V8PrivateProperty::GetSymbol(isolate, symbol_name);
 //   ...
 class PLATFORM_EXPORT V8PrivateProperty {
   USING_FAST_MALLOC(V8PrivateProperty);
@@ -86,6 +87,8 @@ class PLATFORM_EXPORT V8PrivateProperty {
     kNoCachedAccessor = 0,
     kWindowDocumentCachedAccessor,
   };
+
+  V8PrivateProperty() = default;
 
   // Provides fast access to V8's private properties.
   //
@@ -140,10 +143,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
     v8::Isolate* isolate_;
   };
 
-  static std::unique_ptr<V8PrivateProperty> Create() {
-    return base::WrapUnique(new V8PrivateProperty());
-  }
-
 #define V8_PRIVATE_PROPERTY_DEFINE_GETTER(InterfaceName, KeyName)              \
   static Symbol V8_PRIVATE_PROPERTY_GETTER_NAME(/* // NOLINT */                \
                                                 InterfaceName, KeyName)(       \
@@ -197,8 +196,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
   }
 
  private:
-  V8PrivateProperty() = default;
-
   static v8::Local<v8::Private> CreateV8Private(v8::Isolate*,
                                                 const char* symbol);
   // TODO(peria): Remove this method. We should not use v8::Private::ForApi().

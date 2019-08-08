@@ -58,34 +58,6 @@ class OfflinePageComparer {
   }
 };
 
-void OnGetPagesByURLDone(
-    const GURL& url,
-    int tab_id,
-    const std::vector<std::string>& namespaces_restricted_to_tab_from_client_id,
-    base::OnceCallback<void(const std::vector<OfflinePageItem>&)> callback,
-    const MultipleOfflinePageItemResult& pages) {
-  std::vector<OfflinePageItem> selected_pages;
-  std::string tab_id_str = base::NumberToString(tab_id);
-
-  // Exclude pages whose tab id does not match.
-  // Note: For this restriction to work offline pages saved to tab-bound
-  // namespaces must have the assigned tab id set to their ClientId::id field.
-  for (const auto& page : pages) {
-    if (base::ContainsValue(namespaces_restricted_to_tab_from_client_id,
-                            page.client_id.name_space) &&
-        page.client_id.id != tab_id_str) {
-      continue;
-    }
-    selected_pages.push_back(page);
-  }
-
-  // Sort based on creation date.
-  std::sort(selected_pages.begin(), selected_pages.end(),
-            OfflinePageComparer());
-
-  std::move(callback).Run(selected_pages);
-}
-
 bool IsSupportedByDownload(content::BrowserContext* browser_context,
                            const std::string& name_space) {
   OfflinePageModel* offline_page_model =
@@ -207,6 +179,17 @@ void OfflinePageUtils::SelectPagesForURL(
     const GURL& url,
     int tab_id,
     base::OnceCallback<void(const std::vector<OfflinePageItem>&)> callback) {
+  PageCriteria criteria;
+  criteria.url = url;
+  criteria.pages_for_tab_id = tab_id;
+  SelectPagesWithCriteria(browser_context, criteria, std::move(callback));
+}
+
+// static
+void OfflinePageUtils::SelectPagesWithCriteria(
+    content::BrowserContext* browser_context,
+    const PageCriteria& criteria,
+    base::OnceCallback<void(const std::vector<OfflinePageItem>&)> callback) {
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(browser_context);
   if (!offline_page_model) {
@@ -216,11 +199,7 @@ void OfflinePageUtils::SelectPagesForURL(
     return;
   }
 
-  offline_page_model->GetPagesByURL(
-      url, base::BindOnce(&OnGetPagesByURLDone, url, tab_id,
-                          offline_page_model->GetPolicyController()
-                              ->GetNamespacesRestrictedToTabFromClientId(),
-                          std::move(callback)));
+  offline_page_model->GetPagesWithCriteria(criteria, std::move(callback));
 }
 
 const OfflinePageItem* OfflinePageUtils::GetOfflinePageFromWebContents(
@@ -317,9 +296,10 @@ void OfflinePageUtils::CheckDuplicateDownloads(
       callback.Run(DuplicateCheckResult::DUPLICATE_PAGE_FOUND);
     }
   };
-
-  offline_page_model->GetPagesByURL(
-      url, base::BindOnce(continuation, browser_context, url, callback));
+  PageCriteria criteria;
+  criteria.url = url;
+  offline_page_model->GetPagesWithCriteria(
+      criteria, base::BindOnce(continuation, browser_context, url, callback));
 }
 
 // static
@@ -353,6 +333,9 @@ void OfflinePageUtils::ScheduleDownload(content::WebContents* web_contents,
 bool OfflinePageUtils::CanDownloadAsOfflinePage(
     const GURL& url,
     const std::string& contents_mime_type) {
+  if (!IsOfflinePagesEnabled())
+    return false;
+
   return url.SchemeIsHTTPOrHTTPS() &&
          (net::MatchesMimeType(contents_mime_type, "text/html") ||
           net::MatchesMimeType(contents_mime_type, "application/xhtml+xml"));
@@ -368,8 +351,11 @@ bool OfflinePageUtils::GetCachedOfflinePageSizeBetween(
       OfflinePageModelFactory::GetForBrowserContext(browser_context);
   if (!offline_page_model || begin_time > end_time)
     return false;
-  offline_page_model->GetPagesRemovedOnCacheReset(base::BindOnce(
-      &DoCalculateSizeBetween, std::move(callback), begin_time, end_time));
+  PageCriteria criteria;
+  criteria.removed_on_cache_reset = true;
+  offline_page_model->GetPagesWithCriteria(
+      criteria, base::BindOnce(&DoCalculateSizeBetween, std::move(callback),
+                               begin_time, end_time));
   return true;
 }
 

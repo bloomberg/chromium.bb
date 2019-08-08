@@ -14,6 +14,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -27,6 +28,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/url_formatter/url_formatter.h"
+#include "components/variations/active_field_trials.h"
+#include "components/variations/hashing.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -51,7 +54,11 @@
 #include "net/dns/mock_host_resolver.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/features.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
+
+using ::testing::IsEmpty;
+using ::testing::UnorderedElementsAre;
 
 class ChromeNavigationBrowserTest : public InProcessBrowserTest {
  public:
@@ -70,11 +77,12 @@ class ChromeNavigationBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kDisableRendererBackgrounding);
 
     embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
-    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
   }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
+    embedded_test_server()->StartAcceptingConnections();
   }
 
   void PreRunTestOnMainThread() override {
@@ -86,8 +94,7 @@ class ChromeNavigationBrowserTest : public InProcessBrowserTest {
     expired_https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
     expired_https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-    expired_https_server_->AddDefaultHandlers(
-        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    expired_https_server_->AddDefaultHandlers(GetChromeTestDataDir());
     ASSERT_TRUE(expired_https_server_->Start());
   }
 
@@ -102,31 +109,6 @@ class ChromeNavigationBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNavigationBrowserTest);
-};
-
-// Helper class to track and allow waiting for navigation start events.
-class DidStartNavigationObserver : public content::WebContentsObserver {
- public:
-  explicit DidStartNavigationObserver(content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents),
-        message_loop_runner_(new content::MessageLoopRunner) {}
-  ~DidStartNavigationObserver() override {}
-
-  // Runs a nested run loop and blocks until the full load has
-  // completed.
-  void Wait() { message_loop_runner_->Run(); }
-
- private:
-  // WebContentsObserver
-  void DidStartNavigation(content::NavigationHandle* handle) override {
-    if (message_loop_runner_->loop_running())
-      message_loop_runner_->Quit();
-  }
-
-  // The MessageLoopRunner used to spin the message loop.
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DidStartNavigationObserver);
 };
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -194,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(
   // Navigate again the opened window to the same page. It should not cause
   // WebContents::GetVisibleURL to return the last committed one.
   {
-    DidStartNavigationObserver nav_observer(new_web_contents);
+    content::DidStartNavigationObserver nav_observer(new_web_contents);
     EXPECT_TRUE(content::ExecuteScript(
         main_web_contents, "navigate('" + error_url.spec() + "');"));
     nav_observer.Wait();
@@ -876,9 +858,8 @@ class WillProcessResponseObserver : public content::WebContentsObserver {
 // no handler defined for the "ftp" protocol in
 // URLRequestJobFactoryImpl::protocol_handler_map_.
 IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, BlockLegacySubresources) {
-  net::SpawnedTestServer ftp_server(
-      net::SpawnedTestServer::TYPE_FTP,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::SpawnedTestServer ftp_server(net::SpawnedTestServer::TYPE_FTP,
+                                    GetChromeTestDataDir());
   ASSERT_TRUE(ftp_server.Start());
 
   GURL main_url_http(embedded_test_server()->GetURL("/iframe.html"));
@@ -953,8 +934,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, ChromeSchemeNavFromSadTab) {
 // redirects to a pdf hosted on another site works.
 IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, CrossSiteRedirectionToPDF) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
 
   GURL initial_url = embedded_test_server()->GetURL("/title1.html");
@@ -1327,18 +1307,7 @@ IN_PROC_BROWSER_TEST_F(NavigationConsumingTest, TargetNavigationFocus) {
   EXPECT_EQ(new_contents, browser()->tab_strip_model()->GetActiveWebContents());
 }
 
-class HistoryManipulationInterventionBrowserTest
-    : public ChromeNavigationBrowserTest {
- protected:
-  void SetUp() override {
-    feature_list_.InitAndEnableFeature(
-        features::kHistoryManipulationIntervention);
-    ChromeNavigationBrowserTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
+using HistoryManipulationInterventionBrowserTest = ChromeNavigationBrowserTest;
 
 // Tests that chrome::GoBack does nothing if all the previous entries are marked
 // as skippable and the back button is disabled.
@@ -1402,17 +1371,102 @@ IN_PROC_BROWSER_TEST_F(HistoryManipulationInterventionBrowserTest,
   ASSERT_EQ(GURL("about:blank"), main_contents->GetLastCommittedURL());
 }
 
+// Tests that a main frame hosting pdf does not get skipped because of history
+// manipulation intervention (crbug.com/965434).
+IN_PROC_BROWSER_TEST_F(HistoryManipulationInterventionBrowserTest,
+                       PDFDoNotSkipOnBackForward) {
+  GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  ui_test_utils::NavigateToURL(browser(), pdf_url);
+
+  GURL url(embedded_test_server()->GetURL("/title2.html"));
+
+  // Navigate to a new document from the renderer without a user gesture.
+  content::WebContents* main_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver observer(main_contents);
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      main_contents, "location = '" + url.spec() + "';"));
+  observer.Wait();
+  EXPECT_EQ(url, main_contents->GetLastCommittedURL());
+
+  // Even though pdf_url initiated a navigation without a user gesture, it will
+  // not be skipped since it is a pdf.
+  // Going back should be allowed and should navigate to pdf_url.
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BACK));
+
+  ASSERT_TRUE(chrome::CanGoBack(browser()));
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+  content::WaitForLoadStop(main_contents);
+  ASSERT_EQ(pdf_url, main_contents->GetLastCommittedURL());
+}
+
 // This test class turns on the mode where sites where the user enters a
 // password are dynamically added to the list of sites requiring a dedicated
 // process.  It also disables strict site isolation so that the effects of
 // password isolation can be observed.
 class SiteIsolationForPasswordSitesBrowserTest
     : public ChromeNavigationBrowserTest {
+ public:
+  std::vector<std::string> GetSavedIsolatedSites() {
+    return GetSavedIsolatedSites(browser()->profile());
+  }
+
+  std::vector<std::string> GetSavedIsolatedSites(Profile* profile) {
+    PrefService* prefs = profile->GetPrefs();
+    auto* list = prefs->GetList(prefs::kUserTriggeredIsolatedOrigins);
+    std::vector<std::string> sites;
+    for (const base::Value& value : list->GetList())
+      sites.push_back(value.GetString());
+    return sites;
+  }
+
+  bool HasSyntheticTrial(const std::string& trial_name) {
+    std::vector<std::string> synthetic_trials;
+    variations::GetSyntheticTrialGroupIdsAsString(&synthetic_trials);
+    std::string trial_hash =
+        base::StringPrintf("%x", variations::HashName(trial_name));
+    auto it =
+        std::find_if(synthetic_trials.begin(), synthetic_trials.end(),
+                     [trial_hash](const auto& trial) {
+                       return base::StartsWith(trial, trial_hash,
+                                               base::CompareCase::SENSITIVE);
+                     });
+    return it != synthetic_trials.end();
+  }
+
+  bool IsInSyntheticTrialGroup(const std::string& trial_name,
+                               const std::string& trial_group) {
+    std::vector<std::string> synthetic_trials;
+    variations::GetSyntheticTrialGroupIdsAsString(&synthetic_trials);
+    std::string expected_entry =
+        base::StringPrintf("%x-%x", variations::HashName(trial_name),
+                           variations::HashName(trial_group));
+    return std::find(synthetic_trials.begin(), synthetic_trials.end(),
+                     expected_entry) != synthetic_trials.end();
+  }
+
+  const std::string kSiteIsolationSyntheticTrialName = "SiteIsolationActive";
+  const std::string kOOPIFSyntheticTrialName = "OutOfProcessIframesActive";
+  const std::string kSyntheticTrialGroup = "Enabled";
+
  protected:
   void SetUp() override {
     feature_list_.InitWithFeatures({features::kSiteIsolationForPasswordSites},
                                    {features::kSitePerProcess});
     ChromeNavigationBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ChromeNavigationBrowserTest::SetUpCommandLine(command_line);
+
+    // This simulates a whitelist of isolated sites.
+    std::string origin_list =
+        embedded_test_server()->GetURL("isolated1.com", "/").spec() + "," +
+        embedded_test_server()->GetURL("isolated2.com", "/").spec();
+    command_line->AppendSwitchASCII(switches::kIsolateOrigins, origin_list);
+
+    // Allow HTTPS server to be used on sites other than localhost.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
  private:
@@ -1435,6 +1489,8 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
 
   // foo.com should not be isolated to start with. Verify that a cross-site
   // iframe does not become an OOPIF.
+  EXPECT_FALSE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
   std::string kAppendIframe = R"(
       var i = document.createElement('iframe');
       i.id = 'child';
@@ -1454,8 +1510,19 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
   EXPECT_TRUE(content::ExecJs(contents, kFillAndSubmit));
   observer.Wait();
 
-  // Open a fresh tab (forcing a new BrowsingInstance), navigate to foo.com,
-  // and verify that a cross-site iframe now becomes an OOPIF.
+  // Since there were no script references from other windows, we should've
+  // swapped BrowsingInstances and put the result of the form submission into a
+  // dedicated process, locked to foo.com.  Check that a cross-site iframe now
+  // becomes an OOPIF.
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+  EXPECT_TRUE(ExecJs(contents, kAppendIframe));
+  EXPECT_TRUE(NavigateIframeToURL(contents, "child", bar_url));
+  child = ChildFrameAt(contents->GetMainFrame(), 0);
+  EXPECT_TRUE(child->IsCrossProcessSubframe());
+
+  // Open a fresh tab (also forcing a new BrowsingInstance), navigate to
+  // foo.com, and verify that a cross-site iframe becomes an OOPIF.
   AddBlankTabAndShow(browser());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   content::WebContents* new_contents =
@@ -1468,4 +1535,204 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
   content::RenderFrameHost* new_child =
       ChildFrameAt(new_contents->GetMainFrame(), 0);
   EXPECT_TRUE(new_child->IsCrossProcessSubframe());
+}
+
+// This test checks that the synthetic field trial is activated properly after
+// a navigation to an isolated origin commits in a main frame.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
+                       SyntheticTrialFromMainFrame) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  NavigationMetricsRecorder* recorder =
+      content::WebContentsUserData<NavigationMetricsRecorder>::FromWebContents(
+          web_contents);
+  recorder->EnableSiteIsolationSyntheticTrialForTesting();
+
+  EXPECT_FALSE(HasSyntheticTrial(kSiteIsolationSyntheticTrialName));
+  EXPECT_FALSE(HasSyntheticTrial(kOOPIFSyntheticTrialName));
+
+  // Browse to a page with some iframes without involving any isolated origins.
+  GURL unisolated_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c(a))"));
+  ui_test_utils::NavigateToURL(browser(), unisolated_url);
+  EXPECT_FALSE(HasSyntheticTrial(kSiteIsolationSyntheticTrialName));
+
+  // Now browse to an isolated origin.
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated1.com", "/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), isolated_url);
+  EXPECT_TRUE(IsInSyntheticTrialGroup(kSiteIsolationSyntheticTrialName,
+                                      kSyntheticTrialGroup));
+
+  // The OOPIF synthetic trial shouldn't be activated, since the isolated
+  // oriign page doesn't have any OOPIFs.
+  EXPECT_FALSE(
+      IsInSyntheticTrialGroup(kOOPIFSyntheticTrialName, kSyntheticTrialGroup));
+}
+
+// This test checks that the synthetic field trials for both site isolation and
+// encountering OOPIFs are activated properly after a navigation to an isolated
+// origin commits in a subframe.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
+                       SyntheticTrialFromSubframe) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  NavigationMetricsRecorder* recorder =
+      content::WebContentsUserData<NavigationMetricsRecorder>::FromWebContents(
+          web_contents);
+  recorder->EnableSiteIsolationSyntheticTrialForTesting();
+
+  EXPECT_FALSE(HasSyntheticTrial(kSiteIsolationSyntheticTrialName));
+  EXPECT_FALSE(HasSyntheticTrial(kOOPIFSyntheticTrialName));
+
+  // Browse to a page with an isolated origin on one of the iframes.
+  GURL isolated_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c,isolated2,d)"));
+  ui_test_utils::NavigateToURL(browser(), isolated_url);
+  EXPECT_TRUE(IsInSyntheticTrialGroup(kSiteIsolationSyntheticTrialName,
+                                      kSyntheticTrialGroup));
+  EXPECT_TRUE(
+      IsInSyntheticTrialGroup(kOOPIFSyntheticTrialName, kSyntheticTrialGroup));
+}
+
+// Verifies that persistent isolated sites survive restarts.  Part 1.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
+                       PRE_IsolatedSitesPersistAcrossRestarts) {
+  // There shouldn't be any saved isolated origins to start with.
+  EXPECT_THAT(GetSavedIsolatedSites(), IsEmpty());
+
+  // Isolate saved.com and saved2.com persistently.
+  GURL saved_url(embedded_test_server()->GetURL("saved.com", "/title1.html"));
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  GURL saved2_url(embedded_test_server()->GetURL("saved2.com", "/title1.html"));
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved2_url);
+
+  // Check that saved.com utilizes a dedicated process in future navigations.
+  // Open a new tab to force creation of a new BrowsingInstance.
+  AddBlankTabAndShow(browser());
+  ui_test_utils::NavigateToURL(browser(), saved_url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+
+  // Check that saved.com and saved2.com were saved to disk.
+  EXPECT_THAT(GetSavedIsolatedSites(),
+              UnorderedElementsAre("http://saved.com", "http://saved2.com"));
+}
+
+// Verifies that process-isolated sites persist across restarts.  Part 2.
+// This runs after Part 1 above and in the same profile.  Part 1 has already
+// added "saved.com" as a persisted isolated origin, so this part verifies that
+// it requires a dedicated process after restart.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
+                       IsolatedSitesPersistAcrossRestarts) {
+  // Check that saved.com and saved2.com are still saved to disk.
+  EXPECT_THAT(GetSavedIsolatedSites(),
+              UnorderedElementsAre("http://saved.com", "http://saved2.com"));
+
+  // Check that these sites utilize a dedicated process after restarting, but a
+  // non-isolated foo.com URL does not.
+  GURL saved_url(embedded_test_server()->GetURL("saved.com", "/title1.html"));
+  GURL saved2_url(embedded_test_server()->GetURL("saved2.com", "/title2.html"));
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title3.html"));
+  ui_test_utils::NavigateToURL(browser(), saved_url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+  ui_test_utils::NavigateToURL(browser(), saved2_url);
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+  ui_test_utils::NavigateToURL(browser(), foo_url);
+  EXPECT_FALSE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+}
+
+// Verify that trying to isolate a site multiple times will only save it to
+// disk once.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
+                       IsolatedSiteIsSavedOnlyOnce) {
+  GURL saved_url(embedded_test_server()->GetURL("saved.com", "/title1.html"));
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  EXPECT_THAT(GetSavedIsolatedSites(),
+              UnorderedElementsAre("http://saved.com"));
+}
+
+// Check that Incognito doesn't inherit saved isolated origins from its
+// original profile, and that any isolated origins added in Incognito don't
+// affect the original profile.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
+                       IncognitoWithIsolatedSites) {
+  // Isolate saved.com and verify it's been saved to disk.
+  GURL saved_url(embedded_test_server()->GetURL("saved.com", "/title1.html"));
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  EXPECT_THAT(GetSavedIsolatedSites(),
+              UnorderedElementsAre("http://saved.com"));
+
+  // Create an incognito browser and browse to saved.com.  Verify that it's
+  // *not* isolated in incognito.
+  //
+  // TODO(alexmos): This might change in the future if we decide to inherit
+  // main profile's isolated origins in incognito. See
+  // https://crbug.com/905513.
+  Browser* incognito = CreateIncognitoBrowser();
+  ui_test_utils::NavigateToURL(incognito, saved_url);
+  content::WebContents* contents =
+      incognito->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+
+  // Add an isolated site in incognito, and verify that while future
+  // navigations to this site in incognito require a dedicated process,
+  // navigations to this site in the main profile do not require a dedicated
+  // process, and the site is not persisted for either the main or incognito
+  // profiles.
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  content::SiteInstance::StartIsolatingSite(incognito->profile(), foo_url);
+
+  AddBlankTabAndShow(incognito);
+  ui_test_utils::NavigateToURL(incognito, foo_url);
+  contents = incognito->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+
+  AddBlankTabAndShow(browser());
+  ui_test_utils::NavigateToURL(browser(), foo_url);
+  contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+
+  EXPECT_THAT(GetSavedIsolatedSites(browser()->profile()),
+              testing::Not(testing::Contains("http://foo.com")));
+  EXPECT_THAT(GetSavedIsolatedSites(incognito->profile()),
+              testing::Not(testing::Contains("http://foo.com")));
+}
+
+// Verify that serving a Clear-Site-Data header does not clear saved isolated
+// sites.  Saved isolated sites should only be cleared by user-initiated
+// actions.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
+                       ClearSiteDataDoesNotClearSavedIsolatedSites) {
+  // Start an HTTPS server, as Clear-Site-Data is only available on HTTPS URLs.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
+  ASSERT_TRUE(https_server.Start());
+
+  // Isolate saved.com and verify it's been saved to disk.
+  GURL saved_url(https_server.GetURL("saved.com", "/clear_site_data.html"));
+  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  EXPECT_THAT(GetSavedIsolatedSites(),
+              UnorderedElementsAre("https://saved.com"));
+
+  // Navigate to a URL that serves a Clear-Site-Data header for cache, cookies,
+  // and DOM storage. This is the most that a Clear-Site-Data header could
+  // clear, and this should not clear saved isolated sites.
+  ui_test_utils::NavigateToURL(browser(), saved_url);
+  EXPECT_THAT(GetSavedIsolatedSites(),
+              UnorderedElementsAre("https://saved.com"));
 }

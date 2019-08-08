@@ -22,7 +22,7 @@ namespace content {
 
 SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
     std::unique_ptr<viz::SoftwareOutputDevice> software_device,
-    const UpdateVSyncParametersCallback& update_vsync_parameters_callback)
+    const viz::UpdateVSyncParametersCallback& update_vsync_parameters_callback)
     : BrowserCompositorOutputSurface(std::move(software_device),
                                      update_vsync_parameters_callback),
       weak_factory_(this) {}

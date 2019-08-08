@@ -25,6 +25,11 @@ constexpr char kLcsAddress[] =
     "user@domain.com/chromoting_lcs_KkMKIDB5NldsZndLalZZamZWVTZlYmhPT1RBa2p2TUl"
     "GX0lvEKT-HRhwIhB1V3QxYVkwdUptWlc3bnIxKVYHxmgZQ7i7";
 
+constexpr char kFtlRegistrationId[] = "f6b43f10-566e-11e9-8647-d663bd873d93";
+
+constexpr char kFtlAddress[] =
+    "user@domain.com/chromoting_ftl_f6b43f10-566e-11e9-8647-d663bd873d93";
+
 }  // namespace
 
 TEST(SignalingAddressTest, ParseAddress) {
@@ -168,6 +173,18 @@ TEST(SignalingAddressTest, SetInMessageToLcs) {
   EXPECT_EQ(kLcsAddress, jingle->Attr(QName("", "to-endpoint-id")));
 }
 
+TEST(SignalingAddressTest, SetInMessageToFtl) {
+  std::unique_ptr<jingle_xmpp::XmlElement> message = GetEmptyJingleMessage();
+  SignalingAddress addr(kFtlAddress);
+
+  addr.SetInMessage(message.get(), SignalingAddress::TO);
+  EXPECT_EQ(kFtlAddress, message->Attr(QName("", "to")));
+  jingle_xmpp::XmlElement* jingle =
+      message->FirstNamed(jingle_xmpp::QName("urn:xmpp:jingle:1", "jingle"));
+  EXPECT_EQ("", jingle->Attr(QName("", "to-channel")));
+  EXPECT_EQ("", jingle->Attr(QName("", "to-endpoint-id")));
+}
+
 TEST(SignalingAddressTest, SetInMessageFromXmpp) {
   std::unique_ptr<jingle_xmpp::XmlElement> message = GetEmptyJingleMessage();
   SignalingAddress addr("user@domain.com/resource");
@@ -189,6 +206,39 @@ TEST(SignalingAddressTest, SetInMessageFromLcs) {
       message->FirstNamed(jingle_xmpp::QName("urn:xmpp:jingle:1", "jingle"));
   EXPECT_EQ("lcs", jingle->Attr(QName("", "from-channel")));
   EXPECT_EQ(kLcsAddress, jingle->Attr(QName("", "from-endpoint-id")));
+}
+
+TEST(SignalingAddressTest, SetInMessageFromFtl) {
+  std::unique_ptr<jingle_xmpp::XmlElement> message = GetEmptyJingleMessage();
+  SignalingAddress addr(kFtlAddress);
+  addr.SetInMessage(message.get(), SignalingAddress::FROM);
+  EXPECT_EQ(kFtlAddress, message->Attr(QName("", "from")));
+  jingle_xmpp::XmlElement* jingle =
+      message->FirstNamed(jingle_xmpp::QName("urn:xmpp:jingle:1", "jingle"));
+  EXPECT_EQ("", jingle->Attr(QName("", "from-channel")));
+  EXPECT_EQ("", jingle->Attr(QName("", "from-endpoint-id")));
+}
+
+TEST(SignalingAddressTest, CreateFtlSignalingAddress) {
+  SignalingAddress addr = SignalingAddress::CreateFtlSignalingAddress(
+      "user@domain.com", kFtlRegistrationId);
+  EXPECT_EQ(kFtlAddress, addr.jid());
+
+  std::string username;
+  std::string registration_id;
+  EXPECT_TRUE(addr.GetFtlInfo(&username, &registration_id));
+  EXPECT_EQ("user@domain.com", username);
+  EXPECT_EQ(kFtlRegistrationId, registration_id);
+}
+
+TEST(SignalingAddressTest, GetFtlInfo_NotFtlInfo) {
+  SignalingAddress addr(kLcsAddress);
+
+  std::string username;
+  std::string registration_id;
+  EXPECT_FALSE(addr.GetFtlInfo(&username, &registration_id));
+  EXPECT_TRUE(username.empty());
+  EXPECT_TRUE(registration_id.empty());
 }
 
 }  // namespace remoting

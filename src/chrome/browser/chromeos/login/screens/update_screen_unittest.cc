@@ -52,7 +52,7 @@ class UpdateScreenUnitTest : public testing::Test {
     if (critical) {
       ASSERT_TRUE(available) << "Does not make sense for an update to be "
                                 "critical if one is not even available.";
-      update_screen->is_ignore_update_deadlines_ = true;
+      update_screen->set_ignore_update_deadlines_for_testing(true);
     }
     update_engine_status.status =
         available ? UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE
@@ -76,19 +76,15 @@ class UpdateScreenUnitTest : public testing::Test {
     mock_network_portal_detector_ = new MockNetworkPortalDetector();
     network_portal_detector::SetNetworkPortalDetector(
         mock_network_portal_detector_);
-    mock_error_screen_.reset(
-        new MockErrorScreen(&mock_base_screen_delegate_, &mock_error_view_));
+    mock_error_screen_.reset(new MockErrorScreen(&mock_error_view_));
 
     // Ensure proper behavior of UpdateScreen's supporting objects.
     EXPECT_CALL(*mock_network_portal_detector_, IsEnabled())
         .Times(AnyNumber())
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(mock_base_screen_delegate_, GetErrorScreen())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(mock_error_screen_.get()));
 
     update_screen_ = std::make_unique<UpdateScreen>(
-        &mock_base_screen_delegate_, &mock_view_,
+        &mock_base_screen_delegate_, &mock_view_, mock_error_screen_.get(),
         base::BindRepeating(&UpdateScreenUnitTest::HandleScreenExit,
                             base::Unretained(this)));
   }

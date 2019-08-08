@@ -51,7 +51,7 @@ class BASE_EXPORT ThreadCheckerImpl {
   mutable TaskToken task_token_;
 
   // SequenceToken for which CalledOnValidThread() may return true. Used to
-  // ensure that CalledOnValidThread() doesn't return true for TaskScheduler
+  // ensure that CalledOnValidThread() doesn't return true for ThreadPool
   // tasks that happen to run on the same thread but weren't posted to the same
   // SingleThreadTaskRunner.
   mutable SequenceToken sequence_token_;

@@ -21,6 +21,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">現在</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 分}other{# 分}}</translation>
+<translation id="1756116796893109054">タブを送信しています...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">ピリオド</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 か月}other{# か月}}</translation>
@@ -34,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">すべて選択(&amp;A)</translation>
 <translation id="1938451708255335766">ウィンドウの表示間隔を調整するには、アプリを再起動してください。</translation>
+<translation id="208586643495776849">もう一度お試しください</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1日}other{#日}}</translation>
 <translation id="2148716181193084225">今日</translation>
 <translation id="2168039046890040389">前のページへ</translation>
@@ -51,11 +53,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">キャリブレーションが完了しました</translation>
 <translation id="252373100621549798">不明なディスプレイ</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{1時間}other{#時間}}</translation>
 <translation id="2583543531130364912">タッチスクリーンのキャリブレーション</translation>
 <translation id="2666092431469916601">一番上</translation>
+<translation id="2701330563083355633"><ph name="DEVICE_NAME" /> から共有しました</translation>
 <translation id="2743387203779672305">クリップボードにコピー</translation>
 <translation id="2803313416453193357">フォルダを開く</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 年前}other{# 年前}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{1日}other{#日}}</translation>
 <translation id="2931838996092594335">クリック</translation>
 <translation id="3036649622769666520">ファイルを開く</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -67,6 +72,7 @@
 <translation id="3234408098842461169">下矢印キー</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 日}other{# 日}}</translation>
 <translation id="335581015389089642">スピーチ</translation>
+<translation id="3443810440409579745">タブが共有されました。</translation>
 <translation id="3479552764303398839">後で</translation>
 <translation id="348799646910989694">シェルフは自動的に非表示になります</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{残り 1 日}other{残り # 日}}</translation>
@@ -96,6 +102,7 @@
 <translation id="4730374152663651037">よく使用するアプリ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{残り 1 か月}other{残り # か月}}</translation>
 <translation id="4841881773802181781">挿入</translation>
+<translation id="4881695831933465202">開く</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="4971687151119236543">メディアの前のトラック</translation>
 <translation id="5046499563572181734">ここをタップしてください</translation>
@@ -103,6 +110,7 @@
 <translation id="5137751499640340777">Google アシスタントを起動</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">三角形の展開ボタン</translation>
+<translation id="5278860589123563674">送信できませんでした</translation>
 <translation id="528468243742722775">終了</translation>
 <translation id="5329858601952122676">削除(&amp;D)</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" />を<ph name="IN_PLACE_APP" />の上にドラッグしました。指を離すとフォルダが作成されます。</translation>
@@ -114,6 +122,7 @@
 <translation id="5613020302032141669">左矢印キー</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 分}other{# 分}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 日と }other{# 日と }}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{1年}other{#年}}</translation>
 <translation id="5895138241574237353">再起動</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{残り 1 秒}other{残り # 秒}}</translation>
 <translation id="5941711191222866238">最小化</translation>
@@ -145,7 +154,6 @@
 <translation id="6808150112686056157">メディアの停止</translation>
 <translation id="6845383723252244143">フォルダを選択</translation>
 <translation id="6845533974506654842">押す</translation>
-<translation id="686304767576508198">次から共有:</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{残り 1 時間}other{残り # 時間}}</translation>
 <translation id="688711909580084195">無題のウェブページ</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/秒</translation>
@@ -170,6 +178,7 @@
 <translation id="7907591526440419938">ファイルを開く</translation>
 <translation id="7969046989155602842">コマンド</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 件以上の未読の通知}other{# 件以上の未読の通知}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{1分}other{#分}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 時間前}other{# 時間前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{残り 1 秒}other{残り # 秒}}</translation>
@@ -198,6 +207,7 @@
 <translation id="8806053966018712535">フォルダ <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">画像に注釈を付ける</translation>
 <translation id="8841375032071747811">戻るボタン</translation>
+<translation id="8876215549894133151">形式:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">シェルフは常に非表示です</translation>
 <translation id="9002566407876343676">開く</translation>

@@ -101,7 +101,8 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
   FrameOcclusionState occlusion_state =
       owner_element->GetDocument().GetFrame()->GetOcclusionState();
   bool should_compute_occlusion =
-      needs_occlusion_tracking_ && occlusion_state == kGuaranteedNotOccluded &&
+      needs_occlusion_tracking_ &&
+      occlusion_state == FrameOcclusionState::kGuaranteedNotOccluded &&
       parent_lifecycle_state >= DocumentLifecycle::kPrePaintClean &&
       RuntimeEnabledFeatures::IntersectionObserverV2Enabled();
 
@@ -134,25 +135,32 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
       viewport_intersection = EnclosingIntRect(intersection_rect);
     }
     if (should_compute_occlusion && !geometry.IsVisible())
-      occlusion_state = kPossiblyOccluded;
-  } else if (occlusion_state == kGuaranteedNotOccluded) {
-    occlusion_state = kUnknownOcclusionState;
+      occlusion_state = FrameOcclusionState::kPossiblyOccluded;
+  } else if (occlusion_state == FrameOcclusionState::kGuaranteedNotOccluded) {
+    occlusion_state = FrameOcclusionState::kUnknown;
   }
 
-  // TODO(szager): There are some redundant IPC's here; clean them up.
+  if (viewport_intersection != last_viewport_intersection_ ||
+      occlusion_state != last_occlusion_state_) {
+    last_viewport_intersection_ = viewport_intersection;
+    last_occlusion_state_ = occlusion_state;
+    remote_frame_->Client()->UpdateRemoteViewportIntersection(
+        viewport_intersection, occlusion_state);
+  }
+
+  // TODO(szager): There is redundant functionality here; clean it up.
+  // UpdateVisibility controls RenderFrameHostImpl::visibility_ for the iframe,
+  // and RenderWidget::is_hidden_ in the iframe process. When an OOPIF is marked
+  // "hidden", it stops running lifecycle updates altogether.
+  // UpdateRenderThrottlingStatus sets the hidden_for_throttling_ and
+  // subtree_throttled_ flags on LocalFrameView in the iframe process. They
+  // control whether the iframe skips doing rendering work during lifecycle
+  // updates.
   bool is_visible_for_throttling = !viewport_intersection.IsEmpty();
   UpdateVisibility(is_visible_for_throttling);
-  UpdateRenderThrottlingStatus(!is_visible_for_throttling, subtree_throttled_);
-
-  if (viewport_intersection == last_viewport_intersection_ &&
-      occlusion_state == last_occlusion_state_) {
-    return needs_occlusion_tracking_;
-  }
-
-  last_viewport_intersection_ = viewport_intersection;
-  last_occlusion_state_ = occlusion_state;
-  remote_frame_->Client()->UpdateRemoteViewportIntersection(
-      viewport_intersection, occlusion_state);
+  UpdateRenderThrottlingStatus(
+      !is_visible_for_throttling,
+      is_attached_ && ParentFrameView()->CanThrottleRendering());
 
   return needs_occlusion_tracking_;
 }
@@ -225,6 +233,7 @@ void RemoteFrameView::Dispose() {
   // RemoteFrameView is disconnected before detachment.
   if (owner_element && owner_element->OwnedEmbeddedContentView() == this)
     owner_element->SetEmbeddedContentView(nullptr);
+  SetNeedsOcclusionTracking(false);
 }
 
 void RemoteFrameView::InvalidateRect(const IntRect& rect) {

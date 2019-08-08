@@ -65,11 +65,11 @@ VolumeManagerCommon.RootType = {
   // Root for a drive volume.
   DRIVE: 'drive',
 
-  // The grand root entry of Team Drives in Drive volume.
-  TEAM_DRIVES_GRAND_ROOT: 'team_drives_grand_root',
+  // The grand root entry of Shared Drives in Drive volume.
+  SHARED_DRIVES_GRAND_ROOT: 'shared_drives_grand_root',
 
-  // Root directory of a Team Drive.
-  TEAM_DRIVE: 'team_drive',
+  // Root directory of a Shared Drive.
+  SHARED_DRIVE: 'team_drive',
 
   // Root for a MTP volume.
   MTP: 'mtp',
@@ -140,8 +140,8 @@ VolumeManagerCommon.RootTypesForUMA = [
   VolumeManagerCommon.RootType.ARCHIVE,                           // 1
   VolumeManagerCommon.RootType.REMOVABLE,                         // 2
   VolumeManagerCommon.RootType.DRIVE,                             // 3
-  VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT,            // 4
-  VolumeManagerCommon.RootType.TEAM_DRIVE,                        // 5
+  VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT,          // 4
+  VolumeManagerCommon.RootType.SHARED_DRIVE,                      // 5
   VolumeManagerCommon.RootType.MTP,                               // 6
   VolumeManagerCommon.RootType.PROVIDED,                          // 7
   VolumeManagerCommon.RootType.DRIVE_OTHER,                       // 8
@@ -287,8 +287,8 @@ VolumeManagerCommon.getVolumeTypeFromRootType = rootType => {
     case VolumeManagerCommon.RootType.REMOVABLE:
       return VolumeManagerCommon.VolumeType.REMOVABLE;
     case VolumeManagerCommon.RootType.DRIVE:
-    case VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT:
-    case VolumeManagerCommon.RootType.TEAM_DRIVE:
+    case VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT:
+    case VolumeManagerCommon.RootType.SHARED_DRIVE:
     case VolumeManagerCommon.RootType.DRIVE_OTHER:
     case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
     case VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME:
@@ -388,9 +388,9 @@ VolumeManagerCommon.getMediaViewRootTypeFromVolumeId = volumeId => {
  */
 VolumeManagerCommon.VOLUME_ALREADY_MOUNTED = 'volume_already_mounted';
 
-VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME = 'team_drives';
-VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH =
-    '/' + VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME;
+VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_NAME = 'team_drives';
+VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_PATH =
+    '/' + VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_NAME;
 
 /**
  * This is the top level directory name for Computers in drive that are using

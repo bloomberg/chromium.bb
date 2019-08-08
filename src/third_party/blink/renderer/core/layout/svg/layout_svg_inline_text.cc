@@ -169,7 +169,7 @@ PositionWithAffinity LayoutSVGInlineText::PositionForPoint(
   // Map local point to absolute point, as the character origins stored in the
   // text fragments use absolute coordinates.
   FloatPoint absolute_point(point);
-  absolute_point.MoveBy(containing_block->Location());
+  absolute_point.MoveBy(FloatPoint(containing_block->Location()));
 
   float closest_distance = std::numeric_limits<float>::max();
   float position_in_fragment = 0;
@@ -419,8 +419,9 @@ void LayoutSVGInlineText::ComputeNewScaledFontForStyle(
   scaled_font.Update(document.GetStyleEngine().GetFontSelector());
 }
 
-LayoutRect LayoutSVGInlineText::VisualRectInDocument() const {
-  return Parent()->VisualRectInDocument();
+LayoutRect LayoutSVGInlineText::VisualRectInDocument(
+    VisualRectFlags flags) const {
+  return Parent()->VisualRectInDocument(flags);
 }
 
 FloatRect LayoutSVGInlineText::VisualRectInLocalSVGCoordinates() const {

@@ -31,6 +31,29 @@ public class PrefetchConfiguration {
     }
 
     /**
+     * Return the value of offline_pages.enabled_by_server pref.
+     */
+    public static boolean isPrefetchingEnabledByServer() {
+        return nativeIsEnabledByServer(Profile.getLastUsedProfile());
+    }
+
+    /**
+     * Returns true if it's time for a GeneratePageBundle-forbidden check. This could be the case
+     * if the check has never run before or we are forbidden and it's been more than seven days
+     * since the last check.
+     */
+    public static boolean isForbiddenCheckDue() {
+        return nativeIsForbiddenCheckDue(Profile.getLastUsedProfile());
+    }
+
+    /**
+     * Returns true if the GeneratePageBundle-forbidden check has never run and is due to run.
+     */
+    public static boolean isEnabledByServerUnknown() {
+        return nativeIsEnabledByServerUnknown(Profile.getLastUsedProfile());
+    }
+
+    /**
      * Sets the value of the user controlled setting that controls whether Offline Prefetch is
      * enabled or disabled. If the current browser Profile is null the setting will not be changed.
      */
@@ -38,7 +61,19 @@ public class PrefetchConfiguration {
         nativeSetPrefetchingEnabledInSettings(Profile.getLastUsedProfile(), enabled);
     }
 
+    /**
+     * Gets the value of the user controlled setting that controls whether Offline Prefetch is
+     * enabled or disabled.
+     */
+    public static boolean isPrefetchingEnabledInSettings() {
+        return nativeIsPrefetchingEnabledInSettings(Profile.getLastUsedProfile());
+    }
+
     private static native boolean nativeIsPrefetchingEnabled(Profile profile);
+    private static native boolean nativeIsEnabledByServer(Profile profile);
+    private static native boolean nativeIsForbiddenCheckDue(Profile profile);
+    private static native boolean nativeIsEnabledByServerUnknown(Profile profile);
     private static native void nativeSetPrefetchingEnabledInSettings(
             Profile profile, boolean enabled);
+    private static native boolean nativeIsPrefetchingEnabledInSettings(Profile profile);
 }

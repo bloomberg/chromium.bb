@@ -103,13 +103,11 @@ gfx::Rect HorizontalPageContainer::GetSearchBoxBoundsForState(
 
 gfx::Rect HorizontalPageContainer::GetPageBoundsForState(
     ash::AppListState state) const {
-  gfx::Rect onscreen_bounds = GetDefaultContentsBounds();
+  const gfx::Rect onscreen_bounds = GetDefaultContentsBounds();
 
-  // Both STATE_START and STATE_APPS are AppsContainerView page.
-  if (state == ash::AppListState::kStateApps ||
-      state == ash::AppListState::kStateStart) {
+  // kStateApps is the AppsContainerView page.
+  if (state == ash::AppListState::kStateApps)
     return onscreen_bounds;
-  }
 
   return GetBelowContentsOffscreenBounds(onscreen_bounds.size());
 }

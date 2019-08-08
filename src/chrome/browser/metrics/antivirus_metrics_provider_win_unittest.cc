@@ -103,7 +103,7 @@ class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
   UtilWinService util_win_service_;
   AntiVirusMetricsProvider provider_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::ThreadChecker thread_checker_;
+  base::ThreadCheckerImpl thread_checker_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AntiVirusMetricsProviderTest);

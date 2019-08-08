@@ -196,37 +196,6 @@ cr.define('nux', function() {
   };
 });
 
-// This is done outside |cr.define| because the closure compiler wants a fully
-// qualified name for |nux.ModuleMetricsProxyImpl|.
-nux.EmailMetricsProxyImpl = class extends nux.ModuleMetricsProxyImpl {
-  constructor() {
-    /**
-     * NuxEmailProvidersInteractions enum.
-     * These values are persisted to logs and should not be renumbered or
-     * re-used.
-     * See tools/metrics/histograms/enums.xml.
-     * @enum {number}
-     */
-    const NuxEmailProvidersInteractions = {
-      PageShown: 0,
-      DidNothingAndNavigatedAway: 1,
-      DidNothingAndChoseSkip: 2,
-      ChoseAnOptionAndNavigatedAway: 3,
-      ChoseAnOptionAndChoseSkip: 4,
-      ChoseAnOptionAndChoseNext: 5,
-      ClickedDisabledNextButtonAndNavigatedAway: 6,
-      ClickedDisabledNextButtonAndChoseSkip: 7,
-      ClickedDisabledNextButtonAndChoseNext: 8,
-      DidNothingAndChoseNext: 9,
-      NavigatedAwayThroughBrowserHistory: 10,
-    };
-
-    super(
-        'FirstRun.NewUserExperience.EmailProvidersInteraction',
-        NuxEmailProvidersInteractions);
-  }
-};
-
 nux.GoogleAppsMetricsProxyImpl = class extends nux.ModuleMetricsProxyImpl {
   constructor() {
     /**
@@ -276,14 +245,19 @@ nux.NtpBackgroundMetricsProxyImpl = class extends nux.ModuleMetricsProxyImpl {
       ChoseAnOptionAndChoseSkip: 5,
       ChoseAnOptionAndChoseNext: 6,
       NavigatedAwayThroughBrowserHistory: 7,
+      BackgroundImageFailedToLoad: 8,
+      BackgroundImageNeverLoaded: 9,
     };
 
     super(
         'FirstRun.NewUserExperience.NtpBackgroundInteraction',
         NuxNtpBackgroundInteractions);
   }
+
+  getInteractions() {
+    return this.interactions_;
+  }
 };
 
-cr.addSingletonGetter(nux.EmailMetricsProxyImpl);
 cr.addSingletonGetter(nux.GoogleAppsMetricsProxyImpl);
 cr.addSingletonGetter(nux.NtpBackgroundMetricsProxyImpl);

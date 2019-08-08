@@ -98,7 +98,8 @@ class TestDataReductionProxyConfigServiceClient
       DataReductionProxyConfig* config,
       DataReductionProxyIOData* io_data,
       network::NetworkConnectionTracker* network_connection_tracker,
-      ConfigStorer config_storer);
+      ConfigStorer config_storer,
+      const net::BackoffEntry::Policy& backoff_policy);
 
   ~TestDataReductionProxyConfigServiceClient() override;
 
@@ -111,6 +112,8 @@ class TestDataReductionProxyConfigServiceClient
   base::TimeDelta GetDelay() const;
 
   int GetBackoffErrorCount();
+
+  base::TimeDelta GetBackoffTimeUntilRelease() const;
 
   void SetConfigServiceURL(const GURL& service_url);
 
@@ -215,8 +218,9 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
       bool enabled);
   ~TestDataReductionProxyIOData() override;
 
-  void SetDataReductionProxyService(base::WeakPtr<DataReductionProxyService>
-                                        data_reduction_proxy_service) override;
+  void SetDataReductionProxyService(
+      base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service,
+      const std::string& user_agent) override;
 
   DataReductionProxyConfigurator* configurator() const {
     return configurator_.get();
@@ -374,10 +378,6 @@ class DataReductionProxyTestContext {
   };
 
   virtual ~DataReductionProxyTestContext();
-
-  // Returns the name of the preference used to enable the Data Reduction
-  // Proxy.
-  const char* GetDataReductionProxyEnabledPrefName() const;
 
   // Registers, sets, and gets the preference used to enable the Data Reduction
   // Proxy, respectively.

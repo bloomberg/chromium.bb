@@ -119,9 +119,9 @@ void Heap::SetMessageListeners(TemplateList value) {
   roots_table()[RootIndex::kMessageListeners] = value->ptr();
 }
 
-void Heap::SetPendingOptimizeForTestBytecode(Object bytecode) {
-  DCHECK(bytecode->IsBytecodeArray() || bytecode->IsUndefined(isolate()));
-  roots_table()[RootIndex::kPendingOptimizeForTestBytecode] = bytecode->ptr();
+void Heap::SetPendingOptimizeForTestBytecode(Object hash_table) {
+  DCHECK(hash_table->IsObjectHashTable() || hash_table->IsUndefined(isolate()));
+  roots_table()[RootIndex::kPendingOptimizeForTestBytecode] = hash_table->ptr();
 }
 
 PagedSpace* Heap::paged_space(int idx) {
@@ -300,15 +300,7 @@ void Heap::FinalizeExternalString(String string) {
       ExternalBackingStoreType::kExternalString,
       ext_string->ExternalPayloadSize());
 
-  v8::String::ExternalStringResourceBase** resource_addr =
-      reinterpret_cast<v8::String::ExternalStringResourceBase**>(
-          string->address() + ExternalString::kResourceOffset);
-
-  // Dispose of the C++ object if it has not already been disposed.
-  if (*resource_addr != nullptr) {
-    (*resource_addr)->Dispose();
-    *resource_addr = nullptr;
-  }
+  ext_string->DisposeResource();
 }
 
 Address Heap::NewSpaceTop() { return new_space_->top(); }
@@ -375,10 +367,6 @@ bool Heap::InToPage(HeapObject heap_object) {
 }
 
 bool Heap::InOldSpace(Object object) { return old_space_->Contains(object); }
-
-bool Heap::InReadOnlySpace(Object object) {
-  return read_only_space_->Contains(object);
-}
 
 // static
 Heap* Heap::FromWritableHeapObject(const HeapObject obj) {

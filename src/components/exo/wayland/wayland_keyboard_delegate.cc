@@ -8,6 +8,7 @@
 #include <wayland-server-protocol-core.h>
 
 #include "base/containers/flat_map.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace exo {
 namespace wayland {
@@ -80,21 +81,23 @@ uint32_t WaylandKeyboardDelegate::OnKeyboardKey(base::TimeTicks time_stamp,
       keyboard_resource_, serial, TimeTicksToMilliseconds(time_stamp),
       DomCodeToKey(key),
       pressed ? WL_KEYBOARD_KEY_STATE_PRESSED : WL_KEYBOARD_KEY_STATE_RELEASED);
+  // Unlike normal wayland clients, the X11 server tries to maintain its own
+  // modifier state, which it updates based on key events. To prevent numlock
+  // presses from allowing numpad keys to be interpreted as directions, we
+  // re-send the modifier state after a numlock press.
+  if (key == ui::DomCode::NUM_LOCK)
+    SendKeyboardModifiers();
   wl_client_flush(client());
   return serial;
 }
 
 void WaylandKeyboardDelegate::OnKeyboardModifiers(int modifier_flags) {
-  xkb_state_update_mask(xkb_state_.get(),
-                        ModifierFlagsToXkbModifiers(modifier_flags), 0, 0, 0, 0,
-                        0);
-  wl_keyboard_send_modifiers(
-      keyboard_resource_, next_serial(),
-      xkb_state_serialize_mods(xkb_state_.get(), XKB_STATE_MODS_DEPRESSED),
-      xkb_state_serialize_mods(xkb_state_.get(), XKB_STATE_MODS_LOCKED),
-      xkb_state_serialize_mods(xkb_state_.get(), XKB_STATE_MODS_LATCHED),
-      xkb_state_serialize_layout(xkb_state_.get(), XKB_STATE_LAYOUT_EFFECTIVE));
-  wl_client_flush(client());
+  // CrOS treats numlock as always on, but its event flags actually have that
+  // key disabled, (i.e. chromeos apps specially handle numpad key events as
+  // though numlock is on). In order to get the same result from the linux apps,
+  // we need to ensure they always treat numlock as on.
+  modifier_flags_ = modifier_flags | ui::EF_NUM_LOCK_ON;
+  SendKeyboardModifiers();
 }
 
 #if defined(OS_CHROMEOS)
@@ -116,8 +119,7 @@ uint32_t WaylandKeyboardDelegate::DomCodeToKey(ui::DomCode code) const {
   return xkb_keycode - 8;
 }
 
-uint32_t WaylandKeyboardDelegate::ModifierFlagsToXkbModifiers(
-    int modifier_flags) {
+uint32_t WaylandKeyboardDelegate::ModifierFlagsToXkbModifiers() {
   struct {
     ui::EventFlags flag;
     const char* xkb_name;
@@ -133,12 +135,24 @@ uint32_t WaylandKeyboardDelegate::ModifierFlagsToXkbModifiers(
   };
   uint32_t xkb_modifiers = 0;
   for (auto modifier : modifiers) {
-    if (modifier_flags & modifier.flag) {
+    if (modifier_flags_ & modifier.flag) {
       xkb_modifiers |=
           1 << xkb_keymap_mod_get_index(xkb_keymap_.get(), modifier.xkb_name);
     }
   }
   return xkb_modifiers;
+}
+
+void WaylandKeyboardDelegate::SendKeyboardModifiers() {
+  xkb_state_update_mask(xkb_state_.get(), ModifierFlagsToXkbModifiers(), 0, 0,
+                        0, 0, 0);
+  wl_keyboard_send_modifiers(
+      keyboard_resource_, next_serial(),
+      xkb_state_serialize_mods(xkb_state_.get(), XKB_STATE_MODS_DEPRESSED),
+      xkb_state_serialize_mods(xkb_state_.get(), XKB_STATE_MODS_LOCKED),
+      xkb_state_serialize_mods(xkb_state_.get(), XKB_STATE_MODS_LATCHED),
+      xkb_state_serialize_layout(xkb_state_.get(), XKB_STATE_LAYOUT_EFFECTIVE));
+  wl_client_flush(client());
 }
 
 #if defined(OS_CHROMEOS)

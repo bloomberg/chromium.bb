@@ -103,11 +103,12 @@ MainThreadDebugger::~MainThreadDebugger() {
   instance_ = nullptr;
 }
 
-void MainThreadDebugger::ReportConsoleMessage(ExecutionContext* context,
-                                              MessageSource source,
-                                              mojom::ConsoleMessageLevel level,
-                                              const String& message,
-                                              SourceLocation* location) {
+void MainThreadDebugger::ReportConsoleMessage(
+    ExecutionContext* context,
+    mojom::ConsoleMessageSource source,
+    mojom::ConsoleMessageLevel level,
+    const String& message,
+    SourceLocation* location) {
   if (LocalFrame* frame = ToFrame(context))
     frame->Console().ReportMessageToClient(source, level, message, location);
 }
@@ -189,8 +190,9 @@ void MainThreadDebugger::ExceptionThrown(ExecutionContext* context,
   }
 
   frame->Console().ReportMessageToClient(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kError,
-      event->MessageForConsole(), event->Location());
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kError, event->MessageForConsole(),
+      event->Location());
 
   const String default_message = "Uncaught";
   if (script_state && script_state->ContextIsValid()) {
@@ -333,12 +335,13 @@ void MainThreadDebugger::consoleAPIMessage(
     return;
   // TODO(dgozman): we can save a copy of message and url here by making
   // FrameConsole work with StringView.
-  std::unique_ptr<SourceLocation> location =
-      SourceLocation::Create(ToCoreString(url), line_number, column_number,
-                             stack_trace ? stack_trace->clone() : nullptr, 0);
-  frame->Console().ReportMessageToClient(kConsoleAPIMessageSource,
-                                         V8MessageLevelToMessageLevel(level),
-                                         ToCoreString(message), location.get());
+  std::unique_ptr<SourceLocation> location = std::make_unique<SourceLocation>(
+      ToCoreString(url), line_number, column_number,
+      stack_trace ? stack_trace->clone() : nullptr, 0);
+  frame->Console().ReportMessageToClient(
+      mojom::ConsoleMessageSource::kConsoleApi,
+      V8MessageLevelToMessageLevel(level), ToCoreString(message),
+      location.get());
 }
 
 void MainThreadDebugger::consoleClear(int context_group_id) {
@@ -355,8 +358,9 @@ v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(
   ExecutionContext* execution_context = ToExecutionContext(context);
   DCHECK(execution_context);
   DCHECK(execution_context->IsDocument());
-  return ToV8(MemoryInfo::Create(MemoryInfo::Precision::Bucketized),
-              context->Global(), isolate);
+  return ToV8(
+      MakeGarbageCollected<MemoryInfo>(MemoryInfo::Precision::Bucketized),
+      context->Global(), isolate);
 }
 
 void MainThreadDebugger::installAdditionalCommandLineAPI(

@@ -65,13 +65,13 @@ TAGS_THAT_HAVE_EXTRA_NEWLINE = {
 # Tags that we allow to be squished into a single line for brevity.
 TAGS_THAT_ALLOW_SINGLE_LINE = ['summary', 'int', 'owner']
 
-LOWERCASE_NAME_FN = lambda n: n.attributes['name'].value.lower()
+LOWERCASE_NAME_FN = lambda n: n.get('name').lower()
 
 
 def _NaturalSortByName(node):
   """Sort by name, ordering numbers in the way humans expect."""
   # See: https://blog.codinghorror.com/sorting-for-humans-natural-sort-order/
-  name = node.attributes['name'].value.lower()
+  name = node.get('name').lower()
   convert = lambda text: int(text) if text.isdigit() else text
   return [convert(c) for c in re.split('([0-9]+)', name)]
 
@@ -82,7 +82,7 @@ def _NaturalSortByName(node):
 TAGS_ALPHABETIZATION_RULES = {
     'histograms': [('histogram', LOWERCASE_NAME_FN)],
     'enums': [('enum', LOWERCASE_NAME_FN)],
-    'enum': [('int', lambda n: int(n.attributes['value'].value))],
+    'enum': [('int', lambda n: int(n.get('value')))],
     'histogram_suffixes_list': [('histogram_suffixes', LOWERCASE_NAME_FN)],
     'histogram_suffixes': [
         ('obsolete', lambda n: None),

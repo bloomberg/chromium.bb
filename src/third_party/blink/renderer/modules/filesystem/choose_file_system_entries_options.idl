@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://wicg.github.io/writable-files/#enumdef-choosefilesystementriestype
+// https://wicg.github.io/native-file-system/#enumdef-choosefilesystementriestype
 enum ChooseFileSystemEntriesType { "openFile", "saveFile", "openDirectory" };
 
-// https://wicg.github.io/writable-files/#dictdef-choosefilesystementriesoptions
+// https://wicg.github.io/native-file-system/#dictdef-choosefilesystementriesoptions
 dictionary ChooseFileSystemEntriesOptions {
     ChooseFileSystemEntriesType type = "openFile";
     boolean multiple = false;

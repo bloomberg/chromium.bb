@@ -10,8 +10,8 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/geolocation/simple_geolocation_request_test_monitor.h"
 #include "chromeos/network/geolocation_handler.h"
@@ -273,8 +273,7 @@ TEST_F(SimpleGeolocationTest, InvalidResponse) {
 }
 
 TEST_F(SimpleGeolocationTest, NoWiFi) {
-  // This initializes DBusThreadManager and markes it "for tests only".
-  DBusThreadManager::GetSetterForTesting();
+  shill_clients::InitializeFakes();
   NetworkHandler::Initialize();
 
   WirelessTestMonitor requests_monitor;
@@ -301,7 +300,7 @@ TEST_F(SimpleGeolocationTest, NoWiFi) {
   EXPECT_EQ(1U, url_factory.attempts());
 
   NetworkHandler::Shutdown();
-  DBusThreadManager::Shutdown();
+  shill_clients::Shutdown();
 }
 
 // Test sending of WiFi Access points and Cell Towers.
@@ -313,11 +312,9 @@ class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
   ~SimpleGeolocationWirelessTest() override = default;
 
   void SetUp() override {
-    // This initializes DBusThreadManager and markes it "for tests only".
-    DBusThreadManager::GetSetterForTesting();
+    shill_clients::InitializeFakes();
     // Get the test interface for manager / device.
-    manager_test_ =
-        DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface();
+    manager_test_ = ShillManagerClient::Get()->GetTestInterface();
     ASSERT_TRUE(manager_test_);
     geolocation_handler_.reset(new GeolocationHandler());
     geolocation_handler_->Init();
@@ -326,7 +323,7 @@ class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
 
   void TearDown() override {
     geolocation_handler_.reset();
-    DBusThreadManager::Shutdown();
+    shill_clients::Shutdown();
   }
 
   bool GetWifiAccessPoints() {

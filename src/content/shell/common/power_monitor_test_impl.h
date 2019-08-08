@@ -17,7 +17,6 @@ class PowerMonitorTestImpl : public base::PowerObserver,
                              public mojom::PowerMonitorTest {
  public:
   static void MakeStrongBinding(
-      std::unique_ptr<PowerMonitorTestImpl> instance,
       mojom::PowerMonitorTestRequest request);
 
   PowerMonitorTestImpl();

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+import static org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.MutableResolvedSearchTerm;
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.waitForSecondChromeTabbedActivity;
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.waitForTabs;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
@@ -35,8 +36,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
@@ -62,6 +63,7 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchQuickActionControl;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.FakeSlowResolveSearch;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
+import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
@@ -82,12 +84,14 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionPopupController;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.KeyUtils;
 import org.chromium.content_public.browser.test.util.TestSelectionPopupController;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
@@ -186,12 +190,7 @@ public class ContextualSearchManagerTest {
         // We have to set up the test server before starting the activity.
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FirstRunStatus.setFirstRunFlowComplete(true);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
         LocaleManager.setInstanceForTest(new LocaleManager() {
             @Override
             public boolean needToCheckForSearchEnginePromo() {
@@ -236,12 +235,7 @@ public class ContextualSearchManagerTest {
     public void tearDown() throws Exception {
         clearUnifiedConsentMetadata();
         mTestServer.stopAndDestroyServer();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FirstRunStatus.setFirstRunFlowComplete(false);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
     }
 
     /**
@@ -262,12 +256,7 @@ public class ContextualSearchManagerTest {
         mFakeServer.setIsOnline(isOnline);
         final String testUrl = mTestServer.getURL(TEST_PAGE);
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                tab.reload();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> tab.reload());
         // Make sure the page is fully loaded.
         ChromeTabUtils.waitForTabPageLoaded(tab, testUrl);
     }
@@ -456,56 +445,15 @@ public class ContextualSearchManagerTest {
      * Posts a fake response on the Main thread.
      */
     private final class FakeResponseOnMainThread implements Runnable {
+        private final ResolvedSearchTerm mResolvedSearchTerm;
 
-        private final boolean mIsNetworkUnavailable;
-        private final int mResponseCode;
-        private final String mSearchTerm;
-        private final String mDisplayText;
-        private final String mAlternateTerm;
-        private final String mMid;
-        private final boolean mDoPreventPreload;
-        private final int mStartAdjust;
-        private final int mEndAdjust;
-        private final String mContextLanguage;
-        private final String mThumbnailUrl;
-        private final String mCaption;
-        private final String mQuickActionUri;
-        private final int mQuickActionCategory;
-        private final long mLoggedEventId;
-        private final String mSearchUrlFull;
-        private final String mSearchUrlPreload;
-
-        public FakeResponseOnMainThread(boolean isNetworkUnavailable, int responseCode,
-                String searchTerm, String displayText, String alternateTerm, String mid,
-                boolean doPreventPreload, int startAdjust, int endAdjudst, String contextLanguage,
-                String thumbnailUrl, String caption, String quickActionUri, int quickActionCategory,
-                long loggedEventId, String searchUrlFull, String searchUrlPreload) {
-            mIsNetworkUnavailable = isNetworkUnavailable;
-            mResponseCode = responseCode;
-            mSearchTerm = searchTerm;
-            mDisplayText = displayText;
-            mAlternateTerm = alternateTerm;
-            mMid = mid;
-            mDoPreventPreload = doPreventPreload;
-            mStartAdjust = startAdjust;
-            mEndAdjust = endAdjudst;
-            mContextLanguage = contextLanguage;
-            mThumbnailUrl = thumbnailUrl;
-            mCaption = caption;
-            mQuickActionUri = quickActionUri;
-            mQuickActionCategory = quickActionCategory;
-            mLoggedEventId = loggedEventId;
-            mSearchUrlFull = searchUrlFull;
-            mSearchUrlPreload = searchUrlPreload;
+        public FakeResponseOnMainThread(ResolvedSearchTerm resolvedSearchTerm) {
+            mResolvedSearchTerm = resolvedSearchTerm;
         }
 
         @Override
         public void run() {
-            mFakeServer.handleSearchTermResolutionResponse(mIsNetworkUnavailable, mResponseCode,
-                    mSearchTerm, mDisplayText, mAlternateTerm, mMid, mDoPreventPreload,
-                    mStartAdjust, mEndAdjust, mContextLanguage, mThumbnailUrl, mCaption,
-                    mQuickActionUri, mQuickActionCategory, mLoggedEventId, mSearchUrlFull,
-                    mSearchUrlPreload);
+            mFakeServer.handleSearchTermResolutionResponse(mResolvedSearchTerm);
         }
     }
 
@@ -515,25 +463,18 @@ public class ContextualSearchManagerTest {
      */
     private void fakeResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload) {
-        fakeResponse(isNetworkUnavailable, responseCode, searchTerm, displayText, alternateTerm,
-                null, doPreventPreload, 0, 0, "", "", "", "", QuickActionCategory.NONE, 0, "", "");
+        fakeResponse(new ResolvedSearchTerm(isNetworkUnavailable, responseCode, searchTerm,
+                displayText, alternateTerm, doPreventPreload));
     }
 
     /**
      * Fakes a server response with the parameters given.
      * {@See ContextualSearchManager#handleSearchTermResolutionResponse}.
      */
-    private void fakeResponse(boolean isNetworkUnavailable, int responseCode, String searchTerm,
-            String displayText, String alternateTerm, String mid, boolean doPreventPreload,
-            int startAdjust, int endAdjust, String contextLanguage, String thumbnailUrl,
-            String caption, String quickActionUri, int quickActionCategory, long loggedEventId,
-            String searchUrlFull, String searchUrlPreload) {
+    private void fakeResponse(ResolvedSearchTerm resolvedSearchTerm) {
         if (mFakeServer.getSearchTermRequested() != null) {
             InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                    new FakeResponseOnMainThread(isNetworkUnavailable, responseCode, searchTerm,
-                            displayText, alternateTerm, mid, doPreventPreload, startAdjust,
-                            endAdjust, contextLanguage, thumbnailUrl, caption, quickActionUri,
-                            quickActionCategory, loggedEventId, searchUrlFull, searchUrlPreload));
+                    new FakeResponseOnMainThread(resolvedSearchTerm));
         }
     }
 
@@ -1080,16 +1021,13 @@ public class ContextualSearchManagerTest {
      * Resets all the counters used, by resetting all shared preferences.
      */
     private void resetCounters() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-                boolean freStatus = prefs.getBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, false);
-                prefs.edit()
-                        .clear()
-                        .putBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, freStatus)
-                        .apply();
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+            boolean freStatus = prefs.getBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, false);
+            prefs.edit()
+                    .clear()
+                    .putBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, freStatus)
+                    .apply();
         });
     }
 
@@ -1588,8 +1526,9 @@ public class ContextualSearchManagerTest {
      */
     @Test
     @SmallTest
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/837998")
     @Feature({"ContextualSearch"})
+    @DisabledTest(message = "See https://crbug.com/837998")
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testLongPressGestureFollowedByTapDoesntSelect()
             throws InterruptedException, TimeoutException {
         longPressNode("intelligence");
@@ -1612,12 +1551,9 @@ public class ContextualSearchManagerTest {
         Assert.assertEquals("States", getSelectedText());
         waitForPanelToPeek();
 
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                ChromeTabUtils.simulateRendererKilledForTesting(
-                        mActivityTestRule.getActivity().getActivityTab(), true);
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            ChromeTabUtils.simulateRendererKilledForTesting(
+                    mActivityTestRule.getActivity().getActivityTab(), true);
         });
 
         // Give the panelState time to change
@@ -1647,11 +1583,8 @@ public class ContextualSearchManagerTest {
                 TabModelUtils.getCurrentTab(mActivityTestRule.getActivity().getCurrentTabModel());
 
         // TODO(donnd): consider using runOnUiThreadBlocking, won't need to waitForIdleSync?
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                TabModelUtils.setIndex(mActivityTestRule.getActivity().getCurrentTabModel(), 0);
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            TabModelUtils.setIndex(mActivityTestRule.getActivity().getCurrentTabModel(), 0);
         });
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
@@ -1659,12 +1592,8 @@ public class ContextualSearchManagerTest {
         Assert.assertEquals("States", getSelectedText());
         waitForPanelToPeek();
 
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                ChromeTabUtils.simulateRendererKilledForTesting(tab2, false);
-            }
-        });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> { ChromeTabUtils.simulateRendererKilledForTesting(tab2, false); });
 
         waitForPanelToPeek();
     }
@@ -2237,12 +2166,8 @@ public class ContextualSearchManagerTest {
 
         // Dismiss select action mode.
         assertWaitForSelectActionBarVisible(true);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                getSelectionPopupController().destroySelectActionMode();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> getSelectionPopupController().destroySelectActionMode());
         assertWaitForSelectActionBarVisible(false);
 
         waitForPanelToClose();
@@ -2268,15 +2193,12 @@ public class ContextualSearchManagerTest {
         Assert.assertEquals("Search", getSelectedText());
 
         // Simulate a selection change event and assert that the panel has not reappeared.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                SelectionClient selectionClient = mManager.getContextualSearchSelectionClient();
-                selectionClient.onSelectionEvent(
-                        SelectionEventType.SELECTION_HANDLE_DRAG_STARTED, 333, 450);
-                selectionClient.onSelectionEvent(
-                        SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED, 303, 450);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            SelectionClient selectionClient = mManager.getContextualSearchSelectionClient();
+            selectionClient.onSelectionEvent(
+                    SelectionEventType.SELECTION_HANDLE_DRAG_STARTED, 333, 450);
+            selectionClient.onSelectionEvent(
+                    SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED, 303, 450);
         });
         assertPanelClosedOrUndefined();
 
@@ -2393,8 +2315,11 @@ public class ContextualSearchManagerTest {
         clickWordNode("intelligence");
         waitForPanelToPeek();
 
-        fakeResponse(false, 200, "Intelligence", "United States Intelligence", "alternate-term",
-                null, false, -14, 0, "", "", "", "", QuickActionCategory.NONE, 0, "", "");
+        MutableResolvedSearchTerm resolvedSearchTerm =
+                new ContextualSearchFakeServer.MutableResolvedSearchTerm(
+                        false, 200, "Intelligence", "United States Intelligence");
+        resolvedSearchTerm.setSelectionStartAdjust(-14);
+        fakeResponse(resolvedSearchTerm);
         waitForSelectionToBe("United States Intelligence");
     }
 
@@ -2900,23 +2825,15 @@ public class ContextualSearchManagerTest {
         Assert.assertFalse(imageControl.getThumbnailVisible());
         Assert.assertTrue(TextUtils.isEmpty(imageControl.getThumbnailUrl()));
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                imageControl.setThumbnailUrl("http://someimageurl.com/image.png");
-                imageControl.onThumbnailFetched(true);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            imageControl.setThumbnailUrl("http://someimageurl.com/image.png");
+            imageControl.onThumbnailFetched(true);
         });
 
         Assert.assertTrue(imageControl.getThumbnailVisible());
         Assert.assertEquals(imageControl.getThumbnailUrl(), "http://someimageurl.com/image.png");
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                imageControl.hideCustomImage(false);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> imageControl.hideCustomImage(false));
 
         Assert.assertFalse(imageControl.getThumbnailVisible());
         Assert.assertTrue(TextUtils.isEmpty(imageControl.getThumbnailUrl()));
@@ -2966,13 +2883,10 @@ public class ContextualSearchManagerTest {
 
         // Simulate a tap to show the Bar, then set the quick action data.
         simulateTapSearch("search");
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mPanel.onSearchTermResolved("search", null, "tel:555-555-5555",
-                        QuickActionCategory.PHONE);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mPanel.onSearchTermResolved("search", null, "tel:555-555-5555",
+                                QuickActionCategory.PHONE, CardTag.CT_CONTACT));
 
         ContextualSearchBarControl barControl = mPanel.getSearchBarControl();
         ContextualSearchQuickActionControl quickActionControl = barControl.getQuickActionControl();
@@ -2987,12 +2901,7 @@ public class ContextualSearchManagerTest {
         Assert.assertEquals(1.f, imageControl.getCustomImageVisibilityPercentage(), 0);
 
         // Expand the bar.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mPanel.simulateTapOnEndButton();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mPanel.simulateTapOnEndButton());
         waitForPanelToExpand();
 
         // Check that the expanded bar is showing the correct image and caption.
@@ -3035,13 +2944,10 @@ public class ContextualSearchManagerTest {
 
         // Simulate a tap to show the Bar, then set the quick action data.
         simulateTapSearch("search");
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mPanel.onSearchTermResolved("search", null, "tel:555-555-5555",
-                        QuickActionCategory.PHONE);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mPanel.onSearchTermResolved("search", null, "tel:555-555-5555",
+                                QuickActionCategory.PHONE, CardTag.CT_CONTACT));
 
         // Tap on the portion of the bar that should trigger the quick action intent to be fired.
         clickPanelBar();
@@ -3064,12 +2970,10 @@ public class ContextualSearchManagerTest {
 
         // Simulate a tap to show the Bar, then set the quick action data.
         simulateTapSearch("search");
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mPanel.onSearchTermResolved("search", null, testUrl, QuickActionCategory.WEBSITE);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mPanel.onSearchTermResolved("search", null, testUrl,
+                                QuickActionCategory.WEBSITE, CardTag.CT_URL));
 
         // Tap on the portion of the bar that should trigger the quick action.
         clickPanelBar();
@@ -3077,6 +2981,35 @@ public class ContextualSearchManagerTest {
         // Assert that the URL was loaded.
         ChromeTabUtils.waitForTabPageLoaded(
                 mActivityTestRule.getActivity().getActivityTab(), testUrl);
+    }
+
+    private void runDictionaryCardTest(@CardTag int cardTag)
+            throws InterruptedException, TimeoutException {
+        // Simulate a tap to show the Bar, then set the quick action data.
+        simulateTapSearch("search");
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mPanel.onSearchTermResolved("obscure · əbˈskyo͝or", null, null,
+                                QuickActionCategory.NONE, cardTag));
+
+        // Tap on the main portion of the bar.
+        clickPanelBar();
+
+        // The panel should just expand open.
+        waitForPanelToExpand();
+    }
+
+    /**
+     * Tests that the flow for showing dictionary definitions works, and that tapping in the
+     * bar just opens the panel instead of taking some action.
+     */
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    public void testDictionaryDefinitions() throws InterruptedException, TimeoutException {
+        runDictionaryCardTest(CardTag.CT_DEFINITION);
+        closePanel();
+        runDictionaryCardTest(CardTag.CT_CONTEXTUAL_DEFINITION);
     }
 
     /**

@@ -52,15 +52,18 @@ void RenderTargetVk::reset()
     mOwner      = nullptr;
 }
 
-void RenderTargetVk::onColorDraw(vk::FramebufferHelper *framebufferVk,
-                                 vk::CommandBuffer *commandBuffer,
-                                 vk::RenderPassDesc *renderPassDesc)
+angle::Result RenderTargetVk::onColorDraw(ContextVk *contextVk,
+                                          vk::FramebufferHelper *framebufferVk,
+                                          vk::CommandBuffer *commandBuffer,
+                                          vk::RenderPassDesc *renderPassDesc)
 {
     ASSERT(commandBuffer->valid());
-    ASSERT(!mImage->getFormat().textureFormat().hasDepthOrStencilBits());
+    ASSERT(!mImage->getFormat().imageFormat().hasDepthOrStencilBits());
 
     // Store the attachment info in the renderPassDesc.
     renderPassDesc->packAttachment(mImage->getFormat());
+
+    ANGLE_TRY(ensureImageInitialized(contextVk));
 
     // TODO(jmadill): Use automatic layout transition. http://anglebug.com/2361
     mImage->changeLayout(VK_IMAGE_ASPECT_COLOR_BIT, vk::ImageLayout::ColorAttachment,
@@ -68,26 +71,33 @@ void RenderTargetVk::onColorDraw(vk::FramebufferHelper *framebufferVk,
 
     // Set up dependencies between the RT resource and the Framebuffer.
     mImage->addWriteDependency(framebufferVk);
+
+    return angle::Result::Continue;
 }
 
-void RenderTargetVk::onDepthStencilDraw(vk::FramebufferHelper *framebufferVk,
-                                        vk::CommandBuffer *commandBuffer,
-                                        vk::RenderPassDesc *renderPassDesc)
+angle::Result RenderTargetVk::onDepthStencilDraw(ContextVk *contextVk,
+                                                 vk::FramebufferHelper *framebufferVk,
+                                                 vk::CommandBuffer *commandBuffer,
+                                                 vk::RenderPassDesc *renderPassDesc)
 {
     ASSERT(commandBuffer->valid());
-    ASSERT(mImage->getFormat().textureFormat().hasDepthOrStencilBits());
+    ASSERT(mImage->getFormat().imageFormat().hasDepthOrStencilBits());
 
     // Store the attachment info in the renderPassDesc.
     renderPassDesc->packAttachment(mImage->getFormat());
 
     // TODO(jmadill): Use automatic layout transition. http://anglebug.com/2361
-    const angle::Format &format    = mImage->getFormat().textureFormat();
+    const angle::Format &format    = mImage->getFormat().imageFormat();
     VkImageAspectFlags aspectFlags = vk::GetDepthStencilAspectFlags(format);
+
+    ANGLE_TRY(ensureImageInitialized(contextVk));
 
     mImage->changeLayout(aspectFlags, vk::ImageLayout::DepthStencilAttachment, commandBuffer);
 
     // Set up dependencies between the RT resource and the Framebuffer.
     mImage->addWriteDependency(framebufferVk);
+
+    return angle::Result::Continue;
 }
 
 vk::ImageHelper &RenderTargetVk::getImage()
@@ -119,10 +129,10 @@ const vk::Format &RenderTargetVk::getImageFormat() const
     return mImage->getFormat();
 }
 
-const gl::Extents &RenderTargetVk::getImageExtents() const
+gl::Extents RenderTargetVk::getExtents() const
 {
     ASSERT(mImage && mImage->valid());
-    return mImage->getExtents();
+    return mImage->getLevelExtents2D(mLevelIndex);
 }
 
 void RenderTargetVk::updateSwapchainImage(vk::ImageHelper *image, vk::ImageView *imageView)
@@ -172,8 +182,11 @@ angle::Result RenderTargetVk::ensureImageInitialized(ContextVk *contextVk)
 {
     if (mOwner)
     {
+        // If the render target source is a texture, make sure the image is initialized and its
+        // staged updates flushed.
         return mOwner->ensureImageInitialized(contextVk);
     }
+
     return angle::Result::Continue;
 }
 

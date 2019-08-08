@@ -61,7 +61,7 @@ OfflinePageRequestJob* OfflinePageRequestJob::Create(
 
   // Ignore the requests not for the main resource.
   if (resource_request_info->GetResourceType() !=
-      content::RESOURCE_TYPE_MAIN_FRAME) {
+      content::ResourceType::kMainFrame) {
     return nullptr;
   }
 

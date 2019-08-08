@@ -25,7 +25,7 @@ struct AXEvent;
 }
 
 namespace extensions {
-class ExtensionBindingsSystem;
+class NativeExtensionBindingsSystem;
 }  // namespace extensions
 
 namespace extensions {
@@ -43,8 +43,9 @@ struct TreeChangeObserver {
 // API.
 class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
  public:
-  AutomationInternalCustomBindings(ScriptContext* context,
-                                   ExtensionBindingsSystem* bindings_system);
+  AutomationInternalCustomBindings(
+      ScriptContext* context,
+      NativeExtensionBindingsSystem* bindings_system);
   ~AutomationInternalCustomBindings() override;
 
   // ObjectBackedNativeHandler:
@@ -212,7 +213,7 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   std::vector<TreeChangeObserver> tree_change_observers_;
   // A bit-map of api::automation::TreeChangeObserverFilter.
   int tree_change_observer_overall_filter_;
-  ExtensionBindingsSystem* bindings_system_;
+  NativeExtensionBindingsSystem* bindings_system_;
   bool should_ignore_context_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInternalCustomBindings);

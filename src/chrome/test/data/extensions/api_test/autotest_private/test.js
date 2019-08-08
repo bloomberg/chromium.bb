@@ -209,6 +209,14 @@ var defaultTests = [
     chrome.autotestPrivate.runCrostiniUninstaller(chrome.test.callbackFail(
         'Crostini is not available for the current user'));
   },
+  function exportCrostini() {
+    chrome.autotestPrivate.exportCrostini('backup', chrome.test.callbackFail(
+        'Crostini is not available for the current user'));
+  },
+  function importCrostini() {
+    chrome.autotestPrivate.importCrostini('backup', chrome.test.callbackFail(
+        'Crostini is not available for the current user'));
+  },
   function takeScreenshot() {
     chrome.autotestPrivate.takeScreenshot(
       function(base64Png) {
@@ -226,24 +234,24 @@ var defaultTests = [
   function setAssistantEnabled() {
     chrome.autotestPrivate.setAssistantEnabled(true, 1000 /* timeout_ms */,
         chrome.test.callbackFail(
-            'Assistant is not available for the current user'));
+            'Assistant not allowed - state: 4'));
   },
   function sendAssistantTextQuery() {
     chrome.autotestPrivate.sendAssistantTextQuery(
         'what time is it?' /* query */,
         1000 /* timeout_ms */,
         chrome.test.callbackFail(
-          'Assistant is not available for the current user'));
+            'Assistant not allowed - state: 4'));
   },
   function setWhitelistedPref() {
     chrome.autotestPrivate.setWhitelistedPref(
         'settings.voice_interaction.hotword.enabled' /* pref_name */,
         true /* value */,
         chrome.test.callbackFail(
-          'Assistant is not available for the current user'));
+            'Assistant not allowed - state: 4'));
   },
-  // This test verifies that getArcState returns provisined False in case ARC
-  // is not provisoned by default.
+  // This test verifies that getArcState returns provisioned False in case ARC
+  // is not provisioned by default.
   function arcNotProvisioned() {chrome.autotestPrivate.getArcState(
     function(state) {
       chrome.test.assertFalse(state.provisioned);
@@ -314,11 +322,40 @@ var defaultTests = [
       chrome.test.succeed();
     });
   },
+  // This test verifies that changing the shelf behavior works as expected.
+  function setShelfAutoHideBehavior() {
+    // Using shelf from primary display.
+    var displayId = "-1";
+    chrome.system.display.getInfo(function(info) {
+      var l = info.length;
+      for (var i = 0; i < l; i++) {
+        if (info[i].isPrimary === true) {
+          displayId = info[i].id;
+          break;
+        }
+      }
+      chrome.test.assertTrue(displayId != "-1");
+      var behaviors = ["always", "never", "hidden"];
+      var l = behaviors.length;
+      for (var i = 0; i < l; i++) {
+        var behavior = behaviors[i];
+        chrome.autotestPrivate.setShelfAutoHideBehavior(displayId, behavior,
+            function() {
+          chrome.autotestPrivate.getShelfAutoHideBehavior(displayId,
+              function(newBehavior) {
+            chrome.test.assertTrue(behavior === newBehavior);
+            chrome.test.assertNoLastError();
+            chrome.test.succeed();
+          });
+        });
+      }
+    });
+  },
 ];
 
 var arcEnabledTests = [
-  // This test verifies that getArcState returns provisined True in case ARC
-  // provisiong is done.
+  // This test verifies that getArcState returns provisioned True in case ARC
+  // provisioning is done.
   function arcProvisioned() {chrome.autotestPrivate.getArcState(
     function(state) {
       chrome.test.assertTrue(state.provisioned);

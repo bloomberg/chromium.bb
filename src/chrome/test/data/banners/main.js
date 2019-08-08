@@ -16,6 +16,7 @@ const Action = {
   CANCEL_PROMPT_AND_NAVIGATE: 'cancel_prompt_and_navigate',
   CANCEL_PROMPT: 'cancel_prompt',
   STASH_EVENT: 'stash_event',
+  FULLSCREEN_ON_CLICK: 'fullscreen_on_click',
 };
 
 const LISTENER = "listener";
@@ -60,6 +61,18 @@ function callStashedPrompt() {
   callPrompt(stashedEvent);
 }
 
+function isBodyFullscreen() {
+  return document.fullscreenElement == document.body;
+}
+
+function toggleFullscreen() {
+  if (isBodyFullscreen()) {
+    document.exitFullscreen();
+  } else {
+    document.body.requestFullscreen();
+  }
+}
+
 function addClickListener(action) {
   switch (action) {
     case Action.CALL_STASHED_PROMPT_ON_CLICK:
@@ -68,6 +81,9 @@ function addClickListener(action) {
     case Action.CALL_STASHED_PROMPT_ON_CLICK_VERIFY_APPINSTALLED:
       window.addEventListener('click', callStashedPrompt);
       verifyEvents("appinstalled");
+      break;
+    case Action.FULLSCREEN_ON_CLICK:
+      window.addEventListener('click', toggleFullscreen);
       break;
   }
 }
@@ -146,6 +162,9 @@ function initialize() {
     case Action.CANCEL_PROMPT:
     case Action.STASH_EVENT:
       addPromptListener(action);
+      break;
+    case Action.FULLSCREEN_ON_CLICK:
+      addClickListener(action);
       break;
     default:
       throw new Error("Unrecognised action: " + action);

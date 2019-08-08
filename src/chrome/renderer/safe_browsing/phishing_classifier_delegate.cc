@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -141,8 +142,11 @@ void PhishingClassifierDelegate::OnInterfaceRequestForFrame(
   registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
-void PhishingClassifierDelegate::StartPhishingDetection(const GURL& url) {
+void PhishingClassifierDelegate::StartPhishingDetection(
+    const GURL& url,
+    StartPhishingDetectionCallback callback) {
   last_url_received_from_browser_ = StripRef(url);
+  callback_ = std::move(callback);
   // Start classifying the current page if all conditions are met.
   // See MaybeStartClassification() for details.
   MaybeStartClassification();
@@ -206,11 +210,10 @@ void PhishingClassifierDelegate::ClassificationDone(
   classifier_page_text_.clear();
   DVLOG(2) << "Phishy verdict = " << verdict.is_phishing()
            << " score = " << verdict.client_score();
-  if (verdict.client_score() != PhishingClassifier::kInvalidScore) {
+  if (verdict.client_score() != PhishingClassifier::kInvalidScore &&
+      !callback_.is_null()) {
     DCHECK_EQ(last_url_sent_to_classifier_.spec(), verdict.url());
-    safe_browsing::mojom::PhishingDetectorClientPtr phishing_detector;
-    render_frame()->GetRemoteInterfaces()->GetInterface(&phishing_detector);
-    phishing_detector->PhishingDetectionDone(verdict.SerializeAsString());
+    std::move(callback_).Run(verdict.SerializeAsString());
   }
 }
 

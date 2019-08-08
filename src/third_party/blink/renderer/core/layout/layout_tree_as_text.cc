@@ -61,7 +61,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
-#include "third_party/blink/renderer/platform/wtf/hex_number.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -130,11 +129,7 @@ String QuoteAndEscapeNonPrintables(const String& s) {
       if (c >= 0x20 && c < 0x7F) {
         result.Append(c);
       } else {
-        result.Append('\\');
-        result.Append('x');
-        result.Append('{');
-        HexNumber::AppendUnsignedAsHex(c, result);
-        result.Append('}');
+        result.AppendFormat("\\x{%X}", c);
       }
     }
   }
@@ -451,12 +446,12 @@ static void WriteTextRun(WTF::TextStream& ts,
 static void WriteTextFragment(WTF::TextStream& ts,
                               const NGPhysicalFragment& physical_fragment,
                               NGPhysicalOffset offset_to_container_box) {
-  if (!physical_fragment.IsText())
+  const auto* physical_text_fragment =
+      DynamicTo<NGPhysicalTextFragment>(physical_fragment);
+  if (!physical_text_fragment)
     return;
-  const NGPhysicalTextFragment& physical_text_fragment =
-      ToNGPhysicalTextFragment(physical_fragment);
   const ComputedStyle& style = physical_fragment.Style();
-  NGTextFragment fragment(style.GetWritingMode(), physical_text_fragment);
+  NGTextFragment fragment(style.GetWritingMode(), *physical_text_fragment);
   if (UNLIKELY(style.IsFlippedBlocksWritingMode())) {
     if (physical_fragment.GetLayoutObject()) {
       LayoutRect rect(offset_to_container_box.ToLayoutPoint(),
@@ -475,7 +470,7 @@ static void WriteTextFragment(WTF::TextStream& ts,
       (offset_to_container_box.left + fragment.InlineSize()).Ceil() - x;
   ts << "text run at (" << x << "," << y << ") width " << logical_width;
   ts << ": "
-     << QuoteAndEscapeNonPrintables(physical_text_fragment.Text().ToString());
+     << QuoteAndEscapeNonPrintables(physical_text_fragment->Text().ToString());
   ts << "\n";
 }
 
@@ -551,8 +546,9 @@ void Write(WTF::TextStream& ts,
     WritePaintProperties(ts, o, indent + 1);
   }
 
-  if ((behavior & kLayoutAsTextShowLineTrees) && o.IsLayoutBlockFlow()) {
-    LayoutTreeAsText::WriteLineBoxTree(ts, ToLayoutBlockFlow(o), indent + 1);
+  auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(o);
+  if ((behavior & kLayoutAsTextShowLineTrees) && layout_block_flow) {
+    LayoutTreeAsText::WriteLineBoxTree(ts, *layout_block_flow, indent + 1);
   }
 
   if (o.IsText() && !o.IsBR()) {

@@ -47,6 +47,10 @@ constexpr mojom::AutoclickEventType kDefaultAutoclickEventType =
 // a new autoclick.
 constexpr int kDefaultAutoclickMovementThreshold = 20;
 
+// The default automatic click menu position.
+constexpr mojom::AutoclickMenuPosition kDefaultAutoclickMenuPosition =
+    mojom::AutoclickMenuPosition::kBottomRight;
+
 // The default frame color.
 constexpr SkColor kDefaultFrameColor = SkColorSetRGB(0xFD, 0xFE, 0xFF);
 

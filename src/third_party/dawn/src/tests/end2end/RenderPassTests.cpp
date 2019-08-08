@@ -47,7 +47,6 @@ protected:
         descriptor.cVertexStage.module = vsModule;
         descriptor.cFragmentStage.module = fsModule;
         descriptor.primitiveTopology = dawn::PrimitiveTopology::TriangleStrip;
-        descriptor.indexFormat = dawn::IndexFormat::Uint32;
         descriptor.cColorStates[0]->format = kFormat;
 
         pipeline = device.CreateRenderPipeline(&descriptor);
@@ -73,6 +72,11 @@ protected:
 
 // Test using two different render passes in one commandBuffer works correctly.
 TEST_P(RenderPassTest, TwoRenderPassesInOneCommandBuffer) {
+    if (IsOpenGL() || IsMetal()) {
+      // crbug.com/950768
+      // This test is consistently failing on OpenGL and flaky on Metal.
+      return;
+    }
     constexpr RGBA8 kRed(255, 0, 0, 255);
     constexpr RGBA8 kGreen(0, 255, 0, 255);
 
@@ -85,7 +89,7 @@ TEST_P(RenderPassTest, TwoRenderPassesInOneCommandBuffer) {
     {
         // In the first render pass we clear renderTarget1 to red and draw a blue triangle in the
         // bottom left of renderTarget1.
-        utils::ComboRenderPassDescriptor renderPass({renderTarget1.CreateDefaultTextureView()});
+        utils::ComboRenderPassDescriptor renderPass({renderTarget1.CreateDefaultView()});
         renderPass.cColorAttachmentsInfoPtr[0]->clearColor = {1.0f, 0.0f, 0.0f, 1.0f};
 
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
@@ -97,7 +101,7 @@ TEST_P(RenderPassTest, TwoRenderPassesInOneCommandBuffer) {
     {
         // In the second render pass we clear renderTarget2 to green and draw a blue triangle in the
         // bottom left of renderTarget2.
-        utils::ComboRenderPassDescriptor renderPass({renderTarget2.CreateDefaultTextureView()});
+        utils::ComboRenderPassDescriptor renderPass({renderTarget2.CreateDefaultView()});
         renderPass.cColorAttachmentsInfoPtr[0]->clearColor = {0.0f, 1.0f, 0.0f, 1.0f};
 
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);

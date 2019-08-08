@@ -37,6 +37,8 @@ constexpr char kServerHttpResponseCode[] =
     "ImageAnnotationService.AccessibilityV1.ServerHttpResponseCode";
 constexpr char kServerLatency[] =
     "ImageAnnotationService.AccessibilityV1.ServerLatencyMs";
+constexpr char kImageRequestIncludesDesc[] =
+    "ImageAnnotationService.AccessibilityV1.ImageRequestIncludesDesc";
 constexpr char kServerRequestSize[] =
     "ImageAnnotationService.AccessibilityV1.ServerRequestSizeKB";
 constexpr char kServerResponseSize[] =
@@ -92,6 +94,11 @@ void ReportServerResponseCode(int code);
 // Report the length of time taken for a response to be returned from the
 // server.
 void ReportServerLatency(base::TimeDelta latency);
+
+// Report whether or not a request for image annotation includes parameters for
+// the description engine; requests for images that violate the description
+// engine policy (e.g. are too small) will not.
+void ReportImageRequestIncludesDesc(bool includes_desc);
 
 // Report the size of the request sent to the image annotation server.
 void ReportServerRequestSizeKB(size_t size_kb);

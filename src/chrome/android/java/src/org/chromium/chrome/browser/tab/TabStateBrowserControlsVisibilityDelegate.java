@@ -63,7 +63,7 @@ public class TabStateBrowserControlsVisibilityDelegate
                 if (!mIsFullscreenWaitingForLoad) return;
 
                 mIsFullscreenWaitingForLoad = false;
-                mTab.updateFullscreenEnabledState();
+                TabFullscreenHandler.updateEnabledState(mTab);
             }
 
             private void cancelEnableFullscreenLoadDelay() {
@@ -94,13 +94,13 @@ public class TabStateBrowserControlsVisibilityDelegate
                 mHandler.removeMessages(MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD);
                 mHandler.sendEmptyMessageDelayed(
                         MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD, getLoadDelayMs());
-                mTab.updateFullscreenEnabledState();
+                TabFullscreenHandler.updateEnabledState(mTab);
             }
 
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
                 mIsFullscreenWaitingForLoad = !DomDistillerUrlUtils.isDistilledPage(url);
-                mTab.updateFullscreenEnabledState();
+                TabFullscreenHandler.updateEnabledState(mTab);
             }
 
             @Override
@@ -108,12 +108,13 @@ public class TabStateBrowserControlsVisibilityDelegate
                 // Handle the case where a commit or prerender swap notification failed to arrive
                 // and the enable fullscreen message was never enqueued.
                 scheduleEnableFullscreenLoadDelayIfNecessary();
+                TabFullscreenHandler.updateEnabledState(mTab); ///?
             }
 
             @Override
             public void onPageLoadFailed(Tab tab, int errorCode) {
                 cancelEnableFullscreenLoadDelay();
-                mTab.updateFullscreenEnabledState();
+                TabFullscreenHandler.updateEnabledState(mTab);
             }
 
             @Override
@@ -134,6 +135,7 @@ public class TabStateBrowserControlsVisibilityDelegate
     @Override
     public boolean canAutoHideBrowserControls() {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DONT_AUTO_HIDE_BROWSER_CONTROLS)
+                && mTab.getActivity() != null && mTab.getActivity().getToolbarManager() != null
                 && mTab.getActivity().getToolbarManager().getBottomToolbarCoordinator() != null) {
             return false;
         }

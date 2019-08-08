@@ -13,7 +13,6 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
@@ -135,10 +134,11 @@ class ServiceWorkerObjectHostTest : public testing::Test {
 
     // Make the registration findable via storage functions.
     base::Optional<blink::ServiceWorkerStatusCode> status;
+    base::RunLoop run_loop;
     helper_->context()->storage()->StoreRegistration(
         registration_.get(), version_.get(),
-        CreateReceiverOnCurrentThread(&status));
-    base::RunLoop().RunUntilIdle();
+        ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+    run_loop.Run();
     ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   }
 
@@ -171,7 +171,7 @@ class ServiceWorkerObjectHostTest : public testing::Test {
 
   void SetProviderHostRenderFrameId(ServiceWorkerProviderHost* host,
                                     int render_frame_id) {
-    host->info_->route_id = render_frame_id;
+    host->frame_id_ = render_frame_id;
   }
 
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr

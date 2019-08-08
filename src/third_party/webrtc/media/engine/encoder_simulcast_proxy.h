@@ -23,14 +23,14 @@
 #include "api/video_codecs/video_codec.h"
 #include "api/video_codecs/video_encoder.h"
 #include "api/video_codecs/video_encoder_factory.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/video_coding/include/video_codec_interface.h"
+#include "rtc_base/system/rtc_export.h"
 
 namespace webrtc {
 
 // This class provides fallback to SimulcastEncoderAdapter if default VP8Encoder
 // doesn't support simulcast for provided settings.
-class EncoderSimulcastProxy : public VideoEncoder {
+class RTC_EXPORT EncoderSimulcastProxy : public VideoEncoder {
  public:
   EncoderSimulcastProxy(VideoEncoderFactory* factory,
                         const SdpVideoFormat& format);
@@ -46,11 +46,12 @@ class EncoderSimulcastProxy : public VideoEncoder {
                  int number_of_cores,
                  size_t max_payload_size) override;
   int Encode(const VideoFrame& input_image,
-             const CodecSpecificInfo* codec_specific_info,
-             const std::vector<FrameType>* frame_types) override;
+             const std::vector<VideoFrameType>* frame_types) override;
   int RegisterEncodeCompleteCallback(EncodedImageCallback* callback) override;
-  int SetRateAllocation(const VideoBitrateAllocation& bitrate,
-                        uint32_t new_framerate) override;
+  void SetRates(const RateControlParameters& parameters) override;
+  void OnPacketLossRateUpdate(float packet_loss_rate) override;
+  void OnRttUpdate(int64_t rtt_ms) override;
+  void OnLossNotification(const LossNotification& loss_notification) override;
   EncoderInfo GetEncoderInfo() const override;
 
  private:

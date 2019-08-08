@@ -7,7 +7,6 @@
  */
 
 login.createScreen('EulaScreen', 'eula', function() {
-  var CONTEXT_KEY_USAGE_STATS_ENABLED = 'usageStatsEnabled';
   var CLEAR_ANCHORS_CONTENT_SCRIPT = {
     code: 'A=Array.from(document.getElementsByTagName("a"));' +
         'for(var i = 0; i < A.length; ++i) {' +
@@ -112,8 +111,7 @@ login.createScreen('EulaScreen', 'eula', function() {
      * @param {boolean} value $('usage-stats').checked value.
      */
     onUsageStatsClicked_: function(value) {
-      this.context.set(CONTEXT_KEY_USAGE_STATS_ENABLED, value);
-      this.commitContextChanges();
+      chrome.send('EulaScreen.usageStatsEnabled', [value]);
     },
 
     /**
@@ -130,14 +128,6 @@ login.createScreen('EulaScreen', 'eula', function() {
     onBeforeShow: function() {
       $('eula').classList.add('eula-loading');
       this.updateLocalizedContent();
-    },
-
-    /**
-     * Header text of the screen.
-     * @type {string}
-     */
-    get header() {
-      return loadTimeData.getString('eulaScreenTitle');
     },
 
     /**

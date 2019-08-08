@@ -17,6 +17,19 @@
 #include "build/build_config.h"
 #include "gpu/vulkan/vulkan_export.h"
 
+#if defined(OS_ANDROID)
+#include <vulkan/vulkan_android.h>
+#endif
+
+#if defined(OS_FUCHSIA)
+#include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
+#endif
+
+#if defined(USE_VULKAN_XLIB)
+#include <X11/Xlib.h>
+#include <vulkan/vulkan_xlib.h>
+#endif
+
 namespace gpu {
 
 struct VulkanFunctionPointers;
@@ -53,7 +66,9 @@ struct VulkanFunctionPointers {
   PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevicesFn = nullptr;
   PFN_vkGetDeviceProcAddr vkGetDeviceProcAddrFn = nullptr;
   PFN_vkDestroySurfaceKHR vkDestroySurfaceKHRFn = nullptr;
-
+#if defined(USE_VULKAN_XLIB)
+  PFN_vkCreateXlibSurfaceKHR vkCreateXlibSurfaceKHRFn = nullptr;
+#endif
   // Physical Device functions
   PFN_vkCreateDevice vkCreateDeviceFn = nullptr;
   PFN_vkEnumerateDeviceLayerProperties vkEnumerateDeviceLayerPropertiesFn =
@@ -66,7 +81,10 @@ struct VulkanFunctionPointers {
       vkGetPhysicalDeviceSurfaceFormatsKHRFn = nullptr;
   PFN_vkGetPhysicalDeviceSurfaceSupportKHR
       vkGetPhysicalDeviceSurfaceSupportKHRFn = nullptr;
-
+#if defined(USE_VULKAN_XLIB)
+  PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR
+      vkGetPhysicalDeviceXlibPresentationSupportKHRFn = nullptr;
+#endif
   // Device functions
   PFN_vkAllocateCommandBuffers vkAllocateCommandBuffersFn = nullptr;
   PFN_vkAllocateDescriptorSets vkAllocateDescriptorSetsFn = nullptr;
@@ -110,17 +128,33 @@ struct VulkanFunctionPointers {
 #if defined(OS_ANDROID)
   PFN_vkGetAndroidHardwareBufferPropertiesANDROID
       vkGetAndroidHardwareBufferPropertiesANDROIDFn = nullptr;
-  PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHRFn = nullptr;
 #endif
 
   // Device functions shared between Linux and Android.
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   PFN_vkGetSemaphoreFdKHR vkGetSemaphoreFdKHRFn = nullptr;
+  PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHRFn = nullptr;
 #endif
 
   // Linux-only device functions.
 #if defined(OS_LINUX)
   PFN_vkGetMemoryFdKHR vkGetMemoryFdKHRFn = nullptr;
+#endif
+
+  // Fuchsia only device functions.
+#if defined(OS_FUCHSIA)
+  PFN_vkImportSemaphoreZirconHandleFUCHSIA
+      vkImportSemaphoreZirconHandleFUCHSIAFn = nullptr;
+  PFN_vkGetSemaphoreZirconHandleFUCHSIA vkGetSemaphoreZirconHandleFUCHSIAFn =
+      nullptr;
+  PFN_vkCreateBufferCollectionFUCHSIA vkCreateBufferCollectionFUCHSIAFn =
+      nullptr;
+  PFN_vkSetBufferCollectionConstraintsFUCHSIA
+      vkSetBufferCollectionConstraintsFUCHSIAFn = nullptr;
+  PFN_vkGetBufferCollectionPropertiesFUCHSIA
+      vkGetBufferCollectionPropertiesFUCHSIAFn = nullptr;
+  PFN_vkDestroyBufferCollectionFUCHSIA vkDestroyBufferCollectionFUCHSIAFn =
+      nullptr;
 #endif
 
   // Queue functions
@@ -164,6 +198,10 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkGetDeviceProcAddrFn
 #define vkDestroySurfaceKHR \
   gpu::GetVulkanFunctionPointers()->vkDestroySurfaceKHRFn
+#if defined(USE_VULKAN_XLIB)
+#define vkCreateXlibSurfaceKHR \
+  gpu::GetVulkanFunctionPointers()->vkCreateXlibSurfaceKHRFn
+#endif
 
 // Physical Device functions
 #define vkCreateDevice gpu::GetVulkanFunctionPointers()->vkCreateDeviceFn
@@ -177,6 +215,11 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceSurfaceFormatsKHRFn
 #define vkGetPhysicalDeviceSurfaceSupportKHR \
   gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceSurfaceSupportKHRFn
+#if defined(USE_VULKAN_XLIB)
+#define vkGetPhysicalDeviceXlibPresentationSupportKHR \
+  gpu::GetVulkanFunctionPointers()                    \
+      ->vkGetPhysicalDeviceXlibPresentationSupportKHRFn
+#endif
 
 // Device functions
 #define vkAllocateCommandBuffers \
@@ -241,17 +284,32 @@ struct VulkanFunctionPointers {
 #define vkGetAndroidHardwareBufferPropertiesANDROID \
   gpu::GetVulkanFunctionPointers()                  \
       ->vkGetAndroidHardwareBufferPropertiesANDROIDFn
-#define vkImportSemaphoreFdKHR \
-  gpu::GetVulkanFunctionPointers()->vkImportSemaphoreFdKHRFn
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #define vkGetSemaphoreFdKHR \
   gpu::GetVulkanFunctionPointers()->vkGetSemaphoreFdKHRFn
+#define vkImportSemaphoreFdKHR \
+  gpu::GetVulkanFunctionPointers()->vkImportSemaphoreFdKHRFn
 #endif
 
 #if defined(OS_LINUX)
 #define vkGetMemoryFdKHR gpu::GetVulkanFunctionPointers()->vkGetMemoryFdKHRFn
+#endif
+
+#if defined(OS_FUCHSIA)
+#define vkImportSemaphoreZirconHandleFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkImportSemaphoreZirconHandleFUCHSIAFn
+#define vkGetSemaphoreZirconHandleFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkGetSemaphoreZirconHandleFUCHSIAFn
+#define vkCreateBufferCollectionFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkCreateBufferCollectionFUCHSIAFn
+#define vkSetBufferCollectionConstraintsFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkSetBufferCollectionConstraintsFUCHSIAFn
+#define vkGetBufferCollectionPropertiesFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkGetBufferCollectionPropertiesFUCHSIAFn
+#define vkDestroyBufferCollectionFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkDestroyBufferCollectionFUCHSIAFn
 #endif
 
 // Queue functions

@@ -21,4 +21,6 @@ per-file browser_instant_controller*=file://chrome/browser/search/OWNERS
 per-file avatar_*=file://components/signin/OWNERS
 per-file signin_*=file://components/signin/OWNERS
 
+per-file settings_window_manager*chromeos*=file://chrome/browser/ui/ash/OWNERS
+
 # COMPONENT: UI>Browser

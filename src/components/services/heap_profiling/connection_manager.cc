@@ -6,24 +6,10 @@
 
 #include "base/bind.h"
 #include "base/json/string_escape.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/stringprintf.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread.h"
-#include "components/services/heap_profiling/allocation_tracker.h"
+#include "base/task/post_task.h"
 #include "components/services/heap_profiling/json_exporter.h"
 #include "components/services/heap_profiling/public/cpp/client.h"
-#include "components/services/heap_profiling/receiver_pipe.h"
-#include "components/services/heap_profiling/stream_parser.h"
-#include "mojo/public/cpp/system/buffer.h"
-#include "mojo/public/cpp/system/platform_handle.h"
-#include "third_party/zlib/zlib.h"
-
-#if defined(OS_WIN)
-#include <io.h>
-#endif
 
 namespace heap_profiling {
 
@@ -68,29 +54,16 @@ struct ConnectionManager::DumpProcessesForTracingTracking
 };
 
 struct ConnectionManager::Connection {
-  Connection(AllocationTracker::CompleteCallback complete_cb,
-             BacktraceStorage* backtrace_storage,
-             base::ProcessId pid,
+  Connection(CompleteCallback complete_cb,
              mojom::ProfilingClientPtr client,
-             scoped_refptr<ReceiverPipe> p,
              mojom::ProcessType process_type,
              uint32_t sampling_rate,
-             mojom::StackMode stack_mode,
-             bool stream_samples)
-      : thread(base::StringPrintf("Sender %lld thread",
-                                  static_cast<long long>(pid))),
-        client(std::move(client)),
-        pipe(p),
+             mojom::StackMode stack_mode)
+      : client(std::move(client)),
         process_type(process_type),
         stack_mode(stack_mode),
-        stream_samples(stream_samples),
-        tracker(std::move(complete_cb), backtrace_storage),
-        sampling_rate(sampling_rate) {}
-
-  ~Connection() {
-    // The parser may outlive this class because it's refcounted, make sure no
-    // callbacks are issued.
-    parser->DisconnectReceivers();
+        sampling_rate(sampling_rate) {
+    this->client.set_connection_error_handler(std::move(complete_cb));
   }
 
   bool HeapDumpNeedsVmRegions() {
@@ -99,18 +72,9 @@ struct ConnectionManager::Connection {
            stack_mode == mojom::StackMode::MIXED;
   }
 
-  base::Thread thread;
-
   mojom::ProfilingClientPtr client;
-  scoped_refptr<ReceiverPipe> pipe;
-  scoped_refptr<StreamParser> parser;
   mojom::ProcessType process_type;
   mojom::StackMode stack_mode;
-  bool stream_samples;
-
-  // Danger: This lives on the |thread| member above. The connection manager
-  // lives on the I/O thread, so accesses to the variable must be synchronized.
-  AllocationTracker tracker;
 
   // When sampling is enabled, allocations are recorded with probability (size /
   // sampling_rate) when size < sampling_rate. When size >= sampling_rate, the
@@ -121,9 +85,7 @@ struct ConnectionManager::Connection {
   uint32_t sampling_rate = 1;
 };
 
-ConnectionManager::ConnectionManager()
-    : blocking_thread_("Blocking thread"), weak_factory_(this) {
-  blocking_thread_.Start();
+ConnectionManager::ConnectionManager() {
   metrics_timer_.Start(
       FROM_HERE, base::TimeDelta::FromHours(24),
       base::Bind(&ConnectionManager::ReportMetrics, base::Unretained(this)));
@@ -132,7 +94,6 @@ ConnectionManager::~ConnectionManager() = default;
 
 void ConnectionManager::OnNewConnection(base::ProcessId pid,
                                         mojom::ProfilingClientPtr client,
-                                        mojo::ScopedHandle receiver_pipe_end,
                                         mojom::ProcessType process_type,
                                         mojom::ProfilingParamsPtr params) {
   base::AutoLock lock(connections_lock_);
@@ -151,35 +112,15 @@ void ConnectionManager::OnNewConnection(base::ProcessId pid,
   // when the user is attempting to manually start profiling for processes, so
   // we ignore this edge case.
 
-  scoped_refptr<ReceiverPipe> new_pipe = base::MakeRefCounted<ReceiverPipe>(
-      mojo::UnwrapPlatformHandle(std::move(receiver_pipe_end)));
-
-  // The allocation tracker will call this on a background thread, so thunk
-  // back to the current thread with weak pointers.
-  AllocationTracker::CompleteCallback complete_cb = base::BindOnce(
-      &ConnectionManager::OnConnectionCompleteThunk,
-      base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr(), pid);
+  CompleteCallback complete_cb =
+      base::BindOnce(&ConnectionManager::OnConnectionComplete,
+                     weak_factory_.GetWeakPtr(), pid);
 
   auto connection = std::make_unique<Connection>(
-      std::move(complete_cb), &backtrace_storage_, pid, std::move(client),
-      new_pipe, process_type, params->sampling_rate, params->stack_mode,
-      params->stream_samples);
-
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
-  connection->thread.StartWithOptions(options);
-
-  connection->parser = base::MakeRefCounted<StreamParser>(&connection->tracker);
-  new_pipe->SetReceiver(connection->thread.task_runner(), connection->parser);
-
-  connection->thread.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ReceiverPipe::StartReadingOnIOThread, new_pipe));
-
-  // Request the client start sending us data.
+      std::move(complete_cb), std::move(client), process_type,
+      params->sampling_rate, params->stack_mode);
   connection->client->StartProfiling(std::move(params));
-
-  connections_[pid] = std::move(connection);  // Transfers ownership.
+  connections_[pid] = std::move(connection);
 }
 
 std::vector<base::ProcessId> ConnectionManager::GetConnectionPids() {
@@ -219,18 +160,7 @@ void ConnectionManager::ReportMetrics() {
   }
 }
 
-// static
-void ConnectionManager::OnConnectionCompleteThunk(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    base::WeakPtr<ConnectionManager> connection_manager,
-    base::ProcessId pid) {
-  task_runner->PostTask(FROM_HERE,
-                        base::BindOnce(&ConnectionManager::OnConnectionComplete,
-                                       connection_manager, pid));
-}
-
 void ConnectionManager::DumpProcessesForTracing(
-    bool keep_small_allocations,
     bool strip_path_from_mapped_files,
     DumpProcessesForTracingCallback callback,
     VmRegions vm_regions) {
@@ -254,26 +184,10 @@ void ConnectionManager::DumpProcessesForTracing(
   for (auto& it : connections_) {
     base::ProcessId pid = it.first;
     Connection* connection = it.second.get();
-    if (!connection->stream_samples) {
-      connection->client->RetrieveHeapProfile(base::BindOnce(
-          &ConnectionManager::HeapProfileRetrieved, weak_factory_.GetWeakPtr(),
-          tracking, pid, connection->process_type, keep_small_allocations,
-          strip_path_from_mapped_files, connection->sampling_rate));
-      continue;
-    }
-    int barrier_id = next_barrier_id_++;
-
-    // Register for callback before requesting the dump so we don't race for the
-    // signal. The callback will be issued on the allocation tracker thread so
-    // need to thunk back to the I/O thread.
-    connection->tracker.SnapshotOnBarrier(
-        barrier_id, base::ThreadTaskRunnerHandle::Get(),
-        base::BindOnce(&ConnectionManager::DoDumpOneProcessForTracing,
-                       weak_factory_.GetWeakPtr(), tracking, pid,
-                       connection->process_type, keep_small_allocations,
-                       strip_path_from_mapped_files,
-                       connection->sampling_rate));
-    connection->client->FlushMemlogPipe(barrier_id);
+    connection->client->RetrieveHeapProfile(base::BindOnce(
+        &ConnectionManager::HeapProfileRetrieved, weak_factory_.GetWeakPtr(),
+        tracking, pid, connection->process_type, strip_path_from_mapped_files,
+        connection->sampling_rate));
   }
 }
 
@@ -281,13 +195,12 @@ void ConnectionManager::HeapProfileRetrieved(
     scoped_refptr<DumpProcessesForTracingTracking> tracking,
     base::ProcessId pid,
     mojom::ProcessType process_type,
-    bool keep_small_allocations,
     bool strip_path_from_mapped_files,
     uint32_t sampling_rate,
     mojom::HeapProfilePtr profile) {
   AllocationCountMap counts;
-  AllocationTracker::ContextMap context_map;
-  AllocationTracker::AddressToStringMap string_map;
+  ContextMap context_map;
+  AddressToStringMap string_map;
   BacktraceStorage backtrace_storage;
   BacktraceStorage::Lock backtrace_storage_lock(&backtrace_storage);
 
@@ -312,13 +225,8 @@ void ConnectionManager::HeapProfileRetrieved(
     }
     const Backtrace* backtrace = backtrace_storage.Insert(
         std::vector<Address>(sample->stack.begin(), sample->stack.end()));
-    AllocatorType allocator = static_cast<AllocatorType>(sample->allocator);
-    if (allocator >= AllocatorType::kCount) {
-      success = false;
-      break;
-    }
-    AllocationEvent alloc(allocator, Address(0), sample->size, backtrace,
-                          context_id);
+    AllocationEvent alloc(sample->allocator, Address(0), sample->size,
+                          backtrace, context_id);
     ++counts[alloc];
   }
 
@@ -331,23 +239,22 @@ void ConnectionManager::HeapProfileRetrieved(
   }
 
   DCHECK(success);
-  DoDumpOneProcessForTracing(
-      tracking, pid, process_type, keep_small_allocations,
-      strip_path_from_mapped_files, sampling_rate, success, std::move(counts),
-      std::move(context_map), std::move(string_map));
+  DoDumpOneProcessForTracing(std::move(tracking), pid, process_type,
+                             strip_path_from_mapped_files, sampling_rate,
+                             success, std::move(counts), std::move(context_map),
+                             std::move(string_map));
 }
 
 void ConnectionManager::DoDumpOneProcessForTracing(
     scoped_refptr<DumpProcessesForTracingTracking> tracking,
     base::ProcessId pid,
     mojom::ProcessType process_type,
-    bool keep_small_allocations,
     bool strip_path_from_mapped_files,
     uint32_t sampling_rate,
     bool success,
     AllocationCountMap counts,
-    AllocationTracker::ContextMap context,
-    AllocationTracker::AddressToStringMap mapped_strings) {
+    ContextMap context,
+    AddressToStringMap mapped_strings) {
   // All code paths through here must issue the callback when waiting_responses
   // is 0 or the browser will wait forever for the dump.
   DCHECK(tracking->waiting_responses > 0);
@@ -371,8 +278,8 @@ void ConnectionManager::DoDumpOneProcessForTracing(
   params.context_map = std::move(context);
   params.mapped_strings = std::move(mapped_strings);
   params.process_type = process_type;
-  params.min_size_threshold = keep_small_allocations ? 0 : kMinSizeThreshold;
-  params.min_count_threshold = keep_small_allocations ? 0 : kMinCountThreshold;
+  params.min_size_threshold = kMinSizeThreshold;
+  params.min_count_threshold = kMinCountThreshold;
   params.strip_path_from_mapped_files = strip_path_from_mapped_files;
   params.next_id = next_id_;
   params.sampling_rate = sampling_rate;
@@ -381,55 +288,46 @@ void ConnectionManager::DoDumpOneProcessForTracing(
   ExportMemoryMapsAndV2StackTraceToJSON(&params, oss);
   std::string reply = oss.str();
   size_t reply_size = reply.size();
-
   next_id_ = params.next_id;
 
-  using FinishedCallback =
-      base::OnceCallback<void(mojo::ScopedSharedBufferHandle)>;
-  FinishedCallback finished_callback = base::BindOnce(
-      [](std::string reply, base::ProcessId pid,
-         scoped_refptr<DumpProcessesForTracingTracking> tracking,
-         mojo::ScopedSharedBufferHandle buffer) {
-        if (!buffer.is_valid()) {
-          DLOG(ERROR) << "Could not create Mojo shared buffer";
-        } else {
-          mojo::ScopedSharedBufferMapping mapping = buffer->Map(reply.size());
-          if (!mapping) {
-            DLOG(ERROR) << "Could not map Mojo shared buffer";
-          } else {
-            memcpy(mapping.get(), reply.c_str(), reply.size());
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(
+          [](size_t size) {
+            // This call sends a synchronous IPC to the browser process.
+            return mojo::SharedBufferHandle::Create(size);
+          },
+          reply_size),
+      base::BindOnce(
+          [](std::string reply, base::ProcessId pid,
+             scoped_refptr<DumpProcessesForTracingTracking> tracking,
+             mojo::ScopedSharedBufferHandle buffer) {
+            if (!buffer.is_valid()) {
+              DLOG(ERROR) << "Could not create Mojo shared buffer";
+            } else {
+              mojo::ScopedSharedBufferMapping mapping =
+                  buffer->Map(reply.size());
+              if (!mapping) {
+                DLOG(ERROR) << "Could not map Mojo shared buffer";
+              } else {
+                memcpy(mapping.get(), reply.c_str(), reply.size());
 
-            memory_instrumentation::mojom::SharedBufferWithSizePtr result =
-                memory_instrumentation::mojom::SharedBufferWithSize::New();
-            result->buffer = std::move(buffer);
-            result->size = reply.size();
-            result->pid = pid;
-            tracking->results.push_back(std::move(result));
-          }
-        }
+                memory_instrumentation::mojom::SharedBufferWithSizePtr result =
+                    memory_instrumentation::mojom::SharedBufferWithSize::New();
+                result->buffer = std::move(buffer);
+                result->size = reply.size();
+                result->pid = pid;
+                tracking->results.push_back(std::move(result));
+              }
+            }
 
-        // When all responses complete, issue done callback.
-        tracking->waiting_responses--;
-        if (tracking->waiting_responses == 0)
-          std::move(tracking->callback).Run(std::move(tracking->results));
-      },
-      std::move(reply), pid, tracking);
-
-  blocking_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](size_t size,
-                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                        FinishedCallback callback) {
-                       // This call will send a synchronous IPC to the browser
-                       // process.
-                       mojo::ScopedSharedBufferHandle buffer =
-                           mojo::SharedBufferHandle::Create(size);
-                       task_runner->PostTask(FROM_HERE,
-                                             base::BindOnce(std::move(callback),
-                                                            std::move(buffer)));
-                     },
-                     reply_size, base::ThreadTaskRunnerHandle::Get(),
-                     std::move(finished_callback)));
+            // When all responses complete, issue done callback.
+            if (--tracking->waiting_responses == 0)
+              std::move(tracking->callback).Run(std::move(tracking->results));
+          },
+          std::move(reply), pid, std::move(tracking)));
 }
 
 }  // namespace heap_profiling

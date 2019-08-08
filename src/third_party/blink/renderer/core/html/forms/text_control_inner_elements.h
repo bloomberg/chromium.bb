@@ -39,7 +39,7 @@ class TextControlInnerContainer final : public HTMLDivElement {
   explicit TextControlInnerContainer(Document&);
 
  protected:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 };
 
 class EditingViewPortElement final : public HTMLDivElement {
@@ -67,7 +67,7 @@ class TextControlInnerEditorElement final : public HTMLDivElement {
   scoped_refptr<ComputedStyle> CreateInnerEditorStyle() const;
 
  private:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
   bool SupportsFocus() const override { return false; }
   bool is_visible_ = true;

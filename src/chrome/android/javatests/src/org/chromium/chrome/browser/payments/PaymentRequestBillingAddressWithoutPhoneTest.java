@@ -11,6 +11,7 @@ import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.NEXT_Y
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.CardType;
@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 import java.util.concurrent.ExecutionException;
@@ -37,6 +38,10 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivityStartCallback {
+    // Disable animations to reduce flakiness.
+    @ClassRule
+    public static DisableAnimationsTestRule sNoAnimationsRule = new DisableAnimationsTestRule();
+
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
             new PaymentRequestTestRule("payment_request_free_shipping_test.html", this);
@@ -150,16 +155,9 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
         mPaymentRequestTestRule.setSpinnerSelectionsInCardEditorAndWait(
                 new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS},
                 mPaymentRequestTestRule.getReadyToEdit());
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME)) {
-            mPaymentRequestTestRule.setTextInEditorAndWait(
-                    new String[] {
-                            "Seb Doe", "Google", "340 Main St", "Los Angeles", "CA", "90291", ""},
-                    mPaymentRequestTestRule.getEditorTextUpdate());
-        } else {
-            mPaymentRequestTestRule.setTextInEditorAndWait(
-                    new String[] {"Seb Doe", "340 Main St", "Los Angeles", "CA", "90291", ""},
-                    mPaymentRequestTestRule.getEditorTextUpdate());
-        }
+        mPaymentRequestTestRule.setTextInEditorAndWait(
+                new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles", "CA", "90291", ""},
+                mPaymentRequestTestRule.getEditorTextUpdate());
         // Trying to add the address without a phone number should fail.
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.editor_dialog_done_button, mPaymentRequestTestRule.getEditorValidationError());

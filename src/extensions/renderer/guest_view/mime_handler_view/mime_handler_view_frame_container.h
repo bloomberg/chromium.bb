@@ -13,7 +13,6 @@
 namespace blink {
 class WebElement;
 class WebFrame;
-class WebLocalFrame;
 }  // namespace blink
 
 namespace content {
@@ -34,7 +33,6 @@ namespace extensions {
 // for an embedded MimeHandlerView extension in a cross-origin frame.
 class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
  public:
-  static bool IsSupportedMimeType(const std::string& mime_type);
   static bool Create(const blink::WebElement& plugin_element,
                      const GURL& resource_url,
                      const std::string& mime_type,
@@ -55,16 +53,6 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
   friend class RenderFrameLifetimeObserver;
   friend class MimeHandlerViewContainerManager;
 
-  static void CreateWithFrame(blink::WebLocalFrame* web_frame,
-                              const GURL& resource_url,
-                              const std::string& mime_type,
-                              const std::string& view_id);
-
-  MimeHandlerViewFrameContainer(blink::WebLocalFrame* web_frame,
-                                const GURL& resource_url,
-                                const std::string& mime_type,
-                                const std::string& view_id);
-
   MimeHandlerViewFrameContainer(const blink::WebElement& plugin_element,
                                 const GURL& resource_url,
                                 const std::string& mime_type,
@@ -79,13 +67,6 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
   gfx::Size GetElementSize() const final;
 
   blink::WebFrame* GetContentFrame() const;
-
-  // mime_handler::BeforeUnloadControl implementation.
-  void SetShowBeforeUnloadDialog(
-      bool show_dialog,
-      SetShowBeforeUnloadDialogCallback callback) override;
-
-  void OnMessageReceived(const IPC::Message& message);
 
   blink::WebElement plugin_element_;
   const int32_t element_instance_id_;

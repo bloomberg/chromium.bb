@@ -35,7 +35,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 @CommandLineParameter(
         {"", "enable-features=" + ChromeFeatureList.LOOKALIKE_NAVIGATION_URL_SUGGESTIONS_UI})
 public class LookalikeInterstitialTest {
-    private static final String INTERSTITIAL_TITLE_PREFIX = "Did you mean?";
+    private static final String INTERSTITIAL_TITLE_PREFIX = "Continue to ";
 
     private static final int INTERSTITIAL_TITLE_UPDATE_TIMEOUT_SECONDS = 5;
 
@@ -64,8 +64,12 @@ public class LookalikeInterstitialTest {
                         "/chrome/test/data/android/navigate/simple.html"));
 
         // Wait for the interstitial page to commit and check the page title.
-        new TabTitleObserver(tab, INTERSTITIAL_TITLE_PREFIX)
-                .waitForTitleUpdate(INTERSTITIAL_TITLE_UPDATE_TIMEOUT_SECONDS);
+        new TabTitleObserver(tab, INTERSTITIAL_TITLE_PREFIX) {
+            @Override
+            protected boolean doesTitleMatch(String expectedTitle, String actualTitle) {
+                return actualTitle.indexOf(expectedTitle) == 0;
+            }
+        }.waitForTitleUpdate(INTERSTITIAL_TITLE_UPDATE_TIMEOUT_SECONDS);
         Assert.assertEquals(0, tab.getTitle().indexOf(INTERSTITIAL_TITLE_PREFIX));
     }
 }

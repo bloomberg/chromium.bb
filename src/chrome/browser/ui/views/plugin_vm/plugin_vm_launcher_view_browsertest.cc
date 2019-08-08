@@ -84,7 +84,6 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
   void SetUp() override { DialogBrowserTest::SetUp(); }
 
   void SetUpOnMainThread() override {
-    embedded_test_server()->ServeFilesFromSourceDirectory("chrome/test/data");
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 

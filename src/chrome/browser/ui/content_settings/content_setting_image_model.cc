@@ -16,7 +16,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
@@ -28,6 +27,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
+#include "services/device/public/cpp/device_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
@@ -162,10 +162,8 @@ bool ShouldShowPluginExplanation(content::WebContents* web_contents,
 
   // For plugins, show the animated explanation in these cases:
   //  - The plugin is blocked despite the user having content setting ALLOW.
-  //  - The user has disabled Flash using BLOCK and HTML5 By Default feature.
-  return setting == CONTENT_SETTING_ALLOW ||
-         (setting == CONTENT_SETTING_BLOCK &&
-          PluginUtils::ShouldPreferHtmlOverPlugins(map));
+  //  - The user has disabled Flash using BLOCK.
+  return setting == CONTENT_SETTING_ALLOW || setting == CONTENT_SETTING_BLOCK;
 }
 
 struct ContentSettingsImageDetails {
@@ -374,8 +372,8 @@ bool ContentSettingGeolocationImageModel::UpdateAndGetVisibility(
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
     return false;
-  const ContentSettingsUsagesState& usages_state = content_settings->
-      geolocation_usages_state();
+  const ContentSettingsUsagesState& usages_state =
+      content_settings->geolocation_usages_state();
   if (usages_state.state_map().empty())
     return false;
 
@@ -590,9 +588,25 @@ bool ContentSettingSensorsImageModel::UpdateAndGetVisibility(
   if (!blocked && !allowed)
     return false;
 
-  set_icon(kSensorsIcon, allowed ? gfx::kNoneIcon : kBlockedBadgeIcon);
-  set_tooltip(l10n_util::GetStringUTF16(allowed ? IDS_SENSORS_ALLOWED_TOOLTIP
-                                                : IDS_SENSORS_BLOCKED_TOOLTIP));
+  HostContentSettingsMap* map = HostContentSettingsMapFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+
+  // Do not show any indicator if sensors are allowed by default and they were
+  // not blocked in this page.
+  if (!blocked && map->GetDefaultContentSetting(content_type(), nullptr) ==
+                      CONTENT_SETTING_ALLOW) {
+    return false;
+  }
+
+  set_icon(kSensorsIcon, !blocked ? gfx::kNoneIcon : kBlockedBadgeIcon);
+  if (base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)) {
+    set_tooltip(l10n_util::GetStringUTF16(
+        !blocked ? IDS_SENSORS_ALLOWED_TOOLTIP : IDS_SENSORS_BLOCKED_TOOLTIP));
+  } else {
+    set_tooltip(l10n_util::GetStringUTF16(
+        !blocked ? IDS_MOTION_SENSORS_ALLOWED_TOOLTIP
+                 : IDS_MOTION_SENSORS_BLOCKED_TOOLTIP));
+  }
   return true;
 }
 

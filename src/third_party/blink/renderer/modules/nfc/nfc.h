@@ -89,8 +89,7 @@ class NFC final : public ScriptWrappable,
   device::mojom::blink::NFCPtr nfc_;
   mojo::Binding<device::mojom::blink::NFCClient> client_binding_;
   HeapHashSet<Member<ScriptPromiseResolver>> requests_;
-  using WatchCallbacksMap =
-      HeapHashMap<uint32_t, TraceWrapperMember<V8MessageCallback>>;
+  using WatchCallbacksMap = HeapHashMap<uint32_t, Member<V8MessageCallback>>;
   WatchCallbacksMap callbacks_;
 };
 

@@ -81,11 +81,10 @@ bool RtcDtmfSenderHandler::CanInsertDTMF() {
 }
 
 bool RtcDtmfSenderHandler::InsertDTMF(const blink::WebString& tones,
-                                      long duration,
-                                      long interToneGap) {
+                                      int duration,
+                                      int interToneGap) {
   std::string utf8_tones = tones.Utf8();
-  return dtmf_sender_->InsertDtmf(utf8_tones, static_cast<int>(duration),
-                                  static_cast<int>(interToneGap));
+  return dtmf_sender_->InsertDtmf(utf8_tones, duration, interToneGap);
 }
 
 void RtcDtmfSenderHandler::OnToneChange(const std::string& tone) {

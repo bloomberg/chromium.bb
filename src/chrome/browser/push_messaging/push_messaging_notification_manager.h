@@ -25,11 +25,7 @@ class Profile;
 namespace content {
 struct NotificationDatabaseData;
 class WebContents;
-}
-
-namespace blink {
-struct PlatformNotificationData;
-}
+}  // namespace content
 
 // Developers may be required to display a Web Notification in response to an
 // incoming push message in order to clarify to the user that something has
@@ -82,12 +78,9 @@ class PushMessagingNotificationManager {
                          base::OnceClosure message_handled_closure,
                          bool silent_push_allowed);
 
-  void DidWriteNotificationData(
-      const GURL& origin,
-      const blink::PlatformNotificationData& notification_data,
-      base::OnceClosure message_handled_closure,
-      bool success,
-      const std::string& notification_id);
+  void DidWriteNotificationData(base::OnceClosure message_handled_closure,
+                                bool success,
+                                const std::string& notification_id);
 
 #if defined(OS_CHROMEOS)
   bool ShouldSkipUserVisibleOnlyRequirements(const GURL& origin);

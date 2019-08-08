@@ -32,11 +32,23 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/common/content_switches.h"
 #include "net/server/http_connection.h"
+#include "third_party/inspector_protocol/encoding/encoding.h"
 
 const size_t kReceiveBufferSizeForDevTools = 100 * 1024 * 1024;  // 100Mb
 const size_t kWritePacketSize = 1 << 16;
 const int kReadFD = 3;
 const int kWriteFD = 4;
+
+// Our CBOR (RFC 7049) based format starts with a tag 24 indicating
+// an envelope, that is, a byte string which as payload carries the
+// entire remaining message. Thereby, the length of the byte string
+// also tells us the message size on the wire.
+// The details of the encoding are implemented in
+// third_party/inspector_protocol/encoding/encoding.h.
+using inspector_protocol_encoding::SpanFrom;
+using inspector_protocol_encoding::cbor::InitialByteFor32BitLengthByteString;
+using inspector_protocol_encoding::cbor::InitialByteForEnvelope;
+using inspector_protocol_encoding::cbor::IsCBORMessage;
 
 namespace content {
 
@@ -113,29 +125,6 @@ const char kDevToolsPipeHandlerReadThreadName[] =
 const char kDevToolsPipeHandlerWriteThreadName[] =
     "DevToolsPipeHandlerWriteThread";
 
-// Our CBOR (RFC 7049) based format starts with a tag 24 indicating
-// an envelope, that is, a byte string which as payload carries the
-// entire remaining message. Thereby, the length of the byte string
-// also tells us the message size on the wire.
-// Envelope is encoded as TAG with minor info 24.
-// Our byte strings always have their length encoded as a 32 bit
-// unsigned value.
-
-constexpr uint8_t kCBOR_MAJOR_BYTE_STRING = 2;
-constexpr uint8_t kCBOR_MAJOR_TAG = 6;
-
-constexpr uint8_t kCBOR_MINOR_ENVELOPE = 24;
-constexpr uint8_t kCBOR_MINOR_32BIT = 26;
-
-constexpr uint8_t cbor_first_byte(uint8_t major, uint8_t minor) {
-  return major << 5 | minor;
-}
-
-constexpr uint8_t kCBOR_ENVELOPE_TAG =
-    cbor_first_byte(kCBOR_MAJOR_TAG, kCBOR_MINOR_ENVELOPE);
-constexpr uint8_t kCBOR_BYTESTR_32B_LEN =
-    cbor_first_byte(kCBOR_MAJOR_BYTE_STRING, kCBOR_MINOR_32BIT);
-
 void WriteBytes(int write_fd, const char* bytes, size_t size) {
 #if defined(OS_WIN)
   HANDLE handle = reinterpret_cast<HANDLE>(_get_osfhandle(write_fd));
@@ -171,8 +160,7 @@ void WriteIntoPipeASCIIZ(int write_fd, const std::string& message) {
 }
 
 void WriteIntoPipeCBOR(int write_fd, const std::string& message) {
-  DCHECK(!message.empty() &&
-         static_cast<uint8_t>(message[0]) == kCBOR_ENVELOPE_TAG);
+  DCHECK(IsCBORMessage(SpanFrom(message)));
 
   WriteBytes(write_fd, message.data(), message.size());
 }
@@ -237,8 +225,8 @@ class PipeReaderCBOR : public PipeReaderBase {
       if (!ReadBytes(&buffer.front(), kHeaderSize, true))
         break;
       const uint8_t* prefix = reinterpret_cast<const uint8_t*>(buffer.data());
-      if (prefix[0] != kCBOR_ENVELOPE_TAG ||
-          prefix[1] != kCBOR_BYTESTR_32B_LEN) {
+      if (prefix[0] != InitialByteForEnvelope() ||
+          prefix[1] != InitialByteFor32BitLengthByteString()) {
         LOG(ERROR) << "Unexpected start of CBOR envelope " << prefix[0] << ","
                    << prefix[1];
         return;

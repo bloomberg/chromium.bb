@@ -24,9 +24,21 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   ~IOSChromePasswordManagerInfoBarDelegate() override;
 
+  // Updates the credentials being saved with |username| and |password|.
+  void UpdateCredentials(NSString* username, NSString* password);
+
   // Getter for the message displayed in addition to the title. If no message
   // was set, this returns an empty string.
-  base::string16 GetDetailsMessageText() const;
+  NSString* GetDetailsMessageText() const;
+
+  // The Username being saved or updated by the Infobar.
+  NSString* GetUserNameText() const;
+
+  // The Password being saved or updated by the Infobar.
+  NSString* GetPasswordText() const;
+
+  // The URL host for which the credentials are being saved for.
+  NSString* GetURLHostText() const;
 
  protected:
   IOSChromePasswordManagerInfoBarDelegate(

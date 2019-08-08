@@ -90,10 +90,14 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/test/ui_controls_factory_ash.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/test/base/default_ash_event_generator_delegate.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/fake_device_sync.h"
+#include "components/user_manager/user_names.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/aura/window.h"
@@ -112,6 +116,7 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/test/views/accessibility_checker.h"
+#include "ui/views/views_delegate.h"
 #endif
 
 namespace {
@@ -133,6 +138,8 @@ class FakeDeviceSyncImplFactory
       service_manager::Connector* connector,
       const chromeos::device_sync::GcmDeviceInfoProvider*
           gcm_device_info_provider,
+      chromeos::device_sync::ClientAppMetadataProvider*
+          client_app_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<base::OneShotTimer> timer) override {
     return std::make_unique<chromeos::device_sync::FakeDeviceSync>();
@@ -152,6 +159,16 @@ InProcessBrowserTest::SetUpBrowserFunction*
     InProcessBrowserTest::global_browser_set_up_function_ = nullptr;
 
 InProcessBrowserTest::InProcessBrowserTest()
+#if defined(TOOLKIT_VIEWS)
+    : InProcessBrowserTest(
+          base::BindOnce([]() -> std::unique_ptr<views::ViewsDelegate> {
+            return std::make_unique<AccessibilityChecker>();
+          })) {
+}
+
+InProcessBrowserTest::InProcessBrowserTest(
+    DelegateCallback viewsDelegateCallback)
+#endif  // defined(TOOLKIT_VIEWS)
     : browser_(NULL),
       exit_when_last_browser_closes_(true),
       open_about_blank_on_browser_launch_(true)
@@ -178,7 +195,7 @@ InProcessBrowserTest::InProcessBrowserTest()
   CHECK(base::PathService::Override(content::CHILD_PROCESS_EXE, file_exe));
 #endif  // defined(OS_MACOSX)
 
-  CreateTestServer(base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  CreateTestServer(GetChromeTestDataDir());
   base::FilePath src_dir;
   CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
 
@@ -186,7 +203,7 @@ InProcessBrowserTest::InProcessBrowserTest()
   // ContentMain. However that is after tests' constructors or SetUp methods,
   // which sometimes need it. So just override it.
   CHECK(base::PathService::Override(chrome::DIR_TEST_DATA,
-                                    src_dir.AppendASCII("chrome/test/data")));
+                                    src_dir.Append(GetChromeTestDataDir())));
 
 #if defined(OS_MACOSX)
   bundle_swizzler_.reset(new ScopedBundleSwizzlerMac);
@@ -198,7 +215,7 @@ InProcessBrowserTest::InProcessBrowserTest()
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  accessibility_checker_ = std::make_unique<AccessibilityChecker>();
+  views_delegate_ = std::move(viewsDelegateCallback).Run();
 #endif
 }
 
@@ -231,16 +248,36 @@ void InProcessBrowserTest::SetUp() {
       << "Could not set up user data directory.";
 
 #if defined(OS_CHROMEOS)
-  // Make sure that the log directory exists.
-  base::FilePath log_dir = logging::GetSessionLogDir(*command_line);
-  base::CreateDirectory(log_dir);
+  // No need to redirect log for test.
+  command_line->AppendSwitch(switches::kDisableLoggingRedirect);
+
   // Disable IME extension loading to avoid many browser tests failures.
   chromeos::input_method::DisableExtensionLoading();
-  if (!command_line->HasSwitch(switches::kHostWindowBounds)) {
+
+  if (!command_line->HasSwitch(switches::kHostWindowBounds) &&
+      !base::SysInfo::IsRunningOnChromeOS()) {
     // Adjusting window location & size so that the ash desktop window fits
-    // inside the Xvfb'x default resolution.
+    // inside the Xvfb's default resolution. Only do that when not running
+    // on device. Otherwise, device display is not properly configured.
     command_line->AppendSwitchASCII(switches::kHostWindowBounds,
                                     "0+0-1280x800");
+  }
+
+  // Default to run in a signed in session of stub user if tests do not run
+  // in the login screen (--login-manager), or logged in user session
+  // (--login-user), or the guest session (--bwsi). This is essentially
+  // the same as in ChromeBrowserMainPartsChromeos::PreEarlyInitialization
+  // but it will be done on device and only for tests.
+  if (!command_line->HasSwitch(chromeos::switches::kLoginManager) &&
+      !command_line->HasSwitch(chromeos::switches::kLoginUser) &&
+      !command_line->HasSwitch(chromeos::switches::kGuestSession)) {
+    command_line->AppendSwitchASCII(
+        chromeos::switches::kLoginUser,
+        cryptohome::Identification(user_manager::StubAccountId()).id());
+    if (!command_line->HasSwitch(chromeos::switches::kLoginProfile)) {
+      command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+                                      chrome::kTestUserProfileDir);
+    }
   }
 #endif
 
@@ -350,8 +387,7 @@ void InProcessBrowserTest::TearDown() {
 
 void InProcessBrowserTest::CloseBrowserSynchronously(Browser* browser) {
   content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::Source<Browser>(browser));
+      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser));
   CloseBrowserAsynchronously(browser);
   observer.Wait();
 #if defined(OS_CHROMEOS)
@@ -403,10 +439,9 @@ void InProcessBrowserTest::AddTabAtIndexToBrowser(
   }
 }
 
-void InProcessBrowserTest::AddTabAtIndex(
-    int index,
-    const GURL& url,
-    ui::PageTransition transition) {
+void InProcessBrowserTest::AddTabAtIndex(int index,
+                                         const GURL& url,
+                                         ui::PageTransition transition) {
   AddTabAtIndexToBrowser(browser(), index, url, transition, true);
 }
 
@@ -467,9 +502,8 @@ Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
   return browser;
 }
 
-Browser* InProcessBrowserTest::CreateBrowserForApp(
-    const std::string& app_name,
-    Profile* profile) {
+Browser* InProcessBrowserTest::CreateBrowserForApp(const std::string& app_name,
+                                                   Profile* profile) {
   Browser* browser = new Browser(Browser::CreateParams::CreateForApp(
       app_name, false /* trusted_source */, gfx::Rect(), profile, true));
   AddBlankTabAndShow(browser);
@@ -481,8 +515,7 @@ void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  chrome::AddSelectedTabWithURL(browser,
-                                GURL(url::kAboutBlankURL),
+  chrome::AddSelectedTabWithURL(browser, GURL(url::kAboutBlankURL),
                                 ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   observer.Wait();
 
@@ -511,6 +544,10 @@ base::CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   return new_command_line;
 }
 #endif
+
+base::FilePath InProcessBrowserTest::GetChromeTestDataDir() const {
+  return base::FilePath(FILE_PATH_LITERAL("chrome/test/data"));
+}
 
 void InProcessBrowserTest::PreRunTestOnMainThread() {
   AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();

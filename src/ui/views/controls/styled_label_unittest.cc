@@ -34,8 +34,8 @@ namespace views {
 
 class StyledLabelTest : public ViewsTestBase, public StyledLabelListener {
  public:
-  StyledLabelTest() {}
-  ~StyledLabelTest() override {}
+  StyledLabelTest() = default;
+  ~StyledLabelTest() override = default;
 
   // StyledLabelListener implementation.
   void StyledLabelLinkClicked(StyledLabel* label,
@@ -46,7 +46,7 @@ class StyledLabelTest : public ViewsTestBase, public StyledLabelListener {
   StyledLabel* styled() { return styled_.get(); }
 
   void InitStyledLabel(const std::string& ascii_text) {
-    styled_.reset(new StyledLabel(ASCIIToUTF16(ascii_text), this));
+    styled_ = std::make_unique<StyledLabel>(ASCIIToUTF16(ascii_text), this);
     styled_->set_owned_by_client();
   }
 
@@ -76,7 +76,7 @@ TEST_F(StyledLabelTest, TrailingWhitespaceiIgnored) {
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
 
-  ASSERT_EQ(1, styled()->child_count());
+  ASSERT_EQ(1u, styled()->children().size());
   ASSERT_EQ(std::string(Label::kViewClassName),
             styled()->child_at(0)->GetClassName());
   EXPECT_EQ(ASCIIToUTF16("This is a test block of text"),
@@ -90,7 +90,7 @@ TEST_F(StyledLabelTest, RespectLeadingWhitespace) {
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
 
-  ASSERT_EQ(1, styled()->child_count());
+  ASSERT_EQ(1u, styled()->children().size());
   ASSERT_EQ(std::string(Label::kViewClassName),
             styled()->child_at(0)->GetClassName());
   EXPECT_EQ(ASCIIToUTF16("   This is a test block of text"),
@@ -103,7 +103,7 @@ TEST_F(StyledLabelTest, RespectLeadingSpacesInNonFirstLine) {
   InitStyledLabel(text);
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
-  ASSERT_EQ(2, styled()->child_count());
+  ASSERT_EQ(2u, styled()->children().size());
   ASSERT_EQ(std::string(Label::kViewClassName),
             styled()->child_at(0)->GetClassName());
   EXPECT_EQ(ASCIIToUTF16(indented_line),
@@ -120,7 +120,7 @@ TEST_F(StyledLabelTest, CorrectWrapAtNewline) {
   // Correct handling of \n and label width limit encountered at the same place
   styled()->SetBounds(0, 0, label_preferred_size.width(), 1000);
   styled()->Layout();
-  ASSERT_EQ(2, styled()->child_count());
+  ASSERT_EQ(2u, styled()->children().size());
   ASSERT_EQ(std::string(Label::kViewClassName),
             styled()->child_at(1)->GetClassName());
   EXPECT_EQ(ASCIIToUTF16(first_line),
@@ -141,7 +141,7 @@ TEST_F(StyledLabelTest, FirstLineNotEmptyWhenLeadingWhitespaceTooLong) {
   styled()->SetBounds(0, 0, label_preferred_size.width() / 2, 1000);
   styled()->Layout();
 
-  ASSERT_EQ(1, styled()->child_count());
+  ASSERT_EQ(1u, styled()->children().size());
   ASSERT_EQ(std::string(Label::kViewClassName),
             styled()->child_at(0)->GetClassName());
   EXPECT_EQ(ASCIIToUTF16("a"),
@@ -166,7 +166,7 @@ TEST_F(StyledLabelTest, BasicWrapping) {
       styled()->GetInsets().width() + label_preferred_size.width(),
       styled()->GetInsets().height() + 2 * label_preferred_size.height());
   styled()->Layout();
-  ASSERT_EQ(2, styled()->child_count());
+  ASSERT_EQ(2u, styled()->children().size());
   EXPECT_EQ(3, styled()->child_at(0)->x());
   EXPECT_EQ(3, styled()->child_at(0)->y());
   EXPECT_EQ(styled()->height() - 3, styled()->child_at(1)->bounds().bottom());
@@ -181,7 +181,7 @@ TEST_F(StyledLabelTest, AllowEmptyLines) {
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
   EXPECT_EQ(3 * default_height, styled()->GetHeightForWidth(1000));
-  ASSERT_EQ(2, styled()->child_count());
+  ASSERT_EQ(2u, styled()->children().size());
   EXPECT_EQ(styled()->GetHeightForWidth(1000),
             styled()->child_at(1)->bounds().bottom());
 }
@@ -199,7 +199,7 @@ TEST_F(StyledLabelTest, WrapLongWords) {
       styled()->GetInsets().height() + 2 * label_preferred_size.height());
   styled()->Layout();
 
-  ASSERT_EQ(2, styled()->child_count());
+  ASSERT_EQ(2u, styled()->children().size());
   ASSERT_EQ(gfx::Point(), styled()->origin());
   EXPECT_EQ(gfx::Point(), styled()->child_at(0)->origin());
   EXPECT_EQ(gfx::Point(0, styled()->height() / 2),
@@ -236,7 +236,7 @@ TEST_F(StyledLabelTest, CreateLinks) {
   // Verify layout creates the right number of children.
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
-  EXPECT_EQ(7, styled()->child_count());
+  EXPECT_EQ(7u, styled()->children().size());
 }
 
 TEST_F(StyledLabelTest, DontBreakLinks) {
@@ -255,7 +255,7 @@ TEST_F(StyledLabelTest, DontBreakLinks) {
 
   styled()->SetBounds(0, 0, label_preferred_size.width(), pref_height);
   styled()->Layout();
-  ASSERT_EQ(2, styled()->child_count());
+  ASSERT_EQ(2u, styled()->children().size());
 
   // No additional insets should be added.
   EXPECT_EQ(0, styled()->child_at(0)->x());
@@ -282,7 +282,7 @@ TEST_F(StyledLabelTest, StyledRangeWithDisabledLineWrapping) {
 
   styled()->SetBounds(0, 0, label_preferred_size.width(), pref_height);
   styled()->Layout();
-  ASSERT_EQ(2, styled()->child_count());
+  ASSERT_EQ(2u, styled()->children().size());
   EXPECT_EQ(0, styled()->child_at(0)->x());
   EXPECT_EQ(0, styled()->child_at(1)->x());
 }
@@ -302,7 +302,7 @@ TEST_F(StyledLabelTest, StyledRangeCustomFontUnderlined) {
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
 
-  ASSERT_EQ(2, styled()->child_count());
+  ASSERT_EQ(2u, styled()->children().size());
   ASSERT_EQ(std::string(Label::kViewClassName),
             styled()->child_at(1)->GetClassName());
   EXPECT_EQ(
@@ -346,12 +346,12 @@ TEST_F(StyledLabelTest, StyledRangeTextStyleBold) {
   StyledLabel unstyled(ASCIIToUTF16(bold_text), this);
   unstyled.SetBounds(0, 0, styled_width, pref_height);
   unstyled.Layout();
-  EXPECT_EQ(1, unstyled.child_count());
+  EXPECT_EQ(1u, unstyled.children().size());
 
   styled()->SetBounds(0, 0, styled_width, pref_height);
   styled()->Layout();
 
-  ASSERT_EQ(3, styled()->child_count());
+  ASSERT_EQ(3u, styled()->children().size());
 
   // The bold text should be broken up into two parts.
   ASSERT_EQ(std::string(Label::kViewClassName),
@@ -465,7 +465,7 @@ TEST_F(StyledLabelTest, StyledRangeWithTooltip) {
 
   EXPECT_EQ(label_preferred_size.width(), styled()->width());
 
-  ASSERT_EQ(5, styled()->child_count());
+  ASSERT_EQ(5u, styled()->children().size());
 
   // The labels shouldn't be offset to cater for focus rings.
   EXPECT_EQ(0, styled()->child_at(0)->x());
@@ -477,12 +477,10 @@ TEST_F(StyledLabelTest, StyledRangeWithTooltip) {
             styled()->child_at(3)->x());
   EXPECT_EQ(0, styled()->child_at(4)->x());
 
-  base::string16 tooltip;
-  EXPECT_TRUE(
-      styled()->child_at(1)->GetTooltipText(gfx::Point(1, 1), &tooltip));
+  base::string16 tooltip =
+      styled()->child_at(1)->GetTooltipText(gfx::Point(1, 1));
   EXPECT_EQ(ASCIIToUTF16("tooltip"), tooltip);
-  EXPECT_TRUE(
-      styled()->child_at(2)->GetTooltipText(gfx::Point(1, 1), &tooltip));
+  tooltip = styled()->child_at(2)->GetTooltipText(gfx::Point(1, 1));
   EXPECT_EQ(ASCIIToUTF16("tooltip"), tooltip);
 }
 
@@ -504,7 +502,7 @@ TEST_F(StyledLabelTest, SetTextContextAndDefaultStyle) {
   EXPECT_EQ(label.GetPreferredSize().width(), styled()->width());
 
   styled()->Layout();
-  ASSERT_EQ(1, styled()->child_count());
+  ASSERT_EQ(1u, styled()->children().size());
   Label* sublabel = static_cast<Label*>(styled()->child_at(0));
   EXPECT_EQ(style::CONTEXT_DIALOG_TITLE, sublabel->text_context());
 
@@ -545,7 +543,7 @@ TEST_F(StyledLabelTest, HandleEmptyLayout) {
   const std::string text("This is a test block of text.");
   InitStyledLabel(text);
   styled()->Layout();
-  EXPECT_EQ(0, styled()->child_count());
+  EXPECT_EQ(0u, styled()->children().size());
 }
 
 TEST_F(StyledLabelTest, CacheSize) {
@@ -561,7 +559,7 @@ TEST_F(StyledLabelTest, CacheSize) {
   // no controls should be created
   int precalculated_height = styled()->GetHeightForWidth(preferred_width);
   EXPECT_LT(0, precalculated_height);
-  EXPECT_EQ(0, styled()->child_count());
+  EXPECT_EQ(0u, styled()->children().size());
 
   styled()->SetBounds(0, 0, preferred_width, preferred_height);
   styled()->Layout();
@@ -569,16 +567,16 @@ TEST_F(StyledLabelTest, CacheSize) {
   // controls should be created after layout
   // height should be the same as precalculated
   int real_height = styled()->GetHeightForWidth(styled()->width());
-  View* first_child_after_layout = styled()->has_children() ?
-      styled()->child_at(0) : nullptr;
-  EXPECT_LT(0, styled()->child_count());
+  View* first_child_after_layout =
+      styled()->children().empty() ? nullptr : styled()->child_at(0);
+  EXPECT_LT(0u, styled()->children().size());
   EXPECT_LT(0, real_height);
   EXPECT_EQ(real_height, precalculated_height);
 
   // another call to Layout should not kill and recreate all controls
   styled()->Layout();
-  View* first_child_after_second_layout = styled()->has_children() ?
-      styled()->child_at(0) : nullptr;
+  View* first_child_after_second_layout =
+      styled()->children().empty() ? nullptr : styled()->child_at(0);
   EXPECT_EQ(first_child_after_layout, first_child_after_second_layout);
 
   // if text is changed:
@@ -587,8 +585,8 @@ TEST_F(StyledLabelTest, CacheSize) {
   styled()->SetText(another_text);
   int updated_height = styled()->GetHeightForWidth(styled()->width());
   EXPECT_NE(updated_height, real_height);
-  View* first_child_after_text_update = styled()->has_children() ?
-      styled()->child_at(0) : nullptr;
+  View* first_child_after_text_update =
+      styled()->children().empty() ? nullptr : styled()->child_at(0);
   EXPECT_NE(first_child_after_text_update, first_child_after_layout);
 }
 
@@ -677,7 +675,7 @@ TEST_F(StyledLabelTest, AlignmentInLTR) {
   InitStyledLabel(text);
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
-  ASSERT_EQ(1, styled()->child_count());
+  ASSERT_EQ(1u, styled()->children().size());
 
   // Test the default alignment puts the text on the leading side (left).
   EXPECT_EQ(0, styled()->child_at(0)->bounds().x());
@@ -709,7 +707,7 @@ TEST_F(StyledLabelTest, AlignmentInRTL) {
   InitStyledLabel(text);
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
-  ASSERT_EQ(1, styled()->child_count());
+  ASSERT_EQ(1u, styled()->children().size());
 
   // Test the default alignment puts the text on the leading side (right).
   // Note that x-coordinates in RTL place the origin (0) on the right.
@@ -757,7 +755,7 @@ TEST_F(StyledLabelTest, ViewsCenteredWithLinkAndCustomView) {
   styled()->Layout();
   int height = styled()->GetPreferredSize().height();
 
-  ASSERT_EQ(3, styled()->child_count());
+  ASSERT_EQ(3u, styled()->children().size());
   EXPECT_EQ((height - styled()->child_at(0)->bounds().height()) / 2,
             styled()->child_at(0)->bounds().y());
   EXPECT_EQ((height - styled()->child_at(1)->bounds().height()) / 2,

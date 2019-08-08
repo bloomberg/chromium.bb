@@ -244,6 +244,9 @@
     <message name="IDS_PAGE_INFO_TYPE_SENSORS" desc="The label used for the sensor permission controls in the Page Info popup. Title case format.">
       Motion or Light Sensors
     </message>
+    <message name="IDS_PAGE_INFO_TYPE_MOTION_SENSORS" desc="The label used for the motion sensor (accelerometer, gyroscope, magnetometer) permission controls in the Page Info popup. Title case format.">
+      Motion Sensors
+    </message>
     <message name="IDS_PAGE_INFO_TYPE_USB" desc="The label used for the USB permission controls in the Page Info popup.">
       USB devices
     </message>
@@ -388,6 +391,12 @@
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS" desc="A short paragraph explaining to the user that they has reuse their google password on current website.">
           You could lose access to your Google Account. Chrome recommends changing your password now. You'll be asked to sign in.
         </message>
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC" desc="A short paragraph explaining to a Chrome sync user that they have reused their Google password on the current website.">
+          Chrome can help you protect your Google Account and change your password.
+        </message>
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SIGNED_IN_NON_SYNC" desc="A short paragraph explaining to a non-sync user that they have reused their Google password on the current website.">
+          Chrome can help you protect your Google Account and change your password. This will notify Google about this site.
+        </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE" desc="A short paragraph explaining to the user that they have reused their password on the current website.">
           You could lose access to your organization's account or experience identity theft. Chrome recommends changing your password now.
         </message>
@@ -398,6 +407,12 @@
       <if expr="not _google_chrome">
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS" desc="A short paragraph explaining to the user that they has reuse their google password on current website.">
           You could lose access to your Google Account. Chromium recommends changing your password now. You'll be asked to sign in.
+        </message>
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC" desc="A short paragraph explaining to a Chrome sync user that they have reused their Google password on the current website.">
+          Chromium can help you protect your Google Account and change your password.
+        </message>
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SIGNED_IN_NON_SYNC" desc="A short paragraph explaining to a non-sync user that they have reused their Google password on the current website.">
+          Chromium can help you protect your Google Account and change your password. This will notify Google about this site.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE" desc="A short paragraph explaining to the user that they have reused their password on the current website.">
           You could lose access to your organization's account or experience identity theft. Chromium recommends changing your password now.
@@ -411,6 +426,9 @@
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON" desc="In Title Case: The string used in the page info change password button.">
           Change Password
         </message>
+        <message name="IDS_PAGE_INFO_PROTECT_ACCOUNT_BUTTON" desc="In Title Case: The string used in the page info protect account button.">
+          Protect Account
+        </message>
         <message name="IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON" desc="In Title Case: The string used in the page info ignore password warning button.">
           Ignore
         </message>
@@ -418,6 +436,9 @@
       <if expr="not use_titlecase">
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON" desc="The string used in the page info change password button.">
           Change password
+        </message>
+        <message name="IDS_PAGE_INFO_PROTECT_ACCOUNT_BUTTON" desc="The string used in the page info protect account button.">
+          Protect account
         </message>
         <message name="IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON" desc="The string used in the page info ignore password warning button.">
           Ignore
@@ -439,9 +460,9 @@
 
   <!-- Misc site settings -->
   <message name="IDS_PAGE_INFO_VR_PRESENTING_TEXT" desc="The string used in the page info that states that an active VR presentation is in progress.">
-    VR session is active
+    VR session in progress
   </message>
   <message name="IDS_PAGE_INFO_VR_TURN_OFF_BUTTON_TEXT" desc="Label on the button that's used to turn off the VR presentation.">
-    End session
+    End
   </message>
 </grit-part>

@@ -59,6 +59,7 @@ TEST_F(FindInPageControllerTest, VerifyUKMLoggedTrue) {
                              completion_handler_finished = true;
                            }];
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    base::RunLoop().RunUntilIdle();
     return completion_handler_finished;
   }));
   // Single true entry should be recorded for the interaction above.
@@ -81,6 +82,7 @@ TEST_F(FindInPageControllerTest, VerifyUKMLoggedFalse) {
                              completion_handler_finished = true;
                            }];
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    base::RunLoop().RunUntilIdle();
     return completion_handler_finished;
   }));
   // Single false entry should be recorded for the interaction above.

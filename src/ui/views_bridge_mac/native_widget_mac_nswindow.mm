@@ -27,7 +27,7 @@
 @interface NativeWidgetMacNSWindow ()
 - (ViewsNSWindowDelegate*)viewsNSWindowDelegate;
 - (BOOL)hasViewsMenuActive;
-- (id)rootAccessibilityObject;
+- (id<NSAccessibility>)rootAccessibilityObject;
 
 // Private API on NSWindow, determines whether the title is drawn on the title
 // bar. The title is still visible in menus, Expose, etc.
@@ -141,9 +141,14 @@
   return hasMenuController;
 }
 
-- (id)rootAccessibilityObject {
-  return bridgeImpl_ ? bridgeImpl_->host_helper()->GetNativeViewAccessible()
-                     : nullptr;
+- (id<NSAccessibility>)rootAccessibilityObject {
+  id<NSAccessibility> obj =
+      bridgeImpl_ ? bridgeImpl_->host_helper()->GetNativeViewAccessible() : nil;
+  // We should like to DCHECK that the object returned implemements the
+  // NSAccessibility protocol, but the NSAccessibilityRemoteUIElement interface
+  // does not conform.
+  // TODO(https://crbug.com/944698): Create a sub-class that does.
+  return obj;
 }
 
 // NSWindow overrides.
@@ -342,18 +347,13 @@
   return bridgeImpl_->host_helper()->GetNativeViewAccessible();
 }
 
-- (id)accessibilityAttributeValue:(NSString*)attribute {
+- (NSString*)accessibilityTitle {
   // Check when NSWindow is asked for its title to provide the title given by
   // the views::RootView (and WidgetDelegate::GetAccessibleWindowTitle()). For
   // all other attributes, use what NSWindow provides by default since diverging
   // from NSWindow's behavior can easily break VoiceOver integration.
-  if (![attribute isEqualToString:NSAccessibilityTitleAttribute])
-    return [super accessibilityAttributeValue:attribute];
-
-  id viewsValue =
-      [[self rootAccessibilityObject] accessibilityAttributeValue:attribute];
-  return viewsValue ? viewsValue
-                    : [super accessibilityAttributeValue:attribute];
+  NSString* viewsValue = self.rootAccessibilityObject.accessibilityTitle;
+  return viewsValue ? viewsValue : [super accessibilityTitle];
 }
 
 @end

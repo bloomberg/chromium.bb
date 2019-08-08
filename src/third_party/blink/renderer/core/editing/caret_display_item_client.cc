@@ -46,34 +46,30 @@ namespace blink {
 CaretDisplayItemClient::CaretDisplayItemClient() = default;
 CaretDisplayItemClient::~CaretDisplayItemClient() = default;
 
-static inline bool CaretRendersInsideNode(const Node* node) {
+namespace {
+
+inline bool CaretRendersInsideNode(const Node* node) {
   return node && !IsDisplayInsideTable(node) && !EditingIgnoresContent(*node);
 }
 
-LayoutBlock* CaretDisplayItemClient::CaretLayoutBlock(const Node* node) {
+LayoutBlock* CaretLayoutBlock(const Node* node,
+                              const LayoutObject* layout_object) {
   if (!node)
     return nullptr;
 
-  LayoutObject* layout_object = node->GetLayoutObject();
   if (!layout_object)
     return nullptr;
 
+  auto* caret_layout_object = DynamicTo<LayoutBlock>(layout_object);
   // if caretNode is a block and caret is inside it then caret should be painted
   // by that block
-  bool painted_by_block =
-      layout_object->IsLayoutBlock() && CaretRendersInsideNode(node);
-  // TODO(yoichio): This function is called at least
-  // DocumentLifeCycle::LayoutClean but caretRendersInsideNode above can
-  // layout. Thus |node->layoutObject()| can be changed then this is bad
-  // design. We should make caret painting algorithm clean.
-  CHECK_EQ(layout_object, node->GetLayoutObject())
-      << "Layout tree should not changed";
-  return painted_by_block ? ToLayoutBlock(layout_object)
+  bool painted_by_block = caret_layout_object && CaretRendersInsideNode(node);
+  return painted_by_block ? const_cast<LayoutBlock*>(caret_layout_object)
                           : layout_object->ContainingBlock();
 }
 
-static LayoutRect MapCaretRectToCaretPainter(const LayoutBlock* caret_block,
-                                             const LocalCaretRect& caret_rect) {
+LayoutRect MapCaretRectToCaretPainter(const LayoutBlock* caret_block,
+                                      const LocalCaretRect& caret_rect) {
   // FIXME: This shouldn't be called on un-rooted subtrees.
   // FIXME: This should probably just use mapLocalToAncestor.
   // Compute an offset between the caretLayoutItem and the caretPainterItem.
@@ -95,31 +91,34 @@ static LayoutRect MapCaretRectToCaretPainter(const LayoutBlock* caret_block,
   return result_rect;
 }
 
-LayoutRect CaretDisplayItemClient::ComputeCaretRect(
+}  // namespace
+
+CaretDisplayItemClient::CaretRectAndPainterBlock
+CaretDisplayItemClient::ComputeCaretRectAndPainterBlock(
     const PositionWithAffinity& caret_position) {
   if (caret_position.IsNull())
-    return LayoutRect();
+    return {};
 
   if (!caret_position.AnchorNode()->GetLayoutObject())
-    return LayoutRect();
+    return {};
 
   // First compute a rect local to the layoutObject at the selection start.
   const LocalCaretRect& caret_rect = LocalCaretRectOfPosition(caret_position);
   if (!caret_rect.layout_object)
-    return LayoutRect();
+    return {};
 
   // Get the layoutObject that will be responsible for painting the caret
   // (which is either the layoutObject we just found, or one of its containers).
-  const LayoutBlock* caret_block =
-      CaretLayoutBlock(caret_position.AnchorNode());
-  return MapCaretRectToCaretPainter(caret_block, caret_rect);
+  LayoutBlock* caret_block =
+      CaretLayoutBlock(caret_position.AnchorNode(), caret_rect.layout_object);
+  return {MapCaretRectToCaretPainter(caret_block, caret_rect), caret_block};
 }
 
 void CaretDisplayItemClient::ClearPreviousVisualRect(const LayoutBlock& block) {
   if (block == layout_block_)
-    visual_rect_ = LayoutRect();
+    visual_rect_ = IntRect();
   if (block == previous_layout_block_)
-    visual_rect_in_previous_layout_block_ = LayoutRect();
+    visual_rect_in_previous_layout_block_ = IntRect();
 }
 
 void CaretDisplayItemClient::LayoutBlockWillBeDestroyed(
@@ -143,12 +142,14 @@ void CaretDisplayItemClient::UpdateStyleAndLayoutIfNeeded(
     visual_rect_in_previous_layout_block_ = visual_rect_;
   }
 
-  LayoutBlock* new_layout_block = CaretLayoutBlock(caret_position.AnchorNode());
+  CaretRectAndPainterBlock rect_and_block =
+      ComputeCaretRectAndPainterBlock(caret_position);
+  LayoutBlock* new_layout_block = rect_and_block.painter_block;
   if (new_layout_block != layout_block_) {
     if (layout_block_)
       layout_block_->SetShouldCheckForPaintInvalidation();
     layout_block_ = new_layout_block;
-    visual_rect_ = LayoutRect();
+    visual_rect_ = IntRect();
     if (new_layout_block) {
       needs_paint_invalidation_ = true;
       if (new_layout_block == previous_layout_block_) {
@@ -177,7 +178,7 @@ void CaretDisplayItemClient::UpdateStyleAndLayoutIfNeeded(
     color_ = new_color;
   }
 
-  LayoutRect new_local_rect = ComputeCaretRect(caret_position);
+  LayoutRect new_local_rect = rect_and_block.caret_rect;
   if (new_local_rect != local_rect_) {
     needs_paint_invalidation_ = true;
     local_rect_ = new_local_rect;
@@ -215,15 +216,15 @@ void CaretDisplayItemClient::InvalidatePaintInCurrentLayoutBlock(
     const PaintInvalidatorContext& context) {
   DCHECK(layout_block_);
 
-  LayoutRect new_visual_rect;
+  IntRect new_visual_rect;
 #if DCHECK_IS_ON()
   FindVisualRectNeedingUpdateScope finder(*layout_block_, context, visual_rect_,
                                           new_visual_rect);
 #endif
   if (context.NeedsVisualRectUpdate(*layout_block_)) {
     if (!local_rect_.IsEmpty()) {
-      new_visual_rect = local_rect_;
-      context.MapLocalRectToVisualRect(*layout_block_, new_visual_rect);
+      new_visual_rect =
+          context.MapLocalRectToVisualRect(*layout_block_, local_rect_);
     }
   } else {
     new_visual_rect = visual_rect_;
@@ -273,7 +274,7 @@ String CaretDisplayItemClient::DebugName() const {
   return "Caret";
 }
 
-LayoutRect CaretDisplayItemClient::VisualRect() const {
+IntRect CaretDisplayItemClient::VisualRect() const {
   return visual_rect_;
 }
 

@@ -1129,6 +1129,57 @@ class AndroidJUnitBaseClassTest(unittest.TestCase):
     self.assertTrue('IncorrectMultiLineTest.java:2' in msgs[0].items,
                     'IncorrectMultiLineTest not found in errors')
 
+class AndroidDebuggableBuildTest(unittest.TestCase):
+
+  def testCheckAndroidDebuggableBuild(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+      MockAffectedFile('RandomStuff.java', [
+        'random stuff'
+      ]),
+      MockAffectedFile('CorrectUsage.java', [
+        'import org.chromium.base.BuildInfo;',
+        'some random stuff',
+        'boolean isOsDebuggable = BuildInfo.isDebugAndroid();',
+      ]),
+      MockAffectedFile('JustCheckUserdebugBuild.java', [
+        'import android.os.Build;',
+        'some random stuff',
+        'boolean isOsDebuggable = Build.TYPE.equals("userdebug")',
+      ]),
+      MockAffectedFile('JustCheckEngineeringBuild.java', [
+        'import android.os.Build;',
+        'some random stuff',
+        'boolean isOsDebuggable = "eng".equals(Build.TYPE)',
+      ]),
+      MockAffectedFile('UsedBuildType.java', [
+        'import android.os.Build;',
+        'some random stuff',
+        'boolean isOsDebuggable = Build.TYPE.equals("userdebug")'
+            '|| "eng".equals(Build.TYPE)',
+      ]),
+      MockAffectedFile('UsedExplicitBuildType.java', [
+        'some random stuff',
+        'boolean isOsDebuggable = android.os.Build.TYPE.equals("userdebug")'
+            '|| "eng".equals(android.os.Build.TYPE)',
+      ]),
+    ]
+
+    msgs = PRESUBMIT._CheckAndroidDebuggableBuild(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(msgs),
+                     'Expected %d items, found %d: %s'
+                     % (1, len(msgs), msgs))
+    self.assertEqual(4, len(msgs[0].items),
+                     'Expected %d items, found %d: %s'
+                     % (4, len(msgs[0].items), msgs[0].items))
+    self.assertTrue('JustCheckUserdebugBuild.java:3' in msgs[0].items)
+    self.assertTrue('JustCheckEngineeringBuild.java:3' in msgs[0].items)
+    self.assertTrue('UsedBuildType.java:3' in msgs[0].items)
+    self.assertTrue('UsedExplicitBuildType.java:2' in msgs[0].items)
+
 
 class LogUsageTest(unittest.TestCase):
 
@@ -1772,6 +1823,23 @@ class BannedFunctionCheckTest(unittest.TestCase):
     self.assertTrue('another/ios_file.mm' in errors[0].message)
     self.assertTrue('some/mac/file.mm' not in errors[0].message)
 
+  def testBannedMojoFunctions(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('some/cpp/problematic/file.cc',
+               ['mojo::DataPipe();']),
+      MockFile('some/cpp/ok/file.cc',
+               ['CreateDataPipe();']),
+      MockFile('some/cpp/ok/file2.cc',
+               ['mojo::DataPipeDrainer();']),
+    ]
+
+    errors = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
+    self.assertEqual(1, len(errors))
+    self.assertTrue('some/cpp/problematic/file.cc' in errors[0].message)
+    self.assertTrue('some/cpp/ok/file.cc' not in errors[0].message)
+    self.assertTrue('some/cpp/ok/file2.cc' not in errors[0].message)
+
 
 class NoProductionCodeUsingTestOnlyFunctionsTest(unittest.TestCase):
   def testTruePositives(self):
@@ -2231,6 +2299,50 @@ class DISABLETypoInTest(unittest.TestCase):
     results = PRESUBMIT._CheckNoDISABLETypoInTests(mock_input_api,
                                                    MockOutputApi())
     self.assertEqual(0, len(results))
+
+
+class BuildtoolsRevisionsAreInSyncTest(unittest.TestCase):
+  # TODO(crbug.com/941824): We need to make sure the entries in
+  # //buildtools/DEPS are kept in sync with the entries in //DEPS
+  # so that users of //buildtools in other projects get the same tooling
+  # Chromium gets. If we ever fix the referenced bug and add 'includedeps'
+  # support to gclient, we can eliminate the duplication and delete
+  # these tests for the corresponding presubmit check.
+
+  def _check(self, files):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = []
+    for fname, contents in files.items():
+      mock_input_api.files.append(MockFile(fname, contents.splitlines()))
+    return PRESUBMIT._CheckBuildtoolsRevisionsAreInSync(mock_input_api,
+                                                        MockOutputApi())
+
+  def testOneFileChangedButNotTheOther(self):
+    results = self._check({
+        "DEPS": "'libunwind_revision': 'onerev'",
+    })
+    self.assertNotEqual(results, [])
+
+  def testNeitherFileChanged(self):
+    results = self._check({
+        "OWNERS": "foobar@example.com",
+    })
+    self.assertEqual(results, [])
+
+  def testBothFilesChangedAndMatch(self):
+    results = self._check({
+        "DEPS": "'libunwind_revision': 'onerev'",
+        "buildtools/DEPS": "'libunwind_revision': 'onerev'",
+    })
+    self.assertEqual(results, [])
+
+  def testBothFilesWereChangedAndDontMatch(self):
+    results = self._check({
+        "DEPS": "'libunwind_revision': 'onerev'",
+        "buildtools/DEPS": "'libunwind_revision': 'anotherrev'",
+    })
+    self.assertNotEqual(results, [])
+
 
 if __name__ == '__main__':
   unittest.main()

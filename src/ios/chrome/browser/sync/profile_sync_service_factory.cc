@@ -7,16 +7,18 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
-#include "components/browser_sync/browser_sync_switches.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/startup_controller.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_util.h"
 #include "ios/chrome/browser/application_context.h"
@@ -38,10 +40,12 @@
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
 #include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
+#include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
 #include "ios/chrome/browser/sync/session_sync_service_factory.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
+#include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -95,18 +99,18 @@ syncer::SyncService* ProfileSyncServiceFactory::GetForBrowserStateIfExists(
 }
 
 // static
-browser_sync::ProfileSyncService*
+syncer::ProfileSyncService*
 ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  return static_cast<browser_sync::ProfileSyncService*>(
+  return static_cast<syncer::ProfileSyncService*>(
       GetForBrowserState(browser_state));
 }
 
 // static
-browser_sync::ProfileSyncService*
+syncer::ProfileSyncService*
 ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserStateIfExists(
     ios::ChromeBrowserState* browser_state) {
-  return static_cast<browser_sync::ProfileSyncService*>(
+  return static_cast<syncer::ProfileSyncService*>(
       GetForBrowserStateIfExists(browser_state));
 }
 
@@ -134,6 +138,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(IOSChromeProfileInvalidationProviderFactory::GetInstance());
   DependsOn(
       IOSChromeDeprecatedProfileInvalidationProviderFactory::GetInstance());
+  DependsOn(IOSUserEventServiceFactory::GetInstance());
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
   DependsOn(ReadingListModelFactory::GetInstance());
   DependsOn(SessionSyncServiceFactory::GetInstance());
@@ -156,17 +161,21 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
   // startup once bug has been fixed.
   ios::AboutSigninInternalsFactory::GetForBrowserState(browser_state);
 
-  browser_sync::ProfileSyncService::InitParams init_params;
+  syncer::ProfileSyncService::InitParams init_params;
   init_params.identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
-  init_params.start_behavior = browser_sync::ProfileSyncService::MANUAL_START;
+  init_params.start_behavior = syncer::ProfileSyncService::MANUAL_START;
   init_params.sync_client =
       std::make_unique<IOSChromeSyncClient>(browser_state);
   init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
   init_params.url_loader_factory = browser_state->GetSharedURLLoaderFactory();
   init_params.network_connection_tracker =
       GetApplicationContext()->GetNetworkConnectionTracker();
+  init_params.channel = ::GetChannel();
   init_params.debug_identifier = browser_state->GetDebugName();
+  init_params.autofill_enable_account_wallet_storage =
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableAccountWalletStorage);
 
   bool use_fcm_invalidations =
       base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);
@@ -191,8 +200,8 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
         deprecated_invalidation_provider->GetIdentityProvider());
   }
 
-  auto pss = std::make_unique<browser_sync::ProfileSyncService>(
-      std::move(init_params));
+  auto pss =
+      std::make_unique<syncer::ProfileSyncService>(std::move(init_params));
   pss->Initialize();
   return pss;
 }

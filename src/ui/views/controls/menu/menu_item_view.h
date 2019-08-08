@@ -111,20 +111,16 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // The data structure which is used for the menu size
   struct MenuItemDimensions {
-    MenuItemDimensions()
-        : standard_width(0),
-          children_width(0),
-          minor_text_width(0),
-          height(0) {}
+    MenuItemDimensions() = default;
 
     // Width of everything except the accelerator and children views.
-    int standard_width;
+    int standard_width = 0;
     // The width of all contained views of the item.
-    int children_width;
+    int children_width = 0;
     // The amount of space needed to accommodate the subtext.
-    int minor_text_width;
+    int minor_text_width = 0;
     // The height of the menu item.
-    int height;
+    int height = 0;
   };
 
   // Constructor for use with the top level menu item. This menu is never
@@ -132,8 +128,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   explicit MenuItemView(MenuDelegate* delegate);
 
   // Overridden from View:
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
 
@@ -170,6 +165,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Remove an item from the menu at a specified index. The removed MenuItemView
   // is deleted when ChildrenChanged() is invoked.
   void RemoveMenuItemAt(int index);
+
+  // Removes all items from the menu.  The removed MenuItemViews are deleted
+  // when ChildrenChanged() is invoked.
+  void RemoveAllMenuItems();
 
   // Appends an item to this menu.
   // item_id    The id of the item, used to identify it in delegate callbacks
@@ -382,8 +381,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // MenuRunner owns MenuItemView and should be the only one deleting it.
   ~MenuItemView() override;
 
+  // View:
   void ChildPreferredSizeChanged(View* child) override;
-
   const char* GetClassName() const override;
 
   // Returns the preferred size (and padding) of any children.

@@ -91,13 +91,12 @@ class MacPort(base.Port):
     #
 
     def path_to_apache(self):
-        return '/usr/sbin/httpd'
+        return self._path_from_chromium_base(
+            'third_party', 'apache-mac', 'bin', 'httpd')
 
     def path_to_apache_config_file(self):
-        config_file_basename = 'apache2-httpd-' + self._apache_version()
-        if self.host.platform.os_version in ['mac10.13', 'mac10.14']:
-            config_file_basename += '-php7'
-        return self._filesystem.join(self.apache_config_directory(), config_file_basename + '.conf')
+        config_file_basename = 'apache2-httpd-%s-php7.conf' % (self._apache_version(),)
+        return self._filesystem.join(self.apache_config_directory(), config_file_basename)
 
     def _path_to_driver(self, target=None):
         return self._build_path_with_target(target, self.driver_name() + '.app', 'Contents', 'MacOS', self.driver_name())

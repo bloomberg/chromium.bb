@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 from collections import defaultdict
 import pprint
 import sys
@@ -52,7 +54,7 @@ def SameAsOriginal(table, hits):
     if table_set != trans_set:
       table_set_items = ' '.join(table_set)
       trans_set_items = ' '.join(trans_set)
-      print 'FAIL %s: %s vs %s' % (target, table_set_items, trans_set_items)
+      print('FAIL %s: %s vs %s' % (target, table_set_items, trans_set_items))
       return False
   return True
 
@@ -92,9 +94,9 @@ def TestTransform(table, name, verbose=False):
   if verbose:
     PrintData(merged)
   if not cnt:
-    print 'PASS ' + name
+    print('PASS ' + name)
     return 0
-  print 'FAILED ' + name
+  print('FAILED ' + name)
   return 1
 
 

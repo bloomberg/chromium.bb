@@ -631,6 +631,12 @@ OPENSSL_EXPORT int SSL_CTX_set_min_proto_version(SSL_CTX *ctx,
 OPENSSL_EXPORT int SSL_CTX_set_max_proto_version(SSL_CTX *ctx,
                                                  uint16_t version);
 
+// SSL_CTX_get_min_proto_version returns the minimum protocol version for |ctx|
+OPENSSL_EXPORT uint16_t SSL_CTX_get_min_proto_version(SSL_CTX *ctx);
+
+// SSL_CTX_get_max_proto_version returns the maximum protocol version for |ctx|
+OPENSSL_EXPORT uint16_t SSL_CTX_get_max_proto_version(SSL_CTX *ctx);
+
 // SSL_set_min_proto_version sets the minimum protocol version for |ssl| to
 // |version|. If |version| is zero, the default minimum version is used. It
 // returns one on success and zero if |version| is invalid.
@@ -3069,7 +3075,7 @@ OPENSSL_EXPORT void SSL_get_peer_quic_transport_params(const SSL *ssl,
 // host may use a delegated credential to sign the handshake. Once issued,
 // credentials can't be revoked. In order to mitigate the damage in case the
 // credential secret key is compromised, the credential is only valid for a
-// short time (days, hours, or even minutes). This library implements draft-02
+// short time (days, hours, or even minutes). This library implements draft-03
 // of the protocol spec.
 //
 // The extension ID has not been assigned; we're using 0xff02 for the time
@@ -3082,7 +3088,7 @@ OPENSSL_EXPORT void SSL_get_peer_quic_transport_params(const SSL *ssl,
 // SSL_set1_delegated_credential configures the delegated credential (DC) that
 // will be sent to the peer for the current connection. |dc| is the DC in wire
 // format, and |pkey| or |key_method| is the corresponding private key.
-// Currently (as of draft-02), only servers may configure a DC to use in the
+// Currently (as of draft-03), only servers may configure a DC to use in the
 // handshake.
 //
 // The DC will only be used if the protocol version is correct and the signature
@@ -3439,13 +3445,6 @@ OPENSSL_EXPORT uint64_t SSL_get_write_sequence(const SSL *ssl);
 
 
 // Obscure functions.
-
-// SSL_get_structure_sizes returns the sizes of the SSL, SSL_CTX and
-// SSL_SESSION structures so that a test can ensure that outside code agrees on
-// these values.
-OPENSSL_EXPORT void SSL_get_structure_sizes(size_t *ssl_size,
-                                            size_t *ssl_ctx_size,
-                                            size_t *ssl_session_size);
 
 // SSL_CTX_set_msg_callback installs |cb| as the message callback for |ctx|.
 // This callback will be called when sending or receiving low-level record

@@ -75,7 +75,7 @@ def _cpp_type(idl_type):
 IdlTypeBase.callback_cpp_type = property(_cpp_type)
 
 
-def callback_interface_context(callback_interface, _):
+def callback_interface_context(callback_interface, _, component_info):
     is_legacy_callback_interface = len(callback_interface.constants) > 0
 
     includes.clear()
@@ -102,7 +102,7 @@ def callback_interface_context(callback_interface, _):
                 break
 
     return {
-        'constants': [constant_context(constant, callback_interface)
+        'constants': [constant_context(constant, callback_interface, component_info)
                       for constant in callback_interface.constants],
         'cpp_class': callback_interface.name,
         'do_not_check_constants': 'DoNotCheckConstants' in callback_interface.extended_attributes,

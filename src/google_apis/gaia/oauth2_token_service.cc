@@ -711,10 +711,10 @@ OAuth2TokenService::GetCachedTokenResponse(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TokenCache::iterator token_iterator = token_cache_.find(request_parameters);
   if (token_iterator == token_cache_.end())
-    return NULL;
+    return nullptr;
   if (token_iterator->second.expiration_time <= base::Time::Now()) {
     token_cache_.erase(token_iterator);
-    return NULL;
+    return nullptr;
   }
   return &token_iterator->second;
 }

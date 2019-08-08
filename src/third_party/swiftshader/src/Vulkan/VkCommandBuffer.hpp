@@ -17,11 +17,14 @@
 
 #include "VkConfig.h"
 #include "VkObject.hpp"
+#include "VkDescriptorSet.hpp"
+#include "Device/Context.hpp"
 #include <memory>
 #include <vector>
 
 namespace sw
 {
+	class Context;
 	class Renderer;
 }
 
@@ -121,11 +124,36 @@ public:
 	// TODO(sugoi): Move ExecutionState out of CommandBuffer (possibly into Device)
 	struct ExecutionState
 	{
+		struct PipelineState
+		{
+			Pipeline *pipeline = nullptr;
+			vk::DescriptorSet::Bindings descriptorSets = {};
+			vk::DescriptorSet::DynamicOffsets descriptorDynamicOffsets = {};
+		};
+
 		sw::Renderer* renderer = nullptr;
 		RenderPass* renderPass = nullptr;
 		Framebuffer* renderPassFramebuffer = nullptr;
-		Pipeline* pipelines[VK_PIPELINE_BIND_POINT_RANGE_SIZE] = {};
-		VkDescriptorSet boundDescriptorSets[VK_PIPELINE_BIND_POINT_RANGE_SIZE][MAX_BOUND_DESCRIPTOR_SETS] = { { VK_NULL_HANDLE } };
+		std::array<PipelineState, VK_PIPELINE_BIND_POINT_RANGE_SIZE> pipelineState;
+
+		struct DynamicState
+		{
+			VkViewport viewport;
+			VkRect2D scissor;
+			sw::Color<float> blendConstants;
+			float depthBiasConstantFactor = 0.0f;
+			float depthBiasClamp = 0.0f;
+			float depthBiasSlopeFactor = 0.0f;
+			float minDepthBounds = 0.0f;
+			float maxDepthBounds = 0.0f;
+
+			uint32_t compareMask[2] = { 0 };
+			uint32_t writeMask[2] = { 0 };
+			uint32_t reference[2] = { 0 };
+		};
+		DynamicState dynamicState;
+
+		sw::PushConstantStorage pushConstants;
 
 		struct VertexInputBinding
 		{
@@ -137,9 +165,11 @@ public:
 		VkIndexType indexType;
 
 		void bindAttachments();
+		void bindVertexInputs(sw::Context& context, int firstVertex, int firstInstance);
 	};
 
 	void submit(CommandBuffer::ExecutionState& executionState);
+	void submitSecondary(CommandBuffer::ExecutionState& executionState) const;
 
 	class Command;
 private:

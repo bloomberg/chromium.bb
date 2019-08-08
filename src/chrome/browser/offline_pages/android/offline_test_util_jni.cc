@@ -16,9 +16,11 @@
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/offline_page_model.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "jni/OfflineTestUtil_jni.h"
@@ -246,6 +248,20 @@ void JNI_OfflineTestUtil_WaitForConnectivityState(
                 : network::mojom::ConnectionType::CONNECTION_NONE;
   NetworkConnectionObserver::WaitForConnectionType(
       type, base::android::ScopedJavaGlobalRef<jobject>(env, callback));
+}
+
+void JNI_OfflineTestUtil_SetPrefetchingEnabledByServer(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jprofile,
+    const jboolean enabled) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  if (!profile)
+    return;
+
+  prefetch_prefs::SetEnabledByServer(profile->GetPrefs(), enabled);
+  if (!enabled) {
+    prefetch_prefs::ResetForbiddenStateForTesting(profile->GetPrefs());
+  }
 }
 
 }  // namespace offline_pages

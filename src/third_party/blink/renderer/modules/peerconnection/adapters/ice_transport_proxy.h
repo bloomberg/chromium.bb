@@ -116,8 +116,8 @@ class IceTransportProxy final {
   // This handle notifies scheduler about an active connection associated
   // with a frame. Handle should be destroyed when connection is closed.
   // This should have the same lifetime as |proxy_|.
-  std::unique_ptr<FrameScheduler::ActiveConnectionHandle>
-      connection_handle_for_scheduler_;
+  FrameScheduler::SchedulingAffectingFeatureHandle
+      feature_handle_for_scheduler_;
 
   THREAD_CHECKER(thread_checker_);
 

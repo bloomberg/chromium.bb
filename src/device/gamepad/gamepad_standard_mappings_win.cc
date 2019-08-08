@@ -265,11 +265,11 @@ void MapperMogaPro(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
-void MapperAnalogGamepad(const Gamepad& input, Gamepad* mapped) {
-  enum AnalogGamepadButtons {
-    ANALOG_GAMEPAD_BUTTON_EXTRA = BUTTON_INDEX_COUNT,
-    ANALOG_GAMEPAD_BUTTON_EXTRA2,
-    ANALOG_GAMEPAD_BUTTON_COUNT
+void MapperStadiaController(const Gamepad& input, Gamepad* mapped) {
+  enum StadiaGamepadButtons {
+    STADIA_GAMEPAD_BUTTON_EXTRA = BUTTON_INDEX_COUNT,
+    STADIA_GAMEPAD_BUTTON_EXTRA2,
+    STADIA_GAMEPAD_BUTTON_COUNT
   };
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
@@ -285,12 +285,12 @@ void MapperAnalogGamepad(const Gamepad& input, Gamepad* mapped) {
   mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[13];
   mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[14];
   mapped->buttons[BUTTON_INDEX_META] = input.buttons[11];
-  mapped->buttons[ANALOG_GAMEPAD_BUTTON_EXTRA] = input.buttons[16];
-  mapped->buttons[ANALOG_GAMEPAD_BUTTON_EXTRA2] = input.buttons[17];
+  mapped->buttons[STADIA_GAMEPAD_BUTTON_EXTRA] = input.buttons[16];
+  mapped->buttons[STADIA_GAMEPAD_BUTTON_EXTRA2] = input.buttons[17];
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
   DpadFromAxis(mapped, input.axes[9]);
 
-  mapped->buttons_length = ANALOG_GAMEPAD_BUTTON_COUNT;
+  mapped->buttons_length = STADIA_GAMEPAD_BUTTON_COUNT;
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
@@ -356,6 +356,37 @@ void MapperBoomN64Psx(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
+void MapperSwitchJoyCon(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
+  mapped->axes_length = 2;
+}
+
+void MapperSwitchPro(const Gamepad& input, Gamepad* mapped) {
+  // The Switch Pro controller has a Capture button that has no equivalent in
+  // the Standard Gamepad.
+  const size_t kSwitchProExtraButtonCount = 1;
+  *mapped = input;
+  mapped->buttons_length = BUTTON_INDEX_COUNT + kSwitchProExtraButtonCount;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
+void MapperSwitchComposite(const Gamepad& input, Gamepad* mapped) {
+  // In composite mode, the inputs from two Joy-Cons are combined to form one
+  // virtual gamepad. Some buttons do not have equivalents in the Standard
+  // Gamepad and are exposed as extra buttons:
+  // * Capture button (Joy-Con L):  BUTTON_INDEX_COUNT
+  // * SL (Joy-Con L):              BUTTON_INDEX_COUNT + 1
+  // * SR (Joy-Con L):              BUTTON_INDEX_COUNT + 2
+  // * SL (Joy-Con R):              BUTTON_INDEX_COUNT + 3
+  // * SR (Joy-Con R):              BUTTON_INDEX_COUNT + 4
+  const size_t kSwitchCompositeExtraButtonCount = 5;
+  *mapped = input;
+  mapped->buttons_length =
+      BUTTON_INDEX_COUNT + kSwitchCompositeExtraButtonCount;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
 constexpr struct MappingData {
   GamepadId gamepad_id;
   GamepadStandardMappingFunction function;
@@ -374,6 +405,14 @@ constexpr struct MappingData {
     {GamepadId::kSonyProduct09cc, MapperDualshock4},
     // Dualshock 4 USB receiver
     {GamepadId::kSonyProduct0ba0, MapperDualshock4},
+    // Switch Joy-Con L
+    {GamepadId::kNintendoProduct2006, MapperSwitchJoyCon},
+    // Switch Joy-Con R
+    {GamepadId::kNintendoProduct2007, MapperSwitchJoyCon},
+    // Switch Pro Controller
+    {GamepadId::kNintendoProduct2009, MapperSwitchPro},
+    // Switch Charging Grip
+    {GamepadId::kNintendoProduct200e, MapperSwitchPro},
     // iBuffalo Classic
     {GamepadId::kPadixProduct2060, MapperIBuffalo},
     // Nvidia Shield gamepad (2015)
@@ -388,6 +427,8 @@ constexpr struct MappingData {
     {GamepadId::kRazer1532Product0900, MapperRazerServal},
     // ADT-1 Controller
     {GamepadId::kGoogleProduct2c40, MapperADT1},
+    // Stadia Controller
+    {GamepadId::kGoogleProduct9400, MapperStadiaController},
     // Moga Pro Controller (HID mode)
     {GamepadId::kVendor20d6Product6271, MapperMogaPro},
     // OnLive Controller (Bluetooth)
@@ -398,8 +439,8 @@ constexpr struct MappingData {
     {GamepadId::kVendor2836Product0001, MapperOUYA},
     // boom PSX+N64 USB Converter
     {GamepadId::kPrototypeVendorProduct0667, MapperBoomN64Psx},
-    // Analog game controller
-    {GamepadId::kPrototypeVendorProduct9401, MapperAnalogGamepad},
+    // Stadia Controller prototype
+    {GamepadId::kPrototypeVendorProduct9401, MapperStadiaController},
 };
 
 }  // namespace
@@ -416,7 +457,27 @@ GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
   const auto* find_it = std::find_if(begin, end, [=](const MappingData& item) {
     return gamepad_id == item.gamepad_id;
   });
-  return (find_it == end) ? nullptr : find_it->function;
+  GamepadStandardMappingFunction mapper =
+      (find_it == end) ? nullptr : find_it->function;
+
+  // The Switch Joy-Con Charging Grip allows a pair of Joy-Cons to be docked
+  // with the grip and used over USB as a single composite gamepad. The Nintendo
+  // data fetcher also allows a pair of Bluetooth-connected Joy-Cons to be used
+  // as a composite device and sets the same product ID as the Charging Grip.
+  //
+  // In both configurations, we remap the Joy-Con buttons to align with the
+  // Standard Gamepad mapping. Docking a Joy-Con in the Charging Grip makes the
+  // SL and SR buttons inaccessible.
+  //
+  // If the Joy-Cons are not docked, the SL and SR buttons are still accessible.
+  // Inspect the |bus_type| of the composite device to detect this case and use
+  // an alternate mapping function that exposes the extra buttons.
+  if (gamepad_id == GamepadId::kNintendoProduct200e &&
+      mapper == MapperSwitchPro && bus_type != GAMEPAD_BUS_USB) {
+    mapper = MapperSwitchComposite;
+  }
+
+  return mapper;
 }
 
 }  // namespace device

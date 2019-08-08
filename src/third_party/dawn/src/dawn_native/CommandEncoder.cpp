@@ -55,19 +55,19 @@ namespace dawn_native {
 
             // TODO(cwallez@chromium.org): Check the depth bound differently for 2D arrays and 3D
             // textures
-            if (textureCopy.origin.z != 0 || copySize.depth != 1) {
-                return DAWN_VALIDATION_ERROR("No support for z != 0 and depth != 1 for now");
+            if (textureCopy.origin.z != 0 || copySize.depth > 1) {
+                return DAWN_VALIDATION_ERROR("No support for z != 0 and depth > 1 for now");
             }
 
             return {};
         }
 
-        bool FitsInBuffer(const BufferBase* buffer, uint32_t offset, uint32_t size) {
-            uint32_t bufferSize = buffer->GetSize();
+        bool FitsInBuffer(const BufferBase* buffer, uint64_t offset, uint64_t size) {
+            uint64_t bufferSize = buffer->GetSize();
             return offset <= bufferSize && (size <= (bufferSize - offset));
         }
 
-        MaybeError ValidateCopySizeFitsInBuffer(const BufferCopy& bufferCopy, uint32_t dataSize) {
+        MaybeError ValidateCopySizeFitsInBuffer(const BufferCopy& bufferCopy, uint64_t dataSize) {
             if (!FitsInBuffer(bufferCopy.buffer.Get(), bufferCopy.offset, dataSize)) {
                 return DAWN_VALIDATION_ERROR("Copy would overflow the buffer");
             }
@@ -75,9 +75,9 @@ namespace dawn_native {
             return {};
         }
 
-        MaybeError ValidateB2BCopySizeAlignment(uint32_t dataSize,
-                                                uint32_t srcOffset,
-                                                uint32_t dstOffset) {
+        MaybeError ValidateB2BCopySizeAlignment(uint64_t dataSize,
+                                                uint64_t srcOffset,
+                                                uint64_t dstOffset) {
             // Copy size must be a multiple of 4 bytes on macOS.
             if (dataSize % 4 != 0) {
                 return DAWN_VALIDATION_ERROR("Copy size must be a multiple of 4 bytes");
@@ -136,6 +136,49 @@ namespace dawn_native {
         MaybeError ValidateTextureSampleCountInCopyCommands(const TextureBase* texture) {
             if (texture->GetSampleCount() > 1) {
                 return DAWN_VALIDATION_ERROR("The sample count of textures must be 1");
+            }
+
+            return {};
+        }
+
+        MaybeError ValidateEntireSubresourceCopied(const TextureCopy& src,
+                                                   const TextureCopy& dst,
+                                                   const Extent3D& copySize) {
+            Extent3D srcSize = src.texture.Get()->GetSize();
+
+            if (dst.origin.x != 0 || dst.origin.y != 0 || dst.origin.z != 0 ||
+                srcSize.width != copySize.width || srcSize.height != copySize.height ||
+                srcSize.depth != copySize.depth) {
+                return DAWN_VALIDATION_ERROR(
+                    "The entire subresource must be copied when using a depth/stencil texture or "
+                    "when samples are greater than 1.");
+            }
+
+            return {};
+        }
+
+        MaybeError ValidateTextureToTextureCopyRestrictions(const TextureCopy& src,
+                                                            const TextureCopy& dst,
+                                                            const Extent3D& copySize) {
+            const uint32_t srcSamples = src.texture.Get()->GetSampleCount();
+            const uint32_t dstSamples = dst.texture.Get()->GetSampleCount();
+
+            if (srcSamples != dstSamples) {
+                return DAWN_VALIDATION_ERROR(
+                    "Source and destination textures must have matching sample counts.");
+            } else if (srcSamples > 1) {
+                // D3D12 requires entire subresource to be copied when using CopyTextureRegion when
+                // samples > 1.
+                DAWN_TRY(ValidateEntireSubresourceCopied(src, dst, copySize));
+            }
+
+            if (src.texture.Get()->GetFormat() != dst.texture.Get()->GetFormat()) {
+                // Metal requires texture-to-texture copies be the same format
+                return DAWN_VALIDATION_ERROR("Source and destination texture formats must match.");
+            } else if (TextureFormatHasDepthOrStencil(src.texture.Get()->GetFormat())) {
+                // D3D12 requires entire subresource to be copied when using CopyTextureRegion is
+                // used with depth/stencil.
+                DAWN_TRY(ValidateEntireSubresourceCopied(src, dst, copySize));
             }
 
             return {};
@@ -230,19 +273,79 @@ namespace dawn_native {
             return {};
         }
 
+        MaybeError ValidateOrSetColorAttachmentSampleCount(const TextureViewBase* colorAttachment,
+                                                           uint32_t* sampleCount) {
+            if (*sampleCount == 0) {
+                *sampleCount = colorAttachment->GetTexture()->GetSampleCount();
+                DAWN_ASSERT(*sampleCount != 0);
+            } else if (*sampleCount != colorAttachment->GetTexture()->GetSampleCount()) {
+                return DAWN_VALIDATION_ERROR("Color attachment sample counts mismatch");
+            }
+
+            return {};
+        }
+
+        MaybeError ValidateResolveTarget(
+            const DeviceBase* device,
+            const RenderPassColorAttachmentDescriptor* colorAttachment) {
+            if (colorAttachment->resolveTarget == nullptr) {
+                return {};
+            }
+
+            DAWN_TRY(device->ValidateObject(colorAttachment->resolveTarget));
+
+            if (!colorAttachment->attachment->GetTexture()->IsMultisampledTexture()) {
+                return DAWN_VALIDATION_ERROR(
+                    "Cannot set resolve target when the sample count of the color attachment is 1");
+            }
+
+            if (colorAttachment->resolveTarget->GetTexture()->IsMultisampledTexture()) {
+                return DAWN_VALIDATION_ERROR("Cannot use multisampled texture as resolve target");
+            }
+
+            if (colorAttachment->resolveTarget->GetLayerCount() > 1) {
+                return DAWN_VALIDATION_ERROR(
+                    "The array layer count of the resolve target must be 1");
+            }
+
+            if (colorAttachment->resolveTarget->GetLevelCount() > 1) {
+                return DAWN_VALIDATION_ERROR("The mip level count of the resolve target must be 1");
+            }
+
+            uint32_t colorAttachmentBaseMipLevel = colorAttachment->attachment->GetBaseMipLevel();
+            const Extent3D& colorTextureSize = colorAttachment->attachment->GetTexture()->GetSize();
+            uint32_t colorAttachmentWidth = colorTextureSize.width >> colorAttachmentBaseMipLevel;
+            uint32_t colorAttachmentHeight = colorTextureSize.height >> colorAttachmentBaseMipLevel;
+
+            uint32_t resolveTargetBaseMipLevel = colorAttachment->resolveTarget->GetBaseMipLevel();
+            const Extent3D& resolveTextureSize =
+                colorAttachment->resolveTarget->GetTexture()->GetSize();
+            uint32_t resolveTargetWidth = resolveTextureSize.width >> resolveTargetBaseMipLevel;
+            uint32_t resolveTargetHeight = resolveTextureSize.height >> resolveTargetBaseMipLevel;
+            if (colorAttachmentWidth != resolveTargetWidth ||
+                colorAttachmentHeight != resolveTargetHeight) {
+                return DAWN_VALIDATION_ERROR(
+                    "The size of the resolve target must be the same as the color attachment");
+            }
+
+            dawn::TextureFormat resolveTargetFormat = colorAttachment->resolveTarget->GetFormat();
+            if (resolveTargetFormat != colorAttachment->attachment->GetFormat()) {
+                return DAWN_VALIDATION_ERROR(
+                    "The format of the resolve target must be the same as the color attachment");
+            }
+
+            return {};
+        }
+
         MaybeError ValidateRenderPassColorAttachment(
             const DeviceBase* device,
             const RenderPassColorAttachmentDescriptor* colorAttachment,
             uint32_t* width,
-            uint32_t* height) {
+            uint32_t* height,
+            uint32_t* sampleCount) {
             DAWN_ASSERT(colorAttachment != nullptr);
 
             DAWN_TRY(device->ValidateObject(colorAttachment->attachment));
-
-            // TODO(jiawei.shao@intel.com): support resolve target for multisample color attachment.
-            if (colorAttachment->resolveTarget != nullptr) {
-                return DAWN_VALIDATION_ERROR("Resolve target is not supported now");
-            }
 
             const TextureViewBase* attachment = colorAttachment->attachment;
             if (!IsColorRenderableTextureFormat(attachment->GetFormat())) {
@@ -250,6 +353,10 @@ namespace dawn_native {
                     "The format of the texture view used as color attachment is not color "
                     "renderable");
             }
+
+            DAWN_TRY(ValidateOrSetColorAttachmentSampleCount(attachment, sampleCount));
+
+            DAWN_TRY(ValidateResolveTarget(device, colorAttachment));
 
             DAWN_TRY(ValidateAttachmentArrayLayersAndLevelCount(attachment));
             DAWN_TRY(ValidateOrSetAttachmentSize(attachment, width, height));
@@ -261,7 +368,8 @@ namespace dawn_native {
             const DeviceBase* device,
             const RenderPassDepthStencilAttachmentDescriptor* depthStencilAttachment,
             uint32_t* width,
-            uint32_t* height) {
+            uint32_t* height,
+            uint32_t* sampleCount) {
             DAWN_ASSERT(depthStencilAttachment != nullptr);
 
             DAWN_TRY(device->ValidateObject(depthStencilAttachment->attachment));
@@ -273,28 +381,40 @@ namespace dawn_native {
                     "depth stencil format");
             }
 
+            // *sampleCount == 0 must only happen when there is no color attachment. In that case we
+            // do not need to validate the sample count of the depth stencil attachment.
+            const uint32_t depthStencilSampleCount = attachment->GetTexture()->GetSampleCount();
+            if (*sampleCount != 0) {
+                if (depthStencilSampleCount != *sampleCount) {
+                    return DAWN_VALIDATION_ERROR("Depth stencil attachment sample counts mismatch");
+                }
+            } else {
+                *sampleCount = depthStencilSampleCount;
+            }
+
             DAWN_TRY(ValidateAttachmentArrayLayersAndLevelCount(attachment));
             DAWN_TRY(ValidateOrSetAttachmentSize(attachment, width, height));
 
             return {};
         }
 
-        MaybeError ValidateRenderPassDescriptorAndSetSize(const DeviceBase* device,
-                                                          const RenderPassDescriptor* renderPass,
-                                                          uint32_t* width,
-                                                          uint32_t* height) {
+        MaybeError ValidateRenderPassDescriptor(const DeviceBase* device,
+                                                const RenderPassDescriptor* renderPass,
+                                                uint32_t* width,
+                                                uint32_t* height,
+                                                uint32_t* sampleCount) {
             if (renderPass->colorAttachmentCount > kMaxColorAttachments) {
                 return DAWN_VALIDATION_ERROR("Setting color attachments out of bounds");
             }
 
             for (uint32_t i = 0; i < renderPass->colorAttachmentCount; ++i) {
                 DAWN_TRY(ValidateRenderPassColorAttachment(device, renderPass->colorAttachments[i],
-                                                           width, height));
+                                                           width, height, sampleCount));
             }
 
             if (renderPass->depthStencilAttachment != nullptr) {
                 DAWN_TRY(ValidateRenderPassDepthStencilAttachment(
-                    device, renderPass->depthStencilAttachment, width, height));
+                    device, renderPass->depthStencilAttachment, width, height, sampleCount));
             }
 
             if (renderPass->colorAttachmentCount == 0 &&
@@ -440,6 +560,12 @@ namespace dawn_native {
 
                     case dawn::BindingType::Sampler:
                         break;
+
+                    // TODO(shaobo.yan@intel.com): Implement dynamic buffer offset
+                    case dawn::BindingType::DynamicUniformBuffer:
+                    case dawn::BindingType::DynamicStorageBuffer:
+                        UNREACHABLE();
+                        break;
                 }
             }
         }
@@ -506,9 +632,13 @@ namespace dawn_native {
 
         uint32_t width = 0;
         uint32_t height = 0;
-        if (ConsumedError(ValidateRenderPassDescriptorAndSetSize(device, info, &width, &height))) {
+        uint32_t sampleCount = 0;
+        if (ConsumedError(
+                ValidateRenderPassDescriptor(device, info, &width, &height, &sampleCount))) {
             return RenderPassEncoderBase::MakeError(device, this);
         }
+
+        ASSERT(width > 0 && height > 0 && sampleCount > 0);
 
         mEncodingState = EncodingState::RenderPass;
 
@@ -541,15 +671,16 @@ namespace dawn_native {
 
         cmd->width = width;
         cmd->height = height;
+        cmd->sampleCount = sampleCount;
 
         return new RenderPassEncoderBase(device, this, &mAllocator);
     }
 
     void CommandEncoderBase::CopyBufferToBuffer(BufferBase* source,
-                                                uint32_t sourceOffset,
+                                                uint64_t sourceOffset,
                                                 BufferBase* destination,
-                                                uint32_t destinationOffset,
-                                                uint32_t size) {
+                                                uint64_t destinationOffset,
+                                                uint64_t size) {
         if (ConsumedError(ValidateCanRecordTopLevelCommands())) {
             return;
         }
@@ -646,8 +777,40 @@ namespace dawn_native {
         }
     }
 
+    void CommandEncoderBase::CopyTextureToTexture(const TextureCopyView* source,
+                                                  const TextureCopyView* destination,
+                                                  const Extent3D* copySize) {
+        if (ConsumedError(ValidateCanRecordTopLevelCommands())) {
+            return;
+        }
+
+        if (ConsumedError(GetDevice()->ValidateObject(source->texture))) {
+            return;
+        }
+
+        if (ConsumedError(GetDevice()->ValidateObject(destination->texture))) {
+            return;
+        }
+
+        CopyTextureToTextureCmd* copy =
+            mAllocator.Allocate<CopyTextureToTextureCmd>(Command::CopyTextureToTexture);
+        new (copy) CopyTextureToTextureCmd;
+        copy->source.texture = source->texture;
+        copy->source.origin = source->origin;
+        copy->source.level = source->level;
+        copy->source.slice = source->slice;
+        copy->destination.texture = destination->texture;
+        copy->destination.origin = destination->origin;
+        copy->destination.level = destination->level;
+        copy->destination.slice = destination->slice;
+        copy->copySize = *copySize;
+    }
+
     CommandBufferBase* CommandEncoderBase::Finish() {
         if (GetDevice()->ConsumedError(ValidateFinish())) {
+            // Even if finish validation fails, it is now invalid to call any encoding commands on
+            // this object, so we set its state to finished.
+            mEncodingState = EncodingState::Finished;
             return CommandBufferBase::MakeError(GetDevice());
         }
         ASSERT(!IsError());
@@ -673,6 +836,11 @@ namespace dawn_native {
     }
 
     void CommandEncoderBase::PassEnded() {
+        // This function may still be called when the command encoder is finished, just do nothing.
+        if (mEncodingState == EncodingState::Finished) {
+            return;
+        }
+
         if (mEncodingState == EncodingState::ComputePass) {
             mAllocator.Allocate<EndComputePassCmd>(Command::EndComputePass);
         } else {
@@ -782,6 +950,25 @@ namespace dawn_native {
                     mResourceUsages.topLevelBuffers.insert(copy->destination.buffer.Get());
                 } break;
 
+                case Command::CopyTextureToTexture: {
+                    CopyTextureToTextureCmd* copy =
+                        mIterator.NextCommand<CopyTextureToTextureCmd>();
+
+                    DAWN_TRY(ValidateTextureToTextureCopyRestrictions(
+                        copy->source, copy->destination, copy->copySize));
+
+                    DAWN_TRY(ValidateCopySizeFitsInTexture(copy->source, copy->copySize));
+                    DAWN_TRY(ValidateCopySizeFitsInTexture(copy->destination, copy->copySize));
+
+                    DAWN_TRY(ValidateCanUseAs(copy->source.texture.Get(),
+                                              dawn::TextureUsageBit::TransferSrc));
+                    DAWN_TRY(ValidateCanUseAs(copy->destination.texture.Get(),
+                                              dawn::TextureUsageBit::TransferDst));
+
+                    mResourceUsages.topLevelTextures.insert(copy->source.texture.Get());
+                    mResourceUsages.topLevelTextures.insert(copy->destination.texture.Get());
+                } break;
+
                 default:
                     return DAWN_VALIDATION_ERROR("Command disallowed outside of a pass");
             }
@@ -871,6 +1058,12 @@ namespace dawn_native {
             RenderPassColorAttachmentInfo* colorAttachment = &renderPass->colorAttachments[i];
             TextureBase* texture = colorAttachment->view->GetTexture();
             usageTracker.TextureUsedAs(texture, dawn::TextureUsageBit::OutputAttachment);
+
+            TextureViewBase* resolveTarget = colorAttachment->resolveTarget.Get();
+            if (resolveTarget != nullptr) {
+                usageTracker.TextureUsedAs(resolveTarget->GetTexture(),
+                                           dawn::TextureUsageBit::OutputAttachment);
+            }
         }
 
         if (renderPass->hasDepthStencilAttachment) {
@@ -972,7 +1165,7 @@ namespace dawn_native {
                 case Command::SetVertexBuffers: {
                     SetVertexBuffersCmd* cmd = mIterator.NextCommand<SetVertexBuffersCmd>();
                     auto buffers = mIterator.NextData<Ref<BufferBase>>(cmd->count);
-                    mIterator.NextData<uint32_t>(cmd->count);
+                    mIterator.NextData<uint64_t>(cmd->count);
 
                     for (uint32_t i = 0; i < cmd->count; ++i) {
                         usageTracker.BufferUsedAs(buffers[i].Get(), dawn::BufferUsageBit::Vertex);

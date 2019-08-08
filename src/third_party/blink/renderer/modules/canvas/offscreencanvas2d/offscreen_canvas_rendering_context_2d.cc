@@ -35,7 +35,7 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
   ExecutionContext* execution_context = canvas->GetTopExecutionContext();
   if (auto* document = DynamicTo<Document>(execution_context)) {
     Settings* settings = document->GetSettings();
-    if (settings->GetDisableReadingFromCanvas())
+    if (settings && settings->GetDisableReadingFromCanvas())
       canvas->SetDisableReadingFromCanvasTrue();
     return;
   }
@@ -294,7 +294,7 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
   }
 
   CSSParser::ParseValue(
-      style, CSSPropertyFont, new_font, true,
+      style, CSSPropertyID::kFont, new_font, true,
       Host()->GetTopExecutionContext()->GetSecureContextMode());
 
   FontDescription desc =

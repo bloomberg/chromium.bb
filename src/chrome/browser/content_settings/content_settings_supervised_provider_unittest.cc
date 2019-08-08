@@ -22,7 +22,7 @@ namespace content_settings {
 
 class SupervisedUserProviderTest : public ::testing::Test {
  public:
-  SupervisedUserProviderTest() : service_(nullptr) {}
+  SupervisedUserProviderTest() {}
 
   void SetUp() override;
   void TearDown() override;

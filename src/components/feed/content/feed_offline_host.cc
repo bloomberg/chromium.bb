@@ -7,11 +7,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feed/core/feed_scheduler_host.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/page_criteria.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "url/gurl.h"
 
@@ -35,7 +36,8 @@ class CallbackAggregator : public base::RefCounted<CallbackAggregator> {
   using CacheIdCallback =
       base::RepeatingCallback<void(const std::string&, int64_t)>;
 
-  CallbackAggregator(ReportStatusCallback on_completion,
+  CallbackAggregator(OfflinePageModel* model,
+                     ReportStatusCallback on_completion,
                      CacheIdCallback on_each_result)
       : on_completion_(std::move(on_completion)),
         on_each_result_(std::move(on_each_result)),
@@ -80,6 +82,8 @@ class CallbackAggregator : public base::RefCounted<CallbackAggregator> {
                         duration);
     std::move(on_completion_).Run(std::move(urls_));
   }
+
+  OfflinePageModel* offline_page_model_;
 
   // To be called once all callbacks are run or destroyed.
   ReportStatusCallback on_completion_;
@@ -182,15 +186,17 @@ void FeedOfflineHost::GetOfflineStatus(
 
   scoped_refptr<CallbackAggregator> aggregator =
       base::MakeRefCounted<CallbackAggregator>(
-          std::move(callback),
+          offline_page_model_, std::move(callback),
           base::BindRepeating(&FeedOfflineHost::CacheOfflinePageUrlAndId,
                               weak_factory_.GetWeakPtr()));
 
   for (std::string url : urls) {
-    GURL gurl(url);
-    offline_page_model_->GetPagesByURL(
-        gurl, base::BindOnce(&CallbackAggregator::OnGetPages, aggregator,
-                             std::move(url)));
+    offline_pages::PageCriteria criteria;
+    criteria.url = GURL(url);
+    criteria.exclude_tab_bound_pages = true;
+    offline_page_model_->GetPagesWithCriteria(
+        criteria, base::BindOnce(&CallbackAggregator::OnGetPages, aggregator,
+                                 std::move(url)));
   }
 }
 

@@ -9,19 +9,14 @@ cr.define('pages_per_sheet_settings_test', function() {
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+
       pagesPerSheetSection =
           document.createElement('print-preview-pages-per-sheet-settings');
-      pagesPerSheetSection.settings = {
-        pagesPerSheet: {
-          value: 1,
-          unavailableValue: 1,
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: '',
-        },
-      };
+      pagesPerSheetSection.settings = model.settings;
       pagesPerSheetSection.disabled = false;
+      test_util.fakeDataBind(model, pagesPerSheetSection, 'settings');
       document.body.appendChild(pagesPerSheetSection);
     });
 
@@ -30,10 +25,24 @@ cr.define('pages_per_sheet_settings_test', function() {
       const select = pagesPerSheetSection.$$('select');
       assertEquals('1', select.value);
 
-      pagesPerSheetSection.set('settings.pagesPerSheet.value', 4);
+      pagesPerSheetSection.setSetting('pagesPerSheet', 4);
       await test_util.eventToPromise(
           'process-select-change', pagesPerSheetSection);
       assertEquals('4', select.value);
+    });
+
+    // Tests that setting the pages per sheet setting resets margins to DEFAULT.
+    test('resets margins setting', async () => {
+      pagesPerSheetSection.setSetting(
+          'margins', print_preview.ticket_items.MarginsTypeValue.NO_MARGINS);
+      assertEquals(1, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
+      pagesPerSheetSection.setSetting('pagesPerSheet', 4);
+      await test_util.eventToPromise(
+          'process-select-change', pagesPerSheetSection);
+      assertEquals(4, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
+      assertEquals(
+          print_preview.ticket_items.MarginsTypeValue.DEFAULT,
+          pagesPerSheetSection.getSettingValue('margins'));
     });
 
     // Tests that selecting a new option in the dropdown updates the setting.

@@ -19,7 +19,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/compositor/canvas_painter.h"
 #import "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -286,11 +285,13 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
   // If it's the view's window, process normally.
   if ([target isEqual:source]) {
-    if (isScrollEvent)
+    if (isScrollEvent) {
       [self scrollWheel:theEvent];
-    else
+    } else {
       [self mouseEvent:theEvent];
-
+      if ([theEvent type] == NSLeftMouseUp)
+        [self handleLeftMouseUp:theEvent];
+    }
     return;
   }
 
@@ -566,15 +567,29 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 // NSView implementation.
 
-// This view must consistently return YES or else dragging a tab may drag the
-// entire window. See r549802 for details.
+// Refuse first responder so that clicking a blank area of the view don't take
+// first responder away from another view. This does not prevent the view
+// becoming first responder via -[NSWindow makeFirstResponder:] when invoked
+// during Init or by FocusManager.
+//
+// The condition is to work around an AppKit quirk. When a window is being
+// ordered front, if its current first responder returns |NO| for this method,
+// it resigns it if it can find another responder in the key loop that replies
+// |YES|.
 - (BOOL)acceptsFirstResponder {
-  return YES;
+  return self.window.firstResponder == self;
+}
+
+// This undocumented method determines which parts of the view prevent
+// server-side window dragging (i.e. aren't draggable without asking the app
+// first). Since Views decides click-by-click whether to handle an event, the
+// whole view is off limits but, since the view's content is rendered out of
+// process and the view is locally transparent, AppKit won't guess that.
+- (NSRect)_opaqueRectForWindowMoveWhenInTitlebar {
+  return self.bounds;
 }
 
 - (BOOL)becomeFirstResponder {
-  if ([[self window] firstResponder] != self)
-    return NO;
   BOOL result = [super becomeFirstResponder];
   if (result && bridge_)
     bridge_->host()->OnIsFirstResponderChanged(true);
@@ -1432,16 +1447,15 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     client->EndDrag();
 }
 
-// NSAccessibility informal protocol implementation.
+// NSAccessibility formal protocol implementation:
 
-- (id)accessibilityAttributeValue:(NSString*)attribute {
-  if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
-    if (id accessible = bridge_->host_helper()->GetNativeViewAccessible())
-      return @[ accessible ];
-  }
-
-  return [super accessibilityAttributeValue:attribute];
+- (NSArray*)accessibilityChildren {
+  if (id accessible = bridge_->host_helper()->GetNativeViewAccessible())
+    return @[ accessible ];
+  return [super accessibilityChildren];
 }
+
+// NSAccessibility informal protocol implementation:
 
 - (id)accessibilityHitTest:(NSPoint)point {
   return [bridge_->host_helper()->GetNativeViewAccessible()

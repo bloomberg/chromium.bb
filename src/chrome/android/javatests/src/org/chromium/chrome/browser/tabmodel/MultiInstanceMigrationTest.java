@@ -15,13 +15,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,16 +55,13 @@ public class MultiInstanceMigrationTest {
     }
 
     private void buildPersistentStoreAndWaitForMigration() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                MockTabModelSelector selector = new MockTabModelSelector(0, 0, null);
-                TabbedModeTabPersistencePolicy persistencePolicy =
-                        new TabbedModeTabPersistencePolicy(0, false);
-                TabPersistentStore store = new TabPersistentStore(
-                        persistencePolicy, selector, null, null);
-                store.waitForMigrationToFinish();
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            MockTabModelSelector selector = new MockTabModelSelector(0, 0, null);
+            TabbedModeTabPersistencePolicy persistencePolicy =
+                    new TabbedModeTabPersistencePolicy(0, false);
+            TabPersistentStore store =
+                    new TabPersistentStore(persistencePolicy, selector, null, null);
+            store.waitForMigrationToFinish();
         });
     }
 

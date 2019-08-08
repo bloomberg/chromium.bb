@@ -118,7 +118,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
             new net::HttpServerPropertiesImpl()));
 
     std::unique_ptr<net::HostResolver> host_resolver(
-        net::HostResolver::CreateDefaultResolver(
+        net::HostResolver::CreateStandaloneResolver(
             url_request_context_->net_log()));
     storage_->set_http_auth_handler_factory(
         net::HttpAuthHandlerFactory::CreateDefault());
@@ -133,8 +133,6 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         url_request_context_->cert_transparency_verifier();
     network_session_context.ct_policy_enforcer =
         url_request_context_->ct_policy_enforcer();
-    network_session_context.channel_id_service =
-        url_request_context_->channel_id_service();
     network_session_context.net_log = url_request_context_->net_log();
     network_session_context.proxy_resolution_service =
         url_request_context_->proxy_resolution_service();

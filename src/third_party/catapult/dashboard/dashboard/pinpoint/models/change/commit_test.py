@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import mock
 import re
 
 from dashboard.pinpoint.models.change import commit
@@ -75,6 +76,7 @@ deps_os = {
         'committer': {'time': 'Fri Jan 01 00:01:00 2016'},
         'message': 'Subject.\n\n'
                    'Commit message.\n'
+                   'Reviewed-on: https://foo/c/chromium/src/+/123\n'
                    'Cr-Commit-Position: refs/heads/master@{#437745}',
     }
 
@@ -87,7 +89,9 @@ deps_os = {
         'subject': 'Subject.',
         'message': 'Subject.\n\n'
                    'Commit message.\n'
+                   'Reviewed-on: https://foo/c/chromium/src/+/123\n'
                    'Cr-Commit-Position: refs/heads/master@{#437745}',
+        'review_url': 'https://foo/c/chromium/src/+/123',
         'commit_position': 437745,
     }
     self.assertEqual(Commit(0).AsDict(), expected)
@@ -241,6 +245,16 @@ class MidpointTest(test.TestCase):
         commit.Commit(repository='chromium', git_hash='mc_4'))
     self.assertEqual(midpoint,
                      commit.Commit(repository='chromium', git_hash='commit_2'))
+
+  @mock.patch.object(
+      commit.deferred, 'defer')
+  def testMidpointCachesData(self, mock_defer):
+    midpoint = commit.Commit.Midpoint(
+        commit.Commit(repository='chromium', git_hash='commit_0'),
+        commit.Commit(repository='chromium', git_hash='mc_4'))
+
+    mock_defer.assert_called_once_with(
+        commit._CacheCommitDetails, midpoint.repository, midpoint.git_hash)
 
   def testContinuousMidpointWithMergeCommits(self):
 

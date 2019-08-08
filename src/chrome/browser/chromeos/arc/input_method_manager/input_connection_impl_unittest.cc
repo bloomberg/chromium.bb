@@ -14,6 +14,7 @@
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/mock_input_method.h"
+#include "ui/events/keycodes/dom/dom_codes.h"
 
 namespace arc {
 
@@ -277,6 +278,70 @@ TEST_F(InputConnectionImplTest, SetSelection) {
   EXPECT_EQ(4u, client()->selection_history().back().end());
 
   engine()->FocusOut();
+}
+
+TEST_F(InputConnectionImplTest, SendKeyEvent) {
+  auto connection = createNewConnection(1);
+  engine()->FocusIn(context());
+
+  context_handler()->Reset();
+
+  {
+    mojom::KeyEventDataPtr data = mojom::KeyEventData::New();
+    data->pressed = true;
+    data->key_code = ui::VKEY_RETURN;
+    data->is_shift_down = false;
+    data->is_control_down = false;
+    data->is_alt_down = false;
+    data->is_capslock_on = false;
+
+    connection->SendKeyEvent(std::move(data));
+    EXPECT_EQ(1, context_handler()->send_key_event_call_count());
+    const auto& event = context_handler()->last_sent_key_event();
+    EXPECT_EQ(ui::VKEY_RETURN, event.key_code());
+    EXPECT_EQ(ui::DomCode::ENTER, event.code());
+    EXPECT_EQ("Enter", event.GetCodeString());
+    EXPECT_EQ(ui::ET_KEY_PRESSED, event.type());
+    EXPECT_EQ(0, ui::EF_SHIFT_DOWN & event.flags());
+    EXPECT_EQ(0, ui::EF_CONTROL_DOWN & event.flags());
+    EXPECT_EQ(0, ui::EF_ALT_DOWN & event.flags());
+    EXPECT_EQ(0, ui::EF_CAPS_LOCK_ON & event.flags());
+  }
+
+  {
+    mojom::KeyEventDataPtr data = mojom::KeyEventData::New();
+    data->pressed = false;
+    data->key_code = ui::VKEY_A;
+    data->is_shift_down = true;
+    data->is_control_down = true;
+    data->is_alt_down = true;
+    data->is_capslock_on = true;
+
+    connection->SendKeyEvent(std::move(data));
+    EXPECT_EQ(2, context_handler()->send_key_event_call_count());
+    const auto& event = context_handler()->last_sent_key_event();
+    EXPECT_EQ(ui::VKEY_A, event.key_code());
+    EXPECT_EQ(ui::DomCode::US_A, event.code());
+    EXPECT_EQ("KeyA", event.GetCodeString());
+    EXPECT_EQ(ui::ET_KEY_RELEASED, event.type());
+    EXPECT_NE(0, ui::EF_SHIFT_DOWN & event.flags());
+    EXPECT_NE(0, ui::EF_CONTROL_DOWN & event.flags());
+    EXPECT_NE(0, ui::EF_ALT_DOWN & event.flags());
+    EXPECT_NE(0, ui::EF_CAPS_LOCK_ON & event.flags());
+  }
+  engine()->FocusOut();
+}
+
+TEST_F(InputConnectionImplTest, InputContextHandlerIsNull) {
+  auto connection = createNewConnection(1);
+  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+
+  connection->CommitText(base::ASCIIToUTF16("text"), 1);
+  connection->DeleteSurroundingText(1, 1);
+  connection->FinishComposingText();
+  connection->SetComposingText(base::ASCIIToUTF16("text"), 0, base::nullopt);
+  connection->SetSelection(gfx::Range(2, 4));
+  connection->GetTextInputState(true);
 }
 
 }  // namespace arc

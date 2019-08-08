@@ -313,6 +313,9 @@ message LoginReputationClientRequest {
   // Visual features of the current page. This field should only be filled for
   // extended reporting users.
   optional VisualFeatures visual_features = 11;
+
+  // DOM features of the current page.
+  optional DomFeatures dom_features = 12;
 }
 
 // The message is used for client response for login reputation requests.
@@ -402,6 +405,29 @@ message VisualFeatures {
   // Using Rec 2020 color space:
   // https://en.wikipedia.org/wiki/Rec._2020
   optional BlurredImage image = 2;
+}
+
+// This message encapsulates all the DOM features of the current page.
+message DomFeatures {
+  message Feature {
+    // Feature name. E.g., 'PageHasForms'
+    optional string name = 1;
+
+    // Feature value is always in the range [0.0, 1.0].  Boolean features
+    // have value 1.0.
+    optional double value = 2;
+  }
+
+  // List of features extracted.
+  repeated Feature feature_map = 1;
+
+  // List of shingle hashes we extracted.
+  repeated uint32 shingle_hashes = 2 [packed = true];
+
+  // The model version used to generate these hashes. This is copied from
+  // ClientSideModel.version(). The model sets the term list, which affects
+  // the feature extraction.
+  optional int32 model_version = 3;
 }
 
 message ClientMalwareResponse {
@@ -553,6 +579,8 @@ message ClientDownloadRequest {
     // .rar file that Chrome failed to unpack to the point of finding
     // executables or archives.
     INVALID_RAR = 13;
+    // Office Document or PDF.
+    DOCUMENT = 14;
   }
   optional DownloadType download_type = 10 [default = WIN_EXECUTABLE];
 

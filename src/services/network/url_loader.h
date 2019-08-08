@@ -40,6 +40,8 @@ class URLRequestContext;
 
 namespace network {
 
+constexpr size_t kMaxFileUploadRequestsPerBatch = 64;
+
 class NetToMojoPendingBuffer;
 class NetworkUsageAccumulator;
 class KeepaliveStatisticsRecorder;
@@ -87,7 +89,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
                           const net::RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
   void OnAuthRequired(net::URLRequest* request,
-                      net::AuthChallengeInfo* info) override;
+                      const net::AuthChallengeInfo& info) override;
   void OnCertificateRequested(net::URLRequest* request,
                               net::SSLCertRequestInfo* info) override;
   void OnSSLCertificateError(net::URLRequest* request,
@@ -116,6 +118,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   uint32_t GetProcessId() const;
   uint32_t GetResourceType() const;
 
+  // Whether this URLLoader should allow sending/setting cookies for requests
+  // with |url| and |site_for_cookies|. This decision is based on the options
+  // passed to URLLoaderFactory::CreateLoaderAndStart().
+  bool AllowCookies(const GURL& url, const GURL& site_for_cookies) const;
+
   const net::HttpRequestHeaders& custom_proxy_pre_cache_headers() const {
     return custom_proxy_pre_cache_headers_;
   }
@@ -130,6 +137,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   const base::Optional<GURL>& new_redirect_url() const {
     return new_redirect_url_;
+  }
+
+  const base::Optional<std::string>& devtools_request_id() const {
+    return devtools_request_id_;
   }
 
   void SetAllowReportingRawHeaders(bool allow);
@@ -273,6 +284,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // be later referred to from NetworkContext::OnBeforeURLRequestInternal, which
   // is called from NetworkDelegate::NotifyBeforeURLRequest.
   base::Optional<GURL> new_redirect_url_;
+
+  // The ID that DevTools uses to track network requests. It is generated in the
+  // renderer process and is only present when DevTools is enabled in the
+  // renderer.
+  const base::Optional<std::string> devtools_request_id_;
 
   bool should_pause_reading_body_ = false;
   // The response body stream is open, but transferring data is paused.

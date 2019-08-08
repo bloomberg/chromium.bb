@@ -21,7 +21,6 @@
 #include "pc/srtp_filter.h"
 #include "rtc_base/bind.h"
 #include "rtc_base/checks.h"
-#include "rtc_base/key_derivation.h"
 #include "rtc_base/thread.h"
 
 using webrtc::SdpType;
@@ -447,7 +446,7 @@ JsepTransportController::CreateDtlsTransport(
   // If media transport is used for both media and data channels,
   // then we don't need to create DTLS.
   // Otherwise, DTLS is still created.
-  if (is_media_transport_factory_enabled_ && config_.media_transport_factory &&
+  if (config_.media_transport_factory &&
       config_.use_media_transport_for_media &&
       config_.use_media_transport_for_data_channels) {
     dtls = absl::make_unique<cricket::NoOpDtlsTransport>(
@@ -960,9 +959,6 @@ JsepTransportController::MaybeCreateMediaTransport(
     const cricket::ContentInfo& content_info,
     const cricket::SessionDescription& description,
     bool local) {
-  if (!is_media_transport_factory_enabled_) {
-    return nullptr;
-  }
   if (config_.media_transport_factory == nullptr) {
     return nullptr;
   }

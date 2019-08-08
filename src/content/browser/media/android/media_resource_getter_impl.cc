@@ -71,7 +71,8 @@ void CheckPolicyForCookies(const GURL& url,
                            int render_process_id,
                            int render_frame_id,
                            MediaResourceGetterImpl::GetCookieCB callback,
-                           const net::CookieList& cookie_list) {
+                           const net::CookieList& cookie_list,
+                           const net::CookieStatusList& excluded_cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // AllowGetCookie has to be called on IO thread.

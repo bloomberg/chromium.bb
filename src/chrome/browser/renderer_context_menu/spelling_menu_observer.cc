@@ -276,11 +276,23 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
   // The spelling service can be toggled by the user only if it is not managed.
   if (command_id == IDC_CONTENT_CONTEXT_SPELLING_TOGGLE &&
       integrate_spelling_service_.IsUserModifiable()) {
-    // When a user enables the "Ask Google for spelling suggestions" item, we
-    // show a bubble to confirm it. On the other hand, when a user disables this
+    bool spellcheckEnabled =
+        profile &&
+        profile->GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable);
+
+    // When a user enables the "Use enhanced spell check" item, we check to see
+    // if the user has spellcheck disabled. If the user has spellcheck disabled
+    // but has already enabled the spelling service, we just enable spellcheck.
+    // If spellcheck is enabled but the spelling service is not, we show a
+    // bubble to confirm it. On the other hand, when a user disables this
     // item, we directly update/ the profile and stop integrating the spelling
     // service immediately.
-    if (!integrate_spelling_service_.GetValue()) {
+    if (!spellcheckEnabled && integrate_spelling_service_.GetValue()) {
+      if (profile) {
+        profile->GetPrefs()->SetBoolean(spellcheck::prefs::kSpellCheckEnable,
+                                        true);
+      }
+    } else if (!integrate_spelling_service_.GetValue()) {
       content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
       gfx::Rect rect = rvh->GetWidget()->GetView()->GetViewBounds();
       std::unique_ptr<SpellingBubbleModel> model(

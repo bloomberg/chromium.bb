@@ -378,7 +378,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       {
         ScopedGpuRaster gpu_raster(context_provider);
         viz::ClientResourceProvider::ScopedSkSurface scoped_surface(
-            context_provider->GrContext(), mailbox_texture_id,
+            context_provider->GrContext(),
+            pool_resource.color_space().ToSkColorSpace(), mailbox_texture_id,
             backing->texture_target, pool_resource.size(),
             pool_resource.format(), false /* can_use_lcd_text */,
             0 /* msaa_sample_count */);
@@ -838,8 +839,8 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(PaintCanvas* canvas,
   const SkScalar pos[] = {SkFloatToScalar(0.2f), SkFloatToScalar(0.4f),
                           SkFloatToScalar(0.6f), SkFloatToScalar(0.8f),
                           SkFloatToScalar(1.0f)};
-  flags.setShader(PaintShader::MakeSweepGradient(
-      cx, cy, colors, pos, 5, SkShader::kClamp_TileMode, 0, 360));
+  flags.setShader(PaintShader::MakeSweepGradient(cx, cy, colors, pos, 5,
+                                                 SkTileMode::kClamp, 0, 360));
   flags.setAntiAlias(true);
 
   // Draw current status.

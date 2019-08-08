@@ -459,7 +459,7 @@ void DriveFirstRunController::ShowNotification() {
       data, std::move(delegate));
   notification.set_priority(message_center::LOW_PRIORITY);
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, notification, /*metadata=*/nullptr);
 }
 
 }  // namespace chromeos

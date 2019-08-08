@@ -65,6 +65,9 @@ class GURL;
 - (void)viewSource;
 #endif
 
+// Shows the translate infobar.
+- (void)showTranslate;
+
 // Shows the Find In Page bar.
 - (void)showFindInPage;
 
@@ -92,10 +95,6 @@ class GURL;
 
 // Requests the "mobile" version of the current page in the active tab.
 - (void)requestMobileSite;
-
-// Navigates to the Memex tab switcher.
-// TODO(crbug.com/799601): Delete this once its not needed.
-- (void)navigateToMemexTabSwitcher;
 
 // Prepares the browser to display a popup menu.
 - (void)prepareForPopupMenuPresentation:(PopupMenuCommandType)type;

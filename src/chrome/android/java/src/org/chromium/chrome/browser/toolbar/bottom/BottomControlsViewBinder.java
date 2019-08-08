@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.toolbar.bottom;
 
 import android.view.View;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.scene_layer.ScrollingBottomViewSceneLayer;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -31,7 +32,15 @@ class BottomControlsViewBinder {
     }
 
     static void bind(PropertyModel model, ViewHolder view, PropertyKey propertyKey) {
-        if (BottomControlsProperties.Y_OFFSET == propertyKey) {
+        if (BottomControlsProperties.BOTTOM_CONTROLS_CONTAINER_HEIGHT_PX == propertyKey) {
+            View bottomControlsWrapper = view.root.findViewById(R.id.bottom_controls_wrapper);
+            bottomControlsWrapper.getLayoutParams().height =
+                    model.get(BottomControlsProperties.BOTTOM_CONTROLS_CONTAINER_HEIGHT_PX);
+        } else if (BottomControlsProperties.BOTTOM_CONTROLS_HEIGHT_PX == propertyKey) {
+            View bottomContainerSlot = view.root.findViewById(R.id.bottom_toolbar);
+            bottomContainerSlot.getLayoutParams().height =
+                    model.get(BottomControlsProperties.BOTTOM_CONTROLS_HEIGHT_PX);
+        } else if (BottomControlsProperties.Y_OFFSET == propertyKey) {
             // Native may not have completely initialized by the time this is set.
             if (view.sceneLayer == null) return;
             view.sceneLayer.setYOffset(model.get(BottomControlsProperties.Y_OFFSET));

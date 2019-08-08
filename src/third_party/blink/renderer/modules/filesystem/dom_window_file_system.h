@@ -46,7 +46,7 @@ class DOMWindowFileSystem {
  public:
   static void webkitRequestFileSystem(LocalDOMWindow&,
                                       int type,
-                                      long long size,
+                                      int64_t size,
                                       V8FileSystemCallback*,
                                       V8ErrorCallback*);
   static void webkitResolveLocalFileSystemURL(LocalDOMWindow&,

@@ -226,11 +226,13 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info,
       gfx::HasExtension(extension_set, "GL_OES_EGL_image");
 #else
   gl::GLWindowSystemBindingInfo window_system_binding_info;
-  if (gl::init::GetGLWindowSystemBindingInfo(&window_system_binding_info)) {
+  if (gl::init::GetGLWindowSystemBindingInfo(gl_info,
+                                             &window_system_binding_info)) {
     gpu_info->gl_ws_vendor = window_system_binding_info.vendor;
     gpu_info->gl_ws_version = window_system_binding_info.version;
     gpu_info->gl_ws_extensions = window_system_binding_info.extensions;
-    gpu_info->direct_rendering = window_system_binding_info.direct_rendering;
+    gpu_info->direct_rendering_version =
+        window_system_binding_info.direct_rendering_version;
   }
 #endif  // OS_ANDROID
 

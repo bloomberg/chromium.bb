@@ -29,12 +29,14 @@ class NotificationHeaderView;
 }  // namespace message_center
 
 namespace views {
-class ImageView;
+class BoxLayout;
 class ToggleImageButton;
 class View;
 }  // namespace views
 
 namespace ash {
+
+class MediaNotificationBackground;
 
 // MediaNotificationView will show up as a custom notification. It will show the
 // currently playing media and provide playback controls. There will also be
@@ -43,6 +45,24 @@ namespace ash {
 class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
                                          public views::ButtonListener {
  public:
+  // The name of the histogram used when recorded whether the artwork was
+  // present.
+  static const char kArtworkHistogramName[];
+
+  // The name of the histogram used when recording the type of metadata that was
+  // displayed.
+  static const char kMetadataHistogramName[];
+
+  // The type of metadata that was displayed. This is used in metrics so new
+  // values must only be added to the end.
+  enum class Metadata {
+    kTitle,
+    kArtist,
+    kAlbum,
+    kCount,
+    kMaxValue = kCount,
+  };
+
   explicit MediaNotificationView(
       const message_center::Notification& notification);
   ~MediaNotificationView() override;
@@ -53,9 +73,9 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   message_center::NotificationControlButtonsView* GetControlButtonsView()
       const override;
   void SetExpanded(bool expanded) override;
+  void UpdateCornerRadius(int top_radius, int bottom_radius) override;
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
   // views::ButtonListener:
@@ -67,6 +87,7 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   void UpdateWithMediaActions(
       const std::set<media_session::mojom::MediaSessionAction>& actions);
   void UpdateWithMediaArtwork(const gfx::ImageSkia& image);
+  void UpdateWithMediaIcon(const gfx::ImageSkia& image);
 
  private:
   friend class MediaNotificationViewTest;
@@ -74,20 +95,30 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   void UpdateControlButtonsVisibilityWithNotification(
       const message_center::Notification& notification);
 
-  // Creates an image button with |icon| and adds it to |button_row_|. When
-  // clicked it will trigger |action| on the sesssion.
-  void CreateMediaButton(const gfx::VectorIcon& icon,
-                         media_session::mojom::MediaSessionAction action);
-
-  bool IsActionButtonVisible(
-      media_session::mojom::MediaSessionAction action) const;
+  // Creates an image button with an icon that matches |action| and adds it
+  // to |button_row_|. When clicked it will trigger |action| on the session.
+  // |accessible_name| is the text used for screen readers.
+  void CreateMediaButton(media_session::mojom::MediaSessionAction action,
+                         const base::string16& accessible_name);
 
   void UpdateActionButtonsVisibility();
   void UpdateViewForExpandedState();
 
+  MediaNotificationBackground* GetMediaNotificationBackground();
+
+  bool IsExpandable() const;
+  bool IsActuallyExpanded() const;
+
+  std::set<media_session::mojom::MediaSessionAction> CalculateVisibleActions(
+      bool expanded) const;
+
+  void UpdateForegroundColor();
+
   // View containing close and settings buttons.
   std::unique_ptr<message_center::NotificationControlButtonsView>
       control_buttons_view_;
+
+  bool has_artwork_ = false;
 
   // Whether this notification is expanded or not.
   bool expanded_ = false;
@@ -104,7 +135,8 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   views::Label* artist_label_ = nullptr;
   views::View* layout_row_ = nullptr;
   views::View* main_row_ = nullptr;
-  views::ImageView* artwork_ = nullptr;
+
+  views::BoxLayout* title_artist_row_layout_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationView);
 };

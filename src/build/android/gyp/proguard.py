@@ -15,6 +15,11 @@ from util import build_utils
 from util import diff_utils
 from util import proguard_util
 
+_GENERATED_PROGUARD_HEADER = """
+################################################################################
+# Dynamically generated from build/android/gyp/proguard.py
+################################################################################
+"""
 
 # Example:
 # android.arch.core.internal.SafeIterableMap$Entry -> b:
@@ -69,13 +74,14 @@ def _ParseOptions(args):
                     help='Minimum Android API level compatibility.')
   parser.add_option('--verbose', '-v', action='store_true',
                     help='Print all proguard output')
+  parser.add_option(
+      '--repackage-classes',
+      help='Unique package name given to an asynchronously proguarded module')
 
   options, _ = parser.parse_args(args)
 
   assert not options.main_dex_rules_path or options.r8_path, \
-      "R8 must be enabled to pass main dex rules."
-  assert not options.min_api or options.r8_path, \
-      "R8 must be enabled to pass min api."
+      'R8 must be enabled to pass main dex rules.'
 
   classpath = []
   for arg in options.classpath:
@@ -92,7 +98,7 @@ def _ParseOptions(args):
   options.input_paths = build_utils.ParseGnList(options.input_paths)
 
   if not options.mapping_output:
-    options.mapping_output = options.output_path + ".mapping"
+    options.mapping_output = options.output_path + '.mapping'
 
   if options.apply_mapping:
     options.apply_mapping = os.path.abspath(options.apply_mapping)
@@ -102,20 +108,15 @@ def _ParseOptions(args):
 
 
 def _VerifyExpectedConfigs(expected_path, actual_path, fail_on_exit):
-  diff = diff_utils.DiffFileContents(expected_path, actual_path)
-  if not diff:
+  msg = diff_utils.DiffFileContents(expected_path, actual_path)
+  if not msg:
     return
 
-  print """
-{}
-
-Detected Proguard flags change. Please update by running:
-
-cp {} {}
-
-See https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
-for more info.
-""".format(diff, os.path.abspath(actual_path), os.path.abspath(expected_path))
+  sys.stderr.write("""\
+Proguard flag expectations file needs updating. For details see:
+https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
+""")
+  sys.stderr.write(msg)
   if fail_on_exit:
     sys.exit(1)
 
@@ -155,20 +156,28 @@ def _CreateR8Command(options, map_output_path, output_dir, tmp_config_path,
   for config_file in options.proguard_configs:
     cmd += ['--pg-conf', config_file]
 
-  if options.apply_mapping:
+  temp_config_string = ''
+  if options.apply_mapping or options.repackage_classes or options.min_api:
     with open(tmp_config_path, 'w') as f:
-      f.write('-applymapping ' + options.apply_mapping)
+      if options.apply_mapping:
+        temp_config_string += '-applymapping \'%s\'\n' % (options.apply_mapping)
+      if options.repackage_classes:
+        temp_config_string += '-repackageclasses \'%s\'\n' % (
+            options.repackage_classes)
+      if options.min_api:
+        temp_config_string += (
+            '-assumevalues class android.os.Build$VERSION {\n' +
+            '    public static final int SDK_INT return ' + options.min_api +
+            '..9999;\n}\n')
+      f.write(temp_config_string)
     cmd += ['--pg-conf', tmp_config_path]
-
-  if options.min_api:
-    cmd += ['--min-api', options.min_api]
 
   if options.main_dex_rules_path:
     for main_dex_rule in options.main_dex_rules_path:
       cmd += ['--main-dex-rules', main_dex_rule]
 
   cmd += options.input_paths
-  return cmd
+  return cmd, temp_config_string
 
 
 def main(args):
@@ -183,6 +192,7 @@ def main(args):
 
   # TODO(agrieve): Remove proguard usages.
   if options.r8_path:
+    temp_config_string = ''
     with build_utils.TempDir() as tmp_dir:
       tmp_mapping_path = os.path.join(tmp_dir, 'mapping.txt')
       tmp_proguard_config_path = os.path.join(tmp_dir, 'proguard_config.txt')
@@ -194,18 +204,22 @@ def main(args):
       proguard_util.WriteFlagsFile(
           options.proguard_configs, f, exclude_generated=True)
       merged_configs = f.getvalue()
+      # Fix up line endings (third_party configs can have windows endings)
+      merged_configs = merged_configs.replace('\r', '')
       f.close()
       print_stdout = '-whyareyoukeeping' in merged_configs
 
       if options.output_path.endswith('.dex'):
         with build_utils.TempDir() as tmp_dex_dir:
-          cmd = _CreateR8Command(options, tmp_mapping_path, tmp_dex_dir,
-                                 tmp_proguard_config_path, libraries)
+          cmd, temp_config_string = _CreateR8Command(
+              options, tmp_mapping_path, tmp_dex_dir, tmp_proguard_config_path,
+              libraries)
           build_utils.CheckOutput(cmd, print_stdout=print_stdout)
           _MoveTempDexFile(tmp_dex_dir, options.output_path)
       else:
-        cmd = _CreateR8Command(options, tmp_mapping_path, options.output_path,
-                               tmp_proguard_config_path, libraries)
+        cmd, temp_config_string = _CreateR8Command(
+            options, tmp_mapping_path, options.output_path,
+            tmp_proguard_config_path, libraries)
         build_utils.CheckOutput(cmd, print_stdout=print_stdout)
 
       # Copy output files to correct locations.
@@ -213,10 +227,13 @@ def main(args):
         # Mapping files generated by R8 include comments that may break
         # some of our tooling so remove those.
         with open(tmp_mapping_path) as tmp:
-          mapping.writelines(l for l in tmp if not l.startswith("#"))
+          mapping.writelines(l for l in tmp if not l.startswith('#'))
 
     with build_utils.AtomicOutput(options.output_config) as f:
       f.write(merged_configs)
+      if temp_config_string:
+        f.write(_GENERATED_PROGUARD_HEADER)
+        f.write(temp_config_string)
 
     if options.expected_configs_file:
       _VerifyExpectedConfigs(options.expected_configs_file,
@@ -242,6 +259,7 @@ def main(args):
     proguard.mapping_output(options.mapping_output)
     proguard.libraryjars(libraries)
     proguard.verbose(options.verbose)
+    proguard.min_api(options.min_api)
     # Do not consider the temp file as an input since its name is random.
     input_paths = proguard.GetInputs()
 

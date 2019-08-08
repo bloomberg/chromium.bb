@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -24,6 +25,8 @@ namespace {
 // Base FIFOClient with an extra thread for looping and jitter control. The
 // child class must define a specific task to run on the thread.
 class FIFOClient {
+  USING_FAST_MALLOC(FIFOClient);
+
  public:
   FIFOClient(PushPullFIFO* fifo, size_t bus_length, size_t jitter_range_ms)
       : fifo_(fifo),

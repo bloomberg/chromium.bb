@@ -65,6 +65,9 @@ class ShaderStorageBufferTest31 : public ANGLETest
         setConfigGreenBits(8);
         setConfigBlueBits(8);
         setConfigAlphaBits(8);
+
+        // Test flakiness was noticed when reusing displays.
+        forceNewDisplay();
     }
 
     void runMatrixTest(const MatrixCase &matrixCase)
@@ -1590,6 +1593,9 @@ TEST_P(ShaderStorageBufferTest31, LoadAndStoreBooleanValue)
     // http://anglebug.com/1951
     ANGLE_SKIP_TEST_IF(IsIntel() && IsLinux());
 
+    // Seems to fail on Windows NVIDIA GL when tests are run without interruption.
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsNVIDIA() && IsOpenGL());
+
     constexpr char kComputeShaderSource[] = R"(#version 310 es
 layout (local_size_x=1) in;
 layout(binding=0, std140) buffer Storage0
@@ -2034,6 +2040,35 @@ void main()
         glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, kBytesPerComponent, GL_MAP_READ_BIT));
     EXPECT_EQ(kExpectedValue, *ptr);
 
+    EXPECT_GL_NO_ERROR();
+}
+
+// Test that uniform can be used as the index of buffer variable.
+TEST_P(ShaderStorageBufferTest31, UniformUsedAsIndexOfBufferVariable)
+{
+    constexpr char kComputeShaderSource[] =
+        R"(#version 310 es
+layout (local_size_x=4) in;
+layout(std140, binding = 0) uniform CB
+{
+    uint index;
+} cb;
+
+layout(binding=0, std140) buffer Storage0
+{
+    uint data[];
+} sb_load;
+layout(binding=1, std140) buffer Storage1
+{
+    uint data[];
+} sb_store;
+void main()
+{
+    sb_store.data[gl_LocalInvocationIndex] = sb_load.data[gl_LocalInvocationID.x + cb.index];
+}
+)";
+
+    ANGLE_GL_COMPUTE_PROGRAM(program, kComputeShaderSource);
     EXPECT_GL_NO_ERROR();
 }
 

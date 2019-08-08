@@ -12,6 +12,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -66,9 +67,14 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
 
     constexpr int kAccountPictureSize = 68;
     std::string custom_picture_url = profiles::GetPlaceholderAvatarIconUrl();
-    GURL account_picture_url(IdentityManagerFactory::GetForProfile(profile)
-                                 ->GetPrimaryAccountInfo()
-                                 .picture_url);
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile);
+    base::Optional<AccountInfo> primary_account_info =
+        identity_manager->FindExtendedAccountInfoForAccount(
+            identity_manager->GetPrimaryAccountInfo());
+    GURL account_picture_url(primary_account_info
+                                 ? primary_account_info->picture_url
+                                 : std::string());
     if (account_picture_url.is_valid()) {
       custom_picture_url = signin::GetAvatarImageURLWithOptions(
                                account_picture_url, kAccountPictureSize,
@@ -83,7 +89,6 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     consent_feature_ = consent_auditor::Feature::CHROME_UNIFIED_CONSENT;
   } else {
     source->SetDefaultResource(IDR_SYNC_CONFIRMATION_HTML);
-    source->AddResourcePath("sync_confirmation.css", IDR_SYNC_CONFIRMATION_CSS);
     source->AddResourcePath("sync_confirmation.js", IDR_SYNC_CONFIRMATION_JS);
 
     source->AddBoolean("isSyncAllowed", is_sync_allowed);
@@ -127,6 +132,7 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
       g_browser_process->GetApplicationLocale(), &strings);
   source->AddLocalizedStrings(strings);
 
+  DarkModeHandler::Initialize(web_ui, source);
   content::WebUIDataSource::Add(profile, source);
 }
 

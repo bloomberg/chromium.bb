@@ -150,6 +150,8 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   bool IsPointOutsideOfFolderBoundary(const gfx::Point& point) override;
   bool IsOEMFolder() const override;
   void SetRootLevelDragViewVisible(bool visible) override;
+  void HandleKeyboardReparent(AppListItemView* reparented_view,
+                              ui::KeyboardCode key_code) override;
 
   // Returns the compositor associated to the widget containing this view.
   // Returns nullptr if there isn't one associated with this widget.
@@ -175,8 +177,8 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
 
   std::unique_ptr<views::ViewModel> view_model_;
 
-  AppListModel* model_;             // Not owned.
-  AppListFolderItem* folder_item_;  // Not owned.
+  AppListModel* model_;                       // Not owned.
+  AppListFolderItem* folder_item_ = nullptr;  // Not owned.
 
   // The bounds of the activated folder item icon relative to this view.
   gfx::Rect folder_item_icon_bounds_;
@@ -184,7 +186,7 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   // The preferred bounds of this view relative to AppsContainerView.
   gfx::Rect preferred_bounds_;
 
-  bool hide_for_reparent_;
+  bool hide_for_reparent_ = false;
 
   std::unique_ptr<gfx::SlideAnimation> background_animation_;
   std::unique_ptr<gfx::SlideAnimation> folder_item_title_animation_;
@@ -195,7 +197,7 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   std::unique_ptr<ui::LayerOwner> background_mask_ = nullptr;
 
   // The compositor frame number when animation starts.
-  int animation_start_frame_number_;
+  int animation_start_frame_number_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AppListFolderView);
 };

@@ -107,14 +107,14 @@ static network::ResourceRequest CreateResourceRequest(const char* method,
   request.referrer_policy = Referrer::GetDefaultReferrerPolicy();
   request.load_flags = 0;
   request.plugin_child_id = -1;
-  request.resource_type = type;
+  request.resource_type = static_cast<int>(type);
   request.appcache_host_id = blink::mojom::kAppCacheNoHostId;
   request.should_reset_appcache = false;
   request.render_frame_id = 0;
   request.is_main_frame = true;
   request.transition_type = ui::PAGE_TRANSITION_LINK;
   request.allow_download = true;
-  request.keepalive = (type == RESOURCE_TYPE_PING);
+  request.keepalive = (type == ResourceType::kPing);
   return request;
 }
 
@@ -129,7 +129,6 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
             nullptr,
             nullptr,
             nullptr,
-            browser_context->GetSharedCorsOriginAccessList(),
             base::Bind(&TestFilterSpecifyingChild::GetContexts,
                        base::Unretained(this)),
             base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
@@ -915,7 +914,7 @@ void ResourceDispatcherHostTest::MakeTestRequest(
     network::mojom::URLLoaderRequest loader_request,
     network::mojom::URLLoaderClientPtr client) {
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
-                                  url, RESOURCE_TYPE_SUB_RESOURCE,
+                                  url, ResourceType::kSubResource,
                                   std::move(loader_request), std::move(client));
 }
 
@@ -975,7 +974,7 @@ void ResourceDispatcherHostTest::MakeTestRequestWithPriorityAndRenderFrame(
     network::mojom::URLLoaderRequest loader_request,
     network::mojom::URLLoaderClientPtr client) {
   network::ResourceRequest request = CreateResourceRequest(
-      "GET", RESOURCE_TYPE_SUB_RESOURCE, GURL("http://example.com/priority"));
+      "GET", ResourceType::kSubResource, GURL("http://example.com/priority"));
   request.render_frame_id = render_frame_id;
   request.priority = priority;
   filter_->CreateLoaderAndStart(
@@ -1032,7 +1031,7 @@ TEST_P(ResourceDispatcherHostTest, Cancel) {
 
   MakeTestRequestWithResourceType(
       filter_.get(), 0, 4, net::URLRequestTestJob::test_url_4(),
-      RESOURCE_TYPE_PREFETCH,  // detachable type
+      ResourceType::kPrefetch,  // detachable type
       mojo::MakeRequest(&loader4), client4.CreateInterfacePtr());
 
   CancelRequest(2);
@@ -1075,7 +1074,7 @@ TEST_P(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
   network::TestURLLoaderClient client;
   MakeTestRequestWithResourceType(
       filter_.get(), 0, 1, net::URLRequestTestJob::test_url_2(),
-      RESOURCE_TYPE_PREFETCH,  // detachable type
+      ResourceType::kPrefetch,  // detachable type
       mojo::MakeRequest(&loader), client.CreateInterfacePtr());
   content::RunAllTasksUntilIdle();
 
@@ -1121,7 +1120,7 @@ TEST_P(ResourceDispatcherHostTest, DeletedFilterDetached) {
   base::test::ScopedFeatureList feature_list;
   // test_url_1's data is available synchronously, so use 2 and 3.
   network::ResourceRequest request_prefetch = CreateResourceRequest(
-      "GET", RESOURCE_TYPE_PREFETCH, net::URLRequestTestJob::test_url_2());
+      "GET", ResourceType::kPrefetch, net::URLRequestTestJob::test_url_2());
 
   filter_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader1), 0, 1, network::mojom::kURLLoadOptionNone,
@@ -1160,7 +1159,7 @@ TEST_P(ResourceDispatcherHostTest, DeletedFilterDetachedRedirect) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   network::ResourceRequest request = CreateResourceRequest(
-      "GET", RESOURCE_TYPE_PREFETCH,
+      "GET", ResourceType::kPrefetch,
       net::URLRequestTestJob::test_url_redirect_to_url_2());
 
   filter_->CreateLoaderAndStart(
@@ -1245,7 +1244,7 @@ TEST_P(ResourceDispatcherHostTest, DetachWhileStartIsDeferred) {
 
   MakeTestRequestWithResourceType(
       filter_.get(), 0, 1, net::URLRequestTestJob::test_url_1(),
-      RESOURCE_TYPE_PREFETCH,  // detachable type
+      ResourceType::kPrefetch,  // detachable type
       mojo::MakeRequest(&loader), client.CreateInterfacePtr());
   // Cancel request must come from the renderer for a detachable resource to
   // detach.
@@ -1381,23 +1380,23 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForRoute) {
   network::TestURLLoaderClient client1, client2, client3, client4;
   base::test::ScopedFeatureList feature_list;
   job_factory_->SetDelayedStartJobGeneration(true);
-  MakeTestRequestWithRenderFrame(0, 11, 1, net::URLRequestTestJob::test_url_1(),
-                                 RESOURCE_TYPE_XHR, mojo::MakeRequest(&loader1),
-                                 client1.CreateInterfacePtr());
+  MakeTestRequestWithRenderFrame(
+      0, 11, 1, net::URLRequestTestJob::test_url_1(), ResourceType::kXhr,
+      mojo::MakeRequest(&loader1), client1.CreateInterfacePtr());
   EXPECT_EQ(1, host_.pending_requests());
 
-  MakeTestRequestWithRenderFrame(0, 12, 2, net::URLRequestTestJob::test_url_2(),
-                                 RESOURCE_TYPE_XHR, mojo::MakeRequest(&loader2),
-                                 client2.CreateInterfacePtr());
+  MakeTestRequestWithRenderFrame(
+      0, 12, 2, net::URLRequestTestJob::test_url_2(), ResourceType::kXhr,
+      mojo::MakeRequest(&loader2), client2.CreateInterfacePtr());
   EXPECT_EQ(2, host_.pending_requests());
 
   MakeTestRequestWithRenderFrame(
-      0, 11, 3, net::URLRequestTestJob::test_url_3(), RESOURCE_TYPE_PREFETCH,
+      0, 11, 3, net::URLRequestTestJob::test_url_3(), ResourceType::kPrefetch,
       mojo::MakeRequest(&loader3), client3.CreateInterfacePtr());
   EXPECT_EQ(3, host_.pending_requests());
 
   MakeTestRequestWithRenderFrame(
-      0, 12, 4, net::URLRequestTestJob::test_url_4(), RESOURCE_TYPE_PREFETCH,
+      0, 12, 4, net::URLRequestTestJob::test_url_4(), ResourceType::kPrefetch,
       mojo::MakeRequest(&loader4), client4.CreateInterfacePtr());
   EXPECT_EQ(4, host_.pending_requests());
 
@@ -1438,7 +1437,7 @@ TEST_P(ResourceDispatcherHostTest, TestProcessCancel) {
   // request 1 goes to the test delegate
   MakeTestRequestWithResourceType(
       test_filter.get(), 0, 1, net::URLRequestTestJob::test_url_1(),
-      RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loader1),
+      ResourceType::kSubResource, mojo::MakeRequest(&loader1),
       client1.CreateInterfacePtr());
 
   // request 2 goes to us
@@ -1448,13 +1447,13 @@ TEST_P(ResourceDispatcherHostTest, TestProcessCancel) {
   // request 3 goes to the test delegate
   MakeTestRequestWithResourceType(
       test_filter.get(), 0, 3, net::URLRequestTestJob::test_url_3(),
-      RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loader3),
+      ResourceType::kSubResource, mojo::MakeRequest(&loader3),
       client3.CreateInterfacePtr());
 
   // request 4 goes to us
   MakeTestRequestWithResourceType(
       filter_.get(), 0, 4, net::URLRequestTestJob::test_url_4(),
-      RESOURCE_TYPE_PREFETCH,  // detachable type
+      ResourceType::kPrefetch,  // detachable type
       mojo::MakeRequest(&loader4), client4.CreateInterfacePtr());
 
   // Make sure all requests have finished stage one. test_url_1 will have
@@ -1567,7 +1566,7 @@ TEST_P(ResourceDispatcherHostTest, TestProcessCancelDetachedTimesOut) {
   network::TestURLLoaderClient client;
   MakeTestRequestWithResourceType(
       filter_.get(), 0, 1, net::URLRequestTestJob::test_url_4(),
-      RESOURCE_TYPE_PREFETCH,  // detachable type
+      ResourceType::kPrefetch,  // detachable type
       mojo::MakeRequest(&loader), client.CreateInterfacePtr());
   content::RunAllTasksUntilIdle();
   GlobalRequestID global_request_id(filter_->child_id(), 1);
@@ -1619,27 +1618,27 @@ TEST_P(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
   host_.BlockRequestsForRoute(GlobalFrameRoutingId(filter_->child_id(), 13));
 
   MakeTestRequestWithRenderFrame(0, 10, 1, net::URLRequestTestJob::test_url_1(),
-                                 RESOURCE_TYPE_SUB_RESOURCE,
+                                 ResourceType::kSubResource,
                                  mojo::MakeRequest(&loader1),
                                  client1.CreateInterfacePtr());
   MakeTestRequestWithRenderFrame(1, 11, 2, net::URLRequestTestJob::test_url_2(),
-                                 RESOURCE_TYPE_SUB_RESOURCE,
+                                 ResourceType::kSubResource,
                                  mojo::MakeRequest(&loader2),
                                  client2.CreateInterfacePtr());
   MakeTestRequestWithRenderFrame(0, 10, 3, net::URLRequestTestJob::test_url_3(),
-                                 RESOURCE_TYPE_SUB_RESOURCE,
+                                 ResourceType::kSubResource,
                                  mojo::MakeRequest(&loader3),
                                  client3.CreateInterfacePtr());
   MakeTestRequestWithRenderFrame(1, 11, 4, net::URLRequestTestJob::test_url_1(),
-                                 RESOURCE_TYPE_SUB_RESOURCE,
+                                 ResourceType::kSubResource,
                                  mojo::MakeRequest(&loader4),
                                  client4.CreateInterfacePtr());
   MakeTestRequestWithRenderFrame(2, 12, 5, net::URLRequestTestJob::test_url_2(),
-                                 RESOURCE_TYPE_SUB_RESOURCE,
+                                 ResourceType::kSubResource,
                                  mojo::MakeRequest(&loader5),
                                  client5.CreateInterfacePtr());
   MakeTestRequestWithRenderFrame(3, 13, 6, net::URLRequestTestJob::test_url_3(),
-                                 RESOURCE_TYPE_SUB_RESOURCE,
+                                 ResourceType::kSubResource,
                                  mojo::MakeRequest(&loader6),
                                  client6.CreateInterfacePtr());
 
@@ -1667,7 +1666,7 @@ TEST_P(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
 
   // Test that new requests are not blocked for RFH 11.
   MakeTestRequestWithRenderFrame(1, 11, 7, net::URLRequestTestJob::test_url_1(),
-                                 RESOURCE_TYPE_SUB_RESOURCE,
+                                 ResourceType::kSubResource,
                                  mojo::MakeRequest(&loader7),
                                  client7.CreateInterfacePtr());
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -1695,25 +1694,25 @@ TEST_P(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
   host_.BlockRequestsForRoute(GlobalFrameRoutingId(filter_->child_id(), 11));
 
   MakeTestRequestWithRenderFrame(0, 10, 1, net::URLRequestTestJob::test_url_1(),
-                                 RESOURCE_TYPE_SUB_RESOURCE,
+                                 ResourceType::kSubResource,
                                  mojo::MakeRequest(&loader1),
                                  client1.CreateInterfacePtr());
   MakeTestRequestWithRenderFrame(1, 11, 2, net::URLRequestTestJob::test_url_2(),
-                                 RESOURCE_TYPE_SUB_RESOURCE,
+                                 ResourceType::kSubResource,
                                  mojo::MakeRequest(&loader2),
                                  client2.CreateInterfacePtr());
   MakeTestRequestWithRenderFrame(0, 10, 3, net::URLRequestTestJob::test_url_3(),
-                                 RESOURCE_TYPE_SUB_RESOURCE,
+                                 ResourceType::kSubResource,
                                  mojo::MakeRequest(&loader3),
                                  client3.CreateInterfacePtr());
   MakeTestRequestWithRenderFrame(1, 11, 4, net::URLRequestTestJob::test_url_1(),
-                                 RESOURCE_TYPE_SUB_RESOURCE,
+                                 ResourceType::kSubResource,
                                  mojo::MakeRequest(&loader4),
                                  client4.CreateInterfacePtr());
   // Blocked detachable resources should not delay cancellation.
   //
   MakeTestRequestWithRenderFrame(1, 11, 5, net::URLRequestTestJob::test_url_4(),
-                                 RESOURCE_TYPE_PREFETCH,  // detachable type
+                                 ResourceType::kPrefetch,  // detachable type
                                  mojo::MakeRequest(&loader5),
                                  client5.CreateInterfacePtr());
   // Flush all the pending requests.
@@ -1749,23 +1748,23 @@ TEST_P(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
 
   MakeTestRequestWithResourceType(
       filter_.get(), 0, 1, net::URLRequestTestJob::test_url_1(),
-      RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loader1),
+      ResourceType::kSubResource, mojo::MakeRequest(&loader1),
       client1.CreateInterfacePtr());
   MakeTestRequestWithResourceType(
       second_filter.get(), 0, 2, net::URLRequestTestJob::test_url_2(),
-      RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loader2),
+      ResourceType::kSubResource, mojo::MakeRequest(&loader2),
       client2.CreateInterfacePtr());
   MakeTestRequestWithResourceType(
       filter_.get(), 0, 3, net::URLRequestTestJob::test_url_3(),
-      RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loader3),
+      ResourceType::kSubResource, mojo::MakeRequest(&loader3),
       client3.CreateInterfacePtr());
   MakeTestRequestWithResourceType(
       second_filter.get(), 0, 4, net::URLRequestTestJob::test_url_1(),
-      RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loader4),
+      ResourceType::kSubResource, mojo::MakeRequest(&loader4),
       client4.CreateInterfacePtr());
   MakeTestRequestWithResourceType(
       second_filter.get(), 0, 5, net::URLRequestTestJob::test_url_4(),
-      RESOURCE_TYPE_PREFETCH,  // detachable type
+      ResourceType::kPrefetch,  // detachable type
       mojo::MakeRequest(&loader5), client5.CreateInterfacePtr());
 
   // Simulate process death.
@@ -1804,35 +1803,35 @@ TEST_P(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
 
   MakeTestRequestWithResourceType(
       filter_.get(), 0, 1, net::URLRequestTestJob::test_url_1(),
-      RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loader1),
+      ResourceType::kSubResource, mojo::MakeRequest(&loader1),
       client1.CreateInterfacePtr());
   MakeTestRequestWithResourceType(
       filter_.get(), 1, 2, net::URLRequestTestJob::test_url_2(),
-      RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loader2),
+      ResourceType::kSubResource, mojo::MakeRequest(&loader2),
       client2.CreateInterfacePtr());
   MakeTestRequestWithResourceType(
       filter_.get(), 0, 3, net::URLRequestTestJob::test_url_3(),
-      RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loader3),
+      ResourceType::kSubResource, mojo::MakeRequest(&loader3),
       client3.CreateInterfacePtr());
   MakeTestRequestWithResourceType(
       second_filter.get(), 1, 4, net::URLRequestTestJob::test_url_1(),
-      RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loader4),
+      ResourceType::kSubResource, mojo::MakeRequest(&loader4),
       client4.CreateInterfacePtr());
   MakeTestRequestWithResourceType(
       filter_.get(), 2, 5, net::URLRequestTestJob::test_url_2(),
-      RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loader5),
+      ResourceType::kSubResource, mojo::MakeRequest(&loader5),
       client5.CreateInterfacePtr());
   MakeTestRequestWithResourceType(
       filter_.get(), 2, 6, net::URLRequestTestJob::test_url_3(),
-      RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loader6),
+      ResourceType::kSubResource, mojo::MakeRequest(&loader6),
       client6.CreateInterfacePtr());
   MakeTestRequestWithResourceType(
       filter_.get(), 0, 7, net::URLRequestTestJob::test_url_4(),
-      RESOURCE_TYPE_PREFETCH,  // detachable type
+      ResourceType::kPrefetch,  // detachable type
       mojo::MakeRequest(&loader7), client7.CreateInterfacePtr());
   MakeTestRequestWithResourceType(
       second_filter.get(), 1, 8, net::URLRequestTestJob::test_url_4(),
-      RESOURCE_TYPE_PREFETCH,  // detachable type
+      ResourceType::kPrefetch,  // detachable type
       mojo::MakeRequest(&loader8), client8.CreateInterfacePtr());
 
   host_.CancelRequestsForProcess(filter_->child_id());
@@ -1905,29 +1904,29 @@ TEST_P(ResourceDispatcherHostTest, TooMuchOutstandingRequestsMemory) {
   for (size_t i = 0; i < kMaxRequests; ++i) {
     MakeTestRequestWithResourceType(
         filter_.get(), 0, i + 1, net::URLRequestTestJob::test_url_2(),
-        RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loaders[i]),
+        ResourceType::kSubResource, mojo::MakeRequest(&loaders[i]),
         clients[i].CreateInterfacePtr());
   }
 
   // Issue two more requests for our process -- these should fail immediately.
   MakeTestRequestWithResourceType(
       filter_.get(), 0, kMaxRequests + 1, net::URLRequestTestJob::test_url_2(),
-      RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loaders[kMaxRequests]),
+      ResourceType::kSubResource, mojo::MakeRequest(&loaders[kMaxRequests]),
       clients[kMaxRequests].CreateInterfacePtr());
   MakeTestRequestWithResourceType(
       filter_.get(), 0, kMaxRequests + 2, net::URLRequestTestJob::test_url_2(),
-      RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loaders[kMaxRequests + 1]),
+      ResourceType::kSubResource, mojo::MakeRequest(&loaders[kMaxRequests + 1]),
       clients[kMaxRequests + 1].CreateInterfacePtr());
   // Issue two requests for the second process -- these should succeed since
   // it is just process 0 that is saturated.
   MakeTestRequestWithResourceType(
       second_filter.get(), 0, kMaxRequests + 3,
-      net::URLRequestTestJob::test_url_2(), RESOURCE_TYPE_SUB_RESOURCE,
+      net::URLRequestTestJob::test_url_2(), ResourceType::kSubResource,
       mojo::MakeRequest(&loaders[kMaxRequests + 2]),
       clients[kMaxRequests + 2].CreateInterfacePtr());
   MakeTestRequestWithResourceType(
       second_filter.get(), 0, kMaxRequests + 4,
-      net::URLRequestTestJob::test_url_2(), RESOURCE_TYPE_SUB_RESOURCE,
+      net::URLRequestTestJob::test_url_2(), ResourceType::kSubResource,
       mojo::MakeRequest(&loaders[kMaxRequests + 3]),
       clients[kMaxRequests + 3].CreateInterfacePtr());
   // Flush all the pending requests.
@@ -1978,14 +1977,14 @@ TEST_P(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
   for (size_t i = 0; i < kMaxRequestsPerProcess; ++i) {
     MakeTestRequestWithResourceType(
         filter_.get(), 0, i + 1, net::URLRequestTestJob::test_url_2(),
-        RESOURCE_TYPE_SUB_RESOURCE, mojo::MakeRequest(&loaders[i]),
+        ResourceType::kSubResource, mojo::MakeRequest(&loaders[i]),
         clients[i].CreateInterfacePtr());
   }
 
   // Issue another request for our process -- this should fail immediately.
   MakeTestRequestWithResourceType(
       filter_.get(), 0, kMaxRequestsPerProcess + 1,
-      net::URLRequestTestJob::test_url_2(), RESOURCE_TYPE_SUB_RESOURCE,
+      net::URLRequestTestJob::test_url_2(), ResourceType::kSubResource,
       mojo::MakeRequest(&loaders[kMaxRequestsPerProcess]),
       clients[kMaxRequestsPerProcess].CreateInterfacePtr());
 
@@ -1993,7 +1992,7 @@ TEST_P(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
   // is just process 0 that is saturated.
   MakeTestRequestWithResourceType(
       second_filter.get(), 0, kMaxRequestsPerProcess + 2,
-      net::URLRequestTestJob::test_url_2(), RESOURCE_TYPE_SUB_RESOURCE,
+      net::URLRequestTestJob::test_url_2(), ResourceType::kSubResource,
       mojo::MakeRequest(&loaders[kMaxRequestsPerProcess + 1]),
       clients[kMaxRequestsPerProcess + 1].CreateInterfacePtr());
 
@@ -2001,7 +2000,7 @@ TEST_P(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
   // global limit has been reached.
   MakeTestRequestWithResourceType(
       third_filter.get(), 0, kMaxRequestsPerProcess + 3,
-      net::URLRequestTestJob::test_url_2(), RESOURCE_TYPE_SUB_RESOURCE,
+      net::URLRequestTestJob::test_url_2(), ResourceType::kSubResource,
       mojo::MakeRequest(&loaders[kMaxRequestsPerProcess + 2]),
       clients[kMaxRequestsPerProcess + 2].CreateInterfacePtr());
 
@@ -2148,7 +2147,7 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContextDetached) {
 
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
                                   net::URLRequestTestJob::test_url_4(),
-                                  RESOURCE_TYPE_PREFETCH,  // detachable type
+                                  ResourceType::kPrefetch,  // detachable type
                                   mojo::MakeRequest(&loader),
                                   client.CreateInterfacePtr());
 
@@ -2185,7 +2184,9 @@ class ExternalProtocolBrowserClient : public TestContentBrowserClient {
       ui::PageTransition page_transition,
       bool has_user_gesture,
       const std::string& method,
-      const net::HttpRequestHeaders& headers) override {
+      const net::HttpRequestHeaders& headers,
+      network::mojom::URLLoaderFactoryRequest* factory_request,
+      network::mojom::URLLoaderFactory*& out_factory) override {
     return false;
   }
 
@@ -2240,7 +2241,7 @@ TEST_P(ResourceDispatcherHostTest, DataSentBeforeDetach) {
 
   MakeTestRequestWithResourceType(
       filter_.get(), render_view_id, request_id,
-      GURL("http://example.com/blah"), RESOURCE_TYPE_PREFETCH,
+      GURL("http://example.com/blah"), ResourceType::kPrefetch,
       mojo::MakeRequest(&loader), client.CreateInterfacePtr());
   content::RunAllTasksUntilIdle();
 
@@ -2453,7 +2454,7 @@ TEST_P(ResourceDispatcherHostTest, ThrottleMustProcessResponseBeforeRead) {
 
   MakeTestRequestWithResourceType(
       filter_.get(), filter_->child_id(), 1, GURL("http://example.com/blah"),
-      RESOURCE_TYPE_STYLESHEET, mojo::MakeRequest(&loader),
+      ResourceType::kStylesheet, mojo::MakeRequest(&loader),
       client.CreateInterfacePtr());
 
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {

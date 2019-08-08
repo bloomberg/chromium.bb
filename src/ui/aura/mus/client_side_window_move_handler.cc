@@ -99,6 +99,12 @@ ClientSideWindowMoveHandler::~ClientSideWindowMoveHandler() {
 
 void ClientSideWindowMoveHandler::MaybeSetupLastTarget(
     ui::LocatedEvent* event) {
+  // Do nothing in the middle of a dragging session, otherwise some properties
+  // (e.g. |last_component_| or |dragging_window_|) might get wrong. See:
+  // https://crbug.com/940545.
+  if (dragging_window_)
+    return;
+
   last_target_.RemoveAll();
 
   Window* window = GetToplevelTargetForEvent(event, &last_component_);
@@ -116,6 +122,11 @@ void ClientSideWindowMoveHandler::MaybeSetupLastTarget(
 
 void ClientSideWindowMoveHandler::UpdateWindowResizeShadow(Window* window,
                                                            int component) {
+  // Do nothing in the middle of a dragging session. See:
+  // https://crbug.com/940545.
+  if (dragging_window_)
+    return;
+
   client_->SetWindowResizeShadow(window->GetRootWindow(), component);
   last_shadow_target_.RemoveAll();
   last_shadow_target_.Add(window);
@@ -124,6 +135,11 @@ void ClientSideWindowMoveHandler::UpdateWindowResizeShadow(Window* window,
 void ClientSideWindowMoveHandler::MaybePerformWindowMove(
     ui::LocatedEvent* event,
     ws::mojom::MoveLoopSource source) {
+  // Do nothing in the middle of a dragging session. See:
+  // https://crbug.com/940545.
+  if (dragging_window_)
+    return;
+
   Window* target = static_cast<Window*>(event->target());
   if (!last_target_.Contains(target->GetToplevelWindow()))
     return;

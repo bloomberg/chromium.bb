@@ -2335,10 +2335,24 @@ void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
   if (HasOverflowClip() && !end_padding && GetNode() &&
       IsRootEditableElement(*GetNode()) && StyleRef().IsLeftToRightDirection())
     end_padding = LayoutUnit(1);
-  for (RootInlineBox* curr = FirstRootBox(); curr; curr = curr->NextRootBox()) {
-    LayoutRect visual_overflow =
-        curr->VisualOverflowRect(curr->LineTop(), curr->LineBottom());
-    AddContentsVisualOverflow(visual_overflow);
+
+  if (const NGPaintFragment* paint_fragment = PaintFragment()) {
+    for (const NGPaintFragment* child : paint_fragment->Children()) {
+      if (child->HasSelfPaintingLayer())
+        continue;
+      NGPhysicalOffsetRect child_rect = child->InkOverflow();
+      if (!child_rect.IsEmpty()) {
+        child_rect.offset += child->Offset();
+        AddContentsVisualOverflow(child_rect.ToLayoutRect());
+      }
+    }
+  } else {
+    for (RootInlineBox* curr = FirstRootBox(); curr;
+         curr = curr->NextRootBox()) {
+      LayoutRect visual_overflow =
+          curr->VisualOverflowRect(curr->LineTop(), curr->LineBottom());
+      AddContentsVisualOverflow(visual_overflow);
+    }
   }
 
   if (!ContainsInlineWithOutlineAndContinuation())

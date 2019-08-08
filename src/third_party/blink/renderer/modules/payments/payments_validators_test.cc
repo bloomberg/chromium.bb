@@ -197,6 +197,7 @@ struct ValidationErrorsTestCase {
   ValidationErrorsTestCase(bool expected_valid)
       : expected_valid(expected_valid) {}
 
+  const char* m_error = "";
   const char* m_payer_email = "";
   const char* m_payer_name = "";
   const char* m_payer_phone = "";
@@ -242,6 +243,7 @@ PaymentValidationErrors* toPaymentValidationErrors(
   shipping_address->setRegion(test_case.m_shipping_address_region);
   shipping_address->setSortingCode(test_case.m_shipping_address_sorting_code);
 
+  errors->setError(test_case.m_error);
   errors->setPayer(payer);
   errors->setShippingAddress(shipping_address);
 
@@ -266,6 +268,7 @@ INSTANTIATE_TEST_SUITE_P(
     PaymentValidationErrorss,
     PaymentsErrorMessageValidatorTest,
     testing::Values(
+        VALIDATION_ERRORS_TEST_CASE(error, "test", true),
         VALIDATION_ERRORS_TEST_CASE(payer_email, "test", true),
         VALIDATION_ERRORS_TEST_CASE(payer_name, "test", true),
         VALIDATION_ERRORS_TEST_CASE(payer_phone, "test", true),
@@ -288,6 +291,7 @@ INSTANTIATE_TEST_SUITE_P(
         VALIDATION_ERRORS_TEST_CASE(shipping_address_sorting_code,
                                     "test",
                                     true),
+        VALIDATION_ERRORS_TEST_CASE(error, LongString2049(), false),
         VALIDATION_ERRORS_TEST_CASE(payer_email, LongString2049(), false),
         VALIDATION_ERRORS_TEST_CASE(payer_name, LongString2049(), false),
         VALIDATION_ERRORS_TEST_CASE(payer_phone, LongString2049(), false),

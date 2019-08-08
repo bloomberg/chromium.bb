@@ -19,6 +19,7 @@
 #include "chrome/browser/metrics/perf/heap_collector.h"
 #include "chrome/browser/metrics/perf/metric_collector.h"
 #include "chromeos/login/login_state/login_state.h"
+#include "components/services/heap_profiling/public/cpp/settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
@@ -130,8 +131,8 @@ class ProfileProviderTest : public testing::Test {
   void SetUp() override {
     // ProfileProvider requires chromeos::LoginState and
     // chromeos::PowerManagerClient to be initialized.
+    chromeos::PowerManagerClient::InitializeFake();
     chromeos::LoginState::Initialize();
-    chromeos::PowerManagerClient::Initialize();
 
     profile_provider_ = std::make_unique<TestProfileProvider>();
     profile_provider_->Init();
@@ -139,8 +140,8 @@ class ProfileProviderTest : public testing::Test {
 
   void TearDown() override {
     profile_provider_.reset();
-    chromeos::PowerManagerClient::Shutdown();
     chromeos::LoginState::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
   }
 
  protected:
@@ -302,13 +303,13 @@ class ProfileProviderFeatureParamsTest : public testing::Test {
   void SetUp() override {
     // ProfileProvider requires chromeos::LoginState and
     // chromeos::PowerManagerClient to be initialized.
+    chromeos::PowerManagerClient::InitializeFake();
     chromeos::LoginState::Initialize();
-    chromeos::PowerManagerClient::Initialize();
   }
 
   void TearDown() override {
-    chromeos::PowerManagerClient::Shutdown();
     chromeos::LoginState::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
   }
 
  private:
@@ -320,11 +321,12 @@ class ProfileProviderFeatureParamsTest : public testing::Test {
 
 TEST_F(ProfileProviderFeatureParamsTest, HeapCollectorDisabled) {
   std::map<std::string, std::string> params;
-  params.insert(std::make_pair("SamplingFactorForEnablingHeapCollector", "0"));
+  params.insert(
+      std::make_pair(heap_profiling::kOOPHeapProfilingFeatureMode, "non-cwp"));
 
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(kCWPHeapCollection,
-                                                         params);
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      heap_profiling::kOOPHeapProfilingFeature, params);
 
   TestParamsProfileProvider profile_provider;
   // We should have one collector registered.
@@ -338,11 +340,12 @@ TEST_F(ProfileProviderFeatureParamsTest, HeapCollectorDisabled) {
 
 TEST_F(ProfileProviderFeatureParamsTest, HeapCollectorEnabled) {
   std::map<std::string, std::string> params;
-  params.insert(std::make_pair("SamplingFactorForEnablingHeapCollector", "1"));
+  params.insert(std::make_pair(heap_profiling::kOOPHeapProfilingFeatureMode,
+                               "cwp-tcmalloc"));
 
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(kCWPHeapCollection,
-                                                         params);
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      heap_profiling::kOOPHeapProfilingFeature, params);
 
   TestParamsProfileProvider profile_provider;
   // We should have one collector registered.

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromecast/media/cma/backend/post_processors/governor.h"
+
 #include <cmath>
 #include <cstdint>
 #include <limits>
@@ -12,7 +14,6 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chromecast/media/base/aligned_buffer.h"
-#include "chromecast/media/cma/backend/post_processors/governor.h"
 #include "chromecast/media/cma/backend/post_processors/post_processor_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,11 +58,11 @@ class GovernorTest : public ::testing::TestWithParam<float> {
   ~GovernorTest() = default;
   void SetUp() override {
     governor_->SetSlewTimeMsForTest(0);
-    governor_->SetSampleRate(kSampleRate);
+    governor_->SetConfig({kSampleRate});
   }
 
   void ProcessFrames(float volume) {
-    EXPECT_EQ(governor_->ProcessFrames(data_.data(), kNumFrames, volume, 0), 0);
+    governor_->ProcessFrames(data_.data(), kNumFrames, volume, 0);
   }
 
   void CompareBuffers() {
@@ -87,13 +88,17 @@ TEST_P(GovernorTest, ZeroVolume) {
 }
 
 TEST_P(GovernorTest, EpsilonBelowOnset) {
-  float volume = onset_volume_ - std::numeric_limits<float>::epsilon();
+  // Approximately equaling is inclusive, thus needs more than one epsilon to
+  // make sure triggering volume change.
+  float volume = onset_volume_ - 2 * std::numeric_limits<float>::epsilon();
   ProcessFrames(volume);
   CompareBuffers();
 }
 
 TEST_P(GovernorTest, EpsilonAboveOnset) {
-  float volume = onset_volume_ + std::numeric_limits<float>::epsilon();
+  // Approximately equaling is inclusive, thus needs more than one epsilon to
+  // make sure triggering volume change.
+  float volume = onset_volume_ + 2 * std::numeric_limits<float>::epsilon();
   ProcessFrames(volume);
   ScaleData(expected_.data(), kNumFrames * kNumChannels, clamp_);
   CompareBuffers();

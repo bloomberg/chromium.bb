@@ -1075,9 +1075,9 @@ TEST_F(FieldTrialTest, FloatBoundariesGiveEqualGroupSizes) {
     scoped_refptr<FieldTrial> trial(
         new FieldTrial("test", kBucketCount, "default", entropy));
     for (int j = 0; j < kBucketCount; ++j)
-      trial->AppendGroup(IntToString(j), 1);
+      trial->AppendGroup(NumberToString(j), 1);
 
-    EXPECT_EQ(IntToString(i), trial->group_name());
+    EXPECT_EQ(NumberToString(i), trial->group_name());
   }
 }
 
@@ -1482,7 +1482,9 @@ TEST(FieldTrialListTest, SerializeSharedMemoryRegionMetadata) {
 
   LaunchOptions options;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_WIN)
+  options.handles_to_inherit.push_back(shm.region.GetPlatformHandle());
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
   options.mach_ports_for_rendezvous.insert(
       std::make_pair('fldt', MachRendezvousPort{shm.region.GetPlatformHandle(),
                                                 MACH_MSG_TYPE_COPY_SEND}));

@@ -25,8 +25,8 @@
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/attestation_constants.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/constants/attestation_constants.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -83,8 +83,7 @@ EPKPChallengeKeyBase::PrepareKeyContext::~PrepareKeyContext() {
 }
 
 EPKPChallengeKeyBase::EPKPChallengeKeyBase()
-    : cryptohome_client_(
-          chromeos::DBusThreadManager::Get()->GetCryptohomeClient()),
+    : cryptohome_client_(chromeos::CryptohomeClient::Get()),
       async_caller_(cryptohome::AsyncMethodCaller::GetInstance()),
       install_attributes_(g_browser_process->platform_part()
                               ->browser_policy_connector_chromeos()

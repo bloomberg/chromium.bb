@@ -153,6 +153,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="4240294130679914010">Chromootimise hosti desinstaller</translation>
 <translation id="4277463233460010382">Arvuti on seadistatud nii, et see lubab ühel või mitmel kliendil luua ühenduse ilma PIN-koodi sisestamata.</translation>
 <translation id="4277736576214464567">Pääsukood on kehtetu. Proovige uuesti.</translation>
+<translation id="4281844954008187215">Teenusetingimused</translation>
 <translation id="4361728918881830843">Muu arvutiga kaugühenduse lubamiseks installige sinna Chrome Remote Desktop ja klõpsake nupul „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="4394049700291259645">Keela</translation>
 <translation id="4405930547258349619">Põhikogu</translation>
@@ -345,6 +346,7 @@ Funktsiooni lubamiseks valige nupp „<ph name="BUTTON_NAME" />”, et kuvada tu
 <translation id="8747048596626351634">Seanss jooksis kokku või selle käivitamine ebaõnnestus. Kui seanss ~/.chrome-remote-desktop-session on kaugarvutis olemas, veenduge, et see käivitaks pikaajalise taustaprotsessi (nt töölauakeskkond või aknahaldur).</translation>
 <translation id="8759753423332885148">Lisateave.</translation>
 <translation id="8791202241915690908">Chromootimise hosti installiprogrammi allalaadimine</translation>
+<translation id="8804164990146287819">Privaatsuseeskirjad</translation>
 <translation id="894763922177556086">Hea</translation>
 <translation id="895780780740011433">Windows 7-le ja uuematele versioonidele</translation>
 <translation id="897805526397249209">Muu arvutiga kaugühenduste lubamiseks installige sellesse rakendus Chromoting ja klõpsake nupul „<ph name="BUTTON_NAME" />”.</translation>

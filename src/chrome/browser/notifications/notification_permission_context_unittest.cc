@@ -28,7 +28,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -473,11 +473,12 @@ TEST_F(NotificationPermissionContextTest, GetNotificationsSettings) {
 
   // The platform isn't guaranteed to return the settings in any particular
   // order, so sort them first.
-  std::sort(
-      settings.begin(), settings.begin() + 4,
-      [](ContentSettingPatternSource& s1, ContentSettingPatternSource& s2) {
-        return s1.primary_pattern.GetHost() < s2.primary_pattern.GetHost();
-      });
+  std::sort(settings.begin(), settings.begin() + 4,
+            [](const ContentSettingPatternSource& s1,
+               const ContentSettingPatternSource& s2) {
+              return s1.primary_pattern.GetHost() <
+                     s2.primary_pattern.GetHost();
+            });
 
   EXPECT_EQ(
       ContentSettingsPattern::FromURLNoWildcard(GURL("https://allowed.com")),

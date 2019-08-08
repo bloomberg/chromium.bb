@@ -86,7 +86,7 @@ void CrossSiteDocumentResourceHandler::LogBlockedResponseOnUIThread(
   ukm::builders::SiteIsolation_XSD_Browser_Blocked(source_id)
       .SetCanonicalMimeType(static_cast<int64_t>(canonical_mime_type))
       .SetContentLengthWasZero(content_length == 0)
-      .SetContentResourceType(resource_type)
+      .SetContentResourceType(static_cast<int>(resource_type))
       .SetHttpResponseCode(http_response_code)
       .SetNeededSniffing(needed_sniffing)
       .Record(ukm::UkmRecorder::Get());
@@ -103,41 +103,34 @@ void CrossSiteDocumentResourceHandler::LogBlockedResponse(
   analyzer_->LogBlockedResponse();
 
   ResourceType resource_type = resource_request_info->GetResourceType();
-  UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked", resource_type,
-                            content::RESOURCE_TYPE_LAST_TYPE);
+  UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked", resource_type);
   switch (analyzer_->canonical_mime_type()) {
     case MimeType::kHtml:
       UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.HTML",
-                                resource_type,
-                                content::RESOURCE_TYPE_LAST_TYPE);
+                                resource_type);
       break;
     case MimeType::kXml:
       UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.XML",
-                                resource_type,
-                                content::RESOURCE_TYPE_LAST_TYPE);
+                                resource_type);
       break;
     case MimeType::kJson:
       UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.JSON",
-                                resource_type,
-                                content::RESOURCE_TYPE_LAST_TYPE);
+                                resource_type);
       break;
     case MimeType::kPlain:
       UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.Plain",
-                                resource_type,
-                                content::RESOURCE_TYPE_LAST_TYPE);
+                                resource_type);
       break;
     case MimeType::kOthers:
       UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.Others",
-                                resource_type,
-                                content::RESOURCE_TYPE_LAST_TYPE);
+                                resource_type);
       break;
     default:
       NOTREACHED();
   }
   if (analyzer_->found_parser_breaker()) {
     UMA_HISTOGRAM_ENUMERATION(
-        "SiteIsolation.XSD.Browser.BlockedForParserBreaker", resource_type,
-        content::RESOURCE_TYPE_LAST_TYPE);
+        "SiteIsolation.XSD.Browser.BlockedForParserBreaker", resource_type);
   }
 
   // The last committed URL is only available on the UI thread - we need to hop
@@ -666,7 +659,7 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   //   initiators and therefore doesn't need another exception here;
   //   additionally PDF doesn't _really_ make *cross*-origin requests - it just
   //   seems that way because of the usage of the Chrome extension).
-  if (info->GetResourceType() == RESOURCE_TYPE_PLUGIN_RESOURCE &&
+  if (info->GetResourceType() == ResourceType::kPluginResource &&
       fetch_request_mode_ == network::mojom::FetchRequestMode::kNoCors &&
       network::CrossOriginReadBlocking::ShouldAllowForPlugin(
           info->GetChildID())) {

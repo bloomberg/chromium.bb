@@ -29,16 +29,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ThrottlingController {
   static void SetConditions(const base::UnguessableToken& throttling_profile_id,
                             std::unique_ptr<NetworkConditions>);
 
-  // Returns the profile ID for the NetLog source ID. Returns an empty string if
-  // not registered.
-  // Note: This method is used only from ServiceWorkerFetchDispatcher to copy
-  // the profile ID from the net::URLRequest of original navigation request to
-  // the network::ResourceRequest of navigation preload request when
-  // S13nServiceWorker is not enabled.
-  // TODO(crbug/846235): Remove this method once S13nServiceWorker is shipped.
-  static base::Optional<base::UnguessableToken> GetProfileIDForNetLogSource(
-      uint32_t net_log_source_id);
-
   // Returns the interceptor for the NetLog source ID.
   static ThrottlingNetworkInterceptor* GetInterceptor(
       uint32_t net_log_source_id);

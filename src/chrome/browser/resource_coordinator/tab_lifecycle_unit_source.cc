@@ -7,7 +7,12 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/web_contents_proxy.h"
 #include "chrome/browser/resource_coordinator/discard_metrics_lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
@@ -22,6 +27,8 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace resource_coordinator {
@@ -54,12 +61,52 @@ class TabLifecycleUnitSource::TabLifecycleUnitHolder
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(TabLifecycleUnitSource::TabLifecycleUnitHolder)
 
+// A very simple graph observer that forwards events over to the
+// TabLifecycleUnitSource on the UI thread. This is created on the UI thread
+// and ownership passed to the performance manager.
+class TabLifecycleStateObserver : public performance_manager::GraphObserver {
+ public:
+  using NodeBase = performance_manager::NodeBase;
+  using PageNodeImpl = performance_manager::PageNodeImpl;
+  using WebContentsProxy = performance_manager::WebContentsProxy;
+
+  TabLifecycleStateObserver() = default;
+  ~TabLifecycleStateObserver() override = default;
+
+ private:
+  bool ShouldObserve(const NodeBase* node) override {
+    return node->id().type == resource_coordinator::CoordinationUnitType::kPage;
+  }
+
+  static void OnLifecycleStateChangedImpl(
+      const base::WeakPtr<WebContentsProxy>& contents_proxy,
+      mojom::LifecycleState state) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // If the web contents is still alive then dispatch to the actual
+    // implementation in TabLifecycleUnitSource.
+    if (contents_proxy.get()) {
+      DCHECK(contents_proxy.get()->GetWebContents());
+      TabLifecycleUnitSource::OnLifecycleStateChanged(
+          contents_proxy.get()->GetWebContents(), state);
+    }
+  }
+
+  void OnLifecycleStateChanged(PageNodeImpl* page_node) override {
+    // Forward the notification over to the UI thread.
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&TabLifecycleStateObserver::OnLifecycleStateChangedImpl,
+                       page_node->contents_proxy(),
+                       page_node->lifecycle_state()));
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TabLifecycleStateObserver);
+};
+
 TabLifecycleUnitSource::TabLifecycleUnitSource(
     InterventionPolicyDatabase* intervention_policy_database,
-    UsageClock* usage_clock,
-    PageSignalReceiver* page_signal_receiver)
+    UsageClock* usage_clock)
     : browser_tab_strip_tracker_(this, nullptr, this),
-      page_signal_receiver_observer_(this),
       intervention_policy_database_(intervention_policy_database),
       usage_clock_(usage_clock) {
   // In unit tests, tabs might already exist when TabLifecycleUnitSource is
@@ -67,14 +114,25 @@ TabLifecycleUnitSource::TabLifecycleUnitSource(
 
   DCHECK(intervention_policy_database_);
   browser_tab_strip_tracker_.Init();
-  if (page_signal_receiver)
-    page_signal_receiver_observer_.Add(page_signal_receiver);
+
+  auto* perf_man = performance_manager::PerformanceManager::GetInstance();
+  if (perf_man) {
+    // The performance manager dies on its own sequence, so posting unretained
+    // is fine.
+    perf_man->task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &performance_manager::PerformanceManager::RegisterObserver,
+            base::Unretained(perf_man),
+            std::make_unique<TabLifecycleStateObserver>()));
+  }
 }
 
 TabLifecycleUnitSource::~TabLifecycleUnitSource() = default;
 
+// static
 TabLifecycleUnitExternal* TabLifecycleUnitSource::GetTabLifecycleUnitExternal(
-    content::WebContents* web_contents) const {
+    content::WebContents* web_contents) {
   auto* lu = GetTabLifecycleUnit(web_contents);
   if (!lu)
     return nullptr;
@@ -118,9 +176,10 @@ void TabLifecycleUnitSource::OnAllLifecycleUnitsDestroyed() {
   tab_lifecycles_enterprise_preference_monitor_.reset();
 }
 
+// static
 TabLifecycleUnitSource::TabLifecycleUnit*
 TabLifecycleUnitSource::GetTabLifecycleUnit(
-    content::WebContents* web_contents) const {
+    content::WebContents* web_contents) {
   auto* holder = TabLifecycleUnitHolder::FromWebContents(web_contents);
   if (holder)
     return holder->lifecycle_unit();
@@ -243,6 +302,7 @@ void TabLifecycleUnitSource::OnTabStripModelChanged(
       break;
     }
     case TabStripModelChange::kMoved:
+    case TabStripModelChange::kGroupChanged:
     case TabStripModelChange::kSelectionOnly:
       break;
   }
@@ -274,9 +334,9 @@ void TabLifecycleUnitSource::OnBrowserNoLongerActive(Browser* browser) {
   UpdateFocusedTab();
 }
 
+// static
 void TabLifecycleUnitSource::OnLifecycleStateChanged(
     content::WebContents* web_contents,
-    const PageNavigationIdentity& page_navigation_id,
     mojom::LifecycleState state) {
   TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(web_contents);
 

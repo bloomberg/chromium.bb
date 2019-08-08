@@ -221,35 +221,6 @@ CreditCardEntryList GenerateCreditCardList(
   return list;
 }
 
-CreditCardEntryList GenerateLocalCreditCardList(
-    const autofill::PersonalDataManager& personal_data) {
-  const std::vector<autofill::CreditCard*>& all_cards =
-      personal_data.GetCreditCards();
-
-  CreditCardEntryList list;
-  for (const autofill::CreditCard* card : all_cards) {
-    // Keep only local and full server cards.
-    if (card->record_type() == autofill::CreditCard::LOCAL_CARD ||
-        card->record_type() == autofill::CreditCard::FULL_SERVER_CARD) {
-      list.push_back(CreditCardToCreditCardEntry(*card, personal_data));
-    }
-  }
-
-  return list;
-}
-
-CreditCardEntryList GenerateServerCreditCardList(
-    const autofill::PersonalDataManager& personal_data) {
-  const std::vector<autofill::CreditCard*>& server_cards =
-      personal_data.GetServerCreditCards();
-
-  CreditCardEntryList list;
-  for (const autofill::CreditCard* card : server_cards)
-    list.push_back(CreditCardToCreditCardEntry(*card, personal_data));
-
-  return list;
-}
-
 }  // namespace autofill_util
 
 }  // namespace extensions

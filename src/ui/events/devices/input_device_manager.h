@@ -32,6 +32,10 @@ class EVENTS_DEVICES_EXPORT InputDeviceManager {
   virtual const std::vector<InputDevice>& GetMouseDevices() const = 0;
   virtual const std::vector<InputDevice>& GetTouchpadDevices() const = 0;
 
+  // Returns all the uncategorized input devices, which means input devices
+  // besides keyboards, touchscreens, mice and touchpads.
+  virtual const std::vector<InputDevice>& GetUncategorizedDevices() const = 0;
+
   virtual bool AreDeviceListsComplete() const = 0;
   virtual bool AreTouchscreensEnabled() const = 0;
 

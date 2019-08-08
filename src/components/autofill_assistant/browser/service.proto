@@ -25,7 +25,7 @@ message ClientContextProto {
   }
   oneof client { Chrome chrome = 1; }
 
-  // locale should be a comma separated list of language tags. Each tag should
+  // locale will be the language tag of the default locale. The tag should
   // be a well-formed IETF BCP 47 language tag with language and country code
   // (e.g., "en-US").
   // The intent is to communicate the client language preferences to the server.
@@ -34,6 +34,9 @@ message ClientContextProto {
   // country should be a country code as defined by ISO 3166-1-alpha-2.
   // The intent is to communicate the client's location to the server.
   optional string country = 6;
+
+  // Experiment ids string provided by the 'caller'.
+  optional string experiment_ids = 7;
 }
 
 // Get the list of scripts that can potentially be run on a url.
@@ -100,6 +103,9 @@ message SupportedScriptProto {
     // name field.
     optional ChipType chip_type = 10;
 
+    // An icon the should be shown next to the chip text.
+    optional ChipIcon chip_icon = 11;
+
     // When set to true this script can be run in 'autostart mode'. Chip won't
     // be shown; name and chip_type are ignored.
     optional bool autostart = 8;
@@ -145,6 +151,19 @@ enum ChipType {
   // cancel button. Otherwise, buttons of this type work and look like a
   // HIGHLIGHTED_ACTION.
   DONE_ACTION = 6;
+}
+
+enum ChipIcon {
+  NO_ICON = 0;
+
+  // https://icons.googleplex.com/#icon=ic_clear
+  ICON_CLEAR = 1;
+
+  // https://icons.googleplex.com/#icon=ic_done
+  ICON_DONE = 2;
+
+  // https://icons.googleplex.com/#icon=ic_refresh
+  ICON_REFRESH = 3;
 }
 
 enum ScriptStatusProto {
@@ -320,6 +339,9 @@ message ActionProto {
     GetPaymentInformationProto get_payment_information = 36;
     SetAttributeProto set_attribute = 37;
     ShowInfoBoxProto show_info_box = 39;
+    ExpectNavigationProto expect_navigation = 40;
+    WaitForNavigationProto wait_for_navigation = 41;
+    ConfigureBottomSheetProto configure_bottom_sheet = 42;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -343,12 +365,85 @@ message ProcessedActionProto {
 
   optional ProcessedActionStatusProto status = 2;
 
+  optional ProcessedActionStatusDetailsProto status_details = 19;
+
   oneof result_data {
     PromptProto.Choice prompt_choice = 5;
     string html_source = 12;
     // Should be set as a result of GetPaymentInformationAction.
     PaymentDetails payment_details = 15;
+    // Should be set as a result of SetFormFieldValueAction.
+    SetFormFieldValueProto.Result set_form_field_value_result = 17;
   }
+
+  // Reports information about navigation that happened while
+  // processing the action. This is meant for debugging.
+  optional NavigationInfoProto navigation_info = 20;
+}
+
+// Extended information about the action status, which provides more details
+// about what happened than a simple ProcessedActionStatusProto can.
+message ProcessedActionStatusDetailsProto {
+  // More information included for unexpected errors.
+  //
+  // Only set for action whose status are OTHER_ACTION_STATUS or
+  // UNEXPECTED_JS_ERROR.
+  optional UnexpectedErrorInfoProto unexpected_error_info = 1;
+
+  // In some case, such as USER_ABORTED_ACTION and NAVIGATION_ERROR, the status
+  // reported by the action is overridden after the action failed, to report a
+  // more appropriate error. When that happens, this field contains the original
+  // status, to help debugging.
+  optional ProcessedActionStatusProto original_status = 2;
+}
+
+message NavigationInfoProto {
+  // Navigation started while processing the current action.
+  optional bool started = 1;
+
+  // Navigation ended while processing the current action.
+  optional bool ended = 2;
+
+  // Navigation failed before or during the processing of the current action.
+  optional bool has_error = 3;
+
+  // Unexpected navigation started while processing the current action. This
+  // will happen during some actions, such as PROMPT action but it should
+  // normally not happen during scripts that have been updated to use
+  // expect_navigation.
+  optional bool unexpected = 4;
+}
+
+// Extra debugging information included in case of unexpected errors.
+//
+// Presence of this element is usually the sign of a bug in the client code and
+// is always the sign that the client code needs to be updated: such issues
+// should be either fixed or reported as proper, expected error with a useful
+// status code.
+message UnexpectedErrorInfoProto {
+  // Source file, within the client code, where an unexpected error was detected
+  // and reported.
+  //
+  // Only filled for unexpected errors OTHER_ACTION_STATUS and
+  // UNEXPECTED_JS_ERROR.
+  //
+  // This and source_line are only meaningful for the exact version reported in
+  // the client context.
+  optional string source_file = 1;
+
+  // Line number, within the client's source file, where the error was detected.
+  optional int32 source_line_number = 2;
+
+  // JavaScript exception class name, if reporting a JavaScript error.
+  optional string js_exception_classname = 3;
+
+  // JavaScript exception line number, within the js snippet that was sent to
+  // devtools runtime by the client, if reporting a JavaScript error.
+  optional int32 js_exception_line_number = 4;
+
+  // JavaScript exception column number, within the js snippet that was sent to
+  // devtools runtime by the client, if reporting a JavaScript error.
+  optional int32 js_exception_column_number = 5;
 }
 
 enum ProcessedActionStatusProto {
@@ -361,6 +456,12 @@ enum ProcessedActionStatusProto {
   ACTION_APPLIED = 2;
 
   // The action failed (generic error).
+  //
+  // This usually means that the client needs to be fixed: either the error
+  // should be assigned a more specific error code, or a bug in the client code
+  // needs to be fixed.
+  //
+  // ProcessedActionProto.UnexpectedErrorInfoProto contains more details.
   OTHER_ACTION_STATUS = 3;
 
   // The action failed to get payment information.
@@ -404,6 +505,43 @@ enum ProcessedActionStatusProto {
   // failed.
   //
   PRECONDITION_FAILED = 10;
+
+  // The action definition returned by the server was rejected.
+  INVALID_ACTION = 11;
+
+  // Executing the action as defined is unsupported.
+  UNSUPPORTED = 12;
+
+  // Timed out waiting for the document to load.
+  TIMED_OUT = 13;
+
+  // Failed to get a stable position for the element, usually to click on it.
+  ELEMENT_UNSTABLE = 14;
+
+  reserved 15;
+
+  // The value passed to the select option action does not exist in the element.
+  // This is usually a scripting error.
+  OPTION_VALUE_NOT_FOUND = 16;
+
+  // The client got an unexpected error from a JavaScript snippet executed
+  // through devtools. This means that there's a bug in the client code.
+  //
+  // ProcessedActionProto.UnexpectedErrorInfoProto contains more details.
+  UNEXPECTED_JS_ERROR = 17;
+
+  // There were more than one matching element in the DOM in a context where
+  // only one is supported. This is generally a scripting error: the selector is
+  // not specific enough.
+  TOO_MANY_ELEMENTS = 18;
+
+  // The browser failed to navigate to a new document for its main frame. Note
+  // that this doesn't include page load errors, which are reported as
+  // TIMED_OUT.
+  NAVIGATION_ERROR = 19;
+
+  // A selector included into the current action is invalid.
+  INVALID_SELECTOR = 20;
 }
 
 // The pseudo type values come from
@@ -436,10 +574,44 @@ message ElementReferenceProto {
   // elements (i.e. resolve to more than one element on the page).
   repeated string selectors = 2;
 
+  // If non-empty, only take into accounts the elements matched by selector
+  // whose inner text matches the given JavaScript regex. This does a search,
+  // not a full match. Add ^ and $ as necessary.
+  //
+  // This is used to filter the elements matching the last selector, before
+  // trying to get the pseudo_type, if any was set.
+  optional string inner_text_pattern = 4;
+
+  // If non-empty, only take into accounts the elements matched by selector
+  // whose value matches the given JavaScript regex. This does a search,
+  // not a full match. Add ^ and $ as necessary.
+  //
+  // This is used to filter the elements matching the last selector, before
+  // trying to get the pseudo_type, if any was set.
+  optional string value_pattern = 6;
+
+  // Specifies whether the matched element(s) must be visible.
+  //
+  // Visibility applies to the element matched in selectors; the pseudo type is
+  // checked afterwards.
+  optional VisibilityRequirement visibility_requirement = 5;
+
   // An optional pseudo type. This pseudo type is associated to the final
-  // element matched by |selector|, which means that we currently don't handle
-  // matching an element inside a pseudo element.
+  // element matched, which means that we currently don't handle matching an
+  // element inside a pseudo element.
   optional PseudoType pseudo_type = 3;
+}
+
+enum VisibilityRequirement {
+  UNSPECIFIED_VISIBILITY = 0;
+
+  // Element must be visible. Visible elements are elements that have a box
+  // model. The box model is not checked at all, so an element with a zero size
+  // bounding box is considered visible.
+  MUST_BE_VISIBLE = 1;
+
+  // It's enough for the element to exist in the DOM tree for it to match.
+  MUST_EXIST = 2;
 }
 
 // Contain all arguments to perform a click.
@@ -522,6 +694,9 @@ message UseAddressProto {
     // Whether we should simulate actual key presses when filling |element| with
     // its corresponding value.
     optional bool simulate_key_presses = 3;
+
+    // Delay between two key presses when simlulating.
+    optional int32 delay_in_millisecond = 4 [default = 20];
   }
 
   // An optional name to allow to handle multiple addresses selection (for
@@ -555,13 +730,21 @@ message WaitForDomProto {
   // Fail after waiting this amount of time.
   optional int32 timeout_ms = 1;
 
-  // The element to wait for.
-  // TODO(crbug.com/806868): Use ElementReferenceProto instead.
-  repeated string selectors = 2;
+  oneof wait_on {
+    // Wait until there exists at least one element that matches the given
+    // selector.
+    ElementReferenceProto wait_until = 5;
+
+    // Wait as long as there's at least one element that matches the given
+    // reference.
+    ElementReferenceProto wait_while = 6;
+  }
 
   // If true, run scripts flagged with 'interrupt=true' as soon as their
   // preconditions match.
   optional bool allow_interrupt = 3;
+
+  reserved 4;
 }
 
 // Volatile upload of a portion of the dom for backend analysis, does not store
@@ -597,6 +780,31 @@ message NavigateProto {
   optional string url = 1;
 }
 
+// Specify from which point in the script navigation is expected for the next
+// call to WaitForNavigation.
+message ExpectNavigationProto {}
+
+// Wait for the browser to have navigated to a new page since the last
+// ExpectNavigation or Navigate. This returns as soon as an HTTP response that's
+// not a redirect was received for the new page, possibly before even loading
+// the page content.
+//
+// Will return immediately if navigation already happened.
+//
+// Client errors:
+//   NAVIGATION_ERROR if navigation failed
+//   TIMED_OUT if timed out waiting for navigation to start
+//   INVALID_ACTION no ExpectNavigation or Navigate action was executed in the
+//     current script.
+message WaitForNavigationProto {
+  // How long to wait for navigation to start before failing with client status
+  // TIMED_OUT. The action waits 20s by default.
+  //
+  // This is usually used to track cases where expected navigation doesn't
+  // happen, because, for example, a click wasn't registered.
+  optional int32 timeout_ms = 1;
+}
+
 // Allow choosing one or more possibility. If FocusElement was called just
 // before, allow interaction with the touchable element area, otherwise don't
 // allow any interactions.
@@ -619,14 +827,21 @@ message PromptProto {
     // name field.
     optional ChipType chip_type = 7;
 
+    // An icon the should be shown next to the chip text.
+    optional ChipIcon chip_icon = 10;
+
     // Auto-select this choice if the given element exist.
     optional ElementReferenceProto auto_select_if_element_exists = 4;
 
-    // The chip is only visible if all the given element exists.
+    // The chip is only visible or enabled if all the given element exists.
     repeated ElementReferenceProto show_only_if_element_exists = 6;
 
-    // The chip is only visible if all the form values match.
+    // The chip is only visible or enabled if all the form values match.
     repeated FormValueMatchProto show_only_if_form_value_matches = 8;
+
+    // Disable the chip instead of hiding it completely, if the preconditions
+    // don't match.
+    optional bool allow_disabling = 9;
 
     // Server payload originally sent by the server. This should
     // be transmitted as-is by the client without interpreting.
@@ -649,6 +864,15 @@ message ContactDetailsProto {
 // Asks to provide the data used by UseAddressAction and
 // UseCreditCardAction.
 message GetPaymentInformationProto {
+  enum TermsAndConditionsState {
+    // No choice has been made yet.
+    NOT_SELECTED = 0;
+    // The 'accept' radio button is toggled.
+    ACCEPTED = 1;
+    // The 'review' radio button is toggled.
+    REVIEW_REQUIRED = 2;
+  }
+
   optional string prompt = 1;
   // NOTE: Payment request does not ask separately for billing address.
   // The billing address is associated with the credit card that was picked.
@@ -664,6 +888,8 @@ message GetPaymentInformationProto {
   repeated string supported_basic_card_networks = 6;
   // Contact details that should be gathered.
   optional ContactDetailsProto contact_details = 5;
+  // The initial state of the terms & conditions choice.
+  optional TermsAndConditionsState terms_and_conditions_state = 8;
 }
 
 // Resets Autofill Assistant: clears any state and server payload.
@@ -717,6 +943,9 @@ message DetailsChangesProto {
 
   // Whether the second description line should be highlighted.
   optional bool highlight_line2 = 4;
+
+  // Whether the third description line should be highlighted.
+  optional bool highlight_line3 = 5;
 }
 
 message DetailsProto {
@@ -728,6 +957,25 @@ message DetailsProto {
     bool show_image_placeholder = 10;
   }
 
+  // Specifies what happens when user tap on the image in the details section.
+  message ImageClickthroughData {
+    // Whether to show the original URL where image is extracted from. Only
+    // useful when 'image_url' is set.
+    optional bool allow_clickthrough = 1;
+
+    // When image clickthrough is allowed, below texts are used to customize the
+    // modal dialog shown to user *if* they are set, otherwise default texts
+    // will be used.
+    optional string description = 2;
+    optional string positive_text = 3;
+    optional string negative_text = 4;
+
+    // The url to present when user did choose to clickthrough.
+    optional string clickthrough_url = 5;
+  }
+
+  optional ImageClickthroughData image_clickthrough_data = 12;
+
   // Optional label to provide additional price information.
   optional string total_price_label = 9;
   // The price containing the total amount and the currency to pay, formatted
@@ -736,6 +984,7 @@ message DetailsProto {
 
   optional string description_line_1 = 7;
   optional string description_line_2 = 8;
+  optional string description_line_3 = 13;
 
   // Deprecated, but currently still necessary and supported. We can get rid of
   // these fields when the backend starts setting description_line_1 and 2.
@@ -746,7 +995,7 @@ message DetailsProto {
   // The placeholder will be shown on effectively missing:
   // * title
   // * image
-  // * description line (1 or 2)
+  // * description line (1, 2 or 3)
   // TODO(crbug.com/806868): Make the fields for displaying placeholders
   // configurable by the server.
   optional bool animate_placeholders = 11;
@@ -773,6 +1022,7 @@ message ShowDetailsProto {
 
 // Set the value of an form element.
 message SetFormFieldValueProto {
+  message Result { optional bool fallback_to_simulate_key_presses = 1; }
   message KeyPress {
     oneof keypress {
       // Text to insert as-is into a form field.
@@ -791,6 +1041,12 @@ message SetFormFieldValueProto {
 
   // The value to set.
   repeated KeyPress value = 2;
+
+  // Whether to send key press events when setting values to HTML fields.
+  optional bool simulate_key_presses = 5;
+
+  // Delay between two key presses when simlulating.
+  optional int32 delay_in_millisecond = 6 [default = 20];
 }
 
 // Set an element attribute to a specific value.
@@ -819,4 +1075,47 @@ message InfoBoxProto {
 // when |info_box| is not set.
 message ShowInfoBoxProto {
   optional InfoBoxProto info_box = 1;
+}
+
+// Allow scripts to configure the peek height of the sheet and whether we should
+// resize the viewport by this peek height.
+message ConfigureBottomSheetProto {
+  enum ViewportResizing {
+    // Don't change resizing configuration.
+    NO_CHANGE = 0;
+
+    // Resize the viewport such that it is completely visible when the sheet is
+    // in the peek state.
+    RESIZE = 1;
+
+    // Don't resize the viewport such that it is overlaid by the sheet, even in
+    // the peek state.
+    NO_RESIZE = 2;
+  }
+
+  // The peek mode allows to set what components are visible when the sheet is
+  // in the peek (minimized) state.
+  enum PeekMode {
+    UNDEFINED_PEEK_MODE = 0;
+
+    // Only show the swipe handle.
+    HANDLE = 1;
+
+    // Show the swipe handle, header (status message, poodle, profile icon) and
+    // progress bar.
+    HANDLE_HEADER = 2;
+
+    // Show swipe handle, header, progress bar, suggestions and actions.
+    HANDLE_HEADER_CAROUSELS = 3;
+  }
+
+  // Whether the viewport should be resized. Resizing the viewport is an
+  // expensive operation, so toggling the resize on/off should be done
+  // cautiously.
+  optional ViewportResizing viewport_resizing = 1;
+
+  // Set the peek mode. This will change the peek height of the sheet. If
+  // resize_viewport is true or was set to true by a previous actions, the
+  // viewport will be resized to match the new peek height.
+  optional PeekMode peek_mode = 2;
 }

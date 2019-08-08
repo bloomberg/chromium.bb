@@ -48,12 +48,6 @@ class SystemUse24HourClockPolicyTest
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
-    DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
   void TearDownOnMainThread() override {
     // If the login display is still showing, exit gracefully.
     if (LoginDisplayHost::default_host()) {

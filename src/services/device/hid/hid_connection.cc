@@ -74,6 +74,14 @@ HidConnection::~HidConnection() {
   DCHECK(closed_);
 }
 
+void HidConnection::SetClient(Client* client) {
+  if (client) {
+    DCHECK(pending_reads_.empty());
+    DCHECK(pending_reports_.empty());
+  }
+  client_ = client;
+}
+
 void HidConnection::Close() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!closed_);
@@ -84,6 +92,7 @@ void HidConnection::Close() {
 
 void HidConnection::Read(ReadCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!client_);
   if (device_info_->max_input_report_size() == 0) {
     HID_LOG(USER) << "This device does not support input reports.";
     std::move(callback).Run(false, NULL, 0);
@@ -191,12 +200,17 @@ void HidConnection::ProcessInputReport(
   if (IsReportIdProtected(report_id))
     return;
 
-  pending_reports_.emplace(buffer, size);
-  ProcessReadQueue();
+  if (client_) {
+    client_->OnInputReport(buffer, size);
+  } else {
+    pending_reports_.emplace(buffer, size);
+    ProcessReadQueue();
+  }
 }
 
 void HidConnection::ProcessReadQueue() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!client_);
 
   // Hold a reference to |this| to prevent a callback from freeing this object
   // during the loop.

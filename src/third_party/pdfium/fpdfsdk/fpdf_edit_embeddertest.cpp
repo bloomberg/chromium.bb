@@ -440,8 +440,7 @@ TEST_F(FPDFEditEmbedderTest, SetText) {
   ASSERT_EQ(2, FPDFPage_CountObjects(page));
   FPDF_PAGEOBJECT page_object = FPDFPage_GetObject(page, 0);
   ASSERT_TRUE(page_object);
-  std::unique_ptr<unsigned short, pdfium::FreeDeleter> text1 =
-      GetFPDFWideString(L"Changed for SetText test");
+  ScopedFPDFWideString text1 = GetFPDFWideString(L"Changed for SetText test");
   EXPECT_TRUE(FPDFText_SetText(page_object, text1.get()));
 
   // Verify the "Hello, world!" text is gone and "Changed for SetText test" is
@@ -689,10 +688,13 @@ TEST_F(FPDFEditEmbedderTest, RemoveMarkedObjectsPrime) {
 
 #if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
   const char kNonPrimesMD5[] = "57e76dc7375d896704f0fd6d6d1b9e65";
+  const char kNonPrimesAfterSaveMD5[] = "6304512d0150bbd5578e8e22d3121103";
 #elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
   const char kNonPrimesMD5[] = "4d906b57fba36c70c600cf50d60f508c";
+  const char kNonPrimesAfterSaveMD5[] = "4d906b57fba36c70c600cf50d60f508c";
 #else
   const char kNonPrimesMD5[] = "33d9c45bec41ead92a295e252f6b7922";
+  const char kNonPrimesAfterSaveMD5[] = "33d9c45bec41ead92a295e252f6b7922";
 #endif
   {
     ScopedFPDFBitmap page_bitmap = RenderPage(page);
@@ -711,7 +713,7 @@ TEST_F(FPDFEditEmbedderTest, RemoveMarkedObjectsPrime) {
 
   {
     ScopedFPDFBitmap page_bitmap = RenderPage(saved_page);
-    CompareBitmap(page_bitmap.get(), 200, 200, kNonPrimesMD5);
+    CompareBitmap(page_bitmap.get(), 200, 200, kNonPrimesAfterSaveMD5);
   }
 
   CloseSavedPage(saved_page);
@@ -1775,11 +1777,12 @@ TEST_F(FPDFEditEmbedderTest, AddStandardFontText) {
   FPDF_PAGEOBJECT text_object1 =
       FPDFPageObj_NewTextObj(document(), "Arial", 12.0f);
   EXPECT_TRUE(text_object1);
-  std::unique_ptr<unsigned short, pdfium::FreeDeleter> text1 =
+  ScopedFPDFWideString text1 =
       GetFPDFWideString(L"I'm at the bottom of the page");
   EXPECT_TRUE(FPDFText_SetText(text_object1, text1.get()));
   FPDFPageObj_Transform(text_object1, 1, 0, 0, 1, 20, 20);
   FPDFPage_InsertObject(page, text_object1);
+  EXPECT_TRUE(FPDFPage_GenerateContent(page));
   {
     ScopedFPDFBitmap page_bitmap = RenderPage(page);
 #if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
@@ -1790,48 +1793,58 @@ TEST_F(FPDFEditEmbedderTest, AddStandardFontText) {
     const char md5[] = "eacaa24573b8ce997b3882595f096f00";
 #endif
     CompareBitmap(page_bitmap.get(), 612, 792, md5);
+
+    EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+    VerifySavedDocument(612, 792, md5);
   }
 
   // Try another font
   FPDF_PAGEOBJECT text_object2 =
       FPDFPageObj_NewTextObj(document(), "TimesNewRomanBold", 15.0f);
   EXPECT_TRUE(text_object2);
-  std::unique_ptr<unsigned short, pdfium::FreeDeleter> text2 =
+  ScopedFPDFWideString text2 =
       GetFPDFWideString(L"Hi, I'm Bold. Times New Roman Bold.");
   EXPECT_TRUE(FPDFText_SetText(text_object2, text2.get()));
   FPDFPageObj_Transform(text_object2, 1, 0, 0, 1, 100, 600);
   FPDFPage_InsertObject(page, text_object2);
+  EXPECT_TRUE(FPDFPage_GenerateContent(page));
   {
     ScopedFPDFBitmap page_bitmap = RenderPage(page);
 #if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
-    const char md5_2[] = "a5c4ace4c6f27644094813fe1441a21c";
+    const char md5[] = "a5c4ace4c6f27644094813fe1441a21c";
 #elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-    const char md5_2[] = "3755dd35abd4c605755369401ee85b2d";
+    const char md5[] = "3755dd35abd4c605755369401ee85b2d";
 #else
-    const char md5_2[] = "76fcc7d08aa15445efd2e2ceb7c6cc3b";
+    const char md5[] = "76fcc7d08aa15445efd2e2ceb7c6cc3b";
 #endif
-    CompareBitmap(page_bitmap.get(), 612, 792, md5_2);
+    CompareBitmap(page_bitmap.get(), 612, 792, md5);
+
+    EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+    VerifySavedDocument(612, 792, md5);
   }
 
   // And some randomly transformed text
   FPDF_PAGEOBJECT text_object3 =
       FPDFPageObj_NewTextObj(document(), "Courier-Bold", 20.0f);
   EXPECT_TRUE(text_object3);
-  std::unique_ptr<unsigned short, pdfium::FreeDeleter> text3 =
-      GetFPDFWideString(L"Can you read me? <:)>");
+  ScopedFPDFWideString text3 = GetFPDFWideString(L"Can you read me? <:)>");
   EXPECT_TRUE(FPDFText_SetText(text_object3, text3.get()));
   FPDFPageObj_Transform(text_object3, 1, 1.5, 2, 0.5, 200, 200);
   FPDFPage_InsertObject(page, text_object3);
+  EXPECT_TRUE(FPDFPage_GenerateContent(page));
   {
     ScopedFPDFBitmap page_bitmap = RenderPage(page);
 #if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
-    const char md5_3[] = "40b3ef04f915ff4c4208948001763544";
+    const char md5[] = "40b3ef04f915ff4c4208948001763544";
 #elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-    const char md5_3[] = "aba523a8110d01ed9bd7b7781ff74045";
+    const char md5[] = "aba523a8110d01ed9bd7b7781ff74045";
 #else
-    const char md5_3[] = "b8a21668f1dab625af7c072e07fcefc4";
+    const char md5[] = "b8a21668f1dab625af7c072e07fcefc4";
 #endif
-    CompareBitmap(page_bitmap.get(), 612, 792, md5_3);
+    CompareBitmap(page_bitmap.get(), 612, 792, md5);
+
+    EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+    VerifySavedDocument(612, 792, md5);
   }
 
   double matrix_a = 0;
@@ -1984,7 +1997,7 @@ TEST_F(FPDFEditEmbedderTest, AddStandardFontText2) {
   FPDF_PAGEOBJECT text_object =
       FPDFPageObj_CreateTextObj(document(), font, 12.0f);
   EXPECT_TRUE(text_object);
-  std::unique_ptr<unsigned short, pdfium::FreeDeleter> text =
+  ScopedFPDFWideString text =
       GetFPDFWideString(L"I'm at the bottom of the page");
   EXPECT_TRUE(FPDFText_SetText(text_object, text.get()));
   FPDFPageObj_Transform(text_object, 1, 0, 0, 1, 20, 20);
@@ -2141,7 +2154,7 @@ TEST_F(FPDFEditEmbedderTest, DoubleGenerating) {
   // Add some text to the page
   FPDF_PAGEOBJECT text_object =
       FPDFPageObj_NewTextObj(document(), "Arial", 12.0f);
-  std::unique_ptr<unsigned short, pdfium::FreeDeleter> text =
+  ScopedFPDFWideString text =
       GetFPDFWideString(L"Something something #text# something");
   EXPECT_TRUE(FPDFText_SetText(text_object, text.get()));
   FPDFPageObj_Transform(text_object, 1, 0, 0, 1, 300, 300);
@@ -2330,7 +2343,7 @@ TEST_F(FPDFEditEmbedderTest, AddTrueTypeFontText) {
     FPDF_PAGEOBJECT text_object =
         FPDFPageObj_CreateTextObj(document(), font.get(), 12.0f);
     EXPECT_TRUE(text_object);
-    std::unique_ptr<unsigned short, pdfium::FreeDeleter> text =
+    ScopedFPDFWideString text =
         GetFPDFWideString(L"I am testing my loaded font, WEE.");
     EXPECT_TRUE(FPDFText_SetText(text_object, text.get()));
     FPDFPageObj_Transform(text_object, 1, 0, 0, 1, 400, 400);
@@ -2348,8 +2361,7 @@ TEST_F(FPDFEditEmbedderTest, AddTrueTypeFontText) {
     // Add some more text, same font
     FPDF_PAGEOBJECT text_object2 =
         FPDFPageObj_CreateTextObj(document(), font.get(), 15.0f);
-    std::unique_ptr<unsigned short, pdfium::FreeDeleter> text2 =
-        GetFPDFWideString(L"Bigger font size");
+    ScopedFPDFWideString text2 = GetFPDFWideString(L"Bigger font size");
     EXPECT_TRUE(FPDFText_SetText(text_object2, text2.get()));
     FPDFPageObj_Transform(text_object2, 1, 0, 0, 1, 200, 200);
     FPDFPage_InsertObject(page, text_object2);
@@ -2412,8 +2424,7 @@ TEST_F(FPDFEditEmbedderTest, AddCIDFontText) {
         FPDFPageObj_CreateTextObj(document(), font.get(), 12.0f);
     ASSERT_TRUE(text_object);
     std::wstring wstr = L"ABCDEFGhijklmnop.";
-    std::unique_ptr<unsigned short, pdfium::FreeDeleter> text =
-        GetFPDFWideString(wstr);
+    ScopedFPDFWideString text = GetFPDFWideString(wstr);
     EXPECT_TRUE(FPDFText_SetText(text_object, text.get()));
     FPDFPageObj_Transform(text_object, 1, 0, 0, 1, 200, 200);
     FPDFPage_InsertObject(page, text_object);
@@ -2425,8 +2436,7 @@ TEST_F(FPDFEditEmbedderTest, AddCIDFontText) {
     std::wstring wstr2 =
         L"\u3053\u3093\u306B\u3061\u306f\u4e16\u754C\u3002\u3053\u3053\u306B1"
         L"\u756A";
-    std::unique_ptr<unsigned short, pdfium::FreeDeleter> text2 =
-        GetFPDFWideString(wstr2);
+    ScopedFPDFWideString text2 = GetFPDFWideString(wstr2);
     EXPECT_TRUE(FPDFText_SetText(text_object2, text2.get()));
     FPDFPageObj_Transform(text_object2, 1, 0, 0, 1, 100, 500);
     FPDFPage_InsertObject(page, text_object2);
@@ -2591,7 +2601,7 @@ TEST_F(FPDFEditEmbedderTest, AddMarkedText) {
       FPDFPageObj_CreateTextObj(document(), font.get(), 12.0f);
 
   EXPECT_TRUE(text_object);
-  std::unique_ptr<unsigned short, pdfium::FreeDeleter> text1 =
+  ScopedFPDFWideString text1 =
       GetFPDFWideString(L"I am testing my loaded font, WEE.");
   EXPECT_TRUE(FPDFText_SetText(text_object, text1.get()));
   FPDFPageObj_Transform(text_object, 1, 0, 0, 1, 400, 400);
@@ -2656,7 +2666,7 @@ TEST_F(FPDFEditEmbedderTest, AddMarkedText) {
 #if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
   const char md5[] = "17d2b6cd574cf66170b09c8927529a94";
 #elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-    const char md5[] = "d60ba39f9698e32360d99e727dd93165";
+  const char md5[] = "d60ba39f9698e32360d99e727dd93165";
 #else
   const char md5[] = "70592859010ffbf532a2237b8118bcc4";
 #endif

@@ -48,14 +48,24 @@ class LargeIconService : public KeyedService {
       const favicon_base::LargeIconCallback& callback,
       base::CancelableTaskTracker* tracker) = 0;
 
-  // Behaves the same as GetLargeIconOrFallbackStyle(), only returns the large
-  // icon (if available) decoded.
+  // Behaves the same as GetLargeIconRawBitmapOrFallbackStyleForPageUrl(), only
+  // returns the large icon (if available) decoded.
   virtual base::CancelableTaskTracker::TaskId
   GetLargeIconImageOrFallbackStyleForPageUrl(
       const GURL& page_url,
       int min_source_size_in_pixel,
       int desired_size_in_pixel,
       const favicon_base::LargeIconImageCallback& callback,
+      base::CancelableTaskTracker* tracker) = 0;
+
+  // Behaves the same as GetLargeIconRawBitmapOrFallbackStyleForPageUrl, except
+  // uses icon URL instead of page URL.
+  virtual base::CancelableTaskTracker::TaskId
+  GetLargeIconRawBitmapOrFallbackStyleForIconUrl(
+      const GURL& icon_url,
+      int min_source_size_in_pixel,
+      int desired_size_in_pixel,
+      const favicon_base::LargeIconCallback& callback,
       base::CancelableTaskTracker* tracker) = 0;
 
   // Fetches the best large icon for the page at |page_url| from a Google

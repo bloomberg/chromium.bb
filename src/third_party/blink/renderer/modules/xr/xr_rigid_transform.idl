@@ -7,10 +7,11 @@
 [
     SecureContext,
     Exposed=Window,
-    OriginTrialEnabled=WebXR,
+    RuntimeEnabled=WebXR,
     Constructor(optional DOMPointInit position, optional DOMPointInit orientation)
 ] interface XRRigidTransform {
   readonly attribute DOMPointReadOnly position;
   readonly attribute DOMPointReadOnly orientation;
   readonly attribute Float32Array matrix;
+  readonly attribute XRRigidTransform inverse;
 };

@@ -63,9 +63,13 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -193,8 +197,8 @@ void LayoutBox::RemoveFloatingOrPositionedChildFromBlockLists() {
   if (IsFloating()) {
     LayoutBlockFlow* parent_block_flow = nullptr;
     for (LayoutObject* curr = Parent(); curr; curr = curr->Parent()) {
-      if (curr->IsLayoutBlockFlow()) {
-        LayoutBlockFlow* curr_block_flow = ToLayoutBlockFlow(curr);
+      auto* curr_block_flow = DynamicTo<LayoutBlockFlow>(curr);
+      if (curr_block_flow) {
         if (!parent_block_flow || curr_block_flow->ContainsFloat(this))
           parent_block_flow = curr_block_flow;
       }
@@ -276,10 +280,11 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
   if (HasReflection() && !HasLayer())
     SetHasReflection(false);
 
+  auto* parent_flow_block = DynamicTo<LayoutBlockFlow>(Parent());
   if (IsFloatingOrOutOfFlowPositioned() && old_style &&
       !old_style->IsFloating() && !old_style->HasOutOfFlowPosition() &&
-      Parent() && Parent()->IsLayoutBlockFlow())
-    ToLayoutBlockFlow(Parent())->ChildBecameFloatingOrOutOfFlow(this);
+      parent_flow_block)
+    parent_flow_block->ChildBecameFloatingOrOutOfFlow(this);
 
   const ComputedStyle& new_style = StyleRef();
   if (NeedsLayout() && old_style)
@@ -356,6 +361,11 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
     if (old_style->OverscrollBehaviorX() != new_style.OverscrollBehaviorX() ||
         old_style->OverscrollBehaviorY() != new_style.OverscrollBehaviorY()) {
       SetNeedsPaintPropertyUpdate();
+    }
+
+    if (IsInLayoutNGInlineFormattingContext() && IsAtomicInlineLevel() &&
+        old_style->Direction() != new_style.Direction()) {
+      SetNeedsCollectInlines();
     }
   }
 
@@ -492,6 +502,8 @@ void LayoutBox::UpdateFromStyle() {
   SetFloating(!IsOutOfFlowPositioned() && style_to_use.IsFloating());
   SetHasTransformRelatedProperty(style_to_use.HasTransformRelatedProperty());
   SetHasReflection(style_to_use.BoxReflect());
+  // LayoutTable and LayoutTableCell will overwrite this flag if needed.
+  SetHasNonCollapsedBorderDecoration(style_to_use.HasBorderDecoration());
 }
 
 void LayoutBox::UpdateLayout() {
@@ -1005,7 +1017,7 @@ bool LayoutBox::CanBeProgramaticallyScrolled() const {
   return node && HasEditableStyle(*node);
 }
 
-void LayoutBox::Autoscroll(const IntPoint& position_in_root_frame) {
+void LayoutBox::Autoscroll(const LayoutPoint& position_in_root_frame) {
   LocalFrame* frame = GetFrame();
   if (!frame)
     return;
@@ -1014,8 +1026,8 @@ void LayoutBox::Autoscroll(const IntPoint& position_in_root_frame) {
   if (!frame_view)
     return;
 
-  IntPoint absolute_position =
-      frame_view->ConvertFromRootFrame(position_in_root_frame);
+  LayoutPoint absolute_position =
+      frame_view->ConvertFromRootFrame(LayoutPoint(position_in_root_frame));
   ScrollRectToVisibleRecursive(
       LayoutRect(absolute_position, LayoutSize(1, 1)),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
@@ -1031,14 +1043,14 @@ bool LayoutBox::CanAutoscroll() const {
 // If specified point is outside the border-belt-excluded box (the border box
 // inset by the autoscroll activation threshold), returned offset denotes
 // direction of scrolling.
-IntSize LayoutBox::CalculateAutoscrollDirection(
-    const IntPoint& point_in_root_frame) const {
+LayoutSize LayoutBox::CalculateAutoscrollDirection(
+    const FloatPoint& point_in_root_frame) const {
   if (!GetFrame())
-    return IntSize();
+    return LayoutSize();
 
   LocalFrameView* frame_view = GetFrame()->View();
   if (!frame_view)
-    return IntSize();
+    return LayoutSize();
 
   LayoutRect absolute_scrolling_box = LayoutRect(AbsoluteBoundingBoxRect());
 
@@ -1047,10 +1059,10 @@ IntSize LayoutBox::CalculateAutoscrollDirection(
   ExcludeScrollbars(absolute_scrolling_box,
                     kExcludeOverlayScrollbarSizeForHitTesting);
 
-  IntRect belt_box = View()->GetFrameView()->ConvertToRootFrame(
-      PixelSnappedIntRect(absolute_scrolling_box));
+  LayoutRect belt_box =
+      View()->GetFrameView()->ConvertToRootFrame(absolute_scrolling_box);
   belt_box.Inflate(-kAutoscrollBeltSize);
-  IntPoint point = point_in_root_frame;
+  LayoutPoint point(point_in_root_frame);
 
   if (point.X() < belt_box.X())
     point.Move(-kAutoscrollBeltSize, 0);
@@ -1062,7 +1074,7 @@ IntSize LayoutBox::CalculateAutoscrollDirection(
   else if (point.Y() > belt_box.MaxY())
     point.Move(0, kAutoscrollBeltSize);
 
-  return point - point_in_root_frame;
+  return point - LayoutPoint(point_in_root_frame);
 }
 
 LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object) {
@@ -2165,8 +2177,9 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForContent(
 
 LayoutUnit LayoutBox::ContainingBlockAvailableLineWidth() const {
   LayoutBlock* cb = ContainingBlock();
-  if (cb->IsLayoutBlockFlow()) {
-    return ToLayoutBlockFlow(cb)->AvailableLogicalWidthForAvoidingFloats(
+  auto* child_block_flow = DynamicTo<LayoutBlockFlow>(cb);
+  if (child_block_flow) {
+    return child_block_flow->AvailableLogicalWidthForAvoidingFloats(
         LogicalTop(), AvailableLogicalHeight(kIncludeMarginBorderPadding));
   }
   return LayoutUnit();
@@ -2303,6 +2316,156 @@ void LayoutBox::SetCachedLayoutResult(const NGLayoutResult& layout_result,
   cached_layout_result_ = &layout_result;
 }
 
+scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
+    const NGConstraintSpace& new_space,
+    const NGBreakToken* break_token) {
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
+    return nullptr;
+
+  // TODO(cbiesinger): Support caching fragmented boxes.
+  if (break_token)
+    return nullptr;
+
+  if (SelfNeedsLayoutForStyle() || NormalChildNeedsLayout() ||
+      PosChildNeedsLayout() || NeedsSimplifiedNormalFlowLayout() ||
+      (NeedsPositionedMovementLayout() && !NeedsPositionedMovementLayoutOnly()))
+    return nullptr;
+
+  const NGLayoutResult* cached_layout_result = GetCachedLayoutResult();
+  if (!cached_layout_result)
+    return nullptr;
+
+  // If we have an orthogonal flow root descendant, we don't attempt to cache
+  // our layout result. This is because the initial containing block size may
+  // have changed, having a high likelihood of changing the size of the
+  // orthogonal flow root.
+  if (cached_layout_result->HasOrthogonalFlowRoots())
+    return nullptr;
+
+  NGBlockNode node(this);
+  if (!MaySkipLayout(node, *cached_layout_result, new_space))
+    return nullptr;
+  // It is possible that our intrinsic size has changed; check for that here.
+  // TODO(cbiesinger): Move this to ::MaySkipLayout.
+  if (new_space.IsShrinkToFit() || NeedMinMaxSize(StyleRef())) {
+    NGBoxFragment fragment(
+        new_space.GetWritingMode(), StyleRef().Direction(),
+        To<NGPhysicalBoxFragment>(*cached_layout_result->PhysicalFragment()));
+    // If we get here, we know that border and padding haven't changed.
+    NGBoxStrut border_padding = fragment.Borders() + fragment.Padding();
+    LayoutUnit size =
+        ComputeInlineSizeForFragment(new_space, node, border_padding);
+    if (size != fragment.InlineSize())
+      return nullptr;
+  }
+
+  const NGConstraintSpace& old_space =
+      cached_layout_result->GetConstraintSpaceForCaching();
+
+  base::Optional<LayoutUnit> bfc_block_offset =
+      cached_layout_result->BfcBlockOffset();
+  LayoutUnit bfc_line_offset = new_space.BfcOffset().line_offset;
+
+  DCHECK_EQ(old_space.BfcOffset().line_offset,
+            cached_layout_result->BfcLineOffset());
+
+  // Check the BFC offset. Even if they don't match, there're some cases we can
+  // still reuse the fragment.
+  bool is_bfc_offset_equal = new_space.BfcOffset() == old_space.BfcOffset();
+
+  // Even for the first fragment, when block fragmentation is enabled, block
+  // offset changes should cause re-layout, since we will fragment at other
+  // locations than before.
+  if (UNLIKELY(!is_bfc_offset_equal && new_space.HasBlockFragmentation())) {
+    DCHECK(old_space.HasBlockFragmentation());
+    return nullptr;
+  }
+
+  bool is_exclusion_space_equal =
+      new_space.ExclusionSpace() == old_space.ExclusionSpace();
+
+  // If anything changes within the layout regarding floats, we need to perform
+  // a series of additional checks to see if the result can still be reused.
+  if (!is_bfc_offset_equal || !is_exclusion_space_equal ||
+      new_space.ClearanceOffset() != old_space.ClearanceOffset()) {
+    // We can't reuse a result if it was previously affected by clearance.
+    //
+    // TODO(layout-dev): There may be cases where we can re-use results here.
+    // However as there are complexities regarding margin-collapsing and
+    // clearance we currently don't attempt to cache anything.
+    if (cached_layout_result->IsPushedByFloats()) {
+      DCHECK(old_space.HasFloats());
+      return nullptr;
+    }
+
+    // Check we have a descendant that *may* be positioned above the block-start
+    // edge. We abort if either the old or new space has floats, as we don't
+    // keep track of how far above the child could be. This case is relatively
+    // rare, and only occurs with negative margins.
+    if (cached_layout_result->MayHaveDescendantAboveBlockStart() &&
+        (old_space.HasFloats() || new_space.HasFloats()))
+      return nullptr;
+
+    // We can now try to adjust the BFC block-offset.
+    if (bfc_block_offset) {
+      // Check if the previous position may intersect with any floats.
+      if (*bfc_block_offset <
+          old_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+        return nullptr;
+
+      bfc_block_offset = *bfc_block_offset -
+                         old_space.BfcOffset().block_offset +
+                         new_space.BfcOffset().block_offset;
+
+      // Check if the new position may intersect with any floats.
+      if (*bfc_block_offset <
+          new_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+        return nullptr;
+    }
+  }
+
+  // We can safely re-use this fragment if we are positioned, and only our
+  // position constraints changed (left/top/etc). However we need to clear the
+  // dirty layout bit(s).
+  ClearNeedsLayout();
+
+  // The checks above should be enough to bail if layout is incomplete, but
+  // let's verify:
+  DCHECK(IsBlockLayoutComplete(old_space, *cached_layout_result));
+
+  // OOF-positioned nodes have to two-tier cache. The additional cache check
+  // runs before the OOF-positioned sizing, and positioning calculations.
+  //
+  // This additional check compares the percentage resolution size.
+  //
+  // As a result, the cached layout result always needs to contain the previous
+  // percentage resolution size in order for the first-tier cache to work.
+  // See |NGBlockNode::CachedLayoutResultForOutOfFlowPositioned|.
+  bool needs_cached_result_update =
+      node.IsOutOfFlowPositioned() && new_space.PercentageResolutionSize() !=
+                                          old_space.PercentageResolutionSize();
+
+  // We can safely reuse this result if our BFC and "input" exclusion spaces
+  // were equal.
+  if (is_bfc_offset_equal && is_exclusion_space_equal &&
+      !needs_cached_result_update) {
+    // In order not to rebuild the internal derived-geometry "cache" of float
+    // data, we need to move this to the new "output" exclusion space.
+    cached_layout_result->ExclusionSpace().MoveAndUpdateDerivedGeometry(
+        new_space.ExclusionSpace());
+    return cached_layout_result;
+  }
+
+  scoped_refptr<const NGLayoutResult> new_result =
+      base::AdoptRef(new NGLayoutResult(*cached_layout_result, new_space,
+                                        bfc_line_offset, bfc_block_offset));
+
+  if (needs_cached_result_update)
+    SetCachedLayoutResult(*new_result, break_token);
+
+  return new_result;
+}
+
 void LayoutBox::PositionLineBox(InlineBox* box) {
   if (IsOutOfFlowPositioned()) {
     // Cache the x position only if we were an INLINE type originally.
@@ -2406,8 +2569,6 @@ bool LayoutBox::IsBreakBetweenControllable(EBreakBetween break_value) const {
         return true;
       bool is_multicol_value = break_value == EBreakBetween::kColumn ||
                                break_value == EBreakBetween::kAvoidColumn;
-      if (ToLayoutFlowThread(curr)->IsLayoutPagedFlowThread())
-        return !is_multicol_value;
       if (is_multicol_value)
         return true;
       // If this is a flow thread for a multicol container, and we have a break
@@ -2428,7 +2589,7 @@ bool LayoutBox::IsBreakInsideControllable(EBreakInside break_value) const {
   const LayoutFlowThread* flow_thread = FlowThreadContainingBlock();
   // 'avoid-column' is only valid in a multicol context.
   if (break_value == EBreakInside::kAvoidColumn)
-    return flow_thread && !flow_thread->IsLayoutPagedFlowThread();
+    return flow_thread;
   // 'avoid' is valid in any kind of fragmentation context.
   if (break_value == EBreakInside::kAvoid && flow_thread)
     return true;
@@ -2438,14 +2599,6 @@ bool LayoutBox::IsBreakInsideControllable(EBreakInside break_value) const {
     return true;  // The view is paginated, probably because we're printing.
   if (!flow_thread)
     return false;  // We're not inside any pagination context
-  // We're inside a flow thread. We need to be contained by a flow thread for
-  // paged overflow in order for pagination values to be valid, though.
-  for (const LayoutBlock* ancestor = flow_thread; ancestor;
-       ancestor = ancestor->ContainingBlock()) {
-    if (ancestor->IsLayoutFlowThread() &&
-        ToLayoutFlowThread(ancestor)->IsLayoutPagedFlowThread())
-      return true;
-  }
   return false;
 }
 
@@ -2955,12 +3108,13 @@ LayoutUnit LayoutBox::ComputeLogicalWidthUsing(
   LayoutUnit logical_width_result =
       FillAvailableMeasure(available_logical_width, margin_start, margin_end);
 
-  if (ShrinkToAvoidFloats() && cb->IsLayoutBlockFlow() &&
-      ToLayoutBlockFlow(cb)->ContainsFloats())
-    logical_width_result =
-        std::min(logical_width_result,
-                 ShrinkLogicalWidthToAvoidFloats(margin_start, margin_end,
-                                                 ToLayoutBlockFlow(cb)));
+  auto* child_block_flow = DynamicTo<LayoutBlockFlow>(cb);
+  if (ShrinkToAvoidFloats() && child_block_flow &&
+      child_block_flow->ContainsFloats()) {
+    logical_width_result = std::min(
+        logical_width_result, ShrinkLogicalWidthToAvoidFloats(
+                                  margin_start, margin_end, child_block_flow));
+  }
 
   if (width_type == kMainOrPreferredSize &&
       SizesLogicalWidthToFitContent(logical_width)) {
@@ -3127,8 +3281,9 @@ void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,
       MinimumValueForLength(margin_end_length, container_width);
 
   LayoutUnit available_width = container_width;
-  if (AvoidsFloats() && containing_block->IsLayoutBlockFlow() &&
-      ToLayoutBlockFlow(containing_block)->ContainsFloats()) {
+  auto* containing_block_flow = DynamicTo<LayoutBlockFlow>(containing_block);
+  if (CreatesNewFormattingContext() && containing_block_flow &&
+      containing_block_flow->ContainsFloats()) {
     available_width = ContainingBlockAvailableLineWidth();
     if (ShrinkToAvoidFloats() && available_width < container_width) {
       margin_start = std::max(LayoutUnit(), margin_start_width);
@@ -3483,12 +3638,12 @@ bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
 
   // For quirks mode, we skip most auto-height containing blocks when computing
   // percentages.
+  auto* layout_custom = DynamicTo<LayoutCustom>(containing_block);
   return containing_block->GetDocument().InQuirksMode() &&
          containing_block->StyleRef().LogicalHeight().IsAuto() &&
          !containing_block->IsTableCell() &&
          !containing_block->IsOutOfFlowPositioned() &&
-         !(containing_block->IsLayoutCustom() &&
-           ToLayoutCustom(containing_block)->IsLoaded()) &&
+         !(layout_custom && layout_custom->IsLoaded()) &&
          !containing_block->HasOverridePercentageResolutionBlockSize() &&
          !containing_block->IsLayoutGrid() &&
          !containing_block->IsFlexibleBoxIncludingDeprecatedAndNG();
@@ -3588,7 +3743,13 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
           &cb, &skipped_auto_height_containing_block);
 
   DCHECK(cb);
-  cb->AddPercentHeightDescendant(const_cast<LayoutBox*>(this));
+
+  // If the container of the descendant is a replaced element (a VIDEO, for
+  // instance), |cb| (which uses ContainingBlock()) may actually not be in the
+  // containing block chain for the descendant.
+  const LayoutObject* container = Container();
+  if (!container->IsLayoutReplaced())
+    cb->AddPercentHeightDescendant(const_cast<LayoutBox*>(this));
 
   if (available_height == -1)
     return available_height;
@@ -3775,8 +3936,8 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
       bool has_perpendicular_containing_block =
           cb->IsHorizontalWritingMode() != IsHorizontalWritingMode();
       LayoutUnit stretched_height(-1);
-      if (cb->IsLayoutBlock()) {
-        LayoutBlock* block = ToLayoutBlock(cb);
+      auto* block = DynamicTo<LayoutBlock>(cb);
+      if (block) {
         block->AddPercentHeightDescendant(const_cast<LayoutBox*>(this));
         if (block->IsFlexItem()) {
           const LayoutFlexibleBox* flex_box =
@@ -3821,7 +3982,7 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
                 logical_height,
                 available_height - BorderAndPaddingLogicalHeight());
           }
-          ToLayoutBlock(cb)->AddPercentHeightDescendant(
+          To<LayoutBlock>(cb)->AddPercentHeightDescendant(
               const_cast<LayoutBox*>(this));
           cb = cb->ContainingBlock();
         }
@@ -3914,10 +4075,11 @@ LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
   // FIXME: Check logicalTop/logicalBottom here to correctly handle vertical
   // writing-mode.
   // https://bugs.webkit.org/show_bug.cgi?id=46500
-  if (IsLayoutBlock() && IsOutOfFlowPositioned() &&
+  auto* curr_layout_block = DynamicTo<LayoutBlock>(this);
+  if (curr_layout_block && IsOutOfFlowPositioned() &&
       StyleRef().Height().IsAuto() &&
       !(StyleRef().Top().IsAuto() || StyleRef().Bottom().IsAuto())) {
-    LayoutBlock* block = const_cast<LayoutBlock*>(ToLayoutBlock(this));
+    LayoutBlock* block = const_cast<LayoutBlock*>(curr_layout_block);
     LogicalExtentComputedValues computed_values;
     block->ComputeLogicalHeight(block->LogicalHeight(), LayoutUnit(),
                                 computed_values);
@@ -5114,7 +5276,7 @@ DISABLE_CFI_PERF
 bool LayoutBox::ShrinkToAvoidFloats() const {
   // Floating objects don't shrink.  Objects that don't avoid floats don't
   // shrink.
-  if (IsInline() || !AvoidsFloats() || IsFloating())
+  if (IsInline() || !CreatesNewFormattingContext() || IsFloating())
     return false;
 
   // Only auto width objects can possibly shrink to avoid floats.
@@ -5128,6 +5290,13 @@ bool LayoutBox::ShrinkToAvoidFloats() const {
     if (containing_block->IsLayoutNGMixin())
       return false;
   }
+
+  // Legends are taken out of the normal flow, and are laid out at the very
+  // start of the fieldset, and are therefore not affected by floats (that may
+  // appear earlier in the DOM).
+  if (IsRenderedLegend())
+    return false;
+
   return true;
 }
 
@@ -5141,10 +5310,6 @@ bool LayoutBox::ShouldBeConsideredAsReplaced() const {
   return node && node->IsElementNode() &&
          (ToElement(node)->IsFormControlElement() ||
           IsHTMLImageElement(ToElement(node)));
-}
-
-bool LayoutBox::AvoidsFloats() const {
-  return true;
 }
 
 bool LayoutBox::HasNonCompositedScrollbars() const {
@@ -5238,15 +5403,16 @@ void LayoutBox::UnmarkOrthogonalWritingModeRoot() {
 // Children of LayoutCustom object's are only considered "items" when it has a
 // loaded algorithm.
 bool LayoutBox::IsCustomItem() const {
-  return Parent() && Parent()->IsLayoutCustom() &&
-         ToLayoutCustom(Parent())->State() == LayoutCustomState::kBlock;
+  auto* parent_layout_box = DynamicTo<LayoutCustom>(Parent());
+  return parent_layout_box &&
+         parent_layout_box->State() == LayoutCustomState::kBlock;
 }
 
 // LayoutCustom items are only shrink-to-fit during the web-developer defined
 // layout phase (not during fallback).
 bool LayoutBox::IsCustomItemShrinkToFit() const {
   DCHECK(IsCustomItem());
-  return ToLayoutCustom(Parent())->Phase() == LayoutCustomPhase::kCustom;
+  return To<LayoutCustom>(Parent())->Phase() == LayoutCustomPhase::kCustom;
 }
 
 void LayoutBox::AddVisualEffectOverflow() {
@@ -5730,12 +5896,13 @@ static void MarkBoxForRelayoutAfterSplit(LayoutBox* box) {
 
 static void CollapseLoneAnonymousBlockChild(LayoutBox* parent,
                                             LayoutObject* child) {
-  if (!child->IsAnonymousBlock() || !child->IsLayoutBlockFlow())
+  auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
+  auto* parent_block_flow = DynamicTo<LayoutBlockFlow>(parent);
+  if (!child->IsAnonymousBlock() || !child_block_flow)
     return;
-  if (!parent->IsLayoutBlockFlow())
+  if (!parent_block_flow)
     return;
-  ToLayoutBlockFlow(parent)->CollapseAnonymousBlockChild(
-      ToLayoutBlockFlow(child));
+  parent_block_flow->CollapseAnonymousBlockChild(child_block_flow);
 }
 
 LayoutObject* LayoutBox::SplitAnonymousBoxesAroundChild(
@@ -6069,13 +6236,7 @@ void LayoutBox::ClearCustomLayoutChild() {
 }
 
 LayoutRect LayoutBox::DebugRect() const {
-  LayoutRect rect = FrameRect();
-
-  LayoutBlock* block = ContainingBlock();
-  if (block)
-    block->AdjustChildDebugRect(rect);
-
-  return rect;
+  return FrameRect();
 }
 
 bool LayoutBox::ComputeShouldClipOverflow() const {

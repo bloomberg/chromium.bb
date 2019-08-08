@@ -77,7 +77,7 @@ namespace utils {
 
 class WireTest : public testing::Test {
   protected:
-    WireTest(bool ignoreSetCallbackCalls);
+    WireTest();
     ~WireTest() override;
 
     void SetUp() override;
@@ -85,12 +85,17 @@ class WireTest : public testing::Test {
     void FlushClient();
     void FlushServer();
 
-    MockProcTable api;
-    dawnDevice apiDevice;
-    dawnDevice device;
+    testing::StrictMock<MockProcTable> api;
+    DawnDevice apiDevice;
+    DawnDevice device;
+
+    dawn_wire::WireServer* GetWireServer();
+    dawn_wire::WireClient* GetWireClient();
+
+    void DeleteServer();
 
   private:
-    bool mIgnoreSetCallbackCalls = false;
+    void SetupIgnoredCallExpectations();
 
     std::unique_ptr<dawn_wire::WireServer> mWireServer;
     std::unique_ptr<dawn_wire::WireClient> mWireClient;

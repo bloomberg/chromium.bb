@@ -71,7 +71,7 @@ public class TrustedWebActivityOpenTimeRecorder implements PauseResumeWithNative
         mLastStateChangeTimestampMs = SystemClock.elapsedRealtime();
 
         if (mInVerifiedOrigin && !mTwaOpenedRecorded) {
-            mRecorder.recordTwaOpened(mTabProvider.getActivityTab());
+            mRecorder.recordTwaOpened(mTabProvider.get());
             mTwaOpenedRecorded = true;
         }
     }

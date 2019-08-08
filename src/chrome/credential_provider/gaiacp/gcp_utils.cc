@@ -12,7 +12,6 @@
 #include <ntsecapi.h>  // For LsaLookupAuthenticationPackage()
 #include <sddl.h>      // For ConvertSidToStringSid()
 #include <security.h>  // For NEGOSSP_NAME_A
-#include <shlobj.h>    // For SHGetKnownFolderPath()
 #include <wbemidl.h>
 
 #include <atlbase.h>
@@ -47,7 +46,6 @@
 namespace credential_provider {
 
 const wchar_t kDefaultProfilePictureFileExtension[] = L".jpg";
-const wchar_t kCredentialLogoPictureFileExtension[] = L".bmp";
 
 namespace {
 
@@ -638,57 +636,46 @@ base::string16 GetStringResource(int base_message_id) {
   return localized_string;
 }
 
-HRESULT GetUserAccountPicturePath(const base::string16& sid,
-                                  base::FilePath* base_path) {
-  DCHECK(base_path);
-  base_path->clear();
-  LPWSTR path;
-  HRESULT hr = ::SHGetKnownFolderPath(FOLDERID_PublicUserTiles, 0, NULL, &path);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "SHGetKnownFolderPath=" << putHR(hr);
-    return hr;
-  }
-  *base_path = base::FilePath(path).Append(sid);
-  ::CoTaskMemFree(path);
-  return S_OK;
-}
-
-base::FilePath GetUserSizedAccountPictureFilePath(
-    const base::FilePath& account_picture_path,
-    int size,
-    const base::string16& picture_extension) {
-  return account_picture_path.Append(base::StringPrintf(
-      L"GoogleAccountPicture_%i%ls", size, picture_extension.c_str()));
-}
-
 base::string16 GetSelectedLanguage() {
   return GetLanguageSelector().matched_candidate();
 }
 
-base::string16 GetDictString(const base::DictionaryValue* dict,
-                             const char* name) {
+void SecurelyClearDictionaryValue(base::Optional<base::Value>* value) {
+  if (!value || !(*value) || !((*value)->is_dict()))
+    return;
+
+  const std::string* password_value = (*value)->FindStringKey(kKeyPassword);
+  if (password_value) {
+    ::RtlSecureZeroMemory(const_cast<char*>(password_value->data()),
+                          password_value->size());
+  }
+
+  (*value).reset();
+}
+
+base::string16 GetDictString(const base::Value& dict, const char* name) {
   DCHECK(name);
-  auto* value = dict->FindKey(name);
+  DCHECK(dict.is_dict());
+  auto* value = dict.FindKey(name);
   return value && value->is_string() ? base::UTF8ToUTF16(value->GetString())
                                      : base::string16();
 }
 
-base::string16 GetDictString(const std::unique_ptr<base::DictionaryValue>& dict,
+base::string16 GetDictString(const std::unique_ptr<base::Value>& dict,
                              const char* name) {
-  return GetDictString(dict.get(), name);
+  return GetDictString(*dict, name);
 }
 
-std::string GetDictStringUTF8(const base::DictionaryValue* dict,
-                              const char* name) {
+std::string GetDictStringUTF8(const base::Value& dict, const char* name) {
   DCHECK(name);
-  auto* value = dict->FindKey(name);
+  DCHECK(dict.is_dict());
+  auto* value = dict.FindKey(name);
   return value && value->is_string() ? value->GetString() : std::string();
 }
 
-std::string GetDictStringUTF8(
-    const std::unique_ptr<base::DictionaryValue>& dict,
-    const char* name) {
-  return GetDictStringUTF8(dict.get(), name);
+std::string GetDictStringUTF8(const std::unique_ptr<base::Value>& dict,
+                              const char* name) {
+  return GetDictStringUTF8(*dict, name);
 }
 
 base::FilePath::StringType GetInstallParentDirectoryName() {
@@ -701,7 +688,7 @@ base::FilePath::StringType GetInstallParentDirectoryName() {
 
 base::string16 GetWindowsVersion() {
   wchar_t release_id[32];
-  ULONG length = base::size(release_id) * sizeof(release_id[0]);
+  ULONG length = base::size(release_id);
   HRESULT hr =
       GetMachineRegString(L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
                           L"ReleaseId", release_id, &length);

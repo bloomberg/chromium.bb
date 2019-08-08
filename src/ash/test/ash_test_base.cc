@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/accessibility/accessibility_panel_layout_manager.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/display/extended_mouse_warp_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
@@ -16,6 +17,7 @@
 #include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -31,11 +33,12 @@
 #include "ash/window_factory.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "ash/wm/window_positioner.h"
+#include "ash/wm/work_area_insets.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "mojo/public/cpp/bindings/map.h"
@@ -59,7 +62,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -209,6 +212,11 @@ UnifiedSystemTray* AshTestBase::GetPrimaryUnifiedSystemTray() {
   return GetPrimaryShelf()->GetStatusAreaWidget()->unified_system_tray();
 }
 
+// static
+WorkAreaInsets* AshTestBase::GetPrimaryWorkAreaInsets() {
+  return Shell::GetPrimaryRootWindowController()->work_area_insets();
+}
+
 ui::test::EventGenerator* AshTestBase::GetEventGenerator() {
   if (!event_generator_) {
     event_generator_ = std::make_unique<ui::test::EventGenerator>(
@@ -250,7 +258,8 @@ aura::Window* AshTestBase::CurrentContext() {
 std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
     views::WidgetDelegate* delegate,
     int container_id,
-    const gfx::Rect& bounds) {
+    const gfx::Rect& bounds,
+    bool show) {
   std::unique_ptr<views::Widget> widget(new views::Widget);
   views::Widget::InitParams params;
   params.delegate = delegate;
@@ -258,7 +267,8 @@ std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
   params.bounds = bounds;
   params.parent = Shell::GetPrimaryRootWindow()->GetChildById(container_id);
   widget->Init(params);
-  widget->Show();
+  if (show)
+    widget->Show();
   return widget;
 }
 
@@ -440,6 +450,13 @@ void AshTestBase::SimulateKioskMode(user_manager::UserType user_type) {
   session->AddUserSession(user_email, user_type);
   session->SwitchActiveUser(AccountId::FromUserEmail(user_email));
   session->SetSessionState(SessionState::ACTIVE);
+}
+
+void AshTestBase::SetAccessibilityPanelHeight(int panel_height) {
+  Shell::GetPrimaryRootWindowController()
+      ->GetAccessibilityPanelLayoutManagerForTest()
+      ->SetPanelBounds(gfx::Rect(0, 0, 0, panel_height),
+                       mojom::AccessibilityPanelState::FULL_WIDTH);
 }
 
 void AshTestBase::ClearLogin() {

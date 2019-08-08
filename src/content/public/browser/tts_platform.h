@@ -62,7 +62,7 @@ class CONTENT_EXPORT TtsPlatform {
 
   // Allows the platform to monitor speech commands and the voices used
   // for each one.
-  virtual void WillSpeakUtteranceWithVoice(const TtsUtterance* utterance,
+  virtual void WillSpeakUtteranceWithVoice(TtsUtterance* utterance,
                                            const VoiceData& voice_data) = 0;
 
   virtual std::string GetError() = 0;

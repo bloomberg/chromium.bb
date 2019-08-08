@@ -17,11 +17,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Semaphore;
@@ -42,7 +42,7 @@ public final class ExploreSitesBridgeExperimentalTest {
 
     @Before
     public void setUp() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> { mProfile = Profile.getLastUsedProfile(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mProfile = Profile.getLastUsedProfile(); });
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
@@ -80,19 +80,15 @@ public final class ExploreSitesBridgeExperimentalTest {
         // Use an AtomicReference and assert on the Instrumentation thread so that failures show
         // up as proper failures instead of browser crashes.
         final AtomicReference<Bitmap> actualIcon = new AtomicReference<Bitmap>();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ExploreSitesBridgeExperimental.getIcon(
-                        mProfile, testImageUrl, new Callback<Bitmap>() {
-                            @Override
-                            public void onResult(Bitmap icon) {
-                                actualIcon.set(icon);
-                                semaphore.release();
-                            }
-                        });
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ExploreSitesBridgeExperimental.getIcon(
+                                mProfile, testImageUrl, new Callback<Bitmap>() {
+                                    @Override
+                                    public void onResult(Bitmap icon) {
+                                        actualIcon.set(icon);
+                                        semaphore.release();
+                                    }
+                                }));
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertNotNull(actualIcon.get());
         Assert.assertTrue(bitmapsEqual(expectedIcon, actualIcon.get()));

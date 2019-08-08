@@ -30,6 +30,8 @@
 
 #include "third_party/blink/renderer/core/css/rule_set.h"
 
+#include <type_traits>
+
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
@@ -43,7 +45,7 @@
 
 namespace blink {
 
-static inline PropertyWhitelistType DeterminePropertyWhitelistType(
+static inline ValidPropertyFilter DetermineValidPropertyFilter(
     const AddRuleFlags add_rule_flags,
     const CSSSelector& selector) {
   for (const CSSSelector* component = &selector; component;
@@ -51,11 +53,11 @@ static inline PropertyWhitelistType DeterminePropertyWhitelistType(
     if (component->GetPseudoType() == CSSSelector::kPseudoCue ||
         (component->Match() == CSSSelector::kPseudoElement &&
          component->Value() == TextTrackCue::CueShadowPseudoId()))
-      return kPropertyWhitelistCue;
+      return ValidPropertyFilter::kCue;
     if (component->GetPseudoType() == CSSSelector::kPseudoFirstLetter)
-      return kPropertyWhitelistFirstLetter;
+      return ValidPropertyFilter::kFirstLetter;
   }
-  return kPropertyWhitelistNone;
+  return ValidPropertyFilter::kNoFilter;
 }
 
 RuleData* RuleData::MaybeCreate(StyleRule* rule,
@@ -84,8 +86,9 @@ RuleData::RuleData(StyleRule* rule,
       link_match_type_(Selector().ComputeLinkMatchType(CSSSelector::kMatchAll)),
       has_document_security_origin_(add_rule_flags &
                                     kRuleHasDocumentSecurityOrigin),
-      property_whitelist_(
-          DeterminePropertyWhitelistType(add_rule_flags, Selector())),
+      valid_property_filter_(
+          static_cast<std::underlying_type_t<ValidPropertyFilter>>(
+              DetermineValidPropertyFilter(add_rule_flags, Selector()))),
       descendant_selector_identifier_hashes_() {
   SelectorFilter::CollectIdentifierHashes(
       Selector(), descendant_selector_identifier_hashes_,

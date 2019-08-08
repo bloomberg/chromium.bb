@@ -9,8 +9,6 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
@@ -24,11 +22,13 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateInteractionSource;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateStatus;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * Contains logic related to displaying app menu badge and a special menu item for information
@@ -118,8 +118,6 @@ public class UpdateMenuItemHelper {
 
     private final ObserverList<Runnable> mObservers = new ObserverList<>();
 
-    private final Handler mHandler = new Handler(Looper.getMainLooper());
-
     private final Callback<UpdateStatusProvider.UpdateStatus> mUpdateCallback = status -> {
         mStatus = status;
         handleStateChanged();
@@ -159,7 +157,7 @@ public class UpdateMenuItemHelper {
         if (!mObservers.addObserver(observer)) return;
 
         if (mStatus != null) {
-            mHandler.post(() -> {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                 if (mObservers.hasObserver(observer)) observer.run();
             });
             return;

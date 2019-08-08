@@ -25,7 +25,14 @@ void InProcessBrowserTestMixin::SetUpCommandLine(
 void InProcessBrowserTestMixin::SetUpDefaultCommandLine(
     base::CommandLine* command_line) {}
 
+bool InProcessBrowserTestMixin::SetUpUserDataDirectory() {
+  return true;
+}
+
 void InProcessBrowserTestMixin::SetUpInProcessBrowserTestFixture() {}
+
+void InProcessBrowserTestMixin::CreatedBrowserMainParts(
+    content::BrowserMainParts* browser_main_parts) {}
 
 void InProcessBrowserTestMixin::SetUpOnMainThread() {}
 
@@ -56,9 +63,23 @@ void InProcessBrowserTestMixinHost::SetUpDefaultCommandLine(
     mixin->SetUpDefaultCommandLine(command_line);
 }
 
+bool InProcessBrowserTestMixinHost::SetUpUserDataDirectory() {
+  for (InProcessBrowserTestMixin* mixin : mixins_) {
+    if (!mixin->SetUpUserDataDirectory())
+      return false;
+  }
+  return true;
+}
+
 void InProcessBrowserTestMixinHost::SetUpInProcessBrowserTestFixture() {
   for (InProcessBrowserTestMixin* mixin : mixins_)
     mixin->SetUpInProcessBrowserTestFixture();
+}
+
+void InProcessBrowserTestMixinHost::CreatedBrowserMainParts(
+    content::BrowserMainParts* browser_main_parts) {
+  for (InProcessBrowserTestMixin* mixin : mixins_)
+    mixin->CreatedBrowserMainParts(browser_main_parts);
 }
 
 void InProcessBrowserTestMixinHost::SetUpOnMainThread() {
@@ -102,9 +123,20 @@ void MixinBasedInProcessBrowserTest::SetUpDefaultCommandLine(
   InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
 }
 
+bool MixinBasedInProcessBrowserTest::SetUpUserDataDirectory() {
+  return mixin_host_.SetUpUserDataDirectory() &&
+         InProcessBrowserTest::SetUpUserDataDirectory();
+}
+
 void MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture() {
   mixin_host_.SetUpInProcessBrowserTestFixture();
   InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+}
+
+void MixinBasedInProcessBrowserTest::CreatedBrowserMainParts(
+    content::BrowserMainParts* browser_main_parts) {
+  mixin_host_.CreatedBrowserMainParts(browser_main_parts);
+  InProcessBrowserTest::CreatedBrowserMainParts(browser_main_parts);
 }
 
 void MixinBasedInProcessBrowserTest::SetUpOnMainThread() {

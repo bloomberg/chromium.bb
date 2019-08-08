@@ -35,7 +35,7 @@ void HttpAuth::ChooseBestChallenge(
     HostResolver* host_resolver,
     std::unique_ptr<HttpAuthHandler>* handler) {
   DCHECK(http_auth_handler_factory);
-  DCHECK(handler->get() == NULL);
+  DCHECK(handler->get() == nullptr);
 
   // Choose the challenge whose authentication handler gives the maximum score.
   std::unique_ptr<HttpAuthHandler> best;

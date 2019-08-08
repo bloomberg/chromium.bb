@@ -53,6 +53,7 @@ class ProguardCmdBuilder(object):
     self._outjar = None
     self._mapping_output = None
     self._verbose = False
+    self._min_api = None
     self._disabled_optimizations = []
 
   def outjar(self, path):
@@ -93,6 +94,10 @@ class ProguardCmdBuilder(object):
   def verbose(self, verbose):
     self._verbose = verbose
 
+  def min_api(self, min_api):
+    assert self._min_api is None
+    self._min_api = min_api
+
   def disable_optimizations(self, optimizations):
     self._disabled_optimizations += optimizations
 
@@ -110,6 +115,13 @@ class ProguardCmdBuilder(object):
 
     if self._libraries:
       cmd += ['-libraryjars', ':'.join(self._libraries)]
+
+    if self._min_api:
+      cmd += [
+          '-assumevalues class android.os.Build$VERSION {' +
+          ' public static final int SDK_INT return ' + self._min_api +
+          '..9999; }'
+      ]
 
     for optimization in self._disabled_optimizations:
       cmd += [ '-optimizations', '!' + optimization ]

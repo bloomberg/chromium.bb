@@ -30,8 +30,8 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/browser/ui/autofill/local_card_migration_bubble_controller_impl.h"
-#include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/local_card_migration_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -42,26 +42,30 @@
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views/autofill/local_card_migration_icon_view.h"
-#include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
+#include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
+#include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
+#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/web_app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/omnibox/browser/location_bar_model.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/vector_icons.h"
@@ -108,10 +112,6 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
-#endif
 
 namespace {
 
@@ -201,7 +201,7 @@ void LocationBarView::Init() {
   selected_keyword_view_ = new SelectedKeywordView(this, font_list, profile());
   AddChildView(selected_keyword_view_);
 
-  keyword_hint_view_ = new KeywordHintView(this, profile(), tint());
+  keyword_hint_view_ = new KeywordHintView(this, profile());
   AddChildView(keyword_hint_view_);
 
   SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
@@ -217,7 +217,7 @@ void LocationBarView::Init() {
     AddChildView(image_view);
   }
 
-  PageActionIconContainerView::Params params;
+  OmniboxPageActionIconContainerView::Params params;
   params.types_enabled.push_back(PageActionIconType::kManagePasswords);
   // |browser_| may be null when LocationBarView is used for non-Browser windows
   // such as PresentationReceiverWindowView, which do not support page actions.
@@ -234,30 +234,33 @@ void LocationBarView::Init() {
   params.browser = browser_;
   params.command_updater = command_updater();
   params.page_action_icon_delegate = this;
-  params.location_bar_delegate = delegate_;
-  page_action_icon_container_view_ = new PageActionIconContainerView(params);
-  AddChildView(page_action_icon_container_view_);
+  omnibox_page_action_icon_container_view_ =
+      new OmniboxPageActionIconContainerView(params);
+  AddChildView(omnibox_page_action_icon_container_view_);
 
   if (browser_) {
-    save_credit_card_icon_view_ = new autofill::SaveCardIconView(
-        command_updater(), browser_, this, font_list);
-    page_action_icons_.push_back(save_credit_card_icon_view_);
+    // Add icons only when feature is not enabled. Otherwise icons will
+    // be added to the ToolbarPageActionIconContainerView.
+    if (!base::FeatureList::IsEnabled(
+            autofill::features::kAutofillEnableToolbarStatusChip)) {
+      save_credit_card_icon_view_ = new autofill::SaveCardIconView(
+          command_updater(), browser_, this, font_list);
+      page_action_icons_.push_back(save_credit_card_icon_view_);
 
-    local_card_migration_icon_view_ = new autofill::LocalCardMigrationIconView(
-        command_updater(), browser_, this, font_list);
-    page_action_icons_.push_back(local_card_migration_icon_view_);
+      local_card_migration_icon_view_ =
+          new autofill::LocalCardMigrationIconView(command_updater(), browser_,
+                                                   this, font_list);
+      page_action_icons_.push_back(local_card_migration_icon_view_);
+    }
 
-#if defined(OS_CHROMEOS)
     page_action_icons_.push_back(intent_picker_view_ =
                                      new IntentPickerView(browser_, this));
-#endif
 
     page_action_icons_.push_back(
         star_view_ = new StarView(command_updater(), browser_, this));
   }
 
   for (PageActionIconView* icon_view : page_action_icons_) {
-    icon_view->Init();
     icon_view->SetVisible(false);
     icon_view->SetIconColor(icon_color);
     AddChildView(icon_view);
@@ -274,10 +277,12 @@ void LocationBarView::Init() {
   Update(nullptr);
 
   hover_animation_.SetSlideDuration(200);
+
+  is_initialized_ = true;
 }
 
 bool LocationBarView::IsInitialized() const {
-  return omnibox_view_ != nullptr;
+  return is_initialized_;
 }
 
 SkColor LocationBarView::GetColor(OmniboxPart part) const {
@@ -428,6 +433,10 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
   return gfx::Size(width, height);
 }
 
+void LocationBarView::OnKeywordFaviconFetched(const gfx::Image& icon) {
+  selected_keyword_view_->SetImage(icon.AsImageSkia());
+}
+
 void LocationBarView::Layout() {
   if (!IsInitialized())
     return;
@@ -500,6 +509,20 @@ void LocationBarView::Layout() {
         gfx::Image image = extensions::OmniboxAPI::Get(profile())->
             GetOmniboxIcon(template_url->GetExtensionId());
         selected_keyword_view_->SetImage(image.AsImageSkia());
+      } else if (template_url && template_url->type() == TemplateURL::NORMAL &&
+                 OmniboxFieldTrial::IsExperimentalKeywordModeEnabled()) {
+        gfx::Image image =
+            omnibox_view()
+                ->model()
+                ->client()
+                ->GetFaviconForKeywordSearchProvider(
+                    template_url,
+                    base::BindOnce(&LocationBarView::OnKeywordFaviconFetched,
+                                   base::Unretained(this)));
+        if (!image.IsEmpty())
+          selected_keyword_view_->SetImage(image.AsImageSkia());
+        else
+          selected_keyword_view_->ResetImage();
       } else {
         selected_keyword_view_->ResetImage();
       }
@@ -523,11 +546,9 @@ void LocationBarView::Layout() {
 
   if (star_view_)
     add_trailing_decoration(star_view_);
-  add_trailing_decoration(page_action_icon_container_view_);
-#if defined(OS_CHROMEOS)
+  add_trailing_decoration(omnibox_page_action_icon_container_view_);
   if (intent_picker_view_)
     add_trailing_decoration(intent_picker_view_);
-#endif
   if (save_credit_card_icon_view_)
     add_trailing_decoration(save_credit_card_icon_view_);
   if (local_card_migration_icon_view_)
@@ -605,6 +626,10 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 
   tint_ = GetTint();
   RefreshBackground();
+
+  // When the native theme changes, so can the colors used for emphasized text.
+  omnibox_view_->EmphasizeURLComponents();
+
   location_icon_view_->Update(/*suppress_animations=*/false);
   RefreshClearAllButtonIcon();
   SchedulePaint();
@@ -639,7 +664,7 @@ void LocationBarView::ResetTabState(WebContents* contents) {
 }
 
 bool LocationBarView::ActivateFirstInactiveBubbleForAccessibility() {
-  if (page_action_icon_container_view_
+  if (omnibox_page_action_icon_container_view_
           ->ActivateFirstInactiveBubbleForAccessibility()) {
     return true;
   }
@@ -683,8 +708,7 @@ SkColor LocationBarView::GetContentSettingInkDropColor() const {
 }
 
 content::WebContents* LocationBarView::GetContentSettingWebContents() {
-  return GetLocationBarModel()->input_in_progress() ? nullptr
-                                                    : GetWebContents();
+  return IsLocationBarUserInputInProgress() ? nullptr : GetWebContents();
 }
 
 ContentSettingBubbleModelDelegate*
@@ -701,6 +725,10 @@ SkColor LocationBarView::GetPageActionInkDropColor() const {
 
 WebContents* LocationBarView::GetWebContentsForPageActionIconView() {
   return GetWebContents();
+}
+
+bool LocationBarView::IsLocationBarUserInputInProgress() const {
+  return omnibox_view() && omnibox_view()->model()->user_input_in_progress();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -747,14 +775,12 @@ int LocationBarView::GetMinimumLeadingWidth() const {
 
 int LocationBarView::GetMinimumTrailingWidth() const {
   int trailing_width =
-      IncrementalMinimumWidth(page_action_icon_container_view_) +
+      IncrementalMinimumWidth(omnibox_page_action_icon_container_view_) +
       IncrementalMinimumWidth(star_view_) +
       IncrementalMinimumWidth(save_credit_card_icon_view_) +
       IncrementalMinimumWidth(local_card_migration_icon_view_);
 
-#if defined(OS_CHROMEOS)
   trailing_width += IncrementalMinimumWidth(intent_picker_view_);
-#endif  // defined(OS_CHROMEOS)
 
   for (auto* content_setting_view : content_setting_views_)
     trailing_width += IncrementalMinimumWidth(content_setting_view);
@@ -819,14 +845,12 @@ void LocationBarView::RefreshBackground() {
   // Keep the views::Textfield in sync. It needs an opaque background to
   // correctly enable subpixel AA.
   omnibox_view_->SetBackgroundColor(background_color);
-  omnibox_view_->EmphasizeURLComponents();
 
   SchedulePaint();
 }
 
 bool LocationBarView::RefreshContentSettingViews() {
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_)) {
+  if (WebAppBrowserController::IsForExperimentalWebAppBrowser(browser_)) {
     // For hosted apps, the location bar is normally hidden and icons appear in
     // the window frame instead.
     GetWidget()->non_client_view()->ResetWindowControls();
@@ -843,14 +867,13 @@ bool LocationBarView::RefreshContentSettingViews() {
 }
 
 void LocationBarView::RefreshPageActionIconViews() {
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_)) {
+  if (WebAppBrowserController::IsForExperimentalWebAppBrowser(browser_)) {
     // For hosted apps, the location bar is normally hidden and icons appear in
     // the window frame instead.
     GetWidget()->non_client_view()->ResetWindowControls();
   }
 
-  page_action_icon_container_view_->UpdateAll();
+  omnibox_page_action_icon_container_view_->UpdateAll();
 
   for (PageActionIconView* icon : page_action_icons_)
     icon->Update();
@@ -919,24 +942,6 @@ OmniboxPopupView* LocationBarView::GetOmniboxPopupView() {
   return omnibox_view_->model()->popup_model()->view();
 }
 
-OmniboxTint LocationBarView::GetTint() {
-  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
-  bool is_dark_mode = GetNativeTheme()->SystemDarkModeEnabled();
-  if (theme_service->UsingDefaultTheme()) {
-    return profile()->GetProfileType() == Profile::INCOGNITO_PROFILE ||
-                   is_dark_mode
-               ? OmniboxTint::DARK
-               : OmniboxTint::LIGHT;
-  }
-
-  // Check for GTK on Desktop Linux.
-  if (theme_service->IsSystemThemeDistinctFromDefaultTheme() &&
-      theme_service->UsingSystemTheme())
-    return OmniboxTint::NATIVE;
-
-  return is_dark_mode ? OmniboxTint::DARK : OmniboxTint::LIGHT;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private LocationBar implementation:
 
@@ -995,7 +1000,7 @@ void LocationBarView::UpdateBookmarkStarVisibility() {
   if (star_view_) {
     star_view_->SetVisible(browser_defaults::bookmarks_enabled &&
                            !is_popup_mode_ &&
-                           !GetLocationBarModel()->input_in_progress() &&
+                           !IsLocationBarUserInputInProgress() &&
                            edit_bookmarks_enabled_.GetValue() &&
                            !IsBookmarkStarHiddenByExtension());
   }
@@ -1132,7 +1137,7 @@ void LocationBarView::AnimationCanceled(const gfx::Animation* animation) {
 
 void LocationBarView::OnChanged() {
   location_icon_view_->Update(/*suppress_animations=*/false);
-  clear_all_button_->SetVisible(GetLocationBarModel()->input_in_progress() &&
+  clear_all_button_->SetVisible(IsLocationBarUserInputInProgress() &&
                                 !omnibox_view_->text().empty() &&
                                 IsVirtualKeyboardVisible(GetWidget()));
   Layout();
@@ -1186,6 +1191,24 @@ void LocationBarView::OnOmniboxHovered(bool is_hovering) {
   }
 }
 
+OmniboxTint LocationBarView::GetTint() {
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
+  bool is_dark_mode = GetNativeTheme()->SystemDarkModeEnabled();
+  if (theme_service->UsingDefaultTheme()) {
+    return profile()->GetProfileType() == Profile::INCOGNITO_PROFILE ||
+                   is_dark_mode
+               ? OmniboxTint::DARK
+               : OmniboxTint::LIGHT;
+  }
+
+  // Check for GTK on Desktop Linux.
+  if (theme_service->IsSystemThemeDistinctFromDefaultTheme() &&
+      theme_service->UsingSystemTheme())
+    return OmniboxTint::NATIVE;
+
+  return is_dark_mode ? OmniboxTint::DARK : OmniboxTint::LIGHT;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private DropdownBarHostDelegate implementation:
 
@@ -1214,7 +1237,7 @@ void LocationBarView::OnTouchUiChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, LocationBarIconView::Delegate implementation:
 
-bool LocationBarView::IsEditingOrEmpty() {
+bool LocationBarView::IsEditingOrEmpty() const {
   return omnibox_view() && omnibox_view()->IsEditingOrEmpty();
 }
 
@@ -1255,14 +1278,13 @@ bool LocationBarView::ShowPageInfoDialog() {
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(contents);
   DCHECK(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
 
   DCHECK(GetWidget());
   views::BubbleDialogDelegateView* bubble =
       PageInfoBubbleView::CreatePageInfoBubble(
           this, gfx::Rect(), GetWidget()->GetNativeWindow(), profile(),
-          contents, entry->GetVirtualURL(), security_info);
+          contents, entry->GetVirtualURL(), helper->GetSecurityLevel(),
+          *helper->GetVisibleSecurityState());
   bubble->SetHighlightedButton(location_icon_view());
   bubble->GetWidget()->Show();
   return true;
@@ -1270,14 +1292,15 @@ bool LocationBarView::ShowPageInfoDialog() {
 
 gfx::ImageSkia LocationBarView::GetLocationIcon(
     LocationIconView::Delegate::IconFetchedCallback on_icon_fetched) const {
-  return omnibox_view()
-             ? omnibox_view()->GetIcon(
-                   GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-                   GetSecurityChipColor(
-                       GetLocationBarModel()->GetSecurityLevel(false)),
-                   GetColor(OmniboxPart::RESULTS_TEXT_URL),
-                   std::move(on_icon_fetched))
-             : gfx::ImageSkia();
+  security_state::SecurityLevel level = security_state::SecurityLevel::NONE;
+  if (!IsEditingOrEmpty())
+    level = GetLocationBarModel()->GetSecurityLevel();
+  return omnibox_view() ? omnibox_view()->GetIcon(
+                              GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+                              GetSecurityChipColor(level),
+                              GetColor(OmniboxPart::RESULTS_TEXT_URL),
+                              std::move(on_icon_fetched))
+                        : gfx::ImageSkia();
 }
 
 SkColor LocationBarView::GetLocationIconInkDropColor() const {

@@ -19,7 +19,6 @@ class SyncClientMock : public SyncClient {
   MOCK_METHOD0(GetPrefService, PrefService*());
   MOCK_METHOD0(GetSyncDataPath, base::FilePath());
   MOCK_METHOD0(GetLocalSyncBackendFolder, base::FilePath());
-  MOCK_METHOD0(GetDeviceInfoSyncService, DeviceInfoSyncService*());
   MOCK_METHOD1(CreateDataTypeControllers,
                DataTypeController::TypeVector(SyncService* sync_service));
   MOCK_METHOD0(GetPasswordStateChangedCallback, base::RepeatingClosure());
@@ -31,6 +30,7 @@ class SyncClientMock : public SyncClient {
   MOCK_METHOD1(CreateModelWorkerForGroup,
                scoped_refptr<ModelSafeWorker>(ModelSafeGroup group));
   MOCK_METHOD0(GetSyncApiComponentFactory, SyncApiComponentFactory*());
+  MOCK_METHOD0(GetPreferenceProvider, SyncTypePreferenceProvider*());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncClientMock);

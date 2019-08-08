@@ -3,16 +3,19 @@
 // found in the LICENSE file.
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/net/aw_proxy_config_monitor.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/message_loop/message_loop_current.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/AwProxyController_jni.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
+#include "services/network/public/cpp/features.h"
 
 using base::android::AttachCurrentThread;
 using base::android::HasException;
@@ -68,16 +71,25 @@ ScopedJavaLocalRef<jstring> JNI_AwProxyController_SetProxyOverride(
   std::vector<std::string> bypass_rules;
   base::android::AppendJavaStringArrayToStringVector(env, jbypass_rules,
                                                      &bypass_rules);
-
-  std::string result =
-      AwBrowserContext::GetDefault()
-          ->GetAwURLRequestContext()
-          ->SetProxyOverride(
-              proxy_rules, bypass_rules,
-              base::BindOnce(&ProxyOverrideChanged,
-                             ScopedJavaGlobalRef<jobject>(env, obj),
-                             ScopedJavaGlobalRef<jobject>(env, listener),
-                             ScopedJavaGlobalRef<jobject>(env, executor)));
+  std::string result;
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    result = AwProxyConfigMonitor::GetInstance()->SetProxyOverride(
+        proxy_rules, bypass_rules,
+        base::BindOnce(&ProxyOverrideChanged,
+                       ScopedJavaGlobalRef<jobject>(env, obj),
+                       ScopedJavaGlobalRef<jobject>(env, listener),
+                       ScopedJavaGlobalRef<jobject>(env, executor)));
+  } else {
+    result =
+        AwBrowserContext::GetDefault()
+            ->GetAwURLRequestContext()
+            ->SetProxyOverride(
+                proxy_rules, bypass_rules,
+                base::BindOnce(&ProxyOverrideChanged,
+                               ScopedJavaGlobalRef<jobject>(env, obj),
+                               ScopedJavaGlobalRef<jobject>(env, listener),
+                               ScopedJavaGlobalRef<jobject>(env, executor)));
+  }
   return base::android::ConvertUTF8ToJavaString(env, result);
 }
 
@@ -86,11 +98,19 @@ void JNI_AwProxyController_ClearProxyOverride(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& listener,
     const JavaParamRef<jobject>& executor) {
-  AwBrowserContext::GetDefault()->GetAwURLRequestContext()->ClearProxyOverride(
-      base::BindOnce(&ProxyOverrideChanged,
-                     ScopedJavaGlobalRef<jobject>(env, obj),
-                     ScopedJavaGlobalRef<jobject>(env, listener),
-                     ScopedJavaGlobalRef<jobject>(env, executor)));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    AwProxyConfigMonitor::GetInstance()->ClearProxyOverride(base::BindOnce(
+        &ProxyOverrideChanged, ScopedJavaGlobalRef<jobject>(env, obj),
+        ScopedJavaGlobalRef<jobject>(env, listener),
+        ScopedJavaGlobalRef<jobject>(env, executor)));
+  } else {
+    AwBrowserContext::GetDefault()
+        ->GetAwURLRequestContext()
+        ->ClearProxyOverride(base::BindOnce(
+            &ProxyOverrideChanged, ScopedJavaGlobalRef<jobject>(env, obj),
+            ScopedJavaGlobalRef<jobject>(env, listener),
+            ScopedJavaGlobalRef<jobject>(env, executor)));
+  }
 }
 
 }  // namespace android_webview

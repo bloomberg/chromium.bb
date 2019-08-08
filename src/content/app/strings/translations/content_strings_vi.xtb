@@ -176,7 +176,9 @@
 <translation id="6941933287844615239">tải xuống phương tiện</translation>
 <translation id="6981594929165378967">chèn</translation>
 <translation id="6989848892321993519">Vui lòng kéo dài văn bản này thành <ph name="MIN_CHARACTERS" /> ký tự trở lên (bạn hiện đang sử dụng 1 ký tự).</translation>
+<translation id="7033340931668032222">lên và xuống để thay đổi âm lượng</translation>
 <translation id="709897737746224366">Vui lòng khớp với định dạng được yêu cầu.</translation>
+<translation id="7118469954320184356">Không có nội dung mô tả.</translation>
 <translation id="7139483182332611405">lời nói đầu</translation>
 <translation id="7263440858009898357">Vui lòng chọn một mục trong danh sách.</translation>
 <translation id="727747134524199931">tiêu đề cột</translation>
@@ -226,6 +228,7 @@
 <translation id="8550857728288566671">biểu tượng đồ họa</translation>
 <translation id="8583702881314752957">danh sách định nghĩa</translation>
 <translation id="8597182159515967513">đầu đề</translation>
+<translation id="8603553056539299761">trái và phải để tìm kiếm</translation>
 <translation id="860475260694818407">mục lục</translation>
 <translation id="8613126697340063924">điều khiển phát lại từ xa</translation>
 <translation id="862370744433916922">phụ đề</translation>

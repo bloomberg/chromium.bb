@@ -38,53 +38,58 @@ const char kTargetExtension[] = "abcdefghijklmnopabcdefghijklmnop";
 const char kTargetExtension2[] = "bcdefghijklmnopabcdefghijklmnopa";
 const char kTargetExtension3[] = "cdefghijklmnopabcdefghijklmnopab";
 const char kTargetExtension4[] = "defghijklmnopabcdefghijklmnopabc";
+const char kTargetExtension5[] = "efghijklmnopabcdefghijklmnopabcd";
+const char kTargetExtension6[] = "fghijklmnopabcdefghijklmnopabcde";
+const char kTargetExtension7[] = "ghijklmnopabcdefghijklmnopabcdef";
+const char kTargetExtension8[] = "hijklmnopabcdefghijklmnopabcdefg";
 const char kExampleUpdateUrl[] = "http://example.com/update_url";
 
 const char kNonExistingExtension[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kNonExistingUpdateUrl[] = "http://example.net/update.xml";
 
 const char kExampleDictPreference[] =
-    "{"
-    "  \"abcdefghijklmnopabcdefghijklmnop\": {"  // kTargetExtension
-    "    \"installation_mode\": \"allowed\","
-    "    \"blocked_permissions\": [\"fileSystem\", "
-    "                              \"bookmarks\", "
-    "                              \"downloads\"],"
-    "    \"minimum_version_required\": \"1.1.0\","
-    "    \"runtime_allowed_hosts\": [\"<all_urls>\"],"
-    "  },"
-    "  \"bcdefghijklmnopabcdefghijklmnopa\": {"  // kTargetExtension2
-    "    \"installation_mode\": \"force_installed\","
-    "    \"update_url\": \"http://example.com/update_url\","
-    "    \"blocked_permissions\": [\"downloads\"],"
-    "  },"
-    "  \"cdefghijklmnopabcdefghijklmnopab\": {"  // kTargetExtension3
-    "    \"installation_mode\": \"normal_installed\","
-    "    \"update_url\": \"http://example.com/update_url\","
-    "    \"blocked_permissions\": [\"fileSystem\", \"history\"],"
-    "  },"
-    "  \"defghijklmnopabcdefghijklmnopabc\": {"  // kTargetExtension4
-    "    \"installation_mode\": \"blocked\","
-    "    \"runtime_blocked_hosts\": [\"*://*.foo.com\", "
-    "\"https://bar.org/test\"],"
-    "    \"blocked_install_message\": \"Custom Error Extension4\","
-    "  },"
-    "  \"jdkrmdirkjskemfioeesiofoielsmroi\": {"  // kTargetExtension5
-    "    \"installation_mode\": \"normal_installed\","
-    "  },"
-    "  \"update_url:http://example.com/update_url\": {"  // kExampleUpdateUrl
-    "    \"installation_mode\": \"allowed\","
-    "    \"blocked_permissions\": [\"fileSystem\", \"bookmarks\"],"
-    "  },"
-    "  \"*\": {"
-    "    \"installation_mode\": \"blocked\","
-    "    \"install_sources\": [\"*://foo.com/*\"],"
-    "    \"allowed_types\": [\"theme\", \"user_script\"],"
-    "    \"blocked_permissions\": [\"fileSystem\", \"downloads\"],"
-    "    \"runtime_blocked_hosts\": [\"*://*.example.com\"],"
-    "    \"blocked_install_message\": \"Custom Error Default\","
-    "  },"
-    "}";
+    R"(
+{
+  "abcdefghijklmnopabcdefghijklmnop": {
+    "installation_mode": "allowed",
+    "blocked_permissions": ["fileSystem", "bookmarks", "downloads"],
+    "minimum_version_required": "1.1.0",
+    "runtime_allowed_hosts": ["<all_urls>"],
+  },
+  "bcdefghijklmnopabcdefghijklmnopa": {
+    "installation_mode": "force_installed",
+    "update_url": "http://example.com/update_url",
+    "blocked_permissions": ["downloads"],
+  },
+  "cdefghijklmnopabcdefghijklmnopab": {
+    "installation_mode": "normal_installed",
+    "update_url": "http://example.com/update_url",
+    "blocked_permissions": ["fileSystem", "history"],
+  },
+  "defghijklmnopabcdefghijklmnopabc": {
+    "installation_mode": "blocked",
+    "runtime_blocked_hosts": ["*://*.foo.com", "https://bar.org/test"],
+    "blocked_install_message": "Custom Error Extension4",
+  },
+  "efghijklmnopabcdefghijklmnopabcd,fghijklmnopabcdefghijklmnopabcde": {
+    "installation_mode": "allowed",
+  },
+  "ghijklmnopabcdefghijklmnopabcdef,hijklmnopabcdefghijklmnopabcdefg,": {
+    "installation_mode": "allowed",
+  },
+  "update_url:http://example.com/update_url": {
+    "installation_mode": "allowed",
+    "blocked_permissions": ["fileSystem", "bookmarks"],
+  },
+  "*": {
+    "installation_mode": "blocked",
+    "install_sources": ["*://foo.com/*"],
+    "allowed_types": ["theme", "user_script"],
+    "blocked_permissions": ["fileSystem", "downloads"],
+    "runtime_blocked_hosts": ["*://*.example.com"],
+    "blocked_install_message": "Custom Error Default",
+  },
+})";
 
 const char kExampleDictNoCustomError[] =
     "{"
@@ -489,6 +494,16 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
             GetBlockedInstallMessage(kTargetExtension4));
   EXPECT_EQ("Custom Error Default",
             GetBlockedInstallMessage(kNonExistingExtension));
+
+  // Verifies using multiple extensions as a key.
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension5),
+            ExtensionManagement::INSTALLATION_ALLOWED);
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension6),
+            ExtensionManagement::INSTALLATION_ALLOWED);
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension7),
+            ExtensionManagement::INSTALLATION_ALLOWED);
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension8),
+            ExtensionManagement::INSTALLATION_ALLOWED);
 
   // Verifies global settings.
   EXPECT_TRUE(ReadGlobalSettings()->has_restricted_install_sources);

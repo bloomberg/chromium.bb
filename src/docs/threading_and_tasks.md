@@ -118,7 +118,7 @@ The discussion below covers all of these ways to execute tasks in details.
 
 ## Posting a Parallel Task
 
-### Direct Posting to the Task Scheduler
+### Direct Posting to the Thread Pool
 
 A task that can run on any thread and doesn’t have ordering or mutual exclusion
 requirements with other tasks should be posted using one of the
@@ -273,8 +273,7 @@ accessed on multiple threads.  If one thread updates it based on expensive
 computation or through disk access, then that slow work should be done without
 holding on to the lock.  Only when the result is available should the lock be
 used to swap in the new data.  An example of this is in PluginList::LoadPlugins
-([`content/common/plugin_list.cc`](https://cs.chromium.org/chromium/src/content/
-common/plugin_list.cc). If you must use locks,
+([`content/browser/plugin_list.cc`](https://cs.chromium.org/chromium/src/content/browser/plugin_list.cc)). If you must use locks,
 [here](https://www.chromium.org/developers/lock-and-condition-variable) are some
 best practices and pitfalls to avoid.
 
@@ -404,7 +403,7 @@ com_sta_task_runner->PostTask(FROM_HERE, base::BindOnce(&TaskBUsingCOMSTA));
 ## Annotating Tasks with TaskTraits
 
 [`TaskTraits`](https://cs.chromium.org/chromium/src/base/task/task_traits.h)
-encapsulate information about a task that helps the task scheduler make better
+encapsulate information about a task that helps the thread pool make better
 scheduling decisions.
 
 All `PostTask*()` functions in
@@ -414,7 +413,8 @@ overload that doesn’t take `TaskTraits` as argument is appropriate for tasks
 that:
 - Don’t block (ref. MayBlock and WithBaseSyncPrimitives).
 - Prefer inheriting the current priority to specifying their own.
-- Can either block shutdown or be skipped on shutdown (task scheduler is free to choose a fitting default).
+- Can either block shutdown or be skipped on shutdown (thread pool is free to
+  choose a fitting default).
 Tasks that don’t match this description must be posted with explicit TaskTraits.
 
 [`base/task/task_traits.h`](https://cs.chromium.org/chromium/src/base/task/task_traits.h)
@@ -432,7 +432,7 @@ Below are some examples of how to specify `TaskTraits`.
 // block shutdown or be skipped on shutdown.
 base::PostTask(FROM_HERE, base::BindOnce(...));
 
-// This task has the highest priority. The task scheduler will try to
+// This task has the highest priority. The thread pool will try to
 // run it before USER_VISIBLE and BEST_EFFORT tasks.
 base::PostTaskWithTraits(
     FROM_HERE, {base::TaskPriority::USER_BLOCKING},
@@ -636,14 +636,14 @@ TEST(MyTest, MyTest) {
   run_loop.Run();
   // D and run_loop.QuitClosure() have been executed. E is still in the queue.
 
-  // Tasks posted to task scheduler run asynchronously as they are posted.
+  // Tasks posted to thread pool run asynchronously as they are posted.
   base::PostTaskWithTraits(FROM_HERE, base::TaskTraits(), base::BindOnce(&F));
   auto task_runner =
       base::CreateSequencedTaskRunnerWithTraits(base::TaskTraits());
   task_runner->PostTask(FROM_HERE, base::BindOnce(&G));
 
-  // To block until all tasks posted to task scheduler are done running:
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  // To block until all tasks posted to thread pool are done running:
+  base::ThreadPool::GetInstance()->FlushForTesting();
   // F and G have been executed.
 
   base::PostTaskWithTraitsAndReplyWithResult(
@@ -658,33 +658,33 @@ TEST(MyTest, MyTest) {
 }
 ```
 
-## Using TaskScheduler in a New Process
+## Using ThreadPool in a New Process
 
-TaskScheduler needs to be initialized in a process before the functions in
+ThreadPool needs to be initialized in a process before the functions in
 [`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h)
-can be used. Initialization of TaskScheduler in the Chrome browser process and
+can be used. Initialization of ThreadPool in the Chrome browser process and
 child processes (renderer, GPU, utility) has already been taken care of. To use
-TaskScheduler in another process, initialize TaskScheduler early in the main
+ThreadPool in another process, initialize ThreadPool early in the main
 function:
 
 ```cpp
-// This initializes and starts TaskScheduler with default params.
-base::TaskScheduler::CreateAndStartWithDefaultParams(“process_name”);
+// This initializes and starts ThreadPool with default params.
+base::ThreadPool::CreateAndStartWithDefaultParams(“process_name”);
 // The base/task/post_task.h API can now be used. Tasks will be // scheduled as
 // they are posted.
 
-// This initializes TaskScheduler.
-base::TaskScheduler::Create(“process_name”);
+// This initializes ThreadPool.
+base::ThreadPool::Create(“process_name”);
 // The base/task/post_task.h API can now be used. No threads // will be created
 // and no tasks will be scheduled until after Start() is called.
-base::TaskScheduler::GetInstance()->Start(params);
-// TaskScheduler can now create threads and schedule tasks.
+base::ThreadPool::GetInstance()->Start(params);
+// ThreadPool can now create threads and schedule tasks.
 ```
 
-And shutdown TaskScheduler late in the main function:
+And shutdown ThreadPool late in the main function:
 
 ```cpp
-base::TaskScheduler::GetInstance()->Shutdown();
+base::ThreadPool::GetInstance()->Shutdown();
 // Tasks posted with TaskShutdownBehavior::BLOCK_SHUTDOWN and
 // tasks posted with TaskShutdownBehavior::SKIP_ON_SHUTDOWN that
 // have started to run before the Shutdown() call have now completed their

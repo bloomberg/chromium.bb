@@ -84,7 +84,7 @@ mojo.internal.align = function(size, alignment) {
  */
 mojo.internal.setInt64 = function(dataView, byteOffset, value) {
   if (mojo.internal.kHostLittleEndian) {
-    dataView.setInt32(
+    dataView.setUint32(
         byteOffset, Number(BigInt(value) & BigInt(0xffffffff)),
         mojo.internal.kHostLittleEndian);
     dataView.setInt32(
@@ -94,7 +94,7 @@ mojo.internal.setInt64 = function(dataView, byteOffset, value) {
     dataView.setInt32(
         byteOffset, Number(BigInt(value) >> BigInt(32)),
         mojo.internal.kHostLittleEndian);
-    dataView.setInt32(
+    dataView.setUint32(
         byteOffset + 4, Number(BigInt(value) & BigInt(0xffffffff)),
         mojo.internal.kHostLittleEndian);
   }
@@ -131,10 +131,10 @@ mojo.internal.setUint64 = function(dataView, byteOffset, value) {
 mojo.internal.getInt64 = function(dataView, byteOffset) {
   let low, high;
   if (mojo.internal.kHostLittleEndian) {
-    low = dataView.getInt32(byteOffset, mojo.internal.kHostLittleEndian);
+    low = dataView.getUint32(byteOffset, mojo.internal.kHostLittleEndian);
     high = dataView.getInt32(byteOffset + 4, mojo.internal.kHostLittleEndian);
   } else {
-    low = dataView.getInt32(byteOffset + 4, mojo.internal.kHostLittleEndian);
+    low = dataView.getUint32(byteOffset + 4, mojo.internal.kHostLittleEndian);
     high = dataView.getInt32(byteOffset, mojo.internal.kHostLittleEndian);
   }
   const value = (BigInt(high) << BigInt(32)) | BigInt(low);

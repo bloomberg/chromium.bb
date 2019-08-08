@@ -19,11 +19,10 @@ import("//v8/snapshot_toolchain.gni")
 #   deps
 #   visibility
 template("js2gtest") {
-  assert(
-      defined(invoker.test_type) &&
-      (invoker.test_type == "webui" || invoker.test_type == "unit" ||
-       invoker.test_type == "extension" || invoker.test_type == "mojo_webui" ||
-       invoker.test_type == "mojo_lite_webui"))
+  assert(defined(invoker.test_type) &&
+         (invoker.test_type == "webui" || invoker.test_type == "unit" ||
+          invoker.test_type == "extension" ||
+          invoker.test_type == "mojo_lite_webui"))
   action_name = target_name + "_action"
   source_set_name = target_name
 
@@ -134,6 +133,9 @@ template("js2gtest") {
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
+    }
+    if (defined(invoker.gen_include_files)) {
+      data = invoker.gen_include_files
     }
     if (defined(invoker.extra_js_files)) {
       data_deps = [

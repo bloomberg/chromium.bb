@@ -65,6 +65,12 @@ void PageLoadMetricsObserverTestHarness::SimulateTimingAndMetadataUpdate(
   tester_->SimulateTimingAndMetadataUpdate(timing, metadata);
 }
 
+void PageLoadMetricsObserverTestHarness::SimulateMetadataUpdate(
+    const mojom::PageLoadMetadata& metadata,
+    content::RenderFrameHost* rfh) {
+  tester_->SimulateMetadataUpdate(metadata, rfh);
+}
+
 void PageLoadMetricsObserverTestHarness::SimulateResourceDataUseUpdate(
     const std::vector<mojom::ResourceDataUpdatePtr>& resources) {
   tester_->SimulateResourceDataUseUpdate(resources);
@@ -82,12 +88,12 @@ void PageLoadMetricsObserverTestHarness::SimulateFeaturesUpdate(
 }
 
 void PageLoadMetricsObserverTestHarness::SimulateRenderDataUpdate(
-    const mojom::PageRenderData& render_data) {
+    const mojom::FrameRenderDataUpdate& render_data) {
   tester_->SimulateRenderDataUpdate(render_data);
 }
 
 void PageLoadMetricsObserverTestHarness::SimulateRenderDataUpdate(
-    const mojom::PageRenderData& render_data,
+    const mojom::FrameRenderDataUpdate& render_data,
     content::RenderFrameHost* render_frame_host) {
   tester_->SimulateRenderDataUpdate(render_data, render_frame_host);
 }
@@ -134,8 +140,11 @@ PageLoadMetricsObserverTestHarness::GetPageLoadExtraInfoForCommittedLoad() {
 void PageLoadMetricsObserverTestHarness::NavigateWithPageTransitionAndCommit(
     const GURL& url,
     ui::PageTransition transition) {
-  auto simulator =
-      content::NavigationSimulator::CreateRendererInitiated(url, main_rfh());
+  auto simulator = PageTransitionIsWebTriggerable(transition)
+                       ? content::NavigationSimulator::CreateRendererInitiated(
+                             url, main_rfh())
+                       : content::NavigationSimulator::CreateBrowserInitiated(
+                             url, web_contents());
   simulator->SetTransition(transition);
   simulator->Commit();
 }

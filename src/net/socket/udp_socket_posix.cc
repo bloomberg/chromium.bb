@@ -938,13 +938,6 @@ int UDPSocketPosix::SetMulticastOptions() {
   if (multicast_interface_ != 0) {
     switch (addr_family_) {
       case AF_INET: {
-#if defined(OS_FUCHSIA)
-        // setsockopt(IP_MULTICAST_IF) is broken on Fuchsia.
-        // TODO(https://crbug.com/938101) Remove ifdef once the bug is fixed
-        // upstream.
-        return OK;
-#endif
-
 #if defined(OS_MACOSX)
         ip_mreq mreq = {};
         int error = GetIPv4AddressFromIndex(socket_, multicast_interface_,

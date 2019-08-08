@@ -13,6 +13,7 @@ include_rules = [
   "+gpu/ipc/host",
   "+media/capture/mojom/video_capture_types.mojom.h",
   "+mojo/public/cpp",
+  "+services/service_manager/public",
   "+services/viz/privileged/interfaces",
   "+services/viz/public/interfaces",
   "+services/viz/public/interfaces/hit_test",
@@ -29,5 +30,8 @@ specific_include_rules = {
     "+components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h",
     "+components/viz/service/frame_sinks/frame_sink_manager_impl.h",
     "+components/viz/service/surfaces/surface_manager.h",
+  ],
+  "renderer_settings_creation\.cc": [
+    "+components/viz/common/switches.h",
   ],
 }

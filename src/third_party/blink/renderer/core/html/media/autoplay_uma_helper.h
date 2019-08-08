@@ -56,8 +56,6 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
   USING_GARBAGE_COLLECTED_MIXIN(AutoplayUmaHelper);
 
  public:
-  static AutoplayUmaHelper* Create(HTMLMediaElement*);
-
   explicit AutoplayUmaHelper(HTMLMediaElement*);
   ~AutoplayUmaHelper() override;
 

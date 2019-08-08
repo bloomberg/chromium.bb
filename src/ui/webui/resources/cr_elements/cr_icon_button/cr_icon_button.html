@@ -9,23 +9,23 @@
     <style>
       :host {
         --cr-icon-button-color: var(--google-grey-refresh-700);
-        --cr-icon-button-default-icon-padding: 8px;
+        --cr-icon-button-icon-padding:  calc((var(--cr-icon-button-size) -
+            var(--cr-icon-button-icon-size)) / 2);
         --cr-icon-button-icon-size: 20px;
-        --cr-icon-button-ripple-color: var(--google-grey-900);
-        --cr-icon-button-ripple-size: calc(var(--cr-icon-button-icon-size) +
-            2 * var(--cr-icon-button-icon-padding,
-                    var(--cr-icon-button-default-icon-padding)));
-        --cr-icon-button-size: var(--cr-icon-button-ripple-size);
+        --cr-icon-button-size: 36px;
         background-position: center;
         background-repeat: no-repeat;
         background-size: var(--cr-icon-button-icon-size);
         color: var(--cr-icon-button-color);
         cursor: pointer;
+        display: inline-flex;
         height: var(--cr-icon-button-size);
-        margin-inline-end: var(--cr-icon-ripple-margin);
+        margin-inline-end: var(--cr-icon-button-margin-end,
+            var(--cr-icon-ripple-margin));
         margin-inline-start: var(--cr-icon-button-margin-start);
         outline: none;
         user-select: none;
+        vertical-align: middle;
         width: var(--cr-icon-button-size);
       }
 
@@ -41,12 +41,10 @@
 
       :host-context([dark]) {
         --cr-icon-button-color: var(--google-grey-refresh-500);
-        --cr-icon-button-ripple-color: var(--google-grey-refresh-500);
       }
 
       :host paper-ripple {
-        --paper-ripple-opacity: .15;
-        color: var(--cr-icon-button-ripple-color);
+        --paper-ripple-opacity: .21; /* GG900 .15 is about GG700 .21 */
       }
 
       :host-context([dark]) paper-ripple {
@@ -54,17 +52,17 @@
       }
 
       #icon {
-        height: var(--cr-icon-button-ripple-size);
+        display: flex;
+        height: var(--cr-icon-button-size);
         /* The |_rippleContainer| must be position relative. */
         position: relative;
-        width: var(--cr-icon-button-ripple-size);
+        width: var(--cr-icon-button-size);
       }
 
       iron-icon {
         --iron-icon-height: var(--cr-icon-button-icon-size);
         --iron-icon-width: var(--cr-icon-button-icon-size);
-        padding: var(--cr-icon-button-icon-padding,
-                     var(--cr-icon-button-default-icon-padding));
+        padding: var(--cr-icon-button-icon-padding);
       }
     </style>
     <div id="icon"></div>

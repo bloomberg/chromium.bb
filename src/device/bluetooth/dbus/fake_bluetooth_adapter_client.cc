@@ -52,7 +52,7 @@ void FakeBluetoothAdapterClient::Properties::Get(
     dbus::PropertyBase* property,
     dbus::PropertySet::GetCallback callback) {
   VLOG(1) << "Get " << property->name();
-  callback.Run(false);
+  std::move(callback).Run(false);
 }
 
 void FakeBluetoothAdapterClient::Properties::GetAll() {
@@ -66,10 +66,10 @@ void FakeBluetoothAdapterClient::Properties::Set(
   if (property->name() == powered.name() || property->name() == alias.name() ||
       property->name() == discoverable.name() ||
       property->name() == discoverable_timeout.name()) {
-    callback.Run(true);
+    std::move(callback).Run(true);
     property->ReplaceValueWithSetValue();
   } else {
-    callback.Run(false);
+    std::move(callback).Run(false);
   }
 }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/status_bubble_views.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
@@ -31,15 +32,24 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/scrollbar/scroll_bar_views.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_properties.mojom.h"
+#include "services/ws/public/cpp/property_type_converters.h"
+#include "ui/aura/window.h"
+#endif
 
 namespace {
 
@@ -145,6 +155,10 @@ class StatusBubbleViews::StatusView : public views::View {
   StatusView(StatusBubbleViews* status_bubble, gfx::Size popup_size);
   ~StatusView() override;
 
+  // views::View:
+  void Layout() override;
+  void OnThemeChanged() override;
+
   // Set the bubble text, or hide the bubble if |text| is an empty string.
   // Triggers an animation sequence to display if |should_animate_open| is true.
   void SetText(const base::string16& text, bool should_animate_open);
@@ -190,6 +204,9 @@ class StatusBubbleViews::StatusView : public views::View {
   void StartHiding();
   void StartShowing();
 
+  // Set the text label's colors according to the theme.
+  void SetTextLabelColors(views::Label* label);
+
   // views::View:
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
@@ -203,7 +220,7 @@ class StatusBubbleViews::StatusView : public views::View {
   StatusBubbleViews* status_bubble_;
 
   // The currently-displayed text.
-  base::string16 text_;
+  views::Label* text_;
 
   gfx::Size popup_size_;
 
@@ -221,6 +238,13 @@ StatusBubbleViews::StatusView::StatusView(StatusBubbleViews* status_bubble,
                                           gfx::Size popup_size)
     : status_bubble_(status_bubble), popup_size_(popup_size) {
   animation_ = std::make_unique<StatusViewAnimation>(this, 0, 0);
+
+  std::unique_ptr<views::Label> text = std::make_unique<views::Label>();
+  // Don't move this after AddChildView() since this function would trigger
+  // repaint which should not happen in the constructor.
+  SetTextLabelColors(text.get());
+  text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  text_ = AddChildView(std::move(text));
 }
 
 StatusBubbleViews::StatusView::~StatusView() {
@@ -228,15 +252,26 @@ StatusBubbleViews::StatusView::~StatusView() {
   CancelTimer();
 }
 
+void StatusBubbleViews::StatusView::Layout() {
+  gfx::Rect text_rect(kTextPositionX, 0,
+                      popup_size_.width() - kTextHorizPadding - kTextPositionX,
+                      popup_size_.height());
+  text_rect.Inset(kShadowThickness, kShadowThickness);
+  // Make sure the text is aligned to the right on RTL UIs.
+  text_rect = GetMirroredRect(text_rect);
+  text_->SetBoundsRect(text_rect);
+}
+
+void StatusBubbleViews::StatusView::OnThemeChanged() {
+  SetTextLabelColors(text_);
+}
+
 void StatusBubbleViews::StatusView::SetText(const base::string16& text,
                                             bool should_animate_open) {
   if (text.empty()) {
     StartHiding();
   } else {
-    if (text != text_) {
-      text_ = text;
-      SchedulePaint();
-    }
+    text_->SetText(text);
     if (should_animate_open)
       StartShowing();
   }
@@ -262,7 +297,7 @@ void StatusBubbleViews::StatusView::HideInstantly() {
   animation_->Stop();
   CancelTimer();
   SetOpacity(0.0);
-  text_.clear();
+  text_->SetText(base::string16());
   state_ = BUBBLE_HIDDEN;
 #if !defined(OS_MACOSX)
   // Don't orderOut: the window on macOS. Doing so for a child window requires
@@ -391,6 +426,18 @@ void StatusBubbleViews::StatusView::OnAnimationEnded() {
 
 void StatusBubbleViews::StatusView::SetWidth(int new_width) {
   popup_size_.set_width(new_width);
+  Layout();
+}
+
+void StatusBubbleViews::StatusView::SetTextLabelColors(views::Label* text) {
+  const auto* theme_provider = status_bubble_->base_view()->GetThemeProvider();
+  SkColor bubble_color =
+      theme_provider->GetColor(ThemeProperties::COLOR_STATUS_BUBBLE);
+  text->SetBackgroundColor(bubble_color);
+  // Text color is the foreground tab text color at 60% alpha.
+  text->SetEnabledColor(color_utils::AlphaBlend(
+      theme_provider->GetColor(ThemeProperties::COLOR_TAB_TEXT), bubble_color,
+      0.6f));
 }
 
 const char* StatusBubbleViews::StatusView::GetClassName() const {
@@ -398,7 +445,7 @@ const char* StatusBubbleViews::StatusView::GetClassName() const {
 }
 
 void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
-  canvas->Save();
+  gfx::ScopedCanvas scoped(canvas);
   float scale = canvas->UndoDeviceScaleFactor();
   const float radius = kBubbleCornerRadius * scale;
 
@@ -489,26 +536,6 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
 
   flags.setColor(kShadowColor);
   canvas->sk_canvas()->drawPath(stroke_path, flags);
-
-  canvas->Restore();
-
-  // Compute text bounds.
-  gfx::Rect text_rect(kTextPositionX, 0,
-                      popup_size_.width() - kTextHorizPadding,
-                      popup_size_.height());
-  text_rect.Inset(kShadowThickness, kShadowThickness);
-  // Make sure the text is aligned to the right on RTL UIs.
-  text_rect = GetMirroredRect(text_rect);
-
-  // Text color is the foreground tab text color at 60% alpha.
-  SkColor blended_text_color = color_utils::AlphaBlend(
-      theme_provider->GetColor(ThemeProperties::COLOR_TAB_TEXT), bubble_color,
-      0.6f);
-
-  canvas->DrawStringRect(text_, GetFont(),
-                         color_utils::GetColorWithMinimumContrast(
-                             blended_text_color, bubble_color),
-                         text_rect);
 }
 
 
@@ -660,11 +687,18 @@ void StatusBubbleViews::InitPopup() {
     params.parent = frame->GetNativeView();
     params.context = frame->GetNativeWindow();
     params.name = "StatusBubble";
+#if defined(OS_CHROMEOS)
+    params.mus_properties[ash::mojom::kHideInOverview_Property] =
+        mojo::ConvertTo<std::vector<uint8_t>>(true);
+#endif
     popup_->Init(params);
     // We do our own animation and don't want any from the system.
     popup_->SetVisibilityChangedAnimationsEnabled(false);
     popup_->SetOpacity(0.f);
     popup_->SetContentsView(view_);
+#if defined(OS_CHROMEOS)
+    popup_->GetNativeWindow()->SetProperty(ash::kHideInOverviewKey, true);
+#endif
     RepositionPopup();
   }
 }
@@ -715,6 +749,19 @@ void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {
     AvoidMouse(last_mouse_moved_location_);
 }
 
+int StatusBubbleViews::GetWidthForURL(const base::string16& url_string) {
+  // Get the width of the elided url
+  int elided_url_width = gfx::GetStringWidth(url_string, GetFont());
+  // Add proper paddings
+  return elided_url_width + (kShadowThickness * 2) + kTextPositionX +
+         kTextHorizPadding + 1;
+}
+
+void StatusBubbleViews::OnThemeChanged() {
+  if (popup_)
+    popup_->ThemeChanged();
+}
+
 void StatusBubbleViews::SetStatus(const base::string16& status_text) {
   if (size_.IsEmpty())
     return;  // We have no bounds, don't attempt to show the popup.
@@ -731,8 +778,10 @@ void StatusBubbleViews::SetStatus(const base::string16& status_text) {
 
   InitPopup();
   view_->SetText(!status_text_.empty() ? status_text_ : url_text_, true);
-  if (!status_text_.empty())
+  if (!status_text_.empty()) {
+    SetBubbleWidth(GetStandardStatusBubbleWidth());
     view_->ShowInstantly();
+  }
 }
 
 void StatusBubbleViews::SetURL(const GURL& url) {
@@ -754,12 +803,6 @@ void StatusBubbleViews::SetURL(const GURL& url) {
     return;
   }
 
-  // Reset expansion state only when bubble is completely hidden.
-  if (view_->state() == StatusView::BUBBLE_HIDDEN) {
-    is_expanded_ = false;
-    SetBubbleWidth(GetStandardStatusBubbleWidth());
-  }
-
   // Set Elided Text corresponding to the GURL object.
   int text_width = static_cast<int>(size_.width() - (kShadowThickness * 2) -
                                     kTextPositionX - kTextHorizPadding - 1);
@@ -770,8 +813,28 @@ void StatusBubbleViews::SetURL(const GURL& url) {
   // correctly.
   url_text_ = base::i18n::GetDisplayStringInLTRDirectionality(url_text_);
 
+  // Get the width of the URL if the bubble width is the maximum size.
+  base::string16 full_size_elided_url =
+      url_formatter::ElideUrl(url, GetFont(), GetMaxStatusBubbleWidth());
+  int url_width = GetWidthForURL(full_size_elided_url);
+
+  // Get the width for the url if it is unexpanded.
+  int unexpanded_width = std::min(url_width, GetStandardStatusBubbleWidth());
+
+  // Reset expansion state only when bubble is completely hidden.
+  if (view_->state() == StatusView::BUBBLE_HIDDEN) {
+    is_expanded_ = false;
+    url_text_ = url_formatter::ElideUrl(url, GetFont(), unexpanded_width);
+    SetBubbleWidth(unexpanded_width);
+  }
+
   if (IsFrameVisible()) {
-    view_->SetText(url_text_, true);
+    // If bubble is not expanded & not empty, make it fit properly in the
+    // unexpanded bubble
+    if (!is_expanded_ & !url.is_empty()) {
+      url_text_ = url_formatter::ElideUrl(url, GetFont(), unexpanded_width);
+      SetBubbleWidth(unexpanded_width);
+    }
 
     CancelExpandTimer();
 
@@ -787,6 +850,7 @@ void StatusBubbleViews::SetURL(const GURL& url) {
                          expand_timer_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kExpandHoverDelayMS));
     }
+    view_->SetText(url_text_, true);
   }
 }
 
@@ -931,15 +995,10 @@ bool StatusBubbleViews::IsFrameMaximized() {
 void StatusBubbleViews::ExpandBubble() {
   // Elide URL to maximum possible size, then check actual length (it may
   // still be too long to fit) before expanding bubble.
-  int max_status_bubble_width = GetMaxStatusBubbleWidth();
-  const gfx::FontList font_list;
-  url_text_ = url_formatter::ElideUrl(url_, font_list, max_status_bubble_width);
+  url_text_ =
+      url_formatter::ElideUrl(url_, GetFont(), GetMaxStatusBubbleWidth());
   int expanded_bubble_width =
-      std::max(GetStandardStatusBubbleWidth(),
-               std::min(gfx::GetStringWidth(url_text_, font_list) +
-                            (kShadowThickness * 2) + kTextPositionX +
-                            kTextHorizPadding + 1,
-                        max_status_bubble_width));
+      std::min(GetWidthForURL(url_text_), GetMaxStatusBubbleWidth());
   is_expanded_ = true;
   expand_view_->StartExpansion(url_text_, size_.width(), expanded_bubble_width);
 }

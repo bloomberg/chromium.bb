@@ -88,6 +88,7 @@ public class IncognitoNewTabPage
         mIncognitoNewTabPageView =
                 (IncognitoNewTabPageView) inflater.inflate(R.layout.new_tab_page_incognito, null);
         mIncognitoNewTabPageView.initialize(mIncognitoNewTabPageManager);
+        mIncognitoNewTabPageView.setTab(host.getActiveTab());
 
         boolean useAlternateIncognitoStrings =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS);
@@ -111,6 +112,7 @@ public class IncognitoNewTabPage
     public void destroy() {
         assert !ViewCompat
                 .isAttachedToWindow(getView()) : "Destroy called before removed from window";
+        super.destroy();
     }
 
     @Override

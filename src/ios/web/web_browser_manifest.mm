@@ -9,7 +9,6 @@
 #include "ios/web/public/web_client.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -27,9 +26,6 @@ const service_manager::Manifest& GetWebBrowserManifest() {
                            .CanConnectToInstancesWithAnyId(true)
                            .CanRegisterOtherServiceInstances(true)
                            .Build())
-          .ExposeCapability("service_manager:service_factory",
-                            service_manager::Manifest::InterfaceList<
-                                service_manager::mojom::ServiceFactory>())
           .RequireCapability(mojom::kBrowserServiceName, "")
           .RequireCapability(service_manager::mojom::kServiceName,
                              "service_manager:service_manager")

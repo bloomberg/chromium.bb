@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -64,7 +65,6 @@
 #include "media/base/media_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_LINUX)
@@ -121,6 +121,12 @@
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 #include "device/bluetooth/cast/bluetooth_adapter_cast.h"
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+
+#if !defined(OS_FUCHSIA)
+#include "base/bind_helpers.h"
+#include "components/heap_profiling/client_connection_manager.h"
+#include "components/heap_profiling/supervisor.h"
+#endif  // !defined(OS_FUCHSIA)
 
 namespace {
 
@@ -218,6 +224,18 @@ void DeregisterKillOnAlarm() {
 }
 
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+
+#if !defined(OS_FUCHSIA)
+
+std::unique_ptr<heap_profiling::ClientConnectionManager>
+CreateClientConnectionManager(
+    base::WeakPtr<heap_profiling::Controller> controller_weak_ptr,
+    heap_profiling::Mode mode) {
+  return std::make_unique<heap_profiling::ClientConnectionManager>(
+      std::move(controller_weak_ptr), mode);
+}
+
+#endif
 
 }  // namespace
 
@@ -478,6 +496,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       std::make_unique<CastBrowserContext>(url_request_context_factory_));
   cast_browser_process_->SetMetricsServiceClient(
       std::make_unique<metrics::CastMetricsServiceClient>(
+          cast_browser_process_->browser_client(),
           cast_browser_process_->pref_service(),
           content::BrowserContext::GetDefaultStoragePartition(
               cast_browser_process_->browser_context())
@@ -574,6 +593,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->metrics_service_client()->Initialize();
   url_request_context_factory_->InitializeNetworkDelegates();
 
+  cast_content_browser_client_->CreateGeneralAudienceBrowsingService();
+
   cast_browser_process_->cast_service()->Start();
 }
 
@@ -668,6 +689,17 @@ void CastBrowserMainParts::PostDestroyThreads() {
 #if !defined(OS_ANDROID)
   cast_content_browser_client_->ResetMediaResourceTracker();
 #endif  // !defined(OS_ANDROID)
+}
+
+void CastBrowserMainParts::ServiceManagerConnectionStarted(
+    content::ServiceManagerConnection* connection) {
+#if !defined(OS_FUCHSIA)
+  heap_profiling::Supervisor* supervisor =
+      heap_profiling::Supervisor::GetInstance();
+  supervisor->SetClientConnectionManagerConstructor(
+      &CreateClientConnectionManager);
+  supervisor->Start(connection, base::NullCallback());
+#endif  // !defined(OS_FUCHSIA)
 }
 
 }  // namespace shell

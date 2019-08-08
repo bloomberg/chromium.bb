@@ -39,10 +39,6 @@ namespace blink {
 PointerLockController::PointerLockController(Page* page)
     : page_(page), lock_pending_(false) {}
 
-PointerLockController* PointerLockController::Create(Page* page) {
-  return MakeGarbageCollected<PointerLockController>(page);
-}
-
 void PointerLockController::RequestPointerLock(Element* target) {
   if (!target || !target->isConnected() ||
       document_of_removed_element_while_waiting_for_unlock_) {
@@ -57,11 +53,12 @@ void PointerLockController::RequestPointerLock(Element* target) {
                       WebFeature::kElementRequestPointerLockInShadow);
   }
 
-  if (target->GetDocument().IsSandboxed(kSandboxPointerLock)) {
+  if (target->GetDocument().IsSandboxed(WebSandboxFlags::kPointerLock)) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     target->GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
         "Blocked pointer lock on an element because the element's frame is "
         "sandboxed and the 'allow-pointer-lock' permission is not set."));
     EnqueueEvent(event_type_names::kPointerlockerror, target);
@@ -118,6 +115,15 @@ Element* PointerLockController::GetElement() const {
 void PointerLockController::DidAcquirePointerLock() {
   EnqueueEvent(event_type_names::kPointerlockchange, element_.Get());
   lock_pending_ = false;
+  if (element_) {
+    LocalFrame* frame = element_->GetDocument().GetFrame();
+    pointer_lock_position_ = frame->LocalFrameRoot()
+                                 .GetEventHandler()
+                                 .LastKnownMousePositionInRootFrame();
+    pointer_lock_screen_position_ = frame->LocalFrameRoot()
+                                        .GetEventHandler()
+                                        .LastKnownMouseScreenPosition();
+  }
 }
 
 void PointerLockController::DidNotAcquirePointerLock() {
@@ -156,6 +162,17 @@ void PointerLockController::DispatchLockedMouseEvent(
           element_, event, event_type_names::kClick, Vector<WebMouseEvent>(),
           Vector<WebMouseEvent>());
     }
+  }
+}
+
+void PointerLockController::GetPointerLockPosition(
+    FloatPoint* lock_position,
+    FloatPoint* lock_screen_position) {
+  if (element_ && !lock_pending_) {
+    DCHECK(lock_position);
+    DCHECK(lock_screen_position);
+    *lock_position = pointer_lock_position_;
+    *lock_screen_position = pointer_lock_screen_position_;
   }
 }
 

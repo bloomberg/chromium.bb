@@ -14,6 +14,7 @@ import org.chromium.base.Log;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SettingsNavigationSource;
 
@@ -40,7 +41,8 @@ public class ManageTrustedWebActivityDataActivity extends AppCompatActivity {
     private void verifyOriginAndLaunchSettings() {
         Origin origin = new Origin(getIntent().getData());
         if (isVerifiedOrigin(origin)) {
-            new TrustedWebActivityUmaRecorder().recordOpenedSettingsViaManageSpace();
+            new TrustedWebActivityUmaRecorder(ChromeBrowserInitializer.getInstance())
+                    .recordOpenedSettingsViaManageSpace();
             startActivity(PreferencesLauncher.createIntentForSingleWebsitePreferences(this,
                     origin.toString(), SettingsNavigationSource.TWA_MANAGE_SPACE_ACTIVITY));
         } else {

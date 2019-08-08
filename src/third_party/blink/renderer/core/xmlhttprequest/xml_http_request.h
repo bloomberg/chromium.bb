@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request_progress_event_throttle.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_string.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -182,14 +181,14 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   void DidSendData(uint64_t bytes_sent,
                    uint64_t total_bytes_to_be_sent) override;
-  void DidReceiveResponse(unsigned long identifier,
+  void DidReceiveResponse(uint64_t identifier,
                           const ResourceResponse&) override;
   void DidReceiveData(const char* data, unsigned data_length) override;
   // When responseType is set to "blob", didDownloadData() is called instead
   // of didReceiveData().
   void DidDownloadData(uint64_t data_length) override;
   void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) override;
-  void DidFinishLoading(unsigned long identifier) override;
+  void DidFinishLoading(uint64_t identifier) override;
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
@@ -244,7 +243,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void SetRequestHeaderInternal(const AtomicString& name,
                                 const AtomicString& value);
 
-  void TrackProgress(long long data_length);
+  void TrackProgress(uint64_t data_length);
   // Changes m_state and dispatches a readyStateChange event if new m_state
   // value is different from last one.
   void ChangeState(State new_state);
@@ -261,7 +260,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void CreateRequest(scoped_refptr<EncodedFormData>, ExceptionState&);
 
   // Dispatches a response ProgressEvent.
-  void DispatchProgressEvent(const AtomicString&, long long, long long);
+  void DispatchProgressEvent(const AtomicString&, int64_t, int64_t);
   // Dispatches a response ProgressEvent using values sampled from
   // m_receivedLength and m_response.
   void DispatchProgressEventFromSnapshot(const AtomicString&);
@@ -277,8 +276,8 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   void HandleRequestError(DOMExceptionCode,
                           const AtomicString&,
-                          long long,
-                          long long);
+                          int64_t,
+                          int64_t);
 
   void UpdateContentTypeAndCharset(const AtomicString& content_type,
                                    const String& charset);
@@ -306,7 +305,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // using case insensitive comparison functions if needed.
   AtomicString mime_type_override_;
   TimeDelta timeout_;
-  TraceWrapperMember<Blob> response_blob_;
+  Member<Blob> response_blob_;
 
   TaskHandle pending_abort_event_;
 
@@ -320,18 +319,18 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // Avoid using a flat WTF::String here and rather use a traced v8::String
   // which internally builds a string rope.
   GC_PLUGIN_IGNORE("crbug.com/841830") TraceWrapperV8String response_text_;
-  TraceWrapperMember<Document> response_document_;
+  Member<Document> response_document_;
   Member<DocumentParser> response_document_parser_;
 
   scoped_refptr<SharedBuffer> binary_response_builder_;
   size_t binary_response_builder_last_reported_size_ = 0;
-  long long length_downloaded_to_blob_ = 0;
-  long long length_downloaded_to_blob_last_reported_ = 0;
+  int64_t length_downloaded_to_blob_ = 0;
+  int64_t length_downloaded_to_blob_last_reported_ = 0;
 
-  TraceWrapperMember<DOMArrayBuffer> response_array_buffer_;
+  Member<DOMArrayBuffer> response_array_buffer_;
 
   // Used for onprogress tracking
-  long long received_length_ = 0;
+  int64_t received_length_ = 0;
 
   // An exception to throw in synchronous mode. It's set when failure
   // notification is received from m_loader and thrown at the end of send() if
@@ -369,7 +368,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   bool error_ = false;
   bool upload_events_allowed_ = true;
   bool upload_complete_ = false;
-  bool same_origin_request_ = true;
   // True iff the ongoing resource loading is using the downloadToBlob
   // option.
   bool downloading_to_blob_ = false;

@@ -5,6 +5,7 @@
 #include "services/network/cors/cors_url_loader.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "net/base/load_flags.h"
 #include "services/network/cors/preflight_controller.h"
@@ -17,6 +18,18 @@ namespace network {
 namespace cors {
 
 namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class CompletionStatusMetric {
+  kPassedWhenCorsFlagUnset = 0,
+  kFailedWhenCorsFlagUnset = 1,
+  kPassedWhenCorsFlagSet = 2,
+  kFailedWhenCorsFlagSet = 3,
+  kBlockedByCors = 4,
+
+  kMaxValue = kBlockedByCors,
+};
 
 bool NeedsPreflight(const ResourceRequest& request) {
   if (!IsCorsEnabledRequestMode(request.fetch_request_mode))
@@ -43,6 +56,21 @@ bool NeedsPreflight(const ResourceRequest& request) {
               .empty();
 }
 
+void ReportCompletionStatusMetric(bool fetch_cors_flag,
+                                  const URLLoaderCompletionStatus& status) {
+  CompletionStatusMetric metric;
+  if (status.error_code == net::OK) {
+    metric = fetch_cors_flag ? CompletionStatusMetric::kPassedWhenCorsFlagSet
+                             : CompletionStatusMetric::kPassedWhenCorsFlagUnset;
+  } else if (status.cors_error_status) {
+    metric = CompletionStatusMetric::kBlockedByCors;
+  } else {
+    metric = fetch_cors_flag ? CompletionStatusMetric::kFailedWhenCorsFlagSet
+                             : CompletionStatusMetric::kFailedWhenCorsFlagUnset;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Net.Cors.CompletionStatus", metric);
+}
+
 }  // namespace
 
 CorsURLLoader::CorsURLLoader(
@@ -55,7 +83,6 @@ CorsURLLoader::CorsURLLoader(
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::URLLoaderFactory* network_loader_factory,
-    const base::RepeatingCallback<void(int)>& request_finalizer,
     const OriginAccessList* origin_access_list,
     const OriginAccessList* factory_bound_origin_access_list,
     PreflightController* preflight_controller)
@@ -68,7 +95,6 @@ CorsURLLoader::CorsURLLoader(
       network_client_binding_(this),
       request_(resource_request),
       forwarding_client_(std::move(client)),
-      request_finalizer_(request_finalizer),
       traffic_annotation_(traffic_annotation),
       origin_access_list_(origin_access_list),
       factory_bound_origin_access_list_(factory_bound_origin_access_list),
@@ -131,6 +157,7 @@ void CorsURLLoader::FollowRedirect(
     request_.headers.RemoveHeader(name);
   request_.headers.MergeFrom(modified_headers);
 
+  const std::string original_method = std::move(request_.method);
   request_.url = redirect_info_.new_url;
   request_.method = redirect_info_.new_method;
   request_.referrer = GURL(redirect_info_.new_referrer);
@@ -147,28 +174,32 @@ void CorsURLLoader::FollowRedirect(
   // We cannot use FollowRedirect for a request with preflight (i.e., when both
   // |fetch_cors_flag_| and |NeedsPreflight(request_)| are true).
   //
-  // Additionally, when |original_fetch_cors_flag| is false,
-  // |fetch_cors_flag_| is true and |NeedsPreflight(request)| is false, the net/
-  // implementation won't attach an "origin" header on redirect, as the original
-  // request didn't have one. In such a case we need to re-issue a request
-  // manually in order to attach the correct origin header.
-  // For "no-cors" requests we rely on redirect logic in net/ (specifically
-  // in net/url_request/redirect_util.cc).
-  if ((original_fetch_cors_flag && !NeedsPreflight(request_)) ||
-      !fetch_cors_flag_) {
-    response_tainting_ = CalculateResponseTainting(
-        request_.url, request_.fetch_request_mode, request_.request_initiator,
-        fetch_cors_flag_, tainted_, origin_access_list_);
-    network_loader_->FollowRedirect(removed_headers, modified_headers, new_url);
+  // When |original_fetch_cors_flag| is false, |fetch_cors_flag_| is true and
+  // |NeedsPreflight(request)| is false, the net/ implementation won't attach an
+  // "origin" header on redirect, as the original request didn't have one.
+  //
+  // When the request method is changed (due to 302 status code, for example),
+  // the net/ implementation removes the origin header.
+  //
+  // In such cases we need to re-issue a request manually in order to attach the
+  // correct origin header. For "no-cors" requests we rely on redirect logic in
+  // net/ (specifically in net/url_request/redirect_util.cc).
+  //
+  // After both OOR-CORS and network service are fully shipped, we may be able
+  // to remove the logic in net/.
+  if ((fetch_cors_flag_ && NeedsPreflight(request_)) ||
+      (!original_fetch_cors_flag && fetch_cors_flag_) ||
+      (fetch_cors_flag_ && original_method != request_.method)) {
+    DCHECK_NE(request_.fetch_request_mode, mojom::FetchRequestMode::kNoCors);
+    network_client_binding_.Unbind();
+    StartRequest();
     return;
   }
-  DCHECK_NE(request_.fetch_request_mode, mojom::FetchRequestMode::kNoCors);
 
-  if (request_finalizer_)
-    request_finalizer_.Run(request_id_);
-  network_client_binding_.Unbind();
-
-  StartRequest();
+  response_tainting_ = CalculateResponseTainting(
+      request_.url, request_.fetch_request_mode, request_.request_initiator,
+      fetch_cors_flag_, tainted_, origin_access_list_);
+  network_loader_->FollowRedirect(removed_headers, modified_headers, new_url);
 }
 
 void CorsURLLoader::ProceedWithResponse() {
@@ -377,9 +408,19 @@ void CorsURLLoader::StartRequest() {
       request_.request_initiator &&
       (fetch_cors_flag_ ||
        (request_.method != "GET" && request_.method != "HEAD"))) {
-    request_.headers.SetHeader(
-        net::HttpRequestHeaders::kOrigin,
-        (tainted_ ? url::Origin() : *request_.request_initiator).Serialize());
+    if (!fetch_cors_flag_ &&
+        request_.headers.HasHeader(net::HttpRequestHeaders::kOrigin) &&
+        request_.request_initiator->scheme() == "chrome-extension") {
+      // We need to attach an origin header when the request's method is neither
+      // GET nor HEAD. For requests made by an extension content scripts, we
+      // want to attach page's origin, whereas the request's origin is the
+      // content script's origin. See https://crbug.com/944704 for details.
+      // TODO(crbug.com/940068) Remove this condition.
+    } else {
+      request_.headers.SetHeader(
+          net::HttpRequestHeaders::kOrigin,
+          (tainted_ ? url::Origin() : *request_.request_initiator).Serialize());
+    }
   }
 
   if (fetch_cors_flag_ &&
@@ -409,16 +450,11 @@ void CorsURLLoader::StartRequest() {
     return;
   }
 
-  base::OnceCallback<void()> preflight_finalizer;
-  if (request_finalizer_)
-    preflight_finalizer = base::BindOnce(request_finalizer_, request_id_);
-
   preflight_controller_->PerformPreflightCheck(
       base::BindOnce(&CorsURLLoader::StartNetworkRequest,
                      weak_factory_.GetWeakPtr()),
-      request_id_, request_, tainted_,
-      net::NetworkTrafficAnnotationTag(traffic_annotation_),
-      network_loader_factory_, std::move(preflight_finalizer));
+      request_, tainted_, net::NetworkTrafficAnnotationTag(traffic_annotation_),
+      network_loader_factory_);
 }
 
 void CorsURLLoader::StartNetworkRequest(
@@ -447,6 +483,7 @@ void CorsURLLoader::StartNetworkRequest(
 }
 
 void CorsURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
+  ReportCompletionStatusMetric(fetch_cors_flag_, status);
   forwarding_client_->OnComplete(status);
   std::move(delete_callback_).Run(this);
   // |this| is deleted here.

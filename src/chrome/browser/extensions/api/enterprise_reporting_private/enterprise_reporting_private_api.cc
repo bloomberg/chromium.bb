@@ -61,7 +61,9 @@ EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
 
   cloud_policy_client_ = std::make_unique<policy::CloudPolicyClient>(
       std::string() /* machine_id */, std::string() /* machine_model */,
-      std::string() /* brand_code */, device_management_service,
+      std::string() /* brand_code */, std::string() /* ethernet_mac_address */,
+      std::string() /* dock_mac_address */,
+      std::string() /* manufacture_date */, device_management_service,
       std::move(url_loader_factory), nullptr,
       policy::CloudPolicyClient::DeviceDMTokenCallback());
   dm_token_ = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();

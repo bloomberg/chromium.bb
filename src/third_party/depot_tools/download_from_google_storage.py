@@ -5,11 +5,17 @@
 
 """Download files from Google Storage based on SHA1 sums."""
 
+from __future__ import print_function
 
 import hashlib
 import optparse
 import os
-import Queue
+
+try:
+  import Queue as queue
+except ImportError:  # For Py3 compatibility
+  import queue
+
 import re
 import shutil
 import stat
@@ -110,13 +116,13 @@ class Gsutil(object):
         timeout=self.timeout)
 
     # Parse output.
-    status_code_match = re.search('status=([0-9]+)', err)
+    status_code_match = re.search(b'status=([0-9]+)', err)
     if status_code_match:
       return (int(status_code_match.group(1)), out, err)
-    if ('You are attempting to access protected data with '
-          'no configured credentials.' in err):
+    if (b'You are attempting to access protected data with '
+        b'no configured credentials.' in err):
       return (403, out, err)
-    if 'matched no objects' in err:
+    if b'matched no objects' in err:
       return (404, out, err)
     return (code, out, err)
 
@@ -164,15 +170,15 @@ def enumerate_input(input_filename, directory, recursive, ignore_errors, output,
     if not os.path.exists(input_filename):
       if not ignore_errors:
         raise FileNotFoundError('%s not found.' % input_filename)
-      print >> sys.stderr, '%s not found.' % input_filename
+      print('%s not found.' % input_filename, file=sys.stderr)
     with open(input_filename, 'rb') as f:
-      sha1_match = re.match('^([A-Za-z0-9]{40})$', f.read(1024).rstrip())
+      sha1_match = re.match(b'^([A-Za-z0-9]{40})$', f.read(1024).rstrip())
       if sha1_match:
         yield (sha1_match.groups(1)[0], output)
         return
     if not ignore_errors:
       raise InvalidFileError('No sha1 sum found in %s.' % input_filename)
-    print >> sys.stderr, 'No sha1 sum found in %s.' % input_filename
+    print('No sha1 sum found in %s.' % input_filename, file=sys.stderr)
     return
 
   if not directory:
@@ -198,20 +204,20 @@ def enumerate_input(input_filename, directory, recursive, ignore_errors, output,
                    'the path of %s' % full_path)
             if not ignore_errors:
               raise InvalidFileError(err)
-            print >> sys.stderr, err
+            print(err, file=sys.stderr)
             continue
           current_platform = PLATFORM_MAPPING[sys.platform]
           if current_platform != target_platform:
             continue
 
         with open(full_path, 'rb') as f:
-          sha1_match = re.match('^([A-Za-z0-9]{40})$', f.read(1024).rstrip())
+          sha1_match = re.match(b'^([A-Za-z0-9]{40})$', f.read(1024).rstrip())
         if sha1_match:
           yield (sha1_match.groups(1)[0], full_path.replace('.sha1', ''))
         else:
           if not ignore_errors:
             raise InvalidFileError('No sha1 sum found in %s.' % filename)
-          print >> sys.stderr, 'No sha1 sum found in %s.' % filename
+          print('No sha1 sum found in %s.' % filename, file=sys.stderr)
 
 
 def _validate_tar_file(tar, prefix):
@@ -246,7 +252,7 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
         if get_sha1(output_filename) == input_sha1_sum:
           continue
     # Check if file exists.
-    file_url = '%s/%s' % (base_url, input_sha1_sum)
+    file_url = '%s/%s' % (base_url, input_sha1_sum.decode())
     (code, _, err) = gsutil.check_call('ls', file_url)
     if code != 0:
       if code == 404:
@@ -256,10 +262,10 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
             file_url, output_filename)))
       else:
         # Other error, probably auth related (bad ~/.boto, etc).
-        out_q.put('%d> Failed to fetch file %s for %s, skipping. [Err: %s]' % (
-            thread_num, file_url, output_filename, err))
-        ret_codes.put((1, 'Failed to fetch file %s for %s. [Err: %s]' % (
-            file_url, output_filename, err)))
+        out_q.put('%d> Failed to fetch file %s for %s, skipping. [Err: %s]' %
+                  (thread_num, file_url, output_filename, err.decode()))
+        ret_codes.put((1, 'Failed to fetch file %s for %s. [Err: %s]' %
+                       (file_url, output_filename, err.decode())))
       continue
     # Fetch the file.
     out_q.put('%d> Downloading %s...' % (thread_num, output_filename))
@@ -272,8 +278,8 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
             thread_num, output_filename))
     code, _, err = gsutil.check_call('cp', file_url, output_filename)
     if code != 0:
-      out_q.put('%d> %s' % (thread_num, err))
-      ret_codes.put((code, err))
+      out_q.put('%d> %s' % (thread_num, err.decode()))
+      ret_codes.put((code, err.decode()))
       continue
 
     remote_sha1 = get_sha1(output_filename)
@@ -328,8 +334,8 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
       # "x-goog-meta-executable".
       code, out, _ = gsutil.check_call('stat', file_url)
       if code != 0:
-        out_q.put('%d> %s' % (thread_num, err))
-        ret_codes.put((code, err))
+        out_q.put('%d> %s' % (thread_num, err.decode()))
+        ret_codes.put((code, err.decode()))
       elif re.search(r'executable:\s*1', out):
         st = os.stat(output_filename)
         os.chmod(output_filename, st.st_mode | stat.S_IEXEC)
@@ -348,7 +354,7 @@ class PrinterThread(threading.Thread):
       if line is None:
         break
       self.did_print_anything = True
-      print line
+      print(line)
 
 
 def _data_exists(input_sha1_sum, output_filename, extract):
@@ -405,9 +411,9 @@ def download_from_google_storage(
   # Start up all the worker threads.
   all_threads = []
   download_start = time.time()
-  stdout_queue = Queue.Queue()
-  work_queue = Queue.Queue()
-  ret_codes = Queue.Queue()
+  stdout_queue = queue.Queue()
+  work_queue = queue.Queue()
+  ret_codes = queue.Queue()
   ret_codes.put((0, None))
   for thread_num in range(num_threads):
     t = threading.Thread(
@@ -438,12 +444,12 @@ def download_from_google_storage(
   for ret_code, message in ret_codes.queue:
     max_ret_code = max(ret_code, max_ret_code)
     if message:
-      print >> sys.stderr, message
+      print(message, file=sys.stderr)
 
   # Only print summary if any work was done.
   if printer_thread.did_print_anything:
-    print 'Downloading %d files took %1f second(s)' % (
-        len(input_data), time.time() - download_start)
+    print('Downloading %d files took %1f second(s)' %
+          (len(input_data), time.time() - download_start))
   return max_ret_code
 
 
@@ -530,14 +536,16 @@ def main(args):
     if (set(('http_proxy', 'https_proxy')).intersection(
         env.lower() for env in os.environ) and
         'NO_AUTH_BOTO_CONFIG' not in os.environ):
-      print >> sys.stderr, ('NOTICE: You have PROXY values set in your '
-                            'environment, but gsutil in depot_tools does not '
-                            '(yet) obey them.')
-      print >> sys.stderr, ('Also, --no_auth prevents the normal BOTO_CONFIG '
-                            'environment variable from being used.')
-      print >> sys.stderr, ('To use a proxy in this situation, please supply '
-                            'those settings in a .boto file pointed to by '
-                            'the NO_AUTH_BOTO_CONFIG environment var.')
+      print('NOTICE: You have PROXY values set in your environment, but gsutil'
+            'in depot_tools does not (yet) obey them.',
+            file=sys.stderr)
+      print('Also, --no_auth prevents the normal BOTO_CONFIG environment'
+            'variable from being used.',
+            file=sys.stderr)
+      print('To use a proxy in this situation, please supply those settings'
+            'in a .boto file pointed to by the NO_AUTH_BOTO_CONFIG environment'
+            'variable.',
+            file=sys.stderr)
     options.boto = os.environ.get('NO_AUTH_BOTO_CONFIG', os.devnull)
 
   # Make sure gsutil exists where we expect it to.
@@ -550,10 +558,10 @@ def main(args):
 
   # Passing in -g/--config will run our copy of GSUtil, then quit.
   if options.config:
-    print '===Note from depot_tools==='
-    print 'If you do not have a project ID, enter "0" when asked for one.'
-    print '===End note from depot_tools==='
-    print
+    print('===Note from depot_tools===')
+    print('If you do not have a project ID, enter "0" when asked for one.')
+    print('===End note from depot_tools===')
+    print()
     gsutil.check_call('version')
     return gsutil.call('config')
 

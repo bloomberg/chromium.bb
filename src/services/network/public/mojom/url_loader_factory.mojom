@@ -24,6 +24,11 @@ const uint32 kURLLoadOptionSendSSLInfoForCertificateError = 8;
 const uint32 kURLLoadOptionPauseOnResponseStarted = 16;
 // Uses the header client set in URLLoaderFactoryParams for this request.
 const uint32 kURLLoadOptionUseHeaderClient = 32;
+// Disallow the request from sending cookies. Disallow the response from writing
+// cookies.
+const uint32 kURLLoadOptionBlockAllCookies = 64;
+// Similar to |kURLLoadOptionBlockAllCookies|, but only for third party cookies.
+const uint32 kURLLoadOptionBlockThirdPartyCookies = 128;
 
 interface URLLoaderFactory {
   // Creates a URLLoader and starts loading with the given |request|. |client|'s

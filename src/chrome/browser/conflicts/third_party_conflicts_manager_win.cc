@@ -10,7 +10,6 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -20,6 +19,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/version.h"
 #include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
@@ -29,13 +29,13 @@
 #include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome_elf/third_party_dlls/packed_list_format.h"
 #include "chrome_elf/third_party_dlls/status_codes.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -117,6 +117,41 @@ void LogChromeElfThirdPartyStatus() {
     UMA_HISTOGRAM_ENUMERATION("ChromeElf.ThirdPartyStatus", status);
 }
 
+// Updates the current value of the kModuleBlacklistCacheMD5Digest pref.
+void UpdateModuleBlacklistCacheMD5Digest(
+    const ModuleBlacklistCacheUpdater::CacheUpdateResult& result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Check that the MD5 digest of the old cache matches what was expected. Only
+  // used for reporting a metric.
+  const PrefService::Preference* preference =
+      g_browser_process->local_state()->FindPreference(
+          prefs::kModuleBlacklistCacheMD5Digest);
+  DCHECK(preference);
+
+  // The first time this is executed, the pref doesn't yet hold a valid MD5
+  // digest.
+  if (!preference->IsDefaultValue()) {
+    const std::string old_md5_string =
+        base::MD5DigestToBase16(result.old_md5_digest);
+    const std::string& current_md5_string = preference->GetValue()->GetString();
+    UMA_HISTOGRAM_BOOLEAN("ModuleBlacklistCache.ExpectedMD5Digest",
+                          old_md5_string == current_md5_string);
+  }
+
+  // Set the expected MD5 digest for the next time the cache is updated.
+  g_browser_process->local_state()->Set(
+      prefs::kModuleBlacklistCacheMD5Digest,
+      base::Value(base::MD5DigestToBase16(result.new_md5_digest)));
+}
+
+void ClearModuleBlacklistCacheMD5Digest() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  g_browser_process->local_state()->ClearPref(
+      prefs::kModuleBlacklistCacheMD5Digest);
+}
+
 }  // namespace
 
 ThirdPartyConflictsManager::ThirdPartyConflictsManager(
@@ -130,7 +165,8 @@ ThirdPartyConflictsManager::ThirdPartyConflictsManager(
       on_module_database_idle_called_(false),
       initialization_forced_(false),
       module_list_update_needed_(false),
-      component_update_service_observer_(this),
+      module_list_component_updater_(nullptr,
+                                     base::OnTaskRunnerDeleter(nullptr)),
       weak_ptr_factory_(this) {
   LogChromeElfThirdPartyStatus();
 
@@ -145,6 +181,8 @@ ThirdPartyConflictsManager::ThirdPartyConflictsManager(
 }
 
 ThirdPartyConflictsManager::~ThirdPartyConflictsManager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!terminal_state_.has_value())
     SetTerminalState(State::kDestroyed);
   module_database_event_source_->RemoveObserver(this);
@@ -172,8 +210,8 @@ void ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(
 
   // Also clear the MD5 digest since there will no longer be a current module
   // blacklist cache.
-  g_browser_process->local_state()->ClearPref(
-      prefs::kModuleBlacklistCacheMD5Digest);
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           base::BindOnce(&ClearModuleBlacklistCacheMD5Digest));
 }
 
 // static
@@ -186,6 +224,8 @@ void ThirdPartyConflictsManager::ShutdownAndDestroy(
 void ThirdPartyConflictsManager::OnNewModuleFound(
     const ModuleInfoKey& module_key,
     const ModuleInfoData& module_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Keep looking for the CertificateInfo of the current executable as long as
   // it wasn't found yet.
   if (exe_certificate_info_)
@@ -204,6 +244,8 @@ void ThirdPartyConflictsManager::OnNewModuleFound(
 }
 
 void ThirdPartyConflictsManager::OnModuleDatabaseIdle() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (on_module_database_idle_called_)
     return;
 
@@ -223,7 +265,7 @@ void ThirdPartyConflictsManager::OnModuleDatabaseIdle() {
 
   // And the initial blacklisted modules are only needed for the third-party
   // modules blocking.
-  if (base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
+  if (ModuleBlacklistCacheUpdater::IsBlockingEnabled()) {
     base::PostTaskAndReplyWithResult(
         background_sequence_.get(), FROM_HERE,
         base::BindOnce(&ReadInitialBlacklistedModules),
@@ -234,18 +276,14 @@ void ThirdPartyConflictsManager::OnModuleDatabaseIdle() {
 }
 
 void ThirdPartyConflictsManager::OnModuleListComponentRegistered(
-    base::StringPiece component_id) {
+    base::StringPiece component_id,
+    const base::Version& component_version) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   DCHECK(module_list_component_id_.empty());
   module_list_component_id_ = component_id.as_string();
 
-  auto components = g_browser_process->component_updater()->GetComponents();
-  auto iter = std::find_if(components.begin(), components.end(),
-                           [this](const auto& component) {
-                             return component.id == module_list_component_id_;
-                           });
-  DCHECK(iter != components.end());
-
-  if (iter->version == base::Version("0.0.0.0")) {
+  if (component_version == base::Version("0.0.0.0")) {
     // The module list component is currently not installed. An update is
     // required to initialize the ModuleListFilter.
     module_list_update_needed_ = true;
@@ -261,10 +299,12 @@ void ThirdPartyConflictsManager::OnModuleListComponentRegistered(
 }
 
 void ThirdPartyConflictsManager::LoadModuleList(const base::FilePath& path) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (module_list_received_)
     return;
 
-  component_update_service_observer_.RemoveAll();
+  module_list_component_updater_ = nullptr;
 
   module_list_received_ = true;
 
@@ -277,6 +317,8 @@ void ThirdPartyConflictsManager::LoadModuleList(const base::FilePath& path) {
 
 void ThirdPartyConflictsManager::ForceInitialization(
     OnInitializationCompleteCallback on_initialization_complete_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   on_initialization_complete_callback_ =
       std::move(on_initialization_complete_callback);
 
@@ -301,48 +343,18 @@ void ThirdPartyConflictsManager::ForceInitialization(
     ForceModuleListComponentUpdate();
 }
 
-void ThirdPartyConflictsManager::OnEvent(Events event,
-                                         const std::string& component_id) {
-  DCHECK(!module_list_component_id_.empty());
-
-  // LoadModuleList() was already invoked.
-  if (module_list_received_)
-    return;
-
-  // Only consider events for the module list component.
-  if (component_id != module_list_component_id_)
-    return;
-
-  // There are 2 cases that are important. Either the component is being
-  // updated, or the component is not updated because there is no update
-  // available.
-  //
-  // For the first case, there is nothing to do because LoadModuleList() will
-  // eventually be called when the component is installed.
-  //
-  // For the second case, it means that the server is not offering any update
-  // right now, either because it is too busy, or there is an issue with the
-  // server-side component configuration.
-  //
-  // Note:
-  // The COMPONENT_NOT_UPDATED event can also be broadcasted when the component
-  // is already up-to-date. This is not the case here because this class only
-  // registers to the component updater service as an observer when the
-  // component version is 0.0.0.0 (aka not installed).
-  if (event == Events::COMPONENT_NOT_UPDATED)
-    SetTerminalState(State::kNoModuleListAvailableFailure);
-}
-
 void ThirdPartyConflictsManager::DisableModuleAnalysis() {
   module_analysis_disabled_ = true;
   if (incompatible_applications_updater_)
     incompatible_applications_updater_->DisableModuleAnalysis();
-  if (incompatible_applications_updater_)
-    incompatible_applications_updater_->DisableModuleAnalysis();
+  if (module_blacklist_cache_updater_)
+    module_blacklist_cache_updater_->DisableModuleAnalysis();
 }
 
 void ThirdPartyConflictsManager::OnModuleListFilterCreated(
     scoped_refptr<ModuleListFilter> module_list_filter) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   module_list_filter_ = std::move(module_list_filter);
 
   // A valid |module_list_filter_| is critical to the blocking of third-party
@@ -364,16 +376,18 @@ void ThirdPartyConflictsManager::OnModuleListFilterCreated(
 
 void ThirdPartyConflictsManager::OnInstalledApplicationsCreated(
     std::unique_ptr<InstalledApplications> installed_applications) {
-  installed_applications_ = std::move(installed_applications);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  installed_applications_ = std::move(installed_applications);
   InitializeIfReady();
 }
 
 void ThirdPartyConflictsManager::OnInitialBlacklistedModulesRead(
     std::unique_ptr<std::vector<third_party_dlls::PackedListModule>>
         initial_blacklisted_modules) {
-  initial_blacklisted_modules_ = std::move(initial_blacklisted_modules);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  initial_blacklisted_modules_ = std::move(initial_blacklisted_modules);
   InitializeIfReady();
 }
 
@@ -393,13 +407,13 @@ void ThirdPartyConflictsManager::InitializeIfReady() {
   }
 
   // And the dependency needed only for the ThirdPartyModulesBlocking feature.
-  if (base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking) &&
+  if (ModuleBlacklistCacheUpdater::IsBlockingEnabled() &&
       !initial_blacklisted_modules_) {
     return;
   }
 
   // Now both features are ready to be initialized.
-  if (base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
+  if (ModuleBlacklistCacheUpdater::IsBlockingEnabled()) {
     // It is safe to use base::Unretained() since the callback will not be
     // invoked if the updater is freed.
     module_blacklist_cache_updater_ =
@@ -417,7 +431,7 @@ void ThirdPartyConflictsManager::InitializeIfReady() {
   // ModuleBlacklistCacheUpdater instance. This way, it knows about which
   // modules were added to the module blacklist cache so that it's possible to
   // not warn about them.
-  if (installed_applications_) {
+  if (IncompatibleApplicationsUpdater::IsWarningEnabled()) {
     incompatible_applications_updater_ =
         std::make_unique<IncompatibleApplicationsUpdater>(
             module_database_event_source_, *exe_certificate_info_,
@@ -436,41 +450,33 @@ void ThirdPartyConflictsManager::InitializeIfReady() {
 
 void ThirdPartyConflictsManager::OnModuleBlacklistCacheUpdated(
     const ModuleBlacklistCacheUpdater::CacheUpdateResult& result) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Check that the MD5 digest of the old cache matches what was expected. Only
-  // used for reporting a metric.
-  const PrefService::Preference* preference =
-      g_browser_process->local_state()->FindPreference(
-          prefs::kModuleBlacklistCacheMD5Digest);
-  DCHECK(preference);
-
-  // The first time this is executed, the pref doesn't yet hold a valid MD5
-  // digest.
-  if (!preference->IsDefaultValue()) {
-    const std::string old_md5_string =
-        base::MD5DigestToBase16(result.old_md5_digest);
-    const std::string& current_md5_string = preference->GetValue()->GetString();
-    UMA_HISTOGRAM_BOOLEAN("ModuleBlacklistCache.ExpectedMD5Digest",
-                          old_md5_string == current_md5_string);
-  }
-
-  // Set the expected MD5 digest for the next time the cache is updated.
-  g_browser_process->local_state()->Set(
-      prefs::kModuleBlacklistCacheMD5Digest,
-      base::Value(base::MD5DigestToBase16(result.new_md5_digest)));
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&UpdateModuleBlacklistCacheMD5Digest, result));
 }
 
 void ThirdPartyConflictsManager::ForceModuleListComponentUpdate() {
-  auto* component_update_service = g_browser_process->component_updater();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Observe the component updater service to know the result of the update.
-  DCHECK(!component_update_service_observer_.IsObserving(
-      component_update_service));
-  component_update_service_observer_.Add(component_update_service);
+  DCHECK(!module_list_component_id_.empty());
 
-  component_update_service->MaybeThrottle(module_list_component_id_,
-                                          base::DoNothing());
+  module_list_component_updater_ = ModuleListComponentUpdater::Create(
+      module_list_component_id_,
+      base::BindRepeating(
+          &ThirdPartyConflictsManager::OnModuleListComponentNotUpdated,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ThirdPartyConflictsManager::OnModuleListComponentNotUpdated() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // LoadModuleList() was already invoked.
+  if (module_list_received_)
+    return;
+
+  SetTerminalState(State::kNoModuleListAvailableFailure);
 }
 
 void ThirdPartyConflictsManager::SetTerminalState(State terminal_state) {

@@ -21,7 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.vr.util.RenderTestUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -84,7 +85,7 @@ public class VrBrowserDialogTest {
             PermissionInfo notificationSettings =
                     new PermissionInfo(PermissionInfo.Type.NOTIFICATION,
                             "http://127.0.0.1:" + String.valueOf(SERVER_PORT), null, false);
-            ThreadUtils.runOnUiThread(
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                     () -> notificationSettings.setContentSetting(ContentSettingValues.DEFAULT));
         }
     }

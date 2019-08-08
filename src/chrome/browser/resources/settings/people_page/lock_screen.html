@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/quick_unlock/lock_screen_constants.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
@@ -35,7 +36,7 @@
       }
 
       cr-radio-button {
-        --cr-radio-button-label: {
+        --cr-radio-button-slot: {
           display: flex;
           line-height: 154%;  /* Apply 20px line-height to paper radio button
                                  text to match rest of settings line-heights. */
@@ -49,7 +50,7 @@
       }
 
       .underbar {
-        border-bottom: var(--settings-separator-line);
+        border-bottom: var(--cr-separator-line);
       }
 
       #unlockType[disabled] {
@@ -158,7 +159,7 @@
         <settings-lock-screen-password-prompt-dialog
             id="lockScreenPasswordPrompt"
             on-close="onPasswordPromptDialogClose_" set-modes="{{setModes_}}"
-            auth-token="{{authToken_}}">
+            auth-token="{{authToken}}">
         </settings-lock-screen-password-prompt-dialog>
       </template>
 

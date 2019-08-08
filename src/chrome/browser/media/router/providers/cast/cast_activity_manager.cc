@@ -12,6 +12,11 @@
 #include "chrome/common/media_router/discovery/media_sink_service_base.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 
+using blink::mojom::PresentationConnectionCloseReason;
+using blink::mojom::PresentationConnectionMessagePtr;
+using blink::mojom::PresentationConnectionPtrInfo;
+using blink::mojom::PresentationConnectionState;
+
 namespace media_router {
 
 namespace {
@@ -28,11 +33,13 @@ void ReportClientMessageParseError(const MediaRoute::Id& route_id,
 CastSessionClient::CastSessionClient(const std::string& client_id,
                                      const url::Origin& origin,
                                      int tab_id,
+                                     AutoJoinPolicy auto_join_policy,
                                      DataDecoder* data_decoder,
                                      CastActivityRecord* activity)
     : client_id_(client_id),
       origin_(origin),
       tab_id_(tab_id),
+      auto_join_policy_(auto_join_policy),
       data_decoder_(data_decoder),
       activity_(activity),
       connection_binding_(this),
@@ -41,17 +48,16 @@ CastSessionClient::CastSessionClient(const std::string& client_id,
 CastSessionClient::~CastSessionClient() = default;
 
 mojom::RoutePresentationConnectionPtr CastSessionClient::Init() {
-  blink::mojom::PresentationConnectionPtrInfo renderer_connection;
+  PresentationConnectionPtrInfo renderer_connection;
   connection_binding_.Bind(mojo::MakeRequest(&renderer_connection));
   auto connection_request = mojo::MakeRequest(&connection_);
-  connection_->DidChangeState(
-      blink::mojom::PresentationConnectionState::CONNECTED);
+  connection_->DidChangeState(PresentationConnectionState::CONNECTED);
   return mojom::RoutePresentationConnection::New(std::move(renderer_connection),
                                                  std::move(connection_request));
 }
 
 void CastSessionClient::SendMessageToClient(
-    blink::mojom::PresentationConnectionMessagePtr message) {
+    PresentationConnectionMessagePtr message) {
   connection_->OnMessage(std::move(message));
 }
 
@@ -76,8 +82,7 @@ void CastSessionClient::SendMediaStatusToClient(
       CreateV2Message(client_id_, media_status, sequence_number));
 }
 
-void CastSessionClient::OnMessage(
-    blink::mojom::PresentationConnectionMessagePtr message) {
+void CastSessionClient::OnMessage(PresentationConnectionMessagePtr message) {
   if (!message->is_message())
     return;
 
@@ -89,11 +94,21 @@ void CastSessionClient::OnMessage(
                           activity_->route().media_route_id()));
 }
 
-void CastSessionClient::DidClose(
-    blink::mojom::PresentationConnectionCloseReason reason) {
+void CastSessionClient::DidClose(PresentationConnectionCloseReason reason) {
   // TODO(https://crbug.com/809249): Implement close connection with this
   // method once we make sure Blink calls this on navigation and on
   // PresentationConnection::close().
+}
+bool CastSessionClient::MatchesAutoJoinPolicy(url::Origin origin,
+                                              int tab_id) const {
+  switch (auto_join_policy_) {
+    case AutoJoinPolicy::kTabAndOriginScoped:
+      return origin == origin_ && tab_id == tab_id_;
+    case AutoJoinPolicy::kOriginScoped:
+      return origin == origin_;
+    default:
+      return false;
+  }
 }
 
 void CastSessionClient::HandleParsedClientMessage(
@@ -103,39 +118,48 @@ void CastSessionClient::HandleParsedClientMessage(
   if (!cast_message) {
     ReportClientMessageParseError(activity_->route().media_route_id(),
                                   "Not a Cast message");
-    DVLOG(2) << "Received non-Cast message from client";
+    DLOG(ERROR) << "Received non-Cast message from client";
     return;
   }
 
   if (cast_message->client_id != client_id_) {
-    DVLOG(2) << "Client ID mismatch: expected: " << client_id_
-             << ", got: " << cast_message->client_id;
+    DLOG(ERROR) << "Client ID mismatch: expected: " << client_id_
+                << ", got: " << cast_message->client_id;
     return;
   }
 
-  if (cast_message->type != CastInternalMessage::Type::kAppMessage &&
-      cast_message->type != CastInternalMessage::Type::kV2Message) {
-    DVLOG(2) << "Unhandled message type: "
-             << static_cast<int>(cast_message->type);
+  if (cast_message->has_session_id() &&
+      cast_message->session_id() != activity_->session_id()) {
+    DLOG(ERROR) << "Session ID mismatch: expected: "
+                << activity_->session_id().value_or("<missing>")
+                << ", got: " << cast_message->session_id();
     return;
   }
 
-  if (cast_message->session_id() != activity_->session_id()) {
-    DVLOG(2) << "Session ID mismatch: expected: "
-             << activity_->session_id().value_or("<missing>")
-             << ", got: " << cast_message->session_id();
-    return;
-  }
-
-  if (cast_message->type == CastInternalMessage::Type::kAppMessage &&
-      activity_->SendAppMessageToReceiver(*cast_message) ==
+  switch (cast_message->type) {
+    case CastInternalMessage::Type::kAppMessage:
+      // Send an ACK message back to SDK client to indicate it is handled.
+      if (activity_->SendAppMessageToReceiver(*cast_message) ==
           cast_channel::Result::kOk) {
-    // Send an ACK message back to SDK client to indicate it is handled.
-    DCHECK(cast_message->sequence_number);
-    SendMessageToClient(CreateAppMessageAck(cast_message->client_id,
-                                            *cast_message->sequence_number));
-  } else if (cast_message->type == CastInternalMessage::Type::kV2Message) {
-    HandleV2ProtocolMessage(*cast_message);
+        DCHECK(cast_message->sequence_number);
+        SendMessageToClient(CreateAppMessageAck(
+            cast_message->client_id, *cast_message->sequence_number));
+      }
+      break;
+
+    case CastInternalMessage::Type::kV2Message:
+      HandleV2ProtocolMessage(*cast_message);
+      break;
+
+    case CastInternalMessage::Type::kLeaveSession:
+      SendMessageToClient(CreateLeaveSessionAckMessage(
+          client_id_, cast_message->sequence_number));
+      activity_->HandleLeaveSession(client_id_);
+      break;
+
+    default:
+      DLOG(ERROR) << "Unhandled message type: "
+                  << static_cast<int>(cast_message->type);
   }
 }
 
@@ -173,7 +197,7 @@ void CastSessionClient::HandleV2ProtocolMessage(
     // TODO(jrw): implement STOP_SESSION.
     DVLOG(2) << "Ignoring stop-session (" << type_str << ") message";
   } else {
-    DLOG(FATAL) << "Unknown v2 message type: " << type_str;
+    DLOG(ERROR) << "Unknown v2 message type: " << type_str;
   }
 }
 
@@ -187,20 +211,23 @@ void CastSessionClient::SendResultResponse(int sequence_number,
   }
 }
 
-void CastSessionClient::CloseConnection() {
+void CastSessionClient::CloseConnection(
+    PresentationConnectionCloseReason close_reason) {
   if (connection_)
-    connection_->DidChangeState(
-        blink::mojom::PresentationConnectionState::CLOSED);
+    connection_->DidClose(close_reason);
 
-  connection_.reset();
-  connection_binding_.Close();
+  TearDownPresentationConnection();
 }
 
 void CastSessionClient::TerminateConnection() {
-  if (connection_)
-    connection_->DidChangeState(
-        blink::mojom::PresentationConnectionState::TERMINATED);
+  if (connection_) {
+    connection_->DidChangeState(PresentationConnectionState::TERMINATED);
+  }
 
+  TearDownPresentationConnection();
+}
+
+void CastSessionClient::TearDownPresentationConnection() {
   connection_.reset();
   connection_binding_.Close();
 }
@@ -210,13 +237,25 @@ CastActivityRecord::~CastActivityRecord() {}
 mojom::RoutePresentationConnectionPtr CastActivityRecord::AddClient(
     const std::string& client_id,
     const url::Origin& origin,
-    int tab_id) {
+    int tab_id,
+    AutoJoinPolicy auto_join_policy) {
   DCHECK(!base::ContainsKey(connected_clients_, client_id));
-  auto client = std::make_unique<CastSessionClient>(client_id, origin, tab_id,
-                                                    data_decoder_, this);
+  auto client = std::make_unique<CastSessionClient>(
+      client_id, origin, tab_id, auto_join_policy, data_decoder_, this);
   auto presentation_connection = client->Init();
   connected_clients_.emplace(client_id, std::move(client));
+
+  // Route is now local due to connected client.
+  route_.set_local(true);
   return presentation_connection;
+}
+
+void CastActivityRecord::RemoveClient(const std::string& client_id) {
+  // Don't erase by key here as the |client_id| may be referring to the client
+  // being deleted.
+  auto it = connected_clients_.find(client_id);
+  if (it != connected_clients_.end())
+    connected_clients_.erase(it);
 }
 
 void CastActivityRecord::SetOrUpdateSession(const CastSession& session,
@@ -244,7 +283,7 @@ cast_channel::Result CastActivityRecord::SendAppMessageToReceiver(
                                            // SDK client.
   const std::string& message_namespace = cast_message.app_message_namespace();
   if (!base::ContainsKey(session->message_namespaces(), message_namespace)) {
-    DVLOG(2) << "Disallowed message namespace: " << message_namespace;
+    DLOG(ERROR) << "Disallowed message namespace: " << message_namespace;
     // TODO(jrw): Send error code back to SDK client.
     return cast_channel::Result::kFailed;
   }
@@ -288,21 +327,41 @@ void CastActivityRecord::SendStopSessionMessageToReceiver(
                      std::move(callback)));
 }
 
+void CastActivityRecord::HandleLeaveSession(const std::string& client_id) {
+  auto client_it = connected_clients_.find(client_id);
+  CHECK(client_it != connected_clients_.end());
+  CastSessionClient& client = *client_it->second;
+  std::vector<std::string> leaving_client_ids;
+  for (const auto& pair : connected_clients_) {
+    if (pair.second->MatchesAutoJoinPolicy(client.origin(), client.tab_id()))
+      leaving_client_ids.push_back(pair.first);
+  }
+
+  for (const auto& client_id : leaving_client_ids) {
+    auto leaving_client_it = connected_clients_.find(client_id);
+    CHECK(leaving_client_it != connected_clients_.end());
+    leaving_client_it->second->CloseConnection(
+        PresentationConnectionCloseReason::CLOSED);
+    connected_clients_.erase(leaving_client_it);
+  }
+}
+
 void CastActivityRecord::SendMessageToClient(
     const std::string& client_id,
-    blink::mojom::PresentationConnectionMessagePtr message) {
+    PresentationConnectionMessagePtr message) {
   auto it = connected_clients_.find(client_id);
   if (it == connected_clients_.end()) {
-    DVLOG(2) << "Attempting to send message to nonexistent client: "
-             << client_id;
+    DLOG(ERROR) << "Attempting to send message to nonexistent client: "
+                << client_id;
     return;
   }
   it->second->SendMessageToClient(std::move(message));
 }
 
-void CastActivityRecord::ClosePresentationConnections() {
+void CastActivityRecord::ClosePresentationConnections(
+    PresentationConnectionCloseReason close_reason) {
   for (auto& client : connected_clients_)
-    client.second->CloseConnection();
+    client.second->CloseConnection(close_reason);
 }
 
 void CastActivityRecord::TerminatePresentationConnections() {
@@ -466,7 +525,8 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
   const std::string& client_id = cast_source.client_id();
   if (!client_id.empty()) {
     presentation_connection =
-        activity_ptr->AddClient(client_id, params.origin, params.tab_id);
+        activity_ptr->AddClient(client_id, params.origin, params.tab_id,
+                                cast_source.auto_join_policy());
     activity_ptr->SendMessageToClient(
         client_id,
         CreateReceiverActionCastMessage(client_id, sink, hash_token_));
@@ -497,18 +557,28 @@ void CastActivityManager::LaunchSessionAfterTerminatingExisting(
 
 void CastActivityManager::RemoveActivity(
     ActivityMap::iterator activity_it,
-    blink::mojom::PresentationConnectionState state,
-    bool notify) {
-  DCHECK(state == blink::mojom::PresentationConnectionState::CLOSED ||
-         state == blink::mojom::PresentationConnectionState::TERMINATED);
-  if (state == blink::mojom::PresentationConnectionState::CLOSED)
-    activity_it->second->ClosePresentationConnections();
-  else
-    activity_it->second->TerminatePresentationConnections();
+    PresentationConnectionState state,
+    PresentationConnectionCloseReason close_reason) {
+  RemoveActivityWithoutNotification(activity_it, state, close_reason);
+  NotifyAllOnRoutesUpdated();
+}
+
+void CastActivityManager::RemoveActivityWithoutNotification(
+    ActivityMap::iterator activity_it,
+    PresentationConnectionState state,
+    PresentationConnectionCloseReason close_reason) {
+  switch (state) {
+    case PresentationConnectionState::CLOSED:
+      activity_it->second->ClosePresentationConnections(close_reason);
+      break;
+    case PresentationConnectionState::TERMINATED:
+      activity_it->second->TerminatePresentationConnections();
+      break;
+    default:
+      DLOG(ERROR) << "Invalid state: " << state;
+  }
 
   activities_.erase(activity_it);
-  if (notify)
-    NotifyAllOnRoutesUpdated();
 }
 
 void CastActivityManager::TerminateSession(
@@ -532,7 +602,8 @@ void CastActivityManager::TerminateSession(
   // still pending.
   if (!session_id) {
     DVLOG(2) << "Terminated route has no session ID.";
-    RemoveActivity(activity_it);
+    RemoveActivity(activity_it, PresentationConnectionState::TERMINATED,
+                   PresentationConnectionCloseReason::CLOSED);
     std::move(callback).Run(base::nullopt, RouteRequestResult::OK);
     return;
   }
@@ -638,9 +709,12 @@ void CastActivityManager::OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
     // whether it even happens in practice; I haven't been able to trigger it.
     //
     // TODO(jrw): Try to come up with a test to exercise this code.
-    RemoveActivity(activity_it,
-                   blink::mojom::PresentationConnectionState::TERMINATED,
-                   /* notify */ false);
+    //
+    // TODO(jrw): Figure out why this code was originally written to explicitly
+    // avoid calling NotifyAllOnRoutesUpdated().
+    RemoveActivityWithoutNotification(
+        activity_it, PresentationConnectionState::TERMINATED,
+        PresentationConnectionCloseReason::CLOSED);
     AddNonLocalActivityRecord(sink, session);
   }
   NotifyAllOnRoutesUpdated();
@@ -648,8 +722,10 @@ void CastActivityManager::OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
 
 void CastActivityManager::OnSessionRemoved(const MediaSinkInternal& sink) {
   auto it = FindActivityBySink(sink);
-  if (it != activities_.end())
-    RemoveActivity(it);
+  if (it != activities_.end()) {
+    RemoveActivity(it, PresentationConnectionState::TERMINATED,
+                   PresentationConnectionCloseReason::CLOSED);
+  }
 }
 
 void CastActivityManager::OnMediaStatusUpdated(const MediaSinkInternal& sink,
@@ -736,16 +812,18 @@ void CastActivityManager::HandleLaunchSessionResponse(
   }
 
   if (response.result != cast_channel::LaunchSessionResponse::Result::kOk) {
-    DVLOG(2) << "Failed to launch session for " << route_id;
-    RemoveActivity(activity_it);
+    DLOG(ERROR) << "Failed to launch session for " << route_id;
+    RemoveActivity(activity_it, PresentationConnectionState::CLOSED,
+                   PresentationConnectionCloseReason::CONNECTION_ERROR);
     SendFailedToCastIssue(sink.sink().id(), route_id);
     return;
   }
 
   auto session = CastSession::From(sink, *response.receiver_status);
   if (!session) {
-    DVLOG(2) << "Unable to get session from launch response";
-    RemoveActivity(activity_it);
+    DLOG(ERROR) << "Unable to get session from launch response";
+    RemoveActivity(activity_it, PresentationConnectionState::CLOSED,
+                   PresentationConnectionCloseReason::CONNECTION_ERROR);
     SendFailedToCastIssue(sink.sink().id(), route_id);
     return;
   }
@@ -782,7 +860,8 @@ void CastActivityManager::HandleStopSessionResponse(
   }
 
   if (result == cast_channel::Result::kOk) {
-    RemoveActivity(activity_it);
+    RemoveActivity(activity_it, PresentationConnectionState::TERMINATED,
+                   PresentationConnectionCloseReason::CLOSED);
     std::move(callback).Run(base::nullopt, RouteRequestResult::OK);
   } else {
     std::move(callback).Run("Failed to terminate route",

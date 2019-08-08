@@ -23,13 +23,13 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_device_client.h"
-#include "chromeos/dbus/shill_ipconfig_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/dbus/shill_profile_client.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_device_client.h"
+#include "chromeos/dbus/shill/shill_ipconfig_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_profile_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_handler.h"
@@ -225,7 +225,7 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
     user_manager::User* user = user_manager->GetActiveUser();
     CHECK(user);
     std::string userhash;
-    DBusThreadManager::Get()->GetCryptohomeClient()->GetSanitizedUsername(
+    CryptohomeClient::Get()->GetSanitizedUsername(
         cryptohome::CreateAccountIdentifierFromAccountId(user->GetAccountId()),
         base::BindOnce(
             [](std::string* out, base::Optional<std::string> result) {

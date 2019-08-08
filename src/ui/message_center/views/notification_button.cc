@@ -78,7 +78,7 @@ void NotificationButton::OnFocus() {
 }
 
 void NotificationButton::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   // We disable view hierarchy change detection in the parent
   // because it resets the hoverstate, which we do not want
   // when we update the view to contain a new label or image.

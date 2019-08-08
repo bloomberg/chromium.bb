@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 
+#include <string>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -20,6 +22,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "components/invalidation/impl/invalidation_switches.h"
@@ -32,6 +35,7 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
 #include "google_apis/gaia/gaia_switches.h"
+#include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -97,7 +101,7 @@ static const char* kBadFlags[] = {
 
     // This flag allows people to whitelist certain origins as secure, even
     // if they are not.
-    switches::kUnsafelyTreatInsecureOriginAsSecure,
+    network::switches::kUnsafelyTreatInsecureOriginAsSecure,
 
     // This flag allows sites to access the camera and microphone without
     // getting the user's permission.
@@ -119,6 +123,14 @@ static const char* kBadFlags[] = {
     // UI websites can scan for bluetooth without user intervention. Show a
     // warning until the UI is complete.
     switches::kEnableWebBluetoothScanning,
+
+    // Enables save data feature which can cause user traffic to be proxied via
+    // Google's data reduction proxy servers.
+    data_reduction_proxy::switches::kEnableDataReductionProxy,
+
+    // GPU sanboxing isn't implemented for the Web GPU API yet meaning it would
+    // be possible to read GPU data for other Chromium processes.
+    switches::kEnableUnsafeWebGPU,
 };
 #endif  // OS_ANDROID
 

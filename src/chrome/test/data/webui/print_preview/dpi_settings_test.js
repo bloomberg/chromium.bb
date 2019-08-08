@@ -20,19 +20,15 @@ cr.define('dpi_settings_test', function() {
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+
       dpiSection = document.createElement('print-preview-dpi-settings');
-      dpiSection.settings = {
-        dpi: {
-          value: {},
-          unavailableValue: {},
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: 'dpi',
-        },
-      };
+      dpiSection.settings = model.settings;
       dpiSection.capability = dpiCapability;
       dpiSection.disabled = false;
+      model.set('settings.dpi.available', true);
+      test_util.fakeDataBind(model, dpiSection, 'settings');
       document.body.appendChild(dpiSection);
     });
 
@@ -51,7 +47,7 @@ cr.define('dpi_settings_test', function() {
       const lowQualityWithLabel = expectedCapabilityWithLabels.option[1];
 
       // Set the setting to the printer default.
-      dpiSection.set('settings.dpi.value', highQualityOption);
+      dpiSection.setSetting('dpi', highQualityOption);
 
       // Default is 200 dpi.
       const settingsSelect = dpiSection.$$('print-preview-settings-select');

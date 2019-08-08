@@ -117,4 +117,60 @@ void SendTabToSelfModelEqualityChecker::EntriesRemovedRemotely(
   CheckExitCondition();
 }
 
+SendTabToSelfActiveChecker::SendTabToSelfActiveChecker(
+    send_tab_to_self::SendTabToSelfSyncService* service)
+    : service_(service) {
+  service->GetSendTabToSelfModel()->AddObserver(this);
+}
+
+SendTabToSelfActiveChecker::~SendTabToSelfActiveChecker() {
+  service_->GetSendTabToSelfModel()->RemoveObserver(this);
+}
+
+bool SendTabToSelfActiveChecker::IsExitConditionSatisfied() {
+  return service_->GetSendTabToSelfModel()->IsReady();
+}
+
+std::string SendTabToSelfActiveChecker::GetDebugMessage() const {
+  return "Waiting for model to be active.";
+}
+
+void SendTabToSelfActiveChecker::SendTabToSelfModelLoaded() {
+  CheckExitCondition();
+}
+
+void SendTabToSelfActiveChecker::EntriesAddedRemotely(
+    const std::vector<const send_tab_to_self::SendTabToSelfEntry*>&
+        new_entries) {
+  CheckExitCondition();
+}
+
+void SendTabToSelfActiveChecker::EntriesRemovedRemotely(
+    const std::vector<std::string>& guids_removed) {
+  CheckExitCondition();
+}
+
+SendTabToSelfMultiDeviceActiveChecker::SendTabToSelfMultiDeviceActiveChecker(
+    syncer::DeviceInfoTracker* tracker)
+    : tracker_(tracker) {
+  tracker_->AddObserver(this);
+}
+
+SendTabToSelfMultiDeviceActiveChecker::
+    ~SendTabToSelfMultiDeviceActiveChecker() {
+  tracker_->RemoveObserver(this);
+}
+
+bool SendTabToSelfMultiDeviceActiveChecker::IsExitConditionSatisfied() {
+  return tracker_->CountActiveDevices() > 1;
+}
+
+std::string SendTabToSelfMultiDeviceActiveChecker::GetDebugMessage() const {
+  return "Waiting for multiple devices to be active.";
+}
+
+void SendTabToSelfMultiDeviceActiveChecker::OnDeviceInfoChange() {
+  CheckExitCondition();
+}
+
 }  // namespace send_tab_to_self_helper

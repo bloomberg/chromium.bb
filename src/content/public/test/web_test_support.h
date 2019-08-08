@@ -11,8 +11,6 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "cc/layers/texture_layer.h"
-#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 
 class GURL;
 
@@ -55,11 +53,6 @@ void TerminateAllSharedWorkersForTesting(StoragePartition* storage_partition,
 
 // Turn a renderer into web test mode.
 void EnableRendererWebTestMode();
-
-// "Casts" |render_view| to |WebViewTestProxy|.  Caller has to ensure that
-// prior to construction of |render_view|, EnableWebTestProxyCreation was
-// called.
-test_runner::WebViewTestProxy* GetWebViewTestProxy(RenderView* render_view);
 
 // Gets WebWidgetTestProxy associated with |frame| (either the view's widget
 // or the local root's frame widget).  Caller has to ensure that prior to

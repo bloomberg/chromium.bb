@@ -13,6 +13,10 @@ import("//printing/buildflags/buildflags.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 # This target is for dependency tracking for the command ID header.
 source_set("command_ids") {
   sources = [
@@ -379,7 +383,10 @@ static_library("test_support") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chrome/browser/chromeos" ]
+    deps += [
+      "//chrome/browser/chromeos",
+      "//chromeos",
+    ]
   }
 
   if (enable_plugins && enable_nacl) {
@@ -453,6 +460,7 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//ash/components/shortcut_viewer/public/mojom",
       "//ash/components/tap_visualizer/public/cpp:manifest",
       "//ash/components/tap_visualizer/public/mojom",
+      "//chrome/browser/chromeos/kiosk_next_home/mojom",
       "//chromeos/assistant:buildflags",
       "//chromeos/services/device_sync/public/cpp:manifest",
       "//chromeos/services/ime/public/mojom",
@@ -485,6 +493,10 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//chrome/browser/ui/webui/discards:mojo_bindings",
       "//services/resource_coordinator/public/mojom",
     ]
+  }
+
+  if (is_android && notouch_build) {
+    configs += [ "//chrome/browser:notouch_config" ]
   }
 }
 
@@ -612,6 +624,7 @@ source_set("chrome_packaged_service_manifests") {
       "//ash/public/cpp:manifest",
       "//chrome/browser/chromeos:ash_pref_connector_manifest",
       "//chrome/services/cups_ipp_parser/public/cpp:manifest",
+      "//chromeos/services/cellular_setup/public/cpp:manifest",
       "//chromeos/services/ime/public/cpp:manifest",
       "//chromeos/services/secure_channel/public/cpp:manifest",
       "//services/ws/public/mojom/input_devices",

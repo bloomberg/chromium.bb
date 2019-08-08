@@ -6,7 +6,9 @@
 
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -36,9 +38,7 @@ FrameLoadRequest::FrameLoadRequest(
     : origin_document_(origin_document),
       resource_request_(resource_request),
       frame_name_(frame_name),
-      client_redirect_(ClientRedirectPolicy::kNotClientRedirect),
       should_send_referrer_(kMaybeSendReferrer),
-      should_set_opener_(kMaybeSetOpener),
       should_check_main_world_content_security_policy_(
           should_check_main_world_content_security_policy) {
   // These flags are passed to a service worker which controls the page.
@@ -48,6 +48,9 @@ FrameLoadRequest::FrameLoadRequest(
       network::mojom::FetchCredentialsMode::kInclude);
   resource_request_.SetFetchRedirectMode(
       network::mojom::FetchRedirectMode::kManual);
+
+  if (const WebInputEvent* input_event = CurrentInputEvent::Get())
+    SetInputStartTime(input_event->TimeStamp());
 
   if (origin_document) {
     DCHECK(!resource_request_.RequestorOrigin());
@@ -60,7 +63,22 @@ FrameLoadRequest::FrameLoadRequest(
       origin_document->GetPublicURLManager().Resolve(
           resource_request.Url(), MakeRequest(&blob_url_token_->data));
     }
+
+    if (ContentSecurityPolicy::ShouldBypassMainWorld(origin_document)) {
+      should_check_main_world_content_security_policy_ =
+          kDoNotCheckContentSecurityPolicy;
+    }
   }
+}
+
+ClientRedirectPolicy FrameLoadRequest::ClientRedirect() const {
+  // Form submissions have not historically been reported to the extensions API
+  // as client redirects.
+  if (client_navigation_reason_ == ClientNavigationReason::kNone ||
+      client_navigation_reason_ == ClientNavigationReason::kFormSubmissionGet ||
+      client_navigation_reason_ == ClientNavigationReason::kFormSubmissionPost)
+    return ClientRedirectPolicy::kNotClientRedirect;
+  return ClientRedirectPolicy::kClientRedirect;
 }
 
 }  // namespace blink

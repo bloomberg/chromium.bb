@@ -6,8 +6,10 @@
 
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/i18n/file_util_icu.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
@@ -19,9 +21,9 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/resource_request.h"
-
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
+#include "components/download/internal/common/android/download_collection_bridge.h"
 #endif
 
 namespace download {
@@ -109,9 +111,9 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
 
     case net::HTTP_NO_CONTENT:
     case net::HTTP_RESET_CONTENT:
-    // These two status codes don't have an entity (or rather RFC 7231
-    // requires that there be no entity). They are treated the same as the
-    // resource not being found since there is no entity to download.
+      // These two status codes don't have an entity (or rather RFC 7231
+      // requires that there be no entity). They are treated the same as the
+      // resource not being found since there is no entity to download.
 
     case net::HTTP_NOT_FOUND:
       result = DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
@@ -245,8 +247,11 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   request->allow_download = true;
   request->is_main_frame = true;
 
-  if (params->render_process_host_id() >= 0)
-    request->render_frame_id = params->render_frame_host_routing_id();
+  // Downloads should be treated as navigations from Fetch spec perspective.
+  // See also:
+  // - https://crbug.com/952834
+  // - https://github.com/whatwg/fetch/issues/896#issuecomment-484423278
+  request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
 
   bool has_upload_data = false;
   if (params->post_body()) {
@@ -445,11 +450,11 @@ ResumeMode GetDownloadResumeMode(const GURL& url,
       break;
 
     case DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
-    // The server disagreed with the file offset that we sent.
+      // The server disagreed with the file offset that we sent.
 
     case DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH:
-    // The file on disk was found to not match the expected hash. Discard and
-    // start from beginning.
+      // The file on disk was found to not match the expected hash. Discard and
+      // start from beginning.
 
     case DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT:
       // The [possibly persisted] file offset disagreed with the file on disk.
@@ -549,4 +554,40 @@ bool DeleteDownloadedFile(const base::FilePath& path) {
   return base::DeleteFile(path, false);
 }
 
+download::DownloadItem::DownloadRenameResult RenameDownloadedFile(
+    const base::FilePath& from_path,
+    const base::FilePath& to_path) {
+  if (!base::PathExists(from_path) ||
+      !base::DirectoryExists(from_path.DirName()))
+    return DownloadItem::DownloadRenameResult::FAILURE_UNAVAILABLE;
+
+  if (!base::DirectoryExists(to_path.DirName()))
+    return DownloadItem::DownloadRenameResult::FAILURE_NAME_INVALID;
+
+  if (base::PathExists(to_path))
+    return DownloadItem::DownloadRenameResult::FAILURE_NAME_CONFLICT;
+
+  int max_path_component_length =
+      base::GetMaximumPathComponentLength(to_path.DirName());
+  if (max_path_component_length != -1) {
+    if (static_cast<int>(to_path.value().length()) >=
+        max_path_component_length) {
+      return DownloadItem::DownloadRenameResult::FAILURE_NAME_TOO_LONG;
+    }
+  }
+#if defined(OS_ANDROID)
+  if (from_path.IsContentUri()) {
+    return DownloadCollectionBridge::RenameDownloadUri(from_path,
+                                                       to_path.BaseName())
+               ? download::DownloadItem::DownloadRenameResult::SUCCESS
+               : download::DownloadItem::DownloadRenameResult::
+                     FAILURE_NAME_INVALID;
+  }
+#endif
+
+  return base::Move(from_path, to_path)
+             ? download::DownloadItem::DownloadRenameResult::SUCCESS
+             : download::DownloadItem::DownloadRenameResult::
+                   FAILURE_NAME_INVALID;
+}
 }  // namespace download

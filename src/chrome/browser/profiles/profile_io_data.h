@@ -164,6 +164,10 @@ class ProfileIOData {
     return &network_prediction_options_;
   }
 
+  BooleanPrefMember* signed_exchange_enabled() const {
+    return &signed_exchange_enabled_;
+  }
+
   signin::AccountConsistencyMethod account_consistency() const {
     return account_consistency_;
   }
@@ -511,6 +515,7 @@ class ProfileIOData {
   mutable StringPrefMember allowed_domains_for_apps_;
   mutable IntegerPrefMember network_prediction_options_;
   mutable IntegerPrefMember incognito_availibility_pref_;
+  mutable BooleanPrefMember signed_exchange_enabled_;
 #if BUILDFLAG(ENABLE_PLUGINS)
   mutable BooleanPrefMember always_open_pdf_externally_;
 #endif

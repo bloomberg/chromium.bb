@@ -23,6 +23,14 @@ Polymer({
 
   properties: {
     /**
+     * Authentication token provided by settings-people-page.
+     */
+    authToken: {
+      type: String,
+      value: '',
+    },
+
+    /**
      * The list of fingerprint objects.
      * @private {!Array<string>}
      */

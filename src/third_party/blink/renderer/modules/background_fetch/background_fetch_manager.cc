@@ -248,7 +248,7 @@ ScriptPromise BackgroundFetchManager::fetch(
   UMA_HISTOGRAM_BOOLEAN("BackgroundFetch.HasDuplicateRequests",
                         kurls.size() != fetch_api_requests.size());
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // Pick the best icon, and load it.
@@ -365,7 +365,7 @@ ScriptPromise BackgroundFetchManager::get(ScriptState* script_state,
                                           "The provided id is invalid."));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   bridge_->GetRegistration(
@@ -418,8 +418,6 @@ BackgroundFetchManager::CreateFetchAPIRequestVector(
 
       DCHECK(request);
       *has_requests_with_body |= request->HasBody();
-      // TODO(crbug.com/774054): Set blob data handle when adding support for
-      // requests with body.
       fetch_api_requests[i] = request->CreateFetchAPIRequest();
       fetch_api_requests[i]->blob = ExtractBlobHandle(request, exception_state);
       if (exception_state.HadException())
@@ -428,9 +426,6 @@ BackgroundFetchManager::CreateFetchAPIRequestVector(
   } else if (requests.IsRequest()) {
     auto* request = requests.GetAsRequest();
     DCHECK(request);
-
-    // TODO(crbug.com/774054): Set blob data handle when adding support for
-    // requests with body.
 
     *has_requests_with_body = request->HasBody();
     fetch_api_requests.resize(1);
@@ -508,7 +503,7 @@ ScriptPromise BackgroundFetchManager::getIds(ScriptState* script_state) {
                                v8::Array::New(script_state->GetIsolate()));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   bridge_->GetDeveloperIds(WTF::Bind(

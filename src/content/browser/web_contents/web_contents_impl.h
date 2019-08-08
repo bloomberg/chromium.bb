@@ -309,7 +309,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   RenderWidgetHostView* GetTopLevelRenderWidgetHostView() override;
   void ClosePage() override;
   RenderWidgetHostView* GetFullscreenRenderWidgetHostView() override;
-  SkColor GetThemeColor() override;
+  base::Optional<SkColor> GetThemeColor() override;
   WebUI* GetWebUI() override;
   WebUI* GetCommittedWebUI() override;
   void SetUserAgentOverride(const std::string& override,
@@ -344,6 +344,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetAudioMuted(bool mute) override;
   bool IsCurrentlyAudible() override;
   bool IsConnectedToBluetoothDevice() override;
+  bool IsConnectedToSerialPort() const override;
   bool HasPictureInPictureVideo() override;
   bool IsCrashed() override;
   void SetIsCrashed(base::TerminationStatus status, int error_code) override;
@@ -663,6 +664,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool ShouldIgnoreUnresponsiveRenderer() override;
   bool HideDownloadUI() const override;
   bool HasPersistentVideo() const override;
+  bool IsSpatialNavigationDisabled() const override;
   RenderFrameHost* GetPendingMainFrame() override;
   void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) override;
   void DidCommitAndDrawCompositorFrame(RenderViewHostImpl* source) override;
@@ -796,7 +798,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderViewHost* render_view_host) override;
   bool CreateRenderFrameForRenderManager(
       RenderFrameHost* render_frame_host,
-      int proxy_routing_id,
+      int previous_routing_id,
       int opener_routing_id,
       int parent_routing_id,
       int previous_sibling_routing_id) override;
@@ -874,8 +876,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // No interstitial page should already be attached.
   void AttachInterstitialPage(InterstitialPageImpl* interstitial_page) override;
 
-  void MediaMutedStatusChanged(const WebContentsObserver::MediaPlayerId& id,
-                               bool muted);
+  void MediaMutedStatusChanged(const MediaPlayerId& id, bool muted);
 
   // Unsets the currently showing interstitial.
   void DetachInterstitialPage(bool has_focus) override;
@@ -884,6 +885,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Unpause the throbber if it was paused.
   void DidProceedOnInterstitial() override;
+
+  bool HadInnerWebContents() override;
 
   // Forces overscroll to be disabled (used by touch emulation).
   void SetForceDisableOverscrollContent(bool force_disable);
@@ -903,15 +906,14 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // WebContentsObserver function stubs for more details.
   void MediaStartedPlaying(
       const WebContentsObserver::MediaPlayerInfo& media_info,
-      const WebContentsObserver::MediaPlayerId& id);
+      const MediaPlayerId& id);
   void MediaStoppedPlaying(
       const WebContentsObserver::MediaPlayerInfo& media_info,
-      const WebContentsObserver::MediaPlayerId& id,
+      const MediaPlayerId& id,
       WebContentsObserver::MediaStoppedReason reason);
   // This will be called before playback is started, check
   // GetCurrentlyPlayingVideoCount if you need this when playback starts.
-  void MediaResized(const gfx::Size& size,
-                    const WebContentsObserver::MediaPlayerId& id);
+  void MediaResized(const gfx::Size& size, const MediaPlayerId& id);
   void MediaEffectivelyFullscreenChanged(bool is_fullscreen);
 
   int GetCurrentlyPlayingVideoCount() override;
@@ -936,6 +938,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Modify the counter of connected devices for this WebContents.
   void IncrementBluetoothConnectedDeviceCount();
   void DecrementBluetoothConnectedDeviceCount();
+
+  // Modify the counter of frames in this WebContents actively using serial
+  // ports.
+  void IncrementSerialActiveFrameCount();
+  void DecrementSerialActiveFrameCount();
 
   // Called when the WebContents gains or loses a persistent video.
   void SetHasPersistentVideo(bool has_persistent_video);
@@ -982,6 +989,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Updates the tracking information for |this| to know if there is
   // a video currently in Picture-in-Picture mode.
   void SetHasPictureInPictureVideo(bool has_picture_in_picture_video);
+
+  // Sets the spatial navigation state.
+  void SetSpatialNavigationDisabled(bool disabled);
 
 #if defined(OS_ANDROID)
   // Called by FindRequestManager when all of the find match rects are in.
@@ -1209,7 +1219,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                       const base::string16& user_input);
 
   // IPC message handlers.
-  void OnThemeColorChanged(RenderFrameHostImpl* source, SkColor theme_color);
+  void OnThemeColorChanged(RenderFrameHostImpl* source,
+                           base::Optional<SkColor> theme_color);
   void OnDidLoadResourceFromMemoryCache(
       RenderFrameHostImpl* source,
       const GURL& url,
@@ -1226,7 +1237,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnDidRunContentWithCertificateErrors(RenderFrameHostImpl* source);
   void OnDocumentLoadedInFrame(RenderFrameHostImpl* source);
   void OnDidFinishLoad(RenderFrameHostImpl* source, const GURL& url);
-  void OnGoToEntryAtOffset(RenderViewHostImpl* source,
+  void OnGoToEntryAtOffset(RenderFrameHostImpl* source,
                            int offset,
                            bool has_user_gesture);
   void OnUpdateZoomLimits(RenderViewHostImpl* source,
@@ -1572,10 +1583,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // The theme color for the underlying document as specified
   // by theme-color meta tag.
-  SkColor theme_color_;
+  base::Optional<SkColor> theme_color_;
 
   // The last published theme color.
-  SkColor last_sent_theme_color_;
+  base::Optional<SkColor> last_sent_theme_color_;
 
   // Whether the first visually non-empty paint has occurred.
   bool did_first_visually_non_empty_paint_;
@@ -1755,7 +1766,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Created on-demand to mute all audio output from this WebContents.
   std::unique_ptr<WebContentsAudioMuter> audio_muter_;
 
-  size_t bluetooth_connected_device_count_;
+  size_t bluetooth_connected_device_count_ = 0;
+  size_t serial_active_frame_count_ = 0;
 
   bool has_picture_in_picture_video_ = false;
 
@@ -1815,10 +1827,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool showing_context_menu_;
 
   int currently_playing_video_count_ = 0;
-  base::flat_map<WebContentsObserver::MediaPlayerId, gfx::Size>
-      cached_video_sizes_;
+  base::flat_map<MediaPlayerId, gfx::Size> cached_video_sizes_;
 
   bool has_persistent_video_ = false;
+
+  bool is_spatial_navigation_disabled_ = false;
 
   bool is_currently_audible_ = false;
   bool was_ever_audible_ = false;
@@ -1849,10 +1862,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // WebContents can be found by using GetOuterWebContents().
   Portal* portal_ = nullptr;
 
-  // TODO(ericrk): Variable to debug https://crbug.com/758186. Remove when
-  // debugging concluded.
-  WebContentsDelegate* web_contents_created_delegate_ = nullptr;
-  bool web_contents_added_to_delegate_ = false;
+  // TODO(crbug.com/934637): Remove this field when pdf/any inner web contents
+  // user gesture is properly propagated. This is a temporary fix for history
+  // intervention to be disabled for pdfs (crbug.com/965434).
+  bool had_inner_webcontents_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

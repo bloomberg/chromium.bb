@@ -146,10 +146,10 @@ interface PasswordGenerationDriver {
   // form. This is used for UMA stats.
   GenerationAvailableForForm(PasswordForm password_form);
 
-  // Notifies the browser when automatic generation becomes available or
-  // unavailable and provides data needed by the UI.
-  AutomaticGenerationStatusChanged(
-      bool available, PasswordGenerationUIData? password_generation_ui_data);
+  // Notifies the browser when automatic generation becomes available
+  // and provides data needed by the UI.
+  AutomaticGenerationAvailable(
+    PasswordGenerationUIData password_generation_ui_data);
 
   // Instructs the browser to show the popup for editing a generated password.
   // The location should be specified in the renderers coordinate system. Form
@@ -167,4 +167,12 @@ interface PasswordGenerationDriver {
   // Instructs the browser that form no longer contains a generated password and
   // the presaved form should be removed.
   PasswordNoLongerGenerated(PasswordForm password_form);
+
+  // Communicates to the browser that a scroll event happened on the frame. This
+  // event affects the password generation popup position.
+  FrameWasScrolled();
+
+  // Informs the browser that the generation element lost focus, so the browser
+  // might hide the generation popup.
+  GenerationElementLostFocus();
 };

@@ -19,6 +19,7 @@
 #include "api/audio_codecs/audio_encoder_factory_template.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
+#include "media/sctp/sctp_transport_internal.h"
 #include "rtc_base/gunit.h"
 #include "rtc_base/logging.h"
 
@@ -32,11 +33,11 @@
 #include "test/mock_audio_decoder_factory.h"
 #include "test/mock_audio_encoder_factory.h"
 
-using testing::AtLeast;
-using testing::Invoke;
-using testing::StrictMock;
-using testing::Values;
-using testing::_;
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::Invoke;
+using ::testing::StrictMock;
+using ::testing::Values;
 
 using webrtc::DataChannelInterface;
 using webrtc::MediaStreamInterface;
@@ -50,7 +51,7 @@ const int kMaxWait = 25000;
 }  // namespace
 
 class PeerConnectionEndToEndBaseTest : public sigslot::has_slots<>,
-                                       public testing::Test {
+                                       public ::testing::Test {
  public:
   typedef std::vector<rtc::scoped_refptr<DataChannelInterface>> DataChannelList;
 
@@ -721,7 +722,48 @@ TEST_P(PeerConnectionEndToEndTest, CloseDataChannelRemotelyWhileNotReferenced) {
   // close message and be destroyed.
   rtc::Thread::Current()->ProcessMessages(100);
 }
+
+// Test behavior of creating too many datachannels.
+TEST_P(PeerConnectionEndToEndTest, TooManyDataChannelsOpenedBeforeConnecting) {
+  CreatePcs(webrtc::MockAudioEncoderFactory::CreateEmptyFactory(),
+            webrtc::MockAudioDecoderFactory::CreateEmptyFactory());
+
+  webrtc::DataChannelInit init;
+  std::vector<rtc::scoped_refptr<DataChannelInterface>> channels;
+  for (int i = 0; i <= cricket::kMaxSctpStreams / 2; i++) {
+    rtc::scoped_refptr<DataChannelInterface> caller_dc(
+        caller_->CreateDataChannel("data", init));
+    channels.push_back(std::move(caller_dc));
+  }
+  Negotiate();
+  WaitForConnection();
+  EXPECT_EQ_WAIT(callee_signaled_data_channels_.size(),
+                 static_cast<size_t>(cricket::kMaxSctpStreams / 2), kMaxWait);
+  EXPECT_EQ(DataChannelInterface::kOpen,
+            channels[(cricket::kMaxSctpStreams / 2) - 1]->state());
+  EXPECT_EQ(DataChannelInterface::kClosed,
+            channels[cricket::kMaxSctpStreams / 2]->state());
+}
+
 #endif  // HAVE_SCTP
+
+TEST_P(PeerConnectionEndToEndTest, CanRestartIce) {
+  rtc::scoped_refptr<webrtc::AudioDecoderFactory> real_decoder_factory =
+      webrtc::CreateBuiltinAudioDecoderFactory();
+  CreatePcs(webrtc::CreateBuiltinAudioEncoderFactory(),
+            CreateForwardingMockDecoderFactory(real_decoder_factory.get()));
+  GetAndAddUserMedia();
+  Negotiate();
+  WaitForCallEstablished();
+  // Cause ICE restart to be requested.
+  auto config = caller_->pc()->GetConfiguration();
+  ASSERT_NE(PeerConnectionInterface::kRelay, config.type);
+  config.type = PeerConnectionInterface::kRelay;
+  webrtc::RTCError error;
+  ASSERT_TRUE(caller_->pc()->SetConfiguration(config, &error));
+  // When solving https://crbug.com/webrtc/10504, all we need to check
+  // is that we do not crash. We should also be testing that restart happens.
+}
 
 INSTANTIATE_TEST_SUITE_P(PeerConnectionEndToEndTest,
                          PeerConnectionEndToEndTest,

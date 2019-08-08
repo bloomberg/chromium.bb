@@ -5,9 +5,14 @@
 #ifndef SERVICES_TRACING_PUBLIC_CPP_PERFETTO_TASK_RUNNER_H_
 #define SERVICES_TRACING_PUBLIC_CPP_PERFETTO_TASK_RUNNER_H_
 
+#include <list>
+
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/thread_local.h"
+#include "base/timer/timer.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/base/task_runner.h"
 
@@ -43,8 +48,25 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTaskRunner
   void ResetTaskRunnerForTesting(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
+  // Sometimes we have to temporarily defer any posted tasks, like
+  // when trace events are added when the taskqueue is locked. For this purpose
+  // we keep a timer running when tracing is enabled, which will periodically
+  // drain these posted tasks.
+  void StartDeferredTasksDrainTimer();
+  void StopDeferredTasksDrainTimer();
+
+  void BlockPostTaskForThread();
+  void UnblockPostTaskForThread();
+
  private:
+  void OnDeferredTasksDrainTimer();
+
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::ThreadLocalBoolean posttask_is_blocked_for_thread_;
+
+  base::Lock lock_;  // Protects deferred_tasks_;
+  std::list<std::function<void()>> deferred_tasks_;
+  base::RepeatingTimer deferred_tasks_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PerfettoTaskRunner);
 };

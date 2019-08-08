@@ -17,6 +17,7 @@
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
@@ -47,9 +48,9 @@ bool PathContainsDisallowedCharacter(const GURL& url) {
 bool ServiceWorkerUtils::IsMainResourceType(ResourceType type) {
   // When PlzDedicatedWorker is enabled, a dedicated worker script is considered
   // to be a main resource.
-  if (type == RESOURCE_TYPE_WORKER)
+  if (type == ResourceType::kWorker)
     return blink::features::IsPlzDedicatedWorkerEnabled();
-  return IsResourceTypeFrame(type) || type == RESOURCE_TYPE_SHARED_WORKER;
+  return IsResourceTypeFrame(type) || type == ResourceType::kSharedWorker;
 }
 
 // static
@@ -306,6 +307,45 @@ const char* ServiceWorkerUtils::FetchResponseSourceToSuffix(
   }
   NOTREACHED();
   return ".Unknown";
+}
+
+void ServiceWorkerUtils::SendHttpResponseInfoToClient(
+    const net::HttpResponseInfo* http_info,
+    uint32_t options,
+    base::TimeTicks request_start_time,
+    base::TimeTicks response_start_time,
+    int response_data_size,
+    network::mojom::URLLoaderClientProxy* client_proxy) {
+  DCHECK(http_info);
+  DCHECK(client_proxy);
+
+  network::ResourceResponseHead head;
+  head.request_start = request_start_time;
+  head.response_start = response_start_time;
+  head.request_time = http_info->request_time;
+  head.response_time = http_info->response_time;
+  head.headers = http_info->headers;
+  head.headers->GetMimeType(&head.mime_type);
+  head.headers->GetCharset(&head.charset);
+  head.content_length = response_data_size;
+  head.was_fetched_via_spdy = http_info->was_fetched_via_spdy;
+  head.was_alpn_negotiated = http_info->was_alpn_negotiated;
+  head.connection_info = http_info->connection_info;
+  head.alpn_negotiated_protocol = http_info->alpn_negotiated_protocol;
+  head.remote_endpoint = http_info->remote_endpoint;
+  head.cert_status = http_info->ssl_info.cert_status;
+
+  if (options & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)
+    head.ssl_info = http_info->ssl_info;
+
+  client_proxy->OnReceiveResponse(head);
+
+  if (http_info->metadata) {
+    const uint8_t* data =
+        reinterpret_cast<const uint8_t*>(http_info->metadata->data());
+    client_proxy->OnReceiveCachedMetadata(
+        std::vector<uint8_t>(data, data + http_info->metadata->size()));
+  }
 }
 
 bool LongestScopeMatcher::MatchLongest(const GURL& scope) {

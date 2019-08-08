@@ -430,6 +430,32 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
       UMA_HISTOGRAM_ENUMERATION("NewTabPage.CustomizeShortcutAction",
                                 LoggingEventToCustomizeShortcutAction(event));
       break;
+    case NTP_MIDDLE_SLOT_PROMO_SHOWN:
+      UMA_HISTOGRAM_LOAD_TIME("NewTabPage.Promos.ShownTime", time);
+      break;
+    case NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED:
+      UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.Promos.LinkClicked", 1, 1);
+      break;
+  }
+}
+
+void NTPUserDataLogger::LogSuggestionEventWithValue(
+    NTPSuggestionsLoggingEventType event,
+    int data,
+    base::TimeDelta time) {
+  // Only logged on the Google NTP.
+  if (!DefaultSearchProviderIsGoogle()) {
+    return;
+  }
+
+  switch (event) {
+    case NTPSuggestionsLoggingEventType::kShownCount:
+      UMA_HISTOGRAM_COUNTS_100("NewTabPage.SearchSuggestions.ShownCount", data);
+      break;
+    case NTPSuggestionsLoggingEventType::kIndexClicked:
+      UMA_HISTOGRAM_COUNTS_100("NewTabPage.SearchSuggestions.IndexClicked",
+                               data);
+      break;
   }
 }
 

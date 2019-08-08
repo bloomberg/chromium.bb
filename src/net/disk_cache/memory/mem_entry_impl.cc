@@ -8,8 +8,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "net/base/interval.h"
@@ -28,11 +30,11 @@ namespace {
 
 const int kSparseData = 1;
 
-// Maximum size of a sparse entry is 2 to the power of this number.
-const int kMaxSparseEntryBits = 12;
+// Maximum size of a child of sparse entry is 2 to the power of this number.
+const int kMaxChildEntryBits = 12;
 
-// Sparse entry has maximum size of 4KB.
-const int kMaxSparseEntrySize = 1 << kMaxSparseEntryBits;
+// Sparse entry children have maximum size of 4KB.
+const int kMaxChildEntrySize = 1 << kMaxChildEntryBits;
 
 // This enum is used for histograms, so only append to the end.
 enum MemEntryWriteResult {
@@ -49,21 +51,21 @@ void RecordWriteResult(MemEntryWriteResult result) {
 }
 
 // Convert global offset to child index.
-int ToChildIndex(int64_t offset) {
-  return static_cast<int>(offset >> kMaxSparseEntryBits);
+int64_t ToChildIndex(int64_t offset) {
+  return offset >> kMaxChildEntryBits;
 }
 
 // Convert global offset to offset in child entry.
 int ToChildOffset(int64_t offset) {
-  return static_cast<int>(offset & (kMaxSparseEntrySize - 1));
+  return static_cast<int>(offset & (kMaxChildEntrySize - 1));
 }
 
 // Returns a name for a child entry given the base_name of the parent and the
 // child_id.  This name is only used for logging purposes.
 // If the entry is called entry_name, child entries will be named something
 // like Range_entry_name:YYY where YYY is the number of the particular child.
-std::string GenerateChildName(const std::string& base_name, int child_id) {
-  return base::StringPrintf("Range_%s:%i", base_name.c_str(), child_id);
+std::string GenerateChildName(const std::string& base_name, int64_t child_id) {
+  return base::StringPrintf("Range_%s:%" PRId64, base_name.c_str(), child_id);
 }
 
 // Returns NetLog parameters for the creation of a MemEntryImpl. A separate
@@ -103,7 +105,7 @@ MemEntryImpl::MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
 }
 
 MemEntryImpl::MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
-                           int child_id,
+                           int64_t child_id,
                            MemEntryImpl* parent,
                            net::NetLog* net_log)
     : MemEntryImpl(backend,
@@ -137,8 +139,7 @@ int MemEntryImpl::GetStorageSize() const {
 }
 
 void MemEntryImpl::UpdateStateOnUse(EntryModified modified_enum) {
-  // !doomed_ implies backend_ != null as ~MemBackendImpl dooms everything.
-  if (!doomed_)
+  if (!doomed_ && backend_)
     backend_->OnEntryUpdated(this);
 
   last_used_ = Time::Now();
@@ -147,10 +148,10 @@ void MemEntryImpl::UpdateStateOnUse(EntryModified modified_enum) {
 }
 
 void MemEntryImpl::Doom() {
-  // !doomed_ implies backend_ != null as ~MemBackendImpl dooms everything.
   if (!doomed_) {
     doomed_ = true;
-    backend_->OnEntryDoomed(this);
+    if (backend_)
+      backend_->OnEntryDoomed(this);
     net_log_.AddEvent(net::NetLogEventType::ENTRY_DOOM);
   }
   if (!ref_count_)
@@ -307,7 +308,7 @@ size_t MemEntryImpl::EstimateMemoryUsage() const {
 
 MemEntryImpl::MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
                            const ::std::string& key,
-                           int child_id,
+                           int64_t child_id,
                            MemEntryImpl* parent,
                            net::NetLog* net_log)
     : key_(key),
@@ -359,7 +360,9 @@ int MemEntryImpl::InternalReadData(int index, int offset, IOBuffer* buf,
   if (offset >= entry_size || offset < 0 || !buf_len)
     return 0;
 
-  if (offset + buf_len > entry_size)
+  int end_offset;
+  if (!base::CheckAdd(offset, buf_len).AssignIfValid(&end_offset) ||
+      end_offset > entry_size)
     buf_len = entry_size - offset;
 
   UpdateStateOnUse(ENTRY_WAS_NOT_MODIFIED);
@@ -390,16 +393,17 @@ int MemEntryImpl::InternalWriteData(int index, int offset, IOBuffer* buf,
 
   int max_file_size = backend_->MaxFileSize();
 
-  // offset of buf_len could be negative numbers.
+  int end_offset;
   if (offset > max_file_size || buf_len > max_file_size ||
-      offset + buf_len > max_file_size) {
+      !base::CheckAdd(offset, buf_len).AssignIfValid(&end_offset) ||
+      end_offset > max_file_size) {
     RecordWriteResult(MEM_ENTRY_WRITE_RESULT_OVER_MAX_ENTRY_SIZE);
     return net::ERR_FAILED;
   }
 
   int old_data_size = data_[index].size();
-  if (truncate || old_data_size < offset + buf_len) {
-    int delta = offset + buf_len - old_data_size;
+  if (truncate || old_data_size < end_offset) {
+    int delta = end_offset - old_data_size;
     backend_->ModifyStorageSize(delta);
     if (backend_->HasExceededStorageSize()) {
       backend_->ModifyStorageSize(-delta);
@@ -407,7 +411,7 @@ int MemEntryImpl::InternalWriteData(int index, int offset, IOBuffer* buf,
       return net::ERR_INSUFFICIENT_RESOURCES;
     }
 
-    data_[index].resize(offset + buf_len);
+    data_[index].resize(end_offset);
 
     // Zero fill any hole.
     if (old_data_size < offset) {
@@ -434,7 +438,9 @@ int MemEntryImpl::InternalReadSparseData(int64_t offset,
   if (!InitSparseInfo())
     return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;
 
-  if (offset < 0 || buf_len < 0)
+  // Check that offset + buf_len does not overflow. This ensures that
+  // offset + io_buf->BytesConsumed() never overflows below.
+  if (offset < 0 || buf_len < 0 || !base::CheckAdd(offset, buf_len).IsValid())
     return net::ERR_INVALID_ARGUMENT;
 
   // We will keep using this buffer and adjust the offset in this buffer.
@@ -497,14 +503,16 @@ int MemEntryImpl::InternalWriteSparseData(int64_t offset,
   if (!backend_)
     return net::ERR_FAILED;
 
-  if (offset < 0 || buf_len < 0)
+  // Check that offset + buf_len does not overflow. This ensures that
+  // offset + io_buf->BytesConsumed() never overflows below.
+  if (offset < 0 || buf_len < 0 || !base::CheckAdd(offset, buf_len).IsValid())
     return net::ERR_INVALID_ARGUMENT;
 
   scoped_refptr<net::DrainableIOBuffer> io_buf =
       base::MakeRefCounted<net::DrainableIOBuffer>(buf, buf_len);
 
   // This loop walks through child entries continuously starting from |offset|
-  // and writes blocks of data (of maximum size kMaxSparseEntrySize) into each
+  // and writes blocks of data (of maximum size kMaxChildEntrySize) into each
   // child entry until all |buf_len| bytes are written. The write operation can
   // start in the middle of an entry.
   while (io_buf->BytesRemaining()) {
@@ -513,8 +521,8 @@ int MemEntryImpl::InternalWriteSparseData(int64_t offset,
 
     // Find the right amount to write, this evaluates the remaining bytes to
     // write and remaining capacity of this child entry.
-    int write_len = std::min(static_cast<int>(io_buf->BytesRemaining()),
-                             kMaxSparseEntrySize - child_offset);
+    int write_len =
+        std::min(io_buf->BytesRemaining(), kMaxChildEntrySize - child_offset);
 
     // Keep a record of the last byte position (exclusive) in the child.
     int data_size = child->GetDataSize(kSparseData);
@@ -566,6 +574,7 @@ int MemEntryImpl::InternalGetAvailableRange(int64_t offset,
   if (offset < 0 || len < 0 || !start)
     return net::ERR_INVALID_ARGUMENT;
 
+  // If offset + len overflows, this will just be the empty interval.
   net::Interval<int64_t> requested(offset, offset + len);
 
   // Find the first relevant child, if any --- may have to skip over
@@ -618,7 +627,7 @@ bool MemEntryImpl::InitSparseInfo() {
 
 MemEntryImpl* MemEntryImpl::GetChild(int64_t offset, bool create) {
   DCHECK_EQ(PARENT_ENTRY, type());
-  int index = ToChildIndex(offset);
+  int64_t index = ToChildIndex(offset);
   auto i = children_->find(index);
   if (i != children_->end())
     return i->second;
@@ -634,7 +643,7 @@ net::Interval<int64_t> MemEntryImpl::ChildInterval(
   // The valid range in child is [child_first_pos_, DataSize), since the child
   // entry ops just use standard disk_cache::Entry API, so DataSize is
   // not aware of any hole in the beginning.
-  int64_t child_responsibility_start = (i->first) * kMaxSparseEntrySize;
+  int64_t child_responsibility_start = (i->first) * kMaxChildEntrySize;
   return net::Interval<int64_t>(
       child_responsibility_start + child->child_first_pos_,
       child_responsibility_start + child->GetDataSize(kSparseData));

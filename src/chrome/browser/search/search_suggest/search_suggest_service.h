@@ -40,9 +40,7 @@ class SearchSuggestService : public KeyedService {
   // Virtual for testing.
   virtual const base::Optional<SearchSuggestData>& search_suggest_data() const;
 
-  const SearchSuggestLoader::Status& search_suggest_status() const {
-    return search_suggest_status_;
-  }
+  virtual const SearchSuggestLoader::Status& search_suggest_status() const;
 
   // Determines if a request for search suggestions should be made. If a request
   // should not be made immediately call SearchSuggestDataLoaded with the

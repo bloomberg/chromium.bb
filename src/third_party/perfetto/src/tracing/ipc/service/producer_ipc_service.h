@@ -55,9 +55,16 @@ class ProducerIPCService : public protos::ProducerPort {
                              DeferredUnregisterTraceWriterResponse) override;
   void CommitData(const protos::CommitDataRequest&,
                   DeferredCommitDataResponse) override;
+  void NotifyDataSourceStarted(
+      const protos::NotifyDataSourceStartedRequest&,
+      DeferredNotifyDataSourceStartedResponse) override;
   void NotifyDataSourceStopped(
       const protos::NotifyDataSourceStoppedRequest&,
       DeferredNotifyDataSourceStoppedResponse) override;
+
+  void ActivateTriggers(const protos::ActivateTriggersRequest&,
+                        DeferredActivateTriggersResponse) override;
+
   void GetAsyncCommand(const protos::GetAsyncCommandRequest&,
                        DeferredGetAsyncCommandResponse) override;
   void OnClientDisconnected() override;
@@ -109,7 +116,7 @@ class ProducerIPCService : public protos::ProducerPort {
   // |core_service_| business logic.
   std::map<ipc::ClientID, std::unique_ptr<RemoteProducer>> producers_;
 
-  base::WeakPtrFactory<ProducerIPCService> weak_ptr_factory_;
+  base::WeakPtrFactory<ProducerIPCService> weak_ptr_factory_;  // Keep last.
 };
 
 }  // namespace perfetto

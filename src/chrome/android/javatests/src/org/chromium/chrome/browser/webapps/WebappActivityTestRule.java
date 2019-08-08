@@ -16,16 +16,17 @@ import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Custom {@link ChromeActivityTestRule} for tests using {@link WebappActivity}.
@@ -108,35 +109,24 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
                 // ConcurrentModificationExceptions caused by multiple threads iterating and
                 // modifying its hashmap at the same time.
                 final TestFetchStorageCallback callback = new TestFetchStorageCallback();
-                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Register the webapp so when the data storage is opened, the test doesn't
-                        // crash.
-                        WebappRegistry.refreshSharedPrefsForTesting();
-                        WebappRegistry.getInstance().register(WEBAPP_ID, callback);
-                    }
+                TestThreadUtils.runOnUiThreadBlocking(() -> {
+                    // Register the webapp so when the data storage is opened, the test doesn't
+                    // crash.
+                    WebappRegistry.refreshSharedPrefsForTesting();
+                    WebappRegistry.getInstance().register(WEBAPP_ID, callback);
                 });
 
                 // Running this on the UI thread causes issues, so can't group everything into one
                 // runnable.
                 callback.waitForCallback(0);
 
-                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.getStorage().updateFromShortcutIntent(createIntent());
-                    }
-                });
+                TestThreadUtils.runOnUiThreadBlocking(
+                        () -> { callback.getStorage().updateFromShortcutIntent(createIntent()); });
 
                 base.evaluate();
 
-                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                    @Override
-                    public void run() {
-                        WebappRegistry.getInstance().clearForTesting();
-                    }
-                });
+                TestThreadUtils.runOnUiThreadBlocking(
+                        () -> { WebappRegistry.getInstance().clearForTesting(); });
             }
         };
 
@@ -158,14 +148,10 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
         waitUntilIdle();
     }
 
-    public static void assertToolbarShowState(
-            final ChromeActivity activity, final boolean showState) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertEquals(showState, activity.getActivityTab().canShowBrowserControls());
-            }
-        });
+    public static void assertToolbarShowState(ChromeActivity activity, boolean showState) {
+        Assert.assertEquals(showState,
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> TabBrowserControlsState.get(activity.getActivityTab()).canShow()));
     }
 
     /**

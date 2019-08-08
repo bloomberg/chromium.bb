@@ -48,7 +48,6 @@
 namespace blink {
 
 class DocumentMarkerList;
-class Node;
 class SuggestionMarkerProperties;
 
 class CORE_EXPORT DocumentMarkerController final
@@ -67,11 +66,11 @@ class CORE_EXPORT DocumentMarkerController final
   void AddTextMatchMarker(const EphemeralRange&, TextMatchMarker::MatchStatus);
   void AddCompositionMarker(const EphemeralRange&,
                             Color underline_color,
-                            ws::mojom::ImeTextSpanThickness,
+                            ui::mojom::ImeTextSpanThickness,
                             Color background_color);
   void AddActiveSuggestionMarker(const EphemeralRange&,
                                  Color underline_color,
-                                 ws::mojom::ImeTextSpanThickness,
+                                 ui::mojom::ImeTextSpanThickness,
                                  Color background_color);
   void AddSuggestionMarker(const EphemeralRange&,
                            const SuggestionMarkerProperties&);
@@ -135,7 +134,7 @@ class CORE_EXPORT DocumentMarkerController final
   // overlap with the specified range. Note that the range can be collapsed, in
   // in which case markers containing the position in their interiors are
   // returned.
-  HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>
+  HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>
   MarkersIntersectingRange(const EphemeralRangeInFlatTree&,
                            DocumentMarker::MarkerTypes);
   DocumentMarkerVector MarkersFor(

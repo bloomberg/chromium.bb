@@ -9,7 +9,7 @@ PASS customElements.define must throw a NotSupportedError when element definitio
 PASS customElements.define must check IsConstructor on the constructor before checking the element definition is running flag
 PASS customElements.define must validate the custom element name before checking the element definition is running flag
 PASS customElements.define unset the element definition is running flag before upgrading custom elements
-FAIL customElements.define must not throw when defining another custom element in a different global object during Get(constructor, "prototype") Failed to execute 'define' on 'CustomElementRegistry': this name has already been used with this registry
+FAIL customElements.define must not throw when defining another custom element in a different global object during Get(constructor, "prototype") Failed to execute 'define' on 'CustomElementRegistry': the name "another-custom-element" has already been used with this registry
 PASS Custom Elements: CustomElementRegistry interface
 FAIL customElements.define must get "prototype" property of the constructor assert_array_equals: lengths differ, expected 1 got 3
 PASS customElements.define must rethrow an exception thrown while getting "prototype" property of the constructor

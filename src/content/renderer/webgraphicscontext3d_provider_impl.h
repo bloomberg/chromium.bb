@@ -45,7 +45,6 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override;
   GrContext* GetGrContext() override;
-  gpu::SharedImageInterface* GetSharedImageInterface() const override;
   const gpu::Capabilities& GetCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   viz::GLHelper* GetGLHelper() override;

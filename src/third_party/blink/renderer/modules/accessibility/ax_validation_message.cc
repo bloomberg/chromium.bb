@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -116,19 +117,20 @@ String AXValidationMessage::TextAlternative(
   if (!form_control_element)
     return String();
 
-  String message = form_control_element->validationMessage();
+  StringBuilder message;
+  message.Append(form_control_element->validationMessage());
   if (form_control_element->ValidationSubMessage()) {
-    message.append(' ');
-    message.append(form_control_element->ValidationSubMessage());
+    message.Append(' ');
+    message.Append(form_control_element->ValidationSubMessage());
   }
 
   if (name_sources) {
     name_sources->push_back(NameSource(true));
     name_sources->back().type = ax::mojom::NameFrom::kContents;
-    name_sources->back().text = message;
+    name_sources->back().text = message.ToString();
   }
 
-  return message;
+  return message.ToString();
 }
 
 }  // namespace blink

@@ -17,10 +17,10 @@ namespace content {
 
 class ServiceWorkerVersion;
 
-class ServiceWorkerUpdateChecker {
+class CONTENT_EXPORT ServiceWorkerUpdateChecker {
  public:
   // Data of each compared script needed in remaining update process
-  struct ComparedScriptInfo {
+  struct CONTENT_EXPORT ComparedScriptInfo {
     ComparedScriptInfo();
     ComparedScriptInfo(
         int64_t old_resource_id,

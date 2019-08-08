@@ -22,6 +22,9 @@ import mock
 import process_perf_results as ppr_module
 
 
+UUID_SIZE = 36
+
+
 class _FakeLogdogStream(object):
 
   def write(self, data):
@@ -116,12 +119,65 @@ class ProcessPerfResultsIntegrationTest(unittest.TestCase):
                       "master:master.tryserver.chromium.perf",
                       "user_agent:cq"]}}"""
         })
+
+    output_results_dir = os.path.join(self.test_dir, 'outputresults')
+    os.mkdir(output_results_dir)
+
     return_code, benchmark_upload_result_map = ppr_module.process_perf_results(
         self.output_json, configuration_name='test-builder',
         service_account_file=self.service_account_file,
         build_properties=build_properties,
         task_output_dir=self.task_output_dir,
-        smoke_test_mode=False)
+        smoke_test_mode=False,
+        output_results_dir=output_results_dir)
+
+    # Output filenames are prefixed with a UUID. Strip it off.
+    output_results = {
+        filename[UUID_SIZE:]: os.stat(os.path.join(
+            output_results_dir, filename)).st_size
+        for filename in os.listdir(output_results_dir)}
+    self.assertEquals(32, len(output_results))
+
+    self.assertLess(10 << 10, output_results["power.desktop.reference"])
+    self.assertLess(10 << 10, output_results["blink_perf.image_decoder"])
+    self.assertLess(10 << 10, output_results["octane.reference"])
+    self.assertLess(10 << 10, output_results["power.desktop"])
+    self.assertLess(10 << 10, output_results["speedometer-future"])
+    self.assertLess(10 << 10, output_results["blink_perf.owp_storage"])
+    self.assertLess(10 << 10, output_results["memory.desktop"])
+    self.assertLess(10 << 10, output_results["wasm"])
+    self.assertLess(10 << 10, output_results[
+      "dummy_benchmark.histogram_benchmark_1"])
+    self.assertLess(10 << 10, output_results[
+      "dummy_benchmark.histogram_benchmark_1.reference"])
+    self.assertLess(10 << 10, output_results["wasm.reference"])
+    self.assertLess(10 << 10, output_results["speedometer"])
+    self.assertLess(10 << 10, output_results[
+      "memory.long_running_idle_gmail_tbmv2"])
+    self.assertLess(10 << 10, output_results["v8.runtime_stats.top_25"])
+    self.assertLess(1 << 10, output_results[
+      "dummy_benchmark.noisy_benchmark_1"])
+    self.assertLess(10 << 10, output_results["blink_perf.svg"])
+    self.assertLess(10 << 10, output_results[
+      "v8.runtime_stats.top_25.reference"])
+    self.assertLess(10 << 10, output_results["jetstream.reference"])
+    self.assertLess(10 << 10, output_results["jetstream"])
+    self.assertLess(10 << 10, output_results["speedometer2-future.reference"])
+    self.assertLess(10 << 10, output_results["blink_perf.svg.reference"])
+    self.assertLess(10 << 10, output_results[
+      "blink_perf.image_decoder.reference"])
+    self.assertLess(10 << 10, output_results["power.idle_platform.reference"])
+    self.assertLess(10 << 10, output_results["power.idle_platform"])
+    self.assertLess(1 << 10, output_results[
+      "dummy_benchmark.noisy_benchmark_1.reference"])
+    self.assertLess(10 << 10, output_results["speedometer-future.reference"])
+    self.assertLess(10 << 10, output_results[
+      "memory.long_running_idle_gmail_tbmv2.reference"])
+    self.assertLess(10 << 10, output_results["memory.desktop.reference"])
+    self.assertLess(10 << 10, output_results[
+      "blink_perf.owp_storage.reference"])
+    self.assertLess(10 << 10, output_results["octane"])
+    self.assertLess(10 << 10, output_results["speedometer.reference"])
 
     self.assertEquals(return_code, 1)
     self.assertEquals(benchmark_upload_result_map,

@@ -195,55 +195,36 @@ void GrContextPriv::flush(GrSurfaceProxy* proxy) {
     ASSERT_OWNED_PROXY_PRIV(proxy);
 
     fContext->drawingManager()->flush(proxy, SkSurface::BackendSurfaceAccess::kNoAccess,
-                                      SkSurface::kNone_FlushFlags, 0, nullptr);
+                                      GrFlushInfo());
 }
 
-void GrContextPriv::flushSurfaceWrites(GrSurfaceProxy* proxy) {
+void GrContextPriv::flushSurface(GrSurfaceProxy* proxy) {
     ASSERT_SINGLE_OWNER_PRIV
     RETURN_IF_ABANDONED_PRIV
     SkASSERT(proxy);
     ASSERT_OWNED_PROXY_PRIV(proxy);
-    if (proxy->priv().hasPendingWrite()) {
-        this->flush(proxy);
-    }
-}
-
-void GrContextPriv::flushSurfaceIO(GrSurfaceProxy* proxy) {
-    ASSERT_SINGLE_OWNER_PRIV
-    RETURN_IF_ABANDONED_PRIV
-    SkASSERT(proxy);
-    ASSERT_OWNED_PROXY_PRIV(proxy);
-    if (proxy->priv().hasPendingIO()) {
-        this->flush(proxy);
-    }
-}
-
-void GrContextPriv::prepareSurfaceForExternalIO(GrSurfaceProxy* proxy) {
-    ASSERT_SINGLE_OWNER_PRIV
-    RETURN_IF_ABANDONED_PRIV
-    SkASSERT(proxy);
-    ASSERT_OWNED_PROXY_PRIV(proxy);
-    fContext->drawingManager()->prepareSurfaceForExternalIO(proxy,
-            SkSurface::BackendSurfaceAccess::kNoAccess, SkSurface::kNone_FlushFlags, 0, nullptr);
+    fContext->drawingManager()->flushSurface(proxy,
+            SkSurface::BackendSurfaceAccess::kNoAccess, GrFlushInfo());
 }
 
 static bool valid_premul_color_type(GrColorType ct) {
     switch (ct) {
-        case GrColorType::kUnknown:      return false;
-        case GrColorType::kAlpha_8:      return false;
-        case GrColorType::kRGB_565:      return false;
-        case GrColorType::kABGR_4444:    return true;
-        case GrColorType::kRGBA_8888:    return true;
-        case GrColorType::kRGB_888x:     return false;
-        case GrColorType::kRG_88:        return false;
-        case GrColorType::kBGRA_8888:    return true;
-        case GrColorType::kRGBA_1010102: return true;
-        case GrColorType::kGray_8:       return false;
-        case GrColorType::kAlpha_F16:    return false;
-        case GrColorType::kRGBA_F16:     return true;
-        case GrColorType::kRG_F32:       return false;
-        case GrColorType::kRGBA_F32:     return true;
-        case GrColorType::kRGB_ETC1:     return false;
+        case GrColorType::kUnknown:          return false;
+        case GrColorType::kAlpha_8:          return false;
+        case GrColorType::kRGB_565:          return false;
+        case GrColorType::kABGR_4444:        return true;
+        case GrColorType::kRGBA_8888:        return true;
+        case GrColorType::kRGB_888x:         return false;
+        case GrColorType::kRG_88:            return false;
+        case GrColorType::kBGRA_8888:        return true;
+        case GrColorType::kRGBA_1010102:     return true;
+        case GrColorType::kGray_8:           return false;
+        case GrColorType::kAlpha_F16:        return false;
+        case GrColorType::kRGBA_F16:         return true;
+        case GrColorType::kRGBA_F16_Clamped: return true;
+        case GrColorType::kRG_F32:           return false;
+        case GrColorType::kRGBA_F32:         return true;
+        case GrColorType::kRGB_ETC1:         return false;
     }
     SK_ABORT("Invalid GrColorType");
     return false;
@@ -270,6 +251,7 @@ static bool valid_premul_config(GrPixelConfig config) {
         case kRG_float_GrPixelConfig:           return false;
         case kAlpha_half_GrPixelConfig:         return false;
         case kRGBA_half_GrPixelConfig:          return true;
+        case kRGBA_half_Clamped_GrPixelConfig:  return true;
         case kRGB_ETC1_GrPixelConfig:           return false;
         case kAlpha_8_as_Alpha_GrPixelConfig:   return false;
         case kAlpha_8_as_Red_GrPixelConfig:     return false;
@@ -302,17 +284,13 @@ bool GrContextPriv::readSurfacePixels(GrSurfaceContext* src, int left, int top, 
     ASSERT_OWNED_PROXY_PRIV(src->asSurfaceProxy());
     GR_CREATE_TRACE_MARKER_CONTEXT("GrContextPriv", "readSurfacePixels", fContext);
 
-    SkASSERT(!(pixelOpsFlags & kDontFlush_PixelOpsFlag));
-    if (pixelOpsFlags & kDontFlush_PixelOpsFlag) {
-        return false;
-    }
+    GrSurfaceProxy* srcProxy = src->asSurfaceProxy();
 
     // MDB TODO: delay this instantiation until later in the method
-    if (!src->asSurfaceProxy()->instantiate(this->resourceProvider())) {
+    if (!srcProxy->instantiate(this->resourceProvider())) {
         return false;
     }
 
-    GrSurfaceProxy* srcProxy = src->asSurfaceProxy();
     GrSurface* srcSurface = srcProxy->peekSurface();
 
     if (!GrSurfacePriv::AdjustReadPixelParams(srcSurface->width(), srcSurface->height(),
@@ -328,6 +306,9 @@ bool GrContextPriv::readSurfacePixels(GrSurfaceContext* src, int left, int top, 
         return false;
     }
 
+    bool needColorConversion =
+            SkColorSpaceXformSteps::Required(src->colorSpaceInfo().colorSpace(), dstColorSpace);
+
     // This is the getImageData equivalent to the canvas2D putImageData fast path. We probably don't
     // care so much about getImageData performance. However, in order to ensure putImageData/
     // getImageData in "legacy" mode are round-trippable we use the GPU to do the complementary
@@ -335,7 +316,7 @@ bool GrContextPriv::readSurfacePixels(GrSurfaceContext* src, int left, int top, 
     // fContext->vaildaPMUPMConversionExists()).
     bool canvas2DFastPath =
             unpremul &&
-            !src->colorSpaceInfo().colorSpace() &&
+            !needColorConversion &&
             (GrColorType::kRGBA_8888 == dstColorType || GrColorType::kBGRA_8888 == dstColorType) &&
             SkToBool(srcProxy->asTextureProxy()) &&
             (srcProxy->config() == kRGBA_8888_GrPixelConfig ||
@@ -346,8 +327,6 @@ bool GrContextPriv::readSurfacePixels(GrSurfaceContext* src, int left, int top, 
     if (!fContext->priv().caps()->surfaceSupportsReadPixels(srcSurface) ||
         canvas2DFastPath) {
         GrSurfaceDesc desc;
-        desc.fFlags = canvas2DFastPath ? kRenderTarget_GrSurfaceFlag : kNone_GrSurfaceFlags;
-        desc.fConfig = canvas2DFastPath ? kRGBA_8888_GrPixelConfig : srcProxy->config();
         desc.fWidth = width;
         desc.fHeight = height;
         desc.fSampleCnt = 1;
@@ -409,7 +388,7 @@ bool GrContextPriv::readSurfacePixels(GrSurfaceContext* src, int left, int top, 
                                        dstColorSpace, buffer, rowBytes, flags);
     }
 
-    bool convert = unpremul;
+    bool convert = unpremul || needColorConversion;
 
     bool flip = srcProxy->origin() == kBottomLeft_GrSurfaceOrigin;
     if (flip) {
@@ -419,12 +398,6 @@ bool GrContextPriv::readSurfacePixels(GrSurfaceContext* src, int left, int top, 
     GrColorType allowedColorType = fContext->priv().caps()->supportedReadPixelsColorType(
             srcProxy->config(), dstColorType);
     convert = convert || (dstColorType != allowedColorType);
-
-    if (!src->colorSpaceInfo().colorSpace()) {
-        // "Legacy" mode - no color space conversions.
-        dstColorSpace = nullptr;
-    }
-    convert = convert || !SkColorSpace::Equals(dstColorSpace, src->colorSpaceInfo().colorSpace());
 
     SkAutoPixmapStorage tempPixmap;
     SkPixmap finalPixmap;
@@ -458,9 +431,7 @@ bool GrContextPriv::readSurfacePixels(GrSurfaceContext* src, int left, int top, 
         sk_bzero(buffer, tempPixmap.computeByteSize());
     }
 
-    if (srcSurface->surfacePriv().hasPendingWrite()) {
-        this->flush(nullptr);  // MDB TODO: tighten this
-    }
+    this->flush(srcProxy);
 
     if (!fContext->fGpu->readPixels(srcSurface, left, top, width, height, allowedColorType, buffer,
                                     rowBytes)) {
@@ -501,11 +472,11 @@ bool GrContextPriv::writeSurfacePixels(GrSurfaceContext* dst, int left, int top,
         return false;
     }
 
-    if (!dst->asSurfaceProxy()->instantiate(this->resourceProvider())) {
+    GrSurfaceProxy* dstProxy = dst->asSurfaceProxy();
+    if (!dstProxy->instantiate(this->resourceProvider())) {
         return false;
     }
 
-    GrSurfaceProxy* dstProxy = dst->asSurfaceProxy();
     GrSurface* dstSurface = dstProxy->peekSurface();
 
     if (!GrSurfacePriv::AdjustWritePixelParams(dstSurface->width(), dstSurface->height(),
@@ -517,29 +488,24 @@ bool GrContextPriv::writeSurfacePixels(GrSurfaceContext* dst, int left, int top,
     // TODO: Make GrSurfaceContext know its alpha type and pass src buffer's alpha type.
     bool premul = SkToBool(kUnpremul_PixelOpsFlag & pixelOpsFlags);
 
+    bool needColorConversion =
+            SkColorSpaceXformSteps::Required(srcColorSpace, dst->colorSpaceInfo().colorSpace());
+
     // For canvas2D putImageData performance we have a special code path for unpremul RGBA_8888 srcs
     // that are premultiplied on the GPU. This is kept as narrow as possible for now.
     bool canvas2DFastPath =
             !fContext->priv().caps()->avoidWritePixelsFastPath() &&
             premul &&
-            !dst->colorSpaceInfo().colorSpace() &&
+            !needColorConversion &&
             (srcColorType == GrColorType::kRGBA_8888 || srcColorType == GrColorType::kBGRA_8888) &&
             SkToBool(dst->asRenderTargetContext()) &&
             (dstProxy->config() == kRGBA_8888_GrPixelConfig ||
              dstProxy->config() == kBGRA_8888_GrPixelConfig) &&
-            !(pixelOpsFlags & kDontFlush_PixelOpsFlag) &&
             fContext->priv().caps()->isConfigTexturable(kRGBA_8888_GrPixelConfig) &&
             fContext->validPMUPMConversionExists();
 
     const GrCaps* caps = this->caps();
-    if (!caps->surfaceSupportsWritePixels(dstSurface) ||
-        canvas2DFastPath) {
-        // We don't expect callers that are skipping flushes to require an intermediate draw.
-        SkASSERT(!(pixelOpsFlags & kDontFlush_PixelOpsFlag));
-        if (pixelOpsFlags & kDontFlush_PixelOpsFlag) {
-            return false;
-        }
-
+    if (!caps->surfaceSupportsWritePixels(dstSurface) || canvas2DFastPath) {
         GrSurfaceDesc desc;
         desc.fWidth = width;
         desc.fHeight = height;
@@ -593,13 +559,16 @@ bool GrContextPriv::writeSurfacePixels(GrSurfaceContext* dst, int left, int top,
             dst->asRenderTargetContext()->fillRectToRect(
                     GrNoClip(), std::move(paint), GrAA::kNo, SkMatrix::I(),
                     SkRect::MakeXYWH(left, top, width, height), SkRect::MakeWH(width, height));
-            return true;
         } else {
-            return dst->copy(tempProxy.get(), SkIRect::MakeWH(width, height), {left, top});
+            if (!dst->copy(tempProxy.get(), SkIRect::MakeWH(width, height), {left, top})) {
+                return false;
+            }
         }
+
+        return true;
     }
 
-    bool convert = premul;
+    bool convert = premul || needColorConversion;
 
     if (!valid_pixel_conversion(srcColorType, dstProxy->config(), premul)) {
         return false;
@@ -608,12 +577,6 @@ bool GrContextPriv::writeSurfacePixels(GrSurfaceContext* dst, int left, int top,
     GrColorType allowedColorType = fContext->priv().caps()->supportedWritePixelsColorType(
             dstProxy->config(), srcColorType);
     convert = convert || (srcColorType != allowedColorType);
-
-    if (!dst->colorSpaceInfo().colorSpace()) {
-        // "Legacy" mode - no color space conversions.
-        srcColorSpace = nullptr;
-    }
-    convert = convert || !SkColorSpace::Equals(srcColorSpace, dst->colorSpaceInfo().colorSpace());
 
     std::unique_ptr<char[]> tempBuffer;
     if (convert) {
@@ -664,9 +627,12 @@ bool GrContextPriv::writeSurfacePixels(GrSurfaceContext* dst, int left, int top,
         top = dstSurface->height() - top - height;
     }
 
-    if (!(kDontFlush_PixelOpsFlag & pixelOpsFlags) && dstSurface->surfacePriv().hasPendingIO()) {
-        this->flush(nullptr);  // MDB TODO: tighten this
-    }
+    // On platforms that prefer flushes over VRAM use (i.e., ANGLE) we're better off forcing a
+    // complete flush here. On platforms that prefer VRAM use over flushes we're better off
+    // giving the drawing manager the chance of skipping the flush (i.e., by passing in the
+    // destination proxy)
+    // TODO: should this policy decision just be moved into the drawing manager?
+    this->flush(caps->preferVRAMUseOverFlushes() ? dstProxy : nullptr);
 
     return this->getGpu()->writePixels(dstSurface, left, top, width, height, srcColorType, buffer,
                                        rowBytes);
@@ -797,4 +763,3 @@ void GrContextPriv::testingOnly_flushAndRemoveOnFlushCallbackObject(GrOnFlushCal
     fContext->drawingManager()->testingOnly_removeOnFlushCallbackObject(cb);
 }
 #endif
-

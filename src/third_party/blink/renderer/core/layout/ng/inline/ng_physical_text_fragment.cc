@@ -267,8 +267,6 @@ void NGPhysicalTextFragment::UpdateSelfInkOverflow() {
     ink_overflow.Expand(text_shadow_logical_outsets);
   }
 
-  ink_overflow = LayoutRect(EnclosingIntRect(ink_overflow));
-
   // Uniting the frame rect ensures that non-ink spaces such side bearings, or
   // even space characters, are included in the visual rect for decorations.
   NGPhysicalOffsetRect local_ink_overflow = ConvertToLocal(ink_overflow);
@@ -278,6 +276,7 @@ void NGPhysicalTextFragment::UpdateSelfInkOverflow() {
     return;
   }
   local_ink_overflow.Unite(local_rect);
+  local_ink_overflow.ExpandEdgesToPixelBoundaries();
   EnsureRareData()->self_ink_overflow_ = local_ink_overflow;
 }
 

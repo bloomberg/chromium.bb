@@ -104,7 +104,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
     if (layout_replaced_.StyleRef().Visibility() == EVisibility::kVisible) {
       if (layout_replaced_.HasBoxDecorationBackground())
         should_paint_background = true;
-      if (layout_replaced_.HasEffectiveWhitelistedTouchAction())
+      if (layout_replaced_.HasEffectiveAllowedTouchAction())
         should_paint_background = true;
     }
     if (should_paint_background) {

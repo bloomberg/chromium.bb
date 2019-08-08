@@ -34,17 +34,14 @@ class TabletModeWindowState : public wm::WindowState::State {
   TabletModeWindowState(aura::Window* window,
                         TabletModeWindowManager* creator,
                         bool snap,
-                        bool animate_bounds_on_attach);
+                        bool animate_bounds_on_attach,
+                        bool entering_tablet_mode);
   ~TabletModeWindowState() override;
 
   void set_ignore_wm_events(bool ignore) { ignore_wm_events_ = ignore; }
 
   // Leaves the tablet mode by reverting to previous state object.
-  void LeaveTabletMode(wm::WindowState* window_state);
-
-  // Sets whether to ignore bounds updates. If set to false, immediately does a
-  // bounds update as the current window bounds may no longer be correct.
-  void SetDeferBoundsUpdates(bool defer_bounds_updates);
+  void LeaveTabletMode(wm::WindowState* window_state, bool was_in_overview);
 
   // WindowState::State overrides:
   void OnWMEvent(wm::WindowState* window_state,
@@ -55,13 +52,9 @@ class TabletModeWindowState : public wm::WindowState::State {
                    wm::WindowState::State* previous_state) override;
   void DetachState(wm::WindowState* window_state) override;
 
-  void set_use_zero_animation_type(bool use_zero_animation_type) {
-    use_zero_animation_type_ = use_zero_animation_type;
-  }
+  wm::WindowState::State* old_state() { return old_state_.get(); }
 
  private:
-  friend class TabletModeControllerTestApi;
-
   // Updates the window to |new_state_type| and resulting bounds:
   // Either full screen, maximized centered or minimized. If the state does not
   // change, only the bounds will be changed. If |animate| is set, the bound
@@ -87,6 +80,9 @@ class TabletModeWindowState : public wm::WindowState::State {
   // window state. If |animated| is set we animate the change.
   void UpdateBounds(wm::WindowState* window_state, bool animated);
 
+  // True if |window| is the top window in BuildWindowForCycleList.
+  bool IsTopWindow(aura::Window* window);
+
   // The original state object of the window.
   std::unique_ptr<wm::WindowState::State> old_state_;
 
@@ -108,13 +104,6 @@ class TabletModeWindowState : public wm::WindowState::State {
   // The current state type. Due to the nature of this state, this can only be
   // WM_STATE_TYPE{NORMAL, MINIMIZED, MAXIMIZED}.
   mojom::WindowStateType current_state_type_;
-
-  // If true, do not update bounds.
-  bool defer_bounds_updates_ = false;
-
-  // If true, the animation type will be set to ZERO, which means the bounds
-  // will be updated at the end of the animation.
-  bool use_zero_animation_type_ = false;
 
   // If true, the state will not process events.
   bool ignore_wm_events_ = false;

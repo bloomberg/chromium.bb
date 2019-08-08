@@ -239,11 +239,8 @@ if (target_os == "android") {
   assert(host_os == "mac", "Mac cross-compiles are unsupported.")
   _default_toolchain = host_toolchain
 } else if (target_os == "win") {
-  # On Windows we use the same toolchain for host and target by default.
+  # On Windows, we use the same toolchain for host and target by default.
   # Beware, win cross builds have some caveats, see docs/win_cross.md
-  # TODO(thakis): See if we want to make 32-bit builds on mac hosts work.
-  assert(host_os != "mac" || target_cpu == "x64",
-         "Mac hosts can only build 64-bit chrome/win, https://crbug.com/794838")
   if (is_clang) {
     _default_toolchain = "//build/toolchain/win:win_clang_$target_cpu"
   } else {
@@ -450,7 +447,6 @@ if (is_win) {
     "//build/config/win:nominmax",
     "//build/config/win:unicode",
     "//build/config/win:winver",
-    "//build/config/win:vs_code_analysis",
   ]
 }
 
@@ -520,6 +516,13 @@ default_executable_configs = default_compiler_configs + [
                                "//build/config:default_libs",
                                "//build/config:executable_config",
                              ] + _linker_configs
+
+if (is_win) {
+  # Currently only turn on linker CFI for executables, and position it so it can
+  # be removed when needed.
+  default_executable_configs += [ "//build/config/win:cfi_linker" ]
+}
+
 set_defaults("executable") {
   configs = default_executable_configs
 }

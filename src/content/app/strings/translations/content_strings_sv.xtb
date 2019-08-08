@@ -176,7 +176,9 @@
 <translation id="6941933287844615239">ladda ned media</translation>
 <translation id="6981594929165378967">infogning</translation>
 <translation id="6989848892321993519">Lägg till minst <ph name="MIN_CHARACTERS" /> tecken (för närvarande har du angett 1 tecken).</translation>
+<translation id="7033340931668032222">ändra volym med uppåt och nedåt</translation>
 <translation id="709897737746224366">Matcha det format som anges.</translation>
+<translation id="7118469954320184356">Det finns ingen tillgänglig beskrivning.</translation>
 <translation id="7139483182332611405">företal</translation>
 <translation id="7263440858009898357">Välj ett alternativ i listan.</translation>
 <translation id="727747134524199931">kolumnrubrik</translation>
@@ -226,6 +228,7 @@
 <translation id="8550857728288566671">grafisk symbol</translation>
 <translation id="8583702881314752957">definitionslista</translation>
 <translation id="8597182159515967513">rubrik</translation>
+<translation id="8603553056539299761">sök med vänster och höger</translation>
 <translation id="860475260694818407">innehållsförteckning</translation>
 <translation id="8613126697340063924">styra fjärruppspelning</translation>
 <translation id="862370744433916922">undertext</translation>

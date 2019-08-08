@@ -13,10 +13,9 @@
 #include "content/public/browser/notification_service.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/system/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_policy_controller.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
 #endif
 
@@ -53,7 +52,8 @@ void NotifyAndTerminate(bool fast_path, RebootPolicy reboot_policy) {
   if (chromeos::PowerPolicyController::IsInitialized())
     chromeos::PowerPolicyController::Get()->NotifyChromeIsExiting();
 
-  if (base::SysInfo::IsRunningOnChromeOS()) {
+  if (chromeos::DBusThreadManager::IsInitialized() &&
+      !chromeos::DBusThreadManager::Get()->IsUsingFakes()) {
     // If we're on a ChromeOS device, reboot if an update has been applied,
     // or else signal the session manager to log out.
     chromeos::UpdateEngineClient* update_engine_client =
@@ -65,9 +65,7 @@ void NotifyAndTerminate(bool fast_path, RebootPolicy reboot_policy) {
     } else if (chrome::IsAttemptingShutdown()) {
       // Don't ask SessionManager to stop session if the shutdown request comes
       // from session manager.
-      chromeos::DBusThreadManager::Get()
-          ->GetSessionManagerClient()
-          ->StopSession();
+      chromeos::SessionManagerClient::Get()->StopSession();
     }
   } else {
     if (chrome::IsAttemptingShutdown()) {

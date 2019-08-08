@@ -111,7 +111,7 @@ const char LevelDBSiteCharacteristicsDatabase::kDbMetadataKey[] =
     "database_metadata";
 
 // Helper class used to run all the blocking operations posted by
-// LocalSiteCharacteristicDatabase on a TaskScheduler sequence with the
+// LocalSiteCharacteristicDatabase on a ThreadPool sequence with the
 // |MayBlock()| trait.
 //
 // Instances of this class should only be destructed once all the posted tasks

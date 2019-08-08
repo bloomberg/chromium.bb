@@ -83,8 +83,10 @@
     "includes": [11000],
     "structures": [12000],
   },
+  "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
+    "structures": [12040],
+  },
   "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
-    "includes": [12040],
     "structures": [12045],
   },
   "chrome/browser/resources/component_extension_resources.grd": {
@@ -97,10 +99,10 @@
   "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
     "includes": [12440],
   },
-  "chrome/browser/resources/md_extensions/extensions_resources_vulcanized.grd": {
+  "chrome/browser/resources/extensions/extensions_resources_vulcanized.grd": {
     "includes": [12500],
   },
-  "chrome/browser/resources/md_extensions/extensions_resources.grd": {
+  "chrome/browser/resources/extensions/extensions_resources.grd": {
     "structures": [12510],
   },
   "chrome/browser/resources/net_internals/net_internals_resources.grd": {
@@ -115,53 +117,59 @@
   "chrome/browser/resources/quota_internals/quota_internals_resources.grd": {
     "includes": [12810],
   },
-  "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
+  "chrome/browser/resources/settings/os_settings_resources_vulcanized.grd": {
     "includes": [12830],
   },
-  "chrome/browser/resources/settings/settings_resources.grd": {
+  "chrome/browser/resources/settings/os_settings_resources.grd": {
     "structures": [12840],
   },
-  "chrome/browser/resources/sync_file_system_internals/sync_file_system_internals_resources.grd": {
+  "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
     "includes": [13340],
   },
+  "chrome/browser/resources/settings/settings_resources.grd": {
+    "structures": [13350],
+  },
+  "chrome/browser/resources/sync_file_system_internals/sync_file_system_internals_resources.grd": {
+    "includes": [13850],
+  },
   "chrome/browser/resources/translate_internals/translate_internals_resources.grd": {
-    "includes": [13370],
+    "includes": [13880],
   },
   "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
-    "includes": [13380],
+    "includes": [13890],
   },
   "chrome/browser/resources/welcome/onboarding_welcome/onboarding_welcome_resources.grd": {
-    "includes": [13390],
-    "structures": [13440],
+    "includes": [13900],
+    "structures": [13950],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [13480],
+    "includes": [13990],
   },
   # END chrome/browser section.
 
   # START chrome/ miscellaneous section.
   "chrome/common/common_resources.grd": {
-    "includes": [13650],
+    "includes": [14160],
   },
   "chrome/credential_provider/gaiacp/gaia_resources.grd": {
-    "includes": [13670],
-    "messages": [13680],
+    "includes": [14180],
+    "messages": [14190],
   },
   "chrome/renderer/resources/renderer_resources.grd": {
-    "includes": [13720],
-    "structures": [13830],
+    "includes": [14230],
+    "structures": [14340],
   },
   "chrome/test/data/webui_test_resources.grd": {
-    "includes": [13870],
+    "includes": [14380],
   },
   # END chrome/ miscellaneous section.
 
   # START chromeos/ section.
   "chromeos/chromeos_strings.grd": {
-    "messages": [14000],
+    "messages": [14510],
   },
   "chromeos/resources/chromeos_resources.grd": {
-    "includes": [14050],
+    "includes": [14560],
   },
   # END chromeos/ section.
 
@@ -369,6 +377,9 @@
   },
   "third_party/blink/public/blink_resources.grd": {
     "includes": [25500],
+  },
+  "third_party/blink/renderer/modules/media_controls/touchless/resources/media_controls_touchless_resources.grd": {
+    "structures": [25590],
   },
   "third_party/blink/renderer/modules/media_controls/resources/media_controls_resources.grd": {
     "includes": [25600],

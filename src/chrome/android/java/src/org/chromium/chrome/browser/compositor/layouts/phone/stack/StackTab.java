@@ -90,6 +90,18 @@ public class StackTab implements ChromeAnimation.Animatable {
 
     private LayoutTab mLayoutTab;
 
+    public static final FloatProperty<StackTab> SCALE = new FloatProperty<StackTab>("SCALE") {
+        @Override
+        public void setValue(StackTab layoutTab, float v) {
+            layoutTab.setScale(v);
+        }
+
+        @Override
+        public Float get(StackTab layoutTab) {
+            return layoutTab.getScale();
+        }
+    };
+
     public static final FloatProperty<StackTab> SCROLL_OFFSET =
             new FloatProperty<StackTab>("SCROLL_OFFSET") {
                 @Override
@@ -100,6 +112,58 @@ public class StackTab implements ChromeAnimation.Animatable {
                 @Override
                 public Float get(StackTab layoutTab) {
                     return layoutTab.getScrollOffset();
+                }
+            };
+
+    public static final FloatProperty<StackTab> X_IN_STACK_INFLUENCE =
+            new FloatProperty<StackTab>("X_IN_STACK_INFLUENCE") {
+                @Override
+                public void setValue(StackTab layoutTab, float v) {
+                    layoutTab.setXInStackInfluence(v);
+                }
+
+                @Override
+                public Float get(StackTab layoutTab) {
+                    return layoutTab.getXInStackInfluence();
+                }
+            };
+
+    public static final FloatProperty<StackTab> X_IN_STACK_OFFSET =
+            new FloatProperty<StackTab>("X_IN_STACK_OFFSET") {
+                @Override
+                public void setValue(StackTab layoutTab, float v) {
+                    layoutTab.setXInStackOffset(v);
+                }
+
+                @Override
+                public Float get(StackTab layoutTab) {
+                    return layoutTab.getXInStackOffset();
+                }
+            };
+
+    public static final FloatProperty<StackTab> Y_IN_STACK_INFLUENCE =
+            new FloatProperty<StackTab>("Y_IN_STACK_INFLUENCE") {
+                @Override
+                public void setValue(StackTab layoutTab, float v) {
+                    layoutTab.setYInStackInfluence(v);
+                }
+
+                @Override
+                public Float get(StackTab layoutTab) {
+                    return layoutTab.getYInStackInfluence();
+                }
+            };
+
+    public static final FloatProperty<StackTab> Y_IN_STACK_OFFSET =
+            new FloatProperty<StackTab>("Y_IN_STACK_OFFSET") {
+                @Override
+                public void setValue(StackTab layoutTab, float v) {
+                    layoutTab.setYInStackOffset(v);
+                }
+
+                @Override
+                public Float get(StackTab layoutTab) {
+                    return layoutTab.getYInStackOffset();
                 }
             };
 

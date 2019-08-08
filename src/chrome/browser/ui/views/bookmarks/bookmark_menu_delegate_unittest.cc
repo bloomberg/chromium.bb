@@ -94,11 +94,10 @@ class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
   void LoadAllMenus(views::MenuItemView* menu) {
     EXPECT_EQ(views::MenuItemView::SUBMENU, menu->GetType());
 
-    for (int i = 0; i < menu->GetSubmenu()->GetMenuItemCount(); ++i) {
-      views::MenuItemView* child = menu->GetSubmenu()->GetMenuItemAt(i);
-      if (child->GetType() == views::MenuItemView::SUBMENU) {
-        bookmark_menu_delegate_->WillShowMenu(child);
-        LoadAllMenus(child);
+    for (views::MenuItemView* item : menu->GetSubmenu()->GetMenuItems()) {
+      if (item->GetType() == views::MenuItemView::SUBMENU) {
+        bookmark_menu_delegate_->WillShowMenu(item);
+        LoadAllMenus(item);
       }
     }
   }
@@ -144,18 +143,18 @@ TEST_F(BookmarkMenuDelegateTest, VerifyLazyLoad) {
   NewAndInitDelegateForPermanent();
   views::MenuItemView* root_item = bookmark_menu_delegate_->menu();
   ASSERT_TRUE(root_item->HasSubmenu());
-  EXPECT_EQ(4, root_item->GetSubmenu()->GetMenuItemCount());
-  EXPECT_EQ(5, root_item->GetSubmenu()->child_count());  // Includes separator.
+  EXPECT_EQ(4u, root_item->GetSubmenu()->GetMenuItems().size());
+  EXPECT_EQ(5u, root_item->GetSubmenu()->children().size());  // + separator
   views::MenuItemView* f1_item = root_item->GetSubmenu()->GetMenuItemAt(1);
   ASSERT_TRUE(f1_item->HasSubmenu());
   // f1 hasn't been loaded yet.
-  EXPECT_EQ(0, f1_item->GetSubmenu()->GetMenuItemCount());
+  EXPECT_EQ(0u, f1_item->GetSubmenu()->GetMenuItems().size());
   // Will show triggers a load.
   int next_id_before_load = next_menu_id();
   bookmark_menu_delegate_->WillShowMenu(f1_item);
   // f1 should have loaded its children.
   EXPECT_EQ(next_id_before_load + 2, next_menu_id());
-  ASSERT_EQ(2, f1_item->GetSubmenu()->GetMenuItemCount());
+  ASSERT_EQ(2u, f1_item->GetSubmenu()->GetMenuItems().size());
   const BookmarkNode* f1_node = model_->bookmark_bar_node()->GetChild(1);
   EXPECT_EQ(f1_node->GetChild(0),
             GetNodeForMenuItem(f1_item->GetSubmenu()->GetMenuItemAt(0)));
@@ -165,7 +164,7 @@ TEST_F(BookmarkMenuDelegateTest, VerifyLazyLoad) {
   // F11 shouldn't have loaded yet.
   views::MenuItemView* f11_item = f1_item->GetSubmenu()->GetMenuItemAt(1);
   ASSERT_TRUE(f11_item->HasSubmenu());
-  EXPECT_EQ(0, f11_item->GetSubmenu()->GetMenuItemCount());
+  EXPECT_EQ(0u, f11_item->GetSubmenu()->GetMenuItems().size());
 
   next_id_before_load = next_menu_id();
   bookmark_menu_delegate_->WillShowMenu(f11_item);
@@ -175,7 +174,7 @@ TEST_F(BookmarkMenuDelegateTest, VerifyLazyLoad) {
   // F11 should have loaded its single child (f11a).
   EXPECT_EQ(next_id_before_load + 1, next_menu_id());
 
-  ASSERT_EQ(1, f11_item->GetSubmenu()->GetMenuItemCount());
+  ASSERT_EQ(1u, f11_item->GetSubmenu()->GetMenuItems().size());
   const BookmarkNode* f11_node = f1_node->GetChild(1);
   EXPECT_EQ(f11_node->GetChild(0),
             GetNodeForMenuItem(f11_item->GetSubmenu()->GetMenuItemAt(0)));

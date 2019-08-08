@@ -19,10 +19,11 @@ void FakePageTimingSender::SendTiming(
     const mojom::PageLoadMetadataPtr& metadata,
     mojom::PageLoadFeaturesPtr new_features,
     std::vector<mojom::ResourceDataUpdatePtr> resources,
-    const mojom::PageRenderData& render_data,
-    const mojom::CpuTimingPtr& cpu_timing) {
+    const mojom::FrameRenderDataUpdate& render_data,
+    const mojom::CpuTimingPtr& cpu_timing,
+    mojom::DeferredResourceCountsPtr new_deferred_resource_data) {
   validator_->UpdateTiming(timing, metadata, new_features, resources,
-                           render_data, cpu_timing);
+                           render_data, cpu_timing, new_deferred_resource_data);
 }
 
 FakePageTimingSender::PageTimingValidator::PageTimingValidator() {}
@@ -113,8 +114,8 @@ void FakePageTimingSender::PageTimingValidator::VerifyExpectedCssProperties()
 
 void FakePageTimingSender::PageTimingValidator::VerifyExpectedRenderData()
     const {
-  EXPECT_FLOAT_EQ(expected_render_data_.layout_jank_score,
-                  actual_render_data_.layout_jank_score);
+  EXPECT_FLOAT_EQ(expected_render_data_.layout_jank_delta,
+                  actual_render_data_.layout_jank_delta);
 }
 
 void FakePageTimingSender::PageTimingValidator::UpdateTiming(
@@ -122,8 +123,9 @@ void FakePageTimingSender::PageTimingValidator::UpdateTiming(
     const mojom::PageLoadMetadataPtr& metadata,
     const mojom::PageLoadFeaturesPtr& new_features,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-    const mojom::PageRenderData& render_data,
-    const mojom::CpuTimingPtr& cpu_timing) {
+    const mojom::FrameRenderDataUpdate& render_data,
+    const mojom::CpuTimingPtr& cpu_timing,
+    const mojom::DeferredResourceCountsPtr& new_deferred_resource_data) {
   actual_timings_.push_back(timing.Clone());
   if (!cpu_timing->task_time.is_zero()) {
     actual_cpu_timings_.push_back(cpu_timing.Clone());
@@ -140,7 +142,7 @@ void FakePageTimingSender::PageTimingValidator::UpdateTiming(
         << "has been sent more than once";
     actual_css_properties_.insert(css_property_id);
   }
-  actual_render_data_.layout_jank_score = render_data.layout_jank_score;
+  actual_render_data_.layout_jank_delta = render_data.layout_jank_delta;
   VerifyExpectedTimings();
   VerifyExpectedCpuTimings();
   VerifyExpectedFeatures();

@@ -34,12 +34,6 @@ class TextureRef : public base::RefCounted<TextureRef> {
   gfx::GpuMemoryBufferHandle ExportGpuMemoryBufferHandle() const;
   scoped_refptr<VideoFrame> ExportVideoFrame(gfx::Rect visible_rect) const;
 
-  // Return true if contains data in a buffer and format directly mappable and
-  // readable (e.g. not tiled), without a need to first format convert it.
-  // TODO(crbug.com/900865): Remove this once it is doable to get tiled
-  // information in media::VideoFrame.
-  bool IsDirectlyMappable() const;
-
   int32_t texture_id() const { return texture_id_; }
 
  private:

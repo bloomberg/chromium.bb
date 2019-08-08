@@ -60,11 +60,7 @@ class LayoutMultiColumnSpannerPlaceholder;
 class LayoutRubyRun;
 class MarginInfo;
 class NGBlockBreakToken;
-class NGBreakToken;
-class NGConstraintSpace;
-class NGLayoutResult;
 class NGOffsetMapping;
-class NGPaintFragment;
 class NGPhysicalFragment;
 
 struct NGInlineNodeData;
@@ -105,7 +101,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   ~LayoutBlockFlow() override;
 
   static LayoutBlockFlow* CreateAnonymous(Document*,
-                                          scoped_refptr<ComputedStyle>);
+                                          scoped_refptr<ComputedStyle>,
+                                          LegacyLayout);
   bool BeingDestroyed() const { return being_destroyed_; }
 
   bool IsLayoutBlockFlow() const final { return true; }
@@ -361,7 +358,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   void PositionSpannerDescendant(LayoutMultiColumnSpannerPlaceholder& child);
 
   bool CreatesNewFormattingContext() const override;
-  bool AvoidsFloats() const final;
 
   using LayoutBoxModelObject::MoveChildrenTo;
   void MoveChildrenTo(LayoutBoxModelObject* to_box_model_object,
@@ -458,11 +454,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   virtual void ResetNGInlineNodeData() {}
   virtual void ClearNGInlineNodeData() {}
   virtual bool HasNGInlineNodeData() const { return false; }
-  virtual NGPaintFragment* PaintFragment() const { return nullptr; }
-  virtual scoped_refptr<const NGLayoutResult> CachedLayoutResult(
-      const NGConstraintSpace&,
-      const NGBreakToken*);
-  virtual bool AreCachedLinesValidFor(const NGConstraintSpace&) const;
   virtual void WillCollectInlines() {}
   virtual void SetPaintFragment(const NGBlockBreakToken*,
                                 scoped_refptr<const NGPhysicalFragment>);
@@ -634,17 +625,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
         marking_behaviour == kMarkContainerChain);
   }
 
-  bool IsPagedOverflow(const ComputedStyle&);
-
-  enum FlowThreadType {
-    kNoFlowThread,
-    kMultiColumnFlowThread,
-    kPagedFlowThread
-  };
-
-  FlowThreadType GetFlowThreadType(const ComputedStyle&);
-
-  LayoutMultiColumnFlowThread* CreateMultiColumnFlowThread(FlowThreadType);
   void CreateOrDestroyMultiColumnFlowThreadIfNeeded(
       const ComputedStyle* old_style);
 
@@ -1051,6 +1031,13 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBlockFlow, IsLayoutBlockFlow());
+
+template <>
+struct DowncastTraits<LayoutBlockFlow> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsLayoutBlockFlow();
+  }
+};
 
 }  // namespace blink
 

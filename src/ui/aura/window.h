@@ -128,7 +128,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
     kMaxValue = HIDDEN,
   };
 
-  typedef std::vector<Window*> Windows;
+  using Windows = std::vector<Window*>;
 
   explicit Window(WindowDelegate* delegate,
                   client::WindowType type = client::WINDOW_TYPE_UNKNOWN,
@@ -255,6 +255,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Returns the target bounds of the window. If the window's layer is
   // not animating, it simply returns the current bounds.
   gfx::Rect GetTargetBounds() const;
+
+  // Forwards directly to the layer. See Layer::ScheduleDraw() for details.
+  void ScheduleDraw();
 
   // Marks the a portion of window as needing to be painted.
   void SchedulePaintInRect(const gfx::Rect& rect);
@@ -390,6 +393,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Overridden from ui::LayerDelegate:
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override;
+  void UpdateVisualState() override;
 
   // Overridden from ui::LayerOwner:
   std::unique_ptr<ui::Layer> RecreateLayer() override;
@@ -468,14 +472,18 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // ui::GestureConsumer:
   bool RequiresDoubleTapGestureEvents() const override;
 
+  // Returns |state| as a string. This is generally only useful for debugging.
+  static const char* OcclusionStateToString(OcclusionState state);
+
  protected:
   // Deletes (or removes if not owned by parent) all child windows. Intended for
   // use from the destructor.
   void RemoveOrDestroyChildren();
 
   // Overrides from ui::PropertyHandler
-  std::unique_ptr<ui::PropertyData> BeforePropertyChange(const void* key)
-      override;
+  std::unique_ptr<ui::PropertyData> BeforePropertyChange(
+      const void* key,
+      bool is_value_changing) override;
   void AfterPropertyChange(const void* key,
                            int64_t old_value,
                            std::unique_ptr<ui::PropertyData> data) override;

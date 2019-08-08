@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -30,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -177,13 +179,41 @@ class ByteCodeProcessor {
             throw new RuntimeException(ioException);
         }
 
-        if (sValidator.getNumClassPathErrors() > 0) {
-            System.err.println("Missing " + sValidator.getNumClassPathErrors()
-                    + " classes missing in direct classpath. To fix, add GN deps for:");
-            for (String s : sValidator.getClassPathMissingJars()) {
-                System.err.println(s);
+        if (sValidator.hasErrors()) {
+            System.err.println("Direct classpath is incomplete. To fix, add deps on the "
+                    + "GN target(s) that provide:");
+            for (Map.Entry<String, Map<String, Set<String>>> entry :
+                    sValidator.getErrors().entrySet()) {
+                printValidationError(System.err, entry.getKey(), entry.getValue());
             }
             System.exit(1);
+        }
+    }
+
+    private static void printValidationError(
+            PrintStream out, String jarName, Map<String, Set<String>> missingClasses) {
+        out.print(" * ");
+        out.println(jarName);
+        int i = 0;
+        final int numErrorsPerJar = 2;
+        // The list of missing classes is non-exhaustive because each class that fails to validate
+        // reports only the first missing class.
+        for (Map.Entry<String, Set<String>> entry : missingClasses.entrySet()) {
+            String missingClass = entry.getKey();
+            Set<String> filesThatNeededIt = entry.getValue();
+            out.print("     * ");
+            if (i == numErrorsPerJar) {
+                out.print(String.format("And %d more...", missingClasses.size() - numErrorsPerJar));
+                break;
+            }
+            out.print(missingClass.replace('/', '.'));
+            out.print(" (needed by ");
+            out.print(filesThatNeededIt.iterator().next().replace('/', '.'));
+            if (filesThatNeededIt.size() > 1) {
+                out.print(String.format(" and %d more", filesThatNeededIt.size() - 1));
+            }
+            out.println(")");
+            i++;
         }
     }
 

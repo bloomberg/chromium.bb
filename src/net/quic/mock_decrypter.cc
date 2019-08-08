@@ -4,8 +4,8 @@
 
 #include "net/quic/mock_decrypter.h"
 
-#include "net/third_party/quic/core/quic_utils.h"
-#include "net/third_party/quic/platform/api/quic_bug_tracker.h"
+#include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 
 using quic::DiversificationNonce;
 using quic::Perspective;
@@ -19,6 +19,15 @@ MockDecrypter::MockDecrypter(Perspective perspective) {}
 
 bool MockDecrypter::SetKey(QuicStringPiece key) {
   return key.empty();
+}
+
+bool MockDecrypter::SetHeaderProtectionKey(QuicStringPiece key) {
+  return key.empty();
+}
+
+std::string MockDecrypter::GenerateHeaderProtectionMask(
+    quic::QuicDataReader* sample_reader) {
+  return std::string(5, 0);
 }
 
 bool MockDecrypter::SetNoncePrefix(QuicStringPiece nonce_prefix) {

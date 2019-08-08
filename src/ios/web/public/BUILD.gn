@@ -6,6 +6,7 @@ import("//ios/build/config.gni")
 
 source_set("public") {
   public_deps = [
+    ":referrer",
     ":user_agent",
     "//net",
     "//services/network/public/cpp",
@@ -13,12 +14,12 @@ source_set("public") {
   ]
 
   deps = [
+    "//ios/web/common",
     "//services/service_manager/public/cpp",
     "//ui/base",
   ]
 
   sources = [
-    "block_types.h",
     "browser_state.h",
     "browser_url_rewriter.h",
     "browsing_data_removing_util.h",
@@ -33,7 +34,6 @@ source_set("public") {
     "favicon_status.h",
     "favicon_url.cc",
     "favicon_url.h",
-    "features.h",
     "interstitials/web_interstitial.h",
     "interstitials/web_interstitial_delegate.h",
     "java_script_dialog_callback.h",
@@ -45,9 +45,6 @@ source_set("public") {
     "navigation_manager.h",
     "origin_util.h",
     "origin_util.mm",
-    "referrer.h",
-    "referrer_util.cc",
-    "referrer_util.h",
     "reload_type.h",
     "security_style.h",
     "serializable_user_data_manager.h",
@@ -59,7 +56,6 @@ source_set("public") {
     "url_scheme_util.h",
     "url_schemes.h",
     "url_schemes.mm",
-    "url_util.h",
     "web_client.h",
     "web_state/context_menu_params.h",
     "web_state/global_web_state_observer.h",
@@ -70,11 +66,9 @@ source_set("public") {
     "web_state/page_display_state.h",
     "web_state/page_display_state.mm",
     "web_state/session_certificate_policy_cache.h",
-    "web_state/ui/crw_content_view.h",
     "web_state/ui/crw_context_menu_delegate.h",
     "web_state/ui/crw_native_content.h",
     "web_state/ui/crw_native_content_provider.h",
-    "web_state/ui/crw_web_view_content_view.h",
     "web_state/ui/crw_web_view_proxy.h",
     "web_state/ui/crw_web_view_scroll_view_proxy.h",
     "web_state/url_verification_constants.h",
@@ -120,6 +114,19 @@ source_set("user_agent") {
   sources = [
     "user_agent.h",
     "user_agent.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("referrer") {
+  deps = [
+    "//base",
+    "//url",
+  ]
+
+  sources = [
+    "referrer.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

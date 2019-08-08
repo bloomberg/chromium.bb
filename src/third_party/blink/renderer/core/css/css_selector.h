@@ -226,6 +226,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoFullScreen,
     kPseudoFullScreenAncestor,
     kPseudoFullscreen,
+    kPseudoPictureInPicture,
     kPseudoInRange,
     kPseudoOutOfRange,
     // Pseudo elements in UA ShadowRoots. Available in any stylesheets.

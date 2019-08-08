@@ -52,10 +52,10 @@ class TestLoginScreen : public ash::mojom::LoginScreen {
                                    bool successful) override;
   void SetAvatarForUser(const AccountId& account_id,
                         ::ash::mojom::UserAvatarPtr avatar) override;
-  void SetAuthEnabledForUser(
+  void EnableAuthForUser(const AccountId& account_id) override;
+  void DisableAuthForUser(
       const AccountId& account_id,
-      bool is_enabled,
-      base::Optional<base::Time> auth_reenabled_time) override;
+      ash::mojom::AuthDisabledDataPtr auth_disabled_data) override;
   void HandleFocusLeavingLockScreenApps(bool reverse) override;
   void SetSystemInfo(bool show_if_hidden,
                      const std::string& os_version_label_text,
@@ -74,8 +74,8 @@ class TestLoginScreen : public ash::mojom::LoginScreen {
       std::vector<::ash::mojom::InputMethodItemPtr> keyboard_layouts) override;
   void SetPublicSessionShowFullManagementDisclosure(
       bool show_full_management_disclosure) override;
-  void SetKioskApps(
-      std::vector<::ash::mojom::KioskAppInfoPtr> kiosk_apps) override;
+  void SetKioskApps(std::vector<::ash::mojom::KioskAppInfoPtr> kiosk_apps,
+                    SetKioskAppsCallback callback) override;
   void ShowKioskAppError(const std::string& message) override;
   void NotifyOobeDialogState(ash::mojom::OobeDialogState state) override;
   void SetAddUserButtonEnabled(bool enable) override;

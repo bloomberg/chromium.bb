@@ -65,8 +65,7 @@
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
@@ -83,7 +82,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "media/audio/sounds/sounds_manager.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/window.h"
@@ -400,7 +399,7 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
     : initialize_webui_hidden_(ShouldInitializeWebUIHidden()),
       oobe_startup_sound_played_(StartupUtils::IsOobeCompleted()),
       weak_factory_(this) {
-  DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
+  SessionManagerClient::Get()->AddObserver(this);
   CrasAudioHandler::Get()->AddAudioObserver(this);
 
   display::Screen::GetScreen()->AddObserver(this);
@@ -432,7 +431,7 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
           << " wait_for_wp_load_: " << waiting_for_wallpaper_load_
           << " init_webui_hidden_: " << initialize_webui_hidden_;
 
-  media::SoundsManager* manager = media::SoundsManager::Get();
+  audio::SoundsManager* manager = audio::SoundsManager::Get();
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   manager->Initialize(SOUND_STARTUP,
                       bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));
@@ -441,7 +440,7 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
 }
 
 LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
-  DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
+  SessionManagerClient::Get()->RemoveObserver(this);
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 
@@ -672,6 +671,9 @@ void LoginDisplayHostWebUI::OnStartSignInScreen(
   CHECK(login_display_);
   GetOobeUI()->ShowSigninScreen(context, login_display_.get(),
                                 login_display_.get());
+
+  OnStartSignInScreenCommon();
+
   TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI", kShowLoginWebUIid,
                                "WaitForScreenStateInitialize");
 
@@ -1081,7 +1083,10 @@ void LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest() {
 void LoginDisplayHostWebUI::ShowGaiaDialog(
     bool can_close,
     const base::Optional<AccountId>& prefilled_account) {
-  NOTREACHED();
+  // This is a special case, when WebUI sign-in screen shown with Views-based
+  // launch bar. Then "Add user" button will be Views-based, and user click
+  // will result in this call.
+  ShowGaiaDialogCommon(prefilled_account);
 }
 
 void LoginDisplayHostWebUI::HideOobeDialog() {

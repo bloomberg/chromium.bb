@@ -39,9 +39,6 @@ enum AvatarSyncErrorType {
   NO_SYNC_ERROR,                     // No sync error.
   MANAGED_USER_UNRECOVERABLE_ERROR,  // Unrecoverable error for managed users.
   UNRECOVERABLE_ERROR,               // Unrecoverable error for regular users.
-  // TODO(crbug.com/911153): Remove this value. It is never returned, but some
-  // clients still check for it.
-  SUPERVISED_USER_AUTH_ERROR,  // Auth token error for supervised users.
   AUTH_ERROR,                  // Authentication error.
   UPGRADE_CLIENT_ERROR,        // Out-of-date client error.
   PASSPHRASE_ERROR,            // Sync passphrase error.
@@ -72,7 +69,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
 
 // Whether sync is currently blocked from starting because the sync
 // confirmation dialog hasn't been shown. Note that once the dialog is
-// showing (i.e. IsFirstSetupInProgress() is true), this will return false.
+// showing (i.e. IsSetupInProgress() is true), this will return false.
 bool ShouldRequestSyncConfirmation(const syncer::SyncService* service);
 
 // Returns whether it makes sense to show a Sync passphrase error UI, i.e.

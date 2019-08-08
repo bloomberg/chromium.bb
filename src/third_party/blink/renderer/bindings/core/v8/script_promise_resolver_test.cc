@@ -47,7 +47,8 @@ class TestHelperFunction : public ScriptFunction {
 
 class ScriptPromiseResolverTest : public testing::Test {
  public:
-  ScriptPromiseResolverTest() : page_holder_(DummyPageHolder::Create()) {}
+  ScriptPromiseResolverTest()
+      : page_holder_(std::make_unique<DummyPageHolder>()) {}
 
   ~ScriptPromiseResolverTest() override {
     // Execute all pending microtasks
@@ -67,7 +68,7 @@ class ScriptPromiseResolverTest : public testing::Test {
 TEST_F(ScriptPromiseResolverTest, construct) {
   ASSERT_FALSE(GetExecutionContext()->IsContextDestroyed());
   ScriptState::Scope scope(GetScriptState());
-  ScriptPromiseResolver::Create(GetScriptState());
+  MakeGarbageCollected<ScriptPromiseResolver>(GetScriptState());
 }
 
 TEST_F(ScriptPromiseResolverTest, resolve) {
@@ -75,7 +76,7 @@ TEST_F(ScriptPromiseResolverTest, resolve) {
   ScriptPromise promise;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = ScriptPromiseResolver::Create(GetScriptState());
+    resolver = MakeGarbageCollected<ScriptPromiseResolver>(GetScriptState());
     promise = resolver->Promise();
   }
 
@@ -124,7 +125,7 @@ TEST_F(ScriptPromiseResolverTest, reject) {
   ScriptPromise promise;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = ScriptPromiseResolver::Create(GetScriptState());
+    resolver = MakeGarbageCollected<ScriptPromiseResolver>(GetScriptState());
     promise = resolver->Promise();
   }
 
@@ -173,7 +174,7 @@ TEST_F(ScriptPromiseResolverTest, stop) {
   ScriptPromise promise;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = ScriptPromiseResolver::Create(GetScriptState());
+    resolver = MakeGarbageCollected<ScriptPromiseResolver>(GetScriptState());
     promise = resolver->Promise();
   }
 
@@ -201,10 +202,6 @@ TEST_F(ScriptPromiseResolverTest, stop) {
 
 class ScriptPromiseResolverKeepAlive : public ScriptPromiseResolver {
  public:
-  static ScriptPromiseResolverKeepAlive* Create(ScriptState* script_state) {
-    return MakeGarbageCollected<ScriptPromiseResolverKeepAlive>(script_state);
-  }
-
   explicit ScriptPromiseResolverKeepAlive(ScriptState* script_state)
       : ScriptPromiseResolver(script_state) {}
   ~ScriptPromiseResolverKeepAlive() override { destructor_calls_++; }
@@ -222,18 +219,17 @@ TEST_F(ScriptPromiseResolverTest, keepAliveUntilResolved) {
   ScriptPromiseResolver* resolver = nullptr;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = ScriptPromiseResolverKeepAlive::Create(GetScriptState());
+    resolver =
+        MakeGarbageCollected<ScriptPromiseResolverKeepAlive>(GetScriptState());
   }
   resolver->KeepAliveWhilePending();
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
   ASSERT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
 
   resolver->Resolve("hello");
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
   EXPECT_FALSE(ScriptPromiseResolverKeepAlive::IsAlive());
 }
 
@@ -242,18 +238,17 @@ TEST_F(ScriptPromiseResolverTest, keepAliveUntilRejected) {
   ScriptPromiseResolver* resolver = nullptr;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = ScriptPromiseResolverKeepAlive::Create(GetScriptState());
+    resolver =
+        MakeGarbageCollected<ScriptPromiseResolverKeepAlive>(GetScriptState());
   }
   resolver->KeepAliveWhilePending();
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
   ASSERT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
 
   resolver->Reject("hello");
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
   EXPECT_FALSE(ScriptPromiseResolverKeepAlive::IsAlive());
 }
 
@@ -262,24 +257,23 @@ TEST_F(ScriptPromiseResolverTest, keepAliveWhileScriptForbidden) {
   ScriptPromiseResolver* resolver = nullptr;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = ScriptPromiseResolverKeepAlive::Create(GetScriptState());
+    resolver =
+        MakeGarbageCollected<ScriptPromiseResolverKeepAlive>(GetScriptState());
   }
 
   {
     ScriptForbiddenScope forbidden;
     resolver->Resolve("hello");
 
-    ThreadState::Current()->CollectGarbage(
-        BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-        BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+    ThreadState::Current()->CollectAllGarbageForTesting(
+        BlinkGC::kNoHeapPointersOnStack);
     EXPECT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
   }
 
   base::RunLoop().RunUntilIdle();
 
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
   EXPECT_FALSE(ScriptPromiseResolverKeepAlive::IsAlive());
 }
 
@@ -288,18 +282,17 @@ TEST_F(ScriptPromiseResolverTest, keepAliveUntilStopped) {
   ScriptPromiseResolver* resolver = nullptr;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = ScriptPromiseResolverKeepAlive::Create(GetScriptState());
+    resolver =
+        MakeGarbageCollected<ScriptPromiseResolverKeepAlive>(GetScriptState());
   }
   resolver->KeepAliveWhilePending();
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
   EXPECT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
 
   GetExecutionContext()->NotifyContextDestroyed();
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
   EXPECT_FALSE(ScriptPromiseResolverKeepAlive::IsAlive());
 }
 
@@ -308,25 +301,23 @@ TEST_F(ScriptPromiseResolverTest, suspend) {
   ScriptPromiseResolver* resolver = nullptr;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = ScriptPromiseResolverKeepAlive::Create(GetScriptState());
+    resolver =
+        MakeGarbageCollected<ScriptPromiseResolverKeepAlive>(GetScriptState());
   }
   resolver->KeepAliveWhilePending();
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
   ASSERT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
 
   GetExecutionContext()->SetLifecycleState(mojom::FrameLifecycleState::kFrozen);
   resolver->Resolve("hello");
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
   EXPECT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
 
   GetExecutionContext()->NotifyContextDestroyed();
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
   EXPECT_FALSE(ScriptPromiseResolverKeepAlive::IsAlive());
 }
 
@@ -335,7 +326,7 @@ TEST_F(ScriptPromiseResolverTest, resolveVoid) {
   ScriptPromise promise;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = ScriptPromiseResolver::Create(GetScriptState());
+    resolver = MakeGarbageCollected<ScriptPromiseResolver>(GetScriptState());
     promise = resolver->Promise();
   }
 
@@ -360,7 +351,7 @@ TEST_F(ScriptPromiseResolverTest, rejectVoid) {
   ScriptPromise promise;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = ScriptPromiseResolver::Create(GetScriptState());
+    resolver = MakeGarbageCollected<ScriptPromiseResolver>(GetScriptState());
     promise = resolver->Promise();
   }
 

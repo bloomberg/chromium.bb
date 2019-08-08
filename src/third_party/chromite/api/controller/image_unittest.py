@@ -10,7 +10,7 @@ from __future__ import print_function
 import mock
 import os
 
-from chromite.api.gen import image_pb2
+from chromite.api.gen.chromite.api import image_pb2
 from chromite.api.controller import image as image_controller
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
@@ -18,7 +18,7 @@ from chromite.lib import osutils
 from chromite.service import image as image_service
 
 
-class CreateTest(cros_test_lib.MockTestCase):
+class CreateTest(cros_test_lib.MockTempDirTestCase):
   """Create image tests."""
 
   def testArgumentValidation(self):
@@ -32,7 +32,9 @@ class CreateTest(cros_test_lib.MockTestCase):
 
   def testImageTypeHandling(self):
     """Test the image type handling."""
-    build_patch = self.PatchObject(image_service, 'Build', return_value=False)
+    # Failed result to avoid the success handling logic.
+    result = image_service.BuildResult(1, [])
+    build_patch = self.PatchObject(image_service, 'Build', return_value=result)
     input_proto = image_pb2.CreateImageRequest()
     input_proto.build_target.name = 'board'
     output_proto = image_pb2.CreateImageResult()
@@ -55,6 +57,20 @@ class CreateTest(cros_test_lib.MockTestCase):
     image_controller.Create(input_proto, output_proto)
     build_patch.assert_called_with(images=expected_images, board=u'board',
                                    config=mock.ANY)
+
+  def testFailedPackageHandling(self):
+    """Test failed packages are populated correctly."""
+    result = image_service.BuildResult(1, ['foo/bar', 'cat/pkg'])
+    expected_packages = [('foo', 'bar'), ('cat', 'pkg')]
+    self.PatchObject(image_service, 'Build', return_value=result)
+
+    input_proto = image_pb2.CreateImageRequest()
+    input_proto.build_target.name = 'board'
+    output_proto = image_pb2.CreateImageResult()
+
+    image_controller.Create(input_proto, output_proto)
+    for package in output_proto.failed_packages:
+      self.assertIn((package.category, package.package_name), expected_packages)
 
 
 class ImageTest(cros_test_lib.MockTempDirTestCase):

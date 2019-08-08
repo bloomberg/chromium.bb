@@ -15,6 +15,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -73,10 +74,10 @@ base::LazyInstance<std::unordered_set<WebContentsAndroid*>>::Leaky
     g_allocated_web_contents_androids = LAZY_INSTANCE_INITIALIZER;
 
 void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
-                              const base::Value* result) {
+                              base::Value result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   std::string json;
-  base::JSONWriter::Write(*result, &json);
+  base::JSONWriter::Write(result, &json);
   ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env, json);
   Java_WebContentsImpl_onEvaluateJavaScriptResult(env, j_json, callback);
 }
@@ -304,6 +305,15 @@ ScopedJavaLocalRef<jobject> WebContentsAndroid::GetMainFrame(
   return web_contents_->GetMainFrame()->GetJavaRenderFrameHost();
 }
 
+ScopedJavaLocalRef<jobject> WebContentsAndroid::GetFocusedFrame(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) const {
+  RenderFrameHostImpl* rfh = web_contents_->GetFocusedFrame();
+  if (!rfh)
+    return nullptr;
+  return rfh->GetJavaRenderFrameHost();
+}
+
 ScopedJavaLocalRef<jstring> WebContentsAndroid::GetTitle(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) const {
@@ -385,8 +395,12 @@ RenderWidgetHostViewAndroid*
 jint WebContentsAndroid::GetBackgroundColor(JNIEnv* env,
                                             const JavaParamRef<jobject>& obj) {
   RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
+
+  // Return transparent as an indicator that the web content background color
+  // is not specified, and a default background color will be used on the Java
+  // side.
   if (!rwhva || !rwhva->GetCachedBackgroundColor())
-    return SK_ColorWHITE;
+    return SK_ColorTRANSPARENT;
   return *rwhva->GetCachedBackgroundColor();
 }
 
@@ -517,7 +531,7 @@ void WebContentsAndroid::EvaluateJavaScript(
   if (!callback) {
     // No callback requested.
     web_contents_->GetMainFrame()->ExecuteJavaScript(
-        ConvertJavaStringToUTF16(env, script));
+        ConvertJavaStringToUTF16(env, script), base::NullCallback());
     return;
   }
 
@@ -525,11 +539,10 @@ void WebContentsAndroid::EvaluateJavaScript(
   // base::Callback.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
-  RenderFrameHost::JavaScriptResultCallback js_callback =
-      base::Bind(&JavaScriptResultCallback, j_callback);
 
   web_contents_->GetMainFrame()->ExecuteJavaScript(
-      ConvertJavaStringToUTF16(env, script), js_callback);
+      ConvertJavaStringToUTF16(env, script),
+      base::BindOnce(&JavaScriptResultCallback, j_callback));
 }
 
 void WebContentsAndroid::EvaluateJavaScriptForTests(
@@ -551,7 +564,7 @@ void WebContentsAndroid::EvaluateJavaScriptForTests(
   if (!callback) {
     // No callback requested.
     web_contents_->GetMainFrame()->ExecuteJavaScriptForTests(
-        ConvertJavaStringToUTF16(env, script));
+        ConvertJavaStringToUTF16(env, script), base::NullCallback());
     return;
   }
 
@@ -559,11 +572,10 @@ void WebContentsAndroid::EvaluateJavaScriptForTests(
   // base::Callback.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
-  RenderFrameHost::JavaScriptResultCallback js_callback =
-      base::Bind(&JavaScriptResultCallback, j_callback);
 
   web_contents_->GetMainFrame()->ExecuteJavaScriptForTests(
-      ConvertJavaStringToUTF16(env, script), js_callback);
+      ConvertJavaStringToUTF16(env, script),
+      base::BindOnce(&JavaScriptResultCallback, j_callback));
 }
 
 void WebContentsAndroid::AddMessageToDevToolsConsole(
@@ -572,10 +584,10 @@ void WebContentsAndroid::AddMessageToDevToolsConsole(
     jint level,
     const JavaParamRef<jstring>& message) {
   DCHECK_GE(level, 0);
-  DCHECK_LE(level, CONSOLE_MESSAGE_LEVEL_LAST);
+  DCHECK_LE(level, static_cast<int>(blink::mojom::ConsoleMessageLevel::kError));
 
   web_contents_->GetMainFrame()->AddMessageToConsole(
-      static_cast<ConsoleMessageLevel>(level),
+      static_cast<blink::mojom::ConsoleMessageLevel>(level),
       ConvertJavaStringToUTF8(env, message));
 }
 
@@ -600,7 +612,7 @@ jboolean WebContentsAndroid::HasAccessedInitialDocument(
 
 jint WebContentsAndroid::GetThemeColor(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj) {
-  return web_contents_->GetThemeColor();
+  return web_contents_->GetThemeColor().value_or(SK_ColorTRANSPARENT);
 }
 
 void WebContentsAndroid::RequestSmartClipExtract(
@@ -652,6 +664,13 @@ void WebContentsAndroid::SetOverscrollRefreshHandler(
   view->SetOverscrollRefreshHandler(
       std::make_unique<ui::OverscrollRefreshHandler>(
           overscroll_refresh_handler));
+}
+
+void WebContentsAndroid::SetSpatialNavigationDisabled(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    bool disabled) {
+  web_contents_->SetSpatialNavigationDisabled(disabled);
 }
 
 void WebContentsAndroid::WriteContentBitmapToDisk(

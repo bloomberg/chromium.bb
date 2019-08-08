@@ -43,6 +43,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/atomicops.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -62,7 +63,6 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/content_capture/android/content_capture_receiver_manager_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/child_process_importance.h"
 #include "content/public/browser/android/synchronous_compositor.h"
@@ -152,10 +152,10 @@ base::subtle::Atomic32 g_instance_count = 0;
 
 void JavaScriptResultCallbackForTesting(
     const ScopedJavaGlobalRef<jobject>& callback,
-    const base::Value* result) {
+    base::Value result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   std::string json;
-  base::JSONWriter::Write(*result, &json);
+  base::JSONWriter::Write(result, &json);
   ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env, json);
   Java_AwContents_onEvaluateJavaScriptResultForTesting(env, j_json, callback);
 }
@@ -280,8 +280,7 @@ void AwContents::SetJavaPeers(
     const JavaParamRef<jobject>& contents_client_bridge,
     const JavaParamRef<jobject>& io_thread_client,
     const JavaParamRef<jobject>& intercept_navigation_delegate,
-    const JavaParamRef<jobject>& autofill_provider,
-    const JavaParamRef<jobject>& content_capture_receiver_manager) {
+    const JavaParamRef<jobject>& autofill_provider) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // The |aw_content| param is technically spurious as it duplicates |obj| but
   // is passed over anyway to make the binding more explicit.
@@ -301,10 +300,7 @@ void AwContents::SetJavaPeers(
   InterceptNavigationDelegate::Associate(
       web_contents_.get(), std::make_unique<InterceptNavigationDelegate>(
                                env, intercept_navigation_delegate));
-  if (content_capture_receiver_manager) {
-    content_capture::ContentCaptureReceiverManagerAndroid::Create(
-        web_contents_.get(), content_capture_receiver_manager);
-  }
+
   if (!autofill_provider.is_null()) {
     autofill_provider_ = std::make_unique<autofill::AutofillProviderAndroid>(
         autofill_provider, web_contents_.get());
@@ -792,6 +788,12 @@ FindHelper* AwContents::GetFindHelper() {
   return find_helper_.get();
 }
 
+bool AwContents::AllowThirdPartyCookies() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  AwSettings* aw_settings = AwSettings::FromWebContents(web_contents_.get());
+  return aw_settings->GetAllowThirdPartyCookies();
+}
+
 void AwContents::OnFindResultReceived(int active_ordinal,
                                       int match_count,
                                       bool finished) {
@@ -1204,6 +1206,8 @@ void AwContents::SmoothScroll(JNIEnv* env,
   float scale = browser_view_renderer_.page_scale_factor();
   if (!content::IsUseZoomForDSFEnabled())
     scale *= browser_view_renderer_.dip_scale();
+
+  DCHECK_GE(duration_ms, 0);
   render_view_host_ext_->SmoothScroll(target_x / scale, target_y / scale,
                                       duration_ms);
 }
@@ -1285,9 +1289,6 @@ jint AwContents::GetEffectivePriority(
       return static_cast<jint>(RendererPriority::LOW);
     case content::ChildProcessImportance::IMPORTANT:
       return static_cast<jint>(RendererPriority::HIGH);
-    case content::ChildProcessImportance::COUNT:
-      NOTREACHED();
-      return 0;
   }
   NOTREACHED();
   return 0;
@@ -1461,7 +1462,7 @@ void AwContents::EvaluateJavaScriptOnInterstitialForTesting(
   if (!callback) {
     // No callback requested.
     interstitial->GetMainFrame()->ExecuteJavaScriptForTests(
-        ConvertJavaStringToUTF16(env, script));
+        ConvertJavaStringToUTF16(env, script), base::NullCallback());
     return;
   }
 
@@ -1470,10 +1471,10 @@ void AwContents::EvaluateJavaScriptOnInterstitialForTesting(
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
   RenderFrameHost::JavaScriptResultCallback js_callback =
-      base::Bind(&JavaScriptResultCallbackForTesting, j_callback);
+      base::BindOnce(&JavaScriptResultCallbackForTesting, j_callback);
 
   interstitial->GetMainFrame()->ExecuteJavaScriptForTests(
-      ConvertJavaStringToUTF16(env, script), js_callback);
+      ConvertJavaStringToUTF16(env, script), std::move(js_callback));
 }
 
 void AwContents::RendererUnresponsive(

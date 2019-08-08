@@ -128,6 +128,16 @@ class PLATFORM_EXPORT ImageDecoder {
     kHighBitDepthToHalfFloat
   };
 
+  // The first three values are as defined in webp/decode.h, the last value
+  // specifies WebP animation formats.
+  enum CompressionFormat {
+    kUndefinedFormat = 0,
+    kLossyFormat = 1,
+    kLosslessFormat = 2,
+    kWebPAnimationFormat = 3,
+    kMaxValue = kWebPAnimationFormat,
+  };
+
   virtual ~ImageDecoder() = default;
 
   // Returns a caller-owned decoder of the appropriate type.  Returns nullptr if
@@ -167,6 +177,14 @@ class PLATFORM_EXPORT ImageDecoder {
   // This is useful for callers to determine whether a decoder instantiation
   // failure is due to insufficient or bad data.
   static bool HasSufficientDataToSniffImageType(const SharedBuffer&);
+
+  // Looks at the image data to determine and return the image MIME type.
+  static String SniffImageType(scoped_refptr<SharedBuffer> image_data);
+
+  // Returns the image data's compression format.
+  static CompressionFormat GetCompressionFormat(
+      scoped_refptr<SharedBuffer> image_data,
+      String mime_type);
 
   void SetData(scoped_refptr<SegmentReader> data, bool all_data_received) {
     if (failed_)
@@ -458,14 +476,13 @@ class PLATFORM_EXPORT ImageDecoder {
  private:
   // Some code paths compute the size of the image as "width * height * 4 or 8"
   // and return it as a (signed) int.  Avoid overflow.
-  static bool SizeCalculationMayOverflow(unsigned width,
+  inline bool SizeCalculationMayOverflow(unsigned width,
                                          unsigned height,
                                          unsigned decoded_bytes_per_pixel) {
-    unsigned long long total_size = static_cast<unsigned long long>(width) *
-                                    static_cast<unsigned long long>(height);
-    if (decoded_bytes_per_pixel == 4)
-      return total_size > ((1 << 29) - 1);
-    return total_size > ((1 << 28) - 1);
+    base::CheckedNumeric<int32_t> total_size = width;
+    total_size *= height;
+    total_size *= decoded_bytes_per_pixel;
+    return !total_size.IsValid();
   }
 
   bool purge_aggressively_;

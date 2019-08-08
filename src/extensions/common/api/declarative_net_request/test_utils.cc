@@ -62,6 +62,8 @@ std::unique_ptr<base::DictionaryValue> TestRuleAction::ToValue() const {
     value->SetString(kRuleActionTypeKey, *type);
   if (redirect_url)
     value->SetString(kRedirectUrlKey, *redirect_url);
+  if (remove_headers_list)
+    value->Set(kRemoveHeadersListKey, ToListValue(*remove_headers_list));
   return value;
 }
 

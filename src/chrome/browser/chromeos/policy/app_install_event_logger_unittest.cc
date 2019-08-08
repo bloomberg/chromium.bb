@@ -105,8 +105,9 @@ class AppInstallEventLoggerTest : public testing::Test {
     TestingBrowserProcess::GetGlobal()->SetLocalState(&pref_service_);
 
     chromeos::DBusThreadManager::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
+
     chromeos::NetworkHandler::Initialize();
-    chromeos::PowerManagerClient::Initialize();
 
     disk_mount_manager_ = new chromeos::disks::MockDiskMountManager;
     chromeos::disks::DiskMountManager::InitializeForTesting(

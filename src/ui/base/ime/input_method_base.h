@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/events/event_dispatcher.h"
 
 namespace gfx {
@@ -31,7 +31,7 @@ class TextInputClient;
 
 // A helper class providing functionalities shared among ui::InputMethod
 // implementations.
-class UI_BASE_IME_EXPORT InputMethodBase
+class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
     : public InputMethod,
       public base::SupportsWeakPtr<InputMethodBase>,
       public IMEInputContextHandlerInterface {
@@ -52,6 +52,7 @@ class UI_BASE_IME_EXPORT InputMethodBase
   void DetachTextInputClient(TextInputClient* client) override;
   TextInputClient* GetTextInputClient() const override;
   void SetOnScreenKeyboardBounds(const gfx::Rect& new_bounds) override;
+  AsyncKeyDispatcher* GetAsyncKeyDispatcher() override;
 
   // If a derived class overrides this method, it should call parent's
   // implementation.

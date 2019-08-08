@@ -8,10 +8,12 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 
 class GURL;
 
@@ -23,9 +25,12 @@ namespace net {
 class CookieStore;
 }
 
+namespace network {
+class CookieManager;
+}
+
 namespace android_webview {
 
-class AwCookieManagerWrapper;
 class BoolCookieCallbackHolder;
 
 // CookieManager creates and owns Webview's CookieStore, in addition to handling
@@ -43,9 +48,11 @@ class CookieManager {
   // Returns the CookieStore, creating it if necessary. This must only be called
   // on the CookieStore TaskRunner.
   net::CookieStore* GetCookieStore();
-  // Passes a |cookie_manager_info| to |cookie_manager_wrapper_|. This may
-  // create an AwCookieManagerWrapper to assign to |cookie_manager_wrapper_|, if
-  // none already exists.
+  // Passes a |cookie_manager_info|, which this will use for CookieManager APIs
+  // going forward. Only called in the Network Service path, with the intention
+  // this is called once during content initialization (when we create the
+  // only NetworkContext). Note: no other cookie tasks will be processed while
+  // this operation is running.
   void SetMojoCookieManager(
       network::mojom::CookieManagerPtrInfo cookie_manager_info);
 
@@ -72,11 +79,12 @@ class CookieManager {
   CookieManager();
   ~CookieManager();
 
-  // Returns an AwCookieManagerWrapper, creating it if necessary. This must only
-  // be called on the CookieStore TaskRunner. Must only be called when the
-  // NetworkService is enabled, although this may be called before content layer
-  // is initialized.
-  AwCookieManagerWrapper* GetCookieManagerWrapper();
+  // Gets the Network Service CookieManager if it's been passed via
+  // |SetMojoCookieManager|. Otherwise (if Network Service is disabled or
+  // content layer has not yet initialized the NetworkContext), this returns
+  // nullptr (and |GetCookieStore| should be used installed). This must only be
+  // called on the CookieStore TaskRunner.
+  network::mojom::CookieManager* GetMojoCookieManager();
 
   void ExecCookieTaskSync(
       base::OnceCallback<void(base::RepeatingCallback<void(bool)>)> task);
@@ -84,6 +92,8 @@ class CookieManager {
       base::OnceCallback<void(base::RepeatingCallback<void(int)>)> task);
   void ExecCookieTaskSync(base::OnceCallback<void(base::OnceClosure)> task);
   void ExecCookieTask(base::OnceClosure task);
+  // Runs all queued-up cookie tasks in |tasks_|.
+  void RunPendingCookieTasks();
 
   void SetCookieHelper(const GURL& host,
                        const std::string& value,
@@ -97,9 +107,6 @@ class CookieManager {
                               net::CookieList* result,
                               const net::CookieList& value,
                               const net::CookieStatusList& excluded_cookies);
-  void GetCookieListCompleted2(base::OnceClosure complete,
-                               net::CookieList* result,
-                               const net::CookieList& value);
 
   void RemoveSessionCookiesHelper(base::RepeatingCallback<void(bool)> callback);
   void RemoveAllCookiesHelper(base::RepeatingCallback<void(bool)> callback);
@@ -107,6 +114,13 @@ class CookieManager {
                               uint32_t num_deleted);
 
   void FlushCookieStoreAsyncHelper(base::OnceClosure complete);
+
+  void SetMojoCookieManagerAsync(
+      network::mojom::CookieManagerPtrInfo cookie_manager_info,
+      base::OnceClosure complete);
+  void SwapMojoCookieManagerAsync(
+      network::mojom::CookieManagerPtrInfo cookie_manager_info,
+      base::OnceClosure complete);
 
   void HasCookiesAsyncHelper(bool* result, base::OnceClosure complete);
   void HasCookiesCompleted(base::OnceClosure complete,
@@ -116,6 +130,15 @@ class CookieManager {
   void HasCookiesCompleted2(base::OnceClosure complete,
                             bool* result,
                             const net::CookieList& cookies);
+
+  // |result| indicates whether or not this call was successful, indicating
+  // whether we may update |accept_file_scheme_cookies_|.
+  void AllowFileSchemeCookiesAsyncHelper(bool accept,
+                                         bool* result,
+                                         base::OnceClosure complete);
+  void AllowFileSchemeCookiesCompleted(base::OnceClosure complete,
+                                       bool* result,
+                                       bool value);
 
   // This protects the following two bools, as they're used on multiple threads.
   base::Lock accept_file_scheme_cookies_lock_;
@@ -131,7 +154,20 @@ class CookieManager {
 
   scoped_refptr<base::SingleThreadTaskRunner> cookie_store_task_runner_;
   std::unique_ptr<net::CookieStore> cookie_store_;
-  std::unique_ptr<AwCookieManagerWrapper> cookie_manager_wrapper_;
+
+  // Tracks if we're in the middle of a call to SetMojoCookieManager(). See the
+  // note in SetMojoCookieManager(). Must only be accessed on
+  // |cookie_store_task_runner_|.
+  bool setting_new_mojo_cookie_manager_;
+
+  // |tasks_| is a queue we manage, to allow us to delay tasks until after
+  // SetMojoCookieManager()'s work is done. This is modified on different
+  // threads, so accesses must be guarded by |task_queue_lock_|.
+  base::Lock task_queue_lock_;
+  base::circular_deque<base::OnceClosure> tasks_;
+
+  // The CookieManager shared with the NetworkContext.
+  network::mojom::CookieManagerPtr mojo_cookie_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieManager);
 };

@@ -20,22 +20,22 @@ class ArcAppfuseProviderClient;
 class ArcMidisClient;
 class ArcObbMounterClient;
 class ArcOemCryptoClient;
-class AuthPolicyClient;
+class CecServiceClient;
 class CiceroneClient;
 class ConciergeClient;
 class CrosDisksClient;
 class DebugDaemonClient;
-class DiagnosticsdClient;
 class EasyUnlockClient;
 class ImageBurnerClient;
 class ImageLoaderClient;
 class LorgnetteManagerClient;
-class MediaAnalyticsClient;
 class OobeConfigurationClient;
 class RuntimeProbeClient;
 class SeneschalClient;
 class SmbProviderClient;
+class UpdateEngineClient;
 class VirtualFileProviderClient;
+class WilcoDtcSupportdClient;
 
 // D-Bus clients used only in the browser process.
 // TODO(jamescook): Move this under //chrome/browser. http://crbug.com/647367
@@ -56,22 +56,22 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsBrowser {
   std::unique_ptr<ArcMidisClient> arc_midis_client_;
   std::unique_ptr<ArcObbMounterClient> arc_obb_mounter_client_;
   std::unique_ptr<ArcOemCryptoClient> arc_oemcrypto_client_;
-  std::unique_ptr<AuthPolicyClient> auth_policy_client_;
+  std::unique_ptr<CecServiceClient> cec_service_client_;
   std::unique_ptr<CiceroneClient> cicerone_client_;
   std::unique_ptr<ConciergeClient> concierge_client_;
   std::unique_ptr<CrosDisksClient> cros_disks_client_;
   std::unique_ptr<DebugDaemonClient> debug_daemon_client_;
-  std::unique_ptr<DiagnosticsdClient> diagnosticsd_client_;
   std::unique_ptr<EasyUnlockClient> easy_unlock_client_;
   std::unique_ptr<ImageBurnerClient> image_burner_client_;
   std::unique_ptr<ImageLoaderClient> image_loader_client_;
   std::unique_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
-  std::unique_ptr<MediaAnalyticsClient> media_analytics_client_;
   std::unique_ptr<OobeConfigurationClient> oobe_configuration_client_;
   std::unique_ptr<RuntimeProbeClient> runtime_probe_client_;
   std::unique_ptr<SeneschalClient> seneschal_client_;
   std::unique_ptr<SmbProviderClient> smb_provider_client_;
+  std::unique_ptr<UpdateEngineClient> update_engine_client_;
   std::unique_ptr<VirtualFileProviderClient> virtual_file_provider_client_;
+  std::unique_ptr<WilcoDtcSupportdClient> wilco_dtc_supportd_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusClientsBrowser);
 };

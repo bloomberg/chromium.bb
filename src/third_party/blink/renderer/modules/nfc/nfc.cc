@@ -146,8 +146,7 @@ struct TypeConverter<NDEFRecordPtr, String> {
   static NDEFRecordPtr Convert(const String& string) {
     NDEFRecordPtr record = NDEFRecord::New();
     record->record_type = NDEFRecordType::TEXT;
-    record->media_type = kPlainTextMimeType;
-    record->media_type.append(kCharSetUTF8);
+    record->media_type = StringView(kPlainTextMimeType) + kCharSetUTF8;
     record->data = mojo::ConvertTo<Vector<uint8_t>>(string);
     return record;
   }
@@ -237,7 +236,7 @@ struct TypeConverter<NDEFRecordPtr, blink::NDEFRecord*> {
       case NDEFRecordType::TEXT:
       case NDEFRecordType::URL:
         setMediaType(recordPtr, record->mediaType(), kPlainTextMimeType);
-        recordPtr->media_type.append(kCharSetUTF8);
+        recordPtr->media_type = recordPtr->media_type + kCharSetUTF8;
         break;
       case NDEFRecordType::JSON:
         setMediaType(recordPtr, record->mediaType(), kJsonMimeType);
@@ -722,7 +721,7 @@ ScriptPromise NFC::push(ScriptState* script_state,
         "NDEFMessage exceeds maximum supported size.");
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
   auto callback = WTF::Bind(&NFC::OnRequestCompleted, WrapPersistent(this),
                             WrapPersistent(resolver));
@@ -739,7 +738,7 @@ ScriptPromise NFC::cancelPush(ScriptState* script_state, const String& target) {
   if (!promise.IsEmpty())
     return promise;
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
   auto callback = WTF::Bind(&NFC::OnRequestCompleted, WrapPersistent(this),
                             WrapPersistent(resolver));
@@ -767,7 +766,7 @@ ScriptPromise NFC::watch(ScriptState* script_state,
     }
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
   auto watch_callback =
       WTF::Bind(&NFC::OnWatchRegistered, WrapPersistent(this),
@@ -792,7 +791,7 @@ ScriptPromise NFC::cancelWatch(ScriptState* script_state, int32_t id) {
                                   "Provided watch id cannot be found.");
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
   nfc_->CancelWatch(id,
                     WTF::Bind(&NFC::OnRequestCompleted, WrapPersistent(this),
@@ -808,7 +807,7 @@ ScriptPromise NFC::cancelWatch(ScriptState* script_state) {
     return promise;
 
   callbacks_.clear();
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
   nfc_->CancelAllWatches(WTF::Bind(&NFC::OnRequestCompleted,
                                    WrapPersistent(this),

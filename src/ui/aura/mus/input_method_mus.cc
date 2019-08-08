@@ -37,6 +37,11 @@ void CallEventResultCallback(InputMethodMus::EventResultCallback ack_callback,
       .Run(handled ? EventResult::HANDLED : EventResult::UNHANDLED);
 }
 
+void CallKeyAckCallback(InputMethodMus::KeyAckCallback ack_callback,
+                        EventResult result) {
+  std::move(ack_callback).Run(result == EventResult::HANDLED);
+}
+
 void OnDispatchKeyEventPostIME(InputMethodMus::EventResultCallback callback,
                                bool handled,
                                bool stopped_propagation) {
@@ -106,21 +111,12 @@ void InputMethodMus::Init(service_manager::Connector* connector) {
     connector->BindInterface(ws::mojom::kServiceName, &ime_driver_);
 }
 
-ui::EventDispatchDetails InputMethodMus::DispatchKeyEvent(
-    ui::KeyEvent* event,
-    EventResultCallback ack_callback) {
-  DCHECK(event->type() == ui::ET_KEY_PRESSED ||
-         event->type() == ui::ET_KEY_RELEASED);
-
-  // If no text input client or the event is synthesized, dispatch the devent
-  // directly without forwarding it to the real input method.
-  if (!GetTextInputClient() || (event->flags() & ui::EF_IS_SYNTHESIZED)) {
-    return DispatchKeyEventPostIME(
-        event,
-        base::BindOnce(&OnDispatchKeyEventPostIME, std::move(ack_callback)));
-  }
-
-  return SendKeyEventToInputMethod(*event, std::move(ack_callback));
+////////////////////////////////////////////////////////////////////////////////
+// InputMethodMus, ui::AsyncKeyDispatcher implementation:
+void InputMethodMus::DispatchKeyEventAsync(ui::KeyEvent* event,
+                                           KeyAckCallback cb) {
+  ignore_result(DispatchKeyEventInternal(
+      event, base::BindOnce(&CallKeyAckCallback, std::move(cb))));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -138,11 +134,15 @@ void InputMethodMus::OnBlur() {
 
 ui::EventDispatchDetails InputMethodMus::DispatchKeyEvent(ui::KeyEvent* event) {
   ui::EventDispatchDetails dispatch_details =
-      DispatchKeyEvent(event, EventResultCallback());
+      DispatchKeyEventInternal(event, EventResultCallback());
   // Mark the event as handled so that EventGenerator doesn't attempt to
   // deliver event as well.
   event->SetHandled();
   return dispatch_details;
+}
+
+ui::AsyncKeyDispatcher* InputMethodMus::GetAsyncKeyDispatcher() {
+  return this;
 }
 
 void InputMethodMus::OnTextInputTypeChanged(const ui::TextInputClient* client) {
@@ -202,6 +202,23 @@ void InputMethodMus::ShowVirtualKeyboardIfEnabled() {
   InputMethodBase::ShowVirtualKeyboardIfEnabled();
   if (input_method_)
     input_method_->ShowVirtualKeyboardIfEnabled();
+}
+
+ui::EventDispatchDetails InputMethodMus::DispatchKeyEventInternal(
+    ui::KeyEvent* event,
+    EventResultCallback ack_callback) {
+  DCHECK(event->type() == ui::ET_KEY_PRESSED ||
+         event->type() == ui::ET_KEY_RELEASED);
+
+  // If no text input client or the event is synthesized, dispatch the devent
+  // directly without forwarding it to the real input method.
+  if (!GetTextInputClient() || (event->flags() & ui::EF_IS_SYNTHESIZED)) {
+    return DispatchKeyEventPostIME(
+        event,
+        base::BindOnce(&OnDispatchKeyEventPostIME, std::move(ack_callback)));
+  }
+
+  return SendKeyEventToInputMethod(*event, std::move(ack_callback));
 }
 
 ui::EventDispatchDetails InputMethodMus::SendKeyEventToInputMethod(
@@ -272,7 +289,7 @@ void InputMethodMus::OnDidChangeFocusedClient(
 void InputMethodMus::UpdateTextInputType() {
   ui::TextInputType type = GetTextInputType();
   ui::mojom::TextInputStatePtr state = ui::mojom::TextInputState::New();
-  state->type = mojo::ConvertTo<ui::mojom::TextInputType>(type);
+  state->type = type;
   if (input_method_mus_delegate_) {
     if (type != ui::TEXT_INPUT_TYPE_NONE)
       input_method_mus_delegate_->SetImeVisibility(true, std::move(state));

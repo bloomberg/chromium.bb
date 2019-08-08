@@ -58,8 +58,8 @@ class ConditionalCacheDeletionHelperBrowserTest : public ContentBrowserTest {
         content::BrowserContext::GetDefaultStoragePartition(
             shell()->web_contents()->GetBrowserContext()));
     done_callback_ =
-        base::Bind(&ConditionalCacheDeletionHelperBrowserTest::DoneCallback,
-                   base::Unretained(this));
+        base::BindOnce(&ConditionalCacheDeletionHelperBrowserTest::DoneCallback,
+                       base::Unretained(this));
     // UI and IO thread synchronization.
     waitable_event_ = std::make_unique<base::WaitableEvent>(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -86,7 +86,7 @@ class ConditionalCacheDeletionHelperBrowserTest : public ContentBrowserTest {
     auto* helper =
         new ConditionalCacheDeletionHelper(cache_util_->backend(), condition);
 
-    helper->DeleteAndDestroySelfWhenFinished(done_callback_);
+    helper->DeleteAndDestroySelfWhenFinished(std::move(done_callback_));
   }
 
   bool TestCacheEntry(const GURL& url) {
@@ -130,7 +130,7 @@ class ConditionalCacheDeletionHelperBrowserTest : public ContentBrowserTest {
     return shell()->web_contents()->GetBrowserContext();
   }
 
-  base::Callback<void(int)> done_callback_;
+  base::OnceCallback<void(int)> done_callback_;
   std::unique_ptr<CacheTestUtil> cache_util_;
   std::unique_ptr<base::WaitableEvent> waitable_event_;
 };

@@ -21,14 +21,12 @@
       }
 
       cr-icon-button {
-        --cr-icon-button-color: white;
-        --cr-icon-button-ripple-color: white;
-        display: inline-block;
+        justify-content: flex-end;
         margin: 4px;
       }
 
-      :host-context([dark]) cr-icon-button {
-        --cr-icon-button-color: var(--google-grey-200);
+      :host-context(html:not([dark])) cr-icon-button {
+        --cr-icon-button-color: currentColor;
       }
 
       :host(:not([narrow_])) cr-toolbar-selection-overlay {

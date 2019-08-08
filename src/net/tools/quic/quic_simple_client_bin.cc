@@ -8,35 +8,30 @@
 //
 // Some usage examples:
 //
-//   TODO(rtenneti): make --host optional by getting IP Address of URL's host.
-//
-//   Get IP address of the www.google.com
-//   IP=`dig www.google.com +short | head -1`
-//
 // Standard request/response:
-//   quic_client http://www.google.com  --host=${IP}
-//   quic_client http://www.google.com --quiet  --host=${IP}
-//   quic_client https://www.google.com --port=443  --host=${IP}
+//   quic_client http://www.google.com
+//   quic_client http://www.google.com --quiet
+//   quic_client https://www.google.com --port=443
 //
 // Use a specific version:
-//   quic_client http://www.google.com --quic_version=23  --host=${IP}
+//   quic_client http://www.google.com --quic_version=23
 //
 // Send a POST instead of a GET:
-//   quic_client http://www.google.com --body="this is a POST body" --host=${IP}
+//   quic_client http://www.google.com --body="this is a POST body"
 //
 // Append additional headers to the request:
 //   quic_client http://www.google.com  --host=${IP}
 //               --headers="Header-A: 1234; Header-B: 5678"
 //
 // Connect to a host different to the URL being requested:
-//   Get IP address of the www.google.com
+//   quic_client mail.google.com --host=www.google.com
+//
+// Connect to a specific IP:
 //   IP=`dig www.google.com +short | head -1`
-//   quic_client mail.google.com --host=${IP}
+//   quic_client www.google.com --host=${IP}
 //
 // Try to connect to a host which does not speak QUIC:
-//   Get IP address of the www.example.com
-//   IP=`dig www.example.com +short | head -1`
-//   quic_client http://www.example.com --host=${IP}
+//   quic_client http://www.example.com
 
 #include <iostream>
 
@@ -44,7 +39,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "net/base/net_errors.h"
 #include "net/base/privacy_mode.h"
 #include "net/cert/cert_verifier.h"
@@ -54,13 +49,14 @@
 #include "net/http/transport_security_state.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/spdy/spdy_http_utils.h"
-#include "net/third_party/quic/core/quic_error_codes.h"
-#include "net/third_party/quic/core/quic_packets.h"
-#include "net/third_party/quic/core/quic_server_id.h"
-#include "net/third_party/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quic/platform/api/quic_str_cat.h"
-#include "net/third_party/quic/platform/api/quic_string_piece.h"
-#include "net/third_party/quic/platform/api/quic_text_utils.h"
+#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
+#include "net/third_party/quiche/src/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
+#include "net/third_party/quiche/src/quic/core/quic_versions.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 #include "net/tools/quic/quic_simple_client.h"
 #include "net/tools/quic/synchronous_host_resolver.h"
@@ -78,24 +74,25 @@ using spdy::SpdyHeaderBlock;
 using std::cout;
 using std::cerr;
 using std::endl;
-using std::string;
 
 // The IP or hostname the quic client will connect to.
-string FLAGS_host = "";
+std::string FLAGS_host = "";
 // The port to connect to.
 int32_t FLAGS_port = 0;
 // If set, send a POST with this body.
-string FLAGS_body = "";
+std::string FLAGS_body = "";
 // If set, contents are converted from hex to ascii, before sending as body of
 // a POST. e.g. --body_hex=\"68656c6c6f\"
-string FLAGS_body_hex = "";
+std::string FLAGS_body_hex = "";
 // A semicolon separated list of key:value pairs to add to request headers.
-string FLAGS_headers = "";
+std::string FLAGS_headers = "";
 // Set to true for a quieter output experience.
 bool FLAGS_quiet = false;
-// QUIC version to speak, e.g. 21. If not set, then all available versions are
-// offered in the handshake.
-int32_t FLAGS_quic_version = -1;
+// QUIC version to speak, e.g. "21". If not set, then all available versions are
+// offered in the handshake. The version label (e.g. "T099") can also be used.
+std::string FLAGS_quic_version = "";
+// QUIC IETF draft number to use over the wire.
+int32_t FLAGS_quic_ietf_draft = 0;
 // If true, a version mismatch in the handshake is not considered a failure.
 // Useful for probing a server to determine if it speaks any version of QUIC.
 bool FLAGS_version_mismatch_ok = false;
@@ -108,16 +105,16 @@ int32_t FLAGS_initial_mtu = 0;
 class FakeProofVerifier : public quic::ProofVerifier {
  public:
   quic::QuicAsyncStatus VerifyProof(
-      const string& hostname,
+      const std::string& hostname,
       const uint16_t port,
-      const string& server_config,
+      const std::string& server_config,
       quic::QuicTransportVersion quic_version,
       quic::QuicStringPiece chlo_hash,
-      const std::vector<string>& certs,
-      const string& cert_sct,
-      const string& signature,
+      const std::vector<std::string>& certs,
+      const std::string& cert_sct,
+      const std::string& signature,
       const quic::ProofVerifyContext* context,
-      string* error_details,
+      std::string* error_details,
       std::unique_ptr<quic::ProofVerifyDetails>* details,
       std::unique_ptr<quic::ProofVerifierCallback> callback) override {
     return quic::QUIC_SUCCESS;
@@ -142,7 +139,7 @@ int main(int argc, char* argv[]) {
   base::CommandLine::Init(argc, argv);
   base::CommandLine* line = base::CommandLine::ForCurrentProcess();
   const base::CommandLine::StringVector& urls = line->GetArgs();
-  base::TaskScheduler::CreateAndStartWithDefaultParams("quic_client");
+  base::ThreadPool::CreateAndStartWithDefaultParams("quic_client");
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
@@ -163,14 +160,18 @@ int main(int argc, char* argv[]) {
         "--headers=<headers>         specify a semicolon separated list of "
         "key:value pairs to add to request headers\n"
         "--quiet                     specify for a quieter output experience\n"
-        "--quic-version=<quic version> specify QUIC version to speak\n"
+        "--quic_version=<quic version> specify QUIC version to speak "
+        "(e.g. 43, Q046 or T099).\n"
+        "--quic_ietf_draft=<draft> specify which QUIC IETF draft number to use "
+        "over the wire, e.g. 18. By default this sets quic_version to T099. "
+        "This also enables required internal QUIC flags.\n"
         "--version_mismatch_ok       if specified a version mismatch in the "
         "handshake is not considered a failure\n"
         "--redirect_is_success       if specified an HTTP response code of 3xx "
         "is considered to be a successful response, otherwise a failure\n"
         "--initial_mtu=<initial_mtu> specify the initial MTU of the connection"
         "\n"
-        "--disable-certificate-verification do not verify certificates\n";
+        "--disable_certificate_verification do not verify certificates\n";
     cout << help_str;
     exit(0);
   }
@@ -195,11 +196,14 @@ int main(int argc, char* argv[]) {
   if (line->HasSwitch("quiet")) {
     FLAGS_quiet = true;
   }
-  if (line->HasSwitch("quic-version")) {
-    int quic_version;
-    if (base::StringToInt(line->GetSwitchValueASCII("quic-version"),
-                          &quic_version)) {
-      FLAGS_quic_version = quic_version;
+  if (line->HasSwitch("quic_version")) {
+    FLAGS_quic_version = line->GetSwitchValueASCII("quic_version");
+  }
+  if (line->HasSwitch("quic_ietf_draft")) {
+    if (!base::StringToInt(line->GetSwitchValueASCII("quic_ietf_draft"),
+                           &FLAGS_quic_ietf_draft)) {
+      std::cerr << "--quic_ietf_draft must be an integer\n";
+      return 1;
     }
   }
   if (line->HasSwitch("version_mismatch_ok")) {
@@ -219,7 +223,8 @@ int main(int argc, char* argv[]) {
   VLOG(1) << "server host: " << FLAGS_host << " port: " << FLAGS_port
           << " body: " << FLAGS_body << " headers: " << FLAGS_headers
           << " quiet: " << FLAGS_quiet
-          << " quic-version: " << FLAGS_quic_version
+          << " quic_version: " << FLAGS_quic_version
+          << " quic_ietf_draft: " << FLAGS_quic_ietf_draft
           << " version_mismatch_ok: " << FLAGS_version_mismatch_ok
           << " redirect_is_success: " << FLAGS_redirect_is_success
           << " initial_mtu: " << FLAGS_initial_mtu;
@@ -231,7 +236,7 @@ int main(int argc, char* argv[]) {
   quic::QuicIpAddress ip_addr;
 
   GURL url(urls[0]);
-  string host = FLAGS_host;
+  std::string host = FLAGS_host;
   if (host.empty()) {
     host = url.host();
   }
@@ -251,19 +256,38 @@ int main(int argc, char* argv[]) {
         quic::QuicIpAddress(quic::QuicIpAddressImpl(addresses[0].address()));
   }
 
-  string host_port = quic::QuicStrCat(ip_addr.ToString(), ":", port);
+  std::string host_port = quic::QuicStrCat(ip_addr.ToString(), ":", port);
   VLOG(1) << "Resolved " << host << " to " << host_port << endl;
 
   // Build the client, and try to connect.
   quic::QuicServerId server_id(url.host(), url.EffectiveIntPort(),
                                net::PRIVACY_MODE_DISABLED);
+
+  // Select QUIC version to use.
   quic::ParsedQuicVersionVector versions = quic::CurrentSupportedVersions();
-  if (FLAGS_quic_version != -1) {
-    versions.clear();
-    versions.push_back(quic::ParsedQuicVersion(
-        quic::PROTOCOL_QUIC_CRYPTO,
-        static_cast<quic::QuicTransportVersion>(FLAGS_quic_version)));
+  std::string quic_version_string = FLAGS_quic_version;
+  if (FLAGS_quic_ietf_draft > 0) {
+    quic::QuicVersionInitializeSupportForIetfDraft(FLAGS_quic_ietf_draft);
+    if (quic_version_string.empty()) {
+      quic_version_string = "T099";
+    }
   }
+  if (!quic_version_string.empty()) {
+    if (quic_version_string[0] == 'T') {
+      // ParseQuicVersionString checks quic_supports_tls_handshake.
+      SetQuicFlag(&FLAGS_quic_supports_tls_handshake, true);
+    }
+    quic::ParsedQuicVersion parsed_quic_version =
+        quic::ParseQuicVersionString(quic_version_string);
+    if (parsed_quic_version.transport_version ==
+        quic::QUIC_VERSION_UNSUPPORTED) {
+      return 1;
+    }
+    versions.clear();
+    versions.push_back(parsed_quic_version);
+    quic::QuicEnableVersion(parsed_quic_version);
+  }
+
   // For secure QUIC we need to verify the cert chain.
   std::unique_ptr<CertVerifier> cert_verifier(CertVerifier::CreateDefault());
   std::unique_ptr<TransportSecurityState> transport_security_state(
@@ -272,7 +296,7 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer(
       new net::DefaultCTPolicyEnforcer());
   std::unique_ptr<quic::ProofVerifier> proof_verifier;
-  if (line->HasSwitch("disable-certificate-verification")) {
+  if (line->HasSwitch("disable_certificate_verification")) {
     proof_verifier.reset(new FakeProofVerifier());
   } else {
     proof_verifier.reset(new ProofVerifierChromium(
@@ -303,7 +327,7 @@ int main(int argc, char* argv[]) {
   cout << "Connected to " << host_port << endl;
 
   // Construct the string body from flags, if provided.
-  string body = FLAGS_body;
+  std::string body = FLAGS_body;
   if (!FLAGS_body_hex.empty()) {
     DCHECK(FLAGS_body.empty()) << "Only set one of --body and --body_hex.";
     body = quic::QuicTextUtils::HexDecode(FLAGS_body_hex);
@@ -351,7 +375,7 @@ int main(int argc, char* argv[]) {
     cout << endl;
     cout << "Response:" << endl;
     cout << "headers: " << client.latest_response_headers() << endl;
-    string response_body = client.latest_response_body();
+    std::string response_body = client.latest_response_body();
     if (!FLAGS_body_hex.empty()) {
       // Assume response is binary data.
       cout << "body:\n" << quic::QuicTextUtils::HexDump(response_body) << endl;

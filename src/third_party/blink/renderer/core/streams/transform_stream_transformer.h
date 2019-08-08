@@ -14,7 +14,7 @@
 namespace blink {
 
 class ExceptionState;
-class TransformStreamDefaultController;
+class TransformStreamDefaultControllerInterface;
 class Visitor;
 
 // Interface to be implemented by C++ code that needs to create a
@@ -33,9 +33,10 @@ class CORE_EXPORT TransformStreamTransformer
   virtual ~TransformStreamTransformer() = default;
 
   virtual void Transform(v8::Local<v8::Value> chunk,
-                         TransformStreamDefaultController*,
+                         TransformStreamDefaultControllerInterface*,
                          ExceptionState&) = 0;
-  virtual void Flush(TransformStreamDefaultController*, ExceptionState&) = 0;
+  virtual void Flush(TransformStreamDefaultControllerInterface*,
+                     ExceptionState&) = 0;
 
   virtual void Trace(Visitor*) {}
 

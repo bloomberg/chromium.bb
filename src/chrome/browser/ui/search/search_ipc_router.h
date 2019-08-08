@@ -54,6 +54,10 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // Called when the EmbeddedSearch wants to undo all Most Visited deletions.
     virtual void OnUndoAllMostVisitedDeletions() = 0;
 
+    // Called when the EmbeddedSearch wants to switch between custom links and
+    // Most Visited.
+    virtual void OnToggleMostVisitedOrCustomLinks() = 0;
+
     // Called when the EmbeddedSearch wants to add a custom link.
     virtual bool OnAddCustomLink(const GURL& url, const std::string& title) = 0;
 
@@ -80,6 +84,13 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // particular time since navigation start.
     virtual void OnLogEvent(NTPLoggingEventType event,
                             base::TimeDelta time) = 0;
+
+    // Called to signal that an event has occurred on the New Tab Page at a
+    // particular time since navigation start, and provide an int value.
+    virtual void OnLogSuggestionEventWithValue(
+        NTPSuggestionsLoggingEventType event,
+        int data,
+        base::TimeDelta time) = 0;
 
     // Called to log an impression from a given provider on the New Tab Page.
     virtual void OnLogMostVisitedImpression(
@@ -152,6 +163,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessDeleteMostVisitedItem() = 0;
     virtual bool ShouldProcessUndoMostVisitedDeletion() = 0;
     virtual bool ShouldProcessUndoAllMostVisitedDeletions() = 0;
+    virtual bool ShouldProcessToggleMostVisitedOrCustomLinks() = 0;
     virtual bool ShouldProcessAddCustomLink() = 0;
     virtual bool ShouldProcessUpdateCustomLink() = 0;
     virtual bool ShouldProcessReorderCustomLink() = 0;
@@ -159,6 +171,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessUndoCustomLinkAction() = 0;
     virtual bool ShouldProcessResetCustomLinks() = 0;
     virtual bool ShouldProcessLogEvent() = 0;
+    virtual bool ShouldProcessLogSuggestionEventWithValue() = 0;
     virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) = 0;
     virtual bool ShouldProcessChromeIdentityCheck() = 0;
     virtual bool ShouldProcessHistorySyncCheck() = 0;
@@ -221,6 +234,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void DeleteMostVisitedItem(int page_seq_no, const GURL& url) override;
   void UndoMostVisitedDeletion(int page_seq_no, const GURL& url) override;
   void UndoAllMostVisitedDeletions(int page_seq_no) override;
+  void ToggleMostVisitedOrCustomLinks(int page_seq_no) override;
   void AddCustomLink(int page_seq_no,
                      const GURL& url,
                      const std::string& title,
@@ -241,6 +255,10 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void LogEvent(int page_seq_no,
                 NTPLoggingEventType event,
                 base::TimeDelta time) override;
+  void LogSuggestionEventWithValue(int page_seq_no,
+                                   NTPSuggestionsLoggingEventType event,
+                                   int data,
+                                   base::TimeDelta time) override;
   void LogMostVisitedImpression(
       int page_seq_no,
       const ntp_tiles::NTPTileImpression& impression) override;

@@ -188,21 +188,18 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   virtual void ForwardGestureEvent(
       const blink::WebGestureEvent& gesture_event) = 0;
 
-  virtual RenderProcessHost* GetProcess() const = 0;
+  virtual RenderProcessHost* GetProcess() = 0;
 
-  virtual int GetRoutingID() const = 0;
+  virtual int GetRoutingID() = 0;
 
   // Gets the View of this RenderWidgetHost. Can be nullptr, e.g. if the
   // RenderWidget is being destroyed or the render process crashed. You should
   // never cache this pointer since it can become nullptr if the renderer
   // crashes, instead you should always ask for it using the accessor.
-  virtual RenderWidgetHostView* GetView() const = 0;
-
-  // Returns true if the renderer is loading, false if not.
-  virtual bool IsLoading() const = 0;
+  virtual RenderWidgetHostView* GetView() = 0;
 
   // Returns true if the renderer is considered unresponsive.
-  virtual bool IsCurrentlyUnresponsive() const = 0;
+  virtual bool IsCurrentlyUnresponsive() = 0;
 
   // Called to propagate updated visual properties to the renderer. Returns
   // whether the renderer has been informed of updated properties.

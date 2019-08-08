@@ -294,8 +294,7 @@ class ShelfAppButton::AppStatusIndicatorView
 // static
 const char ShelfAppButton::kViewClassName[] = "ash/ShelfAppButton";
 
-ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
-                               const base::string16& title)
+ShelfAppButton::ShelfAppButton(ShelfView* shelf_view)
     : ShelfButton(shelf_view),
       icon_view_(new views::ImageView()),
       indicator_(new AppStatusIndicatorView()),
@@ -304,7 +303,6 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
       destroyed_flag_(nullptr),
       is_notification_indicator_enabled_(
           features::IsNotificationIndicatorEnabled()) {
-  SetTitle(title);
   const gfx::ShadowValue kShadows[] = {
       gfx::ShadowValue(gfx::Vector2d(0, 2), 0, SkColorSetARGB(0x1A, 0, 0, 0)),
       gfx::ShadowValue(gfx::Vector2d(0, 3), 1, SkColorSetARGB(0x1A, 0, 0, 0)),
@@ -341,10 +339,6 @@ ShelfAppButton::~ShelfAppButton() {
 void ShelfAppButton::SetShadowedImage(const gfx::ImageSkia& image) {
   icon_view_->SetImage(gfx::ImageSkiaOperations::CreateImageWithDropShadow(
       image, icon_shadows_));
-}
-
-void ShelfAppButton::SetTitle(const base::string16 title) {
-  SetAccessibleName(title);
 }
 
 void ShelfAppButton::SetImage(const gfx::ImageSkia& image) {

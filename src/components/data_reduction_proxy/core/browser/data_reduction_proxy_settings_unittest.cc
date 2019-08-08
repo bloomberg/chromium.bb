@@ -54,61 +54,7 @@ class DataReductionProxySettingsTest
     settings_->MaybeActivateDataReductionProxy(false);
     test_context_->RunUntilIdle();
   }
-
-  void InitPrefMembers() {
-    settings_->set_data_reduction_proxy_enabled_pref_name_for_test(
-        test_context_->GetDataReductionProxyEnabledPrefName());
-    settings_->InitPrefMembers();
-  }
 };
-
-TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
-  InitPrefMembers();
-  NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), test_context_->pref_service(),
-      test_context_->task_runner());
-  test_context_->config()->SetNetworkPropertiesManagerForTesting(
-      &network_properties_manager);
-
-  // The proxy is disabled initially.
-  test_context_->config()->UpdateConfigForTesting(false, true, true);
-
-  EXPECT_FALSE(settings_->IsDataReductionProxyEnabled());
-  EXPECT_FALSE(settings_->IsDataReductionProxyManaged());
-
-  CheckOnPrefChange(true, true, false);
-  EXPECT_TRUE(settings_->IsDataReductionProxyEnabled());
-  EXPECT_FALSE(settings_->IsDataReductionProxyManaged());
-
-  CheckOnPrefChange(true, true, true);
-  EXPECT_TRUE(settings_->IsDataReductionProxyEnabled());
-  EXPECT_TRUE(settings_->IsDataReductionProxyManaged());
-
-  test_context_->RunUntilIdle();
-}
-
-TEST_F(DataReductionProxySettingsTest, TestCanUseDataReductionProxy) {
-  InitPrefMembers();
-  NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), test_context_->pref_service(),
-      test_context_->task_runner());
-  test_context_->config()->SetNetworkPropertiesManagerForTesting(
-      &network_properties_manager);
-
-  // The proxy is disabled initially.
-  test_context_->config()->UpdateConfigForTesting(false, true, true);
-
-  GURL http_gurl("http://url.com/");
-  EXPECT_FALSE(settings_->CanUseDataReductionProxy(http_gurl));
-
-  CheckOnPrefChange(true, true, false);
-  EXPECT_TRUE(settings_->CanUseDataReductionProxy(http_gurl));
-
-  GURL https_gurl("https://url.com/");
-  EXPECT_FALSE(settings_->CanUseDataReductionProxy(https_gurl));
-
-  test_context_->RunUntilIdle();
-}
 
 TEST_F(DataReductionProxySettingsTest, TestResetDataReductionStatistics) {
   int64_t original_content_length;
@@ -284,6 +230,88 @@ TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
   drp_test_context->SetDataReductionProxyEnabled(true);
 }
 
+TEST(DataReductionProxySettingsStandaloneTest, TestIsProxyEnabledOrManaged) {
+  base::test::ScopedTaskEnvironment task_environment{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
+      DataReductionProxyTestContext::Builder()
+          .WithMockConfig()
+          .WithMockDataReductionProxyService()
+          .SkipSettingsInitialization()
+          .Build();
+
+  NetworkPropertiesManager network_properties_manager(
+      base::DefaultClock::GetInstance(), drp_test_context->pref_service(),
+      drp_test_context->task_runner());
+  drp_test_context->config()->SetNetworkPropertiesManagerForTesting(
+      &network_properties_manager);
+  drp_test_context->InitSettings();
+
+  DataReductionProxySettings* settings = drp_test_context->settings();
+
+  drp_test_context->SetDataReductionProxyEnabled(true);
+  EXPECT_TRUE(settings->IsDataReductionProxyEnabled());
+  EXPECT_FALSE(settings->IsDataReductionProxyManaged());
+
+  drp_test_context->SetDataReductionProxyEnabled(false);
+  EXPECT_FALSE(settings->IsDataReductionProxyEnabled());
+  EXPECT_FALSE(settings->IsDataReductionProxyManaged());
+
+  drp_test_context->SetDataReductionProxyEnabled(false);
+  drp_test_context->pref_service()->SetManagedPref(
+      prefs::kDataSaverEnabled, std::make_unique<base::Value>(false));
+  EXPECT_FALSE(settings->IsDataReductionProxyEnabled());
+  EXPECT_TRUE(settings->IsDataReductionProxyManaged());
+
+  drp_test_context->SetDataReductionProxyEnabled(true);
+  drp_test_context->pref_service()->SetManagedPref(
+      prefs::kDataSaverEnabled, std::make_unique<base::Value>(true));
+  EXPECT_TRUE(settings->IsDataReductionProxyEnabled());
+  EXPECT_TRUE(settings->IsDataReductionProxyManaged());
+
+  drp_test_context->RunUntilIdle();
+}
+
+TEST(DataReductionProxySettingsStandaloneTest, TestCanUseDataReductionProxy) {
+  base::test::ScopedTaskEnvironment task_environment{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
+      DataReductionProxyTestContext::Builder()
+          .WithMockConfig()
+          .WithMockDataReductionProxyService()
+          .SkipSettingsInitialization()
+          .Build();
+
+  NetworkPropertiesManager network_properties_manager(
+      base::DefaultClock::GetInstance(), drp_test_context->pref_service(),
+      drp_test_context->task_runner());
+  drp_test_context->config()->SetNetworkPropertiesManagerForTesting(
+      &network_properties_manager);
+  drp_test_context->InitSettings();
+
+  MockDataReductionProxyService* mock_service =
+      static_cast<MockDataReductionProxyService*>(
+          drp_test_context->data_reduction_proxy_service());
+
+  DataReductionProxySettings* settings = drp_test_context->settings();
+  GURL http_gurl("http://url.com/");
+  GURL https_gurl("https://url.com/");
+
+  // The pref is disabled, so correspondingly should be the proxy.
+  EXPECT_CALL(*mock_service, SetProxyPrefs(false, false));
+  drp_test_context->SetDataReductionProxyEnabled(false);
+  EXPECT_FALSE(settings->CanUseDataReductionProxy(http_gurl));
+  EXPECT_FALSE(settings->CanUseDataReductionProxy(https_gurl));
+
+  // The pref is enabled, so correspondingly should be the proxy.
+  EXPECT_CALL(*mock_service, SetProxyPrefs(true, false));
+  drp_test_context->SetDataReductionProxyEnabled(true);
+  EXPECT_TRUE(settings->CanUseDataReductionProxy(http_gurl));
+  EXPECT_FALSE(settings->CanUseDataReductionProxy(https_gurl));
+
+  drp_test_context->RunUntilIdle();
+}
+
 TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   // Initialize the pref member in |settings_| without the usual callback
   // so it won't trigger MaybeActivateDataReductionProxy when the pref value
@@ -293,10 +321,6 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
       test_context_->task_runner());
   test_context_->config()->SetNetworkPropertiesManagerForTesting(
       &network_properties_manager);
-
-  settings_->spdy_proxy_auth_enabled_.Init(
-      test_context_->GetDataReductionProxyEnabledPrefName(),
-      settings_->GetOriginalProfilePrefs());
 
   // TODO(bengr): Test enabling/disabling while a secure proxy check is
   // outstanding.
@@ -348,13 +372,12 @@ TEST_F(DataReductionProxySettingsTest, TestSetDataReductionProxyEnabled) {
   test_context_->SetDataReductionProxyEnabled(true);
   InitDataReductionProxy(true);
 
-  ExpectSetProxyPrefs(false, false);
-  settings_->SetDataReductionProxyEnabled(false);
+  test_context_->SetDataReductionProxyEnabled(false);
   test_context_->RunUntilIdle();
   CheckDataReductionProxySyntheticTrial(false);
 
-  ExpectSetProxyPrefs(true, false);
-  settings->SetDataReductionProxyEnabled(true);
+  test_context_->SetDataReductionProxyEnabled(true);
+  test_context_->RunUntilIdle();
   CheckDataReductionProxySyntheticTrial(true);
 }
 
@@ -362,7 +385,6 @@ TEST_F(DataReductionProxySettingsTest, TestSettingsEnabledStateHistograms) {
   const char kUMAEnabledState[] = "DataReductionProxy.EnabledState";
   base::HistogramTester histogram_tester;
 
-  InitPrefMembers();
   settings_->data_reduction_proxy_service_->SetIOData(
       test_context_->io_data()->GetWeakPtr());
 
@@ -370,14 +392,16 @@ TEST_F(DataReductionProxySettingsTest, TestSettingsEnabledStateHistograms) {
   test_context_->RunUntilIdle();
   histogram_tester.ExpectTotalCount(kUMAEnabledState, 0);
 
-  settings_->SetDataReductionProxyEnabled(true);
+  test_context_->SetDataReductionProxyEnabled(true);
+  settings_->MaybeActivateDataReductionProxy(false);
   test_context_->RunUntilIdle();
   histogram_tester.ExpectBucketCount(
       kUMAEnabledState, DATA_REDUCTION_SETTINGS_ACTION_OFF_TO_ON, 1);
   histogram_tester.ExpectBucketCount(
       kUMAEnabledState, DATA_REDUCTION_SETTINGS_ACTION_ON_TO_OFF, 0);
 
-  settings_->SetDataReductionProxyEnabled(false);
+  test_context_->SetDataReductionProxyEnabled(false);
+  settings_->MaybeActivateDataReductionProxy(false);
   test_context_->RunUntilIdle();
   histogram_tester.ExpectBucketCount(
       kUMAEnabledState, DATA_REDUCTION_SETTINGS_ACTION_OFF_TO_ON, 1);
@@ -395,7 +419,6 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
 
   base::Time last_enabled_time = clock.Now();
 
-  InitPrefMembers();
   {
     base::HistogramTester histogram_tester;
     settings_->data_reduction_proxy_service_->SetIOData(
@@ -405,7 +428,8 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
     histogram_tester.ExpectTotalCount(kUMAEnabledState, 0);
 
     // Enable data reduction proxy. The metric should be recorded.
-    settings_->SetDataReductionProxyEnabled(true /* enabled */);
+    test_context_->SetDataReductionProxyEnabled(true);
+    settings_->MaybeActivateDataReductionProxy(false);
     test_context_->RunUntilIdle();
 
     last_enabled_time = clock.Now();
@@ -420,13 +444,14 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
   {
     // Simulate turning off and on of data reduction proxy while Chromium is
     // running.
-    settings_->SetDataReductionProxyEnabled(false /* enabled */);
+    test_context_->SetDataReductionProxyEnabled(false);
+    settings_->MaybeActivateDataReductionProxy(false);
     clock.Advance(base::TimeDelta::FromDays(1));
-    base::HistogramTester histogram_tester;
     last_enabled_time = clock.Now();
 
-    settings_->spdy_proxy_auth_enabled_.SetValue(true);
-    settings_->MaybeActivateDataReductionProxy(false);
+    test_context_->SetDataReductionProxyEnabled(true);
+    base::HistogramTester histogram_tester;
+    settings_->MaybeActivateDataReductionProxy(false /* at_startup */);
     test_context_->RunUntilIdle();
     histogram_tester.ExpectUniqueSample(kUMAEnabledState, 0, 1);
     EXPECT_EQ(
@@ -442,7 +467,7 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
     base::HistogramTester histogram_tester;
     // Simulate Chromium start up. Data reduction proxy was enabled
     // |advance_clock_days| ago.
-    settings_->MaybeActivateDataReductionProxy(true);
+    settings_->MaybeActivateDataReductionProxy(true /* at_startup */);
     test_context_->RunUntilIdle();
     histogram_tester.ExpectUniqueSample(kUMAEnabledState, advance_clock_days,
                                         1);
@@ -455,19 +480,35 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
 
 // Verify that the pref and the UMA metric are not recorded for existing users
 // that already have data reduction proxy on.
-TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledExistingUser) {
-  InitPrefMembers();
+TEST(DataReductionProxySettingsStandaloneTest,
+     TestDaysSinceEnabledExistingUser) {
+  base::test::ScopedTaskEnvironment task_environment{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
+      DataReductionProxyTestContext::Builder()
+          .WithMockConfig()
+          .WithMockDataReductionProxyService()
+          .SkipSettingsInitialization()
+          .Build();
+
+  NetworkPropertiesManager network_properties_manager(
+      base::DefaultClock::GetInstance(), drp_test_context->pref_service(),
+      drp_test_context->task_runner());
+  drp_test_context->config()->SetNetworkPropertiesManagerForTesting(
+      &network_properties_manager);
+
+  // The proxy is enabled initially.
+  drp_test_context->config()->UpdateConfigForTesting(true, true, true);
+  drp_test_context->InitSettings();
+
   base::HistogramTester histogram_tester;
-  settings_->data_reduction_proxy_service_->SetIOData(
-      test_context_->io_data()->GetWeakPtr());
-  test_context_->RunUntilIdle();
 
   // Simulate Chromium startup with data reduction proxy already enabled.
-  settings_->spdy_proxy_auth_enabled_.SetValue(true);
-  settings_->MaybeActivateDataReductionProxy(true /* at_startup */);
-  test_context_->RunUntilIdle();
+  drp_test_context->settings()->MaybeActivateDataReductionProxy(
+      true /* at_startup */);
+  drp_test_context->RunUntilIdle();
   histogram_tester.ExpectTotalCount("DataReductionProxy.DaysSinceEnabled", 0);
-  EXPECT_EQ(0, test_context_->pref_service()->GetInt64(
+  EXPECT_EQ(0, drp_test_context->pref_service()->GetInt64(
                    prefs::kDataReductionProxyLastEnabledTime));
 }
 
@@ -476,7 +517,6 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceSavingsCleared) {
   clock.Advance(base::TimeDelta::FromDays(1));
   ResetSettings(&clock);
 
-  InitPrefMembers();
   base::HistogramTester histogram_tester;
   test_context_->pref_service()->SetInt64(
       prefs::kDataReductionProxySavingsClearedNegativeSystemClock,
@@ -489,7 +529,7 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceSavingsCleared) {
   clock.Advance(base::TimeDelta::FromDays(100));
 
   // Simulate Chromium startup with data reduction proxy already enabled.
-  settings_->spdy_proxy_auth_enabled_.SetValue(true);
+  test_context_->SetDataReductionProxyEnabled(true);
   settings_->MaybeActivateDataReductionProxy(true /* at_startup */);
   test_context_->RunUntilIdle();
   histogram_tester.ExpectUniqueSample(

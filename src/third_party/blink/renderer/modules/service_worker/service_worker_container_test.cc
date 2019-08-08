@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
@@ -276,6 +277,8 @@ TEST_F(ServiceWorkerContainerTest, GetRegistration_CrossOriginURLIsRejected) {
 }
 
 class StubWebServiceWorkerProvider {
+  DISALLOW_NEW();
+
  public:
   StubWebServiceWorkerProvider()
       : register_call_count_(0),

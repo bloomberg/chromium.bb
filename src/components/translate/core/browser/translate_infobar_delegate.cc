@@ -24,7 +24,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace translate {
-namespace {
 // The number of times user should consecutively translate for "Always
 // Translate" to automatically trigger.
 const int kAutoAlwaysThreshold = 5;
@@ -35,7 +34,6 @@ const int kAutoNeverThreshold = 10;
 const int kMaxNumberOfAutoAlways = 2;
 // The maximum number of times "Never Translate" is automatically triggered.
 const int kMaxNumberOfAutoNever = 2;
-}  // namespace
 
 const base::Feature kTranslateCompactUI{"TranslateCompactUI",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

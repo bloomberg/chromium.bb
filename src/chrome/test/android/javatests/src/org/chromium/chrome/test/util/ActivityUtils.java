@@ -18,13 +18,13 @@ import org.junit.Assert;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Locale;
 import java.util.concurrent.Callable;
@@ -161,7 +161,7 @@ public class ActivityUtils {
     }
 
     private static void logRunningChromeActivities() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             StringBuilder builder = new StringBuilder("Running Chrome Activities: ");
             for (Activity activity : ApplicationStatus.getRunningActivities()) {
                 builder.append(String.format(Locale.US, "\n   %s : %d",

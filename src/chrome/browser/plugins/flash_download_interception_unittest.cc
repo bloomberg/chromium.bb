@@ -46,14 +46,6 @@ class FlashDownloadInterceptionTest : public ChromeRenderViewHostTestHarness {
   const GURL source_url_;
 };
 
-TEST_F(FlashDownloadInterceptionTest, PreferHtmlOverPluginsOff) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kPreferHtmlOverPlugins);
-
-  EXPECT_FALSE(
-      ShouldStopFlashDownloadAction("https://get.adobe.com/flashplayer/"));
-}
-
 TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
   const char* const flash_intercept_urls[] = {
       "https://get.adobe.com/flashplayer/",

@@ -15,6 +15,7 @@
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "third_party/blink/public/common/service_worker/service_worker_types.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 
@@ -33,7 +34,6 @@ ServiceWorkerNetworkProviderForWorker::Create(
   auto provider = base::WrapUnique(new ServiceWorkerNetworkProviderForWorker(
       is_secure_context, std::move(response_override)));
   provider->context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      info->provider_id,
       blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
       std::move(info->client_request), std::move(info->host_ptr_info),
       std::move(controller_info), std::move(fallback_loader_factory));
@@ -53,7 +53,6 @@ ServiceWorkerNetworkProviderForWorker::
 void ServiceWorkerNetworkProviderForWorker::WillSendRequest(
     blink::WebURLRequest& request) {
   auto extra_data = std::make_unique<RequestExtraData>();
-  extra_data->set_service_worker_provider_id(provider_id());
   extra_data->set_initiated_in_secure_context(is_secure_context_);
   if (response_override_) {
     DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
@@ -111,12 +110,6 @@ int64_t ServiceWorkerNetworkProviderForWorker::ControllerServiceWorkerID() {
 }
 
 void ServiceWorkerNetworkProviderForWorker::DispatchNetworkQuiet() {}
-
-int ServiceWorkerNetworkProviderForWorker::provider_id() const {
-  if (!context_)
-    return kInvalidServiceWorkerProviderId;
-  return context_->provider_id();
-}
 
 ServiceWorkerNetworkProviderForWorker::ServiceWorkerNetworkProviderForWorker(
     bool is_secure_context,

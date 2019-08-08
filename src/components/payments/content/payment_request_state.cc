@@ -147,6 +147,7 @@ void PaymentRequestState::FinishedGetAllSWPaymentInstruments() {
   get_all_instruments_finished_ = true;
   are_requested_methods_supported_ |= !available_instruments_.empty();
   NotifyOnGetAllPaymentInstrumentsFinished();
+  NotifyInitialized();
 
   // Fulfill the pending CanMakePayment call.
   if (can_make_payment_callback_) {
@@ -303,6 +304,12 @@ void PaymentRequestState::GeneratePaymentResponse() {
       selected_shipping_profile_, selected_contact_profile_, this);
 }
 
+void PaymentRequestState::OnPaymentAppWindowClosed() {
+  DCHECK(selected_instrument_);
+  response_helper_.reset();
+  selected_instrument_->OnPaymentAppWindowClosed();
+}
+
 void PaymentRequestState::RecordUseStats() {
   if (spec_->request_shipping()) {
     DCHECK(selected_shipping_profile_);
@@ -457,6 +464,18 @@ bool PaymentRequestState::IsInitialized() const {
   return get_all_instruments_finished_;
 }
 
+void PaymentRequestState::SelectDefaultShippingAddressAndNotifyObservers() {
+  // Only pre-select an address if the merchant provided at least one selected
+  // shipping option, and the top profile is complete. Assumes that profiles
+  // have already been sorted for completeness and frecency.
+  if (!shipping_profiles().empty() && spec_->selected_shipping_option() &&
+      profile_comparator()->IsShippingComplete(shipping_profiles_[0])) {
+    selected_shipping_profile_ = shipping_profiles()[0];
+  }
+
+  UpdateIsReadyToPayAndNotifyObservers();
+}
+
 void PaymentRequestState::PopulateProfileCache() {
   std::vector<autofill::AutofillProfile*> profiles =
       personal_data_manager_->GetProfilesToSuggest();
@@ -511,14 +530,6 @@ void PaymentRequestState::PopulateProfileCache() {
 }
 
 void PaymentRequestState::SetDefaultProfileSelections() {
-  // Only pre-select an address if the merchant provided at least one selected
-  // shipping option, and the top profile is complete. Assumes that profiles
-  // have already been sorted for completeness and frecency.
-  if (!shipping_profiles().empty() && spec_->selected_shipping_option() &&
-      profile_comparator()->IsShippingComplete(shipping_profiles_[0])) {
-    selected_shipping_profile_ = shipping_profiles()[0];
-  }
-
   // Contact profiles were ordered by completeness in addition to frecency;
   // the first one is the best default selection.
   if (!contact_profiles().empty() &&
@@ -539,7 +550,8 @@ void PaymentRequestState::SetDefaultProfileSelections() {
   selected_instrument_ = first_complete_instrument == instruments.end()
                              ? nullptr
                              : first_complete_instrument->get();
-  UpdateIsReadyToPayAndNotifyObservers();
+
+  SelectDefaultShippingAddressAndNotifyObservers();
 
   bool has_complete_instrument =
       available_instruments().empty()
@@ -560,7 +572,6 @@ void PaymentRequestState::UpdateIsReadyToPayAndNotifyObservers() {
 void PaymentRequestState::NotifyOnGetAllPaymentInstrumentsFinished() {
   for (auto& observer : observers_)
     observer.OnGetAllPaymentInstrumentsFinished();
-  NotifyInitialized();
 }
 
 void PaymentRequestState::NotifyOnSelectedInformationChanged() {

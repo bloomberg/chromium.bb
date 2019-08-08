@@ -12,6 +12,10 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/page_transition_types.h"
 
+namespace content {
+class WebContents;
+}
+
 class GURL;
 class PrefRegistrySimple;
 class Profile;
@@ -45,12 +49,10 @@ class ExternalProtocolHandler {
     virtual BlockState GetBlockState(const std::string& scheme,
                                      Profile* profile) = 0;
     virtual void BlockRequest() = 0;
-    virtual void RunExternalProtocolDialog(
-        const GURL& url,
-        int render_process_host_id,
-        int routing_id,
-        ui::PageTransition page_transition,
-        bool has_user_gesture) = 0;
+    virtual void RunExternalProtocolDialog(const GURL& url,
+                                           content::WebContents* web_contents,
+                                           ui::PageTransition page_transition,
+                                           bool has_user_gesture) = 0;
     virtual void LaunchUrlWithoutSecurityCheck(
         const GURL& url,
         content::WebContents* web_contents) = 0;
@@ -124,8 +126,7 @@ class ExternalProtocolHandler {
   // TODO(davidsac): Consider refactoring this to take a WebContents directly.
   // crbug.com/668289
   static void RunExternalProtocolDialog(const GURL& url,
-                                        int render_process_host_id,
-                                        int routing_id,
+                                        content::WebContents* web_contents,
                                         ui::PageTransition page_transition,
                                         bool has_user_gesture);
 

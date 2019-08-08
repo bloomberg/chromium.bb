@@ -21,8 +21,7 @@ class EncryptionMigrationScreen
   using ContinueLoginCallback = base::OnceCallback<void(const UserContext&)>;
   using RestartLoginCallback = base::OnceCallback<void(const UserContext&)>;
 
-  EncryptionMigrationScreen(BaseScreenDelegate* base_screen_delegate,
-                            EncryptionMigrationScreenView* view);
+  explicit EncryptionMigrationScreen(EncryptionMigrationScreenView* view);
   ~EncryptionMigrationScreen() override;
 
   // BaseScreen implementation:

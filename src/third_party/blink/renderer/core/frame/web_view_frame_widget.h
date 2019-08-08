@@ -53,17 +53,19 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void DidBeginFrame() override;
   void BeginRafAlignedInput() override;
   void EndRafAlignedInput() override;
+  void BeginUpdateLayers() override;
+  void EndUpdateLayers() override;
+  void BeginCommitCompositorFrame() override;
+  void EndCommitCompositorFrame() override;
   void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
                        LifecycleUpdateReason reason) override;
-  void PaintContent(cc::PaintCanvas*, const WebRect& view_port) override;
-  void CompositeAndReadbackAsync(
-      base::OnceCallback<void(const SkBitmap&)>) override;
   void ThemeChanged() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
   void SetCursorVisibilityState(bool is_visible) override;
+  void OnFallbackCursorModeToggled(bool is_on) override;
   void ApplyViewportChanges(const ApplyViewportChangesArgs&) override;
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override;

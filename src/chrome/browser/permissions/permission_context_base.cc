@@ -82,7 +82,7 @@ void LogPermissionBlockedMessage(content::WebContents* web_contents,
                                  const char* message,
                                  ContentSettingsType type) {
   web_contents->GetMainFrame()->AddMessageToConsole(
-      content::CONSOLE_MESSAGE_LEVEL_WARNING,
+      blink::mojom::ConsoleMessageLevel::kWarning,
       base::StringPrintf(message,
                          PermissionUtil::GetPermissionString(type).c_str()));
 }

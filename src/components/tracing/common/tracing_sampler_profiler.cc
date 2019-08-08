@@ -27,7 +27,7 @@
 #include <dlfcn.h>
 
 #include "base/trace_event/cfi_backtrace_android.h"
-#include "components/tracing/common/native_stack_sampler_android.h"
+#include "components/tracing/common/stack_sampler_android.h"
 #endif
 
 namespace tracing {
@@ -50,7 +50,7 @@ TracingSamplerProfiler::TracingProfileBuilder::GetModuleCache() {
 }
 
 void TracingSamplerProfiler::TracingProfileBuilder::OnSampleCompleted(
-    std::vector<base::StackSamplingProfiler::Frame> frames) {
+    std::vector<base::Frame> frames) {
   int process_priority = base::Process::Current().GetPriority();
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
                        "ProcessPriority", TRACE_EVENT_SCOPE_THREAD, "priority",
@@ -201,7 +201,7 @@ void TracingSamplerProfiler::OnTraceLogEnabled() {
   profiler_ = std::make_unique<base::StackSamplingProfiler>(
       sampled_thread_id_, params,
       std::make_unique<TracingProfileBuilder>(sampled_thread_id_),
-      std::make_unique<NativeStackSamplerAndroid>(sampled_thread_id_));
+      std::make_unique<StackSamplerAndroid>(sampled_thread_id_));
 #else
   profiler_ = std::make_unique<base::StackSamplingProfiler>(
       sampled_thread_id_, params,

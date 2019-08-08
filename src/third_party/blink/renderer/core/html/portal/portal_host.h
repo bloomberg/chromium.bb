@@ -7,12 +7,14 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
 class ExecutionContext;
 class LocalDOMWindow;
+class SecurityOrigin;
 
 class CORE_EXPORT PortalHost : public EventTargetWithInlineData,
                                public Supplement<LocalDOMWindow> {
@@ -30,6 +32,11 @@ class CORE_EXPORT PortalHost : public EventTargetWithInlineData,
   // EventTarget overrides
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
+  PortalHost* ToPortalHost() override;
+
+  void ReceiveMessage(BlinkTransferableMessage message,
+                      scoped_refptr<const SecurityOrigin> source_origin,
+                      scoped_refptr<const SecurityOrigin> target_origin);
 };
 
 }  // namespace blink

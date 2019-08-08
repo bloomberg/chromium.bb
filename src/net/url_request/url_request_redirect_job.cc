@@ -114,7 +114,7 @@ void URLRequestRedirectJob::StartAsync() {
   fake_headers_ = new HttpResponseHeaders(
       HttpUtil::AssembleRawHeaders(header_string.c_str(),
                                    header_string.length()));
-  DCHECK(fake_headers_->IsRedirect(NULL));
+  DCHECK(fake_headers_->IsRedirect(nullptr));
 
   request()->net_log().AddEvent(
       NetLogEventType::URL_REQUEST_FAKE_RESPONSE_HEADERS_CREATED,

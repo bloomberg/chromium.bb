@@ -14,16 +14,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/viz/common/gl_helper.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
-#include "content/renderer/media/stream/media_stream_video_capturer_source.h"
-#include "content/renderer/media/stream/media_stream_video_source.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -32,6 +32,18 @@
 using media::VideoFrame;
 
 namespace content {
+
+namespace {
+
+// Return the gfx::ColorSpace that the pixels resulting from calling
+// ConvertToYUVFrame on |image| will be in.
+gfx::ColorSpace GetImageYUVColorSpace(sk_sp<SkImage> image) {
+  // TODO: Determine the ColorSpace::MatrixID and ColorSpace::RangeID that the
+  // calls to libyuv are assuming.
+  return gfx::ColorSpace();
+}
+
+}  // namespace
 
 // Implementation VideoCapturerSource that is owned by
 // MediaStreamVideoCapturerSource and delegates the Start/Stop calls to
@@ -176,7 +188,7 @@ void CanvasCaptureHandler::SendNewFrame(
                                 static_cast<const uint8_t*>(pixmap.addr(0, 0)),
                                 gfx::Size(pixmap.width(), pixmap.height()),
                                 pixmap.rowBytes(), pixmap.colorType()),
-              timestamp, image->refColorSpace());
+              timestamp, GetImageYUVColorSpace(image));
     return;
   }
 
@@ -269,7 +281,7 @@ void CanvasCaptureHandler::ReadARGBPixelsSync(sk_sp<SkImage> image) {
           is_opaque, false /* flip */,
           temp_argb_frame->visible_data(VideoFrame::kARGBPlane), image_size,
           temp_argb_frame->stride(VideoFrame::kARGBPlane), kN32_SkColorType),
-      timestamp, image->refColorSpace());
+      timestamp, GetImageYUVColorSpace(image));
 }
 
 void CanvasCaptureHandler::ReadARGBPixelsAsync(
@@ -325,16 +337,12 @@ void CanvasCaptureHandler::ReadYUVPixelsAsync(
   const bool result = backend_texture.getGLTextureInfo(&texture_info);
   DCHECK(result);
   DCHECK(context_provider->GetGLHelper());
-  const gpu::MailboxHolder& mailbox_holder =
-      context_provider->GetGLHelper()->ProduceMailboxHolderFromTexture(
-          texture_info.fID);
-  DCHECK_EQ(static_cast<int>(texture_info.fTarget), GL_TEXTURE_2D);
   viz::ReadbackYUVInterface* const yuv_reader =
       context_provider->GetGLHelper()->GetReadbackPipelineYUV(
           surface_origin != kTopLeft_GrSurfaceOrigin);
   yuv_reader->ReadbackYUV(
-      mailbox_holder.mailbox, mailbox_holder.sync_token, image_size,
-      gfx::Rect(image_size), output_frame->stride(media::VideoFrame::kYPlane),
+      texture_info.fID, image_size, gfx::Rect(image_size),
+      output_frame->stride(media::VideoFrame::kYPlane),
       output_frame->visible_data(media::VideoFrame::kYPlane),
       output_frame->stride(media::VideoFrame::kUPlane),
       output_frame->visible_data(media::VideoFrame::kUPlane),
@@ -361,7 +369,7 @@ void CanvasCaptureHandler::OnARGBPixelsReadAsync(
   }
   // Let |image| fall out of scope after we are done reading.
   const bool is_opaque = image->isOpaque();
-  const auto color_space = image->refColorSpace();
+  const auto color_space = GetImageYUVColorSpace(image);
   image = nullptr;
 
   SendFrame(
@@ -383,7 +391,7 @@ void CanvasCaptureHandler::OnYUVPixelsReadAsync(
     DLOG(ERROR) << "Couldn't read SkImage using async callback";
     return;
   }
-  SendFrame(yuv_frame, this_frame_ticks, image->refColorSpace());
+  SendFrame(yuv_frame, this_frame_ticks, GetImageYUVColorSpace(image));
 }
 
 scoped_refptr<media::VideoFrame> CanvasCaptureHandler::ConvertToYUVFrame(
@@ -447,7 +455,7 @@ scoped_refptr<media::VideoFrame> CanvasCaptureHandler::ConvertToYUVFrame(
 
 void CanvasCaptureHandler::SendFrame(scoped_refptr<VideoFrame> video_frame,
                                      base::TimeTicks this_frame_ticks,
-                                     sk_sp<SkColorSpace> color_space) {
+                                     const gfx::ColorSpace& color_space) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
 
   // If this function is called asynchronously, |delegate_| might have been
@@ -458,8 +466,8 @@ void CanvasCaptureHandler::SendFrame(scoped_refptr<VideoFrame> video_frame,
   if (!first_frame_ticks_)
     first_frame_ticks_ = this_frame_ticks;
   video_frame->set_timestamp(this_frame_ticks - *first_frame_ticks_);
-  if (color_space)
-    video_frame->set_color_space(gfx::ColorSpace(*color_space));
+  if (color_space.IsValid())
+    video_frame->set_color_space(color_space);
 
   last_frame_ = video_frame;
   io_task_runner_->PostTask(
@@ -477,8 +485,8 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
   base::Base64Encode(base::RandBytesAsString(64), &str_track_id);
   const blink::WebString track_id = blink::WebString::FromASCII(str_track_id);
   media::VideoCaptureFormats preferred_formats = source->GetPreferredFormats();
-  MediaStreamVideoSource* media_stream_source =
-      new MediaStreamVideoCapturerSource(
+  blink::MediaStreamVideoSource* media_stream_source =
+      new blink::MediaStreamVideoCapturerSource(
           blink::WebPlatformMediaStreamSource::SourceStoppedCallback(),
           std::move(source));
   blink::WebMediaStreamSource webkit_source;
@@ -491,8 +499,8 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
       false /* is_device_capture */));
 
   web_track->Initialize(webkit_source);
-  web_track->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
-      media_stream_source, MediaStreamVideoSource::ConstraintsCallback(),
+  web_track->SetPlatformTrack(std::make_unique<blink::MediaStreamVideoTrack>(
+      media_stream_source, blink::MediaStreamVideoSource::ConstraintsCallback(),
       true));
 }
 

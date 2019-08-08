@@ -465,7 +465,8 @@ void RenderWidgetHostViewEventHandler::OnScrollEvent(ui::ScrollEvent* event) {
       mouse_wheel_phase_handler_.ResetTouchpadScrollSequence();
     } else if (event->type() == ui::ET_SCROLL_FLING_CANCEL) {
       // The user has put their fingers down.
-      DCHECK_EQ(blink::kWebGestureDeviceTouchpad, gesture_event.SourceDevice());
+      DCHECK_EQ(blink::WebGestureDevice::kTouchpad,
+                gesture_event.SourceDevice());
       mouse_wheel_phase_handler_.TouchpadScrollingMayBegin();
     }
   }
@@ -547,7 +548,7 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     // event to stop any in-progress flings.
     blink::WebGestureEvent fling_cancel = gesture;
     fling_cancel.SetType(blink::WebInputEvent::kGestureFlingCancel);
-    fling_cancel.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+    fling_cancel.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
     if (ShouldRouteEvents()) {
       host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
           host_view_, &fling_cancel,

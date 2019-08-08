@@ -23,8 +23,6 @@ void BackgroundFetchRegistrationNotifier::AddObserver(
   // Observe connection errors, which occur when the JavaScript object or the
   // renderer hosting them goes away. (For example through navigation.) The
   // observer gets freed together with |this|, thus the Unretained is safe.
-  // TODO(crbug.com/777764): This doesn't actually work for the cases where
-  // the closing of the binding is non-exceptional.
   observer.set_connection_error_handler(
       base::BindOnce(&BackgroundFetchRegistrationNotifier::OnConnectionError,
                      base::Unretained(this), unique_id, observer.get()));
@@ -33,12 +31,14 @@ void BackgroundFetchRegistrationNotifier::AddObserver(
 }
 
 void BackgroundFetchRegistrationNotifier::Notify(
-    const blink::mojom::BackgroundFetchRegistration& registration) {
-  auto range = observers_.equal_range(registration.unique_id);
+    const std::string& unique_id,
+    const blink::mojom::BackgroundFetchRegistrationData& registration_data) {
+  auto range = observers_.equal_range(unique_id);
   for (auto it = range.first; it != range.second; ++it) {
-    it->second->OnProgress(registration.upload_total, registration.uploaded,
-                           registration.download_total, registration.downloaded,
-                           registration.result, registration.failure_reason);
+    it->second->OnProgress(
+        registration_data.upload_total, registration_data.uploaded,
+        registration_data.download_total, registration_data.downloaded,
+        registration_data.result, registration_data.failure_reason);
   }
 }
 

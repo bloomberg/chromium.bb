@@ -10,7 +10,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/no_destructor.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -67,39 +67,8 @@ EntityData& EntityData::operator=(EntityData&& other) {
   return *this;
 }
 
-EntityDataPtr EntityData::PassToPtr() {
-  // Check the entity is valid before passing it out.
-  DCHECK(base::IsStringUTF8(non_unique_name));
-
-  EntityDataPtr target;
-  target.swap_value(this);
-  return target;
-}
-
-EntityDataPtr EntityData::UpdateId(const std::string& new_id) const {
-  EntityData entity_data(*this);
-  entity_data.id = new_id;
-  EntityDataPtr target;
-  target.swap_value(&entity_data);
-  return target;
-}
-
-EntityDataPtr EntityData::UpdateClientTagHash(
-    const std::string& new_client_tag_hash) const {
-  EntityData entity_data(*this);
-  entity_data.client_tag_hash = new_client_tag_hash;
-  EntityDataPtr target;
-  target.swap_value(&entity_data);
-  return target;
-}
-
-EntityDataPtr EntityData::UpdateSpecifics(
-    const sync_pb::EntitySpecifics& new_specifics) const {
-  EntityData entity_data(*this);
-  entity_data.specifics = new_specifics;
-  EntityDataPtr target;
-  target.swap_value(&entity_data);
-  return target;
+std::unique_ptr<EntityData> EntityData::Clone() const {
+  return base::WrapUnique(new EntityData(*this));
 }
 
 #define ADD_TO_DICT(dict, value) \
@@ -147,19 +116,6 @@ size_t EntityData::EstimateMemoryUsage() const {
   memory_usage += EstimateMemoryUsage(parent_id);
   memory_usage += EstimateMemoryUsage(unique_position);
   return memory_usage;
-}
-
-void EntityDataTraits::SwapValue(EntityData* dest, EntityData* src) {
-  std::swap(*dest, *src);
-}
-
-bool EntityDataTraits::HasValue(const EntityData& value) {
-  return !value.client_tag_hash.empty() || !value.id.empty();
-}
-
-const EntityData& EntityDataTraits::DefaultValue() {
-  static base::NoDestructor<EntityData> default_instance;
-  return *default_instance;
 }
 
 void PrintTo(const EntityData& entity_data, std::ostream* os) {

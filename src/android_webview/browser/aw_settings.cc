@@ -71,6 +71,7 @@ AwSettings::AwSettings(JNIEnv* env,
     : WebContentsObserver(web_contents),
       renderer_prefs_initialized_(false),
       javascript_can_open_windows_automatically_(false),
+      allow_third_party_cookies_(false),
       aw_settings_(env, obj) {
   web_contents->SetUserData(kAwSettingsUserDataKey,
                             std::make_unique<AwSettingsUserData>(this));
@@ -91,6 +92,10 @@ AwSettings::~AwSettings() {
 
 bool AwSettings::GetJavaScriptCanOpenWindowsAutomatically() {
   return javascript_can_open_windows_automatically_;
+}
+
+bool AwSettings::GetAllowThirdPartyCookies() {
+  return allow_third_party_cookies_;
 }
 
 void AwSettings::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -143,6 +148,7 @@ void AwSettings::UpdateEverythingLocked(JNIEnv* env,
   UpdateRendererPreferencesLocked(env, obj);
   UpdateOffscreenPreRasterLocked(env, obj);
   UpdateWillSuppressErrorStateLocked(env, obj);
+  UpdateCookiePolicyLocked(env, obj);
 }
 
 void AwSettings::UpdateUserAgentLocked(JNIEnv* env,
@@ -233,7 +239,6 @@ void AwSettings::UpdateRendererPreferencesLocked(
 
   if (!renderer_prefs_initialized_) {
     content::UpdateFontRendererPreferencesFromSystemSettings(prefs);
-    content::UpdateFocusRingPreferencesFromSystemSettings(prefs);
     renderer_prefs_initialized_ = true;
     update_prefs = true;
   }
@@ -256,9 +261,20 @@ void AwSettings::UpdateRendererPreferencesLocked(
     // AndroidWebview does not use per-site storage partitions.
     content::StoragePartition* storage_partition =
         content::BrowserContext::GetDefaultStoragePartition(aw_browser_context);
+    std::string expanded_language_list =
+        net::HttpUtil::ExpandLanguageList(prefs->accept_languages);
     storage_partition->GetNetworkContext()->SetAcceptLanguage(
-        net::HttpUtil::ExpandLanguageList(prefs->accept_languages));
+        net::HttpUtil::GenerateAcceptLanguageHeader(expanded_language_list));
   }
+}
+
+void AwSettings::UpdateCookiePolicyLocked(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj) {
+  if (!web_contents())
+    return;
+
+  allow_third_party_cookies_ =
+      Java_AwSettings_getAcceptThirdPartyCookiesLocked(env, obj);
 }
 
 void AwSettings::UpdateOffscreenPreRasterLocked(
@@ -453,10 +469,10 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
     // Using 100M instead of max int to avoid overflows.
     web_prefs->minimum_accelerated_2d_canvas_size = 100 * 1000 * 1000;
   }
-  web_prefs->webgl1_enabled = web_prefs->webgl1_enabled &&
-                              enable_supported_hardware_accelerated_features;
-  web_prefs->webgl2_enabled = web_prefs->webgl2_enabled &&
-                              enable_supported_hardware_accelerated_features;
+  // Always allow webgl. Webview always requires access to the GPU even if
+  // it only does software draws. WebGL will not show up in software draw so
+  // there is no more brokenness for user. This makes it easier for apps that
+  // want to start running webgl content before webview is first attached.
 
   // If strict mixed content checking is enabled then running should not be
   // allowed.
@@ -505,6 +521,16 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
       break;
     }
   }
+}
+
+bool AwSettings::GetAllowFileAccess() {
+  // TODO(timvolodine): cache this lazily on update, crbug.com/949590
+  JNIEnv* env = base::android::AttachCurrentThread();
+  CHECK(env);
+  ScopedJavaLocalRef<jobject> scoped_obj = aw_settings_.get(env);
+  if (scoped_obj.is_null())
+    return true;
+  return Java_AwSettings_getAllowFileAccess(env, scoped_obj);
 }
 
 static jlong JNI_AwSettings_Init(JNIEnv* env,

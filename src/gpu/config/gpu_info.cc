@@ -67,6 +67,8 @@ const char* ImageDecodeAcceleratorSubsamplingToString(
       return "4:2:0";
     case gpu::ImageDecodeAcceleratorSubsampling::k422:
       return "4:2:2";
+    case gpu::ImageDecodeAcceleratorSubsampling::k444:
+      return "4:4:4";
   }
 }
 
@@ -186,7 +188,6 @@ GPUInfo::GPUInfo()
       amd_switchable(false),
       gl_reset_notification_strategy(0),
       software_rendering(false),
-      direct_rendering(true),
       sandboxed(false),
       in_process_gpu(true),
       passthrough_cmd_decoder(false),
@@ -243,7 +244,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     std::string gl_ws_extensions;
     uint32_t gl_reset_notification_strategy;
     bool software_rendering;
-    bool direct_rendering;
+    std::string direct_rendering_version;
     bool sandboxed;
     bool in_process_gpu;
     bool passthrough_cmd_decoder;
@@ -306,7 +307,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
       static_cast<int>(gl_reset_notification_strategy));
   // TODO(kbr): add performance_stats.
   enumerator->AddBool("softwareRendering", software_rendering);
-  enumerator->AddBool("directRendering", direct_rendering);
+  enumerator->AddString("directRenderingVersion", direct_rendering_version);
   enumerator->AddBool("sandboxed", sandboxed);
   enumerator->AddBool("inProcessGpu", in_process_gpu);
   enumerator->AddBool("passthroughCmdDecoder", passthrough_cmd_decoder);

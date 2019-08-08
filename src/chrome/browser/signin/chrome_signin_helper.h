@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_HELPER_H_
 #define CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_HELPER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
+#include "base/supports_user_data.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/resource_request_info.h"
 
@@ -25,6 +27,9 @@ class ProfileIOData;
 // profile, so that Gaia can modify its response accordingly and let Chrome
 // handle signin accordingly.
 namespace signin {
+
+// Key for ManageAccountsHeaderReceivedUserData. Exposed for testing.
+extern const void* const kManageAccountsHeaderReceivedUserDataKey;
 
 class ChromeRequestAdapter : public RequestAdapter {
  public:
@@ -48,7 +53,7 @@ class ChromeRequestAdapter : public RequestAdapter {
 
 class ResponseAdapter {
  public:
-  explicit ResponseAdapter(const net::URLRequest* request);
+  explicit ResponseAdapter(net::URLRequest* request);
   virtual ~ResponseAdapter();
 
   virtual content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter()
@@ -58,8 +63,12 @@ class ResponseAdapter {
   virtual const net::HttpResponseHeaders* GetHeaders() const;
   virtual void RemoveHeader(const std::string& name);
 
+  virtual base::SupportsUserData::Data* GetUserData(const void* key) const;
+  virtual void SetUserData(const void* key,
+                           std::unique_ptr<base::SupportsUserData::Data> data);
+
  private:
-  const net::URLRequest* const request_;
+  net::URLRequest* const request_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponseAdapter);
 };

@@ -81,10 +81,10 @@ class FakeBluetoothProfileServiceProviderDelegate
       const dbus::ObjectPath&,
       base::ScopedFD,
       const bluez::BluetoothProfileServiceProvider::Delegate::Options&,
-      const ConfirmationCallback&) override {}
+      ConfirmationCallback) override {}
 
   void RequestDisconnection(const dbus::ObjectPath&,
-                            const ConfirmationCallback&) override {}
+                            ConfirmationCallback) override {}
 
   void Cancel() override {}
 };

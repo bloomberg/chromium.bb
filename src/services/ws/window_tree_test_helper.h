@@ -126,6 +126,11 @@ class WindowTreeTestHelper {
   in_flight_other_events() {
     return window_tree_->in_flight_other_events_;
   }
+  void ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
+                          ime::mojom::ImeEngineClientPtr client) {
+    window_tree_->ConnectToImeEngine(std::move(engine_request),
+                                     std::move(client));
+  }
 
  private:
   WindowTree* window_tree_;

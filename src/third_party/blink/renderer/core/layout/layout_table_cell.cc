@@ -440,6 +440,9 @@ void LayoutTableCell::StyleDidChange(StyleDifference diff,
   LayoutBlockFlow::StyleDidChange(diff, old_style);
   SetHasBoxDecorationBackground(true);
 
+  if (Row() && Section() && Table() && Table()->ShouldCollapseBorders())
+    SetHasNonCollapsedBorderDecoration(false);
+
   if (!old_style)
     return;
 
@@ -1143,9 +1146,10 @@ void LayoutTableCell::ScrollbarsChanged(bool horizontal_scrollbar_changed,
 
 LayoutTableCell* LayoutTableCell::CreateAnonymous(
     Document* document,
-    scoped_refptr<ComputedStyle> style) {
+    scoped_refptr<ComputedStyle> style,
+    LegacyLayout legacy) {
   LayoutTableCell* layout_object =
-      LayoutObjectFactory::CreateTableCell(*document, *style);
+      LayoutObjectFactory::CreateTableCell(*document, *style, legacy);
   layout_object->SetDocumentForAnonymous(document);
   layout_object->SetStyle(std::move(style));
   return layout_object;
@@ -1156,8 +1160,10 @@ LayoutTableCell* LayoutTableCell::CreateAnonymousWithParent(
   scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent->StyleRef(),
                                                      EDisplay::kTableCell);
+  LegacyLayout legacy =
+      parent->ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
   LayoutTableCell* new_cell = LayoutTableCell::CreateAnonymous(
-      &parent->GetDocument(), std::move(new_style));
+      &parent->GetDocument(), std::move(new_style), legacy);
   return new_cell;
 }
 
@@ -1169,26 +1175,6 @@ bool LayoutTableCell::BackgroundIsKnownToBeOpaqueInRect(
   if (HasLayer() && Table()->ShouldCollapseBorders())
     return false;
   return LayoutBlockFlow::BackgroundIsKnownToBeOpaqueInRect(local_rect);
-}
-
-// TODO(loonybear): Deliberately dump the "inner" box of table cells, since that
-// is what current results reflect.  We'd like to clean up the results to dump
-// both the outer box and the intrinsic padding so that both bits of information
-// are captured by the results.
-LayoutRect LayoutTableCell::DebugRect() const {
-  LayoutRect rect = LayoutRect(
-      Location().X(), Location().Y() + IntrinsicPaddingBefore(), Size().Width(),
-      Size().Height() - IntrinsicPaddingBefore() - IntrinsicPaddingAfter());
-
-  LayoutBlock* cb = ContainingBlock();
-  if (cb)
-    cb->AdjustChildDebugRect(rect);
-
-  return rect;
-}
-
-void LayoutTableCell::AdjustChildDebugRect(LayoutRect& r) const {
-  r.Move(0, -IntrinsicPaddingBefore());
 }
 
 bool LayoutTableCell::HasLineIfEmpty() const {

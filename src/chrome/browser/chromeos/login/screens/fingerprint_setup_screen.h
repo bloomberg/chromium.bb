@@ -14,14 +14,11 @@
 
 namespace chromeos {
 
-class BaseScreenDelegate;
-
 // Controls fingerprint setup. The screen can be shown during OOBE. It allows
 // user to enroll fingerprint on the device.
 class FingerprintSetupScreen : public BaseScreen {
  public:
-  FingerprintSetupScreen(BaseScreenDelegate* base_screen_delegate,
-                         FingerprintSetupScreenView* view,
+  FingerprintSetupScreen(FingerprintSetupScreenView* view,
                          const base::RepeatingClosure& exit_callback);
   ~FingerprintSetupScreen() override;
 

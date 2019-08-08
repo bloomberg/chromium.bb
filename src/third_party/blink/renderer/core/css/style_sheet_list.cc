@@ -29,17 +29,13 @@
 
 namespace blink {
 
-StyleSheetList* StyleSheetList::Create() {
-  return MakeGarbageCollected<StyleSheetList>();
-}
-
 StyleSheetList::StyleSheetList(TreeScope* tree_scope)
     : tree_scope_(tree_scope) {
   CHECK(tree_scope);
 }
 
-inline const HeapVector<TraceWrapperMember<StyleSheet>>&
-StyleSheetList::StyleSheets() const {
+inline const HeapVector<Member<StyleSheet>>& StyleSheetList::StyleSheets()
+    const {
   return GetDocument()->GetStyleEngine().StyleSheetsForStyleSheetList(
       *tree_scope_);
 }
@@ -55,7 +51,7 @@ StyleSheet* StyleSheetList::item(unsigned index) {
     return index < style_sheet_vector_.size() ? style_sheet_vector_[index].Get()
                                               : nullptr;
   }
-  const HeapVector<TraceWrapperMember<StyleSheet>>& sheets = StyleSheets();
+  const HeapVector<Member<StyleSheet>>& sheets = StyleSheets();
   return index < sheets.size() ? sheets[index].Get() : nullptr;
 }
 

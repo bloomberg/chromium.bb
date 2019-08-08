@@ -31,8 +31,7 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
   USING_FAST_MALLOC(WebThreadSupportingGC);
 
  public:
-  static std::unique_ptr<WebThreadSupportingGC> Create(
-      const ThreadCreationParams&);
+  explicit WebThreadSupportingGC(const ThreadCreationParams&);
   ~WebThreadSupportingGC();
 
   void PostTask(const base::Location& location, base::OnceClosure task) {
@@ -76,8 +75,6 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
   }
 
  private:
-  WebThreadSupportingGC(const ThreadCreationParams&);
-
   std::unique_ptr<GCTaskRunner> gc_task_runner_;
 
   std::unique_ptr<Thread> thread_;

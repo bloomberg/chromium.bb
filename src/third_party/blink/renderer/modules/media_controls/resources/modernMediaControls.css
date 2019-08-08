@@ -824,6 +824,7 @@ video::-internal-media-controls-text-track-list,
 audio::-internal-media-controls-overflow-menu-list,
 video::-internal-media-controls-overflow-menu-list {
   position: fixed;
+  z-index: 2; /* Keep the menus above the loading animation at z-index 1. */
   max-width: 50%;
   max-height: 250px;
   min-width: 180px;
@@ -985,7 +986,7 @@ video::-internal-media-controls-text-track-list-header,
 audio::-internal-media-controls-text-track-list-item,
 video::-internal-media-controls-text-track-list-item {
   padding-left: 58px;
-  display: block;
+  justify-content: space-between;
 }
 
 audio::-internal-media-controls-text-track-list-header,
@@ -1168,6 +1169,7 @@ video::cue {
     display: inline;
 
     background-color: rgba(0, 0, 0, 0.8);
+    padding: 2px 2px;
 }
 
 video::-webkit-media-text-track-region {
@@ -1329,6 +1331,15 @@ video::-webkit-media-controls.immersive-mode div[pseudo="-internal-media-control
   margin-left: -32px; /* play button width / -2 */
 }
 
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i],
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i] {
+  height: 43px;
+}
+
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i].closed,
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i].closed {
+  min-width: 43px;
+}
 
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-mute-button" i],
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i],
@@ -1356,6 +1367,13 @@ video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-control
 video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-controls-overflow-button" i]:hover {
   background-color: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
+}
+
+/* Hide modern hover background */
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background {
+  display: none;
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) {

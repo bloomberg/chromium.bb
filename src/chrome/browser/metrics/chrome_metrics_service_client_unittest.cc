@@ -33,7 +33,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/assistant/buildflags.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #endif
 
@@ -60,15 +60,15 @@ class ChromeMetricsServiceClientTest : public testing::Test {
 #if defined(OS_CHROMEOS)
     // ChromeOs Metrics Provider require g_login_state and power manager client
     // initialized before they can be instantiated.
+    chromeos::PowerManagerClient::InitializeFake();
     chromeos::LoginState::Initialize();
-    chromeos::PowerManagerClient::Initialize();
 #endif  // defined(OS_CHROMEOS)
   }
 
   void TearDown() override {
 #if defined(OS_CHROMEOS)
-    chromeos::PowerManagerClient::Shutdown();
     chromeos::LoginState::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
 #endif  // defined(OS_CHROMEOS)
     service_manager_context_.reset();
   }
@@ -156,7 +156,7 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
   size_t expected_providers = 3;
 
   // This is the number of metrics providers that are outside any #if macros.
-  expected_providers += 16;
+  expected_providers += 17;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   expected_providers++;  // ExtensionsMetricsProvider.

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"  // For DISALLOW_COPY_AND_ASSIGN
 #include "cc/paint/paint_image_generator.h"
 
 namespace cc {
@@ -28,9 +27,13 @@ class FakePaintImageGenerator : public PaintImageGenerator {
       std::vector<FrameMetadata> frames = {FrameMetadata()},
       bool allocate_discardable_memory = true,
       std::vector<SkISize> supported_sizes = {});
+  FakePaintImageGenerator(const FakePaintImageGenerator&) = delete;
   ~FakePaintImageGenerator() override;
 
+  FakePaintImageGenerator& operator=(const FakePaintImageGenerator&) = delete;
+
   // PaintImageGenerator implementation.
+  bool IsEligibleForAcceleratedDecoding() const override;
   sk_sp<SkData> GetEncodedData() const override;
   bool GetPixels(const SkImageInfo& info,
                  void* pixels,
@@ -70,8 +73,6 @@ class FakePaintImageGenerator : public PaintImageGenerator {
   // planes and after Chrome implements it, we should no longer expect RGB
   // fallback.
   bool expect_fallback_to_rgb_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FakePaintImageGenerator);
 };
 
 }  // namespace cc

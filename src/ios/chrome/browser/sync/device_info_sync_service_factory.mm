@@ -10,6 +10,7 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "components/sync/device_info/device_info_sync_service_impl.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
@@ -19,7 +20,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -76,10 +76,13 @@ DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
   auto local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           ::GetChannel(), ::GetVersionString(),
-          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
           /*signin_scoped_device_id_callback=*/
           base::BindRepeating(&signin::GetSigninScopedDeviceId,
-                              browser_state->GetPrefs()));
+                              browser_state->GetPrefs()),
+          /*send_tab_to_self_receiving_enabled_callback=*/
+          base::BindRepeating(
+              &send_tab_to_self::IsReceivingEnabledByUserOnThisDevice,
+              browser_state->GetPrefs()));
 
   return std::make_unique<syncer::DeviceInfoSyncServiceImpl>(
       ModelTypeStoreServiceFactory::GetForBrowserState(browser_state)

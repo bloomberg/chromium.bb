@@ -35,7 +35,7 @@ namespace aura {
 class Window;
 class WindowTreeClient;
 
-// See PrepareForServerBoundsChange() for details on this.
+// See PrepareForServerVisibilityChange() for details on this.
 struct AURA_EXPORT WindowMusChangeData {
   virtual ~WindowMusChangeData() {}
 };
@@ -84,7 +84,6 @@ class AURA_EXPORT WindowMus {
   virtual void SetBoundsFromServer(const gfx::Rect& bounds) = 0;
   virtual void SetTransformFromServer(const gfx::Transform& transform) = 0;
   virtual void SetVisibleFromServer(bool visible) = 0;
-  virtual void SetOpacityFromServer(float opacity) = 0;
   virtual void SetCursorFromServer(const ui::Cursor& cursor) = 0;
   virtual void SetPropertyFromServer(const std::string& property_name,
                                      const std::vector<uint8_t>* data) = 0;
@@ -113,8 +112,6 @@ class AURA_EXPORT WindowMus {
   // because it needs to call another function that as a side effect changes the
   // window. Once the call to the underlying window has completed the returned
   // object should be destroyed.
-  virtual std::unique_ptr<WindowMusChangeData> PrepareForServerBoundsChange(
-      const gfx::Rect& bounds) = 0;
   virtual std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(
       bool value) = 0;
 

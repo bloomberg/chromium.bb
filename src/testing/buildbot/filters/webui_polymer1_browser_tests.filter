@@ -123,7 +123,6 @@ CrSettingsExtensionControlledIndicatorTest.*
 CrSettingsFindShortcutBehavior.*
 CrSettingsFingerprintListTest.*
 CrSettingsFingerprintProgressArcTest.*
-CrSettingsFocusRowBehavior.*
 CrSettingsGoogleAssistantPageTest.*
 CrSettingsImportDataDialogTest.*
 CrSettingsIncompatibleApplicationsPageTest.*
@@ -221,6 +220,7 @@ InvalidationsWebUITest.*
 LoadTimeDataTest.*
 LocalAndDriveFileSystemExtensionApiTest.*
 LocalFileSystemExtensionApiTest.*
+MdSetTimeBrowserTest.*
 MediaEngagementWebUIBrowserTest.*
 MediaRouterElementsBrowserTest.*
 Mock4JSWebUITest.*
@@ -233,7 +233,6 @@ NetInternalsTest.*
 NoBackgroundTasksTest.*
 NTP4WebUITest.*
 OnboardingWelcomeEmailChooserTest.*
-OnboardingWelcomeEmailInterstitialTest.*
 OnboardingWelcomeWelcomeAppTest.*
 OpenAudioFiles/*
 PDFAnnotationsTest.*

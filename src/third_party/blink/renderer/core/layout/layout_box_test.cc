@@ -1354,4 +1354,15 @@ TEST_P(LayoutBoxTest, GeometriesWithScrollbarsScrollable) {
   EXPECT_EQ(LayoutRect(90, 30, 385, 284), rtl_vrl->PhysicalContentBoxRect());
 }
 
+TEST_P(LayoutBoxTest, HasNonCollapsedBorderDecoration) {
+  SetBodyInnerHTML("<div id='div'></div>");
+  auto* div = GetLayoutBoxByElementId("div");
+  EXPECT_FALSE(div->HasNonCollapsedBorderDecoration());
+
+  ToElement(div->GetNode())
+      ->setAttribute(html_names::kStyleAttr, "border: 1px solid black");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(div->HasNonCollapsedBorderDecoration());
+}
+
 }  // namespace blink

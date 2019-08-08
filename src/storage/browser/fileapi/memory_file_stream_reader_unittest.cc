@@ -20,7 +20,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
-#include "storage/browser/fileapi/file_stream_reader_test_utils.h"
+#include "storage/browser/fileapi/file_stream_test_utils.h"
 #include "storage/browser/fileapi/obfuscated_file_util_memory_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

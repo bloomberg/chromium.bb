@@ -31,8 +31,11 @@ enum MediaSessionAction {
 
 [Extensible]
 enum MediaSessionImageType {
-  // The artwork associated with the media session (e.g album art)
+  // The artwork associated with the media session (e.g album art).
   kArtwork,
+
+  // The icon associated with the source of the media session.
+  kSourceIcon,
 };
 
 // Album art in MediaMetadata

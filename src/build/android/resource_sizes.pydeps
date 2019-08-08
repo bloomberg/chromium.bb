@@ -44,11 +44,9 @@
 ../../third_party/catapult/tracing/tracing/value/__init__.py
 ../../third_party/catapult/tracing/tracing/value/convert_chart_json.py
 ../../third_party/catapult/tracing/tracing_project.py
-../../third_party/depot_tools/breakpad.py
 ../../third_party/depot_tools/download_from_google_storage.py
 ../../third_party/depot_tools/subprocess2.py
 ../../third_party/depot_tools/upload_to_google_storage.py
-../find_depot_tools.py
 ../gn_helpers.py
 ../util/lib/common/perf_result_data_type.py
 ../util/lib/common/perf_tests_results_helper.py

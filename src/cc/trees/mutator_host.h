@@ -26,6 +26,11 @@ class MutatorHostClient;
 class LayerTreeMutator;
 class ScrollTree;
 
+// Used as the return value of MaximumTargetScale() and AnimationStartScale() to
+// indicate that there is no active scale animation or the scale cannot be
+// computed.
+const float kNotScaled = 0;
+
 // A MutatorHost owns all the animation and mutation effects.
 // There is just one MutatorHost for LayerTreeHost on main renderer thread
 // and just one MutatorHost for LayerTreeHostImpl on the impl thread.
@@ -41,6 +46,8 @@ class MutatorHost {
       bool supports_impl_scrolling) const = 0;
 
   virtual void ClearMutators() = 0;
+
+  virtual void InitClientAnimationState() = 0;
 
   virtual void RegisterElement(ElementId element_id,
                                ElementListType list_type) = 0;
@@ -68,7 +75,7 @@ class MutatorHost {
   // Tick animations that depends on scroll offset.
   virtual void TickScrollAnimations(base::TimeTicks monotonic_time,
                                     const ScrollTree& scroll_tree) = 0;
-  virtual void TickWorkletAnimations(base::TimeTicks monotonic_time) = 0;
+  virtual void TickWorkletAnimations() = 0;
   virtual bool UpdateAnimationState(bool start_ready_animations,
                                     MutatorEvents* events) = 0;
   virtual void PromoteScrollTimelinesPendingToActive() = 0;
@@ -106,12 +113,17 @@ class MutatorHost {
       ElementListType list_type) const = 0;
   virtual bool AnimationsPreserveAxisAlignment(ElementId element_id) const = 0;
 
-  virtual bool MaximumTargetScale(ElementId element_id,
-                                  ElementListType list_type,
-                                  float* max_scale) const = 0;
-  virtual bool AnimationStartScale(ElementId element_id,
-                                   ElementListType list_type,
-                                   float* start_scale) const = 0;
+  // Returns the maximum scale along any dimension at any destination in active
+  // scale animations, or kNotScaled if there is no active scale animation or
+  // the maximum scale cannot be computed.
+  virtual float MaximumTargetScale(ElementId element_id,
+                                   ElementListType list_type) const = 0;
+
+  // Returns the maximum of starting animation scale along any dimension at any
+  // destination in active scale animations, or kNotScaled if there is no active
+  // scale animation or the starting scale cannot be computed.
+  virtual float AnimationStartScale(ElementId element_id,
+                                    ElementListType list_type) const = 0;
 
   virtual bool IsElementAnimating(ElementId element_id) const = 0;
   virtual bool HasTickingKeyframeModelForTesting(
@@ -131,6 +143,9 @@ class MutatorHost {
       base::TimeDelta delayed_by) = 0;
 
   virtual void ScrollAnimationAbort() = 0;
+
+  // True when there is an ongoing scroll animation on Impl.
+  virtual bool IsImplOnlyScrollAnimating() const = 0;
 
   virtual size_t CompositedAnimationsCount() const = 0;
   virtual size_t MainThreadAnimationsCount() const = 0;

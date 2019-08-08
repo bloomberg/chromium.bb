@@ -109,22 +109,6 @@ bool ValidateMultiDrawElementsInstancedANGLE(Context *context,
                                              const GLsizei *instanceCounts,
                                              GLsizei drawcount);
 
-// GL_ANGLE_multiview
-bool ValidateFramebufferTextureMultiviewLayeredANGLE(Context *context,
-                                                     GLenum target,
-                                                     GLenum attachment,
-                                                     GLuint texture,
-                                                     GLint level,
-                                                     GLint baseViewIndex,
-                                                     GLsizei numViews);
-bool ValidateFramebufferTextureMultiviewSideBySideANGLE(Context *context,
-                                                        GLenum target,
-                                                        GLenum attachment,
-                                                        GLuint texture,
-                                                        GLint level,
-                                                        GLsizei numViews,
-                                                        const GLint *viewportOffsets);
-
 // GL_ANGLE_provoking_vertex
 bool ValidateProvokingVertexANGLE(Context *context, ProvokingVertex modePacked);
 
@@ -265,7 +249,7 @@ bool ValidateTexSubImage2DRobustANGLE(Context *context,
                                       GLsizei bufSize,
                                       const void *pixels);
 bool ValidateTexImage3DRobustANGLE(Context *context,
-                                   TextureType targetPacked,
+                                   TextureTarget targetPacked,
                                    GLint level,
                                    GLint internalformat,
                                    GLsizei width,
@@ -277,7 +261,7 @@ bool ValidateTexImage3DRobustANGLE(Context *context,
                                    GLsizei bufSize,
                                    const void *pixels);
 bool ValidateTexSubImage3DRobustANGLE(Context *context,
-                                      TextureType targetPacked,
+                                      TextureTarget targetPacked,
                                       GLint level,
                                       GLint xoffset,
                                       GLint yoffset,
@@ -311,7 +295,7 @@ bool ValidateCompressedTexSubImage2DRobustANGLE(Context *context,
                                                 GLsizei dataSize,
                                                 const GLvoid *data);
 bool ValidateCompressedTexImage3DRobustANGLE(Context *context,
-                                             TextureType targetPacked,
+                                             TextureTarget targetPacked,
                                              GLint level,
                                              GLenum internalformat,
                                              GLsizei width,
@@ -322,7 +306,7 @@ bool ValidateCompressedTexImage3DRobustANGLE(Context *context,
                                              GLsizei dataSize,
                                              const GLvoid *data);
 bool ValidateCompressedTexSubImage3DRobustANGLE(Context *context,
-                                                TextureType targetPacked,
+                                                TextureTarget targetPacked,
                                                 GLint level,
                                                 GLint xoffset,
                                                 GLint yoffset,
@@ -636,6 +620,11 @@ bool ValidateCoverageModulationCHROMIUM(Context *context, GLenum components);
 bool ValidateMatrixLoadfCHROMIUM(Context *context, GLenum matrixMode, const GLfloat *matrix);
 bool ValidateMatrixLoadIdentityCHROMIUM(Context *context, GLenum matrixMode);
 
+// GL_CHROMIUM_lose_context
+bool ValidateLoseContextCHROMIUM(Context *context,
+                                 GraphicsResetStatus currentPacked,
+                                 GraphicsResetStatus otherPacked);
+
 // GL_CHROMIUM_path_rendering
 bool ValidateGenPathsCHROMIUM(Context *context, GLsizei range);
 bool ValidateDeletePathsCHROMIUM(Context *context, GLuint first, GLsizei range);
@@ -809,6 +798,69 @@ bool ValidateMapBufferRangeEXT(Context *context,
                                GLsizeiptr length,
                                GLbitfield access);
 
+// GL_EXT_memory_object
+bool ValidateBufferStorageMemEXT(Context *context,
+                                 TextureType targetPacked,
+                                 GLsizeiptr size,
+                                 GLuint memory,
+                                 GLuint64 offset);
+bool ValidateCreateMemoryObjectsEXT(Context *context, GLsizei n, GLuint *memoryObjects);
+bool ValidateDeleteMemoryObjectsEXT(Context *context, GLsizei n, const GLuint *memoryObjects);
+bool ValidateGetMemoryObjectParameterivEXT(Context *context,
+                                           GLuint memoryObject,
+                                           GLenum pname,
+                                           GLint *params);
+bool ValidateGetUnsignedBytevEXT(Context *context, GLenum pname, GLubyte *data);
+bool ValidateGetUnsignedBytei_vEXT(Context *context, GLenum target, GLuint index, GLubyte *data);
+bool ValidateIsMemoryObjectEXT(Context *context, GLuint memoryObject);
+bool ValidateMemoryObjectParameterivEXT(Context *context,
+                                        GLuint memoryObject,
+                                        GLenum pname,
+                                        const GLint *params);
+bool ValidateTexStorageMem2DEXT(Context *context,
+                                TextureType targetPacked,
+                                GLsizei levels,
+                                GLenum internalFormat,
+                                GLsizei width,
+                                GLsizei height,
+                                GLuint memory,
+                                GLuint64 offset);
+bool ValidateTexStorageMem2DMultisampleEXT(Context *context,
+                                           TextureType targetPacked,
+                                           GLsizei samples,
+                                           GLenum internalFormat,
+                                           GLsizei width,
+                                           GLsizei height,
+                                           GLboolean fixedSampleLocations,
+                                           GLuint memory,
+                                           GLuint64 offset);
+bool ValidateTexStorageMem3DEXT(Context *context,
+                                TextureType targetPacked,
+                                GLsizei levels,
+                                GLenum internalFormat,
+                                GLsizei width,
+                                GLsizei height,
+                                GLsizei depth,
+                                GLuint memory,
+                                GLuint64 offset);
+bool ValidateTexStorageMem3DMultisampleEXT(Context *context,
+                                           TextureType targetPacked,
+                                           GLsizei samples,
+                                           GLenum internalFormat,
+                                           GLsizei width,
+                                           GLsizei height,
+                                           GLsizei depth,
+                                           GLboolean fixedSampleLocations,
+                                           GLuint memory,
+                                           GLuint64 offset);
+
+// GL_EXT_memory_object_fd
+bool ValidateImportMemoryFdEXT(Context *context,
+                               GLuint memory,
+                               GLuint64 size,
+                               HandleType handleTypePacked,
+                               GLint fd);
+
 // GL_EXT_occlusion_query_boolean
 
 // GL_EXT_robustness
@@ -832,6 +884,39 @@ bool ValidateReadnPixelsEXT(Context *context,
                             GLenum type,
                             GLsizei bufSize,
                             void *data);
+
+// GL_EXT_semaphore
+bool ValidateDeleteSemaphoresEXT(Context *context, GLsizei n, const GLuint *semaphores);
+bool ValidateGenSemaphoresEXT(Context *context, GLsizei n, GLuint *semaphores);
+bool ValidateGetSemaphoreParameterui64vEXT(Context *context,
+                                           GLuint semaphore,
+                                           GLenum pname,
+                                           GLuint64 *params);
+bool ValidateIsSemaphoreEXT(Context *context, GLuint semaphore);
+bool ValidateSemaphoreParameterui64vEXT(Context *context,
+                                        GLuint semaphore,
+                                        GLenum pname,
+                                        const GLuint64 *params);
+bool ValidateSignalSemaphoreEXT(Context *context,
+                                GLuint semaphore,
+                                GLuint numBufferBarriers,
+                                const GLuint *buffers,
+                                GLuint numTextureBarriers,
+                                const GLuint *textures,
+                                const GLenum *dstLayouts);
+bool ValidateWaitSemaphoreEXT(Context *context,
+                              GLuint semaphore,
+                              GLuint numBufferBarriers,
+                              const GLuint *buffers,
+                              GLuint numTextureBarriers,
+                              const GLuint *textures,
+                              const GLenum *srcLayouts);
+
+// GL_EXT_semaphore_fd
+bool ValidateImportSemaphoreFdEXT(Context *context,
+                                  GLuint semaphore,
+                                  HandleType handleTypePacked,
+                                  GLint fd);
 
 // GL_EXT_texture_storage
 bool ValidateTexStorage1DEXT(Context *context,
@@ -1094,6 +1179,17 @@ bool ValidateBindVertexArrayOES(Context *context, GLuint array);
 bool ValidateDeleteVertexArraysOES(Context *context, GLsizei n, const GLuint *arrays);
 bool ValidateGenVertexArraysOES(Context *context, GLsizei n, GLuint *arrays);
 bool ValidateIsVertexArrayOES(Context *context, GLuint array);
+
+// GL_OVR_multiview
+bool ValidateFramebufferTextureMultiviewOVR(Context *context,
+                                            GLenum target,
+                                            GLenum attachment,
+                                            GLuint texture,
+                                            GLint level,
+                                            GLint baseViewIndex,
+                                            GLsizei numViews);
+
+// GL_OVR_multiview2
 }  // namespace gl
 
 #endif  // LIBANGLE_VALIDATION_ESEXT_AUTOGEN_H_

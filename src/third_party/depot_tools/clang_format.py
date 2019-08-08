@@ -9,7 +9,7 @@ clang-format binaries are pulled down from Google Cloud Storage whenever you
 sync Chrome, to platform-specific locations. This script knows how to locate
 those tools, assuming the script is invoked from inside a Chromium checkout."""
 
-import gclient_utils
+import gclient_paths
 import os
 import subprocess
 import sys
@@ -25,14 +25,14 @@ class NotFoundError(Exception):
 
 def FindClangFormatToolInChromiumTree():
   """Return a path to the clang-format executable, or die trying."""
-  bin_path = gclient_utils.GetBuildtoolsPlatformBinaryPath()
+  bin_path = gclient_paths.GetBuildtoolsPlatformBinaryPath()
   if not bin_path:
     raise NotFoundError(
         'Could not find checkout in any parent of the current path.\n'
         'Set CHROMIUM_BUILDTOOLS_PATH to use outside of a chromium checkout.')
 
   tool_path = os.path.join(bin_path,
-                           'clang-format' + gclient_utils.GetExeSuffix())
+                           'clang-format' + gclient_paths.GetExeSuffix())
   if not os.path.exists(tool_path):
     raise NotFoundError('File does not exist: %s' % tool_path)
   return tool_path
@@ -40,7 +40,7 @@ def FindClangFormatToolInChromiumTree():
 
 def FindClangFormatScriptInChromiumTree(script_name):
   """Return a path to a clang-format helper script, or die trying."""
-  tools_path = gclient_utils.GetBuildtoolsPath()
+  tools_path = gclient_paths.GetBuildtoolsPath()
   if not tools_path:
     raise NotFoundError(
         'Could not find checkout in any parent of the current path.\n',

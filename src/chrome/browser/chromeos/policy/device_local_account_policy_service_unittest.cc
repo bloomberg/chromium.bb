@@ -30,7 +30,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/constants/chromeos_paths.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
@@ -817,11 +817,11 @@ void DeviceLocalAccountPolicyProviderTest::SetUp() {
   // Values implicitly enforced for public accounts.
   expected_policy_map_.Set(key::kShelfAutoHideBehavior, POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_MACHINE,
-                           POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+                           POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
                            std::make_unique<base::Value>("Never"), nullptr);
   expected_policy_map_.Set(key::kShowLogoutButtonInTray, POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_MACHINE,
-                           POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+                           POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
                            std::make_unique<base::Value>(true), nullptr);
 
   // Policy defaults (for policies not set by admin).

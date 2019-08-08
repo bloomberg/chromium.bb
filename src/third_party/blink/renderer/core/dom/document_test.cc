@@ -59,6 +59,8 @@
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -68,7 +70,9 @@ namespace blink {
 
 class DocumentTest : public PageTestBase {
  protected:
-  void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }
+  void TearDown() override {
+    ThreadState::Current()->CollectAllGarbageForTesting();
+  }
 
   void SetHtmlInnerHTML(const char*);
 };
@@ -421,13 +425,15 @@ TEST_F(DocumentTest, LinkManifest) {
   EXPECT_EQ(nullptr, GetDocument().LinkManifest());
 
   // Check that we use the first manifest with <link rel=manifest>
-  auto* link = HTMLLinkElement::Create(GetDocument(), CreateElementFlags());
+  auto* link = MakeGarbageCollected<HTMLLinkElement>(GetDocument(),
+                                                     CreateElementFlags());
   link->setAttribute(blink::html_names::kRelAttr, "manifest");
   link->setAttribute(blink::html_names::kHrefAttr, "foo.json");
   GetDocument().head()->AppendChild(link);
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
-  auto* link2 = HTMLLinkElement::Create(GetDocument(), CreateElementFlags());
+  auto* link2 = MakeGarbageCollected<HTMLLinkElement>(GetDocument(),
+                                                      CreateElementFlags());
   link2->setAttribute(blink::html_names::kRelAttr, "manifest");
   link2->setAttribute(blink::html_names::kHrefAttr, "bar.json");
   GetDocument().head()->InsertBefore(link2, link);
@@ -593,12 +599,12 @@ TEST_F(DocumentTest, EnforceSandboxFlags) {
   scoped_refptr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("http://example.test");
   GetDocument().SetSecurityOrigin(origin);
-  SandboxFlags mask = kSandboxNavigation;
+  SandboxFlags mask = WebSandboxFlags::kNavigation;
   GetDocument().EnforceSandboxFlags(mask);
   EXPECT_EQ(origin, GetDocument().GetSecurityOrigin());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
-  mask |= kSandboxOrigin;
+  mask |= WebSandboxFlags::kOrigin;
   GetDocument().EnforceSandboxFlags(mask);
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
@@ -876,7 +882,7 @@ TEST_F(DocumentTest, SandboxDisablesAppCache) {
   scoped_refptr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("https://test.com");
   GetDocument().SetSecurityOrigin(origin);
-  SandboxFlags mask = kSandboxOrigin;
+  SandboxFlags mask = WebSandboxFlags::kOrigin;
   GetDocument().EnforceSandboxFlags(mask);
   GetDocument().SetURL(KURL("https://test.com/foobar/document"));
 
@@ -1074,8 +1080,13 @@ TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
 INSTANTIATE_TEST_SUITE_P(, IsolatedWorldCSPTest, testing::Values(true, false));
 
 TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
-  constexpr SandboxFlags kSandboxMask = kSandboxScripts;
+  constexpr SandboxFlags kSandboxMask = WebSandboxFlags::kScripts;
   GetDocument().EnforceSandboxFlags(kSandboxMask);
+  // With FeaturePolicyForSandbox, all the sandbox flags must be explicitly
+  // converted to equivalent feature policies. Since sandbox is enforced above,
+  // the feature policies have to be reset; setting an empty header policy will
+  // internally convert the newly set sandbox flags to policies.
+  GetDocument().ApplyFeaturePolicyFromHeader("");
 
   LocalFrame* frame = GetDocument().GetFrame();
   frame->GetSettings()->SetScriptEnabled(true);

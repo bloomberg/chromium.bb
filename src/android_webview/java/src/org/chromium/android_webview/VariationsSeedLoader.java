@@ -79,10 +79,23 @@ public class VariationsSeedLoader {
 
     private SeedLoadAndUpdateRunnable mRunnable;
 
+    // Time as reported by SystemClock.elapsedRealtime() that getSeedBlockingAndLog() started
+    // blocking to wait for the FutureTask that loads the seed. This is written by
+    // getSeedBlockingAndLog() on the main thread and then read by SeedLoadAndUpdateRunnable on a
+    // background thread. It's volatile to ensure the write is visible to the background thread:
+    // https://docs.oracle.com/javase/tutorial/essential/concurrency/atomic.html
+    // TODO(crbug/936172): Remove this after m75.
+    private volatile long mStartBlockingTime;
+
     private static void recordLoadSeedResult(int result) {
         EnumeratedHistogramSample histogram = new EnumeratedHistogramSample(
                 "Variations.SeedLoadResult", LoadSeedResult.ENUM_SIZE);
         histogram.record(result);
+    }
+
+    private static void recordTimesHistogram(String name, long time) {
+        TimesHistogramSample histogram = new TimesHistogramSample(name);
+        histogram.record(time);
     }
 
     private static boolean isExpired(long seedFileTime) {
@@ -104,6 +117,16 @@ public class VariationsSeedLoader {
         private boolean mNeedNewSeed;
         private long mCurrentSeedDate = Long.MIN_VALUE;
 
+        private SeedInfo readSeedFileAndLogTime(File seedFile) {
+            long start = SystemClock.elapsedRealtime();
+            SeedInfo seed = VariationsUtils.readSeedFile(seedFile);
+            if (seed != null) {
+                long end = SystemClock.elapsedRealtime();
+                recordTimesHistogram("Variations.SeedLoadSuccessTime", end - start);
+            }
+            return seed;
+        }
+
         private FutureTask<SeedInfo> mLoadTask = new FutureTask<>(() -> {
             File newSeedFile = VariationsUtils.getNewSeedFile();
             File oldSeedFile = VariationsUtils.getSeedFile();
@@ -114,7 +137,7 @@ public class VariationsSeedLoader {
             long seedFileTime = 0;
 
             // First check for a new seed.
-            SeedInfo seed = VariationsUtils.readSeedFile(newSeedFile);
+            SeedInfo seed = readSeedFileAndLogTime(newSeedFile);
             if (seed != null) {
                 // If a valid new seed was found, make a note to replace the old seed with
                 // the new seed. (Don't do it now, to avoid delaying FutureTask.get().)
@@ -123,7 +146,7 @@ public class VariationsSeedLoader {
                 seedFileTime = newSeedFile.lastModified();
             } else {
                 // If there is no new seed, check for an old seed.
-                seed = VariationsUtils.readSeedFile(oldSeedFile);
+                seed = readSeedFileAndLogTime(oldSeedFile);
 
                 if (seed != null) {
                     seedFileTime = oldSeedFile.lastModified();
@@ -161,6 +184,19 @@ public class VariationsSeedLoader {
         public void run() {
             mLoadTask.run();
             // The loaded seed is now available via get(). The following steps won't block startup.
+            if (mStartBlockingTime == 0) {
+                // Ideally, we haven't blocked yet, and the seed is already available, so we will
+                // block for 0 ms.
+                recordTimesHistogram("Variations.SeedLoadWouldBlockTime", 0);
+            } else {
+                // If we did block, measure the time from when we started blocking until when the
+                // seed became available. This may be longer than the timeout, in which case we
+                // should have proceeded without the seed. This tells us how much we'd need to
+                // increase the timeout to get the seed in this case.
+                long seedAvailableTime = SystemClock.elapsedRealtime();
+                recordTimesHistogram("Variations.SeedLoadWouldBlockTime",
+                                     seedAvailableTime - mStartBlockingTime);
+            }
 
             if (mFoundNewSeed) {
                 // The move happens synchronously. It's not possible for the service to still be
@@ -226,15 +262,14 @@ public class VariationsSeedLoader {
     }
 
     private SeedInfo getSeedBlockingAndLog() {
-        long start = SystemClock.elapsedRealtime();
+        mStartBlockingTime = SystemClock.elapsedRealtime();
         try {
             try {
                 return mRunnable.get(SEED_LOAD_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
             } finally {
-                long end = SystemClock.elapsedRealtime();
-                TimesHistogramSample histogram =
-                        new TimesHistogramSample("Variations.SeedLoadBlockingTime");
-                histogram.record(end - start);
+                long finishBlockingTime = SystemClock.elapsedRealtime();
+                recordTimesHistogram("Variations.SeedLoadBlockingTime",
+                                     finishBlockingTime - mStartBlockingTime);
             }
         } catch (TimeoutException e) {
             recordLoadSeedResult(LoadSeedResult.LOAD_TIMED_OUT);

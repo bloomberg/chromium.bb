@@ -17,7 +17,7 @@ let watcherDone = new Event("watcherdone");
 
 let fakeDeviceInitParams = { supportsImmersive:true };
 
-let requestSessionOptions = [{ mode: 'immersive-vr' }];
+let requestSessionOptions = ['immersive-vr'];
 
 let testFunction = function(session, t, fakeDeviceController) {
   let eventWatcher = new EventWatcher(
@@ -36,11 +36,24 @@ let testFunction = function(session, t, fakeDeviceController) {
       viewMatrix: VALID_VIEW_MATRIX
     }]);
 
+  function tryCallingFrameMethods(frame) {
+    t.step(() => {
+      // Frame is active but not an animation frame, so calling getPose is
+      // allowed while getViewerPose is not.
+      assert_throws('InvalidStateError', () => frame.getViewerPose(currentReferenceSpace));
+      let pose = frame.getPose(session.viewerSpace, currentReferenceSpace);
+      assert_not_equals(pose, null);
+      assert_true(pose instanceof XRPose);
+      assert_false(pose instanceof XRViewerPose);
+    });
+  }
+
   function onSessionSelectStart(event) {
     t.step( () => {
       let input_sources = session.getInputSources();
       assert_equals(event.frame.session, session);
       assert_equals(event.inputSource, input_sources[0]);
+      tryCallingFrameMethods(event.frame);
     });
   }
 
@@ -49,6 +62,7 @@ let testFunction = function(session, t, fakeDeviceController) {
       let input_sources = session.getInputSources();
       assert_equals(event.frame.session, session);
       assert_equals(event.inputSource, input_sources[0]);
+      tryCallingFrameMethods(event.frame);
     });
   }
 
@@ -57,6 +71,7 @@ let testFunction = function(session, t, fakeDeviceController) {
       let input_sources = session.getInputSources();
       assert_equals(event.frame.session, session);
       assert_equals(event.inputSource, input_sources[0]);
+      tryCallingFrameMethods(event.frame);
     });
     session.dispatchEvent(watcherDone);
   }
@@ -71,17 +86,23 @@ let testFunction = function(session, t, fakeDeviceController) {
 
   fakeDeviceController.addInputSource(input_source);
 
-  // Press the primary input button and then release it a short time later.
-  session.requestAnimationFrame((time, xrFrame) => {
-    input_source.primaryInputPressed = true;
+  let currentReferenceSpace = null;
 
-      session.requestAnimationFrame((time, xrFrame) => {
-        input_source.primaryInputPressed = false;
+  session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((referenceSpace) => {
+    currentReferenceSpace = referenceSpace;
+
+    // Press the primary input button and then release it a short time later.
+    session.requestAnimationFrame((time, xrFrame) => {
+      input_source.primaryInputPressed = true;
 
         session.requestAnimationFrame((time, xrFrame) => {
-          // Need to process one more frame to allow select to propegate.
+          input_source.primaryInputPressed = false;
+
+          session.requestAnimationFrame((time, xrFrame) => {
+            // Need to process one more frame to allow select to propegate.
+          });
         });
-      });
+    });
   });
 
   return eventPromise;

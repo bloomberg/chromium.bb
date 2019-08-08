@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/animation/ink_drop_event_handler.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -126,12 +127,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // Called after a new InkDrop instance is created.
   virtual void OnInkDropCreated() {}
 
-  // View:
-  void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  void VisibilityChanged(View* starting_from, bool is_visible) override;
-
   // Returns an InkDropImpl suitable for use with a square ink drop.
   // TODO(pbos): Rename to CreateDefaultSquareInkDropImpl.
   std::unique_ptr<InkDropImpl> CreateDefaultInkDropImpl();
@@ -170,7 +165,11 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // Provides access to |ink_drop_|. Implements lazy initialization of
   // |ink_drop_| so as to avoid virtual method calls during construction since
   // subclasses should be able to call SetInkDropMode() during construction.
-  InkDrop* GetInkDrop();
+  //
+  // WARNING: please don't override this; this is only virtual for the
+  // InstallableInkDrop refactor. TODO(crbug.com/931964): make non-virtual when
+  // this isn't necessary anymore.
+  virtual InkDrop* GetInkDrop();
 
   // Returns the point of the |last_ripple_triggering_event_| if it was a
   // LocatedEvent, otherwise the center point of the local bounds is returned.
@@ -187,12 +186,23 @@ class VIEWS_EXPORT InkDropHostView : public View {
   static gfx::Size CalculateLargeInkDropSize(const gfx::Size& small_size);
 
  private:
-  class InkDropEventHandler;
-  class InkDropViewObserver;
   friend class test::InkDropHostViewTestApi;
 
-  // The last user Event to trigger an ink drop ripple animation.
-  std::unique_ptr<ui::LocatedEvent> last_ripple_triggering_event_;
+  class InkDropHostViewEventHandlerDelegate
+      : public InkDropEventHandler::Delegate {
+   public:
+    explicit InkDropHostViewEventHandlerDelegate(InkDropHostView* host_view);
+
+    // InkDropEventHandler:
+    InkDrop* GetInkDrop() override;
+    bool HasInkDrop() const override;
+
+    bool SupportsGestureEvents() const override;
+
+   private:
+    // The host view.
+    InkDropHostView* const host_view_;
+  };
 
   // Defines what type of |ink_drop_| to create.
   InkDropMode ink_drop_mode_ = InkDropMode::OFF;
@@ -202,10 +212,8 @@ class VIEWS_EXPORT InkDropHostView : public View {
 
   // Intentionally declared after |ink_drop_| so that it doesn't access a
   // destroyed |ink_drop_| during destruction.
-  const std::unique_ptr<InkDropEventHandler> ink_drop_event_handler_;
-
-  // Used to observe changes to the host through the ViewObserver API.
-  const std::unique_ptr<InkDropViewObserver> ink_drop_view_observer_;
+  InkDropHostViewEventHandlerDelegate ink_drop_event_handler_delegate_;
+  InkDropEventHandler ink_drop_event_handler_;
 
   float ink_drop_visible_opacity_ = 0.175f;
 

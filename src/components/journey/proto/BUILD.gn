@@ -8,5 +8,4 @@ proto_library("proto") {
   sources = [
     "batch_get_switcher_journey_from_pageload_request.proto",
   ]
-  deps = []
 }

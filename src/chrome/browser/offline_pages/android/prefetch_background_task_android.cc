@@ -5,6 +5,7 @@
 
 #include <memory>
 
+#include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
@@ -27,7 +28,8 @@ namespace prefetch {
 static jboolean JNI_PrefetchBackgroundTask_StartPrefetchTask(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jobject>& jprofile) {
+    const JavaParamRef<jobject>& jprofile,
+    const JavaParamRef<jstring>& gcm_token) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);
 
@@ -35,6 +37,9 @@ static jboolean JNI_PrefetchBackgroundTask_StartPrefetchTask(
       PrefetchServiceFactory::GetForBrowserContext(profile);
   if (!prefetch_service)
     return false;
+
+  prefetch_service->SetCachedGCMToken(
+      base::android::ConvertJavaStringToUTF8(env, gcm_token));
 
   prefetch_service->GetPrefetchDispatcher()->BeginBackgroundTask(
       std::make_unique<PrefetchBackgroundTaskAndroid>(env, jcaller,

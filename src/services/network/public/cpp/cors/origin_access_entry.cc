@@ -58,16 +58,16 @@ OriginAccessEntry::OriginAccessEntry(
   if (host_.length() <= public_suffix_length + 1) {
     host_is_public_suffix_ = true;
   } else if (mode_ ==
-                 mojom::CorsOriginAccessMatchMode::kAllowRegisterableDomains &&
+                 mojom::CorsOriginAccessMatchMode::kAllowRegistrableDomains &&
              public_suffix_length) {
     // The "2" in the next line is 1 for the '.', plus a 1-char minimum label
     // length.
     const size_t dot =
         host_.rfind('.', host_.length() - public_suffix_length - 2);
     if (dot == std::string::npos)
-      registerable_domain_ = host_;
+      registrable_domain_ = host_;
     else
-      registerable_domain_ = host_.substr(dot + 1);
+      registrable_domain_ = host_.substr(dot + 1);
   }
 }
 
@@ -107,14 +107,14 @@ OriginAccessEntry::MatchResult OriginAccessEntry::MatchesDomain(
         return kDoesNotMatchOrigin;
       break;
 
-    case mojom::CorsOriginAccessMatchMode::kAllowRegisterableDomains:
-      // Fall back to a simple subdomain check if no registerable domain could
+    case mojom::CorsOriginAccessMatchMode::kAllowRegistrableDomains:
+      // Fall back to a simple subdomain check if no registrable domain could
       // be found:
-      if (registerable_domain_.empty()) {
+      if (registrable_domain_.empty()) {
         if (!IsSubdomainOfHost(origin.host(), host_))
           return kDoesNotMatchOrigin;
-      } else if (registerable_domain_ != origin.host() &&
-                 !IsSubdomainOfHost(origin.host(), registerable_domain_)) {
+      } else if (registrable_domain_ != origin.host() &&
+                 !IsSubdomainOfHost(origin.host(), registrable_domain_)) {
         return kDoesNotMatchOrigin;
       }
       break;

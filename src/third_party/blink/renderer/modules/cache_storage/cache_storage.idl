@@ -4,6 +4,7 @@
 
 // See https://w3c.github.io/ServiceWorker/#cachestorage-interface
 [
+    ActiveScriptWrappable,
     SecureContext,
     Exposed=(Window,Worker)
 ] interface CacheStorage {

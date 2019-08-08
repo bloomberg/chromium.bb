@@ -28,7 +28,6 @@
 #include "components/variations/variations_associated_data.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/ui_base_features.h"
 
 using metrics::OmniboxEventProto;
 
@@ -520,8 +519,7 @@ int OmniboxFieldTrial::KeywordScoreForSufficientlyCompleteMatch() {
 OmniboxFieldTrial::EmphasizeTitlesCondition
 OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
     const AutocompleteInput& input) {
-  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentSwapTitleAndUrl) ||
-      base::FeatureList::IsEnabled(features::kExperimentalUi)) {
+  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentSwapTitleAndUrl)) {
     return EMPHASIZE_WHEN_NONEMPTY;
   }
 
@@ -551,22 +549,29 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
   return static_cast<EmphasizeTitlesCondition>(value);
 }
 
+size_t OmniboxFieldTrial::GetMaxURLMatches() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kOmniboxMaxURLMatches,
+      OmniboxFieldTrial::kOmniboxMaxURLMatchesParam,
+      0);  // default
+}
+
+bool OmniboxFieldTrial::IsPreserveDefaultMatchScoreEnabled() {
+  return base::FeatureList::IsEnabled(
+      omnibox::kOmniboxPreserveDefaultMatchScore);
+}
+
 bool OmniboxFieldTrial::IsRichEntitySuggestionsEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions);
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions) ||
+         base::FeatureList::IsEnabled(omnibox::kOmniboxLocalEntitySuggestions);
 }
 
 bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseAnswers) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseAnswers);
 }
 
 bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
-#if defined(OS_IOS)
   return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
-#else  // defined(OS_IOS)
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
-#endif
 }
 
 bool OmniboxFieldTrial::IsTabSwitchLogicReversed() {
@@ -578,17 +583,25 @@ bool OmniboxFieldTrial::IsPedalSuggestionsEnabled() {
 }
 
 bool OmniboxFieldTrial::IsHideSteadyStateUrlSchemeEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kHideSteadyStateUrlScheme) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
+  return base::FeatureList::IsEnabled(omnibox::kHideSteadyStateUrlScheme);
 }
 
 bool OmniboxFieldTrial::IsHideSteadyStateUrlTrivialSubdomainsEnabled() {
   return base::FeatureList::IsEnabled(
-             omnibox::kHideSteadyStateUrlTrivialSubdomains) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
+      omnibox::kHideSteadyStateUrlTrivialSubdomains);
 }
 
-int OmniboxFieldTrial::GetSuggestionVerticalMargin() {
+base::Optional<int>
+OmniboxFieldTrial::GetSuggestionVerticalMarginFieldTrialOverride() {
+  if (!base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalMargin))
+    return base::nullopt;
+
+  if (base::FeatureList::IsEnabled(
+          omnibox::kUIExperimentVerticalMarginLimitToNonTouchOnly) &&
+      ui::MaterialDesignController::touch_ui()) {
+    return base::nullopt;
+  }
+
   // When the vertical margin is set to 2dp, the suggestion height is the
   // closest to the pre-Refresh height. In fact it's 1dp taller than the
   // pre-Refresh height on Linux.
@@ -598,6 +611,15 @@ int OmniboxFieldTrial::GetSuggestionVerticalMargin() {
 
 bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kExperimentalKeywordMode);
+}
+
+bool OmniboxFieldTrial::IsGroupSuggestionsBySearchVsUrlFeatureEnabled() {
+  return base::FeatureList::IsEnabled(
+      omnibox::kOmniboxGroupSuggestionsBySearchVsUrl);
+}
+
+bool OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxMaxURLMatches);
 }
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
@@ -635,6 +657,9 @@ const char OmniboxFieldTrial::kKeywordRequiresPrefixMatchRule[] =
 const char OmniboxFieldTrial::kKeywordScoreForSufficientlyCompleteMatchRule[] =
     "KeywordScoreForSufficientlyCompleteMatch";
 const char OmniboxFieldTrial::kEmphasizeTitlesRule[] = "EmphasizeTitles";
+
+const char OmniboxFieldTrial::kOmniboxMaxURLMatchesParam[] =
+    "OmniboxMaxURLMatches";
 
 const char OmniboxFieldTrial::kHUPNewScoringTypedCountRelevanceCapParam[] =
     "TypedCountRelevanceCap";

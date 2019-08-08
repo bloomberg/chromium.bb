@@ -34,6 +34,7 @@ class CrostiniTestVolume;
 class AndroidFilesTestVolume;
 class RemovableTestVolume;
 class DocumentsProviderTestVolume;
+class MediaViewTestVolume;
 
 class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
  protected:
@@ -59,6 +60,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   virtual bool GetEnableDriveFs() const;
   virtual bool GetEnableMyFilesVolume() const;
   virtual bool GetEnableDocumentsProvider() const;
+  virtual bool GetEnableArc() const;
   virtual bool GetRequiresStartupBrowser() const;
   virtual bool GetNeedsZipSupport() const;
   virtual bool GetIsOffline() const;
@@ -71,6 +73,8 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   void StartTest();
 
  private:
+  class MockFileTasksObserver;
+
   // Returns true if the test requires incognito mode.
   bool IsIncognitoModeTest() const { return GetGuestMode() == IN_INCOGNITO; }
 
@@ -85,6 +89,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   // Returns true if the test requires Android documents providers.
   bool IsDocumentsProviderTest() const { return GetEnableDocumentsProvider(); }
+
+  // Returns true if the test requires ARC++.
+  bool IsArcTest() const { return GetEnableArc(); }
 
   // Returns true if the test MyFilesVolume feature is enabled.
   bool IsMyFilesVolume() const { return GetEnableMyFilesVolume(); }
@@ -148,6 +155,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   std::unique_ptr<RemovableTestVolume> partition_1_;
   std::unique_ptr<RemovableTestVolume> partition_2_;
   std::unique_ptr<DocumentsProviderTestVolume> documents_provider_volume_;
+  std::unique_ptr<MediaViewTestVolume> media_view_images_;
+  std::unique_ptr<MediaViewTestVolume> media_view_videos_;
+  std::unique_ptr<MediaViewTestVolume> media_view_audio_;
 
   drive::DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;
@@ -156,6 +166,8 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
   std::unique_ptr<arc::FakeFileSystemInstance> arc_file_system_instance_;
+
+  std::unique_ptr<MockFileTasksObserver> file_tasks_observer_;
 
   // Not owned.
   SelectFileDialogExtensionTestFactory* select_factory_;

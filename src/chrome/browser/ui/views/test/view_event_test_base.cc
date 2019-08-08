@@ -14,7 +14,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "mojo/core/embedder/embedder.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -42,7 +42,7 @@ class TestView : public views::View {
     // Permit a test to remove the view being tested from the hierarchy, then
     // still handle a _NET_WM_STATE event on Linux during teardown that triggers
     // layout.
-    if (!has_children())
+    if (children().empty())
       return;
 
     View* child_view = child_at(0);
@@ -64,6 +64,7 @@ ViewEventTestBase::ViewEventTestBase() : window_(NULL), content_view_(NULL) {
 }
 
 void ViewEventTestBase::Done() {
+  drag_event_thread_.reset();
   run_loop_.Quit();
 }
 
@@ -169,16 +170,25 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 ViewEventTestBase::GetDragTaskRunner() {
+#if defined(OS_WIN)
+  // Drag events must be posted from a background thread, since starting a drag
+  // triggers a nested message loop that filters messages other than mouse
+  // events, so further tasks on the main message loop will be blocked.
   if (!drag_event_thread_) {
     drag_event_thread_ = std::make_unique<base::Thread>("drag-event-thread");
     drag_event_thread_->Start();
   }
   return drag_event_thread_->task_runner();
+#else
+  // Drag events must be posted from the current thread, since UI events on many
+  // platforms cannot be posted from background threads.  The nested drag
+  // message loop on non-Windows does not filter out non-input events, so these
+  // tasks will run.
+  return base::ThreadTaskRunnerHandle::Get();
+#endif
 }
 
 void ViewEventTestBase::RunTestMethod(base::OnceClosure task) {
-  drag_event_thread_.reset();
-
   std::move(task).Run();
   if (HasFatalFailure())
     Done();

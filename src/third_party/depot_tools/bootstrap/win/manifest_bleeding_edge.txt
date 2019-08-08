@@ -17,4 +17,4 @@ $VerifiedPlatform windows-386 windows-amd64
 infra/python/cpython/${platform} version:2.7.13.chromium7
 
 @Subdir git
-infra/git/windows-${arch} version:2.20.1.chromium16
+infra/git/windows-${arch} version:2.21.0.chromium16

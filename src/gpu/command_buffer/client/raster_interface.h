@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "gpu/command_buffer/client/interface_base.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
 namespace cc {
@@ -35,7 +36,7 @@ namespace raster {
 
 enum RasterTexStorageFlags { kNone = 0, kOverlay = (1 << 0) };
 
-class RasterInterface {
+class RasterInterface : public InterfaceBase {
  public:
   RasterInterface() {}
   virtual ~RasterInterface() {}
@@ -67,15 +68,10 @@ class RasterInterface {
                               bool requires_clear,
                               size_t* max_op_size_hint) = 0;
 
-  // Determines if an encoded image can be decoded using hardware decode
-  // acceleration. If this method returns true, then the client can be confident
-  // that a call to ScheduleImageDecode() will succeed.
-  virtual bool CanDecodeWithHardwareAcceleration(
-      base::span<const uint8_t> encoded_data) = 0;
-
   // Schedules a hardware-accelerated image decode and a sync token that's
   // released when the image decode is complete. If the decode could not be
-  // scheduled, an empty sync token is returned.
+  // scheduled, an empty sync token is returned. This method should only be
+  // called if ContextSupport::CanDecodeWithHardwareAcceleration() returns true.
   virtual SyncToken ScheduleImageDecode(
       base::span<const uint8_t> encoded_data,
       const gfx::Size& output_size,

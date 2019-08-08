@@ -22,7 +22,7 @@ class COMPONENT_EXPORT(VULKAN_ANDROID) VulkanImplementationAndroid
   ~VulkanImplementationAndroid() override;
 
   // VulkanImplementation:
-  bool InitializeVulkanInstance() override;
+  bool InitializeVulkanInstance(bool using_surface) override;
   VulkanInstance* GetVulkanInstance() override;
   std::unique_ptr<VulkanSurface> CreateViewSurface(
       gfx::AcceleratedWidget window) override;
@@ -35,12 +35,12 @@ class COMPONENT_EXPORT(VULKAN_ANDROID) VulkanImplementationAndroid
   std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
       VkDevice vk_device,
       VkFence vk_fence) override;
-  bool ImportSemaphoreFdKHR(VkDevice vk_device,
-                            base::ScopedFD sync_fd,
-                            VkSemaphore* vk_semaphore) override;
-  bool GetSemaphoreFdKHR(VkDevice vk_device,
-                         VkSemaphore vk_semaphore,
-                         base::ScopedFD* sync_fd) override;
+  VkSemaphore CreateExternalSemaphore(VkDevice vk_device) override;
+  VkSemaphore ImportSemaphoreHandle(VkDevice vk_device,
+                                    SemaphoreHandle handle) override;
+  SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
+                                     VkSemaphore vk_semaphore) override;
+  VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
   bool CreateVkImageAndImportAHB(
       const VkDevice& vk_device,
       const VkPhysicalDevice& vk_physical_device,

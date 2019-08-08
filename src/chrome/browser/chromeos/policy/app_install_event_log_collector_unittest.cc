@@ -19,8 +19,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_handler.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -111,9 +111,9 @@ class AppInstallEventLogCollectorTest : public testing::Test {
   void SetUp() override {
     RegisterLocalState(pref_service_.registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&pref_service_);
-    chromeos::PowerManagerClient::Initialize();
 
     chromeos::DBusThreadManager::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     chromeos::NetworkHandler::Initialize();
     profile_ = std::make_unique<TestingProfile>();
 
@@ -136,8 +136,8 @@ class AppInstallEventLogCollectorTest : public testing::Test {
 
     profile_.reset();
     chromeos::NetworkHandler::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
   }
 

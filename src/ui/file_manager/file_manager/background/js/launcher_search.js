@@ -113,6 +113,7 @@ LauncherSearch.prototype.initializeEventListeners_ = function(
 LauncherSearch.prototype.onQueryStarted_ = function(queryId, query, limit) {
   this.queryId_ = queryId;
 
+  const startTime = Date.now();
   // Request an instance of volume manager to ensure that all volumes are
   // initialized. When user searches while background page of the Files app is
   // not running, it happens that this method is executed before all volumes are
@@ -122,8 +123,8 @@ LauncherSearch.prototype.onQueryStarted_ = function(queryId, query, limit) {
   volumeManagerFactory.getInstance()
       .then(() => {
         return Promise.all([
-          this.queryDriveEntries_(queryId, query, limit),
-          this.queryLocalEntries_(queryId, query)
+          this.queryDriveEntries_(queryId, query, limit, startTime),
+          this.queryLocalEntries_(query, limit, startTime),
         ]);
       })
       .then((results) => {
@@ -159,8 +160,7 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
       if (entry.isDirectory) {
         // If it's directory, open the directory with file manager.
         launcher.launchFileManager(
-            { currentDirectoryURL: entry.toURL() },
-            undefined, /* App ID */
+            {currentDirectoryURL: entry.toURL()}, undefined, /* App ID */
             LaunchType.FOCUS_SAME_OR_CREATE);
       } else {
         // getFileTasks supports only native entries.
@@ -220,8 +220,7 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
  */
 LauncherSearch.prototype.openFileManagerWithSelectionURL_ = selectionURL => {
   launcher.launchFileManager(
-      {selectionURL: selectionURL},
-      undefined, /* App ID */
+      {selectionURL: selectionURL}, undefined, /* App ID */
       LaunchType.FOCUS_SAME_OR_CREATE);
 };
 
@@ -230,17 +229,23 @@ LauncherSearch.prototype.openFileManagerWithSelectionURL_ = selectionURL => {
  * @param {number} queryId
  * @param {string} query
  * @param {number} limit
+ * @param {number} startTime
  * @return {!Promise<!Array<!Entry>>}
  * @private
  */
-LauncherSearch.prototype.queryDriveEntries_ = (queryId, query, limit) => {
+LauncherSearch.prototype
+    .queryDriveEntries_ = (queryId, query, limit, startTime) => {
   const param = {query: query, types: 'ALL', maxResults: limit};
   return new Promise((resolve, reject) => {
     chrome.fileManagerPrivate.searchDriveMetadata(param, results => {
       chrome.fileManagerPrivate.getDriveConnectionState(connectionState => {
         if (connectionState.type !== 'online') {
-          results = results.filter(result => result.availableOffline !== false);
+          results = results.filter(
+              result => result.entry.isDirectory ||
+                  result.availableOffline !== false);
         }
+        chrome.metricsPrivate.recordTime(
+            'FileBrowser.LauncherSearch.Drive', Date.now() - startTime);
         resolve(results.map(result => result.entry));
       });
     });
@@ -249,69 +254,22 @@ LauncherSearch.prototype.queryDriveEntries_ = (queryId, query, limit) => {
 
 /**
  * Queries entries which match the given query in Downloads.
- * @param {number} queryId
  * @param {string} query
+ * @param {number} startTime
  * @return {!Promise<!Array<!Entry>>}
  * @private
  */
-LauncherSearch.prototype.queryLocalEntries_ = function(queryId, query) {
+LauncherSearch.prototype.queryLocalEntries_ = function(
+    query, limit, startTime) {
   if (!query) {
     return Promise.resolve([]);
   }
-
-  return this.getDownloadsEntry_()
-      .then((downloadsEntry) => {
-        return this.queryEntriesRecursively_(
-            downloadsEntry, queryId, query.toLowerCase());
-      })
-      .catch((error) => {
-        if (error.name != 'AbortError') {
-          console.error('Query local entries failed.', error);
-        }
-        return [];
-      });
-};
-
-/**
- * Returns root entry of Downloads volume.
- * @return {!Promise<!DirectoryEntry>}
- * @private
- */
-LauncherSearch.prototype.getDownloadsEntry_ = () => {
-  return volumeManagerFactory.getInstance().then((volumeManager) => {
-    const downloadsVolumeInfo = volumeManager.getCurrentProfileVolumeInfo(
-        VolumeManagerCommon.VolumeType.DOWNLOADS);
-    return downloadsVolumeInfo.resolveDisplayRoot();
-  });
-};
-
-/**
- * Queries entries which match the given query inside rootEntry recursively.
- * @param {!DirectoryEntry} rootEntry
- * @param {number} queryId
- * @param {string} query
- * @return {!Promise<!Array<!Entry>>}
- * @private
- */
-LauncherSearch.prototype.queryEntriesRecursively_ = function(
-    rootEntry, queryId, query) {
   return new Promise((resolve, reject) => {
-    let foundEntries = [];
-    util.readEntriesRecursively(
-        rootEntry,
-        (entries) => {
-          const matchEntries = entries.filter(
-              entry => entry.name.toLowerCase().indexOf(query) >= 0);
-          if (matchEntries.length > 0) {
-            foundEntries = foundEntries.concat(matchEntries);
-          }
-        },
-        () => {
-          resolve(foundEntries);
-        },
-        reject,
-        () => {
-          return this.queryId_ != queryId;
+    chrome.fileManagerPrivate.searchFiles(
+        {query: query, types: 'ALL', maxResults: limit}, results => {
+          chrome.metricsPrivate.recordTime(
+              'FileBrowser.LauncherSearch.Local', Date.now() - startTime);
+          resolve(results);
         });
   });
 };

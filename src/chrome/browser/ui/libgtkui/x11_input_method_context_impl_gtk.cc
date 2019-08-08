@@ -13,7 +13,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/composition_text.h"
-#include "ui/base/ime/composition_text_util_pango.h"
+#include "ui/base/ime/linux/composition_text_util_pango.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"

@@ -14,13 +14,14 @@ rtc_source_set("repeating_task") {
     "repeating_task.h",
   ]
   deps = [
+    ":to_queued_task",
     "..:logging",
-    "..:rtc_task_queue",
-    "..:sequenced_task_checker",
     "..:thread_checker",
     "..:timeutils",
+    "../../api/task_queue",
     "../../api/units:time_delta",
     "../../api/units:timestamp",
+    "../synchronization:sequence_checker",
     "//third_party/abseil-cpp/absl/memory",
   ]
 }
@@ -44,6 +45,8 @@ if (rtc_include_tests) {
     deps = [
       ":repeating_task",
       "..:rtc_base_approved",
+      "..:rtc_task_queue",
+      "..:task_queue_for_test",
       "../../test:test_support",
       "//third_party/abseil-cpp/absl/memory",
     ]

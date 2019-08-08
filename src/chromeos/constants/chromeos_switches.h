@@ -48,7 +48,6 @@ extern const char kArcPlayStoreAutoUpdate[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcStartMode[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kArcTransitionMigrationRequired[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArtifactsDir[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kCellularFirst[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kChildWallpaperLarge[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kChildWallpaperSmall[];
@@ -68,9 +67,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDerelictIdleTimeout[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableArcDataWipe[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableArcOptInVerification[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisableCaptivePortalBypassProxy[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableCloudImport[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableDemoMode[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableDeviceDisabling[];
@@ -78,8 +74,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableEncryptionMigration[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableEolNotification[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisableFileManagerTouchMode[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableFineGrainedTimeZoneDetection[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableGaiaServices[];
@@ -106,8 +100,6 @@ extern const char kDisableSigninFrameClientCerts[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableSigninFrameClientCertUserSelection[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisableSystemTimezoneAutomaticDetectionPolicy[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableVolumeAdjustSound[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableWakeOnWifi[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableArc[];
@@ -123,8 +115,6 @@ extern const char kEnableEncryptionMigration[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableExtensionAssetsSharing[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kEnableFileManagerTouchMode[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableFirstRunUITransitions[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableMarketingOptInScreen[];
@@ -133,13 +123,9 @@ extern const char kEnablePhysicalKeyboardAutocorrect[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableRequestTabletSite[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kEnableScreenshotTestingWithMode[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableTouchCalibrationSetting[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableTouchpadThreeFingerClick[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kEnableVideoPlayerChromecastSupport[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnterpriseDisableArc[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnterpriseDisableLicenseTypeSelection[];
@@ -169,7 +155,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kForceLoginManagerInTests[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kForceSystemCompositorMode[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kGoldenScreenshotsDir[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kForceUseChromeCamera[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kGuestSession[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kGuestWallpaperLarge[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kGuestWallpaperSmall[];
@@ -179,6 +166,8 @@ extern const char kHideAndroidFilesInFilesApp[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kHomedir[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kIgnoreUserProfileMappingForTests[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kKioskNextHomeUrlPrefix[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kLoginManager[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kLoginProfile[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kLoginUser[];
@@ -193,9 +182,14 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeGuestSession[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeSkipPostLogin[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeSkipToLogin[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeTimerInterval[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kDisableArcCpuRestriction[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kProfileRequiresPolicy[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kRedirectLibassistantLogging[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kRegulatoryLabelDir[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kRlzPingDelay[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kSamlPasswordChangeUrl[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfHoverPreviews[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kShowAndroidFilesInFilesApp[];
@@ -294,6 +288,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldSkipOobePostLogin();
 
 // Returns true if GAIA services has been disabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsGaiaServicesDisabled();
+
+// Returns true if |kDisableArcCpuRestriction| is true.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsArcCpuRestrictionDisabled();
 
 }  // namespace switches
 }  // namespace chromeos

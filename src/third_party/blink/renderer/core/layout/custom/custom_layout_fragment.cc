@@ -21,9 +21,9 @@ CustomLayoutFragment::CustomLayoutFragment(
       block_size_(block_size.ToDouble()) {
   // Immediately store the result data, so that it remains immutable between
   // layout calls to the child.
-  if (GetLayoutBox()->IsLayoutCustom()) {
-    SerializedScriptValue* data =
-        ToLayoutCustom(GetLayoutBox())->GetFragmentResultData();
+  auto* layout_custom = DynamicTo<LayoutCustom>(GetLayoutBox());
+  if (layout_custom) {
+    SerializedScriptValue* data = layout_custom->GetFragmentResultData();
     if (data)
       layout_worklet_world_v8_data_.Set(isolate, data->Deserialize(isolate));
   }

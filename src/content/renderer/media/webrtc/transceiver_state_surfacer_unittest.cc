@@ -25,7 +25,19 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 
+using testing::AnyNumber;
+using testing::Return;
+
 namespace content {
+
+class MockSctpTransport : public webrtc::SctpTransportInterface {
+ public:
+  MOCK_CONST_METHOD0(dtls_transport,
+                     rtc::scoped_refptr<webrtc::DtlsTransportInterface>());
+  MOCK_CONST_METHOD0(Information, webrtc::SctpTransportInformation());
+  MOCK_METHOD1(RegisterObserver, void(webrtc::SctpTransportObserverInterface*));
+  MOCK_METHOD0(UnregisterObserver, void());
+};
 
 class TransceiverStateSurfacerTest : public ::testing::Test {
  public:
@@ -36,6 +48,11 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
         dependency_factory_.get(), main_task_runner_);
     surfacer_.reset(new TransceiverStateSurfacer(main_task_runner_,
                                                  signaling_task_runner()));
+    peer_connection_ = dependency_factory_->CreatePeerConnection(
+        webrtc::PeerConnectionInterface::RTCConfiguration(), nullptr, nullptr);
+    EXPECT_CALL(*(static_cast<MockPeerConnectionImpl*>(peer_connection_.get())),
+                GetSctpTransport())
+        .Times(AnyNumber());
   }
 
   void TearDown() override {
@@ -136,6 +153,14 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
 
   void ObtainStatesAndExpectInitialized(
       rtc::scoped_refptr<webrtc::RtpTransceiverInterface> webrtc_transceiver) {
+    // Inspect SCTP transport
+    auto sctp_snapshot = surfacer_->SctpTransportSnapshot();
+    EXPECT_EQ(peer_connection_->GetSctpTransport(), sctp_snapshot.transport);
+    if (peer_connection_->GetSctpTransport()) {
+      EXPECT_EQ(peer_connection_->GetSctpTransport()->dtls_transport(),
+                sctp_snapshot.sctp_transport_state.dtls_transport());
+    }
+    // Inspect transceivers
     auto transceiver_states = surfacer_->ObtainStates();
     EXPECT_EQ(1u, transceiver_states.size());
     auto& transceiver_state = transceiver_states[0];
@@ -200,7 +225,8 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
         blink::WebString::FromUTF8(id), blink::WebMediaStreamSource::kTypeAudio,
         blink::WebString::FromUTF8("local_audio_track"), false);
     blink::MediaStreamAudioSource* audio_source =
-        new blink::MediaStreamAudioSource(true);
+        new blink::MediaStreamAudioSource(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true);
     // Takes ownership of |audio_source|.
     web_source.SetPlatformSource(base::WrapUnique(audio_source));
 
@@ -215,7 +241,8 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
           transceivers,
       base::WaitableEvent* waitable_event) {
     DCHECK(signaling_task_runner()->BelongsToCurrentThread());
-    surfacer_->Initialize(track_adapter_map_, std::move(transceivers));
+    surfacer_->Initialize(peer_connection_, track_adapter_map_,
+                          std::move(transceivers));
     waitable_event->Signal();
   }
 
@@ -225,7 +252,8 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
       base::OnceCallback<void()> callback,
       base::RunLoop* run_loop) {
     DCHECK(signaling_task_runner()->BelongsToCurrentThread());
-    surfacer_->Initialize(track_adapter_map_, std::move(transceivers));
+    surfacer_->Initialize(peer_connection_, track_adapter_map_,
+                          std::move(transceivers));
     main_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&TransceiverStateSurfacerTest::
@@ -245,6 +273,7 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  protected:
+  scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
@@ -329,6 +358,28 @@ TEST_F(TransceiverStateSurfacerTest, SurfaceReceiverStateOnly) {
   EXPECT_EQ(transceiver_state.direction(),
             webrtc::RtpTransceiverDirection::kRecvOnly);
   EXPECT_FALSE(transceiver_state.current_direction());
+}
+
+TEST_F(TransceiverStateSurfacerTest, SurfaceTransceiverWithSctpTransport) {
+  auto local_track_adapter = CreateLocalTrackAndAdapter("local_track");
+  auto webrtc_transceiver = CreateWebRtcTransceiver(
+      local_track_adapter->webrtc_track(), "local_stream", "remote_track",
+      "remote_stream", nullptr);
+  rtc::scoped_refptr<MockSctpTransport> mock_sctp_transport =
+      new rtc::RefCountedObject<MockSctpTransport>();
+  webrtc::SctpTransportInformation sctp_transport_info(
+      webrtc::SctpTransportState::kNew);
+  EXPECT_CALL(*(static_cast<MockPeerConnectionImpl*>(peer_connection_.get())),
+              GetSctpTransport())
+      .WillRepeatedly(Return(mock_sctp_transport));
+  EXPECT_CALL(*mock_sctp_transport.get(), Information())
+      .WillRepeatedly(Return(sctp_transport_info));
+  EXPECT_CALL(*mock_sctp_transport.get(), dtls_transport()).Times(AnyNumber());
+  auto waitable_event =
+      AsyncInitializeSurfacerWithWaitableEvent({webrtc_transceiver});
+  waitable_event->Wait();
+  EXPECT_TRUE(surfacer_->SctpTransportSnapshot().transport);
+  ObtainStatesAndExpectInitialized(webrtc_transceiver);
 }
 
 }  // namespace content

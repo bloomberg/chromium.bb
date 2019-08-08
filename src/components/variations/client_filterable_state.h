@@ -30,6 +30,10 @@ struct ClientFilterableState {
   // The Chrome version to filter on.
   base::Version version;
 
+  // The OS version to filter on. See |min_os_version| in study.proto for
+  // details.
+  base::Version os_version;
+
   // The Channel for this Chrome installation.
   Study::Channel channel;
 
@@ -46,11 +50,6 @@ struct ClientFilterableState {
   // Whether this is a low-end device. Currently only supported on Android.
   // Based on base::SysInfo::IsLowEndDevice().
   bool is_low_end_device = false;
-
-  // Whether this platform supports experiments which retain their group
-  // assignments across runs.
-  // TODO(paulmiller): Remove this once https://crbug.com/866722 is resolved.
-  bool supports_permanent_consistency = true;
 
   // The country code to use for studies configured with session consistency.
   std::string session_consistency_country;

@@ -89,25 +89,31 @@ void DebugDaemonLogSource::Fetch(SysLogsSourceCallback callback) {
 
   client->GetRoutes(true,   // Numeric
                     false,  // No IPv6
-                    base::Bind(&DebugDaemonLogSource::OnGetRoutes,
-                               weak_ptr_factory_.GetWeakPtr()));
+                    base::BindOnce(&DebugDaemonLogSource::OnGetRoutes,
+                                   weak_ptr_factory_.GetWeakPtr()));
   ++num_pending_requests_;
-  client->GetNetworkStatus(base::Bind(&DebugDaemonLogSource::OnGetNetworkStatus,
-                                      weak_ptr_factory_.GetWeakPtr()));
+
+  client->GetNetworkStatus(base::BindOnce(&DebugDaemonLogSource::OnGetOneLog,
+                                          weak_ptr_factory_.GetWeakPtr(),
+                                          kNetworkStatusKeyName));
   ++num_pending_requests_;
-  client->GetModemStatus(base::Bind(&DebugDaemonLogSource::OnGetModemStatus,
-                                    weak_ptr_factory_.GetWeakPtr()));
+
+  client->GetModemStatus(base::BindOnce(&DebugDaemonLogSource::OnGetOneLog,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        kModemStatusKeyName));
   ++num_pending_requests_;
-  client->GetWiMaxStatus(base::Bind(&DebugDaemonLogSource::OnGetWiMaxStatus,
-                                    weak_ptr_factory_.GetWeakPtr()));
+
+  client->GetWiMaxStatus(base::BindOnce(&DebugDaemonLogSource::OnGetOneLog,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        kWiMaxStatusKeyName));
   ++num_pending_requests_;
 
   if (scrub_) {
-    client->GetScrubbedBigLogs(base::Bind(&DebugDaemonLogSource::OnGetLogs,
-                                          weak_ptr_factory_.GetWeakPtr()));
+    client->GetScrubbedBigLogs(base::BindOnce(&DebugDaemonLogSource::OnGetLogs,
+                                              weak_ptr_factory_.GetWeakPtr()));
   } else {
-    client->GetAllLogs(base::Bind(&DebugDaemonLogSource::OnGetLogs,
-                                  weak_ptr_factory_.GetWeakPtr()));
+    client->GetAllLogs(base::BindOnce(&DebugDaemonLogSource::OnGetLogs,
+                                      weak_ptr_factory_.GetWeakPtr()));
   }
   ++num_pending_requests_;
 }
@@ -122,28 +128,11 @@ void DebugDaemonLogSource::OnGetRoutes(
   RequestCompleted();
 }
 
-void DebugDaemonLogSource::OnGetNetworkStatus(
-    base::Optional<std::string> status) {
+void DebugDaemonLogSource::OnGetOneLog(std::string key,
+                                       base::Optional<std::string> status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  (*response_)[kNetworkStatusKeyName] =
-      std::move(status).value_or(kNotAvailable);
-  RequestCompleted();
-}
-
-void DebugDaemonLogSource::OnGetModemStatus(
-    base::Optional<std::string> status) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  (*response_)[kModemStatusKeyName] = std::move(status).value_or(kNotAvailable);
-  RequestCompleted();
-}
-
-void DebugDaemonLogSource::OnGetWiMaxStatus(
-    base::Optional<std::string> status) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  (*response_)[kWiMaxStatusKeyName] = std::move(status).value_or(kNotAvailable);
+  (*response_)[std::move(key)] = std::move(status).value_or(kNotAvailable);
   RequestCompleted();
 }
 

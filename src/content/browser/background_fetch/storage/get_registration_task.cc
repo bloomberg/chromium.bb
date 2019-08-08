@@ -5,12 +5,10 @@
 #include "content/browser/background_fetch/storage/get_registration_task.h"
 
 #include "base/bind.h"
-#include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/get_metadata_task.h"
 
 namespace content {
-
 namespace background_fetch {
 
 GetRegistrationTask::GetRegistrationTask(DatabaseTaskHost* host,
@@ -45,24 +43,30 @@ void GetRegistrationTask::DidGetMetadata(
 
 void GetRegistrationTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
-  auto registration = blink::mojom::BackgroundFetchRegistration::New();
+  auto registration_data = blink::mojom::BackgroundFetchRegistrationData::New();
+  BackgroundFetchRegistrationId registration_id;
 
   if (error == blink::mojom::BackgroundFetchError::NONE) {
     DCHECK(metadata_proto_);
 
-    bool converted =
-        ToBackgroundFetchRegistration(*metadata_proto_, registration.get());
+    bool converted = ToBackgroundFetchRegistration(*metadata_proto_,
+                                                   registration_data.get());
     if (!converted) {
       // Database corrupted.
       SetStorageErrorAndFinish(
           BackgroundFetchStorageError::kServiceWorkerStorageError);
       return;
     }
+
+    registration_id = BackgroundFetchRegistrationId(
+        service_worker_registration_id_, origin_, developer_id_,
+        metadata_proto_->registration().unique_id());
   }
 
   ReportStorageError();
 
-  std::move(callback_).Run(error, std::move(registration));
+  std::move(callback_).Run(error, std::move(registration_id),
+                           std::move(registration_data));
   Finished();  // Destroys |this|.
 }
 
@@ -71,5 +75,4 @@ std::string GetRegistrationTask::HistogramName() const {
 }
 
 }  // namespace background_fetch
-
 }  // namespace content

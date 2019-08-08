@@ -39,21 +39,9 @@ namespace sw
 			bool quadLayoutDepthBuffer;
 
 			bool stencilActive;
-			VkCompareOp stencilCompareMode;
-			VkStencilOp stencilFailOperation;
-			VkStencilOp stencilPassOperation;
-			VkStencilOp stencilZFailOperation;
-			bool noStencilMask;
-			bool noStencilWriteMask;
-			bool stencilWriteMasked;
 			bool twoSidedStencil;
-			VkCompareOp stencilCompareModeCCW;
-			VkStencilOp stencilFailOperationCCW;
-			VkStencilOp stencilPassOperationCCW;
-			VkStencilOp stencilZFailOperationCCW;
-			bool noStencilMaskCCW;
-			bool noStencilWriteMaskCCW;
-			bool stencilWriteMaskedCCW;
+			VkStencilOpState frontStencil;
+			VkStencilOpState backStencil;
 
 			bool depthTestActive;
 			bool occlusionEnabled;
@@ -76,6 +64,7 @@ namespace sw
 			TransparencyAntialiasing transparencyAntialiasing;
 			bool centroid;
 			bool frontFaceCCW;
+			VkFormat depthFormat;
 
 			Sampler::State sampler[TEXTURE_IMAGE_UNITS];
 		};
@@ -157,23 +146,6 @@ namespace sw
 		void setColorLogicOpEnabled(bool colorLogicOpEnabled);
 		void setLogicalOperation(VkLogicOp logicalOperation);
 
-		void setStencilEnable(bool stencilEnable);
-		void setStencilCompare(VkCompareOp stencilCompareMode);
-		void setStencilReference(int stencilReference);
-		void setStencilMask(int stencilMask);
-		void setStencilFailOperation(VkStencilOp stencilFailOperation);
-		void setStencilPassOperation(VkStencilOp stencilPassOperation);
-		void setStencilZFailOperation(VkStencilOp stencilZFailOperation);
-		void setStencilWriteMask(int stencilWriteMask);
-		void setTwoSidedStencil(bool enable);
-		void setStencilCompareCCW(VkCompareOp stencilCompareMode);
-		void setStencilReferenceCCW(int stencilReference);
-		void setStencilMaskCCW(int stencilMask);
-		void setStencilFailOperationCCW(VkStencilOp stencilFailOperation);
-		void setStencilPassOperationCCW(VkStencilOp stencilPassOperation);
-		void setStencilZFailOperationCCW(VkStencilOp stencilZFailOperation);
-		void setStencilWriteMaskCCW(int stencilWriteMask);
-
 		void setBlendConstant(const Color<float> &blendConstant);
 
 		void setAlphaBlendEnable(bool alphaBlendEnable);
@@ -196,8 +168,6 @@ namespace sw
 		void setRoutineCacheSize(int routineCacheSize);
 
 		// Other semi-constants
-		Stencil stencil;
-		Stencil stencilCCW;
 		Factor factor;
 
 	private:

@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <string>
+#include "base/component_export.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/events/event.h"
 
 namespace ui {
@@ -20,7 +20,7 @@ struct SurroundingTextInfo {
   gfx::Range selection_range;
 };
 
-class UI_BASE_IME_EXPORT IMEInputContextHandlerInterface {
+class COMPONENT_EXPORT(UI_BASE_IME) IMEInputContextHandlerInterface {
  public:
   // Called when the engine commit a text.
   virtual void CommitText(const std::string& text) = 0;

@@ -13,7 +13,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
@@ -35,7 +35,7 @@ int DesktopProcessMain() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("Me2Me");
+  base::ThreadPool::CreateAndStartWithDefaultParams("Me2Me");
 
   base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;

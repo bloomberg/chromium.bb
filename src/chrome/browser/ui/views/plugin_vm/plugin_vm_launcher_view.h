@@ -37,14 +37,18 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   // plugin_vm::PluginVmImageDownloadObserver implementation.
   void OnDownloadStarted() override;
   void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
-                                 int64_t content_length) override;
+                                 int64_t content_length,
+                                 int64_t download_bytes_per_sec) override;
   void OnDownloadCompleted() override;
   void OnDownloadCancelled() override;
   void OnDownloadFailed() override;
   void OnUnzippingProgressUpdated(int64_t bytes_unzipped,
-                                  int64_t plugin_vm_image_size) override;
+                                  int64_t plugin_vm_image_size,
+                                  int64_t unzipping_bytes_per_sec) override;
   void OnUnzipped() override;
   void OnUnzippingFailed() override;
+  void OnRegistered() override;
+  void OnRegistrationFailed() override;
 
   // Public for testing purposes.
   base::string16 GetBigMessage();
@@ -54,6 +58,7 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
     START_DOWNLOADING,  // PluginVm image downloading should be started.
     DOWNLOADING,        // PluginVm image downloading is in progress.
     UNZIPPING,          // Downloaded PluginVm image unzipping is in progress.
+    REGISTERING,        // PluginVm image registering is in progress.
     FINISHED,           // PluginVm environment setting has been finished.
     ERROR,              // Something unexpected happened.
   };
@@ -67,6 +72,12 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
 
  private:
   base::string16 GetMessage() const;
+  base::string16 GetDownloadProgressMessage(uint64_t downlaoded_bytes,
+                                            int64_t content_length) const;
+  // Returns empty string in case time left cannot be estimated.
+  base::string16 GetTimeLeftMessage(int64_t processed_bytes,
+                                    int64_t bytes_to_be_processed,
+                                    int64_t bytes_per_sec) const;
   void SetBigMessageLabel();
   void SetMessageLabel();
   void SetBigImage();
@@ -77,6 +88,8 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   views::Label* big_message_label_ = nullptr;
   views::Label* message_label_ = nullptr;
   views::ProgressBar* progress_bar_ = nullptr;
+  views::Label* download_progress_message_label_ = nullptr;
+  views::Label* time_left_message_label_ = nullptr;
   views::ImageView* big_image_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PluginVmLauncherView);

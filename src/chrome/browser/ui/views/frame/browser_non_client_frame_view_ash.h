@@ -61,12 +61,12 @@ class BrowserNonClientFrameViewAsh
   ash::mojom::SplitViewObserverPtr CreateInterfacePtrForTesting();
 
   // BrowserNonClientFrameView:
-  gfx::Rect GetBoundsForTabStrip(const views::View* tabstrip) const override;
+  gfx::Rect GetBoundsForTabStripRegion(
+      const views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
   void UpdateMinimumSize() override;
-  void OnTabsMaxXChanged() override;
   bool CanUserExitFullscreen() const override;
   SkColor GetCaptionColor(ActiveState active_state) const override;
 

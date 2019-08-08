@@ -7,7 +7,6 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
@@ -37,6 +36,12 @@ namespace {
 bool IsValidWindowVisibilityAnimationTransition(int64_t value) {
   return value == wm::ANIMATE_SHOW || value == wm::ANIMATE_HIDE ||
          value == wm::ANIMATE_BOTH || value == wm::ANIMATE_NONE;
+}
+
+bool IsValidWindowPinType(int64_t value) {
+  return value == static_cast<int64_t>(mojom::WindowPinType::NONE) ||
+         value == static_cast<int64_t>(mojom::WindowPinType::PINNED) ||
+         value == static_cast<int64_t>(mojom::WindowPinType::TRUSTED_PINNED);
 }
 
 }  // namespace
@@ -70,6 +75,9 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
   property_converter->RegisterPrimitiveProperty(
       aura::client::kGestureDragFromClientAreaTopMovesWindow,
       mojom::kGestureDragFromClientAreaTopMovesWindow_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
+      kHideInOverviewKey, mojom::kHideInOverview_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
       kHideShelfWhenFullscreenKey, mojom::kHideShelfWhenFullscreen_Property,

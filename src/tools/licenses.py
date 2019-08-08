@@ -27,8 +27,8 @@ import tempfile
 
 # TODO(agrieve): Move build_utils.WriteDepFile into a non-android directory.
 _REPOSITORY_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-sys.path.append(os.path.join(_REPOSITORY_ROOT, 'build/android/gyp/util'))
-import build_utils
+sys.path.insert(0, os.path.join(_REPOSITORY_ROOT, 'build/android/gyp'))
+from util import build_utils
 
 
 # Paths from the root of the tree to directories to skip.
@@ -186,11 +186,24 @@ SPECIAL_CASES = {
         "License File": "NOT_SHIPPED",
     },
     os.path.join('third_party', 'crashpad', 'crashpad', 'third_party',
+                 'lss'): {
+        "Name": "linux-syscall-support",
+        "URL": "https://chromium.googlesource.com/linux-syscall-support/",
+        "License": "BSD",
+        "License File": "NOT_SHIPPED",
+    },
+    os.path.join('third_party', 'crashpad', 'crashpad', 'third_party',
                  'mini_chromium'): {
         "Name": "mini_chromium",
         "URL": "https://chromium.googlesource.com/chromium/mini_chromium/",
         "License": "BSD",
         "License File": "NOT_SHIPPED",
+    },
+    os.path.join('third_party', 'crashpad', 'crashpad', 'third_party', 'xnu'): {
+        "Name": "xnu",
+        "URL": "https://opensource.apple.com/source/xnu/",
+        "License": "Apple Public Source License 2.0",
+        "License File": "APPLE_LICENSE",
     },
     os.path.join('third_party', 'crashpad', 'crashpad', 'third_party',
                  'zlib'): {
@@ -283,6 +296,8 @@ KNOWN_NON_IOS_LIBRARIES = set([
     os.path.join('base', 'third_party', 'symbolize'),
     os.path.join('base', 'third_party', 'xdg_mime'),
     os.path.join('base', 'third_party', 'xdg_user_dirs'),
+    os.path.join('buildtools', 'third_party', 'libc++'),
+    os.path.join('buildtools', 'third_party', 'libc++abi'),
     os.path.join('chrome', 'installer', 'mac', 'third_party', 'bsdiff'),
     os.path.join('chrome', 'installer', 'mac', 'third_party', 'xz'),
     os.path.join('chrome', 'test', 'data', 'third_party', 'kraken'),
@@ -458,7 +473,7 @@ def FindThirdPartyDirs(prune_paths, root):
             for dir in dirs:
                 dirpath = os.path.join(path, dir)
                 additional_paths_file = os.path.join(
-                        dirpath, ADDITIONAL_PATHS_FILENAME)
+                    root, dirpath, ADDITIONAL_PATHS_FILENAME)
                 if os.path.exists(additional_paths_file):
                     with open(additional_paths_file) as paths_file:
                         extra_paths = json.load(paths_file)
@@ -504,7 +519,7 @@ def _GnBinary():
     return os.path.join(_REPOSITORY_ROOT, 'buildtools', subdir, exe)
 
 
-def GetThirdPartyDepsFromGNDepsOutput(gn_deps):
+def GetThirdPartyDepsFromGNDepsOutput(gn_deps, target_os):
     """Returns third_party/foo directories given the output of "gn desc deps".
 
     Note that it always returns the direct sub-directory of third_party
@@ -519,13 +534,22 @@ def GetThirdPartyDepsFromGNDepsOutput(gn_deps):
         relative_build_dep = os.path.relpath(
             absolute_build_dep, _REPOSITORY_ROOT)
         m = re.search(
-            r'^((.+/)?third_party/[^/]+)/(.+/)?BUILD\.gn$', relative_build_dep)
-        if m and not os.path.join('build', 'secondary') in relative_build_dep:
-            third_party_deps.add(m.group(1))
+            r'^((.+/)?third_party/[^/]+/)(.+/)?BUILD\.gn$', relative_build_dep)
+        if not m:
+            continue
+        third_party_path = m.group(1)
+        if any(third_party_path.startswith(p + '/') for p in PRUNE_PATHS):
+            continue
+        if (target_os == 'ios' and
+            any(third_party_path.startswith(p + '/')
+                for p in KNOWN_NON_IOS_LIBRARIES)):
+            # Skip over files that are known not to be used on iOS.
+            continue
+        third_party_deps.add(third_party_path[:-1])
     return third_party_deps
 
 
-def FindThirdPartyDeps(gn_out_dir, gn_target):
+def FindThirdPartyDeps(gn_out_dir, gn_target, target_os):
     if not gn_out_dir:
         raise RuntimeError("--gn-out-dir is required if --gn-target is used.")
 
@@ -545,7 +569,7 @@ def FindThirdPartyDeps(gn_out_dir, gn_target):
         if tmp_dir and os.path.exists(tmp_dir):
             shutil.rmtree(tmp_dir)
 
-    return GetThirdPartyDepsFromGNDepsOutput(gn_deps)
+    return GetThirdPartyDepsFromGNDepsOutput(gn_deps, target_os)
 
 
 def ScanThirdPartyDirs(root=None):
@@ -595,7 +619,7 @@ def GenerateCredits(
         }
 
     if gn_target:
-        third_party_dirs = FindThirdPartyDeps(gn_out_dir, gn_target)
+        third_party_dirs = FindThirdPartyDeps(gn_out_dir, gn_target, target_os)
 
         # Sanity-check to raise a build error if invalid gn_... settings are
         # somehow passed to this script.
@@ -694,7 +718,7 @@ def _ReadFile(path):
         return f.read()
 
 
-def GenerateLicenseFile(output_file, gn_out_dir, gn_target):
+def GenerateLicenseFile(output_file, gn_out_dir, gn_target, target_os):
     """Generate a plain-text LICENSE file which can be used when you ship a part
     of Chromium code (specified by gn_target) as a stand-alone library
     (e.g., //ios/web_view).
@@ -702,7 +726,7 @@ def GenerateLicenseFile(output_file, gn_out_dir, gn_target):
     The LICENSE file contains licenses of both Chromium and third-party
     libraries which gn_target depends on. """
 
-    third_party_dirs = FindThirdPartyDeps(gn_out_dir, gn_target)
+    third_party_dirs = FindThirdPartyDeps(gn_out_dir, gn_target, target_os)
 
     # Start with Chromium's LICENSE file.
     content = [_ReadFile('LICENSE')]
@@ -757,7 +781,8 @@ def main():
             return 1
     elif args.command == 'license_file':
         if not GenerateLicenseFile(
-                args.output_file, args.gn_out_dir, args.gn_target):
+                args.output_file, args.gn_out_dir, args.gn_target,
+                args.target_os):
             return 1
     else:
         print __doc__

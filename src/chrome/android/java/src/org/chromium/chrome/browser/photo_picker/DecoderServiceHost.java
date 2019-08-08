@@ -21,10 +21,11 @@ import android.os.SystemClock;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -210,24 +211,21 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
         // As per the Android documentation, AIDL callbacks can (and will) happen on any thread, so
         // make sure the code runs on the UI thread, since further down the callchain the code will
         // end up creating UI objects.
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    // Read the reply back from the service.
-                    String filePath = payload.getString(DecoderService.KEY_FILE_PATH);
-                    Boolean success = payload.getBoolean(DecoderService.KEY_SUCCESS);
-                    Bitmap bitmap = success
-                            ? (Bitmap) payload.getParcelable(DecoderService.KEY_IMAGE_BITMAP)
-                            : null;
-                    long decodeTime = payload.getLong(DecoderService.KEY_DECODE_TIME);
-                    mSuccessfulDecodes++;
-                    closeRequest(filePath, bitmap, decodeTime);
-                } catch (RuntimeException e) {
-                    mFailedDecodesRuntime++;
-                } catch (OutOfMemoryError e) {
-                    mFailedDecodesMemory++;
-                }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            try {
+                // Read the reply back from the service.
+                String filePath = payload.getString(DecoderService.KEY_FILE_PATH);
+                Boolean success = payload.getBoolean(DecoderService.KEY_SUCCESS);
+                Bitmap bitmap = success
+                        ? (Bitmap) payload.getParcelable(DecoderService.KEY_IMAGE_BITMAP)
+                        : null;
+                long decodeTime = payload.getLong(DecoderService.KEY_DECODE_TIME);
+                mSuccessfulDecodes++;
+                closeRequest(filePath, bitmap, decodeTime);
+            } catch (RuntimeException e) {
+                mFailedDecodesRuntime++;
+            } catch (OutOfMemoryError e) {
+                mFailedDecodesMemory++;
             }
         });
     }

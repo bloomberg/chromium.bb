@@ -46,10 +46,11 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   explicit GamepadProvider(
       GamepadConnectionChangeClient* connection_change_client);
 
-  // Manually specifies the data fetcher. Used for testing.
-  explicit GamepadProvider(
-      GamepadConnectionChangeClient* connection_change_client,
-      std::unique_ptr<GamepadDataFetcher> fetcher);
+  // Manually specifies the data fetcher and polling thread. The polling thread
+  // will be created normally if |polling_thread| is nullptr. Used for testing.
+  GamepadProvider(GamepadConnectionChangeClient* connection_change_client,
+                  std::unique_ptr<GamepadDataFetcher> fetcher,
+                  std::unique_ptr<base::Thread> polling_thread);
 
   ~GamepadProvider() override;
 

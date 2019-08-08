@@ -164,17 +164,42 @@ FrameTreeNode::~FrameTreeNode() {
 
   g_frame_tree_node_id_map.Get().erase(frame_tree_node_id_);
 
+  bool did_stop_loading = false;
+
   if (navigation_request_) {
+    navigation_request_.reset();
     // PlzNavigate: if a frame with a pending navigation is detached, make sure
     // the WebContents (and its observers) update their loading state.
-    navigation_request_.reset();
-    DidStopLoading();
+    did_stop_loading = true;
   }
 
-  // ~SiteProcessCountTracker DCHECKs in some tests if CleanUpNavigation is not
-  // called last. Ideally this would be closer to (possible before) the
-  // ResetLoadingState() call above.
-  render_manager_.CleanUpNavigation();
+  // ~SiteProcessCountTracker DCHECKs in some tests if the speculative
+  // RenderFrameHostImpl is not destroyed last. Ideally this would be closer to
+  // (possible before) the ResetLoadingState() call above.
+  //
+  // There is an inherent race condition causing bugs 838348/915179/et al, where
+  // the renderer may have committed the speculative main frame and the browser
+  // has not heard about it yet. If this is a main frame, then in that case the
+  // speculative RenderFrame was unable to be deleted (it is owned by the
+  // renderer) and we should not be able to cancel the navigation at this point.
+  // CleanUpNavigation() would normally be called here but it will try to undo
+  // the navigation and expose the race condition. When it replaces the main
+  // frame with a RenderFrameProxy, that leaks the committed main frame, leaving
+  // the frame and its friend group with pointers that will become invalid
+  // shortly as we are shutting everything down and deleting the RenderView etc.
+  // We avoid this problematic situation by not calling CleanUpNavigation() or
+  // DiscardUnusedFrame() here. The speculative RenderFrameHost is simply
+  // returned and deleted immediately. This satisfies the requirement that the
+  // speculative RenderFrameHost is removed from the RenderFrameHostManager
+  // before it is destroyed.
+  if (render_manager_.speculative_frame_host()) {
+    did_stop_loading |= render_manager_.speculative_frame_host()->is_loading();
+    render_manager_.UnsetSpeculativeRenderFrameHost();
+  }
+
+  if (did_stop_loading)
+    DidStopLoading();
+
   DCHECK(!IsLoading());
 }
 
@@ -563,10 +588,8 @@ bool FrameTreeNode::NotifyUserActivation() {
   }
   replication_state_.has_received_user_gesture = true;
 
-  // TODO(mustaq): The following block relaxes UAv2 a bit to make it slightly
-  // closer to the old (v1) model, to address a Hangout regression.  We will
-  // remove this after implementing a mechanism to delegate activation to
-  // subframes (https://crbug.com/728334)
+  // See the "Same-origin Visibility" section in |UserActivationState| class
+  // doc.
   if (base::FeatureList::IsEnabled(features::kUserActivationV2) &&
       base::FeatureList::IsEnabled(
           features::kUserActivationSameOriginVisibility)) {
@@ -659,6 +682,18 @@ void FrameTreeNode::UpdateFramePolicyHeaders(
   // Notify any proxies if the policies have been changed.
   if (changed)
     render_manager()->OnDidSetFramePolicyHeaders();
+}
+
+void FrameTreeNode::TransferUserActivationFrom(
+    RenderFrameHostImpl* source_rfh) {
+  user_activation_state_.TransferFrom(
+      source_rfh->frame_tree_node()->user_activation_state_);
+
+  // Notify proxies in non-source and non-target renderer processes to
+  // transfer the activation state from the source proxy to the target
+  // so the user activation state of those proxies matches the source
+  // renderer and the target renderer (which are separately updated).
+  render_manager_.TransferUserActivationFrom(source_rfh);
 }
 
 void FrameTreeNode::PruneChildFrameNavigationEntries(

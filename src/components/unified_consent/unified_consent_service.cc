@@ -10,7 +10,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -92,10 +92,10 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
 
 void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
   // Start observing pref changes when the user enters sync setup.
-  // Note: |sync->IsSetupInProgress()| is used instead of
-  // |sync->IsFirstSetupInProgress()|, because on Android
-  // |SetFirstSetupComplete()| is called automatically during the first setup.
-  // I.e. the value could change in the meantime.
+  // Note: Only |sync->IsSetupInProgress()| is used (i.e. no check for
+  // |IsFirstSetupComplete()|), because on Android |SetFirstSetupComplete()| is
+  // called automatically during the first setup, i.e. the value could change in
+  // the meantime.
   if (sync->IsSetupInProgress() && !pref_service_->IsSyncing()) {
     StartObservingServicePrefChanges();
   } else {
@@ -187,8 +187,8 @@ void UnifiedConsentService::UpdateSettingsForMigration() {
   // consent.
   bool url_keyed_metrics_enabled =
       sync_service_->IsSyncFeatureEnabled() &&
-      sync_service_->GetUserSettings()->GetChosenDataTypes().Has(
-          syncer::TYPED_URLS) &&
+      sync_service_->GetUserSettings()->GetSelectedTypes().Has(
+          syncer::UserSelectableType::kHistory) &&
       !sync_service_->GetUserSettings()->IsUsingSecondaryPassphrase();
   SetUrlKeyedAnonymizedDataCollectionEnabled(url_keyed_metrics_enabled);
 }

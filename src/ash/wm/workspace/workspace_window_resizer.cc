@@ -16,6 +16,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/default_window_resizer.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/pip/pip_window_resizer.h"
@@ -65,13 +66,7 @@ class TabletModeAppWindowDragDelegate : public TabletModeWindowDragDelegate {
   void EndingWindowDrag(wm::WmToplevelWindowEventHandler::DragResult result,
                         const gfx::Point& location_in_screen) override {}
   void EndedWindowDrag(const gfx::Point& location_in_screen) override {}
-  void StartFling(const ui::GestureEvent* event) override {
-    if (ShouldFlingIntoOverview(event)) {
-      DCHECK(Shell::Get()->overview_controller()->IsSelecting());
-      Shell::Get()->overview_controller()->overview_session()->AddItem(
-          dragged_window_, /*reposition=*/true, /*animate=*/false);
-    }
-  }
+  void StartFling(const ui::GestureEvent* event) override {}
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeAppWindowDragDelegate);
 };
@@ -102,9 +97,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
     std::unique_ptr<WindowResizer> window_resizer =
         std::make_unique<TabletModeWindowDragController>(
             window_state, std::make_unique<TabletModeAppWindowDragDelegate>());
-    window_resizer = std::make_unique<DragWindowResizer>(
-        std::move(window_resizer), window_state);
-    return window_resizer;
+    return std::make_unique<DragWindowResizer>(std::move(window_resizer),
+                                               window_state);
   }
 
   // Only allow drag that happens on caption or top area. Note: for a maxmized
@@ -130,9 +124,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
       std::make_unique<TabletModeWindowDragController>(
           window_state,
           std::make_unique<TabletModeBrowserWindowDragDelegate>());
-  window_resizer = std::make_unique<DragWindowResizer>(
-      std::move(window_resizer), window_state);
-  return window_resizer;
+  return std::make_unique<DragWindowResizer>(std::move(window_resizer),
+                                             window_state);
 }
 
 }  // namespace
@@ -145,28 +138,14 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   DCHECK(window);
 
   wm::WindowState* window_state = wm::GetWindowState(window);
-  // No need to return a resizer when the window cannot get resized or when a
-  // resizer already exists for this window.
-  if ((!window_state->CanResize() && window_component != HTCAPTION) ||
-      window_state->drag_details()) {
-    return nullptr;
-  }
 
-  // TODO(varkha): The chaining of window resizers causes some of the logic
-  // to be repeated and the logic flow difficult to control. With some windows
-  // classes using reparenting during drag operations it becomes challenging to
-  // implement proper transition from one resizer to another during or at the
-  // end of the drag. This also causes http://crbug.com/247085.
-  // We should have a better way of doing this, perhaps by having a way of
-  // observing drags or having a generic drag window wrapper which informs a
-  // layout manager that a drag has started or stopped. It may be possible to
-  // refactor and eliminate chaining.
-  std::unique_ptr<WindowResizer> window_resizer;
+  // A resizer already exists; don't create a new one.
+  if (window_state->drag_details())
+    return nullptr;
 
   if (window_state->IsPip()) {
     window_state->CreateDragDetails(point_in_parent, window_component, source);
-    window_resizer = std::make_unique<PipWindowResizer>(window_state);
-    return window_resizer;
+    return std::make_unique<PipWindowResizer>(window_state);
   }
 
   if (Shell::Get()
@@ -175,6 +154,10 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
     return CreateWindowResizerForTabletMode(window, point_in_parent,
                                             window_component, source);
   }
+
+  // No need to return a resizer when the window cannot get resized.
+  if (!window_state->CanResize() && window_component != HTCAPTION)
+    return nullptr;
 
   if (!window_state->IsNormalOrSnapped())
     return nullptr;
@@ -187,17 +170,28 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   window_state->CreateDragDetails(point_in_parent, window_component, source);
   const int parent_shell_window_id =
       window->parent() ? window->parent()->id() : -1;
+
+  // TODO(varkha): The chaining of window resizers causes some of the logic
+  // to be repeated and the logic flow difficult to control. With some windows
+  // classes using reparenting during drag operations it becomes challenging to
+  // implement proper transition from one resizer to another during or at the
+  // end of the drag. This also causes http://crbug.com/247085.
+  // We should have a better way of doing this, perhaps by having a way of
+  // observing drags or having a generic drag window wrapper which informs a
+  // layout manager that a drag has started or stopped. It may be possible to
+  // refactor and eliminate chaining.
+  std::unique_ptr<WindowResizer> window_resizer;
   if (window->parent() &&
-      (parent_shell_window_id == kShellWindowId_DefaultContainer ||
+      // TODO(afakhry): Maybe use switchable containers?
+      (desks_util::IsDeskContainerId(parent_shell_window_id) ||
        parent_shell_window_id == kShellWindowId_AlwaysOnTopContainer)) {
     window_resizer.reset(WorkspaceWindowResizer::Create(
         window_state, std::vector<aura::Window*>()));
   } else {
     window_resizer.reset(DefaultWindowResizer::Create(window_state));
   }
-  window_resizer = std::make_unique<DragWindowResizer>(
-      std::move(window_resizer), window_state);
-  return window_resizer;
+  return std::make_unique<DragWindowResizer>(std::move(window_resizer),
+                                             window_state);
 }
 
 namespace {
@@ -695,6 +689,8 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   }
   instance = this;
 
+  // Use |bounds()| instead of |GetTargetBounds()| because that's the position a
+  // user captured the window.
   pre_drag_window_bounds_ = window_state->window()->bounds();
 
   window_state->OnDragStarted(details().window_component);
@@ -840,8 +836,10 @@ void WorkspaceWindowResizer::CreateBucketsForAttached(
   }
 }
 
-void WorkspaceWindowResizer::MagneticallySnapToOtherWindows(gfx::Rect* bounds) {
-  if (UpdateMagnetismWindow(*bounds, kAllMagnetismEdges)) {
+void WorkspaceWindowResizer::MagneticallySnapToOtherWindows(
+    const display::Display& display,
+    gfx::Rect* bounds) {
+  if (UpdateMagnetismWindow(display, *bounds, kAllMagnetismEdges)) {
     gfx::Rect bounds_in_screen = *bounds;
     ::wm::ConvertRectToScreen(GetTarget()->parent(), &bounds_in_screen);
     gfx::Point point = OriginForMagneticAttach(
@@ -853,10 +851,11 @@ void WorkspaceWindowResizer::MagneticallySnapToOtherWindows(gfx::Rect* bounds) {
 }
 
 void WorkspaceWindowResizer::MagneticallySnapResizeToOtherWindows(
+    const display::Display& display,
     gfx::Rect* bounds) {
   const uint32_t edges =
       WindowComponentToMagneticEdge(details().window_component);
-  if (UpdateMagnetismWindow(*bounds, edges)) {
+  if (UpdateMagnetismWindow(display, *bounds, edges)) {
     gfx::Rect bounds_in_screen = *bounds;
     ::wm::ConvertRectToScreen(GetTarget()->parent(), &bounds_in_screen);
     *bounds = BoundsForMagneticResizeAttach(
@@ -866,8 +865,12 @@ void WorkspaceWindowResizer::MagneticallySnapResizeToOtherWindows(
   }
 }
 
-bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
-                                                   uint32_t edges) {
+bool WorkspaceWindowResizer::UpdateMagnetismWindow(
+    const display::Display& display,
+    const gfx::Rect& bounds,
+    uint32_t edges) {
+  DCHECK(display.is_valid());
+
   // |bounds| are in coordinates of original window's parent.
   gfx::Rect bounds_in_screen = bounds;
   ::wm::ConvertRectToScreen(GetTarget()->parent(), &bounds_in_screen);
@@ -890,24 +893,29 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
   if (!window_state()->CanResize())
     return false;
 
-  for (aura::Window* root_window : Shell::Get()->GetAllRootWindows()) {
-    // Test all children from the desktop in each root window.
-    const std::vector<aura::Window*>& children =
-        root_window->GetChildById(kShellWindowId_DefaultContainer)->children();
-    for (auto i = children.rbegin();
-         i != children.rend() && !matcher.AreEdgesObscured(); ++i) {
-      wm::WindowState* other_state = wm::GetWindowState(*i);
-      if (other_state->window() == GetTarget() ||
-          !other_state->window()->IsVisible() ||
-          !other_state->IsNormalOrSnapped() || !other_state->CanResize()) {
-        continue;
-      }
-      if (matcher.ShouldAttach(other_state->window()->GetBoundsInScreen(),
-                               &magnetism_edge_)) {
-        magnetism_window_ = other_state->window();
-        window_tracker_.Add(magnetism_window_);
-        return true;
-      }
+  // Check the child windows of the root of the display in which the mouse
+  // cursor is. It doesn't make sense to do magnetism with windows on other
+  // displays until the cursor enters those displays.
+  aura::Window* root_window =
+      Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+          display.id());
+  aura::Window* container =
+      desks_util::GetActiveDeskContainerForRoot(root_window);
+  DCHECK(container);
+  const std::vector<aura::Window*>& children = container->children();
+  for (auto i = children.rbegin();
+       i != children.rend() && !matcher.AreEdgesObscured(); ++i) {
+    wm::WindowState* other_state = wm::GetWindowState(*i);
+    if (other_state->window() == GetTarget() ||
+        !other_state->window()->IsVisible() ||
+        !other_state->IsNormalOrSnapped() || !other_state->CanResize()) {
+      continue;
+    }
+    if (matcher.ShouldAttach(other_state->window()->GetBoundsInScreen(),
+                             &magnetism_edge_)) {
+      magnetism_window_ = other_state->window();
+      window_tracker_.Add(magnetism_window_);
+      return true;
     }
   }
   return false;
@@ -942,10 +950,10 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(int sticky_size,
       // work area.
       if (display.work_area().Contains(last_mouse_location_in_screen))
         StickToWorkAreaOnMove(work_area, sticky_size, bounds);
-      MagneticallySnapToOtherWindows(bounds);
+      MagneticallySnapToOtherWindows(display, bounds);
     }
   } else if (sticky_size > 0) {
-    MagneticallySnapResizeToOtherWindows(bounds);
+    MagneticallySnapResizeToOtherWindows(display, bounds);
     if (!magnetism_window_ && sticky_size > 0)
       StickToWorkAreaOnResize(work_area, sticky_size, bounds);
   }

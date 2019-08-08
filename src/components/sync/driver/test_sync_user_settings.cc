@@ -7,6 +7,7 @@
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings_impl.h"
 #include "components/sync/driver/test_sync_service.h"
 
 namespace syncer {
@@ -57,22 +58,40 @@ bool TestSyncUserSettings::IsSyncEverythingEnabled() const {
   return sync_everything_enabled_;
 }
 
-ModelTypeSet TestSyncUserSettings::GetChosenDataTypes() const {
-  ModelTypeSet types = service_->GetPreferredDataTypes();
-  types.RetainAll(UserSelectableTypes());
-  return types;
+UserSelectableTypeSet TestSyncUserSettings::GetSelectedTypes() const {
+  // TODO(crbug.com/950874): consider getting rid of the logic inversion here.
+  // service_.preferred_type should be derived from selected types, not vice
+  // versa.
+  ModelTypeSet preferred_types = service_->GetPreferredDataTypes();
+  UserSelectableTypeSet selected_types;
+  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+    if (preferred_types.Has(UserSelectableTypeToCanonicalModelType(type))) {
+      selected_types.Put(type);
+    }
+  }
+  return selected_types;
 }
 
-void TestSyncUserSettings::SetChosenDataTypes(bool sync_everything,
-                                              ModelTypeSet types) {
+void TestSyncUserSettings::SetSelectedTypes(bool sync_everything,
+                                            UserSelectableTypeSet types) {
   sync_everything_enabled_ = sync_everything;
   syncer::ModelTypeSet preferred_types;
   if (sync_everything_enabled_) {
     preferred_types = syncer::ModelTypeSet::All();
   } else {
-    preferred_types = syncer::SyncPrefs::ResolvePrefGroups(types);
+    preferred_types =
+        syncer::SyncUserSettingsImpl::ResolvePreferredTypesForTesting(types);
   }
   service_->SetPreferredDataTypes(preferred_types);
+}
+
+UserSelectableTypeSet TestSyncUserSettings::GetRegisteredSelectableTypes()
+    const {
+  return UserSelectableTypeSet::All();
+}
+
+UserSelectableTypeSet TestSyncUserSettings::GetForcedTypes() const {
+  return {};
 }
 
 bool TestSyncUserSettings::IsEncryptEverythingAllowed() const {

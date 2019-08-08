@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "third_party/blink/public/platform/modules/broadcastchannel/broadcast_channel.mojom.h"
+#include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
 #include "url/origin.h"
 
 namespace content {

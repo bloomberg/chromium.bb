@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
@@ -133,12 +134,14 @@ TEST_F(UssMigratorTest, Migrate) {
   const sync_pb::ModelTypeState& state = processor()->GetNthUpdateState(0);
   EXPECT_EQ(kToken1, state.progress_marker().token());
 
-  UpdateResponseData update = processor()->GetNthUpdateResponse(0).at(0);
-  const EntityData& entity = update.entity.value();
+  const UpdateResponseData* update =
+      std::move(processor()->GetNthUpdateResponse(0).at(0));
+  ASSERT_TRUE(update);
+  const EntityData& entity = *update->entity;
 
   EXPECT_FALSE(entity.id.empty());
   EXPECT_EQ(kHash1, entity.client_tag_hash);
-  EXPECT_EQ(1, update.response_version);
+  EXPECT_EQ(1, update->response_version);
   EXPECT_EQ(ctime, entity.creation_time);
   EXPECT_EQ(ctime, entity.modification_time);
   EXPECT_EQ(kTag1, entity.non_unique_name);
@@ -163,10 +166,14 @@ TEST_F(UssMigratorTest, MigrateMultiple) {
   EXPECT_EQ(3U, processor()->GetNthUpdateResponse(0).size());
   EXPECT_EQ(3, migrated_entity_count);
 
-  UpdateResponseDataList updates = processor()->GetNthUpdateResponse(0);
-  EXPECT_EQ(kTag1, updates.at(0).entity.value().specifics.preference().name());
-  EXPECT_EQ(kTag2, updates.at(1).entity.value().specifics.preference().name());
-  EXPECT_EQ(kTag3, updates.at(2).entity.value().specifics.preference().name());
+  std::vector<const UpdateResponseData*> updates =
+      processor()->GetNthUpdateResponse(0);
+  ASSERT_TRUE(updates.at(0));
+  EXPECT_EQ(kTag1, updates.at(0)->entity->specifics.preference().name());
+  ASSERT_TRUE(updates.at(1));
+  EXPECT_EQ(kTag2, updates.at(1)->entity->specifics.preference().name());
+  ASSERT_TRUE(updates.at(2));
+  EXPECT_EQ(kTag3, updates.at(2)->entity->specifics.preference().name());
 
   const sync_pb::ModelTypeState& state = processor()->GetNthUpdateState(0);
   EXPECT_EQ(kToken1, state.progress_marker().token());
@@ -193,10 +200,14 @@ TEST_F(UssMigratorTest, MigrateMultipleBatches) {
   EXPECT_EQ(kPreviouslyMigratedEntityCount + 3,
             cumulative_migrated_entity_count);
 
-  UpdateResponseDataList updates = processor()->GetNthUpdateResponse(0);
-  EXPECT_EQ(kTag1, updates.at(0).entity.value().specifics.preference().name());
-  EXPECT_EQ(kTag2, updates.at(1).entity.value().specifics.preference().name());
-  EXPECT_EQ(kTag3, updates.at(2).entity.value().specifics.preference().name());
+  std::vector<const UpdateResponseData*> updates =
+      processor()->GetNthUpdateResponse(0);
+  ASSERT_TRUE(updates.at(0));
+  EXPECT_EQ(kTag1, updates.at(0)->entity->specifics.preference().name());
+  ASSERT_TRUE(updates.at(1));
+  EXPECT_EQ(kTag2, updates.at(1)->entity->specifics.preference().name());
+  ASSERT_TRUE(updates.at(2));
+  EXPECT_EQ(kTag3, updates.at(2)->entity->specifics.preference().name());
 
   const sync_pb::ModelTypeState& state = processor()->GetNthUpdateState(0);
   EXPECT_EQ(kToken1, state.progress_marker().token());

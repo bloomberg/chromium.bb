@@ -183,7 +183,7 @@ zu{
         MF{"i-Saint Martin"}
         MG{"i-Madagascar"}
         MH{"i-Marshall Islands"}
-        MK{"i-Macedonia (FYROM)"}
+        MK{"i-Macedonia"}
         ML{"iMali"}
         MM{"i-Myanmar (Burma)"}
         MN{"i-Mongolia"}
@@ -287,6 +287,8 @@ zu{
         VU{"i-Vanuatu"}
         WF{"i-Wallis ne-Futuna"}
         WS{"i-Samoa"}
+        XA{"Pseudo-Accents"}
+        XB{"Pseudo-Bidi"}
         XK{"i-Kosovo"}
         YE{"i-Yemen"}
         YT{"i-Mayotte"}
@@ -305,7 +307,9 @@ zu{
         CG{"i-Congo (Republic)"}
         CI{"i-Ivory Coast"}
         CZ{"i-Czech Republic"}
+        MK{"i-Macedonia (FYROM)"}
+        SZ{"SZ"}
         TL{"i-East Timor"}
     }
-    Version{"2.1.43.65"}
+    Version{"2.1.48.17"}
 }

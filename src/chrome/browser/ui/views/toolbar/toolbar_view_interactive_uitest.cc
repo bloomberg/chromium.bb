@@ -10,9 +10,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -39,10 +37,18 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_WIN)
+#include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
+#else
+#include "base/threading/thread_task_runner_handle.h"
+#endif
+
 using bookmarks::BookmarkModel;
 
 class ToolbarViewInteractiveUITest : public AppMenuButtonObserver,
-                                     public extensions::ExtensionBrowserTest {
+                                     public extensions::ExtensionBrowserTest,
+                                     public views::WidgetObserver {
  public:
   ToolbarViewInteractiveUITest() = default;
   ~ToolbarViewInteractiveUITest() override = default;
@@ -50,8 +56,9 @@ class ToolbarViewInteractiveUITest : public AppMenuButtonObserver,
   // AppMenuButtonObserver:
   void AppMenuShown() override;
 
-  void OnWidgetDragWillStart();
-  void OnWidgetDragComplete();
+  // views::WidgetObserver:
+  void OnWidgetDragWillStart(views::Widget* widget) override;
+  void OnWidgetDragComplete(views::Widget* widget) override;
 
   // Starts a drag to the app menu button.
   void StartDrag();
@@ -88,14 +95,17 @@ class ToolbarViewInteractiveUITest : public AppMenuButtonObserver,
 void ToolbarViewInteractiveUITest::AppMenuShown() {
   menu_shown_ = true;
 
-  // Release the mouse button.
-  ui_controls::SendMouseEventsNotifyWhenDone(
-      ui_controls::LEFT, ui_controls::UP,
-      base::BindOnce(&ToolbarViewInteractiveUITest::OnWidgetDragComplete,
-                     base::Unretained(this)));
+  // Release the mouse button, which should result in calling
+  // OnWidgetDragComplete().
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseEvents),
+                     ui_controls::LEFT, ui_controls::UP,
+                     ui_controls::kNoAccelerator));
 }
 
-void ToolbarViewInteractiveUITest::OnWidgetDragWillStart() {
+void ToolbarViewInteractiveUITest::OnWidgetDragWillStart(
+    views::Widget* widget) {
   // Enqueue an event to move the mouse to the app menu button, which should
   // result in calling AppMenuShown().
   const gfx::Point target =
@@ -105,20 +115,19 @@ void ToolbarViewInteractiveUITest::OnWidgetDragWillStart() {
                                 target.x(), target.y()));
 }
 
-void ToolbarViewInteractiveUITest::OnWidgetDragComplete() {
+void ToolbarViewInteractiveUITest::OnWidgetDragComplete(views::Widget* widget) {
   // Return control to the testcase.
   std::move(quit_closure_).Run();
 }
 
 void ToolbarViewInteractiveUITest::StartDrag() {
-  // Move the mouse outside the toolbar action.
+  // Move the mouse outside the toolbar action, which should result in calling
+  // OnWidgetDragWillStart().
   const views::View* toolbar_action =
       GetBrowserActions()->GetToolbarActionViewAt(0);
   gfx::Point target(toolbar_action->width() + 1, toolbar_action->height() / 2);
   views::View::ConvertPointToScreen(toolbar_action, &target);
   EXPECT_TRUE(ui_controls::SendMouseMove(target.x(), target.y()));
-
-  OnWidgetDragWillStart();
 }
 
 void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
@@ -129,16 +138,8 @@ void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
   ToolbarActionsBar::disable_animations_for_testing_ = true;
 }
 
-#if defined(OS_LINUX) && defined(USE_AURA)
-// TODO(pkasting): https://crbug.com/923188 Flaky
-#define MAYBE_TestAppMenuOpensOnDrag DISABLED_TestAppMenuOpensOnDrag
-#elif defined(OS_MACOSX)
-// TODO(pkasting): https://crbug.com/910435 Test hangs in the run loop on Mac, I
-// don't know why.
-#define MAYBE_TestAppMenuOpensOnDrag DISABLED_TestAppMenuOpensOnDrag
-#elif defined(USE_OZONE)
-// TODO(pkasting): https://crbug.com/910423 Can't post mouse events from
-// background threads on Ozone, which is required to avoid hanging.
+// TODO(pkasting): https://crbug.com/939621 Fails on Mac.
+#if defined(OS_MACOSX)
 #define MAYBE_TestAppMenuOpensOnDrag DISABLED_TestAppMenuOpensOnDrag
 #else
 #define MAYBE_TestAppMenuOpensOnDrag TestAppMenuOpensOnDrag
@@ -156,12 +157,16 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewInteractiveUITest,
   // Set up observers that will drive the test along.
   AppMenuButton* const app_menu_button = GetAppMenuButton();
   EXPECT_FALSE(app_menu_button->IsMenuShowing());
+  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer(this);
+  widget_observer.Add(
+      BrowserView::GetBrowserViewForBrowser(browser())->GetWidget());
   ScopedObserver<AppMenuButton, AppMenuButtonObserver> button_observer(this);
   button_observer.Add(app_menu_button);
 
   // Set up the task runner to use for posting drag actions.
   // TODO(devlin): This is basically ViewEventTestBase::GetDragTaskRunner().  In
   // a perfect world, this would be factored better.
+#if defined(OS_WIN)
   // Drag events must be posted from a background thread, since starting a drag
   // triggers a nested message loop that filters messages other than mouse
   // events, so further tasks on the main message loop will be blocked.
@@ -169,6 +174,13 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewInteractiveUITest,
   base::Thread drag_event_thread("drag-event-thread");
   drag_event_thread.Start();
   set_task_runner(drag_event_thread.task_runner());
+#else
+  // Drag events must be posted from the current thread, since UI events on many
+  // platforms cannot be posted from background threads.  The nested drag
+  // message loop on non-Windows does not filter out non-input events, so these
+  // tasks will run.
+  set_task_runner(base::ThreadTaskRunnerHandle::Get());
+#endif
 
   // Click on the toolbar action.
   BrowserActionsContainer* const browser_actions = GetBrowserActions();

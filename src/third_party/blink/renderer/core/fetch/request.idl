@@ -54,4 +54,4 @@ enum ReferrerPolicy {
     [RaisesException, CallWith=ScriptState, DoNotTestNewObject, NewObject] Request clone();
 };
 
-Request implements Body;
+Request includes Body;

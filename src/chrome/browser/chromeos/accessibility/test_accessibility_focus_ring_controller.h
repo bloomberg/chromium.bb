@@ -26,19 +26,12 @@ class TestAccessibilityFocusRingController
   ~TestAccessibilityFocusRingController() override;
 
   // ash::mojom::AccessibilityFocusRingController:
-  void SetFocusRingColor(uint32_t skcolor,
-                         const std::string& caller_id) override;
-  void ResetFocusRingColor(const std::string& caller_id) override;
-  void SetFocusRing(const std::vector<gfx::Rect>& rects_in_screen,
-                    ash::mojom::FocusRingBehavior focus_ring_behavior,
-                    const std::string& caller_id) override;
-  void HideFocusRing(const std::string& caller_id) override;
+  void SetFocusRing(const std::string& focus_ring_id,
+                    ash::mojom::FocusRingPtr focus_ring) override;
+  void HideFocusRing(const std::string& focus_ring_id) override;
   void SetHighlights(const std::vector<gfx::Rect>& rects_in_screen,
                      uint32_t skcolor) override;
   void HideHighlights() override;
-  void EnableDoubleFocusRing(uint32_t skcolor,
-                             const std::string& caller_id) override;
-  void DisableDoubleFocusRing(const std::string& caller_id) override;
 
  private:
   void Bind(mojo::ScopedMessagePipeHandle handle);

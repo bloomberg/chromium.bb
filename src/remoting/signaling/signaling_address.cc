@@ -4,9 +4,11 @@
 
 #include "remoting/signaling/signaling_address.h"
 
-#include "base/base64.h"
+#include <string.h>
+
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "remoting/base/name_value_map.h"
 #include "remoting/base/remoting_bot.h"
 #include "remoting/base/service_urls.h"
@@ -17,7 +19,13 @@ namespace remoting {
 
 namespace {
 
-const char kJingleNamespace[] = "urn:xmpp:jingle:1";
+constexpr char kJingleNamespace[] = "urn:xmpp:jingle:1";
+constexpr char kLcsResourcePrefix[] = "chromoting_lcs_";
+
+// FTL JID format:
+// user@domain.com/chromoting_ftl_(registration ID)
+// The FTL JID is only used local to the program.
+constexpr char kFtlResourcePrefix[] = "chromoting_ftl_";
 
 // Represents the XML attrbute names for the various address fields in the
 // iq stanza.
@@ -26,6 +34,7 @@ enum class Field { JID, CHANNEL, ENDPOINT_ID };
 const NameMapElement<SignalingAddress::Channel> kChannelTypes[] = {
     {SignalingAddress::Channel::LCS, "lcs"},
     {SignalingAddress::Channel::XMPP, "xmpp"},
+    {SignalingAddress::Channel::FTL, "ftl"},
 };
 
 jingle_xmpp::QName GetQNameByField(Field attr, SignalingAddress::Direction direction) {
@@ -50,9 +59,14 @@ jingle_xmpp::QName GetQNameByField(Field attr, SignalingAddress::Direction direc
 SignalingAddress::Channel GetChannelType(std::string address) {
   std::string bare_jid;
   std::string resource;
-  if (SplitJidResource(address, &bare_jid, &resource) &&
-      resource.find("chromoting_lcs_") == 0) {
-    return SignalingAddress::Channel::LCS;
+  bool has_jid_resource = SplitJidResource(address, &bare_jid, &resource);
+  if (has_jid_resource) {
+    if (resource.find(kLcsResourcePrefix) == 0) {
+      return SignalingAddress::Channel::LCS;
+    }
+    if (resource.find(kFtlResourcePrefix) == 0) {
+      return SignalingAddress::Channel::FTL;
+    }
   }
   return SignalingAddress::Channel::XMPP;
 }
@@ -71,6 +85,9 @@ SignalingAddress::SignalingAddress(const std::string& address) {
     case SignalingAddress::Channel::LCS:
       endpoint_id_ = NormalizeJid(address);
       jid_ = remoting::ServiceUrls::GetInstance()->directory_bot_jid();
+      break;
+    case SignalingAddress::Channel::FTL:
+      jid_ = NormalizeJid(address);
       break;
     default:
       NOTREACHED();
@@ -99,6 +116,16 @@ bool SignalingAddress::operator!=(const SignalingAddress& other) const {
   return !(*this == other);
 }
 
+// static
+SignalingAddress SignalingAddress::CreateFtlSignalingAddress(
+    const std::string& username,
+    const std::string& registration_id) {
+  return SignalingAddress(base::StringPrintf("%s/%s%s", username.c_str(),
+                                             kFtlResourcePrefix,
+                                             registration_id.c_str()));
+}
+
+// static
 SignalingAddress SignalingAddress::Parse(const jingle_xmpp::XmlElement* iq,
                                          SignalingAddress::Direction direction,
                                          std::string* error) {
@@ -110,7 +137,7 @@ SignalingAddress SignalingAddress::Parse(const jingle_xmpp::XmlElement* iq,
   const jingle_xmpp::XmlElement* jingle =
       iq->FirstNamed(jingle_xmpp::QName(kJingleNamespace, "jingle"));
 
-  if (!jingle) {
+  if (!jingle || GetChannelType(jid) == SignalingAddress::Channel::FTL) {
     return SignalingAddress(jid);
   }
 
@@ -187,6 +214,20 @@ void SignalingAddress::SetInMessage(jingle_xmpp::XmlElement* iq,
                       ValueToName(kChannelTypes, channel_));
     }
   }
+}
+
+bool SignalingAddress::GetFtlInfo(std::string* username,
+                                  std::string* registration_id) const {
+  if (channel_ != Channel::FTL) {
+    return false;
+  }
+  std::string resource;
+  bool has_jid_resource = SplitJidResource(jid_, username, &resource);
+  DCHECK(has_jid_resource);
+  size_t ftl_resource_prefix_length = strlen(kFtlResourcePrefix);
+  DCHECK_LT(ftl_resource_prefix_length, resource.length());
+  *registration_id = resource.substr(ftl_resource_prefix_length);
+  return true;
 }
 
 }  // namespace remoting

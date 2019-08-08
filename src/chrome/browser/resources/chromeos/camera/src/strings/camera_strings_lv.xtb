@@ -8,6 +8,7 @@
 <translation id="1664224225747386870">Nekas nav ierakstīts</translation>
 <translation id="1862930711583847113">Nevar eksportēt failu <ph name="FILE" /></translation>
 <translation id="2036868001356139588">Taimera ilgums</translation>
+<translation id="2050339315714019657">Portrets</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> aktīva</translation>
 <translation id="229579744168541441">Eksportēt diskā</translation>
 <translation id="2501278716633472235">Doties atpakaļ</translation>
@@ -20,14 +21,19 @@
 <translation id="3081586908890909590">Ieslēdziet, lai ierakstītu videoklipu</translation>
 <translation id="3183731565330012717">Režģa veids</translation>
 <translation id="3227137524299004712">Mikrofons</translation>
+<translation id="3517926952904427380">Nevar uzņemt portretu</translation>
 <translation id="3569311554794739032">Vai tiešām vēlaties noņemt failu <ph name="FILE" />?</translation>
+<translation id="3810838688059735925">Video</translation>
 <translation id="4279490309300973883">Spoguļošana</translation>
+<translation id="4329152592498422850">Pārslēgt uz kvadrātveida fotoattēlu uzņemšanu</translation>
 <translation id="4445542136948522167">Pārtraukt fotoattēla uzņemšanu</translation>
+<translation id="4628948037717959914">Fotoattēls</translation>
 <translation id="4649291346448517080">Nevar saglabāt failu</translation>
 <translation id="4890010094662541459">3 x 3</translation>
 <translation id="5057360777601936059">Kamera šobrīd nav pieejama.
         Lūdzu, pārbaudiet, vai kamera ir pareizi pievienota.</translation>
 <translation id="5152121255775685072">Pāriet uz galeriju</translation>
+<translation id="5671277269877808209">Kvadrāts</translation>
 <translation id="5869546221129391014">Režģis</translation>
 <translation id="6073451960410192870">Pārtraukt ierakstīšanu</translation>
 <translation id="6233780560267770709">3 pa 3</translation>
@@ -46,6 +52,7 @@
 <translation id="8145038249676204903">Pārslēgt, lai uzņemtu fotoattēlu</translation>
 <translation id="8261506727792406068">Dzēst</translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
+<translation id="8815966864175525708">Pārslēgt uz portretu uzņemšanu</translation>
 <translation id="8870695351537079478">Nevar sākt ierakstīšanu</translation>
 <translation id="9045155556724273246">10 sekundes</translation>
 <translation id="945522503751344254">Sūtīt atsauksmes</translation>

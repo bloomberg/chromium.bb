@@ -232,7 +232,7 @@ void NetworkFetcherWinHTTP::SendRequestComplete() {
       request_handle_.get(),
       WINHTTP_QUERY_RAW_HEADERS_CRLF | WINHTTP_QUERY_FLAG_REQUEST_HEADERS,
       WINHTTP_HEADER_NAME_BY_INDEX, &all);
-  VLOG(1) << "request headers: " << all;
+  VLOG(2) << "request headers: " << all;
 
   net_error_ = ReceiveResponse();
   if (FAILED(net_error_))
@@ -252,7 +252,7 @@ void NetworkFetcherWinHTTP::ReceiveResponseComplete() {
   base::string16 all;
   QueryHeadersString(request_handle_.get(), WINHTTP_QUERY_RAW_HEADERS_CRLF,
                      WINHTTP_HEADER_NAME_BY_INDEX, &all);
-  VLOG(1) << "response headers: " << all;
+  VLOG(2) << "response headers: " << all;
 
   int response_code = 0;
   net_error_ = QueryHeadersInt(request_handle_.get(), WINHTTP_QUERY_STATUS_CODE,
@@ -398,7 +398,7 @@ void NetworkFetcherWinHTTP::WriteDataToMemory() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (read_buffer_.empty()) {
-    VLOG(1) << post_response_body_;
+    VLOG(2) << post_response_body_;
     net_error_ = S_OK;
     std::move(fetch_complete_callback_).Run();
     return;
@@ -518,7 +518,7 @@ void NetworkFetcherWinHTTP::StatusCallback(HINTERNET handle,
     base::StringAppendF(&msg, ", info=%s",
                         base::SysWideToUTF8(info_string).c_str());
 
-  VLOG(1) << "WinHttp status callback:"
+  VLOG(2) << "WinHttp status callback:"
           << " handle=" << handle << ", " << msg;
 
   switch (status) {

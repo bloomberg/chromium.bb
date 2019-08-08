@@ -15,9 +15,6 @@
 
 namespace tracing {
 
-const char kPerfettoTestDataSourceName[] =
-    "org.chromium.chrome_integration_unittest";
-const char kPerfettoProducerName[] = "chrome_producer_test";
 const char kPerfettoTestString[] = "d00df00d";
 const size_t kLargeMessageSize = 1 * 1024 * 1024;
 
@@ -36,10 +33,12 @@ class TestDataSource : public ProducerClient::DataSourceBase {
       base::OnceClosure stop_complete_callback = base::OnceClosure()) override;
   void Flush(base::RepeatingClosure flush_complete_callback) override;
 
+  const perfetto::DataSourceConfig& config() { return config_; }
+
  private:
   ProducerClient* producer_client_ = nullptr;
   const size_t send_packet_count_;
-  uint32_t target_buffer_ = 0;
+  perfetto::DataSourceConfig config_;
 };
 
 class MockProducerClient : public ProducerClient {
@@ -52,9 +51,9 @@ class MockProducerClient : public ProducerClient {
 
   void SetupDataSource(const std::string& data_source_name);
 
-  void StartDataSource(
-      uint64_t id,
-      const perfetto::DataSourceConfig& data_source_config) override;
+  void StartDataSource(uint64_t id,
+                       const perfetto::DataSourceConfig& data_source_config,
+                       StartDataSourceCallback callback) override;
 
   void StopDataSource(uint64_t id, StopDataSourceCallback callback) override;
 
@@ -107,6 +106,7 @@ class MockConsumer : public perfetto::Consumer {
   void OnDetach(bool success) override;
   void OnAttach(bool success, const perfetto::TraceConfig&) override;
   void OnTraceStats(bool success, const perfetto::TraceStats&) override;
+  void OnObservableEvents(const perfetto::ObservableEvents&) override {}
 
  private:
   std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
@@ -119,6 +119,7 @@ class MockConsumer : public perfetto::Consumer {
 class MockProducerHost : public ProducerHost {
  public:
   MockProducerHost(
+      const std::string& producer_name,
       const std::string& data_source_name,
       perfetto::TracingService* service,
       MockProducerClient* producer_client,
@@ -142,15 +143,16 @@ class MockProducerHost : public ProducerHost {
   }
 
  protected:
+  const std::string producer_name_;
   base::OnceClosure datasource_registered_callback_;
-  const std::string data_source_name_;
   std::string all_host_commit_data_requests_;
   std::unique_ptr<mojo::Binding<mojom::ProducerHost>> binding_;
 };
 
 class MockProducer {
  public:
-  MockProducer(const std::string& data_source_name,
+  MockProducer(const std::string& producer_name,
+               const std::string& data_source_name,
                perfetto::TracingService* service,
                base::OnceClosure on_datasource_registered,
                base::OnceClosure on_tracing_started,
@@ -158,6 +160,8 @@ class MockProducer {
   virtual ~MockProducer();
 
   void WritePacketBigly(base::OnceClosure on_write_complete);
+
+  MockProducerClient* producer_client() { return producer_client_.get(); }
 
  private:
   std::unique_ptr<MockProducerClient> producer_client_;

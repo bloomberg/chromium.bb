@@ -75,14 +75,22 @@ class WebState : public base::SupportsUserData {
   // Parameters for the OpenURL() method.
   struct OpenURLParams {
     OpenURLParams(const GURL& url,
+                  const GURL& virtual_url,
                   const Referrer& referrer,
                   WindowOpenDisposition disposition,
                   ui::PageTransition transition,
                   bool is_renderer_initiated);
+    OpenURLParams(const GURL& url,
+                  const Referrer& referrer,
+                  WindowOpenDisposition disposition,
+                  ui::PageTransition transition,
+                  bool is_renderer_initiated);
+    OpenURLParams(const OpenURLParams& params);
     ~OpenURLParams();
 
-    // The URL/referrer to be opened.
+    // The URL/virtualURL/referrer to be opened.
     GURL url;
+    GURL virtual_url;
     Referrer referrer;
 
     // The disposition requested by the navigation source.
@@ -123,6 +131,11 @@ class WebState : public base::SupportsUserData {
   // Must be called when the WebState becomes shown/hidden.
   virtual void WasShown() = 0;
   virtual void WasHidden() = 0;
+
+  // When |true|, attempt to prevent the WebProcess from suspending. Embedder
+  // must override WebClient::GetWindowedContainer to maintain this
+  // functionality.
+  virtual void SetKeepRenderProcessAlive(bool keep_alive) = 0;
 
   // Gets the BrowserState associated with this WebState. Can never return null.
   virtual BrowserState* GetBrowserState() const = 0;

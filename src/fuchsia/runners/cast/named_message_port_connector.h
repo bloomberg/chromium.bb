@@ -5,6 +5,7 @@
 #ifndef FUCHSIA_RUNNERS_CAST_NAMED_MESSAGE_PORT_CONNECTOR_H_
 #define FUCHSIA_RUNNERS_CAST_NAMED_MESSAGE_PORT_CONNECTOR_H_
 
+#include <fuchsia/web/cpp/fidl.h>
 #include <deque>
 #include <map>
 #include <string>
@@ -12,7 +13,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
 // The implementation actively creates a MessagePort for each registered Id,
 // passing them all to the web container every time a page-load occurs. It then
@@ -21,7 +21,7 @@
 class NamedMessagePortConnector {
  public:
   using PortConnectedCallback =
-      base::RepeatingCallback<void(chromium::web::MessagePortPtr)>;
+      base::RepeatingCallback<void(fuchsia::web::MessagePortPtr)>;
 
   NamedMessagePortConnector();
   ~NamedMessagePortConnector();
@@ -35,14 +35,14 @@ class NamedMessagePortConnector {
   // injected after Register is called.
   void Register(const std::string& id,
                 PortConnectedCallback handler,
-                chromium::web::Frame* frame);
+                fuchsia::web::Frame* frame);
 
   // Unregisters a handler for |frame|. Should be called before |frame| is
   // deleted.
-  void Unregister(chromium::web::Frame* frame, const std::string& id);
+  void Unregister(fuchsia::web::Frame* frame, const std::string& id);
 
   // Client should call this every time a page is loaded.
-  void NotifyPageLoad(chromium::web::Frame* frame);
+  void NotifyPageLoad(fuchsia::web::Frame* frame);
 
  private:
   struct RegistrationEntry {
@@ -54,9 +54,9 @@ class NamedMessagePortConnector {
     PortConnectedCallback handler;
   };
 
-  void InjectBindings(chromium::web::Frame* frame);
+  void InjectBindings(fuchsia::web::Frame* frame);
 
-  std::multimap<chromium::web::Frame*, RegistrationEntry> registrations_;
+  std::multimap<fuchsia::web::Frame*, RegistrationEntry> registrations_;
   fuchsia::mem::Buffer bindings_script_;
 
   DISALLOW_COPY_AND_ASSIGN(NamedMessagePortConnector);

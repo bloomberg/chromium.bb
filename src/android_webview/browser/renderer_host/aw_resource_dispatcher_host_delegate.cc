@@ -13,7 +13,7 @@
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
-#include "android_webview/browser/net_helpers.h"
+#include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_resource_throttle.h"
 #include "android_webview/common/url_constants.h"
@@ -280,7 +280,7 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
   // webcontents is created.
   throttles->push_back(std::move(ioThreadThrottle));
 
-  bool is_main_frame = resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
+  bool is_main_frame = resource_type == content::ResourceType::kMainFrame;
   throttles->push_back(
       std::make_unique<web_restrictions::WebRestrictionsResourceThrottle>(
           AwBrowserContext::GetDefault()->GetWebRestrictionProvider(),
@@ -359,7 +359,7 @@ void AwResourceDispatcherHostDelegate::OnResponseStarted(
     return;
   }
 
-  if (request_info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME) {
+  if (request_info->GetResourceType() == content::ResourceType::kMainFrame) {
     // Check for x-auto-login header.
     HeaderData header_data;
     if (ParserHeaderInResponse(request, ALLOW_ANY_REALM, &header_data)) {

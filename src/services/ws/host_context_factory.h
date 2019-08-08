@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "services/ws/public/cpp/raster_thread_helper.h"
 #include "ui/compositor/compositor.h"
 
@@ -27,6 +28,7 @@ class HostContextFactoryPrivate;
 
 namespace ws {
 
+class ContextProviderCommandBuffer;
 class Gpu;
 
 // ui::ContextFactory used when the WindowService is acting as the viz host.
@@ -50,6 +52,8 @@ class HostContextFactory : public ui::ContextFactory {
       base::WeakPtr<ui::Compositor> compositor) override;
   scoped_refptr<viz::ContextProvider> SharedMainThreadContextProvider()
       override;
+  scoped_refptr<viz::RasterContextProvider>
+  SharedMainThreadRasterContextProvider() override;
   void RemoveCompositor(ui::Compositor* compositor) override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
@@ -59,7 +63,8 @@ class HostContextFactory : public ui::ContextFactory {
 
   RasterThreadHelper raster_thread_helper_;
   Gpu* gpu_;
-  scoped_refptr<viz::ContextProvider> shared_main_thread_context_provider_;
+  scoped_refptr<ws::ContextProviderCommandBuffer>
+      shared_main_thread_context_provider_;
 
   std::unique_ptr<ui::HostContextFactoryPrivate> context_factory_private_;
 

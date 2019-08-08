@@ -11,6 +11,7 @@ import android.view.Window;
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
+import org.chromium.chrome.browser.tab.TabFullscreenHandler;
 
 /**
  * Manages the basic fullscreen functionality required by a Tab.
@@ -148,11 +149,7 @@ public abstract class FullscreenManager {
      */
     public void enterPersistentFullscreenMode(FullscreenOptions options) {
         mHtmlApiHandler.enterPersistentFullscreenMode(options);
-
-        Tab tab = getTab();
-        if (tab != null) {
-            tab.updateFullscreenEnabledState();
-        }
+        TabFullscreenHandler.updateEnabledState(getTab());
     }
 
     /**
@@ -161,11 +158,7 @@ public abstract class FullscreenManager {
      */
     public void exitPersistentFullscreenMode() {
         mHtmlApiHandler.exitPersistentFullscreenMode();
-
-        Tab tab = getTab();
-        if (tab != null) {
-            tab.updateFullscreenEnabledState();
-        }
+        TabFullscreenHandler.updateEnabledState(getTab());
     }
 
     /**

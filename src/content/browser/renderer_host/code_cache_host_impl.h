@@ -77,6 +77,7 @@ class CONTENT_EXPORT CodeCacheHostImpl : public blink::mojom::CodeCacheHost {
                            const std::vector<uint8_t>& data);
   void OnCacheStorageOpenCallback(const GURL& url,
                                   base::Time expected_response_time,
+                                  int64_t trace_id,
                                   scoped_refptr<net::IOBuffer> buf,
                                   int buf_len,
                                   CacheStorageCacheHandle cache_handle,

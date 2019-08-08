@@ -5,7 +5,7 @@
 #include "cc/tiles/software_image_decode_cache_utils.h"
 
 #include "base/atomic_sequence_num.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"

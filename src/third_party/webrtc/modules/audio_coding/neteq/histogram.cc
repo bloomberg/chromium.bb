@@ -9,25 +9,33 @@
  */
 
 #include <algorithm>
+#include <cstdlib>
 #include <numeric>
 
+#include "absl/types/optional.h"
 #include "modules/audio_coding/neteq/histogram.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/numerics/safe_conversions.h"
 
 namespace webrtc {
 
-Histogram::Histogram(size_t num_buckets, int forget_factor)
+Histogram::Histogram(size_t num_buckets,
+                     int forget_factor,
+                     absl::optional<double> start_forget_weight)
     : buckets_(num_buckets, 0),
       forget_factor_(0),
-      base_forget_factor_(forget_factor) {}
+      base_forget_factor_(forget_factor),
+      add_count_(0),
+      start_forget_weight_(start_forget_weight) {
+  RTC_DCHECK_LT(base_forget_factor_, 1 << 15);
+}
 
 Histogram::~Histogram() {}
 
 // Each element in the vector is first multiplied by the forgetting factor
 // |forget_factor_|. Then the vector element indicated by |iat_packets| is then
 // increased (additive) by 1 - |forget_factor_|. This way, the probability of
-// |iat_packets| is slightly increased, while the sum of the histogram remains
+// |value| is slightly increased, while the sum of the histogram remains
 // constant (=1).
 // Due to inaccuracies in the fixed-point arithmetic, the histogram may no
 // longer sum up to 1 (in Q30) after the update. To correct this, a correction
@@ -36,7 +44,7 @@ Histogram::~Histogram() {}
 // The forgetting factor |forget_factor_| is also updated. When the DelayManager
 // is reset, the factor is set to 0 to facilitate rapid convergence in the
 // beginning. With each update of the histogram, the factor is increased towards
-// the steady-state value |kIatFactor_|.
+// the steady-state value |base_forget_factor_|.
 void Histogram::Add(int value) {
   RTC_DCHECK(value >= 0);
   RTC_DCHECK(value < static_cast<int>(buckets_.size()));
@@ -61,19 +69,38 @@ void Histogram::Add(int value) {
     int flip_sign = vector_sum > 0 ? -1 : 1;
     for (int& bucket : buckets_) {
       // Add/subtract 1/16 of the element, but not more than |vector_sum|.
-      int correction = flip_sign * std::min(abs(vector_sum), bucket >> 4);
+      int correction = flip_sign * std::min(std::abs(vector_sum), bucket >> 4);
       bucket += correction;
       vector_sum += correction;
-      if (abs(vector_sum) == 0) {
+      if (std::abs(vector_sum) == 0) {
         break;
       }
     }
   }
   RTC_DCHECK(vector_sum == 0);  // Verify that the above is correct.
 
+  ++add_count_;
+
   // Update |forget_factor_| (changes only during the first seconds after a
   // reset). The factor converges to |base_forget_factor_|.
-  forget_factor_ += (base_forget_factor_ - forget_factor_ + 3) >> 2;
+  if (start_forget_weight_) {
+    if (forget_factor_ != base_forget_factor_) {
+      int old_forget_factor = forget_factor_;
+      int forget_factor =
+          (1 << 15) * (1 - start_forget_weight_.value() / (add_count_ + 1));
+      forget_factor_ =
+          std::max(0, std::min(base_forget_factor_, forget_factor));
+      // The histogram is updated recursively by forgetting the old histogram
+      // with |forget_factor_| and adding a new sample multiplied by |1 -
+      // forget_factor_|. We need to make sure that the effective weight on the
+      // new sample is no smaller than those on the old samples, i.e., to
+      // satisfy the following DCHECK.
+      RTC_DCHECK_GE((1 << 15) - forget_factor_,
+                    ((1 << 15) - old_forget_factor) * forget_factor_ >> 15);
+    }
+  } else {
+    forget_factor_ += (base_forget_factor_ - forget_factor_ + 3) >> 2;
+  }
 }
 
 int Histogram::Quantile(int probability) {
@@ -111,6 +138,7 @@ void Histogram::Reset() {
     bucket = temp_prob << 16;
   }
   forget_factor_ = 0;  // Adapt the histogram faster for the first few packets.
+  add_count_ = 0;
 }
 
 int Histogram::NumBuckets() const {

@@ -14,7 +14,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -297,6 +297,14 @@ void SpellcheckCustomDictionary::Load() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+void SpellcheckCustomDictionary::WaitUntilReadyToSync(base::OnceClosure done) {
+  DCHECK(!wait_until_ready_to_sync_cb_);
+  if (is_loaded_)
+    std::move(done).Run();
+  else
+    wait_until_ready_to_sync_cb_ = std::move(done);
+}
+
 syncer::SyncMergeResult SpellcheckCustomDictionary::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
@@ -436,6 +444,8 @@ void SpellcheckCustomDictionary::OnLoaded(
   Apply(dictionary_change);
   Sync(dictionary_change);
   is_loaded_ = true;
+  if (wait_until_ready_to_sync_cb_)
+    std::move(wait_until_ready_to_sync_cb_).Run();
   for (Observer& observer : observers_)
     observer.OnCustomDictionaryLoaded();
   if (!result->is_valid_file) {

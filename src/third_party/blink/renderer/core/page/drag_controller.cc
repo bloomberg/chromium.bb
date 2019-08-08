@@ -150,10 +150,6 @@ DragController::DragController(Page* page)
       drag_destination_action_(kDragDestinationActionNone),
       did_initiate_drag_(false) {}
 
-DragController* DragController::Create(Page* page) {
-  return MakeGarbageCollected<DragController>(page);
-}
-
 static DocumentFragment* DocumentFragmentFromDragData(
     DragData* drag_data,
     LocalFrame* frame,
@@ -487,9 +483,9 @@ static bool SetSelectionToDragCaret(LocalFrame* frame,
                                     const LayoutPoint& point) {
   frame->Selection().SetSelectionAndEndTyping(drag_caret);
   // TODO(editing-dev): The use of
-  // UpdateStyleAndLayoutIgnorePendingStylesheets
+  // UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame->GetDocument()->UpdateStyleAndLayout();
   if (!frame->Selection().ComputeVisibleSelectionInDOMTree().IsNone()) {
     return frame->Selection()
         .ComputeVisibleSelectionInDOMTree()
@@ -503,9 +499,9 @@ static bool SetSelectionToDragCaret(LocalFrame* frame,
   frame->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder().Collapse(position).Build());
   // TODO(editing-dev): The use of
-  // UpdateStyleAndLayoutIgnorePendingStylesheets
+  // UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame->GetDocument()->UpdateStyleAndLayout();
   const VisibleSelection& visible_selection =
       frame->Selection().ComputeVisibleSelectionInDOMTree();
   range = CreateRange(visible_selection.ToNormalizedEphemeralRange());
@@ -576,13 +572,13 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
   }
 
   if (page_->GetDragCaret().HasCaret()) {
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited.  See http://crbug.com/590369 for more details.
     page_->GetDragCaret()
         .CaretPosition()
         .GetPosition()
         .GetDocument()
-        ->UpdateStyleAndLayoutIgnorePendingStylesheets();
+        ->UpdateStyleAndLayout();
   }
 
   const PositionWithAffinity& caret_position =
@@ -619,7 +615,7 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
   // Start new Drag&Drop command group, invalidate previous command group.
   // Assume no other places is firing |DeleteByDrag| and |InsertFromDrop|.
   inner_frame->GetEditor().RegisterCommandGroup(
-      DragAndDropCommand::Create(*inner_frame->GetDocument()));
+      MakeGarbageCollected<DragAndDropCommand>(*inner_frame->GetDocument()));
 
   if (DragIsMove(inner_frame->Selection(), drag_data) ||
       IsRichlyEditablePosition(drag_caret.Base())) {
@@ -803,8 +799,9 @@ bool SelectTextInsteadOfDrag(const Node& node) {
   if (HasEditableStyle(node))
     return true;
 
-  for (Node& node : NodeTraversal::InclusiveAncestorsOf(node)) {
-    if (node.IsHTMLElement() && ToHTMLElement(&node)->draggable())
+  for (Node& ancestor_node : NodeTraversal::InclusiveAncestorsOf(node)) {
+    if (ancestor_node.IsHTMLElement() &&
+        ToHTMLElement(&ancestor_node)->draggable())
       return false;
   }
 
@@ -1119,7 +1116,8 @@ static std::unique_ptr<DragImage> DragImageForLink(const KURL& link_url,
                                                    const String& link_text,
                                                    float device_scale_factor) {
   FontDescription font_description;
-  LayoutTheme::GetTheme().SystemFont(blink::CSSValueNone, font_description);
+  LayoutTheme::GetTheme().SystemFont(blink::CSSValueID::kNone,
+                                     font_description);
   return DragImage::Create(link_url, link_text, font_description,
                            device_scale_factor);
 }
@@ -1267,12 +1265,12 @@ bool DragController::StartDrag(LocalFrame* src,
       // a user can initiate a drag on a link without having any text
       // selected.  In this case, we should expand the selection to
       // the enclosing anchor element
-      if (Node* node = EnclosingAnchorElement(
+      if (Node* anchor = EnclosingAnchorElement(
               src->Selection()
                   .ComputeVisibleSelectionInDOMTreeDeprecated()
                   .Base())) {
         src->Selection().SetSelectionAndEndTyping(
-            SelectionInDOMTree::Builder().SelectAllChildren(*node).Build());
+            SelectionInDOMTree::Builder().SelectAllChildren(*anchor).Build());
       }
     }
 

@@ -9,6 +9,7 @@ from telemetry.core import exceptions
 from telemetry import decorators
 from telemetry.internal.backends.chrome import chrome_browser_backend
 from telemetry.internal.backends.chrome import misc_web_contents_backend
+from telemetry.internal.util import format_for_logging
 
 import py_utils
 
@@ -70,7 +71,9 @@ class CrOSBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
             'boolean:true',
             'array:string:"%s"' % ','.join(startup_args),
             'array:string:']
-    logging.info(' '.join(args))
+    formatted_args = format_for_logging.ShellFormat(
+        args, trim=self.browser_options.trim_logs)
+    logging.info('Starting Chrome: %s', formatted_args)
     self._cri.RunCmdOnDevice(args)
 
     # Wait for new chrome and oobe.
@@ -86,6 +89,12 @@ class CrOSBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
         # incognito browser in a separate process, which we need to wait for.
         try:
           py_utils.WaitFor(lambda: pid != self.GetPid(), 15)
+
+          # Also make sure we reconnect the devtools client to the new browser
+          # process. It's important to do this before waiting for _IsLoggedIn,
+          # otherwise the devtools connection check will still try to reach the
+          # older DevTools agent (and fail to do so).
+          self.BindDevToolsClient()
         except py_utils.TimeoutException:
           self._RaiseOnLoginFailure(
               'Failed to restart browser in guest mode (pid %d).' % pid)
@@ -201,13 +210,6 @@ class CrOSBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     return not self._GetLoginStatus()
 
   def _WaitForLogin(self):
-    # For incognito mode, the session manager actually relaunches chrome with
-    # new arguments, so we have to wait for the browser to restart and then
-    # bind the new DevTools agent to this backend. It's important to do this
-    # before waiting for _IsLoggedIn, otherwise the devtools connection check
-    # will still try to reach the older DevTools agent (and fail to do so).
-    self.BindDevToolsClient()
-
     # Wait for cryptohome to mount.
     py_utils.WaitFor(self._IsLoggedIn, 900)
 

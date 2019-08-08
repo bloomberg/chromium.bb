@@ -23,7 +23,7 @@ void NGFieldsetPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const LayoutPoint paint_offset) {
   const NGPaintFragment* legend = nullptr;
-  if (fieldset_.Children().size()) {
+  if (!fieldset_.Children().IsEmpty()) {
     const auto& first_child = fieldset_.Children().front();
     if (first_child.PhysicalFragment().IsRenderedLegend())
       legend = &first_child;
@@ -45,13 +45,16 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
     const LayoutPoint paint_offset) {
   LayoutSize fieldset_size(fieldset_.Size().ToLayoutSize());
   LayoutRect paint_rect(paint_offset, fieldset_size);
+  const auto& fragment =
+      To<NGPhysicalBoxFragment>(fieldset_.PhysicalFragment());
+  BoxDecorationData box_decoration_data(paint_info, fragment);
+  if (!box_decoration_data.ShouldPaint())
+    return;
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(paint_info.context, fieldset_,
                                                   paint_info.phase))
     return;
 
-  const NGPhysicalBoxFragment& fragment =
-      ToNGPhysicalBoxFragment(fieldset_.PhysicalFragment());
   LayoutRectOutsets fieldset_borders = fragment.Borders().ToLayoutRectOutsets();
   const ComputedStyle& style = fieldset_.Style();
   LayoutRect legend_border_box;
@@ -65,37 +68,39 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
   contracted_rect.Contract(fieldset_paint_info.border_outsets);
 
   DrawingRecorder recorder(paint_info.context, fieldset_, paint_info.phase);
-  BoxDecorationData box_decoration_data(fragment);
 
   NGBoxFragmentPainter fragment_painter(fieldset_);
-  fragment_painter.PaintNormalBoxShadow(paint_info, contracted_rect, style);
+  if (box_decoration_data.ShouldPaintShadow()) {
+    fragment_painter.PaintNormalBoxShadow(paint_info, contracted_rect, style);
+  }
+  if (box_decoration_data.ShouldPaintBackground()) {
+    // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
+    BackgroundImageGeometry geometry(
+        *static_cast<const LayoutBoxModelObject*>(fieldset_.GetLayoutObject()));
+    fragment_painter.PaintFillLayers(
+        paint_info, box_decoration_data.BackgroundColor(),
+        style.BackgroundLayers(), contracted_rect, geometry);
+  }
+  if (box_decoration_data.ShouldPaintShadow()) {
+    fragment_painter.PaintInsetBoxShadowWithBorderRect(
+        paint_info, contracted_rect, fieldset_.Style());
+  }
+  if (box_decoration_data.ShouldPaintBorder()) {
+    // Create a clipping region around the legend and paint the border as
+    // normal.
+    GraphicsContext& graphics_context = paint_info.context;
+    GraphicsContextStateSaver state_saver(graphics_context);
 
-  // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
-  BackgroundImageGeometry geometry(
-      *static_cast<const LayoutBoxModelObject*>(fieldset_.GetLayoutObject()));
+    LayoutRect legend_cutout_rect = fieldset_paint_info.legend_cutout_rect;
+    legend_cutout_rect.MoveBy(paint_rect.Location());
+    graphics_context.ClipOut(PixelSnappedIntRect(legend_cutout_rect));
 
-  fragment_painter.PaintFillLayers(
-      paint_info, box_decoration_data.background_color,
-      style.BackgroundLayers(), contracted_rect, geometry);
-  fragment_painter.PaintInsetBoxShadowWithBorderRect(
-      paint_info, contracted_rect, fieldset_.Style());
-
-  if (!box_decoration_data.has_border_decoration)
-    return;
-
-  // Create a clipping region around the legend and paint the border as normal.
-  GraphicsContext& graphics_context = paint_info.context;
-  GraphicsContextStateSaver state_saver(graphics_context);
-
-  LayoutRect legend_cutout_rect = fieldset_paint_info.legend_cutout_rect;
-  legend_cutout_rect.MoveBy(paint_rect.Location());
-  graphics_context.ClipOut(PixelSnappedIntRect(legend_cutout_rect));
-
-  LayoutObject* layout_object = fieldset_.GetLayoutObject();
-  Node* node = layout_object->GeneratingNode();
-  fragment_painter.PaintBorder(*fieldset_.GetLayoutObject(),
-                               layout_object->GetDocument(), node, paint_info,
-                               contracted_rect, fieldset_.Style());
+    LayoutObject* layout_object = fieldset_.GetLayoutObject();
+    Node* node = layout_object->GeneratingNode();
+    fragment_painter.PaintBorder(*fieldset_.GetLayoutObject(),
+                                 layout_object->GetDocument(), node, paint_info,
+                                 contracted_rect, fieldset_.Style());
+  }
 }
 
 void NGFieldsetPainter::PaintLegend(const NGPaintFragment& legend,

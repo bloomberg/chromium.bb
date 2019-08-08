@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_observer.h"
@@ -120,7 +121,7 @@ class InstantService::SearchProviderObserver
     : public TemplateURLServiceObserver {
  public:
   explicit SearchProviderObserver(TemplateURLService* service,
-                                  base::RepeatingCallback<void(bool)> callback)
+                                  base::RepeatingClosure callback)
       : service_(service),
         is_google_(search::DefaultSearchProviderIsGoogle(service_)),
         callback_(std::move(callback)) {
@@ -138,7 +139,7 @@ class InstantService::SearchProviderObserver
  private:
   void OnTemplateURLServiceChanged() override {
     is_google_ = search::DefaultSearchProviderIsGoogle(service_);
-    callback_.Run(is_google_);
+    callback_.Run();
   }
 
   void OnTemplateURLServiceShuttingDown() override {
@@ -148,7 +149,7 @@ class InstantService::SearchProviderObserver
 
   TemplateURLService* service_;
   bool is_google_;
-  base::RepeatingCallback<void(bool)> callback_;
+  base::RepeatingClosure callback_;
 };
 
 InstantService::InstantService(Profile* profile)
@@ -173,8 +174,6 @@ InstantService::InstantService(Profile* profile)
 
   most_visited_sites_ = ChromeMostVisitedSitesFactory::NewForProfile(profile_);
   if (most_visited_sites_) {
-    bool custom_links_enabled = true;
-
     // Determine if we are using a third-party NTP. Custom links should only be
     // enabled for the default NTP.
     TemplateURLService* template_url_service =
@@ -184,13 +183,12 @@ InstantService::InstantService(Profile* profile)
           template_url_service,
           base::BindRepeating(&InstantService::OnSearchProviderChanged,
                               weak_ptr_factory_.GetWeakPtr()));
-      custom_links_enabled = search_provider_observer_->is_google();
     }
 
     // 9 tiles are required for the custom links feature in order to balance the
     // Most Visited rows (this is due to an additional "Add" button).
     most_visited_sites_->SetMostVisitedURLsObserver(this, 9);
-    most_visited_sites_->EnableCustomLinks(custom_links_enabled);
+    most_visited_sites_->EnableCustomLinks(IsCustomLinksEnabled());
   }
 
   if (profile_) {
@@ -282,50 +280,58 @@ void InstantService::UndoAllMostVisitedDeletions() {
   }
 }
 
+bool InstantService::ToggleMostVisitedOrCustomLinks() {
+  // Non-Google NTPs are not supported.
+  if (!most_visited_sites_ || !search_provider_observer_ ||
+      !search_provider_observer_->is_google()) {
+    return false;
+  }
+  bool use_most_visited =
+      pref_service_->GetBoolean(prefs::kNtpUseMostVisitedTiles);
+  pref_service_->SetBoolean(prefs::kNtpUseMostVisitedTiles, !use_most_visited);
+  most_visited_sites_->EnableCustomLinks(IsCustomLinksEnabled());
+  return true;
+}
+
 bool InstantService::AddCustomLink(const GURL& url, const std::string& title) {
-  if (most_visited_sites_)
-    return most_visited_sites_->AddCustomLink(url, base::UTF8ToUTF16(title));
-  return false;
+  return most_visited_sites_ &&
+         most_visited_sites_->AddCustomLink(url, base::UTF8ToUTF16(title));
 }
 
 bool InstantService::UpdateCustomLink(const GURL& url,
                                       const GURL& new_url,
                                       const std::string& new_title) {
-  if (most_visited_sites_) {
-    return most_visited_sites_->UpdateCustomLink(url, new_url,
-                                                 base::UTF8ToUTF16(new_title));
-  }
-  return false;
+  return most_visited_sites_ && most_visited_sites_->UpdateCustomLink(
+                                    url, new_url, base::UTF8ToUTF16(new_title));
 }
 
 bool InstantService::ReorderCustomLink(const GURL& url, int new_pos) {
-  if (most_visited_sites_)
-    return most_visited_sites_->ReorderCustomLink(url, new_pos);
-  return false;
+  return most_visited_sites_ &&
+         most_visited_sites_->ReorderCustomLink(url, new_pos);
 }
 
 bool InstantService::DeleteCustomLink(const GURL& url) {
-  if (most_visited_sites_)
-    return most_visited_sites_->DeleteCustomLink(url);
-  return false;
+  return most_visited_sites_ && most_visited_sites_->DeleteCustomLink(url);
 }
 
 bool InstantService::UndoCustomLinkAction() {
-  // Non-Google search providers are not supported.
-  if (most_visited_sites_ && search_provider_observer_->is_google()) {
-    most_visited_sites_->UndoCustomLinkAction();
-    return true;
+  // Non-Google NTPs are not supported.
+  if (!most_visited_sites_ || !search_provider_observer_ ||
+      !search_provider_observer_->is_google()) {
+    return false;
   }
-  return false;
+  most_visited_sites_->UndoCustomLinkAction();
+  return true;
 }
 
 bool InstantService::ResetCustomLinks() {
-  // Non-Google search providers are not supported.
-  if (most_visited_sites_ && search_provider_observer_->is_google()) {
-    most_visited_sites_->UninitializeCustomLinks();
-    return true;
+  // Non-Google NTPs are not supported.
+  if (!most_visited_sites_ || !search_provider_observer_ ||
+      !search_provider_observer_->is_google()) {
+    return false;
   }
-  return false;
+  most_visited_sites_->UninitializeCustomLinks();
+  return true;
 }
 
 void InstantService::UpdateThemeInfo() {
@@ -472,9 +478,9 @@ void InstantService::OnRendererProcessTerminated(int process_id) {
   }
 }
 
-void InstantService::OnSearchProviderChanged(bool is_google) {
+void InstantService::OnSearchProviderChanged() {
   DCHECK(most_visited_sites_);
-  most_visited_sites_->EnableCustomLinks(is_google);
+  most_visited_sites_->EnableCustomLinks(IsCustomLinksEnabled());
 }
 
 void InstantService::OnDarkModeChanged(bool dark_mode) {
@@ -517,6 +523,11 @@ void InstantService::NotifyAboutMostVisitedItems() {
 void InstantService::NotifyAboutThemeInfo() {
   for (InstantServiceObserver& observer : observers_)
     observer.ThemeInfoChanged(*theme_info_);
+}
+
+bool InstantService::IsCustomLinksEnabled() {
+  return search_provider_observer_ && search_provider_observer_->is_google() &&
+         !pref_service_->GetBoolean(prefs::kNtpUseMostVisitedTiles);
 }
 
 namespace {
@@ -635,6 +646,12 @@ void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
     std::string local_string(chrome::kChromeSearchLocalNtpBackgroundUrl);
     GURL timestamped_url(local_string + "?ts=" + time_string);
     GetInitializedThemeInfo()->custom_background_url = timestamped_url;
+    GetInitializedThemeInfo()->custom_background_attribution_line_1 =
+        std::string();
+    GetInitializedThemeInfo()->custom_background_attribution_line_2 =
+        std::string();
+    GetInitializedThemeInfo()->custom_background_attribution_action_url =
+        GURL();
     return;
   }
 
@@ -771,4 +788,5 @@ void InstantService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kNtpCustomBackgroundLocalToDevice,
                                 false);
+  registry->RegisterBooleanPref(prefs::kNtpUseMostVisitedTiles, false);
 }

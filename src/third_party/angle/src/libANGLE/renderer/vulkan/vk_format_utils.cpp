@@ -36,13 +36,13 @@ void FillTextureFormatCaps(RendererVk *renderer, VkFormat format, gl::TextureCap
     const VkPhysicalDeviceLimits &physicalDeviceLimits =
         renderer->getPhysicalDeviceProperties().limits;
     bool hasColorAttachmentFeatureBit =
-        renderer->hasTextureFormatFeatureBits(format, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT);
-    bool hasDepthAttachmentFeatureBit = renderer->hasTextureFormatFeatureBits(
-        format, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        renderer->hasImageFormatFeatureBits(format, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT);
+    bool hasDepthAttachmentFeatureBit =
+        renderer->hasImageFormatFeatureBits(format, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
     outTextureCaps->texturable =
-        renderer->hasTextureFormatFeatureBits(format, VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
-    outTextureCaps->filterable = renderer->hasTextureFormatFeatureBits(
+        renderer->hasImageFormatFeatureBits(format, VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+    outTextureCaps->filterable = renderer->hasImageFormatFeatureBits(
         format, VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
     outTextureCaps->textureAttachment =
         hasColorAttachmentFeatureBit || hasDepthAttachmentFeatureBit;
@@ -103,11 +103,11 @@ namespace vk
 Format::Format()
     : angleFormatID(angle::FormatID::NONE),
       internalFormat(GL_NONE),
-      textureFormatID(angle::FormatID::NONE),
-      vkTextureFormat(VK_FORMAT_UNDEFINED),
+      imageFormatID(angle::FormatID::NONE),
+      vkImageFormat(VK_FORMAT_UNDEFINED),
       bufferFormatID(angle::FormatID::NONE),
       vkBufferFormat(VK_FORMAT_UNDEFINED),
-      textureInitializerFunction(nullptr),
+      imageInitializerFunction(nullptr),
       textureLoadFunctions(),
       vertexLoadRequiresConversion(false),
       vkBufferFormatIsPacked(false),
@@ -116,17 +116,15 @@ Format::Format()
       vkFormatIsUnsigned(false)
 {}
 
-void Format::initTextureFallback(RendererVk *renderer,
-                                 const TextureFormatInitInfo *info,
-                                 int numInfo)
+void Format::initImageFallback(RendererVk *renderer, const ImageFormatInitInfo *info, int numInfo)
 {
     size_t skip = renderer->getFeatures().forceFallbackFormat ? 1 : 0;
     int i = FindSupportedFormat(renderer, info + skip, numInfo - skip, HasFullTextureFormatSupport);
     i += skip;
 
-    textureFormatID            = info[i].format;
-    vkTextureFormat            = info[i].vkFormat;
-    textureInitializerFunction = info[i].initializer;
+    imageFormatID            = info[i].format;
+    vkImageFormat            = info[i].vkFormat;
+    imageInitializerFunction = info[i].initializer;
 }
 
 void Format::initBufferFallback(RendererVk *renderer, const BufferFormatInitInfo *info, int numInfo)
@@ -163,7 +161,7 @@ size_t Format::getImageCopyBufferAlignment() const
     // - else blockSize % 4 != 0 gives a 2x multiplier
     // - else there's no multiplier.
     //
-    const angle::Format &format = textureFormat();
+    const angle::Format &format = imageFormat();
 
     if (!format.isBlock)
     {
@@ -176,6 +174,18 @@ size_t Format::getImageCopyBufferAlignment() const
     const size_t alignment  = multiplier * blockSize;
 
     return alignment;
+}
+
+bool Format::hasEmulatedImageChannels() const
+{
+    const angle::Format &angleFmt   = angleFormat();
+    const angle::Format &textureFmt = imageFormat();
+
+    return (angleFmt.alphaBits == 0 && textureFmt.alphaBits > 0) ||
+           (angleFmt.blueBits == 0 && textureFmt.blueBits > 0) ||
+           (angleFmt.greenBits == 0 && textureFmt.greenBits > 0) ||
+           (angleFmt.depthBits == 0 && textureFmt.depthBits > 0) ||
+           (angleFmt.stencilBits == 0 && textureFmt.stencilBits > 0);
 }
 
 bool operator==(const Format &lhs, const Format &rhs)
@@ -205,7 +215,6 @@ void FormatTable::initialize(RendererVk *renderer,
 
         format.initialize(renderer, angleFormat);
         const GLenum internalFormat = format.internalFormat;
-        format.textureLoadFunctions = GetLoadFunctionsMap(internalFormat, format.textureFormatID);
         format.angleFormatID        = formatID;
 
         if (!format.valid())
@@ -217,8 +226,13 @@ void FormatTable::initialize(RendererVk *renderer,
             format.vkBufferFormat, VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT);
 
         gl::TextureCaps textureCaps;
-        FillTextureFormatCaps(renderer, format.vkTextureFormat, &textureCaps);
+        FillTextureFormatCaps(renderer, format.vkImageFormat, &textureCaps);
         outTextureCapsMap->set(formatID, textureCaps);
+
+        if (textureCaps.texturable)
+        {
+            format.textureLoadFunctions = GetLoadFunctionsMap(internalFormat, format.imageFormatID);
+        }
 
         if (angleFormat.isBlock)
         {
@@ -235,8 +249,8 @@ bool HasFullTextureFormatSupport(RendererVk *renderer, VkFormat vkFormat)
                                     VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT;
     constexpr uint32_t kBitsDepth = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-    return renderer->hasTextureFormatFeatureBits(vkFormat, kBitsColor) ||
-           renderer->hasTextureFormatFeatureBits(vkFormat, kBitsDepth);
+    return renderer->hasImageFormatFeatureBits(vkFormat, kBitsColor) ||
+           renderer->hasImageFormatFeatureBits(vkFormat, kBitsDepth);
 }
 
 size_t GetVertexInputAlignment(const vk::Format &format)

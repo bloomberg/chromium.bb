@@ -95,11 +95,11 @@ String InlineBox::DebugName() const {
   return BoxName();
 }
 
-LayoutRect InlineBox::VisualRect() const {
+IntRect InlineBox::VisualRect() const {
   return GetLineLayoutItem().VisualRectForInlineBox();
 }
 
-LayoutRect InlineBox::PartialInvalidationVisualRect() const {
+IntRect InlineBox::PartialInvalidationVisualRect() const {
   return GetLineLayoutItem().PartialInvalidationVisualRectForInlineBox();
 }
 
@@ -131,9 +131,9 @@ void InlineBox::DumpLineTreeAndMark(StringBuilder& string_builder,
   if (this == marked_box2)
     string_inlinebox.Append(marked_label2);
   if (GetLineLayoutItem().IsEqual(obj))
-    string_inlinebox.Append("*");
+    string_inlinebox.Append('*');
   while ((int)string_inlinebox.length() < (depth * 2))
-    string_inlinebox.Append(" ");
+    string_inlinebox.Append(' ');
 
   DumpBox(string_inlinebox);
   string_builder.Append('\n');
@@ -141,16 +141,16 @@ void InlineBox::DumpLineTreeAndMark(StringBuilder& string_builder,
 }
 
 void InlineBox::DumpBox(StringBuilder& string_inlinebox) const {
-  string_inlinebox.Append(String::Format("%s %p", BoxName(), this));
+  string_inlinebox.AppendFormat("%s %p", BoxName(), this);
   while (string_inlinebox.length() < kShowTreeCharacterOffset)
-    string_inlinebox.Append(" ");
-  string_inlinebox.Append(
-      String::Format("\t%s %p {pos=%g,%g size=%g,%g} baseline=%i/%i",
-                     GetLineLayoutItem().DecoratedName().Ascii().data(),
-                     GetLineLayoutItem().DebugPointer(), X().ToFloat(),
-                     Y().ToFloat(), Width().ToFloat(), Height().ToFloat(),
-                     BaselinePosition(kAlphabeticBaseline).ToInt(),
-                     BaselinePosition(kIdeographicBaseline).ToInt()));
+    string_inlinebox.Append(' ');
+  string_inlinebox.AppendFormat(
+      "\t%s %p {pos=%g,%g size=%g,%g} baseline=%i/%i",
+      GetLineLayoutItem().DecoratedName().Ascii().data(),
+      GetLineLayoutItem().DebugPointer(), X().ToFloat(), Y().ToFloat(),
+      Width().ToFloat(), Height().ToFloat(),
+      BaselinePosition(kAlphabeticBaseline).ToInt(),
+      BaselinePosition(kIdeographicBaseline).ToInt());
 }
 #endif
 

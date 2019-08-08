@@ -5,16 +5,16 @@
 #include "components/arc/arc_util.h"
 
 #include <algorithm>
-#include <string>
+#include <cstdio>
 
 #include "ash/public/cpp/app_types.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/arc_features.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -178,17 +178,35 @@ bool IsArcAppWindow(const aura::Window* window) {
          static_cast<int>(ash::AppType::ARC_APP);
 }
 
+int GetWindowTaskId(const aura::Window* window) {
+  const std::string* arc_app_id = exo::GetShellApplicationId(window);
+  if (!arc_app_id)
+    return kNoTaskId;
+  return GetTaskIdFromWindowAppId(*arc_app_id);
+}
+
+int GetTaskIdFromWindowAppId(const std::string& app_id) {
+  int task_id;
+  if (std::sscanf(app_id.c_str(), "org.chromium.arc.%d", &task_id) != 1)
+    return kNoTaskId;
+  return task_id;
+}
+
 void SetArcCpuRestriction(bool do_restrict) {
-  chromeos::SessionManagerClient* session_manager_client =
-      chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-  if (!session_manager_client) {
+  if (!chromeos::SessionManagerClient::Get()) {
     LOG(WARNING) << "SessionManagerClient is not available";
     return;
   }
+
+  // Ignore any calls to restrict the ARC container if the specified command
+  // line flag is set.
+  if (chromeos::switches::IsArcCpuRestrictionDisabled() && do_restrict)
+    return;
+
   const login_manager::ContainerCpuRestrictionState state =
       do_restrict ? login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND
                   : login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND;
-  session_manager_client->SetArcCpuRestriction(
+  chromeos::SessionManagerClient::Get()->SetArcCpuRestriction(
       state, base::BindOnce(SetArcCpuRestrictionCallback, state));
 }
 

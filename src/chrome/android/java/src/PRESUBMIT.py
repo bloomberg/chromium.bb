@@ -63,106 +63,53 @@ def _CheckNotificationConstructors(input_api, output_api):
 
 
 def _CheckAlertDialogBuilder(input_api, output_api):
+  browser_root = 'chrome/android/java/src/org/chromium/chrome/browser/'
+
   # "Blacklist" because the following files are excluded from the check.
   blacklist = (
-      'chrome/android/java/src/org/chromium/chrome/browser/init/'
-          'InvalidStartupDialog.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/dom_distiller/'
-          'DomDistillerUIUtils.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/signin/'
-          'SignOutDialogFragment.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/'
-          'RepostFormWarningDialog.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/permissions/'
-          'PermissionDialogView.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/sync/ui/'
-          'PassphraseDialogFragment.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/webapps/'
-          'WebappOfflineDialog.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/password_manager/'
-          'AccountChooserDialog.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/signin/'
-          'ConfirmImportSyncDataDialog.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/webapps/'
-          'AddToHomescreenDialog.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/signin/'
-          'AccountPickerDialogFragment.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/sync/ui/'
-          'PassphraseTypeDialogFragment.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/LoginPrompt.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/dom_distiller/'
-          'DistilledPagePrefsView.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/util/'
-          'AccessibilityUtil.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/download/'
-          'OMADownloadHandler.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/download/'
-          'DownloadController.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/sync/ui/'
-          'PassphraseCreationDialogFragment.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/signin/'
-          'ConfirmManagedSyncDataDialog.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/preferences/'
-          'password/ExportErrorDialogFragment.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/signin/'
-          'AccountAdder.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/password_manager/'
-          'AutoSigninFirstRunDialog.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/preferences/'
-          'password/ProgressBarDialogFragment.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/preferences/'
-          'password/ExportWarningDialogFragment.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/share/'
-          'ShareHelper.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/'
-          'OtherFormsOfHistoryDialogFragment.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/'
-          'ConfirmImportantSitesDialogFragment.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/externalnav/'
-          'ExternalNavigationDelegateImpl.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/'
-          'SSLClientCertificateRequest.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/autofill/'
-          'AutofillPopupBridge.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/autofill/'
-          'CardUnmaskPrompt.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/omnibox/'
-          'SuggestionView.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/permissions/'
-          'AndroidPermissionRequester.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/signin/'
-          'AccountSigninView.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/datausage/'
-          'DataUseTabUIManager.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/signin/'
-          'SigninFragmentBase.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/payments/'
-          'AndroidPaymentApp.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/preferences/website/'
-          'SingleWebsitePreferences.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/preferences/website/'
-          'SingleCategoryPreferences.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/autofill/'
+      browser_root + 'LoginPrompt.java',
+      browser_root + 'SSLClientCertificateRequest.java',
+      browser_root + 'RepostFormWarningDialog.java',
+      browser_root + 'autofill/AutofillPopupBridge.java',
+      browser_root + 'autofill/CardUnmaskPrompt.java',
+      browser_root + 'autofill/keyboard_accessory/'
           'AutofillKeyboardAccessoryBridge.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/preferences/website/'
-          'AddExceptionPreference.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/preferences/website/'
-          'ManageSpaceActivity.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/signin/'
-          'ConfirmSyncDataStateMachineDelegate.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/preferences/'
-          'datareduction/DataReductionStatsPreference.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/preferences/'
-          'SyncAndServicesPreferences.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/browserservices/'
-          'ClearDataDialogActivity.java',
+      browser_root + 'browserservices/ClearDataDialogActivity.java',
+      browser_root + 'datausage/DataUseTabUIManager.java',
+      browser_root + 'dom_distiller/DistilledPagePrefsView.java',
+      browser_root + 'dom_distiller/DomDistillerUIUtils.java',
+      browser_root + 'download/DownloadController.java',
+      browser_root + 'download/OMADownloadHandler.java',
+      browser_root + 'externalnav/ExternalNavigationDelegateImpl.java',
+      browser_root + 'init/InvalidStartupDialog.java',
+      browser_root + 'omnibox/SuggestionView.java',
+      browser_root + 'payments/AndroidPaymentApp.java',
+      browser_root + 'password_manager/AccountChooserDialog.java',
+      browser_root + 'password_manager/AutoSigninFirstRunDialog.java',
+      browser_root + 'permissions/AndroidPermissionRequester.java',
+      browser_root + r'preferences[\\\/].*',
+      browser_root + 'share/ShareHelper.java',
+      browser_root + 'signin/AccountAdder.java',
+      browser_root + 'signin/AccountPickerDialogFragment.java',
+      browser_root + 'signin/AccountSigninView.java',
+      browser_root + 'signin/ConfirmImportSyncDataDialog.java',
+      browser_root + 'signin/ConfirmManagedSyncDataDialog.java',
+      browser_root + 'signin/ConfirmSyncDataStateMachineDelegate.java',
+      browser_root + 'signin/SigninFragmentBase.java',
+      browser_root + 'signin/SignOutDialogFragment.java',
+      browser_root + 'sync/ui/PassphraseCreationDialogFragment.java',
+      browser_root + 'sync/ui/PassphraseDialogFragment.java',
+      browser_root + 'sync/ui/PassphraseTypeDialogFragment.java',
+      browser_root + 'util/AccessibilityUtil.java',
+      browser_root + 'webapps/AddToHomescreenDialog.java',
+      browser_root + 'webapps/WebappOfflineDialog.java',
   )
   error_msg = '''
-  AlertDialoga.Builder Check failed:
+  AlertDialog.Builder Check failed:
   Your new code added one or more calls to the AlertDialog.Builder, listed
   below.
 
-  This breaks browsing when in VR, please use ModalDialogView insead of
+  This breaks browsing when in VR, please use ModalDialogView instead of
   AlertDialog.
   Contact asimjour@chromium.org if you have any questions.
   '''

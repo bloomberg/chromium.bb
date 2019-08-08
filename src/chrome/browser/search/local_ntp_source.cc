@@ -55,6 +55,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/local_ntp_resources.h"
 #include "components/google/core/common/google_util.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_terms_data.h"
@@ -85,6 +86,9 @@ using search_provider_logos::LogoMetadata;
 using search_provider_logos::LogoService;
 
 namespace {
+
+// Language code used to check features run in English in the US.
+const char kEnUSLanguageCode[] = "en-US";
 
 // Signifies a locally constructed resource, i.e. not from grit/.
 const int kLocalResource = -1;
@@ -139,12 +143,12 @@ const struct Resource{
      "image/jpg"},
 };
 
-// This enum must match the numbering for NTPSearchSuggestionsRequestStatus in
+// This enum must match the numbering for NTPSearchSuggestionsRequestStatusi in
 // enums.xml. Do not reorder or remove items, and update kMaxValue when new
 // items are added.
 enum class SearchSuggestionsRequestStatus {
   UNKNOWN_ERROR = 0,
-  SENT = 1,
+  RECEIVED_RESPONSE = 1,
   SIGNED_OUT = 2,
   OPTED_OUT = 3,
   IMPRESSION_CAP = 4,
@@ -186,8 +190,13 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
             IDS_NEW_TAB_MOST_VISITED);
 
   if (is_google) {
-    AddString(translated_strings.get(), "searchboxPlaceholder",
-              IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD);
+    if (base::FeatureList::IsEnabled(features::kFakeboxShortHintTextOnNtp)) {
+      AddString(translated_strings.get(), "searchboxPlaceholder",
+                IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_SHORT);
+    } else {
+      AddString(translated_strings.get(), "searchboxPlaceholder",
+                IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD);
+    }
 
     // Custom Backgrounds
     AddString(translated_strings.get(), "customizeButtonLabel",
@@ -219,6 +228,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL);
     AddString(translated_strings.get(), "backLabel",
               IDS_NTP_CUSTOM_BG_BACK_LABEL);
+    AddString(translated_strings.get(), "selectedLabel",
+              IDS_NTP_CUSTOM_BG_IMAGE_SELECTED);
 
     // Custom Links
     AddString(translated_strings.get(), "addLinkTitle",
@@ -295,6 +306,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
     AddString(translated_strings.get(), "waiting", IDS_NEW_TAB_VOICE_WAITING);
     AddString(translated_strings.get(), "otherError",
               IDS_NEW_TAB_VOICE_OTHER_ERROR);
+    AddString(translated_strings.get(), "voiceCloseTooltip",
+              IDS_NEW_TAB_VOICE_CLOSE_TOOLTIP);
   }
 
   return translated_strings;
@@ -560,12 +573,21 @@ class LocalNtpSource::SearchConfigurationProvider
                                                   features::kRemoveNtpFakebox));
       config_data.SetBoolean("alternateFakebox",
                              features::IsUseAlternateFakeboxOnNtpEnabled());
+      config_data.SetBoolean("alternateFakeboxRect",
+                             base::FeatureList::IsEnabled(
+                                 features::kUseAlternateFakeboxRectOnNtp));
+      config_data.SetBoolean("fakeboxSearchIcon",
+                             features::IsFakeboxSearchIconOnNtpEnabled());
       config_data.SetBoolean(
-          "fakeboxSearchIcon",
-          base::FeatureList::IsEnabled(features::kFakeboxSearchIconOnNtp));
+          "fakeboxSearchIconColor",
+          base::FeatureList::IsEnabled(features::kFakeboxSearchIconColorOnNtp));
       config_data.SetBoolean(
           "hideShortcuts",
           base::FeatureList::IsEnabled(features::kHideShortcutsOnNtp));
+      config_data.SetBoolean(
+          "showFakeboxPlaceholderOnFocus",
+          base::FeatureList::IsEnabled(
+              omnibox::kUIExperimentShowPlaceholderWhenCaretShowing));
     }
 
     // Serialize the dictionary.
@@ -835,8 +857,6 @@ void LocalNtpSource::StartDataRequest(
       return;
     }
 
-    // TODO(crbug/909931): There's no need to fetch the promo on each load,
-    // we can sometimes use cached data.
     promo_requests_.emplace_back(base::TimeTicks::Now(), callback);
     promo_service_->Refresh();
 
@@ -849,11 +869,20 @@ void LocalNtpSource::StartDataRequest(
       return;
     }
 
+    // Currently Vasco search suggestions are only available for en-US
+    // users. If this restriction is expanded or removed in the future this
+    // check must be changed.
+    if (one_google_bar_service_->language_code() != kEnUSLanguageCode) {
+      std::string no_suggestions =
+          "var searchSuggestions = {suggestionsHtml: ''}";
+      callback.Run(base::RefCountedString::TakeString(&no_suggestions));
+      return;
+    }
+
     MaybeServeSearchSuggestions(callback);
 
     search_suggest_requests_.emplace_back(base::TimeTicks::Now());
     search_suggest_service_->Refresh();
-
     return;
   }
 
@@ -1041,7 +1070,7 @@ void LocalNtpSource::OnCollectionInfoAvailable() {
     return;
 
   std::string js_errors =
-      "var coll_errors = " +
+      "var collErrors = " +
       GetErrorDict(ntp_background_service_->collection_error_info());
 
   scoped_refptr<base::RefCountedString> result;
@@ -1079,7 +1108,7 @@ void LocalNtpSource::OnCollectionImagesAvailable() {
     return;
 
   std::string js_errors =
-      "var coll_img_errors = " +
+      "var collImgErrors = " +
       GetErrorDict(ntp_background_service_->collection_images_error_info());
 
   scoped_refptr<base::RefCountedString> result;
@@ -1087,7 +1116,7 @@ void LocalNtpSource::OnCollectionImagesAvailable() {
   base::JSONWriter::Write(ConvertCollectionImageToDict(
                               ntp_background_service_->collection_images()),
                           &js);
-  js = "var coll_img = " + js + "; " + js_errors;
+  js = "var collImg = " + js + "; " + js_errors;
   result = base::RefCountedString::TakeString(&js);
 
   base::TimeTicks now = base::TimeTicks::Now();
@@ -1149,7 +1178,7 @@ void LocalNtpSource::OnSearchSuggestDataUpdated() {
   base::TimeTicks now = base::TimeTicks::Now();
   for (const auto& request : search_suggest_requests_) {
     base::TimeDelta delta = now - request.start_time;
-    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.SearchSuggestions.RequestLatency",
+    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.SearchSuggestions.RequestLatencyV2",
                                delta);
     SearchSuggestionsRequestStatus request_status =
         SearchSuggestionsRequestStatus::UNKNOWN_ERROR;
@@ -1162,16 +1191,24 @@ void LocalNtpSource::OnSearchSuggestDataUpdated() {
       request_status = SearchSuggestionsRequestStatus::IMPRESSION_CAP;
     } else if (result == SearchSuggestLoader::Status::REQUESTS_FROZEN) {
       request_status = SearchSuggestionsRequestStatus::FROZEN;
-    } else if (result == SearchSuggestLoader::Status::OK) {
-      request_status = SearchSuggestionsRequestStatus::SENT;
+    } else if (result == SearchSuggestLoader::Status::OK_WITH_SUGGESTIONS) {
+      request_status = SearchSuggestionsRequestStatus::RECEIVED_RESPONSE;
       UMA_HISTOGRAM_MEDIUM_TIMES(
-          "NewTabPage.SearchSuggestions.RequestLatency.Success", delta);
+          "NewTabPage.SearchSuggestions.RequestLatencyV2."
+          "SuccessWithSuggestions",
+          delta);
+    } else if (result == SearchSuggestLoader::Status::OK_WITHOUT_SUGGESTIONS) {
+      request_status = SearchSuggestionsRequestStatus::RECEIVED_RESPONSE;
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "NewTabPage.SearchSuggestions.RequestLatencyV2."
+          "SuccessWithoutSuggestions",
+          delta);
     } else if (result == SearchSuggestLoader::Status::FATAL_ERROR) {
       request_status = SearchSuggestionsRequestStatus::FATAL_ERROR;
       UMA_HISTOGRAM_MEDIUM_TIMES(
-          "NewTabPage.SearchSuggestions.RequestLatency.Failure", delta);
+          "NewTabPage.SearchSuggestions.RequestLatencyV2.Failure", delta);
     }
-    UMA_HISTOGRAM_ENUMERATION("NewTabPage.SearchSuggestions.RequestStatus",
+    UMA_HISTOGRAM_ENUMERATION("NewTabPage.SearchSuggestions.RequestStatusV2",
                               request_status);
   }
   search_suggest_requests_.clear();
@@ -1188,13 +1225,14 @@ void LocalNtpSource::MaybeServeSearchSuggestions(
   base::Optional<SearchSuggestData> data =
       search_suggest_service_->search_suggest_data();
 
-  if (data.has_value()) {
+  if (search_suggest_service_->search_suggest_status() ==
+      SearchSuggestLoader::Status::OK_WITH_SUGGESTIONS) {
     search_suggest_service_->SuggestionsDisplayed();
   }
   scoped_refptr<base::RefCountedString> result;
   std::string js;
   base::JSONWriter::Write(*ConvertSearchSuggestDataToDict(data), &js);
-  js = "var search_suggestions  = " + js + ";";
+  js = "var searchSuggestions  = " + js + ";";
   result = base::RefCountedString::TakeString(&js);
   callback.Run(result);
 }
@@ -1241,17 +1279,20 @@ void LocalNtpSource::ServePromo(const base::Optional<PromoData>& data) {
   base::JSONWriter::Write(*ConvertPromoDataToDict(data), &js);
   js = "var promo = " + js + ";";
   result = base::RefCountedString::TakeString(&js);
-
   base::TimeTicks now = base::TimeTicks::Now();
   for (const auto& request : promo_requests_) {
     request.callback.Run(result);
     base::TimeDelta delta = now - request.start_time;
-    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency", delta);
-    if (result) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency.Success",
-                                 delta);
+    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency2", delta);
+    if (promo_service_->promo_status() == PromoService::Status::OK_WITH_PROMO) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "NewTabPage.Promos.RequestLatency2.SuccessWithPromo", delta);
+    } else if (promo_service_->promo_status() ==
+               PromoService::Status::OK_WITHOUT_PROMO) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "NewTabPage.Promos.RequestLatency2.SuccessWithoutPromo", delta);
     } else {
-      UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency.Failure",
+      UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency2.Failure",
                                  delta);
     }
   }

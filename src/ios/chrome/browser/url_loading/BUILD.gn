@@ -5,6 +5,10 @@
 source_set("url_loading") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "app_url_loading_service.h",
+    "app_url_loading_service.mm",
+    "test_app_url_loading_service.h",
+    "test_app_url_loading_service.mm",
     "test_url_loading_service.h",
     "test_url_loading_service.mm",
     "url_loading_notifier.h",
@@ -26,11 +30,14 @@ source_set("url_loading") {
     "//base",
     "//components/keyed_service/ios",
     "//components/sessions",
+    "//ios/chrome/app:mode",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/feature_engagement",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/prerender",
     "//ios/chrome/browser/sessions",
+    "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",

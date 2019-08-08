@@ -233,6 +233,7 @@ UsbServiceImpl::UsbServiceImpl()
 }
 
 UsbServiceImpl::~UsbServiceImpl() {
+  NotifyWillDestroyUsbService();
   if (hotplug_enabled_)
     libusb_hotplug_deregister_callback(context_->context(), hotplug_handle_);
 }

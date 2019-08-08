@@ -77,5 +77,10 @@
   await writeArray();
   await dumpWhenMatches(clearStorageView, usage => usage > 20000);
 
+  TestRunner.markStep('Clear again with ActionDelegate');
+
+  await UI.actionRegistry.action('resources.clear').execute();
+  await dumpWhenMatches(clearStorageView, usage => usage === 0);
+
   TestRunner.completeTest();
 })();

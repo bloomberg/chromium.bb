@@ -3429,6 +3429,10 @@ TEST_F(DecodedImageTrackerTileManagerTest, DecodedImageTrackerDropsLocksOnUse) {
 
 class TileManagerCheckRasterQueriesTest : public TileManagerTest {
  public:
+  ~TileManagerCheckRasterQueriesTest() override {
+    // Ensure that the host impl doesn't outlive |raster_buffer_provider_|.
+    TakeHostImpl();
+  }
   void SetUp() override {
     TileManagerTest::SetUp();
     host_impl()->tile_manager()->SetRasterBufferProviderForTesting(

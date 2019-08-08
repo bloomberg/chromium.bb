@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/html/track/track_base.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -142,7 +141,7 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   CueTimeline* GetCueTimeline() const;
 
   TextTrackCueList* EnsureTextTrackCueList();
-  TraceWrapperMember<TextTrackCueList> cues_;
+  Member<TextTrackCueList> cues_;
   Member<TextTrackCueList> active_cues_;
 
   Member<TextTrackList> track_list_;

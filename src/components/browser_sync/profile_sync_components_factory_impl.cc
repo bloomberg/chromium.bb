@@ -9,10 +9,9 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/autofill_wallet_data_type_controller.h"
-#include "components/autofill/core/browser/autofill_wallet_model_type_controller.h"
+#include "components/autofill/core/browser/payments/autofill_wallet_data_type_controller.h"
+#include "components/autofill/core/browser/payments/autofill_wallet_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_model_type_controller.h"
@@ -21,8 +20,6 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browser_sync/browser_sync_client.h"
-#include "components/browser_sync/browser_sync_switches.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/sync/history_delete_directives_data_type_controller.h"
 #include "components/history/core/browser/sync/history_delete_directives_model_type_controller.h"
 #include "components/history/core/browser/sync/typed_url_model_type_controller.h"
@@ -31,6 +28,7 @@
 #include "components/password_manager/core/browser/sync/password_model_type_controller.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
+#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/driver/async_directory_type_controller.h"
@@ -43,6 +41,7 @@
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
+#include "components/sync/user_events/user_event_model_type_controller.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
@@ -109,8 +108,8 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     browser_sync::BrowserSyncClient* sync_client,
     version_info::Channel channel,
     const char* history_disabled_pref,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+    const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
+    const scoped_refptr<base::SequencedTaskRunner>& db_thread,
     const scoped_refptr<autofill::AutofillWebDataService>&
         web_data_service_on_disk,
     const scoped_refptr<autofill::AutofillWebDataService>&
@@ -290,7 +289,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                   base::Unretained(sync_client_->GetSessionSyncService()))));
       controllers.push_back(
           std::make_unique<sync_sessions::SessionModelTypeController>(
-              sync_client_->GetPrefService(),
+              sync_service, sync_client_->GetPrefService(),
               std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
                   sync_client_->GetSessionSyncService()
                       ->GetControllerDelegate()
@@ -398,14 +397,26 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
         syncer::READING_LIST));
   }
 
-  if (!disabled_types.Has(syncer::USER_EVENTS) &&
-      FeatureList::IsEnabled(switches::kSyncUserEvents)) {
-    controllers.push_back(CreateModelTypeControllerForModelRunningOnUIThread(
-        syncer::USER_EVENTS));
+  if (!disabled_types.Has(syncer::USER_EVENTS)) {
+    // TODO(crbug.com/867801): Switch to forwarding delegate.
+    controllers.push_back(
+        std::make_unique<syncer::UserEventModelTypeController>(
+            sync_service,
+            std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+                sync_client_
+                    ->GetControllerDelegateForModelType(syncer::USER_EVENTS)
+                    .get())));
   }
 
-  // TODO(crbug.com/919489): Enable security events once their controller
-  // delegate is wired properly.
+  if (!disabled_types.Has(syncer::SEND_TAB_TO_SELF) &&
+      base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
+    controllers.push_back(std::make_unique<syncer::ModelTypeController>(
+        syncer::SEND_TAB_TO_SELF,
+        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+            sync_client_->GetSendTabToSelfSyncService()
+                ->GetControllerDelegate()
+                .get())));
+  }
 
   // Forward both on-disk and in-memory storage modes to the same delegate,
   // since behavior for USER_CONSENTS does not differ (they are always

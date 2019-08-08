@@ -2539,7 +2539,8 @@ TEST_F(WebRtcEventLogManagerTest,
   // impossible to write the log to a file.
   std::string error_message;
   EXPECT_FALSE(StartRemoteLogging(key, nullptr, &error_message));
-  EXPECT_EQ(error_message, kStartRemoteLoggingFailureGeneric);
+  EXPECT_EQ(error_message,
+            kStartRemoteLoggingFailureLoggingDisabledBrowserContext);
 
   // Graceful handling of OnWebRtcEventLogWrite: False returned because the
   // log could not be written at all, let alone in its entirety.
@@ -2569,7 +2570,7 @@ TEST_F(WebRtcEventLogManagerTest, GracefullyHandleFailureToStartRemoteLogFile) {
   ASSERT_TRUE(PeerConnectionSessionIdSet(key));
   std::string error_message;
   EXPECT_FALSE(StartRemoteLogging(key, nullptr, &error_message));
-  EXPECT_EQ(error_message, kStartRemoteLoggingFailureGeneric);
+  EXPECT_EQ(error_message, kStartRemoteLoggingFailureFileCreationError);
   EXPECT_EQ(OnWebRtcEventLogWrite(key, "abc"), std::make_pair(false, false));
   EXPECT_TRUE(base::IsDirectoryEmpty(remote_logs_path));
 }
@@ -2668,7 +2669,8 @@ TEST_F(WebRtcEventLogManagerTest,
   ASSERT_TRUE(PeerConnectionSessionIdSet(forbidden));
   std::string error_message;
   EXPECT_FALSE(StartRemoteLogging(forbidden, nullptr, &error_message));
-  EXPECT_EQ(error_message, kStartRemoteLoggingFailureGeneric);
+  EXPECT_EQ(error_message,
+            kStartRemoteLoggingFailureNoAdditionalActiveLogsAllowed);
 }
 
 TEST_F(WebRtcEventLogManagerTest,
@@ -2702,7 +2704,8 @@ TEST_F(WebRtcEventLogManagerTest,
   ASSERT_TRUE(PeerConnectionSessionIdSet(key0));
   std::string error_message;
   EXPECT_FALSE(StartRemoteLogging(key0, nullptr, &error_message));
-  EXPECT_EQ(error_message, kStartRemoteLoggingFailureGeneric);
+  EXPECT_EQ(error_message,
+            kStartRemoteLoggingFailureNoAdditionalActiveLogsAllowed);
 
   // Other BrowserContexts aren't limit by the previous one's limit.
   const auto key1 = GetPeerConnectionKey(rphs[1].get(), 0);
@@ -3022,7 +3025,7 @@ TEST_F(WebRtcEventLogManagerTest,
   ASSERT_TRUE(PeerConnectionSessionIdSet(without_permissions_key));
   std::string error;
   ASSERT_FALSE(StartRemoteLogging(without_permissions_key, nullptr, &error));
-  EXPECT_EQ(error, kStartRemoteLoggingFailureGeneric);
+  EXPECT_EQ(error, kStartRemoteLoggingFailureFileCreationError);
 
   // Show that this was not counted towards the limit of active files.
   for (int i = 0; i < kMaxActiveRemoteLogFiles; ++i) {
@@ -3374,7 +3377,7 @@ TEST_F(WebRtcEventLogManagerTest,
   rph_.reset();
   std::string error_message;
   EXPECT_FALSE(StartRemoteLogging(key, nullptr, &error_message));
-  EXPECT_EQ(error_message, kStartRemoteLoggingFailureGeneric);
+  EXPECT_EQ(error_message, kStartRemoteLoggingFailureDeadRenderProcessHost);
 }
 
 TEST_F(WebRtcEventLogManagerTest,
@@ -4357,7 +4360,8 @@ INSTANTIATE_TEST_SUITE_P(
         ::testing::Bool(),
         // The upload-supporting network type to be used.
         ::testing::Values(network::mojom::ConnectionType::CONNECTION_ETHERNET,
-                          network::mojom::ConnectionType::CONNECTION_WIFI),
+                          network::mojom::ConnectionType::CONNECTION_WIFI,
+                          network::mojom::ConnectionType::CONNECTION_UNKNOWN),
         // The upload-unsupporting network type to be used.
         ::testing::Values(network::mojom::ConnectionType::CONNECTION_NONE,
                           network::mojom::ConnectionType::CONNECTION_4G)));

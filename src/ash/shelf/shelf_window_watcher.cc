@@ -13,6 +13,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_window_watcher_item_delegate.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -93,8 +94,9 @@ const char ShelfWindowWatcher::kDefaultShelfIdPrefix[] = "ShelfWindowWatcher";
 void ShelfWindowWatcher::ContainerWindowObserver::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   if (!params.old_parent && params.new_parent &&
-      (params.new_parent->id() == kShellWindowId_DefaultContainer)) {
-    // A new window was created in the default container.
+      desks_util::IsDeskContainerId(params.new_parent->id())) {
+    // A new window was created in one of the desks' containers. Note that the
+    // shelf is globally showing all apps from all active and inactive desks.
     window_watcher_->OnUserWindowAdded(params.target);
   }
 }
@@ -263,11 +265,11 @@ void ShelfWindowWatcher::OnWindowActivated(ActivationReason reason,
 }
 
 void ShelfWindowWatcher::OnRootWindowAdded(aura::Window* root_window) {
-  aura::Window* container =
-      root_window->GetChildById(kShellWindowId_DefaultContainer);
-  for (aura::Window* window : container->children())
-    OnUserWindowAdded(window);
-  observed_container_windows_.Add(container);
+  for (aura::Window* container : desks_util::GetDesksContainers(root_window)) {
+    for (aura::Window* window : container->children())
+      OnUserWindowAdded(window);
+    observed_container_windows_.Add(container);
+  }
 }
 
 }  // namespace ash

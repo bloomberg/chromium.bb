@@ -33,6 +33,8 @@ class InputMethodEngine : public InputMethodEngineBase,
                          bool is_visible) override;
   void CommitTextToInputContext(int context_id,
                                 const std::string& text) override;
+  void DeleteSurroundingTextToInputContext(int offset,
+                                           size_t number_of_chars) override;
   bool SendKeyEvent(ui::KeyEvent* ui_event, const std::string& code) override;
   bool IsActive() const override;
 

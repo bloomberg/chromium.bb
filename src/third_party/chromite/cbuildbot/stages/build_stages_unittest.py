@@ -32,6 +32,7 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
+from chromite.lib import path_util
 from chromite.lib.buildstore import FakeBuildStore
 
 from chromite.cbuildbot.stages.generic_stages_unittest import patch
@@ -152,6 +153,13 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
     self.buildstore = FakeBuildStore(self.fake_db)
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
 
+    # Prevent the setup_board tempdir path from being translated because it
+    # ends up raising an error when that path can't be found in the chroot.
+    self.PatchObject(path_util, 'ToChrootPath', side_effect=lambda x: x)
+    self.setup_board = os.path.join(self.tempdir, 'buildroot',
+                                    constants.CHROMITE_BIN_SUBDIR,
+                                    'setup_board')
+
   def ConstructStage(self):
     return build_stages.SetupBoardStage(self._run, self.buildstore,
                                         self._current_board)
@@ -159,31 +167,31 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
   def _RunFull(self, dir_exists=False):
     """Helper for testing a full builder."""
     self._Run(dir_exists)
-    cmd = ['./setup_board', '--board=%s' % self._current_board, '--nousepkg']
+    cmd = [self.setup_board, '--board=%s' % self._current_board, '--nousepkg']
     self.assertCommandContains(cmd)
-    cmd = ['./setup_board', '--skip_chroot_upgrade']
+    cmd = [self.setup_board, '--skip-chroot-upgrade']
     self.assertCommandContains(cmd)
 
   def testFullBuildWithProfile(self):
     """Tests whether full builds add profile flag when requested."""
     self._PrepareFull(extra_config={'profile': 'foo'})
     self._RunFull(dir_exists=False)
-    self.assertCommandContains(['./setup_board', '--profile=foo'])
+    self.assertCommandContains([self.setup_board, '--profile=foo'])
 
   def testFullBuildWithOverriddenProfile(self):
     """Tests whether full builds add overridden profile flag when requested."""
     self._PrepareFull(extra_cmd_args=['--profile', 'smock'])
     self._RunFull(dir_exists=False)
-    self.assertCommandContains(['./setup_board', '--profile=smock'])
+    self.assertCommandContains([self.setup_board, '--profile=smock'])
 
   def _RunBin(self, dir_exists):
     """Helper for testing a binary builder."""
     self._Run(dir_exists)
     self.assertTrue(self.setup_toolchains_mock.called)
-    self.assertCommandContains(['./setup_board'])
-    cmd = ['./setup_board', '--skip_chroot_upgrade']
+    self.assertCommandContains([self.setup_board])
+    cmd = [self.setup_board, '--skip-chroot-upgrade']
     self.assertCommandContains(cmd)
-    cmd = ['./setup_board', '--nousepkg']
+    cmd = [self.setup_board, '--nousepkg']
     self.assertCommandContains(cmd, not self._run.config.usepkg_build_packages)
 
   def testBinBuildWithLatestToolchain(self):
@@ -210,7 +218,7 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
     self._PrepareFull(extra_config=extra_config)
     self._Run(dir_exists=False)
     self.assertCommandContains(['./update_chroot'], expected=False)
-    self.assertCommandContains(['./setup_board', '--skip_chroot_upgrade'])
+    self.assertCommandContains([self.setup_board, '--skip-chroot-upgrade'])
 
 
 class UprevStageTest(generic_stages_unittest.AbstractStageTestCase):

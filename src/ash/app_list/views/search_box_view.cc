@@ -36,6 +36,8 @@
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/chromeos/search_box/search_box_view_delegate.h"
 #include "ui/events/event.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -57,14 +59,16 @@ namespace app_list {
 namespace {
 
 constexpr int kPaddingSearchResult = 16;
-constexpr int kSearchBoxBorderWidth = 4;
+constexpr int kSearchBoxFocusRingWidth = 2;
 
-constexpr SkColor kSearchBoxBorderColor =
-    SkColorSetARGB(0x3D, 0xFF, 0xFF, 0xFF);
+// Padding between the focus ring and the search box view
+constexpr int kSearchBoxFocusRingPadding = 4;
+
+constexpr SkColor kSearchBoxFocusRingColor = gfx::kGoogleBlue300;
 
 constexpr int kAssistantIconSize = 24;
 constexpr int kCloseIconSize = 24;
-constexpr int kSearchBoxFocusBorderCornerRadius = 28;
+constexpr int kSearchBoxFocusRingCornerRadius = 28;
 
 // Range of the fraction of app list from collapsed to peeking that search box
 // should change opacity.
@@ -147,12 +151,14 @@ void SearchBoxView::UpdateKeyboardVisibility() {
   if (!keyboard::KeyboardController::HasInstance())
     return;
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  bool should_show_keyboard =
+      is_search_box_active() && search_box()->HasFocus();
   if (!keyboard_controller->IsEnabled() ||
-      is_search_box_active() == keyboard_controller->IsKeyboardVisible()) {
+      should_show_keyboard == keyboard_controller->IsKeyboardVisible()) {
     return;
   }
 
-  if (is_search_box_active()) {
+  if (should_show_keyboard) {
     keyboard_controller->ShowKeyboard(false);
     return;
   }
@@ -180,22 +186,28 @@ void SearchBoxView::UpdateSearchIcon() {
 }
 
 void SearchBoxView::UpdateSearchBoxBorder() {
-  if (search_box()->HasFocus() && !is_search_box_active() &&
-      !is_tablet_mode()) {
-    // Show a gray ring around search box to indicate that the search box is
-    // selected. Do not show it when search box is active, because blinking
-    // cursor already indicates that.
-    SetBorder(views::CreateRoundedRectBorder(kSearchBoxBorderWidth,
-                                             kSearchBoxFocusBorderCornerRadius,
-                                             kSearchBoxBorderColor));
-    return;
-  }
+  // Creates an empty border to create a region for the focus ring to appear.
+  SetBorder(views::CreateEmptyBorder(gfx::Insets(GetFocusRingSpacing())));
+}
 
-  // Creates an empty border as a placeholder for colored border so that
-  // re-layout won't move views below the search box.
-  SetBorder(
-      views::CreateEmptyBorder(kSearchBoxBorderWidth, kSearchBoxBorderWidth,
-                               kSearchBoxBorderWidth, kSearchBoxBorderWidth));
+void SearchBoxView::OnPaintBackground(gfx::Canvas* canvas) {
+  // Paints the focus ring if the search box is focused.
+  if (search_box()->HasFocus() && !is_search_box_active() &&
+      view_delegate_->KeyboardTraversalEngaged()) {
+    gfx::Rect bounds = GetContentsBounds();
+    bounds.Inset(-kSearchBoxFocusRingPadding, -kSearchBoxFocusRingPadding);
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(kSearchBoxFocusRingColor);
+    flags.setStyle(cc::PaintFlags::Style::kStroke_Style);
+    flags.setStrokeWidth(kSearchBoxFocusRingWidth);
+    canvas->DrawRoundRect(bounds, kSearchBoxFocusRingCornerRadius, flags);
+  }
+}
+
+// static
+int SearchBoxView::GetFocusRingSpacing() {
+  return kSearchBoxFocusRingWidth + kSearchBoxFocusRingPadding;
 }
 
 void SearchBoxView::SetupCloseButton() {
@@ -242,6 +254,13 @@ void SearchBoxView::RecordSearchBoxActivationHistogram(
   }
 
   UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchBoxActivated", activation_type);
+  if (is_tablet_mode()) {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchBoxActivated.TabletMode",
+                              activation_type);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchBoxActivated.ClamshellMode",
+                              activation_type);
+  }
 }
 
 void SearchBoxView::OnKeyEvent(ui::KeyEvent* event) {
@@ -355,8 +374,8 @@ void SearchBoxView::UpdateOpacity() {
 
   AppListView* app_list_view = contents_view_->app_list_view();
   bool should_restore_opacity =
-      !app_list_view->is_in_drag() &&
-      (app_list_view->app_list_state() != AppListViewState::CLOSED);
+      !app_list_view->is_in_drag() && (app_list_view->app_list_state() !=
+                                       ash::mojom::AppListViewState::kClosed);
   // Restores the opacity of searchbox if the gesture dragging ends.
   this->layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
   contents_view_->search_results_page_view()->layer()->SetOpacity(
@@ -528,6 +547,16 @@ void SearchBoxView::UpdateQuery(const base::string16& new_query) {
   ContentsChanged(search_box(), new_query);
 }
 
+void SearchBoxView::ClearSearchAndDeactivateSearchBox() {
+  if (!is_search_box_active())
+    return;
+
+  view_delegate_->LogSearchAbandonHistogram();
+
+  ClearSearch();
+  SetSearchBoxActive(false, ui::ET_UNKNOWN);
+}
+
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
   if (key_event.type() == ui::ET_KEY_PRESSED &&
@@ -631,6 +660,13 @@ bool SearchBoxView::HandleMouseEvent(views::Textfield* sender,
   }
   if (mouse_event.type() == ui::ET_MOUSE_PRESSED && HasAutocompleteText())
     AcceptAutocompleteText();
+
+  // Don't activate search box for context menu click.
+  if (mouse_event.type() == ui::ET_MOUSE_PRESSED &&
+      mouse_event.IsOnlyRightMouseButton()) {
+    return false;
+  }
+
   return search_box::SearchBoxViewBase::HandleMouseEvent(sender, mouse_event);
 }
 
@@ -645,6 +681,7 @@ bool SearchBoxView::HandleGestureEvent(views::Textfield* sender,
 void SearchBoxView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   if (close_button() && sender == close_button()) {
+    view_delegate_->LogSearchAbandonHistogram();
     SetSearchBoxActive(false, ui::ET_UNKNOWN);
   }
   search_box::SearchBoxViewBase::ButtonPressed(sender, event);

@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/devtools_session.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
@@ -77,6 +76,8 @@
 #include "third_party/blink/renderer/modules/time_zone_monitor/time_zone_monitor_client.h"
 #include "third_party/blink/renderer/modules/vr/navigator_vr.h"
 #include "third_party/blink/renderer/modules/vr/vr_controller.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context_tracker.h"
+#include "third_party/blink/renderer/modules/webaudio/inspector_web_audio_agent.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_client.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_manager.h"
 #include "third_party/blink/renderer/modules/webdatabase/inspector_database_agent.h"
@@ -88,11 +89,17 @@
 #include "third_party/blink/renderer/modules/accessibility/inspector_accessibility_agent.h"
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_canvas_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
+#if defined(TOUCHLESS_MEDIA_CONTROLS)
+#include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_impl.h"
+#endif
 
 namespace blink {
 
@@ -136,6 +143,8 @@ void ModulesInitializer::Initialize() {
       std::make_unique<ImageBitmapRenderingContext::Factory>());
   HTMLCanvasElement::RegisterRenderingContextFactory(
       std::make_unique<XRPresentationContext::Factory>());
+  HTMLCanvasElement::RegisterRenderingContextFactory(
+      std::make_unique<GPUCanvasContext::Factory>());
 
   // OffscreenCanvas context types must be registered with the OffscreenCanvas.
   OffscreenCanvas::RegisterRenderingContextFactory(
@@ -172,12 +181,13 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   WebLocalFrameClient* client = web_frame->Client();
   DCHECK(client);
   ProvidePushControllerTo(frame, client->PushClient());
-  ProvideUserMediaTo(frame, UserMediaClient::Create(client->UserMediaClient()));
-  ProvideIndexedDBClientTo(frame, IndexedDBClient::Create(frame));
-  ProvideLocalFileSystemTo(frame, LocalFileSystemClient::Create());
+  ProvideUserMediaTo(
+      frame, std::make_unique<UserMediaClient>(client->UserMediaClient()));
+  ProvideIndexedDBClientTo(frame, MakeGarbageCollected<IndexedDBClient>(frame));
+  ProvideLocalFileSystemTo(frame, std::make_unique<LocalFileSystemClient>());
   NavigatorContentUtils::ProvideTo(
       *frame.DomWindow()->navigator(),
-      NavigatorContentUtilsClient::Create(web_frame));
+      MakeGarbageCollected<NavigatorContentUtilsClient>(web_frame));
 
   ScreenOrientationControllerImpl::ProvideTo(frame);
   if (RuntimeEnabledFeatures::PresentationEnabled())
@@ -189,20 +199,24 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
 
 void ModulesInitializer::ProvideLocalFileSystemToWorker(
     WorkerClients& worker_clients) const {
-  ::blink::ProvideLocalFileSystemToWorker(&worker_clients,
-                                          LocalFileSystemClient::Create());
+  ::blink::ProvideLocalFileSystemToWorker(
+      &worker_clients, std::make_unique<LocalFileSystemClient>());
 }
 
 void ModulesInitializer::ProvideIndexedDBClientToWorker(
     WorkerClients& worker_clients) const {
   ::blink::ProvideIndexedDBClientToWorker(
-      &worker_clients, IndexedDBClient::Create(worker_clients));
+      &worker_clients, MakeGarbageCollected<IndexedDBClient>(worker_clients));
 }
 
 MediaControls* ModulesInitializer::CreateMediaControls(
     HTMLMediaElement& media_element,
     ShadowRoot& shadow_root) const {
+#if defined(TOUCHLESS_MEDIA_CONTROLS)
+  return MediaControlsTouchlessImpl::Create(media_element, shadow_root);
+#else
   return MediaControlsImpl::Create(media_element, shadow_root);
+#endif
 }
 
 PictureInPictureController*
@@ -224,9 +238,11 @@ void ModulesInitializer::InitInspectorAgentSession(
       MakeGarbageCollected<InspectorDOMStorageAgent>(inspected_frames));
   session->Append(MakeGarbageCollected<InspectorAccessibilityAgent>(
       inspected_frames, dom_agent));
+  session->Append(MakeGarbageCollected<InspectorWebAudioAgent>(page));
   if (allow_view_agents) {
-    session->Append(InspectorDatabaseAgent::Create(page));
-    session->Append(InspectorCacheStorageAgent::Create(inspected_frames));
+    session->Append(MakeGarbageCollected<InspectorDatabaseAgent>(page));
+    session->Append(
+        MakeGarbageCollected<InspectorCacheStorageAgent>(inspected_frames));
   }
 }
 
@@ -239,7 +255,7 @@ void ModulesInitializer::OnClearWindowObjectInMainWorld(
   NavigatorGamepad::From(document);
   NavigatorServiceWorker::From(document);
   DOMWindowStorageController::From(document);
-  if (origin_trials::WebVREnabled(document.GetExecutionContext()))
+  if (RuntimeEnabledFeatures::WebVREnabled(document.GetExecutionContext()))
     NavigatorVR::From(document);
   if (RuntimeEnabledFeatures::PresentationEnabled() &&
       settings.GetPresentationReceiver()) {
@@ -272,18 +288,21 @@ WebRemotePlaybackClient* ModulesInitializer::CreateWebRemotePlaybackClient(
 void ModulesInitializer::ProvideModulesToPage(Page& page,
                                               WebViewClient* client) const {
   MediaKeysController::ProvideMediaKeysTo(page);
-  ::blink::ProvideContextFeaturesTo(page, ContextFeaturesClientImpl::Create());
+  ::blink::ProvideContextFeaturesTo(
+      page, std::make_unique<ContextFeaturesClientImpl>());
   ::blink::ProvideDatabaseClientTo(page,
                                    MakeGarbageCollected<DatabaseClient>());
   StorageNamespace::ProvideSessionStorageNamespaceTo(page, client);
+  BaseAudioContextTracker::ProvideToPage(page);
 }
 
 void ModulesInitializer::ForceNextWebGLContextCreationToFail() const {
   WebGLRenderingContext::ForceNextWebGLContextCreationToFail();
 }
 
-void ModulesInitializer::CollectAllGarbageForAnimationAndPaintWorklet() const {
-  AnimationAndPaintWorkletThread::CollectAllGarbage();
+void ModulesInitializer::
+    CollectAllGarbageForAnimationAndPaintWorkletForTesting() const {
+  AnimationAndPaintWorkletThread::CollectAllGarbageForTesting();
 }
 
 void ModulesInitializer::CloneSessionStorage(

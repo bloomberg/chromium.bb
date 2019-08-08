@@ -6,46 +6,57 @@
 #define ASH_KIOSK_NEXT_KIOSK_NEXT_SHELL_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/interfaces/kiosk_next_shell.mojom.h"
+#include "ash/session/session_observer.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 class PrefRegistrySimple;
 
 namespace ash {
 
+class KioskNextHomeController;
+
 // KioskNextShellController allows an ash consumer to manage a Kiosk Next
 // session. During this session most system functions are disabled and we launch
 // a specific app (Kiosk Next Home) that takes the whole screen.
 class ASH_EXPORT KioskNextShellController
-    : public mojom::KioskNextShellController {
+    : public mojom::KioskNextShellController,
+      public SessionObserver {
  public:
   KioskNextShellController();
   ~KioskNextShellController() override;
 
   // Register prefs related to the Kiosk Next Shell.
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
 
   // Binds the mojom::KioskNextShellController interface to this object.
   void BindRequest(mojom::KioskNextShellControllerRequest request);
 
-  // Returns if the Kiosk Next Shell is enabled for the current user.
+  // Returns if the Kiosk Next Shell is enabled for the current user. If there's
+  // no signed-in user, this returns false.
   bool IsEnabled();
 
-  // Tries to start the Kiosk Next shell by sending a
-  // LaunchKioskNextShell command to the KioskNextShellClient. We will only
-  // launch if |IsEnabled()| is true, so it's safe to call this every time a
-  // successful sign in happens.
-  // Warning: This method should not be called before sign in since the prefs
-  // would not be initialized.
-  void LaunchKioskNextShellIfEnabled();
+  void AddObserver(KioskNextShellObserver* observer);
+  void RemoveObserver(KioskNextShellObserver* observer);
 
   // mojom::KioskNextShellController:
   void SetClient(mojom::KioskNextShellClientPtr client) override;
 
+  // SessionObserver:
+  void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
+
  private:
   mojom::KioskNextShellClientPtr kiosk_next_shell_client_;
   mojo::BindingSet<mojom::KioskNextShellController> bindings_;
+  base::ObserverList<KioskNextShellObserver> observer_list_;
+  ScopedSessionObserver session_observer_{this};
+  bool kiosk_next_enabled_ = false;
+
+  // Controls the KioskNext home screen when the Kiosk Next Shell is enabled.
+  std::unique_ptr<KioskNextHomeController> kiosk_next_home_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskNextShellController);
 };

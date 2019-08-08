@@ -5,7 +5,6 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -20,7 +19,6 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -56,25 +54,6 @@ std::vector<std::string> GetExplicitPatternsAsStrings(
       extension.permissions_data()->active_permissions().explicit_hosts());
 }
 
-class RuntimeHostPermissionsForcedScope {
- public:
-  explicit RuntimeHostPermissionsForcedScope(bool enabled) {
-    if (enabled) {
-      feature_list_.InitAndEnableFeature(
-          extensions_features::kRuntimeHostPermissions);
-    } else {
-      feature_list_.InitAndDisableFeature(
-          extensions_features::kRuntimeHostPermissions);
-    }
-  }
-  ~RuntimeHostPermissionsForcedScope() {}
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(RuntimeHostPermissionsForcedScope);
-};
-
 void InitializeExtensionPermissions(Profile* profile,
                                     const Extension& extension) {
   PermissionsUpdater updater(profile);
@@ -88,9 +67,6 @@ using ScriptingPermissionsModifierUnitTest = ExtensionServiceTestBase;
 
 TEST_F(ScriptingPermissionsModifierUnitTest, GrantAndWithholdHostPermissions) {
   InitializeEmptyExtensionService();
-
-  // Permissions can only be withheld with the appropriate feature turned on.
-  RuntimeHostPermissionsForcedScope enabled_scope(true);
 
   std::vector<std::string> test_cases[] = {
       {"http://www.google.com/*"},
@@ -164,9 +140,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantAndWithholdHostPermissions) {
 TEST_F(ScriptingPermissionsModifierUnitTest, SwitchBehavior) {
   InitializeEmptyExtensionService();
 
-  // Permissions can only be withheld with the appropriate feature turned on.
-  auto forced_scope = std::make_unique<RuntimeHostPermissionsForcedScope>(true);
-
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("a")
           .AddPermission(URLPattern::kAllUrlsPattern)
@@ -192,34 +165,10 @@ TEST_F(ScriptingPermissionsModifierUnitTest, SwitchBehavior) {
   EXPECT_THAT(GetPatternsAsStrings(
                   permissions_data->withheld_permissions().effective_hosts()),
               testing::UnorderedElementsAre(URLPattern::kAllUrlsPattern));
-
-  // Remove the switch. The extension should have permission again.
-  forced_scope.reset();  // Let the old scope destruct before creating another.
-  forced_scope = std::make_unique<RuntimeHostPermissionsForcedScope>(false);
-  updater.InitializePermissions(extension.get());
-  EXPECT_FALSE(modifier.CanAffectExtension());
-  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension),
-              testing::UnorderedElementsAre(URLPattern::kAllUrlsPattern));
-  EXPECT_TRUE(
-      permissions_data->withheld_permissions().effective_hosts().is_empty());
-
-  // Reapply the switch; the extension should go back to having permissions
-  // withheld.
-  forced_scope.reset();  // Let the old scope destruct before creating another.
-  forced_scope = std::make_unique<RuntimeHostPermissionsForcedScope>(true);
-  updater.InitializePermissions(extension.get());
-  EXPECT_TRUE(modifier.HasWithheldHostPermissions());
-  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
-  EXPECT_THAT(GetPatternsAsStrings(
-                  permissions_data->withheld_permissions().effective_hosts()),
-              testing::UnorderedElementsAre(URLPattern::kAllUrlsPattern));
 }
 
 TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
   InitializeEmptyExtensionService();
-
-  // Permissions can only be withheld with the appropriate feature turned on.
-  RuntimeHostPermissionsForcedScope enabled_scope(true);
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension")
@@ -279,8 +228,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
 }
 
 TEST_F(ScriptingPermissionsModifierUnitTest, CanAffectExtensionByLocation) {
-  auto forced_scope = std::make_unique<RuntimeHostPermissionsForcedScope>(true);
-
   InitializeEmptyExtensionService();
 
   struct {
@@ -303,28 +250,10 @@ TEST_F(ScriptingPermissionsModifierUnitTest, CanAffectExtensionByLocation) {
                   .CanAffectExtension())
         << test_case.location;
   }
-
-  forced_scope.reset();  // Let the old scope destruct before creating another.
-  forced_scope = std::make_unique<RuntimeHostPermissionsForcedScope>(false);
-
-  // With the feature disabled, no extension should be able to be affected.
-  for (const auto& test_case : test_cases) {
-    scoped_refptr<const Extension> extension =
-        ExtensionBuilder("test")
-            .SetLocation(test_case.location)
-            .AddPermission("<all_urls>")
-            .Build();
-    EXPECT_FALSE(ScriptingPermissionsModifier(profile(), extension.get())
-                     .CanAffectExtension())
-        << test_case.location;
-  }
 }
 
 TEST_F(ScriptingPermissionsModifierUnitTest,
        ExtensionsInitializedWithSavedRuntimeGrantedHostPermissionsAcrossLoad) {
-  // Permissions can only be withheld with the appropriate feature turned on.
-  RuntimeHostPermissionsForcedScope enabled_scope(true);
-
   InitializeEmptyExtensionService();
 
   const GURL kExampleCom("https://example.com/");
@@ -395,7 +324,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 // hosts granted through the ScriptingPermissionsModifier.
 TEST_F(ScriptingPermissionsModifierUnitTest,
        RemoveAllGrantedHostPermissions_GrantedHosts) {
-  RuntimeHostPermissionsForcedScope enabled_scope(true);
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
@@ -422,7 +350,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 // don't request <all_urls>.
 TEST_F(ScriptingPermissionsModifierUnitTest,
        RemoveAllGrantedHostPermissions_GrantedHostsForNonAllUrlsExtension) {
-  RuntimeHostPermissionsForcedScope enabled_scope(true);
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
@@ -450,7 +377,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 // granted optional host permissions.
 TEST_F(ScriptingPermissionsModifierUnitTest,
        RemoveAllGrantedHostPermissions_GrantedOptionalPermissions) {
-  RuntimeHostPermissionsForcedScope enabled_scope(true);
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
@@ -484,7 +410,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 // wants to run on a subset of that host.
 TEST_F(ScriptingPermissionsModifierUnitTest,
        GrantingHostPermissionsBeyondRequested) {
-  RuntimeHostPermissionsForcedScope enabled_scope(true);
   InitializeEmptyExtensionService();
 
   DictionaryBuilder content_script;
@@ -534,7 +459,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 }
 
 TEST_F(ScriptingPermissionsModifierUnitTest, GetSiteAccess_AllHostsExtension) {
-  RuntimeHostPermissionsForcedScope enabled_scope(true);
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
@@ -619,7 +543,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GetSiteAccess_AllHostsExtension) {
 
 TEST_F(ScriptingPermissionsModifierUnitTest,
        GetSiteAccess_AllHostsLikeExtension) {
-  RuntimeHostPermissionsForcedScope enabled_scope(true);
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
@@ -660,7 +583,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 }
 
 TEST_F(ScriptingPermissionsModifierUnitTest, GetSiteAccess_SpecificSites) {
-  RuntimeHostPermissionsForcedScope enabled_scope(true);
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
@@ -703,7 +625,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GetSiteAccess_SpecificSites) {
 
 TEST_F(ScriptingPermissionsModifierUnitTest,
        GetSiteAccess_GrantedButNotRequested) {
-  RuntimeHostPermissionsForcedScope enabled_scope(true);
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
@@ -737,7 +658,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 // Tests that for the purposes of displaying an extension's site access to the
 // user (or granting/revoking permissions), we ignore paths in the URL.
 TEST_F(ScriptingPermissionsModifierUnitTest, GetSiteAccess_IgnorePaths) {
-  RuntimeHostPermissionsForcedScope enabled_scope(true);
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
@@ -777,7 +697,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GetSiteAccess_IgnorePaths) {
 // to that host.
 TEST_F(ScriptingPermissionsModifierUnitTest,
        RemoveHostAccess_RemovesOverlappingPatterns) {
-  RuntimeHostPermissionsForcedScope enabled_scope(true);
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =
@@ -809,7 +728,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 // it, behaves properly. Regression test for https://crbug.com/930062.
 TEST_F(ScriptingPermissionsModifierUnitTest,
        RemoveAllURLsGrantedOptionalPermission) {
-  RuntimeHostPermissionsForcedScope enabled_scope(true);
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> extension =

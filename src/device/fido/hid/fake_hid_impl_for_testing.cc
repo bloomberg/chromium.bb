@@ -166,6 +166,7 @@ void FakeHidManager::GetDevices(GetDevicesCallback callback) {
 }
 
 void FakeHidManager::Connect(const std::string& device_guid,
+                             mojom::HidConnectionClientPtr connection_client,
                              ConnectCallback callback) {
   auto device_it = devices_.find(device_guid);
   auto connection_it = connections_.find(device_guid);

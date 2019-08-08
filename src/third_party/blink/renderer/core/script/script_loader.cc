@@ -186,18 +186,22 @@ ShouldFireErrorEvent ParseAndRegisterImportMap(ScriptElementBase& element,
 
   if (!modulator->IsAcquiringImportMaps()) {
     element_document.AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kError,
         "An import map is added after module script load was triggered."));
     return ShouldFireErrorEvent::kShouldFire;
   }
 
   // TODO(crbug.com/922212): Implemenet external import maps.
   if (element.HasSourceAttribute()) {
-    element_document.AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
-        "External import maps are not yet supported."));
+    element_document.AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kError,
+                               "External import maps are not yet supported."));
     return ShouldFireErrorEvent::kShouldFire;
   }
+
+  UseCounter::Count(*context_document, WebFeature::kImportMap);
 
   KURL base_url = element_document.BaseURL();
   const String import_map_text = element.TextFromChildren();
@@ -430,7 +434,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   if (ShouldBlockSyncScriptForFeaturePolicy(element_.Get(), GetScriptType(),
                                             parser_inserted_)) {
     element_document.AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kError,
         "Synchronous script execution is disabled by Feature Policy"));
     return false;
   }
@@ -667,11 +672,12 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         // script, given settings object and the destination "script". When this
         // asynchronously completes, set the script's script to the result. At
         // that time, the script is ready.</spec>
-        auto* module_tree_client = ModulePendingScriptTreeClient::Create();
+        auto* module_tree_client =
+            MakeGarbageCollected<ModulePendingScriptTreeClient>();
         modulator->FetchDescendantsForInlineScript(
             module_script, fetch_client_settings_object_fetcher,
             mojom::RequestContextType::SCRIPT, module_tree_client);
-        prepared_pending_script_ = ModulePendingScript::Create(
+        prepared_pending_script_ = MakeGarbageCollected<ModulePendingScript>(
             element_, module_tree_client, is_external_script_);
         break;
       }
@@ -857,11 +863,12 @@ void ScriptLoader::FetchModuleScriptTree(
   //
   // Fetch a module script graph given url, settings object, "script", and
   // options.</spec>
-  auto* module_tree_client = ModulePendingScriptTreeClient::Create();
+  auto* module_tree_client =
+      MakeGarbageCollected<ModulePendingScriptTreeClient>();
   modulator->FetchTree(url, fetch_client_settings_object_fetcher,
                        mojom::RequestContextType::SCRIPT, options,
                        ModuleScriptCustomFetchType::kNone, module_tree_client);
-  prepared_pending_script_ = ModulePendingScript::Create(
+  prepared_pending_script_ = MakeGarbageCollected<ModulePendingScript>(
       element_, module_tree_client, is_external_script_);
 }
 

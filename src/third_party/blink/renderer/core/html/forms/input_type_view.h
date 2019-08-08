@@ -46,15 +46,16 @@ namespace blink {
 
 class AXObject;
 class BeforeTextInsertedEvent;
+class ComputedStyle;
 class Element;
 class Event;
 class FormControlState;
 class HTMLFormElement;
 class HTMLInputElement;
 class KeyboardEvent;
-class MouseEvent;
 class LayoutObject;
-class ComputedStyle;
+enum class LegacyLayout;
+class MouseEvent;
 
 class ClickHandlingState final : public EventDispatchHandlingState {
  public:
@@ -98,7 +99,8 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   void DispatchSimulatedClickIfActive(KeyboardEvent&) const;
 
   virtual void SubtreeHasChanged();
-  virtual LayoutObject* CreateLayoutObject(const ComputedStyle&) const;
+  virtual LayoutObject* CreateLayoutObject(const ComputedStyle&,
+                                           LegacyLayout) const;
   virtual scoped_refptr<ComputedStyle> CustomStyleForLayoutObject(
       scoped_refptr<ComputedStyle>);
   virtual TextDirection ComputedTextDirection();

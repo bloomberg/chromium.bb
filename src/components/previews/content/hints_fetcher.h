@@ -9,36 +9,54 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/core/previews_experiments.h"
 #include "url/gurl.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
+
 namespace previews {
 
-class HintCache;
-
-// A class to handle OnePlatform client requests for optimization hints from
-// the remote Optimization Guide Service.
+// A class to handle requests for optimization hints from a remote Optimization
+// Guide Service.
 //
-// When Chrome starts up, if the client's OnePlatform hints have not been
-// updated in over day, this class will be triggered to fetch new hints from the
-// remote Optimization Guide Service. Owner must ensure that |hint_cache|
-// remains alive for the lifetime of |HintsFetcher|.
+// This class fetches new hints from the remote Optimization Guide Service.
+// Owner must ensure that |hint_cache| remains alive for the lifetime of
+// |HintsFetcher|.
 class HintsFetcher {
- public:
-  explicit HintsFetcher(HintCache* hint_cache);
-  ~HintsFetcher();
+  // Callback to inform the caller that the remote hints have been fetched and
+  // to pass back the fetched hints response from the remote Optimization Guide
+  // Service.
+  using HintsFetchedCallback = base::OnceCallback<void(
+      base::Optional<
+          std::unique_ptr<optimization_guide::proto::GetHintsResponse>>)>;
 
-  // Handles any configuration or checking needed and then
-  // initiates the fetch of OnePlatform Hints.
-  void FetchHintsForHosts(const std::vector<std::string>& hosts);
+ public:
+  HintsFetcher(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      GURL optimization_guide_service_url);
+  virtual ~HintsFetcher();
+
+  // Requests hints from the Optimization Guide Service if a request for them is
+  // not already in progress. Returns whether a new request was issued.
+  // |hints_fetched_callback| is run, passing a GetHintsResponse object, if a
+  // fetch was successful or passes nullopt if the fetch fails. Virtualized for
+  // testing.
+  virtual bool FetchOptimizationGuideServiceHints(
+      const std::vector<std::string>& hosts,
+      HintsFetchedCallback hints_fetched_callback);
 
  private:
-  // Creates the GetHintsResponse proto and executes the SimpleURLLoader request
-  // to the remote Optimization Guide Service with the |get_hints_request_|.
-  void GetRemoteHints(const std::vector<std::string>& hosts);
+  // URL loader completion callback.
+  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
   // Handles the response from the remote Optimization Guide Service.
   // |response| is the response body, |status| is the
@@ -48,25 +66,23 @@ class HintsFetcher {
                       int status,
                       int response_code);
 
-  // URL loader completion callback.
-  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
-
-  // Parses the hints component of |get_hints_response| and applies it to
-  // |hints_|. Returns true if |get_hints_response| was successfully
-  // parsed and applied.
-  bool ParseGetHintsResponseAndApplyHints(
-      const optimization_guide::proto::GetHintsResponse& get_hints_response);
-
   // Used to hold the GetHintsRequest being constructed and sent as a remote
   // request.
   std::unique_ptr<optimization_guide::proto::GetHintsRequest>
       get_hints_request_;
 
-  // The URL for the remote Optimization Guide Service.
-  const GURL oneplatform_service_url_;
+  // Used to hold the callback while the SimpleURLLoader performs the request
+  // asynchronously.
+  HintsFetchedCallback hints_fetched_callback_;
 
-  // The caller must ensure that the |hints_| outlives this instance.
-  HintCache* hint_cache_ = nullptr;
+  // The URL for the remote Optimization Guide Service.
+  const GURL optimization_guide_service_url_;
+
+  // Holds the |URLLoader| for an active hints request.
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+
+  // Used for creating a |url_loader_| when needed for request hints.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

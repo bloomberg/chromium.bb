@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/animation_util.h"
 #import "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/reversed_animation.h"
@@ -221,10 +222,61 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   return NSTextAlignmentNatural;
 }
 
+- (UISemanticContentAttribute)bestSemanticContentAttribute {
+  // This method will be called in response to
+  // UITextInputCurrentInputModeDidChangeNotification. At this
+  // point, the baseWritingDirectionForPosition doesn't yet return the correct
+  // direction if the text field is empty. Instead, treat this as a special case
+  // and calculate the direction from the keyboard locale if there is no text.
+  if (self.text.length == 0) {
+    NSLocaleLanguageDirection direction = [NSLocale
+        characterDirectionForLanguage:self.textInputMode.primaryLanguage];
+    return direction == NSLocaleLanguageDirectionRightToLeft
+               ? UISemanticContentAttributeForceRightToLeft
+               : UISemanticContentAttributeForceLeftToRight;
+  }
+
+  [self setTextAlignment:NSTextAlignmentNatural];
+
+  UITextWritingDirection textDirection =
+      [self baseWritingDirectionForPosition:[self beginningOfDocument]
+                                inDirection:UITextStorageDirectionForward];
+  NSLocaleLanguageDirection currentLocaleDirection = [NSLocale
+      characterDirectionForLanguage:NSLocale.currentLocale.languageCode];
+
+  if ((textDirection == UITextWritingDirectionLeftToRight &&
+       currentLocaleDirection == NSLocaleLanguageDirectionLeftToRight) ||
+      (textDirection == UITextWritingDirectionRightToLeft &&
+       currentLocaleDirection == NSLocaleLanguageDirectionRightToLeft)) {
+    return UISemanticContentAttributeUnspecified;
+  }
+
+  return textDirection == UITextWritingDirectionRightToLeft
+             ? UISemanticContentAttributeForceRightToLeft
+             : UISemanticContentAttributeForceLeftToRight;
+}
+
 // Normally NSTextAlignmentNatural would handle text alignment automatically,
 // but there are numerous edge case issues with it, so it's simpler to just
 // manually update the text alignment and writing direction of the UITextField.
 - (void)updateTextDirection {
+  // If the flag is enabled, we want to use the default text alignment.
+  if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
+    // If the keyboard language direction does not match the device
+    // language direction, the alignment of the placeholder text will be off.
+    if (self.text.length == 0) {
+      NSLocaleLanguageDirection direction = [NSLocale
+          characterDirectionForLanguage:self.textInputMode.primaryLanguage];
+      if (direction == NSLocaleLanguageDirectionRightToLeft) {
+        [self setTextAlignment:NSTextAlignmentRight];
+      } else {
+        [self setTextAlignment:NSTextAlignmentLeft];
+      }
+    } else {
+      [self setTextAlignment:NSTextAlignmentNatural];
+    }
+    return;
+  }
   // Setting the empty field to Natural seems to let iOS update the cursor
   // position when the keyboard language is changed.
   if (![self text].length) {

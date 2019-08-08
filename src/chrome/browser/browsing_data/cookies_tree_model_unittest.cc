@@ -279,7 +279,6 @@ class CookiesTreeModelTest : public testing::Test {
       case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
         return node->GetDetailedInfo().cookie->Name() + ",";
       case CookieTreeNode::DetailedInfo::TYPE_APPCACHE:
-        return node->GetDetailedInfo().appcache_info->manifest_url.spec() + ",";
       case CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE:
       case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
       case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB:

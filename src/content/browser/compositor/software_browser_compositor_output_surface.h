@@ -19,7 +19,8 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
  public:
   SoftwareBrowserCompositorOutputSurface(
       std::unique_ptr<viz::SoftwareOutputDevice> software_device,
-      const UpdateVSyncParametersCallback& update_vsync_parameters_callback);
+      const viz::UpdateVSyncParametersCallback&
+          update_vsync_parameters_callback);
 
   ~SoftwareBrowserCompositorOutputSurface() override;
 

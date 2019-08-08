@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -38,17 +39,21 @@ inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(
     Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEDisplacementMapTag,
                                            document),
-      scale_(SVGAnimatedNumber::Create(this, svg_names::kScaleAttr, 0.0f)),
-      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)),
-      in2_(SVGAnimatedString::Create(this, svg_names::kIn2Attr)),
-      x_channel_selector_(SVGAnimatedEnumeration<ChannelSelectorType>::Create(
-          this,
-          svg_names::kXChannelSelectorAttr,
-          CHANNEL_A)),
-      y_channel_selector_(SVGAnimatedEnumeration<ChannelSelectorType>::Create(
-          this,
-          svg_names::kYChannelSelectorAttr,
-          CHANNEL_A)) {
+      scale_(MakeGarbageCollected<SVGAnimatedNumber>(this,
+                                                     svg_names::kScaleAttr,
+                                                     0.0f)),
+      in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)),
+      in2_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kIn2Attr)),
+      x_channel_selector_(
+          MakeGarbageCollected<SVGAnimatedEnumeration<ChannelSelectorType>>(
+              this,
+              svg_names::kXChannelSelectorAttr,
+              CHANNEL_A)),
+      y_channel_selector_(
+          MakeGarbageCollected<SVGAnimatedEnumeration<ChannelSelectorType>>(
+              this,
+              svg_names::kYChannelSelectorAttr,
+              CHANNEL_A)) {
   AddToPropertyMap(scale_);
   AddToPropertyMap(in1_);
   AddToPropertyMap(in2_);
@@ -113,7 +118,7 @@ FilterEffect* SVGFEDisplacementMapElement::Build(
   DCHECK(input1);
   DCHECK(input2);
 
-  FilterEffect* effect = FEDisplacementMap::Create(
+  auto* effect = MakeGarbageCollected<FEDisplacementMap>(
       filter, x_channel_selector_->CurrentValue()->EnumValue(),
       y_channel_selector_->CurrentValue()->EnumValue(),
       scale_->CurrentValue()->Value());

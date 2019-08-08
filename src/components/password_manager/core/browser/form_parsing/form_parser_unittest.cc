@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -169,12 +170,12 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
                                    ParseResultIds* save_result) {
   FormData form_data;
   form_data.action = GURL("http://example1.com");
-  form_data.origin = GURL("http://example2.com");
+  form_data.url = GURL("http://example2.com");
   form_data.submission_event = test_case.submission_event;
   for (const FieldDataDescription& field_description : test_case.fields) {
     FormFieldData field;
-    const uint32_t unique_id = GetUniqueId();
-    field.unique_renderer_id = unique_id;
+    const uint32_t renderer_id = GetUniqueId();
+    field.unique_renderer_id = renderer_id;
     field.id_attribute = StampUniqueSuffix("html_id");
     if (field_description.name == kNonimportantValue) {
       field.name = StampUniqueSuffix("html_name");
@@ -182,6 +183,9 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
       field.name = ASCIIToUTF16(field_description.name);
     }
     field.name_attribute = field.name;
+#if defined(OS_IOS)
+    field.unique_id = StampUniqueSuffix("unique_id");
+#endif
     field.form_control_type = field_description.form_control_type;
     field.is_focusable = field_description.is_focusable;
     field.is_enabled = field_description.is_enabled;
@@ -198,16 +202,22 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
       field.typed_value = ASCIIToUTF16(field_description.typed_value);
     form_data.fields.push_back(field);
     if (field_description.role == ElementRole::NONE) {
-      UpdateResultWithIdByRole(fill_result, unique_id,
+      UpdateResultWithIdByRole(fill_result, renderer_id,
                                field_description.role_filling);
-      UpdateResultWithIdByRole(save_result, unique_id,
+      UpdateResultWithIdByRole(save_result, renderer_id,
                                field_description.role_saving);
     } else {
-      UpdateResultWithIdByRole(fill_result, unique_id, field_description.role);
-      UpdateResultWithIdByRole(save_result, unique_id, field_description.role);
+      UpdateResultWithIdByRole(fill_result, renderer_id,
+                               field_description.role);
+      UpdateResultWithIdByRole(save_result, renderer_id,
+                               field_description.role);
     }
     if (field_description.prediction.type != autofill::MAX_VALID_FIELD_TYPE) {
-      (*predictions)[unique_id] = field_description.prediction;
+      predictions->push_back(field_description.prediction);
+      predictions->back().renderer_id = renderer_id;
+#if defined(OS_IOS)
+      predictions->back().unique_id = field.unique_id;
+#endif
     }
     if (field_description.predicted_username >= 0) {
       size_t index = static_cast<size_t>(field_description.predicted_username);
@@ -1478,6 +1488,33 @@ TEST(FormParserTest, CVC) {
               {.role = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password",
                .name = "verification_type"},
+          },
+          .fallback_only = true,
+      },
+  });
+}
+
+// The parser should avoid identifying NOT_PASSWORD fields as passwords.
+TEST(FormParserTest, NotPasswordField) {
+  CheckTestData({
+      {
+          "Server hints: NOT_PASSWORD.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.form_control_type = "password",
+               .prediction = {.type = autofill::NOT_PASSWORD}},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+          },
+          .fallback_only = false,
+      },
+      {
+          "Server hints: NOT_PASSWORD on only password.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .prediction = {.type = autofill::NOT_PASSWORD},
+               .form_control_type = "password"},
           },
           .fallback_only = true,
       },

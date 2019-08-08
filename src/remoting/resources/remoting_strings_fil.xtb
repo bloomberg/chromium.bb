@@ -153,6 +153,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="4240294130679914010">Uninstaller ng Chromoting Host</translation>
 <translation id="4277463233460010382">Naka-configure ang computer na ito na payagan ang isa o higit pang mga client na kumonekta nang hindi naglalagay ng PIN.</translation>
 <translation id="4277736576214464567">Di-wasto ang access code. Pakisubukang muli.</translation>
+<translation id="4281844954008187215">Mga Tuntunin ng Serbisyo</translation>
 <translation id="4361728918881830843">Upang paganahin ang mga malayuang koneksyon sa ibang computer, i-install ang Remote na Desktop ng Chrome doon at i-click ang “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="4394049700291259645">Huwag paganahin</translation>
 <translation id="4405930547258349619">Pangunahing Library</translation>
@@ -345,6 +346,7 @@ Para ma-enable ang functionality na ito, piliin ang '<ph name="BUTTON_NAME" />' 
 <translation id="8747048596626351634">Nag-crash o hindi nagsimula ang session. Kung may ~/.chrome-remote-desktop-session sa malayuang computer, tiyaking nagsisimula ito ng matagal na paggana ng proseso sa foreground gaya ng desktop environment o window manager.</translation>
 <translation id="8759753423332885148">Matuto pa.</translation>
 <translation id="8791202241915690908">I-download ang Chromoting Host Installer</translation>
+<translation id="8804164990146287819">Patakaran sa Privacy</translation>
 <translation id="894763922177556086">Malakas</translation>
 <translation id="895780780740011433">Para sa Windows 7 at mas bago</translation>
 <translation id="897805526397249209">Upang paganahin ang mga malayuang koneksyon sa ibang computer, i-install ang Chromoting doon at i-click ang “<ph name="BUTTON_NAME" />”.</translation>

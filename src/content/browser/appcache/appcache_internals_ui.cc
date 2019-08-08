@@ -83,9 +83,16 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryValueForAppCacheInfo(
                         appcache_info.last_update_time.ToJsTime());
   dict_value->SetDouble("lastAccessTime",
                         appcache_info.last_access_time.ToJsTime());
+  dict_value->SetString("responseSizes",
+                        base::UTF16ToUTF8(base::FormatBytesUnlocalized(
+                            appcache_info.response_sizes)));
+  dict_value->SetString("paddingSizes",
+                        base::UTF16ToUTF8(base::FormatBytesUnlocalized(
+                            appcache_info.padding_sizes)));
   dict_value->SetString(
-      "size",
-      base::UTF16ToUTF8(base::FormatBytesUnlocalized(appcache_info.size)));
+      "totalSize",
+      base::UTF16ToUTF8(base::FormatBytesUnlocalized(
+          appcache_info.response_sizes + appcache_info.padding_sizes)));
   dict_value->SetString("groupId",
                         base::NumberToString(appcache_info.group_id));
 
@@ -118,9 +125,14 @@ GetDictionaryValueForAppCacheResourceInfo(
     const blink::mojom::AppCacheResourceInfo& resource_info) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("url", resource_info.url.spec());
-  dict->SetString(
-      "size",
-      base::UTF16ToUTF8(base::FormatBytesUnlocalized(resource_info.size)));
+  dict->SetString("responseSize",
+                  base::UTF16ToUTF8(base::FormatBytesUnlocalized(
+                      resource_info.response_size)));
+  dict->SetString("paddingSize", base::UTF16ToUTF8(base::FormatBytesUnlocalized(
+                                     resource_info.padding_size)));
+  dict->SetString("totalSize", base::UTF16ToUTF8(base::FormatBytesUnlocalized(
+                                   resource_info.response_size +
+                                   resource_info.padding_size)));
   dict->SetString("responseId",
                   base::NumberToString(resource_info.response_id));
   dict->SetBoolean("isExplicit", resource_info.is_explicit);
@@ -439,6 +451,7 @@ void AppCacheInternalsUI::OnAllAppCacheInfoReady(
     incognito_path_prefix = "Incognito ";
   web_ui()->CallJavascriptFunctionUnsafe(
       kFunctionOnAllAppCacheInfoReady,
+      base::Value(partition_path.AsUTF8Unsafe()),
       base::Value(incognito_path_prefix + partition_path.AsUTF8Unsafe()),
       *GetListValueFromAppCacheInfoCollection(collection.get()));
 }

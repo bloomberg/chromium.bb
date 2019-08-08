@@ -141,7 +141,7 @@ if (is_android) {
       "$google_play_services_package:google_play_services_iid_java",
       "$google_play_services_package:google_play_services_tasks_java",
       "//third_party/android_protobuf:protobuf_nano_javalib",
-      "//third_party/android_tools:android_gcm_java",
+      "//third_party/android_sdk:android_gcm_java",
     ]
 
     java_files = [

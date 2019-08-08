@@ -5,6 +5,10 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/blink/public/public_features.gni")
 
+if (is_android) {
+  import("//build/config/android/config.gni")
+}
+
 # This target includes all mojom interfaces which can be used from
 # renderer/platform. In particular these mojom interfaces can't use types that
 # are typemapped to a type in renderer/core.
@@ -18,21 +22,21 @@ mojom("mojom_platform") {
     "associated_interfaces/associated_interfaces.mojom",
     "autoplay/autoplay.mojom",
     "background_fetch/background_fetch.mojom",
-    "blob/blob.mojom",
-    "blob/blob_registry.mojom",
-    "blob/blob_url_store.mojom",
-    "blob/data_element.mojom",
-    "blob/serialized_blob.mojom",
+    "background_sync/background_sync.mojom",
+    "badging/badging.mojom",
     "cache_storage/cache_storage.mojom",
     "choosers/color_chooser.mojom",
     "choosers/file_chooser.mojom",
     "clipboard/clipboard.mojom",
+    "commit_result/commit_result.mojom",
     "contacts/contacts_manager.mojom",
     "cookie_store/cookie_store.mojom",
     "crash/crash_memory_metrics_reporter.mojom",
+    "credentialmanager/credential_manager.mojom",
     "csp/content_security_policy.mojom",
     "devtools/console_message.mojom",
     "devtools/devtools_agent.mojom",
+    "devtools/devtools_frontend.mojom",
     "dom_storage/session_storage_namespace.mojom",
     "dom_storage/storage_area.mojom",
     "dom_storage/storage_partition_service.mojom",
@@ -47,12 +51,18 @@ mojom("mojom_platform") {
     "frame/frame_host_test_interface.mojom",
     "frame/lifecycle.mojom",
     "frame/navigation_initiator.mojom",
+    "geolocation/geolocation_service.mojom",
+    "hyphenation/hyphenation.mojom",
+    "idle/idle_manager.mojom",
+    "insecure_input/insecure_input_service.mojom",
+    "keyboard_lock/keyboard_lock.mojom",
     "leak_detector/leak_detector.mojom",
     "loader/code_cache.mojom",
     "loader/navigation_predictor.mojom",
     "loader/pause_subresource_loading_handle.mojom",
     "loader/previews_resource_loading_hints.mojom",
     "loader/url_loader_factory_bundle.mojom",
+    "locks/lock_manager.mojom",
     "manifest/display_mode.mojom",
     "manifest/manifest.mojom",
     "manifest/manifest_manager.mojom",
@@ -61,9 +71,13 @@ mojom("mojom_platform") {
     "mime/mime_registry.mojom",
     "net/ip_address_space.mojom",
     "notifications/notification.mojom",
+    "notifications/notification_service.mojom",
     "oom_intervention/oom_intervention.mojom",
     "page/display_cutout.mojom",
+    "page/spatial_navigation.mojom",
     "payments/payment_app.mojom",
+    "permissions/permission.mojom",
+    "permissions/permission_status.mojom",
     "picture_in_picture/picture_in_picture.mojom",
     "plugins/plugin_registry.mojom",
     "presentation/presentation.mojom",
@@ -74,7 +88,8 @@ mojom("mojom_platform") {
     "renderer_preferences.mojom",
     "reporting/reporting.mojom",
     "script/script_type.mojom",
-    "serial/serial.mojom",
+    "selection_menu/selection_menu_behavior.mojom",
+    "service_worker/controller_service_worker_mode.mojom",
     "service_worker/dispatch_fetch_event_params.mojom",
     "service_worker/navigation_preload_state.mojom",
     "service_worker/service_worker_client.mojom",
@@ -87,6 +102,7 @@ mojom("mojom_platform") {
     "service_worker/service_worker_stream_handle.mojom",
     "site_engagement/site_engagement.mojom",
     "speech/speech_recognition_error.mojom",
+    "speech/speech_recognition_error_code.mojom",
     "speech/speech_recognition_grammar.mojom",
     "speech/speech_recognition_result.mojom",
     "speech/speech_recognizer.mojom",
@@ -96,6 +112,8 @@ mojom("mojom_platform") {
     "v8_cache_options.mojom",
     "wake_lock/wake_lock.mojom",
     "webaudio/audio_context_manager.mojom",
+    "webdatabase/web_database.mojom",
+    "window_features/window_features.mojom",
     "worker/shared_worker.mojom",
     "worker/shared_worker_client.mojom",
     "worker/shared_worker_connector.mojom",
@@ -106,14 +124,18 @@ mojom("mojom_platform") {
     "worker/worker_main_script_load_params.mojom",
   ]
 
+  if (!is_android) {
+    sources += [ "serial/serial.mojom" ]
+  }
+
   if (is_win) {
     sources += [ "dwrite_font_proxy/dwrite_font_proxy.mojom" ]
   }
 
   public_deps = [
     ":android_mojo_bindings",
+    ":authenticator_test_mojo_bindings",
     ":mojom_mhtml_load_result",
-    ":speech_recognition_error_code",
     ":web_client_hints_types_mojo_bindings",
     ":web_feature_mojo_bindings",
     "//components/payments/mojom",
@@ -152,18 +174,39 @@ mojom("mojom_platform") {
   export_header_blink = "third_party/blink/renderer/platform/platform_export.h"
 }
 
-# Kept separate from "mojom_platform" because the Java bindings are specifically
-# needed by Android's implementation of payments
-# (in components/payments/content/android and chrome/android/)
-# and input (in android_webview/ and content/browser/android/).
+# Kept separate from "mojom_platform" because the Java bindings are
+# needed by Android's implementation (in chrome/android or in android_webview)
+# for following mojom files.
 mojom("android_mojo_bindings") {
   sources = [
+    "blob/blob.mojom",
+    "blob/blob_registry.mojom",
+    "blob/blob_url_store.mojom",
+    "blob/data_element.mojom",
+    "blob/serialized_blob.mojom",
+    "document_metadata/copyless_paste.mojom",
+    "font_unique_name_lookup/font_unique_name_lookup.mojom",
     "input/input_host.mojom",
     "input/input_messages.mojom",
+    "installation/installation.mojom",
+    "installedapp/installed_app_provider.mojom",
+    "installedapp/related_application.mojom",
+    "mediasession/media_session.mojom",
     "payments/payment_request.mojom",
+    "remote_objects/remote_objects.mojom",
+    "webauthn/authenticator.mojom",
+    "webshare/webshare.mojom",
   ]
+  if (is_android && notouch_build) {
+    sources += [ "media_controls/touchless/media_controls.mojom" ]
+  }
   public_deps = [
     "//components/payments/mojom",
+    "//mojo/public/mojom/base",
+    "//services/media_session/public/mojom",
+    "//services/network/public/mojom",
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
 
   # This Android unhandled-tap feature uses another mojo source, add it in.
@@ -179,17 +222,9 @@ mojom("android_mojo_bindings") {
   export_class_attribute_blink = "PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/renderer/platform/platform_export.h"
-}
 
-# Kept separate from "mojom_platform" because the Java bindings are needed by
-# Android's implementation of speech recognition.
-mojom_component("speech_recognition_error_code") {
-  sources = [
-    "speech/speech_recognition_error_code.mojom",
-  ]
-
-  macro_prefix = "SPEECH_RECOGNITION_ERROR_CODE_MOJOM"
-  output_prefix = "speech_recognition_error_code_mojom"
+  # Don't scramble message IDs so they are redistributable to external tests.
+  scramble_message_ids = false
 }
 
 # This target can include mojom interfaces which do use types that are
@@ -225,6 +260,7 @@ mojom("mojom_core") {
   ]
 
   public_deps = [
+    ":android_mojo_bindings",
     ":mojom_platform",
     ":web_feature_mojo_bindings",
     "//components/payments/mojom",
@@ -237,6 +273,7 @@ mojom("mojom_core") {
   ]
 
   overridden_deps_blink = [
+    ":android_mojo_bindings",
     ":mojom_platform",
     "//services/network/public/mojom",
   ]
@@ -260,20 +297,14 @@ mojom("mojom_modules") {
   ]
 
   public_deps = [
+    ":android_mojo_bindings",
     ":mojom_core",
-
-    # TODO(https://crbug.com/822804): Remove when mojom bindings deps checks
-    # get fixed.
-    ":mojom_platform",
     "//mojo/public/mojom/base",
-    "//skia/public/interfaces",
-    "//url/mojom:url_mojom_gurl",
-    "//url/mojom:url_mojom_origin",
   ]
 
   overridden_deps_blink = [
+    ":android_mojo_bindings",
     ":mojom_core",
-    ":mojom_platform",
   ]
   component_deps_blink = [ "//third_party/blink/renderer/core" ]
 
@@ -284,6 +315,36 @@ mojom("mojom_modules") {
   export_class_attribute_blink = "MODULES_EXPORT"
   export_define_blink = "BLINK_MODULES_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/renderer/modules/modules_export.h"
+}
+
+# The mojom_broadcastchannel_bindings is separated from the rest of mojom files
+# to allow blink/renderer/core to depend on this.
+mojom("mojom_broadcastchannel_bindings") {
+  visibility = [ "//content/*" ]
+  visibility_blink = [ "//third_party/blink/renderer/core/*" ]
+  sources = [
+    "broadcastchannel/broadcast_channel.mojom",
+  ]
+  public_deps = [
+    ":mojom_core",
+    "//url/mojom:url_mojom_origin",
+  ]
+
+  overridden_deps = [ ":mojom_core" ]
+  component_deps = [ "//third_party/blink/public/common" ]
+
+  component_output_prefix = "blink_mojom_broadcastchannel_bindings"
+
+  # See comment above.
+  export_class_attribute = "CONTENT_EXPORT"
+  export_define = "CONTENT_IMPLEMENTATION=1"
+  export_header = "content/common/content_export.h"
+
+  # Similarly, the blink variant must be linked with the core component
+  # since it uses types from it in its typemaps.
+  export_class_attribute_blink = "CORE_EXPORT"
+  export_define_blink = "BLINK_CORE_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/renderer/core/core_export.h"
 }
 
 mojom("mojom_mhtml_load_result") {
@@ -315,4 +376,52 @@ mojom("web_client_hints_types_mojo_bindings") {
   sources = [
     "web_client_hints/web_client_hints_types.mojom",
   ]
+}
+
+# The embedded_frame_sink_mojo_bindings is separated from the rest of mojom
+# files because its deps contain too many files in Chromium that would pollute
+# the include paths in generated mojom-blink files for other services.
+mojom("embedded_frame_sink_mojo_bindings") {
+  visibility = [ "//content/*" ]
+  visibility_blink = [ "//third_party/blink/renderer/platform" ]
+  sources = [
+    "frame_sinks/embedded_frame_sink.mojom",
+  ]
+  deps = [
+    "//services/viz/public/interfaces",
+  ]
+
+  component_output_prefix = "blink_embedded_frame_sink_mojo_bindings"
+
+  # The chromium variant must be linked with content and use the same export
+  # settings in component build.
+  export_class_attribute = "CONTENT_EXPORT"
+  export_define = "CONTENT_IMPLEMENTATION=1"
+  export_header = "content/common/content_export.h"
+  export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/public/platform/web_common.h"
+}
+
+# This is a separate target because it needs unscrambled message IDs.
+mojom("authenticator_test_mojo_bindings") {
+  sources = [
+    "webauthn/virtual_authenticator.mojom",
+  ]
+
+  public_deps = [
+    ":android_mojo_bindings",
+    "//url/mojom:url_mojom_gurl",
+  ]
+
+  export_class_attribute = "BLINK_COMMON_EXPORT"
+  export_define = "BLINK_COMMON_IMPLEMENTATION=1"
+  export_header = "third_party/blink/public/common/common_export.h"
+
+  export_class_attribute_blink = "PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/renderer/platform/platform_export.h"
+
+  # Don't scramble message IDs so they are redistributable to external tests.
+  scramble_message_ids = false
 }

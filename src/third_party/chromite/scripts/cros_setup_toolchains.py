@@ -61,6 +61,7 @@ HOST_PACKAGES = (
     'sys-libs/glibc',
     'sys-libs/libcxx',
     'sys-libs/libcxxabi',
+    'sys-libs/llvm-libunwind',
 )
 
 # These packages are also installed into the host SDK.  However, they require

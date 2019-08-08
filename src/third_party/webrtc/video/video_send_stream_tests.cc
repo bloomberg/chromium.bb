@@ -11,7 +11,9 @@
 #include <memory>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/memory/memory.h"
+#include "api/task_queue/default_task_queue_factory.h"
 #include "api/test/simulated_network.h"
 #include "api/video/encoded_image.h"
 #include "api/video/video_bitrate_allocation.h"
@@ -681,9 +683,11 @@ TEST_F(VideoSendStreamTest, DISABLED_DoesUtilizeUlpfecForVp9WithNackEnabled) {
 #endif  // defined(RTC_ENABLE_VP9)
 
 TEST_F(VideoSendStreamTest, SupportsUlpfecWithMultithreadedH264) {
-  test::FunctionVideoEncoderFactory encoder_factory([]() {
+  std::unique_ptr<TaskQueueFactory> task_queue_factory =
+      CreateDefaultTaskQueueFactory();
+  test::FunctionVideoEncoderFactory encoder_factory([&]() {
     return absl::make_unique<test::MultithreadedFakeH264Encoder>(
-        Clock::GetRealTimeClock());
+        Clock::GetRealTimeClock(), task_queue_factory.get());
   });
   UlpfecObserver test(false, false, true, true, "H264", &encoder_factory);
   RunBaseTest(&test);
@@ -728,9 +732,9 @@ class FlexfecObserver : public test::EndToEndTest {
     } else {
       EXPECT_EQ(VideoSendStreamTest::kFakeVideoSendPayloadType,
                 header.payloadType);
-      EXPECT_THAT(testing::make_tuple(VideoSendStreamTest::kVideoSendSsrcs,
-                                      num_video_streams_),
-                  testing::Contains(header.ssrc));
+      EXPECT_THAT(::testing::make_tuple(VideoSendStreamTest::kVideoSendSsrcs,
+                                        num_video_streams_),
+                  ::testing::Contains(header.ssrc));
       sent_media_ = true;
     }
 
@@ -861,9 +865,11 @@ TEST_F(VideoSendStreamTest, SupportsFlexfecWithNackH264) {
 }
 
 TEST_F(VideoSendStreamTest, SupportsFlexfecWithMultithreadedH264) {
-  test::FunctionVideoEncoderFactory encoder_factory([]() {
+  std::unique_ptr<TaskQueueFactory> task_queue_factory =
+      CreateDefaultTaskQueueFactory();
+  test::FunctionVideoEncoderFactory encoder_factory([&]() {
     return absl::make_unique<test::MultithreadedFakeH264Encoder>(
-        Clock::GetRealTimeClock());
+        Clock::GetRealTimeClock(), task_queue_factory.get());
   });
 
   FlexfecObserver test(false, false, "H264", &encoder_factory, 1);
@@ -930,8 +936,7 @@ void VideoSendStreamTest::TestNackRetransmission(
         sequence_number = (rtx_header[0] << 8) + rtx_header[1];
       }
 
-      auto found = std::find(nacked_sequence_numbers_.begin(),
-                             nacked_sequence_numbers_.end(), sequence_number);
+      auto found = absl::c_find(nacked_sequence_numbers_, sequence_number);
       if (found != nacked_sequence_numbers_.end()) {
         nacked_sequence_numbers_.erase(found);
 
@@ -1619,9 +1624,10 @@ TEST_F(VideoSendStreamTest, MinTransmitBitrateRespectsRemb) {
         const std::vector<VideoReceiveStream*>& receive_streams) override {
       stream_ = send_stream;
       RtpRtcp::Configuration config;
+      config.clock = Clock::GetRealTimeClock();
       config.outgoing_transport = feedback_transport_.get();
       config.retransmission_rate_limiter = &retranmission_rate_limiter_;
-      rtp_rtcp_.reset(RtpRtcp::CreateRtpRtcp(config));
+      rtp_rtcp_ = RtpRtcp::Create(config);
       rtp_rtcp_->SetRTCPStatus(RtcpMode::kReducedSize);
     }
 
@@ -1982,8 +1988,7 @@ TEST_F(VideoSendStreamTest,
     }
 
     int32_t Encode(const VideoFrame& input_image,
-                   const CodecSpecificInfo* codec_specific_info,
-                   const std::vector<FrameType>* frame_types) override {
+                   const std::vector<VideoFrameType>* frame_types) override {
       ADD_FAILURE()
           << "Unexpected Encode call since the send stream is not started";
       return 0;
@@ -2040,11 +2045,11 @@ TEST_F(VideoSendStreamTest, CanReconfigureToUseStartBitrateAbovePreviousMax) {
       return FakeEncoder::InitEncode(config, number_of_cores, max_payload_size);
     }
 
-    int32_t SetRates(uint32_t new_target_bitrate, uint32_t framerate) override {
+    void SetRates(const RateControlParameters& parameters) override {
       rtc::CritScope lock(&crit_);
-      start_bitrate_kbps_ = new_target_bitrate;
+      start_bitrate_kbps_ = parameters.bitrate.get_sum_kbps();
       start_bitrate_changed_.Set();
-      return FakeEncoder::SetRates(new_target_bitrate, framerate);
+      FakeEncoder::SetRates(parameters);
     }
 
     int GetStartBitrateKbps() const {
@@ -2113,12 +2118,11 @@ class StartStopBitrateObserver : public test::FakeEncoder {
     return FakeEncoder::InitEncode(config, number_of_cores, max_payload_size);
   }
 
-  int32_t SetRateAllocation(const VideoBitrateAllocation& bitrate,
-                            uint32_t framerate) override {
+  void SetRates(const RateControlParameters& parameters) override {
     rtc::CritScope lock(&crit_);
-    bitrate_kbps_ = bitrate.get_sum_kbps();
+    bitrate_kbps_ = parameters.bitrate.get_sum_kbps();
     bitrate_changed_.Set();
-    return FakeEncoder::SetRateAllocation(bitrate, framerate);
+    FakeEncoder::SetRates(parameters);
   }
 
   bool WaitForEncoderInit() {
@@ -2316,8 +2320,7 @@ TEST_F(VideoSendStreamTest, EncoderIsProperlyInitializedAndDestroyed) {
     }
 
     int32_t Encode(const VideoFrame& inputImage,
-                   const CodecSpecificInfo* codecSpecificInfo,
-                   const std::vector<FrameType>* frame_types) override {
+                   const std::vector<VideoFrameType>* frame_types) override {
       EXPECT_TRUE(IsReadyForEncode());
 
       observation_complete_.Set();
@@ -2535,8 +2538,7 @@ class VideoCodecConfigObserver : public test::SendTest,
   }
 
   int32_t Encode(const VideoFrame& input_image,
-                 const CodecSpecificInfo* codec_specific_info,
-                 const std::vector<FrameType>* frame_types) override {
+                 const std::vector<VideoFrameType>* frame_types) override {
     // Silently skip the encode, FakeEncoder::Encode doesn't produce VP8.
     return 0;
   }
@@ -2851,17 +2853,17 @@ TEST_F(VideoSendStreamTest, ReconfigureBitratesSetsEncoderBitratesCorrectly) {
                                      maxPayloadSize);
     }
 
-    int32_t SetRateAllocation(const VideoBitrateAllocation& bitrate,
-                              uint32_t frameRate) override {
+    void SetRates(const RateControlParameters& parameters) override {
       {
         rtc::CritScope lock(&crit_);
-        if (target_bitrate_ == bitrate.get_sum_kbps()) {
-          return FakeEncoder::SetRateAllocation(bitrate, frameRate);
+        if (target_bitrate_ == parameters.bitrate.get_sum_kbps()) {
+          FakeEncoder::SetRates(parameters);
+          return;
         }
-        target_bitrate_ = bitrate.get_sum_kbps();
+        target_bitrate_ = parameters.bitrate.get_sum_kbps();
       }
       bitrate_changed_event_.Set();
-      return FakeEncoder::SetRateAllocation(bitrate, frameRate);
+      FakeEncoder::SetRates(parameters);
     }
 
     void WaitForSetRates(uint32_t expected_bitrate) {
@@ -3001,8 +3003,7 @@ TEST_F(VideoSendStreamTest, ReportsSentResolution) {
 
    private:
     int32_t Encode(const VideoFrame& input_image,
-                   const CodecSpecificInfo* codecSpecificInfo,
-                   const std::vector<FrameType>* frame_types) override {
+                   const std::vector<VideoFrameType>* frame_types) override {
       CodecSpecificInfo specifics;
       specifics.codecType = kVideoCodecGeneric;
 
@@ -3651,16 +3652,15 @@ TEST_F(VideoSendStreamTest, RemoveOverheadFromBandwidth) {
           max_bitrate_bps_(0),
           first_packet_sent_(false) {}
 
-    int32_t SetRateAllocation(const VideoBitrateAllocation& bitrate,
-                              uint32_t frameRate) override {
+    void SetRates(const RateControlParameters& parameters) override {
       rtc::CritScope lock(&crit_);
       // Wait for the first sent packet so that videosendstream knows
       // rtp_overhead.
       if (first_packet_sent_) {
-        max_bitrate_bps_ = bitrate.get_sum_bps();
+        max_bitrate_bps_ = parameters.bitrate.get_sum_bps();
         bitrate_changed_event_.Set();
       }
-      return FakeEncoder::SetRateAllocation(bitrate, frameRate);
+      return FakeEncoder::SetRates(parameters);
     }
 
     void OnCallsCreated(Call* sender_call, Call* receiver_call) override {

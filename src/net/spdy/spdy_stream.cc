@@ -100,7 +100,7 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       recv_window_size_(max_recv_window_size),
       unacked_recv_window_bytes_(0),
       session_(session),
-      delegate_(NULL),
+      delegate_(nullptr),
       request_headers_valid_(false),
       pending_send_status_(MORE_DATA_TO_SEND),
       request_time_(base::Time::Now()),
@@ -167,7 +167,7 @@ void SpdyStream::PushedStreamReplay() {
     std::unique_ptr<SpdyBuffer> buffer = std::move(pending_recv_data_.at(0));
     pending_recv_data_.erase(pending_recv_data_.begin());
 
-    bool eof = (buffer == NULL);
+    bool eof = (buffer == nullptr);
 
     CHECK(delegate_);
     delegate_->OnDataReceived(std::move(buffer));
@@ -204,7 +204,7 @@ std::unique_ptr<spdy::SpdySerializedFrame> SpdyStream::ProduceHeadersFrame() {
 
 void SpdyStream::DetachDelegate() {
   DCHECK(!IsClosed());
-  delegate_ = NULL;
+  delegate_ = nullptr;
   Cancel(ERR_ABORTED);
 }
 
@@ -533,7 +533,7 @@ void SpdyStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
     if (buffer) {
       pending_recv_data_.push_back(std::move(buffer));
     } else {
-      pending_recv_data_.push_back(NULL);
+      pending_recv_data_.push_back(nullptr);
       // Note: we leave the stream open in the session until the stream
       //       is claimed.
     }
@@ -663,7 +663,7 @@ int SpdyStream::OnDataSent(size_t frame_size) {
     QueueNextDataFrame();
     return ERR_IO_PENDING;
   } else {
-    pending_send_data_ = NULL;
+    pending_send_data_ = nullptr;
     return OK;
   }
 }
@@ -686,7 +686,7 @@ void SpdyStream::OnClose(int status) {
     }
   }
   Delegate* delegate = delegate_;
-  delegate_ = NULL;
+  delegate_ = nullptr;
   if (delegate)
     delegate->OnClose(status);
   // Unset |stream_id_| last so that the delegate can look it up.

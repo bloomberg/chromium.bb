@@ -38,7 +38,7 @@ ClipboardFormatType::ClipboardFormatType(UINT native_format, LONG index)
 ClipboardFormatType::~ClipboardFormatType() {}
 
 std::string ClipboardFormatType::Serialize() const {
-  return base::IntToString(data_.cfFormat);
+  return base::NumberToString(data_.cfFormat);
 }
 
 // static

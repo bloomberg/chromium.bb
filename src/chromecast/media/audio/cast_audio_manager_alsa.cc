@@ -9,6 +9,7 @@
 
 #include "base/memory/free_deleter.h"
 #include "base/stl_util.h"
+#include "chromecast/media/audio/audio_buildflags.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "media/audio/alsa/alsa_input.h"
 #include "media/audio/alsa/alsa_wrapper.h"
@@ -18,7 +19,7 @@ namespace media {
 
 namespace {
 // TODO(alokp): Query the preferred value from media backend.
-const int kDefaultSampleRate = 48000;
+const int kDefaultSampleRate = BUILDFLAG(AUDIO_INPUT_SAMPLE_RATE);
 
 // TODO(jyw): Query the preferred value from media backend.
 static const int kDefaultInputBufferSize = 1024;

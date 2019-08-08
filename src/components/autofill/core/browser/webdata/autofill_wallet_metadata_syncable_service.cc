@@ -7,12 +7,14 @@
 #include <stddef.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
@@ -22,6 +24,7 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_change_processor.h"
@@ -362,6 +365,12 @@ void AutofillWalletMetadataSyncableService::OnWalletDataTrackingStateChanged(
   }
 }
 
+void AutofillWalletMetadataSyncableService::WaitUntilReadyToSync(
+    base::OnceClosure done) {
+  // Not used in the legacy directory-based architecture.
+  NOTREACHED();
+}
+
 syncer::SyncMergeResult
 AutofillWalletMetadataSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
@@ -381,6 +390,39 @@ AutofillWalletMetadataSyncableService::MergeDataAndStartSyncing(
   syncer::SyncMergeResult result(syncer::AUTOFILL_WALLET_METADATA);
   if (track_wallet_data_) {
     result = MergeData(initial_sync_data);
+  }
+
+  // Record ages for individual metadata entities to UMA.
+  for (const syncer::SyncData& data : cache_) {
+    const sync_pb::WalletMetadataSpecifics& specifics =
+        data.GetSpecifics().wallet_metadata();
+    base::Time use_date = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromMicroseconds(specifics.use_date()));
+    switch (specifics.type()) {
+      case sync_pb::WalletMetadataSpecifics::ADDRESS:
+        // TODO(crbug.com/949034): Consider adding standard functions for
+        // recording large times in seconds/minutes.
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Autofill.WalletUseDateInMinutes.Address",
+            /*sample=*/(AutofillClock::Now() - use_date).InMinutes(),
+            /*min=*/base::TimeDelta::FromMinutes(1).InMinutes(),
+            /*max=*/base::TimeDelta::FromDays(365).InMinutes(),
+            /*bucket_count=*/50);
+        break;
+      case sync_pb::WalletMetadataSpecifics::CARD:
+        // TODO(crbug.com/949034): Consider adding standard functions for
+        // recording large times in seconds/minutes.
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Autofill.WalletUseDateInMinutes.Card",
+            /*sample=*/(AutofillClock::Now() - use_date).InMinutes(),
+            /*min=*/base::TimeDelta::FromMinutes(1).InMinutes(),
+            /*max=*/base::TimeDelta::FromDays(365).InMinutes(),
+            /*bucket_count=*/50);
+        break;
+      case sync_pb::WalletMetadataSpecifics::UNKNOWN:
+        NOTREACHED();
+        break;
+    }
   }
 
   // Notify that sync has started. This callback does not currently take into
@@ -507,8 +549,8 @@ syncer::SyncError AutofillWalletMetadataSyncableService::ProcessSyncChanges(
     status = SendChangesToSyncServer(changes_to_sync);
   if (is_any_local_modified) {
     // TODO(crbug.com/900607): Remove the need to listen to
-    // AutofillMultipleChanged() in the new USS implementation so that we can
-    // get rid of this hack.
+    // AutofillMultipleChangedBySync() in the new USS implementation so that we
+    // can get rid of this hack.
     DCHECK(!ignore_multiple_changed_notification_);
     ignore_multiple_changed_notification_ = true;
     web_data_backend_->NotifyOfMultipleAutofillChanges();
@@ -521,19 +563,18 @@ syncer::SyncError AutofillWalletMetadataSyncableService::ProcessSyncChanges(
 void AutofillWalletMetadataSyncableService::AutofillProfileChanged(
     const AutofillProfileChange& change) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(change.data_model());
   if (!track_wallet_data_) {
     return;
   }
 
-  if (sync_processor_ && change.data_model() &&
+  if (sync_processor_ && change.type() == AutofillProfileChange::UPDATE &&
       change.data_model()->record_type() != AutofillProfile::LOCAL_PROFILE) {
     std::string server_id = GetServerId(*change.data_model());
     auto it = FindServerIdAndTypeInCache(
         server_id, sync_pb::WalletMetadataSpecifics::ADDRESS, &cache_);
     if (it == cache_.end())
       return;
-    // Implicitly, we filter out ADD (not in cache) and REMOVE (!data_model()).
-    DCHECK(change.type() == AutofillProfileChange::UPDATE);
 
     const sync_pb::WalletMetadataSpecifics& remote =
         it->GetSpecifics().wallet_metadata();
@@ -568,7 +609,7 @@ void AutofillWalletMetadataSyncableService::CreditCardChanged(
     if (it == cache_.end())
       return;
     // Deletions and creations are treated by Wallet data sync (and propagated
-    // here by AutofillMultipleChanged()). We only treat updates here.
+    // here by AutofillMultipleChangedBySync()). We only treat updates here.
     if (change.type() != AutofillProfileChange::UPDATE) {
       return;
     }
@@ -589,11 +630,11 @@ void AutofillWalletMetadataSyncableService::CreditCardChanged(
   }
 }
 
-void AutofillWalletMetadataSyncableService::AutofillMultipleChanged() {
+void AutofillWalletMetadataSyncableService::AutofillMultipleChangedBySync() {
   if (ignore_multiple_changed_notification_) {
     // TODO(crbug.com/900607): Remove the need to listen to
-    // AutofillMultipleChanged() in the new USS implementation so that we can
-    // get rid of this hack.
+    // AutofillMultipleChangedBySync() in the new USS implementation so that we
+    // can get rid of this hack.
     return;
   }
 
@@ -754,8 +795,8 @@ syncer::SyncMergeResult AutofillWalletMetadataSyncableService::MergeData(
     result.set_error(SendChangesToSyncServer(changes_to_sync));
   if (is_any_local_modified) {
     // TODO(crbug.com/900607): Remove the need to listen to
-    // AutofillMultipleChanged() in the new USS implementation so that we can
-    // get rid of this hack.
+    // AutofillMultipleChangedBySync() in the new USS implementation so that we
+    // can get rid of this hack.
     DCHECK(!ignore_multiple_changed_notification_);
     ignore_multiple_changed_notification_ = true;
     web_data_backend_->NotifyOfMultipleAutofillChanges();

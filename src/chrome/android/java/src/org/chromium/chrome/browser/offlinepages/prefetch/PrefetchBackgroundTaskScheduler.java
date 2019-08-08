@@ -27,8 +27,8 @@ public class PrefetchBackgroundTaskScheduler {
      * TODO(dewittj): Handle skipping work if the battery percentage is too low.
      */
     @CalledByNative
-    public static void scheduleTask(int additionalDelaySeconds) {
-        scheduleTaskInternal(additionalDelaySeconds, false);
+    public static void scheduleTask(int additionalDelaySeconds, String gcmToken) {
+        scheduleTaskInternal(additionalDelaySeconds, false, gcmToken);
     }
 
     /**
@@ -36,12 +36,18 @@ public class PrefetchBackgroundTaskScheduler {
      * delays and no network restrictions (device needs only to be online).
      */
     @CalledByNative
-    public static void scheduleTaskLimitless(int additionalDelaySeconds) {
-        scheduleTaskInternal(additionalDelaySeconds, true);
+    public static void scheduleTaskLimitless(int additionalDelaySeconds, String gcmToken) {
+        scheduleTaskInternal(additionalDelaySeconds, true, gcmToken);
+    }
+
+    static Bundle createGCMTokenBundle(String gcmToken) {
+        Bundle bundle = new Bundle(1);
+        bundle.putString(PrefetchBackgroundTask.GCM_TOKEN_BUNDLE_KEY, gcmToken);
+        return bundle;
     }
 
     private static void scheduleTaskInternal(
-            int additionalDelaySeconds, boolean limitlessPrefetching) {
+            int additionalDelaySeconds, boolean limitlessPrefetching, String gcmToken) {
         final long minimumTimeSeconds =
                 (limitlessPrefetching ? 0 : DEFAULT_START_DELAY_SECONDS) + additionalDelaySeconds;
         TaskInfo.Builder taskInfoBuilder =
@@ -55,16 +61,17 @@ public class PrefetchBackgroundTaskScheduler {
                         .setRequiredNetworkType(TaskInfo.NetworkType.UNMETERED)
                         .setIsPersisted(true)
                         .setUpdateCurrent(true);
+
+        Bundle bundle = createGCMTokenBundle(gcmToken);
         /* Limitless prefetching eliminates the default wait time but still complies with backoff
          * delays determined by |additionalDelaySeconds|. There's also no restriction on the network
          * type.
          */
         if (limitlessPrefetching) {
             taskInfoBuilder.setRequiredNetworkType(TaskInfo.NetworkType.ANY);
-            Bundle bundle = new Bundle(1);
             bundle.putBoolean(PrefetchBackgroundTask.LIMITLESS_BUNDLE_KEY, true);
-            taskInfoBuilder.setExtras(bundle);
         }
+        taskInfoBuilder.setExtras(bundle);
         BackgroundTaskSchedulerFactory.getScheduler().schedule(
                 ContextUtils.getApplicationContext(), taskInfoBuilder.build());
     }

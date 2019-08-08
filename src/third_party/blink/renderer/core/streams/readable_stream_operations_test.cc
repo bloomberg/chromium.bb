@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/messaging/message_channel.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_wrapper.h"
 #include "third_party/blink/renderer/core/streams/test_underlying_source.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -427,7 +427,7 @@ TEST(ReadableStreamOperationsTest, IsReadable) {
   auto* errored = ReadableStream::CreateWithCountQueueingStrategy(
       scope.GetScriptState(), erroring_source, 0);
   ASSERT_TRUE(errored);
-  erroring_source->SetError(
+  erroring_source->Error(
       ScriptValue(scope.GetScriptState(), v8::Undefined(scope.GetIsolate())));
 
   EXPECT_EQ(ReadableStreamOperations::IsReadable(
@@ -467,7 +467,7 @@ TEST(ReadableStreamOperationsTest, IsClosed) {
   auto* errored = ReadableStream::CreateWithCountQueueingStrategy(
       scope.GetScriptState(), erroring_source, 0);
   ASSERT_TRUE(errored);
-  erroring_source->SetError(
+  erroring_source->Error(
       ScriptValue(scope.GetScriptState(), v8::Undefined(scope.GetIsolate())));
 
   EXPECT_EQ(ReadableStreamOperations::IsClosed(
@@ -507,7 +507,7 @@ TEST(ReadableStreamOperationsTest, IsErrored) {
   auto* errored = ReadableStream::CreateWithCountQueueingStrategy(
       scope.GetScriptState(), erroring_source, 0);
   ASSERT_TRUE(errored);
-  erroring_source->SetError(
+  erroring_source->Error(
       ScriptValue(scope.GetScriptState(), v8::Undefined(scope.GetIsolate())));
 
   EXPECT_EQ(ReadableStreamOperations::IsErrored(
@@ -613,7 +613,8 @@ TEST(ReadableStreamOperationsTest, Serialize) {
                               V8String(scope.GetIsolate(), "hello")));
   ScriptValue internal_stream =
       CheckedGetInternalStream(scope.GetScriptState(), stream);
-  MessageChannel* channel = MessageChannel::Create(scope.GetExecutionContext());
+  auto* channel =
+      MakeGarbageCollected<MessageChannel>(scope.GetExecutionContext());
   ReadableStreamOperations::Serialize(scope.GetScriptState(), internal_stream,
                                       channel->port1(), ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(ReadableStreamOperations::IsLocked(

@@ -4,7 +4,7 @@
 
 #include "media/learning/common/value.h"
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 
 namespace media {
 namespace learning {

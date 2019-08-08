@@ -38,6 +38,7 @@ class ThreadControllerForTest
   using ThreadControllerWithMessagePumpImpl::DoWork;
   using ThreadControllerWithMessagePumpImpl::EnsureWorkScheduled;
   using ThreadControllerWithMessagePumpImpl::Quit;
+  using ThreadControllerWithMessagePumpImpl::Run;
 };
 
 class MockMessagePump : public MessagePump {
@@ -575,6 +576,38 @@ TEST_F(ThreadControllerWithMessagePumpTest, NativeNestedMessageLoop) {
   thread_controller_.ScheduleWork();
   EXPECT_TRUE(thread_controller_.DoWork());
   EXPECT_TRUE(did_run);
+}
+
+TEST_F(ThreadControllerWithMessagePumpTest, RunWithTimeout) {
+  MockCallback<OnceClosure> task1;
+  task_source_.AddTask(PendingTask(FROM_HERE, task1.Get(), Seconds(5)));
+  MockCallback<OnceClosure> task2;
+  task_source_.AddTask(PendingTask(FROM_HERE, task2.Get(), Seconds(10)));
+  MockCallback<OnceClosure> task3;
+  task_source_.AddTask(PendingTask(FROM_HERE, task3.Get(), Seconds(20)));
+
+  EXPECT_CALL(*message_pump_, Run(_))
+      .WillOnce(Invoke([&](MessagePump::Delegate*) {
+        TimeTicks next_run_time;
+        clock_.SetNowTicks(Seconds(5));
+        EXPECT_CALL(task1, Run()).Times(1);
+        EXPECT_TRUE(thread_controller_.DoDelayedWork(&next_run_time));
+        EXPECT_EQ(next_run_time, Seconds(10));
+
+        clock_.SetNowTicks(Seconds(10));
+        EXPECT_CALL(task2, Run()).Times(1);
+        EXPECT_TRUE(thread_controller_.DoDelayedWork(&next_run_time));
+        EXPECT_EQ(next_run_time, Seconds(15));
+
+        clock_.SetNowTicks(Seconds(15));
+        EXPECT_CALL(task3, Run()).Times(0);
+        EXPECT_FALSE(thread_controller_.DoDelayedWork(&next_run_time));
+        EXPECT_EQ(next_run_time, TimeTicks());
+
+        EXPECT_CALL(*message_pump_, Quit());
+        EXPECT_FALSE(thread_controller_.DoIdleWork());
+      }));
+  thread_controller_.Run(true, TimeDelta::FromSeconds(15));
 }
 
 }  // namespace sequence_manager

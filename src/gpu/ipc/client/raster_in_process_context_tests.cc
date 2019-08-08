@@ -111,8 +111,8 @@ TEST_F(RasterInProcessCommandBufferTest,
 
   // Should flag an error this command is not allowed between a Begin and
   // EndRasterCHROMIUM.
-  SyncToken sync_token;
-  ri_->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+  GLuint id;
+  ri_->GenQueriesEXT(1, &id);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), ri_->GetError());
 
   // Confirm that we skip over without error.

@@ -122,9 +122,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   void FilterURL(bool empty_allowed, GURL* url) override;
   void EnableAudioDebugRecordings(const base::FilePath& file) override;
   void DisableAudioDebugRecordings() override;
-  void SetEchoCanceller3(
-      bool enable,
-      base::OnceCallback<void(bool, const std::string&)> callback) override;
   WebRtcStopRtpDumpCallback StartRtpDump(
       bool incoming,
       bool outgoing,
@@ -143,7 +140,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   void DecrementKeepAliveRefCount(KeepAliveClientType) override;
   void DisableKeepAliveRefCount() override;
   bool IsKeepAliveRefCountDisabled() override;
-  void PurgeAndSuspend() override;
   void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
   void CreateURLLoaderFactory(

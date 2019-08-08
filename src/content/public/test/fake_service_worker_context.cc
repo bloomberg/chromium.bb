@@ -108,6 +108,17 @@ void FakeServiceWorkerContext::StopAllServiceWorkers(base::OnceClosure) {
   NOTREACHED();
 }
 
+void FakeServiceWorkerContext::GetAllServiceWorkerRunningInfos(
+    GetAllServiceWorkerRunningInfosCallback callback) {
+  NOTREACHED();
+}
+
+void FakeServiceWorkerContext::GetServiceWorkerRunningInfo(
+    int64_t service_worker_version_id,
+    GetServiceWorkerRunningInfoCallback callback) {
+  NOTREACHED();
+}
+
 void FakeServiceWorkerContext::NotifyObserversOnVersionActivated(
     int64_t version_id,
     const GURL& scope) {

@@ -308,6 +308,10 @@ ClientControlledShellSurface::ClientControlledShellSurface(Surface* surface,
 }
 
 ClientControlledShellSurface::~ClientControlledShellSurface() {
+  // Reset the window delegate here so that we won't try to do any dragging
+  // operation on a to-be-destroyed window. |widget_| can be nullptr in tests.
+  if (GetWidget())
+    GetWindowState()->SetDelegate(nullptr);
   wide_frame_.reset();
   display::Screen::GetScreen()->RemoveObserver(this);
 }
@@ -518,6 +522,10 @@ void ClientControlledShellSurface::SetExtraTitle(
 
   GetFrameView()->GetHeaderView()->GetFrameHeader()->SetFrameTextOverride(
       extra_title);
+  if (wide_frame_) {
+    wide_frame_->header_view()->GetFrameHeader()->SetFrameTextOverride(
+        extra_title);
+  }
 }
 
 void ClientControlledShellSurface::SetOrientationLock(
@@ -922,7 +930,6 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
       break;
   }
 
-  // PIP windows should not be able to be active.
   if (pending_window_state_ == ash::mojom::WindowStateType::PIP) {
     if (ash::features::IsPipRoundedCornersEnabled()) {
       decorator_ = std::make_unique<ash::RoundedCornerDecorator>(
@@ -942,6 +949,9 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
   }
 
   if (wasPip && !window_state->IsMinimized()) {
+    // Expanding PIP should end split-view. See crbug.com/941788.
+    ash::Shell::Get()->split_view_controller()->EndSplitView(
+        ash::SplitViewController::EndReason::kPipExpanded);
     // As Android doesn't activate PIP tasks after they are expanded, we need
     // to do it here explicitly.
     // TODO(937738): Investigate if we can activate PIP windows inside commit.
@@ -1002,7 +1012,13 @@ void ClientControlledShellSurface::UpdateFrame() {
       wide_frame_ = std::make_unique<ash::WideFrameView>(widget_);
       ash::ImmersiveFullscreenController::EnableForWidget(widget_, false);
       wide_frame_->Init(immersive_fullscreen_controller_.get());
+      wide_frame_->header_view()->GetFrameHeader()->SetFrameTextOverride(
+          GetFrameView()
+              ->GetHeaderView()
+              ->GetFrameHeader()
+              ->frame_text_override());
       wide_frame_->GetWidget()->Show();
+
       // Restoring window targeter replaced by ImmersiveFullscreenController.
       InstallCustomWindowTargeter();
 

@@ -243,7 +243,7 @@ needed for local builds.
 * `target_cpu = "x86"` - x86 builds are slightly faster than x64 builds and
 support incremental linking for more targets. Note that if you set this but
 don't' set enable_nacl = false then build times may get worse.
-* `remove_webcore_debug_symbols = true` - turn off source-level debugging for
+* `blink_symbol_level = 0` - turn off source-level debugging for
 blink to reduce build times, appropriate if you don't plan to debug blink.
 
 In order to speed up linking you can set `symbol_level = 1` - this option

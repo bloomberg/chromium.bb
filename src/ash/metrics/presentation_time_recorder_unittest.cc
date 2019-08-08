@@ -25,7 +25,7 @@ TEST_F(PresentationTimeRecorderTest, Histogram) {
   base::HistogramTester histogram_tester;
 
   auto* compositor = CurrentContext()->layer()->GetCompositor();
-  auto test_recorder = std::make_unique<PresentationTimeHistogramRecorder>(
+  auto test_recorder = CreatePresentationTimeHistogramRecorder(
       compositor, kName, kMaxLatencyName);
 
   // Flush pending draw requests.
@@ -70,27 +70,65 @@ TEST_F(PresentationTimeRecorderTest, Histogram) {
   histogram_tester.ExpectTotalCount(kMaxLatencyName, 1);
 }
 
+TEST_F(PresentationTimeRecorderTest, NoSuccessNoHistogram) {
+  base::HistogramTester histogram_tester;
+  auto* compositor = CurrentContext()->layer()->GetCompositor();
+  auto test_recorder = CreatePresentationTimeHistogramRecorder(
+      compositor, kName, kMaxLatencyName);
+  PresentationTimeRecorder::TestApi test_api(test_recorder.get());
+  base::TimeDelta interval_not_used = base::TimeDelta::FromMilliseconds(0);
+  gfx::PresentationFeedback failure(base::TimeTicks::FromUptimeMillis(2000),
+                                    interval_not_used,
+                                    gfx::PresentationFeedback::kFailure);
+  base::TimeTicks start = base::TimeTicks::FromUptimeMillis(1000);
+  test_recorder->RequestNext();
+  test_api.OnPresented(0, start, failure);
+
+  test_recorder.reset();
+  histogram_tester.ExpectTotalCount(kName, 0);
+  histogram_tester.ExpectTotalCount(kMaxLatencyName, 0);
+}
+
+TEST_F(PresentationTimeRecorderTest, DelayedHistogram) {
+  base::HistogramTester histogram_tester;
+  auto* compositor = CurrentContext()->layer()->GetCompositor();
+  auto test_recorder = CreatePresentationTimeHistogramRecorder(
+      compositor, kName, kMaxLatencyName);
+  test_recorder->RequestNext();
+
+  // Delete the recorder while waiting for the presentation callback.
+  test_recorder.reset();
+  histogram_tester.ExpectTotalCount(kName, 0);
+  histogram_tester.ExpectTotalCount(kMaxLatencyName, 0);
+
+  // Draw next frame and make sure the histgoram is recorded.
+  compositor->ScheduleFullRedraw();
+  WaitForNextFrameToBePresented(compositor);
+  histogram_tester.ExpectTotalCount(kName, 1);
+  histogram_tester.ExpectTotalCount(kMaxLatencyName, 1);
+}
+
 TEST_F(PresentationTimeRecorderTest, Failure) {
   auto* compositor = CurrentContext()->layer()->GetCompositor();
-  auto test_recorder = std::make_unique<PresentationTimeHistogramRecorder>(
+  auto test_recorder = CreatePresentationTimeHistogramRecorder(
       compositor, kName, kMaxLatencyName);
-
+  PresentationTimeRecorder::TestApi test_api(test_recorder.get());
   test_recorder->RequestNext();
-  test_recorder->OnCompositingDidCommit(compositor);
+  test_api.OnCompositingDidCommit(compositor);
   base::TimeDelta interval_not_used = base::TimeDelta::FromMilliseconds(0);
   base::TimeTicks start = base::TimeTicks::FromUptimeMillis(1000);
   gfx::PresentationFeedback success(base::TimeTicks::FromUptimeMillis(1100),
                                     interval_not_used, /*flags=*/0);
-  test_recorder->OnPresented(0, start, success);
-  EXPECT_EQ(100, test_recorder->max_latency_ms());
-  EXPECT_EQ(1, test_recorder->success_count());
+  test_api.OnPresented(0, start, success);
+  EXPECT_EQ(100, test_api.GetMaxLatencyMs());
+  EXPECT_EQ(1, test_api.GetSuccessCount());
   gfx::PresentationFeedback failure(base::TimeTicks::FromUptimeMillis(2000),
                                     interval_not_used,
                                     gfx::PresentationFeedback::kFailure);
-  test_recorder->OnPresented(0, start, failure);
+  test_api.OnPresented(0, start, failure);
   // Failure should not be included in max latency.
-  EXPECT_EQ(100, test_recorder->max_latency_ms());
-  EXPECT_EQ(50, test_recorder->failure_ratio());
+  EXPECT_EQ(100, test_api.GetMaxLatencyMs());
+  EXPECT_EQ(50, test_api.GetFailureRatio());
 }
 
 }  // namespace ash

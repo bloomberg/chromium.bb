@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "cc/animation/animation_export.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
 
@@ -17,6 +16,8 @@ namespace cc {
 class CC_ANIMATION_EXPORT TimingFunction {
  public:
   virtual ~TimingFunction();
+
+  TimingFunction& operator=(const TimingFunction&) = delete;
 
   // Note that LINEAR is a nullptr TimingFunction (for now).
   enum class Type { LINEAR, CUBIC_BEZIER, STEPS, FRAMES };
@@ -28,8 +29,6 @@ class CC_ANIMATION_EXPORT TimingFunction {
 
  protected:
   TimingFunction();
-
-  DISALLOW_ASSIGN(TimingFunction);
 };
 
 class CC_ANIMATION_EXPORT CubicBezierTimingFunction : public TimingFunction {
@@ -43,6 +42,9 @@ class CC_ANIMATION_EXPORT CubicBezierTimingFunction : public TimingFunction {
                                                            double x2,
                                                            double y2);
   ~CubicBezierTimingFunction() override;
+
+  CubicBezierTimingFunction& operator=(const CubicBezierTimingFunction&) =
+      delete;
 
   // TimingFunction implementation.
   Type GetType() const override;
@@ -62,8 +64,6 @@ class CC_ANIMATION_EXPORT CubicBezierTimingFunction : public TimingFunction {
 
   gfx::CubicBezier bezier_;
   EaseType ease_type_;
-
-  DISALLOW_ASSIGN(CubicBezierTimingFunction);
 };
 
 class CC_ANIMATION_EXPORT StepsTimingFunction : public TimingFunction {
@@ -76,6 +76,8 @@ class CC_ANIMATION_EXPORT StepsTimingFunction : public TimingFunction {
       int steps,
       StepPosition step_position);
   ~StepsTimingFunction() override;
+
+  StepsTimingFunction& operator=(const StepsTimingFunction&) = delete;
 
   // TimingFunction implementation.
   Type GetType() const override;
@@ -94,14 +96,14 @@ class CC_ANIMATION_EXPORT StepsTimingFunction : public TimingFunction {
 
   int steps_;
   StepPosition step_position_;
-
-  DISALLOW_ASSIGN(StepsTimingFunction);
 };
 
 class CC_ANIMATION_EXPORT FramesTimingFunction : public TimingFunction {
  public:
   static std::unique_ptr<FramesTimingFunction> Create(int frames);
   ~FramesTimingFunction() override;
+
+  FramesTimingFunction& operator=(const FramesTimingFunction&) = delete;
 
   // TimingFunction implementation.
   Type GetType() const override;
@@ -116,8 +118,6 @@ class CC_ANIMATION_EXPORT FramesTimingFunction : public TimingFunction {
   explicit FramesTimingFunction(int frames);
 
   int frames_;
-
-  DISALLOW_ASSIGN(FramesTimingFunction);
 };
 
 }  // namespace cc

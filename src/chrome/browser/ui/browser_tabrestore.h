@@ -15,7 +15,7 @@ class Browser;
 namespace content {
 class SessionStorageNamespace;
 class WebContents;
-}
+}  // namespace content
 
 namespace sessions {
 class SerializedNavigationEntry;

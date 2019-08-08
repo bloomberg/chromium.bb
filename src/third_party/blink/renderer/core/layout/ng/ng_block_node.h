@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -36,6 +37,18 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   scoped_refptr<const NGLayoutResult> Layout(
       const NGConstraintSpace& constraint_space,
       const NGBreakToken* break_token = nullptr);
+
+  // This method is just for use within the |NGOutOfFlowLayoutPart|.
+  //
+  // As OOF-positioned objects have their position, and size computed
+  // pre-layout, we need a way to quickly determine if we need to perform this
+  // work. This method compares the containing-block size to determine this.
+  //
+  // If the containing-block size hasn't changed, and we are layout-clean we
+  // can reuse the previous layout result.
+  scoped_refptr<const NGLayoutResult> CachedLayoutResultForOutOfFlowPositioned(
+      NGLogicalSize container_content_size) const;
+
   NGLayoutInputNode NextSibling() const;
 
   // Computes the value of min-content and max-content for this node's border
@@ -143,11 +156,12 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
       LayoutUnit percentage_resolution_inline_size);
 };
 
-DEFINE_TYPE_CASTS(NGBlockNode,
-                  NGLayoutInputNode,
-                  node,
-                  node->IsBlock(),
-                  node.IsBlock());
+template <>
+struct DowncastTraits<NGBlockNode> {
+  static bool AllowFrom(const NGLayoutInputNode& node) {
+    return node.IsBlock();
+  }
+};
 
 }  // namespace blink
 

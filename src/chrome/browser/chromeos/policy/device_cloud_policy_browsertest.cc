@@ -33,7 +33,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -116,8 +116,6 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
     SetFakeDevicePolicy();
   }
 
@@ -286,8 +284,6 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
 
   void SetUpInProcessBrowserTestFixture() override {
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
     SetFakeDevicePolicy();
 
     EXPECT_TRUE(
@@ -367,8 +363,8 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
 
     device_policy()
         ->payload()
-        .mutable_device_login_screen_app_install_list()
-        ->add_device_login_screen_app_install_list(policy_item_value);
+        .mutable_device_login_screen_extensions()
+        ->add_device_login_screen_extensions(policy_item_value);
 
     device_policy()->Build();
     session_manager_client()->set_device_policy(device_policy()->GetBlob());

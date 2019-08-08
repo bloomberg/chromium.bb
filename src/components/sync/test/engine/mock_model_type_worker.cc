@@ -34,27 +34,34 @@ void MockModelTypeWorker::NudgeForCommit() {
 void MockModelTypeWorker::LocalChangesReceived(
     CommitRequestDataList&& commit_request) {
   // Verify that all request entities have valid id, version combinations.
-  for (const CommitRequestData& commit_request_data : commit_request) {
-    EXPECT_TRUE(commit_request_data.base_version == -1 ||
-                !commit_request_data.entity->id.empty());
+  for (const std::unique_ptr<CommitRequestData>& commit_request_data :
+       commit_request) {
+    EXPECT_TRUE(commit_request_data->base_version == -1 ||
+                !commit_request_data->entity->id.empty());
   }
-  pending_commits_.push_back(commit_request);
+  pending_commits_.push_back(std::move(commit_request));
 }
 
 size_t MockModelTypeWorker::GetNumPendingCommits() const {
   return pending_commits_.size();
 }
 
-CommitRequestDataList MockModelTypeWorker::GetNthPendingCommit(size_t n) const {
+std::vector<const CommitRequestData*> MockModelTypeWorker::GetNthPendingCommit(
+    size_t n) const {
   DCHECK_LT(n, GetNumPendingCommits());
-  return pending_commits_[n];
+  std::vector<const CommitRequestData*> nth_pending_commits;
+  for (const std::unique_ptr<CommitRequestData>& request_data :
+       pending_commits_[n]) {
+    nth_pending_commits.push_back(request_data.get());
+  }
+  return nth_pending_commits;
 }
 
 bool MockModelTypeWorker::HasPendingCommitForHash(
     const std::string& tag_hash) const {
   for (const CommitRequestDataList& commit : pending_commits_) {
-    for (const CommitRequestData& data : commit) {
-      if (data.entity->client_tag_hash == tag_hash) {
+    for (const std::unique_ptr<CommitRequestData>& data : commit) {
+      if (data && data->entity->client_tag_hash == tag_hash) {
         return true;
       }
     }
@@ -62,20 +69,20 @@ bool MockModelTypeWorker::HasPendingCommitForHash(
   return false;
 }
 
-CommitRequestData MockModelTypeWorker::GetLatestPendingCommitForHash(
+const CommitRequestData* MockModelTypeWorker::GetLatestPendingCommitForHash(
     const std::string& tag_hash) const {
   // Iterate backward through the sets of commit requests to find the most
   // recent one that applies to the specified tag_hash.
   for (auto rev_it = pending_commits_.rbegin();
        rev_it != pending_commits_.rend(); ++rev_it) {
-    for (const CommitRequestData& data : *rev_it) {
-      if (data.entity->client_tag_hash == tag_hash) {
-        return data;
+    for (const std::unique_ptr<CommitRequestData>& data : *rev_it) {
+      if (data && data->entity->client_tag_hash == tag_hash) {
+        return data.get();
       }
     }
   }
   NOTREACHED() << "Could not find commit for tag hash " << tag_hash << ".";
-  return CommitRequestData();
+  return nullptr;
 }
 
 void MockModelTypeWorker::VerifyNthPendingCommit(
@@ -83,10 +90,11 @@ void MockModelTypeWorker::VerifyNthPendingCommit(
     const std::vector<std::string>& tag_hashes,
     const std::vector<sync_pb::EntitySpecifics>& specifics_list) {
   ASSERT_EQ(tag_hashes.size(), specifics_list.size());
-  const CommitRequestDataList& list = GetNthPendingCommit(n);
+  std::vector<const CommitRequestData*> list = GetNthPendingCommit(n);
   ASSERT_EQ(tag_hashes.size(), list.size());
   for (size_t i = 0; i < tag_hashes.size(); i++) {
-    const EntityData& data = list[i].entity.value();
+    ASSERT_TRUE(list[i]);
+    const EntityData& data = *list[i]->entity;
     EXPECT_EQ(tag_hashes[i], data.client_tag_hash);
     EXPECT_EQ(specifics_list[i].SerializeAsString(),
               data.specifics.SerializeAsString());
@@ -95,12 +103,13 @@ void MockModelTypeWorker::VerifyNthPendingCommit(
 
 void MockModelTypeWorker::VerifyPendingCommits(
     const std::vector<std::vector<std::string>>& tag_hashes) {
-  EXPECT_EQ(tag_hashes.size(), GetNumPendingCommits());
+  ASSERT_EQ(tag_hashes.size(), GetNumPendingCommits());
   for (size_t i = 0; i < tag_hashes.size(); i++) {
-    const CommitRequestDataList& commits = GetNthPendingCommit(i);
-    EXPECT_EQ(tag_hashes[i].size(), commits.size());
+    std::vector<const CommitRequestData*> commits = GetNthPendingCommit(i);
+    ASSERT_EQ(tag_hashes[i].size(), commits.size());
     for (size_t j = 0; j < tag_hashes[i].size(); j++) {
-      EXPECT_EQ(tag_hashes[i][j], commits[j].entity->client_tag_hash)
+      ASSERT_TRUE(commits[j]);
+      EXPECT_EQ(tag_hashes[i][j], commits[j]->entity->client_tag_hash)
           << "Hash for tag " << tag_hashes[i][j] << " doesn't match.";
     }
   }
@@ -137,15 +146,15 @@ void MockModelTypeWorker::UpdateFromServer(
   UpdateResponseDataList updates;
   updates.push_back(
       GenerateUpdateData(tag_hash, specifics, version_offset, ekn));
-  UpdateFromServer(updates);
+  UpdateFromServer(std::move(updates));
 }
 
-void MockModelTypeWorker::UpdateFromServer(
-    const UpdateResponseDataList& updates) {
-  processor_->OnUpdateReceived(model_type_state_, updates);
+void MockModelTypeWorker::UpdateFromServer(UpdateResponseDataList updates) {
+  processor_->OnUpdateReceived(model_type_state_, std::move(updates));
 }
 
-UpdateResponseData MockModelTypeWorker::GenerateUpdateData(
+std::unique_ptr<syncer::UpdateResponseData>
+MockModelTypeWorker::GenerateUpdateData(
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics,
     int64_t version_offset,
@@ -157,50 +166,51 @@ UpdateResponseData MockModelTypeWorker::GenerateUpdateData(
     SetServerVersion(tag_hash, version);
   }
 
-  EntityData data;
-  data.id = GenerateId(tag_hash);
-  data.client_tag_hash = tag_hash;
-  data.specifics = specifics;
+  auto data = std::make_unique<syncer::EntityData>();
+  data->id = GenerateId(tag_hash);
+  data->client_tag_hash = tag_hash;
+  data->specifics = specifics;
   // These elements should have no effect on behavior, but we set them anyway
   // so we can test they are properly copied around the system if we want to.
-  data.creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
-  data.modification_time =
-      data.creation_time + base::TimeDelta::FromSeconds(version);
-  data.non_unique_name = data.specifics.has_encrypted()
-                             ? "encrypted"
-                             : data.specifics.preference().name();
+  data->creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
+  data->modification_time =
+      data->creation_time + base::TimeDelta::FromSeconds(version);
+  data->non_unique_name = data->specifics.has_encrypted()
+                              ? "encrypted"
+                              : data->specifics.preference().name();
 
-  UpdateResponseData response_data;
-  response_data.entity = data.PassToPtr();
-  response_data.response_version = version;
-  response_data.encryption_key_name = ekn;
+  auto response_data = std::make_unique<syncer::UpdateResponseData>();
+  response_data->entity = std::move(data);
+  response_data->response_version = version;
+  response_data->encryption_key_name = ekn;
 
   return response_data;
 }
 
-UpdateResponseData MockModelTypeWorker::GenerateUpdateData(
+std::unique_ptr<syncer::UpdateResponseData>
+MockModelTypeWorker::GenerateUpdateData(
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
   return GenerateUpdateData(tag_hash, specifics, 1,
                             model_type_state_.encryption_key_name());
 }
 
-UpdateResponseData MockModelTypeWorker::GenerateTypeRootUpdateData(
-    const ModelType& model_type) {
-  EntityData data;
-  data.id = syncer::ModelTypeToRootTag(model_type);
-  data.parent_id = "r";
-  data.server_defined_unique_tag = syncer::ModelTypeToRootTag(model_type);
-  syncer::AddDefaultFieldValue(model_type, &data.specifics);
+std::unique_ptr<syncer::UpdateResponseData>
+MockModelTypeWorker::GenerateTypeRootUpdateData(const ModelType& model_type) {
+  auto data = std::make_unique<syncer::EntityData>();
+  data->id = syncer::ModelTypeToRootTag(model_type);
+  data->parent_id = "r";
+  data->server_defined_unique_tag = syncer::ModelTypeToRootTag(model_type);
+  syncer::AddDefaultFieldValue(model_type, &data->specifics);
   // These elements should have no effect on behavior, but we set them anyway
   // so we can test they are properly copied around the system if we want to.
-  data.creation_time = base::Time::UnixEpoch();
-  data.modification_time = base::Time::UnixEpoch();
+  data->creation_time = base::Time::UnixEpoch();
+  data->modification_time = base::Time::UnixEpoch();
 
-  UpdateResponseData response_data;
-  response_data.entity = data.PassToPtr();
+  auto response_data = std::make_unique<syncer::UpdateResponseData>();
+  response_data->entity = std::move(data);
   // Similar to what's done in the loopback_server.
-  response_data.response_version = 0;
+  response_data->response_version = 0;
   return response_data;
 }
 
@@ -209,24 +219,24 @@ void MockModelTypeWorker::TombstoneFromServer(const std::string& tag_hash) {
   int64_t version = old_version + 1;
   SetServerVersion(tag_hash, version);
 
-  EntityData data;
-  data.id = GenerateId(tag_hash);
-  data.client_tag_hash = tag_hash;
+  auto data = std::make_unique<syncer::EntityData>();
+  data->id = GenerateId(tag_hash);
+  data->client_tag_hash = tag_hash;
   // These elements should have no effect on behavior, but we set them anyway
   // so we can test they are properly copied around the system if we want to.
-  data.creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
-  data.modification_time =
-      data.creation_time + base::TimeDelta::FromSeconds(version);
-  data.non_unique_name = "Name Non Unique";
+  data->creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
+  data->modification_time =
+      data->creation_time + base::TimeDelta::FromSeconds(version);
+  data->non_unique_name = "Name Non Unique";
 
-  UpdateResponseData response_data;
-  response_data.entity = data.PassToPtr();
-  response_data.response_version = version;
-  response_data.encryption_key_name = model_type_state_.encryption_key_name();
+  auto response_data = std::make_unique<UpdateResponseData>();
+  response_data->entity = std::move(data);
+  response_data->response_version = version;
+  response_data->encryption_key_name = model_type_state_.encryption_key_name();
 
   UpdateResponseDataList list;
-  list.push_back(response_data);
-  processor_->OnUpdateReceived(model_type_state_, list);
+  list.push_back(std::move(response_data));
+  processor_->OnUpdateReceived(model_type_state_, std::move(list));
 }
 
 void MockModelTypeWorker::AckOnePendingCommit() {
@@ -236,8 +246,9 @@ void MockModelTypeWorker::AckOnePendingCommit() {
 void MockModelTypeWorker::AckOnePendingCommit(int64_t version_offset) {
   CommitResponseDataList list;
   ASSERT_FALSE(pending_commits_.empty());
-  for (const CommitRequestData& data : pending_commits_.front()) {
-    list.push_back(SuccessfulCommitResponse(data, version_offset));
+  for (const std::unique_ptr<CommitRequestData>& data :
+       pending_commits_.front()) {
+    list.push_back(SuccessfulCommitResponse(*data, version_offset));
   }
   pending_commits_.pop_front();
   processor_->OnCommitCompleted(model_type_state_, list);
@@ -252,7 +263,7 @@ void MockModelTypeWorker::FailOneCommit() {
 CommitResponseData MockModelTypeWorker::SuccessfulCommitResponse(
     const CommitRequestData& request_data,
     int64_t version_offset) {
-  const EntityData& entity = request_data.entity.value();
+  const EntityData& entity = *request_data.entity;
   const std::string& client_tag_hash = entity.client_tag_hash;
 
   CommitResponseData response_data;
@@ -286,9 +297,9 @@ void MockModelTypeWorker::UpdateWithEncryptionKey(const std::string& ekn) {
 
 void MockModelTypeWorker::UpdateWithEncryptionKey(
     const std::string& ekn,
-    const UpdateResponseDataList& update) {
+    UpdateResponseDataList update) {
   model_type_state_.set_encryption_key_name(ekn);
-  processor_->OnUpdateReceived(model_type_state_, update);
+  processor_->OnUpdateReceived(model_type_state_, std::move(update));
 }
 
 void MockModelTypeWorker::UpdateWithGarbageCollection(
@@ -298,10 +309,10 @@ void MockModelTypeWorker::UpdateWithGarbageCollection(
 }
 
 void MockModelTypeWorker::UpdateWithGarbageCollection(
-    const UpdateResponseDataList& update,
+    UpdateResponseDataList update,
     const sync_pb::GarbageCollectionDirective& gcd) {
   *model_type_state_.mutable_progress_marker()->mutable_gc_directive() = gcd;
-  processor_->OnUpdateReceived(model_type_state_, update);
+  processor_->OnUpdateReceived(model_type_state_, std::move(update));
 }
 
 std::string MockModelTypeWorker::GenerateId(const std::string& tag_hash) {

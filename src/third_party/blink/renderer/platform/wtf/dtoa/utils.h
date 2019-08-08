@@ -29,6 +29,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_UTILS_H_
 
 #include <string.h>
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #define UNIMPLEMENTED NOTREACHED
@@ -45,7 +46,7 @@
 // disabled.)
 // On Linux,x86 89255e-22 != Div_double(89255.0/1e22)
 #if defined(_M_X64) || defined(__x86_64__) || defined(__ARMEL__) || \
-    defined(__aarch64__) || defined(__MIPSEL__)
+    defined(__aarch64__) || defined(__MIPSEL__) || defined(__powerpc64__)
 #define DOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS 1
 #elif defined(_M_IX86) || defined(__i386__)
 #if defined(_WIN32)
@@ -178,6 +179,8 @@ class Vector {
 // purpose of the class is to use safe operations that checks the
 // buffer bounds on all operations in debug mode.
 class StringBuilder {
+  DISALLOW_NEW();
+
  public:
   StringBuilder(char* buffer, int size) : buffer_(buffer, size), position_(0) {}
 

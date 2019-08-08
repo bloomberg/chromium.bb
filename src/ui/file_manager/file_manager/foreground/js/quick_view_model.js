@@ -4,34 +4,29 @@
 
 /**
  * Quick view model that doesn't fit into properties of quick view element.
- *
- * @constructor
- * @struct
- * @extends {cr.EventTarget}
  */
-function QuickViewModel() {
+class QuickViewModel extends cr.EventTarget {
+  constructor() {
+    super();
+
+    /**
+     * Current selected file entry.
+     * @type {FileEntry}
+     * @private
+     */
+    this.selectedEntry_ = null;
+  }
+
+  /** @return {FileEntry} */
+  getSelectedEntry() {
+    return this.selectedEntry_;
+  }
+
   /**
-   * Current selected file entry.
-   * @type {FileEntry}
-   * @private
+   * @param {!FileEntry} entry
    */
-  this.selectedEntry_ = null;
+  setSelectedEntry(entry) {
+    this.selectedEntry_ = entry;
+    cr.dispatchSimpleEvent(this, 'selected-entry-changed');
+  }
 }
-
-/**
- * QuickViewModel extends cr.EventTarget.
- */
-QuickViewModel.prototype.__proto__ = cr.EventTarget.prototype;
-
-/** @return {FileEntry} */
-QuickViewModel.prototype.getSelectedEntry = function() {
-  return this.selectedEntry_;
-};
-
-/**
- * @param {!FileEntry} entry
- */
-QuickViewModel.prototype.setSelectedEntry = function(entry) {
-  this.selectedEntry_ = entry;
-  cr.dispatchSimpleEvent(this, 'selected-entry-changed');
-};

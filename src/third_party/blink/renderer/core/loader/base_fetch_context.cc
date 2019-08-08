@@ -115,7 +115,7 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
       GetResourceFetcherProperties().GetFetchClientSettingsObject();
   // TODO(domfarolino): we can probably *just set* the HTTP `Referer` here
   // no matter what now.
-  if (!request.DidSetHTTPReferrer()) {
+  if (!request.DidSetHttpReferrer()) {
     String referrer_to_use = request.ReferrerString();
     network::mojom::ReferrerPolicy referrer_policy_to_use =
         request.GetReferrerPolicy();
@@ -129,7 +129,7 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
 
     // TODO(domfarolino): Stop storing ResourceRequest's referrer as a header
     // and store it elsewhere. See https://crbug.com/850813.
-    request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
+    request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
         referrer_policy_to_use, request.Url(), referrer_to_use));
   } else {
     CHECK_EQ(
@@ -139,13 +139,12 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
         request.HttpReferrer());
   }
 
-  auto address_space = fetch_client_settings_object.GetAddressSpace();
-  if (address_space)
-    request.SetExternalRequestStateFromRequestorAddressSpace(*address_space);
+  request.SetExternalRequestStateFromRequestorAddressSpace(
+      fetch_client_settings_object.GetAddressSpace());
 
   scoped_refptr<SecurityOrigin> url_origin =
       SecurityOrigin::Create(request.Url());
-  if (blink::RuntimeEnabledFeatures::SecMetadataEnabled() &&
+  if (blink::RuntimeEnabledFeatures::FetchMetadataEnabled() &&
       url_origin->IsPotentiallyTrustworthy()) {
     const char* destination_value =
         GetDestinationFromContext(request.GetRequestContext());
@@ -155,7 +154,7 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
     if (strlen(destination_value) == 0)
       destination_value = "empty";
 
-    // We'll handle adding the header to navigations outside of Blink.
+    // We'll handle adding these headers to navigations outside of Blink.
     if (strncmp(destination_value, "document", 8) != 0 &&
         request.GetRequestContext() != mojom::RequestContextType::INTERNAL) {
       const char* site_value = "cross-site";
@@ -166,7 +165,7 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
         OriginAccessEntry access_entry(
             request.Url().Protocol(), request.Url().Host(),
             network::mojom::CorsOriginAccessMatchMode::
-                kAllowRegisterableDomains);
+                kAllowRegistrableDomains);
         if (access_entry.MatchesOrigin(
                 *fetch_client_settings_object.GetSecurityOrigin()) ==
             network::cors::OriginAccessEntry::kMatchesOrigin) {
@@ -174,12 +173,15 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
         }
       }
 
-      request.AddHTTPHeaderField("Sec-Fetch-Dest", destination_value);
-      request.AddHTTPHeaderField(
+      if (blink::RuntimeEnabledFeatures::FetchMetadataDestinationEnabled()) {
+        request.SetHttpHeaderField("Sec-Fetch-Dest", destination_value);
+      }
+
+      request.SetHttpHeaderField(
           "Sec-Fetch-Mode",
           FetchRequestModeToString(request.GetFetchRequestMode()));
-      request.AddHTTPHeaderField("Sec-Fetch-Site", site_value);
-      request.AddHTTPHeaderField("Sec-Fetch-User", "?F");
+      request.SetHttpHeaderField("Sec-Fetch-Site", site_value);
+      // We don't set `Sec-Fetch-User` for subresource requests.
     }
   }
 }
@@ -230,8 +232,9 @@ void BaseFetchContext::PrintAccessDeniedMessage(const KURL& url) const {
               ". Domains, protocols and ports must match.\n";
   }
 
-  AddConsoleMessage(ConsoleMessage::Create(
-      kSecurityMessageSource, mojom::ConsoleMessageLevel::kError, message));
+  AddConsoleMessage(
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
+                             mojom::ConsoleMessageLevel::kError, message));
 }
 
 base::Optional<ResourceRequestBlockedReason>
@@ -299,7 +302,8 @@ BaseFetchContext::CanRequestInternal(
       !origin->CanDisplay(url)) {
     if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
       AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kError,
           "Not allowed to load local resource: " + url.GetString()));
     }
     RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::requestResource URL was not "
@@ -348,37 +352,29 @@ BaseFetchContext::CanRequestInternal(
   if (IsSVGImageChromeClient() && !url.ProtocolIsData())
     return ResourceRequestBlockedReason::kOrigin;
 
-  network::mojom::RequestContextFrameType frame_type =
-      resource_request.GetFrameType();
-
   // Measure the number of legacy URL schemes ('ftp://') and the number of
   // embedded-credential ('http://user:password@...') resources embedded as
   // subresources.
-  if (frame_type != network::mojom::RequestContextFrameType::kTopLevel) {
-    bool is_subresource =
-        frame_type == network::mojom::RequestContextFrameType::kNone;
-    const FetchClientSettingsObject& fetch_client_settings_object =
-        GetResourceFetcherProperties().GetFetchClientSettingsObject();
-    const SecurityOrigin* embedding_origin =
-        is_subresource ? fetch_client_settings_object.GetSecurityOrigin()
-                       : GetParentSecurityOrigin();
-    DCHECK(embedding_origin);
-    if (SchemeRegistry::ShouldTreatURLSchemeAsLegacy(url.Protocol()) &&
-        !SchemeRegistry::ShouldTreatURLSchemeAsLegacy(
-            embedding_origin->Protocol())) {
-      CountDeprecation(WebFeature::kLegacyProtocolEmbeddedAsSubresource);
+  const FetchClientSettingsObject& fetch_client_settings_object =
+      GetResourceFetcherProperties().GetFetchClientSettingsObject();
+  const SecurityOrigin* embedding_origin =
+      fetch_client_settings_object.GetSecurityOrigin();
+  DCHECK(embedding_origin);
+  if (SchemeRegistry::ShouldTreatURLSchemeAsLegacy(url.Protocol()) &&
+      !SchemeRegistry::ShouldTreatURLSchemeAsLegacy(
+          embedding_origin->Protocol())) {
+    CountDeprecation(WebFeature::kLegacyProtocolEmbeddedAsSubresource);
 
-      return ResourceRequestBlockedReason::kOrigin;
-    }
-
-    if (ShouldBlockFetchAsCredentialedSubresource(resource_request, url))
-      return ResourceRequestBlockedReason::kOrigin;
+    return ResourceRequestBlockedReason::kOrigin;
   }
+
+  if (ShouldBlockFetchAsCredentialedSubresource(resource_request, url))
+    return ResourceRequestBlockedReason::kOrigin;
 
   // Check for mixed content. We do this second-to-last so that when folks block
   // mixed content via CSP, they don't get a mixed content warning, but a CSP
   // warning instead.
-  if (ShouldBlockFetchByMixedContentCheck(request_context, frame_type,
+  if (ShouldBlockFetchByMixedContentCheck(request_context,
                                           resource_request.GetRedirectStatus(),
                                           url, reporting_policy))
     return ResourceRequestBlockedReason::kMixedContent;

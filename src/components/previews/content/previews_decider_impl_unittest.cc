@@ -22,6 +22,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
@@ -36,6 +37,8 @@
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/previews/content/hint_cache_store.h"
+#include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
@@ -49,6 +52,7 @@
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/test/test_network_quality_tracker.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -148,12 +152,16 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
   TestPreviewsOptimizationGuide(
       optimization_guide::OptimizationGuideService* optimization_guide_service,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       const base::FilePath& test_path,
-      PreviewsTopHostProvider* previews_top_host_provider)
+      PreviewsTopHostProvider* previews_top_host_provider,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : PreviewsOptimizationGuide(optimization_guide_service,
                                   ui_task_runner,
+                                  background_task_runner,
                                   test_path,
-                                  previews_top_host_provider) {}
+                                  previews_top_host_provider,
+                                  url_loader_factory) {}
   ~TestPreviewsOptimizationGuide() override {}
 
   // PreviewsOptimizationGuide:
@@ -397,7 +405,10 @@ class PreviewsDeciderImplTest : public testing::Test {
         std::make_unique<TestPreviewsOptimizationGuide>(
             &optimization_guide_service_,
             scoped_task_environment_.GetMainThreadTaskRunner(),
-            temp_dir_.GetPath(), &previews_top_host_provider_),
+            base::CreateSequencedTaskRunnerWithTraits(
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+            temp_dir_.GetPath(), &previews_top_host_provider_,
+            url_loader_factory_),
         base::BindRepeating(&IsPreviewFieldTrialEnabled),
         std::make_unique<PreviewsLogger>(), std::move(allowed_types),
         &network_quality_tracker_));
@@ -407,6 +418,15 @@ class PreviewsDeciderImplTest : public testing::Test {
     InitializeUIServiceWithoutWaitingForBlackList();
     scoped_task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
+  }
+
+  void InitializeOptimizationGuideHints() {
+    std::unique_ptr<optimization_guide::proto::Configuration> config =
+        std::make_unique<optimization_guide::proto::Configuration>();
+    std::unique_ptr<PreviewsHints> hints =
+        PreviewsHints::CreateFromHintsConfiguration(std::move(config), nullptr);
+    previews_decider_impl()->previews_opt_guide()->UpdateHints(
+        base::DoNothing(), std::move(hints));
   }
 
   TestPreviewsDeciderImpl* previews_decider_impl() {
@@ -433,6 +453,7 @@ class PreviewsDeciderImplTest : public testing::Test {
   TestPreviewsTopHostProvider previews_top_host_provider_;
   std::unique_ptr<TestPreviewsUIService> ui_service_;
   network::TestNetworkQualityTracker network_quality_tracker_;
+  scoped_refptr<network::TestSharedURLLoaderFactory> url_loader_factory_;
 };
 
 TEST_F(PreviewsDeciderImplTest, AllPreviewsDisabledByFeature) {
@@ -894,6 +915,7 @@ TEST_F(PreviewsDeciderImplTest, NoScriptAllowedByFeatureWithWhitelist) {
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   base::HistogramTester histogram_tester;
 
@@ -921,6 +943,7 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   // First verify not allowed for non-whitelisted url.
   {
@@ -1108,6 +1131,7 @@ TEST_F(PreviewsDeciderImplTest, LitePageRedirectDisallowedByServerBlacklist) {
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   base::HistogramTester histogram_tester;
 
@@ -1136,11 +1160,95 @@ TEST_F(PreviewsDeciderImplTest, LitePageRedirectDisallowedByServerBlacklist) {
       1);
 }
 
+TEST_F(PreviewsDeciderImplTest,
+       LitePageRedirectAllowedByServerBlacklistWithFlag) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kLitePageServerPreviews,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
+  InitializeOptimizationGuideHints();
+
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->AppendSwitch(
+      switches::kIgnoreLitePageRedirectOptimizationBlacklist);
+  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kIgnoreLitePageRedirectOptimizationBlacklist));
+
+  base::HistogramTester histogram_tester;
+
+  PreviewsUserData user_data(kDefaultPageId);
+  // First verify preview allowed for non-whitelisted url.
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::LITE_PAGE_REDIRECT));
+
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.LitePageRedirect",
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://blacklisted.example.com"), false,
+      PreviewsType::LITE_PAGE_REDIRECT));
+
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.LitePageRedirect",
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 2);
+}
+
+TEST_F(PreviewsDeciderImplTest, OptimizationGuidePreviewsAllowedWithoutHints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kLitePageServerPreviews,
+       features::kOptimizationHints, features::kNoScriptPreviews,
+       features::kResourceLoadingHints},
+      {});
+  InitializeUIService();
+
+  base::HistogramTester histogram_tester;
+  PreviewsUserData user_data(kDefaultPageId);
+
+  // NoScript is allowed before commit without hints.
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::NOSCRIPT));
+
+  // ResourceLoading is allowed before commit without hints.
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::RESOURCE_LOADING_HINTS));
+
+  // LitePageRedirect is not allowed before commit without hints.
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::LITE_PAGE_REDIRECT));
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.LitePageRedirect",
+      static_cast<int>(
+          PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE),
+      1);
+
+  // Load hints and make sure everything is allowed.
+  InitializeOptimizationGuideHints();
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::NOSCRIPT));
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::LITE_PAGE_REDIRECT));
+}
+
 TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsAllowedByDefault) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kOptimizationHints}, {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   base::HistogramTester histogram_tester;
   PreviewsUserData user_data(kDefaultPageId);
@@ -1189,6 +1297,7 @@ TEST_F(PreviewsDeciderImplTest,
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   for (const auto& test_ect : {net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
                                net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
@@ -1217,6 +1326,7 @@ TEST_F(PreviewsDeciderImplTest,
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   base::HistogramTester histogram_tester;
   PreviewsUserData user_data(kDefaultPageId);
@@ -1238,6 +1348,7 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   // First verify not allowed for non-whitelisted url.
   {
@@ -1617,6 +1728,8 @@ TEST_F(PreviewsDeciderImplTest,
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
+
   std::unique_ptr<TestPreviewsBlackList> blacklist =
       std::make_unique<TestPreviewsBlackList>(
           PreviewsEligibilityReason::ALLOWED, previews_decider_impl());
@@ -1822,6 +1935,7 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowHintPreviewWithoutECT) {
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   std::unique_ptr<TestPreviewsBlackList> blacklist =
       std::make_unique<TestPreviewsBlackList>(

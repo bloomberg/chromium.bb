@@ -212,9 +212,18 @@ class FakePhishingDetector : public mojom::PhishingDetector {
   }
 
   // mojom::PhishingDetector
-  void StartPhishingDetection(const GURL& url) override {
+  void StartPhishingDetection(
+      const GURL& url,
+      StartPhishingDetectionCallback callback) override {
     url_ = url;
     phishing_detection_started_ = true;
+
+    // The callback must be run before destruction, so send a minimal
+    // ClientPhishingRequest.
+    ClientPhishingRequest request;
+    request.set_client_score(0.8);
+    std::move(callback).Run(request.SerializeAsString());
+
     return;
   }
 
@@ -305,7 +314,7 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
   void DidStopLoading() { csd_host_->DidStopLoading(); }
 
   void UpdateIPUrlMap(const std::string& ip, const std::string& host) {
-    csd_host_->UpdateIPUrlMap(ip, host, "", "", content::RESOURCE_TYPE_OBJECT);
+    csd_host_->UpdateIPUrlMap(ip, host, "", "", content::ResourceType::kObject);
   }
 
   BrowseInfo* GetBrowseInfo() {
@@ -928,7 +937,7 @@ TEST_F(ClientSideDetectionHostTest, UpdateIPUrlMap) {
   for (int i = 0; i < 20; i++) {
     std::string url = base::StringPrintf("http://%d.com/", i);
     expected_urls.push_back(
-        IPUrlInfo(url, "", "", content::RESOURCE_TYPE_OBJECT));
+        IPUrlInfo(url, "", "", content::ResourceType::kObject));
     UpdateIPUrlMap("250.10.10.10", url);
   }
   ASSERT_EQ(1U, browse_info->ips.size());
@@ -948,7 +957,7 @@ TEST_F(ClientSideDetectionHostTest, UpdateIPUrlMap) {
     std::string ip = base::StringPrintf("%d.%d.%d.256", i, i, i);
     expected_urls.clear();
     expected_urls.push_back(
-        IPUrlInfo("test.com/", "", "", content::RESOURCE_TYPE_OBJECT));
+        IPUrlInfo("test.com/", "", "", content::ResourceType::kObject));
     UpdateIPUrlMap(ip, "test.com/");
     ASSERT_EQ(1U, browse_info->ips[ip].size());
     CheckIPUrlEqual(expected_urls,
@@ -967,9 +976,9 @@ TEST_F(ClientSideDetectionHostTest, UpdateIPUrlMap) {
   ASSERT_EQ(2U, browse_info->ips["100.100.100.256"].size());
   expected_urls.clear();
   expected_urls.push_back(
-      IPUrlInfo("test.com/", "", "", content::RESOURCE_TYPE_OBJECT));
+      IPUrlInfo("test.com/", "", "", content::ResourceType::kObject));
   expected_urls.push_back(
-      IPUrlInfo("more.com/", "", "", content::RESOURCE_TYPE_OBJECT));
+      IPUrlInfo("more.com/", "", "", content::ResourceType::kObject));
   CheckIPUrlEqual(expected_urls,
                   browse_info->ips["100.100.100.256"]);
 }
@@ -1268,7 +1277,7 @@ TEST_F(ClientSideDetectionHostTest,
   resource_load_info->url = GURL("http://host1.com");
   resource_load_info->referrer = GURL("http://host2.com");
   resource_load_info->method = "GET";
-  resource_load_info->resource_type = content::RESOURCE_TYPE_SUB_FRAME;
+  resource_load_info->resource_type = content::ResourceType::kSubFrame;
   csd_host_->ResourceLoadComplete(/*render_frame_host=*/nullptr,
                                   content::GlobalRequestID(),
                                   *resource_load_info);

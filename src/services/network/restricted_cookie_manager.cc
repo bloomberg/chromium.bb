@@ -190,10 +190,14 @@ void RestrictedCookieManager::SetCanonicalCookie(
       cookie.SameSite(), cookie.Priority());
 
   // TODO(pwnall): source_scheme might depend on the renderer.
-  bool modify_http_only = false;
+  net::CookieOptions options;
+  // TODO(https://crbug.com/925311): Wire initiator here.
+  options.set_same_site_cookie_context(net::cookie_util::ComputeSameSiteContext(
+      url, site_for_cookies, base::nullopt /*initiator*/));
+  options.set_exclude_httponly();  // Default, but make it explicit here.
   cookie_store_->SetCanonicalCookieAsync(
-      std::move(sanitized_cookie), origin_.scheme(), modify_http_only,
-      AdaptCookieInclusionStatusToBool(std::move(callback)));
+      std::move(sanitized_cookie), origin_.scheme(), options,
+      net::cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback)));
 }
 
 void RestrictedCookieManager::AddChangeListener(

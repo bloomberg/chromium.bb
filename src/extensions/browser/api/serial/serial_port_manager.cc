@@ -194,7 +194,8 @@ void SerialPortManager::OnGotDevicesToGetPort(
 
   for (auto& device : devices) {
     if (device->path.AsUTF8Unsafe() == path) {
-      port_manager_->GetPort(device->token, std::move(request));
+      port_manager_->GetPort(device->token, std::move(request),
+                             /*watcher=*/nullptr);
       return;
     }
   }

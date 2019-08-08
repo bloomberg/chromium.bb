@@ -42,6 +42,17 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     // platform handle attachments and treat them as malformed messages.
     kRejectHandles,
   };
+  enum class DispatchBufferPolicy {
+    // If the Channel is constructed in this mode, it will create and manage a
+    // buffer that implementations should manipulate with GetReadBuffer() and
+    // OnReadComplete().
+    kManaged,
+
+    // If the Channel is constructed in this mode, it will not create and
+    // manage a buffer for the implementation. Instead, the implementation must
+    // use its own buffer and pass spans of it to TryDispatchMessage().
+    kUnmanaged,
+  };
 
   struct Message;
 
@@ -100,12 +111,22 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     };
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-    struct MachPortsEntry {
-      // Index of Mach port in the original vector of PlatformHandleInTransits.
-      uint16_t index;
+    union MachPortsEntry {
+      // Used with ChannelPosix.
+      struct {
+        // Index of Mach port in the original vector of
+        // PlatformHandleInTransits.
+        uint16_t index;
 
-      // Mach port name.
-      uint32_t mach_port;
+        // Mach port name.
+        uint32_t mach_port;
+      } posix_entry;
+
+      // Used with ChannelMac.
+      struct {
+        // The PlatformHandle::Type.
+        uint8_t type;
+      } mach_entry;
       static_assert(sizeof(mach_port_t) <= sizeof(uint32_t),
                     "mach_port_t must be no larger than uint32_t");
     };
@@ -312,7 +333,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   virtual void LeakHandle() = 0;
 
  protected:
-  Channel(Delegate* delegate, HandlePolicy handle_policy);
+  // Constructor for implementations to call. |delegate| and |handle_policy|
+  // should be passed from Create(). |buffer_policy| should be specified by
+  // the implementation.
+  Channel(Delegate* delegate,
+          HandlePolicy handle_policy,
+          DispatchBufferPolicy buffer_policy = DispatchBufferPolicy::kManaged);
   virtual ~Channel();
 
   Delegate* delegate() const { return delegate_; }
@@ -323,13 +349,37 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   //
   // Returns the address of a buffer which can be written to, and indicates its
   // actual capacity in |*buffer_capacity|.
+  //
+  // This should only be used with DispatchBufferPolicy::kManaged.
   char* GetReadBuffer(size_t* buffer_capacity);
 
   // Called by the implementation when new data is available in the read
   // buffer. Returns false to indicate an error. Upon success,
   // |*next_read_size_hint| will be set to a recommended size for the next
-  // read done by the implementation.
+  // read done by the implementation. This should only be used with
+  // DispatchBufferPolicy::kManaged.
   bool OnReadComplete(size_t bytes_read, size_t* next_read_size_hint);
+
+  // Called by the implementation to deserialize a message stored in |buffer|.
+  // If the channel was created with DispatchBufferPolicy::kUnmanaged, the
+  // implementation should call this directly. If it was created with kManaged,
+  // OnReadComplete() will call this. |*size_hint| will be set to a recommended
+  // size for the next read done by the implementation.
+  enum class DispatchResult {
+    // The message was dispatched and consumed. |size_hint| contains the size
+    // of the message.
+    kOK,
+    // The message could not be deserialized because |buffer| does not contain
+    // enough data. |size_hint| contains the amount of data missing.
+    kNotEnoughData,
+    // The message has associated handles that were not transferred in this
+    // message.
+    kMissingHandles,
+    // An error occurred during processing.
+    kError,
+  };
+  DispatchResult TryDispatchMessage(base::span<const char> buffer,
+                                    size_t* size_hint);
 
   // Called by the implementation when something goes horribly wrong. It is NOT
   // OK to call this synchronously from any public interface methods.

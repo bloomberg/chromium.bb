@@ -57,7 +57,7 @@ class MockTtsPlatformImpl : public content::TtsPlatform {
   bool PlatformImplAvailable() override { return true; }
 
   void WillSpeakUtteranceWithVoice(
-      const content::TtsUtterance* utterance,
+      content::TtsUtterance* utterance,
       const content::VoiceData& voice_data) override {}
 
   bool LoadBuiltInTtsEngine(content::BrowserContext* browser_context) override {

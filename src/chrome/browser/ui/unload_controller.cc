@@ -45,7 +45,7 @@ bool UnloadController::CanCloseContents(content::WebContents* contents) {
   if (is_attempting_to_close_browser_)
     ClearUnloadState(contents, true);
   return !is_attempting_to_close_browser_ ||
-      is_calling_before_unload_handlers();
+         is_calling_before_unload_handlers();
 }
 
 bool UnloadController::ShouldRunUnloadEventsHelper(
@@ -194,7 +194,8 @@ bool UnloadController::TabsNeedBeforeUnloadFired() {
     for (int i = 0; i < browser_->tab_strip_model()->count(); ++i) {
       content::WebContents* contents =
           browser_->tab_strip_model()->GetWebContentsAt(i);
-      bool should_fire_beforeunload = contents->NeedToFireBeforeUnload() ||
+      bool should_fire_beforeunload =
+          contents->NeedToFireBeforeUnload() ||
           DevToolsWindow::NeedsToInterceptBeforeUnload(contents);
       if (!ContainsKey(tabs_needing_unload_fired_, contents) &&
           should_fire_beforeunload) {
@@ -286,17 +287,14 @@ void UnloadController::TabStripEmpty() {
 void UnloadController::TabAttachedImpl(content::WebContents* contents) {
   // If the tab crashes in the beforeunload or unload handler, it won't be
   // able to ack. But we know we can close it.
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-      content::Source<content::WebContents>(contents));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+                 content::Source<content::WebContents>(contents));
 }
 
 void UnloadController::TabDetachedImpl(content::WebContents* contents) {
   if (is_attempting_to_close_browser_)
     ClearUnloadState(contents, false);
-  registrar_.Remove(this,
-                    content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                     content::Source<content::WebContents>(contents));
 }
 
@@ -374,8 +372,8 @@ void UnloadController::ProcessPendingTabs(bool skip_beforeunload) {
 
 bool UnloadController::HasCompletedUnloadProcessing() const {
   return is_attempting_to_close_browser_ &&
-      tabs_needing_before_unload_fired_.empty() &&
-      tabs_needing_unload_fired_.empty();
+         tabs_needing_before_unload_fired_.empty() &&
+         tabs_needing_unload_fired_.empty();
 }
 
 bool UnloadController::RemoveFromSet(UnloadListenerSet* set,

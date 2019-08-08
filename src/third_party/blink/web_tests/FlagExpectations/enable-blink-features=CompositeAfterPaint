@@ -1,6 +1,7 @@
 # Expectations for CompositeAfterPaint
 # See: https://docs.google.com/document/d/1QCM912Dr6u38DqyQqd7pxQxDy8FFOoWMMDq7uAXqKdA/view
 Bug(none) http/tests/devtools/tracing/ [ Skip ]
+Bug(none) virtual/nobinary-for-devtools/http/tests/devtools/tracing/ [ Skip ]
 Bug(none) scrollingcoordinator/ [ Skip ]
 
 Bug(none) virtual/disable-blink-gen-property-trees/ [ Skip ]
@@ -52,7 +53,6 @@ Bug(none) compositing/geometry/limit-layer-bounds-positioned-transition.html [ F
 Bug(none) compositing/geometry/limit-layer-bounds-positioned.html [ Failure ]
 Bug(none) compositing/geometry/limit-layer-bounds-transformed.html [ Failure ]
 Bug(none) compositing/iframes/become-composited-nested-iframes.html [ Failure ]
-Bug(none) compositing/iframes/iframe-composited-scrolling-hide-and-show.html [ Failure ]
 Bug(none) compositing/layer-creation/overlap-animation-clipping.html [ Failure ]
 Bug(none) compositing/layer-creation/overlap-animation-container.html [ Failure ]
 Bug(none) compositing/layer-creation/overlap-animation.html [ Failure ]
@@ -119,10 +119,12 @@ Bug(none) compositing/squashing/squashing-sparsity-heuristic.html [ Failure ]
 Bug(none) compositing/video/video-poster.html [ Failure ]
 Bug(none) compositing/visibility/layer-visible-content.html [ Failure ]
 Bug(none) compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
+Bug(none) css3/masking/mask-composite-missing-image.html [ Failure ]
 Bug(none) external/wpt/css/css-transforms/transform3d-backface-visibility-006.html [ Failure ]
 Bug(none) external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Crash ]
 Bug(none) external/wpt/portals/portals-rendering.html [ Failure ]
 Bug(none) fast/css/outline-offset-large.html [ Failure ]
+Bug(none) fast/forms/validation-bubble-device-emulation-change.html [ Failure ]
 Bug(none) fast/webgl/pixelated.html [ Failure ]
 Bug(none) images/color-profile-svg-foreign-object.html [ Failure ]
 Bug(none) fast/multicol/insane-column-count-and-padding-nested-crash.html [ Crash ]
@@ -168,6 +170,7 @@ Bug(none) paint/invalidation/compositing/scrolling-neg-z-index-descendants.html 
 Bug(none) paint/invalidation/compositing/should-not-repaint-composited-filter.html [ Failure ]
 Bug(none) paint/invalidation/compositing/should-not-repaint-composited-opacity.html [ Failure ]
 Bug(none) paint/invalidation/compositing/should-not-repaint-move-backface-hidden.html [ Failure ]
+Bug(none) paint/invalidation/scroll/iframe-scroll-repaint.html [ Failure ]
 Bug(none) paint/invalidation/position/layout-state-only-positioned.html [ Failure ]
 Bug(none) paint/invalidation/position/relative-positioned-movement-repaint.html [ Failure ]
 Bug(none) paint/invalidation/svg/scrolling-embedded-svg-file-image-repaint-problem.html [ Failure ]
@@ -250,7 +253,7 @@ Bug(none) virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundar
 Bug(none) virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.html [ Failure ]
 Bug(none) virtual/threaded/compositing/visibility/layer-visible-content.html [ Failure ]
 Bug(none) virtual/threaded/compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
-Bug(none) virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure ]
+Bug(none) virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Timeout ]
 
 Bug(none) fast/block/float/float-change-composited-scrolling.html [ Failure ]
 
@@ -261,7 +264,6 @@ crbug.com/738613 paint/invalidation/table/scroll-relative-table-inside-table-cel
 crbug.com/738613 paint/invalidation/table/scroll-inside-table-cell.html [ Failure ]
 crbug.com/738613 paint/invalidation/table/table-overflow-auto-in-overflow-auto-scrolled.html [ Failure ]
 crbug.com/738613 paint/invalidation/table/table-overflow-scroll-in-overflow-scroll-scrolled.html [ Failure ]
-crbug.com/738613 paint/invalidation/scroll/repaint-during-scroll-with-zoom.html [ Failure ]
 crbug.com/738613 paint/invalidation/scroll/resize-scrollable-iframe.html [ Failure ]
 crbug.com/738613 paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Failure ]
 crbug.com/738613 paint/invalidation/scroll/caret-invalidation-in-overflow-scroll.html [ Failure ]
@@ -308,9 +310,8 @@ crbug.com/589279 paint/invalidation/compositing/opacity-from-zero-to-non-zero-co
 # content layers.
 crbug.com/931486 compositing/force-compositing-mode/overflow-iframe-enter-compositing.html [ Failure ]
 crbug.com/931486 compositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
+crbug.com/931486 compositing/iframes/overlapped-iframe-iframe.html [ Failure ]
 crbug.com/931486 compositing/overflow/scroll-parent-absolute-with-backdrop-filter.html [ Failure ]
-crbug.com/931486 compositing/iframes/become-overlapped-iframe.html [ Failure ]
-crbug.com/931486 compositing/iframes/resizer.html [ Failure ]
 crbug.com/931486 compositing/layer-creation/fixed-position-nonscrollable-body-mismatch-containers.html [ Failure ]
 crbug.com/931486 compositing/layer-creation/fixed-position-out-of-view-positioning.html [ Failure ]
 crbug.com/931486 compositing/layer-creation/overflow-scroll-overlap.html [ Failure ]
@@ -323,7 +324,6 @@ crbug.com/931486 compositing/rtl/rtl-fixed-overflow.html [ Failure ]
 crbug.com/931486 compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ]
 crbug.com/931486 paint/invalidation/scroll/fixed-child-move-after-scroll.html [ Failure ]
 crbug.com/931486 paint/invalidation/scroll/fixed-child-of-fixed-move-after-scroll.html [ Failure ]
-crbug.com/931486 paint/invalidation/position/fixed-element-repaint-after-compositing-update.html [ Failure ]
 crbug.com/931486 paint/invalidation/position/fixed-tranformed.html [ Failure ]
 crbug.com/931486 paint/invalidation/scroll/inline-style-change-in-scrolled-view.html [ Failure ]
 crbug.com/931486 paint/invalidation/background/background-image-paint-invalidation.html [ Failure ]
@@ -350,7 +350,6 @@ crbug.com/931486 paint/invalidation/invalidation-on-foreground-graphics-layer.ht
 # different results.
 Bug(none) paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Failure ]
 
-Bug(none) fast/pagination/multicol.html [ Crash ]
 Bug(none) paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]
 Bug(none) paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 
@@ -377,6 +376,11 @@ Bug(none) compositing/overflow/scrollbar-layer-placement-negative-z-index-child-
 Bug(none) paint/float/float-under-inline-self-painting-change.html [ Failure ]
 Bug(none) compositing/overflow/overlap-testing-ancestor-scroller-high-dpi.html [ Failure ]
 
+# Extra raster invalidation on start/end of animation. Caused by animation
+# element id namespaces
+crbug.com/900241 paint/invalidation/animation/opacity-animation.html [ Failure ]
+crbug.com/900241 paint/invalidation/animation/transform-animation.html [ Failure ]
+
 # These tests have additional hit test rects. These may correct and simply due
 # to different layerization decisions, but this needs investigation.
 crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-global.html [ Failure ]
@@ -395,8 +399,18 @@ crbug.com/909749 fast/events/touch/touch-rect-crash-on-unpromote-layer.html [ Fa
 crbug.com/924680 virtual/threaded/fast/events/pinch/pinch-zoom-into-center.html [ Failure ]
 crbug.com/924680 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Failure ]
 
+# These were introduced when we started setting the scrolls_outer_viewport bit on ScrollNodes
+Bug(none) virtual/fractional_scrolling_threaded/fast/scrolling/hover-during-scroll.html [ Failure ]
+Bug(none) virtual/fractional_scrolling_threaded/fast/scrolling/no-hover-during-scroll.html [ Failure ]
+Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-frame-no-scroll-manual.tentative.html [ Failure ]
+Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Failure ]
+Bug(none) virtual/threaded/fast/scrolling/hover-during-scroll.html [ Failure ]
+Bug(none) virtual/threaded/fast/scrolling/no-hover-during-scroll.html [ Failure ]
+Bug(none) virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.html [ Failure ]
+
 # Backdrop filter
 crbug.com/923429 css3/filters/backdrop-filter-basic-blur.html [ Failure ]
+crbug.com/923429 css3/filters/backdrop-filter-browser-zoom.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-border-radius.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-rendering.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-rendering-no-background.html [ Failure ]
@@ -405,6 +419,12 @@ crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-fixed-clip.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-isolation.html [ Failure ]
+
+crbug.com/940033 virtual/fractional_scrolling_threaded/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
+crbug.com/940033 virtual/threaded/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
+
+Bug(none) virtual/threaded/fast/scrolling/scroll-then-composite.html [ Failure ]
+Bug(none) virtual/fractional_scrolling_threaded/fast/scrolling/scroll-then-composite.html [ Failure ]
 
 # Missing composited layer for fixed-position
 crbug.com/931491 compositing/layer-creation/fixed-position-change-out-of-view-in-view.html [ Failure ]
@@ -428,14 +448,23 @@ Bug(none) css3/filters/blur-filter-page-scroll-self.html [ Failure ]
 
 # Crash during PictureLayer::GetPicture() when DisplayItemList is finished twice.
 Bug(none) http/tests/devtools/layers/layer-canvas-log.js [ Crash ]
+Bug(none) virtual/nobinary-for-devtools/http/tests/devtools/layers/layer-canvas-log.js [ Crash ]
 Bug(none) http/tests/devtools/layers/layer-replay-scale.js [ Crash ]
+Bug(none) virtual/nobinary-for-devtools/http/tests/devtools/layers/layer-replay-scale.js [ Crash ]
 # Missing compositing reasons
 Bug(none) http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]
+Bug(none) virtual/nobinary-for-devtools/http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]
 # Missing WheelEventHandler
 Bug(none) http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure ]
+Bug(none) virtual/nobinary-for-devtools/http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure ]
 
 # Other:
 crbug.com/935728 fast/frames/transparent-scrollbar.html [ Failure ]
+
+# Wrong contentsOpaque for will-change: opacity layers
+Bug(none) compositing/will-change/composited-layers.html [ Failure ]
+# Crash on non-contiguous effect on multiple columns
+Bug(none) fast/multicol/composited-layer-will-change.html [ Crash ]
 
 Bug(none) external/wpt/css/css-masking/clip-path-svg-content/clip-path-recursion-001.svg [ Failure ]
 Bug(none) external/wpt/css/css-masking/clip-path-svg-content/mask-nested-clip-path-001.svg [ Failure ]

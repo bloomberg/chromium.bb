@@ -143,8 +143,8 @@ void ModellerImpl::OnAmbientLightUpdated(int lux) {
   if (!is_modeller_enabled_.has_value() || !*is_modeller_enabled_)
     return;
 
-  DCHECK(ambient_light_values_);
-  ambient_light_values_->SaveToBuffer({lux, tick_clock_->NowTicks()});
+  DCHECK(log_als_values_);
+  log_als_values_->SaveToBuffer({ConvertToLog(lux), tick_clock_->NowTicks()});
 }
 
 void ModellerImpl::OnAlsReaderInitialized(AlsReader::AlsInitStatus status) {
@@ -170,17 +170,16 @@ void ModellerImpl::OnUserBrightnessChanged(double old_brightness_percent,
   if (!is_modeller_enabled_.has_value() || !*is_modeller_enabled_)
     return;
 
-  DCHECK(ambient_light_values_);
+  DCHECK(log_als_values_);
   const base::TimeTicks now = tick_clock_->NowTicks();
   // We don't add any training data if there is no ambient light sample.
-  const base::Optional<double> average_ambient_lux_opt =
-      ambient_light_values_->AverageAmbient(now);
-  if (!average_ambient_lux_opt)
+  const base::Optional<AlsAvgStdDev> log_als_avg_stddev =
+      log_als_values_->AverageAmbientWithStdDev(now);
+  if (!log_als_avg_stddev)
     return;
 
-  const double average_ambient_lux = average_ambient_lux_opt.value();
   data_cache_.push_back({old_brightness_percent, new_brightness_percent,
-                         ConvertToLog(average_ambient_lux), now});
+                         log_als_avg_stddev->avg, now});
 
   ScheduleTrainerStart();
 }
@@ -225,8 +224,13 @@ std::unique_ptr<ModellerImpl> ModellerImpl::CreateForTesting(
 base::Optional<double> ModellerImpl::AverageAmbientForTesting(
     base::TimeTicks now) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(ambient_light_values_);
-  return ambient_light_values_->AverageAmbient(now);
+  DCHECK(log_als_values_);
+  const base::Optional<AlsAvgStdDev> log_als_avg_stddev =
+      log_als_values_->AverageAmbientWithStdDev(now);
+  if (!log_als_avg_stddev)
+    return base::nullopt;
+
+  return log_als_avg_stddev->avg;
 }
 
 size_t ModellerImpl::NumberTrainingDataPointsForTesting() const {
@@ -368,8 +372,20 @@ void ModellerImpl::RunCustomization() {
   global_curve_.emplace(
       MonotoneCubicSpline(model_config_.log_lux, model_config_.brightness));
 
-  ambient_light_values_ = std::make_unique<AmbientLightSampleBuffer>(
-      base::TimeDelta::FromSeconds(model_config_.model_als_horizon_seconds));
+  // Get |model_als_horizon_seconds| from finch and use the value from
+  // |model_config_| as its default.
+  int model_als_horizon_seconds = GetFieldTrialParamByFeatureAsInt(
+      features::kAutoScreenBrightness, "model_als_horizon_seconds",
+      model_config_.model_als_horizon_seconds);
+
+  // If finch param is invalid, use the value from |model_config_|, which is
+  // guaranteed to be valid.
+  if (model_als_horizon_seconds <= 0) {
+    // TODO(jiameng): log model param error.
+    model_als_horizon_seconds = model_config_.model_als_horizon_seconds;
+  }
+  log_als_values_ = std::make_unique<AmbientLightSampleBuffer>(
+      base::TimeDelta::FromSeconds(model_als_horizon_seconds));
 
   // TODO(jiameng): the following params are probably not useful and can be
   // removed.

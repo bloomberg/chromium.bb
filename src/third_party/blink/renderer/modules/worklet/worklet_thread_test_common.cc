@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "third_party/blink/renderer/modules/worklet/worklet_thread_test_common.h"
 
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
@@ -12,29 +14,18 @@
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
 
 namespace blink {
+
+namespace {
 
 std::unique_ptr<AnimationAndPaintWorkletThread>
 CreateAnimationAndPaintWorkletThread(
     Document* document,
     WorkerReportingProxy* reporting_proxy,
-    AnimationWorkletProxyClient* proxy_client) {
-  std::unique_ptr<AnimationAndPaintWorkletThread> thread =
-      AnimationAndPaintWorkletThread::CreateForAnimationWorklet(
-          *reporting_proxy);
-
-  if (!proxy_client) {
-    proxy_client = MakeGarbageCollected<AnimationWorkletProxyClient>(
-        1, nullptr, /* mutator_dispatcher */
-        nullptr,    /* mutator_runner */
-        nullptr,    /* mutator_dispatcher */
-        nullptr     /* mutator_runner */
-    );
-  }
-  WorkerClients* clients = WorkerClients::Create();
-  ProvideAnimationWorkletProxyClientTo(clients, proxy_client);
-
+    WorkerClients* clients,
+    std::unique_ptr<AnimationAndPaintWorkletThread> thread) {
   thread->Start(
       std::make_unique<GlobalScopeCreationParams>(
           document->Url(), mojom::ScriptType::kModule,
@@ -50,6 +41,47 @@ CreateAnimationAndPaintWorkletThread(
       base::nullopt, std::make_unique<WorkerDevToolsParams>(),
       ParentExecutionContextTaskRunners::Create());
   return thread;
+}
+
+}  // namespace
+
+std::unique_ptr<AnimationAndPaintWorkletThread>
+CreateThreadAndProvidePaintWorkletProxyClient(
+    Document* document,
+    WorkerReportingProxy* reporting_proxy,
+    PaintWorkletProxyClient* proxy_client) {
+  if (!proxy_client)
+    proxy_client = MakeGarbageCollected<PaintWorkletProxyClient>(1, nullptr);
+  WorkerClients* clients = MakeGarbageCollected<WorkerClients>();
+  ProvidePaintWorkletProxyClientTo(clients, proxy_client);
+
+  std::unique_ptr<AnimationAndPaintWorkletThread> thread =
+      AnimationAndPaintWorkletThread::CreateForPaintWorklet(*reporting_proxy);
+  return CreateAnimationAndPaintWorkletThread(document, reporting_proxy,
+                                              clients, std::move(thread));
+}
+
+std::unique_ptr<AnimationAndPaintWorkletThread>
+CreateThreadAndProvideAnimationWorkletProxyClient(
+    Document* document,
+    WorkerReportingProxy* reporting_proxy,
+    AnimationWorkletProxyClient* proxy_client) {
+  if (!proxy_client) {
+    proxy_client = MakeGarbageCollected<AnimationWorkletProxyClient>(
+        1, nullptr, /* mutator_dispatcher */
+        nullptr,    /* mutator_runner */
+        nullptr,    /* mutator_dispatcher */
+        nullptr     /* mutator_runner */
+    );
+  }
+  WorkerClients* clients = MakeGarbageCollected<WorkerClients>();
+  ProvideAnimationWorkletProxyClientTo(clients, proxy_client);
+
+  std::unique_ptr<AnimationAndPaintWorkletThread> thread =
+      AnimationAndPaintWorkletThread::CreateForAnimationWorklet(
+          *reporting_proxy);
+  return CreateAnimationAndPaintWorkletThread(document, reporting_proxy,
+                                              clients, std::move(thread));
 }
 
 }  // namespace blink

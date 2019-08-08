@@ -14,26 +14,6 @@ config("web_engine_implementation") {
   defines = [ "WEB_ENGINE_IMPLEMENTATION" ]
 }
 
-source_set("test_support") {
-  testonly = true
-  sources = [
-    "test/fake_context.cc",
-    "test/fake_context.h",
-    "test/test_common.cc",
-    "test/test_common.h",
-  ]
-  deps = [
-    "//base",
-    "//base/test:test_config",
-    "//content/test:test_support",
-    "//fuchsia/base",
-  ]
-  public_deps = [
-    "//fuchsia:web_fidl",
-    "//skia/public/interfaces",
-  ]
-}
-
 mojom("mojom") {
   sources = [
     "on_load_script_injector.mojom",
@@ -80,6 +60,18 @@ repack("web_engine_pak") {
   visibility = [ ":*" ]
 }
 
+source_set("legacy_message_port_bridge") {
+  sources = [
+    "legacy_message_port_bridge.cc",
+    "legacy_message_port_bridge.h",
+  ]
+  deps = [
+    "//base",
+    "//fuchsia:web_fidl",
+    "//third_party/fuchsia-sdk/sdk:web",
+  ]
+}
+
 component("web_engine_core") {
   deps = [
     ":mojom",
@@ -92,11 +84,13 @@ component("web_engine_core") {
     "//content/public/common",
     "//content/public/renderer",
     "//fuchsia/base",
+    "//fuchsia/base:modular",
     "//mojo/public/cpp/bindings",
     "//services/network/public/cpp",
     "//services/service_manager/sandbox",
     "//skia/public/interfaces",
     "//third_party/blink/public/common",
+    "//third_party/fuchsia-sdk/sdk:web",
     "//ui/aura",
     "//ui/base/ime",
     "//ui/display",
@@ -110,9 +104,6 @@ component("web_engine_core") {
   ]
   data = [
     "$root_out_dir/webrunner.pak",
-  ]
-  public_deps = [
-    "//fuchsia:web_fidl",
   ]
   configs += [ ":web_engine_implementation" ]
   sources = [
@@ -156,7 +147,10 @@ component("web_engine_core") {
     "web_engine_main_delegate.cc",
     "web_engine_main_delegate.h",
   ]
-  visibility = [ ":*" ]
+  visibility = [
+    ":*",
+    "//fuchsia/runners:cast_runner_browsertests__exec",
+  ]
 }
 
 executable("web_engine_exe") {
@@ -199,9 +193,9 @@ source_set("browsertest_core") {
     ":web_engine_core",
     "//content/public/browser",
     "//content/test:test_support",
-    "//fuchsia:web_fidl",
     "//net:test_support",
     "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk:web",
     "//ui/ozone",
   ]
 }
@@ -217,7 +211,6 @@ test("web_engine_browsertests") {
   ]
   deps = [
     ":browsertest_core",
-    ":test_support",
     ":web_engine_core",
     "//base/test:test_support",
     "//content/public/browser",
@@ -226,6 +219,7 @@ test("web_engine_browsertests") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk:scenic_cpp",
     "//ui/ozone",
   ]
 }
@@ -233,22 +227,26 @@ test("web_engine_browsertests") {
 test("web_engine_unittests") {
   sources = [
     "context_provider_impl_unittest.cc",
+    "fake_context.cc",
+    "fake_context.h",
   ]
   deps = [
-    ":test_support",
     ":web_engine_core",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk:web",
   ]
 }
 
-symbol_archive("symbol_archive") {
-  deps = [
-    ":web_engine",
-  ]
-  ids_txt = "$root_gen_dir/fuchsia/engine/chromium/ids.txt"
-  archive_name =
-      "$root_gen_dir/fuchsia/engine/chromium/chromium.symbols.tar.bz2"
-}
+if (is_official_build) {
+  symbol_archive("symbol_archive") {
+    deps = [
+      ":web_engine",
+    ]
+    ids_txt = "$root_gen_dir/fuchsia/engine/chromium/ids.txt"
+    archive_name =
+        "$root_gen_dir/fuchsia/engine/chromium/chromium.symbols.tar.bz2"
+  }
+}  # is_official_build

@@ -38,6 +38,59 @@ template <typename T>
 using Abi =
     typename ABI::Windows::Foundation::Internal::GetAbiType<Complex<T>>::type;
 
+template <typename T>
+class VectorIterator
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<
+              Microsoft::WRL::WinRtClassicComMix |
+              Microsoft::WRL::InhibitRoOriginateError>,
+          ABI::Windows::Foundation::Collections::IIterator<Logical<T>>> {
+ public:
+  using LogicalT = Logical<T>;
+  using AbiT = Abi<T>;
+
+  explicit VectorIterator(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Foundation::Collections::IVectorView<LogicalT>> view)
+      : view_(std::move(view)) {}
+
+  // ABI::Windows::Foundation::Collections::IIterator:
+  IFACEMETHODIMP get_Current(AbiT* current) override {
+    return view_->GetAt(current_index_, current);
+  }
+
+  IFACEMETHODIMP get_HasCurrent(boolean* has_current) override {
+    *has_current = FALSE;
+    unsigned size;
+    HRESULT hr = view_->get_Size(&size);
+    if (SUCCEEDED(hr)) {
+      if (current_index_ >= size) {
+        hr = E_BOUNDS;
+      } else {
+        *has_current = TRUE;
+      }
+    }
+    return hr;
+  }
+
+  IFACEMETHODIMP MoveNext(boolean* has_current) override {
+    ++current_index_;
+    return get_HasCurrent(has_current);
+  }
+
+  IFACEMETHODIMP GetMany(unsigned capacity,
+                         AbiT* value,
+                         unsigned* actual) override {
+    return view_->GetMany(current_index_, capacity, value, actual);
+  }
+
+ private:
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Foundation::Collections::IVectorView<LogicalT>>
+      view_;
+  unsigned current_index_ = 0;
+};
+
 class BASE_EXPORT VectorChangedEventArgs
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<
@@ -181,6 +234,8 @@ class Vector
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
           ABI::Windows::Foundation::Collections::IVector<internal::Logical<T>>,
           ABI::Windows::Foundation::Collections::IObservableVector<
+              internal::Logical<T>>,
+          ABI::Windows::Foundation::Collections::IIterable<
               internal::Logical<T>>> {
  public:
   // windows.foundation.collections.h defines the following template and
@@ -340,6 +395,21 @@ class Vector
     auto handlers = handlers_;
     for (auto& handler : handlers)
       handler.second->Invoke(this, args.Get());
+  }
+
+  // ABI::Windows::Foundation::Collections::IIterable:
+  IFACEMETHODIMP First(
+      ABI::Windows::Foundation::Collections::IIterator<LogicalT>** first) {
+    Microsoft::WRL::ComPtr<
+        ABI::Windows::Foundation::Collections::IVectorView<LogicalT>>
+        view;
+    HRESULT hr = GetView(&view);
+    if (SUCCEEDED(hr)) {
+      return Microsoft::WRL::Make<internal::VectorIterator<LogicalT>>(view)
+          .CopyTo(first);
+    } else {
+      return hr;
+    }
   }
 
   const std::vector<AbiT>& vector_for_testing() { return vector_; }

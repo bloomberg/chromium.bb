@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 560 tests; 394 PASS, 166 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 560 tests; 396 PASS, 164 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAccumulation function
 PASS align-content: "flex-end" onto "flex-start"
@@ -443,10 +443,10 @@ PASS stop-opacity (type: opacity) has testAccumulation function
 FAIL stop-opacity: [0, 1] number assert_equals: The value should be 0.6 at 0ms expected "0.6" but got "0.3"
 FAIL stop-opacity: [0, 1] number (clamped) assert_equals: The value should be 1 at 0ms expected "1" but got "0.3"
 PASS stroke-dasharray (type: dasharray) has testAccumulation function
-FAIL stroke-dasharray: dasharray assert_equals: The value should be 1, 2, 3, 4, 5 at 0ms expected "1, 2, 3, 4, 5" but got "1px, 2px, 3px, 4px, 5px"
+PASS stroke-dasharray: dasharray
 PASS stroke-dasharray (type: discrete) has testAccumulation function
-FAIL stroke-dasharray: "10, 20" onto "none" assert_equals: The value should be 10, 20 at 0ms expected "10, 20" but got "10px, 20px"
-PASS stroke-dasharray: "none" onto "10, 20"
+PASS stroke-dasharray: "10px, 20px" onto "none"
+PASS stroke-dasharray: "none" onto "10px, 20px"
 PASS stroke-linecap (type: discrete) has testAccumulation function
 PASS stroke-linecap: "square" onto "round"
 PASS stroke-linecap: "round" onto "square"

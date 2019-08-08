@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_SUPERVISION_TRANSITION_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_SUPERVISION_TRANSITION_SCREEN_H_
 
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/supervision_transition_screen.h"
 #include "chrome/browser/chromeos/login/screens/supervision_transition_screen_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -14,8 +13,7 @@ namespace chromeos {
 
 class MockSupervisionTransitionScreen : public SupervisionTransitionScreen {
  public:
-  MockSupervisionTransitionScreen(BaseScreenDelegate* base_screen_delegate,
-                                  SupervisionTransitionScreenView* view,
+  MockSupervisionTransitionScreen(SupervisionTransitionScreenView* view,
                                   const base::RepeatingClosure& exit_callback);
   virtual ~MockSupervisionTransitionScreen();
 

@@ -21,6 +21,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">الآن</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{دقيقة واحدة}zero{# من الدقائق}two{دقيقتان (#)}few{# دقائق}many{# دقيقة}other{# من الدقائق}}</translation>
+<translation id="1756116796893109054">جارٍ إرسال علامة التبويب...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> بايت</translation>
 <translation id="1801827354178857021">الفترة</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{شهر واحد}zero{# شهر}two{شهران (#)}few{# أشهر}many{# شهرًا}other{# شهر}}</translation>
@@ -34,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">تح&amp;ديد الكلّ</translation>
 <translation id="1938451708255335766">لتعديل كثافة عرض النافذة، يمكنك إعادة تشغيل التطبيق.</translation>
+<translation id="208586643495776849">يُرجى إعادة المحاولة</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{يوم واحد}zero{# يوم}two{يومان (#)}few{# أيام}many{# يومًا}other{# يوم}}</translation>
 <translation id="2148716181193084225">اليوم</translation>
 <translation id="2168039046890040389">صفحة  إلى أعلى</translation>
@@ -51,11 +53,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">اكتملت المعايرة</translation>
 <translation id="252373100621549798">شاشة عرض غير معروفة</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{خلال ساعة واحدة}zero{خلال # ساعة}two{خلال ساعتين (#)}few{خلال # ساعات}many{خلال # ساعة}other{خلال # ساعة}}</translation>
 <translation id="2583543531130364912">معايرة الشاشة التي تعمل باللمس</translation>
 <translation id="2666092431469916601">أعلى</translation>
+<translation id="2701330563083355633">تمت المشاركة من <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">نسخ إلى الحافظة</translation>
 <translation id="2803313416453193357">فتح المجلد</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{قبل عام واحد}zero{قبل # عام}two{قبل عامين (#)}few{قبل # أعوام}many{قبل # عامًا}other{قبل # عام}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{خلال يوم واحد}zero{خلال # يوم}two{خلال يومين (#)}few{خلال # أيام}many{خلال # يومًا}other{خلال # يوم}}</translation>
 <translation id="2931838996092594335">النقر</translation>
 <translation id="3036649622769666520">فتح الملفات</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> ميغابايت</translation>
@@ -67,6 +72,7 @@
 <translation id="3234408098842461169">مفتاح سهم  إلى أسفل</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{يوم واحد}zero{# من الأيام}two{يومان (#)}few{# أيام}many{# يومًا}other{# من الأيام}}</translation>
 <translation id="335581015389089642">الحديث</translation>
+<translation id="3443810440409579745">تم استلام علامة تبويب.</translation>
 <translation id="3479552764303398839">ليس الآن</translation>
 <translation id="348799646910989694">إخفاء الرف تلقائيًا</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{يتبقى يوم واحد}zero{يتبقى عدد # من الأيام}two{يتبقى يومان (#)}few{يتبقى # أيام}many{يتبقى # يومًا}other{يتبقى # من الأيام}}</translation>
@@ -96,6 +102,7 @@
 <translation id="4730374152663651037">التطبيقات المستخدمة بشكل متكرر</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{يتبقى شهر واحد}zero{يتبقى # شهر}two{يتبقى شهرين (#)}few{يتبقى # أشهر}many{يتبقى # شهرًا}other{يتبقى # شهر}}</translation>
 <translation id="4841881773802181781">إدراج</translation>
+<translation id="4881695831933465202">فتح</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{ثانية واحدة}zero{# من الثواني}two{ثانيتان (#)}few{# ثوانٍ}many{# ثانية}other{# من الثواني}}</translation>
 <translation id="4971687151119236543">المقطع الصوتي السابق للوسائط</translation>
 <translation id="5046499563572181734">انقر هنا</translation>
@@ -103,6 +110,7 @@
 <translation id="5137751499640340777">‏بدء "مساعد Google"</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> بيتابايت</translation>
 <translation id="5266161281976477809">مثلث الإفصاح</translation>
+<translation id="5278860589123563674">تعذّر الإرسال</translation>
 <translation id="528468243742722775">‏مفتاح End</translation>
 <translation id="5329858601952122676">&amp;حذف</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> في أعلى <ph name="IN_PLACE_APP" />، يُرجى التحرير لإنشاء مجلد.</translation>
@@ -114,6 +122,7 @@
 <translation id="5613020302032141669">مفتاح سهم إلى اليسار</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{دقيقة واحدة}zero{# من الدقائق}two{دقيقتان (#)}few{# دقائق}many{# دقيقة}other{# من الدقائق}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{يوم واحد و }zero{# من الأيام و }two{يومان (#) و }few{# أيام و }many{# يومًا و }other{# من الأيام و }}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{خلال عام واحد}zero{خلال # عام}two{خلال عامين (#)}few{خلال # أعوام}many{خلال # عامًا}other{خلال # عام}}</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{يتبقى ثانية واحدة}zero{يتبقى # من الثواني}two{يتبقى ثانيتان (#)}few{يتبقى # ثانية}many{يتبقى # ثانية}other{يتبقى # من الثواني}}</translation>
 <translation id="5941711191222866238">تصغير</translation>
@@ -145,7 +154,6 @@
 <translation id="6808150112686056157">إيقاف الوسائط</translation>
 <translation id="6845383723252244143">تحديد مجلد</translation>
 <translation id="6845533974506654842">اضغط</translation>
-<translation id="686304767576508198">تمت المشاركة من</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{يتبقى ساعة}zero{يتبقى # من الساعات}two{ يتبقى ساعتان (#)}few{يتبقى # ساعات}many{يتبقى # ساعة}other{يتبقى # من الساعات}}</translation>
 <translation id="688711909580084195">صفحة ويب بدون عنوان</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> بيتابايت/ثانية</translation>
@@ -170,6 +178,7 @@
 <translation id="7907591526440419938">فتح ملف</translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{أكثر من إشعار واحد غير مقروء}zero{أكثر من # إشعار غير مقروء}two{أكثر من إشعارين غير مقروءين (#)}few{أكثر من # إشعارات غير مقروءة}many{أكثر من # إشعارًا غير مقروء}other{أكثر من # إشعار غير مقروء}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{خلال دقيقة واحدة}zero{خلال # دقيقة}two{خلال دقيقتين (#)}few{خلال # دقائق}many{خلال # دقيقة}other{خلال # دقيقة}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{قبل ساعة واحدة}zero{قبل # من الساعات}two{قبل ساعتين (#)}few{قبل # ساعات}many{قبل # ساعة}other{قبل # من الساعات}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{يتبقى ثانية واحدة}zero{يتبقى # من الثواني}two{يتبقى ثانيتان (#)}few{يتبقى # ثوانٍ}many{يتبقى # ثانية}other{يتبقى # من الثواني}}</translation>
@@ -198,6 +207,7 @@
 <translation id="8806053966018712535">مجلد <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">إضافة تعليق توضيحي على الصورة</translation>
 <translation id="8841375032071747811">زر الرجوع</translation>
+<translation id="8876215549894133151">التنسيق:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> كيلوبايت</translation>
 <translation id="8926951137623668982">إخفاء الرف دائمًا</translation>
 <translation id="9002566407876343676">الفتح</translation>

@@ -49,8 +49,6 @@ class DesktopMediaPicker {
     bool request_audio = false;
     // Whether audio capture option should be approved by default if shown.
     bool approve_audio_by_default = true;
-    // Whether the picker is created by extension desktopCapture API.
-    bool created_by_extension = false;
   };
 
   // Creates default implementation of DesktopMediaPicker for the current

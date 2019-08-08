@@ -163,7 +163,7 @@ WEBRTC_DEFINE_string(
     "AGC2 adaptive digital level estimator to use [RMS, peak]");
 
 WEBRTC_DEFINE_float(pre_amplifier_gain_factor,
-                    1.f,
+                    kParameterNotSpecifiedValue,
                     "Pre-amplifier gain factor (linear) to apply");
 WEBRTC_DEFINE_int(vad_likelihood,
                   kParameterNotSpecifiedValue,
@@ -190,6 +190,10 @@ WEBRTC_DEFINE_int(
     kParameterNotSpecifiedValue,
     "Specify which microphone kind to use for microphone simulation");
 WEBRTC_DEFINE_bool(performance_report, false, "Report the APM performance ");
+WEBRTC_DEFINE_string(performance_report_output_file,
+                     "",
+                     "Generate a CSV file with the API call durations");
+
 WEBRTC_DEFINE_bool(verbose, false, "Produce verbose output");
 WEBRTC_DEFINE_bool(quiet,
                    false,
@@ -206,6 +210,10 @@ WEBRTC_DEFINE_bool(store_intermediate_output,
 WEBRTC_DEFINE_string(custom_call_order_file,
                      "",
                      "Custom process API call order file");
+WEBRTC_DEFINE_string(
+    output_custom_call_order_file,
+    "",
+    "Generate custom process API call order file from AEC dump");
 WEBRTC_DEFINE_bool(print_aec_parameter_values,
                    false,
                    "Print parameter values used in AEC in JSON-format");
@@ -229,6 +237,14 @@ void SetSettingIfSpecified(const std::string& value,
 
 void SetSettingIfSpecified(int value, absl::optional<int>* parameter) {
   if (value != kParameterNotSpecifiedValue) {
+    *parameter = value;
+  }
+}
+
+void SetSettingIfSpecified(float value, absl::optional<float>* parameter) {
+  constexpr float kFloatParameterNotSpecifiedValue =
+      kParameterNotSpecifiedValue;
+  if (value != kFloatParameterNotSpecifiedValue) {
     *parameter = value;
   }
 }
@@ -331,7 +347,8 @@ SimulationSettings CreateSettings() {
   settings.agc2_fixed_gain_db = FLAG_agc2_fixed_gain_db;
   settings.agc2_adaptive_level_estimator =
       MapAgc2AdaptiveLevelEstimator(FLAG_agc2_adaptive_level_estimator);
-  settings.pre_amplifier_gain_factor = FLAG_pre_amplifier_gain_factor;
+  SetSettingIfSpecified(FLAG_pre_amplifier_gain_factor,
+                        &settings.pre_amplifier_gain_factor);
   SetSettingIfSpecified(FLAG_vad_likelihood, &settings.vad_likelihood);
   SetSettingIfSpecified(FLAG_ns_level, &settings.ns_level);
   SetSettingIfSpecified(FLAG_stream_delay, &settings.stream_delay);
@@ -339,12 +356,16 @@ SimulationSettings CreateSettings() {
   SetSettingIfSpecified(FLAG_stream_drift_samples,
                         &settings.stream_drift_samples);
   SetSettingIfSpecified(FLAG_custom_call_order_file,
-                        &settings.custom_call_order_filename);
+                        &settings.call_order_input_filename);
+  SetSettingIfSpecified(FLAG_output_custom_call_order_file,
+                        &settings.call_order_output_filename);
   SetSettingIfSpecified(FLAG_aec_settings, &settings.aec_settings_filename);
   settings.initial_mic_level = FLAG_initial_mic_level;
   settings.simulate_mic_gain = FLAG_simulate_mic_gain;
   SetSettingIfSpecified(FLAG_simulated_mic_kind, &settings.simulated_mic_kind);
   settings.report_performance = FLAG_performance_report;
+  SetSettingIfSpecified(FLAG_performance_report_output_file,
+                        &settings.performance_report_output_filename);
   settings.use_verbose_logging = FLAG_verbose;
   settings.use_quiet_output = FLAG_quiet;
   settings.report_bitexactness = FLAG_bitexactness_report;
@@ -454,7 +475,7 @@ void PerformBasicParameterSanityChecks(const SimulationSettings& settings) {
       "aecdump\n");
 
   ReportConditionalErrorAndExit(
-      settings.custom_call_order_filename && settings.aec_dump_input_filename,
+      settings.call_order_input_filename && settings.aec_dump_input_filename,
       "Error: --custom_call_order_file cannot be used when operating on an "
       "aecdump\n");
 
@@ -514,6 +535,17 @@ void PerformBasicParameterSanityChecks(const SimulationSettings& settings) {
       !settings.dump_internal_data &&
           settings.dump_internal_data_output_dir.has_value(),
       "Error: --dump_data_output_dir cannot be set without --dump_data.\n");
+
+  ReportConditionalErrorAndExit(
+      !settings.aec_dump_input_filename &&
+          settings.call_order_output_filename.has_value(),
+      "Error: --output_custom_call_order_file needs an AEC dump input file.\n");
+
+  ReportConditionalErrorAndExit(
+      (!settings.use_pre_amplifier || !(*settings.use_pre_amplifier)) &&
+          settings.pre_amplifier_gain_factor.has_value(),
+      "Error: --pre_amplifier_gain_factor needs --pre_amplifier to be "
+      "specified and set.\n");
 }
 
 }  // namespace
@@ -544,18 +576,11 @@ int AudioprocFloatImpl(std::unique_ptr<AudioProcessingBuilder> ap_builder,
   processor->Process();
 
   if (settings.report_performance) {
-    const auto& proc_time = processor->proc_time();
-    int64_t exec_time_us = proc_time.sum / rtc::kNumNanosecsPerMicrosec;
-    std::cout << std::endl
-              << "Execution time: " << exec_time_us * 1e-6 << " s, File time: "
-              << processor->get_num_process_stream_calls() * 1.f /
-                     AudioProcessingSimulator::kChunksPerSecond
-              << std::endl
-              << "Time per fwd stream chunk (mean, max, min): " << std::endl
-              << exec_time_us * 1.f / processor->get_num_process_stream_calls()
-              << " us, " << 1.f * proc_time.max / rtc::kNumNanosecsPerMicrosec
-              << " us, " << 1.f * proc_time.min / rtc::kNumNanosecsPerMicrosec
-              << " us" << std::endl;
+    processor->GetApiCallStatistics().PrintReport();
+  }
+  if (settings.performance_report_output_filename) {
+    processor->GetApiCallStatistics().WriteReportToFile(
+        *settings.performance_report_output_filename);
   }
 
   if (settings.report_bitexactness && settings.aec_dump_input_filename) {

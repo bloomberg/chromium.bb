@@ -34,7 +34,7 @@ void SurfaceKHR::getSurfaceCapabilities(VkSurfaceCapabilitiesKHR *pSurfaceCapabi
 
 uint32_t SurfaceKHR::getSurfaceFormatsCount() const
 {
-	return surfaceFormats.size();
+	return static_cast<uint32_t>(surfaceFormats.size());
 }
 
 VkResult SurfaceKHR::getSurfaceFormats(uint32_t *pSurfaceFormatCount, VkSurfaceFormatKHR *pSurfaceFormats) const
@@ -83,6 +83,19 @@ VkResult SurfaceKHR::getPresentModes(uint32_t *pPresentModeCount, VkPresentModeK
 	return VK_SUCCESS;
 }
 
+void SurfaceKHR::associateSwapchain(VkSwapchainKHR swapchain)
+{
+	associatedSwapchain = swapchain;
+}
 
+void SurfaceKHR::disassociateSwapchain()
+{
+	associatedSwapchain = VK_NULL_HANDLE;
+}
+
+VkSwapchainKHR SurfaceKHR::getAssociatedSwapchain()
+{
+	return associatedSwapchain;
+}
 
 }

@@ -11,7 +11,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom.h"
+#include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom.h"
 
 namespace viz {
 class HostFrameSinkManager;

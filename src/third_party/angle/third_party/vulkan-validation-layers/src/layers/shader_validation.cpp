@@ -32,8 +32,8 @@
 #include "vk_layer_data.h"
 #include "vk_layer_extension_utils.h"
 #include "vk_layer_utils.h"
+#include "chassis.h"
 #include "core_validation.h"
-#include "core_validation_types.h"
 #include "shader_validation.h"
 #include "spirv-tools/libspirv.h"
 #include "xxhash.h"
@@ -941,6 +941,9 @@ static bool ValidateFsOutputsAgainstRenderPass(debug_report_data const *report_d
     auto it_a = outputs.begin();
     auto it_b = color_attachments.begin();
     bool used = false;
+    bool alphaToCoverageEnabled = pipeline->graphicsPipelineCI.pMultisampleState != NULL &&
+                                  pipeline->graphicsPipelineCI.pMultisampleState->alphaToCoverageEnable == VK_TRUE;
+    bool locationZeroHasAlpha = false;
 
     // Walk attachment list and outputs together
 
@@ -948,10 +951,16 @@ static bool ValidateFsOutputsAgainstRenderPass(debug_report_data const *report_d
         bool a_at_end = outputs.size() == 0 || it_a == outputs.end();
         bool b_at_end = color_attachments.size() == 0 || it_b == color_attachments.end();
 
+        if (!a_at_end && it_a->first.first == 0 && fs->get_def(it_a->second.type_id) != fs->end() &&
+            GetComponentsConsumedByType(fs, it_a->second.type_id, false) == 4)
+            locationZeroHasAlpha = true;
+
         if (!a_at_end && (b_at_end || it_a->first.first < it_b->first)) {
-            skip |= log_msg(report_data, VK_DEBUG_REPORT_WARNING_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT,
-                            HandleToUint64(fs->vk_shader_module), kVUID_Core_Shader_OutputNotConsumed,
-                            "fragment shader writes to output location %d with no matching attachment", it_a->first.first);
+            if (!alphaToCoverageEnabled || it_a->first.first != 0) {
+                skip |= log_msg(report_data, VK_DEBUG_REPORT_WARNING_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT,
+                                HandleToUint64(fs->vk_shader_module), kVUID_Core_Shader_OutputNotConsumed,
+                                "fragment shader writes to output location %d with no matching attachment", it_a->first.first);
+            }
             it_a++;
         } else if (!b_at_end && (a_at_end || it_a->first.first > it_b->first)) {
             // Only complain if there are unmasked channels for this attachment. If the writemask is 0, it's acceptable for the
@@ -983,6 +992,12 @@ static bool ValidateFsOutputsAgainstRenderPass(debug_report_data const *report_d
             it_a++;
             used = true;
         }
+    }
+
+    if (alphaToCoverageEnabled && !locationZeroHasAlpha) {
+        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT,
+                        HandleToUint64(fs->vk_shader_module), kVUID_Core_Shader_NoAlphaAtLocation0WithAlphaToCoverage,
+                        "fragment shader doesn't declare alpha output at location 0 even though alpha to coverage is enabled.");
     }
 
     return skip;
@@ -1404,13 +1419,12 @@ static bool RequireExtension(debug_report_data const *report_data, bool extensio
     return false;
 }
 
-static bool ValidateShaderCapabilities(layer_data *dev_data, shader_module const *src, VkShaderStageFlagBits stage,
-                                       bool has_writable_descriptor) {
+bool CoreChecks::ValidateShaderCapabilities(layer_data *dev_data, shader_module const *src, VkShaderStageFlagBits stage,
+                                            bool has_writable_descriptor) {
     bool skip = false;
 
-    auto report_data = GetReportData(dev_data);
-    auto const &features = GetEnabledFeatures(dev_data);
-    auto const &extensions = GetDeviceExtensions(dev_data);
+    auto const &features = GetEnabledFeatures();
+    auto const &extensions = GetDeviceExtensions();
 
     struct FeaturePointer {
         // Callable object to test if this feature is enabled in the given aggregate feature struct
@@ -1632,16 +1646,15 @@ static bool VariableIsBuiltIn(shader_module const *src, const uint32_t ID, std::
     return false;
 }
 
-static bool ValidateShaderStageInputOutputLimits(layer_data *dev_data, shader_module const *src,
-                                                 VkPipelineShaderStageCreateInfo const *pStage, PIPELINE_STATE *pipeline) {
+bool CoreChecks::ValidateShaderStageInputOutputLimits(layer_data *dev_data, shader_module const *src,
+                                                      VkPipelineShaderStageCreateInfo const *pStage, PIPELINE_STATE *pipeline) {
     if (pStage->stage == VK_SHADER_STAGE_COMPUTE_BIT || pStage->stage == VK_SHADER_STAGE_ALL_GRAPHICS ||
         pStage->stage == VK_SHADER_STAGE_ALL) {
         return false;
     }
 
     bool skip = false;
-    auto const &properties = GetPhysDevProperties(dev_data);
-    auto const report_data = GetReportData(dev_data);
+    auto const &limits = dev_data->phys_dev_props.limits;
 
     std::vector<uint32_t> builtInBlockIDs;
     std::vector<uint32_t> builtInIDs;
@@ -1717,89 +1730,85 @@ static bool ValidateShaderStageInputOutputLimits(layer_data *dev_data, shader_mo
 
     switch (pStage->stage) {
         case VK_SHADER_STAGE_VERTEX_BIT:
-            if (numCompOut > properties->properties.limits.maxVertexOutputComponents) {
+            if (numCompOut > limits.maxVertexOutputComponents) {
                 skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
                                 HandleToUint64(pipeline->pipeline), kVUID_Core_Shader_ExceedDeviceLimit,
                                 "Invalid Pipeline CreateInfo State: Vertex shader exceeds "
                                 "VkPhysicalDeviceLimits::maxVertexOutputComponents of %u "
                                 "components by %u components",
-                                properties->properties.limits.maxVertexOutputComponents,
-                                numCompOut - properties->properties.limits.maxVertexOutputComponents);
+                                limits.maxVertexOutputComponents, numCompOut - limits.maxVertexOutputComponents);
             }
             break;
 
         case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
-            if (numCompIn > properties->properties.limits.maxTessellationControlPerVertexInputComponents) {
+            if (numCompIn > limits.maxTessellationControlPerVertexInputComponents) {
                 skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
                                 HandleToUint64(pipeline->pipeline), kVUID_Core_Shader_ExceedDeviceLimit,
                                 "Invalid Pipeline CreateInfo State: Tessellation control shader exceeds "
                                 "VkPhysicalDeviceLimits::maxTessellationControlPerVertexInputComponents of %u "
                                 "components by %u components",
-                                properties->properties.limits.maxTessellationControlPerVertexInputComponents,
-                                numCompIn - properties->properties.limits.maxTessellationControlPerVertexInputComponents);
+                                limits.maxTessellationControlPerVertexInputComponents,
+                                numCompIn - limits.maxTessellationControlPerVertexInputComponents);
             }
-            if (numCompOut > properties->properties.limits.maxTessellationControlPerVertexOutputComponents) {
+            if (numCompOut > limits.maxTessellationControlPerVertexOutputComponents) {
                 skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
                                 HandleToUint64(pipeline->pipeline), kVUID_Core_Shader_ExceedDeviceLimit,
                                 "Invalid Pipeline CreateInfo State: Tessellation control shader exceeds "
                                 "VkPhysicalDeviceLimits::maxTessellationControlPerVertexOutputComponents of %u "
                                 "components by %u components",
-                                properties->properties.limits.maxTessellationControlPerVertexOutputComponents,
-                                numCompOut - properties->properties.limits.maxTessellationControlPerVertexOutputComponents);
+                                limits.maxTessellationControlPerVertexOutputComponents,
+                                numCompOut - limits.maxTessellationControlPerVertexOutputComponents);
             }
             break;
 
         case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
-            if (numCompIn > properties->properties.limits.maxTessellationEvaluationInputComponents) {
+            if (numCompIn > limits.maxTessellationEvaluationInputComponents) {
                 skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
                                 HandleToUint64(pipeline->pipeline), kVUID_Core_Shader_ExceedDeviceLimit,
                                 "Invalid Pipeline CreateInfo State: Tessellation evaluation shader exceeds "
                                 "VkPhysicalDeviceLimits::maxTessellationEvaluationInputComponents of %u "
                                 "components by %u components",
-                                properties->properties.limits.maxTessellationEvaluationInputComponents,
-                                numCompIn - properties->properties.limits.maxTessellationEvaluationInputComponents);
+                                limits.maxTessellationEvaluationInputComponents,
+                                numCompIn - limits.maxTessellationEvaluationInputComponents);
             }
-            if (numCompOut > properties->properties.limits.maxTessellationEvaluationOutputComponents) {
+            if (numCompOut > limits.maxTessellationEvaluationOutputComponents) {
                 skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
                                 HandleToUint64(pipeline->pipeline), kVUID_Core_Shader_ExceedDeviceLimit,
                                 "Invalid Pipeline CreateInfo State: Tessellation evaluation shader exceeds "
                                 "VkPhysicalDeviceLimits::maxTessellationEvaluationOutputComponents of %u "
                                 "components by %u components",
-                                properties->properties.limits.maxTessellationEvaluationOutputComponents,
-                                numCompOut - properties->properties.limits.maxTessellationEvaluationOutputComponents);
+                                limits.maxTessellationEvaluationOutputComponents,
+                                numCompOut - limits.maxTessellationEvaluationOutputComponents);
             }
             break;
 
         case VK_SHADER_STAGE_GEOMETRY_BIT:
-            if (numCompIn > properties->properties.limits.maxGeometryInputComponents) {
+            if (numCompIn > limits.maxGeometryInputComponents) {
                 skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
                                 HandleToUint64(pipeline->pipeline), kVUID_Core_Shader_ExceedDeviceLimit,
                                 "Invalid Pipeline CreateInfo State: Geometry shader exceeds "
                                 "VkPhysicalDeviceLimits::maxGeometryInputComponents of %u "
                                 "components by %u components",
-                                properties->properties.limits.maxGeometryInputComponents,
-                                numCompIn - properties->properties.limits.maxGeometryInputComponents);
+                                limits.maxGeometryInputComponents, numCompIn - limits.maxGeometryInputComponents);
             }
-            if (numCompOut > properties->properties.limits.maxGeometryOutputComponents) {
+            if (numCompOut > limits.maxGeometryOutputComponents) {
                 skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
                                 HandleToUint64(pipeline->pipeline), kVUID_Core_Shader_ExceedDeviceLimit,
                                 "Invalid Pipeline CreateInfo State: Geometry shader exceeds "
                                 "VkPhysicalDeviceLimits::maxGeometryOutputComponents of %u "
                                 "components by %u components",
-                                properties->properties.limits.maxGeometryOutputComponents,
-                                numCompOut - properties->properties.limits.maxGeometryOutputComponents);
+                                limits.maxGeometryOutputComponents, numCompOut - limits.maxGeometryOutputComponents);
             }
             break;
 
         case VK_SHADER_STAGE_FRAGMENT_BIT:
-            if (numCompIn > properties->properties.limits.maxFragmentInputComponents) {
+            if (numCompIn > limits.maxFragmentInputComponents) {
                 skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
                                 HandleToUint64(pipeline->pipeline), kVUID_Core_Shader_ExceedDeviceLimit,
                                 "Invalid Pipeline CreateInfo State: Fragment shader exceeds "
                                 "VkPhysicalDeviceLimits::maxFragmentInputComponents of %u "
                                 "components by %u components",
-                                properties->properties.limits.maxFragmentInputComponents,
-                                numCompIn - properties->properties.limits.maxFragmentInputComponents);
+                                limits.maxFragmentInputComponents, numCompIn - limits.maxFragmentInputComponents);
             }
             break;
 
@@ -1819,7 +1828,7 @@ static bool ValidateShaderStageInputOutputLimits(layer_data *dev_data, shader_mo
     return skip;
 }
 
-static uint32_t DescriptorTypeToReqs(shader_module const *module, uint32_t type_id) {
+uint32_t DescriptorTypeToReqs(shader_module const *module, uint32_t type_id) {
     auto type = module->get_def(type_id);
 
     while (true) {
@@ -1930,8 +1939,8 @@ static void ProcessExecutionModes(shader_module const *src, spirv_inst_iter entr
 //            * gl_PointSize must be written in the final geometry stage
 //        - If shaderTessellationAndGeometryPointSize feature is disabled:
 //            * gl_PointSize must NOT be written and a default of 1.0 is assumed
-bool ValidatePointListShaderState(const layer_data *dev_data, const PIPELINE_STATE *pipeline, shader_module const *src,
-                                  spirv_inst_iter entrypoint, VkShaderStageFlagBits stage) {
+bool CoreChecks::ValidatePointListShaderState(const layer_data *dev_data, const PIPELINE_STATE *pipeline, shader_module const *src,
+                                              spirv_inst_iter entrypoint, VkShaderStageFlagBits stage) {
     if (pipeline->topology_at_rasterizer != VK_PRIMITIVE_TOPOLOGY_POINT_LIST) {
         return false;
     }
@@ -1961,16 +1970,16 @@ bool ValidatePointListShaderState(const layer_data *dev_data, const PIPELINE_STA
     }
 
     if ((stage == VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT || stage == VK_SHADER_STAGE_GEOMETRY_BIT) &&
-        !GetEnabledFeatures(dev_data)->core.shaderTessellationAndGeometryPointSize) {
+        !GetEnabledFeatures()->core.shaderTessellationAndGeometryPointSize) {
         if (pointsize_written) {
-            skip |= log_msg(GetReportData(dev_data), VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
+            skip |= log_msg(GetReportData(), VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
                             HandleToUint64(pipeline->pipeline), kVUID_Core_Shader_PointSizeBuiltInOverSpecified,
                             "Pipeline topology is set to POINT_LIST and geometry or tessellation shaders write PointSize which "
                             "is prohibited when the shaderTessellationAndGeometryPointSize feature is not enabled.");
         }
     } else if (!pointsize_written) {
         skip |=
-            log_msg(GetReportData(dev_data), VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
+            log_msg(GetReportData(), VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
                     HandleToUint64(pipeline->pipeline), kVUID_Core_Shader_MissingPointSizeBuiltIn,
                     "Pipeline topology is set to POINT_LIST, but PointSize is not written to in the shader corresponding to %s.",
                     string_VkShaderStageFlagBits(stage));
@@ -1978,12 +1987,12 @@ bool ValidatePointListShaderState(const layer_data *dev_data, const PIPELINE_STA
     return skip;
 }
 
-static bool ValidatePipelineShaderStage(layer_data *dev_data, VkPipelineShaderStageCreateInfo const *pStage,
-                                        PIPELINE_STATE *pipeline, shader_module const **out_module, spirv_inst_iter *out_entrypoint,
-                                        bool check_point_size) {
+bool CoreChecks::ValidatePipelineShaderStage(layer_data *dev_data, VkPipelineShaderStageCreateInfo const *pStage,
+                                             PIPELINE_STATE *pipeline, shader_module const **out_module,
+                                             spirv_inst_iter *out_entrypoint, bool check_point_size) {
     bool skip = false;
-    auto module = *out_module = GetShaderModuleState(dev_data, pStage->module);
-    auto report_data = GetReportData(dev_data);
+    auto module = *out_module = GetShaderModuleState(pStage->module);
+    auto report_data = GetReportData();
 
     if (!module->has_valid_spirv) return false;
 
@@ -2169,11 +2178,11 @@ static inline uint32_t DetermineFinalGeomStage(PIPELINE_STATE *pipeline, VkGraph
 
 // Validate that the shaders used by the given pipeline and store the active_slots
 //  that are actually used by the pipeline into pPipeline->active_slots
-bool ValidateAndCapturePipelineShaderState(layer_data *dev_data, PIPELINE_STATE *pipeline) {
+bool CoreChecks::ValidateAndCapturePipelineShaderState(layer_data *dev_data, PIPELINE_STATE *pipeline) {
     auto pCreateInfo = pipeline->graphicsPipelineCI.ptr();
     int vertex_stage = GetShaderStageId(VK_SHADER_STAGE_VERTEX_BIT);
     int fragment_stage = GetShaderStageId(VK_SHADER_STAGE_FRAGMENT_BIT);
-    auto report_data = GetReportData(dev_data);
+    auto report_data = GetReportData();
 
     shader_module const *shaders[32];
     memset(shaders, 0, sizeof(shaders));
@@ -2232,7 +2241,7 @@ bool ValidateAndCapturePipelineShaderState(layer_data *dev_data, PIPELINE_STATE 
     return skip;
 }
 
-bool ValidateComputePipeline(layer_data *dev_data, PIPELINE_STATE *pipeline) {
+bool CoreChecks::ValidateComputePipeline(layer_data *dev_data, PIPELINE_STATE *pipeline) {
     auto pCreateInfo = pipeline->computePipelineCI.ptr();
 
     shader_module const *module;
@@ -2241,7 +2250,7 @@ bool ValidateComputePipeline(layer_data *dev_data, PIPELINE_STATE *pipeline) {
     return ValidatePipelineShaderStage(dev_data, &pCreateInfo->stage, pipeline, &module, &entrypoint, false);
 }
 
-bool ValidateRayTracingPipelineNV(layer_data *dev_data, PIPELINE_STATE *pipeline) {
+bool CoreChecks::ValidateRayTracingPipelineNV(layer_data *dev_data, PIPELINE_STATE *pipeline) {
     auto pCreateInfo = pipeline->raytracingPipelineCI.ptr();
 
     shader_module const *module;
@@ -2261,20 +2270,21 @@ static ValidationCache *GetValidationCacheInfo(VkShaderModuleCreateInfo const *p
     return nullptr;
 }
 
-bool PreCallValidateCreateShaderModule(layer_data *dev_data, VkShaderModuleCreateInfo const *pCreateInfo, bool *is_spirv,
-                                       bool *spirv_valid) {
+bool CoreChecks::PreCallValidateCreateShaderModule(VkDevice device, const VkShaderModuleCreateInfo *pCreateInfo,
+                                                   const VkAllocationCallbacks *pAllocator, VkShaderModule *pShaderModule) {
+    layer_data *device_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+
     bool skip = false;
     spv_result_t spv_valid = SPV_SUCCESS;
-    auto report_data = GetReportData(dev_data);
 
-    if (GetDisables(dev_data)->shader_validation) {
+    if (GetDisables()->shader_validation) {
         return false;
     }
 
-    auto have_glsl_shader = GetDeviceExtensions(dev_data)->vk_nv_glsl_shader;
+    auto have_glsl_shader = GetDeviceExtensions()->vk_nv_glsl_shader;
 
     if (!have_glsl_shader && (pCreateInfo->codeSize % 4)) {
-        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+        skip |= log_msg(device_data->report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
                         "VUID-VkShaderModuleCreateInfo-pCode-01376",
                         "SPIR-V module not valid: Codesize must be a multiple of 4 but is " PRINTF_SIZE_T_SPECIFIER ".",
                         pCreateInfo->codeSize);
@@ -2288,27 +2298,27 @@ bool PreCallValidateCreateShaderModule(layer_data *dev_data, VkShaderModuleCreat
 
         // Use SPIRV-Tools validator to try and catch any issues with the module itself
         spv_target_env spirv_environment = SPV_ENV_VULKAN_1_0;
-        if (GetApiVersion(dev_data) >= VK_API_VERSION_1_1) {
+        if (GetApiVersion() >= VK_API_VERSION_1_1) {
             spirv_environment = SPV_ENV_VULKAN_1_1;
         }
         spv_context ctx = spvContextCreate(spirv_environment);
         spv_const_binary_t binary{pCreateInfo->pCode, pCreateInfo->codeSize / sizeof(uint32_t)};
         spv_diagnostic diag = nullptr;
         spv_validator_options options = spvValidatorOptionsCreate();
-        if (GetDeviceExtensions(dev_data)->vk_khr_relaxed_block_layout) {
+        if (GetDeviceExtensions()->vk_khr_relaxed_block_layout) {
             spvValidatorOptionsSetRelaxBlockLayout(options, true);
         }
-        if (GetDeviceExtensions(dev_data)->vk_ext_scalar_block_layout &&
-            GetEnabledFeatures(dev_data)->scalar_block_layout_features.scalarBlockLayout == VK_TRUE) {
+        if (GetDeviceExtensions()->vk_ext_scalar_block_layout &&
+            GetEnabledFeatures()->scalar_block_layout_features.scalarBlockLayout == VK_TRUE) {
             spvValidatorOptionsSetScalarBlockLayout(options, true);
         }
         spv_valid = spvValidateWithOptions(ctx, options, &binary, &diag);
         if (spv_valid != SPV_SUCCESS) {
             if (!have_glsl_shader || (pCreateInfo->pCode[0] == spv::MagicNumber)) {
-                skip |=
-                    log_msg(report_data, spv_valid == SPV_WARNING ? VK_DEBUG_REPORT_WARNING_BIT_EXT : VK_DEBUG_REPORT_ERROR_BIT_EXT,
-                            VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0, kVUID_Core_Shader_InconsistentSpirv,
-                            "SPIR-V module not valid: %s", diag && diag->error ? diag->error : "(no error text)");
+                skip |= log_msg(device_data->report_data,
+                                spv_valid == SPV_WARNING ? VK_DEBUG_REPORT_WARNING_BIT_EXT : VK_DEBUG_REPORT_ERROR_BIT_EXT,
+                                VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0, kVUID_Core_Shader_InconsistentSpirv,
+                                "SPIR-V module not valid: %s", diag && diag->error ? diag->error : "(no error text)");
             }
         } else {
             if (cache) {
@@ -2321,7 +2331,33 @@ bool PreCallValidateCreateShaderModule(layer_data *dev_data, VkShaderModuleCreat
         spvContextDestroy(ctx);
     }
 
-    *is_spirv = (pCreateInfo->pCode[0] == spv::MagicNumber);
-    *spirv_valid = (spv_valid == SPV_SUCCESS);
     return skip;
+}
+
+void CoreChecks::PreCallRecordCreateShaderModule(VkDevice device, const VkShaderModuleCreateInfo *pCreateInfo,
+                                                 const VkAllocationCallbacks *pAllocator, VkShaderModule *pShaderModule,
+                                                 void *csm_state_data) {
+    layer_data *device_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+
+    create_shader_module_api_state *csm_state = reinterpret_cast<create_shader_module_api_state *>(csm_state_data);
+    if (GetEnables()->gpu_validation) {
+        GpuPreCallCreateShaderModule(device_data, pCreateInfo, pAllocator, pShaderModule, &csm_state->unique_shader_id,
+                                     &csm_state->instrumented_create_info, &csm_state->instrumented_pgm);
+    }
+}
+
+void CoreChecks::PostCallRecordCreateShaderModule(VkDevice device, const VkShaderModuleCreateInfo *pCreateInfo,
+                                                  const VkAllocationCallbacks *pAllocator, VkShaderModule *pShaderModule,
+                                                  VkResult result, void *csm_state_data) {
+    layer_data *device_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+
+    if (VK_SUCCESS != result) return;
+    create_shader_module_api_state *csm_state = reinterpret_cast<create_shader_module_api_state *>(csm_state_data);
+
+    spv_target_env spirv_environment = ((GetApiVersion() >= VK_API_VERSION_1_1) ? SPV_ENV_VULKAN_1_1 : SPV_ENV_VULKAN_1_0);
+    bool is_spirv = (pCreateInfo->pCode[0] == spv::MagicNumber);
+    std::unique_ptr<shader_module> new_shader_module(
+        is_spirv ? new shader_module(pCreateInfo, *pShaderModule, spirv_environment, csm_state->unique_shader_id)
+                 : new shader_module());
+    device_data->shaderModuleMap[*pShaderModule] = std::move(new_shader_module);
 }

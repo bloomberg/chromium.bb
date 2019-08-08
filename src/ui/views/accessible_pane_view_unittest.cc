@@ -17,7 +17,7 @@ namespace views {
 // TODO(alicet): bring pane rotation into views and add tests.
 //               See browser_view.cc for details.
 
-typedef ViewsTestBase AccessiblePaneViewTest;
+using AccessiblePaneViewTest = ViewsTestBase;
 
 class TestBarView : public AccessiblePaneView,
                     public ButtonListener {
@@ -51,7 +51,7 @@ TestBarView::TestBarView() {
   set_allow_deactivate_on_esc(true);
 }
 
-TestBarView::~TestBarView() {}
+TestBarView::~TestBarView() = default;
 
 void TestBarView::ButtonPressed(Button* sender, const ui::Event& event) {
 }
@@ -59,13 +59,13 @@ void TestBarView::ButtonPressed(Button* sender, const ui::Event& event) {
 void TestBarView::Init() {
   SetLayoutManager(std::make_unique<FillLayout>());
   base::string16 label;
-  child_button_.reset(new LabelButton(this, label));
+  child_button_ = std::make_unique<LabelButton>(this, label);
   AddChildView(child_button_.get());
-  second_child_button_.reset(new LabelButton(this, label));
+  second_child_button_ = std::make_unique<LabelButton>(this, label);
   AddChildView(second_child_button_.get());
-  third_child_button_.reset(new LabelButton(this, label));
+  third_child_button_ = std::make_unique<LabelButton>(this, label);
   AddChildView(third_child_button_.get());
-  not_child_button_.reset(new LabelButton(this, label));
+  not_child_button_ = std::make_unique<LabelButton>(this, label);
 }
 
 View* TestBarView::GetDefaultFocusableChild() {

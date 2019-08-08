@@ -35,8 +35,6 @@ net::HttpRequestHeaders GetWebURLRequestHeaders(
 std::string GetWebURLRequestHeadersAsString(
     const blink::WebURLRequest& request);
 
-int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request);
-
 // Takes a ResourceRequestBody and converts into WebHTTPBody.
 blink::WebHTTPBody GetWebHTTPBodyForRequestBody(
     const network::ResourceRequestBody& input);
@@ -49,7 +47,7 @@ blink::WebHTTPBody GetWebHTTPBodyForRequestBodyWithBlobPtrs(
     std::vector<blink::mojom::BlobPtrInfo> blob_ptrs);
 
 // Takes a ResourceRequestBody and gets blob pointers for Blob entries.
-// Used only in non-NetworkService cases but with S13nServiceWorker.
+// Used only in non-NetworkService case.
 // TODO(kinuko): Remove this once Network Service is shipped.
 std::vector<blink::mojom::BlobPtrInfo> GetBlobPtrsForRequestBody(
     const network::ResourceRequestBody& input);

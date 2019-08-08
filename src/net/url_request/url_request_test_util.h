@@ -204,7 +204,7 @@ class TestDelegate : public URLRequest::Delegate {
                           const RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
   void OnAuthRequired(URLRequest* request,
-                      AuthChallengeInfo* auth_info) override;
+                      const AuthChallengeInfo& auth_info) override;
   // NOTE: |fatal| causes |certificate_errors_are_fatal_| to be set to true.
   // (Unit tests use this as a post-condition.) But for policy, this method
   // consults |allow_certificate_errors_|.

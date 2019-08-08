@@ -7,6 +7,14 @@ Polymer({
 
   behaviors: [welcome.NavigationBehavior],
 
+  properties: {
+    /** @private */
+    signinAllowed_: {
+      type: Boolean,
+      value: () => loadTimeData.getBoolean('signinAllowed'),
+    }
+  },
+
   /** @private {?nux.LandingViewProxy} */
   landingViewProxy_: null,
 
@@ -36,8 +44,12 @@ Polymer({
   onExistingUserClick_: function() {
     this.finalized_ = true;
     this.landingViewProxy_.recordExistingUser();
-    welcome.WelcomeBrowserProxyImpl.getInstance().handleActivateSignIn(
+    if (this.signinAllowed_) {
+      welcome.WelcomeBrowserProxyImpl.getInstance().handleActivateSignIn(
         'chrome://welcome/returning-user');
+    } else {
+      welcome.navigateTo(welcome.Routes.RETURNING_USER, 1);
+    }
   },
 
   /** @private */

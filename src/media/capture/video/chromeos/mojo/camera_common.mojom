@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next min version: 2
+// Next min version: 3
 
 module cros.mojom;
 
@@ -57,11 +57,37 @@ interface CameraModuleCallbacks {
   TorchModeStatusChange@1(int32 camera_id, TorchModeStatus new_status);
 };
 
+// VendorTagOps is a translation of the vendor_tag_ops_t API
+// (https://goo.gl/3aLWv3). This structure contains basic functions for
+// enumerating an immutable set of vendor-defined camera metadata tags, and
+// querying static information about their structure/type.
+//
+// Next method ID: 5
+// TODO(hywu): evaluate passing an array of vendor tags along with their
+// section names, tag names, and types
+interface VendorTagOps {
+  // Get the number of vendor tags supported on this platform. Return -1 on
+  // error.
+  GetTagCount@0() => (int32 result);
+
+  // Fill an array with all of the supported vendor tags on this platform.
+  GetAllTags@1() => (array<uint32> tag_array);
+
+  // Get the vendor section name for a vendor-specified entry tag.
+  GetSectionName@2(uint32 tag) => (string? name);
+
+  // Get the tag name for a vendor-specified entry tag.
+  GetTagName@3(uint32 tag) => (string? name);
+
+  // Get tag type for a vendor-specified entry tag. Return -1 on error.
+  GetTagType@4(uint32 tag) => (int32 type);
+};
+
 // CameraModule is a translation of the camera_module_t API
 // (https://goo.gl/8Hf8S8).  CameraModule is the interface to interact with a
 // camera HAL to query device info and open camera devices.
 //
-// Next method ID: 6
+// Next method ID: 7
 interface CameraModule {
   // Opens the camera device specified by |camera_id|.  On success, the camera
   // device is accessible through the |device_ops| returned.
@@ -87,4 +113,10 @@ interface CameraModule {
   // one-time operations.
   [MinVersion=1]
   Init@5() => (int32 result);
+
+  // Get methods to query for vendor extension metadata tag information. The HAL
+  // should fill in all the vendor tag operation methods, or leave ops unchanged
+  // if no vendor tags are defined.
+  [MinVersion=2]
+  GetVendorTagOps@6(VendorTagOps& vendor_tag_ops_request) => ();
 };

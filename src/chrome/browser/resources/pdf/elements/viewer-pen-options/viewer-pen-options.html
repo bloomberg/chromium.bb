@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 
 <dom-module id="viewer-pen-options">
   <template>
@@ -14,21 +15,20 @@
     #colors {
       overflow: hidden;
     }
-    input,
     #expand {
-      height: 32px;
-      width: 32px;
-    }
-    #expand {
+      --cr-icon-button-icon-size: 16px;
+      --cr-icon-button-size: 32px;
       grid-column: 8;
       grid-row: 1 / 4;
+      margin: 0;
     }
     input {
       -webkit-appearance: none;
       border-radius: 16px;
+      height: 32px;
       margin: 0;
       padding: 0;
-
+      width: 32px;
     }
     #sizes input {
       background: black;
@@ -70,12 +70,9 @@
             aria-label$="[[lookup_(strings, item.name)]]"
             on-pointerdown="blurOnPointerDown">
       </template>
-      <paper-icon-button id="expand" icon="cr:expand-more"
-          tabindex="3"
-          on-click="toggleExpanded_"
-          aria-label$="[[strings.annotationExpand]]"
-          title$="[[strings.annotationExpand]]">
-      </paper-icon-button>
+      <cr-icon-button id="expand" iron-icon="cr:expand-more" tabindex="3"
+          on-click="toggleExpanded_" aria-label$="[[strings.annotationExpand]]"
+          title$="[[strings.annotationExpand]]"></cr-icon-button>
     </div>
     <div id="separator"></div>
     <div id="sizes" on-change="sizeChanged_">
@@ -88,7 +85,6 @@
             on-pointerdown="blurOnPointerDown">
       </template>
     </div>
-    </paper-icon-button>
   </template>
   <script src="viewer-pen-options.js"></script>
 </dom-module>

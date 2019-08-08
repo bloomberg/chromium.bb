@@ -10,7 +10,7 @@
     <item>
         <shape>
             <corners android:radius="4dp" />
-            <solid android:color="@color/modern_primary_color" />
+            <solid android:color="@color/popup_bg_color" />
         </shape>
     </item>
 </layer-list>

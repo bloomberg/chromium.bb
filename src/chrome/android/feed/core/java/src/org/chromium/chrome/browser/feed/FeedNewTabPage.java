@@ -10,6 +10,7 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -26,11 +27,15 @@ import com.google.android.libraries.feed.host.stream.CardConfiguration;
 import com.google.android.libraries.feed.host.stream.SnackbarApi;
 import com.google.android.libraries.feed.host.stream.SnackbarCallbackApi;
 import com.google.android.libraries.feed.host.stream.StreamConfiguration;
+import com.google.android.libraries.feed.host.stream.TooltipApi;
+import com.google.android.libraries.feed.host.stream.TooltipCallbackApi;
+import com.google.android.libraries.feed.host.stream.TooltipInfo;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.feed.action.FeedActionHandler;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
@@ -100,6 +105,14 @@ public class FeedNewTabPage extends NewTabPage {
         }
     }
 
+    private static class BasicTooltipApi implements TooltipApi {
+        @Override
+        public boolean maybeShowHelpUi(
+                TooltipInfo tooltipInfo, View view, TooltipCallbackApi tooltipCallback) {
+            return false;
+        }
+    }
+
     private static class BasicStreamConfiguration implements StreamConfiguration {
         public BasicStreamConfiguration() {}
 
@@ -131,7 +144,7 @@ public class FeedNewTabPage extends NewTabPage {
         public BasicCardConfiguration(Resources resources, UiConfig uiConfig) {
             mResources = resources;
             mUiConfig = uiConfig;
-            mCornerRadius = mResources.getDimensionPixelSize(R.dimen.default_card_corner_radius);
+            mCornerRadius = mResources.getDimensionPixelSize(R.dimen.default_rounded_corner_radius);
             mCardMargin = mResources.getDimensionPixelSize(
                     R.dimen.content_suggestions_card_modern_margin);
             mCardWideMargin =
@@ -145,8 +158,10 @@ public class FeedNewTabPage extends NewTabPage {
 
         @Override
         public Drawable getCardBackground() {
-            return ApiCompatibilityUtils.getDrawable(
-                    mResources, R.drawable.hairline_border_card_background);
+            return ApiCompatibilityUtils.getDrawable(mResources,
+                    FeedConfiguration.getFeedUiEnabled()
+                            ? R.drawable.hairline_border_card_background_with_inset
+                            : R.drawable.hairline_border_card_background);
         }
 
         @Override
@@ -274,6 +289,7 @@ public class FeedNewTabPage extends NewTabPage {
 
         mRootView = new RootView(context, mConstructedTimeNs);
         mRootView.setPadding(0, topPadding, 0, 0);
+        mRootView.setTab(mTab);
         mUiConfig = new UiConfig(mRootView);
     }
 
@@ -341,8 +357,7 @@ public class FeedNewTabPage extends NewTabPage {
         ChromeActivity chromeActivity = mTab.getActivity();
         Profile profile = mTab.getProfile();
 
-        mImageLoader = new FeedImageLoader(
-                chromeActivity, chromeActivity.getChromeApplication().getReferencePool());
+        mImageLoader = new FeedImageLoader(chromeActivity, ChromeApplication.getReferencePool());
         FeedLoggingBridge loggingBridge = FeedProcessScopeFactory.getFeedLoggingBridge();
         FeedOfflineIndicator offlineIndicator = FeedProcessScopeFactory.getFeedOfflineIndicator();
         Runnable consumptionObserver = () -> {
@@ -355,6 +370,8 @@ public class FeedNewTabPage extends NewTabPage {
                 consumptionObserver, offlineIndicator, OfflinePageBridge.getForProfile(profile),
                 loggingBridge);
 
+        TooltipApi tooltipApi = new BasicTooltipApi();
+
         FeedStreamScope streamScope =
                 feedProcessScope
                         .createFeedStreamScopeBuilder(chromeActivity, mImageLoader, actionApi,
@@ -362,7 +379,9 @@ public class FeedNewTabPage extends NewTabPage {
                                 new BasicCardConfiguration(
                                         chromeActivity.getResources(), mUiConfig),
                                 new BasicSnackbarApi(mNewTabPageManager.getSnackbarManager()),
-                                offlineIndicator)
+                                offlineIndicator, tooltipApi)
+                        .setIsBackgroundDark(
+                                chromeActivity.getNightModeStateProvider().isInNightMode())
                         .build();
 
         mStream = streamScope.getStream();
@@ -384,6 +403,13 @@ public class FeedNewTabPage extends NewTabPage {
         mStream.setHeaderViews(Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
                 new NonDismissibleHeader(mSectionHeaderView)));
         mStream.addScrollListener(new FeedLoggingBridge.ScrollEventReporter(loggingBridge));
+
+        // Work around https://crbug.com/943873 where default focus highlight shows up after
+        // toggling dark mode.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            view.setDefaultFocusHighlightEnabled(false);
+        }
+
         // Explicitly request focus on the scroll container to avoid UrlBar being focused after
         // the scroll container for policy is removed.
         view.requestFocus();

@@ -84,8 +84,6 @@ class CORE_EXPORT TransitionInterpolation : public Interpolation {
 
   std::unique_ptr<TypedInterpolationValue> GetInterpolatedValue() const;
 
-  AnimatableValue* GetInterpolatedCompositorValue() const;
-
   void Interpolate(int iteration, double fraction) final;
 
   void Trace(Visitor* visitor) override {

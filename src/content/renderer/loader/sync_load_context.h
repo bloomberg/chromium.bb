@@ -33,12 +33,10 @@ struct SyncLoadResponse;
 
 // This class owns the context necessary to perform an asynchronous request
 // while the main thread is blocked so that it appears to be synchronous.
-// There are a few mode to load a request:
-//   1) kNonDataPipe: body is received on OnReceivedData(), and the body is set
-//      to response_.data.
-//   2) kDataPipe; body is received on a data pipe passed on
+// There are a couple of modes to load a request:
+//   1) kDataPipe; body is received on a data pipe passed on
 //      OnStartLoadingResponseBody(), and the body is set to response_.data.
-//   3) kBlob: body is received on a data pipe passed on
+//   2) kBlob: body is received on a data pipe passed on
 //      OnStartLoadingResponseBody(), and wraps the data pipe with a
 //      SerializedBlobPtr.
 class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
@@ -88,7 +86,6 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
   void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
@@ -109,7 +106,7 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
   // Set to null after CompleteRequest() is called.
   SyncLoadResponse* response_;
 
-  enum class Mode { kInitial, kNonDataPipe, kDataPipe, kBlob };
+  enum class Mode { kInitial, kDataPipe, kBlob };
   Mode mode_ = Mode::kInitial;
 
   // Used when Mode::kDataPipe.

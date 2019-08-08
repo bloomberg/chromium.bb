@@ -98,6 +98,13 @@ var tests = [
     Promise.all([printMessageArrived, contentRead]).then(chrome.test.succeed);
   },
 
+  function testIframeBasic() {
+    checkStreamDetails('testIframeBasic.csv', true);
+    fetchUrl(streamDetails.streamUrl)
+        .then(expectSuccessfulRead)
+        .then(chrome.test.succeed);
+  },
+
   function testAbort() {
     checkStreamDetails('testAbort.csv', false);
     chrome.mimeHandlerPrivate.abortStream(function() {
@@ -138,6 +145,14 @@ var tests = [
     while (queuedMessages.length) {
       handleMessage(queuedMessages.shift());
     }
+  },
+
+  function testPostMessageUMA() {
+    // The actual testing is done on the browser side. Pass so long as the
+    // resource is properly fetched.
+    fetchUrl(streamDetails.streamUrl)
+        .then(expectSuccessfulRead)
+        .then(chrome.test.succeed);
   },
 
   function testDataUrl() {

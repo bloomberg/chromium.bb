@@ -9,9 +9,11 @@ import re
 import scm
 import subprocess2
 import sys
-import urlparse
 
-from third_party import colorama
+try:
+  import urlparse
+except ImportError:  # For Py3 compatibility
+  import urllib.parse as urlparse
 
 
 # Current version of metrics recording.
@@ -277,26 +279,20 @@ def get_repo_timestamp(path_to_repo):
   # Get the age of the checkout in weeks.
   return seconds_to_weeks(stdout.strip())
 
-def print_red_boxed_text(out, min_width, lines):
-  colorama.init()
-  if sys.platform == 'win32':
-    [EW, NS, SE, SW, NE, NW] = list('=|++++')
-  else:
-    [EW, NS, SE, SW, NE, NW] = list(u'\u2501\u2503\u250F\u2513\u2517\u251B')
-  out(colorama.Fore.RED + colorama.Style.BRIGHT)
+def print_boxed_text(out, min_width, lines):
+  [EW, NS, SE, SW, NE, NW] = list('=|++++')
   width = max(min_width, max(len(line) for line in lines))
   out(SE + EW * (width + 2) + SW + '\n')
   for line in lines:
-     out('%s %-*s %s\n' % (NS, width, line, NS))
+    out('%s %-*s %s\n' % (NS, width, line, NS))
   out(NE + EW * (width + 2) + NW + '\n')
-  out(colorama.Style.RESET_ALL)
 
 def print_notice(countdown):
   """Print a notice to let the user know the status of metrics collection."""
   lines = list(get_notice_countdown_header(countdown))
   lines.append('')
   lines += list(get_notice_footer())
-  print_red_boxed_text(sys.stderr.write, 49, lines)
+  print_boxed_text(sys.stderr.write, 49, lines)
 
 def print_version_change(config_version):
   """Print a notice to let the user know we are collecting more metrics."""
@@ -304,4 +300,4 @@ def print_version_change(config_version):
   for version in xrange(config_version + 1, CURRENT_VERSION + 1):
     lines.append('')
     lines += list(get_change_notice(version))
-  print_red_boxed_text(sys.stderr.write, 49, lines)
+  print_boxed_text(sys.stderr.write, 49, lines)

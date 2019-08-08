@@ -63,10 +63,6 @@ using namespace html_names;
 
 class ImageEventListener : public NativeEventListener {
  public:
-  static ImageEventListener* Create(ImageDocument* document) {
-    return MakeGarbageCollected<ImageEventListener>(document);
-  }
-
   ImageEventListener(ImageDocument* document) : doc_(document) {}
 
   bool Matches(const EventListener& other) const override;
@@ -96,10 +92,6 @@ struct DowncastTraits<ImageEventListener> {
 
 class ImageDocumentParser : public RawDataDocumentParser {
  public:
-  static ImageDocumentParser* Create(ImageDocument* document) {
-    return MakeGarbageCollected<ImageDocumentParser>(document);
-  }
-
   ImageDocumentParser(ImageDocument* document)
       : RawDataDocumentParser(document) {}
 
@@ -213,7 +205,7 @@ ImageDocument::ImageDocument(const DocumentInit& initializer)
 }
 
 DocumentParser* ImageDocument::CreateParser() {
-  return ImageDocumentParser::Create(this);
+  return MakeGarbageCollected<ImageDocumentParser>(this);
 }
 
 IntSize ImageDocument::ImageSize() const {
@@ -271,7 +263,7 @@ void ImageDocument::CreateDocumentStructure() {
 
   WillInsertBody();
 
-  image_element_ = HTMLImageElement::Create(*this);
+  image_element_ = MakeGarbageCollected<HTMLImageElement>(*this);
   UpdateImageStyle();
   image_element_->SetLoadingImageDocument();
   image_element_->SetSrc(Url().GetString());
@@ -283,7 +275,7 @@ void ImageDocument::CreateDocumentStructure() {
 
   if (ShouldShrinkToFit()) {
     // Add event listeners
-    EventListener* listener = ImageEventListener::Create(this);
+    auto* listener = MakeGarbageCollected<ImageEventListener>(this);
     if (LocalDOMWindow* dom_window = domWindow())
       dom_window->addEventListener(event_type_names::kResize, listener, false);
 
@@ -486,7 +478,7 @@ void ImageDocument::WindowSizeChanged() {
 
   if (shrink_to_fit_mode_ == kViewport) {
     int div_width = CalculateDivWidth();
-    div_element_->SetInlineStyleProperty(CSSPropertyWidth, div_width,
+    div_element_->SetInlineStyleProperty(CSSPropertyID::kWidth, div_width,
                                          CSSPrimitiveValue::UnitType::kPixels);
 
     // Explicitly set the height of the <div> containing the <img> so that it
@@ -500,7 +492,7 @@ void ImageDocument::WindowSizeChanged() {
     float aspect_ratio = View()->GetLayoutSize().AspectRatio();
     int div_height = std::max(ImageSize().Height(),
                               static_cast<int>(div_width / aspect_ratio));
-    div_element_->SetInlineStyleProperty(CSSPropertyHeight, div_height,
+    div_element_->SetInlineStyleProperty(CSSPropertyID::kHeight, div_height,
                                          CSSPrimitiveValue::UnitType::kPixels);
     return;
   }

@@ -134,7 +134,7 @@ class DelayManager {
   // This accessor is only intended for testing purposes.
   HistogramMode histogram_mode() const { return histogram_mode_; }
   int histogram_quantile() const { return histogram_quantile_; }
-  int histogram_forget_factor() const { return histogram_->forget_factor(); }
+  Histogram* histogram() const { return histogram_.get(); }
 
  private:
   // Provides value which minimum delay can't exceed based on current buffer

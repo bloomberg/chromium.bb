@@ -148,15 +148,19 @@ bool CupsPrinter::InitializeDestInfo() const {
 
 ipp_status_t CupsPrinter::CreateJob(int* job_id,
                                     const std::string& title,
+                                    const base::Optional<std::string>& username,
                                     const std::vector<cups_option_t>& options) {
   DCHECK(dest_info_) << "Verify availability before starting a print job";
 
   cups_option_t* data = const_cast<cups_option_t*>(
       options.data());  // createDestJob will not modify the data
+  if (username)
+    cupsSetUser(username->c_str());
+
   ipp_status_t create_status =
       cupsCreateDestJob(cups_http_, destination_.get(), dest_info_.get(),
                         job_id, title.c_str(), options.size(), data);
-
+  cupsSetUser(nullptr);  // reset to default username ("anonymous")
   return create_status;
 }
 

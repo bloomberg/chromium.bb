@@ -10,19 +10,11 @@
 namespace keyboard {
 namespace switches {
 
-// Disables voice input.
-KEYBOARD_EXPORT extern const char kDisableVoiceInput[];
-
 // Flag which disables gesture typing for the virtual keyboard.
 KEYBOARD_EXPORT extern const char kDisableGestureTyping[];
 
 // Enables the virtual keyboard.
 KEYBOARD_EXPORT extern const char kEnableVirtualKeyboard[];
-
-// Disabled overscrolling of web content when the virtual keyboard is displayed.
-// If disabled, the work area is resized to restrict windows from overlapping
-// with the keybaord area.
-KEYBOARD_EXPORT extern const char kDisableVirtualKeyboardOverscroll[];
 
 }  // namespace switches
 }  // namespace keyboard

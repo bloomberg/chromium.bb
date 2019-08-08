@@ -15,7 +15,7 @@ namespace blink {
 
 namespace worker_pool {
 
-// These are a thin wrapper around base::TaskScheduler to ensure that all
+// These are a thin wrapper around base::ThreadPool to ensure that all
 // callers use WTF::CrossThreadBind instead of base::Bind to ensure that
 // all non-thread-safe objects are copied properly.
 //

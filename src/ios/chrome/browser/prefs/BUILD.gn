@@ -58,6 +58,7 @@ source_set("browser_prefs") {
     "//components/sync_sessions",
     "//components/translate/core/browser",
     "//components/translate/core/common",
+    "//components/ukm/ios:features",
     "//components/unified_consent",
     "//components/update_client",
     "//components/variations/service",
@@ -74,6 +75,7 @@ source_set("browser_prefs") {
     "//ios/chrome/browser/ui/bookmarks",
     "//ios/chrome/browser/voice:prefs",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/user",
     "//services/identity/public/cpp:cpp",
     "//ui/base",
   ]

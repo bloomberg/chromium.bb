@@ -109,7 +109,6 @@ void AwGLFunctor::DrawGL(AwDrawGLInfo* draw_info) {
       HardwareRendererDrawParams params{
           draw_info->clip_left,   draw_info->clip_top, draw_info->clip_right,
           draw_info->clip_bottom, draw_info->width,    draw_info->height,
-          draw_info->is_layer,
       };
       static_assert(base::size(decltype(draw_info->transform){}) ==
                         base::size(params.transform),

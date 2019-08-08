@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -47,21 +48,26 @@ const SVGEnumerationMap& GetEnumerationMap<TurbulenceType>() {
 inline SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFETurbulenceTag,
                                            document),
-      base_frequency_(
-          SVGAnimatedNumberOptionalNumber::Create(this,
-                                                  svg_names::kBaseFrequencyAttr,
-                                                  0.0f)),
-      seed_(SVGAnimatedNumber::Create(this, svg_names::kSeedAttr, 0.0f)),
-      stitch_tiles_(SVGAnimatedEnumeration<SVGStitchOptions>::Create(
+      base_frequency_(MakeGarbageCollected<SVGAnimatedNumberOptionalNumber>(
           this,
-          svg_names::kStitchTilesAttr,
-          kSvgStitchtypeNostitch)),
-      type_(SVGAnimatedEnumeration<TurbulenceType>::Create(
+          svg_names::kBaseFrequencyAttr,
+          0.0f)),
+      seed_(MakeGarbageCollected<SVGAnimatedNumber>(this,
+                                                    svg_names::kSeedAttr,
+                                                    0.0f)),
+      stitch_tiles_(
+          MakeGarbageCollected<SVGAnimatedEnumeration<SVGStitchOptions>>(
+              this,
+              svg_names::kStitchTilesAttr,
+              kSvgStitchtypeNostitch)),
+      type_(MakeGarbageCollected<SVGAnimatedEnumeration<TurbulenceType>>(
           this,
           svg_names::kTypeAttr,
           FETURBULENCE_TYPE_TURBULENCE)),
       num_octaves_(
-          SVGAnimatedInteger::Create(this, svg_names::kNumOctavesAttr, 1)) {
+          MakeGarbageCollected<SVGAnimatedInteger>(this,
+                                                   svg_names::kNumOctavesAttr,
+                                                   1)) {
   AddToPropertyMap(base_frequency_);
   AddToPropertyMap(seed_);
   AddToPropertyMap(stitch_tiles_);
@@ -121,7 +127,7 @@ void SVGFETurbulenceElement::SvgAttributeChanged(
 }
 
 FilterEffect* SVGFETurbulenceElement::Build(SVGFilterBuilder*, Filter* filter) {
-  return FETurbulence::Create(
+  return MakeGarbageCollected<FETurbulence>(
       filter, type_->CurrentValue()->EnumValue(),
       baseFrequencyX()->CurrentValue()->Value(),
       baseFrequencyY()->CurrentValue()->Value(),

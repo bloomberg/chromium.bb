@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/v8_value_converter.h"
+#include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/bindings/api_response_validator.h"
 #include "extensions/renderer/bindings/exception_handler.h"
 #include "extensions/renderer/bindings/js_runner.h"
@@ -301,6 +302,12 @@ void APIRequestHandler::CompleteRequestImpl(int request_id,
   JSRunner::Get(context)->RunJSFunction(pending_request.callback->Get(isolate),
                                         context, full_args.size(),
                                         full_args.data());
+
+  // Since arbitrary JS has ran, the context may have been invalidated. If it
+  // was, bail.
+  if (!binding::IsContextValid(context))
+    return;
+
   if (try_catch.HasCaught()) {
     v8::Local<v8::Message> v8_message = try_catch.Message();
     base::Optional<std::string> message;

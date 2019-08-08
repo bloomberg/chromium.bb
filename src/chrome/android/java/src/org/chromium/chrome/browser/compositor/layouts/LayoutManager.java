@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabFullscreenHandler;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -458,6 +459,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         mSceneChangeObservers.clear();
         if (mStaticLayout != null) mStaticLayout.destroy();
         if (mOverlayPanelManager != null) mOverlayPanelManager.destroy();
+        if (mEphemeralTabPanel != null) mEphemeralTabPanel.destroy();
         if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
         if (mTabModelSelectorObserver != null) {
             getTabModelSelector().removeObserver(mTabModelSelectorObserver);
@@ -508,8 +510,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     @Override
     public void releaseOverlayPanelContent() {
         if (getTabModelSelector() == null) return;
-        Tab tab = getTabModelSelector().getCurrentTab();
-        if (tab != null) tab.updateFullscreenEnabledState();
+        TabFullscreenHandler.updateEnabledState(getTabModelSelector().getCurrentTab());
     }
 
     /**
@@ -648,11 +649,12 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
         boolean isNtp = tab.getNativePage() instanceof NewTabPage;
         boolean isLocationBarShownInNtp =
-                isNtp ? ((NewTabPage) tab.getNativePage()).isLocationBarShownInNTP() : false;
-        boolean needsUpdate = layoutTab.initFromHost(tab.getBackgroundColor(), shouldStall(tab),
-                canUseLiveTexture, themeColor,
-                ColorUtils.getTextBoxColorForToolbarBackground(
-                        mContext.getResources(), isLocationBarShownInNtp, themeColor),
+                isNtp && ((NewTabPage) tab.getNativePage()).isLocationBarShownInNTP();
+
+        boolean needsUpdate = layoutTab.initFromHost(TabThemeColorHelper.getBackgroundColor(tab),
+                shouldStall(tab), canUseLiveTexture, ColorUtils.getToolbarSceneLayerBackground(tab),
+                ColorUtils.getTextBoxColorForToolbarBackground(mContext.getResources(),
+                        isLocationBarShownInNtp, themeColor, tab.isIncognito()),
                 ColorUtils.getTextBoxAlphaForToolbarBackground(tab));
         if (needsUpdate) requestUpdate();
 

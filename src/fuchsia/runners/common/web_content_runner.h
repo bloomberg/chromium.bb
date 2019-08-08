@@ -6,6 +6,7 @@
 #define FUCHSIA_RUNNERS_COMMON_WEB_CONTENT_RUNNER_H_
 
 #include <fuchsia/sys/cpp/fidl.h>
+#include <fuchsia/web/cpp/fidl.h>
 #include <memory>
 #include <set>
 
@@ -14,7 +15,6 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/macros.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
 class WebComponent;
 
@@ -24,7 +24,12 @@ class WebContentRunner : public fuchsia::sys::Runner {
   // Creates and returns a web.Context with a default path and parameters,
   // and with access to the same services as this Runner. The returned binding
   // is configured to exit this process on error.
-  static chromium::web::ContextPtr CreateDefaultWebContext();
+  static fuchsia::web::ContextPtr CreateDefaultWebContext();
+
+  // Creates and returns an incognito web.Context  with access to the same
+  // services as this Runner. The returned binding is configured to exit this
+  // process on error.
+  static fuchsia::web::ContextPtr CreateIncognitoWebContext();
 
   // |service_directory|: ServiceDirectory into which this Runner will be
   //   published. |on_idle_closure| will be invoked when the final client of the
@@ -35,11 +40,11 @@ class WebContentRunner : public fuchsia::sys::Runner {
   // |on_idle_closure|: A callback which is invoked when the WebContentRunner
   //   has entered an idle state and may be safely torn down.
   WebContentRunner(base::fuchsia::ServiceDirectory* service_directory,
-                   chromium::web::ContextPtr context,
+                   fuchsia::web::ContextPtr context,
                    base::OnceClosure on_idle_closure);
   ~WebContentRunner() override;
 
-  chromium::web::Context* context() { return context_.get(); }
+  fuchsia::web::Context* context() { return context_.get(); }
 
   // Used by WebComponent instances to signal that the ComponentController
   // channel was dropped, and therefore the component should be destroyed.
@@ -61,7 +66,7 @@ class WebContentRunner : public fuchsia::sys::Runner {
  private:
   void RunOnIdleClosureIfValid();
 
-  chromium::web::ContextPtr context_;
+  fuchsia::web::ContextPtr context_;
   std::set<std::unique_ptr<WebComponent>, base::UniquePtrComparator>
       components_;
 

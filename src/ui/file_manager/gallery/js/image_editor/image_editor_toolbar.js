@@ -355,6 +355,12 @@ ImageEditorToolbar.prototype.show = function(on) {
         'button:not(.crop-aspect-ratio), paper-button, input, cr-slider, cr-input');
     if (input) {
       input.focus();
+      // Fix for crbug/914741 set selection to the end (> 32-bit int)
+      // Note the input element lives in Shadow DOM.
+      if (input.select && input.tagName) {
+        assert(input.tagName === 'CR-INPUT');
+        input.select(12, 12);
+      }
     }
   }
 };

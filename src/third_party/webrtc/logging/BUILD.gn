@@ -55,6 +55,7 @@ rtc_source_set("rtc_stream_config") {
   deps = [
     ":rtc_event_log_api",
     "../api:libjingle_peerconnection_api",
+    "../api:rtp_headers",
   ]
 }
 
@@ -110,7 +111,7 @@ rtc_source_set("rtc_event_bwe") {
   deps = [
     ":rtc_event_log_api",
     "../api:scoped_refptr",
-    "../modules/remote_bitrate_estimator:remote_bitrate_estimator",
+    "../modules/remote_bitrate_estimator",
     "//third_party/abseil-cpp/absl/memory",
   ]
 }
@@ -189,11 +190,12 @@ rtc_static_library("rtc_event_log_impl_encoder") {
 
   deps = [
     "../api:libjingle_peerconnection_api",
+    "../api:rtp_headers",
     "../api/transport:network_control",
     "../rtc_base:checks",
     "../rtc_base:rtc_base_approved",
     "//third_party/abseil-cpp/absl/memory",
-    "//third_party/abseil-cpp/absl/strings:strings",
+    "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 
@@ -214,7 +216,7 @@ rtc_static_library("rtc_event_log_impl_encoder") {
       ":rtc_stream_config",
       "../api:array_view",
       "../modules/audio_coding:audio_network_adaptor",
-      "../modules/remote_bitrate_estimator:remote_bitrate_estimator",
+      "../modules/remote_bitrate_estimator",
       "../modules/rtp_rtcp:rtp_rtcp_format",
     ]
     sources += [
@@ -256,12 +258,13 @@ rtc_static_library("rtc_event_log_impl_base") {
     ":ice_log",
     ":rtc_event_log_api",
     "../api:libjingle_logging_api",
+    "../api/task_queue",
     "../api/task_queue:global_task_queue_factory",
     "../rtc_base:checks",
     "../rtc_base:rtc_base_approved",
     "../rtc_base:rtc_task_queue",
     "../rtc_base:safe_minmax",
-    "../rtc_base:sequenced_task_checker",
+    "../rtc_base/synchronization:sequence_checker",
     "//third_party/abseil-cpp/absl/memory",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
@@ -284,8 +287,8 @@ rtc_source_set("fake_rtc_event_log") {
   deps = [
     ":ice_log",
     ":rtc_event_log_api",
+    "../rtc_base",
     "../rtc_base:checks",
-    "../rtc_base:rtc_base",
   ]
 }
 
@@ -325,14 +328,16 @@ if (rtc_enable_protobuf) {
       ":rtc_event_log_impl_encoder",
       ":rtc_event_log_proto",
       ":rtc_stream_config",
+      "../api:function_view",
       "../api:libjingle_peerconnection_api",
+      "../api:rtp_headers",
       "../api/units:data_rate",
       "../api/units:time_delta",
       "../api/units:timestamp",
       "../call:video_stream_api",
       "../modules/audio_coding:audio_network_adaptor",
       "../modules/congestion_controller/rtp:transport_feedback",
-      "../modules/remote_bitrate_estimator:remote_bitrate_estimator",
+      "../modules/remote_bitrate_estimator",
       "../modules/rtp_rtcp",
       "../modules/rtp_rtcp:rtp_rtcp_format",
       "../rtc_base:checks",
@@ -379,15 +384,17 @@ if (rtc_enable_protobuf) {
         ":rtc_stream_config",
         "../api:array_view",
         "../api:libjingle_peerconnection_api",
+        "../api:rtp_headers",
+        "../api/task_queue:default_task_queue_factory",
         "../call",
         "../call:call_interfaces",
         "../modules/audio_coding:audio_network_adaptor",
-        "../modules/remote_bitrate_estimator:remote_bitrate_estimator",
+        "../modules/remote_bitrate_estimator",
         "../modules/rtp_rtcp:rtp_rtcp_format",
         "../rtc_base:checks",
         "../rtc_base:rtc_base_approved",
         "../rtc_base:rtc_base_tests_utils",
-        "../system_wrappers:system_wrappers",
+        "../system_wrappers",
         "../test:fileutils",
         "../test:test_support",
         "//testing/gtest",
@@ -406,6 +413,7 @@ if (rtc_enable_protobuf) {
         ":rtc_event_log_parser",
         "../api:array_view",
         "../api:libjingle_peerconnection_api",
+        "../api:rtp_headers",
         "../modules/rtp_rtcp",
         "../modules/rtp_rtcp:rtp_rtcp_format",
         "../rtc_base:checks",

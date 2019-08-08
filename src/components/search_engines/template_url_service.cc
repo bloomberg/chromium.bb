@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/debug/crash_logging.h"
 #include "base/format_macros.h"
-#include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -887,6 +886,19 @@ void TemplateURLService::Shutdown() {
   web_data_service_ = nullptr;
 }
 
+void TemplateURLService::WaitUntilReadyToSync(base::OnceClosure done) {
+  DCHECK(!on_loaded_callback_for_sync_);
+
+  // We force a load here to allow remote updates to be processed, without
+  // waiting for the lazy load.
+  Load();
+
+  if (loaded_)
+    std::move(done).Run();
+  else
+    on_loaded_callback_for_sync_ = std::move(done);
+}
+
 syncer::SyncDataList TemplateURLService::GetAllSyncData(
     syncer::ModelType type) const {
   DCHECK_EQ(syncer::SEARCH_ENGINES, type);
@@ -1584,6 +1596,9 @@ void TemplateURLService::ChangeToLoadedState() {
       default_search_provider_source_);
   initial_default_search_provider_.reset();
 
+  if (on_loaded_callback_for_sync_)
+    std::move(on_loaded_callback_for_sync_).Run();
+
   on_loaded_callbacks_.Notify();
 }
 
@@ -1915,6 +1930,12 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
     if (default_search_provider_) {
       TemplateURLData update_data(*data);
       update_data.sync_guid = default_search_provider_->sync_guid();
+
+      // Now that we are auto-updating the favicon_url as the user browses,
+      // respect the favicon_url entry in the database, instead of falling back
+      // to the one in the prepopulated list.
+      update_data.favicon_url = default_search_provider_->favicon_url();
+
       if (!default_search_provider_->safe_for_autoreplace()) {
         update_data.safe_for_autoreplace = false;
         update_data.SetKeyword(default_search_provider_->keyword());
@@ -2067,7 +2088,7 @@ void TemplateURLService::UpdateProvidersCreatedByPolicy(
     default_search_provider_source_ = DefaultSearchManager::FROM_POLICY;
     TemplateURLData new_data(*default_from_prefs);
     if (new_data.sync_guid.empty())
-      new_data.sync_guid = base::GenerateGUID();
+      new_data.GenerateSyncGUID();
     new_data.created_by_policy = true;
     std::unique_ptr<TemplateURL> new_dse_ptr =
         std::make_unique<TemplateURL>(new_data);
@@ -2299,7 +2320,7 @@ void TemplateURLService::PatchMissingSyncGUIDs(
     DCHECK(template_url);
     if (template_url->sync_guid().empty() &&
         (template_url->type() == TemplateURL::NORMAL)) {
-      template_url->data_.sync_guid = base::GenerateGUID();
+      template_url->data_.GenerateSyncGUID();
       if (web_data_service_)
         web_data_service_->UpdateKeyword(template_url->data());
     }

@@ -37,13 +37,13 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/browser_sync/abstract_profile_sync_service_test.h"
-#include "components/browser_sync/profile_sync_service.h"
-#include "components/browser_sync/test_profile_sync_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/data_type_manager_impl.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/driver/sync_client_mock.h"
+#include "components/sync/driver/test_profile_sync_service.h"
 #include "components/sync/engine/data_type_debug_info_listener.h"
 #include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
@@ -106,8 +106,6 @@ void RegisterAutofillPrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 atoi(version_info::GetVersionNumber().c_str()));
   registry->RegisterIntegerPref(autofill::prefs::kAutofillLastVersionValidated,
                                 atoi(version_info::GetVersionNumber().c_str()));
-  registry->RegisterDoublePref(autofill::prefs::kAutofillBillingCustomerNumber,
-                               0.0);
   registry->RegisterBooleanPref(
       autofill::prefs::kAutofillJapanCityFieldMigrated, true);
   registry->RegisterBooleanPref(autofill::prefs::kAutofillOrphanRowsRemoved,
@@ -199,6 +197,7 @@ class FakeAutofillBackend : public autofill::AutofillWebDataBackend {
     DCHECK(!ui_task_runner_->RunsTasksInCurrentSequence());
     ui_task_runner_->PostTask(FROM_HERE, on_changed_);
   }
+  void NotifyOfAddressConversionCompleted() override {}
   void NotifyThatSyncHasStarted(syncer::ModelType model_type) override {
     DCHECK(!ui_task_runner_->RunsTasksInCurrentSequence());
     ui_task_runner_->PostTask(FROM_HERE,
@@ -1000,7 +999,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   ASSERT_TRUE(add_autofill.success());
 
   AutofillProfileChange change(AutofillProfileChange::REMOVE,
-                               sync_profile.guid(), nullptr);
+                               sync_profile.guid(), &sync_profile);
   web_data_service()->OnAutofillProfileChanged(change);
 
   std::vector<AutofillProfile> new_sync_profiles;

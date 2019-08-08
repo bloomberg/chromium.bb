@@ -4,10 +4,12 @@
 
 #include "content/browser/portal/portal.h"
 
+#include <unordered_map>
 #include <utility>
 
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
@@ -21,13 +23,25 @@
 
 namespace content {
 
+namespace {
+using PortalTokenMap = std::
+    unordered_map<base::UnguessableToken, Portal*, base::UnguessableTokenHash>;
+base::LazyInstance<PortalTokenMap>::Leaky g_portal_token_map =
+    LAZY_INSTANCE_INITIALIZER;
+}  // namespace
+
 Portal::Portal(RenderFrameHostImpl* owner_render_frame_host)
     : WebContentsObserver(
           WebContents::FromRenderFrameHost(owner_render_frame_host)),
       owner_render_frame_host_(owner_render_frame_host),
-      portal_token_(base::UnguessableToken::Create()) {}
+      portal_token_(base::UnguessableToken::Create()) {
+  auto pair = g_portal_token_map.Get().emplace(portal_token_, this);
+  DCHECK(pair.second);
+}
 
-Portal::~Portal() {}
+Portal::~Portal() {
+  g_portal_token_map.Get().erase(portal_token_);
+}
 
 // static
 bool Portal::IsEnabled() {
@@ -37,12 +51,19 @@ bool Portal::IsEnabled() {
 }
 
 // static
+Portal* Portal::FromToken(const base::UnguessableToken& portal_token) {
+  PortalTokenMap& portals = g_portal_token_map.Get();
+  auto it = portals.find(portal_token);
+  return it == portals.end() ? nullptr : it->second;
+}
+
+// static
 Portal* Portal::Create(RenderFrameHostImpl* owner_render_frame_host,
-                       blink::mojom::PortalRequest request) {
+                       blink::mojom::PortalAssociatedRequest request) {
   auto portal_ptr = base::WrapUnique(new Portal(owner_render_frame_host));
   Portal* portal = portal_ptr.get();
-  portal->binding_ =
-      mojo::MakeStrongBinding(std::move(portal_ptr), std::move(request));
+  portal->binding_ = mojo::MakeStrongAssociatedBinding(std::move(portal_ptr),
+                                                       std::move(request));
   return portal;
 }
 
@@ -76,13 +97,19 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties(), false, blink::FrameOwnerElementType::kPortal);
 
-  // Create the Portal WebContents.
-  WebContents::CreateParams params(outer_contents_impl->GetBrowserContext());
-  std::unique_ptr<WebContents> portal_contents = WebContents::Create(params);
-  portal_contents_impl_ = static_cast<WebContentsImpl*>(portal_contents.get());
-  portal_contents_impl_->set_portal(this);
+  bool web_contents_created = false;
+  if (!portal_contents_) {
+    // Create the Portal WebContents.
+    WebContents::CreateParams params(outer_contents_impl->GetBrowserContext());
+    SetPortalContents(WebContents::Create(params));
+    web_contents_created = true;
+  }
 
-  outer_contents_impl->AttachInnerWebContents(std::move(portal_contents),
+  DCHECK_EQ(portal_contents_.get(), portal_contents_impl_);
+  DCHECK_EQ(portal_contents_impl_->portal(), this);
+  DCHECK_EQ(portal_contents_impl_->GetDelegate(), this);
+
+  outer_contents_impl->AttachInnerWebContents(std::move(portal_contents_),
                                               outer_node->current_frame_host());
 
   FrameTreeNode* frame_tree_node =
@@ -92,8 +119,8 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   proxy_host->set_render_frame_proxy_created(true);
   portal_contents_impl_->ReattachToOuterWebContentsFrame();
 
-  outer_contents_impl->GetDelegate()->PortalWebContentsCreated(
-      portal_contents_impl_);
+  if (web_contents_created)
+    PortalWebContentsCreated(portal_contents_impl_);
 
   return proxy_host;
 }
@@ -103,24 +130,48 @@ void Portal::Navigate(const GURL& url) {
   portal_contents_impl_->GetController().LoadURLWithParams(load_url_params);
 }
 
-void Portal::Activate(base::OnceCallback<void()> callback) {
-  WebContents* outer_contents =
-      WebContents::FromRenderFrameHost(owner_render_frame_host_);
+void Portal::Activate(blink::TransferableMessage data,
+                      ActivateCallback callback) {
+  WebContentsImpl* outer_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(owner_render_frame_host_));
+
+  if (outer_contents->portal()) {
+    mojo::ReportBadMessage("Portal::Activate called on nested portal");
+    binding_->Close();  // Also deletes |this|.
+    return;
+  }
+
   WebContentsDelegate* delegate = outer_contents->GetDelegate();
   bool is_loading = portal_contents_impl_->IsLoading();
   std::unique_ptr<WebContents> portal_contents =
       portal_contents_impl_->DetachFromOuterWebContents();
-  // TODO(lfg): If there are nested portals, this would replace the entire tab
-  // upon a nested portal's activation. We should handle that case so that it
-  // would only replace the nested portal's contents. https://crbug.com/919110
-  std::unique_ptr<WebContents> contents = delegate->SwapWebContents(
-      outer_contents, std::move(portal_contents), true, is_loading);
-  CHECK_EQ(contents.get(), outer_contents);
-  // TODO(lfg): The old WebContents is currently discarded, but should be
-  // kept and passed to the new page. https://crbug.com/914122
+
+  auto* outer_contents_main_frame_view = static_cast<RenderWidgetHostViewBase*>(
+      outer_contents->GetMainFrame()->GetView());
+  if (outer_contents_main_frame_view)
+    outer_contents_main_frame_view->Destroy();
+  std::unique_ptr<WebContents> predecessor_web_contents =
+      delegate->SwapWebContents(outer_contents, std::move(portal_contents),
+                                true, is_loading);
+  CHECK_EQ(predecessor_web_contents.get(), outer_contents);
+
   portal_contents_impl_->set_portal(nullptr);
-  portal_contents_impl_->GetMainFrame()->OnPortalActivated();
-  std::move(callback).Run();
+
+  blink::mojom::PortalAssociatedPtr portal_ptr;
+  Portal* portal = Create(portal_contents_impl_->GetMainFrame(),
+                          mojo::MakeRequest(&portal_ptr));
+  portal->SetPortalContents(std::move(predecessor_web_contents));
+
+  portal_contents_impl_->GetMainFrame()->OnPortalActivated(
+      portal->portal_token_, portal_ptr.PassInterface(), std::move(data),
+      std::move(callback));
+}
+
+void Portal::PostMessage(blink::TransferableMessage message,
+                         const base::Optional<url::Origin>& target_origin) {
+  portal_contents_impl_->GetMainFrame()->ForwardMessageToPortalHost(
+      std::move(message), owner_render_frame_host_->GetLastCommittedOrigin(),
+      target_origin);
 }
 
 void Portal::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
@@ -132,13 +183,27 @@ void Portal::WebContentsDestroyed() {
   binding_->Close();  // Also deletes |this|.
 }
 
+void Portal::PortalWebContentsCreated(WebContents* portal_web_contents) {
+  WebContentsImpl* outer_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(owner_render_frame_host_));
+  DCHECK(outer_contents->GetDelegate());
+  outer_contents->GetDelegate()->PortalWebContentsCreated(portal_web_contents);
+}
+
 WebContentsImpl* Portal::GetPortalContents() {
   return portal_contents_impl_;
 }
 
 void Portal::SetBindingForTesting(
-    mojo::StrongBindingPtr<blink::mojom::Portal> binding) {
+    mojo::StrongAssociatedBindingPtr<blink::mojom::Portal> binding) {
   binding_ = binding;
+}
+
+void Portal::SetPortalContents(std::unique_ptr<WebContents> web_contents) {
+  portal_contents_ = std::move(web_contents);
+  portal_contents_impl_ = static_cast<WebContentsImpl*>(portal_contents_.get());
+  portal_contents_impl_->SetDelegate(this);
+  portal_contents_impl_->set_portal(this);
 }
 
 }  // namespace content

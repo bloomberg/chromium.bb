@@ -180,6 +180,14 @@ class CronetURLRequest {
   // issued to indicate when no more callbacks will be issued.
   void Destroy(bool send_on_canceled);
 
+  // On the network thread, reports metrics to the registered
+  // CronetURLRequest::Callback, and then runs |callback| on the network thread.
+  //
+  // Since metrics are only reported once, this can be used to ensure metrics
+  // are reported to the registered CronetURLRequest::Callback before resources
+  // used by the callback are deleted.
+  void MaybeReportMetricsAndRunCallback(base::OnceClosure callback);
+
  private:
   friend class TestUtil;
 
@@ -225,6 +233,9 @@ class CronetURLRequest {
     // |send_on_canceled| indicates whether OnCanceled callback should be
     // issued to indicate when no more callbacks will be issued.
     void Destroy(CronetURLRequest* request, bool send_on_canceled);
+
+    // Runs MaybeReportMetrics(), then runs |callback|.
+    void MaybeReportMetricsAndRunCallback(base::OnceClosure callback);
 
    private:
     friend class TestUtil;

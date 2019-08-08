@@ -22,11 +22,14 @@ using testing::Return;
 class GLContextVirtualTest : public GpuServiceTest {
  public:
   GLContextVirtualTest()
-      : decoder_(new MockGLES2Decoder(&command_buffer_service_, &outputter_)) {}
+      : decoder_(new MockGLES2Decoder(&client_,
+                                      &command_buffer_service_,
+                                      &outputter_)) {}
   ~GLContextVirtualTest() override = default;
 
  protected:
   FakeCommandBufferServiceBase command_buffer_service_;
+  FakeDecoderClient client_;
   TraceOutputter outputter_;
   std::unique_ptr<MockGLES2Decoder> decoder_;
 };

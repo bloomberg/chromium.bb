@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_PAINT_PROPERTY_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_PAINT_PROPERTY_NODE_H_
 
+#include <algorithm>
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
@@ -37,19 +38,17 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
     scoped_refptr<const RefCountedPath> clip_path;
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
 
-    // Returns true if the states are equal, ignoring the clip rect excluding
-    // overlay scrollbars which is only used for hit testing.
-    bool EqualIgnoringHitTestRects(const State& o) const {
-      return local_transform_space == o.local_transform_space &&
-             clip_rect == o.clip_rect && clip_path == o.clip_path &&
-             direct_compositing_reasons == o.direct_compositing_reasons;
-    }
-
-    bool operator==(const State& o) const {
-      if (!EqualIgnoringHitTestRects(o))
-        return false;
-      return clip_rect_excluding_overlay_scrollbars ==
-             o.clip_rect_excluding_overlay_scrollbars;
+    PaintPropertyChangeType ComputeChange(const State& other) const {
+      if (local_transform_space != other.local_transform_space ||
+          clip_rect != other.clip_rect || clip_path != other.clip_path) {
+        return PaintPropertyChangeType::kChangedOnlyValues;
+      }
+      if (direct_compositing_reasons != other.direct_compositing_reasons ||
+          clip_rect_excluding_overlay_scrollbars !=
+              other.clip_rect_excluding_overlay_scrollbars) {
+        return PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
+      }
+      return PaintPropertyChangeType::kUnchanged;
     }
   };
 
@@ -70,30 +69,32 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
         true /* is_parent_alias */));
   }
 
-  bool Update(const ClipPaintPropertyNode& parent, State&& state) {
-    bool parent_changed = SetParent(&parent);
-    if (state == state_)
-      return parent_changed;
-
-    DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
-    state_ = std::move(state);
-    SetChanged();
-    return true;
+  // The empty AnimationState struct is to meet the requirement of
+  // ObjectPaintProperties.
+  struct AnimationState {};
+  PaintPropertyChangeType Update(const ClipPaintPropertyNode& parent,
+                                 State&& state,
+                                 const AnimationState& = AnimationState()) {
+    auto parent_changed = SetParent(&parent);
+    auto state_changed = state_.ComputeChange(state);
+    if (state_changed != PaintPropertyChangeType::kUnchanged) {
+      DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
+      state_ = std::move(state);
+      AddChanged(state_changed);
+    }
+    return std::max(parent_changed, state_changed);
   }
 
   // Checks if the accumulated clip from |this| to |relative_to_state.Clip()|
-  // has changed in the space of |relative_to_state.Transform()|. We check for
-  // changes of not only clip nodes, but also LocalTransformSpace relative to
-  // |relative_to_state.Transform()| of the clip nodes. |transform_not_to_check|
-  // specifies a transform node that the caller has checked or will check its
-  // change in other ways and this function should treat it as unchanged.
-  bool Changed(const PropertyTreeState& relative_to_state,
+  // has changed, at least significance of |change|, in the space of
+  // |relative_to_state.Transform()|. We check for changes of not only clip
+  // nodes, but also LocalTransformSpace relative to |relative_to_state
+  // .Transform()| of the clip nodes. |transform_not_to_check| specifies a
+  // transform node that the caller has checked or will check its change in
+  // other ways and this function should treat it as unchanged.
+  bool Changed(PaintPropertyChangeType change,
+               const PropertyTreeState& relative_to_state,
                const TransformPaintPropertyNode* transform_not_to_check) const;
-
-  bool EqualIgnoringHitTestRects(const ClipPaintPropertyNode* parent,
-                                 const State& state) const {
-    return parent == Parent() && state_.EqualIgnoringHitTestRects(state);
-  }
 
   // Returns the local transform space of this node. Note that the function
   // first unaliases the node, meaning that it walks up the parent chain until
@@ -136,15 +137,16 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
                         bool is_parent_alias)
       : PaintPropertyNode(parent, is_parent_alias), state_(std::move(state)) {}
 
-  void SetChanged() {
+  void AddChanged(PaintPropertyChangeType changed) {
     // TODO(crbug.com/814815): This is a workaround of the bug. When the bug is
     // fixed, change the following condition to
     //   DCHECK(!clip_cache_ || !clip_cache_->IsValid());
+    DCHECK_NE(PaintPropertyChangeType::kUnchanged, changed);
     if (clip_cache_ && clip_cache_->IsValid()) {
       DLOG(WARNING) << "Clip tree changed without invalidating the cache.";
       GeometryMapperClipCache::ClearCache();
     }
-    PaintPropertyNode::SetChanged();
+    PaintPropertyNode::AddChanged(changed);
   }
 
   // For access to GetClipCache();

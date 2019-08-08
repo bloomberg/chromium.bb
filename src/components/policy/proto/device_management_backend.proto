@@ -8,6 +8,9 @@ option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
 
+// Everything below this comment will be synchronized between client and server
+// repos ( go/cros-proto-sync ).
+
 // This enum needs to be shared between DeviceRegisterRequest and
 // LicenseAvailability protos. With java_api_version 1, this means that enum
 // needs to be wrapped into a message.
@@ -160,6 +163,23 @@ message DeviceRegisterRequest {
 
   // Previous DMToken that should be reused for re-registration.
   optional string reregistration_dm_token = 13;
+
+  // MAC address for onboard network (ethernet) interface.
+  // The format is twelve (12) hexadecimal digits without any delimiter
+  // (uppercase letters).
+  // This field might be set only if register type == DEVICE.
+  optional string ethernet_mac_address = 14;
+
+  // Built-in MAC address for the docking station that the device can be
+  // connected to.
+  // The format is twelve (12) hexadecimal digits without any delimiter
+  // (uppercase letters).
+  // This field might be set only if register type == DEVICE.
+  optional string dock_mac_address = 15;
+
+  // The date the device was manufactured in yyyy-mm-dd format.
+  // This field might be set only if register type == DEVICE.
+  optional string manufacture_date = 16;
 }
 
 // Response from server to device register request.
@@ -560,6 +580,12 @@ message PolicyData {
   // belongs to. This is domain metadata included in a device policy response,
   // but it is not an explicit device policy.
   optional CustomerLogo customer_logo = 31;
+
+  // b/129771193
+  // This setting is from SingleSignOnSettingsProto#change_password_uri
+  // http://google3/ccc/hosted/policies/services/common/sso_settings.proto?l=48&rcl=241246111
+  // This field is currently only set for User Policy response.
+  optional string change_password_uri = 32;
 }
 
 message PolicyFetchResponse {
@@ -845,6 +871,15 @@ message PowerStatus {
   repeated BatteryInfo batteries = 2;
 }
 
+// LifeTime estimation for eMMC devices
+message DiskLifetimeEstimation {
+  // Lifetime estimations for SLC and MLC areas of eMMC.
+  // Values range from 00h to 0Bh -- indicating the percentage of device
+  // lifetime used.
+  optional int32 slc = 1;
+  optional int32 mlc = 2;
+}
+
 // Status of the single storage device
 message DiskInfo {
   optional string serial = 1;
@@ -852,7 +887,7 @@ message DiskInfo {
   optional string model = 3;
   // Size in bytes
   optional int64 size = 4;
-  // SSD / eMMC / HDD
+  // SSD / MMC / HDD
   optional string type = 5;
   optional string health = 6;
   // volume_id for volumes on this disk.
@@ -862,6 +897,7 @@ message DiskInfo {
 // Status of the storage subsystem.
 message StorageStatus {
   repeated DiskInfo disks = 1;
+  optional DiskLifetimeEstimation lifetime_estimation = 2;
 }
 
 // Sampling for single temperature measurements
@@ -1946,6 +1982,58 @@ message RefreshAccountRequest {
 // account.
 message RefreshAccountResponse {}
 
+// Models a window for screen time.
+message ScreenTimeSpan {
+  optional TimePeriod time_period = 1;
+
+  // The actual activity duration during a particular time period window
+  // (in milliseconds).
+  optional int64 active_duration_ms = 2;
+}
+
+// Informs the server about the current state of a child user's session, to
+// allow parent supervision.
+message ChildStatusReportRequest {
+  // The user's DMToken.
+  optional string user_dm_token = 1;
+
+  // Timestamp of this status report in milliseconds since epoch.
+  optional int64 timestamp_ms = 2;
+
+  // Time zone id of the active user (e.g. America/Sao_Paulo).
+  // For more details check `third_party/icu/source/i18n/unicode/timezone.h`.
+  optional string time_zone = 3;
+
+  // A list of time spans when the screen was on during the user's session.
+  repeated ScreenTimeSpan screen_time_span = 4;
+
+  // Information about ARC status.
+  optional AndroidStatus android_status = 5;
+
+  // The OS version reported by the device is a platform version
+  // e.g. 1435.0.2011_12_16_1635.
+  optional string os_version = 6;
+
+  // "Verified", "Dev". Same as verified mode.
+  // If the mode is unknown, this field should not be set.
+  optional string boot_mode = 7;
+
+  // Next id: 8.
+}
+
+// Response from DMServer to update user devices' status.
+// It is possible that status report fails but policy request succeed.  In such
+// case, the ChildStatusReportResponse will contain an error code and the
+// device should re-send status report data in the next policy request.  The
+// device should re-send report data if policy request fails, even if
+// ChildStatusReportResponse contains no error code.
+message ChildStatusReportResponse {
+  optional int32 error_code = 1;
+
+  // Human readable error message for customer support purpose.
+  optional string error_message = 2;
+}
+
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
 // request MUST be in the following format:
@@ -2018,7 +2106,8 @@ message RefreshAccountResponse {}
 //   ping: policy_request
 //   policy: policy_request
 //   register: register_request
-//   status: device_status_report_request or session_status_report_request
+//   status: device_status_report_request or session_status_report_request or
+//       child_status_report_request
 //   unregister: unregister_request
 //   remote_commands: remote_command_request
 //   attribute_update_permission: device_attribute_update_permission_request
@@ -2036,7 +2125,6 @@ message RefreshAccountResponse {}
 //   policy_validation_report: policy_validation_report_request
 //   device_initial_enrollment_state: device_initial_enrollment_state_request
 //   refresh_account: refresh_account_request
-//
 message DeviceManagementRequest {
   reserved 24;  // unused previous version of chrome_desktop_report_request.
 
@@ -2052,6 +2140,7 @@ message DeviceManagementRequest {
   // Update status.
   optional DeviceStatusReportRequest device_status_report_request = 4;
   optional SessionStatusReportRequest session_status_report_request = 5;
+  optional ChildStatusReportRequest child_status_report_request = 30;
 
   // Auto-enrollment detection.
   optional DeviceAutoEnrollmentRequest auto_enrollment_request = 6;
@@ -2128,6 +2217,8 @@ message DeviceManagementRequest {
 
   // Request from device to wipe an old account and get a new account.
   optional RefreshAccountRequest refresh_account_request = 29;
+
+  // Next id: 31.
 }
 
 // Response from server to device.
@@ -2171,11 +2262,10 @@ message DeviceManagementResponse {
   // Policy response.
   optional DevicePolicyResponse policy_response = 5;
 
-  // Device status report response.
+  // Update status report response.
   optional DeviceStatusReportResponse device_status_report_response = 6;
-
-  // Session status report response.
   optional SessionStatusReportResponse session_status_report_response = 7;
+  optional ChildStatusReportResponse child_status_report_response = 29;
 
   // Auto-enrollment detection response.
   optional DeviceAutoEnrollmentResponse auto_enrollment_response = 8;
@@ -2243,4 +2333,6 @@ message DeviceManagementResponse {
 
   // Response to refresh account request.
   optional RefreshAccountResponse refresh_account_response = 28;
+
+  // Next id: 30.
 }

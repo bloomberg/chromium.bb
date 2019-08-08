@@ -69,8 +69,7 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
   if (should_unmask_card_) {
     payments_client_->Prepare();
     request_->billing_customer_number = GetBillingCustomerId(
-        personal_data_manager_, payments_client_->GetPrefService(),
-        /*should_log_validity=*/true);
+        personal_data_manager_, /*should_log_validity=*/true);
   }
 
   ui_delegate_->ShowUnmaskPrompt(request_->card, reason,

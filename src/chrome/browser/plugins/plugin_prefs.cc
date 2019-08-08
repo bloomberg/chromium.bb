@@ -7,24 +7,20 @@
 #include <stddef.h>
 
 #include <memory>
-#include <string>
-#include <utility>
 
 #include "base/bind.h"
-#include "base/location.h"
+#include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/single_thread_task_runner.h"
-#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/plugins/plugin_installer.h"
+#include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,12 +35,12 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/webplugininfo.h"
 
 using content::BrowserThread;
-using content::PluginService;
 
 namespace {
 
@@ -245,46 +241,6 @@ PluginPrefs::~PluginPrefs() {
 void PluginPrefs::SetAlwaysOpenPdfExternallyForTests(
     bool always_open_pdf_externally) {
   always_open_pdf_externally_ = always_open_pdf_externally;
-}
-
-
-void PluginPrefs::OnUpdatePreferences(
-    const std::vector<content::WebPluginInfo>& plugins) {
-  if (!prefs_)
-    return;
-
-  PluginFinder* finder = PluginFinder::GetInstance();
-  ListPrefUpdate update(prefs_, prefs::kPluginsPluginsList);
-  base::ListValue* plugins_list = update.Get();
-  plugins_list->Clear();
-
-  base::FilePath internal_dir;
-  if (base::PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir))
-    prefs_->SetFilePath(prefs::kPluginsLastInternalDirectory, internal_dir);
-
-  base::AutoLock auto_lock(lock_);
-
-  // Add the plugin files.
-  std::set<base::string16> group_names;
-  for (size_t i = 0; i < plugins.size(); ++i) {
-    std::unique_ptr<base::DictionaryValue> summary(new base::DictionaryValue());
-    summary->SetString("path", plugins[i].path.value());
-    summary->SetString("name", plugins[i].name);
-    summary->SetString("version", plugins[i].version);
-    plugins_list->Append(std::move(summary));
-
-    std::unique_ptr<PluginMetadata> plugin_metadata(
-        finder->GetPluginMetadata(plugins[i]));
-    // Insert into a set of all group names.
-    group_names.insert(plugin_metadata->name());
-  }
-
-  // Add the plugin groups.
-  for (auto it = group_names.begin(); it != group_names.end(); ++it) {
-    std::unique_ptr<base::DictionaryValue> summary(new base::DictionaryValue());
-    summary->SetString("name", *it);
-    plugins_list->Append(std::move(summary));
-  }
 }
 
 void PluginPrefs::NotifyPluginStatusChanged() {

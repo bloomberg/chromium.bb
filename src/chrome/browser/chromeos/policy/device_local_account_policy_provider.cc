@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_service.h"
@@ -54,19 +54,29 @@ DeviceLocalAccountPolicyProvider::Create(
 
   std::unique_ptr<PolicyMap> chrome_policy_overrides;
   if (type == DeviceLocalAccount::TYPE_PUBLIC_SESSION) {
-    chrome_policy_overrides.reset(new PolicyMap());
+    chrome_policy_overrides = std::make_unique<PolicyMap>();
 
     // Force the |ShelfAutoHideBehavior| policy to |Never|, ensuring that the
     // ash shelf does not auto-hide.
     chrome_policy_overrides->Set(
         key::kShelfAutoHideBehavior, POLICY_LEVEL_MANDATORY,
-        POLICY_SCOPE_MACHINE, POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+        POLICY_SCOPE_MACHINE, POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
         std::make_unique<base::Value>("Never"), nullptr);
     // Force the |ShowLogoutButtonInTray| policy to |true|, ensuring that a big,
     // red logout button is shown in the ash system tray.
     chrome_policy_overrides->Set(key::kShowLogoutButtonInTray,
                                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                                 POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+                                 POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
+                                 std::make_unique<base::Value>(true), nullptr);
+  } else if (type == DeviceLocalAccount::TYPE_KIOSK_APP) {
+    chrome_policy_overrides = std::make_unique<PolicyMap>();
+
+    // Temporary allow CRX2.
+    // See https://crbug.com/960428.
+    // TODO(crbug.com/740715): remove in M77.
+    chrome_policy_overrides->Set(key::kExtensionAllowInsecureUpdates,
+                                 POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                                 POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
                                  std::make_unique<base::Value>(true), nullptr);
   }
 

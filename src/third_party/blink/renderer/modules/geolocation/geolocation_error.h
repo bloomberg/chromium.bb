@@ -34,10 +34,6 @@ class GeolocationError : public GarbageCollectedFinalized<GeolocationError> {
  public:
   enum ErrorCode { kPermissionDenied, kPositionUnavailable };
 
-  static GeolocationError* Create(ErrorCode code, const String& message) {
-    return MakeGarbageCollected<GeolocationError>(code, message);
-  }
-
   GeolocationError(ErrorCode code, const String& message)
       : code_(code), message_(message) {}
 

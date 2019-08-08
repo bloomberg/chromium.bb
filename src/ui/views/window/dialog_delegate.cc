@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
@@ -18,6 +19,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -32,12 +34,7 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // DialogDelegate:
 
-DialogDelegate::DialogDelegate()
-    : supports_custom_frame_(true),
-      // TODO(crbug.com/733040): Most subclasses assume they must set their own
-      // margins explicitly, so we set them to 0 here for now to avoid doubled
-      // margins.
-      margins_(0) {
+DialogDelegate::DialogDelegate() {
   UMA_HISTOGRAM_BOOLEAN("Dialog.DialogDelegate.Create", true);
   creation_time_ = base::TimeTicks::Now();
 }
@@ -67,11 +64,11 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // The new style doesn't support unparented dialogs on Linux desktop.
   if (dialog)
-    dialog->supports_custom_frame_ &= parent != NULL;
+    dialog->supports_custom_frame_ &= parent != nullptr;
 #elif defined(OS_WIN)
   // The new style doesn't support unparented dialogs on Windows Classic themes.
   if (dialog && !ui::win::IsAeroGlassEnabled())
-    dialog->supports_custom_frame_ &= parent != NULL;
+    dialog->supports_custom_frame_ &= parent != nullptr;
 #endif
 
   if (!dialog || dialog->ShouldUseCustomFrame()) {
@@ -126,7 +123,7 @@ bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
 }
 
 View* DialogDelegate::CreateExtraView() {
-  return NULL;
+  return nullptr;
 }
 
 bool DialogDelegate::GetExtraViewPadding(int* padding) {
@@ -134,7 +131,7 @@ bool DialogDelegate::GetExtraViewPadding(int* padding) {
 }
 
 View* DialogDelegate::CreateFootnoteView() {
-  return NULL;
+  return nullptr;
 }
 
 bool DialogDelegate::Cancel() {
@@ -176,21 +173,23 @@ bool DialogDelegate::ShouldHaveRoundCorners() const {
 View* DialogDelegate::GetInitiallyFocusedView() {
   // Focus the default button if any.
   const DialogClientView* dcv = GetDialogClientView();
+  if (!dcv)
+    return nullptr;
   int default_button = GetDefaultDialogButton();
   if (default_button == ui::DIALOG_BUTTON_NONE)
-    return NULL;
+    return nullptr;
 
   if ((default_button & GetDialogButtons()) == 0) {
     // The default button is a button we don't have.
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 
   if (default_button & ui::DIALOG_BUTTON_OK)
     return dcv->ok_button();
   if (default_button & ui::DIALOG_BUTTON_CANCEL)
     return dcv->cancel_button();
-  return NULL;
+  return nullptr;
 }
 
 DialogDelegate* DialogDelegate::AsDialogDelegate() {
@@ -220,10 +219,11 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();
   if (delegate) {
     if (delegate->ShouldHaveRoundCorners()) {
-      // TODO(sajadm): Remove when fixing https://crbug.com/822075 and use
-      // EMPHASIS_HIGH metric values from the LayoutProvider to get the
-      // corner radius.
-      border->SetCornerRadius(2);
+      border->SetCornerRadius(
+          base::FeatureList::IsEnabled(
+              features::kEnableMDRoundedCornersOnDialogs)
+              ? provider->GetCornerRadiusMetric(views::EMPHASIS_HIGH)
+              : 2);
     }
     frame->SetFootnoteView(delegate->CreateFootnoteView());
   }
@@ -236,10 +236,14 @@ bool DialogDelegate::ShouldUseCustomFrame() const {
 }
 
 const DialogClientView* DialogDelegate::GetDialogClientView() const {
+  if (!GetWidget())
+    return nullptr;
   return GetWidget()->client_view()->AsDialogClientView();
 }
 
 DialogClientView* DialogDelegate::GetDialogClientView() {
+  if (!GetWidget())
+    return nullptr;
   return GetWidget()->client_view()->AsDialogClientView();
 }
 
@@ -261,7 +265,7 @@ DialogDelegate::~DialogDelegate() {
                            base::TimeTicks::Now() - creation_time_);
 }
 
-ax::mojom::Role DialogDelegate::GetAccessibleWindowRole() const {
+ax::mojom::Role DialogDelegate::GetAccessibleWindowRole() {
   return ax::mojom::Role::kDialog;
 }
 
@@ -274,7 +278,7 @@ DialogDelegateView::DialogDelegateView() {
   UMA_HISTOGRAM_BOOLEAN("Dialog.DialogDelegateView.Create", true);
 }
 
-DialogDelegateView::~DialogDelegateView() {}
+DialogDelegateView::~DialogDelegateView() = default;
 
 void DialogDelegateView::DeleteDelegate() {
   delete this;
@@ -294,8 +298,11 @@ View* DialogDelegateView::GetContentsView() {
 
 void DialogDelegateView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this && GetWidget())
+  if (details.is_add && details.child == this && GetWidget() &&
+      (GetAccessibleWindowRole() == ax::mojom::Role::kAlert ||
+       GetAccessibleWindowRole() == ax::mojom::Role::kAlertDialog)) {
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  }
 }
 
 }  // namespace views

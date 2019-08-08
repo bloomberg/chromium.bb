@@ -282,7 +282,8 @@ void LayoutNGListItem::UpdateMarkerContentIfNeeded() {
                                                          EDisplay::kInline);
       image->SetStyle(image_style);
       image->SetImageResource(
-          LayoutImageResourceStyleImage::Create(list_style_image));
+          MakeGarbageCollected<LayoutImageResourceStyleImage>(
+              list_style_image));
       image->SetIsGeneratedContent();
       marker_->AddChild(image);
     }
@@ -299,8 +300,8 @@ void LayoutNGListItem::UpdateMarkerContentIfNeeded() {
       }
     }
     if (!child) {
-      text = LayoutText::CreateEmptyAnonymous(GetDocument(),
-                                              marker_->MutableStyle());
+      text = LayoutText::CreateEmptyAnonymous(
+          GetDocument(), marker_->MutableStyle(), LegacyLayout::kAuto);
       marker_->AddChild(text);
       is_marker_text_updated_ = false;
     }

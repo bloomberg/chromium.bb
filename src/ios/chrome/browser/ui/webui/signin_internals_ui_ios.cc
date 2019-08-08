@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ui/webui/signin_internals_ui_ios.h"
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "components/grit/components_resources.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -253,9 +253,9 @@ int main(int argc, char** argv) {
     std::cerr << "ERROR in CommandLine::Init\n";
     return 1;
   }
-  base::TaskScheduler::CreateAndStartWithDefaultParams("cert_verify_tool");
+  base::ThreadPool::CreateAndStartWithDefaultParams("cert_verify_tool");
   base::ScopedClosureRunner cleanup(
-      base::BindOnce([] { base::TaskScheduler::GetInstance()->Shutdown(); }));
+      base::BindOnce([] { base::ThreadPool::GetInstance()->Shutdown(); }));
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
@@ -284,7 +284,7 @@ int main(int argc, char** argv) {
   base::FilePath target_path = base::FilePath(args[0]);
 
   base::FilePath crlset_path = command_line.GetSwitchValuePath("crlset");
-  scoped_refptr<net::CRLSet> crl_set;
+  scoped_refptr<net::CRLSet> crl_set = net::CRLSet::BuiltinCRLSet();
   if (!crlset_path.empty()) {
     std::string crl_set_bytes;
     if (!ReadFromFile(crlset_path, &crl_set_bytes))

@@ -107,7 +107,7 @@ class AdTrackerTest : public testing::Test {
 };
 
 void AdTrackerTest::SetUp() {
-  page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+  page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   page_holder_->GetDocument().SetURL(KURL("https://example.com/foo"));
   ad_tracker_ = MakeGarbageCollected<TestAdTracker>(GetFrame());
   ad_tracker_->SetExecutionContext(&page_holder_->GetDocument());
@@ -270,9 +270,10 @@ TEST_F(AdTrackerSimTest, ScriptDetectedByContext) {
 }
 
 TEST_F(AdTrackerSimTest, RedirectToAdUrl) {
+  SimRequest::Params params;
+  params.redirect_url = "https://example.com/ad_script.js";
   SimSubresourceRequest redirect_script(
-      "https://example.com/redirect_script.js",
-      "https://example.com/ad_script.js", "text/javascript");
+      "https://example.com/redirect_script.js", "text/javascript", params);
   SimSubresourceRequest ad_script("https://example.com/ad_script.js",
                                   "text/javascript");
 
@@ -352,7 +353,7 @@ TEST_F(AdTrackerSimTest, InlineAdScriptRunningInNonAdContext) {
 
   // The new sibling frame should also be identified as an ad.
   EXPECT_TRUE(
-      To<LocalFrame>(GetDocument().GetFrame()->Tree().Find("ad_sibling"))
+      To<LocalFrame>(GetDocument().GetFrame()->Tree().ScopedChild("ad_sibling"))
           ->IsAdSubframe());
 }
 

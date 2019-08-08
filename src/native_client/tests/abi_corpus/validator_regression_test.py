@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import optparse
 import os
 import subprocess
@@ -40,21 +42,21 @@ def ValidateNexe(options, path, src_path, expect_pass):
   did_pass = (process.returncode == 0)
   if expect_pass != did_pass:
     if options.verbose:
-      print '-' * 70
-      print 'Validating: %s' % path
-      print 'From: %s' % src_path
-      print 'Size: %d' % os.path.getsize(path)
-      print 'SHA1: %s' % corpus_utils.Sha1FromFilename(src_path)
-      print 'Validator: %s' % options.validator
-      print 'Unexpected return code: %s' % process.returncode
-      print '>>> STDOUT'
-      print process_stdout
-      print '>>> STDERR'
-      print process_stderr
-      print '-' * 70
+      print('-' * 70)
+      print('Validating: %s' % path)
+      print('From: %s' % src_path)
+      print('Size: %d' % os.path.getsize(path))
+      print('SHA1: %s' % corpus_utils.Sha1FromFilename(src_path))
+      print('Validator: %s' % options.validator)
+      print('Unexpected return code: %s' % process.returncode)
+      print('>>> STDOUT')
+      print(process_stdout)
+      print('>>> STDERR')
+      print(process_stderr)
+      print('-' * 70)
     else:
-      print 'Unexpected return code %d on sha1: %s' % (
-          process.returncode, corpus_utils.Sha1FromFilename(src_path))
+      print('Unexpected return code %d on sha1: %s' %
+            (process.returncode, corpus_utils.Sha1FromFilename(src_path)))
     return False
   return True
 
@@ -83,7 +85,7 @@ def TestValidators(options, work_dir):
     if architecture != options.architecture:
       continue
     if corpus_errors.NexeShouldBeSkipped(filename):
-      print 'Skipped, sha1: %s' % corpus_utils.Sha1FromFilename(filename)
+      print('Skipped, sha1: %s' % corpus_utils.Sha1FromFilename(filename))
       progress.Skip()
       continue
     # Validate a copy in case validator is mutating.
@@ -99,7 +101,7 @@ def TestValidators(options, work_dir):
       try:
         os.remove(nexe_filename)
       except OSError:
-        print 'ERROR - unable to remove %s' % nexe_filename
+        print('ERROR - unable to remove %s' % nexe_filename)
   progress.Summary(warn_only=options.warn_only)
 
 

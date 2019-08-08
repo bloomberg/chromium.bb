@@ -46,8 +46,6 @@ class Node;
 
 class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
  public:
-  static AXLayoutObject* Create(LayoutObject*, AXObjectCacheImpl&);
-
   AXLayoutObject(LayoutObject*, AXObjectCacheImpl&);
   ~AXLayoutObject() override;
 
@@ -105,12 +103,18 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   AtomicString FontFamily() const final;
   // Font size is in pixels.
   float FontSize() const final;
+  float FontWeight() const final;
   String ImageDataUrl(const IntSize& max_size) const final;
+  ax::mojom::ListStyle GetListStyle() const final;
   String GetText() const override;
   ax::mojom::TextDirection GetTextDirection() const final;
   ax::mojom::TextPosition GetTextPosition() const final;
   int TextLength() const override;
-  int32_t GetTextStyle() const final;
+  void GetTextStyleAndTextDecorationStyle(
+      int32_t* text_style,
+      ax::mojom::TextDecorationStyle* text_overline_style,
+      ax::mojom::TextDecorationStyle* text_strikethrough_style,
+      ax::mojom::TextDecorationStyle* text_underline_style) const final;
 
   // Inline text boxes.
   void LoadInlineTextBoxes() override;
@@ -164,6 +168,10 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   AXObject* RawFirstChild() const override;
   AXObject* RawNextSibling() const override;
   void AddChildren() override;
+  void AddListMarker() override;
+  void AddInlineTextBoxChildren(bool force) override;
+  void AddImageMapChildren() override;
+  void AddHiddenChildren() override;
   bool CanHaveChildren() const override;
 
   // Properties of the object's owning document or page.
@@ -186,7 +194,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   // Text metrics. Most of these should be deprecated, needs major cleanup.
   int Index(const VisiblePosition&) const override;
   VisiblePosition VisiblePositionForIndex(int) const override;
-  void LineBreaks(Vector<int>&) const final;
 
   // For a table.
   bool IsDataTable() const override;
@@ -215,18 +222,14 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool IsValidSelectionBound(const AXObject*) const;
   AXObject* AccessibilityImageMapHitTest(HTMLAreaElement*,
                                          const IntPoint&) const;
-  LayoutObject* LayoutParentObject() const;
   bool IsSVGImage() const;
   void DetachRemoteSVGRoot();
   AXSVGRoot* RemoteSVGRootElement() const;
   AXObject* RemoteSVGElementHitTest(const IntPoint&) const;
   void OffsetBoundingBoxForRemoteSVGElement(LayoutRect&) const;
-  void AddHiddenChildren();
-  void AddImageMapChildren();
   void AddPopupChildren();
   void AddRemoteSVGChildren();
   void AddTableChildren();
-  void AddInlineTextBoxChildren(bool force);
   void AddValidationMessageChild();
   ax::mojom::Role DetermineTableCellRole() const;
   ax::mojom::Role DetermineTableRowRole() const;
@@ -241,6 +244,10 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool CanIgnoreSpaceNextTo(LayoutObject*, bool is_after) const;
   bool HasAriaCellRole(Element*) const;
   bool IsPlaceholder() const;
+
+  static ax::mojom::TextDecorationStyle
+  TextDecorationStyleToAXTextDecorationStyle(
+      const ETextDecorationStyle text_decoration_style);
 
   bool is_autofill_available_;
 

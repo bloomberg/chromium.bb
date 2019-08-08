@@ -908,7 +908,6 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDriveFileSystemExtensionApiTest,
 
 //
 // LocalAndDriveFileSystemExtensionApiTests.
-//
 IN_PROC_BROWSER_TEST_F(LocalAndDriveFileSystemExtensionApiTest,
                        AppFileHandlerMulti) {
   EXPECT_TRUE(

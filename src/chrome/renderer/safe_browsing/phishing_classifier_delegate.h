@@ -103,7 +103,8 @@ class PhishingClassifierDelegate : public content::RenderFrameObserver,
   // for the given toplevel URL.  If the URL has been fully loaded into the
   // RenderFrame and a Scorer has been set, this will begin classification,
   // otherwise classification will be deferred until these conditions are met.
-  void StartPhishingDetection(const GURL& url) override;
+  void StartPhishingDetection(const GURL& url,
+                              StartPhishingDetectionCallback callback) override;
 
   // Called when classification for the current page finishes.
   void ClassificationDone(const ClientPhishingRequest& verdict);
@@ -148,6 +149,9 @@ class PhishingClassifierDelegate : public content::RenderFrameObserver,
 
   // Set to true if the classifier is currently running.
   bool is_classifying_;
+
+  // The callback from the most recent call to StartPhishingDetection.
+  StartPhishingDetectionCallback callback_;
 
   mojo::BindingSet<mojom::PhishingDetector> phishing_detector_bindings_;
 

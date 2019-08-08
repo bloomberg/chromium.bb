@@ -37,7 +37,6 @@
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell_title_edit_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
-#import "ios/chrome/browser/ui/chrome_load_params.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
@@ -48,6 +47,7 @@
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
@@ -536,12 +536,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     return;
   }
 
-  CGFloat scale = [UIScreen mainScreen].scale;
-  CGFloat desiredFaviconSizeInPixel =
-      scale * [BookmarkHomeSharedState desiredFaviconSizePt];
-  CGFloat minFaviconSizeInPixel =
-      scale * [BookmarkHomeSharedState minFaviconSizePt];
-
   // Start loading a favicon.
   __weak BookmarkHomeViewController* weakSelf = self;
   GURL blockURL(node->url());
@@ -561,8 +555,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     [URLCell.faviconView configureWithAttributes:attributes];
   };
 
-  FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForUrl(
-      blockURL, desiredFaviconSizeInPixel, minFaviconSizeInPixel,
+  CGFloat desiredFaviconSizeInPoints =
+      [BookmarkHomeSharedState desiredFaviconSizePt];
+  CGFloat minFaviconSizeInPoints = [BookmarkHomeSharedState minFaviconSizePt];
+
+  FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForPageUrl(
+      blockURL, desiredFaviconSizeInPoints, minFaviconSizeInPoints,
       /*fallback_to_google_server=*/fallbackToGoogleServer, faviconLoadedBlock);
   DCHECK(cachedAttributes);
   faviconLoadedBlock(cachedAttributes);
@@ -1056,11 +1054,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                                  new_tab_page_uma::ACTION_OPENED_BOOKMARK);
   base::RecordAction(
       base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
-  web::NavigationManager::WebLoadParams params(url);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  ChromeLoadParams chromeParams(params);
-  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-      ->LoadUrlInCurrentTab(chromeParams);
+  UrlLoadParams params = UrlLoadParams::InCurrentTab(url);
+  params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)->Load(params);
 }
 
 - (void)addNewFolder {

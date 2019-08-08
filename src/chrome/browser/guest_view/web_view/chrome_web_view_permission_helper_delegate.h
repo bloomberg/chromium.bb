@@ -13,7 +13,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
 namespace extensions {
 class WebViewGuest;
@@ -29,7 +29,7 @@ class ChromeWebViewPermissionHelperDelegate
   // WebViewPermissionHelperDelegate implementation.
   void CanDownload(const GURL& url,
                    const std::string& request_method,
-                   const base::Callback<void(bool)>& callback) override;
+                   base::OnceCallback<void(bool)> callback) override;
   void RequestPointerLockPermission(
       bool user_gesture,
       bool last_unlocked_by_target,
@@ -83,10 +83,9 @@ class ChromeWebViewPermissionHelperDelegate
       bool allow,
       const std::string& user_input);
 
-  void OnDownloadPermissionResponse(
-      const base::Callback<void(bool)>& callback,
-      bool allow,
-      const std::string& user_input);
+  void OnDownloadPermissionResponse(base::OnceCallback<void(bool)> callback,
+                                    bool allow,
+                                    const std::string& user_input);
 
   void OnPointerLockPermissionResponse(
       const base::Callback<void(bool)>& callback,

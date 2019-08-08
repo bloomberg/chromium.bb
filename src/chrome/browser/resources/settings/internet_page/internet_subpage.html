@@ -1,12 +1,13 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_list.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="internet_page_browser_proxy.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-internet-subpage">
@@ -21,9 +22,9 @@
          separator lines can fill the entire width of the page. */
       #networkListDiv > * {
         /* cr-network-list is padded to the right to allow space for a ripple */
-        padding-inline-end: calc(var(--settings-box-row-padding) -
+        padding-inline-end: calc(var(--cr-section-padding) -
             var(--cr-icon-ripple-padding));
-        padding-inline-start: var(--settings-box-row-padding);
+        padding-inline-start: var(--cr-section-padding);
       }
 
       #addButton {
@@ -84,12 +85,10 @@
             '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
         </div>
         <!-- The add button in this row is only shown for WiFi networks. -->
-        <paper-icon-button-light class="icon-add-wifi" id="addButton"
-            hidden$="[[!showAddButton_(deviceState, globalPolicy)]]">
-          <button aria-label="$i18n{internetAddWiFi}"
-              on-click="onAddButtonTap_" tabindex$="[[tabindex]]">
-          </button>
-        </paper-icon-button-light>
+        <cr-icon-button class="icon-add-wifi" id="addButton"
+            hidden$="[[!showAddButton_(deviceState, globalPolicy)]]"
+            aria-label="$i18n{internetAddWiFi}" on-click="onAddButtonTap_"
+            tabindex$="[[tabindex]]"></cr-icon-button>
         <cr-toggle id="deviceEnabledButton"
             aria-label$="[[getToggleA11yString_(deviceState)]]"
             checked="[[deviceIsEnabled_(deviceState)]]"
@@ -102,9 +101,8 @@
     <template is="dom-if" if="[[knownNetworksIsVisible_(deviceState)]]">
       <div actionable class="settings-box" on-click="onKnownNetworksTap_">
         <div class="start">$i18n{knownNetworksButton}</div>
-        <paper-icon-button-light class="subpage-arrow">
-          <button aria-label="$i18n{knownNetworksButton}"></button>
-        </paper-icon-button-light>
+        <cr-icon-button class="subpage-arrow"
+            aria-label="$i18n{knownNetworksButton}"></cr-icon-button>
       </div>
     </template>
 
@@ -114,11 +112,9 @@
         <template is="dom-if" if="[[isEqual_('VPN', deviceState.Type)]]">
           <div class="vpn-header layout horizontal center">
             <div class="flex settings-box-text">$i18n{networkVpnBuiltin}</div>
-            <paper-icon-button-light class="icon-add-circle">
-              <button aria-label="$i18n{internetAddVPN}"
-                  on-click="onAddButtonTap_" tabindex$="[[tabindex]]">
-              </button>
-            </paper-icon-button-light>
+            <cr-icon-button class="icon-add-circle"
+                aria-label="$i18n{internetAddVPN}" on-click="onAddButtonTap_"
+                tabindex$="[[tabindex]]"></cr-icon-button>
           </div>
         </template>
 
@@ -165,12 +161,10 @@
             <div id="[[item.ProviderName]]"
                 class="vpn-header layout horizontal center">
               <div class="flex settings-box-text">[[item.ProviderName]]</div>
-              <paper-icon-button-light>
-                <button class="icon-add-circle"
-                    aria-label$="[[getAddThirdPartyVpnA11yString_(item)]]"
-                    on-click="onAddThirdPartyVpnTap_" tabindex$="[[tabindex]]">
-                </button>
-              </paper-icon-button-light>
+              <cr-icon-button class="icon-add-circle"
+                  aria-label$="[[getAddThirdPartyVpnA11yString_(item)]]"
+                  on-click="onAddThirdPartyVpnTap_" tabindex$="[[tabindex]]">
+              </cr-icon-button>
             </div>
             <cr-network-list show-buttons
                 hidden$="[[!haveThirdPartyVpnNetwork_(thirdPartyVpns_, item)]]"
@@ -187,12 +181,10 @@
             <div id="[[item.ProviderName]]"
                 class="vpn-header layout horizontal center">
               <div class="flex settings-box-text">[[item.ProviderName]]</div>
-              <paper-icon-button-light>
-                <button class="icon-add-circle"
-                    aria-label$="[[getAddArcVpnAllyString_(item)]]"
-                    on-click="onAddArcVpnTap_" tabindex$="[[tabindex]]">
-                </button>
-              </paper-icon-button-light>
+              <cr-icon-button class="icon-add-circle"
+                  aria-label$="[[getAddArcVpnAllyString_(item)]]"
+                  on-click="onAddArcVpnTap_" tabindex$="[[tabindex]]">
+              </cr-icon-button>
             </div>
             <cr-network-list show-buttons
                 hidden$="[[!haveArcVpnNetwork_(arcVpns_, item)]]"
@@ -210,7 +202,7 @@
       <template is="dom-if"
           if="[[tetherToggleIsVisible_(deviceState, tetherDeviceState)]]">
         <div class="settings-box two-line" actionable
-            on-click="onTetherEnabledTap_">
+            on-click="onTetherEnabledChange_">
           <div class="start settings-box-text">
             $i18n{internetToggleTetherLabel}
             <div id="tetherSecondary" class="secondary">
@@ -222,7 +214,8 @@
               aria-describedby="tetherSecondary"
               checked="[[deviceIsEnabled_(tetherDeviceState)]]"
               disabled="[[!tetherToggleIsEnabled_(deviceState,
-                  tetherDeviceState)]]">
+                         tetherDeviceState)]]"
+              on-change="onTetherEnabledChange_">
           </cr-toggle>
         </div>
       </template>

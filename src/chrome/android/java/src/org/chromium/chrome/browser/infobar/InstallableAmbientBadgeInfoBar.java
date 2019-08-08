@@ -84,7 +84,7 @@ public class InstallableAmbientBadgeInfoBar extends InfoBar implements View.OnCl
      */
     private InstallableAmbientBadgeInfoBar(
             int iconDrawableId, Bitmap iconBitmap, String messageText, String url) {
-        super(iconDrawableId, iconBitmap, null);
+        super(iconDrawableId, 0, null, iconBitmap);
         mMessageText = messageText;
         mUrl = url;
     }

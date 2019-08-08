@@ -7,7 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/keyboard_observer_helper.h"
+#import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -23,8 +23,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-using web::test::ElementSelector;
 
 namespace {
 
@@ -66,7 +64,7 @@ void TapOnWebElementWithID(const std::string& elementID) {
                                    chrome_test_util::GetCurrentWebState())]
       performAction:web::WebViewTapElement(
                         chrome_test_util::GetCurrentWebState(),
-                        ElementSelector::ElementSelectorId(elementID))];
+                        [ElementSelector selectorWithElementID:elementID])];
 }
 
 }  // namespace

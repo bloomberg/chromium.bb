@@ -6,17 +6,30 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/background_sync_parameters.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/background_sync_launcher_android.h"
 #endif
+
+namespace {
+
+// Default min time gap between two periodic sync events for a given
+// Periodic Background Sync registration.
+constexpr base::TimeDelta kMinGapBetweenPeriodicSyncEvents =
+    base::TimeDelta::FromHours(12);
+
+}  // namespace
 
 // static
 const char BackgroundSyncControllerImpl::kFieldTrialName[] = "BackgroundSync";
@@ -33,7 +46,14 @@ const char BackgroundSyncControllerImpl::kMaxSyncEventDurationName[] =
     "max_sync_event_duration_sec";
 
 BackgroundSyncControllerImpl::BackgroundSyncControllerImpl(Profile* profile)
-    : profile_(profile) {}
+    : profile_(profile),
+      site_engagement_service_(SiteEngagementService::Get(profile)),
+      background_sync_metrics_(HistoryServiceFactory::GetForProfile(
+          profile_,
+          ServiceAccessType::EXPLICIT_ACCESS)) {
+  DCHECK(profile_);
+  DCHECK(site_engagement_service_);
+}
 
 BackgroundSyncControllerImpl::~BackgroundSyncControllerImpl() = default;
 
@@ -103,32 +123,111 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
 }
 
 void BackgroundSyncControllerImpl::NotifyBackgroundSyncRegistered(
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    bool can_fire,
+    bool is_reregistered) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (profile_->IsOffTheRecord())
-    return;
-
-  rappor::SampleDomainAndRegistryFromGURL(GetRapporServiceImpl(),
-                                          "BackgroundSync.Register.Origin",
-                                          origin.GetURL());
+  background_sync_metrics_.MaybeRecordRegistrationEvent(origin, can_fire,
+                                                        is_reregistered);
 }
 
-void BackgroundSyncControllerImpl::RunInBackground(bool enabled,
-                                                   int64_t min_ms) {
+void BackgroundSyncControllerImpl::NotifyBackgroundSyncCompleted(
+    const url::Origin& origin,
+    blink::ServiceWorkerStatusCode status_code,
+    int num_attempts,
+    int max_attempts) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  background_sync_metrics_.MaybeRecordCompletionEvent(
+      origin, status_code, num_attempts, max_attempts);
+}
+
+void BackgroundSyncControllerImpl::RunInBackground() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (profile_->IsOffTheRecord())
     return;
 #if defined(OS_ANDROID)
-  BackgroundSyncLauncherAndroid::LaunchBrowserIfStopped(enabled, min_ms);
-#else
-// TODO(jkarlin): Use BackgroundModeManager to enter background mode. See
-// https://crbug.com/484201.
+  BackgroundSyncLauncherAndroid::LaunchBrowserIfStopped();
 #endif
 }
 
-rappor::RapporServiceImpl*
-BackgroundSyncControllerImpl::GetRapporServiceImpl() {
-  return g_browser_process->rappor_service();
+int BackgroundSyncControllerImpl::GetSiteEngagementPenalty(
+    const GURL& url) const {
+  blink::mojom::EngagementLevel engagement_level =
+      site_engagement_service_->GetEngagementLevel(url);
+
+  switch (engagement_level) {
+    case blink::mojom::EngagementLevel::NONE:
+      // Suspend registration until site_engagement improves.
+      return kEngagementLevelNonePenalty;
+    case blink::mojom::EngagementLevel::MINIMAL:
+      return kEngagementLevelMinimalPenalty;
+    case blink::mojom::EngagementLevel::LOW:
+      return kEngagementLevelLowPenalty;
+    case blink::mojom::EngagementLevel::MEDIUM:
+      return kEngagementLevelMediumPenalty;
+    case blink::mojom::EngagementLevel::HIGH:
+    case blink::mojom::EngagementLevel::MAX:
+      // Very few sites reach max engagement level.
+      return kEngagementLevelHighOrMaxPenalty;
+  }
+
+  NOTREACHED();
+  return kEngagementLevelNonePenalty;
 }
+
+base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
+    const url::Origin& origin,
+    int64_t min_interval,
+    int num_attempts,
+    blink::mojom::BackgroundSyncType sync_type,
+    content::BackgroundSyncParameters* parameters) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(parameters);
+
+  if (!num_attempts) {
+    // First attempt.
+    switch (sync_type) {
+      case blink::mojom::BackgroundSyncType::ONE_SHOT:
+        return base::TimeDelta();
+      case blink::mojom::BackgroundSyncType::PERIODIC:
+        int site_engagement_factor = GetSiteEngagementPenalty(origin.GetURL());
+        if (!site_engagement_factor)
+          return base::TimeDelta::Max();
+
+        int64_t effective_gap_ms =
+            site_engagement_factor *
+            kMinGapBetweenPeriodicSyncEvents.InMilliseconds();
+        return base::TimeDelta::FromMilliseconds(
+            std::max(min_interval, effective_gap_ms));
+    }
+  }
+
+  // After a sync event has been fired.
+  DCHECK_LT(num_attempts, parameters->max_sync_attempts);
+  return parameters->initial_retry_delay *
+         pow(parameters->retry_delay_factor, num_attempts - 1);
+}
+
+std::unique_ptr<content::BackgroundSyncController::BackgroundSyncEventKeepAlive>
+BackgroundSyncControllerImpl::CreateBackgroundSyncEventKeepAlive() {
+#if !defined(OS_ANDROID)
+  return std::make_unique<BackgroundSyncEventKeepAliveImpl>();
+#endif
+  return nullptr;
+}
+
+#if !defined(OS_ANDROID)
+BackgroundSyncControllerImpl::BackgroundSyncEventKeepAliveImpl::
+    BackgroundSyncEventKeepAliveImpl() {
+  keepalive_ = std::unique_ptr<ScopedKeepAlive,
+                               content::BrowserThread::DeleteOnUIThread>(
+      new ScopedKeepAlive(KeepAliveOrigin::BACKGROUND_SYNC,
+                          KeepAliveRestartOption::DISABLED));
+}
+
+BackgroundSyncControllerImpl::BackgroundSyncEventKeepAliveImpl::
+    ~BackgroundSyncEventKeepAliveImpl() = default;
+#endif

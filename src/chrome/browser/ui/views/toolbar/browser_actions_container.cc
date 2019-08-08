@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
@@ -94,6 +95,8 @@ BrowserActionsContainer::BrowserActionsContainer(
       separator_ = new views::Separator();
       AddChildView(separator_);
     }
+  } else {
+    DCHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
   }
 }
 
@@ -758,7 +761,7 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
 }
 
 void BrowserActionsContainer::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   if (!toolbar_actions_bar_->enabled())
     return;
 

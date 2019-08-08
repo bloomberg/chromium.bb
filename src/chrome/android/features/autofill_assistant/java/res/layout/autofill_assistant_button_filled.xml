@@ -2,13 +2,16 @@
 <!-- Copyright 2018 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
-<org.chromium.ui.widget.ButtonCompat
+<org.chromium.chrome.browser.autofill_assistant.carousel.ButtonView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:paddingStart="24dp"
-    android:paddingEnd="24dp"
-    android:gravity="center_vertical|center_horizontal"
-    android:minHeight="36dp"
-    android:singleLine="true"
-    style="@style/FilledButton" />
+    android:minHeight="@dimen/autofill_assistant_button_height"
+    app:chipColor="@color/filled_button_bg"
+    app:rippleColor="@color/filled_button_ripple_color"
+    app:cornerRadius="40dp"
+    app:primaryTextAppearance="@style/TextAppearance.WhiteButtonText"
+    app:iconWidth="24dp"
+    app:iconHeight="24dp"
+    app:chipBorderWidth="@dimen/autofill_assistant_filled_button_border_width"/>

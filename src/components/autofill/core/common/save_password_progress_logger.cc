@@ -341,8 +341,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
     case SavePasswordProgressLogger::
         STRING_PROVISIONALLY_SAVED_FORM_IS_NOT_HTML:
       return "Provisionally saved form is not HTML";
-    case SavePasswordProgressLogger::STRING_PROCESS_MATCHES_METHOD:
-      return "PasswordFormManager::ProcessMatches";
+    case SavePasswordProgressLogger::STRING_ON_FETCH_COMPLETED_METHOD:
+      return "PasswordFormManager::OnFetchCompleted";
     case SavePasswordProgressLogger::STRING_BEST_SCORE:
       return "best_score";
     case SavePasswordProgressLogger::STRING_ON_GET_STORE_RESULTS_METHOD:

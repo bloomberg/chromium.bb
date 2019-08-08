@@ -17,8 +17,9 @@
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_event_logger.h"
 #include "components/offline_pages/core/offline_page_archiver.h"
-#include "components/offline_pages/core/offline_page_thumbnail.h"
 #include "components/offline_pages/core/offline_page_types.h"
+#include "components/offline_pages/core/offline_page_visuals.h"
+#include "components/offline_pages/core/page_criteria.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -108,7 +109,13 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
 
     // Invoked when a thumbnail for an offline page is added.
     virtual void ThumbnailAdded(OfflinePageModel* model,
-                                const OfflinePageThumbnail& added_thumbnail) {}
+                                int64_t offline_id,
+                                const std::string& added_thumbnail_data) {}
+
+    // Invoked when a favicon for an offline page is added.
+    virtual void FaviconAdded(OfflinePageModel* model,
+                              int64_t offline_id,
+                              const std::string& added_favicon_data) {}
 
    protected:
     virtual ~Observer() = default;
@@ -188,66 +195,33 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
   virtual void GetPageByOfflineId(int64_t offline_id,
                                   SingleOfflinePageItemCallback callback) = 0;
 
-  // Returns zero or one offline page associated with a specified |guid|.
-  // Note: this should only be used for the case that |guid| can uniquely
-  // identify the page regardless its namespace.
-  virtual void GetPageByGuid(const std::string& guid,
-                             SingleOfflinePageItemCallback callback) = 0;
-
-  // Retrieves all pages associated with any of |client_ids|.
-  virtual void GetPagesByClientIds(
-      const std::vector<ClientId>& client_ids,
-      MultipleOfflinePageItemCallback callback) = 0;
-
-  // Returns via callback all offline pages related to |url|. The provided URL
-  // is matched both against the original and the actual URL fields (they
-  // sometimes differ because of possible redirects). The returned list is
+  // Returns all offline pages that match |criteria|. The returned list is
   // sorted by descending creation date so that the most recent offline page
   // will be the first element of the list.
-  virtual void GetPagesByURL(const GURL& url,
-                             MultipleOfflinePageItemCallback callback) = 0;
-
-  // Returns the offline pages that belong in |name_space|.
-  virtual void GetPagesByNamespace(
-      const std::string& name_space,
+  virtual void GetPagesWithCriteria(
+      const PageCriteria& criteria,
       MultipleOfflinePageItemCallback callback) = 0;
-
-  // Returns the offline pages that are removed when cache is reset.
-  virtual void GetPagesRemovedOnCacheReset(
-      MultipleOfflinePageItemCallback callback) = 0;
-
-  // Returns the offline pages that are visible in download manager UI.
-  virtual void GetPagesSupportedByDownloads(
-      MultipleOfflinePageItemCallback callback) = 0;
-
-  // Retrieves all pages associated with the |request_origin|.
-  virtual void GetPagesByRequestOrigin(
-      const std::string& request_origin,
-      MultipleOfflinePageItemCallback callback) = 0;
-
-  // Returns zero or one offline pages associated with a specified |digest|.
-  virtual void GetPageBySizeAndDigest(
-      int64_t file_size,
-      const std::string& digest,
-      SingleOfflinePageItemCallback callback) = 0;
 
   // Gets all offline ids where the offline page has the matching client id.
   virtual void GetOfflineIdsForClientId(const ClientId& client_id,
                                         MultipleOfflineIdCallback callback) = 0;
 
   // Stores a new page thumbnail in the page_thumbnails table.
-  virtual void StoreThumbnail(const OfflinePageThumbnail& thumb) = 0;
+  virtual void StoreThumbnail(int64_t offline_id, std::string thumbnail) = 0;
 
-  // Reads a thumbnail from the page_thumbnails table. Calls callback
-  // with nullptr if the thumbnail was not found.
-  virtual void GetThumbnailByOfflineId(int64_t offline_id,
-                                       GetThumbnailCallback callback) = 0;
+  // Stores a new favicon in the page_thumbnails table.
+  virtual void StoreFavicon(int64_t offline_id, std::string favicon) = 0;
+
+  // Reads a thumbnail and favicon from the page_thumbnails table. Calls
+  // callback with nullptr if the thumbnail was not found.
+  virtual void GetVisualsByOfflineId(int64_t offline_id,
+                                     GetVisualsCallback callback) = 0;
 
   // Checks if a thumbnail for a specific |offline_id| exists in the
   // page_thumbnails table. Calls callback with the bool result.
-  virtual void HasThumbnailForOfflineId(
+  virtual void GetVisualsAvailability(
       int64_t offline_id,
-      base::OnceCallback<void(bool)> callback) = 0;
+      base::OnceCallback<void(VisualsAvailability)> callback) = 0;
 
   // Publishes an offline page from the internal offline page directory.  This
   // includes putting it in a public directory, updating the system download

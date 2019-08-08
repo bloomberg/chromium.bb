@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/gamepad/gamepad_dispatcher.h"
 
+#include "device/gamepad/public/cpp/gamepads.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_shared_memory_reader.h"
@@ -82,9 +83,7 @@ void GamepadDispatcher::DispatchDidConnectOrDisconnectGamepad(
 
 void GamepadDispatcher::StartListening(LocalFrame* frame) {
   if (!reader_) {
-    // TODO(crbug.com/850619): ensure a valid frame is passed
-    if (!frame)
-      return;
+    DCHECK(frame);
     reader_ = std::make_unique<GamepadSharedMemoryReader>(*frame);
   }
   reader_->Start(this);

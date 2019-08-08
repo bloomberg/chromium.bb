@@ -135,8 +135,6 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                       GLfloat post_scale,
                       bool requires_clear,
                       size_t* max_op_size_hint) override;
-  bool CanDecodeWithHardwareAcceleration(
-      base::span<const uint8_t> encoded_data) override;
   SyncToken ScheduleImageDecode(base::span<const uint8_t> encoded_data,
                                 const gfx::Size& output_size,
                                 uint32_t transfer_cache_entry_id,
@@ -185,6 +183,14 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
       const std::vector<std::pair<uint32_t, uint32_t>>& entries) override;
   void DeleteTransferCacheEntry(uint32_t type, uint32_t id) override;
   unsigned int GetTransferBufferFreeSize() const override;
+  bool CanDecodeWithHardwareAcceleration(
+      base::span<const uint8_t> encoded_data) const override;
+
+  // InterfaceBase implementation.
+  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
+  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
 
   bool GetQueryObjectValueHelper(const char* function_name,
                                  GLuint id,

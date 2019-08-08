@@ -77,9 +77,6 @@ class InternalSettings final : public InternalSettingsGenerated,
     bool original_scroll_top_left_interop_enabled_;
   };
 
-  static InternalSettings* Create(Page& page) {
-    return MakeGarbageCollected<InternalSettings>(page);
-  }
   static InternalSettings* From(Page&);
 
   explicit InternalSettings(Page&);

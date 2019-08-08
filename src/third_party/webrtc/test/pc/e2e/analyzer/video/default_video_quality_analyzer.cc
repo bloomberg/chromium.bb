@@ -20,12 +20,28 @@
 #include "test/testsupport/perf_test.h"
 
 namespace webrtc {
-namespace test {
+namespace webrtc_pc_e2e {
 namespace {
 
 constexpr int kMaxActiveComparisons = 10;
 constexpr int kFreezeThresholdMs = 150;
 constexpr int kMicrosPerSecond = 1000000;
+
+void LogFrameCounters(const std::string& name, const FrameCounters& counters) {
+  RTC_LOG(INFO) << "[" << name << "] Captured    : " << counters.captured;
+  RTC_LOG(INFO) << "[" << name << "] Pre encoded : " << counters.pre_encoded;
+  RTC_LOG(INFO) << "[" << name << "] Encoded     : " << counters.encoded;
+  RTC_LOG(INFO) << "[" << name << "] Received    : " << counters.received;
+  RTC_LOG(INFO) << "[" << name << "] Rendered    : " << counters.rendered;
+  RTC_LOG(INFO) << "[" << name << "] Dropped     : " << counters.dropped;
+}
+
+void LogStreamInternalStats(const std::string& name, const StreamStats& stats) {
+  RTC_LOG(INFO) << "[" << name
+                << "] Dropped by encoder     : " << stats.dropped_by_encoder;
+  RTC_LOG(INFO) << "[" << name << "] Dropped before encoder : "
+                << stats.dropped_before_encoder;
+}
 
 }  // namespace
 
@@ -105,8 +121,7 @@ uint16_t DefaultVideoQualityAnalyzer::OnFrameCaptured(
       state->frame_ids.pop_front();
       frame_counters_.dropped++;
       stream_frame_counters_[stream_label].dropped++;
-      AddComparison(it->second, state->last_rendered_frame, true,
-                    stats_it->second);
+      AddComparison(it->second, absl::nullopt, true, stats_it->second);
 
       captured_frames_in_flight_.erase(it);
       frame_stats_.erase(stats_it);
@@ -135,7 +150,6 @@ void DefaultVideoQualityAnalyzer::OnFrameEncoded(
     uint16_t frame_id,
     const webrtc::EncodedImage& encoded_image) {
   rtc::CritScope crit(&lock_);
-  // TODO(titovartem) we need to pick right spatial index here.
   auto it = frame_stats_.find(frame_id);
   RTC_DCHECK(it != frame_stats_.end());
   RTC_DCHECK(it->second.encoded_time.IsInfinite())
@@ -154,7 +168,6 @@ void DefaultVideoQualityAnalyzer::OnFrameDropped(
 void DefaultVideoQualityAnalyzer::OnFrameReceived(
     uint16_t frame_id,
     const webrtc::EncodedImage& input_image) {
-  // TODO(titovartem) We should always receive only single spatial layer here.
   rtc::CritScope crit(&lock_);
   auto it = frame_stats_.find(frame_id);
   RTC_DCHECK(it != frame_stats_.end());
@@ -223,7 +236,7 @@ void DefaultVideoQualityAnalyzer::OnFrameRendered(
     auto dropped_frame_it = captured_frames_in_flight_.find(dropped_frame_id);
     RTC_CHECK(dropped_frame_it != captured_frames_in_flight_.end());
 
-    AddComparison(dropped_frame_it->second, state->last_rendered_frame, true,
+    AddComparison(dropped_frame_it->second, absl::nullopt, true,
                   dropped_frame_stats_it->second);
 
     frame_stats_.erase(dropped_frame_stats_it);
@@ -232,7 +245,6 @@ void DefaultVideoQualityAnalyzer::OnFrameRendered(
   RTC_DCHECK(!state->frame_ids.empty());
   state->frame_ids.pop_front();
 
-  state->last_rendered_frame = frame;
   if (state->last_rendered_frame_time) {
     frame_stats->prev_frame_rendered_time =
         state->last_rendered_frame_time.value();
@@ -435,7 +447,7 @@ void DefaultVideoQualityAnalyzer::ProcessComparison(
   }
   // Next stats can be calculated only if frame was received on remote side.
   if (!comparison.dropped) {
-    stats->resolution_of_encoded_image.AddSample(
+    stats->resolution_of_rendered_frame.AddSample(
         *comparison.frame_stats.rendered_frame_width *
         *comparison.frame_stats.rendered_frame_height);
     stats->transport_time_ms.AddSample(
@@ -468,13 +480,26 @@ void DefaultVideoQualityAnalyzer::ProcessComparison(
   }
 }
 
-void DefaultVideoQualityAnalyzer::ReportResults() const {
+void DefaultVideoQualityAnalyzer::ReportResults() {
   rtc::CritScope crit1(&lock_);
   rtc::CritScope crit2(&comparison_lock_);
   for (auto& item : stream_stats_) {
     ReportResults(GetTestCaseName(item.first), item.second,
                   stream_frame_counters_.at(item.first));
   }
+  LogFrameCounters("Global", frame_counters_);
+  for (auto& item : stream_stats_) {
+    LogFrameCounters(item.first, stream_frame_counters_.at(item.first));
+    LogStreamInternalStats(item.first, item.second);
+  }
+  RTC_LOG(INFO) << "comparisons_queue_size min="
+                << analyzer_stats_.comparisons_queue_size.GetMin()
+                << "; max=" << analyzer_stats_.comparisons_queue_size.GetMax()
+                << "; 99%="
+                << analyzer_stats_.comparisons_queue_size.GetPercentile(0.99);
+  RTC_LOG(INFO) << "comparisons_done=" << analyzer_stats_.comparisons_done;
+  RTC_LOG(INFO) << "overloaded_comparisons_done="
+                << analyzer_stats_.overloaded_comparisons_done;
 }
 
 void DefaultVideoQualityAnalyzer::ReportResults(std::string test_case_name,
@@ -496,7 +521,7 @@ void DefaultVideoQualityAnalyzer::ReportResults(std::string test_case_name,
   ReportResult("time_between_freezes", test_case_name,
                stats.time_between_freezes_ms, "ms");
   ReportResult("pixels_per_frame", test_case_name,
-               stats.resolution_of_encoded_image, "unitless");
+               stats.resolution_of_rendered_frame, "unitless");
   test::PrintResult("min_psnr", "", test_case_name,
                     stats.psnr.IsEmpty() ? 0 : stats.psnr.GetMin(), "dB",
                     /*important=*/false);
@@ -551,5 +576,5 @@ DefaultVideoQualityAnalyzer::FrameComparison::FrameComparison(
       dropped(dropped),
       frame_stats(std::move(frame_stats)) {}
 
-}  // namespace test
+}  // namespace webrtc_pc_e2e
 }  // namespace webrtc

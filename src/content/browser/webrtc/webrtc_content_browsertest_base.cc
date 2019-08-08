@@ -24,6 +24,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/audio/cras_audio_client.h"
 #endif
 
 namespace content {
@@ -47,7 +48,8 @@ void WebRtcContentBrowserTestBase::SetUp() {
   // We need pixel output when we dig pixels out of video tags for verification.
   EnablePixelOutput();
 #if defined(OS_CHROMEOS)
-    chromeos::CrasAudioHandler::InitializeForTesting();
+  chromeos::CrasAudioClient::InitializeFake();
+  chromeos::CrasAudioHandler::InitializeForTesting();
 #endif
   ContentBrowserTest::SetUp();
 }
@@ -55,7 +57,8 @@ void WebRtcContentBrowserTestBase::SetUp() {
 void WebRtcContentBrowserTestBase::TearDown() {
   ContentBrowserTest::TearDown();
 #if defined(OS_CHROMEOS)
-    chromeos::CrasAudioHandler::Shutdown();
+  chromeos::CrasAudioHandler::Shutdown();
+  chromeos::CrasAudioClient::Shutdown();
 #endif
 }
 

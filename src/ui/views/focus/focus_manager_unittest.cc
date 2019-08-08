@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
+#include "build/build_config.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -112,7 +113,7 @@ TEST_F(FocusManagerTest, FocusChangeListener) {
 
   // Required for VS2010:
   // http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
-  views::View* null_view = NULL;
+  views::View* null_view = nullptr;
 
   view1->RequestFocus();
   ASSERT_EQ(1, static_cast<int>(listener.focus_changes().size()));
@@ -413,12 +414,12 @@ TEST_F(FocusManagerTest, SuspendAccelerators) {
 
 class FocusManagerDtorTest : public FocusManagerTest {
  protected:
-  typedef std::vector<std::string> DtorTrackVector;
+  using DtorTrackVector = std::vector<std::string>;
 
   class FocusManagerDtorTracked : public FocusManager {
    public:
     FocusManagerDtorTracked(Widget* widget, DtorTrackVector* dtor_tracker)
-        : FocusManager(widget, NULL /* delegate */),
+        : FocusManager(widget, nullptr /* delegate */),
           dtor_tracker_(dtor_tracker) {}
 
     ~FocusManagerDtorTracked() override {
@@ -435,7 +436,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
    public:
     explicit TestFocusManagerFactory(DtorTrackVector* dtor_tracker)
         : dtor_tracker_(dtor_tracker) {}
-    ~TestFocusManagerFactory() override {}
+    ~TestFocusManagerFactory() override = default;
 
     std::unique_ptr<FocusManager> CreateFocusManager(Widget* widget) override {
       return std::make_unique<FocusManagerDtorTracked>(widget, dtor_tracker_);
@@ -475,7 +476,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
   }
 
   void TearDown() override {
-    FocusManagerFactory::Install(NULL);
+    FocusManagerFactory::Install(nullptr);
     ViewsTestBase::TearDown();
   }
 
@@ -487,7 +488,7 @@ namespace {
 
 class FocusInAboutToRequestFocusFromTabTraversalView : public View {
  public:
-  FocusInAboutToRequestFocusFromTabTraversalView() : view_to_focus_(NULL) {}
+  FocusInAboutToRequestFocusFromTabTraversalView() = default;
 
   void set_view_to_focus(View* view) { view_to_focus_ = view; }
 
@@ -496,7 +497,7 @@ class FocusInAboutToRequestFocusFromTabTraversalView : public View {
   }
 
  private:
-  views::View* view_to_focus_;
+  views::View* view_to_focus_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FocusInAboutToRequestFocusFromTabTraversalView);
 };
@@ -626,7 +627,7 @@ class FocusManagerArrowKeyTraversalTest
       public testing::WithParamInterface<bool> {
  public:
   FocusManagerArrowKeyTraversalTest() = default;
-  ~FocusManagerArrowKeyTraversalTest() override {}
+  ~FocusManagerArrowKeyTraversalTest() override = default;
 
   // FocusManagerTest overrides:
   void SetUp() override {
@@ -712,14 +713,14 @@ TEST_F(FocusManagerTest, StoreFocusedView) {
 
   GetFocusManager()->SetFocusedView(view);
   GetFocusManager()->StoreFocusedView(false);
-  EXPECT_EQ(NULL, GetFocusManager()->GetFocusedView());
+  EXPECT_EQ(nullptr, GetFocusManager()->GetFocusedView());
   EXPECT_TRUE(GetFocusManager()->RestoreFocusedView());
   EXPECT_EQ(view, GetFocusManager()->GetStoredFocusView());
 
   // Repeat with |true|.
   GetFocusManager()->SetFocusedView(view);
   GetFocusManager()->StoreFocusedView(true);
-  EXPECT_EQ(NULL, GetFocusManager()->GetFocusedView());
+  EXPECT_EQ(nullptr, GetFocusManager()->GetFocusedView());
   EXPECT_TRUE(GetFocusManager()->RestoreFocusedView());
   EXPECT_EQ(view, GetFocusManager()->GetStoredFocusView());
 }
@@ -805,7 +806,7 @@ class AdvanceFocusWidgetDelegate : public WidgetDelegate {
  public:
   explicit AdvanceFocusWidgetDelegate(Widget* widget)
       : widget_(widget), should_advance_focus_to_parent_(false) {}
-  ~AdvanceFocusWidgetDelegate() override {}
+  ~AdvanceFocusWidgetDelegate() override = default;
 
   void set_should_advance_focus_to_parent(bool value) {
     should_advance_focus_to_parent_ = value;
@@ -827,9 +828,9 @@ class AdvanceFocusWidgetDelegate : public WidgetDelegate {
 
 class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
  public:
-  TestBubbleDialogDelegateView(View* anchor)
+  explicit TestBubbleDialogDelegateView(View* anchor)
       : BubbleDialogDelegateView(anchor, BubbleBorder::NONE) {}
-  ~TestBubbleDialogDelegateView() override {}
+  ~TestBubbleDialogDelegateView() override = default;
 
   // If this is called, the bubble will be forced to use a NativeWidgetAura.
   // If not set, it might get a DesktopNativeWidgetAura depending on the
@@ -874,7 +875,7 @@ TEST_F(FocusManagerTest, AdvanceFocusStaysInWidget) {
   params.bounds = gfx::Rect(10, 10, 100, 100);
   params.parent = GetWidget()->GetNativeView();
   Widget child_widget;
-  delegate.reset(new AdvanceFocusWidgetDelegate(&child_widget));
+  delegate = std::make_unique<AdvanceFocusWidgetDelegate>(&child_widget);
   params.delegate = delegate.get();
   child_widget.Init(params);
   View* view1 = new View;

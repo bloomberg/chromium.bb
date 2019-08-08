@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/rtree.h"
@@ -58,6 +57,8 @@ class CC_PAINT_EXPORT DisplayItemList
   enum UsageHint { kTopLevelDisplayItemList, kToBeReleasedAsPaintOpBuffer };
 
   explicit DisplayItemList(UsageHint = kTopLevelDisplayItemList);
+  DisplayItemList(const DisplayItemList&) = delete;
+  DisplayItemList& operator=(const DisplayItemList&) = delete;
 
   void Raster(SkCanvas* canvas, ImageProvider* image_provider = nullptr) const;
 
@@ -105,12 +106,11 @@ class CC_PAINT_EXPORT DisplayItemList
     if (usage_hint_ == kToBeReleasedAsPaintOpBuffer)
       return;
 
-    while (visual_rects_.size() < paint_op_buffer_.size())
-      visual_rects_.push_back(visual_rect);
+    visual_rects_.resize(paint_op_buffer_.size(), visual_rect);
     GrowCurrentBeginItemVisualRect(visual_rect);
   }
 
-  void EndPaintOfPairedBegin(const gfx::Rect& visual_rect = gfx::Rect()) {
+  void EndPaintOfPairedBegin() {
 #if DCHECK_IS_ON()
     DCHECK(IsPainting());
     DCHECK_LT(current_range_start_, paint_op_buffer_.size());
@@ -121,8 +121,7 @@ class CC_PAINT_EXPORT DisplayItemList
 
     DCHECK_LT(visual_rects_.size(), paint_op_buffer_.size());
     size_t count = paint_op_buffer_.size() - visual_rects_.size();
-    for (size_t i = 0; i < count; ++i)
-      visual_rects_.push_back(visual_rect);
+    visual_rects_.resize(paint_op_buffer_.size());
     begin_paired_indices_.push_back(
         std::make_pair(visual_rects_.size() - 1, count));
   }
@@ -154,8 +153,7 @@ class CC_PAINT_EXPORT DisplayItemList
     begin_paired_indices_.pop_back();
 
     // Copy the visual rect of the matching begin item to the end item(s).
-    while (visual_rects_.size() < paint_op_buffer_.size())
-      visual_rects_.push_back(visual_rect);
+    visual_rects_.resize(paint_op_buffer_.size(), visual_rect);
 
     // The block that ended needs to be included in the bounds of the enclosing
     // block.
@@ -197,6 +195,7 @@ class CC_PAINT_EXPORT DisplayItemList
                              int max_ops_to_analyze = 1);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, TraceEmptyVisualRect);
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithNoOps);
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithOps);
   friend gpu::raster::RasterImplementation;
@@ -247,7 +246,6 @@ class CC_PAINT_EXPORT DisplayItemList
 
   friend class base::RefCountedThreadSafe<DisplayItemList>;
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, BytesUsed);
-  DISALLOW_COPY_AND_ASSIGN(DisplayItemList);
 };
 
 }  // namespace cc

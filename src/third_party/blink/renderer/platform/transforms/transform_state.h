@@ -77,7 +77,7 @@ class PLATFORM_EXPORT TransformState {
 
   // Accumulate a transform but don't map any points directly.
   TransformState(TransformDirection mapping_direction)
-      : accumulated_transform_(TransformationMatrix::Create()),
+      : accumulated_transform_(std::make_unique<TransformationMatrix>()),
         accumulating_transform_(true),
         force_accumulating_transform_(true),
         map_point_(false),

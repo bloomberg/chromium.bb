@@ -27,7 +27,7 @@ public final class FeedConfiguration {
     private static final String FEED_SERVER_ENDPOINT = "feed_server_endpoint";
     /** Default value for server endpoint. */
     public static final String FEED_SERVER_ENDPOINT_DEFAULT =
-            "https://www.google.com/httpservice/noretry/NowStreamService/FeedQuery";
+            "https://www.google.com/httpservice/noretry/DiscoverClankService/FeedQuery";
 
     private static final String FEED_SERVER_METHOD = "feed_server_method";
     /** Default value for feed server method. */
@@ -66,6 +66,10 @@ public final class FeedConfiguration {
     private static final String SESSION_LIFETIME_MS = "session_lifetime_ms";
     /** Default value for session lifetime. */
     public static final int SESSION_LIFETIME_MS_DEFAULT = 3600000;
+
+    private static final String SNIPPETS_ENABLED = "snippets_enabled";
+    /** Default value for whether to show article snippets. */
+    public static final boolean SNIPPETS_ENABLED_DEFAULT = false;
 
     private static final String TRIGGER_IMMEDIATE_PAGINATION = "trigger_immediate_pagination";
     /** Default value for triggering immediate pagination. */
@@ -228,6 +232,14 @@ public final class FeedConfiguration {
                 VIEW_LOG_THRESHOLD_DEFAULT);
     }
 
+    /** @return Whether the article snippets feature is enabled. */
+    @VisibleForTesting
+    static boolean getSnippetsEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, SNIPPETS_ENABLED,
+                SNIPPETS_ENABLED_DEFAULT);
+    }
+
     /**
      * @return A fully built {@link Configuration}, ready to be given to the Feed.
      */
@@ -250,6 +262,7 @@ public final class FeedConfiguration {
                         FeedConfiguration.getNonCachedMinPageSize())
                 .put(ConfigKey.NON_CACHED_PAGE_SIZE, FeedConfiguration.getNonCachedPageSize())
                 .put(ConfigKey.SESSION_LIFETIME_MS, FeedConfiguration.getSessionLifetimeMs())
+                .put(ConfigKey.SNIPPETS_ENABLED, FeedConfiguration.getSnippetsEnabled())
                 .put(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION,
                         FeedConfiguration.getTriggerImmediatePagination())
                 .put(ConfigKey.UNDOABLE_ACTIONS_ENABLED,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 26
+// Next MinVersion: 27
 
 module arc.mojom;
 
@@ -165,7 +165,10 @@ struct TextSelectionAction {
 
 // Interface to interact with a custom tab.
 // Close the interface pointer to close the custom tab.
+// Next method ID: 1
 interface CustomTabSession {
+  // Called when "Open in Chrome" button on the custom tab is clicked.
+  [MinVersion=26] OnOpenInChromeClicked@0();
 };
 
 // Handles intents from ARC in Chrome.

@@ -49,9 +49,7 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
       std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks>) override;
   void GetRegistrations(
       std::unique_ptr<WebServiceWorkerGetRegistrationsCallbacks>) override;
-  void GetRegistrationForReady(
-      std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>)
-      override;
+  void GetRegistrationForReady(GetRegistrationForReadyCallback) override;
   bool ValidateScopeAndScriptURL(const blink::WebURL& pattern,
                                  const blink::WebURL& script_url,
                                  blink::WebString* error_message) override;
@@ -89,8 +87,7 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
           infos);
 
   void OnDidGetRegistrationForReady(
-      std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>
-          callbacks,
+      GetRegistrationForReadyCallback callback,
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration);
 
   scoped_refptr<ServiceWorkerProviderContext> context_;

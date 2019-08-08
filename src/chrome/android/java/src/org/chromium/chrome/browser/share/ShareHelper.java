@@ -257,14 +257,24 @@ public class ShareHelper {
     }
 
     /**
+     * Returns the directory where temporary files are stored to be shared with external
+     * applications. These files are deleted on startup and when there are no longer any active
+     * Activities.
+     *
+     * @return The directory where shared files are stored.
+     */
+    public static File getSharedFilesDirectory() throws IOException {
+        File imagePath = UiUtils.getDirectoryForImageCapture(ContextUtils.getApplicationContext());
+        return new File(imagePath, SHARE_IMAGES_DIRECTORY_NAME);
+    }
+
+    /**
      * Clears all shared image files.
      */
     public static void clearSharedImages() {
         AsyncTask.SERIAL_EXECUTOR.execute(() -> {
             try {
-                File imagePath =
-                        UiUtils.getDirectoryForImageCapture(ContextUtils.getApplicationContext());
-                deleteShareImageFiles(new File(imagePath, SHARE_IMAGES_DIRECTORY_NAME));
+                deleteShareImageFiles(getSharedFilesDirectory());
             } catch (IOException ie) {
                 // Ignore exception.
             }
@@ -435,8 +445,8 @@ public class ShareHelper {
 
         final ShareDialogAdapter adapter =
                 new ShareDialogAdapter(activity, manager, resolveInfoList);
-        AlertDialog.Builder builder =
-                new AlertDialog.Builder(activity, R.style.Theme_Chromium_AlertDialog);
+        AlertDialog.Builder builder = new UiUtils.CompatibleAlertDialogBuilder(
+                activity, R.style.Theme_Chromium_AlertDialog);
         builder.setTitle(activity.getString(R.string.share_link_chooser_title));
         builder.setAdapter(adapter, null);
 
@@ -584,7 +594,8 @@ public class ShareHelper {
 
     @VisibleForTesting
     public static Intent getShareLinkIntent(ShareParams params) {
-        Intent intent = new Intent(Intent.ACTION_SEND);
+        final boolean isFileShare = (params.getFileUris() != null);
+        Intent intent = new Intent(isFileShare ? Intent.ACTION_SEND_MULTIPLE : Intent.ACTION_SEND);
         intent.addFlags(ApiCompatibilityUtils.getActivityNewDocumentFlag());
         intent.putExtra(EXTRA_TASK_ID, params.getActivity().getTaskId());
 
@@ -610,7 +621,15 @@ public class ShareHelper {
                 intent.putExtra(Intent.EXTRA_SUBJECT, params.getTitle());
             }
             intent.putExtra(Intent.EXTRA_TEXT, params.getText());
-            intent.setType("text/plain");
+
+            if (isFileShare) {
+                intent.setType(params.getFileContentType());
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, params.getFileUris());
+            } else {
+                intent.setType("text/plain");
+            }
         }
 
         return intent;

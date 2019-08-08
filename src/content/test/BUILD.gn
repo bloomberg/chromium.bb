@@ -17,6 +17,7 @@ import("//ppapi/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//third_party/blink/public/public_features.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
+import("//ui/base/mpris/buildflags/buildflags.gni")
 import("//v8/gni/v8.gni")
 
 # Use a static library here because many test binaries depend on this but don't
@@ -53,6 +54,10 @@ jumbo_static_library("test_support") {
     "../browser/media/session/mock_media_session_player_observer.h",
     "../browser/media/session/mock_media_session_service_impl.cc",
     "../browser/media/session/mock_media_session_service_impl.h",
+    "../browser/renderer_host/input/mock_input_router.cc",
+    "../browser/renderer_host/input/mock_input_router.h",
+    "../browser/renderer_host/mock_render_widget_host.cc",
+    "../browser/renderer_host/mock_render_widget_host.h",
     "../browser/service_worker/embedded_worker_test_helper.cc",
     "../browser/service_worker/embedded_worker_test_helper.h",
     "../browser/service_worker/fake_embedded_worker_instance_client.cc",
@@ -358,7 +363,6 @@ jumbo_static_library("test_support") {
     "//content/public/renderer",
     "//content/public/utility",
     "//content/renderer:for_content_tests",
-    "//content/renderer/compositor",
     "//content/shell:pak",
     "//content/utility:for_content_tests",
     "//device/base/synchronization",
@@ -391,7 +395,6 @@ jumbo_static_library("test_support") {
     "//third_party/webrtc/api:rtc_stats_api",
     "//third_party/webrtc/api:scoped_refptr",
     "//third_party/webrtc/media:rtc_media_base",
-    "//third_party/webrtc/modules/video_capture",
     "//third_party/webrtc/pc:libjingle_peerconnection",
     "//third_party/webrtc/rtc_base:rtc_base_approved",
     "//third_party/webrtc/stats:rtc_stats",
@@ -430,6 +433,11 @@ jumbo_static_library("test_support") {
     deps += [
       "//content/shell:android_shell_descriptors",
       "//mojo/public/java/system:native_support",
+    ]
+  } else {
+    sources += [
+      "../browser/serial/serial_test_utils.cc",
+      "../browser/serial/serial_test_utils.h",
     ]
   }
 
@@ -579,7 +587,7 @@ jumbo_static_library("browsertest_support") {
     "//testing/gtest",
     "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
   ]
 
   if (is_android) {
@@ -650,26 +658,21 @@ static_library("web_test_support") {
 
   deps = [
     ":test_support",
-    "//cc",
-    "//components/viz/service",
-    "//components/viz/test:test_support",
     "//content/browser:for_content_tests",
     "//content/child:for_content_tests",
     "//content/public/common",
     "//content/public/renderer",
     "//content/renderer:for_content_tests",
-    "//content/renderer/compositor",
     "//content/shell:web_test_switches",
     "//content/shell/test_runner:test_runner",
     "//device/bluetooth",
     "//device/gamepad/public/cpp:shared_with_blink",
-    "//gpu/ipc/service",
     "//services/device/public/cpp/generic_sensor",
-    "//services/ws/public/cpp/gpu",
     "//skia",
     "//ui/accessibility:ax_enums_mojo",
     "//ui/events/blink",
     "//ui/gfx:test_support",
+    "//ui/gfx/geometry",
     "//v8",
   ]
 
@@ -792,6 +795,7 @@ test("content_browsertests") {
     "../browser/download/mhtml_generation_browsertest.cc",
     "../browser/download/save_package_browsertest.cc",
     "../browser/fileapi/file_system_browsertest.cc",
+    "../browser/frame_host/back_forward_cache_metrics_browsertest.cc",
 
     # These tests have incorrect threading (https://crbug.com/860547).
     #"../browser/fileapi/file_system_url_loader_factory_browsertest.cc",
@@ -805,9 +809,11 @@ test("content_browsertests") {
     "../browser/frame_host/interstitial_page_impl_browsertest.cc",
     "../browser/frame_host/navigation_controller_impl_browsertest.cc",
     "../browser/frame_host/navigation_handle_impl_browsertest.cc",
+    "../browser/frame_host/render_document_host_browsertest.cc",
     "../browser/frame_host/render_frame_host_impl_browsertest.cc",
     "../browser/frame_host/render_frame_host_manager_browsertest.cc",
     "../browser/frame_host/render_frame_message_filter_browsertest.cc",
+    "../browser/frame_host/sec_fetch_browsertest.cc",
     "../browser/frame_host/webui_navigation_browsertest.cc",
     "../browser/generic_sensor/generic_sensor_browsertest.cc",
     "../browser/gpu/gpu_ipc_browsertests.cc",
@@ -820,6 +826,7 @@ test("content_browsertests") {
     "../browser/keyboard_lock_browsertest.h",
     "../browser/keyboard_lock_browsertest_mac.mm",
     "../browser/loader/cors_file_origin_browsertest.cc",
+    "../browser/loader/cors_preflight_cache_browsertest.cc",
     "../browser/loader/cross_site_document_blocking_browsertest.cc",
     "../browser/loader/loader_browsertest.cc",
     "../browser/loader/prefetch_browsertest.cc",
@@ -892,6 +899,7 @@ test("content_browsertests") {
     "../browser/service_worker/service_worker_browsertest.cc",
     "../browser/service_worker/service_worker_clients_api_browsertest.cc",
     "../browser/service_worker/service_worker_file_upload_browsertest.cc",
+    "../browser/service_worker/service_worker_no_best_effort_tasks_browsertest.cc",
     "../browser/service_worker/service_worker_tls_browsertest.cc",
     "../browser/session_history_browsertest.cc",
     "../browser/shape_detection/shape_detection_browsertest.cc",
@@ -905,6 +913,7 @@ test("content_browsertests") {
     "../browser/tracing/background_tracing_manager_browsertest.cc",
     "../browser/tracing/memory_instrumentation_browsertest.cc",
     "../browser/tracing/memory_tracing_browsertest.cc",
+    "../browser/tracing/startup_tracing_browsertest.cc",
     "../browser/tracing/tracing_controller_browsertest.cc",
     "../browser/utility_process_host_browsertest.cc",
     "../browser/vibration_browsertest.cc",
@@ -1000,7 +1009,6 @@ test("content_browsertests") {
     "//content/public/gpu",
     "//content/public/renderer",
     "//content/renderer:for_content_tests",
-    "//content/renderer/compositor",
     "//content/shell:content_shell_lib",
     "//content/shell:mojo_bindings",
     "//content/shell:pak",
@@ -1043,7 +1051,7 @@ test("content_browsertests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/public:blink",
-    "//third_party/blink/public:core_mojo_bindings",
+    "//third_party/blink/public/mojom:mojom_broadcastchannel_bindings",
     "//third_party/leveldatabase",
     "//third_party/mesa_headers",
     "//third_party/zlib",
@@ -1137,10 +1145,13 @@ test("content_browsertests") {
 
   if (is_win) {
     sources += [
+      "../browser/accessibility/accessibility_browsertest.cc",
+      "../browser/accessibility/accessibility_browsertest.h",
       "../browser/accessibility/accessibility_win_browsertest.cc",
       "../browser/accessibility/ax_platform_node_win_browsertest.cc",
+      "../browser/renderer_host/accessibility_object_lifetime_win_browsertest.cc",
       "../browser/renderer_host/accessibility_tree_linkage_win_browsertest.cc",
-      "../browser/renderer_host/direct_manipulation_browsertest.cc",
+      "../browser/renderer_host/direct_manipulation_win_browsertest.cc",
     ]
 
     deps += [
@@ -1150,6 +1161,8 @@ test("content_browsertests") {
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
     ]
+
+    libs = [ "uiautomationcore.lib" ]
 
     if (symbol_level != 0) {
       data += [ "$root_out_dir/content_browsertests.exe.pdb" ]
@@ -1164,14 +1177,16 @@ test("content_browsertests") {
     ]
 
     if (use_atk) {
-      sources +=
-          [ "../browser/accessibility/accessibility_auralinux_browsertest.cc" ]
+      sources += [
+        "../browser/accessibility/accessibility_auralinux_browsertest.cc",
+        "../browser/accessibility/accessibility_browsertest.cc",
+        "../browser/accessibility/accessibility_browsertest.h",
+      ]
       configs += [ "//build/config/linux/atk" ]
     }
   }
 
   if (is_android) {
-    enable_multidex = true
     if (is_component_build) {
       sources += [ "../browser/android/render_widget_host_connector.cc" ]
     }
@@ -1238,7 +1253,10 @@ test("content_browsertests") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chromeos/audio" ]
+    deps += [
+      "//chromeos/audio",
+      "//chromeos/dbus/audio",
+    ]
   }
 
   if (use_aura && !is_win) {
@@ -1341,17 +1359,16 @@ test("content_unittests") {
     check_includes = false
   }
 
-  if (is_android) {
-    enable_multidex = true
-  }
-
   defines = []
   sources = [
     "../browser/accessibility/browser_accessibility_mac_unittest.mm",
     "../browser/accessibility/browser_accessibility_manager_unittest.cc",
+    "../browser/accessibility/browser_accessibility_manager_win_unittest.cc",
     "../browser/accessibility/browser_accessibility_unittest.cc",
     "../browser/accessibility/browser_accessibility_win_unittest.cc",
     "../browser/accessibility/one_shot_accessibility_tree_search_unittest.cc",
+    "../browser/accessibility/test_browser_accessibility_delegate.cc",
+    "../browser/accessibility/test_browser_accessibility_delegate.h",
     "../browser/appcache/appcache_database_unittest.cc",
     "../browser/appcache/appcache_disk_cache_unittest.cc",
     "../browser/appcache/appcache_group_unittest.cc",
@@ -1384,6 +1401,7 @@ test("content_unittests") {
     "../browser/background_fetch/background_fetch_service_unittest.cc",
     "../browser/background_fetch/storage/database_helpers_unittest.cc",
     "../browser/background_fetch/storage/image_helpers_unittest.cc",
+    "../browser/background_sync/background_sync_launcher_unittest.cc",
     "../browser/background_sync/background_sync_manager_unittest.cc",
     "../browser/background_sync/background_sync_network_observer_unittest.cc",
     "../browser/background_sync/background_sync_service_impl_unittest.cc",
@@ -1447,6 +1465,7 @@ test("content_unittests") {
     "../browser/fileapi/file_system_chooser_unittest.cc",
     "../browser/fileapi/file_system_operation_runner_unittest.cc",
     "../browser/frame_host/ancestor_throttle_unittest.cc",
+    "../browser/frame_host/back_forward_cache_metrics_unittest.cc",
     "../browser/frame_host/form_submission_throttle_unittest.cc",
     "../browser/frame_host/frame_service_base_unittest.cc",
     "../browser/frame_host/frame_tree_node_blame_context_unittest.cc",
@@ -1504,6 +1523,10 @@ test("content_unittests") {
     "../browser/indexed_db/mock_mojo_indexed_db_database_callbacks.cc",
     "../browser/indexed_db/mock_mojo_indexed_db_database_callbacks.h",
     "../browser/indexed_db/scopes/disjoint_range_lock_manager_unittest.cc",
+    "../browser/indexed_db/scopes/leveldb_scopes_coding_unittest.cc",
+    "../browser/indexed_db/scopes/leveldb_scopes_tasks_unittest.cc",
+    "../browser/indexed_db/scopes/leveldb_scopes_test_utils.cc",
+    "../browser/indexed_db/scopes/leveldb_scopes_test_utils.h",
     "../browser/indexed_db/scopes/scopes_lock_manager_unittest.cc",
     "../browser/loader/cross_site_document_resource_handler_unittest.cc",
     "../browser/loader/data_pipe_to_source_stream_unittest.cc",
@@ -1572,6 +1595,7 @@ test("content_unittests") {
     "../browser/presentation/presentation_service_impl_unittest.cc",
     "../browser/renderer_host/clipboard_host_impl_unittest.cc",
     "../browser/renderer_host/cursor_manager_unittest.cc",
+    "../browser/renderer_host/direct_manipulation_win_unittest.cc",
     "../browser/renderer_host/dwrite_font_lookup_table_builder_win_unittest.cc",
     "../browser/renderer_host/dwrite_font_proxy_impl_win_unittest.cc",
     "../browser/renderer_host/embedded_frame_sink_provider_impl_unittest.cc",
@@ -1653,9 +1677,7 @@ test("content_unittests") {
     "../browser/service_worker/service_worker_context_unittest.cc",
     "../browser/service_worker/service_worker_context_watcher_unittest.cc",
     "../browser/service_worker/service_worker_controllee_request_handler_unittest.cc",
-    "../browser/service_worker/service_worker_data_pipe_reader_unittest.cc",
     "../browser/service_worker/service_worker_database_unittest.cc",
-    "../browser/service_worker/service_worker_dispatcher_host_unittest.cc",
     "../browser/service_worker/service_worker_installed_scripts_sender_unittest.cc",
     "../browser/service_worker/service_worker_job_unittest.cc",
     "../browser/service_worker/service_worker_metrics_unittest.cc",
@@ -1664,14 +1686,12 @@ test("content_unittests") {
     "../browser/service_worker/service_worker_object_host_unittest.cc",
     "../browser/service_worker/service_worker_process_manager_unittest.cc",
     "../browser/service_worker/service_worker_provider_host_unittest.cc",
-    "../browser/service_worker/service_worker_read_from_cache_job_unittest.cc",
     "../browser/service_worker/service_worker_registration_unittest.cc",
     "../browser/service_worker/service_worker_request_handler_unittest.cc",
     "../browser/service_worker/service_worker_script_loader_factory_unittest.cc",
     "../browser/service_worker/service_worker_single_script_update_checker_unittest.cc",
     "../browser/service_worker/service_worker_storage_unittest.cc",
     "../browser/service_worker/service_worker_version_unittest.cc",
-    "../browser/service_worker/service_worker_write_to_cache_job_unittest.cc",
     "../browser/shareable_file_reference_unittest.cc",
     "../browser/site_instance_impl_unittest.cc",
     "../browser/speech/tts_controller_unittest.cc",
@@ -1737,7 +1757,6 @@ test("content_unittests") {
     "../common/input/touch_event_stream_validator_unittest.cc",
     "../common/inter_process_time_ticks_converter_unittest.cc",
     "../common/mac/attributed_string_coder_unittest.mm",
-    "../common/manifest_util_unittest.cc",
     "../common/mime_sniffing_throttle_unittest.cc",
     "../common/origin_util_unittest.cc",
     "../common/page_state_serialization_unittest.cc",
@@ -1745,6 +1764,7 @@ test("content_unittests") {
     "../common/service_manager/service_manager_connection_impl_unittest.cc",
     "../common/service_worker/service_worker_types_unittest.cc",
     "../common/service_worker/service_worker_utils_unittest.cc",
+    "../common/tab_switch_time_recorder_unittest.cc",
     "../common/throttling_url_loader_unittest.cc",
     "../common/unique_name_helper_unittest.cc",
     "../common/webplugininfo_unittest.cc",
@@ -1768,16 +1788,13 @@ test("content_unittests") {
     "../renderer/input/main_thread_event_queue_unittest.cc",
     "../renderer/loader/navigation_body_loader_unittest.cc",
     "../renderer/loader/resource_dispatcher_unittest.cc",
-    "../renderer/loader/shared_memory_data_consumer_handle_unittest.cc",
     "../renderer/loader/sync_load_context_unittest.cc",
     "../renderer/loader/test_request_peer.cc",
     "../renderer/loader/test_request_peer.h",
     "../renderer/loader/url_loader_client_impl_unittest.cc",
-    "../renderer/loader/url_response_body_consumer_unittest.cc",
     "../renderer/loader/web_data_consumer_handle_impl_unittest.cc",
     "../renderer/loader/web_url_loader_impl_unittest.cc",
     "../renderer/low_memory_mode_controller_unittest.cc",
-    "../renderer/manifest/manifest_parser_unittest.cc",
     "../renderer/media/audio/audio_output_ipc_factory_unittest.cc",
     "../renderer/media/audio/audio_renderer_mixer_manager_unittest.cc",
     "../renderer/media/audio/audio_renderer_sink_cache_unittest.cc",
@@ -1795,7 +1812,6 @@ test("content_unittests") {
     "../renderer/media/stream/media_stream_constraints_util_video_content_unittest.cc",
     "../renderer/media/stream/media_stream_constraints_util_video_device_unittest.cc",
     "../renderer/media/stream/media_stream_device_observer_unittest.cc",
-    "../renderer/media/stream/media_stream_video_capturer_source_unittest.cc",
     "../renderer/media/stream/media_stream_video_renderer_sink_unittest.cc",
     "../renderer/media/stream/media_stream_video_source_unittest.cc",
     "../renderer/media/stream/media_stream_video_track_unittest.cc",
@@ -1809,10 +1825,11 @@ test("content_unittests") {
     "../renderer/media/stream/mock_media_stream_video_source.h",
     "../renderer/media/stream/processed_local_audio_source_unittest.cc",
     "../renderer/media/stream/user_media_client_impl_unittest.cc",
-    "../renderer/media/stream/video_track_adapter_unittest.cc",
     "../renderer/media/stream/webmediaplayer_ms_unittest.cc",
-    "../renderer/media/video_capture_impl_manager_unittest.cc",
-    "../renderer/media/video_capture_impl_unittest.cc",
+    "../renderer/media/video_capture/video_capture_impl_manager_unittest.cc",
+    "../renderer/media/video_capture/video_capture_impl_unittest.cc",
+    "../renderer/media/webrtc/fake_rtc_rtp_transceiver.cc",
+    "../renderer/media/webrtc/fake_rtc_rtp_transceiver.h",
     "../renderer/media/webrtc/media_stream_remote_video_source_unittest.cc",
     "../renderer/media/webrtc/media_stream_track_metrics_unittest.cc",
     "../renderer/media/webrtc/media_stream_video_webrtc_sink_unittest.cc",
@@ -1829,6 +1846,7 @@ test("content_unittests") {
     "../renderer/media/webrtc/stun_field_trial_unittest.cc",
     "../renderer/media/webrtc/task_queue_factory_unittest.cc",
     "../renderer/media/webrtc/transceiver_state_surfacer_unittest.cc",
+    "../renderer/media/webrtc/transmission_encoding_info_handler_unittest.cc",
     "../renderer/media/webrtc/two_keys_adapter_map_unittest.cc",
     "../renderer/media/webrtc/webrtc_audio_renderer_unittest.cc",
     "../renderer/media/webrtc/webrtc_media_stream_track_adapter_map_unittest.cc",
@@ -1923,7 +1941,9 @@ test("content_unittests") {
     "//content/browser/background_fetch:background_fetch_proto",
     "//content/browser/cache_storage:cache_storage_proto",
     "//content/browser/devtools:devtools_background_services_proto",
+    "//content/browser/devtools:inspector_protocol_encoding_test",
     "//content/browser/dom_storage:local_storage_proto",
+    "//content/browser/indexed_db/scopes:scopes_metadata_proto",
     "//content/browser/notifications:notification_proto",
     "//content/browser/service_worker:service_worker_proto",
     "//content/browser/speech/proto",
@@ -1935,7 +1955,6 @@ test("content_unittests") {
     "//content/public/common:service_names",
     "//content/public/renderer",
     "//content/renderer:for_content_tests",
-    "//content/renderer/compositor",
     "//crypto",
     "//device/bluetooth",
     "//device/bluetooth:mocks",
@@ -1954,6 +1973,7 @@ test("content_unittests") {
     "//media/capture",
     "//media/midi:midi",
     "//media/midi:mojo",
+    "//media/webrtc",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/test_support:test_utils",
@@ -2005,7 +2025,6 @@ test("content_unittests") {
     "//third_party/webrtc/media:rtc_media",
     "//third_party/webrtc/media:rtc_vp9_profile",
     "//third_party/webrtc/modules/desktop_capture:primitives",
-    "//third_party/webrtc/modules/video_capture",
     "//third_party/webrtc/modules/video_coding:video_codec_interface",
     "//third_party/webrtc/pc:libjingle_peerconnection",
     "//third_party/webrtc/rtc_base:ip_address",
@@ -2018,9 +2037,10 @@ test("content_unittests") {
     "//third_party/webrtc_overrides:task_queue_factory",
     "//third_party/widevine/cdm:headers",
     "//ui/accessibility",
+    "//ui/accessibility:test_support",
     "//ui/base:test_support",
     "//ui/base/clipboard:clipboard_test_support",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/compositor:test_support",
     "//ui/display",
     "//ui/display:test_support",
@@ -2111,10 +2131,12 @@ test("content_unittests") {
     }
   }
   if (is_win) {
+    sources += [ "../browser/media/system_media_controls_notifier_unittest.cc" ]
     deps += [
       "//third_party/blink/public/common",
       "//third_party/blink/public/common:font_unique_name_table_proto",
       "//third_party/iaccessible2",
+      "//ui/base/win/system_media_controls:test_support",
     ]
     libs = [
       "dwrite.lib",
@@ -2135,7 +2157,10 @@ test("content_unittests") {
     ]
   }
   if (is_chromeos) {
-    deps += [ "//chromeos/audio" ]
+    deps += [
+      "//chromeos/audio",
+      "//chromeos/dbus/audio",
+    ]
   }
   if (is_android) {
     sources += [
@@ -2147,6 +2172,7 @@ test("content_unittests") {
       "../browser/android/url_request_content_job_unittest.cc",
       "../browser/font_unique_name_lookup/font_unique_name_lookup_unittest.cc",
       "../browser/media/capture/screen_capture_device_android_unittest.cc",
+      "../browser/renderer_host/render_widget_host_view_android_unittest.cc",
       "../renderer/java/gin_java_bridge_value_converter_unittest.cc",
       "../renderer/media/android/stream_texture_wrapper_impl_unittest.cc",
     ]
@@ -2178,6 +2204,7 @@ test("content_unittests") {
     # Non-Android.
     sources += [
       "../browser/host_zoom_map_impl_unittest.cc",
+      "../browser/serial/serial_unittest.cc",
       "../browser/speech/chunked_byte_buffer_unittest.cc",
       "../browser/speech/endpointer/endpointer_unittest.cc",
       "../browser/speech/speech_recognition_engine_unittest.cc",
@@ -2237,6 +2264,11 @@ test("content_unittests") {
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
   }
+
+  if (use_mpris) {
+    sources += [ "../browser/media/mpris_notifier_unittest.cc" ]
+    deps += [ "//ui/base/mpris:test_support" ]
+  }
 }
 
 if (enable_nocompile_tests) {
@@ -2291,5 +2323,23 @@ test("content_perftests") {
 group("fuzzers") {
   deps = [
     "//content/test/fuzzer",
+  ]
+}
+
+# This group defines the isolate files needed to run
+# test_buildbucket_api_gpu_cases.py on bots. This also tells the build system
+# when the tests should be re-run - when one of the dependent files changes.
+#
+group("test_buildbucket_api_gpu_use_cases") {
+  data = [
+    # The common.py script and its dependencies.
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//testing/test_env.py",
+
+    # The test runner and its dependencies.
+    "//testing/scripts/test_buildbucket_api_gpu_use_cases.py",
+
+    "//content/test/gpu/gather_swarming_json_results.py",
   ]
 }

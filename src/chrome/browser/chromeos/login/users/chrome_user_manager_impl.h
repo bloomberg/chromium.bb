@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
-#include "chrome/browser/chromeos/printing/external_printers.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "components/account_id/account_id.h"
@@ -84,8 +83,6 @@ class ChromeUserManagerImpl
   // UserManager implementation:
   void Shutdown() override;
   user_manager::UserList GetUsersAllowedForMultiProfile() const override;
-  user_manager::UserList GetUsersAllowedForSupervisedUsersCreation()
-      const override;
   user_manager::UserList GetUnlockUsers() const override;
   void SaveUserOAuthStatus(
       const AccountId& account_id,

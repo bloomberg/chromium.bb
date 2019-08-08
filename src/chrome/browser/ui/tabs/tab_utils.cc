@@ -48,6 +48,9 @@ TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
   if (usb_tab_helper && usb_tab_helper->IsDeviceConnected())
     return TabAlertState::USB_CONNECTED;
 
+  if (contents->IsConnectedToSerialPort())
+    return TabAlertState::SERIAL_CONNECTED;
+
   // Check if VR content is being presented in a headset.
   // NOTE: This icon must take priority over the audio alert ones
   // because most VR content has audio and its usage is implied by the VR icon.
@@ -85,6 +88,7 @@ bool CanToggleAudioMute(content::WebContents* contents) {
     case TabAlertState::TAB_CAPTURING:
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::USB_CONNECTED:
+    case TabAlertState::SERIAL_CONNECTED:
     case TabAlertState::DESKTOP_CAPTURING:
       // The new Audio Service implements muting separately from the tab audio
       // capture infrastructure; so the mute state can be toggled independently

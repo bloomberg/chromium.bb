@@ -145,7 +145,8 @@ void SearchEngineTabHelper::PageHasOpenSearchDescriptionDocument(
   TemplateURLFetcherFactory::GetForProfile(profile)->ScheduleDownload(
       keyword, osdd_url, entry->GetFavicon().url,
       url::Origin::Create(web_contents()->GetURL()), url_loader_factory.get(),
-      frame->GetRoutingID(), content::RESOURCE_TYPE_SUB_RESOURCE);
+      frame->GetRoutingID(),
+      static_cast<int>(content::ResourceType::kSubResource));
 }
 
 void SearchEngineTabHelper::OnFaviconUpdated(

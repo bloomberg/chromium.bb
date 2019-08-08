@@ -166,7 +166,8 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_MACOSX) && \
     !defined(OS_WIN)
   context->AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kInfo,
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kInfo,
       "Web Bluetooth is experimental on this platform. See "
       "https://github.com/WebBluetoothCG/web-bluetooth/blob/gh-pages/"
       "implementation-status.md"));
@@ -210,7 +211,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
   Platform::Current()->RecordRapporURL("Bluetooth.APIUsage.Origin", doc.Url());
 
   // Subsequent steps are handled in the browser process.
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   service_->RequestDevice(
@@ -271,8 +272,8 @@ void Bluetooth::RequestScanningCallback(
     return;
   }
 
-  auto* scan =
-      BluetoothLEScan::Create(id, this, std::move(result->get_options()));
+  auto* scan = MakeGarbageCollected<BluetoothLEScan>(
+      id, this, std::move(result->get_options()));
   resolver->Resolve(scan);
 }
 
@@ -286,7 +287,8 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
   // Remind developers when they are using Web Bluetooth on unsupported
   // platforms.
   context->AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kInfo,
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kInfo,
       "Web Bluetooth Scanning is experimental on this platform. See "
       "https://github.com/WebBluetoothCG/web-bluetooth/blob/gh-pages/"
       "implementation-status.md"));
@@ -327,7 +329,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
   Platform::Current()->RecordRapporURL("Bluetooth.APIUsage.Origin", doc.Url());
 
   // Subsequent steps are handled in the browser process.
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   mojom::blink::WebBluetoothScanClientAssociatedPtrInfo client;
@@ -375,7 +377,7 @@ void Bluetooth::ScanEvent(mojom::blink::WebBluetoothScanResultPtr result) {
   if (result->appearance_is_set)
     appearance = result->appearance;
 
-  auto* event = BluetoothAdvertisingEvent::Create(
+  auto* event = MakeGarbageCollected<BluetoothAdvertisingEvent>(
       event_type_names::kAdvertisementreceived, bluetooth_device, result->name,
       uuids, appearance, tx_power, rssi, manufacturer_data, service_data);
   DispatchEvent(*event);

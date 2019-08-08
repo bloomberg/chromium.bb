@@ -82,11 +82,6 @@ class ExecuteSQLCallbackWrapper : public RefCounted<ExecuteSQLCallbackWrapper> {
 
 class StatementCallback final : public SQLStatement::OnSuccessCallback {
  public:
-  static StatementCallback* Create(
-      scoped_refptr<ExecuteSQLCallbackWrapper> request_callback) {
-    return MakeGarbageCollected<StatementCallback>(std::move(request_callback));
-  }
-
   explicit StatementCallback(
       scoped_refptr<ExecuteSQLCallbackWrapper> request_callback)
       : request_callback_(std::move(request_callback)) {}
@@ -130,12 +125,6 @@ class StatementCallback final : public SQLStatement::OnSuccessCallback {
 
 class StatementErrorCallback final : public SQLStatement::OnErrorCallback {
  public:
-  static StatementErrorCallback* Create(
-      scoped_refptr<ExecuteSQLCallbackWrapper> request_callback) {
-    return MakeGarbageCollected<StatementErrorCallback>(
-        std::move(request_callback));
-  }
-
   explicit StatementErrorCallback(
       scoped_refptr<ExecuteSQLCallbackWrapper> request_callback)
       : request_callback_(std::move(request_callback)) {}
@@ -152,13 +141,6 @@ class StatementErrorCallback final : public SQLStatement::OnErrorCallback {
 
 class TransactionCallback final : public SQLTransaction::OnProcessCallback {
  public:
-  static TransactionCallback* Create(
-      const String& sql_statement,
-      scoped_refptr<ExecuteSQLCallbackWrapper> request_callback) {
-    return MakeGarbageCollected<TransactionCallback>(
-        sql_statement, std::move(request_callback));
-  }
-
   explicit TransactionCallback(
       const String& sql_statement,
       scoped_refptr<ExecuteSQLCallbackWrapper> request_callback)
@@ -168,10 +150,11 @@ class TransactionCallback final : public SQLTransaction::OnProcessCallback {
 
   bool OnProcess(SQLTransaction* transaction) override {
     Vector<SQLValue> sql_values;
-    transaction->ExecuteSQL(sql_statement_, sql_values,
-                            StatementCallback::Create(request_callback_),
-                            StatementErrorCallback::Create(request_callback_),
-                            IGNORE_EXCEPTION_FOR_TESTING);
+    transaction->ExecuteSQL(
+        sql_statement_, sql_values,
+        MakeGarbageCollected<StatementCallback>(request_callback_),
+        MakeGarbageCollected<StatementErrorCallback>(request_callback_),
+        IGNORE_EXCEPTION_FOR_TESTING);
     return true;
   }
 
@@ -220,8 +203,8 @@ void InspectorDatabaseAgent::DidOpenDatabase(blink::Database* database,
     return;
   }
 
-  InspectorDatabaseResource* resource =
-      InspectorDatabaseResource::Create(database, domain, name, version);
+  auto* resource = MakeGarbageCollected<InspectorDatabaseResource>(
+      database, domain, name, version);
   resources_.Set(resource->Id(), resource);
   // Resources are only bound while visible.
   DCHECK(enabled_.Get());
@@ -313,7 +296,7 @@ void InspectorDatabaseAgent::executeSQL(
 
   scoped_refptr<ExecuteSQLCallbackWrapper> wrapper =
       ExecuteSQLCallbackWrapper::Create(std::move(request_callback));
-  TransactionCallback* callback = TransactionCallback::Create(query, wrapper);
+  auto* callback = MakeGarbageCollected<TransactionCallback>(query, wrapper);
   TransactionErrorCallback* error_callback =
       TransactionErrorCallback::Create(wrapper);
   SQLTransaction::OnSuccessCallback* success_callback = nullptr;

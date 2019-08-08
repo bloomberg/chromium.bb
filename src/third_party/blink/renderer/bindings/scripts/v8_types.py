@@ -90,6 +90,7 @@ ARRAY_BUFFER_AND_VIEW_TYPES = TYPED_ARRAY_TYPES.union(frozenset([
 # disable the hack.
 _CALLBACK_CONSTRUCTORS = frozenset((
     'AnimatorConstructor',
+    'BlinkAudioWorkletProcessorConstructor',
     'CustomElementConstructor',
     'NoArgumentConstructor',
 ))
@@ -276,7 +277,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
             return v8_type_name
         if not used_in_cpp_sequence:
             return v8_type_name + '*'
-        return cpp_template_type('TraceWrapperMember', v8_type_name)
+        return cpp_template_type('Member', v8_type_name)
 
     if base_idl_type == 'void':
         return base_idl_type
@@ -513,8 +514,7 @@ def impl_includes_for_type(idl_type, interfaces_info):
         includes_for_type.add('platform/wtf/text/wtf_string.h')
     if idl_type.is_callback_function:
         component = IdlType.callback_functions[base_idl_type]['component_dir']
-        return set(['bindings/%s/v8/%s' % (component, binding_header_filename(base_idl_type)),
-                    'platform/bindings/trace_wrapper_member.h'])
+        return set(['bindings/%s/v8/%s' % (component, binding_header_filename(base_idl_type))])
     if base_idl_type in interfaces_info:
         interface_info = interfaces_info[base_idl_type]
         includes_for_type.add(interface_info['include_path'])
@@ -1051,7 +1051,7 @@ def literal_cpp_value(idl_type, idl_literal):
     """Converts an expression that is a valid C++ literal for this type."""
     # FIXME: add validation that idl_type and idl_literal are compatible
     if idl_type.base_type in ('any', 'object') and idl_literal.is_null:
-        return 'ScriptValue()'
+        return 'ScriptValue::CreateNull(script_state)'
     literal_value = str(idl_literal)
     if idl_type.base_type in ('octet', 'unsigned short', 'unsigned long'):
         return literal_value + 'u'

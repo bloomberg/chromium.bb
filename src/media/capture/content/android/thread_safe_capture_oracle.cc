@@ -237,8 +237,8 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
                                    params_.requested_format.frame_rate,
                                    frame->format());
   client_->OnIncomingCapturedBufferExt(
-      std::move(capture->buffer), format, reference_time, frame->timestamp(),
-      frame->visible_rect(), *frame->metadata());
+      std::move(capture->buffer), format, frame->ColorSpace(), reference_time,
+      frame->timestamp(), frame->visible_rect(), *frame->metadata());
 }
 
 void ThreadSafeCaptureOracle::OnConsumerReportingUtilization(

@@ -103,7 +103,12 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'ios_chrome_reading_list_egtests',
   'ios_chrome_settings_egtests',
   'ios_chrome_smoke_egtests',
+  'ios_chrome_translate_egtests',
   'ios_chrome_ui_egtests',
+  'ios_chrome_ui_payments_egtests',
+  'ios_chrome_ui_qr_scanner_egtests',
+  'ios_chrome_ui_settings_egtests',
+  'ios_chrome_ui_signin_interaction_egtests',
   'ios_chrome_unittests',
   'ios_chrome_web_egtests',
   'ios_components_unittests',
@@ -183,6 +188,9 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
 
   # These are defined by an android internal gn_isolate_map.pyl file.
   'chrome_apk',
+
+  # These are used by https://www.chromium.org/developers/cluster-telemetry.
+  'ct_telemetry_perf_tests_without_chrome',
 }
 
 

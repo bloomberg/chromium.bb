@@ -70,14 +70,37 @@ int GetModIndex(int sum_dist, int index, int rounding, int strength,
 template <>
 int GetModIndex<uint8_t>(int sum_dist, int index, int rounding, int strength,
                          int filter_weight) {
-  unsigned int index_mult[14] = {
-    0, 0, 0, 0, 49152, 39322, 32768, 28087, 24576, 21846, 19661, 17874, 0, 15124
-  };
+  unsigned int index_mult[14] = { 0,     0,     0,     0,     49152,
+                                  39322, 32768, 28087, 24576, 21846,
+                                  19661, 17874, 0,     15124 };
 
   assert(index >= 0 && index <= 13);
   assert(index_mult[index] != 0);
 
   int mod = (clamp(sum_dist, 0, UINT16_MAX) * index_mult[index]) >> 16;
+  mod += rounding;
+  mod >>= strength;
+
+  mod = VPXMIN(16, mod);
+
+  mod = 16 - mod;
+  mod *= filter_weight;
+
+  return mod;
+}
+
+template <>
+int GetModIndex<uint16_t>(int sum_dist, int index, int rounding, int strength,
+                          int filter_weight) {
+  int64_t index_mult[14] = { 0U,          0U,          0U,          0U,
+                             3221225472U, 2576980378U, 2147483648U, 1840700270U,
+                             1610612736U, 1431655766U, 1288490189U, 1171354718U,
+                             0U,          991146300U };
+
+  assert(index >= 0 && index <= 13);
+  assert(index_mult[index] != 0);
+
+  int mod = static_cast<int>((sum_dist * index_mult[index]) >> 32);
   mod += rounding;
   mod >>= strength;
 
@@ -657,9 +680,20 @@ WRAP_HIGHBD_FUNC(vp9_highbd_apply_temporal_filter_c, 12);
 INSTANTIATE_TEST_CASE_P(
     C, YUVTemporalFilterTest,
     ::testing::Values(
-        TemporalFilterWithBd(&vp9_apply_temporal_filter_c, 8),
         TemporalFilterWithBd(&wrap_vp9_highbd_apply_temporal_filter_c_10, 10),
         TemporalFilterWithBd(&wrap_vp9_highbd_apply_temporal_filter_c_12, 12)));
+#if HAVE_SSE4_1
+WRAP_HIGHBD_FUNC(vp9_highbd_apply_temporal_filter_sse4_1, 10);
+WRAP_HIGHBD_FUNC(vp9_highbd_apply_temporal_filter_sse4_1, 12);
+
+INSTANTIATE_TEST_CASE_P(
+    SSE4_1, YUVTemporalFilterTest,
+    ::testing::Values(
+        TemporalFilterWithBd(&wrap_vp9_highbd_apply_temporal_filter_sse4_1_10,
+                             10),
+        TemporalFilterWithBd(&wrap_vp9_highbd_apply_temporal_filter_sse4_1_12,
+                             12)));
+#endif  // HAVE_SSE4_1
 #else
 INSTANTIATE_TEST_CASE_P(
     C, YUVTemporalFilterTest,

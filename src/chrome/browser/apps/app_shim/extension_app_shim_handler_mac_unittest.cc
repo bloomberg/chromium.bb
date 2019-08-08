@@ -4,6 +4,8 @@
 
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 
+#include <unistd.h>
+
 #include <map>
 #include <memory>
 #include <utility>
@@ -181,7 +183,8 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
       const std::string& app_id,
       base::Optional<apps::AppShimLaunchResult>* launch_result,
       apps::AppShimHandler* handler)
-      : profile_path_(profile_path),
+      : AppShimHostBootstrap(getpid()),
+        profile_path_(profile_path),
         app_id_(app_id),
         launch_result_(launch_result),
         handler_(handler),

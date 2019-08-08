@@ -40,9 +40,30 @@ RTCDtlsTransport* RTCRtpReceiver::transport() {
   return transport_;
 }
 
-RTCDtlsTransport* RTCRtpReceiver::rtcp_transport() {
+RTCDtlsTransport* RTCRtpReceiver::rtcpTransport() {
   // Chrome does not support turning off RTCP-mux.
   return nullptr;
+}
+
+double RTCRtpReceiver::jitterBufferDelayHint(bool& is_null, ExceptionState&) {
+  is_null = !jitter_buffer_delay_hint_.has_value();
+  return jitter_buffer_delay_hint_.value_or(0.0);
+}
+
+void RTCRtpReceiver::setJitterBufferDelayHint(double value,
+                                              bool is_null,
+                                              ExceptionState& exception_state) {
+  base::Optional<double> hint =
+      is_null ? base::nullopt : base::Optional<double>(value);
+  if (hint && *hint < 0.0) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidAccessError,
+        "jitterBufferDelayHint can't be negative");
+    return;
+  }
+
+  jitter_buffer_delay_hint_ = hint;
+  receiver_->SetJitterBufferMinimumDelay(jitter_buffer_delay_hint_);
 }
 
 HeapVector<Member<RTCRtpSynchronizationSource>>
@@ -82,10 +103,11 @@ RTCRtpReceiver::getContributingSources() {
 }
 
 ScriptPromise RTCRtpReceiver::getStats(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  receiver_->GetStats(WebRTCStatsReportCallbackResolver::Create(resolver),
-                      GetRTCStatsFilter(script_state));
+  receiver_->GetStats(
+      WTF::Bind(WebRTCStatsReportCallbackResolver, WrapPersistent(resolver)),
+      GetExposedGroupIds(script_state));
   return promise;
 }
 

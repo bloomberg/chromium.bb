@@ -7,7 +7,6 @@
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/system/accessibility/autoclick_tray.h"
 #include "ash/system/accessibility/dictation_button_tray.h"
 #include "ash/system/accessibility/select_to_speak_tray.h"
 #include "ash/system/flag_warning/flag_warning_tray.h"
@@ -18,9 +17,7 @@
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
-#include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
@@ -58,12 +55,6 @@ void StatusAreaWidget::Initialize() {
   dictation_button_tray_ = std::make_unique<DictationButtonTray>(shelf_);
   status_area_widget_delegate_->AddChildView(dictation_button_tray_.get());
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalAccessibilityAutoclick)) {
-    autoclick_tray_ = std::make_unique<AutoclickTray>(shelf_);
-    status_area_widget_delegate_->AddChildView(autoclick_tray_.get());
-  }
-
   select_to_speak_tray_ = std::make_unique<SelectToSpeakTray>(shelf_);
   status_area_widget_delegate_->AddChildView(select_to_speak_tray_.get());
 
@@ -92,8 +83,6 @@ void StatusAreaWidget::Initialize() {
   virtual_keyboard_tray_->Initialize();
   ime_menu_tray_->Initialize();
   select_to_speak_tray_->Initialize();
-  if (autoclick_tray_)
-    autoclick_tray_->Initialize();
   if (dictation_button_tray_)
     dictation_button_tray_->Initialize();
   overview_button_tray_->Initialize();
@@ -109,7 +98,6 @@ StatusAreaWidget::~StatusAreaWidget() {
   unified_system_tray_.reset();
   ime_menu_tray_.reset();
   select_to_speak_tray_.reset();
-  autoclick_tray_.reset();
   dictation_button_tray_.reset();
   virtual_keyboard_tray_.reset();
   palette_tray_.reset();
@@ -118,7 +106,7 @@ StatusAreaWidget::~StatusAreaWidget() {
   flag_warning_tray_.reset();
 
   // All child tray views have been removed.
-  DCHECK_EQ(0, GetContentsView()->child_count());
+  DCHECK(GetContentsView()->children().empty());
 }
 
 void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {

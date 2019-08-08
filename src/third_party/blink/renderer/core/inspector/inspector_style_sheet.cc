@@ -720,14 +720,6 @@ InspectorStyleSheetBase::BuildSourceRangeObject(const SourceRange& range) {
   return result;
 }
 
-InspectorStyle* InspectorStyle::Create(
-    CSSStyleDeclaration* style,
-    CSSRuleSourceData* source_data,
-    InspectorStyleSheetBase* parent_style_sheet) {
-  return MakeGarbageCollected<InspectorStyle>(style, source_data,
-                                              parent_style_sheet);
-}
-
 InspectorStyle::InspectorStyle(CSSStyleDeclaration* style,
                                CSSRuleSourceData* source_data,
                                InspectorStyleSheetBase* parent_style_sheet)
@@ -801,7 +793,7 @@ void InspectorStyle::PopulateAllProperties(
       continue;
     bool important = !style_->getPropertyPriority(name).IsEmpty();
     if (important)
-      value.append(" !important");
+      value = value + " !important";
     result.push_back(CSSPropertySourceData(
         name, value, !style_->getPropertyPriority(name).IsEmpty(), false, true,
         SourceRange()));
@@ -1649,7 +1641,7 @@ InspectorStyleSheet::MediaQueryExpValueSourceRange(
 
 InspectorStyle* InspectorStyleSheet::GetInspectorStyle(
     CSSStyleDeclaration* style) {
-  return style ? InspectorStyle::Create(
+  return style ? MakeGarbageCollected<InspectorStyle>(
                      style, SourceDataForRule(style->parentRule()), this)
                : nullptr;
 }
@@ -1941,9 +1933,10 @@ bool InspectorStyleSheetForInlineStyle::GetText(String* result) {
 
 InspectorStyle* InspectorStyleSheetForInlineStyle::GetInspectorStyle(
     CSSStyleDeclaration* style) {
-  if (!inspector_style_)
-    inspector_style_ =
-        InspectorStyle::Create(element_->style(), RuleSourceData(), this);
+  if (!inspector_style_) {
+    inspector_style_ = MakeGarbageCollected<InspectorStyle>(
+        element_->style(), RuleSourceData(), this);
+  }
 
   return inspector_style_;
 }

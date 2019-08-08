@@ -10,7 +10,7 @@
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -73,11 +73,11 @@ TEST_F(HTMLCanvasElementModuleTest, TransferControlToOffscreen) {
   EXPECT_EQ(canvas_id, DOMNodeIds::IdForNode(&(canvas_element())));
 }
 
-// Verifies that a lowLatency canvas has the appropriate opacity/blending
+// Verifies that a desynchronized canvas has the appropriate opacity/blending
 // information sent to the CompositorFrameSink.
 TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
 #if defined(OS_MACOSX)
-  // TODO(crbug.com/922218): enable lowLatency on Mac.
+  // TODO(crbug.com/922218): enable desynchronized on Mac.
   return;
 #endif
 
@@ -97,7 +97,7 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
   const bool context_alpha = GetParam();
   CanvasContextCreationAttributesCore attrs;
   attrs.alpha = context_alpha;
-  attrs.low_latency = true;
+  attrs.desynchronized = true;
   // |context_| creation triggers a SurfaceLayerBridge creation which connects
   // to a MockEmbeddedFrameSinkProvider to create a new CompositorFrameSink,
   // that will receive a SetNeedsBeginFrame() upon construction.
@@ -106,7 +106,7 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
   EXPECT_CALL(mock_embedded_frame_sink_provider, CreateCompositorFrameSink_(_));
   context_ = canvas_element().GetCanvasRenderingContext(String("2d"), attrs);
   EXPECT_EQ(context_->CreationAttributes().alpha, attrs.alpha);
-  EXPECT_TRUE(context_->CreationAttributes().low_latency);
+  EXPECT_TRUE(context_->CreationAttributes().desynchronized);
   EXPECT_TRUE(canvas_element().LowLatencyEnabled());
   EXPECT_TRUE(canvas_element().SurfaceLayerBridge());
   platform->RunUntilIdle();

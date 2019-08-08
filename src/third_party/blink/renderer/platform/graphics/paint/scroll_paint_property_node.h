@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCROLL_PAINT_PROPERTY_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCROLL_PAINT_PROPERTY_NODE_H_
 
+#include <algorithm>
 #include "base/optional.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/overscroll_behavior.h"
@@ -54,19 +55,23 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
         cc::OverscrollBehavior::kOverscrollBehaviorTypeAuto);
     base::Optional<cc::SnapContainerData> snap_container_data;
 
-    bool operator==(const State& o) const {
-      return container_rect == o.container_rect &&
-             contents_size == o.contents_size &&
-             user_scrollable_horizontal == o.user_scrollable_horizontal &&
-             user_scrollable_vertical == o.user_scrollable_vertical &&
-             scrolls_inner_viewport == o.scrolls_inner_viewport &&
-             scrolls_outer_viewport == o.scrolls_outer_viewport &&
-             max_scroll_offset_affected_by_page_scale ==
-                 o.max_scroll_offset_affected_by_page_scale &&
-             main_thread_scrolling_reasons == o.main_thread_scrolling_reasons &&
-             compositor_element_id == o.compositor_element_id &&
-             overscroll_behavior == o.overscroll_behavior &&
-             snap_container_data == o.snap_container_data;
+    PaintPropertyChangeType ComputeChange(const State& other) const {
+      if (container_rect != other.container_rect ||
+          contents_size != other.contents_size ||
+          user_scrollable_horizontal != other.user_scrollable_horizontal ||
+          user_scrollable_vertical != other.user_scrollable_vertical ||
+          scrolls_inner_viewport != other.scrolls_inner_viewport ||
+          scrolls_outer_viewport != other.scrolls_outer_viewport ||
+          max_scroll_offset_affected_by_page_scale !=
+              other.max_scroll_offset_affected_by_page_scale ||
+          main_thread_scrolling_reasons !=
+              other.main_thread_scrolling_reasons ||
+          compositor_element_id != other.compositor_element_id ||
+          overscroll_behavior != other.overscroll_behavior ||
+          snap_container_data != other.snap_container_data) {
+        return PaintPropertyChangeType::kChangedOnlyValues;
+      }
+      return PaintPropertyChangeType::kUnchanged;
     }
   };
 
@@ -86,15 +91,20 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     return nullptr;
   }
 
-  bool Update(const ScrollPaintPropertyNode& parent, State&& state) {
-    bool parent_changed = SetParent(&parent);
-    if (state == state_)
-      return parent_changed;
-
-    state_ = std::move(state);
-    Validate();
-    SetChanged();
-    return true;
+  // The empty AnimationState struct is to meet the requirement of
+  // ObjectPaintProperties.
+  struct AnimationState {};
+  PaintPropertyChangeType Update(const ScrollPaintPropertyNode& parent,
+                                 State&& state,
+                                 const AnimationState& = AnimationState()) {
+    auto parent_changed = SetParent(&parent);
+    auto state_changed = state_.ComputeChange(state);
+    if (state_changed != PaintPropertyChangeType::kUnchanged) {
+      state_ = std::move(state);
+      Validate();
+      AddChanged(state_changed);
+    }
+    return std::max(parent_changed, state_changed);
   }
 
   cc::OverscrollBehavior::OverscrollBehaviorType OverscrollBehaviorX() const {

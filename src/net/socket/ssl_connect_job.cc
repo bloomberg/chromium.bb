@@ -32,16 +32,24 @@
 
 namespace net {
 
+namespace {
+
+// Timeout for the SSL handshake portion of the connect.
+constexpr base::TimeDelta kSSLHandshakeTimeout(
+    base::TimeDelta::FromSeconds(30));
+
+}  // namespace
+
 SSLSocketParams::SSLSocketParams(
-    const scoped_refptr<TransportSocketParams>& direct_params,
-    const scoped_refptr<SOCKSSocketParams>& socks_proxy_params,
-    const scoped_refptr<HttpProxySocketParams>& http_proxy_params,
+    scoped_refptr<TransportSocketParams> direct_params,
+    scoped_refptr<SOCKSSocketParams> socks_proxy_params,
+    scoped_refptr<HttpProxySocketParams> http_proxy_params,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     PrivacyMode privacy_mode)
-    : direct_params_(direct_params),
-      socks_proxy_params_(socks_proxy_params),
-      http_proxy_params_(http_proxy_params),
+    : direct_params_(std::move(direct_params)),
+      socks_proxy_params_(std::move(socks_proxy_params)),
+      http_proxy_params_(std::move(http_proxy_params)),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       privacy_mode_(privacy_mode) {
@@ -87,27 +95,28 @@ SSLSocketParams::GetHttpProxyConnectionParams() const {
   return http_proxy_params_;
 }
 
-// Timeout for the SSL handshake portion of the connect.
-static const int kSSLHandshakeTimeoutInSeconds = 30;
-
 SSLConnectJob::SSLConnectJob(
     RequestPriority priority,
-    const CommonConnectJobParams& common_connect_job_params,
-    const scoped_refptr<SSLSocketParams>& params,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
+    scoped_refptr<SSLSocketParams> params,
     ConnectJob::Delegate* delegate,
     const NetLogWithSource* net_log)
-    : ConnectJob(priority,
-                 ConnectionTimeout(
-                     *params,
-                     common_connect_job_params.network_quality_estimator),
-                 common_connect_job_params,
-                 delegate,
-                 net_log,
-                 NetLogSourceType::SSL_CONNECT_JOB,
-                 NetLogEventType::SSL_CONNECT_JOB_CONNECT),
-      params_(params),
+    : ConnectJob(
+          priority,
+          socket_tag,
+          // The SSLConnectJob's timer is only started during the SSL handshake.
+          base::TimeDelta(),
+          common_connect_job_params,
+          delegate,
+          net_log,
+          NetLogSourceType::SSL_CONNECT_JOB,
+          NetLogEventType::SSL_CONNECT_JOB_CONNECT),
+      params_(std::move(params)),
       callback_(base::BindRepeating(&SSLConnectJob::OnIOComplete,
-                                    base::Unretained(this))) {}
+                                    base::Unretained(this))),
+      ssl_negotiation_started_(false),
+      proxy_redirect_(false) {}
 
 SSLConnectJob::~SSLConnectJob() {
   // In the case the job was canceled, need to delete nested job first to
@@ -157,8 +166,9 @@ void SSLConnectJob::OnNeedsProxyAuth(
     ConnectJob* job) {
   DCHECK_EQ(next_state_, STATE_TUNNEL_CONNECT_COMPLETE);
 
-  // Stop running the connection timer while potentially waiting for user input.
-  ResetTimer(base::TimeDelta());
+  // The timer shouldn't have started running yet, since the handshake only
+  // starts after a tunnel has been established through the proxy.
+  DCHECK(!TimerIsRunning());
 
   // Just pass the callback up to the consumer. This class doesn't need to do
   // anything once credentials are provided.
@@ -166,47 +176,26 @@ void SSLConnectJob::OnNeedsProxyAuth(
                             std::move(restart_with_auth_callback));
 }
 
-void SSLConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
-  // Headers in |error_response_info_| indicate a proxy tunnel setup
-  // problem. See DoTunnelConnectComplete.
-  if (error_response_info_.headers.get()) {
-    handle->set_pending_http_proxy_socket(std::move(nested_socket_));
-
-    // Copy connection timing so caller can access it. Used for
-    // ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT.
-    //
-    // TODO(mmenke): Remove this once ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT
-    // responses are no longer treated as redirects.
-    if (nested_connect_job_)
-      handle->set_connect_timing(nested_connect_job_->connect_timing());
-  }
-  handle->set_ssl_error_response_info(error_response_info_);
-  if (!connect_timing_.ssl_start.is_null())
-    handle->set_is_ssl_error(true);
-
-  handle->set_connection_attempts(connection_attempts_);
+ConnectionAttempts SSLConnectJob::GetConnectionAttempts() const {
+  return connection_attempts_;
 }
 
-base::TimeDelta SSLConnectJob::ConnectionTimeout(
-    const SSLSocketParams& params,
-    const NetworkQualityEstimator* network_quality_estimator) {
-  SSLSocketParams::ConnectionType connection_type = params.GetConnectionType();
+std::unique_ptr<StreamSocket> SSLConnectJob::PassProxySocketOnFailure() {
+  if (proxy_redirect_)
+    return std::move(nested_socket_);
+  return nullptr;
+}
 
-  base::TimeDelta nested_job_timeout;
-  switch (connection_type) {
-    case SSLSocketParams::DIRECT:
-      nested_job_timeout = TransportConnectJob::ConnectionTimeout();
-      break;
-    case SSLSocketParams::SOCKS_PROXY:
-      nested_job_timeout = SOCKSConnectJob::ConnectionTimeout();
-      break;
-    case SSLSocketParams::HTTP_PROXY:
-      nested_job_timeout = HttpProxyConnectJob::ConnectionTimeout(
-          *params.GetHttpProxyConnectionParams(), network_quality_estimator);
-      break;
-  }
-  return nested_job_timeout +
-         base::TimeDelta::FromSeconds(kSSLHandshakeTimeoutInSeconds);
+bool SSLConnectJob::IsSSLError() const {
+  return ssl_negotiation_started_;
+}
+
+scoped_refptr<SSLCertRequestInfo> SSLConnectJob::GetCertRequestInfo() {
+  return ssl_cert_request_info_;
+}
+
+base::TimeDelta SSLConnectJob::HandshakeTimeoutForTesting() {
+  return kSSLHandshakeTimeout;
 }
 
 void SSLConnectJob::OnIOComplete(int result) {
@@ -265,22 +254,21 @@ int SSLConnectJob::DoLoop(int result) {
 int SSLConnectJob::DoTransportConnect() {
   DCHECK(!nested_connect_job_);
   DCHECK(params_->GetDirectConnectionParams());
+  DCHECK(!TimerIsRunning());
 
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   nested_connect_job_ = TransportConnectJob::CreateTransportConnectJob(
-      params_->GetDirectConnectionParams(), priority(),
+      params_->GetDirectConnectionParams(), priority(), socket_tag(),
       common_connect_job_params(), this, &net_log());
   return nested_connect_job_->Connect();
 }
 
 int SSLConnectJob::DoTransportConnectComplete(int result) {
-  // TODO(https://crbug.com/927101): Implement a better API to get this
-  // information.
-  ClientSocketHandle bogus_handle;
-  nested_connect_job_->GetAdditionalErrorState(&bogus_handle);
+  ConnectionAttempts connection_attempts =
+      nested_connect_job_->GetConnectionAttempts();
   connection_attempts_.insert(connection_attempts_.end(),
-                              bogus_handle.connection_attempts().begin(),
-                              bogus_handle.connection_attempts().end());
+                              connection_attempts.begin(),
+                              connection_attempts.end());
   if (result == OK) {
     next_state_ = STATE_SSL_CONNECT;
     nested_socket_ = nested_connect_job_->PassSocket();
@@ -293,10 +281,11 @@ int SSLConnectJob::DoTransportConnectComplete(int result) {
 int SSLConnectJob::DoSOCKSConnect() {
   DCHECK(!nested_connect_job_);
   DCHECK(params_->GetSocksProxyConnectionParams());
+  DCHECK(!TimerIsRunning());
 
   next_state_ = STATE_SOCKS_CONNECT_COMPLETE;
   nested_connect_job_ = std::make_unique<SOCKSConnectJob>(
-      priority(), common_connect_job_params(),
+      priority(), socket_tag(), common_connect_job_params(),
       params_->GetSocksProxyConnectionParams(), this, &net_log());
   return nested_connect_job_->Connect();
 }
@@ -313,12 +302,13 @@ int SSLConnectJob::DoSOCKSConnectComplete(int result) {
 int SSLConnectJob::DoTunnelConnect() {
   DCHECK(!nested_connect_job_);
   DCHECK(params_->GetHttpProxyConnectionParams());
+  DCHECK(!TimerIsRunning());
 
   next_state_ = STATE_TUNNEL_CONNECT_COMPLETE;
   scoped_refptr<HttpProxySocketParams> http_proxy_params =
       params_->GetHttpProxyConnectionParams();
   nested_connect_job_ = std::make_unique<HttpProxyConnectJob>(
-      priority(), common_connect_job_params(),
+      priority(), socket_tag(), common_connect_job_params(),
       params_->GetHttpProxyConnectionParams(), this, &net_log());
   return nested_connect_job_->Connect();
 }
@@ -331,13 +321,10 @@ int SSLConnectJob::DoTunnelConnectComplete(int result) {
     // authentication so that when ClientSocketPoolBaseHelper calls
     // |GetAdditionalErrorState|, we can easily set the state.
     if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
-      ClientSocketHandle handle_with_error_state;
-      nested_connect_job_->GetAdditionalErrorState(&handle_with_error_state);
-      error_response_info_ = handle_with_error_state.ssl_error_response_info();
+      ssl_cert_request_info_ = nested_connect_job_->GetCertRequestInfo();
     } else if (result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT) {
-      ProxyClientSocket* tunnel_socket =
-          static_cast<ProxyClientSocket*>(nested_socket_.get());
-      error_response_info_ = *tunnel_socket->GetConnectResponseInfo();
+      proxy_redirect_ = true;
+      connect_timing_ = nested_connect_job_->connect_timing();
     }
     return result;
   }
@@ -348,10 +335,12 @@ int SSLConnectJob::DoTunnelConnectComplete(int result) {
 
 int SSLConnectJob::DoSSLConnect() {
   TRACE_EVENT0(NetTracingCategory(), "SSLConnectJob::DoSSLConnect");
+  DCHECK(!TimerIsRunning());
+
   next_state_ = STATE_SSL_CONNECT_COMPLETE;
 
-  // Reset the timeout to just the time allowed for the SSL handshake.
-  ResetTimer(base::TimeDelta::FromSeconds(kSSLHandshakeTimeoutInSeconds));
+  // Set the timeout to just the time allowed for the SSL handshake.
+  ResetTimer(kSSLHandshakeTimeout);
 
   // If the handle has a fresh socket, get its connect start and DNS times.
   const LoadTimingInfo::ConnectTiming* socket_connect_timing = nullptr;
@@ -366,6 +355,7 @@ int SSLConnectJob::DoSSLConnect() {
     connect_timing_.dns_end = socket_connect_timing->dns_end;
   }
 
+  ssl_negotiation_started_ = true;
   connect_timing_.ssl_start = base::TimeTicks::Now();
 
   // TODO(mmenke): Consider moving this up to the socket pool layer, after
@@ -452,9 +442,8 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
   if (result == OK || IsCertificateError(result)) {
     SetSocket(std::move(ssl_socket_));
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
-    error_response_info_.cert_request_info = new SSLCertRequestInfo;
-    ssl_socket_->GetSSLCertRequestInfo(
-        error_response_info_.cert_request_info.get());
+    ssl_cert_request_info_ = base::MakeRefCounted<SSLCertRequestInfo>();
+    ssl_socket_->GetSSLCertRequestInfo(ssl_cert_request_info_.get());
   }
 
   return result;

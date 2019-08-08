@@ -43,6 +43,7 @@ class Extension;
 class ExtensionService;
 
 // A helper class for creating bookmark apps from a WebContents.
+// DEPRECATED. Use web_app::InstallManager instead. crbug.com/915043.
 class BookmarkAppHelper : public content::NotificationObserver {
  public:
   typedef base::Callback<void(const Extension*, const WebApplicationInfo&)>
@@ -98,10 +99,25 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   bool is_no_network_install() { return is_no_network_install_; }
 
-  // If called, desktop shortcuts will not be created.
-  void set_skip_shortcut_creation() { create_shortcuts_ = false; }
+  void set_skip_adding_to_applications_menu() {
+    add_to_applications_menu_ = false;
+  }
 
-  bool create_shortcuts() const { return create_shortcuts_; }
+  bool add_to_applications_menu() { return add_to_applications_menu_; }
+
+  // If called, desktop shortcuts will not be created. Has no effect on
+  // platforms other than Linux and Windows.
+  void set_skip_adding_to_desktop() { add_to_desktop_ = false; }
+
+  bool add_to_desktop() const { return add_to_desktop_; }
+
+  // If called, the app will not be pinned to the shelf. Has no effect on
+  // platforms other than Chrome OS.
+  void set_skip_adding_to_quick_launch_bar() {
+    add_to_quick_launch_bar_ = false;
+  }
+
+  bool add_to_quick_launch_bar() { return add_to_quick_launch_bar_; }
 
   // If called, the installability check won't test for a service worker.
   void set_bypass_service_worker_check() {
@@ -198,7 +214,11 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // installation and we should not try to fetch a manifest.
   bool is_no_network_install_ = false;
 
-  bool create_shortcuts_ = true;
+  bool add_to_applications_menu_ = true;
+
+  bool add_to_desktop_ = true;
+
+  bool add_to_quick_launch_bar_ = true;
 
   bool bypass_service_worker_check_ = false;
 
@@ -215,6 +235,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
 // Creates or updates a bookmark app from the given |web_app_info|. Icons will
 // be downloaded from the icon URLs provided in |web_app_info|.
+// DEPRECATED. Use web_app::InstallManager instead. crbug.com/915043.
 void CreateOrUpdateBookmarkApp(ExtensionService* service,
                                WebApplicationInfo* web_app_info,
                                bool is_locally_installed);

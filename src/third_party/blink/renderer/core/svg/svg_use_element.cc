@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -51,24 +52,28 @@ namespace blink {
 inline SVGUseElement::SVGUseElement(Document& document)
     : SVGGraphicsElement(svg_names::kUseTag, document),
       SVGURIReference(this),
-      x_(SVGAnimatedLength::Create(this,
-                                   svg_names::kXAttr,
-                                   SVGLengthMode::kWidth,
-                                   SVGLength::Initial::kUnitlessZero,
-                                   CSSPropertyX)),
-      y_(SVGAnimatedLength::Create(this,
-                                   svg_names::kYAttr,
-                                   SVGLengthMode::kHeight,
-                                   SVGLength::Initial::kUnitlessZero,
-                                   CSSPropertyY)),
-      width_(SVGAnimatedLength::Create(this,
-                                       svg_names::kWidthAttr,
-                                       SVGLengthMode::kWidth,
-                                       SVGLength::Initial::kUnitlessZero)),
-      height_(SVGAnimatedLength::Create(this,
-                                        svg_names::kHeightAttr,
-                                        SVGLengthMode::kHeight,
-                                        SVGLength::Initial::kUnitlessZero)),
+      x_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kXAttr,
+          SVGLengthMode::kWidth,
+          SVGLength::Initial::kUnitlessZero,
+          CSSPropertyID::kX)),
+      y_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kYAttr,
+          SVGLengthMode::kHeight,
+          SVGLength::Initial::kUnitlessZero,
+          CSSPropertyID::kY)),
+      width_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kWidthAttr,
+          SVGLengthMode::kWidth,
+          SVGLength::Initial::kUnitlessZero)),
+      height_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kHeightAttr,
+          SVGLengthMode::kHeight,
+          SVGLength::Initial::kUnitlessZero)),
       element_url_is_local_(true),
       have_fired_load_event_(false),
       needs_shadow_tree_recreation_(false) {
@@ -139,41 +144,31 @@ static void TransferUseWidthAndHeightIfNeeded(
     const SVGUseElement& use,
     SVGElement& shadow_element,
     const SVGElement& original_element) {
-  DEFINE_STATIC_LOCAL(const AtomicString, hundred_percent_string, ("100%"));
-  // Use |originalElement| for checking the element type, because we will
+  // Use |original_element| for checking the element type, because we will
   // have replaced a <symbol> with an <svg> in the instance tree.
-  if (IsSVGSymbolElement(original_element)) {
-    // Spec (<use> on <symbol>): This generated 'svg' will always have
-    // explicit values for attributes width and height.  If attributes
-    // width and/or height are provided on the 'use' element, then these
-    // attributes will be transferred to the generated 'svg'. If attributes
-    // width and/or height are not specified, the generated 'svg' element
-    // will use values of 100% for these attributes.
-    shadow_element.setAttribute(
-        svg_names::kWidthAttr,
-        use.width()->IsSpecified()
-            ? AtomicString(use.width()->CurrentValue()->ValueAsString())
-            : hundred_percent_string);
-    shadow_element.setAttribute(
-        svg_names::kHeightAttr,
-        use.height()->IsSpecified()
-            ? AtomicString(use.height()->CurrentValue()->ValueAsString())
-            : hundred_percent_string);
-  } else if (IsSVGSVGElement(original_element)) {
-    // Spec (<use> on <svg>): If attributes width and/or height are
-    // provided on the 'use' element, then these values will override the
-    // corresponding attributes on the 'svg' in the generated tree.
-    shadow_element.setAttribute(
-        svg_names::kWidthAttr,
-        use.width()->IsSpecified()
-            ? AtomicString(use.width()->CurrentValue()->ValueAsString())
-            : original_element.getAttribute(svg_names::kWidthAttr));
-    shadow_element.setAttribute(
-        svg_names::kHeightAttr,
-        use.height()->IsSpecified()
-            ? AtomicString(use.height()->CurrentValue()->ValueAsString())
-            : original_element.getAttribute(svg_names::kHeightAttr));
-  }
+  if (!IsSVGSymbolElement(original_element) &&
+      !IsSVGSVGElement(original_element))
+    return;
+
+  // "The width and height properties on the 'use' element override the values
+  // for the corresponding properties on a referenced 'svg' or 'symbol' element
+  // when determining the used value for that property on the instance root
+  // element. However, if the computed value for the property on the 'use'
+  // element is auto, then the property is computed as normal for the element
+  // instance. ... Because auto is the initial value, if dimensions are not
+  // explicitly set on the 'use' element, the values set on the 'svg' or
+  // 'symbol' will be used as defaults."
+  // (https://svgwg.org/svg2-draft/struct.html#UseElement)
+  AtomicString width_value(
+      use.width()->IsSpecified()
+          ? use.width()->CurrentValue()->ValueAsString()
+          : original_element.getAttribute(svg_names::kWidthAttr));
+  shadow_element.setAttribute(svg_names::kWidthAttr, width_value);
+  AtomicString height_value(
+      use.height()->IsSpecified()
+          ? use.height()->CurrentValue()->ValueAsString()
+          : original_element.getAttribute(svg_names::kHeightAttr));
+  shadow_element.setAttribute(svg_names::kHeightAttr, height_value);
 }
 
 void SVGUseElement::CollectStyleForPresentationAttribute(
@@ -420,8 +415,8 @@ Element* SVGUseElement::CreateInstanceTree(SVGElement& target_root) const {
     // transferred to the generated 'svg'. If attributes width and/or
     // height are not specified, the generated 'svg' element will use
     // values of 100% for these attributes.
-    SVGSVGElement* svg_element =
-        SVGSVGElement::Create(target_root.GetDocument());
+    auto* svg_element =
+        MakeGarbageCollected<SVGSVGElement>(target_root.GetDocument());
     // Transfer all attributes from the <symbol> to the new <svg>
     // element.
     svg_element->CloneAttributesFrom(*instance_root);
@@ -480,7 +475,8 @@ void SVGUseElement::BuildShadowAndInstanceTree(SVGElement& target) {
   UpdateRelativeLengthsInformation();
 }
 
-LayoutObject* SVGUseElement::CreateLayoutObject(const ComputedStyle& style) {
+LayoutObject* SVGUseElement::CreateLayoutObject(const ComputedStyle& style,
+                                                LegacyLayout) {
   if (style.Display() == EDisplay::kContents)
     return nullptr;
   return new LayoutSVGTransformableContainer(this);
@@ -611,7 +607,8 @@ void SVGUseElement::ExpandUseElementsInShadowTree() {
 
     // Don't DCHECK(target) here, it may be "pending", too.
     // Setup sub-shadow tree root node
-    SVGGElement* clone_parent = SVGGElement::Create(original_use.GetDocument());
+    auto* clone_parent =
+        MakeGarbageCollected<SVGGElement>(original_use.GetDocument());
     // Transfer all data (attributes, etc.) from <use> to the new <g> element.
     clone_parent->CloneAttributesFrom(*use);
     clone_parent->SetCorrespondingElement(&original_use);

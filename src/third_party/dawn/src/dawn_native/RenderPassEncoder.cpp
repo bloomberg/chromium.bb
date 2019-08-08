@@ -60,7 +60,7 @@ namespace dawn_native {
     void RenderPassEncoderBase::DrawIndexed(uint32_t indexCount,
                                             uint32_t instanceCount,
                                             uint32_t firstIndex,
-                                            uint32_t baseVertex,
+                                            int32_t baseVertex,
                                             uint32_t firstInstance) {
         if (mTopLevelEncoder->ConsumedError(ValidateCanRecordCommands())) {
             return;
@@ -115,6 +115,10 @@ namespace dawn_native {
         if (mTopLevelEncoder->ConsumedError(ValidateCanRecordCommands())) {
             return;
         }
+        if (width == 0 || height == 0) {
+            mTopLevelEncoder->HandleError("Width and height must be greater than 0.");
+            return;
+        }
 
         SetScissorRectCmd* cmd = mAllocator->Allocate<SetScissorRectCmd>(Command::SetScissorRect);
         new (cmd) SetScissorRectCmd;
@@ -124,7 +128,7 @@ namespace dawn_native {
         cmd->height = height;
     }
 
-    void RenderPassEncoderBase::SetIndexBuffer(BufferBase* buffer, uint32_t offset) {
+    void RenderPassEncoderBase::SetIndexBuffer(BufferBase* buffer, uint64_t offset) {
         if (mTopLevelEncoder->ConsumedError(ValidateCanRecordCommands()) ||
             mTopLevelEncoder->ConsumedError(GetDevice()->ValidateObject(buffer))) {
             return;
@@ -139,7 +143,7 @@ namespace dawn_native {
     void RenderPassEncoderBase::SetVertexBuffers(uint32_t startSlot,
                                                  uint32_t count,
                                                  BufferBase* const* buffers,
-                                                 uint32_t const* offsets) {
+                                                 uint64_t const* offsets) {
         if (mTopLevelEncoder->ConsumedError(ValidateCanRecordCommands())) {
             return;
         }
@@ -161,8 +165,8 @@ namespace dawn_native {
             new (&cmdBuffers[i]) Ref<BufferBase>(buffers[i]);
         }
 
-        uint32_t* cmdOffsets = mAllocator->AllocateData<uint32_t>(count);
-        memcpy(cmdOffsets, offsets, count * sizeof(uint32_t));
+        uint64_t* cmdOffsets = mAllocator->AllocateData<uint64_t>(count);
+        memcpy(cmdOffsets, offsets, count * sizeof(uint64_t));
     }
 
 }  // namespace dawn_native

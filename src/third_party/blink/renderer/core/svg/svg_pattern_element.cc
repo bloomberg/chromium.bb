@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/svg/pattern_attributes.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
 namespace blink {
@@ -38,35 +39,40 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
       SVGURIReference(this),
       SVGTests(this),
       SVGFitToViewBox(this),
-      x_(SVGAnimatedLength::Create(this,
-                                   svg_names::kXAttr,
-                                   SVGLengthMode::kWidth,
-                                   SVGLength::Initial::kUnitlessZero)),
-      y_(SVGAnimatedLength::Create(this,
-                                   svg_names::kYAttr,
-                                   SVGLengthMode::kHeight,
-                                   SVGLength::Initial::kUnitlessZero)),
-      width_(SVGAnimatedLength::Create(this,
-                                       svg_names::kWidthAttr,
-                                       SVGLengthMode::kWidth,
-                                       SVGLength::Initial::kUnitlessZero)),
-      height_(SVGAnimatedLength::Create(this,
-                                        svg_names::kHeightAttr,
-                                        SVGLengthMode::kHeight,
-                                        SVGLength::Initial::kUnitlessZero)),
-      pattern_transform_(
-          SVGAnimatedTransformList::Create(this,
-                                           svg_names::kPatternTransformAttr,
-                                           CSSPropertyTransform)),
-      pattern_units_(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
+      x_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kXAttr,
+          SVGLengthMode::kWidth,
+          SVGLength::Initial::kUnitlessZero)),
+      y_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kYAttr,
+          SVGLengthMode::kHeight,
+          SVGLength::Initial::kUnitlessZero)),
+      width_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kWidthAttr,
+          SVGLengthMode::kWidth,
+          SVGLength::Initial::kUnitlessZero)),
+      height_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kHeightAttr,
+          SVGLengthMode::kHeight,
+          SVGLength::Initial::kUnitlessZero)),
+      pattern_transform_(MakeGarbageCollected<SVGAnimatedTransformList>(
+          this,
+          svg_names::kPatternTransformAttr,
+          CSSPropertyID::kTransform)),
+      pattern_units_(MakeGarbageCollected<
+                     SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>>(
           this,
           svg_names::kPatternUnitsAttr,
           SVGUnitTypes::kSvgUnitTypeObjectboundingbox)),
-      pattern_content_units_(
-          SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
-              this,
-              svg_names::kPatternContentUnitsAttr,
-              SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
+      pattern_content_units_(MakeGarbageCollected<
+                             SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>>(
+          this,
+          svg_names::kPatternContentUnitsAttr,
+          SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
   AddToPropertyMap(x_);
   AddToPropertyMap(y_);
   AddToPropertyMap(width_);
@@ -123,7 +129,7 @@ void SVGPatternElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == svg_names::kPatternTransformAttr) {
     AddPropertyToPresentationAttributeStyle(
-        style, CSSPropertyTransform,
+        style, CSSPropertyID::kTransform,
         *pattern_transform_->CurrentValue()->CssValue());
     return;
   }
@@ -193,7 +199,8 @@ void SVGPatternElement::InvalidatePattern(
     layout_object->InvalidateCacheAndMarkForLayout(reason);
 }
 
-LayoutObject* SVGPatternElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGPatternElement::CreateLayoutObject(const ComputedStyle&,
+                                                    LegacyLayout) {
   return new LayoutSVGResourcePattern(this);
 }
 

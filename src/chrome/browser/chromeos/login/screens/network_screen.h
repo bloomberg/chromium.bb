@@ -32,8 +32,7 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   enum class Result { CONNECTED, OFFLINE_DEMO_SETUP, BACK };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
-  NetworkScreen(BaseScreenDelegate* base_screen_delegate,
-                NetworkScreenView* view,
+  NetworkScreen(NetworkScreenView* view,
                 const ScreenExitCallback& exit_callback);
   ~NetworkScreen() override;
 

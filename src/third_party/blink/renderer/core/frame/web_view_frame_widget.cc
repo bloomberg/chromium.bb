@@ -69,6 +69,22 @@ void WebViewFrameWidget::EndRafAlignedInput() {
   web_view_->EndRafAlignedInput();
 }
 
+void WebViewFrameWidget::BeginUpdateLayers() {
+  web_view_->BeginUpdateLayers();
+}
+
+void WebViewFrameWidget::EndUpdateLayers() {
+  web_view_->EndUpdateLayers();
+}
+
+void WebViewFrameWidget::BeginCommitCompositorFrame() {
+  web_view_->BeginCommitCompositorFrame();
+}
+
+void WebViewFrameWidget::EndCommitCompositorFrame() {
+  web_view_->EndCommitCompositorFrame();
+}
+
 void WebViewFrameWidget::RecordStartOfFrameMetrics() {
   web_view_->RecordStartOfFrameMetrics();
 }
@@ -81,16 +97,6 @@ void WebViewFrameWidget::RecordEndOfFrameMetrics(
 void WebViewFrameWidget::UpdateLifecycle(LifecycleUpdate requested_update,
                                          LifecycleUpdateReason reason) {
   web_view_->UpdateLifecycle(requested_update, reason);
-}
-
-void WebViewFrameWidget::PaintContent(cc::PaintCanvas* canvas,
-                                      const WebRect& view_port) {
-  web_view_->PaintContent(canvas, view_port);
-}
-
-void WebViewFrameWidget::CompositeAndReadbackAsync(
-    base::OnceCallback<void(const SkBitmap&)> callback) {
-  web_view_->CompositeAndReadbackAsync(std::move(callback));
 }
 
 void WebViewFrameWidget::ThemeChanged() {
@@ -108,6 +114,10 @@ WebInputEventResult WebViewFrameWidget::DispatchBufferedTouchEvents() {
 
 void WebViewFrameWidget::SetCursorVisibilityState(bool is_visible) {
   web_view_->SetCursorVisibilityState(is_visible);
+}
+
+void WebViewFrameWidget::OnFallbackCursorModeToggled(bool is_on) {
+  web_view_->OnFallbackCursorModeToggled(is_on);
 }
 
 void WebViewFrameWidget::ApplyViewportChanges(

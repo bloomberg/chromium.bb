@@ -19,39 +19,38 @@
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "api/test/network_emulation_manager.h"
 #include "api/test/simulated_network.h"
 #include "api/units/timestamp.h"
-#include "rtc_base/async_socket.h"
 #include "rtc_base/copy_on_write_buffer.h"
-#include "rtc_base/critical_section.h"
+#include "rtc_base/network.h"
 #include "rtc_base/socket_address.h"
-#include "rtc_base/thread.h"
+#include "rtc_base/task_queue_for_test.h"
+#include "rtc_base/task_utils/repeating_task.h"
+#include "rtc_base/thread_checker.h"
 #include "system_wrappers/include/clock.h"
 
 namespace webrtc {
-namespace test {
 
 struct EmulatedIpPacket {
  public:
   EmulatedIpPacket(const rtc::SocketAddress& from,
                    const rtc::SocketAddress& to,
-                   uint64_t dest_endpoint_id,
                    rtc::CopyOnWriteBuffer data,
                    Timestamp arrival_time);
-  ~EmulatedIpPacket();
+  ~EmulatedIpPacket() = default;
   // This object is not copyable or assignable.
   EmulatedIpPacket(const EmulatedIpPacket&) = delete;
   EmulatedIpPacket& operator=(const EmulatedIpPacket&) = delete;
   // This object is only moveable.
-  EmulatedIpPacket(EmulatedIpPacket&&);
-  EmulatedIpPacket& operator=(EmulatedIpPacket&&);
+  EmulatedIpPacket(EmulatedIpPacket&&) = default;
+  EmulatedIpPacket& operator=(EmulatedIpPacket&&) = default;
 
   size_t size() const { return data.size(); }
   const uint8_t* cdata() const { return data.cdata(); }
 
   rtc::SocketAddress from;
   rtc::SocketAddress to;
-  uint64_t dest_endpoint_id;
   rtc::CopyOnWriteBuffer data;
   Timestamp arrival_time;
 };
@@ -63,6 +62,52 @@ class EmulatedNetworkReceiverInterface {
   virtual void OnPacketReceived(EmulatedIpPacket packet) = 0;
 };
 
+class LinkEmulation : public EmulatedNetworkReceiverInterface {
+ public:
+  LinkEmulation(Clock* clock,
+                rtc::TaskQueue* task_queue,
+                std::unique_ptr<NetworkBehaviorInterface> network_behavior,
+                EmulatedNetworkReceiverInterface* receiver)
+      : clock_(clock),
+        task_queue_(task_queue),
+        network_behavior_(std::move(network_behavior)),
+        receiver_(receiver) {}
+  void OnPacketReceived(EmulatedIpPacket packet) override;
+
+ private:
+  struct StoredPacket {
+    uint64_t id;
+    EmulatedIpPacket packet;
+    bool removed;
+  };
+  void Process(Timestamp at_time) RTC_RUN_ON(task_queue_);
+  void HandlePacketReceived(EmulatedIpPacket packet) RTC_RUN_ON(task_queue_);
+
+  Clock* const clock_;
+  rtc::TaskQueue* const task_queue_;
+  const std::unique_ptr<NetworkBehaviorInterface> network_behavior_
+      RTC_GUARDED_BY(task_queue_);
+  EmulatedNetworkReceiverInterface* const receiver_;
+  RepeatingTaskHandle process_task_ RTC_GUARDED_BY(task_queue_);
+  std::deque<StoredPacket> packets_ RTC_GUARDED_BY(task_queue_);
+  uint64_t next_packet_id_ RTC_GUARDED_BY(task_queue_) = 1;
+};
+
+class NetworkRouterNode : public EmulatedNetworkReceiverInterface {
+ public:
+  explicit NetworkRouterNode(rtc::TaskQueue* task_queue);
+
+  void OnPacketReceived(EmulatedIpPacket packet) override;
+  void SetReceiver(rtc::IPAddress dest_ip,
+                   EmulatedNetworkReceiverInterface* receiver);
+  void RemoveReceiver(rtc::IPAddress dest_ip);
+
+ private:
+  rtc::TaskQueue* const task_queue_;
+  std::map<rtc::IPAddress, EmulatedNetworkReceiverInterface*> routing_
+      RTC_GUARDED_BY(task_queue_);
+};
+
 // Represents node in the emulated network. Nodes can be connected with each
 // other to form different networks with different behavior. The behavior of
 // the node itself is determined by a concrete implementation of
@@ -72,55 +117,49 @@ class EmulatedNetworkNode : public EmulatedNetworkReceiverInterface {
   // Creates node based on |network_behavior|. The specified |packet_overhead|
   // is added to the size of each packet in the information provided to
   // |network_behavior|.
-  explicit EmulatedNetworkNode(
+  // |task_queue| is used to process packets and to forward the packets when
+  // they are ready.
+  EmulatedNetworkNode(
+      Clock* clock,
+      rtc::TaskQueue* task_queue,
       std::unique_ptr<NetworkBehaviorInterface> network_behavior);
   ~EmulatedNetworkNode() override;
   RTC_DISALLOW_COPY_AND_ASSIGN(EmulatedNetworkNode);
 
   void OnPacketReceived(EmulatedIpPacket packet) override;
-  void Process(Timestamp at_time);
-  void SetReceiver(uint64_t dest_endpoint_id,
-                   EmulatedNetworkReceiverInterface* receiver);
-  void RemoveReceiver(uint64_t dest_endpoint_id);
 
-  // Creates a route for the given receiver_id over all the given nodes to the
+  LinkEmulation* link() { return &link_; }
+  NetworkRouterNode* router() { return &router_; }
+
+  // Creates a route for the given receiver_ip over all the given nodes to the
   // given receiver.
-  static void CreateRoute(uint64_t receiver_id,
+  static void CreateRoute(rtc::IPAddress receiver_ip,
                           std::vector<EmulatedNetworkNode*> nodes,
                           EmulatedNetworkReceiverInterface* receiver);
-  static void ClearRoute(uint64_t receiver_id,
+  static void ClearRoute(rtc::IPAddress receiver_ip,
                          std::vector<EmulatedNetworkNode*> nodes);
 
  private:
-  struct StoredPacket {
-    uint64_t id;
-    EmulatedIpPacket packet;
-    bool removed;
-  };
-
-  rtc::CriticalSection lock_;
-  std::map<uint64_t, EmulatedNetworkReceiverInterface*> routing_
-      RTC_GUARDED_BY(lock_);
-  const std::unique_ptr<NetworkBehaviorInterface> network_behavior_
-      RTC_GUARDED_BY(lock_);
-  std::deque<StoredPacket> packets_ RTC_GUARDED_BY(lock_);
-
-  uint64_t next_packet_id_ RTC_GUARDED_BY(lock_) = 1;
+  NetworkRouterNode router_;
+  LinkEmulation link_;
 };
 
 // Represents single network interface on the device.
 // It will be used as sender from socket side to send data to the network and
 // will act as packet receiver from emulated network side to receive packets
 // from other EmulatedNetworkNodes.
-class EndpointNode : public EmulatedNetworkReceiverInterface {
+class EmulatedEndpoint : public EmulatedNetworkReceiverInterface {
  public:
-  EndpointNode(uint64_t id, rtc::IPAddress, Clock* clock);
-  ~EndpointNode() override;
+  EmulatedEndpoint(uint64_t id,
+                   const rtc::IPAddress& ip,
+                   bool is_enabled,
+                   rtc::TaskQueue* task_queue,
+                   Clock* clock);
+  ~EmulatedEndpoint() override;
 
   uint64_t GetId() const;
 
-  // Set network node, that will be used to send packets to the network.
-  void SetSendNode(EmulatedNetworkNode* send_node);
+  NetworkRouterNode* router() { return &router_; }
   // Send packet into network.
   // |from| will be used to set source address for the packet in destination
   // socket.
@@ -149,32 +188,67 @@ class EndpointNode : public EmulatedNetworkReceiverInterface {
   // Will be called to deliver packet into endpoint from network node.
   void OnPacketReceived(EmulatedIpPacket packet) override;
 
- protected:
-  friend class NetworkEmulationManager;
+  void Enable();
+  void Disable();
+  bool Enabled() const;
 
-  EmulatedNetworkNode* GetSendNode() const;
-  void SetConnectedEndpointId(uint64_t endpoint_id);
+  const rtc::Network& network() const { return *network_.get(); }
+
+  EmulatedNetworkStats stats();
 
  private:
   static constexpr uint16_t kFirstEphemeralPort = 49152;
   uint16_t NextPort() RTC_EXCLUSIVE_LOCKS_REQUIRED(receiver_lock_);
+  void UpdateSendStats(const EmulatedIpPacket& packet);
+  void UpdateReceiveStats(const EmulatedIpPacket& packet);
 
   rtc::CriticalSection receiver_lock_;
+  rtc::ThreadChecker enabled_state_checker_;
 
   uint64_t id_;
   // Peer's local IP address for this endpoint network interface.
   const rtc::IPAddress peer_local_addr_;
-  EmulatedNetworkNode* send_node_;
+  bool is_enabled_ RTC_GUARDED_BY(enabled_state_checker_);
   Clock* const clock_;
+  rtc::TaskQueue* const task_queue_;
+  std::unique_ptr<rtc::Network> network_;
+  NetworkRouterNode router_;
 
   uint16_t next_port_ RTC_GUARDED_BY(receiver_lock_);
   std::map<uint16_t, EmulatedNetworkReceiverInterface*> port_to_receiver_
       RTC_GUARDED_BY(receiver_lock_);
 
-  absl::optional<uint64_t> connected_endpoint_id_;
+  EmulatedNetworkStats stats_ RTC_GUARDED_BY(task_queue_);
 };
 
-}  // namespace test
+class EmulatedRoute {
+ public:
+  EmulatedRoute(EmulatedEndpoint* from,
+                std::vector<EmulatedNetworkNode*> via_nodes,
+                EmulatedEndpoint* to)
+      : from(from), via_nodes(std::move(via_nodes)), to(to), active(true) {}
+
+  EmulatedEndpoint* from;
+  std::vector<EmulatedNetworkNode*> via_nodes;
+  EmulatedEndpoint* to;
+  bool active;
+};
+
+class EndpointsContainer {
+ public:
+  EndpointsContainer(const std::vector<EmulatedEndpoint*>& endpoints);
+
+  EmulatedEndpoint* LookupByLocalAddress(const rtc::IPAddress& local_ip) const;
+  bool HasEndpoint(EmulatedEndpoint* endpoint) const;
+  // Returns list of networks for enabled endpoints. Caller takes ownership of
+  // returned rtc::Network objects.
+  std::vector<std::unique_ptr<rtc::Network>> GetEnabledNetworks() const;
+  EmulatedNetworkStats GetStats() const;
+
+ private:
+  const std::vector<EmulatedEndpoint*> endpoints_;
+};
+
 }  // namespace webrtc
 
 #endif  // TEST_SCENARIO_NETWORK_NETWORK_EMULATION_H_

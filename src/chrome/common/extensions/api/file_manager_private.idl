@@ -587,7 +587,7 @@ dictionary SearchMetadataParams {
 };
 
 // Entry and Drive-related properties representing a search result.
-dictionary SearchResult {
+dictionary DriveMetadataSearchResult {
   // A dictionary object which represents a Drive file. This will be converted
   // into a kind of FileEntry object. See
   // file_browser_handler_custom_bindings.cc for details. For filesystem API's
@@ -666,6 +666,9 @@ dictionary CrostiniEvent {
   // Is the event raised for enable, disable, share, or unshare.
   CrostiniEventType eventType;
 
+  // VM that this event relates to.
+  DOMString vmName;
+
   // Paths that have been shared or unshared.
   [instanceOf=Entry] object[] entries;
 };
@@ -729,7 +732,10 @@ callback GetPreferencesCallback = void(Preferences result);
 callback SearchDriveCallback =
     void([instanceOf=Entry] object[] entries, DOMString nextFeed);
 
-callback SearchDriveMetadataCallback = void(SearchResult[] results);
+callback SearchDriveMetadataCallback =
+    void(DriveMetadataSearchResult[] results);
+
+callback SearchFilesCallback = void([instanceOf=Entry] object[] entries);
 
 // |urls| The map of hash and array of FileEntry's URL. The array can be empty
 // if the corresponding file is not found.
@@ -1024,6 +1030,10 @@ interface Functions {
                                   DOMString[] hashList,
                                   SearchFilesByHashesCallback callback);
 
+  // Search files in My Files.
+  static void searchFiles(SearchMetadataParams searchParams,
+                          SearchFilesCallback callback);
+
   // Create a zip file for the selected files.
   // |parentEntry| Entry of the directory containing the selected files.
   // |entries| Entries of the selected files. The files must be under the
@@ -1100,9 +1110,6 @@ interface Functions {
   static void computeChecksum([instanceof=Entry] object entry,
                               ComputeChecksumCallback callback);
 
-  // Is UMA enabled?
-  static void isUMAEnabled(BooleanCallback callback);
-
   // Sets a tag on a file or a directory. Only Drive files are supported.
   [nocompile]
   static void setEntryTag([instanceof=Entry] object entry,
@@ -1158,25 +1165,29 @@ interface Functions {
   static void mountCrostini(SimpleCallback callback);
 
   // Shares paths with crostini container.
+  // |vmName| VM to share path with.
   // |entries| Entries of the files or directories to share.
   // |persist| If true, shares will persist across restarts.
   // |callback|
-  [nocompile]
-  static void sharePathsWithCrostini(
-      [instanceof=Entry] object[] entries, boolean persist, SimpleCallback callback);
+  [nocompile] static void sharePathsWithCrostini(
+      DOMString vmName, [ instanceof = Entry] object[] entries, boolean persist,
+      SimpleCallback callback);
 
   // Unshares path with crostini container.
+  // |vmName| VM to unshare path from.
   // |entry| Entry of the file or directory to unshare.
   // |callback|
-  [nocompile]
-  static void unsharePathWithCrostini(
-      [instanceof=Entry] object entry, SimpleCallback callback);
+  [nocompile] static void unsharePathWithCrostini(
+      DOMString vmName, [ instanceof = Entry] object entry,
+      SimpleCallback callback);
 
   // Returns list of paths shared with crostini container.
   // |observeFirstForSession| If true, callback provides whether this is the
+  // |vmName| VM to get shared paths of.
   // first time this function has been called with observeFirstForSession true.
   [nocompile] static void getCrostiniSharedPaths(
-      boolean observeFirstForSession, GetCrostiniSharedPathsCallback callback);
+      boolean observeFirstForSession, DOMString vmName, 
+      GetCrostiniSharedPathsCallback callback);
 
   // Requests information about a Linux package. |entry| is a .deb file.
   [nocompile]

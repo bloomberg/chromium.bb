@@ -13,7 +13,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "components/arc/common/app.mojom.h"
-#include "components/arc/connection_holder.h"
+#include "components/arc/session/connection_holder.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "extensions/browser/extension_registry.h"
@@ -84,8 +84,7 @@ void ApkWebAppService::SetArcAppListPrefsForTesting(ArcAppListPrefs* prefs) {
   arc_app_list_prefs_->AddObserver(this);
 }
 
-void ApkWebAppService::UninstallWebApp(
-    const extensions::ExtensionId& web_app_id) {
+void ApkWebAppService::UninstallWebApp(const web_app::AppId& web_app_id) {
   if (!web_app::ExtensionIdsMap::HasExtensionIdWithInstallSource(
           profile_->GetPrefs(), web_app_id, web_app::InstallSource::kArc)) {
     // Do not uninstall a web app that was not installed via ApkWebAppInstaller.
@@ -114,9 +113,41 @@ void ApkWebAppService::Shutdown() {
 
 void ApkWebAppService::OnPackageInstalled(
     const arc::mojom::ArcPackageInfo& package_info) {
-  if (package_info.web_app_info.is_null())
+  // This method is called when a) new packages are installed, and b) existing
+  // packages are updated. In (b), there are two cases to handle: the package
+  // could previously have been an Android app and has now become a web app, and
+  // vice-versa.
+  DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
+                                        kWebAppToApkDictPref);
+
+  // Search the pref dict for any |web_app_id| that has a value matching the
+  // provided package name.
+  std::string web_app_id;
+  for (const auto& it : web_apps_to_apks->DictItems()) {
+    const base::Value* v =
+        it.second.FindKeyOfType(kPackageNameKey, base::Value::Type::STRING);
+
+    if (v && (v->GetString() == package_info.package_name)) {
+      web_app_id = it.first;
+      break;
+    }
+  }
+
+  bool was_previously_web_app = !web_app_id.empty();
+  bool is_now_web_app = !package_info.web_app_info.is_null();
+
+  // The previous and current states match. Nothing to do.
+  if (is_now_web_app == was_previously_web_app)
     return;
 
+  if (was_previously_web_app) {
+    // The package was a web app, but now isn't. Remove the web app.
+    OnPackageRemoved(package_info.package_name, true /* uninstalled */);
+    return;
+  }
+
+  // The package is a web app but we don't have a corresponding browser-side
+  // artifact. Install it.
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_app_list_prefs_->app_connection_holder(), RequestPackageIcon);
   if (!instance)
@@ -234,9 +265,13 @@ void ApkWebAppService::OnDidGetWebAppIcon(
       weak_ptr_factory_.GetWeakPtr());
 }
 
-void ApkWebAppService::OnDidFinishInstall(
-    const std::string& package_name,
-    const extensions::ExtensionId& web_app_id) {
+void ApkWebAppService::OnDidFinishInstall(const std::string& package_name,
+                                          const web_app::AppId& web_app_id,
+                                          web_app::InstallResultCode code) {
+  // Do nothing: any error cancels installation.
+  if (code != web_app::InstallResultCode::kSuccess)
+    return;
+
   // Set a pref to map |web_app_id| to |package_name| for future uninstallation.
   DictionaryPrefUpdate dict_update(profile_->GetPrefs(), kWebAppToApkDictPref);
   dict_update->SetPath({web_app_id, kPackageNameKey},

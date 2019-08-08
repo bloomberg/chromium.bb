@@ -22,6 +22,7 @@ Item 1
       "name": "LayoutBlockFlow DIV id='composited-container'",
       "position": [8, 8],
       "contentsOpaque": true,
+      "drawsContent": false,
       "backfaceVisibility": "hidden"
     }
   ]

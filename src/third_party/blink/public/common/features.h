@@ -11,14 +11,19 @@
 namespace blink {
 namespace features {
 
+BLINK_COMMON_EXPORT extern const base::Feature
+    kBlockingDownloadsInAdFrameWithoutUserActivation;
 BLINK_COMMON_EXPORT extern const base::Feature kAvoidFlashBetweenNavigation;
 BLINK_COMMON_EXPORT extern const base::Feature
     kEagerCacheStorageSetupForServiceWorkers;
 BLINK_COMMON_EXPORT extern const base::Feature
     kEnableGpuRasterizationViewportRestriction;
 BLINK_COMMON_EXPORT extern const base::Feature kScriptStreaming;
+BLINK_COMMON_EXPORT extern const base::Feature kUserLevelMemoryPressureSignal;
 BLINK_COMMON_EXPORT extern const base::Feature kFirstContentfulPaintPlusPlus;
+BLINK_COMMON_EXPORT extern const base::Feature kFreezePurgeMemoryAllPagesFrozen;
 BLINK_COMMON_EXPORT extern const base::Feature kImplicitRootScroller;
+BLINK_COMMON_EXPORT extern const base::Feature kInvalidateFontCacheOnPurge;
 BLINK_COMMON_EXPORT extern const base::Feature kJankTrackingSweepLine;
 BLINK_COMMON_EXPORT extern const base::Feature kBlinkGenPropertyTrees;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
@@ -37,18 +42,23 @@ BLINK_COMMON_EXPORT extern const base::Feature kPortals;
 BLINK_COMMON_EXPORT extern const base::Feature
     kPreviewsResourceLoadingHintsSpecificResourceTypes;
 BLINK_COMMON_EXPORT extern const base::Feature
-    kPurgeMemoryOnlyForBackgroundedProcesses;
+    kPurgeRendererMemoryWhenBackgrounded;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCGetDisplayMedia;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCUnifiedPlanByDefault;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCOfferExtmapAllowMixed;
 BLINK_COMMON_EXPORT extern const base::Feature kResourceLoadViaDataPipe;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kServiceWorkerIsolateInForeground;
 BLINK_COMMON_EXPORT extern const base::Feature
     kServiceWorkerImportedScriptUpdateCheck;
 BLINK_COMMON_EXPORT extern const base::Feature
     kServiceWorkerParallelSideDataReading;
 BLINK_COMMON_EXPORT extern const base::Feature
     kServiceWorkerAggressiveCodeCache;
+BLINK_COMMON_EXPORT extern const base::Feature kServiceWorkerUpdateDelay;
 BLINK_COMMON_EXPORT extern const base::Feature kStopInBackground;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kFreezeBackgroundTabOnNetworkIdle;
 BLINK_COMMON_EXPORT extern const base::Feature kStopNonTimersInBackground;
 BLINK_COMMON_EXPORT extern const base::Feature kTextFragmentAnchor;
 BLINK_COMMON_EXPORT extern const base::Feature kWasmCodeCache;
@@ -67,6 +77,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kAlwaysAccelerateCanvas;
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kWebFontsCacheAwareTimeoutAdaption;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kBlockingFocusWithoutUserActivation;
 
 // Returns true when off-the-main-thread shared worker script fetch is enabled.
 BLINK_COMMON_EXPORT bool IsOffMainThreadSharedWorkerScriptFetchEnabled();

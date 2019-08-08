@@ -315,8 +315,8 @@ TEST_F(ExtensionAlarmsTest, CreateDelayBelowMinimum) {
   std::string message;
   ASSERT_TRUE(iter.ReadString(&message));
 
-  EXPECT_EQ(content::CONSOLE_MESSAGE_LEVEL_WARNING,
-            static_cast<content::ConsoleMessageLevel>(level));
+  EXPECT_EQ(blink::mojom::ConsoleMessageLevel::kWarning,
+            static_cast<blink::mojom::ConsoleMessageLevel>(level));
   EXPECT_THAT(message, testing::HasSubstr("delay is less than minimum of 1"));
 }
 

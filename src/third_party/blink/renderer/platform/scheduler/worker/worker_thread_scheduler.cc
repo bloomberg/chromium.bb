@@ -97,9 +97,9 @@ base::Optional<base::TimeDelta> GetMaxThrottlingDelay() {
 
 WorkerThreadScheduler::WorkerThreadScheduler(
     WebThreadType thread_type,
-    std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
+    base::sequence_manager::SequenceManager* sequence_manager,
     WorkerSchedulerProxy* proxy)
-    : NonMainThreadSchedulerImpl(std::move(sequence_manager),
+    : NonMainThreadSchedulerImpl(sequence_manager,
                                  TaskType::kWorkerThreadTaskQueueDefault),
       thread_type_(thread_type),
       idle_helper_(helper(),
@@ -205,6 +205,7 @@ void WorkerThreadScheduler::Shutdown() {
       base::TimeDelta::FromDays(1), 50 /* bucket count */);
   task_queue_throttler_.reset();
   idle_helper_.Shutdown();
+  helper()->RemoveTaskTimeObserver(this);
   helper()->Shutdown();
 }
 
@@ -307,7 +308,7 @@ void WorkerThreadScheduler::RecordTaskUkm(
     NonMainThreadTaskQueue* worker_task_queue,
     const base::sequence_manager::Task& task,
     const base::sequence_manager::TaskQueue::TaskTiming& task_timing) {
-  if (!ShouldRecordTaskUkm(task_timing.has_thread_time()))
+  if (!helper()->ShouldRecordTaskUkm(task_timing.has_thread_time()))
     return;
   ukm::builders::RendererSchedulerTask builder(ukm_source_id_);
 
@@ -329,6 +330,10 @@ void WorkerThreadScheduler::RecordTaskUkm(
 void WorkerThreadScheduler::SetUkmRecorderForTest(
     std::unique_ptr<ukm::UkmRecorder> ukm_recorder) {
   ukm_recorder_ = std::move(ukm_recorder);
+}
+
+void WorkerThreadScheduler::SetUkmTaskSamplingRateForTest(double rate) {
+  helper()->SetUkmTaskSamplingRateForTest(rate);
 }
 
 void WorkerThreadScheduler::SetCPUTimeBudgetPoolForTesting(

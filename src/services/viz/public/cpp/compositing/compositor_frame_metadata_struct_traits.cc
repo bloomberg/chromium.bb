@@ -18,6 +18,8 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
                   viz::CompositorFrameMetadata>::
     Read(viz::mojom::CompositorFrameMetadataDataView data,
          viz::CompositorFrameMetadata* out) {
+  if (data.device_scale_factor() <= 0)
+    return false;
   out->device_scale_factor = data.device_scale_factor();
   if (!data.ReadRootScrollOffset(&out->root_scroll_offset))
     return false;

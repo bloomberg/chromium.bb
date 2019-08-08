@@ -21,6 +21,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">હમણાં</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 મિનિટ}one{# મિનિટ}other{# મિનિટ}}</translation>
+<translation id="1756116796893109054">ટૅબ મોકલી રહ્યાં છીએ...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> અબજ</translation>
 <translation id="1801827354178857021">સમયગાળો</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 મહિનો}one{# મહિનો}other{# મહિના}}</translation>
@@ -34,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;બધા પસંદ કરો</translation>
 <translation id="1938451708255335766">વિંડો ડિસ્પ્લે ઘનતાને ગોઠવવા માટે, ઍપને ફરીથી શરૂ કરો.</translation>
+<translation id="208586643495776849">કૃપા કરીને ફરી પ્રયાસ કરો</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 દિ}one{# દિ}other{# દિ}}</translation>
 <translation id="2148716181193084225">આજે</translation>
 <translation id="2168039046890040389">પૃષ્ઠ ઉપર</translation>
@@ -51,11 +53,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">કૅલિબ્રેશન પૂર્ણ થયું</translation>
 <translation id="252373100621549798">અજાણ્યું ડિસ્પ્લે</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{1ક. માં}one{#ક. માં}other{#ક. માં}}</translation>
 <translation id="2583543531130364912">તમારી ટચસ્ક્રીનને કેલિબ્રેટ કરો</translation>
 <translation id="2666092431469916601">ઉપર</translation>
+<translation id="2701330563083355633"><ph name="DEVICE_NAME" />માંથી શેર કર્યું</translation>
 <translation id="2743387203779672305">ક્લિપબોર્ડ પર કૉપિ કરો</translation>
 <translation id="2803313416453193357">ફોલ્ડર ખોલો</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 વર્ષ પહેલાં}one{# વર્ષ પહેલાં}other{# વર્ષ પહેલાં}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{1દિ. માં}one{#દિ. માં}other{#દિ. માં}}</translation>
 <translation id="2931838996092594335">ક્લિક કરો</translation>
 <translation id="3036649622769666520">ફાઇલો ખોલો</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" />MB</translation>
@@ -67,6 +72,7 @@
 <translation id="3234408098842461169">નીચલો એરો</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 દિવસ}one{# દિવસ}other{# દિવસ}}</translation>
 <translation id="335581015389089642">ભાષા</translation>
+<translation id="3443810440409579745">ટૅબ પ્રાપ્ત થયું.</translation>
 <translation id="3479552764303398839">હમણાં નહીં</translation>
 <translation id="348799646910989694">શેલ્ફ ઑટોમૅટિક રીતે છુપાવવામાં આવશે</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 દિવસ બાકી}one{# દિવસ બાકી}other{# દિવસ બાકી}}</translation>
@@ -96,6 +102,7 @@
 <translation id="4730374152663651037">વારંવાર વપરાયેલ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 મહિનો બાકી}one{# મહિનો બાકી}other{# મહિના બાકી}}</translation>
 <translation id="4841881773802181781">ઉમેરો</translation>
+<translation id="4881695831933465202">ખોલો</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 સેકન્ડ}one{# સેકન્ડ}other{# સેકન્ડ}}</translation>
 <translation id="4971687151119236543">મીડિયા પાછલું ગીત</translation>
 <translation id="5046499563572181734">અહીં ટૅપ કરો</translation>
@@ -103,6 +110,7 @@
 <translation id="5137751499640340777">Google આસિસ્ટંટ શરૂ કરો</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">પ્રકટીકરણ ત્રિકોણ</translation>
+<translation id="5278860589123563674">મોકલવામાં નિષ્ફળ રહ્યાં</translation>
 <translation id="528468243742722775">સમાપ્ત</translation>
 <translation id="5329858601952122676">&amp;કાઢી નાખો</translation>
 <translation id="5395308026110844773"><ph name="IN_PLACE_APP" />ની સૌથી ઉપર <ph name="DRAGGED_APP_NAME" /> પર, ફોલ્ડર બનાવવા માટે રિલીઝ કરો.</translation>
@@ -114,6 +122,7 @@
 <translation id="5613020302032141669">ડાબો એરો</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 મિનિટ}one{# મિનિટ}other{# મિનિટ}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 દિવસ અને }one{# દિવસ અને }other{# દિવસ અને }}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{1વ. માં}one{#વ. માં}other{#વ. માં}}</translation>
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 સેકન્ડ બાકી}one{# સેકન્ડ બાકી}other{# સેકન્ડ બાકી}}</translation>
 <translation id="5941711191222866238">નાનું કરો</translation>
@@ -145,7 +154,6 @@
 <translation id="6808150112686056157">મીડિયા સ્ટોપ</translation>
 <translation id="6845383723252244143">ફોલ્ડર પસંદ કરો</translation>
 <translation id="6845533974506654842">દબાવો</translation>
-<translation id="686304767576508198">આમાંથી શેર કર્યું</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 કલાક બાકી}one{# કલાક બાકી}other{# કલાક બાકી}}</translation>
 <translation id="688711909580084195">શીર્ષક વિનાનું વેબપેજ</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
@@ -170,6 +178,7 @@
 <translation id="7907591526440419938">ફાઇલ ખોલો</translation>
 <translation id="7969046989155602842">આદેશ</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 કરતાં વઘુ વાંચ્યા વગરના નોટિફિકેશન}one{# કરતાં વઘુ વાંચ્યા વગરના નોટિફિકેશન}other{# કરતાં વઘુ વાંચ્યા વગરના નોટિફિકેશન}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{1મિ માં}one{#મિ માં}other{#મિ માં}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 કલાક પહેલા}one{# કલાક પહેલાં}other{# કલાક પહેલાં}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 સે બાકી}one{# સે બાકી}other{# સે બાકી}}</translation>
@@ -198,6 +207,7 @@
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> ફોલ્ડર</translation>
 <translation id="883911313571074303">છબીમાં ટીકા કરો</translation>
 <translation id="8841375032071747811">પાછળ બટન</translation>
+<translation id="8876215549894133151">ફોર્મેટ:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">શેલ્ફ હંમેશાં છુપાવવામાં આવે છે</translation>
 <translation id="9002566407876343676">ખોલો</translation>

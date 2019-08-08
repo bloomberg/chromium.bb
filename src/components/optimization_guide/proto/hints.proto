@@ -113,6 +113,8 @@ enum OptimizationType {
   RESOURCE_LOADING = 2;
   // This optimization redirects the navigation through a lite page server.
   LITE_PAGE_REDIRECT = 3;
+  // This optimization does nothing (no-op).
+  OPTIMIZATION_NONE = 4;
 }
 
 // Presents semantics for how page load URLs should be matched.
@@ -163,10 +165,10 @@ message Optimization {
   // The experiment name that activates the optimization.
   //
   // If a non-empty name is provided, the optimization will be disabled unless
-  // a previews experiment of that same name is running. An empty name is not
+  // an experiment of that same name is running. An empty name is not
   // experimental.
   //
-  // Previews experiments are enabled and configured by passing an
+  // Optimization Hints experiments are enabled and configured by passing an
   // experiment_name parameter to the OptimizationHintsExperiments feature.
   // For example, if experiment_name is my_exp, it could be enabled with the
   // following command-line flags:
@@ -174,6 +176,12 @@ message Optimization {
   //   --force-fieldtrial-params="MyFieldTrial.Enabled:experiment_name/my_exp"
   //   --force-fieldtrials=MyFieldTrial/Enabled/
   optional string experiment_name = 4;
+  // The experiment name that should be excluded from using this optimization.
+  //
+  // If a non-empty name is provided and the client is in an experiment of that
+  // same name, the optimization will be disabled and skipped for that client.
+  // An empty name is not experimental.
+  optional string excluded_experiment_name = 5;
 }
 
 // The possible effective connection type values.

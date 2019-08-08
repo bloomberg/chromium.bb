@@ -34,6 +34,8 @@
 
 #define OUTPUT_RC_STATS 1
 
+#define SIMULCAST_MODE 0
+
 static const arg_def_t outputfile =
     ARG_DEF("o", "output", 1, "Output filename");
 static const arg_def_t skip_frames_arg =
@@ -261,6 +263,9 @@ static void parse_command_line(int argc, const char **argv_,
 #endif
     } else if (arg_match(&arg, &speed_arg, argi)) {
       svc_ctx->speed = arg_parse_uint(&arg);
+      if (svc_ctx->speed > 9) {
+        warn("Mapping speed %d to speed 9.\n", svc_ctx->speed);
+      }
     } else if (arg_match(&arg, &aqmode_arg, argi)) {
       svc_ctx->aqmode = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &threads_arg, argi)) {
@@ -749,7 +754,7 @@ static void set_frame_flags_bypass_mode_ex1(
   }
 }
 
-#if CONFIG_VP9_DECODER
+#if CONFIG_VP9_DECODER && !SIMULCAST_MODE
 static void test_decode(vpx_codec_ctx_t *encoder, vpx_codec_ctx_t *decoder,
                         const int frames_out, int *mismatch_seen) {
   vpx_image_t enc_img, dec_img;
@@ -834,12 +839,21 @@ static void svc_output_rc_stats(
   for (sl = 0; sl < enc_cfg->ss_number_layers; ++sl) {
     unsigned int sl2;
     uint64_t tot_size = 0;
+#if SIMULCAST_MODE
+    for (sl2 = 0; sl2 < sl; ++sl2) {
+      if (cx_pkt->data.frame.spatial_layer_encoded[sl2]) tot_size += sizes[sl2];
+    }
+    vpx_video_writer_write_frame(outfile[sl],
+                                 (uint8_t *)(cx_pkt->data.frame.buf) + tot_size,
+                                 (size_t)(sizes[sl]), cx_pkt->data.frame.pts);
+#else
     for (sl2 = 0; sl2 <= sl; ++sl2) {
       if (cx_pkt->data.frame.spatial_layer_encoded[sl2]) tot_size += sizes[sl2];
     }
     if (tot_size > 0)
       vpx_video_writer_write_frame(outfile[sl], cx_pkt->data.frame.buf,
                                    (size_t)(tot_size), cx_pkt->data.frame.pts);
+#endif  // SIMULCAST_MODE
   }
   for (sl = 0; sl < enc_cfg->ss_number_layers; ++sl) {
     if (cx_pkt->data.frame.spatial_layer_encoded[sl]) {
@@ -924,7 +938,7 @@ int main(int argc, const char **argv) {
 #if CONFIG_INTERNAL_STATS
   FILE *f = fopen("opsnr.stt", "a");
 #endif
-#if CONFIG_VP9_DECODER
+#if CONFIG_VP9_DECODER && !SIMULCAST_MODE
   int mismatch_seen = 0;
   vpx_codec_ctx_t decoder;
 #endif
@@ -964,7 +978,7 @@ int main(int argc, const char **argv) {
   if (vpx_svc_init(&svc_ctx, &encoder, vpx_codec_vp9_cx(), &enc_cfg) !=
       VPX_CODEC_OK)
     die("Failed to initialize encoder\n");
-#if CONFIG_VP9_DECODER
+#if CONFIG_VP9_DECODER && !SIMULCAST_MODE
   if (vpx_codec_dec_init(
           &decoder, get_vpx_decoder_by_name("vp9")->codec_interface(), NULL, 0))
     die("Failed to initialize decoder\n");
@@ -1111,7 +1125,7 @@ int main(int argc, const char **argv) {
                         &ref_frame_config);
       // Keep track of input frames, to account for frame drops in rate control
       // stats/metrics.
-      for (sl = 0; sl < (unsigned int)enc_cfg.ss_number_layers; ++sl) {
+      for (sl = 0; sl < enc_cfg.ss_number_layers; ++sl) {
         ++rc.layer_input_frames[sl * enc_cfg.ts_number_layers +
                                 layer_id.temporal_layer_id];
       }
@@ -1163,7 +1177,7 @@ int main(int argc, const char **argv) {
           if (enc_cfg.ss_number_layers == 1 && enc_cfg.ts_number_layers == 1)
             si->bytes_sum[0] += (int)cx_pkt->data.frame.sz;
           ++frames_received;
-#if CONFIG_VP9_DECODER
+#if CONFIG_VP9_DECODER && !SIMULCAST_MODE
           if (vpx_codec_decode(&decoder, cx_pkt->data.frame.buf,
                                (unsigned int)cx_pkt->data.frame.sz, NULL, 0))
             die_codec(&decoder, "Failed to decode frame.");
@@ -1178,11 +1192,12 @@ int main(int argc, const char **argv) {
         default: { break; }
       }
 
-#if CONFIG_VP9_DECODER
+#if CONFIG_VP9_DECODER && !SIMULCAST_MODE
       vpx_codec_control(&encoder, VP9E_GET_SVC_LAYER_ID, &layer_id);
       // Don't look for mismatch on top spatial and top temporal layers as they
       // are non reference frames.
-      if (!(layer_id.temporal_layer_id > 0 &&
+      if ((enc_cfg.ss_number_layers > 1 || enc_cfg.ts_number_layers > 1) &&
+          !(layer_id.temporal_layer_id > 0 &&
             layer_id.temporal_layer_id == (int)enc_cfg.ts_number_layers - 1 &&
             cx_pkt->data.frame
                 .spatial_layer_encoded[enc_cfg.ss_number_layers - 1])) {

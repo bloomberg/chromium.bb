@@ -98,7 +98,8 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         storage_partition_impl->GetAppCacheService(), process_id_);
 
     WorkerScriptFetchInitiator::Start(
-        process_id_, script_url, request_initiator_origin, RESOURCE_TYPE_WORKER,
+        process_id_, script_url, request_initiator_origin,
+        ResourceType::kWorker,
         storage_partition_impl->GetServiceWorkerContext(),
         appcache_handle_->core(), std::move(blob_url_loader_factory),
         storage_partition_impl,
@@ -234,12 +235,13 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       return;
     }
 
+    uint32_t options = network::mojom::kWebSocketOptionNone;
     network::mojom::TrustedHeaderClientPtr header_client;
     GetContentClient()->browser()->WillCreateWebSocket(
-        frame, &request, &auth_handler, &header_client);
+        frame, &request, &auth_handler, &header_client, &options);
 
     WebSocketManager::CreateWebSocket(
-        process_id_, ancestor_render_frame_id_, origin_,
+        process_id_, ancestor_render_frame_id_, origin_, options,
         std::move(auth_handler), std::move(header_client), std::move(request));
   }
 

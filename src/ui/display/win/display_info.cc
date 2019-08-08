@@ -4,7 +4,7 @@
 
 #include "ui/display/win/display_info.h"
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace display {

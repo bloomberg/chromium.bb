@@ -8,6 +8,7 @@
 <translation id="1664224225747386870">Nessun dato registrato</translation>
 <translation id="1862930711583847113">Impossibile esportare <ph name="FILE" /></translation>
 <translation id="2036868001356139588">Durata del timer</translation>
+<translation id="2050339315714019657">Verticale</translation>
 <translation id="2064538373111010176">Fotocamera <ph name="CAMERA" /> attiva</translation>
 <translation id="229579744168541441">Esporta su disco</translation>
 <translation id="2501278716633472235">Indietro</translation>
@@ -20,14 +21,19 @@ Le app con autorizzazioni di accesso allo spazio di archiviazione potranno acced
 <translation id="3081586908890909590">Passa alla modalità video</translation>
 <translation id="3183731565330012717">Tipo di griglia</translation>
 <translation id="3227137524299004712">Microfono</translation>
+<translation id="3517926952904427380">Impossibile scattare foto verticale</translation>
 <translation id="3569311554794739032">Vuoi rimuovere <ph name="FILE" />?</translation>
+<translation id="3810838688059735925">Video</translation>
 <translation id="4279490309300973883">Mirroring</translation>
+<translation id="4329152592498422850">Passa alla modalità foto quadrata</translation>
 <translation id="4445542136948522167">Interrompi acquisizione foto</translation>
+<translation id="4628948037717959914">Foto</translation>
 <translation id="4649291346448517080">Impossibile salvare il file</translation>
 <translation id="4890010094662541459">3 x 3</translation>
 <translation id="5057360777601936059">La tua fotocamera non è attualmente disponibile.
         Controlla se la fotocamera è collegata correttamente.</translation>
 <translation id="5152121255775685072">Vai alla galleria</translation>
+<translation id="5671277269877808209">Quadrato</translation>
 <translation id="5869546221129391014">Griglia</translation>
 <translation id="6073451960410192870">Interrompi registrazione</translation>
 <translation id="6233780560267770709">3 x 3</translation>
@@ -46,6 +52,7 @@ Le app con autorizzazioni di accesso allo spazio di archiviazione potranno acced
 <translation id="8145038249676204903">Passa alla modalità foto</translation>
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
+<translation id="8815966864175525708">Passa alla modalità foto verticale</translation>
 <translation id="8870695351537079478">Impossibile avviare la registrazione</translation>
 <translation id="9045155556724273246">10 secondi</translation>
 <translation id="945522503751344254">Invia feedback</translation>

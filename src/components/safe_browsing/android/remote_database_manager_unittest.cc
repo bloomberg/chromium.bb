@@ -83,13 +83,14 @@ TEST_F(RemoteDatabaseManagerTest, DisabledViaNull) {
 
 TEST_F(RemoteDatabaseManagerTest, TypesToCheckDefault) {
   // Most are true, a few are false.
-  for (int t_int = 0; t_int < content::RESOURCE_TYPE_LAST_TYPE; t_int++) {
+  for (int t_int = 0;
+       t_int <= static_cast<int>(content::ResourceType::kMaxValue); t_int++) {
     content::ResourceType t = static_cast<content::ResourceType>(t_int);
     switch (t) {
-      case content::RESOURCE_TYPE_STYLESHEET:
-      case content::RESOURCE_TYPE_IMAGE:
-      case content::RESOURCE_TYPE_FONT_RESOURCE:
-      case content::RESOURCE_TYPE_FAVICON:
+      case content::ResourceType::kStylesheet:
+      case content::ResourceType::kImage:
+      case content::ResourceType::kFontResource:
+      case content::ResourceType::kFavicon:
         EXPECT_FALSE(db_->CanCheckResourceType(t));
         break;
       default:
@@ -103,14 +104,14 @@ TEST_F(RemoteDatabaseManagerTest, TypesToCheckFromTrial) {
   SetFieldTrialParams("1,2,blah, 9");
   db_ = new RemoteSafeBrowsingDatabaseManager();
   EXPECT_TRUE(db_->CanCheckResourceType(
-      content::RESOURCE_TYPE_MAIN_FRAME));  // defaulted
-  EXPECT_TRUE(db_->CanCheckResourceType(content::RESOURCE_TYPE_SUB_FRAME));
-  EXPECT_TRUE(db_->CanCheckResourceType(content::RESOURCE_TYPE_STYLESHEET));
-  EXPECT_FALSE(db_->CanCheckResourceType(content::RESOURCE_TYPE_SCRIPT));
-  EXPECT_FALSE(db_->CanCheckResourceType(content::RESOURCE_TYPE_IMAGE));
+      content::ResourceType::kMainFrame));  // defaulted
+  EXPECT_TRUE(db_->CanCheckResourceType(content::ResourceType::kSubFrame));
+  EXPECT_TRUE(db_->CanCheckResourceType(content::ResourceType::kStylesheet));
+  EXPECT_FALSE(db_->CanCheckResourceType(content::ResourceType::kScript));
+  EXPECT_FALSE(db_->CanCheckResourceType(content::ResourceType::kImage));
   // ...
-  EXPECT_FALSE(db_->CanCheckResourceType(content::RESOURCE_TYPE_MEDIA));
-  EXPECT_TRUE(db_->CanCheckResourceType(content::RESOURCE_TYPE_WORKER));
+  EXPECT_FALSE(db_->CanCheckResourceType(content::ResourceType::kMedia));
+  EXPECT_TRUE(db_->CanCheckResourceType(content::ResourceType::kWorker));
 }
 
 }  // namespace safe_browsing

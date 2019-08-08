@@ -91,7 +91,9 @@ cr.define('cr.login', function() {
     'lsbReleaseBoard',           // Chrome OS Release board name
     'isFirstUser',               // True if this is non-enterprise device,
                                  // and there are no users yet.
-    'obfuscatedOwnerId',         // Obfuscated device owner ID, if neeed.
+    'obfuscatedOwnerId',         // Obfuscated device owner ID, if needed.
+    'extractSamlPasswordAttributes',  // If enabled attempts to extract password
+                                      // attributes from the SAML response.
 
     // The email fields allow for the following possibilities:
     //
@@ -217,7 +219,8 @@ cr.define('cr.login', function() {
 
       this.webview_ = typeof webview == 'string' ? $(webview) : webview;
 
-      this.samlHandler_ = new cr.login.SamlHandler(this.webview_);
+      this.samlHandler_ =
+          new cr.login.SamlHandler(this.webview_, false /* startsOnSamlPage */);
       this.webviewEventManager_.addEventListener(
           this.samlHandler_, 'insecureContentBlocked',
           this.onInsecureContentBlocked_.bind(this));
@@ -303,6 +306,8 @@ cr.define('cr.login', function() {
       // http. Otherwise, block insecure content as long as gaia is https.
       this.samlHandler_.blockInsecureContent = authMode != AuthMode.DESKTOP &&
           this.idpOrigin_.startsWith('https://');
+      this.samlHandler_.extractSamlPasswordAttributes =
+          data.extractSamlPasswordAttributes;
       this.needPassword = !('needPassword' in data) || data.needPassword;
 
       if (this.isNewGaiaFlow) {
@@ -633,6 +638,8 @@ cr.define('cr.login', function() {
         if (this.email_ && this.gaiaId_ && this.sessionIndex_) {
           this.maybeCompleteAuth_();
         }
+      } else if (msg.method == 'showIncognito') {
+        this.dispatchEvent(new Event('showIncognito'));
       } else {
         console.warn('Unrecognized message from GAIA: ' + msg.method);
       }

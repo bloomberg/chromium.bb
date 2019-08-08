@@ -569,10 +569,10 @@ bool CreateTemporaryDirInDir(const FilePath& base_dir,
     // the one exists, keep trying another path name until we reach some limit.
     string16 new_dir_name;
     new_dir_name.assign(prefix);
-    new_dir_name.append(IntToString16(GetCurrentProcId()));
+    new_dir_name.append(NumberToString16(GetCurrentProcId()));
     new_dir_name.push_back('_');
     new_dir_name.append(
-        IntToString16(RandInt(0, std::numeric_limits<int16_t>::max())));
+        NumberToString16(RandInt(0, std::numeric_limits<int16_t>::max())));
 
     path_to_create = base_dir.Append(new_dir_name);
     if (::CreateDirectory(as_wcstr(path_to_create.value()), NULL)) {

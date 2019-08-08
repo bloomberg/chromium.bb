@@ -53,6 +53,14 @@ DecoderBuffer::DecoderBuffer(std::unique_ptr<UnalignedSharedMemory> shm,
       shm_(std::move(shm)),
       is_key_frame_(false) {}
 
+DecoderBuffer::DecoderBuffer(
+    std::unique_ptr<ReadOnlyUnalignedMapping> shared_mem_mapping,
+    size_t size)
+    : size_(size),
+      side_data_size_(0),
+      shared_mem_mapping_(std::move(shared_mem_mapping)),
+      is_key_frame_(false) {}
+
 DecoderBuffer::~DecoderBuffer() {
   // TODO(crbug.com/794740). As a lot of the crashes have |side_data_size_|
   // == 0 yet |side_data| is not null, check that here hoping to get better
@@ -116,6 +124,19 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::FromSharedMemoryHandle(
   if (size == 0 || !shm->MapAt(offset, size))
     return nullptr;
   return base::WrapRefCounted(new DecoderBuffer(std::move(shm), size));
+}
+
+// static
+scoped_refptr<DecoderBuffer> DecoderBuffer::FromSharedMemoryRegion(
+    base::ReadOnlySharedMemoryRegion region,
+    off_t offset,
+    size_t size) {
+  std::unique_ptr<ReadOnlyUnalignedMapping> unaligned_mapping =
+      std::make_unique<ReadOnlyUnalignedMapping>(region, size, offset);
+  if (!unaligned_mapping->IsValid())
+    return nullptr;
+  return base::WrapRefCounted(
+      new DecoderBuffer(std::move(unaligned_mapping), size));
 }
 
 // static

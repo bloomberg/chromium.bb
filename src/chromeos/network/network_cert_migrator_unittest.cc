@@ -12,9 +12,9 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_profile_client.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/shill/shill_profile_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_state_handler.h"
 #include "crypto/scoped_nss_types.h"
@@ -64,13 +64,10 @@ class NetworkCertMigratorTest : public testing::Test {
     test_system_nsscertdb_->SetSystemSlot(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_system_nssdb_.slot())));
 
-    DBusThreadManager::Initialize();
-    service_test_ =
-        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
-    DBusThreadManager::Get()
-        ->GetShillProfileClient()
-        ->GetTestInterface()
-        ->AddProfile(kUserShillProfile, "" /* userhash */);
+    shill_clients::InitializeFakes();
+    service_test_ = ShillServiceClient::Get()->GetTestInterface();
+    ShillProfileClient::Get()->GetTestInterface()->AddProfile(
+        kUserShillProfile, "" /* userhash */);
     scoped_task_environment_.RunUntilIdle();
     service_test_->ClearServices();
     scoped_task_environment_.RunUntilIdle();
@@ -83,7 +80,7 @@ class NetworkCertMigratorTest : public testing::Test {
     network_cert_migrator_.reset();
     network_state_handler_.reset();
     NetworkCertLoader::Shutdown();
-    DBusThreadManager::Shutdown();
+    shill_clients::Shutdown();
   }
 
  protected:

@@ -153,7 +153,7 @@ ScriptPromise PaymentInstruments::deleteInstrument(
                                            kPaymentManagerUnavailable));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   manager_->DeletePaymentInstrument(
@@ -174,7 +174,7 @@ ScriptPromise PaymentInstruments::get(ScriptState* script_state,
                                            kPaymentManagerUnavailable));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   manager_->GetPaymentInstrument(
@@ -194,7 +194,7 @@ ScriptPromise PaymentInstruments::keys(ScriptState* script_state) {
                                            kPaymentManagerUnavailable));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   manager_->KeysOfPaymentInstruments(
@@ -214,7 +214,7 @@ ScriptPromise PaymentInstruments::has(ScriptState* script_state,
                                            kPaymentManagerUnavailable));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   manager_->HasPaymentInstrument(
@@ -237,7 +237,7 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
                                            kPaymentManagerUnavailable));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ExecutionContext* context = ExecutionContext::From(script_state);
   Document* doc = DynamicTo<Document>(context);
 
@@ -267,7 +267,7 @@ ScriptPromise PaymentInstruments::clear(ScriptState* script_state) {
                                            kPaymentManagerUnavailable));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   manager_->ClearPaymentInstruments(

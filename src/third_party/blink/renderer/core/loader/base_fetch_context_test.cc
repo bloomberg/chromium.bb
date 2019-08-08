@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -81,7 +82,6 @@ class MockBaseFetchContext final : public BaseFetchContext {
   }
   bool ShouldBlockFetchByMixedContentCheck(
       mojom::RequestContextType,
-      network::mojom::RequestContextFrameType,
       ResourceRequest::RedirectStatus,
       const KURL&,
       SecurityViolationReportingPolicy) const override {
@@ -126,7 +126,8 @@ class BaseFetchContextTest : public testing::Test {
                 *execution_context_));
     resource_fetcher_ = MakeGarbageCollected<ResourceFetcher>(
         ResourceFetcherInit(*resource_fetcher_properties_, fetch_context_,
-                            base::MakeRefCounted<scheduler::FakeTaskRunner>()));
+                            base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+                            MakeGarbageCollected<TestLoaderFactory>()));
   }
 
   const FetchClientSettingsObject& GetFetchClientSettingsObject() const {
@@ -273,8 +274,6 @@ TEST_F(BaseFetchContextTest, CanRequest) {
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
   resource_request.SetRequestorOrigin(GetSecurityOrigin());
-  resource_request.SetFetchCredentialsMode(
-      network::mojom::FetchCredentialsMode::kOmit);
 
   ResourceLoaderOptions options;
 

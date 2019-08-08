@@ -19,6 +19,7 @@
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/managed_memory_policy.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -113,8 +114,7 @@ class SynchronousLayerTreeFrameSink
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args,
-                    const base::flat_map<uint32_t, gfx::PresentationFeedback>&
-                        feedbacks) override;
+                    const viz::PresentationFeedbackMap& feedbacks) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFramePausedChanged(bool paused) override;
@@ -122,6 +122,8 @@ class SynchronousLayerTreeFrameSink
   // viz::ExternalBeginFrameSourceClient overrides.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
+  void DidPresentCompositorFrame(
+      const viz::PresentationFeedbackMap& presentation_feedbacks);
   void BeginFrame(const viz::BeginFrameArgs& args);
   void SetBeginFrameSourcePaused(bool paused);
   void SetMemoryPolicy(size_t bytes_limit);
@@ -174,8 +176,9 @@ class SynchronousLayerTreeFrameSink
     void DisplayDidReceiveCALayerParams(
         const gfx::CALayerParams& ca_layer_params) override {}
     void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override {}
-    void DidSwapAfterSnapshotRequestReceived(
-        const std::vector<ui::LatencyInfo>& latency_info) override {}
+    void SetPreferredFrameInterval(base::TimeDelta interval) override {}
+    base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
+        const viz::FrameSinkId& id) override;
   };
 
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface

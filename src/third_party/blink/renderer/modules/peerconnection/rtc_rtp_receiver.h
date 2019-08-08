@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/optional.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_source.h"
@@ -16,6 +17,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_contributing_source.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receive_parameters.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_synchronization_source.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -42,7 +44,9 @@ class RTCRtpReceiver final : public ScriptWrappable {
 
   MediaStreamTrack* track() const;
   RTCDtlsTransport* transport();
-  RTCDtlsTransport* rtcp_transport();
+  RTCDtlsTransport* rtcpTransport();
+  double jitterBufferDelayHint(bool&, ExceptionState&);
+  void setJitterBufferDelayHint(double, bool, ExceptionState&);
   RTCRtpReceiveParameters* getParameters();
   HeapVector<Member<RTCRtpSynchronizationSource>> getSynchronizationSources();
   HeapVector<Member<RTCRtpContributingSource>> getContributingSources();
@@ -71,6 +75,11 @@ class RTCRtpReceiver final : public ScriptWrappable {
   WebVector<std::unique_ptr<WebRTCRtpSource>> web_sources_;
   bool web_sources_needs_updating_ = true;
   Member<RTCRtpTransceiver> transceiver_;
+
+  // Hint to the WebRTC Jitter Buffer about desired playout delay. Actual
+  // observed delay may differ depending on the congestion control. |nullopt|
+  // means default value must be used.
+  base::Optional<double> jitter_buffer_delay_hint_;
 };
 
 }  // namespace blink

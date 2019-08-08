@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg/svg_stop_element.h"
 #include "third_party/blink/renderer/core/svg/svg_transform_list.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -47,15 +48,17 @@ SVGGradientElement::SVGGradientElement(const QualifiedName& tag_name,
                                        Document& document)
     : SVGElement(tag_name, document),
       SVGURIReference(this),
-      gradient_transform_(
-          SVGAnimatedTransformList::Create(this,
-                                           svg_names::kGradientTransformAttr,
-                                           CSSPropertyTransform)),
-      spread_method_(SVGAnimatedEnumeration<SVGSpreadMethodType>::Create(
+      gradient_transform_(MakeGarbageCollected<SVGAnimatedTransformList>(
           this,
-          svg_names::kSpreadMethodAttr,
-          kSVGSpreadMethodPad)),
-      gradient_units_(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
+          svg_names::kGradientTransformAttr,
+          CSSPropertyID::kTransform)),
+      spread_method_(
+          MakeGarbageCollected<SVGAnimatedEnumeration<SVGSpreadMethodType>>(
+              this,
+              svg_names::kSpreadMethodAttr,
+              kSVGSpreadMethodPad)),
+      gradient_units_(MakeGarbageCollected<
+                      SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>>(
           this,
           svg_names::kGradientUnitsAttr,
           SVGUnitTypes::kSvgUnitTypeObjectboundingbox)) {
@@ -95,7 +98,7 @@ void SVGGradientElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == svg_names::kGradientTransformAttr) {
     AddPropertyToPresentationAttributeStyle(
-        style, CSSPropertyTransform,
+        style, CSSPropertyID::kTransform,
         *gradient_transform_->CurrentValue()->CssValue());
     return;
   }

@@ -17,7 +17,7 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/arc/mojo_channel.h"
+#include "components/arc/session/mojo_channel.h"
 #include "ui/message_center/lock_screen/lock_screen_controller.h"
 #include "ui/message_center/message_center_impl.h"
 #include "ui/message_center/message_center_observer.h"
@@ -54,7 +54,8 @@ std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
 
 class DoNotDisturbManager : public message_center::MessageCenterObserver {
  public:
-  DoNotDisturbManager(ArcNotificationManager* manager) : manager_(manager) {}
+  explicit DoNotDisturbManager(ArcNotificationManager* manager)
+      : manager_(manager) {}
   void OnQuietModeChanged(bool in_quiet_mode) override {
     manager_->SetDoNotDisturbStatusOnAndroid(in_quiet_mode);
   }
@@ -475,6 +476,13 @@ bool ArcNotificationManager::ShouldIgnoreNotification(
   if (data->package_name.has_value() &&
       *data->package_name == kPlayStorePackageName &&
       delegate_->IsPublicSessionOrKiosk()) {
+    return true;
+  }
+
+  // Media Notifications may be ignored if we have the native views based media
+  // session notifications enabled.
+  if (data->is_media_notification &&
+      features::IsHideArcMediaNotificationsEnabled()) {
     return true;
   }
 

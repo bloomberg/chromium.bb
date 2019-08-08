@@ -22,7 +22,8 @@
 
 #if defined(USE_AURA)
 // http://crbug.com/105200
-#define MAYBE_ExpectAsynchronousListenerCall DISABLED_ExpectAsynchronousListenerCall
+#define MAYBE_ExpectAsynchronousListenerCall \
+  DISABLED_ExpectAsynchronousListenerCall
 #else
 #define MAYBE_ExpectAsynchronousListenerCall ExpectAsynchronousListenerCall
 #endif
@@ -31,9 +32,7 @@ namespace {
 
 class FileSelectionUser : public ui::SelectFileDialog::Listener {
  public:
-  FileSelectionUser()
-      : file_selection_initialisation_in_progress(false) {
-  }
+  FileSelectionUser() : file_selection_initialisation_in_progress(false) {}
 
   ~FileSelectionUser() override {
     if (select_file_dialog_.get())
@@ -50,13 +49,8 @@ class FileSelectionUser : public ui::SelectFileDialog::Listener {
 
     file_selection_initialisation_in_progress = true;
     select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE,
-                                    title,
-                                    file_path,
-                                    NULL,
-                                    0,
-                                    base::FilePath::StringType(),
-                                    NULL,
-                                    NULL);
+                                    title, file_path, NULL, 0,
+                                    base::FilePath::StringType(), NULL, NULL);
     file_selection_initialisation_in_progress = false;
   }
 
@@ -89,8 +83,7 @@ typedef testing::Test ChromeSelectFilePolicyTest;
 TEST_F(ChromeSelectFilePolicyTest, MAYBE_ExpectAsynchronousListenerCall) {
   content::TestBrowserThreadBundle test_browser_thread_bundle;
 
-  ScopedTestingLocalState local_state(
-      TestingBrowserProcess::GetGlobal());
+  ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
 
   std::unique_ptr<FileSelectionUser> file_selection_user(
       new FileSelectionUser());

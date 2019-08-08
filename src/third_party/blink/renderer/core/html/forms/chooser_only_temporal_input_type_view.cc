@@ -42,13 +42,6 @@ ChooserOnlyTemporalInputTypeView::ChooserOnlyTemporalInputTypeView(
     BaseTemporalInputType& input_type)
     : KeyboardClickableInputTypeView(element), input_type_(input_type) {}
 
-ChooserOnlyTemporalInputTypeView* ChooserOnlyTemporalInputTypeView::Create(
-    HTMLInputElement& element,
-    BaseTemporalInputType& input_type) {
-  return MakeGarbageCollected<ChooserOnlyTemporalInputTypeView>(element,
-                                                                input_type);
-}
-
 ChooserOnlyTemporalInputTypeView::~ChooserOnlyTemporalInputTypeView() {
   DCHECK(!date_time_chooser_);
 }

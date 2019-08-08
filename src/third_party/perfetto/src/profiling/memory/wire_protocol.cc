@@ -38,7 +38,7 @@ bool ViewAndAdvance(char** ptr, T** out, const char* end) {
 
 // We need this to prevent crashes due to FORTIFY_SOURCE.
 void UnsafeMemcpy(char* dest, const char* src, size_t n)
-    __attribute__((no_sanitize("address"))) {
+    __attribute__((no_sanitize("address", "hwaddress"))) {
   for (size_t i = 0; i < n; ++i) {
     dest[i] = src[i];
   }
@@ -128,7 +128,7 @@ bool ReceiveWireMessage(char* buf, size_t size, WireMessage* out) {
     }
     out->payload_size = static_cast<size_t>(end - buf);
   } else if (*record_type == RecordType::Free) {
-    if (!ViewAndAdvance<FreeMetadata>(&buf, &out->free_header, end)) {
+    if (!ViewAndAdvance<FreeBatch>(&buf, &out->free_header, end)) {
       PERFETTO_DFATAL("Cannot read free header.");
       return false;
     }

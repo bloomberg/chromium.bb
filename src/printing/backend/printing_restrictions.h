@@ -16,7 +16,7 @@ namespace printing {
 // Allowed printing modes as a bitmask.
 // This is used in pref file and should never change.
 enum class ColorModeRestriction {
-  kNone = 0x0,
+  kUnset = 0x0,
   kMonochrome = 0x1,
   kColor = 0x2,
 };
@@ -24,7 +24,7 @@ enum class ColorModeRestriction {
 // Allowed duplex modes as a bitmask.
 // This is used in pref file and should never change.
 enum class DuplexModeRestriction {
-  kNone = 0x0,
+  kUnset = 0x0,
   kSimplex = 0x1,
   kLongEdge = 0x2,
   kShortEdge = 0x4,
@@ -34,9 +34,9 @@ enum class DuplexModeRestriction {
 // Allowed PIN printing modes.
 // This is used in pref file and should never change.
 enum class PinModeRestriction {
-  kNone,
-  kSecure,
-  kUnsecure,
+  kUnset = 0,
+  kPin = 1,
+  kNoPin = 2,
 };
 
 struct PRINTING_EXPORT PrintingRestrictions {

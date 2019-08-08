@@ -84,8 +84,16 @@ LUCI_BUILDER_TRY = 'Try'
 LUCI_BUILDER_PRECQ = 'PreCQ'
 LUCI_BUILDER_PROD = 'Prod'
 LUCI_BUILDER_INCREMENTAL = 'Incremental'
+LUCI_BUILDER_INFRA = 'Infra'
+LUCI_BUILDER_LEGACY_POSTSUBMIT = 'LegacyPostsubmit'
+LUCI_BUILDER_COMMITQUEUE = 'CommitQueue'
 LUCI_BUILDER_CQ = 'CQ'
 LUCI_BUILDER_STAGING = 'Staging'
+LUCI_BUILDER_INFORMATIONAL = 'Informational'
+LUCI_BUILDER_PFQ = 'PFQ'
+LUCI_BUILDER_FULL = 'Full'
+LUCI_BUILDER_FACTORY = 'Factory'
+LUCI_BUILDER_RELEASE = 'Release'
 
 ALL_LUCI_BUILDER = {
     LUCI_BUILDER_TRY,
@@ -93,7 +101,15 @@ ALL_LUCI_BUILDER = {
     LUCI_BUILDER_PROD,
     LUCI_BUILDER_INCREMENTAL,
     LUCI_BUILDER_CQ,
+    LUCI_BUILDER_COMMITQUEUE,
     LUCI_BUILDER_STAGING,
+    LUCI_BUILDER_INFORMATIONAL,
+    LUCI_BUILDER_PFQ,
+    LUCI_BUILDER_FULL,
+    LUCI_BUILDER_FACTORY,
+    LUCI_BUILDER_RELEASE,
+    LUCI_BUILDER_LEGACY_POSTSUBMIT,
+    LUCI_BUILDER_INFRA,
 }
 
 
@@ -183,6 +199,14 @@ def GetHWTestEnv(builder_run_config, model_config=None, suite_config=None):
   Returns:
     A string variable to indiate the hwtest environment.
   """
+  # arc-*ts-qual suites use a different logic because they use a separate pool
+  # on the release builder.
+  if suite_config and suite_config.suite in [
+      constants.HWTEST_CTS_QUAL_SUITE, constants.HWTEST_GTS_QUAL_SUITE]:
+    if builder_run_config.enable_skylab_cts_hw_tests:
+      return constants.ENV_SKYLAB
+    return constants.ENV_AUTOTEST
+
   enable_suite = True if suite_config is None else suite_config.enable_skylab
   enable_model = True if model_config is None else model_config.enable_skylab
   if (builder_run_config.enable_skylab_hw_tests
@@ -517,6 +541,8 @@ class HWTestConfig(object):
     suite_args: Arguments passed to the suite.  This should be a dict
                 representing keyword arguments.  The value is marshalled
                 using repr(), so the dict values should be basic types.
+    quota_account: If specified, the quotascheduler account to use for all
+                   tests in this suite.
 
   Some combinations of member settings are invalid:
     * A suite config may not specify both blocking and async.
@@ -556,7 +582,8 @@ class HWTestConfig(object):
                suite_min_duts=0,
                suite_args=None,
                offload_failures_only=False,
-               enable_skylab=True):
+               enable_skylab=True,
+               quota_account=None):
     """Constructor -- see members above."""
 
     assert not async or not blocking, "%s is async and blocking" % suite
@@ -580,6 +607,7 @@ class HWTestConfig(object):
     # in build config. But for some particular suites, we want to exclude them
     # from Skylab even if the build config is migrated to Skylab.
     self.enable_skylab = enable_skylab
+    self.quota_account = quota_account
 
   def _SetCommonBranchedValues(self):
     """Set the common values for branched builds."""
@@ -811,6 +839,10 @@ def DefaultSettings():
       # to run a predetermined set of benchmarks.
       afdo_generate=False,
 
+      # Generate Chrome orderfile. Will build Chrome with C3 ordering and
+      # generate an orderfile for uploading as a result.
+      orderfile_generate=False,
+
       # Generates AFDO data, builds the minimum amount of artifacts and
       # assumes a non-distributed builder (i.e.: the whole process in a single
       # builder).
@@ -840,8 +872,13 @@ def DefaultSettings():
       # failures.
       vm_test_runs=1,
 
-      # If True, run SkylabHWTestStage instead of HWTestStage.
+      # If True, run SkylabHWTestStage instead of HWTestStage for suites that
+      # use pools other than pool:cts.
       enable_skylab_hw_tests=False,
+
+      # If True, run SkylabHWTestStage instead of HWTestStage for suites that
+      # use pool:cts.
+      enable_skylab_cts_hw_tests=False,
 
       # A list of HWTestConfig objects to run.
       hw_tests=[],
@@ -989,6 +1026,10 @@ def DefaultSettings():
       # Use SDK as opposed to building the chroot from source.
       use_sdk=True,
 
+      # Bootstrap from previous SDK instead of Gentoo stage3 when building chroot
+      # from source (only applicable with use_sdk=False).
+      self_bootstrap = False,
+
       # The description string to print out for config when user runs --list.
       description=None,
 
@@ -1017,10 +1058,6 @@ def DefaultSettings():
       # Run the binhost_test stage. Only makes sense for builders that have no
       # boards.
       binhost_test=False,
-
-      # Run the BranchUtilTestStage. Useful for builders that publish new
-      # manifest versions that we may later want to branch off of.
-      branch_util_test=False,
 
       # If specified, it is passed on to the PushImage script as '--sign-types'
       # commandline argument.  Must be either None or a list of image types.
@@ -1135,8 +1172,8 @@ def DefaultSiteParameters():
   chrome_remote = 'chrome'
   aosp_remote = 'aosp'
 
-  internal_change_prefix = '*'
-  external_change_prefix = ''
+  internal_change_prefix = 'chrome-internal:'
+  external_change_prefix = 'chromium:'
 
   # Gerrit instance site parameters.
   default_site_params.update(
@@ -1805,7 +1842,9 @@ def GetArchBoardDict(ge_build_config):
 
   for b in ge_build_config[CONFIG_TEMPLATE_BOARDS]:
     board_name = b[CONFIG_TEMPLATE_NAME]
-    for config in b[CONFIG_TEMPLATE_CONFIGS]:
+    # Invalid build configs being written out with no configs array, thus the
+    # default. See https://crbug.com/947712.
+    for config in b.get(CONFIG_TEMPLATE_CONFIGS, []):
       arch = config[CONFIG_TEMPLATE_ARCH]
       arch_board_dict.setdefault(arch, set()).add(board_name)
 

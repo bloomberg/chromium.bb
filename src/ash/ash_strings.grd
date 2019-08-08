@@ -133,7 +133,7 @@ This file contains the strings for ash.
         Back
       </message>
       <message name="IDS_ASH_SHELF_OVERFLOW_NAME" desc="The title used for the Ash overflow button in the shelf">
-        Overflow button
+        Overflow
       </message>
       <message name="IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE" desc="Title of the menu item in the context menu for auto-hiding the shelf when the current window is not maximized">
         Autohide shelf
@@ -473,26 +473,29 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_AUTOCLICK" desc="The label and title used in the accessibility menu of the system tray to toggle on/off automatic mouse clicks.">
         Automatic clicks
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUTOCLICK_SETTINGS" desc="The settings button for the automatic clicks menu">
-        Settings
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_LEFT_CLICK" desc="The menu option for the automatic clicks menu that results in the next automatic click being a left-click.">
+      <message name="IDS_ASH_AUTOCLICK_OPTION_LEFT_CLICK" desc="The tooltip text for a menu option for the automatic clicks menu that results in the next automatic click being a left-click.">
         Left click
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_RIGHT_CLICK" desc="The menu option for the automatic clicks menu that results in the next automatic click being a right-click.">
+      <message name="IDS_ASH_AUTOCLICK_OPTION_RIGHT_CLICK" desc="The tooltip text for a menu option for the automatic clicks menu that results in the next automatic click being a right-click.">
         Right click
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_DOUBLE_CLICK" desc="The menu option for the automatic clicks menu that results in the next automatic click being a double-click.">
+      <message name="IDS_ASH_AUTOCLICK_OPTION_DOUBLE_CLICK" desc="The tooltip text for a menu option for the automatic clicks menu that results in the next automatic click being a double-click.">
         Double click
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_DRAG_AND_DROP" desc="The menu option for the automatic clicks menu that results in the next automatic click being a drag-and-drop.">
+      <message name="IDS_ASH_AUTOCLICK_OPTION_DRAG_AND_DROP" desc="The tooltip text for a menu option for the automatic clicks menu that results in the next automatic click being a drag-and-drop.">
         Drag and drop
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_NO_ACTION" desc="The menu option for the automatic clicks menu that results in pausing the automatic clicks feature without disabling it.">
+      <message name="IDS_ASH_AUTOCLICK_OPTION_NO_ACTION" desc="The tooltip text for a menu option for the automatic clicks menu that results in pausing the automatic clicks feature without disabling it.">
         No action (pause)
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_OPTION_CHANGE_POSITION" desc="The tooltip text for a menu option for automatic clicks menu that results in the menu changing position on the screen. The menu will toggle through several pre-set positions.">
+        Toggle menu position
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
         On-screen keyboard
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SWITCH_ACCESS" desc="The label used in the accessibility menu of the system tray to toggle switch access, a feature that allows the entire device to be controlled with as few as 1 switch or button.">
+        Switch Access
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_ADDITIONAL_SETTINGS" desc="The sub-header label for additional setting in accessibility menu of system tray.">
         Additional settings
@@ -814,6 +817,33 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_SUBLABEL" desc="The sub label text used when network is not connected.">
         No networks
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_ONE_X" desc="The sub label text used when a cellular connection is using the 1xRTT connectivity type.">
+        1X
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_GSM" desc="The sub label text used when a cellular connection is using the GSM connectivity type.">
+        GSM
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_GPRS" desc="The sub label text used when a cellular connection is using the GPRS connectivity type.">
+        GPRS
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_EDGE" desc="The sub label text used when a cellular connection is using the EDGE connectivity type.">
+        EDGE
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_THREE_G" desc="The sub label text used when a cellular connection is using the 3G connectivity type.">
+        3G
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_HSPA" desc="The sub label text used when a cellular connection is using the HSPA connectivity type.">
+        HSPA
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_HSPA_PLUS" desc="The sub label text used when a cellular connection is using the HSPA+ connectivity type.">
+        H+
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_LTE" desc="The sub label text used when a cellular connection is using the LTE connectivity type.">
+        LTE
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_LTE_PLUS" desc="The sub label text used when a cellular connection is using the LTE Advanced connectivity type.">
+        LTE+
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK_SUBLABEL" desc="The sub label text used when WiFi signal strength is weak (among weak, medium, and strong.)">
         Weak
       </message>
@@ -906,7 +936,7 @@ This file contains the strings for ash.
 
       <!-- Status tray screen share strings. -->
       <message name="IDS_ASH_STATUS_TRAY_SCREEN_SHARE_TITLE" desc="The title for screen sharing notification">
-        You are sharing your screen
+        You're sharing your screen
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SCREEN_SHARE_STOP" desc="label used for screen sharing stop button">
         Stop
@@ -1735,7 +1765,7 @@ This file contains the strings for ash.
         Power off
       </message>
       <message name="IDS_ASH_POWER_BUTTON_MENU_LOCK_SCREEN_BUTTON" desc="Text shown on lock screen button in power button menu.">
-        Lock screen
+        Lock
       </message>
       <message name="IDS_ASH_POWER_BUTTON_MENU_FEEDBACK_BUTTON" desc="Text shown on feedback button in power button menu.">
         Feedback
@@ -1849,6 +1879,12 @@ This file contains the strings for ash.
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_QUERY" desc="Query to issue to stop Assistant timer.">
         Stop timer
       </message>
+      <message name="IDS_ASSISTANT_CREATE_REMINDER_QUERY" desc="Query to issue to create reminder.">
+        Create reminder
+      </message>
+      <message name="IDS_ASSISTANT_EDIT_REMINDER_QUERY" desc="Query to issue to edit reminder.">
+        Edit reminder
+      </message>
 
       <message name="IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_PERFORM_ACTION" desc="The short message to encourage user to unlock the device so that Chrome OS can perform the notification action selected by user after unlocking.">
         Unlock device to perform the notification action
@@ -1858,6 +1894,26 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_CHANGE_SETTING" desc="The short message to encourage user to unlock the device to change the lock screen notification setting, so that Chrome OS can show the setting window after unlocking.">
         To see notifications on your lock screen, unlock to change the setting
+      </message>
+
+      <!-- Media Notification -->
+      <message name="IDS_ASH_MEDIA_NOTIFICATION_ACTION_PREVIOUS_TRACK" desc="The button to trigger media playback to go to the previous track.">
+        Previous Track
+      </message>
+      <message name="IDS_ASH_MEDIA_NOTIFICATION_ACTION_SEEK_BACKWARD" desc="The button to trigger media playback to seek backwards a few seconds.">
+        Seek Backward
+      </message>
+      <message name="IDS_ASH_MEDIA_NOTIFICATION_ACTION_PLAY" desc="The button to trigger media playback to start.">
+        Play
+      </message>
+      <message name="IDS_ASH_MEDIA_NOTIFICATION_ACTION_PAUSE" desc="The button to trigger media playback to pause.">
+        Pause
+      </message>
+      <message name="IDS_ASH_MEDIA_NOTIFICATION_ACTION_SEEK_FORWARD" desc="The button to trigger media playback to seek forwards a few seconds.">
+        Seek Forward
+      </message>
+      <message name="IDS_ASH_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK" desc="The button to trigger media playback to go to the next track.">
+        Next Track
       </message>
     </messages>
   </release>

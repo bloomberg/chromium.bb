@@ -40,6 +40,7 @@ class MiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
       const std::string primary_account,
       bool first_execution,
       bool primary_has_error) const override;
+  bool IsUnknownInvalidAccountInCookieAllowed() const override;
 
   DISALLOW_COPY_AND_ASSIGN(MiceAccountReconcilorDelegate);
 };

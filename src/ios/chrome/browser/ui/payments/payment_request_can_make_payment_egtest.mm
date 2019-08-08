@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
+
 #include "base/ios/ios_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -53,8 +55,9 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 
 // Tests canMakePayment() when visa is required and user has a visa instrument.
 - (void)testCanMakePaymentIsSupported {
-  [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
-
+  NSError* creditCardError =
+      [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
 
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
@@ -65,8 +68,9 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 // Tests canMakePayment() when visa is required, user has a visa instrument, and
 // user is in incognito mode.
 - (void)testCanMakePaymentIsSupportedInIncognitoMode {
-  [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
-
+  NSError* creditCardError =
+      [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
   // Open an Incognito tab.
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -116,7 +120,9 @@ const char kCanMakePaymentMethodIdentifierPage[] =
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   prefs->SetBoolean(payments::kCanMakePaymentEnabled, false);
 
-  [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
+  NSError* creditCardError =
+      [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
 
@@ -133,7 +139,9 @@ const char kCanMakePaymentMethodIdentifierPage[] =
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   prefs->SetBoolean(payments::kCanMakePaymentEnabled, false);
 
-  [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
+  NSError* creditCardError =
+      [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
 
   // Open an Incognito tab.
   [ChromeEarlGreyUI openToolsMenu];
@@ -198,7 +206,9 @@ const char kCanMakePaymentMethodIdentifierPage[] =
       waitForWebViewContainingTexts:
           {"NotAllowedError", "Not allowed to check whether can make payment"}];
 
-  [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
+  NSError* creditCardError =
+      [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
 
   // Query visa payment method.
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
@@ -263,7 +273,9 @@ const char kCanMakePaymentMethodIdentifierPage[] =
       waitForWebViewContainingTexts:
           {"NotAllowedError", "Not allowed to check whether can make payment"}];
 
-  [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
+  NSError* creditCardError =
+      [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
 
   // Query basic-card payment method with "supportedNetworks": ["visa"] in the
   // payment method specific data.

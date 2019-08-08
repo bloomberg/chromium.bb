@@ -105,9 +105,7 @@ void ShellContentUtilityClient::UtilityThreadStarted() {
   registry->AddInterface(base::BindRepeating(&TestUtilityServiceImpl::Create),
                          base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface<mojom::PowerMonitorTest>(
-      base::BindRepeating(
-          &PowerMonitorTestImpl::MakeStrongBinding,
-          base::Passed(std::make_unique<PowerMonitorTestImpl>())),
+      base::BindRepeating(&PowerMonitorTestImpl::MakeStrongBinding),
       base::ThreadTaskRunnerHandle::Get());
   content::ChildThread::Get()
       ->GetServiceManagerConnection()

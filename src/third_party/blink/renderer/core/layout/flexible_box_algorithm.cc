@@ -39,7 +39,7 @@ namespace blink {
 FlexItem::FlexItem(LayoutBox* box,
                    LayoutUnit flex_base_content_size,
                    MinMaxSize min_max_sizes,
-                   LayoutUnit main_axis_border_and_padding,
+                   LayoutUnit main_axis_border_scrollbar_padding,
                    LayoutUnit main_axis_margin)
     : algorithm(nullptr),
       line_number(0),
@@ -48,7 +48,7 @@ FlexItem::FlexItem(LayoutBox* box,
       min_max_sizes(min_max_sizes),
       hypothetical_main_content_size(
           min_max_sizes.ClampSizeToMinAndMax(flex_base_content_size)),
-      main_axis_border_and_padding(main_axis_border_and_padding),
+      main_axis_border_scrollbar_padding(main_axis_border_scrollbar_padding),
       main_axis_margin(main_axis_margin),
       frozen(false),
       ng_input_node(/* LayoutBox* */ nullptr) {
@@ -489,7 +489,7 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
   // when percentages are involved, so for now don't apply min-height: auto
   // in such cases.
   if (IsColumnFlow() && child.IsFlexibleBox() &&
-      ToLayoutBlock(child).HasPercentHeightDescendants())
+      To<LayoutBlock>(child).HasPercentHeightDescendants())
     return false;
 
   return !child.ShouldApplySizeContainment() &&
@@ -515,6 +515,37 @@ LayoutUnit FlexLayoutAlgorithm::IntrinsicContentBlockSize() const {
   // Subtract the first line's offset to remove border/padding
   return last_line.cross_axis_offset + last_line.cross_axis_extent -
          flex_lines_.front().cross_axis_offset;
+}
+
+void FlexLayoutAlgorithm::AlignFlexLines(LayoutUnit cross_axis_content_extent) {
+  const StyleContentAlignmentData align_content = ResolvedAlignContent(*style_);
+  if (align_content.GetPosition() == ContentPosition::kFlexStart)
+    return;
+  if (flex_lines_.IsEmpty() || !IsMultiline())
+    return;
+  LayoutUnit available_cross_axis_space = cross_axis_content_extent;
+  for (const FlexLine& line : flex_lines_)
+    available_cross_axis_space -= line.cross_axis_extent;
+
+  LayoutUnit line_offset = InitialContentPositionOffset(
+      available_cross_axis_space, align_content, flex_lines_.size());
+  for (FlexLine& line_context : flex_lines_) {
+    line_context.cross_axis_offset += line_offset;
+
+    for (FlexItem& flex_item : line_context.line_items) {
+      flex_item.desired_location.SetY(flex_item.desired_location.Y() +
+                                      line_offset);
+    }
+    if (align_content.Distribution() == ContentDistributionType::kStretch &&
+        available_cross_axis_space > 0) {
+      line_context.cross_axis_extent +=
+          available_cross_axis_space /
+          static_cast<unsigned>(flex_lines_.size());
+    }
+
+    line_offset += ContentDistributionSpaceBetweenChildren(
+        available_cross_axis_space, align_content, flex_lines_.size());
+  }
 }
 
 TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode() const {

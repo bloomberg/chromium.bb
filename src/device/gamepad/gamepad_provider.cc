@@ -53,13 +53,15 @@ GamepadProvider::GamepadProvider(
 
 GamepadProvider::GamepadProvider(
     GamepadConnectionChangeClient* connection_change_client,
-    std::unique_ptr<GamepadDataFetcher> fetcher)
+    std::unique_ptr<GamepadDataFetcher> fetcher,
+    std::unique_ptr<base::Thread> polling_thread)
     : is_paused_(true),
       have_scheduled_do_poll_(false),
       devices_changed_(true),
       ever_had_user_gesture_(false),
       sanitize_(true),
       gamepad_shared_buffer_(std::make_unique<GamepadSharedBuffer>()),
+      polling_thread_(std::move(polling_thread)),
       connection_change_client_(connection_change_client) {
   Initialize(std::move(fetcher));
 }
@@ -163,7 +165,8 @@ void GamepadProvider::Initialize(std::unique_ptr<GamepadDataFetcher> fetcher) {
   if (monitor)
     monitor->AddDevicesChangedObserver(this);
 
-  polling_thread_.reset(new base::Thread("Gamepad polling thread"));
+  if (!polling_thread_)
+    polling_thread_.reset(new base::Thread("Gamepad polling thread"));
 #if defined(OS_LINUX)
   // On Linux, the data fetcher needs to watch file descriptors, so the message
   // loop needs to be a libevent loop.

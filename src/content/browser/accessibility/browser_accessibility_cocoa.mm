@@ -1380,14 +1380,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
                                       ax::mojom::StringAttribute::kName);
   }
 
-  ax::mojom::DescriptionFrom descriptionFrom =
-      static_cast<ax::mojom::DescriptionFrom>(
-          owner_->GetIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom));
-  if (descriptionFrom == ax::mojom::DescriptionFrom::kPlaceholder) {
-    return NSStringForStringAttribute(owner_,
-                                      ax::mojom::StringAttribute::kDescription);
-  }
-
   return NSStringForStringAttribute(owner_,
                                     ax::mojom::StringAttribute::kPlaceholder);
 }
@@ -1525,7 +1517,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSPoint)origin {
   if (![self instanceActive])
     return NSMakePoint(0, 0);
-  gfx::Rect bounds = owner_->GetPageBoundsRect();
+  gfx::Rect bounds = owner_->GetClippedRootFrameBoundsRect();
   return NSMakePoint(bounds.x(), bounds.y());
 }
 
@@ -2071,7 +2063,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSValue*)size {
   if (![self instanceActive])
     return nil;
-  gfx::Rect bounds = owner_->GetPageBoundsRect();
+  gfx::Rect bounds = owner_->GetClippedRootFrameBoundsRect();
   return [NSValue valueWithSize:NSMakeSize(bounds.width(), bounds.height())];
 }
 
@@ -2260,12 +2252,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
         break;
     }
     return [NSNumber numberWithInt:value];
-  } else if ([role isEqualToString:NSAccessibilityProgressIndicatorRole] ||
-             [role isEqualToString:NSAccessibilitySliderRole] ||
-             [role isEqualToString:NSAccessibilityIncrementorRole] ||
-             [role isEqualToString:NSAccessibilityScrollBarRole] ||
-             ([role isEqualToString:NSAccessibilitySplitterRole] &&
-              owner_->HasState(ax::mojom::State::kFocusable))) {
+  } else if (IsRangeValueSupported(owner_->GetData())) {
     float floatValue;
     if (owner_->GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
                                   &floatValue)) {
@@ -2688,7 +2675,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       return nil;
     NSRange range = [(NSValue*)parameter rangeValue];
     gfx::Rect rect =
-        owner_->GetScreenBoundsForRange(range.location, range.length);
+        owner_->GetUnclippedScreenRangeBoundsRect(range.location, range.length);
     NSRect nsrect = [self rectInScreen:rect];
     return [NSValue valueWithRect:nsrect];
   }
@@ -2747,7 +2734,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     DCHECK_GE(startOffset, 0);
     DCHECK_GE(endOffset, 0);
 
-    gfx::Rect rect = BrowserAccessibilityManager::GetPageBoundsForRange(
+    gfx::Rect rect = BrowserAccessibilityManager::GetRootFrameRangeBoundsRect(
         *startObject, startOffset, *endObject, endOffset);
     NSRect nsrect = [self rectInScreen:rect];
     return [NSValue valueWithRect:nsrect];
@@ -3026,12 +3013,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     ]];
   } else if ([role isEqualToString:NSAccessibilityTabGroupRole]) {
     [ret addObject:NSAccessibilityTabsAttribute];
-  } else if ([role isEqualToString:NSAccessibilityProgressIndicatorRole] ||
-             [role isEqualToString:NSAccessibilitySliderRole] ||
-             [role isEqualToString:NSAccessibilityIncrementorRole] ||
-             [role isEqualToString:NSAccessibilityScrollBarRole] ||
-             ([role isEqualToString:NSAccessibilitySplitterRole] &&
-              owner_->HasState(ax::mojom::State::kFocusable))) {
+  } else if (IsRangeValueSupported(owner_->GetData())) {
     [ret addObjectsFromArray:@[
       NSAccessibilityMaxValueAttribute, NSAccessibilityMinValueAttribute,
       NSAccessibilityValueDescriptionAttribute
@@ -3165,7 +3147,12 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   // TODO(accessibility) What nodes should language be exposed on given new
   // auto detection features?
-  if (owner_->HasStringAttribute(ax::mojom::StringAttribute::kLanguage)) {
+  //
+  // Once lang attribute inheritance becomes stable most nodes will have a
+  // language, so it may make more sense to always expose this attribute.
+  //
+  // For now we expose the language attribute if we have any language set.
+  if (owner_->node() && !owner_->node()->GetLanguage().empty()) {
     [ret addObjectsFromArray:@[ NSAccessibilityLanguageAttribute ]];
   }
 

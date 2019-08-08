@@ -392,10 +392,114 @@ void DWriteFontProxyImpl::MapCharacters(
   DCHECK_GT(result->mapped_length, 0u);
 }
 
+void DWriteFontProxyImpl::GetUniqueNameLookupTableIfAvailable(
+    GetUniqueNameLookupTableIfAvailableCallback callback) {
+  DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
+  base::ReadOnlySharedMemoryRegion invalid_region;
+  callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      std::move(callback), false, std::move(invalid_region));
+
+  if (!DWriteFontLookupTableBuilder::GetInstance()
+           ->FontUniqueNameTableReady()) {
+    return;
+  }
+
+  std::move(callback).Run(
+      true,
+      DWriteFontLookupTableBuilder::GetInstance()->DuplicateMemoryRegion());
+}
+
+void DWriteFontProxyImpl::MatchUniqueFont(
+    const base::string16& unique_font_name,
+    MatchUniqueFontCallback callback) {
+  TRACE_EVENT0("dwrite,fonts", "DWriteFontProxyImpl::MatchUniqueFont");
+
+  DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
+  callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
+                                                         base::FilePath(), 0);
+  InitializeDirectWrite();
+
+  // We must not get here if this version of DWrite can't handle performing the
+  // search.
+  DCHECK(factory3_.Get());
+  mswr::ComPtr<IDWriteFontSet> system_font_set;
+  HRESULT hr = factory3_->GetSystemFontSet(&system_font_set);
+  if (FAILED(hr))
+    return;
+
+  DCHECK(system_font_set->GetFontCount() > 0);
+
+  mswr::ComPtr<IDWriteFontSet> filtered_set;
+
+  auto filter_set = [&system_font_set, &filtered_set,
+                     &unique_font_name](DWRITE_FONT_PROPERTY_ID property_id) {
+    TRACE_EVENT0("dwrite,fonts",
+                 "DWriteFontProxyImpl::MatchUniqueFont::filter_set");
+    std::wstring unique_font_name_wide =
+        base::UTF16ToWide(unique_font_name).c_str();
+    DWRITE_FONT_PROPERTY search_property = {property_id,
+                                            unique_font_name_wide.c_str(), L""};
+    // GetMatchingFonts() matches all languages according to:
+    // https://docs.microsoft.com/en-us/windows/desktop/api/dwrite_3/ns-dwrite_3-dwrite_font_property
+    HRESULT hr =
+        system_font_set->GetMatchingFonts(&search_property, 1, &filtered_set);
+    return SUCCEEDED(hr);
+  };
+
+  // Search PostScript name first, otherwise try searching for full font name.
+  // Return if filtering failed.
+  if (!filter_set(DWRITE_FONT_PROPERTY_ID_POSTSCRIPT_NAME))
+    return;
+
+  if (!filtered_set->GetFontCount() &&
+      !filter_set(DWRITE_FONT_PROPERTY_ID_FULL_NAME)) {
+    return;
+  }
+
+  if (!filtered_set->GetFontCount())
+    return;
+
+  mswr::ComPtr<IDWriteFontFaceReference> first_font;
+  hr = filtered_set->GetFontFaceReference(0, &first_font);
+  if (FAILED(hr))
+    return;
+
+  mswr::ComPtr<IDWriteFontFace3> first_font_face_3;
+  hr = first_font->CreateFontFace(&first_font_face_3);
+  if (FAILED(hr))
+    return;
+
+  mswr::ComPtr<IDWriteFontFace> first_font_face;
+  hr = first_font_face_3.As<IDWriteFontFace>(&first_font_face);
+  if (FAILED(hr))
+    return;
+
+  base::string16 font_file_pathname;
+  uint32_t ttc_index;
+  bool result = FontFilePathAndTtcIndex(first_font_face.Get(),
+                                        font_file_pathname, ttc_index);
+  if (!result)
+    return;
+
+  base::FilePath path(base::UTF16ToWide(font_file_pathname));
+  std::move(callback).Run(path, ttc_index);
+}
+
+void DWriteFontProxyImpl::GetUniqueFontLookupMode(
+    GetUniqueFontLookupModeCallback callback) {
+  InitializeDirectWrite();
+  // If factory3_ is available, that means we can use IDWriteFontSet to filter
+  // for PostScript name and full font name directly and do not need to build
+  // the lookup table.
+  blink::mojom::UniqueFontLookupMode lookup_mode =
+      factory3_.Get() ? blink::mojom::UniqueFontLookupMode::kSingleLookups
+                      : blink::mojom::UniqueFontLookupMode::kRetrieveTable;
+  std::move(callback).Run(lookup_mode);
+}
+
 void DWriteFontProxyImpl::GetUniqueNameLookupTable(
     GetUniqueNameLookupTableCallback callback) {
   DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
-  InitializeDirectWrite();
   callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), base::ReadOnlySharedMemoryRegion());
 
@@ -414,6 +518,8 @@ void DWriteFontProxyImpl::InitializeDirectWrite() {
     return;
   direct_write_initialized_ = true;
 
+  TRACE_EVENT0("dwrite,fonts", "DWriteFontProxyImpl::InitializeDirectWrite");
+
   mswr::ComPtr<IDWriteFactory> factory;
   gfx::win::CreateDWriteFactory(&factory);
   if (factory == nullptr) {
@@ -425,6 +531,11 @@ void DWriteFontProxyImpl::InitializeDirectWrite() {
   // QueryInterface for IDWriteFactory2. It's ok for this to fail if we are
   // running an older version of DirectWrite (earlier than Win8.1).
   factory.As<IDWriteFactory2>(&factory2_);
+
+  // QueryInterface for IDwriteFactory3, needed for MatchUniqueFont on Windows
+  // 10. May fail on older versions, in which case, unique font matching must be
+  // done through indexing system fonts using DWriteFontLookupTableBuilder.
+  factory.As<IDWriteFactory3>(&factory3_);
 
   HRESULT hr = factory->GetSystemFontCollection(&collection_);
   DCHECK(SUCCEEDED(hr));

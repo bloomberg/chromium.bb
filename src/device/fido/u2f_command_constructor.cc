@@ -41,6 +41,12 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fRegisterCommand(
   if (!IsConvertibleToU2fRegisterCommand(request))
     return base::nullopt;
 
+  if (request.pin_auth() && request.pin_auth()->size() == 0) {
+    // An empty pin_auth in CTAP2 indicates that the device should just wait
+    // for a touch.
+    return ConstructBogusU2fRegistrationCommand();
+  }
+
   const bool is_invidual_attestation =
       request.attestation_preference() ==
       AttestationConveyancePreference::ENTERPRISE;

@@ -46,7 +46,6 @@ SignedExchangeRequestHandler::SignedExchangeRequestHandler(
       metric_recorder_(std::move(metric_recorder)),
       accept_langs_(std::move(accept_langs)),
       weak_factory_(this) {
-  DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
 }
 
 SignedExchangeRequestHandler::~SignedExchangeRequestHandler() = default;

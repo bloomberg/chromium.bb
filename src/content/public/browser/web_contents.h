@@ -361,8 +361,8 @@ class WebContents : public PageNavigator,
   virtual RenderWidgetHostView* GetFullscreenRenderWidgetHostView() = 0;
 
   // Returns the theme color for the underlying content as set by the
-  // theme-color meta tag.
-  virtual SkColor GetThemeColor() = 0;
+  // theme-color meta tag if any.
+  virtual base::Optional<SkColor> GetThemeColor() = 0;
 
   // Returns the committed WebUI if one exists, otherwise the pending one.
   virtual WebUI* GetWebUI() = 0;
@@ -473,6 +473,10 @@ class WebContents : public PageNavigator,
   // Indicates whether any frame in the WebContents is connected to a Bluetooth
   // Device.
   virtual bool IsConnectedToBluetoothDevice() = 0;
+
+  // Indicates whether any frame in the WebContents is connected to a serial
+  // port.
+  virtual bool IsConnectedToSerialPort() const = 0;
 
   // Indicates whether a video is in Picture-in-Picture for |this|.
   virtual bool HasPictureInPictureVideo() = 0;

@@ -27,8 +27,7 @@ class MockTtsControllerDelegate : public TtsControllerDelegateImpl {
   PrefService* pref_service_ = nullptr;
 
  private:
-  const PrefService* GetPrefService(
-      const content::TtsUtterance* utterance) override {
+  const PrefService* GetPrefService(content::TtsUtterance* utterance) override {
     return pref_service_;
   }
 };

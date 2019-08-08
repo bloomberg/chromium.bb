@@ -12,13 +12,13 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/one_shot_event.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/app_list/internal_app/internal_app_model_builder.h"
 #include "chrome/browser/ui/app_list/page_break_app_item.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
-#include "chrome/browser/ui/app_list/plugin_vm/plugin_vm_app_model_builder.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -51,7 +50,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/one_shot_event.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using syncer::SyncChange;
@@ -277,6 +275,20 @@ AppListSyncableService::AppListSyncableService(
       is_app_service_enabled_(
           base::FeatureList::IsEnabled(features::kAppServiceAsh)),
       weak_ptr_factory_(this) {
+  // This log message helps us gather better manual bug reports, as we
+  // gradually roll out enabling the AppList + AppService integration across
+  // Chrome OS' various release channels.
+  //
+  // Asking users to inspect chrome://flags/#app-service-ash isn't enough, as
+  // that UI can display just "Default" without detailing whether the default
+  // is to enable or disable. Instead, we can ask them to inspect
+  // file:///var/log/chrome/chrome for this log message.
+  //
+  // TODO(crbug.com/826982): remove this log message once the roll out is
+  // complete, hopefully by mid-2019.
+  VLOG(1) << "AppList + AppService integration: "
+          << (is_app_service_enabled_ ? "enabled" : "disabled");
+
   if (g_model_updater_factory_callback_for_test_)
     model_updater_ = g_model_updater_factory_callback_for_test_->Run();
   else
@@ -294,8 +306,8 @@ AppListSyncableService::AppListSyncableService(
     BuildModel();
   } else {
     extension_system_->ready().Post(
-        FROM_HERE, base::Bind(&AppListSyncableService::BuildModel,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&AppListSyncableService::BuildModel,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -358,6 +370,10 @@ bool AppListSyncableService::IsInitialized() const {
   return ext_apps_builder_.get();
 }
 
+bool AppListSyncableService::IsSyncing() const {
+  return sync_processor_.get();
+}
+
 void AppListSyncableService::BuildModel() {
   InitFromLocalStorage();
 
@@ -376,10 +392,6 @@ void AppListSyncableService::BuildModel() {
       crostini_apps_builder_ =
           std::make_unique<CrostiniAppModelBuilder>(controller);
     }
-    if (plugin_vm::IsPluginVmAllowedForProfile(profile_)) {
-      plugin_vm_apps_builder_ =
-          std::make_unique<PluginVmAppModelBuilder>(controller);
-    }
     internal_apps_builder_ =
         std::make_unique<InternalAppModelBuilder>(controller);
   }
@@ -395,12 +407,13 @@ void AppListSyncableService::BuildModel() {
       arc_apps_builder_->Initialize(this, profile_, model_updater_.get());
     if (crostini_apps_builder_.get())
       crostini_apps_builder_->Initialize(this, profile_, model_updater_.get());
-    if (plugin_vm_apps_builder_.get())
-      plugin_vm_apps_builder_->Initialize(this, profile_, model_updater_.get());
     internal_apps_builder_->Initialize(this, profile_, model_updater_.get());
   }
 
   HandleUpdateFinished();
+
+  if (wait_until_ready_to_sync_cb_)
+    std::move(wait_until_ready_to_sync_cb_).Run();
 }
 
 void AppListSyncableService::AddObserverAndStart(Observer* observer) {
@@ -734,7 +747,7 @@ void AppListSyncableService::RemoveSyncItem(const std::string& id) {
 }
 
 void AppListSyncableService::ResolveFolderPositions() {
-  VLOG(1) << "ResolveFolderPositions.";
+  VLOG(2) << "ResolveFolderPositions.";
   for (const auto& sync_pair : sync_items_) {
     SyncItem* sync_item = sync_pair.second.get();
     if (sync_item->item_type != sync_pb::AppListSpecifics::TYPE_FOLDER)
@@ -758,7 +771,7 @@ void AppListSyncableService::ResolveFolderPositions() {
                 return;
 
               if (oem_folder) {
-                VLOG(1) << "Creating new OEM folder sync item: "
+                VLOG(2) << "Creating new OEM folder sync item: "
                         << oem_folder->position().ToDebugString();
                 self->CreateSyncItemFromAppItem(oem_folder);
               }
@@ -785,6 +798,17 @@ void AppListSyncableService::PruneEmptySyncFolders() {
 
 void AppListSyncableService::InstallDefaultPageBreaksForTest() {
   InstallDefaultPageBreaks();
+}
+
+void AppListSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
+  DCHECK(!wait_until_ready_to_sync_cb_);
+
+  if (IsInitialized()) {
+    std::move(done).Run();
+  } else {
+    // Wait until initialization is completed in BuildModel();
+    wait_until_ready_to_sync_cb_ = std::move(done);
+  }
 }
 
 syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
@@ -818,7 +842,7 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
 
   syncer::SyncMergeResult result = syncer::SyncMergeResult(type);
   result.set_num_items_before_association(sync_items_.size());
-  VLOG(1) << this << ": MergeDataAndStartSyncing: " << initial_sync_data.size();
+  VLOG(2) << this << ": MergeDataAndStartSyncing: " << initial_sync_data.size();
 
   // Copy all sync items to |unsynced_items|.
   std::set<std::string> unsynced_items;
@@ -883,15 +907,15 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
         model_updater_->FindItem(sync_item->item_id);
     if (app_item) {
       if (UpdateSyncItemFromAppItem(app_item, sync_item)) {
-        VLOG(1) << "Fixing sync item from existing app: " << sync_item;
+        VLOG(2) << "Fixing sync item from existing app: " << sync_item;
       } else {
         sync_item->item_ordinal = syncer::StringOrdinal::CreateInitialOrdinal();
-        VLOG(1) << "Failed to fix sync item from existing app. "
+        VLOG(2) << "Failed to fix sync item from existing app. "
                 << "Generating new position ordinal: " << sync_item;
       }
     } else {
       sync_item->item_ordinal = syncer::StringOrdinal::CreateInitialOrdinal();
-      VLOG(1) << "Fixing sync item by generating new position ordinal: "
+      VLOG(2) << "Fixing sync item by generating new position ordinal: "
               << sync_item;
     }
     change_list.push_back(SyncChange(FROM_HERE, SyncChange::ACTION_UPDATE,
@@ -916,7 +940,7 @@ syncer::SyncDataList AppListSyncableService::GetAllSyncData(
     syncer::ModelType type) const {
   DCHECK_EQ(syncer::APP_LIST, type);
 
-  VLOG(1) << this << ": GetAllSyncData: " << sync_items_.size();
+  VLOG(2) << this << ": GetAllSyncData: " << sync_items_.size();
   syncer::SyncDataList list;
   for (auto iter = sync_items_.begin(); iter != sync_items_.end(); ++iter) {
     VLOG(2) << this << " -> SYNC: " << iter->second->ToString();
@@ -936,7 +960,7 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
 
   HandleUpdateStarted();
 
-  VLOG(1) << this << ": ProcessSyncChanges: " << change_list.size();
+  VLOG(2) << this << ": ProcessSyncChanges: " << change_list.size();
   for (syncer::SyncChangeList::const_iterator iter = change_list.begin();
        iter != change_list.end(); ++iter) {
     const SyncChange& change = *iter;
@@ -967,7 +991,6 @@ void AppListSyncableService::Shutdown() {
   crostini_apps_builder_.reset();
   arc_apps_builder_.reset();
   ext_apps_builder_.reset();
-  plugin_vm_apps_builder_.reset();
 }
 
 // AppListSyncableService private
@@ -1022,7 +1045,7 @@ void AppListSyncableService::ProcessNewSyncItem(SyncItem* sync_item) {
       return;
     }
     case sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP: {
-      VLOG(1) << this << ": Uninstall: " << sync_item->ToString();
+      VLOG(2) << this << ": Uninstall: " << sync_item->ToString();
       UninstallExtension(extension_system_->extension_service(),
                          sync_item->item_id);
       return;
@@ -1074,7 +1097,7 @@ bool AppListSyncableService::SyncStarted() {
   if (sync_processor_.get())
     return true;
   if (flare_.is_null()) {
-    VLOG(1) << this << ": SyncStarted: Flare.";
+    VLOG(2) << this << ": SyncStarted: Flare.";
     flare_ = sync_start_util::GetFlareForSyncableService(profile_->GetPath());
     flare_.Run(syncer::APP_LIST);
   }
@@ -1160,9 +1183,9 @@ void AppListSyncableService::DeleteSyncItemSpecifics(
 }
 
 syncer::StringOrdinal AppListSyncableService::GetPreferredOemFolderPos() {
-  VLOG(1) << "GetPreferredOemFolderPos: " << first_app_list_sync_;
+  VLOG(2) << "GetPreferredOemFolderPos: " << first_app_list_sync_;
   if (!first_app_list_sync_) {
-    VLOG(1) << "Sync items exist, placing OEM folder at end.";
+    VLOG(2) << "Sync items exist, placing OEM folder at end.";
     syncer::StringOrdinal last;
     for (const auto& sync_pair : sync_items_) {
       SyncItem* sync_item = sync_pair.second.get();

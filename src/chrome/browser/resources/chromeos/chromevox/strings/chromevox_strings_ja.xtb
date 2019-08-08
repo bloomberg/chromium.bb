@@ -98,6 +98,7 @@
 <translation id="1616111909442424068">ウィート</translation>
 <translation id="1618597272655350600">現在位置の詳細な説明を読み上げます</translation>
 <translation id="1627222324347828322">ゴースト ホワイト</translation>
+<translation id="1630688379087270943">斜体を表す:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{大なり}other{# 個の大なり記号}}</translation>
 <translation id="1653266918374749391">前のレベル 3 見出し</translation>
 <translation id="1657616855184033958">イベント ストリーム フィルタを表示する</translation>
@@ -212,6 +213,7 @@
 <translation id="2626530649491650971">クリック可能</translation>
 <translation id="2628764385451019380">前のコンボ ボックスはありません。</translation>
 <translation id="2637227747952042642">数式</translation>
+<translation id="2638785836053527382"><ph name="FILE_NAME" /> のダウンロードを再開しました</translation>
 <translation id="2639750663247012216">ChromeVox 修飾キー</translation>
 <translation id="2644542693584024604">スペルミス</translation>
 <translation id="2661530546602071611">注記</translation>
@@ -251,6 +253,7 @@
 <translation id="287383510823843610">ダークオレンジ</translation>
 <translation id="2879867157561757640">3 本の指で下にスワイプします</translation>
 <translation id="288178314850623291">特定タイプの要素に移動するには、ジャンプ コマンドを使用します。見出し間を移動するには、順方向の場合は検索+H キー、逆方向の場合は検索+Shift+H キーを押します。</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{分}other{分}}</translation>
 <translation id="2894654529758326923">情報</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{左中かっこ}other{# 個の左中かっこ}}</translation>
 <translation id="2911433807131383493">ChromeVox チュートリアルを開く</translation>
@@ -285,6 +288,7 @@
 <translation id="3084806535845658316">入力読み上げなし</translation>
 <translation id="3086746722712840547">注記</translation>
 <translation id="308895241372589742">次の数式はありません。</translation>
+<translation id="3090227230165225418">ダウンロード通知を読み上げる</translation>
 <translation id="3090532668523289635">グループ</translation>
 <translation id="3093176084511590672">次のランドマーク</translation>
 <translation id="3096671415663099226">コンボボックス</translation>
@@ -319,6 +323,7 @@
 <translation id="3286390186030710347">スライダ</translation>
 <translation id="3299925995433437805">次にアクセスしたリンクはありません。</translation>
 <translation id="3300348286427369683">リッチテキストのサポート。リッチテキスト フィールド（ジャンプ コマンド、点字ディスプレイでのカーソル移動、選択など）が ChromeVox でサポートされるようになりました。</translation>
+<translation id="3304756947457041303">リッチテキストの通知をカスタマイズする</translation>
 <translation id="3307886118343381874">表の末尾に移動</translation>
 <translation id="3311969765485641742">アラートを確認するには Alt+Shift+A を押してください</translation>
 <translation id="3312997241656799641">次にアクセスしたリンク</translation>
@@ -405,6 +410,7 @@
 <translation id="3930498801443296724">引用</translation>
 <translation id="3936394396199829062">ラベンダー ブラッシュ</translation>
 <translation id="3941269780691800708">カーソル部分のテキストを読み上げます。</translation>
+<translation id="394953087167197343">つづり間違いを表す:</translation>
 <translation id="3962990492275676168">現在の場所から読み上げを開始</translation>
 <translation id="3970951409746498040">サンディ ブラウン</translation>
 <translation id="3989324057180830702">切り替えボタン</translation>
@@ -435,6 +441,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{右中かっこ}other{# 個の右中かっこ}}</translation>
 <translation id="4158704014418536539">大文字と小文字を区別します。</translation>
 <translation id="4159784952369912983">パープル</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{秒}other{秒}}</translation>
 <translation id="4161663686871496107">ChromeVox 音声フィードバックをご利用いただけます</translation>
 <translation id="4173994908659439270">次の編集可能テキスト フィールドはありません。</translation>
 <translation id="4176463684765177261">無効</translation>
@@ -450,7 +457,8 @@
 <translation id="4215733775853809057">次のスライダ</translation>
 <translation id="42164919740161077">カデットブルー</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{ダッシュ}other{# 個のダッシュ}}</translation>
-<translation id="421884353938374759">色の選択</translation>
+<translation id="421884353938374759">カラー選択ツール</translation>
+<translation id="4221071177874897997">太字を表す:</translation>
 <translation id="4229646983878045487">日時</translation>
 <translation id="4230834257931120629">ライト スレートグレー</translation>
 <translation id="4231102694147661229">デベロッパー向けオプションを有効にする</translation>
@@ -506,7 +514,7 @@
 <translation id="461613135510474570">文</translation>
 <translation id="4623097797855662355">奥付</translation>
 <translation id="463135993322337640">ChromeVox+o+n キーを押すと新機能を確認できます</translation>
-<translation id="4647836961514597010">色の選択</translation>
+<translation id="4647836961514597010">カラー選択ツール</translation>
 <translation id="4652110509054054146">検索、左または右矢印でホームまたはエンドになります。検索、コントロール、左または右矢印で、コントロール ホームまたはコントロール エンドになります。検索、上または下矢印でページアップまたはページダウンになります。</translation>
 <translation id="4660783501463101648">クラシックの削除。ChromeVox クラシックに戻るキーボード切り替えは削除されました。</translation>
 <translation id="4661075872484491155">ツリー</translation>
@@ -613,6 +621,7 @@
 <translation id="5349770431644471053">言及リンク</translation>
 <translation id="536031132345979795">連続読み上げ時に後方へスキップします</translation>
 <translation id="5368000168321181111">イアコン オフ</translation>
+<translation id="5368505757342402527"><ph name="FILE_NAME" /> のダウンロードが <ph name="PROGRESS" />% 終了しました。完了まであと約 <ph name="TIME" /> <ph name="UNITS" />です。</translation>
 <translation id="5374320867641260420">次のボタンはありません。</translation>
 <translation id="5376407118396657359">検索+Ctrl+Alt キーを押しながら矢印キーを押して、セル間を移動します。</translation>
 <translation id="5382299583965267720">次のレベル 1 見出しはありません。</translation>
@@ -646,6 +655,7 @@
 <translation id="5574412348552378458">ChromeVox 学習モード</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">テキスト編集、メール エントリ</translation>
+<translation id="5586942249556966598">何もしない</translation>
 <translation id="5597170376237141345">次のチェックボックス</translation>
 <translation id="5597933780944041114">次の見出しはありません。</translation>
 <translation id="5598905979683743333"><ph name="NAME" />、選択されていないラジオボタン</translation>
@@ -750,6 +760,7 @@
 <translation id="6348869651006731065">ディムグレー</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{箇条書き}other{# 件の箇条書き}}</translation>
 <translation id="6355910664415701303">前のリスト項目はありません。</translation>
+<translation id="6360318852623800555">リッチテキスト属性</translation>
 <translation id="6364795331201459219">見出し 6</translation>
 <translation id="6368143427468974988">前の見出し</translation>
 <translation id="6376999910001533545">マルーン</translation>
@@ -791,6 +802,7 @@
 <translation id="667999046851023355">ドキュメント</translation>
 <translation id="6688209025607531203">非モーダル アラート</translation>
 <translation id="6689672606256159458">ダークサーモン</translation>
+<translation id="669617842401078250"><ph name="FILE_NAME" /> のダウンロードを一時停止しました</translation>
 <translation id="6696967141280706829">序文</translation>
 <translation id="6697092096875747123">前のコンボ ボックス</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{感嘆符}other{# 個の感嘆符}}</translation>
@@ -924,10 +936,12 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="762020119231868829">現在再生中のメディア ウィジェットをすべて一時停止します</translation>
 <translation id="7625690649919402823">次の表</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" />（<ph name="VARIANT" />）、グレード <ph name="GRADE" /></translation>
+<translation id="763535765081585392">下線を表す:</translation>
 <translation id="7639968568612851608">ダークグレー</translation>
 <translation id="7641134354185483015">前のレベル 3 見出しはありません。</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />、<ph name="NAME" />、テキスト ボックス</translation>
 <translation id="7663318257180412551">見出し 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{時間}other{時間}}</translation>
 <translation id="7674576868851035240">次のリンク</translation>
 <translation id="7674768236845044097">マーク</translation>
 <translation id="7684431668231950609">テキスト編集、URL エントリ</translation>
@@ -942,6 +956,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">リストのオートコンプリート</translation>
+<translation id="7763537600611320912"><ph name="FILE_NAME" /> のダウンロードを開始しました</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />、<ph name="NAME" />、パスワード テキスト ボックス</translation>
 <translation id="7776293189010177726">ChromeVox メニューを開きます</translation>
 <translation id="7800558923657349506">エピローグ</translation>
@@ -1066,6 +1081,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8096975275316362544">ミントクリーム</translation>
 <translation id="8098587210054821856">スレートグレー</translation>
 <translation id="8110647606445335195">ARIA ランドマークはありません。</translation>
+<translation id="812886159861361726"><ph name="FILE_NAME" /> のダウンロードを停止しました</translation>
 <translation id="8138880386467279117">タップ</translation>
 <translation id="8153880621934657047">表の中ではありません。</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{アンダースコア}other{# 個のアンダースコア}}</translation>
@@ -1135,6 +1151,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8743786158317878347">表などの構造化コンテンツに入ります</translation>
 <translation id="8747966237988593539">番号付きリスト</translation>
 <translation id="8749988712346667988">シルバー</translation>
+<translation id="875769700429317857"><ph name="FILE_NAME" /> のダウンロードが完了しました</translation>
 <translation id="8759334257841767240">次のリンクはありません。</translation>
 <translation id="8767968232364267681">次のレベル 4 見出し</translation>
 <translation id="8770473310765924354">表などの構造化コンテンツの外に出ます</translation>
@@ -1159,6 +1176,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8943175951035496220">右にセルはありません。</translation>
 <translation id="8943282376843390568">ライム</translation>
 <translation id="8946628535652548639">行<ph name="TABLECELLROWINDEX" />列<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">読み上げる</translation>
 <translation id="8978496506222343566">ツールチップ</translation>
 <translation id="8986362086234534611">削除</translation>
 <translation id="900114243503212879">ファイル</translation>

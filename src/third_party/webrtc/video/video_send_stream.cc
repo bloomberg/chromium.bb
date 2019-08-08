@@ -34,7 +34,7 @@ size_t CalculateMaxHeaderSize(const RtpConfig& config) {
   size_t header_size = kRtpHeaderSize;
   size_t extensions_size = 0;
   size_t fec_extensions_size = 0;
-  if (config.extensions.size() > 0) {
+  if (!config.extensions.empty()) {
     RtpHeaderExtensionMap extensions_map(config.extensions);
     extensions_size = RtpHeaderExtensionSize(RTPSender::VideoExtensionSizes(),
                                              extensions_map);
@@ -69,7 +69,6 @@ VideoSendStream::VideoSendStream(
     Clock* clock,
     int num_cpu_cores,
     ProcessThread* module_process_thread,
-    rtc::TaskQueue* worker_queue,
     TaskQueueFactory* task_queue_factory,
     CallStats* call_stats,
     RtpTransportControllerSendInterface* transport,
@@ -81,7 +80,7 @@ VideoSendStream::VideoSendStream(
     const std::map<uint32_t, RtpState>& suspended_ssrcs,
     const std::map<uint32_t, RtpPayloadState>& suspended_payload_states,
     std::unique_ptr<FecController> fec_controller)
-    : worker_queue_(worker_queue),
+    : worker_queue_(transport->GetWorkerQueue()),
       stats_proxy_(clock, config, encoder_config.content_type),
       config_(std::move(config)),
       content_type_(encoder_config.content_type) {
@@ -207,9 +206,9 @@ void VideoSendStream::StopPermanentlyAndGetRtpStates(
   thread_sync_event_.Wait(rtc::Event::kForever);
 }
 
-bool VideoSendStream::DeliverRtcp(const uint8_t* packet, size_t length) {
+void VideoSendStream::DeliverRtcp(const uint8_t* packet, size_t length) {
   // Called on a network thread.
-  return send_stream_->DeliverRtcp(packet, length);
+  send_stream_->DeliverRtcp(packet, length);
 }
 
 }  // namespace internal

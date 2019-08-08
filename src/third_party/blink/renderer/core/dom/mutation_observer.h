@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -126,8 +125,8 @@ class CORE_EXPORT MutationObserver final
   bool ShouldBeSuspended() const;
   void CancelInspectorAsyncTasks();
 
-  TraceWrapperMember<Delegate> delegate_;
-  HeapVector<TraceWrapperMember<MutationRecord>> records_;
+  Member<Delegate> delegate_;
+  HeapVector<Member<MutationRecord>> records_;
   MutationObserverRegistrationSet registrations_;
   unsigned priority_;
 

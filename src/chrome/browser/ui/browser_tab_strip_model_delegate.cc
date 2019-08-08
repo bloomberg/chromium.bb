@@ -26,26 +26,26 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "ipc/ipc_message.h"
 
+class TabGroupData;
+
 namespace chrome {
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripModelDelegate, public:
 
 BrowserTabStripModelDelegate::BrowserTabStripModelDelegate(Browser* browser)
-    : browser_(browser),
-      weak_factory_(this) {
-}
+    : browser_(browser), weak_factory_(this) {}
 
-BrowserTabStripModelDelegate::~BrowserTabStripModelDelegate() {
-}
+BrowserTabStripModelDelegate::~BrowserTabStripModelDelegate() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripModelDelegate, TabStripModelDelegate implementation:
 
 void BrowserTabStripModelDelegate::AddTabAt(const GURL& url,
                                             int index,
-                                            bool foreground) {
-  chrome::AddTabAt(browser_, url, index, foreground);
+                                            bool foreground,
+                                            base::Optional<int> group) {
+  chrome::AddTabAt(browser_, url, index, foreground, group);
 }
 
 Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(
@@ -93,8 +93,9 @@ void BrowserTabStripModelDelegate::WillAddWebContents(
 
 int BrowserTabStripModelDelegate::GetDragActions() const {
   return TabStripModelDelegate::TAB_TEAROFF_ACTION |
-      (browser_->tab_strip_model()->count() > 1
-          ? TabStripModelDelegate::TAB_MOVE_ACTION : 0);
+         (browser_->tab_strip_model()->count() > 1
+              ? TabStripModelDelegate::TAB_MOVE_ACTION
+              : 0);
 }
 
 bool BrowserTabStripModelDelegate::CanDuplicateContentsAt(int index) {

@@ -10,6 +10,7 @@
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/pending_task.h"
+#include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue_selector_logic.h"
 #include "base/task/sequence_manager/work_queue_sets.h"
 
@@ -23,8 +24,9 @@ class AssociatedThreadId;
 // of particular task queues.
 class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
  public:
-  explicit TaskQueueSelector(
-      scoped_refptr<AssociatedThreadId> associated_thread);
+  TaskQueueSelector(scoped_refptr<AssociatedThreadId> associated_thread,
+                    const SequenceManager::Settings& settings);
+
   ~TaskQueueSelector() override;
 
   // Called to register a queue that can be selected. This function is called
@@ -75,10 +77,6 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
   void WorkQueueSetBecameNonEmpty(size_t set_index) override;
 
  protected:
-  WorkQueue* ChooseOldestWithPriority(
-      TaskQueue::QueuePriority priority,
-      bool* out_chose_delayed_over_immediate) const;
-
   WorkQueueSets* delayed_work_queue_sets() { return &delayed_work_queue_sets_; }
 
   WorkQueueSets* immediate_work_queue_sets() {
@@ -141,6 +139,65 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
     TaskQueue::QueuePriority index_to_id_[TaskQueue::kQueuePriorityCount];
   };
 
+  /*
+   * SetOperation is used to configure ChooseWithPriority() and must have:
+   *
+   * static WorkQueue* GetWithPriority(const WorkQueueSets& sets,
+   *                                   TaskQueue::QueuePriority priority);
+   *
+   * static WorkQueue* GetWithPriorityAndEnqueueOrder(
+   *     const WorkQueueSets& sets,
+   *     TaskQueue::QueuePriority priority
+   *     EnqueueOrder* enqueue_order);
+   */
+
+  // The default
+  struct SetOperationOldest {
+    static WorkQueue* GetWithPriority(const WorkQueueSets& sets,
+                                      TaskQueue::QueuePriority priority) {
+      return sets.GetOldestQueueInSet(priority);
+    }
+
+    static WorkQueue* GetWithPriorityAndEnqueueOrder(
+        const WorkQueueSets& sets,
+        TaskQueue::QueuePriority priority,
+        EnqueueOrder* enqueue_order) {
+      return sets.GetOldestQueueAndEnqueueOrderInSet(priority, enqueue_order);
+    }
+  };
+
+#if DCHECK_IS_ON()
+  struct SetOperationRandom {
+    static WorkQueue* GetWithPriority(const WorkQueueSets& sets,
+                                      TaskQueue::QueuePriority priority) {
+      return sets.GetRandomQueueInSet(priority);
+    }
+
+    static WorkQueue* GetWithPriorityAndEnqueueOrder(
+        const WorkQueueSets& sets,
+        TaskQueue::QueuePriority priority,
+        EnqueueOrder* enqueue_order) {
+      return sets.GetRandomQueueAndEnqueueOrderInSet(priority, enqueue_order);
+    }
+  };
+#endif  // DCHECK_IS_ON()
+
+  template <typename SetOperation>
+  WorkQueue* ChooseWithPriority(TaskQueue::QueuePriority priority,
+                                bool* out_chose_delayed_over_immediate) const {
+    // Select an immediate work queue if we are starving immediate tasks.
+    if (immediate_starvation_count_ >= kMaxDelayedStarvationTasks) {
+      *out_chose_delayed_over_immediate = false;
+      WorkQueue* queue =
+          SetOperation::GetWithPriority(immediate_work_queue_sets_, priority);
+      if (queue)
+        return queue;
+      return SetOperation::GetWithPriority(delayed_work_queue_sets_, priority);
+    }
+    return ChooseImmediateOrDelayedTaskWithPriority<SetOperation>(
+        priority, out_chose_delayed_over_immediate);
+  }
+
  private:
   void ChangeSetIndex(internal::TaskQueueImpl* queue,
                       TaskQueue::QueuePriority priority);
@@ -152,15 +209,30 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
   bool CheckContainsQueueForTest(const internal::TaskQueueImpl* queue) const;
 #endif
 
-  WorkQueue* ChooseOldestImmediateTaskWithPriority(
-      TaskQueue::QueuePriority priority) const;
-
-  WorkQueue* ChooseOldestDelayedTaskWithPriority(
-      TaskQueue::QueuePriority priority) const;
-
-  WorkQueue* ChooseOldestImmediateOrDelayedTaskWithPriority(
+  template <typename SetOperation>
+  WorkQueue* ChooseImmediateOrDelayedTaskWithPriority(
       TaskQueue::QueuePriority priority,
-      bool* out_chose_delayed_over_immediate) const;
+      bool* out_chose_delayed_over_immediate) const {
+    EnqueueOrder immediate_enqueue_order;
+    *out_chose_delayed_over_immediate = false;
+    WorkQueue* immediate_queue = SetOperation::GetWithPriorityAndEnqueueOrder(
+        immediate_work_queue_sets_, priority, &immediate_enqueue_order);
+    if (immediate_queue) {
+      EnqueueOrder delayed_enqueue_order;
+      WorkQueue* delayed_queue = SetOperation::GetWithPriorityAndEnqueueOrder(
+          delayed_work_queue_sets_, priority, &delayed_enqueue_order);
+      if (!delayed_queue)
+        return immediate_queue;
+
+      if (immediate_enqueue_order < delayed_enqueue_order) {
+        return immediate_queue;
+      } else {
+        *out_chose_delayed_over_immediate = true;
+        return delayed_queue;
+      }
+    }
+    return SetOperation::GetWithPriority(delayed_work_queue_sets_, priority);
+  }
 
   // Returns the priority which is next after |priority|.
   static TaskQueue::QueuePriority NextPriority(
@@ -170,6 +242,10 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
   bool HasTasksWithPriority(TaskQueue::QueuePriority priority);
 
   scoped_refptr<AssociatedThreadId> associated_thread_;
+
+#if DCHECK_IS_ON()
+  const bool random_task_selection_ = false;
+#endif
 
   // Count of the number of sets (delayed or immediate) for each priority.
   // Should only contain 0, 1 or 2.

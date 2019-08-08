@@ -17,6 +17,7 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/workspace_controller.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -191,9 +192,14 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
     case WM_EVENT_WORKAREA_BOUNDS_CHANGED: {
       // Don't resize the maximized window when the desktop is covered
       // by fullscreen window. crbug.com/504299.
-      bool in_fullscreen =
-          RootWindowController::ForWindow(window_state->window())
-              ->GetWorkspaceWindowState() == WORKSPACE_WINDOW_STATE_FULL_SCREEN;
+      // TODO(afakhry): Decide whether we want the active desk's workspace, or
+      // the workspace of the desk of `window_state->window()`.
+      // For now use the active desk's.
+      auto* workspace_controller =
+          GetActiveWorkspaceController(window_state->window()->GetRootWindow());
+      DCHECK(workspace_controller);
+      bool in_fullscreen = workspace_controller->GetWindowState() ==
+                           WORKSPACE_WINDOW_STATE_FULL_SCREEN;
       if (in_fullscreen && window_state->IsMaximized())
         return;
 
@@ -291,7 +297,7 @@ void DefaultState::HandleCompoundEvents(WindowState* window_state,
         gfx::Rect new_bounds(work_area.x(), window->bounds().y(),
                              work_area.width(), window->bounds().height());
 
-        gfx::Rect restore_bounds = window->bounds();
+        gfx::Rect restore_bounds = window->GetTargetBounds();
         if (window_state->IsSnapped()) {
           window_state->SetRestoreBoundsInParent(new_bounds);
           window_state->Restore();
@@ -389,16 +395,27 @@ bool DefaultState::SetMaximizedOrFullscreenBounds(WindowState* window_state) {
 // static
 void DefaultState::SetBounds(WindowState* window_state,
                              const SetBoundsEvent* event) {
-  if (!event->animate() &&
-      (window_state->is_dragged() || window_state->allow_set_bounds_direct())) {
-    // TODO(oshima|varkha): Is this still needed? crbug.com/485612.
-    window_state->SetBoundsDirect(event->requested_bounds());
+  if (window_state->is_dragged() || window_state->allow_set_bounds_direct()) {
+    if (event->animate()) {
+      window_state->SetBoundsDirectAnimated(event->requested_bounds(),
+                                            event->duration());
+    } else {
+      // TODO(oshima|varkha): Is this still needed? crbug.com/485612.
+      window_state->SetBoundsDirect(event->requested_bounds());
+    }
   } else if (!SetMaximizedOrFullscreenBounds(window_state)) {
     if (event->animate()) {
       window_state->SetBoundsDirectAnimated(event->requested_bounds(),
                                             event->duration());
     } else {
       window_state->SetBoundsConstrained(event->requested_bounds());
+      // Update the restore size if the bounds is updated by PIP itself.
+      if (window_state->IsPip() && window_state->HasRestoreBounds()) {
+        gfx::Rect restore_bounds = window_state->GetRestoreBoundsInScreen();
+        restore_bounds.set_size(
+            window_state->window()->GetTargetBounds().size());
+        window_state->SetRestoreBoundsInScreen(restore_bounds);
+      }
     }
   }
 }
@@ -564,21 +581,26 @@ void DefaultState::UpdateBoundsFromState(
       return;
   }
 
-  if (!window_state->IsMinimized()) {
-    if (IsMinimizedWindowStateType(previous_state_type) ||
-        window_state->IsFullscreen() || window_state->IsPinned()) {
-      window_state->SetBoundsDirect(bounds_in_parent);
-    } else if (window_state->IsMaximized() ||
-               IsMaximizedOrFullscreenOrPinnedWindowStateType(
-                   previous_state_type)) {
-      window_state->SetBoundsDirectCrossFade(bounds_in_parent);
-    } else if (window_state->is_dragged()) {
-      // SetBoundsDirectAnimated does not work when the window gets reparented.
-      // TODO(oshima): Consider fixing it and reenable the animation.
-      window_state->SetBoundsDirect(bounds_in_parent);
-    } else {
-      window_state->SetBoundsDirectAnimated(bounds_in_parent);
-    }
+  if (window_state->IsMinimized())
+    return;
+
+  if (IsMinimizedWindowStateType(previous_state_type) ||
+      window_state->IsFullscreen() || window_state->IsPinned() ||
+      enter_animation_type() == IMMEDIATE) {
+    window_state->SetBoundsDirect(bounds_in_parent);
+    // Reset the |enter_animation_type_| to DEFAULT if it is IMMEDIATE, which is
+    // set for non-top windows when entering clamshell mode.
+    set_enter_animation_type(DEFAULT);
+  } else if (window_state->IsMaximized() ||
+             IsMaximizedOrFullscreenOrPinnedWindowStateType(
+                 previous_state_type)) {
+    window_state->SetBoundsDirectCrossFade(bounds_in_parent);
+  } else if (window_state->is_dragged()) {
+    // SetBoundsDirectAnimated does not work when the window gets reparented.
+    // TODO(oshima): Consider fixing it and re-enable the animation.
+    window_state->SetBoundsDirect(bounds_in_parent);
+  } else {
+    window_state->SetBoundsDirectAnimated(bounds_in_parent);
   }
 }
 

@@ -14,8 +14,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
-#include "base/task/task_scheduler/scheduler_lock.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/thread_annotations.h"
 #include "build/build_config.h"
 

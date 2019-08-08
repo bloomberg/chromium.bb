@@ -108,13 +108,5 @@ login.createScreen('TermsOfServiceScreen', 'terms-of-service', function() {
       return $('tos-accept-button').disabled ? $('tos-back-button') :
                                                $('tos-accept-button');
     },
-
-    /**
-     * Event handler that is invoked just before the screen is shown.
-     * @param {object} data Screen init payload.
-     */
-    onBeforeShow: function(data) {
-      Oobe.getInstance().headerHidden = true;
-    }
   };
 });

@@ -106,6 +106,26 @@ TEST_F(InstantServiceTest, DeleteThumbnailDataIfExists) {
   EXPECT_FALSE(base::PathExists(database_dir));
 }
 
+TEST_F(InstantServiceTest, DoesToggleMostVisitedOrCustomLinks) {
+  sync_preferences::TestingPrefServiceSyncable* pref_service =
+      profile()->GetTestingPrefService();
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  ASSERT_FALSE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
+
+  // Enable most visited tiles.
+  EXPECT_TRUE(instant_service_->ToggleMostVisitedOrCustomLinks());
+  EXPECT_TRUE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
+
+  // Disable most visited tiles.
+  EXPECT_TRUE(instant_service_->ToggleMostVisitedOrCustomLinks());
+  EXPECT_FALSE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
+
+  // Should do nothing if this is a non-Google NTP.
+  SetUserSelectedDefaultSearchProvider("https://www.search.com");
+  EXPECT_FALSE(instant_service_->ToggleMostVisitedOrCustomLinks());
+  EXPECT_FALSE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
+}
+
 TEST_F(InstantServiceTest,
        DisableUndoCustomLinkActionForNonGoogleSearchProvider) {
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
@@ -121,6 +141,25 @@ TEST_F(InstantServiceTest, DisableResetCustomLinksForNonGoogleSearchProvider) {
 
   SetUserSelectedDefaultSearchProvider("https://www.search.com");
   EXPECT_FALSE(instant_service_->ResetCustomLinks());
+}
+
+TEST_F(InstantServiceTest, IsCustomLinksEnabled) {
+  sync_preferences::TestingPrefServiceSyncable* pref_service =
+      profile()->GetTestingPrefService();
+
+  // Test that custom links are only enabled when Most Visited is toggled off
+  // and this is a Google NTP.
+  pref_service->SetBoolean(prefs::kNtpUseMostVisitedTiles, false);
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  EXPECT_TRUE(instant_service_->IsCustomLinksEnabled());
+
+  // All other cases should return false.
+  SetUserSelectedDefaultSearchProvider("https://www.search.com");
+  EXPECT_FALSE(instant_service_->IsCustomLinksEnabled());
+  pref_service->SetBoolean(prefs::kNtpUseMostVisitedTiles, true);
+  EXPECT_FALSE(instant_service_->IsCustomLinksEnabled());
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  EXPECT_FALSE(instant_service_->IsCustomLinksEnabled());
 }
 
 TEST_F(InstantServiceTest, SetCustomBackgroundURL) {
@@ -361,7 +400,7 @@ TEST_F(InstantServiceTest, SetLocalImage) {
   base::FilePath path(profile_path.AppendASCII(
       chrome::kChromeSearchLocalNtpBackgroundFilename));
   base::WriteFile(path, "background_image", 16);
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
 
   instant_service_->SelectLocalBackgroundImage(path);
   thread_bundle()->RunUntilIdle();
@@ -386,7 +425,7 @@ TEST_F(InstantServiceTest, SyncPrefOverridesLocalImage) {
   base::FilePath path(profile_path.AppendASCII(
       chrome::kChromeSearchLocalNtpBackgroundFilename));
   base::WriteFile(path, "background_image", 16);
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
 
   instant_service_->SelectLocalBackgroundImage(path);
   thread_bundle()->RunUntilIdle();
@@ -493,4 +532,47 @@ TEST_F(InstantServiceThemeTest, DarkModeHandler) {
   thread_bundle()->RunUntilIdle();
 
   EXPECT_FALSE(theme_info.using_dark_mode);
+}
+
+TEST_F(InstantServiceTest, LocalImageDoesNotHaveAttribution) {
+  ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
+  const GURL kUrl("https://www.foo.com");
+  const std::string kAttributionLine1 = "foo";
+  const std::string kAttributionLine2 = "bar";
+  const GURL kActionUrl("https://www.bar.com");
+
+  sync_preferences::TestingPrefServiceSyncable* pref_service =
+      profile()->GetTestingPrefService();
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  instant_service_->AddValidBackdropUrlForTesting(kUrl);
+  instant_service_->SetCustomBackgroundURLWithAttributions(
+      kUrl, kAttributionLine1, kAttributionLine2, kActionUrl);
+
+  ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
+  ASSERT_EQ(kAttributionLine1,
+            theme_info->custom_background_attribution_line_1);
+  ASSERT_EQ(kAttributionLine2,
+            theme_info->custom_background_attribution_line_2);
+  ASSERT_EQ(kActionUrl, theme_info->custom_background_attribution_action_url);
+  ASSERT_TRUE(instant_service_->IsCustomBackgroundSet());
+
+  base::FilePath profile_path = profile()->GetPath();
+  base::FilePath path(profile_path.AppendASCII(
+      chrome::kChromeSearchLocalNtpBackgroundFilename));
+  base::WriteFile(path, "background_image", 16);
+  base::ThreadPool::GetInstance()->FlushForTesting();
+
+  instant_service_->SelectLocalBackgroundImage(path);
+  thread_bundle()->RunUntilIdle();
+
+  theme_info = instant_service_->GetInitializedThemeInfo();
+  EXPECT_TRUE(base::StartsWith(theme_info->custom_background_url.spec(),
+                               chrome::kChromeSearchLocalNtpBackgroundUrl,
+                               base::CompareCase::SENSITIVE));
+  EXPECT_TRUE(
+      pref_service->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice));
+  EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
+  EXPECT_EQ(std::string(), theme_info->custom_background_attribution_line_1);
+  EXPECT_EQ(std::string(), theme_info->custom_background_attribution_line_2);
+  EXPECT_EQ(GURL(), theme_info->custom_background_attribution_action_url);
 }

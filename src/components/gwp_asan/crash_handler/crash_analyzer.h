@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/gtest_prod_util.h"
 #include "components/gwp_asan/common/allocator_state.h"
 #include "components/gwp_asan/crash_handler/crash.pb.h"
 #include "third_party/crashpad/crashpad/util/misc/address_types.h"
@@ -49,8 +50,14 @@ class CrashAnalyzer {
     kErrorBadSlot = 8,
     // Failed to read the crashing process' memory of the SlotMetadata.
     kErrorFailedToReadSlotMetadata = 9,
+    // The allocator stored an invalid metadata index for a given slot.
+    kErrorBadMetadataIndex = 10,
+    // The computed metadata index was outdated.
+    kErrorOutdatedMetadataIndex = 11,
+    // Failed to read the crashing process' slot to metadata mapping.
+    kErrorFailedToReadSlotMetadataMapping = 12,
     // Number of values in this enumeration, required by UMA.
-    kMaxValue = kErrorFailedToReadSlotMetadata
+    kMaxValue = kErrorFailedToReadSlotMetadataMapping
   };
 
   // Given a ProcessSnapshot, determine if the exception is related to GWP-ASan.
@@ -84,10 +91,14 @@ class CrashAnalyzer {
       crashpad::VMAddress gpa_addr,
       gwp_asan::Crash* proto);
 
-  // This method fills out an AllocationInfo protobuf from a
-  // SlotMetadata::AllocationInfo struct.
-  static void ReadAllocationInfo(const SlotMetadata::AllocationInfo& slot_info,
+  // This method fills out an AllocationInfo protobuf from a stack trace
+  // and a SlotMetadata::AllocationInfo struct.
+  static void ReadAllocationInfo(const uint8_t* stack_trace,
+                                 size_t stack_trace_offset,
+                                 const SlotMetadata::AllocationInfo& slot_info,
                                  gwp_asan::Crash_AllocationInfo* proto_info);
+
+  FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, StackTraceCollection);
 };
 
 }  // namespace internal

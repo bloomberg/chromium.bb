@@ -172,7 +172,7 @@ void MediaControlPopupMenuElement::Trace(blink::Visitor* visitor) {
 
 MediaControlPopupMenuElement::MediaControlPopupMenuElement(
     MediaControlsImpl& media_controls)
-    : MediaControlDivElement(media_controls, kMediaIgnore) {
+    : MediaControlDivElement(media_controls) {
   SetIsWanted(false);
 }
 
@@ -191,13 +191,12 @@ void MediaControlPopupMenuElement::SetPosition() {
 
   WTF::String bottom_str_value =
       WTF::String::Number(dom_window->innerHeight() -
-                          bounding_client_rect->bottom() + kPopupMenuMarginPx);
+                          bounding_client_rect->bottom() + kPopupMenuMarginPx) +
+      kPx;
   WTF::String right_str_value =
       WTF::String::Number(dom_window->innerWidth() -
-                          bounding_client_rect->right() + kPopupMenuMarginPx);
-
-  bottom_str_value.append(kPx);
-  right_str_value.append(kPx);
+                          bounding_client_rect->right() + kPopupMenuMarginPx) +
+      kPx;
 
   style()->setProperty(&GetDocument(), "bottom", bottom_str_value, kImportant,
                        ASSERT_NO_EXCEPTION);
@@ -214,11 +213,17 @@ void MediaControlPopupMenuElement::HideIfNotFocused() {
   if (!IsWanted())
     return;
 
-  if (!GetDocument().FocusedElement() ||
-      (GetDocument().FocusedElement()->parentElement() != this &&
-       GetDocument().FocusedElement() != this)) {
-    SetIsWanted(false);
+  // Cancel hiding if the focused element is a descendent of this element
+  auto* focused_element = GetDocument().FocusedElement();
+  while (focused_element) {
+    if (focused_element == this) {
+      return;
+    }
+
+    focused_element = focused_element->parentElement();
   }
+
+  SetIsWanted(false);
 }
 
 // Focus the given item in the list if it is displayed. Returns whether it was
@@ -227,7 +232,7 @@ bool MediaControlPopupMenuElement::FocusListItemIfDisplayed(Node* node) {
   Element* element = ToElement(node);
 
   if (!element->InlineStyle() ||
-      !element->InlineStyle()->HasProperty(CSSPropertyDisplay)) {
+      !element->InlineStyle()->HasProperty(CSSPropertyID::kDisplay)) {
     element->focus();
     last_focused_element_ = element;
     return true;

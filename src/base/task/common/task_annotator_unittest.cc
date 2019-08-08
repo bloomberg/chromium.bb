@@ -36,7 +36,7 @@ TEST(TaskAnnotatorTest, QueueAndRunTask) {
   PendingTask pending_task(FROM_HERE, BindOnce(&TestTask, &result));
 
   TaskAnnotator annotator;
-  annotator.WillQueueTask("TaskAnnotatorTest::Queue", &pending_task);
+  annotator.WillQueueTask("TaskAnnotatorTest::Queue", &pending_task, "?");
   EXPECT_EQ(0, result);
   annotator.RunTask("TaskAnnotatorTest::Queue", &pending_task);
   EXPECT_EQ(123, result);
@@ -125,7 +125,8 @@ class TaskAnnotatorBacktraceIntegrationTest
   Lock on_before_run_task_lock_;
 
   Location last_posted_from_ = {};
-  std::array<const void*, 4> last_task_backtrace_ = {};
+  std::array<const void*, PendingTask::kTaskBacktraceLength>
+      last_task_backtrace_ = {};
 
   DISALLOW_COPY_AND_ASSIGN(TaskAnnotatorBacktraceIntegrationTest);
 };
@@ -187,8 +188,8 @@ TEST_F(TaskAnnotatorBacktraceIntegrationTest, SingleThreadedSimple) {
 TEST_F(TaskAnnotatorBacktraceIntegrationTest, MultipleThreads) {
   test::ScopedTaskEnvironment scoped_task_environment;
 
-  // Use diverse task runners (a task environment main thread, a TaskScheduler
-  // based SequencedTaskRunner, and a TaskScheduler based
+  // Use diverse task runners (a task environment main thread, a ThreadPool
+  // based SequencedTaskRunner, and a ThreadPool based
   // SingleThreadTaskRunner) to verify that TaskAnnotator can capture backtraces
   // for PostTasks back-and-forth between these.
   auto main_thread_a = ThreadTaskRunnerHandle::Get();

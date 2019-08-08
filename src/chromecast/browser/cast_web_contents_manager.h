@@ -23,10 +23,6 @@ class BrowserContext;
 class WebContents;
 }  // namespace content
 
-namespace extensions {
-class Extension;
-}  // namespace extensions
-
 namespace chromecast {
 
 class CastWebViewFactory;
@@ -45,12 +41,10 @@ class CastWebContentsManager {
   std::unique_ptr<CastWebView> CreateWebView(
       const CastWebView::CreateParams& params,
       scoped_refptr<content::SiteInstance> site_instance,
-      const extensions::Extension* extension,
       const GURL& initial_url);
 
   std::unique_ptr<CastWebView> CreateWebView(
       const CastWebView::CreateParams& params,
-      const extensions::Extension* extension,
       const GURL& initial_url);
 
   // Take ownership of |web_contents| and delete after |time_delta|, or sooner

@@ -246,7 +246,7 @@ public class AccountManagerFacadeRobolectricTest {
                                        .featureSet(new HashSet<>(Arrays.asList(features)))
                                        .build();
         mDelegate.addAccountHolderExplicitly(holder);
-        Assert.assertFalse(AccountManagerFacade.get().isUpdatePending());
+        Assert.assertFalse(AccountManagerFacade.get().isUpdatePending().get());
         return account;
     }
 

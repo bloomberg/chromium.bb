@@ -7,11 +7,12 @@ package org.chromium.chrome.browser.feed;
 import android.support.annotation.Nullable;
 
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
+import com.google.android.libraries.feed.common.functional.Consumer;
 import com.google.android.libraries.feed.host.config.ApplicationInfo;
 import com.google.android.libraries.feed.host.config.Configuration;
 import com.google.android.libraries.feed.host.config.DebugBehavior;
 import com.google.android.libraries.feed.host.network.NetworkClient;
-import com.google.android.libraries.feed.hostimpl.logging.LoggingApiImpl;
+import com.google.android.libraries.feed.host.stream.TooltipSupportedApi;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -135,14 +136,15 @@ public class FeedProcessScopeFactory {
         NetworkClient networkClient = sTestNetworkClient == null ?
             new FeedNetworkBridge(profile) : sTestNetworkClient;
         sFeedLoggingBridge = new FeedLoggingBridge(profile);
-        sFeedProcessScope = new FeedProcessScope
-                                    .Builder(configHostApi, Executors.newSingleThreadExecutor(),
-                                            new LoggingApiImpl(), sFeedLoggingBridge, networkClient,
-                                            schedulerBridge, DebugBehavior.SILENT,
-                                            ContextUtils.getApplicationContext(), applicationInfo)
-                                    .setContentStorage(contentStorage)
-                                    .setJournalStorage(journalStorage)
-                                    .build();
+        sFeedProcessScope =
+                new FeedProcessScope
+                        .Builder(configHostApi, Executors.newSingleThreadExecutor(),
+                                sFeedLoggingBridge, networkClient, schedulerBridge,
+                                DebugBehavior.SILENT, ContextUtils.getApplicationContext(),
+                                applicationInfo, new StubFeedTooltiSupportedApi())
+                        .setContentStorage(contentStorage)
+                        .setJournalStorage(journalStorage)
+                        .build();
         schedulerBridge.initializeFeedDependencies(
                 sFeedProcessScope.getRequestManager(), sFeedProcessScope.getSessionManager());
 
@@ -176,12 +178,13 @@ public class FeedProcessScopeFactory {
         ApplicationInfo applicationInfo =
                 new ApplicationInfo.Builder(ContextUtils.getApplicationContext()).build();
 
-        sFeedProcessScope = new FeedProcessScope
-                                    .Builder(configHostApi, Executors.newSingleThreadExecutor(),
-                                            new LoggingApiImpl(), sFeedLoggingBridge, networkClient,
-                                            sFeedScheduler, DebugBehavior.SILENT,
-                                            ContextUtils.getApplicationContext(), applicationInfo)
-                                    .build();
+        sFeedProcessScope =
+                new FeedProcessScope
+                        .Builder(configHostApi, Executors.newSingleThreadExecutor(),
+                                sFeedLoggingBridge, networkClient, sFeedScheduler,
+                                DebugBehavior.SILENT, ContextUtils.getApplicationContext(),
+                                applicationInfo, new StubFeedTooltiSupportedApi())
+                        .build();
     }
 
     /** Use supplied NetworkClient instead of real one, for tests. */
@@ -258,5 +261,10 @@ public class FeedProcessScopeFactory {
             sFeedLoggingBridge.destroy();
             sFeedLoggingBridge = null;
         }
+    }
+
+    private static class StubFeedTooltiSupportedApi implements TooltipSupportedApi {
+        @Override
+        public void wouldTriggerHelpUi(String featureName, Consumer<Boolean> consumer) {}
     }
 }

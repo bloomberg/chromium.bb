@@ -15,6 +15,7 @@ enum WebGLExtensionName {
   kEXTColorBufferHalfFloatName,
   kEXTDisjointTimerQueryName,
   kEXTDisjointTimerQueryWebGL2Name,
+  kEXTFloatBlendName,
   kEXTFragDepthName,
   kEXTShaderTextureLODName,
   kEXTsRGBName,
@@ -27,6 +28,7 @@ enum WebGLExtensionName {
   kOESTextureHalfFloatLinearName,
   kOESTextureHalfFloatName,
   kOESVertexArrayObjectName,
+  kOVRMultiview2Name,
   kWebGLColorBufferFloatName,
   kWebGLCompressedTextureASTCName,
   kWebGLCompressedTextureETCName,
@@ -43,6 +45,7 @@ enum WebGLExtensionName {
   kWebGLMultiDrawName,
   kWebGLMultiDrawInstancedName,
   kWebGLMultiviewName,
+  kWebGLVideoTextureName,
   kWebGLExtensionNameCount,  // Must be the last entry
 };
 }  // namespace blink

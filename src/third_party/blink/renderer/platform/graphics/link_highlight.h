@@ -15,6 +15,7 @@ class Layer;
 namespace blink {
 
 class EffectPaintPropertyNode;
+class FloatPoint;
 
 class PLATFORM_EXPORT LinkHighlight : public DisplayItemClient {
  public:
@@ -26,11 +27,15 @@ class PLATFORM_EXPORT LinkHighlight : public DisplayItemClient {
 
   virtual const EffectPaintPropertyNode& Effect() const = 0;
 
+  // This returns the link highlight offset from its parent transform node,
+  // including both the link location and the layer location.
+  virtual FloatPoint GetOffsetFromTransformNode() const = 0;
+
   // DisplayItemClient methods
   // TODO(wangxianzhu): This class doesn't need to be a DisplayItemClient in
   // CompositeAfterPaint.
   String DebugName() const final { return "LinkHighlight"; }
-  LayoutRect VisualRect() const final { return LayoutRect(); }
+  IntRect VisualRect() const final { return IntRect(); }
 };
 
 }  // namespace blink

@@ -41,8 +41,6 @@ class MockAgent : public mojom::Agent {
                     StartTracingCallback cb) override;
   void StopAndFlush(mojom::RecorderPtr recorder) override;
   void RequestBufferStatus(RequestBufferStatusCallback cb) override;
-  void WaitForTracingEnabled(
-      Agent::WaitForTracingEnabledCallback callback) override;
 
   mojo::Binding<mojom::Agent> binding_;
   std::vector<std::string> call_stat_;

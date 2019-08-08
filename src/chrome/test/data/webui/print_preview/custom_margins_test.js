@@ -23,43 +23,11 @@ cr.define('custom_margins_test', function() {
     /** @type {?PrintPreviewMarginControlContainerElement} */
     let container = null;
 
+    /** @type {?PrintPreviewModelElement} */
+    let model = null;
+
     /** @type {!Array<!print_preview.ticket_items.CustomMarginsOrientation>} */
     let sides = [];
-
-    // Only care about marginType, customMargins, mediaSize, and layout
-    let settings = {
-      margins: {
-        value: 0,  // print_preview.ticket_items.MarginsTypeValue.DEFAULT,
-        unavailableValue: 0,
-        valid: true,
-        available: true,
-        key: 'marginsType',
-      },
-      customMargins: {
-        value: {},
-        unavailableValue: {},
-        valid: true,
-        available: true,
-        key: 'customMargins',
-      },
-      layout: {
-        value: false,
-        unavailableValue: false,
-        valid: true,
-        available: true,
-        key: 'isLandscapeEnabled',
-      },
-      mediaSize: {
-        value: {
-          width_microns: 215900,
-          height_microns: 279400,
-        },
-        unavailableValue: {},
-        valid: true,
-        available: true,
-        key: 'mediaSize',
-      },
-    };
 
     /** @type {number} */
     const pixelsPerInch = 100;
@@ -76,6 +44,10 @@ cr.define('custom_margins_test', function() {
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
+      model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+      model.set('settings.mediaSize.available', true);
+
       sides = [
         print_preview.ticket_items.CustomMarginsOrientation.TOP,
         print_preview.ticket_items.CustomMarginsOrientation.RIGHT,
@@ -109,16 +81,17 @@ cr.define('custom_margins_test', function() {
      *     added and initialization is complete.
      */
     function finishSetup() {
-      document.body.appendChild(container);
-
       // Wait for the control elements to be created before updating the state.
+      document.body.appendChild(container);
       container.$$('template').notifyDomChange = true;
       let controlsAdded = test_util.eventToPromise('dom-change', container);
       return controlsAdded.then(() => {
         // 8.5 x 11, in pixels
         const controls = getControls();
         assertEquals(4, controls.length);
-        container.settings = settings;
+        container.settings = model.settings;
+        test_util.fakeDataBind(model, container, 'settings');
+
         container.state = print_preview_new.State.READY;
         container.updateClippingMask(new print_preview.Size(850, 1100));
         container.updateScaleTransform(pixelsPerInch / pointsPerInch);
@@ -223,7 +196,7 @@ cr.define('custom_margins_test', function() {
         [orientationEnum.TOP, 72], [orientationEnum.RIGHT, 36],
         [orientationEnum.BOTTOM, 108], [orientationEnum.LEFT, 18]
       ]);
-      settings.customMargins.value = {
+      model.settings.customMargins.value = {
         marginTop: marginValues.get(orientationEnum.TOP),
         marginRight: marginValues.get(orientationEnum.RIGHT),
         marginBottom: marginValues.get(orientationEnum.BOTTOM),
@@ -243,7 +216,7 @@ cr.define('custom_margins_test', function() {
       const marginValues = setupCustomMargins();
       return finishSetup().then(() => {
         // Simulate setting custom margins.
-        container.set(
+        model.set(
             'settings.margins.value',
             print_preview.ticket_items.MarginsTypeValue.CUSTOM);
 
@@ -291,7 +264,7 @@ cr.define('custom_margins_test', function() {
 
             let onTransitionEnd = getAllTransitions(controls);
             // Controls become visible when margin type CUSTOM is selected.
-            container.set(
+            model.set(
                 'settings.margins.value',
                 print_preview.ticket_items.MarginsTypeValue.CUSTOM);
 
@@ -347,11 +320,11 @@ cr.define('custom_margins_test', function() {
         const controls = getControls();
 
         // Simulate setting custom margins from sticky settings.
-        container.set(
+        model.set(
             'settings.margins.value',
             print_preview.ticket_items.MarginsTypeValue.CUSTOM);
         const marginValues = setupCustomMargins();
-        container.notifyPath('settings.customMargins.value');
+        model.notifyPath('settings.customMargins.value');
         Polymer.dom.flush();
 
         // Validate control positions have been updated.
@@ -394,7 +367,7 @@ cr.define('custom_margins_test', function() {
 
       return finishSetup().then(() => {
         const controls = getControls();
-        container.set(
+        model.set(
             'settings.margins.value',
             print_preview.ticket_items.MarginsTypeValue.CUSTOM);
         Polymer.dom.flush();
@@ -419,7 +392,7 @@ cr.define('custom_margins_test', function() {
     test(assert(TestNames.SetControlsWithTextbox), function() {
       return finishSetup().then(() => {
         const controls = getControls();
-        container.set(
+        model.set(
             'settings.margins.value',
             print_preview.ticket_items.MarginsTypeValue.CUSTOM);
         Polymer.dom.flush();
@@ -463,7 +436,7 @@ cr.define('custom_margins_test', function() {
       return finishSetup().then(() => {
         // Simulate setting custom margins.
         const controls = getControls();
-        container.set(
+        model.set(
             'settings.margins.value',
             print_preview.ticket_items.MarginsTypeValue.CUSTOM);
 
@@ -475,7 +448,7 @@ cr.define('custom_margins_test', function() {
         });
 
         // Simulate setting minimum margins.
-        container.set(
+        model.set(
             'settings.margins.value',
             print_preview.ticket_items.MarginsTypeValue.MINIMUM);
 
@@ -494,7 +467,7 @@ cr.define('custom_margins_test', function() {
                  'mediaSize', {height_microns: 200000, width_microns: 200000})
           .then(() => {
             // Simulate setting custom margins again.
-            container.set(
+            model.set(
                 'settings.margins.value',
                 print_preview.ticket_items.MarginsTypeValue.CUSTOM);
 
@@ -513,7 +486,7 @@ cr.define('custom_margins_test', function() {
     test(assert(TestNames.LayoutClearsCustomMargins), function() {
       return validateMarginsClearedForSetting('layout', true).then(() => {
         // Simulate setting custom margins again
-        container.set(
+        model.set(
             'settings.margins.value',
             print_preview.ticket_items.MarginsTypeValue.CUSTOM);
 
@@ -532,7 +505,7 @@ cr.define('custom_margins_test', function() {
     // not updated based on the document margins - i.e. PDFs do not change the
     // custom margins state.
     test(assert(TestNames.IgnoreDocumentMarginsFromPDF), function() {
-      settings.margins.available = false;
+      model.set('settings.margins.available', false);
       return finishSetup().then(() => {
         assertEquals(
             '{}', JSON.stringify(container.getSettingValue('customMargins')));
@@ -542,7 +515,7 @@ cr.define('custom_margins_test', function() {
     // Test that if margins are not available but the user changes the media
     // size, the custom margins are cleared.
     test(assert(TestNames.MediaSizeClearsCustomMarginsPDF), function() {
-      settings.margins.available = false;
+      model.set('settings.margins.available', false);
       return validateMarginsClearedForSetting(
           'mediaSize', {height_microns: 200000, width_microns: 200000});
     });
@@ -564,7 +537,7 @@ cr.define('custom_margins_test', function() {
             const onTransitionEnd = getAllTransitions(getControls());
 
             // Controls become visible when margin type CUSTOM is selected.
-            container.set(
+            model.set(
                 'settings.margins.value',
                 print_preview.ticket_items.MarginsTypeValue.CUSTOM);
             container.notifyPath('settings.customMargins.value');

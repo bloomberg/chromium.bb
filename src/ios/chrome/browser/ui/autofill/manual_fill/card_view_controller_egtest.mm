@@ -26,7 +26,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#include "ios/web/public/features.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
@@ -175,7 +174,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
                           _personalDataManager->GetCreditCards().size();
                  }),
              @"Failed to add credit card.");
-  _personalDataManager->NotifyPersonalDataChangedForTest();
+  _personalDataManager->NotifyPersonalDataObserver();
 }
 
 // Adds a server credit card, one that needs CVC unlocking.
@@ -183,7 +182,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   DCHECK(card.record_type() != autofill::CreditCard::LOCAL_CARD);
   _personalDataManager->AddServerCreditCardForTest(
       std::make_unique<autofill::CreditCard>(card));
-  _personalDataManager->NotifyPersonalDataChangedForTest();
+  _personalDataManager->NotifyPersonalDataObserver();
 }
 
 - (void)saveLocalCreditCard {

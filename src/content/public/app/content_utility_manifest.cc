@@ -16,10 +16,6 @@ const service_manager::Manifest& GetContentUtilityManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kUtilityServiceName)
           .WithDisplayName("Content (utility process)")
-          .ExposeCapability("service_manager:service_factory",
-                            std::set<const char*>{
-                                "service_manager.mojom.ServiceFactory",
-                            })
           .ExposeCapability("browser",
                             std::set<const char*>{
                                 "content.mojom.Child",
@@ -30,7 +26,6 @@ const service_manager::Manifest& GetContentUtilityManifest() {
                                 "IPC.mojom.ChannelBootstrap",
                                 "printing.mojom.PdfToEmfConverterFactory",
                                 "printing.mojom.PdfToPwgRasterConverter",
-                                "service_manager.mojom.ServiceFactory",
                             })
           .RequireCapability("device", "device:power_monitor")
           .RequireCapability("device", "device:time_zone_monitor")

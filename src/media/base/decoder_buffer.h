@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/time/time.h"
@@ -79,6 +80,16 @@ class MEDIA_EXPORT DecoderBuffer
       off_t offset,
       size_t size);
 
+  // Create a DecoderBuffer where data() of |size| bytes resides within the
+  // ReadOnlySharedMemoryRegion referred to by |mapping| at non-negative offset
+  // |offset|. The buffer's |is_key_frame_| will default to false.
+  //
+  // Ownership of |region| is transferred to the buffer.
+  static scoped_refptr<DecoderBuffer> FromSharedMemoryRegion(
+      base::ReadOnlySharedMemoryRegion region,
+      off_t offset,
+      size_t size);
+
   // Create a DecoderBuffer indicating we've reached end of stream.
   //
   // Calling any method other than end_of_stream() on the resulting buffer
@@ -109,6 +120,8 @@ class MEDIA_EXPORT DecoderBuffer
 
   const uint8_t* data() const {
     DCHECK(!end_of_stream());
+    if (shared_mem_mapping_ && shared_mem_mapping_->IsValid())
+      return static_cast<const uint8_t*>(shared_mem_mapping_->memory());
     if (shm_)
       return static_cast<uint8_t*>(shm_->memory());
     return data_.get();
@@ -118,6 +131,7 @@ class MEDIA_EXPORT DecoderBuffer
   uint8_t* writable_data() const {
     DCHECK(!end_of_stream());
     DCHECK(!shm_);
+    DCHECK(!shared_mem_mapping_);
     return data_.get();
   }
 
@@ -160,7 +174,7 @@ class MEDIA_EXPORT DecoderBuffer
   }
 
   // If there's no data in this buffer, it represents end of stream.
-  bool end_of_stream() const { return !shm_ && !data_; }
+  bool end_of_stream() const { return !shared_mem_mapping_ && !shm_ && !data_; }
 
   bool is_key_frame() const {
     DCHECK(!end_of_stream());
@@ -196,6 +210,8 @@ class MEDIA_EXPORT DecoderBuffer
 
   DecoderBuffer(std::unique_ptr<UnalignedSharedMemory> shm, size_t size);
 
+  DecoderBuffer(std::unique_ptr<ReadOnlyUnalignedMapping> shared_mem_mapping,
+                size_t size);
   virtual ~DecoderBuffer();
 
  private:
@@ -216,6 +232,9 @@ class MEDIA_EXPORT DecoderBuffer
   // Copy of |data_| for debugging purposes. This field is not to be used.
   // crbug.com/794740.
   void* data_at_initialize_;
+
+  // Encoded data, if it is stored in a shared memory mapping.
+  std::unique_ptr<ReadOnlyUnalignedMapping> shared_mem_mapping_;
 
   // Encoded data, if it is stored in SHM.
   std::unique_ptr<UnalignedSharedMemory> shm_;

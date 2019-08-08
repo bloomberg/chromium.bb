@@ -264,7 +264,7 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
       case content::JAVASCRIPT_DIALOG_TYPE_CONFIRM: {
         *did_suppress_message = true;
         alerting_web_contents->GetMainFrame()->AddMessageToConsole(
-            content::CONSOLE_MESSAGE_LEVEL_WARNING,
+            blink::mojom::ConsoleMessageLevel::kWarning,
             base::StringPrintf(kDialogSuppressedConsoleMessageFormat, "confirm",
                                "5140698722467840"));
         return;
@@ -272,7 +272,7 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
       case content::JAVASCRIPT_DIALOG_TYPE_PROMPT: {
         *did_suppress_message = true;
         alerting_web_contents->GetMainFrame()->AddMessageToConsole(
-            content::CONSOLE_MESSAGE_LEVEL_WARNING,
+            blink::mojom::ConsoleMessageLevel::kWarning,
             base::StringPrintf(kDialogSuppressedConsoleMessageFormat, "prompt",
                                "5637107137642496"));
         return;

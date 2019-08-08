@@ -169,7 +169,7 @@ TEST_F(APIBindingJSUtilUnittest, TestSendRequestWithOptions) {
 
   const char kSendRequestWithNoOptions[] =
       "obj.sendRequest('alpha.functionWithCallback',\n"
-      "                ['someString', function() {}], undefined, undefined);";
+      "                ['someString', function() {}], undefined);";
   CallFunctionOnObject(context, v8_util, kSendRequestWithNoOptions);
   ASSERT_TRUE(last_request());
   EXPECT_EQ("alpha.functionWithCallback", last_request()->method_name);
@@ -179,7 +179,7 @@ TEST_F(APIBindingJSUtilUnittest, TestSendRequestWithOptions) {
 
   const char kSendRequestForIOThread[] =
       "obj.sendRequest('alpha.functionWithCallback',\n"
-      "                ['someOtherString', function() {}], undefined,\n"
+      "                ['someOtherString', function() {}],\n"
       "                {__proto__: null, forIOThread: true});";
   CallFunctionOnObject(context, v8_util, kSendRequestForIOThread);
   ASSERT_TRUE(last_request());
@@ -190,7 +190,7 @@ TEST_F(APIBindingJSUtilUnittest, TestSendRequestWithOptions) {
 
   const char kSendRequestForUIThread[] =
       "obj.sendRequest('alpha.functionWithCallback',\n"
-      "                ['someOtherString', function() {}], undefined,\n"
+      "                ['someOtherString', function() {}],\n"
       "                {__proto__: null, forIOThread: false});";
   CallFunctionOnObject(context, v8_util, kSendRequestForUIThread);
   ASSERT_TRUE(last_request());
@@ -202,7 +202,7 @@ TEST_F(APIBindingJSUtilUnittest, TestSendRequestWithOptions) {
   const char kSendRequestWithCustomCallback[] =
       R"(obj.sendRequest(
              'alpha.functionWithCallback',
-             ['stringy', function() {}], undefined,
+             ['stringy', function() {}],
              {
                __proto__: null,
                customCallback: function() {
@@ -234,7 +234,7 @@ TEST_F(APIBindingJSUtilUnittest, TestSendRequestSerializationFailure) {
   const char kSendRequest[] =
       R"(obj.sendRequest('alpha.functionWithCallback',
                          [undefined, 1/0, function() {}],
-                         undefined, undefined);)";
+                         undefined);)";
   CallFunctionOnObject(context, v8_util, kSendRequest);
   ASSERT_TRUE(last_request());
   EXPECT_EQ("alpha.functionWithCallback", last_request()->method_name);

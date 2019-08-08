@@ -73,19 +73,18 @@ ExternalProtocolHandler::BlockState GetBlockStateWithDelegate(
 
 void RunExternalProtocolDialogWithDelegate(
     const GURL& url,
-    int render_process_host_id,
-    int routing_id,
+    content::WebContents* web_contents,
     ui::PageTransition page_transition,
     bool has_user_gesture,
     ExternalProtocolHandler::Delegate* delegate) {
+  DCHECK(web_contents);
   if (delegate) {
-    delegate->RunExternalProtocolDialog(url, render_process_host_id, routing_id,
-                                        page_transition, has_user_gesture);
+    delegate->RunExternalProtocolDialog(url, web_contents, page_transition,
+                                        has_user_gesture);
     return;
   }
   ExternalProtocolHandler::RunExternalProtocolDialog(
-      url, render_process_host_id, routing_id, page_transition,
-      has_user_gesture);
+      url, web_contents, page_transition, has_user_gesture);
 }
 
 void LaunchUrlWithoutSecurityCheckWithDelegate(
@@ -129,20 +128,24 @@ void OnDefaultProtocolClientWorkerFinished(
     return;
   }
 
+  content::WebContents* web_contents = tab_util::GetWebContentsByID(
+      render_process_host_id, render_view_routing_id);
+
   // If we get here, either we are not the default or we cannot work out
   // what the default is, so we proceed.
   if (prompt_user) {
+    // Never prompt the user without a web_contents.
+    if (!web_contents)
+      return;
+
     // Ask the user if they want to allow the protocol. This will call
     // LaunchUrlWithoutSecurityCheck if the user decides to accept the
     // protocol.
     RunExternalProtocolDialogWithDelegate(
-        escaped_url, render_process_host_id, render_view_routing_id,
-        page_transition, has_user_gesture, delegate);
+        escaped_url, web_contents, page_transition, has_user_gesture, delegate);
     return;
   }
 
-  content::WebContents* web_contents = tab_util::GetWebContentsByID(
-      render_process_host_id, render_view_routing_id);
   LaunchUrlWithoutSecurityCheckWithDelegate(escaped_url, web_contents,
                                             delegate);
 }

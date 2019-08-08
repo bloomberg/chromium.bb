@@ -17,6 +17,7 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.SystemClock;
@@ -39,6 +40,7 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.VrSettingsFile;
@@ -52,6 +54,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -65,7 +68,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT) // WebVR and WebXR are only supported on K+
+@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebVR and WebXR are only supported on L+
 @TargetApi(Build.VERSION_CODES.KITKAT) // Necessary to allow taking screenshots with UiAutomation
 public class WebXrVrTransitionTest {
     @ClassParameter
@@ -122,38 +125,36 @@ public class WebXrVrTransitionTest {
         framework.enterSessionWithUserGestureOrFail();
         Assert.assertTrue("Browser did not enter VR", VrShellDelegate.isInVr());
 
-        // Initial Pixel Test - Verify that the Canvas is blue.
-        // The Canvas is set to blue while presenting.
-        final UiDevice uiDevice =
-                UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-
-        // Screenshots are just black on standalones, so skip this part in that case.
-        if (!TestVrShellDelegate.isOnStandalone()) {
+        // Verify that we're actually rendering WebXR/VR content and that it's blue (the canvas
+        // is set to blue while presenting). This could be a proper RenderTest, but it's less
+        // overhead to just directly check a pixel.
+        // TODO(https://crbug.com/947252): Run this part unconditionally once the cause of the
+        // flakiness on older devices is fixed.
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             CriteriaHelper.pollInstrumentationThread(
                     ()
                             -> {
-                        Bitmap screenshot = InstrumentationRegistry.getInstrumentation()
-                                                    .getUiAutomation()
-                                                    .takeScreenshot();
-
-                        if (screenshot != null) {
-                            // Calculate center of eye coordinates.
-                            int height = uiDevice.getDisplayHeight() / 2;
-                            int width = uiDevice.getDisplayWidth() / 4;
-
-                            // Verify screen is blue.
-                            int pixel = screenshot.getPixel(width, height);
-                            // Workaround for the immersive mode popup sometimes being rendered over
-                            // the screen on K, which causes the pure blue to be darkened to (0, 0,
-                            // 127).
-                            // TODO(https://crbug.com/819021): Only check pure blue.
-                            return pixel == Color.BLUE || pixel == Color.rgb(0, 0, 127);
+                        // Creating temporary directories doesn't seem to work, so use a fixed
+                        // location that we know we can write to.
+                        File dumpDirectory = new File(UrlUtils.getIsolatedTestFilePath(
+                                "chrome/test/data/vr/framebuffer_dumps"));
+                        if (!dumpDirectory.exists() && !dumpDirectory.isDirectory()) {
+                            Assert.assertTrue("Failed to make framebuffer dump directory",
+                                    dumpDirectory.mkdirs());
                         }
-                        return false;
+                        File baseImagePath = new File(dumpDirectory, "dump");
+                        NativeUiUtils.dumpNextFramesFrameBuffers(baseImagePath.getPath());
+                        String filepath = baseImagePath.getPath()
+                                + NativeUiUtils.FRAME_BUFFER_SUFFIX_WEB_XR_CONTENT + ".png";
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                        Bitmap bitmap = BitmapFactory.decodeFile(filepath, options);
+                        return bitmap != null && Color.BLUE == bitmap.getPixel(0, 0);
                     },
                     "Immersive session started, but browser not visibly in VR",
                     POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_LONG_MS);
         }
+
         framework.assertNoJavaScriptErrors();
     }
 

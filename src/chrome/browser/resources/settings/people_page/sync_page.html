@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
@@ -11,7 +12,6 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="sync_browser_proxy.html">
 <link rel="import" href="sync_controls.html">
 <link rel="import" href="../privacy_page/personalization_options.html">
@@ -32,12 +32,12 @@
       }
 
       #sync-separator {
-        border-bottom: var(--settings-separator-line);
+        border-bottom: var(--cr-separator-line);
       }
 
       #create-password-box {
         /* In order to line up with the encryption radio box text. */
-        margin-inline-start: var(--settings-indent-width);
+        margin-inline-start: var(--cr-section-indent-width);
       }
 
       #create-password-box {
@@ -53,10 +53,10 @@
       }
 
       #existingPassphrase {
-        border-bottom: var(--settings-separator-line);
-        border-top: var(--settings-separator-line);
+        border-bottom: var(--cr-separator-line);
+        border-top: var(--cr-separator-line);
         /* This particular list frame is not indented. */
-        padding-inline-start: var(--settings-box-row-padding);
+        padding-inline-start: var(--cr-section-padding);
       }
 
       #submitExistingPassphrase {
@@ -73,7 +73,7 @@
       }
 
       #other-sync-items > .list-item:not(.first) {
-        border-top: var(--settings-separator-line);
+        border-top: var(--cr-separator-line);
       }
 
       .passphrase-reset-icon {
@@ -120,13 +120,14 @@
     </div>
 
     <template is="dom-if" if="[[shouldShowExistingPassphraseBelowAccount_(
-      unifiedConsentEnabled, syncPrefs.passphraseRequired)]]">
+        unifiedConsentEnabled, syncPrefs.passphraseRequired)]]"
+        notify-dom-change on-dom-change="focusPassphraseInput_">
       <div id="existingPassphrase" class="list-frame">
         <div id="existingPassphraseTitle" class="list-item">
             <div class="start settings-box-text">
               <div>$i18n{existingPassphraseTitle}</div>
-              <div class="secondary" inner-h-t-m-l="[[enterPassphrasePrompt_(
-                  syncPrefs.passphraseTypeIsCustom)]]">
+              <div class="secondary"
+                  inner-h-t-m-l="[[syncPrefs.enterPassphraseBody]]">
               </div>
             </div>
         </div>
@@ -169,12 +170,12 @@
         <!-- TODO(http://crbug.com/862983) Remove this section once the Unified
             Consent feature is launched. -->
         <template is="dom-if" if="[[shouldShowExistingPassphraseInSyncSection_(
-            unifiedConsentEnabled, syncPrefs.passphraseRequired)]]">
+            unifiedConsentEnabled, syncPrefs.passphraseRequired)]]"
+            notify-dom-change on-dom-change="focusPassphraseInput_">
           <div id="existingPassphrase" class="list-frame">
             <div class="list-item">
               <div class="settings-box-text"
-                  inner-h-t-m-l="[[enterPassphrasePrompt_(
-                      syncPrefs.passphraseTypeIsCustom)]]">
+                  inner-h-t-m-l="[[syncPrefs.enterPassphraseBody]]">
               </div>
             </div>
             <div id="existingPassphraseContainer" class="list-item">
@@ -210,9 +211,8 @@
               <div class="start">
                 $i18n{syncAdvancedPageTitle}
               </div>
-              <paper-icon-button-light class="subpage-arrow">
-                <button aria-label="$i18n{syncAdvancedPageTitle}"></button>
-              </paper-icon-button-light>
+              <cr-icon-button class="subpage-arrow"
+                  aria-label="$i18n{syncAdvancedPageTitle}"></cr-icon-button>
             </div>
           </template>
 
@@ -233,9 +233,7 @@
             <div class="start settings-box-text">
               $i18n{personalizeGoogleServicesTitle}
             </div>
-            <paper-icon-button-light actionable class="icon-external">
-              <button></button>
-            </paper-icon-button-light>
+            <cr-icon-button actionable class="icon-external"></cr-icon-button>
           </a>
 
           <a id="syncDashboardLink"
@@ -246,9 +244,7 @@
             <div class="start settings-box-text">
               $i18n{manageSyncedDataTitle}
             </div>
-            <paper-icon-button-light actionable class="icon-external">
-              <button></button>
-            </paper-icon-button-light>
+            <cr-icon-button actionable class="icon-external"></cr-icon-button>
           </a>
 
           <div id="encryptionDescription"
@@ -272,8 +268,7 @@
               hidden="[[syncPrefs.passphraseRequired]]">
             <cr-radio-group
                 id="encryptionRadioGroup"
-                selected="[[selectedEncryptionRadio_(
-                    syncPrefs.passphraseTypeIsCustom)]]"
+                selected="[[selectedEncryptionRadio_(syncPrefs)]]"
                 on-selected-changed="onEncryptionRadioSelectionChanged_"
                 disabled$="[[disableEncryptionOptions_]]">
               <cr-radio-button name="encrypt-with-google" class="list-item"

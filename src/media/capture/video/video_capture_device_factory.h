@@ -10,15 +10,12 @@
 #include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "media/capture/video/video_capture_device.h"
-#include "media/mojo/interfaces/jpeg_decode_accelerator.mojom.h"
-#include "media/mojo/interfaces/jpeg_encode_accelerator.mojom.h"
+#include "media/mojo/interfaces/mjpeg_decode_accelerator.mojom.h"
 
 namespace media {
 
-using MojoJpegDecodeAcceleratorFactoryCB =
-    base::RepeatingCallback<void(media::mojom::JpegDecodeAcceleratorRequest)>;
-using MojoJpegEncodeAcceleratorFactoryCB =
-    base::RepeatingCallback<void(media::mojom::JpegEncodeAcceleratorRequest)>;
+using MojoMjpegDecodeAcceleratorFactoryCB =
+    base::RepeatingCallback<void(media::mojom::MjpegDecodeAcceleratorRequest)>;
 
 // VideoCaptureDeviceFactory is the base class for creation of video capture
 // devices in the different platforms. VCDFs are created by MediaStreamManager

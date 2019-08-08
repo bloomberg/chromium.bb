@@ -43,9 +43,6 @@ class CORE_EXPORT DOMTokenList : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMTokenList* Create(Element& element, const QualifiedName& attr) {
-    return MakeGarbageCollected<DOMTokenList>(element, attr);
-  }
   DOMTokenList(Element& element, const QualifiedName& attr)
       : element_(element), attribute_name_(attr) {}
   ~DOMTokenList() override = default;

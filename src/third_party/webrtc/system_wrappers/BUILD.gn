@@ -17,14 +17,12 @@ rtc_static_library("system_wrappers") {
   sources = [
     "include/clock.h",
     "include/cpu_info.h",
-    "include/event_wrapper.h",
     "include/ntp_time.h",
     "include/rtp_to_ntp_estimator.h",
     "include/sleep.h",
     "source/clock.cc",
     "source/cpu_features.cc",
     "source/cpu_info.cc",
-    "source/event.cc",
     "source/rtp_to_ntp_estimator.cc",
     "source/sleep.cc",
   ]
@@ -66,9 +64,9 @@ rtc_static_library("system_wrappers") {
   if (is_win) {
     libs += [ "winmm.lib" ]
 
-    # Windows needs ../rtc_base:rtc_base due to include of
+    # Windows needs ../rtc_base due to include of
     # webrtc/rtc_base/win32.h in source/clock.cc.
-    deps += [ "../rtc_base:rtc_base" ]
+    deps += [ "../rtc_base" ]
   }
 
   deps += [
@@ -106,6 +104,20 @@ rtc_source_set("field_trial") {
   }
 }
 
+rtc_source_set("event_wrapper") {
+  visibility = [
+    "../modules/video_coding",
+    "../modules/video_coding:video_coding_unittests",
+  ]
+  sources = [
+    "include/event_wrapper.h",
+    "source/event.cc",
+  ]
+  deps = [
+    "../rtc_base:rtc_event",
+  ]
+}
+
 rtc_source_set("metrics") {
   visibility = [ "*" ]
   public = [
@@ -118,7 +130,6 @@ rtc_source_set("metrics") {
     defines = [ "WEBRTC_EXCLUDE_METRICS_DEFAULT" ]
   }
   deps = [
-    "..:webrtc_common",
     "../rtc_base:checks",
     "../rtc_base:rtc_base_approved",
   ]
@@ -134,7 +145,7 @@ if (is_android && !build_with_mozilla) {
     ]
 
     deps = [
-      "//third_party/android_tools:cpu_features",
+      "//third_party/android_sdk:cpu_features",
     ]
   }
 }
@@ -165,7 +176,6 @@ if (rtc_include_tests) {
     deps = [
       ":metrics",
       ":system_wrappers",
-      "..:webrtc_common",
       "../rtc_base:checks",
       "../rtc_base:rtc_base_approved",
       "../test:test_main",

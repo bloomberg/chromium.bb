@@ -571,9 +571,12 @@ static void JNI_WebsitePreferenceBridge_GetChosenObjects(
     ScopedJavaLocalRef<jstring> jserialized =
         ConvertUTF8ToJavaString(env, serialized);
 
+    jboolean jis_managed =
+        object->source == content_settings::SETTING_SOURCE_POLICY;
+
     Java_WebsitePreferenceBridge_insertChosenObjectInfoIntoList(
         env, list, content_settings_type, jorigin, jembedder, jname,
-        jserialized);
+        jserialized, jis_managed);
   }
 }
 

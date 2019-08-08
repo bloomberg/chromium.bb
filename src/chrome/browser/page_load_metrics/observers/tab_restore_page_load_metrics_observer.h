@@ -30,7 +30,7 @@ class TabRestorePageLoadMetricsObserver
       const GURL& currently_committed_url,
       bool started_in_foreground) override;
   void OnResourceDataUseObserved(
-      FrameTreeNodeId frame_tree_node_id,
+      content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
   page_load_metrics::PageLoadMetricsObserver::ObservePolicy

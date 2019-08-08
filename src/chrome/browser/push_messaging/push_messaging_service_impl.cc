@@ -55,7 +55,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/push_subscription_options.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
@@ -458,7 +458,8 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 
   if (!options.user_visible_only) {
     web_contents->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR, kSilentPushUnsupportedMessage);
+        blink::mojom::ConsoleMessageLevel::kError,
+        kSilentPushUnsupportedMessage);
 
     SubscribeEndWithError(
         callback, content::mojom::PushRegistrationStatus::PERMISSION_DENIED);

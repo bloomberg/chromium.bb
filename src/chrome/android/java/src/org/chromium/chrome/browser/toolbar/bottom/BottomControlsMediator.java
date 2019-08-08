@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.toolbar.bottom;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -11,6 +13,7 @@ import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -24,15 +27,31 @@ import org.chromium.ui.resources.ResourceManager;
 class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListener,
                                         KeyboardVisibilityDelegate.KeyboardVisibilityListener,
                                         SceneChangeObserver,
-                                        OverlayPanelManager.OverlayPanelManagerObserver {
+                                        OverlayPanelManager.OverlayPanelManagerObserver,
+                                        ImmersiveModeManager.ImmersiveModeObserver {
     /** The model for the bottom controls component that holds all of its view state. */
     private final PropertyModel mModel;
 
     /** The fullscreen manager to observe browser controls events. */
     private final ChromeFullscreenManager mFullscreenManager;
 
-    /** The height of the bottom bar in pixels */
-    private final int mBottomControlContainerHeight;
+    /**
+     * The height of the bottom bar in pixels including any adjustments for immersive mode, but not
+     * including the top shadow.
+     */
+    private int mBottomControlsHeight;
+
+    /**
+     * The base height of the bottom bar in pixels not including adjustments for immersive mode or
+     * the top shadow.
+     */
+    private final int mBottomControlsBaseHeight;
+
+    /**
+     * The height of the bottom bar container (which includes the top shadow) in pixels not
+     * including any offset for immersive mode.
+     */
+    private final int mBottomControlsContainerBaseHeight;
 
     /** A {@link WindowAndroid} for watching keyboard visibility events. */
     private WindowAndroid mWindowAndroid;
@@ -49,23 +68,30 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
     /** Whether the soft keyboard is visible. */
     private boolean mIsKeyboardVisible;
 
+    /** The {@link ImmersiveModeManager} for the containing activity.*/
+    private @Nullable ImmersiveModeManager mImmersiveModeManager;
+
     /**
      * Build a new mediator that handles events from outside the bottom controls component.
      * @param model The {@link BottomControlsProperties} that holds all the view state for the
-     *         bottom
-     *              controls component.
+     *         bottom controls component.
      * @param fullscreenManager A {@link ChromeFullscreenManager} for events related to the browser
      *                          controls.
-     * @param bottomControlContainerHeight The height of the bottom bar in pixels.
+     * @param bottomControlsHeight The height of the bottom bar in pixels.
+     * @param bottomControlsContainerHeight The height of the bottom bar container in px. This
+     *                                      should be the height of {@code bottomControlsHeight}
+     *                                      plus the height of the top shadow.
      */
     BottomControlsMediator(PropertyModel model, ChromeFullscreenManager fullscreenManager,
-            int bottomControlContainerHeight) {
+            int bottomControlsHeight, int bottomControlsContainerHeight) {
         mModel = model;
 
         mFullscreenManager = fullscreenManager;
         mFullscreenManager.addListener(this);
 
-        mBottomControlContainerHeight = bottomControlContainerHeight;
+        mBottomControlsBaseHeight = bottomControlsHeight;
+        mBottomControlsHeight = mBottomControlsBaseHeight;
+        mBottomControlsContainerBaseHeight = bottomControlsContainerHeight;
     }
 
     /**
@@ -103,6 +129,20 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
     }
 
     /**
+     * @param immersiveModeManager The {@link ImmersiveModeManager} for the containing activity.
+     */
+    void setImmersiveModeManager(ImmersiveModeManager immersiveModeManager) {
+        if (!immersiveModeManager.isImmersiveModeSupported()) return;
+
+        mImmersiveModeManager = immersiveModeManager;
+        mImmersiveModeManager.addObserver(this);
+
+        if (mImmersiveModeManager.getBottomUiInsetPx() != 0) {
+            onBottomUiInsetChanged(mImmersiveModeManager.getBottomUiInsetPx());
+        }
+    }
+
+    /**
      * Clean up anything that needs to be when the bottom controls component is destroyed.
      */
     void destroy() {
@@ -116,6 +156,8 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
             manager.getOverlayPanelManager().removeObserver(this);
             manager.removeSceneChangeObserver(this);
         }
+
+        if (mImmersiveModeManager != null) mImmersiveModeManager.removeObserver(this);
     }
 
     @Override
@@ -162,6 +204,13 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
     }
 
     /**
+     * @return Whether the browser is currently in fullscreen mode.
+     */
+    private boolean isInFullscreenMode() {
+        return mFullscreenManager != null && mFullscreenManager.getPersistentFullscreenMode();
+    }
+
+    /**
      * The composited view is the composited version of the Android View. It is used to be able to
      * scroll the bottom controls off-screen synchronously. Since the bottom controls live below
      * the webcontents we re-size the webcontents through
@@ -169,10 +218,11 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
      * visibility changes.
      */
     private void updateCompositedViewVisibility() {
-        final boolean isCompositedViewVisible = mIsBottomControlsVisible && !mIsKeyboardVisible;
+        final boolean isCompositedViewVisible =
+                mIsBottomControlsVisible && !mIsKeyboardVisible && !isInFullscreenMode();
         mModel.set(BottomControlsProperties.COMPOSITED_VIEW_VISIBLE, isCompositedViewVisible);
         mFullscreenManager.setBottomControlsHeight(
-                isCompositedViewVisible ? mBottomControlContainerHeight : 0);
+                isCompositedViewVisible ? mBottomControlsHeight : 0);
     }
 
     /**
@@ -185,6 +235,20 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
     private void updateAndroidViewVisibility() {
         mModel.set(BottomControlsProperties.ANDROID_VIEW_VISIBLE,
                 mIsBottomControlsVisible && !mIsKeyboardVisible && !mIsOverlayPanelShowing
-                        && !mIsInSwipeLayout && mFullscreenManager.getBottomControlOffset() == 0);
+                        && !mIsInSwipeLayout && mFullscreenManager.getBottomControlOffset() == 0
+                        && !isInFullscreenMode());
+    }
+
+    @Override
+    public void onImmersiveModeChanged(boolean inImmersiveMode) {}
+
+    @Override
+    public void onBottomUiInsetChanged(int bottomUiInsetPx) {
+        mBottomControlsHeight = mBottomControlsBaseHeight + bottomUiInsetPx;
+        mModel.set(BottomControlsProperties.BOTTOM_CONTROLS_HEIGHT_PX, mBottomControlsHeight);
+        mModel.set(BottomControlsProperties.BOTTOM_CONTROLS_CONTAINER_HEIGHT_PX,
+                mBottomControlsContainerBaseHeight + bottomUiInsetPx);
+
+        updateCompositedViewVisibility();
     }
 }

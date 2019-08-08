@@ -82,27 +82,6 @@ jumbo_component("shell_dialogs") {
   }
 }
 
-if (is_mac) {
-  mac_xib_bundle_data("shell_dialogs_unittests_xibs") {
-    testonly = true
-    sources = [
-      "//chrome/app/nibs/SaveAccessoryView.xib",
-    ]
-  }
-
-  mac_framework_bundle("shell_dialogs_unittests_bundle") {
-    testonly = true
-    framework_version = "S"
-    framework_contents = [ "Resources" ]
-    info_plist = "//ui/base/test/framework-Info.plist"
-    deps = [
-      ":shell_dialogs_unittests_xibs",
-      "//ui/resources:ui_test_pak_bundle_data",
-    ]
-    extra_substitutions = [ "CHROMIUM_BUNDLE_ID=$target_name" ]
-  }
-}
-
 test("shell_dialogs_unittests") {
   testonly = true
   sources = [
@@ -122,8 +101,4 @@ test("shell_dialogs_unittests") {
     "//ui/resources:ui_test_pak_data",
     "//ui/strings",
   ]
-
-  if (is_mac) {
-    deps += [ ":shell_dialogs_unittests_bundle" ]
-  }
 }

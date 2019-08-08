@@ -29,6 +29,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 #include "components/download/quarantine/common_win.h"
 #include "components/download/quarantine/quarantine_features_win.h"
 #include "url/gurl.h"
@@ -47,9 +48,8 @@ bool IsValidUrlForAttachmentServices(const GURL& url) {
 // streams are not supported, like a file on a FAT32 filesystem.  This function
 // does not invoke Windows Attachment Execution Services.
 //
-// If the AugmentedZoneIdentifier feature is enabled, the ReferrerUrl and
-// HostUrl values are set according to the behavior of the IAttachmentExecute
-// interface on Windows 10.
+// On Windows 10 or higher, the ReferrerUrl and HostUrl values are set according
+// to the behavior of the IAttachmentExecute interface.
 //
 // |full_path| is the path to the downloaded file.
 QuarantineFileResult SetInternetZoneIdentifierDirectly(
@@ -68,7 +68,7 @@ QuarantineFileResult SetInternetZoneIdentifierDirectly(
   static const char kHostUrlFormat[] = "HostUrl=%s\r\n";
 
   std::string identifier = "[ZoneTransfer]\r\nZoneId=3\r\n";
-  if (base::FeatureList::IsEnabled(kAugmentedZoneIdentifier)) {
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
     // Match what the InvokeAttachmentServices() function will output, including
     // the order of the values.
     if (IsValidUrlForAttachmentServices(referrer_url)) {
@@ -92,6 +92,39 @@ QuarantineFileResult SetInternetZoneIdentifierDirectly(
              : QuarantineFileResult::ANNOTATION_FAILED;
 }
 
+// Maps a return code from an unsuccessful IAttachmentExecute::Save() call to a
+// QuarantineFileResult.
+//
+// Typical return codes from IAttachmentExecute::Save():
+//   S_OK   : The file was okay. If any viruses were found, they were cleaned.
+//   E_FAIL : Virus infected.
+//   INET_E_SECURITY_PROBLEM : The file was blocked due to security policy.
+//
+// Any other return value indicates an unexpected error during the scan.
+QuarantineFileResult FailedSaveResultToQuarantineResult(HRESULT result) {
+  switch (result) {
+    case INET_E_SECURITY_PROBLEM:  // 0x800c000e
+      // This is returned if the download was blocked due to security
+      // restrictions. E.g. if the source URL was in the Restricted Sites zone
+      // and downloads are blocked on that zone, then the download would be
+      // deleted and this error code is returned.
+      return QuarantineFileResult::BLOCKED_BY_POLICY;
+
+    case E_FAIL:  // 0x80004005
+      // Returned if an anti-virus product reports an infection in the
+      // downloaded file during IAE::Save().
+      return QuarantineFileResult::VIRUS_INFECTED;
+
+    default:
+      // Any other error that occurs during IAttachmentExecute::Save() likely
+      // indicates a problem with the security check, but not necessarily the
+      // download. This also includes cases where SUCCEEDED(result) is true. In
+      // the latter case we are likely dealing with a situation where the file
+      // is missing after a successful scan. See http://crbug.com/153212.
+      return QuarantineFileResult::SECURITY_CHECK_FAILED;
+  }
+}
+
 // Invokes IAttachmentExecute::Save on CLSID_AttachmentServices to validate the
 // downloaded file. The call may scan the file for viruses and if necessary,
 // annotate it with evidence.  As a result of the validation, the file may be
@@ -99,19 +132,12 @@ QuarantineFileResult SetInternetZoneIdentifierDirectly(
 //
 // IAE::Save() will delete the file if it was found to be blocked by local
 // security policy or if it was found to be infected. The call may also delete
-// the file due to other failures (http://crbug.com/153212). A failure code will
-// be returned in these cases.
+// the file due to other failures (http://crbug.com/153212). In these cases,
+// |result| will contain the failure code.
 //
 // The return value is |false| iff the function fails to invoke
 // IAttachmentExecute::Save(). If the function returns |true|, then the result
-// of invoking IAttachmentExecute::Save() is stored in |save_result|.
-//
-// Typical |save_result| values:
-//   S_OK   : The file was okay. If any viruses were found, they were cleaned.
-//   E_FAIL : Virus infected.
-//   INET_E_SECURITY_PROBLEM : The file was blocked due to security policy.
-//
-// Any other return value indicates an unexpected error during the scan.
+// of invoking IAttachmentExecute::Save() is stored in |result|.
 //
 // |full_path| : is the path to the downloaded file. This should be the final
 //               path of the download. Must be present.
@@ -121,16 +147,15 @@ QuarantineFileResult SetInternetZoneIdentifierDirectly(
 //               will not be set.
 // |client_guid|: the GUID to be set in the IAttachmentExecute client slot.
 //                Used to identify the app to the system AV function.
-// |save_result|: Receives the result of invoking IAttachmentExecute::Save().
+// |result|: Receives the result of invoking IAttachmentExecute::Save().
 bool InvokeAttachmentServices(const base::FilePath& full_path,
                               const GURL& source_url,
                               const GURL& referrer_url,
                               const GUID& client_guid,
-                              HRESULT* save_result) {
+                              QuarantineFileResult* result) {
   Microsoft::WRL::ComPtr<IAttachmentExecute> attachment_services;
   HRESULT hr = ::CoCreateInstance(CLSID_AttachmentServices, nullptr, CLSCTX_ALL,
                                   IID_PPV_ARGS(&attachment_services));
-  *save_result = S_OK;
 
   if (FAILED(hr)) {
     // The thread must have COM initialized.
@@ -175,39 +200,30 @@ bool InvokeAttachmentServices(const base::FilePath& full_path,
       return false;
   }
 
+  HRESULT save_result = S_OK;
   {
     // This method has been known to take longer than 10 seconds in some
     // instances.
     SCOPED_UMA_HISTOGRAM_LONG_TIMER("Download.AttachmentServices.Duration");
-    *save_result = attachment_services->Save();
+    save_result = attachment_services->Save();
   }
+
+  // If the download file is missing after the call, then treat this as an
+  // interrupted download.
+  //
+  // If IAttachmentExecute::Save() failed, but the downloaded file is still
+  // around, then don't interrupt the download. Attachment Execution Services
+  // deletes the submitted file if the downloaded file is blocked by policy or
+  // if it was found to be infected.
+  //
+  // If the file is still there, then the error could be due to Windows
+  // Attachment Services not being available or some other error during the AES
+  // invocation. In either case, we don't surface the error to the user.
+  *result = base::PathExists(full_path)
+                ? QuarantineFileResult::OK
+                : FailedSaveResultToQuarantineResult(save_result);
+
   return true;
-}
-
-// Maps a return code from an unsuccessful IAttachmentExecute::Save() call to a
-// QuarantineFileResult.
-QuarantineFileResult FailedSaveResultToQuarantineResult(HRESULT result) {
-  switch (result) {
-    case INET_E_SECURITY_PROBLEM:  // 0x800c000e
-      // This is returned if the download was blocked due to security
-      // restrictions. E.g. if the source URL was in the Restricted Sites zone
-      // and downloads are blocked on that zone, then the download would be
-      // deleted and this error code is returned.
-      return QuarantineFileResult::BLOCKED_BY_POLICY;
-
-    case E_FAIL:  // 0x80004005
-      // Returned if an anti-virus product reports an infection in the
-      // downloaded file during IAE::Save().
-      return QuarantineFileResult::VIRUS_INFECTED;
-
-    default:
-      // Any other error that occurs during IAttachmentExecute::Save() likely
-      // indicates a problem with the security check, but not necessarily the
-      // download. This also includes cases where SUCCEEDED(result) is true. In
-      // the latter case we are likely dealing with a situation where the file
-      // is missing after a successful scan. See http://crbug.com/153212.
-      return QuarantineFileResult::SECURITY_CHECK_FAILED;
-  }
 }
 
 }  // namespace
@@ -238,8 +254,6 @@ QuarantineFileResult QuarantineFile(const base::FilePath& file,
     return SetInternetZoneIdentifierDirectly(file, source_url, referrer_url);
   }
 
-  HRESULT save_result = S_OK;
-
   // Check if the attachment services should be invoked based on the experiment
   // state. Not invoking the attachment services means that the Zone Identifier
   // will always be set to 3 (Internet), regardless of URL zones configurations.
@@ -252,27 +266,14 @@ QuarantineFileResult QuarantineFile(const base::FilePath& file,
       base::IsMachineExternallyManaged() ||
       base::FeatureList::IsEnabled(kInvokeAttachmentServices);
 
-  bool attachment_services_available =
-      should_invoke_attachment_services &&
+  QuarantineFileResult attachment_services_result = QuarantineFileResult::OK;
+  if (should_invoke_attachment_services &&
       InvokeAttachmentServices(file, source_url, referrer_url, guid,
-                               &save_result);
-  if (!attachment_services_available)
-    return SetInternetZoneIdentifierDirectly(file, source_url, referrer_url);
+                               &attachment_services_result)) {
+    return attachment_services_result;
+  }
 
-  // If the download file is missing after the call, then treat this as an
-  // interrupted download.
-  //
-  // If InvokeAttachmentServices() failed, but the downloaded file is still
-  // around, then don't interrupt the download. Attachment Execution Services
-  // deletes the submitted file if the downloaded file is blocked by policy or
-  // if it was found to be infected.
-  //
-  // If the file is still there, then the error could be due to Windows
-  // Attachment Services not being available or some other error during the AES
-  // invocation. In either case, we don't surface the error to the user.
-  if (!base::PathExists(file))
-    return FailedSaveResultToQuarantineResult(save_result);
-  return QuarantineFileResult::OK;
+  return SetInternetZoneIdentifierDirectly(file, source_url, referrer_url);
 }
 
 }  // namespace download

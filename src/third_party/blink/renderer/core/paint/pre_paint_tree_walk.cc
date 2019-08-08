@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
@@ -25,6 +24,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -50,9 +50,14 @@ void PrePaintTreeWalk::WalkTree(LocalFrameView& root_frame_view) {
   if (needs_tree_builder_context_update)
     GeometryMapper::ClearCache();
 
-  VisualViewportPaintPropertyTreeBuilder::Update(
+  auto property_changed = VisualViewportPaintPropertyTreeBuilder::Update(
       root_frame_view.GetPage()->GetVisualViewport(),
       *context_storage_.back().tree_builder_context);
+
+  if (property_changed >
+      PaintPropertyChangeType::kChangedOnlyCompositedValues) {
+    root_frame_view.SetPaintArtifactCompositorNeedsUpdate();
+  }
 
   Walk(root_frame_view);
   paint_invalidator_.ProcessPendingDelayedPaintInvalidations();
@@ -134,18 +139,19 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
 #endif
   }
 
-  if (origin_trials::JankTrackingEnabled(frame_view.GetFrame().GetDocument()))
+  if (RuntimeEnabledFeatures::JankTrackingEnabled(
+          frame_view.GetFrame().GetDocument()))
     frame_view.GetJankTracker().NotifyPrePaintFinished();
 
   context_storage_.pop_back();
 }
 
-bool PrePaintTreeWalk::NeedsEffectiveWhitelistedTouchActionUpdate(
+bool PrePaintTreeWalk::NeedsEffectiveAllowedTouchActionUpdate(
     const LayoutObject& object,
     PrePaintTreeWalk::PrePaintTreeWalkContext& context) const {
-  return context.effective_whitelisted_touch_action_changed ||
-         object.EffectiveWhitelistedTouchActionChanged() ||
-         object.DescendantEffectiveWhitelistedTouchActionChanged();
+  return context.effective_allowed_touch_action_changed ||
+         object.EffectiveAllowedTouchActionChanged() ||
+         object.DescendantEffectiveAllowedTouchActionChanged();
 }
 
 namespace {
@@ -169,8 +175,9 @@ bool HasBlockingTouchEventHandler(const LayoutObject& object) {
   }
 
   auto* node = object.GetNode();
-  if (!node && object.IsLayoutBlockFlow() &&
-      ToLayoutBlockFlow(object).IsAnonymousBlockContinuation()) {
+  auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(object);
+  if (!node && layout_block_flow &&
+      layout_block_flow->IsAnonymousBlockContinuation()) {
     // An anonymous continuation does not have handlers so we need to check the
     // DOM ancestor for handlers using |NodeForHitTest|.
     node = object.NodeForHitTest();
@@ -181,13 +188,13 @@ bool HasBlockingTouchEventHandler(const LayoutObject& object) {
 }
 }  // namespace
 
-void PrePaintTreeWalk::UpdateEffectiveWhitelistedTouchAction(
+void PrePaintTreeWalk::UpdateEffectiveAllowedTouchAction(
     const LayoutObject& object,
     PrePaintTreeWalk::PrePaintTreeWalkContext& context) {
-  if (object.EffectiveWhitelistedTouchActionChanged())
-    context.effective_whitelisted_touch_action_changed = true;
+  if (object.EffectiveAllowedTouchActionChanged())
+    context.effective_allowed_touch_action_changed = true;
 
-  if (context.effective_whitelisted_touch_action_changed) {
+  if (context.effective_allowed_touch_action_changed) {
     object.GetMutableForPainting().UpdateInsideBlockingTouchEventHandler(
         context.inside_blocking_touch_event_handler ||
         HasBlockingTouchEventHandler(object));
@@ -197,21 +204,19 @@ void PrePaintTreeWalk::UpdateEffectiveWhitelistedTouchAction(
     context.inside_blocking_touch_event_handler = true;
 }
 
-bool PrePaintTreeWalk::NeedsHitTestingPaintInvalidation(
-    const LayoutObject& object,
-    const PrePaintTreeWalk::PrePaintTreeWalkContext& context) const {
-  return context.effective_whitelisted_touch_action_changed;
-}
-
 void PrePaintTreeWalk::InvalidatePaintForHitTesting(
     const LayoutObject& object,
     PrePaintTreeWalk::PrePaintTreeWalkContext& context) {
-  if (context.effective_whitelisted_touch_action_changed) {
-    if (auto* paint_layer = context.paint_invalidator_context.painting_layer)
-      paint_layer->SetNeedsRepaint();
-    ObjectPaintInvalidator(object).InvalidateDisplayItemClient(
-        object, PaintInvalidationReason::kHitTest);
-  }
+  if (context.paint_invalidator_context.subtree_flags &
+      PaintInvalidatorContext::kSubtreeNoInvalidation)
+    return;
+
+  if (!context.effective_allowed_touch_action_changed)
+    return;
+
+  context.paint_invalidator_context.painting_layer->SetNeedsRepaint();
+  ObjectPaintInvalidator(object).InvalidateDisplayItemClient(
+      object, PaintInvalidationReason::kHitTest);
 }
 
 void PrePaintTreeWalk::UpdateAuxiliaryObjectProperties(
@@ -250,44 +255,63 @@ bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
     return true;
 
   return frame_view.GetLayoutView() &&
-         NeedsTreeBuilderContextUpdate(*frame_view.GetLayoutView(), context);
+         (ObjectRequiresTreeBuilderContext(*frame_view.GetLayoutView()) ||
+          ContextRequiresTreeBuilderContext(context,
+                                            *frame_view.GetLayoutView()));
 }
 
-bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
+bool PrePaintTreeWalk::ObjectRequiresPrePaint(const LayoutObject& object) {
+  return object.ShouldCheckForPaintInvalidation() ||
+         object.EffectiveAllowedTouchActionChanged() ||
+         object.DescendantEffectiveAllowedTouchActionChanged();
+}
+
+bool PrePaintTreeWalk::ContextRequiresPrePaint(
+    const PrePaintTreeWalkContext& context) {
+  return context.paint_invalidator_context.NeedsSubtreeWalk() ||
+         context.effective_allowed_touch_action_changed || context.clip_changed;
+}
+
+bool PrePaintTreeWalk::ObjectRequiresTreeBuilderContext(
+    const LayoutObject& object) {
+  return object.NeedsPaintPropertyUpdate() ||
+         object.DescendantNeedsPaintPropertyUpdate() ||
+         object.DescendantNeedsPaintOffsetAndVisualRectUpdate();
+}
+
+bool PrePaintTreeWalk::ContextRequiresTreeBuilderContext(
+    const PrePaintTreeWalkContext& context,
+    const LayoutObject& object) {
+  return (context.tree_builder_context &&
+          context.tree_builder_context->force_subtree_update_reasons) ||
+         context.paint_invalidator_context.NeedsVisualRectUpdate(object);
+}
+
+#if DCHECK_IS_ON()
+void PrePaintTreeWalk::CheckTreeBuilderContextState(
     const LayoutObject& object,
     const PrePaintTreeWalkContext& parent_context) {
-  if (parent_context.tree_builder_context &&
-      parent_context.tree_builder_context->force_subtree_update_reasons) {
-    return true;
+  if (parent_context.tree_builder_context ||
+      (!ObjectRequiresTreeBuilderContext(object) &&
+       !ContextRequiresTreeBuilderContext(parent_context, object))) {
+    return;
   }
-  // The following CHECKs are for debugging crbug.com/816810.
-  if (object.NeedsPaintPropertyUpdate()) {
-    CHECK(parent_context.tree_builder_context) << "NeedsPaintPropertyUpdate";
-    return true;
-  }
-  if (object.DescendantNeedsPaintPropertyUpdate()) {
-    CHECK(parent_context.tree_builder_context)
-        << "DescendantNeedsPaintPropertyUpdate";
-    return true;
-  }
-  if (object.DescendantNeedsPaintOffsetAndVisualRectUpdate()) {
-    CHECK(parent_context.tree_builder_context)
-        << "DescendantNeedsPaintOffsetAndVisualRectUpdate";
-    return true;
-  }
+
+  DCHECK(!object.NeedsPaintPropertyUpdate());
+  DCHECK(!object.DescendantNeedsPaintPropertyUpdate());
+  DCHECK(!object.DescendantNeedsPaintOffsetAndVisualRectUpdate());
   if (parent_context.paint_invalidator_context.NeedsVisualRectUpdate(object)) {
-    // If the object needs visual rect update, we should update tree
-    // builder context which is needed by visual rect update.
-    if (object.NeedsPaintOffsetAndVisualRectUpdate()) {
-      CHECK(parent_context.tree_builder_context)
-          << "NeedsPaintOffsetAndVisualRectUpdate";
-    } else {
-      CHECK(parent_context.tree_builder_context) << "kSubtreeVisualRectUpdate";
-    }
-    return true;
+    // Note that if paint_invalidator_context's NeedsVisualRectUpdate(object) is
+    // true, we definitely want to DCHECK. However, we would also like to know
+    // the value of object.NeedsPaintOffsetAndVisualRectUpdate(), hence one of
+    // the two DCHECKs below will definitely trigger, and depending on which one
+    // does we will know the value.
+    DCHECK(object.NeedsPaintOffsetAndVisualRectUpdate());
+    DCHECK(!object.NeedsPaintOffsetAndVisualRectUpdate());
   }
-  return false;
+  NOTREACHED();
 }
+#endif
 
 void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
                                     PrePaintTreeWalkContext& context) {
@@ -299,14 +323,14 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   UpdateAuxiliaryObjectProperties(object, context);
 
   base::Optional<PaintPropertyTreeBuilder> property_tree_builder;
-  PaintPropertyChangedState property_changed =
-      PaintPropertyChangedState::kUnchanged;
+  PaintPropertyChangeType property_changed =
+      PaintPropertyChangeType::kUnchanged;
   if (context.tree_builder_context) {
     property_tree_builder.emplace(object, *context.tree_builder_context);
     property_changed =
         std::max(property_changed, property_tree_builder->UpdateForSelf());
 
-    if ((property_changed > PaintPropertyChangedState::kUnchanged) &&
+    if ((property_changed > PaintPropertyChangeType::kUnchanged) &&
         !context.tree_builder_context
              ->supports_composited_raster_invalidation) {
       paint_invalidator_context.subtree_flags |=
@@ -315,8 +339,8 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   }
 
   // This must happen before paint invalidation because background painting
-  // depends on the effective whitelisted touch action.
-  UpdateEffectiveWhitelistedTouchAction(object, context);
+  // depends on the effective allowed touch action.
+  UpdateEffectiveAllowedTouchAction(object, context);
 
   if (paint_invalidator_.InvalidatePaint(
           object, base::OptionalOrNullptr(context.tree_builder_context),
@@ -334,15 +358,15 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
     if (context.tree_builder_context->clip_changed)
       context.clip_changed = true;
 
-    if (property_changed > PaintPropertyChangedState::kUnchanged) {
+    if (property_changed != PaintPropertyChangeType::kUnchanged) {
       if (property_changed >
-          PaintPropertyChangedState::kChangedOnlyDueToAnimations) {
+          PaintPropertyChangeType::kChangedOnlyCompositedValues) {
         object.GetFrameView()->SetPaintArtifactCompositorNeedsUpdate();
       }
 
       if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
         if (property_changed >
-            PaintPropertyChangedState::kChangedOnlyDueToAnimations) {
+            PaintPropertyChangeType::kChangedOnlyCompositedValues) {
           const auto* paint_invalidation_layer =
               paint_invalidator_context.paint_invalidation_container->Layer();
           if (!paint_invalidation_layer->NeedsRepaint()) {
@@ -369,7 +393,7 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
 
   CompositingLayerPropertyUpdater::Update(object);
 
-  if (origin_trials::JankTrackingEnabled(&object.GetDocument())) {
+  if (RuntimeEnabledFeatures::JankTrackingEnabled(&object.GetDocument())) {
     object.GetFrameView()->GetJankTracker().NotifyObjectPrePaint(
         object, paint_invalidator_context.old_visual_rect,
         *paint_invalidator_context.painting_layer);
@@ -377,13 +401,6 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
 }
 
 void PrePaintTreeWalk::Walk(const LayoutObject& object) {
-  if (object.PrePaintBlockedByDisplayLock())
-    return;
-  // TODO(vmpstr): Technically we should do this after prepaint finishes, but
-  // due to a possible early out this is more convenient. We should change this
-  // to RAII.
-  object.NotifyDisplayLockDidPrePaint();
-
   // We need to be careful not to have a reference to the parent context, since
   // this reference will be to the context_storage_ memory which may be
   // reallocated during this function call.
@@ -394,16 +411,41 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
   };
 
   bool needs_tree_builder_context_update =
-      NeedsTreeBuilderContextUpdate(object, parent_context());
-  // Early out from the tree walk if possible.
-  if (!needs_tree_builder_context_update &&
-      !object.ShouldCheckForPaintInvalidation() &&
-      !parent_context().paint_invalidator_context.NeedsSubtreeWalk() &&
-      !NeedsEffectiveWhitelistedTouchActionUpdate(object, parent_context()) &&
-      !NeedsHitTestingPaintInvalidation(object, parent_context()) &&
-      !parent_context().clip_changed) {
+      ContextRequiresTreeBuilderContext(parent_context(), object) ||
+      ObjectRequiresTreeBuilderContext(object);
+
+  if (object.PrePaintBlockedByDisplayLock()) {
+    // If we need a subtree walk due to context flags, we need to store that
+    // information on the display lock, since subsequent walks might not set the
+    // same bits on the parent context.
+    if (ContextRequiresTreeBuilderContext(parent_context(), object) ||
+        ContextRequiresPrePaint(parent_context())) {
+      // Note that effective allowed touch action changed is special in that
+      // it requires us to specifically recalculate this value on each subtree
+      // element. Other flags simply need a subtree walk. Some consideration
+      // needs to be given to |clip_changed| which ensures that we repaint every
+      // layer, but for the purposes of PrePaint, this flag is just forcing a
+      // subtree walk.
+      object.GetDisplayLockContext()->SetNeedsPrePaintSubtreeWalk(
+          parent_context().effective_allowed_touch_action_changed);
+    }
     return;
   }
+
+#if DCHECK_IS_ON()
+  CheckTreeBuilderContextState(object, parent_context());
+#endif
+
+  // Early out from the tree walk if possible.
+  if (!needs_tree_builder_context_update && !ObjectRequiresPrePaint(object) &&
+      !ContextRequiresPrePaint(parent_context())) {
+    return;
+  }
+
+  // TODO(vmpstr): Technically we should do this after prepaint finishes, but
+  // due to a possible early out this is more convenient. We should change this
+  // to RAII.
+  object.NotifyDisplayLockDidPrePaint();
 
   // Note that because we're emplacing an object constructed from
   // parent_context() (which is a reference to the vector itself), it's

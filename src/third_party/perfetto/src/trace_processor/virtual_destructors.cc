@@ -15,11 +15,13 @@
  */
 
 #include "src/trace_processor/chunked_trace_reader.h"
+#include "src/trace_processor/trace_parser.h"
 
 namespace perfetto {
 namespace trace_processor {
 
 ChunkedTraceReader::~ChunkedTraceReader() {}
+TraceParser::~TraceParser() {}
 
 }  // namespace trace_processor
 }  // namespace perfetto

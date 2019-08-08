@@ -32,11 +32,11 @@ interface Navigator {
     [HighEntropy, MeasureAs=NavigatorVendor] readonly attribute DOMString vendor;
 };
 
-Navigator implements NavigatorConcurrentHardware;
-Navigator implements NavigatorCookies;
-Navigator implements NavigatorDeviceMemory;
-Navigator implements NavigatorID;
-Navigator implements NavigatorLanguage;
-Navigator implements NavigatorOnLine;
-Navigator implements NavigatorAutomationInformation;
-Navigator implements NavigatorUserAgent;
+Navigator includes NavigatorConcurrentHardware;
+Navigator includes NavigatorCookies;
+Navigator includes NavigatorDeviceMemory;
+Navigator includes NavigatorID;
+Navigator includes NavigatorLanguage;
+Navigator includes NavigatorOnLine;
+Navigator includes NavigatorAutomationInformation;
+Navigator includes NavigatorUserAgent;

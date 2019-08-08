@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
+#include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
@@ -31,7 +32,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
-#include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 #include "components/arc/common/intent_helper.mojom.h"  // nogncheck https://crbug.com/784179
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #endif  // defined(OS_CHROMEOS)
@@ -40,9 +40,11 @@ class AppMenuButton;
 class AvatarToolbarButton;
 class BrowserAppMenuButton;
 class Browser;
+class ExtensionsToolbarButton;
 class HomeButton;
 class ReloadButton;
 class ToolbarButton;
+class ToolbarPageActionIconContainerView;
 
 namespace bookmarks {
 class BookmarkBubbleObserver;
@@ -110,27 +112,34 @@ class ToolbarView : public views::AccessiblePaneView,
   // Returns true if the app menu is focused.
   bool IsAppMenuFocused();
 
-#if defined(OS_CHROMEOS)
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
-      bool disable_stay_in_chrome,
+      bool show_stay_in_chrome,
+      bool show_remember_selection,
       IntentPickerResponse callback);
-#endif  // defined(OS_CHROMEOS)
 
   // Shows a bookmark bubble and anchors it appropriately.
   void ShowBookmarkBubble(const GURL& url,
                           bool already_bookmarked,
                           bookmarks::BookmarkBubbleObserver* observer);
 
+  // Access to the avatar button.
+  AvatarToolbarButton* GetAvatarToolbarButton();
+
   // Accessors.
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
+  ExtensionsToolbarButton* extensions_button() const {
+    return extensions_button_;
+  }
   ToolbarButton* back_button() const { return back_; }
   ReloadButton* reload_button() const { return reload_; }
   LocationBarView* location_bar() const { return location_bar_; }
   CustomTabBarView* custom_tab_bar() { return custom_tab_bar_; }
   media_router::CastToolbarButton* cast_button() const { return cast_; }
-  AvatarToolbarButton* avatar_button() const { return avatar_; }
+  ToolbarPageActionIconContainerView* toolbar_page_action_container() const {
+    return toolbar_page_action_container_;
+  }
   BrowserAppMenuButton* app_menu_button() const { return app_menu_button_; }
   HomeButton* home_button() const { return home_; }
   AppMenuIconController* app_menu_icon_controller() {
@@ -138,7 +147,7 @@ class ToolbarView : public views::AccessiblePaneView,
   }
 
   // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::MenuButton* source,
+  void OnMenuButtonClicked(views::Button* source,
                            const gfx::Point& point,
                            const ui::Event* event) override;
 
@@ -208,10 +217,13 @@ class ToolbarView : public views::AccessiblePaneView,
   // AppMenuIconController::Delegate:
   void UpdateTypeAndSeverity(
       AppMenuIconController::TypeAndSeverity type_and_severity) override;
+  const ui::ThemeProvider* GetViewThemeProvider() const override;
+  ui::NativeTheme* GetViewNativeTheme() override;
 
   // ToolbarButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;
-  PageActionIconContainerView* GetPageActionIconContainerView() override;
+  OmniboxPageActionIconContainerView* GetOmniboxPageActionIconContainerView()
+      override;
   AppMenuButton* GetAppMenuButton() override;
   gfx::Rect GetFindBarBoundingBox(int contents_height) const override;
   void FocusToolbar() override;
@@ -248,7 +260,9 @@ class ToolbarView : public views::AccessiblePaneView,
   CustomTabBarView* custom_tab_bar_ = nullptr;
   LocationBarView* location_bar_ = nullptr;
   BrowserActionsContainer* browser_actions_ = nullptr;
+  ExtensionsToolbarButton* extensions_button_ = nullptr;
   media_router::CastToolbarButton* cast_ = nullptr;
+  ToolbarPageActionIconContainerView* toolbar_page_action_container_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;
   BrowserAppMenuButton* app_menu_button_ = nullptr;
 

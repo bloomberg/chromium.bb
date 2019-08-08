@@ -32,6 +32,7 @@ const char kVmName[] = "vm_name";
 const char kContainerName[] = "container_name";
 const char kPackageID[] = "package;1;;";
 constexpr int64_t kDiskSizeBytes = 4ll * 1024 * 1024 * 1024;  // 4 GiB
+const uint8_t kUsbPort = 0x01;
 }  // namespace
 
 class CrostiniManagerTest : public testing::Test {
@@ -131,8 +132,16 @@ class CrostiniManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
+  base::ScopedFD TestFileDescriptor() {
+    base::File file(base::FilePath("/dev/null"),
+                    base::File::FLAG_OPEN | base::File::FLAG_WRITE);
+    base::ScopedFD fd(file.TakePlatformFile());
+    return fd;
+  }
+
   void AttachUsbDeviceCallback(base::OnceClosure closure,
                                CrostiniResult expected_result,
+                               uint8_t guest_port,
                                CrostiniResult result) {
     EXPECT_TRUE(fake_concierge_client_->attach_usb_device_called());
     EXPECT_EQ(expected_result, result);
@@ -154,7 +163,7 @@ class CrostiniManagerTest : public testing::Test {
       CrostiniResult expected_result,
       size_t expected_size,
       CrostiniResult result,
-      std::vector<device::mojom::UsbDeviceInfoPtr> devices) {
+      std::vector<std::pair<std::string, uint8_t>> devices) {
     EXPECT_TRUE(fake_concierge_client_->list_usb_devices_called());
     EXPECT_EQ(expected_result, result);
     EXPECT_EQ(devices.size(), expected_size);
@@ -211,8 +220,6 @@ class CrostiniManagerTest : public testing::Test {
 
     device::mojom::UsbDeviceManagerPtr fake_usb_manager_ptr_;
     fake_usb_manager_.AddBinding(mojo::MakeRequest(&fake_usb_manager_ptr_));
-    crostini_manager_->SetUsbManagerForTesting(
-        std::move(fake_usb_manager_ptr_));
   }
 
   void TearDown() override {
@@ -487,7 +494,7 @@ TEST_F(CrostiniManagerTest, AttachUsbDeviceSuccess) {
   auto guid = fake_usb->guid;
 
   crostini_manager()->AttachUsbDevice(
-      kVmName, std::move(fake_usb),
+      kVmName, std::move(fake_usb), TestFileDescriptor(),
       base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS));
@@ -504,23 +511,10 @@ TEST_F(CrostiniManagerTest, AttachUsbDeviceFailure) {
   auto guid = fake_usb->guid;
 
   crostini_manager()->AttachUsbDevice(
-      kVmName, std::move(fake_usb),
+      kVmName, std::move(fake_usb), TestFileDescriptor(),
       base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::ATTACH_USB_FAILED));
-  run_loop()->Run();
-  fake_usb_manager_.RemoveDevice(guid);
-}
-
-TEST_F(CrostiniManagerTest, DetachUsbDeviceNoop) {
-  auto fake_usb = fake_usb_manager_.CreateAndAddDevice(0, 0);
-  auto guid = fake_usb->guid;
-
-  crostini_manager()->DetachUsbDevice(
-      kVmName, std::move(fake_usb),
-      base::BindOnce(&CrostiniManagerTest::DetachUsbDeviceCallback,
-                     base::Unretained(this), run_loop()->QuitClosure(), false,
-                     CrostiniResult::SUCCESS));
   run_loop()->Run();
   fake_usb_manager_.RemoveDevice(guid);
 }
@@ -539,13 +533,13 @@ TEST_F(CrostiniManagerTest, DetachUsbDeviceSuccess) {
 
   auto detach_usb = base::BindOnce(
       &CrostiniManager::DetachUsbDevice, base::Unretained(crostini_manager()),
-      kVmName, fake_usb.Clone(),
+      kVmName, fake_usb.Clone(), kUsbPort,
       base::BindOnce(&CrostiniManagerTest::DetachUsbDeviceCallback,
                      base::Unretained(this), run_loop()->QuitClosure(), true,
                      CrostiniResult::SUCCESS));
 
   crostini_manager()->AttachUsbDevice(
-      kVmName, std::move(fake_usb),
+      kVmName, std::move(fake_usb), TestFileDescriptor(),
       base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
                      base::Unretained(this), std::move(detach_usb),
                      CrostiniResult::SUCCESS));
@@ -567,13 +561,13 @@ TEST_F(CrostiniManagerTest, DetachUsbDeviceFailure) {
 
   auto detach_usb = base::BindOnce(
       &CrostiniManager::DetachUsbDevice, base::Unretained(crostini_manager()),
-      kVmName, fake_usb.Clone(),
+      kVmName, fake_usb.Clone(), kUsbPort,
       base::BindOnce(&CrostiniManagerTest::DetachUsbDeviceCallback,
                      base::Unretained(this), run_loop()->QuitClosure(), true,
                      CrostiniResult::DETACH_USB_FAILED));
 
   crostini_manager()->AttachUsbDevice(
-      kVmName, std::move(fake_usb),
+      kVmName, std::move(fake_usb), TestFileDescriptor(),
       base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
                      base::Unretained(this), std::move(detach_usb),
                      CrostiniResult::SUCCESS));
@@ -615,7 +609,7 @@ TEST_F(CrostiniManagerTest, ListUsbDeviceOne) {
   auto guid = fake_usb->guid;
 
   crostini_manager()->AttachUsbDevice(
-      kVmName, std::move(fake_usb),
+      kVmName, std::move(fake_usb), TestFileDescriptor(),
       base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS));
@@ -632,40 +626,6 @@ TEST_F(CrostiniManagerTest, ListUsbDeviceOne) {
       kVmName, base::BindOnce(&CrostiniManagerTest::ListUsbDevicesCallback,
                               base::Unretained(this), run_loop2.QuitClosure(),
                               CrostiniResult::SUCCESS, 1));
-  run_loop2.Run();
-
-  fake_usb_manager_.RemoveDevice(guid);
-}
-
-TEST_F(CrostiniManagerTest, ListUsbDeviceExtra) {
-  vm_tools::concierge::AttachUsbDeviceResponse attach_response;
-  attach_response.set_success(true);
-  attach_response.set_guest_port(1);
-  fake_concierge_client_->set_attach_usb_device_response(attach_response);
-
-  auto fake_usb = fake_usb_manager_.CreateAndAddDevice(0, 0);
-  auto guid = fake_usb->guid;
-
-  crostini_manager()->AttachUsbDevice(
-      kVmName, std::move(fake_usb),
-      base::BindOnce(&CrostiniManagerTest::AttachUsbDeviceCallback,
-                     base::Unretained(this), run_loop()->QuitClosure(),
-                     CrostiniResult::SUCCESS));
-  run_loop()->Run();
-
-  vm_tools::concierge::ListUsbDeviceResponse response;
-  response.set_success(true);
-  auto* msg = response.add_usb_devices();
-  msg->set_guest_port(1);
-  msg = response.add_usb_devices();
-  msg->set_guest_port(2);
-  fake_concierge_client_->set_list_usb_devices_response(response);
-
-  base::RunLoop run_loop2;
-  crostini_manager()->ListUsbDevices(
-      kVmName, base::BindOnce(&CrostiniManagerTest::ListUsbDevicesCallback,
-                              base::Unretained(this), run_loop2.QuitClosure(),
-                              CrostiniResult::UNKNOWN_USB_DEVICE, 1));
   run_loop2.Run();
 
   fake_usb_manager_.RemoveDevice(guid);
@@ -1166,7 +1126,7 @@ TEST_F(CrostiniManagerTest, ExportContainerFailInProgress) {
       kVmName, kContainerName, base::FilePath("export_path"),
       base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), base::DoNothing::Once(),
-                     CrostiniResult::CONTAINER_EXPORT_FAILED));
+                     CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED));
 
   // Send signal to indicate 1st call is done.
   vm_tools::cicerone::ExportLxdContainerProgressSignal signal;
@@ -1185,7 +1145,7 @@ TEST_F(CrostiniManagerTest, ExportContainerFailFromSignal) {
       kVmName, kContainerName, base::FilePath("export_path"),
       base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
-                     CrostiniResult::CONTAINER_EXPORT_FAILED));
+                     CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED));
 
   // Send signal with FAILED.
   vm_tools::cicerone::ExportLxdContainerProgressSignal signal;
@@ -1203,9 +1163,10 @@ TEST_F(CrostiniManagerTest, ExportContainerFailOnVmStop) {
   crostini_manager()->AddRunningVmForTesting(kVmName);
   crostini_manager()->ExportLxdContainer(
       kVmName, kContainerName, base::FilePath("export_path"),
-      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
-                     base::Unretained(this), run_loop()->QuitClosure(),
-                     CrostiniResult::CONTAINER_EXPORT_FAILED));
+      base::BindOnce(
+          &CrostiniManagerTest::CrostiniResultCallback, base::Unretained(this),
+          run_loop()->QuitClosure(),
+          CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED));
   crostini_manager()->StopVm(kVmName, base::DoNothing());
   run_loop()->Run();
 }
@@ -1252,7 +1213,7 @@ TEST_F(CrostiniManagerTest, ImportContainerFailInProgress) {
       kVmName, kContainerName, base::FilePath("import_path"),
       base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), base::DoNothing::Once(),
-                     CrostiniResult::CONTAINER_IMPORT_FAILED));
+                     CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED));
 
   // Send signal to indicate 1st call is done.
   vm_tools::cicerone::ImportLxdContainerProgressSignal signal;
@@ -1266,12 +1227,35 @@ TEST_F(CrostiniManagerTest, ImportContainerFailInProgress) {
   run_loop()->Run();
 }
 
+TEST_F(CrostiniManagerTest, ImportContainerFailArchitecture) {
+  crostini_manager()->ImportLxdContainer(
+      kVmName, kContainerName, base::FilePath("import_path"),
+      base::BindOnce(
+          &CrostiniManagerTest::CrostiniResultCallback, base::Unretained(this),
+          run_loop()->QuitClosure(),
+          CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_ARCHITECTURE));
+
+  // Send signal with FAILED_ARCHITECTURE.
+  vm_tools::cicerone::ImportLxdContainerProgressSignal signal;
+  signal.set_owner_id(CryptohomeIdForProfile(profile()));
+  signal.set_vm_name(kVmName);
+  signal.set_container_name(kContainerName);
+  signal.set_status(
+      vm_tools::cicerone::
+          ImportLxdContainerProgressSignal_Status_FAILED_ARCHITECTURE);
+  signal.set_architecture_device("archdev");
+  signal.set_architecture_container("archcont");
+  fake_cicerone_client_->NotifyImportLxdContainerProgress(signal);
+
+  run_loop()->Run();
+}
+
 TEST_F(CrostiniManagerTest, ImportContainerFailFromSignal) {
   crostini_manager()->ImportLxdContainer(
       kVmName, kContainerName, base::FilePath("import_path"),
       base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
-                     CrostiniResult::CONTAINER_IMPORT_FAILED));
+                     CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED));
 
   // Send signal with FAILED.
   vm_tools::cicerone::ImportLxdContainerProgressSignal signal;
@@ -1289,9 +1273,10 @@ TEST_F(CrostiniManagerTest, ImportContainerFailOnVmStop) {
   crostini_manager()->AddRunningVmForTesting(kVmName);
   crostini_manager()->ImportLxdContainer(
       kVmName, kContainerName, base::FilePath("import_path"),
-      base::BindOnce(&CrostiniManagerTest::CrostiniResultCallback,
-                     base::Unretained(this), run_loop()->QuitClosure(),
-                     CrostiniResult::CONTAINER_IMPORT_FAILED));
+      base::BindOnce(
+          &CrostiniManagerTest::CrostiniResultCallback, base::Unretained(this),
+          run_loop()->QuitClosure(),
+          CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED));
   crostini_manager()->StopVm(kVmName, base::DoNothing());
   run_loop()->Run();
 }

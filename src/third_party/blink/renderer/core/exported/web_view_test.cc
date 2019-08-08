@@ -1080,7 +1080,7 @@ TEST_F(WebViewTest, LongPressOutsideInputShouldNotSelectPlaceholderText) {
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(100, 150));
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
             web_view->MainFrameWidget()->HandleInputEvent(
@@ -1587,7 +1587,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingText) {
   web_view->SetInitialFocus(false);
   WebVector<WebImeTextSpan> ime_text_spans(static_cast<size_t>(1));
   ime_text_spans[0] = WebImeTextSpan(WebImeTextSpan::Type::kComposition, 0, 4,
-                                     ws::mojom::ImeTextSpanThickness::kThin, 0);
+                                     ui::mojom::ImeTextSpanThickness::kThin, 0);
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   WebInputMethodController* active_input_method_controller =
       frame->GetInputMethodController();
@@ -1614,7 +1614,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea) {
   web_view->SetInitialFocus(false);
   WebVector<WebImeTextSpan> ime_text_spans(static_cast<size_t>(1));
   ime_text_spans[0] = WebImeTextSpan(WebImeTextSpan::Type::kComposition, 0, 4,
-                                     ws::mojom::ImeTextSpanThickness::kThin, 0);
+                                     ui::mojom::ImeTextSpanThickness::kThin, 0);
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   WebInputMethodController* active_input_method_controller =
       frame->FrameWidget()->GetActiveWebInputMethodController();
@@ -1658,7 +1658,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInRichText) {
   web_view->SetInitialFocus(false);
   WebVector<WebImeTextSpan> ime_text_spans(static_cast<size_t>(1));
   ime_text_spans[0] = WebImeTextSpan(WebImeTextSpan::Type::kComposition, 0, 4,
-                                     ws::mojom::ImeTextSpanThickness::kThin, 0);
+                                     ui::mojom::ImeTextSpanThickness::kThin, 0);
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetEditableSelectionOffsets(1, 1);
   WebDocument document = web_view->MainFrameImpl()->GetDocument();
@@ -2519,7 +2519,7 @@ bool WebViewTest::TapElement(WebInputEvent::Type type, Element* element) {
 
   WebGestureEvent event(type, WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(center);
 
   web_view_helper_.GetWebView()->MainFrameWidget()->HandleInputEvent(
@@ -2553,7 +2553,7 @@ TEST_F(WebViewTest, ClientTapHandling) {
                                                          nullptr, &client);
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(3, 8));
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
@@ -2588,7 +2588,7 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
 
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(3, 8));
   EXPECT_EQ(WebInputEventResult::kNotHandled,
             web_view->MainFrameWidget()->HandleInputEvent(
@@ -2610,7 +2610,7 @@ TEST_F(WebViewTest, LongPressEmptyDiv) {
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(250, 150));
 
   EXPECT_EQ(WebInputEventResult::kNotHandled,
@@ -2631,7 +2631,7 @@ TEST_F(WebViewTest, LongPressEmptyDivAlwaysShow) {
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(250, 150));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
@@ -2652,7 +2652,7 @@ TEST_F(WebViewTest, LongPressObject) {
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_NE(WebInputEventResult::kHandledSystem,
@@ -2677,7 +2677,7 @@ TEST_F(WebViewTest, LongPressObjectFallback) {
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
@@ -2702,7 +2702,7 @@ TEST_F(WebViewTest, LongPressImage) {
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
@@ -2723,7 +2723,7 @@ TEST_F(WebViewTest, LongPressVideo) {
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
@@ -2744,7 +2744,7 @@ TEST_F(WebViewTest, LongPressLink) {
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(500, 300));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
@@ -2834,7 +2834,7 @@ TEST_F(WebViewTest, LongPressEmptyEditableSelection) {
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
@@ -2854,7 +2854,7 @@ TEST_F(WebViewTest, LongPressEmptyNonEditableSelection) {
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(300, 300));
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
 
@@ -2940,7 +2940,7 @@ TEST_F(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   // Double-tap on carriage returns.
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(100, 25));
   event.data.tap.tap_count = 2;
 
@@ -3257,7 +3257,7 @@ TEST_F(WebViewTest, ShowPressOnTransformedLink) {
   WebGestureEvent event(WebInputEvent::kGestureShowPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(20, 20));
 
   // Just make sure we don't hit any asserts.
@@ -3467,7 +3467,6 @@ class ViewCreatingWebViewClient : public frame_test_helpers::TestWebViewClient {
                       const WebWindowFeatures&,
                       const WebString& name,
                       WebNavigationPolicy,
-                      bool,
                       WebSandboxFlags,
                       const FeaturePolicy::FeatureState&,
                       const SessionStorageNamespaceId&) override {
@@ -3505,6 +3504,8 @@ TEST_F(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
       local_frame->GetDocument(),
       web_url_request_with_target_start.ToResourceRequest(), "_top");
   local_frame->Loader().StartNavigation(request_with_target_start);
+  frame_test_helpers::PumpPendingRequestsForFrameToLoad(
+      To<WebLocalFrameImpl>(web_view_impl->MainFrame()->FirstChild()));
   EXPECT_FALSE(client.DidFocusCalled());
 
   web_view_helper.Reset();  // Remove dependency on locally scoped client.
@@ -3540,6 +3541,69 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
   EXPECT_TRUE(client.DidFocusCalled());
 
   web_view_helper.Reset();  // Remove dependency on locally scoped client.
+}
+
+class ViewReusingWebViewClient : public frame_test_helpers::TestWebViewClient {
+ public:
+  ViewReusingWebViewClient() = default;
+
+  // WebViewClient methods
+  WebView* CreateView(WebLocalFrame*,
+                      const WebURLRequest&,
+                      const WebWindowFeatures&,
+                      const WebString& name,
+                      WebNavigationPolicy,
+                      WebSandboxFlags,
+                      const FeaturePolicy::FeatureState&,
+                      const SessionStorageNamespaceId&) override {
+    return web_view_;
+  }
+
+  void SetWebView(WebView* view) { web_view_ = view; }
+
+ private:
+  WebView* web_view_ = nullptr;
+};
+
+class NavigationPolicyWebFrameClient
+    : public frame_test_helpers::TestWebFrameClient {
+ public:
+  NavigationPolicyWebFrameClient() = default;
+
+  void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override {
+    begin_navigation_called_ = true;
+    last_navigation_policy_ = info->navigation_policy;
+  }
+
+  bool BeginNavigationWasCalled() const { return begin_navigation_called_; }
+  WebNavigationPolicy LastNavigationPolicy() const {
+    return last_navigation_policy_;
+  }
+
+ private:
+  WebNavigationPolicy last_navigation_policy_ = kWebNavigationPolicyCurrentTab;
+  bool begin_navigation_called_ = false;
+};
+
+TEST_F(WebViewTest,
+       ReuseExistingWindowOnCreateViewUsesCorrectNavigationPolicy) {
+  ViewReusingWebViewClient view_client;
+  NavigationPolicyWebFrameClient frame_client;
+  frame_test_helpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view_impl =
+      web_view_helper.Initialize(&frame_client, &view_client);
+  view_client.SetWebView(web_view_impl);
+  LocalFrame* frame = To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
+
+  // Request a new window, but the WebViewClient will decline to and instead
+  // return the current window.
+  WebURLRequest web_url_request(KURL("about:blank"));
+  FrameLoadRequest request(frame->GetDocument(),
+                           web_url_request.ToResourceRequest(), "_blank");
+  frame->Loader().StartNavigation(request);
+  ASSERT_TRUE(frame_client.BeginNavigationWasCalled());
+  EXPECT_EQ(kWebNavigationPolicyCurrentTab,
+            frame_client.LastNavigationPolicy());
 }
 
 TEST_F(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus) {
@@ -3692,8 +3756,7 @@ class CreateChildCounterFrameClient
                                   WebTreeScopeType,
                                   const WebString& name,
                                   const WebString& fallback_name,
-                                  WebSandboxFlags,
-                                  const ParsedFeaturePolicy&,
+                                  const FramePolicy&,
                                   const WebFrameOwnerProperties&,
                                   FrameOwnerElementType) override;
 
@@ -3708,14 +3771,13 @@ WebLocalFrame* CreateChildCounterFrameClient::CreateChildFrame(
     WebTreeScopeType scope,
     const WebString& name,
     const WebString& fallback_name,
-    WebSandboxFlags sandbox_flags,
-    const ParsedFeaturePolicy& container_policy,
+    const FramePolicy& frame_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
     FrameOwnerElementType frame_owner_element_type) {
   ++count_;
   return TestWebFrameClient::CreateChildFrame(
-      parent, scope, name, fallback_name, sandbox_flags, container_policy,
-      frame_owner_properties, frame_owner_element_type);
+      parent, scope, name, fallback_name, frame_policy, frame_owner_properties,
+      frame_owner_element_type);
 }
 
 TEST_F(WebViewTest, ChangeDisplayMode) {
@@ -3953,7 +4015,7 @@ TEST_F(WebViewTest, DeleteElementWithRegisteredHandler) {
   // removed when checking below. We do a precise GC (collectAllGarbage does not
   // scan the stack) to ensure the div element dies. This is also why the
   // Document is in a Persistent since we want that to stay around.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   EXPECT_FALSE(registry.HasEventHandlers(EventHandlerRegistry::kScrollEvent));
 }

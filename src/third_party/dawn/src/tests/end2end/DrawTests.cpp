@@ -26,20 +26,6 @@ class DrawTest : public DawnTest {
 
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-        dawn::VertexInputDescriptor input;
-        input.inputSlot = 0;
-        input.stride = 4 * sizeof(float);
-        input.stepMode = dawn::InputStepMode::Vertex;
-
-        dawn::VertexAttributeDescriptor attribute;
-        attribute.shaderLocation = 0;
-        attribute.inputSlot = 0;
-        attribute.offset = 0;
-        attribute.format = dawn::VertexFormat::FloatR32G32B32A32;
-
-        dawn::InputState inputState =
-            device.CreateInputStateBuilder().SetInput(&input).SetAttribute(&attribute).GetResult();
-
         dawn::ShaderModule vsModule =
             utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
                 #version 450
@@ -60,8 +46,10 @@ class DrawTest : public DawnTest {
         descriptor.cVertexStage.module = vsModule;
         descriptor.cFragmentStage.module = fsModule;
         descriptor.primitiveTopology = dawn::PrimitiveTopology::TriangleStrip;
-        descriptor.indexFormat = dawn::IndexFormat::Uint32;
-        descriptor.inputState = inputState;
+        descriptor.cInputState.numInputs = 1;
+        descriptor.cInputState.cInputs[0].stride = 4 * sizeof(float);
+        descriptor.cInputState.numAttributes = 1;
+        descriptor.cInputState.cAttributes[0].format = dawn::VertexFormat::Float4;
         descriptor.cColorStates[0]->format = renderPass.colorFormat;
 
         pipeline = device.CreateRenderPipeline(&descriptor);
@@ -85,7 +73,7 @@ class DrawTest : public DawnTest {
               uint32_t firstInstance,
               RGBA8 bottomLeftExpected,
               RGBA8 topRightExpected) {
-        uint32_t zeroOffset = 0;
+        uint64_t zeroOffset = 0;
         dawn::CommandEncoder encoder = device.CreateCommandEncoder();
         {
             dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);

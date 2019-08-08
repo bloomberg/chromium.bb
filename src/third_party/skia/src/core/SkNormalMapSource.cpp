@@ -47,7 +47,7 @@ private:
             // add uniform
             const char* xformUniName = nullptr;
             fXformUni = uniformHandler->addUniform(kFragment_GrShaderFlag, kFloat2x2_GrSLType,
-                                                   kDefault_GrSLPrecision, "Xform", &xformUniName);
+                                                   "Xform", &xformUniName);
 
             SkString dstNormalColorName("dstNormalColor");
             this->emitChild(0, &dstNormalColorName, args);
@@ -167,7 +167,7 @@ SkNormalSource::Provider* SkNormalMapSourceImpl::asProvider(const SkShaderBase::
 
 bool SkNormalMapSourceImpl::computeNormTotalInverse(const SkShaderBase::ContextRec& rec,
                                                     SkMatrix* normTotalInverse) const {
-    SkMatrix total = SkMatrix::Concat(*rec.fMatrix, fMapShader->getLocalMatrix());
+    SkMatrix total = SkMatrix::Concat(*rec.fMatrix, as_SB(fMapShader)->getLocalMatrix());
     if (rec.fLocalMatrix) {
         total.preConcat(*rec.fLocalMatrix);
     }

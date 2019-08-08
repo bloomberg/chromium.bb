@@ -108,10 +108,9 @@ class FlexLayoutTest : public testing::Test {
 
   std::vector<Rect> GetChildBounds() const {
     std::vector<Rect> result;
-    for (int i = 0; i < host_->child_count(); ++i) {
-      const View* const child = host_->child_at(i);
-      result.push_back(child->bounds());
-    }
+    std::transform(host_->children().cbegin(), host_->children().cend(),
+                   std::back_inserter(result),
+                   [](const View* v) { return v->bounds(); });
     return result;
   }
 

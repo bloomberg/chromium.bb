@@ -241,7 +241,11 @@ bool TouchFile(const FilePath& path,
   // On Windows, FILE_FLAG_BACKUP_SEMANTICS is needed to open a directory.
   if (DirectoryExists(path))
     flags |= File::FLAG_BACKUP_SEMANTICS;
-#endif  // OS_WIN
+#elif defined(OS_FUCHSIA)
+  // On Fuchsia, we need O_RDONLY for directories, or O_WRONLY for files.
+  // TODO(https://crbug.com/947802): Find a cleaner workaround for this.
+  flags |= (DirectoryExists(path) ? File::FLAG_READ : File::FLAG_WRITE);
+#endif
 
   File file(path, flags);
   if (!file.IsValid())

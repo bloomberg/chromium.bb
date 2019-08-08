@@ -25,7 +25,9 @@ ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickDelayMs[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickEventType[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickRevertToLeftClick[];
+ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickStabilizePosition[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickMovementThreshold[];
+ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickMenuPosition[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityCaretHighlightEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityCursorHighlightEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityFocusHighlightEnabled[];
@@ -105,6 +107,7 @@ ASH_PUBLIC_EXPORT extern const char kPowerUserActivityScreenDimDelayFactor[];
 ASH_PUBLIC_EXPORT extern const char kPowerWaitForInitialUserActivity[];
 ASH_PUBLIC_EXPORT extern const char
     kPowerForceNonzeroBrightnessForUserActivity[];
+ASH_PUBLIC_EXPORT extern const char kPowerFastSuspendWhenBacklightsForcedOff[];
 ASH_PUBLIC_EXPORT extern const char kPowerSmartDimEnabled[];
 
 ASH_PUBLIC_EXPORT extern const char kShelfAlignment[];
@@ -135,6 +138,21 @@ ASH_PUBLIC_EXPORT extern const char kCursorMotionBlurEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAssistantNumWarmerWelcomeTriggered[];
 
 ASH_PUBLIC_EXPORT extern const char kVpnConfigAllowed[];
+
+ASH_PUBLIC_EXPORT extern const char kPowerPeakShiftEnabled[];
+ASH_PUBLIC_EXPORT extern const char kPowerPeakShiftBatteryThreshold[];
+ASH_PUBLIC_EXPORT extern const char kPowerPeakShiftDayConfig[];
+
+ASH_PUBLIC_EXPORT extern const char kBootOnAcEnabled[];
+
+ASH_PUBLIC_EXPORT extern const char kAdvancedBatteryChargeModeEnabled[];
+ASH_PUBLIC_EXPORT extern const char kAdvancedBatteryChargeModeDayConfig[];
+
+ASH_PUBLIC_EXPORT extern const char kBatteryChargeMode[];
+ASH_PUBLIC_EXPORT extern const char kBatteryChargeCustomStartCharging[];
+ASH_PUBLIC_EXPORT extern const char kBatteryChargeCustomStopCharging[];
+
+ASH_PUBLIC_EXPORT extern const char kUsbPowerShareEnabled[];
 
 }  // namespace prefs
 

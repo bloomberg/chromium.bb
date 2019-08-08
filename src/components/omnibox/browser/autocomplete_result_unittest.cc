@@ -11,10 +11,12 @@
 #include <vector>
 
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -25,6 +27,7 @@
 #include "components/omnibox/browser/fake_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
@@ -999,6 +1002,133 @@ TEST_F(AutocompleteResultTest, SortAndCullPromoteDuplicateSearchURLs) {
   EXPECT_EQ("http://www.foo.com/",
             result.match_at(2)->destination_url.spec());
   EXPECT_EQ(900, result.match_at(2)->relevance);
+}
+
+TEST_F(AutocompleteResultTest, SortAndCullGroupSuggestionsByType) {
+  TestData data[] = {
+    { 0, 1,  500, false },
+    { 1, 2,  600, false },
+    { 2, 1,  700, false },
+    { 3, 2,  800, true  },
+    { 4, 1,  900, false },
+    { 5, 2, 1000, false },
+    { 6, 3, 1100, false },
+  };
+  ACMatches matches;
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
+  AutocompleteMatchType::Type match_types[] = {
+      AutocompleteMatchType::SEARCH_SUGGEST,
+      AutocompleteMatchType::HISTORY_URL,
+      AutocompleteMatchType::SEARCH_HISTORY,
+      AutocompleteMatchType::HISTORY_TITLE,
+      AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+      AutocompleteMatchType::HISTORY_BODY,
+      AutocompleteMatchType::BOOKMARK_TITLE};
+  for (size_t i = 0; i < base::size(data); ++i)
+    matches[i].type = match_types[i];
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      omnibox::kOmniboxGroupSuggestionsBySearchVsUrl);
+
+  AutocompleteInput input(base::ASCIIToUTF16("a"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  TestData expected_data[] = {
+    { 3, 2,  800, true  },  // default match unmoved
+    { 4, 1,  900, false },  // search types
+    { 2, 1,  700, false },
+    { 6, 3, 1100, false },  // other types
+    { 5, 2, 1000, false },
+    { 1, 2,  600, false },
+  };
+  AssertResultMatches(result, expected_data, base::size(expected_data));
+}
+
+TEST_F(AutocompleteResultTest, SortAndCullMaxURLMatches) {
+  base::test::ScopedFeatureList feature_list;
+  std::map<std::string, std::string> parameters = {
+      {OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "3"}};
+  feature_list.InitAndEnableFeatureWithParameters(
+      omnibox::kOmniboxMaxURLMatches, parameters);
+  EXPECT_TRUE(OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled());
+  EXPECT_EQ(OmniboxFieldTrial::GetMaxURLMatches(), 3u);
+
+  // Case 1: Eject URL match for a search.
+  {
+    ACMatches matches;
+    const AutocompleteMatchTestData data[] = {
+        {"http://search-what-you-typed/",
+         AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED},
+        {"http://search-history/", AutocompleteMatchType::SEARCH_HISTORY},
+        {"http://history-url/", AutocompleteMatchType::HISTORY_URL},
+        {"http://history-title/", AutocompleteMatchType::HISTORY_TITLE},
+        {"http://url-what-you-typed/",
+         AutocompleteMatchType::URL_WHAT_YOU_TYPED},
+        {"http://clipboard-url/", AutocompleteMatchType::CLIPBOARD_URL},
+        {"http://search-suggest/", AutocompleteMatchType::SEARCH_SUGGEST},
+    };
+    PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
+
+    AutocompleteInput input(base::ASCIIToUTF16("a"),
+                            metrics::OmniboxEventProto::OTHER,
+                            TestSchemeClassifier());
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.SortAndCull(input, template_url_service_.get());
+
+    EXPECT_EQ(result.size(), 6u);
+    AutocompleteMatchType::Type expected_types[] = {
+        AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        AutocompleteMatchType::SEARCH_HISTORY,
+        AutocompleteMatchType::HISTORY_URL,
+        AutocompleteMatchType::HISTORY_TITLE,
+        AutocompleteMatchType::URL_WHAT_YOU_TYPED,
+        AutocompleteMatchType::SEARCH_SUGGEST,
+    };
+    for (size_t i = 0; i < result.size(); ++i)
+      EXPECT_EQ(result.match_at(i)->type, expected_types[i]);
+  }
+
+  // Case 2: Do not eject URL match because there's no replacement.
+  {
+    ACMatches matches;
+    const AutocompleteMatchTestData data[] = {
+        {"http://search-what-you-typed/",
+         AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED},
+        {"http://search-history/", AutocompleteMatchType::SEARCH_HISTORY},
+        {"http://history-url/", AutocompleteMatchType::HISTORY_URL},
+        {"http://history-title/", AutocompleteMatchType::HISTORY_TITLE},
+        {"http://url-what-you-typed/",
+         AutocompleteMatchType::URL_WHAT_YOU_TYPED},
+        {"http://clipboard-url/", AutocompleteMatchType::CLIPBOARD_URL},
+        {"http://bookmark-title/", AutocompleteMatchType::BOOKMARK_TITLE},
+    };
+    PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
+
+    AutocompleteInput input(base::ASCIIToUTF16("a"),
+                            metrics::OmniboxEventProto::OTHER,
+                            TestSchemeClassifier());
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.SortAndCull(input, template_url_service_.get());
+
+    EXPECT_EQ(result.size(), 6u);
+    AutocompleteMatchType::Type expected_types[] = {
+        AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        AutocompleteMatchType::SEARCH_HISTORY,
+        AutocompleteMatchType::HISTORY_URL,
+        AutocompleteMatchType::HISTORY_TITLE,
+        AutocompleteMatchType::URL_WHAT_YOU_TYPED,
+        AutocompleteMatchType::CLIPBOARD_URL,
+    };
+    for (size_t i = 0; i < result.size(); ++i)
+      EXPECT_EQ(result.match_at(i)->type, expected_types[i]);
+  }
 }
 
 TEST_F(AutocompleteResultTest, TopMatchIsStandaloneVerbatimMatch) {

@@ -12,16 +12,17 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
+#include "third_party/blink/public/mojom/commit_result/commit_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
+#include "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/public/web/commit_result.mojom-shared.h"
-#include "third_party/blink/public/web/selection_menu_behavior.mojom-shared.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
@@ -54,6 +55,7 @@ class WebTextCheckClient;
 class WebURL;
 class WebView;
 enum class WebTreeScopeType;
+struct TransferableMessage;
 struct WebAssociatedURLLoaderOptions;
 struct WebConsoleMessage;
 struct WebContentSecurityPolicyViolation;
@@ -100,7 +102,8 @@ class WebLocalFrame : public WebFrame {
   // frame pointer, the parent frame's children list will not contain the
   // provisional frame. Thus, a provisional frame is invisible to the rest of
   // Blink unless the navigation commits and the provisional frame is fully
-  // attached to the frame tree by calling Swap().
+  // attached to the frame tree by calling Swap(). It swaps with the
+  // |previous_web_frame|.
   //
   // Otherwise, if the load should not commit, call Detach() to discard the
   // frame.
@@ -108,9 +111,8 @@ class WebLocalFrame : public WebFrame {
       WebLocalFrameClient*,
       blink::InterfaceRegistry*,
       mojo::ScopedMessagePipeHandle,
-      WebRemoteFrame*,
-      WebSandboxFlags,
-      ParsedFeaturePolicy);
+      WebFrame* previous_web_frame,
+      const FramePolicy&);
 
   // Creates a new local child of this frame. Similar to the other methods that
   // create frames, the returned frame should be freed by calling Close() when
@@ -192,6 +194,11 @@ class WebLocalFrame : public WebFrame {
   // pseudo-names like _self, _top, and _blank and otherwise performs the same
   // kind of lookup what |window.open(..., name)| would in Javascript.
   virtual WebFrame* FindFrameByName(const WebString& name) = 0;
+
+  // Starts scrolling to a specific offset in a frame. Returns false on failure.
+  virtual bool ScrollTo(const gfx::Point& scrollPosition,
+                        bool animate,
+                        base::OnceClosure on_finish) = 0;
 
   // Navigation Ping --------------------------------------------------------
 
@@ -556,9 +563,17 @@ class WebLocalFrame : public WebFrame {
 
   // Iframe sandbox ---------------------------------------------------------
 
+  // TODO(ekaramad): This method is only exposed for testing for certain tests
+  // outside of blink/ that are interested in approximate value of the
+  // FrameReplicationState. This method should be replaced with one in content/
+  // where the notion of FrameReplicationState is relevant to.
   // Returns the effective sandbox flags which are inherited from their parent
   // frame.
-  virtual WebSandboxFlags EffectiveSandboxFlags() const = 0;
+  virtual WebSandboxFlags EffectiveSandboxFlagsForTesting() const = 0;
+
+  // Returns false if this frame, or any parent frame is sandboxed and does not
+  // have the flag "allow-downloads-without-user-activation" set.
+  virtual bool IsAllowedToDownloadWithoutUserActivation() const = 0;
 
   // Find-in-page -----------------------------------------------------------
 
@@ -610,8 +625,24 @@ class WebLocalFrame : public WebFrame {
   // This will be removed following the deprecation.
   virtual void UsageCountChromeLoadTimes(const WebString& metric) = 0;
 
-  // Dispatches an event when a Portal gets activated.
-  virtual void OnPortalActivated() = 0;
+  // Portals -------------------------------------------------------------
+
+  // Dispatches an event when a Portal gets activated. |portal_token| is the
+  // portal's unique identifier, and the message pipe |portal_pipe| is the
+  // portal's mojo interface. |data| is an optional message sent together with
+  // the portal's activation.
+  using OnPortalActivatedCallback = base::OnceCallback<void(bool)>;
+  virtual void OnPortalActivated(
+      const base::UnguessableToken& portal_token,
+      mojo::ScopedInterfaceEndpointHandle portal_pipe,
+      TransferableMessage data,
+      OnPortalActivatedCallback callback) = 0;
+
+  // Forwards message to the PortalHost associated with frame.
+  virtual void ForwardMessageToPortalHost(
+      TransferableMessage message,
+      const WebSecurityOrigin& source_origin,
+      const base::Optional<WebSecurityOrigin>& target_origin) = 0;
 
   // Scheduling ---------------------------------------------------------------
 

@@ -94,9 +94,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // May close the bubble.
   virtual void ClickedOutsideBubble() = 0;
 
-  // Returns the bubble anchor alignment based on |shelf_alignment_|.
-  TrayBubbleView::AnchorAlignment GetAnchorAlignment() const;
-
   void SetIsActive(bool is_active);
   bool is_active() const { return is_active_; }
 
@@ -123,6 +120,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Helper function that calculates background bounds relative to local bounds
   // based on background insets returned from GetBackgroundInsets().
   gfx::Rect GetBackgroundBounds() const;
+
+  // Returns background color for the tray.
+  SkColor GetBackgroundColor() const;
 
  protected:
   // ActionableView:

@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/gamepad/gamepad_pose.h"
 
+#include "device/gamepad/public/cpp/gamepad.h"
+
 namespace blink {
 
 namespace {

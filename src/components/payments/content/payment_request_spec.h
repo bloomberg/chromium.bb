@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/payments/content/initialization_task.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_options_provider.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
@@ -33,12 +34,22 @@ extern const char kAndroidPayMethodName[];
 // The spec contains all the options that the merchant has specified about this
 // Payment Request. It's a (mostly) read-only view, which can be updated in
 // certain occasions by the merchant (see API).
-class PaymentRequestSpec : public PaymentOptionsProvider {
+//
+// The spec starts out completely initialized when a PaymentRequest object is
+// created, but can be placed into uninitialized state if PaymentRequest.show()
+// was called with a promise. This allows for asynchronous calculation of the
+// shopping cart contents, the total, the shipping options, and the modifiers.
+//
+// The initialization state is observed by PaymentRequestDialogView for showing
+// a "Loading..." spinner.
+class PaymentRequestSpec : public PaymentOptionsProvider,
+                           public InitializationTask {
  public:
   // This enum represents which bit of information was changed to trigger an
   // update roundtrip with the website.
   enum class UpdateReason {
     NONE,
+    INITIAL_PAYMENT_DETAILS,
     SHIPPING_OPTION,
     SHIPPING_ADDRESS,
     RETRY,
@@ -72,7 +83,18 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   void UpdateWith(mojom::PaymentDetailsPtr details);
 
   // Called when the merchant calls retry().
-  void Retry(mojom::PaymentValidationErrorsPtr errors);
+  void Retry(mojom::PaymentValidationErrorsPtr validation_errors);
+
+  // Gets the display string for the general retry error message.
+  const base::string16& retry_error_message() const {
+    return retry_error_message_;
+  }
+
+  // Reset the display string for the general retry error message. This method
+  // is called in PaymentSheetViewController::ButtonPressed when the user
+  // interacts. That is, the retry error message is displayed  on UI until user
+  // interaction happens since retry() called.
+  void reset_retry_error_message() { retry_error_message_.clear(); }
 
   // Gets the display string for the shipping address error for the given
   // |type|.
@@ -92,6 +114,9 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // InitializationTask:
+  bool IsInitialized() const override;
 
   // PaymentOptionsProvider:
   bool request_shipping() const override;
@@ -147,7 +172,11 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
     return selected_shipping_option_error_;
   }
 
+  // Notifies observers that spec is going to be updated due to |reason|. This
+  // shows a spinner in UI that goes away when merchant calls updateWith() or
+  // ignores the shipping*change event.
   void StartWaitingForUpdateWith(UpdateReason reason);
+
   bool IsMixedCurrency() const;
 
   UpdateReason current_update_reason() const { return current_update_reason_; }
@@ -177,8 +206,9 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
 
   // Updates the |selected_shipping_option| based on the data passed to this
   // payment request by the website. This will set selected_shipping_option_ to
-  // the last option marked selected in the options array. If no options are
-  // provided and this method is called |after_update|, it means the merchant
+  // the last option marked selected in the options array. If merchants provides
+  // no options or an error message this method is called |after_update| (after
+  // user changed their shipping address selection), it means the merchant
   // doesn't ship to this location. In this case,
   // |selected_shipping_option_error_| will be set.
   void UpdateSelectedShippingOption(bool after_update);
@@ -237,6 +267,7 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // notified.
   base::ObserverList<Observer>::Unchecked observers_;
 
+  base::string16 retry_error_message_;
   mojom::PayerErrorsPtr payer_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSpec);

@@ -18,8 +18,8 @@ class HTMLRubyElement final : public HTMLElement {
   explicit HTMLRubyElement(Document&);
 
  private:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
-  bool ShouldForceLegacyLayout() const final { return true; }
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
+  bool TypeShouldForceLegacyLayout() const final { return true; }
 };
 
 }  // namespace blink

@@ -19,7 +19,7 @@ LoopbackConnectionManager::~LoopbackConnectionManager() {}
 bool LoopbackConnectionManager::PostBufferToPath(
     PostBufferParams* params,
     const std::string& path,
-    const std::string& auth_token) {
+    const std::string& access_token) {
   params->response.http_status_code =
       loopback_server_.HandleCommand(params->buffer_in, &params->buffer_out);
   DCHECK_GE(params->response.http_status_code, 0);

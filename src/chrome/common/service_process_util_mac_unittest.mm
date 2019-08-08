@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -21,6 +22,7 @@
 #include "base/threading/thread.h"
 #include "chrome/common/mac/launchd.h"
 #include "chrome/common/mac/mock_launchd.h"
+#include "mojo/public/cpp/platform/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ServiceProcessStateFileManipulationTest : public ::testing::Test {
@@ -48,8 +50,12 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(MockLaunchd::MakeABundle(GetTempDirPath(), "Test",
                                          &bundle_path_, &executable_path_));
+    // If using a Mach Mojo channel, set up MockLaunchd as a service.
+    bool as_service =
+        base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac);
     mock_launchd_.reset(new MockLaunchd(executable_path_, loop_.task_runner(),
-                                        run_loop_.QuitClosure(), false, false));
+                                        run_loop_.QuitClosure(), false,
+                                        as_service));
     scoped_launchd_instance_.reset(
         new Launchd::ScopedInstance(mock_launchd_.get()));
     ASSERT_TRUE(service_process_state_.Initialize());

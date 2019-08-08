@@ -52,12 +52,16 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   void RequestAudioFocus(media_session::mojom::AudioFocusType audio_focus_type);
   void AbandonAudioFocusIfNeeded();
 
+  base::WeakPtr<AssistantMediaSession> GetWeakPtr();
+
  private:
   // Ensures that |audio_focus_ptr_| is connected.
   void EnsureServiceConnection();
 
   // Called by AudioFocusManager when an async audio focus request is completed.
   void FinishAudioFocusRequest(media_session::mojom::AudioFocusType type);
+  void FinishInitialAudioFocusRequest(media_session::mojom::AudioFocusType type,
+                                      const base::UnguessableToken& request_id);
 
   // Returns information about |this|.
   media_session::mojom::MediaSessionInfoPtr GetMediaSessionInfoInternal();
@@ -84,6 +88,8 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   media_session::mojom::AudioFocusRequestClientPtr request_client_ptr_;
 
   State audio_focus_state_ = State::INACTIVE;
+
+  base::WeakPtrFactory<AssistantMediaSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantMediaSession);
 };

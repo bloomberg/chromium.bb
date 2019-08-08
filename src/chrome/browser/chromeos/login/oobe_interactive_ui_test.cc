@@ -16,6 +16,8 @@
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -78,6 +80,7 @@ class OobeInteractiveUITest
   }
 
   void TearDown() override {
+    quick_unlock::EnabledForTesting(false);
     OobeBaseTest::TearDown();
     params_.reset();
   }
@@ -93,7 +96,14 @@ class OobeInteractiveUITest
     OobeBaseTest::SetUpInProcessBrowserTestFixture();
 
     if (params_->is_quick_unlock_enabled)
-      quick_unlock::EnableForTesting();
+      quick_unlock::EnabledForTesting(true);
+  }
+
+  void SetUpOnMainThread() override {
+    OobeBaseTest::SetUpOnMainThread();
+
+    if (params_->is_tablet)
+      TabletModeClient::Get()->OnTabletModeToggled(true);
   }
 
   void TearDownOnMainThread() override {
@@ -129,10 +139,7 @@ class OobeInteractiveUITest
         chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
         content::NotificationService::AllSources());
     observer.Wait();
-
-    test::OobeJS()
-        .CreateWaiter("Oobe.getInstance().currentScreen.id == 'connect'")
-        ->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
   }
 
   void RunWelcomeScreenChecks() {
@@ -141,30 +148,24 @@ class OobeInteractiveUITest
 #else
     constexpr int kNumberOfVideosPlaying = 0;
 #endif
-
-    test::OobeJS().ExpectTrue("!$('oobe-welcome-md').$.welcomeScreen.hidden");
-    test::OobeJS().ExpectTrue(
-        "$('oobe-welcome-md').$.accessibilityScreen.hidden");
-    test::OobeJS().ExpectTrue("$('oobe-welcome-md').$.languageScreen.hidden");
-    test::OobeJS().ExpectTrue("$('oobe-welcome-md').$.timezoneScreen.hidden");
+    test::OobeJS().ExpectVisiblePath({"connect", "welcomeScreen"});
+    test::OobeJS().ExpectHiddenPath({"connect", "accessibilityScreen"});
+    test::OobeJS().ExpectHiddenPath({"connect", "languageScreen"});
+    test::OobeJS().ExpectHiddenPath({"connect", "timezoneScreen"});
 
     test::OobeJS().ExpectEQ(
         "(() => {let cnt = 0; for (let v of "
-        "$('oobe-welcome-md').$.welcomeScreen.root.querySelectorAll('video')) "
+        "$('connect').$.welcomeScreen.root.querySelectorAll('video')) "
         "{  cnt += v.paused ? 0 : 1; }; return cnt; })()",
         kNumberOfVideosPlaying);
   }
 
   void TapWelcomeNext() {
-    test::OobeJS().ExecuteAsync(
-        "$('oobe-welcome-md').$.welcomeScreen.$.welcomeNextButton.click()");
+    test::OobeJS().TapOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
   }
 
   void WaitForNetworkSelectionScreen() {
-    test::OobeJS()
-        .CreateWaiter(
-            "Oobe.getInstance().currentScreen.id == 'network-selection'")
-        ->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
     LOG(INFO)
         << "OobeInteractiveUITest: Switched to 'network-selection' screen.";
   }
@@ -182,29 +183,25 @@ class OobeInteractiveUITest
   }
 
   void WaitForEulaScreen() {
-    test::OobeJS()
-        .CreateWaiter("Oobe.getInstance().currentScreen.id == 'eula'")
-        ->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'eula' screen.";
   }
 
   void RunEulaScreenChecks() {
     // Wait for actual EULA to appear.
     test::OobeJS()
-        .CreateWaiter("!$('oobe-eula-md').$.eulaDialog.hidden")
+        .CreateVisibilityWaiter(true, {"oobe-eula-md", "eulaDialog"})
         ->Wait();
     test::OobeJS().ExpectTrue("!$('oobe-eula-md').$.acceptButton.disabled");
   }
 
   void TapEulaAccept() {
-    test::OobeJS().ExecuteAsync("$('oobe-eula-md').$.acceptButton.click();");
+    test::OobeJS().TapOnPath({"oobe-eula-md", "acceptButton"});
   }
 
   void WaitForUpdateScreen() {
-    test::OobeJS()
-        .CreateWaiter("Oobe.getInstance().currentScreen.id == 'update'")
-        ->Wait();
-    test::OobeJS().CreateWaiter("!$('update').hidden")->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
+    test::OobeJS().CreateVisibilityWaiter(true, {"update"})->Wait();
 
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'update' screen.";
   }
@@ -219,9 +216,7 @@ class OobeInteractiveUITest
   }
 
   void WaitForGaiaSignInScreen() {
-    test::OobeJS()
-        .CreateWaiter("Oobe.getInstance().currentScreen.id == 'gaia-signin'")
-        ->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'gaia-signin' screen.";
   }
 
@@ -237,9 +232,7 @@ class OobeInteractiveUITest
 
   void WaitForSyncConsentScreen() {
     LOG(INFO) << "OobeInteractiveUITest: Waiting for 'sync-consent' screen.";
-    test::OobeJS()
-        .CreateWaiter("Oobe.getInstance().currentScreen.id == 'sync-consent'")
-        ->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_SYNC_CONSENT).Wait();
   }
 
   void ExitScreenSyncConsent() {
@@ -251,50 +244,47 @@ class OobeInteractiveUITest
     screen->OnStateChanged(nullptr);
     LOG(INFO) << "OobeInteractiveUITest: Waiting for 'sync-consent' screen "
                  "to close.";
-    test::CreatePredicateOrOobeDestroyedWaiter(
-        "Oobe.getInstance().currentScreen.id != 'sync-consent'")
-        ->Wait();
+    OobeScreenExitWaiter(OobeScreen::SCREEN_SYNC_CONSENT).Wait();
   }
 
   void WaitForFingerprintScreen() {
     LOG(INFO)
         << "OobeInteractiveUITest: Waiting for 'fingerprint-setup' screen.";
-    test::OobeJS()
-        .CreateWaiter(
-            "Oobe.getInstance().currentScreen.id == 'fingerprint-setup'")
-        ->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_FINGERPRINT_SETUP).Wait();
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
                  "to show.";
-    test::OobeJS().CreateWaiter("!$('fingerprint-setup').hidden")->Wait();
+    test::OobeJS().CreateVisibilityWaiter(true, {"fingerprint-setup"})->Wait();
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
                  "to initializes.";
-    test::OobeJS().CreateWaiter("!$('fingerprint-setup-impl').hidden")->Wait();
+    test::OobeJS()
+        .CreateVisibilityWaiter(true, {"fingerprint-setup-impl"})
+        ->Wait();
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
                  "to show setupFingerprint.";
     test::OobeJS()
-        .CreateWaiter("!$('fingerprint-setup-impl').$.setupFingerprint.hidden")
+        .CreateVisibilityWaiter(true,
+                                {"fingerprint-setup-impl", "setupFingerprint"})
         ->Wait();
   }
 
   void RunFingerprintScreenChecks() {
-    test::OobeJS().ExpectTrue("!$('fingerprint-setup').hidden");
-    test::OobeJS().ExpectTrue("!$('fingerprint-setup-impl').hidden");
-    test::OobeJS().ExpectTrue(
-        "!$('fingerprint-setup-impl').$.setupFingerprint.hidden");
-    test::OobeJS().ExecuteAsync(
-        "$('fingerprint-setup-impl').$.showSensorLocationButton.click()");
-    test::OobeJS().ExpectTrue(
-        "$('fingerprint-setup-impl').$.setupFingerprint.hidden");
+    test::OobeJS().ExpectVisible("fingerprint-setup");
+    test::OobeJS().ExpectVisible("fingerprint-setup-impl");
+    test::OobeJS().ExpectVisiblePath(
+        {"fingerprint-setup-impl", "setupFingerprint"});
+    test::OobeJS().TapOnPath(
+        {"fingerprint-setup-impl", "showSensorLocationButton"});
+    test::OobeJS().ExpectHiddenPath(
+        {"fingerprint-setup-impl", "setupFingerprint"});
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup "
                  "to switch to placeFinger.";
     test::OobeJS()
-        .CreateWaiter("!$('fingerprint-setup-impl').$.placeFinger.hidden")
+        .CreateVisibilityWaiter(true, {"fingerprint-setup-impl", "placeFinger"})
         ->Wait();
   }
 
   void ExitFingerprintPinSetupScreen() {
-    test::OobeJS().ExpectTrue(
-        "!$('fingerprint-setup-impl').$.placeFinger.hidden");
+    test::OobeJS().ExpectVisiblePath({"fingerprint-setup-impl", "placeFinger"});
     // This might be the last step in flow. Synchronious execute gets stuck as
     // WebContents may be destroyed in the process. So it may never return.
     // So we use ExecuteAsync() here.
@@ -302,22 +292,18 @@ class OobeInteractiveUITest
         "$('fingerprint-setup-impl').$.setupFingerprintLater.click()");
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
                  "to close.";
-    test::CreatePredicateOrOobeDestroyedWaiter(
-        "Oobe.getInstance().currentScreen.id != 'fingerprint-setup'")
-        ->Wait();
+    OobeScreenExitWaiter(OobeScreen::SCREEN_FINGERPRINT_SETUP).Wait();
     LOG(INFO) << "OobeInteractiveUITest: 'fingerprint-setup' screen done.";
   }
 
   void WaitForDiscoverScreen() {
-    test::OobeJS()
-        .CreateWaiter("Oobe.getInstance().currentScreen.id == 'discover'")
-        ->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_DISCOVER).Wait();
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'discover' screen.";
   }
 
   void RunDiscoverScreenChecks() {
-    test::OobeJS().ExpectTrue("!$('discover').hidden");
-    test::OobeJS().ExpectTrue("!$('discover-impl').hidden");
+    test::OobeJS().ExpectVisible("discover");
+    test::OobeJS().ExpectVisible("discover-impl");
     test::OobeJS().ExpectTrue(
         "!$('discover-impl').root.querySelector('discover-pin-setup-module')."
         "hidden");
@@ -336,18 +322,8 @@ class OobeInteractiveUITest
     test::OobeJS().ExecuteAsync(
         "$('discover-impl').root.querySelector('discover-pin-setup-module')."
         "$.setupSkipButton.click()");
-    test::CreatePredicateOrOobeDestroyedWaiter(
-        "Oobe.getInstance().currentScreen.id != 'discover'")
-        ->Wait();
+    OobeScreenExitWaiter(OobeScreen::SCREEN_DISCOVER).Wait();
     LOG(INFO) << "OobeInteractiveUITest: 'discover' screen done.";
-  }
-
-  void WaitForUserImageScreen() {
-    test::OobeJS()
-        .CreateWaiter("Oobe.getInstance().currentScreen.id == 'user-image'")
-        ->Wait();
-
-    LOG(INFO) << "OobeInteractiveUITest: Switched to 'user-image' screen.";
   }
 
   void SimpleEndToEnd();
@@ -396,7 +372,7 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
     ExitFingerprintPinSetupScreen();
   }
 
-  if (TabletModeClient::Get()->tablet_mode_enabled()) {
+  if (params_->is_tablet) {
     WaitForDiscoverScreen();
     RunDiscoverScreenChecks();
     ExitDiscoverPinSetupScreen();
@@ -405,9 +381,7 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
   WaitForLoginDisplayHostShutdown();
 }
 
-// Flaky on MSAN/ASAN/LSAN: crbug.com/891277, crbug.com/891484.
-// Flaky on normal builds: crbug.com/936041
-IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, DISABLED_SimpleEndToEnd) {
+IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, SimpleEndToEnd) {
   SimpleEndToEnd();
 }
 

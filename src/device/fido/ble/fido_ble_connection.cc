@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
@@ -95,7 +96,7 @@ std::ostream& operator<<(std::ostream& os,
 const BluetoothRemoteGattService* GetFidoService(
     const BluetoothDevice* device) {
   if (!device) {
-    LOG(ERROR) << "No device present.";
+    FIDO_LOG(ERROR) << "No device present.";
     return nullptr;
   }
 
@@ -103,45 +104,48 @@ const BluetoothRemoteGattService* GetFidoService(
     // This assumes that no device is representing as both a FIDO BLE
     // and a caBLE device.
     if (service->GetUUID() == BluetoothUUID(kFidoServiceUUID) ||
-        service->GetUUID() == BluetoothUUID(kCableAdvertisementUUID128))
+        service->GetUUID() == BluetoothUUID(kCableAdvertisementUUID128)) {
+      FIDO_LOG(EVENT) << "Found caBLE service UUID: "
+                      << service->GetUUID().value();
       return service;
+    }
   }
 
-  LOG(ERROR) << "No Fido service present.";
+  FIDO_LOG(ERROR) << "No Fido service present.";
   return nullptr;
 }
 
 void OnWriteRemoteCharacteristic(FidoBleConnection::WriteCallback callback) {
-  VLOG(2) << "Writing Remote Characteristic Succeeded.";
+  FIDO_LOG(DEBUG) << "Writing Remote Characteristic Succeeded.";
   std::move(callback).Run(true);
 }
 
 void OnWriteRemoteCharacteristicError(
     FidoBleConnection::WriteCallback callback,
     BluetoothGattService::GattErrorCode error_code) {
-  LOG(ERROR) << "Writing Remote Characteristic Failed: "
-             << ToString(error_code);
+  FIDO_LOG(ERROR) << "Writing Remote Characteristic Failed: "
+                  << ToString(error_code);
   std::move(callback).Run(false);
 }
 
 void OnReadServiceRevisionBitfield(ServiceRevisionsCallback callback,
                                    const std::vector<uint8_t>& value) {
   if (value.empty()) {
-    VLOG(2) << "Service Revision Bitfield is empty.";
+    FIDO_LOG(DEBUG) << "Service Revision Bitfield is empty.";
     std::move(callback).Run({});
     return;
   }
 
   if (value.size() != 1u) {
-    VLOG(2) << "Service Revision Bitfield has unexpected size: " << value.size()
-            << ". Ignoring all but the first byte.";
+    FIDO_LOG(DEBUG) << "Service Revision Bitfield has unexpected size: "
+                    << value.size() << ". Ignoring all but the first byte.";
   }
 
   const uint8_t bitset = value[0];
   if (bitset & 0x1F) {
-    VLOG(2) << "Service Revision Bitfield has unexpected bits set: "
-            << base::StringPrintf("0x%02X", bitset)
-            << ". Ignoring all but the first three bits.";
+    FIDO_LOG(DEBUG) << "Service Revision Bitfield has unexpected bits set: "
+                    << base::StringPrintf("0x%02X", bitset)
+                    << ". Ignoring all but the first three bits.";
   }
 
   std::vector<FidoBleConnection::ServiceRevision> service_revisions;
@@ -149,7 +153,7 @@ void OnReadServiceRevisionBitfield(ServiceRevisionsCallback callback,
                         FidoBleConnection::ServiceRevision::kU2f12,
                         FidoBleConnection::ServiceRevision::kFido2}) {
     if (bitset & static_cast<uint8_t>(revision)) {
-      VLOG(2) << "Detected Support for " << revision << ".";
+      FIDO_LOG(DEBUG) << "Detected Support for " << revision << ".";
       service_revisions.push_back(revision);
     }
   }
@@ -160,8 +164,8 @@ void OnReadServiceRevisionBitfield(ServiceRevisionsCallback callback,
 void OnReadServiceRevisionBitfieldError(
     ServiceRevisionsCallback callback,
     BluetoothGattService::GattErrorCode error_code) {
-  LOG(ERROR) << "Error while reading Service Revision Bitfield: "
-             << ToString(error_code);
+  FIDO_LOG(ERROR) << "Error while reading Service Revision Bitfield: "
+                  << ToString(error_code);
   std::move(callback).Run({});
 }
 
@@ -181,6 +185,11 @@ FidoBleConnection::FidoBleConnection(
 }
 
 FidoBleConnection::~FidoBleConnection() {
+  // Workaround for crbug.com/950204, avoids re-entrancy bugs triggered by
+  // closing a GATT connection while handling changes to the GATT connection
+  // state.
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                  std::move(connection_));
   adapter_->RemoveObserver(this);
 }
 
@@ -203,7 +212,7 @@ FidoBleConnection::FidoBleConnection(BluetoothAdapter* adapter,
 void FidoBleConnection::Connect(ConnectionCallback callback) {
   auto* device = GetBleDevice();
   if (!device) {
-    LOG(ERROR) << "Failed to get Device.";
+    FIDO_LOG(ERROR) << "Failed to get Device.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
@@ -227,7 +236,7 @@ void FidoBleConnection::ReadControlPointLength(
   }
 
   if (!control_point_length_id_) {
-    LOG(ERROR) << "Failed to get Control Point Length.";
+    FIDO_LOG(ERROR) << "Failed to get Control Point Length.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     return;
@@ -236,7 +245,7 @@ void FidoBleConnection::ReadControlPointLength(
   BluetoothRemoteGattCharacteristic* control_point_length =
       fido_service->GetCharacteristic(*control_point_length_id_);
   if (!control_point_length) {
-    LOG(ERROR) << "No Control Point Length characteristic present.";
+    FIDO_LOG(ERROR) << "No Control Point Length characteristic present.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     return;
@@ -260,7 +269,7 @@ void FidoBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
   }
 
   if (!control_point_id_) {
-    LOG(ERROR) << "Failed to get Control Point.";
+    FIDO_LOG(ERROR) << "Failed to get Control Point.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
@@ -269,7 +278,7 @@ void FidoBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
   BluetoothRemoteGattCharacteristic* control_point =
       fido_service->GetCharacteristic(*control_point_id_);
   if (!control_point) {
-    LOG(ERROR) << "Control Point characteristic not present.";
+    FIDO_LOG(ERROR) << "Control Point characteristic not present.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
@@ -280,7 +289,7 @@ void FidoBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
   // confirmed write in case of failure, e.g. when the characteristic does not
   // provide the required property.
   if (control_point->WriteWithoutResponse(data)) {
-    VLOG(2) << "Write without response succeeded.";
+    FIDO_LOG(DEBUG) << "Write without response succeeded.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), true));
     return;
@@ -300,7 +309,7 @@ void FidoBleConnection::OnCreateGattConnection(
 
   BluetoothDevice* device = adapter_->GetDevice(address_);
   if (!device) {
-    LOG(ERROR) << "Failed to get Device.";
+    FIDO_LOG(ERROR) << "Failed to get Device.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(pending_connection_callback_), false));
@@ -316,17 +325,18 @@ void FidoBleConnection::OnCreateGattConnection(
 void FidoBleConnection::OnCreateGattConnectionError(
     BluetoothDevice::ConnectErrorCode error_code) {
   DCHECK(pending_connection_callback_);
-  LOG(ERROR) << "CreateGattConnection() failed: " << ToString(error_code);
+  FIDO_LOG(ERROR) << "CreateGattConnection() failed: " << ToString(error_code);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(pending_connection_callback_), false));
 }
 
 void FidoBleConnection::ConnectToFidoService() {
+  FIDO_LOG(EVENT) << "Attempting to connect to a Fido service.";
   DCHECK(pending_connection_callback_);
   const auto* fido_service = GetFidoService(GetBleDevice());
   if (!fido_service) {
-    LOG(ERROR) << "Failed to get Fido Service.";
+    FIDO_LOG(ERROR) << "Failed to get Fido Service.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(pending_connection_callback_), false));
@@ -337,38 +347,39 @@ void FidoBleConnection::ConnectToFidoService() {
     std::string uuid = characteristic->GetUUID().canonical_value();
     if (uuid == kFidoControlPointLengthUUID) {
       control_point_length_id_ = characteristic->GetIdentifier();
-      VLOG(2) << "Got Fido Control Point Length: " << *control_point_length_id_;
+      FIDO_LOG(DEBUG) << "Got Fido Control Point Length: "
+                      << *control_point_length_id_;
       continue;
     }
 
     if (uuid == kFidoControlPointUUID) {
       control_point_id_ = characteristic->GetIdentifier();
-      VLOG(2) << "Got Fido Control Point: " << *control_point_id_;
+      FIDO_LOG(DEBUG) << "Got Fido Control Point: " << *control_point_id_;
       continue;
     }
 
     if (uuid == kFidoStatusUUID) {
       status_id_ = characteristic->GetIdentifier();
-      VLOG(2) << "Got Fido Status: " << *status_id_;
+      FIDO_LOG(DEBUG) << "Got Fido Status: " << *status_id_;
       continue;
     }
 
     if (uuid == kFidoServiceRevisionUUID) {
       service_revision_id_ = characteristic->GetIdentifier();
-      VLOG(2) << "Got Fido Service Revision: " << *service_revision_id_;
+      FIDO_LOG(DEBUG) << "Got Fido Service Revision: " << *service_revision_id_;
       continue;
     }
 
     if (uuid == kFidoServiceRevisionBitfieldUUID) {
       service_revision_bitfield_id_ = characteristic->GetIdentifier();
-      VLOG(2) << "Got Fido Service Revision Bitfield: "
-              << *service_revision_bitfield_id_;
+      FIDO_LOG(DEBUG) << "Got Fido Service Revision Bitfield: "
+                      << *service_revision_bitfield_id_;
     }
   }
 
   if (!control_point_length_id_ || !control_point_id_ || !status_id_ ||
       (!service_revision_id_ && !service_revision_bitfield_id_)) {
-    LOG(ERROR) << "Fido Characteristics missing.";
+    FIDO_LOG(ERROR) << "Fido Characteristics missing.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(pending_connection_callback_), false));
@@ -376,7 +387,7 @@ void FidoBleConnection::ConnectToFidoService() {
   }
 
   // In case the bitfield characteristic is present, the client has to select a
-  // supported bersion by writing the corresponding bit. Reference:
+  // supported version by writing the corresponding bit. Reference:
   // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#ble-protocol-overview
   if (service_revision_bitfield_id_) {
     auto callback = base::Bind(&FidoBleConnection::OnReadServiceRevisions,
@@ -395,7 +406,7 @@ void FidoBleConnection::OnReadServiceRevisions(
     std::vector<ServiceRevision> service_revisions) {
   DCHECK(pending_connection_callback_);
   if (service_revisions.empty()) {
-    LOG(ERROR) << "Could not obtain Service Revisions.";
+    FIDO_LOG(ERROR) << "Could not obtain Service Revisions.";
     std::move(pending_connection_callback_).Run(false);
     return;
   }
@@ -464,13 +475,13 @@ void FidoBleConnection::StartNotifySession() {
 void FidoBleConnection::OnStartNotifySession(
     std::unique_ptr<BluetoothGattNotifySession> notify_session) {
   notify_session_ = std::move(notify_session);
-  VLOG(2) << "Created notification session. Connection established.";
+  FIDO_LOG(DEBUG) << "Created notification session. Connection established.";
   std::move(pending_connection_callback_).Run(true);
 }
 
 void FidoBleConnection::OnStartNotifySessionError(
     BluetoothGattService::GattErrorCode error_code) {
-  LOG(ERROR) << "StartNotifySession() failed: " << ToString(error_code);
+  FIDO_LOG(ERROR) << "StartNotifySession() failed: " << ToString(error_code);
   std::move(pending_connection_callback_).Run(false);
 }
 
@@ -487,7 +498,7 @@ void FidoBleConnection::GattCharacteristicValueChanged(
     const std::vector<uint8_t>& value) {
   if (characteristic->GetIdentifier() != status_id_)
     return;
-  VLOG(2) << "Status characteristic value changed.";
+  FIDO_LOG(DEBUG) << "Status characteristic value changed.";
   read_callback_.Run(value);
 }
 
@@ -507,13 +518,14 @@ void FidoBleConnection::OnReadControlPointLength(
     ControlPointLengthCallback callback,
     const std::vector<uint8_t>& value) {
   if (value.size() != 2) {
-    LOG(ERROR) << "Wrong Control Point Length: " << value.size() << " bytes";
+    FIDO_LOG(ERROR) << "Wrong Control Point Length: " << value.size()
+                    << " bytes";
     std::move(callback).Run(base::nullopt);
     return;
   }
 
   uint16_t length = (value[0] << 8) | value[1];
-  VLOG(2) << "Control Point Length: " << length;
+  FIDO_LOG(DEBUG) << "Control Point Length: " << length;
   std::move(callback).Run(length);
 }
 
@@ -521,7 +533,8 @@ void FidoBleConnection::OnReadControlPointLength(
 void FidoBleConnection::OnReadControlPointLengthError(
     ControlPointLengthCallback callback,
     BluetoothGattService::GattErrorCode error_code) {
-  LOG(ERROR) << "Error reading Control Point Length: " << ToString(error_code);
+  FIDO_LOG(ERROR) << "Error reading Control Point Length: "
+                  << ToString(error_code);
   std::move(callback).Run(base::nullopt);
 }
 

@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text_path.h"
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -48,19 +49,21 @@ const SVGEnumerationMap& GetEnumerationMap<SVGTextPathSpacingType>() {
 inline SVGTextPathElement::SVGTextPathElement(Document& document)
     : SVGTextContentElement(svg_names::kTextPathTag, document),
       SVGURIReference(this),
-      start_offset_(
-          SVGAnimatedLength::Create(this,
-                                    svg_names::kStartOffsetAttr,
-                                    SVGLengthMode::kWidth,
-                                    SVGLength::Initial::kUnitlessZero)),
-      method_(SVGAnimatedEnumeration<SVGTextPathMethodType>::Create(
+      start_offset_(MakeGarbageCollected<SVGAnimatedLength>(
           this,
-          svg_names::kMethodAttr,
-          kSVGTextPathMethodAlign)),
-      spacing_(SVGAnimatedEnumeration<SVGTextPathSpacingType>::Create(
-          this,
-          svg_names::kSpacingAttr,
-          kSVGTextPathSpacingExact)) {
+          svg_names::kStartOffsetAttr,
+          SVGLengthMode::kWidth,
+          SVGLength::Initial::kUnitlessZero)),
+      method_(
+          MakeGarbageCollected<SVGAnimatedEnumeration<SVGTextPathMethodType>>(
+              this,
+              svg_names::kMethodAttr,
+              kSVGTextPathMethodAlign)),
+      spacing_(
+          MakeGarbageCollected<SVGAnimatedEnumeration<SVGTextPathSpacingType>>(
+              this,
+              svg_names::kSpacingAttr,
+              kSVGTextPathSpacingExact)) {
   AddToPropertyMap(start_offset_);
   AddToPropertyMap(method_);
   AddToPropertyMap(spacing_);
@@ -107,7 +110,8 @@ void SVGTextPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   SVGTextContentElement::SvgAttributeChanged(attr_name);
 }
 
-LayoutObject* SVGTextPathElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGTextPathElement::CreateLayoutObject(const ComputedStyle&,
+                                                     LegacyLayout) {
   return new LayoutSVGTextPath(this);
 }
 

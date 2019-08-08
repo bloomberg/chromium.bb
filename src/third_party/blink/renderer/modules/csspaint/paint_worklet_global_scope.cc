@@ -104,8 +104,7 @@ PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
       frame, std::move(creation_params), reporting_proxy,
       pending_generator_registry);
   // TODO(bashi): Handle a case where the script controller fails to initialize.
-  global_scope->ScriptController()->InitializeContext(global_scope->Name(),
-                                                      NullURL());
+  global_scope->ScriptController()->Initialize(NullURL());
   MainThreadDebugger::Instance()->ContextCreated(
       global_scope->ScriptController()->GetScriptState(),
       global_scope->GetFrame(), global_scope->DocumentSecurityOrigin());
@@ -171,6 +170,12 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
     return;
   }
 
+  if (!paint_ctor->IsConstructor()) {
+    exception_state.ThrowTypeError(
+        "The provided callback is not a constructor.");
+    return;
+  }
+
   v8::Local<v8::Context> context = ScriptController()->GetContext();
 
   v8::Local<v8::Object> v8_paint_ctor = paint_ctor->CallbackObject();
@@ -209,7 +214,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
     return;
   V8PaintCallback* paint = V8PaintCallback::Create(v8_paint);
 
-  CSSPaintDefinition* definition = CSSPaintDefinition::Create(
+  auto* definition = MakeGarbageCollected<CSSPaintDefinition>(
       ScriptController()->GetScriptState(), paint_ctor, paint,
       native_invalidation_properties, custom_invalidation_properties,
       input_argument_types, context_settings);
@@ -275,7 +280,7 @@ void PaintWorkletGlobalScope::RegisterWithProxyClientIfNeeded() {
 
   if (PaintWorkletProxyClient* proxy_client =
           PaintWorkletProxyClient::From(Clients())) {
-    proxy_client->SetGlobalScope(this);
+    proxy_client->AddGlobalScope(this);
     registered_ = true;
   }
 }

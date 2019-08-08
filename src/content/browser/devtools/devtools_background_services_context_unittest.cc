@@ -15,11 +15,14 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
 namespace content {
 namespace {
+
+using testing::_;
 
 const std::string kEventName = "Test Event";
 const std::string kInstanceId = "my-instance";
@@ -82,7 +85,9 @@ void DidGetLoggedBackgroundServiceEvents(
 
 }  // namespace
 
-class DevToolsBackgroundServicesContextTest : public ::testing::Test {
+class DevToolsBackgroundServicesContextTest
+    : public ::testing::Test,
+      DevToolsBackgroundServicesContext::EventObserver {
  public:
   DevToolsBackgroundServicesContextTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
@@ -102,11 +107,22 @@ class DevToolsBackgroundServicesContextTest : public ::testing::Test {
     SimulateBrowserRestart();
   }
 
+  void TearDown() override { context_->RemoveObserver(this); }
+
  protected:
+  MOCK_METHOD1(OnEventReceived,
+               void(const devtools::proto::BackgroundServiceEvent& event));
+  MOCK_METHOD2(OnRecordingStateChanged,
+               void(bool shoul_record,
+                    devtools::proto::BackgroundService service));
+
   void SimulateBrowserRestart() {
+    if (context_)
+      context_->RemoveObserver(this);
     // Create |context_|.
     context_ = base::MakeRefCounted<DevToolsBackgroundServicesContext>(
         &browser_context_, embedded_worker_test_helper_.context_wrapper());
+    context_->AddObserver(this);
     ASSERT_TRUE(context_);
   }
 
@@ -149,6 +165,10 @@ class DevToolsBackgroundServicesContextTest : public ::testing::Test {
   }
 
   void StartRecording() {
+    EXPECT_CALL(
+        *this,
+        OnRecordingStateChanged(
+            true, devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE));
     context_->StartRecording(
         devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
 
@@ -157,6 +177,11 @@ class DevToolsBackgroundServicesContextTest : public ::testing::Test {
   }
 
   void StopRecording() {
+    EXPECT_CALL(
+        *this,
+        OnRecordingStateChanged(
+            false,
+            devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE));
     context_->StopRecording(
         devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
 
@@ -318,6 +343,24 @@ TEST_F(DevToolsBackgroundServicesContextTest, RecordingExpiration) {
 
   SimulateOneWeekPassing();
   EXPECT_FALSE(GetExpirationTime().is_null());
+
+  // Recording should be true, with an expired value.
+  EXPECT_TRUE(IsRecording());
+
+  // Logging should not happen.
+  EXPECT_CALL(*this, OnEventReceived(_)).Times(0);
+  LogTestBackgroundServiceEvent("f1");
+
+  // Observers should be informed that recording stopped.
+  EXPECT_CALL(
+      *this,
+      OnRecordingStateChanged(
+          false, devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE));
+
+  thread_bundle_.RunUntilIdle();
+
+  // The expiration time entry should be cleared.
+  EXPECT_TRUE(GetExpirationTime().is_null());
   EXPECT_FALSE(IsRecording());
 }
 
@@ -337,6 +380,22 @@ TEST_F(DevToolsBackgroundServicesContextTest, ClearLoggedEvents) {
   // Should be empty now.
   feature_events = GetLoggedBackgroundServiceEvents();
   EXPECT_TRUE(feature_events.empty());
+}
+
+TEST_F(DevToolsBackgroundServicesContextTest, EventObserverCalled) {
+  {
+    EXPECT_CALL(*this, OnEventReceived(_)).Times(0);
+    LogTestBackgroundServiceEvent("f1");
+    thread_bundle_.RunUntilIdle();
+  }
+
+  StartRecording();
+
+  {
+    EXPECT_CALL(*this, OnEventReceived(_));
+    LogTestBackgroundServiceEvent("f2");
+    thread_bundle_.RunUntilIdle();
+  }
 }
 
 }  // namespace content

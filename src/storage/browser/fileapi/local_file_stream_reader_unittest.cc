@@ -26,7 +26,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
-#include "storage/browser/fileapi/file_stream_reader_test_utils.h"
+#include "storage/browser/fileapi/file_stream_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::LocalFileStreamReader;
@@ -160,17 +160,18 @@ TEST_F(LocalFileStreamReaderTest, GetLengthAfterModified) {
 
   std::unique_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, test_file_modification_time()));
-  net::TestInt64CompletionCallback callback;
-  int64_t result = reader->GetLength(callback.callback());
+  net::TestInt64CompletionCallback callback1;
+  int64_t result = reader->GetLength(callback1.callback());
   if (result == net::ERR_IO_PENDING)
-    result = callback.WaitForResult();
+    result = callback1.WaitForResult();
   ASSERT_EQ(net::ERR_UPLOAD_FILE_CHANGED, result);
 
   // With nullptr expected modification time this should work.
   reader.reset(CreateFileReader(test_path(), 0, base::Time()));
-  result = reader->GetLength(callback.callback());
+  net::TestInt64CompletionCallback callback2;
+  result = reader->GetLength(callback2.callback());
   if (result == net::ERR_IO_PENDING)
-    result = callback.WaitForResult();
+    result = callback2.WaitForResult();
   ASSERT_EQ(kTestDataSize, result);
 }
 

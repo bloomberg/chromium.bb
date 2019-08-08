@@ -160,7 +160,7 @@
             }
           }
         }
-      }
+     }
     ],
     "functions": [
       {
@@ -422,6 +422,18 @@
                 "$ref": "ExtensionInfo"
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "installReplacementWebApp",
+        "description": "Prompts the user to install the replacement web app from the manifest.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters":  []
           }
         ]
       }

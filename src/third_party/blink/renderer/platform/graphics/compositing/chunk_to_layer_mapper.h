@@ -31,7 +31,7 @@ class PLATFORM_EXPORT ChunkToLayerMapper {
   void SwitchToChunk(const PaintChunk&);
 
   // Maps a visual rectangle in the current chunk space into the layer space.
-  IntRect MapVisualRect(const FloatRect&) const;
+  IntRect MapVisualRect(const IntRect&) const;
 
   // Returns the combined transform from the current chunk to the layer.
   SkMatrix Transform() const { return translation_2d_or_matrix_.ToSkMatrix(); }
@@ -44,7 +44,7 @@ class PLATFORM_EXPORT ChunkToLayerMapper {
  private:
   friend class ChunkToLayerMapperTest;
 
-  IntRect MapUsingGeometryMapper(const FloatRect&) const;
+  IntRect MapUsingGeometryMapper(const IntRect&) const;
   void AdjustVisualRectBySubpixelOffset(FloatRect&) const;
 
   const PropertyTreeState layer_state_;

@@ -67,7 +67,10 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
       !prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar))
     return false;
 
-  return IsNTP(web_contents());
+  // The bookmark bar is only shown on the NTP if the user
+  // has added something to it.
+  return IsNTP(web_contents()) && bookmark_model_ &&
+         bookmark_model_->HasBookmarks();
 }
 
 void BookmarkTabHelper::AddObserver(BookmarkTabHelperObserver* observer) {

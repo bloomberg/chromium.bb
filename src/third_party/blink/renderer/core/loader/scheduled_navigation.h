@@ -7,7 +7,9 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -22,20 +24,19 @@ class ScheduledNavigation
   ScheduledNavigation(ClientNavigationReason,
                       double delay,
                       Document* origin_document,
-                      bool is_location_change,
+                      const KURL&,
+                      WebFrameLoadType,
                       base::TimeTicks input_timestamp);
   virtual ~ScheduledNavigation();
 
   virtual void Fire(LocalFrame*) = 0;
-
-  virtual KURL Url() const = 0;
 
   virtual bool ShouldStartTimer(LocalFrame*) { return true; }
 
   ClientNavigationReason GetReason() const { return reason_; }
   double Delay() const { return delay_; }
   Document* OriginDocument() const { return origin_document_.Get(); }
-  bool IsLocationChange() const { return is_location_change_; }
+  const KURL& Url() const { return url_; }
   std::unique_ptr<UserGestureIndicator> CreateUserGestureIndicator();
   base::TimeTicks InputTimestamp() const { return input_timestamp_; }
 
@@ -45,12 +46,14 @@ class ScheduledNavigation
 
  protected:
   void ClearUserGesture() { user_gesture_token_ = nullptr; }
+  WebFrameLoadType LoadType() const { return frame_load_type_; }
 
  private:
   ClientNavigationReason reason_;
   double delay_;
   Member<Document> origin_document_;
-  bool is_location_change_;
+  KURL url_;
+  WebFrameLoadType frame_load_type_;
   scoped_refptr<UserGestureToken> user_gesture_token_;
   base::TimeTicks input_timestamp_;
 

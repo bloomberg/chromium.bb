@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_DOCUMENT_LAYOUT_DEFINITION_H_
 
 #include "third_party/blink/renderer/core/layout/custom/css_layout_definition.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 

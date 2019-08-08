@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "device/gamepad/gamepad_id_list.h"
 #include "device/gamepad/gamepad_uma.h"
+#include "device/gamepad/nintendo_controller.h"
 
 #import <Foundation/Foundation.h>
 #include <IOKit/hid/IOHIDKeys.h>
@@ -190,6 +191,10 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   uint16_t vendor_int = [vendor_id intValue];
   uint16_t product_int = [product_id intValue];
   uint16_t version_int = [version_number intValue];
+
+  // Nintendo devices are handled by the Nintendo data fetcher.
+  if (NintendoController::IsNintendoController(vendor_int, product_int))
+    return;
 
   // Record the device before excluding Made for iOS gamepads. This allows us to
   // recognize these devices even though the GameController API masks the vendor

@@ -71,13 +71,6 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
  public:
   WebContentsViewAuraTest() = default;
 
-  // Executes the javascript synchronously and makes sure the returned value is
-  // freed properly.
-  void ExecuteSyncJSFunction(RenderFrameHost* rfh, const std::string& jscript) {
-    std::unique_ptr<base::Value> value =
-        content::ExecuteScriptAndGetValue(rfh, jscript);
-  }
-
   // Starts the test server and navigates to the given url. Sets a large enough
   // size to the root window.  Returns after the navigation to the url is
   // complete.
@@ -108,19 +101,17 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
     EXPECT_FALSE(controller.CanGoBack());
     EXPECT_FALSE(controller.CanGoForward());
-    int index = -1;
-    std::unique_ptr<base::Value> value =
-        content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-    ASSERT_TRUE(value->GetAsInteger(&index));
+    base::Value value = ExecuteScriptAndGetValue(main_frame, "get_current()");
+    int index = value.GetInt();
     EXPECT_EQ(0, index);
 
     if (touch_handler)
-      ExecuteSyncJSFunction(main_frame, "install_touch_handler()");
+      content::ExecuteScriptAndGetValue(main_frame, "install_touch_handler()");
 
-    ExecuteSyncJSFunction(main_frame, "navigate_next()");
-    ExecuteSyncJSFunction(main_frame, "navigate_next()");
+    content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
+    content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
     value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-    ASSERT_TRUE(value->GetAsInteger(&index));
+    index = value.GetInt();
     EXPECT_EQ(2, index);
     EXPECT_TRUE(controller.CanGoBack());
     EXPECT_FALSE(controller.CanGoForward());
@@ -142,8 +133,8 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
           kScrollSteps);
       base::string16 actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
-      value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-      ASSERT_TRUE(value->GetAsInteger(&index));
+      value = ExecuteScriptAndGetValue(main_frame, "get_current()");
+      index = value.GetInt();
       EXPECT_EQ(1, index);
       EXPECT_TRUE(controller.CanGoBack());
       EXPECT_TRUE(controller.CanGoForward());
@@ -160,8 +151,8 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
           kScrollSteps);
       base::string16 actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
-      value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-      ASSERT_TRUE(value->GetAsInteger(&index));
+      value = ExecuteScriptAndGetValue(main_frame, "get_current()");
+      index = value.GetInt();
       EXPECT_EQ(0, index);
       EXPECT_FALSE(controller.CanGoBack());
       EXPECT_TRUE(controller.CanGoForward());
@@ -178,8 +169,8 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
           kScrollSteps);
       base::string16 actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
-      value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-      ASSERT_TRUE(value->GetAsInteger(&index));
+      value = ExecuteScriptAndGetValue(main_frame, "get_current()");
+      index = value.GetInt();
       EXPECT_EQ(1, index);
       EXPECT_TRUE(controller.CanGoBack());
       EXPECT_TRUE(controller.CanGoForward());
@@ -190,12 +181,10 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
     RenderFrameHost* main_frame = web_contents->GetMainFrame();
-    int index = -1;
-    std::unique_ptr<base::Value> value;
-    value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-    if (!value->GetAsInteger(&index))
-      index = -1;
-    return index;
+    base::Value value = ExecuteScriptAndGetValue(main_frame, "get_current()");
+    if (!value.is_int())
+      return -1;
+    return value.GetInt();
   }
 
   int ExecuteScriptAndExtractInt(const std::string& script) {
@@ -317,15 +306,13 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
-  int index = -1;
-  std::unique_ptr<base::Value> value =
-      content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-  ASSERT_TRUE(value->GetAsInteger(&index));
+  base::Value value = ExecuteScriptAndGetValue(main_frame, "get_current()");
+  int index = value.GetInt();
   EXPECT_EQ(0, index);
 
-  ExecuteSyncJSFunction(main_frame, "navigate_next()");
+  content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
   value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-  ASSERT_TRUE(value->GetAsInteger(&index));
+  index = value.GetInt();
   EXPECT_EQ(1, index);
   EXPECT_TRUE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
@@ -340,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       blink::WebGestureEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchscreen);
+      blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
       blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
@@ -351,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       blink::WebGestureEvent::kGestureScrollUpdate,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchscreen);
+      blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_update.data.scroll_update.delta_units =
       blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
   gesture_scroll_update.data.scroll_update.delta_y = 0.f;
@@ -400,11 +387,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       ui::ScopedAnimationDurationScaleMode::FAST_DURATION);
 
   // Make sure the page has both back/forward history.
-  ExecuteSyncJSFunction(main_frame, "navigate_next()");
+  content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
   EXPECT_EQ(1, GetCurrentIndex());
-  ExecuteSyncJSFunction(main_frame, "navigate_next()");
+  content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
   EXPECT_EQ(2, GetCurrentIndex());
-  web_contents->GetController().GoBack();
+  web_contents->GetController().GoToOffset(-1);
   EXPECT_EQ(1, GetCurrentIndex());
 
   aura::Window* content = web_contents->GetContentNativeView();
@@ -485,7 +472,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  ExecuteSyncJSFunction(web_contents->GetMainFrame(), "navigate_next()");
+  content::ExecuteScriptAndGetValue(web_contents->GetMainFrame(),
+                                    "navigate_next()");
   EXPECT_EQ(1, GetCurrentIndex());
 
   aura::Window* content = web_contents->GetContentNativeView();
@@ -505,7 +493,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ContentWindowClose) {
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  ExecuteSyncJSFunction(web_contents->GetMainFrame(), "navigate_next()");
+  content::ExecuteScriptAndGetValue(web_contents->GetMainFrame(),
+                                    "navigate_next()");
   EXPECT_EQ(1, GetCurrentIndex());
 
   aura::Window* content = web_contents->GetContentNativeView();
@@ -540,11 +529,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       static_cast<WebContentsImpl*>(shell()->web_contents());
   NavigationController& controller = web_contents->GetController();
   RenderFrameHost* main_frame = web_contents->GetMainFrame();
-  ExecuteSyncJSFunction(main_frame, "install_touch_handler()");
+  content::ExecuteScriptAndGetValue(main_frame, "install_touch_handler()");
 
   // Navigate twice, then navigate back in history once.
-  ExecuteSyncJSFunction(main_frame, "navigate_next()");
-  ExecuteSyncJSFunction(main_frame, "navigate_next()");
+  content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
+  content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
   EXPECT_EQ(2, GetCurrentIndex());
   EXPECT_TRUE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
@@ -630,16 +619,17 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   gfx::Rect bounds = content->GetBoundsInRootWindow();
   const int dx = 20;
 
-  ExecuteSyncJSFunction(web_contents->GetMainFrame(),
-                        "install_touchmove_handler()");
+  content::ExecuteScriptAndGetValue(web_contents->GetMainFrame(),
+                                    "install_touchmove_handler()");
 
   WaitAFrame();
 
   for (int navigated = 0; navigated <= 1; ++navigated) {
     if (navigated) {
-      ExecuteSyncJSFunction(web_contents->GetMainFrame(), "navigate_next()");
-      ExecuteSyncJSFunction(web_contents->GetMainFrame(),
-                            "reset_touchmove_count()");
+      content::ExecuteScriptAndGetValue(web_contents->GetMainFrame(),
+                                        "navigate_next()");
+      content::ExecuteScriptAndGetValue(web_contents->GetMainFrame(),
+                                        "reset_touchmove_count()");
     }
     InputEventAckWaiter touch_start_waiter(
         GetRenderWidgetHost(),
@@ -673,7 +663,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
     blink::WebGestureEvent scroll_begin =
         SyntheticWebGestureEventBuilder::BuildScrollBegin(
-            1, 1, blink::kWebGestureDeviceTouchscreen);
+            1, 1, blink::WebGestureDevice::kTouchscreen);
     GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
         scroll_begin, ui::LatencyInfo());
     // Scroll begin ignores ack disposition, so don't wait for the ack.
@@ -689,7 +679,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
       blink::WebGestureEvent scroll_update =
           SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-              dx, 5, 0, blink::kWebGestureDeviceTouchscreen);
+              dx, 5, 0, blink::WebGestureDevice::kTouchscreen);
 
       GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
           scroll_update, ui::LatencyInfo());

@@ -56,29 +56,6 @@ BASE_EXPORT string16 NumberToString16(unsigned long long value);
 BASE_EXPORT std::string NumberToString(double value);
 BASE_EXPORT string16 NumberToString16(double value);
 
-// Type-specific naming for backwards compatibility.
-//
-// TODO(brettw) these should be removed and callers converted to the overloaded
-// "NumberToString" variant.
-inline std::string IntToString(int value) {
-  return NumberToString(value);
-}
-inline string16 IntToString16(int value) {
-  return NumberToString16(value);
-}
-inline std::string UintToString(unsigned value) {
-  return NumberToString(value);
-}
-inline string16 UintToString16(unsigned value) {
-  return NumberToString16(value);
-}
-inline std::string Int64ToString(int64_t value) {
-  return NumberToString(value);
-}
-inline string16 Int64ToString16(int64_t value) {
-  return NumberToString16(value);
-}
-
 // String -> number conversions ------------------------------------------------
 
 // Perform a best-effort conversion of the input string to a numeric type,

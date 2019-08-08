@@ -34,7 +34,6 @@ using chrome_test_util::ExecuteJavaScript;
 using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::TapWebViewElementWithId;
-using web::test::ElementSelector;
 using web::test::HttpServer;
 using web::WebViewInWebState;
 
@@ -97,7 +96,7 @@ id<GREYMatcher> PopupBlocker() {
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
-                        ElementSelector::ElementSelectorId(ID))];
+                        [ElementSelector selectorWithElementID:ID])];
 
   [ChromeEarlGrey waitForMainTabCount:2];
   [ChromeEarlGrey waitForWebViewContainingText:"Expected result"];
@@ -113,7 +112,7 @@ id<GREYMatcher> PopupBlocker() {
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
-                        ElementSelector::ElementSelectorId(ID))];
+                        [ElementSelector selectorWithElementID:ID])];
   [ChromeEarlGrey waitForMainTabCount:2];
 }
 
@@ -135,7 +134,7 @@ id<GREYMatcher> PopupBlocker() {
   web::WebState* test_page_web_state = GetCurrentWebState();
   id<GREYMatcher> test_page_matcher = WebViewInWebState(test_page_web_state);
   id<GREYAction> link_tap = web::WebViewTapElement(
-      test_page_web_state, ElementSelector::ElementSelectorId(ID));
+      test_page_web_state, [ElementSelector selectorWithElementID:ID]);
   [[EarlGrey selectElementWithMatcher:test_page_matcher]
       performAction:link_tap];
   [ChromeEarlGrey waitForMainTabCount:2];
@@ -203,7 +202,7 @@ id<GREYMatcher> PopupBlocker() {
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
-                        ElementSelector::ElementSelectorId(ID))];
+                        [ElementSelector selectorWithElementID:ID])];
   [ChromeEarlGrey waitForMainTabCount:2];
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(1));
   [ChromeEarlGrey waitForMainTabCount:1];

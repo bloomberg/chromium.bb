@@ -13,6 +13,7 @@
 #include <vulkan/vulkan.h>
 #include <memory>
 
+#include "common/PoolAlloc.h"
 #include "common/angleutils.h"
 #include "libANGLE/BlobCache.h"
 #include "libANGLE/Caps.h"
@@ -76,8 +77,12 @@ class RendererVk : angle::NonCopyable
                                                VkSurfaceKHR surface,
                                                uint32_t *presentQueueOut);
 
-    angle::Result finish(vk::Context *context);
-    angle::Result flush(vk::Context *context);
+    angle::Result finish(vk::Context *context,
+                         const vk::Semaphore *waitSemaphore,
+                         const vk::Semaphore *signalSemaphore);
+    angle::Result flush(vk::Context *context,
+                        const vk::Semaphore *waitSemaphore,
+                        const vk::Semaphore *signalSemaphore);
 
     const vk::CommandPool &getCommandPool() const;
 
@@ -148,8 +153,6 @@ class RendererVk : angle::NonCopyable
 
     angle::Result syncPipelineCacheVk(DisplayVk *displayVk);
 
-    vk::DynamicSemaphorePool *getDynamicSemaphorePool() { return &mSubmitSemaphorePool; }
-
     // Request a semaphore, that is expected to be signaled externally.  The next submission will
     // wait on it.
     angle::Result allocateSubmitWaitSemaphore(vk::Context *context,
@@ -182,7 +185,7 @@ class RendererVk : angle::NonCopyable
     // The events are queued until the query results are available.  Possible values for `phase`
     // are TRACE_EVENT_PHASE_*
     ANGLE_INLINE angle::Result traceGpuEvent(vk::Context *context,
-                                             vk::CommandBuffer *commandBuffer,
+                                             vk::PrimaryCommandBuffer *commandBuffer,
                                              char phase,
                                              const char *name)
     {
@@ -199,8 +202,8 @@ class RendererVk : angle::NonCopyable
     // Query the format properties for select bits (linearTilingFeatures, optimalTilingFeatures and
     // bufferFeatures).  Looks through mandatory features first, and falls back to querying the
     // device (first time only).
-    bool hasLinearTextureFormatFeatureBits(VkFormat format, const VkFormatFeatureFlags featureBits);
-    bool hasTextureFormatFeatureBits(VkFormat format, const VkFormatFeatureFlags featureBits);
+    bool hasLinearImageFormatFeatureBits(VkFormat format, const VkFormatFeatureFlags featureBits);
+    bool hasImageFormatFeatureBits(VkFormat format, const VkFormatFeatureFlags featureBits);
     bool hasBufferFormatFeatureBits(VkFormat format, const VkFormatFeatureFlags featureBits);
 
     void insertDebugMarker(GLenum source, GLuint id, std::string &&marker);
@@ -220,22 +223,20 @@ class RendererVk : angle::NonCopyable
 
     angle::Result initializeDevice(DisplayVk *displayVk, uint32_t queueFamilyIndex);
     void ensureCapsInitialized() const;
-    void getSubmitWaitSemaphores(
-        vk::Context *context,
-        angle::FixedVector<VkSemaphore, kMaxWaitSemaphores> *waitSemaphores,
-        angle::FixedVector<VkPipelineStageFlags, kMaxWaitSemaphores> *waitStageMasks);
     angle::Result submitFrame(vk::Context *context,
                               const VkSubmitInfo &submitInfo,
-                              vk::CommandBuffer &&commandBuffer);
+                              vk::PrimaryCommandBuffer &&commandBuffer);
     void freeAllInFlightResources();
-    angle::Result flushCommandGraph(vk::Context *context, vk::CommandBuffer *commandBatch);
+    angle::Result flushCommandGraph(vk::Context *context, vk::PrimaryCommandBuffer *commandBatch);
     void initFeatures(const ExtensionNameList &extensions);
     void initPipelineCacheVkKey();
     angle::Result initPipelineCache(DisplayVk *display);
 
-    angle::Result synchronizeCpuGpuTime(vk::Context *context);
+    angle::Result synchronizeCpuGpuTime(vk::Context *context,
+                                        const vk::Semaphore *waitSemaphore,
+                                        const vk::Semaphore *signalSemaphore);
     angle::Result traceGpuEventImpl(vk::Context *context,
-                                    vk::CommandBuffer *commandBuffer,
+                                    vk::PrimaryCommandBuffer *commandBuffer,
                                     char phase,
                                     const char *name);
     angle::Result checkCompletedGpuEvents(vk::Context *context);
@@ -306,26 +307,6 @@ class RendererVk : angle::NonCopyable
     // A cache of VkFormatProperties as queried from the device over time.
     std::array<VkFormatProperties, vk::kNumVkFormats> mFormatProperties;
 
-    // mSubmitWaitSemaphores is a list of specifically requested semaphores to be waited on before a
-    // command buffer submission, for example, semaphores signaled by vkAcquireNextImageKHR.
-    // After first use, the list is automatically cleared.  This is a vector to support concurrent
-    // rendering to multiple surfaces.
-    //
-    // Note that with multiple contexts present, this may result in a context waiting on image
-    // acquisition even if it doesn't render to that surface.  If CommandGraphs are separated by
-    // context or share group for example, this could be moved to the one that actually uses the
-    // image.
-    angle::FixedVector<vk::SemaphoreHelper, kMaxExternalSemaphores> mSubmitWaitSemaphores;
-    // mSubmitLastSignaledSemaphore shows which semaphore was last signaled by submission.  This can
-    // be set to nullptr if retrieved to be waited on outside RendererVk, such
-    // as by the surface before presentation.  Each submission waits on the
-    // previously signaled semaphore (as well as any in mSubmitWaitSemaphores)
-    // and allocates a new semaphore to signal.
-    vk::SemaphoreHelper mSubmitLastSignaledSemaphore;
-
-    // A pool of semaphores used to support the aforementioned mid-frame submissions.
-    vk::DynamicSemaphorePool mSubmitSemaphorePool;
-
     // mSubmitFence is the fence that's going to be signaled at the next submission.  This is used
     // to support SyncVk objects, which may outlive the context (as EGLSync objects).
     //
@@ -333,6 +314,9 @@ class RendererVk : angle::NonCopyable
     // is otherwise unnecessary as the SyncVk objects don't actually outlive the renderer currently.
     // http://anglebug.com/2701
     vk::Shared<vk::Fence> mSubmitFence;
+
+    // Pool allocator used for command graph but may be expanded to other allocations
+    angle::PoolAllocator mPoolAllocator;
 
     // See CommandGraph.h for a desription of the Command Graph.
     vk::CommandGraph mCommandGraph;

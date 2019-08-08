@@ -29,15 +29,13 @@ class TRACING_EXPORT TracingSamplerProfiler
  public:
   // This class will receive the sampling profiler stackframes and output them
   // to the chrome trace via an event. Exposed for testing.
-  class TRACING_EXPORT TracingProfileBuilder
-      : public base::StackSamplingProfiler::ProfileBuilder {
+  class TRACING_EXPORT TracingProfileBuilder : public base::ProfileBuilder {
    public:
     TracingProfileBuilder(base::PlatformThreadId sampled_thread_id);
 
-    // base::StackSamplingProfiler::ProfileBuilder
+    // base::ProfileBuilder
     base::ModuleCache* GetModuleCache() override;
-    void OnSampleCompleted(
-        std::vector<base::StackSamplingProfiler::Frame> frames) override;
+    void OnSampleCompleted(std::vector<base::Frame> frames) override;
     void OnProfileCompleted(base::TimeDelta profile_duration,
                             base::TimeDelta sampling_period) override {}
 

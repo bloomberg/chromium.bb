@@ -171,7 +171,8 @@ class MostVisitedSites : public history::TopSitesObserver,
   // otherwise.
   bool IsCustomLinksInitialized();
   // Enables or disables custom links, but does not (un)initialize them. Called
-  // when a third-party NTP is being used.
+  // when a third-party NTP is being used, or when the user switches between
+  // custom links and Most Visited sites.
   void EnableCustomLinks(bool enable);
   // Adds a custom link. If the number of current links is maxed, returns false
   // and does nothing. Will initialize custom links if they have not been
@@ -307,6 +308,11 @@ class MostVisitedSites : public history::TopSitesObserver,
   // would exceed the maximum.
   NTPTilesVector InsertHomeTile(NTPTilesVector tiles,
                                 const base::string16& title) const;
+
+  // Adds the Google Search page as first tile to |tiles| and returns them as
+  // new vector. Drops existing tiles with the same host as the Google Search
+  // page and tiles that would exceed the maximum.
+  NTPTilesVector InsertSearchTile(NTPTilesVector tiles) const;
 
   void OnHomepageTitleDetermined(NTPTilesVector tiles,
                                  const base::Optional<base::string16>& title);

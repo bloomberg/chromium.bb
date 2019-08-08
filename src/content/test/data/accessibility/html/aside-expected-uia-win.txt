@@ -1,5 +1,5 @@
 region
-++document IsKeyboardFocusable=true
+++document
 ++++group
 ++++++description Name='The aside tag defines some content aside from the content it is placed in.'
 ++++complementary

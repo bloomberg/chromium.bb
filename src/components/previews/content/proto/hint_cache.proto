@@ -19,4 +19,7 @@ message StoreEntry {
   optional string version = 1;
   // The actual hint data.
   optional optimization_guide.proto.Hint hint = 2;
+  // Time when top host fetched hints are still usable but update should
+  // be requested. This is set on the fetched metadata entry.
+  optional int64 update_time_secs = 3;
 }

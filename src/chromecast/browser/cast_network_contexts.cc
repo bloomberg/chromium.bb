@@ -17,8 +17,10 @@
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/cast_content_client.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/network_context.h"
@@ -100,9 +102,15 @@ class CastNetworkContexts::SystemNetworkContextOwner {
                   scoped_refptr<net::URLRequestContextGetter> context_getter) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     context_getter_ = std::move(context_getter);
+    network::mojom::NetworkContextParamsPtr network_context_params =
+        network::mojom::NetworkContextParams::New();
+    content::UpdateCorsExemptHeader(network_context_params.get());
+    variations::UpdateCorsExemptHeaderForVariations(
+        network_context_params.get());
     network_context_ = std::make_unique<network::NetworkContext>(
         content::GetNetworkServiceImpl(), std::move(network_context_request),
-        context_getter_->GetURLRequestContext());
+        context_getter_->GetURLRequestContext(),
+        network_context_params->cors_exempt_header_list);
   }
 
  private:
@@ -199,7 +207,6 @@ network::mojom::NetworkContextPtr CastNetworkContexts::CreateNetworkContext(
 
   // Copy of what's in ContentBrowserClient::CreateNetworkContext for now.
   context_params->accept_language = "en-us,en";
-  context_params->enable_data_url_support = true;
 
   content::GetNetworkService()->CreateNetworkContext(
       MakeRequest(&network_context), std::move(context_params));
@@ -235,6 +242,14 @@ void CastNetworkContexts::OnLocaleUpdate() {
   content::BrowserContext::GetDefaultStoragePartition(browser_context)
       ->GetNetworkContext()
       ->SetAcceptLanguage(accept_language);
+}
+
+void CastNetworkContexts::OnPrefServiceShutdown() {
+  if (proxy_config_service_)
+    proxy_config_service_->RemoveObserver(this);
+
+  if (pref_proxy_config_tracker_impl_)
+    pref_proxy_config_tracker_impl_->DetachFromPrefService();
 }
 
 network::mojom::NetworkContextParamsPtr

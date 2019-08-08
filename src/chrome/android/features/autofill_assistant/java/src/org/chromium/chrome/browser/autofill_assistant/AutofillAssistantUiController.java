@@ -16,16 +16,19 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip.Type;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Bridge to native side autofill_assistant::UiControllerAndroid. It allows native side to control
@@ -37,6 +40,7 @@ import java.util.List;
 // TODO(crbug.com/806868): This class should be removed once all logic is in native side and the
 // model is directly modified by the native AssistantMediator.
 class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
+    private static Set<ChromeActivity> sActiveChromeActivities;
     private long mNativeUiController;
 
     private final ChromeActivity mActivity;
@@ -54,25 +58,49 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     @Nullable
     private static ChromeActivity findAppropriateActivity(WebContents webContents) {
         ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
-        if (activity != null && AssistantCoordinator.isActive(activity)) {
+        if (activity != null && isActive(activity)) {
             return null;
         }
 
         return activity;
     }
 
+    /**
+     * Returns {@code true} if an AA UI is active on the given activity.
+     *
+     * <p>Used to avoid creating duplicate coordinators views.
+     *
+     * <p>TODO(crbug.com/806868): Refactor to have AssistantCoordinator owned by the activity, so
+     * it's easy to guarantee that there will be at most one per activity.
+     */
+    private static boolean isActive(ChromeActivity activity) {
+        if (sActiveChromeActivities == null) {
+            return false;
+        }
+
+        return sActiveChromeActivities.contains(activity);
+    }
+
     @CalledByNative
     private static AutofillAssistantUiController create(
             ChromeActivity activity, boolean allowTabSwitching, long nativeUiController) {
         assert activity != null;
-        return new AutofillAssistantUiController(activity, allowTabSwitching, nativeUiController);
+        assert activity.getBottomSheetController() != null;
+
+        if (sActiveChromeActivities == null) {
+            sActiveChromeActivities = new HashSet<>();
+        }
+        sActiveChromeActivities.add(activity);
+
+        return new AutofillAssistantUiController(activity, activity.getBottomSheetController(),
+                allowTabSwitching, nativeUiController);
     }
 
-    private AutofillAssistantUiController(
-            ChromeActivity activity, boolean allowTabSwitching, long nativeUiController) {
+    private AutofillAssistantUiController(ChromeActivity activity, BottomSheetController controller,
+            boolean allowTabSwitching, long nativeUiController) {
         mNativeUiController = nativeUiController;
         mActivity = activity;
-        mCoordinator = new AssistantCoordinator(activity, this);
+        mCoordinator = new AssistantCoordinator(activity, this, controller);
         mActivityTabObserver =
                 new ActivityTabProvider.ActivityTabTabObserver(activity.getActivityTabProvider()) {
                     @Override
@@ -92,15 +120,14 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
                         // confusion.
                         dismissSnackbar();
 
-                        AssistantModel model = getModel();
                         if (tab == null) {
                             // A null tab indicates that there's no selected tab; Most likely, we're
                             // in the process of selecting a new tab. Hide the UI for possible reuse
                             // later.
-                            getModel().setVisible(false);
+                            safeNativeSetVisible(false);
                         } else if (tab.getWebContents() == mWebContents) {
                             // The original tab was re-selected. Show it again
-                            model.setVisible(true);
+                            safeNativeSetVisible(true);
                         } else {
                             // A new tab was selected. If Autofill Assistant is running on it,
                             // attach the UI to that other instance, otherwise destroy the UI.
@@ -155,6 +182,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         mNativeUiController = 0;
         mActivityTabObserver.destroy();
         mCoordinator.destroy();
+        sActiveChromeActivities.remove(mActivity);
     }
 
     /**
@@ -169,18 +197,13 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void onShowOnboarding(Runnable onAccept) {
-        mCoordinator.showOnboarding(onAccept);
+    private void onShowOnboarding(String experimentIds, Runnable onAccept) {
+        mCoordinator.showOnboarding(experimentIds, onAccept);
     }
 
     @CalledByNative
     private void expandBottomSheet() {
-        mCoordinator.getBottomBarCoordinator().expand();
-    }
-
-    @CalledByNative
-    private void showFeedback(String debugContext) {
-        mCoordinator.showFeedback(debugContext);
+        mCoordinator.getBottomBarCoordinator().showAndExpand();
     }
 
     @CalledByNative
@@ -196,35 +219,33 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void setSuggestions(String[] texts) {
+    private void setSuggestions(int[] icons, String[] texts, boolean[] disabled) {
+        assert texts.length == icons.length;
+        assert texts.length == disabled.length;
         List<AssistantChip> chips = new ArrayList<>();
         for (int i = 0; i < texts.length; i++) {
             final int suggestionIndex = i;
-            chips.add(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, texts[i],
-                    () -> safeNativeOnSuggestionSelected(suggestionIndex)));
+            chips.add(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, icons[i], texts[i],
+                    disabled[i], () -> safeNativeOnSuggestionSelected(suggestionIndex)));
         }
         AssistantCarouselModel model = getModel().getSuggestionsModel();
         model.set(ALIGNMENT, AssistantCarouselModel.Alignment.START);
         setChips(model, chips);
     }
 
-    @CalledByNative
-    private void clearActions() {
-        getModel().getActionsModel().getChipsModel().set(Collections.emptyList());
-    }
-
     /** Creates an empty list of chips. */
     @CalledByNative
     private static List<AssistantChip> createChipList() {
-        return new ArrayList<AssistantChip>();
+        return new ArrayList<>();
     }
 
     /**
      * Adds an action button to the chip list, which executes the action {@code actionIndex}.
      */
     @CalledByNative
-    private void addActionButton(List<AssistantChip> chips, String text, int actionIndex) {
-        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, text,
+    private void addActionButton(
+            List<AssistantChip> chips, int icon, String text, int actionIndex, boolean disabled) {
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
                 () -> safeNativeOnActionSelected(actionIndex)));
     }
 
@@ -234,8 +255,8 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      */
     @CalledByNative
     private void addHighlightedActionButton(
-            List<AssistantChip> chips, String text, int actionIndex) {
-        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_FILLED_BLUE, text,
+            List<AssistantChip> chips, int icon, String text, int actionIndex, boolean disabled) {
+        chips.add(new AssistantChip(Type.BUTTON_FILLED_BLUE, icon, text, disabled,
                 () -> safeNativeOnActionSelected(actionIndex)));
     }
 
@@ -244,8 +265,9 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      * {@code actionIndex}, or shuts down Autofill Assistant if {@code actionIndex} is {@code -1}.
      */
     @CalledByNative
-    private void addCancelButton(List<AssistantChip> chips, String text, int actionIndex) {
-        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, text,
+    private void addCancelButton(
+            List<AssistantChip> chips, int icon, String text, int actionIndex, boolean disabled) {
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
                 () -> safeNativeOnCancelButtonClicked(actionIndex)));
     }
 
@@ -253,17 +275,17 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      * Adds a close action button to the chip list, which shuts down Autofill Assistant.
      */
     @CalledByNative
-    private void addCloseButton(List<AssistantChip> chips, String text) {
-        chips.add(new AssistantChip(
-                AssistantChip.Type.BUTTON_HAIRLINE, text, this::safeNativeOnCloseButtonClicked));
+    private void addCloseButton(
+            List<AssistantChip> chips, int icon, String text, boolean disabled) {
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
+                this::safeNativeOnCloseButtonClicked));
     }
 
     @CalledByNative
     private void setActions(List<AssistantChip> chips) {
         AssistantCarouselModel model = getModel().getActionsModel();
         model.set(ALIGNMENT,
-                (chips.size() == 1
-                        && chips.get(0).getType() != AssistantChip.Type.BUTTON_FILLED_BLUE)
+                (chips.size() == 1 && chips.get(0).getType() != Type.BUTTON_FILLED_BLUE)
                         ? AssistantCarouselModel.Alignment.CENTER
                         : AssistantCarouselModel.Alignment.END);
         setChips(model, chips);
@@ -276,6 +298,16 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         // with their associated callbacks.
         EditDistance.transform(model.getChipsModel(), chips,
                 (a, b) -> a.getType() == b.getType() && a.getText().equals(b.getText()));
+    }
+
+    @CalledByNative
+    private void setResizeViewport(boolean resizeViewport) {
+        mCoordinator.getBottomBarCoordinator().setResizeViewport(resizeViewport);
+    }
+
+    @CalledByNative
+    private void setPeekMode(@AssistantPeekHeightCoordinator.PeekMode int peekMode) {
+        mCoordinator.getBottomBarCoordinator().setPeekMode(peekMode);
     }
 
     // Native methods.
@@ -314,4 +346,9 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         if (mNativeUiController != 0) nativeOnCloseButtonClicked(mNativeUiController);
     }
     private native void nativeOnCloseButtonClicked(long nativeUiControllerAndroid);
+
+    private void safeNativeSetVisible(boolean visible) {
+        if (mNativeUiController != 0) nativeSetVisible(mNativeUiController, visible);
+    }
+    private native void nativeSetVisible(long nativeUiControllerAndroid, boolean visible);
 }

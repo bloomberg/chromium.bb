@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/bookmark_app_helper.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -20,9 +20,12 @@
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
+#include "chrome/common/web_application_info.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/string_ordinal.h"
 #include "content/public/browser/notification_service.h"
@@ -51,10 +54,6 @@ namespace {
 
 extensions::ExtensionRegistry* GetExtensionRegistry(Profile* profile) {
   return extensions::ExtensionRegistry::Get(profile);
-}
-
-extensions::ExtensionService* GetExtensionService(Profile* profile) {
-  return extensions::ExtensionSystem::Get(profile)->extension_service();
 }
 
 }  // namespace
@@ -382,19 +381,23 @@ IN_PROC_BROWSER_TEST_P(TwoClientAppsSyncTest, BookmarkAppBasic) {
   size_t num_extensions =
       GetExtensionRegistry(GetProfile(0))->enabled_extensions().size();
 
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = GURL("http://www.chromium.org/path");
-  web_app_info.scope = GURL("http://www.chromium.org/");
-  web_app_info.title = base::UTF8ToUTF16("Test name");
-  web_app_info.description = base::UTF8ToUTF16("Test description");
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = GURL("http://www.chromium.org/path");
+  web_app_info->scope = GURL("http://www.chromium.org/");
+  web_app_info->title = base::UTF8ToUTF16("Test name");
+  web_app_info->description = base::UTF8ToUTF16("Test description");
   ++num_extensions;
   {
     content::WindowedNotificationObserver windowed_observer(
         extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         content::NotificationService::AllSources());
-    extensions::CreateOrUpdateBookmarkApp(GetExtensionService(GetProfile(0)),
-                                          &web_app_info,
-                                          true /* is_locally_installed */);
+
+    auto* provider =
+        web_app::WebAppProviderBase::GetProviderBase(GetProfile(0));
+    DCHECK(provider);
+    provider->install_manager().InstallWebAppForTesting(std::move(web_app_info),
+                                                        base::DoNothing());
+
     windowed_observer.Wait();
     EXPECT_EQ(num_extensions,
               GetExtensionRegistry(GetProfile(0))->enabled_extensions().size());
@@ -415,17 +418,21 @@ IN_PROC_BROWSER_TEST_P(TwoClientAppsSyncTest, BookmarkAppMinimal) {
   size_t num_extensions =
       GetExtensionRegistry(GetProfile(0))->enabled_extensions().size();
 
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = GURL("http://www.chromium.org/");
-  web_app_info.title = base::UTF8ToUTF16("Test name");
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = GURL("http://www.chromium.org/");
+  web_app_info->title = base::UTF8ToUTF16("Test name");
   ++num_extensions;
   {
     content::WindowedNotificationObserver windowed_observer(
         extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         content::NotificationService::AllSources());
-    extensions::CreateOrUpdateBookmarkApp(GetExtensionService(GetProfile(0)),
-                                          &web_app_info,
-                                          true /* is_locally_installed */);
+
+    auto* provider =
+        web_app::WebAppProviderBase::GetProviderBase(GetProfile(0));
+    DCHECK(provider);
+    provider->install_manager().InstallWebAppForTesting(std::move(web_app_info),
+                                                        base::DoNothing());
+
     windowed_observer.Wait();
     EXPECT_EQ(num_extensions,
               GetExtensionRegistry(GetProfile(0))->enabled_extensions().size());
@@ -457,18 +464,23 @@ IN_PROC_BROWSER_TEST_P(TwoClientAppsSyncTest, BookmarkAppThemeColor) {
   size_t num_extensions =
       GetExtensionRegistry(GetProfile(0))->enabled_extensions().size();
 
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = GURL("http://www.chromium.org/");
-  web_app_info.title = base::UTF8ToUTF16("Test name");
-  web_app_info.theme_color = SK_ColorBLUE;
+  const GURL app_url("http://www.chromium.org/");
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = app_url;
+  web_app_info->title = base::UTF8ToUTF16("Test name");
+  web_app_info->theme_color = SK_ColorBLUE;
   ++num_extensions;
   {
     content::WindowedNotificationObserver windowed_observer(
         extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         content::NotificationService::AllSources());
-    extensions::CreateOrUpdateBookmarkApp(GetExtensionService(GetProfile(0)),
-                                          &web_app_info,
-                                          true /* is_locally_installed */);
+
+    auto* provider =
+        web_app::WebAppProviderBase::GetProviderBase(GetProfile(0));
+    DCHECK(provider);
+    provider->install_manager().InstallWebAppForTesting(std::move(web_app_info),
+                                                        base::DoNothing());
+
     windowed_observer.Wait();
     EXPECT_EQ(num_extensions,
               GetExtensionRegistry(GetProfile(0))->enabled_extensions().size());
@@ -480,7 +492,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAppsSyncTest, BookmarkAppThemeColor) {
         base::BindRepeating(&AllProfilesHaveSameApps));
     windowed_observer.Wait();
   }
-  auto* extension = GetAppByLaunchURL(web_app_info.app_url, GetProfile(1));
+  auto* extension = GetAppByLaunchURL(app_url, GetProfile(1));
   base::Optional<SkColor> theme_color =
       extensions::AppThemeColorInfo::GetThemeColor(extension);
   EXPECT_EQ(SK_ColorBLUE, theme_color.value());
@@ -493,18 +505,23 @@ IN_PROC_BROWSER_TEST_P(TwoClientAppsSyncTest, IsLocallyInstalled) {
   size_t num_extensions =
       GetExtensionRegistry(GetProfile(0))->enabled_extensions().size();
 
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = GURL("http://www.chromium.org/");
-  web_app_info.title = base::UTF8ToUTF16("Test name");
-  web_app_info.theme_color = SK_ColorBLUE;
+  const GURL app_url("http://www.chromium.org/");
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = app_url;
+  web_app_info->title = base::UTF8ToUTF16("Test name");
+  web_app_info->theme_color = SK_ColorBLUE;
   ++num_extensions;
   {
     content::WindowedNotificationObserver windowed_observer(
         extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         content::NotificationService::AllSources());
-    extensions::CreateOrUpdateBookmarkApp(GetExtensionService(GetProfile(0)),
-                                          &web_app_info,
-                                          true /* is_locally_installed */);
+
+    auto* provider =
+        web_app::WebAppProviderBase::GetProviderBase(GetProfile(0));
+    DCHECK(provider);
+    provider->install_manager().InstallWebAppForTesting(std::move(web_app_info),
+                                                        base::DoNothing());
+
     windowed_observer.Wait();
     EXPECT_EQ(num_extensions,
               GetExtensionRegistry(GetProfile(0))->enabled_extensions().size());
@@ -528,7 +545,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAppsSyncTest, IsLocallyInstalled) {
     // it would not wait for the sync stuff to happen.
     content::RunAllTasksUntilIdle();
   }
-  auto* extension = GetAppByLaunchURL(web_app_info.app_url, GetProfile(1));
+  auto* extension = GetAppByLaunchURL(app_url, GetProfile(1));
 #if defined(OS_CHROMEOS)
   EXPECT_TRUE(BookmarkAppIsLocallyInstalled(GetProfile(1), extension));
 #else

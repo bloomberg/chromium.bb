@@ -22,6 +22,8 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_counter_wrapper.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
@@ -39,6 +41,7 @@
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
@@ -62,13 +65,51 @@ const int kMaxTimesHistoryNoticeShown = 1;
 // The tableView button red background color.
 const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 
+// List of flags that have corresponding counters.
+const std::vector<BrowsingDataRemoveMask> _browsingDataRemoveFlags = {
+    // BrowsingDataRemoveMask::REMOVE_COOKIES not included; we don't have cookie
+    // counters yet.
+    BrowsingDataRemoveMask::REMOVE_HISTORY,
+    BrowsingDataRemoveMask::REMOVE_CACHE,
+    BrowsingDataRemoveMask::REMOVE_PASSWORDS,
+    BrowsingDataRemoveMask::REMOVE_FORM_DATA,
+};
+
 }  // namespace
 
-@interface ClearBrowsingDataManager ()
+static NSDictionary* _imageNamesByItemTypes = @{
+  [NSNumber numberWithInteger:ItemTypeDataTypeBrowsingHistory] :
+      @"clear_browsing_data_history",
+  [NSNumber numberWithInteger:ItemTypeDataTypeCookiesSiteData] :
+      @"clear_browsing_data_cookies",
+  [NSNumber numberWithInteger:ItemTypeDataTypeCache] :
+      @"clear_browsing_data_cached_images",
+  [NSNumber numberWithInteger:ItemTypeDataTypeSavedPasswords] :
+      @"clear_browsing_data_passwords",
+  [NSNumber numberWithInteger:ItemTypeDataTypeAutofill] :
+      @"clear_browsing_data_autofill",
+};
+
+@interface ClearBrowsingDataManager () {
+  // Access to the kDeleteTimePeriod preference.
+  IntegerPrefMember _timeRangePref;
+
+  // Observer for browsing data removal events and associated ScopedObserver
+  // used to track registration with BrowsingDataRemover. They both may be
+  // null if the new Clear Browser Data UI is disabled.
+  std::unique_ptr<BrowsingDataRemoverObserver> observer_;
+  std::unique_ptr<
+      ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>
+      scoped_observer_;
+
+  // Corresponds browsing data counters to their masks/flags. Items are inserted
+  // as clear data items are constructed. Remains empty if the new Clear Browser
+  // Data UI is disabled.
+  std::map<BrowsingDataRemoveMask, std::unique_ptr<BrowsingDataCounterWrapper>>
+      _countersByMasks;
+}
 
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
-// Time Period to clear data.
-@property(nonatomic, assign) browsing_data::TimePeriod timePeriod;
 // Whether to show alert about other forms of browsing history.
 @property(nonatomic, assign)
     BOOL shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
@@ -79,13 +120,19 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 // CollectionsViewController.
 @property(nonatomic, assign) ClearBrowsingDataListType listType;
 
+// TODO(crbug.com/947456): Prune
+// ClearBrowsingDataCollectionViewController-related code when it is dropped.
+@property(nonatomic, strong)
+    LegacySettingsDetailItem* collectionViewTimeRangeItem;
+
+@property(nonatomic, strong) TableViewDetailIconItem* tableViewTimeRangeItem;
+
 @end
 
 @implementation ClearBrowsingDataManager
 @synthesize browserState = _browserState;
 @synthesize consumer = _consumer;
 @synthesize linkDelegate = _linkDelegate;
-@synthesize timePeriod = _timePeriod;
 @synthesize shouldShowNoticeAboutOtherFormsOfBrowsingHistory =
     _shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
 @synthesize shouldPopupDialogAboutOtherFormsOfBrowsingHistory =
@@ -99,16 +146,16 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
     _browserState = browserState;
     _listType = listType;
 
-    _timePeriod = browsing_data::TimePeriod::ALL_TIME;
-    if (IsNewClearBrowsingDataUIEnabled()) {
-      constexpr int maxValue =
-          static_cast<int>(browsing_data::TimePeriod::TIME_PERIOD_LAST);
-      const int prefValue = browserState->GetPrefs()->GetInteger(
-          browsing_data::prefs::kDeleteTimePeriod);
+    _timeRangePref.Init(browsing_data::prefs::kDeleteTimePeriod,
+                        _browserState->GetPrefs());
 
-      if (0 <= prefValue && prefValue <= maxValue) {
-        _timePeriod = static_cast<browsing_data::TimePeriod>(prefValue);
-      }
+    if (IsNewClearBrowsingDataUIEnabled()) {
+      observer_ = std::make_unique<BrowsingDataRemoverObserverBridge>(self);
+      scoped_observer_ = std::make_unique<
+          ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>(
+          observer_.get());
+      scoped_observer_->Add(
+          BrowsingDataRemoverFactory::GetForBrowserState(self.browserState));
     }
   }
   return self;
@@ -119,11 +166,19 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 - (void)loadModel:(ListModel*)model {
   // Time range section.
   // Only implementing new UI for kListTypeCollectionView.
-  if (IsNewClearBrowsingDataUIEnabled() &&
-      self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
+  if (IsNewClearBrowsingDataUIEnabled()) {
     [model addSectionWithIdentifier:SectionIdentifierTimeRange];
-    [model addItem:[self timeRangeItem]
+    ListItem* timeRangeItem = [self timeRangeItem];
+    [model addItem:timeRangeItem
         toSectionWithIdentifier:SectionIdentifierTimeRange];
+    if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
+      self.collectionViewTimeRangeItem =
+          base::mac::ObjCCastStrict<LegacySettingsDetailItem>(timeRangeItem);
+    } else {
+      DCHECK(self.listType == ClearBrowsingDataListType::kListTypeTableView);
+      self.tableViewTimeRangeItem =
+          base::mac::ObjCCastStrict<TableViewDetailIconItem>(timeRangeItem);
+    }
   }
 
   [self addClearBrowsingDataItemsToModel:model];
@@ -208,7 +263,9 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
                              (~NSByteCountFormatterUseKB);
     formatter.countStyle = NSByteCountFormatterCountStyleMemory;
     NSString* formattedSize = [formatter stringFromByteCount:cacheSizeBytes];
-    return (self.timePeriod == browsing_data::TimePeriod::ALL_TIME)
+    return (!IsNewClearBrowsingDataUIEnabled() ||
+            _timeRangePref.GetValue() ==
+                static_cast<int>(browsing_data::TimePeriod::ALL_TIME))
                ? formattedSize
                : l10n_util::GetNSStringF(
                      IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,
@@ -225,34 +282,32 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
                                  (UIViewController*)baseViewController
                                      sourceRect:(CGRect)sourceRect
                                      sourceView:(UIView*)sourceView {
-  if (dataTypeMaskToRemove == BrowsingDataRemoveMask::REMOVE_NOTHING) {
-    // Nothing to clear (no data types selected).
-    return nil;
-  }
-  __weak ClearBrowsingDataManager* weakSelf = self;
-  ActionSheetCoordinator* actionCoordinator = [[ActionSheetCoordinator alloc]
-      initWithBaseViewController:baseViewController
-                           title:l10n_util::GetNSString(
-                                     IDS_IOS_CONFIRM_CLEAR_BUTTON_TITLE)
-                         message:nil
-                            rect:sourceRect
-                            view:sourceView];
-  actionCoordinator.popoverArrowDirection =
-      UIPopoverArrowDirectionDown | UIPopoverArrowDirectionUp;
-  [actionCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON)
-                action:^{
-                  [weakSelf clearDataForDataTypes:dataTypeMaskToRemove];
-                }
-                 style:UIAlertActionStyleDestructive];
-  [actionCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                               action:nil
-                                style:UIAlertActionStyleCancel];
+  return [self actionSheetCoordinatorWithDataTypesToRemove:dataTypeMaskToRemove
+                                        baseViewController:baseViewController
+                                                sourceRect:sourceRect
+                                                sourceView:sourceView
+                                       sourceBarButtonItem:nil];
+}
 
-  return actionCoordinator;
+- (ActionSheetCoordinator*)
+    actionSheetCoordinatorWithDataTypesToRemove:
+        (BrowsingDataRemoveMask)dataTypeMaskToRemove
+                             baseViewController:
+                                 (UIViewController*)baseViewController
+                            sourceBarButtonItem:
+                                (UIBarButtonItem*)sourceBarButtonItem {
+  return [self actionSheetCoordinatorWithDataTypesToRemove:dataTypeMaskToRemove
+                                        baseViewController:baseViewController
+                                                sourceRect:CGRectNull
+                                                sourceView:nil
+                                       sourceBarButtonItem:sourceBarButtonItem];
 }
 
 - (void)addClearDataButtonToModel:(ListModel*)model {
+  if (self.listType == ClearBrowsingDataListType::kListTypeTableView &&
+      IsNewClearBrowsingDataUIEnabled()) {
+    return;
+  }
   // Clear Browsing Data button.
   ListItem* clearButtonItem = [self clearButtonItem];
   [model addSectionWithIdentifier:SectionIdentifierClearBrowsingDataButton];
@@ -316,6 +371,17 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
       }));
 }
 
+- (void)restartCounters:(BrowsingDataRemoveMask)mask {
+  for (auto flag : _browsingDataRemoveFlags) {
+    if (IsRemoveDataMaskSet(mask, flag)) {
+      const auto it = _countersByMasks.find(flag);
+      if (it != _countersByMasks.end()) {
+        it->second->RestartCounter();
+      }
+    }
+  }
+}
+
 #pragma mark Items
 
 - (ListItem*)clearButtonItem {
@@ -354,25 +420,12 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
                               mask:(BrowsingDataRemoveMask)mask
                           prefName:(const char*)prefName {
   PrefService* prefs = self.browserState->GetPrefs();
-  std::unique_ptr<BrowsingDataCounterWrapper> counter;
-  if (IsNewClearBrowsingDataUIEnabled()) {
-    __weak ClearBrowsingDataManager* weakSelf = self;
-    counter = BrowsingDataCounterWrapper::CreateCounterWrapper(
-        prefName, self.browserState, prefs,
-        base::BindRepeating(
-            ^(const browsing_data::BrowsingDataCounter::Result& result) {
-              [weakSelf.consumer
-                  updateCounter:itemType
-                     detailText:[weakSelf counterTextFromResult:result]];
-            }));
-  }
   ListItem* clearDataItem;
   // Create a ClearBrowsingDataItem for a CollectionView model and a
   // TableViewClearBrowsingDataItem for a TableView model.
   if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
     ClearBrowsingDataItem* collectionClearDataItem =
-        [[ClearBrowsingDataItem alloc] initWithType:itemType
-                                            counter:std::move(counter)];
+        [[ClearBrowsingDataItem alloc] initWithType:itemType counter:nullptr];
     collectionClearDataItem.text = l10n_util::GetNSString(titleMessageID);
     if (prefs->GetBoolean(prefName)) {
       collectionClearDataItem.accessoryType =
@@ -382,14 +435,28 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
     collectionClearDataItem.prefName = prefName;
     collectionClearDataItem.accessibilityIdentifier =
         [self accessibilityIdentifierFromItemType:itemType];
-
-    // Because there is no counter for cookies, an explanatory text is
-    // displayed.
-    if (itemType == ItemTypeDataTypeCookiesSiteData &&
-        IsNewClearBrowsingDataUIEnabled() &&
-        prefs->GetBoolean(browsing_data::prefs::kDeleteCookies)) {
-      collectionClearDataItem.detailText =
-          l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
+    if (IsNewClearBrowsingDataUIEnabled()) {
+      if (itemType == ItemTypeDataTypeCookiesSiteData) {
+        // Because there is no counter for cookies, an explanatory text is
+        // displayed.
+        collectionClearDataItem.detailText =
+            l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
+      } else {
+        __weak ClearBrowsingDataManager* weakSelf = self;
+        __weak ClearBrowsingDataItem* weakCollectionClearDataItem =
+            collectionClearDataItem;
+        std::unique_ptr<BrowsingDataCounterWrapper> counter =
+            BrowsingDataCounterWrapper::CreateCounterWrapper(
+                prefName, self.browserState, prefs,
+                base::BindRepeating(^(
+                    const browsing_data::BrowsingDataCounter::Result& result) {
+                  weakCollectionClearDataItem.detailText =
+                      [weakSelf counterTextFromResult:result];
+                  [weakSelf.consumer
+                      updateCellsForItem:weakCollectionClearDataItem];
+                }));
+        _countersByMasks.emplace(mask, std::move(counter));
+      }
     }
     clearDataItem = collectionClearDataItem;
   } else {
@@ -401,6 +468,30 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
         [self accessibilityIdentifierFromItemType:itemType];
     tableViewClearDataItem.dataTypeMask = mask;
     tableViewClearDataItem.prefName = prefName;
+    if (IsNewClearBrowsingDataUIEnabled()) {
+      tableViewClearDataItem.imageName = [_imageNamesByItemTypes
+          objectForKey:[NSNumber numberWithInteger:itemType]];
+      if (itemType == ItemTypeDataTypeCookiesSiteData) {
+        // Because there is no counter for cookies, an explanatory text is
+        // displayed.
+        tableViewClearDataItem.detailText =
+            l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
+      } else {
+        __weak ClearBrowsingDataManager* weakSelf = self;
+        __weak TableViewClearBrowsingDataItem* weakTableClearDataItem =
+            tableViewClearDataItem;
+        std::unique_ptr<BrowsingDataCounterWrapper> counter =
+            BrowsingDataCounterWrapper::CreateCounterWrapper(
+                prefName, self.browserState, prefs,
+                base::BindRepeating(^(
+                    const browsing_data::BrowsingDataCounter::Result& result) {
+                  weakTableClearDataItem.detailText =
+                      [weakSelf counterTextFromResult:result];
+                  [weakSelf.consumer updateCellsForItem:weakTableClearDataItem];
+                }));
+        _countersByMasks.emplace(mask, std::move(counter));
+      }
+    }
     clearDataItem = tableViewClearDataItem;
   }
   return clearDataItem;
@@ -507,7 +598,7 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
         [[LegacySettingsDetailItem alloc] initWithType:ItemTypeTimeRange];
     collectionTimeRangeItem.text = l10n_util::GetNSString(
         IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE);
-    NSString* detailText = [TimeRangeSelectorCollectionViewController
+    NSString* detailText = [TimeRangeSelectorTableViewController
         timePeriodLabelForPrefs:self.browserState->GetPrefs()];
     DCHECK(detailText);
     collectionTimeRangeItem.detailText = detailText;
@@ -515,8 +606,22 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
         MDCCollectionViewCellAccessoryDisclosureIndicator;
     collectionTimeRangeItem.accessibilityTraits |= UIAccessibilityTraitButton;
     timeRangeItem = collectionTimeRangeItem;
-  }
+  } else {
+    DCHECK(self.listType == ClearBrowsingDataListType::kListTypeTableView);
+    TableViewDetailIconItem* tableTimeRangeItem =
+        [[TableViewDetailIconItem alloc] initWithType:ItemTypeTimeRange];
+    tableTimeRangeItem.text = l10n_util::GetNSString(
+        IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE);
+    NSString* detailText = [TimeRangeSelectorTableViewController
+        timePeriodLabelForPrefs:self.browserState->GetPrefs()];
+    DCHECK(detailText);
 
+    tableTimeRangeItem.detailText = detailText;
+    tableTimeRangeItem.accessoryType =
+        UITableViewCellAccessoryDisclosureIndicator;
+    tableTimeRangeItem.accessibilityTraits |= UIAccessibilityTraitButton;
+    timeRangeItem = tableTimeRangeItem;
+  }
   return timeRangeItem;
 }
 
@@ -544,8 +649,12 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 - (void)clearDataForDataTypes:(BrowsingDataRemoveMask)mask {
   DCHECK(mask != BrowsingDataRemoveMask::REMOVE_NOTHING);
 
+  browsing_data::TimePeriod timePeriod =
+      IsNewClearBrowsingDataUIEnabled()
+          ? static_cast<browsing_data::TimePeriod>(_timeRangePref.GetValue())
+          : browsing_data::TimePeriod::ALL_TIME;
   [self.consumer removeBrowsingDataForBrowserState:_browserState
-                                        timePeriod:self.timePeriod
+                                        timePeriod:timePeriod
                                         removeMask:mask
                                    completionBlock:nil];
 
@@ -580,6 +689,57 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
         noticeShownTimes + 1);
     [self.consumer showBrowsingHistoryRemovedDialog];
   }
+}
+
+// Internal helper method which constructs an ActionSheetCoordinator for the two
+// |actionSheetCoordinatorWithDataTypesToRemove:...| in the interface.
+- (ActionSheetCoordinator*)
+    actionSheetCoordinatorWithDataTypesToRemove:
+        (BrowsingDataRemoveMask)dataTypeMaskToRemove
+                             baseViewController:
+                                 (UIViewController*)baseViewController
+                                     sourceRect:(CGRect)sourceRect
+                                     sourceView:(UIView*)sourceView
+                            sourceBarButtonItem:
+                                (UIBarButtonItem*)sourceBarButtonItem {
+  if (dataTypeMaskToRemove == BrowsingDataRemoveMask::REMOVE_NOTHING) {
+    // Nothing to clear (no data types selected).
+    return nil;
+  }
+  __weak ClearBrowsingDataManager* weakSelf = self;
+
+  ActionSheetCoordinator* actionCoordinator;
+  if (sourceBarButtonItem) {
+    DCHECK(!sourceView);
+    actionCoordinator = [[ActionSheetCoordinator alloc]
+        initWithBaseViewController:baseViewController
+                             title:l10n_util::GetNSString(
+                                       IDS_IOS_CONFIRM_CLEAR_BUTTON_TITLE)
+                           message:nil
+                     barButtonItem:sourceBarButtonItem];
+  } else {
+    DCHECK(!sourceBarButtonItem);
+    actionCoordinator = [[ActionSheetCoordinator alloc]
+        initWithBaseViewController:baseViewController
+                             title:l10n_util::GetNSString(
+                                       IDS_IOS_CONFIRM_CLEAR_BUTTON_TITLE)
+                           message:nil
+                              rect:sourceRect
+                              view:sourceView];
+  }
+
+  actionCoordinator.popoverArrowDirection =
+      UIPopoverArrowDirectionDown | UIPopoverArrowDirectionUp;
+  [actionCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON)
+                action:^{
+                  [weakSelf clearDataForDataTypes:dataTypeMaskToRemove];
+                }
+                 style:UIAlertActionStyleDestructive];
+  [actionCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                               action:nil
+                                style:UIAlertActionStyleCancel];
+  return actionCoordinator;
 }
 
 #pragma mark Properties
@@ -621,12 +781,28 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
   [self.consumer updateCellsForItem:footerItem];
 }
 
-#pragma mark TimeRangeSelectorCollectionViewControllerDelegate
+#pragma mark TimeRangeSelectorTableViewControllerDelegate
 
 - (void)timeRangeSelectorViewController:
-            (TimeRangeSelectorCollectionViewController*)collectionViewController
+            (TimeRangeSelectorTableViewController*)tableViewController
                     didSelectTimePeriod:(browsing_data::TimePeriod)timePeriod {
-  self.timePeriod = timePeriod;
+  NSString* detailText = [TimeRangeSelectorTableViewController
+      timePeriodLabelForPrefs:self.browserState->GetPrefs()];
+  if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
+    self.collectionViewTimeRangeItem.detailText = detailText;
+    [self.consumer updateCellsForItem:self.collectionViewTimeRangeItem];
+  } else {
+    DCHECK(self.listType == ClearBrowsingDataListType::kListTypeTableView);
+    self.tableViewTimeRangeItem.detailText = detailText;
+    [self.consumer updateCellsForItem:self.tableViewTimeRangeItem];
+  }
+}
+
+#pragma mark BrowsingDataRemoverObserving
+
+- (void)browsingDataRemover:(BrowsingDataRemover*)remover
+    didRemoveBrowsingDataWithMask:(BrowsingDataRemoveMask)mask {
+  [self restartCounters:mask];
 }
 
 @end

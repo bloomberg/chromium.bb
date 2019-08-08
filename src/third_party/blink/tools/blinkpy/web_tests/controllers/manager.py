@@ -99,10 +99,17 @@ class Manager(object):
         self._printer.write_update('Collecting tests ...')
         running_all_tests = False
 
-        if self._options.manifest_update and (not args or any('external' in path for path in args)):
-            self._printer.write_update('Generating MANIFEST.json for web-platform-tests ...')
-            WPTManifest.ensure_manifest(self._port.host)
-            self._printer.write_update('Completed generating manifest.')
+        if self._options.manifest_update:
+            # TODO(robertma): Consolidate the two cases to `for wpt_path in
+            # WPT_DIRS` when external/wpt is moved to wpt.
+            if not args or any('external' in path for path in args):
+                self._printer.write_update('Generating MANIFEST.json for external/wpt...')
+                WPTManifest.ensure_manifest(self._port.host)
+                self._printer.write_update('Completed generating manifest.')
+            if not args or any('wpt_internal' in path for path in args):
+                self._printer.write_update('Generating MANIFEST.json for wpt_internal...')
+                WPTManifest.ensure_manifest(self._port.host, 'wpt_internal')
+                self._printer.write_update('Completed generating manifest.')
 
         self._printer.write_update('Collecting tests ...')
         try:

@@ -76,6 +76,7 @@ public class FindToolbar extends LinearLayout
     protected ImageButton mCloseFindButton;
     protected ImageButton mFindPrevButton;
     protected ImageButton mFindNextButton;
+    protected View mDivider;
 
     private FindResultBar mResultBar;
 
@@ -335,6 +336,8 @@ public class FindToolbar extends LinearLayout
                 deactivate();
             }
         });
+
+        mDivider = findViewById(R.id.find_separator);
     }
 
     // Overriden by subclasses.
@@ -762,8 +765,8 @@ public class FindToolbar extends LinearLayout
      * @return          The color of the status text.
      */
     protected int getStatusColor(boolean failed, boolean incognito) {
-        int colorResourceId =
-                failed ? R.color.find_in_page_failed_results_status_color : R.color.black_alpha_38;
+        int colorResourceId = failed ? R.color.find_in_page_failed_results_status_color
+                                     : R.color.default_text_color_tertiary;
         return ApiCompatibilityUtils.getColor(getContext().getResources(), colorResourceId);
     }
 

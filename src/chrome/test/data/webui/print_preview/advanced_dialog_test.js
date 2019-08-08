@@ -34,18 +34,15 @@ cr.define('advanced_dialog_test', function() {
           print_preview.DestinationOrigin.COOKIES, printerName,
           print_preview.DestinationConnectionStatus.ONLINE);
       PolymerTest.clearBody();
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+      model.set('settings.vendorItems.available', true);
+
       dialog = document.createElement('print-preview-advanced-dialog');
 
       // Set up settings. Only need the vendor items.
-      dialog.settings = {
-        vendorItems: {
-          value: {},
-          unavailableValue: {},
-          valid: true,
-          available: true,
-          key: 'vendorOptions',
-        },
-      };
+      dialog.settings = model.settings;
+      test_util.fakeDataBind(model, dialog, 'settings');
     });
 
     /**

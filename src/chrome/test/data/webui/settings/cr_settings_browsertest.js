@@ -10,6 +10,11 @@ const ROOT_PATH = '../../../../../';
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+
+GEN('#if defined(OS_CHROMEOS)');
+GEN('#include "ash/public/cpp/ash_features.h"');
+GEN('#endif  // defined(OS_CHROMEOS)');
+
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "components/omnibox/common/omnibox_features.h"');
@@ -335,6 +340,36 @@ CrSettingsPasswordsSectionTest.prototype = {
 TEST_F('CrSettingsPasswordsSectionTest', 'All', function() {
   mocha.run();
 });
+
+GEN('#if defined(OS_CHROMEOS)');
+/**
+ * Test fixture for CrOS specific behavior in
+ * chrome/browser/resources/settings/autofill_page/passwords_section.html.
+ * See http://crbug.com/917178 for details.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsPasswordsSectionTest_Cros() {}
+
+CrSettingsPasswordsSectionTest_Cros.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/autofill_page/passwords_section.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'passwords_and_autofill_fake_data.js',
+    'passwords_section_test_cros.js',
+    'test_password_manager_proxy.js',
+  ]),
+};
+
+TEST_F('CrSettingsPasswordsSectionTest_Cros', 'All', function() {
+  mocha.run();
+});
+GEN('#endif  // defined(OS_CHROMEOS)');
 
 /**
  * Test fixture for
@@ -1435,6 +1470,32 @@ TEST_F('CrSettingsProtocolHandlersTest', 'All', function() {
 });
 
 /**
+ * Test fixture for
+ * chrome/browser/resources/settings/privacy_page/security_keys_subpage.html
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSecurityKeysSubpageTest() {}
+
+CrSettingsSecurityKeysSubpageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/privacy_page/security_keys_subpage.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_util.js',
+    '../test_browser_proxy.js',
+    'security_keys_subpage_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsSecurityKeysSubpageTest', 'All', function() {
+  mocha.run();
+});
+
+/**
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
@@ -1786,6 +1847,13 @@ TEST_F('CrSettingsLanguagesPageTest', 'InputMethods', function() {
 TEST_F('CrSettingsLanguagesPageTest', 'Spellcheck', function() {
   mocha.grep(assert(languages_page_tests.TestNames.Spellcheck)).run();
 });
+
+GEN('#if defined(GOOGLE_CHROME_BUILD)');
+TEST_F('CrSettingsLanguagesPageTest', 'SpellcheckOfficialBuild', function() {
+  mocha.grep(assert(languages_page_tests.TestNames.SpellcheckOfficialBuild))
+      .run();
+});
+GEN('#endif');
 
 /**
  * @constructor
@@ -2179,6 +2247,39 @@ TEST_F('CrSettingsMultideviceSubpageTest', 'All', function() {
 });
 
 /**
+ * Test fixture for the Chrome OS Kiosk Next Shell page.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsKioskNextShellPageTest() {}
+
+CrSettingsKioskNextShellPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://settings/kiosk_next_shell_page/kiosk_next_shell_page.html',
+
+  /** @override */
+  featureList: ['ash::features::kKioskNextShell', ''],
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'kiosk_next_shell_page_tests.js',
+    'test_util.js',
+    'test_lifetime_browser_proxy.js',
+  ]),
+};
+
+GEN('#if defined(OS_CHROMEOS)');
+GEN('#if defined(GOOGLE_CHROME_BUILD)');
+TEST_F('CrSettingsKioskNextShellPageTest', 'All', function() {
+  mocha.run();
+});
+GEN('#endif  // defined(GOOGLE_CHROME_BUILD)');
+GEN('#endif  // defined(OS_CHROMEOS)');
+
+/**
  * Test fixture for the Linux for Chromebook (Crostini) page.
  * @constructor
  * @extends {CrSettingsBrowserTest}
@@ -2378,3 +2479,30 @@ CrSettingsSiteFaviconTest.prototype = {
 TEST_F('CrSettingsSiteFaviconTest', 'All', function() {
   mocha.run();
 });
+
+GEN('#if defined(OS_CHROMEOS)');
+
+/**
+ * Test fixture for the chrome://settings/accounts page
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsAddUsersTest() {}
+
+CrSettingsAddUsersTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/accounts.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'add_users_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsAddUsersTest', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif  // defined(OS_CHROMEOS)');

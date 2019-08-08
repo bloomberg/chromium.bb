@@ -29,17 +29,14 @@ class CONTENT_EXPORT RelatedAppsFetcher : public blink::WebRelatedAppsFetcher {
 
   // blink::WebRelatedAppsFetcher overrides:
   void GetManifestRelatedApplications(
-      std::unique_ptr<blink::WebCallbacks<
-          const blink::WebVector<blink::WebRelatedApplication>&,
-          void>> callbacks) override;
+      blink::GetManifestRelatedApplicationsCallback completion_callback)
+      override;
 
  private:
   // Callback for when the manifest has been fetched, triggered by a call to
   // getManifestRelatedApplications.
   void OnGetManifestForRelatedApplications(
-      std::unique_ptr<blink::WebCallbacks<
-          const blink::WebVector<blink::WebRelatedApplication>&,
-          void>> callbacks,
+      blink::GetManifestRelatedApplicationsCallback completion_callback,
       const GURL& url,
       const blink::Manifest& manifest);
 

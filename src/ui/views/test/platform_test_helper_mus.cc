@@ -22,6 +22,7 @@
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/mus/input_method_mus_test_api.h"
 #include "ui/aura/window.h"
+#include "ui/base/ime/input_method_base.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"
@@ -33,6 +34,24 @@
 namespace views {
 
 namespace {
+
+class TestInputMethod : public ui::InputMethodBase {
+ public:
+  TestInputMethod() : ui::InputMethodBase(nullptr) {}
+  ~TestInputMethod() override = default;
+
+  // ui::InputMethod override:
+  ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override {
+    return ui::EventDispatchDetails();
+  }
+  ui::AsyncKeyDispatcher* GetAsyncKeyDispatcher() override { return nullptr; }
+  void OnCaretBoundsChanged(const ui::TextInputClient* client) override {}
+  void CancelComposition(const ui::TextInputClient* client) override {}
+  bool IsCandidatePopupOpen() const override { return false; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestInputMethod);
+};
 
 NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
                                  internal::NativeWidgetDelegate* delegate) {
@@ -46,7 +65,9 @@ NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
   aura::WindowTreeHostMus* window_tree_host_mus =
       static_cast<aura::WindowTreeHostMus*>(
           static_cast<DesktopNativeWidgetAura*>(native_widget)->host());
-  aura::InputMethodMusTestApi::Disable(window_tree_host_mus->input_method());
+
+  static TestInputMethod test_input_method;
+  window_tree_host_mus->SetSharedInputMethod(&test_input_method);
   return native_widget;
 }
 
@@ -88,7 +109,7 @@ class PlatformTestHelperMus::ServiceManagerConnection {
     // (e.g. AuraTestSuiteSetup).
     params.window_tree_client =
         aura::test::EnvTestHelper().GetWindowTreeClient();
-    params.running_in_ws_process = features::IsSingleProcessMash();
+    params.running_in_ws_process = ::features::IsSingleProcessMash();
     return std::make_unique<MusClient>(params);
   }
 

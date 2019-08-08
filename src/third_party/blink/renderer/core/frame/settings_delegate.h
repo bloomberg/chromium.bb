@@ -69,6 +69,8 @@ class CORE_EXPORT SettingsDelegate {
     kHighlightAdsChange,
     kPaintChange,
     kScrollbarLayoutChange,
+    kColorSchemeChange,
+    kSpatialNavigationChange,
   };
 
   virtual void SettingsChanged(ChangeType) = 0;

@@ -8,46 +8,20 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "components/login/localized_values_builder.h"
 #include "content/public/browser/web_ui.h"
 
 namespace chromeos {
 
-JSCallsContainer::JSCallsContainer() = default;
-
-JSCallsContainer::~JSCallsContainer() = default;
-
-void JSCallsContainer::ExecuteDeferredJSCalls() {
-  DCHECK(!is_initialized());
-  is_initialized_ = true;
-  // Copy deferred_js_calls_ into a separate variable to avoid any potential
-  // concurrent modifications.
-  auto calls = std::move(deferred_js_calls_);
-  for (const auto& call : calls)
-    call.Run();
-  // We're initialized so no more calls should have been queued.
-  // TODO(jdufault): Rework this class API so that this is not possible.
-  DCHECK(deferred_js_calls_.empty());
-}
-
 BaseWebUIHandler::BaseWebUIHandler(JSCallsContainer* js_calls_container)
     : js_calls_container_(js_calls_container) {}
 
-BaseWebUIHandler::~BaseWebUIHandler() {
-  if (base_screen_)
-    base_screen_->set_model_view_channel(nullptr);
-}
+BaseWebUIHandler::~BaseWebUIHandler() = default;
 
 void BaseWebUIHandler::InitializeBase() {
   page_is_ready_ = true;
   Initialize();
-  if (!pending_context_changes_.empty()) {
-    CommitContextChanges(pending_context_changes_);
-    pending_context_changes_.Clear();
-  }
 }
 
 void BaseWebUIHandler::GetLocalizedStrings(base::DictionaryValue* dict) {
@@ -56,24 +30,8 @@ void BaseWebUIHandler::GetLocalizedStrings(base::DictionaryValue* dict) {
   GetAdditionalParameters(dict);
 }
 
-std::string BaseWebUIHandler::FullMethodPath(const std::string& method) const {
-  DCHECK(!method.empty());
-  return js_screen_path_prefix_ + method;
-}
-
 void BaseWebUIHandler::RegisterMessages() {
-  AddCallback(FullMethodPath("userActed"),
-              &BaseScreenHandler::HandleUserAction);
-  AddCallback(FullMethodPath("contextChanged"),
-              &BaseScreenHandler::HandleContextChanged);
   DeclareJSCallbacks();
-}
-
-void BaseWebUIHandler::CommitContextChanges(const base::DictionaryValue& diff) {
-  if (!page_is_ready())
-    pending_context_changes_.MergeDictionary(&diff);
-  else
-    CallJS(FullMethodPath("contextChanged"), diff);
 }
 
 void BaseWebUIHandler::GetAdditionalParameters(base::DictionaryValue* dict) {}
@@ -105,28 +63,26 @@ OobeScreen BaseWebUIHandler::GetCurrentScreen() const {
   return oobe_ui->current_screen();
 }
 
-gfx::NativeWindow BaseWebUIHandler::GetNativeWindow() {
-  return LoginDisplayHost::default_host()->GetNativeWindow();
+void BaseWebUIHandler::InsertIntoList(std::vector<base::Value>*) {}
+
+void BaseWebUIHandler::MaybeRecordIncomingEvent(
+    const std::string& function_name,
+    const base::ListValue* args) {
+  if (js_calls_container_->record_all_events_for_test()) {
+    // Do a clone so |args| is still available for the actual handler.
+    std::vector<base::Value> arguments = std::move(args->Clone().GetList());
+    js_calls_container_->events()->emplace_back(
+        JSCallsContainer::Event(JSCallsContainer::Event::Type::kIncoming,
+                                function_name, std::move(arguments)));
+  }
 }
 
-void BaseWebUIHandler::SetBaseScreen(BaseScreen* base_screen) {
-  if (base_screen_ == base_screen)
-    return;
-  if (base_screen_)
-    base_screen_->set_model_view_channel(nullptr);
-  base_screen_ = base_screen;
-  if (base_screen_)
-    base_screen_->set_model_view_channel(this);
-}
-
-void BaseWebUIHandler::HandleUserAction(const std::string& action_id) {
-  if (base_screen_)
-    base_screen_->OnUserAction(action_id);
-}
-
-void BaseWebUIHandler::HandleContextChanged(const base::DictionaryValue* diff) {
-  if (diff && base_screen_)
-    base_screen_->OnContextChanged(*diff);
+void BaseWebUIHandler::OnRawCallback(
+    const std::string& function_name,
+    const content::WebUI::MessageCallback callback,
+    const base::ListValue* args) {
+  MaybeRecordIncomingEvent(function_name, args);
+  callback.Run(args);
 }
 
 }  // namespace chromeos

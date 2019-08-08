@@ -26,15 +26,12 @@ base::string16 ElideCommandName(const base::string16& command_name) {
 
 ExternalProtocolDialogDelegate::ExternalProtocolDialogDelegate(
     const GURL& url,
-    int render_process_host_id,
-    int render_view_routing_id)
+    content::WebContents* web_contents)
     : ProtocolDialogDelegate(url),
-      render_process_host_id_(render_process_host_id),
-      render_view_routing_id_(render_view_routing_id),
+      content::WebContentsObserver(web_contents),
       program_name_(shell_integration::GetApplicationNameForProtocol(url)) {}
 
-ExternalProtocolDialogDelegate::~ExternalProtocolDialogDelegate() {
-}
+ExternalProtocolDialogDelegate::~ExternalProtocolDialogDelegate() {}
 
 base::string16 ExternalProtocolDialogDelegate::GetDialogButtonLabel(
     ui::DialogButton button) const {
@@ -60,19 +57,16 @@ base::string16 ExternalProtocolDialogDelegate::GetTitleText() const {
 
 void ExternalProtocolDialogDelegate::DoAccept(const GURL& url,
                                               bool remember) const {
-  content::WebContents* web_contents = tab_util::GetWebContentsByID(
-      render_process_host_id_, render_view_routing_id_);
-
-  if (!web_contents)
+  if (!web_contents())
     return;  // The dialog may outlast the WebContents.
 
   if (remember) {
     Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
     ExternalProtocolHandler::SetBlockState(
         url.scheme(), ExternalProtocolHandler::DONT_BLOCK, profile);
   }
 
-  ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url, web_contents);
+  ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url, web_contents());
 }

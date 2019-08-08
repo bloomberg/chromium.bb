@@ -8,6 +8,10 @@ namespace prefs {
 
 #if defined(OS_CHROMEOS)
 // Boolean identifying if Mirror account consistency is required for profile.
+// If Chrome OS Account Manager is not available, this has the effect of
+// disabling secondary account sign-ins within the content area.
+// TODO(https://crbug.com/938835): Clean this up after releasing Chrome OS
+// Account Manager.
 const char kAccountConsistencyMirrorRequired[] =
     "account_consistency_mirror.required";
 #endif

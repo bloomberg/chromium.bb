@@ -112,6 +112,7 @@ extern const char kCodecParamMinBitrate[];
 extern const char kCodecParamStartBitrate[];
 extern const char kCodecParamMaxQuantization[];
 extern const char kCodecParamPort[];
+extern const char kCodecParamMaxMessageSize[];
 
 // We put the data codec names here so callers of DataEngine::CreateChannel
 // don't have to import rtpdataengine.h to get the codec names they want to
@@ -127,8 +128,8 @@ extern const char kGoogleSctpDataCodecName[];
 
 extern const char kComfortNoiseCodecName[];
 
-extern const char kVp8CodecName[];
-extern const char kVp9CodecName[];
+RTC_EXPORT extern const char kVp8CodecName[];
+RTC_EXPORT extern const char kVp9CodecName[];
 RTC_EXPORT extern const char kH264CodecName[];
 
 // RFC 6184 RTP Payload Format for H.264 video

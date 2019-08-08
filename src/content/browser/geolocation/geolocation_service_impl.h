@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
-#include "third_party/blink/public/platform/modules/geolocation/geolocation_service.mojom.h"
+#include "third_party/blink/public/mojom/geolocation/geolocation_service.mojom.h"
 
 namespace blink {
 namespace mojom {
@@ -60,12 +60,14 @@ class CONTENT_EXPORT GeolocationServiceImpl
   // This may not be called a second time until the Geolocation instance has
   // been created.
   void CreateGeolocation(device::mojom::GeolocationRequest request,
-                         bool user_gesture) override;
+                         bool user_gesture,
+                         CreateGeolocationCallback callback) override;
 
  private:
   // Creates the Geolocation Service.
   void CreateGeolocationWithPermissionStatus(
       device::mojom::GeolocationRequest request,
+      CreateGeolocationCallback callback,
       blink::mojom::PermissionStatus permission_status);
 
   device::mojom::GeolocationContext* geolocation_context_;

@@ -77,26 +77,11 @@ void ArcPackageSyncDataTypeController::OnArcPlayStoreEnabledChanged(
     bool enabled) {
   DCHECK(CalledOnValidThread());
 
-  // Delay enabling DTC until ARC successfully signed in.
-  if (ReadyForStart())
-    return;
-
-  // If enable ARC in settings is turned off then generate an unrecoverable
-  // error.
-  if (state() != NOT_RUNNING && state() != STOPPING) {
-    syncer::SyncError error(
-        FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
-        "ARC package sync is now disabled because user disables ARC.", type());
-    CreateErrorHandler()->OnUnrecoverableError(error);
-  }
+  sync_service()->ReadyForStartChanged(type());
 }
 
 void ArcPackageSyncDataTypeController::OnArcInitialStart() {
-  EnableDataType();
-}
-
-void ArcPackageSyncDataTypeController::EnableDataType() {
-  sync_service()->ReenableDatatype(type());
+  sync_service()->ReadyForStartChanged(type());
 }
 
 bool ArcPackageSyncDataTypeController::ShouldSyncArc() const {

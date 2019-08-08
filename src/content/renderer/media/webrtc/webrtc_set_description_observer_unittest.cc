@@ -244,7 +244,8 @@ class WebRtcSetDescriptionObserverHandlerTest
         blink::WebString::FromUTF8(id), blink::WebMediaStreamSource::kTypeAudio,
         blink::WebString::FromUTF8("local_audio_track"), false);
     blink::MediaStreamAudioSource* audio_source =
-        new blink::MediaStreamAudioSource(true);
+        new blink::MediaStreamAudioSource(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true);
     // Takes ownership of |audio_source|.
     web_source.SetPlatformSource(base::WrapUnique(audio_source));
 
@@ -361,7 +362,7 @@ class WebRtcSetDescriptionObserverHandlerTest
 
  protected:
   // The ScopedTaskEnvironment prevents the ChildProcess from leaking a
-  // TaskScheduler.
+  // ThreadPool.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ChildProcess child_process_;
 

@@ -4,9 +4,10 @@
 
 #import "ios/web/public/test/fakes/test_web_client.h"
 
+#import <UIKit/UIKit.h>
+
 #include "base/logging.h"
 #include "base/task/post_task.h"
-#include "ios/web/public/features.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/test/test_url_constants.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -82,6 +83,10 @@ void TestWebClient::AllowCertificateError(
 
 void TestWebClient::SetAllowCertificateErrors(bool flag) {
   allow_certificate_errors_ = flag;
+}
+
+UIView* TestWebClient::GetWindowedContainer() {
+  return UIApplication.sharedApplication.keyWindow.rootViewController.view;
 }
 
 }  // namespace web

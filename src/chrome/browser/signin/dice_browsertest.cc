@@ -33,7 +33,6 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -311,17 +310,14 @@ std::unique_ptr<HttpResponse> HandleChromeSigninEmbeddedURL(
 
 }  // namespace FakeGaia
 
-class DiceBrowserTestBase : public InProcessBrowserTest,
-                            public AccountReconcilor::Observer,
-                            public identity::IdentityManager::Observer {
+class DiceBrowserTest : public InProcessBrowserTest,
+                        public AccountReconcilor::Observer,
+                        public identity::IdentityManager::Observer {
  protected:
-  ~DiceBrowserTestBase() override {}
+  ~DiceBrowserTest() override {}
 
-  explicit DiceBrowserTestBase(
-      AccountConsistencyMethod account_consistency_method,
-      const std::string& main_email)
-      : scoped_account_consistency_(account_consistency_method),
-        main_email_(main_email),
+  explicit DiceBrowserTest(const std::string& main_email = kMainGmailEmail)
+      : main_email_(main_email),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         enable_sync_requested_(false),
         token_requested_(false),
@@ -333,25 +329,25 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
         reconcilor_started_count_(0) {
     https_server_.RegisterDefaultHandler(base::BindRepeating(
         &FakeGaia::HandleSigninURL, main_email_,
-        base::BindRepeating(&DiceBrowserTestBase::OnSigninRequest,
+        base::BindRepeating(&DiceBrowserTest::OnSigninRequest,
                             base::Unretained(this))));
     https_server_.RegisterDefaultHandler(base::BindRepeating(
         &FakeGaia::HandleEnableSyncURL, main_email_,
-        base::BindRepeating(&DiceBrowserTestBase::OnEnableSyncRequest,
+        base::BindRepeating(&DiceBrowserTest::OnEnableSyncRequest,
                             base::Unretained(this))));
     https_server_.RegisterDefaultHandler(
         base::BindRepeating(&FakeGaia::HandleSignoutURL, main_email_));
     https_server_.RegisterDefaultHandler(base::BindRepeating(
         &FakeGaia::HandleOAuth2TokenExchangeURL,
-        base::BindRepeating(&DiceBrowserTestBase::OnTokenExchangeRequest,
+        base::BindRepeating(&DiceBrowserTest::OnTokenExchangeRequest,
                             base::Unretained(this))));
     https_server_.RegisterDefaultHandler(base::BindRepeating(
         &FakeGaia::HandleOAuth2TokenRevokeURL,
-        base::BindRepeating(&DiceBrowserTestBase::OnTokenRevocationRequest,
+        base::BindRepeating(&DiceBrowserTest::OnTokenRevocationRequest,
                             base::Unretained(this))));
     https_server_.RegisterDefaultHandler(base::BindRepeating(
         &FakeGaia::HandleChromeSigninEmbeddedURL,
-        base::BindRepeating(&DiceBrowserTestBase::OnChromeSigninEmbeddedRequest,
+        base::BindRepeating(&DiceBrowserTest::OnChromeSigninEmbeddedRequest,
                             base::Unretained(this))));
     signin::SetDiceAccountReconcilorBlockDelayForTesting(
         kAccountReconcilorDelayMs);
@@ -370,14 +366,14 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   // Returns the account ID associated with |main_email_| and its associated
   // gaia ID.
   std::string GetMainAccountID() {
-    return GetIdentityManager()->LegacyPickAccountIdForAccount(
+    return GetIdentityManager()->PickAccountIdForAccount(
         identity::GetTestGaiaIdForEmail(main_email_), main_email_);
   }
 
   // Returns the account ID associated with kSecondaryEmail and its associated
   // gaia ID.
   std::string GetSecondaryAccountID() {
-    return GetIdentityManager()->LegacyPickAccountIdForAccount(
+    return GetIdentityManager()->PickAccountIdForAccount(
         identity::GetTestGaiaIdForEmail(kSecondaryEmail), kSecondaryEmail);
   }
 
@@ -410,18 +406,9 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   // Navigate to a Gaia URL setting the Google-Accounts-SignOut header.
   void SignOutWithDice(SignoutType signout_type) {
     NavigateToURL(base::StringPrintf("%s?%i", kSignoutURL, signout_type));
-    signin::AccountConsistencyMethod account_consistency =
-        AccountConsistencyModeManager::GetMethodForProfile(
-            browser()->profile());
-    if (signin::DiceMethodGreaterOrEqual(
-            account_consistency,
-            signin::AccountConsistencyMethod::kDiceMigration)) {
-      EXPECT_EQ(1, reconcilor_blocked_count_);
-      WaitForReconcilorUnblockedCount(1);
-    } else {
-      EXPECT_EQ(0, reconcilor_blocked_count_);
-      WaitForReconcilorUnblockedCount(0);
-    }
+    EXPECT_EQ(1, reconcilor_blocked_count_);
+    WaitForReconcilorUnblockedCount(1);
+
     base::RunLoop().RunUntilIdle();
   }
 
@@ -456,6 +443,8 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     // credentials. Abort the reconcilor here to make sure tests start in a
     // stable state.
     reconcilor->AbortReconcile();
+    reconcilor->SetState(
+        signin_metrics::AccountReconcilorState::ACCOUNT_RECONCILOR_OK);
     reconcilor->AddObserver(this);
   }
 
@@ -518,7 +507,12 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     ++reconcilor_unblocked_count_;
     RunClosureIfValid(std::move(unblock_count_quit_closure_));
   }
-  void OnStartReconcile() override { ++reconcilor_started_count_; }
+  void OnStateChanged(signin_metrics::AccountReconcilorState state) override {
+    if (state ==
+        signin_metrics::AccountReconcilorState::ACCOUNT_RECONCILOR_RUNNING) {
+      ++reconcilor_started_count_;
+    }
+  }
 
   // identity::IdentityManager::Observer
   void OnPrimaryAccountSet(
@@ -601,7 +595,6 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     EXPECT_EQ(count, token_revoked_count_);
   }
 
-  const ScopedAccountConsistency scoped_account_consistency_;
   const std::string main_email_;
   net::EmbeddedTestServer https_server_;
   bool enable_sync_requested_;
@@ -628,13 +621,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   base::OnceClosure tokens_loaded_quit_closure_;
   base::OnceClosure on_primary_account_set_quit_closure_;
 
-  DISALLOW_COPY_AND_ASSIGN(DiceBrowserTestBase);
-};
-
-class DiceBrowserTest : public DiceBrowserTestBase {
- public:
-  DiceBrowserTest()
-      : DiceBrowserTestBase(AccountConsistencyMethod::kDice, kMainGmailEmail) {}
+  DISALLOW_COPY_AND_ASSIGN(DiceBrowserTest);
 };
 
 // Checks that signin on Gaia triggers the fetch for a refresh token.
@@ -945,11 +932,11 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Incognito) {
 }
 
 // This test is not specifically related to DICE, but it extends
-// |DiceBrowserTestBase| for convenience.
-class DiceManageAccountBrowserTest : public DiceBrowserTestBase {
+// |DiceBrowserTest| for convenience.
+class DiceManageAccountBrowserTest : public DiceBrowserTest {
  public:
   DiceManageAccountBrowserTest()
-      : DiceBrowserTestBase(AccountConsistencyMethod::kDice, kMainManagedEmail),
+      : DiceBrowserTest(kMainManagedEmail),
         // Skip showing the error message box to avoid freezing the main thread.
         skip_message_box_auto_reset_(
             &chrome::internal::g_should_skip_message_box_for_test,

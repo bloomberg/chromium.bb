@@ -166,7 +166,7 @@ class SeriallyExecutedBrowserTestCase(unittest.TestCase):
   def GenerateTags(cls, finder_options, possible_browser):
     """This class method is part of the API for all test suites
     that inherit this class. All test suites that override this function
-    can use the browser_options and possible_browser parameters to generate
+    can use the finder_options and possible_browser parameters to generate
     test expectations file tags.
 
     Args:
@@ -179,7 +179,7 @@ class SeriallyExecutedBrowserTestCase(unittest.TestCase):
     It can be used to create an actual browser. For example the code below
     shows how to create a browser from the possible_browser object
 
-    with possible_browser.BrowserSession(browser_options) as browser:
+    with possible_browser.BrowserSession(finder_options) as browser:
       # Do something with the browser.
 
     Returns:
@@ -212,11 +212,36 @@ class SeriallyExecutedBrowserTestCase(unittest.TestCase):
     are no expectations files passed to typ, then a tuple of
     (set(['PASS']), False) should be returned from this function.
     """
-    cls = self.__class__
-    if cls._typ_runner.has_expectations:
-      return cls._typ_runner.expectations.expectations_for(self.id())
-    else:
-      return (set([json_results.ResultType.Pass]), False)
+    return self.__class__._typ_runner.expectations_for(self)
+
+  @classmethod
+  def GetPlatformTags(cls, browser):
+    """This method uses the Browser instances's platform member variable to get
+    the operating system, operating system version and browser type tags.
+    Example tags for  operating system are 'linux' and 'mac'. Example tags
+    for the operating system version are 'mojave' and  'vista'. Example tags
+    for browser type are 'debug' and 'release'. If a None value or empty string
+    is retrieved from the browser's platform member variable, then it will be
+    filtered out.
+
+    Args:
+    Browser instance returned from the possible_browser.BrowserSession() method.
+
+    Returns:
+    A list of tags derived from the Browser instance's platform member variable.
+    """
+    platform = browser.platform
+    tags = [
+        platform.GetOSVersionName(), platform.GetOSName(), browser.browser_type]
+    return [tag.lower() for tag in tags if tag]
+
+  @staticmethod
+  def GetJSONResultsDelimiter():
+    """This method returns the path delimiter that will be used to seperate
+    a test name into parts. By default, the delimiter is '.'
+    """
+    return json_results.DEFAULT_TEST_SEPARATOR
+
 
 def LoadAllTestsInModule(module):
   """ Load all tests & generated browser tests in a given module.
@@ -276,7 +301,7 @@ def _GenerateTestMethod(based_method, args):
 
 
 _TEST_GENERATOR_PREFIX = 'GenerateTestCases_'
-_INVALID_TEST_NAME_RE = re.compile(r'[^a-zA-Z0-9_]')
+_INVALID_TEST_NAME_RE = re.compile(r'[^a-zA-Z0-9_\.\\\/-]')
 
 def _ValidateTestMethodname(test_name):
   assert not bool(_INVALID_TEST_NAME_RE.search(test_name))

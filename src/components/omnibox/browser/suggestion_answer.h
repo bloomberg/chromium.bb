@@ -20,7 +20,7 @@
 #endif
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 // Structured representation of the JSON payload of a suggestion with an answer.
@@ -126,10 +126,10 @@ class SuggestionAnswer {
     TextField();
     ~TextField();
 
-    // Parses |field_json| and populates |text_field| with the contents.  If any
-    // of the required elements is missing, returns false and leaves text_field
-    // in a partially populated state.
-    static bool ParseTextField(const base::DictionaryValue* field_json,
+    // Parses |field_json| dictionary and populates |text_field| with the
+    // contents.  If any of the required elements is missing, returns false and
+    // leaves text_field in a partially populated state.
+    static bool ParseTextField(const base::Value& field_json,
                                TextField* text_field);
 
     const base::string16& text() const { return text_; }
@@ -165,10 +165,10 @@ class SuggestionAnswer {
     ImageLine& operator=(const ImageLine& line);
     ~ImageLine();
 
-    // Parses |line_json| and populates |image_line| with the contents.  If any
-    // of the required elements is missing, returns false and leaves text_field
-    // in a partially populated state.
-    static bool ParseImageLine(const base::DictionaryValue* line_json,
+    // Parses dictionary |line_json| and populates |image_line| with the
+    // contents.  If any of the required elements is missing, returns false and
+    // leaves text_field in a partially populated state.
+    static bool ParseImageLine(const base::Value& line_json,
                                ImageLine* image_line);
 
     const TextFields& text_fields() const { return text_fields_; }
@@ -216,10 +216,10 @@ class SuggestionAnswer {
   SuggestionAnswer& operator=(const SuggestionAnswer& answer);
   ~SuggestionAnswer();
 
-  // Parses |answer_json| and fills a SuggestionAnswer containing the
-  // contents. Returns true on success. If the supplied data is not well
-  // formed or is missing required elements, returns false instead.
-  static bool ParseAnswer(const base::DictionaryValue* answer_json,
+  // Parses dictionary |answer_json| and fills a SuggestionAnswer containing the
+  // contents. Returns true on success. If the supplied data is not well formed
+  // or is missing required elements, returns false instead.
+  static bool ParseAnswer(const base::Value& answer_json,
                           const base::string16& answer_type_str,
                           SuggestionAnswer* answer);
 
@@ -243,6 +243,10 @@ class SuggestionAnswer {
 
   // For new answers, replace old answer text types with appropriate new types.
   void InterpretTextTypes();
+
+  // Logs which answer type was used (if any) at the time a user used the
+  // omnibox to go somewhere.
+  static void LogAnswerUsed(const base::Optional<SuggestionAnswer>& answer);
 
 #ifdef OS_ANDROID
   base::android::ScopedJavaLocalRef<jobject> CreateJavaObject() const;

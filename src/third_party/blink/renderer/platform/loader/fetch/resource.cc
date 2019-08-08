@@ -125,7 +125,6 @@ Resource::Resource(const ResourceRequest& request,
                    const ResourceLoaderOptions& options)
     : type_(type),
       status_(ResourceStatus::kNotStarted),
-      identifier_(0),
       encoded_size_(0),
       encoded_size_memory_usage_(0),
       decoded_size_(0),
@@ -449,6 +448,12 @@ const ResourceRequest& Resource::LastResourceRequest() const {
   if (!redirect_chain_.size())
     return GetResourceRequest();
   return redirect_chain_.back().request_;
+}
+
+const ResourceResponse* Resource::LastResourceResponse() const {
+  if (!redirect_chain_.size())
+    return nullptr;
+  return &redirect_chain_.back().redirect_response_;
 }
 
 void Resource::SetRevalidatingRequest(const ResourceRequest& request) {
@@ -925,9 +930,9 @@ void Resource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
 
 String Resource::GetMemoryDumpName() const {
   return String::Format(
-      "web_cache/%s_resources/%ld",
-      ResourceTypeToString(GetType(), Options().initiator_info.name),
-      identifier_);
+             "web_cache/%s_resources/",
+             ResourceTypeToString(GetType(), Options().initiator_info.name)) +
+         String::Number(InspectorId());
 }
 
 void Resource::SetCachePolicyBypassingCache() {
@@ -939,7 +944,7 @@ void Resource::SetPreviewsState(WebURLRequest::PreviewsState previews_state) {
 }
 
 void Resource::ClearRangeRequestHeader() {
-  resource_request_.ClearHTTPHeaderField("range");
+  resource_request_.ClearHttpHeaderField("range");
 }
 
 void Resource::RevalidationSucceeded(
@@ -961,7 +966,7 @@ void Resource::RevalidationSucceeded(
     // care about.
     if (!ShouldUpdateHeaderAfterRevalidation(header.key))
       continue;
-    response_.SetHTTPHeaderField(header.key, header.value);
+    response_.SetHttpHeaderField(header.key, header.value);
   }
 
   is_revalidating_ = false;

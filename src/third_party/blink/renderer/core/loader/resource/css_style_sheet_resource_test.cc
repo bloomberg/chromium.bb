@@ -46,8 +46,9 @@ namespace {
 class CSSStyleSheetResourceTest : public PageTestBase {
  protected:
   CSSStyleSheetResourceTest() {
-    original_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create(
-        blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
+    original_memory_cache_ =
+        ReplaceMemoryCacheForTesting(MakeGarbageCollected<MemoryCache>(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
   }
 
   ~CSSStyleSheetResourceTest() override {

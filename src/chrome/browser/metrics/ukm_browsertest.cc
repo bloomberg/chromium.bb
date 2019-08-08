@@ -30,8 +30,8 @@
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_token_status.h"
@@ -128,7 +128,7 @@ class MetricsConsentOverride {
 
 class SyncConnectionOkChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit SyncConnectionOkChecker(browser_sync::ProfileSyncService* service)
+  explicit SyncConnectionOkChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
@@ -398,7 +398,7 @@ class UkmConsentParamBrowserTest : public UkmBrowserTestBase,
 class UkmEnabledChecker : public SingleClientStatusChangeChecker {
  public:
   UkmEnabledChecker(UkmBrowserTestBase* test,
-                    browser_sync::ProfileSyncService* service,
+                    syncer::ProfileSyncService* service,
                     bool want_enabled)
       : SingleClientStatusChangeChecker(service),
         test_(test),
@@ -690,7 +690,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, SingleDisableHistorySyncCheck) {
   uint64_t original_client_id = client_id();
   EXPECT_NE(0U, original_client_id);
 
-  harness->DisableSyncForDatatype(syncer::TYPED_URLS);
+  harness->DisableSyncForType(syncer::UserSelectableType::kHistory);
   if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     // Disable history sync does not disable UKM when unified consent is
     // enabled.
@@ -698,7 +698,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, SingleDisableHistorySyncCheck) {
   } else {
     EXPECT_FALSE(ukm_enabled());
 
-    harness->EnableSyncForDatatype(syncer::TYPED_URLS);
+    harness->EnableSyncForType(syncer::UserSelectableType::kHistory);
     EXPECT_TRUE(ukm_enabled());
     // Client ID should be reset.
     EXPECT_NE(original_client_id, client_id());
@@ -728,7 +728,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MultiDisableHistorySyncCheck) {
   EXPECT_TRUE(ukm_enabled());
   EXPECT_EQ(original_client_id, client_id());
 
-  harness2->DisableSyncForDatatype(syncer::TYPED_URLS);
+  harness2->DisableSyncForType(syncer::UserSelectableType::kHistory);
   if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     // Disable history sync does not disable UKM when unified consent is
     // enabled.
@@ -740,7 +740,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MultiDisableHistorySyncCheck) {
     EXPECT_NE(0U, original_client_id);
   }
 
-  harness2->EnableSyncForDatatype(syncer::TYPED_URLS);
+  harness2->EnableSyncForType(syncer::UserSelectableType::kHistory);
   EXPECT_TRUE(ukm_enabled());
   EXPECT_EQ(original_client_id, client_id());
 
@@ -765,11 +765,13 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, SingleDisableExtensionsSyncCheck) {
   uint64_t original_client_id = client_id();
   EXPECT_NE(0U, original_client_id);
 
-  ASSERT_TRUE(harness->DisableSyncForDatatype(syncer::EXTENSIONS));
+  ASSERT_TRUE(
+      harness->DisableSyncForType(syncer::UserSelectableType::kExtensions));
   EXPECT_TRUE(ukm_enabled());
   EXPECT_FALSE(ukm_extensions_enabled());
 
-  ASSERT_TRUE(harness->EnableSyncForDatatype(syncer::EXTENSIONS));
+  ASSERT_TRUE(
+      harness->EnableSyncForType(syncer::UserSelectableType::kExtensions));
   EXPECT_TRUE(ukm_enabled());
   EXPECT_TRUE(ukm_extensions_enabled());
   // Client ID should not be reset.
@@ -801,11 +803,11 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MultiDisableExtensionsSyncCheck) {
   EXPECT_TRUE(ukm_extensions_enabled());
   EXPECT_EQ(original_client_id, client_id());
 
-  harness2->DisableSyncForDatatype(syncer::EXTENSIONS);
+  harness2->DisableSyncForType(syncer::UserSelectableType::kExtensions);
   EXPECT_TRUE(ukm_enabled());
   EXPECT_FALSE(ukm_extensions_enabled());
 
-  harness2->EnableSyncForDatatype(syncer::EXTENSIONS);
+  harness2->EnableSyncForType(syncer::UserSelectableType::kExtensions);
   EXPECT_TRUE(ukm_enabled());
   EXPECT_TRUE(ukm_extensions_enabled());
   EXPECT_EQ(original_client_id, client_id());
@@ -1136,8 +1138,8 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport, SyncFeatureCheck) {
   ASSERT_FALSE(sync_service->GetActiveDataTypes().Has(syncer::TYPED_URLS));
   ASSERT_FALSE(sync_service->GetActiveDataTypes().Has(
       syncer::HISTORY_DELETE_DIRECTIVES));
-  ASSERT_TRUE(sync_service->GetUserSettings()->GetChosenDataTypes().Has(
-      syncer::TYPED_URLS));
+  ASSERT_TRUE(sync_service->GetUserSettings()->GetSelectedTypes().Has(
+      syncer::UserSelectableType::kHistory));
 
   // If unified consent is disabled, then UKM should now be off, since Sync (the
   // feature) isn't enabled anymore, even though the machinery is still active.
@@ -1187,8 +1189,8 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport,
   ASSERT_FALSE(sync_service->GetActiveDataTypes().Has(syncer::TYPED_URLS));
   ASSERT_FALSE(sync_service->GetActiveDataTypes().Has(
       syncer::HISTORY_DELETE_DIRECTIVES));
-  ASSERT_TRUE(sync_service->GetUserSettings()->GetChosenDataTypes().Has(
-      syncer::TYPED_URLS));
+  ASSERT_TRUE(sync_service->GetUserSettings()->GetSelectedTypes().Has(
+      syncer::UserSelectableType::kHistory));
 
   EXPECT_FALSE(ukm_enabled());
 }

@@ -6,17 +6,18 @@ package org.chromium.content_public.browser.test.util;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import android.app.Activity;
 import android.graphics.Rect;
 import android.util.JsonReader;
 import android.view.View;
 
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -81,7 +82,7 @@ public class DOMUtils {
      * @param id The element's id to check.
      * @return whether the media has ended.
      */
-    private static boolean isMediaEnded(final WebContents webContents, final String id)
+    public static boolean isMediaEnded(final WebContents webContents, final String id)
             throws InterruptedException, TimeoutException {
         return getNodeField("ended", webContents, id, Boolean.class);
     }
@@ -176,6 +177,10 @@ public class DOMUtils {
 
     private static View getContainerView(final WebContents webContents) {
         return ((WebContentsImpl) webContents).getViewAndroidDelegate().getContainerView();
+    }
+
+    private static Activity getActivity(final WebContents webContents) {
+        return WindowAndroid.activityFromContext(((WebContentsImpl) webContents).getContext());
     }
 
     /**
@@ -285,6 +290,86 @@ public class DOMUtils {
         int[] clickTarget = getClickTargetForBounds(webContents, rect);
         return TouchCommon.singleClickView(
                 getContainerView(webContents), clickTarget[0], clickTarget[1]);
+    }
+
+    /**
+     * Starts (synchronously) a drag motion on the specified coordinates of a DOM node by its id,
+     * scrolling it into view first. Normally followed by dragNodeTo() and dragNodeEnd().
+     *
+     * @param webContents The WebContents in which the node lives.
+     * @param nodeId The id of the node.
+     * @param downTime When the drag was started, in millis since the epoch.
+     */
+    public static void dragNodeStart(final WebContents webContents, String nodeId, long downTime)
+            throws InterruptedException, TimeoutException {
+        scrollNodeIntoView(webContents, nodeId);
+        String jsCode = "document.getElementById('" + nodeId + "')";
+        int[] fromTarget = getClickTargetForNodeByJs(webContents, jsCode);
+        TouchCommon.dragStart(getActivity(webContents), fromTarget[0], fromTarget[1], downTime);
+    }
+
+    /**
+     * Drags / moves (synchronously) to the specified coordinates of a DOM node by its id. Normally
+     * preceded by dragNodeStart() and followed by dragNodeEnd()
+     *
+     * @param webContents The WebContents in which the node lives.
+     * @param fromNodeId The id of the node's coordinates of the initial touch.
+     * @param toNodeId The id of the node's coordinates of the drag destination.
+     * @param stepCount How many move steps to include in the drag.
+     * @param downTime When the drag was started, in millis since the epoch.
+     */
+    public static void dragNodeTo(final WebContents webContents, String fromNodeId, String toNodeId,
+            int stepCount, long downTime) throws InterruptedException, TimeoutException {
+        int[] fromTarget = getClickTargetForNodeByJs(
+                webContents, "document.getElementById('" + fromNodeId + "')");
+        int[] toTarget = getClickTargetForNodeByJs(
+                webContents, "document.getElementById('" + toNodeId + "')");
+        TouchCommon.dragTo(getActivity(webContents), fromTarget[0], fromTarget[1], toTarget[0],
+                toTarget[1], stepCount, downTime);
+    }
+
+    /**
+     * Finishes (synchronously) a drag / move at the specified coordinate of a DOM node by its id,
+     * scrolling it into view first. Normally preceded by dragNodeStart() and dragNodeTo().
+     *
+     * @param webContents The WebContents in which the node lives.
+     * @param nodeId The id of the node.
+     * @param downTime When the drag was started, in millis since the epoch.
+     */
+    public static void dragNodeEnd(final WebContents webContents, String nodeId, long downTime)
+            throws InterruptedException, TimeoutException {
+        scrollNodeIntoView(webContents, nodeId);
+        String jsCode = "document.getElementById('" + nodeId + "')";
+        int[] endTarget = getClickTargetForNodeByJs(webContents, jsCode);
+        TouchCommon.dragEnd(getActivity(webContents), endTarget[0], endTarget[1], downTime);
+    }
+
+    /**
+     * Long-press a DOM node by its id, scrolling it into view first and without release.
+     * @param webContents The WebContents in which the node lives.
+     * @param nodeId The id of the node.
+     * @param downTime When the Long-press was started, in millis since the epoch.
+     */
+    public static void longPressNodeWithoutUp(final WebContents webContents, String nodeId,
+            long downTime) throws InterruptedException, TimeoutException {
+        scrollNodeIntoView(webContents, nodeId);
+        String jsCode = "document.getElementById('" + nodeId + "')";
+        longPressNodeWithoutUpByJs(webContents, jsCode, downTime);
+    }
+
+    /**
+     * Long-press a DOM node by its id, without release.
+     * <p>Note that content view should be located in the current position for a foreseeable
+     * amount of time because this involves sleep to simulate touch to long press transition.
+     * @param webContents The WebContents in which the node lives.
+     * @param jsCode js code that returns an element.
+     * @param downTime When the Long-press was started, in millis since the epoch.
+     */
+    public static void longPressNodeWithoutUpByJs(final WebContents webContents, String jsCode,
+            long downTime) throws InterruptedException, TimeoutException {
+        int[] clickTarget = getClickTargetForNodeByJs(webContents, jsCode);
+        TouchCommon.longPressViewWithoutUp(
+                getContainerView(webContents), clickTarget[0], clickTarget[1], downTime);
     }
 
     /**
@@ -398,8 +483,8 @@ public class DOMUtils {
      * @param valueType The type of the value to read.
      * @return the field's value.
      */
-    private static <T> T getNodeField(String fieldName, final WebContents webContents,
-            String nodeId, Class<T> valueType) throws InterruptedException, TimeoutException {
+    public static <T> T getNodeField(String fieldName, final WebContents webContents, String nodeId,
+            Class<T> valueType) throws InterruptedException, TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
         sb.append("  var node = document.getElementById('" + nodeId + "');");
@@ -488,6 +573,8 @@ public class DOMUtils {
      * @return the click target of the node in the form of a [ x, y ] array.
      */
     private static int[] getClickTargetForBounds(WebContents webContents, Rect bounds) {
+        // TODO(nburris): This converts from CSS pixels to physical pixels, but
+        // does not account for visual viewport offset.
         RenderCoordinatesImpl coord = ((WebContentsImpl) webContents).getRenderCoordinates();
         int clickX = (int) coord.fromLocalCssToPix(bounds.exactCenterX());
         int clickY = (int) coord.fromLocalCssToPix(bounds.exactCenterY())
@@ -502,7 +589,7 @@ public class DOMUtils {
 
     private static int getMaybeTopControlsHeight(final WebContents webContents) {
         try {
-            return ThreadUtils.runOnUiThreadBlocking(
+            return TestThreadUtils.runOnUiThreadBlocking(
                     () -> nativeGetTopControlsShrinkBlinkHeight(webContents));
         } catch (ExecutionException e) {
             return 0;

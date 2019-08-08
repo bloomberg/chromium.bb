@@ -8,8 +8,8 @@
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/layered_api_module.h"
@@ -31,7 +31,7 @@ class ModuleScriptFetcher;
 class ImportMap;
 class ReferrerScriptInfo;
 class ResourceFetcher;
-class ScriptModuleResolver;
+class ModuleRecordResolver;
 class ScriptPromiseResolver;
 class ScriptState;
 class ScriptValue;
@@ -110,7 +110,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   void Trace(blink::Visitor* visitor) override {}
   const char* NameInHeapSnapshot() const override { return "Modulator"; }
 
-  virtual ScriptModuleResolver* GetScriptModuleResolver() = 0;
+  virtual ModuleRecordResolver* GetModuleRecordResolver() = 0;
   virtual base::SingleThreadTaskRunner* TaskRunner() = 0;
 
   virtual ScriptState* GetScriptState() = 0;
@@ -180,11 +180,11 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual void ClearIsAcquiringImportMaps() = 0;
 
   // https://html.spec.whatwg.org/C/#hostgetimportmetaproperties
-  virtual ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const = 0;
+  virtual ModuleImportMeta HostGetImportMetaProperties(ModuleRecord) const = 0;
 
   virtual bool HasValidContext() = 0;
 
-  virtual ScriptValue InstantiateModule(ScriptModule) = 0;
+  virtual ScriptValue InstantiateModule(ModuleRecord) = 0;
 
   struct ModuleRequest {
     String specifier;
@@ -192,8 +192,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
     ModuleRequest(const String& specifier, const TextPosition& position)
         : specifier(specifier), position(position) {}
   };
-  virtual Vector<ModuleRequest> ModuleRequestsFromScriptModule(
-      ScriptModule) = 0;
+  virtual Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
+      ModuleRecord) = 0;
 
   enum class CaptureEvalErrorFlag : bool { kReport, kCapture };
 

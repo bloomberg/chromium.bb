@@ -71,6 +71,14 @@ StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
 const std::string&
 StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
              chromeos::multidevice::RemoteDevice>::
+    pii_free_device_name(
+        const chromeos::multidevice::RemoteDevice& remote_device) {
+  return remote_device.pii_free_name;
+}
+
+const std::string&
+StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
+             chromeos::multidevice::RemoteDevice>::
     persistent_symmetric_key(
         const chromeos::multidevice::RemoteDevice& remote_device) {
   return remote_device.persistent_symmetric_key;
@@ -106,6 +114,7 @@ bool StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
   base::Time last_update_time;
 
   if (!in.ReadUserId(&out->user_id) || !in.ReadDeviceName(&out->name) ||
+      !in.ReadPiiFreeDeviceName(&out->pii_free_name) ||
       !in.ReadDeviceId(&device_id) ||
       !in.ReadPersistentSymmetricKey(&out->persistent_symmetric_key) ||
       !in.ReadLastUpdateTime(&last_update_time) ||

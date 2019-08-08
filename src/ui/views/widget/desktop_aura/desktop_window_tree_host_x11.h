@@ -86,7 +86,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   static void CleanUpWindowList(void (*func)(aura::Window* window));
 
   // Disables event listening to make |dialog| modal.
-  std::unique_ptr<base::Closure> DisableEventListening();
+  base::OnceClosure DisableEventListening();
 
   // Returns a map of KeyboardEvent code to KeyboardEvent key values.
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
@@ -308,7 +308,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // X11 things
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_;
-  ::Window xwindow_;
+  ::Window xwindow_ = 0;
 
   // Events selected on |xwindow_|.
   std::unique_ptr<ui::XScopedEventSelector> xwindow_events_;
@@ -317,10 +317,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   ::Window x_root_window_;
 
   // Whether the window is mapped with respect to the X server.
-  bool window_mapped_in_server_;
+  bool window_mapped_in_server_ = false;
 
   // Whether the window is visible with respect to Aura.
-  bool window_mapped_in_client_;
+  bool window_mapped_in_client_ = false;
 
   // The bounds of |xwindow_|.
   gfx::Rect bounds_in_pixels_;
@@ -351,21 +351,21 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   base::flat_set<XAtom> window_properties_;
 
   // Whether |xwindow_| was requested to be fullscreen via SetFullscreen().
-  bool is_fullscreen_;
+  bool is_fullscreen_ = false;
 
   // True if the window should stay on top of most other windows.
-  bool is_always_on_top_;
+  bool is_always_on_top_ = false;
 
   // True if the window has title-bar / borders provided by the window manager.
-  bool use_native_frame_;
+  bool use_native_frame_ = false;
 
   // True if a Maximize() call should be done after mapping the window.
-  bool should_maximize_after_map_;
+  bool should_maximize_after_map_ = false;
 
   // Whether we used an ARGB visual for our window.
-  bool use_argb_visual_;
+  bool use_argb_visual_ = false;
 
-  DesktopDragDropClientAuraX11* drag_drop_client_;
+  DesktopDragDropClientAuraX11* drag_drop_client_ = nullptr;
 
   std::unique_ptr<ui::EventHandler> x11_non_client_event_filter_;
   std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
@@ -378,7 +378,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   // We can optionally have a parent which can order us to close, or own
   // children who we're responsible for closing when we CloseNow().
-  DesktopWindowTreeHostX11* window_parent_;
+  DesktopWindowTreeHostX11* window_parent_ = nullptr;
   std::set<DesktopWindowTreeHostX11*> window_children_;
 
   base::ObserverList<DesktopWindowTreeHostObserverX11>::Unchecked
@@ -389,7 +389,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
       window_shape_;
 
   // Whether |window_shape_| was set via SetShape().
-  bool custom_window_shape_;
+  bool custom_window_shape_ = false;
 
   // The size of the window manager provided borders (if any).
   gfx::Insets native_window_frame_borders_in_pixels_;
@@ -408,12 +408,16 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // by setting the urgency hint with the window manager, which can draw
   // attention to the window or completely ignore the hint. We stop flashing
   // the frame when |xwindow_| gains focus or handles a mouse button event.
-  bool urgency_hint_set_;
+  bool urgency_hint_set_ = false;
 
   // Does |xwindow_| have the pointer grab (XI2 or normal)?
-  bool has_pointer_grab_;
+  bool has_pointer_grab_ = false;
 
-  bool activatable_;
+  // Is this window able to receive focus?
+  bool activatable_ = true;
+
+  // Was this window initialized with the override_redirect window attribute?
+  bool override_redirect_ = false;
 
   // The focus-tracking state variables are as described in
   // gtk/docs/focus_tracking.txt
@@ -423,39 +427,39 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   //     !|ignore_keyboard_input_|
 
   // Is the pointer in |xwindow_| or one of its children?
-  bool has_pointer_;
+  bool has_pointer_ = false;
 
   // Is |xwindow_| or one of its children focused?
-  bool has_window_focus_;
+  bool has_window_focus_ = false;
 
   // (An ancestor window or the PointerRoot is focused) && |has_pointer_|.
   // |has_pointer_focus_| == true is the odd case where we will receive keyboard
   // input when |has_window_focus_| == false.  |has_window_focus_| and
   // |has_pointer_focus_| are mutually exclusive.
-  bool has_pointer_focus_;
+  bool has_pointer_focus_ = false;
 
   // X11 does not support defocusing windows; you can only focus a different
   // window.  If we would like to be defocused, we just ignore keyboard input we
   // no longer care about.
-  bool ignore_keyboard_input_;
+  bool ignore_keyboard_input_ = false;
 
   // Used for tracking activation state in {Before|After}ActivationStateChanged.
-  bool was_active_;
-  bool had_pointer_;
-  bool had_pointer_grab_;
-  bool had_window_focus_;
+  bool was_active_ = false;
+  bool had_pointer_ = false;
+  bool had_pointer_grab_ = false;
+  bool had_window_focus_ = false;
 
   // Captures system key events when keyboard lock is requested.
   std::unique_ptr<ui::KeyboardHook> keyboard_hook_;
 
-  base::CancelableCallback<void()> delayed_resize_task_;
+  base::CancelableOnceCallback<void()> delayed_resize_task_;
 
   std::unique_ptr<aura::ScopedWindowTargeter> targeter_for_modal_;
 
-  uint32_t modal_dialog_counter_;
+  uint32_t modal_dialog_counter_ = 0;
 
-  base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_;
-  base::WeakPtrFactory<DesktopWindowTreeHostX11> weak_factory_;
+  base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_{this};
+  base::WeakPtrFactory<DesktopWindowTreeHostX11> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11);
 };

@@ -135,14 +135,14 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, LocalNTPRequests) {
   info.render_process_id = -1;
 
   // Sub-resource browser initiated requests are hidden from extensions.
-  info.type = content::RESOURCE_TYPE_SUB_RESOURCE;
+  info.type = content::ResourceType::kSubResource;
   info.web_request_type = extensions::WebRequestResourceType::OTHER;
   info.is_browser_side_navigation = false;
   EXPECT_TRUE(
       WebRequestPermissions::HideRequest(extension_info_map_.get(), info));
 
   // Sub-frame navigations initiated from the local ntp should be hidden.
-  info.type = content::RESOURCE_TYPE_SUB_FRAME;
+  info.type = content::ResourceType::kSubFrame;
   info.web_request_type = extensions::WebRequestResourceType::SUB_FRAME;
   info.is_browser_side_navigation = true;
   EXPECT_TRUE(
@@ -163,7 +163,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
                             NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
 
   const content::ResourceType kResourceType =
-      content::RESOURCE_TYPE_SUB_RESOURCE;
+      content::ResourceType::kSubResource;
 
   EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
             WebRequestPermissions::CanExtensionAccessURL(
@@ -254,7 +254,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
           false,  // crosses_incognito
           WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
           request_with_initiator->initiator(),
-          content::RESOURCE_TYPE_SUB_FRAME));
+          content::ResourceType::kSubFrame));
 
   EXPECT_EQ(PermissionsData::PageAccess::kDenied,
             WebRequestPermissions::CanExtensionAccessURL(

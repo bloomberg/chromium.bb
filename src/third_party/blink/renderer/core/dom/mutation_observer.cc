@@ -80,7 +80,7 @@ class MutationObserver::V8DelegateImpl final
   }
 
  private:
-  TraceWrapperMember<V8MutationCallback> callback_;
+  Member<V8MutationCallback> callback_;
 };
 
 static unsigned g_observer_priority = 0;

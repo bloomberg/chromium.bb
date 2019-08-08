@@ -11,8 +11,8 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "media/gpu/test/video_frame_mapper.h"
-#include "media/gpu/test/video_frame_mapper_factory.h"
+#include "media/gpu/video_frame_mapper.h"
+#include "media/gpu/video_frame_mapper_factory.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace media {

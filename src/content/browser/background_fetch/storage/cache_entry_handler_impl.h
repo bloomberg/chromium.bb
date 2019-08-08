@@ -22,7 +22,8 @@ class CacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
   // CacheStorageCacheEntryHandler implementation:
   std::unique_ptr<PutContext> CreatePutContext(
       blink::mojom::FetchAPIRequestPtr request,
-      blink::mojom::FetchAPIResponsePtr response) override;
+      blink::mojom::FetchAPIResponsePtr response,
+      int64_t trace_id) override;
   void PopulateResponseBody(scoped_refptr<BlobDataHandle> data_handle,
                             blink::mojom::FetchAPIResponse* response) override;
   void PopulateRequestBody(scoped_refptr<BlobDataHandle> data_handle,

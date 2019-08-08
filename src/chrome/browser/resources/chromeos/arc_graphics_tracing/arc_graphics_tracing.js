@@ -12,14 +12,18 @@ cr.define('cr.ArcGraphicsTracing', function() {
      * Initializes internal structures.
      */
     initialize: function() {
-      var startDelay = $('arc-graphics-tracing-start-delay');
-      var duration = $('arc-graphics-tracing-duration');
-      $('arc-graphics-tracing-start')
-          .addEventListener('click', function(event) {
-            chrome.send(
-                'startTracing',
-                [Number(startDelay.value), Number(duration.value)]);
-          }, false);
+      var stopOnJank = $('arc-graphics-tracing-stop-on-jank');
+      stopOnJank.addEventListener('click', function(event) {
+        chrome.send('setStopOnJank', [stopOnJank.checked]);
+      }, false);
+      chrome.send('ready');
+      chrome.send('setStopOnJank', [stopOnJank.checked]);
+      initializeUi();
+    },
+
+    setStatus: function(statusText) {
+      var status = $('arc-graphics-tracing-status');
+      status.textContent = statusText;
     },
 
     setModel: function(model) {

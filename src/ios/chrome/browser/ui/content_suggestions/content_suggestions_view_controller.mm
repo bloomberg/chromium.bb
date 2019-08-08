@@ -28,7 +28,7 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -267,7 +267,6 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   [super viewDidAppear:animated];
   // Resize the collection as it might have been rotated while not being
   // presented (e.g. rotation on stack view).
-  [self correctMissingSafeArea];
   [self updateConstraints];
 }
 
@@ -321,13 +320,11 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
     [self.headerSynchronizer updateFakeOmniboxOnCollectionScroll];
     [self.headerSynchronizer updateConstraints];
   }
-  [self correctMissingSafeArea];
   [self updateOverscrollActionsState];
 }
 
 - (void)viewSafeAreaInsetsDidChange {
   [super viewSafeAreaInsetsDidChange];
-  [self correctMissingSafeArea];
   [self.headerSynchronizer
       updateFakeOmniboxOnNewWidth:self.collectionView.bounds.size.width];
   [self.headerSynchronizer updateConstraints];
@@ -639,24 +636,6 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
 }
 
 #pragma mark - Private
-
-// TODO(crbug.com/826369) Remove this when the NTP is conatined by the BVC
-// and removed from native content.  As a part of native content, the NTP is
-// contained by a view controller that is inset from safeArea.top.  Even
-// though content suggestions appear under the top safe area, they are blocked
-// by the browser container view controller.
-- (void)correctMissingSafeArea {
-  if (base::FeatureList::IsEnabled(web::features::kBrowserContainerFullscreen))
-    return;
-
-  UIEdgeInsets missingTop = UIEdgeInsetsZero;
-  // During the new tab animation the browser container view controller
-  // actually matches the browser view controller frame, so safe area does
-  // work, so be sure to check the parent view controller offset.
-  if (self.parentViewController.view.frame.origin.y == StatusBarHeight())
-    missingTop = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
-  self.additionalSafeAreaInsets = missingTop;
-}
 
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {
   if (self.editor.editing ||

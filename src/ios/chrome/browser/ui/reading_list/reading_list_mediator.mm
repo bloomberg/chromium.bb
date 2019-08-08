@@ -168,7 +168,7 @@ const CGFloat kFaviconMinWidthHeight = 16;
 
         [strongSelf.dataSink itemHasChangedAfterDelay:strongItem];
       };
-  FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForUrl(
+  FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForPageUrl(
       item.faviconPageURL, kFaviconWidthHeight, kFaviconMinWidthHeight,
       /*fallback_to_google_server=*/false, completionBlock);
   DCHECK(cachedAttributes);

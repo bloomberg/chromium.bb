@@ -57,6 +57,7 @@ public abstract class CardViewHolder
                 (menu, view, menuInfo)
                         -> contextMenuManager.createContextMenu(
                                 menu, itemView, CardViewHolder.this));
+        ContextMenuManager.registerViewForTouchlessContextMenu(itemView, this);
 
         mUiConfig = uiConfig;
     }
@@ -78,6 +79,11 @@ public abstract class CardViewHolder
 
     @Override
     public String getUrl() {
+        return null;
+    }
+
+    @Override
+    public String getContextMenuTitle() {
         return null;
     }
 
@@ -142,7 +148,6 @@ public abstract class CardViewHolder
             case ItemViewType.HEADER:
             case ItemViewType.PROGRESS:
             case ItemViewType.FOOTER:
-            case ItemViewType.ALL_DISMISSED:
                 return false;
         }
         assert false;

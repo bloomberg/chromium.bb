@@ -114,7 +114,8 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
     network::mojom::URLLoaderPtr loader;
     network::ResourceRequest resource_request;
     resource_request.url = scope_;
-    resource_request.resource_type = RESOURCE_TYPE_SERVICE_WORKER;
+    resource_request.resource_type =
+        static_cast<int>(ResourceType::kServiceWorker);
     factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
         network::mojom::kURLLoadOptionNone, resource_request,
@@ -151,8 +152,7 @@ TEST_F(ServiceWorkerScriptLoaderFactoryTest, Redundant) {
 }
 
 TEST_F(ServiceWorkerScriptLoaderFactoryTest, NoProviderHost) {
-  helper_->context()->RemoveProviderHost(helper_->mock_render_process_id(),
-                                         provider_host_->provider_id());
+  helper_->context()->RemoveProviderHost(provider_host_->provider_id());
 
   network::TestURLLoaderClient client;
   network::mojom::URLLoaderPtr loader = CreateTestLoaderAndStart(&client);

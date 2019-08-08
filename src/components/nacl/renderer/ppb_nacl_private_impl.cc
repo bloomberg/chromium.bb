@@ -427,7 +427,8 @@ void PPBNaClPrivate::LaunchSelLdr(
   InstanceInfo instance_info;
   instance_info.url = GURL(alleged_url);
 
-  uint32_t perm_bits = ppapi::PERMISSION_NONE;
+  // Keep backwards-compatible, but no other permissions.
+  uint32_t perm_bits = ppapi::PERMISSION_DEFAULT;
   instance_info.permissions =
       ppapi::PpapiPermissions::GetForCommandLine(perm_bits);
 
@@ -1737,7 +1738,7 @@ void PPBNaClPrivate::StreamPexe(PP_Instance instance,
   blink::WebURLRequest url_request = CreateWebURLRequest(document, gurl);
   // Mark the request as requesting a PNaCl bitcode file,
   // so that component updater can detect this user action.
-  url_request.AddHTTPHeaderField(
+  url_request.AddHttpHeaderField(
       blink::WebString::FromUTF8("Accept"),
       blink::WebString::FromUTF8("application/x-pnacl, */*"));
   url_request.SetRequestContext(blink::mojom::RequestContextType::OBJECT);

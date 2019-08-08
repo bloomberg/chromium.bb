@@ -22,8 +22,7 @@ namespace extensions {
 namespace {
 
 using RenderFrameMap =
-    base::flat_map<content::RenderFrame*,
-                   std::unique_ptr<MimeHandlerViewContainerManager>>;
+    base::flat_map<int32_t, std::unique_ptr<MimeHandlerViewContainerManager>>;
 
 RenderFrameMap* GetRenderFrameMap() {
   static base::NoDestructor<RenderFrameMap> instance;
@@ -48,40 +47,37 @@ void MimeHandlerViewContainerManager::BindRequest(
 MimeHandlerViewContainerManager* MimeHandlerViewContainerManager::Get(
     content::RenderFrame* render_frame,
     bool create_if_does_not_exits) {
+  int32_t routing_id = render_frame->GetRoutingID();
   auto& map = *GetRenderFrameMap();
-  if (base::ContainsKey(map, render_frame))
-    return map[render_frame].get();
+  if (base::ContainsKey(map, routing_id))
+    return map[routing_id].get();
   if (create_if_does_not_exits) {
-    map[render_frame] =
+    map[routing_id] =
         std::make_unique<MimeHandlerViewContainerManager>(render_frame);
-    return map[render_frame].get();
+    return map[routing_id].get();
   }
   return nullptr;
 }
 
 MimeHandlerViewContainerManager::MimeHandlerViewContainerManager(
     content::RenderFrame* render_frame)
-    : content::RenderFrameObserver(render_frame) {}
+    : content::RenderFrameObserver(render_frame),
+      before_unload_control_binding_(this) {}
 
 MimeHandlerViewContainerManager::~MimeHandlerViewContainerManager() {}
 
 void MimeHandlerViewContainerManager::OnDestruct() {
   bindings_.CloseAllBindings();
   // This will delete the class.
-  GetRenderFrameMap()->erase(render_frame());
+  GetRenderFrameMap()->erase(routing_id());
 }
 
-void MimeHandlerViewContainerManager::CreateFrameContainer(
-    const GURL& resource_url,
-    const std::string& mime_type,
-    const std::string& view_id) {
-  // TODO(ekaramad): Implement (https://crbug.com/659750).
-  DCHECK(MimeHandlerViewFrameContainer::IsSupportedMimeType(mime_type));
-  auto* child = render_frame()->GetWebFrame()->FirstChild();
-  if (!child || child->IsWebRemoteFrame())
-    return;
-  MimeHandlerViewFrameContainer::CreateWithFrame(
-      child->ToWebLocalFrame(), resource_url, mime_type, view_id);
+void MimeHandlerViewContainerManager::CreateBeforeUnloadControl(
+    CreateBeforeUnloadControlCallback callback) {
+  mime_handler::BeforeUnloadControlPtr before_unload_control;
+  before_unload_control_binding_.Bind(
+      mojo::MakeRequest(&before_unload_control));
+  std::move(callback).Run(std::move(before_unload_control));
 }
 
 void MimeHandlerViewContainerManager::DestroyFrameContainer(
@@ -93,7 +89,7 @@ void MimeHandlerViewContainerManager::DestroyFrameContainer(
 void MimeHandlerViewContainerManager::RetryCreatingMimeHandlerViewGuest(
     int32_t element_instance_id) {
   if (auto* frame_container = GetFrameContainer(element_instance_id))
-    frame_container->DestroyFrameContainer();
+    frame_container->RetryCreatingMimeHandlerViewGuest();
 }
 
 void MimeHandlerViewContainerManager::DidLoad(int32_t element_instance_id) {
@@ -111,6 +107,14 @@ MimeHandlerViewContainerManager::GetFrameContainer(int32_t instance_id) {
       return frame_container;
   }
   return nullptr;
+}
+
+void MimeHandlerViewContainerManager::SetShowBeforeUnloadDialog(
+    bool show_dialog,
+    SetShowBeforeUnloadDialogCallback callback) {
+  render_frame()->GetWebFrame()->GetDocument().SetShowBeforeUnloadDialog(
+      show_dialog);
+  std::move(callback).Run();
 }
 
 }  // namespace extensions

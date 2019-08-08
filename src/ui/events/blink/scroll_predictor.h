@@ -35,10 +35,9 @@ class ScrollPredictor {
   // Resampling GestureScrollUpdate events. Updates the prediction with events
   // in original events list, and apply the prediction to the aggregated GSU
   // event if enable_resampling is true.
-  void ResampleScrollEvents(
-      const EventWithCallback::OriginalEventList& original_events,
-      base::TimeTicks frame_time,
-      blink::WebInputEvent* event);
+  std::unique_ptr<EventWithCallback> ResampleScrollEvents(
+      std::unique_ptr<EventWithCallback> event_with_callback,
+      base::TimeTicks frame_time);
 
  private:
   friend class test::InputHandlerProxyEventQueueTest;
@@ -53,7 +52,9 @@ class ScrollPredictor {
                         base::TimeTicks frame_time);
 
   // Apply resampled deltaX/deltaY to gesture events
-  void ResampleEvent(base::TimeTicks frame_time, blink::WebInputEvent* event);
+  void ResampleEvent(base::TimeTicks frame_time,
+                     blink::WebInputEvent* event,
+                     LatencyInfo* latency_info);
 
   // Reports prediction accuracy UMA histogram. Calculates position in current
   // event time and compute the distance between real event and predicted event.

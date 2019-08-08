@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_display.h"
 
 #include <xf86drmMode.h>
+#include <memory>
 
 #include "base/stl_util.h"
 #include "ui/display/types/display_snapshot.h"

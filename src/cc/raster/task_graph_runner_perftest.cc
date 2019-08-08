@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/timer/lap_timer.h"
@@ -29,6 +28,8 @@ class PerfTaskImpl : public Task {
   typedef std::vector<scoped_refptr<PerfTaskImpl>> Vector;
 
   PerfTaskImpl() = default;
+  PerfTaskImpl(const PerfTaskImpl&) = delete;
+  PerfTaskImpl& operator=(const PerfTaskImpl&) = delete;
 
   // Overridden from Task:
   void RunOnWorkerThread() override {}
@@ -37,8 +38,6 @@ class PerfTaskImpl : public Task {
 
  private:
   ~PerfTaskImpl() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(PerfTaskImpl);
 };
 
 class TaskGraphRunnerPerfTest : public testing::Test {

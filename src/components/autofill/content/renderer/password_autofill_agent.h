@@ -60,26 +60,6 @@ enum class PrefilledUsernameFillOutcome {
   kMaxValue = kPrefilledUsernameNotOverridden,
 };
 
-// Used in UMA histograms, please do NOT reorder.
-// Metric: "PasswordManager.SendPasswordFormToBrowserProcess".
-// This metrics is relevant for PasswordAutofillAgent::SendPasswordForms method.
-enum class SendPasswordFormToBrowserProcess {
-  // Password form wasn't sent to the browser process.
-  kPasswordFormWasNotSent = 0,
-  // Password form was sent, because only_visible == true.
-  kPasswordFormSentByOnlyVisible = 1,
-  // Password form was sent, because it's newly added form.
-  kPasswordFormSentAsNewlyAdded = 2,
-  // Password form was sent, because the form structure was changed.
-  kPasswordFormSentByStructureChange = 3,
-  // Password form was sent, because there is no form-tag.
-  kPasswordFormSentByNoFormTag = 4,
-  // Password form was sent, because there is no id. this should never happen;
-  // this enum value exists only for checking.
-  kPasswordFormWithoutId = 5,
-  kMaxValue = kPasswordFormWithoutId,
-};
-
 // Used in UMA histogram, please do NOT reorder.
 // Metric: "PasswordManager.FirstRendererFillingResult".
 // This metric records whether the PasswordAutofillAgent succeeded in filling
@@ -250,7 +230,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void DidFinishLoad() override;
   void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) override;
-  void WillCommitProvisionalLoad() override;
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
   void OnDestruct() override;
@@ -372,8 +351,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                                   blink::WebInputElement* password_element,
                                   PasswordInfo** password_info);
 
-  // Invoked when the frame is closing.
-  void FrameClosing();
+  // Cleans up the state when document is shut down, e.g. when committing a new
+  // document or closing the frame.
+  void CleanupOnDocumentShutdown();
 
   // Clears the preview for the username and password fields, restoring both to
   // their previous filled state.

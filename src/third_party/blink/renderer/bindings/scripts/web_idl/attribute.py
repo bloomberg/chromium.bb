@@ -1,44 +1,43 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .extended_attribute import ExtendedAttributeList
-from .idl_types import RecordType
-from .idl_types import SequenceType
-from .utilities import assert_no_extra_args
+import exceptions
+from .idl_member import IdlMember
 
 
-# https://heycam.github.io/webidl/#idl-attributes
-class Attribute(object):
-    _INVALID_TYPES = frozenset([SequenceType, RecordType])
-
-    def __init__(self, **kwargs):
-        self._identifier = kwargs.pop('identifier')
-        self._type = kwargs.pop('type')
-        self._is_static = kwargs.pop('is_static', False)
-        self._is_readonly = kwargs.pop('is_readonly', False)
-        self._extended_attribute_list = kwargs.pop('extended_attribute_list', ExtendedAttributeList())
-        assert_no_extra_args(kwargs)
-
-        if type(self.type) in Attribute._INVALID_TYPES:
-            raise ValueError('The type of an attribute must not be either of sequence<T> and record<K,V>.')
+class Attribute(IdlMember):
+    """https://heycam.github.io/webidl/#idl-attributes"""
 
     @property
-    def identifier(self):
-        return self._identifier
-
-    @property
-    def type(self):
-        return self._type
+    def idl_type(self):
+        """
+        Returns type of this attribute.
+        @return IdlType
+        """
+        raise exceptions.NotImplementedError()
 
     @property
     def is_static(self):
-        return self._is_static
+        """
+        Returns True if this attriute is static.
+        @return bool
+        """
+        raise exceptions.NotImplementedError()
 
     @property
     def is_readonly(self):
-        return self._is_readonly
+        """
+        Returns True if this attribute is read only.
+        @return bool
+        """
+        raise exceptions.NotImplementedError()
 
     @property
-    def extended_attribute_list(self):
-        return self._extended_attribute_list
+    def does_inherit_getter(self):
+        """
+        Returns True if |self| inherits its getter.
+        https://heycam.github.io/webidl/#dfn-inherit-getter
+        @return bool
+        """
+        raise exceptions.NotImplementedError()

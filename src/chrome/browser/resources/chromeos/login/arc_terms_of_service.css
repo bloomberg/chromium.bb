@@ -46,7 +46,8 @@ p {
   display: none;
 }
 
-#arc-tos-dialog:not(.arc-tos-for-demo-mode) #arc-tos-back-button {
+#arc-tos-dialog:not(.arc-tos-for-demo-mode) #arc-tos-back-button,
+#arc-tos-dialog:not(.arc-tos-for-demo-mode) #arc-tos-metrics-demo-apps {
   display: none;
 }
 

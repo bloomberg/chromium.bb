@@ -28,7 +28,7 @@ namespace {
 
 class TestButton : public Button {
  public:
-  TestButton() : Button(NULL) {}
+  TestButton() : Button(nullptr) {}
   ~TestButton() override = default;
 
  private:
@@ -174,7 +174,7 @@ TEST_F(ViewAXPlatformNodeDelegateTest, WritableFocus) {
 #if defined(USE_AURA)
 class DerivedTestView : public View {
  public:
-  DerivedTestView() : View() {}
+  DerivedTestView() = default;
   ~DerivedTestView() override = default;
 
   void OnBlur() override { SetVisible(false); }
@@ -182,7 +182,9 @@ class DerivedTestView : public View {
 
 class TestAXEventObserver : public AXEventObserver {
  public:
-  TestAXEventObserver() { AXEventManager::Get()->AddObserver(this); }
+  TestAXEventObserver(AXAuraObjCache* cache) : cache_(cache) {
+    AXEventManager::Get()->AddObserver(this);
+  }
 
   ~TestAXEventObserver() override {
     AXEventManager::Get()->RemoveObserver(this);
@@ -190,13 +192,14 @@ class TestAXEventObserver : public AXEventObserver {
 
   // AXEventObserver:
   void OnViewEvent(View* view, ax::mojom::Event event_type) override {
-    AXAuraObjCache* ax = AXAuraObjCache::GetInstance();
     std::vector<AXAuraObjWrapper*> out_children;
-    AXAuraObjWrapper* ax_obj = ax->GetOrCreate(view->GetWidget());
+    AXAuraObjWrapper* ax_obj = cache_->GetOrCreate(view->GetWidget());
     ax_obj->GetChildren(&out_children);
   }
 
  private:
+  AXAuraObjCache* cache_;
+
   DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
 };
 
@@ -207,7 +210,8 @@ using ViewAccessibilityTest = ViewsTestBase;
 TEST_F(ViewAccessibilityTest, LayoutCalledInvalidateRootView) {
   // TODO: Construct a real AutomationManagerAura rather than using this
   // observer to simulate it.
-  TestAXEventObserver observer;
+  AXAuraObjCache cache;
+  TestAXEventObserver observer(&cache);
   std::unique_ptr<Widget> widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -226,8 +230,8 @@ TEST_F(ViewAccessibilityTest, LayoutCalledInvalidateRootView) {
   // During the destruction of parent, OnBlur will be called and change the
   // visibility to false.
   parent->SetVisible(true);
-  AXAuraObjCache* ax = AXAuraObjCache::GetInstance();
-  ax->GetOrCreate(widget.get());
+
+  cache.GetOrCreate(widget.get());
 }
 #endif
 

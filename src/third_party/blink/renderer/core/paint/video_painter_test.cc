@@ -33,6 +33,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
     client_->ReadyStateChanged();
     layer_ = cc::Layer::Create();
     layer_->SetIsDrawable(true);
+    layer_->SetHitTestable(true);
     client_->SetCcLayer(layer_.get());
     return LoadTiming::kImmediate;
   }

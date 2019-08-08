@@ -9,7 +9,7 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/model/app_list_view_state.h"
+#include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/pagination_model.h"
 #include "ash/app_list/views/app_list_item_view.h"
@@ -17,6 +17,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram_macros.h"
@@ -96,15 +97,11 @@ SearchResultTileItemView::SearchResultTileItemView(
   icon_->SetVerticalAlignment(views::ImageView::LEADING);
   AddChildView(icon_);
 
-  if (is_play_store_app_search_enabled_ ||
-      app_list_features::IsAppShortcutSearchEnabled() ||
-      is_app_reinstall_recommendation_enabled_) {
-    badge_ = new views::ImageView;
-    badge_->set_can_process_events_within_subtree(false);
-    badge_->SetVerticalAlignment(views::ImageView::LEADING);
-    badge_->SetVisible(false);
-    AddChildView(badge_);
-  }
+  badge_ = new views::ImageView;
+  badge_->set_can_process_events_within_subtree(false);
+  badge_->SetVerticalAlignment(views::ImageView::LEADING);
+  badge_->SetVisible(false);
+  AddChildView(badge_);
 
   title_ = new views::Label;
   title_->SetAutoColorReadabilityEnabled(false);
@@ -366,11 +363,12 @@ void SearchResultTileItemView::OnGetContextMenuModel(
   anchor_rect.ClampToCenteredSize(AppListConfig::instance().grid_focus_size());
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
-      result()->id(), this, source_type, this, GetAppType(),
+      result()->id(), GetWidget(), source_type, this, GetAppType(),
       base::BindOnce(&SearchResultTileItemView::OnMenuClosed,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      view_delegate_->GetSearchModel()->tablet_mode());
   context_menu_->Build(std::move(menu));
-  context_menu_->Run(anchor_rect, views::MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT,
+  context_menu_->Run(anchor_rect, views::MenuAnchorPosition::kBubbleRight,
                      views::MenuRunner::HAS_MNEMONICS |
                          views::MenuRunner::USE_TOUCHABLE_LAYOUT |
                          views::MenuRunner::CONTEXT_MENU |
@@ -385,7 +383,8 @@ void SearchResultTileItemView::OnMenuClosed() {
 void SearchResultTileItemView::ExecuteCommand(int command_id, int event_flags) {
   if (result()) {
     view_delegate_->SearchResultContextMenuItemSelected(
-        result()->id(), command_id, event_flags);
+        result()->id(), command_id, event_flags,
+        ash::mojom::AppListLaunchType::kAppSearchResult);
   }
 }
 
@@ -412,9 +411,6 @@ void SearchResultTileItemView::SetIcon(const gfx::ImageSkia& icon) {
 }
 
 void SearchResultTileItemView::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
-  if (!badge_)
-    return;
-
   if (badge_icon.isNull()) {
     badge_->SetVisible(false);
     return;
@@ -472,17 +468,17 @@ AppListMenuModelAdapter::AppListViewAppType
 SearchResultTileItemView::GetAppType() const {
   if (IsSuggestedAppTile()) {
     if (view_delegate_->GetModel()->state_fullscreen() ==
-        AppListViewState::PEEKING) {
+        ash::mojom::AppListViewState::kPeeking) {
       return AppListMenuModelAdapter::PEEKING_SUGGESTED;
     } else {
       return AppListMenuModelAdapter::FULLSCREEN_SUGGESTED;
     }
   } else {
     if (view_delegate_->GetModel()->state_fullscreen() ==
-        AppListViewState::HALF) {
+        ash::mojom::AppListViewState::kHalf) {
       return AppListMenuModelAdapter::HALF_SEARCH_RESULT;
     } else if (view_delegate_->GetModel()->state_fullscreen() ==
-               AppListViewState::FULLSCREEN_SEARCH) {
+               ash::mojom::AppListViewState::kFullscreenSearch) {
       return AppListMenuModelAdapter::FULLSCREEN_SEARCH_RESULT;
     }
   }
@@ -538,17 +534,15 @@ void SearchResultTileItemView::Layout() {
     icon_rect.set_y(kSearchTileTopPadding);
     icon_->SetBoundsRect(icon_rect);
 
-    if (badge_) {
-      const int badge_icon_dimension =
-          AppListConfig::instance().search_tile_badge_icon_dimension();
-      const int badge_icon_offset =
-          AppListConfig::instance().search_tile_badge_icon_offset();
-      const gfx::Rect badge_rect(
-          icon_rect.right() - badge_icon_dimension + badge_icon_offset,
-          icon_rect.bottom() - badge_icon_dimension + badge_icon_offset,
-          badge_icon_dimension, badge_icon_dimension);
-      badge_->SetBoundsRect(badge_rect);
-    }
+    const int badge_icon_dimension =
+        AppListConfig::instance().search_tile_badge_icon_dimension();
+    const int badge_icon_offset =
+        AppListConfig::instance().search_tile_badge_icon_offset();
+    const gfx::Rect badge_rect(
+        icon_rect.right() - badge_icon_dimension + badge_icon_offset,
+        icon_rect.bottom() - badge_icon_dimension + badge_icon_offset,
+        badge_icon_dimension, badge_icon_dimension);
+    badge_->SetBoundsRect(badge_rect);
 
     rect.set_y(icon_rect.bottom() + kSearchTitleSpacing);
     rect.set_height(title_->GetPreferredSize().height());
@@ -607,16 +601,16 @@ gfx::Size SearchResultTileItemView::CalculatePreferredSize() const {
                    AppListConfig::instance().search_tile_height());
 }
 
-bool SearchResultTileItemView::GetTooltipText(const gfx::Point& p,
-                                              base::string16* tooltip) const {
+base::string16 SearchResultTileItemView::GetTooltipText(
+    const gfx::Point& p) const {
   // Use the label to generate a tooltip, so that it will consider its text
   // truncation in making the tooltip. We do not want the label itself to have a
   // tooltip, so we only temporarily enable it to get the tooltip text from the
   // label, then disable it again.
   title_->SetHandlesTooltips(true);
-  bool handled = title_->GetTooltipText(p, tooltip);
+  base::string16 tooltip = title_->GetTooltipText(p);
   title_->SetHandlesTooltips(false);
-  return handled;
+  return tooltip;
 }
 
 }  // namespace app_list

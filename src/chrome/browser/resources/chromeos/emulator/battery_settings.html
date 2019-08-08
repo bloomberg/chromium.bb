@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
@@ -8,7 +9,6 @@
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="icons.html">
 <link rel="import" href="shared_styles.html">
 
@@ -25,8 +25,8 @@
     </style>
     <div class="layout vertical">
       <div class="element-label">
-        <paper-icon-button icon="device-emulator:battery-charging-full">
-        </paper-icon-button>
+        <cr-icon-button iron-icon="device-emulator:battery-charging-full">
+        </cr-icon-button>
         Power
       </div>
       <label>
@@ -59,7 +59,7 @@
             <td class="centered-cell-label">Role</td>
             <td class="centered-cell-label">Amps</td>
           </tr>
-          <template is="dom-repeat" items="[[powerSourceOptions]]">
+          <template is="dom-repeat" items="{{powerSourceOptions}}">
             <tr>
               <td class="alias-cell">[[item.name]]</td>
               <td class="control-cell">

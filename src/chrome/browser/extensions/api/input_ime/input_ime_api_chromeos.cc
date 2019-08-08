@@ -224,8 +224,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     // There is both a public and private OnFocus event. The private OnFocus
     // event is only for ChromeOS and contains additional information about pen
     // inputs. We ensure that we only trigger one OnFocus event.
-    if (ExtensionHasListener(input_method_private::OnFocus::kEventName) &&
-        base::FeatureList::IsEnabled(features::kEnableStylusVirtualKeyboard)) {
+    if (ExtensionHasListener(input_method_private::OnFocus::kEventName)) {
       input_method_private::InputContext input_context;
       input_context.context_id = context.id;
       input_context.type = input_method_private::ParseInputContextType(

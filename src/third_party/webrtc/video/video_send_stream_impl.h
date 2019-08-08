@@ -40,7 +40,7 @@
 #include "rtc_base/thread_annotations.h"
 #include "rtc_base/weak_ptr.h"
 #include "video/call_stats.h"
-#include "video/encoder_key_frame_callback.h"
+#include "video/encoder_rtcp_feedback.h"
 #include "video/send_delay_stats.h"
 #include "video/send_statistics_proxy.h"
 #include "video/video_send_stream.h"
@@ -97,7 +97,7 @@ class VideoSendStreamImpl : public webrtc::BitrateAllocatorObserver,
   void RegisterProcessThread(ProcessThread* module_process_thread);
   void DeRegisterProcessThread();
 
-  bool DeliverRtcp(const uint8_t* packet, size_t length);
+  void DeliverRtcp(const uint8_t* packet, size_t length);
   void UpdateActiveSimulcastLayers(const std::vector<bool> active_layers);
   void Start();
   void Stop();
@@ -163,6 +163,7 @@ class VideoSendStreamImpl : public webrtc::BitrateAllocatorObserver,
 
   rtc::CriticalSection ivf_writers_crit_;
 
+  bool disable_padding_;
   int max_padding_bitrate_;
   int encoder_min_bitrate_bps_;
   uint32_t encoder_max_bitrate_bps_;
@@ -171,7 +172,7 @@ class VideoSendStreamImpl : public webrtc::BitrateAllocatorObserver,
   bool has_packet_feedback_;
 
   VideoStreamEncoderInterface* const video_stream_encoder_;
-  EncoderKeyFrameCallback encoder_feedback_;
+  EncoderRtcpFeedback encoder_feedback_;
 
   RtcpBandwidthObserver* const bandwidth_observer_;
   RtpVideoSenderInterface* const rtp_video_sender_;

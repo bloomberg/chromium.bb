@@ -166,7 +166,7 @@ class CertificateProviderService : public KeyedService {
   // |extension_to_certificates_| is updated and |callback| is run with the
   // retrieved list of certificates.
   void GetCertificatesFromExtensions(
-      const base::Callback<void(net::ClientCertIdentityList)>& callback);
+      base::OnceCallback<void(net::ClientCertIdentityList)> callback);
 
   // Copies the given certificates into the internal
   // |extension_to_certificates_|. Any previously stored certificates are
@@ -174,7 +174,7 @@ class CertificateProviderService : public KeyedService {
   void UpdateCertificatesAndRun(
       const std::map<std::string, CertificateInfoList>&
           extension_to_certificates,
-      const base::Callback<void(net::ClientCertIdentityList)>& callback);
+      base::OnceCallback<void(net::ClientCertIdentityList)> callback);
 
   // Terminates the certificate request with id |cert_request_id| by ignoring
   // pending replies from extensions. Certificates that were already reported

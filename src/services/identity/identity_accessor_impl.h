@@ -5,6 +5,7 @@
 #ifndef SERVICES_IDENTITY_IDENTITY_ACCESSOR_IMPL_H_
 #define SERVICES_IDENTITY_IDENTITY_ACCESSOR_IMPL_H_
 
+#include <map>
 #include <memory>
 
 #include "base/callback_list.h"
@@ -16,54 +17,36 @@
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 
-class AccountTrackerService;
-
 namespace identity {
 
 class IdentityAccessorImpl : public mojom::IdentityAccessor,
                              public IdentityManager::Observer {
  public:
   static void Create(mojom::IdentityAccessorRequest request,
-                     IdentityManager* identity_manager,
-                     AccountTrackerService* account_tracker);
+                     IdentityManager* identity_manager);
 
   IdentityAccessorImpl(mojom::IdentityAccessorRequest request,
-                       IdentityManager* identity_manager,
-                       AccountTrackerService* account_tracker);
+                       IdentityManager* identity_manager);
   ~IdentityAccessorImpl() override;
 
  private:
-  // Makes an access token request to the IdentityManager on behalf of a
-  // given consumer that has made the request to the Identity Service.
-  class AccessTokenRequest {
-   public:
-    AccessTokenRequest(const std::string& account_id,
-                       const ScopeSet& scopes,
-                       const std::string& consumer_id,
-                       GetAccessTokenCallback consumer_callback,
-                       IdentityAccessorImpl* manager);
-    ~AccessTokenRequest();
+  // Map of outstanding access token requests.
+  using AccessTokenFetchers =
+      std::map<base::UnguessableToken, std::unique_ptr<AccessTokenFetcher>>;
 
-   private:
-    // Invoked after access token request completes (successful or not).
-    // Completes the pending access token request by calling back the consumer.
-    void OnTokenRequestCompleted(GoogleServiceAuthError error,
-                                 AccessTokenInfo access_token_info);
-
-    std::unique_ptr<AccessTokenFetcher> access_token_fetcher_;
-    GetAccessTokenCallback consumer_callback_;
-    IdentityAccessorImpl* manager_;
-  };
-  using AccessTokenRequests =
-      std::map<AccessTokenRequest*, std::unique_ptr<AccessTokenRequest>>;
+  // Invoked after access token request completes (successful or not).
+  // Completes the pending access token request by calling back the consumer.
+  void OnTokenRequestCompleted(
+      base::UnguessableToken callback_id,
+      scoped_refptr<base::RefCountedData<bool>> is_callback_done,
+      GetAccessTokenCallback consumer_callback,
+      GoogleServiceAuthError error,
+      AccessTokenInfo access_token_info);
 
   // mojom::IdentityAccessor:
   void GetPrimaryAccountInfo(GetPrimaryAccountInfoCallback callback) override;
   void GetPrimaryAccountWhenAvailable(
       GetPrimaryAccountWhenAvailableCallback callback) override;
-  void GetAccountInfoFromGaiaId(
-      const std::string& gaia_id,
-      GetAccountInfoFromGaiaIdCallback callback) override;
   void GetAccessToken(const std::string& account_id,
                       const ScopeSet& scopes,
                       const std::string& consumer_id,
@@ -78,11 +61,8 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
   // corresponding to |account_id|.
   void OnAccountStateChange(const std::string& account_id);
 
-  // Deletes |request|.
-  void AccessTokenRequestCompleted(AccessTokenRequest* request);
-
   // Gets the current state of the account represented by |account_info|.
-  AccountState GetStateOfAccount(const AccountInfo& account_info);
+  AccountState GetStateOfAccount(const CoreAccountInfo& account_info);
 
   // Called when |binding_| hits a connection error. Destroys this instance,
   // since it's no longer needed.
@@ -90,10 +70,9 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
 
   mojo::Binding<mojom::IdentityAccessor> binding_;
   IdentityManager* identity_manager_;
-  AccountTrackerService* account_tracker_;
 
   // The set of pending requests for access tokens.
-  AccessTokenRequests access_token_requests_;
+  AccessTokenFetchers access_token_fetchers_;
 
   // List of callbacks that will be notified when the primary account is
   // available.

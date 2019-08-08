@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
@@ -126,7 +125,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
 
   // Correspond to _result_ in
   // https://html.spec.whatwg.org/C/#internal-module-script-graph-fetching-procedure
-  TraceWrapperMember<ModuleScript> result_;
+  Member<ModuleScript> result_;
 
   bool found_parse_error_ = false;
 

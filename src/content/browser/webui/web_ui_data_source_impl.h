@@ -40,8 +40,10 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   void SetJsonPath(base::StringPiece path) override;
   void AddResourcePath(base::StringPiece path, int resource_id) override;
   void SetDefaultResource(int resource_id) override;
-  void SetRequestFilter(
-      const WebUIDataSource::HandleRequestCallback& callback) override;
+  void SetRequestFilter(const WebUIDataSource::ShouldHandleRequestCallback&
+                            should_handle_request_callback,
+                        const WebUIDataSource::HandleRequestCallback&
+                            handle_request_callback) override;
   void DisableReplaceExistingSource() override;
   void DisableContentSecurityPolicy() override;
   void OverrideContentSecurityPolicyScriptSrc(const std::string& data) override;
@@ -112,6 +114,8 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   // to |load_time_flags_| if the usage is reduced to storing flags only).
   base::DictionaryValue localized_strings_;
   WebUIDataSource::HandleRequestCallback filter_callback_;
+  WebUIDataSource::ShouldHandleRequestCallback should_handle_request_callback_;
+
   bool add_csp_;
   bool script_src_set_;
   std::string script_src_;

@@ -4,10 +4,12 @@
 
 #include "components/sync/engine_impl/non_blocking_type_commit_contribution.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
-#include "base/sha1.h"
+#include "base/hash/sha1.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/hash_util.h"
@@ -50,23 +52,23 @@ TEST(NonBlockingTypeCommitContributionTest, PopulateCommitProtoDefault) {
   base::Time modification_time =
       creation_time + base::TimeDelta::FromSeconds(1);
 
-  EntityData data;
+  auto data = std::make_unique<syncer::EntityData>();
 
-  data.client_tag_hash = kTag;
-  data.specifics = GeneratePreferenceSpecifics(kTag, kValue);
+  data->client_tag_hash = kTag;
+  data->specifics = GeneratePreferenceSpecifics(kTag, kValue);
 
   // These fields are not really used for much, but we set them anyway
   // to make this item look more realistic.
-  data.creation_time = creation_time;
-  data.modification_time = modification_time;
-  data.non_unique_name = "Name:";
+  data->creation_time = creation_time;
+  data->modification_time = modification_time;
+  data->non_unique_name = "Name:";
 
   CommitRequestData request_data;
-  request_data.entity = data.PassToPtr();
   request_data.sequence_number = 2;
   request_data.base_version = kBaseVersion;
-  base::Base64Encode(base::SHA1HashString(data.specifics.SerializeAsString()),
+  base::Base64Encode(base::SHA1HashString(data->specifics.SerializeAsString()),
                      &request_data.specifics_hash);
+  request_data.entity = std::move(data);
 
   SyncEntity entity;
   NonBlockingTypeCommitContribution::PopulateCommitProto(request_data, &entity);
@@ -93,28 +95,28 @@ TEST(NonBlockingTypeCommitContributionTest, PopulateCommitProtoBookmark) {
   base::Time modification_time =
       creation_time + base::TimeDelta::FromSeconds(1);
 
-  EntityData data;
+  auto data = std::make_unique<syncer::EntityData>();
 
-  data.id = "bookmark";
-  data.specifics = GenerateBookmarkSpecifics(kURL, kTitle);
+  data->id = "bookmark";
+  data->specifics = GenerateBookmarkSpecifics(kURL, kTitle);
 
   // These fields are not really used for much, but we set them anyway
   // to make this item look more realistic.
-  data.creation_time = creation_time;
-  data.modification_time = modification_time;
-  data.non_unique_name = "Name:";
-  data.parent_id = "ParentOf:";
-  data.is_folder = true;
+  data->creation_time = creation_time;
+  data->modification_time = modification_time;
+  data->non_unique_name = "Name:";
+  data->parent_id = "ParentOf:";
+  data->is_folder = true;
   syncer::UniquePosition uniquePosition = syncer::UniquePosition::FromInt64(
       10, syncer::UniquePosition::RandomSuffix());
-  data.unique_position = uniquePosition.ToProto();
+  data->unique_position = uniquePosition.ToProto();
 
   CommitRequestData request_data;
-  request_data.entity = data.PassToPtr();
   request_data.sequence_number = 2;
   request_data.base_version = kBaseVersion;
-  base::Base64Encode(base::SHA1HashString(data.specifics.SerializeAsString()),
+  base::Base64Encode(base::SHA1HashString(data->specifics.SerializeAsString()),
                      &request_data.specifics_hash);
+  request_data.entity = std::move(data);
 
   SyncEntity entity;
   NonBlockingTypeCommitContribution::PopulateCommitProto(request_data, &entity);
@@ -143,21 +145,21 @@ TEST(NonBlockingTypeCommitContributionTest,
   const std::string kSignonRealm = "signon_realm";
   const int64_t kBaseVersion = 7;
 
-  EntityData data;
-  data.client_tag_hash = kTag;
+  auto data = std::make_unique<syncer::EntityData>();
+  data->client_tag_hash = kTag;
   sync_pb::PasswordSpecificsData* password_data =
-      data.specifics.mutable_password()->mutable_client_only_encrypted_data();
+      data->specifics.mutable_password()->mutable_client_only_encrypted_data();
   password_data->set_signon_realm(kSignonRealm);
 
-  data.specifics.mutable_password()->mutable_unencrypted_metadata()->set_url(
+  data->specifics.mutable_password()->mutable_unencrypted_metadata()->set_url(
       kMetadataUrl);
 
-  CommitRequestData request_data;
-  request_data.entity = data.PassToPtr();
-  request_data.sequence_number = 2;
-  request_data.base_version = kBaseVersion;
-  base::Base64Encode(base::SHA1HashString(data.specifics.SerializeAsString()),
-                     &request_data.specifics_hash);
+  auto request_data = std::make_unique<CommitRequestData>();
+  request_data->sequence_number = 2;
+  request_data->base_version = kBaseVersion;
+  base::Base64Encode(base::SHA1HashString(data->specifics.SerializeAsString()),
+                     &request_data->specifics_hash);
+  request_data->entity = std::move(data);
 
   base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
   DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
@@ -166,8 +168,10 @@ TEST(NonBlockingTypeCommitContributionTest,
   Cryptographer cryptographer(&fake_encryptor);
   cryptographer.AddKey({KeyDerivationParams::CreateForPbkdf2(), "dummy"});
 
+  CommitRequestDataList requests_data;
+  requests_data.push_back(std::move(request_data));
   NonBlockingTypeCommitContribution contribution(
-      PASSWORDS, sync_pb::DataTypeContext(), {request_data},
+      PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
       /*worker=*/nullptr, &cryptographer, PassphraseType::IMPLICIT_PASSPHRASE,
       &debug_info_emitter,
       /*only_commit_specifics=*/false);
@@ -203,21 +207,21 @@ TEST(NonBlockingTypeCommitContributionTest,
   const std::string kSignonRealm = "signon_realm";
   const int64_t kBaseVersion = 7;
 
-  EntityData data;
-  data.client_tag_hash = kTag;
+  auto data = std::make_unique<syncer::EntityData>();
+  data->client_tag_hash = kTag;
   sync_pb::PasswordSpecificsData* password_data =
-      data.specifics.mutable_password()->mutable_client_only_encrypted_data();
+      data->specifics.mutable_password()->mutable_client_only_encrypted_data();
   password_data->set_signon_realm(kSignonRealm);
 
-  data.specifics.mutable_password()->mutable_unencrypted_metadata()->set_url(
+  data->specifics.mutable_password()->mutable_unencrypted_metadata()->set_url(
       kMetadataUrl);
 
-  CommitRequestData request_data;
-  request_data.entity = data.PassToPtr();
-  request_data.sequence_number = 2;
-  request_data.base_version = kBaseVersion;
-  base::Base64Encode(base::SHA1HashString(data.specifics.SerializeAsString()),
-                     &request_data.specifics_hash);
+  auto request_data = std::make_unique<CommitRequestData>();
+  request_data->sequence_number = 2;
+  request_data->base_version = kBaseVersion;
+  base::Base64Encode(base::SHA1HashString(data->specifics.SerializeAsString()),
+                     &request_data->specifics_hash);
+  request_data->entity = std::move(data);
 
   base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
   DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
@@ -226,8 +230,10 @@ TEST(NonBlockingTypeCommitContributionTest,
   Cryptographer cryptographer(&fake_encryptor);
   cryptographer.AddKey({KeyDerivationParams::CreateForPbkdf2(), "dummy"});
 
+  CommitRequestDataList requests_data;
+  requests_data.push_back(std::move(request_data));
   NonBlockingTypeCommitContribution contribution(
-      PASSWORDS, sync_pb::DataTypeContext(), {request_data},
+      PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
       /*worker=*/nullptr, &cryptographer, PassphraseType::CUSTOM_PASSPHRASE,
       &debug_info_emitter,
       /*only_commit_specifics=*/false);

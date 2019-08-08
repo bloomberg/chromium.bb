@@ -41,6 +41,11 @@ constexpr int32_t kDefaultAudioReportInterval = 5000;
 
 RtpRtcp::Configuration::Configuration() = default;
 
+std::unique_ptr<RtpRtcp> RtpRtcp::Create(const Configuration& configuration) {
+  RTC_DCHECK(configuration.clock);
+  return absl::make_unique<ModuleRtpRtcpImpl>(configuration);
+}
+
 RtpRtcp* RtpRtcp::CreateRtpRtcp(const RtpRtcp::Configuration& configuration) {
   if (configuration.clock) {
     return new ModuleRtpRtcpImpl(configuration);
@@ -69,6 +74,7 @@ ModuleRtpRtcpImpl::ModuleRtpRtcpImpl(const Configuration& configuration)
                      configuration.rtcp_packet_type_counter_observer,
                      configuration.bandwidth_callback,
                      configuration.intra_frame_callback,
+                     configuration.rtcp_loss_notification_observer,
                      configuration.transport_feedback_callback,
                      configuration.bitrate_allocation_observer,
                      configuration.rtcp_report_interval_ms > 0
@@ -77,12 +83,10 @@ ModuleRtpRtcpImpl::ModuleRtpRtcpImpl(const Configuration& configuration)
                                                 : kDefaultVideoReportInterval),
                      this),
       clock_(configuration.clock),
-      keepalive_config_(configuration.keepalive_config),
       last_bitrate_process_time_(clock_->TimeInMilliseconds()),
       last_rtt_process_time_(clock_->TimeInMilliseconds()),
       next_process_time_(clock_->TimeInMilliseconds() +
                          kRtpRtcpMaxIdleTimeProcessMs),
-      next_keepalive_time_(-1),
       packet_overhead_(28),  // IPV4 UDP.
       nack_last_time_sent_full_ms_(0),
       nack_last_seq_number_sent_(0),
@@ -111,16 +115,9 @@ ModuleRtpRtcpImpl::ModuleRtpRtcpImpl(const Configuration& configuration)
         configuration.extmap_allow_mixed,
         configuration.field_trials ? *configuration.field_trials
                                    : default_trials));
-    if (configuration.audio) {
-      audio_ = absl::make_unique<RTPSenderAudio>(clock_, rtp_sender_.get());
-    }
+
     // Make sure rtcp sender use same timestamp offset as rtp sender.
     rtcp_sender_.SetTimestampOffset(rtp_sender_->TimestampOffset());
-
-    if (keepalive_config_.timeout_interval_ms != -1) {
-      next_keepalive_time_ =
-          clock_->TimeInMilliseconds() + keepalive_config_.timeout_interval_ms;
-    }
   }
 
   // Set default packet size limit.
@@ -150,20 +147,6 @@ void ModuleRtpRtcpImpl::Process() {
       last_bitrate_process_time_ = now;
       next_process_time_ =
           std::min(next_process_time_, now + kRtpRtcpBitrateProcessTimeMs);
-    }
-    if (keepalive_config_.timeout_interval_ms > 0 &&
-        now >= next_keepalive_time_) {
-      int64_t last_send_time_ms = rtp_sender_->LastTimestampTimeMs();
-      // If no packet has been sent, |last_send_time_ms| will be 0, and so the
-      // keep-alive will be triggered as expected.
-      if (now >= last_send_time_ms + keepalive_config_.timeout_interval_ms) {
-        rtp_sender_->SendKeepAlive(keepalive_config_.payload_type);
-        next_keepalive_time_ = now + keepalive_config_.timeout_interval_ms;
-      } else {
-        next_keepalive_time_ =
-            last_send_time_ms + keepalive_config_.timeout_interval_ms;
-      }
-      next_process_time_ = std::min(next_process_time_, next_keepalive_time_);
     }
   }
 
@@ -263,17 +246,6 @@ absl::optional<uint32_t> ModuleRtpRtcpImpl::FlexfecSsrc() const {
 void ModuleRtpRtcpImpl::IncomingRtcpPacket(const uint8_t* rtcp_packet,
                                            const size_t length) {
   rtcp_receiver_.IncomingPacket(rtcp_packet, length);
-}
-
-void ModuleRtpRtcpImpl::RegisterAudioSendPayload(int payload_type,
-                                                 absl::string_view payload_name,
-                                                 int frequency,
-                                                 int channels,
-                                                 int rate) {
-  RTC_DCHECK(audio_);
-  rtcp_sender_.SetRtpClockRate(payload_type, frequency);
-  RTC_CHECK_EQ(0, audio_->RegisterAudioPayload(payload_name, payload_type,
-                                               frequency, channels, rate));
 }
 
 void ModuleRtpRtcpImpl::RegisterSendPayloadFrequency(int payload_type,
@@ -418,30 +390,6 @@ bool ModuleRtpRtcpImpl::SendingMedia() const {
 void ModuleRtpRtcpImpl::SetAsPartOfAllocation(bool part_of_allocation) {
   RTC_CHECK(rtp_sender_);
   rtp_sender_->SetAsPartOfAllocation(part_of_allocation);
-}
-
-bool ModuleRtpRtcpImpl::SendOutgoingData(
-    FrameType frame_type,
-    int8_t payload_type,
-    uint32_t time_stamp,
-    int64_t capture_time_ms,
-    const uint8_t* payload_data,
-    size_t payload_size,
-    const RTPFragmentationHeader* fragmentation,
-    const RTPVideoHeader* rtp_video_header,
-    uint32_t* transport_frame_id_out) {
-  OnSendingRtpFrame(time_stamp, capture_time_ms, payload_type,
-                    kVideoFrameKey == frame_type);
-
-  const uint32_t rtp_timestamp = time_stamp + rtp_sender_->TimestampOffset();
-  if (transport_frame_id_out)
-    *transport_frame_id_out = rtp_timestamp;
-
-  RTC_DCHECK(audio_);
-  RTC_DCHECK(fragmentation == nullptr);
-
-  return audio_->SendAudio(frame_type, payload_type, rtp_timestamp,
-                           payload_data, payload_size);
 }
 
 bool ModuleRtpRtcpImpl::OnSendingRtpFrame(uint32_t timestamp,
@@ -594,6 +542,8 @@ int32_t ModuleRtpRtcpImpl::DataCountersRTP(size_t* bytes_sent,
   rtp_sender_->GetDataCounters(&rtp_stats, &rtx_stats);
 
   if (bytes_sent) {
+    // TODO(http://crbug.com/webrtc/10525): Bytes sent should only include
+    // payload bytes, not header and padding bytes.
     *bytes_sent = rtp_stats.transmitted.payload_bytes +
                   rtp_stats.transmitted.padding_bytes +
                   rtp_stats.transmitted.header_bytes +
@@ -780,17 +730,6 @@ RtcpStatisticsCallback* ModuleRtpRtcpImpl::GetRtcpStatisticsCallback() {
 bool ModuleRtpRtcpImpl::SendFeedbackPacket(
     const rtcp::TransportFeedback& packet) {
   return rtcp_sender_.SendFeedbackPacket(packet);
-}
-
-// Send a TelephoneEvent tone using RFC 2833 (4733).
-int32_t ModuleRtpRtcpImpl::SendTelephoneEventOutband(const uint8_t key,
-                                                     const uint16_t time_ms,
-                                                     const uint8_t level) {
-  return audio_ ? audio_->SendTelephoneEvent(key, time_ms, level) : -1;
-}
-
-int32_t ModuleRtpRtcpImpl::SetAudioLevel(const uint8_t level_d_bov) {
-  return audio_ ? audio_->SetAudioLevel(level_d_bov) : -1;
 }
 
 int32_t ModuleRtpRtcpImpl::SetKeyFrameRequestMethod(

@@ -52,6 +52,9 @@ class CONTENT_EXPORT WebContentsAndroid
   base::android::ScopedJavaLocalRef<jobject> GetMainFrame(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj) const;
+  base::android::ScopedJavaLocalRef<jobject> GetFocusedFrame(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj) const;
   base::android::ScopedJavaLocalRef<jstring> GetTitle(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj) const;
@@ -151,6 +154,7 @@ class CONTENT_EXPORT WebContentsAndroid
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jobj);
 
+  // No theme color is represented by SK_ColorTRANSPARENT.
   jint GetThemeColor(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
 
@@ -176,6 +180,11 @@ class CONTENT_EXPORT WebContentsAndroid
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& overscroll_refresh_handler);
+
+  void SetSpatialNavigationDisabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      bool disabled);
 
   // Relay the access from Java layer to RWHV::CopyFromSurface() through JNI.
   void WriteContentBitmapToDisk(

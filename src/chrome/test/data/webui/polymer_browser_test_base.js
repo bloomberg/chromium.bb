@@ -86,13 +86,6 @@ PolymerTest.prototype = {
         throw e;
       }
     };
-
-    // Import Polymer before running tests.
-    suiteSetup(function() {
-      if (!window.Polymer) {
-        return PolymerTest.importHtml('chrome://resources/html/polymer.html');
-      }
-    });
   },
 
   /** @override */

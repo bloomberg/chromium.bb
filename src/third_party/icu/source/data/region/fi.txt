@@ -183,7 +183,7 @@ fi{
         MF{"Saint-Martin"}
         MG{"Madagaskar"}
         MH{"Marshallinsaaret"}
-        MK{"EJT Makedonia"}
+        MK{"Pohjois-Makedonia"}
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
@@ -307,5 +307,5 @@ fi{
         CZ{"Tšekin tasavalta"}
         TL{"Timor-Leste"}
     }
-    Version{"2.1.44.91"}
+    Version{"2.1.48.42"}
 }

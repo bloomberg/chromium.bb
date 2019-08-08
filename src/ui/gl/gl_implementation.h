@@ -39,10 +39,11 @@ enum GLImplementation {
 
 struct GL_EXPORT GLWindowSystemBindingInfo {
   GLWindowSystemBindingInfo();
+  ~GLWindowSystemBindingInfo();
   std::string vendor;
   std::string version;
   std::string extensions;
-  bool direct_rendering;
+  std::string direct_rendering_version;
 };
 
 using GLFunctionPointerType = void (*)();

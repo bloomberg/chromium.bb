@@ -151,6 +151,14 @@ def wasm_llvm(c):
   c.revisions['src'] = 'origin/master'
 
 @config_ctx()
+def emscripten_releases(c):
+  s = c.solutions.add()
+  s.name = 'emscripten_releases'
+  s.url = ChromiumGitURL(c, 'emscripten-releases.git')
+  m = c.got_revision_mapping
+  m['emscripten_releases'] = 'got_revision'
+
+@config_ctx()
 def gyp(c):
   s = c.solutions.add()
   s.name = 'gyp'
@@ -411,6 +419,13 @@ def angle(c):
   soln = c.solutions.add()
   soln.name = 'angle'
   soln.url = 'https://chromium.googlesource.com/angle/angle.git'
+  # Standalone developer angle builds want the angle checkout in the same
+  # directory the .gclient file is in.  Bots want it in a directory called
+  # 'angle'.  To make both cases work, the angle DEPS file pulls deps and runs
+  # hooks relative to the variable "root" which is set to . by default and
+  # then to 'angle' in the recipes here:
+  soln.custom_vars = {'angle_root': 'angle'}
+  c.got_revision_mapping['angle'] = 'got_revision'
 
 @config_ctx()
 def dawn(c):
@@ -426,3 +441,10 @@ def celab(c):
   soln.name = 'cel'
   soln.url = 'https://chromium.googlesource.com/enterprise/cel.git'
   c.got_revision_mapping['cel'] = 'got_revision'
+
+@config_ctx()
+def openscreen(c):
+  s = c.solutions.add()
+  s.name = 'openscreen'
+  s.url = 'https://chromium.googlesource.com/openscreen'
+  c.got_revision_mapping['openscreen'] = 'got_revision'

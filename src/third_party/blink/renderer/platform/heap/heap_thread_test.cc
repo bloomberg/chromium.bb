@@ -7,10 +7,12 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 namespace heap_thread_test {
@@ -68,6 +70,8 @@ class Object : public GarbageCollected<Object> {
 };
 
 class AlternatingThreadTester {
+  STACK_ALLOCATED();
+
  public:
   void Test() {
     MutexLocker locker(ActiveThreadMutex());
@@ -206,10 +210,6 @@ TEST(HeapDeathTest, MarkingSameThreadCheck) {
 class DestructorLockingObject
     : public GarbageCollectedFinalized<DestructorLockingObject> {
  public:
-  static DestructorLockingObject* Create() {
-    return MakeGarbageCollected<DestructorLockingObject>();
-  }
-
   DestructorLockingObject() = default;
   virtual ~DestructorLockingObject() { ++destructor_calls_; }
 
@@ -248,13 +248,13 @@ class CrossThreadWeakPersistentTester : public AlternatingThreadTester {
 
   void WorkerThreadMain() override {
     // Step 2: Create an object and store the pointer.
-    object_ = DestructorLockingObject::Create();
+    object_ = MakeGarbageCollected<DestructorLockingObject>();
     SwitchToMainThread();
 
     // Step 4: Run a GC.
     ThreadState::Current()->CollectGarbage(
         BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-        BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+        BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGCForTesting);
     SwitchToMainThread();
   }
 

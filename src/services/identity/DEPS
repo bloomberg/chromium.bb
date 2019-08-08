@@ -1,9 +1,9 @@
 include_rules = [
+  "+components/image_fetcher/core/fake_image_decoder.h",
   "+components/prefs/pref_service.h",
   "+components/signin/core/browser/account_info.h",
   "+components/signin/core/browser/account_tracker_service.h",
   "+components/signin/core/browser/device_id_helper.h",
-  "+components/signin/core/browser/test_image_decoder.h",
   "+components/signin/core/browser/fake_profile_oauth2_token_service.h",
   "+components/signin/core/browser/fake_signin_manager.h",
   "+components/signin/core/browser/profile_oauth2_token_service.h",

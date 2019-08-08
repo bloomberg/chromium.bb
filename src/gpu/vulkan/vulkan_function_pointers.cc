@@ -303,11 +303,6 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkGetAndroidHardwareBufferPropertiesANDROIDFn)
     return false;
 
-  vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
-      vkGetDeviceProcAddrFn(vk_device, "vkImportSemaphoreFdKHR"));
-  if (!vkImportSemaphoreFdKHRFn)
-    return false;
-
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -317,6 +312,11 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkGetSemaphoreFdKHRFn)
     return false;
 
+  vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkImportSemaphoreFdKHR"));
+  if (!vkImportSemaphoreFdKHRFn)
+    return false;
+
 #endif
 
 #if defined(OS_LINUX)
@@ -324,6 +324,50 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   vkGetMemoryFdKHRFn = reinterpret_cast<PFN_vkGetMemoryFdKHR>(
       vkGetDeviceProcAddrFn(vk_device, "vkGetMemoryFdKHR"));
   if (!vkGetMemoryFdKHRFn)
+    return false;
+
+#endif
+
+#if defined(OS_FUCHSIA)
+
+  vkImportSemaphoreZirconHandleFUCHSIAFn =
+      reinterpret_cast<PFN_vkImportSemaphoreZirconHandleFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkImportSemaphoreZirconHandleFUCHSIA"));
+  if (!vkImportSemaphoreZirconHandleFUCHSIAFn)
+    return false;
+
+  vkGetSemaphoreZirconHandleFUCHSIAFn =
+      reinterpret_cast<PFN_vkGetSemaphoreZirconHandleFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkGetSemaphoreZirconHandleFUCHSIA"));
+  if (!vkGetSemaphoreZirconHandleFUCHSIAFn)
+    return false;
+
+  vkCreateBufferCollectionFUCHSIAFn =
+      reinterpret_cast<PFN_vkCreateBufferCollectionFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device, "vkCreateBufferCollectionFUCHSIA"));
+  if (!vkCreateBufferCollectionFUCHSIAFn)
+    return false;
+
+  vkSetBufferCollectionConstraintsFUCHSIAFn =
+      reinterpret_cast<PFN_vkSetBufferCollectionConstraintsFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkSetBufferCollectionConstraintsFUCHSIA"));
+  if (!vkSetBufferCollectionConstraintsFUCHSIAFn)
+    return false;
+
+  vkGetBufferCollectionPropertiesFUCHSIAFn =
+      reinterpret_cast<PFN_vkGetBufferCollectionPropertiesFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkGetBufferCollectionPropertiesFUCHSIA"));
+  if (!vkGetBufferCollectionPropertiesFUCHSIAFn)
+    return false;
+
+  vkDestroyBufferCollectionFUCHSIAFn =
+      reinterpret_cast<PFN_vkDestroyBufferCollectionFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device, "vkDestroyBufferCollectionFUCHSIA"));
+  if (!vkDestroyBufferCollectionFUCHSIAFn)
     return false;
 
 #endif

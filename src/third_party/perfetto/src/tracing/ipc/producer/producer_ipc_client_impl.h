@@ -66,10 +66,13 @@ class ProducerIPCClientImpl : public TracingService::ProducerEndpoint,
   void RegisterTraceWriter(uint32_t writer_id, uint32_t target_buffer) override;
   void UnregisterTraceWriter(uint32_t writer_id) override;
   void CommitData(const CommitDataRequest&, CommitDataCallback) override;
+  void NotifyDataSourceStarted(DataSourceInstanceID) override;
   void NotifyDataSourceStopped(DataSourceInstanceID) override;
+  void ActivateTriggers(const std::vector<std::string>&) override;
 
   std::unique_ptr<TraceWriter> CreateTraceWriter(
       BufferID target_buffer) override;
+  SharedMemoryArbiter* GetInProcessShmemArbiter() override;
   void NotifyFlushComplete(FlushRequestID) override;
   SharedMemory* shared_memory() const override;
   size_t shared_buffer_page_size_kb() const override;

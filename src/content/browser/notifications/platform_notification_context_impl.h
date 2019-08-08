@@ -18,14 +18,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "content/browser/notifications/notification_database.h"
 #include "content/browser/notifications/notification_id_generator.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/platform_notification_context.h"
-#include "third_party/blink/public/platform/modules/notifications/notification_service.mojom.h"
+#include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 
 class GURL;
 
@@ -95,10 +94,13 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   void DeleteNotificationData(const std::string& notification_id,
                               const GURL& origin,
                               DeleteResultCallback callback) override;
+  void DeleteAllNotificationDataForBlockedOrigins(
+      DeleteAllResultCallback callback) override;
   void ReadAllNotificationDataForServiceWorkerRegistration(
       const GURL& origin,
       int64_t service_worker_registration_id,
       ReadAllResultCallback callback) override;
+  void TriggerNotifications() override;
 
   // ServiceWorkerContextCoreObserver implementation.
   void OnRegistrationDeleted(int64_t registration_id,
@@ -116,16 +118,14 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
 
   using InitializeResultCallback = base::OnceCallback<void(bool)>;
 
+  using ReadAllOriginsResultCallback =
+      base::OnceCallback<void(bool /* success */,
+                              std::set<GURL> /* origins */)>;
+
   // Initializes the database if necessary. |callback| will be invoked on the
   // |task_runner_| thread. If everything is available, |callback| will be
   // called with true, otherwise it will be called with false.
   void LazyInitialize(InitializeResultCallback callback);
-
-  // Schedules a job to run at |timestamp| and call TriggerNotifications.
-  void ScheduleTrigger(base::Time timestamp);
-
-  // Trigger all pending notifications.
-  void TriggerNotifications();
 
   // Marks this notification as shown and displays it.
   void DoTriggerNotification(const NotificationDatabaseData& database_data);
@@ -208,6 +208,27 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
                                 DeleteResultCallback callback,
                                 bool initialized);
 
+  // Actually reads all notification origins from the database. Must only be
+  // called on the |task_runner_| thread. |callback| will be invoked on the UI
+  // thread when the operation has completed.
+  void DoReadAllNotificationOrigins(ReadAllOriginsResultCallback callback,
+                                    bool initialized);
+
+  // Checks permissions for all |origins| via PermissionController and deletes
+  // all notifications for origins that do not have granted permissions. Must be
+  // called on the UI thread. |callback| will be invoked on the UI thread when
+  // the operation has completed.
+  void CheckPermissionsAndDeleteBlocked(DeleteAllResultCallback callback,
+                                        bool success,
+                                        std::set<GURL> origins);
+
+  // Actually deletes the notification information from the database. Must only
+  // be called on the |task_runner_| thread. |callback| will be invoked on the
+  // UI thread when the operation has completed.
+  void DoDeleteAllNotificationDataForOrigins(std::set<GURL> origins,
+                                             DeleteAllResultCallback callback,
+                                             bool initialized);
+
   void OnStorageWipedInitialized(bool initialized);
 
   // Deletes all notifications associated with |service_worker_registration_id|
@@ -238,9 +259,6 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   std::unique_ptr<NotificationDatabase> database_;
 
   NotificationIdGenerator notification_id_generator_;
-
-  // Triggers pending notifications, set by ScheduleTrigger.
-  base::OneShotTimer trigger_timer_;
 
   // Keeps track of the next trigger timestamp.
   base::Optional<base::Time> next_trigger_;

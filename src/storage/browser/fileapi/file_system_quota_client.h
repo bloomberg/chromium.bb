@@ -36,9 +36,7 @@ class FileSystemContext;
 class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaClient
     : public storage::QuotaClient {
  public:
-  FileSystemQuotaClient(
-      FileSystemContext* file_system_context,
-      bool is_incognito);
+  FileSystemQuotaClient(FileSystemContext* file_system_context);
   ~FileSystemQuotaClient() override;
 
   // QuotaClient methods.
@@ -63,8 +61,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaClient
   base::SequencedTaskRunner* file_task_runner() const;
 
   scoped_refptr<FileSystemContext> file_system_context_;
-
-  bool is_incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaClient);
 };

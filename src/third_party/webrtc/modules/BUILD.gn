@@ -51,7 +51,8 @@ rtc_source_set("module_api") {
     ":module_api_public",
     ":module_fec_api",
     "..:webrtc_common",
-    "../api:libjingle_peerconnection_api",
+    "../api:rtp_headers",
+    "../api/video:video_frame_type",
     "../modules/rtp_rtcp:rtp_video_header",
     "../rtc_base:safe_conversions",
     "../rtc_base/system:rtc_export",
@@ -258,10 +259,6 @@ if (rtc_include_tests) {
 
     if (rtc_desktop_capture_supported) {
       deps += [ "desktop_capture:desktop_capture_unittests" ]
-    }
-
-    if (!build_with_mozilla) {
-      deps += [ "video_capture" ]
     }
 
     data = modules_unittests_resources

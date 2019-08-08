@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -40,7 +41,9 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     const NGLinkStorage* buffer_;
   };
 
-  virtual ChildLinkList Children() const = 0;
+  ChildLinkList Children() const {
+    return ChildLinkList(num_children_, buffer_);
+  }
 
   void AddOutlineRectsForNormalChildren(Vector<LayoutRect>* outline_rects,
                                         const LayoutPoint& additional_offset,
@@ -60,14 +63,18 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
                               NGFragmentType,
                               unsigned sub_type);
 
+  // Because flexible arrays need to be the last member in a class, the actual
+  // storage is in the subclass and we just keep a pointer to it here.
+  const NGLinkStorage* buffer_;
   wtf_size_t num_children_;
 };
 
-DEFINE_TYPE_CASTS(NGPhysicalContainerFragment,
-                  NGPhysicalFragment,
-                  fragment,
-                  fragment->IsContainer(),
-                  fragment.IsContainer());
+template <>
+struct DowncastTraits<NGPhysicalContainerFragment> {
+  static bool AllowFrom(const NGPhysicalFragment& fragment) {
+    return fragment.IsContainer();
+  }
+};
 
 }  // namespace blink
 

@@ -69,30 +69,33 @@ class FlexItem {
   DISALLOW_NEW();
 
  public:
-  // flex_base_content_size includes scrollbar width but not border or padding.
-  // min_max_sizes is the min and max size in the main axis direction.
+  // Parameters:
+  // - |flex_base_content_size| does not include border/scrollbar/padding.
+  // - |min_max_sizes| is the resolved min and max size properties in the
+  //   main axis direction (not intrinsic widths). It does not include
+  //   border/scrollbar/padding.
   FlexItem(LayoutBox*,
            LayoutUnit flex_base_content_size,
            MinMaxSize min_max_sizes,
-           LayoutUnit main_axis_border_and_padding,
+           LayoutUnit main_axis_border_scrollbar_padding,
            LayoutUnit main_axis_margin);
 
   LayoutUnit HypotheticalMainAxisMarginBoxSize() const {
-    return hypothetical_main_content_size + main_axis_border_and_padding +
+    return hypothetical_main_content_size + main_axis_border_scrollbar_padding +
            main_axis_margin;
   }
 
   LayoutUnit FlexBaseMarginBoxSize() const {
-    return flex_base_content_size + main_axis_border_and_padding +
+    return flex_base_content_size + main_axis_border_scrollbar_padding +
            main_axis_margin;
   }
 
   LayoutUnit FlexedBorderBoxSize() const {
-    return flexed_content_size + main_axis_border_and_padding;
+    return flexed_content_size + main_axis_border_scrollbar_padding;
   }
 
   LayoutUnit FlexedMarginBoxSize() const {
-    return flexed_content_size + main_axis_border_and_padding +
+    return flexed_content_size + main_axis_border_scrollbar_padding +
            main_axis_margin;
   }
 
@@ -129,7 +132,7 @@ class FlexItem {
   const LayoutUnit flex_base_content_size;
   const MinMaxSize min_max_sizes;
   const LayoutUnit hypothetical_main_content_size;
-  const LayoutUnit main_axis_border_and_padding;
+  const LayoutUnit main_axis_border_scrollbar_padding;
   const LayoutUnit main_axis_margin;
   LayoutUnit flexed_content_size;
 
@@ -314,7 +317,19 @@ class FlexLayoutAlgorithm {
 
   bool ShouldApplyMinSizeAutoForChild(const LayoutBox& child) const;
 
+  // Returns the intrinsic size of this box in the block direction. Call this
+  // after all flex lines have been created and processed (ie. after the
+  // ComputeLineItemsPosition stage).
+  // For a column flexbox, this will return the max across all flex lines of
+  // the length of the line, minus any added spacing due to justification.
+  // For row flexboxes, this returns the bottom (block axis) of the last flex
+  // line. In both cases, border/padding is not included.
   LayoutUnit IntrinsicContentBlockSize() const;
+
+  // Positions flex lines by modifying FlexLine::cross_axis_offset, and
+  // FlexItem::desired_position. When lines stretch, also modifies
+  // FlexLine::cross_axis_extent.
+  void AlignFlexLines(LayoutUnit cross_axis_content_extent);
 
   static TransformedWritingMode GetTransformedWritingMode(const ComputedStyle&);
 

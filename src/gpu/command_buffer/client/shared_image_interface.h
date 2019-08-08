@@ -34,8 +34,8 @@ class SharedImageInterface {
   // API(s) the image will be used with.
   // Returns a mailbox that can be imported into said APIs using their
   // corresponding shared image functions (e.g.
-  // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM) or (deprecated)
-  // mailbox functions (e.g.  RasterInterface::CreateAndConsumeTexture or
+  // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM or
+  // RasterInterface::CopySubTexture) or (deprecated) mailbox functions (e.g.
   // GLES2Interface::CreateAndConsumeTextureCHROMIUM).
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
@@ -59,12 +59,15 @@ class SharedImageInterface {
   // |usage| is a combination of |SharedImageUsage| bits that describes which
   // API(s) the image will be used with. Format and size are derived from the
   // GpuMemoryBuffer. |gpu_memory_buffer_manager| is the manager that created
-  // |gpu_memory_buffer|. If valid, |color_space| will be applied to the shared
+  // |gpu_memory_buffer|. If the |gpu_memory_buffer| was created on the client
+  // side (for NATIVE_PIXMAP or ANDROID_HARDWARE_BUFFER types only), without a
+  // GpuMemoryBufferManager, |gpu_memory_buffer_manager| can be nullptr.
+  // If valid, |color_space| will be applied to the shared
   // image (possibly overwriting the one set on the GpuMemoryBuffer).
   // Returns a mailbox that can be imported into said APIs using their
   // corresponding shared image functions (e.g.
-  // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM) or (deprecated)
-  // mailbox functions (e.g.  RasterInterface::CreateAndConsumeTexture or
+  // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM or
+  // RasterInterface::CopySubTexture) or (deprecated) mailbox functions (e.g.
   // GLES2Interface::CreateAndConsumeTextureCHROMIUM).
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
@@ -90,6 +93,10 @@ class SharedImageInterface {
   // Generates an unverified SyncToken that is released after all previous
   // commands on this interface have executed on the service side.
   virtual SyncToken GenUnverifiedSyncToken() = 0;
+
+  // Generates a verified SyncToken that is released after all previous
+  // commands on this interface have executed on the service side.
+  virtual SyncToken GenVerifiedSyncToken() = 0;
 };
 
 }  // namespace gpu

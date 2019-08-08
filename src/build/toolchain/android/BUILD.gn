@@ -75,6 +75,12 @@ android_clang_toolchain("android_clang_x86") {
   binary_prefix = "i686-linux-android"
   toolchain_args = {
     current_cpu = "x86"
+
+    # We lack the libclang_rt.profile library for x86 and x86_64, so we cannot
+    # link any binaries that are generated with coverage instrumentation.
+    # Therefore we need to turn off 'use_clang_coverage' for this toolchain.
+    # TODO(crbug.com/865376)
+    use_clang_coverage = false
   }
 }
 
@@ -105,6 +111,12 @@ android_clang_toolchain("android_clang_x64") {
   binary_prefix = "x86_64-linux-android"
   toolchain_args = {
     current_cpu = "x64"
+
+    # We lack the libclang_rt.profile library for x86 and x86_64, so we cannot
+    # link any binaries that are generated with coverage instrumentation.
+    # Therefore we need to turn off 'use_clang_coverage' for this toolchain.
+    # TODO(crbug.com/865376)
+    use_clang_coverage = false
   }
 }
 

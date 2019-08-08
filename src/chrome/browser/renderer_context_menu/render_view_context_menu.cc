@@ -39,6 +39,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -53,6 +54,7 @@
 #include "chrome/browser/renderer_context_menu/spelling_menu_observer.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -177,7 +179,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/window_pin_type.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/intent_helper/open_with_menu.h"
 #include "chrome/browser/chromeos/arc/intent_helper/start_smart_selection_action_menu.h"
@@ -355,10 +356,12 @@ const struct UmaEnumCommandIdPair {
     {99, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE},
     {100, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE},
     {101, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS},
+    {102, -1, IDC_SEND_TAB_TO_SELF},
+    {103, -1, IDC_CONTENT_LINK_SEND_TAB_TO_SELF},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in
     // tools/metrics/histograms/enums.xml.
-    {102, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {104, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                    // was added.
 };
 
@@ -879,7 +882,7 @@ void RenderViewContextMenu::InitMenu() {
   // Accessibility label items are appended to all menus when a screen reader
   // is enabled. It can be difficult to open a specific context menu with a
   // screen reader, so this is a UX approved solution.
-  AppendAccessibilityLabelsItems();
+  bool added_accessibility_labels_items = AppendAccessibilityLabelsItems();
 
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_DEVELOPER)) {
@@ -901,6 +904,15 @@ void RenderViewContextMenu::InitMenu() {
   if (index >= 0 &&
       menu_model_.GetTypeAt(index) == ui::MenuModel::TYPE_SEPARATOR) {
     menu_model_.RemoveItemAt(index);
+  }
+
+  // If there is only one item and it is the Accessibility labels item, remove
+  // it. We only show this item when it is not the only item.
+  // Note that the separator added in AppendAccessibilityLabelsItems will not
+  // actually be added if this is the first item in the list, so we don't need
+  // to check for or remove the initial separator.
+  if (added_accessibility_labels_items && menu_model_.GetItemCount() == 1) {
+    menu_model_.RemoveItemAt(0);
   }
 }
 
@@ -1157,6 +1169,18 @@ void RenderViewContextMenu::AppendLinkItems() {
       }
     }
 #endif  // !defined(OS_CHROMEOS)
+
+    if (browser && send_tab_to_self::ShouldOfferFeatureForLink(
+                       browser->tab_strip_model()->GetActiveWebContents(),
+                       params_.link_url)) {
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kShowItem);
+      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+      menu_model_.AddItemWithStringIdAndIcon(IDC_CONTENT_LINK_SEND_TAB_TO_SELF,
+                                             IDS_LINK_MENU_SEND_TAB_TO_SELF,
+                                             *send_tab_to_self::GetImageSkia());
+    }
+
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVELINKAS,
                                     IDS_CONTENT_CONTEXT_SAVELINKAS);
@@ -1351,9 +1375,16 @@ void RenderViewContextMenu::AppendPageItems() {
   menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
   AppendMediaRouterItem();
 
-  if (send_tab_to_self::ShouldOfferFeature(GetBrowser())) {
-    menu_model_.AddItemWithStringId(IDC_SEND_TO_MY_DEVICES,
-                                    IDS_CONTENT_CONTEXT_SEND_TO_MY_DEVICES);
+  if (GetBrowser() &&
+      send_tab_to_self::ShouldOfferFeature(
+          GetBrowser()->tab_strip_model()->GetActiveWebContents())) {
+    send_tab_to_self::RecordSendTabToSelfClickResult(
+        send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kShowItem);
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_.AddItemWithStringIdAndIcon(IDC_SEND_TAB_TO_SELF,
+                                           IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
+                                           *send_tab_to_self::GetImageSkia());
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
   if (TranslateService::IsTranslatableURL(params_.page_url)) {
     std::unique_ptr<translate::TranslatePrefs> prefs(
@@ -1567,7 +1598,7 @@ void RenderViewContextMenu::AppendSpellingSuggestionItems() {
   spelling_suggestions_menu_observer_->InitMenu(params_);
 }
 
-void RenderViewContextMenu::AppendAccessibilityLabelsItems() {
+bool RenderViewContextMenu::AppendAccessibilityLabelsItems() {
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   if (!accessibility_labels_menu_observer_) {
     accessibility_labels_menu_observer_ =
@@ -1575,6 +1606,7 @@ void RenderViewContextMenu::AppendAccessibilityLabelsItems() {
   }
   observers_.AddObserver(accessibility_labels_menu_observer_.get());
   accessibility_labels_menu_observer_->InitMenu(params_);
+  return accessibility_labels_menu_observer_->ShouldShowLabelsItem();
 }
 
 void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
@@ -1632,13 +1664,11 @@ void RenderViewContextMenu::AppendPictureInPictureItem() {
 // Menu delegate functions -----------------------------------------------------
 
 bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
-#if defined(OS_CHROMEOS)
   // Disable context menu in locked fullscreen mode (the menu is not really
   // disabled as the user can still open it, but all the individual context menu
   // entries are disabled / greyed out).
-  if (GetBrowser() && ash::IsWindowTrustedPinned(GetBrowser()->window()))
+  if (GetBrowser() && platform_util::IsBrowserLockedFullscreen(GetBrowser()))
     return false;
-#endif
 
   {
     bool enabled = false;
@@ -1811,8 +1841,13 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_GOTOURL:
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
-    case IDC_SEND_TO_MY_DEVICES:
+    case IDC_SEND_TAB_TO_SELF:
       return true;
+
+    case IDC_CONTENT_LINK_SEND_TAB_TO_SELF:
+      return send_tab_to_self::IsContentRequirementsMet(
+          params_.link_url, GetBrowser()->profile());
+
     case IDC_CHECK_SPELLING_WHILE_TYPING:
       return prefs->GetBoolean(spellcheck::prefs::kSpellCheckEnable);
 
@@ -2025,8 +2060,17 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       embedder_web_contents_->OnSavePage();
       break;
 
-    case IDC_SEND_TO_MY_DEVICES:
-      send_tab_to_self::CreateNewEntry(embedder_web_contents_, GetProfile());
+    case IDC_SEND_TAB_TO_SELF:
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kClickItem);
+      send_tab_to_self::CreateNewEntry(embedder_web_contents_);
+      break;
+
+    case IDC_CONTENT_LINK_SEND_TAB_TO_SELF:
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kClickItem);
+      send_tab_to_self::CreateNewEntry(embedder_web_contents_,
+                                       params_.link_url);
       break;
 
     case IDC_RELOAD:

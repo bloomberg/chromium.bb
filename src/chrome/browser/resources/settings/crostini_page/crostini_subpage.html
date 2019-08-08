@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="crostini_browser_proxy.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
@@ -13,45 +13,33 @@
   <template>
     <style include="settings-shared"></style>
     <div id="crostini-shared-paths" class="settings-box first"
-        actionable on-click="onSharedPathsTap_">
+        on-click="onSharedPathsClick_" actionable>
       <div class="start">$i18n{crostiniSharedPaths}</div>
-      <paper-icon-button-light class="subpage-arrow">
-        <button aria-label="$i18n{crostiniSharedPaths}"></button>
-      </paper-icon-button-light>
+      <cr-icon-button class="subpage-arrow"
+          aria-label="$i18n{crostiniSharedPaths}"></cr-icon-button>
     </div>
     <template is="dom-if" if="[[enableCrostiniUsbDeviceSupport_]]">
       <div id="crostini-shared-usb-devices" class="settings-box"
-          actionable on-click="onSharedUsbDevicesTap_">
+          on-click="onSharedUsbDevicesClick_" actionable>
         <div class="start">$i18n{crostiniSharedUsbDevicesLabel}</div>
-        <paper-icon-button-light class="subpage-arrow">
-          <button aria-label="$i18n{crostiniSharedUsbDevicesLabel}"></button>
-        </paper-icon-button-light>
+        <cr-icon-button class="subpage-arrow"
+            aria-label="$i18n{crostiniSharedUsbDevicesLabel}"></cr-icon-button>
       </div>
     </template>
     <template is="dom-if" if="[[showCrostiniExportImport_]]">
-      <div class="settings-box">$i18n{crostiniExportImportTitle}</div>
-      <div class="list-frame vertical-list">
-        <div id="export" class="list-item">
-          <div class="start secondary">$i18n{crostiniExportLabel}</div>
-          <paper-button on-click="onExportClick_">
-             $i18n{crostiniExport}
-          </paper-button>
-        </div>
-        <div id="import" class="list-item">
-          <div class="start secondary">$i18n{crostiniImportLabel}</div>
-          <paper-button on-click="onImportClick_">
-             $i18n{crostiniImport}
-          </paper-button>
-        </div>
+      <div id="crostini-export-import" class="settings-box"
+          on-click="onExportImportClick_" actionable>
+        <div class="start">$i18n{crostiniExportImportTitle}</div>
+        <cr-icon-button class="subpage-arrow"
+            aria-label="$i18n{crostiniExportImportTitle}"></cr-icon-button>
       </div>
     </template>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">
-      <div id="remove" class="settings-box"
-           actionable on-click="onRemoveTap_">
+      <div id="remove" class="settings-box">
         <div class="start">$i18n{crostiniRemove}</div>
-        <paper-icon-button-light class="subpage-arrow">
-          <button aria-label="$i18n{crostiniRemove}"></button>
-        </paper-icon-button-light>
+        <paper-button on-click="onRemoveClick_">
+           $i18n{crostiniRemoveButton}
+        </paper-button>
       </div>
     </template>
   </template>

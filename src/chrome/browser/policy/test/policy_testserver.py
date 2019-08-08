@@ -58,6 +58,10 @@ Example:
       "token": "abcd-ef01-123123123",
       "username": "admin@example.com"
    },
+   "expected_errors": {
+     "register": 500,
+   }
+   "allow_set_device_attributes" : false,
 }
 
 """
@@ -305,10 +309,16 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         (self.GetUniqueParam('deviceid') is not None and
          len(self.GetUniqueParam('deviceid')) >= 64)):
       return (400, 'Invalid request parameter')
+
+    expected_error = self.GetExpectedError(request_type)
+    if expected_error:
+      return expected_error
+
     if request_type == 'register':
       response = self.ProcessRegister(rmsg.register_request)
     elif request_type == 'certificate_based_register':
-      response = self.ProcessCertBasedRegister(rmsg.register_request)
+      response = self.ProcessCertBasedRegister(
+          rmsg.certificate_based_register_request)
     elif request_type == 'api_authorization':
       response = self.ProcessApiAuthorization(rmsg.service_api_access_request)
     elif request_type == 'unregister':
@@ -401,7 +411,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     is GoogleEnrollmentToken token from an Authorization header. Returns None
     if no token is present.
     """
-    match = re.match('GoogleEnrollmentToken auth=(\\w+)',
+    match = re.match('GoogleEnrollmentToken token=(\\S+)',
                      self.headers.getheader('Authorization', ''))
     if match:
       return match.group(1)
@@ -450,8 +460,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """
     # Unwrap the request
     try:
-      req = self.UnwrapCertificateBasedDeviceRegistrationData(signed_msg)
-    except (Error):
+      req = self.UnwrapCertificateBasedDeviceRegistrationData(
+          signed_msg.signed_request)
+    except (IOError):
       return(400, 'Invalid request')
 
     # TODO(drcrash): Check the certificate itself.
@@ -505,6 +516,12 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Verifies the signature of |msg| and if it is valid, return the
     certificate based device registration data. If not, throws an
     exception.
+
+    Args:
+      msg: SignedData received from the client.
+
+    Returns:
+      CertificateBasedDeviceRegistrationData
     """
     # TODO(drcrash): Verify signature.
     rdata = dm.CertificateBasedDeviceRegistrationData()
@@ -708,8 +725,15 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       A tuple of HTTP status code and response data to send to the client.
     """
     response = dm.DeviceManagementResponse()
+    policy = self.server.GetPolicies()
+    update_allowed = True
+    if ('allow_set_device_attributes' in policy):
+      update_allowed = policy['allow_set_device_attributes']
+
     response.device_attribute_update_permission_response.result = (
-        dm.DeviceAttributeUpdatePermissionResponse.ATTRIBUTE_UPDATE_ALLOWED)
+        dm.DeviceAttributeUpdatePermissionResponse.ATTRIBUTE_UPDATE_ALLOWED
+        if update_allowed else
+        dm.DeviceAttributeUpdatePermissionResponse.ATTRIBUTE_UPDATE_DISALLOWED)
 
     return (200, response)
 
@@ -1208,6 +1232,21 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Helper for logging an ASCII dump of a protobuf message."""
     logging.debug('%s\n%s' % (label, str(msg)))
 
+  def GetExpectedError(self, request):
+    """
+    Returns the preset HTTP error for |request| if it is defined in
+    configuration.
+
+    Returns:
+      A tuple of HTTP status code and response data to send to the client or
+      None if no error was defined.
+    """
+    policy = self.server.GetPolicies()
+    if 'request_errors' in policy:
+      errors = policy['request_errors']
+      if (request in errors) and (errors[request] > 0):
+        return errors[request], 'Preconfigured error'
+    return None
 
 class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
                        testserver_base.StoppableHTTPServer):

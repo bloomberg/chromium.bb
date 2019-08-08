@@ -49,6 +49,7 @@ message DeviceIdType {
     ANDROID_IID_TOKEN = 1;
     IOS_VENDOR_ID = 2;
     WEB_UUID = 3;
+    CHROMOTING_HOST_ID = 6;
   }
 }
 
@@ -134,9 +135,13 @@ message InboxMessage {
     CHROMOTING_MESSAGE = 29;
   }
 
+  enum MessageClass { USER = 0; }
+
   string message_id = 1;
   MessageType message_type = 2;
+  MessageClass message_class = 5;
   Id sender_id = 8;
+  bytes sender_registration_id = 17;
   Id receiver_id = 9;
   bytes message = 12;
 }
@@ -144,10 +149,6 @@ message InboxMessage {
 message ReceiverMessage {
   string message_id = 1;
   Id receiver_id = 2;
-}
-
-message ChromotingMessage {
-  string message = 1;
 }
 
 // Requests and responses
@@ -193,4 +194,39 @@ message AckMessagesRequest {
 
 message AckMessagesResponse {
   ResponseHeader header = 1;
+}
+
+message ReceiveMessagesRequest {
+  RequestHeader header = 1;
+}
+
+message ReceiveMessagesResponse {
+  message Pong {}
+
+  message StartOfBatch { int32 count = 1; }
+
+  message EndOfBatch {}
+
+  message RefreshResult {}
+
+  oneof body {
+    InboxMessage inbox_message = 2;
+    Pong pong = 3;
+    StartOfBatch start_of_batch = 4;
+    EndOfBatch end_of_batch = 5;
+    RefreshResult refresh_result = 6;
+  }
+}
+
+message InboxSendRequest {
+  Id dest_id = 1;
+  repeated bytes dest_registration_ids = 9;
+  InboxMessage message = 2;
+  RequestHeader header = 3;
+  int64 time_to_live = 5;
+}
+
+message InboxSendResponse {
+  ResponseHeader header = 1;
+  int64 timestamp = 2;
 }

@@ -13,6 +13,11 @@
 
 namespace device {
 
+void FidoAuthenticator::GetNextAssertion(
+    FidoAuthenticator::GetAssertionCallback callback) {
+  NOTREACHED();
+}
+
 void FidoAuthenticator::GetTouch(base::OnceCallback<void()> callback) {}
 
 void FidoAuthenticator::GetRetries(
@@ -43,6 +48,20 @@ void FidoAuthenticator::ChangePIN(const std::string& old_pin,
                                   pin::KeyAgreementResponse& peer_key,
                                   SetPINCallback callback) {
   NOTREACHED();
+}
+
+FidoAuthenticator::MakeCredentialPINDisposition
+FidoAuthenticator::WillNeedPINToMakeCredential(
+    const CtapMakeCredentialRequest& request,
+    const FidoRequestHandlerBase::Observer* observer) {
+  return MakeCredentialPINDisposition::kNoPIN;
+}
+
+FidoAuthenticator::GetAssertionPINDisposition
+FidoAuthenticator::WillNeedPINToGetAssertion(
+    const CtapGetAssertionRequest& request,
+    const FidoRequestHandlerBase::Observer* observer) {
+  return GetAssertionPINDisposition::kNoPIN;
 }
 
 void FidoAuthenticator::Reset(ResetCallback callback) {

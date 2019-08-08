@@ -139,10 +139,11 @@ cr.define('ntp', function() {
       newTabView.cardSlider.currentCardValue.navigationDot.classList.add(
           'selected');
 
-      cr.dispatchSimpleEvent(document, 'ntpLoaded', true, true);
       document.documentElement.classList.remove('starting-up');
 
       startTime = Date.now();
+
+      chrome.send('observeThemeChanges');
     });
   }
 

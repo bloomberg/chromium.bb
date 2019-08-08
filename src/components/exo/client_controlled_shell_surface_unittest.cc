@@ -1090,6 +1090,80 @@ TEST_F(ClientControlledShellSurfaceTest, ClientIniatedResize) {
 
 namespace {
 
+// This class is only meant to used by CloseWindowWhenDraggingTest.
+// When a ClientControlledShellSurface is destroyed, its natvie window will be
+// hidden first and at that time its window delegate should have been properly
+// reset.
+class ShellSurfaceWindowObserver : public aura::WindowObserver {
+ public:
+  explicit ShellSurfaceWindowObserver(aura::Window* window)
+      : window_(window),
+        has_delegate_(ash::wm::GetWindowState(window)->HasDelegate()) {
+    window_->AddObserver(this);
+  }
+  ~ShellSurfaceWindowObserver() override {
+    if (window_) {
+      window_->RemoveObserver(this);
+      window_ = nullptr;
+    }
+  }
+
+  bool has_delegate() const { return has_delegate_; }
+
+  // aura::WindowObserver:
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
+    DCHECK_EQ(window_, window);
+
+    if (!visible) {
+      has_delegate_ = ash::wm::GetWindowState(window_)->HasDelegate();
+      window_->RemoveObserver(this);
+      window_ = nullptr;
+    }
+  }
+
+ private:
+  aura::Window* window_;
+  bool has_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWindowObserver);
+};
+
+}  // namespace
+
+// Test that when a shell surface is destroyed during its dragging, its window
+// delegate should be reset properly.
+TEST_F(ClientControlledShellSurfaceTest, CloseWindowWhenDraggingTest) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface());
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  const gfx::Rect original_bounds(0, 0, 256, 256);
+  shell_surface->SetGeometry(original_bounds);
+  shell_surface->set_client_controlled_move_resize(false);
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  // Press on the edge of the window and start dragging.
+  gfx::Point touch_location(256, 150);
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->MoveTouch(touch_location);
+  event_generator->PressTouch();
+
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  EXPECT_TRUE(ash::wm::GetWindowState(window)->is_dragged());
+  auto observer = std::make_unique<ShellSurfaceWindowObserver>(window);
+  EXPECT_TRUE(observer->has_delegate());
+
+  // Destroy the window.
+  shell_surface.reset();
+  EXPECT_FALSE(observer->has_delegate());
+}
+
+namespace {
+
 class ClientControlledShellSurfaceDragTest : public test::ExoTestBase {
  public:
   ClientControlledShellSurfaceDragTest() = default;
@@ -1930,6 +2004,78 @@ TEST_F(ClientControlledShellSurfaceTest, PipWindowDragDoesNotAnimate) {
   EXPECT_EQ(gfx::Rect(18, 18, 256, 256), window->layer()->GetTargetBounds());
   EXPECT_EQ(gfx::Rect(18, 18, 256, 256), window->layer()->bounds());
   resizer->CompleteDrag();
+}
+
+TEST_F(ClientControlledShellSurfaceTest,
+       ExpandingPipInTabletModeEndsSplitView) {
+  EnableTabletMode(true);
+
+  auto* split_view_controller = ash::Shell::Get()->split_view_controller();
+  EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
+
+  // Create a PIP window:
+  const gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface());
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->SetPip();
+  surface->Commit();
+  shell_surface->GetWidget()->Show();
+
+  auto window_left = CreateTestWindow();
+  auto window_right = CreateTestWindow();
+
+  split_view_controller->SnapWindow(
+      window_left.get(), ash::SplitViewController::SnapPosition::LEFT);
+  split_view_controller->SnapWindow(
+      window_right.get(), ash::SplitViewController::SnapPosition::RIGHT);
+  EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
+
+  // Should end split view.
+  shell_surface->SetRestored();
+  surface->Commit();
+  EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
+}
+
+TEST_F(ClientControlledShellSurfaceTest,
+       DismissingPipInTabletModeDoesNotEndSplitView) {
+  EnableTabletMode(true);
+
+  auto* split_view_controller = ash::Shell::Get()->split_view_controller();
+  EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
+
+  // Create a PIP window:
+  const gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface());
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->SetPip();
+  surface->Commit();
+  shell_surface->GetWidget()->Show();
+
+  auto window_left = CreateTestWindow();
+  auto window_right = CreateTestWindow();
+
+  split_view_controller->SnapWindow(
+      window_left.get(), ash::SplitViewController::SnapPosition::LEFT);
+  split_view_controller->SnapWindow(
+      window_right.get(), ash::SplitViewController::SnapPosition::RIGHT);
+  EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
+
+  // Should not end split-view.
+  shell_surface->SetMinimized();
+  surface->Commit();
+  EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
 }
 
 }  // namespace exo

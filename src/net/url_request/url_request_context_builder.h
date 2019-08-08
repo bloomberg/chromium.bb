@@ -39,7 +39,7 @@
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/ssl_config_service.h"
-#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace base {
@@ -58,6 +58,7 @@ class HttpAuthHandlerFactory;
 class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class HttpServerProperties;
+class HostResolverManager;
 class NetworkQualityEstimator;
 class ProxyConfigService;
 class URLRequestContext;
@@ -171,14 +172,6 @@ class NET_EXPORT URLRequestContextBuilder {
     pac_quick_check_enabled_ = pac_quick_check_enabled;
   }
 
-  // Sets policy for sanitizing URLs before passing them to a PAC. Defaults to
-  // ProxyResolutionService::SanitizeUrlPolicy::SAFE. Ignored if
-  // a ProxyResolutionService is set directly.
-  void set_pac_sanitize_url_policy(
-      ProxyResolutionService::SanitizeUrlPolicy pac_sanitize_url_policy) {
-    pac_sanitize_url_policy_ = pac_sanitize_url_policy;
-  }
-
   // Sets the proxy service. If one is not provided, by default, uses system
   // libraries to evaluate PAC scripts, if available (And if not, skips PAC
   // resolution). Subclasses may override CreateProxyResolutionService for
@@ -237,15 +230,30 @@ class NET_EXPORT URLRequestContextBuilder {
   // set their own NetLog::Observers instead.
   void set_net_log(NetLog* net_log) { net_log_ = net_log; }
 
-  // By default host_resolver is constructed with CreateDefaultResolver.
+  // Sets a HostResolver instance to be used instead of default construction.
+  // Should not be used if set_host_resolver_manager(),
+  // set_host_mapping_rules(), or set_host_resolver_factory() are used. On
+  // building the context, will call HostResolver::SetRequestContext, so
+  // |host_resolver| may not already be associated with a context.
   void set_host_resolver(std::unique_ptr<HostResolver> host_resolver);
-  // Allows sharing the HostResolver with other URLRequestContexts. Should not
-  // be used if set_host_resolver() is used. The consumer must ensure the
-  // HostResolver outlives the URLRequestContext returned by the builder.
+
+  // If set to non-empty, the mapping rules will be applied to requests to the
+  // created host resolver. See MappedHostResolver for details. Should not be
+  // used if set_host_resolver() is used.
+  void set_host_mapping_rules(std::string host_mapping_rules);
+
+  // Sets a shared HostResolverManager to be used for created HostResolvers.
+  // Should not be used if set_host_resolver() is used. The consumer must ensure
+  // |manager| outlives the URLRequestContext returned by the builder.
   //
-  // TODO(mmenke): Figure out the cost/benefits of not supporting sharing
-  // HostResolvers between URLRequestContexts. See: https://crbug.com/743251.
-  void set_shared_host_resolver(HostResolver* host_resolver);
+  // TODO(crbug.com/934402): Make this required if set_host_resolver() not
+  // called to force sharing managers when reasonable.
+  void set_host_resolver_manager(HostResolverManager* manager);
+
+  // Sets the factory used for any HostResolverCreation. By default, a default
+  // implementation will be used. Should not be used if set_host_resolver() is
+  // used.
+  void set_host_resolver_factory(HostResolver::Factory* factory);
 
   // Uses BasicNetworkDelegate by default. Note that calling Build will unset
   // any custom delegate in builder, so this must be called each time before
@@ -353,6 +361,8 @@ class NET_EXPORT URLRequestContextBuilder {
       CreateHttpTransactionFactoryCallback
           create_http_network_transaction_factory);
 
+  void set_allow_copy() { allow_copy_ = true; }
+
   // Creates a mostly self-contained URLRequestContext. May only be called once
   // per URLRequestContextBuilder. After this is called, the Builder can be
   // safely destroyed.
@@ -399,11 +409,11 @@ class NET_EXPORT URLRequestContextBuilder {
   base::FilePath transport_security_persister_path_;
   NetLog* net_log_ = nullptr;
   std::unique_ptr<HostResolver> host_resolver_;
-  HostResolver* shared_host_resolver_ = nullptr;
+  std::string host_mapping_rules_;
+  HostResolverManager* host_resolver_manager_ = nullptr;
+  HostResolver::Factory* host_resolver_factory_ = nullptr;
   std::unique_ptr<ProxyConfigService> proxy_config_service_;
   bool pac_quick_check_enabled_ = true;
-  ProxyResolutionService::SanitizeUrlPolicy pac_sanitize_url_policy_ =
-      ProxyResolutionService::SanitizeUrlPolicy::SAFE;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<NetworkDelegate> network_delegate_;
@@ -426,6 +436,7 @@ class NET_EXPORT URLRequestContextBuilder {
   std::unique_ptr<HttpServerProperties> http_server_properties_;
   std::map<std::string, std::unique_ptr<URLRequestJobFactory::ProtocolHandler>>
       protocol_handlers_;
+  bool allow_copy_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextBuilder);
 };

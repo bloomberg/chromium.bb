@@ -139,7 +139,7 @@ File* DataObjectItem::GetAsFile() const {
         mojom::ClipboardBuffer::kStandard);
     std::vector<unsigned char> png_data;
     if (gfx::PNGCodec::FastEncodeBGRASkBitmap(image, false, &png_data)) {
-      std::unique_ptr<BlobData> data = BlobData::Create();
+      auto data = std::make_unique<BlobData>();
       data->SetContentType(kMimeTypeImagePng);
       data->AppendBytes(png_data.data(), png_data.size());
       const uint64_t length = data->length();

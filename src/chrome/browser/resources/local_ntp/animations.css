@@ -49,7 +49,8 @@ button.paper {
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
-  height: 32px;
+  line-height: 1.6;
+  min-height: 32px;
   padding: 0 16px;
   position: relative;
   transition-duration: 200ms;

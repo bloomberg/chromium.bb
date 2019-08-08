@@ -6,11 +6,12 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
@@ -26,10 +27,9 @@
 class DataSaverWebAPIsBrowserTest : public InProcessBrowserTest {
  protected:
   void EnableDataSaver(bool enabled) {
-    PrefService* prefs = browser()->profile()->GetPrefs();
-    prefs->SetBoolean(prefs::kDataSaverEnabled, enabled);
-    // Give the setting notification a chance to propagate.
-    content::RunAllPendingInMessageLoop();
+    data_reduction_proxy::DataReductionProxySettings::
+        SetDataSaverEnabledForTesting(browser()->profile()->GetPrefs(),
+                                      enabled);
   }
 
   void SetUp() override {
@@ -66,6 +66,17 @@ IN_PROC_BROWSER_TEST_F(DataSaverWebAPIsBrowserTest, DataSaverEnabledJS) {
 }
 
 IN_PROC_BROWSER_TEST_F(DataSaverWebAPIsBrowserTest, DataSaverDisabledJS) {
+  EnableDataSaver(false);
+  VerifySaveDataAPI(false);
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverWebAPIsBrowserTest, DataSaverToggleJS) {
+  EnableDataSaver(false);
+  VerifySaveDataAPI(false);
+
+  EnableDataSaver(true);
+  VerifySaveDataAPI(true);
+
   EnableDataSaver(false);
   VerifySaveDataAPI(false);
 }

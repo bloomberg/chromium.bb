@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NAVIGATION_LOADER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -15,7 +16,6 @@
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_response_type.h"
-#include "content/browser/service_worker/service_worker_url_job_wrapper.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -30,35 +30,51 @@ namespace content {
 class ServiceWorkerVersion;
 class ServiceWorkerProviderHost;
 
-// S13nServiceWorker:
 // ServiceWorkerNavigationLoader is the URLLoader used for main resource
 // requests (i.e., navigation and shared worker requests) that (potentially) go
 // through a service worker. This loader is only used for the main resource
 // request; once the response is delivered, the resulting client loads
 // subresources via ServiceWorkerSubresourceLoader.
 //
-// This class works similarly to ServiceWorkerURLRequestJob but with
-// network::mojom::URLLoader instead of URLRequest.
-//
-// This class is owned by the job wrapper until it is bound to a URLLoader
-// request. After it is bound |this| is kept alive until the Mojo connection to
-// this URLLoader is dropped.
+// This class is owned by ServiceWorkerControlleeRequestHandler until it is
+// bound to a URLLoader request. After it is bound |this| is kept alive until
+// the Mojo connection to this URLLoader is dropped.
 class CONTENT_EXPORT ServiceWorkerNavigationLoader
     : public network::mojom::URLLoader {
  public:
-  using Delegate = ServiceWorkerURLJobWrapper::Delegate;
   using ResponseType = ServiceWorkerResponseType;
+
+  class CONTENT_EXPORT Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Returns the ServiceWorkerVersion fetch events for this request job should
+    // be dispatched to. If no appropriate worker can be determined, returns
+    // nullptr and sets |*result| to an appropriate error.
+    virtual ServiceWorkerVersion* GetServiceWorkerVersion(
+        ServiceWorkerMetrics::URLRequestJobResult* result) = 0;
+
+    // Called after dispatching the fetch event to determine if processing of
+    // the request should still continue, or if processing should be aborted.
+    // When false is returned, this sets |*result| to an appropriate error.
+    virtual bool RequestStillValid(
+        ServiceWorkerMetrics::URLRequestJobResult* result) = 0;
+
+    // Called to signal that loading failed, and that the resource being loaded
+    // was a main resource.
+    virtual void MainResourceLoadFailed() = 0;
+  };
 
   // Created by ServiceWorkerControlleeRequestHandler::MaybeCreateLoader
   // when starting to load a main resource.
   //
   // For the navigation case, this job typically works in the following order:
-  // 1. One of the FallbackTo* or ForwardTo* methods are called via
-  //    URLJobWrapper by ServiceWorkerControlleeRequestHandler, which
-  //    determines how the request should be served (e.g. should fallback
-  //    to network or should be sent to the SW). If it decides to fallback
-  //    to the network this will call |loader_callback| with a null
-  //    RequestHandler, which will be then handled by NavigationURLLoaderImpl.
+  // 1. One of the FallbackTo* or ForwardTo* methods are called by
+  //    ServiceWorkerControlleeRequestHandler, which determines how the request
+  //    should be served (e.g. should fallback to network or should be sent to
+  //    the SW). If it decides to fallback to the network this will call
+  //    |loader_callback| with a null RequestHandler, which will be then handled
+  //    by NavigationURLLoaderImpl.
   // 2. If it is decided that the request should be sent to the SW,
   //    this job calls |loader_callback|, passing StartRequest as the
   //    RequestHandler.
@@ -86,7 +102,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
 
   ~ServiceWorkerNavigationLoader() override;
 
-  // Called via URLJobWrapper.
+  // Called via ServiceWorkerControlleeRequestHandler.
   void FallbackToNetwork();
   void ForwardToServiceWorker();
   bool ShouldFallbackToNetwork();
@@ -212,6 +228,21 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   base::WeakPtrFactory<ServiceWorkerNavigationLoader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationLoader);
+};
+
+// Owns a loader and calls DetachedFromRequest() to release it.
+class ServiceWorkerNavigationLoaderWrapper {
+ public:
+  explicit ServiceWorkerNavigationLoaderWrapper(
+      std::unique_ptr<ServiceWorkerNavigationLoader> loader);
+  ~ServiceWorkerNavigationLoaderWrapper();
+
+  ServiceWorkerNavigationLoader* get() { return loader_.get(); }
+
+ private:
+  std::unique_ptr<ServiceWorkerNavigationLoader> loader_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationLoaderWrapper);
 };
 
 }  // namespace content

@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/supports_user_data.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/sessions/core/session_id.h"
 #include "media/mojo/interfaces/mirror_service_remoting.mojom.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
@@ -129,6 +130,7 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
       base::RepeatingCallback<CancelPermissionRequestCallback(
           PermissionResultCallback)>;
   CastRemotingConnector(media_router::MediaRouter* router,
+                        PrefService* pref_service,
                         SessionID tab_id,
                         PermissionRequestCallback request_callback);
 
@@ -197,6 +199,14 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   // Called when any connection error/lost occurs with the MediaRemoter.
   void OnMirrorServiceStopped();
 
+  // Starts observing for changes to the user preference to enable/disable
+  // remoting.
+  void StartObservingPref();
+
+  // Called when the user preference to enable/disable remoting changes. Stops
+  // remoting if necessary.
+  void OnPrefChanged();
+
   media_router::MediaRouter* const media_router_;
 
   const SessionID tab_id_;
@@ -232,6 +242,9 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   // This callback is non-null when a dialog is showing to get user's
   // permission, and is reset when the dialog closes.
   CancelPermissionRequestCallback permission_request_cancel_callback_;
+
+  PrefService* const pref_service_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Produces weak pointers that are only valid for the current remoting
   // session. This is used to cancel any outstanding callbacks when a remoting

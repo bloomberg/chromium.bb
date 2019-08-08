@@ -38,8 +38,13 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/skia/include/core/SkColor.h"
 
+namespace cc {
+class PaintCanvas;
+}
+
 namespace gfx {
 class Point;
+class Rect;
 }
 
 namespace blink {
@@ -177,7 +182,7 @@ class WebView {
   virtual void ClearFocusedElement() = 0;
 
   // Smooth scroll the root layer to |targetX|, |targetY| in |durationMs|.
-  virtual void SmoothScroll(int target_x, int target_y, long duration_ms) {}
+  virtual void SmoothScroll(int target_x, int target_y, uint64_t duration_ms) {}
 
   // Advance the focus of the WebView forward to the next element or to the
   // previous element in the tab sequence (if reverse is true).
@@ -336,7 +341,7 @@ class WebView {
 
   // Returns next unused request identifier which is unique within the
   // parent Page.
-  virtual unsigned long CreateUniqueIdentifierForRequest() = 0;
+  virtual uint64_t CreateUniqueIdentifierForRequest() = 0;
 
   // Developer tools -----------------------------------------------------
 
@@ -369,7 +374,7 @@ class WebView {
 
   // Tells all WebView instances to update the visited link state for the
   // specified hash.
-  BLINK_EXPORT static void UpdateVisitedLinkState(unsigned long long hash);
+  BLINK_EXPORT static void UpdateVisitedLinkState(uint64_t hash);
 
   // Tells all WebView instances to update the visited state for all
   // their links. Use invalidateVisitedLinkHashes to inform that the visitedlink
@@ -456,6 +461,29 @@ class WebView {
   virtual void AddAutoplayFlags(int32_t flags) = 0;
   virtual void ClearAutoplayFlags() = 0;
   virtual int32_t AutoplayFlagsForTest() = 0;
+
+  // Non-composited support -----------------------------------------------
+
+  // Called to paint the rectangular region within the WebView's main frame
+  // onto the specified canvas at (viewport.x, viewport.y). This is to provide
+  // support for non-composited WebViews, and is used to paint into a
+  // PaintCanvas being supplied by another (composited) WebView.
+  //
+  // Before calling PaintContent(), the caller must ensure the lifecycle of the
+  // widget's frame is clean by calling UpdateLifecycle(LifecycleUpdate::All).
+  // It is okay to call paint multiple times once the lifecycle is clean,
+  // assuming no other changes are made to the WebWidget (e.g., once
+  // events are processed, it should be assumed that another call to
+  // UpdateLifecycle is warranted before painting again). Paints starting from
+  // the main LayoutView's property tree state, thus ignoring any transient
+  // transormations (e.g. pinch-zoom, dev tools emulation, etc.).
+  //
+  // The painting will be performed without applying the DevicePixelRatio as
+  // scaling is expected to already be applied to the PaintCanvas by the
+  // composited WebView which supplied the PaintCanvas. The canvas state may
+  // be modified and should be saved before calling this method and restored
+  // after.
+  virtual void PaintContent(cc::PaintCanvas*, const gfx::Rect& viewport) = 0;
 
   // Suspend and resume ---------------------------------------------------
 

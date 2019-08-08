@@ -158,7 +158,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function createBufferSource(source, buffer, analyser) {
         // Create a buffer source. This will need to be recreated every time
-        // we wish to start the audio, see 
+        // we wish to start the audio, see
         // https://developer.mozilla.org/en-US/docs/Web/API/AudioBufferSourceNode
         let bufferSource = audioContext.createBufferSource();
         bufferSource.loop = true;
@@ -264,15 +264,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function initXR() {
         xrButton = new XRDeviceButton({
           onRequestSession: onRequestSession,
-          onEndSession: onEndSession
+          onEndSession: onEndSession,
+          supportedSessionTypes: ['immersive-vr']
         });
         document.querySelector('header').appendChild(xrButton.domElement);
 
         if (navigator.xr) {
-          navigator.xr.supportsSessionMode('immersive-vr').then(() => {
-            xrButton.enabled = true;
-          });
-
           // Load multiple audio sources.
           Promise.all([
             createAudioSource({
@@ -306,7 +303,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             scene.addNode(playButton);
           });
 
-          navigator.xr.requestSession().then(onSessionStarted);
+          navigator.xr.requestSession('inline').then(onSessionStarted);
         } else {
           initFallback();
         }
@@ -333,7 +330,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onRequestSession() {
-        navigator.xr.requestSession({ mode: 'immersive-vr' }).then((session) => {
+        navigator.xr.requestSession('immersive-vr').then((session) => {
           xrButton.setSession(session);
           onSessionStarted(session);
         });
@@ -362,6 +359,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         });
 
         session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).then((refSpace) => {
+          return refSpace;
+        }, (e) => {
+          if (!session.mode.startsWith('immersive')) {
+            // If we're in inline mode, our underlying platform may not support
+            // the stationary reference space, but an identity space is guaranteed.
+            return session.requestReferenceSpace({ type: 'identity' });
+          } else {
+            throw e;
+          }
+        }).then((refSpace) => {
           if (session.mode.startsWith('immersive')) {
             xrImmersiveRefSpace = refSpace;
           } else {
@@ -394,19 +401,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let draggingTransform = mat4.create();
 
       function hitTest(inputSource, frame, refSpace) {
-        let inputPose = frame.getInputPose(inputSource, refSpace);
-        if (!inputPose) {
-          return;
-        }
-
-        if (inputPose.targetRay) {
-          let hitResult = scene.hitTest(inputPose.targetRay)
+        let pose = frame.getPose(inputSource.targetRaySpace, refSpace);
+        if (pose) {
+          let targetRay = new XRRay(pose.transform);
+          let hitResult = scene.hitTest(targetRay)
           if (hitResult) {
             for (let source of audioSources) {
               if (hitResult.node ==  source.node) {
                 draggingSource = source;
                 draggingInput = inputSource;
-                mat4.invert(draggingTransform, inputPose.targetRay.matrix);
+                mat4.invert(draggingTransform, targetRay.matrix);
                 mat4.multiply(draggingTransform, draggingTransform, source.node.matrix);
                 return true;
               }
@@ -444,10 +448,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         scene.updateInputSources(frame, refSpace);
 
         if (draggingSource) {
-          let draggingPose = frame.getInputPose(draggingInput, refSpace);
+          let draggingPose = frame.getPose(draggingInput.targetRaySpace, refSpace);
           if (draggingPose) {
             let pos = draggingSource.position;
-            mat4.multiply(tmpMatrix, draggingPose.targetRay.matrix, draggingTransform);
+            mat4.multiply(tmpMatrix, draggingPose.transform.matrix, draggingTransform);
             vec3.transformMat4(pos, [0, 0, 0], tmpMatrix);
             draggingSource.source.setPosition(pos[0], pos[1], pos[2]);
           }

@@ -33,7 +33,7 @@
 namespace syncer {
 
 class CommitQueue;
-class ProcessorEntityTracker;
+class ProcessorEntity;
 
 // A sync component embedded on the model type's thread that tracks entity
 // metadata in the model store and coordinates communication between sync and
@@ -78,6 +78,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override;
   bool IsTrackingMetadata() override;
   std::string TrackedAccountId() override;
+  std::string TrackedCacheGuid() override;
   void ReportError(const ModelError& error) override;
   base::Optional<ModelError> GetError() const override;
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override;
@@ -90,7 +91,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void OnCommitCompleted(const sync_pb::ModelTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
-                        const UpdateResponseDataList& updates) override;
+                        UpdateResponseDataList updates) override;
 
   // ModelTypeControllerDelegate implementation.
   void OnSyncStarting(const DataTypeActivationRequest& request,
@@ -130,14 +131,19 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
 
   // Helper function to process the update for a single entity. If a local data
   // change is required, it will be added to |entity_changes|. The return value
-  // is the tracker for this entity, or nullptr if the update should be ignored.
-  ProcessorEntityTracker* ProcessUpdate(const UpdateResponseData& update,
-                                        EntityChangeList* entity_changes);
+  // is the tracked entity, or nullptr if the update should be ignored.
+  // |storage_key_to_clear| must not be null and allows the implementation to
+  // indicate that a certain storage key is now obsolete and should be cleared,
+  // which is leveraged in certain conflict resolution scenarios.
+  ProcessorEntity* ProcessUpdate(std::unique_ptr<UpdateResponseData> update,
+                                 EntityChangeList* entity_changes,
+                                 std::string* storage_key_to_clear);
 
   // Resolve a conflict between |update| and the pending commit in |entity|.
   ConflictResolution::Type ResolveConflict(const UpdateResponseData& update,
-                                           ProcessorEntityTracker* entity,
-                                           EntityChangeList* changes);
+                                           ProcessorEntity* entity,
+                                           EntityChangeList* changes,
+                                           std::string* storage_key_to_clear);
 
   // Recommit all entities for encryption except those in |already_updated|.
   void RecommitAllForEncryption(
@@ -155,13 +161,13 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // any server update.
   base::Optional<ModelError> OnFullUpdateReceived(
       const sync_pb::ModelTypeState& type_state,
-      const UpdateResponseDataList& updates);
+      UpdateResponseDataList updates);
 
   // Handle any incremental updates received from the server after being
   // enabled.
   base::Optional<ModelError> OnIncrementalUpdateReceived(
       const sync_pb::ModelTypeState& type_state,
-      const UpdateResponseDataList& updates);
+      UpdateResponseDataList updates);
 
   // ModelTypeSyncBridge::GetData() callback for pending loading data upon
   // GetLocalChanges call.
@@ -170,7 +176,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                            std::unordered_set<std::string> storage_keys_to_load,
                            std::unique_ptr<DataBatch> data_batch);
 
-  // Caches EntityData from the |data_batch| in the entity trackers and checks
+  // Caches EntityData from the |data_batch| in the entity and checks
   // that every entity in |storage_keys_to_load| was successfully loaded (or is
   // not tracked by the processor any more). Reports failed checks to UMA.
   void ConsumeDataBatch(std::unordered_set<std::string> storage_keys_to_load,
@@ -192,26 +198,24 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                                const EntityData& data) const;
 
   // Gets the entity for the given storage key, or null if there isn't one.
-  ProcessorEntityTracker* GetEntityForStorageKey(
-      const std::string& storage_key);
-  const ProcessorEntityTracker* GetEntityForStorageKey(
+  ProcessorEntity* GetEntityForStorageKey(const std::string& storage_key);
+  const ProcessorEntity* GetEntityForStorageKey(
       const std::string& storage_key) const;
 
   // Gets the entity for the given tag hash, or null if there isn't one.
-  ProcessorEntityTracker* GetEntityForTagHash(const std::string& tag_hash);
-  const ProcessorEntityTracker* GetEntityForTagHash(
-      const std::string& tag_hash) const;
+  ProcessorEntity* GetEntityForTagHash(const std::string& tag_hash);
+  const ProcessorEntity* GetEntityForTagHash(const std::string& tag_hash) const;
 
   // Create an entity in the entity map for |storage_key| and return a pointer
   // to it.
   // Requires that no entity for |storage_key| already exists in the map.
-  ProcessorEntityTracker* CreateEntity(const std::string& storage_key,
-                                       const EntityData& data);
+  ProcessorEntity* CreateEntity(const std::string& storage_key,
+                                const EntityData& data);
 
   // Version of the above that generates a tag for |data|.
-  ProcessorEntityTracker* CreateEntity(const EntityData& data);
+  ProcessorEntity* CreateEntity(const EntityData& data);
 
-  // Returns true if all processor entity trackers have non-empty storage keys.
+  // Returns true if all processor entities have non-empty storage keys.
   bool AllStorageKeysPopulated() const;
 
   // Expires entries according to garbage collection directives.
@@ -243,9 +247,9 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void ExpireEntriesByItemLimit(int32_t max_number_of_items,
                                 MetadataChangeList* metadata_changes);
 
-  // Removes entity tracker and clears metadata for entity from
-  // MetadataChangeList.
-  void RemoveEntity(ProcessorEntityTracker* entity,
+  // Removes |entity| and clears metadata for |entity| from
+  // |metadata_change_list|.
+  void RemoveEntity(ProcessorEntity* entity,
                     MetadataChangeList* metadata_change_list);
 
   // Resets the internal state of the processor to the one right after calling
@@ -314,7 +318,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // A map of client tag hash to sync entities known to this processor. This
   // should contain entries and metadata for most everything, although the
   // entities may not always contain model type data/specifics.
-  std::map<std::string, std::unique_ptr<ProcessorEntityTracker>> entities_;
+  std::map<std::string, std::unique_ptr<ProcessorEntity>> entities_;
 
   // The bridge wants to communicate entirely via storage keys that it is free
   // to define and can understand more easily. All of the sync machinery wants

@@ -4,6 +4,7 @@
 
 #include "media/base/video_decoder_config.h"
 
+#include <iomanip>
 #include <vector>
 
 #include "base/logging.h"
@@ -153,7 +154,21 @@ std::string VideoDecoderConfig::AsHumanReadableString() const {
     << natural_size().height() << "]"
     << ", has extra data: " << (extra_data().empty() ? "false" : "true")
     << ", encryption scheme: " << encryption_scheme()
-    << ", rotation: " << VideoRotationToString(video_rotation());
+    << ", rotation: " << VideoRotationToString(video_rotation())
+    << ", color space: " << color_space_info().ToGfxColorSpace().ToString();
+  if (hdr_metadata().has_value()) {
+    s << std::setprecision(4) << ", luminance range: "
+      << hdr_metadata()->mastering_metadata.luminance_min << "-"
+      << hdr_metadata()->mastering_metadata.luminance_max << ", primaries: r("
+      << hdr_metadata()->mastering_metadata.primary_r.x() << ","
+      << hdr_metadata()->mastering_metadata.primary_r.y() << ") g("
+      << hdr_metadata()->mastering_metadata.primary_g.x() << ","
+      << hdr_metadata()->mastering_metadata.primary_g.y() << ") b("
+      << hdr_metadata()->mastering_metadata.primary_b.x() << ","
+      << hdr_metadata()->mastering_metadata.primary_b.y() << ") wp("
+      << hdr_metadata()->mastering_metadata.white_point.x() << ","
+      << hdr_metadata()->mastering_metadata.white_point.y() << ")";
+  }
   return s.str();
 }
 

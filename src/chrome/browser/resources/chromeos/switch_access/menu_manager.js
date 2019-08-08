@@ -15,7 +15,7 @@ class MenuManager {
   constructor(navigationManager, desktop) {
     /**
      * A list of the Menu actions that are currently enabled.
-     * @private {!Array<SAConstants.MenuAction>}
+     * @private {!Array<!SAConstants.MenuAction>}
      */
     this.actions_ = [];
 
@@ -84,18 +84,21 @@ class MenuManager {
       this.menuPanel_.setActions(this.actions_);
     }
 
-    const firstNode =
-        this.menuNode().find({role: chrome.automation.RoleType.BUTTON});
-    if (firstNode) {
-      this.node_ = firstNode;
-      this.updateFocusRing_();
-    }
-
     if (navNode.location) {
       chrome.accessibilityPrivate.setSwitchAccessMenuState(
           true, navNode.location, actions.length);
     } else {
       console.log('Unable to show Switch Access menu.');
+    }
+
+    let firstNode =
+        this.menuNode().find({role: chrome.automation.RoleType.BUTTON});
+    while (firstNode && !this.isActionAvailable_(firstNode.htmlAttributes.id))
+      firstNode = firstNode.nextSibling;
+
+    if (firstNode) {
+      this.node_ = firstNode;
+      this.updateFocusRing_();
     }
   }
 
@@ -237,9 +240,6 @@ class MenuManager {
   getActionsForNode_(node) {
     let actions = [];
 
-    if (SwitchAccessPredicate.isTextInput(node))
-      actions.push(SAConstants.MenuAction.DICTATION);
-
     let scrollableAncestor = node;
     while (!scrollableAncestor.scrollable && scrollableAncestor.parent)
       scrollableAncestor = scrollableAncestor.parent;
@@ -254,41 +254,67 @@ class MenuManager {
       if (scrollableAncestor.scrollY < scrollableAncestor.scrollYMax)
         actions.push(SAConstants.MenuAction.SCROLL_DOWN);
     }
-    const standardActions = /** @type {!Array<SAConstants.MenuAction>} */ (
+    const standardActions = /** @type {!Array<!SAConstants.MenuAction>} */ (
         node.standardActions.filter(
             action => action in SAConstants.MenuAction));
 
     actions = actions.concat(standardActions);
 
+    if (SwitchAccessPredicate.isTextInput(node)) {
+      actions.push(SAConstants.MenuAction.KEYBOARD);
+      actions.push(SAConstants.MenuAction.DICTATION);
+    } else if (actions.length > 0) {
+      actions.push(SAConstants.MenuAction.SELECT);
+    }
+
     if (actions.length === 0)
       return null;
 
-    actions.push(SAConstants.MenuAction.SELECT, SAConstants.MenuAction.OPTIONS);
+    actions.push(SAConstants.MenuAction.OPTIONS);
     return actions;
   }
 
   /**
-   * Receive a message from the Switch Access menu, and perform the appropriate
-   * action.
+   * Verify if a specified action is available in the current menu.
+   * @param {!SAConstants.MenuAction} action
+   * @return {boolean}
    * @private
+   */
+  isActionAvailable_(action) {
+    if (!this.inMenu_)
+      return false;
+    return this.actions_.includes(action);
+  }
+
+  /**
+   * Perform a specified action on the Switch Access menu.
+   * @param {!SAConstants.MenuAction} action
    */
   performAction(action) {
     this.exit();
 
-    if (action === SAConstants.MenuAction.SELECT)
-      this.navigationManager_.selectCurrentNode();
-    else if (action === SAConstants.MenuAction.DICTATION)
-      chrome.accessibilityPrivate.toggleDictation();
-    else if (action === SAConstants.MenuAction.OPTIONS)
-      window.switchAccess.showOptionsPage();
-    else if (
-        action === SAConstants.MenuAction.SCROLL_DOWN ||
-        action === SAConstants.MenuAction.SCROLL_UP ||
-        action === SAConstants.MenuAction.SCROLL_LEFT ||
-        action === SAConstants.MenuAction.SCROLL_RIGHT)
-      this.navigationManager_.scroll(action);
-    else
-      this.navigationManager_.performActionOnCurrentNode(action);
+    switch (action) {
+      case SAConstants.MenuAction.SELECT:
+        this.navigationManager_.selectCurrentNode();
+        break;
+      case SAConstants.MenuAction.KEYBOARD:
+        this.navigationManager_.openKeyboard();
+        break;
+      case SAConstants.MenuAction.DICTATION:
+        chrome.accessibilityPrivate.toggleDictation();
+        break;
+      case SAConstants.MenuAction.OPTIONS:
+        window.switchAccess.showOptionsPage();
+        break;
+      case SAConstants.MenuAction.SCROLL_DOWN:
+      case SAConstants.MenuAction.SCROLL_UP:
+      case SAConstants.MenuAction.SCROLL_LEFT:
+      case SAConstants.MenuAction.SCROLL_RIGHT:
+        this.navigationManager_.scroll(action);
+        break;
+      default:
+        this.navigationManager_.performActionOnCurrentNode(action);
+    }
   }
 
   /**

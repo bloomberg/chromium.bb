@@ -20,7 +20,7 @@
 #include "base/scoped_observer.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "components/account_id/account_id.h"
@@ -99,6 +99,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   void RequestAccessToken();
 
+  // Returns the "actual" hotword status. In addition to the hotword pref, this
+  // method also take power status into account if dsp support is not available
+  // for the device.
+  bool ShouldEnableHotword();
+
   void SetIdentityAccessorForTesting(
       identity::mojom::IdentityAccessorPtr identity_accessor);
 
@@ -130,6 +135,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void OnVoiceInteractionHotwordEnabled(bool enabled) override;
   void OnVoiceInteractionHotwordAlwaysOn(bool always_on) override;
   void OnLocaleChanged(const std::string& locale) override;
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   void UpdateAssistantManagerState();
   void BindAssistantSettingsManager(
@@ -159,8 +165,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void AddAshSessionObserver();
 
   void UpdateListeningState();
-
-  bool ShouldEnableHotword();
 
   service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;

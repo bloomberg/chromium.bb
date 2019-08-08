@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "chrome/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -24,9 +25,17 @@ TEST_F(SearchBouncerTest, ShouldFork) {
   EXPECT_FALSE(bouncer_.ShouldFork(GURL("http://example.com/search?q=foo")));
   EXPECT_FALSE(bouncer_.ShouldFork(GURL("http://example.com/search2#q=foo")));
   EXPECT_TRUE(bouncer_.ShouldFork(GURL("http://example.com/newtab")));
+  EXPECT_TRUE(bouncer_.ShouldFork(GURL("http://example.com/newtab?q=foo")));
+  EXPECT_TRUE(bouncer_.ShouldFork(GURL("http://example.com/newtab#q=foo")));
+  EXPECT_TRUE(
+      bouncer_.ShouldFork(GURL("http://example.com/newtab#q=foo?q=foo")));
 }
 
 TEST_F(SearchBouncerTest, IsNewTabPage) {
   EXPECT_FALSE(bouncer_.IsNewTabPage(GURL("http://example.com/foo")));
   EXPECT_TRUE(bouncer_.IsNewTabPage(GURL("http://example.com/newtab")));
+  EXPECT_TRUE(bouncer_.IsNewTabPage(GURL("http://example.com/newtab?q=foo")));
+  EXPECT_TRUE(bouncer_.IsNewTabPage(GURL("http://example.com/newtab#q=foo")));
+  EXPECT_TRUE(
+      bouncer_.IsNewTabPage(GURL("http://example.com/newtab#q=foo?q=foo")));
 }

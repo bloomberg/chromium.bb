@@ -40,12 +40,12 @@ class BuilderTest(cros_test_lib.MockTestCase):
     results_lib.Results.Record('stage_2', results_lib.Results.SUCCESS)
     fake_db.InsertBuildStage(build_id, 'stage_2',
                              status=constants.BUILDER_STATUS_PASSED)
-    # build stage status for stage_3 is failed but no entry in failureTable
+    # build stage status for stage_3 is in completed status
     fake_db.InsertBuildStage(build_id, 'stage_3',
-                             status=constants.BUILDER_STATUS_FAILED)
-    # build stage status for stage_4 is not in completed status
-    fake_db.InsertBuildStage(build_id, 'stage_4',
                              status=constants.BUILDER_STATUS_INFLIGHT)
+    # build stage status for stage_4 is failed but no entry in failureTable
+    fake_db.InsertBuildStage(build_id, 'stage_4',
+                             status=constants.BUILDER_STATUS_FAILED)
     # no build stage status found for stage_5
 
     stage_objs = []
@@ -64,9 +64,9 @@ class BuilderTest(cros_test_lib.MockTestCase):
       if r.name in ('stage_3', 'stage_4'):
         self.assertEqual(r.prefix, 'stage_prefix')
 
-    for i in range(0, 3):
+    for i in range(0, 4):
       self.assertFalse(fake_db.HasFailureMsgForStage(i))
-    for i in range(3, 6):
+    for i in range(4, 6):
       self.assertTrue(fake_db.HasFailureMsgForStage(i))
 
     self.assertEqual(fake_db.GetBuildStage(0)['status'],

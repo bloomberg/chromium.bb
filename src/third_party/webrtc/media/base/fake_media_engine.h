@@ -267,13 +267,13 @@ class RtpHelper : public Base {
   void set_recv_rtcp_parameters(const RtcpParameters& params) {
     recv_rtcp_parameters_ = params;
   }
-  virtual void OnPacketReceived(rtc::CopyOnWriteBuffer* packet,
+  virtual void OnPacketReceived(rtc::CopyOnWriteBuffer packet,
                                 int64_t packet_time_us) {
-    rtp_packets_.push_back(std::string(packet->data<char>(), packet->size()));
+    rtp_packets_.push_back(std::string(packet.cdata<char>(), packet.size()));
   }
-  virtual void OnRtcpReceived(rtc::CopyOnWriteBuffer* packet,
+  virtual void OnRtcpReceived(rtc::CopyOnWriteBuffer packet,
                               int64_t packet_time_us) {
-    rtcp_packets_.push_back(std::string(packet->data<char>(), packet->size()));
+    rtcp_packets_.push_back(std::string(packet.cdata<char>(), packet.size()));
   }
   virtual void OnReadyToSend(bool ready) { ready_to_send_ = ready; }
 
@@ -546,7 +546,9 @@ class FakeVideoEngine : public VideoEngineInterface {
       webrtc::Call* call,
       const MediaConfig& config,
       const VideoOptions& options,
-      const webrtc::CryptoOptions& crypto_options) override;
+      const webrtc::CryptoOptions& crypto_options,
+      webrtc::VideoBitrateAllocatorFactory* video_bitrate_allocator_factory)
+      override;
   FakeVideoMediaChannel* GetChannel(size_t index);
   void UnregisterChannel(VideoMediaChannel* channel);
   std::vector<VideoCodec> codecs() const override;

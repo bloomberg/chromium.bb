@@ -3,14 +3,38 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
+
+#include "third_party/blink/renderer/modules/gamepad/gamepad.h"
+#include "third_party/blink/renderer/modules/xr/xr_grip_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_space.h"
+#include "third_party/blink/renderer/modules/xr/xr_target_ray_space.h"
 
 namespace blink {
 
 XRInputSource::XRInputSource(XRSession* session, uint32_t source_id)
-    : session_(session), source_id_(source_id) {
+    : session_(session),
+      source_id_(source_id),
+      target_ray_space_(MakeGarbageCollected<XRTargetRaySpace>(session, this)),
+      grip_space_(MakeGarbageCollected<XRGripSpace>(session, this)) {
   SetTargetRayMode(kGaze);
   SetHandedness(kHandNone);
+}
+
+XRSpace* XRInputSource::gripSpace() const {
+  if (target_ray_mode_ == kTrackedPointer) {
+    return grip_space_;
+  }
+
+  return nullptr;
+}
+
+XRSpace* XRInputSource::targetRaySpace() const {
+  return target_ray_space_;
+}
+
+Gamepad* XRInputSource::gamepad() const {
+  return gamepad_;
 }
 
 void XRInputSource::SetTargetRayMode(TargetRayMode target_ray_mode) {
@@ -74,6 +98,9 @@ void XRInputSource::SetPointerTransformMatrix(
 
 void XRInputSource::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);
+  visitor->Trace(target_ray_space_);
+  visitor->Trace(grip_space_);
+  visitor->Trace(gamepad_);
   ScriptWrappable::Trace(visitor);
 }
 

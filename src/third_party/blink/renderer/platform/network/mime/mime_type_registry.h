@@ -64,10 +64,6 @@ class PLATFORM_EXPORT MIMETypeRegistry {
   // Checks to see if a mime type is suitable for being encoded.
   static bool IsSupportedImageMIMETypeForEncoding(const String& mime_type);
 
-  // Checks to see if a mime type is one of the default modern formats supported
-  // when the 'legacy-image-formats' feature is disabled.
-  static bool IsModernImageMIMEType(const String& mime_type);
-
   // Checks to see if a mime type is suitable for being loaded as a JavaScript
   // resource.
   static bool IsSupportedJavaScriptMIMEType(const String& mime_type);
@@ -103,6 +99,16 @@ class PLATFORM_EXPORT MIMETypeRegistry {
 
   // Checks to see if a mime type is suitable for being loaded as a text track.
   static bool IsSupportedTextTrackMIMEType(const String& mime_type);
+
+  // Checks to see if a mime type is an image type with lossy compression, whose
+  // size will be restricted via the 'unoptimized-lossy-images' feature
+  // policy. (JPEG)
+  static bool IsLossyImageMIMEType(const String& mime_type);
+
+  // Checks to see if a mime type is an image type with lossless (or no)
+  // compression, whose size may be restricted via the
+  // 'unoptimized-lossless-images' feature policy. (BMP, GIF, PNG, WEBP)
+  static bool IsLosslessImageMIMEType(const String& mime_type);
 };
 
 }  // namespace blink

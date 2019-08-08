@@ -103,7 +103,7 @@ public class NewTabPageTestUtils {
         AccountManagerFacade.overrideAccountManagerFacadeForTests(fakeAccountManager);
         Account account = AccountManagerFacade.createAccountFromName("test@gmail.com");
         fakeAccountManager.addAccountHolderExplicitly(new AccountHolder.Builder(account).build());
-        assertFalse(AccountManagerFacade.get().isUpdatePending());
+        assertFalse(AccountManagerFacade.get().isUpdatePending().get());
         assertFalse(ChromePreferenceManager.getInstance().readBoolean(
                 ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false));
     }

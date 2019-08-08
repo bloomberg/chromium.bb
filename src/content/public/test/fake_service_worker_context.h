@@ -68,6 +68,11 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
       StartServiceWorkerForNavigationHintCallback callback) override;
   void StopAllServiceWorkersForOrigin(const GURL& origin) override;
   void StopAllServiceWorkers(base::OnceClosure callback) override;
+  void GetAllServiceWorkerRunningInfos(
+      GetAllServiceWorkerRunningInfosCallback callback) override;
+  void GetServiceWorkerRunningInfo(
+      int64_t service_worker_version_id,
+      GetServiceWorkerRunningInfoCallback callback) override;
 
   // Explicitly notify ServiceWorkerContextObservers added to this context.
   void NotifyObserversOnVersionActivated(int64_t version_id, const GURL& scope);

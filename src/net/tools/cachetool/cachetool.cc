@@ -10,15 +10,15 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
+#include "base/hash/md5.h"
 #include "base/logging.h"
-#include "base/md5.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
@@ -678,7 +678,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("cachetool");
+  base::ThreadPool::CreateAndStartWithDefaultParams("cachetool");
 
   base::FilePath cache_path(args[0]);
   std::string cache_backend_type(args[1]);

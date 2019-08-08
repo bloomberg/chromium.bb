@@ -39,11 +39,7 @@ class VectorIconGallery : public View,
         color_input_(new Textfield()),
         file_chooser_(new Textfield()),
         file_go_button_(
-            MdTextButton::Create(this, base::ASCIIToUTF16("Render"))),
-        // 36dp is one of the natural sizes for MD icons, and corresponds
-        // roughly to a 32dp usable area.
-        size_(36),
-        color_(SK_ColorRED) {
+            MdTextButton::Create(this, base::ASCIIToUTF16("Render"))) {
     AddChildView(size_input_);
     AddChildView(color_input_);
 
@@ -78,7 +74,7 @@ class VectorIconGallery : public View,
     color_input_->set_controller(this);
   }
 
-  ~VectorIconGallery() override {}
+  ~VectorIconGallery() override = default;
 
   // TextfieldController implementation.
   void ContentsChanged(Textfield* sender,
@@ -128,8 +124,13 @@ class VectorIconGallery : public View,
       image_view_->SetImage(
           gfx::CreateVectorIconFromSource(contents_, size_, color_));
     }
-    Layout();
+    InvalidateLayout();
   }
+
+  // 36dp is one of the natural sizes for MD icons, and corresponds roughly to a
+  // 32dp usable area.
+  int size_ = 36;
+  SkColor color_ = SK_ColorRED;
 
   ImageView* image_view_;
   View* image_view_container_;
@@ -139,9 +140,6 @@ class VectorIconGallery : public View,
   Button* file_go_button_;
   std::string contents_;
 
-  int size_;
-  SkColor color_;
-
   DISALLOW_COPY_AND_ASSIGN(VectorIconGallery);
 };
 
@@ -149,7 +147,7 @@ class VectorIconGallery : public View,
 
 VectorExample::VectorExample() : ExampleBase("Vector Icon") {}
 
-VectorExample::~VectorExample() {}
+VectorExample::~VectorExample() = default;
 
 void VectorExample::CreateExampleView(View* container) {
   container->SetLayoutManager(std::make_unique<FillLayout>());

@@ -82,7 +82,7 @@ ShadowRoot::~ShadowRoot() = default;
 
 SlotAssignment& ShadowRoot::EnsureSlotAssignment() {
   if (!slot_assignment_)
-    slot_assignment_ = SlotAssignment::Create(*this);
+    slot_assignment_ = MakeGarbageCollected<SlotAssignment>(*this);
   return *slot_assignment_;
 }
 
@@ -230,7 +230,7 @@ void ShadowRoot::ChildrenChanged(const ChildrenChange& change) {
 
 StyleSheetList& ShadowRoot::StyleSheets() {
   if (!style_sheet_list_)
-    SetStyleSheets(StyleSheetList::Create(this));
+    SetStyleSheets(MakeGarbageCollected<StyleSheetList>(this));
   return *style_sheet_list_;
 }
 

@@ -139,6 +139,13 @@ class ShellSurface : public ShellSurfaceBase,
   bool OnPreWidgetCommit() override;
   void OnPostWidgetCommit() override;
 
+  // Set the parent window of this surface.
+  void SetParentWindow(aura::Window* parent);
+
+  // Sets up a transient window manager for this window if it can (i.e. if the
+  // surface has a widget with a parent).
+  void MaybeMakeTransient();
+
   // Asks the client to configure its surface. Optionally, the user can override
   // the behaviour to check for window dragging by setting ends_drag to true.
   void Configure(bool ends_drag = false);

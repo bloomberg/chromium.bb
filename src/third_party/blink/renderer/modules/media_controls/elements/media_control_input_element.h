@@ -43,7 +43,7 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   bool IsDisabled() const override;
 
  protected:
-  MediaControlInputElement(MediaControlsImpl&, MediaControlElementType);
+  MediaControlInputElement(MediaControlsImpl&);
 
   // Returns a string that represents the button for metrics purposes. This
   // will be used as a suffix for histograms.

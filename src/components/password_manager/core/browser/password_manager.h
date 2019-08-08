@@ -117,6 +117,10 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   void OnPasswordFormSubmitted(PasswordManagerDriver* driver,
                                const autofill::PasswordForm& password_form);
 
+  // Handles submitted http auth credentials.
+  void OnPasswordHttpAuthFormSubmitted(
+      const autofill::PasswordForm& password_form);
+
   // Handles a password form being submitted, assumes that submission is
   // successful and does not do any checks on success of submission.
   // For example, this is called if |password_form| was filled
@@ -202,15 +206,13 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   void PresaveGeneratedPassword(PasswordManagerDriver* driver,
                                 const autofill::FormData& form,
                                 const base::string16& generated_password,
-                                const base::string16& generation_element,
-                                bool is_manually_triggered);
+                                const base::string16& generation_element);
 
   // Updates the presaved credential with the generated password when the user
   // types in field with |field_identifier|, which is in form with
   // |form_identifier| and the field value is |field_value|. |driver|
   // corresponds to the form parent frame.
   void UpdateGeneratedPasswordOnUserInput(
-      PasswordManagerDriver* driver,
       const base::string16& form_identifier,
       const base::string16& field_identifier,
       const base::string16& field_value);
@@ -276,10 +278,21 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // the match. If the function is called multiple times, only the form from the
   // last call is provisionally saved. Multiple calls is possible because it is
   // called on any user keystroke. If there is no NewPasswordFormManager that
-  // manages |form|, the new one is created.
-  // Returns manager which manages |form|.
-  NewPasswordFormManager* ProvisionallySaveForm(const autofill::FormData& form,
-                                                PasswordManagerDriver* driver);
+  // manages |form|, the new one is created. Returns manager which manages
+  // |form|.
+  // |is_gaia_with_skip_save_password_form| is true iff this is Gaia form which
+  // should be skipped on saving.
+  // TODO(https://crbug.com/949519): move |is_gaia_with_skip_save_password_form|
+  // from PasswordForm to FormData, and remove it from arguments.
+  NewPasswordFormManager* ProvisionallySaveForm(
+      const autofill::FormData& form,
+      PasswordManagerDriver* driver,
+      bool is_gaia_with_skip_save_password_form);
+
+  // Passes |form| to NewPasswordFormManager that manages it for using it after
+  // detecting submission success for saving.
+  void ProvisionallySaveHttpAuthForm(
+      const autofill::PasswordForm& password_form);
 
   // Returns the best match in |pending_login_managers_| for |form|. May return
   // nullptr if no match exists.
@@ -389,11 +402,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
 
   // The user-visible URL from the last time a password was provisionally saved.
   GURL main_frame_url_;
-
-  const bool is_new_form_parsing_for_saving_enabled_;
-
-  // If true, it turns off using PasswordFormManager in PasswordManager.
-  const bool is_only_new_parser_enabled_;
 
   // True if Credential Management API function store() was called. In this case
   // PasswordManager does not need to show a save/update prompt since

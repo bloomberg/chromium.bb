@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -29,6 +28,7 @@ import org.chromium.chrome.browser.toolbar.top.CustomTabToolbar;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.ExecutionException;
 
@@ -135,12 +135,12 @@ public class CustomTabActivityIncognitoTest {
     }
 
     private int getIncognitoThemeColor() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> ColorUtils.getDefaultThemeColor(mActivity.getResources(), true));
     }
 
     private int getToolbarColor() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(() -> {
+        return TestThreadUtils.runOnUiThreadBlocking(() -> {
             CustomTabToolbar toolbar = mActivity.findViewById(R.id.toolbar);
             return toolbar.getBackground().getColor();
         });

@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chrome/browser/chromeos/login/ui/kiosk_app_menu_updater.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/chromeos/login/ui/oobe_ui_dialog_delegate.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
@@ -50,9 +49,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // Show whitelist check failed error. Happens after user completes online
   // signin but whitelist check fails.
   void ShowWhitelistCheckFailedError();
-
-  // Show unrecoverable cryptohome error dialog.
-  void ShowUnrecoverableCrypthomeErrorDialog();
 
   // Displays detailed error screen for error with ID |error_id|.
   void ShowErrorScreen(LoginDisplay::SigninError error_id);
@@ -120,6 +116,9 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // AuthStatusConsumer:
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;
+  void OnPasswordChangeDetected() override;
+  void OnOldEncryptionDetected(const UserContext& user_context,
+                               bool has_incomplete_migration) override;
 
  private:
   void LoadOobeDialog();
@@ -157,8 +156,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // The account id of the user pod that's being focused.
   AccountId focused_pod_account_id_;
 
-  KioskAppMenuUpdater kiosk_updater_;
-
   // Fetches system information and sends it to the UI over mojo.
   std::unique_ptr<MojoSystemInfoDispatcher> system_info_updater_;
 
@@ -166,10 +163,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // user cancels the Powerwash dialog in the login screen. Set to true on the
   // first OnStartSigninScreen and remains true afterward.
   bool signin_screen_started_ = false;
-
-  // Set if the signin screen initialization was delayed to show a OOBE dialog,
-  // for example to run reset or enable debugging wizard.
-  bool start_delayed_for_oobe_dialog_ = false;
 
   base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_;
 

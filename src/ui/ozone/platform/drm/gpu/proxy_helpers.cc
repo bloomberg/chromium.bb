@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/gpu/proxy_helpers.h"
 
+#include <utility>
+
 #include "base/synchronization/waitable_event.h"
 
 namespace ui {

@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
+#include "third_party/blink/renderer/bindings/modules/v8/blob_or_readable_stream.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fetch/fetch_data_loader.h"
 #include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
@@ -24,20 +25,12 @@ FileSystemWriter::FileSystemWriter(mojom::blink::FileWriterPtr writer)
 
 ScriptPromise FileSystemWriter::write(ScriptState* script_state,
                                       uint64_t position,
-                                      ScriptValue data,
+                                      const BlobOrReadableStream& data,
                                       ExceptionState& exception_state) {
-  v8::Isolate* isolate = script_state->GetIsolate();
-  if (V8Blob::HasInstance(data.V8Value(), isolate)) {
-    Blob* blob = V8Blob::ToImpl(data.V8Value().As<v8::Object>());
-    return WriteBlob(script_state, position, blob);
-  }
-  if (!V8ReadableStream::HasInstance(data.V8Value(), isolate)) {
-    if (!exception_state.HadException())
-      exception_state.ThrowTypeError("data should be a Blob or ReadableStream");
-    return ScriptPromise();
-  }
-  return WriteStream(script_state, position,
-                     V8ReadableStream::ToImpl(data.V8Value().As<v8::Object>()),
+  DCHECK(!data.IsNull());
+  if (data.IsBlob())
+    return WriteBlob(script_state, position, data.GetAsBlob());
+  return WriteStream(script_state, position, data.GetAsReadableStream(),
                      exception_state);
 }
 
@@ -49,7 +42,8 @@ ScriptPromise FileSystemWriter::WriteBlob(ScriptState* script_state,
         script_state,
         DOMException::Create(DOMExceptionCode::kInvalidStateError));
   }
-  pending_operation_ = ScriptPromiseResolver::Create(script_state);
+  pending_operation_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = pending_operation_->Promise();
   writer_->Write(
       position, blob->AsMojoBlob(),
@@ -161,7 +155,8 @@ ScriptPromise FileSystemWriter::WriteStream(ScriptState* script_state,
   stream_loader_ = FetchDataLoader::CreateLoaderAsDataPipe(
       ExecutionContext::From(script_state)
           ->GetTaskRunner(TaskType::kInternalDefault));
-  pending_operation_ = ScriptPromiseResolver::Create(script_state);
+  pending_operation_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = pending_operation_->Promise();
   auto* client = MakeGarbageCollected<StreamWriterClient>(this);
   stream_loader_->Start(consumer, client);
@@ -178,7 +173,8 @@ ScriptPromise FileSystemWriter::truncate(ScriptState* script_state,
         script_state,
         DOMException::Create(DOMExceptionCode::kInvalidStateError));
   }
-  pending_operation_ = ScriptPromiseResolver::Create(script_state);
+  pending_operation_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = pending_operation_->Promise();
   writer_->Truncate(size, WTF::Bind(&FileSystemWriter::TruncateComplete,
                                     WrapPersistent(this)));

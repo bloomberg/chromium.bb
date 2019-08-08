@@ -85,6 +85,11 @@ PaymentRequestDialogView::PaymentRequestDialogView(
     ++number_of_initialization_tasks_;
   }
 
+  if (!request->spec()->IsInitialized()) {
+    request->spec()->AddInitializationObserver(this);
+    ++number_of_initialization_tasks_;
+  }
+
   if (number_of_initialization_tasks_ > 0) {
     ShowProcessingSpinner();
   } else if (observer_for_testing_) {
@@ -477,7 +482,7 @@ gfx::Size PaymentRequestDialogView::CalculatePreferredSize() const {
 }
 
 void PaymentRequestDialogView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   if (being_closed_)
     return;
 

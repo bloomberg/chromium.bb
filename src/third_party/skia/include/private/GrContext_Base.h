@@ -57,7 +57,7 @@ protected:
      */
     const GrContextOptions& options() const { return fOptions; }
 
-    bool explicitlyAllocateGPUResources() const;
+    bool explicitlyAllocateGPUResources() const { return true; }
 
     const GrCaps* caps() const;
     sk_sp<const GrCaps> refCaps() const;

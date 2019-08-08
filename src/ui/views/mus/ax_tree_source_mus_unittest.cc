@@ -59,19 +59,18 @@ class AXTreeSourceMusTest : public ViewsTestBase {
 };
 
 TEST_F(AXTreeSourceMusTest, GetTreeData) {
-  AXAuraObjWrapper* root =
-      AXAuraObjCache::GetInstance()->GetOrCreate(widget_->GetContentsView());
-  AXTreeSourceMus tree(root, ax_tree_id_);
+  AXAuraObjCache cache;
+  AXAuraObjWrapper* root = cache.GetOrCreate(widget_->GetContentsView());
+  AXTreeSourceMus tree(root, ax_tree_id_, &cache);
   ui::AXTreeData tree_data;
   tree.GetTreeData(&tree_data);
   EXPECT_EQ(ax_tree_id_, tree_data.tree_id);
 }
 
 TEST_F(AXTreeSourceMusTest, Serialize) {
-  AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
-  AXAuraObjWrapper* root = cache->GetOrCreate(widget_->GetContentsView());
-
-  AXTreeSourceMus tree(root, ax_tree_id_);
+  AXAuraObjCache cache;
+  AXAuraObjWrapper* root = cache.GetOrCreate(widget_->GetContentsView());
+  AXTreeSourceMus tree(root, ax_tree_id_, &cache);
   EXPECT_EQ(root, tree.GetRoot());
 
   // Serialize the root.
@@ -83,7 +82,7 @@ TEST_F(AXTreeSourceMusTest, Serialize) {
   EXPECT_EQ(-1, node_data.relative_bounds.offset_container_id);
 
   // Serialize a child.
-  tree.SerializeNode(cache->GetOrCreate(label_), &node_data);
+  tree.SerializeNode(cache.GetOrCreate(label_), &node_data);
 
   // Child has relative position with the root as the container.
   EXPECT_EQ(gfx::RectF(1, 1, 111, 111), node_data.relative_bounds.bounds);
@@ -91,11 +90,11 @@ TEST_F(AXTreeSourceMusTest, Serialize) {
 }
 
 TEST_F(AXTreeSourceMusTest, ScaleFactor) {
-  AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
-  AXAuraObjWrapper* root = cache->GetOrCreate(widget_->GetContentsView());
+  AXAuraObjCache cache;
+  AXAuraObjWrapper* root = cache.GetOrCreate(widget_->GetContentsView());
 
   // Simulate serializing a widget on a high-dpi display.
-  AXTreeSourceMus tree(root, ax_tree_id_);
+  AXTreeSourceMus tree(root, ax_tree_id_, &cache);
   tree.set_device_scale_factor(2.f);
 
   // Serialize the root.

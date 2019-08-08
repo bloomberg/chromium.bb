@@ -47,6 +47,10 @@ class SearchBox : public content::RenderFrameObserver,
   // Sends LogEvent to the browser.
   void LogEvent(NTPLoggingEventType event);
 
+  // Sends LogSuggestionEventWithValue to the browser.
+  void LogSuggestionEventWithValue(NTPSuggestionsLoggingEventType event,
+                                   int data);
+
   // Sends LogMostVisitedImpression to the browser.
   void LogMostVisitedImpression(const ntp_tiles::NTPTileImpression& impression);
 
@@ -111,6 +115,9 @@ class SearchBox : public content::RenderFrameObserver,
 
   // Returns true if the most visited items are custom links.
   bool IsCustomLinks() const;
+
+  // Sends ToggleMostVisitedOrCustomLinks to the browser.
+  void ToggleMostVisitedOrCustomLinks();
 
   // Sends AddCustomLink to the browser.
   void AddCustomLink(const GURL& url, const std::string& title);

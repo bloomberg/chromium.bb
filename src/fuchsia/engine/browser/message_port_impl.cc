@@ -16,7 +16,6 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
 #include "fuchsia/base/mem_buffer_util.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
@@ -27,9 +26,9 @@ namespace {
 
 // Converts a message posted to a JS MessagePort to a WebMessage.
 // Returns an unset Optional<> if the message could not be converted.
-base::Optional<chromium::web::WebMessage> FromMojoMessage(
+base::Optional<fuchsia::web::WebMessage> FromMojoMessage(
     mojo::Message message) {
-  chromium::web::WebMessage converted;
+  fuchsia::web::WebMessage converted;
 
   blink::TransferableMessage transferable_message;
   if (!blink::mojom::TransferableMessage::DeserializeFromMessage(
@@ -37,16 +36,14 @@ base::Optional<chromium::web::WebMessage> FromMojoMessage(
     return {};
 
   if (!transferable_message.ports.empty()) {
-    if (transferable_message.ports.size() != 1u) {
-      // TODO(crbug.com/893236): support >1 transferable when fidlc cycle
-      // detection is fixed (FIDL-354).
-      LOG(ERROR) << "FIXME: Request to transfer >1 MessagePort was ignored.";
-      return {};
+    std::vector<fuchsia::web::IncomingTransferable> transferables;
+    for (const blink::MessagePortChannel& port : transferable_message.ports) {
+      fuchsia::web::IncomingTransferable incoming;
+      incoming.set_message_port(
+          MessagePortImpl::FromMojo(port.ReleaseHandle()));
+      transferables.emplace_back(std::move(incoming));
     }
-    converted.incoming_transfer =
-        std::make_unique<chromium::web::IncomingTransferable>();
-    converted.incoming_transfer->set_message_port(MessagePortImpl::FromMojo(
-        transferable_message.ports[0].ReleaseHandle()));
+    converted.set_incoming_transfer(std::move(transferables));
   }
 
   base::string16 data_utf16;
@@ -60,45 +57,13 @@ base::Optional<chromium::web::WebMessage> FromMojoMessage(
     return {};
   base::STLClearObject(&data_utf16);
 
-  converted.data.size = data_utf8.size();
-  zx_status_t status = zx::vmo::create(data_utf8.size(), ZX_VMO_NON_RESIZABLE,
-                                       &converted.data.vmo);
-  if (status != ZX_OK) {
-    ZX_LOG(ERROR, status) << "zx_vmo_create";
+  fuchsia::mem::Buffer data = cr_fuchsia::MemBufferFromString(data_utf8);
+  if (!data.vmo) {
     return {};
   }
 
-  status = converted.data.vmo.write(data_utf8.data(), 0, data_utf8.length());
-  if (status != ZX_OK) {
-    ZX_LOG(ERROR, status) << "zx_vmo_write";
-    return {};
-  }
-
+  converted.set_data(std::move(data));
   return converted;
-}
-
-// Converts a FIDL chromium::web::WebMessage into a MessagePipe message, for
-// sending over Mojo.
-//
-// Returns a null mojo::Message if |message| was invalid.
-mojo::Message FromFidlMessage(chromium::web::WebMessage message) {
-  base::string16 data_utf16;
-  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(message.data, &data_utf16))
-    return mojo::Message();
-
-  // TODO(crbug.com/893236): support >1 transferable when fidlc cycle detection
-  // is fixed (FIDL-354).
-  blink::TransferableMessage transfer_message;
-  if (message.outgoing_transfer) {
-    transfer_message.ports.emplace_back(MessagePortImpl::FromFidl(
-        std::move(message.outgoing_transfer->message_port())));
-  }
-
-  transfer_message.owned_encoded_message =
-      blink::EncodeStringMessage(data_utf16);
-  transfer_message.encoded_message = transfer_message.owned_encoded_message;
-  return blink::mojom::TransferableMessage::SerializeAsMessage(
-      &transfer_message);
 }
 
 }  // namespace
@@ -114,40 +79,65 @@ MessagePortImpl::MessagePortImpl(mojo::ScopedMessagePipeHandle mojo_port)
   binding_.set_error_handler([this](zx_status_t status) {
     ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
         << " MessagePort disconnected.";
-
     OnDisconnected();
   });
 }
 
-MessagePortImpl::~MessagePortImpl() {}
+MessagePortImpl::~MessagePortImpl() = default;
 
 void MessagePortImpl::OnDisconnected() {
   // |connector_| and |binding_| are implicitly unbound.
   delete this;
 }
 
-void MessagePortImpl::PostMessage(chromium::web::WebMessage message,
+void MessagePortImpl::PostMessage(fuchsia::web::WebMessage message,
                                   PostMessageCallback callback) {
-  mojo::Message mojo_message = FromFidlMessage(std::move(message));
-  if (mojo_message.IsNull()) {
-    callback(false);
-    delete this;
+  fuchsia::web::MessagePort_PostMessage_Result result;
+  if (!message.has_data()) {
+    result.set_err(fuchsia::web::FrameError::NO_DATA_IN_MESSAGE);
+    callback(std::move(result));
     return;
   }
+
+  base::string16 data_utf16;
+  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(message.data(), &data_utf16)) {
+    result.set_err(fuchsia::web::FrameError::BUFFER_NOT_UTF8);
+    callback(std::move(result));
+    return;
+  }
+
+  blink::TransferableMessage transfer_message;
+  if (message.has_outgoing_transfer()) {
+    for (fuchsia::web::OutgoingTransferable& outgoing :
+         *message.mutable_outgoing_transfer()) {
+      transfer_message.ports.emplace_back(
+          MessagePortImpl::FromFidl(std::move(outgoing.message_port())));
+    }
+  }
+
+  transfer_message.owned_encoded_message =
+      blink::EncodeStringMessage(data_utf16);
+  transfer_message.encoded_message = transfer_message.owned_encoded_message;
+  mojo::Message mojo_message =
+      blink::mojom::TransferableMessage::SerializeAsMessage(&transfer_message);
+
   CHECK(connector_->Accept(&mojo_message));
-  callback(true);
+  result.set_response(fuchsia::web::MessagePort_PostMessage_Response());
+  callback(std::move(result));
 }
 
-void MessagePortImpl::ReceiveMessage(ReceiveMessageCallback callback) {
+void MessagePortImpl::ReceiveMessage(
+    fuchsia::web::MessagePort::ReceiveMessageCallback callback) {
   pending_client_read_cb_ = std::move(callback);
   MaybeDeliverToClient();
 }
 
 void MessagePortImpl::MaybeDeliverToClient() {
-  // Do nothing if the client hasn't requested a read, or if there's nothing to
-  // read.
-  if (!pending_client_read_cb_ || message_queue_.empty())
+  // Do nothing if the client hasn't requested a read, or if there's nothing
+  // to read.
+  if (!pending_client_read_cb_ || message_queue_.empty()) {
     return;
+  }
 
   base::ResetAndReturn (&pending_client_read_cb_)(
       std::move(message_queue_.front()));
@@ -155,21 +145,20 @@ void MessagePortImpl::MaybeDeliverToClient() {
 }
 
 bool MessagePortImpl::Accept(mojo::Message* message) {
-  base::Optional<chromium::web::WebMessage> message_converted =
+  base::Optional<fuchsia::web::WebMessage> message_converted =
       FromMojoMessage(std::move(*message));
   if (!message_converted) {
     DLOG(ERROR) << "Couldn't decode MessageChannel from Mojo pipe.";
     return false;
   }
-
-  message_queue_.push_back(std::move(message_converted.value()));
+  message_queue_.emplace_back(std::move(message_converted.value()));
   MaybeDeliverToClient();
   return true;
 }
 
 // static
 mojo::ScopedMessagePipeHandle MessagePortImpl::FromFidl(
-    fidl::InterfaceRequest<chromium::web::MessagePort> port) {
+    fidl::InterfaceRequest<fuchsia::web::MessagePort> port) {
   mojo::ScopedMessagePipeHandle client_port;
   mojo::ScopedMessagePipeHandle content_port;
   mojo::CreateMessagePipe(0, &content_port, &client_port);
@@ -181,7 +170,7 @@ mojo::ScopedMessagePipeHandle MessagePortImpl::FromFidl(
 }
 
 // static
-fidl::InterfaceHandle<chromium::web::MessagePort> MessagePortImpl::FromMojo(
+fidl::InterfaceHandle<fuchsia::web::MessagePort> MessagePortImpl::FromMojo(
     mojo::ScopedMessagePipeHandle port) {
   MessagePortImpl* created_port = new MessagePortImpl(std::move(port));
   return created_port->binding_.NewBinding();

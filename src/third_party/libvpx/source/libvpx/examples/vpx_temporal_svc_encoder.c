@@ -30,7 +30,7 @@
 
 #define ROI_MAP 0
 
-#define zero(Dest) memset(&Dest, 0, sizeof(Dest));
+#define zero(Dest) memset(&(Dest), 0, sizeof(Dest));
 
 static const char *exec_name;
 
@@ -725,6 +725,9 @@ int main(int argc, char **argv) {
   speed = (int)strtol(argv[8], NULL, 0);
   if (speed < 0) {
     die("Invalid speed setting: must be positive");
+  }
+  if (strncmp(encoder->name, "vp9", 3) == 0 && speed > 9) {
+    warn("Mapping speed %d to speed 9.\n", speed);
   }
 
   for (i = min_args_base;

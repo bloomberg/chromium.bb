@@ -89,6 +89,32 @@ gfx::PresentationFeedback SanitizePresentationFeedback(
   return feedback;
 }
 
+// Returns the bounds for the largest rect that can be inscribed in a rounded
+// rect.
+gfx::RectF GetOccludingRectForRRectF(const gfx::RRectF& bounds) {
+  if (bounds.IsEmpty())
+    return gfx::RectF();
+  if (bounds.GetType() == gfx::RRectF::Type::kRect)
+    return bounds.rect();
+  gfx::RectF occluding_rect = bounds.rect();
+
+  // Compute the radius for each corner
+  float top_left = bounds.GetCornerRadii(gfx::RRectF::Corner::kUpperLeft).x();
+  float top_right = bounds.GetCornerRadii(gfx::RRectF::Corner::kUpperRight).x();
+  float lower_right =
+      bounds.GetCornerRadii(gfx::RRectF::Corner::kLowerRight).x();
+  float lower_left = bounds.GetCornerRadii(gfx::RRectF::Corner::kLowerLeft).x();
+
+  // Get a bounding rect that does not intersect with the rounding clip.
+  // When a rect has rounded corner with radius r, then the largest rect that
+  // can be inscribed inside it has an inset of |((2 - sqrt(2)) / 2) * radius|.
+  occluding_rect.Inset(std::max(top_left, lower_left) * 0.3f,
+                       std::max(top_left, top_right) * 0.3f,
+                       std::max(top_right, lower_right) * 0.3f,
+                       std::max(lower_right, lower_left) * 0.3f);
+  return occluding_rect;
+}
+
 }  // namespace
 
 Display::Display(
@@ -161,6 +187,9 @@ void Display::Initialize(DisplayClient* client,
   output_surface_->BindToClient(this);
   if (output_surface_->software_device())
     output_surface_->software_device()->BindToClient(this);
+
+  frame_rate_decider_ =
+      std::make_unique<FrameRateDecider>(surface_manager_, this);
 
   InitializeRenderer(enable_shared_images);
 
@@ -314,10 +343,15 @@ void Display::InitializeRenderer(bool enable_shared_images) {
 
   // TODO(jbauman): Outputting an incomplete quad list doesn't work when using
   // overlays.
-  bool output_partial_list = renderer_->use_partial_swap() &&
-                             !output_surface_->GetOverlayCandidateValidator();
+  OverlayCandidateValidator* overlay_validator =
+      output_surface_->GetOverlayCandidateValidator();
+  bool output_partial_list =
+      renderer_->use_partial_swap() && !overlay_validator;
+  bool needs_surface_occluding_damage_rect =
+      overlay_validator && overlay_validator->NeedsSurfaceOccludingDamageRect();
   aggregator_.reset(new SurfaceAggregator(
-      surface_manager_, resource_provider_.get(), output_partial_list));
+      surface_manager_, resource_provider_.get(), output_partial_list,
+      needs_surface_occluding_damage_rect));
   aggregator_->set_output_is_secure(output_is_secure_);
   aggregator_->SetOutputColorSpace(blending_color_space_, device_color_space_);
 }
@@ -364,10 +398,15 @@ bool Display::DrawAndSwap() {
       resource_provider_.get());
   base::ElapsedTimer aggregate_timer;
   const base::TimeTicks now_time = aggregate_timer.Begin();
-  CompositorFrame frame = aggregator_->Aggregate(
-      current_surface_id_,
-      scheduler_ ? scheduler_->current_frame_display_time() : now_time,
-      ++swapped_trace_id_);
+  CompositorFrame frame;
+  {
+    FrameRateDecider::ScopedAggregate scoped_aggregate(
+        frame_rate_decider_.get());
+    frame = aggregator_->Aggregate(
+        current_surface_id_,
+        scheduler_ ? scheduler_->current_frame_display_time() : now_time,
+        ++swapped_trace_id_);
+  }
   UMA_HISTOGRAM_COUNTS_1M("Compositing.SurfaceAggregator.AggregateUs",
                           aggregate_timer.Elapsed().InMicroseconds());
 
@@ -604,8 +643,8 @@ bool Display::SurfaceDamaged(const SurfaceId& surface_id,
   return display_damaged;
 }
 
-void Display::SurfaceDiscarded(const SurfaceId& surface_id) {
-  TRACE_EVENT0("viz", "Display::SurfaceDiscarded");
+void Display::SurfaceDestroyed(const SurfaceId& surface_id) {
+  TRACE_EVENT0("viz", "Display::SurfaceDestroyed");
   if (aggregator_)
     aggregator_->ReleaseResources(surface_id);
 }
@@ -729,6 +768,14 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
                   last_sqs->quad_to_target_transform,
                   last_sqs->visible_quad_layer_rect);
 
+          // If a rounded corner is being applied then the visible rect for the
+          // sqs is actually even smaller. Reduce the rect size to get a
+          // rounded corner adjusted occluding region.
+          if (!last_sqs->rounded_corner_bounds.IsEmpty()) {
+            sqs_rect_in_target.Intersect(gfx::ToEnclosedRect(
+                GetOccludingRectForRRectF(last_sqs->rounded_corner_bounds)));
+          }
+
           if (last_sqs->is_clipped)
             sqs_rect_in_target.Intersect(last_sqs->clip_rect);
 
@@ -840,6 +887,20 @@ void Display::RunDrawCallbacks() {
         surface->SendAckToClient();
     }
   }
+}
+
+void Display::SetPreferredFrameInterval(base::TimeDelta interval) {
+  client_->SetPreferredFrameInterval(interval);
+}
+
+base::TimeDelta Display::GetPreferredFrameIntervalForFrameSinkId(
+    const FrameSinkId& id) {
+  return client_->GetPreferredFrameIntervalForFrameSinkId(id);
+}
+
+void Display::SetSupportedFrameIntervals(
+    std::vector<base::TimeDelta> intervals) {
+  frame_rate_decider_->SetSupportedFrameIntervals(std::move(intervals));
 }
 
 }  // namespace viz

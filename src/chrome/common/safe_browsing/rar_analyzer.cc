@@ -26,71 +26,55 @@ void AnalyzeRarFile(base::File rar_file,
   results->success = false;
   results->file_count = 0;
   results->directory_count = 0;
-  auto archive = std::make_unique<third_party_unrar::Archive>();
-  archive->SetFileHandle(rar_file.GetPlatformFile());
-
-  if (base::FeatureList::IsEnabled(kInspectRarContentFeature)) {
-    archive->SetTempFileHandle(temp_file.GetPlatformFile());
-  }
-
-  bool open_success = archive->Open(L"dummy.rar");
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarOpenSuccess", open_success);
-  if (!open_success) {
-    DLOG(ERROR) << __FUNCTION__
-                << ": Unable to open rar_file: " << rar_file.GetPlatformFile();
-    return;
-  }
-
-  bool is_valid_archive = archive->IsArchive(/*EnableBroken=*/true);
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarValidArchive", is_valid_archive);
-  if (!is_valid_archive) {
-    DLOG(ERROR) << __FUNCTION__
-                << ": !IsArchive: rar_file: " << rar_file.GetPlatformFile();
-    return;
-  }
 
   // If the file is too big to unpack, fall back to the old method.
-  bool too_big_to_unpack =
-      base::checked_cast<uint64_t>(rar_file.GetLength()) >
-      FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("rar");
-  if (base::FeatureList::IsEnabled(kInspectRarContentFeature) &&
-      !too_big_to_unpack) {
-    auto command = std::make_unique<third_party_unrar::CommandData>();
-    command->ParseArg(const_cast<wchar_t*>(L"-p"));
-    command->ParseArg(const_cast<wchar_t*>(L"x"));
-    command->ParseDone();
+  if (base::FeatureList::IsEnabled(kInspectRarContentFeature)) {
+    bool too_big_to_unpack =
+        base::checked_cast<uint64_t>(rar_file.GetLength()) >
+        FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("rar");
+    if (too_big_to_unpack)
+      return;
 
-    third_party_unrar::CmdExtract extractor(command.get());
-    extractor.ExtractArchiveInit(*archive);
-    bool failed = false, repeat = true;
-    while (!failed || repeat) {
-      // Clear the |temp_file| between extractions.
-      temp_file.Seek(base::File::Whence::FROM_BEGIN, 0);
-      temp_file.SetLength(0);
-      size_t header_size = archive->ReadHeader();
-      repeat = false;
-      failed = !extractor.ExtractCurrentFile(
-          *archive, header_size, repeat);  // |repeat| is passed by reference
+    third_party_unrar::RarReader reader;
+    if (!reader.Open(std::move(rar_file), temp_file.Duplicate()))
+      return;
 
-      if (archive->GetHeaderType() == third_party_unrar::kUnrarFileHead) {
-        std::wstring wide_filename(archive->FileHead.FileName);
-#if defined(OS_WIN)
-        base::FilePath file_path(wide_filename);
-#else
-        std::string filename(wide_filename.begin(), wide_filename.end());
-        base::FilePath file_path(filename);
-#endif  // OS_WIN
-
-        UpdateArchiveAnalyzerResultsWithFile(
-            file_path, &temp_file, archive->FileHead.Encrypted, results);
-
-        if (archive->FileHead.Dir)
-          results->directory_count++;
-        else
-          results->file_count++;
-      }
+    while (reader.ExtractNextEntry()) {
+      const third_party_unrar::RarReader::EntryInfo& entry =
+          reader.current_entry();
+      UpdateArchiveAnalyzerResultsWithFile(entry.file_path, &temp_file,
+                                           entry.file_size, entry.is_encrypted,
+                                           results);
+      if (entry.is_directory)
+        results->directory_count++;
+      else
+        results->file_count++;
     }
   } else {
+    // TODO(drubery): Remove this path once http://crbug/909778 is fully rolled
+    // out.
+    auto archive = std::make_unique<third_party_unrar::Archive>();
+    archive->SetFileHandle(rar_file.GetPlatformFile());
+
+    if (base::FeatureList::IsEnabled(kInspectRarContentFeature)) {
+      archive->SetTempFileHandle(temp_file.GetPlatformFile());
+    }
+
+    bool open_success = archive->Open(L"dummy.rar");
+    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarOpenSuccess", open_success);
+    if (!open_success) {
+      DLOG(ERROR) << __FUNCTION__ << ": Unable to open rar_file: "
+                  << rar_file.GetPlatformFile();
+      return;
+    }
+
+    bool is_valid_archive = archive->IsArchive(/*EnableBroken=*/true);
+    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarValidArchive", is_valid_archive);
+    if (!is_valid_archive) {
+      DLOG(ERROR) << __FUNCTION__
+                  << ": !IsArchive: rar_file: " << rar_file.GetPlatformFile();
+      return;
+    }
     std::set<base::FilePath> archived_archive_filenames;
     for (archive->ViewComment();
          archive->ReadHeader() > 0 &&

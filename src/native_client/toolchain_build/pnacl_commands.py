@@ -6,6 +6,8 @@
 """Runnables for toolchain_build_pnacl.py
 """
 
+from __future__ import print_function
+
 import base64
 import os
 import shutil
@@ -52,7 +54,7 @@ def PrebuiltCmake():
 
 def InstallPrebuiltCMake():
   if os.path.isdir(PREBUILT_CMAKE_DIR):
-    print 'Prebuilt CMake directory already exists'
+    print('Prebuilt CMake directory already exists')
     if not os.path.isfile(PREBUILT_CMAKE_BIN):
       raise Exception('Prebuilt CMake dir %s exists but does not contain CMake'%
                       PREBUILT_CMAKE_DIR)
@@ -65,13 +67,13 @@ def InstallPrebuiltCMake():
     download_target = os.path.join(PREBUILT_CMAKE_DIR, filename)
     pynacl.http_download.HttpDownload(url, download_target)
 
-    print 'Downloaded %s' % url
+    print('Downloaded %s' % url)
     # The tar file itself includes the 'cmake343' directory, so set the
     # extract path to WORK_DIR to get the right path
     with open(download_target) as f:
       tarfile.open(mode='r:gz', fileobj=f).extractall(path=NACL_DIR)
     assert os.path.isfile(PREBUILT_CMAKE_BIN)
-    print 'Extracted CMake to %s' % PREBUILT_CMAKE_DIR
+    print('Extracted CMake to %s' % PREBUILT_CMAKE_DIR)
 
 
 def InstallDriverScripts(logger, subst, srcdir, dstdir, host_windows=False,
@@ -110,10 +112,10 @@ def InstallDriverScripts(logger, subst, srcdir, dstdir, host_windows=False,
   driver_conf = os.path.join(dstdir, 'driver.conf')
   logger.debug('  Installing: %s', driver_conf)
   with open(driver_conf, 'w') as f:
-    print >> f, 'HAS_FRONTEND=1'
-    print >> f, 'HOST_ARCH=x86_64' if host_64bit else 'HOST_ARCH=x86_32'
+    print('HAS_FRONTEND=1', file=f)
+    print('HOST_ARCH=x86_64' if host_64bit else 'HOST_ARCH=x86_32', file=f)
     for line in extra_config:
-      print >> f, subst.Substitute(line)
+      print(subst.Substitute(line), file=f)
 
 
 def CheckoutGitBundleForTrybot(repo, destination):
@@ -156,8 +158,8 @@ def WriteREVFile(logger, subst, dstfile, base_url, repos, revisions):
   logger.debug('Installing: %s', rev_file)
   with open(rev_file, 'w') as f:
     url, rev = pynacl.repo_tools.GitRevInfo(NACL_DIR)
-    print >> f, '[GIT] %s: %s' % (url, rev)
+    print('[GIT] %s: %s' % (url, rev), file=f)
 
     for name, revision in revisions.iteritems():
       repo = base_url + repos[name]
-      print >> f, '[GIT] %s: %s' % (repo, revision)
+      print('[GIT] %s: %s' % (repo, revision), file=f)

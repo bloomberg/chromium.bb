@@ -32,6 +32,7 @@
 
 namespace ui {
 enum class DomCode;
+class Layer;
 class ScopedPasswordInputEnabler;
 }
 
@@ -99,21 +100,21 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void InitAsChild(gfx::NativeView parent_view) override;
   void SetSize(const gfx::Size& size) override;
   void SetBounds(const gfx::Rect& rect) override;
-  gfx::NativeView GetNativeView() const override;
+  gfx::NativeView GetNativeView() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  bool HasFocus() const override;
+  bool HasFocus() override;
   void Show() override;
   void Hide() override;
   bool IsShowing() override;
   void WasUnOccluded() override;
   void WasOccluded() override;
-  gfx::Rect GetViewBounds() const override;
+  gfx::Rect GetViewBounds() override;
   bool IsMouseLocked() override;
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override;
   void SpeakSelection() override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
-  void GetScreenInfo(ScreenInfo* screen_info) const override;
+  void GetScreenInfo(ScreenInfo* screen_info) override;
   void SetWantsAnimateOnlyBeginFrames() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
 
@@ -132,9 +133,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
   void DisplayTooltipText(const base::string16& tooltip_text) override;
-  gfx::Size GetRequestedRendererSize() const override;
+  gfx::Size GetRequestedRendererSize() override;
   uint32_t GetCaptureSequenceNumber() const override;
-  bool IsSurfaceAvailableForCopy() const override;
+  bool IsSurfaceAvailableForCopy() override;
   void CopyFromSurface(
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
@@ -158,9 +159,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessibleForWindow()
       override;
-  base::Optional<SkColor> GetBackgroundColor() const override;
+  base::Optional<SkColor> GetBackgroundColor() override;
 
-  void SetParentUiLayer(ui::Layer* parent_ui_layer) override;
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
@@ -393,8 +393,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void StopSpeaking() override;
   bool SyncIsSpeaking(bool* is_speaking) override;
   void SyncIsSpeaking(SyncIsSpeakingCallback callback) override;
-  void SyncGetRootAccessibilityElement(
-      SyncGetRootAccessibilityElementCallback callback) override;
   void SetRemoteAccessibilityWindowToken(
       const std::vector<uint8_t>& window_token) override;
 
@@ -461,6 +459,15 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // referred to by |parent_ns_view_id|.
   void MigrateNSViewBridge(NSViewBridgeFactoryHost* bridge_factory_host,
                            uint64_t parent_ns_view_id);
+
+  // Specify a ui::Layer into which the renderer's content should be
+  // composited. If nullptr is specified, then this layer will create a
+  // separate ui::Compositor as needed (e.g, for tab capture).
+  void SetParentUiLayer(ui::Layer* parent_ui_layer);
+
+  // Specify the element to return as the accessibility parent of the
+  // |cocoa_view_|.
+  void SetParentAccessibilityElement(id parent_accessibility_element);
 
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 

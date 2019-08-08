@@ -221,7 +221,7 @@ void NavigatorImpl::DidNavigate(
 
   // Save the activation status of the previous page here before it gets reset
   // in FrameTreeNode::ResetForNavigation.
-  bool previous_page_was_activated = frame_tree_node->HasBeenActivated();
+  bool previous_document_was_activated = frame_tree->root()->HasBeenActivated();
 
   // Navigating to a new location means a new, fresh set of http headers and/or
   // <meta> elements - we need to reset CSP and Feature Policy.
@@ -258,7 +258,7 @@ void NavigatorImpl::DidNavigate(
   LoadCommittedDetails details;
   bool did_navigate = controller_->RendererDidNavigate(
       render_frame_host, params, &details, is_same_document_navigation,
-      previous_page_was_activated, navigation_request.get());
+      previous_document_was_activated, navigation_request.get());
 
   // If the history length and/or offset changed, update other renderers in the
   // FrameTree.

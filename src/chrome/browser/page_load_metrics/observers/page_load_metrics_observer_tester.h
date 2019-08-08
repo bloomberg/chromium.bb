@@ -49,16 +49,22 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   void SimulateTimingUpdate(const mojom::PageLoadTiming& timing);
   void SimulateTimingUpdate(const mojom::PageLoadTiming& timing,
                             content::RenderFrameHost* rfh);
+  void SimulateCpuTimingUpdate(const mojom::CpuTiming& cpu_timing);
+  void SimulateCpuTimingUpdate(const mojom::CpuTiming& cpu_timing,
+                               content::RenderFrameHost* rfh);
   void SimulateTimingAndMetadataUpdate(const mojom::PageLoadTiming& timing,
                                        const mojom::PageLoadMetadata& metadata);
+  void SimulateMetadataUpdate(const mojom::PageLoadMetadata& metadata,
+                              content::RenderFrameHost* rfh);
   void SimulateFeaturesUpdate(const mojom::PageLoadFeatures& new_features);
   void SimulateResourceDataUseUpdate(
       const std::vector<mojom::ResourceDataUpdatePtr>& resources);
   void SimulateResourceDataUseUpdate(
       const std::vector<mojom::ResourceDataUpdatePtr>& resources,
       content::RenderFrameHost* render_frame_host);
-  void SimulateRenderDataUpdate(const mojom::PageRenderData& render_data);
-  void SimulateRenderDataUpdate(const mojom::PageRenderData& render_data,
+  void SimulateRenderDataUpdate(
+      const mojom::FrameRenderDataUpdate& render_data);
+  void SimulateRenderDataUpdate(const mojom::FrameRenderDataUpdate& render_data,
                                 content::RenderFrameHost* render_frame_host);
 
   // Simulates a loaded resource. Main frame resources must specify a
@@ -69,6 +75,10 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   // Simulates a loaded resource, with the given GlobalRequestID.
   void SimulateLoadedResource(const ExtraRequestCompleteInfo& info,
                               const content::GlobalRequestID& request_id);
+
+  // Simulate the first user interaction for a frame.
+  void SimulateFrameReceivedFirstUserActivation(
+      content::RenderFrameHost* render_frame_host);
 
   // Simulates a user input.
   void SimulateInputEvent(const blink::WebInputEvent& event);
@@ -87,12 +97,14 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   void RegisterObservers(PageLoadTracker* tracker);
 
  private:
-  void SimulatePageLoadTimingUpdate(const mojom::PageLoadTiming& timing,
-                                    const mojom::PageLoadMetadata& metadata,
-                                    const mojom::PageLoadFeatures& new_features,
-                                    const mojom::PageRenderData& render_data,
-                                    const mojom::CpuTiming& cpu_timing,
-                                    content::RenderFrameHost* rfh);
+  void SimulatePageLoadTimingUpdate(
+      const mojom::PageLoadTiming& timing,
+      const mojom::PageLoadMetadata& metadata,
+      const mojom::PageLoadFeatures& new_features,
+      const mojom::FrameRenderDataUpdate& render_data,
+      const mojom::CpuTiming& cpu_timing,
+      const mojom::DeferredResourceCounts& new_deferred_resource_data,
+      content::RenderFrameHost* rfh);
 
   content::WebContents* web_contents() const { return web_contents_; }
 

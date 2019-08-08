@@ -146,9 +146,8 @@ void SyncWebSocketImpl::Core::ConnectOnIO(
   if (socket_ && is_connected_)
     return;
   socket_.reset(new WebSocket(url, this));
-  socket_->Connect(base::Bind(
-      &SyncWebSocketImpl::Core::OnConnectCompletedOnIO,
-      this, success, event));
+  socket_->Connect(base::BindOnce(
+      &SyncWebSocketImpl::Core::OnConnectCompletedOnIO, this, success, event));
 }
 
 void SyncWebSocketImpl::Core::OnConnectCompletedOnIO(

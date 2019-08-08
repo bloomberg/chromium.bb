@@ -26,7 +26,7 @@
 #include "media/base/media_content_type.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
-#include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
+#include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/media/session/media_session_android.h"
@@ -105,6 +105,12 @@ void MaybePushBackString(std::vector<std::string>& vector,
 
 bool IsSizeAtLeast(const gfx::Size& size, int min_size) {
   return size.width() >= min_size || size.height() >= min_size;
+}
+
+base::string16 SanitizeMediaTitle(const base::string16 title) {
+  base::string16 out;
+  base::TrimString(title, base::ASCIIToUTF16(" "), &out);
+  return out;
 }
 
 }  // anonymous namespace
@@ -204,6 +210,10 @@ void MediaSessionImpl::OnWebContentsFocused(RenderWidgetHost*) {
 
 void MediaSessionImpl::OnWebContentsLostFocus(RenderWidgetHost*) {
   focused_ = false;
+}
+
+void MediaSessionImpl::TitleWasSet(NavigationEntry* entry) {
+  RebuildAndNotifyMetadataChanged();
 }
 
 bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
@@ -1143,8 +1153,18 @@ void MediaSessionImpl::RebuildAndNotifyMetadataChanged() {
     artwork = routed_service_->metadata()->artwork;
   }
 
-  metadata.source_title = url_formatter::FormatOriginForSecurityDisplay(
-      url::Origin::Create(web_contents()->GetLastCommittedURL()));
+  if (metadata.title.empty())
+    metadata.title = SanitizeMediaTitle(web_contents()->GetTitle());
+
+  base::string16 formatted_origin =
+      url_formatter::FormatOriginForSecurityDisplay(
+          url::Origin::Create(web_contents()->GetLastCommittedURL()));
+
+  if (metadata.artist.empty()) {
+    metadata.artist = formatted_origin;
+  } else {
+    metadata.source_title = formatted_origin;
+  }
 
   // If we have no artwork in |images_| or the arwork has changed then we should
   // update it with the latest artwork from the routed service.

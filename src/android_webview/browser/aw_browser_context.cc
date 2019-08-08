@@ -19,12 +19,14 @@
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 #include "base/base_paths_posix.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/url_formatter/url_fixer.h"
@@ -33,11 +35,13 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_request_utils.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "services/network/public/cpp/features.h"
 #include "services/preferences/tracked/segregated_pref_store.h"
 
 using base::FilePath;
@@ -156,15 +160,30 @@ base::FilePath AwBrowserContext::GetCookieStorePath() {
   return cookie_store_path;
 }
 
+// static
+void AwBrowserContext::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
+  registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
+                               std::string());
+}
+
+// static
+std::vector<std::string> AwBrowserContext::GetAuthSchemes() {
+  // In Chrome this is configurable via the AuthSchemes policy. For WebView
+  // there is no interest to have it available so far.
+  std::vector<std::string> supported_schemes = {"basic", "digest", "ntlm",
+                                                "negotiate"};
+  return supported_schemes;
+}
+
 void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
   FilePath cache_path = GetCacheDir();
 
-  // TODO(ntfschr): set this to nullptr when the NetworkService is disabled,
-  // once we remove a dependency on url_request_context_getter_
-  // (http://crbug.com/887538).
-  url_request_context_getter_ =
-      new AwURLRequestContextGetter(cache_path, CreateProxyConfigService(),
-                                    user_pref_service_.get(), net_log);
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    url_request_context_getter_ =
+        new AwURLRequestContextGetter(cache_path, CreateProxyConfigService(),
+                                      user_pref_service_.get(), net_log);
+  }
 
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
@@ -188,6 +207,14 @@ void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
   web_restriction_provider_->SetAuthority(
       user_pref_service_->GetString(prefs::kWebRestrictionsAuthority));
 
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    auto auth_pref_callback = base::BindRepeating(
+        &AwBrowserContext::OnAuthPrefsChanged, base::Unretained(this));
+    pref_change_registrar_.Add(prefs::kAuthServerWhitelist, auth_pref_callback);
+    pref_change_registrar_.Add(prefs::kAuthAndroidNegotiateAccountType,
+                               auth_pref_callback);
+  }
+
   safe_browsing_ui_manager_ = new AwSafeBrowsingUIManager(
       GetAwURLRequestContext(), user_pref_service_.get());
   safe_browsing_db_manager_ =
@@ -206,6 +233,11 @@ void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
 void AwBrowserContext::OnWebRestrictionsAuthorityChanged() {
   web_restriction_provider_->SetAuthority(
       user_pref_service_->GetString(prefs::kWebRestrictionsAuthority));
+}
+
+void AwBrowserContext::OnAuthPrefsChanged() {
+  content::GetNetworkService()->ConfigureHttpAuthPrefs(
+      CreateHttpAuthDynamicParams());
 }
 
 void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
@@ -318,6 +350,7 @@ AwBrowserContext::GetBrowsingDataRemoverDelegate() {
 net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   // This function cannot actually create the request context because
   // there is a reentrant dependency on GetResourceContext() via
   // content::StoragePartitionImplMap::Create(). This is not fixable
@@ -340,6 +373,7 @@ AwBrowserContext::CreateRequestContextForStoragePartition(
 }
 
 net::URLRequestContextGetter* AwBrowserContext::CreateMediaRequestContext() {
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   return url_request_context_getter_.get();
 }
 
@@ -392,6 +426,19 @@ AwSafeBrowsingWhitelistManager*
 AwBrowserContext::GetSafeBrowsingWhitelistManager() const {
   // Should not be called until the end of PreMainMessageLoopRun,
   return safe_browsing_whitelist_manager_.get();
+}
+
+network::mojom::HttpAuthDynamicParamsPtr
+AwBrowserContext::CreateHttpAuthDynamicParams() {
+  network::mojom::HttpAuthDynamicParamsPtr auth_dynamic_params =
+      network::mojom::HttpAuthDynamicParams::New();
+
+  auth_dynamic_params->server_whitelist =
+      user_pref_service_->GetString(prefs::kAuthServerWhitelist);
+  auth_dynamic_params->android_negotiate_account_type =
+      user_pref_service_->GetString(prefs::kAuthAndroidNegotiateAccountType);
+
+  return auth_dynamic_params;
 }
 
 void AwBrowserContext::RebuildTable(

@@ -61,17 +61,14 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
 
   const ComputedStyle& style = layout_object.StyleRef();
 
-  if (RequiresCompositingForTransform(layout_object))
+  if (RequiresCompositingFor3DTransform(layout_object))
     reasons |= CompositingReason::k3DTransform;
 
   if (style.BackfaceVisibility() == EBackfaceVisibility::kHidden)
     reasons |= CompositingReason::kBackfaceVisibilityHidden;
 
   reasons |= CompositingReasonsForAnimation(style);
-
-  if (style.HasWillChangeCompositingHint() &&
-      !style.SubtreeWillChangeContents())
-    reasons |= CompositingReason::kWillChangeCompositingHint;
+  reasons |= CompositingReasonsForWillChange(style);
 
   if (style.UsedTransformStyle3D() == ETransformStyle3D::kPreserve3d)
     reasons |= CompositingReason::kPreserve3DWith3DDescendants;
@@ -122,26 +119,30 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
     return CompositingReason::kNone;
 
   const ComputedStyle& style = object.StyleRef();
-  auto reasons = CompositingReasonsForAnimation(style);
+  auto reasons = CompositingReasonsForAnimation(style) |
+                 CompositingReasonsForWillChange(style);
 
-  if (RequiresCompositingForTransform(object))
+  if (RequiresCompositingFor3DTransform(object))
     reasons |= CompositingReason::k3DTransform;
 
-  if (style.HasWillChangeCompositingHint() &&
-      !style.SubtreeWillChangeContents())
-    reasons |= CompositingReason::kWillChangeCompositingHint;
-
-  if (ToLayoutBoxModelObject(object).Layer()->Has3DTransformedDescendant()) {
+  auto* layer = ToLayoutBoxModelObject(object).Layer();
+  if (layer->Has3DTransformedDescendant()) {
     if (style.HasPerspective())
       reasons |= CompositingReason::kPerspectiveWith3DDescendants;
     if (style.Preserves3D())
       reasons |= CompositingReason::kPreserve3DWith3DDescendants;
   }
 
+  if (RequiresCompositingForRootScroller(*layer))
+    reasons |= CompositingReason::kRootScroller;
+
+  if (RequiresCompositingForScrollTimeline(*layer))
+    reasons |= CompositingReason::kScrollTimelineTarget;
+
   return reasons;
 }
 
-bool CompositingReasonFinder::RequiresCompositingForTransform(
+bool CompositingReasonFinder::RequiresCompositingFor3DTransform(
     const LayoutObject& layout_object) {
   // Note that we ask the layoutObject if it has a transform, because the style
   // may have transforms, but the layoutObject may be an inline that doesn't
@@ -168,6 +169,9 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
   if (RequiresCompositingForRootScroller(layer))
     direct_reasons |= CompositingReason::kRootScroller;
 
+  if (RequiresCompositingForScrollTimeline(layer))
+    direct_reasons |= CompositingReason::kScrollTimelineTarget;
+
   // Composite |layer| if it is inside of an ancestor scrolling layer, but that
   // scrolling layer is not on the stacking context ancestor chain of |layer|.
   // See the definition of the scrollParent property in Layer for more detail.
@@ -178,14 +182,6 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
 
   if (RequiresCompositingForScrollDependentPosition(layer))
     direct_reasons |= CompositingReason::kScrollDependentPosition;
-
-  // TODO(crbug.com/839341): Remove once we support main-thread AnimationWorklet
-  // and don't need to promote the scroll-source.
-  if (layer.GetScrollableArea() && layer.GetLayoutObject().GetNode() &&
-      ScrollTimeline::HasActiveScrollTimeline(
-          layer.GetLayoutObject().GetNode())) {
-    direct_reasons |= CompositingReason::kScrollTimelineTarget;
-  }
 
   // Video is special. It's the only PaintLayer type that can both have
   // PaintLayer children and whose children can't use its backing to render
@@ -211,43 +207,38 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
 CompositingReasons CompositingReasonFinder::CompositingReasonsForAnimation(
     const ComputedStyle& style) {
   CompositingReasons reasons = CompositingReason::kNone;
-  if (RequiresCompositingForTransformAnimation(style))
+  if (style.SubtreeWillChangeContents())
+    return reasons;
+
+  if (style.HasCurrentTransformAnimation())
     reasons |= CompositingReason::kActiveTransformAnimation;
-  if (RequiresCompositingForOpacityAnimation(style))
+  if (style.HasCurrentOpacityAnimation())
     reasons |= CompositingReason::kActiveOpacityAnimation;
-  if (RequiresCompositingForFilterAnimation(style))
+  if (style.HasCurrentFilterAnimation())
     reasons |= CompositingReason::kActiveFilterAnimation;
-  if (RequiresCompositingForBackdropFilterAnimation(style))
+  if (style.HasCurrentBackdropFilterAnimation())
     reasons |= CompositingReason::kActiveBackdropFilterAnimation;
   return reasons;
 }
 
-bool CompositingReasonFinder::RequiresCompositingForOpacityAnimation(
+CompositingReasons CompositingReasonFinder::CompositingReasonsForWillChange(
     const ComputedStyle& style) {
-  return style.SubtreeWillChangeContents()
-             ? style.IsRunningOpacityAnimationOnCompositor()
-             : style.HasCurrentOpacityAnimation();
-}
+  CompositingReasons reasons = CompositingReason::kNone;
+  if (style.SubtreeWillChangeContents())
+    return reasons;
 
-bool CompositingReasonFinder::RequiresCompositingForFilterAnimation(
-    const ComputedStyle& style) {
-  return style.SubtreeWillChangeContents()
-             ? style.IsRunningFilterAnimationOnCompositor()
-             : style.HasCurrentFilterAnimation();
-}
+  if (style.HasWillChangeTransformHint())
+    reasons |= CompositingReason::kWillChangeTransform;
+  if (style.HasWillChangeOpacityHint())
+    reasons |= CompositingReason::kWillChangeOpacity;
 
-bool CompositingReasonFinder::RequiresCompositingForBackdropFilterAnimation(
-    const ComputedStyle& style) {
-  return style.SubtreeWillChangeContents()
-             ? style.IsRunningBackdropFilterAnimationOnCompositor()
-             : style.HasCurrentBackdropFilterAnimation();
-}
+  // kWillChangeOther is needed only when neither kWillChangeTransform nor
+  // kWillChangeOpacity is set.
+  if (reasons == CompositingReason::kNone &&
+      style.HasWillChangeCompositingHint())
+    reasons |= CompositingReason::kWillChangeOther;
 
-bool CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-    const ComputedStyle& style) {
-  return style.SubtreeWillChangeContents()
-             ? style.IsRunningTransformAnimationOnCompositor()
-             : style.HasCurrentTransformAnimation();
+  return reasons;
 }
 
 bool CompositingReasonFinder::RequiresCompositingForRootScroller(
@@ -261,6 +252,15 @@ bool CompositingReasonFinder::RequiresCompositingForRootScroller(
     return false;
 
   return layer.GetLayoutObject().IsGlobalRootScroller();
+}
+
+bool CompositingReasonFinder::RequiresCompositingForScrollTimeline(
+    const PaintLayer& layer) {
+  // TODO(crbug.com/839341): Remove once we support main-thread AnimationWorklet
+  // and don't need to promote the scroll-source.
+  return layer.GetScrollableArea() && layer.GetLayoutObject().GetNode() &&
+         ScrollTimeline::HasActiveScrollTimeline(
+             layer.GetLayoutObject().GetNode());
 }
 
 bool CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(

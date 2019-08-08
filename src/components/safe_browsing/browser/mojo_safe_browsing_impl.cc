@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/supports_user_data.h"
 #include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -56,6 +57,22 @@ class CheckUrlCallbackWrapper {
   Callback callback_;
 };
 
+// UserData object that owns MojoSafeBrowsingImpl. This is used rather than
+// having MojoSafeBrowsingImpl directly extend base::SupportsUserData::Data to
+// avoid naming conflicts between Data::Clone() and
+// mojom::SafeBrowsing::Clone().
+class SafeBrowserUserData : public base::SupportsUserData::Data {
+ public:
+  explicit SafeBrowserUserData(std::unique_ptr<MojoSafeBrowsingImpl> impl)
+      : impl_(std::move(impl)) {}
+  ~SafeBrowserUserData() override = default;
+
+ private:
+  std::unique_ptr<MojoSafeBrowsingImpl> impl_;
+
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowserUserData);
+};
+
 }  // namespace
 
 MojoSafeBrowsingImpl::MojoSafeBrowsingImpl(
@@ -95,11 +112,11 @@ void MojoSafeBrowsingImpl::MaybeCreate(
       std::move(delegate), render_process_id, resource_context));
   impl->Clone(std::move(request));
 
-  // Need to store the value of |impl.get()| in a temp variable instead of
-  // getting the value on the same line as |std::move(impl)|, because the
-  // evalution order is unspecified.
-  const void* key = impl.get();
-  resource_context->SetUserData(key, std::move(impl));
+  MojoSafeBrowsingImpl* raw_impl = impl.get();
+  std::unique_ptr<SafeBrowserUserData> user_data =
+      std::make_unique<SafeBrowserUserData>(std::move(impl));
+  raw_impl->user_data_key_ = user_data.get();
+  resource_context->SetUserData(raw_impl->user_data_key_, std::move(user_data));
 }
 
 void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
@@ -119,6 +136,12 @@ void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
                                         -1 /* frame_tree_node_id */,
                                         render_process_id_, render_frame_id,
                                         originated_from_service_worker)) {
+    // Ensure that we don't destroy an uncalled CreateCheckerAndCheckCallback
+    if (callback) {
+      std::move(callback).Run(nullptr, true /* proceed */,
+                              false /* showed_interstitial */);
+    }
+
     // This will drop |request|. The result is that the renderer side will
     // consider all URLs in the redirect chain of this request as safe.
     return;
@@ -144,7 +167,7 @@ void MojoSafeBrowsingImpl::Clone(mojom::SafeBrowsingRequest request) {
 
 void MojoSafeBrowsingImpl::OnConnectionError() {
   if (bindings_.empty()) {
-    resource_context_->RemoveUserData(this);
+    resource_context_->RemoveUserData(user_data_key_);
     // This object is destroyed.
   }
 }

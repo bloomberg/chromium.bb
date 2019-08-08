@@ -36,8 +36,8 @@
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/session/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -121,7 +121,8 @@ class ArcSessionManagerTest : public chromeos::MixinBasedInProcessBrowserTest {
     ArcSessionManager::SetUiEnabledForTesting(false);
     ArcSessionManager::EnableCheckAndroidManagementForTesting(true);
     ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
-        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
+        std::make_unique<ArcSessionRunner>(
+            base::BindRepeating(FakeArcSession::Create)));
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 

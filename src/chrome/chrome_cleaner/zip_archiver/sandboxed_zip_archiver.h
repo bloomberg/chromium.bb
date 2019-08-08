@@ -17,6 +17,7 @@
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/ipc/sandbox.h"
 #include "chrome/chrome_cleaner/zip_archiver/broker/sandbox_setup.h"
+#include "chrome/chrome_cleaner/zip_archiver/zip_archiver.h"
 
 namespace chrome_cleaner {
 
@@ -27,19 +28,16 @@ base::string16 ConstructZipArchiveFileName(const base::string16& filename,
 
 }  // namespace internal
 
-class SandboxedZipArchiver {
+class SandboxedZipArchiver : public ZipArchiver {
  public:
-  using ArchiveResultCallback =
-      base::OnceCallback<void(mojom::ZipArchiverResultCode)>;
-
   SandboxedZipArchiver(scoped_refptr<MojoTaskRunner> mojo_task_runner,
                        UniqueZipArchiverPtr zip_archiver_ptr,
                        const base::FilePath& dst_archive_folder,
                        const std::string& zip_password);
-  ~SandboxedZipArchiver();
+  ~SandboxedZipArchiver() override;
 
   void Archive(const base::FilePath& src_file_path,
-               ArchiveResultCallback result_callback);
+               ArchiveResultCallback result_callback) override;
 
  private:
   mojom::ZipArchiverResultCode CheckFileSize(base::File* file);

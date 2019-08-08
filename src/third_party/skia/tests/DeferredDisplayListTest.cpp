@@ -675,7 +675,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DDLInvalidRecorder, reporter, ctxInfo) {
                 dummy_fulfill_proc,
                 dummy_release_proc,
                 dummy_done_proc,
-                nullptr);
+                nullptr,
+                SkDeferredDisplayListRecorder::PromiseImageApiVersion::kNew);
         REPORTER_ASSERT(reporter, !image);
     }
 
@@ -779,7 +780,8 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(DDLTextureFlagsTest, reporter, ctxInfo) {
                     dummy_fulfill_proc,
                     dummy_release_proc,
                     dummy_done_proc,
-                    nullptr);
+                    nullptr,
+                    SkDeferredDisplayListRecorder::PromiseImageApiVersion::kNew);
             if (GR_GL_TEXTURE_2D != target && mipMapped == GrMipMapped::kYes) {
                 REPORTER_ASSERT(reporter, !image);
                 continue;
@@ -806,11 +808,6 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(DDLCompatibilityTest, reporter, ctxInfo) {
 
     for (int ct = 0; ct <= kLastEnum_SkColorType; ++ct) {
         SkColorType colorType = static_cast<SkColorType>(ct);
-
-        if (colorType == kRGBA_F16Norm_SkColorType) {
-            // TODO(brianosman): we can't yet distinguish F16 and F16Norm in this test.
-            continue;
-        }
 
         SurfaceParameters params(context->backend());
         params.setColorType(colorType);

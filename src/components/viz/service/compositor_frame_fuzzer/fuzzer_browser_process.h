@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_VIZ_SERVICE_COMPOSITOR_FRAME_FUZZER_FUZZER_BROWSER_PROCESS_H_
 #define COMPONENTS_VIZ_SERVICE_COMPOSITOR_FRAME_FUZZER_FUZZER_BROWSER_PROCESS_H_
 
+#include <vector>
+
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "components/viz/service/compositor_frame_fuzzer/compositor_frame_fuzzer_util.h"
 #include "components/viz/service/compositor_frame_fuzzer/fuzzer_software_display_provider.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -31,7 +34,11 @@ class FuzzerBrowserProcess {
   // Submits a CompositorFrame to the RootCompositorFrameSinkImpl
   // with a SolidColorDrawQuad "toolbar" and a SurfaceDrawQuad "renderer frame"
   // embedding the fuzzed CompositorFrame.
-  void EmbedFuzzedCompositorFrame(CompositorFrame fuzzed_frame);
+  //
+  // |allocated_bitmaps| should contain references to already-allocated memory
+  // that is referenced by the frame's DrawQuads and |resource_list|.
+  void EmbedFuzzedCompositorFrame(CompositorFrame fuzzed_frame,
+                                  std::vector<FuzzedBitmap> allocated_bitmaps);
 
  private:
   mojom::RootCompositorFrameSinkParamsPtr BuildRootCompositorFrameSinkParams();

@@ -452,11 +452,16 @@ ComPtr<IMMDevice> CreateDeviceInternal(const std::string& device_id,
 
   HRESULT hr;
   if (AudioDeviceDescription::IsDefaultDevice(device_id)) {
-    hr = device_enum->GetDefaultAudioEndpoint(data_flow, role,
-                                              endpoint_device.GetAddressOf());
+    hr =
+        device_enum->GetDefaultAudioEndpoint(data_flow, role, &endpoint_device);
+  } else if (AudioDeviceDescription::IsLoopbackDevice(device_id)) {
+    // Obtain an IMMDevice interface for the rendering endpoint device since
+    // loopback mode is selected.
+    // TODO(http://crbug/956526): clean up code related to loopback mode.
+    hr = device_enum->GetDefaultAudioEndpoint(eRender, role, &endpoint_device);
   } else {
     hr = device_enum->GetDevice(base::UTF8ToUTF16(device_id).c_str(),
-                                endpoint_device.GetAddressOf());
+                                &endpoint_device);
   }
   DVLOG_IF(1, FAILED(hr)) << "Create Device failed: " << std::hex << hr;
 

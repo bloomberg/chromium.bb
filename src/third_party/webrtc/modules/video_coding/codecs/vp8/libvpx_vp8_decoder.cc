@@ -20,7 +20,6 @@
 #include "api/video/video_frame.h"
 #include "api/video/video_frame_buffer.h"
 #include "api/video/video_rotation.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/video_coding/codecs/vp8/include/vp8.h"
 #include "modules/video_coding/codecs/vp8/libvpx_vp8_decoder.h"
 #include "modules/video_coding/include/video_error_codes.h"
@@ -153,7 +152,6 @@ int LibvpxVp8Decoder::InitDecode(const VideoCodec* inst, int number_of_cores) {
 
 int LibvpxVp8Decoder::Decode(const EncodedImage& input_image,
                              bool missing_frames,
-                             const CodecSpecificInfo* codec_specific_info,
                              int64_t /*render_time_ms*/) {
   if (!inited_) {
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
@@ -209,7 +207,7 @@ int LibvpxVp8Decoder::Decode(const EncodedImage& input_image,
 
   // Always start with a complete key frame.
   if (key_frame_required_) {
-    if (input_image._frameType != kVideoFrameKey)
+    if (input_image._frameType != VideoFrameType::kVideoFrameKey)
       return WEBRTC_VIDEO_CODEC_ERROR;
     // We have a key frame - is it complete?
     if (input_image._completeFrame) {
@@ -220,7 +218,8 @@ int LibvpxVp8Decoder::Decode(const EncodedImage& input_image,
   }
   // Restrict error propagation using key frame requests.
   // Reset on a key frame refresh.
-  if (input_image._frameType == kVideoFrameKey && input_image._completeFrame) {
+  if (input_image._frameType == VideoFrameType::kVideoFrameKey &&
+      input_image._completeFrame) {
     propagation_cnt_ = -1;
     // Start count on first loss.
   } else if ((!input_image._completeFrame || missing_frames) &&

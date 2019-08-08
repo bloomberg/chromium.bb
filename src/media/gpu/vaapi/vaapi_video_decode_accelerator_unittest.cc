@@ -101,7 +101,7 @@ class MockVaapiPicture : public VaapiPicture {
   bool Allocate(gfx::BufferFormat format) override { return true; }
   bool ImportGpuMemoryBufferHandle(
       gfx::BufferFormat format,
-      const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) override {
+      gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) override {
     return true;
   }
   bool DownloadFromSurface(

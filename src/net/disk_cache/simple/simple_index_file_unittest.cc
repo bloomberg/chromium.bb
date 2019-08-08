@@ -9,7 +9,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/pickle.h"
@@ -213,7 +213,7 @@ TEST_F(SimpleIndexFileTest, Serialize) {
 
   std::unique_ptr<base::Pickle> pickle = WrappedSimpleIndexFile::Serialize(
       net::DISK_CACHE, index_metadata, entries);
-  EXPECT_TRUE(pickle.get() != NULL);
+  EXPECT_TRUE(pickle.get() != nullptr);
   base::Time now = base::Time::Now();
   WrappedSimpleIndexFile::SerializeFinalData(now, pickle.get());
   base::Time when_index_last_saw_cache;
@@ -253,7 +253,7 @@ TEST_F(SimpleIndexFileTest, SerializeAppCache) {
 
   std::unique_ptr<base::Pickle> pickle = WrappedSimpleIndexFile::Serialize(
       net::APP_CACHE, index_metadata, entries);
-  EXPECT_TRUE(pickle.get() != NULL);
+  EXPECT_TRUE(pickle.get() != nullptr);
   base::Time now = base::Time::Now();
   WrappedSimpleIndexFile::SerializeFinalData(now, pickle.get());
   base::Time when_index_last_saw_cache;
@@ -295,7 +295,7 @@ TEST_F(SimpleIndexFileTest, ReadV7Format) {
   }
   std::unique_ptr<base::Pickle> pickle =
       WrappedSimpleIndexFile::Serialize(net::DISK_CACHE, v7_metadata, entries);
-  ASSERT_TRUE(pickle.get() != NULL);
+  ASSERT_TRUE(pickle.get() != nullptr);
   base::Time now = base::Time::Now();
   WrappedSimpleIndexFile::SerializeFinalData(now, pickle.get());
 
@@ -338,7 +338,7 @@ TEST_F(SimpleIndexFileTest, ReadV8Format) {
   }
   std::unique_ptr<base::Pickle> pickle =
       WrappedSimpleIndexFile::Serialize(net::DISK_CACHE, v8_metadata, entries);
-  ASSERT_TRUE(pickle.get() != NULL);
+  ASSERT_TRUE(pickle.get() != nullptr);
   base::Time now = base::Time::Now();
   WrappedSimpleIndexFile::SerializeFinalData(now, pickle.get());
 
@@ -381,7 +381,7 @@ TEST_F(SimpleIndexFileTest, ReadV8FormatAppCache) {
   }
   std::unique_ptr<base::Pickle> pickle =
       WrappedSimpleIndexFile::Serialize(net::DISK_CACHE, v8_metadata, entries);
-  ASSERT_TRUE(pickle.get() != NULL);
+  ASSERT_TRUE(pickle.get() != nullptr);
   base::Time now = base::Time::Now();
   WrappedSimpleIndexFile::SerializeFinalData(now, pickle.get());
 

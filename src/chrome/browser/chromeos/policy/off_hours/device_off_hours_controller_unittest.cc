@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 
@@ -107,7 +107,7 @@ class DeviceOffHoursControllerSimpleTest
 
   void SetUp() override {
     chromeos::DeviceSettingsTestBase::SetUp();
-    chromeos::SystemClockClient::Initialize(nullptr /* bus */);
+    chromeos::SystemClockClient::InitializeFake();
 
     device_settings_service_->SetDeviceOffHoursControllerForTesting(
         std::make_unique<policy::off_hours::DeviceOffHoursController>());

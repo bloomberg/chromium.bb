@@ -221,7 +221,8 @@ class CONTENT_EXPORT PeerConnectionTracker
                         size_t transceiver_index);
 
   // IPC Message handler for getting all stats.
-  void OnGetAllStats();
+  void OnGetStandardStats();
+  void OnGetLegacyStats();
 
   // Called when the browser process reports a suspend event from the OS.
   void OnSuspend();

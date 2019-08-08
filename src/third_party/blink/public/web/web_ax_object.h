@@ -79,6 +79,12 @@ class WebAXObject {
     return *this;
   }
 
+  BLINK_EXPORT bool operator==(const WebAXObject& other) const;
+  BLINK_EXPORT bool operator!=(const WebAXObject& other) const;
+  BLINK_EXPORT bool operator<(const WebAXObject& other) const;
+  BLINK_EXPORT bool operator<=(const WebAXObject& other) const;
+  BLINK_EXPORT bool operator>(const WebAXObject& other) const;
+  BLINK_EXPORT bool operator>=(const WebAXObject& other) const;
   BLINK_EXPORT static WebAXObject FromWebNode(const WebNode&);
   BLINK_EXPORT static WebAXObject FromWebDocument(const WebDocument&);
   BLINK_EXPORT static WebAXObject FromWebDocumentByID(const WebDocument&, int);
@@ -99,10 +105,10 @@ class WebAXObject {
   // tree.
   BLINK_EXPORT int GenerateAXID() const;
 
-  // Update layout on the underlying tree, and return true if this object is
-  // still valid (not detached). Note that calling this method
-  // can cause other WebAXObjects to become invalid, too,
-  // so always call isDetached if any other WebCore code has run.
+  // Update layout if necessary on the underlying tree, and return true if this
+  // object is still valid (not detached). Note that calling this method can
+  // cause other WebAXObjects to become invalid, too, so always call isDetached
+  // if any other blink/renderer/core code has run.
   BLINK_EXPORT bool UpdateLayoutAndCheckValidity();
 
   BLINK_EXPORT unsigned ChildCount() const;
@@ -158,6 +164,7 @@ class WebAXObject {
   BLINK_EXPORT bool AriaOwns(WebVector<WebAXObject>& owns_elements) const;
   BLINK_EXPORT WebString FontFamily() const;
   BLINK_EXPORT float FontSize() const;
+  BLINK_EXPORT float FontWeight() const;
   BLINK_EXPORT bool CanvasHasFallbackContent() const;
   BLINK_EXPORT WebAXObject ErrorMessage() const;
   // If this is an image, returns the image (scaled to maxSize) as a data url.
@@ -177,10 +184,14 @@ class WebAXObject {
   BLINK_EXPORT WebVector<WebAXObject> RadioButtonsInGroup() const;
   BLINK_EXPORT ax::mojom::Role Role() const;
   BLINK_EXPORT WebString StringValue() const;
+  BLINK_EXPORT ax::mojom::ListStyle GetListStyle() const;
   BLINK_EXPORT ax::mojom::TextDirection GetTextDirection() const;
   BLINK_EXPORT ax::mojom::TextPosition GetTextPosition() const;
-  // Bitmask from ax::mojom::TextStyle.
-  BLINK_EXPORT int32_t TextStyle() const;
+  BLINK_EXPORT void GetTextStyleAndTextDecorationStyle(
+      int32_t* text_style,
+      ax::mojom::TextDecorationStyle* text_overline_style,
+      ax::mojom::TextDecorationStyle* text_strikethrough_style,
+      ax::mojom::TextDecorationStyle* text_underline_style) const;
   BLINK_EXPORT WebURL Url() const;
 
   // Retrieves the accessible name of the object, an enum indicating where the
@@ -203,9 +214,28 @@ class WebAXObject {
   // present and if it wasn't already exposed by one of the two functions above.
   BLINK_EXPORT WebString Placeholder(ax::mojom::NameFrom) const;
 
+  // Takes the result of nameFrom and retrieves the HTML Title of the object,
+  // if present and if it wasn't already exposed by |GetName| above.
+  // HTML Title is typically used as a tooltip.
+  BLINK_EXPORT WebString Title(ax::mojom::NameFrom) const;
+
   // The following selection functions get or set the global document
   // selection and can be called on any object in the tree.
-  BLINK_EXPORT void Selection(WebAXObject& anchor_object,
+  //
+  // Since we are gradually moving to a new selection codebase, we have two sets
+  // of functions. The deprecated ones will still be used by Chromium, except in
+  // Web Tests, which will be using the new ones.
+  // TODO(nektar): Remove deprecated functions. crbug.com/639340
+
+  BLINK_EXPORT void SelectionDeprecated(
+      WebAXObject& anchor_object,
+      int& anchor_offset,
+      ax::mojom::TextAffinity& anchor_affinity,
+      WebAXObject& focus_object,
+      int& focus_offset,
+      ax::mojom::TextAffinity& focus_affinity) const;
+  BLINK_EXPORT void Selection(bool& is_selection_backward,
+                              WebAXObject& anchor_object,
                               int& anchor_offset,
                               ax::mojom::TextAffinity& anchor_affinity,
                               WebAXObject& focus_object,
@@ -213,12 +243,18 @@ class WebAXObject {
                               ax::mojom::TextAffinity& focus_affinity) const;
 
   // The following selection functions return text offsets calculated starting
-  // the current object. They only report on a selection that is placed on
+  // from the current object. They only report on a selection that is placed on
   // the current object or on any of its descendants.
+  //
+  // Since we are gradually moving to a new selection codebase, we have two sets
+  // of functions. The deprecated ones will still be used by Chromium, except in
+  // Web Tests, which will be using the new ones.
+  // TODO(nektar): Remove deprecated functions. crbug.com/639340
+
+  BLINK_EXPORT unsigned SelectionEndDeprecated() const;
   BLINK_EXPORT unsigned SelectionEnd() const;
-  BLINK_EXPORT unsigned SelectionEndLineNumber() const;
+  BLINK_EXPORT unsigned SelectionStartDeprecated() const;
   BLINK_EXPORT unsigned SelectionStart() const;
-  BLINK_EXPORT unsigned SelectionStartLineNumber() const;
 
   // 1-based position in set & Size of set.
   BLINK_EXPORT int PosInSet() const;
@@ -247,7 +283,6 @@ class WebAXObject {
   BLINK_EXPORT bool HasComputedStyle() const;
   BLINK_EXPORT WebString ComputedStyleDisplay() const;
   BLINK_EXPORT bool AccessibilityIsIgnored() const;
-  BLINK_EXPORT bool LineBreaks(WebVector<int>&) const;
   BLINK_EXPORT void Markers(WebVector<ax::mojom::MarkerType>& types,
                             WebVector<int>& starts,
                             WebVector<int>& ends) const;
@@ -261,6 +296,10 @@ class WebAXObject {
   BLINK_EXPORT bool Focus() const;
   BLINK_EXPORT bool SetAccessibilityFocus() const;
   BLINK_EXPORT bool SetSelected(bool) const;
+  BLINK_EXPORT bool SetSelectionDeprecated(const WebAXObject& anchor_object,
+                                           int anchor_offset,
+                                           const WebAXObject& focus_object,
+                                           int focus_offset) const;
   BLINK_EXPORT bool SetSelection(const WebAXObject& anchor_object,
                                  int anchor_offset,
                                  const WebAXObject& focus_object,
@@ -340,6 +379,13 @@ class WebAXObject {
                                       WebFloatRect& bounds_in_container,
                                       SkMatrix44& container_transform,
                                       bool* clips_children = nullptr) const;
+
+  // Exchanges a WebAXObject with another.
+  BLINK_EXPORT void Swap(WebAXObject& other);
+
+  // Returns a brief description of the object, suitable for debugging. E.g. its
+  // role and name.
+  BLINK_EXPORT WebString ToString() const;
 
 #if INSIDE_BLINK
   BLINK_EXPORT WebAXObject(AXObject*);

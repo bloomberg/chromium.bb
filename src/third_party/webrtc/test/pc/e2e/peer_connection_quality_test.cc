@@ -17,6 +17,7 @@
 #include "api/media_stream_interface.h"
 #include "api/peer_connection_interface.h"
 #include "api/scoped_refptr.h"
+#include "api/test/video_quality_analyzer_interface.h"
 #include "api/units/time_delta.h"
 #include "logging/rtc_event_log/output/rtc_event_log_output_file.h"
 #include "logging/rtc_event_log/rtc_event_log.h"
@@ -27,12 +28,11 @@
 #include "system_wrappers/include/cpu_info.h"
 #include "test/pc/e2e/analyzer/audio/default_audio_quality_analyzer.h"
 #include "test/pc/e2e/analyzer/video/default_video_quality_analyzer.h"
-#include "test/pc/e2e/api/video_quality_analyzer_interface.h"
 #include "test/pc/e2e/stats_poller.h"
 #include "test/testsupport/file_utils.h"
 
 namespace webrtc {
-namespace test {
+namespace webrtc_pc_e2e {
 namespace {
 
 using VideoConfig = PeerConnectionE2EQualityTestFixture::VideoConfig;
@@ -102,8 +102,7 @@ PeerConnectionE2EQualityTest::PeerConnectionE2EQualityTest(
     std::unique_ptr<AudioQualityAnalyzerInterface> audio_quality_analyzer,
     std::unique_ptr<VideoQualityAnalyzerInterface> video_quality_analyzer)
     : clock_(Clock::GetRealTimeClock()),
-      test_case_name_(std::move(test_case_name)),
-      task_queue_("pc_e2e_quality_test") {
+      test_case_name_(std::move(test_case_name)) {
   // Create default video quality analyzer. We will always create an analyzer,
   // even if there are no video streams, because it will be installed into video
   // encoder/decoder factories.
@@ -123,19 +122,104 @@ PeerConnectionE2EQualityTest::PeerConnectionE2EQualityTest(
   audio_quality_analyzer_.swap(audio_quality_analyzer);
 }
 
+void PeerConnectionE2EQualityTest::ExecuteAt(
+    TimeDelta target_time_since_start,
+    std::function<void(TimeDelta)> func) {
+  ExecuteTask(target_time_since_start, absl::nullopt, func);
+}
+
+void PeerConnectionE2EQualityTest::ExecuteEvery(
+    TimeDelta initial_delay_since_start,
+    TimeDelta interval,
+    std::function<void(TimeDelta)> func) {
+  ExecuteTask(initial_delay_since_start, interval, func);
+}
+
+void PeerConnectionE2EQualityTest::ExecuteTask(
+    TimeDelta initial_delay_since_start,
+    absl::optional<TimeDelta> interval,
+    std::function<void(TimeDelta)> func) {
+  RTC_CHECK(initial_delay_since_start.IsFinite() &&
+            initial_delay_since_start >= TimeDelta::Zero());
+  RTC_CHECK(!interval ||
+            (interval->IsFinite() && *interval > TimeDelta::Zero()));
+  rtc::CritScope crit(&lock_);
+  ScheduledActivity activity(initial_delay_since_start, interval, func);
+  if (start_time_.IsInfinite()) {
+    scheduled_activities_.push(std::move(activity));
+  } else {
+    PostTask(std::move(activity));
+  }
+}
+
+void PeerConnectionE2EQualityTest::PostTask(ScheduledActivity activity) {
+  // Because start_time_ will never change at this point copy it to local
+  // variable to capture in in lambda without requirement to hold a lock.
+  Timestamp start_time = start_time_;
+
+  TimeDelta remaining_delay =
+      activity.initial_delay_since_start == TimeDelta::Zero()
+          ? TimeDelta::Zero()
+          : activity.initial_delay_since_start - (Now() - start_time_);
+  if (remaining_delay < TimeDelta::Zero()) {
+    RTC_LOG(WARNING) << "Executing late task immediately, late by="
+                     << ToString(remaining_delay.Abs());
+    remaining_delay = TimeDelta::Zero();
+  }
+
+  if (activity.interval) {
+    if (remaining_delay == TimeDelta::Zero()) {
+      repeating_task_handles_.push_back(RepeatingTaskHandle::Start(
+          task_queue_->Get(), [activity, start_time, this]() {
+            activity.func(Now() - start_time);
+            return *activity.interval;
+          }));
+      return;
+    }
+    repeating_task_handles_.push_back(RepeatingTaskHandle::DelayedStart(
+        task_queue_->Get(), remaining_delay, [activity, start_time, this]() {
+          activity.func(Now() - start_time);
+          return *activity.interval;
+        }));
+    return;
+  }
+
+  if (remaining_delay == TimeDelta::Zero()) {
+    task_queue_->PostTask(
+        [activity, start_time, this]() { activity.func(Now() - start_time); });
+    return;
+  }
+
+  task_queue_->PostDelayedTask(
+      [activity, start_time, this]() { activity.func(Now() - start_time); },
+      remaining_delay.ms());
+}
+
+void PeerConnectionE2EQualityTest::AddPeer(
+    rtc::Thread* network_thread,
+    rtc::NetworkManager* network_manager,
+    rtc::FunctionView<void(PeerConfigurer*)> configurer) {
+  peer_configurations_.push_back(
+      absl::make_unique<PeerConfigurerImpl>(network_thread, network_manager));
+  configurer(peer_configurations_.back().get());
+}
+
 void PeerConnectionE2EQualityTest::Run(
-    std::unique_ptr<InjectableComponents> alice_components,
-    std::unique_ptr<Params> alice_params,
-    std::unique_ptr<InjectableComponents> bob_components,
-    std::unique_ptr<Params> bob_params,
     RunParams run_params) {
-  RTC_CHECK(alice_components);
-  RTC_CHECK(alice_params);
-  RTC_CHECK(bob_components);
-  RTC_CHECK(bob_params);
+  RTC_CHECK_EQ(peer_configurations_.size(), 2)
+      << "Only peer to peer calls are allowed, please add 2 peers";
+
+  std::unique_ptr<Params> alice_params =
+      peer_configurations_[0]->ReleaseParams();
+  std::unique_ptr<InjectableComponents> alice_components =
+      peer_configurations_[0]->ReleaseComponents();
+  std::unique_ptr<Params> bob_params = peer_configurations_[1]->ReleaseParams();
+  std::unique_ptr<InjectableComponents> bob_components =
+      peer_configurations_[1]->ReleaseComponents();
+  peer_configurations_.clear();
 
   SetDefaultValuesForMissingParams({alice_params.get(), bob_params.get()});
-  ValidateParams({alice_params.get(), bob_params.get()});
+  ValidateParams(run_params, {alice_params.get(), bob_params.get()});
 
   // Print test summary
   RTC_LOG(INFO)
@@ -149,6 +233,9 @@ void PeerConnectionE2EQualityTest::Run(
   const std::unique_ptr<rtc::Thread> signaling_thread = rtc::Thread::Create();
   signaling_thread->SetName(kSignalThreadName, nullptr);
   signaling_thread->Start();
+
+  // Create a |task_queue_|.
+  task_queue_ = absl::make_unique<TaskQueueForTest>("pc_e2e_quality_test");
 
   // Create call participants: Alice and Bob.
   // Audio streams are intercepted in AudioDeviceModule, so if it is required to
@@ -170,21 +257,23 @@ void PeerConnectionE2EQualityTest::Run(
       absl::make_unique<FixturePeerConnectionObserver>(
           [this, bob_video_configs](
               rtc::scoped_refptr<RtpTransceiverInterface> transceiver) {
-            SetupVideoSink(transceiver, bob_video_configs);
+            OnTrackCallback(transceiver, bob_video_configs);
           },
           [this]() { StartVideo(alice_video_sources_); }),
       video_quality_analyzer_injection_helper_.get(), signaling_thread.get(),
-      alice_audio_output_dump_file_name);
+      alice_audio_output_dump_file_name,
+      run_params.video_encoder_bitrate_multiplier, task_queue_.get());
   bob_ = TestPeer::CreateTestPeer(
       std::move(bob_components), std::move(bob_params),
       absl::make_unique<FixturePeerConnectionObserver>(
           [this, alice_video_configs](
               rtc::scoped_refptr<RtpTransceiverInterface> transceiver) {
-            SetupVideoSink(transceiver, alice_video_configs);
+            OnTrackCallback(transceiver, alice_video_configs);
           },
           [this]() { StartVideo(bob_video_sources_); }),
       video_quality_analyzer_injection_helper_.get(), signaling_thread.get(),
-      bob_audio_output_dump_file_name);
+      bob_audio_output_dump_file_name,
+      run_params.video_encoder_bitrate_multiplier, task_queue_.get());
 
   int num_cores = CpuInfo::DetectNumberOfCores();
   RTC_DCHECK_GE(num_cores, 1);
@@ -200,7 +289,7 @@ void PeerConnectionE2EQualityTest::Run(
 
   video_quality_analyzer_injection_helper_->Start(test_case_name_,
                                                   video_analyzer_threads);
-  audio_quality_analyzer_->Start(test_case_name_);
+  audio_quality_analyzer_->Start(test_case_name_, &analyzer_helper_);
 
   // Start RTCEventLog recording if requested.
   if (alice_->params()->rtc_event_log_path) {
@@ -216,30 +305,40 @@ void PeerConnectionE2EQualityTest::Run(
                                  webrtc::RtcEventLog::kImmediateOutput);
   }
 
+  // Setup call.
   signaling_thread->Invoke<void>(
       RTC_FROM_HERE,
       rtc::Bind(&PeerConnectionE2EQualityTest::SetupCallOnSignalingThread,
                 this));
+  {
+    rtc::CritScope crit(&lock_);
+    start_time_ = Now();
+    while (!scheduled_activities_.empty()) {
+      PostTask(std::move(scheduled_activities_.front()));
+      scheduled_activities_.pop();
+    }
+  }
 
   StatsPoller stats_poller({audio_quality_analyzer_.get(),
                             video_quality_analyzer_injection_helper_.get()},
                            {{"alice", alice_.get()}, {"bob", bob_.get()}});
 
-  task_queue_.PostTask([&stats_poller, this]() {
-    RTC_DCHECK_RUN_ON(&task_queue_);
-    stats_polling_task_ = RepeatingTaskHandle::Start([this, &stats_poller]() {
-      RTC_DCHECK_RUN_ON(&task_queue_);
-      stats_poller.PollStatsAndNotifyObservers();
-      return kStatsUpdateInterval;
-    });
+  task_queue_->PostTask([&stats_poller, this]() {
+    RTC_DCHECK_RUN_ON(task_queue_.get());
+    stats_polling_task_ =
+        RepeatingTaskHandle::Start(task_queue_->Get(), [this, &stats_poller]() {
+          RTC_DCHECK_RUN_ON(task_queue_.get());
+          stats_poller.PollStatsAndNotifyObservers();
+          return kStatsUpdateInterval;
+        });
   });
 
   rtc::Event done;
   done.Wait(run_params.run_duration.ms());
 
   rtc::Event stats_polling_stopped;
-  task_queue_.PostTask([&stats_polling_stopped, this]() {
-    RTC_DCHECK_RUN_ON(&task_queue_);
+  task_queue_->PostTask([&stats_polling_stopped, this]() {
+    RTC_DCHECK_RUN_ON(task_queue_.get());
     stats_polling_task_.Stop();
     stats_polling_stopped.Set();
   });
@@ -247,11 +346,21 @@ void PeerConnectionE2EQualityTest::Run(
   RTC_CHECK(no_timeout) << "Failed to stop Stats polling after "
                         << kStatsPollingStopTimeout.seconds() << " seconds.";
 
+  // We need to detach AEC dumping from peers, because dump uses |task_queue_|
+  // inside.
+  alice_->DetachAecDump();
+  bob_->DetachAecDump();
+  // Destroy |task_queue_|. It is done to stop all running tasks and prevent
+  // their access to any call related objects after these objects will be
+  // destroyed during call tear down.
+  task_queue_.reset();
+  // Tear down the call.
   signaling_thread->Invoke<void>(
       RTC_FROM_HERE,
       rtc::Bind(&PeerConnectionE2EQualityTest::TearDownCallOnSignalingThread,
                 this));
 
+  audio_quality_analyzer_->Stop();
   video_quality_analyzer_injection_helper_->Stop();
 
   // Ensuring that TestPeers have been destroyed in order to correctly close
@@ -299,7 +408,10 @@ void PeerConnectionE2EQualityTest::SetDefaultValuesForMissingParams(
   }
 }
 
-void PeerConnectionE2EQualityTest::ValidateParams(std::vector<Params*> params) {
+void PeerConnectionE2EQualityTest::ValidateParams(const RunParams& run_params,
+                                                  std::vector<Params*> params) {
+  RTC_CHECK_GT(run_params.video_encoder_bitrate_multiplier, 0.0);
+
   std::set<std::string> video_labels;
   std::set<std::string> audio_labels;
   int media_streams_count = 0;
@@ -341,7 +453,10 @@ void PeerConnectionE2EQualityTest::ValidateParams(std::vector<Params*> params) {
       }
       if (p->audio_config.value().mode == AudioConfig::Mode::kFile) {
         RTC_CHECK(p->audio_config.value().input_file_name);
-        RTC_CHECK(FileExists(p->audio_config.value().input_file_name.value()));
+        RTC_CHECK(
+            test::FileExists(p->audio_config.value().input_file_name.value()))
+            << p->audio_config.value().input_file_name.value()
+            << " doesn't exist";
       }
     }
   }
@@ -349,17 +464,18 @@ void PeerConnectionE2EQualityTest::ValidateParams(std::vector<Params*> params) {
   RTC_CHECK_GT(media_streams_count, 0) << "No media in the call.";
 }
 
-void PeerConnectionE2EQualityTest::SetupVideoSink(
+void PeerConnectionE2EQualityTest::OnTrackCallback(
     rtc::scoped_refptr<RtpTransceiverInterface> transceiver,
     std::vector<VideoConfig> remote_video_configs) {
   const rtc::scoped_refptr<MediaStreamTrackInterface>& track =
       transceiver->receiver()->track();
+  RTC_CHECK_EQ(transceiver->receiver()->stream_ids().size(), 1);
+  std::string stream_label = transceiver->receiver()->stream_ids().front();
+  analyzer_helper_.AddTrackToStreamMapping(track->id(), stream_label);
   if (track->kind() != MediaStreamTrackInterface::kVideoKind) {
     return;
   }
 
-  RTC_CHECK_EQ(transceiver->receiver()->stream_ids().size(), 1);
-  std::string stream_label = transceiver->receiver()->stream_ids().front();
   VideoConfig* video_config = nullptr;
   for (auto& config : remote_video_configs) {
     if (config.stream_label == stream_label) {
@@ -368,7 +484,7 @@ void PeerConnectionE2EQualityTest::SetupVideoSink(
     }
   }
   RTC_CHECK(video_config);
-  VideoFrameWriter* writer = MaybeCreateVideoWriter(
+  test::VideoFrameWriter* writer = MaybeCreateVideoWriter(
       video_config->output_dump_file_name, *video_config);
   // It is safe to cast here, because it is checked above that
   // track->kind() is kVideoKind.
@@ -420,12 +536,12 @@ PeerConnectionE2EQualityTest::MaybeAddVideo(TestPeer* peer) {
   std::vector<rtc::scoped_refptr<FrameGeneratorCapturerVideoTrackSource>> out;
   for (auto video_config : params->video_configs) {
     // Create video generator.
-    std::unique_ptr<FrameGenerator> frame_generator =
+    std::unique_ptr<test::FrameGenerator> frame_generator =
         CreateFrameGenerator(video_config);
 
     // Wrap it to inject video quality analyzer and enable dump of input video
     // if required.
-    VideoFrameWriter* writer =
+    test::VideoFrameWriter* writer =
         MaybeCreateVideoWriter(video_config.input_dump_file_name, video_config);
     frame_generator =
         video_quality_analyzer_injection_helper_->WrapFrameGenerator(
@@ -433,8 +549,8 @@ PeerConnectionE2EQualityTest::MaybeAddVideo(TestPeer* peer) {
             writer);
 
     // Setup FrameGenerator into peer connection.
-    std::unique_ptr<FrameGeneratorCapturer> capturer =
-        absl::WrapUnique(FrameGeneratorCapturer::Create(
+    std::unique_ptr<test::FrameGeneratorCapturer> capturer =
+        absl::WrapUnique(test::FrameGeneratorCapturer::Create(
             std::move(frame_generator), video_config.fps, clock_));
     rtc::scoped_refptr<FrameGeneratorCapturerVideoTrackSource> source =
         new rtc::RefCountedObject<FrameGeneratorCapturerVideoTrackSource>(
@@ -450,26 +566,26 @@ PeerConnectionE2EQualityTest::MaybeAddVideo(TestPeer* peer) {
   return out;
 }
 
-std::unique_ptr<FrameGenerator>
+std::unique_ptr<test::FrameGenerator>
 PeerConnectionE2EQualityTest::CreateFrameGenerator(
     const VideoConfig& video_config) {
   if (video_config.generator) {
-    absl::optional<FrameGenerator::OutputType> frame_generator_type =
+    absl::optional<test::FrameGenerator::OutputType> frame_generator_type =
         absl::nullopt;
     if (video_config.generator == VideoGeneratorType::kDefault) {
-      frame_generator_type = FrameGenerator::OutputType::I420;
+      frame_generator_type = test::FrameGenerator::OutputType::I420;
     } else if (video_config.generator == VideoGeneratorType::kI420A) {
-      frame_generator_type = FrameGenerator::OutputType::I420A;
+      frame_generator_type = test::FrameGenerator::OutputType::I420A;
     } else if (video_config.generator == VideoGeneratorType::kI010) {
-      frame_generator_type = FrameGenerator::OutputType::I010;
+      frame_generator_type = test::FrameGenerator::OutputType::I010;
     }
-    return FrameGenerator::CreateSquareGenerator(
+    return test::FrameGenerator::CreateSquareGenerator(
         static_cast<int>(video_config.width),
         static_cast<int>(video_config.height), frame_generator_type,
         absl::nullopt);
   }
   if (video_config.input_file_name) {
-    return FrameGenerator::CreateFromYuvFile(
+    return test::FrameGenerator::CreateFromYuvFile(
         std::vector<std::string>(/*count=*/1,
                                  video_config.input_file_name.value()),
         video_config.width, video_config.height, /*frame_repeat_count=*/1);
@@ -545,18 +661,30 @@ void PeerConnectionE2EQualityTest::TearDownCall() {
   bob_.reset();
 }
 
-VideoFrameWriter* PeerConnectionE2EQualityTest::MaybeCreateVideoWriter(
+test::VideoFrameWriter* PeerConnectionE2EQualityTest::MaybeCreateVideoWriter(
     absl::optional<std::string> file_name,
     const VideoConfig& config) {
   if (!file_name) {
     return nullptr;
   }
-  auto video_writer = absl::make_unique<VideoFrameWriter>(
+  auto video_writer = absl::make_unique<test::VideoFrameWriter>(
       file_name.value(), config.width, config.height, config.fps);
-  VideoFrameWriter* out = video_writer.get();
+  test::VideoFrameWriter* out = video_writer.get();
   video_writers_.push_back(std::move(video_writer));
   return out;
 }
 
-}  // namespace test
+Timestamp PeerConnectionE2EQualityTest::Now() const {
+  return Timestamp::us(clock_->TimeInMicroseconds());
+}
+
+PeerConnectionE2EQualityTest::ScheduledActivity::ScheduledActivity(
+    TimeDelta initial_delay_since_start,
+    absl::optional<TimeDelta> interval,
+    std::function<void(TimeDelta)> func)
+    : initial_delay_since_start(initial_delay_since_start),
+      interval(std::move(interval)),
+      func(std::move(func)) {}
+
+}  // namespace webrtc_pc_e2e
 }  // namespace webrtc

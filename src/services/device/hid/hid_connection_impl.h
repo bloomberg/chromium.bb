@@ -6,6 +6,7 @@
 #define SERVICES_DEVICE_HID_HID_CONNECTION_IMPL_H_
 
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/device/hid/hid_connection.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
@@ -14,10 +15,16 @@ namespace device {
 // HidConnectionImpl is reponsible for handling mojo communications from
 // clients. It delegates to HidConnection the real work of creating
 // connections in different platforms.
-class HidConnectionImpl : public mojom::HidConnection {
+class HidConnectionImpl : public mojom::HidConnection,
+                          public HidConnection::Client {
  public:
-  explicit HidConnectionImpl(scoped_refptr<device::HidConnection> connection);
+  HidConnectionImpl(scoped_refptr<device::HidConnection> connection,
+                    mojom::HidConnectionClientPtr connection_client);
   ~HidConnectionImpl() final;
+
+  // HidConnection::Client implementation:
+  void OnInputReport(scoped_refptr<base::RefCountedBytes> buffer,
+                     size_t size) override;
 
   // mojom::HidConnection implementation:
   void Read(ReadCallback callback) override;
@@ -43,6 +50,8 @@ class HidConnectionImpl : public mojom::HidConnection {
   void OnSendFeatureReport(SendFeatureReportCallback callback, bool success);
 
   scoped_refptr<device::HidConnection> hid_connection_;
+  mojo::InterfacePtr<mojom::HidConnectionClient> client_;
+
   base::WeakPtrFactory<HidConnectionImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HidConnectionImpl);

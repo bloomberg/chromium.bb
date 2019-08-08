@@ -431,7 +431,7 @@ VideoTrackRecorder::VideoTrackRecorder(
       codec, on_encoded_video_callback, bits_per_second);
 
   // InitializeEncoder() will be called on Render Main thread.
-  MediaStreamVideoSink::ConnectToTrack(
+  blink::MediaStreamVideoSink::ConnectToTrack(
       track_,
       media::BindToCurrentLoop(base::Bind(initialize_encoder_callback_,
                                           true /* allow_vea_encoder */)),
@@ -440,7 +440,7 @@ VideoTrackRecorder::VideoTrackRecorder(
 
 VideoTrackRecorder::~VideoTrackRecorder() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-  MediaStreamVideoSink::DisconnectFromTrack();
+  blink::MediaStreamVideoSink::DisconnectFromTrack();
   track_.Reset();
 }
 
@@ -489,7 +489,7 @@ void VideoTrackRecorder::InitializeEncoder(
   if (encoder_)
     return;
 
-  MediaStreamVideoSink::DisconnectFromTrack();
+  blink::MediaStreamVideoSink::DisconnectFromTrack();
 
   const gfx::Size& input_size = frame->visible_rect().size();
   if (allow_vea_encoder && CanUseAcceleratedEncoder(codec, input_size.width(),
@@ -526,7 +526,7 @@ void VideoTrackRecorder::InitializeEncoder(
     encoder_->SetPaused(should_pause_encoder_on_initialization_);
 
   // StartFrameEncode() will be called on Render IO thread.
-  MediaStreamVideoSink::ConnectToTrack(
+  blink::MediaStreamVideoSink::ConnectToTrack(
       track_,
       base::Bind(&VideoTrackRecorder::Encoder::StartFrameEncode, encoder_),
       false);
@@ -538,9 +538,9 @@ void VideoTrackRecorder::OnError() {
 
   // InitializeEncoder() will be called to reinitialize encoder on Render Main
   // thread.
-  MediaStreamVideoSink::DisconnectFromTrack();
+  blink::MediaStreamVideoSink::DisconnectFromTrack();
   encoder_ = nullptr;
-  MediaStreamVideoSink::ConnectToTrack(
+  blink::MediaStreamVideoSink::ConnectToTrack(
       track_,
       media::BindToCurrentLoop(base::Bind(initialize_encoder_callback_,
                                           false /*allow_vea_encoder*/)),

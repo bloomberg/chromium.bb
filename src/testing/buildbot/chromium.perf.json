@@ -246,7 +246,7 @@
           "hard_timeout": 36000,
           "ignore_task_failure": false,
           "io_timeout": 1800,
-          "shards": 8
+          "shards": 12
         },
         "trigger_script": {
           "args": [
@@ -660,7 +660,7 @@
       {
         "args": [
           "-v",
-          "--browser=android-chromium",
+          "--browser=android-chrome",
           "--upload-results",
           "--run-ref-build",
           "--test-shard-map-filename=android-go-perf_map.json"

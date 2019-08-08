@@ -12,7 +12,7 @@ from __future__ import print_function
 
 import os
 
-from chromite.api.gen import image_pb2
+from chromite.api.gen.chromite.api import image_pb2
 from chromite.lib import constants
 from chromite.lib import image_lib
 from chromite.service import image
@@ -78,13 +78,27 @@ def Create(input_proto, output_proto):
   )
 
   # Sorted isn't really necessary here, but it's much easier to test.
-  output_proto.success = image.Build(board=board,
-                                     images=sorted(list(image_types)),
-                                     config=build_config)
-  if not output_proto.success:
-    # Nothing else to add on failure.
-    return
+  result = image.Build(board=board, images=sorted(list(image_types)),
+                       config=build_config)
 
+  output_proto.success = result.success
+  if result.success:
+    # Success -- we need to list out the images we built in the output.
+    _PopulateBuiltImages(board, image_types, output_proto)
+  else:
+    # Failure -- include all of the failed packages in the output.
+    for package in result.failed_packages:
+      current = output_proto.failed_packages.add()
+      current.category = package.category
+      current.package_name = package.package
+      if package.version:
+        current.version = package.version
+
+    return 1
+
+
+def _PopulateBuiltImages(board, image_types, output_proto):
+  """Helper to list out built images for Create."""
   # Build out the ImageType->ImagePath mapping in the output.
   # We're using the default path, so just fetch that, but read the symlink so
   # the path we're returning is somewhat more permanent.

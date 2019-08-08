@@ -29,3 +29,8 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+cr-icon-button {
+  --cr-icon-button-color: black;
+  margin: 0;
+}

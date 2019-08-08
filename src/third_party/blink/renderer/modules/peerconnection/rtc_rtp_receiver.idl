@@ -7,7 +7,8 @@
 interface RTCRtpReceiver {
     readonly attribute MediaStreamTrack track;
     [RuntimeEnabled=RTCDtlsTransport] readonly attribute RTCDtlsTransport? transport;
-    [RuntimeEnabled=RTCDtlsTransport] readonly attribute RTCDtlsTransport? rtcp_transport;
+    [RuntimeEnabled=RTCDtlsTransport] readonly attribute RTCDtlsTransport? rtcpTransport;
+    [RaisesException, RuntimeEnabled=RtcJitterBufferDelayHint, Measure] attribute double? jitterBufferDelayHint;
     static RTCRtpCapabilities?            getCapabilities(DOMString kind);
     RTCRtpReceiveParameters               getParameters();
     sequence<RTCRtpSynchronizationSource> getSynchronizationSources();

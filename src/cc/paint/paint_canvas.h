@@ -6,7 +6,6 @@
 #define CC_PAINT_PAINT_CANVAS_H_
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_export.h"
@@ -42,8 +41,11 @@ using PaintRecord = PaintOpBuffer;
 // from SkCanvas to PaintCanvas or from SkPicture back into PaintRecord.
 class CC_PAINT_EXPORT PaintCanvas {
  public:
-  PaintCanvas() {}
-  virtual ~PaintCanvas() {}
+  PaintCanvas() = default;
+  PaintCanvas(const PaintCanvas&) = delete;
+  virtual ~PaintCanvas() = default;
+
+  PaintCanvas& operator=(const PaintCanvas&) = delete;
 
   // TODO(enne): this only appears to mostly be used to determine if this is
   // recording or not, so could be simplified or removed.
@@ -193,8 +195,6 @@ class CC_PAINT_EXPORT PaintCanvas {
 
  private:
   printing::MetafileSkia* metafile_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintCanvas);
 };
 
 class CC_PAINT_EXPORT PaintCanvasAutoRestore {

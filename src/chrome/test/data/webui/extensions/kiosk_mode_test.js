@@ -106,8 +106,7 @@ cr.define('extension_kiosk_mode_tests', function() {
             // disabled.
             expectTrue(dialog.$$('cr-checkbox').hidden);
 
-            MockInteractions.tap(
-                items[0].querySelector('.icon-delete-gray button'));
+            MockInteractions.tap(items[0].querySelector('.icon-delete-gray'));
             Polymer.dom.flush();
             return browserProxy.whenCalled('removeKioskApp');
           })

@@ -96,11 +96,6 @@ PaintLayerScrollableArea* GetScrollableArea(const Element& element) {
 
 }  // namespace
 
-// static
-RootScrollerController* RootScrollerController::Create(Document& document) {
-  return MakeGarbageCollected<RootScrollerController>(document);
-}
-
 RootScrollerController::RootScrollerController(Document& document)
     : document_(&document), effective_root_scroller_(&document) {}
 
@@ -303,13 +298,13 @@ bool RootScrollerController::IsValidImplicit(const Element& element) const {
     // the URL bar movement). Test it for scrolling so that we only promote if
     // we know we won't block scrolling the main document.
     if (ancestor->IsLayoutView()) {
-      const ComputedStyle* style = ancestor->Style();
-      DCHECK(style);
+      const ComputedStyle* ancestor_style = ancestor->Style();
+      DCHECK(ancestor_style);
 
       PaintLayerScrollableArea* area = ancestor->GetScrollableArea();
       DCHECK(area);
 
-      if (style->ScrollsOverflowY() && area->HasVerticalOverflow())
+      if (ancestor_style->ScrollsOverflowY() && area->HasVerticalOverflow())
         return false;
     } else {
       if (ancestor->ShouldClipOverflow() || ancestor->HasMask() ||
@@ -343,7 +338,7 @@ void RootScrollerController::ApplyRootScrollerProperties(Node& node) {
 
   if (IsA<LocalFrame>(frame_owner->ContentFrame())) {
     LocalFrameView* frame_view =
-        To<LocalFrameView>(frame_owner->OwnedEmbeddedContentView());
+        DynamicTo<LocalFrameView>(frame_owner->OwnedEmbeddedContentView());
 
     bool is_root_scroller = &EffectiveRootScroller() == &node;
 

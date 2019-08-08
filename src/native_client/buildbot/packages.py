@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import argparse
 import os
 import subprocess
@@ -27,17 +29,17 @@ def UploadPackages(filename, is_try, is_sanitizer=False):
     is_try: True if the run is for a trybot, False if for a real buildbot.
     is_sanitizer: True if building with a sanitizer.
   """
-  print '@@@BUILD_STEP upload_package_info@@@'
+  print('@@@BUILD_STEP upload_package_info@@@')
   sys.stdout.flush()
 
   buildbot_buildername = os.getenv('BUILDBOT_BUILDERNAME', None)
   if buildbot_buildername is None:
-    print 'Error - could not obtain buildbot builder name'
+    print('Error - could not obtain buildbot builder name')
     sys.exit(1)
   if not is_try:
     buildbot_revision = os.getenv('BUILDBOT_GOT_REVISION', None)
     if buildbot_revision is None:
-      print 'Error - Could not obtain buildbot revision number'
+      print('Error - Could not obtain buildbot revision number')
       sys.exit(1)
     if is_sanitizer:
       upload_rev = '%s/%s' % (buildbot_buildername, buildbot_revision)
@@ -47,7 +49,7 @@ def UploadPackages(filename, is_try, is_sanitizer=False):
   else:
     buildbot_buildnumber = os.getenv('BUILDBOT_BUILDNUMBER', None)
     if buildbot_buildnumber is None:
-      print 'Error - could not obtain buildbot build number'
+      print('Error - could not obtain buildbot build number')
       sys.exit(1)
     upload_rev = '%s/%s' % (buildbot_buildername, buildbot_buildnumber)
     upload_args = ['--cloud-bucket', 'nativeclient-trybot/packages']
@@ -77,7 +79,7 @@ def ExtractPackages(filename, overlay_packages=True, skip_missing=True):
     overlay_packages: Uses packages overlaid on top of default packages.
     skip_missing: If not overlaying packages, do not error on missing tar files.
   """
-  print '@@@BUILD_STEP extract_packages@@@'
+  print('@@@BUILD_STEP extract_packages@@@')
   sys.stdout.flush()
 
   platform = pynacl.platform.GetOS()
@@ -115,7 +117,7 @@ def ExtractPackages(filename, overlay_packages=True, skip_missing=True):
                   ['extract'] +
                   extract_args)
 
-      print 'Executing:', cmd_args
+      print('Executing:', cmd_args)
       subprocess.check_call([sys.executable,
                              PACKAGE_VERSION_SCRIPT,
                              '--annotate',
@@ -151,7 +153,7 @@ def main(args):
                     skip_missing=arguments.skip_missing)
     return 0
 
-  print 'Unknown Command:', arguments.command
+  print('Unknown Command:', arguments.command)
   return 1
 
 if __name__ == '__main__':

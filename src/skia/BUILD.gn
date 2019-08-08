@@ -25,6 +25,7 @@ skia_support_skottie = true
 
 declare_args() {
   skia_whitelist_serialized_typefaces = false
+  skia_use_metal = false
 }
 
 # External-facing config for dependent code.
@@ -544,7 +545,7 @@ component("skia") {
 
   if (is_android) {
     deps += [
-      "//third_party/android_tools:cpu_features",
+      "//third_party/android_sdk:cpu_features",
       "//third_party/expat",
     ]
   }
@@ -555,6 +556,15 @@ component("skia") {
   }
 
   if (is_mac) {
+    if (skia_use_metal) {
+      deps += [ ":skia_metal" ]
+      defines += [ "SK_METAL" ]
+      libs += [
+        "Metal.framework",
+        "Foundation.framework",
+      ]
+    }
+
     libs = [
       "AppKit.framework",
       "CoreFoundation.framework",
@@ -788,6 +798,18 @@ skia_source_set("skia_opts") {
   }
 
   visibility = [ ":skia" ]
+}
+
+# Split out metal sources, because they require ARC.
+if (is_mac && skia_use_metal) {
+  skia_source_set("skia_metal") {
+    defines = [ "SK_METAL" ]
+    sources = skia_metal_sources
+    cflags_objcc = [
+      "-Wno-unguarded-availability",
+      "-fobjc-arc",
+    ]
+  }
 }
 
 # Font copies.

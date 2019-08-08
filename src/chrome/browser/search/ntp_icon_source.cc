@@ -11,17 +11,17 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/hash/sha1.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
+#include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
-#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/platform_locale_settings.h"
@@ -298,7 +298,7 @@ struct NtpIconSource::NtpIconRequest {
 NtpIconSource::NtpIconSource(Profile* profile)
     : profile_(profile),
       image_fetcher_(std::make_unique<image_fetcher::ImageFetcherImpl>(
-          std::make_unique<suggestions::ImageDecoderImpl>(),
+          std::make_unique<ImageDecoderImpl>(),
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetURLLoaderFactoryForBrowserProcess())),
       weak_ptr_factory_(this) {}

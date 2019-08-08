@@ -27,8 +27,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -85,6 +84,9 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
     // Run the event loop so that PowerButtonDisplayController can receive the
     // initial backlights-forced-off state.
     base::RunLoop().RunUntilIdle();
+
+    a11y_controller_ = Shell::Get()->accessibility_controller();
+    a11y_controller_->SetClient(a11y_client_.CreateInterfacePtrAndBind());
   }
 
  protected:
@@ -150,6 +152,9 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
   void ReleaseLockButton() {
     power_button_controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
   }
+
+  AccessibilityController* a11y_controller_ = nullptr;  // not owned
+  TestAccessibilityControllerClient a11y_client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerButtonControllerTest);
@@ -402,7 +407,7 @@ TEST_F(PowerButtonControllerTest, PressAfterAnotherReleased) {
   PressLockButton();
   ReleaseLockButton();
   EXPECT_TRUE(lock_state_test_api_->is_animating_lock());
-  EXPECT_EQ(1, session_manager_client_->request_lock_screen_call_count());
+  EXPECT_TRUE(GetLockedState());
 }
 
 // Tests press lock/power button before release power/lock button.
@@ -417,7 +422,7 @@ TEST_F(PowerButtonControllerTest, PressBeforeAnotherReleased) {
   ReleaseLockButton();
   ReleasePowerButton();
   EXPECT_FALSE(lock_state_test_api_->is_animating_lock());
-  EXPECT_EQ(0, session_manager_client_->request_lock_screen_call_count());
+  EXPECT_FALSE(GetLockedState());
   EXPECT_TRUE(power_manager_client()->backlights_forced_off());
 
   // Turn the screen on.
@@ -430,7 +435,7 @@ TEST_F(PowerButtonControllerTest, PressBeforeAnotherReleased) {
   ReleasePowerButton();
   ReleaseLockButton();
   EXPECT_TRUE(lock_state_test_api_->is_animating_lock());
-  EXPECT_EQ(1, session_manager_client_->request_lock_screen_call_count());
+  EXPECT_TRUE(GetLockedState());
   EXPECT_FALSE(power_manager_client()->backlights_forced_off());
 }
 
@@ -771,21 +776,19 @@ TEST_F(PowerButtonControllerTest, IgnoreForcingOffWhenDisplayIsTurningOn) {
 // Tests that a11y alert is sent on tablet power button induced screen state
 // change.
 TEST_F(PowerButtonControllerTest, A11yAlert) {
-  TestAccessibilityControllerClient client;
-  AccessibilityController* controller =
-      Shell::Get()->accessibility_controller();
-  controller->SetClient(client.CreateInterfacePtrAndBind());
   EnableTabletMode(true);
   PressPowerButton();
   ReleasePowerButton();
   SendBrightnessChange(0, kUserCause);
-  controller->FlushMojoForTest();
-  EXPECT_EQ(mojom::AccessibilityAlert::SCREEN_OFF, client.last_a11y_alert());
+  a11y_controller_->FlushMojoForTest();
+  EXPECT_EQ(mojom::AccessibilityAlert::SCREEN_OFF,
+            a11y_client_.last_a11y_alert());
 
   PressPowerButton();
   SendBrightnessChange(kNonZeroBrightness, kUserCause);
-  controller->FlushMojoForTest();
-  EXPECT_EQ(mojom::AccessibilityAlert::SCREEN_ON, client.last_a11y_alert());
+  a11y_controller_->FlushMojoForTest();
+  EXPECT_EQ(mojom::AccessibilityAlert::SCREEN_ON,
+            a11y_client_.last_a11y_alert());
   ReleasePowerButton();
 }
 
@@ -1361,6 +1364,35 @@ TEST_P(PowerButtonControllerWithPositionTest, AdjustMenuShownForDisplaySize) {
             OrientationLockType::kPortraitSecondary);
   EXPECT_TRUE(GetPrimaryDisplay().bounds().Contains(
       power_button_test_api_->GetMenuBoundsInScreen()));
+}
+
+// Tests that a power button press before the menu is fully shown will not
+// create a new menu.
+TEST_F(PowerButtonControllerTest, LegacyPowerButtonIgnoreExtraPress) {
+  Initialize(ButtonType::LEGACY, LoginStatus::USER);
+
+  // Enable animations so that we can make sure that they occur.
+  ui::ScopedAnimationDurationScaleMode regular_animations(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  PressPowerButton();
+  // Power menu is in the partially shown state.
+  ASSERT_TRUE(power_button_test_api_->IsMenuOpened());
+  ASSERT_FALSE(power_button_test_api_->ShowMenuAnimationDone());
+  PowerButtonMenuView* menu_view_before =
+      power_button_test_api_->GetPowerButtonMenuView();
+  // Press power button again and make sure new PowerButtonMenuView is not
+  // created. This makes sure that we do not create a new menu while we are in
+  // the process of creating one for an old power button press.
+  PressPowerButton();
+  EXPECT_EQ(menu_view_before, power_button_test_api_->GetPowerButtonMenuView());
+  // This is needed to simulate the shutdown sound having been played,
+  // which blocks the shutdown timer.
+  a11y_controller_->FlushMojoForTest();
+  // Make sure that the second press did not trigger a shutdown.
+  EXPECT_FALSE(lock_state_test_api_->real_shutdown_timer_is_running());
+  // Make sure that power menu is still in partially shown state.
+  ASSERT_TRUE(power_button_test_api_->IsMenuOpened());
+  ASSERT_FALSE(power_button_test_api_->ShowMenuAnimationDone());
 }
 
 INSTANTIATE_TEST_SUITE_P(AshPowerButtonPosition,

@@ -7,8 +7,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/token.h"
 #include "base/values.h"
-#include "chrome/browser/browser_features.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -48,16 +48,12 @@ class DarkModeHandlerTest : public testing::Test {
     const auto* replacements = source()->GetReplacements();
     const auto dark_it = replacements->find("dark");
 
-    const auto* local_strings = source()->GetLocalizedStrings();
-    const auto* dark_mode =
-        local_strings->FindKeyOfType("darkMode", base::Value::Type::BOOLEAN);
-
-    if (dark_it == replacements->end() || !dark_mode) {
+    if (dark_it == replacements->end()) {
       ADD_FAILURE();
       return false;
     }
 
-    return dark_it->second == "dark" && dark_mode->GetBool();
+    return dark_it->second == "dark";
   }
 
  private:

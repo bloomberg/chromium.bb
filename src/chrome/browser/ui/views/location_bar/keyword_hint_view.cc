@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/search_engines/template_url_service.h"
@@ -28,16 +27,14 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 
-KeywordHintView::KeywordHintView(views::ButtonListener* listener,
-                                 Profile* profile,
-                                 OmniboxTint tint)
-    : Button(listener),
+KeywordHintView::KeywordHintView(LocationBarView* parent, Profile* profile)
+    : Button(parent),
+      location_bar_view_(parent),
       profile_(profile),
-      leading_label_(nullptr),
       chip_container_(new views::View()),
       chip_label_(
-          new views::Label(base::string16(), CONTEXT_OMNIBOX_DECORATION)),
-      trailing_label_(nullptr) {
+          new views::Label(base::string16(), CONTEXT_OMNIBOX_DECORATION)) {
+  OmniboxTint tint = parent->GetTint();
   const SkColor leading_label_text_color =
       GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DEFAULT, tint);
   const SkColor background_color =
@@ -205,6 +202,35 @@ void KeywordHintView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
       gfx::Insets(GetInsets().top(), chip_corner_radius, GetInsets().bottom(),
                   chip_corner_radius)));
   views::Button::OnBoundsChanged(previous_bounds);
+}
+
+void KeywordHintView::OnThemeChanged() {
+  OmniboxTint tint = location_bar_view_->GetTint();
+  const SkColor leading_label_text_color =
+      GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DEFAULT, tint);
+  const SkColor background_color =
+      GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, tint);
+  leading_label_->SetEnabledColor(leading_label_text_color);
+  leading_label_->SetBackgroundColor(background_color);
+
+  const SkColor tab_border_color =
+      GetOmniboxColor(OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE, tint);
+  SkColor text_color = leading_label_text_color;
+  SkColor tab_bg_color = GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, tint);
+  if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled()) {
+    text_color = SK_ColorWHITE;
+    tab_bg_color = tab_border_color;
+  }
+  chip_label_->SetEnabledColor(text_color);
+  chip_label_->SetBackgroundColor(tab_bg_color);
+
+  chip_container_->SetBackground(CreateBackgroundFromPainter(
+      views::Painter::CreateRoundRectWith1PxBorderPainter(
+          tab_bg_color, tab_border_color,
+          GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS))));
+
+  trailing_label_->SetEnabledColor(text_color);
+  trailing_label_->SetBackgroundColor(background_color);
 }
 
 views::Label* KeywordHintView::CreateLabel(SkColor text_color,

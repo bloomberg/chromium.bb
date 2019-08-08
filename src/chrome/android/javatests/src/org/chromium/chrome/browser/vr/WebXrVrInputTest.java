@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
@@ -50,6 +49,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 
 import java.util.List;
@@ -64,7 +64,7 @@ import java.util.concurrent.TimeUnit;
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT) // WebVR and WebXR are only supported on K+
+@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebVR and WebXR are only supported on L+
 public class WebXrVrInputTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
@@ -234,7 +234,7 @@ public class WebXrVrInputTest {
 
     private long sendScreenTouchDown(final View view, final int x, final int y) {
         long downTime = SystemClock.uptimeMillis();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             view.dispatchTouchEvent(
                     MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0));
         });
@@ -242,7 +242,7 @@ public class WebXrVrInputTest {
     }
 
     private void sendScreenTouchUp(final View view, final int x, final int y, final long downTime) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             long now = SystemClock.uptimeMillis();
             view.dispatchTouchEvent(
                     MotionEvent.obtain(downTime, now, MotionEvent.ACTION_UP, x, y, 0));
@@ -334,6 +334,8 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
+    @DisableIf.
+    Build(message = "K/M https://crbug.com/897259", sdk_is_less_than = Build.VERSION_CODES.N)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testPresentationLocksFocus() throws InterruptedException {
         presentationLocksFocusImpl(
@@ -479,7 +481,7 @@ public class WebXrVrInputTest {
 
         NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
         Assert.assertFalse("App button left Chrome",
-                ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                TestThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
                         return mockApi.getExitFromVrCalled()
@@ -512,7 +514,7 @@ public class WebXrVrInputTest {
                 },
                 "DisplayActivate was never registered", POLL_TIMEOUT_LONG_MS,
                 POLL_CHECK_INTERVAL_SHORT_MS);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ViewEventSink.from(mTestRule.getWebContents()).onPauseForTesting();
             Assert.assertFalse(
                     "VR Shell is listening for headset insertion after WebContents paused",
@@ -562,8 +564,8 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Verifies that a Gamepad API gamepad is not returned when using WebXR and a Daydream View if
-     * WebXRGamepadSupport is not explicitly enabled. Correctness testing for
+     * Verifies that a Gamepad API gamepad is not returned when using WebXR and a Daydream headset
+     * if WebXRGamepadSupport is not explicitly enabled. Correctness testing for
      * https://crbug.com/830935.
      */
     @Test
@@ -598,7 +600,7 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Verifies that a Gamepad API gamepad is returned when using WebXR  and Daydream View if
+     * Verifies that a Gamepad API gamepad is returned when using WebXR and a Daydream headset if
      * WebXRGamepadSupport is explicitly enabled. Correctness testing for https://crbug.com/830935.
      */
     @Test
@@ -632,7 +634,7 @@ public class WebXrVrInputTest {
 
     /**
      * Verifies that a Gamepad API gamepad is not returned when not using WebXR, WebVR, or the
-     * WebXRGamepadSupport feature with Daydream View. Correctness testing for
+     * WebXRGamepadSupport feature with a Daydream headset. Correctness testing for
      * https://crbug.com/830935.
      */
     @Test
@@ -663,6 +665,13 @@ public class WebXrVrInputTest {
     private void webxrGamepadSupportImpl(int numExpectedGamepads, boolean webxrPresent,
             boolean daydream) throws InterruptedException {
         if (webxrPresent) {
+            // TODO(https://crbug.com/947581): Update the test and remove this when Gamepads are
+            // supported by WebXR again. getGamepads() should always return 0, and the test should
+            // check that too. For now, change the expected value rather than disabling the tests
+            // since we actually expect 0 gamepads in all cases after removing WebXRGamepadSupport
+            // (https://crbug.com/920025).
+            numExpectedGamepads = 0;
+
             mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
                     WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_gamepad_support"),
                     PAGE_LOAD_TIMEOUT_S);

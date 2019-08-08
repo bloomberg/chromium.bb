@@ -28,12 +28,17 @@
 #ifndef DAV1D_COMMON_H
 #define DAV1D_COMMON_H
 
+#include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #ifndef DAV1D_API
     #if defined _WIN32
-      #define DAV1D_API __declspec(dllexport)
+      #if defined DAV1D_BUILDING_DLL
+        #define DAV1D_API __declspec(dllexport)
+      #else
+        #define DAV1D_API
+      #endif
     #else
       #if __GNUC__ >= 4
         #define DAV1D_API __attribute__ ((visibility ("default")))
@@ -41,6 +46,12 @@
         #define DAV1D_API
       #endif
     #endif
+#endif
+
+#if EPERM > 0
+#define DAV1D_ERR(e) (-(e)) ///< Negate POSIX error code.
+#else
+#define DAV1D_ERR(e) (e)
 #endif
 
 /**

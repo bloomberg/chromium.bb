@@ -70,6 +70,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
             int child_id,
             int frame_id,
             url::Origin origin,
+            uint32_t options,
             base::TimeDelta delay);
   ~WebSocket() override;
 
@@ -90,6 +91,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
 
   bool handshake_succeeded() const { return handshake_succeeded_; }
+
+  // Whether to allow sending/setting cookies during WebSocket handshakes for
+  // |url|. This decision is based on the |options_| and |origin_| this
+  // WebSocket was created with.
+  bool AllowCookies(const GURL& url) const;
 
   // These methods are called by the network delegate to forward these events to
   // the |header_client_|.
@@ -165,6 +171,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // AddChannel() is called.
   // Zero indicates there is no pending SendFlowControl().
   int64_t pending_flow_control_quota_;
+
+  uint32_t options_;
 
   int child_id_;
   int frame_id_;

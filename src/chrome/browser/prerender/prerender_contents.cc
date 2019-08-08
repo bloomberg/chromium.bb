@@ -104,10 +104,10 @@ class PrerenderContents::WebContentsDelegateImpl
 
   void CanDownload(const GURL& url,
                    const std::string& request_method,
-                   const base::Callback<void(bool)>& callback) override {
+                   base::OnceCallback<void(bool)> callback) override {
     prerender_contents_->Destroy(FINAL_STATUS_DOWNLOAD);
     // Cancel the download.
-    callback.Run(false);
+    std::move(callback).Run(false);
   }
 
   bool ShouldCreateWebContents(
@@ -174,7 +174,7 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
                                      const GURL& url,
                                      const content::Referrer& referrer,
                                      Origin origin)
-    : prerender_mode_(FULL_PRERENDER),
+    : prerender_mode_(DEPRECATED_FULL_PRERENDER),
       prerendering_has_started_(false),
       prerender_canceler_binding_(this),
       prerender_manager_(prerender_manager),
@@ -182,7 +182,7 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       referrer_(referrer),
       profile_(profile),
       has_finished_loading_(false),
-      final_status_(FINAL_STATUS_MAX),
+      final_status_(FINAL_STATUS_UNKNOWN),
       prerendering_has_been_cancelled_(false),
       process_pid_(base::kNullProcessId),
       child_id_(-1),
@@ -312,13 +312,13 @@ void PrerenderContents::SetFinalStatus(FinalStatus final_status) {
   DCHECK_GE(final_status, FINAL_STATUS_USED);
   DCHECK_LT(final_status, FINAL_STATUS_MAX);
 
-  DCHECK_EQ(FINAL_STATUS_MAX, final_status_);
+  DCHECK_EQ(FINAL_STATUS_UNKNOWN, final_status_);
 
   final_status_ = final_status;
 }
 
 PrerenderContents::~PrerenderContents() {
-  DCHECK_NE(FINAL_STATUS_MAX, final_status());
+  DCHECK_NE(FINAL_STATUS_UNKNOWN, final_status());
   DCHECK(
       prerendering_has_been_cancelled() || final_status() == FINAL_STATUS_USED);
   DCHECK_NE(ORIGIN_MAX, origin());
@@ -326,7 +326,7 @@ PrerenderContents::~PrerenderContents() {
   prerender_manager_->RecordFinalStatus(origin(), final_status());
   prerender_manager_->RecordNetworkBytesConsumed(origin(), network_bytes_);
 
-  if (prerender_mode_ == FULL_PRERENDER) {
+  if (prerender_mode_ == DEPRECATED_FULL_PRERENDER) {
     // Broadcast the removal of aliases.
     for (content::RenderProcessHost::iterator host_iterator =
              content::RenderProcessHost::AllHostsIterator();
@@ -351,7 +351,7 @@ PrerenderContents::~PrerenderContents() {
 }
 
 void PrerenderContents::AddObserver(Observer* observer) {
-  DCHECK_EQ(FINAL_STATUS_MAX, final_status_);
+  DCHECK_EQ(FINAL_STATUS_UNKNOWN, final_status_);
   observer_list_.AddObserver(observer);
 }
 
@@ -410,7 +410,7 @@ std::unique_ptr<WebContents> PrerenderContents::CreateWebContents(
 }
 
 void PrerenderContents::NotifyPrerenderStart() {
-  DCHECK_EQ(FINAL_STATUS_MAX, final_status_);
+  DCHECK_EQ(FINAL_STATUS_UNKNOWN, final_status_);
   for (Observer& observer : observer_list_)
     observer.OnPrerenderStart(this);
 }
@@ -426,7 +426,7 @@ void PrerenderContents::NotifyPrerenderDomContentLoaded() {
 }
 
 void PrerenderContents::NotifyPrerenderStop() {
-  DCHECK_NE(FINAL_STATUS_MAX, final_status_);
+  DCHECK_NE(FINAL_STATUS_UNKNOWN, final_status_);
   for (Observer& observer : observer_list_)
     observer.OnPrerenderStop(this);
   observer_list_.Clear();
@@ -450,7 +450,7 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
 
   alias_urls_.push_back(url);
 
-  if (prerender_mode_ == FULL_PRERENDER) {
+  if (prerender_mode_ == DEPRECATED_FULL_PRERENDER) {
     for (content::RenderProcessHost::iterator host_iterator =
              content::RenderProcessHost::AllHostsIterator();
          !host_iterator.IsAtEnd(); host_iterator.Advance()) {
@@ -620,7 +620,7 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
 
 void PrerenderContents::DestroyWhenUsingTooManyResources() {
   if (process_pid_ == base::kNullProcessId) {
-    const RenderViewHost* rvh = GetRenderViewHost();
+    RenderViewHost* rvh = GetRenderViewHost();
     if (!rvh)
       return;
 
@@ -680,11 +680,7 @@ std::unique_ptr<WebContents> PrerenderContents::ReleasePrerenderContents() {
   return std::move(prerender_contents_);
 }
 
-RenderViewHost* PrerenderContents::GetRenderViewHostMutable() {
-  return const_cast<RenderViewHost*>(GetRenderViewHost());
-}
-
-const RenderViewHost* PrerenderContents::GetRenderViewHost() const {
+RenderViewHost* PrerenderContents::GetRenderViewHost() {
   return prerender_contents_ ? prerender_contents_->GetRenderViewHost()
                              : nullptr;
 }

@@ -4,13 +4,15 @@
 
 """Code shared by the various language-specific code generators."""
 
+from __future__ import print_function
+
 from functools import partial
 import os.path
 import re
 
-import module as mojom
+import mojom.generate.module as mojom
 import mojom.fileutil as fileutil
-import pack
+import mojom.generate.pack as pack
 
 
 def ExpectedArraySize(kind):
@@ -165,7 +167,7 @@ class Generator(object):
                export_header=None, generate_non_variant_code=False,
                support_lazy_serialization=False, disallow_native_types=False,
                disallow_interfaces=False, generate_message_ids=False,
-               generate_fuzzing=False):
+               generate_fuzzing=False, enable_kythe_annotations=False):
     self.module = module
     self.output_dir = output_dir
     self.typemap = typemap or {}
@@ -181,10 +183,11 @@ class Generator(object):
     self.disallow_interfaces = disallow_interfaces
     self.generate_message_ids = generate_message_ids
     self.generate_fuzzing = generate_fuzzing
+    self.enable_kythe_annotations = enable_kythe_annotations
 
   def Write(self, contents, filename):
     if self.output_dir is None:
-      print contents
+      print(contents)
       return
     full_path = os.path.join(self.output_dir, filename)
     WriteFile(contents, full_path)

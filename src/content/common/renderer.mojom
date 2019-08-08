@@ -101,9 +101,10 @@ struct CreateFrameParams {
   // Specifies the routing ID of the new RenderFrame object.
   int32 routing_id;
 
-  // If a valid |proxy_routing_id| is provided, the new frame will be
-  // configured to replace the proxy on commit.
-  int32 proxy_routing_id;
+  // If a valid |previous_routing_id| is provided, the new frame will be
+  // configured to replace either the previous frame or the previous proxy on
+  // commit.
+  int32 previous_routing_id;
 
   // Specifies the new frame's opener.  The opener will be null if this is
   // MSG_ROUTING_NONE.
@@ -259,9 +260,6 @@ interface Renderer {
   // service workers, shared workers, or fetch keep-alive.
   // If set to true, then the scheduler should not freeze the renderer.
   SetSchedulerKeepActive(bool keep_active);
-
-  // Tells the renderer process to purge and suspend.
-  ProcessPurgeAndSuspend();
 
   // Tells the renderer process that it has been locked to a site (i.e., a
   // scheme plus eTLD+1, such as https://google.com), or to a more specific

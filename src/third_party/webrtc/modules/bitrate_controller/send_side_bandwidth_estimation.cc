@@ -280,7 +280,7 @@ void SendSideBandwidthEstimation::SetBitrates(
 
 void SendSideBandwidthEstimation::SetSendBitrate(DataRate bitrate,
                                                  Timestamp at_time) {
-  RTC_DCHECK(bitrate > DataRate::Zero());
+  RTC_DCHECK_GT(bitrate, DataRate::Zero());
   // Reset to avoid being capped by the estimate.
   delay_based_bitrate_ = DataRate::Zero();
   if (loss_based_bandwidth_estimation_.Enabled()) {
@@ -310,7 +310,7 @@ int SendSideBandwidthEstimation::GetMinBitrate() const {
 void SendSideBandwidthEstimation::CurrentEstimate(int* bitrate,
                                                   uint8_t* loss,
                                                   int64_t* rtt) const {
-  *bitrate = current_bitrate_.bps<int>();
+  *bitrate = std::max<int32_t>(current_bitrate_.bps<int>(), GetMinBitrate());
   *loss = last_fraction_loss_;
   *rtt = last_round_trip_time_.ms<int64_t>();
 }

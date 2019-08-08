@@ -934,7 +934,7 @@ static bool IsVisuallyEquivalentCandidateAlgorithm(
   if (layout_object->IsLayoutBlockFlow() ||
       layout_object->IsFlexibleBoxIncludingNG() ||
       layout_object->IsLayoutGrid()) {
-    if (ToLayoutBlock(layout_object)->LogicalHeight() ||
+    if (To<LayoutBlock>(layout_object)->LogicalHeight() ||
         anchor_node->GetDocument().body() == anchor_node) {
       if (!HasRenderedNonAnonymousDescendantsWithHeight(layout_object))
         return position.AtFirstEditingPositionForNode();

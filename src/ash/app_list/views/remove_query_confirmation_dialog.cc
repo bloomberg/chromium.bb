@@ -8,8 +8,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace app_list {
 
@@ -93,6 +95,23 @@ gfx::Size RemoveQueryConfirmationDialog::CalculatePreferredSize() const {
 
 void RemoveQueryConfirmationDialog::OnSearchBoxBoundsUpdated() {
   UpdateBounds();
+}
+
+void RemoveQueryConfirmationDialog::OnSearchBoxClearAndDeactivated() {
+  // In tablet mode, when the user opens uber tray, the search box will be
+  // cleared and deactivated while app list switches to full app mode. Close
+  // this dialog when receiving such notification.
+  // Note: When the dialog is closed, the focus manager will restore
+  // the focus to the previously focused view, i.e., SearchBoxView's
+  // text field, which will lead to the opening of virtual keyboard. In order to
+  // avoid this, we temporarily clear the stored focus view before closing
+  // the dialog, and restore it back right after.
+  views::FocusManager* focus_manager =
+      contents_view_->GetSearchBoxView()->GetWidget()->GetFocusManager();
+  views::View* strored_focus_view = focus_manager->GetStoredFocusView();
+  focus_manager->SetStoredFocusView(nullptr);
+  GetDialogClientView()->CancelWindow();
+  focus_manager->SetStoredFocusView(strored_focus_view);
 }
 
 void RemoveQueryConfirmationDialog::UpdateBounds() {

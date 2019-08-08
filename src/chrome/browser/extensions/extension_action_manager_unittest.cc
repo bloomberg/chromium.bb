@@ -194,42 +194,5 @@ TEST_F(ExtensionActionManagerTest, PopulatePageAction) {
   TestPopulateMissingValues(kPageAction);
 }
 
-TEST_F(ExtensionActionManagerTest, GetBestFitActionTest) {
-  // Create an extension with page action defaults.
-  scoped_refptr<const Extension> extension = BuildExtension(
-      DictionaryBuilder().Set("48", "icon48.png").Build(),
-      DictionaryBuilder()
-          .Set("default_title", "Action!")
-          .Set("default_icon",
-               DictionaryBuilder().Set("38", "action38.png").Build())
-          .Build(),
-      kPageAction);
-  ASSERT_TRUE(extension.get());
-
-  // Get a "best fit" browser action for |extension|.
-  std::unique_ptr<ExtensionAction> action =
-      manager()->GetBestFitAction(*extension, ActionInfo::TYPE_BROWSER);
-  ASSERT_TRUE(action.get());
-  ASSERT_EQ(action->action_type(), ActionInfo::TYPE_BROWSER);
-
-  // |action|'s title and default icon should match |extension|'s page action's.
-  ASSERT_EQ(action->GetTitle(ExtensionAction::kDefaultTabId), "Action!");
-  ASSERT_EQ(action->default_icon()->Get(38, ExtensionIconSet::MATCH_EXACTLY),
-            "action38.png");
-
-  // Create a new extension without page action defaults.
-  extension =
-      BuildExtension(DictionaryBuilder().Set("48", "icon48.png").Build(),
-                     DictionaryBuilder().Build(), kPageAction);
-  ASSERT_TRUE(extension.get());
-
-  action = manager()->GetBestFitAction(*extension, ActionInfo::TYPE_BROWSER);
-
-  // Now these values match because |extension| does not have page action
-  // defaults.
-  ASSERT_TRUE(TitlesMatch(*extension, *action));
-  ASSERT_TRUE(IconsMatch(*extension, 48, *action, 38));
-}
-
 }  // namespace
 }  // namespace extensions

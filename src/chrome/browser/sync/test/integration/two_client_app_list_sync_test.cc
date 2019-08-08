@@ -284,14 +284,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, UpdateEnableDisableApp) {
   ASSERT_TRUE(IsAppEnabled(GetProfile(1), 0));
 }
 
-// TODO(crbug.com/721391) Flaky on CrOS.
-#if defined(OS_CHROMEOS)
-#define MAYBE_UpdateIncognitoEnableDisable DISABLED_UpdateIncognitoEnableDisable
-#else
-#define MAYBE_UpdateIncognitoEnableDisable UpdateIncognitoEnableDisable
-#endif
-IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest,
-                       MAYBE_UpdateIncognitoEnableDisable) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, UpdateIncognitoEnableDisable) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppList());
 
@@ -321,14 +314,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, DisableApps) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppList());
 
-  // Disable APP_LIST by disabling APPS since APP_LIST is in APPS groups.
-  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::APPS));
+  // Disable APP_LIST by disabling kApps since APP_LIST is in kApps groups.
+  ASSERT_TRUE(
+      GetClient(1)->DisableSyncForType(syncer::UserSelectableType::kApps));
   InstallApp(GetProfile(0), 0);
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   ASSERT_FALSE(AllProfilesHaveSameAppList());
 
-  // Enable APP_LIST by enabling APPS since APP_LIST is in APPS groups.
-  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::APPS));
+  // Enable APP_LIST by enabling kApps since APP_LIST is in kApps groups.
+  ASSERT_TRUE(
+      GetClient(1)->EnableSyncForType(syncer::UserSelectableType::kApps));
   AwaitQuiescenceAndInstallAppsPendingForSync();
 
   ASSERT_TRUE(AllProfilesHaveSameAppList());

@@ -42,6 +42,7 @@
 <translation id="152234381334907219">ક્યારેય ન સચવાયેલું</translation>
 <translation id="1540800554400757039">સરનામું 1</translation>
 <translation id="1545749641540134597">QR કોડ સ્કેન કરો</translation>
+<translation id="1552525382687785070">સિંક કરવાનું તમારા વ્યવસ્થાપક દ્વારા બંધ કરવામાં આવ્યું છે</translation>
 <translation id="1558704936695638228">વધુ ટૅબ વિકલ્પો માટે દબાવી રાખો</translation>
 <translation id="1580783302095112590">મેઇલ મોકલ્યો છે.</translation>
 <translation id="1582732959743469162">આનાથી તમારું હાલનું ડાઉનલોડ આગળ વધતું અટકી જશે.</translation>
@@ -84,6 +85,7 @@
 <translation id="213900355088104901">ખાનગી રૂપે બ્રાઉઝ કરવા માટે, છુપું ટૅબ ખોલો</translation>
 <translation id="2139867232736819575">તમે કૉપિ કરેલી ટેક્સ્ટ માટે શોધ કરો</translation>
 <translation id="2149973817440762519">બુકમાર્કમાં ફેરફાર કરો</translation>
+<translation id="2179182049312275900">તમે કોઈ પણ સમયે સેટિંગમાં સિંક કરો ચાલુ કરી શકો છો.</translation>
 <translation id="2198757192731523470">શોધ, જાહેરાતો અને અન્ય Google સેવાઓને મનગમતી બનાવવા માટે Google, તમારા ઇતિહાસનો ઉપયોગ કરી શકે છે.</translation>
 <translation id="2207590065820824892">વાંચન સૂચિમાં <ph name="UNREAD_COUNT" /> ન વાંચેલા લેખો.</translation>
 <translation id="2230173723195178503">વેબપેજ લોડ કર્યું</translation>
@@ -96,12 +98,14 @@
 <translation id="2320166752086256636">કીબોર્ડ છુપાવો</translation>
 <translation id="2339560363438331454">સિંક અને Google સેવાઓ</translation>
 <translation id="2351097562818989364">તમારી અનુવાદ સેટિંગ્સ ફરીથી સેટ કરવામાં આવી છે.</translation>
+<translation id="2359043044084662842">અનુવાદ કરો</translation>
 <translation id="2359808026110333948">આગળ વધો</translation>
 <translation id="2360196772093551345">મોબાઇલ સાઇટની વિનંતી કરો</translation>
 <translation id="2381405137052800939">મૂળભૂત</translation>
 <translation id="2386793615875593361">1 પસંદ કર્યું છે</translation>
 <translation id="2435457462613246316">પાસવર્ડ બતાવો</translation>
 <translation id="2481538920734869610">એકાઉન્ટ ઉમેરો</translation>
+<translation id="2497852260688568942">સમન્વયન, તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરવામાં આવ્યું છે</translation>
 <translation id="2523184218357549926">તમે મુલાકાત લો તે પેજના URLs Googleને મોકલે છે</translation>
 <translation id="2523363575747517183">આ વેબસાઇટ વારંવાર અન્ય ઍપ્લિકેશન ખોલવાનો પ્રયાસ કરી રહી છે.</translation>
 <translation id="2529021024822217800">બધા ખોલો</translation>
@@ -124,6 +128,7 @@
 <translation id="2800683595868705743">ટેબ સ્વિચર છોડી દો</translation>
 <translation id="2830972654601096923">સરનામા મેનેજ કરો…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">સિંકનું પ્રારંભિક સેટઅપ પૂર્ણ થયું નથી</translation>
 <translation id="2843803966603263712">અનુવાદ સેટિંગ્સને ફરીથી સેટ કરો</translation>
 <translation id="2858204748079866344">તમારી પ્રાઇવસીની સુરક્ષા કરવા માટે, Chrome આ ફીલ્ડમાં તમારો પાસવર્ડ સ્વતઃ નહીં ભરે.</translation>
 <translation id="285960592395650245">ડાઉનલોડનો ફરી પ્રયાસ કરો</translation>
@@ -200,9 +205,9 @@
 <translation id="4038354071007134711">આ ઉપકરણ પર કોઈ ઍપ્લિકેશન ફાઇલને ખોલી શકતી નથી.</translation>
 <translation id="4042870976416480368">પેજમાં શોધો</translation>
 <translation id="4049507953662678203">તમારી પાસે નેટવર્ક કનેક્શન છે તેની ખાતરી કરો અને ફરીથી પ્રયાસ કરો.</translation>
+<translation id="4071530748369333746">સિંક કરવાનું રદ કરીએ?</translation>
 <translation id="4082688844002261427">શોધ, જાહેરાતો અને વધુ સુવિધાને વ્યક્તિગત કરવા માટે તમારા બ્રાઉઝિંગ ઇતિહાસને કેવી રીતે ઉપયોગમાં લેવાય તેનું નિયંત્રણ કરો</translation>
 <translation id="408404951701638773">શોધ બાર સુધી પહોંચવું હવે વધુ સરળ છે</translation>
-<translation id="4084682180776658562">બુકમાર્ક</translation>
 <translation id="411254640334432676">ડાઉનલોડ નિષ્ફળ થયું.</translation>
 <translation id="4112644173421521737">શોધો</translation>
 <translation id="4121993058175073134">ચોખ્ખો-નિકાસ ડેટા મોકલવા માટે, કૃપા કરીને સેટિંગ એપ્લિકેશનમાં તમારા ઇમેઇલ એકાઉન્ટને ગોઠવો.</translation>
@@ -214,7 +219,6 @@
 <translation id="4272631900155121838">QR કોડને સ્કેન કરવા માટે, સેટિંગમાંથી કૅમેરો ચાલુ કરો</translation>
 <translation id="4281844954008187215">સેવાની શરતો</translation>
 <translation id="430793432425771671">બધાને સમન્વયિત કરો</translation>
-<translation id="4342284590510997375">નવું</translation>
 <translation id="4359125752503270327">આ પૃષ્ઠ બીજી અ‍ૅપ્લિકેશનમાં ખુલશે.</translation>
 <translation id="4370827530403103842">સમન્વયન કામ કરતું નથી. ઠીક કરવા માટે ટૅપ કરો.</translation>
 <translation id="4375040482473363939">QR કોડ શોધો</translation>
@@ -270,6 +274,7 @@
 <translation id="5197255632782567636">ઇન્ટરનેટ</translation>
 <translation id="5228579091201413441">સિંક ચાલુ કરો</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> પર સમન્વયિત કરી રહ્યાં છે</translation>
+<translation id="5245322853195994030">સિંક કરવાનું રદ કરો</translation>
 <translation id="5300589172476337783">બતાવો</translation>
 <translation id="5317780077021120954">સાચવો</translation>
 <translation id="5327248766486351172">નામ</translation>
@@ -288,6 +293,7 @@
 <translation id="5659593005791499971">ઇમેઇલ</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">વર્ઝન <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5711039611392265845">ગોપનીયતા, સુરક્ષા, અને ડેટા સંગ્રહથી સંબંધિત વધુ સેટિંગ માટે, <ph name="BEGIN_LINK" />સિંક અને Google સેવાઓ<ph name="END_LINK" /> જુઓ.</translation>
 <translation id="5728700505257787410">માફ કરશો, તમારા એકાઉન્ટમાં સાઇન ઇન કરવામાં સમસ્યા હતી.</translation>
 <translation id="5737974891429562743">એકાઉન્ટ સાઇન ઇન વિગતો જૂની થઈ ગઈ છે. સિંકને પ્રારંભ કરવા માટે અપડેટ કરો.</translation>
 <translation id="5738887413654608789">આ તમને તમારી આસપાસના વાતાવરણના આધારે સંગત વેબ પૃષ્ઠોની શોધ કરવા દે છે.</translation>
@@ -363,9 +369,9 @@
 <translation id="6643016212128521049">સાફ કરો</translation>
 <translation id="6656103420185847513">ફોલ્ડરમાં ફેરફાર કરો</translation>
 <translation id="6657585470893396449">પાસવર્ડ</translation>
+<translation id="6668619169535738264">બુકમાર્કમાં ફેરફાર કરો</translation>
 <translation id="667999046851023355">દસ્તાવેજ</translation>
 <translation id="6691331417640343772">Google ડૅશબોર્ડ પર સિંક કરેલ ડેટા મેનેજ કરો</translation>
-<translation id="6709334795756764830">બુકમાર્કમાં ફેરફાર કરો</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">બધા પાસવર્ડ નિકાસ કરી શકાતાં નથી</translation>
 <translation id="6780034285637185932">પિન કોડ</translation>
@@ -385,6 +391,7 @@
 <translation id="6979158407327259162">Google ડ્રાઇવ</translation>
 <translation id="7004499039102548441">તાજેતરના ટૅબ્સ</translation>
 <translation id="7006788746334555276">કન્ટેન્ટ સેટિંગ</translation>
+<translation id="7015203776128479407">આરંભિક સિંક સેટઅપ પૂરું થયું નથી. સિંક કરવાનું બંધ છે.</translation>
 <translation id="7029809446516969842">પાસવર્ડ્સ</translation>
 <translation id="7031882061095297553">આના પર સમન્વયિત કરો</translation>
 <translation id="7053983685419859001">અવરોધિત કરો</translation>
@@ -396,6 +403,7 @@
 <translation id="7136892417564438900">કૅમેરો અનુપલબ્ધ છે</translation>
 <translation id="7159472599653637159">મોબાઇલ સાઇટની વિનંતી કરો</translation>
 <translation id="7167621057293532233">ડેટા પ્રકાર</translation>
+<translation id="7173114856073700355">સેટિંગ ખોલો</translation>
 <translation id="7189598951263744875">શેર કરો...</translation>
 <translation id="7192050974311852563">લૉગિંગ શરૂ કરો</translation>
 <translation id="7203585745079012652">જવાબો પાછા બોલો</translation>
@@ -404,8 +412,10 @@
 <translation id="7280856130494094142">સિંક શરૂ કરવા માટે પાસફ્રેઝ દાખલ કરો</translation>
 <translation id="7285236536143823449">હા, હું સંમત છું</translation>
 <translation id="7291368939935408496">પાસવર્ડ તૈયાર કરી રહ્યાં છીએ…</translation>
+<translation id="7293171162284876153">સિંક કરવાનું શરૂ કરવા માટે, "તમારો Chromeનો ડેટા સિંક કરો"ને ચાલુ કરો.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> ટકા ડાઉનલોડ થઈ</translation>
 <translation id="7346909386216857016">બરાબર, સમજાઇ ગયું</translation>
+<translation id="7348502496356775519">બુકમાર્ક કરો</translation>
 <translation id="7383797227493018512">વાંચન સૂચિ</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7425346204213733349">તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને બીજા સેટિંગમાં ફેરફારને હવે તમારા Google એકાઉન્ટ પર સિંક કરવામાં આવશે નહિ. જોકે, તમારો અસ્તિત્વમાંનો ડેટા તમારા Google એકાઉન્ટમાં સ્ટોર રહેશે.</translation>
@@ -453,6 +463,7 @@
 <translation id="8073670137947914548">ડાઉનલોડ સમાપ્ત</translation>
 <translation id="8076014560081431679">સાચવેલ સાઇટ સેટિંગ્સ કાઢી નાખવામાં આવશે નહીં અને તે તમારી બ્રાઉઝિંગ ટેવોને પ્રતિબિંબિત કરી શકે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">ફાઇલ ડાઉનલોડ માટે ઉપલબ્ધ છે. સ્ક્રીનના તળિયે વિકલ્પો ઉપલબ્ધ છે.</translation>
+<translation id="8131740175452115882">પુષ્ટિ કરો</translation>
 <translation id="8205564605687841303">રદ કરો</translation>
 <translation id="8225985093977202398">કૅશ કરેલ છબીઓ અને ફાઇલો</translation>
 <translation id="8261506727792406068">ડિલીટ કરો</translation>
@@ -470,6 +481,7 @@
 <translation id="850600235656508448">છુપામાં ખોલો</translation>
 <translation id="8517375800490286174">ઓપન સોર્સ લાઇસન્સ</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> ના  <ph name="FIRST_VISIBLE_TAB" /> થી <ph name="LAST_VISIBLE_TAB" /> સુધી <ph name="INCOGNITO" /> ટેબ્સ</translation>
+<translation id="8529767659511976195">નવી</translation>
 <translation id="8532105204136943229">સમય સમાપ્તિ વર્ષ</translation>
 <translation id="8534481786647257214">Google+ પોસ્ટ પૂર્ણ કરેલ છે.</translation>
 <translation id="8548878600947630424">પૃષ્ઠમાં શોધો...</translation>

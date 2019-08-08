@@ -27,6 +27,8 @@ import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences
 import org.chromium.chrome.browser.preferences.website.SettingsNavigationSource;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.touchless.TouchlessDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.ModelType;
@@ -101,7 +103,9 @@ public class PreferencesLauncher {
     public static Intent createIntentForSettingsPage(
             Context context, @Nullable String fragmentName, @Nullable Bundle fragmentArgs) {
         Intent intent = new Intent();
-        intent.setClass(context, Preferences.class);
+        intent.setClass(context, FeatureUtilities.isNoTouchModeEnabled()
+                        ? TouchlessDelegate.getTouchlessPreferencesClass()
+                        : Preferences.class);
         if (!(context instanceof Activity)) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

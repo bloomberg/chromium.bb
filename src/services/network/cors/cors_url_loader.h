@@ -35,9 +35,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
  public:
   using DeleteCallback = base::OnceCallback<void(mojom::URLLoader* loader)>;
 
-  // Assumes network_loader_factory outlives this loader.
-  // TODO(yhirano): Remove |request_finalizer| when the network service is
-  // fully enabled.
   CorsURLLoader(
       mojom::URLLoaderRequest loader_request,
       int32_t routing_id,
@@ -48,7 +45,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* network_loader_factory,
-      const base::RepeatingCallback<void(int)>& request_finalizer,
       const OriginAccessList* origin_access_list,
       const OriginAccessList* factory_bound_origin_access_list,
       PreflightController* preflight_controller);
@@ -163,10 +159,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
   // https://fetch.spec.whatwg.org/#concept-request-redirect-count
   int redirect_count_ = 0;
-
-  // Used to finalize preflight / redirect requests.
-  // TODO(yhirano): Remove this once the network service is fully enabled.
-  base::RepeatingCallback<void(int)> request_finalizer_;
 
   // We need to save this for redirect.
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;

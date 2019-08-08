@@ -8,34 +8,27 @@ import logging
 import math
 import multiprocessing
 import os
-import tempfile
 import time
 import unittest
 
 from py_trace_event import trace_event
 from py_trace_event import trace_time
 from py_trace_event.trace_event_impl import log
+from py_utils import tempfile_ext
 
 
 class TraceEventTests(unittest.TestCase):
 
-  def setUp(self):
-    tf = tempfile.NamedTemporaryFile(delete=False)
-    self._log_path = tf.name
-    tf.close()
-
-  def tearDown(self):
-    if os.path.exists(self._log_path):
-      os.remove(self._log_path)
-
   @contextlib.contextmanager
-  def _test_trace(self, disable=True):
-    try:
-      trace_event.trace_enable(self._log_path)
-      yield
-    finally:
-      if disable:
-        trace_event.trace_disable()
+  def _test_trace(self, disable=True, format=None):
+    with tempfile_ext.TemporaryFileName() as filename:
+      self._log_path = filename
+      try:
+        trace_event.trace_enable(self._log_path, format=format)
+        yield
+      finally:
+        if disable:
+          trace_event.trace_disable()
 
   def testNoImpl(self):
     orig_impl = trace_event.trace_event_impl
@@ -187,6 +180,7 @@ class TraceEventTests(unittest.TestCase):
       with open(self._log_path, 'r') as f:
         log_output = json.loads(f.read() + ']')
         self.assertEquals(len(log_output), 3)
+        expected_name = __name__ + '.test_decorator'
         current_entry = log_output.pop(0)
         self.assertEquals(current_entry['category'], 'process_argv')
         self.assertEquals(current_entry['name'], 'process_argv')
@@ -194,12 +188,12 @@ class TraceEventTests(unittest.TestCase):
         self.assertEquals(current_entry['ph'], 'M')
         current_entry = log_output.pop(0)
         self.assertEquals(current_entry['category'], 'python')
-        self.assertEquals(current_entry['name'], '__main__.test_decorator')
+        self.assertEquals(current_entry['name'], expected_name)
         self.assertEquals(current_entry['args']['this'], '\'that\'')
         self.assertEquals(current_entry['ph'], 'B')
         current_entry = log_output.pop(0)
         self.assertEquals(current_entry['category'], 'python')
-        self.assertEquals(current_entry['name'], '__main__.test_decorator')
+        self.assertEquals(current_entry['name'], expected_name)
         self.assertEquals(current_entry['args'], {})
         self.assertEquals(current_entry['ph'], 'E')
 
@@ -349,7 +343,8 @@ class TraceEventTests(unittest.TestCase):
         self.assertLessEqual(one_open['ts'], two_open['ts'])
         self.assertLessEqual(one_close['ts'], two_close['ts'])
 
-  def testMultiprocess(self):
+  # TODO(khokhlov): Fix this test on Windows. See crbug.com/945819 for details.
+  def disabled_testMultiprocess(self):
     def child_function():
       with trace_event.trace('child_event'):
         pass
@@ -417,6 +412,45 @@ class TraceEventTests(unittest.TestCase):
         self.assertEquals(parent_close['category'], 'python')
         self.assertEquals(parent_close['name'], 'parent')
         self.assertEquals(parent_close['ph'], 'E')
+
+  def testFormatJson(self):
+    with self._test_trace(format=trace_event.JSON):
+      trace_event.trace_flush()
+      with open(self._log_path, 'r') as f:
+        log_output = json.loads(f.read() + ']')
+    self.assertEquals(len(log_output), 1)
+    self.assertEquals(log_output[0]['ph'], 'M')
+
+  def testFormatJsonWithMetadata(self):
+    with self._test_trace(format=trace_event.JSON_WITH_METADATA):
+      trace_event.trace_disable()
+      with open(self._log_path, 'r') as f:
+        log_output = json.load(f)
+    self.assertEquals(len(log_output), 2)
+    events = log_output['traceEvents']
+    self.assertEquals(len(events), 1)
+    self.assertEquals(events[0]['ph'], 'M')
+
+  def testFormatProtobuf(self):
+    with self._test_trace(format=trace_event.PROTOBUF):
+      trace_event.trace_flush()
+      with open(self._log_path, 'r') as f:
+        self.assertGreater(len(f.read()), 0)
+
+  def testAddMetadata(self):
+    with self._test_trace(format=trace_event.JSON_WITH_METADATA):
+      trace_event.trace_add_metadata({'version': 1})
+      trace_event.trace_disable()
+      with open(self._log_path, 'r') as f:
+        log_output = json.load(f)
+    self.assertEquals(len(log_output), 2)
+    self.assertEquals(log_output['metadata']['version'], 1)
+
+  def testAddMetadataInJsonFormatRaises(self):
+    with self._test_trace(format=trace_event.JSON):
+      with self.assertRaises(log.TraceException):
+        trace_event.trace_add_metadata({'version': 1})
+
 
 if __name__ == '__main__':
   logging.getLogger().setLevel(logging.DEBUG)

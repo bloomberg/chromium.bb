@@ -150,13 +150,13 @@ ExtensionInstallForcelistPolicyHandler::ExtensionInstallForcelistPolicyHandler()
     : ExtensionInstallListPolicyHandler(policy::key::kExtensionInstallForcelist,
                                         pref_names::kInstallForceList) {}
 
-// ExtensionInstallLoginScreenAppListPolicyHandler implementation --------------
+// ExtensionInstallLoginScreenExtensionsPolicyHandler implementation -----------
 
-ExtensionInstallLoginScreenAppListPolicyHandler::
-    ExtensionInstallLoginScreenAppListPolicyHandler()
+ExtensionInstallLoginScreenExtensionsPolicyHandler::
+    ExtensionInstallLoginScreenExtensionsPolicyHandler()
     : ExtensionInstallListPolicyHandler(
-          policy::key::kDeviceLoginScreenAppInstallList,
-          pref_names::kInstallLoginScreenAppList) {}
+          policy::key::kDeviceLoginScreenExtensions,
+          pref_names::kLoginScreenExtensions) {}
 
 // ExtensionURLPatternListPolicyHandler implementation -------------------------
 

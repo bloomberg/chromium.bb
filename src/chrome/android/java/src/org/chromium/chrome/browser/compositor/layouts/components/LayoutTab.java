@@ -59,6 +59,8 @@ public class LayoutTab implements ChromeAnimation.Animatable {
 
     // Public Layout constants.
     public static final float CLOSE_BUTTON_WIDTH_DP = 36.f;
+    public static final float SHADOW_ALPHA_ON_LIGHT_BG = 0.8f;
+    public static final float SHADOW_ALPHA_ON_DARK_BG = 1.0f;
 
     // TODO(dtrainor): Investigate removing this.
     private static final float BORDER_THICKNESS_DP = 4.f;
@@ -1020,6 +1022,45 @@ public class LayoutTab implements ChromeAnimation.Animatable {
                 }
             };
 
+    public static final FloatProperty<LayoutTab> TOOLBAR_ALPHA =
+            new FloatProperty<LayoutTab>("TOOLBAR_ALPHA") {
+                @Override
+                public void setValue(LayoutTab layoutTab, float v) {
+                    layoutTab.setToolbarAlpha(v);
+                }
+
+                @Override
+                public Float get(LayoutTab layoutTab) {
+                    return layoutTab.getToolbarAlpha();
+                }
+            };
+
+    public static final FloatProperty<LayoutTab> TOOLBAR_Y_OFFSET =
+            new FloatProperty<LayoutTab>("TOOLBAR_Y_OFFSET") {
+                @Override
+                public void setValue(LayoutTab layoutTab, float v) {
+                    layoutTab.setToolbarYOffset(v);
+                }
+
+                @Override
+                public Float get(LayoutTab layoutTab) {
+                    return layoutTab.getToolbarYOffset();
+                }
+            };
+
+    public static final FloatProperty<LayoutTab> MAX_CONTENT_HEIGHT =
+            new FloatProperty<LayoutTab>("MAX_CONTENT_HEIGHT") {
+                @Override
+                public void setValue(LayoutTab layoutTab, float v) {
+                    layoutTab.setMaxContentHeight(v);
+                }
+
+                @Override
+                public Float get(LayoutTab layoutTab) {
+                    return layoutTab.getMaxContentHeight();
+                }
+            };
+
     public static final FloatProperty<LayoutTab> SATURATION =
             new FloatProperty<LayoutTab>("SATURATION") {
                 @Override
@@ -1044,6 +1085,19 @@ public class LayoutTab implements ChromeAnimation.Animatable {
             return layoutTab.getScale();
         }
     };
+
+    public static final FloatProperty<LayoutTab> SIDE_BORDER_SCALE =
+            new FloatProperty<LayoutTab>("SIDE_BORDER_SCALE") {
+                @Override
+                public void setValue(LayoutTab layoutTab, float v) {
+                    layoutTab.setSideBorderScale(v);
+                }
+
+                @Override
+                public Float get(LayoutTab layoutTab) {
+                    return layoutTab.getSideBorderScale();
+                }
+            };
 
     public static final FloatProperty<LayoutTab> STATIC_TO_VIEW_BLEND =
             new FloatProperty<LayoutTab>("STATIC_TO_VIEW_BLEND") {

@@ -31,7 +31,7 @@ class Quic(IntegrationTest):
       responses = t.GetHTTPResponses()
       self.assertEqual(2, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
 
   # Ensure Chrome uses QUIC DataSaver proxy when QUIC is enabled. This test
   # may fail if QUIC is disabled on the server side.
@@ -52,22 +52,13 @@ class Quic(IntegrationTest):
       responses = t.GetHTTPResponses()
       self.assertEqual(2, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
 
       # Verify that histogram DataReductionProxy.Quic.ProxyStatus has at least 1
       # sample. This sample must be in bucket 0 (QUIC_PROXY_STATUS_AVAILABLE).
       proxy_status = t.GetHistogram('DataReductionProxy.Quic.ProxyStatus')
       self.assertLessEqual(1, proxy_status['count'])
       self.assertEqual(0, proxy_status['sum'])
-
-      # Navigate to one more page to ensure that established QUIC connection
-      # is used for the next request. Give 3 seconds extra headroom for the QUIC
-      # connection to be established.
-      time.sleep(3)
-      t.LoadURL('http://check.googlezip.net/test.html')
-      proxy_usage = t.GetHistogram('Net.QuicAlternativeProxy.Usage')
-      # Bucket ALTERNATIVE_PROXY_USAGE_NO_RACE should have at least onesample.
-      self.assertLessEqual(1, proxy_usage['buckets'][0]['count'])
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()

@@ -777,19 +777,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     int tabCount = static_cast<int>(self.count);
     UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerLoad", tabCount, 1, 200, 50);
   }
-
-  // Sending a notification about the url change for crash reporting.
-  // TODO(crbug.com/661675): Consider using the navigation entry committed
-  // notification now that it's in the right place.
-  const std::string& lastCommittedURL = webState->GetLastCommittedURL().spec();
-  if (!lastCommittedURL.empty()) {
-    [[NSNotificationCenter defaultCenter]
-        postNotificationName:kTabUrlStartedLoadingNotificationForCrashReporting
-                      object:tab
-                    userInfo:@{
-                      kTabUrlKey : base::SysUTF8ToNSString(lastCommittedURL)
-                    }];
-  }
 }
 
 - (void)webState:(web::WebState*)webState
@@ -846,7 +833,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
-  DCHECK(!webState->IsLoading());
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   [self notifyTabChanged:tab];
 

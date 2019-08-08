@@ -7,17 +7,18 @@
 
 #include "base/optional.h"
 #include "components/signin/core/browser/account_consistency_method.h"
+#include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
+#include "services/identity/public/cpp/diagnostics_provider_impl.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 
-class AccountFetcherService;
 class AccountTrackerService;
 class FakeProfileOAuth2TokenService;
-class GaiaCookieManagerService;
+class Profile;
+class IdentityManagerWrapper;
 class IdentityTestEnvironmentChromeBrowserStateAdaptor;
 class IdentityTestEnvironmentProfileAdaptor;
 class PrefService;
-class SigninManager;
 class TestSigninClient;
 
 namespace sync_preferences {
@@ -32,9 +33,6 @@ namespace identity {
 
 class IdentityManagerDependenciesOwner;
 class TestIdentityManagerObserver;
-
-// Necessary to declare this test as a temporary friend.
-class IdentityAccessorImplTest;
 
 // Class that creates an IdentityManager for use in testing contexts and
 // provides facilities for driving that IdentityManager. The IdentityManager
@@ -60,9 +58,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   //
   // This constructor also takes an optional PrefService instance as parameter,
   // which allows tests to move away from referencing IdentityManager's
-  // dependencies directly (namely AccountTrackerService, PO2TS, SigninManager
-  // and GaiaCookieManagerService), but still be able to tweak preferences on
-  // demand.
+  // dependencies directly (namely AccountTrackerService, PO2TS), but still be
+  // able to tweak preferences on demand.
   //
   // Last, this constructor can take an optional parameter |account_consistency|
   // as parameter, to specify the account consistency policy that will be used.
@@ -275,10 +272,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   friend class ::IdentityTestEnvironmentChromeBrowserStateAdaptor;
   friend class ::IdentityTestEnvironmentProfileAdaptor;
 
-  // TODO(https://crbug.com/933109): Remove friendship after conversion to
-  // IdentityManager is complete.
-  friend class identity::IdentityAccessorImplTest;
-
   struct AccessTokenRequestState {
     AccessTokenRequestState();
     ~AccessTokenRequestState();
@@ -293,68 +286,24 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
     base::OnceClosure on_available;
   };
 
-  // Constructor that takes in instances of the dependencies of
-  // IdentityManager and constructs an IdentityManager instance from those
-  // dependencies. For use in contexts where those dependencies are still
-  // being used directly by the creator of this object (i.e., while a test is
-  // being incrementally converted). Prefer the above constructor, and switch to
-  // that constructor once possible (e.g., when an incremental conversion is
-  // completed). NOTE: The passed-in objects must all outlive this object.
+  // Constructs an IdentityTestEnvironment that builds and owns an
+  // IdentityManager. This private constructor is meant to only be called
+  // internally by IdentityTestEnvironment from other constructors.
   IdentityTestEnvironment(
-      PrefService* pref_service,
-      AccountTrackerService* account_tracker_service,
-      AccountFetcherService* account_fetcher_service,
-      FakeProfileOAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
-      GaiaCookieManagerService* gaia_cookie_manager_service,
-      network::TestURLLoaderFactory* test_url_loader_factory = nullptr);
+      std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
+      network::TestURLLoaderFactory* test_url_loader_factory,
+      signin::AccountConsistencyMethod account_consistency);
 
-  // Constructor that takes in an IdentityManager instance as well as instances
-  // of the dependencies of that IdentityManager. For use only in contexts where
-  // IdentityManager and its dependencies are all unavoidably created by the
-  // embedder (e.g., //chrome-level unittests that use the
-  // ProfileKeyedServiceFactory infrastructure).
-  // When using this constructor, the invoker is responsible for ensuring the
-  // following:
-  // - That all of these objects outlive this object
-  // - That the dependencies being passed in were in fact the objects used to
-  //   construct |identity_manager|
-  // - That the passed-in dependencies of |identity_manager| outlive it
+  // Constructs an IdentityTestEnvironment that uses the supplied
+  // |identity_manager|.
+  // For use only in contexts where IdentityManager and its dependencies are all
+  // unavoidably created by the embedder (e.g., //chrome-level unittests that
+  // use the ProfileKeyedServiceFactory infrastructure).
   // NOTE: This constructor is for usage only in the special case of embedder
   // unittests that must use the IdentityManager instance associated with the
   // Profile/ChromeBrowserState. If you think you have another use case for it,
   // contact blundell@chromium.org.
-  IdentityTestEnvironment(
-      PrefService* pref_service,
-      AccountTrackerService* account_tracker_service,
-      AccountFetcherService* account_fetcher_service,
-      FakeProfileOAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
-      GaiaCookieManagerService* gaia_cookie_manager_service,
-      IdentityManager* identity_manager,
-      network::TestURLLoaderFactory* test_url_loader_factory = nullptr);
-
-  // Constructs this object from the supplied
-  // dependencies of IdentityManager and potentially IdentityManager itself.
-  // The supplied dependencies must be either:
-  // (1) non-null instances of the backing classes,
-  // (2) a non-null instance of |dependencies_owner|.
-  // In the case of (1), |identity_manager| can be non-null, in which case it
-  // must point to an object created via these dependencies. In the case of 2,
-  // |identity_manager| must be null. If |identity_manager| is non-null, it will
-  // be the IdentityManager instance associated with this object. Otherwise,
-  // this object will create and own an IdentityManager instance from the
-  // supplied dependencies.
-  IdentityTestEnvironment(
-      PrefService* pref_service,
-      AccountTrackerService* account_tracker_service,
-      AccountFetcherService* account_fetcher_service,
-      FakeProfileOAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
-      GaiaCookieManagerService* gaia_cookie_manager_service,
-      network::TestURLLoaderFactory* test_url_loader_factory,
-      std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
-      IdentityManager* identity_manager);
+  IdentityTestEnvironment(IdentityManager* identity_manager);
 
   // IdentityManager::DiagnosticsObserver:
   void OnAccessTokenRequested(const std::string& account_id,
@@ -374,20 +323,23 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   void WaitForAccessTokenRequestIfNecessary(
       base::Optional<std::string> account_id);
 
-  // NOTE: This object must be first in the list, as it owns the objects
-  // pointed to below in the case where those objects are not passed in via
-  // the IdentityTestEnvironment constructor.
+  // Returns the FakeProfileOAuth2TokenService owned by IdentityManager.
+  FakeProfileOAuth2TokenService* fake_token_service();
+
+  // Owner of all dependencies that don't belong to IdentityManager.
   std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner_;
-  PrefService* pref_service_ = nullptr;
-  AccountTrackerService* account_tracker_service_ = nullptr;
-  AccountFetcherService* account_fetcher_service_ = nullptr;
-  FakeProfileOAuth2TokenService* token_service_ = nullptr;
-  SigninManagerBase* signin_manager_ = nullptr;
-  GaiaCookieManagerService* gaia_cookie_manager_service_ = nullptr;
 
   // Used to set fake responses for cookie-related requests.
   // This can be null if no TestURLLoaderFactory was passed via the constructor.
   network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
+
+  // This will be null if a TestSigninClient was provided to
+  // IdentityTestEnvironment's constructor.
+  std::unique_ptr<TestSigninClient> owned_signin_client_;
+
+  // This will be null if a AccountTrackerService was provided to
+  // IdentityTestEnvironment's constructor.
+  std::unique_ptr<AccountTrackerService> owned_account_tracker_service_;
 
   // Depending on which constructor is used, exactly one of these will be
   // non-null. See the documentation on the constructor wherein IdentityManager
@@ -399,6 +351,19 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
 
   base::OnceClosure on_access_token_requested_callback_;
   std::vector<AccessTokenRequestState> requesters_;
+
+  // Create an IdentityManager instance for tests.
+  static std::unique_ptr<IdentityManagerWrapper> BuildIdentityManagerForTests(
+      SigninClient* signin_client,
+      PrefService* pref_service,
+      std::unique_ptr<FakeProfileOAuth2TokenService> token_service,
+      AccountTrackerService* account_tracker_service,
+      signin::AccountConsistencyMethod account_consistency =
+          signin::AccountConsistencyMethod::kDisabled,
+      network::TestURLLoaderFactory* test_url_loader_factory = nullptr);
+
+  // Shared constructor initialization logic.
+  void Initialize();
 
   base::WeakPtrFactory<IdentityTestEnvironment> weak_ptr_factory_;
 

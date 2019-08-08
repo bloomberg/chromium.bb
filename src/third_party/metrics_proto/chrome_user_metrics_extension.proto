@@ -20,10 +20,11 @@ import "printer_event.proto";
 import "reporting_info.proto";
 import "sampled_profile.proto";
 import "system_profile.proto";
+import "trace_log.proto";
 import "translate_event.proto";
 import "user_action_event.proto";
 
-// Next tag: 19
+// Next tag: 20
 message ChromeUserMetricsExtension {
   // The product (i.e. end user application) for a given UMA log.
   enum Product {
@@ -86,4 +87,10 @@ message ChromeUserMetricsExtension {
   // The ReportingInfo message sent in the X-Chrome-UMA-ReportingInfo header.
   // Copied in by the receiving server.
   optional ReportingInfo reporting_info = 17;
+
+  // The Chrome traces obtained during the current session. The start time,
+  // duration and details depend on the experiment triggers in the current
+  // session. This field is uploaded as independent logs, which contain only
+  // session id and core system profile fields, apart from this field.
+  repeated TraceLog trace_log = 19;
 }

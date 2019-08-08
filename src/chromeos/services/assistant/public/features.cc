@@ -10,6 +10,9 @@ namespace chromeos {
 namespace assistant {
 namespace features {
 
+const base::Feature kAssistantAudioEraser{"AssistantAudioEraser",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAssistantFeedbackUi{"AssistantFeedbackUi",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -20,7 +23,7 @@ const base::Feature kAssistantWarmerWelcomeFeature{
     "AssistantWarmerWelcome", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAssistantAppSupport{"AssistantAppSupport",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAssistantRoutines{"AssistantRoutines",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
@@ -47,6 +50,9 @@ const base::Feature kEnableTextQueriesWithClientDiscourseContext{
 const base::Feature kTimerTicks{"ChromeOSAssistantTimerTicks",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableAssistantAlarmTimerManager{
+    "EnableAssistantAlarmTimerManager", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnablePowerManager{"ChromeOSAssistantEnablePowerManager",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -59,9 +65,21 @@ const base::Feature kAssistantKeyRemapping{"AssistantKeyRemapping",
 const base::Feature kScreenContextQuery{"ChromeOSAssistantScreenContextQuery",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableMediaSessionIntegration{
+    "AssistantEnableMediaSessionIntegration",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAlarmTimerManagerEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAssistantAlarmTimerManager);
+}
+
 bool IsAppSupportEnabled() {
   return base::FeatureList::IsEnabled(
       assistant::features::kAssistantAppSupport);
+}
+
+bool IsAudioEraserEnabled() {
+  return base::FeatureList::IsEnabled(kAssistantAudioEraser);
 }
 
 bool IsClearCutLogEnabled() {
@@ -80,12 +98,30 @@ bool IsInAssistantNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kInAssistantNotifications);
 }
 
+bool IsKeyRemappingEnabled() {
+  return base::FeatureList::IsEnabled(kAssistantKeyRemapping);
+}
+
+bool IsMediaSessionIntegrationEnabled() {
+  return base::FeatureList::IsEnabled(kEnableMediaSessionIntegration);
+}
+
+bool IsPowerManagerEnabled() {
+  return base::FeatureList::IsEnabled(kEnablePowerManager);
+}
+
 bool IsRoutinesEnabled() {
   return base::FeatureList::IsEnabled(kAssistantRoutines);
 }
 
+bool IsScreenContextQueryEnabled() {
+  return base::FeatureList::IsEnabled(kScreenContextQuery);
+}
+
 bool IsStereoAudioInputEnabled() {
-  return base::FeatureList::IsEnabled(kEnableStereoAudioInput);
+  return base::FeatureList::IsEnabled(kEnableStereoAudioInput) ||
+         // Audio eraser requires 2 channel input.
+         base::FeatureList::IsEnabled(kAssistantAudioEraser);
 }
 
 bool IsTimerNotificationEnabled() {
@@ -98,18 +134,6 @@ bool IsTimerTicksEnabled() {
 
 bool IsWarmerWelcomeEnabled() {
   return base::FeatureList::IsEnabled(kAssistantWarmerWelcomeFeature);
-}
-
-bool IsPowerManagerEnabled() {
-  return base::FeatureList::IsEnabled(kEnablePowerManager);
-}
-
-bool IsKeyRemappingEnabled() {
-  return base::FeatureList::IsEnabled(kAssistantKeyRemapping);
-}
-
-bool IsScreenContextQueryEnabled() {
-  return base::FeatureList::IsEnabled(kScreenContextQuery);
 }
 
 }  // namespace features

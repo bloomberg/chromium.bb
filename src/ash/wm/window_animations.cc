@@ -64,6 +64,10 @@ const float kWindowAnimation_ShowBrightnessGrayscale = 0.f;
 const float kWindowAnimation_HideOpacity = 0.f;
 const float kWindowAnimation_ShowOpacity = 1.f;
 
+// Duration for gfx::Tween::ZERO animation of showing window.
+constexpr base::TimeDelta kZeroAnimationMs =
+    base::TimeDelta::FromMilliseconds(300);
+
 int64_t Round64(float f) {
   return static_cast<int64_t>(f + 0.5f);
 }
@@ -296,6 +300,21 @@ void AnimateHideWindow_SlideOut(aura::Window* window) {
   window->layer()->SetBounds(dismissed_bounds);
 }
 
+void AnimateShowWindow_StepEnd(aura::Window* window) {
+  window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
+  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+  settings.SetTransitionDuration(kZeroAnimationMs);
+  settings.SetTweenType(gfx::Tween::ZERO);
+  window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
+}
+
+void AnimateHideWindow_StepEnd(aura::Window* window) {
+  ::wm::ScopedHidingAnimationSettings settings(window);
+  settings.layer_animation_settings()->SetTransitionDuration(kZeroAnimationMs);
+  settings.layer_animation_settings()->SetTweenType(gfx::Tween::ZERO);
+  window->layer()->SetVisible(false);
+}
+
 bool AnimateShowWindow(aura::Window* window) {
   if (!::wm::HasWindowVisibilityAnimationTransition(window,
                                                     ::wm::ANIMATE_SHOW)) {
@@ -314,6 +333,9 @@ bool AnimateShowWindow(aura::Window* window) {
       return true;
     case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
       AnimateShowWindow_FadeIn(window);
+      return true;
+    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
+      AnimateShowWindow_StepEnd(window);
       return true;
     default:
       NOTREACHED();
@@ -338,6 +360,9 @@ bool AnimateHideWindow(aura::Window* window) {
       return AnimateHideWindow_SlideDown(window);
     case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
       AnimateHideWindow_SlideOut(window);
+      return true;
+    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
+      AnimateHideWindow_StepEnd(window);
       return true;
     default:
       NOTREACHED();

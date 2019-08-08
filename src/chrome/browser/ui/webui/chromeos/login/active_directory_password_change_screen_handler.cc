@@ -7,12 +7,12 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/login/auth/key.h"
 #include "components/login/localized_values_builder.h"
 #include "components/user_manager/known_user.h"
@@ -22,7 +22,6 @@ namespace chromeos {
 
 namespace {
 
-constexpr char kJsScreenPath[] = "login.ActiveDirectoryPasswordChangeScreen";
 constexpr char kUsernameKey[] = "username";
 constexpr char kErrorKey[] = "error";
 
@@ -42,10 +41,9 @@ ActiveDirectoryPasswordChangeScreenHandler::
         CoreOobeView* core_oobe_view)
     : BaseScreenHandler(OobeScreen::SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE,
                         js_calls_container),
-      authpolicy_login_helper_(std::make_unique<AuthPolicyLoginHelper>()),
+      authpolicy_login_helper_(std::make_unique<AuthPolicyHelper>()),
       core_oobe_view_(core_oobe_view),
       weak_factory_(this) {
-  set_call_js_prefix(kJsScreenPath);
 }
 
 ActiveDirectoryPasswordChangeScreenHandler::

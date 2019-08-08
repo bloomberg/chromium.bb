@@ -41,19 +41,18 @@ CredentialMetadata::~CredentialMetadata() = default;
 CredentialMetadata::UserEntity
 CredentialMetadata::UserEntity::FromPublicKeyCredentialUserEntity(
     const PublicKeyCredentialUserEntity& user) {
-  return CredentialMetadata::UserEntity(user.user_id(),
-                                        user.user_name().value_or(""),
-                                        user.user_display_name().value_or(""));
+  return CredentialMetadata::UserEntity(user.id, user.name.value_or(""),
+                                        user.display_name.value_or(""));
 }
 
 PublicKeyCredentialUserEntity
 CredentialMetadata::UserEntity::ToPublicKeyCredentialUserEntity() {
   auto user_entity = PublicKeyCredentialUserEntity(id);
   if (!name.empty()) {
-    user_entity.SetUserName(name);
+    user_entity.name = name;
   }
   if (!display_name.empty()) {
-    user_entity.SetDisplayName(display_name);
+    user_entity.display_name = display_name;
   }
   return user_entity;
 }

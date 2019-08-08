@@ -130,6 +130,11 @@ PasswordSyncableService::PasswordSyncableService(
 
 PasswordSyncableService::~PasswordSyncableService() = default;
 
+void PasswordSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
+  // PasswordStore becomes ready upon construction.
+  std::move(done).Run();
+}
+
 syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
@@ -335,7 +340,7 @@ bool PasswordSyncableService::ReadFromPasswordStore(
     // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
     UMA_HISTOGRAM_ENUMERATION("Sync.LocalDataFailedToLoad",
                               ModelTypeToHistogramInt(syncer::PASSWORDS),
-                              static_cast<int>(syncer::MODEL_TYPE_COUNT));
+                              static_cast<int>(syncer::ModelType::NUM_ENTRIES));
     return false;
   }
   password_entries->resize(autofillable_entries.size() +

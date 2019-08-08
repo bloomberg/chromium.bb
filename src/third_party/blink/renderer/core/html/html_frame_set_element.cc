@@ -66,7 +66,7 @@ void HTMLFrameSetElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kBordercolorAttr)
-    AddHTMLColorToStyle(style, CSSPropertyBorderColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyID::kBorderColor, value);
   else
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
 }
@@ -222,9 +222,10 @@ bool HTMLFrameSetElement::LayoutObjectIsNeeded(
 }
 
 LayoutObject* HTMLFrameSetElement::CreateLayoutObject(
-    const ComputedStyle& style) {
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
   if (style.HasContent())
-    return LayoutObject::CreateObject(this, style);
+    return LayoutObject::CreateObject(this, style, legacy);
   return new LayoutFrameSet(this);
 }
 

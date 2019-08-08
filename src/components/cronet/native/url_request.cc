@@ -15,6 +15,7 @@
 #include "components/cronet/native/generated/cronet.idl_impl_struct.h"
 #include "components/cronet/native/include/cronet_c.h"
 #include "components/cronet/native/io_buffer_with_cronet_buffer.h"
+#include "components/cronet/native/native_metrics_util.h"
 #include "components/cronet/native/runnables.h"
 #include "components/cronet/native/upload_data_sink.h"
 #include "net/base/io_buffer.h"
@@ -266,7 +267,8 @@ class Cronet_UrlRequestImpl::NetworkTasks : public CronetURLRequest::Callback {
                           const base::TimeTicks& request_end,
                           bool socket_reused,
                           int64_t sent_bytes_count,
-                          int64_t received_bytes_count) override;
+                          int64_t received_bytes_count)
+      LOCKS_EXCLUDED(url_request_->lock_) override;
 
   // The UrlRequest which owns context that owns the callback.
   Cronet_UrlRequestImpl* const url_request_ = nullptr;
@@ -328,6 +330,15 @@ Cronet_RESULT Cronet_UrlRequestImpl::InitWithParams(
   callback_ = callback;
   executor_ = executor;
 
+  if (params->request_finished_listener != nullptr &&
+      params->request_finished_executor == nullptr) {
+    return engine_->CheckResult(
+        Cronet_RESULT_NULL_POINTER_REQUEST_FINISHED_INFO_LISTENER_EXECUTOR);
+  }
+
+  request_finished_listener_ = params->request_finished_listener;
+  request_finished_executor_ = params->request_finished_executor;
+
   auto network_tasks = std::make_unique<NetworkTasks>(url, this);
   network_tasks_ = network_tasks.get();
 
@@ -335,7 +346,8 @@ Cronet_RESULT Cronet_UrlRequestImpl::InitWithParams(
       engine_->cronet_url_request_context(), std::move(network_tasks),
       GURL(url), ConvertRequestPriority(params->priority),
       params->disable_cache, true /* params->disableConnectionMigration */,
-      false /* params->enableMetrics */,
+      request_finished_listener_ != nullptr ||
+          engine_->HasRequestFinishedListener() /* params->enableMetrics */,
       // TODO(pauljensen): Consider exposing TrafficStats API via C++ API.
       false /* traffic_stats_tag_set */, 0 /* traffic_stats_tag */,
       false /* traffic_stats_uid_set */, 0 /* traffic_stats_uid */);
@@ -478,21 +490,25 @@ void Cronet_UrlRequestImpl::GetStatus(
                      Cronet_UrlRequestStatusListener_Status_INVALID));
 }
 
-void Cronet_UrlRequestImpl::OnUploadDataProviderError(
-    const std::string& error_message) {
-  {
-    base::AutoLock lock(lock_);
-    // If |error_| is not nullptr, that means that another network error is
-    // already reported.
-    if (error_)
-      return;
-    error_ = CreateCronet_Error(
-        0, 0, "Failure from UploadDataProvider: " + error_message);
-    error_->error_code = Cronet_Error_ERROR_CODE_ERROR_CALLBACK;
-  }
-  // Invoke Cronet_UrlRequestCallback_OnFailed on client executor.
+void Cronet_UrlRequestImpl::PostCallbackOnFailedToExecutor() {
   PostTaskToExecutor(base::BindOnce(
       &Cronet_UrlRequestImpl::InvokeCallbackOnFailed, base::Unretained(this)));
+}
+
+void Cronet_UrlRequestImpl::OnUploadDataProviderError(
+    const std::string& error_message) {
+  base::AutoLock lock(lock_);
+  // If |error_| is not nullptr, that means that another network error is
+  // already reported.
+  if (error_)
+    return;
+  error_ = CreateCronet_Error(
+      0, 0, "Failure from UploadDataProvider: " + error_message);
+  error_->error_code = Cronet_Error_ERROR_CODE_ERROR_CALLBACK;
+
+  request_->MaybeReportMetricsAndRunCallback(
+      base::BindOnce(&Cronet_UrlRequestImpl::PostCallbackOnFailedToExecutor,
+                     base::Unretained(this)));
 }
 
 void Cronet_UrlRequestImpl::PostTaskToExecutor(base::OnceClosure task) {
@@ -542,6 +558,7 @@ void Cronet_UrlRequestImpl::InvokeCallbackOnSucceeded() {
   }
   InvokeAllStatusListeners();
   Cronet_UrlRequestCallback_OnSucceeded(callback_, this, response_info_.get());
+  // |this| may have been deleted here.
 }
 
 void Cronet_UrlRequestImpl::InvokeCallbackOnFailed() {
@@ -552,11 +569,13 @@ void Cronet_UrlRequestImpl::InvokeCallbackOnFailed() {
   InvokeAllStatusListeners();
   Cronet_UrlRequestCallback_OnFailed(callback_, this, response_info_.get(),
                                      error_.get());
+  // |this| may have been deleted here.
 }
 
 void Cronet_UrlRequestImpl::InvokeCallbackOnCanceled() {
   InvokeAllStatusListeners();
   Cronet_UrlRequestCallback_OnCanceled(callback_, this, response_info_.get());
+  // |this| may have been deleted here.
 }
 
 void Cronet_UrlRequestImpl::InvokeAllStatusListeners() {
@@ -587,7 +606,6 @@ Cronet_UrlRequestImpl::NetworkTasks::NetworkTasks(
   DCHECK(url_request);
 }
 
-// CronetURLRequest::NetworkTasks implementations:
 void Cronet_UrlRequestImpl::NetworkTasks::OnReceivedRedirect(
     const std::string& new_location,
     int http_status_code,
@@ -736,6 +754,38 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnMetricsCollected(
     int64_t sent_bytes_count,
     int64_t received_bytes_count) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
+  base::AutoLock lock(url_request_->lock_);
+  DCHECK_EQ(url_request_->metrics_.get(), nullptr)
+      << "Metrics collection should only happen once.";
+  auto metrics = std::make_unique<Cronet_Metrics>();
+  using native_metrics_util::ConvertTime;
+  ConvertTime(request_start, request_start, request_start_time,
+              &metrics->request_start);
+  ConvertTime(dns_start, request_start, request_start_time,
+              &metrics->dns_start);
+  ConvertTime(dns_end, request_start, request_start_time, &metrics->dns_end);
+  ConvertTime(connect_start, request_start, request_start_time,
+              &metrics->connect_start);
+  ConvertTime(connect_end, request_start, request_start_time,
+              &metrics->connect_end);
+  ConvertTime(ssl_start, request_start, request_start_time,
+              &metrics->ssl_start);
+  ConvertTime(ssl_end, request_start, request_start_time, &metrics->ssl_end);
+  ConvertTime(send_start, request_start, request_start_time,
+              &metrics->sending_start);
+  ConvertTime(send_end, request_start, request_start_time,
+              &metrics->sending_end);
+  ConvertTime(push_start, request_start, request_start_time,
+              &metrics->push_start);
+  ConvertTime(push_end, request_start, request_start_time, &metrics->push_end);
+  ConvertTime(receive_headers_end, request_start, request_start_time,
+              &metrics->response_start);
+  ConvertTime(request_end, request_start, request_start_time,
+              &metrics->request_end);
+  metrics->socket_reused = socket_reused;
+  metrics->sent_byte_count = sent_bytes_count;
+  metrics->received_byte_count = received_bytes_count;
+  url_request_->metrics_ = std::move(metrics);
 }
 
 void Cronet_UrlRequestImpl::NetworkTasks::OnStatus(

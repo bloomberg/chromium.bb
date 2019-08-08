@@ -142,8 +142,8 @@ network::ResourceRequest CreateResourceRequest(const std::string& method,
   request.request_initiator =
       url::Origin::Create(url);  // ensure initiator set.
   request.referrer_policy = content::Referrer::GetDefaultReferrerPolicy();
-  request.resource_type = resource_type;
-  request.is_main_frame = resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
+  request.resource_type = static_cast<int>(resource_type);
+  request.is_main_frame = resource_type == content::ResourceType::kMainFrame;
   request.allow_download = true;
   return request;
 }
@@ -276,7 +276,7 @@ class ExtensionProtocolsTestBase
                    /*notifications_disabled=*/false);
     }
     return RequestOrLoad(extension->GetResourceURL(relative_path),
-                         content::RESOURCE_TYPE_MAIN_FRAME);
+                         content::ResourceType::kMainFrame);
   }
 
   ExtensionRegistry* extension_registry() {
@@ -336,7 +336,7 @@ class ExtensionProtocolsTestBase
         /*render_process_id=*/-1,
         /*render_view_id=*/-1,
         /*render_frame_id=*/-1,
-        /*is_main_frame=*/resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
+        /*is_main_frame=*/resource_type == content::ResourceType::kMainFrame,
         content::ResourceInterceptPolicy::kAllowAll,
         /*is_async=*/false, content::PREVIEWS_OFF,
         /*navigation_ui_data*/ nullptr);
@@ -434,7 +434,7 @@ TEST_P(ExtensionProtocolsIncognitoTest, IncognitoRequest) {
       // is blocked, we should see BLOCKED_BY_CLIENT. Otherwise, the request
       // should just fail because the file doesn't exist.
       auto get_result = RequestOrLoad(extension->GetResourceURL("404.html"),
-                                      content::RESOURCE_TYPE_MAIN_FRAME);
+                                      content::ResourceType::kMainFrame);
 
       if (cases[i].should_allow_main_frame_load) {
         EXPECT_EQ(net::ERR_FILE_NOT_FOUND, get_result.result())
@@ -462,6 +462,42 @@ void CheckForContentLengthHeader(const GetResult& get_result) {
   EXPECT_GT(length_value, 0);
 }
 
+#if defined(OS_CHROMEOS)
+// Tests getting a resource for a component extension works correctly where
+// there is no mime type. Such a resource currently only exists for Chrome OS
+// build.
+TEST_P(ExtensionProtocolsTest, ComponentResourceRequestNoMimeType) {
+  SetProtocolHandler(false);
+  std::unique_ptr<base::DictionaryValue> manifest =
+      DictionaryBuilder()
+          .Set("name", "pdf")
+          .Set("version", "1")
+          .Set("manifest_version", 2)
+          .Set("web_accessible_resources",
+               // Registered by chrome_component_extension_resource_manager.cc
+               ListBuilder().Append("ink/glcore_base.js.mem").Build())
+          .Build();
+
+  base::FilePath path;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_RESOURCES, &path));
+  path = path.AppendASCII("pdf");
+
+  std::string error;
+  scoped_refptr<Extension> extension(Extension::Create(
+      path, Manifest::COMPONENT, *manifest, Extension::NO_FLAGS, &error));
+  EXPECT_TRUE(extension.get()) << error;
+  AddExtension(extension, false, false);
+
+  auto get_result =
+      RequestOrLoad(extension->GetResourceURL("ink/glcore_base.js.mem"),
+                    content::ResourceType::kXhr);
+  EXPECT_EQ(net::OK, get_result.result());
+  CheckForContentLengthHeader(get_result);
+  EXPECT_EQ("", get_result.GetResponseHeaderByName(
+                    net::HttpRequestHeaders::kContentType));
+}
+#endif
+
 // Tests getting a resource for a component extension works correctly, both when
 // the extension is enabled and when it is disabled.
 TEST_P(ExtensionProtocolsTest, ComponentResourceRequest) {
@@ -475,7 +511,7 @@ TEST_P(ExtensionProtocolsTest, ComponentResourceRequest) {
   {
     auto get_result =
         RequestOrLoad(extension->GetResourceURL("webstore_icon_16.png"),
-                      content::RESOURCE_TYPE_MEDIA);
+                      content::ResourceType::kMedia);
     EXPECT_EQ(net::OK, get_result.result());
     CheckForContentLengthHeader(get_result);
     EXPECT_EQ("image/png", get_result.GetResponseHeaderByName(
@@ -487,7 +523,7 @@ TEST_P(ExtensionProtocolsTest, ComponentResourceRequest) {
   {
     auto get_result =
         RequestOrLoad(extension->GetResourceURL("webstore_icon_16.png"),
-                      content::RESOURCE_TYPE_MEDIA);
+                      content::ResourceType::kMedia);
     EXPECT_EQ(net::OK, get_result.result());
     CheckForContentLengthHeader(get_result);
     EXPECT_EQ("image/png", get_result.GetResponseHeaderByName(
@@ -507,7 +543,7 @@ TEST_P(ExtensionProtocolsTest, ResourceRequestResponseHeaders) {
 
   {
     auto get_result = RequestOrLoad(extension->GetResourceURL("test.dat"),
-                                    content::RESOURCE_TYPE_MEDIA);
+                                    content::ResourceType::kMedia);
     EXPECT_EQ(net::OK, get_result.result());
 
     // Check that cache-related headers are set.
@@ -540,7 +576,7 @@ TEST_P(ExtensionProtocolsTest, AllowFrameRequests) {
   // should not succeed.
   {
     auto get_result = RequestOrLoad(extension->GetResourceURL("test.dat"),
-                                    content::RESOURCE_TYPE_MAIN_FRAME);
+                                    content::ResourceType::kMainFrame);
     EXPECT_EQ(net::OK, get_result.result());
   }
 
@@ -551,7 +587,7 @@ TEST_P(ExtensionProtocolsTest, AllowFrameRequests) {
   // And subresource types, such as media, should fail.
   {
     auto get_result = RequestOrLoad(extension->GetResourceURL("test.dat"),
-                                    content::RESOURCE_TYPE_MEDIA);
+                                    content::ResourceType::kMedia);
     EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, get_result.result());
   }
 }
@@ -799,7 +835,7 @@ TEST_P(ExtensionProtocolsTest, MimeTypesForKnownFiles) {
   for (const auto& test_case : test_cases) {
     SCOPED_TRACE(test_case.file_name);
     auto result = RequestOrLoad(extension->GetResourceURL(test_case.file_name),
-                                content::RESOURCE_TYPE_SUB_RESOURCE);
+                                content::ResourceType::kSubResource);
     EXPECT_EQ(
         test_case.expected_mime_type,
         result.GetResponseHeaderByName(net::HttpRequestHeaders::kContentType));

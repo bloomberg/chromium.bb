@@ -63,7 +63,7 @@ class CORE_EXPORT Text : public CharacterData {
   bool TextLayoutObjectIsNeeded(const AttachContext&,
                                 const ComputedStyle&,
                                 const LayoutObject& parent) const;
-  LayoutText* CreateTextLayoutObject(const ComputedStyle&);
+  LayoutText* CreateTextLayoutObject(const ComputedStyle&, LegacyLayout);
   void UpdateTextLayoutObject(unsigned offset_of_replaced_data,
                               unsigned length_of_replaced_data);
 

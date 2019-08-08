@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/connector.h"
 #include "net/base/ip_address.h"
@@ -27,12 +28,15 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace network {
+namespace {
+
+using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::NiceMock;
 using ::testing::Return;
-using ::testing::_;
-
-namespace {
+using ServiceError = MdnsResponderManager::ServiceError;
 
 const net::IPAddress kPublicAddrs[2] = {net::IPAddress(11, 11, 11, 11),
                                         net::IPAddress(22, 22, 22, 22)};
@@ -44,6 +48,11 @@ const base::TimeDelta kDefaultTtl = base::TimeDelta::FromSeconds(120);
 
 const int kNumAnnouncementsPerInterface = 2;
 const int kNumMaxRetriesPerResponse = 2;
+
+// Keep in sync with the histogram name in ReportServiceError in
+// mdns_responder.cc
+const char kServiceErrorHistogram[] =
+    "NetworkService.MdnsResponder.ServiceError";
 
 std::string CreateMdnsQuery(uint16_t query_id,
                             const std::string& dotted_name,
@@ -99,6 +108,37 @@ class MockFailingMdnsSocketFactory : public net::MDnsSocketFactory {
     return -1;
   }
 
+  // Emulates IO blocking in sending packets if |BlockSend()| is called, in
+  // which case the completion callback is not invoked until |ResumeSend()| is
+  // called.
+  int MaybeBlockSend(const std::string& packet,
+                     const std::string& address,
+                     net::CompletionRepeatingCallback callback) {
+    OnSendTo(packet);
+    if (block_send_) {
+      blocked_packet_size_ = packet.size();
+      blocked_send_callback_ = std::move(callback);
+    } else {
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce([](net::CompletionRepeatingCallback callback,
+                            size_t packet_size) { callback.Run(packet_size); },
+                         callback, packet.size()));
+    }
+    return -1;
+  }
+
+  void BlockSend() {
+    DCHECK(!block_send_);
+    block_send_ = true;
+  }
+
+  void ResumeSend() {
+    DCHECK(block_send_);
+    block_send_ = false;
+    blocked_send_callback_.Run(blocked_packet_size_);
+  }
+
   // Emulates the asynchronous contract of invoking |callback| in the RecvFrom
   // primitive but failed receiving;
   int FailToRecv(net::IOBuffer* buffer,
@@ -114,12 +154,13 @@ class MockFailingMdnsSocketFactory : public net::MDnsSocketFactory {
   }
 
  private:
+  bool block_send_ = false;
+  size_t blocked_packet_size_ = 0;
+  net::CompletionRepeatingCallback blocked_send_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace
-
-namespace network {
 
 // Tests of the response creation helpers. For positive responses, we have the
 // address records in the Answer section and, if TTL is nonzero, the
@@ -277,6 +318,14 @@ class MdnsResponderTest : public testing::Test {
     Reset();
   }
 
+  ~MdnsResponderTest() {
+    // Goodbye messages are scheduled when the responder service |host_manager_|
+    // is destroyed and can be synchronously sent if the rate limiting permits.
+    // See ResponseScheduler::DispatchPendingPackets().
+    EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(AnyNumber());
+    EXPECT_CALL(failing_socket_factory_, OnSendTo(_)).Times(AnyNumber());
+  }
+
   void Reset(bool use_failing_socket_factory = false) {
     client_[0].reset();
     client_[1].reset();
@@ -359,12 +408,12 @@ class MdnsResponderTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
-  mojom::MdnsResponderPtr client_[2];
-  std::unique_ptr<MdnsResponderManager> host_manager_;
   // Overrides the current thread task runner, so we can simulate the passage
   // of time and avoid any actual sleeps.
   NiceMock<net::MockMDnsSocketFactory> socket_factory_;
   NiceMock<MockFailingMdnsSocketFactory> failing_socket_factory_;
+  mojom::MdnsResponderPtr client_[2];
+  std::unique_ptr<MdnsResponderManager> host_manager_;
   std::string last_name_created_;
 };
 
@@ -542,6 +591,7 @@ TEST_F(MdnsResponderTest, SendNegativeResponseToQueryForNonAddressRecord) {
 // an invalid IP address is given to create a name for.
 TEST_F(MdnsResponderTest,
        HostClosesMojoConnectionWhenCreatingNameForInvalidAddress) {
+  base::HistogramTester tester;
   const net::IPAddress addr;
   ASSERT_TRUE(!addr.IsValid());
   EXPECT_TRUE(client_[0].is_bound());
@@ -549,6 +599,10 @@ TEST_F(MdnsResponderTest,
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(0);
   CreateNameForAddress(0, addr);
   EXPECT_FALSE(client_[0].is_bound());
+
+  tester.ExpectBucketCount(kServiceErrorHistogram,
+                           ServiceError::kInvalidIpToRegisterName, 1);
+  tester.ExpectTotalCount(kServiceErrorHistogram, 1);
 }
 
 // Test that the responder manager closes the connection after observing
@@ -612,12 +666,19 @@ TEST_F(MdnsResponderTest, ResponderHostDoesCleanUpAfterMojoConnectionError) {
 // Test that the host generates a Mojo connection error when no socket handler
 // is successfully started.
 TEST_F(MdnsResponderTest, ClosesBindingWhenNoSocketHanlderStarted) {
+  base::HistogramTester tester;
   EXPECT_CALL(failing_socket_factory_, CreateSockets(_)).WillOnce(Return());
   Reset(true /* use_failing_socket_factory */);
   RunUntilNoTasksRemain();
   // MdnsResponderTest::OnMojoConnectionError.
   EXPECT_FALSE(client_[0].is_bound());
   EXPECT_FALSE(client_[1].is_bound());
+
+  tester.ExpectBucketCount(kServiceErrorHistogram,
+                           ServiceError::kFailToStartManager, 1);
+  tester.ExpectBucketCount(kServiceErrorHistogram,
+                           ServiceError::kFailToCreateResponder, 2);
+  tester.ExpectTotalCount(kServiceErrorHistogram, 3);
 }
 
 // Test that an announcement is retried after send failure.
@@ -967,6 +1028,7 @@ TEST_F(MdnsResponderTest, ScheduledSendsAreCancelledAfterManagerDestroyed) {
 
 // Test that if all socket handlers fail to read, the manager restarts itself.
 TEST_F(MdnsResponderTest, ManagerCanRestartAfterAllSocketHandlersFailToRead) {
+  base::HistogramTester tester;
   auto create_read_failing_socket =
       [this](std::vector<std::unique_ptr<net::DatagramServerSocket>>* sockets) {
         auto socket =
@@ -983,7 +1045,68 @@ TEST_F(MdnsResponderTest, ManagerCanRestartAfterAllSocketHandlersFailToRead) {
   EXPECT_CALL(failing_socket_factory_, CreateSockets(_))
       .WillOnce(Invoke(create_read_failing_socket));
   Reset(true /* use_failing_socket_factory */);
+  // Called when the manager restarts. The mocked CreateSockets() by default
+  // returns an empty vector of sockets, thus failing the restart again.
   EXPECT_CALL(failing_socket_factory_, CreateSockets(_)).Times(1);
+  RunUntilNoTasksRemain();
+  tester.ExpectBucketCount(kServiceErrorHistogram,
+                           ServiceError::kFatalSocketHandlerError, 1);
+  tester.ExpectBucketCount(kServiceErrorHistogram,
+                           ServiceError::kFailToStartManager, 1);
+  tester.ExpectTotalCount(kServiceErrorHistogram, 2);
+}
+
+// Test that sending packets on an interface can be blocked by an incomplete
+// send on the same interface. Blocked packets are later flushed when sending is
+// unblocked.
+TEST_F(MdnsResponderTest, IncompleteSendBlocksFollowingSends) {
+  auto create_send_blocking_socket =
+      [this](std::vector<std::unique_ptr<net::DatagramServerSocket>>* sockets) {
+        auto socket =
+            std::make_unique<NiceMock<net::MockMDnsDatagramServerSocket>>(
+                net::ADDRESS_FAMILY_IPV4);
+
+        ON_CALL(*socket, SendToInternal(_, _, _))
+            .WillByDefault(
+                Invoke(&failing_socket_factory_,
+                       &MockFailingMdnsSocketFactory::MaybeBlockSend));
+        ON_CALL(*socket, RecvFromInternal(_, _, _, _))
+            .WillByDefault(Return(-1));
+
+        sockets->push_back(std::move(socket));
+      };
+  EXPECT_CALL(failing_socket_factory_, CreateSockets(_))
+      .WillOnce(Invoke(create_send_blocking_socket));
+  Reset(true /* use_failing_socket_factory */);
+
+  const auto& addr1 = kPublicAddrs[0];
+  std::string expected_announcement1 =
+      CreateResolutionResponse(kDefaultTtl, {{"0.local", addr1}});
+  // Mocked CreateSockets above only creates one socket.
+  // We schedule to send the announcement for |kNumAnnouncementsPerInterface|
+  // times but the second announcement is blocked by the first one in this case.
+  EXPECT_CALL(failing_socket_factory_, OnSendTo(expected_announcement1))
+      .Times(1);
+  failing_socket_factory_.BlockSend();
+  const auto name1 = CreateNameForAddress(0, addr1);
+  RunUntilNoTasksRemain();
+
+  const auto& addr2 = kPublicAddrs[1];
+  std::string expected_announcement2 =
+      CreateResolutionResponse(kDefaultTtl, {{"1.local", addr2}});
+  // The announcement for the following name should also be blocked.
+  const auto name2 = CreateNameForAddress(0, addr2);
+  EXPECT_CALL(failing_socket_factory_, OnSendTo(expected_announcement2))
+      .Times(0);
+  RunUntilNoTasksRemain();
+
+  // We later unblock sending packets. Previously scheduled announcements should
+  // be flushed.
+  EXPECT_CALL(failing_socket_factory_, OnSendTo(expected_announcement1))
+      .Times(kNumAnnouncementsPerInterface - 1);
+  EXPECT_CALL(failing_socket_factory_, OnSendTo(expected_announcement2))
+      .Times(kNumAnnouncementsPerInterface);
+  failing_socket_factory_.ResumeSend();
   RunUntilNoTasksRemain();
 }
 

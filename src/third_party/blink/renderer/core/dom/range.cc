@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -1017,13 +1018,13 @@ DocumentFragment* Range::createContextualFragmentFromString(
     if (document.IsSVGDocument()) {
       element = document.documentElement();
       if (!element)
-        element = SVGSVGElement::Create(document);
+        element = MakeGarbageCollected<SVGSVGElement>(document);
     } else {
       // Optimization over spec: try to reuse the existing <body> element, if it
       // is available.
       element = document.body();
       if (!element)
-        element = HTMLBodyElement::Create(document);
+        element = MakeGarbageCollected<HTMLBodyElement>(document);
     }
   }
 
@@ -1610,7 +1611,7 @@ void Range::DidSplitTextNode(const Text& old_node) {
 void Range::expand(const String& unit, ExceptionState& exception_state) {
   if (!StartPosition().IsConnected() || !EndPosition().IsConnected())
     return;
-  owner_document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  owner_document_->UpdateStyleAndLayout();
   VisiblePosition start = CreateVisiblePosition(StartPosition());
   VisiblePosition end = CreateVisiblePosition(EndPosition());
   if (unit == "word") {
@@ -1637,7 +1638,7 @@ void Range::expand(const String& unit, ExceptionState& exception_state) {
 }
 
 DOMRectList* Range::getClientRects() const {
-  owner_document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  owner_document_->UpdateStyleAndLayout();
 
   Vector<FloatQuad> quads;
   GetBorderAndTextQuads(quads);
@@ -1756,7 +1757,7 @@ void Range::GetBorderAndTextQuads(Vector<FloatQuad>& quads) const {
 }
 
 FloatRect Range::BoundingRect() const {
-  owner_document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  owner_document_->UpdateStyleAndLayout();
 
   Vector<FloatQuad> quads;
   GetBorderAndTextQuads(quads);

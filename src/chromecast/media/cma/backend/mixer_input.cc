@@ -34,15 +34,11 @@ int RoundUpMultiple(int value, int multiple) {
 
 }  // namespace
 
-MixerInput::MixerInput(Source* source,
-                       int output_samples_per_second,
-                       int read_size,
-                       RenderingDelay initial_rendering_delay,
-                       FilterGroup* filter_group)
+MixerInput::MixerInput(Source* source, FilterGroup* filter_group)
     : source_(source),
       num_channels_(source->num_channels()),
       input_samples_per_second_(source->input_samples_per_second()),
-      output_samples_per_second_(output_samples_per_second),
+      output_samples_per_second_(filter_group->input_samples_per_second()),
       primary_(source->primary()),
       device_id_(source->device_id()),
       content_type_(source->content_type()),
@@ -58,7 +54,10 @@ MixerInput::MixerInput(Source* source,
   DCHECK_GT(num_channels_, 0);
   DCHECK_GT(input_samples_per_second_, 0);
 
-  int source_read_size = read_size;
+  MediaPipelineBackend::AudioDecoder::RenderingDelay initial_rendering_delay =
+      filter_group->GetRenderingDelayToOutput();
+
+  int source_read_size = filter_group->input_frames_per_write();
   if (output_samples_per_second_ > 0 &&
       output_samples_per_second_ != input_samples_per_second_) {
     // Round up to nearest multiple of SincResampler::kKernelSize. The read size

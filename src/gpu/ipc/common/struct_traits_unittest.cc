@@ -149,7 +149,7 @@ TEST_F(StructTraitsTest, GpuInfo) {
   const std::string gl_ws_extensions = "gl_ws_extensions";
   const uint32_t gl_reset_notification_strategy = 0xbeef;
   const bool software_rendering = true;
-  const bool direct_rendering = true;
+  const std::string direct_rendering_version = "DRI1";
   const bool sandboxed = true;
   const bool in_process_gpu = true;
   const bool passthrough_cmd_decoder = true;
@@ -193,7 +193,7 @@ TEST_F(StructTraitsTest, GpuInfo) {
   input.gl_ws_extensions = gl_ws_extensions;
   input.gl_reset_notification_strategy = gl_reset_notification_strategy;
   input.software_rendering = software_rendering;
-  input.direct_rendering = direct_rendering;
+  input.direct_rendering_version = direct_rendering_version;
   input.sandboxed = sandboxed;
   input.in_process_gpu = in_process_gpu;
   input.passthrough_cmd_decoder = passthrough_cmd_decoder;
@@ -252,7 +252,7 @@ TEST_F(StructTraitsTest, GpuInfo) {
   EXPECT_EQ(gl_reset_notification_strategy,
             output.gl_reset_notification_strategy);
   EXPECT_EQ(software_rendering, output.software_rendering);
-  EXPECT_EQ(direct_rendering, output.direct_rendering);
+  EXPECT_EQ(direct_rendering_version, output.direct_rendering_version);
   EXPECT_EQ(sandboxed, output.sandboxed);
   EXPECT_EQ(in_process_gpu, output.in_process_gpu);
   EXPECT_EQ(passthrough_cmd_decoder, output.passthrough_cmd_decoder);

@@ -371,6 +371,120 @@ TEST_P(CopyTexImageTest, SubDefaultFramebuffer)
     EXPECT_GL_NO_ERROR();
 }
 
+// Calling CopyTexSubImage from cubeMap texture.
+TEST_P(CopyTexImageTest, CopyTexSubImageFromCubeMap)
+{
+    // TODO: Diagnose and fix. http://anglebug.com/2954
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsIntel());
+
+    constexpr GLsizei kCubeMapFaceCount = 6;
+
+    // The framebuffer will be a face of a cube map with a different colors for each face.  Each
+    // glCopyTexSubImage2D will take one face of this image to copy over a pixel in a 1x6
+    // framebuffer.
+    GLColor fboPixels[kCubeMapFaceCount]   = {GLColor::red,  GLColor::yellow, GLColor::green,
+                                            GLColor::cyan, GLColor::blue,   GLColor::magenta};
+    GLColor whitePixels[kCubeMapFaceCount] = {GLColor::white, GLColor::white, GLColor::white,
+                                              GLColor::white, GLColor::white, GLColor::white};
+
+    GLTexture fboTex;
+    glBindTexture(GL_TEXTURE_CUBE_MAP, fboTex);
+    for (GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X; face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+         face++)
+    {
+        GLsizei faceIndex = face - GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+
+        glTexImage2D(face, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &fboPixels[faceIndex]);
+    }
+
+    GLTexture dstTex;
+    glBindTexture(GL_TEXTURE_2D, dstTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kCubeMapFaceCount, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 whitePixels);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    for (GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X; face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+         face++)
+    {
+        GLsizei faceIndex = face - GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face, fboTex, 0);
+
+        ASSERT_GL_NO_ERROR();
+        ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+        // Copy the fbo (a cube map face) into a pixel of the destination texture.
+        glCopyTexSubImage2D(GL_TEXTURE_2D, 0, faceIndex, 0, 0, 0, 1, 1);
+    }
+
+    // Make sure all the copies are done correctly.
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dstTex, 0);
+
+    ASSERT_GL_NO_ERROR();
+    ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+    for (GLsizei faceIndex = 0; faceIndex < kCubeMapFaceCount; ++faceIndex)
+    {
+        EXPECT_PIXEL_COLOR_EQ(faceIndex, 0, fboPixels[faceIndex]);
+    }
+}
+
+// Calling CopyTexSubImage to a non-cube-complete texture.
+TEST_P(CopyTexImageTest, CopyTexSubImageToNonCubeCompleteDestination)
+{
+    constexpr GLsizei kCubeMapFaceCount = 6;
+
+    // The framebuffer will be a 1x6 image with 6 different colors.  Each glCopyTexSubImage2D will
+    // take one pixel of this image to copy over each face of a cube map.
+    GLColor fboPixels[kCubeMapFaceCount] = {GLColor::red,  GLColor::yellow, GLColor::green,
+                                            GLColor::cyan, GLColor::blue,   GLColor::magenta};
+    GLColor whitePixel                   = GLColor::white;
+
+    GLTexture fboTex;
+    glBindTexture(GL_TEXTURE_2D, fboTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kCubeMapFaceCount, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 fboPixels);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fboTex, 0);
+
+    ASSERT_GL_NO_ERROR();
+    ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+    GLTexture cubeMap;
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap);
+
+    for (GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X; face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+         face++)
+    {
+        GLsizei faceIndex = face - GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+
+        // Initialize the face with a color not found in the fbo.
+        glTexImage2D(face, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &whitePixel);
+
+        // Copy one pixel from the fbo into this face.  The first 5 copies are done on a
+        // non-cube-complete texture.
+        glCopyTexSubImage2D(face, 0, 0, 0, faceIndex, 0, 1, 1);
+    }
+
+    // Make sure all the copies are done correctly.
+    for (GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X; face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+         face++)
+    {
+        GLsizei faceIndex = face - GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face, cubeMap, 0);
+
+        ASSERT_GL_NO_ERROR();
+        ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+        EXPECT_PIXEL_COLOR_EQ(0, 0, fboPixels[faceIndex]);
+    }
+}
+
 // specialization of CopyTexImageTest is added so that some tests can be explicitly run with an ES3
 // context
 class CopyTexImageTestES3 : public CopyTexImageTest
@@ -396,6 +510,40 @@ TEST_P(CopyTexImageTestES3, ReadBufferIsNone)
     EXPECT_GL_NO_ERROR();
     glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, 4, 4);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+}
+
+// Test CopyTexImage3D with some simple parameters with a 2D array texture.
+TEST_P(CopyTexImageTestES3, 2DArraySubImage)
+{
+    // Seems to fail on AMD OpenGL Windows.
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsOpenGL() & IsWindows());
+
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
+
+    constexpr GLsizei kTexSize     = 4;
+    constexpr GLsizei kLayerOffset = 1;
+    constexpr GLsizei kLayers      = 2;
+
+    // Clear screen to green.
+    glClearColor(0, 1, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Initialize a two-layer 2D array texture with red.
+    std::vector<GLColor> red(kTexSize * kTexSize * kLayers, GLColor::red);
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, kTexSize, kTexSize, kLayers, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, red.data());
+    glCopyTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, kLayerOffset, 0, 0, kTexSize, kTexSize);
+    ASSERT_GL_NO_ERROR();
+
+    // Check level 0 (red from image data) and 1 (green from backbuffer clear).
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex, 0, 0);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex, 0, 1);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+    ASSERT_GL_NO_ERROR();
 }
 
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these

@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/webshare/navigator_share.h"
 
+#include <stdint.h>
+#include <utility>
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -20,6 +22,9 @@ namespace blink {
 
 namespace {
 
+constexpr size_t kMaxSharedFileCount = 10;
+constexpr uint32_t kMaxSharedFileBytes = 50U * 1024 * 1024;
+
 // Gets the human-friendly error message for a ShareError. |error| must not be
 // ShareError::OK.
 String ErrorToString(mojom::blink::ShareError error) {
@@ -29,6 +34,8 @@ String ErrorToString(mojom::blink::ShareError error) {
       break;
     case mojom::blink::ShareError::INTERNAL_ERROR:
       return "Share failed";
+    case mojom::blink::ShareError::PERMISSION_DENIED:
+      return "Permission denied";
     case mojom::blink::ShareError::CANCELED:
       return "Share canceled";
   }
@@ -100,8 +107,11 @@ void NavigatorShare::ShareClientImpl::Callback(mojom::blink::ShareError error) {
   if (error == mojom::blink::ShareError::OK) {
     resolver_->Resolve();
   } else {
-    resolver_->Reject(DOMException::Create(DOMExceptionCode::kAbortError,
-                                           ErrorToString(error)));
+    resolver_->Reject(DOMException::Create(
+        (error == mojom::blink::ShareError::PERMISSION_DENIED)
+            ? DOMExceptionCode::kNotAllowedError
+            : DOMExceptionCode::kAbortError,
+        ErrorToString(error)));
   }
 }
 
@@ -181,15 +191,34 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     DCHECK(service_);
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ShareClientImpl* client =
       MakeGarbageCollected<ShareClientImpl>(this, resolver);
   clients_.insert(client);
   ScriptPromise promise = resolver->Promise();
 
+  WTF::Vector<mojom::blink::SharedFilePtr> files;
+  uint64_t total_bytes = 0;
+  if (share_data->hasFiles()) {
+    files.ReserveInitialCapacity(share_data->files().size());
+    for (const blink::Member<blink::File>& file : share_data->files()) {
+      total_bytes += file->size();
+      files.push_back(mojom::blink::SharedFile::New(file->name(),
+                                                    file->GetBlobDataHandle()));
+    }
+
+    if (files.size() > kMaxSharedFileCount ||
+        total_bytes > kMaxSharedFileBytes) {
+      DOMException* error = DOMException::Create(
+          DOMExceptionCode::kNotAllowedError, "Permission denied");
+      return ScriptPromise::RejectWithDOMException(script_state, error);
+    }
+  }
+
   service_->Share(
       share_data->hasTitle() ? share_data->title() : g_empty_string,
       share_data->hasText() ? share_data->text() : g_empty_string, full_url,
+      std::move(files),
       WTF::Bind(&ShareClientImpl::Callback, WrapPersistent(client)));
 
   return promise;

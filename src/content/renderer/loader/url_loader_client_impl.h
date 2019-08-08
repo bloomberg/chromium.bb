@@ -96,12 +96,6 @@ class CONTENT_EXPORT URLLoaderClientImpl final
   void StoreAndDispatch(std::unique_ptr<DeferredMessage> message);
   void OnConnectionClosed();
 
-  // Non-ResourceLoadViaDataPipe:
-  // Used for reading the response body from the data pipe passed on
-  // OnStartLoadingResponseBody() and passing the data to corresponding
-  // RequestPeer.
-  scoped_refptr<URLResponseBodyConsumer> body_consumer_;
-
   std::vector<std::unique_ptr<DeferredMessage>> deferred_messages_;
   const int request_id_;
   bool has_received_response_head_ = false;

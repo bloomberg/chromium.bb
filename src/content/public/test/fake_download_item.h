@@ -109,6 +109,8 @@ class FakeDownloadItem : public download::DownloadItem {
   void ValidateDangerousDownload() override;
   void StealDangerousDownload(bool delete_file_afterward,
                               const AcquireFileCallback& callback) override;
+  void Rename(const base::FilePath& name,
+              RenameDownloadCallback callback) override;
 
   bool removed() const { return removed_; }
   void NotifyDownloadDestroyed();

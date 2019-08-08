@@ -25,6 +25,7 @@
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
@@ -497,10 +498,15 @@ void InputHandler::SetRenderer(int process_host_id,
   WebContents* old_web_contents = WebContents::FromRenderFrameHost(host_);
   WebContents* new_web_contents = WebContents::FromRenderFrameHost(frame_host);
 
+  // When navigating, the new renderer might have a different page scale.
+  // It emits a changed event iff the new page scale is not 1
+  // (see crbug.com/929806)
+  // If attaching to a new host, we've got OnPageScaleFactorChanged(),
+  // so don't override it.
+  if (host_)
+    page_scale_factor_ = 1.0;
+
   host_ = frame_host;
-  // TODO(crbug.com/929806) The new renderer might have a different page scale.
-  // It emits a changed event iff the new page scale is not 1 .
-  page_scale_factor_ = 1.0;
 
   if (ignore_input_events_ && old_web_contents != new_web_contents) {
     if (old_web_contents)

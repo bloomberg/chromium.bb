@@ -87,6 +87,7 @@ component("lib") {
     "//services/ws/public/mojom",
     "//ui/aura",
     "//ui/aura_extra:window_position_in_root_monitor",
+    "//ui/base/ime/mojo",
     "//ui/base/mojo:lib",
     "//ui/wm",
     "//ui/wm/public",

@@ -54,7 +54,7 @@ namespace blink {
 class AnimationAnimationTest : public RenderingTest {
  public:
   AnimationAnimationTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
   void SetUp() override {
     RenderingTest::SetUp();
@@ -63,7 +63,7 @@ class AnimationAnimationTest : public RenderingTest {
   }
 
   void SetUpWithoutStartingTimeline() {
-    page_holder = DummyPageHolder::Create();
+    page_holder = std::make_unique<DummyPageHolder>();
     document = &page_holder->GetDocument();
     document->GetAnimationClock().ResetTimeForTesting();
     timeline = DocumentTimeline::Create(document.Get());
@@ -79,9 +79,9 @@ class AnimationAnimationTest : public RenderingTest {
     PropertyHandle PropertyHandleOpacity(GetCSSPropertyOpacity());
     TransitionKeyframe* start_keyframe =
         TransitionKeyframe::Create(PropertyHandleOpacity);
-    start_keyframe->SetValue(TypedInterpolationValue::Create(
+    start_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
         CSSNumberInterpolationType(PropertyHandleOpacity),
-        InterpolableNumber::Create(1.0)));
+        std::make_unique<InterpolableNumber>(1.0)));
     start_keyframe->SetOffset(0.0);
     // Egregious hack: Sideload the compositor value.
     // This is usually set in a part of the rendering process SimulateFrame
@@ -89,9 +89,9 @@ class AnimationAnimationTest : public RenderingTest {
     start_keyframe->SetCompositorValue(AnimatableDouble::Create(1.0));
     TransitionKeyframe* end_keyframe =
         TransitionKeyframe::Create(PropertyHandleOpacity);
-    end_keyframe->SetValue(TypedInterpolationValue::Create(
+    end_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
         CSSNumberInterpolationType(PropertyHandleOpacity),
-        InterpolableNumber::Create(0.0)));
+        std::make_unique<InterpolableNumber>(0.0)));
     end_keyframe->SetOffset(1.0);
     // Egregious hack: Sideload the compositor value.
     end_keyframe->SetCompositorValue(AnimatableDouble::Create(0.0));
@@ -116,11 +116,11 @@ class AnimationAnimationTest : public RenderingTest {
     timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
 
     Persistent<StringKeyframe> start_keyframe = StringKeyframe::Create();
-    start_keyframe->SetCSSPropertyValue(CSSPropertyOpacity, "1.0",
+    start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
                                         SecureContextMode::kInsecureContext,
                                         nullptr);
     Persistent<StringKeyframe> end_keyframe = StringKeyframe::Create();
-    end_keyframe->SetCSSPropertyValue(CSSPropertyOpacity, "0.0",
+    end_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "0.0",
                                       SecureContextMode::kInsecureContext,
                                       nullptr);
 
@@ -787,7 +787,7 @@ TEST_F(AnimationAnimationTest, AttachedAnimations) {
   EXPECT_EQ(
       1U, element->GetElementAnimations()->Animations().find(animation)->value);
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_TRUE(element->GetElementAnimations()->Animations().IsEmpty());
 }
 
@@ -953,11 +953,13 @@ TEST_F(AnimationAnimationTest, SetKeyframesCausesCompositorPending) {
   // Now change the keyframes; this should mark the animation as compositor
   // pending as we need to sync the compositor side.
   Persistent<StringKeyframe> start_keyframe = StringKeyframe::Create();
-  start_keyframe->SetCSSPropertyValue(
-      CSSPropertyOpacity, "0.0", SecureContextMode::kInsecureContext, nullptr);
+  start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "0.0",
+                                      SecureContextMode::kInsecureContext,
+                                      nullptr);
   Persistent<StringKeyframe> end_keyframe = StringKeyframe::Create();
-  end_keyframe->SetCSSPropertyValue(
-      CSSPropertyOpacity, "1.0", SecureContextMode::kInsecureContext, nullptr);
+  end_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
 
   StringKeyframeVector keyframes;
   keyframes.push_back(start_keyframe);

@@ -1,6 +1,6 @@
 region
-++document IsKeyboardFocusable=true
+++document
 ++++group
 ++++++document Name='pipe'
-++++++++link Name='pipe1' IsKeyboardFocusable=true
+++++++++link Name='pipe1'
 ++++++++link Name='pipe2'

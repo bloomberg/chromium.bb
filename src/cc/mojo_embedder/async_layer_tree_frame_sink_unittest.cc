@@ -39,7 +39,12 @@ class ThreadTrackingLayerTreeFrameSinkClient
       base::PlatformThreadId* called_thread_id,
       base::RunLoop* run_loop)
       : called_thread_id_(called_thread_id), run_loop_(run_loop) {}
+  ThreadTrackingLayerTreeFrameSinkClient(
+      const ThreadTrackingLayerTreeFrameSinkClient&) = delete;
   ~ThreadTrackingLayerTreeFrameSinkClient() override = default;
+
+  ThreadTrackingLayerTreeFrameSinkClient& operator=(
+      const ThreadTrackingLayerTreeFrameSinkClient&) = delete;
 
   // FakeLayerTreeFrameSinkClient:
   void DidLoseLayerTreeFrameSink() override {
@@ -52,8 +57,6 @@ class ThreadTrackingLayerTreeFrameSinkClient
  private:
   base::PlatformThreadId* called_thread_id_;
   base::RunLoop* run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadTrackingLayerTreeFrameSinkClient);
 };
 
 TEST(AsyncLayerTreeFrameSinkTest,
@@ -190,7 +193,8 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest, HitTestRegionListDuplicate) {
   gfx::Rect rect1(display_rect_);
   shared_quad_state1->SetAll(
       gfx::Transform(), /*quad_layer_rect=*/rect1,
-      /*visible_quad_layer_rect=*/rect1, /*clip_rect=*/rect1,
+      /*visible_quad_layer_rect=*/rect1,
+      /*rounded_corner_bounds=*/gfx::RRectF(), /*clip_rect=*/rect1,
       /*is_clipped=*/false, /*are_contents_opaque=*/false,
       /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
   auto* quad1 =
@@ -211,7 +215,8 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest, HitTestRegionListDuplicate) {
   gfx::Rect rect2(display_rect_);
   shared_quad_state2->SetAll(
       gfx::Transform(), /*quad_layer_rect=*/rect2,
-      /*visible_quad_layer_rect=*/rect2, /*clip_rect=*/rect2,
+      /*visible_quad_layer_rect=*/rect2,
+      /*rounded_corner_bounds=*/gfx::RRectF(), /*clip_rect=*/rect2,
       /*is_clipped=*/false, /*are_contents_opaque=*/false,
       /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
   auto* quad2 =
@@ -239,7 +244,8 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest, HitTestRegionListDuplicate) {
   transform3_0.Translate(-200, -100);
   shared_quad_state3_0->SetAll(
       transform3_0, /*quad_layer_rect=*/rect3_0,
-      /*visible_quad_layer_rect=*/rect3_0, /*clip_rect=*/rect3_0,
+      /*visible_quad_layer_rect=*/rect3_0,
+      /*rounded_corner_bounds=*/gfx::RRectF(), /*clip_rect=*/rect3_0,
       /*is_clipped=*/false, /*are_contents_opaque=*/false,
       /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
   auto* quad3_0 =
@@ -259,7 +265,8 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest, HitTestRegionListDuplicate) {
   gfx::Rect rect3_1(display_rect_);
   shared_quad_state3_1->SetAll(
       gfx::Transform(), /*quad_layer_rect=*/rect3_1,
-      /*visible_quad_layer_rect=*/rect3_1, /*clip_rect=*/rect3_1,
+      /*visible_quad_layer_rect=*/rect3_1,
+      /*rounded_corner_bounds=*/gfx::RRectF(), /*clip_rect=*/rect3_1,
       /*is_clipped=*/false, /*are_contents_opaque=*/false,
       /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
   auto* quad3_1 =
@@ -276,7 +283,8 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest, HitTestRegionListDuplicate) {
   gfx::Rect rect3_root(display_rect_);
   shared_quad_state3_root->SetAll(
       gfx::Transform(), /*quad_layer_rect=*/rect3_root,
-      /*visible_quad_layer_rect=*/rect3_root, /*clip_rect=*/rect3_root,
+      /*visible_quad_layer_rect=*/rect3_root,
+      /*rounded_corner_bounds=*/gfx::RRectF(), /*clip_rect=*/rect3_root,
       /*is_clipped=*/false, /*are_contents_opaque=*/false,
       /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
   auto* quad3_root_1 =
@@ -313,7 +321,8 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest,
   gfx::Rect rect1(display_rect_);
   shared_quad_state1->SetAll(
       gfx::Transform(), /*quad_layer_rect=*/rect1,
-      /*visible_quad_layer_rect=*/rect1, /*clip_rect=*/rect1,
+      /*visible_quad_layer_rect=*/rect1,
+      /*rounded_corner_bounds=*/gfx::RRectF(), /*clip_rect=*/rect1,
       /*is_clipped=*/false, /*are_contents_opaque=*/false,
       /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
   auto* quad1 =
@@ -339,7 +348,8 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest,
   transform2_0.Translate(-200, -100);
   shared_quad_state2_0->SetAll(
       transform2_0, /*quad_layer_rect=*/rect2_0,
-      /*visible_quad_layer_rect=*/rect2_0, /*clip_rect=*/rect2_0,
+      /*visible_quad_layer_rect=*/rect2_0,
+      /*rounded_corner_bounds=*/gfx::RRectF(), /*clip_rect=*/rect2_0,
       /*is_clipped=*/false, /*are_contents_opaque=*/false,
       /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
   auto* quad2_0 =
@@ -359,7 +369,8 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest,
   gfx::Rect rect2_1(display_rect_);
   shared_quad_state2_1->SetAll(
       gfx::Transform(), /*quad_layer_rect=*/rect2_1,
-      /*visible_quad_layer_rect=*/rect2_1, /*clip_rect=*/rect2_1,
+      /*visible_quad_layer_rect=*/rect2_1,
+      /*rounded_corner_bounds=*/gfx::RRectF(), /*clip_rect=*/rect2_1,
       /*is_clipped=*/false, /*are_contents_opaque=*/false,
       /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
   auto* quad2_1 =
@@ -376,7 +387,8 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest,
   gfx::Rect rect2_root(display_rect_);
   shared_quad_state2_root->SetAll(
       gfx::Transform(), /*quad_layer_rect=*/rect2_root,
-      /*visible_quad_layer_rect=*/rect2_root, /*clip_rect=*/rect2_root,
+      /*visible_quad_layer_rect=*/rect2_root,
+      /*rounded_corner_bounds=*/gfx::RRectF(), /*clip_rect=*/rect2_root,
       /*is_clipped=*/false, /*are_contents_opaque=*/false,
       /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
   auto* quad2_root_1 =
@@ -411,7 +423,8 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest,
   gfx::Rect rect3(display_rect_);
   shared_quad_state3->SetAll(
       gfx::Transform(), /*quad_layer_rect=*/rect3,
-      /*visible_quad_layer_rect=*/rect3, /*clip_rect=*/rect3,
+      /*visible_quad_layer_rect=*/rect3,
+      /*rounded_corner_bounds=*/gfx::RRectF(), /*clip_rect=*/rect3,
       /*is_clipped=*/false, /*are_contents_opaque=*/false,
       /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
   auto* quad3 =

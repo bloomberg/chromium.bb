@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/values.h"
 #include "ios/web/public/user_agent.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -190,6 +190,9 @@ class WebClient {
   // second flag arises before clean up, consider generalizing to an experiment
   // flags struct instead of adding a bool method for each experiment.
   virtual bool IsSlimNavigationManagerEnabled() const;
+
+  // Instructs the embedder to return a container that is attached to a window.
+  virtual UIView* GetWindowedContainer();
 };
 
 }  // namespace web

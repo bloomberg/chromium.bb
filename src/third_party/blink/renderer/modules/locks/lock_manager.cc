@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -169,7 +168,7 @@ class LockManager::LockRequestImpl final
 
  private:
   // Callback passed by script; invoked when the lock is granted.
-  TraceWrapperMember<V8LockGrantedCallback> callback_;
+  Member<V8LockGrantedCallback> callback_;
 
   // Rejects if the request was aborted, otherwise resolves/rejects with
   // |callback_|'s result.
@@ -295,7 +294,7 @@ ScriptPromise LockManager::request(ScriptState* script_state,
                              ? mojom::blink::LockManager::WaitMode::NO_WAIT
                              : mojom::blink::LockManager::WaitMode::WAIT;
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   mojom::blink::LockRequestAssociatedPtrInfo request_info;
@@ -351,7 +350,7 @@ ScriptPromise LockManager::query(ScriptState* script_state,
     }
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   service_->QueryState(WTF::Bind(

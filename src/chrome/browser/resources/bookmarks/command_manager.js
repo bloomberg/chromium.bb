@@ -347,7 +347,7 @@ cr.define('bookmarks', function() {
         }
         case Command.UNDO:
           chrome.bookmarkManagerPrivate.undo();
-          bookmarks.ToastManager.getInstance().hide();
+          cr.toastManager.getInstance().hide();
           break;
         case Command.REDO:
           chrome.bookmarkManagerPrivate.redo();
@@ -391,7 +391,7 @@ cr.define('bookmarks', function() {
         case Command.SORT:
           chrome.bookmarkManagerPrivate.sortChildren(
               assert(state.selectedFolder));
-          bookmarks.ToastManager.getInstance().show(
+          cr.toastManager.getInstance().show(
               loadTimeData.getString('toastFolderSorted'), true);
           break;
         case Command.ADD_BOOKMARK:
@@ -751,7 +751,7 @@ cr.define('bookmarks', function() {
                            return p;
                          });
 
-      bookmarks.ToastManager.getInstance().showForStringPieces(pieces, canUndo);
+      cr.toastManager.getInstance().showForStringPieces(pieces, canUndo);
     },
 
     ////////////////////////////////////////////////////////////////////////////
@@ -789,10 +789,14 @@ cr.define('bookmarks', function() {
      * @private
      */
     onKeydown_: function(e) {
-      const selection = this.getState().selection.items;
-      if (e.target == document.body &&
+      const path = e.composedPath();
+      if (path[0].tagName == 'INPUT') {
+        return;
+      }
+      if ((e.target == document.body ||
+           path.some(el => el.tagName == 'BOOKMARKS-TOOLBAR')) &&
           !bookmarks.DialogFocusManager.getInstance().hasOpenDialog()) {
-        this.handleKeyEvent(e, selection);
+        this.handleKeyEvent(e, this.getState().selection.items);
       }
     },
 

@@ -16,11 +16,11 @@ namespace {
 bool SSLConfigsAreEqual(const net::SSLConfig& config1,
                         const net::SSLConfig& config2) {
   return std::tie(config1.version_min, config1.version_max,
-                  config1.disabled_cipher_suites, config1.channel_id_enabled,
-                  config1.false_start_enabled, config1.require_ecdhe) ==
+                  config1.disabled_cipher_suites, config1.false_start_enabled,
+                  config1.require_ecdhe) ==
          std::tie(config2.version_min, config2.version_max,
-                  config2.disabled_cipher_suites, config2.channel_id_enabled,
-                  config2.false_start_enabled, config2.require_ecdhe);
+                  config2.disabled_cipher_suites, config2.false_start_enabled,
+                  config2.require_ecdhe);
 }
 
 }  // namespace

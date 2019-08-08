@@ -122,7 +122,7 @@ ReceiveSideCongestionController::ReceiveSideCongestionController(
     Clock* clock,
     PacketRouter* packet_router)
     : remote_bitrate_estimator_(packet_router, clock),
-      remote_estimator_proxy_(clock, packet_router) {}
+      remote_estimator_proxy_(clock, packet_router, &field_trial_config_) {}
 
 void ReceiveSideCongestionController::OnReceivedPacket(
     int64_t arrival_time_ms,
@@ -139,10 +139,9 @@ void ReceiveSideCongestionController::OnReceivedPacket(
   }
 }
 
-void ReceiveSideCongestionController::SetSendFeedbackOnRequestOnly(
-    bool send_feedback_on_request_only) {
-  remote_estimator_proxy_.SetSendFeedbackOnRequestOnly(
-      send_feedback_on_request_only);
+void ReceiveSideCongestionController::SetSendPeriodicFeedback(
+    bool send_periodic_feedback) {
+  remote_estimator_proxy_.SetSendPeriodicFeedback(send_periodic_feedback);
 }
 
 RemoteBitrateEstimator*

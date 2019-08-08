@@ -220,7 +220,7 @@ class ValidationPool(object):
         launcher is NOT considered a Pre-CQ trybot.)
       tree_was_open: Whether the tree was open when the pool was created.
       applied: List of CLs that have been applied to the current repo.
-      buildbucket_id: Buildbucket id of the current build as a string .
+      buildbucket_id: Buildbucket id of the current build as a string or int.
                       None if not buildbucket scheduled.
       builder_run: BuilderRun instance used to fetch cidb handle and metadata
         instance. Please note due to the pickling logic, this MUST be the last
@@ -245,7 +245,10 @@ class ValidationPool(object):
 
     if (buildbucket_id is not None and
         not isinstance(buildbucket_id, basestring)):
-      raise ValueError("Invalid buildbucket_id: %r" % (builder_name,))
+      if isinstance(buildbucket_id, int):
+        buildbucket_id = str(buildbucket_id)
+      else:
+        raise ValueError("Invalid buildbucket_id: %r" % (buildbucket_id,))
 
     for changes_name, changes_value in (
         ('candidates', candidates),
@@ -467,14 +470,16 @@ class ValidationPool(object):
     # We choose a longer wait here as we haven't committed to anything yet. By
     # doing this here we can reduce the number of builder cycles.
     timeout = cls.DEFAULT_TIMEOUT
-    build_identifier, db = builder_run.GetCIDBHandle()
-    if db:
-      build_id = build_identifier.cidb_id
-      time_to_deadline = db.GetTimeToDeadline(build_id)
-      if time_to_deadline is not None:
-        # We must leave enough time before the deadline to allow us to extend
-        # the deadline in case we hit this timeout.
-        timeout = time_to_deadline - cls.EXTENSION_TIMEOUT_BUFFER
+    if builder_run:
+      try:
+        time_to_deadline = builder_run.config.build_timeout
+        if time_to_deadline is not None:
+          # We must leave enough time before the deadline to allow us to extend
+          # the deadline in case we hit this timeout.
+          timeout = time_to_deadline - cls.EXTENSION_TIMEOUT_BUFFER
+      except AttributeError:
+        logging.error('Could not fetch build_timeout from BuilderRun.config',
+                      exc_info=True)
 
     end_time = time.time() + timeout
     status = constants.TREE_OPEN

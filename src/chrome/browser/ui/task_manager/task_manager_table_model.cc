@@ -80,6 +80,18 @@ int ValueCompare(T value1, T value2) {
   return value1 < value2 ? -1 : 1;
 }
 
+// This forces NaN values to the bottom of the table.
+template <>
+int ValueCompare(double value1, double value2) {
+  if (std::isnan(value1))
+    return std::isnan(value2) ? 0 : -1;
+  if (std::isnan(value2))
+    return 1;
+  if (value1 == value2)
+    return 0;
+  return value1 < value2 ? -1 : 1;
+}
+
 // This is used to sort process priority. We want the backgrounded process (with
 // a true value) to come first.
 int BooleanCompare(bool value1, bool value2) {

@@ -11,6 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
 #include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/connector.mojom-forward.h"
 #include "services/service_manager/public/mojom/service.mojom-forward.h"
 
@@ -36,9 +37,9 @@ class CONTENT_EXPORT ServiceManagerConnection {
  public:
   using ServiceRequestHandler =
       base::RepeatingCallback<void(service_manager::mojom::ServiceRequest)>;
-  using ServiceRequestHandlerWithPID =
-      base::RepeatingCallback<void(service_manager::mojom::ServiceRequest,
-                                   service_manager::mojom::PIDReceiverPtr)>;
+  using ServiceRequestHandlerWithCallback = base::RepeatingCallback<void(
+      service_manager::mojom::ServiceRequest,
+      service_manager::Service::CreatePackagedServiceInstanceCallback)>;
   using Factory =
       base::RepeatingCallback<std::unique_ptr<ServiceManagerConnection>(void)>;
 
@@ -112,9 +113,9 @@ class CONTENT_EXPORT ServiceManagerConnection {
 
   // Similar to above but for registering handlers which want to communicate
   // additional information the process hosting the new service.
-  virtual void AddServiceRequestHandlerWithPID(
+  virtual void AddServiceRequestHandlerWithCallback(
       const std::string& name,
-      const ServiceRequestHandlerWithPID& handler) = 0;
+      const ServiceRequestHandlerWithCallback& handler) = 0;
 
   // Sets a request handler to use if no registered handlers were interested in
   // an incoming service request. Must be called before |Start()|.

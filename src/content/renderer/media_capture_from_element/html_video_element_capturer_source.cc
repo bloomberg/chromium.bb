@@ -12,7 +12,6 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/media/stream/media_stream_video_source.h"
 #include "media/base/limits.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "skia/ext/platform_canvas.h"
@@ -20,6 +19,7 @@
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 namespace {
@@ -69,7 +69,8 @@ HtmlVideoElementCapturerSource::GetPreferredFormats() {
   // to specify it.
   const media::VideoCaptureFormat format(
       web_media_player_->NaturalSize(),
-      MediaStreamVideoSource::kDefaultFrameRate, media::PIXEL_FORMAT_I420);
+      blink::MediaStreamVideoSource::kDefaultFrameRate,
+      media::PIXEL_FORMAT_I420);
   media::VideoCaptureFormats formats;
   formats.push_back(format);
   return formats;

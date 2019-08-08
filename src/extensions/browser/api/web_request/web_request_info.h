@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -177,6 +178,11 @@ struct WebRequestInfo {
 
   // The ResourceContext associated with this request. May be null.
   content::ResourceContext* resource_context = nullptr;
+
+  // Headers to remove from the request. Used by the Declarative Net Request
+  // API.
+  std::vector<const char*> request_headers_to_remove;
+  std::vector<const char*> response_headers_to_remove;
 
  private:
   void InitializeWebViewAndFrameData(

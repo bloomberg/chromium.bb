@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_TEST_FAKE_SKIA_OUTPUT_SURFACE_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -55,8 +56,9 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
   sk_sp<SkImage> MakePromiseSkImageFromYUV(
-      std::vector<ResourceMetadata> metadatas,
+      const std::vector<ResourceMetadata>& metadatas,
       SkYUVColorSpace yuv_color_space,
+      sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) override;
   void SkiaSwapBuffers(OutputSurfaceFrame frame) override;
   SkCanvas* BeginPaintRenderPass(const RenderPassId& id,
@@ -65,15 +67,14 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
                                  bool mipmap,
                                  sk_sp<SkColorSpace> color_space) override;
   gpu::SyncToken SubmitPaint() override;
-  sk_sp<SkImage> MakePromiseSkImage(ResourceMetadata metadata) override;
+  sk_sp<SkImage> MakePromiseSkImage(const ResourceMetadata& metadata) override;
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
       const RenderPassId& id,
       const gfx::Size& size,
       ResourceFormat format,
       bool mipmap,
       sk_sp<SkColorSpace> color_space) override;
-  gpu::SyncToken ReleasePromiseSkImages(
-      std::vector<sk_sp<SkImage>> images) override;
+  void ReleaseCachedPromiseSkImages(std::vector<ResourceId> ids) override;
 
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
   void CopyOutput(RenderPassId id,

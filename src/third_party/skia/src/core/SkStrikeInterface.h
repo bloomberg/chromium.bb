@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "SkPoint.h"
+#include "SkSpan.h"
 #include "SkTypes.h"
 
 class SkDescriptor;
@@ -51,14 +52,38 @@ private:
     const SkScalerContextEffects fEffects;
 };
 
+struct SkGlyphPos {
+    size_t index;
+    const SkGlyph* glyph;
+    SkPoint position;
+};
+
+struct SkPathPos {
+    const SkPath* path;
+    SkPoint position;
+};
+
 class SkStrikeInterface {
 public:
     virtual ~SkStrikeInterface() = default;
     virtual SkVector rounding() const = 0;
     virtual const SkDescriptor& getDescriptor() const = 0;
     virtual SkStrikeSpec strikeSpec() const = 0;
+
+    // prepareForDrawing takes glyphIDs, and position, and returns a list of SkGlyphs and
+    // positions where all the data to draw the glyph has been created. The maxDimension
+    // parameter determines if the mask/SDF version will be created, or an alternate drawing
+    // format should be used. For path-only drawing set maxDimension to 0, and for bitmap-device
+    // drawing (where there is no upper limit to the glyph in the cache) use INT_MAX.
+    virtual SkSpan<const SkGlyphPos> prepareForDrawing(const SkGlyphID glyphIDs[],
+                                                       const SkPoint positions[],
+                                                       size_t n,
+                                                       int maxDimension,
+                                                       SkGlyphPos results[]) = 0;
+
     virtual const SkGlyph& getGlyphMetrics(SkGlyphID glyphID, SkPoint position) = 0;
-    virtual bool decideCouldDrawFromPath(const SkGlyph& glyph) = 0;
+    // TODO: Deprecated. Do not use. Remove when ARGB fallback for bitmap device paths is working.
+    virtual void generatePath(const SkGlyph& glyph) = 0;
     virtual void onAboutToExitScope() = 0;
 
     struct Deleter {

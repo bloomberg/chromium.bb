@@ -162,6 +162,40 @@ void WontCompile() {
   auto subspan = span.subspan<0, 4>();
 }
 
+#elif defined(NCTEST_DISCARD_RETURN_OF_EMPTY_DISALLOWED) // [r"ignoring return value of function"]
+
+// Discarding the return value of empty() is not allowed.
+void WontCompile() {
+  span<int> s;
+  s.empty();
+}
+
+#elif defined(NCTEST_FRONT_ON_EMPTY_STATIC_SPAN_DISALLOWED) // [r"Extent must not be 0"]
+
+// Front called on an empty span with static extent is not allowed.
+void WontCompile() {
+  span<int, 0> s;
+  s.front();
+}
+
+#elif defined(NCTEST_BACK_ON_EMPTY_STATIC_SPAN_DISALLOWED) // [r"Extent must not be 0"]
+
+// Back called on an empty span with static extent is not allowed.
+void WontCompile() {
+  span<int, 0> s;
+  s.back();
+}
+
+#elif defined(NCTEST_SWAP_WITH_DIFFERENT_EXTENTS_DISALLOWED)  // [r"no matching function for call to 'swap'"]
+
+// Calling swap on spans with different extents is not allowed.
+void WontCompile() {
+  std::array<int, 3> array = {1, 2, 3};
+  span<int, 3> static_span(array);
+  span<int> dynamic_span(array);
+  std::swap(static_span, dynamic_span);
+}
+
 #elif defined(NCTEST_AS_WRITABLE_BYTES_WITH_CONST_CONTAINER_DISALLOWED)  // [r"fatal error: no matching function for call to 'as_writable_bytes'"]
 
 // as_writable_bytes should not be possible for a const container.
@@ -176,6 +210,50 @@ void WontCompile() {
 void WontCompile() {
   std::set<int> set;
   auto span = make_span(set);
+}
+
+#elif defined(NCTEST_TUPLE_SIZE_WITH_DYNAMIC_SPAN_DISALLOWED)  // [r"implicit instantiation of undefined template"]
+
+// Invoking std::tuple_size on a dynamically sized span is not allowed.
+size_t WontCompile() {
+  return std::tuple_size<span<int>>::value;
+}
+
+#elif defined(NCTEST_TUPLE_ELEMENT_WITH_DYNAMIC_SPAN_DISALLOWED)  // [r"std::tuple_element<> not supported for base::span<T, dynamic_extent>"]
+
+// Invoking std::tuple_element on a dynamically elementd span is not allowed.
+void WontCompile() {
+  std::tuple_element<0, span<int>>::type value;
+}
+
+#elif defined(NCTEST_TUPLE_ELEMENT_WITH_INDEX_OUT_OF_BOUNDS_DISALLOWED)  // [r"Index out of bounds in std::tuple_element<> \(base::span\)"]
+
+// Invoking std::tuple_element with an out of bound index is not allowed.
+void WontCompile() {
+  std::tuple_element<0, span<int, 0>>::type value;
+}
+
+#elif defined(NCTEST_GET_WITH_DYNAMIC_SPAN_DISALLOWED)  // [r"std::get<> not supported for base::span<T, dynamic_extent>"]
+
+// Invoking std::get on a dynamically elementd span is not allowed.
+int WontCompile() {
+  span<int> s;
+  return std::get<0>(s);
+}
+
+#elif defined(NCTEST_GET_WITH_INDEX_OUT_OF_BOUNDS_DISALLOWED)  // [r"Index out of bounds in std::get<> \(base::span\)"]
+
+// Invoking std::get with an out of bound index is not allowed.
+int WontCompile() {
+  span<int, 0> s;
+  return std::get<0>(s);
+}
+
+#elif defined(NCTEST_CONST_VECTOR_DEDUCES_AS_CONST_SPAN)  // [r"fatal error: no viable conversion from 'span<const int>' to 'span<int>'"]
+
+int WontCompile() {
+  const std::vector<int> v;
+  span<int> s = make_span(v);
 }
 
 #endif

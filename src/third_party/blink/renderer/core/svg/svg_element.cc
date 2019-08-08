@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/svg/svg_use_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xml_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
@@ -71,7 +72,9 @@ SVGElement::SVGElement(const QualifiedName& tag_name,
                        ConstructionType construction_type)
     : Element(tag_name, &document, construction_type),
       svg_rare_data_(nullptr),
-      class_name_(SVGAnimatedString::Create(this, html_names::kClassAttr)) {
+      class_name_(
+          MakeGarbageCollected<SVGAnimatedString>(this,
+                                                  html_names::kClassAttr)) {
   AddToPropertyMap(class_name_);
   SetHasCustomStyleCallbacks();
 }
@@ -159,9 +162,10 @@ void SVGElement::ReportAttributeParsingError(SVGParsingError error,
   // Don't report any errors on attribute removal.
   if (value.IsNull())
     return;
-  GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-      kRenderingMessageSource, mojom::ConsoleMessageLevel::kError,
-      "Error: " + error.Format(tagName(), name, value)));
+  GetDocument().AddConsoleMessage(
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                             mojom::ConsoleMessageLevel::kError,
+                             "Error: " + error.Format(tagName(), name, value)));
 }
 
 String SVGElement::title() const {
@@ -436,7 +440,7 @@ void SVGElement::ChildrenChanged(const ChildrenChange& change) {
 CSSPropertyID SVGElement::CssPropertyIdForSVGAttributeName(
     const QualifiedName& attr_name) {
   if (!attr_name.NamespaceURI().IsNull())
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
 
   static HashMap<StringImpl*, CSSPropertyID>* property_name_to_id_map = nullptr;
   if (!property_name_to_id_map) {
@@ -505,7 +509,7 @@ CSSPropertyID SVGElement::CssPropertyIdForSVGAttributeName(
     };
     for (size_t i = 0; i < base::size(attr_names); i++) {
       CSSPropertyID property_id = cssPropertyID(attr_names[i]->LocalName());
-      DCHECK_GT(property_id, 0);
+      DCHECK_GT(property_id, CSSPropertyID::kInvalid);
       property_name_to_id_map->Set(attr_names[i]->LocalName().Impl(),
                                    property_id);
     }
@@ -815,7 +819,7 @@ bool SVGElement::IsAnimatableCSSProperty(const QualifiedName& attr_name) {
 bool SVGElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (const SVGAnimatedPropertyBase* property = PropertyFromAttribute(name))
     return property->HasPresentationAttributeMapping();
-  return CssPropertyIdForSVGAttributeName(name) > 0;
+  return CssPropertyIdForSVGAttributeName(name) > CSSPropertyID::kInvalid;
 }
 
 bool SVGElement::IsPresentationAttributeWithSVGDOM(
@@ -829,7 +833,7 @@ void SVGElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   CSSPropertyID property_id = CssPropertyIdForSVGAttributeName(name);
-  if (property_id > 0)
+  if (property_id > CSSPropertyID::kInvalid)
     AddPropertyToPresentationAttributeStyle(style, property_id, value);
 }
 
@@ -962,7 +966,7 @@ void SVGElement::AttributeChanged(const AttributeModificationParams& params) {
 void SVGElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   CSSPropertyID prop_id =
       SVGElement::CssPropertyIdForSVGAttributeName(attr_name);
-  if (prop_id > 0) {
+  if (prop_id > CSSPropertyID::kInvalid) {
     InvalidateInstances();
     return;
   }
@@ -1027,7 +1031,8 @@ void SVGElement::SynchronizeAnimatedSVGAttribute(
 }
 
 scoped_refptr<ComputedStyle> SVGElement::CustomStyleForLayoutObject() {
-  if (!CorrespondingElement())
+  // TODO(http://crbug.com/953263): Eliminate isConnected check.
+  if (!CorrespondingElement() || !CorrespondingElement()->isConnected())
     return GetDocument().EnsureStyleResolver().StyleForElement(this);
 
   const ComputedStyle* style = nullptr;

@@ -40,6 +40,7 @@
 #include "components/previews/core/previews_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/base/features.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -543,8 +544,8 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsEctForceFieldtrialValue) {
 
   std::map<std::string, std::string> params;
   params[net::kForceEffectiveConnectionType] = expected_ect;
-  ASSERT_TRUE(base::AssociateFieldTrialParams(trial_name, group_name, params));
-  base::FieldTrialList::CreateFieldTrial(trial_name, group_name);
+  scoped_feature_list_->InitAndEnableFeatureWithParameters(
+      net::features::kNetworkQualityEstimator, params);
 
   page_handler_->GetPreviewsFlagsDetails(
       base::BindOnce(&MockGetPreviewsFlagsCallback));

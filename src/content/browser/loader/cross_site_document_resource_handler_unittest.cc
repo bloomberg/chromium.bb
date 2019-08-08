@@ -155,7 +155,8 @@ struct TestScenario {
 
   return os << "\n  description           = " << scenario.description
             << "\n  target_url            = " << scenario.target_url
-            << "\n  resource_type         = " << scenario.resource_type
+            << "\n  resource_type         = "
+            << static_cast<int>(scenario.resource_type)
             << "\n  initiator_origin      = " << scenario.initiator_origin
             << "\n  cors_request          = "
             << (scenario.cors_request == OriginHeader::kOmit
@@ -204,7 +205,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Same-site XHR to HTML",
         __LINE__,
         "http://www.a.com/resource.html",           // target_url
-        RESOURCE_TYPE_XHR,                          // resource_type
+        ResourceType::kXhr,                         // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_content_type
@@ -220,7 +221,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Same-origin JSON with parser breaker and HTML mime type",
         __LINE__,
         "http://www.a.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_content_type
@@ -236,7 +237,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Same-origin JSON with parser breaker and JSON mime type",
         __LINE__,
         "http://www.a.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/json",                            // response_content_type
@@ -252,7 +253,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Cross-site script without parser breaker",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_SCRIPT,                   // resource_type
+        ResourceType::kScript,                  // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "application/javascript",               // response_content_type
@@ -268,7 +269,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Cross-site XHR to HTML with CORS for origin",
         __LINE__,
         "http://www.b.com/resource.html",  // target_url
-        RESOURCE_TYPE_XHR,                 // resource_type
+        ResourceType::kXhr,                // resource_type
         "http://www.a.com/",               // initiator_origin
         OriginHeader::kInclude,            // cors_request
         "text/html",                       // response_content_type
@@ -284,7 +285,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Cross-site XHR to XML with CORS for any",
         __LINE__,
         "http://www.b.com/resource.html",           // target_url
-        RESOURCE_TYPE_XHR,                          // resource_type
+        ResourceType::kXhr,                         // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kInclude,                     // cors_request
         "application/rss+xml",                      // response_content_type
@@ -300,7 +301,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Cross-site XHR to JSON with CORS for null",
         __LINE__,
         "http://www.b.com/resource.html",            // target_url
-        RESOURCE_TYPE_XHR,                           // resource_type
+        ResourceType::kXhr,                          // resource_type
         "http://www.a.com/",                         // initiator_origin
         OriginHeader::kInclude,                      // cors_request
         "text/json",                                 // response_content_type
@@ -316,7 +317,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Cross-site XHR to HTML over FTP",
         __LINE__,
         "ftp://www.b.com/resource.html",            // target_url
-        RESOURCE_TYPE_XHR,                          // resource_type
+        ResourceType::kXhr,                         // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_content_type
@@ -332,7 +333,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Cross-site XHR to HTML from file://",
         __LINE__,
         "file:///foo/resource.html",                // target_url
-        RESOURCE_TYPE_XHR,                          // resource_type
+        ResourceType::kXhr,                         // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_content_type
@@ -354,7 +355,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site fetch HTML from Flash without CORS",
         __LINE__,
         "http://www.b.com/plugin.html",             // target_url
-        RESOURCE_TYPE_PLUGIN_RESOURCE,              // resource_type
+        ResourceType::kPluginResource,              // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_content_type
@@ -370,7 +371,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Cross-site fetch HTML from NaCl with CORS response",
         __LINE__,
         "http://www.b.com/plugin.html",  // target_url
-        RESOURCE_TYPE_PLUGIN_RESOURCE,   // resource_type
+        ResourceType::kPluginResource,   // resource_type
         "http://www.a.com/",             // initiator_origin
         OriginHeader::kInclude,          // cors_request
         "text/html",                     // response_content_type
@@ -386,7 +387,7 @@ const TestScenario kScenarios[] = {
         "Allowed: JSON object + CORS with parser-breaker labeled as JavaScript",
         __LINE__,
         "http://www.b.com/resource.html",           // target_url
-        RESOURCE_TYPE_SCRIPT,                       // resource_type
+        ResourceType::kScript,                      // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kInclude,                     // cors_request
         "application/javascript",                   // response_content_type
@@ -402,7 +403,7 @@ const TestScenario kScenarios[] = {
         "Blocked: JSON object labeled as JavaScript with a no-sniff header",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_SCRIPT,                   // resource_type
+        ResourceType::kScript,                  // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "application/javascript",               // response_content_type
@@ -418,7 +419,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Empty response with PNG mime type",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "image/png",                            // response_content_type
@@ -434,7 +435,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Empty response with PNG mime type and nosniff header",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "image/png",                            // response_content_type
@@ -452,7 +453,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Cross-site script to JSONP labeled as HTML",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_SCRIPT,                   // resource_type
+        ResourceType::kScript,                  // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_content_type
@@ -468,7 +469,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Cross-site script to JavaScript labeled as text",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_SCRIPT,                   // resource_type
+        ResourceType::kScript,                  // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_content_type
@@ -484,7 +485,7 @@ const TestScenario kScenarios[] = {
         "Allowed: JSON-like JavaScript labeled as text",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_SCRIPT,                   // resource_type
+        ResourceType::kScript,                  // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_content_type
@@ -501,7 +502,7 @@ const TestScenario kScenarios[] = {
         "Allowed: JSONP labeled as JSON",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_SCRIPT,                   // resource_type
+        ResourceType::kScript,                  // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/json",                            // response_content_type
@@ -517,7 +518,7 @@ const TestScenario kScenarios[] = {
         "Allowed (for now): JSON array literal labeled as text/plain",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_SCRIPT,                   // resource_type
+        ResourceType::kScript,                  // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_content_type
@@ -533,7 +534,7 @@ const TestScenario kScenarios[] = {
         "Allowed: JSON array literal on which a function is called.",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_SCRIPT,                   // resource_type
+        ResourceType::kScript,                  // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_content_type
@@ -550,7 +551,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Cross-site XHR to nonsense labeled as XML",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "application/xml",                      // response_content_type
@@ -566,7 +567,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Cross-site XHR to nonsense labeled as JSON",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/json",                            // response_content_type
@@ -582,7 +583,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Cross-site XHR to partial match for <HTML> tag",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_content_type
@@ -598,7 +599,7 @@ const TestScenario kScenarios[] = {
         "Allowed: HTML tag appears only after net::kMaxBytesToSniff",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_content_type
@@ -614,7 +615,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Empty response with html mime type",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_content_type
@@ -630,7 +631,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Same-site XHR to a filesystem URI",
         __LINE__,
         "filesystem:http://www.a.com/file.html",    // target_url
-        RESOURCE_TYPE_XHR,                          // resource_type
+        ResourceType::kXhr,                         // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_content_type
@@ -646,7 +647,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Same-site XHR to a blob URI",
         __LINE__,
         "blob:http://www.a.com/guid-goes-here",     // target_url
-        RESOURCE_TYPE_XHR,                          // resource_type
+        ResourceType::kXhr,                         // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_content_type
@@ -664,7 +665,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site XHR to nosniff HTML without CORS",
         __LINE__,
         "http://www.b.com/resource.html",           // target_url
-        RESOURCE_TYPE_XHR,                          // resource_type
+        ResourceType::kXhr,                         // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_content_type
@@ -680,7 +681,7 @@ const TestScenario kScenarios[] = {
         "Blocked: nosniff + Content-Type: text/html; charset=utf-8",
         __LINE__,
         "http://www.b.com/resource.html",           // target_url
-        RESOURCE_TYPE_XHR,                          // resource_type
+        ResourceType::kXhr,                         // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html; charset=utf-8",                 // response_content_type
@@ -696,7 +697,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site XHR to nosniff response without CORS",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_content_type
@@ -712,7 +713,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-origin, same-site XHR to nosniff HTML without CORS",
         __LINE__,
         "https://foo.site.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                          // resource_type
+        ResourceType::kXhr,                         // resource_type
         "https://bar.site.com/",                    // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_content_type
@@ -730,7 +731,7 @@ const TestScenario kScenarios[] = {
         // to the CORS response.
         __LINE__,
         "http://www.b.com/resource.html",  // target_url
-        RESOURCE_TYPE_XHR,                 // resource_type
+        ResourceType::kXhr,                // resource_type
         "http://foo.example.com/",         // initiator_origin
         OriginHeader::kInclude,            // cors_request
         "text/html",                       // response_content_type
@@ -750,7 +751,7 @@ const TestScenario kScenarios[] = {
         "Blocked(-ish?): Nosniff header + empty response",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kInclude,                 // cors_request
         "text/html",                            // response_content_type
@@ -768,7 +769,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site XHR to HTML without CORS",
         __LINE__,
         "http://www.b.com/resource.html",           // target_url
-        RESOURCE_TYPE_XHR,                          // resource_type
+        ResourceType::kXhr,                         // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_content_type
@@ -784,7 +785,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site XHR to XML without CORS",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "application/xml",                      // response_content_type
@@ -800,7 +801,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site XHR to JSON without CORS",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "application/json",                     // response_content_type
@@ -816,7 +817,7 @@ const TestScenario kScenarios[] = {
         "Blocked: slow-arriving JSON labeled as text/plain",
         __LINE__,
         "http://www.b.com/resource.html",             // target_url
-        RESOURCE_TYPE_XHR,                            // resource_type
+        ResourceType::kXhr,                           // resource_type
         "http://www.a.com/",                          // initiator_origin
         OriginHeader::kOmit,                          // cors_request
         "text/plain",                                 // response_content_type
@@ -832,7 +833,7 @@ const TestScenario kScenarios[] = {
         "Blocked: slow-arriving xml labeled as text/plain",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_content_type
@@ -848,7 +849,7 @@ const TestScenario kScenarios[] = {
         "Blocked: slow-arriving html labeled as text/plain",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_content_type
@@ -865,7 +866,7 @@ const TestScenario kScenarios[] = {
         "Blocked: slow-arriving html with commented-out xml tag",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_content_type
@@ -881,7 +882,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site XHR to HTML labeled as text without CORS",
         __LINE__,
         "http://www.b.com/resource.html",           // target_url
-        RESOURCE_TYPE_XHR,                          // resource_type
+        ResourceType::kXhr,                         // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/plain",                               // response_content_type
@@ -897,7 +898,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site <script> inclusion of HTML w/ DTD without CORS",
         __LINE__,
         "http://www.b.com/resource.html",       // target_url
-        RESOURCE_TYPE_SCRIPT,                   // resource_type
+        ResourceType::kScript,                  // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_content_type
@@ -915,7 +916,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site XHR to HTML with wrong CORS",
         __LINE__,
         "http://www.b.com/resource.html",  // target_url
-        RESOURCE_TYPE_XHR,                 // resource_type
+        ResourceType::kXhr,                // resource_type
         "http://www.a.com/",               // initiator_origin
         OriginHeader::kInclude,            // cors_request
         "text/html",                       // response_content_type
@@ -931,7 +932,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site fetch HTML from NaCl without CORS response",
         __LINE__,
         "http://www.b.com/plugin.html",             // target_url
-        RESOURCE_TYPE_PLUGIN_RESOURCE,              // resource_type
+        ResourceType::kPluginResource,              // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kInclude,                     // cors_request
         "text/html",                                // response_content_type
@@ -947,7 +948,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site JSON with parser breaker and JSON mime type",
         __LINE__,
         "http://a.com/resource.html",           // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://c.com/",                        // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/json",                            // response_content_type
@@ -963,7 +964,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site JSON with parser breaker/nosniff/other mime type",
         __LINE__,
         "http://a.com/resource.html",           // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://c.com/",                        // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "audio/x-wav",                          // response_content_type
@@ -979,7 +980,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site JSON with parser breaker and other mime type",
         __LINE__,
         "http://a.com/resource.html",           // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://c.com/",                        // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "application/javascript",               // response_content_type
@@ -995,7 +996,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site JSON with parser breaker/html/nosniff",
         __LINE__,
         "http://a.com/resource.html",           // target_url
-        RESOURCE_TYPE_XHR,                      // resource_type
+        ResourceType::kXhr,                     // resource_type
         "http://c.com/",                        // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_content_type
@@ -1012,7 +1013,7 @@ const TestScenario kScenarios[] = {
         "as JavaScript",
         __LINE__,
         "http://www.b.com/resource.html",  // target_url
-        RESOURCE_TYPE_SCRIPT,              // resource_type
+        ResourceType::kScript,             // resource_type
         "http://www.a.com/",               // initiator_origin
         OriginHeader::kInclude,            // cors_request
         "application/javascript",          // response_content_type
@@ -1028,7 +1029,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site XHR to a filesystem URI",
         __LINE__,
         "filesystem:http://www.b.com/file.html",    // target_url
-        RESOURCE_TYPE_XHR,                          // resource_type
+        ResourceType::kXhr,                         // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_content_type
@@ -1044,7 +1045,7 @@ const TestScenario kScenarios[] = {
         "Blocked: Cross-site XHR to a blob URI",
         __LINE__,
         "blob:http://www.b.com/guid-goes-here",     // target_url
-        RESOURCE_TYPE_XHR,                          // resource_type
+        ResourceType::kXhr,                         // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_content_type
@@ -1060,7 +1061,7 @@ const TestScenario kScenarios[] = {
         "Allowed: Javascript 206",
         __LINE__,
         "http://www.b.com/script.js",           // target_url
-        RESOURCE_TYPE_SCRIPT,                   // resource_type
+        ResourceType::kScript,                  // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "application/javascript",               // response_content_type
@@ -1076,7 +1077,7 @@ const TestScenario kScenarios[] = {
         "Allowed: text/html 206 media with CORS",
         __LINE__,
         "http://www.b.com/movie.html",  // target_url
-        RESOURCE_TYPE_MEDIA,            // resource_type
+        ResourceType::kMedia,           // resource_type
         "http://www.a.com/",            // initiator_origin
         OriginHeader::kInclude,         // cors_request
         "text/html",                    // response_content_type
@@ -1092,7 +1093,7 @@ const TestScenario kScenarios[] = {
         "Allowed: text/plain 206 media",
         __LINE__,
         "http://www.b.com/movie.txt",           // target_url
-        RESOURCE_TYPE_MEDIA,                    // resource_type
+        ResourceType::kMedia,                   // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_content_type
@@ -1108,7 +1109,7 @@ const TestScenario kScenarios[] = {
         "Blocked: text/html 206 media",
         __LINE__,
         "http://www.b.com/movie.html",           // target_url
-        RESOURCE_TYPE_MEDIA,                     // resource_type
+        ResourceType::kMedia,                    // resource_type
         "http://www.a.com/",                     // initiator_origin
         OriginHeader::kOmit,                     // cors_request
         "text/html",                             // response_content_type
@@ -1622,10 +1623,12 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
     expected_counts[histogram_base + ".Blocked.ContentLength.WasAvailable"] = 1;
     expected_counts[histogram_base + ".Blocked." + bucket] = 1;
     EXPECT_THAT(histograms.GetAllSamples(histogram_base + ".Blocked"),
-                testing::ElementsAre(base::Bucket(scenario.resource_type, 1)))
+                testing::ElementsAre(
+                    base::Bucket(static_cast<int>(scenario.resource_type), 1)))
         << "Should have incremented aggregate blocking.";
     EXPECT_THAT(histograms.GetAllSamples(histogram_base + ".Blocked." + bucket),
-                testing::ElementsAre(base::Bucket(scenario.resource_type, 1)))
+                testing::ElementsAre(
+                    base::Bucket(static_cast<int>(scenario.resource_type), 1)))
         << "Should have incremented blocking for resource type.";
   }
   // Make sure that the expected metrics, and only those metrics, were

@@ -18,6 +18,7 @@
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_tile_item_list_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "base/memory/ptr_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -31,7 +32,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/shadow_border.h"
 
 namespace app_list {
 
@@ -175,7 +175,7 @@ SearchResultPageView::SearchResultPageView() : contents_view_(new views::View) {
   scroller->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(kSearchBoxHeight + kSeparatorThickness, 0, 0, 0)));
   scroller->set_draw_overflow_indicator(false);
-  scroller->SetContents(contents_view_);
+  scroller->SetContents(base::WrapUnique(contents_view_));
   // Setting clip height is necessary to make ScrollView take into account its
   // contents' size. Using zeroes doesn't prevent it from scrolling and sizing
   // correctly.
@@ -336,6 +336,9 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
 void SearchResultPageView::OnSearchResultContainerResultFocused(
     SearchResultBaseView* focused_result_view) {
+  if (!focused_result_view->result())
+    return;
+
   views::Textfield* search_box =
       AppListPage::contents_view()->GetSearchBoxView()->search_box();
   if (focused_result_view->result()->result_type() ==

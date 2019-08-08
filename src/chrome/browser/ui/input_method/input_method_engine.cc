@@ -91,20 +91,28 @@ void InputMethodEngine::UpdateComposition(
 
 void InputMethodEngine::CommitTextToInputContext(int context_id,
                                                  const std::string& text) {
-  // Append the text to the buffer, as it allows committing text multiple times
-  // when processing a key event.
-  text_ += text;
-
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
   // If the IME extension is handling key event, hold the text until the key
   // event is handled.
   if (input_context && !handling_key_event_) {
-    input_context->CommitText(text_);
+    input_context->CommitText(text);
     text_ = "";
   } else {
+    // Append the text to the buffer, as it allows committing text multiple
+    // times when processing a key event.
+    text_ += text;
     commit_text_changed_ = true;
   }
+}
+
+void InputMethodEngine::DeleteSurroundingTextToInputContext(
+    int offset,
+    size_t number_of_chars) {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (input_context)
+    input_context->DeleteSurroundingText(offset, number_of_chars);
 }
 
 bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,

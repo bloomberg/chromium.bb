@@ -4,7 +4,6 @@
 
 #include "cc/layers/picture_layer_impl.h"
 
-#include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/lap_timer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
@@ -49,6 +48,9 @@ class PictureLayerImplPerfTest : public testing::Test {
         timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval) {}
+
+  PictureLayerImplPerfTest(const PictureLayerImplPerfTest&) = delete;
+  PictureLayerImplPerfTest& operator=(const PictureLayerImplPerfTest&) = delete;
 
   void SetUp() override {
     host_impl_.SetVisible(true);
@@ -175,9 +177,6 @@ class PictureLayerImplPerfTest : public testing::Test {
   FakeLayerTreeHostImpl host_impl_;
   FakePictureLayerImpl* pending_layer_;
   base::LapTimer timer_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PictureLayerImplPerfTest);
 };
 
 TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstructAndIterate) {

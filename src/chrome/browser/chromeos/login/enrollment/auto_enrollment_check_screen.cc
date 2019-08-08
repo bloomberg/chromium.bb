@@ -13,7 +13,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -44,12 +43,12 @@ AutoEnrollmentCheckScreen* AutoEnrollmentCheckScreen::Get(
 }
 
 AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
-    BaseScreenDelegate* base_screen_delegate,
     AutoEnrollmentCheckScreenView* view,
+    ErrorScreen* error_screen,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(base_screen_delegate,
-                 OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK),
+    : BaseScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK),
       view_(view),
+      error_screen_(error_screen),
       exit_callback_(exit_callback),
       auto_enrollment_controller_(nullptr),
       captive_portal_status_(
@@ -152,9 +151,8 @@ void AutoEnrollmentCheckScreen::UpdateState() {
     UpdateAutoEnrollmentState(new_auto_enrollment_state);
 
   // Update the connecting indicator.
-  ErrorScreen* error_screen = get_base_screen_delegate()->GetErrorScreen();
-  error_screen->ShowConnectingIndicator(new_auto_enrollment_state ==
-                                        policy::AUTO_ENROLLMENT_STATE_PENDING);
+  error_screen_->ShowConnectingIndicator(new_auto_enrollment_state ==
+                                         policy::AUTO_ENROLLMENT_STATE_PENDING);
 
   // Determine whether a retry is in order.
   bool retry = (new_captive_portal_status ==
@@ -184,7 +182,7 @@ bool AutoEnrollmentCheckScreen::UpdateCaptivePortalStatus(
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
       ShowErrorScreen(NetworkError::ERROR_STATE_PORTAL);
       if (captive_portal_status_ != new_captive_portal_status)
-        get_base_screen_delegate()->GetErrorScreen()->FixCaptivePortal();
+        error_screen_->FixCaptivePortal();
       return true;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
       ShowErrorScreen(NetworkError::ERROR_STATE_PROXY);
@@ -229,18 +227,26 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
     NetworkError::ErrorState error_state) {
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  ErrorScreen* error_screen = get_base_screen_delegate()->GetErrorScreen();
-  error_screen->SetUIState(NetworkError::UI_STATE_AUTO_ENROLLMENT_ERROR);
-  error_screen->AllowGuestSignin(
+  error_screen_->SetUIState(NetworkError::UI_STATE_AUTO_ENROLLMENT_ERROR);
+  error_screen_->AllowGuestSignin(
       auto_enrollment_controller_->GetFRERequirement() !=
       AutoEnrollmentController::FRERequirement::kExplicitlyRequired);
-  error_screen->SetErrorState(error_state,
-                              network ? network->name() : std::string());
-  connect_request_subscription_ = error_screen->RegisterConnectRequestCallback(
+  error_screen_->SetErrorState(error_state,
+                               network ? network->name() : std::string());
+  connect_request_subscription_ = error_screen_->RegisterConnectRequestCallback(
       base::Bind(&AutoEnrollmentCheckScreen::OnConnectRequested,
                  base::Unretained(this)));
-  get_base_screen_delegate()->ShowErrorScreen();
+  error_screen_->SetHideCallback(
+      base::BindRepeating(&AutoEnrollmentCheckScreen::OnErrorScreenHidden,
+                          weak_ptr_factory_.GetWeakPtr()));
+  error_screen_->SetParentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  error_screen_->Show();
   histogram_helper_->OnErrorShow(error_state);
+}
+
+void AutoEnrollmentCheckScreen::OnErrorScreenHidden() {
+  error_screen_->SetParentScreen(OobeScreen::SCREEN_UNKNOWN);
+  Show();
 }
 
 void AutoEnrollmentCheckScreen::SignalCompletion() {

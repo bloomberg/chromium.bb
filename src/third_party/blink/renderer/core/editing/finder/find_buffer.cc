@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/text/unicode_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
@@ -121,8 +122,7 @@ void FindBuffer::InvisibleLayoutScope::EnsureRecalc(Node& block_root) {
   // TODO(rakina): This currently does layout too and might be expensive. In the
   // future, we might to figure out a way to make NGOffsetMapping work with only
   // style & layout tree so that we don't have to do layout here.
-  invisible_root_->GetDocument()
-      .UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes();
+  invisible_root_->GetDocument().UpdateStyleAndLayout();
 }
 
 FindBuffer::InvisibleLayoutScope::~InvisibleLayoutScope() {
@@ -134,7 +134,7 @@ FindBuffer::InvisibleLayoutScope::~InvisibleLayoutScope() {
   invisible_root_->SetNeedsStyleRecalc(
       kSubtreeStyleChange,
       StyleChangeReasonForTracing::Create(style_change_reason::kFindInvisible));
-  invisible_root_->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  invisible_root_->GetDocument().UpdateStyleAndLayout();
 }
 
 bool ShouldIgnoreContents(const Node& node) {
@@ -317,13 +317,17 @@ void FindBuffer::CollectScopedForcedUpdates(Node& start_node,
 void FindBuffer::CollectTextUntilBlockBoundary(
     const EphemeralRangeInFlatTree& range) {
   DCHECK(range.IsNotNull() && !range.IsCollapsed()) << range;
+
+  node_after_block_ = nullptr;
+  const Node* const first_node = range.StartPosition().NodeAsRangeFirstNode();
+  if (!first_node)
+    return;
   // Get first visible text node from |start_position|.
   Node* node =
       GetVisibleTextNode(*range.StartPosition().NodeAsRangeFirstNode());
-  if (!node || !node->isConnected()) {
-    node_after_block_ = nullptr;
+  if (!node || !node->isConnected())
     return;
-  }
+
   Node& block_ancestor = GetLowestDisplayBlockInclusiveAncestor(*node);
   const Node* just_after_block = FlatTreeTraversal::Next(
       FlatTreeTraversal::LastWithinOrSelf(block_ancestor));
@@ -347,7 +351,7 @@ void FindBuffer::CollectTextUntilBlockBoundary(
   if (node) {
     CollectScopedForcedUpdates(*node, end_node, just_after_block);
     if (!scoped_forced_update_list_.IsEmpty())
-      node->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+      node->GetDocument().UpdateStyleAndLayout();
   }
 
   while (node && node != just_after_block) {

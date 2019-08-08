@@ -57,6 +57,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -77,7 +78,6 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_info.h"
-#include "net/log/net_log_with_source.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -280,13 +280,16 @@ VerifySaveDataHeaderNotInRequest(const net::test_server::HttpRequest& request) {
 std::unique_ptr<net::test_server::HttpResponse>
 VerifySaveDataNotInAccessControlRequestHeader(
     const net::test_server::HttpRequest& request) {
-  if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors)) {
-    // 'Save-Data' is not expected to be in the CORS preflight request.
+  if (request.method == net::test_server::METHOD_OPTIONS &&
+      network::features::ShouldEnableOutOfBlinkCors()) {
+    // In OOR-CORS mode, 'Save-Data' is not added to the CORS preflight request.
+    // This is the desired behavior.
     auto it = request.headers.find("Save-Data");
     EXPECT_EQ(request.headers.end(), it);
   } else {
-    // The legacy code path appends 'Save-Data' header regardless of CORS
-    // preflight just because it can not be distinguished.
+    // In the legacy code path, 'Save-Data' is (undesirably) added to the
+    // preflight request. And in both code paths, 'Save-Data' is added to the
+    // actual request, as expected.
     auto it = request.headers.find("Save-Data");
     EXPECT_NE(request.headers.end(), it);
     EXPECT_EQ("on", it->second);
@@ -343,8 +346,8 @@ void CountScriptResources(
 
 void StoreString(std::string* result,
                  base::OnceClosure callback,
-                 const base::Value* value) {
-  value->GetAsString(result);
+                 base::Value value) {
+  value.GetAsString(result);
   std::move(callback).Run();
 }
 
@@ -431,10 +434,24 @@ std::unique_ptr<net::test_server::HttpResponse> RequestHandlerForUpdateWorker(
   return http_response;
 }
 
-const char kNavigationPreloadAbortError[] =
-    "NetworkError: The service worker navigation preload request was cancelled "
-    "before 'preloadResponse' settled. If you intend to use 'preloadResponse', "
-    "use waitUntil() or respondWith() to wait for the promise to settle.";
+void StoreAllServiceWorkerRunningInfos(
+    std::vector<ServiceWorkerRunningInfo>* out_infos,
+    base::OnceClosure quit_closure,
+    ServiceWorkerContext* context,
+    std::vector<ServiceWorkerRunningInfo> infos) {
+  (*out_infos) = std::move(infos);
+  std::move(quit_closure).Run();
+}
+
+void StoreServiceWorkerRunningInfo(
+    std::vector<ServiceWorkerRunningInfo>* out_infos,
+    base::OnceClosure quit_closure,
+    ServiceWorkerContext* context,
+    const ServiceWorkerRunningInfo& info) {
+  out_infos->push_back(info);
+  std::move(quit_closure).Run();
+}
+
 const char kNavigationPreloadNetworkError[] =
     "NetworkError: The service worker navigation preload request failed with "
     "a network error.";
@@ -488,7 +505,7 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
 
 class ConsoleListener : public EmbeddedWorkerInstance::Listener {
  public:
-  void OnReportConsoleMessage(int source_identifier,
+  void OnReportConsoleMessage(blink::mojom::ConsoleMessageSource source,
                               blink::mojom::ConsoleMessageLevel message_level,
                               const base::string16& message,
                               int line_number,
@@ -930,7 +947,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     GURL url = embedded_test_server()->GetURL(path);
-    ResourceType resource_type = RESOURCE_TYPE_MAIN_FRAME;
+    ResourceType resource_type = ResourceType::kMainFrame;
     base::OnceClosure prepare_callback = CreatePrepareReceiver(prepare_result);
     ServiceWorkerFetchDispatcher::FetchCallback fetch_callback =
         CreateResponseReceiver(std::move(done), blob_context_.get(), result);
@@ -939,8 +956,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     request->method = "GET";
     fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
         std::move(request), resource_type, std::string() /* client_id */,
-        version_, net::NetLogWithSource(), std::move(prepare_callback),
-        std::move(fetch_callback));
+        version_, std::move(prepare_callback), std::move(fetch_callback));
     fetch_dispatcher_->Run();
   }
 
@@ -1726,7 +1742,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossOriginFetchWithSaveData) {
   const char kPageUrl[] = "/service_worker/fetch_cross_origin.html";
   const char kWorkerUrl[] = "/service_worker/fetch_event_pass_through.js";
   net::EmbeddedTestServer cross_origin_server;
-  cross_origin_server.ServeFilesFromSourceDirectory("content/test/data");
+  cross_origin_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
   cross_origin_server.RegisterRequestHandler(
       base::BindRepeating(&VerifySaveDataNotInAccessControlRequestHeader));
   ASSERT_TRUE(cross_origin_server.Start());
@@ -1849,14 +1865,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
 // https://crbug.com/878667.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, IdleTimerWithDevTools) {
   StartServerAndNavigateToSetup();
-
-  // This test is based on a new idle timer mechanism which is available only
-  // when S13nServiceWorker or NetworkService is enabled.
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    LOG(WARNING)
-        << "This test requires NetworkService or ServiceWorkerServicification.";
-    return;
-  }
 
   // Register a service worker.
   scoped_refptr<WorkerActivatedObserver> observer =
@@ -2028,8 +2036,7 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
     std::string text_content;
     shell()->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("document.body.textContent;"),
-        base::BindRepeating(&StoreString, &text_content,
-                            run_loop.QuitClosure()));
+        base::BindOnce(&StoreString, &text_content, run_loop.QuitClosure()));
     run_loop.Run();
     return text_content;
   }
@@ -2503,46 +2510,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, NetworkError) {
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
-                       CanceledByInterceptor) {
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    // This is a test for a ResourceDispatcherHost interceptor cancelling the
-    // Navigation Preload request. The analogue for the
-    // NetworkService/ServiceWorker*Loader code path would be throttles, but
-    // these don't see Navigation Preload (crbug.com/825717) and there is no
-    // plan to allow them to, so just skip this test.
-
-    // This has to be called so the EmbeddedTestServer IO Thread is created,
-    // otherwise we crash on destruction.
-    embedded_test_server()->StartAcceptingConnections();
-    return;
-  }
-
-  auto console_observer =
-      base::MakeRefCounted<ConsoleMessageContextObserver>(wrapper());
-  console_observer->Init();
-
-  content::ResourceDispatcherHost::Get()->RegisterInterceptor(
-      kNavigationPreloadHeaderName, "",
-      base::BindRepeating(&CancellingInterceptorCallback));
-
-  const char kPageUrl[] = "/service_worker/navigation_preload.html";
-  const char kWorkerUrl[] = "/service_worker/navigation_preload.js";
-  const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
-  const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
-  RegisterStaticFile(
-      kWorkerUrl, kEnableNavigationPreloadScript + kPreloadResponseTestScript,
-      "text/javascript");
-
-  EXPECT_EQ(kNavigationPreloadAbortError,
-            LoadNavigationPreloadTestPage(page_url, worker_url, "REJECTED"));
-
-  console_observer->WaitForConsoleMessages(1);
-  const base::string16 expected = base::ASCIIToUTF16("request was cancelled");
-  std::vector<base::string16> messages = console_observer->messages();
-  EXPECT_NE(base::string16::npos, messages[0].find(expected));
-}
-
-IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
                        PreloadHeadersSimple) {
   const char kPageUrl[] = "/service_worker/navigation_preload.html";
   const char kWorkerUrl[] = "/service_worker/navigation_preload.js";
@@ -2774,64 +2741,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
   EXPECT_EQ(1, GetRequestCount(kPageUrl + "?3"));
 }
 
-// When the content type of the page is not correctly set,
-// OnStartLoadingResponseBody() of network::mojom::URLLoaderClient is called
-// before OnReceiveResponse(). This behavior is caused by
-// MimeSniffingResourceHandler. This test checks that even if the
-// MimeSniffingResourceHandler is triggered navigation preload must be handled
-// correctly.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
-                       RespondWithNavigationPreloadWithMimeSniffing) {
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    // When S13nSW/NetworkService is enabled, we don't do MIME sniffing
-    // (https://crbug.com/771118), so just skip this test. Also, this test was
-    // meant to test an internal quirk of MimeSniffingResourceHandler, which
-    // might not make sense in the NetworkService implementation anyway. If we
-    // want a behavior test for MIME sniffing for navigation preload, it can be
-    // an end-to-end web test instead.
-
-    // This has to be called so the EmbeddedTestServer IO Thread is created,
-    // otherwise we crash on destruction.
-    embedded_test_server()->StartAcceptingConnections();
-    return;
-  }
-
-  const char kPageUrl[] = "/service_worker/navigation_preload.html";
-  const char kWorkerUrl[] = "/service_worker/navigation_preload.js";
-  const char kPage[] = "<title>PASS</title>Hello world.";
-  const std::string kScript = kEnableNavigationPreloadScript +
-                              "self.addEventListener('fetch', event => {\n"
-                              "    event.respondWith(event.preloadResponse);\n"
-                              "  });";
-  const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
-  const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
-
-  // Setting an empty content type to trigger MimeSniffingResourceHandler.
-  RegisterStaticFile(kPageUrl, kPage, "");
-  RegisterStaticFile(kWorkerUrl, kScript, "text/javascript");
-
-  RegisterMonitorRequestHandler();
-  StartServerAndNavigateToSetup();
-  SetupForNavigationPreloadTest(page_url, worker_url);
-
-  const base::string16 title = base::ASCIIToUTF16("PASS");
-  TitleWatcher title_watcher(shell()->web_contents(), title);
-  NavigateToURL(shell(), page_url);
-  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
-  EXPECT_EQ("Hello world.", GetTextContent());
-
-  // The page request must be sent only once, since the worker responded with
-  // the navigation preload response
-  EXPECT_EQ(1, GetRequestCount(kPageUrl));
-}
-
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
                        ResponseFromHTTPSServiceWorkerIsMarkedAsSecure) {
   StartServerAndNavigateToSetup();
   const char kPageUrl[] = "/service_worker/fetch_event_blob.html";
   const char kWorkerUrl[] = "/service_worker/fetch_event_blob.js";
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
   ASSERT_TRUE(https_server.Start());
 
   scoped_refptr<WorkerActivatedObserver> observer =
@@ -2924,6 +2840,87 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, ImportsBustMemcache) {
       &CountScriptResources, base::Unretained(wrapper()),
       embedded_test_server()->GetURL(kScopeUrl), &num_resources));
   EXPECT_EQ(kExpectedNumResources, num_resources);
+}
+
+// An observer that waits for the service worker to be running.
+class WorkerRunningStatusObserver : public ServiceWorkerContextObserver {
+ public:
+  explicit WorkerRunningStatusObserver(ServiceWorkerContext* context)
+      : context_(context) {
+    context_->AddObserver(this);
+  }
+
+  ~WorkerRunningStatusObserver() override { context_->RemoveObserver(this); }
+
+  int64_t version_id() { return version_id_; }
+
+  void WaitUntilRunning() {
+    if (version_id_ == blink::mojom::kInvalidServiceWorkerVersionId)
+      run_loop_.Run();
+  }
+
+  void OnVersionRunningStatusChanged(content::ServiceWorkerContext* context,
+                                     int64_t version_id,
+                                     bool is_running) override {
+    if (is_running) {
+      EXPECT_EQ(context_, context);
+      version_id_ = version_id;
+
+      if (run_loop_.running())
+        run_loop_.Quit();
+    }
+  }
+
+ private:
+  base::RunLoop run_loop_;
+  ServiceWorkerContext* const context_;
+  int64_t version_id_ = blink::mojom::kInvalidServiceWorkerVersionId;
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
+                       GetAllServiceWorkerRunningInfos) {
+  StartServerAndNavigateToSetup();
+  WorkerRunningStatusObserver observer(public_context());
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE", EvalJs(shell(), "register('fetch_event.js');"));
+  observer.WaitUntilRunning();
+
+  std::vector<ServiceWorkerRunningInfo> infos;
+  base::RunLoop run_loop;
+  public_context()->GetAllServiceWorkerRunningInfos(base::BindOnce(
+      &StoreAllServiceWorkerRunningInfos, &infos, run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_EQ(1u, infos.size());
+  EXPECT_EQ(embedded_test_server()->GetURL("/service_worker/fetch_event.js"),
+            infos[0].script_url);
+  EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
+            infos[0].process_id);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, GetServiceWorkerRunningInfo) {
+  StartServerAndNavigateToSetup();
+  WorkerRunningStatusObserver observer(public_context());
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE", EvalJs(shell(), "register('fetch_event.js');"));
+  observer.WaitUntilRunning();
+
+  std::vector<ServiceWorkerRunningInfo> infos;
+  base::RunLoop run_loop;
+  public_context()->GetServiceWorkerRunningInfo(
+      observer.version_id(), base::BindOnce(&StoreServiceWorkerRunningInfo,
+                                            &infos, run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_EQ(1u, infos.size());
+  EXPECT_EQ(embedded_test_server()->GetURL("/service_worker/fetch_event.js"),
+            infos[0].script_url);
+  EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
+            infos[0].process_id);
 }
 
 // An observer that waits for the version to stop.
@@ -3187,8 +3184,9 @@ class CacheStorageSideDataSizeChecker
         cache_storage_context_->cache_manager()->OpenCacheStorage(
             url::Origin::Create(origin_), CacheStorageOwner::kCacheAPI);
     cache_storage.value()->OpenCache(
-        cache_name_, base::BindOnce(&self::OnCacheStorageOpenCallback, this,
-                                    result, std::move(continuation)));
+        cache_name_, /* trace_id = */ 0,
+        base::BindOnce(&self::OnCacheStorageOpenCallback, this, result,
+                       std::move(continuation)));
   }
 
   void OnCacheStorageOpenCallback(int* result,
@@ -3200,7 +3198,7 @@ class CacheStorageSideDataSizeChecker
     scoped_request->url = url_;
     CacheStorageCache* cache = cache_handle.value();
     cache->Match(
-        std::move(scoped_request), nullptr,
+        std::move(scoped_request), nullptr, /* trace_id = */ 0,
         base::BindOnce(&self::OnCacheStorageCacheMatchCallback, this, result,
                        std::move(continuation), std::move(cache_handle)));
   }
@@ -3533,7 +3531,7 @@ class ServiceWorkerDisableWebSecurityTest : public ServiceWorkerBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    cross_origin_server_.ServeFilesFromSourceDirectory("content/test/data");
+    cross_origin_server_.ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(cross_origin_server_.Start());
     ServiceWorkerBrowserTest::SetUpOnMainThread();
   }
@@ -3682,14 +3680,6 @@ class ServiceWorkerURLLoaderThrottleTest : public ServiceWorkerBrowserTest {
 // observable inside the service worker's fetch event.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
                        FetchEventForNavigationHasThrottledRequest) {
-  // This tests throttling behavior which only has an effect on service worker
-  // interception when servicification is on.
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    LOG(WARNING)
-        << "This test requires NetworkService or ServiceWorkerServicification.";
-    return;
-  }
-
   // Add a throttle which injects a header.
   ThrottlingContentBrowserClient content_browser_client;
   auto* old_content_browser_client =
@@ -3725,14 +3715,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
 // Test that redirects by throttles occur before service worker interception.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
                        RedirectOccursBeforeFetchEvent) {
-  // This tests throttling behavior which only has an effect on service worker
-  // interception when servicification is on.
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    LOG(WARNING)
-        << "This test requires NetworkService or ServiceWorkerServicification.";
-    return;
-  }
-
   // Add a throttle which performs a redirect.
   ThrottlingContentBrowserClient content_browser_client;
   auto* old_content_browser_client =
@@ -3778,14 +3760,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
 IN_PROC_BROWSER_TEST_F(
     ServiceWorkerURLLoaderThrottleTest,
     NavigationHasThrottledRequestHeadersAfterNetworkFallback) {
-  // This tests throttling behavior which only has an effect on service worker
-  // interception when servicification is on.
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    LOG(WARNING)
-        << "This test requires NetworkService or ServiceWorkerServicification.";
-    return;
-  }
-
   // Add a throttle which injects a header.
   ThrottlingContentBrowserClient content_browser_client;
   auto* old_content_browser_client =
@@ -3816,14 +3790,6 @@ IN_PROC_BROWSER_TEST_F(
 // present in the navigation preload request.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
                        NavigationPreloadHasThrottledRequestHeaders) {
-  // This tests throttling behavior which only has an effect on service worker
-  // interception when servicification is on.
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    LOG(WARNING)
-        << "This test requires NetworkService or ServiceWorkerServicification.";
-    return;
-  }
-
   // Add a throttle which injects a header.
   ThrottlingContentBrowserClient content_browser_client;
   auto* old_content_browser_client =

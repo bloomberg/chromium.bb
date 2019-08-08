@@ -31,14 +31,14 @@ class WebMediaStreamRendererFactory {
   // Returns a WebMediaStreamVideoRenderer that uses the given task runners.
   // |io_task_runner| is used for passing video frames.
   virtual scoped_refptr<WebMediaStreamVideoRenderer> GetVideoRenderer(
-      const blink::WebMediaStream& web_stream,
+      const WebMediaStream& web_stream,
       const base::Closure& error_cb,
       const WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner) = 0;
 
   virtual scoped_refptr<WebMediaStreamAudioRenderer> GetAudioRenderer(
-      const blink::WebMediaStream& web_stream,
+      const WebMediaStream& web_stream,
       int render_frame_id,
       const std::string& device_id) = 0;
 };

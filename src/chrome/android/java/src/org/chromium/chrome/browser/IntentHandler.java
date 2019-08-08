@@ -468,6 +468,10 @@ public class IntentHandler {
 
         if (isIntentForMhtmlFileOrContent(intent) && tabOpenType == TabOpenType.OPEN_NEW_TAB
                 && referrerUrl == null && extraHeaders == null) {
+            // TODO(https://crbug.com/963233): should MHTML intent be handled on touchless someday?
+            if (!OfflinePageUtils.isEnabled()) {
+                return false;
+            }
             handleMhtmlFileOrContentIntent(url, intent);
             return true;
         }
@@ -909,7 +913,8 @@ public class IntentHandler {
                     // applications.
                     String lowerCaseUrl = url.toLowerCase(Locale.US);
                     if (ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(lowerCaseUrl)
-                            || ContentUrlConstants.ABOUT_BLANK_URL.equals(lowerCaseUrl)) {
+                            || ContentUrlConstants.ABOUT_BLANK_URL.equals(lowerCaseUrl)
+                            || UrlConstants.CHROME_DINO_URL.equals(lowerCaseUrl)) {
                         return false;
                     }
 

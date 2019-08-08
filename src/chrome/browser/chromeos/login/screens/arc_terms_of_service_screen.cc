@@ -5,13 +5,13 @@
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
@@ -29,15 +29,15 @@ void ArcTermsOfServiceScreen::MaybeLaunchArcSettings(Profile* profile) {
     // TODO(jhorwich) Handle the case where the user chooses to review both ARC
     // settings and sync settings - currently the Settings window will only
     // show one settings page. See crbug.com/901184#c4 for details.
-    chrome::ShowSettingsSubPageForProfile(profile, "androidApps/details");
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        profile, chrome::kAndroidAppsDetailsSubPage);
   }
 }
 
 ArcTermsOfServiceScreen::ArcTermsOfServiceScreen(
-    BaseScreenDelegate* base_screen_delegate,
     ArcTermsOfServiceScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE),
+    : BaseScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

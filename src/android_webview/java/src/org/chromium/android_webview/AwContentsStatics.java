@@ -123,6 +123,10 @@ public class AwContentsStatics {
         nativeSetCheckClearTextPermitted(permitted);
     }
 
+    public static void logCommandLineForDebugging() {
+        nativeLogCommandLineForDebugging();
+    }
+
     /**
      * Return the first substring consisting of the address of a physical location.
      * @see {@link android.webkit.WebView#findAddress(String)}
@@ -137,9 +141,17 @@ public class AwContentsStatics {
         return FindAddress.findAddress(addr);
     }
 
+    /**
+     * Returns true if WebView is running in multi process mode.
+     */
+    public static boolean isMultiProcessEnabled() {
+        return nativeIsMultiProcessEnabled();
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
+    private static native void nativeLogCommandLineForDebugging();
     private static native String nativeGetSafeBrowsingPrivacyPolicyUrl();
     private static native void nativeClearClientCertPreferences(Runnable callback);
     private static native String nativeGetUnreachableWebDataUrl();
@@ -149,4 +161,5 @@ public class AwContentsStatics {
     private static native void nativeSetSafeBrowsingWhitelist(
             String[] urls, Callback<Boolean> callback);
     private static native void nativeSetCheckClearTextPermitted(boolean permitted);
+    private static native boolean nativeIsMultiProcessEnabled();
 }

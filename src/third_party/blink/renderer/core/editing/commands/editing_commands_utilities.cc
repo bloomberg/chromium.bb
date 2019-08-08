@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -532,16 +533,18 @@ void TidyUpHTMLStructure(Document& document) {
   // non-<html> root elements under <body>, and the <body> works as
   // rootEditableElement.
   document.AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kWarning,
       "document.execCommand() doesn't work with an invalid HTML structure. It "
       "is corrected automatically."));
   UseCounter::Count(document, WebFeature::kExecCommandAltersHTMLStructure);
 
-  Element* const root = HTMLHtmlElement::Create(document);
+  auto* const root = MakeGarbageCollected<HTMLHtmlElement>(document);
   if (existing_head)
     root->AppendChild(existing_head);
-  Element* const body =
-      existing_body ? existing_body : HTMLBodyElement::Create(document);
+  auto* const body = existing_body
+                         ? existing_body
+                         : MakeGarbageCollected<HTMLBodyElement>(document);
   if (document.documentElement() && body != document.documentElement())
     body->AppendChild(document.documentElement());
   root->AppendChild(body);
@@ -659,9 +662,9 @@ void ChangeSelectionAfterCommand(LocalFrame* frame,
 
 InputEvent::EventIsComposing IsComposingFromCommand(
     const CompositeEditCommand* command) {
-  if (command->IsTypingCommand() &&
-      ToTypingCommand(command)->CompositionType() !=
-          TypingCommand::kTextCompositionNone)
+  auto* typing_command = DynamicTo<TypingCommand>(command);
+  if (typing_command &&
+      typing_command->CompositionType() != TypingCommand::kTextCompositionNone)
     return InputEvent::EventIsComposing::kIsComposing;
   return InputEvent::EventIsComposing::kNotComposing;
 }

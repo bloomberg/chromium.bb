@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
@@ -85,7 +85,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
     const GPUCreateCommandBufferConfig& init_params,
     base::UnsafeSharedMemoryRegion shared_state_shm) {
   TRACE_EVENT0("gpu", "GLES2CommandBufferStub::Initialize");
-  FastSetActiveURL(active_url_, active_url_hash_, channel_);
+  UpdateActiveUrl();
 
   GpuChannelManager* manager = channel_->gpu_channel_manager();
   DCHECK(manager);
@@ -364,7 +364,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
       std::move(shared_state_shm), std::move(shared_state_mapping)));
 
   if (offscreen && !active_url_.is_empty())
-    manager->delegate()->DidCreateOffscreenContext(active_url_);
+    manager->delegate()->DidCreateOffscreenContext(active_url_.url());
 
   if (use_virtualized_gl_context_) {
     // If virtualized GL contexts are in use, then real GL context state

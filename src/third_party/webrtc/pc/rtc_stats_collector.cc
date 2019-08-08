@@ -19,6 +19,7 @@
 #include "api/candidate.h"
 #include "api/media_stream_interface.h"
 #include "api/peer_connection_interface.h"
+#include "api/video/video_content_type.h"
 #include "media/base/media_channel.h"
 #include "p2p/base/p2p_constants.h"
 #include "p2p/base/port.h"
@@ -243,6 +244,12 @@ void SetInboundRTPStreamStatsFromVoiceReceiverInfo(
           rtc::kNumMillisecsPerSec;
   // |fir_count|, |pli_count| and |sli_count| are only valid for video and are
   // purposefully left undefined for audio.
+  if (voice_receiver_info.last_packet_received_timestamp_ms) {
+    inbound_audio->last_packet_received_timestamp =
+        static_cast<double>(
+            *voice_receiver_info.last_packet_received_timestamp_ms) /
+        rtc::kNumMillisecsPerSec;
+  }
 }
 
 void SetInboundRTPStreamStatsFromVideoReceiverInfo(
@@ -266,6 +273,16 @@ void SetInboundRTPStreamStatsFromVideoReceiverInfo(
   inbound_video->frames_decoded = video_receiver_info.frames_decoded;
   if (video_receiver_info.qp_sum)
     inbound_video->qp_sum = *video_receiver_info.qp_sum;
+  if (video_receiver_info.last_packet_received_timestamp_ms) {
+    inbound_video->last_packet_received_timestamp =
+        static_cast<double>(
+            *video_receiver_info.last_packet_received_timestamp_ms) /
+        rtc::kNumMillisecsPerSec;
+  }
+  // TODO(https://crbug.com/webrtc/10529): When info's |content_info| is
+  // optional, support the "unspecified" value.
+  if (video_receiver_info.content_type == VideoContentType::SCREENSHARE)
+    inbound_video->content_type = RTCContentType::kScreenshare;
 }
 
 // Provides the media independent counters (both audio and video).
@@ -278,8 +295,12 @@ void SetOutboundRTPStreamStatsFromMediaSenderInfo(
   outbound_stats->is_remote = false;
   outbound_stats->packets_sent =
       static_cast<uint32_t>(media_sender_info.packets_sent);
+  outbound_stats->retransmitted_packets_sent =
+      media_sender_info.retransmitted_packets_sent;
   outbound_stats->bytes_sent =
       static_cast<uint64_t>(media_sender_info.bytes_sent);
+  outbound_stats->retransmitted_bytes_sent =
+      media_sender_info.retransmitted_bytes_sent;
 }
 
 void SetOutboundRTPStreamStatsFromVoiceSenderInfo(
@@ -319,6 +340,13 @@ void SetOutboundRTPStreamStatsFromVideoSenderInfo(
   if (video_sender_info.qp_sum)
     outbound_video->qp_sum = *video_sender_info.qp_sum;
   outbound_video->frames_encoded = video_sender_info.frames_encoded;
+  outbound_video->total_encode_time =
+      static_cast<double>(video_sender_info.total_encode_time_ms) /
+      rtc::kNumMillisecsPerSec;
+  // TODO(https://crbug.com/webrtc/10529): When info's |content_info| is
+  // optional, support the "unspecified" value.
+  if (video_sender_info.content_type == VideoContentType::SCREENSHARE)
+    outbound_video->content_type = RTCContentType::kScreenshare;
 }
 
 void ProduceCertificateStatsFromSSLCertificateStats(

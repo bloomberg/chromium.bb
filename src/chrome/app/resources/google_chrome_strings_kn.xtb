@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">ಇದು ಕಂಡುಬಂದಲ್ಲಿ, <ph name="BEGIN_BOLD" />ಹೇಗಾದರೂ ಬದಲಿಸಿ<ph name="END_BOLD" /> ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡಿ</translation>
 <translation id="1587223624401073077">Google Chrome ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಬಳಸುತ್ತಿದೆ.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹಾಗಾಗಿ Chrome ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
+<translation id="1590588151039584890">ಅಪ್‌ಡೇಟ್ ಮಾಡಲು, ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ರನ್ ಆಗುತ್ತಿರುವ Chrome ಅನ್ನು ನಿಲ್ಲಿಸಬೇಕಾಗುತ್ತದೆ. ಇದರಿಂದಾಗಿ ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಲಾಗ್ ಇನ್ ಆಗಿರುವ ಇತರ ಬಳಕೆದಾರರು ತಮ್ಮ ಉಳಿಸಲಾಗದ ಬದಲಾವಣೆಗಳನ್ನು ಕಳೆದುಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="1619887657840448962">Chrome ಅನ್ನು ಸುರಕ್ಷಿತವಾಗಿರಿಸಲು, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ನಲ್ಲಿ ಪಟ್ಟಿ ಮಾಡದಿರುವ ಕೆಳಗಿನ ವಿಸ್ತರಣೆಯನ್ನು ನಾವು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದೇವೆ ಮತ್ತು ಇದು ನಿಮ್ಮ ಗಮನಕ್ಕೆ ಬಾರದೇ ಸೇರಿಸಲಾಗಿರಬಹುದು.</translation>
 <translation id="1628000112320670027">Chrome ಕುರಿತಾಗಿ ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
 <translation id="1662639173275167396">ಹೆಚ್ಚುವರಿ <ph name="BEGIN_LINK_CROS_OSS" />ಓಪನ್ ಸೋರ್ಸ್ ಸಾಫ್ಟ್‌ವೇರ್‌<ph name="END_LINK_CROS_OSS" /> ನಿಂದ Chrome OS ನ ರಚನೆ, ಹಾಗೆಯೇ <ph name="BEGIN_LINK_LINUX_OSS" />Linux (ಬೀಟಾ)<ph name="END_LINK_LINUX_OSS" /> ರಚನೆ ಸಹ ಸಾಧ್ಯವಾಯಿತು.</translation>
@@ -40,6 +41,7 @@
 <translation id="1773601347087397504">Chrome OS ಅನ್ನು ಬಳಸಿಕೊಳ್ಳುವುದರೊಂದಿಗೆ ಸಹಾಯವನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="1795405610103747296">ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ Chrome ಅನ್ನು ಸ್ಥಾಪಿಸಿ. ನಿಮ್ಮ ಫೋನ್‌‌ಗೆ ನಾವು ಎಸ್ಎಂಎಸ್ ಕಳುಹಿಸುತ್ತೇವೆ: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">ಇದನ್ನು ಆಫ್ ಮಾಡುವ ಮೂಲಕ, ನೀವು Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡದೆಯೇ Gmail ನಂತಹ Google ಸೈಟ್‌ಗಳಿಗೆ ಸೈನ್ ಇನ್ ಮಾಡಬಹುದು</translation>
+<translation id="1815759068706561639"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹೀಗಾಗಿ Chrome ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ. ಸುಧಾರಿತ ಸಂರಕ್ಷಣೆಯ ಮೂಲಕ ನಿಮ್ಮನ್ನು ರಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="1860536484129686729">ಈ ಸೈಟ್‌ಗಾಗಿ ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಪ್ರವೇಶಿಸಲು Chrome ಗೆ ಅನುಮತಿಯ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="1873233029667955273">Google Chrome ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅಲ್ಲ</translation>
 <translation id="1874309113135274312">Google Chrome ಬೀಟಾ (mDNS-In)</translation>
@@ -58,7 +60,6 @@
 <translation id="2290014774651636340">Google API ಕೀಗಳು ಕಾಣೆಯಾಗಿವೆ. Google Chrome ನ ಕೆಲವು ಕಾರ್ಯವನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="2290095356545025170">ನೀವು ಖಚಿತವಾಗಿ Google Chrome ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="2309047409763057870">ಇದು Google Chrome ನ ದ್ವಿತೀಯ ಸ್ಥಾಪನೆಯಾಗಿದೆ ಮತ್ತು ಅದನ್ನು ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
-<translation id="2334084861041072223">ಹಕ್ಕುಸ್ವಾಮ್ಯ <ph name="YEAR" /> Google Inc. ಎಲ್ಲಾ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.</translation>
 <translation id="2346876346033403680">ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ Chrome ಗೆ ಯಾರೋ ಈ ಹಿಂದೆಯೇ <ph name="ACCOUNT_EMAIL_LAST" /> ಹೆಸರಿನಲ್ಲಿ  ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದಾರೆ. ಅದು ನಿಮ್ಮ ಖಾತೆಯಲ್ಲವಾದರೆ ನಿಮ್ಮ ಮಾಹಿತಿಯನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿ ಇರಿಸಿಕೊಳ್ಳಲು ಹೊಸ Chrome ಬಳಕೆದಾರರನ್ನು ರಚಿಸಿ.
 
 ಸೈನ್‌ ಇನ್ ಮಾಡುವುದು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಹಾಗೂ ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳಂತಹ Chrome ಮಾಹಿತಿಯನ್ನು <ph name="ACCOUNT_EMAIL_NEW" /> ಗೆ ಹೇಗಿದ್ದರೂ ವಿಲೀನಗೊಳಿಸುತ್ತದೆ.</translation>
@@ -66,6 +67,7 @@
 <translation id="2429317896000329049">ನಿಮ್ಮ ಡೊಮೇನ್‌ನಲ್ಲಿ ಸಿಂಕ್‌ ಮಾಡುವ ಸೌಲಭ್ಯವಿಲ್ಲದ ಕಾರಣ Google Chrome ಗೆ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="2467438592969358367">Google Chrome ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಲು ಬಯಸುತ್ತದೆ. ಇದನ್ನು ಅನುಮತಿಸಲು ನಿಮ್ಮ Windows ಪಾಸ್‌ವರ್ಡ್‌ ಟೈಪ್ ಮಾಡಿ.</translation>
 <translation id="2485422356828889247">ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್</translation>
+<translation id="2521856951867783208">ಈ ಫೈಲ್ ಅಪಾಯಕಾರಿಯಾಗಿರಬಹುದು, ಹೀಗಾಗಿ Chrome ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ. ಸುಧಾರಿತ ಸಂರಕ್ಷಣೆಯ ಮೂಲಕ ನಿಮ್ಮನ್ನು ರಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="2534507159460261402">Google Pay (Chrome ಗೆ ನಕಲಿಸಲಾಗಿದೆ)</translation>
 <translation id="2535429035253759792">ಈ ಅಪ್‌ಡೇಟ್‌ ಅನ್ವಯಿಸಲು ನೀವು Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ ಎಂದು ನಿರ್ವಾಹಕವು ನಿಮ್ಮನ್ನು ವಿನಂತಿಸುತ್ತದೆ</translation>
 <translation id="2580411288591421699">ಪ್ರಸ್ತುತ ಚಾಲನೆಯಲ್ಲಿರುವ ಅದೇ Google Chrome ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು Google Chrome ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -102,6 +104,7 @@
 <translation id="3451115285585441894">Chrome ಗೆ ಸೇರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="345171907106878721">ನಿಮ್ಮನ್ನು Chrome ಗೆ ಸೇರಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="3479552764303398839">ಈಗ ಬೇಡ</translation>
+<translation id="3481286511616257896"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿರಬಹುದು, ಹೀಗಾಗಿ Chrome ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ. ಸುಧಾರಿತ ಸಂರಕ್ಷಣೆಯ ಮೂಲಕ ನಿಮ್ಮನ್ನು ರಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="34857402635545079">Chrome ನಿಂದಲೂ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">ಈ ಸೈಟ್‌ ಜೊತೆ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಹಂಚಿಕೊಳ್ಳಲು Chrome ಗೆ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಪ್ರವೇಶಿಸುವ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="3576528680708590453"><ph name="TARGET_URL_HOSTNAME" /> ಗೆ ಪ್ರವೇಶಿಸಲು ಒಂದು ಪರ್ಯಾಯ ಬ್ರೌಸರ್ ತೆರೆಯುವಂತೆ ನಿಮ್ಮ ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರು Google Chrome ಅನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಿದ್ದಾರೆ.</translation>
@@ -114,7 +117,6 @@
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome ನಿಂದ ತೆಗೆದುಹಾಕು...</translation>
 <translation id="386202838227397562">ದಯವಿಟ್ಟು ಎಲ್ಲಾ Google Chrome ವಿಂಡೋಗಳನ್ನು ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">ಲಿಂಕ್‌ ಅನ್ನು Chrome ಅ&amp;ದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="3889417619312448367">Google Chrome ಅನ್ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="3898493977366060150">Google ಸ್ಮಾರ್ಟ್‌ಗಳ ಮೂಲಕ ವೆಬ್‌ ಬ್ರೌಸ್‌ ಮಾಡುವಿಕೆ</translation>
@@ -141,7 +143,6 @@
 <translation id="4600710005438004015">Chrome ಗೆ ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಗೆ ಅಪ್‌ಡೇಟ್ ಆಗಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ, ಆದ್ದರಿಂದ ನೀವು ಹೊಸ ವೈಶಿಷ್ಟ್ಯಗಳು ಮತ್ತು ಭದ್ರತೆ ಸರಿಪಡಿಸುವಿಕೆಗಳನ್ನು ಕಳೆದುಕೊಳ್ಳುತ್ತೀರಿ.</translation>
 <translation id="4631713731678262610">Chrome ಮೆನುವಿನಲ್ಲಿ ಮರೆಮಾಡು</translation>
 <translation id="4633000520311261472">Chrome ಸುರಕ್ಷಿತವಾಗಿರಿಸುವಂತೆ ಮಾಡಲು, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ನಲ್ಲಿ ಪಟ್ಟಿ ಮಾಡಲಾದ ಕೆಲವು ವಿಸ್ತರಣೆಗಳನ್ನು ನಾವು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದೇವೆ ಮತ್ತು ಅವುಗಳನ್ನು ನಿಮ್ಮ ಅರಿವಿಲ್ಲದೆ ಸೇರಿಸಿರಬಹುದು.</translation>
-<translation id="4700157086864140907">Google ಹುಡುಕಾಟ ಮೂಲಕ ಬಳಸಲಾದ ಅದೇ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆಯ ತಂತ್ರಜ್ಞಾನವನ್ನು ಬಳಸಲು ನಿಮಗೆ ಅನುಮತಿಸುತ್ತಿರುವ, Google ಸೇವೆಗಳಿಗೆ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ನೀವು ಟೈಪ್ ಮಾಡಿರುವುದನ್ನು ಕಳುಹಿಸುವುದರ ಮೂಲಕ Google Chrome ಉತ್ತಮ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆಯನ್ನು ಒದಗಿಸಬಹುದು.</translation>
 <translation id="4728575227883772061">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆ ವಿಫಲವಾಗಿದೆ. Google Chrome ಪ್ರಸ್ತುತ ಚಲಿಸುತ್ತಿದ್ದರೆ, ದಯವಿಟ್ಟು ಇದನ್ನು ಮುಚ್ಚಿ ಮತ್ತು ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> ಸಕ್ರಿಯಗೊಳಿಸಲು Chrome ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="4754614261631455953">Google Chrome ಕ್ಯಾನರಿ (mDNS-In)</translation>
@@ -166,10 +167,12 @@
 <translation id="5386244825306882791">ನೀವು Chrome ಪ್ರಾರಂಭಿಸಿದಾಗ ಅಥವಾ ಓಮ್ನಿಬಾಕ್ಸ್ ನಿಂದ ಹುಡುಕಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
 <translation id="5430073640787465221">ನಿಮ್ಮ ಪ್ರಾಶಸ್ತ್ಯಗಳ ಫೈಲ್ ದೋಷಪೂರಿತವಾಗಿದೆ ಅಥವಾ ಅಮಾನ್ಯವಾಗಿದೆ. ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಪಡೆದುಕೊಳ್ಳುವಲ್ಲಿ Google Chrome ವಿಫಲಗೊಂಡಿದೆ.</translation>
 <translation id="5483595757826856374">{0,plural, =0{ಇದೀಗ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}=1{1 ಸೆಂಕೆಂಡಿನಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ಸೆಕೆಂಡುಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ಸೆಕೆಂಡುಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
+<translation id="5543953544073077331">Chrome ನ ಇತರ ನಕಲುಗಳು ರನ್ ಆಗುತ್ತಿವೆ. ಅಪ್‌ಡೇಟ್ ಮಾಡಲು, ಅವುಗಳನ್ನು ಮುಚ್ಚಿರಿ.</translation>
 <translation id="556024056938947818">Google Chrome ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ತೋರಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿರಬಹುದು, ಹಾಗಾಗಿ Chrome ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="5686916850681061684">Google Chrome ಕಸ್ಟಮೈಸ್ ಮಾಡಿ ಮತ್ತು ನಿಯಂತ್ರಿಸಿ. ನೀವು ಕೆಲವು ಸಂಗತಿಗಳ ಕುರಿತು ಗಮನಹರಿಸಬೇಕಿದೆ - ವಿವರಗಳಿಗಾಗಿ ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
+<translation id="5690427481109656848">Google LLC</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome 1 ಸೆಕೆಂಡ್‌ನಲ್ಲಿ ಮರುಪ್ರಾರಂಭವಾಗುತ್ತದೆ}one{Google Chrome # ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಮರುಪ್ರಾರಂಭವಾಗುತ್ತದೆ}other{Google Chrome # ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಮರುಪ್ರಾರಂಭವಾಗುತ್ತದೆ}}</translation>
 <translation id="573759479754913123">Chrome OS ಕುರಿತು</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
@@ -224,12 +227,16 @@
 <translation id="7459554271817304652">ನಿಮ್ಮ ವೈಯಕ್ತಿಕಗೊಳಿಸಿದ ಬ್ರೌಸರ್ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ವೆಬ್‍ಗೆ ಉಳಿಸಲು ಮತ್ತು ಅವುಗಳನ್ನು Google Chrome ನಿಂದ ಯಾವುದೇ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಪ್ರವೇಶಿಸಲು ಸಿಂಕ್ ಅನ್ನು ಹೊಂದಿಸಿ.</translation>
 <translation id="7473136999113284234">Chrome ಸ್ವಯಂಚಾಲಿತವಾಗಿ ನವೀಕರಣಗೊಳ್ಳುತ್ತದೆ ಈ ಮೂಲಕ ನೀವು ಯಾವಾಗಲೂ ತಾಜಾ ಆವೃತ್ತಿಯನ್ನು ಹೊಂದಿರುತ್ತೀರಿ.</translation>
 <translation id="7486227612705979895">ವಿಳಾಸಪಟ್ಟಿಯಲ್ಲಿ ಸಲಹೆ ನೀಡಲು, Chrome ನಿಮ್ಮ ಡ್ರೈವ್‌ಗೆ ಪ್ರವೇಶಿಸುತ್ತದೆ.</translation>
+<translation id="748945194546522577">ಈ ಫೈಲ್ ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹೀಗಾಗಿ Chrome ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ. ಸುಧಾರಿತ ಸಂರಕ್ಷಣೆಯ ಮೂಲಕ ನಿಮ್ಮನ್ನು ರಕ್ಷಿಸಲಾಗಿದೆ.</translation>
+<translation id="7531671357096394523">Chrome ನ ಎಲ್ಲಾ ನಕಲುಗಳನ್ನು ತ್ಯಜಿಸಿ.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Chrome OS ಈ ಭಾಷೆಯಲ್ಲಿ ಪ್ರದರ್ಶಿಸಿ</translation>
 <translation id="7561940363513215021">{0,plural, =1{1 ನಿಮಿಷದಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ನಿಮಿಷಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ನಿಮಿಷಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
 <translation id="7589360514048265910">ಈ ಕಂಪ್ಯೂಟರ್‌ ಇನ್ನು ಮುಂದೆ Google Chrome ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಸ್ವೀಕರಿಸುವುದಿಲ್ಲ. ಏಕೆಂದರೆ ಅದರ Mac OS X 10.9 ಇನ್ನು ಮುಂದೆ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="7592736734348559088">ನಿಮ್ಮ ಖಾತೆಯ ಸೈನ್ ಇನ್ ವಿವರಗಳು ತೀರಾ ಹಳತಾಗಿರುವ ಕಾರಣ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Google Chrome ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="7626032353295482388">Chrome ಗೆ ಸ್ವಾಗತ</translation>
+<translation id="7636297873481318396">ಈ ಫೈಲ್ ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹೀಗಾಗಿ Chrome ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ. ಸುಧಾರಿತ ಸಂರಕ್ಷಣೆಯ ಮೂಲಕ ನಿಮ್ಮನ್ನು ರಕ್ಷಿಸಲಾಗಿದೆ.</translation>
+<translation id="7641148173327520642"><ph name="TARGET_URL_HOSTNAME" /> ಗೆ ಪ್ರವೇಶ ಪಡೆಯುವುದಕ್ಕಾಗಿ <ph name="ALTERNATIVE_BROWSER_NAME" /> ಅನ್ನು ತೆರೆಯಲು ನಿಮ್ಮ ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರು Google Chrome ಅನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಿದ್ದಾರೆ.</translation>
 <translation id="7651907282515937834">Chrome ಎಂಟರ್‌ಪ್ರೈಸ್ ಲೋಗೋ</translation>
 <translation id="7747138024166251722">ಸ್ಥಾಪಕಕ್ಕೆ ತಾತ್ಕಾಲಿಕ ಡೈರೆಕ್ಟರಿಯನ್ನು ರಚಿಸಲಾಗಲಿಲ್ಲ. ಸಾಫ್ಟ್ವೇರ್ ಸ್ಥಾಪನೆ ಮಾಡಲು ಮುಕ್ತ ಡಿಸ್ಕ್ ಜಾಗ ಮತ್ತು ಅನುಮತಿಗಾಗಿ ದಯವಿಟ್ಟು ಪರಿಶೀಲಿಸಿ.</translation>
 <translation id="7761834446675418963">Chrome ತೆರೆಯಲು ಮತ್ತು ಬ್ರೌಸ್ ಮಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸಲು ನಿಮ್ಮ ಹೆಸರನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
@@ -259,6 +266,7 @@
 <translation id="8286862437124483331">Google Chrome ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪ್ರದರ್ಶಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ. ಇದಕ್ಕೆ ಅನುಮತಿಸಲು ನಿಮ್ಮ Windows ಪಾಸ್‌ವರ್ಡ್‌ ಟೈಪ್ ಮಾಡಿ.</translation>
 <translation id="8290100596633877290">ಓಹ್! Google Chrome ಕ್ರ‍್ಯಾಶ್‌ ಆಗಿದೆ.ಇದೀಗ ಮರುಪ್ರಾರಂಭಿಸುವುದೆ?</translation>
 <translation id="8342675569599923794">ಈ ಫೈಲ್ ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹೀಗಾಗಿ Chrome ಇದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
+<translation id="8370517070665726704">ಕೃತಿಸ್ವಾಮ್ಯ <ph name="YEAR" /> Google LLC. ಎಲ್ಲ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.</translation>
 <translation id="8380166467911888159">ಕಾಗುಣಿತ ದೋಷಗಳನ್ನು ಸರಿಪಡಿಸಲು,  ನೀವು ಪಠ್ಯ ಕ್ಷೇತ್ರಗಳಲ್ಲಿ ಟೈಪ್ ಮಾಡುವ ಪಠ್ಯವನ್ನು Chrome, Google ಗೆ ಕಳುಹಿಸುತ್ತದೆ</translation>
 <translation id="840084489713044809">Google Chrome ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಲು ಬಯಸುತ್ತದೆ.</translation>
 <translation id="8406086379114794905">Chrome ಉತ್ತಮಗೊಳಿಸುವಲ್ಲಿ ಸಹಾಯ ಮಾಡಿ.</translation>
@@ -278,6 +286,7 @@
 <translation id="8669527147644353129">Google Chrome ಸಹಾಯಕ</translation>
 <translation id="8679801911857917785">ನೀವು Chrome ಪ್ರಾರಂಭಿಸಿದಾಗ ಕಾಣಿಸಿಕೊಳ್ಳುವ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
 <translation id="870251953148363156">&amp;Google Chrome ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
+<translation id="8704255848199359374">ಇದು Google ಹುಡುಕಾಟದಲ್ಲಿ ಬಳಸಲಾದ ಅದೇ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆಯನ್ನು ಬಳಸುತ್ತದೆ. ನೀವು ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಟೈಪ್ ಮಾಡುವ ಪಠ್ಯವನ್ನು Google ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ. ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನೀವು ಈ ವರ್ತನೆಯನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಬದಲಾಯಿಸಬಹುದು.</translation>
 <translation id="873133009373065397">ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅನ್ನು ನಿರ್ಧರಿಸಲು ಅಥವಾ ಹೊಂದಿಸಲು Google Chrome ಗೆ ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ</translation>
 <translation id="8736674169840206667">ಅಪ್‌ಡೇಟ್‌ ಅನ್ವಯಿಸಲು ನೀವು Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕೆಂದು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಕೋರುತ್ತಿದ್ದಾರೆ</translation>
 <translation id="8788264404293392165">Chrome OS UI ತೋರಿಸಲು ಈ ಭಾಷೆಯನ್ನು ಬಳಸಲಾಗುತ್ತದೆ</translation>

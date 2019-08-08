@@ -211,8 +211,8 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeBasics, "emulation/virtual-time-basics.js")
 HEADLESS_PROTOCOL_TEST(VirtualTimeInterrupt,
                        "emulation/virtual-time-interrupt.js")
 
-// Flaky on Linux. TODO(crbug.com/930717): Re-enable.
-#if defined(OS_LINUX)
+// Flaky on Linux & Mac. TODO(crbug.com/930717): Re-enable.
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_VirtualTimeCrossProcessNavigation \
   DISABLED_VirtualTimeCrossProcessNavigation
 #else
@@ -327,14 +327,44 @@ class HeadlessProtocolCompositorBrowserTest
   }
 #endif
 
-HEADLESS_PROTOCOL_COMPOSITOR_TEST(CompositorBasicRaf,
+// TODO(crbug.com/954398): Timeout-flaky on Windows.
+#if defined(OS_WIN)
+#define MAYBE_CompositorBasicRaf DISABLED_CompositorBasicRaf
+#define MAYBE_CompositorImageAnimation DISABLED_CompositorImageAnimation
+#define MAYBE_CompositorCssAnimation DISABLED_CompositorCssAnimation
+#define MAYBE_VirtualTimeControllerTest DISABLED_VirtualTimeControllerTest
+#define MAYBE_RendererDelayedCompletion DISABLED_RendererDelayedCompletion
+#define MAYBE_RendererClientRedirectChain DISABLED_RendererClientRedirectChain
+#define MAYBE_RendererClientRedirectChainNoJs \
+  DISABLED_RendererClientRedirectChainNoJs
+#define MAYBE_RendererServerRedirectToFailure \
+  DISABLED_RendererServerRedirectToFailure
+#define MAYBE_RendererCookieSetFromJs DISABLED_RendererCookieSetFromJs
+#define MAYBE_RendererCookieUpdatedFromJs DISABLED_RendererCookieUpdatedFromJs
+#define MAYBE_RendererFrameLoadEvents DISABLED_RendererFrameLoadEvents
+#define MAYBE_RendererRedirect307PutMethod DISABLED_RendererRedirect307PutMethod
+#else
+#define MAYBE_CompositorBasicRaf CompositorBasicRaf
+#define MAYBE_CompositorImageAnimation CompositorImageAnimation
+#define MAYBE_CompositorCssAnimation CompositorCssAnimation
+#define MAYBE_VirtualTimeControllerTest VirtualTimeControllerTest
+#define MAYBE_RendererDelayedCompletion RendererDelayedCompletion
+#define MAYBE_RendererClientRedirectChain RendererClientRedirectChain
+#define MAYBE_RendererClientRedirectChainNoJs RendererClientRedirectChainNoJs
+#define MAYBE_RendererServerRedirectToFailure RendererServerRedirectToFailure
+#define MAYBE_RendererCookieSetFromJs RendererCookieSetFromJs
+#define MAYBE_RendererCookieUpdatedFromJs RendererCookieUpdatedFromJs
+#define MAYBE_RendererFrameLoadEvents RendererFrameLoadEvents
+#define MAYBE_RendererRedirect307PutMethod RendererRedirect307PutMethod
+#endif
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_CompositorBasicRaf,
                                   "emulation/compositor-basic-raf.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
-    CompositorImageAnimation,
+    MAYBE_CompositorImageAnimation,
     "emulation/compositor-image-animation-test.js")
-HEADLESS_PROTOCOL_COMPOSITOR_TEST(CompositorCssAnimation,
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_CompositorCssAnimation,
                                   "emulation/compositor-css-animation-test.js")
-HEADLESS_PROTOCOL_COMPOSITOR_TEST(VirtualTimeControllerTest,
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_VirtualTimeControllerTest,
                                   "helpers/virtual-time-controller-test.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererHelloWorld,
                                   "sanity/renderer-hello-world.js")
@@ -347,17 +377,17 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
     RendererJavaScriptConsoleErrors,
     "sanity/renderer-javascript-console-errors.js")
-HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererDelayedCompletion,
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_RendererDelayedCompletion,
                                   "sanity/renderer-delayed-completion.js")
-HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererClientRedirectChain,
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_RendererClientRedirectChain,
                                   "sanity/renderer-client-redirect-chain.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
-    RendererClientRedirectChainNoJs,
+    MAYBE_RendererClientRedirectChainNoJs,
     "sanity/renderer-client-redirect-chain-no-js.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererServerRedirectChain,
                                   "sanity/renderer-server-redirect-chain.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
-    RendererServerRedirectToFailure,
+    MAYBE_RendererServerRedirectToFailure,
     "sanity/renderer-server-redirect-to-failure.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
     RendererServerRedirectRelativeChain,
@@ -375,7 +405,7 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererRedirect307PostMethod,
                                   "sanity/renderer-redirect-307-post-method.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererRedirectPostChain,
                                   "sanity/renderer-redirect-post-chain.js")
-HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererRedirect307PutMethod,
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_RendererRedirect307PutMethod,
                                   "sanity/renderer-redirect-307-put-method.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererRedirect303PutGet,
                                   "sanity/renderer-redirect-303-put-get.js")
@@ -397,12 +427,12 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererRedirectNewFragment,
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
     RendererWindowLocationFragments,
     "sanity/renderer-window-location-fragments.js")
-HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCookieSetFromJs,
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_RendererCookieSetFromJs,
                                   "sanity/renderer-cookie-set-from-js.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
     RendererCookieSetFromJsNoCookies,
     "sanity/renderer-cookie-set-from-js-no-cookies.js")
-HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCookieUpdatedFromJs,
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_RendererCookieUpdatedFromJs,
                                   "sanity/renderer-cookie-updated-from-js.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererInCrossOriginObject,
                                   "sanity/renderer-in-cross-origin-object.js")
@@ -410,7 +440,7 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererInCrossOriginObject,
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererContentSecurityPolicy,
                                   "sanity/renderer-content-security-policy.js")
 
-HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererFrameLoadEvents,
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_RendererFrameLoadEvents,
                                   "sanity/renderer-frame-load-events.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCssUrlFilter,
                                   "sanity/renderer-css-url-filter.js")

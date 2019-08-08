@@ -14,6 +14,7 @@ import android.support.annotation.Nullable;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
 
 import java.util.HashMap;
@@ -171,6 +172,27 @@ public class ContentSettingsResources {
                             org.chromium.chrome.R.string.protected_content,
                             org.chromium.chrome.R.string.protected_content,
                             ContentSettingValues.ASK, ContentSettingValues.BLOCK, 0, 0));
+            int sensorsPermissionTitle = R.string.motion_sensors_permission_title;
+            int sensorsAllowedDescription =
+                    R.string.website_settings_category_motion_sensors_allowed;
+            int sensorsBlockedDescription =
+                    R.string.website_settings_category_motion_sensors_blocked;
+            try {
+                if (ChromeFeatureList.isEnabled(ChromeFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
+                    sensorsPermissionTitle = R.string.sensors_permission_title;
+                    sensorsAllowedDescription = R.string.website_settings_category_sensors_allowed;
+                    sensorsBlockedDescription = R.string.website_settings_category_sensors_blocked;
+                }
+            } catch (IllegalArgumentException e) {
+                // We can hit this in tests that use the @Features annotation, as it calls
+                // ChromeFeatureList.setTestFeatures() with a map that should not need to contain
+                // ChromeFeatureList.GENERIC_SENSOR_EXTRA_CLASSES.
+            }
+            localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS,
+                    new ResourceItem(R.drawable.settings_sensors, sensorsPermissionTitle,
+                            sensorsPermissionTitle, ContentSettingValues.ALLOW,
+                            ContentSettingValues.BLOCK, sensorsAllowedDescription,
+                            sensorsBlockedDescription));
             localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND,
                     new ResourceItem(R.drawable.ic_volume_up_grey600_24dp,
                             R.string.sound_permission_title, R.string.sound_permission_title,
@@ -185,12 +207,6 @@ public class ContentSettingsResources {
                             R.string.website_settings_usb, ContentSettingValues.ASK,
                             ContentSettingValues.BLOCK, R.string.website_settings_category_usb_ask,
                             R.string.website_settings_category_usb_blocked));
-            localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS,
-                    new ResourceItem(R.drawable.settings_sensors, R.string.sensors_permission_title,
-                            R.string.sensors_permission_title, ContentSettingValues.ALLOW,
-                            ContentSettingValues.BLOCK,
-                            R.string.website_settings_category_sensors_allowed,
-                            R.string.website_settings_category_sensors_blocked));
             sResourceInfo = localMap;
         }
         return sResourceInfo;

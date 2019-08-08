@@ -15,8 +15,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "content/public/common/console_message_level.h"
 #include "net/http/http_response_headers.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -239,7 +239,7 @@ void AncestorThrottle::ParseError(const std::string& value,
   // Log a console error in the parent of the current RenderFrameHost (as
   // the current RenderFrameHost itself doesn't yet have a document).
   navigation_handle()->GetRenderFrameHost()->GetParent()->AddMessageToConsole(
-      CONSOLE_MESSAGE_LEVEL_ERROR, message);
+      blink::mojom::ConsoleMessageLevel::kError, message);
 }
 
 void AncestorThrottle::ConsoleError(HeaderDisposition disposition) {
@@ -257,7 +257,7 @@ void AncestorThrottle::ConsoleError(HeaderDisposition disposition) {
   // Log a console error in the parent of the current RenderFrameHost (as
   // the current RenderFrameHost itself doesn't yet have a document).
   navigation_handle()->GetRenderFrameHost()->GetParent()->AddMessageToConsole(
-      CONSOLE_MESSAGE_LEVEL_ERROR, message);
+      blink::mojom::ConsoleMessageLevel::kError, message);
 }
 
 AncestorThrottle::HeaderDisposition AncestorThrottle::ParseHeader(

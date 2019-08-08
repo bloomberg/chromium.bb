@@ -1,6 +1,6 @@
 Name: libcxx-pretty-printers
-URL: https://github.com/LeszekSwirski/libcxx-pretty-printers
-Version: dc4eb17426ce62262992d7c52aa1140f9b707c37
+URL: https://github.com/tanderson-google/libcxx-pretty-printers
+Version: unknown
 License: GPL v3
 License File: LICENSE
 Security Critical: no
@@ -9,10 +9,10 @@ Description:
 GDB Pretty Printers for libc++ of Clang/LLVM
 
 Local patches:
-None
+This is a fork of [1] which is a fork of [2] which is a fork of [3] which was
+originally a fork of some pretty-printers for libstdc++.  printers.py no longer
+tracks any of these upstreams.
 
-Upgrading:
-$ git clone https://github.com/LeszekSwirski/libcxx-pretty-printers.git
-$ rm -rf .git .gitignore
-* Add README.chromium
-* Add OWNERS
+[1] https://github.com/tanderson-google/libcxx-pretty-printers
+[2] https://github.com/LeszekSwirski/libcxx-pretty-printers
+[3] https://github.com/koutheir/libcxx-pretty-printers

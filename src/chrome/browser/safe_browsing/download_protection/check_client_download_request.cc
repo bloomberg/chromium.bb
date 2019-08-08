@@ -177,6 +177,7 @@ CheckClientDownloadRequest::CheckClientDownloadRequest(
       is_extended_reporting_(false),
       is_incognito_(false),
       is_under_advanced_protection_(false),
+      requests_ap_verdicts_(false),
       weakptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   item_->AddObserver(this);
@@ -209,6 +210,10 @@ void CheckClientDownloadRequest::Start() {
     is_under_advanced_protection_ =
         profile &&
         AdvancedProtectionStatusManager::IsUnderAdvancedProtection(profile);
+    requests_ap_verdicts_ =
+        profile &&
+        AdvancedProtectionStatusManager::RequestsAdvancedProtectionVerdicts(
+            profile);
   }
 
   // If whitelist check passes, FinishRequest() will be called to avoid
@@ -610,6 +615,7 @@ void CheckClientDownloadRequest::SendRequest() {
           g_browser_process->browser_policy_connector()));
   request->mutable_population()->set_is_under_advanced_protection(
       is_under_advanced_protection_);
+  request->mutable_population()->set_is_incognito(is_incognito_);
 
   request->set_url(SanitizeUrl(item_->GetUrlChain().back()));
   request->mutable_digests()->set_sha256(item_->GetHash());
@@ -704,8 +710,7 @@ void CheckClientDownloadRequest::SendRequest() {
     request->mutable_archived_binary()->Swap(&archived_binaries_);
   request->set_archive_file_count(file_count_);
   request->set_archive_directory_count(directory_count_);
-  request->set_request_ap_verdicts(
-      base::FeatureList::IsEnabled(kUseAPDownloadProtection));
+  request->set_request_ap_verdicts(requests_ap_verdicts_);
 
   if (!request->SerializeToString(&client_download_request_data_)) {
     FinishRequest(DownloadCheckResult::UNKNOWN, REASON_INVALID_REQUEST_PROTO);

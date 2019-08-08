@@ -31,9 +31,6 @@ traits_headers = [ "//media/base/ipc/media_param_traits_macros.h" ]
 
 public_deps = [
   "//media",
-]
-
-deps = [
   "//media/base/ipc",
 ]
 

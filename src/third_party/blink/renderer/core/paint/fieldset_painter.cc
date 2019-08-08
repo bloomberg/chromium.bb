@@ -35,11 +35,14 @@ void FieldsetPainter::PaintBoxDecorationBackground(
     const LayoutPoint& paint_offset) {
   LayoutRect paint_rect(paint_offset, layout_fieldset_.Size());
   LayoutBox* legend = layout_fieldset_.FindInFlowLegend();
-  if (!legend)
+  if (!legend) {
     return BoxPainter(layout_fieldset_)
         .PaintBoxDecorationBackground(paint_info, paint_offset);
+  }
 
-  if (!DrawingRecorder::UseCachedDrawingIfPossible(
+  BoxDecorationData box_decoration_data(paint_info, layout_fieldset_);
+  if (box_decoration_data.ShouldPaint() &&
+      !DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_fieldset_, paint_info.phase)) {
     FieldsetPaintInfo fieldset_paint_info =
         CreateFieldsetPaintInfo(layout_fieldset_, *legend);
@@ -47,19 +50,24 @@ void FieldsetPainter::PaintBoxDecorationBackground(
 
     DrawingRecorder recorder(paint_info.context, layout_fieldset_,
                              paint_info.phase);
-    BoxDecorationData box_decoration_data(layout_fieldset_);
 
-    BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect,
-                                         layout_fieldset_.StyleRef());
-    BackgroundImageGeometry geometry(layout_fieldset_);
-    BoxModelObjectPainter(layout_fieldset_)
-        .PaintFillLayers(paint_info, box_decoration_data.background_color,
-                         layout_fieldset_.StyleRef().BackgroundLayers(),
-                         paint_rect, geometry);
-    BoxPainterBase::PaintInsetBoxShadowWithBorderRect(
-        paint_info, paint_rect, layout_fieldset_.StyleRef());
+    if (box_decoration_data.ShouldPaintShadow()) {
+      BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect,
+                                           layout_fieldset_.StyleRef());
+    }
+    if (box_decoration_data.ShouldPaintBackground()) {
+      BackgroundImageGeometry geometry(layout_fieldset_);
+      BoxModelObjectPainter(layout_fieldset_)
+          .PaintFillLayers(paint_info, box_decoration_data.BackgroundColor(),
+                           layout_fieldset_.StyleRef().BackgroundLayers(),
+                           paint_rect, geometry);
+    }
+    if (box_decoration_data.ShouldPaintShadow()) {
+      BoxPainterBase::PaintInsetBoxShadowWithBorderRect(
+          paint_info, paint_rect, layout_fieldset_.StyleRef());
+    }
 
-    if (box_decoration_data.has_border_decoration) {
+    if (box_decoration_data.ShouldPaintBorder()) {
       // Create a clipping region around the legend and paint the border as
       // normal
       GraphicsContext& graphics_context = paint_info.context;

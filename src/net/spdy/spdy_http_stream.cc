@@ -111,8 +111,8 @@ SpdyHttpStream::SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
       closed_stream_id_(0),
       closed_stream_received_bytes_(0),
       closed_stream_sent_bytes_(0),
-      request_info_(NULL),
-      response_info_(NULL),
+      request_info_(nullptr),
+      response_info_(nullptr),
       response_headers_complete_(false),
       upload_stream_in_progress_(false),
       user_buffer_len_(0),
@@ -156,8 +156,8 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   }
 
   int rv = stream_request_.StartRequest(
-      SPDY_REQUEST_RESPONSE_STREAM, spdy_session_, request_info_->url, priority,
-      request_info_->socket_tag, stream_net_log,
+      SPDY_REQUEST_RESPONSE_STREAM, spdy_session_, request_info_->url,
+      can_send_early, priority, request_info_->socket_tag, stream_net_log,
       base::BindOnce(&SpdyHttpStream::OnStreamCreated,
                      weak_factory_.GetWeakPtr(), std::move(callback)),
       NetworkTrafficAnnotationTag(request_info->traffic_annotation));
@@ -312,7 +312,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     *response = *(push_response_info_.get());
     push_response_info_.reset();
   } else {
-    DCHECK_EQ(static_cast<HttpResponseInfo*>(NULL), response_info_);
+    DCHECK_EQ(static_cast<HttpResponseInfo*>(nullptr), response_info_);
   }
 
   response_info_ = response;

@@ -18,10 +18,38 @@
 
 namespace utils {
 
+    ComboInputStateDescriptor::ComboInputStateDescriptor() {
+        dawn::InputStateDescriptor* descriptor = this;
+
+        descriptor->indexFormat = dawn::IndexFormat::Uint32;
+
+        // Fill the default values for vertexInput.
+        descriptor->numInputs = 0;
+        dawn::VertexInputDescriptor vertexInput;
+        vertexInput.inputSlot = 0;
+        vertexInput.stride = 0;
+        vertexInput.stepMode = dawn::InputStepMode::Vertex;
+        for (uint32_t i = 0; i < kMaxVertexInputs; ++i) {
+            cInputs[i] = vertexInput;
+        }
+        descriptor->inputs = &cInputs[0];
+
+        // Fill the default values for vertexAttribute.
+        descriptor->numAttributes = 0;
+        dawn::VertexAttributeDescriptor vertexAttribute;
+        vertexAttribute.shaderLocation = 0;
+        vertexAttribute.inputSlot = 0;
+        vertexAttribute.offset = 0;
+        vertexAttribute.format = dawn::VertexFormat::Float;
+        for (uint32_t i = 0; i < kMaxVertexAttributes; ++i) {
+            cAttributes[i] = vertexAttribute;
+        }
+        descriptor->attributes = &cAttributes[0];
+    }
+
     ComboRenderPipelineDescriptor::ComboRenderPipelineDescriptor(const dawn::Device& device) {
         dawn::RenderPipelineDescriptor* descriptor = this;
 
-        descriptor->indexFormat = dawn::IndexFormat::Uint32;
         descriptor->primitiveTopology = dawn::PrimitiveTopology::TriangleList;
         descriptor->sampleCount = 1;
 
@@ -37,6 +65,20 @@ namespace utils {
             cFragmentStage.entryPoint = "main";
         }
 
+        // Set defaults for the input state descriptors.
+        descriptor->inputState = &cInputState;
+
+        // Set defaults for the rasterization state descriptor.
+        {
+            cRasterizationState.frontFace = dawn::FrontFace::CCW;
+            cRasterizationState.cullMode = dawn::CullMode::None;
+
+            cRasterizationState.depthBias = 0;
+            cRasterizationState.depthBiasSlopeScale = 0.0;
+            cRasterizationState.depthBiasClamp = 0.0;
+            descriptor->rasterizationState = &cRasterizationState;
+        }
+
         // Set defaults for the color state descriptors.
         {
             descriptor->colorStateCount = 1;
@@ -50,7 +92,7 @@ namespace utils {
             colorStateDescriptor.format = dawn::TextureFormat::R8G8B8A8Unorm;
             colorStateDescriptor.alphaBlend = blend;
             colorStateDescriptor.colorBlend = blend;
-            colorStateDescriptor.colorWriteMask = dawn::ColorWriteMask::All;
+            colorStateDescriptor.writeMask = dawn::ColorWriteMask::All;
             for (uint32_t i = 0; i < kMaxColorAttachments; ++i) {
                 mColorStates[i] = colorStateDescriptor;
                 cColorStates[i] = &mColorStates[i];
@@ -75,7 +117,6 @@ namespace utils {
             descriptor->depthStencilState = nullptr;
         }
 
-        descriptor->inputState = device.CreateInputStateBuilder().GetResult();
         descriptor->layout = utils::MakeBasicPipelineLayout(device, nullptr);
     }
 

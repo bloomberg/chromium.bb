@@ -9,6 +9,7 @@ found in the LICENSE file.
 <link rel="import" href="/tracing/extras/chrome/chrome_test_utils.html">
 <link rel="import"
     href="/tracing/extras/chrome/chrome_user_friendly_category_driver.html">
+<link rel="import" href="/tracing/extras/chrome/event_finder_utils.html">
 <link rel="import" href="/tracing/metrics/system_health/loading_metric.html">
 <link rel="import" href="/tracing/value/histogram_set.html">
 
@@ -99,7 +100,7 @@ tr.b.unittest.testSuite(function() {
   });
 
 
-  test('timeToFirstViewportReady', function() {
+  test('aboveTheFoldLoadedToVisibleHistogram', function() {
     const model = tr.e.chrome.ChromeTestUtils.newChromeModel(function(model) {
       const rendererProcess = model.rendererProcess;
       const mainThread = model.rendererMain;
@@ -126,13 +127,13 @@ tr.b.unittest.testSuite(function() {
     });
     const histograms = new tr.v.HistogramSet();
     tr.metrics.sh.loadingMetric(histograms, model);
-    const hist = histograms.getHistogramNamed('timeToFirstViewportReady');
+    const hist = histograms.getHistogramNamed('aboveTheFoldLoadedToVisible');
     assert.strictEqual(1, hist.running.count);
     assert.strictEqual(1000, hist.running.mean);
   });
 
 
-  test('aboveTheFoldLoadedToVisibleHistogram', function() {
+  test('timeToFirstViewportReady', function() {
     const model = tr.e.chrome.ChromeTestUtils.newChromeModel(function(model) {
       const rendererProcess = model.rendererProcess;
       const mainThread = model.rendererMain;
@@ -160,8 +161,7 @@ tr.b.unittest.testSuite(function() {
     });
     const histograms = new tr.v.HistogramSet();
     tr.metrics.sh.loadingMetric(histograms, model);
-    const hist = histograms.getHistogramNamed(
-        'aboveTheFoldLoadedToVisible');
+    const hist = histograms.getHistogramNamed('timeToFirstViewportReady');
     assert.strictEqual(1, hist.running.count);
     assert.strictEqual(900, hist.running.mean);
   });
@@ -1118,21 +1118,23 @@ tr.b.unittest.testSuite(function() {
     const chromeHelper = model.getOrCreateHelper(
         tr.model.helpers.ChromeModelHelper);
     const rendererHelper = chromeHelper.rendererHelpers[rendererPid];
-    const allNetworkEvents = tr.metrics.sh.getNetworkEventsInRange(
-        rendererHelper.process, tr.b.math.Range.fromExplicitRange(0, 550));
+    const allNetworkEvents =
+        tr.e.chrome.EventFinderUtils.getNetworkEventsInRange(
+            rendererHelper.process, tr.b.math.Range.fromExplicitRange(0, 550));
     assert.sameDeepMembers(
         [netEvent1, netEvent2, netEvent3, netEvent4],
         allNetworkEvents);
 
-    const partialNetworkEvents = tr.metrics.sh.getNetworkEventsInRange(
-        rendererHelper.process, tr.b.math.Range.fromExplicitRange(0, 460));
+    const partialNetworkEvents =
+        tr.e.chrome.EventFinderUtils.getNetworkEventsInRange(
+            rendererHelper.process, tr.b.math.Range.fromExplicitRange(0, 460));
     assert.strictEqual(2, partialNetworkEvents.length);
     assert.sameDeepMembers(
         [netEvent1, netEvent2],
         partialNetworkEvents);
 
     const networkEventsWithIntersecting =
-        tr.metrics.sh.getNetworkEventsInRange(
+        tr.e.chrome.EventFinderUtils.getNetworkEventsInRange(
             rendererHelper.process, tr.b.math.Range.fromExplicitRange(0, 410));
     assert.sameDeepMembers(
         [netEvent1, netEvent2],

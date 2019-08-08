@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/one_shot_event.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -21,8 +22,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/events/lazy_event_dispatch_util.h"
@@ -40,7 +39,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
-#include "extensions/common/one_shot_event.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "url/gurl.h"
 
@@ -741,10 +739,9 @@ RuntimeGetPackageDirectoryEntryFunction::Run() {
   std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
       storage::kFileSystemTypeNativeLocal, std::string(), path, &relative_path);
 
-  int renderer_id = render_frame_host()->GetProcess()->GetID();
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
-  policy->GrantReadFileSystem(renderer_id, filesystem_id);
+  policy->GrantReadFileSystem(source_process_id(), filesystem_id);
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("fileSystemId", filesystem_id);
   dict->SetString("baseName", relative_path);

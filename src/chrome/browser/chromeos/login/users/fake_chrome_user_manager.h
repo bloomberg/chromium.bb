@@ -164,8 +164,6 @@ class FakeChromeUserManager : public ChromeUserManager {
   UserFlow* GetCurrentUserFlow() const override;
   UserFlow* GetUserFlow(const AccountId& account_id) const override;
   void ResetUserFlow(const AccountId& account_id) override;
-  user_manager::UserList GetUsersAllowedForSupervisedUsersCreation()
-      const override;
 
   // ChromeUserManager override.
   void SetUserAffiliation(

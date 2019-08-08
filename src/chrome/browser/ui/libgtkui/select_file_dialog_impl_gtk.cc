@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -64,8 +65,9 @@ void OnFileFilterDataDestroyed(std::string* file_extension) {
 
 // Runs DesktopWindowTreeHostX11::EnableEventListening() when the file-picker
 // is closed.
-void OnFilePickerDestroy(base::Closure* callback) {
-  callback->Run();
+void OnFilePickerDestroy(base::OnceClosure* callback_raw) {
+  std::unique_ptr<base::OnceClosure> callback = base::WrapUnique(callback_raw);
+  std::move(*callback).Run();
 }
 
 }  // namespace
@@ -190,10 +192,11 @@ void SelectFileDialogImplGTK::SelectFileImpl(
       // been captured and by turning off event listening, it is never
       // released. So we manually ensure there is no current capture.
       host->ReleaseCapture();
-      std::unique_ptr<base::Closure> callback =
-          views::DesktopWindowTreeHostX11::GetHostForXID(
-              host->GetAcceleratedWidget())
-              ->DisableEventListening();
+      std::unique_ptr<base::OnceClosure> callback =
+          std::make_unique<base::OnceClosure>(
+              views::DesktopWindowTreeHostX11::GetHostForXID(
+                  host->GetAcceleratedWidget())
+                  ->DisableEventListening());
       // OnFilePickerDestroy() is called when |dialog| destroyed, which allows
       // to invoke the callback function to re-enable event handling on the
       // owning window.

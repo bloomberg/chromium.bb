@@ -30,7 +30,7 @@ void WebDatabaseObserverImpl::DatabaseOpened(
     const WebSecurityOrigin& origin,
     const WebString& database_name,
     const WebString& database_display_name,
-    unsigned long estimated_size) {
+    uint32_t estimated_size) {
   (*web_database_host_)
       ->Opened(origin, database_name.Utf16(), database_display_name.Utf16(),
                estimated_size);

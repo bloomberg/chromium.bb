@@ -22,9 +22,15 @@
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
+
+#if BUILDFLAG(USE_DAWN)
+#include <dawn/dawncpp.h>
+#include <dawn_native/DawnNative.h>
+#endif  // BUILDFLAG(USE_DAWN)
 
 namespace gpu {
 namespace {
@@ -81,8 +87,8 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Basic) {
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
 
-  auto backing = backing_factory_->CreateSharedImage(mailbox, format, size,
-                                                     color_space, usage);
+  auto backing = backing_factory_->CreateSharedImage(
+      mailbox, format, size, color_space, usage, false /* is_thread_safe */);
   EXPECT_TRUE(backing);
 
   // Check clearing.
@@ -126,16 +132,16 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Basic) {
   gl_representation.reset();
 
   // Finally, validate a SharedImageRepresentationSkia.
-  auto skia_representation =
-      shared_image_representation_factory_->ProduceSkia(mailbox);
+  auto skia_representation = shared_image_representation_factory_->ProduceSkia(
+      mailbox, context_state_);
   EXPECT_TRUE(skia_representation);
   auto surface = skia_representation->BeginWriteAccess(
-      gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
+      0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
   EXPECT_TRUE(surface);
   EXPECT_EQ(size.width(), surface->width());
   EXPECT_EQ(size.height(), surface->height());
   skia_representation->EndWriteAccess(std::move(surface));
-  auto promise_texture = skia_representation->BeginReadAccess(nullptr);
+  auto promise_texture = skia_representation->BeginReadAccess();
   EXPECT_TRUE(promise_texture);
   if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();
@@ -153,15 +159,15 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Basic) {
 // Test to check interaction between Gl and skia GL representations.
 // We write to a GL texture using gl representation and then read from skia
 // representation.
-TEST_F(SharedImageBackingFactoryIOSurfaceTest, GLSkiaGL) {
+TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_SkiaGL) {
   // Create a backing using mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(1, 1);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
-  auto backing = backing_factory_->CreateSharedImage(mailbox, format, size,
-                                                     color_space, usage);
+  auto backing = backing_factory_->CreateSharedImage(
+      mailbox, format, size, color_space, usage, false /* is_thread_safe */);
   EXPECT_TRUE(backing);
 
   GLenum expected_target = GL_TEXTURE_RECTANGLE;
@@ -193,10 +199,10 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GLSkiaGL) {
   gl_representation.reset();
 
   // Next create a SharedImageRepresentationSkia to read back the texture data.
-  auto skia_representation =
-      shared_image_representation_factory_->ProduceSkia(mailbox);
+  auto skia_representation = shared_image_representation_factory_->ProduceSkia(
+      mailbox, context_state_);
   EXPECT_TRUE(skia_representation);
-  auto promise_texture = skia_representation->BeginReadAccess(nullptr);
+  auto promise_texture = skia_representation->BeginReadAccess();
   EXPECT_TRUE(promise_texture);
   if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();
@@ -232,6 +238,120 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GLSkiaGL) {
   factory_ref.reset();
   EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
 }
+
+#if BUILDFLAG(USE_DAWN)
+// Test to check interaction between Dawn and skia GL representations.
+TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
+  // Create a Dawn Metal device
+  dawn_native::Instance instance;
+  instance.DiscoverDefaultAdapters();
+
+  std::vector<dawn_native::Adapter> adapters = instance.GetAdapters();
+  auto adapter_it = std::find_if(
+      adapters.begin(), adapters.end(), [](dawn_native::Adapter adapter) {
+        return adapter.GetBackendType() == dawn_native::BackendType::Metal;
+      });
+  ASSERT_NE(adapter_it, adapters.end());
+
+  dawn::Device device = dawn::Device::Acquire(adapter_it->CreateDevice());
+  DawnProcTable procs = dawn_native::GetProcs();
+  dawnSetProcs(&procs);
+
+  // Create a backing using mailbox.
+  auto mailbox = Mailbox::GenerateForSharedImage();
+  auto format = viz::ResourceFormat::RGBA_8888;
+  gfx::Size size(1, 1);
+  auto color_space = gfx::ColorSpace::CreateSRGB();
+  uint32_t usage = SHARED_IMAGE_USAGE_WEBGPU | SHARED_IMAGE_USAGE_DISPLAY;
+  auto backing = backing_factory_->CreateSharedImage(
+      mailbox, format, size, color_space, usage, false /* is_thread_safe */);
+  EXPECT_TRUE(backing);
+
+  std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =
+      shared_image_manager_.Register(std::move(backing),
+                                     memory_type_tracker_.get());
+
+  // Create a SharedImageRepresentationDawn.
+  auto dawn_representation =
+      shared_image_representation_factory_->ProduceDawn(mailbox, device.Get());
+  EXPECT_TRUE(dawn_representation);
+
+  // Clear the shared image to green using Dawn.
+  {
+    dawn::Texture texture =
+        dawn::Texture::Acquire(dawn_representation->BeginAccess(
+            DAWN_TEXTURE_USAGE_BIT_OUTPUT_ATTACHMENT));
+
+    dawn::RenderPassColorAttachmentDescriptor colorDesc;
+    colorDesc.attachment = texture.CreateDefaultView();
+    colorDesc.resolveTarget = nullptr;
+    colorDesc.loadOp = dawn::LoadOp::Clear;
+    colorDesc.storeOp = dawn::StoreOp::Store;
+    colorDesc.clearColor = {0, 255, 0, 255};
+
+    dawn::RenderPassColorAttachmentDescriptor* colorAttachmentsPtr = &colorDesc;
+
+    dawn::RenderPassDescriptor renderPassDesc;
+    renderPassDesc.colorAttachmentCount = 1;
+    renderPassDesc.colorAttachments = &colorAttachmentsPtr;
+    renderPassDesc.depthStencilAttachment = nullptr;
+
+    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+    dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);
+    pass.EndPass();
+    dawn::CommandBuffer commands = encoder.Finish();
+
+    dawn::Queue queue = device.CreateQueue();
+    queue.Submit(1, &commands);
+  }
+
+  dawn_representation->EndAccess();
+
+  // Next create a SharedImageRepresentationSkia to read back the texture data.
+  auto skia_representation = shared_image_representation_factory_->ProduceSkia(
+      mailbox, context_state_);
+  EXPECT_TRUE(skia_representation);
+  auto promise_texture = skia_representation->BeginReadAccess();
+  EXPECT_TRUE(promise_texture);
+  if (promise_texture) {
+    GrBackendTexture backend_texture = promise_texture->backendTexture();
+    EXPECT_TRUE(backend_texture.isValid());
+    EXPECT_EQ(size.width(), backend_texture.width());
+    EXPECT_EQ(size.height(), backend_texture.height());
+  }
+
+  // Create an Sk Image from GrBackendTexture.
+  auto sk_image = SkImage::MakeFromTexture(
+      gr_context(), promise_texture->backendTexture(), kTopLeft_GrSurfaceOrigin,
+      kRGBA_8888_SkColorType, kOpaque_SkAlphaType, nullptr);
+
+  SkImageInfo dst_info =
+      SkImageInfo::Make(size.width(), size.height(), kRGBA_8888_SkColorType,
+                        kOpaque_SkAlphaType, nullptr);
+
+  const int num_pixels = size.width() * size.height();
+  std::unique_ptr<uint8_t[]> dst_pixels(new uint8_t[num_pixels * 4]());
+
+  // Read back pixels from Sk Image.
+  EXPECT_TRUE(sk_image->readPixels(dst_info, dst_pixels.get(),
+                                   dst_info.minRowBytes(), 0, 0));
+  skia_representation->EndReadAccess();
+
+  // Compare the pixel values.
+  EXPECT_EQ(dst_pixels[0], 0);
+  EXPECT_EQ(dst_pixels[1], 255);
+  EXPECT_EQ(dst_pixels[2], 0);
+  EXPECT_EQ(dst_pixels[3], 255);
+
+  // Shut down Dawn
+  device = dawn::Device();
+  dawnSetProcs(nullptr);
+
+  skia_representation.reset();
+  factory_ref.reset();
+  EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
+}
+#endif  // BUILDFLAG(USE_DAWN)
 
 }  // anonymous namespace
 }  // namespace gpu

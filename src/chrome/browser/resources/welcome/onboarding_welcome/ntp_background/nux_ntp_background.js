@@ -29,6 +29,9 @@ Polymer({
   /** @private */
   finalized_: false,
 
+  /** @private {boolean} */
+  imageIsLoading_: false,
+
   /** @private {?nux.ModuleMetricsManager} */
   metricsManager_: null,
 
@@ -65,6 +68,10 @@ Polymer({
   },
 
   onRouteExit: function() {
+    if (this.imageIsLoading_) {
+      this.ntpBackgroundProxy_.recordBackgroundImageNeverLoaded();
+    }
+
     if (this.finalized_) {
       return;
     }
@@ -72,6 +79,10 @@ Polymer({
   },
 
   onRouteUnload: function() {
+    if (this.imageIsLoading_) {
+      this.ntpBackgroundProxy_.recordBackgroundImageNeverLoaded();
+    }
+
     if (this.finalized_) {
       return;
     }
@@ -99,13 +110,24 @@ Polymer({
     const id = this.selectedBackground_.id;
 
     if (id > -1) {
+      this.imageIsLoading_ = true;
       const imageUrl = this.selectedBackground_.imageUrl;
-      this.ntpBackgroundProxy_.preloadImage(imageUrl).then(() => {
-        if (this.selectedBackground_.id === id) {
-          this.$.backgroundPreview.classList.add('active');
-          this.$.backgroundPreview.style.backgroundImage = `url(${imageUrl})`;
-        }
-      });
+      const beforeLoadTime = window.performance.now();
+      this.ntpBackgroundProxy_.preloadImage(imageUrl).then(
+          () => {
+            if (this.selectedBackground_.id === id) {
+              this.imageIsLoading_ = false;
+              this.$.backgroundPreview.classList.add('active');
+              this.$.backgroundPreview.style.backgroundImage =
+                  `url(${imageUrl})`;
+            }
+
+            this.ntpBackgroundProxy_.recordBackgroundImageLoadTime(
+                Math.floor(performance.now() - beforeLoadTime));
+          },
+          () => {
+            this.ntpBackgroundProxy_.recordBackgroundImageFailedToLoad();
+          });
     } else {
       this.$.backgroundPreview.classList.remove('active');
     }
@@ -158,7 +180,7 @@ Polymer({
       direction *= -1;  // Reverse direction if RTL.
     }
 
-    const buttons = this.root.querySelectorAll('.ntp-background-grid-button');
+    const buttons = this.root.querySelectorAll('.option');
     const targetIndex = Array.prototype.indexOf.call(buttons, element);
 
     const oldFocus = buttons[targetIndex];

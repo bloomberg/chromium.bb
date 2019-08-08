@@ -12,7 +12,7 @@
 Polymer({
   is: 'settings-kiosk-next-shell-confirmation-dialog',
 
-  behaviors: [I18nBehavior, PrefsBehavior],
+  behaviors: [PrefsBehavior],
 
   properties: {
     /** Preferences state. */
@@ -31,8 +31,8 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onCancelTap_: function(event) {
-    this.$.dialog.close();
+  onCancelClick_: function(event) {
+    this.$.dialog.cancel();
     event.stopPropagation();
   },
 
@@ -40,39 +40,44 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onConfirmTap_: function(event) {
+  onConfirmClick_: function(event) {
     const prefPath = 'ash.kiosk_next_shell.enabled';
     this.setPrefValue(prefPath, !this.getPref(prefPath).value);
     settings.LifetimeBrowserProxyImpl.getInstance().signOutAndRestart();
+    this.$.dialog.close();
     event.stopPropagation();
   },
 
   /**
-   * @private
+   * @param {boolean} kioskNextShellEnabled
    * @return {string}
+   * @private
    */
   getTitleText_: function(kioskNextShellEnabled) {
-    return kioskNextShellEnabled ?
-        this.i18n('kioskNextShellEnabledDialogTitle') :
-        this.i18n('kioskNextShellDisabledDialogTitle');
+    return loadTimeData.getString(
+        kioskNextShellEnabled ? 'kioskNextShellEnabledDialogTitle' :
+                                'kioskNextShellDisabledDialogTitle');
   },
 
   /**
-   * @private
+   * @param {boolean} kioskNextShellEnabled
    * @return {string}
+   * @private
    */
   getBodyText_: function(kioskNextShellEnabled) {
-    return kioskNextShellEnabled ?
-        this.i18n('kioskNextShellEnabledDialogBody') :
-        this.i18n('kioskNextShellDisabledDialogBody');
+    return loadTimeData.getString(
+        kioskNextShellEnabled ? 'kioskNextShellEnabledDialogBody' :
+                                'kioskNextShellDisabledDialogBody');
   },
 
   /**
-   * @private
+   * @param {boolean} kioskNextShellEnabled
    * @return {string}
+   * @private
    */
   getConfirmationText_: function(kioskNextShellEnabled) {
-    return kioskNextShellEnabled ? this.i18n('kioskNextShellTurnOff') :
-                                   this.i18n('kioskNextShellTurnOn');
+    return loadTimeData.getString(
+        kioskNextShellEnabled ? 'kioskNextShellTurnOff' :
+                                'kioskNextShellTurnOn');
   },
 });

@@ -88,12 +88,17 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual ScrollResult UserScroll(ScrollGranularity, const ScrollOffset&);
 
+  using ScrollCallback = base::OnceClosure;
   virtual void SetScrollOffset(const ScrollOffset&,
                                ScrollType,
-                               ScrollBehavior = kScrollBehaviorInstant);
-  virtual void ScrollBy(const ScrollOffset&,
-                        ScrollType,
-                        ScrollBehavior = kScrollBehaviorInstant);
+                               ScrollBehavior,
+                               ScrollCallback on_finish);
+  void SetScrollOffset(const ScrollOffset&,
+                       ScrollType,
+                       ScrollBehavior = kScrollBehaviorInstant);
+  void ScrollBy(const ScrollOffset&,
+                ScrollType,
+                ScrollBehavior = kScrollBehaviorInstant);
   void SetScrollOffsetSingleAxis(ScrollbarOrientation,
                                  float,
                                  ScrollType,
@@ -268,7 +273,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool ScrollbarsCanBeActive() const = 0;
 
   // Returns the bounding box of this scrollable area, in the coordinate system
-  // of the top-level FrameView.
+  // of the top-level FrameView's Document.
   virtual IntRect ScrollableAreaBoundingBox() const = 0;
 
   virtual CompositorElementId GetCompositorElementId() const = 0;
@@ -446,7 +451,10 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,
                            PopupOverlayScrollbarShouldNotFadeOut);
 
-  void ProgrammaticScrollHelper(const ScrollOffset&, ScrollBehavior, bool);
+  void ProgrammaticScrollHelper(const ScrollOffset&,
+                                ScrollBehavior,
+                                bool,
+                                ScrollCallback on_finish);
   void UserScrollHelper(const ScrollOffset&, ScrollBehavior);
 
   void FadeOverlayScrollbarsTimerFired(TimerBase*);

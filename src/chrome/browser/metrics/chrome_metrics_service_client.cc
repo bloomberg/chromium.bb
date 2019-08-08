@@ -51,8 +51,8 @@
 #include "chrome/browser/safe_browsing/certificate_reporting_metrics_provider.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/tracing/background_tracing_metrics_provider.h"
 #include "chrome/browser/translate/translate_ranker_metrics_provider.h"
-#include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
@@ -103,8 +103,6 @@
 #include "base/android/build_info.h"
 #include "chrome/browser/metrics/android_metrics_provider.h"
 #include "chrome/browser/metrics/page_load_metrics_provider.h"
-#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
-#include "chrome/browser/ui/android/tab_model/tab_model_list_observer.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -151,7 +149,7 @@
 #include "content/public/common/service_manager_connection.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
 #include "third_party/crashpad/crashpad/client/crashpad_info.h"
 #endif
 
@@ -184,7 +182,7 @@ const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
 // third_party/crashpad/crashpad/handler/handler_main.cc.
 const char kCrashpadHistogramAllocatorName[] = "CrashpadMetrics";
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
 // The stream type assigned to the minidump stream that holds the serialized
 // system profile proto.
 const uint32_t kSystemProfileMinidumpStreamType = 0x4B6B0003;
@@ -195,7 +193,7 @@ const uint32_t kSystemProfileMinidumpStreamType = 0x4B6B0003;
 // not assume it.
 // TODO(manzagop): revisit this if the Crashpad API evolves.
 base::LazyInstance<std::string>::Leaky g_environment_for_crash_reporter;
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
 
 void RegisterFileMetricsPreferences(PrefRegistrySimple* registry) {
   metrics::FileMetricsProvider::RegisterPrefs(registry, kBrowserMetricsName);
@@ -356,25 +354,6 @@ void GetExecutableVersionDetails(base::string16* product_name,
 }
 #endif  // OS_WIN
 
-#if defined(OS_ANDROID)
-class AndroidIncognitoObserver : public TabModelListObserver {
- public:
-  explicit AndroidIncognitoObserver(ChromeMetricsServiceClient* parent)
-      : parent_(parent) {
-    TabModelList::AddObserver(this);
-  }
-
-  ~AndroidIncognitoObserver() override { TabModelList::RemoveObserver(this); }
-
-  void OnTabModelAdded() override { parent_->UpdateRunningServices(); }
-
-  void OnTabModelRemoved() override { parent_->UpdateRunningServices(); }
-
- private:
-  ChromeMetricsServiceClient* parent_;
-};
-#endif
-
 ChromeMetricsServiceClient::IsProcessRunningFunction g_is_process_running =
     nullptr;
 
@@ -420,10 +399,9 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RecordCommandLineMetrics();
   notification_listeners_active_ = RegisterForNotifications();
-#if defined(OS_ANDROID)
-  incognito_observer_ = std::make_unique<AndroidIncognitoObserver>(this);
-  notification_listeners_active_ &= (incognito_observer_ != nullptr);
-#endif
+  incognito_observer_ = std::make_unique<IncognitoObserver>(
+      base::BindRepeating(&ChromeMetricsServiceClient::UpdateRunningServices,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 ChromeMetricsServiceClient::~ChromeMetricsServiceClient() {
@@ -491,7 +469,7 @@ std::string ChromeMetricsServiceClient::GetVersionString() {
 }
 
 void ChromeMetricsServiceClient::OnEnvironmentUpdate(std::string* environment) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
   DCHECK(environment);
 
   // Register the environment with the crash reporter. Note this only registers
@@ -512,7 +490,7 @@ void ChromeMetricsServiceClient::OnEnvironmentUpdate(std::string* environment) {
       reinterpret_cast<const void*>(
           g_environment_for_crash_reporter.Get().data()),
       g_environment_for_crash_reporter.Get().size());
-#endif  // OS_WIN || OS_MACOSX
+#endif  // OS_WIN || OS_MACOSX || OS_ANDROID
 }
 
 void ChromeMetricsServiceClient::OnLogCleanShutdown() {
@@ -611,12 +589,8 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
           content::CreateNetworkConnectionTrackerAsyncGetter(),
           std::make_unique<metrics::NetworkQualityEstimatorProviderImpl>()));
 
-  // Currently, we configure OmniboxMetricsProvider to not log events to UMA
-  // if there is a single incognito session visible. In the future, it may
-  // be worth revisiting this to still log events from non-incognito sessions.
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<OmniboxMetricsProvider>(
-          base::Bind(&chrome::IsIncognitoSessionActive)));
+      std::make_unique<OmniboxMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<ChromeStabilityMetricsProvider>(local_state));
@@ -649,6 +623,9 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::ComponentMetricsProvider>(
           g_browser_process->component_updater()));
+
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<tracing::BackgroundTracingMetricsProvider>());
 
 #if defined(OS_ANDROID)
   metrics_service_->RegisterMetricsProvider(
@@ -899,8 +876,6 @@ bool ChromeMetricsServiceClient::RegisterForNotifications() {
   // Observe history deletions for all profiles.
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::NotificationService::AllBrowserContextsAndSources());
 
   bool all_profiles_succeeded = true;
   for (Profile* profile :
@@ -955,8 +930,6 @@ void ChromeMetricsServiceClient::Observe(
 
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_OPENED:
-      // May have opened an incognito window.
-      UpdateRunningServices();
       metrics_service_->OnApplicationNotIdle();
       break;
     case chrome::NOTIFICATION_BROWSER_CLOSED:
@@ -972,16 +945,14 @@ void ChromeMetricsServiceClient::Observe(
     case chrome::NOTIFICATION_PROFILE_ADDED: {
       bool success =
           RegisterForProfileEvents(content::Source<Profile>(source).ptr());
+      // On failure, set |notification_listeners_active_| to false which will
+      // disable UKM reporting via UpdateRunningServices().
       if (!success && notification_listeners_active_) {
         notification_listeners_active_ = false;
         UpdateRunningServices();
       }
       break;
     }
-    case chrome::NOTIFICATION_PROFILE_DESTROYED:
-      // May have closed last incognito window.
-      UpdateRunningServices();
-      break;
 
     default:
       NOTREACHED();

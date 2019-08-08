@@ -39,7 +39,7 @@ WebGPUInProcessContext::~WebGPUInProcessContext() {
 }
 
 ContextResult WebGPUInProcessContext::Initialize(
-    scoped_refptr<CommandBufferTaskExecutor> task_executor,
+    CommandBufferTaskExecutor* task_executor,
     const ContextCreationAttribs& attribs,
     const SharedMemoryLimits& memory_limits,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -54,7 +54,7 @@ ContextResult WebGPUInProcessContext::Initialize(
 
   client_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
   command_buffer_ =
-      std::make_unique<InProcessCommandBuffer>(std::move(task_executor));
+      std::make_unique<InProcessCommandBuffer>(task_executor, GURL());
 
   static const scoped_refptr<gl::GLSurface> surface = nullptr;
   static constexpr bool is_offscreen = true;
@@ -98,6 +98,10 @@ const GpuFeatureInfo& WebGPUInProcessContext::GetGpuFeatureInfo() const {
 
 webgpu::WebGPUInterface* WebGPUInProcessContext::GetImplementation() {
   return webgpu_implementation_.get();
+}
+
+base::TestSimpleTaskRunner* WebGPUInProcessContext::GetTaskRunner() {
+  return client_task_runner_.get();
 }
 
 ServiceTransferCache* WebGPUInProcessContext::GetTransferCacheForTest() const {

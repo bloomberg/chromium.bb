@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/risk_data_loader.h"
+#include "components/autofill/core/browser/payments/risk_data_loader.h"
 #include "components/security_state/core/security_state.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/window_open_disposition.h"
@@ -125,6 +125,11 @@ class AutofillClient : public RiskDataLoader {
 
   // Used for options of upload prompt.
   struct SaveCreditCardOptions {
+    SaveCreditCardOptions& with_from_dynamic_change_form(bool b) {
+      from_dynamic_change_form = b;
+      return *this;
+    }
+
     SaveCreditCardOptions& with_has_non_focusable_field(bool b) {
       has_non_focusable_field = b;
       return *this;
@@ -146,6 +151,7 @@ class AutofillClient : public RiskDataLoader {
       return *this;
     }
 
+    bool from_dynamic_change_form = false;
     bool has_non_focusable_field = false;
     bool should_request_name_from_user = false;
     bool should_request_expiration_date_from_user = false;

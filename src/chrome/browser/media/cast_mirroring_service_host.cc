@@ -14,6 +14,8 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/cast_remoting_connector.h"
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "components/mirroring/browser/single_client_video_capture_host.h"
 #include "components/mirroring/mojom/cast_message_channel.mojom.h"
@@ -210,6 +212,8 @@ void CastMirroringServiceHost::Start(
       std::move(session_params), GetCaptureResolutionConstraint(),
       std::move(observer), std::move(provider), std::move(outbound_channel),
       std::move(inbound_channel));
+
+  ShowCaptureIndicator();
 }
 
 void CastMirroringServiceHost::GetVideoCaptureHost(
@@ -279,6 +283,20 @@ void CastMirroringServiceHost::ConnectToRemotingSource(
 void CastMirroringServiceHost::WebContentsDestroyed() {
   audio_stream_creator_.reset();
   mirroring_service_.reset();
+}
+
+void CastMirroringServiceHost::ShowCaptureIndicator() {
+  if (source_media_id_.type != content::DesktopMediaID::TYPE_WEB_CONTENTS ||
+      !web_contents()) {
+    return;
+  }
+  const blink::MediaStreamDevice device(
+      ConvertVideoStreamType(source_media_id_.type),
+      source_media_id_.ToString(), /* name */ std::string());
+  media_stream_ui_ = MediaCaptureDevicesDispatcher::GetInstance()
+                         ->GetMediaStreamCaptureIndicator()
+                         ->RegisterMediaStream(web_contents(), {device});
+  media_stream_ui_->OnStarted(base::OnceClosure(), base::RepeatingClosure());
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

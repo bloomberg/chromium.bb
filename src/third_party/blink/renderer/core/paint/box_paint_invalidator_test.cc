@@ -21,12 +21,13 @@ namespace blink {
 class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
  public:
   BoxPaintInvalidatorTest()
-      : PaintControllerPaintTest(SingleChildLocalFrameClient::Create()) {}
+      : PaintControllerPaintTest(
+            MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  protected:
   PaintInvalidationReason ComputePaintInvalidationReason(
       const LayoutBox& box,
-      const LayoutRect& old_visual_rect,
+      const IntRect& old_visual_rect,
       const LayoutPoint& old_paint_offset) {
     FragmentData fragment_data;
     PaintInvalidatorContext context;
@@ -47,8 +48,8 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
     UpdateAllLifecyclePhasesForTest();
     auto& target = *GetDocument().getElementById("target");
     auto& box = *ToLayoutBox(target.GetLayoutObject());
-    LayoutRect visual_rect = box.FirstFragment().VisualRect();
-    LayoutPoint paint_offset = box.FirstFragment().PaintOffset();
+    auto visual_rect = box.FirstFragment().VisualRect();
+    auto paint_offset = box.FirstFragment().PaintOffset();
 
     // No geometry change.
     EXPECT_EQ(PaintInvalidationReason::kNone,
@@ -60,7 +61,7 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
     GetDocument().View()->UpdateLifecycleToCompositingInputsClean();
     // Simulate that PaintInvalidator updates visual rect.
     box.GetMutableForPainting().SetVisualRect(
-        LayoutRect(visual_rect.Location(), box.Size()));
+        IntRect(visual_rect.Location(), RoundedIntSize(box.Size())));
 
     EXPECT_EQ(PaintInvalidationReason::kGeometry,
               ComputePaintInvalidationReason(box, visual_rect, paint_offset));
@@ -107,12 +108,12 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(box.PaintedOutputOfObjectHasNoEffectRegardlessOfSize());
-  LayoutRect visual_rect = box.FirstFragment().VisualRect();
+  auto visual_rect = box.FirstFragment().VisualRect();
 
   // No geometry change.
-  EXPECT_EQ(
-      PaintInvalidationReason::kNone,
-      ComputePaintInvalidationReason(box, visual_rect, visual_rect.Location()));
+  EXPECT_EQ(PaintInvalidationReason::kNone,
+            ComputePaintInvalidationReason(
+                box, visual_rect, LayoutPoint(visual_rect.Location())));
 
   // Paint offset change.
   EXPECT_EQ(PaintInvalidationReason::kNone,
@@ -120,16 +121,16 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
                 box, visual_rect, visual_rect.Location() + LayoutSize(10, 20)));
 
   // Visual rect size change.
-  LayoutRect old_visual_rect = visual_rect;
+  auto old_visual_rect = visual_rect;
   target.setAttribute(html_names::kStyleAttr, "width: 200px");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   // Simulate that PaintInvalidator updates visual rect.
   box.GetMutableForPainting().SetVisualRect(
-      LayoutRect(visual_rect.Location(), box.Size()));
+      IntRect(visual_rect.Location(), RoundedIntSize(box.Size())));
 
   EXPECT_EQ(PaintInvalidationReason::kNone,
-            ComputePaintInvalidationReason(box, old_visual_rect,
-                                           old_visual_rect.Location()));
+            ComputePaintInvalidationReason(
+                box, old_visual_rect, LayoutPoint(old_visual_rect.Location())));
 }
 
 TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
@@ -142,29 +143,30 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
   UpdateAllLifecyclePhasesForTest();
 
   box.SetShouldCheckForPaintInvalidation();
-  LayoutRect visual_rect = box.FirstFragment().VisualRect();
-  EXPECT_EQ(LayoutRect(0, 0, 50, 100), visual_rect);
+  auto visual_rect = box.FirstFragment().VisualRect();
+  EXPECT_EQ(IntRect(0, 0, 50, 100), visual_rect);
 
   // No geometry change.
-  EXPECT_EQ(
-      PaintInvalidationReason::kNone,
-      ComputePaintInvalidationReason(box, visual_rect, visual_rect.Location()));
+  EXPECT_EQ(PaintInvalidationReason::kNone,
+            ComputePaintInvalidationReason(
+                box, visual_rect, LayoutPoint(visual_rect.Location())));
 
   // Visual rect size change.
-  LayoutRect old_visual_rect = visual_rect;
+  auto old_visual_rect = visual_rect;
   target.setAttribute(html_names::kStyleAttr, "background: blue; width: 200px");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   // Simulate that PaintInvalidator updates visual rect.
   box.GetMutableForPainting().SetVisualRect(
-      LayoutRect(visual_rect.Location(), box.Size()));
+      IntRect(visual_rect.Location(), RoundedIntSize(box.Size())));
 
   EXPECT_EQ(PaintInvalidationReason::kIncremental,
-            ComputePaintInvalidationReason(box, old_visual_rect,
-                                           old_visual_rect.Location()));
+            ComputePaintInvalidationReason(
+                box, old_visual_rect, LayoutPoint(old_visual_rect.Location())));
 
   // Visual rect size change, with paint offset different from location of
   // visual rect.
-  LayoutPoint fake_paint_offset = visual_rect.Location() + LayoutSize(10, 20);
+  LayoutPoint fake_paint_offset =
+      LayoutPoint(visual_rect.Location()) + LayoutSize(10, 20);
   box.GetMutableForPainting().FirstFragment().SetPaintOffset(fake_paint_offset);
   EXPECT_EQ(
       PaintInvalidationReason::kGeometry,
@@ -173,12 +175,13 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
   // Should use the existing full paint invalidation reason regardless of
   // geometry change.
   box.SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kStyle);
-  EXPECT_EQ(
-      PaintInvalidationReason::kStyle,
-      ComputePaintInvalidationReason(box, visual_rect, visual_rect.Location()));
   EXPECT_EQ(PaintInvalidationReason::kStyle,
             ComputePaintInvalidationReason(
-                box, visual_rect, visual_rect.Location() + LayoutSize(10, 20)));
+                box, visual_rect, LayoutPoint(visual_rect.Location())));
+  EXPECT_EQ(PaintInvalidationReason::kStyle,
+            ComputePaintInvalidationReason(
+                box, visual_rect,
+                LayoutPoint(visual_rect.Location()) + LayoutSize(10, 20)));
 }
 
 TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonOtherCases) {

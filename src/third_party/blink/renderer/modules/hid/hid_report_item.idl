@@ -1,0 +1,82 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// An element of a HID report that describes one or more fields contained within
+// the report.
+// https://wicg.github.io/webhid/index.html#report-descriptor
+
+[
+    Exposed(Window WebHID),
+    SecureContext
+] interface HIDReportItem {
+    // True if the item represents an absolute measurement (e.g. joystick tilt)
+    // or false if it represents a relative measurement (e.g. mouse movement).
+    readonly attribute boolean isAbsolute;
+
+    // True if the item is an Array or false if it is a Variable. Array items
+    // are typically used when a device needs to represent a large number of
+    // button-type inputs, but only a few inputs need to be active at once.
+    // Variable items require space in the report for each input, but can report
+    // all inputs simultaneously.
+    readonly attribute boolean isArray;
+
+    // True if the usages for this item are defined by |usageMinimum| and
+    // |usageMaximum| or false if the usages are defined by |usages|.
+    readonly attribute boolean isRange;
+
+    // True if the item uses an out-of-bounds value when there is no input.
+    readonly attribute boolean hasNull;
+
+    // An ordered list of 32-bit usage values associated with this item. Unused
+    // if |isRange| is true. If |reportCount| is two or more, usages are
+    // assigned from the list until the list is exhausted.
+    readonly attribute FrozenArray<unsigned long> usages;
+
+    // The minimum and maximum usage values associated with this item. Unused if
+    // |isRange| is false. If |reportCount| is two or more, usages are assigned
+    // starting from |usageMinimum| and increment by one.
+    readonly attribute unsigned long usageMinimum;
+    readonly attribute unsigned long usageMaximum;
+
+    // The minimum and maximum designator indices associated with this item. If
+    // there are no designators, both are set to zero.
+    // TODO(mattreynolds): Expose the designators instead of the indices.
+    readonly attribute unsigned long designatorMinimum;
+    readonly attribute unsigned long designatorMaximum;
+
+    // The minimum and maximum string indices associated with this item. If
+    // there are no designators, both are set to zero.
+    // TODO(mattreynolds): Expose the strings instead of the indices.
+    readonly attribute unsigned long stringMinimum;
+    readonly attribute unsigned long stringMaximum;
+
+    // The size of a single field described by this item, in bits.
+    readonly attribute unsigned short reportSize;
+
+    // The number of similar fields described by this item. The total size of
+    // the item described by this report is |reportSize| * |reportCount| bits.
+    readonly attribute unsigned short reportCount;
+
+    // The base 10 exponent of the units for this report item. For instance, for
+    // kilograms |unitExponent| would be 3 and for micrograms it would be -6.
+    readonly attribute unsigned long unitExponent;
+
+    // A value that specifies the unit factors that make up the units for this
+    // report item. See the units table in section 6.2.2.7 of the Device Class
+    // Definition for HID, v1.11.
+    // https://www.usb.org/document-library/device-class-definition-hid-111
+    // TODO(mattreynolds): Split this into its component nibbles.
+    readonly attribute unsigned long unit;
+
+    // The minimum and maximum values that may be represented by this input. A
+    // device with |hasNull| may report a value outside this range to indicate
+    // no input.
+    readonly attribute long logicalMinimum;
+    readonly attribute long logicalMaximum;
+
+    // The minimum and maximum values, scaled to the units described by |unit|
+    // and |unitExponent|.
+    readonly attribute long physicalMinimum;
+    readonly attribute long physicalMaximum;
+};

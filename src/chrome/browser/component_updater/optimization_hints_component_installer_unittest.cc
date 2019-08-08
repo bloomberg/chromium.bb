@@ -17,6 +17,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/component_updater/mock_component_updater_service.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -81,15 +83,19 @@ class OptimizationHintsComponentInstallerTest : public PlatformTest {
             base::ThreadTaskRunnerHandle::Get());
     optimization_guide_service_ = optimization_guide_service.get();
 
-    pref_service_ = std::make_unique<TestingPrefServiceSimple>();
-
     TestingBrowserProcess::GetGlobal()->SetOptimizationGuideService(
         std::move(optimization_guide_service));
     policy_ = std::make_unique<OptimizationHintsComponentInstallerPolicy>();
+
+    drp_test_context_ =
+        data_reduction_proxy::DataReductionProxyTestContext::Builder()
+            .WithMockConfig()
+            .Build();
   }
 
   void TearDown() override {
     TestingBrowserProcess::GetGlobal()->SetOptimizationGuideService(nullptr);
+    drp_test_context_->DestroySettings();
     PlatformTest::TearDown();
   }
 
@@ -101,10 +107,16 @@ class OptimizationHintsComponentInstallerTest : public PlatformTest {
     return component_install_dir_.GetPath();
   }
 
-  TestingPrefServiceSimple* profile_prefs() { return pref_service_.get(); }
+  TestingPrefServiceSimple* profile_prefs() {
+    return drp_test_context_->pref_service();
+  }
 
   base::Version ruleset_format_version() {
     return policy_->ruleset_format_version_;
+  }
+
+  void SetDataSaverEnabled(bool enabled) {
+    drp_test_context_->SetDataReductionProxyEnabled(enabled);
   }
 
   void CreateTestOptimizationHints(const std::string& hints_content) {
@@ -144,6 +156,9 @@ class OptimizationHintsComponentInstallerTest : public PlatformTest {
 
   std::unique_ptr<OptimizationHintsComponentInstallerPolicy> policy_;
 
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
+      drp_test_context_;
+
   TestOptimizationGuideService* optimization_guide_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(OptimizationHintsComponentInstallerTest);
@@ -164,12 +179,11 @@ TEST_F(OptimizationHintsComponentInstallerTest,
        ComponentRegistrationWhenFeatureEnabledButDataSaverDisabled) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(previews::features::kOptimizationHints);
-  TestingPrefServiceSimple* prefs = profile_prefs();
-  prefs->registry()->RegisterBooleanPref(prefs::kDataSaverEnabled, false);
+  SetDataSaverEnabled(false);
   std::unique_ptr<OptimizationHintsMockComponentUpdateService> cus(
       new OptimizationHintsMockComponentUpdateService());
   EXPECT_CALL(*cus, RegisterComponent(testing::_)).Times(0);
-  RegisterOptimizationHintsComponent(cus.get(), prefs);
+  RegisterOptimizationHintsComponent(cus.get(), profile_prefs());
   RunUntilIdle();
 }
 
@@ -188,8 +202,7 @@ TEST_F(OptimizationHintsComponentInstallerTest,
        ComponentRegistrationWhenFeatureEnabledAndDataSaverEnabled) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(previews::features::kOptimizationHints);
-  TestingPrefServiceSimple* prefs = profile_prefs();
-  prefs->registry()->RegisterBooleanPref(prefs::kDataSaverEnabled, true);
+  SetDataSaverEnabled(true);
   std::unique_ptr<OptimizationHintsMockComponentUpdateService> cus(
       new OptimizationHintsMockComponentUpdateService());
   EXPECT_CALL(*cus, RegisterComponent(testing::_))

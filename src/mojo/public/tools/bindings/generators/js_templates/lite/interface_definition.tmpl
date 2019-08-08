@@ -17,6 +17,14 @@
    */
 {% endmacro %}
 
+{%  if generate_closure_exports -%}
+goog.provide('{{module.namespace}}.{{interface.name}}');
+goog.provide('{{module.namespace}}.{{interface.name}}CallbackRouter');
+goog.provide('{{module.namespace}}.{{interface.name}}Interface');
+goog.provide('{{module.namespace}}.{{interface.name}}Proxy');
+goog.provide('{{module.namespace}}.{{interface.name}}Request');
+{% endif %}
+
 /** @export */
 {{module.namespace}}.{{interface.name}}Request = class {
   /** @param {!MojoHandle} handle */
@@ -120,6 +128,8 @@
 {%-   endif %}
         impl.{{method.name}}.bind(impl));
 {%- endfor %}
+    /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
+    this.onConnectionError = this.target_.getConnectionErrorEventRouter();
   }
 
   /**
@@ -165,7 +175,7 @@
 {#--- Enums #}
 {% from "lite/enum_definition.tmpl" import enum_def with context %}
 {%- for enum in interface.enums %}
-{{ enum_def("%s.%sSpec"|format(module.namespace, interface.name),
+{{ enum_def("%s.%s"|format(module.namespace, interface.name),
             "%s.%s"|format(module.namespace, interface.name),
             enum) }}
 {%-  endfor %}
@@ -193,7 +203,7 @@
 {%-   set interface_message_id =
           interface.mojom_name ~ "_" ~ method.mojom_name %}
     /**
-     * @export {!mojo.internal.interfaceSupport.InterfaceCallbackTarget}
+     * @public {!mojo.internal.interfaceSupport.InterfaceCallbackTarget}
      */
     this.{{method.name}} =
         new mojo.internal.interfaceSupport.InterfaceCallbackTarget(
@@ -210,6 +220,8 @@
         this.{{method.name}}.createTargetHandler(false /* expectsResponse */));
 {%-   endif %}
 {%- endfor %}
+    /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
+    this.onConnectionError = this.target_.getConnectionErrorEventRouter();
   }
 
   /**

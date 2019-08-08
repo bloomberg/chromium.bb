@@ -101,6 +101,7 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OnDeleteMostVisitedItem(const GURL& url) override;
   void OnUndoMostVisitedDeletion(const GURL& url) override;
   void OnUndoAllMostVisitedDeletions() override;
+  void OnToggleMostVisitedOrCustomLinks() override;
   bool OnAddCustomLink(const GURL& url, const std::string& title) override;
   bool OnUpdateCustomLink(const GURL& url,
                           const GURL& new_url,
@@ -110,6 +111,9 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OnUndoCustomLinkAction() override;
   void OnResetCustomLinks() override;
   void OnLogEvent(NTPLoggingEventType event, base::TimeDelta time) override;
+  void OnLogSuggestionEventWithValue(NTPSuggestionsLoggingEventType event,
+                                     int data,
+                                     base::TimeDelta time) override;
   void OnLogMostVisitedImpression(
       const ntp_tiles::NTPTileImpression& impression) override;
   void OnLogMostVisitedNavigation(

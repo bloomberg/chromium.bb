@@ -64,4 +64,6 @@ struct UserInfo {
   bool is_device_owner;
   // True if the user has a gaia account.
   bool has_gaia_account;
+  // True if should display managed ui.
+  bool should_display_managed_ui;
 };

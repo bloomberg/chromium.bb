@@ -146,24 +146,9 @@ class _TargetHost(object):
                                                    ssh_args=forwarding_flags,
                                                    stderr=subprocess.PIPE)
 
-        # Copy content_shell package to the device.
-        device_package_path = \
-            os.path.join('/data', os.path.basename(CONTENT_SHELL_PACKAGE_PATH))
-        self._target.PutFile(
-            os.path.join(build_path, CONTENT_SHELL_PACKAGE_PATH),
-            device_package_path)
-
-        pm_install = self._target.RunCommandPiped(
-            ['pm', 'install', device_package_path],
-            stderr=subprocess.PIPE)
-        output = pm_install.stderr.readlines()
-        pm_install.wait()
-
-        if pm_install.returncode != 0:
-          # Don't error out if the package already exists on the device.
-          if len(output) != 1 or 'ErrAlreadyExists' not in output[0]:
-            raise Exception('Failed to install content_shell: %s' % \
-                            '\n'.join(output))
+        package_path = os.path.join(build_path, CONTENT_SHELL_PACKAGE_PATH)
+        self._target.InstallPackage(package_path, "content_shell",
+                                    package_deps=[])
 
         # Process will be forked for each worker, which may make QemuTarget
         # unusable (e.g. waitpid() for qemu process returns ECHILD after

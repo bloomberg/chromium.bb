@@ -68,6 +68,7 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/blink/renderer/modules/webmidi/midi_message_event.idl",
     "//third_party/blink/renderer/modules/websockets/close_event.idl",
     "//third_party/blink/renderer/modules/xr/xr_input_source_event.idl",
+    "//third_party/blink/renderer/modules/xr/xr_reference_space_event.idl",
     "//third_party/blink/renderer/modules/xr/xr_session_event.idl",
   ]
 

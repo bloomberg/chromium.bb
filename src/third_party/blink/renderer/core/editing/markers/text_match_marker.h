@@ -29,6 +29,7 @@
 
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -69,11 +70,12 @@ class CORE_EXPORT TextMatchMarker final : public DocumentMarker {
   DISALLOW_COPY_AND_ASSIGN(TextMatchMarker);
 };
 
-DEFINE_TYPE_CASTS(TextMatchMarker,
-                  DocumentMarker,
-                  marker,
-                  marker->GetType() == DocumentMarker::kTextMatch,
-                  marker.GetType() == DocumentMarker::kTextMatch);
+template <>
+struct DowncastTraits<TextMatchMarker> {
+  static bool AllowFrom(const DocumentMarker& marker) {
+    return marker.GetType() == DocumentMarker::kTextMatch;
+  }
+};
 
 }  // namespace blink
 

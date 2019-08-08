@@ -43,7 +43,6 @@ import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.AwActivityTestRule.TestDependencyFactory;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
@@ -54,6 +53,7 @@ import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.autofill.SubmissionSource;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.io.ByteArrayInputStream;
@@ -528,22 +528,14 @@ public class AwAutofillTest {
         }
 
         public int getSessionValue() {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    mSessionValue = getUMAEnumerateValue(mSessionDelta);
-                }
-            });
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> { mSessionValue = getUMAEnumerateValue(mSessionDelta); });
             return mSessionValue;
         }
 
         public int getSubmissionSourceValue() {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    mSourceValue = getUMAEnumerateValue(mSubmissionSourceDelta);
-                }
-            });
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> { mSourceValue = getUMAEnumerateValue(mSubmissionSourceDelta); });
             return mSourceValue;
         }
 
@@ -620,109 +612,85 @@ public class AwAutofillTest {
         }
 
         private void initDeltaSamples() {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    mSessionDelta = new HashMap<MetricsUtils.HistogramDelta, Integer>();
-                    for (int i = 0; i < AwAutofillUMA.AUTOFILL_SESSION_HISTOGRAM_COUNT; i++) {
-                        mSessionDelta.put(
-                                new MetricsUtils.HistogramDelta(
-                                        AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_AUTOFILL_SESSION, i),
-                                i);
-                    }
-                    mSubmissionSourceDelta = new HashMap<MetricsUtils.HistogramDelta, Integer>();
-                    for (int i = 0; i < AwAutofillUMA.SUBMISSION_SOURCE_HISTOGRAM_COUNT; i++) {
-                        mSubmissionSourceDelta.put(
-                                new MetricsUtils.HistogramDelta(
-                                        AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_SUBMISSION_SOURCE, i),
-                                i);
-                    }
-                    mAutofillWebViewViewEnabled = new MetricsUtils.HistogramDelta(
-                            AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_ENABLED, 1 /*true*/);
-                    mAutofillWebViewViewDisabled = new MetricsUtils.HistogramDelta(
-                            AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_ENABLED, 0 /*false*/);
-                    mAutofillWebViewCreatedByActivityContext = new MetricsUtils.HistogramDelta(
-                            AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_CREATED_BY_ACTIVITY_CONTEXT, 1);
-                    mAutofillWebViewCreatedByAppContext = new MetricsUtils.HistogramDelta(
-                            AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_CREATED_BY_ACTIVITY_CONTEXT, 0);
-                    mUserChangedAutofilledField = new MetricsUtils.HistogramDelta(
-                            AwAutofillUMA.UMA_AUTOFILL_USER_CHANGED_AUTOFILLED_FIELD, 1 /*true*/);
-                    mUserChangedNonAutofilledField = new MetricsUtils.HistogramDelta(
-                            AwAutofillUMA.UMA_AUTOFILL_USER_CHANGED_AUTOFILLED_FIELD, 0 /*falsTe*/);
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                mSessionDelta = new HashMap<MetricsUtils.HistogramDelta, Integer>();
+                for (int i = 0; i < AwAutofillUMA.AUTOFILL_SESSION_HISTOGRAM_COUNT; i++) {
+                    mSessionDelta.put(
+                            new MetricsUtils.HistogramDelta(
+                                    AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_AUTOFILL_SESSION, i),
+                            i);
                 }
+                mSubmissionSourceDelta = new HashMap<MetricsUtils.HistogramDelta, Integer>();
+                for (int i = 0; i < AwAutofillUMA.SUBMISSION_SOURCE_HISTOGRAM_COUNT; i++) {
+                    mSubmissionSourceDelta.put(
+                            new MetricsUtils.HistogramDelta(
+                                    AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_SUBMISSION_SOURCE, i),
+                            i);
+                }
+                mAutofillWebViewViewEnabled = new MetricsUtils.HistogramDelta(
+                        AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_ENABLED, 1 /*true*/);
+                mAutofillWebViewViewDisabled = new MetricsUtils.HistogramDelta(
+                        AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_ENABLED, 0 /*false*/);
+                mAutofillWebViewCreatedByActivityContext = new MetricsUtils.HistogramDelta(
+                        AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_CREATED_BY_ACTIVITY_CONTEXT, 1);
+                mAutofillWebViewCreatedByAppContext = new MetricsUtils.HistogramDelta(
+                        AwAutofillUMA.UMA_AUTOFILL_WEBVIEW_CREATED_BY_ACTIVITY_CONTEXT, 0);
+                mUserChangedAutofilledField = new MetricsUtils.HistogramDelta(
+                        AwAutofillUMA.UMA_AUTOFILL_USER_CHANGED_AUTOFILLED_FIELD, 1 /*true*/);
+                mUserChangedNonAutofilledField = new MetricsUtils.HistogramDelta(
+                        AwAutofillUMA.UMA_AUTOFILL_USER_CHANGED_AUTOFILLED_FIELD, 0 /*falsTe*/);
             });
         }
 
         public int getHistogramSampleCount(String name) throws Throwable {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    mHistogramSimpleCount =
-                            Integer.valueOf(RecordHistogram.getHistogramTotalCountForTesting(name));
-                }
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                mHistogramSimpleCount =
+                        Integer.valueOf(RecordHistogram.getHistogramTotalCountForTesting(name));
             });
             return mHistogramSimpleCount;
         }
 
         public void verifyAutofillEnabled() throws Throwable {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    assertEquals(1, mAutofillWebViewViewEnabled.getDelta());
-                    assertEquals(0, mAutofillWebViewViewDisabled.getDelta());
-                }
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                assertEquals(1, mAutofillWebViewViewEnabled.getDelta());
+                assertEquals(0, mAutofillWebViewViewDisabled.getDelta());
             });
         }
 
         public void verifyAutofillDisabled() throws Throwable {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    assertEquals(0, mAutofillWebViewViewEnabled.getDelta());
-                    assertEquals(1, mAutofillWebViewViewDisabled.getDelta());
-                }
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                assertEquals(0, mAutofillWebViewViewEnabled.getDelta());
+                assertEquals(1, mAutofillWebViewViewDisabled.getDelta());
             });
         }
 
         public void verifyUserChangedAutofilledField() throws Throwable {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    assertEquals(0, mUserChangedNonAutofilledField.getDelta());
-                    assertEquals(1, mUserChangedAutofilledField.getDelta());
-                }
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                assertEquals(0, mUserChangedNonAutofilledField.getDelta());
+                assertEquals(1, mUserChangedAutofilledField.getDelta());
             });
         }
 
         public void verifyUserChangedNonAutofilledField() throws Throwable {
             // User changed the form, but not the autofilled field.
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    assertEquals(1, mUserChangedNonAutofilledField.getDelta());
-                    assertEquals(0, mUserChangedAutofilledField.getDelta());
-                }
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                assertEquals(1, mUserChangedNonAutofilledField.getDelta());
+                assertEquals(0, mUserChangedAutofilledField.getDelta());
             });
         }
 
         public void verifyUserDidntChangeForm() throws Throwable {
             // User didn't change the form at all.
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    assertEquals(0, mUserChangedNonAutofilledField.getDelta());
-                    assertEquals(0, mUserChangedAutofilledField.getDelta());
-                }
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                assertEquals(0, mUserChangedNonAutofilledField.getDelta());
+                assertEquals(0, mUserChangedAutofilledField.getDelta());
             });
         }
 
         public void verifyWebViewCreatedByActivityContext() throws Throwable {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    assertEquals(1, mAutofillWebViewCreatedByActivityContext.getDelta());
-                    assertEquals(0, mAutofillWebViewCreatedByAppContext.getDelta());
-                }
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                assertEquals(1, mAutofillWebViewCreatedByActivityContext.getDelta());
+                assertEquals(0, mAutofillWebViewCreatedByAppContext.getDelta());
             });
         }
 
@@ -1879,31 +1847,18 @@ public class AwAutofillTest {
     }
 
     private void invokeOnProvideAutoFillVirtualStructure() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mTestValues.testViewStructure = new TestViewStructure();
-                mAwContents.onProvideAutoFillVirtualStructure(mTestValues.testViewStructure, 1);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mTestValues.testViewStructure = new TestViewStructure();
+            mAwContents.onProvideAutoFillVirtualStructure(mTestValues.testViewStructure, 1);
         });
     }
 
     private void invokeAutofill(SparseArray<AutofillValue> values) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mAwContents.autofill(values);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mAwContents.autofill(values));
     }
 
     private void invokeOnInputUIShown() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mTestAwAutofillManager.notifyInputUIChange();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mTestAwAutofillManager.notifyInputUIChange());
     }
 
     private int getCallbackCount() {
@@ -1966,7 +1921,7 @@ public class AwAutofillTest {
     }
 
     private boolean dispatchKeyEvent(final KeyEvent event) throws Throwable {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+        return TestThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return mTestContainerView.dispatchKeyEvent(event);

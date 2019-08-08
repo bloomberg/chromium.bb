@@ -80,4 +80,9 @@ buildflag_header("audio_buildflags") {
     "MAXIMUM_OUTPUT_BUFFER_SIZE_IN_FRAMES=$maximum_output_buffer_size_in_frames",
     "DEFAULT_OUTPUT_BUFFER_SIZE_IN_FRAMES=$default_output_buffer_size_in_frames",
   ]
+
+  if (use_alsa) {
+    # Currently, this flag will only be used in cast_audio_manager_alsa.cc
+    flags += [ "AUDIO_INPUT_SAMPLE_RATE=$audio_input_sample_rate" ]
+  }
 }

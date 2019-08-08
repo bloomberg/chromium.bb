@@ -213,9 +213,17 @@ cr.define('print_preview', function() {
       return cr.sendWithPromise('getPreview', printTicket);
     }
 
-    /** Opens the chrome://settings printing page. */
+    /**
+     * Opens the chrome://settings printing page. For Chrome OS, open the
+     *  printing settings in the Settings App.
+     */
     openSettingsPrintPage() {
+      // <if expr="chromeos">
+      chrome.send('openPrinterSettings');
+      // </if>
+      // <if expr="not chromeos">
       window.open('chrome://settings/printing');
+      // </if>
     }
 
     /**

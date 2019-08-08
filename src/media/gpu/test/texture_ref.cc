@@ -7,12 +7,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
+#include "build/build_config.h"
 #include "media/gpu/test/video_frame_helpers.h"
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
 #include <libdrm/drm_fourcc.h>
 
-#include "base/logging.h"
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #endif
 
 namespace media {
@@ -47,15 +49,18 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
 #if defined(OS_CHROMEOS)
   texture_ref = TextureRef::Create(texture_id, std::move(no_longer_needed_cb));
   LOG_ASSERT(texture_ref);
+  // We set visible size to coded_size. The correct visible rectangle is set
+  // later in ExportVideoFrame().
   texture_ref->frame_ =
-      CreatePlatformVideoFrame(pixel_format, size, buffer_usage);
+      CreatePlatformVideoFrame(pixel_format, size, gfx::Rect(size), size,
+                               base::TimeDelta(), buffer_usage);
 #endif
   return texture_ref;
 }
 
 gfx::GpuMemoryBufferHandle TextureRef::ExportGpuMemoryBufferHandle() const {
 #if defined(OS_CHROMEOS)
-  return CreateGpuMemoryBufferHandle(frame_);
+  return CreateGpuMemoryBufferHandle(frame_.get());
 #else
   return gfx::GpuMemoryBufferHandle();
 #endif
@@ -68,14 +73,6 @@ scoped_refptr<VideoFrame> TextureRef::ExportVideoFrame(
                                     visible_rect.size());
 #else
   return nullptr;
-#endif
-}
-
-bool TextureRef::IsDirectlyMappable() const {
-#if defined(OS_CHROMEOS)
-  return frame_->layout().planes()[0].modifier == DRM_FORMAT_MOD_LINEAR;
-#else
-  return false;
 #endif
 }
 

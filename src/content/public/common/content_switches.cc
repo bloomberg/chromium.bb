@@ -105,10 +105,6 @@ const char kDisableBlinkFeatures[]          = "disable-blink-features";
 // permission prompt for testing.
 const char kEnableWebBluetoothScanning[] = "enable-web-bluetooth-scanning";
 
-// Disables compositor Ukm recording in browser tests.
-// TODO(khushalsagar): Remove once crbug.com/761524 is resolved.
-const char kDisableCompositorUkmForTests[] = "disable-compositor-ukm-for-tests";
-
 // Disables HTML5 DB support.
 const char kDisableDatabases[]              = "disable-databases";
 
@@ -219,6 +215,13 @@ const char kDisableNotifications[]          = "disable-notifications";
 // Disable partial raster in the renderer. Disabling this switch also disables
 // the use of persistent gpu memory buffers.
 const char kDisablePartialRaster[] = "disable-partial-raster";
+
+// By default, in devtools_session.cc, we use CBOR for protocol messages
+// except for sending JSON to clients that request it.
+// This switch undoes this default. We plan to remove it after after transition
+// to binary is sufficiently complete (2019-04-15).
+const char kDisableInternalDevToolsBinaryProtocol[] =
+    "disable-internal-devtools-binary-protocol";
 
 // Enable partial raster in the renderer.
 const char kEnablePartialRaster[] = "enable-partial-raster";
@@ -378,9 +381,6 @@ const char kEnableNetworkInformationDownlinkMax[] =
 
 // Disables the video decoder from drawing to an NV12 textures instead of ARGB.
 const char kDisableNv12DxgiVideo[] = "disable-nv12-dxgi-video";
-
-// Enables compositor-accelerated touch-screen pinch gestures.
-const char kEnablePinch[]                   = "enable-pinch";
 
 // Enables testing features of the Plugin Placeholder. For internal use only.
 const char kEnablePluginPlaceholderTesting[] =
@@ -579,17 +579,6 @@ const char kLogFile[] = "log-file";
 // portrait mode (i.e. Android) so the page should be rescaled to fit.
 const char kMainFrameResizesAreOrientationChanges[] =
     "main-frame-resizes-are-orientation-changes";
-
-// Specifies the maximum disk cache size for the ApplicationCache. The default
-// value is 250MB.
-// TODO(crbug.com/895825): Remove this flag in Feb 2019.
-const char kMaxAppCacheDiskCacheSizeMb[] = "max-appcache-disk-cache-size-mb";
-
-// Specifies the maximum cache size per an origin for the ApplicationCache.
-// The default value is 5MB.
-// TODO(crbug.com/895825): Remove this flag in Feb 2019.
-const char kMaxAppCacheOriginCacheSizeMb[] =
-    "max-appcache-origin-cache-size-mb";
 
 // Sets the maximium decoded image size limitation.
 const char kMaxDecodedImageSizeMb[] = "max-decoded-image-size-mb";
@@ -964,10 +953,6 @@ const char kEnableAggressiveDOMStorageFlushing[] =
 
 // Enable indication that browser is controlled by automation.
 const char kEnableAutomation[] = "enable-automation";
-
-// Enable audio for desktop share.
-const char kDisableAudioSupportForDesktopShare[] =
-    "disable-audio-support-for-desktop-share";
 
 #if defined(OS_CHROMEOS)
 // Disables panel fitting (used for mirror mode).

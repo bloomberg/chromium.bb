@@ -70,6 +70,39 @@ namespace dawn_native { namespace vulkan {
             return region;
         }
 
+        VkImageCopy ComputeImageCopyRegion(const TextureCopy& srcCopy,
+                                           const TextureCopy& dstCopy,
+                                           const Extent3D& copySize) {
+            const Texture* srcTexture = ToBackend(srcCopy.texture.Get());
+            const Texture* dstTexture = ToBackend(dstCopy.texture.Get());
+
+            VkImageCopy region;
+
+            region.srcSubresource.aspectMask = srcTexture->GetVkAspectMask();
+            region.srcSubresource.mipLevel = srcCopy.level;
+            region.srcSubresource.baseArrayLayer = srcCopy.slice;
+            region.srcSubresource.layerCount = 1;
+
+            region.srcOffset.x = srcCopy.origin.x;
+            region.srcOffset.y = srcCopy.origin.y;
+            region.srcOffset.z = srcCopy.origin.z;
+
+            region.dstSubresource.aspectMask = dstTexture->GetVkAspectMask();
+            region.dstSubresource.mipLevel = dstCopy.level;
+            region.dstSubresource.baseArrayLayer = dstCopy.slice;
+            region.dstSubresource.layerCount = 1;
+
+            region.dstOffset.x = dstCopy.origin.x;
+            region.dstOffset.y = dstCopy.origin.y;
+            region.dstOffset.z = dstCopy.origin.z;
+
+            region.extent.width = copySize.width;
+            region.extent.height = copySize.height;
+            region.extent.depth = copySize.depth;
+
+            return region;
+        }
+
         class DescriptorSetTracker {
           public:
             void OnSetBindGroup(uint32_t index, VkDescriptorSet set) {
@@ -121,7 +154,9 @@ namespace dawn_native { namespace vulkan {
 
                 for (uint32_t i : IterateBitSet(renderPass->colorAttachmentsSet)) {
                     const auto& attachmentInfo = renderPass->colorAttachments[i];
-                    query.SetColor(i, attachmentInfo.view->GetFormat(), attachmentInfo.loadOp);
+                    bool hasResolveTarget = attachmentInfo.resolveTarget.Get() != nullptr;
+                    query.SetColor(i, attachmentInfo.view->GetFormat(), attachmentInfo.loadOp,
+                                   hasResolveTarget);
                 }
 
                 if (renderPass->hasDepthStencilAttachment) {
@@ -129,6 +164,8 @@ namespace dawn_native { namespace vulkan {
                     query.SetDepthStencil(attachmentInfo.view->GetTexture()->GetFormat(),
                                           attachmentInfo.depthLoadOp, attachmentInfo.stencilLoadOp);
                 }
+
+                query.SetSampleCount(renderPass->sampleCount);
 
                 renderPassVK = device->GetRenderPassCache()->GetRenderPass(query);
             }
@@ -140,7 +177,7 @@ namespace dawn_native { namespace vulkan {
             uint32_t attachmentCount = 0;
             {
                 // Fill in the attachment info that will be chained in the framebuffer create info.
-                std::array<VkImageView, kMaxColorAttachments + 1> attachments;
+                std::array<VkImageView, kMaxColorAttachments * 2 + 1> attachments;
 
                 for (uint32_t i : IterateBitSet(renderPass->colorAttachmentsSet)) {
                     auto& attachmentInfo = renderPass->colorAttachments[i];
@@ -166,6 +203,17 @@ namespace dawn_native { namespace vulkan {
                     clearValues[attachmentCount].depthStencil.stencil = attachmentInfo.clearStencil;
 
                     attachmentCount++;
+                }
+
+                for (uint32_t i : IterateBitSet(renderPass->colorAttachmentsSet)) {
+                    if (renderPass->colorAttachments[i].resolveTarget.Get() != nullptr) {
+                        TextureView* view =
+                            ToBackend(renderPass->colorAttachments[i].resolveTarget.Get());
+
+                        attachments[attachmentCount] = view->GetHandle();
+
+                        attachmentCount++;
+                    }
                 }
 
                 // Chain attachments and create the framebuffer
@@ -297,6 +345,28 @@ namespace dawn_native { namespace vulkan {
                     // The Dawn TransferSrc usage is always mapped to GENERAL
                     device->fn.CmdCopyImageToBuffer(commands, srcImage, VK_IMAGE_LAYOUT_GENERAL,
                                                     dstBuffer, 1, &region);
+                } break;
+
+                case Command::CopyTextureToTexture: {
+                    CopyTextureToTextureCmd* copy =
+                        mCommands.NextCommand<CopyTextureToTextureCmd>();
+                    TextureCopy& src = copy->source;
+                    TextureCopy& dst = copy->destination;
+
+                    ToBackend(src.texture)
+                        ->TransitionUsageNow(commands, dawn::TextureUsageBit::TransferSrc);
+                    ToBackend(dst.texture)
+                        ->TransitionUsageNow(commands, dawn::TextureUsageBit::TransferDst);
+
+                    VkImage srcImage = ToBackend(src.texture)->GetHandle();
+                    VkImage dstImage = ToBackend(dst.texture)->GetHandle();
+
+                    VkImageCopy region = ComputeImageCopyRegion(src, dst, copy->copySize);
+
+                    // The dstImage is written to so the Dawn guarantees make sure it is in the
+                    // TRANSFER_DST_OPTIMAL layout
+                    device->fn.CmdCopyImage(commands, srcImage, VK_IMAGE_LAYOUT_GENERAL, dstImage,
+                                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
                 } break;
 
                 case Command::BeginRenderPass: {
@@ -504,7 +574,8 @@ namespace dawn_native { namespace vulkan {
                     // TODO(cwallez@chromium.org): get the index type from the last render pipeline
                     // and rebind if needed on pipeline change
                     ASSERT(lastPipeline != nullptr);
-                    VkIndexType indexType = VulkanIndexType(lastPipeline->GetIndexFormat());
+                    VkIndexType indexType =
+                        VulkanIndexType(lastPipeline->GetInputStateDescriptor()->indexFormat);
                     device->fn.CmdBindIndexBuffer(
                         commands, indexBuffer, static_cast<VkDeviceSize>(cmd->offset), indexType);
                 } break;
@@ -540,7 +611,7 @@ namespace dawn_native { namespace vulkan {
                 case Command::SetVertexBuffers: {
                     SetVertexBuffersCmd* cmd = mCommands.NextCommand<SetVertexBuffersCmd>();
                     auto buffers = mCommands.NextData<Ref<BufferBase>>(cmd->count);
-                    auto offsets = mCommands.NextData<uint32_t>(cmd->count);
+                    auto offsets = mCommands.NextData<uint64_t>(cmd->count);
 
                     std::array<VkBuffer, kMaxVertexInputs> vkBuffers;
                     std::array<VkDeviceSize, kMaxVertexInputs> vkOffsets;

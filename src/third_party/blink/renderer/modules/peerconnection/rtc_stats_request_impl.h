@@ -43,11 +43,6 @@ class RTCStatsRequestImpl final : public RTCStatsRequest,
   USING_GARBAGE_COLLECTED_MIXIN(RTCStatsRequestImpl);
 
  public:
-  static RTCStatsRequestImpl* Create(ExecutionContext*,
-                                     RTCPeerConnection*,
-                                     V8RTCStatsCallback*,
-                                     MediaStreamTrack*);
-
   RTCStatsRequestImpl(ExecutionContext*,
                       RTCPeerConnection*,
                       V8RTCStatsCallback*,

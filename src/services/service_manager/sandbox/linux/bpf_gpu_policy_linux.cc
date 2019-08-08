@@ -40,6 +40,7 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
 #if !defined(OS_CHROMEOS)
     case __NR_ftruncate:
+    case __NR_fallocate:
 #endif
     case __NR_ioctl:
       return Allow();

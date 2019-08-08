@@ -40,7 +40,7 @@ namespace safe_browsing {
 constexpr char kSRTPromptTrial[] = "SRTPromptFieldTrial";
 
 const base::Feature kRebootPromptDialogFeature{
-    "RebootPromptDialog", base::FEATURE_DISABLED_BY_DEFAULT};
+    "RebootPromptDialog", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kChromeCleanupDistributionFeature{
     "ChromeCleanupDistribution", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -60,7 +60,7 @@ bool SRTPromptNeedsElevationIcon() {
 }
 
 GURL GetStableDownloadURL() {
-  const std::string url = base::win::OSInfo::GetInstance()->architecture() ==
+  const std::string url = base::win::OSInfo::GetArchitecture() ==
                                   base::win::OSInfo::X86_ARCHITECTURE
                               ? kSRTX86StableDownloadURL
                               : kSRTX64StableDownloadURL;
@@ -74,7 +74,7 @@ GURL GetSRTDownloadURL() {
   if (download_group.empty())
     return GetStableDownloadURL();
 
-  std::string architecture = base::win::OSInfo::GetInstance()->architecture() ==
+  std::string architecture = base::win::OSInfo::GetArchitecture() ==
                                      base::win::OSInfo::X86_ARCHITECTURE
                                  ? "x86"
                                  : "x64";
@@ -111,7 +111,7 @@ RebootPromptType GetRebootPromptType() {
     return REBOOT_PROMPT_TYPE_OPEN_SETTINGS_PAGE;
   if (base::GetFieldTrialParamByFeatureAsBool(kRebootPromptDialogFeature,
                                               kIsModalParam,
-                                              /*default_value=*/false)) {
+                                              /*default_value=*/true)) {
     return REBOOT_PROMPT_TYPE_SHOW_MODAL_DIALOG;
   } else {
     return REBOOT_PROMPT_TYPE_SHOW_NON_MODAL_DIALOG;

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
@@ -157,7 +158,7 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
   for (size_t i = 0; i < AutocompleteResult::GetMaxMatches(); ++i) {
     OmniboxResultView* result_view = new OmniboxResultView(this, i);
     result_view->SetVisible(false);
-    AddChildViewAt(result_view, static_cast<int>(i));
+    AddChildView(result_view);
   }
 }
 
@@ -385,7 +386,7 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
 // OmniboxPopupContentsView, private:
 
 gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
-  DCHECK_GE(static_cast<size_t>(child_count()), model_->result().size());
+  DCHECK_GE(children().size(), model_->result().size());
   int popup_height = 0;
   for (size_t i = 0; i < model_->result().size(); ++i)
     popup_height += child_at(i)->GetPreferredSize().height();
@@ -394,11 +395,13 @@ gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
   // interior between each row of text.
   popup_height += RoundedOmniboxResultsFrame::GetNonResultSectionHeight();
 
-  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalMargin)) {
+  base::Optional<int> vertical_margin_override =
+      OmniboxFieldTrial::GetSuggestionVerticalMarginFieldTrialOverride();
+  if (vertical_margin_override) {
     // If the vertical margin experiment uses a very small value (like a value
     // similar to pre-Refresh), we need to pad up the popup height at the
     // bottom (just like pre-Refresh) to prevent it from looking very bad.
-    if (OmniboxFieldTrial::GetSuggestionVerticalMargin() < 4)
+    if (vertical_margin_override.value() < 4)
       popup_height += 4;
   }
 
@@ -439,10 +442,10 @@ size_t OmniboxPopupContentsView::GetIndexForPoint(const gfx::Point& point) {
   if (!HitTestPoint(point))
     return OmniboxPopupModel::kNoMatch;
 
-  int nb_match = model_->result().size();
-  DCHECK(nb_match <= child_count());
-  for (int i = 0; i < nb_match; ++i) {
-    views::View* child = child_at(i);
+  size_t nb_match = model_->result().size();
+  DCHECK_LE(nb_match, children().size());
+  for (size_t i = 0; i < nb_match; ++i) {
+    views::View* child = children()[i];
     gfx::Point point_in_child_coords(point);
     View::ConvertPointToTarget(this, child, &point_in_child_coords);
     if (child->visible() && child->HitTestPoint(point_in_child_coords))

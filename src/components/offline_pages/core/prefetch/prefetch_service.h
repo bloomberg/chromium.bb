@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_SERVICE_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_SERVICE_H_
 
+#include <string>
+
+#include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class GURL;
@@ -46,6 +50,9 @@ class PrefetchService : public KeyedService {
  public:
   ~PrefetchService() override = default;
 
+  using GCMTokenCallback =
+      base::OnceCallback<void(const std::string& gcm_token)>;
+
   // Externally used functions. They will remain part of this class.
 
   // Note: The source of article suggestions is being migrated from Zine to the
@@ -77,6 +84,14 @@ class PrefetchService : public KeyedService {
 
   virtual PrefetchGCMHandler* GetPrefetchGCMHandler() = 0;
 
+  // Obtains the current GCM token from the PrefetchGCMHandler
+  virtual void GetGCMToken(GCMTokenCallback callback) = 0;
+
+  // Stores and retrieves a cached GCM token to be used if PrefetchGCMHandler is
+  // unavailable.
+  virtual void SetCachedGCMToken(const std::string& gcm_token) = 0;
+  virtual const std::string& GetCachedGCMToken() const = 0;
+
   // Internal usage only functions. They will eventually be moved out of this
   // class.
 
@@ -95,7 +110,7 @@ class PrefetchService : public KeyedService {
   // Zine/Feed: Null when using the Feed.
   virtual ThumbnailFetcher* GetThumbnailFetcher() = 0;
   virtual OfflinePageModel* GetOfflinePageModel() = 0;
-  virtual image_fetcher::ImageFetcher* GetThumbnailImageFetcher() = 0;
+  virtual image_fetcher::ImageFetcher* GetImageFetcher() = 0;
 
   // Test-only methods.
 

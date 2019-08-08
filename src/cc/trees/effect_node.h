@@ -45,6 +45,10 @@ struct CC_EXPORT EffectNode {
   float backdrop_filter_quality;
   gfx::PointF filters_origin;
 
+  // Bounds of rounded corner rrect in the space of the transform node
+  // associated with this effect node.
+  gfx::RRectF rounded_corner_bounds;
+
   SkBlendMode blend_mode;
 
   gfx::Vector2dF surface_contents_scale;
@@ -73,13 +77,15 @@ struct CC_EXPORT EffectNode {
   bool is_currently_animating_opacity : 1;
   // Whether this node has a child node with kDstIn blend mode.
   bool has_masking_child : 1;
-  // Whether this node has an ancestor with a mask layer or the node itself has
-  // a mask.
+  // Whether this node has a mask. This bit is not used when using layer lists.
   bool is_masked : 1;
   // Whether this node's effect has been changed since the last
   // frame. Needed in order to compute damage rect.
   bool effect_changed : 1;
   bool subtree_has_copy_request : 1;
+  // If set, the effect node tries to not trigger a render surface due to it
+  // having a rounded corner.
+  bool is_fast_rounded_corner;
   // The transform node index of the transform to apply to this effect
   // node's content when rendering to a surface.
   int transform_id;

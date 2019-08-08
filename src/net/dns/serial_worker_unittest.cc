@@ -53,7 +53,7 @@ class SerialWorkerTest : public TestWithScopedTaskEnvironment {
           scoped_allow_base_sync_primitives;
       work_allowed_.Wait();
     }
-    // Calling from TaskScheduler, but protected by work_allowed_/work_called_.
+    // Calling from ThreadPool, but protected by work_allowed_/work_called_.
     output_value_ = input_value_;
 
     { // This lock might be destroyed after work_called_ is signalled.

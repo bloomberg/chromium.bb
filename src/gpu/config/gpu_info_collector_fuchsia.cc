@@ -18,8 +18,7 @@ bool CollectContextGraphicsInfo(GPUInfo* gpu_info,
 }
 
 bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
-  // TODO(crbug.com/707031): Implement this.
-  NOTIMPLEMENTED();
+  // TODO(https://crbug.com/950587): Implement this.
   return false;
 }
 

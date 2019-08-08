@@ -18,6 +18,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "absl/types/optional.h"
@@ -28,32 +29,58 @@
 
 namespace webrtc {
 
-class DefaultTemporalLayers : public Vp8TemporalLayers {
+class DefaultTemporalLayers final : public Vp8FrameBufferController {
  public:
   explicit DefaultTemporalLayers(int number_of_temporal_layers);
   ~DefaultTemporalLayers() override;
 
-  bool SupportsEncoderFrameDropping() const override;
+  size_t StreamCount() const override;
+
+  bool SupportsEncoderFrameDropping(size_t stream_index) const override;
 
   // Returns the recommended VP8 encode flags needed. May refresh the decoder
   // and/or update the reference buffers.
-  Vp8FrameConfig UpdateLayerConfig(uint32_t timestamp) override;
+  Vp8FrameConfig NextFrameConfig(size_t stream_index,
+                                 uint32_t timestamp) override;
 
   // New target bitrate, per temporal layer.
-  void OnRatesUpdated(const std::vector<uint32_t>& bitrates_bps,
+  void OnRatesUpdated(size_t stream_index,
+                      const std::vector<uint32_t>& bitrates_bps,
                       int framerate_fps) override;
 
-  bool UpdateConfiguration(Vp8EncoderConfig* cfg) override;
+  bool UpdateConfiguration(size_t stream_index, Vp8EncoderConfig* cfg) override;
 
-  void OnEncodeDone(uint32_t rtp_timestamp,
+  void OnEncodeDone(size_t stream_index,
+                    uint32_t rtp_timestamp,
                     size_t size_bytes,
                     bool is_keyframe,
                     int qp,
-                    CodecSpecificInfoVP8* vp8_info) override;
+                    CodecSpecificInfo* info) override;
+
+  void OnFrameDropped(size_t stream_index, uint32_t rtp_timestamp) override;
+
+  void OnPacketLossRateUpdate(float packet_loss_rate) override;
+
+  void OnRttUpdate(int64_t rtt_ms) override;
+
+  void OnLossNotification(
+      const VideoEncoder::LossNotification& loss_notification) override;
 
  private:
-  static constexpr size_t kKeyframeBuffer = std::numeric_limits<size_t>::max();
-  static std::vector<Vp8FrameConfig> GetTemporalPattern(size_t num_layers);
+  struct DependencyInfo {
+    DependencyInfo() = default;
+    DependencyInfo(absl::string_view indication_symbols,
+                   Vp8FrameConfig frame_config)
+        : decode_target_indications(
+              GenericFrameInfo::DecodeTargetInfo(indication_symbols)),
+          frame_config(frame_config) {}
+
+    absl::InlinedVector<GenericFrameInfo::DecodeTargetIndication, 10>
+        decode_target_indications;
+    Vp8FrameConfig frame_config;
+  };
+
+  static std::vector<DependencyInfo> GetDependencyInfo(size_t num_layers);
   bool IsSyncFrame(const Vp8FrameConfig& config) const;
   void ValidateReferences(Vp8FrameConfig::BufferFlags* flags,
                           Vp8FrameConfig::Vp8BufferReference ref) const;
@@ -61,9 +88,10 @@ class DefaultTemporalLayers : public Vp8TemporalLayers {
 
   const size_t num_layers_;
   const std::vector<unsigned int> temporal_ids_;
-  const std::vector<Vp8FrameConfig> temporal_pattern_;
+  const std::vector<DependencyInfo> temporal_pattern_;
   // Set of buffers that are never updated except by keyframes.
-  const std::set<Vp8FrameConfig::Vp8BufferReference> kf_buffers_;
+  std::set<Vp8FrameConfig::Vp8BufferReference> kf_buffers_;
+  TemplateStructure GetTemplateStructure(int num_layers) const;
 
   uint8_t pattern_idx_;
   // Updated cumulative bitrates, per temporal layer.
@@ -73,15 +101,15 @@ class DefaultTemporalLayers : public Vp8TemporalLayers {
     PendingFrame();
     PendingFrame(bool expired,
                  uint8_t updated_buffers_mask,
-                 const Vp8FrameConfig& frame_config);
+                 const DependencyInfo& dependency_info);
     // Flag indicating if this frame has expired, ie it belongs to a previous
     // iteration of the temporal pattern.
     bool expired = false;
     // Bitmask of Vp8BufferReference flags, indicating which buffers this frame
     // updates.
     uint8_t updated_buffer_mask = 0;
-    // The frame config return by UpdateLayerConfig() for this frame.
-    Vp8FrameConfig frame_config;
+    // The frame config returned by NextFrameConfig() for this frame.
+    DependencyInfo dependency_info;
   };
   // Map from rtp timestamp to pending frame status. Reset on pattern loop.
   std::map<uint32_t, PendingFrame> pending_frames_;

@@ -74,8 +74,7 @@ TEST_F(LayoutInlineTest, SimpleContinuation) {
             GetLayoutObjectByElementId("before"));
   EXPECT_FALSE(split_inline_part1->FirstChild()->NextSibling());
 
-  LayoutBlockFlow* block =
-      ToLayoutBlockFlow(split_inline_part1->Continuation());
+  auto* block = To<LayoutBlockFlow>(split_inline_part1->Continuation());
   ASSERT_TRUE(block);
   ASSERT_TRUE(block->FirstChild());
   EXPECT_EQ(block->FirstChild(), GetLayoutObjectByElementId("blockChild"));
@@ -137,7 +136,7 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
     return;
   }
 
-  const LayoutBlockFlow* div = ToLayoutBlockFlow(lots_of_boxes->Parent());
+  const auto* div = To<LayoutBlockFlow>(lots_of_boxes->Parent());
   for (const NGPaintFragment* line : div->PaintFragment()->Children()) {
     DCHECK(line->PhysicalFragment().IsLineBox());
     bool hit_outcome = lots_of_boxes->HitTestCulledInline(hit_result, location,
@@ -295,11 +294,10 @@ TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocument) {
   )HTML");
 
   LayoutInline* target = ToLayoutInline(GetLayoutObjectByElementId("target"));
-  LayoutRect visual_rect = target->VisualRectInDocument();
-  EXPECT_EQ(visual_rect.X(), LayoutUnit(0));
-  EXPECT_EQ(visual_rect.Y(), LayoutUnit(20));
-  EXPECT_EQ(visual_rect.Width(), LayoutUnit(111));
-  EXPECT_EQ(visual_rect.Height(), LayoutUnit(222 + 20 * 2));
+  EXPECT_EQ(LayoutRect(0, 20, 111, 222 + 20 * 2),
+            target->VisualRectInDocument());
+  EXPECT_EQ(LayoutRect(0, 20, 111, 222 + 20 * 2),
+            target->VisualRectInDocument(kUseGeometryMapper));
 }
 
 // When adding focus ring rects, we should avoid adding duplicated rect for

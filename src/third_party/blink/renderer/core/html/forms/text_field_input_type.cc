@@ -63,7 +63,8 @@ class DataListIndicatorElement final : public HTMLDivElement {
     return ToHTMLInputElement(OwnerShadowHost());
   }
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override {
+  LayoutObject* CreateLayoutObject(const ComputedStyle&,
+                                   LegacyLayout) override {
     return new LayoutDetailsMarker(this);
   }
 
@@ -264,12 +265,12 @@ void TextFieldInputType::HandleBlurEvent() {
 bool TextFieldInputType::ShouldSubmitImplicitly(const Event& event) {
   return (event.type() == event_type_names::kTextInput &&
           event.HasInterface(event_interface_names::kTextEvent) &&
-          ToTextEvent(event).data() == "\n") ||
+          To<TextEvent>(event).data() == "\n") ||
          InputTypeView::ShouldSubmitImplicitly(event);
 }
 
-LayoutObject* TextFieldInputType::CreateLayoutObject(
-    const ComputedStyle&) const {
+LayoutObject* TextFieldInputType::CreateLayoutObject(const ComputedStyle&,
+                                                     LegacyLayout) const {
   return new LayoutTextControlSingleLine(&GetElement());
 }
 
@@ -420,9 +421,9 @@ void TextFieldInputType::HandleBeforeTextInsertedEvent(
   // that case, and nothing in the text field will be removed.
   unsigned selection_length = 0;
   if (GetElement().IsFocused()) {
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited.  See http://crbug.com/590369 for more details.
-    GetElement().GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetElement().GetDocument().UpdateStyleAndLayout();
 
     selection_length = GetElement()
                            .GetDocument()
@@ -476,10 +477,11 @@ void TextFieldInputType::UpdatePlaceholderText() {
         HTMLDivElement::Create(GetElement().GetDocument());
     placeholder = new_element;
     placeholder->SetShadowPseudoId(AtomicString("-webkit-input-placeholder"));
-    placeholder->SetInlineStyleProperty(
-        CSSPropertyDisplay,
-        GetElement().IsPlaceholderVisible() ? CSSValueBlock : CSSValueNone,
-        true);
+    placeholder->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                        GetElement().IsPlaceholderVisible()
+                                            ? CSSValueID::kBlock
+                                            : CSSValueID::kNone,
+                                        true);
     placeholder->setAttribute(kIdAttr, shadow_element_names::Placeholder());
     Element* container = ContainerElement();
     Node* previous = container ? container : GetElement().InnerEditorElement();

@@ -181,7 +181,7 @@ void InlineFlowBox::AddToLine(InlineBox* child) {
         if (!child_flow_box->DescendantsHaveSameLineHeightAndBaseline() ||
             !HasIdenticalLineHeightProperties(parent_style, child_style,
                                               root) ||
-            child_style.HasBorder() || child_style.HasPadding() ||
+            child_style.HasBorder() || child_style.MayHavePadding() ||
             child_style.HasTextCombine()) {
           should_clear_descendants_have_same_line_height_and_baseline = true;
         }

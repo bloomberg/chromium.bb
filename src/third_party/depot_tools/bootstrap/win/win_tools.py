@@ -231,7 +231,7 @@ def clean_up_old_installations(skip_dir):
 
 
 # Version of "git_postprocess" system configuration (see |git_postprocess|).
-GIT_POSTPROCESS_VERSION = '1'
+GIT_POSTPROCESS_VERSION = '2'
 
 
 def git_get_mingw_dir(git_directory):
@@ -273,6 +273,7 @@ def git_postprocess(template, git_directory):
     _check_call([git_bat_path, 'config', '--system', 'core.preloadindex',
                  'true'])
     _check_call([git_bat_path, 'config', '--system', 'core.fscache', 'true'])
+    _check_call([git_bat_path, 'config', '--system', 'protocol.version', '2'])
 
   call_if_outdated(
       os.path.join(git_directory, '.git_postprocess'),

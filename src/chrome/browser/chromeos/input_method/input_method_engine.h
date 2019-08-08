@@ -11,11 +11,12 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "base/time/time.h"
+
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
+#include "ui/base/ime/mojo/ime_engine_factory_registry.mojom.h"
 #include "url/gurl.h"
 
 namespace ui {
@@ -33,6 +34,8 @@ class InputMethodEngineBase;
 }
 
 namespace chromeos {
+
+class MojoHelper;
 
 class InputMethodEngine : public ::input_method::InputMethodEngineBase {
  public:
@@ -89,12 +92,21 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
   // InputMethodEngineBase overrides.
   void Enable(const std::string& component_id) override;
   bool IsActive() const override;
+  void FocusIn(const ui::IMEEngineHandlerInterface::InputContext& input_context)
+      override;
 
   // ui::IMEEngineHandlerInterface overrides.
   void PropertyActivate(const std::string& property_name) override;
   void CandidateClicked(uint32_t index) override;
   void SetMirroringEnabled(bool mirroring_enabled) override;
   void SetCastingEnabled(bool casting_enabled) override;
+
+  void set_ime_engine_factory_registry_for_testing(
+      ime::mojom::ImeEngineFactoryRegistryPtr registry) {
+    ime_engine_factory_registry_ = std::move(registry);
+  }
+
+  void FlushForTesting();
 
   // This function returns the current property of the candidate window.
   // The caller can use the returned value as the default property and
@@ -135,6 +147,8 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
                          bool is_visible) override;
   void CommitTextToInputContext(int context_id,
                                 const std::string& text) override;
+  void DeleteSurroundingTextToInputContext(int offset,
+                                           size_t number_of_chars) override;
   bool SendKeyEvent(ui::KeyEvent* event, const std::string& code) override;
 
   // Enables overriding input view page to Virtual Keyboard window.
@@ -165,6 +179,12 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
 
   // Whether the desktop is being casted.
   bool is_casting_;
+
+  std::unique_ptr<MojoHelper> mojo_helper_;
+
+  ime::mojom::ImeEngineFactoryRegistryPtr ime_engine_factory_registry_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputMethodEngine);
 };
 
 }  // namespace chromeos

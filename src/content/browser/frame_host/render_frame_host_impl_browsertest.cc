@@ -1036,8 +1036,7 @@ void PostRequestMonitor(int* post_counter,
 // Verifies form submits and resubmits work.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, POSTNavigation) {
   net::EmbeddedTestServer http_server;
-  base::FilePath content_test_data(FILE_PATH_LITERAL("content/test/data"));
-  http_server.AddDefaultHandlers(content_test_data);
+  http_server.AddDefaultHandlers(GetTestDataFilePath());
   int post_counter = 0;
   http_server.RegisterRequestMonitor(
       base::Bind(&PostRequestMonitor, &post_counter));
@@ -1952,7 +1951,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // Launch an alert javascript dialog. This pending dialog should block a
   // subsequent discarding before unload request.
   wc->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("setTimeout(function(){alert('hello');}, 10);"));
+      base::ASCIIToUTF16("setTimeout(function(){alert('hello');}, 10);"),
+      base::NullCallback());
   dialog_manager.Wait();
   EXPECT_EQ(0, dialog_manager.num_beforeunload_dialogs_seen());
   EXPECT_EQ(0, dialog_manager.num_beforeunload_fired_seen());
@@ -2276,6 +2276,53 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // The about:blank navigation shouldn't contribute an extra history entry.
   EXPECT_EQ(0, popup->GetController().GetEntryCount());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       AccessibilityIsRootIframe) {
+  GURL main_url(
+      embedded_test_server()->GetURL("foo.com", "/page_with_iframe.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  EXPECT_TRUE(main_frame->AccessibilityIsMainFrame());
+
+  ASSERT_EQ(1u, main_frame->child_count());
+  RenderFrameHostImpl* iframe = main_frame->child_at(0)->current_frame_host();
+  EXPECT_FALSE(iframe->AccessibilityIsMainFrame());
+}
+
+void FileChooserCallback(base::RunLoop* run_loop,
+                         blink::mojom::FileChooserResultPtr result) {
+  run_loop->Quit();
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       FileChooserAfterRfhDeath) {
+  NavigateToURL(shell(), GURL("about:balnk"));
+  auto* rfh = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  blink::mojom::FileChooserPtr chooser = rfh->BindFileChooserForTesting();
+
+  // Kill the renderer process.
+  RenderProcessHostWatcher crash_observer(
+      rfh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  rfh->GetProcess()->Shutdown(0);
+  crash_observer.Wait();
+
+  // Call FileChooser methods.  The browser process should not crash.
+  base::RunLoop run_loop1;
+  chooser->OpenFileChooser(blink::mojom::FileChooserParams::New(),
+                           base::BindOnce(FileChooserCallback, &run_loop1));
+  run_loop1.Run();
+
+  base::RunLoop run_loop2;
+  chooser->EnumerateChosenDirectory(
+      base::FilePath(), base::BindOnce(FileChooserCallback, &run_loop2));
+  run_loop2.Run();
+
+  // Pass if this didn't crash.
 }
 
 }  // namespace content

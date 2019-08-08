@@ -28,13 +28,15 @@ enum class TabRankerResult {
   kSuccess = 0,
   kPreprocessorInitializationFailed = 1,
   kPreprocessorOtherError = 2,
-  kMaxValue = kPreprocessorOtherError
+  kUnrecognizableScorer = 3,
+  kMaxValue = kUnrecognizableScorer
 };
 
 // Makes predictions using the tab reactivation DNN classifier. Background tabs
 // are scored based on how likely they are to be reactivated.
 class TabScorePredictor {
  public:
+  enum ScorerType { kMRUScorer = 0, kMLScorer = 1, kMaxValue = kMLScorer };
   TabScorePredictor();
   ~TabScorePredictor();
 
@@ -48,12 +50,19 @@ class TabScorePredictor {
   // Loads the preprocessor config if not already loaded.
   void LazyInitialize();
 
+  TabRankerResult ScoreTabWithMRUScorer(const TabFeatures& tab, float* score);
+  TabRankerResult ScoreTabWithMLScorer(const TabFeatures& tab, float* score);
+
   std::unique_ptr<assist_ranker::ExamplePreprocessorConfig>
       preprocessor_config_;
 
   // Fixed-size working memory provided to the inferencing function. Lazy
   // initialized once so it isn't reallocated for every inference.
   std::unique_ptr<tfnative_model::FixedAllocations> model_alloc_;
+
+  const float discard_count_penalty_ = 0.0f;
+  const float mru_scorer_penalty_ = 1.0f;
+  const ScorerType type_ = kMLScorer;
 
   DISALLOW_COPY_AND_ASSIGN(TabScorePredictor);
 };

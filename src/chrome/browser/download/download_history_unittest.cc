@@ -437,6 +437,16 @@ class DownloadHistoryTest : public testing::Test {
         .WillRepeatedly(SetArgPointee<0>(items));
   }
 
+  void SetDownloadDBEnabled(bool enabled) {
+    if (enabled) {
+      feature_list_.InitAndEnableFeature(
+          download::features::kDownloadDBForNewDownloads);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          download::features::kDownloadDBForNewDownloads);
+    }
+  }
+
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::vector<std::unique_ptr<StrictMockDownloadItem>> items_;
@@ -445,13 +455,16 @@ class DownloadHistoryTest : public testing::Test {
   std::unique_ptr<DownloadHistory> download_history_;
   content::DownloadManager::Observer* manager_observer_ = nullptr;
   size_t download_created_index_ = 0;
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadHistoryTest);
 };
 
 // Test loading an item from the database, changing it, saving it back, removing
 // it.
-TEST_F(DownloadHistoryTest, DownloadHistoryTest_Load) {
+TEST_F(DownloadHistoryTest, DownloadHistoryTest_LoadWithoutDownloadDB) {
+  SetDownloadDBEnabled(false);
+
   // Load a download from history, create the item, OnDownloadCreated,
   // OnDownloadUpdated, OnDownloadRemoved.
   history::DownloadRow info;
@@ -471,6 +484,37 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Load) {
   item(0).NotifyObserversDownloadUpdated();
   info.opened = true;
   ExpectDownloadUpdated(info, false);
+
+  // Pretend that the user removed the item.
+  IdSet ids;
+  ids.insert(info.id);
+  item(0).NotifyObserversDownloadRemoved();
+  ExpectDownloadsRemoved(ids);
+}
+
+// Test loading an item from the database, changing it and removing it.
+TEST_F(DownloadHistoryTest, DownloadHistoryTest_LoadWithDownloadDB) {
+  SetDownloadDBEnabled(true);
+
+  // Load a download from history, create the item, OnDownloadCreated,
+  // OnDownloadUpdated, OnDownloadRemoved.
+  history::DownloadRow info;
+  InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
+                "http://example.com/referrer.html",
+                download::DownloadItem::IN_PROGRESS, &info);
+  {
+    std::unique_ptr<InfoVector> infos(new InfoVector());
+    infos->push_back(info);
+    CreateDownloadHistory(std::move(infos));
+    ExpectNoDownloadCreated();
+  }
+  EXPECT_TRUE(DownloadHistory::IsPersisted(&item(0)));
+
+  // Pretend that something changed on the item, the update will not be
+  // persisted.
+  EXPECT_CALL(item(0), GetOpened()).WillRepeatedly(Return(true));
+  item(0).NotifyObserversDownloadUpdated();
+  ExpectNoDownloadUpdated();
 
   // Pretend that the user removed the item.
   IdSet ids;
@@ -531,6 +575,9 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_OnHistoryQueryComplete_Post) {
 // Test creating an item, saving it to the database, changing it, saving it
 // back, removing it.
 TEST_F(DownloadHistoryTest, DownloadHistoryTest_Create) {
+  // Disable download DB.
+  SetDownloadDBEnabled(false);
+
   // Create a fresh item not from history, OnDownloadCreated, OnDownloadUpdated,
   // OnDownloadRemoved.
   CreateDownloadHistory(std::unique_ptr<InfoVector>(new InfoVector()));
@@ -561,6 +608,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Create) {
 // Test that changes to persisted fields in a DownloadItem triggers database
 // updates.
 TEST_F(DownloadHistoryTest, DownloadHistoryTest_Update) {
+  SetDownloadDBEnabled(false);
   CreateDownloadHistory(std::unique_ptr<InfoVector>(new InfoVector()));
 
   history::DownloadRow info;
@@ -674,6 +722,8 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Update) {
 // IsTemporary, saving it back, changing it, saving it back because it isn't
 // Temporary anymore.
 TEST_F(DownloadHistoryTest, DownloadHistoryTest_Temporary) {
+  SetDownloadDBEnabled(false);
+
   // Create a fresh item not from history, OnDownloadCreated, OnDownloadUpdated,
   // OnDownloadRemoved.
   CreateDownloadHistory(std::unique_ptr<InfoVector>(new InfoVector()));
@@ -724,7 +774,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_RemoveWhileAdding) {
   InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
                 "http://example.com/referrer.html",
                 download::DownloadItem::COMPLETE, &info);
-
+  EXPECT_CALL(item(0), IsDone()).WillRepeatedly(Return(true));
   // Instruct CreateDownload() to not callback to DownloadHistory immediately,
   // but to wait for FinishCreateDownload().
   set_slow_create_download(true);
@@ -786,6 +836,9 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Multiple) {
 
 // Test what happens when HistoryService/CreateDownload::CreateDownload() fails.
 TEST_F(DownloadHistoryTest, DownloadHistoryTest_CreateFailed) {
+  // Disable download DB.
+  SetDownloadDBEnabled(false);
+
   // Create a fresh item not from history, OnDownloadCreated, OnDownloadUpdated,
   // OnDownloadRemoved.
   CreateDownloadHistory(std::unique_ptr<InfoVector>(new InfoVector()));
@@ -816,8 +869,8 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_UpdateWhileAdding) {
   history::DownloadRow info;
   InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
                 "http://example.com/referrer.html",
-                download::DownloadItem::IN_PROGRESS, &info);
-
+                download::DownloadItem::COMPLETE, &info);
+  EXPECT_CALL(item(0), IsDone()).WillRepeatedly(Return(true));
   // Instruct CreateDownload() to not callback to DownloadHistory immediately,
   // but to wait for FinishCreateDownload().
   set_slow_create_download(true);
@@ -837,15 +890,13 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_UpdateWhileAdding) {
   // ItemAdded should call OnDownloadUpdated, which should detect that the item
   // changed while it was being added and call UpdateDownload immediately.
   info.opened = true;
-  ExpectDownloadUpdated(info, false);
+  ExpectDownloadUpdated(info, true);
 }
 
 // Test creating and updating an item with DownloadDB enabled.
 TEST_F(DownloadHistoryTest, CreateWithDownloadDB) {
   // Enable download DB.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      download::features::kDownloadDBForNewDownloads);
+  SetDownloadDBEnabled(true);
 
   // Create a fresh item not from download DB
   CreateDownloadHistory(std::unique_ptr<InfoVector>(new InfoVector()));
@@ -871,9 +922,7 @@ TEST_F(DownloadHistoryTest, CreateWithDownloadDB) {
 // Test creating history download item that exists in DownloadDB.
 TEST_F(DownloadHistoryTest, CreateHistoryItemInDownloadDB) {
   // Enable download DB.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      download::features::kDownloadDBForNewDownloads);
+  SetDownloadDBEnabled(true);
 
   history::DownloadRow info;
   InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
@@ -900,7 +949,7 @@ TEST_F(DownloadHistoryTest, CreateHistoryItemInDownloadDB) {
   info.received_bytes = 50;
   info.state = history::DownloadState::COMPLETE;
   item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(info, false);
+  ExpectDownloadUpdated(info, true);
 }
 
 // Test creating a in-progress history download item that is non-resumable in
@@ -908,9 +957,7 @@ TEST_F(DownloadHistoryTest, CreateHistoryItemInDownloadDB) {
 TEST_F(DownloadHistoryTest,
        CreateInProgressHistoryItemNonResumableInDownloadDB) {
   // Enable download DB.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      download::features::kDownloadDBForNewDownloads);
+  SetDownloadDBEnabled(true);
 
   history::DownloadRow info;
   InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
@@ -938,9 +985,7 @@ TEST_F(DownloadHistoryTest,
 // Test loading history download item that will be cleared by |manager_|
 TEST_F(DownloadHistoryTest, RemoveClearedItemFromHistory) {
   // Enable download DB.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      download::features::kDownloadDBForNewDownloads);
+  SetDownloadDBEnabled(true);
 
   history::DownloadRow info;
   InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",

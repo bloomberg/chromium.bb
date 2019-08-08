@@ -17,6 +17,7 @@ sprep/spreplocal.mk
 brkitr/dictionaries/khmerdict.txt
 brkitr/rules/word_ja.txt
 brkitr/root.txt
+brkitr/ja.txt
 brkitr/zh.txt
 brkitr/zh_Hant.txt
 locales/an.txt

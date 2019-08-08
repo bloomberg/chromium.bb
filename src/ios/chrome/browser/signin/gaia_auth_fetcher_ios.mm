@@ -11,8 +11,8 @@
 #include "ios/chrome/browser/signin/feature_flags.h"
 #import "ios/chrome/browser/signin/gaia_auth_fetcher_ios_ns_url_session_bridge.h"
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios_wk_webview_bridge.h"
+#include "ios/web/common/features.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/features.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 

@@ -270,8 +270,10 @@ void LayoutQuote::UpdateText() {
     fragment->SetStyle(MutableStyle());
     fragment->SetContentString(text_.Impl());
   } else {
-    fragment = LayoutTextFragment::CreateAnonymous(*Style(), *owning_pseudo_,
-                                                   text_.Impl());
+    LegacyLayout legacy =
+        ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
+    fragment = LayoutTextFragment::CreateAnonymous(*owning_pseudo_,
+                                                   text_.Impl(), legacy);
     fragment->SetStyle(MutableStyle());
     AddChild(fragment);
   }

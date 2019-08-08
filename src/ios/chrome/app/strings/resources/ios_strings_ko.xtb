@@ -42,6 +42,7 @@
 <translation id="152234381334907219">저장되지 않음</translation>
 <translation id="1540800554400757039">주소 1</translation>
 <translation id="1545749641540134597">QR 코드 스캔</translation>
+<translation id="1552525382687785070">관리자가 동기화를 사용 중지했습니다.</translation>
 <translation id="1558704936695638228">더 많은 탭 옵션을 보려면 길게 누르세요.</translation>
 <translation id="1580783302095112590">메일이 전송되었습니다.</translation>
 <translation id="1582732959743469162">현재 진행 중인 다운로드가 모두 중지됩니다.</translation>
@@ -84,6 +85,7 @@
 <translation id="213900355088104901">비공개로 탐색하려면 시크릿 탭을 여세요.</translation>
 <translation id="2139867232736819575">복사한 텍스트 검색</translation>
 <translation id="2149973817440762519">북마크 수정</translation>
+<translation id="2179182049312275900">언제든지 설정에서 동기화를 사용 설정할 수 있습니다.</translation>
 <translation id="2198757192731523470">Google에서 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 방문 기록을 사용할 수 있습니다.</translation>
 <translation id="2207590065820824892">읽기 목록에 읽지 않은 기사가 <ph name="UNREAD_COUNT" />개 있습니다.</translation>
 <translation id="2230173723195178503">웹페이지 로드됨</translation>
@@ -96,12 +98,14 @@
 <translation id="2320166752086256636">키보드 숨기기</translation>
 <translation id="2339560363438331454">동기화 및 Google 서비스</translation>
 <translation id="2351097562818989364">번역 설정이 재설정되었습니다.</translation>
+<translation id="2359043044084662842">번역</translation>
 <translation id="2359808026110333948">계속</translation>
 <translation id="2360196772093551345">모바일 버전으로 보기</translation>
 <translation id="2381405137052800939">기본설정</translation>
 <translation id="2386793615875593361">1장 선택됨</translation>
 <translation id="2435457462613246316">비밀번호 표시</translation>
 <translation id="2481538920734869610">계정 추가</translation>
+<translation id="2497852260688568942">관리자가 동기화를 사용 중지했습니다.</translation>
 <translation id="2523184218357549926">방문한 페이지의 URL을 Google에 전송</translation>
 <translation id="2523363575747517183">다른 애플리케이션을 열려는 반복적인 시도가 실행되는 웹사이트입니다.</translation>
 <translation id="2529021024822217800">모두 열기</translation>
@@ -124,6 +128,7 @@
 <translation id="2800683595868705743">탭 전환 종료</translation>
 <translation id="2830972654601096923">주소 관리...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">초기 동기화 설정이 완료되지 않음</translation>
 <translation id="2843803966603263712">번역 설정 재설정</translation>
 <translation id="2858204748079866344">Chrome에서는 개인정보 보호를 위해 이 입력란의 비밀번호를 자동 완성하지 않습니다.</translation>
 <translation id="285960592395650245">다운로드 다시 시도</translation>
@@ -200,9 +205,9 @@
 <translation id="4038354071007134711">파일을 열 수 있는 애플리케이션이 기기에 없습니다.</translation>
 <translation id="4042870976416480368">페이지에서 찾기</translation>
 <translation id="4049507953662678203">네트워크에 연결되었는지 확인한 후 다시 시도해 주세요.</translation>
+<translation id="4071530748369333746">동기화를 취소하시겠습니까?</translation>
 <translation id="4082688844002261427">Google 검색, 광고 등을 맞춤설정하는 데 인터넷 방문 기록이 사용되는 방식 관리</translation>
 <translation id="408404951701638773">검색창을 사용하기가 더욱 쉬워졌습니다.</translation>
-<translation id="4084682180776658562">북마크</translation>
 <translation id="411254640334432676">다운로드에 실패했습니다.</translation>
 <translation id="4112644173421521737">검색</translation>
 <translation id="4121993058175073134">순 내보내기 데이터를 전송하려면 설정 앱에서 이메일 계정을 설정하시기 바랍니다.</translation>
@@ -214,7 +219,6 @@
 <translation id="4272631900155121838">QR 코드를 스캔하려면 설정에서 카메라를 사용하도록 설정하세요.</translation>
 <translation id="4281844954008187215">서비스 약관</translation>
 <translation id="430793432425771671">모두 동기화</translation>
-<translation id="4342284590510997375">New</translation>
 <translation id="4359125752503270327">이 페이지는 다른 애플리케이션에서 열립니다.</translation>
 <translation id="4370827530403103842">동기화가 작동하지 않습니다. 탭하여 수정하세요.</translation>
 <translation id="4375040482473363939">QR 코드 검색</translation>
@@ -270,6 +274,7 @@
 <translation id="5197255632782567636">인터넷</translation>
 <translation id="5228579091201413441">동기화 사용</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" />에 동기화</translation>
+<translation id="5245322853195994030">동기화 취소</translation>
 <translation id="5300589172476337783">표시</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="5327248766486351172">이름</translation>
@@ -288,6 +293,7 @@
 <translation id="5659593005791499971">이메일</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">버전 <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5711039611392265845">개인정보 보호, 보안, 데이터 수집에 관한 설정을 더 보려면 <ph name="BEGIN_LINK" />동기화 및 Google 서비스<ph name="END_LINK" />를 참조하세요.</translation>
 <translation id="5728700505257787410">죄송합니다. 계정에 로그인하는 중에 문제가 발생했습니다.</translation>
 <translation id="5737974891429562743">계정 로그인 세부정보가 오래되었습니다. 업데이트하여 동기화를 시작하세요.</translation>
 <translation id="5738887413654608789">이를 통해 사용자의 주변 환경을 토대로 관련 웹 페이지를 발견할 수 있습니다.</translation>
@@ -363,9 +369,9 @@
 <translation id="6643016212128521049">삭제</translation>
 <translation id="6656103420185847513">폴더 수정</translation>
 <translation id="6657585470893396449">비밀번호</translation>
+<translation id="6668619169535738264">북마크 수정</translation>
 <translation id="667999046851023355">문서</translation>
 <translation id="6691331417640343772">Google 대시보드에서 동기화된 데이터 관리</translation>
-<translation id="6709334795756764830">책갈피 수정</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">비밀번호를 내보낼 수 없음</translation>
 <translation id="6780034285637185932">우편번호</translation>
@@ -385,6 +391,7 @@
 <translation id="6979158407327259162">Google 드라이브</translation>
 <translation id="7004499039102548441">최근 탭</translation>
 <translation id="7006788746334555276">콘텐츠 설정</translation>
+<translation id="7015203776128479407">초기 동기화 설정이 완료되지 않았습니다. 동기화가 사용 중지되었습니다.</translation>
 <translation id="7029809446516969842">비밀번호</translation>
 <translation id="7031882061095297553">동기화 가능 계정</translation>
 <translation id="7053983685419859001">차단</translation>
@@ -396,6 +403,7 @@
 <translation id="7136892417564438900">카메라를 사용할 수 없음</translation>
 <translation id="7159472599653637159">모바일 사이트 요청</translation>
 <translation id="7167621057293532233">데이터 유형</translation>
+<translation id="7173114856073700355">설정 열기</translation>
 <translation id="7189598951263744875">공유...</translation>
 <translation id="7192050974311852563">로깅 시작</translation>
 <translation id="7203585745079012652">음성 응답</translation>
@@ -404,8 +412,10 @@
 <translation id="7280856130494094142">암호를 입력하여 동기화 시작</translation>
 <translation id="7285236536143823449">예</translation>
 <translation id="7291368939935408496">비밀번호 준비 중...</translation>
+<translation id="7293171162284876153">동기화를 시작하려면 'Chrome 데이터 동기화'를 사용 설정하세요.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% 다운로드됨</translation>
 <translation id="7346909386216857016">확인</translation>
+<translation id="7348502496356775519">북마크</translation>
 <translation id="7383797227493018512">읽기 목록</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7425346204213733349">북마크, 방문 기록, 비밀번호, 기타 설정이 더 이상 Google 계정에 동기화되지 않습니다. 하지만 기존 데이터는 Google 계정에 계속 저장됩니다.</translation>
@@ -453,6 +463,7 @@
 <translation id="8073670137947914548">다운로드가 완료되었습니다</translation>
 <translation id="8076014560081431679">저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관이 반영될 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">파일을 다운로드할 수 있습니다. 화면 하단에서 옵션을 선택할 수 있습니다.</translation>
+<translation id="8131740175452115882">확인</translation>
 <translation id="8205564605687841303">취소</translation>
 <translation id="8225985093977202398">캐시된 이미지 및 파일</translation>
 <translation id="8261506727792406068">삭제</translation>
@@ -470,6 +481,7 @@
 <translation id="850600235656508448">시크릿 모드에서 열기</translation>
 <translation id="8517375800490286174">오픈소스 라이선스</translation>
 <translation id="8524799873541103884">전체 <ph name="NUMBER_OF_OPEN_TABS" />개 탭 중 <ph name="FIRST_VISIBLE_TAB" />~<ph name="LAST_VISIBLE_TAB" />번째 탭이 <ph name="INCOGNITO" /> 탭입니다.</translation>
+<translation id="8529767659511976195">신규</translation>
 <translation id="8532105204136943229">만료 연도</translation>
 <translation id="8534481786647257214">Google+ 게시가 완료되었습니다.</translation>
 <translation id="8548878600947630424">페이지에서 찾기...</translation>

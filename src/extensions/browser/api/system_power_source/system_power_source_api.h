@@ -6,7 +6,7 @@
 #define EXTENSIONS_BROWSER_API_SYSTEM_POWER_SOURCE_SYSTEM_POWER_SOURCE_API_H_
 
 #include "base/scoped_observer.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"

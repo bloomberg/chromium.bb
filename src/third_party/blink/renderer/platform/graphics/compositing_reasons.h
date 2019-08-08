@@ -27,13 +27,16 @@ using CompositingReasons = uint64_t;
   V(ActiveOpacityAnimation)                                                   \
   V(ActiveFilterAnimation)                                                    \
   V(ActiveBackdropFilterAnimation)                                            \
-  V(TransitionProperty)                                                       \
   V(ScrollDependentPosition)                                                  \
   V(OverflowScrollingTouch)                                                   \
   V(OverflowScrollingParent)                                                  \
   V(OutOfFlowClipping)                                                        \
   V(VideoOverlay)                                                             \
-  V(WillChangeCompositingHint)                                                \
+  V(WillChangeTransform)                                                      \
+  V(WillChangeOpacity)                                                        \
+  /* This flag is needed only when neither kWillChangeTransform nor           \
+     kWillChangeOpacity is set */                                             \
+  V(WillChangeOther)                                                          \
   V(BackdropFilter)                                                           \
   V(RootScroller)                                                             \
   V(ScrollTimelineTarget)                                                     \
@@ -58,7 +61,7 @@ using CompositingReasons = uint64_t;
   V(Preserve3DWith3DDescendants)                                              \
   V(ReflectionOfCompositedParent)                                             \
   V(IsolateCompositedDescendants)                                             \
-  V(PositionFixedOrStickyWithCompositedDescendants)                           \
+  V(PositionFixedWithCompositedDescendants)                                   \
                                                                               \
   /* The root layer is a special case. It may be forced to be a layer, but it \
   also needs to be a layer if anything else in the subtree is composited. */  \
@@ -121,7 +124,8 @@ class PLATFORM_EXPORT CompositingReason {
 
     kComboAllDirectStyleDeterminedReasons =
         k3DTransform | kBackfaceVisibilityHidden | kComboActiveAnimation |
-        kTransitionProperty | kWillChangeCompositingHint | kBackdropFilter,
+        kWillChangeTransform | kWillChangeOpacity | kWillChangeOther |
+        kBackdropFilter,
 
     kComboAllDirectNonStyleDeterminedReasons =
         kVideo | kCanvas | kPlugin | kIFrame | kOverflowScrollingParent |
@@ -151,17 +155,13 @@ class PLATFORM_EXPORT CompositingReason {
         kOverlap | kAssumedOverlap | kOverflowScrollingParent,
 
     kDirectReasonsForTransformProperty =
-        k3DTransform | kWillChangeCompositingHint |
+        k3DTransform | kWillChangeTransform | kWillChangeOther |
         kPerspectiveWith3DDescendants | kPreserve3DWith3DDescendants |
-        // Currently, we create transform/effect/filter nodes for an element
-        // whenever any property is being animated so that the existence of the
-        // effect node implies the existence of all nodes.
-        // TODO(flackr): Check for nodes for each KeyframeModel target property
-        // instead of creating all nodes and only create a transform/effect/
-        // filter node if needed, https://crbug.com/900241
-        kComboActiveAnimation,
-    kDirectReasonsForEffectProperty = kComboActiveAnimation,
-    kDirectReasonsForFilterProperty = kComboActiveAnimation,
+        kActiveTransformAnimation,
+    kDirectReasonsForEffectProperty = kActiveOpacityAnimation |
+                                      kWillChangeOpacity |
+                                      kActiveBackdropFilterAnimation,
+    kDirectReasonsForFilterProperty = kActiveFilterAnimation,
   };
 };
 

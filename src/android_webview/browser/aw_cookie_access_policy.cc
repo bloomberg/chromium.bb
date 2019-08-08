@@ -7,18 +7,22 @@
 #include <memory>
 
 #include "android_webview/browser/aw_contents_io_thread_client.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/websocket_handshake_request_info.h"
 #include "net/base/net_errors.h"
+#include "net/base/static_cookie_policy.h"
+#include "net/url_request/url_request.h"
+#include "services/network/public/cpp/features.h"
+#include "url/gurl.h"
 
 using base::AutoLock;
 using content::BrowserThread;
 using content::ResourceRequestInfo;
 using content::WebSocketHandshakeRequestInfo;
-using net::StaticCookiePolicy;
 
 namespace android_webview {
 
@@ -51,6 +55,7 @@ bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
     int render_process_id,
     int render_frame_id,
     int frame_tree_node_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::unique_ptr<AwContentsIoThreadClient> io_thread_client =
       (frame_tree_node_id != content::RenderFrameHost::kNoFrameTreeNodeId)
           ? AwContentsIoThreadClient::FromID(frame_tree_node_id)
@@ -65,6 +70,7 @@ bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
 
 bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
     const net::URLRequest& request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int child_id = 0;
   int render_frame_id = 0;
   int frame_tree_node_id = content::RenderFrameHost::kNoFrameTreeNodeId;
@@ -85,81 +91,45 @@ bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
                                           frame_tree_node_id);
 }
 
-bool AwCookieAccessPolicy::OnCanGetCookies(const net::URLRequest& request,
-                                           const net::CookieList& cookie_list) {
-  bool global = GetShouldAcceptCookies();
-  bool thirdParty = GetShouldAcceptThirdPartyCookies(request);
-  return AwStaticCookiePolicy(global, thirdParty)
-      .AllowGet(request.url(), request.site_for_cookies());
+bool AwCookieAccessPolicy::AllowCookies(const net::URLRequest& request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+  bool third_party = GetShouldAcceptThirdPartyCookies(request);
+  return CanAccessCookies(request.url(), request.site_for_cookies(),
+                          third_party);
 }
 
-bool AwCookieAccessPolicy::OnCanSetCookie(const net::URLRequest& request,
-                                          const net::CanonicalCookie& cookie,
-                                          net::CookieOptions* options) {
-  bool global = GetShouldAcceptCookies();
-  bool thirdParty = GetShouldAcceptThirdPartyCookies(request);
-  return AwStaticCookiePolicy(global, thirdParty)
-      .AllowSet(request.url(), request.site_for_cookies());
-}
-
-bool AwCookieAccessPolicy::AllowGetCookie(const GURL& url,
-                                          const GURL& first_party,
-                                          const net::CookieList& cookie_list,
-                                          content::ResourceContext* context,
-                                          int render_process_id,
-                                          int render_frame_id) {
-  bool global = GetShouldAcceptCookies();
-  bool thirdParty = GetShouldAcceptThirdPartyCookies(
+bool AwCookieAccessPolicy::AllowCookies(const GURL& url,
+                                        const GURL& first_party,
+                                        int render_process_id,
+                                        int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  bool third_party = GetShouldAcceptThirdPartyCookies(
       render_process_id, render_frame_id,
       content::RenderFrameHost::kNoFrameTreeNodeId);
-  return AwStaticCookiePolicy(global, thirdParty).AllowGet(url, first_party);
+  return CanAccessCookies(url, first_party, third_party);
 }
 
-bool AwCookieAccessPolicy::AllowSetCookie(const GURL& url,
-                                          const GURL& first_party,
-                                          const net::CanonicalCookie& cookie,
-                                          content::ResourceContext* context,
-                                          int render_process_id,
-                                          int render_frame_id) {
-  bool global = GetShouldAcceptCookies();
-  bool thirdParty = GetShouldAcceptThirdPartyCookies(
-      render_process_id, render_frame_id,
-      content::RenderFrameHost::kNoFrameTreeNodeId);
-  return AwStaticCookiePolicy(global, thirdParty).AllowSet(url, first_party);
-}
+bool AwCookieAccessPolicy::CanAccessCookies(const GURL& url,
+                                            const GURL& site_for_cookies,
+                                            bool accept_third_party_cookies) {
+  if (!accept_cookies_)
+    return false;
 
-AwStaticCookiePolicy::AwStaticCookiePolicy(bool accept_cookies,
-                                           bool accept_third_party_cookies)
-    : accept_cookies_(accept_cookies),
-      accept_third_party_cookies_(accept_third_party_cookies) {
-}
+  if (accept_third_party_cookies)
+    return true;
 
-StaticCookiePolicy::Type AwStaticCookiePolicy::GetPolicy(const GURL& url)
-    const {
   // File URLs are a special case. We want file URLs to be able to set cookies
   // but (for the purpose of cookies) Chrome considers different file URLs to
   // come from different origins so we use the 'allow all' cookie policy for
   // file URLs.
-  bool isFile = url.SchemeIsFile();
-  if (!accept_cookies()) {
-    return StaticCookiePolicy::BLOCK_ALL_COOKIES;
-  }
-  if (accept_third_party_cookies() || isFile) {
-    return StaticCookiePolicy::ALLOW_ALL_COOKIES;
-  }
-  return StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES;
-}
+  if (url.SchemeIsFile())
+    return true;
 
-bool AwStaticCookiePolicy::AllowSet(const GURL& url,
-                                    const GURL& first_party) const {
-  return StaticCookiePolicy(GetPolicy(url))
-             .CanAccessCookies(url, first_party) == net::OK;
-}
-
-bool AwStaticCookiePolicy::AllowGet(const GURL& url,
-                                    const GURL& first_party) const {
-  return StaticCookiePolicy(GetPolicy(url))
-             .CanAccessCookies(url, first_party) == net::OK;
+  // Otherwise, block third-party cookies.
+  return net::StaticCookiePolicy(
+             net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES)
+             .CanAccessCookies(url, site_for_cookies) == net::OK;
 }
 
 }  // namespace android_webview

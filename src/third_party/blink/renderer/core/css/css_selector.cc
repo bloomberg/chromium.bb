@@ -33,7 +33,9 @@
 #include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -280,6 +282,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoFullScreen:
     case kPseudoFullScreenAncestor:
     case kPseudoFullscreen:
+    case kPseudoPictureInPicture:
     case kPseudoSpatialNavigationFocus:
     case kPseudoSpatialNavigationInterest:
     case kPseudoIsHtml:
@@ -377,6 +380,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"optional", CSSSelector::kPseudoOptional},
     {"out-of-range", CSSSelector::kPseudoOutOfRange},
     {"past", CSSSelector::kPseudoPastCue},
+    {"picture-in-picture", CSSSelector::kPseudoPictureInPicture},
     {"placeholder", CSSSelector::kPseudoPlaceholder},
     {"placeholder-shown", CSSSelector::kPseudoPlaceholderShown},
     {"read-only", CSSSelector::kPseudoReadOnly},
@@ -446,6 +450,10 @@ static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
 
   if (match->type == CSSSelector::kPseudoFocusVisible &&
       !RuntimeEnabledFeatures::CSSFocusVisibleEnabled())
+    return CSSSelector::kPseudoUnknown;
+
+  if (match->type == CSSSelector::kPseudoPictureInPicture &&
+      !RuntimeEnabledFeatures::CSSPictureInPictureEnabled())
     return CSSSelector::kPseudoUnknown;
 
   return static_cast<CSSSelector::PseudoType>(match->type);
@@ -624,6 +632,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoOnlyChild:
     case kPseudoOnlyOfType:
     case kPseudoOptional:
+    case kPseudoPictureInPicture:
     case kPseudoPlaceholderShown:
     case kPseudoOutOfRange:
     case kPseudoPastCue:
@@ -636,7 +645,6 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoStart:
     case kPseudoTarget:
     case kPseudoUnknown:
-    case kPseudoUnresolved:
     case kPseudoValid:
     case kPseudoVertical:
     case kPseudoVisited:
@@ -649,6 +657,10 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoLeftPage:
     case kPseudoRightPage:
       pseudo_type_ = kPseudoUnknown;
+      break;
+    case kPseudoUnresolved:
+      if (match_ != kPseudoClass || !context.CustomElementsV0Enabled())
+        pseudo_type_ = kPseudoUnknown;
       break;
   }
 }
@@ -738,12 +750,12 @@ const CSSSelector* CSSSelector::SerializeCompound(
             else if (a == -1)
               builder.Append("-n");
             else
-              builder.Append(String::Format("%dn", a));
+              builder.AppendFormat("%dn", a);
 
             if (b < 0)
               builder.Append(String::Number(b));
             else if (b > 0)
-              builder.Append(String::Format("+%d", b));
+              builder.AppendFormat("+%d", b);
           }
 
           builder.Append(')');

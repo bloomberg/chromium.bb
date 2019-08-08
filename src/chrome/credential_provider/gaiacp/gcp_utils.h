@@ -5,6 +5,7 @@
 #ifndef CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_UTILS_H_
 #define CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_UTILS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -57,13 +58,6 @@ constexpr int kInitialDuplicateUsernameIndex = 2;
 // Default extension used as a fallback if the picture_url returned from gaia
 // does not have a file extension.
 extern const wchar_t kDefaultProfilePictureFileExtension[];
-
-// Required extension for the picture that will be shown by the credential on
-// the login screen. Windows only supports .bmp files for the images shown by
-// credentials.
-extern const wchar_t kCredentialLogoPictureFileExtension[];
-
-constexpr int kLargestProfilePictureSize = 448;
 
 // Because of some strange dependency problems with windows header files,
 // define STATUS_SUCCESS here instead of including ntstatus.h or SubAuth.h
@@ -211,33 +205,21 @@ void DeleteStartupSentinel();
 // Gets a string resource from the DLL with the given id.
 base::string16 GetStringResource(int base_message_id);
 
-// Fills |base_path| with the path where user profile pictures are stored for
-// user with |sid|. This function can fail if the known folder
-// FOLDERID_PublicUserTiles cannot be found.
-HRESULT GetUserAccountPicturePath(const base::string16& sid,
-                                  base::FilePath* base_path);
-
-// Returns the full path to a user profile picture of a specific |size| and
-// |picture_extension|. |account_picture_path| is path filled in by a call to
-// GetUserAccountPicturePath.
-base::FilePath GetUserSizedAccountPictureFilePath(
-    const base::FilePath& account_picture_path,
-    int size,
-    const base::string16& picture_extension);
-
 // Gets the language selected by the base::win::i18n::LanguageSelector.
 base::string16 GetSelectedLanguage();
 
-// Helpers to get strings from DictionaryValues.
-base::string16 GetDictString(const base::DictionaryValue* dict,
+// Securely clear a base::Value that may be a dictionary value that may
+// have a password field.
+void SecurelyClearDictionaryValue(base::Optional<base::Value>* value);
+
+// Helpers to get strings from base::Values that are expected to be
+// DictionaryValues.
+base::string16 GetDictString(const base::Value& dict, const char* name);
+base::string16 GetDictString(const std::unique_ptr<base::Value>& dict,
                              const char* name);
-base::string16 GetDictString(const std::unique_ptr<base::DictionaryValue>& dict,
-                             const char* name);
-std::string GetDictStringUTF8(const base::DictionaryValue* dict,
+std::string GetDictStringUTF8(const base::Value& dict, const char* name);
+std::string GetDictStringUTF8(const std::unique_ptr<base::Value>& dict,
                               const char* name);
-std::string GetDictStringUTF8(
-    const std::unique_ptr<base::DictionaryValue>& dict,
-    const char* name);
 
 // Returns the major build version of Windows by reading the registry.
 // See:

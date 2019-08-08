@@ -11,29 +11,35 @@ namespace blink {
 scoped_refptr<CachedMetadata> CachedMetadata::CreateFromSerializedData(
     const uint8_t* data,
     size_t size) {
-  // Ensure the data is big enough, otherwise discard the data.
-  if (size < kCachedMetaDataStart ||
-      size > std::numeric_limits<wtf_size_t>::max()) {
+  if (size > std::numeric_limits<wtf_size_t>::max())
     return nullptr;
-  }
+  Vector<uint8_t> copied_data;
+  copied_data.Append(data, static_cast<wtf_size_t>(size));
+  return CreateFromSerializedData(std::move(copied_data));
+}
+
+scoped_refptr<CachedMetadata> CachedMetadata::CreateFromSerializedData(
+    Vector<uint8_t> data) {
+  // Ensure the data is big enough, otherwise discard the data.
+  if (data.size() < kCachedMetaDataStart)
+    return nullptr;
   // Ensure the marker matches, otherwise discard the data.
-  if (*reinterpret_cast<const uint32_t*>(data) !=
+  if (*reinterpret_cast<const uint32_t*>(data.data()) !=
       CachedMetadataHandler::kSingleEntry) {
     return nullptr;
   }
-  return base::AdoptRef(
-      new CachedMetadata(data, static_cast<wtf_size_t>(size)));
+  return base::AdoptRef(new CachedMetadata(std::move(data)));
 }
-CachedMetadata::CachedMetadata(const uint8_t* data, wtf_size_t size) {
+
+CachedMetadata::CachedMetadata(Vector<uint8_t> data) {
   // Serialized metadata should have non-empty data.
-  DCHECK_GT(size, kCachedMetaDataStart);
-  DCHECK(data);
+  DCHECK_GT(data.size(), kCachedMetaDataStart);
+  DCHECK(!data.IsEmpty());
   // Make sure that the first int in the data is the single entry marker.
-  CHECK_EQ(*reinterpret_cast<const uint32_t*>(data),
+  CHECK_EQ(*reinterpret_cast<const uint32_t*>(data.data()),
            CachedMetadataHandler::kSingleEntry);
 
-  serialized_data_.ReserveInitialCapacity(size);
-  serialized_data_.Append(data, size);
+  serialized_data_ = std::move(data);
 }
 
 CachedMetadata::CachedMetadata(uint32_t data_type_id,

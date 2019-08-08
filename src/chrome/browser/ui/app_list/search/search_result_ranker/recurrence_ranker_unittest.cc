@@ -9,7 +9,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_predictor_test_util.h"
@@ -67,7 +67,9 @@ class RecurrenceRankerTest : public testing::Test {
   }
 
   RecurrenceRankerConfigProto config_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
+      base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED};
   base::ScopedTempDir temp_dir_;
   base::test::ScopedFeatureList scoped_feature_list_;
 

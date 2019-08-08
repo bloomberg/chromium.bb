@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/containers/flat_map.h"
+#include "base/message_loop/message_loop.h"
+#include "base/task/sequence_manager/task_queue.h"
 #include "content/browser/scheduler/browser_ui_thread_task_queue.h"
 #include "content/common/content_export.h"
 
@@ -40,11 +42,19 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
   // however no tasks will be executed after this point.
   void Shutdown();
 
+  // Attention: Can only be called once
+  void EnableBestEffortQueues();
+
   using QueueType = BrowserUIThreadTaskQueue::QueueType;
 
   // Can be called from any thread.
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForTesting(
       QueueType queue_type);
+
+  // Adds a fence to all queues, runs all tasks until idle, and finally removes
+  // the fences. Note that the run loop will eventually become idle, as new
+  // tasks will not be scheduled due to the fence.
+  void RunAllPendingTasksForTesting();
 
  private:
   friend class BrowserTaskExecutor;
@@ -55,6 +65,11 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
 
   // Note this will be called before the FeatureList has been initialized.
   void InitialiseTaskQueues();
+
+  // Creates all well known task queues (BrowserUIThreadTaskQueue::QueueType).
+  void CreateTaskQueuesAndRunners();
+
+  void InitialiseBestEffortQueue();
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       QueueType queue_type);
@@ -75,6 +90,9 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
       task_queues_;
   base::flat_map<QueueType, scoped_refptr<base::SingleThreadTaskRunner>>
       task_runners_;
+
+  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
+      best_effort_voter_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserUIThreadScheduler);
 };

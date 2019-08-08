@@ -78,7 +78,7 @@ TooltipController* GetController(Widget* widget) {
 class TooltipControllerTest : public ViewsTestBase {
  public:
   TooltipControllerTest() = default;
-  ~TooltipControllerTest() override {}
+  ~TooltipControllerTest() override = default;
 
   void SetUp() override {
 #if !defined(OS_CHROMEOS)
@@ -105,9 +105,9 @@ class TooltipControllerTest : public ViewsTestBase {
     view_ = new TooltipTestView;
     widget_->GetContentsView()->AddChildView(view_);
     view_->SetBoundsRect(widget_->GetContentsView()->GetLocalBounds());
-    helper_.reset(new TooltipControllerTestHelper(
-                      GetController(widget_.get())));
-    generator_.reset(new ui::test::EventGenerator(GetRootWindow()));
+    helper_ = std::make_unique<TooltipControllerTestHelper>(
+        GetController(widget_.get()));
+    generator_ = std::make_unique<ui::test::EventGenerator>(GetRootWindow());
   }
 
   void TearDown() override {
@@ -180,7 +180,7 @@ class TooltipControllerTest : public ViewsTestBase {
 TEST_F(TooltipControllerTest, ViewTooltip) {
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
-  EXPECT_EQ(NULL, helper_->GetTooltipWindow());
+  EXPECT_EQ(nullptr, helper_->GetTooltipWindow());
 
   generator_->MoveMouseToCenterOf(GetWindow());
 
@@ -203,7 +203,7 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
 TEST_F(TooltipControllerTest, HideEmptyTooltip) {
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
-  EXPECT_EQ(NULL, helper_->GetTooltipWindow());
+  EXPECT_EQ(nullptr, helper_->GetTooltipWindow());
 
   generator_->MoveMouseToCenterOf(GetWindow());
   generator_->MoveMouseBy(1, 0);
@@ -258,7 +258,7 @@ TEST_F(TooltipControllerTest, MaxWidth) {
 TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
-  EXPECT_EQ(NULL, helper_->GetTooltipWindow());
+  EXPECT_EQ(nullptr, helper_->GetTooltipWindow());
 
   PrepareSecondView();
   aura::Window* window = GetWindow();
@@ -291,7 +291,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
 TEST_F(TooltipControllerTest, EnableOrDisableTooltips) {
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
-  EXPECT_EQ(NULL, helper_->GetTooltipWindow());
+  EXPECT_EQ(nullptr, helper_->GetTooltipWindow());
 
   generator_->MoveMouseRelativeTo(GetWindow(), view_->bounds().CenterPoint());
   EXPECT_TRUE(helper_->IsTooltipVisible());
@@ -313,7 +313,7 @@ TEST_F(TooltipControllerTest, EnableOrDisableTooltips) {
 TEST_F(TooltipControllerTest, DontShowEmptyTooltips) {
   view_->set_tooltip_text(ASCIIToUTF16("                     "));
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
-  EXPECT_EQ(NULL, helper_->GetTooltipWindow());
+  EXPECT_EQ(nullptr, helper_->GetTooltipWindow());
 
   generator_->MoveMouseRelativeTo(GetWindow(), view_->bounds().CenterPoint());
   EXPECT_FALSE(helper_->IsTooltipVisible());
@@ -322,7 +322,7 @@ TEST_F(TooltipControllerTest, DontShowEmptyTooltips) {
 TEST_F(TooltipControllerTest, TooltipHidesOnKeyPressAndStaysHiddenUntilChange) {
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text for view 1"));
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
-  EXPECT_EQ(NULL, helper_->GetTooltipWindow());
+  EXPECT_EQ(nullptr, helper_->GetTooltipWindow());
 
   TooltipTestView* view2 = PrepareSecondView();
   view2->set_tooltip_text(ASCIIToUTF16("Tooltip Text for view 2"));
@@ -365,7 +365,7 @@ TEST_F(TooltipControllerTest, TooltipHidesOnKeyPressAndStaysHiddenUntilChange) {
 TEST_F(TooltipControllerTest, TooltipHidesOnTimeoutAndStaysHiddenUntilChange) {
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text for view 1"));
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
-  EXPECT_EQ(NULL, helper_->GetTooltipWindow());
+  EXPECT_EQ(nullptr, helper_->GetTooltipWindow());
 
   TooltipTestView* view2 = PrepareSecondView();
   view2->set_tooltip_text(ASCIIToUTF16("Tooltip Text for view 2"));
@@ -469,8 +469,8 @@ int IndexInParent(const aura::Window* window) {
 
 class TooltipControllerCaptureTest : public TooltipControllerTest {
  public:
-  TooltipControllerCaptureTest() {}
-  ~TooltipControllerCaptureTest() override {}
+  TooltipControllerCaptureTest() = default;
+  ~TooltipControllerCaptureTest() override = default;
 
   void SetUp() override {
     TooltipControllerTest::SetUp();
@@ -479,7 +479,7 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
   }
 
   void TearDown() override {
-    aura::client::SetScreenPositionClient(GetRootWindow(), NULL);
+    aura::client::SetScreenPositionClient(GetRootWindow(), nullptr);
     TooltipControllerTest::TearDown();
   }
 
@@ -505,7 +505,7 @@ TEST_F(TooltipControllerCaptureTest, DISABLED_CloseOnCaptureLost) {
   EXPECT_TRUE(helper_->IsTooltipVisible());
   view_->GetWidget()->ReleaseCapture();
   EXPECT_FALSE(helper_->IsTooltipVisible());
-  EXPECT_TRUE(helper_->GetTooltipWindow() == NULL);
+  EXPECT_TRUE(helper_->GetTooltipWindow() == nullptr);
 }
 
 // Disabled on X11 as DesktopScreenX11::GetWindowAtScreenPoint() doesn't
@@ -564,8 +564,8 @@ namespace {
 
 class TestTooltip : public Tooltip {
  public:
-  TestTooltip() : is_visible_(false) {}
-  ~TestTooltip() override {}
+  TestTooltip() = default;
+  ~TestTooltip() override = default;
 
   const base::string16& tooltip_text() const { return tooltip_text_; }
 
@@ -585,7 +585,7 @@ class TestTooltip : public Tooltip {
   const gfx::Point& location() { return location_; }
 
  private:
-  bool is_visible_;
+  bool is_visible_ = false;
   base::string16 tooltip_text_;
   gfx::Point location_;
 
@@ -598,23 +598,23 @@ class TestTooltip : public Tooltip {
 class TooltipControllerTest2 : public aura::test::AuraTestBase {
  public:
   TooltipControllerTest2() : test_tooltip_(new TestTooltip) {}
-  ~TooltipControllerTest2() override {}
+  ~TooltipControllerTest2() override = default;
 
   void SetUp() override {
     at_exit_manager_ = std::make_unique<base::ShadowingAtExitManager>();
     aura::test::AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
-    controller_.reset(
-        new TooltipController(std::unique_ptr<corewm::Tooltip>(test_tooltip_)));
+    controller_ = std::make_unique<TooltipController>(
+        std::unique_ptr<corewm::Tooltip>(test_tooltip_));
     root_window()->AddPreTargetHandler(controller_.get());
     SetTooltipClient(root_window(), controller_.get());
-    helper_.reset(new TooltipControllerTestHelper(controller_.get()));
-    generator_.reset(new ui::test::EventGenerator(root_window()));
+    helper_ = std::make_unique<TooltipControllerTestHelper>(controller_.get());
+    generator_ = std::make_unique<ui::test::EventGenerator>(root_window());
   }
 
   void TearDown() override {
     root_window()->RemovePreTargetHandler(controller_.get());
-    wm::SetTooltipClient(root_window(), NULL);
+    wm::SetTooltipClient(root_window(), nullptr);
     controller_.reset();
     generator_.reset();
     helper_.reset();
@@ -666,7 +666,7 @@ TEST_F(TooltipControllerTest2, CloseOnCancelMode) {
   ui::CancelModeEvent event;
   helper_->controller()->OnCancelMode(&event);
   EXPECT_FALSE(helper_->IsTooltipVisible());
-  EXPECT_TRUE(helper_->GetTooltipWindow() == NULL);
+  EXPECT_TRUE(helper_->GetTooltipWindow() == nullptr);
 }
 
 // Use for tests that need both views and a TestTooltip.
@@ -691,7 +691,7 @@ class TooltipControllerTest3 : public ViewsTestBase {
     widget_->GetContentsView()->AddChildView(view_);
     view_->SetBoundsRect(widget_->GetContentsView()->GetLocalBounds());
 
-    generator_.reset(new ui::test::EventGenerator(GetRootWindow()));
+    generator_ = std::make_unique<ui::test::EventGenerator>(GetRootWindow());
     auto tooltip = std::make_unique<TestTooltip>();
     test_tooltip_ = tooltip.get();
     controller_ = std::make_unique<TooltipController>(std::move(tooltip));
@@ -700,13 +700,13 @@ class TooltipControllerTest3 : public ViewsTestBase {
     if (tooltip_controller)
       GetRootWindow()->RemovePreTargetHandler(tooltip_controller);
     GetRootWindow()->AddPreTargetHandler(controller_.get());
-    helper_.reset(new TooltipControllerTestHelper(controller_.get()));
+    helper_ = std::make_unique<TooltipControllerTestHelper>(controller_.get());
     SetTooltipClient(GetRootWindow(), controller_.get());
   }
 
   void TearDown() override {
     GetRootWindow()->RemovePreTargetHandler(controller_.get());
-    wm::SetTooltipClient(GetRootWindow(), NULL);
+    wm::SetTooltipClient(GetRootWindow(), nullptr);
 
     controller_.reset();
     generator_.reset();

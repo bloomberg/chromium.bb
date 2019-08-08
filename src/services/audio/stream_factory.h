@@ -13,7 +13,9 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/threading/thread.h"
 #include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "media/mojo/interfaces/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -109,6 +111,7 @@ class StreamFactory final : public mojom::StreamFactory {
   // Order of the following members is important for a clean shutdown.
   LoopbackCoordinator coordinator_;
   std::vector<std::unique_ptr<LocalMuter>> muters_;
+  base::Thread loopback_worker_thread_;
   std::vector<std::unique_ptr<LoopbackStream>> loopback_streams_;
   StreamMonitorCoordinator stream_monitor_coordinator_;
   InputStreamSet input_streams_;
@@ -116,6 +119,8 @@ class StreamFactory final : public mojom::StreamFactory {
 
   // TODO(crbug.com/888478): Remove this after diagnosis.
   volatile uint32_t magic_bytes_;
+
+  base::WeakPtrFactory<StreamFactory> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StreamFactory);
 };

@@ -18,13 +18,12 @@
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
-#include "chrome/browser/chromeos/login/screens/welcome_view.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
+#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -37,8 +36,6 @@
 namespace {
 
 constexpr char kUserActionContinueButtonClicked[] = "continue";
-constexpr char kUserActionConnectDebuggingFeaturesClicked[] =
-    "connect-debugging-features";
 
 }  // namespace
 
@@ -53,21 +50,16 @@ WelcomeScreen* WelcomeScreen::Get(ScreenManager* manager) {
       manager->GetScreen(OobeScreen::SCREEN_OOBE_WELCOME));
 }
 
-WelcomeScreen::WelcomeScreen(BaseScreenDelegate* base_screen_delegate,
-                             Delegate* delegate,
-                             WelcomeView* view,
+WelcomeScreen::WelcomeScreen(WelcomeView* view,
                              const base::RepeatingClosure& exit_callback)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_WELCOME),
+    : BaseScreen(OobeScreen::SCREEN_OOBE_WELCOME),
       view_(view),
-      delegate_(delegate),
       exit_callback_(exit_callback),
       weak_factory_(this) {
   if (view_)
     view_->Bind(this);
 
   input_method::InputMethodManager::Get()->AddObserver(this);
-  InitializeTimezoneObserver();
-  OnSystemTimezoneChanged();
   UpdateLanguageList();
 }
 
@@ -84,7 +76,6 @@ WelcomeScreen::~WelcomeScreen() {
 void WelcomeScreen::OnViewDestroyed(WelcomeView* view) {
   if (view_ == view) {
     view_ = nullptr;
-    timezone_subscription_.reset();
   }
 }
 
@@ -191,9 +182,6 @@ void WelcomeScreen::Show() {
     SetApplicationLocale(startup_manifest->initial_locale_default());
   }
 
-  if (!timezone_subscription_)
-    InitializeTimezoneObserver();
-
   // Automatically continue if we are using hands-off enrollment.
   if (WizardController::UsingHandsOffEnrollment()) {
     OnUserAction(kUserActionContinueButtonClicked);
@@ -203,7 +191,6 @@ void WelcomeScreen::Show() {
 }
 
 void WelcomeScreen::Hide() {
-  timezone_subscription_.reset();
   if (view_)
     view_->Hide();
 }
@@ -211,9 +198,6 @@ void WelcomeScreen::Hide() {
 void WelcomeScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kUserActionContinueButtonClicked) {
     OnContinueButtonPressed();
-  } else if (action_id == kUserActionConnectDebuggingFeaturesClicked) {
-    if (delegate_)
-      delegate_->OnEnableDebuggingScreenRequested();
   } else {
     BaseScreen::OnUserAction(action_id);
   }
@@ -234,12 +218,6 @@ void WelcomeScreen::InputMethodChanged(
 
 ////////////////////////////////////////////////////////////////////////////////
 // WelcomeScreen, private:
-
-void WelcomeScreen::InitializeTimezoneObserver() {
-  timezone_subscription_ = CrosSettings::Get()->AddSettingsObserver(
-      kSystemTimezone, base::Bind(&WelcomeScreen::OnSystemTimezoneChanged,
-                                  base::Unretained(this)));
-}
 
 void WelcomeScreen::OnContinueButtonPressed() {
   if (view_) {
@@ -290,14 +268,6 @@ void WelcomeScreen::OnLanguageListResolved(
     view_->ReloadLocalizedContent();
   for (auto& observer : observers_)
     observer.OnLanguageListReloaded();
-}
-
-void WelcomeScreen::OnSystemTimezoneChanged() {
-  if (view_) {
-    std::string current_timezone_id;
-    CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
-    view_->SetTimezoneId(current_timezone_id);
-  }
 }
 
 void WelcomeScreen::ConnectToLocaleUpdateController() {

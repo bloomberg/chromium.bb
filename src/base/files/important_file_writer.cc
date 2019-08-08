@@ -187,7 +187,7 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
 
   if (bytes_written < data_length) {
     LogFailure(path, histogram_suffix, FAILED_WRITING,
-               "error writing, bytes_written=" + IntToString(bytes_written));
+               "error writing, bytes_written=" + NumberToString(bytes_written));
     DeleteTmpFile(tmp_file_path, histogram_suffix);
     return false;
   }

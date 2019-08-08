@@ -247,14 +247,9 @@ std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(
     }
   }
 
-  const ActionInfo* page_action = ActionInfo::GetPageActionInfo(extension);
-  if (page_action && !page_action->default_icon.empty())
-    page_action->default_icon.GetPaths(&image_paths);
-
-  const ActionInfo* browser_action =
-      ActionInfo::GetBrowserActionInfo(extension);
-  if (browser_action && !browser_action->default_icon.empty())
-    browser_action->default_icon.GetPaths(&image_paths);
+  const ActionInfo* action = ActionInfo::GetAnyActionInfo(extension);
+  if (action && !action->default_icon.empty())
+    action->default_icon.GetPaths(&image_paths);
 
   return image_paths;
 }

@@ -27,3 +27,11 @@ std::string LocaleManager::GetMailRUReferralID() {
   return base::android::ConvertJavaStringToUTF8(
       env, Java_LocaleManager_getMailRUReferralId(env, jlocale_manager));
 }
+
+// static
+void LocaleManager::RecordUserTypeMetrics() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> jlocale_manager =
+      Java_LocaleManager_getInstance(env);
+  return Java_LocaleManager_recordUserTypeMetrics(env, jlocale_manager);
+}

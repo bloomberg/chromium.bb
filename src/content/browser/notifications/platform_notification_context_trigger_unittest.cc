@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "content/browser/notifications/notification_trigger_constants.h"
@@ -18,7 +19,6 @@
 #include "content/test/mock_platform_notification_service.h"
 #include "content/test/test_content_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "url/gurl.h"
 
 using base::Time;
@@ -26,22 +26,28 @@ using base::TimeDelta;
 
 namespace content {
 
+namespace {
+
 // Fake Service Worker registration id to use in tests requiring one.
 const int64_t kFakeServiceWorkerRegistrationId = 42;
 
 class NotificationBrowserClient : public TestContentBrowserClient {
  public:
-  NotificationBrowserClient()
+  explicit NotificationBrowserClient(BrowserContext* browser_context)
       : platform_notification_service_(
-            std::make_unique<MockPlatformNotificationService>()) {}
+            std::make_unique<MockPlatformNotificationService>(
+                browser_context)) {}
 
-  PlatformNotificationService* GetPlatformNotificationService() override {
+  PlatformNotificationService* GetPlatformNotificationService(
+      BrowserContext* browser_context) override {
     return platform_notification_service_.get();
   }
 
  private:
   std::unique_ptr<PlatformNotificationService> platform_notification_service_;
 };
+
+}  // namespace
 
 class PlatformNotificationContextTriggerTest : public ::testing::Test {
  public:
@@ -50,13 +56,13 @@ class PlatformNotificationContextTriggerTest : public ::testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
             base::test::ScopedTaskEnvironment::NowSource::
                 MAIN_THREAD_MOCK_TIME),
-        success_(false) {}
+        notification_browser_client_(&browser_context_),
+        success_(false) {
+    SetBrowserClientForTesting(&notification_browser_client_);
+  }
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kNotificationTriggers);
-    SetBrowserClientForTesting(&notification_browser_client_);
-    platform_notification_service_ =
-        notification_browser_client_.GetPlatformNotificationService();
     platform_notification_context_ =
         base::MakeRefCounted<PlatformNotificationContextImpl>(
             base::FilePath(), &browser_context_, nullptr);
@@ -70,16 +76,6 @@ class PlatformNotificationContextTriggerTest : public ::testing::Test {
   void DidWriteNotificationData(bool success,
                                 const std::string& notification_id) {
     success_ = success;
-  }
-
-  // Callback to provide when deleting notification data from the database.
-  void DidDeleteNotificationData(bool success) { success_ = success; }
-
-  // Callback to provide when getting displayed notifications from the
-  // PlatformNotificationService.
-  void DidGetDisplayedNotifications(std::set<std::string> notification_ids,
-                                    bool supports_synchronization) {
-    displayed_notification_ids_ = notification_ids;
   }
 
  protected:
@@ -111,23 +107,33 @@ class PlatformNotificationContextTriggerTest : public ::testing::Test {
     return success_;
   }
 
+  // Gets the currently displayed notifications from
+  // |notification_browser_client_| synchronously.
   std::set<std::string> GetDisplayedNotifications() {
-    platform_notification_service_->GetDisplayedNotifications(
-        &browser_context_,
-        base::BindOnce(&PlatformNotificationContextTriggerTest::
-                           DidGetDisplayedNotifications,
-                       base::Unretained(this)));
+    std::set<std::string> displayed_notification_ids;
+    base::RunLoop run_loop;
+    notification_browser_client_
+        .GetPlatformNotificationService(&browser_context_)
+        ->GetDisplayedNotifications(base::BindLambdaForTesting(
+            [&](std::set<std::string> notification_ids, bool supports_sync) {
+              displayed_notification_ids = std::move(notification_ids);
+              run_loop.QuitClosure().Run();
+            }));
+    run_loop.Run();
+    return displayed_notification_ids;
+  }
+
+  void TriggerNotifications() {
+    platform_notification_context_->TriggerNotifications();
     base::RunLoop().RunUntilIdle();
-    return displayed_notification_ids_;
   }
 
   TestBrowserThreadBundle thread_bundle_;  // Must be first member
-  TestBrowserContext browser_context_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  TestBrowserContext browser_context_;
   NotificationBrowserClient notification_browser_client_;
-  PlatformNotificationService* platform_notification_service_;
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context_;
 
   // Returns the next persistent notification id for tests.
@@ -136,10 +142,7 @@ class PlatformNotificationContextTriggerTest : public ::testing::Test {
   }
 
   bool success_;
-  NotificationDatabaseData database_data_;
-  std::string notification_id_;
   int64_t next_persistent_notification_id_ = 1;
-  std::set<std::string> displayed_notification_ids_;
 };
 
 TEST_F(PlatformNotificationContextTriggerTest, TriggerInFuture) {
@@ -148,12 +151,20 @@ TEST_F(PlatformNotificationContextTriggerTest, TriggerInFuture) {
 
   // Wait until the trigger timestamp is reached.
   thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(10));
+
+  // This gets called by the notification scheduling system.
+  TriggerNotifications();
+
   ASSERT_EQ(1u, GetDisplayedNotifications().size());
 }
 
 TEST_F(PlatformNotificationContextTriggerTest, TriggerInPast) {
   // Trigger timestamp in the past should immediately trigger.
   WriteNotificationData("1", Time::Now() - TimeDelta::FromSeconds(10));
+
+  // This gets called by the notification scheduling system.
+  TriggerNotifications();
+
   ASSERT_EQ(1u, GetDisplayedNotifications().size());
 }
 
@@ -172,6 +183,10 @@ TEST_F(PlatformNotificationContextTriggerTest,
   ASSERT_EQ(0u, GetDisplayedNotifications().size());
 
   thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(5));
+
+  // This gets called by the notification scheduling system.
+  TriggerNotifications();
+
   ASSERT_EQ(1u, GetDisplayedNotifications().size());
 }
 
@@ -183,6 +198,10 @@ TEST_F(PlatformNotificationContextTriggerTest, OverwriteExistingTriggerToPast) {
 
   // Overwrites the scheduled notifications with a new trigger timestamp.
   WriteNotificationData("1", Time::Now() - TimeDelta::FromSeconds(10));
+
+  // This gets called by the notification scheduling system.
+  TriggerNotifications();
+
   ASSERT_EQ(1u, GetDisplayedNotifications().size());
 }
 
@@ -193,6 +212,10 @@ TEST_F(PlatformNotificationContextTriggerTest,
 
   // Overwrites a displayed notification with a trigger timestamp in the past.
   WriteNotificationData("1", Time::Now() - TimeDelta::FromSeconds(10));
+
+  // This gets called by the notification scheduling system.
+  TriggerNotifications();
+
   ASSERT_EQ(1u, GetDisplayedNotifications().size());
 }
 
@@ -201,6 +224,9 @@ TEST_F(PlatformNotificationContextTriggerTest,
   WriteNotificationData("1", Time::Now() + TimeDelta::FromSeconds(10));
   thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(10));
 
+  // This gets called by the notification scheduling system.
+  TriggerNotifications();
+
   // Overwrites a displayed notification which hides it until the trigger
   // timestamp is reached.
   WriteNotificationData("1", Time::Now() + TimeDelta::FromSeconds(10));
@@ -208,6 +234,10 @@ TEST_F(PlatformNotificationContextTriggerTest,
   ASSERT_EQ(0u, GetDisplayedNotifications().size());
 
   thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(10));
+
+  // This gets called by the notification scheduling system.
+  TriggerNotifications();
+
   ASSERT_EQ(1u, GetDisplayedNotifications().size());
 }
 

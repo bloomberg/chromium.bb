@@ -5,6 +5,7 @@ include_rules = [
   "+chrome/browser/ui/views/chrome_layout_provider.h",
 
   "+chrome/services/app_service/public",
+  "+chrome/services/wilco_dtc_supportd/public",
   "+cros",
   "+dbus",
   "+device/bluetooth",
@@ -32,6 +33,10 @@ include_rules = [
 specific_include_rules = {
   ".*test.*": [
    "!ash",
+   "+ash/public",
+  ],
+  "assistant_util_unittest\.cc": [
+    "+ui/events/devices/device_data_manager.h",
   ],
   "chrome_browser_main_chromeos\.cc": [
     # TODO(mash): Support EventRewriters, http://crbug.com/647781.

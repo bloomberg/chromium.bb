@@ -46,6 +46,9 @@ const char kClientID[] = "fake-client-id";
 const char kMachineID[] = "fake-machine-id";
 const char kMachineModel[] = "fake-machine-model";
 const char kBrandCode[] = "fake-brand-code";
+const char kEthernetMacAddress[] = "fake-ethernet-mac-address";
+const char kDockMacAddress[] = "fake-dock-mac-address";
+const char kManufactureDate[] = "fake-manufacture-date";
 const char kOAuthToken[] = "fake-oauth-token";
 const char kDMToken[] = "fake-dm-token";
 const char kDMToken2[] = "fake-dm-token-2";
@@ -125,6 +128,9 @@ class CloudPolicyClientTest : public testing::Test {
     register_request->set_machine_id(kMachineID);
     register_request->set_machine_model(kMachineModel);
     register_request->set_brand_code(kBrandCode);
+    register_request->set_ethernet_mac_address(kEthernetMacAddress);
+    register_request->set_dock_mac_address(kDockMacAddress);
+    register_request->set_manufacture_date(kManufactureDate);
     register_request->set_lifetime(
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE);
     register_request->set_flavor(
@@ -136,6 +142,9 @@ class CloudPolicyClientTest : public testing::Test {
     reregister_request->set_machine_id(kMachineID);
     reregister_request->set_machine_model(kMachineModel);
     reregister_request->set_brand_code(kBrandCode);
+    reregister_request->set_ethernet_mac_address(kEthernetMacAddress);
+    reregister_request->set_dock_mac_address(kDockMacAddress);
+    reregister_request->set_manufacture_date(kManufactureDate);
     reregister_request->set_lifetime(
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE);
     reregister_request->set_flavor(
@@ -153,6 +162,9 @@ class CloudPolicyClientTest : public testing::Test {
     request->set_machine_id(kMachineID);
     request->set_machine_model(kMachineModel);
     request->set_brand_code(kBrandCode);
+    request->set_ethernet_mac_address(kEthernetMacAddress);
+    request->set_dock_mac_address(kDockMacAddress);
+    request->set_manufacture_date(kManufactureDate);
     request->set_lifetime(em::DeviceRegisterRequest::LIFETIME_INDEFINITE);
     request->set_flavor(
         em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_ATTESTATION);
@@ -206,6 +218,7 @@ class CloudPolicyClientTest : public testing::Test {
 
     upload_status_request_.mutable_device_status_report_request();
     upload_status_request_.mutable_session_status_report_request();
+    upload_status_request_.mutable_child_status_report_request();
 
     chrome_desktop_report_request_.mutable_chrome_desktop_report_request();
 
@@ -305,7 +318,8 @@ class CloudPolicyClientTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
     client_ = std::make_unique<CloudPolicyClient>(
-        kMachineID, kMachineModel, kBrandCode, &service_,
+        kMachineID, kMachineModel, kBrandCode, kEthernetMacAddress,
+        kDockMacAddress, kManufactureDate, &service_,
         shared_url_loader_factory_, &fake_signing_service_,
         base::BindRepeating(
             &MockDeviceDMTokenCallbackObserver::OnDeviceDMTokenRequested,
@@ -1160,7 +1174,9 @@ TEST_F(CloudPolicyClientTest, UploadStatus) {
       base::Unretained(&callback_observer_));
   em::DeviceStatusReportRequest device_status;
   em::SessionStatusReportRequest session_status;
-  client_->UploadDeviceStatus(&device_status, &session_status, callback);
+  em::ChildStatusReportRequest child_status;
+  client_->UploadDeviceStatus(&device_status, &session_status, &child_status,
+                              callback);
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
 
@@ -1177,7 +1193,9 @@ TEST_F(CloudPolicyClientTest, UploadStatusWithOAuthToken) {
                           base::Unretained(&callback_observer_));
   em::DeviceStatusReportRequest device_status;
   em::SessionStatusReportRequest session_status;
-  client_->UploadDeviceStatus(&device_status, &session_status, callback);
+  em::ChildStatusReportRequest child_status;
+  client_->UploadDeviceStatus(&device_status, &session_status, &child_status,
+                              callback);
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 
   // Tests that previous OAuth token is no longer sent in status upload after
@@ -1186,7 +1204,8 @@ TEST_F(CloudPolicyClientTest, UploadStatusWithOAuthToken) {
 
   ExpectUploadStatus();
   EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
-  client_->UploadDeviceStatus(&device_status, &session_status, callback);
+  client_->UploadDeviceStatus(&device_status, &session_status, &child_status,
+                              callback);
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
 
@@ -1204,7 +1223,9 @@ TEST_F(CloudPolicyClientTest, UploadStatusWhilePolicyFetchActive) {
       base::Unretained(&callback_observer_));
   em::DeviceStatusReportRequest device_status;
   em::SessionStatusReportRequest session_status;
-  client_->UploadDeviceStatus(&device_status, &session_status, callback);
+  em::ChildStatusReportRequest child_status;
+  client_->UploadDeviceStatus(&device_status, &session_status, &child_status,
+                              callback);
 
   // Now initiate a policy fetch - this should not cancel the upload job.
   ExpectPolicyFetch(kDMToken);
@@ -1259,7 +1280,9 @@ TEST_F(CloudPolicyClientTest, MultipleActiveRequests) {
       base::Unretained(&callback_observer_));
   em::DeviceStatusReportRequest device_status;
   em::SessionStatusReportRequest session_status;
-  client_->UploadDeviceStatus(&device_status, &session_status, callback);
+  em::ChildStatusReportRequest child_status;
+  client_->UploadDeviceStatus(&device_status, &session_status, &child_status,
+                              callback);
 
   // Set up pending upload certificate job.
   MockDeviceManagementJob* upload_certificate_job = nullptr;
@@ -1304,7 +1327,9 @@ TEST_F(CloudPolicyClientTest, UploadStatusFailure) {
 
   em::DeviceStatusReportRequest device_status;
   em::SessionStatusReportRequest session_status;
-  client_->UploadDeviceStatus(&device_status, &session_status, callback);
+  em::ChildStatusReportRequest child_status;
+  client_->UploadDeviceStatus(&device_status, &session_status, &child_status,
+                              callback);
   EXPECT_EQ(DM_STATUS_REQUEST_FAILED, client_->status());
 }
 
@@ -1323,7 +1348,9 @@ TEST_F(CloudPolicyClientTest, RequestCancelOnUnregister) {
       base::Unretained(&callback_observer_));
   em::DeviceStatusReportRequest device_status;
   em::SessionStatusReportRequest session_status;
-  client_->UploadDeviceStatus(&device_status, &session_status, callback);
+  em::ChildStatusReportRequest child_status;
+  client_->UploadDeviceStatus(&device_status, &session_status, &child_status,
+                              callback);
   EXPECT_EQ(1, client_->GetActiveRequestCountForTest());
   EXPECT_CALL(observer_, OnRegistrationStateChanged(_));
   ExpectUnregistration(kDMToken);

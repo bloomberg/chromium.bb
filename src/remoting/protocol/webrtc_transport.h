@@ -34,6 +34,8 @@ class WebrtcTransport : public Transport {
  public:
   class EventHandler {
    public:
+    virtual ~EventHandler() = default;
+
     // Called after |peer_connection| has been created but before handshake. The
     // handler should create data channels and media streams. Renegotiation will
     // be required in two cases after this method returns:
@@ -58,9 +60,6 @@ class WebrtcTransport : public Transport {
         scoped_refptr<webrtc::MediaStreamInterface> stream) = 0;
     virtual void OnWebrtcTransportMediaStreamRemoved(
         scoped_refptr<webrtc::MediaStreamInterface> stream) = 0;
-
-   protected:
-    virtual ~EventHandler() {}
   };
 
   WebrtcTransport(rtc::Thread* worker_thread,

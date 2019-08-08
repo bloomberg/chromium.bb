@@ -18,7 +18,6 @@
 #include "api/video/video_content_type.h"
 #include "api/video/video_frame.h"
 #include "api/video/video_timing.h"
-#include "common_types.h"  // NOLINT(build/include)
 
 namespace webrtc {
 
@@ -81,12 +80,10 @@ class VCMReceiveCallback {
 // rate.
 class VCMReceiveStatisticsCallback {
  public:
-  virtual void OnReceiveRatesUpdated(uint32_t bitRate, uint32_t frameRate) = 0;
   virtual void OnCompleteFrame(bool is_keyframe,
                                size_t size_bytes,
                                VideoContentType content_type) = 0;
-  virtual void OnDiscardedPacketsUpdated(int discarded_packets) = 0;
-  virtual void OnFrameCountsUpdated(const FrameCounts& frame_counts) = 0;
+
   virtual void OnFrameBufferTimingsUpdated(int decode_ms,
                                            int max_decode_ms,
                                            int current_delay_ms,

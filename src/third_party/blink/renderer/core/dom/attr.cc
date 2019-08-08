@@ -46,16 +46,6 @@ Attr::Attr(Document& document,
       name_(name),
       standalone_value_or_attached_local_name_(standalone_value) {}
 
-Attr* Attr::Create(Element& element, const QualifiedName& name) {
-  return MakeGarbageCollected<Attr>(element, name);
-}
-
-Attr* Attr::Create(Document& document,
-                   const QualifiedName& name,
-                   const AtomicString& value) {
-  return MakeGarbageCollected<Attr>(document, name, value);
-}
-
 Attr::~Attr() = default;
 
 const QualifiedName Attr::GetQualifiedName() const {

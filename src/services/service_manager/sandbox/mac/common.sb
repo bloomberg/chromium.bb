@@ -109,6 +109,8 @@
 
 ; Allow reads of system libraries and frameworks.
 (allow file-read*
+  (subpath "/System/Library/CoreServices/CoreTypes.bundle")
+  (subpath "/System/Library/CoreServices/SystemVersion.bundle")
   (subpath "/System/Library/Frameworks")
   (subpath "/System/Library/Preferences/Logging")
   (subpath "/System/Library/PrivateFrameworks")
@@ -159,8 +161,10 @@
 
 ; Access to the home directory.
 (allow file-read-data
+  (path (string-append (user-homedir-path "/Library/Preferences/") (param bundle-id) ".plist"))
   (path (user-homedir-path "/Library/Preferences/.GlobalPreferences.plist"))
   (regex (user-homedir-path #"/Library/Preferences/ByHost/.GlobalPreferences.*"))
+  (path (user-homedir-path "/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist"))
 )
 
 ; Mach IPC needed by all Chromium Helper instances.

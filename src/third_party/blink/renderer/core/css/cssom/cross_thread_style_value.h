@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CROSS_THREAD_STYLE_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CROSS_THREAD_STYLE_VALUE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 
@@ -26,6 +28,7 @@ class CORE_EXPORT CrossThreadStyleValue {
 
   virtual StyleValueType GetType() const = 0;
   virtual CSSStyleValue* ToCSSStyleValue() = 0;
+  virtual std::unique_ptr<CrossThreadStyleValue> IsolatedCopy() const = 0;
 
   virtual bool operator==(const CrossThreadStyleValue&) const = 0;
 

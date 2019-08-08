@@ -169,7 +169,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/omnibox:omnibox_internal",
     "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/omnibox/popup:popup_internal",
-    "//ios/chrome/browser/ui/omnibox/popup:popup_internal",
+    "//ios/chrome/browser/ui/omnibox/popup:popup_ui",
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/tab_grid:egtest_support",
     "//ios/chrome/browser/ui/toolbar/buttons",
@@ -180,6 +180,7 @@ source_set("eg_tests") {
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web:earl_grey_test_support",
+    "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
     "//ui/base",
   ]

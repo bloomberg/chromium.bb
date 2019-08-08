@@ -17,6 +17,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_util.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -28,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "net/http/http_status_code.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 
@@ -164,6 +166,11 @@ const GURL& ContentTranslateDriver::GetLastCommittedURL() {
 
 const GURL& ContentTranslateDriver::GetVisibleURL() {
   return navigation_controller_->GetWebContents()->GetVisibleURL();
+}
+
+ukm::SourceId ContentTranslateDriver::GetUkmSourceId() {
+  return ukm::GetSourceIdForWebContentsDocument(
+      navigation_controller_->GetWebContents());
 }
 
 bool ContentTranslateDriver::HasCurrentPage() {

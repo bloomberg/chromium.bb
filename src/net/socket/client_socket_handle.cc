@@ -15,18 +15,50 @@
 #include "net/base/trace_constants.h"
 #include "net/log/net_log_event_type.h"
 #include "net/socket/client_socket_pool.h"
+#include "net/socket/connect_job.h"
 
 namespace net {
 
 ClientSocketHandle::ClientSocketHandle()
     : is_initialized_(false),
-      pool_(NULL),
-      higher_pool_(NULL),
+      pool_(nullptr),
+      higher_pool_(nullptr),
       reuse_type_(ClientSocketHandle::UNUSED),
+      group_generation_(-1),
       is_ssl_error_(false) {}
 
 ClientSocketHandle::~ClientSocketHandle() {
   Reset();
+}
+
+int ClientSocketHandle::Init(
+    const ClientSocketPool::GroupId& group_id,
+    scoped_refptr<ClientSocketPool::SocketParams> socket_params,
+    RequestPriority priority,
+    const SocketTag& socket_tag,
+    ClientSocketPool::RespectLimits respect_limits,
+    CompletionOnceCallback callback,
+    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
+    ClientSocketPool* pool,
+    const NetLogWithSource& net_log) {
+  requesting_source_ = net_log.source();
+
+  CHECK(!group_id.destination().IsEmpty());
+  ResetInternal(true);
+  ResetErrorState();
+  pool_ = pool;
+  group_id_ = group_id;
+  CompletionOnceCallback io_complete_callback =
+      base::BindOnce(&ClientSocketHandle::OnIOComplete, base::Unretained(this));
+  int rv = pool_->RequestSocket(
+      group_id, std::move(socket_params), priority, socket_tag, respect_limits,
+      this, std::move(io_complete_callback), proxy_auth_callback, net_log);
+  if (rv == ERR_IO_PENDING) {
+    callback_ = std::move(callback);
+  } else {
+    HandleInitCompletion(rv);
+  }
+  return rv;
 }
 
 void ClientSocketHandle::SetPriority(RequestPriority priority) {
@@ -37,7 +69,7 @@ void ClientSocketHandle::SetPriority(RequestPriority priority) {
   }
 
   if (pool_)
-    pool_->SetPriority(group_name_, this, priority);
+    pool_->SetPriority(group_id_, this, priority);
 }
 
 void ClientSocketHandle::Reset() {
@@ -47,7 +79,7 @@ void ClientSocketHandle::Reset() {
 
 void ClientSocketHandle::ResetInternal(bool cancel) {
   // Was Init called?
-  if (!group_name_.empty()) {
+  if (!group_id_.destination().IsEmpty()) {
     // If so, we must have a pool.
     CHECK(pool_);
     if (is_initialized()) {
@@ -55,7 +87,7 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
         socket_->NetLog().EndEvent(NetLogEventType::SOCKET_IN_USE);
         // Release the socket back to the ClientSocketPool so it can be
         // deleted or reused.
-        pool_->ReleaseSocket(group_name_, std::move(socket_), pool_id_);
+        pool_->ReleaseSocket(group_id_, std::move(socket_), group_generation_);
       } else {
         // If the handle has been initialized, we should still have a
         // socket.
@@ -64,17 +96,17 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
     } else if (cancel) {
       // If we did not get initialized yet and we have a socket
       // request pending, cancel it.
-      pool_->CancelRequest(group_name_, this);
+      pool_->CancelRequest(group_id_, this);
     }
   }
   is_initialized_ = false;
   socket_.reset();
-  group_name_.clear();
+  group_id_ = ClientSocketPool::GroupId();
   reuse_type_ = ClientSocketHandle::UNUSED;
   callback_.Reset();
   if (higher_pool_)
     RemoveHigherLayeredPool(higher_pool_);
-  pool_ = NULL;
+  pool_ = nullptr;
   idle_time_ = base::TimeDelta();
   // Connection timing is still needed for handling
   // ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT errors.
@@ -83,23 +115,23 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
   // longer results in following a redirect.
   if (!pending_http_proxy_socket_)
     connect_timing_ = LoadTimingInfo::ConnectTiming();
-  pool_id_ = -1;
+  group_generation_ = -1;
 }
 
 void ClientSocketHandle::ResetErrorState() {
   is_ssl_error_ = false;
-  ssl_error_response_info_ = HttpResponseInfo();
+  ssl_cert_request_info_ = nullptr;
   pending_http_proxy_socket_.reset();
 }
 
 LoadState ClientSocketHandle::GetLoadState() const {
   CHECK(!is_initialized());
-  CHECK(!group_name_.empty());
+  CHECK(!group_id_.destination().IsEmpty());
   // Because of http://crbug.com/37810  we may not have a pool, but have
   // just a raw socket.
   if (!pool_)
     return LOAD_STATE_IDLE;
-  return pool_->GetLoadState(group_name_, this);
+  return pool_->GetLoadState(group_id_, this);
 }
 
 bool ClientSocketHandle::IsPoolStalled() const {
@@ -126,13 +158,13 @@ void ClientSocketHandle::RemoveHigherLayeredPool(
   CHECK_EQ(higher_pool_, higher_pool);
   if (pool_) {
     pool_->RemoveHigherLayeredPool(higher_pool);
-    higher_pool_ = NULL;
+    higher_pool_ = nullptr;
   }
 }
 
 void ClientSocketHandle::CloseIdleSocketsInGroup() {
   if (pool_)
-    pool_->CloseIdleSocketsInGroup(group_name_);
+    pool_->CloseIdleSocketsInGroup(group_id_);
 }
 
 bool ClientSocketHandle::GetLoadTimingInfo(
@@ -172,6 +204,23 @@ void ClientSocketHandle::SetSocket(std::unique_ptr<StreamSocket> s) {
   socket_ = std::move(s);
 }
 
+void ClientSocketHandle::SetAdditionalErrorState(ConnectJob* connect_job) {
+  connection_attempts_ = connect_job->GetConnectionAttempts();
+
+  // TODO(mmenke): Once redirects are no longer followed on
+  // ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT, remove this code.
+  pending_http_proxy_socket_ = connect_job->PassProxySocketOnFailure();
+  if (pending_http_proxy_socket_) {
+    // Connection timing is only set when a socket was actually established. In
+    // this particular case, there is a socket being returned, just not through
+    // the normal path, so need to set timing information here.
+    connect_timing_ = connect_job->connect_timing();
+  }
+
+  is_ssl_error_ = connect_job->IsSSLError();
+  ssl_cert_request_info_ = connect_job->GetCertRequestInfo();
+}
+
 void ClientSocketHandle::OnIOComplete(int result) {
   TRACE_EVENT0(NetTracingCategory(), "ClientSocketHandle::OnIOComplete");
   CompletionOnceCallback callback = std::move(callback_);
@@ -194,7 +243,8 @@ void ClientSocketHandle::HandleInitCompletion(int result) {
     return;
   }
   is_initialized_ = true;
-  CHECK_NE(-1, pool_id_) << "Pool should have set |pool_id_| to a valid value.";
+  CHECK_NE(-1, group_generation_)
+      << "Pool should have set |group_generation_| to a valid value.";
 
   // Broadcast that the socket has been acquired.
   // TODO(eroman): This logging is not complete, in particular set_socket() and

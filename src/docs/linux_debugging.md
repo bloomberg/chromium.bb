@@ -206,22 +206,10 @@ three) but you'll still need to use `--plugin-launcher` or another approach.
 
 ### Printing Chromium types
 
-gdb 7 lets us use Python to write pretty-printers for Chromium types. The
-directory `tools/gdb/` contains a Python gdb scripts useful for Chromium code.
-There is a similar script in `thrid_party/blink/tools/gdb`, which came from
-WebKit.
-
-To include these pretty-printers with your gdb, put the following into
-`~/.gdbinit`:
-
-```python
-python
-import sys
-sys.path.insert(0, "<path/to/chromium/src>/tools/gdb/")
-import gdb_chrome
-```
-
-This will import Blink pretty-printers as well.
+gdb 7 lets us use Python to write pretty-printers for Chromium types. See
+[gdbinit](https://chromium.googlesource.com/chromium/src/+/master/docs/gdbinit.md)
+to enable pretty-printing of Chromium types.  This will import Blink
+pretty-printers as well.
 
 Pretty printers for std types shouldn't be necessary in gdb 7, but they're
 provided here in case you're using an older gdb. Put the following into
@@ -276,13 +264,10 @@ your "gn args".
 ### Source level debug with -fdebug-compilation-dir
 
 When `strip_absolute_paths_from_debug_symbols` is enabled (which is the
-default) you need to add following command to your `~/.gdbinit` for source
-level debugging to load customized [gdbinit](../tools/gdb/gdbinit) or copy the
-content of the file to your `~/.gdbinit`.
-
-```
-source path/to/chromium/src/tools/gdb/gdbinit
-```
+default), gdb may not be able to find debug files, making source-level debugging
+impossible. See
+[gdbinit](https://chromium.googlesource.com/chromium/src/+/master/docs/gdbinit.md)
+to configure gdb to be able to find debug files.
 
 ## Core files
 

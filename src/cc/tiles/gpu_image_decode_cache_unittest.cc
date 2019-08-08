@@ -2429,12 +2429,6 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadDownscaled) {
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.is_budgeted());
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
-  // For non-lazy images which are downscaled, the scaled image should be
-  // cached.
-  auto sw_image = cache->GetSWImageDecodeForTesting(draw_image);
-  EXPECT_TRUE(sw_image);
-  EXPECT_EQ(sw_image->width(), (GetNormalImageSize().width() + 1) / 2);
-  EXPECT_EQ(sw_image->height(), (GetNormalImageSize().height() + 1) / 2);
 }
 
 TEST_P(GpuImageDecodeCacheTest, KeepOnlyLast2ContentIds) {

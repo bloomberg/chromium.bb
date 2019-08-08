@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
+#include "chrome/browser/ui/web_app_browser_controller.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 SSLErrorNavigationThrottle::SSLErrorNavigationThrottle(
@@ -36,11 +37,13 @@ content::NavigationThrottle::ThrottleCheckResult
 SSLErrorNavigationThrottle::WillFailRequest() {
   DCHECK(base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials));
   content::NavigationHandle* handle = navigation_handle();
-  const net::SSLInfo info = handle->GetSSLInfo().value_or(net::SSLInfo());
-  // If there was no certificate error, SSLInfo will be empty.
-  int cert_status = info.cert_status;
-  if (!net::IsCertStatusError(cert_status) ||
-      net::IsCertStatusMinorError(cert_status)) {
+
+  // Check the network error code in case we are here due to a non-ssl related
+  // error. SSLInfo also needs to be checked to cover cases where an SSL error
+  // does not trigger an interstitial, such as chrome://network-errors.
+  if (!net::IsCertificateError(handle->GetNetErrorCode()) ||
+      !net::IsCertStatusError(
+          handle->GetSSLInfo().value_or(net::SSLInfo()).cert_status)) {
     return content::NavigationThrottle::PROCEED;
   }
 
@@ -50,6 +53,8 @@ SSLErrorNavigationThrottle::WillFailRequest() {
     return content::NavigationThrottle::PROCEED;
   }
 
+  const net::SSLInfo info = handle->GetSSLInfo().value_or(net::SSLInfo());
+  int cert_status = info.cert_status;
   QueueShowInterstitial(std::move(handle_ssl_error_callback_),
                         handle->GetWebContents(), cert_status, info,
                         handle->GetURL(), std::move(ssl_cert_reporter_));
@@ -84,8 +89,7 @@ SSLErrorNavigationThrottle::WillProcessResponse() {
   Browser* browser =
       chrome::FindBrowserWithWebContents(handle->GetWebContents());
   if (browser &&
-      extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser)) {
+      WebAppBrowserController::IsForExperimentalWebAppBrowser(browser)) {
     QueueShowInterstitial(std::move(handle_ssl_error_callback_),
                           handle->GetWebContents(), cert_status, info,
                           handle->GetURL(), std::move(ssl_cert_reporter_));

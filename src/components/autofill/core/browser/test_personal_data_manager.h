@@ -135,7 +135,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   base::Optional<bool> autofill_wallet_import_enabled_;
   bool sync_feature_enabled_ = false;
   AutofillSyncSigninState sync_and_signin_state_ =
-      AutofillSyncSigninState::kSignedInAndSyncFeature;
+      AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled;
   bool sync_service_initialized_ = false;
   CoreAccountInfo account_info_;
 

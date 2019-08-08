@@ -10,6 +10,8 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
@@ -31,18 +33,21 @@ const int kMessageWidth = 400;
 // static
 void ExternalProtocolHandler::RunExternalProtocolDialog(
     const GURL& url,
-    int render_process_host_id,
-    int routing_id,
+    WebContents* web_contents,
     ui::PageTransition page_transition,
     bool has_user_gesture) {
   // First, check if ARC version of the dialog is available and run ARC version
   // when possible.
+  // TODO(ellyjones): Refactor arc::RunArcExternalProtocolDialog() to take a
+  // web_contents directly, which will mean sorting out how lifetimes work in
+  // that code.
+  int render_process_host_id =
+      web_contents->GetRenderViewHost()->GetProcess()->GetID();
+  int routing_id = web_contents->GetRenderViewHost()->GetRoutingID();
   if (arc::RunArcExternalProtocolDialog(url, render_process_host_id, routing_id,
                                         page_transition, has_user_gesture)) {
     return;
   }
-  WebContents* web_contents = tab_util::GetWebContentsByID(
-      render_process_host_id, routing_id);
   new ExternalProtocolDialog(web_contents, url);
 }
 

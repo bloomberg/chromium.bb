@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/cdm_config.h"
 #include "media/base/content_decryption_module.h"
 #include "third_party/blink/public/platform/web_content_decryption_module_result.h"
 #include "third_party/blink/public/platform/web_content_decryption_module_session.h"
@@ -108,6 +109,9 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // Returns a prefix to use for UMAs.
   const std::string& GetKeySystemUMAPrefix() const;
 
+  // Returns the CdmConfig used in creation of CDM.
+  const CdmConfig& GetCdmConfig() const;
+
  private:
   friend class base::RefCounted<CdmSessionAdapter>;
 
@@ -121,6 +125,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
   // Callback for CreateCdm().
   void OnCdmCreated(const std::string& key_system,
+                    const CdmConfig& cdm_config,
                     base::TimeTicks start_time,
                     const scoped_refptr<ContentDecryptionModule>& cdm,
                     const std::string& error_message);
@@ -146,6 +151,9 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
   std::string key_system_;
   std::string key_system_uma_prefix_;
+
+  // CdmConfig used in creation of cdm_.
+  CdmConfig cdm_config_;
 
   // A unique ID to trace CdmSessionAdapter::CreateCdm() call and the matching
   // OnCdmCreated() call.

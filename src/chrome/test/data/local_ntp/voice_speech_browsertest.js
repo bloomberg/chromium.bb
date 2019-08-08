@@ -139,6 +139,7 @@ test.speech.setUp = function() {
   // Mock view functions.
   test.speech.stubs.replace(view, 'hide', () => test.speech.viewActiveCount--);
   test.speech.stubs.replace(view, 'init', () => {});
+  test.speech.stubs.replace(view, 'setTitles', () => {});
   test.speech.stubs.replace(view, 'onWindowClick_', (event) => {
     test.speech.viewClickTarget = event.target;
   });

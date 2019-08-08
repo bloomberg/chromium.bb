@@ -425,17 +425,32 @@ def high_entropy(definition_or_member):
 
 
 # [OriginTrialEnabled]
-def origin_trial_feature_name(definition_or_member):
-    """Returns the name of the feature for the OriginTrialEnabled attribute.
+def _is_origin_trial_feature(feature_name, runtime_features):
+    assert feature_name in runtime_features, feature_name + ' is not a runtime feature.'
+    feature = runtime_features[feature_name]
+    return feature['in_origin_trial']
 
-    An exception is raised if OriginTrialEnabled is used in conjunction with any
-    of the following (which must be mutually exclusive with origin trials):
-      - RuntimeEnabled
 
-    If the OriginTrialEnabled extended attribute is found, the includes are
-    also updated as a side-effect.
+def origin_trial_feature_name(definition_or_member, runtime_features):
+    """
+    Returns the name of the origin trial feature if found, None otherwise.
+    Looks for origin trial feature specified by either OriginTrialEnabled or
+    RuntimeEnabled attributes.
+
+    An exception is raised if OriginTrialEnabled is used in conjunction with
+    RuntimeEnabled attribute.
+
+    If the feature name is found, the includes are also updated as a side-effect.
     """
     extended_attributes = definition_or_member.extended_attributes
+    feature_name = extended_attributes.get('RuntimeEnabled')
+    if feature_name and _is_origin_trial_feature(feature_name, runtime_features):
+        return feature_name
+
+    # TODO(yashard): Remove this part.
+    # This part handles the deprecated OriginTrialEnabled attribute. Remove this
+    # logic after the support for origin trial features through RuntimeEnabled
+    # attribute is added.
     feature_name = extended_attributes.get('OriginTrialEnabled')
 
     if feature_name and 'RuntimeEnabled' in extended_attributes:
@@ -448,7 +463,7 @@ def origin_trial_feature_name(definition_or_member):
 
 def origin_trial_function_call(feature_name, execution_context=None):
     """Returns a function call to determine if an origin trial is enabled."""
-    return 'origin_trials::{feature_name}Enabled({context})'.format(
+    return 'RuntimeEnabledFeatures::{feature_name}Enabled({context})'.format(
         feature_name=feature_name,
         context=execution_context if execution_context else "execution_context")
 
@@ -469,23 +484,17 @@ def rcs_counter_name(member, generic_counter_name):
 
 
 # [RuntimeEnabled]
-def runtime_enabled_feature_name(definition_or_member):
+def runtime_enabled_feature_name(definition_or_member, runtime_features):
     extended_attributes = definition_or_member.extended_attributes
-    if 'RuntimeEnabled' not in extended_attributes:
-        return None
-    includes.add('platform/runtime_enabled_features.h')
-    return extended_attributes['RuntimeEnabled']
+    feature_name = extended_attributes.get('RuntimeEnabled')
+    if feature_name and not _is_origin_trial_feature(feature_name, runtime_features):
+        includes.add('platform/runtime_enabled_features.h')
+        return feature_name
 
 
 # [Unforgeable]
 def is_unforgeable(member):
     return 'Unforgeable' in member.extended_attributes
-
-
-# [LegacyInterfaceTypeChecking]
-def is_legacy_interface_type_checking(interface, member):
-    return ('LegacyInterfaceTypeChecking' in interface.extended_attributes or
-            'LegacyInterfaceTypeChecking' in member.extended_attributes)
 
 
 # [Unforgeable], [Global]

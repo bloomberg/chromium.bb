@@ -18,6 +18,12 @@ interface Assistant {
   // without having first cached screen context (see CacheScreenContext()).
   StartCachedScreenContextInteraction();
 
+  // Starts an interaction to edit the reminder uniquely identified by
+  // |client_id|. In response to the request, LibAssistant will initiate
+  // a user facing interaction with the context pre-populated with details
+  // to edit the specified reminder.
+  StartEditReminderInteraction(string client_id);
+
   // Starts a metalayer interaction for the selected screen |region|. Results
   // related to the selected region will be returned through the
   // |AssistantInteractionSubscriber| interface to registered subscribers.
@@ -120,6 +126,10 @@ interface AssistantInteractionSubscriber {
   // Assistant has started speaking. When TTS is started due to an error that
   // occurred during the interaction, |due_to_error| is true.
   OnTtsStarted(bool due_to_error);
+
+  // Assistant has started waiting. This occur during execution of a routine to
+  // give the user time to digest a response before continuing execution.
+  OnWaitStarted();
 };
 
 // Interface for browser to bind and start assistant.
@@ -166,6 +176,10 @@ interface DeviceActions {
   // Verify the status of the Android apps.
   VerifyAndroidApp(array<AndroidAppInfo> apps_info) => (array<AndroidAppInfo>
                                                         apps_info);
+
+  // Launch Android intent. The intent is encoded as a URI string.
+  // See Intent.toUri().
+  LaunchAndroidIntent(string intent);
 };
 
 // Enumeration of possible completions for an Assistant interaction.
@@ -271,11 +285,23 @@ enum AppStatus { UNKNOWN, AVAILABLE, UNAVAILABLE, VERSION_MISMATCH, DISABLED };
 
 // Models an Android app.
 struct AndroidAppInfo {
+  // Unique name to identify a specific app.
   string package_name;
+
+  // Version number of the app.
   int32 version;
+
+  // Localized app name.
   string localized_app_name;
+
+  // Intent data to operate on.
   string intent;
+
+  // Status of the app.
   AppStatus status;
+
+  // The general action to be performed, such as ACTION_VIEW, ACTION_MAIN, etc.
+  string action;
 };
 
 //  Details for Assistant feedback.

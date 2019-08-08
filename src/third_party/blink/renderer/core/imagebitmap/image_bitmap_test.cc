@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -75,8 +76,9 @@ class ImageBitmapTest : public testing::Test {
     image2_ = surface2->makeImageSnapshot();
 
     // Save the global memory cache to restore it upon teardown.
-    global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create(
-        blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
+    global_memory_cache_ =
+        ReplaceMemoryCacheForTesting(MakeGarbageCollected<MemoryCache>(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
 
     auto factory = [](FakeGLES2Interface* gl, bool* gpu_compositing_disabled)
         -> std::unique_ptr<WebGraphicsContext3DProvider> {
@@ -90,9 +92,8 @@ class ImageBitmapTest : public testing::Test {
     // Garbage collection is required prior to switching out the
     // test's memory cache; image resources are released, evicting
     // them from the cache.
-    ThreadState::Current()->CollectGarbage(
-        BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-        BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+    ThreadState::Current()->CollectAllGarbageForTesting(
+        BlinkGC::kNoHeapPointersOnStack);
 
     ReplaceMemoryCacheForTesting(global_memory_cache_.Release());
     SharedGpuContext::ResetForTesting();
@@ -106,8 +107,8 @@ class ImageBitmapTest : public testing::Test {
 
 TEST_F(ImageBitmapTest, ImageResourceConsistency) {
   const ImageBitmapOptions* default_options = ImageBitmapOptions::Create();
-  HTMLImageElement* image_element =
-      HTMLImageElement::Create(*Document::CreateForTest());
+  auto* image_element =
+      MakeGarbageCollected<HTMLImageElement>(*Document::CreateForTest());
   sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
   SkImageInfo raster_image_info =
       SkImageInfo::MakeN32Premul(5, 5, src_rgb_color_space);
@@ -177,8 +178,8 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a
 // reference to the original Image if the HTMLImageElement src is changed.
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
-  HTMLImageElement* image =
-      HTMLImageElement::Create(*Document::CreateForTest());
+  auto* image =
+      MakeGarbageCollected<HTMLImageElement>(*Document::CreateForTest());
   sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
   SkImageInfo raster_image_info =
       SkImageInfo::MakeN32Premul(5, 5, src_rgb_color_space);
@@ -316,8 +317,8 @@ TEST_F(ImageBitmapTest, AvoidGPUReadback) {
 }
 
 TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
-  HTMLImageElement* image_element =
-      HTMLImageElement::Create(*Document::CreateForTest());
+  auto* image_element =
+      MakeGarbageCollected<HTMLImageElement>(*Document::CreateForTest());
 
   SkPaint p;
   p.setColor(SK_ColorRED);

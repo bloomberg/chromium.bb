@@ -17,9 +17,11 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "components/variations/field_trial_config/fieldtrial_testing_config.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/escape.h"
+#include "ui/base/device_form_factor.h"
 
 namespace variations {
 namespace {
@@ -31,6 +33,42 @@ bool HasPlatform(const FieldTrialTestingExperiment& experiment,
       return true;
   }
   return false;
+}
+
+// Returns true if the experiment config has a different value for
+// is_low_end_device than the current system value does.
+// If experiment has is_low_end_device missing, then it is False.
+bool HasDeviceLevelMismatch(const FieldTrialTestingExperiment& experiment) {
+  if (experiment.is_low_end_device == Study::OPTIONAL_BOOL_MISSING) {
+    return false;
+  }
+  if (base::SysInfo::IsLowEndDevice()) {
+    return experiment.is_low_end_device == Study::OPTIONAL_BOOL_FALSE;
+  }
+  return experiment.is_low_end_device == Study::OPTIONAL_BOOL_TRUE;
+}
+
+// Gets current form factor and converts it from enum DeviceFormFactor to enum
+// Study_FormFactor.
+Study::FormFactor _GetCurrentFormFactor() {
+  switch (ui::GetDeviceFormFactor()) {
+    case ui::DEVICE_FORM_FACTOR_PHONE:
+      return Study::PHONE;
+    case ui::DEVICE_FORM_FACTOR_TABLET:
+      return Study::TABLET;
+    case ui::DEVICE_FORM_FACTOR_DESKTOP:
+      return Study::DESKTOP;
+  }
+}
+
+// Returns true if the experiment config has a missing form_factors or it
+// contains the current system's form_factor. Otherwise, it is False.
+bool HasFormFactor(const FieldTrialTestingExperiment& experiment) {
+  for (size_t i = 0; i < experiment.form_factors_size; ++i) {
+    if (experiment.form_factors[i] == _GetCurrentFormFactor())
+      return true;
+  }
+  return experiment.form_factors_size == 0;
 }
 
 void AssociateParamsFromExperiment(
@@ -71,7 +109,11 @@ void AssociateParamsFromExperiment(
 // - Out of the experiments which match this platform:
 //   - If there is a forcing flag for any experiment, choose the first such
 //     experiment.
-//   - Otherwise, choose the first experiment.
+//   - Otherwise, If running on low_end_device and the config specify
+//     a different experiment group for low end devices then pick that.
+//   - Otherwise, If running on non low_end_device and the config specify
+//     a different experiment group for non low_end_device then pick that.
+//   - Otherwise, select the first experiment.
 // - If no experiments match this platform, do not associate any of them.
 void ChooseExperiment(const FieldTrialTestingStudy& study,
                       base::FeatureList* feature_list,
@@ -81,7 +123,9 @@ void ChooseExperiment(const FieldTrialTestingStudy& study,
   for (size_t i = 0; i < study.experiments_size; ++i) {
     const FieldTrialTestingExperiment* experiment = study.experiments + i;
     if (HasPlatform(*experiment, platform)) {
-      if (!chosen_experiment)
+      if (!chosen_experiment &&
+          !HasDeviceLevelMismatch(*experiment) &&
+          HasFormFactor(*experiment))
         chosen_experiment = experiment;
 
       if (experiment->forcing_flag &&

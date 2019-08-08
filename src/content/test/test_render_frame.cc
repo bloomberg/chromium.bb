@@ -100,9 +100,14 @@ class MockFrameHost : public mojom::FrameHost {
     return true;
   }
 
-  void CreatePortal(blink::mojom::PortalRequest request,
+  void CreatePortal(blink::mojom::PortalAssociatedRequest request,
                     CreatePortalCallback callback) override {
     std::move(callback).Run(MSG_ROUTING_NONE, base::UnguessableToken());
+  }
+
+  void AdoptPortal(const base::UnguessableToken&,
+                   AdoptPortalCallback callback) override {
+    std::move(callback).Run(MSG_ROUTING_NONE);
   }
 
   void IssueKeepAliveHandle(mojom::KeepAliveHandleRequest request) override {}
@@ -112,8 +117,6 @@ class MockFrameHost : public mojom::FrameHost {
       override {
     last_commit_params_ = std::move(params);
   }
-
-  void JavaScriptExecuteResponse(int id, base::Value result) override {}
 
   void BeginNavigation(const CommonNavigationParams& common_params,
                        mojom::BeginNavigationParamsPtr begin_params,
@@ -141,6 +144,8 @@ class MockFrameHost : public mojom::FrameHost {
 
   void CancelInitialHistoryLoad() override {}
 
+  void DocumentOnLoadCompleted() override {}
+
   void UpdateEncoding(const std::string& encoding_name) override {}
 
   void FrameSizeChanged(const gfx::Size& frame_size) override {}
@@ -148,6 +153,8 @@ class MockFrameHost : public mojom::FrameHost {
   void FullscreenStateChanged(bool is_fullscreen) override {}
 
   void VisibilityChanged(blink::mojom::FrameVisibility visibility) override {}
+
+  void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override {}
 
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override {}
@@ -199,6 +206,7 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
                      std::make_unique<blink::URLLoaderFactoryBundleInfo>(),
                      base::nullopt,
                      blink::mojom::ControllerServiceWorkerInfoPtr(),
+                     blink::mojom::ServiceWorkerProviderInfoForWindowPtr(),
                      network::mojom::URLLoaderFactoryPtr(),
                      base::UnguessableToken::Create(), base::DoNothing());
   } else {
@@ -209,6 +217,7 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
         network::mojom::URLLoaderClientEndpointsPtr(),
         std::make_unique<blink::URLLoaderFactoryBundleInfo>(), base::nullopt,
         blink::mojom::ControllerServiceWorkerInfoPtr(),
+        blink::mojom::ServiceWorkerProviderInfoForWindowPtr(),
         network::mojom::URLLoaderFactoryPtr(), base::UnguessableToken::Create(),
         base::BindOnce(&MockFrameHost::DidCommitProvisionalLoad,
                        base::Unretained(mock_frame_host_.get())));

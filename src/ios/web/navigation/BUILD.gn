@@ -9,6 +9,7 @@ source_set("navigation") {
     ":core",
     "//base",
     "//ios/web:core",
+    "//ios/web/common",
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
     "//ios/web/web_state:session_certificate_policy_cache",
@@ -70,6 +71,7 @@ source_set("core") {
 source_set("wk_navigation_util") {
   deps = [
     "//base",
+    "//ios/web/common",
     "//ios/web/public",
     "//url",
   ]

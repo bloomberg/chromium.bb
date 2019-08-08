@@ -20,11 +20,10 @@ class OnRequestCanvasDrawListener final
   USING_GARBAGE_COLLECTED_MIXIN(OnRequestCanvasDrawListener);
 
  public:
-  OnRequestCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>);
+  explicit OnRequestCanvasDrawListener(
+      std::unique_ptr<WebCanvasCaptureHandler>);
   ~OnRequestCanvasDrawListener() override;
 
-  static OnRequestCanvasDrawListener* Create(
-      std::unique_ptr<WebCanvasCaptureHandler>);
   void SendNewFrame(
       sk_sp<SkImage>,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) override;

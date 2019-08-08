@@ -4,7 +4,7 @@
 
 module tracing.mojom;
 
-const string kPerfettoProducerName = "org.chromium.perfetto_producer";
+const string kPerfettoProducerNamePrefix = "org.chromium.perfetto_producer.";
 const string kTraceEventDataSourceName = "org.chromium.trace_event";
 const string kMetaDataSourceName = "org.chromium.trace_metadata";
 const string kSystemTraceDataSourceName = "org.chromium.trace_system";
@@ -71,6 +71,10 @@ struct ChromeConfig {
   // base::trace_event::TraceConfig object rather then the json encoded string
   // used currently.
   string trace_config;
+
+  // When enabled the data source is supposed to only emit fields in the output
+  // proto that are guaranteed to not contain any sensitive data.
+  bool privacy_filtering_enabled;
 };
 
 struct DataSourceConfig {
@@ -84,6 +88,7 @@ struct DataSourceConfig {
 
 struct DataSourceRegistration {
   string name;
+  bool will_notify_on_start;
   bool will_notify_on_stop;
 };
 
@@ -103,9 +108,6 @@ interface ProducerHost {
   // datasource.
   RegisterDataSource(DataSourceRegistration registration_info);
 
-  // Called to let the Service know that a flush is complete.
-  NotifyFlushComplete(uint64 flush_request_id);
-
   // Called by the ProducerClient to associate a TraceWriter with a target
   // buffer, which is required to support scraping of the SMB by the service.
   RegisterTraceWriter(uint32 writer_id, uint32 target_buffer);
@@ -116,15 +118,15 @@ interface ProducerHost {
 // this interface and use the PerfettoService interface within the tracing
 // service to register itself.
 interface ProducerClient {
-    OnTracingStart(handle<shared_buffer> shared_memory);
+  OnTracingStart(handle<shared_buffer> shared_memory);
 
-    // Called by Perfetto (via ProducerHost) to request a data source to start
-    // logging.
-    StartDataSource(uint64 id, DataSourceConfig data_source_config);
-    // Requesting a data source to stop logging again, with the id previously
-    // sent in the StartDataSource call.
-    StopDataSource(uint64 id) => ();
-    Flush(uint64 flush_request_id, array<uint64> data_source_ids);
+  // Called by Perfetto (via ProducerHost) to request a data source to start
+  // logging.
+  StartDataSource(uint64 id, DataSourceConfig data_source_config) => ();
+  // Requesting a data source to stop logging again, with the id previously
+  // sent in the StartDataSource call.
+  StopDataSource(uint64 id) => ();
+  Flush(uint64 flush_request_id, array<uint64> data_source_ids);
 };
 
 // This is implemented by the tracing service, and is essentially a singleton
@@ -144,6 +146,7 @@ struct BufferConfig {
 
 struct DataSource {
   DataSourceConfig config;
+  array<string> producer_name_filter;
 };
 
 // The configuration provided by a Consumer to the Perfetto service which
@@ -163,12 +166,38 @@ interface ConsumerHost {
   // Enable Perfetto tracing with the given TracingSession interface for
   // signaling lifespan of the tracing session, and any future callbacks.
   EnableTracing(TracingSession tracing_session, TraceConfig config);
+
+  // Update the trace config for the active tracing session. Currently, only
+  // (additive) updates to the |producer_name_filter| of a data source are
+  // supported.
+  ChangeTraceConfig(TraceConfig config);
+
+  // Stop tracing for the active tracing session. The host will disconnect the
+  // TracingSession once tracing was disabled. Note that tracing may also stop
+  // without an explicit call to DisableTracing(), e.g. when a tracing duration
+  // is specified in the TraceConfig.
+  DisableTracing();
+
   // Tell Perfetto we're ready to receive data, over the given data pipe.
   // The result callback will be called when there's no more data currently
   // available. If the TracingSession is still active after the callback,
   // another call to ReadBuffers() needs to be made to receive any new
   // tracing data.
   ReadBuffers(handle<data_pipe_producer> stream) => ();
+
+  // Disables tracing and converts the collected trace data converted into the
+  // legacy JSON format before returning it via the data pipe. If
+  // |agent_label_filter| is not empty, only data pertaining to the specified
+  // tracing agent label (e.g. "traceEvents") will be returned.
+  //
+  // DEPRECATED: Existing usecases only; new use cases of tracing should use the
+  // streaming proto format via ReadBuffers.
+  DisableTracingAndEmitJson(string agent_label_filter,
+                            handle<data_pipe_producer> stream) => ();
+
+  // Request current trace buffer usage of the active session. Will be returned
+  // as percentage value between 0.0f and 1.0f.
+  RequestBufferUsage() => (bool success, float percent_full);
 };
 
 // Any client connecting to ConsumerHost should implement this
@@ -179,4 +208,6 @@ interface ConsumerHost {
 // data from the session (in addition to any calls it may have
 // made while the session is active, to stream out data).
 interface TracingSession {
+  // Called when all processes have begun tracing.
+  OnTracingEnabled();
 };

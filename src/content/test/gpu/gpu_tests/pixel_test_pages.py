@@ -139,13 +139,13 @@ def DefaultPages(base_name):
       'pixel_background_image.html',
       base_name + '_BackgroundImage',
       test_rect=[20, 20, 370, 370],
-      revision=2),
+      revision=3),
 
     PixelTestPage(
       'pixel_canvas2d.html',
       base_name + '_Canvas2DRedBox',
       test_rect=[0, 0, 300, 300],
-      revision=12),
+      revision=13),
 
     PixelTestPage(
       'pixel_canvas2d_untagged.html',
@@ -163,31 +163,31 @@ def DefaultPages(base_name):
       'pixel_webgl_aa_alpha.html',
       base_name + '_WebGLGreenTriangle_AA_Alpha',
       test_rect=[0, 0, 300, 300],
-      revision=8),
+      revision=9),
 
     PixelTestPage(
       'pixel_webgl_noaa_alpha.html',
       base_name + '_WebGLGreenTriangle_NoAA_Alpha',
       test_rect=[0, 0, 300, 300],
-      revision=5),
+      revision=6),
 
     PixelTestPage(
       'pixel_webgl_aa_noalpha.html',
       base_name + '_WebGLGreenTriangle_AA_NoAlpha',
       test_rect=[0, 0, 300, 300],
-      revision=9),
+      revision=10),
 
     PixelTestPage(
       'pixel_webgl_noaa_noalpha.html',
       base_name + '_WebGLGreenTriangle_NoAA_NoAlpha',
       test_rect=[0, 0, 300, 300],
-      revision=5),
+      revision=6),
 
     PixelTestPage(
       'pixel_webgl_noalpha_implicit_clear.html',
       base_name + '_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
       test_rect=[0, 0, 300, 300],
-      revision=5),
+      revision=6),
 
     PixelTestPage(
       'pixel_webgl_sad_canvas.html',
@@ -227,7 +227,7 @@ def DefaultPages(base_name):
       'pixel_canvas2d_webgl.html',
       base_name + '_2DCanvasWebGL',
       test_rect=[0, 0, 300, 300],
-      revision=12),
+      revision=13),
 
     PixelTestPage(
       'pixel_background.html',
@@ -812,28 +812,49 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_canvas_display_linear-rgb.html',
       base_name + '_CanvasDisplayLinearRGBAccelerated2D',
       test_rect=[0, 0, 140, 140],
-      revision=7,
+      revision=9,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_canvas_display_linear-rgb.html',
       base_name + '_CanvasDisplayLinearRGBUnaccelerated2D',
       test_rect=[0, 0, 140, 140],
-      revision=1,
+      revision=2,
       browser_args=browser_args + unaccelerated_args),
 
     PixelTestPage(
       'pixel_canvas_display_linear-rgb.html',
       base_name + '_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
       test_rect=[0, 0, 140, 140],
-      revision=7,
+      revision=8,
+      browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
+
+    PixelTestPage(
+      'pixel_canvas_display_srgb.html',
+      base_name + '_CanvasDisplaySRGBAccelerated2D',
+      test_rect=[0, 0, 140, 140],
+      revision=0, # not used, unsupported
+      browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_canvas_display_srgb.html',
+      base_name + '_CanvasDisplaySRGBUnaccelerated2D',
+      test_rect=[0, 0, 140, 140],
+      revision=1,
+      browser_args=browser_args + unaccelerated_args),
+
+    PixelTestPage(
+      'pixel_canvas_display_srgb.html',
+      base_name + '_CanvasDisplaySRGBUnaccelerated2DGPUCompositing',
+      test_rect=[0, 0, 140, 140],
+      revision=1,
       browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
 
     PixelTestPage(
       'pixel_canvas_low_latency_2d.html',
       base_name + '_CanvasLowLatency2D',
       test_rect=[0, 0, 100, 100],
-      revision=6,
+      revision=7,
       browser_args=browser_args),
 
     PixelTestPage(

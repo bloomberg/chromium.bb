@@ -26,6 +26,10 @@
 
 namespace chrome {
 
+// "Learn more" URL for accessibility image labels, linked from the permissions
+// dialog shown when a user enables the feature.
+extern const char kAccessibilityLabelsLearnMoreURL[];
+
 // "Learn more" URL for when profile settings are automatically reset.
 extern const char kAutomaticSettingsResetLearnMoreURL[];
 
@@ -130,6 +134,9 @@ extern const char kGoogleAccountActivityControlsURL[];
 
 // URL of the Google Account.
 extern const char kGoogleAccountURL[];
+
+// URL of the Google Account chooser.
+extern const char kGoogleAccountChooserURL[];
 
 // URL of the Google Password Manager.
 extern const char kGooglePasswordManagerURL[];

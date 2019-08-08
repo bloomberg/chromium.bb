@@ -103,14 +103,20 @@ void AppsContainerView::ShowActiveFolder(AppListFolderItem* folder_item) {
 
   SetShowState(SHOW_ACTIVE_FOLDER, false);
 
-  // Avoid announcing search box focus since it is overlapped with opening
-  // folder alert.
-  auto* search_box = contents_view_->GetSearchBoxView()->search_box();
-  search_box->GetViewAccessibility().OverrideIsIgnored(true);
-
+  // If there is no selected view in the root grid when a folder is opened,
+  // silently focus the first item in the folder to avoid showing the selection
+  // highlight or announcing to A11y, but still ensuring the arrow keys navigate
+  // from the first item.
+  AppListItemView* first_item_view_in_folder_grid =
+      app_list_folder_view_->items_grid_view()->view_model()->view_at(0);
+  if (!apps_grid_view()->has_selected_view()) {
+    first_item_view_in_folder_grid->SilentlyRequestFocus();
+  } else {
+    first_item_view_in_folder_grid->RequestFocus();
+  }
   // Disable all the items behind the folder so that they will not be reached
   // during focus traversal.
-  search_box->RequestFocus();
+
   DisableFocusForShowingActiveFolder(true);
 }
 
@@ -151,19 +157,21 @@ void AppsContainerView::ReparentDragEnded() {
   show_state_ = AppsContainerView::SHOW_APPS;
 }
 
-void AppsContainerView::UpdateControlVisibility(AppListViewState app_list_state,
-                                                bool is_in_drag) {
+void AppsContainerView::UpdateControlVisibility(
+    ash::mojom::AppListViewState app_list_state,
+    bool is_in_drag) {
   apps_grid_view_->UpdateControlVisibility(app_list_state, is_in_drag);
   page_switcher_->SetVisible(
-      app_list_state == AppListViewState::FULLSCREEN_ALL_APPS || is_in_drag);
+      app_list_state == ash::mojom::AppListViewState::kFullscreenAllApps ||
+      is_in_drag);
 
   // Ignore button press during dragging to avoid app list item views' opacity
   // being set to wrong value.
   page_switcher_->set_ignore_button_press(is_in_drag);
 
   suggestion_chip_container_view_->SetVisible(
-      app_list_state == AppListViewState::FULLSCREEN_ALL_APPS ||
-      app_list_state == AppListViewState::PEEKING || is_in_drag);
+      app_list_state == ash::mojom::AppListViewState::kFullscreenAllApps ||
+      app_list_state == ash::mojom::AppListViewState::kPeeking || is_in_drag);
 }
 
 void AppsContainerView::UpdateYPositionAndOpacity() {
@@ -173,8 +181,8 @@ void AppsContainerView::UpdateYPositionAndOpacity() {
   // AppsGridView.
   AppListView* app_list_view = contents_view_->app_list_view();
   bool should_restore_opacity =
-      !app_list_view->is_in_drag() &&
-      (app_list_view->app_list_state() != AppListViewState::CLOSED);
+      !app_list_view->is_in_drag() && (app_list_view->app_list_state() !=
+                                       ash::mojom::AppListViewState::kClosed);
   int screen_bottom = app_list_view->GetScreenBottom();
   gfx::Rect switcher_bounds = page_switcher_->GetBoundsInScreen();
   float centerline_above_work_area =

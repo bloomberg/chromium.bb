@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
@@ -14,9 +15,9 @@
 namespace {
 // Banner View constants.
 const CGFloat kBannerViewCornerRadius = 13.0;
-const CGFloat kBannerViewYShadowOffset = 5.0;
-const CGFloat kBannerViewShadowRadius = 3.0;
-const CGFloat kBannerViewShadowOpactiy = 0.08;
+const CGFloat kBannerViewYShadowOffset = 3.0;
+const CGFloat kBannerViewShadowRadius = 9.0;
+const CGFloat kBannerViewShadowOpactiy = 0.23;
 
 // Bottom Grip constants.
 const CGFloat kBottomGripCornerRadius = 0.2;
@@ -36,9 +37,13 @@ const int kButtonSeparatorColor = 0xF1F3F4;
 
 // Container Stack constants.
 const CGFloat kContainerStackSpacing = 18.0;
+const CGFloat kContainerStackVerticalPadding = 18.0;
 
 // Icon constants.
 const CGFloat kIconWidth = 25.0;
+
+// PanGesture constants.
+const CGFloat kChangeInPositionForTransition = 100.0;
 }  // namespace
 
 @interface InfobarBannerViewController ()
@@ -48,6 +53,16 @@ const CGFloat kIconWidth = 25.0;
 @property(nonatomic, assign) CGPoint originalCenter;
 // Delegate to handle this InfobarVC actions.
 @property(nonatomic, weak) id<InfobarBannerDelegate> delegate;
+// YES if the user is interacting with the view via a touch gesture.
+@property(nonatomic, assign) BOOL touchInProgress;
+// YES if the view should be dismissed after any touch gesture has ended.
+@property(nonatomic, assign) BOOL shouldDismissAfterTouchesEnded;
+// UIButton with title |self.buttonText|, which triggers the Infobar action.
+@property(nonatomic, strong) UIButton* infobarButton;
+// UILabel displaying |self.titleText|.
+@property(nonatomic, strong) UILabel* titleLabel;
+// UILabel displaying |self.subTitleText|.
+@property(nonatomic, strong) UILabel* subTitleLabel;
 
 @end
 
@@ -73,6 +88,7 @@ const CGFloat kIconWidth = 25.0;
   [self.view.layer setShadowOffset:CGSizeMake(0.0, kBannerViewYShadowOffset)];
   [self.view.layer setShadowRadius:kBannerViewShadowRadius];
   [self.view.layer setShadowOpacity:kBannerViewShadowOpactiy];
+  self.view.accessibilityIdentifier = kInfobarBannerViewIdentifier;
 
   // Bottom Grip setup.
   UIView* bottomGrip = [[UIView alloc] init];
@@ -89,56 +105,57 @@ const CGFloat kIconWidth = 25.0;
   iconImageView.contentMode = UIViewContentModeScaleAspectFit;
 
   // Labels setup.
-  UILabel* titleLabel = [[UILabel alloc] init];
-  titleLabel.text = self.titleText;
-  titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  titleLabel.adjustsFontForContentSizeCategory = YES;
-  titleLabel.textColor = UIColorFromRGB(kTitleLabelColor);
-  titleLabel.numberOfLines = 0;
-  titleLabel.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
+  self.titleLabel = [[UILabel alloc] init];
+  self.titleLabel.text = self.titleText;
+  self.titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  self.titleLabel.adjustsFontForContentSizeCategory = YES;
+  self.titleLabel.textColor = UIColorFromRGB(kTitleLabelColor);
+  self.titleLabel.numberOfLines = 0;
+  self.titleLabel.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
 
-  UILabel* subTitleLabel = [[UILabel alloc] init];
-  subTitleLabel.text = self.subTitleText;
-  subTitleLabel.font =
+  self.subTitleLabel = [[UILabel alloc] init];
+  self.subTitleLabel.text = self.subTitleText;
+  self.subTitleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
-  subTitleLabel.adjustsFontForContentSizeCategory = YES;
-  subTitleLabel.textColor = UIColorFromRGB(kSubTitleLabelColor);
-  subTitleLabel.numberOfLines = 0;
+  self.subTitleLabel.adjustsFontForContentSizeCategory = YES;
+  self.subTitleLabel.textColor = UIColorFromRGB(kSubTitleLabelColor);
+  self.subTitleLabel.numberOfLines = 0;
   // If |self.subTitleText| hasn't been set or is empty, hide the label to keep
   // the title label centered in the Y axis.
-  subTitleLabel.hidden = ![self.subTitleText length];
+  self.subTitleLabel.hidden = ![self.subTitleText length];
 
   UIStackView* labelsStackView = [[UIStackView alloc]
-      initWithArrangedSubviews:@[ titleLabel, subTitleLabel ]];
+      initWithArrangedSubviews:@[ self.titleLabel, self.subTitleLabel ]];
   labelsStackView.axis = UILayoutConstraintAxisVertical;
-  labelsStackView.alignment = UIStackViewAlignmentLeading;
-  labelsStackView.distribution = UIStackViewDistributionEqualCentering;
-  [labelsStackView setContentHuggingPriority:UILayoutPriorityRequired
-                                     forAxis:UILayoutConstraintAxisVertical];
 
   // Button setup.
-  UIButton* infobarButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  [infobarButton setTitle:self.buttonText forState:UIControlStateNormal];
-  infobarButton.titleLabel.font =
+  self.infobarButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  [self.infobarButton setTitle:self.buttonText forState:UIControlStateNormal];
+  self.infobarButton.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-  [infobarButton addTarget:self.delegate
-                    action:@selector(bannerInfobarButtonWasPressed:)
-          forControlEvents:UIControlEventTouchUpInside];
+  [self.infobarButton addTarget:self.delegate
+                         action:@selector(bannerInfobarButtonWasPressed:)
+               forControlEvents:UIControlEventTouchUpInside];
+  self.infobarButton.accessibilityIdentifier =
+      kInfobarBannerAcceptButtonIdentifier;
 
   UIView* buttonSeparator = [[UIView alloc] init];
   buttonSeparator.translatesAutoresizingMaskIntoConstraints = NO;
   buttonSeparator.backgroundColor = UIColorFromRGB(kButtonSeparatorColor);
-  [infobarButton addSubview:buttonSeparator];
+  [self.infobarButton addSubview:buttonSeparator];
 
   // Container Stack setup.
   UIStackView* containerStack = [[UIStackView alloc] initWithArrangedSubviews:@[
-    iconImageView, labelsStackView, infobarButton
+    iconImageView, labelsStackView, self.infobarButton
   ]];
   containerStack.axis = UILayoutConstraintAxisHorizontal;
   containerStack.spacing = kContainerStackSpacing;
   containerStack.distribution = UIStackViewDistributionFill;
   containerStack.alignment = UIStackViewAlignmentFill;
   containerStack.translatesAutoresizingMaskIntoConstraints = NO;
+  containerStack.layoutMarginsRelativeArrangement = YES;
+  containerStack.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(
+      kContainerStackVerticalPadding, 0, kContainerStackVerticalPadding, 0);
   [self.view addSubview:containerStack];
 
   // Constraints setup.
@@ -149,16 +166,17 @@ const CGFloat kIconWidth = 25.0;
                        constant:kContainerStackSpacing],
     [containerStack.trailingAnchor
         constraintEqualToAnchor:self.view.trailingAnchor],
-    [containerStack.centerYAnchor
-        constraintEqualToAnchor:self.view.centerYAnchor],
+    [containerStack.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+    [containerStack.bottomAnchor
+        constraintEqualToAnchor:self.view.bottomAnchor],
     // Icon.
     [iconImageView.widthAnchor constraintEqualToConstant:kIconWidth],
     // Button.
-    [infobarButton.widthAnchor constraintEqualToConstant:kButtonWidth],
+    [self.infobarButton.widthAnchor constraintEqualToConstant:kButtonWidth],
     [buttonSeparator.widthAnchor
         constraintEqualToConstant:kButtonSeparatorWidth],
     [buttonSeparator.leadingAnchor
-        constraintEqualToAnchor:infobarButton.leadingAnchor],
+        constraintEqualToAnchor:self.infobarButton.leadingAnchor],
     [buttonSeparator.topAnchor constraintEqualToAnchor:self.view.topAnchor],
     [buttonSeparator.bottomAnchor
         constraintEqualToAnchor:self.view.bottomAnchor],
@@ -178,11 +196,16 @@ const CGFloat kIconWidth = 25.0;
   [self.view addGestureRecognizer:panGestureRecognizer];
 }
 
-#pragma mark - Private Methods
+#pragma mark - Public Methods
 
-- (void)buttonTapped:(id)sender {
-  [self dismissViewControllerAnimated:YES completion:nil];
+- (void)dismissWhenInteractionIsFinished {
+  if (!self.touchInProgress) {
+    [self.delegate dismissInfobarBanner:self animated:YES completion:nil];
+  }
+  self.shouldDismissAfterTouchesEnded = YES;
 }
+
+#pragma mark - Private Methods
 
 // TODO(crbug.com/911864): PLACEHOLDER Gesture handling for the new InfobarUI.
 - (void)handlePanGesture:(UIPanGestureRecognizer*)gesture {
@@ -190,20 +213,33 @@ const CGFloat kIconWidth = 25.0;
 
   if (gesture.state == UIGestureRecognizerStateBegan) {
     self.originalCenter = self.view.center;
-
+    self.touchInProgress = YES;
   } else if (gesture.state == UIGestureRecognizerStateChanged) {
     self.view.center =
         CGPointMake(self.view.center.x, self.view.center.y + translation.y);
+    // If the translation in the positive Y axis is larger than
+    // kChangeInPositionForTransition then present the InfobarModal.
+    if (self.view.center.y - self.originalCenter.y >
+        kChangeInPositionForTransition) {
+      [self.delegate presentInfobarModalFromBanner];
+      // Since the modal has now been presented prevent any external dismissal.
+      self.shouldDismissAfterTouchesEnded = NO;
+      // Cancel the gesture since the modal has now been presented.
+      gesture.state = UIGestureRecognizerStateCancelled;
+      return;
+    }
   }
 
-  if (gesture.state == UIGestureRecognizerStateEnded ||
-      gesture.state == UIGestureRecognizerStateCancelled) {
-    if (self.view.center.y > self.originalCenter.y) {
-      self.view.center = self.originalCenter;
-      [self.delegate presentInfobarModal];
-    } else {
-      [self.delegate dismissInfobarBanner:self];
+  if (gesture.state == UIGestureRecognizerStateEnded) {
+    // If there's more than a 1px translation in the negative Y axis when the
+    // gesture ended or |self.shouldDismissAfterInteraction| is YES, dismiss the
+    // banner.
+    if ((self.view.center.y - self.originalCenter.y < 0) ||
+        self.shouldDismissAfterTouchesEnded) {
+      [self.delegate dismissInfobarBanner:self animated:YES completion:nil];
+      return;
     }
+    self.view.center = self.originalCenter;
   }
 
   [gesture setTranslation:CGPointZero inView:self.view];

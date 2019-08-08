@@ -5,10 +5,9 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Notificare privind confidențialitatea Google Chrome</translation>
 <translation id="1863312987075920112">Folosind această aplicație, accepți <ph name="BEGIN_LINK_TOS" />Termenii și condițiile<ph name="END_LINK_TOS" /> și <ph name="BEGIN_LINK_PRIVACY" />Notificarea privind confidențialitatea<ph name="END_LINK_PRIVACY" /> Chrome.</translation>
-<translation id="1984705450038014246">Sincronizează datele Chrome</translation>
+<translation id="1984705450038014246">Sincronizează datele din Chrome</translation>
 <translation id="2147651015520127414">Chrome s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Datele din Sincronizarea Chrome</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Toate drepturile rezervate.</translation>
 <translation id="2342981853652716282">Conectează-te la Chrome pentru a accesa marcajele, parolele și altele pe toate dispozitivele tale.</translation>
 <translation id="2347208864470321755">Când este activată această funcție, Chrome se va oferi să traducă paginile scrise în alte limbi utilizând Google Traducere. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Pentru a salva imaginile, atinge Setări ca să permiți browserului Chrome să folosească fotografiile</translation>
@@ -22,7 +21,6 @@
 <translation id="3282568296779691940">Conectează-te la Chrome</translation>
 <translation id="3345341804167540816">Folosește Chrome oriunde</translation>
 <translation id="384394811301901750">Momentan, Google Chrome nu poate folosi camera foto</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3980220367029651214">Comuți contul pentru sincronizare de la <ph name="USER_EMAIL1" /> la <ph name="USER_EMAIL2" />. Datele Chrome existente sunt gestionate de <ph name="DOMAIN" />. Astfel, se vor șterge datele de pe acest dispozitiv, dar datele vor rămâne în <ph name="USER_EMAIL1" />.</translation>
 <translation id="3988789688219830639">Google Chrome nu are acces la fotografii și videoclipuri. Activează accesul din Setări iOS &gt; Confidențialitate &gt; Fotografii.</translation>
 <translation id="4099578267706723511">Contribuie la îmbunătățirea Chrome trimițând statistici de utilizare și rapoarte de blocare la Google.</translation>
@@ -34,6 +32,7 @@
 <translation id="5389212809648216794">Google Chrome nu poate folosi camera foto, deoarece este folosită de o altă aplicație</translation>
 <translation id="5639704535586432836">Deschide Setări &gt; Confidențialitate &gt; Cameră foto &gt; Google Chrome și activează camera foto.</translation>
 <translation id="5642200033778930880">Google Chrome nu poate folosi camera foto în modul Vizualizare împărțită</translation>
+<translation id="5690427481109656848">Google LLC</translation>
 <translation id="5854621639439811139">Sfat pentru Chrome: unele butoane se află acum în partea de jos a ecranului, cum ar fi Înapoi, Înainte și Caută.</translation>
 <translation id="6036420186814142909">Google Chrome are funcții care te ajută să gestionezi datele de internet și viteza cu care poți să încarci paginile web.
 <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
@@ -51,6 +50,7 @@
 <translation id="7437998757836447326">Deconectează-te de la Chrome</translation>
 <translation id="756809126120519699">Datele Chrome au fost șterse</translation>
 <translation id="7626032353295482388">Bun venit la Chrome</translation>
+<translation id="8370517070665726704">Drept de autor <ph name="YEAR" /> Google LLC. Toate drepturile rezervate.</translation>
 <translation id="840168496893712993">Unele suplimente determină blocarea browserului Chrome. Încearcă să le dezinstalezi.</translation>
 <translation id="8459495907675268833">Datele selectate au fost eliminate din Chrome și de pe dispozitivele sincronizate. Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi căutările și activitatea din alte servicii Google, la history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

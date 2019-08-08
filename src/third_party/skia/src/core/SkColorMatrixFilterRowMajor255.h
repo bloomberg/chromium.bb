@@ -21,7 +21,6 @@ public:
 
     uint32_t getFlags() const override;
     bool asColorMatrix(SkScalar matrix[20]) const override;
-    sk_sp<SkColorFilter> onMakeComposed(sk_sp<SkColorFilter>) const override;
 
 #if SK_SUPPORT_GPU
     std::unique_ptr<GrFragmentProcessor> asFragmentProcessor(
@@ -34,8 +33,7 @@ protected:
 private:
     SK_FLATTENABLE_HOOKS(SkColorMatrixFilterRowMajor255)
 
-    void onAppendStages(SkRasterPipeline*, SkColorSpace*, SkArenaAlloc*,
-                        bool shaderIsOpaque) const override;
+    bool onAppendStages(const SkStageRec& rec, bool shaderIsOpaque) const override;
 
     SkScalar        fMatrix[20];
     float           fTranspose[20]; // for Sk4s

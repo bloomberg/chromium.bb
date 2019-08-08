@@ -20,7 +20,6 @@ class ServiceWorkerProviderHost;
 class ResourceContext;
 class WorkerScriptLoader;
 
-// S13nServiceWorker:
 // WorkerScriptLoaderFactory creates a WorkerScriptLoader to load the main
 // script for a web worker (dedicated worker or shared worker), which follows
 // redirects and sets the controller service worker on the web worker if needed.

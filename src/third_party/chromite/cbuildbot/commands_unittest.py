@@ -25,12 +25,16 @@ from chromite.cbuildbot import topology
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gob_util
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.scripts import pushimage
 
+from chromite.lib.paygen import partition_lib
+from chromite.lib.paygen import paygen_payload_lib
+from chromite.lib.paygen import paygen_stateful_payload_lib
 
 
 class RunBuildScriptTest(cros_test_lib.RunCommandTempDirTestCase):
@@ -373,6 +377,7 @@ class HWLabCommandsTest(cros_test_lib.RunCommandTestCase,
 Autotest instance: cautotest
 02-23-2015 [06:26:51] Submitted create_suite_job rpc
 02-23-2015 [06:26:53] Created suite job: http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110
+Created task id: 26960110
 @@@STEP_LINK@Suite created@http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110@@@
 '''
 
@@ -753,6 +758,11 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
 
     self._dropfile = os.path.join(
         self._buildroot, 'src', 'scripts', 'cbuildbot_package.list')
+
+    self.target_image = os.path.join(
+        self.tempdir,
+        'link/R37-5952.0.2014_06_12_2302-a1/chromiumos_test_image.bin')
+
 
   def testGenerateStackTraces(self):
     """Test if we can generate stack traces for minidumps."""
@@ -1186,6 +1196,52 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
     commands.AbortHWTests('my_config', 'my_version', debug=False)
     self.assertCommandContains(['-i', 'my_config/my_version'])
 
+  def testGenerateQuickProvisionPayloads(self):
+    """Verifies correct files are created for quick_provision script."""
+    extract_kernel_mock = self.PatchObject(partition_lib, 'ExtractKernel')
+    extract_root_mock = self.PatchObject(partition_lib, 'ExtractRoot')
+    compress_file_mock = self.PatchObject(cros_build_lib, 'CompressFile')
+
+    commands.GenerateQuickProvisionPayloads(self.target_image, self.tempdir)
+
+    extract_kernel_mock.assert_called_once_with(
+        self.target_image, partial_mock.HasString('full_dev_part_KERN.bin'))
+    extract_root_mock.assert_called_once_with(
+        self.target_image, partial_mock.HasString('full_dev_part_ROOT.bin'),
+        truncate=False)
+
+    calls = [mock.call(partial_mock.HasString('full_dev_part_KERN.bin'),
+                       partial_mock.HasString('full_dev_part_KERN.bin.gz')),
+             mock.call(partial_mock.HasString('full_dev_part_ROOT.bin'),
+                       partial_mock.HasString('full_dev_part_ROOT.bin.gz'))]
+    compress_file_mock.assert_has_calls(calls)
+
+  def testGenerateFullPayloads(self):
+    """Verifies correctly generating full payloads."""
+    paygen_mock = self.PatchObject(paygen_payload_lib, 'GenerateUpdatePayload')
+    commands.GeneratePayloads(self.target_image, self.tempdir, full=True)
+    payload_path = os.path.join(
+        self.tempdir,
+        'chromeos_R37-5952.0.2014_06_12_2302-a1_link_full_dev.bin')
+    paygen_mock.assert_call_once_with(self.target_image, payload_path)
+
+  def testGenerateDeltaPayloads(self):
+    """Verifies correctly generating delta payloads."""
+    paygen_mock = self.PatchObject(paygen_payload_lib, 'GenerateUpdatePayload')
+    commands.GeneratePayloads(self.target_image, self.tempdir, delta=True)
+    payload_path = os.path.join(
+        self.tempdir,
+        'chromeos_R37-5952.0.2014_06_12_2302-a1_R37-'
+        '5952.0.2014_06_12_2302-a1_link_delta_dev.bin')
+    paygen_mock.assert_call_once_with(self.target_image, payload_path)
+
+  def testGenerateStatefulPayloads(self):
+    """Verifies correctly generating stateful payloads."""
+    paygen_mock = self.PatchObject(paygen_stateful_payload_lib,
+                                   'GenerateStatefulPayload')
+    commands.GeneratePayloads(self.target_image, self.tempdir, stateful=True)
+    paygen_mock.assert_call_once_with(self.target_image, self.tempdir)
+
 
 class GenerateDebugTarballTests(cros_test_lib.TempDirTestCase):
   """Tests related to building tarball artifacts."""
@@ -1364,6 +1420,71 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
       tarball = commands.BuildTastBundleTarball(self._buildroot, self._cwd,
                                                 self._tarball_dir)
       self.assertIs(tarball, None)
+      m.assert_not_called()
+
+  def testBuildPinnedGuestImagesTarball(self):
+    """Tests that generating a guest images tarball."""
+    expected_tarball = os.path.join(self._tarball_dir, 'guest_images.tar')
+
+    pin_dir = os.path.join(self._buildroot, 'chroot', 'build', self._board,
+                           'opt/google/containers/pins')
+    os.makedirs(pin_dir)
+    for filename in ('file1', 'file2'):
+      pin_file = os.path.join(pin_dir, filename + '.json')
+      with open(pin_file, 'w') as f:
+        pin = {
+            'filename': filename + '.tar.gz',
+            'gsuri': 'gs://%s' % filename,
+        }
+        json.dump(pin, f)
+
+    gs_mock = self.PatchObject(gs.GSContext, 'Copy')
+
+    with mock.patch.object(commands, 'BuildTarball') as m:
+      tarball = commands.BuildPinnedGuestImagesTarball(self._buildroot,
+                                                       self._board,
+                                                       self._tarball_dir)
+      self.assertEquals(expected_tarball, tarball)
+      gs_mock.assert_called_with('gs://file2', os.path.join(self._tarball_dir,
+                                                            'file2.tar.gz'))
+      m.assert_called_once_with(self._buildroot,
+                                ['file1.tar.gz', 'file2.tar.gz'],
+                                expected_tarball,
+                                cwd=self._tarball_dir,
+                                compressed=False)
+
+  def testBuildPinnedGuestImagesTarballBadPin(self):
+    """Tests that generating a guest images tarball with a bad pin file."""
+    pin_dir = os.path.join(self._buildroot, 'chroot', 'build', self._board,
+                           'opt/google/containers/pins')
+    os.makedirs(pin_dir)
+    pin_file = os.path.join(pin_dir, 'file1.json')
+    with open(pin_file, 'w') as f:
+      pin = {
+          'gsuri': 'gs://%s' % 'file1',
+      }
+      json.dump(pin, f)
+
+    gs_mock = self.PatchObject(gs.GSContext, 'Copy')
+
+    with mock.patch.object(commands, 'BuildTarball') as m:
+      tarball = commands.BuildPinnedGuestImagesTarball(self._buildroot,
+                                                       self._board,
+                                                       self._tarball_dir)
+      self.assertIs(tarball, None)
+      gs_mock.assert_not_called()
+      m.assert_not_called()
+
+  def testBuildPinnedGuestImagesTarballNoPins(self):
+    """Tests that generating a guest images tarball with no pins."""
+    gs_mock = self.PatchObject(gs.GSContext, 'Copy')
+
+    with mock.patch.object(commands, 'BuildTarball') as m:
+      tarball = commands.BuildPinnedGuestImagesTarball(self._buildroot,
+                                                       self._board,
+                                                       self._tarball_dir)
+      self.assertIs(tarball, None)
+      gs_mock.assert_not_called()
       m.assert_not_called()
 
   def testBuildStrippedPackagesArchive(self):
@@ -1586,10 +1707,12 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     image_dir = os.path.join(self.tempdir, 'inputs')
     archive_dir = os.path.join(self.tempdir, 'outputs')
     files = ('a.bin', 'aa', 'b b b', 'c', 'dalsdkjfasdlkf',)
+    dlc_dir = 'dlc'
     osutils.SafeMakedirs(image_dir)
     osutils.SafeMakedirs(archive_dir)
     for f in files:
       osutils.Touch(os.path.join(image_dir, f))
+    osutils.SafeMakedirs(os.path.join(image_dir, dlc_dir))
 
     # Check specifying tar functionality.
     artifact = {'paths': ['a.bin'], 'output': 'a.tar.gz', 'archive': 'tar',
@@ -1611,6 +1734,12 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     artifact = {'paths': ['a.bin'], 'archive': 'zip'}
     path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
     self.assertEquals(path, ['a.zip'])
+    self.assertExists(os.path.join(archive_dir, path[0]))
+
+    # Check directory copy functionality.
+    artifact = {'paths': ['dlc'], 'output': 'dlc'}
+    path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
+    self.assertEquals(path, ['dlc'])
     self.assertExists(os.path.join(archive_dir, path[0]))
 
   def testGceTarballGeneration(self):

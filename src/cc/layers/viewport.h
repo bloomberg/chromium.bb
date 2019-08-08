@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "cc/layers/layer_impl.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -38,6 +37,9 @@ class CC_EXPORT Viewport {
 
   static std::unique_ptr<Viewport> Create(LayerTreeHostImpl* host_impl);
 
+  Viewport(const Viewport&) = delete;
+  Viewport& operator=(const Viewport&) = delete;
+
   // Differs from scrolling in that only the visual viewport is moved, without
   // affecting the browser controls or outer viewport.
   void Pan(const gfx::Vector2dF& delta);
@@ -53,9 +55,7 @@ class CC_EXPORT Viewport {
 
   bool CanScroll(const ScrollState& scroll_state) const;
 
-  // Scrolls the viewport. Unlike the above method, scrolls the inner before
-  // the outer viewport. Doesn't affect browser controls or return a result
-  // since callers don't need it.
+  // TODO(bokan): Callers can now be replaced by ScrollBy.
   void ScrollByInnerFirst(const gfx::Vector2dF& delta);
 
   // Scrolls the viewport, bubbling the delta between the inner and outer
@@ -68,10 +68,14 @@ class CC_EXPORT Viewport {
   void PinchUpdate(float magnify_delta, const gfx::Point& anchor);
   void PinchEnd(const gfx::Point& anchor, bool snap_to_min);
 
-  // Returns the "representative" viewport layer. That is, the one that's set
-  // as the currently scrolling layer when the viewport scrolls and the one used
-  // in the scrolling code to indicate scrolling should happen via this class.
+  // Returns true if the given scroll node should be scrolled via this class,
+  // false if it should be scrolled directly.
+  bool ShouldScroll(const ScrollNode& scroll_node);
+
+  // Returns the "representative" viewport layer/node. That is, the one that's
+  // set as the currently scrolling layer/node when the viewport scrolls.
   LayerImpl* MainScrollLayer() const;
+  ScrollNode* MainScrollNode() const;
 
  private:
   explicit Viewport(LayerTreeHostImpl* host_impl);
@@ -103,8 +107,6 @@ class CC_EXPORT Viewport {
   gfx::Vector2d pinch_anchor_adjustment_;
 
   FRIEND_TEST_ALL_PREFIXES(ViewportTest, ShouldAnimateViewport);
-
-  DISALLOW_COPY_AND_ASSIGN(Viewport);
 };
 
 }  // namespace cc

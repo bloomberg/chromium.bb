@@ -11,10 +11,10 @@
 #include "base/callback.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#import "ios/web/common/crw_content_view.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
 #import "ios/web/public/serializable_user_data_manager.h"
-#import "ios/web/public/web_state/ui/crw_content_view.h"
 #include "ios/web/public/web_state/web_frame.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/web_state/web_frames_manager_impl.h"
@@ -90,6 +90,8 @@ void TestWebState::WasHidden() {
   for (auto& observer : observers_)
     observer.WasHidden(this);
 }
+
+void TestWebState::SetKeepRenderProcessAlive(bool keep_alive) {}
 
 const NavigationManager* TestWebState::GetNavigationManager() const {
   return navigation_manager_.get();

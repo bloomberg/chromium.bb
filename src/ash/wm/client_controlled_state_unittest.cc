@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -106,7 +107,7 @@ class ClientControlledStateTest : public AshTestBase {
     views::Widget::InitParams params;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
-        kShellWindowId_DefaultContainer);
+        desks_util::GetActiveDeskContainerId());
     params.bounds = kInitialBounds;
     params.delegate = widget_delegate_;
 

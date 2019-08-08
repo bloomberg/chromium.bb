@@ -29,7 +29,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -72,9 +71,8 @@ struct ContextClientPipes {
 // is called on EmbeddedWorkerInstanceClientImpl so it can self-destruct.
 class FakeWebEmbeddedWorker : public blink::WebEmbeddedWorker {
  public:
-  explicit FakeWebEmbeddedWorker(
-      std::unique_ptr<ServiceWorkerContextClient> context_client)
-      : context_client_(std::move(context_client)) {}
+  explicit FakeWebEmbeddedWorker(ServiceWorkerContextClient* context_client)
+      : context_client_(context_client) {}
 
   void StartWorkerContext(const blink::WebEmbeddedWorkerStartData&) override {}
   void TerminateWorkerContext() override {
@@ -88,7 +86,7 @@ class FakeWebEmbeddedWorker : public blink::WebEmbeddedWorker {
                          mojo::ScopedInterfaceEndpointHandle) override {}
 
  private:
-  std::unique_ptr<ServiceWorkerContextClient> context_client_;
+  ServiceWorkerContextClient* context_client_;
 };
 
 class MockWebServiceWorkerContextProxy
@@ -105,6 +103,10 @@ class MockWebServiceWorkerContextProxy
         std::make_unique<blink::WebServiceWorkerRegistrationObjectInfo>(
             std::move(info));
   }
+  void SetFetchHandlerExistence(
+      FetchHandlerExistence fetch_handler_existence) override {
+    fetch_handler_existence_ = fetch_handler_existence;
+  }
   void ReadyToEvaluateScript() override {}
   bool HasFetchEventHandler() override { return false; }
   void DispatchFetchEvent(int fetch_event_id,
@@ -116,22 +118,22 @@ class MockWebServiceWorkerContextProxy
   void DispatchActivateEvent(int event_id) override { NOTREACHED(); }
   void DispatchBackgroundFetchAbortEvent(
       int event_id,
-      const blink::WebBackgroundFetchRegistration& registration) override {
+      blink::WebBackgroundFetchRegistration registration) override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchClickEvent(
       int event_id,
-      const blink::WebBackgroundFetchRegistration& registration) override {
+      blink::WebBackgroundFetchRegistration registration) override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchFailEvent(
       int event_id,
-      const blink::WebBackgroundFetchRegistration& registration) override {
+      blink::WebBackgroundFetchRegistration registration) override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchSuccessEvent(
       int event_id,
-      const blink::WebBackgroundFetchRegistration& registration) override {
+      blink::WebBackgroundFetchRegistration registration) override {
     NOTREACHED();
   }
   void DispatchCookieChangeEvent(
@@ -212,11 +214,17 @@ class MockWebServiceWorkerContextProxy
     return fetch_events_;
   }
 
+  FetchHandlerExistence fetch_handler_existence() const {
+    return fetch_handler_existence_;
+  }
+
  private:
   std::unique_ptr<blink::WebServiceWorkerRegistrationObjectInfo>
       registration_object_info_;
   std::vector<std::pair<int /* event_id */, blink::WebServiceWorkerRequest>>
       fetch_events_;
+  FetchHandlerExistence fetch_handler_existence_ =
+      FetchHandlerExistence::UNKNOWN;
 };
 
 base::RepeatingClosure CreateCallbackWithCalledFlag(bool* out_is_called) {
@@ -263,6 +271,8 @@ class ServiceWorkerContextClientTest : public testing::Test {
   ServiceWorkerContextClientTest() = default;
 
  protected:
+  using FetchHandlerExistence = blink::mojom::FetchHandlerExistence;
+
   void SetUp() override {
     task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
     message_loop_.SetTaskRunner(task_runner_);
@@ -279,16 +289,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
   }
 
   void EnableServicification() {
-    feature_list_.InitWithFeatures({network::features::kNetworkService}, {});
-    ASSERT_TRUE(blink::ServiceWorkerUtils::IsServicificationEnabled());
-  }
-
-  // Creates an empty struct to initialize ServiceWorkerProviderContext.
-  blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr
-  CreateProviderInfo() {
-    auto info = blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
-    info->provider_id = 10;  // dummy
-    return info;
+    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
   }
 
   // Creates an ContextClient, whose pipes are connected to |out_pipes|, then
@@ -298,7 +299,9 @@ class ServiceWorkerContextClientTest : public testing::Test {
   // |out_pipes->embedded_worker_instance_client|.
   ServiceWorkerContextClient* CreateContextClient(
       ContextClientPipes* out_pipes,
-      blink::WebServiceWorkerContextProxy* proxy) {
+      blink::WebServiceWorkerContextProxy* proxy,
+      FetchHandlerExistence fetch_handler_existence =
+          FetchHandlerExistence::DOES_NOT_EXIST) {
     EmbeddedWorkerInstanceClientImpl* embedded_worker_instance_client =
         new EmbeddedWorkerInstanceClientImpl(
             mojo::MakeRequest(&out_pipes->embedded_worker_instance_client));
@@ -316,17 +319,22 @@ class ServiceWorkerContextClientTest : public testing::Test {
         false /* is_script_streaming */,
         blink::mojom::RendererPreferences::New(),
         std::move(service_worker_request), std::move(controller_request),
-        embedded_worker_host_ptr.PassInterface(), CreateProviderInfo(),
+        embedded_worker_host_ptr.PassInterface(),
+        blink::mojom::ServiceWorkerProviderInfoForStartWorker::New(),
         embedded_worker_instance_client,
         blink::mojom::EmbeddedWorkerStartTiming::New(),
         nullptr /* preference_watcher_request */,
         nullptr /* subresource_loaders */,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
-    auto* context_client_raw = context_client.get();
-    context_client->SetReportDebugLogForTesting(false);
 
-    embedded_worker_instance_client->worker_ =
-        std::make_unique<FakeWebEmbeddedWorker>(std::move(context_client));
+    auto* context_client_raw = context_client.get();
+
+    embedded_worker_instance_client->service_worker_context_client_ =
+        std::move(context_client);
+    context_client_raw->StartWorkerContext(
+        std::make_unique<FakeWebEmbeddedWorker>(context_client_raw),
+        blink::WebEmbeddedWorkerStartData());
+
     // TODO(falken): We should mock a worker thread task runner instead of
     // using GetSingleThreadTaskRunnerForTesting() again, since that's the
     // runner we used to mock the main thread when constructing the context
@@ -347,7 +355,8 @@ class ServiceWorkerContextClientTest : public testing::Test {
         mojo::MakeRequest(&registration_info->host_ptr_info);
     registration_info->request = mojo::MakeRequest(&out_pipes->registration);
     out_pipes->service_worker->InitializeGlobalScope(
-        std::move(service_worker_host), std::move(registration_info));
+        std::move(service_worker_host), std::move(registration_info),
+        fetch_handler_existence);
     task_runner()->RunUntilIdle();
     return context_client_raw;
   }
@@ -645,6 +654,14 @@ TEST_F(ServiceWorkerContextClientTest, AbortedTaskInServiceWorker) {
 
   // Calling DidEndTask() shouldn't crash.
   context_client->DidEndTask(task_id);
+}
+
+TEST_F(ServiceWorkerContextClientTest, InstalledFetchEventHandler) {
+  ContextClientPipes pipes;
+  MockWebServiceWorkerContextProxy mock_proxy;
+  CreateContextClient(&pipes, &mock_proxy, FetchHandlerExistence::EXISTS);
+  EXPECT_EQ(FetchHandlerExistence::EXISTS,
+            mock_proxy.fetch_handler_existence());
 }
 
 }  // namespace content

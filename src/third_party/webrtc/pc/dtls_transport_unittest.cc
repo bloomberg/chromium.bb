@@ -20,6 +20,7 @@
 #include "test/gtest.h"
 
 constexpr int kDefaultTimeout = 1000;  // milliseconds
+constexpr int kNonsenseCipherSuite = 1234;
 
 using cricket::FakeDtlsTransport;
 using ::testing::ElementsAre;
@@ -31,6 +32,7 @@ class TestDtlsTransportObserver : public DtlsTransportObserverInterface {
   void OnStateChange(DtlsTransportInformation info) override {
     state_change_called_ = true;
     states_.push_back(info.state());
+    info_ = info;
   }
 
   void OnError(RTCError error) override {}
@@ -44,17 +46,22 @@ class TestDtlsTransportObserver : public DtlsTransportObserverInterface {
   }
 
   bool state_change_called_ = false;
+  DtlsTransportInformation info_;
   std::vector<DtlsTransportState> states_;
 };
 
-class DtlsTransportTest : public testing::Test {
+class DtlsTransportTest : public ::testing::Test {
  public:
   DtlsTransport* transport() { return transport_.get(); }
   DtlsTransportObserverInterface* observer() { return &observer_; }
 
-  void CreateTransport() {
+  void CreateTransport(rtc::FakeSSLCertificate* certificate = nullptr) {
     auto cricket_transport = absl::make_unique<FakeDtlsTransport>(
         "audio", cricket::ICE_CANDIDATE_COMPONENT_RTP);
+    if (certificate) {
+      cricket_transport->SetRemoteSSLCertificate(certificate);
+    }
+    cricket_transport->SetSslCipherSuite(kNonsenseCipherSuite);
     transport_ =
         new rtc::RefCountedObject<DtlsTransport>(std::move(cricket_transport));
   }
@@ -111,6 +118,44 @@ TEST_F(DtlsTransportTest, CloseWhenClearing) {
   transport()->Clear();
   ASSERT_TRUE_WAIT(observer_.state() == DtlsTransportState::kClosed,
                    kDefaultTimeout);
+}
+
+TEST_F(DtlsTransportTest, CertificateAppearsOnConnect) {
+  rtc::FakeSSLCertificate fake_certificate("fake data");
+  CreateTransport(&fake_certificate);
+  transport()->RegisterObserver(observer());
+  CompleteDtlsHandshake();
+  ASSERT_TRUE_WAIT(observer_.state() == DtlsTransportState::kConnected,
+                   kDefaultTimeout);
+  EXPECT_TRUE(observer_.info_.remote_ssl_certificates() != nullptr);
+}
+
+TEST_F(DtlsTransportTest, CertificateDisappearsOnClose) {
+  rtc::FakeSSLCertificate fake_certificate("fake data");
+  CreateTransport(&fake_certificate);
+  transport()->RegisterObserver(observer());
+  CompleteDtlsHandshake();
+  ASSERT_TRUE_WAIT(observer_.state() == DtlsTransportState::kConnected,
+                   kDefaultTimeout);
+  EXPECT_TRUE(observer_.info_.remote_ssl_certificates() != nullptr);
+  transport()->Clear();
+  ASSERT_TRUE_WAIT(observer_.state() == DtlsTransportState::kClosed,
+                   kDefaultTimeout);
+  EXPECT_FALSE(observer_.info_.remote_ssl_certificates());
+}
+
+TEST_F(DtlsTransportTest, CipherSuiteVisibleWhenConnected) {
+  CreateTransport();
+  transport()->RegisterObserver(observer());
+  CompleteDtlsHandshake();
+  ASSERT_TRUE_WAIT(observer_.state() == DtlsTransportState::kConnected,
+                   kDefaultTimeout);
+  ASSERT_TRUE(observer_.info_.ssl_cipher_suite());
+  EXPECT_EQ(kNonsenseCipherSuite, *observer_.info_.ssl_cipher_suite());
+  transport()->Clear();
+  ASSERT_TRUE_WAIT(observer_.state() == DtlsTransportState::kClosed,
+                   kDefaultTimeout);
+  EXPECT_FALSE(observer_.info_.ssl_cipher_suite());
 }
 
 }  // namespace webrtc

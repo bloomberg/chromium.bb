@@ -20,6 +20,43 @@ const int kMinHostSuffix = 6;  // eg., abc.tv
 // is exceeded, the least recently used hint is purged from the cache.
 const size_t kDefaultMaxMemoryCacheHints = 20;
 
+// Verify |get_hints_response| and load the hints that have keys represented by
+// hosts suffix into UpdateData to be stored in the HintCache. Returns true if
+// there are applicable hints moved into UpdateData that can be stored.
+bool ProcessGetHintsResponse(
+    optimization_guide::proto::GetHintsResponse* get_hints_response,
+    HintCacheStore::ComponentUpdateData* fetched_hints_update_data) {
+  std::unordered_set<std::string> seen_host_suffixes;
+
+  bool has_processed_hints = false;
+  // Process each hint in |get_hints_response|.
+  for (auto& hint : *(get_hints_response->mutable_hints())) {
+    // One |hint| applies to one host URL suffix.
+    if (hint.key_representation() != optimization_guide::proto::HOST_SUFFIX) {
+      continue;
+    }
+    const std::string& hint_key = hint.key();
+
+    // Validate configuration keys.
+    DCHECK(!hint_key.empty());
+    if (hint_key.empty()) {
+      continue;
+    }
+
+    auto seen_host_suffixes_iter = seen_host_suffixes.find(hint_key);
+    DCHECK(seen_host_suffixes_iter == seen_host_suffixes.end());
+
+    seen_host_suffixes.insert(hint_key);
+
+    if (!hint.page_hints().empty()) {
+      // Move fetched hints into update data
+      fetched_hints_update_data->MoveHintIntoUpdateData(std::move(hint));
+      has_processed_hints = true;
+    }
+  }
+  return has_processed_hints;
+}
+
 }  // namespace
 
 HintCache::HintCache(
@@ -49,6 +86,12 @@ HintCache::MaybeCreateComponentUpdateData(const base::Version& version) const {
   return hint_store_->MaybeCreateComponentUpdateData(version);
 }
 
+std::unique_ptr<HintCacheStore::ComponentUpdateData>
+HintCache::CreateUpdateDataForFetchedHints(base::Time update_time) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return hint_store_->CreateUpdateDataForFetchedHints(update_time);
+}
+
 void HintCache::UpdateComponentData(
     std::unique_ptr<HintCacheStore::ComponentUpdateData> component_data,
     base::OnceClosure callback) {
@@ -61,6 +104,22 @@ void HintCache::UpdateComponentData(
 
   hint_store_->UpdateComponentData(std::move(component_data),
                                    std::move(callback));
+}
+
+bool HintCache::StoreFetchedHints(
+    std::unique_ptr<optimization_guide::proto::GetHintsResponse>
+        get_hints_response,
+    base::Time update_time,
+    base::OnceClosure callback) {
+  std::unique_ptr<HintCacheStore::ComponentUpdateData>
+      fetched_hints_update_data = CreateUpdateDataForFetchedHints(update_time);
+  if (ProcessGetHintsResponse(get_hints_response.get(),
+                              fetched_hints_update_data.get())) {
+    hint_store_->UpdateFetchedHintsData(std::move(fetched_hints_update_data),
+                                        std::move(callback));
+    return true;
+  }
+  return false;
 }
 
 bool HintCache::HasHint(const std::string& host) const {
@@ -112,6 +171,13 @@ const optimization_guide::proto::Hint* HintCache::GetHintIfLoaded(
   }
 
   return nullptr;
+}
+
+base::Time HintCache::FetchedHintsUpdateTime() const {
+  if (!hint_store_) {
+    return base::Time();
+  }
+  return hint_store_->FetchedHintsUpdateTime();
 }
 
 void HintCache::OnStoreInitialized(base::OnceClosure callback) {

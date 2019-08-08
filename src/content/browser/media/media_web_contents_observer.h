@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_controllers_manager.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/media_player_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 

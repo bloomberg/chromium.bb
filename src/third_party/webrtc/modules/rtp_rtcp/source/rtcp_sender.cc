@@ -16,7 +16,6 @@
 #include <utility>
 
 #include "absl/memory/memory.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "logging/rtc_event_log/events/rtc_event_rtcp_packet_outgoing.h"
 #include "logging/rtc_event_log/rtc_event_log.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/app.h"
@@ -938,6 +937,9 @@ void RTCPSender::SetVideoBitrateAllocation(
       CheckAndUpdateLayerStructure(bitrate);
   if (new_bitrate) {
     video_bitrate_allocation_ = *new_bitrate;
+    RTC_LOG(LS_INFO) << "Emitting TargetBitrate XR for SSRC " << ssrc_
+                     << " with new layers enabled/disabled: "
+                     << video_bitrate_allocation_.ToString();
     next_time_to_send_rtcp_ = clock_->TimeInMilliseconds();
   } else {
     video_bitrate_allocation_ = bitrate;

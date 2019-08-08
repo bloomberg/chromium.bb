@@ -14,10 +14,10 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata_sanitizer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -115,10 +115,6 @@ MediaSession::MediaSession(ExecutionContext* execution_context)
       playback_state_(mojom::blink::MediaSessionPlaybackState::NONE),
       client_binding_(this) {}
 
-MediaSession* MediaSession::Create(ExecutionContext* execution_context) {
-  return MakeGarbageCollected<MediaSession>(execution_context);
-}
-
 void MediaSession::Dispose() {
   client_binding_.Close();
 }
@@ -162,7 +158,7 @@ void MediaSession::setActionHandler(const String& action,
                                     V8MediaSessionActionHandler* handler,
                                     ExceptionState& exception_state) {
   if (action == "skipad") {
-    if (!origin_trials::SkipAdEnabled(GetExecutionContext())) {
+    if (!RuntimeEnabledFeatures::SkipAdEnabled(GetExecutionContext())) {
       exception_state.ThrowTypeError(
           "The provided value 'skipad' is not a valid enum "
           "value of type MediaSessionAction.");

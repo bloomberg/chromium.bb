@@ -104,7 +104,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void ClearErrors() override;
   void ReloadContent(const base::DictionaryValue& dictionary) override;
   void ReloadEulaContent(const base::DictionaryValue& dictionary) override;
-  void ShowControlBar(bool show) override;
   void SetVirtualKeyboardShown(bool displayed) override;
   void SetClientAreaSize(int width, int height) override;
   void ShowDeviceResetScreen() override;
@@ -134,13 +133,11 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void HandleSkipUpdateEnrollAfterEula();
   void HandleUpdateCurrentScreen(const std::string& screen);
   void HandleSetDeviceRequisition(const std::string& requisition);
-  void HandleScreenAssetsLoaded(const std::string& screen_async_load_id);
   void HandleSkipToLoginForTesting(const base::ListValue* args);
   void HandleSkipToUpdateForTesting();
   void HandleLaunchHelpApp(double help_topic_id);
   void HandleToggleResetScreen();
   void HandleEnableDebuggingScreen();
-  void HandleHeaderBarVisible();
   void HandleSetOobeBootstrappingSlave();
   void HandleGetPrimaryDisplayNameForTesting(const base::ListValue* args);
   void GetPrimaryDisplayNameCallback(

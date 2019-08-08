@@ -26,7 +26,8 @@
 #include "src/trace_processor/args_table.h"
 #include "src/trace_processor/args_tracker.h"
 #include "src/trace_processor/clock_tracker.h"
-#include "src/trace_processor/counters_table.h"
+#include "src/trace_processor/counter_definitions_table.h"
+#include "src/trace_processor/counter_values_table.h"
 #include "src/trace_processor/event_tracker.h"
 #include "src/trace_processor/instants_table.h"
 #include "src/trace_processor/process_table.h"
@@ -39,18 +40,20 @@
 #include "src/trace_processor/slice_tracker.h"
 #include "src/trace_processor/span_join_operator_table.h"
 #include "src/trace_processor/sql_stats_table.h"
+#include "src/trace_processor/sqlite3_str_split.h"
 #include "src/trace_processor/stats_table.h"
 #include "src/trace_processor/string_table.h"
+#include "src/trace_processor/syscall_tracker.h"
 #include "src/trace_processor/table.h"
 #include "src/trace_processor/thread_table.h"
+#include "src/trace_processor/trace_blob_view.h"
 #include "src/trace_processor/trace_sorter.h"
 #include "src/trace_processor/window_operator_table.h"
-
-#include "perfetto/trace_processor/raw_query.pb.h"
 
 // JSON parsing is only supported in the standalone build.
 #if PERFETTO_BUILDFLAG(PERFETTO_STANDALONE_BUILD)
 #include "src/trace_processor/json_trace_parser.h"
+#include "src/trace_processor/json_trace_tokenizer.h"
 #endif
 
 // In Android tree builds, we don't have the percentile module.
@@ -62,18 +65,47 @@ extern "C" int sqlite3_percentile_init(sqlite3* db,
                                        const sqlite3_api_routines* api);
 #endif
 
+namespace perfetto {
+namespace trace_processor {
 namespace {
-void InitializeSqliteModules(sqlite3* db) {
+
+void InitializeSqlite(sqlite3* db) {
+  char* error = nullptr;
+  sqlite3_exec(db, "PRAGMA temp_store=2", 0, 0, &error);
+  if (error) {
+    PERFETTO_FATAL("Error setting pragma temp_store: %s", error);
+  }
+  sqlite3_str_split_init(db);
 // In Android tree builds, we don't have the percentile module.
 // Just don't include it.
 #if !PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
-  char* error = nullptr;
   sqlite3_percentile_init(db, &error, nullptr);
   if (error) {
     PERFETTO_ELOG("Error initializing: %s", error);
     sqlite3_free(error);
   }
 #endif
+}
+
+void BuildBoundsTable(sqlite3* db, std::pair<int64_t, int64_t> bounds) {
+  char* error = nullptr;
+  sqlite3_exec(db, "DELETE FROM trace_bounds", nullptr, nullptr, &error);
+  if (error) {
+    PERFETTO_ELOG("Error deleting from bounds table: %s", error);
+    sqlite3_free(error);
+    return;
+  }
+
+  char* insert_sql = sqlite3_mprintf("INSERT INTO trace_bounds VALUES(%" PRId64
+                                     ", %" PRId64 ")",
+                                     bounds.first, bounds.second);
+
+  sqlite3_exec(db, insert_sql, 0, 0, &error);
+  sqlite3_free(insert_sql);
+  if (error) {
+    PERFETTO_ELOG("Error inserting bounds table: %s", error);
+    sqlite3_free(error);
+  }
 }
 
 void CreateBuiltinTables(sqlite3* db) {
@@ -90,25 +122,24 @@ void CreateBuiltinTables(sqlite3* db) {
     PERFETTO_ELOG("Error initializing: %s", error);
     sqlite3_free(error);
   }
+
+  // Initialize the bounds table with some data so even before parsing any data,
+  // we still have a valid table.
+  BuildBoundsTable(db, std::make_pair(0, 0));
 }
 
-void BuildBoundsTable(sqlite3* db, std::pair<int64_t, int64_t> bounds) {
-  char* insert_sql = sqlite3_mprintf("INSERT INTO trace_bounds VALUES(%" PRId64
-                                     ", %" PRId64 ")",
-                                     bounds.first, bounds.second);
+void CreateBuiltinViews(sqlite3* db) {
   char* error = nullptr;
-  sqlite3_exec(db, insert_sql, 0, 0, &error);
-  sqlite3_free(insert_sql);
+  sqlite3_exec(db,
+               "CREATE VIEW counters AS "
+               "SELECT * FROM counter_values "
+               "INNER JOIN counter_definitions USING(counter_id);",
+               0, 0, &error);
   if (error) {
-    PERFETTO_ELOG("Error inserting bounds table: %s", error);
+    PERFETTO_ELOG("Error initializing: %s", error);
     sqlite3_free(error);
   }
 }
-}  // namespace
-
-namespace perfetto {
-namespace trace_processor {
-namespace {
 
 bool IsPrefix(const std::string& a, const std::string& b) {
   return a.size() <= b.size() && b.substr(0, a.size()) == a;
@@ -135,22 +166,21 @@ TraceType GuessTraceType(const uint8_t* data, size_t size) {
   return kProtoTraceType;
 }
 
-TraceProcessorImpl::TraceProcessorImpl(const Config& cfg) {
+TraceProcessorImpl::TraceProcessorImpl(const Config& cfg) : cfg_(cfg) {
   sqlite3* db = nullptr;
   PERFETTO_CHECK(sqlite3_open(":memory:", &db) == SQLITE_OK);
-  InitializeSqliteModules(db);
+  InitializeSqlite(db);
   CreateBuiltinTables(db);
+  CreateBuiltinViews(db);
   db_.reset(std::move(db));
 
   context_.storage.reset(new TraceStorage());
   context_.args_tracker.reset(new ArgsTracker(&context_));
   context_.slice_tracker.reset(new SliceTracker(&context_));
   context_.event_tracker.reset(new EventTracker(&context_));
-  context_.proto_parser.reset(new ProtoTraceParser(&context_));
   context_.process_tracker.reset(new ProcessTracker(&context_));
+  context_.syscall_tracker.reset(new SyscallTracker(&context_));
   context_.clock_tracker.reset(new ClockTracker(&context_));
-  context_.sorter.reset(
-      new TraceSorter(&context_, static_cast<int64_t>(cfg.window_size_ns)));
 
   ArgsTable::RegisterTable(*db_, context_.storage.get());
   ProcessTable::RegisterTable(*db_, context_.storage.get());
@@ -159,7 +189,8 @@ TraceProcessorImpl::TraceProcessorImpl(const Config& cfg) {
   SqlStatsTable::RegisterTable(*db_, context_.storage.get());
   StringTable::RegisterTable(*db_, context_.storage.get());
   ThreadTable::RegisterTable(*db_, context_.storage.get());
-  CountersTable::RegisterTable(*db_, context_.storage.get());
+  CounterDefinitionsTable::RegisterTable(*db_, context_.storage.get());
+  CounterValuesTable::RegisterTable(*db_, context_.storage.get());
   SpanJoinOperatorTable::RegisterTable(*db_, context_.storage.get());
   WindowOperatorTable::RegisterTable(*db_, context_.storage.get());
   InstantsTable::RegisterTable(*db_, context_.storage.get());
@@ -187,13 +218,19 @@ bool TraceProcessorImpl::Parse(std::unique_ptr<uint8_t[]> data, size_t size) {
       case kJsonTraceType:
         PERFETTO_DLOG("Legacy JSON trace detected");
 #if PERFETTO_BUILDFLAG(PERFETTO_STANDALONE_BUILD)
-        context_.chunk_reader.reset(new JsonTraceParser(&context_));
+        context_.chunk_reader.reset(new JsonTraceTokenizer(&context_));
+        context_.sorter.reset(
+            new TraceSorter(&context_, std::numeric_limits<int64_t>::max()));
+        context_.parser.reset(new JsonTraceParser(&context_));
 #else
         PERFETTO_FATAL("JSON traces only supported in standalone mode.");
 #endif
         break;
       case kProtoTraceType:
         context_.chunk_reader.reset(new ProtoTraceTokenizer(&context_));
+        context_.sorter.reset(new TraceSorter(
+            &context_, static_cast<int64_t>(cfg_.window_size_ns)));
+        context_.parser.reset(new ProtoTraceParser(&context_));
         break;
       case kUnknownTraceType:
         return false;
@@ -206,134 +243,25 @@ bool TraceProcessorImpl::Parse(std::unique_ptr<uint8_t[]> data, size_t size) {
 }
 
 void TraceProcessorImpl::NotifyEndOfFile() {
+  if (unrecoverable_parse_error_ || !context_.chunk_reader)
+    return;
+
   context_.sorter->ExtractEventsForced();
   BuildBoundsTable(*db_, context_.storage->GetTraceTimestampBoundsNs());
 }
 
-void TraceProcessorImpl::ExecuteQuery(
-    const protos::RawQueryArgs& args,
-    std::function<void(const protos::RawQueryResult&)> callback) {
-  protos::RawQueryResult proto;
-  query_interrupted_.store(false, std::memory_order_relaxed);
-
-  base::TimeNanos t_start = base::GetWallTimeNs();
-  const std::string& sql = args.sql_query();
-  context_.storage->mutable_sql_stats()->RecordQueryBegin(
-      sql, static_cast<int64_t>(args.time_queued_ns()), t_start.count());
+TraceProcessor::Iterator TraceProcessorImpl::ExecuteQuery(
+    const std::string& sql) {
   sqlite3_stmt* raw_stmt;
   int err = sqlite3_prepare_v2(*db_, sql.c_str(), static_cast<int>(sql.size()),
                                &raw_stmt, nullptr);
-  ScopedStmt stmt(raw_stmt);
-
-  int col_count = sqlite3_column_count(*stmt);
-  int row_count = 0;
-
-  while (!err) {
-    int r = sqlite3_step(*stmt);
-    if (r != SQLITE_ROW) {
-      if (r != SQLITE_DONE)
-        err = r;
-      break;
-    }
-
-    using ColumnDesc = protos::RawQueryResult::ColumnDesc;
-    for (int col = 0; col < col_count; col++) {
-      if (row_count == 0) {
-        // Setup the descriptors.
-        auto* descriptor = proto.add_column_descriptors();
-        descriptor->set_name(sqlite3_column_name(*stmt, col));
-        descriptor->set_type(ColumnDesc::UNKNOWN);
-
-        // Add an empty column.
-        proto.add_columns();
-      }
-
-      auto* column = proto.mutable_columns(col);
-      auto* desc = proto.mutable_column_descriptors(col);
-      auto col_type = sqlite3_column_type(*stmt, col);
-      if (desc->type() == ColumnDesc::UNKNOWN) {
-        switch (col_type) {
-          case SQLITE_INTEGER:
-            desc->set_type(ColumnDesc::LONG);
-            break;
-          case SQLITE_TEXT:
-            desc->set_type(ColumnDesc::STRING);
-            break;
-          case SQLITE_FLOAT:
-            desc->set_type(ColumnDesc::DOUBLE);
-            break;
-          case SQLITE_NULL:
-            break;
-        }
-      }
-
-      // If either the column type is null or we still don't know the type,
-      // just add null values to all the columns.
-      if (col_type == SQLITE_NULL || desc->type() == ColumnDesc::UNKNOWN) {
-        column->add_long_values(0);
-        column->add_string_values("[NULL]");
-        column->add_double_values(0);
-        column->add_is_nulls(true);
-        continue;
-      }
-
-      // Cast the sqlite value to the type of the column.
-      switch (desc->type()) {
-        case ColumnDesc::LONG:
-          column->add_long_values(sqlite3_column_int64(*stmt, col));
-          column->add_is_nulls(false);
-          break;
-        case ColumnDesc::STRING: {
-          const char* str =
-              reinterpret_cast<const char*>(sqlite3_column_text(*stmt, col));
-          column->add_string_values(str);
-          column->add_is_nulls(false);
-          break;
-        }
-        case ColumnDesc::DOUBLE:
-          column->add_double_values(sqlite3_column_double(*stmt, col));
-          column->add_is_nulls(false);
-          break;
-        case ColumnDesc::UNKNOWN:
-          PERFETTO_FATAL("Handled in if statement above.");
-      }
-    }
-    row_count++;
-  }
-
-  if (err) {
-    proto.set_error(sqlite3_errmsg(*db_));
-    callback(std::move(proto));
-    return;
-  }
-
-  proto.set_num_records(static_cast<uint64_t>(row_count));
-
-  if (query_interrupted_.load()) {
-    PERFETTO_ELOG("SQLite query interrupted");
-    query_interrupted_ = false;
-  }
-
-  base::TimeNanos t_end = base::GetWallTimeNs();
-  context_.storage->mutable_sql_stats()->RecordQueryEnd(t_end.count());
-  proto.set_execution_time_ns(static_cast<uint64_t>((t_end - t_start).count()));
-  callback(proto);
-}
-
-TraceProcessor::Iterator TraceProcessorImpl::ExecuteQuery(
-    base::StringView sql) {
-  sqlite3_stmt* raw_stmt;
-  int err = sqlite3_prepare_v2(*db_, sql.data(), static_cast<int>(sql.size()),
-                               &raw_stmt, nullptr);
-
-  uint32_t col_count = 0;
   base::Optional<std::string> error;
-  if (err) {
-    error = base::Optional<std::string>(sqlite3_errmsg(*db_));
+  uint32_t col_count = 0;
+  if (err != SQLITE_OK) {
+    error = sqlite3_errmsg(*db_);
   } else {
     col_count = static_cast<uint32_t>(sqlite3_column_count(raw_stmt));
   }
-
   std::unique_ptr<IteratorImpl> impl(
       new IteratorImpl(this, *db_, ScopedStmt(raw_stmt), col_count, error));
   iterators_.emplace_back(impl.get());
@@ -345,6 +273,13 @@ void TraceProcessorImpl::InterruptQuery() {
     return;
   query_interrupted_.store(true);
   sqlite3_interrupt(db_.get());
+}
+
+int TraceProcessorImpl::ComputeMetric(
+    const std::vector<std::string>& metric_names,
+    std::vector<uint8_t>* metrics_proto) {
+  perfetto::base::ignore_result(metric_names, metrics_proto);
+  return 0;
 }
 
 TraceProcessor::IteratorImpl::IteratorImpl(TraceProcessorImpl* trace_processor,

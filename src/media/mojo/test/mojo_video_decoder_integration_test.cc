@@ -170,6 +170,7 @@ class FakeMojoMediaClient : public MojoMediaClient {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       MediaLog* media_log,
       mojom::CommandBufferIdPtr command_buffer_id,
+      VideoDecoderImplementation implementation,
       RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space) override {
     return create_video_decoder_cb_.Run(media_log);
@@ -217,7 +218,8 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
     // be tested.
     client_ = std::make_unique<MojoVideoDecoder>(
         base::ThreadTaskRunnerHandle::Get(), nullptr, &client_media_log_,
-        CreateRemoteVideoDecoder(), RequestOverlayInfoCB(), gfx::ColorSpace());
+        CreateRemoteVideoDecoder(), VideoDecoderImplementation::kDefault,
+        RequestOverlayInfoCB(), gfx::ColorSpace());
     if (writer_capacity_)
       client_->set_writer_capacity_for_testing(writer_capacity_);
   }

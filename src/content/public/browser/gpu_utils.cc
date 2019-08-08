@@ -111,14 +111,12 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
 
   gpu_preferences.enable_oop_rasterization_ddl =
       command_line->HasSwitch(switches::kEnableOopRasterizationDDL);
-  gpu_preferences.enable_passthrough_raster_decoder =
-      command_line->HasSwitch(switches::kEnablePassthroughRasterDecoder);
-#if defined(OS_WIN)
-  gpu_preferences.enable_passthrough_raster_decoder = true;
-#endif
 
   gpu_preferences.enable_vulkan =
       command_line->HasSwitch(switches::kEnableVulkan);
+
+  gpu_preferences.disable_vulkan_fallback_to_gl_for_testing =
+      command_line->HasSwitch(switches::kDisableVulkanFallbackToGLForTesting);
 
   gpu_preferences.enable_gpu_benchmarking_extension =
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking);

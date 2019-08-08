@@ -27,11 +27,6 @@
 
 namespace blink {
 
-PlatformSpeechSynthesisUtterance* PlatformSpeechSynthesisUtterance::Create(
-    PlatformSpeechSynthesisUtteranceClient* client) {
-  return MakeGarbageCollected<PlatformSpeechSynthesisUtterance>(client);
-}
-
 PlatformSpeechSynthesisUtterance::PlatformSpeechSynthesisUtterance(
     PlatformSpeechSynthesisUtteranceClient* client)
     : client_(client) {}

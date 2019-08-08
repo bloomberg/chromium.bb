@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/async_directory_type_controller.h"
@@ -37,7 +37,7 @@ class AutofillProfileDataTypeController
 
   // |dump_stack| is called when an unrecoverable error occurs.
   AutofillProfileDataTypeController(
-      scoped_refptr<base::SingleThreadTaskRunner> db_thread,
+      scoped_refptr<base::SequencedTaskRunner> db_thread,
       const base::Closure& dump_stack,
       syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client,
@@ -63,9 +63,6 @@ class AutofillProfileDataTypeController
 
   // Returns true if the pref is set such that autofill sync should be enabled.
   bool IsEnabled();
-
-  // Report an error (which will stop the datatype asynchronously).
-  void DisableForPolicy();
 
   // Callback that allows accessing PersonalDataManager lazily.
   const PersonalDataManagerProvider pdm_provider_;

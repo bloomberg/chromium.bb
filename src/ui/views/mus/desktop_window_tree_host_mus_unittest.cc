@@ -75,6 +75,11 @@ class DesktopWindowTreeHostMusTest : public ViewsTestBase,
     return widget;
   }
 
+  AXAuraObjCache* CreateAXAuraObjCache() {
+    ax_aura_obj_cache_ = std::make_unique<AXAuraObjCache>();
+    return ax_aura_obj_cache_.get();
+  }
+
   const Widget* widget_activated() const { return widget_activated_; }
   const Widget* widget_deactivated() const { return widget_deactivated_; }
 
@@ -91,6 +96,7 @@ class DesktopWindowTreeHostMusTest : public ViewsTestBase,
 
   Widget* widget_activated_ = nullptr;
   Widget* widget_deactivated_ = nullptr;
+  std::unique_ptr<AXAuraObjCache> ax_aura_obj_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostMusTest);
 };
@@ -464,40 +470,26 @@ TEST_F(DesktopWindowTreeHostMusTest, SynchronousBoundsWhenTogglingFullscreen) {
   }
 }
 
-TEST_F(DesktopWindowTreeHostMusTest, ClientWindowHasContent) {
-  // Opaque window has content.
-  {
+TEST_F(DesktopWindowTreeHostMusTest, ClientWindowLayerDrawnSet) {
+  struct {
+    ui::LayerType layer_type;
+    bool expected_layer_drawn;
+  } kTestCases[] = {
+      {ui::LayerType::LAYER_TEXTURED, true},
+      {ui::LayerType::LAYER_SOLID_COLOR, true},
+      {ui::LayerType::LAYER_NINE_PATCH, true},
+      {ui::LayerType::LAYER_NOT_DRAWN, false},
+  };
+
+  for (const auto& test : kTestCases) {
     Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.layer_type = test.layer_type;
 
     Widget widget;
     widget.Init(params);
-    EXPECT_TRUE(widget.GetNativeWindow()->GetProperty(
-        aura::client::kClientWindowHasContent));
-  }
-
-  // Translucent window does not have content.
-  {
-    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-
-    Widget widget;
-    widget.Init(params);
-    EXPECT_FALSE(widget.GetNativeWindow()->GetProperty(
-        aura::client::kClientWindowHasContent));
-  }
-
-  // Window with LAYER_NOT_DRAWN does not have content.
-  {
-    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.layer_type = ui::LAYER_NOT_DRAWN;
-
-    Widget widget;
-    widget.Init(params);
-    EXPECT_FALSE(widget.GetNativeWindow()->GetProperty(
-        aura::client::kClientWindowHasContent));
+    EXPECT_EQ(test.expected_layer_drawn, widget.GetNativeWindow()->GetProperty(
+                                             aura::client::kWindowLayerDrawn));
   }
 }
 
@@ -547,7 +539,7 @@ TEST_F(DesktopWindowTreeHostMusTestHighDPI, InitializeMenuWithDIPBounds) {
 
 TEST_F(DesktopWindowTreeHostMusTest, GetWindowBoundsInScreen) {
   // No ScreenMus in single process Mash.
-  if (features::IsSingleProcessMash())
+  if (::features::IsSingleProcessMash())
     return;
 
   ScreenMus* screen = MusClientTestApi::screen();
@@ -633,7 +625,8 @@ TEST_F(DesktopWindowTreeHostMusTest, WindowTitle) {
 
 TEST_F(DesktopWindowTreeHostMusTest, Accessibility) {
   // Pretend we're using the remote AX service, like shortcut_viewer.
-  MusClientTestApi::SetAXRemoteHost(std::make_unique<AXRemoteHost>());
+  AXAuraObjCache* cache = CreateAXAuraObjCache();
+  MusClientTestApi::SetAXRemoteHost(std::make_unique<AXRemoteHost>(cache));
 
   std::unique_ptr<Widget> widget = CreateWidget();
   // Widget frame views do not participate in accessibility node hierarchy
@@ -1182,7 +1175,8 @@ TEST_F(DesktopWindowTreeHostMusTest, ServerBoundsChangeIngoresMinMax) {
   // Changes to the bounds from the server should not consider the min/max.
   const gfx::Rect server_bounds(1, 2, 250, 251);
   static_cast<aura::WindowTreeHostMus*>(widget->GetNativeWindow()->GetHost())
-      ->SetBoundsFromServer(server_bounds, viz::LocalSurfaceIdAllocation());
+      ->SetBoundsFromServer(server_bounds, ui::SHOW_STATE_DEFAULT,
+                            viz::LocalSurfaceIdAllocation());
   EXPECT_EQ(server_bounds, widget->GetWindowBoundsInScreen());
 }
 

@@ -54,7 +54,7 @@ void WebTestRuntimeFlags::Reset() {
 
   set_stay_on_page_after_handling_before_unload(false);
 
-  set_have_top_loading_frame(false);
+  set_have_loading_frame(false);
 
   set_can_open_windows(false);
 

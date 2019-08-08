@@ -21,6 +21,7 @@
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/media_player_id.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -156,7 +157,7 @@ void MetricsWebContentsObserver::FrameDeleted(content::RenderFrameHost* rfh) {
 
 void MetricsWebContentsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
-    const content::WebContentsObserver::MediaPlayerId& id) {
+    const content::MediaPlayerId& id) {
   if (GetMainFrame(id.render_frame_host) != web_contents()->GetMainFrame()) {
     // Ignore media that starts playing in a document that was navigated away
     // from.
@@ -242,7 +243,7 @@ PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
     content::RenderFrameHost* render_frame_host_or_null,
     content::ResourceType resource_type,
     base::TimeTicks creation_time) {
-  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+  if (resource_type == content::ResourceType::kMainFrame) {
     DCHECK(request_id != content::GlobalRequestID());
     // The main frame request can complete either before or after commit, so we
     // look at both provisional loads and the committed load to find a
@@ -271,7 +272,7 @@ PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
     // TODO(bmcquade): consider tracking GlobalRequestIDs for sub-frame
     // navigations in each PageLoadTracker, and performing a lookup for
     // sub-frames similar to the main-frame lookup above.
-    if (resource_type == content::RESOURCE_TYPE_SUB_FRAME)
+    if (resource_type == content::ResourceType::kSubFrame)
       return committed_load_.get();
 
     // This was originally a DCHECK but it fails when the document load happened
@@ -678,8 +679,9 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     mojom::PageLoadMetadataPtr metadata,
     mojom::PageLoadFeaturesPtr new_features,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-    mojom::PageRenderDataPtr render_data,
-    mojom::CpuTimingPtr cpu_timing) {
+    mojom::FrameRenderDataUpdatePtr render_data,
+    mojom::CpuTimingPtr cpu_timing,
+    mojom::DeferredResourceCountsPtr new_deferred_resource_data) {
   // We may receive notifications from frames that have been navigated away
   // from. We simply ignore them.
   if (GetMainFrame(render_frame_host) != web_contents()->GetMainFrame()) {
@@ -714,7 +716,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     committed_load_->metrics_update_dispatcher()->UpdateMetrics(
         render_frame_host, std::move(timing), std::move(metadata),
         std::move(new_features), resources, std::move(render_data),
-        std::move(cpu_timing));
+        std::move(cpu_timing), std::move(new_deferred_resource_data));
   }
 }
 
@@ -723,13 +725,14 @@ void MetricsWebContentsObserver::UpdateTiming(
     mojom::PageLoadMetadataPtr metadata,
     mojom::PageLoadFeaturesPtr new_features,
     std::vector<mojom::ResourceDataUpdatePtr> resources,
-    mojom::PageRenderDataPtr render_data,
-    mojom::CpuTimingPtr cpu_timing) {
+    mojom::FrameRenderDataUpdatePtr render_data,
+    mojom::CpuTimingPtr cpu_timing,
+    mojom::DeferredResourceCountsPtr new_deferred_resource_data) {
   content::RenderFrameHost* render_frame_host =
       page_load_metrics_binding_.GetCurrentTargetFrame();
   OnTimingUpdated(render_frame_host, std::move(timing), std::move(metadata),
                   std::move(new_features), resources, std::move(render_data),
-                  std::move(cpu_timing));
+                  std::move(cpu_timing), std::move(new_deferred_resource_data));
 }
 
 bool MetricsWebContentsObserver::ShouldTrackNavigation(

@@ -6,15 +6,16 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_GAIA_SCREEN_HANDLER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
-#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "net/base/net_errors.h"
 
@@ -76,9 +77,10 @@ class GaiaScreenHandler : public BaseScreenHandler,
                              const std::string& partition_name);
 
   // Called after the GAPS cookie, if present, is added to the cookie store.
-  void OnSetCookieForLoadGaiaWithPartition(const GaiaContext& context,
-                                           const std::string& partition_name,
-                                           bool success);
+  void OnSetCookieForLoadGaiaWithPartition(
+      const GaiaContext& context,
+      const std::string& partition_name,
+      net::CanonicalCookie::CookieInclusionStatus status);
 
   // Callback that loads GAIA after version and stat consent information has
   // been retrieved.
@@ -126,7 +128,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
       const std::string& password,
       bool using_saml,
       const ::login::StringList& services,
-      const std::vector<net::CanonicalCookie>& cookies);
+      const std::vector<net::CanonicalCookie>& cookies,
+      const net::CookieStatusList& excluded_cookies);
   void HandleCompleteLogin(const std::string& gaia_id,
                            const std::string& typed_email,
                            const std::string& password,
@@ -153,6 +156,13 @@ class GaiaScreenHandler : public BaseScreenHandler,
                                        const std::string& typed_email,
                                        const std::string& gaia_id);
   void HandleUpdateSigninUIState(int state);
+
+  // Allows for a password expiry notification to be shown using information
+  // extracted from the SAML response during SAML auth flow.
+  void HandleUpdatePasswordAttributes(
+      const std::string& passwordModifiedTimestamp,
+      const std::string& passwordExpirationTimestamp,
+      const std::string& passwordChangeUrl);
 
   // Allows WebUI to control the login shelf's guest button visibility during
   // OOBE.
@@ -304,7 +314,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   // Helper to call AuthPolicyClient and cancel calls if needed. Used to
   // authenticate users against Active Directory server.
-  std::unique_ptr<AuthPolicyLoginHelper> authpolicy_login_helper_;
+  std::unique_ptr<AuthPolicyHelper> authpolicy_login_helper_;
 
   // Makes untrusted authority certificates from device policy available for
   // client certificate discovery.

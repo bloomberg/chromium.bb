@@ -4,8 +4,12 @@
 
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
 
+#include "base/bind_helpers.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/banners/app_banner_manager.h"
+#include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
@@ -13,7 +17,7 @@
 
 PwaInstallView::PwaInstallView(CommandUpdater* command_updater,
                                PageActionIconView::Delegate* delegate)
-    : PageActionIconView(command_updater, IDC_INSTALL_PWA, delegate) {
+    : PageActionIconView(nullptr, 0, delegate) {
   SetVisible(false);
   SetLabel(l10n_util::GetStringUTF16(IDS_OMNIBOX_PWA_INSTALL_ICON_LABEL));
   SetUpForInOutAnimation();
@@ -28,9 +32,11 @@ bool PwaInstallView::Update() {
 
   banners::AppBannerManager* manager =
       banners::AppBannerManager::FromWebContents(web_contents);
-  DCHECK(manager);
+  // May not be present e.g. in incognito mode.
+  if (!manager)
+    return false;
 
-  bool is_installable = manager->IsInstallable();
+  bool is_installable = manager->IsProbablyInstallable();
   bool is_installed =
       web_app::WebAppTabHelperBase::FromWebContents(web_contents)
           ->HasAssociatedApp();
@@ -49,15 +55,16 @@ bool PwaInstallView::Update() {
   return visible() != was_visible;
 }
 
-void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {}
+void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {
+  base::RecordAction(base::UserMetricsAction("PWAInstallIcon"));
+  web_app::CreateWebAppFromManifest(GetWebContents(),
+                                    WebappInstallSource::OMNIBOX_INSTALL_ICON,
+                                    base::DoNothing());
+}
 
 views::BubbleDialogDelegateView* PwaInstallView::GetBubble() const {
   // TODO(https://907351): Implement.
   return nullptr;
-}
-
-bool PwaInstallView::ShouldShowSeparator() const {
-  return false;
 }
 
 const gfx::VectorIcon& PwaInstallView::GetVectorIcon() const {

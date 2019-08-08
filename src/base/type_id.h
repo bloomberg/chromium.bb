@@ -35,7 +35,68 @@ template <typename Type>
 inline TypeUniqueId UniqueIdFromType() {
   return std::type_index(typeid(Type));
 }
+#elif defined(COMPONENT_BUILD)
+// A substitute for RTTI that uses the hash of the PRETTY_FUNCTION and
+// __BASE_FILE__ to identify the type. Hash collisions can occur so don't use
+// this in production code. The reason we use this at all is the dynamic linker
+// can end up reserving two symbols for |dummy_var| below when the .SO is loaded
+// first. This only seems to affect templates with non-builtin types, e.g.
+// std::unique_ptr<int> is fine but |dummy_var| gets duplicated for
+// std::unique_ptr<MyType>.
+using TypeUniqueId = uint64_t;
 
+// TODO(alexclarke): Replace these when StringPiece gets more constexpr support.
+static constexpr bool string_starts_with(char const* s, char const* prefix) {
+  while (*prefix) {
+    if (*s++ != *prefix++)
+      return false;
+  }
+  return true;
+}
+
+static constexpr bool string_contains(char const* str, char const* fragment) {
+  while (*str) {
+    if (string_starts_with(str++, fragment))
+      return true;
+  }
+  return false;
+}
+
+template <typename Type>
+constexpr inline TypeUniqueId UniqueIdFromType() {
+  // This is an SDBM hash of PRETTY_FUNCTION, SMBD hash seems to be better than
+  // djb2 or other simple hashes, and should be good enough for our purposes.
+  // Source: http://www.cse.yorku.ca/~oz/hash.html
+  constexpr const char* function_name = PRETTY_FUNCTION;
+  uint64_t hash = 0;
+  for (uint64_t i = 0; function_name[i]; ++i) {
+    hash = function_name[i] + (hash << 6) + (hash << 16) - hash;
+  }
+
+  // There doesn't seem to be an official way of figuring out if a type is from
+  // an anonymous namespace so we fall back to inspecting the decorated function
+  // name.
+  constexpr const char* compiler_specific_anonymous_namespace_fragment =
+#if defined(__clang__)
+      "base::internal::UniqueIdFromType() [Type = (anonymous namespace)::";
+#elif defined(COMPILER_GCC)
+      "base::internal::UniqueIdFromType() [with Type = {anonymous}::";
+#elif defined(COMPILER_MSVC)
+      "base::internal::UniqueIdFromType<`anonymous namespace'::";
+#else
+#error Compiler unsupported
+#endif
+
+  // To disambiguate types in anonymous namespaces add __BASE_FILE_ to the hash.
+  if (string_contains(function_name,
+                      compiler_specific_anonymous_namespace_fragment)) {
+    constexpr auto* base_file = __BASE_FILE__;
+    for (uint64_t i = 0; base_file[i]; ++i) {
+      hash = base_file[i] + (hash << 6) + (hash << 16) - hash;
+    }
+  }
+  return hash;
+}
 #else
 // A substitute for RTTI that uses the linker to uniquely reserve an address in
 // the binary for each type.

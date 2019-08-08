@@ -414,6 +414,16 @@ gfx::Image ChromeOmniboxClient::GetFaviconForDefaultSearchProvider(
                                              std::move(on_favicon_fetched));
 }
 
+gfx::Image ChromeOmniboxClient::GetFaviconForKeywordSearchProvider(
+    const TemplateURL* template_url,
+    FaviconFetchedCallback on_favicon_fetched) {
+  if (!template_url)
+    return gfx::Image();
+
+  return favicon_cache_.GetFaviconForIconUrl(template_url->favicon_url(),
+                                             std::move(on_favicon_fetched));
+}
+
 void ChromeOmniboxClient::OnCurrentMatchChanged(
     const AutocompleteMatch& match) {
   if (!prerender::IsNoStatePrefetchEnabled())

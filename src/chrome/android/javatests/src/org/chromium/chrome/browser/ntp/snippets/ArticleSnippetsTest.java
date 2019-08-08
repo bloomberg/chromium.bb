@@ -28,7 +28,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -70,6 +69,7 @@ import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsEventRe
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.NetworkChangeNotifier;
 
 import java.io.IOException;
@@ -125,14 +125,14 @@ public class ArticleSnippetsTest {
 
         mTimestamp = System.currentTimeMillis() - 5 * DateUtils.MINUTE_IN_MILLIS;
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             if (!NetworkChangeNotifier.isInitialized()) {
                 NetworkChangeNotifier.init();
             }
             NetworkChangeNotifier.forceConnectivityState(true);
         });
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeActivity activity = mActivityTestRule.getActivity();
             mContentView = new FrameLayout(activity);
             mUiConfig = new UiConfig(mContentView);
@@ -143,7 +143,7 @@ public class ArticleSnippetsTest {
             mContextMenuManager = new ContextMenuManager(mUiDelegate.getNavigationDelegate(),
                     mRecyclerView::setTouchEnabled, activity::closeContextMenu,
                     NewTabPage.CONTEXT_MENU_USER_ACTION_PREFIX);
-            mRecyclerView.init(mUiConfig, mContextMenuManager);
+            mRecyclerView.init(mUiConfig, activity::closeContextMenu);
 
             mSuggestion = new SnippetArticleViewHolder(mRecyclerView, mContextMenuManager,
                     mUiDelegate, mUiConfig, /* offlinePageBridge = */ null);
@@ -214,7 +214,7 @@ public class ArticleSnippetsTest {
                 null); // Thumbnail dominant color
 
         // See how everything looks in narrow layout.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Since we inform the UiConfig manually about the desired display style, the only
             // reason we actually change the LayoutParams is for the rendered Views to look right.
             ViewGroup.LayoutParams params = mContentView.getLayoutParams();
@@ -235,47 +235,6 @@ public class ArticleSnippetsTest {
     }
 
     // TODO(bauerb): Test top, middle, and bottom card backgrounds.
-
-    @Test
-    @MediumTest
-    @Feature({"ArticleSnippets", "RenderTest"})
-    public void testDownloadSuggestion() throws IOException {
-        String downloadFilePath =
-                UrlUtils.getIsolatedTestFilePath("chrome/test/data/android/capybara.jpg");
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            SnippetArticle downloadSuggestion = new SnippetArticle(KnownCategories.DOWNLOADS, "id1",
-                    "test_image.jpg", "example.com", "http://example.com",
-                    mTimestamp, // Publish timestamp
-                    10f, // Score
-                    mTimestamp, // Fetch timestamp
-                    false, // Is video suggestion
-                    null); // Thumbnail dominant color
-            downloadSuggestion.setAssetDownloadData("asdf", downloadFilePath, "image/jpeg");
-            SuggestionsCategoryInfo downloadsCategory = new SuggestionsCategoryInfo(
-                    KnownCategories.DOWNLOADS, "Downloads", ContentSuggestionsCardLayout.FULL_CARD,
-                    ContentSuggestionsAdditionalAction.NONE,
-                    /* show_if_empty = */ true, "No suggestions");
-
-            mSuggestion.onBindViewHolder(downloadSuggestion, downloadsCategory);
-            mContentView.addView(mSuggestion.itemView);
-        });
-
-        mRenderTestRule.render(mSuggestion.itemView, "download_snippet_placeholder");
-
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        List<ThumbnailRequest> requests = mThumbnailProvider.getRequests();
-        Assert.assertEquals(1, requests.size());
-        ThumbnailRequest request = requests.get(0);
-        Assert.assertEquals(downloadFilePath, request.getFilePath());
-
-        Bitmap thumbnail = BitmapFactory.decodeFile(downloadFilePath);
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mThumbnailProvider.fulfillRequest(request, thumbnail);
-        });
-
-        mRenderTestRule.render(mSuggestion.itemView, "download_snippet_thumbnail");
-    }
 
     @Test
     @MediumTest
@@ -335,7 +294,7 @@ public class ArticleSnippetsTest {
     // TODO(https://crbug.com/936986): Add goldens for UnifiedConsent promos.
     @DisableFeatures(ChromeFeatureList.UNIFIED_CONSENT)
     public void testPersonalizedSigninPromosNoAccounts() throws IOException {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             createPersonalizedSigninPromo(null);
             mContentView.addView(mSigninPromo.itemView);
         });
@@ -348,7 +307,7 @@ public class ArticleSnippetsTest {
     // TODO(https://crbug.com/936986): Add goldens for UnifiedConsent promos.
     @DisableFeatures(ChromeFeatureList.UNIFIED_CONSENT)
     public void testPersonalizedSigninPromosWithAccount() throws IOException {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             createPersonalizedSigninPromo(getTestProfileData());
             mContentView.addView(mSigninPromo.itemView);
         });
@@ -375,12 +334,12 @@ public class ArticleSnippetsTest {
 
     private void renderSuggestion(SnippetArticle suggestion, SuggestionsCategoryInfo categoryInfo,
             String renderId) throws IOException {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mSuggestion.onBindViewHolder(suggestion, categoryInfo);
             mContentView.addView(mSuggestion.itemView);
         });
         mRenderTestRule.render(mSuggestion.itemView, renderId);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContentView.removeView(mSuggestion.itemView);
             mSuggestion.recycle();
         });

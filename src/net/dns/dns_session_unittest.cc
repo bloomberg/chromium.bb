@@ -143,7 +143,7 @@ void DnsSessionTest::Initialize(unsigned num_servers) {
 
   session_ =
       new DnsSession(config_, std::unique_ptr<DnsSocketPool>(dns_socket_pool),
-                     base::Bind(&base::RandInt), NULL /* NetLog */);
+                     base::Bind(&base::RandInt), nullptr /* NetLog */);
 
   events_.clear();
 }

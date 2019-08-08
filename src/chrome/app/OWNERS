@@ -12,10 +12,9 @@ rockot@google.com
 per-file bookmarks_strings.grdp=*
 per-file chromeos_strings.grdp=*
 per-file chromium_strings.grd=*
-per-file file_manager_strings.grdp=*
 per-file generated_resources.grd=*
 per-file google_chrome_strings.grd=*
-per-file md_extensions_strings.grdp=*
+per-file extensions_strings.grdp=*
 
 per-file app_management_strings.grdp=file://chrome/browser/ui/webui/app_management/OWNERS
 

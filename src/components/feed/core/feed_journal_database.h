@@ -16,22 +16,22 @@
 #include "base/sequenced_task_runner.h"
 #include "components/leveldb_proto/public/proto_database.h"
 
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}  // namespace leveldb_proto
+
 namespace feed {
 
 class JournalMutation;
 class JournalOperation;
 class JournalStorageProto;
 
+using InitStatus = leveldb_proto::Enums::InitStatus;
+
 // FeedJournalDatabase is leveldb backend store for Feed's journal storage data.
 // Feed's journal data are key-value pairs.
 class FeedJournalDatabase {
  public:
-  enum State {
-    UNINITIALIZED,
-    INITIALIZED,
-    INIT_FAILURE,
-  };
-
   // Returns the journal data as a vector of strings when calling loading data
   // or keys.
   using JournalLoadCallback =
@@ -47,13 +47,15 @@ class FeedJournalDatabase {
 
   using JournalMap = base::flat_map<std::string, JournalStorageProto>;
 
-  // Initializes the database with |database_folder|.
-  explicit FeedJournalDatabase(const base::FilePath& database_folder);
-
-  // Initializes the database with |database_folder|. Creates storage using the
-  // given |storage_database| for local storage. Useful for testing.
+  // Initializes the database with |proto_database_provider| and
+  // |database_folder|.
   FeedJournalDatabase(
-      const base::FilePath& database_folder,
+      leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
+      const base::FilePath& database_folder);
+
+  // Creates storage using the given |storage_database| for local storage.
+  // Useful for testing.
+  explicit FeedJournalDatabase(
       std::unique_ptr<leveldb_proto::ProtoDatabase<JournalStorageProto>>
           storage_database);
 
@@ -98,7 +100,7 @@ class FeedJournalDatabase {
                         ConfirmationCallback callback);
 
   // Callback methods given to |storage_database_| for async responses.
-  void OnDatabaseInitialized(bool success);
+  void OnDatabaseInitialized(InitStatus status);
   void OnGetEntryForLoadJournal(base::TimeTicks start_time,
                                 JournalLoadCallback callback,
                                 bool success,
@@ -126,7 +128,7 @@ class FeedJournalDatabase {
                                    const JournalStorageProto& source_journal);
 
   // Status of the database initialization.
-  State database_status_;
+  InitStatus database_status_;
 
   // The database for storing journal storage information.
   std::unique_ptr<leveldb_proto::ProtoDatabase<JournalStorageProto>>

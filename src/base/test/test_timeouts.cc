@@ -5,6 +5,7 @@
 #include "base/test/test_timeouts.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/clang_coverage_buildflags.h"
 #include "base/command_line.h"
@@ -89,7 +90,8 @@ void TestTimeouts::Initialize() {
   DCHECK(!initialized_);
   initialized_ = true;
 
-  if (base::debug::BeingDebugged()) {
+  const bool being_debugged = base::debug::BeingDebugged();
+  if (being_debugged) {
     fprintf(stdout,
         "Detected presence of a debugger, running without test timeouts.\n");
   }
@@ -108,9 +110,8 @@ void TestTimeouts::Initialize() {
   // causes problems for some iOS device tests, which are always run inside a
   // debugger (thus BeingDebugged() is true even on the bots).
   int min_ui_test_action_timeout = tiny_timeout_ms_;
-  if (base::debug::BeingDebugged() ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTestLauncherInteractive)) {
+  if (being_debugged || base::CommandLine::ForCurrentProcess()->HasSwitch(
+                            switches::kTestLauncherInteractive)) {
     constexpr int kVeryLargeTimeoutMs = 100'000'000;
     min_ui_test_action_timeout = kVeryLargeTimeoutMs;
   }

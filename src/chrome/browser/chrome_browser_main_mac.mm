@@ -5,7 +5,6 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 
 #import <Cocoa/Cocoa.h>
-#include <libproc.h>
 #include <stdlib.h>
 #include <sys/mount.h>
 #include <sys/param.h>
@@ -19,7 +18,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
@@ -30,12 +29,14 @@
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/first_run/upgrade_util_mac.h"
 #include "chrome/browser/mac/install_from_dmg.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/mac_startup_profiler.h"
 #include "chrome/browser/ui/cocoa/main_menu_builder.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/mac/staging_watcher.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/metrics/metrics_service.h"
@@ -71,7 +72,8 @@ void EnsureMetadataNeverIndexFile(const base::FilePath& user_data_dir) {
       base::BindOnce(&EnsureMetadataNeverIndexFileOnFileThread, user_data_dir));
 }
 
-// Used for UMA; never alter existing values.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class FilesystemType {
   kUnknown,
   kOther,
@@ -157,74 +159,21 @@ void RecordFilesystemStats() {
   if (success)
     filesystem_type = FilesystemStringToType(is_ro_dmg, filesystem_type_string);
 
-  UMA_HISTOGRAM_ENUMERATION("OSX.InstallationFilesystem", filesystem_type);
-}
-
-// Get the uid and executable path for a pid. Returns true iff successful.
-// |path_buffer| must be of PROC_PIDPATHINFO_MAXSIZE length.
-bool GetUIDAndPathOfPID(pid_t pid, char* path_buffer, uid_t* out_uid) {
-  struct proc_bsdshortinfo info;
-  int error = proc_pidinfo(pid, PROC_PIDT_SHORTBSDINFO, 0, &info, sizeof(info));
-  if (error <= 0)
-    return false;
-
-  error = proc_pidpath(pid, path_buffer, PROC_PIDPATHINFO_MAXSIZE);
-  if (error <= 0)
-    return false;
-
-  *out_uid = info.pbsi_uid;
-  return true;
+  base::UmaHistogramEnumeration("OSX.InstallationFilesystem", filesystem_type);
 }
 
 void RecordInstanceStats() {
-  // Get list of all processes.
+  upgrade_util::ThisAndOtherUserCounts counts =
+      upgrade_util::GetCountOfOtherInstancesOfThisBinary();
 
-  int pid_array_size_needed = proc_listallpids(nullptr, 0);
-  if (pid_array_size_needed <= 0)
-    return;
-  std::vector<pid_t> pid_array(pid_array_size_needed * 4);  // slack
-  int pid_count = proc_listallpids(pid_array.data(),
-                                   pid_array.size() * sizeof(pid_array[0]));
-  if (pid_count <= 0)
-    return;
-
-  pid_array.resize(pid_count);
-
-  // Get info about this process.
-
-  const pid_t this_pid = getpid();
-  uid_t this_uid;
-  char this_path[PROC_PIDPATHINFO_MAXSIZE];
-  if (!GetUIDAndPathOfPID(this_pid, this_path, &this_uid))
-    return;
-
-  // Compare all other processes to this one.
-
-  int this_user_count = 0;
-  int other_user_count = 0;
-  for (pid_t pid : pid_array) {
-    if (pid == this_pid)
-      continue;
-
-    uid_t uid;
-    char path[PROC_PIDPATHINFO_MAXSIZE];
-    if (!GetUIDAndPathOfPID(pid, path, &uid))
-      continue;
-
-    if (strcmp(path, this_path) != 0)
-      continue;
-
-    if (uid == this_uid)
-      ++this_user_count;
-    else
-      ++other_user_count;
-  }
-
-  UMA_HISTOGRAM_COUNTS_100("OSX.OtherInstances.ThisUser", this_user_count);
-  UMA_HISTOGRAM_COUNTS_100("OSX.OtherInstances.OtherUser", other_user_count);
+  base::UmaHistogramCounts100("OSX.OtherInstances.ThisUser",
+                              counts.this_user_count);
+  base::UmaHistogramCounts100("OSX.OtherInstances.OtherUser",
+                              counts.other_user_count);
 }
 
-// Used for UMA; never alter existing values.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class FastUserSwitchEvent {
   kUserDidBecomeActiveEvent,
   kUserDidBecomeInactiveEvent,
@@ -232,7 +181,7 @@ enum class FastUserSwitchEvent {
 };
 
 void LogFastUserSwitchStat(FastUserSwitchEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("OSX.FastUserSwitch", event);
+  base::UmaHistogramEnumeration("OSX.FastUserSwitch", event);
 }
 
 void InstallFastUserSwitchStatRecorder() {
@@ -288,7 +237,8 @@ bool IsOnSameFilesystemAsChromium(NSString* dir_path) {
          cr_fsid->val[1] == buf.f_fsid.val[1];
 }
 
-// Used for UMA; never alter existing values.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class StagingDirectoryStep {
   kFailedToFindDirectory,
   kItemReplacementDirectory,
@@ -301,7 +251,7 @@ enum class StagingDirectoryStep {
 };
 
 void LogStagingDirectoryLocation(StagingDirectoryStep step) {
-  UMA_HISTOGRAM_ENUMERATION("OSX.StagingDirectoryLocation2", step);
+  base::UmaHistogramEnumeration("OSX.StagingDirectoryLocation2", step);
 }
 
 void RecordStagingDirectoryStats() {
@@ -411,15 +361,39 @@ void RecordInstallationStats() {
   RecordStagingDirectoryStats();
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class StartupUpdateState {
+  kUpdateKeyNotSet,
+  kUpdateKeySetAndStagedCopyPresent,
+  kUpdateKeySetAndStagedCopyNotPresent,
+  kMaxValue = kUpdateKeySetAndStagedCopyNotPresent,
+};
+
+// Records about the state of Chrome updates. This is pre-emptory data
+// gathering to make sure that a situation that the team thinks will be OK is
+// actually OK in the field.
+void RecordUpdateState() {
+  StartupUpdateState state = StartupUpdateState::kUpdateKeyNotSet;
+  NSString* staging_location = [CrStagingKeyWatcher stagingLocation];
+  if (staging_location) {
+    if ([[NSFileManager defaultManager] fileExistsAtPath:staging_location])
+      state = StartupUpdateState::kUpdateKeySetAndStagedCopyPresent;
+    else
+      state = StartupUpdateState::kUpdateKeySetAndStagedCopyNotPresent;
+  }
+
+  base::UmaHistogramEnumeration("OSX.StartupUpdateState", state);
+}
+
 }  // namespace
 
 // ChromeBrowserMainPartsMac ---------------------------------------------------
 
 ChromeBrowserMainPartsMac::ChromeBrowserMainPartsMac(
     const content::MainFunctionParams& parameters,
-    ChromeFeatureListCreator* chrome_feature_list_creator)
-    : ChromeBrowserMainPartsPosix(parameters,
-                                  chrome_feature_list_creator) {}
+    StartupData* startup_data)
+    : ChromeBrowserMainPartsPosix(parameters, startup_data) {}
 
 ChromeBrowserMainPartsMac::~ChromeBrowserMainPartsMac() {
 }
@@ -497,6 +471,8 @@ void ChromeBrowserMainPartsMac::PostMainMessageLoopStart() {
   ChromeBrowserMainPartsPosix::PostMainMessageLoopStart();
 
   RecordInstallationStats();
+
+  RecordUpdateState();
 }
 
 void ChromeBrowserMainPartsMac::PreProfileInit() {
@@ -526,8 +502,7 @@ void ChromeBrowserMainPartsMac::PostProfileInit() {
   if (glue && ![glue isRegisteredAndActive]) {
     // If profile loading has failed, we still need to handle other tasks
     // like marking of the product as active.
-    [glue updateProfileCountsWithNumProfiles:0
-                         numSignedInProfiles:0];
+    [glue setRegistrationActive];
   }
 }
 

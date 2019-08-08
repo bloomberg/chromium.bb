@@ -105,7 +105,8 @@ class AppListClientImpl
                             const syncer::StringOrdinal& position) override;
   void OnPageBreakItemDeleted(int profile_id, const std::string& id) override;
   void GetNavigableContentsFactory(
-      content::mojom::NavigableContentsFactoryRequest request) override;
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
+      override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visible) override;
 
@@ -157,7 +158,7 @@ class AppListClientImpl
   AppListControllerDelegate* GetControllerDelegate();
   Profile* GetCurrentAppListProfile() const;
 
-  app_list::SearchController* GetSearchControllerForTest();
+  app_list::SearchController* search_controller();
 
   AppListModelUpdater* GetModelUpdaterForTest();
 

@@ -47,8 +47,8 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
-#include "third_party/blink/public/web/web_global_object_reuse_policy.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/html/link_resource.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
@@ -144,13 +145,12 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DidFinishSameDocumentNavigation(HistoryItem*,
                                                WebHistoryCommitType,
                                                bool content_initiated) {}
-  virtual void DispatchWillCommitProvisionalLoad() = 0;
   virtual void DispatchDidStartProvisionalLoad(DocumentLoader*) = 0;
   virtual void DispatchDidReceiveTitle(const String&) = 0;
   virtual void DispatchDidChangeIcons(IconType) = 0;
   virtual void DispatchDidCommitLoad(HistoryItem*,
                                      WebHistoryCommitType,
-                                     WebGlobalObjectReusePolicy) = 0;
+                                     GlobalObjectReusePolicy) = 0;
   virtual void DispatchDidFailProvisionalLoad(const ResourceError&,
                                               WebHistoryCommitType) = 0;
   virtual void DispatchDidFailLoad(const ResourceError&,
@@ -161,6 +161,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void BeginNavigation(
       const ResourceRequest&,
+      network::mojom::RequestContextFrameType,
       Document* origin_document,
       DocumentLoader*,
       WebNavigationType,
@@ -225,6 +226,11 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Will be called when |CpuTiming| events are updated
   virtual void DidChangeCpuTiming(base::TimeDelta time) {}
 
+  // Will be called when the list of active features tracked by the scheduler is
+  // updated.
+  virtual void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) {
+  }
+
   // Will be called when a particular loading code path has been used. This
   // propogates renderer loading behavior to the browser process for histograms.
   virtual void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) {}
@@ -240,6 +246,13 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   virtual void DidObserveLayoutJank(double jank_fraction) {}
+
+  // Reports lazy loaded behavior when the frame or image is fully deferred or
+  // if the frame or image is loaded after being deferred. Called every time the
+  // behavior occurs. This does not apply to images that were loaded as
+  // placeholders.
+  virtual void DidObserveLazyLoadBehavior(
+      WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {}
 
   // Will be called by a Page upon DidCommitLoad, deciding whether to track
   // UseCounter usage or not based on its url.
@@ -276,7 +289,14 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // identifies the portal.
   virtual std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
-      mojom::blink::PortalRequest) = 0;
+      mojom::blink::PortalAssociatedRequest) = 0;
+
+  // Adopts the predecessor |portal|. The HTMLPortalElement must have been
+  // created by adopting the predecessor in the PortalActivateEvent, and have a
+  // valid portal token. Returns a RemoteFrame for the portal.
+  // Adopting the predecessor allows a page to keep it alive and embed it as a
+  // portal, allowing instantaneous back and forward activations.
+  virtual RemoteFrame* AdoptPortal(HTMLPortalElement* portal) = 0;
 
   // Whether or not plugin creation should fail if the HTMLPlugInElement isn't
   // in the DOM after plugin initialization.
@@ -327,12 +347,10 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DidEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}
   virtual void DidEnforceInsecureNavigationsSet(const std::vector<unsigned>&) {}
 
-  virtual void DidChangeFramePolicy(Frame* child_frame,
-                                    SandboxFlags,
-                                    const ParsedFeaturePolicy&) {}
+  virtual void DidChangeFramePolicy(Frame* child_frame, const FramePolicy&) {}
 
   virtual void DidSetFramePolicyHeaders(
-      SandboxFlags,
+      WebSandboxFlags,
       const ParsedFeaturePolicy& parsed_header) {}
 
   // Called when a set of new Content Security Policies is added to the frame's
@@ -355,6 +373,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual WebContentSettingsClient* GetContentSettingsClient() = 0;
 
   virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
+      DocumentLoader*,
       WebApplicationCacheHostClient*) = 0;
 
   virtual void DispatchDidChangeManifest() {}
@@ -466,9 +485,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Returns true when the contents of plugin are handled externally. This means
   // the plugin element will own a content frame but the frame is than used
   // externally to load the required handelrs.
-  virtual bool IsPluginHandledExternally(HTMLPlugInElement&,
-                                         const KURL&,
-                                         const String&) {
+  virtual bool MaybeCreateMimeHandlerView(HTMLPlugInElement&,
+                                          const KURL&,
+                                          const String&) {
     return false;
   }
 
@@ -503,13 +522,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Returns whether we are associated with a print context who suggests to use
   // printing layout.
   virtual bool UsePrintingLayout() const { return false; }
-
-  // Called to get the FeatureState inherited from an opener if any. This works
-  // with disowned openers, i.e., even if Frame::Opener() is nullptr, there
-  // could be a non-empty feature state which is taken from the the original
-  // opener of the frame. This is similar to how sandbox flags are propagated to
-  // the opened new browsing contexts.
-  virtual const FeaturePolicy::FeatureState& GetOpenerFeatureState() const = 0;
 };
 
 }  // namespace blink

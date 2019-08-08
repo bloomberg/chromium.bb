@@ -16,6 +16,11 @@
 #define SRC_TRACE_PROCESSOR_STORAGE_SCHEMA_H_
 
 #include <algorithm>
+#include <deque>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "src/trace_processor/filtered_row_index.h"
 #include "src/trace_processor/sqlite_utils.h"
@@ -42,29 +47,48 @@ class StorageSchema {
       return *this;
     }
 
-    template <class T>
+    template <class NumericType>
     Builder& AddNumericColumn(
         std::string column_name,
-        const std::deque<T>* vals,
+        const std::deque<NumericType>* vals,
         const std::deque<std::vector<uint32_t>>* index = nullptr) {
-      columns_.emplace_back(
-          new NumericColumn<T>(column_name, vals, index, false, false));
-      return *this;
+      NumericDequeAccessor<NumericType> accessor(vals, index,
+                                                 false /* has_ordering */);
+      return AddGenericNumericColumn(column_name, accessor);
     }
 
-    template <class T>
+    template <class NumericType>
     Builder& AddOrderedNumericColumn(std::string column_name,
-                                     const std::deque<T>* vals) {
-      columns_.emplace_back(
-          new NumericColumn<T>(column_name, vals, nullptr, false, true));
+                                     const std::deque<NumericType>* vals) {
+      NumericDequeAccessor<NumericType> accessor(vals, nullptr,
+                                                 true /* has_ordering */);
+      return AddGenericNumericColumn(column_name, accessor);
+    }
+
+    template <class Accessor>
+    Builder& AddGenericNumericColumn(std::string column_name,
+                                     Accessor accessor) {
+      columns_.emplace_back(new NumericColumn<decltype(accessor)>(
+          column_name, false /* hidden */, accessor));
       return *this;
     }
 
     template <class Id>
     Builder& AddStringColumn(std::string column_name,
                              const std::deque<Id>* ids,
-                             const std::deque<std::string>* string_map) {
-      columns_.emplace_back(new StringColumn<Id>(column_name, ids, string_map));
+                             const std::vector<const char*>* string_map) {
+      StringVectorAccessor<Id> accessor(ids, string_map);
+      columns_.emplace_back(
+          new StringColumn<decltype(accessor)>(column_name, accessor));
+      return *this;
+    }
+
+    Builder& AddStringColumn(std::string column_name,
+                             const std::deque<StringPool::Id>* ids,
+                             const StringPool* string_pool) {
+      StringPoolAccessor accessor(ids, string_pool);
+      columns_.emplace_back(
+          new StringColumn<StringPoolAccessor>(column_name, accessor));
       return *this;
     }
 

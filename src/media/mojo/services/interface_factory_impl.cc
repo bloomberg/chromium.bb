@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "media/mojo/interfaces/renderer_extensions.mojom.h"
 #include "media/mojo/services/mojo_decryptor_service.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -109,9 +110,8 @@ void InterfaceFactoryImpl::CreateDefaultRenderer(
   }
 
   std::unique_ptr<MojoRendererService> mojo_renderer_service =
-      std::make_unique<MojoRendererService>(
-          &cdm_service_context_, std::move(renderer),
-          MojoRendererService::InitiateSurfaceRequestCB());
+      std::make_unique<MojoRendererService>(&cdm_service_context_,
+                                            std::move(renderer));
 
   MojoRendererService* mojo_renderer_service_ptr = mojo_renderer_service.get();
 
@@ -127,9 +127,44 @@ void InterfaceFactoryImpl::CreateDefaultRenderer(
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 }
 
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+void InterfaceFactoryImpl::CreateCastRenderer(
+    const base::UnguessableToken& overlay_plane_id,
+    media::mojom::RendererRequest request) {
+  DVLOG(2) << __func__;
+#if BUILDFLAG(ENABLE_MOJO_RENDERER)
+  auto renderer = mojo_media_client_->CreateCastRenderer(
+      interfaces_.get(), base::ThreadTaskRunnerHandle::Get(), &media_log_,
+      overlay_plane_id);
+  if (!renderer) {
+    DLOG(ERROR) << "Renderer creation failed.";
+    return;
+  }
+
+  std::unique_ptr<MojoRendererService> mojo_renderer_service =
+      std::make_unique<MojoRendererService>(&cdm_service_context_,
+                                            std::move(renderer));
+
+  MojoRendererService* mojo_renderer_service_ptr = mojo_renderer_service.get();
+
+  mojo::BindingId binding_id = renderer_bindings_.AddBinding(
+      std::move(mojo_renderer_service), std::move(request));
+
+  // base::Unretained() is safe because the callback will be fired by
+  // |mojo_renderer_service|, which is owned by |renderer_bindings_|.
+  mojo_renderer_service_ptr->set_bad_message_cb(base::BindRepeating(
+      base::IgnoreResult(
+          &mojo::StrongBindingSet<mojom::Renderer>::RemoveBinding),
+      base::Unretained(&renderer_bindings_), binding_id));
+#endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
+}
+#endif
+
 #if defined(OS_ANDROID)
 void InterfaceFactoryImpl::CreateMediaPlayerRenderer(
-    mojo::InterfaceRequest<mojom::Renderer> request) {
+    mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
+    mojom::RendererRequest request,
+    mojom::MediaPlayerRendererExtensionRequest renderer_extension_request) {
   NOTREACHED();
 }
 

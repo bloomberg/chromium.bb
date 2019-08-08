@@ -104,6 +104,21 @@ void InvokeCallbackIfBackendIsAlive(
   std::move(completion_callback).Run(result);
 }
 
+void InvokeCallbackIfBackendIsAliveOrCloseEntry(
+    const base::WeakPtr<SimpleBackendImpl>& backend,
+    SimpleEntryImpl* entry,
+    net::CompletionOnceCallback completion_callback) {
+  DCHECK(!completion_callback.is_null());
+  if (!backend.get()) {
+    // Backend got destroyed while |entry| was in process of being transferred
+    // to client ownership. Give up on that.
+    entry->Close();
+    return;
+  }
+
+  std::move(completion_callback).Run(net::OK);
+}
+
 // If |sync_possible| is false, and callback is available, posts rv to it and
 // return net::ERR_IO_PENDING; otherwise just passes through rv.
 int PostToCallbackIfNeeded(bool sync_possible,
@@ -216,7 +231,7 @@ net::Error SimpleEntryImpl::OpenEntry(Entry** out_entry,
   }
 
   pending_operations_.push(SimpleEntryOperation::OpenOperation(
-      this, index_state, std::move(callback), out_entry));
+      this, std::move(callback), out_entry));
   RunNextOperationIfNeeded();
   return net::ERR_IO_PENDING;
 }
@@ -228,10 +243,6 @@ net::Error SimpleEntryImpl::CreateEntry(Entry** out_entry,
 
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_CREATE_CALL);
 
-  // Don't really care if we're in index or not for this, so avoid extra lookup.
-  OpenEntryIndexEnum index_state =
-      backend_->index()->initialized() ? INDEX_HIT : INDEX_NOEXIST;
-
   net::Error ret_value = net::ERR_FAILED;
   if (use_optimistic_operations_ &&
       state_ == STATE_UNINITIALIZED && pending_operations_.size() == 0) {
@@ -240,7 +251,7 @@ net::Error SimpleEntryImpl::CreateEntry(Entry** out_entry,
 
     ReturnEntryToCaller(out_entry);
     pending_operations_.push(SimpleEntryOperation::CreateOperation(
-        this, index_state, CompletionOnceCallback(), nullptr));
+        this, CompletionOnceCallback(), nullptr));
     ret_value = net::OK;
 
     // If we are optimistically returning before a preceeding doom, we need to
@@ -252,7 +263,7 @@ net::Error SimpleEntryImpl::CreateEntry(Entry** out_entry,
     }
   } else {
     pending_operations_.push(SimpleEntryOperation::CreateOperation(
-        this, index_state, std::move(callback), out_entry));
+        this, std::move(callback), out_entry));
     ret_value = net::ERR_IO_PENDING;
   }
 
@@ -478,7 +489,9 @@ int SimpleEntryImpl::WriteData(int stream_index,
     RecordWriteResult(cache_type_, SIMPLE_ENTRY_WRITE_RESULT_INVALID_ARGUMENT);
     return net::ERR_INVALID_ARGUMENT;
   }
-  if (backend_.get() && offset + buf_len > backend_->MaxFileSize()) {
+  int end_offset;
+  if (!base::CheckAdd(offset, buf_len).AssignIfValid(&end_offset) ||
+      (backend_.get() && end_offset > backend_->MaxFileSize())) {
     if (net_log_.IsCapturing()) {
       net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_WRITE_END,
                         CreateNetLogReadWriteCompleteCallback(net::ERR_FAILED));
@@ -545,6 +558,15 @@ int SimpleEntryImpl::ReadSparseData(int64_t offset,
                       CreateNetLogSparseOperationCallback(offset, buf_len));
   }
 
+  if (offset < 0 || buf_len < 0) {
+    if (net_log_.IsCapturing()) {
+      net_log_.AddEvent(
+          net::NetLogEventType::SIMPLE_CACHE_ENTRY_READ_SPARSE_END,
+          CreateNetLogReadWriteCompleteCallback(net::ERR_INVALID_ARGUMENT));
+    }
+    return net::ERR_INVALID_ARGUMENT;
+  }
+
   ScopedOperationRunner operation_runner(this);
   pending_operations_.push(SimpleEntryOperation::ReadSparseOperation(
       this, offset, buf_len, buf, std::move(callback)));
@@ -563,6 +585,15 @@ int SimpleEntryImpl::WriteSparseData(int64_t offset,
         CreateNetLogSparseOperationCallback(offset, buf_len));
   }
 
+  if (offset < 0 || buf_len < 0) {
+    if (net_log_.IsCapturing()) {
+      net_log_.AddEvent(
+          net::NetLogEventType::SIMPLE_CACHE_ENTRY_WRITE_SPARSE_END,
+          CreateNetLogReadWriteCompleteCallback(net::ERR_INVALID_ARGUMENT));
+    }
+    return net::ERR_INVALID_ARGUMENT;
+  }
+
   ScopedOperationRunner operation_runner(this);
   pending_operations_.push(SimpleEntryOperation::WriteSparseOperation(
       this, offset, buf_len, buf, std::move(callback)));
@@ -574,6 +605,8 @@ int SimpleEntryImpl::GetAvailableRange(int64_t offset,
                                        int64_t* start,
                                        CompletionOnceCallback callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  if (offset < 0 || len < 0)
+    return net::ERR_INVALID_ARGUMENT;
 
   ScopedOperationRunner operation_runner(this);
   pending_operations_.push(SimpleEntryOperation::GetAvailableRangeOperation(
@@ -677,6 +710,26 @@ void SimpleEntryImpl::ReturnEntryToCaller(Entry** out_entry) {
   *out_entry = this;
 }
 
+void SimpleEntryImpl::ReturnEntryToCallerAndPostCallback(
+    Entry** out_entry,
+    CompletionOnceCallback callback) {
+  DCHECK(!callback.is_null());
+  ReturnEntryToCaller(out_entry);
+  if (!backend_.get())
+    return;  // ReturnEntryToCaller takes care of case of already-dead backend_.
+
+  // Note that the callback is posted rather than directly invoked to avoid
+  // reentrancy issues. Unretained(this) is safe since ReturnEntryToCaller
+  // increments the reference count; this effect is also why this chooses to
+  // potentially call ReturnEntryToCaller and then roll it back rather than
+  // delay ReturnEntryToCaller: it protects |this| till any potential ownership
+  // share transfer is sorted out.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&InvokeCallbackIfBackendIsAliveOrCloseEntry, backend_,
+                     base::Unretained(this), std::move(callback)));
+}
+
 void SimpleEntryImpl::MarkAsDoomed(DoomState new_state) {
   DCHECK_NE(DOOM_NONE, new_state);
   doom_state_ = new_state;
@@ -688,20 +741,15 @@ void SimpleEntryImpl::MarkAsDoomed(DoomState new_state) {
 
 void SimpleEntryImpl::RunNextOperationIfNeeded() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
-                   "EntryOperationsPending", cache_type_,
-                   pending_operations_.size(), 0, 100, 20);
   if (!pending_operations_.empty() && state_ != STATE_IO_PENDING) {
     SimpleEntryOperation operation = std::move(pending_operations_.front());
     pending_operations_.pop();
     switch (operation.type()) {
       case SimpleEntryOperation::TYPE_OPEN:
-        OpenEntryInternal(operation.have_index(), operation.ReleaseCallback(),
-                          operation.out_entry());
+        OpenEntryInternal(operation.ReleaseCallback(), operation.out_entry());
         break;
       case SimpleEntryOperation::TYPE_CREATE:
-        CreateEntryInternal(operation.have_index(), operation.ReleaseCallback(),
-                            operation.out_entry());
+        CreateEntryInternal(operation.ReleaseCallback(), operation.out_entry());
         break;
       case SimpleEntryOperation::TYPE_OPEN_OR_CREATE:
         OpenOrCreateEntryInternal(operation.index_state(),
@@ -745,16 +793,14 @@ void SimpleEntryImpl::RunNextOperationIfNeeded() {
   }
 }
 
-void SimpleEntryImpl::OpenEntryInternal(bool have_index,
-                                        net::CompletionOnceCallback callback,
+void SimpleEntryImpl::OpenEntryInternal(net::CompletionOnceCallback callback,
                                         Entry** out_entry) {
   ScopedOperationRunner operation_runner(this);
 
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_BEGIN);
 
   if (state_ == STATE_READY) {
-    ReturnEntryToCaller(out_entry);
-    PostClientCallback(std::move(callback), net::OK);
+    ReturnEntryToCallerAndPostCallback(out_entry, std::move(callback));
     net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_END,
                       CreateNetLogSimpleEntryCreationCallback(this, net::OK));
     return;
@@ -786,10 +832,9 @@ void SimpleEntryImpl::OpenEntryInternal(bool have_index,
     }
   }
 
-  base::OnceClosure task =
-      base::BindOnce(&SimpleSynchronousEntry::OpenEntry, cache_type_, path_,
-                     key_, entry_hash_, have_index, start_time, file_tracker_,
-                     trailer_prefetch_size, results.get());
+  base::OnceClosure task = base::BindOnce(
+      &SimpleSynchronousEntry::OpenEntry, cache_type_, path_, key_, entry_hash_,
+      start_time, file_tracker_, trailer_prefetch_size, results.get());
 
   base::OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::CreationOperationComplete, this, std::move(callback),
@@ -801,8 +846,7 @@ void SimpleEntryImpl::OpenEntryInternal(bool have_index,
                                              std::move(reply), entry_priority_);
 }
 
-void SimpleEntryImpl::CreateEntryInternal(bool have_index,
-                                          net::CompletionOnceCallback callback,
+void SimpleEntryImpl::CreateEntryInternal(net::CompletionOnceCallback callback,
                                           Entry** out_entry) {
   ScopedOperationRunner operation_runner(this);
 
@@ -830,9 +874,9 @@ void SimpleEntryImpl::CreateEntryInternal(bool have_index,
       new SimpleEntryCreationResults(SimpleEntryStat(
           last_used_, last_modified_, data_size_, sparse_data_size_)));
 
-  OnceClosure task = base::BindOnce(
-      &SimpleSynchronousEntry::CreateEntry, cache_type_, path_, key_,
-      entry_hash_, have_index, start_time, file_tracker_, results.get());
+  OnceClosure task = base::BindOnce(&SimpleSynchronousEntry::CreateEntry,
+                                    cache_type_, path_, key_, entry_hash_,
+                                    start_time, file_tracker_, results.get());
   OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::CreationOperationComplete, this, std::move(callback),
       start_time, base::Time(), base::Passed(&results), out_entry,
@@ -857,8 +901,8 @@ void SimpleEntryImpl::OpenOrCreateEntryInternal(
 
   if (state_ == STATE_READY) {
     entry_struct->opened = true;
-    ReturnEntryToCaller(&entry_struct->entry);
-    PostClientCallback(std::move(callback), net::OK);
+    ReturnEntryToCallerAndPostCallback(&entry_struct->entry,
+                                       std::move(callback));
     net_log_.AddEvent(
         net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_OR_CREATE_END,
         CreateNetLogSimpleEntryCreationCallback(this, net::OK));
@@ -951,7 +995,7 @@ void SimpleEntryImpl::CloseInternal() {
         results.get());
     OnceClosure reply = base::BindOnce(&SimpleEntryImpl::CloseOperationComplete,
                                        this, base::Passed(&results));
-    synchronous_entry_ = NULL;
+    synchronous_entry_ = nullptr;
     prioritized_task_runner_->PostTaskAndReply(
         FROM_HERE, std::move(task), std::move(reply), entry_priority_);
 
@@ -1418,13 +1462,11 @@ void SimpleEntryImpl::CreationOperationComplete(
   if (backend_ && doom_state_ == DOOM_NONE)
     backend_->index()->Insert(entry_hash_);
 
-  if (out_opened)
+  // Access to out_opened must be guarded by backend_ check since there is no
+  // requirement to keep this alive past backend destruction, as the callback
+  // will not be invoked.
+  if (backend_ && out_opened)
     *out_opened = !in_results->created;
-
-  // If out_entry is NULL, it means we already called ReturnEntryToCaller from
-  // the optimistic Create case.
-  if (out_entry)
-    ReturnEntryToCaller(out_entry);
 
   state_ = STATE_READY;
   synchronous_entry_ = in_results->sync_entry;
@@ -1472,7 +1514,14 @@ void SimpleEntryImpl::CreationOperationComplete(
   AdjustOpenEntryCountBy(cache_type_, 1);
 
   net_log_.AddEvent(end_event_type);
-  PostClientCallback(std::move(completion_callback), net::OK);
+
+  // The entry was either returned optimistically already, in which case
+  // out_entry is nullptr and there is no callback, or should be returned
+  // to out_entry with callback invoked.
+  DCHECK_EQ(out_entry == nullptr, completion_callback.is_null());
+  if (out_entry)
+    ReturnEntryToCallerAndPostCallback(out_entry,
+                                       std::move(completion_callback));
 }
 
 void SimpleEntryImpl::EntryOperationComplete(

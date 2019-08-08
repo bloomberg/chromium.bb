@@ -16,6 +16,7 @@
 #define VK_PIPELINE_HPP_
 
 #include "VkObject.hpp"
+#include "Vulkan/VkDescriptorSet.hpp"
 #include "Device/Renderer.hpp"
 
 namespace sw { class SpirvShader; }
@@ -71,16 +72,18 @@ public:
 
 	uint32_t computePrimitiveCount(uint32_t vertexCount) const;
 	const sw::Context& getContext() const;
-	const sw::Rect& getScissor() const;
+	const VkRect2D& getScissor() const;
 	const VkViewport& getViewport() const;
 	const sw::Color<float>& getBlendConstants() const;
+	bool hasDynamicState(VkDynamicState dynamicState) const;
 
 private:
 	sw::SpirvShader *vertexShader = nullptr;
 	sw::SpirvShader *fragmentShader = nullptr;
 
+	uint32_t dynamicStateFlags = 0;
 	sw::Context context;
-	sw::Rect scissor;
+	VkRect2D scissor;
 	VkViewport viewport;
 	sw::Color<float> blendConstants;
 };
@@ -100,6 +103,17 @@ public:
 #endif
 
 	static size_t ComputeRequiredAllocationSize(const VkComputePipelineCreateInfo* pCreateInfo);
+
+	void compileShaders(const VkAllocationCallbacks* pAllocator, const VkComputePipelineCreateInfo* pCreateInfo);
+
+	void run(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ,
+		vk::DescriptorSet::Bindings const &descriptorSets,
+		vk::DescriptorSet::DynamicOffsets const &descriptorDynamicOffsets,
+		sw::PushConstantStorage const &pushConstants);
+
+protected:
+	sw::SpirvShader *shader = nullptr;
+	rr::Routine *routine = nullptr;
 };
 
 static inline Pipeline* Cast(VkPipeline object)

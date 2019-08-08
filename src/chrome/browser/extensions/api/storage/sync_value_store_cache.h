@@ -39,7 +39,7 @@ class SyncValueStoreCache : public ValueStoreCache {
   ~SyncValueStoreCache() override;
 
   base::WeakPtr<SyncValueStoreCache> AsWeakPtr();
-  syncer::SyncableService* GetSyncableService(syncer::ModelType type) const;
+  syncer::SyncableService* GetSyncableService(syncer::ModelType type);
 
   // ValueStoreCache implementation:
   void RunWithValueStoreForExtension(

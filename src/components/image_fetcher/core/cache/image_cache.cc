@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/sha1.h"
+#include "base/hash/sha1.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
@@ -17,9 +17,9 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/base32/base32.h"
-#include "components/image_fetcher/core/cache/cached_image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/cache/image_data_store.h"
 #include "components/image_fetcher/core/cache/image_metadata_store.h"
+#include "components/image_fetcher/core/image_fetcher_metrics_reporter.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -137,10 +137,9 @@ void ImageCache::OnDependencyInitialized() {
 
   // TODO(wylieb): Consider delaying eviction as new requests come in via
   // separate weak pointers.
-  CachedImageFetcherMetricsReporter::ReportEvent(
-      CachedImageFetcherMetricsReporter::
-          kCachedImageFetcherInternalUmaClientName,
-      CachedImageFetcherEvent::kCacheStartupEvictionStarted);
+  ImageFetcherMetricsReporter::ReportEvent(
+      ImageFetcherMetricsReporter::kCachedImageFetcherInternalUmaClientName,
+      ImageFetcherEvent::kCacheStartupEvictionStarted);
 
   // Once all the queued requests are taken care of, run eviction.
   base::PostTaskWithTraitsAndReply(
@@ -207,7 +206,7 @@ void ImageCache::RunEvictionWhenFull() {
   base::Time last_eviction_time = pref_service_->GetTime(kPrefLastLRUEviction);
   // Only report for non-null times.
   if (last_eviction_time != base::Time()) {
-    CachedImageFetcherMetricsReporter::ReportTimeSinceLastCacheLRUEviction(
+    ImageFetcherMetricsReporter::ReportTimeSinceLastCacheLRUEviction(
         last_eviction_time);
   }
 
@@ -269,10 +268,9 @@ void ImageCache::ReconcileDataKeys(std::vector<std::string> metadata_keys,
     data_store_->DeleteImage(key);
   }
 
-  CachedImageFetcherMetricsReporter::ReportEvent(
-      CachedImageFetcherMetricsReporter::
-          kCachedImageFetcherInternalUmaClientName,
-      CachedImageFetcherEvent::kCacheStartupEvictionFinished);
+  ImageFetcherMetricsReporter::ReportEvent(
+      ImageFetcherMetricsReporter::kCachedImageFetcherInternalUmaClientName,
+      ImageFetcherEvent::kCacheStartupEvictionFinished);
 }
 
 }  // namespace image_fetcher

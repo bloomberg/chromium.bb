@@ -6,19 +6,56 @@
  * Class to handle text input for improved accuracy and efficiency.
  */
 
-const TextInputManager = {
-  /** @type {number} */
-  KEY_PRESS_DURATION: 100,
+class TextInputManager {
+  /** @param {!NavigationManager} navigationManager */
+  constructor(navigationManager) {
+    /** @private {chrome.automation.AutomationNode} */
+    this.node_;
+
+    /** @private {!NavigationManager} */
+    this.navigationManager_ = navigationManager;
+
+    /** @private {!chrome.accessibilityPrivate.FocusRingInfo} */
+    this.textInputFocusRing_ = {
+      id: SAConstants.TEXT_FOCUS_ID,
+      rects: [],
+      type: chrome.accessibilityPrivate.FocusType.DASHED,
+      color: SAConstants.PRIMARY_FOCUS_COLOR,
+      secondaryColor: SAConstants.SECONDARY_FOCUS_COLOR
+    };
+  }
+
+  /**
+   * Enters the keyboard and draws the text input focus ring.
+   * @param {!chrome.automation.AutomationNode} node
+   */
+  enterKeyboard(node) {
+    if (!SwitchAccessPredicate.isTextInput(node))
+      return false;
+
+    this.node_ = node;
+    this.drawFocusRingForTextInput_();
+    return true;
+  }
+
+  /** Resets the focus ring and the focus in |navigationManager_|. */
+  returnToTextFocus() {
+    if (!this.node_)
+      return;
+    this.clearFocusRingForTextInput_();
+    this.navigationManager_.exitCurrentScope(this.node_);
+    this.node_ = null;
+  }
 
   /**
    * Sends a keyEvent to click the center of the provided node.
    * @param {!chrome.automation.AutomationNode} node
    * @return {boolean} Whether a key was pressed.
    */
-  pressKey: (node) => {
+  pressKey(node) {
     if (node.role !== chrome.automation.RoleType.BUTTON)
       return false;
-    if (!TextInputManager.inVirtualKeyboard_(node))
+    if (!this.inVirtualKeyboard(node))
       return false;
 
     const x = node.location.left + Math.round(node.location.width / 2);
@@ -36,22 +73,62 @@ const TextInputManager = {
           x: x,
           y: y
         }),
-        TextInputManager.KEY_PRESS_DURATION);
+        SAConstants.KEY_PRESS_DURATION_MS);
 
     return true;
-  },
+  }
+
+  /**
+   * Returns the container with a role of keyboard.
+   * @param {!chrome.automation.AutomationNode} desktop
+   * @return {chrome.automation.AutomationNode}
+   */
+  getKeyboard(desktop) {
+    let treeWalker = new AutomationTreeWalker(
+        desktop, constants.Dir.FORWARD,
+        {visit: (node) => node.role === chrome.automation.RoleType.KEYBOARD});
+    const keyboardContainer = treeWalker.next().node;
+    treeWalker =
+        new AutomationTreeWalker(keyboardContainer, constants.Dir.FORWARD, {
+          visit: (node) => SwitchAccessPredicate.isGroup(node, node),
+          root: (node) => node === keyboardContainer
+        });
+    return treeWalker.next().node;
+  }
 
   /**
    * Checks if |node| is in the virtual keyboard.
-   * @private
    * @param {!chrome.automation.AutomationNode} node
    * @return {boolean}
    */
-  inVirtualKeyboard_: (node) => {
+  inVirtualKeyboard(node) {
     if (node.role === chrome.automation.RoleType.KEYBOARD)
       return true;
     if (node.parent)
-      return TextInputManager.inVirtualKeyboard_(node.parent);
+      return this.inVirtualKeyboard(node.parent);
     return false;
-  },
-};
+  }
+
+  /**
+   * Draws a dashed focus ring around the active text input, so the user can
+   * easily reference where they are typing.
+   * @private
+   */
+  drawFocusRingForTextInput_() {
+    if (!this.node_)
+      return;
+
+    this.textInputFocusRing_.rects = [this.node_.location];
+    chrome.accessibilityPrivate.setFocusRings([this.textInputFocusRing_]);
+    return true;
+  }
+
+  /**
+   * Clears the focus ring around the active text input.
+   * @private
+   */
+  clearFocusRingForTextInput_() {
+    this.textInputFocusRing_.rects = [];
+    chrome.accessibilityPrivate.setFocusRings([this.textInputFocusRing_]);
+  }
+}

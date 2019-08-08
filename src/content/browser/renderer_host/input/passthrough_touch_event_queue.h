@@ -15,9 +15,9 @@
 #include "base/time/time.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/input_event_ack_source.h"
 #include "content/public/common/input_event_ack_state.h"
+#include "ui/events/blink/blink_features.h"
 
 namespace content {
 
@@ -60,8 +60,8 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
               base::TimeDelta::FromMilliseconds(1000)),
           touch_ack_timeout_supported(false),
           skip_touch_filter(
-              base::FeatureList::IsEnabled(features::kSkipBrowserTouchFilter)),
-          events_to_always_forward(kSkipBrowserTouchFilterType.Get()) {}
+              base::FeatureList::IsEnabled(features::kSkipTouchEventFilter)),
+          events_to_always_forward(kSkipTouchEventFilterType.Get()) {}
 
     // Touch ack timeout delay for desktop sites. If zero, timeout behavior
     // is disabled for such sites. Defaults to 200ms.
@@ -192,6 +192,7 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   // has no touch handler.
   PreFilterResult FilterBeforeForwarding(const blink::WebTouchEvent& event);
   PreFilterResult FilterBeforeForwardingImpl(const blink::WebTouchEvent& event);
+  bool ShouldFilterForEvent(const blink::WebTouchEvent& event);
 
   void AckTouchEventToClient(const TouchEventWithLatencyInfo& acked_event,
                              InputEventAckSource ack_source,
@@ -241,7 +242,7 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   const bool skip_touch_filter_;
   // What events types are allowed to bypass the filter.
   const std::string events_to_always_forward_;
-  static const base::FeatureParam<std::string> kSkipBrowserTouchFilterType;
+  static const base::FeatureParam<std::string> kSkipTouchEventFilterType;
 
   DISALLOW_COPY_AND_ASSIGN(PassthroughTouchEventQueue);
 };

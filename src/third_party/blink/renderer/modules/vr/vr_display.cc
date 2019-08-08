@@ -230,10 +230,11 @@ bool VRDisplay::getFrameData(VRFrameData* frame_data) {
   if (!in_animation_frame_) {
     Document* doc = navigator_vr_->GetDocument();
     if (doc) {
-      doc->AddConsoleMessage(ConsoleMessage::Create(
-          kRenderingMessageSource, mojom::ConsoleMessageLevel::kWarning,
-          "getFrameData must be called within a "
-          "VRDisplay.requestAnimationFrame callback."));
+      doc->AddConsoleMessage(
+          ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                                 mojom::ConsoleMessageLevel::kWarning,
+                                 "getFrameData must be called within a "
+                                 "VRDisplay.requestAnimationFrame callback."));
     }
     return false;
   }
@@ -327,8 +328,10 @@ int VRDisplay::requestAnimationFrame(V8FrameRequestCallback* callback) {
 
   RequestVSync();
 
-  FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
-      FrameRequestCallbackCollection::V8FrameCallback::Create(callback);
+  auto* frame_callback =
+      MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
+          callback);
+
   frame_callback->SetUseLegacyTimeBase(false);
   return EnsureScriptedAnimationController(doc).RegisterCallback(
       frame_callback);
@@ -395,7 +398,7 @@ ScriptPromise VRDisplay::requestPresent(
 
   ReportPresentationResult(PresentationResult::kRequested);
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // If the VRDisplay does not advertise the ability to present reject the
@@ -624,7 +627,7 @@ void VRDisplay::OnNonImmersiveSessionRequestReturned(
 
 ScriptPromise VRDisplay::exitPresent(ScriptState* script_state) {
   DVLOG(1) << __FUNCTION__;
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!is_presenting_) {
@@ -798,16 +801,18 @@ void VRDisplay::submitFrame() {
 
   if (!is_presenting_) {
     doc->AddConsoleMessage(ConsoleMessage::Create(
-        kRenderingMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kRendering,
+        mojom::ConsoleMessageLevel::kWarning,
         "submitFrame has no effect when the VRDisplay is not presenting."));
     return;
   }
 
   if (!in_animation_frame_) {
-    doc->AddConsoleMessage(ConsoleMessage::Create(
-        kRenderingMessageSource, mojom::ConsoleMessageLevel::kWarning,
-        "submitFrame must be called within a "
-        "VRDisplay.requestAnimationFrame callback."));
+    doc->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                               mojom::ConsoleMessageLevel::kWarning,
+                               "submitFrame must be called within a "
+                               "VRDisplay.requestAnimationFrame callback."));
     return;
   }
 
@@ -1098,6 +1103,16 @@ void VRDisplay::OnPresentingVSync(
         MakeGarbageCollected<VREyeParameters>(frame_data->right_eye, 1);
   }
 
+  if (frame_data->stage_parameters_updated) {
+    if (frame_data->stage_parameters) {
+      if (!stage_parameters_)
+        stage_parameters_ = MakeGarbageCollected<VRStageParameters>();
+      stage_parameters_->Update(frame_data->stage_parameters);
+    } else {
+      stage_parameters_ = nullptr;
+    }
+  }
+
   // Post a task to handle scheduled animations after the current
   // execution context finishes, so that we yield to non-mojo tasks in
   // between frames. Executing mojo tasks back to back within the same
@@ -1172,8 +1187,10 @@ void VRDisplay::OnPresentationProviderConnectionError() {
 
 ScriptedAnimationController& VRDisplay::EnsureScriptedAnimationController(
     Document* doc) {
-  if (!scripted_animation_controller_)
-    scripted_animation_controller_ = ScriptedAnimationController::Create(doc);
+  if (!scripted_animation_controller_) {
+    scripted_animation_controller_ =
+        MakeGarbageCollected<ScriptedAnimationController>(doc);
+  }
 
   return *scripted_animation_controller_;
 }

@@ -28,7 +28,7 @@ class ScrollViewExample::ScrollableView : public View {
  public:
   ScrollableView() {
     SetColor(SK_ColorRED, SK_ColorCYAN);
-    AddChildView(new LabelButton(NULL, ASCIIToUTF16("Button")));
+    AddChildView(new LabelButton(nullptr, ASCIIToUTF16("Button")));
     AddChildView(new RadioButton(ASCIIToUTF16("Radio Button"), 0));
   }
 
@@ -72,8 +72,7 @@ class ScrollViewExample::ScrollableView : public View {
 ScrollViewExample::ScrollViewExample() : ExampleBase("Scroll View") {
 }
 
-ScrollViewExample::~ScrollViewExample() {
-}
+ScrollViewExample::~ScrollViewExample() = default;
 
 void ScrollViewExample::CreateExampleView(View* container) {
   wide_ = new LabelButton(this, ASCIIToUTF16("Wide"));
@@ -81,9 +80,8 @@ void ScrollViewExample::CreateExampleView(View* container) {
   big_square_ = new LabelButton(this, ASCIIToUTF16("Big Square"));
   small_square_ = new LabelButton(this, ASCIIToUTF16("Small Square"));
   scroll_to_ = new LabelButton(this, ASCIIToUTF16("Scroll to"));
-  scrollable_ = new ScrollableView();
   scroll_view_ = new ScrollView();
-  scroll_view_->SetContents(scrollable_);
+  scrollable_ = scroll_view_->SetContents(std::make_unique<ScrollableView>());
   scrollable_->SetBounds(0, 0, 1000, 100);
   scrollable_->SetColor(SK_ColorYELLOW, SK_ColorCYAN);
 
@@ -128,7 +126,7 @@ void ScrollViewExample::ButtonPressed(Button* sender, const ui::Event& event) {
     scroll_view_->contents()->ScrollRectToVisible(
         gfx::Rect(20, 500, 1000, 500));
   }
-  scroll_view_->Layout();
+  scroll_view_->InvalidateLayout();
 }
 
 }  // namespace examples

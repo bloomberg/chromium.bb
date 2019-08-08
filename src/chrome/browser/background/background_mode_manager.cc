@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/one_shot_event.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -64,7 +65,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
-#include "extensions/common/one_shot_event.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -376,9 +376,8 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
   // loaded, to handle the case where an extension has been manually removed
   // while Chrome was not running.
   extensions::ExtensionSystem::Get(profile)->ready().Post(
-      FROM_HERE,
-      base::Bind(&BackgroundModeManager::OnExtensionsReady,
-        weak_factory_.GetWeakPtr(), profile));
+      FROM_HERE, base::BindOnce(&BackgroundModeManager::OnExtensionsReady,
+                                weak_factory_.GetWeakPtr(), profile));
 
   bmd_ptr->applications()->AddObserver(this);
 
@@ -412,6 +411,8 @@ bool BackgroundModeManager::IsBackgroundWithoutWindows() const {
       // Transient startup related KeepAlives, not related to any UI.
       KeepAliveOrigin::SESSION_RESTORE,
       KeepAliveOrigin::BACKGROUND_MODE_MANAGER_STARTUP,
+
+      KeepAliveOrigin::BACKGROUND_SYNC,
 
       // Notification KeepAlives are not dependent on the Chrome UI being
       // loaded, and can be registered when we were in pure background mode.

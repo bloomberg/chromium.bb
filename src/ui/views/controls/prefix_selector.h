@@ -81,6 +81,10 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
   void SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+  void SetActiveCompositionForAccessibility(
+      const gfx::Range& range,
+      const base::string16& active_composition_text,
+      bool is_composition_committed) override;
 #endif
 
   void set_tick_clock_for_testing(const base::TickClock* clock) {

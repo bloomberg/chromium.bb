@@ -36,8 +36,10 @@ void DomAutomationController::Install(RenderFrame* render_frame,
     return;
 
   v8::Local<v8::Object> global = context->Global();
-  global->Set(gin::StringToV8(isolate, "domAutomationController"),
-              controller.ToV8());
+  global
+      ->Set(context, gin::StringToV8(isolate, "domAutomationController"),
+            controller.ToV8())
+      .Check();
 }
 
 DomAutomationController::DomAutomationController(RenderFrame* render_frame)
@@ -72,8 +74,10 @@ void DomAutomationController::DidCreateScriptContext(
     return;
 
   v8::Local<v8::Object> global = context->Global();
-  global->Set(gin::StringToV8(isolate, "domAutomationController"),
-              controller.ToV8());
+  global
+      ->Set(context, gin::StringToV8(isolate, "domAutomationController"),
+            controller.ToV8())
+      .Check();
 }
 
 bool DomAutomationController::SendMsg(const gin::Arguments& args) {

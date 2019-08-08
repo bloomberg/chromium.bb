@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/i18n/string_compare.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/stl_util.h"

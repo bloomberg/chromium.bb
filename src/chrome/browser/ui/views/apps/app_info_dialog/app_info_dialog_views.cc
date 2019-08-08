@@ -71,8 +71,8 @@ bool CanShowAppInfoDialog() {
 void ShowAppInfoInAppList(const gfx::Rect& app_info_bounds,
                           Profile* profile,
                           const extensions::Extension* app) {
-  views::View* app_info_view = new AppInfoDialog(profile, app);
-  views::DialogDelegate* dialog = CreateAppListContainerForView(app_info_view);
+  views::DialogDelegate* dialog = CreateAppListContainerForView(
+      std::make_unique<AppInfoDialog>(profile, app));
   views::Widget* dialog_widget = new views::Widget();
   views::Widget::InitParams params =
       views::DialogDelegate::GetDialogWidgetInitParams(dialog, nullptr, nullptr,
@@ -90,10 +90,10 @@ void ShowAppInfoInNativeDialog(content::WebContents* web_contents,
                                Profile* profile,
                                const extensions::Extension* app,
                                const base::Closure& close_callback) {
-  views::View* app_info_view = new AppInfoDialog(profile, app);
   constexpr gfx::Size kDialogSize = gfx::Size(380, 490);
-  views::DialogDelegate* dialog =
-      CreateDialogContainerForView(app_info_view, kDialogSize, close_callback);
+  views::DialogDelegate* dialog = CreateDialogContainerForView(
+      std::make_unique<AppInfoDialog>(profile, app), kDialogSize,
+      close_callback);
   views::Widget* dialog_widget;
   if (dialog->GetModalType() == ui::MODAL_TYPE_CHILD) {
     dialog_widget =
@@ -112,29 +112,19 @@ AppInfoDialog::AppInfoDialog(Profile* profile, const extensions::Extension* app)
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
   const int kHorizontalSeparatorHeight = 1;
-  dialog_header_ = new AppInfoHeaderPanel(profile, app);
-  dialog_header_->SetBorder(views::CreateSolidSidedBorder(
-      0, 0, kHorizontalSeparatorHeight, 0, kDialogSeparatorColor));
-
-  dialog_footer_ = new AppInfoFooterPanel(profile, app);
-  dialog_footer_->SetBorder(views::CreateSolidSidedBorder(
-      kHorizontalSeparatorHeight, 0, 0, 0, kDialogSeparatorColor));
-  if (!dialog_footer_->has_children()) {
-    // If there are no controls in the footer, don't add it to the dialog.
-    delete dialog_footer_;
-    dialog_footer_ = NULL;
-  }
 
   // Make a vertically stacked view of all the panels we want to display in the
   // dialog.
-  views::View* dialog_body_contents = new views::View();
+  auto dialog_body_contents = std::make_unique<views::View>();
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   dialog_body_contents->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
       provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
-  dialog_body_contents->AddChildView(new AppInfoSummaryPanel(profile, app));
-  dialog_body_contents->AddChildView(new AppInfoPermissionsPanel(profile, app));
+  dialog_body_contents->AddChildView(
+      std::make_unique<AppInfoSummaryPanel>(profile, app));
+  dialog_body_contents->AddChildView(
+      std::make_unique<AppInfoPermissionsPanel>(profile, app));
 
 #if defined(OS_CHROMEOS)
   // When Google Play Store is enabled and the Settings app is available, show
@@ -144,8 +134,8 @@ AppInfoDialog::AppInfoDialog(Profile* profile, const extensions::Extension* app)
     const ArcAppListPrefs* arc_app_list_prefs = ArcAppListPrefs::Get(profile);
     if (arc_app_list_prefs &&
         arc_app_list_prefs->IsRegistered(arc::kSettingsAppId)) {
-      arc_app_info_links_ = new ArcAppInfoLinksPanel(profile, app);
-      dialog_body_contents->AddChildView(arc_app_info_links_);
+      arc_app_info_links_ = dialog_body_contents->AddChildView(
+          std::make_unique<ArcAppInfoLinksPanel>(profile, app));
     }
   }
 #endif
@@ -156,17 +146,24 @@ AppInfoDialog::AppInfoDialog(Profile* profile, const extensions::Extension* app)
   // TODO(sashab): Add ClipHeight() as a parameter-less method to
   // views::ScrollView() to mimic this behaviour.
   const int kMaxDialogHeight = 1000;
-  dialog_body_ = new views::ScrollView();
-  dialog_body_->ClipHeightTo(kMaxDialogHeight, kMaxDialogHeight);
-  dialog_body_->SetContents(dialog_body_contents);
+  auto dialog_body = std::make_unique<views::ScrollView>();
+  dialog_body->ClipHeightTo(kMaxDialogHeight, kMaxDialogHeight);
+  dialog_body->SetContents(std::move(dialog_body_contents));
 
-  AddChildView(dialog_header_);
+  auto dialog_header = std::make_unique<AppInfoHeaderPanel>(profile, app);
+  dialog_header->SetBorder(views::CreateSolidSidedBorder(
+      0, 0, kHorizontalSeparatorHeight, 0, kDialogSeparatorColor));
+  dialog_header_ = AddChildView(std::move(dialog_header));
 
-  AddChildView(dialog_body_);
+  dialog_body_ = AddChildView(std::move(dialog_body));
   layout->SetFlexForView(dialog_body_, 1);
 
-  if (dialog_footer_)
-    AddChildView(dialog_footer_);
+  auto dialog_footer = AppInfoFooterPanel::CreateFooterPanel(profile, app);
+  if (dialog_footer) {
+    dialog_footer->SetBorder(views::CreateSolidSidedBorder(
+        kHorizontalSeparatorHeight, 0, 0, 0, kDialogSeparatorColor));
+    dialog_footer_ = AddChildView(std::move(dialog_footer));
+  }
 
   // Close the dialog if the app is uninstalled, or if the profile is destroyed.
   StartObservingExtensionRegistry();

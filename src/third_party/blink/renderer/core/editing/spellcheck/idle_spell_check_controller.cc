@@ -41,10 +41,6 @@ constexpr TimeDelta kIdleSpellcheckTestTimeout = TimeDelta::FromSeconds(10);
 class IdleSpellCheckController::IdleCallback final
     : public ScriptedIdleTaskController::IdleTask {
  public:
-  static IdleCallback* Create(IdleSpellCheckController* controller) {
-    return MakeGarbageCollected<IdleCallback>(controller);
-  }
-
   explicit IdleCallback(IdleSpellCheckController* controller)
       : controller_(controller) {}
 
@@ -78,7 +74,8 @@ IdleSpellCheckController::IdleSpellCheckController(LocalFrame& frame)
       idle_callback_handle_(kInvalidHandle),
       frame_(frame),
       last_processed_undo_step_sequence_(0),
-      cold_mode_requester_(ColdModeSpellCheckRequester::Create(frame)),
+      cold_mode_requester_(
+          MakeGarbageCollected<ColdModeSpellCheckRequester>(frame)),
       cold_mode_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                        this,
                        &IdleSpellCheckController::ColdModeTimerFired) {}
@@ -127,8 +124,8 @@ void IdleSpellCheckController::SetNeedsInvocation() {
 
   IdleRequestOptions* options = IdleRequestOptions::Create();
   options->setTimeout(kHotModeRequestTimeoutMS);
-  idle_callback_handle_ =
-      GetDocument().RequestIdleCallback(IdleCallback::Create(this), options);
+  idle_callback_handle_ = GetDocument().RequestIdleCallback(
+      MakeGarbageCollected<IdleCallback>(this), options);
   state_ = State::kHotModeRequested;
 }
 
@@ -159,7 +156,7 @@ void IdleSpellCheckController::ColdModeTimerFired(TimerBase*) {
   }
 
   idle_callback_handle_ = GetDocument().RequestIdleCallback(
-      IdleCallback::Create(this), IdleRequestOptions::Create());
+      MakeGarbageCollected<IdleCallback>(this), IdleRequestOptions::Create());
   state_ = State::kColdModeRequested;
 }
 
@@ -229,9 +226,9 @@ void IdleSpellCheckController::ForceInvocationForTesting() {
   if (!IsSpellCheckingEnabled())
     return;
 
-  IdleDeadline* deadline =
-      IdleDeadline::Create(CurrentTimeTicks() + kIdleSpellcheckTestTimeout,
-                           IdleDeadline::CallbackType::kCalledWhenIdle);
+  auto* deadline = MakeGarbageCollected<IdleDeadline>(
+      CurrentTimeTicks() + kIdleSpellcheckTestTimeout,
+      IdleDeadline::CallbackType::kCalledWhenIdle);
 
   switch (state_) {
     case State::kColdModeTimerStarted:

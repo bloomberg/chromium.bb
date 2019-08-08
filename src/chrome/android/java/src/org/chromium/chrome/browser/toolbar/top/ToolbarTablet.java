@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarTablet;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
@@ -52,7 +53,7 @@ public class ToolbarTablet extends ToolbarLayout
     // The number of toolbar buttons that can be hidden at small widths (reload, back, forward).
     public static final int HIDEABLE_BUTTON_COUNT = 3;
 
-    private ImageButton mHomeButton;
+    private HomeButton mHomeButton;
     private ImageButton mBackButton;
     private ImageButton mForwardButton;
     private ImageButton mReloadButton;
@@ -131,6 +132,12 @@ public class ToolbarTablet extends ToolbarLayout
         mShouldAnimateButtonVisibilityChange = false;
         mToolbarButtonsVisible = true;
         mToolbarButtons = new ImageButton[] {mBackButton, mForwardButton, mReloadButton};
+    }
+
+    @Override
+    void destroy() {
+        super.destroy();
+        mHomeButton.destroy();
     }
 
     /**
@@ -341,28 +348,34 @@ public class ToolbarTablet extends ToolbarLayout
         super.onTabOrModelChanged();
         final boolean incognito = isIncognito();
         if (mIsIncognito == null || mIsIncognito != incognito) {
-            final int color = ColorUtils.getDefaultThemeColor(getResources(), incognito);
-            setBackgroundColor(color);
-            getProgressBar().setThemeColor(color, isIncognito());
+            // TODO (amaralp): Have progress bar observe theme color and incognito changes directly.
+            getProgressBar().setThemeColor(
+                    ColorUtils.getDefaultThemeColor(getResources(), incognito), isIncognito());
 
-            final int textBoxColor =
-                    ColorUtils.getTextBoxColorForToolbarBackground(getResources(), false, color);
-            mLocationBar.getBackground().setColorFilter(textBoxColor, PorterDuff.Mode.SRC_IN);
-
-            final ColorStateList tint = ColorUtils.shouldUseLightForegroundOnBackground(color)
-                    ? mLightModeTint
-                    : mDarkModeTint;
-            ApiCompatibilityUtils.setImageTintList(mHomeButton, tint);
-            ApiCompatibilityUtils.setImageTintList(mBackButton, tint);
-            ApiCompatibilityUtils.setImageTintList(mForwardButton, tint);
-            ApiCompatibilityUtils.setImageTintList(mSaveOfflineButton, tint);
-
-            mAccessibilitySwitcherButton.setUseLightDrawables(incognito);
-            mLocationBar.updateVisualsForState();
             mIsIncognito = incognito;
         }
 
         updateNtp();
+    }
+
+    @Override
+    public void onTintChanged(ColorStateList tint, boolean useLight) {
+        ApiCompatibilityUtils.setImageTintList(mHomeButton, tint);
+        ApiCompatibilityUtils.setImageTintList(mBackButton, tint);
+        ApiCompatibilityUtils.setImageTintList(mForwardButton, tint);
+        ApiCompatibilityUtils.setImageTintList(mSaveOfflineButton, tint);
+        ApiCompatibilityUtils.setImageTintList(mReloadButton, tint);
+        mAccessibilitySwitcherButton.setUseLightDrawables(useLight);
+    }
+
+    @Override
+    public void onThemeColorChanged(int color, boolean shouldAnimate) {
+        setBackgroundColor(color);
+        final int textBoxColor = ColorUtils.getTextBoxColorForToolbarBackground(
+                getResources(), false, color, isIncognito());
+        mLocationBar.getBackground().setColorFilter(textBoxColor, PorterDuff.Mode.SRC_IN);
+
+        mLocationBar.updateVisualsForState();
     }
 
     /**
@@ -430,8 +443,6 @@ public class ToolbarTablet extends ToolbarLayout
             mReloadButton.setContentDescription(
                     getContext().getString(R.string.accessibility_btn_refresh));
         }
-        ApiCompatibilityUtils.setImageTintList(
-                mReloadButton, isIncognito() ? mLightModeTint : mDarkModeTint);
         mReloadButton.setEnabled(!mIsInTabSwitcherMode);
     }
 
@@ -439,16 +450,16 @@ public class ToolbarTablet extends ToolbarLayout
     void updateBookmarkButton(boolean isBookmarked, boolean editingAllowed) {
         if (isBookmarked) {
             mBookmarkButton.setImageResource(R.drawable.btn_star_filled);
+            // TODO (huayinz): Ask UX whether night mode should have a white or blue star.
             // Non-incognito mode shows a blue filled star.
             ApiCompatibilityUtils.setImageTintList(mBookmarkButton,
-                    isIncognito() ? mLightModeTint
-                                  : AppCompatResources.getColorStateList(
-                                            getContext(), R.color.blue_mode_tint));
+                    useLight() ? getTint()
+                               : AppCompatResources.getColorStateList(
+                                       getContext(), R.color.blue_mode_tint));
             mBookmarkButton.setContentDescription(getContext().getString(R.string.edit_bookmark));
         } else {
             mBookmarkButton.setImageResource(R.drawable.btn_star);
-            ApiCompatibilityUtils.setImageTintList(
-                    mBookmarkButton, isIncognito() ? mLightModeTint : mDarkModeTint);
+            ApiCompatibilityUtils.setImageTintList(mBookmarkButton, getTint());
             mBookmarkButton.setContentDescription(
                     getContext().getString(R.string.accessibility_menu_bookmark));
         }

@@ -80,6 +80,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "services/identity/public/cpp/scope_set.h"
 #endif
@@ -545,6 +546,12 @@ void PrintPreviewHandler::RegisterMessages() {
       base::BindRepeating(
           &PrintPreviewHandler::HandleGrantExtensionPrinterAccess,
           base::Unretained(this)));
+#if defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback(
+      "openPrinterSettings",
+      base::BindRepeating(&PrintPreviewHandler::HandleOpenPrinterSettings,
+                          base::Unretained(this)));
+#endif
 }
 
 void PrintPreviewHandler::OnJavascriptAllowed() {
@@ -905,6 +912,16 @@ void PrintPreviewHandler::HandleClosePreviewDialog(
   UMA_HISTOGRAM_COUNTS_1M("PrintPreview.RegeneratePreviewRequest.BeforeCancel",
                           regenerate_preview_request_count_);
 }
+
+#if defined(OS_CHROMEOS)
+void PrintPreviewHandler::HandleOpenPrinterSettings(
+    const base::ListValue* args) {
+  auto* const settings_manager = chrome::SettingsWindowManager::GetInstance();
+  settings_manager->ShowChromePageForProfile(
+      Profile::FromWebUI(web_ui()),
+      chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage));
+}
+#endif
 
 void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
     base::DictionaryValue* settings) {

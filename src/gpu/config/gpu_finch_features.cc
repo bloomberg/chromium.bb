@@ -72,7 +72,7 @@ const base::Feature kDirectCompositionPreferNV12Overlays{
 // can be used even if there are controls on top of the video. It can be
 // enabled only when overlay is supported.
 const base::Feature kDirectCompositionUnderlays{
-    "DirectCompositionUnderlays", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DirectCompositionUnderlays", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Causes us to use the SharedImageManager, removing support for the old
 // mailbox system. Any consumers of the GPU process using the old mailbox
@@ -89,7 +89,7 @@ const base::Feature kUseDCOverlaysForSoftwareProtectedVideo{
 // Use decode swap chain created from compatible video decoder buffers.
 const base::Feature kDirectCompositionUseNV12DecodeSwapChain{
     "DirectCompositionUseNV12DecodeSwapChain",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls the decode acceleration of JPEG images (as opposed to camera
 // captures) in Chrome OS using the VA-API.

@@ -22,16 +22,19 @@ aggregate_vector_icons("omnibox_vector_icons") {
   icon_directory = "vector_icons"
 
   icons = [
+    "answer_calculator.icon",
     "answer_currency.icon",
     "answer_default.icon",
     "answer_dictionary.icon",
     "answer_finance.icon",
     "answer_sunrise.icon",
+    "answer_translation.icon",
     "answer_when_is.icon",
     "blank.icon",
     "bookmark.icon",
     "calculator.icon",
     "clear.icon",
+    "clock.icon",
     "drive_docs.icon",
     "drive_forms.icon",
     "drive_image.icon",
@@ -83,6 +86,8 @@ jumbo_static_library("browser") {
     "autocomplete_input.h",
     "autocomplete_match.cc",
     "autocomplete_match.h",
+    "autocomplete_match_classification.cc",
+    "autocomplete_match_classification.h",
     "autocomplete_match_type.cc",
     "autocomplete_match_type.h",
     "autocomplete_provider.cc",
@@ -151,6 +156,7 @@ jumbo_static_library("browser") {
     "omnibox_navigation_observer.h",
     "omnibox_pedal.cc",
     "omnibox_pedal.h",
+    "omnibox_pedal_concepts.h",
     "omnibox_pedal_implementations.cc",
     "omnibox_pedal_implementations.h",
     "omnibox_pedal_provider.cc",
@@ -235,6 +241,7 @@ jumbo_static_library("browser") {
     "//sql",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/re2",
+    "//third_party/zlib/google:compression_utils",
     "//ui/base",
     "//ui/gfx",
   ]
@@ -260,7 +267,7 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
-      "//third_party/android_deps:android_support_compat_java",
+      "//third_party/android_deps:com_android_support_support_compat_java",
     ]
 
     srcjar_deps = [ ":browser_java_enums_srcjar" ]

@@ -66,6 +66,13 @@ declare_args() {
   pgo_build = chrome_pgo_phase > 0
 
   # optimize_webui was moved to ui/base/ui_features.gni
+
+  if (is_mac) {
+    # Restructures the macOS bundle layout so that the Framework goes in
+    # Chromium.app/Contents/Frameworks rather than
+    # Chromium.app/Contents/Versions. https://crbug.com/958976
+    new_mac_bundle_structure = true
+  }
 }
 
 # Use brlapi from brltty for braille display support.

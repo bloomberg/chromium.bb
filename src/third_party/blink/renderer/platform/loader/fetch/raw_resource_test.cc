@@ -260,7 +260,7 @@ TEST_F(RawResourceTest, PreloadWithAsynchronousAddClient) {
   raw->MatchPreload(params, platform_->test_task_runner().get());
   raw->AddClient(dummy_client, platform_->test_task_runner().get());
 
-  raw->ResponseBodyReceived(*body_loader);
+  raw->ResponseBodyReceived(*body_loader, platform_->test_task_runner());
   raw->FinishForTest();
   EXPECT_FALSE(dummy_client->Called());
 

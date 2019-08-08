@@ -180,12 +180,15 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateTextMatch(
   }
   base::string16 text = std::move(optional_text).value();
 
+  // The clipboard can contain the empty string, which shouldn't be suggested.
+  if (text.empty()) {
+    return base::nullopt;
+  }
+
   // The text in the clipboard is a url. We don't want to prompt the user to
   // search for a url.
   if (GURL(text).is_valid())
     return base::nullopt;
-
-  DCHECK(!text.empty());
 
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
   AutocompleteMatch match(this, 800, false,

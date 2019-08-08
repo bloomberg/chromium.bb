@@ -73,7 +73,7 @@ WorkerThreadDebugger::~WorkerThreadDebugger() {
 
 void WorkerThreadDebugger::ReportConsoleMessage(
     ExecutionContext* context,
-    MessageSource source,
+    mojom::ConsoleMessageSource source,
     mojom::ConsoleMessageLevel level,
     const String& message,
     SourceLocation* location) {
@@ -133,8 +133,9 @@ void WorkerThreadDebugger::ContextWillBeDestroyed(
 void WorkerThreadDebugger::ExceptionThrown(WorkerThread* worker_thread,
                                            ErrorEvent* event) {
   worker_thread->GetWorkerReportingProxy().ReportConsoleMessage(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kError,
-      event->MessageForConsole(), event->Location());
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kError, event->MessageForConsole(),
+      event->Location());
 
   const String default_message = "Uncaught";
   ScriptState* script_state =
@@ -241,12 +242,13 @@ void WorkerThreadDebugger::consoleAPIMessage(
   if (!worker_threads_.Contains(context_group_id))
     return;
   WorkerThread* worker_thread = worker_threads_.at(context_group_id);
-  std::unique_ptr<SourceLocation> location =
-      SourceLocation::Create(ToCoreString(url), line_number, column_number,
-                             stack_trace ? stack_trace->clone() : nullptr, 0);
+  std::unique_ptr<SourceLocation> location = std::make_unique<SourceLocation>(
+      ToCoreString(url), line_number, column_number,
+      stack_trace ? stack_trace->clone() : nullptr, 0);
   worker_thread->GetWorkerReportingProxy().ReportConsoleMessage(
-      kConsoleAPIMessageSource, V8MessageLevelToMessageLevel(level),
-      ToCoreString(message), location.get());
+      mojom::ConsoleMessageSource::kConsoleApi,
+      V8MessageLevelToMessageLevel(level), ToCoreString(message),
+      location.get());
 }
 
 void WorkerThreadDebugger::consoleClear(int context_group_id) {

@@ -153,6 +153,7 @@
 <translation id="4240294130679914010">Chrome 远程访问主机卸载程序</translation>
 <translation id="4277463233460010382">此计算机已配置为允许一个或多个客户端无需输入 PIN 即可进行连接。</translation>
 <translation id="4277736576214464567">访问代码无效，请重试。</translation>
+<translation id="4281844954008187215">服务条款</translation>
 <translation id="4361728918881830843">要启用到另一台计算机的远程连接，请在该计算机上安装 Chrome 远程桌面并点击“<ph name="BUTTON_NAME" />”。</translation>
 <translation id="4394049700291259645">停用</translation>
 <translation id="4405930547258349619">核心数据库</translation>
@@ -345,6 +346,7 @@ PC</translation>
 <translation id="8747048596626351634">会话已崩溃或未能顺利启动。如果远程计算机上存在 ~/.chrome-remote-desktop-session，请确保它会启动一个能长时间运行的前台进程（例如桌面环境或窗口管理器）。</translation>
 <translation id="8759753423332885148">了解详情。</translation>
 <translation id="8791202241915690908">下载 Chrome 远程访问主机安装程序</translation>
+<translation id="8804164990146287819">隐私权政策</translation>
 <translation id="894763922177556086">良好</translation>
 <translation id="895780780740011433">适用于 Windows 7 及更高版本</translation>
 <translation id="897805526397249209">要启用到另一台计算机的远程连接，请在该计算机上安装 Chrome 远程访问并点击“<ph name="BUTTON_NAME" />”。</translation>

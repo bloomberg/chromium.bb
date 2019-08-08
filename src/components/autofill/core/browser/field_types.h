@@ -172,9 +172,12 @@ enum ServerFieldType {
   // Price fields are detected, but not filled.
   PRICE = 98,
 
+  // Password-type fields which are not actual passwords.
+  NOT_PASSWORD = 99,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
-  MAX_VALID_FIELD_TYPE = 99,
+  MAX_VALID_FIELD_TYPE = 100,
 };
 
 // The list of all HTML autocomplete field type hints supported by Chrome.

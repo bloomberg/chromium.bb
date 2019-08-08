@@ -25,7 +25,6 @@ class Point;
 }
 
 namespace ui {
-class SimpleMenuModel;
 class WindowTreeHost;
 }
 
@@ -38,7 +37,9 @@ class ScopedCaptureClient;
 }
 
 namespace ash {
+class AccessibilityPanelLayoutManager;
 class AlwaysOnTopController;
+class AppMenuModelAdapter;
 class AshWindowTreeHost;
 class LockScreenActionBackgroundController;
 enum class LoginStatus;
@@ -52,7 +53,7 @@ class TouchExplorationManager;
 class TouchObserverHUD;
 class WallpaperWidgetController;
 class WindowManager;
-class WorkspaceController;
+class WorkAreaInsets;
 
 namespace wm {
 class RootWindowLayoutManager;
@@ -101,12 +102,6 @@ class ASH_EXPORT RootWindowController {
   aura::Window* GetRootWindow();
   const aura::Window* GetRootWindow() const;
 
-  WorkspaceController* workspace_controller() {
-    return workspace_controller_.get();
-  }
-
-  wm::WorkspaceWindowState GetWorkspaceWindowState();
-
   Shelf* shelf() const { return shelf_.get(); }
 
   TouchObserverHUD* touch_observer_hud() const { return touch_observer_hud_; }
@@ -117,6 +112,9 @@ class ASH_EXPORT RootWindowController {
   wm::RootWindowLayoutManager* root_window_layout_manager() {
     return root_window_layout_manager_;
   }
+
+  // Returns parameters of the work area associated with this root window.
+  WorkAreaInsets* work_area_insets() { return work_area_insets_.get(); }
 
   // Access the shelf layout manager associated with this root
   // window controller, NULL if no such shelf exists.
@@ -178,6 +176,10 @@ class ASH_EXPORT RootWindowController {
   void CloseChildWindows();
 
   // Moves child windows to |dest|.
+  // TODO(afakhry): Consider renaming this function to avoid misuse. It is only
+  // called by WindowTreeHostManager::DeleteHost(), and has destructive side
+  // effects like deleting the workspace controllers, so it shouldn't be called
+  // for something else.
   void MoveWindowsTo(aura::Window* dest);
 
   // Force the shelf to query for it's current visibility state.
@@ -188,6 +190,8 @@ class ASH_EXPORT RootWindowController {
 
   // Returns the topmost window or one of its transient parents, if any of them
   // are in fullscreen mode.
+  // TODO(afakhry): Rename this to imply getting the fullscreen window on the
+  // currently active desk on this root.
   aura::Window* GetWindowForFullscreenMode();
 
   // If touch exploration is enabled, update the touch exploration
@@ -202,6 +206,9 @@ class ASH_EXPORT RootWindowController {
 
   // Called when the login status changes after login (such as lock/unlock).
   void UpdateAfterLoginStatusChange(LoginStatus status);
+
+  // Returns accessibility panel layout manager for this root window.
+  AccessibilityPanelLayoutManager* GetAccessibilityPanelLayoutManagerForTest();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RootWindowControllerTest,
@@ -223,6 +230,8 @@ class ASH_EXPORT RootWindowController {
 
   void InitLayoutManagers();
 
+  AccessibilityPanelLayoutManager* GetAccessibilityPanelLayoutManager() const;
+
   // Initializes the shelf for this root window and notifies observers.
   void InitializeShelf();
 
@@ -240,7 +249,7 @@ class ASH_EXPORT RootWindowController {
   void ResetRootForNewWindowsIfNecessary();
 
   // Callback for MenuRunner.
-  void OnMenuClosed(const base::TimeTicks desktop_context_menu_show_time);
+  void OnMenuClosed();
 
   // Passed as callback to |wallpaper_widget_controller_| - run when the
   // wallpaper widget is first set.
@@ -255,13 +264,11 @@ class ASH_EXPORT RootWindowController {
   wm::RootWindowLayoutManager* root_window_layout_manager_ = nullptr;
 
   std::unique_ptr<WallpaperWidgetController> wallpaper_widget_controller_;
-  std::unique_ptr<WorkspaceController> workspace_controller_;
 
   std::unique_ptr<AlwaysOnTopController> always_on_top_controller_;
 
   // Manages the context menu.
-  std::unique_ptr<ui::SimpleMenuModel> menu_model_;
-  std::unique_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<AppMenuModelAdapter> root_window_menu_model_adapter_;
 
   std::unique_ptr<StackingController> stacking_controller_;
 
@@ -293,6 +300,8 @@ class ASH_EXPORT RootWindowController {
   // Whether child windows have been closed during shutdown. Exists to avoid
   // calling related cleanup code more than once.
   bool did_close_child_windows_ = false;
+
+  std::unique_ptr<WorkAreaInsets> work_area_insets_;
 
   static std::vector<RootWindowController*>* root_window_controllers_;
 

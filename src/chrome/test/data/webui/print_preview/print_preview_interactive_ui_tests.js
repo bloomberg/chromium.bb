@@ -56,10 +56,51 @@ PrintPreviewPrintHeaderInteractiveTest =
   }
 };
 
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_FocusPrintOnReady DISABLED_FocusPrintOnReady');
+GEN('#else');
+GEN('#define MAYBE_FocusPrintOnReady FocusPrintOnReady');
+GEN('#endif');
 TEST_F(
-    'PrintPreviewPrintHeaderInteractiveTest', 'FocusPrintOnReady', function() {
+    'PrintPreviewPrintHeaderInteractiveTest', 'MAYBE_FocusPrintOnReady',
+    function() {
       this.runMochaTest(
           print_header_interactive_test.TestNames.FocusPrintOnReady);
+    });
+
+PrintPreviewButtonStripInteractiveTest =
+    class extends PrintPreviewInteractiveUITest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/button_strip.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
+      'button_strip_interactive_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return button_strip_interactive_test.suiteName;
+  }
+};
+
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_FocusPrintOnReady DISABLED_FocusPrintOnReady');
+GEN('#else');
+GEN('#define MAYBE_FocusPrintOnReady FocusPrintOnReady');
+GEN('#endif');
+TEST_F(
+    'PrintPreviewButtonStripInteractiveTest', 'MAYBE_FocusPrintOnReady',
+    function() {
+      this.runMochaTest(
+          button_strip_interactive_test.TestNames.FocusPrintOnReady);
     });
 
 PrintPreviewDestinationDialogInteractiveTest =
@@ -87,15 +128,27 @@ PrintPreviewDestinationDialogInteractiveTest =
   }
 };
 
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_FocusSearchBox DISABLED_FocusSearchBox');
+GEN('#else');
+GEN('#define MAYBE_FocusSearchBox FocusSearchBox');
+GEN('#endif');
 TEST_F(
-    'PrintPreviewDestinationDialogInteractiveTest', 'FocusSearchBox',
+    'PrintPreviewDestinationDialogInteractiveTest', 'MAYBE_FocusSearchBox',
     function() {
       this.runMochaTest(
           destination_dialog_interactive_test.TestNames.FocusSearchBox);
     });
 
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_EscapeSearchBox DISABLED_EscapeSearchBox');
+GEN('#else');
+GEN('#define MAYBE_EscapeSearchBox EscapeSearchBox');
+GEN('#endif');
 TEST_F(
-    'PrintPreviewDestinationDialogInteractiveTest', 'EscapeSearchBox',
+    'PrintPreviewDestinationDialogInteractiveTest', 'MAYBE_EscapeSearchBox',
     function() {
       this.runMochaTest(
           destination_dialog_interactive_test.TestNames.EscapeSearchBox);
@@ -122,19 +175,38 @@ PrintPreviewPagesSettingsTest = class extends PrintPreviewInteractiveUITest {
   }
 };
 
-TEST_F('PrintPreviewPagesSettingsTest', 'ClearInput', function() {
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_ClearInput DISABLED_ClearInput');
+GEN('#else');
+GEN('#define MAYBE_ClearInput ClearInput');
+GEN('#endif');
+TEST_F('PrintPreviewPagesSettingsTest', 'MAYBE_ClearInput', function() {
   this.runMochaTest(pages_settings_test.TestNames.ClearInput);
 });
 
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_InputNotDisabledOnValidityChange DISABLED_InputNotDisabledOnValidityChange');
+GEN('#else');
+GEN('#define MAYBE_InputNotDisabledOnValidityChange InputNotDisabledOnValidityChange');
+GEN('#endif');
 TEST_F(
-    'PrintPreviewPagesSettingsTest', 'InputNotDisabledOnValidityChange',
+    'PrintPreviewPagesSettingsTest', 'MAYBE_InputNotDisabledOnValidityChange',
     function() {
       this.runMochaTest(
           pages_settings_test.TestNames.InputNotDisabledOnValidityChange);
     });
 
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_EnterOnInputTriggersPrint DISABLED_EnterOnInputTriggersPrint');
+GEN('#else');
+GEN('#define MAYBE_EnterOnInputTriggersPrint EnterOnInputTriggersPrint');
+GEN('#endif');
 TEST_F(
-    'PrintPreviewPagesSettingsTest', 'EnterOnInputTriggersPrint', function() {
+    'PrintPreviewPagesSettingsTest', 'MAYBE_EnterOnInputTriggersPrint',
+    function() {
       this.runMochaTest(
           pages_settings_test.TestNames.EnterOnInputTriggersPrint);
     });
@@ -161,9 +233,51 @@ PrintPreviewNumberSettingsSectionInteractiveTest =
   }
 };
 
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_BlurResetsEmptyInput DISABLED_BlurResetsEmptyInput');
+GEN('#else');
+GEN('#define MAYBE_BlurResetsEmptyInput BlurResetsEmptyInput');
+GEN('#endif');
 TEST_F(
-    'PrintPreviewNumberSettingsSectionInteractiveTest', 'BlurResetsEmptyInput',
-    function() {
+    'PrintPreviewNumberSettingsSectionInteractiveTest',
+    'MAYBE_BlurResetsEmptyInput', function() {
       this.runMochaTest(number_settings_section_interactive_test.TestNames
                             .BlurResetsEmptyInput);
+    });
+
+PrintPreviewScalingSettingsInteractiveTest =
+    class extends PrintPreviewInteractiveUITest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/scaling_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      ROOT_PATH + 'ui/webui/resources/js/util.js',
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'scaling_settings_interactive_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return scaling_settings_interactive_test.suiteName;
+  }
+};
+
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_AutoFocusInput DISABLED_InputAutoFocus');
+GEN('#else');
+GEN('#define MAYBE_AutoFocusInput InputAutoFocus');
+GEN('#endif');
+TEST_F(
+    'PrintPreviewScalingSettingsInteractiveTest', 'MAYBE_AutoFocusInput',
+    function() {
+      this.runMochaTest(
+          scaling_settings_interactive_test.TestNames.AutoFocusInput);
     });

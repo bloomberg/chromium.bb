@@ -11,6 +11,7 @@ namespace blink {
 class WebMouseEvent;
 class WebWidget;
 class WebWidgetClient;
+struct WebDeviceEmulationParams;
 }  // namespace blink
 
 namespace content {
@@ -29,10 +30,6 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   // and RenderWidget will fall back to its own WebWidget.
   virtual blink::WebWidget* GetWebWidgetForWidget() const = 0;
 
-  // Returns the WebWidgetClient being provided from the delegate. Usually this
-  // is the RenderWidget itself, but tests can override and change it.
-  virtual blink::WebWidgetClient* GetWebWidgetClientForWidget() = 0;
-
   // As in RenderWidgetInputHandlerDelegate. Return true if the event was
   // handled.
   virtual bool RenderWidgetWillHandleMouseEventForWidget(
@@ -49,6 +46,10 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   // if the event was not cancelled.
   virtual void DidHandleGestureEventForWidget(
       const blink::WebGestureEvent& event) = 0;
+
+  // TODO(bokan): Temporary to unblock synthetic gesture events running under
+  // VR. https://crbug.com/940063
+  virtual bool ShouldAckSyntheticInputImmediately() = 0;
 
   // ==================================
   // These methods called during closing of a RenderWidget.

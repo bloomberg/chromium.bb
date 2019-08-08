@@ -42,27 +42,14 @@ enum class ProcessType {
   FOCUSED_TAB = 1,
   FOCUSED_APP = 2,
 
-  // Important apps are protected in two ways: 1) Chrome never kills them, and
-  // 2) the kernel is still allowed to kill them, but their OOM adjustment
-  // scores are better than BACKGROUND_TABs and BACKGROUND_APPs.
-  IMPORTANT_APP = 3,
-
-  BACKGROUND_APP = 4,
-  PROTECTED_BACKGROUND_TAB = 5,
-  BACKGROUND_TAB = 6,
-
-  // PROTECTED_BACKGROUND, BACKGROUND, and CACHED_APP are newer types
-  // that are used instead of the previous 4 types on systems where the
-  // TabRanker experiment is disabled. Processes previously in IMPORTANT_APP
-  // and PROTECTED_BACKGROUND_TAB are now in PROTECTED_BACKGROUND, processes
-  // previously in either BACKGROUND_APP or BACKGROUND_TAB are now BACKGROUND.
-  // CACHED_APP marks Android processes which are cached or empty.
-  // Currently these types are only used on systems where the NewProcessTypes
-  // feature is enabled.
-  PROTECTED_BACKGROUND = 7,
-  BACKGROUND = 8,
-  CACHED_APP = 9,
-  UNKNOWN_TYPE = 10,
+  // PROTECTED_BACKGROUND processes are those that are in the background but
+  // are more important than BACKGROUND processes because they may be disruptive
+  // to the user if killed. CACHED_APP marks Android processes which are cached
+  // or empty.
+  PROTECTED_BACKGROUND = 3,
+  BACKGROUND = 4,
+  CACHED_APP = 5,
+  UNKNOWN_TYPE = 6,
 };
 
 // The Chrome OS TabManagerDelegate is responsible for keeping the
@@ -87,6 +74,10 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
+  // Called by TabManager::Start to start a timer that periodically updates
+  // OOM scores.
+  void StartPeriodicOOMScoreUpdate();
+
   // Kills a process on memory pressure.
   void LowMemoryKill(::mojom::LifecycleUnitDiscardReason reason,
                      TabManager::TabDiscardDoneCB tab_discard_done);
@@ -95,9 +86,6 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   // If couldn't find the score in the cache, returns -1001 since the valid
   // range of oom_score_adj is [-1000, 1000].
   int GetCachedOomScore(base::ProcessHandle process_handle);
-
-  // Called when the timer fires, sets oom_adjust_score for all renderers.
-  void AdjustOomPriorities();
 
   // Returns true if the process has recently been killed.
   // Virtual for unit testing.
@@ -122,7 +110,7 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest,
                            CandidatesSortedWithFocusedAppAndTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest,
-                           CandidatesSortedWithNewProcessTypes);
+                           CandidatesSortedWithTabRanker);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest,
                            DoNotKillRecentlyKilledArcProcesses);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, IsRecentlyKilledArcProcess);
@@ -171,6 +159,9 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   // Sets a newly focused tab the highest priority process if it wasn't.
   void AdjustFocusedTabScore(base::ProcessHandle pid);
 
+  // Called when the timer fires, sets oom_adjust_score for all renderers.
+  void AdjustOomPriorities();
+
   // Called by AdjustOomPriorities. Runs on the main thread.
   void AdjustOomPrioritiesImpl(OptionalArcProcessList arc_processes);
 
@@ -203,6 +194,9 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
 
   // Registrar to receive renderer notifications.
   content::NotificationRegistrar registrar_;
+
+  // Timer to periodically make OOM score adjustments.
+  base::RepeatingTimer adjust_oom_priorities_timer_;
 
   // Timer to guarantee that the tab or app is focused for a certain amount of
   // time.
@@ -237,20 +231,44 @@ class TabManagerDelegate::Candidate {
         lifecycle_unit_sort_key_(lifecycle_unit_->GetSortKey()) {
     DCHECK(lifecycle_unit_);
   }
-  explicit Candidate(const arc::ArcProcess* app) : app_(app) { DCHECK(app_); }
+
+  // Candidates are sorted by a pair of sort keys <TabRanker score,
+  // last_activity_time>. Apps are not scored by TabRanker, so their score
+  // is set to kMaxScore. When TabRanker is off, tabs also have a score of
+  // kMaxScore so this has the effect of sorting by last_activity_time only.
+  // But if TabRanker is on, kMaxScore guarantees all apps are sorted before
+  // tabs.
+  explicit Candidate(const arc::ArcProcess* app)
+      : lifecycle_unit_sort_key_(
+            LifecycleUnit::SortKey::kMaxScore,
+            base::TimeTicks::FromUptimeMillis(app->last_activity_time())),
+        app_(app) {
+    DCHECK(app_);
+  }
 
   // Move-only class.
   Candidate(Candidate&&) = default;
   Candidate& operator=(Candidate&& other);
 
-  // Higher priority first.
+  // Candidates are sorted higher priority first. They are first sorted into
+  // their respective ProcessTypes.
+  // LifecycleUnit::SortKey is used to compare processes within a ProcessType,
+  // using a combination of TabRanker reactivation score (for tabs only) and
+  // last focused time for all processes. When TabRanker is disabled, tabs are
+  // given a default score of kMaxScore. An ArcProcess (app) is always assigned
+  // kMaxScore. This means that when TabRanker is off, all processes have
+  // kMaxScore and are then compared by last focused time.
+  // When TabRanker is on, tabs have their own defined order so we can't compare
+  // apps to tabs, since we wouldn't have a comparator to satisfy transitivity.
+  // In this case, ARC processes are sorted before (higher priority than) tabs
+  // and compared by last focused time, while tabs are compared by their
+  // reactivation score.
   bool operator<(const Candidate& rhs) const;
 
   LifecycleUnit* lifecycle_unit() { return lifecycle_unit_; }
   const LifecycleUnit* lifecycle_unit() const { return lifecycle_unit_; }
   const arc::ArcProcess* app() const { return app_; }
   ProcessType process_type() const { return process_type_; }
-  base::TimeTicks GetLastActiveTime() const;
 
  private:
   // Derive process type for this candidate. Used to initialize |process_type_|.

@@ -760,6 +760,28 @@ const DeviceCapabilities kIlitekTP = {
     base::size(kIlitekTPAbsAxes),
 };
 
+const DeviceCapabilities kSideVolumeButton = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:1f.0/PNP0C09:00/GOOG0004:00/GOOG0007:00/"
+    "input/input5/event4",
+    /* name */ "cros_ec_buttons",
+    /* phys */ "GOOG0004:00/input1",
+    /* uniq */ "",
+    /* bustype */ "0006",
+    /* vendor */ "0000",
+    /* product */ "0000",
+    /* version */ "0001",
+    /* prop */ "0",
+    /* ev */ "100023",
+    /* key */ "1c000000000000 0",
+    /* rel */ "0",
+    /* abs */ "0",
+    /* msc */ "0",
+    /* sw */ "1",
+    /* led */ "0",
+    /* ff */ "0",
+};
+
 // NB: Please use the capture_device_capabilities.py script to add more
 // test data here. This will help ensure the data matches what the kernel
 // reports for a real device and is entered correctly.

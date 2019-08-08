@@ -103,18 +103,18 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     self._fatal = False
     self.buildbucket_client = self.GetBuildbucketClient()
 
-  def _WaitForSlavesToComplete(self, manager, build_id, builders_array,
+  def _WaitForSlavesToComplete(self, manager, build_identifier, builders_array,
                                timeout):
     """Wait for slave builds to complete.
 
     Args:
       manager: An instance of BuildSpecsManager.
-      build_id: The build id of the master build.
+      build_identifier: The BuildIdentifier instance of the master build.
       builders_array: A list of builder names (strings) of slave builds.
       timeout: Number of seconds to wait for the results.
     """
     return manager.WaitForSlavesToComplete(
-        build_id, builders_array, timeout=timeout)
+        build_identifier, builders_array, timeout=timeout)
 
   def _GetBuilderStatusesFetcher(self):
     """Construct and return the BuilderStatusesFetcher instance.
@@ -127,8 +127,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     """
     # Wait for slaves if we're a master, in production or mock-production.
     # Otherwise just look at our own status.
-    build_identifier, db = self._run.GetCIDBHandle()
-    build_id = build_identifier.cidb_id
+    build_identifier, _ = self._run.GetCIDBHandle()
     builders_array = None
     if not self._run.config.master:
       # The slave build returns its own status.
@@ -137,15 +136,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       # The master build.
       builders = self._GetSlaveConfigs()
       builders_array = [b.name for b in builders]
-      timeout = None
-
-      if db:
-        timeout = db.GetTimeToDeadline(build_id)
-        logging.info('Got timeout for build_id %s', build_id)
-      if timeout is None:
-        # Catch-all: This could happen if cidb is not setup, or the deadline
-        # query fails.
-        timeout = self._run.config.build_timeout
+      timeout = self._run.config.build_timeout
 
       if self._run.options.debug:
         # For debug runs, wait for three minutes to ensure most code
@@ -159,14 +150,14 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if sync_stages.MasterSlaveLKGMSyncStage.external_manager:
         manager = sync_stages.MasterSlaveLKGMSyncStage.external_manager
 
-      self._WaitForSlavesToComplete(manager, build_id, builders_array,
+      self._WaitForSlavesToComplete(manager, build_identifier, builders_array,
                                     timeout)
 
     # Set exclude_experimental to False to fetch the BuilderStatus for
     # builds which are important in config but marked as experimental in
     # the tree status.
     builder_statuses_fetcher = builder_status_lib.BuilderStatusesFetcher(
-        build_id,
+        build_identifier,
         self.buildstore,
         self.success,
         self.message,
@@ -338,10 +329,9 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
       build_identifier, _ = self._run.GetCIDBHandle()
       if self.buildstore.AreClientsReady():
-        build_id = build_identifier.cidb_id
         aborted_slaves = (
             builder_status_lib.GetSlavesAbortedBySelfDestructedMaster(
-                build_id, self.buildstore))
+                build_identifier, self.buildstore))
         # Ignore the slaves aborted by self-destruction.
         not_passed_builders -= aborted_slaves
 
@@ -681,13 +671,13 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       tree_status.SendHealthAlert(
           self._run, subject, msg, extra_fields=extra_fields)
 
-  def _WaitForSlavesToComplete(self, manager, build_id, builders_array,
+  def _WaitForSlavesToComplete(self, manager, build_identifier, builders_array,
                                timeout):
     """Wait for slave builds to complete.
 
     Args:
       manager: An instance of BuildSpecsManager.
-      build_id: The build id of the master build.
+      build_identifier: The BuildIdentifier instance of the master build.
       db: An instance of cidb.CIDBConnection.
       builders_array: A list of builder names (strings) of slave builds.
       timeout: Number of seconds to wait for the results.
@@ -695,7 +685,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     # CQ master build needs needs validation_pool to keep track of applied
     # changes and change dependencies.
     return manager.WaitForSlavesToComplete(
-        build_id,
+        build_identifier,
         builders_array,
         pool=self.sync_stage.pool,
         timeout=timeout)
@@ -790,11 +780,11 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
     self.success = success
     self.stage_push = stage_push
 
-  def CheckMasterBinhostTest(self, build_id):
+  def CheckMasterBinhostTest(self, buildbucket_id):
     """Check whether the master builder has passed BinhostTest stage.
 
     Args:
-      build_id: build_id of the master build to check for.
+      buildbucket_id: buildbucket_id of the master build to check for.
 
     Returns:
       True if the status of the master build BinhostTest stage is 'pass';
@@ -803,12 +793,13 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
     stage_name = 'BinhostTest'
 
     if self._build_stage_id is not None and self.buildstore.AreClientsReady():
-      stages = self.buildstore.GetBuildsStages(build_ids=[build_id])
+      stages = self.buildstore.GetBuildsStages(buildbucket_ids=[buildbucket_id])
 
       # No stages found. BinhostTest stage didn't start or got skipped,
       # in both case we don't need to push commits to the temp pfq branch.
       if not stages:
-        logging.warning('no %s stage found in build %s', stage_name, build_id)
+        logging.warning('no %s stage found in build %s',
+                        stage_name, buildbucket_id)
         return False
 
       stage_status = [
@@ -816,12 +807,12 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
                                 s['status'] == constants.BUILDER_STATUS_PASSED)
       ]
       if stage_status:
-        logging.info('build %s passed stage %s with %s', build_id, stage_name,
-                     stage_status)
+        logging.info('build %s passed stage %s with %s', buildbucket_id,
+                     stage_name, stage_status)
         return True
       else:
-        logging.warning('build %s stage %s result %s', build_id, stage_name,
-                        stage_status)
+        logging.warning('build %s stage %s result %s', buildbucket_id,
+                        stage_name, stage_status)
         return False
 
     logging.warning('Not valid build_stage_id %s or no %s found',
@@ -893,14 +884,15 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
         raise ValueError('This build must be a master chrome PFQ build '
                          'when stage_push is True.')
       build_identifier, _ = self._run.GetCIDBHandle()
-      build_id = build_identifier.cidb_id
+      buildbucket_id = build_identifier.buildbucket_id
 
       # If the master passed BinHostTest and all the important slaves passed
       # UploadPrebuiltsTest, push uprev commits to a staging_branch.
-      if (self.CheckMasterBinhostTest(build_id) and
+      if (self.CheckMasterBinhostTest(buildbucket_id) and
           self.CheckSlaveUploadPrebuiltsTest()):
         staging_branch = ('refs/' + constants.PFQ_REF + '/' +
-                          constants.STAGING_PFQ_BRANCH_PREFIX + str(build_id))
+                          constants.STAGING_PFQ_BRANCH_PREFIX +
+                          str(buildbucket_id))
 
     # If we're a commit queue, we should clean out our local changes, resync,
     # and reapply our uprevs. This is necessary so that 1) we are sure to point

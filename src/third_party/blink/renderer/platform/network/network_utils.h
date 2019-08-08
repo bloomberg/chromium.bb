@@ -33,11 +33,8 @@ PLATFORM_EXPORT String GetDomainAndRegistry(const String& host,
 // Returns the decoded data url as ResourceResponse and SharedBuffer if parsing
 // was successful. The result is returned as net error code. It returns net::OK
 // if decoding succeeds, otherwise it failed.
-// When |verify_mime_type| is true, it returns net::ERR_FAILED if the mime type
-// is not supported (blink::IsSupportedMimeType() returns false) even if parsing
-// succeeds.
 PLATFORM_EXPORT std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>>
-ParseDataURLAndPopulateResponse(const KURL&, bool verify_mime_type);
+ParseDataURL(const KURL&);
 
 // Returns true if the URL is a data URL and its MIME type is in the list of
 // supported/recognized MIME types.

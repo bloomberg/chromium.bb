@@ -18,7 +18,7 @@ android_envsetup_main() {
   local SCRIPT_PATH="$1"
   local SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
   local CHROME_SRC="$(readlink -f "${SCRIPT_DIR}/../../")"
-  local ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
+  local ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_sdk/public"
 
   export PATH=$PATH:${ANDROID_SDK_ROOT}/platform-tools
   export PATH=$PATH:${ANDROID_SDK_ROOT}/tools/

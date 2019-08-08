@@ -7,6 +7,7 @@
 #include <drm.h>
 #include <string.h>
 #include <xf86drm.h>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"

@@ -25,13 +25,17 @@ namespace content {
 ServiceWorkerScriptLoaderFactory::ServiceWorkerScriptLoaderFactory(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory>
+        loader_factory_for_new_scripts)
     : context_(context),
       provider_host_(provider_host),
-      loader_factory_(std::move(loader_factory)),
+      loader_factory_for_new_scripts_(
+          std::move(loader_factory_for_new_scripts)),
       weak_factory_(this) {
   DCHECK(provider_host_->IsProviderForServiceWorker());
-  DCHECK(loader_factory_);
+  DCHECK(loader_factory_for_new_scripts_ ||
+         ServiceWorkerVersion::IsInstalled(
+             provider_host_->running_hosted_version()->status()));
 }
 
 ServiceWorkerScriptLoaderFactory::~ServiceWorkerScriptLoaderFactory() = default;
@@ -44,10 +48,7 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   if (!CheckIfScriptRequestIsValid(resource_request)) {
-    // TODO(kinuko): Record the reason like what we do with netlog in
-    // ServiceWorkerContextRequestHandler.
     client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
     return;
   }
@@ -75,7 +76,8 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   //       script.
   //    3) For other cases or if ServiceWorkerImportedScriptsUpdateCheck is not
   //       enabled, serve from network with installing the script
-  //       (use ServiceWorkerNewScriptLoader).
+  //       (use ServiceWorkerNewScriptLoader::CreateForNetworkOnly() to
+  //       create a ServiceWorkerNewScriptLoader).
   //       This is the common case: load the script and install it.
 
   // Case A and C:
@@ -140,16 +142,21 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
 
   // Case D.3:
   mojo::MakeStrongBinding(
-      std::make_unique<ServiceWorkerNewScriptLoader>(
+      ServiceWorkerNewScriptLoader::CreateForNetworkOnly(
           routing_id, request_id, options, resource_request, std::move(client),
-          provider_host_->running_hosted_version(), loader_factory_,
-          traffic_annotation),
+          provider_host_->running_hosted_version(),
+          loader_factory_for_new_scripts_, traffic_annotation),
       std::move(request));
 }
 
 void ServiceWorkerScriptLoaderFactory::Clone(
     network::mojom::URLLoaderFactoryRequest request) {
   bindings_.AddBinding(this, std::move(request));
+}
+
+void ServiceWorkerScriptLoaderFactory::Update(
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
+  loader_factory_for_new_scripts_ = std::move(loader_factory);
 }
 
 bool ServiceWorkerScriptLoaderFactory::CheckIfScriptRequestIsValid(
@@ -162,10 +169,12 @@ bool ServiceWorkerScriptLoaderFactory::CheckIfScriptRequestIsValid(
   if (!version)
     return false;
 
-  // Handle only the service worker main script (RESOURCE_TYPE_SERVICE_WORKER)
-  // or importScripts() (RESOURCE_TYPE_SCRIPT).
-  if (resource_request.resource_type != RESOURCE_TYPE_SERVICE_WORKER &&
-      resource_request.resource_type != RESOURCE_TYPE_SCRIPT) {
+  // Handle only the service worker main script (ResourceType::kServiceWorker)
+  // or importScripts() (ResourceType::kScript).
+  if (resource_request.resource_type !=
+          static_cast<int>(ResourceType::kServiceWorker) &&
+      resource_request.resource_type !=
+          static_cast<int>(ResourceType::kScript)) {
     static auto* key = base::debug::AllocateCrashKeyString(
         "swslf_bad_type", base::debug::CrashKeySize::Size32);
     base::debug::SetCrashKeyString(

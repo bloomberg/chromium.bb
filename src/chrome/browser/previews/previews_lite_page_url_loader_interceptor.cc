@@ -36,15 +36,16 @@ bool ShouldCreateLoader(const network::ResourceRequest& resource_request) {
   if (!(resource_request.previews_state & content::LITE_PAGE_REDIRECT_ON))
     return false;
 
-  DCHECK_EQ(resource_request.resource_type, content::RESOURCE_TYPE_MAIN_FRAME);
+  DCHECK_EQ(resource_request.resource_type,
+            static_cast<int>(content::ResourceType::kMainFrame));
   DCHECK(resource_request.url.SchemeIsHTTPOrHTTPS());
   DCHECK_EQ(resource_request.method, "GET");
 
   return true;
 }
 
-net::HttpRequestHeaders GetChromeProxyHeaders(
-    content::ResourceContext* context) {
+net::HttpRequestHeaders GetChromeProxyHeaders(content::ResourceContext* context,
+                                              uint64_t page_id) {
   net::HttpRequestHeaders headers;
   // Return empty headers for unittests.
   if (!context)
@@ -57,8 +58,7 @@ net::HttpRequestHeaders GetChromeProxyHeaders(
     DCHECK(data_reduction_proxy::params::IsEnabledWithNetworkService());
     data_reduction_proxy::DataReductionProxyRequestOptions* request_options =
         io_data->data_reduction_proxy_io_data()->request_options();
-    request_options->AddRequestHeader(&headers,
-                                      request_options->GeneratePageId());
+    request_options->AddRequestHeader(&headers, page_id != 0U ? page_id : 1);
 
     headers.SetHeader(data_reduction_proxy::chrome_proxy_ect_header(),
                       net::GetNameForEffectiveConnectionType(
@@ -74,8 +74,10 @@ net::HttpRequestHeaders GetChromeProxyHeaders(
 PreviewsLitePageURLLoaderInterceptor::PreviewsLitePageURLLoaderInterceptor(
     const scoped_refptr<network::SharedURLLoaderFactory>&
         network_loader_factory,
+    uint64_t page_id,
     int frame_tree_node_id)
     : network_loader_factory_(network_loader_factory),
+      page_id_(page_id),
       frame_tree_node_id_(frame_tree_node_id) {}
 
 PreviewsLitePageURLLoaderInterceptor::~PreviewsLitePageURLLoaderInterceptor() {}
@@ -105,6 +107,10 @@ void PreviewsLitePageURLLoaderInterceptor::MaybeCreateLoader(
   std::string original_url;
   if (previews::ExtractOriginalURLFromLitePageRedirectURL(
           tentative_resource_request.url, &original_url)) {
+    // Add the original URL to |urls_processed_| so that we will not retrigger
+    // on this navigation. This is used to allow `location.reload()` JavaScript
+    // code to load the original page when a preview has been committed.
+    urls_processed_.insert(GURL(original_url));
     CreateOriginalURLLoader(tentative_resource_request, GURL(original_url),
                             std::move(callback));
     return;
@@ -135,8 +141,8 @@ void PreviewsLitePageURLLoaderInterceptor::CreateRedirectLoader(
 
   // |redirect_url_loader_| can be null after this call.
   redirect_url_loader_->StartRedirectToPreview(
-      GetChromeProxyHeaders(resource_context), network_loader_factory_,
-      frame_tree_node_id_);
+      GetChromeProxyHeaders(resource_context, page_id_),
+      network_loader_factory_, frame_tree_node_id_);
 }
 
 void PreviewsLitePageURLLoaderInterceptor::CreateOriginalURLLoader(

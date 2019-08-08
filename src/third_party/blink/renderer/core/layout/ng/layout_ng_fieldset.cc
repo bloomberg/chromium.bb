@@ -15,7 +15,7 @@ LayoutNGFieldset::LayoutNGFieldset(Element* element)
 
 void LayoutNGFieldset::AddChild(LayoutObject* new_child,
                                 LayoutObject* before_child) {
-  LayoutBlock* fieldset_content = ToLayoutBlock(FirstChild());
+  LayoutBlock* fieldset_content = To<LayoutBlock>(FirstChild());
   if (!fieldset_content) {
     // We wrap everything inside an anonymous child, which will take care of the
     // fieldset contents. This parent will only be responsible for the fieldset

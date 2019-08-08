@@ -481,7 +481,8 @@ bool SkComputeRadialSteps(const SkVector& v1, const SkVector& v2, SkScalar offse
     int steps = SkScalarRoundToInt(floatSteps);
 
     SkScalar dTheta = steps > 0 ? theta / steps : 0;
-    *rotSin = SkScalarSinCos(dTheta, rotCos);
+    *rotSin = SkScalarSin(dTheta);
+    *rotCos = SkScalarCos(dTheta);
     *n = steps;
     return true;
 }
@@ -1051,14 +1052,14 @@ bool SkIsSimplePolygon(const SkPoint* polygon, int polygonSize) {
         return false;
     }
 
-    // need to be able to represent all the vertices in the 16-bit indices
-    if (polygonSize > std::numeric_limits<uint16_t>::max()) {
-        return false;
-    }
-
     // If it's convex, it's simple
     if (SkIsConvexPolygon(polygon, polygonSize)) {
         return true;
+    }
+
+    // practically speaking, it takes too long to process large polygons
+    if (polygonSize > 2048) {
+        return false;
     }
 
     SkTDPQueue <Vertex, Vertex::Left> vertexQueue(polygonSize);
@@ -1145,7 +1146,8 @@ static bool is_reflex_vertex(const SkPoint* inputPolygonVerts, int winding, SkSc
     return (side*winding*offset < 0);
 }
 
-bool SkOffsetSimplePolygon(const SkPoint* inputPolygonVerts, int inputPolygonSize, SkScalar offset,
+bool SkOffsetSimplePolygon(const SkPoint* inputPolygonVerts, int inputPolygonSize,
+                           const SkRect& bounds, SkScalar offset,
                            SkTDArray<SkPoint>* offsetPolygon, SkTDArray<int>* polygonIndices) {
     if (inputPolygonSize < 3) {
         return false;
@@ -1160,11 +1162,19 @@ bool SkOffsetSimplePolygon(const SkPoint* inputPolygonVerts, int inputPolygonSiz
         return false;
     }
 
+    // can't inset more than the half bounds of the polygon
+    if (offset > SkTMin(SkTAbs(SK_ScalarHalf*bounds.width()),
+                        SkTAbs(SK_ScalarHalf*bounds.height()))) {
+        return false;
+    }
+
     // offsetting close to zero just returns the original poly
     if (SkScalarNearlyZero(offset)) {
         for (int i = 0; i < inputPolygonSize; ++i) {
             *offsetPolygon->push() = inputPolygonVerts[i];
-            *polygonIndices->push() = i;
+            if (polygonIndices) {
+                *polygonIndices->push() = i;
+            }
         }
         return true;
     }

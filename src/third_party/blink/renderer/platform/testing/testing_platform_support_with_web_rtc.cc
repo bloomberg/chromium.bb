@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/webrtc/api/stats/rtc_stats.h"
 
 namespace blink {
 
@@ -78,8 +79,8 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
   void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
                      webrtc::DegradationPreference,
                      WebRTCVoidRequest) override {}
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
-                blink::RTCStatsFilter) override {}
+  void GetStats(WebRTCStatsReportCallback,
+                const std::vector<webrtc::NonStandardGroupId>&) override {}
 
  private:
   scoped_refptr<DummyRtpSenderInternal> internal_;
@@ -132,11 +133,14 @@ class DummyWebRTCRtpReceiver : public WebRTCRtpReceiver {
   WebVector<std::unique_ptr<WebRTCRtpSource>> GetSources() override {
     return WebVector<std::unique_ptr<WebRTCRtpSource>>();
   }
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
-                RTCStatsFilter) override {}
+  void GetStats(WebRTCStatsReportCallback,
+                const std::vector<webrtc::NonStandardGroupId>&) override {}
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override {
     return nullptr;
   }
+
+  void SetJitterBufferMinimumDelay(
+      base::Optional<double> delay_seconds) override {}
 
  private:
   const uintptr_t id_;
@@ -313,8 +317,8 @@ webrtc::RTCErrorType MockWebRTCPeerConnectionHandler::SetConfiguration(
 void MockWebRTCPeerConnectionHandler::GetStats(const WebRTCStatsRequest&) {}
 
 void MockWebRTCPeerConnectionHandler::GetStats(
-    std::unique_ptr<WebRTCStatsReportCallback>,
-    blink::RTCStatsFilter) {}
+    blink::WebRTCStatsReportCallback,
+    const std::vector<webrtc::NonStandardGroupId>&) {}
 
 webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
 MockWebRTCPeerConnectionHandler::AddTransceiverWithTrack(

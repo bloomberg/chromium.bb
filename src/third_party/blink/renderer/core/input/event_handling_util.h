@@ -41,7 +41,7 @@ bool IsInDocument(EventTarget*);
 ContainerNode* ParentForClickEvent(const Node&);
 
 LayoutPoint ContentPointFromRootFrame(LocalFrame*,
-                                      const IntPoint& point_in_root_frame);
+                                      const FloatPoint& point_in_root_frame);
 
 MouseEventWithHitTestResults PerformMouseEventHitTest(LocalFrame*,
                                                       const HitTestRequest&,

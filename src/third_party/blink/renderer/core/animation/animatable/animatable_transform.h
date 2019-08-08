@@ -53,10 +53,6 @@ class CORE_EXPORT AnimatableTransform final : public AnimatableValue {
   }
   double Zoom() const { return zoom_; }
 
- protected:
-  AnimatableValue* InterpolateTo(const AnimatableValue*,
-                                 double fraction) const override;
-
  private:
   AnimatableType GetType() const override { return kTypeTransform; }
 

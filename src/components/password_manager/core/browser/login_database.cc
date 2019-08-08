@@ -931,22 +931,6 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
 
 PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
   PasswordStoreChangeList list;
-  if (form.blacklisted_by_user) {
-    sql::Statement blacklist_statement(db_.GetUniqueStatement(
-        "SELECT EXISTS(SELECT 1 FROM logins WHERE signon_realm == ? AND "
-        "blacklisted_by_user == 1)"));
-    blacklist_statement.BindString(0, form.signon_realm);
-    const bool is_already_blacklisted =
-        blacklist_statement.Step() && blacklist_statement.ColumnBool(0);
-    UMA_HISTOGRAM_BOOLEAN(
-        "PasswordManager.BlacklistedSites.PreventedAddingDuplicates",
-        is_already_blacklisted);
-    if (is_already_blacklisted) {
-      // The site is already blacklisted, so we need to ignore the request to
-      // avoid duplicates.
-      return list;
-    }
-  }
   if (!DoesMatchConstraints(form))
     return list;
   std::string encrypted_password;
@@ -1395,52 +1379,6 @@ bool LoginDatabase::GetLogins(
   return true;
 }
 
-bool LoginDatabase::GetLoginsForSameOrganizationName(
-    const std::string& signon_realm,
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
-  DCHECK(forms);
-  forms->clear();
-
-  GURL signon_realm_as_url(signon_realm);
-  if (!signon_realm_as_url.SchemeIsHTTPOrHTTPS())
-    return true;
-
-  std::string organization_name =
-      GetOrganizationIdentifyingName(signon_realm_as_url);
-  if (organization_name.empty())
-    return true;
-
-  // SQLite does not provide a function to escape special characters, but
-  // seemingly uses POSIX Extended Regular Expressions (ERE), and so does RE2.
-  // In the worst case the bogus results will be filtered out below.
-  static constexpr char kRESchemeAndSubdomains[] = "^https?://([\\w+%-]+\\.)*";
-  static constexpr char kREDotAndEffectiveTLD[] = "(\\.[\\w+%-]+)+/$";
-  const std::string signon_realms_with_same_organization_name_regexp =
-      kRESchemeAndSubdomains + RE2::QuoteMeta(organization_name) +
-      kREDotAndEffectiveTLD;
-  sql::Statement s(db_.GetCachedStatement(
-      SQL_FROM_HERE, get_same_organization_name_logins_statement_.c_str()));
-  s.BindString(0, signon_realms_with_same_organization_name_regexp);
-
-  PrimaryKeyToFormMap key_to_form_map;
-  FormRetrievalResult result = StatementToForms(&s, nullptr, &key_to_form_map);
-  for (auto& pair : key_to_form_map) {
-    forms->push_back(std::move(pair.second));
-  }
-
-  using PasswordFormPtr = std::unique_ptr<autofill::PasswordForm>;
-  base::EraseIf(*forms, [&organization_name](const PasswordFormPtr& form) {
-    GURL candidate_signon_realm_as_url(form->signon_realm);
-    DCHECK_EQ(form->scheme, PasswordForm::SCHEME_HTML);
-    DCHECK(candidate_signon_realm_as_url.SchemeIsHTTPOrHTTPS());
-    std::string candidate_form_organization_name =
-        GetOrganizationIdentifyingName(candidate_signon_realm_as_url);
-    return candidate_form_organization_name != organization_name;
-  });
-
-  return result == FormRetrievalResult::kSuccess;
-}
-
 bool LoginDatabase::GetLoginsCreatedBetween(
     const base::Time begin,
     const base::Time end,
@@ -1618,6 +1556,10 @@ std::unique_ptr<syncer::MetadataBatch> LoginDatabase::GetAllSyncMetadata() {
   return metadata_batch;
 }
 
+void LoginDatabase::DeleteAllSyncMetadata() {
+  ClearAllSyncMetadata(&db_);
+}
+
 bool LoginDatabase::UpdateSyncMetadata(
     syncer::ModelType model_type,
     const std::string& storage_key,
@@ -1698,6 +1640,10 @@ bool LoginDatabase::BeginTransaction() {
   return db_.BeginTransaction();
 }
 
+void LoginDatabase::RollbackTransaction() {
+  db_.RollbackTransaction();
+}
+
 bool LoginDatabase::CommitTransaction() {
   return db_.CommitTransaction();
 }
@@ -1737,9 +1683,9 @@ LoginDatabase::GetAllSyncEntityMetadata() {
       return nullptr;
     }
 
-    sync_pb::EntityMetadata entity_metadata;
-    if (entity_metadata.ParseFromString(decrypted_serialized_metadata)) {
-      metadata_batch->AddMetadata(storage_key, entity_metadata);
+    auto entity_metadata = std::make_unique<sync_pb::EntityMetadata>();
+    if (entity_metadata->ParseFromString(decrypted_serialized_metadata)) {
+      metadata_batch->AddMetadata(storage_key, std::move(entity_metadata));
     } else {
       DLOG(WARNING) << "Failed to deserialize PASSWORD model type "
                        "sync_pb::EntityMetadata.";
@@ -1902,11 +1848,6 @@ void LoginDatabase::InitializeStatementStrings(const SQLTableBuilder& builder) {
   DCHECK(get_statement_psl_federated_.empty());
   get_statement_psl_federated_ =
       get_statement_ + psl_statement + psl_federated_statement;
-  DCHECK(get_same_organization_name_logins_statement_.empty());
-  get_same_organization_name_logins_statement_ =
-      "SELECT " + all_column_names +
-      " FROM LOGINS"
-      " WHERE scheme == 0 AND signon_realm REGEXP ?";
   DCHECK(created_statement_.empty());
   created_statement_ =
       "SELECT " + all_column_names +

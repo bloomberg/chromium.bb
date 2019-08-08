@@ -11,7 +11,7 @@ graphs mapping from portage packages to the dependency source.
 
 from __future__ import print_function
 
-from chromite.api.gen import depgraph_pb2
+from chromite.api.gen.chromite.api import depgraph_pb2
 from chromite.lib import portage_util
 from chromite.service import dependency
 

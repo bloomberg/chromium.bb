@@ -11,12 +11,10 @@ namespace net {
 
 std::unique_ptr<base::Value> NetLogCookieMonsterConstructorCallback(
     bool persistent_store,
-    bool channel_id_service,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::Value> dict =
       std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
   dict->SetKey("persistent_store", base::Value(persistent_store));
-  dict->SetKey("channel_id_service", base::Value(channel_id_service));
   return dict;
 }
 

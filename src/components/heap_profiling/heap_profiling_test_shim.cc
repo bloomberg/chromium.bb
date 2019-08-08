@@ -32,7 +32,6 @@ jboolean HeapProfilingTestShim::RunTestForMode(
     const base::android::JavaParamRef<jstring>& mode,
     jboolean dynamically_start_profiling,
     const base::android::JavaParamRef<jstring>& stack_mode,
-    jboolean stream_samples,
     jboolean should_sample,
     jboolean sample_everything) {
   heap_profiling::TestDriver driver;
@@ -42,7 +41,6 @@ jboolean HeapProfilingTestShim::RunTestForMode(
   options.stack_mode = heap_profiling::ConvertStringToStackMode(
       base::android::ConvertJavaStringToUTF8(stack_mode));
   options.profiling_already_started = !dynamically_start_profiling;
-  options.stream_samples = stream_samples;
   options.should_sample = should_sample;
   options.sample_everything = sample_everything;
   return driver.RunTest(options);

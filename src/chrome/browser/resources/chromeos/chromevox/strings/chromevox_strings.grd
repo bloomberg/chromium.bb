@@ -3223,7 +3223,6 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
         name="IDS_CHROMEVOX_OPTIONS_LANG_SWITCHING_CHECKBOX_LABEL">
         Automatically detect and switch ChromeVox language.
       </message>
-
       <message desc="Spoken to describe all rich text attributes of a node." name="IDS_CHROMEVOX_RICH_TEXT_ATTRIBUTES">
         Text formatting.
         <ph name="font_size_string">$1<ex>Size 12</ex></ph>
@@ -3655,6 +3654,61 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       </message>
       <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DODGER_BLUE">
         Dodger Blue
+      </message>
+      <message desc="An options page section header for options about ChromeVox rich text behavior. This section lets users set preferences on how rich text attributes should be indicated." name="IDS_CHROMEVOX_OPTIONS_RICH_TEXT_HEADER">
+        Rich Text Attributes
+      </message>
+      <message desc="The text label for ChromeVox automatic rich text indication checkbox." name="IDS_CHROMEVOX_OPTIONS_RICH_TEXT_CHECKBOX_LABEL">
+        Customize rich text indication
+      </message>
+      <message desc="Labels the misspell list box." name="IDS_CHROMEVOX_OPTIONS_MISSPELL_DESCRIPTION">
+        Indicate misspell:
+      </message>
+      <message desc="Labels the bold list box." name="IDS_CHROMEVOX_OPTIONS_BOLD_DESCRIPTION">
+        Indicate bold:
+      </message>
+      <message desc="Labels the italic list box." name="IDS_CHROMEVOX_OPTIONS_ITALIC_DESCRIPTION">
+        Indicate italic:
+      </message>
+      <message desc="Labels the underline list box." name="IDS_CHROMEVOX_OPTIONS_UNDERLINE_DESCRIPTION">
+        Indicate underline:
+      </message>
+      <message desc="A menulist option in ChromeVox rich text settings to do nothing to indicate rich text" name="IDS_CHROMEVOX_RICH_TEXT_DO_NOTHING">
+        Do nothing
+      </message>
+      <message desc="A menulist option in ChromeVox rich text settings to announce rich text" name="IDS_CHROMEVOX_RICH_TEXT_ANNOUNCE">
+        Announce
+      </message>
+
+      <message desc="An option to announce download notifications." name="IDS_CHROMEVOX_OPTIONS_ANNOUNCE_DOWNLOAD">
+        Announce download notifications
+      </message>
+      <message desc="Spoken when a download is started" name="IDS_CHROMEVOX_DOWNLOAD_STARTED">
+        Download started <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken when a download is completed" name="IDS_CHROMEVOX_DOWNLOAD_COMPLETED">
+        Download completed <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken when a download is stopped" name="IDS_CHROMEVOX_DOWNLOAD_STOPPED">
+        Download stopped <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken when a download is paused" name="IDS_CHROMEVOX_DOWNLOAD_PAUSED">
+        Download paused <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken when a download is resumed" name="IDS_CHROMEVOX_DOWNLOAD_RESUMED">
+        Download resumed <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken to give progress on a current download, specifying percent complete and time remaining." name="IDS_CHROMEVOX_DOWNLOAD_PROGRESS">
+        Download <ph name="progress">$1<ex>50</ex></ph>% complete <ph name="file_name">$2<ex>test.pdf</ex></ph>. About <ph name="time">$3<ex>30</ex></ph> <ph name="units">$4<ex>minutes</ex></ph> remaining.
+      </message>
+      <message desc="A string to specify time units in seconds." name="IDS_CHROMEVOX_SECONDS">
+        {COUNT, plural, =1 {second}other {seconds}}
+      </message>
+      <message desc="A string to specify time units in minutes." name="IDS_CHROMEVOX_MINUTES">
+        {COUNT, plural, =1 {minute}other {minutes}}
+      </message>
+      <message desc="A string to specify time units in hours." name="IDS_CHROMEVOX_HOURS">
+        {COUNT, plural, =1 {hour}other {hours}}
       </message>
     </messages>
   </release>

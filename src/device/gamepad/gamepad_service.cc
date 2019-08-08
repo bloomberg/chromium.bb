@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/gamepad/gamepad_consumer.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
@@ -32,7 +33,9 @@ GamepadService::GamepadService()
 
 GamepadService::GamepadService(
     std::unique_ptr<device::GamepadDataFetcher> fetcher)
-    : provider_(new device::GamepadProvider(this, std::move(fetcher))),
+    : provider_(new device::GamepadProvider(this,
+                                            std::move(fetcher),
+                                            std::unique_ptr<base::Thread>())),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       num_active_consumers_(0),
       gesture_callback_pending_(false) {
@@ -59,7 +62,8 @@ GamepadService* GamepadService::GetInstance() {
 
 void GamepadService::StartUp(
     std::unique_ptr<service_manager::Connector> service_manager_connector) {
-  service_manager_connector_ = std::move(service_manager_connector);
+  if (!service_manager_connector_)
+    service_manager_connector_ = std::move(service_manager_connector);
 }
 
 service_manager::Connector* GamepadService::GetConnector() {

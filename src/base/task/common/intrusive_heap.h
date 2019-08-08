@@ -13,7 +13,7 @@
 namespace base {
 namespace internal {
 
-template <typename T, typename StalenessPolicy>
+template <typename T>
 class IntrusiveHeap;
 
 // Intended as an opaque wrapper around |index_|.
@@ -24,27 +24,12 @@ class HeapHandle {
   bool IsValid() const { return index_ != 0u; }
 
  private:
-  template <typename T, typename StalenessPolicy>
+  template <typename T>
   friend class IntrusiveHeap;
 
   HeapHandle(size_t index) : index_(index) {}
 
   size_t index_;
-};
-
-template <typename T>
-struct DefaultStalenessPolicy {
-  // Mark a node if it's stale, upon bubble-up or bubble-down
-  void MarkIfStale(T& t, size_t old_pos, size_t new_pos) {}
-
-  // Unmark a node as being stale
-  void Unmark(size_t position) {}
-
-  // Inform the client when the heap is resized
-  void HeapResized(size_t size) {}
-
-  // Obtain the number of known stale nodes
-  size_t NumKnownStaleNodes() const { return 0; }
 };
 
 // A standard min-heap with the following assumptions:
@@ -58,16 +43,10 @@ struct DefaultStalenessPolicy {
 //
 // The reason IntrusiveHeap exists is to provide similar performance to
 // std::priority_queue while allowing removal of arbitrary elements.
-//
-// The StalenessPolicy allows clients to specify nodes that do not need to be
-// in the heap, without explicitly deleting them. This enables appropriate
-// action to be taken when there are many unnecessary nodes in the heap.
-template <typename T, typename StalenessPolicy = DefaultStalenessPolicy<T>>
+template <typename T>
 class IntrusiveHeap {
  public:
-  IntrusiveHeap() : nodes_(kMinimumHeapSize), size_(0) {
-    staleness_policy_.HeapResized(kMinimumHeapSize);
-  }
+  IntrusiveHeap() : nodes_(kMinimumHeapSize), size_(0) {}
 
   ~IntrusiveHeap() {
     for (size_t i = 1; i <= size_; i++) {
@@ -75,20 +54,24 @@ class IntrusiveHeap {
     }
   }
 
+  IntrusiveHeap& operator=(IntrusiveHeap&& other) {
+    nodes_ = std::move(other.nodes_);
+    size_ = other.size_;
+
+    other.size_ = 0;
+
+    return *this;
+  }
+
   bool empty() const { return size_ == 0; }
 
   size_t size() const { return size_; }
-
-  size_t NumKnownStaleNodes() const {
-    return staleness_policy_.NumKnownStaleNodes();
-  }
 
   void Clear() {
     for (size_t i = 1; i <= size_; i++) {
       MakeHole(i);
     }
     nodes_.resize(kMinimumHeapSize);
-    staleness_policy_.HeapResized(kMinimumHeapSize);
     size_ = 0;
   }
 
@@ -101,18 +84,14 @@ class IntrusiveHeap {
     DCHECK_GE(size_, 1u);
     MakeHole(1u);
     size_t top_index = size_--;
-    if (!empty()) {
-      staleness_policy_.Unmark(top_index);
+    if (!empty())
       MoveHoleDownAndFillWithLeafElement(1u, std::move(nodes_[top_index]));
-    }
   }
 
   void insert(T&& element) {
     size_++;
-    if (size_ >= nodes_.size()) {
+    if (size_ >= nodes_.size())
       nodes_.resize(nodes_.size() * 2);
-      staleness_policy_.HeapResized(nodes_.size());
-    }
     // Notionally we have a hole in the tree at index |size_|, move this up
     // to find the right insertion point.
     MoveHoleUpAndFillWithElement(size_, std::move(element));
@@ -125,7 +104,6 @@ class IntrusiveHeap {
     size_t top_index = size_--;
     if (empty() || top_index == handle.index_)
       return;
-    staleness_policy_.Unmark(top_index);
     if (nodes_[handle.index_] <= nodes_[top_index]) {
       MoveHoleDownAndFillWithLeafElement(handle.index_,
                                          std::move(nodes_[top_index]));
@@ -166,7 +144,6 @@ class IntrusiveHeap {
   };
 
   friend class IntrusiveHeapTest;
-  friend class IntrusiveHeapLazyStalenessPolicyTest;
 
   size_t MoveHole(size_t new_hole_pos, size_t old_hole_pos) {
     DCHECK_GT(new_hole_pos, 0u);
@@ -176,8 +153,6 @@ class IntrusiveHeap {
     DCHECK_NE(old_hole_pos, new_hole_pos);
     nodes_[old_hole_pos] = std::move(nodes_[new_hole_pos]);
     nodes_[old_hole_pos].SetHeapHandle(HeapHandle(old_hole_pos));
-    staleness_policy_.MarkIfStale(nodes_[old_hole_pos], new_hole_pos,
-                                  old_hole_pos);
     return new_hole_pos;
   }
 
@@ -186,7 +161,6 @@ class IntrusiveHeap {
     DCHECK_GT(index, 0u);
     DCHECK_LE(index, size_);
     nodes_[index].ClearHeapHandle();
-    staleness_policy_.Unmark(index);
   }
 
   void FillHole(size_t hole, T&& element) {
@@ -194,7 +168,6 @@ class IntrusiveHeap {
     DCHECK_LE(hole, size_);
     nodes_[hole] = std::move(element);
     nodes_[hole].SetHeapHandle(HeapHandle(hole));
-    staleness_policy_.MarkIfStale(nodes_[hole], 0u, hole);
     DCHECK(std::is_heap(begin(), end(), CompareNodes));
   }
 
@@ -260,7 +233,6 @@ class IntrusiveHeap {
 
   std::vector<T> nodes_;  // NOTE we use 1-based indexing
   size_t size_;
-  StalenessPolicy staleness_policy_;
 };
 
 }  // namespace internal

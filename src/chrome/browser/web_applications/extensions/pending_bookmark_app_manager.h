@@ -14,22 +14,24 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/timer/timer.h"
+#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_uninstaller.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
-#include "content/public/browser/web_contents_observer.h"
 
 class GURL;
 class Profile;
 
 namespace content {
-class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
 namespace web_app {
 class AppRegistrar;
+class InstallFinalizer;
+class WebAppUiDelegate;
 }  // namespace web_app
 
 namespace extensions {
@@ -39,71 +41,74 @@ namespace extensions {
 //
 // WebAppProvider creates an instance of this class and manages its
 // lifetime. This class should only be used from the UI thread.
-class PendingBookmarkAppManager final : public web_app::PendingAppManager,
-                                        public content::WebContentsObserver {
+class PendingBookmarkAppManager final : public web_app::PendingAppManager {
  public:
   using WebContentsFactory =
       base::RepeatingCallback<std::unique_ptr<content::WebContents>(Profile*)>;
-  using TaskFactory = base::RepeatingCallback<
-      std::unique_ptr<BookmarkAppInstallationTask>(Profile*, AppInfo)>;
+  using TaskFactory =
+      base::RepeatingCallback<std::unique_ptr<BookmarkAppInstallationTask>(
+          Profile*,
+          web_app::InstallFinalizer*,
+          web_app::InstallOptions)>;
 
-  explicit PendingBookmarkAppManager(Profile* profile,
-                                     web_app::AppRegistrar* registrar_);
+  explicit PendingBookmarkAppManager(
+      Profile* profile,
+      web_app::AppRegistrar* registrar,
+      web_app::InstallFinalizer* install_finalizer);
   ~PendingBookmarkAppManager() override;
 
   // web_app::PendingAppManager
-  void Install(AppInfo app_to_install, OnceInstallCallback callback) override;
-  void InstallApps(std::vector<AppInfo> apps_to_install,
+  void Install(web_app::InstallOptions install_options,
+               OnceInstallCallback callback) override;
+  void InstallApps(std::vector<web_app::InstallOptions> install_options_list,
                    const RepeatingInstallCallback& callback) override;
-  void UninstallApps(std::vector<GURL> apps_to_uninstall,
+  void UninstallApps(std::vector<GURL> uninstall_urls,
                      const UninstallCallback& callback) override;
   std::vector<GURL> GetInstalledAppUrls(
       web_app::InstallSource install_source) const override;
-  base::Optional<std::string> LookupAppId(const GURL& url) const override;
+  base::Optional<web_app::AppId> LookupAppId(const GURL& url) const override;
+  bool HasAppIdWithInstallSource(
+      const web_app::AppId& app_id,
+      web_app::InstallSource install_source) const override;
 
-  void SetFactoriesForTesting(WebContentsFactory web_contents_factory,
-                              TaskFactory task_factory);
-  void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
+  void SetTaskFactoryForTesting(TaskFactory task_factory);
+  void SetUninstallerForTesting(
+      std::unique_ptr<BookmarkAppUninstaller> uninstaller);
+  void SetUrlLoaderForTesting(
+      std::unique_ptr<web_app::WebAppUrlLoader> url_loader);
 
  private:
   struct TaskAndCallback;
 
-  // Returns (as the base::Optional part) whether or not there is already a
-  // known extension for the given ID. The bool inside the base::Optional is,
-  // when known, whether the extension is installed (true) or uninstalled
-  // (false).
-  base::Optional<bool> IsExtensionPresentAndInstalled(
-      const std::string& extension_id);
+  web_app::WebAppUiDelegate& GetUiDelegate();
 
   void MaybeStartNextInstallation();
+
+  bool UninstallPlaceholderIfNecessary(
+      const web_app::InstallOptions install_options);
 
   void StartInstallationTask(std::unique_ptr<TaskAndCallback> task);
 
   void CreateWebContentsIfNecessary();
 
-  void OnInstalled(BookmarkAppInstallationTask::Result result);
+  void OnUrlLoaded(web_app::WebAppUrlLoader::Result result);
 
-  void OnWebContentsLoadTimedOut();
+  void OnInstalled(BookmarkAppInstallationTask::Result result);
 
   void CurrentInstallationFinished(const base::Optional<std::string>& app_id);
 
-  // WebContentsObserver
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
-  void DidFailLoad(content::RenderFrameHost* render_frame_host,
-                   const GURL& validated_url,
-                   int error_code,
-                   const base::string16& error_description) override;
-
   Profile* profile_;
   web_app::AppRegistrar* registrar_;
+  web_app::InstallFinalizer* install_finalizer_;
+  std::unique_ptr<BookmarkAppUninstaller> uninstaller_;
   web_app::ExtensionIdsMap extension_ids_map_;
 
-  WebContentsFactory web_contents_factory_;
+  // unique_ptr so that it can be replaced in tests.
+  std::unique_ptr<web_app::WebAppUrlLoader> url_loader_;
+
   TaskFactory task_factory_;
 
   std::unique_ptr<content::WebContents> web_contents_;
-  std::unique_ptr<base::OneShotTimer> timer_;
 
   std::unique_ptr<TaskAndCallback> current_task_and_callback_;
 

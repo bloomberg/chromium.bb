@@ -58,9 +58,16 @@
 #include "gmock/internal/gmock-port.h"
 #include "gtest/gtest.h"
 
+// MSVC warning C5046 is new as of VS2017 version 15.8.
+#if defined(_MSC_VER) && _MSC_VER >= 1915
+#define GMOCK_MAYBE_5046_ 5046
+#else
+#define GMOCK_MAYBE_5046_
+#endif
+
 GTEST_DISABLE_MSC_WARNINGS_PUSH_(
-    4251 5046 /* class A needs to have dll-interface to be used by clients of
-                 class B */
+    4251 GMOCK_MAYBE_5046_ /* class A needs to have dll-interface to be used by
+                              clients of class B */
     /* Symbol involving type with internal linkage not defined */)
 
 namespace testing {
@@ -661,7 +668,7 @@ class StrEqualityMatcher {
                        MatchResultListener* listener) const {
     // This should fail to compile if absl::string_view is used with wide
     // strings.
-    const StringType& str = string(s);
+    const StringType& str = std::string(s);
     return MatchAndExplain(str, listener);
   }
 #endif  // GTEST_HAS_ABSL
@@ -731,7 +738,7 @@ class HasSubstrMatcher {
                        MatchResultListener* listener) const {
     // This should fail to compile if absl::string_view is used with wide
     // strings.
-    const StringType& str = string(s);
+    const StringType& str = std::string(s);
     return MatchAndExplain(str, listener);
   }
 #endif  // GTEST_HAS_ABSL
@@ -788,7 +795,7 @@ class StartsWithMatcher {
                        MatchResultListener* listener) const {
     // This should fail to compile if absl::string_view is used with wide
     // strings.
-    const StringType& str = string(s);
+    const StringType& str = std::string(s);
     return MatchAndExplain(str, listener);
   }
 #endif  // GTEST_HAS_ABSL
@@ -844,7 +851,7 @@ class EndsWithMatcher {
                        MatchResultListener* listener) const {
     // This should fail to compile if absl::string_view is used with wide
     // strings.
-    const StringType& str = string(s);
+    const StringType& str = std::string(s);
     return MatchAndExplain(str, listener);
   }
 #endif  // GTEST_HAS_ABSL
@@ -3852,7 +3859,7 @@ inline PolymorphicMatcher<internal::EndsWithMatcher<std::string> > EndsWith(
   return MakePolymorphicMatcher(internal::EndsWithMatcher<std::string>(suffix));
 }
 
-#if GTEST_HAS_GLOBAL_WSTRING || GTEST_HAS_STD_WSTRING
+#if GTEST_HAS_STD_WSTRING
 // Wide string matchers.
 
 // Matches a string equal to str.
@@ -3905,7 +3912,7 @@ inline PolymorphicMatcher<internal::EndsWithMatcher<std::wstring> > EndsWith(
       internal::EndsWithMatcher<std::wstring>(suffix));
 }
 
-#endif  // GTEST_HAS_GLOBAL_WSTRING || GTEST_HAS_STD_WSTRING
+#endif  // GTEST_HAS_STD_WSTRING
 
 // Creates a polymorphic matcher that matches a 2-tuple where the
 // first field == the second field.

@@ -236,16 +236,20 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
     return nullptr;
   }
 
-  DarkModeClassification GetDarkModeClassification() {
-    return dark_mode_classification_;
+  void SetShouldCacheDarkModeClassification(bool should_cache_result) {
+    should_cache_dark_mode_classification_ = should_cache_result;
   }
 
-  // Dark mode classification result is cached to be consistent and have
-  // higher performance for future paints.
-  void SetDarkModeClassification(
-      const DarkModeClassification dark_mode_classification) {
-    dark_mode_classification_ = dark_mode_classification;
+  bool ShouldCacheDarkModeClassification() {
+    return should_cache_dark_mode_classification_;
   }
+
+  // Decides if a dark mode filter should be applied to the image or not.
+  // |src_rect| is needed in case of image sprites for the location and
+  // size of the smaller images that the sprite holds.
+  // For images that come from sprites the |src_rect.X| and |src_rect.Y|
+  // can be non-zero. But for other images they are both zero.
+  bool ShouldApplyDarkModeFilter(const FloatRect& src_rect);
 
   PaintImage::Id paint_image_id() const { return stable_image_id_; }
 
@@ -270,7 +274,24 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   // Whether or not size is available yet.
   virtual bool IsSizeAvailable() { return true; }
 
+  DarkModeClassification GetDarkModeClassification(const FloatRect& src_rect);
+
+  // Dark mode classification result is cached to be consistent and have
+  // higher performance for future paints.
+  void AddDarkModeClassification(
+      const FloatRect& src_rect,
+      const DarkModeClassification dark_mode_classification);
+
+  typedef std::pair<float, float> ClassificationKey;
+  std::map<ClassificationKey, DarkModeClassification>
+      dark_mode_classifications_;
+
  private:
+  virtual DarkModeClassification ClassifyImageForDarkMode(
+      const FloatRect& src_rect) {
+    return DarkModeClassification::kDoNotApplyDarkModeFilter;
+  }
+
   bool image_observer_disabled_;
   scoped_refptr<SharedBuffer> encoded_image_data_;
   // TODO(Oilpan): consider having Image on the Oilpan heap and
@@ -283,8 +304,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   WeakPersistent<ImageObserver> image_observer_;
   PaintImage::Id stable_image_id_;
   const bool is_multipart_;
-  DarkModeClassification dark_mode_classification_;
-
+  bool should_cache_dark_mode_classification_ = true;
   DISALLOW_COPY_AND_ASSIGN(Image);
 };
 

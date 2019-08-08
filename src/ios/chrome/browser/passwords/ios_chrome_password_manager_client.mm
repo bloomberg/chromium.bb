@@ -14,8 +14,10 @@
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/password_manager/core/browser/store_metrics_reporter.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/sync/driver/sync_service.h"
@@ -24,6 +26,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/credential_manager_util.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#include "ios/chrome/browser/passwords/ios_password_requirements_service_factory.h"
 #include "ios/chrome/browser/passwords/password_manager_internals_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
@@ -117,6 +120,13 @@ void IOSChromePasswordManagerClient::HideManualFallbackForSaving() {
   NOTIMPLEMENTED();
 }
 
+void IOSChromePasswordManagerClient::FocusedInputChanged(
+    const url::Origin& last_committed_origin,
+    bool is_fillable,
+    bool is_password_field) {
+  NOTIMPLEMENTED();
+}
+
 void IOSChromePasswordManagerClient::AutomaticPasswordSave(
     std::unique_ptr<PasswordFormManagerForUI> saved_form_manager) {
   NOTIMPLEMENTED();
@@ -174,6 +184,11 @@ bool IOSChromePasswordManagerClient::IsSavingAndFillingEnabled(
          IsFillingEnabled(url);
 }
 
+bool IOSChromePasswordManagerClient::IsFillingEnabled(const GURL& url) const {
+  return url.GetOrigin() !=
+         GURL(password_manager::kPasswordManagerAccountDashboardURL);
+}
+
 const GURL& IOSChromePasswordManagerClient::GetLastCommittedEntryURL() const {
   return delegate_.lastCommittedURL;
 }
@@ -206,6 +221,12 @@ IOSChromePasswordManagerClient::GetMetricsRecorder() {
   return base::OptionalOrNullptr(metrics_recorder_);
 }
 
+password_manager::PasswordRequirementsService*
+IOSChromePasswordManagerClient::GetPasswordRequirementsService() {
+  return IOSPasswordRequirementsServiceFactory::GetForBrowserState(
+      delegate_.browserState, ServiceAccessType::EXPLICIT_ACCESS);
+}
+
 void IOSChromePasswordManagerClient::PromptUserToEnableAutosignin() {
   // TODO(crbug.com/435048): Implement this method.
 }
@@ -213,4 +234,9 @@ void IOSChromePasswordManagerClient::PromptUserToEnableAutosignin() {
 password_manager::PasswordManager*
 IOSChromePasswordManagerClient::GetPasswordManager() {
   return delegate_.passwordManager;
+}
+
+bool IOSChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled()
+    const {
+  return false;
 }

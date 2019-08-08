@@ -14,10 +14,6 @@
 
 class FeaturePromoBubbleView;
 
-namespace views {
-class InkDropContainerView;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabButton
 //
@@ -69,18 +65,10 @@ class NewTabButton : public views::ImageButton,
   void OnMouseReleased(const ui::MouseEvent& event) override;
 #endif
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
   void NotifyClick(const ui::Event& event) override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
-  void Layout() override;
-  gfx::Size CalculatePreferredSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // views::MaskedTargeterDelegate:
   bool GetHitTestMask(SkPath* mask) const override;
@@ -116,11 +104,6 @@ class NewTabButton : public views::ImageButton,
 
   // The offset used to paint the background image.
   int background_offset_;
-
-  // In touch-optimized UI, this view holds the ink drop layer so that it's
-  // shifted down to the correct top offset of the button, since the actual
-  // button's y-coordinate is 0 due to Fitt's Law needs.
-  views::InkDropContainerView* ink_drop_container_ = nullptr;
 
   // were we destroyed?
   bool* destroyed_ = nullptr;

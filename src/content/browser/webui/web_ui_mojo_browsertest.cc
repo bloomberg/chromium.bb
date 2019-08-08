@@ -59,12 +59,12 @@ base::FilePath GetFilePathForJSResource(const std::string& path) {
 
 // The bindings for the page are generated from a .mojom file. This code looks
 // up the generated file from disk and returns it.
-bool GetResource(const std::string& id,
+void GetResource(const std::string& id,
                  const WebUIDataSource::GotDataCallback& callback) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   std::string contents;
-  if (base::EndsWith(id, ".mojom.js", base::CompareCase::SENSITIVE)) {
+  if (base::EndsWith(id, ".mojom-lite.js", base::CompareCase::SENSITIVE)) {
     CHECK(base::ReadFileToString(GetFilePathForJSResource(id), &contents))
         << id;
   } else {
@@ -77,7 +77,6 @@ bool GetResource(const std::string& id,
   base::RefCountedString* ref_contents = new base::RefCountedString;
   ref_contents->data() = contents;
   callback.Run(ref_contents);
-  return true;
 }
 
 class BrowserTargetImpl : public mojom::BrowserTarget {
@@ -113,18 +112,21 @@ class TestWebUIController : public WebUIController {
     web_ui->SetBindings(bindings);
     {
       WebUIDataSource* data_source = WebUIDataSource::Create("mojo-web-ui");
-      data_source->SetRequestFilter(base::BindRepeating(&GetResource));
+      data_source->SetRequestFilter(
+          base::BindRepeating([](const std::string& path) { return true; }),
+          base::BindRepeating(&GetResource));
       WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                            data_source);
     }
     {
       WebUIDataSource* data_source = WebUIDataSource::Create("dummy-web-ui");
-      data_source->SetRequestFilter(base::BindRepeating(
-          [](const std::string& id,
-             const WebUIDataSource::GotDataCallback& callback) {
-            callback.Run(new base::RefCountedString);
-            return true;
-          }));
+      data_source->SetRequestFilter(
+          base::BindRepeating([](const std::string& path) { return true; }),
+          base::BindRepeating(
+              [](const std::string& id,
+                 const WebUIDataSource::GotDataCallback& callback) {
+                callback.Run(new base::RefCountedString);
+              }));
       WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                            data_source);
     }
@@ -300,7 +302,7 @@ bool IsGeneratedResourceAvailable(const std::string& resource_path) {
 // it from the browser to the page and back.
 IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
   if (!IsGeneratedResourceAvailable(
-          "content/test/data/web_ui_test_mojo_bindings.mojom.js"))
+          "content/test/data/web_ui_test_mojo_bindings.mojom-lite.js"))
     return;
 
   g_got_message = false;

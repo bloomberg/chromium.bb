@@ -147,7 +147,7 @@ void GetSepiaMatrix(float amount, SkScalar matrix[20]) {
 sk_sp<PaintFilter> CreateMatrixImageFilter(const SkScalar matrix[20],
                                            sk_sp<PaintFilter> input) {
   return sk_make_sp<ColorFilterPaintFilter>(
-      SkColorFilter::MakeMatrixFilterRowMajor255(matrix), std::move(input));
+      SkColorFilters::MatrixRowMajor255(matrix), std::move(input));
 }
 
 }  // namespace

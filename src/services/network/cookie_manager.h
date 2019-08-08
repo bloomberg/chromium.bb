@@ -26,7 +26,6 @@ class GURL;
 
 namespace network {
 class SessionCleanupCookieStore;
-class SessionCleanupChannelIDStore;
 
 // Wrap a cookie store in an implementation of the mojo cookie interface.
 
@@ -41,8 +40,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   CookieManager(
       net::CookieStore* cookie_store,
       scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store,
-      scoped_refptr<SessionCleanupChannelIDStore>
-          session_cleanup_channel_id_store,
       mojom::CookieManagerParamsPtr params);
 
   ~CookieManager() override;
@@ -63,7 +60,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
                      GetCookieListCallback callback) override;
   void SetCanonicalCookie(const net::CanonicalCookie& cookie,
                           const std::string& source_scheme,
-                          bool modify_http_only,
+                          const net::CookieOptions& cookie_options,
                           SetCanonicalCookieCallback callback) override;
   void DeleteCanonicalCookie(const net::CanonicalCookie& cookie,
                              DeleteCanonicalCookieCallback callback) override;
@@ -84,8 +81,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   }
 
   void FlushCookieStore(FlushCookieStoreCallback callback) override;
+  void AllowFileSchemeCookies(bool allow,
+                              AllowFileSchemeCookiesCallback callback) override;
   void SetForceKeepSessionState() override;
   void BlockThirdPartyCookies(bool block) override;
+
+  // Causes the next call to GetCookieList to crash the process.
+  static void CrashOnGetCookieList();
 
  private:
   // State associated with a CookieChangeListener.
@@ -111,7 +113,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
 
   net::CookieStore* const cookie_store_;
   scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store_;
-  scoped_refptr<SessionCleanupChannelIDStore> session_cleanup_channel_id_store_;
   mojo::BindingSet<mojom::CookieManager> bindings_;
   std::vector<std::unique_ptr<ListenerRegistration>> listener_registrations_;
   // Note: RestrictedCookieManager stores pointers to |cookie_settings_|.

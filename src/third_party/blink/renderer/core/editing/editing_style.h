@@ -76,34 +76,11 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
   };
   static float no_font_delta_;
 
-  static EditingStyle* Create() { return MakeGarbageCollected<EditingStyle>(); }
-
-  static EditingStyle* Create(ContainerNode* node,
-                              PropertiesToInclude properties_to_include =
-                                  kOnlyEditingInheritableProperties) {
-    return MakeGarbageCollected<EditingStyle>(node, properties_to_include);
-  }
-
-  static EditingStyle* Create(const Position& position,
-                              PropertiesToInclude properties_to_include =
-                                  kOnlyEditingInheritableProperties) {
-    return MakeGarbageCollected<EditingStyle>(position, properties_to_include);
-  }
-
-  static EditingStyle* Create(const CSSPropertyValueSet* style) {
-    return MakeGarbageCollected<EditingStyle>(style);
-  }
-
-  static EditingStyle* Create(CSSPropertyID property_id,
-                              const String& value,
-                              SecureContextMode secure_context_mode) {
-    return MakeGarbageCollected<EditingStyle>(property_id, value,
-                                              secure_context_mode);
-  }
-
   EditingStyle() = default;
-  EditingStyle(ContainerNode*, PropertiesToInclude);
-  EditingStyle(const Position&, PropertiesToInclude);
+  EditingStyle(ContainerNode*,
+               PropertiesToInclude = kOnlyEditingInheritableProperties);
+  EditingStyle(const Position&,
+               PropertiesToInclude = kOnlyEditingInheritableProperties);
   explicit EditingStyle(const CSSPropertyValueSet*);
   EditingStyle(CSSPropertyID, const String& value, SecureContextMode);
 

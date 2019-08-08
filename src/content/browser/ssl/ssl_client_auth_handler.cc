@@ -98,7 +98,7 @@ class SSLClientAuthHandler::Core : public base::RefCountedThreadSafe<Core> {
       // callback.
       client_cert_store_->GetClientCerts(
           *cert_request_info_,
-          base::Bind(&SSLClientAuthHandler::Core::DidGetClientCerts, this));
+          base::BindOnce(&SSLClientAuthHandler::Core::DidGetClientCerts, this));
     } else {
       DidGetClientCerts(net::ClientCertIdentityList());
     }

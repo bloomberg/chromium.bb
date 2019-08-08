@@ -8,9 +8,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_base.h"
@@ -28,10 +28,10 @@ class DataSaverHoldbackBrowserTest : public InProcessBrowserTest,
     InProcessBrowserTest::SetUp();
   }
 
-  void EnableDataSaver(bool enabled) {
-    PrefService* prefs = browser()->profile()->GetPrefs();
-    prefs->SetBoolean(prefs::kDataSaverEnabled, enabled);
-    content::RunAllPendingInMessageLoop();
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    InProcessBrowserTest::SetUpCommandLine(cmd);
+    cmd->AppendSwitch(
+        data_reduction_proxy::switches::kEnableDataReductionProxy);
   }
 
   void VerifySaveDataHeader(const std::string& expected_header_value) {
@@ -90,7 +90,6 @@ INSTANTIATE_TEST_SUITE_P(, DataSaverHoldbackBrowserTest, testing::Bool());
 IN_PROC_BROWSER_TEST_P(DataSaverHoldbackBrowserTest,
                        DataSaverEnabledWithHoldbackEnabled) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  EnableDataSaver(true);
 
   // If holdback is enabled, then the save-data header should not be set.
   if (GetParam()) {

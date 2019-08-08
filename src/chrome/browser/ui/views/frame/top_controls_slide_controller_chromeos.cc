@@ -75,14 +75,11 @@ content::BrowserControlsState GetBrowserControlsStateConstraints(
   }
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  if (profile && search::IsNTPURL(url, profile))
+  if (profile && search::IsNTPOrRelatedURL(url, profile))
     return content::BROWSER_CONTROLS_STATE_SHOWN;
 
   auto* helper = SecurityStateTabHelper::FromWebContents(contents);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-
-  switch (security_info.security_level) {
+  switch (helper->GetSecurityLevel()) {
     case security_state::HTTP_SHOW_WARNING:
     case security_state::DANGEROUS:
       return content::BROWSER_CONTROLS_STATE_SHOWN;
@@ -666,6 +663,16 @@ void TopControlsSlideControllerChromeOS::OnBeginSliding() {
   const int new_height = widget_layer->bounds().height() + top_container_height;
   root_bounds.set_height(new_height);
   root_view->SetBoundsRect(root_bounds);
+  // Changing the bounds will have triggered an InvalidateLayout() on
+  // NativeViewHost. InvalidateLayout() results in Layout() being called later,
+  // after transforms are set. NativeViewHostAura calculates the bounds of the
+  // window using transforms. By calling LayoutRootViewIfNecessary() we force
+  // the layout now, before any transforms are installed. To do otherwise
+  // results in NativeViewHost positioning the WebContents at the wrong
+  // location.
+  // TODO(https://crbug.com/950981): this is rather fragile, and the code should
+  // deal with Layout() being called during the slide.
+  root_view->GetWidget()->LayoutRootViewIfNecessary();
 
   // We don't want anything to show outside the browser window's bounds.
   widget_layer->SetMasksToBounds(true);

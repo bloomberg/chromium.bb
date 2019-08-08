@@ -6,8 +6,6 @@
 //
 // TODO(mkwst): Update the link iff this lands.
 
-[
-    NoInterfaceObject
-] interface NoncedElement {
+interface mixin NoncedElement {
     [CEReactions] attribute DOMString nonce;
 };

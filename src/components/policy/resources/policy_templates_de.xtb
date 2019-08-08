@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="1002439864875515590">Wenn diese Richtlinie auf einen leeren String festgelegt oder nicht konfiguriert ist, zeigt <ph name="PRODUCT_OS_NAME" /> beim Nutzeranmeldeprozess keine Option zur automatischen Vervollständigung an.
+      Ist diese Richtlinie auf einen String festgelegt, der einen Domainnamen darstellt, dann zeigt <ph name="PRODUCT_OS_NAME" /> beim Nutzeranmeldeprozess eine Option zum automatischen Vervollständigen an. In diesem Fall muss der Nutzer nur einen Nutzernamen eingeben und kann die Domainnamenserweiterung weglassen.  Der Nutzer kann diese Domainnamenserweiterung überschreiben.
+      Ist der Wert der Richtlinie keine gültige Domain, dann wird die Richtlinie nicht angewendet.</translation>
 <translation id="101438888985615157">Bildschirm um 180 Grad drehen</translation>
 <translation id="1016912092715201525">Konfiguriert den Standardbrowser, führt in <ph name="PRODUCT_NAME" /> eine Überprüfung durch und verhindert, dass Nutzer die Einstellung ändern.
 
@@ -48,6 +51,13 @@ Wenn die Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Unte
 <translation id="1049138910114524876">Konfiguriert die Sprache, die auf der <ph name="PRODUCT_OS_NAME" />-Anmeldeseite erzwungen wird.
 
       Ist diese Richtlinie festgelegt, wird die Anmeldeseite immer in der Sprache angezeigt, die durch den ersten Wert der Richtlinie bestimmt wird. Sie ist als eine Liste für Aufwärtskompatibilität definiert. Ist sie nicht festgelegt oder verweist auf eine leere Liste, wird die Anmeldeseite in der Sprache der letzten Nutzersitzung dargestellt. Ist für diese Richtlinie eine ungültige Sprache festgelegt, wird die Anmeldeseite in einer Ersatzsprache angezeigt, derzeit en-US.</translation>
+<translation id="1052499923181221200">Diese Richtlinie zeigt nur Wirkung, wenn "SamlInSessionPasswordChangeEnabled" auf "true" festgelegt ist.
+      Wenn die besagte Richtlinie auf "true" festgelegt ist und für diese Richtlinie zum Beispiel der Wert 14 konfiguriert wurde, bedeutet dies, dass SAML-Nutzer, deren Passwort zu einem bestimmten Datum abläuft, 14 Tage vor diesem Datum benachrichtigt werden.
+      Die Nutzer können die notwendigen Schritte dann sofort ausführen und bei laufender Sitzung ihr Passwort ändern, bevor es abläuft.
+      Allerdings werden diese Benachrichtigungen nur angezeigt, wenn vom SAML-Identitätsanbieter während des SAML-Anmeldeablaufs Informationen zum Ablauf des Passworts an das Gerät gesendet werden.
+      Wenn Sie für diese Richtlinie 0 konfigurieren, bedeutet dies, dass die Nutzer nicht vorab informiert werden. Sie erhalten erst eine Benachrichtigung, wenn das Passwort bereits abgelaufen ist.
+
+      Ist diese Richtlinie eingestellt, dann kann der Nutzer sie weder ändern noch überschreiben.</translation>
 <translation id="1062011392452772310">Remote-Bescheinigung (Remote Attestation) für das Gerät aktivieren</translation>
 <translation id="1062407476771304334">Ersetzen</translation>
 <translation id="1079801999187584280">Nutzung der Entwicklertools nicht zulassen</translation>
@@ -82,6 +92,14 @@ Wenn die Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Unte
       Wird diese Richtlinie nicht konfiguriert, können im Cache gespeicherte GPOs für maximal 25 Stunden wiederverwendet werden.
 
       Ist die Richtlinie auf 0 gesetzt, so ist die GPO-Speicherung deaktiviert. Dies erhöht die Serverlast, da GPOs bei jedem Richtlinienabruf heruntergeladen werden, auch wenn sie unverändert sind.</translation>
+<translation id="1117462881884985156">Für die hier angegebenen Hosts umgeht <ph name="PRODUCT_NAME" /> alle Proxys.
+
+          Diese Richtlinie tritt nur dann in Kraft, wenn Sie bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" die Option für manuelle Proxyeinstellungen ausgewählt haben und die Richtlinie "<ph name="PROXY_SETTINGS_POLICY_NAME" />" nicht konfiguriert wurde.
+
+          Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxyrichtlinien entschieden haben.
+
+          Ausführlichere Beispiele finden Sie unter
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">Die über diese Richtlinie festgelegten Protokoll-Handler werden bei der Verarbeitung von Android-Intents nicht verwendet.</translation>
 <translation id="1118093128235245168">Websites dürfen den Nutzer um Zugriff auf ein angeschlossenes USB-Gerät bitten</translation>
 <translation id="1128903365609589950">Konfiguriert das Verzeichnis, in dem die Cache-Dateien von <ph name="PRODUCT_NAME" /> auf dem Datenträger gespeichert werden.
@@ -104,7 +122,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Der Wert für die Richtlinie sollte in Millisekunden angegeben werden.</translation>
 <translation id="1141767714195601945">Mit dieser Richtlinie werden Befehlszeilenparameter für Chrome vom Internet Explorer festgelegt.
 
-      Wenn das Add-in "Unterstützung für ältere Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keine Auswirkung.
+      Wenn das Add-in "Unterstützung älterer Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keine Auswirkung.
 
       Wenn diese Richtlinie nicht konfiguriert ist, gibt Internet Explorer die URL nur als Befehlszeilenparameter an Chrome weiter.
 
@@ -135,6 +153,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Wenn die Richtlinie nicht konfiguriert ist, beträgt der Standardwert 3 Stunden.
       Die geringste zulässige Häufigkeit beträgt 60 Sekunden.</translation>
 <translation id="1204263402976895730">Aktivierte Unternehmensdrucker</translation>
+<translation id="1216919699175573511">Unterstützung für Signed HTTP Exchange (SXG) aktivieren</translation>
 <translation id="1219695476179627719">Gibt an, ob das Gerät auf die von <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> festgelegte Version zurückgesetzt werden soll, obwohl bereits eine neuere Version ausgeführt wird.
 
       Standardwert ist RollbackDisabled.</translation>
@@ -183,7 +202,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
       Anfragen zur Zusammenführung an unterschiedliche Hosts über Verbindungen, die Clientzertifikate verwenden, können zu Sicherheits- und Datenschutzproblemen führen, da auf alle Anfragen das Prinzip der "Ambient Authority" angewendet wird, auch wenn der Nutzer dies nicht ausdrücklich autorisiert hat. Diese Richtlinie ist vorübergehend und wird in einer zukünftigen Version entfernt. Weitere Informationen finden Sie unter https://crbug.com/855690.
 
       Wenn diese Richtlinie nicht konfiguriert ist, wird das Standardverhalten angewendet und das Zusammenführen von HTTP/2-Verbindungen für Verbindungen, die Clientzertifikate verwenden, ist nicht zulässig.</translation>
-<translation id="1353966721814789986">"Beim Start"-Seiten</translation>
 <translation id="1354424209129232709">Maximum:</translation>
 <translation id="1354452738176731363">Wenn diese Richtlinie auf "false" festgelegt wird, ist die Audioausgabe über das Gerät nicht möglich, während der Nutzer angemeldet ist.
 
@@ -198,6 +216,7 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
       Wenn diese Richtlinie aktiviert ist, darf Google Assistant auf den Bildschirmkontext zugreifen.
       Wenn diese Richtlinie deaktiviert ist, darf Google Assistant nicht auf den Bildschirmkontext zugreifen.
       Wenn die Richtlinie nicht konfiguriert ist, können Nutzer selbst entscheiden, ob Google Assistant auf den Bildschirmkontext zugreifen darf.</translation>
+<translation id="1376119291123231789">Intelligenten Akkulademodus aktivieren</translation>
 <translation id="1383493480903114193">Mit diese Richtlinie wird erzwungen, dass der Netzwerkcode im Browserprozess ausgeführt wird.
 
       Sie ist standardmäßig deaktiviert. Ist die Richtlinie aktiviert, so ist der Nutzer nicht mehr vor den Sicherheitsproblemen geschützt, sobald der Netzwerkprozess in einer Sandbox ausgeführt wird.
@@ -207,7 +226,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
       Wenn die Richtlinie nicht konfiguriert ist, kann der Netzwerkcode – je nach Abhängigkeit der Feldtests des NetworkService-Tests – außerhalb des Browserprozesses ausgeführt werden.</translation>
 <translation id="1384459581748403878">Referenz: <ph name="REFERENCE_URL" /></translation>
 <translation id="1384653327213929024">Nutzern erlauben, installierte Zertifikate zu verwalten.</translation>
-<translation id="1387596372902085462">Festlegen, ob der veralteten Symantec-PKI vertraut werden soll</translation>
 <translation id="1393485621820363363">Aktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="1397855852561539316">Vorschlags-URL für die Standardsuchmaschine</translation>
 <translation id="1404043648050567997">Der Safe Browsing-Dienst zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die als potenziell schädlich eingestuft sind. Wenn diese Einstellung aktiviert ist, können Nutzer die schädliche Website nicht von der Hinweisseite aus besuchen.
@@ -296,9 +314,20 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
       wird Unified Desktop deaktiviert und kann vom Nutzer nicht aktiviert werden.</translation>
 <translation id="1474273443907024088">TLS-Funktion "False Start" deaktivieren</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> umgeht für die Liste der hier angegebenen Hosts alle Proxys. Diese Richtlinie tritt nur dann in Kraft, wenn Sie bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" manuelle Proxy-Einstellungen angegeben haben. Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxy-Richtlinien entschieden haben. Ausführliche Beispiele erhalten Sie unter <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Blockieren von Codeeinschleusungen durch Drittanbieter-Software aktivieren</translation>
 <translation id="1504431521196476721">Remote-Bestätigung</translation>
+<translation id="1507382822467487898">
+          Hiermit wird konfiguriert, welche MAC-Adresse (Media Access Control) verwendet wird, wenn das Gerät angedockt wird.
+
+          Beim Verbinden bestimmter Gerätemodelle mit einem Dock wird standardmäßig die eingetragene Dock-MAC-Adresse zur Identifikation des Geräts im Ethernet-Netzwerk verwendet. Mithilfe dieser Richtlinie kann der Administrator bei angedocktem Gerät die Quelle der MAC-Adresse ändern.
+
+          Wenn "DeviceDockMacAddress" ausgewählt ist oder die Richtlinie nicht festgelegt wurde, wird die eingetragene Dock-MAC-Adresse des Geräts verwendet.
+
+          Ist "DeviceNicMacAddress" festgelegt, dann wird die MAC-Adresse der NIC (Netzwerkkarte) des Geräts verwendet.
+
+          Ist "DockNicMacAddress" ausgewählt, dann wird die MAC-Adresse der Dock-NIC verwendet.
+
+          Diese Einstellung kann vom Nutzer nicht geändert werden.</translation>
 <translation id="1507957856411744193">Wenn diese Richtlinie auf "true" gesetzt ist, stellt <ph name="PRODUCT_NAME" /> eine Verbindung zu Übertragungsgeräten unter allen IP-Adressen her, nicht nur zu jenen unter privaten RFC1918- oder RFC4193-Adressen.
 
 Wenn diese Richtlinie auf "false" gesetzt ist, stellt <ph name="PRODUCT_NAME" /> nur eine Verbindung zu Übertragungsgeräten unter privaten RFC1918- und RFC4193-Adressen her.
@@ -335,14 +364,15 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Standardmäßig <ph name="PRODUCT_FRAME_NAME" /> verwenden</translation>
 <translation id="1599424828227887013">Website-Isolierung für angegebene Ursprünge auf Android-Geräten aktivieren</translation>
-<translation id="1608259529294767544">Mit dieser Richtlinie wird Google Assistant die Berechtigung erteilt, bei Gesprächen zuzuhören, ob die Wortgruppe für die Sprachaktivierung genannt wird.
-
-      Wenn die Richtlinie aktiviert ist, hört Google Assistant bei Gesprächen zu, ob die Wortgruppe für die Sprachaktivierung genannt wird.
-      Wenn die Richtlinie deaktiviert ist, hört Google Assistant bei Gesprächen nicht zu, ob die Wortgruppe für die Sprachaktivierung genannt wird.
-      Wenn die Richtlinie nicht konfiguriert ist, können Nutzer selbst entscheiden, ob Google Assistant bei Gesprächen zuhört, ob die Wortgruppe für die Sprachaktivierung genannt wird.
-      </translation>
 <translation id="1608755754295374538">URLs, denen ohne Nachfrage Zugriff auf Audioaufnahmegeräte gestattet wird</translation>
 <translation id="1615221548356595305">Zusammenführen von HTTP/2-Verbindungen für diese Hosts zulassen, auch wenn Clientzertifikate verwendet werden</translation>
+<translation id="1615855314789673708">Stellt eine Wilco DTC-Konfiguration (Diagnostics and Telemetry Controller) bereit.
+
+      Diese Richtlinie ermöglicht die Bereitstellung einer Wilco DTC-Konfiguration, die angewendet werden darf, wenn Wilco DTC auf dem jeweiligen Gerät verfügbar und die Anwendung gemäß Richtlinie zulässig ist. Die Konfiguration darf nicht größer als 1 MB (1.000.000 Byte) sein und muss im JSON-Format codiert sein. Wilco DTC übernimmt die Verwaltung. Anhand des kryptografischen Hashs wird die Integrität des Downloads verifiziert.
+
+      Die Konfiguration wird heruntergeladen und im Cache gespeichert. Sobald sich die URL oder der Hash ändert, wird sie noch einmal heruntergeladen.
+
+      Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.</translation>
 <translation id="1617235075406854669">Löschen des Browserverlaufs und des Downloadverlaufs aktivieren</translation>
 <translation id="163200210584085447">Muster in dieser Liste werden mit der Sicherheitsherkunft
       der anfragenden URL abgeglichen. Bei einer Übereinstimmung wird der Zugriff
@@ -368,6 +398,22 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Achtung: Es wird nicht empfohlen, die Steuerung der <ph name="PRODUCT_OS_NAME" />-Version einer Kiosk-App zu überlassen, da das Gerät dann unter Umständen Softwareupdates und wichtige Sicherheitspatches nicht erhält. Wird die Steuerung der <ph name="PRODUCT_OS_NAME" />-Version abgegeben, besteht eventuell ein Risiko für die Nutzer.</translation>
 <translation id="1675002386741412210">Unterstützt von:</translation>
 <translation id="1689963000958717134">Ermöglicht das Übernehmen einer per Push übertragenen Netzwerkkonfiguration für alle Nutzer eines <ph name="PRODUCT_OS_NAME" />-Geräts. Die Netzwerkkonfiguration ist ein JSON-formatierter String, der den Open Network Configuration-Vorgaben unter <ph name="ONC_SPEC_URL" /> entspricht.</translation>
+<translation id="1704516734140344991">Hiermit werden Verfügbarkeit und Verhalten der Updatefunktion für die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware konfiguriert.
+
+      Einzelne Einstellungen können in den JSON-Eigenschaften festgelegt werden:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Wenn diese Richtlinie auf <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> festgelegt ist, können Nutzer mithilfe von Powerwash ein Update der <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware installieren.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Wenn diese Richtlinie auf <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> festgelegt ist, können Nutzer den <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmwareupdatevorgang starten, bei dem der geräteübergreifende Status erhalten bleibt (einschließlich Unternehmensregistrierung), aber die Nutzerdaten verloren gehen. Dieser Updatevorgang ist ab Version 68 verfügbar.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Diese Richtlinie bestimmt, wie automatische <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmwareupdates für anfällige <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware erzwungen werden. Der lokale Gerätestatus wird bei allen Abläufen beibehalten.
+        Wenn die Richtlinie auf 1 oder nicht festgelegt ist, werden TPM-Firmwareupdates nicht erzwungen.
+        Wird sie auf 2 festgelegt, erfolgt die Aktualisierung der <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware beim nächsten Neustart, nachdem der Nutzer das Update bestätigt hat.
+        Mit dem Wert 3 wird die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware beim nächsten Neustart aktualisiert.
+        Wenn sie auf 4 gesetzt ist, wird das <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmwareupdate nach der Registrierung ausgeführt, bevor sich der Nutzer anmeldet.
+        Diese Option ist ab Version 74 verfügbar.
+
+      Sollte diese Richtlinie nicht festgelegt werden, ist die Updatefunktion für die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware nicht verfügbar.</translation>
 <translation id="1708496595873025510">Beschränkung für Abruf des Varianten-Seeds festlegen</translation>
 <translation id="1717817358640580294">Wenn die Richtlinie nicht konfiguriert ist und das Chrome Cleanup Tool unerwünschte Software findet, kann es Metadaten betreffend den Scan an Google senden. Dies geschieht in Übereinstimmung mit der über "SafeBrowsingExtendedReportingEnabled" festgelegten Richtlinie. Der Nutzer wird dann vom Chrome Cleanup Tool gefragt, ob die unerwünschte Software gelöscht werden soll. Er kann die Ergebnisse der Bereinigung mit Google teilen, damit unerwünschte Software zukünftig besser erkannt wird. Diese Ergebnisse enthalten Dateimetadaten, automatisch installierte Erweiterungen und Registrierungsschlüssel, wie es im Whitepaper zum Datenschutz bei Chrome beschrieben ist.
 
@@ -377,7 +423,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 
       Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
 <translation id="172374442286684480">Speichern von lokalen Daten für alle Websites zulassen</translation>
-<translation id="1734716591049455502">Optionen für Remotezugriff konfigurieren</translation>
 <translation id="1736269219679256369">Fortfahren von SSL-Hinweisseite erlauben</translation>
 <translation id="1745780278307622857">Hiermit wird ermittelt, ob <ph name="PRODUCT_NAME" /> einen Download ohne eine Überprüfung durch Safe Browsing erlauben darf, wenn die Quelle vertrauenswürdig ist.
 
@@ -446,8 +491,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Ist diese Richtlinie nicht konfiguriert oder auf "tls1.2" eingestellt, führt <ph name="PRODUCT_NAME" /> diesen Fallback nicht mehr durch. Die Unterstützung älterer TLS-Versionen wird dadurch nicht deaktiviert, es wird lediglich festgelegt, ob <ph name="PRODUCT_NAME" /> fehlerträchtige Server umgeht, die keine korrekten Versionsaushandlungen durchführen können.
 
       Wenn die Kompatibilität mit einem fehlerträchtigen Server aufrechterhalten werden muss, kann "tls1.1" eingestellt werden. Hierbei handelt es sich um einen provisorischen Wert und der Server sollte schnell repariert werden.</translation>
-<translation id="1864269674877167562">Wenn diese Richtlinie nicht konfiguriert ist oder ein leerer String dafür festgelegt ist, zeigt <ph name="PRODUCT_OS_NAME" /> keine Option für die automatische Vervollständigung beim Anmeldevorgang an.
-      Wenn die Richtlinie für einen String festgelegt ist, der einen Domainnamen darstellt, zeigt <ph name="PRODUCT_OS_NAME" /> eine Option für die automatische Vervollständigung beim Anmeldevorgang des Nutzers an, sodass er seinen Namen ohne die Domain-Namenserweiterung eingeben kann. Der Nutzer kann diese Domain-Namenserweiterung überschreiben.</translation>
 <translation id="1864382791685519617">Durch diese Richtlinie wird die Netzwerkvorhersage in <ph name="PRODUCT_NAME" /> aktiviert und es wird verhindert, dass die Einstellung von Nutzern geändert wird.
 
       Hiermit werden DNS-Vorabruf, TCP- und SSL-Vorverbindung sowie das Pre-Rendering von Webseiten gesteuert.
@@ -511,7 +554,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Wenn diese Einstellung deaktiviert ist, schlägt AutoFill weder Adressinformationen vor oder füllt sie automatisch aus noch werden zusätzliche Adressinformationen gespeichert, die der Nutzer während des Surfens im Web möglicherweise sendet.
 
       Falls diese Einstellung aktiviert ist oder keinen Wert hat, kann der Nutzer die AutoFill-Funktion in der UI für Adressen steuern.</translation>
-<translation id="1960840544413786116">Genehmigung von Zertifikaten, die von lokalen Vertrauensankern ausgestellt werden, bei denen die "subjectAlternativeName"-Erweiterung fehlt</translation>
 <translation id="1962273523772270623">Speichern von WebRTC-Ereignisprotokollen aus Google-Diensten zulassen</translation>
 <translation id="1964634611280150550">Inkognitomodus deaktiviert</translation>
 <translation id="1964802606569741174">Diese Richtlinie hat keine Auswirkungen auf die Android YouTube App. Wenn der Sicherheitsmodus in YouTube erzwungen werden soll, darf das Installieren der Android YouTube App nicht zugelassen werden.</translation>
@@ -541,15 +583,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Wenn diese Richtlinie nicht konfiguriert ist, gilt in <ph name="PRODUCT_NAME" /> der Standardwert von 3 Stunden.
 
       Hinweis: Wenn die Plattform Richtlinienbenachrichtigungen unterstützt, wird für die Verzögerung der Aktualisierung 24 Stunden festgelegt und alle Standardwerte der Richtlinie werden ignoriert, da davon ausgegangen wird, dass diese Benachrichtigungen bei jeglichen Richtlinienänderungen automatisch eine Aktualisierung erzwingen. Daher ist ein kürzeres Intervall zwischen den Aktualisierungen nicht erforderlich.</translation>
-<translation id="2024149678078029009">Mit dieser Richtlinie wird der Befehl konfiguriert, mit dem URLs in <ph name="PRODUCT_NAME" /> geöffnet werden, wenn vom Internet Explorer zu einem anderen Browser gewechselt wird.
-
-      Wenn das Add-in "Unterstützung für ältere Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keine Auswirkung.
-
-      Wenn diese Richtlinie nicht konfiguriert ist, erkennt Internet Explorer den ausführbaren Pfad von <ph name="PRODUCT_NAME" /> automatisch, wenn <ph name="PRODUCT_NAME" /> über Internet Explorer geöffnet wird.
-
-      Ist diese Richtlinie konfiguriert, wird sie zum Öffnen von <ph name="PRODUCT_NAME" /> verwendet, wenn <ph name="PRODUCT_NAME" /> über Internet Explorer geöffnet wird.
-
-      Diese Richtlinie kann mit einem ausführbaren Dateipfad oder "${chrome}" konfiguriert werden, damit das Installationsverzeichnis von Chrome automatisch erkannt wird.</translation>
 <translation id="2024476116966025075">Erforderlichen Domainnamen für Remotezugriff-Clients konfigurieren</translation>
 <translation id="2030905906517501646">Suchbegriff der Standardsuchmaschine</translation>
 <translation id="203096360153626918">Diese Richtlinie hat keine Auswirkungen auf die Android-Apps. Der Vollbildmodus kann aktiviert werden, auch wenn diese Richtlinie auf <ph name="FALSE" /> gesetzt ist.</translation>
@@ -590,7 +623,6 @@ Wenn die Richtlinie auf "true" gesetzt oder gar nicht festgelegt ist, werden per
 Wenn die Richtlinie auf "false" gesetzt ist, werden keine personenbezogenen Daten erfasst.
 
 Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
-<translation id="2126178089984117495">Hiermit wird der PIN-Druckmodus eingeschränkt. Wenn die Richtlinie nicht konfiguriert ist, wird keine Einschränkung angewendet. Wenn der Modus nicht verfügbar ist, wird diese Richtlinie ignoriert.</translation>
 <translation id="2127599828444728326">Benachrichtigungen auf diesen Websites zulassen</translation>
 <translation id="2131902621292742709">Verzögerung für die Bildschirmabdunkelung im Akkubetrieb</translation>
 <translation id="2134437727173969994">Sperren des Bildschirms erlauben</translation>
@@ -704,13 +736,6 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
       Falls Sie diese Richtlinie konfigurieren, können Nutzer diese weder ändern noch überschreiben, haben jedoch weiterhin die Möglichkeit, eine Bildschirmtastatur als Eingabehilfe zu aktivieren bzw. zu deaktivieren. Diese hat dann Vorrang vor der Bildschirmtastatur dieser Richtlinie. Die Steuerung der Bildschirmtastatur als Eingabehilfe ist über die Richtlinie |VirtualKeyboardEnabled| möglich.
 
       Falls diese Richtlinie nicht konfiguriert ist, ist die Bildschirmtastatur zunächst deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden. Anhand von heuristischen Regeln kann darüber hinaus festgelegt werden, wann die Tastatur eingeblendet wird.</translation>
-<translation id="228659285074633994">Diese Richtlinie gibt an, nach welcher Inaktivitätsspanne des Nutzers im Netzbetrieb eine Warnmeldung angezeigt wird.
-
-          Wird diese Richtlinie festgelegt, gibt sie an, wie lange der Nutzer inaktiv sein kann, bevor <ph name="PRODUCT_OS_NAME" /> in einer Warnung auf die bevorstehende Maßnahme hinweist.
-
-          Wird diese Richtlinie nicht festgelegt, erscheint keine Warnung.
-
-          Geben Sie den Richtlinienwert in Millisekunden an. Solange die Inaktivitätsspanne kleiner oder gleich diesem festgelegten Wert ist, erscheint keine Warnung.</translation>
 <translation id="2292084646366244343">In <ph name="PRODUCT_NAME" /> können mithilfe eines Google-Webdienstes Rechtschreibfehler korrigiert werden. Wenn diese Einstellung aktiviert ist, wird dieser Dienst immer verwendet. Ist die Einstellung deaktiviert, wird dieser Dienst nie verwendet.
 
       Die Rechtschreibprüfung kann weiterhin mit einem heruntergeladenen Wörterbuch durchgeführt werden. Diese Richtlinie bezieht sich nur auf die Verwendung des Online-Dienstes.
@@ -731,12 +756,21 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
       Bei Geräten, die über Active Directory verwaltet werden, unterstützt diese Richtlinie die Erweiterung von <ph name="MACHINE_NAME_VARIABLE" /> auf den Active Directory-Computernamen oder einen Teilstring davon. Wenn der Computername beispielsweise <ph name="MACHINE_NAME_EXAMPLE" /> lautet, wird <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> durch die vier Zeichen nach der sechsten Stelle ersetzt, z. B. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Beachten Sie, dass die Position auf Null basiert.
       </translation>
 <translation id="2294382669900758280">Das Abspielen von Videos in Android-Apps wird nicht berücksichtigt, auch wenn diese Richtlinie auf <ph name="TRUE" /> gesetzt ist.</translation>
-<translation id="2298647742290373702">Standardmäßige "Neuer Tab"-Seite in <ph name="PRODUCT_NAME" /> konfigurieren.</translation>
 <translation id="2299220924812062390">Liste der aktivierten Plug-ins angeben</translation>
 <translation id="2303795211377219696">AutoFill für Kreditkarten aktivieren</translation>
 <translation id="2309390639296060546">Standardeinstellung für "Standortbestimmung"</translation>
-<translation id="2312134445771258233">Mit dieser Richtlinie können Sie konfigurieren, welche Seiten beim Start geladen werden. Der Inhalt der Liste "Beim Start zu öffnende URLs" wird ignoriert, sofern die Option "URL-Liste öffnen" unter "Aktion beim Start" nicht ausgewählt ist.</translation>
 <translation id="2327252517317514801">Domains definieren, die auf die G Suite zugreifen dürfen</translation>
+<translation id="2356878440219553005">Hiermit können Sie die Energieverwaltungsrichtlinie für den Akkulademodus aktivieren.
+
+          Mit dieser Richtlinie können Sie das Aufladen des Akkus dynamisch steuern und auf diese Weise den durch unnötige Belastung entstehenden Akkuverschleiß verringern und die Lebensdauer des Akkus verlängern.
+
+          Wenn der benutzerdefinierte Akkulademodus ausgewählt wird, müssen "DeviceBatteryChargeCustomStartCharging" und "DeviceBatteryChargeCustomStopCharging" konfiguriert sein.
+
+          Wenn die Richtlinie konfiguriert ist, wird der Akkulademodus angewendet, sofern er auf dem Gerät unterstützt wird.
+
+          Wird die Richtlinie nicht konfiguriert, obwohl sie auf dem Gerät unterstützt wird, dann wird der Standardmodus für die Akkuaufladung angewendet und kann vom Nutzer nicht geändert werden.
+
+          Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />" diese Richtlinie.</translation>
 <translation id="237494535617297575">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Anzeigen von Benachrichtigungen gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultNotificationsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="2386362615870139244">Bildschirm-Wakelocks zulassen</translation>
 <translation id="2411817661175306360">Passwortschutzwarnung ist ausgeschaltet</translation>
@@ -772,6 +806,7 @@ Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird und bei ein
 
 Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie automatische Anmeldung, sofern konfiguriert, nicht umgangen werden.</translation>
 <translation id="2454228136871844693">Für eine optimale Stabilität.</translation>
+<translation id="2463034609187171371">DHE-Verschlüsselungssammlungen in TLS aktivieren</translation>
 <translation id="2463365186486772703">Gebietsschema der App</translation>
 <translation id="2466131534462628618">Captive-Portal-Authentifizierung ignoriert Proxy</translation>
 <translation id="2482676533225429905">Natives Messaging</translation>
@@ -914,12 +949,17 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Wird diese Einstellung deaktiviert, können Webseiten kein JavaScript verwenden und der Nutzer kann diese Einstellung nicht ändern.
 
       Ist diese Einstellung aktiviert oder nicht definiert, können Webseiten JavaScript verwenden, wobei der Nutzer diese Einstellung jedoch ändern kann.</translation>
+<translation id="2747157663401642394">Konfiguriert Einstellungen zur Erweiterungsverwaltung für <ph name="PRODUCT_NAME" />.
+
+          Mit dieser Richtlinie werden verschiedene Einstellungen gesteuert, darunter Einstellungen, die von anderen auf Erweiterungen bezogenen Richtlinien geregelt werden. Durch diese Richtlinie werden ältere Richtlinien überschrieben, wenn beide konfiguriert sind.
+
+          Mit dieser Richtlinie wird eine Erweiterungs-ID oder eine Update-URL ihrer Konfiguration zugeordnet. Bei einer Erweiterungs-ID wird die Konfiguration nur auf die angegebene Erweiterung angewendet. Eine Standardkonfiguration kann für die Spezial-ID "<ph name="DEFAULT_SCOPE" />" festgelegt werden, die auf alle Erweiterungen angewendet wird, für die keine benutzerdefinierte Konfiguration in dieser Richtlinie konfiguriert ist. Bei einer Update-URL wird die Konfiguration auf alle Erweiterungen mit genau der im Manifest dieser Erweiterung angegebenen Update-URL angewendet, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> erläutert.
+
+          Bei Windows-Instanzen, die nicht Teil einer <ph name="MS_AD_NAME" />-Domain sind, bleibt die erzwungene Installation auf die im Chrome Web Store aufgeführten Apps und Erweiterungen beschränkt.
+
+          Eine vollständige Beschreibung möglicher Einstellungen und des Aufbaus dieser Richtlinie finden Sie unter https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">Den von WebRTC verwendeten Bereich lokaler UDP-Ports einschränken</translation>
-<translation id="2755385841634849932">Mit dieser Richtlinie wird festgelegt, ob die Android-Funktion "Sicherung und Wiederherstellung" zur Verfügung steht.
-
-      Wenn diese Richtlinie nicht konfiguriert oder auf "<ph name="BR_DISABLED" />" festgelegt wird, ist "Sicherung und Wiederherstellung" unter Android deaktiviert und kann nicht vom Nutzer aktiviert werden.
-
-      Falls die Richtlinie auf "<ph name="BR_UNDER_USER_CONTROL" />" festgelegt ist, wird der Nutzer gefragt, ob er die Android-Funktion "Sicherung und Wiederherstellung" verwenden möchte. Aktiviert er die Funktion, werden App-Daten von Android auf die Android-Sicherungsserver hochgeladen und bei der Neuinstallation von kompatiblen Apps wiederhergestellt.</translation>
 <translation id="2757054304033424106">Typen von Erweiterungen bzw. Apps, die installiert werden können</translation>
 <translation id="2758084448533744848">Gibt die erzwungene Zeitzone an, die für das Gerät verwendet wird. Wenn diese Richtlinie konfiguriert ist, können Nutzer die festgelegte Zeitzone auf dem Gerät nicht überschreiben. Ist ein ungültiger Wert angegeben, wird die Richtlinie stattdessen mithilfe von "GMT" aktiviert. Wird ein leerer String angegeben, wird die Richtlinie ignoriert.
 
@@ -938,6 +978,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="2769952903507981510">Erforderlichen Domain-Namen für Remotezugriff-Hosts konfigurieren</translation>
 <translation id="2787173078141616821">Informationen zum Status von Android senden</translation>
 <translation id="2799297758492717491">Autoplay von Medien für eine weiße Liste mit URL-Mustern erlauben</translation>
+<translation id="2801155097555584385">Den Akkuladestand (%) für benutzerdefiniertes Starten des Ladevorgangs festlegen</translation>
 <translation id="2801230735743888564">Nutzern erlauben, das Easter Egg-Dinosaurierspiel zu spielen, wenn das Gerät offline ist.
 
       Wenn diese Richtlinie auf "false" eingestellt ist, können Nutzer das Easter Egg-Dinosaurierspiel nicht spielen, wenn das Gerät offline ist. Ist es auf "true" eingestellt, können Nutzer das Dinosaurierspiel spielen. Falls die Richtlinie nicht konfiguriert ist, können Nutzer das Easter Egg-Dinosaurierspiel nicht unter einer registrierten Version von Chrome OS spielen, unter anderen Umständen jedoch schon.</translation>
@@ -1011,6 +1052,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Wenn Sie diese Einstellung deaktivieren oder keinen Wert festlegen, wird für die Druckvorschau der zuletzt genutzte Drucker als Standarddrucker verwendet.
 
       Ist diese Einstellung aktiviert, wird für die Druckvorschau der Standarddrucker des Betriebssystems als Standarddrucker ausgewählt.</translation>
+<translation id="285627849510728211">Tageskonfiguration für den erweiterten Akkulademodus festlegen</translation>
 <translation id="2856674246949497058">Führen Sie ein Rollback durch und bleiben Sie bei der Zielversion, falls die Version des Betriebssystems neuer ist als die der Zielversion. Außerdem sollten Sie während des Vorgangs einen Powerwash durchführen.</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="2873651257716068683">Dadurch wird die standardmäßige Druckseitengröße überschrieben. Wenn die Seitengröße nicht verfügbar ist, wird die Richtlinie ignoriert.</translation>
@@ -1042,6 +1084,17 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Wenn diese Richtlinie nicht konfiguriert ist, wird angenommen, dass <ph name="PRINTERS_ALLOW_ALL" /> ausgewählt ist.
       </translation>
 <translation id="2908277604670530363">Maximale Anzahl gleichzeitiger Verbindungen zum Proxyserver</translation>
+<translation id="2948463916588961959">Damit wird die Aktivierung von Sprachen für die Rechtschreibprüfung erzwungen. Sprachen in dieser Liste, die nicht erkannt werden, werden ignoriert.
+
+      Wenn diese Richtlinie aktiviert ist, wird die Rechtschreibprüfung für die angegebenen Sprachen aktiviert, und zwar zusätzlich zu den Sprachen, für die der Nutzer die Rechtschreibprüfung aktiviert hat.
+
+      Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist, bleiben die Einstellungen des Nutzers für die Rechtschreibprüfung unverändert.
+
+      Wenn die Richtlinie "SpellcheckEnabled" auf "disabled" festgelegt wird, hat diese Richtlinie keinerlei Wirkung.
+
+      Ist eine Sprache sowohl in dieser Richtlinie als auch in der Richtlinie "SpellcheckLanguageBlacklist" enthalten, hat diese Richtlinie Vorrang und die Sprache wird für die Rechtschreibprüfung aktiviert.
+
+      Aktuell werden die folgenden Sprachen unterstützt: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Einschränkungen:</translation>
 <translation id="2956777931324644324">Diese Richtlinie wird seit <ph name="PRODUCT_NAME" /> Version 36 nicht mehr verwendet.
 
@@ -1054,7 +1107,6 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="2959898425599642200">Proxy-Umgehungsregeln</translation>
 <translation id="2960128438010718932">Staging-Zeitplan zum Anwenden eines neuen Updates</translation>
 <translation id="2960691910306063964">Authentifizierung ohne PIN für Hosts für den Remotezugriff aktivieren oder deaktivieren</translation>
-<translation id="2972261849442778817">Nutzer fragen, ob eine Migration gewünscht ist oder die Migration übersprungen und ARC deaktiviert werden soll.</translation>
 <translation id="2976002782221275500">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Akkubetrieb abgedunkelt wird.
 
           Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm abdunkelt.
@@ -1088,6 +1140,14 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="3021562480854470924">Rollback bei erreichter Anzahl von Meilensteinen ist erlaubt</translation>
 <translation id="3023572080620427845">URL einer XML-Datei, die URLs enthält, mit denen ein alternativer Browser geladen werden kann.</translation>
 <translation id="3030000825273123558">Messdatenberichte aktivieren</translation>
+<translation id="3033660238345063904">Hier können Sie die URL für den Proxyserver festlegen.
+
+          Diese Richtlinie tritt nur dann in Kraft, wenn Sie bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" die Option für manuelle Proxyeinstellungen ausgewählt haben und die Richtlinie "<ph name="PROXY_SETTINGS_POLICY_NAME" />" nicht konfiguriert wurde.
+
+          Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxyrichtlinien entschieden haben.
+
+          Weitere Optionen und ausführliche Beispiele finden Sie unter
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3034580675120919256">Ermöglicht Ihnen festzulegen, ob Websites JavaScript ausführen dürfen. Das Ausführen von JavaScript kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AllowJavaScript" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
 <translation id="3038323923255997294">Apps weiter im Hintergrund ausführen, wenn <ph name="PRODUCT_NAME" /> geschlossen ist</translation>
 <translation id="3046192273793919231">Netzwerkpakete zur Überwachung des Onlinestatus an den Verwaltungsserver senden</translation>
@@ -1123,12 +1183,26 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
 <translation id="3072045631333522102">Bildschirmschoner für die Anmeldeseite im Händlermodus</translation>
 <translation id="3072847235228302527">Nutzungsbedingungen für ein lokales Gerätekonto festlegen</translation>
 <translation id="3077183141551274418">Aktiviert oder deaktiviert Tablebenszyklen</translation>
+<translation id="3079417254871857650">Hiermit wird festgelegt, wie vorgegangen werden soll, wenn das Basisverzeichnis des Nutzers mit eCryptfs-Verschlüsselung erstellt wurde.
+
+      Wenn diese Richtlinie auf "DisallowArc" gesetzt ist, werden Android-Apps für den Nutzer deaktiviert und es wird keine Migration von eCryptfs- auf ext4-Verschlüsselung durchgeführt. Das Ausführen von Android-Apps wird nicht verhindert, wenn das Basisverzeichnis bereits mit ext4 verschlüsselt ist.
+
+      Wenn diese Richtlinie auf "Migrate" gesetzt wird, werden mit eCryptfs verschlüsselte Basisverzeichnisse bei der Anmeldung ohne Rücksprache mit dem Nutzer automatisch auf ext4-Verschlüsselung umgestellt.
+
+      Bei Auswahl von "Wipe" werden mit eCryptfs verschlüsselte Basisverzeichnisse bei der Anmeldung gelöscht und stattdessen neue ext4-verschlüsselte Basisverzeichnisse erstellt. Warnung: Dadurch werden die lokalen Daten des Nutzers gelöscht.
+
+      Bei Auswahl von "MinimalMigrate" werden mit eCryptfs verschlüsselte Basisverzeichnisse bei der Anmeldung gelöscht und stattdessen neue ext4-verschlüsselte Basisverzeichnisse erstellt. Es wird jedoch versucht, die Anmeldetokens zu übernehmen, sodass der Nutzer sich nicht noch einmal anmelden muss. Warnung: Dadurch werden die lokalen Daten des Nutzers gelöscht.
+
+      Wenn Sie diese Richtlinie auf eine Option festlegen, die nicht mehr unterstützt wird – also "AskUser" oder "AskForEcryptfsArcUsers" –, wird so verfahren, als hätten Sie "Migrate" ausgewählt.
+
+      Diese Richtlinie gilt nicht für Nutzer im Kioskmodus. Sollte die Richtlinie nicht konfiguriert sein, kommt die Vorgehensweise für "DisallowArc" zum Einsatz.</translation>
 <translation id="3086995894968271156">Konfigurieren von Cast Receiver in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Ermöglicht die Erstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Anzeigen von Bildern gestattet ist.
 
           Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultImagesSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.
 
           Bitte beachten Sie, dass diese Richtlinie unter Android zuvor fälschlicherweise aktiviert war, sie von Android aber nie vollständig unterstützt wurde.</translation>
+<translation id="3091832372132789233">Lädt den Akku von Geräten auf, die vorwiegend an eine externe Stromquelle angeschlossen werden.</translation>
 <translation id="3096595567015595053">Liste der aktivierten Plug-ins</translation>
 <translation id="3101501961102569744">Auswählen, wie Proxyserver-Einstellungen angegeben werden</translation>
 <translation id="3101709781009526431">Datum und Uhrzeit</translation>
@@ -1154,26 +1228,9 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
           Wenn die Einstellung deaktiviert ist, werden in <ph name="PRODUCT_NAME" /> nur auf Systemebene installierte Hosts für natives Messaging verwendet.
 
           Wenn die Einstellung nicht festgelegt wird, können in <ph name="PRODUCT_NAME" /> Hosts für natives Messaging auf Nutzerebene verwendet werden.</translation>
+<translation id="3177802893484440532">OCSP/CRL-Online-Prüfungen für lokale Vertrauensanker als erforderlich festlegen</translation>
 <translation id="3185009703220253572">Ab Version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-Apps können keinen Zugriff auf Schlüssel für die geschäftliche Nutzung erhalten. Sie sind von dieser Richtlinie nicht betroffen.</translation>
-<translation id="3201273385265130876">Ermöglicht Ihnen, den von <ph name="PRODUCT_NAME" /> verwendeten Proxyserver anzugeben, und verhindert, dass Nutzer die Proxy-Einstellungen ändern.
-
-          Wenn Sie sich dafür entscheiden, nie einen Proxyserver, sondern immer eine direkte Verbindung zu nutzen, so werden alle anderen Optionen ignoriert.
-
-          Sollten Sie die Proxy-Einstellungen des Systems wählen, werden alle anderen Optionen ignoriert.
-
-          Sollten Sie die automatische Erkennung des Proxyservers wählen, werden ebenfalls alle anderen Optionen ignoriert.
-
-          Bei Auswahl des Modus mit festem Proxyserver können Sie in "Adresse oder URL des Proxyservers" und "Kommagetrennte Liste der Proxy-Umgehungsregeln" weitere Optionen angeben. Nur der HTTP-Proxyserver mit der höchsten Priorität ist für ARC-Apps verfügbar.
-
-          Geben Sie zur Verwendung eines PAC-Proxy-Skripts die URL des Skripts im Feld "URL einer PAC-Proxy-Datei" an.
-
-          Ausführliche Beispiele erhalten Sie unter
-          <ph name="PROXY_HELP_URL" />.
-
-          Wenn Sie diese Einstellung aktivieren, ignorieren <ph name="PRODUCT_NAME" /> und ARC-Apps alle Proxy-Optionen, die in der Eingabeaufforderung angegeben werden.
-
-          Wenn die Richtlinie nicht konfiguriert ist, so können Nutzer die Proxy-Einstellungen selbst konfigurieren.</translation>
 <translation id="3205825995289802549">Erstes Browserfenster bei der ersten Ausführung maximieren</translation>
 <translation id="3211426942294667684">Browser-Anmeldeeinstellungen</translation>
 <translation id="3214164532079860003">Bei Aktivierung erzwingt diese Richtlinie, dass die Startseite vom aktuellen Standardbrowser importiert wird. Wenn sie deaktiviert ist, wird die Startseite nicht importiert. Sollte sie nicht konfiguriert sein, so wird der Nutzer gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
@@ -1181,6 +1238,7 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
 <translation id="3220624000494482595">Wenn die Kiosk-App eine Android-App ist, hat sie keine Kontrolle über die <ph name="PRODUCT_OS_NAME" />-Version, auch wenn diese Richtlinie auf <ph name="TRUE" /> gesetzt ist.</translation>
 <translation id="3236046242843493070">URL-Muster für die Installation von Erweiterungen, Apps und Nutzerskripten von</translation>
 <translation id="3240609035816615922">Richtlinie für den Zugriff auf die Konfiguration von Druckern.</translation>
+<translation id="3240655340884151271">MAC-Adresse der im Dock verbauten NIC</translation>
 <translation id="3243309373265599239">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Netzbetrieb abgedunkelt wird.
 
           Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm abdunkelt.
@@ -1202,15 +1260,12 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
      Wenn diese Einstellung aktiviert ist oder nicht konfiguriert wurde, können Nutzer den Google Cloud Print-Proxy durch die Authentifizierung mit ihrem Google-Konto aktivieren.
 
        Ist diese Einstellung deaktiviert, können Nutzer den Proxy nicht aktivieren und der Computer darf seine Drucker nicht für <ph name="CLOUD_PRINT_NAME" /> freigeben.</translation>
-<translation id="3307746730474515290">Legt fest, welche Typen von Erweiterungen und Apps installiert werden dürfen, und beschränkt den Zugriff während der Laufzeit.
+<translation id="3312206664202507568">Aktiviert eine Seite auf "chrome://password-change", auf der SAML-Nutzer ihre SAML-Passwörter bei laufender Sitzung ändern können. Hierdurch wird dafür gesorgt, dass das SAML-Passwort und das Passwort für den Sperrbildschirm des Geräts synchronisiert bleiben.
 
-          Mit dieser Einstellung wird eine weiße Liste der Typen von Erweiterungen und Apps erstellt, die in <ph name="PRODUCT_NAME" /> installiert werden können. Außerdem wird festgelegt, mit welchen Hosts sie interagieren dürfen. Es handelt sich um eine Liste mit Strings, die jeweils einem der folgenden Typen entsprechen: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Weitere Informationen finden Sie in der Dokumentation zu <ph name="PRODUCT_NAME" />-Erweiterungen.
+      Außerdem ermöglicht diese Richtlinie Benachrichtigungen, mit denen SAML-Nutzer gewarnt werden, wenn ihre SAML-Passwörter bald ablaufen. Sie können dann direkt bei laufender Sitzung ihr Passwort ändern.
+      Allerdings werden diese Benachrichtigungen nur angezeigt, wenn vom SAML-Identitätsanbieter während des SAML-Anmeldeablaufs Informationen zum Ablauf des Passworts an das Gerät gesendet werden.
 
-          Diese Richtlinie betrifft auch Erweiterungen und Apps, deren Installation mit ExtensionInstallForcelist erzwungen wurde.
-
-          Wenn diese Einstellung konfiguriert wurde, werden Erweiterungen oder Apps, die keinem der Typen auf der Liste entsprechen, nicht installiert.
-
-          Wenn diese Einstellung nicht konfiguriert wurde, bestehen keine Einschränkungen für zulässige Typen von Erweiterungen und Apps.</translation>
+      Ist diese Richtlinie eingestellt, dann kann der Nutzer sie weder ändern noch überschreiben.</translation>
 <translation id="3322771899429619102">Ermöglicht Ihnen die Erstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Schlüsselgenerierung gestattet ist. Wenn ein URL-Muster in "KeygenBlockedForUrls" angegeben ist, werden diese Ausnahmen dadurch überschrieben.
 
           Wenn diese Richtlinie nicht konfiguriert ist, wird für alle Websites entweder der globale Standardwert der Richtlinie "DefaultKeygenSetting", sofern festgelegt, oder die persönliche Konfiguration des Nutzers verwendet.</translation>
@@ -1239,6 +1294,17 @@ Für vorausgewählte Sprachen wird immer das beliebteste Tastaturlayout für die
 Diese Richtlinie kann nur als Empfehlung festgelegt werden. Mithilfe dieser Richtlinie können Sie eine Gruppe empfohlener Sprachen an den Anfang der Liste verschieben, Nutzer haben jedoch immer die Möglichkeit, eine beliebige Sprache für ihre Sitzung auszuwählen, die von <ph name="PRODUCT_OS_NAME" /> unterstützt wird.
       </translation>
 <translation id="3381968327636295719">Standardmäßig Host-Browser verwenden</translation>
+<translation id="3384115339826100753">Hiermit können Sie die Energieverwaltungsrichtlinie zum Umschalten bei Leistungsspitzen aktivieren.
+
+          Das Umschalten bei Leistungsspitzen ist eine Richtlinie, mit der Energie gespart werden kann. Dazu wird die Nutzung des Netzstroms während der Tageszeiten mit Spitzenlasten minimiert. Für jeden Wochentag kann eine Start- und eine Endzeit für den Modus zum Umschalten bei Leistungsspitzen festgelegt werden. Während dieser Zeiträume wird das System über den Akku mit Strom versorgt, solange der Ladezustand des Akkus einen bestimmten Schwellenwert nicht unterschreitet – auch dann, wenn das System an das Stromnetz angeschlossen ist. Nach der angegebenen Endzeit wird das System wieder über Netzstrom versorgt, der Akku jedoch nicht geladen. Das System wird wieder auf den normalen Betrieb mit Netzstrom umgestellt und der Akku aufgeladen, nachdem die festgelegte Startzeit zum Laden erreicht wurde.
+
+          Wenn diese Richtlinie auf "true" gesetzt ist und "DevicePowerPeakShiftBatteryThreshold" und "DevicePowerPeakShiftDayConfig" festgelegt sind, ist das Umschalten bei Leistungsspitzen immer aktiviert, sofern die Funktion vom Gerät unterstützt wird.
+
+          Wenn die Richtlinie auf "false" festgelegt ist, ist das Umschalten bei Leistungsspitzen immer deaktiviert.
+
+          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+          Wird die Richtlinie nicht festgelegt, ist das Umschalten bei Leistungsspitzen zuerst deaktiviert und kann vom Nutzer nicht aktiviert werden.</translation>
 <translation id="3388153794103186066">Ermöglicht das Erstellen einer Liste mit URLs, deren Websites automatisch auf ein USB-Gerät mit einem bestimmten Anbieter und einer bestimmten Produkt-ID zugreifen dürfen. Damit die Richtlinie gültig ist, muss jeder Eintrag in der Liste sowohl Geräte als auch URLs enthalten. Jeder Geräteeintrag kann ein Feld für eine Anbieter-ID und eine Produkt-ID enthalten. Fehlende IDs werden wie Platzhalter gehandhabt. Dabei gibt es jedoch eine Ausnahme: Produkt-IDs können nur spezifiziert werden, wenn auch die entsprechende Anbieter-ID angegeben ist. Andernfalls ist die Richtlinie ungültig und wird ignoriert.
 
         Im USB-Berechtigungsmodell wird die URL der anfragenden Website ("anfragende URL") verwendet und die URL der Frame-Website der obersten Ebene ("einbettende URL"). Dabei wird der anfragenden URL die Berechtigung erteilt, auf das USB-Gerät zuzugreifen. Wenn die anfragende Website in einen iFrame geladen wird, kann die anfragende von der einbettenden URL abweichen. Deshalb kann das Feld "urls" bis zu zwei durch ein Komma voneinander getrennte URL-Strings enthalten: die anfragende URL und die einbettende URL. Wenn nur eine einzige URL angegeben ist, wird der Zugriff auf die entsprechenden USB-Geräte gewährt, wenn unabhängig vom Einbettungsstatus die URL der anfragenden Website mit dieser URL übereinstimmt. Die URLs im Feld "urls" müssen gültig sein, da ansonsten die Richtlinie ignoriert wird.
@@ -1270,9 +1336,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 
       Die experimentelle Einstellung wird in Zukunft entfernt, sobald die Inline-Anmeldung alle SSO-Anmeldeprozesse vollständig unterstützt.</translation>
 <translation id="3437924696598384725">Zulassen, dass der Nutzer VPN-Verbindungen verwaltet</translation>
-<translation id="3449886121729668969">Hiermit werden die Proxy-Einstellungen für <ph name="PRODUCT_NAME" /> konfiguriert. Diese Proxy-Einstellungen können auch von ARC-Apps verwendet werden.
-
-      Diese Richtlinie ist noch nicht einsatzbereit und sollte daher nicht verwendet werden.</translation>
 <translation id="3459509316159669723">Drucken</translation>
 <translation id="3460784402832014830">Gibt die URL an, die eine Suchmaschine zum Bereitstellen der "Neuer Tab"-Seite verwendet.
 
@@ -1285,6 +1348,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 
           Ist die Richtlinie auf "false" gesetzt oder nicht definiert, wird der Start der Sitzung als Ausgangspunkt für Verzögerungen beim Energiesparmodus und Begrenzungen der Sitzungslänge verwendet.</translation>
 <translation id="3478024346823118645">Nutzerdaten bei Abmeldung löschen</translation>
+<translation id="3480961938508521469">Lädt den Akku mit normaler Geschwindigkeit vollständig auf.</translation>
 <translation id="348495353354674884">Bildschirmtastatur aktivieren</translation>
 <translation id="3487623755010328395">
         Wenn diese Richtlinie festgelegt wird, versucht <ph name="PRODUCT_NAME" />, sich selbst zu registrieren und die zugehörige Cloud-Richtlinie für alle Profile anzuwenden.
@@ -1313,7 +1377,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="350797926066071931">Übersetzung aktivieren</translation>
-<translation id="3512226956150568738">Wenn das Client-Gerätemodell ARC bereits unterstützt hat, bevor die Migration zu ext4 für die ARC-Ausführung erforderlich war, verhält sich diese Option so, als ob "AskUser" (Wert 3) festgelegt wurde. Beachten Sie, dass die ArcEnabled-Richtlinie hierbei auf "true" festgelegt werden muss. In allen anderen Fällen entspricht dieser Wert "DisallowArc" (Wert 0) – beispielsweise, wenn das Gerätemodell ARC zuvor nicht unterstützt hat, oder wenn die ArcEnabled-Richtlinie auf "false" gesetzt wird.</translation>
 <translation id="3513655665999652754">Der Quirks-Server stellt hardwarespezifische Konfigurationsdateien bereit, wie
       ICC-Displayprofile zur Anpassung der Monitorkalibrierung.
 
@@ -1330,7 +1393,11 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
       Wenn diese Richtlinie auf "DeveloperToolsAllowed" (Wert 1), gesetzt ist, können die Entwicklertools und die JavaScript-Konsole in allen Kontexten aufgerufen und verwendet werden. Dies gilt auch für Erweiterungen, die über die Unternehmensrichtlinie installiert wurden.
       Wenn diese Richtlinie auf "DeveloperToolsDisallowed" (Wert 2) gesetzt ist, kann nicht auf die Entwicklertools zugegriffen werden und Websiteelemente können nicht mehr überprüft werden. Alle Tastenkombinationen und Menü- oder Kontextmenüeinträge, mit denen die Entwicklertools oder die JavaScript-Konsole aufgerufen werden, sind deaktiviert.</translation>
 <translation id="3547954654003013442">Proxy-Einstellungen</translation>
+<translation id="3550875587920006460">Mit dieser Richtlinie kann ein benutzerdefinierter Zeitplan zum Prüfen auf Updates festgelegt werden. Er gilt für alle Nutzer und alle Oberflächen auf diesem Gerät. Wenn ein Zeitplan aktiviert wird, sucht das Gerät entsprechend nach Updates. Wenn geplante Prüfungen auf Updates nicht mehr durchgeführt werden sollen, muss die Richtlinie entfernt werden.</translation>
 <translation id="355118380775352753">Websites, die in einem alternativen Browser geöffnet werden sollen</translation>
+<translation id="3554984410014457319">Google Assistant erlauben, bei Gesprächen zuzuhören und so zu prüfen, ob die Wortgruppe für die Sprachaktivierung genannt wird</translation>
+<translation id="356579196325389849">Nutzer dürfen die Chrome OS-Release-Version konfigurieren</translation>
+<translation id="3575011234198230041">HTTP-Authentifizierung</translation>
 <translation id="3577251398714997599">Einstellungen für Werbung für Websites mit aufdringlichen Werbeanzeigen</translation>
 <translation id="357917253161699596">Nutzern erlauben, Nutzerzertifikate zu verwalten</translation>
 <translation id="3583230441447348508">Gibt eine Liste mit vorkonfigurierten Netzwerkfreigaben an.
@@ -1440,6 +1507,16 @@ Wenn diese Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Un
           Wird diese Richtlinie nicht konfiguriert, ist die Bildschirmtastatur zunächst deaktiviert, kann vom Nutzer aber jederzeit aktiviert werden.</translation>
 <translation id="382476126209906314">TalkGadget-Präfix für Remotezugriff-Hosts konfigurieren</translation>
 <translation id="3824972131618513497">Legt die Einstellungen für das Energiesparen und Neustarten fest.</translation>
+<translation id="3826475866868158882">Standortdienste von Google aktiviert</translation>
+<translation id="3831054243924627613">Mit dieser Richtlinie wird der Ausgangszustand der Android-Funktion "Sichern und wiederherstellen" festgelegt.
+
+      Wenn die Richtlinie nicht konfiguriert oder auf "<ph name="BR_DISABLED" />" festgelegt ist, ist die Android-Funktion "Sichern und wiederherstellen" anfangs deaktiviert.
+
+      Wenn diese Richtlinie auf "<ph name="BR_ENABLED" />" festgelegt ist, ist die Android-Funktion "Sichern und wiederherstellen" anfangs aktiviert.
+
+      Ist die Richtlinie auf "<ph name="BR_UNDER_USER_CONTROL" />" festgelegt, dann wird der Nutzer aufgefordert anzugeben, ob er die Android-Funktion "Sichern und wiederherstellen" verwenden möchte. Aktiviert er die Funktion, werden App-Daten von Android auf die Android-Sicherungsserver hochgeladen und bei der Neuinstallation von kompatiblen Apps wiederhergestellt.
+
+      Beachten Sie, dass mit dieser Richtlinie lediglich der Status der Android-Funktion "Sichern und wiederherstellen" bei der erstmaligen Einrichtung festgelegt wird. Danach kann der Nutzer die Android-Einstellungen öffnen und die Funktion "Sichern und wiederherstellen" aktivieren oder deaktivieren.</translation>
 <translation id="3831376478177535007">Wenn diese Einstellung aktiviert ist, werden von <ph name="PRODUCT_NAME" /> Zertifikate genehmigt, die von der veralteten Symantec-PKI herausgegeben werden – vorausgesetzt sie werden erfolgreich überprüft und bilden eine Kette zu einem anerkannten CA-Zertifikat.
 
       Diese Richtlinie setzt voraus, dass das Betriebssystem die Zertifikate der veralteten Symantec-Infrastruktur noch erkennt. Wenn sich durch ein Update des Betriebssystems die Handhabung solcher Zertifikate ändert, ist diese Richtlinie nicht mehr wirksam. Sie dient zur vorübergehenden Problemumgehung, um Unternehmen mehr Zeit zu geben, veraltete Symantec-Zertifikate zu ersetzen. Diese Richtlinie wird ab dem 1. Januar 2019 entfernt.
@@ -1452,6 +1529,7 @@ Wenn diese Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Un
           Der Wert "*" für die schwarze Liste bedeutet, dass alle Hosts für natives Messaging in die schwarze Liste aufgenommen werden und dass nur Hosts für natives Messaging geladen werden, die auf der Whitelist stehen.
 
           Standardmäßig stehen alle Hosts für natives Messaging auf der Whitelist. Wenn jedoch alle Hosts für natives Messaging durch eine Richtlinie zur schwarzen Liste hinzugefügt wurden, kann diese Richtlinie mithilfe der Whitelist außer Kraft gesetzt werden.</translation>
+<translation id="3835692988507803626">Deaktivierung von Sprachen für die Rechtschreibprüfung erzwingen</translation>
 <translation id="3837424079837455272">Diese Richtlinie steuert, ob <ph name="PRODUCT_OS_NAME" /> neue Nutzer hinzugefügt werden dürfen. Sie verhindert nicht, dass sich Nutzer in weiteren Google-Konten innerhalb von Android anmelden. Wenn Sie dies verhindern möchten, konfigurieren Sie die Android-spezifische Richtlinie "<ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" />" im Rahmen von "<ph name="ARC_POLICY_POLICY_NAME" />".</translation>
 <translation id="384743459174066962">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Öffnen von Pop-ups nicht gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites der globale Standardwert der Richtlinie "DefaultPopupsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="3851039766298741586">Durch diese Richtlinien werden Informationen zur aktiven Kiosksitzung gesendet, etwa Anwendungs-ID und Anwendungsversion.
@@ -1495,7 +1573,6 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
       Sollte sie deaktiviert werden, kann SPDY genutzt werden.
 
       Ist die Richtlinie nicht konfiguriert, steht SPDY zur Verfügung.</translation>
-<translation id="3890999316834333174">Richtlinien zum schnellen Entsperren</translation>
 <translation id="3891357445869647828">JavaScript aktivieren</translation>
 <translation id="3895557476567727016">Konfiguriert das Standardverzeichnis, in dem über <ph name="PRODUCT_NAME" /> heruntergeladene Dateien gespeichert werden.
 
@@ -1518,6 +1595,15 @@ Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer selbst entscheiden
 
           Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, können die Nutzer Dateien an Google Drive übertragen.</translation>
 <translation id="3915395663995367577">URL einer PAC-Proxy-Datei</translation>
+<translation id="3920892052017026701">Legt den Akkuladestand (%) für benutzerdefiniertes Starten des Ladevorgangs fest.
+
+          Der Ladevorgang startet, wenn der Ladestand auf den Startwert für benutzerdefiniertes Laden gefallen ist.
+
+          "DeviceBatteryChargeCustomStartCharging" muss kleiner als "DeviceBatteryChargeCustomStopCharging" sein.
+
+          Diese Richtlinie wird nur verwendet, wenn "DeviceBatteryChargeMode" auf "custom" festgelegt ist.
+
+          Wenn sie nicht konfiguriert oder festgelegt ist, wird der Standardakkulademodus angewendet.</translation>
 <translation id="3925377537407648234">Bildschirmauflösung und Skalierungsfaktor festlegen</translation>
 <translation id="3939893074578116847">Es werden Netzwerkpakete zur Überwachung des Onlinestatus an den 
       Verwaltungsserver gesendet, damit er erkennt, wenn das Gerät offline ist.
@@ -1527,7 +1613,7 @@ Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer selbst entscheiden
       Wird "false" festgelegt oder die Richtlinie nicht konfiguriert, werden keine
       Pakete gesendet.</translation>
 <translation id="3950239119790560549">Zeitbeschränkungen aktualisieren</translation>
-<translation id="3956686688560604829">Richtlinie "SiteList" von Internet Explorer zur Unterstützung für ältere Browser verwenden.</translation>
+<translation id="3956686688560604829">Richtlinie "SiteList" von Internet Explorer zur Unterstützung älterer Browser verwenden.</translation>
 <translation id="3958586912393694012">Verwendung von Smart Lock erlauben</translation>
 <translation id="3963602271515417124">Bei Festlegung auf "true" ist die Remote-Bestätigung für das Gerät erlaubt. Ein Zertifikat wird automatisch erstellt und auf den Device Management Server hochgeladen.
 
@@ -1535,7 +1621,7 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 <translation id="3965339130942650562">Zeitlimit bis zur Abmeldung eines inaktiven Nutzers</translation>
 <translation id="3973371701361892765">Ablage nie automatisch ausblenden</translation>
 <translation id="3984028218719007910">Legt fest, ob lokale Kontodaten nach der Abmeldung in <ph name="PRODUCT_OS_NAME" /> gespeichert werden. Bei Einstellung auf "true" werden Konten nicht dauerhaft in <ph name="PRODUCT_OS_NAME" /> gespeichert und alle Daten der Nutzersitzung werden nach der Abmeldung verworfen. Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, können (verschlüsselte) lokale Nutzerdaten auf dem Gerät verbleiben.</translation>
-<translation id="398475542699441679">Mit dieser Richtlinie wird festgelegt, ob die Unterstützung für ältere Browser aktiviert wird.
+<translation id="398475542699441679">Mit dieser Richtlinie wird festgelegt, ob die Unterstützung älterer Browser aktiviert wird.
 
       Wenn die Richtlinie nicht konfiguriert oder auf "false" gesetzt ist, versucht Chrome nicht, bestimmte URLs in einem alternativen Browser zu starten.
 
@@ -1548,6 +1634,21 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
       Wenn diese Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutzer Angebote über die Chrome OS-Registrierung einlösen.
 
       Ist die Richtlinie auf "False" eingestellt, können Nutzer keine Angebote einlösen.</translation>
+<translation id="4008233182078913897">Gibt eine Liste von Apps und Erweiterungen an, die automatisch, ohne Zutun des Nutzers, installiert werden und die nicht von ihm deinstalliert oder deaktiviert werden können. Alle von den Apps und Erweiterungen angeforderten Berechtigungen werden implizit, ohne Eingriff durch den Nutzer, gewährt. Dazu gehören auch alle weiteren Berechtigungen, die von künftigen Versionen der App oder Erweiterung angefordert werden. Außerdem werden den Erweiterungs-APIs "enterprise.deviceAttributes" und "enterprise.platformKeys" Berechtigungen erteilt. Diese beiden APIs stehen bei Apps oder Erweiterungen ohne erzwungene Installation nicht zur Verfügung.
+
+Diese Richtlinie hat Vorrang gegenüber einer möglicherweise in Konflikt stehenden Richtlinie "<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />". Wenn eine App oder Erweiterung mit erzwungener Installation aus dieser Liste entfernt wird, wird sie automatisch von <ph name="PRODUCT_NAME" /> deinstalliert.
+
+Bei Windows-Instanzen, die nicht Teil einer <ph name="MS_AD_NAME" />-Domain sind, bleibt die erzwungene Installation auf die im Chrome Web Store aufgeführten Apps und Erweiterungen beschränkt.
+
+Der Quellcode jeder Erweiterung kann mithilfe der Entwicklertools von Nutzern geändert werden. Danach funktioniert die entsprechende Erweiterung eventuell nicht mehr. Wenn Sie dies verhindern möchten, können Sie die Richtlinie "<ph name="DEVELOPER_TOOLS_POLICY_NAME" />" festlegen.
+
+Jedes Listenelement der Richtlinie ist ein String mit einer Erweiterungs-ID und einer optionalen Update-URL, die durch ein Semikolon (<ph name="SEMICOLON" />) getrennt sind. Die Erweiterungs-ID ist der String mit 32 Buchstaben, den Sie beispielsweise im Entwicklermodus unter <ph name="CHROME_EXTENSIONS_LINK" /> sehen. Die Update-URL sollte, sofern festgelegt, auf ein XML-Dokument mit einem Update-Manifest verweisen, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> beschrieben. Standardmäßig kommt die Update-URL des Chrome Web Store zum Einsatz, die derzeit "https://clients2.google.com/service/update2/crx" lautet. Die in dieser Richtlinie festgelegte Update-URL wird nur für die erste Installation verwendet. In nachfolgenden Updates der Erweiterung kommt die Update-URL zum Einsatz, die im Manifest der Erweiterung angegeben wurde. Außerdem war die explizite Festlegung der Update-URL in <ph name="PRODUCT_NAME" />-Versionen bis einschließlich Version 67 obligatorisch.
+
+Beispiel: "<ph name="EXTENSION_POLICY_EXAMPLE" />" installiert die Erweiterung mit der ID "<ph name="EXTENSION_ID_SAMPLE" />" über die standardmäßige Update-URL aus dem Chrome Web Store. Weitere Informationen zum Hosting von Erweiterungen finden Sie unter <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+Wenn diese Richtlinie nicht festgelegt ist, werden Apps und Erweiterungen nicht automatisch installiert und der Nutzer kann jede App oder Erweiterung in <ph name="PRODUCT_NAME" /> deinstallieren.
+
+Diese Richtlinie gilt nicht für den Inkognitomodus.</translation>
 <translation id="4008507541867797979">Wenn diese Richtlinie auf "true" gesetzt oder nicht festgelegt ist, werden in <ph name="PRODUCT_OS_NAME" /> vorhandene Nutzer auf der Anmeldeseite aufgeführt und der Nutzer kann einen Namen auswählen.
 
 Ist die Richtlinie auf "false" gesetzt, werden in <ph name="PRODUCT_OS_NAME" /> keine vorhandenen Nutzer auf der Anmeldeseite angezeigt. Stattdessen wird die normale Anmeldeseite, auf der der Nutzer seine E-Mail-Adresse und sein Passwort bzw. seine Telefonnummer eingeben muss, oder der SAML-Interstitialbildschirm angezeigt, wenn dieser über die Richtlinie "<ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />" aktiviert wurde. Falls eine verwaltete Sitzung konfiguriert ist, werden nur die entsprechenden Konten angezeigt, von denen der Nutzer eins auswählen kann.
@@ -1559,18 +1660,17 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
       Ist diese Einstellung nicht konfiguriert oder auf "false" gesetzt, suchen <ph name="PRODUCT_OS_NAME" />-Geräte automatisch nach Updates.
 
       Achtung: Es wird empfohlen, die automatischen Updates aktiviert zu lassen, damit Nutzer Softwareupdates und wichtige Sicherheitspatches erhalten. Bei Deaktivierung der automatischen Updates besteht eventuell ein Risiko für die Nutzer.</translation>
+<translation id="4018000735882846261">Mit dieser Richtlinie erhält Google Assistant die Berechtigung, bei Gesprächen zuzuhören und so zu prüfen, ob die Wortgruppe für die Sprachaktivierung genannt wird.
+
+      Wenn die Richtlinie aktiviert ist, hört Google Assistant bei Gesprächen zu und prüft, ob die Wortgruppe für die Sprachaktivierung genannt wird.
+      Wenn die Richtlinie deaktiviert ist, hört Google Assistant bei Gesprächen nicht zu und prüft nicht, ob die Wortgruppe für die Sprachaktivierung genannt wird.
+      Wird die Richtlinie nicht festgelegt, hört Google Assistant bei Gesprächen nicht zu und prüft nicht, ob die Wortgruppe für die Sprachaktivierung genannt wird.
+      </translation>
 <translation id="4020682745012723568">In das Nutzerprofil übertragene Cookies sind für Android-Apps nicht zugänglich.</translation>
 <translation id="402759845255257575">Ausführung von JavaScript für keine Website zulassen</translation>
 <translation id="4027608872760987929">Standardsuchmaschine aktivieren</translation>
 <translation id="4039085364173654945">Bestimmt, ob untergeordnete Inhalte von Drittanbietern auf einer Seite in einem HTTP-Basic-Authentifizierungs-Pop-up erscheinen dürfen. In der Regel ist dies zur Abwehr gegen Phishing deaktiviert. Wenn die Richtlinie nicht konfiguriert ist, so ist die Einstellung standardmäßig deaktiviert, sodass untergeordnete Inhalte von Drittanbietern nicht in einem HTTP-Basic-Authentifizierungs-Pop-up erscheinen dürfen.</translation>
 <translation id="4056910949759281379">SPDY-Protokoll deaktivieren</translation>
-<translation id="4059515172917655545">Mit dieser Richtlinie wird festgelegt, ob die Standortdienste von Google zur Verfügung stehen.
-
-      Wenn diese Richtlinie nicht konfiguriert oder auf "<ph name="GLS_DISABLED" />" gesetzt wird, sind die Standortdienste von Google deaktiviert und können nicht vom Nutzer aktiviert werden.
-
-      Falls die Richtlinie auf "<ph name="GLS_UNDER_USER_CONTROL" />" festgelegt ist, wird der Nutzer gefragt, ob er die Standortdienste von Google verwenden möchte. Aktiviert er sie, können sie von Android-Apps genutzt werden, um den Gerätestandort abzurufen. Außerdem werden anonyme Standortdaten an Google gesendet.
-
-      Bitte beachten Sie, dass diese Richtlinie ignoriert wird und die Standortdienste von Google immer deaktiviert bleiben, wenn die Richtlinie "<ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" />" auf "<ph name="BLOCK_GEOLOCATION_SETTING" />" gesetzt wird.</translation>
 <translation id="408029843066770167">Abfragen an einen Google-Dienst für die Zeiteinstellung zulassen</translation>
 <translation id="408076456549153854">Browseranmeldung aktivieren</translation>
 <translation id="4088589230932595924">Inkognitomodus erzwungen</translation>
@@ -1587,6 +1687,13 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
           Ist diese Richtlinie nicht konfiguriert, wird ein Standardwert verwendet.
 
           Der Wert für die Richtlinie muss in Millisekunden angegeben werden.</translation>
+<translation id="4105884561459127998">Hiermit wird der Typ der Authentifizierung für SAML-Anmeldungen konfiguriert.
+
+      Wenn diese Richtlinie nicht konfiguriert oder auf dem Standardwert (Wert 0) belassen wird, wird das Verhalten bei SAML-Anmeldungen abhängig von anderen Faktoren vom Browser festgelegt. Im einfachsten Fall basieren die Nutzerauthentifizierung und der Schutz der im Cache gespeicherten Nutzerdaten auf Passwörtern, die von den Nutzern manuell eingegeben werden.
+
+      Wenn diese Richtlinie auf "ClientCertificate" (Wert 1) festgelegt ist, kommt für neu hinzugefügte Nutzer, die sich über SAML anmelden, die Authentifizierung mit Clientzertifikat zum Einsatz. Für solche Nutzer werden keine Passwörter verwendet und ihre im Cache gespeicherten lokalen Daten werden durch entsprechende kryptografische Schlüssel geschützt. Diese Einstellung ermöglicht z. B. die Konfiguration einer Nutzerauthentifizierung auf Grundlage von Smartcards. Hinweis: In diesem Fall ist die Installation von Smartcard-Middleware-Apps über die Richtlinie "DeviceLoginScreenExtensions" erforderlich.
+
+      Diese Richtlinie wirkt sich nur auf Nutzer aus, die sich über SAML authentifizieren.</translation>
 <translation id="4105989332710272578">Erzwingung der Zertifikatstransparenz für eine Liste von URLs deaktivieren</translation>
 <translation id="4121350739760194865">App-Werbung nicht auf der "Neuer Tab"-Seite anzeigen</translation>
 <translation id="4125606414556046117">Mit dieser Richtlinie können Sie das Hintergrundbild konfigurieren, das dem Nutzer auf dem Desktop und auf dem Anmeldebildschirm angezeigt wird. Bei der Konfiguration der Richtlinie wird eine URL angegeben, über die <ph name="PRODUCT_OS_NAME" /> das Hintergrundbild und einen kryptografischen Hash zur Verifizierung der Integrität des Downloads herunterladen kann. Das Bild muss im JPEG-Format vorliegen und darf nicht größer als 16 MB sein. Der Zugriff auf die URL muss ohne Authentifizierung möglich sein.
@@ -1615,9 +1722,34 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
       Ist die Richtlinie nicht konfiguriert, kann der Nutzer ein Bild auswählen, das als Hintergrund auf dem Desktop und dem Anmeldebildschirm angezeigt werden soll.</translation>
 <translation id="412697421478384751">Nutzern erlauben, schwache PINs als Sperrbildschirm-PIN festzulegen</translation>
 <translation id="4138655880188755661">Zeitlimit</translation>
+<translation id="4144164749344898721">Mit dieser Richtlinie können Sie mehrere Einstellungen zur Energieverwaltung bei Inaktivität des Nutzers festlegen.
+
+          Es stehen vier Aktionen zur Verfügung:
+          * Der Bildschirm wird gedimmt, wenn der Nutzer für die unter "|ScreenDim|" angegebene Zeitdauer inaktiv ist.
+          * Der Bildschirm wird ausgeschaltet, wenn der Nutzer für die unter "|ScreenOff|" angegebene Zeitdauer inaktiv ist.
+          * Wenn der Nutzer für die unter "|IdleWarning|" angegebene Zeitdauer inaktiv ist, wird er in einer Warnung darauf hingewiesen, dass als Nächstes die für die Inaktivität festgelegte Aktion ausgeführt wird. Die Warnung wird nur eingeblendet, wenn infolge der Inaktivität der Nutzer abgemeldet oder das Gerät heruntergefahren wird.
+          * Die unter "|IdleAction|" angegebene Aktion wird ausgeführt, wenn der Nutzer für die unter "|Idle|" angegebene Zeitdauer inaktiv ist.
+
+          Die Verzögerungen müssen in Millisekunden angegeben werden und größer als null sein, um die jeweilige Aktion auszulösen. Falls die Verzögerung auf null gesetzt ist, wird die entsprechende Aktion von <ph name="PRODUCT_OS_NAME" /> nicht ausgeführt.
+
+          Wenn kein Wert für die Verzögerungen angegeben ist, wird ein Standardwert verwendet.
+
+          Hinweis: Der Wert für "|ScreenDim|" muss kleiner oder gleich dem Wert für "|ScreenOff|" sein, während die Werte für "|ScreenOff|" und "|IdleWarning|" nicht größer als der Wert für "|Idle|" sein dürfen.
+
+          Für "|IdleAction|" sind die folgenden vier Aktionen möglich:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Wenn "|IdleAction|" nicht konfiguriert ist, wird die Standardaktion "|Suspend|" ausgeführt.
+
+          Es können außerdem spezifische Einstellungen für den Netz- und Akkubetrieb vorgenommen werden.
+          </translation>
 <translation id="4150201353443180367">Display</translation>
 <translation id="4157003184375321727">Betriebssystem- und Firmware-Version melden</translation>
 <translation id="4157594634940419685">Zugriff auf native CUPS-Drucker erlauben</translation>
+<translation id="4160962198980004898">Quelle für die Geräte-MAC-Adresse bei angedocktem Gerät</translation>
 <translation id="4163705126749612234">Konfiguriert die erforderlichen Domainnamen der Clients für den Remotezugriff und verhindert, dass diese von Nutzern geändert werden können.
 
           Wenn diese Einstellung aktiviert ist, können nur Clients aus einer der angegebenen Domains eine Verbindung zum Host herstellen.
@@ -1629,6 +1761,10 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
           Siehe auch "RemoteAccessHostDomainList".</translation>
 <translation id="4183229833636799228">"<ph name="FLASH_PLUGIN_NAME" />" als Standardeinstellung</translation>
 <translation id="4192388905594723944">URL zur Überprüfung des Client-Authentifizierungs-Tokens für den Remotezugriff</translation>
+<translation id="4197038214024763371">Wenn diese Richtlinie nicht konfiguriert oder aktiviert ist, darf der Nutzer die Rechtschreibprüfung verwenden.
+
+      Wenn diese Richtlinie deaktiviert wird, darf der Nutzer die Rechtschreibprüfung nicht verwenden. Außerdem werden die Richtlinien "SpellcheckLanguage" und "SpellcheckLanguageBlacklist" dann ignoriert.
+      </translation>
 <translation id="4203389617541558220">Hiermit kann die Betriebszeit des Geräts durch die Planung automatischer Neustarts begrenzt werden.
 
       Wenn diese Richtlinie konfiguriert ist, wird damit die Dauer der Gerätebetriebszeit angegeben, nach der ein automatischer Neustart geplant ist.
@@ -1680,7 +1816,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
           Diese Richtlinie ist optional. Wenn sie nicht festlegt ist, wird die Bildsuchanfrage mithilfe der GET-Methode gesendet.
 
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
-<translation id="427706009709857238">"Google Assistant erlauben, bei Gesprächen zuzuhören, ob die Wortgruppe für die Sprachaktivierung genannt wird"</translation>
 <translation id="4285674129118156176">Nicht verknüpften Nutzern die Verwendung von ARC gestatten</translation>
 <translation id="4298509794364745131">Gibt an, welche Apps auf dem <ph name="PRODUCT_OS_NAME" />-Sperrbildschirm als Notizen-App aktiviert werden können.
 
@@ -1692,10 +1827,19 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
       Hinweis: Selbst wenn die Richtlinie eine App-ID enthält, bedeutet das nicht zwangsläufig, dass der Nutzer die App als Notizen-App auf dem Sperrbildschirm aktivieren kann. Zum Beispiel ist unter Chrome 61 die Auswahl verfügbarer Apps zusätzlich durch die Plattform eingeschränkt.
 
       Wenn die Richtlinie nicht eingerichtet ist, gibt es vonseiten der Richtlinie keinerlei Einschränkungen im Hinblick auf die Apps, die der Nutzer auf dem Sperrbildschirm aktivieren kann.</translation>
-<translation id="4309640770189628899">Festlegen, ob DHE-Verschlüsselungssammlungen in TLS aktiviert sind</translation>
+<translation id="4313767483634435271">Eingetragene Dock-MAC-Adresse des Geräts</translation>
 <translation id="4322842393287974810">Der automatisch ohne Verzögerung gestarteten Kiosk-App die Steuerung der <ph name="PRODUCT_OS_NAME" />-Version gestatten</translation>
 <translation id="4325690621216251241">Schaltfläche "Abmelden" zur Taskleiste hinzufügen</translation>
 <translation id="4332177773549877617">Ereignisse für Android-App-Installationen protokollieren</translation>
+<translation id="4335292026668105285">Gibt an, nach welcher Inaktivitätsspanne des Nutzers im Netzbetrieb eine Warnung angezeigt wird.
+
+          Wird diese Richtlinie festgelegt, gibt sie an, wie lange der Nutzer inaktiv sein kann, bevor <ph name="PRODUCT_OS_NAME" /> in einer Warnung auf die bevorstehende Maßnahme hinweist.
+
+          Ist diese Richtlinie nicht festgelegt, erscheint keine Warnung.
+
+          Der Richtlinienwert sollte in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert für die Inaktivitätsverzögerung sein.
+
+          Die Warnung wird nur eingeblendet, wenn infolge der Inaktivität der Nutzer abgemeldet oder das Gerät heruntergefahren wird.</translation>
 <translation id="4346674324214534449">Hiermit kann festgelegt werden, ob die Werbung auf Websites mit aufdringlichen Werbeanzeigen blockiert wird.
 
       Wenn diese Richtlinie auf "2" gesetzt wird, wird die Werbung auf Websites mit aufdringlichen Werbeanzeigen blockiert.
@@ -1715,6 +1859,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4360826270668210664">Wenn diese Richtlinie konfiguriert ist, verlangt der Host für den Remotezugriff von Clients, die sich authentifizieren, ein Authentifizierungstoken von dieser URL, damit eine Verbindung aufgebaut werden kann. Diese Richtlinie muss in Verbindung mit "RemoteAccessHostTokenValidationUrl" verwendet werden.
 
           Diese Funktion ist derzeit serverseitig deaktiviert.</translation>
+<translation id="4363057787588706121">Zusammenführen von Listenrichtlinien aus unterschiedlichen Quellen erlauben</translation>
 <translation id="436581050240847513">Gerätenetzwerk-Schnittstellen melden</translation>
 <translation id="4372704773119750918">Nutzer in Unternehmen dürfen keine Mehrfachprofile verwenden (weder als primärer, noch als sekundärer Nutzer)</translation>
 <translation id="4377599627073874279">Anzeige aller Bilder auf allen Websites zulassen</translation>
@@ -1749,6 +1894,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
       Die Richtlinie selbst wird zwar auf den genannten Plattformen unterstützt, die damit aktivierten Funktionen sind aber möglicherweise nicht auf allen Plattformen verfügbar. Nicht alle eingestellten Webplattformfunktionen können wieder aktiviert werden. Nur die nachfolgend ausdrücklich aufgeführten Funktionen können für einen begrenzten Zeitraum wieder aktiviert werden. Der Zeitraum variiert je nach Funktion. Das allgemeine Format des String-Tags lautet [Name der veralteten Funktion]_EffectiveUntil[jjjjmmtt]. Weitere Informationen zu Änderungen an den Webplattformfunktionen erhalten Sie unter http://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Sperre aktivieren, wenn das Gerät inaktiv ist oder angehalten wird</translation>
+<translation id="4449469846627734399">Tageskonfiguration für das Umschalten bei Leistungsspitzen festlegen</translation>
 <translation id="4449545651113180484">Bildschirm um 270 Grad im Uhrzeigersinn drehen</translation>
 <translation id="445270821089253489">Legt fest, welche Art von Nutzer- und Geräteinformationen gesendet wird.</translation>
 <translation id="4454820008017317557">Symbol von <ph name="PRODUCT_NAME" /> in der Symbolleiste anzeigen</translation>
@@ -1787,14 +1933,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4534500438517478692">Name der Android-Einschränkung:</translation>
 <translation id="4541530620466526913">Lokale Gerätekonten</translation>
 <translation id="4543502256674577024">Einstellungen für die Geräteaktualisierung</translation>
-<translation id="4544079461524242527">Konfiguriert Einstellungen zur Erweiterungsverwaltung für <ph name="PRODUCT_NAME" />.
-
-          Mit dieser Richtlinie werden verschiedene Einstellungen gesteuert, darunter Einstellungen, die von bestehenden auf Erweiterungen bezogenen Richtlinien geregelt werden. Diese Richtlinie überschreibt ältere Richtlinien, wenn beide konfiguriert sind.
-
-          Mit dieser Richtlinie wird eine Erweiterungs-ID oder eine Update-URL ihrer Konfiguration zugeordnet. Bei einer Erweiterungs-ID wird die Konfiguration nur auf die angegebene Erweiterung angewendet. Eine Standardkonfiguration kann für die Spezial-ID "<ph name="DEFAULT_SCOPE" />" festgelegt werden, die auf alle Erweiterungen angewendet wird, für die keine Standardkonfiguration in dieser Richtlinie konfiguriert ist. Bei einer Update-URL wird die Konfiguration auf alle Erweiterungen mit genau der im Manifest dieser Erweiterung angegebenen Update-URL angewendet, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> erläutert.
-
-          Eine vollständige Beschreibung möglicher Einstellungen und des Aufbaus dieser Richtlinie finden Sie unter https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Loopback-Verarbeitungsmodus der Nutzerrichtlinien</translation>
 <translation id="4554841826517980623">Mit dieser Richtlinie wird gesteuert, ob die Funktion "Netzwerkfreigaben" für <ph name="PRODUCT_NAME" /> das <ph name="NETBIOS_PROTOCOL" /> nutzen sollte, um Inhaltsfreigaben im Netzwerk zu erkennen.
       Wenn diese Richtlinie auf "true" eingestellt ist, verwendet die Freigabeerkennung das Protokoll <ph name="NETBIOS_PROTOCOL" />, um Freigaben im Netzwerk zu erkennen.
@@ -1812,17 +1950,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4613508646038788144">Wenn die Richtlinie auf "false" festgelegt wird, kann Drittanbieter-Software ausführbaren Code in die Prozesse von Chrome einfügen. Wenn die Richtlinie nicht oder auf "true" festgelegt wird, wird verhindert, dass die Drittanbieter-Software ausführbaren Code in die Prozesse von Chrome einfügt.</translation>
 <translation id="4617338332148204752">Metatag-Überprüfung in <ph name="PRODUCT_FRAME_NAME" /> überspringen</translation>
 <translation id="4625915093043961294">Weiße Liste für Installation von Erweiterungen konfigurieren</translation>
-<translation id="463224920692183755">Damit wird festgelegt, wie vorgegangen werden soll, wenn das Basisverzeichnis des Nutzers mit eCryptfs-Verschlüsselung erstellt wurde und auf ext4-Verschlüsselung umgestellt werden muss.
-
-      Wenn diese Richtlinie auf "DisallowArc" gesetzt ist, werden Android-Apps für den Nutzer deaktiviert und es wird keine Migration von eCryptfs- auf ext4-Verschlüsselung durchgeführt. Das Ausführen von Android-Apps wird nicht verhindert, wenn das Basisverzeichnis bereits mit ext4 verschlüsselt ist.
-
-      Wenn diese Richtlinie auf "Migrate" gesetzt wird, werden mit eCryptfs verschlüsselte Basisverzeichnisse bei der Anmeldung ohne Rücksprache mit dem Nutzer automatisch auf ext4-Verschlüsselung umgestellt.
-
-      Bei Auswahl von "Wipe" werden mit eCryptfs verschlüsselte Basisverzeichnisse bei der Anmeldung gelöscht und stattdessen neue ext4-verschlüsselte Basisverzeichnisse erstellt. Warnung: Dadurch werden die lokalen Daten des Nutzers gelöscht.
-
-      Wenn diese Richtlinie auf "AskUser" gesetzt ist, wird Nutzern mit eCryptfs-verschlüsselten Basisverzeichnissen eine Migration angeboten.
-
-      Diese Richtlinie gilt nicht für Nutzer im Kioskmodus. Sollte die Richtlinie nicht konfiguriert sein, kommt die Vorgehensweise für "DisallowArc" zum Einsatz.</translation>
 <translation id="4632343302005518762">Verarbeitung der gelisteten Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
 <translation id="4632566332417930481">Nutzung der Entwicklertools für Erweiterungen, die über die Unternehmensrichtlinie installiert wurden, nicht zulassen und Nutzung der Entwicklertools in anderen Kontexten zulassen</translation>
 <translation id="4633786464238689684">Ändert das Standardverhalten der Tasten in der obersten Reihe zu Funktionstastenverhalten
@@ -1894,27 +2021,11 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 <translation id="4802905909524200151">Updateverhalten von <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware konfigurieren</translation>
 <translation id="4804828344300125154">Nach Nutzerabmeldung immer neu starten.</translation>
 <translation id="4807950475297505572">Die am längsten nicht verwendeten Nutzer werden entfernt, bis genügend freier Speicherplatz vorhanden ist.</translation>
-<translation id="4815725774537609998">Verwenden Sie statt dieser Richtlinie "ProxyMode", da die Richtlinie veraltet ist.
-
-          Mit dieser Richtlinie können Sie angeben, welchen Proxy <ph name="PRODUCT_NAME" /> verwendet, und verhindern, dass Nutzer die Proxy-Einstellungen ändern. 
-
-          Wenn Sie festlegen, dass kein Proxyserver verwendet, sondern immer eine direkte Verbindung hergestellt werden soll, werden alle anderen Optionen ignoriert.
-
-          Falls Sie bestimmen, dass die Proxy-Einstellungen des Systems verwendet werden sollen oder der Proxyserver automatisch erkannt werden soll, werden alle anderen Optionen ignoriert.
-
-          Bei Auswahl manueller Proxy-Einstellungen können Sie in "Adresse oder URL des Proxyservers", "URL einer PAC-Proxy-Datei" und "Kommagetrennte Liste der Proxy-Umgehungsregeln" weitere Optionen angeben. Nur der HTTP-Proxyserver mit der höchsten Priorität ist für ARC-Apps verfügbar.
-
-          Ausführliche Beispiele erhalten Sie unter
-          <ph name="PROXY_HELP_URL" />.
-
-          Wenn Sie diese Einstellung aktivieren, ignoriert <ph name="PRODUCT_NAME" /> 
-alle Proxy-Optionen, die in der Eingabeaufforderung angegeben werden.
-
-          Ist die Richtlinie nicht konfiguriert, so können Nutzer Ihre eigenen Proxy-Einstellungen vornehmen.</translation>
 <translation id="4816674326202173458">Unternehmensnutzer sowohl als primären als auch als sekundären Nutzer zulassen (Standardverhalten für nicht verwaltete Nutzer)</translation>
 <translation id="4826326557828204741">Auszuführende Aktion beim Erreichen der Leerlaufverzögerung während des Akkubetriebs</translation>
 <translation id="4832852360828533362">Berichte zu Nutzern und Geräten</translation>
 <translation id="4834526953114077364">Die am längsten nicht verwendeten Nutzer, dich sich in den letzten 3 Monaten nicht angemeldet haben, werden entfernt, bis genügend freier Speicherplatz vorhanden ist.</translation>
+<translation id="4835622243021053389">NTLMv2-Authentifizierung aktivieren.</translation>
 <translation id="4858735034935305895">Vollbildmodus zulassen</translation>
 <translation id="4861767323695239729">In einer Nutzersitzung zulässige Eingabemethoden konfigurieren</translation>
 <translation id="487460824085252184">Automatisch migrieren, ohne die Zustimmung des Nutzers einzuholen</translation>
@@ -1949,13 +2060,43 @@ alle Proxy-Optionen, die in der Eingabeaufforderung angegeben werden.
 <translation id="4983201894483989687">Ausführung veralteter Plug-ins zulassen</translation>
 <translation id="4986560318567565414">Pfad, um vom alternativen Browser zu Chrome zu wechseln.</translation>
 <translation id="4988291787868618635">Auszuführende Aktion bei Erreichen der Inaktivitätsverzögerung</translation>
-<translation id="4995548127349206948">Steuerung der Aktivierung der NTLMv2-Authentifizierung.</translation>
+<translation id="5034604678285451405">Hiermit wird der Schwellenwert des Akkus für das Umschalten bei Leistungsspitzen in Prozent festgelegt.
+
+          Diese Richtlinie wird nur verwendet, wenn "DevicePowerPeakShiftEnabled" auf "true" festgelegt ist.
+
+          Wenn sie nicht konfiguriert oder festgelegt ist, bleibt das Umschalten bei Leistungsspitzen immer deaktiviert.</translation>
 <translation id="5047604665028708335">Zugriff auf Websites außerhalb von Inhaltspaketen erlauben</translation>
 <translation id="5052081091120171147">Diese Richtlinie erzwingt, sofern aktiv, den Import des Browserverlaufs aus dem aktuellen Standardbrowser. Ist die Richtlinie aktiviert, wirkt sie sich auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import des Browserverlaufs. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
+<translation id="5055312535952606505">Hiermit werden die Proxyeinstellungen für <ph name="PRODUCT_NAME" /> konfiguriert. Diese Proxyeinstellungen können auch von ARC-Apps verwendet werden.
+
+          Wenn Sie diese Einstellung aktivieren, werden alle Proxyoptionen, die über die Befehlszeile eingegeben werden, von <ph name="PRODUCT_NAME" /> und ARC-Apps ignoriert.
+
+          Wird die Richtlinie nicht konfiguriert, so können Nutzer ihre eigenen Proxyeinstellungen vornehmen.
+
+          Wenn die Richtlinie "<ph name="PROXY_SETTINGS_POLICY_NAME" />" konfiguriert ist, werden die Richtlinien "<ph name="PROXY_MODE_POLICY_NAME" />", "<ph name="PROXY_PAC_URL_POLICY_NAME" />", "<ph name="PROXY_SERVER_POLICY_NAME" />", "<ph name="PROXY_BYPASS_POLICY_NAME" />" und "<ph name="PROXY_SERVER_MODE_POLICY_NAME" />" überschrieben.
+
+          Anhand des Felds "<ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" />" können Sie angeben, welcher Proxyserver von <ph name="PRODUCT_NAME" /> verwendet werden soll, und verhindern, dass Nutzer die Proxyeinstellungen ändern.
+
+          Das Feld "<ph name="PROXY_PAC_URL_PROXY_SETTINGS_FIELD" />" beinhaltet eine URL zu einer PAC-Proxy-Datei.
+
+          Das Feld "<ph name="PROXY_SERVER_PROXY_SETTINGS_FIELD" />" beinhaltet eine URL zum Proxyserver.
+
+          Das Feld "<ph name="PROXY_BYPASS_LIST_PROXY_SETTINGS_FIELD" />" beinhaltet eine Liste mit Proxy-Hosts, die von <ph name="PRODUCT_NAME" /> umgangen werden.
+
+          Das Feld "<ph name="PROXY_SERVER_MODE_PROXY_SETTINGS_FIELD" />" musste dem Feld "ProxyMode" weichen. Damit können Sie angeben, welcher Proxyserver von <ph name="PRODUCT_NAME" /> verwendet werden soll, und verhindern, dass Nutzer die Proxyeinstellungen ändern.
+
+          Wenn Sie für "ProxyMode" den Wert "direct" festlegen, wird kein Proxy verwendet und alle anderen Felder werden ignoriert.
+
+          Bei Auswahl von "system" für "ProxyMode" wird der Proxy des Systems verwendet und alle anderen Felder werden ignoriert.
+
+          Ist "ProxyMode" auf "auto_detect" festgelegt, werden alle anderen Felder ignoriert.
+
+          Wenn Sie für "ProxyMode" den Wert "fixed_server" festlegen, werden die Felder "ProxyServer" und "ProxyBypassList" verwendet.
+
+          Bei Auswahl von "pac_script" für "ProxyMode" werden die Felder "ProxyPacUrl" und "ProxyBypassList" verwendet.</translation>
 <translation id="5056708224511062314">Lupe deaktiviert</translation>
 <translation id="5058573563327660283">Strategie auswählen, die bei der automatischen Bereinigung zur Freigabe von Festplattenspeicher verwendet wird (eingestellt)</translation>
 <translation id="5067143124345820993">Weiße Liste für Nutzer bei der Anmeldung</translation>
-<translation id="5068140065960598044">Die Cloud-Richtlinie für <ph name="PRODUCT_NAME" /> überschreibt die Computerrichtlinie.</translation>
 <translation id="5075834892754086022">Wenn diese Richtlinie konfiguriert ist, wird die festgelegte minimale PIN-Länge
            erzwungen. Die absolute Mindestlänge einer PIN beträgt "1". Alle Werte unter "1"
           werden wie "1" behandelt.
@@ -2002,7 +2143,12 @@ Sollte die Richtlinie nicht konfiguriert sein, so wird der Standardsuchanbieter 
       Wenn die Richtlinie konfiguriert ist, wird jedes Element als Regel angesehen, ähnlich wie bei der Richtlinie "<ph name="URL_LIST_POLICY_NAME" />". Die Logik ist jedoch umgedreht: Wenn es eine Übereinstimmung für die Regel gibt, wird kein alternativer Browser geöffnet.
 
       Im Gegensatz zu "<ph name="URL_LIST_POLICY_NAME" />" gelten die Regeln in beide Richtungen. Wenn das Internet Explorer-Add-in also vorhanden und aktiviert ist, wird damit auch gesteuert, ob <ph name="IE_PRODUCT_NAME" /> diese URLs in <ph name="PRODUCT_NAME" /> öffnen soll.</translation>
-<translation id="5130288486815037971">Legt fest, ob RC4-Verschlüsselungssammlungen in TLS aktiviert sind</translation>
+<translation id="5124368997194894978">Starten bei anliegender Netzspannung aktivieren</translation>
+<translation id="5131211790949066746">Ermöglicht das Zusammenführen der folgenden Listen zur Installation von Erweiterungen: <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> und <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
+
+      Wenn Sie diese Einstellung aktivieren, werden die Werte aus der Computer-Plattformrichtlinie, der Computer-Cloud-Richtlinie und der Nutzer-Plattformrichtlinie in einer einzigen Liste zusammengeführt und gesamtheitlich genutzt. Es werden also nicht nur die Werte aus der einzelnen Quelle mit der höchsten Priorität verwendet.
+
+      Wenn Sie diese Einstellung deaktivieren oder nicht konfigurieren, werden nur Listeneinträge aus der Quelle mit der höchsten Priorität herangezogen. Alle anderen Quellen werden als Konflikte angezeigt, die jedoch ignoriert werden.</translation>
 <translation id="5141670636904227950">Standardtyp für die Lupe festlegen, die auf der Anmeldeseite aktiviert ist</translation>
 <translation id="5142301680741828703">Folgende URL-Muster immer in <ph name="PRODUCT_FRAME_NAME" /> darstellen</translation>
 <translation id="5148753489738115745">Ermöglicht die Verwendung zusätzlicher Parameter, die beim Start von <ph name="PRODUCT_NAME" /> durch <ph name="PRODUCT_FRAME_NAME" /> eingesetzt werden.
@@ -2014,6 +2160,24 @@ Sollte die Richtlinie nicht konfiguriert sein, so wird der Standardsuchanbieter 
       Der Mindestwert beträgt 30 Sekunden und der Höchstwert 24 Stunden.
       Werte außerhalb dieses Bereichs werden auf den jeweiligen Mindest- oder Maximalwert angepasst.</translation>
 <translation id="5163002264923337812">Alte webbasierte Anmeldung aktivieren</translation>
+<translation id="5168529971295111207">Diese Richtlinie wurde eingestellt. Verwenden Sie stattdessen "ProxyMode".
+
+          Mit dieser Richtlinie können Sie angeben, welcher Proxyserver von <ph name="PRODUCT_NAME" /> verwendet werden soll, und verhindern, dass Nutzer die Proxyeinstellungen ändern.
+
+          Diese Richtlinie wird nur angewendet, wenn die Richtlinie "<ph name="PROXY_SETTINGS_POLICY_NAME" />" nicht konfiguriert wurde.
+
+          Wenn Sie festlegen, dass kein Proxyserver verwendet, sondern immer eine direkte Verbindung hergestellt werden soll, werden alle anderen Optionen ignoriert.
+
+          Gleiches gilt, wenn Sie angeben, dass die Proxyserver-Einstellungen des Systems verwendet oder der Proxyserver automatisch erkannt werden soll.
+
+          Bei Auswahl manueller Proxyeinstellungen können Sie in "Adresse oder URL des Proxyservers", "URL einer PAC-Proxy-Datei" und "Kommagetrennte Liste der Proxy-Umgehungsregeln" weitere Optionen festlegen. Nur der HTTP-Proxyserver mit der höchsten Priorität ist für ARC-Apps verfügbar.
+
+          Ausführliche Beispiele finden Sie unter
+          <ph name="PROXY_HELP_URL" />.
+
+          Wenn Sie diese Einstellung aktivieren, werden alle Proxyoptionen, die über die Befehlszeile eingegeben werden, von <ph name="PRODUCT_NAME" /> ignoriert.
+
+          Wird die Richtlinie nicht konfiguriert, so können Nutzer ihre eigenen Proxyeinstellungen vornehmen.</translation>
 <translation id="5182055907976889880">Google Drive in <ph name="PRODUCT_OS_NAME" /> konfigurieren</translation>
 <translation id="5183383917553127163">Mit dieser Richtlinie können Sie festlegen, welche Erweiterungen nicht auf die schwarze Liste gesetzt werden. Der Wert "*" in der schwarzen Liste gibt an, dass alle Erweiterungen ausgeschlossen sind und dass Nutzer nur Erweiterungen installieren können, die in der Whitelist enthalten sind. Standardmäßig können alle Erweiterungen installiert werden. Wurden jedoch alle Erweiterungen durch eine Richtlinie auf die schwarze Liste gesetzt, kann diese Richtlinie mithilfe der Whitelist außer Kraft gesetzt werden.</translation>
 <translation id="519247340330463721">Hiermit werden die Safe Browsing-Richtlinien konfiguriert.</translation>
@@ -2095,13 +2259,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Wenn die Richtlinie nicht konfiguriert ist oder sie auf den leeren String oder einen ungültigen Portbereich eingestellt ist, kann von WebRTC jeder beliebige verfügbare lokale UDP-Port verwendet werden.</translation>
 <translation id="5290940294294002042">Liste von Plug-ins angeben, die der Nutzer aktivieren oder deaktivieren kann</translation>
-<translation id="5304269353650269372">Diese Richtlinie gibt an, nach welcher Inaktivitätsspanne des Nutzers im Akkubetrieb eine Warnmeldung angezeigt wird.
-
-          Wird diese Richtlinie festgelegt, gibt sie an, wie lange der Nutzer inaktiv sein kann, bevor <ph name="PRODUCT_OS_NAME" /> in einer Warnung auf die bevorstehende Maßnahme hinweist.
-
-          Wird diese Richtlinie nicht festgelegt, erscheint keine Warnung.
-
-          Geben Sie den Richtlinienwert in Millisekunden an. Solange die Inaktivitätsspanne kleiner oder gleich diesem festgelegten Wert ist, erscheint keine Warnung.</translation>
+<translation id="5306186200045823863">Der veralteten Symantec-PKI vertrauen</translation>
 <translation id="5307432759655324440">Inkognitomodus - Verfügbarkeit</translation>
 <translation id="5318185076587284965">Verwendung von Relayservern durch den Host für den Remotezugriff gestatten</translation>
 <translation id="5323128137188992869">Hiermit wird das Streamen von Inhalten an das Gerät über <ph name="PRODUCT_NAME" /> erlaubt.
@@ -2113,6 +2271,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Ansonsten kann sie auf einen der folgenden Werte festgelegt werden: "tls1.2" oder "tls1.3". Wenn die Richtlinie konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> keine SSL- oder TLS-Versionen, die neuer als die festgelegte Version sind. Ein unbekannter Wert wird ignoriert.</translation>
 <translation id="5330684698007383292">Verarbeitung der folgenden Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
+<translation id="5331746669335642668">Cloud-Richtlinie von <ph name="PRODUCT_NAME" /> überschreibt Plattformrichtlinie.</translation>
 <translation id="5365476955714838841">Befehlszeilenparameter für den alternativen Browser.</translation>
 <translation id="5365946944967967336">Startseiten-Schaltfläche auf Symbolleiste anzeigen</translation>
 <translation id="5366745336748853475">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, für die auf dem Anmeldebildschirm im Frame, der den SAML-Flow hostet, automatisch ein Clientzertifikat ausgewählt wird, wenn die Website ein Zertifikat anfordert. Zum Beispiel kann damit ein geräteübergreifendes Zertifikat konfiguriert werden, das dem SAML IdP präsentiert wird.
@@ -2178,6 +2337,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="5447306928176905178">Weitergabe von Speicherinformationen (JS-Heap-Größe) an Seite aktivieren (veraltet)</translation>
 <translation id="5457065417344056871">Gastmodus im Browser aktivieren</translation>
 <translation id="5457924070961220141">Ermöglicht Ihnen die Konfiguration des Standard-HTML-Renderers, wenn <ph name="PRODUCT_FRAME_NAME" /> installiert ist. Wenn diese Richtlinie nicht konfiguriert ist, so kommt die Standardeinstellung zum Einsatz, wobei der Hostbrowser das Rendering übernimmt. Sie haben aber die Möglichkeit, dies zu ändern und <ph name="PRODUCT_FRAME_NAME" /> das Rendering der HTML-Seite übernehmen zu lassen.</translation>
+<translation id="5458584148602890023">Umschalten bei Leistungsspitzen aktivieren</translation>
 <translation id="5464816904705580310">Konfiguriert Einstellungen für verwaltete Nutzer</translation>
 <translation id="546726650689747237">Verzögerung für die Bildschirmabdunkelung im Netzbetrieb</translation>
 <translation id="5469143988693423708">Nutzer darf Crostini ausführen</translation>
@@ -2195,6 +2355,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       Falls sich Regeln widersprechen, verwendet <ph name="PRODUCT_NAME" /> die Regel, die am spezifischsten ist.</translation>
 <translation id="5475361623548884387">Drucken aktivieren</translation>
 <translation id="547601067149622666">Werbung auf Websites mit aufdringlichen Werbeanzeigen nicht zulassen</translation>
+<translation id="5483065054530244863">SHA-1-signierte Zertifikate zulassen, die von lokalen Vertrauensankern ausgestellt werden</translation>
 <translation id="5483777239978559943">Diese Richtlinie wurde eingestellt. Sie können mit "<ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />" die Verfügbarkeit des Flash-Plug-ins definieren und über "<ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" />" steuern, ob der integrierte PDF-Viewer zum Öffnen von PDF-Dateien verwendet werden soll.
 
       Gibt eine Liste von Plug-ins an, die der Nutzer in <ph name="PRODUCT_NAME" /> aktivieren oder deaktivieren kann.
@@ -2308,6 +2469,17 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
           Ist sie aktiviert oder nicht konfiguriert, so können Nutzer ihre Passwörter im Passwortmanager als Klartext sehen.</translation>
 <translation id="5620392548325769024">Einblendung der Begrüßungsseite beim ersten Start des Browsers nach einer Aktualisierung des Betriebssystems aktivieren</translation>
 <translation id="5630352020869108293">Letzte Sitzung wiederherstellen</translation>
+<translation id="5643906875497889108">Legt fest, was für Apps und Erweiterungen installiert werden dürfen, und schränkt den Laufzeitzugriff ein.
+
+          Mit dieser Einstellung wird eine weiße Liste mit den zulässigen Erweiterungs- und App-Typen erstellt, die in <ph name="PRODUCT_NAME" /> installiert werden dürfen, und den Hosts, mit denen sie interagieren dürfen. Der Wert ist eine Liste mit Strings, die jeweils eines der Folgenden sind: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app" oder "platform_app". Weitere Informationen zu diesen Typen entnehmen Sie der Dokumentation zu den <ph name="PRODUCT_NAME" />-Erweiterungen.
+
+          Beachten Sie, dass diese Richtlinie auch solche Erweiterungen und Apps betrifft, die über die Richtlinie "ExtensionInstallForcelist" zwangsweise installiert werden.
+
+          Wenn diese Einstellung konfiguriert ist, können Erweiterungen und Apps, deren Typ nicht auf der Liste steht, nicht installiert werden.
+
+          Ist diese Einstellung nicht konfiguriert, dann gelten hinsichtlich der Zulässigkeit von Erweiterungs- und App-Typen keine Einschränkungen.
+
+          Vor Version 75 wird die Angabe mehrerer durch Kommas getrennter Erweiterungs-IDs nicht unterstützt und wird deswegen übersprungen. Der verbleibende Teil der Richtlinie wird trotzdem angewendet.</translation>
 <translation id="5645779841392247734">Cookies auf diesen Websites zulassen</translation>
 <translation id="5689430183304951538">Standardmäßige Druckseitengröße</translation>
 <translation id="5693469654327063861">Datenmigration zulassen</translation>
@@ -2347,6 +2519,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="5765780083710877561">Beschreibung:</translation>
 <translation id="5770738360657678870">Entwicklerversion (möglicherweise nicht stabil)</translation>
 <translation id="5774856474228476867">Such-URL der Standardsuchmaschine</translation>
+<translation id="5775235485119094648">Lädt den Akku auf, solange er sich in einem festen Bereich befindet.</translation>
 <translation id="5776485039795852974">Nachfragen, wenn eine Website Desktop-Benachrichtigungen anzeigen will</translation>
 <translation id="5781412041848781654">Gibt an, welche GSSAPI-Bibliothek für die HTTP-Authentifizierung verwendet werden soll. Sie können entweder nur den Namen einer Bibliothek oder einen vollständigen Pfad angeben.
 
@@ -2408,6 +2581,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="5893553533827140852">Wenn diese Einstellung aktiviert ist, wird für Anfragen zur Gnubby-Authentifizierung ein Proxy über eine Remote-Host-Verbindung verwendet.
 
 Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy für Anfragen zur Gnubby-Authentifizierung verwendet.</translation>
+<translation id="5897913798715600338">Lädt den Akku mit Schnellladetechnologie auf.</translation>
 <translation id="5898486742390981550">Wenn mehrere Nutzer angemeldet sind, kann nur der Hauptnutzer Android-Apps verwenden.</translation>
 <translation id="5900196529149231477">
       Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="ISOLATE_ORIGINS_POLICY_NAME" />" für die eigentliche Nutzersitzung an. Es wird empfohlen, für beide Richtlinien denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, weil der von der Nutzerrichtlinie angegebene Wert erst angewendet werden muss.
@@ -2416,12 +2590,20 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
       Wenn die Richtlinie nicht konfiguriert ist, werden für die Anmeldeseite die standardmäßigen Plattformeinstellungen für die Isolierung von Websites verwendet.
       </translation>
 <translation id="5901427587865226597">Nur Duplexdruck</translation>
+<translation id="5903898512448364160">
+      Wenn die Richtlinie auf "true" gesetzt wird, hat die Cloudrichtlinie Vorrang, wenn sie mit der Plattformrichtlinie in Konflikt steht.
+      Falls die Richtlinie auf "false" gesetzt oder nicht konfiguriert ist, hat die Plattformrichtlinie Vorrang, wenn sie mit der Cloudrichtlinie in Konflikt steht.
+
+      Diese Richtlinie ist nur als erforderliche Computer-Plattformrichtlinie verfügbar und wirkt sich lediglich auf Cloudrichtlinien auf Computern aus.
+      </translation>
+<translation id="5905473632148429217">OCSP/CRL-Online-Prüfungen aktivieren</translation>
 <translation id="5906199912611534122">Ermöglicht die Aktivierung oder Deaktivierung der Netzwerkbegrenzung.
       Diese Richtlinie gilt für alle Nutzer und alle Oberflächen auf diesem Gerät.
       Nachdem die Richtlinie festgelegt wurde, kann die Begrenzung nur durch Deaktivierung der Richtlinie aufgehoben werden.
 
       Wird die Richtlinie auf "false" gesetzt, wird keine Begrenzung festgelegt.
       Wenn sie auf "true" gesetzt wird, wird das System begrenzt, damit die angegebenen Upload- und Downloadwerte in kbit/s eingehalten werden.</translation>
+<translation id="591088232153082363">Lädt den Akku basierend auf der Akkunutzung intelligent auf.</translation>
 <translation id="5921713479449475707">Downloads automatischer Updates über HTTP zulassen</translation>
 <translation id="5921888683953999946">Hiermit wird der Standardstatus der Bedienungshilfefunktion für den großen Cursor auf der Anmeldeseite festgelegt.
 
@@ -2440,9 +2622,11 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 
       Wenn diese Einstellung deaktiviert ist oder kein Wert festgelegt wurde, wird SafeSearch in der Google-Suche nicht erzwungen.</translation>
 <translation id="5946082169633555022">Beta-Kanal</translation>
+<translation id="5946329690214660966">Benutzerdefinierten Zeitplan zum Prüfen auf Updates festlegen</translation>
 <translation id="5950205771952201658">Da Online-Überprüfungen zu SoftFail-Zertifikatssperren keinen wirkungsvollen Sicherheitseffekt bieten, werden sie ab <ph name="PRODUCT_NAME" />-Version 19 standardmäßig deaktiviert. Wenn Sie diese Richtlinie auf "true" setzen, wird das vorherige Verhalten wiederhergestellt und es werden online OCSP-/CRL-Prüfungen durchgeführt.
 
       Falls die Richtlinie nicht konfiguriert oder auf "false" eingestellt ist, führt <ph name="PRODUCT_NAME" /> ab <ph name="PRODUCT_NAME" />-Version 19 keine Online-Überprüfungen auf Zertifikatssperren mehr durch.</translation>
+<translation id="5961137303188584693">MAC-Adresse der im Gerät verbauten NIC</translation>
 <translation id="5966615072639944554">Erweiterungen, die die Remote Attestation API zur Bestätigung der Nutzeridentität verwenden dürfen</translation>
 <translation id="5983708779415553259">Standardverhalten für Websites, die nicht zu einem Inhaltspaket gehören</translation>
 <translation id="5997543603646547632">Standardmäßig 24-Stunden-Uhr verwenden</translation>
@@ -2505,6 +2689,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6034341625190551415">Legt die Typen für öffentliche Sitzungen und Kiosk-Konten fest.</translation>
 <translation id="6034603289689965535">Erlaubt einer Seite, während des Unloads Pop-ups einzublenden</translation>
 <translation id="6036523166753287175">Firewallausnahme über Host für Remotezugriff aktivieren</translation>
+<translation id="605475635122964053">Hiermit wird der PIN-Druckmodus eingeschränkt. Wenn die Richtlinie nicht konfiguriert ist, gelten keine Einschränkungen. Ist der Modus nicht verfügbar, wird diese Richtlinie ignoriert. Der PIN-Druckmodus wird nur für Drucker angewendet, die das IPPS- oder USB-Protokoll bzw. IPP über USB verwenden. </translation>
 <translation id="6070667616071269965">Tastaturlayouts der Anmeldeseite</translation>
 <translation id="6074963268421707432">Anzeige von Desktop-Benachrichtigungen für keine Website zulassen</translation>
 <translation id="6074964551275531965">Zeitraum für Updatebenachrichtigungen festlegen</translation>
@@ -2512,6 +2697,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 
       Wenn diese Richtlinie nicht konfiguriert ist, ist die Liste der trennbaren USB-Geräte leer.</translation>
 <translation id="6083631234867522991">Windows (Windows-Clients):</translation>
+<translation id="608788685013546076">Schwellenwert des Akkus für das Umschalten bei Leistungsspitzen in Prozent festlegen</translation>
 <translation id="6089679180657323464">Legt die Einstellungen für Wilco Diagnostics and Telemetry Controller fest.</translation>
 <translation id="6091233616732024397">Nutzer zwingen, sich zur Nutzung des Browsers anzumelden</translation>
 <translation id="6093156968240188330">Zulassen, dass Remote-Nutzer in Remote-Sitzungen mit geöffneten Fenstern arbeiten können</translation>
@@ -2532,6 +2718,17 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6111936128861357925">Easter Egg-Dinosaurierspiel zulassen</translation>
 <translation id="6114416803310251055">Veraltet</translation>
 <translation id="6133088669883929098">Schlüsselgenerierung für alle Websites zulassen</translation>
+<translation id="6136537398661737682">Mit dieser Richtlinie wird der Ausgangszustand der Standortdienste von Google festgelegt.
+
+      Wenn die Richtlinie nicht konfiguriert oder auf "<ph name="GLS_DISABLED" />" festgelegt ist, sind die Standortdienste anfangs deaktiviert.
+
+      Ist die Richtlinie auf "<ph name="GLS_ENABLED" />" festgelegt, sind die Standortdienste anfangs aktiviert.
+
+      Ist die Richtlinie auf "<ph name="GLS_UNDER_USER_CONTROL" />" festgelegt, dann wird der Nutzer aufgefordert anzugeben, ob die Standortdienste von Google verwendet werden sollen. Hiermit wird Android-Apps die Nutzung der Dienste zum Abfragen des Gerätestandorts erlaubt und die Übermittlung anonymer Standortdaten an Google gestattet.
+
+      Beachten Sie, dass mit dieser Richtlinie lediglich der Status der Standortdienste von Google bei der erstmaligen Einrichtung festgelegt wird. Danach kann der Nutzer die Android-Einstellungen öffnen und die Standortdienste aktivieren oder deaktivieren.
+
+      Beachten Sie, dass die Richtlinie ignoriert wird und die Standortdienste von Google immer deaktiviert sind, wenn die Richtlinie "<ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" />" auf "<ph name="BLOCK_GEOLOCATION_SETTING" />" festgelegt ist.</translation>
 <translation id="6141402445226505817">Immer die grobe Erkennung der Zeitzone verwenden</translation>
 <translation id="6145799962557135888">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von JavaScript gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultJavaScriptSetting", falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="614662973812186053">Diese Richtlinie steuert zudem die Erfassung von Nutzungs- und Diagnosedaten in Android.</translation>
@@ -2557,6 +2754,14 @@ Für diese Richtlinie wird die Installation von <ph name="CHROME_REPORTING_EXTEN
 <translation id="6155936611791017817">Standardstatus für den großen Cursor auf der Anmeldeseite festlegen</translation>
 <translation id="6157537876488211233">Kommagetrennte Liste der Proxy-Umgehungsregeln</translation>
 <translation id="6158324314836466367">Unternehmens-Web-Store-Name (veraltet)</translation>
+<translation id="6158817306788002298">Hier können Sie die URL zu einer PAC-Proxy-Datei festlegen.
+
+          Diese Richtlinie tritt nur dann in Kraft, wenn Sie bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" die Option für manuelle Proxyeinstellungen ausgewählt haben und die Richtlinie "<ph name="PROXY_SETTINGS_POLICY_NAME" />" nicht konfiguriert wurde.
+
+          Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxyrichtlinien entschieden haben.
+
+          Ausführliche Beispiele finden Sie unter
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="6178075938488052838">Diese Richtlinie gibt vor, wer eine <ph name="PRODUCT_OS_NAME" />-Sitzung starten darf. Sie verhindert nicht, dass sich Nutzer in weiteren Google-Konten innerhalb von Android anmelden. Wenn Sie dies verhindern möchten, konfigurieren Sie die Android-spezifische Richtlinie "<ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" />" im Rahmen von "<ph name="ARC_POLICY_POLICY_NAME" />".</translation>
 <translation id="6181608880636987460">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" nicht gestattet ist.
 
@@ -2584,14 +2789,33 @@ Für diese Richtlinie wird die Installation von <ph name="CHROME_REPORTING_EXTEN
       Wenn die Richtlinie deaktiviert ist, erfolgt kein Import der AutoFill-Formulardaten.
 
       Ist die Richtlinie nicht konfiguriert, wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
+<translation id="6221175752766085998">Zertifikate zulassen, die von lokalen Vertrauensankern ausgestellt werden, bei denen die "subjectAlternativeName"-Erweiterung fehlt</translation>
 <translation id="6224304369267200483">Automatischer Nachweis des Sicherheitsschlüssels durch URLs/Domains</translation>
 <translation id="6233173491898450179">Downloadverzeichnis festlegen</translation>
 <translation id="6244210204546589761">Beim Start zu öffnende URLs</translation>
+<translation id="6255387031094435995">Ermöglicht das Zusammenführen der ausgewählten Richtlinien, wenn diese aus unterschiedlichen Quellen stammen, mit gleichem Bereich und gleicher Ebene.
+
+        Wenn sich eine Richtlinie auf der Liste befindet und dadurch ein Konflikt zwischen zwei Quellen entsteht, werden, sofern Bereich und Ebene identisch sind, die Werte zu einer neuen Richtlinienliste zusammengeführt.
+
+        Wenn sich eine Richtlinie auf der Liste befindet und dadurch ein Konflikt zwischen zwei Quellen entsteht, wird, sofern Bereich und/oder Ebene unterschiedlich sind, die Richtlinie mit der höchsten Priorität angewendet.
+
+        Befindet sich eine Richtlinie nicht auf der Liste und liegt ein Konflikt zwischen Quellen, Bereichen und/oder Ebenen vor, dann wird die Richtlinie mit der höchsten Priorität verwendet.</translation>
 <translation id="6258193603492867656">Gibt an, ob der generierte Kerberos-SPN einen Nicht-Standard-Port umfassen soll. Falls Sie diese Einstellung aktivieren und ein Nicht-Standard-Port (ein anderer Port als 80 oder 443) eingegeben wird, wird dieser in den generierten Kerberos-SPN aufgenommen. Wenn Sie diese Einstellung deaktivieren oder nicht konfigurieren, umfasst der generierte Kerberos-SPN in keinem Fall einen Port.</translation>
 <translation id="6261643884958898336">Gerätebezogene Daten erfassen</translation>
 <translation id="6281043242780654992">Konfiguriert Richtlinien für das native Messaging. Hosts für natives Messaging auf der schwarzen Liste können nur geladen werden, wenn sie auch auf der weißen Liste stehen.</translation>
 <translation id="6282799760374509080">Audioaufzeichnung gestatten oder ablehnen</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6306608379445125648">Damit wird die Deaktivierung von Sprachen für die Rechtschreibprüfung erzwungen. Sprachen in dieser Liste, die nicht erkannt werden, werden ignoriert.
+
+      Wenn diese Richtlinie aktiviert ist, wird die Rechtschreibprüfung für die angegebenen Sprachen deaktiviert. Für nicht in der Liste befindliche Sprachen kann die Rechtschreibprüfung weiterhin vom Nutzer aktiviert oder deaktiviert werden.
+
+      Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist, bleiben die Einstellungen des Nutzers für die Rechtschreibprüfung unverändert.
+
+      Wenn die Richtlinie "SpellcheckEnabled" auf "disabled" festgelegt wird, hat diese Richtlinie keinerlei Wirkung.
+
+      Ist eine Sprache sowohl in dieser Richtlinie als auch in der Richtlinie "SpellcheckLanguage" enthalten, hat die Richtlinie "SpellcheckLanguage" Vorrang und die Sprache wird für die Rechtschreibprüfung aktiviert.
+
+      Aktuell werden die folgenden Sprachen unterstützt: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Automatische Vervollständigung des Domainnamens während der Nutzeranmeldung aktivieren</translation>
 <translation id="6315673513957120120">Chrome zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die SSL-Fehler aufweisen. Standardmäßig oder bei Festlegung von "true" für diese Richtlinie ist es Nutzern gestattet, durch diese Seiten mit Warnmeldung zu klicken.
       Wenn für die Richtlinie "false" festgelegt wird, können Nutzer nicht mehr durch diese Seiten klicken.</translation>
@@ -2605,7 +2829,6 @@ Ist die Richtlinie nicht festgelegt, findet keine automatische Anmeldung statt.<
           Diese Richtlinie ist optional. Wenn sie nicht festlegt ist, wird die Suchanfrage mithilfe der GET-Methode gesendet.
 
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
-<translation id="6367755442345892511">Ob der Release-Kanal vom Nutzer konfiguriert werden kann</translation>
 <translation id="6368011194414932347">Startseiten-URL konfigurieren</translation>
 <translation id="6368403635025849609">JavaScript auf diesen Websites zulassen</translation>
 <translation id="6376659517206731212">Kann verbindlich sein</translation>
@@ -2726,6 +2949,17 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
           Wenn diese Richtlinie nicht konfiguriert ist, wird die Einstellung "3" verwendet, die vom Nutzer später geändert werden kann.</translation>
 <translation id="663685822663765995">Farbdruck einschränken</translation>
 <translation id="6641981670621198190">Unterstützung für 3D-Grafik-APIs deaktivieren</translation>
+<translation id="6646056064606561298">Hiermit können Sie die Energieverwaltungsrichtlinie zum Starten bei anliegender Netzspannung aktivieren.
+
+          Diese Energieverwaltungsrichtlinie erlaubt das automatische Starten des Systems aus dem abgeschalteten oder dem Ruhezustand bei Verbindung mit einer Netzspannungsquelle.
+
+          Wenn die Richtlinie auf "true" festgelegt ist, ist das Starten bei anliegender Netzspannung immer aktiviert, sofern die Funktion vom Gerät unterstützt wird.
+
+          Ist die Richtlinie auf "false" festgelegt, dann ist das Starten bei anliegender Netzspannung immer deaktiviert.
+
+          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+          Wird die Richtlinie nicht festgelegt, ist das Starten bei anliegender Netzspannung deaktiviert und kann vom Nutzer nicht aktiviert werden.</translation>
 <translation id="6647965994887675196">Wurde "true" festgelegt, können betreute Nutzer erstellt und verwendet werden.
 
           Wurde "false" oder "not configured" festgelegt, wird die Erstellung und Anmeldung betreuter Nutzer deaktiviert. Alle vorhandenen betreuten Nutzer werden ausgeblendet.
@@ -2761,18 +2995,10 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
       Falls die Anmeldung in einem anderen Konto über den Inkognitomodus nicht erlaubt ist, können Sie diesen Modus mithilfe der IncognitoModeAvailability-Richtlinie blockieren.
 
       Hinweis: Nutzer können durch Blockieren von Cookies auf Google-Dienste, die nicht authentifiziert sind, zugreifen.</translation>
-<translation id="6738326937072482736">Hiermit werden Verfügbarkeit und Verhalten der Updatefunktion für die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware konfiguriert.
-
-      Einzelne Einstellungen können in den JSON-Eigenschaften festgelegt werden:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Wenn diese Richtlinie auf <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> festgelegt ist, können Nutzer mithilfe von Powerwash ein Update der <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware installieren.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Wenn diese Richtlinie auf <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> festgelegt ist, können Nutzer den <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmwareupdatevorgang starten, bei dem der geräteübergreifende Status erhalten bleibt (einschließlich Unternehmensregistrierung), aber die Nutzerdaten verloren gehen. Dieser Updatevorgang ist ab Version 68 verfügbar.
-
-      Wenn diese Richtlinie nicht festgelegt ist, ist die Updatefunktion für die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware nicht verfügbar.</translation>
 <translation id="6757438632136860443">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" gestattet ist.
 
           Ist diese Richtlinie nicht festgelegt, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPluginsSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.</translation>
+<translation id="6757613329154374267">"Sichern und wiederherstellen" aktiviert</translation>
 <translation id="6762235610019366960">Mit dieser Richtlinie wird festgelegt, ob in <ph name="PRODUCT_NAME" /> Werbung und/oder Bildungsinhalte auf einem ganzen Tab angezeigt werden dürfen.
 
       Falls sie nicht konfiguriert oder aktiviert (auf "true" gesetzt) ist, dürfen Nutzern in <ph name="PRODUCT_NAME" /> Inhalte auf einem ganzen Tab angezeigt werden, um ihnen Produktinformationen zu geben.
@@ -2795,6 +3021,7 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
       Der String kann die Variablen ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} enthalten, die im Gerät durch Werte ersetzt werden, bevor sie als Hostname verwendet werden. Das Ergebnis sollte ein gültiger Hostname gemäß RFC 1035, Abschnitt 3.1 sein.
 
       Wird diese Richtlinie nicht definiert oder ist der Wert nach dem Ersetzen kein gültiger Hostname, wird in der DHCP-Anfrage kein Hostname festgelegt. </translation>
+<translation id="6833988859168635883">Start, Startseite und Seite "Neuer Tab"</translation>
 <translation id="6835883744948188639">Dem Nutzer eine wiederkehrende Aufforderung anzeigen, dass ein Neustart empfohlen wird</translation>
 <translation id="6837480141980366278">Legt fest, ob der integrierte DNS-Client von  <ph name="PRODUCT_NAME" /> verwendet werden soll.
 
@@ -2905,7 +3132,19 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 
       Kurz vor dem Dimmen des Bildschirms prüft das intelligente Dimmmodell, ob der Vorgang verzögert werden sollte. Wenn das Dimmen des Bildschirms durch das Modell verzögert wird, wird damit der Zeitraum bis zum Dimmen des Bildschirms effektiv verlängert. In diesem Fall werden die Verzögerungen für das Ausschalten des Bildschirms, die Bildschirmsperre und die Inaktivität entsprechend angepasst, um die ursprünglich konfigurierten Abstände beizubehalten.
       Ist die Richtlinie auf "true" festgelegt oder nicht konfiguriert, wird das intelligente Dimmmodell aktiviert und der Zeitraum bis zum Dimmen des Bildschirms kann durch das Modell verlängert werden. Wenn die Richtlinie auf "false" festgelegt ist, wird das Dimmen des Bildschirms durch das intelligente Dimmmodell nicht beeinflusst.</translation>
+<translation id="6967394885063085697">Hiermit können Sie die Energieverwaltungsrichtlinie für den intelligenten Akkulademodus aktivieren.
+
+          Der intelligente Akkulademodus erlaubt eine Maximierung der Akkulebensdauer. Im intelligenten Akkulademodus verwendet das System außerhalb der Arbeitszeit den Standardladealgorithmus und weitere Verfahren, um die Lebensdauer des Akkus zu maximieren. Während der Arbeitszeit wird dagegen das Schnellladen verwendet. Beim Schnellladen wird der Akku in kürzerer Zeit aufgeladen und steht mit der gesamten Ladekapazität schneller wieder zur Verfügung. Für jeden Tag wird die Zeit, in der das System am intensivsten genutzt wird, durch einen Startzeitpunkt und eine Dauer angegeben.
+
+          Wenn die Richtlinie auf "true" festgelegt ist und "DeviceAdvancedBatteryChargeModeDayConfig" ebenfalls eingestellt ist, ist der intelligente Akkulademodus immer aktiviert, sofern die Funktion vom Gerät unterstützt wird.
+
+          Ist die Richtlinie auf "false" gesetzt, dann ist der Modus immer deaktiviert.
+
+          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+          Wird die Richtlinie nicht festgelegt, dann ist der intelligente Akkulademodus deaktiviert und kann vom Nutzer nicht aktiviert werden.</translation>
 <translation id="6972540544240464302">Konfiguration für Aufgabenplaner auswählen</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6994082778848658360">Hiermit wird angegeben, wie die integrierte Secure Element-Hardware zur Zwei-Faktor-Authentifizierung verwendet werden kann, wenn sie mit dieser Funktion kompatibel ist. Mithilfe der Ein-/Aus-Taste des Geräts wird die Anwesenheit des Nutzers ermittelt.
 
       Wenn "Deaktiviert" ausgewählt ist, steht kein zweiter Authentifizierungsfaktor zur Verfügung.
@@ -2913,7 +3152,6 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Wenn "U2F" ausgewählt ist, verhält sich die integrierte Hardware gemäß der FIDO U2F-Spezifikation.
 
       Wenn "U2F_EXTENDED" ausgewählt ist, sind durch die integrierte Hardware die U2F-Funktionen plus einige Erweiterungen zur individuellen Bestätigung verfügbar.</translation>
-<translation id="6997592395211691850">Gibt an, ob für lokale Vertrauensanker Online-OCSP/CRLS-Prüfungen erforderlich sind</translation>
 <translation id="7003334574344702284">Diese Richtlinie erzwingt, sofern aktiv, den Import von gespeicherten Passwörtern aus dem vorherigen Standardbrowser. Bei einer Aktivierung wirkt sich die Richtlinie auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import der gespeicherten Passwörter. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="7003746348783715221">Einstellungen für <ph name="PRODUCT_NAME" /></translation>
 <translation id="7006788746334555276">Inhaltseinstellungen</translation>
@@ -2970,6 +3208,17 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Sobald diese Einstellung aktiviert oder deaktiviert ist, können Nutzer sie nicht ändern oder außer Kraft setzen.
 
       Ist die Richtlinie nicht konfiguriert, kann der Nutzer bestimmen, ob eine Passwortabfrage zum Reaktivieren des Geräts notwendig sein soll.</translation>
+<translation id="7107148737865880402">Hiermit können Sie die Energieverwaltungsrichtlinie zur gemeinsamen Stromversorgung per USB aktivieren.
+
+          Bestimmte Geräte haben einen speziellen USB-Port, der mit einem Blitz- oder Batteriesymbol gekennzeichnet ist und zum Aufladen von Geräten wie etwa einem Mobiltelefon mithilfe des Systemakkus verwendet werden kann. Diese Richtlinie betrifft das Ladeverhalten dieses Ports, wenn sich das System im Ruhemodus befindet oder heruntergefahren wurde. Diese Richtlinie hat keine Auswirkungen auf die übrigen USB-Ports und das Ladeverhalten, solange das System aktiv ist.
+
+          Ist das System aktiv, dann stellt der USB-Port immer Ladestrom bereit.
+
+          Im Ruhemodus dagegen wird, wenn diese Richtlinie auf "true" gesetzt ist, am USB-Port Ladestrom bereitgestellt, wenn das Gerät mit einer Netzsteckdose verbunden oder der Ladestand des Akkus höher als 50 % ist. Andernfalls liegt kein Ladestrom an.
+
+          Ist das Gerät heruntergefahren, dann wird, wenn diese Richtlinie auf "true" gesetzt ist, Ladestrom am USB-Port bereitgestellt, wenn das Gerät an eine Netzsteckdose angeschlossen ist. Andernfalls liegt kein Ladestrom an.
+
+          Ist diese Richtlinie nicht eingestellt, dann wird sie aktiviert und kann vom Nutzer nicht geändert werden.</translation>
 <translation id="7115494316187648452">Legt fest, ob ein <ph name="PRODUCT_NAME" />-Prozess bei der Anmeldung im Betriebssystem gestartet und nach dem Schließen des letzten Browserfensters weiter ausgeführt wird, sodass Hintergrund-Apps und die aktuelle Browsersitzung einschließlich aller Sitzungscookies aktiv bleiben. Der Hintergrundprozess kann jederzeit über ein entsprechendes Symbol in der Taskleiste geschlossen werden.
 
       Ist diese Richtlinie auf "true" gesetzt, wird der Hintergrundmodus aktiviert und der Prozess kann nicht vom Nutzer über die Browsereinstellungen gesteuert werden.
@@ -3017,6 +3266,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
 Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Bildschirm-Wakelocks bei der Energieverwaltung berücksichtigt, es sei denn, "AllowWakeLocks" ist auf "false" gesetzt.
 Falls die Richtlinie auf "false" gesetzt wird, werden Bildschirm-Wakelock-Anfragen auf den Status von System-Wakelocks zurückgestuft.</translation>
+<translation id="7177857088692019405">Schnelles Entsperren</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Für Updates zugelassene Verbindungstypen</translation>
 <translation id="7194407337890404814">Name der Standardsuchmaschine</translation>
@@ -3080,6 +3330,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="7273823081800296768">Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, kann der Nutzer beim Herstellen der Verbindung Clients und Hosts koppeln. Dadurch braucht nicht jedes Mal eine PIN eingegeben zu werden.
 
           Bei Deaktivierung dieser Einstellung ist diese Funktion nicht verfügbar.</translation>
+<translation id="7274077256421167535">Gemeinsame Stromversorgung per USB aktivieren</translation>
 <translation id="7275334191706090484">Verwaltete Lesezeichen</translation>
 <translation id="7291084543582732020">Wenn Sie die Einstellung aktivieren, können Nutzer Smart Lock verwenden, wenn die Voraussetzungen für die Funktion erfüllt sind.
 
@@ -3093,6 +3344,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
           Diese Richtlinie wird nur befolgt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="7302043767260300182">Verzögerung für die Bildschirmsperre im Netzbetrieb</translation>
+<translation id="7305262223970835999">Erlaubt SAML-Nutzern das Ändern des Passworts während einer Sitzung.</translation>
 <translation id="7311458740754205918">Wenn für diese Richtlinie "true" festgelegt wird oder wenn sie nicht konfiguriert wird, werden auf der "Neuer Tab"-Seite unter Umständen Inhaltsvorschläge auf Basis des Browserverlaufs, der Interessen oder des Standorts des Nutzers angezeigt.
 
       Wenn für diese Richtlinie "false" festgelegt wird, werden auf der "Neuer Tab"-Seite keine automatisch generierten Inhaltsvorschläge angezeigt.</translation>
@@ -3131,9 +3383,6 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="7339315111520512972">Ausführung des Netzwerkcodes im Browserprozess erzwingen</translation>
 <translation id="7340034977315324840">Aktivitätszeit von Geräten melden</translation>
 <translation id="7343497214039883642">Unternehmensdrucker-Konfigurationsdatei für Geräte</translation>
-<translation id="7349338075015720646">Hierdurch wird eine Liste von Websites festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die nicht wieder vom Nutzer deinstalliert werden können.
-
-      Jedes Listenelement der Richtlinie ist ein Objekt mit zwei Teilen: "url" und "launch_container". Bei "url" handelt es sich um die URL der Web-App, die installiert werden soll. Der "Launch_container" sollte entweder ein Fenster oder ein Tab sein, um festzulegen, wie die Web-App nach der Installation geöffnet wird. Wird "launch_container" nicht festgelegt, wird die App in einem Fenster geöffnet, wenn sie von Chrome als progressive Web-App erachtet wird. Andernfalls wird sie in einem Tab geöffnet.</translation>
 <translation id="735902178936442460">Mit dieser Richtlinie wird festgelegt, ob Daten erfasst werden, mit denen Geräte identifiziert werden können, etwa Gerätenamen und Netzwerkadressen.
 
 Wenn die Richtlinie auf "true" gesetzt oder gar nicht festgelegt wird, werden Daten, mit denen Geräte identifiziert werden können, erfasst.
@@ -3152,14 +3401,10 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
       Wenn die Richtlinie nicht konfiguriert oder auf "false" festgelegt ist, wird die Funktion "<ph name="TLS_FALSE_START" />" aktiviert. Ist "true" festgelegt, wird die Funktion "<ph name="TLS_FALSE_START" />" deaktiviert.</translation>
 <translation id="7433714841194914373">Google Instant aktivieren</translation>
 <translation id="7434202861148928348">Erforderliche Domainnamen für Remotezugriff-Clients konfigurieren</translation>
-<translation id="7443061725198440541">Wenn diese Richtlinie nicht festgelegt oder aktiviert wird, darf der Nutzer die Rechtschreibprüfung verwenden.
-
-      Wenn diese Richtlinie deaktiviert wird, darf der Nutzer die Rechtschreibprüfung nicht verwenden. Die Richtlinie "SpellcheckLanguage" wird darüber hinaus ignoriert, wenn diese Richtlinie deaktiviert ist.</translation>
 <translation id="7443616896860707393">Ursprungsübergreifende HTTP-Basic-Authentifizierungsabfragen</translation>
 <translation id="7458437477941640506">Führen Sie kein Rollback auf die Zielversion durch, wenn die Version des Betriebssystems neuer als die der Zielversion ist. Aktualisierungen sind ebenfalls deaktiviert.</translation>
 <translation id="7464991223784276288">Cookies von übereinstimmenden URLs auf die aktuelle Sitzung beschränken</translation>
 <translation id="7469554574977894907">Suchvorschläge aktivieren</translation>
-<translation id="7474249562477552702">Genehmigung von SHA-1-signierten Zertifikaten, die von lokalen Trust Anchors herausgegeben werden</translation>
 <translation id="7485481791539008776">Regeln zur Auswahl des Standarddruckers</translation>
 <translation id="7485730741952775732">Ist diese Richtlinie konfiguriert, verwendet der Host für den Remotezugriff diese URL zur Validierung von Authentifizierungstokens von Clients für den Remotezugriff, um Verbindungen zu akzeptieren. Die Richtlinie muss in Verbindung mit "RemoteAccessHostTokenUrl" verwendet werden.
 
@@ -3173,6 +3418,11 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 
       Wenn diese Richtlinie verwendet wird, werden dem Nutzer alle Drucker mit Ausnahme der in dieser Richtlinie aufgeführten IDs zur Verfügung gestellt. Die IDs müssen den Feldern "id" oder "guid" in der Datei entsprechen, die in <ph name="DEVICE_PRINTERS_POLICY" /> angegeben ist.
       </translation>
+<translation id="7506269062143646163">Hiermit können Sie die Unterstützung für Signed HTTP Exchange (SXG) aktivieren.
+
+          Wenn die Richtlinie nicht konfiguriert oder auf "Enabled" festgelegt ist, werden Webinhalte, die als Signed HTTP Exchanges bereitgestellt werden, von Google Chrome akzeptiert.
+
+          Ist die Richtlinie auf "Disabled" festgelegt, können Signed HTTP Exchanges nicht geladen werden.</translation>
 <translation id="7511361072385293666">Wenn diese Richtlinie auf "true" eingestellt oder nicht konfiguriert ist, ist die Verwendung des QUIC-Protokolls in <ph name="PRODUCT_NAME" /> zulässig.
       Ist die Richtlinie auf "false" eingestellt, ist die Verwendung des QUIC-Protokolls nicht zulässig.</translation>
 <translation id="7517845714620372896">Gibt die Displayhelligkeit in % an.
@@ -3217,6 +3467,15 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
       Wenn der Wert dieser Richtlinie 0 beträgt, wird die Standard-Cache-Größe verwendet. Der Nutzer kann diese jedoch nicht ändern.
 
       Wird diese Richtlinie nicht festgelegt, wird die Standardgröße verwendet und der Nutzer kann diese mit dem Parameter "--disk-cache-size" überschreiben.</translation>
+<translation id="759389052790680884">Legt den Akkuladestand (%) für benutzerdefiniertes Beenden des Ladevorgangs fest.
+
+          Wenn der benutzerdefinierte Endwert für die Akkuaufladung erreicht wird, endet der Ladevorgang.
+
+          "DeviceBatteryChargeCustomStartCharging" muss kleiner als "DeviceBatteryChargeCustomStopCharging" sein.
+
+          Diese Richtlinie wird nur verwendet, wenn "DeviceBatteryChargeMode" auf "custom" festgelegt ist.
+
+          Wenn sie nicht konfiguriert oder festgelegt ist, wird der Standardakkulademodus angewendet.</translation>
 <translation id="759957074386651883">Safe Browsing-Einstellungen</translation>
 <translation id="7604169113182304895">Diese Liste kann auf freiwilliger Basis für Android-Apps übernommen werden. Es ist nicht möglich, die Verwendung zu erzwingen.</translation>
 <translation id="7612157962821894603">Systemweite Parameter, die beim Starten von <ph name="PRODUCT_NAME" /> angewendet werden</translation>
@@ -3290,6 +3549,15 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
 <translation id="7712109699186360774">Nachfragen, wenn eine Website auf meine Kamera bzw. mein Mikrofon zugreifen möchte</translation>
 <translation id="7713608076604149344">Download-Einschränkungen</translation>
 <translation id="7715711044277116530">Prozentsatz für die Skalierung der Spanne für die Bildschirmabdunkelung im Präsentationsmodus</translation>
+<translation id="7716781462866245042">Legt die Tageskonfiguration für den erweiterten Akkulademodus fest.
+
+          Diese Richtlinie wird nur verwendet, wenn "DeviceAdvancedBatteryChargeModeEnabled" auf "true" festgelegt ist.
+
+          Ist diese Richtlinie nicht konfiguriert oder nicht eingestellt, dann bleibt der erweiterte Akkulademodus deaktiviert.
+
+          Hinweis: "<ph name="CHARGE_START_TIME_FIELD_NAME" />" muss kleiner als "<ph name="CHARGE_END_TIME_FIELD_NAME" />" sein.
+
+          Hinweis: Zulässige Werte für das Feld "<ph name="MINUTE_FIELD_NAME" />" in "<ph name="CHARGE_START_TIME_FIELD_NAME" />" und "<ph name="CHARGE_END_TIME_FIELD_NAME" />" sind 0, 15, 30 und 45.</translation>
 <translation id="7717938661004793600">Hiermit konfigurieren Sie die Zugänglichkeitsfunktionen für <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7724994675283793633">Diese Richtlinie aktiviert HTTP/0.9 auf allen Ports mit Ausnahme von Port 80 für HTTP und 443 für HTTPS.
 
@@ -3312,17 +3580,17 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
       Zu den erkannten Verbindungstypkennungen gehören "ethernet", "wifi", "wimax", "bluetooth" und "cellular".</translation>
 <translation id="7763614521440615342">Inhaltsvorschläge auf der "Neuer Tab"-Seite anzeigen</translation>
 <translation id="7765879851993224640">Verwendung von Smart Lock zur Anmeldung erlauben.</translation>
+<translation id="7772346342637974431">Gibt an, nach welcher Inaktivitätsspanne des Nutzers im Akkubetrieb eine Warnung angezeigt wird.
+
+          Wird diese Richtlinie festgelegt, gibt sie an, wie lange der Nutzer inaktiv sein kann, bevor <ph name="PRODUCT_OS_NAME" /> in einer Warnung auf die bevorstehende Maßnahme hinweist.
+
+          Ist diese Richtlinie nicht festgelegt, erscheint keine Warnung.
+
+          Der Richtlinienwert sollte in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert für die Inaktivitätsverzögerung sein.
+
+          Die Warnung wird nur eingeblendet, wenn infolge der Inaktivität der Nutzer abgemeldet oder das Gerät heruntergefahren wird.</translation>
 <translation id="7774768074957326919">System-Proxy-Einstellungen verwenden</translation>
-<translation id="7775831859772431793">Hier können Sie die URL des Proxyservers angeben.
-
-          Die Richtlinie tritt nur dann in Kraft, wenn bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" manuelle Proxy-Einstellungen festgelegt wurden.
-
-          Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie eine andere Methode zur Festlegung der Proxy-Richtlinien ausgewählt haben.
-
-          Weitere Optionen und ausführliche Beispiele finden Sie unter
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7777535871204167559">Externe Speichergeräte nur schreibgeschützt verwenden</translation>
-<translation id="7781069478569868053">"Neuer Tab"-Seite</translation>
 <translation id="7788511847830146438">Nach Profil</translation>
 <translation id="780603170519840350">Hiermit wird das Erzwingen von Zertifikatstransparenz-Anforderungen für eine Liste mit subjectPublicKeyInfo-Hashes deaktiviert.
 
@@ -3350,7 +3618,6 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
 
       Bei Festlegung dieser Richtlinie verwendet <ph name="PRODUCT_NAME" /> den Standardwert von 5.000 Millisekunden.</translation>
 <translation id="7841880500990419427">TLS-Mindestversion für Fallback</translation>
-<translation id="7842869978353666042">Optionen von Google Drive konfigurieren</translation>
 <translation id="7858404742201086014">Wenn Sie diese Einstellung aktivieren, werden veraltete Plug-ins als normale Plug-ins verwendet.
 
       Ist diese Einstellung deaktiviert, werden veraltete Plug-ins nicht verwendet und Nutzer werden nicht aufgefordert, ihrer Ausführung zuzustimmen.
@@ -3364,26 +3631,25 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
       Bestimmt die ID der Erweiterung, die als Bildschirmschoner auf der Anmeldeseite verwendet werden soll. Die Erweiterung muss Teil des App-Pakets sein, das in der DeviceAppPack-Richtlinie für diese Domain konfiguriert wurde.</translation>
 <translation id="7882857838942884046">Wenn Sie Google Sync deaktivieren, funktioniert die Android Sicherung &amp; Wiederherstellung nicht mehr richtig.</translation>
 <translation id="7882890448959833986">Warnung für nicht unterstützte Betriebssysteme unterdrücken</translation>
+<translation id="7895553628261067384">Remotezugriff</translation>
 <translation id="7902255855035461275">Muster in dieser Liste werden mit der Sicherheitsherkunft
       der anfragenden URL abgeglichen. Bei einer Übereinstimmung wird der
       Zugriff auf Videoaufnahmegeräte ohne Nachfrage gestattet.
 
       HINWEIS: Bis Version 45 wurde diese Richtlinie nur im Kioskmodus unterstützt.</translation>
 <translation id="7912255076272890813">Zulässige App- bzw. Erweiterungstypen konfigurieren</translation>
-<translation id="7915236031252389808">Hier können Sie eine URL zu einer Proxy-PAC-Datei angeben.
-
-          Diese Richtlinie tritt nur dann in Kraft, wenn Sie bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" manuelle Proxy-Einstellungen angegeben haben.
-
-          Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxy-Richtlinien entschieden haben.
-
-          Ausführliche Beispiele erhalten Sie unter
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7922358664346625612">Letzten in Chrome geöffneten Tab beibehalten.</translation>
 <translation id="793134539373873765">Gibt an, ob P2P für die Nutzdaten von Betriebssystem-Updates verwendet werden soll. Falls auf "True" gesetzt, teilen die Geräte Update-Nutzdaten im LAN und versuchen, die Daten von dort zu laden. Dadurch wird potenziell weniger Internetbandbreite verbraucht und es kommt seltener zu Datenstaus. Wenn die Update-Nutzdaten nicht im LAN verfügbar sind, lädt das Gerät sie ersatzweise von einem Updateserver herunter. Ist diese Option auf "False" gesetzt oder nicht konfiguriert, wird P2P nicht verwendet.</translation>
 <translation id="7933141401888114454">Erstellung von betreuten Nutzern aktivieren</translation>
 <translation id="793473937901685727">Verfügbarkeit von Zertifikaten für ARC-Apps festlegen</translation>
+<translation id="7937491150792971922">Richtlinien für Listen zur Installation von Erweiterungen aus mehreren Quellen zusammenführen</translation>
 <translation id="7937766917976512374">Videoaufzeichnung gestatten oder ablehnen</translation>
 <translation id="7941975817681987555">Netzwerkaktionen nicht über Netzwerkverbindungen vervollständigen</translation>
+<translation id="7952007677054834789">Hiermit werden die Seiten konfiguriert, die beim Start geladen werden: die standardmäßige Startseite und die Standardseite "Neuer Tab" in <ph name="PRODUCT_NAME" />. Außerdem wird verhindert, dass Nutzer diese Einstellungen ändern.
+
+      Die Startseiteneinstellungen des Nutzers sind nur dann vollständig gesperrt, wenn Sie entweder die Seite "Neuer Tab" als Startseite festlegen oder angeben, dass Sie eine URL als Startseite festlegen möchten, und dann eine Startseiten-URL angeben. Falls Sie die Startseiten-URL nicht angeben, kann der Nutzer die Seite "Neuer Tab" zur Startseite machen, indem er "chrome://newtab" eingibt.
+
+      Die Richtlinie "Beim Start zu öffnende URLs" wird ignoriert, sofern die Option "URL-Liste öffnen" unter "Aktion beim Start" nicht ausgewählt ist.</translation>
 <translation id="7952958573604504839">Diese Richtlinie wurde in M48 zugunsten von "<ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" />" eingestellt und in M54 entfernt.
 
       Aktiviert die Netzwerkvervollständigung in <ph name="PRODUCT_NAME" /> und verhindert, dass Nutzer diese Einstellung ändern.
@@ -3522,6 +3788,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="8176035528522326671">Unternehmensnutzer nur als primären Nutzer mehrerer Profile zulassen (Standardverhalten für von Unternehmen verwaltete Nutzer)</translation>
 <translation id="8214600119442850823">Konfiguriert den Passwortmanager.</translation>
 <translation id="8217516105848565518">Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "RemoteAccessHostDomainList".</translation>
+<translation id="8244171102276095471">RC4-Verschlüsselungssammlungen in TLS aktivieren</translation>
 <translation id="8244525275280476362">Maximale Abrufverzögerung nach der Außerkraftsetzung einer Richtlinie</translation>
 <translation id="8256688113167012935">Gibt an, welchen Kontonamen <ph name="PRODUCT_OS_NAME" /> für das entsprechende lokale Gerätekonto auf der Anmeldeseite anzeigt.
 
@@ -3540,21 +3807,6 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
 <translation id="8259592978873597235">Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, wird der Nutzer während der Wiedergabe von Videos als aktiv angesehen. Dadurch wird verhindert, dass der Countdown für Inaktivität sowie zum Dimmen, Abschalten oder Sperren des Bildschirms eingeleitet wird und nach Ablauf der Zeit entsprechende Maßnahmen ergriffen werden.
 
           Ist diese Richtlinie auf "false" gesetzt, gilt der Nutzer trotz Videowiedergabe als inaktiv.</translation>
-<translation id="8264653492961233132">Gibt eine Liste von Apps und Erweiterungen an, die automatisch, ohne Zutun des Nutzers, installiert werden und die nicht von ihm deinstalliert oder deaktiviert werden können. Alle von den Apps und Erweiterungen angeforderten Berechtigungen werden implizit, ohne Eingriff durch den Nutzer, gewährt. Dazu gehören auch alle weiteren Berechtigungen, die von künftigen Versionen der App oder Erweiterung angefordert werden. Außerdem werden den Erweiterungs-APIs "enterprise.deviceAttributes" und "enterprise.platformKeys" Berechtigungen erteilt. Diese beiden APIs stehen bei Apps oder Erweiterungen ohne erzwungene Installation nicht zur Verfügung.
-
-Diese Richtlinie hat Vorrang gegenüber einer möglicherweise damit in Konflikt stehenden Richtlinie "<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />". Wenn eine App oder Erweiterung mit erzwungener Installation aus dieser Liste entfernt wird, wird sie automatisch von <ph name="PRODUCT_NAME" /> deinstalliert.
-
-Bei Windows-Instanzen, die nicht Teil einer <ph name="MS_AD_NAME" />-Domain sind, bleibt die erzwungene Installation auf die im Chrome Web Store aufgeführten Apps und Erweiterungen beschränkt.
-
-Der Quellcode jeder Erweiterung kann mithilfe der Entwicklertools von Nutzern geändert werden. Danach funktioniert die entsprechende Erweiterung eventuell nicht mehr. Wenn Sie dies verhindern möchten, können Sie die Richtlinie "<ph name="DEVELOPER_TOOLS_POLICY_NAME" />" festlegen.
-
-Jedes Listenelement der Richtlinie ist ein String mit einer Erweiterungs-ID und einer optionalen Update-URL, die durch ein Semikolon (<ph name="SEMICOLON" />) getrennt wird. Die Erweiterungs-ID ist der String mit 32 Buchstaben, den Sie beispielsweise im Entwicklermodus in <ph name="CHROME_EXTENSIONS_LINK" /> sehen. Die Update-URL sollte, sofern festgelegt, auf ein Update-Manifest-XML-Dokument verweisen, wie in <ph name="LINK_TO_EXTENSION_DOC1" /> beschrieben. Standardmäßig kommt die Update-URL des Chrome Web Store zum Einsatz, die derzeit "https://clients2.google.com/service/update2/crx" lautet. Die in dieser Richtlinie festgelegte Update-URL wird nur für die erste Installation verwendet. In nachfolgenden Updates der Erweiterung kommt die Update-URL zum Einsatz, die im Manifest der Erweiterung angegeben wurde. Außerdem war die explizite Festlegung der Update-URL in <ph name="PRODUCT_NAME" />-Versionen bis einschließlich Version 67 obligatorisch.
-
-Beispiel: <ph name="EXTENSION_POLICY_EXAMPLE" /> installiert die App <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> über die standardmäßige Update-URL aus dem Chrome Web Store. Weitere Informationen zum Hosting von Erweiterungen finden Sie unter <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-Wenn diese Richtlinie nicht festgelegt ist, werden Apps und Erweiterungen nicht automatisch installiert und der Nutzer kann jede App oder Erweiterung in <ph name="PRODUCT_NAME" /> deinstallieren.
-
-Diese Richtlinie gilt nicht für den Inkognitomodus.</translation>
 <translation id="8274603902181597201">ecryptfs-Basisverzeichnis des Nutzers löschen und durch ein neues ext4-verschlüsseltes Basisverzeichnis ersetzen.</translation>
 <translation id="8285435910062771358">Vollbildlupe aktiviert</translation>
 <translation id="8288199156259560552">Google-Standortdienst für Android-Geräte aktivieren</translation>
@@ -3577,6 +3829,7 @@ Diese Richtlinie gilt nicht für den Inkognitomodus.</translation>
 <translation id="8312129124898414409">Ermöglicht Ihnen, festzulegen, ob die Schlüsselgenerierung für Websites zugelassen wird. Die Schlüsselgenerierung kann entweder für alle Websites zugelassen oder für alle Websites verboten werden.
 
           Wenn diese Richtlinie nicht konfiguriert ist, wird "BlockKeygen" verwendet, kann jedoch vom Nutzer geändert werden.</translation>
+<translation id="8320149248919453401">Akkulademodus</translation>
 <translation id="8329984337216493753">Diese Richtlinie ist nur im Händlermodus aktiv.
 
       Falls die Richtlinie "DeviceIdleLogoutTimeout" konfiguriert ist, wird mithilfe der vorliegenden Richtlinie festgelegt, wie lange das Warnfenster mit Countdown für Nutzer zu sehen sein soll, bevor sie abgemeldet werden.
@@ -3593,12 +3846,6 @@ Diese Richtlinie gilt nicht für den Inkognitomodus.</translation>
 
       Wird die Richtlinie auf "false" gesetzt, werden keine Statistiken gemeldet.
       Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, werden Statistiken gemeldet.</translation>
-<translation id="8377433219608936819">
-      Ist die Richtlinie auf "True" gesetzt, hat die Cloudrichtlinie Vorrang, wenn sie mit der Computerrichtlinie in Konflikt steht.
-      Ist die Richtlinie auf "False" gesetzt oder nicht konfiguriert, hat die Computerrichtlinie Vorrang, wenn sie mit der Cloudrichtlinie in Konflikt steht.
-      Weitere Informationen zu Richtlinienprioritäten finden Sie unter: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer "<ph name="MS_AD_NAME" />"-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
 <translation id="8380490658357556620">Ermöglicht den Einsatz von Relayservern, wenn Remote-Clients versuchen, eine Verbindung zu diesem Computer herzustellen.
 
           Ist diese Einstellung aktiviert, können Remote-Clients über Relayserver eine Verbindung zu diesem Computer herstellen, sofern keine direkte Verbindung verfügbar ist, zum Beispiel aufgrund von Firewallbeschränkungen.
@@ -3620,7 +3867,6 @@ Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer 
 
       Weitere Informationen zur Richtlinie "<ph name="IEEM_SITELIST_POLICY" />" von Internet Explorer finden Sie hier: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode.</translation>
 <translation id="8402079500086185021">PDF-Dateien immer extern öffnen</translation>
-<translation id="8412312801707973447">Ob online OCSP-/CRL-Prüfungen durchgeführt werden</translation>
 <translation id="8417305981081876834">Maximale Länge der Sperrbildschirm-PIN festlegen</translation>
 <translation id="841977920223099909">Auslöser für Passwortschutzwarnung</translation>
 <translation id="8424255554404582727">Standarddrehung des Bildschirms festlegen, die bei jedem Neustart erneut angewendet wird</translation>
@@ -3680,6 +3926,9 @@ Die Richtlinie wird in M75 entfernt.</translation>
 <translation id="8548832052135586762">Damit wird festgelegt, ob nur in Farbe, nur in Schwarz-Weiß oder ohne Farbmodusbeschränkung gedruckt wird. Ist die Richtlinie nicht konfiguriert, wird keine Einschränkung angewendet.</translation>
 <translation id="8549772397068118889">Vor dem Besuch von Websites außerhalb von Inhaltspaketen warnen</translation>
 <translation id="8566842294717252664">Web Store auf der "Neuer Tab"-Seite und im App Launcher ausblenden</translation>
+<translation id="8569734380847633643">
+          Wenn diese Richtlinie auf "false" gesetzt ist, wird WLAN unter <ph name="PRODUCT_OS_NAME" /> deaktiviert und Nutzer können die Funktion nicht wieder aktivieren.
+          Ist sie auf "true" festgelegt oder nicht konfiguriert, haben Nutzer die Möglichkeit, WLAN nach Bedarf zu aktivieren oder zu deaktivieren.</translation>
 <translation id="857369585509260201">Diese Richtlinie wird nicht mehr angeboten. Sie können stattdessen "BrowserSignin" verwenden.
 
 Wenn diese Richtlinie auf "true" gesetzt ist, muss sich der Nutzer mit seinem Profil in <ph name="PRODUCT_NAME" /> anmelden, um den Browser zu nutzen. Außerdem wird der Standardwert von BrowserGuestModeEnabled auf "false" gesetzt. Beachten Sie, dass vorhandene, nicht signierte Profile gesperrt werden und nach Aktivieren dieser Richtlinie nicht mehr zugänglich sind. Weitere Informationen erhalten Sie im Hilfeartikel.
@@ -3730,7 +3979,15 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wenn nichts festgelegt ist, wird für <ph name="PRODUCT_OS_NAME" />-Geräte der Standardzeitraum von 345.600.000 Millisekunden (vier Tagen) und für <ph name="PRODUCT_NAME" /> ein Zeitraum von 604.800.000 Millisekunden (einer Woche) verwendet.</translation>
 <translation id="8685024486845674965">Die Passwortschutzwarnung wird durch die Wiederverwendung eines Passworts ausgelöst</translation>
 <translation id="8693243869659262736">Integrierten DNS-Client verwenden</translation>
+<translation id="8698286761337647563">Gibt an, wie viele Tage SAML-Nutzer vorab benachrichtigt werden, wenn ihr Passwort bald abläuft</translation>
 <translation id="8703488928438047864">Boardstatus melden</translation>
+<translation id="8703872185032220081">Hiermit kann die Tageskonfiguration für das Umschalten bei Leistungsspitzen festgelegt werden.
+
+          Diese Richtlinie wird nur verwendet, wenn "DevicePowerPeakShiftEnabled" auf "true" festgelegt ist.
+
+          Wenn sie nicht konfiguriert oder festgelegt ist, bleibt das Umschalten bei Leistungsspitzen immer deaktiviert.
+
+          Hinweis: Zulässige Werte für das Feld "<ph name="MINUTE_FIELD_NAME" />" in "<ph name="START_TIME_FIELD_NAME" />", "<ph name="END_TIME_FIELD_NAME" />" und "<ph name="CHARGE_START_TIME_FIELD_NAME" />" sind 0, 15, 30 und 45.</translation>
 <translation id="8704831857353097849">Liste der deaktivierten Plug-ins</translation>
 <translation id="8711086062295757690">Gibt das Suchkürzel an, das als die Verknüpfung fungiert, die in der Omnibox als Auslöser der Suche für diesen Anbieter verwendet wird. Diese Richtlinie ist optional. Wenn sie nicht konfiguriert ist, so wird der Suchanbieter von keinem Suchkürzel aktiviert. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="8731693562790917685">Unter "Inhaltseinstellungen" können Sie angeben, wie Inhalte bestimmter Typen (z. B. Cookies, Bilder oder JavaScript) verarbeitet werden.</translation>
@@ -3755,6 +4012,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wenn diese Einstellung aktiviert oder nicht festgelegt ist, können der Browser- und Downloadverlauf gelöscht werden.
 
       Wenn diese Einstellung deaktiviert ist, können der Browser- und Downloadverlauf nicht gelöscht werden.</translation>
+<translation id="8757552286070680084">Wilco DTC-Konfiguration</translation>
 <translation id="8758831693895931466">Erforderliche Registrierung für Cloud Management aktivieren</translation>
 <translation id="8759829385824155666">Erlaubte Kerberos-Verschlüsselungstypen</translation>
 <translation id="8764119899999036911">Gibt an, ob der generierte Kerberos-SPN auf dem kanonischen DNS-Namen oder dem ursprünglich eingegebenen Namen basiert. Wenn Sie diese Einstellung aktivieren, wird die CNAME-Suche übersprungen und der Servername so wie eingegeben verwendet. Sollten Sie die Einstellung deaktivieren oder nicht konfigurieren, wird der kanonische Name des Servers per CNAME-Suche ermittelt.</translation>
@@ -3766,6 +4024,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, leitet der Passwortschutzdienst Nutzer an https://myaccounts.google.com weiter, damit sie ihr Passwort ändern können.
       Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
 <translation id="8798099450830957504">Standardeinstellung</translation>
+<translation id="8800453707696044281">Den Akkuladestand (%) für benutzerdefiniertes Beenden des Ladevorgangs festlegen</translation>
 <translation id="8801680448782904838">Nutzer benachrichtigen, dass ein Neustart des Browsers oder des Geräts empfohlen wird oder erforderlich ist</translation>
 <translation id="8818173863808665831">Meldet den Standort des Geräts.
 
@@ -3773,10 +4032,29 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8818768076343557335">Netzwerkaktionen in allen Netzwerken außer Mobilfunknetzen vorhersagen.
           (Eingestellt in 50, entfernt in 52. Wird nach 52 der Wert 1 konfiguriert, wird er als 0 – "Netzwerkaktionen über alle Netzwerkverbindungen vervollständigen" behandelt.)</translation>
 <translation id="8825782996899863372">Die Passwortschutzwarnung wird durch die Wiederverwendung eines Passworts auf einer Phishingseite ausgelöst</translation>
-<translation id="8828766846428537606">Mit dieser Richtlinie wird die Standard-Startseite in <ph name="PRODUCT_NAME" /> konfiguriert und verhindert, dass Nutzer diese ändern. Wenn Sie vollständig verhindern möchten, dass der Nutzer seine Startseiteneinstellungen ändern kann, müssen Sie entweder die "Neuer Tab"-Seite als Startseite festlegen oder angeben, dass Sie eine URL als Startseite festlegen möchten, und dann eine Startseiten-URL angeben. Falls Sie die Startseiten-URL nicht angeben, kann der Nutzer die "Neuer Tab"-Seite zur Startseite machen, indem er "chrome://newtab" eingibt.</translation>
 <translation id="8833109046074170275">Authentifizierung über den standardmäßigen GAIA-Vorgang</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> nimmt eine Zwischenspeicherung von Apps und Erweiterungen für eine Installation durch mehrere Nutzer eines einzelnen Geräts vor, um das erneute Herunterladen durch einzelne Nutzer zu vermeiden.
       Wenn diese Richtlinie nicht konfiguriert oder der Wert auf weniger als 1 MB festgelegt ist, verwendet <ph name="PRODUCT_OS_NAME" /> die standardmäßige Cache-Größe.</translation>
+<translation id="8851325571441692315">Mit dieser Richtlinie können Sie angeben, welcher Proxyserver von <ph name="PRODUCT_NAME" /> verwendet werden soll, und verhindern, dass Nutzer die Proxyeinstellungen ändern.
+
+          Diese Richtlinie wird nur angewendet, wenn die Richtlinie "<ph name="PROXY_SETTINGS_POLICY_NAME" />" nicht konfiguriert wurde.
+
+          Wenn Sie festlegen, dass kein Proxyserver verwendet, sondern immer eine direkte Verbindung hergestellt werden soll, werden alle anderen Optionen ignoriert.
+
+          Falls Sie sich entscheiden, die Proxyeinstellungen des Systems zu verwenden, werden alle anderen Optionen ignoriert.
+
+          Gleiches gilt, wenn Sie festlegen, dass der Proxyserver automatisch erkannt werden soll.
+
+          Wenn Sie sich für einen festen Proxyserver entscheiden, können Sie unter "Adresse oder URL des Proxyservers" und "Kommagetrennte Liste der Proxy-Umgehungsregeln" weitere Optionen festlegen. Nur der HTTP-Proxyserver mit der höchsten Priorität ist für ARC-Apps verfügbar.
+
+          Wenn Sie sich für ein PAC-Proxyskript entscheiden, müssen Sie die URL des Skripts unter "URL einer PAC-Proxy-Datei" angeben.
+
+          Ausführliche Beispiele finden Sie unter
+          <ph name="PROXY_HELP_URL" />.
+
+          Wenn Sie diese Einstellung aktivieren, werden alle Proxyoptionen, die über die Befehlszeile eingegeben werden, von <ph name="PRODUCT_NAME" /> und ARC-Apps ignoriert.
+
+          Wird die Richtlinie nicht konfiguriert, so können Nutzer ihre eigenen Proxyeinstellungen vornehmen.</translation>
 <translation id="8858642179038618439">YouTube-Sicherheitsmodus erzwingen</translation>
 <translation id="8860342862142842017">Erzwingung der Zertifikatstransparenz für eine Liste mit subjectPublicKeyInfo-Hashes deaktivieren</translation>
 <translation id="8864975621965365890">Unterdrückung des Hinweises auf Einstellung des Frames, der beim Rendern einer Website durch <ph name="PRODUCT_FRAME_NAME" /> erscheint</translation>
@@ -3789,18 +4067,8 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wird diese Einstellung aktiviert oder deaktiviert, können Nutzer diese Einstellung in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben.
 
       Wenn die Einstellung nicht konfiguriert ist, kann der Nutzer entscheiden, ob er die Funktion in Anspruch nehmen möchte oder nicht.</translation>
-<translation id="8870318296973696995">Startseite</translation>
 <translation id="8876188741456358123">Dadurch wird der standardmäßige Duplexmodus überschrieben. Wenn der Modus nicht verfügbar ist, wird die Richtlinie ignoriert.</translation>
 <translation id="8882006618241293596">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" auf diesen Websites blockieren</translation>
-<translation id="890403179930035128">Erzwingt die Aktivierung von Sprachen für die Rechtschreibprüfung. Sprachen in dieser Liste, die nicht erkannt werden, werden ignoriert.
-
-      Wenn diese Richtlinie aktiviert wird, wird die Rechtschreibprüfung für die angegebenen Sprachen aktiviert, zusätzlich zu den Sprachen, für die der Nutzer die Rechtschreibprüfung aktiviert hat.
-
-      Wenn diese Richtlinie nicht festgelegt oder deaktiviert wird, werden keine Änderungen an den Einstellungen des Nutzers für die Rechtschreibprüfung vorgenommen.
-
-      Wenn die Richtlinie "SpellcheckEnabled" auf "disabled" festgelegt wird, hat diese Richtlinie keinerlei Auswirkungen.
-
-      Aktuell werden die folgenden Sprachen unterstützt: de, af, bg, ca, cs, da, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Gastmodus aktivieren</translation>
 <translation id="8908294717014659003">Hier können Sie festlegen, ob Websites der Zugriff auf Medienaufnahmegeräte erlaubt werden soll. Der Zugriff auf Medienaufnahmegeräte kann standardmäßig zugelassen werden oder Sie können einstellen, dass der Nutzer jedes Mal gefragt wird, wenn eine Website auf Medienaufnahmegeräte zugreifen möchte.
 
@@ -3849,6 +4117,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 
       Weitere Informationen zu sicheren Kontexten finden Sie unter
       https://www.w3.org/TR/secure-contexts/.</translation>
+<translation id="8939595959513040470">Nutzern einen Quick-Fix-Build bereitstellen.</translation>
 <translation id="8942616385591203339">Mit dieser Richtlinie wird festgelegt, ob die Einwilligung zur Synchronisierung dem Nutzer bei der ersten Anmeldung angezeigt werden kann. Sie sollte auf "false" gesetzt werden, wenn vom Nutzer keine Einwilligung zur Synchronisierung eingeholt werden muss.
       Wenn diese Richtlinie auf "false" gesetzt ist, wird die Einwilligung zur Synchronisierung nicht angezeigt.
       Falls die Richtlinie auf "true" festgelegt oder nicht konfiguriert ist, kann die Einwilligung zur Synchronisierung angezeigt werden.</translation>
@@ -3908,6 +4177,10 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 
       Ist die Richtlinie nicht konfiguriert, kann der Nutzer sein Avatarbild für den Anmeldebildschirm selbst auswählen.</translation>
 <translation id="9035964157729712237">Aus der schwarzen Liste auszuschließende Erweiterungs-IDs</translation>
+<translation id="9038058011835642205">Hierdurch wird eine Liste von Web-Apps festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die vom Nutzer weder deinstalliert noch deaktiviert werden können.
+
+      Jedes Listenelement der Richtlinie ist ein Objekt, das aus der obligatorischen Komponente "url" und den beiden optionalen Komponenten "default_launch_container" und "create_desktop_shortcut" besteht. Bei "url" handelt es sich um die URL der Web-App, die installiert werden soll. Der "launch_container" sollte entweder ein Fenster oder ein Tab sein, um festzulegen, wie die Web-App nach der Installation geöffnet wird, und für "create_desktop_shortcut" sollte "true" festgelegt sein, wenn unter Linux und Windows eine Desktopverknüpfung erstellt werden soll. Wenn "default_launch_container" weggelassen wird, wird die App standardmäßig in einem Tab geöffnet. Unabhängig vom Wert von "default_launch_container" können Nutzer ändern, in welchem Container die App geöffnet wird. Wird "create_desktop_shortcuts" weggelassen, werden keine Desktopverknüpfungen erstellt.</translation>
+<translation id="9038839118379817310">WLAN aktivieren</translation>
 <translation id="9039822628127365650">Wenn diese Richtlinie konfiguriert ist, wird damit die Zeitdauer festgelegt, nach der ein Nutzer automatisch abgemeldet und die Sitzung beendet wird. Der Nutzer erfährt über einen Countdown-Timer in der Taskleiste, wie viel Zeit er noch hat.
 
       Wenn diese Richtlinie nicht konfiguriert wurde, ist die Sitzungsdauer unbegrenzt.
@@ -3916,6 +4189,11 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 
       Der Richtlinienwert sollte in Millisekunden angegeben werden. Der Wert kann zwischen 30 Sekunden und 24 Stunden liegen.</translation>
 <translation id="9042911395677044526">Ermöglicht das Übernehmen einer per Push übertragenen Netzwerkkonfiguration pro Nutzer für ein <ph name="PRODUCT_OS_NAME" />-Gerät. Die Netzwerkkonfiguration ist ein JSON-formatierter String, der den Open Network Configuration-Vorgaben unter <ph name="ONC_SPEC_URL" /> entspricht.</translation>
+<translation id="9050853837490399534">Diese Richtlinie gibt vor, ob das Gerät auf einen Quick-Fix-Build aktualisiert werden soll.
+
+      Wenn als Richtlinienwert ein Token festgelegt ist, das mit einem Quick-Fix-Build verknüpft ist, wird das Gerät auf den entsprechenden Build aktualisiert, sofern eine solche Aktualisierung nicht durch eine andere Richtlinie blockiert wird.
+
+      Falls die Richtlinie nicht konfiguriert oder der Wert nicht mit einem Quick-Fix-Build verknüpft ist, wird das Gerät nicht auf einen Quick-Fix-Build aktualisiert. Wenn auf dem Gerät bereits ein Quick-Fix-Build installiert ist und die Richtlinie nicht mehr konfiguriert oder der Wert nicht mehr mit einem Quick-Fix-Build verknüpft ist, wird das Gerät auf einen regulären Build aktualisiert, sofern die Aktualisierung nicht durch eine andere Richtlinie blockiert wird.</translation>
 <translation id="906631898352326790">
       Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge
       in einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt.
@@ -3944,31 +4222,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="9094064873808699479">Führen Sie ein Rollback durch und bleiben Sie bei der Zielversion, falls die Version des Betriebssystems neuer ist als die der Zielversion. Versuchen Sie nach Möglichkeit, die Einstellungen auf Geräteebene (einschließlich der Anmeldedaten für das Netzwerk) per Rollback zu übertragen. Führen Sie das Rollback jedoch mit einem vollständigen Powerwash durch, selbst wenn das Wiederherstellen von Daten nicht möglich ist, weil rückwärtsinkompatible Änderungen vorliegen oder die Zielversion dies nicht unterstützt.
 Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älteren Clients bedeutet dieser Wert, dass das Rollback deaktiviert ist.</translation>
 <translation id="9096086085182305205">Weiße Liste für Authentifizierungsserver</translation>
-<translation id="9098553063150791878">Richtlinien für die HTTP-Authentifizierung</translation>
-<translation id="9103061223348895346">Mit dieser Richtlinie können Sie mehrere Einstellungen zur Energieverwaltung bei Inaktivität des Nutzers festlegen.
-
-          Es stehen vier Aktionen zur Verfügung:
-          * Der Bildschirm wird gedimmt, wenn der Nutzer für die unter "|ScreenDim|" angegebene Zeitdauer inaktiv ist.
-          * Der Bildschirm wird ausgeschaltet, wenn der Nutzer für die unter "|ScreenOff|" angegebene Zeitdauer inaktiv ist.
-          * Wenn der Nutzer für die unter "|IdleWarning|" angegebene Zeitdauer inaktiv ist, wird er in einer Warnung darauf hingewiesen, dass als Nächstes die für die Inaktivität festgelegte Aktion ausgeführt wird.
-          * Die unter "|IdleAction|" angegebene Aktion wird ausgeführt, wenn der Nutzer für die unter "|Idle|" angegebene Zeitdauer inaktiv ist.
-
-          Die Verzögerungen müssen in Millisekunden angegeben werden und größer als null sein, um die jeweilige Aktion auszulösen. Falls die Verzögerung auf null gesetzt ist, wird die entsprechende Aktion von <ph name="PRODUCT_OS_NAME" /> nicht ausgeführt.
-
-          Wenn kein Wert für die Verzögerungen angegeben ist, wird ein Standardwert verwendet.
-
-          Hinweis: Der Wert für "|ScreenDim|" muss kleiner oder gleich dem Wert für "|ScreenOff|" sein, während die Werte für "|ScreenOff|" und "|IdleWarning|" nicht größer als der Wert für "|Idle|" sein dürfen.
-
-          Für "|IdleAction|" sind die folgenden vier Aktionen möglich:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Wenn "|IdleAction|" nicht konfiguriert ist, wird die Standardaktion "|Suspend|" ausgeführt.
-
-          Es können außerdem spezifische Einstellungen für den Netz- und Akkubetrieb vorgenommen werden.
-          </translation>
 <translation id="9105265795073104888">Android-Apps wird nur ein Teil der Proxykonfigurationsoptionen zur Verfügung gestellt. Der Proxy kann in Android-Apps auf freiwilliger Basis verwendet werden. Es ist nicht möglich, die Verwendung eines Proxys zu erzwingen.</translation>
 <translation id="9106865192244721694">WebUSB auf diesen Websites zulassen</translation>
 <translation id="9112727953998243860">Unternehmensdrucker-Konfigurationsdatei</translation>
@@ -4021,13 +4274,6 @@ Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer entscheiden, ob die 
 Wenn die Richtlinie auf "false" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialogfeld "Druckvorschau" nicht ausgewählt und der Nutzer kann dies nicht ändern.
 
 Wenn die Richtlinie auf "true" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialogfeld "Druckvorschau" ausgewählt und der Nutzer kann dies nicht ändern.</translation>
-<translation id="9210953373038593554">Hiermit wird der Typ der Authentifizierung für SAML-Anmeldungen konfiguriert.
-
-      Wenn diese Richtlinie nicht konfiguriert oder auf dem Standardwert (Wert 0) belassen wird, wird das Verhalten bei SAML-Anmeldungen abhängig von anderen Faktoren vom Browser festgelegt. Im einfachsten Fall basieren die Nutzerauthentifizierung und der Schutz der im Cache gespeicherten Nutzerdaten auf Passwörtern, die von den Nutzern manuell eingegeben werden.
-
-      Wenn diese Richtlinie auf "ClientCertificate" (Wert 1) festgelegt ist, kommt für neu hinzugefügte Nutzer, die sich über SAML anmelden, die Authentifizierung mit Clientzertifikat zum Einsatz. Für solche Nutzer werden keine Passwörter verwendet und ihre im Cache gespeicherten lokalen Daten werden durch entsprechende kryptografische Schlüssel geschützt. Diese Einstellung ermöglicht z. B. die Konfiguration einer Nutzerauthentifizierung auf Grundlage von Smartcards. Hinweis: In diesem Fall ist die Installation von Smartcard-Middleware-Apps über die Richtlinie "DeviceLoginScreenAppInstallList" erforderlich.
-
-      Diese Richtlinie wirkt sich nur auf Nutzer aus, die sich über SAML authentifizieren.</translation>
 <translation id="9213347477683611358">Hiermit kann das Hintergrundbild auf Geräteebene konfiguriert werden, das auf dem Anmeldebildschirm angezeigt wird, wenn sich noch kein Nutzer auf dem Gerät angemeldet hat. Die Richtlinie wird konfiguriert, indem die URL, über die das Chrome OS-Gerät das Hintergrundbild herunterladen kann, und ein kryptografischer Hash, mit dem die Integrität des Downloads überprüft wird, festgelegt werden. Das Bild muss das JPEG-Format aufweisen und darf eine Dateigröße von 16 MB nicht überschreiten. Die URL muss ohne Authentifizierung zugänglich sein. Das Hintergrundbild wird heruntergeladen und im Cache gespeichert. Es wird jedes Mal neu heruntergeladen, wenn sich die URL oder der Hash ändert.
 
       Die Richtlinie sollte als String angegeben werden, der die URL und den Hash im JSON-Format ausgibt, z. B.:
@@ -4042,6 +4288,15 @@ Wenn die Richtlinie auf "true" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialog
 <translation id="9217154963008402249">Häufigkeit von Kontrollnetzwerkpaketen</translation>
 <translation id="922540222991413931">Installationsquellen für Erweiterungen, Apps und Nutzerskripte konfigurieren</translation>
 <translation id="924557436754151212">Gespeicherte Passwörter bei erster Ausführung aus Standardbrowser importieren</translation>
+<translation id="926146562923985266">Mit dieser Richtlinie wird der Befehl konfiguriert, mit dem URLs in <ph name="PRODUCT_NAME" /> geöffnet werden, wenn von Internet Explorer dorthin gewechselt wird.
+
+      Wenn das Add-in "Unterstützung älterer Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keinerlei Wirkung.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, erkennt Internet Explorer den ausführbaren Pfad von <ph name="PRODUCT_NAME" /> automatisch, wenn <ph name="PRODUCT_NAME" /> über Internet Explorer geöffnet wird.
+
+      Ist diese Richtlinie konfiguriert, wird sie zum Öffnen von <ph name="PRODUCT_NAME" /> verwendet, wenn <ph name="PRODUCT_NAME" /> über Internet Explorer geöffnet wird.
+
+      Diese Richtlinie kann mit einem ausführbaren Dateipfad oder "${chrome}" konfiguriert werden, damit das Installationsverzeichnis von Chrome automatisch erkannt wird.</translation>
 <translation id="930930237275114205">Verzeichnis für <ph name="PRODUCT_FRAME_NAME" />-Nutzerdaten festlegen</translation>
 <translation id="943865157632139008">Mit dieser Richtlinie können Sie den standardmäßigen HTML-Renderer konfigurieren, wenn <ph name="PRODUCT_FRAME_NAME" /> installiert ist.
       Bei der Standardeinstellung übernimmt der Host-Browser das Rendering. Sie können dies jedoch wahlweise überschreiben und festlegen, dass HTML-Seiten standardmäßig mithilfe von <ph name="PRODUCT_FRAME_NAME" /> gerendert werden sollen.</translation>

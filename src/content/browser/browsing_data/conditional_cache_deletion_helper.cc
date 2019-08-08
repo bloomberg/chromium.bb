@@ -69,10 +69,10 @@ ConditionalCacheDeletionHelper::CreateCustomKeyURLAndTimeCondition(
 }
 
 int ConditionalCacheDeletionHelper::DeleteAndDestroySelfWhenFinished(
-    const net::CompletionCallback& completion_callback) {
+    net::CompletionOnceCallback completion_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  completion_callback_ = completion_callback;
+  completion_callback_ = std::move(completion_callback);
   iterator_ = cache_->CreateIterator();
 
   IterateOverEntries(net::OK);
@@ -97,8 +97,9 @@ void ConditionalCacheDeletionHelper::IterateOverEntries(int error) {
       // The iteration finished successfully or we can no longer iterate
       // (e.g. the cache was destroyed). We cannot distinguish between the two,
       // but we know that there is nothing more that we can do, so we return OK.
+      DCHECK(completion_callback_);
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(completion_callback_, net::OK));
+          FROM_HERE, base::BindOnce(std::move(completion_callback_), net::OK));
       base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
       return;
     }

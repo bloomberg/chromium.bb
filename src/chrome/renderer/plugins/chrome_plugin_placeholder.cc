@@ -94,6 +94,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateLoadableMissingPlugin(
           IDR_BLOCKED_PLUGIN_HTML));
 
   base::DictionaryValue values;
+  values.SetString("name", "");
   values.SetString("message",
                    l10n_util::GetStringUTF8(IDS_PLUGIN_NOT_SUPPORTED));
 
@@ -138,6 +139,12 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
           roundf(power_saver_info.custom_poster_size.height() / zoom_factor);
       values.SetString("visibleWidth", base::NumberToString(width) + "px");
       values.SetString("visibleHeight", base::NumberToString(height) + "px");
+    } else {
+      // Need to populate these to please $i18n{...} replacement mechanism.
+      // 'undefined' is used on purpose as an invalid value for width and
+      // height, which is ignored by CSS.
+      values.SetString("visibleWidth", "undefined");
+      values.SetString("visibleHeight", "undefined");
     }
   }
 
@@ -362,7 +369,7 @@ void ChromePluginPlaceholder::OnBlockedContent(
                        "visible size larger than 400 x 300 pixels, or it will "
                        "be blocked. Invisible content is always blocked.",
       GetPluginParams().url.GetString().Utf8().c_str());
-  render_frame()->AddMessageToConsole(content::CONSOLE_MESSAGE_LEVEL_INFO,
+  render_frame()->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kInfo,
                                       message);
 }
 

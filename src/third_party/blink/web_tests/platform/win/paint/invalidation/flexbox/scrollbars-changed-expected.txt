@@ -18,11 +18,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "VerticalScrollbar",
-          "rect": [185, 0, 15, 100],
-          "reason": "scroll control"
-        },
-        {
           "object": "InlineTextBox 'a'",
           "rect": [0, 5, 15, 15],
           "reason": "disappeared"

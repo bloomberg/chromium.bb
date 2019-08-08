@@ -61,10 +61,16 @@ std::string FullWindowsVersion() {
     // unknown version
     return base::StringPrintf("unknown version %d.%d", major, minor);
   }
+
+  const std::string release_id = gi->release_id();
+
+  if (!release_id.empty())
+    version += " Version " + release_id;
+
   if (patch > 0)
-    version += base::StringPrintf(" Build %d.%d", build, patch);
+    version += base::StringPrintf(" (Build %d.%d)", build, patch);
   else
-    version += base::StringPrintf(" Build %d", build);
+    version += base::StringPrintf(" (Build %d)", build);
   return version;
 }
 

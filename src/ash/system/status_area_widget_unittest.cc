@@ -21,7 +21,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/network/network_handler.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/session_manager_types.h"
@@ -217,7 +217,7 @@ class UnifiedStatusAreaWidgetTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    chromeos::DBusThreadManager::Initialize();
+    chromeos::shill_clients::InitializeFakes();
     // Initializing NetworkHandler before ash is more like production.
     chromeos::NetworkHandler::Initialize();
     AshTestBase::SetUp();
@@ -232,7 +232,7 @@ class UnifiedStatusAreaWidgetTest : public AshTestBase {
     chromeos::NetworkHandler::Get()->ShutdownPrefServices();
     AshTestBase::TearDown();
     chromeos::NetworkHandler::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
+    chromeos::shill_clients::Shutdown();
   }
 
  private:

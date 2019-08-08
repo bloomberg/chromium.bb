@@ -157,7 +157,7 @@ int SearchResultListView::GetYSize() {
 }
 
 SearchResultBaseView* SearchResultListView::GetFirstResultView() {
-  DCHECK(results_container_->has_children());
+  DCHECK(!results_container_->children().empty());
   return num_results() <= 0 ? nullptr : search_result_views_[0];
 }
 
@@ -165,7 +165,7 @@ int SearchResultListView::DoUpdate() {
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByDisplayType(
           results(), ash::SearchResultDisplayType::kList, /*excludes=*/{},
-          results_container_->child_count());
+          results_container_->children().size());
 
   const size_t display_size = display_results.size();
   std::vector<const gfx::VectorIcon*> assistant_item_icons(display_size,
@@ -173,8 +173,7 @@ int SearchResultListView::DoUpdate() {
   if (IsEmbeddedAssistantUiEnabled(view_delegate_))
     CalculateDisplayIcons(display_results, &assistant_item_icons);
 
-  for (size_t i = 0; i < static_cast<size_t>(results_container_->child_count());
-       ++i) {
+  for (size_t i = 0; i < results_container_->children().size(); ++i) {
     SearchResultView* result_view = GetResultViewAt(i);
     result_view->set_is_last_result(i == display_size - 1);
     if (i < display_results.size()) {

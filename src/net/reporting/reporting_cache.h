@@ -35,6 +35,8 @@ class ReportingContext;
 // "doomed", which will cause it to be deallocated once it is no longer pending.
 class NET_EXPORT ReportingCache {
  public:
+  class PersistentReportingStore;
+
   // Information about the number of deliveries that we've attempted for each
   // origin and endpoint.
   struct ClientStatistics {
@@ -214,6 +216,21 @@ class NET_EXPORT ReportingCache {
 
   virtual bool IsReportDoomedForTesting(
       const ReportingReport* report) const = 0;
+};
+
+// Persistent storage for Reporting reports and clients.
+class NET_EXPORT ReportingCache::PersistentReportingStore {
+ public:
+  PersistentReportingStore() = default;
+  virtual ~PersistentReportingStore() = default;
+
+  // TODO(chlily): methods to load, add, update, delete, etc. will be added.
+
+  // Flushes the store.
+  virtual void Flush() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PersistentReportingStore);
 };
 
 }  // namespace net

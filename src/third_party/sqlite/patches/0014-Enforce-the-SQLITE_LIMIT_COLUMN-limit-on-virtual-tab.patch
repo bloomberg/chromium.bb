@@ -1,0 +1,222 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Darwin Huang <huangdarwin@chromium.org>
+Date: Mon, 15 Apr 2019 13:58:06 -0700
+Subject: [PATCH 14/15] Enforce the SQLITE_LIMIT_COLUMN limit on virtual tables
+
+This backports https://www.sqlite.org/src/info/0b6ae032c28e7fe3
+
+Bug: 952406
+---
+ third_party/sqlite/patched/src/build.c    |  8 ++++----
+ third_party/sqlite/patched/src/expr.c     |  2 +-
+ third_party/sqlite/patched/src/main.c     |  2 +-
+ third_party/sqlite/patched/src/test_fs.c  |  2 +-
+ third_party/sqlite/patched/src/util.c     |  2 +-
+ third_party/sqlite/patched/src/vdbeaux.c  |  8 +++++---
+ third_party/sqlite/patched/src/vdbesort.c |  4 ++--
+ third_party/sqlite/patched/src/vtab.c     | 25 ++++++++++++++---------
+ 8 files changed, 30 insertions(+), 23 deletions(-)
+
+diff --git a/third_party/sqlite/patched/src/build.c b/third_party/sqlite/patched/src/build.c
+index 3bf037258ce9..81ee7695dc64 100644
+--- a/third_party/sqlite/patched/src/build.c
++++ b/third_party/sqlite/patched/src/build.c
+@@ -3755,9 +3755,9 @@ void *sqlite3ArrayAllocate(
+   int *pIdx         /* Write the index of a new slot here */
+ ){
+   char *z;
+-  int n = *pnEntry;
++  sqlite3_int64 n = *pnEntry;
+   if( (n & (n-1))==0 ){
+-    int sz = (n==0) ? 1 : 2*n;
++    sqlite3_int64 sz = (n==0) ? 1 : 2*n;
+     void *pNew = sqlite3DbRealloc(db, pArray, sz*szEntry);
+     if( pNew==0 ){
+       *pIdx = -1;
+@@ -3878,7 +3878,7 @@ SrcList *sqlite3SrcListEnlarge(
+   /* Allocate additional space if needed */
+   if( (u32)pSrc->nSrc+nExtra>pSrc->nAlloc ){
+     SrcList *pNew;
+-    int nAlloc = pSrc->nSrc*2+nExtra;
++    sqlite3_int64 nAlloc = 2*(sqlite3_int64)pSrc->nSrc+nExtra;
+     sqlite3 *db = pParse->db;
+ 
+     if( pSrc->nSrc+nExtra>=SQLITE_MAX_SRCLIST ){
+@@ -4634,7 +4634,7 @@ With *sqlite3WithAdd(
+   }
+ 
+   if( pWith ){
+-    int nByte = sizeof(*pWith) + (sizeof(pWith->a[1]) * pWith->nCte);
++    sqlite3_int64 nByte = sizeof(*pWith) + (sizeof(pWith->a[1]) * pWith->nCte);
+     pNew = sqlite3DbRealloc(db, pWith, nByte);
+   }else{
+     pNew = sqlite3DbMallocZero(db, sizeof(*pWith));
+diff --git a/third_party/sqlite/patched/src/expr.c b/third_party/sqlite/patched/src/expr.c
+index d3afcbf4c5eb..6d00df771315 100644
+--- a/third_party/sqlite/patched/src/expr.c
++++ b/third_party/sqlite/patched/src/expr.c
+@@ -1587,7 +1587,7 @@ ExprList *sqlite3ExprListAppend(
+   }else if( (pList->nExpr & (pList->nExpr-1))==0 ){
+     ExprList *pNew;
+     pNew = sqlite3DbRealloc(db, pList,
+-             sizeof(*pList)+(2*pList->nExpr - 1)*sizeof(pList->a[0]));
++         sizeof(*pList)+(2*(sqlite3_int64)pList->nExpr-1)*sizeof(pList->a[0]));
+     if( pNew==0 ){
+       goto no_mem;
+     }
+diff --git a/third_party/sqlite/patched/src/main.c b/third_party/sqlite/patched/src/main.c
+index d58f8c633f8b..64cde232169d 100644
+--- a/third_party/sqlite/patched/src/main.c
++++ b/third_party/sqlite/patched/src/main.c
+@@ -705,7 +705,7 @@ static int setupLookaside(sqlite3 *db, void *pBuf, int sz, int cnt){
+     pStart = 0;
+   }else if( pBuf==0 ){
+     sqlite3BeginBenignMalloc();
+-    pStart = sqlite3Malloc( sz*cnt );  /* IMP: R-61949-35727 */
++    pStart = sqlite3Malloc( sz*(sqlite3_int64)cnt );  /* IMP: R-61949-35727 */
+     sqlite3EndBenignMalloc();
+     if( pStart ) cnt = sqlite3MallocSize(pStart)/sz;
+   }else{
+diff --git a/third_party/sqlite/patched/src/test_fs.c b/third_party/sqlite/patched/src/test_fs.c
+index dc9f9a0c71bd..8106cafab736 100644
+--- a/third_party/sqlite/patched/src/test_fs.c
++++ b/third_party/sqlite/patched/src/test_fs.c
+@@ -744,7 +744,7 @@ static int fsColumn(sqlite3_vtab_cursor *cur, sqlite3_context *ctx, int i){
+     fstat(fd, &sbuf);
+ 
+     if( sbuf.st_size>=pCur->nAlloc ){
+-      int nNew = sbuf.st_size*2;
++      sqlite3_int64 nNew = sbuf.st_size*2;
+       char *zNew;
+       if( nNew<1024 ) nNew = 1024;
+ 
+diff --git a/third_party/sqlite/patched/src/util.c b/third_party/sqlite/patched/src/util.c
+index 7e4bb725280d..c173ddbd2440 100644
+--- a/third_party/sqlite/patched/src/util.c
++++ b/third_party/sqlite/patched/src/util.c
+@@ -1576,7 +1576,7 @@ VList *sqlite3VListAdd(
+   assert( pIn==0 || pIn[0]>=3 );  /* Verify ok to add new elements */
+   if( pIn==0 || pIn[1]+nInt > pIn[0] ){
+     /* Enlarge the allocation */
+-    int nAlloc = (pIn ? pIn[0]*2 : 10) + nInt;
++    sqlite3_int64 nAlloc = (pIn ? 2*(sqlite3_int64)pIn[0] : 10) + nInt;
+     VList *pOut = sqlite3DbRealloc(db, pIn, nAlloc*sizeof(int));
+     if( pOut==0 ) return pIn;
+     if( pIn==0 ) pOut[1] = 2;
+diff --git a/third_party/sqlite/patched/src/vdbeaux.c b/third_party/sqlite/patched/src/vdbeaux.c
+index ca2f38741068..31b6e068d77e 100644
+--- a/third_party/sqlite/patched/src/vdbeaux.c
++++ b/third_party/sqlite/patched/src/vdbeaux.c
+@@ -155,9 +155,11 @@ static int growOpArray(Vdbe *v, int nOp){
+   ** operation (without SQLITE_TEST_REALLOC_STRESS) is to double the current
+   ** size of the op array or add 1KB of space, whichever is smaller. */
+ #ifdef SQLITE_TEST_REALLOC_STRESS
+-  int nNew = (v->nOpAlloc>=512 ? v->nOpAlloc*2 : v->nOpAlloc+nOp);
++  sqlite3_int64 nNew = (v->nOpAlloc>=512 ? 2*(sqlite3_int64)v->nOpAlloc
++                      : (sqlite3_int64)v->nOpAlloc+nOp);
+ #else
+-  int nNew = (v->nOpAlloc ? v->nOpAlloc*2 : (int)(1024/sizeof(Op)));
++  sqlite3_int64 nNew = (v->nOpAlloc ? 2*(sqlite3_int64)v->nOpAlloc
++                      : (sqlite3_int64)1024/sizeof(Op));
+   UNUSED_PARAMETER(nOp);
+ #endif
+ 
+@@ -944,7 +946,7 @@ void sqlite3VdbeScanStatus(
+   LogEst nEst,                    /* Estimated number of output rows */
+   const char *zName               /* Name of table or index being scanned */
+ ){
+-  int nByte = (p->nScan+1) * sizeof(ScanStatus);
++  sqlite3_int64 nByte = (p->nScan+1) * sizeof(ScanStatus);
+   ScanStatus *aNew;
+   aNew = (ScanStatus*)sqlite3DbRealloc(p->db, p->aScan, nByte);
+   if( aNew ){
+diff --git a/third_party/sqlite/patched/src/vdbesort.c b/third_party/sqlite/patched/src/vdbesort.c
+index 65733c8df708..4f7f5ca02a7f 100644
+--- a/third_party/sqlite/patched/src/vdbesort.c
++++ b/third_party/sqlite/patched/src/vdbesort.c
+@@ -537,7 +537,7 @@ static int vdbePmaReadBlob(
+     /* Extend the p->aAlloc[] allocation if required. */
+     if( p->nAlloc<nByte ){
+       u8 *aNew;
+-      int nNew = MAX(128, p->nAlloc*2);
++      sqlite3_int64 nNew = MAX(128, 2*(sqlite3_int64)p->nAlloc);
+       while( nByte>nNew ) nNew = nNew*2;
+       aNew = sqlite3Realloc(p->aAlloc, nNew);
+       if( !aNew ) return SQLITE_NOMEM_BKPT;
+@@ -1829,7 +1829,7 @@ int sqlite3VdbeSorterWrite(
+     if( nMin>pSorter->nMemory ){
+       u8 *aNew;
+       int iListOff = (u8*)pSorter->list.pList - pSorter->list.aMemory;
+-      int nNew = pSorter->nMemory * 2;
++      sqlite3_int64 nNew = 2 * (sqlite3_int64)pSorter->nMemory;
+       while( nNew < nMin ) nNew = nNew*2;
+       if( nNew > pSorter->mxPmaSize ) nNew = pSorter->mxPmaSize;
+       if( nNew < nMin ) nNew = nMin;
+diff --git a/third_party/sqlite/patched/src/vtab.c b/third_party/sqlite/patched/src/vtab.c
+index 8a4d2a5cbf22..34ee6c5554e9 100644
+--- a/third_party/sqlite/patched/src/vtab.c
++++ b/third_party/sqlite/patched/src/vtab.c
+@@ -302,9 +302,13 @@ void sqlite3VtabClear(sqlite3 *db, Table *p){
+ ** string will be freed automatically when the table is
+ ** deleted.
+ */
+-static void addModuleArgument(sqlite3 *db, Table *pTable, char *zArg){
+-  int nBytes = sizeof(char *)*(2+pTable->nModuleArg);
++static void addModuleArgument(Parse *pParse, Table *pTable, char *zArg){
++  sqlite3_int64 nBytes = sizeof(char *)*(2+pTable->nModuleArg);
+   char **azModuleArg;
++  sqlite3 *db = pParse->db;
++  if( pTable->nModuleArg+3>=db->aLimit[SQLITE_LIMIT_COLUMN] ){
++    sqlite3ErrorMsg(pParse, "too many columns on %s", pTable->zName);
++  }
+   azModuleArg = sqlite3DbRealloc(db, pTable->azModuleArg, nBytes);
+   if( azModuleArg==0 ){
+     sqlite3DbFree(db, zArg);
+@@ -339,9 +343,9 @@ void sqlite3VtabBeginParse(
+   db = pParse->db;
+ 
+   assert( pTable->nModuleArg==0 );
+-  addModuleArgument(db, pTable, sqlite3NameFromToken(db, pModuleName));
+-  addModuleArgument(db, pTable, 0);
+-  addModuleArgument(db, pTable, sqlite3DbStrDup(db, pTable->zName));
++  addModuleArgument(pParse, pTable, sqlite3NameFromToken(db, pModuleName));
++  addModuleArgument(pParse, pTable, 0);
++  addModuleArgument(pParse, pTable, sqlite3DbStrDup(db, pTable->zName));
+   assert( (pParse->sNameToken.z==pName2->z && pName2->z!=0)
+        || (pParse->sNameToken.z==pName1->z && pName2->z==0)
+   );
+@@ -374,7 +378,7 @@ static void addArgumentToVtab(Parse *pParse){
+     const char *z = (const char*)pParse->sArg.z;
+     int n = pParse->sArg.n;
+     sqlite3 *db = pParse->db;
+-    addModuleArgument(db, pParse->pNewTable, sqlite3DbStrNDup(db, z, n));
++    addModuleArgument(pParse, pParse->pNewTable, sqlite3DbStrNDup(db, z, n));
+   }
+ }
+ 
+@@ -663,7 +667,8 @@ static int growVTrans(sqlite3 *db){
+   /* Grow the sqlite3.aVTrans array if required */
+   if( (db->nVTrans%ARRAY_INCR)==0 ){
+     VTable **aVTrans;
+-    int nBytes = sizeof(sqlite3_vtab *) * (db->nVTrans + ARRAY_INCR);
++    sqlite3_int64 nBytes = sizeof(sqlite3_vtab*)*
++                                 ((sqlite3_int64)db->nVTrans + ARRAY_INCR);
+     aVTrans = sqlite3DbRealloc(db, (void *)db->aVTrans, nBytes);
+     if( !aVTrans ){
+       return SQLITE_NOMEM_BKPT;
+@@ -1159,9 +1164,9 @@ int sqlite3VtabEponymousTableInit(Parse *pParse, Module *pMod){
+   pTab->pSchema = db->aDb[0].pSchema;
+   assert( pTab->nModuleArg==0 );
+   pTab->iPKey = -1;
+-  addModuleArgument(db, pTab, sqlite3DbStrDup(db, pTab->zName));
+-  addModuleArgument(db, pTab, 0);
+-  addModuleArgument(db, pTab, sqlite3DbStrDup(db, pTab->zName));
++  addModuleArgument(pParse, pTab, sqlite3DbStrDup(db, pTab->zName));
++  addModuleArgument(pParse, pTab, 0);
++  addModuleArgument(pParse, pTab, sqlite3DbStrDup(db, pTab->zName));
+   rc = vtabCallConstructor(db, pTab, pMod, pModule->xConnect, &zErr);
+   if( rc ){
+     sqlite3ErrorMsg(pParse, "%s", zErr);
+-- 
+2.21.0.392.gf8f6787159e-goog
+

@@ -42,7 +42,6 @@ class Controller {
   // named |sampling_interval|.
   Controller(std::unique_ptr<service_manager::Connector> connector,
              mojom::StackMode stack_mode,
-             bool stream_samples,
              uint32_t sampling_rate);
   ~Controller();
 
@@ -57,7 +56,6 @@ class Controller {
   using GetProfiledPidsCallback =
       base::OnceCallback<void(const std::vector<base::ProcessId>&)>;
   void GetProfiledPids(GetProfiledPidsCallback callback);
-  void SetKeepSmallAllocations(bool keep_small_allocations);
 
   // Careful! WeakPtrs are also sequence-affine.
   // This method must be called from the same sequence the instance is bound to.
@@ -72,7 +70,6 @@ class Controller {
   // The same sampling rate and stack mode is used for each client.
   const uint32_t sampling_rate_ = 1;
   const mojom::StackMode stack_mode_;
-  const bool stream_samples_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<Controller> weak_factory_;

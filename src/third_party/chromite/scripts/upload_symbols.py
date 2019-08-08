@@ -380,8 +380,6 @@ def FindDuplicates(symbols, dedupe_namespace):
     if storage_query:
       # Convert SymbolFiles into DedupeItems.
       items = [DedupeItem(x) for x in batch]
-      for item in items:
-        item.prepare(DedupeItem.ALGO)
 
       # Look for duplicates.
       try:
@@ -431,7 +429,6 @@ def PostForDeduplication(symbols, dedupe_namespace):
     # queried for it's presence before, upload to isolate now.
 
     if storage_query and s.status == SymbolFile.UPLOADED and s.dedupe_item:
-      s.dedupe_item.prepare(DedupeItem.ALGO)
       try:
         with timeout_util.Timeout(DEDUPE_NOTIFY_TIMEOUT):
           storage_query.push(s.dedupe_item, s.dedupe_push_state,

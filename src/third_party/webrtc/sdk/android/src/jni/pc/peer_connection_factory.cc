@@ -23,6 +23,7 @@
 // The user may pass in a nullptr.
 #include "modules/audio_processing/include/audio_processing.h"  // nogncheck
 #include "rtc_base/event_tracer.h"
+#include "rtc_base/system/thread_registry.h"
 #include "rtc_base/thread.h"
 #include "sdk/android/generated_peerconnection_jni/jni/PeerConnectionFactory_jni.h"
 #include "sdk/android/native_api/jni/java_types.h"
@@ -239,7 +240,8 @@ static void JNI_PeerConnectionFactory_ShutdownInternalTracer(JNIEnv* jni) {
 
 // Following parameters are optional:
 // |audio_device_module|, |jencoder_factory|, |jdecoder_factory|,
-// |audio_processor|, |media_transport_factory|, |fec_controller_factory|.
+// |audio_processor|, |media_transport_factory|, |fec_controller_factory|,
+// |network_state_predictor_factory|.
 ScopedJavaLocalRef<jobject> CreatePeerConnectionFactoryForJava(
     JNIEnv* jni,
     const JavaParamRef<jobject>& jcontext,
@@ -251,6 +253,8 @@ ScopedJavaLocalRef<jobject> CreatePeerConnectionFactoryForJava(
     const JavaParamRef<jobject>& jdecoder_factory,
     rtc::scoped_refptr<AudioProcessing> audio_processor,
     std::unique_ptr<FecControllerFactoryInterface> fec_controller_factory,
+    std::unique_ptr<NetworkStatePredictorFactoryInterface>
+        network_state_predictor_factory,
     std::unique_ptr<MediaTransportFactory> media_transport_factory) {
   // talk/ assumes pretty widely that the current Thread is ThreadManager'd, but
   // ThreadManager only WrapCurrentThread()s the thread where it is first
@@ -304,6 +308,8 @@ ScopedJavaLocalRef<jobject> CreatePeerConnectionFactoryForJava(
   dependencies.call_factory = std::move(call_factory);
   dependencies.event_log_factory = std::move(rtc_event_log_factory);
   dependencies.fec_controller_factory = std::move(fec_controller_factory);
+  dependencies.network_state_predictor_factory =
+      std::move(network_state_predictor_factory);
   dependencies.media_transport_factory = std::move(media_transport_factory);
 
   rtc::scoped_refptr<PeerConnectionFactoryInterface> factory(
@@ -333,6 +339,7 @@ JNI_PeerConnectionFactory_CreatePeerConnectionFactory(
     const JavaParamRef<jobject>& jdecoder_factory,
     jlong native_audio_processor,
     jlong native_fec_controller_factory,
+    jlong native_network_state_predictor_factory,
     jlong native_media_transport_factory) {
   rtc::scoped_refptr<AudioProcessing> audio_processor =
       reinterpret_cast<AudioProcessing*>(native_audio_processor);
@@ -345,6 +352,8 @@ JNI_PeerConnectionFactory_CreatePeerConnectionFactory(
       audio_processor ? audio_processor : CreateAudioProcessing(),
       TakeOwnershipOfUniquePtr<FecControllerFactoryInterface>(
           native_fec_controller_factory),
+      TakeOwnershipOfUniquePtr<NetworkStatePredictorFactoryInterface>(
+          native_network_state_predictor_factory),
       TakeOwnershipOfUniquePtr<MediaTransportFactory>(
           native_media_transport_factory));
 }
@@ -518,6 +527,11 @@ static void JNI_PeerConnectionFactory_DeleteLoggable(JNIEnv* jni) {
 
 static void JNI_PeerConnectionFactory_PrintStackTrace(JNIEnv* env, jint tid) {
   RTC_LOG(LS_WARNING) << StackTraceToString(GetStackTrace(tid));
+}
+
+static void JNI_PeerConnectionFactory_PrintStackTracesOfRegisteredThreads(
+    JNIEnv* env) {
+  PrintStackTracesOfRegisteredThreads();
 }
 
 }  // namespace jni

@@ -365,10 +365,22 @@ class UnsetProxyConfigService : public ProxyConfigService {
 #endif
 
 // Returns a sanitized copy of |url| which is safe to pass on to a PAC script.
-// The method for sanitizing is determined by |policy|. See the comments for
-// that enum for details.
-GURL SanitizeUrl(const GURL& url,
-                 ProxyResolutionService::SanitizeUrlPolicy policy) {
+//
+// PAC scripts are modelled as being controllable by a network-present
+// attacker (since such an attacker can influence the outcome of proxy
+// auto-discovery, or modify the contents of insecurely delivered PAC scripts).
+//
+// As such, it is important that the full path/query of https:// URLs not be
+// sent to PAC scripts, since that would give an attacker access to data that
+// is ordinarily protected by TLS.
+//
+// Obscuring the path for http:// URLs isn't being done since it doesn't matter
+// for security (attacker can already route traffic through their HTTP proxy
+// and see the full URL for http:// requests).
+//
+// TODO(https://crbug.com/882536): Use the same stripping for insecure URL
+// schemes.
+GURL SanitizeUrl(const GURL& url) {
   DCHECK(url.is_valid());
 
   GURL::Replacements replacements;
@@ -376,8 +388,7 @@ GURL SanitizeUrl(const GURL& url,
   replacements.ClearPassword();
   replacements.ClearRef();
 
-  if (policy == ProxyResolutionService::SanitizeUrlPolicy::SAFE &&
-      url.SchemeIsCryptographic()) {
+  if (url.SchemeIsCryptographic()) {
     replacements.ClearPath();
     replacements.ClearQuery();
   }
@@ -431,7 +442,7 @@ class ProxyResolutionService::InitProxyResolver {
  public:
   InitProxyResolver()
       : proxy_resolver_factory_(nullptr),
-        proxy_resolver_(NULL),
+        proxy_resolver_(nullptr),
         resolver_using_auto_detected_script_(nullptr),
         next_state_(STATE_NONE),
         quick_check_enabled_(true) {}
@@ -747,7 +758,7 @@ class ProxyResolutionService::PacFileDeciderPoller {
     // Start the PAC file decider to see if anything has changed.
     // TODO(eroman): Pass a proper NetLog rather than NULL.
     decider_.reset(
-        new PacFileDecider(pac_file_fetcher_, dhcp_pac_file_fetcher_, NULL));
+        new PacFileDecider(pac_file_fetcher_, dhcp_pac_file_fetcher_, nullptr));
     decider_->set_quick_check_enabled(quick_check_enabled_);
     int result = decider_->Start(
         config_, TimeDelta(), proxy_resolver_expects_pac_bytes_,
@@ -844,7 +855,7 @@ class ProxyResolutionService::PacFileDeciderPoller {
 
 // static
 const ProxyResolutionService::PacPollPolicy*
-    ProxyResolutionService::PacFileDeciderPoller::poll_policy_ = NULL;
+    ProxyResolutionService::PacFileDeciderPoller::poll_policy_ = nullptr;
 
 class ProxyResolutionService::RequestImpl
     : public ProxyResolutionService::Request {
@@ -1056,7 +1067,6 @@ ProxyResolutionService::ProxyResolutionService(
       stall_proxy_auto_config_delay_(
           TimeDelta::FromMilliseconds(kDelayAfterNetworkChangesMs)),
       quick_check_enabled_(true),
-      sanitize_url_policy_(SanitizeUrlPolicy::SAFE),
       weak_ptr_factory_(this) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
   NetworkChangeNotifier::AddDNSObserver(this);
@@ -1097,7 +1107,7 @@ std::unique_ptr<ProxyResolutionService> ProxyResolutionService::CreateFixed(
   // TODO(eroman): This isn't quite right, won't work if |pc| specifies
   //               a PAC script.
   return CreateUsingSystemProxyResolver(
-      std::make_unique<ProxyConfigServiceFixed>(pc), NULL);
+      std::make_unique<ProxyConfigServiceFixed>(pc), nullptr);
 }
 
 // static
@@ -1175,7 +1185,7 @@ int ProxyResolutionService::ResolveProxy(const GURL& raw_url,
   // script). The goal is to remove sensitive data (like embedded user names
   // and password), and local data (i.e. reference fragment) which does not need
   // to be disclosed to the resolver.
-  GURL url = SanitizeUrl(raw_url, sanitize_url_policy_);
+  GURL url = SanitizeUrl(raw_url);
 
   // Check if the request can be completed right away. (This is the case when
   // using a direct connection for example).
@@ -1339,7 +1349,7 @@ void ProxyResolutionService::OnInitProxyResolverComplete(int result) {
                  base::Unretained(this)),
       fetched_config_.value(), resolver_factory_->expects_pac_bytes(),
       pac_file_fetcher_.get(), dhcp_pac_file_fetcher_.get(), result,
-      init_proxy_resolver_->script_data(), NULL));
+      init_proxy_resolver_->script_data(), nullptr));
   script_poller_->set_quick_check_enabled(quick_check_enabled_);
 
   init_proxy_resolver_.reset();

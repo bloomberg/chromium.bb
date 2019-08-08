@@ -32,6 +32,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
@@ -178,6 +179,9 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   void ClearActivation() { user_activation_state_.Clear(); }
 
+  // Transfers user activation state from |other| frame into |this|.
+  void TransferUserActivationFrom(Frame* other);
+
   void SetDocumentHasReceivedUserGestureBeforeNavigation(bool value) {
     has_received_user_gesture_before_nav_ = value;
   }
@@ -225,8 +229,31 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
     return navigation_rate_limiter_;
   }
 
+  // Called to get the opener's FeatureState if any. This works with disowned
+  // openers, i.e., even if WebFrame::Opener() is nullptr, there could be a
+  // non-empty feature state which is taken from the the original opener of the
+  // frame. This is similar to how sandbox flags are propagated to the opened
+  // new browsing contexts.
+  const FeaturePolicy::FeatureState& OpenerFeatureState() const {
+    return opener_feature_state_;
+  }
+
+  // Sets the opener's FeatureState for the main frame. Once a non-empty
+  // |opener_feature_state| is set, it can no longer be modified (due to the
+  // fact that the original opener which passed down the FeatureState cannot be
+  // modified either).
+  void SetOpenerFeatureState(const FeaturePolicy::FeatureState& state) {
+    DCHECK(state.empty() || IsMainFrame());
+    DCHECK(opener_feature_state_.empty());
+    opener_feature_state_ = state;
+  }
+
  protected:
   Frame(FrameClient*, Page&, FrameOwner*, WindowProxyManager*);
+
+  // Perform initialization that must happen after the constructor has run so
+  // that vtables are initialized.
+  void Initialize();
 
   // DetachImpl() may be re-entered multiple times, if a frame is detached while
   // already being detached.
@@ -244,8 +271,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   Member<FrameOwner> owner_;
   Member<DOMWindow> dom_window_;
 
-  // The user activation state of the current frame.  See
-  // FrameTreeNode::user_activation_state_ for details.
+  // The user activation state of the current frame.  See |UserActivationState|
+  // for details on how this state is maintained.
   UserActivationState user_activation_state_;
 
   bool has_received_user_gesture_before_nav_ = false;
@@ -263,6 +290,10 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   FrameLifecycle lifecycle_;
 
   NavigationRateLimiter navigation_rate_limiter_;
+
+  // Feature policy state inherited from an opener. It is always empty for child
+  // frames.
+  FeaturePolicy::FeatureState opener_feature_state_;
 
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.
   bool is_loading_;

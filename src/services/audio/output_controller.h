@@ -155,8 +155,8 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // LoopbackGroupMember implementation.
   const media::AudioParameters& GetAudioParameters() const override;
   std::string GetDeviceId() const override;
-  void StartSnooping(Snooper* snooper, SnoopingMode mode) override;
-  void StopSnooping(Snooper* snooper, SnoopingMode mode) override;
+  void StartSnooping(Snooper* snooper) override;
+  void StopSnooping(Snooper* snooper) override;
   void StartMuting() override;
   void StopMuting() override;
 
@@ -243,10 +243,6 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // Helper method that stops, closes, and NULLs |*stream_|.
   void StopCloseAndClearStream();
 
-  // Send audio data to each Snooper.
-  void BroadcastDataToSnoopers(std::unique_ptr<media::AudioBus> audio_bus,
-                               base::TimeTicks reference_time);
-
   // Log the current average power level measured by power_monitor_.
   void LogAudioPowerLevel(const char* call_name);
 
@@ -276,14 +272,10 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // diverted to |diverting_to_stream_|, or a fake AudioOutputStream.
   bool disable_local_output_;
 
-  // The targets for audio stream to be copied to. |should_duplicate_| is set to
-  // 1 when the OnMoreData() call should proxy the data to
-  // BroadcastDataToSnoopers().
+  // The snoopers examining or grabbing a copy of the audio data from the
+  // OnMoreData() calls.
+  base::Lock snooper_lock_;
   std::vector<Snooper*> snoopers_;
-  base::AtomicRefCount should_duplicate_;
-
-  base::Lock realtime_snooper_lock_;
-  std::vector<Snooper*> realtime_snoopers_;
 
   // The current volume of the audio stream.
   double volume_;

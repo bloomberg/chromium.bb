@@ -5,6 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_VK_IMAGE_SKIA_REPRESENTATION_H_
 #define GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_VK_IMAGE_SKIA_REPRESENTATION_H_
 
+#include <vector>
+
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/external_vk_image_backing.h"
@@ -23,11 +25,10 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
 
   // SharedImageRepresentationSkia implementation.
   sk_sp<SkSurface> BeginWriteAccess(
-      GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override;
   void EndWriteAccess(sk_sp<SkSurface> surface) override;
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override;
+  sk_sp<SkPromiseImageTexture> BeginReadAccess() override;
   void EndReadAccess() override;
 
  private:
@@ -54,11 +55,32 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
         ->GetVulkanQueue();
   }
 
+  VulkanFenceHelper* fence_helper() {
+    return backing_impl()
+        ->context_state()
+        ->vk_context_provider()
+        ->GetDeviceQueue()
+        ->GetFenceHelper();
+  }
+
   ExternalVkImageBacking* backing_impl() {
     return static_cast<ExternalVkImageBacking*>(backing());
   }
 
-  sk_sp<SkSurface> read_surface_ = nullptr;
+  sk_sp<SkPromiseImageTexture> BeginAccess(bool readonly);
+  void EndAccess(bool readonly);
+
+  // Functions used in error cases - immediately clean up semaphores.
+  void DestroySemaphoresImmediate(std::vector<VkSemaphore> semaphores);
+  void DestroySemaphoreImmediate(VkSemaphore semaphores);
+
+  enum AccessMode {
+    kNone = 0,
+    kRead = 1,
+    kWrite = 2,
+  };
+  AccessMode access_mode_ = kNone;
+  sk_sp<SkSurface> surface_;
 };
 
 }  // namespace gpu

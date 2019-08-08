@@ -29,13 +29,15 @@ cr.define('app_management', function() {
     }
 
     /**
+     * @param {Array<number>=} optIds
      * @return {!Object<number, Permission>}
      */
-    static createArcPermissions() {
-      const permissionIds = [
+    static createArcPermissions(optIds) {
+      const permissionIds = optIds || [
         ArcPermissionType.CAMERA,
         ArcPermissionType.LOCATION,
         ArcPermissionType.MICROPHONE,
+        ArcPermissionType.NOTIFICATIONS,
       ];
 
       const permissions = {};

@@ -9,6 +9,7 @@ include_rules = [
     "+base/strings",
     "+base/time/time.h",
     "+cc/input/browser_controls_state.h",
+    "+cc/input/overscroll_behavior.h",
     "+cc/input/layer_selection_bound.h",
     "+cc/paint/node_holder.h",
     "+cc/paint/paint_canvas.h",
@@ -22,10 +23,10 @@ include_rules = [
     "+services/service_manager/public",
     # Enforce to use mojom-shared.h in blink/public so that it can compile
     # inside and outside Blink.
-    "+services/ws/public/mojom/ime/ime.mojom-shared.h",
     "+third_party/blink/public/platform",
     "+third_party/blink/public/web",
     "+ui/accessibility/ax_enums.mojom-shared.h",
+    "+ui/base/ime/mojo/ime_types.mojom-shared.h",
 
     # Allowed only inside INSIDE_BLINK
     "+third_party/blink/renderer/core",

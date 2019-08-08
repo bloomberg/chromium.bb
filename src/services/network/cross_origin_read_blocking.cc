@@ -43,6 +43,7 @@ const char kTextXml[] = "text/xml";
 const char kAppXml[] = "application/xml";
 const char kAppJson[] = "application/json";
 const char kImageSvg[] = "image/svg+xml";
+const char kDashVideo[] = "application/dash+xml";  // https://crbug.com/947498
 const char kTextJson[] = "text/json";
 const char kTextPlain[] = "text/plain";
 // TODO(lukasza): Remove kJsonProtobuf once this MIME type is not used in
@@ -219,10 +220,11 @@ void RecordCorbResultVsInitiatorLockCompatibility(
 
 MimeType CrossOriginReadBlocking::GetCanonicalMimeType(
     base::StringPiece mime_type) {
-  // Checking for image/svg+xml early ensures that it won't get classified as
-  // MimeType::kXml by the presence of the "+xml"
+  // Checking for image/svg+xml and application/dash+xml early ensures that they
+  // won't get classified as MimeType::kXml by the presence of the "+xml"
   // suffix.
-  if (base::LowerCaseEqualsASCII(mime_type, kImageSvg))
+  if (base::LowerCaseEqualsASCII(mime_type, kImageSvg) ||
+      base::LowerCaseEqualsASCII(mime_type, kDashVideo))
     return MimeType::kOthers;
 
   // See also https://mimesniff.spec.whatwg.org/#html-mime-type

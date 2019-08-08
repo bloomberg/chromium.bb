@@ -29,7 +29,7 @@ TestWebThreadBundle::~TestWebThreadBundle() {
   ui_thread_->Stop();
   base::RunLoop().RunUntilIdle();
 
-  // This is required to ensure that all remaining MessageLoop and TaskScheduler
+  // This is required to ensure that all remaining MessageLoop and ThreadPool
   // tasks run in an atomic step. This is a bit different than production where
   // the main thread is not flushed after it's done running but this approach is
   // preferred in unit tests as running more tasks can merely uncover more

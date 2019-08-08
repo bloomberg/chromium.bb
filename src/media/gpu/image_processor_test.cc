@@ -7,7 +7,7 @@
 #include <tuple>
 
 #include "base/files/file_path.h"
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
@@ -30,6 +30,12 @@ constexpr const base::FilePath::CharType* kI420Image =
     FILE_PATH_LITERAL("bear_320x192.i420.yuv");
 constexpr const base::FilePath::CharType* kNV12Image =
     FILE_PATH_LITERAL("bear_320x192.nv12.yuv");
+constexpr const base::FilePath::CharType* kRGBAImage =
+    FILE_PATH_LITERAL("bear_320x192.rgba");
+constexpr const base::FilePath::CharType* kBGRAImage =
+    FILE_PATH_LITERAL("bear_320x192.bgra");
+constexpr const base::FilePath::CharType* kYV12Image =
+    FILE_PATH_LITERAL("bear_320x192.yv12.yuv");
 
 class ImageProcessorSimpleParamTest
     : public ::testing::Test,
@@ -43,10 +49,13 @@ class ImageProcessorSimpleParamTest
   std::unique_ptr<test::ImageProcessorClient> CreateImageProcessorClient(
       const test::Image& input_image,
       const test::Image& output_image) {
+    const VideoPixelFormat input_format = input_image.PixelFormat();
+    const VideoPixelFormat output_format = output_image.PixelFormat();
     auto input_config_layout = test::CreateVideoFrameLayout(
-        input_image.PixelFormat(), input_image.Size());
-    auto output_config_layout = test::CreateVideoFrameLayout(
-        output_image.PixelFormat(), output_image.Size());
+        input_format, input_image.Size(), VideoFrame::NumPlanes(input_format));
+    auto output_config_layout =
+        test::CreateVideoFrameLayout(output_format, output_image.Size(),
+                                     VideoFrame::NumPlanes(output_format));
     LOG_ASSERT(input_config_layout);
     LOG_ASSERT(output_config_layout);
     ImageProcessor::PortConfig input_config(*input_config_layout,
@@ -58,10 +67,13 @@ class ImageProcessorSimpleParamTest
     // TODO(crbug.com/917951): Select more appropriate number of buffers.
     constexpr size_t kNumBuffers = 1;
     LOG_ASSERT(output_image.IsMetadataLoaded());
-    auto vf_validator = test::VideoFrameValidator::Create(
-        {output_image.Checksum()}, output_image.PixelFormat());
     std::vector<std::unique_ptr<test::VideoFrameProcessor>> frame_processors;
-    frame_processors.push_back(std::move(vf_validator));
+    // TODO(crbug.com/944823): Use VideoFrameValidator for RGB formats.
+    if (IsYuvPlanar(input_format) && IsYuvPlanar(output_format)) {
+      auto vf_validator = test::VideoFrameValidator::Create(
+          {output_image.Checksum()}, output_image.PixelFormat());
+      frame_processors.push_back(std::move(vf_validator));
+    }
     auto ip_client = test::ImageProcessorClient::Create(
         input_config, output_config, kNumBuffers, std::move(frame_processors));
     LOG_ASSERT(ip_client) << "Failed to create ImageProcessorClient";
@@ -85,11 +97,17 @@ TEST_P(ImageProcessorSimpleParamTest, ConvertOneTimeFromMemToMem) {
   EXPECT_TRUE(ip_client->WaitForFrameProcessors());
 }
 
+// BGRA->NV12
 // I420->NV12
-INSTANTIATE_TEST_SUITE_P(ConvertI420ToNV12,
-                         ImageProcessorSimpleParamTest,
-                         ::testing::Values(std::make_tuple(kI420Image,
-                                                           kNV12Image)));
+// RGBA->NV12
+// YV12->NV12
+INSTANTIATE_TEST_SUITE_P(
+    ConvertToNV12,
+    ImageProcessorSimpleParamTest,
+    ::testing::Values(std::make_tuple(kBGRAImage, kNV12Image),
+                      std::make_tuple(kI420Image, kNV12Image),
+                      std::make_tuple(kRGBAImage, kNV12Image),
+                      std::make_tuple(kYV12Image, kNV12Image)));
 
 #if defined(OS_CHROMEOS)
 // TODO(hiroh): Add more tests.

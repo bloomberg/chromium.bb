@@ -73,8 +73,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, Cookies) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  https_server.AddDefaultHandlers(GetTestDataFilePath());
   ASSERT_TRUE(https_server.Start());
 
   // The server sends a HttpOnly cookie. The RenderFrameMessageFilter should
@@ -312,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, RenderProcessGone) {
 
 class WaitingCookieStore : public net::CookieMonster {
  public:
-  WaitingCookieStore() : CookieMonster(nullptr, nullptr, nullptr) {}
+  WaitingCookieStore() : CookieMonster(nullptr, nullptr) {}
 
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const net::CookieOptions& options,

@@ -16,7 +16,6 @@
 #include "chrome/browser/browsing_data/local_data_container.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "extensions/buildflags/buildflags.h"
-#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "ui/base/models/tree_node_model.h"
 
 class BrowsingDataCookieHelper;
@@ -113,8 +112,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
         const content::StorageUsageInfo* local_storage_info);
     DetailedInfo& InitSessionStorage(
         const content::StorageUsageInfo* session_storage_info);
-    DetailedInfo& InitAppCache(const GURL& origin,
-                               const blink::mojom::AppCacheInfo* appcache_info);
+    DetailedInfo& InitAppCache(const content::StorageUsageInfo* usage_info);
     DetailedInfo& InitIndexedDB(const content::StorageUsageInfo* usage_info);
     DetailedInfo& InitFileSystem(
         const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info);
@@ -134,9 +132,8 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     NodeType node_type;
     url::Origin origin;
     const net::CanonicalCookie* cookie = nullptr;
-    const blink::mojom::AppCacheInfo* appcache_info = nullptr;
-    // Used for Database (WebSQL), IndexedDB, Service Worker, and Cache
-    // Storage node types.
+    // Used for AppCache, Database (WebSQL), IndexedDB, Service Worker, and
+    // Cache Storage node types.
     const content::StorageUsageInfo* usage_info = nullptr;
     const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info =
         nullptr;

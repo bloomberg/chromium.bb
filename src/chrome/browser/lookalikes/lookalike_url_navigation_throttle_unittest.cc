@@ -7,6 +7,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace lookalikes {
+
 TEST(LookalikeUrlNavigationThrottleTest, IsEditDistanceAtMostOne) {
   const struct TestCase {
     const wchar_t* domain;
@@ -59,9 +61,11 @@ TEST(LookalikeUrlNavigationThrottleTest, IsEditDistanceAtMostOne) {
       {L"google.com", L"goooglé.com", false},
   };
   for (const TestCase& test_case : kTestCases) {
-    bool result = LookalikeUrlNavigationThrottle::IsEditDistanceAtMostOne(
-        base::WideToUTF16(test_case.domain),
-        base::WideToUTF16(test_case.top_domain));
+    bool result =
+        IsEditDistanceAtMostOne(base::WideToUTF16(test_case.domain),
+                                base::WideToUTF16(test_case.top_domain));
     EXPECT_EQ(test_case.expected, result);
   }
 }
+
+}  // namespace lookalikes

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 
 namespace content {
@@ -107,18 +108,22 @@ class PageLoadMetricsUpdateDispatcher {
         content::RenderFrameHost* rfh,
         const mojom::PageLoadTiming& timing) = 0;
     virtual void OnMainFrameMetadataChanged() = 0;
-    virtual void OnSubframeMetadataChanged() = 0;
+    virtual void OnSubframeMetadataChanged(
+        content::RenderFrameHost* rfh,
+        const mojom::PageLoadMetadata& metadata) = 0;
     virtual void OnSubFrameRenderDataChanged(
         content::RenderFrameHost* rfh,
-        const mojom::PageRenderData& render_data) = 0;
+        const mojom::FrameRenderDataUpdate& render_data) = 0;
     virtual void UpdateFeaturesUsage(
         content::RenderFrameHost* rfh,
         const mojom::PageLoadFeatures& new_features) = 0;
     virtual void UpdateResourceDataUse(
-        int frame_tree_node_id,
+        content::RenderFrameHost* rfh,
         const std::vector<mojom::ResourceDataUpdatePtr>& resources) = 0;
     virtual void UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
                                       const mojom::CpuTiming& timing) = 0;
+    virtual void OnNewDeferredResourceCounts(
+        const mojom::DeferredResourceCounts& new_deferred_resource_data) = 0;
   };
 
   // The |client| instance must outlive this object.
@@ -128,13 +133,15 @@ class PageLoadMetricsUpdateDispatcher {
       PageLoadMetricsEmbedderInterface* embedder_interface);
   ~PageLoadMetricsUpdateDispatcher();
 
-  void UpdateMetrics(content::RenderFrameHost* render_frame_host,
-                     mojom::PageLoadTimingPtr new_timing,
-                     mojom::PageLoadMetadataPtr new_metadata,
-                     mojom::PageLoadFeaturesPtr new_features,
-                     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-                     mojom::PageRenderDataPtr render_data,
-                     mojom::CpuTimingPtr new_cpu_timing);
+  void UpdateMetrics(
+      content::RenderFrameHost* render_frame_host,
+      mojom::PageLoadTimingPtr new_timing,
+      mojom::PageLoadMetadataPtr new_metadata,
+      mojom::PageLoadFeaturesPtr new_features,
+      const std::vector<mojom::ResourceDataUpdatePtr>& resources,
+      mojom::FrameRenderDataUpdatePtr render_data,
+      mojom::CpuTimingPtr new_cpu_timing,
+      mojom::DeferredResourceCountsPtr new_deferred_resource_data);
 
   // This method is only intended to be called for PageLoadFeatures being
   // recorded directly from the browser process. Features coming from the
@@ -157,8 +164,9 @@ class PageLoadMetricsUpdateDispatcher {
   const mojom::PageLoadMetadata& subframe_metadata() const {
     return *(subframe_metadata_.get());
   }
-  const mojom::PageRenderData& main_frame_render_data() const {
-    return *(main_frame_render_data_.get());
+  const PageRenderData& page_render_data() const { return page_render_data_; }
+  const PageRenderData& main_frame_render_data() const {
+    return main_frame_render_data_;
   }
 
  private:
@@ -171,11 +179,15 @@ class PageLoadMetricsUpdateDispatcher {
                             mojom::CpuTimingPtr new_timing);
 
   void UpdateMainFrameMetadata(mojom::PageLoadMetadataPtr new_metadata);
-  void UpdateSubFrameMetadata(mojom::PageLoadMetadataPtr subframe_metadata);
+  void UpdateSubFrameMetadata(content::RenderFrameHost* render_frame_host,
+                              mojom::PageLoadMetadataPtr subframe_metadata);
 
-  void UpdateMainFrameRenderData(mojom::PageRenderDataPtr render_data);
-  void UpdateSubFrameRenderData(content::RenderFrameHost* render_frame_host,
-                                mojom::PageRenderDataPtr render_data);
+  void UpdatePageRenderData(const mojom::FrameRenderDataUpdate& render_data);
+  void UpdateMainFrameRenderData(
+      const mojom::FrameRenderDataUpdate& render_data);
+  void OnSubFrameRenderDataChanged(
+      content::RenderFrameHost* render_frame_host,
+      const mojom::FrameRenderDataUpdate& render_data);
 
   void MaybeDispatchTimingUpdates(bool did_merge_new_timing_value);
   void DispatchTimingUpdates();
@@ -202,7 +214,8 @@ class PageLoadMetricsUpdateDispatcher {
   mojom::PageLoadMetadataPtr main_frame_metadata_;
   mojom::PageLoadMetadataPtr subframe_metadata_;
 
-  mojom::PageRenderDataPtr main_frame_render_data_;
+  PageRenderData page_render_data_;
+  PageRenderData main_frame_render_data_;
 
   // Navigation start offsets for the most recently committed document in each
   // frame.

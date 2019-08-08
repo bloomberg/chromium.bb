@@ -477,14 +477,16 @@ class AudioDeviceTest : public ::testing::Test {
   int total_delay_ms() const { return 10; }
 
   void UpdateParameters() {
-    int sample_rate = GetDefaultSampleRate(jni_, audio_manager_);
+    int input_sample_rate = GetDefaultSampleRate(jni_, audio_manager_);
+    int output_sample_rate = GetDefaultSampleRate(jni_, audio_manager_);
     bool stereo_playout_is_available;
     bool stereo_record_is_available;
     audio_device_->StereoPlayoutIsAvailable(&stereo_playout_is_available);
     audio_device_->StereoRecordingIsAvailable(&stereo_record_is_available);
-    GetAudioParameters(jni_, context_, audio_manager_, sample_rate,
-                       stereo_playout_is_available, stereo_record_is_available,
-                       &input_parameters_, &output_parameters_);
+    GetAudioParameters(jni_, context_, audio_manager_, input_sample_rate,
+                       output_sample_rate, stereo_playout_is_available,
+                       stereo_record_is_available, &input_parameters_,
+                       &output_parameters_);
   }
 
   void SetActiveAudioLayer(AudioDeviceModule::AudioLayer audio_layer) {
@@ -511,7 +513,7 @@ class AudioDeviceTest : public ::testing::Test {
 
   rtc::scoped_refptr<AudioDeviceModule> CreateAudioDevice(
       AudioDeviceModule::AudioLayer audio_layer) {
-#if defined(AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
+#if defined(WEBRTC_AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
     if (audio_layer == AudioDeviceModule::kAndroidAAudioAudio) {
       return rtc::scoped_refptr<AudioDeviceModule>(
           CreateAAudioAudioDeviceModule(jni_, context_.obj()));
@@ -715,7 +717,7 @@ TEST_F(AudioDeviceTest, CorrectAudioLayerIsUsedForOpenSLInBothDirections) {
 // TODO(bugs.webrtc.org/8914)
 // TODO(phensman): Add test for AAudio/Java combination when this combination
 // is supported.
-#if !defined(AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
+#if !defined(WEBRTC_AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
 #define MAYBE_CorrectAudioLayerIsUsedForAAudioInBothDirections \
   DISABLED_CorrectAudioLayerIsUsedForAAudioInBothDirections
 #else

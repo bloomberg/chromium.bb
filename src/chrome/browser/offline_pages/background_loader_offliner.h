@@ -68,7 +68,7 @@ class BackgroundLoaderOffliner
   // Called when a navigation resulted in a single-file download. e.g.
   // When user navigated to a pdf page while offline and clicks on the
   // "Download page later" button.
-  void CanDownload(const base::Callback<void(bool)>& callback) override;
+  void CanDownload(base::OnceCallback<void(bool)> callback) override;
 
   // WebContentsObserver implementation.
   void DocumentAvailableInMainFrame() override;

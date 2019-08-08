@@ -4,6 +4,8 @@
 
 #include "ui/views/window/non_client_view.h"
 
+#include <memory>
+
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -26,9 +28,9 @@ const char NonClientView::kViewClassName[] =
 // because the RootView message dispatch sends messages to items higher in the
 // z-order first and we always want the client view to have first crack at
 // handling mouse messages.
-static const int kFrameViewIndex = 0;
-static const int kClientViewIndex = 1;
-// The overlay view is always on top (index == child_count() - 1).
+static constexpr int kFrameViewIndex = 0;
+static constexpr int kClientViewIndex = 1;
+// The overlay view is always on top (view == children().back()).
 
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, default implementations:
@@ -41,11 +43,8 @@ bool NonClientFrameView::GetClientMask(const gfx::Size& size,
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientView, public:
 
-NonClientView::NonClientView()
-    : client_view_(nullptr),
-      overlay_view_(nullptr) {
-  SetEventTargeter(
-      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+NonClientView::NonClientView() {
+  SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 
 NonClientView::~NonClientView() {
@@ -88,7 +87,7 @@ void NonClientView::UpdateFrame() {
   Widget* widget = GetWidget();
   SetFrameView(widget->CreateNonClientFrameView());
   widget->ThemeChanged();
-  Layout();
+  InvalidateLayout();
   SchedulePaint();
 }
 
@@ -181,9 +180,8 @@ void NonClientView::Layout() {
 
 void NonClientView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
-  // Add our two child views here as we are added to the Widget so that if we
-  // are subsequently resized all the parent-child relationships are
-  // established.
+  // Add our child views here as we are added to the Widget so that if we are
+  // subsequently resized all the parent-child relationships are established.
   if (details.is_add && GetWidget() && details.child == this) {
     AddChildViewAt(frame_view_.get(), kFrameViewIndex);
     AddChildViewAt(client_view_, kClientViewIndex);
@@ -249,8 +247,7 @@ View* NonClientView::TargetForRect(View* root, const gfx::Rect& rect) {
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, public:
 
-NonClientFrameView::~NonClientFrameView() {
-}
+NonClientFrameView::~NonClientFrameView() = default;
 
 bool NonClientFrameView::ShouldPaintAsActive() const {
   return  GetWidget()->IsAlwaysRenderAsActive() ||
@@ -325,10 +322,8 @@ void NonClientFrameView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, protected:
 
-NonClientFrameView::NonClientFrameView()
-    : active_state_override_(nullptr) {
-  SetEventTargeter(
-      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+NonClientFrameView::NonClientFrameView() {
+  SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 
 // ViewTargeterDelegate:

@@ -4,6 +4,8 @@
 
 #include <atk/atk.h>
 #include <map>
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/environment.h"
@@ -45,13 +47,11 @@ G_BEGIN_DECLS
 typedef struct _AtkUtilAuraLinux        AtkUtilAuraLinux;
 typedef struct _AtkUtilAuraLinuxClass   AtkUtilAuraLinuxClass;
 
-struct _AtkUtilAuraLinux
-{
+struct _AtkUtilAuraLinux {
   AtkUtil parent;
 };
 
-struct _AtkUtilAuraLinuxClass
-{
+struct _AtkUtilAuraLinuxClass {
   AtkUtilClass parent_class;
 };
 
@@ -99,7 +99,7 @@ static void atk_util_remove_key_event_listener(guint listener_id) {
 }
 
 static void atk_util_auralinux_class_init(AtkUtilAuraLinuxClass *klass) {
-  AtkUtilClass *atk_class;
+  AtkUtilClass* atk_class;
   gpointer data;
 
   data = g_type_class_peek(ATK_TYPE_UTIL);
@@ -156,6 +156,8 @@ void AtkUtilAuraLinux::InitializeForTesting() {
 }
 
 // static
+// Disable CFI-icall since the key snooping function could be in another DSO.
+__attribute__((no_sanitize("cfi-icall")))
 DiscardAtkKeyEvent AtkUtilAuraLinux::HandleAtkKeyEvent(
     AtkKeyEventStruct* key_event) {
   DCHECK(key_event);

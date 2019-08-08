@@ -20,7 +20,7 @@ class GLOutputSurfaceOffscreen : public GLOutputSurface {
  public:
   GLOutputSurfaceOffscreen(
       scoped_refptr<VizProcessContextProvider> context_provider,
-      SyntheticBeginFrameSource* synthetic_begin_frame_source);
+      UpdateVSyncParametersCallback update_vsync_callback);
   ~GLOutputSurfaceOffscreen() override;
 
   // OutputSurface implementation.

@@ -83,6 +83,7 @@
 #include "api/jsep.h"
 #include "api/media_stream_interface.h"
 #include "api/media_transport_interface.h"
+#include "api/network_state_predictor.h"
 #include "api/rtc_error.h"
 #include "api/rtc_event_log_output.h"
 #include "api/rtp_receiver_interface.h"
@@ -91,6 +92,7 @@
 #include "api/set_remote_description_observer_interface.h"
 #include "api/stats/rtc_stats_collector_callback.h"
 #include "api/stats_types.h"
+#include "api/task_queue/task_queue_factory.h"
 #include "api/transport/bitrate_settings.h"
 #include "api/transport/network_control.h"
 #include "api/turn_customizer.h"
@@ -151,7 +153,7 @@ class StatsObserver : public rtc::RefCountInterface {
 
 enum class SdpSemantics { kPlanB, kUnifiedPlan };
 
-class PeerConnectionInterface : public rtc::RefCountInterface {
+class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
  public:
   // See https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate
   enum SignalingState {
@@ -1217,6 +1219,8 @@ struct PeerConnectionDependencies final {
   std::unique_ptr<webrtc::AsyncResolverFactory> async_resolver_factory;
   std::unique_ptr<rtc::RTCCertificateGeneratorInterface> cert_generator;
   std::unique_ptr<rtc::SSLCertificateVerifier> tls_cert_verifier;
+  std::unique_ptr<webrtc::VideoBitrateAllocatorFactory>
+      video_bitrate_allocator_factory;
 };
 
 // PeerConnectionFactoryDependencies holds all of the PeerConnectionFactory
@@ -1242,10 +1246,13 @@ struct PeerConnectionFactoryDependencies final {
   rtc::Thread* network_thread = nullptr;
   rtc::Thread* worker_thread = nullptr;
   rtc::Thread* signaling_thread = nullptr;
+  std::unique_ptr<TaskQueueFactory> task_queue_factory;
   std::unique_ptr<cricket::MediaEngineInterface> media_engine;
   std::unique_ptr<CallFactoryInterface> call_factory;
   std::unique_ptr<RtcEventLogFactoryInterface> event_log_factory;
   std::unique_ptr<FecControllerFactoryInterface> fec_controller_factory;
+  std::unique_ptr<NetworkStatePredictorFactoryInterface>
+      network_state_predictor_factory;
   std::unique_ptr<NetworkControllerFactoryInterface> network_controller_factory;
   std::unique_ptr<MediaTransportFactory> media_transport_factory;
 };
@@ -1425,6 +1432,8 @@ CreateModularPeerConnectionFactory(
     std::unique_ptr<CallFactoryInterface> call_factory,
     std::unique_ptr<RtcEventLogFactoryInterface> event_log_factory,
     std::unique_ptr<FecControllerFactoryInterface> fec_controller_factory,
+    std::unique_ptr<NetworkStatePredictorFactoryInterface>
+        network_state_predictor_factory,
     std::unique_ptr<NetworkControllerFactoryInterface>
         network_controller_factory = nullptr);
 

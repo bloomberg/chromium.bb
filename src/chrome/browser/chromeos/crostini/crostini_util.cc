@@ -164,7 +164,6 @@ class IconLoadWaiter : public CrostiniAppIcon::Observer {
     if (loaded_icons_ != icons_.size())
       return;
 
-    timeout_timer_.AbandonAndStop();
     RunCallback();
   }
 
@@ -182,10 +181,16 @@ class IconLoadWaiter : public CrostiniAppIcon::Observer {
 
     // If we're running the callback as loading has finished, we can't delete
     // ourselves yet as it would destroy the CrostiniAppIcon which is calling
-    // into us right now.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&IconLoadWaiter::Delete, base::Unretained(this)));
+    // into us right now. If we hit the timeout, we delete immediately to avoid
+    // any race with more icons finishing loading.
+    if (timeout_timer_.IsRunning()) {
+      timeout_timer_.AbandonAndStop();
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&IconLoadWaiter::Delete, base::Unretained(this)));
+    } else {
+      Delete();
+    }
   }
 
   std::vector<std::unique_ptr<CrostiniAppIcon>> icons_;
@@ -208,8 +213,7 @@ bool IsCrostiniAllowedForProfileImpl(Profile* profile) {
     return false;
   }
 
-  return virtual_machines::AreVirtualMachinesAllowedByVersionAndChannel() &&
-         base::FeatureList::IsEnabled(features::kCrostini);
+  return base::FeatureList::IsEnabled(features::kCrostini);
 }
 
 }  // namespace

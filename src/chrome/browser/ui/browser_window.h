@@ -31,9 +31,9 @@
 #include "chrome/browser/ui/in_product_help/in_product_help.h"
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
-#endif  // defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
+#include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
+#endif  //  !defined(OS_ANDROID)
 
 class Browser;
 class DownloadShelf;
@@ -50,18 +50,18 @@ class LocalCardMigrationBubbleController;
 class LocalCardMigrationBubble;
 class SaveCardBubbleController;
 class SaveCardBubbleView;
-}
+}  // namespace autofill
 
 namespace content {
 class WebContents;
 struct NativeWebKeyboardEvent;
 enum class KeyboardEventProcessingResult;
-}
+}  // namespace content
 
 namespace extensions {
 class Command;
 class Extension;
-}
+}  // namespace extensions
 
 namespace gfx {
 class Size;
@@ -177,6 +177,9 @@ class BrowserWindow : public ui::BaseWindow {
   // frames may need to refresh their title bar.
   virtual void UpdateTitleBar() = 0;
 
+  // Inform the frame that its color has changed.
+  virtual void UpdateFrameColor() = 0;
+
   // Invoked when the state of the bookmark bar changes. This is only invoked if
   // the state changes for the current tab, it is not sent when switching tabs.
   virtual void BookmarkBarStateChanged(
@@ -234,7 +237,13 @@ class BrowserWindow : public ui::BaseWindow {
   virtual gfx::Size GetContentsSize() const = 0;
 
   // Returns the container of page action icons.
-  virtual PageActionIconContainer* GetPageActionIconContainer() = 0;
+  virtual PageActionIconContainer* GetOmniboxPageActionIconContainer() = 0;
+
+  // Returns the container of toolbar page action icons. The page action icon
+  // container above is in the omnibox. The toolbar page action icon container
+  // is in the toolbar which contains user-account-related data icons and the
+  // profile avatar icon.
+  virtual PageActionIconContainer* GetToolbarPageActionIconContainer() = 0;
 
   // Returns the location bar.
   virtual LocationBar* GetLocationBar() const = 0;
@@ -308,18 +317,20 @@ class BrowserWindow : public ui::BaseWindow {
   // Shows the Update Recommended dialog box.
   virtual void ShowUpdateChromeDialog() = 0;
 
-#if defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
   // Shows the intent picker bubble. |app_info| contains the app candidates to
-  // display, |disable_stay_in_chrome| allows to disable 'Stay in Chrome' (used
-  // for non-http(s) queries), and |callback| helps to continue the flow back to
-  // either AppsNavigationThrottle or ArcExternalProtocolDialog capturing the
-  // user's decision and storing UMA metrics.
+  // display, |show_stay_in_chrome| allows to show or hide 'Stay in Chrome'
+  // (used for non-http(s) queries), if |show_remember_selection| is false, the
+  // "remember my choice" checkbox is hidden, and |callback| helps to continue
+  // the flow back to either AppsNavigationThrottle or ArcExternalProtocolDialog
+  // capturing the user's decision and storing UMA metrics.
   virtual void ShowIntentPickerBubble(
-      std::vector<chromeos::IntentPickerAppInfo> app_info,
-      bool disable_stay_in_chrome,
+      std::vector<apps::IntentPickerAppInfo> app_info,
+      bool show_stay_in_chrome,
+      bool show_remember_selection,
       IntentPickerResponse callback) = 0;
   virtual void SetIntentPickerViewVisibility(bool visible) = 0;
-#endif  // defined(OS_CHROMEOS)
+#endif  //  !defined(OS_ANDROID)
 
   // Shows the Bookmark bubble. |url| is the URL being bookmarked,
   // |already_bookmarked| is true if the url is already bookmarked.
@@ -399,7 +410,7 @@ class BrowserWindow : public ui::BaseWindow {
   // modal dialogs within the browser window. This can sometimes be NULL (for
   // instance during tab drag on Views/Win32).
   virtual web_modal::WebContentsModalDialogHost*
-      GetWebContentsModalDialogHost() = 0;
+  GetWebContentsModalDialogHost() = 0;
 
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(std::unique_ptr<Browser> browser,
@@ -411,13 +422,11 @@ class BrowserWindow : public ui::BaseWindow {
   // page.
   enum AvatarBubbleMode {
     AVATAR_BUBBLE_MODE_DEFAULT,
-    AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT,
     AVATAR_BUBBLE_MODE_SIGNIN,
     AVATAR_BUBBLE_MODE_ADD_ACCOUNT,
     AVATAR_BUBBLE_MODE_REAUTH,
     AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN,
-    AVATAR_BUBBLE_MODE_SHOW_ERROR,
-    AVATAR_BUBBLE_MODE_INCOGNITO,
+    AVATAR_BUBBLE_MODE_SHOW_ERROR
   };
   virtual void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,
@@ -429,11 +438,6 @@ class BrowserWindow : public ui::BaseWindow {
     defined(OS_LINUX)
   virtual void ShowHatsBubbleFromAppMenuButton() = 0;
 #endif
-
-  // Returns the height inset for RenderView when detached bookmark bar is
-  // shown.  Invoked when a new RenderHostView is created for a non-NTP
-  // navigation entry and the bookmark bar is detached.
-  virtual int GetRenderViewHeightInsetWithDetachedBookmarkBar() = 0;
 
   // Executes |command| registered by |extension|.
   virtual void ExecuteExtensionCommand(const extensions::Extension* extension,

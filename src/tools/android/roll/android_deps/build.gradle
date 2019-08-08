@@ -15,9 +15,10 @@ dependencies {
     // Note about the configuration names: they are defined in buildSrc/ChromiumPlugin
 
     // Architecture components
-    def archComponentsVersion = '1.0.0'
+    def archComponentsVersion = '1.1.1'
     compile "android.arch.lifecycle:runtime:${archComponentsVersion}"
     compile "android.arch.lifecycle:common:${archComponentsVersion}"
+    compile "android.arch.lifecycle:common-java8:${archComponentsVersion}"
 
     // Play services libraries
     // See https://developers.google.com/android/guides/releases for updates
@@ -77,12 +78,14 @@ dependencies {
     compile "com.google.protobuf:protobuf-lite:3.0.1"
 
     // ARCore - needed for WebXR implementation on Android
-    compile "com.google.ar:core:1.6.0"
+    compile "com.google.ar:core:1.8.0"
 
     // Androidx test libraries
-    compile "androidx.test:core:1.0.0"
-    compile "androidx.test:monitor:1.1.0"
-    compile "androidx.test.ext:junit:1.0.0"
+    testCompile "androidx.test:core:1.0.0"
+    testCompile "androidx.test:monitor:1.1.0"
+    testCompile "androidx.test:rules:1.1.0"
+    testCompile "androidx.test:runner:1.1.0"
+    testCompile "androidx.test.ext:junit:1.0.0"
 }
 
 task setUpRepository(type: BuildConfigGenerator) {

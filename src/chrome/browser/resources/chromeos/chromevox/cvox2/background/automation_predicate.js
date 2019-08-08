@@ -368,7 +368,8 @@ AutomationPredicate.container = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.structuralContainer = AutomationPredicate.roles([
-  Role.ALERT_DIALOG, Role.CLIENT, Role.DIALOG, Role.ROOT_WEB_AREA,
+  Role.ALERT_DIALOG, Role.CLIENT, Role.DIALOG, Role.LAYOUT_TABLE,
+  Role.LAYOUT_TABLE_CELL, Role.LAYOUT_TABLE_ROW, Role.ROOT_WEB_AREA,
   Role.WEB_VIEW, Role.WINDOW, Role.EMBEDDED_OBJECT, Role.IFRAME,
   Role.IFRAME_PRESENTATIONAL, Role.IGNORED, Role.UNKNOWN
 ]);
@@ -617,6 +618,10 @@ AutomationPredicate.multiline = function(node) {
  */
 AutomationPredicate.autoScrollable = function(node) {
   return !!node.scrollable &&
+      (node.standardActions.includes(
+           chrome.automation.ActionType.SCROLL_FORWARD) ||
+       node.standardActions.includes(
+           chrome.automation.ActionType.SCROLL_BACKWARD)) &&
       (node.role == Role.GRID || node.role == Role.LIST ||
        node.role == Role.POP_UP_BUTTON || node.role == Role.SCROLL_VIEW);
 };

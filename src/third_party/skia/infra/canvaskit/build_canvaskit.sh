@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This assumes it is being run inside a docker container of emsdk-base
+# This assumes it is being run inside a docker container of emsdk-release
 # and a Skia checkout has been mounted at /SRC and the output directory
 # is mounted at /OUT
 
@@ -20,7 +20,7 @@ set -e
 
 #BASE_DIR is the dir this script is in ($SKIA_ROOT/infra/canvaskit)
 BASE_DIR=`cd $(dirname ${BASH_SOURCE[0]}) && pwd`
-CANVASKIT_DIR=$BASE_DIR/../../experimental/canvaskit
+CANVASKIT_DIR=$BASE_DIR/../../modules/canvaskit
 
 BUILD_DIR=/OUT $CANVASKIT_DIR/compile.sh $@
 

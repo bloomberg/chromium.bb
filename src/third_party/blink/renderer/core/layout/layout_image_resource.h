@@ -42,10 +42,6 @@ class CORE_EXPORT LayoutImageResource
   LayoutImageResource();
   virtual ~LayoutImageResource();
 
-  static LayoutImageResource* Create() {
-    return MakeGarbageCollected<LayoutImageResource>();
-  }
-
   virtual void Initialize(LayoutObject*);
   virtual void Shutdown();
 

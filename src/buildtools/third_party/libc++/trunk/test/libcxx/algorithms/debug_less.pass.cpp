@@ -20,7 +20,10 @@ struct DebugException {};
 #define _LIBCPP_ASSERT(x, m) ((x) ? (void)0 : throw ::DebugException())
 
 #include <algorithm>
+#include <iterator>
 #include <cassert>
+
+#include "test_macros.h"
 
 template <int ID>
 struct MyType {
@@ -210,10 +213,67 @@ void test_upper_and_lower_bound() {
     }
 }
 
+struct NonConstArgCmp {
+    bool operator()(int& x, int &y) const {
+        return x < y;
+    }
+};
+
+void test_non_const_arg_cmp() {
+    {
+        NonConstArgCmp cmp;
+        __debug_less<NonConstArgCmp> dcmp(cmp);
+        int x = 0, y = 1;
+        assert(dcmp(x, y));
+        assert(!dcmp(y, x));
+    }
+    {
+        NonConstArgCmp cmp;
+        int arr[] = {5, 4, 3, 2, 1};
+        std::sort(std::begin(arr), std::end(arr), cmp);
+        assert(std::is_sorted(std::begin(arr), std::end(arr)));
+    }
+}
+
+struct ValueIterator {
+    using iterator_category = std::input_iterator_tag;
+    using value_type = size_t;
+    using difference_type = ptrdiff_t;
+    using reference = size_t;
+    using pointer = size_t*;
+
+    ValueIterator() = default;
+
+    reference operator*() { return 0; }
+    ValueIterator& operator++() { return *this; }
+
+    friend bool operator==(ValueIterator, ValueIterator) { return true; }
+    friend bool operator!=(ValueIterator, ValueIterator) { return false; }
+};
+
+void test_value_iterator() {
+    // Ensure no build failures when iterators return values, not references.
+    assert(0 == std::lexicographical_compare(ValueIterator{}, ValueIterator{},
+                                             ValueIterator{}, ValueIterator{}));
+}
+
+void test_value_categories() {
+    std::less<int> l;
+    std::__debug_less<std::less<int>> dl(l);
+    int lvalue = 42;
+    const int const_lvalue = 101;
+
+    assert(dl(lvalue, const_lvalue));
+    assert(dl(/*rvalue*/1, lvalue));
+    assert(dl(static_cast<int&&>(1), static_cast<const int&&>(2)));
+}
+
 int main(int, char**) {
     test_passing();
     test_failing();
     test_upper_and_lower_bound();
-
-  return 0;
+    test_non_const_arg_cmp();
+    test_value_iterator();
+    test_value_categories();
+    return 0;
 }

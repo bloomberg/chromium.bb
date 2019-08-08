@@ -130,7 +130,8 @@ class RemoteAudioTrackAdapter
   ~RemoteAudioTrackAdapter() override;
 
  private:
-  void InitializeWebAudioTrack();
+  void InitializeWebAudioTrack(
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread);
 
   // webrtc::ObserverInterface implementation.
   void OnChanged() override;

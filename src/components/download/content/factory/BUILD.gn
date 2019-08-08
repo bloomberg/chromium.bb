@@ -4,8 +4,8 @@
 
 source_set("factory") {
   sources = [
-    "download_service_factory.cc",
-    "download_service_factory.h",
+    "download_service_factory_helper.cc",
+    "download_service_factory_helper.h",
     "navigation_monitor_factory.cc",
     "navigation_monitor_factory.h",
   ]
@@ -22,6 +22,7 @@ source_set("factory") {
     "//components/download/network",
     "//components/keyed_service/content",
     "//components/leveldb_proto",
+    "//components/leveldb_proto/content:factory",
     "//content/public/browser",
     "//net",
     "//url",

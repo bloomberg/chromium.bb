@@ -96,7 +96,7 @@ class SVGImage::SVGImageLocalFrameClient : public EmptyLocalFrameClient {
 
 SVGImage::SVGImage(ImageObserver* observer, bool is_multipart)
     : Image(observer, is_multipart),
-      paint_controller_(PaintController::Create()),
+      paint_controller_(std::make_unique<PaintController>()),
       has_pending_timeline_rewind_(false) {}
 
 SVGImage::~SVGImage() {
@@ -372,9 +372,9 @@ void SVGImage::DrawPatternForContainer(GraphicsContext& context,
                                  phase.Y() + spaced_tile.Y());
 
   PaintFlags flags;
-  flags.setShader(PaintShader::MakePaintRecord(
-      record, spaced_tile, SkShader::kRepeat_TileMode,
-      SkShader::kRepeat_TileMode, &pattern_transform));
+  flags.setShader(
+      PaintShader::MakePaintRecord(record, spaced_tile, SkTileMode::kRepeat,
+                                   SkTileMode::kRepeat, &pattern_transform));
   // If the shader could not be instantiated (e.g. non-invertible matrix),
   // draw transparent.
   // Note: we can't simply bail, because of arbitrary blend mode.
@@ -429,6 +429,11 @@ static bool DrawNeedsLayer(const PaintFlags& flags) {
   if (SkColorGetA(flags.getColor()) < 255)
     return true;
 
+  // This is needed to preserve the dark mode filter that
+  // has been set in GraphicsContext.
+  if (flags.getColorFilter())
+    return true;
+
   return flags.getBlendMode() != SkBlendMode::kSrcOver;
 }
 
@@ -442,8 +447,8 @@ bool SVGImage::ApplyShaderInternal(PaintFlags& flags,
   IntRect bounds(IntPoint(), size);
 
   flags.setShader(PaintShader::MakePaintRecord(
-      PaintRecordForCurrentFrame(url), bounds, SkShader::kRepeat_TileMode,
-      SkShader::kRepeat_TileMode, &local_matrix));
+      PaintRecordForCurrentFrame(url), bounds, SkTileMode::kRepeat,
+      SkTileMode::kRepeat, &local_matrix));
 
   // Animation is normally refreshed in draw() impls, which we don't reach when
   // painting via shaders.
@@ -744,7 +749,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
 
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
-  chrome_client_ = SVGImageChromeClient::Create(this);
+  chrome_client_ = MakeGarbageCollected<SVGImageChromeClient>(this);
   page_clients.chrome_client = chrome_client_.Get();
 
   // FIXME: If this SVG ends up loading itself, we might leak the world.
@@ -756,7 +761,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   Page* page;
   {
     TRACE_EVENT0("blink", "SVGImage::dataChanged::createPage");
-    page = Page::Create(page_clients);
+    page = Page::CreateNonOrdinary(page_clients);
     page->GetSettings().SetScriptEnabled(false);
     page->GetSettings().SetPluginsEnabled(false);
 
@@ -790,7 +795,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   }
 
   FrameLoader& loader = frame->Loader();
-  loader.ForceSandboxFlags(kSandboxAll);
+  loader.ForceSandboxFlags(WebSandboxFlags::kAll);
 
   // SVG Images will always synthesize a viewBox, if it's not available, and
   // thus never see scrollbars.

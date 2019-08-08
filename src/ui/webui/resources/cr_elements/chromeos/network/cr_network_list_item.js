@@ -63,6 +63,16 @@ Polymer({
 
   behaviors: [CrPolicyNetworkBehavior],
 
+  /** @override */
+  attached: function() {
+    this.listen(this, 'keydown', 'onKeydown_');
+  },
+
+  /** @override */
+  detached: function() {
+    this.unlisten(this, 'keydown', 'onKeydown_');
+  },
+
   /** @private */
   itemChanged_: function() {
     if (this.item && !this.item.hasOwnProperty('customItemName')) {
@@ -142,7 +152,7 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkStateProperties} networkState
+   * @param {!CrOnc.NetworkStateProperties|undefined} networkState
    * @param {boolean} showButtons
    * @return {boolean}
    * @private
@@ -161,8 +171,38 @@ Polymer({
   },
 
   /**
+   * @param {!KeyboardEvent} event
+   * @private
+   */
+  onKeydown_: function(event) {
+    // The only key event handled by this element is pressing Enter when the
+    // subpage arrow is focused.
+    if (event.key != 'Enter' ||
+        !this.isSubpageButtonVisible_(this.networkState, this.showButtons) ||
+        this.$$('#subpage-button') != this.shadowRoot.activeElement) {
+      return;
+    }
+
+    this.fireShowDetails_(event);
+
+    // The default event for pressing Enter on a focused button is to simulate a
+    // click on the button. Prevent this action, since it would navigate a
+    // second time to the details page and cause an unnecessary entry to be
+    // added to the back stack. See https://crbug.com/736963.
+    event.preventDefault();
+  },
+
+  /**
+   * @param {!MouseEvent} event
+   * @private
+   */
+  onSubpageArrowClick_: function(event) {
+    this.fireShowDetails_(event);
+  },
+
+  /**
    * Fires a 'show-details' event with |this.networkState| as the details.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   fireShowDetails_: function(event) {

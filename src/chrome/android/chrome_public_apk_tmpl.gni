@@ -4,11 +4,11 @@
 
 import("//base/android/linker/config.gni")
 import("//base/android/proguard/proguard.gni")
-import("//build/config/android/chrome_version.gni")
 import("//build/config/android/extract_unwind_tables.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/locales.gni")
+import("//build/util/version.gni")
 import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/common/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
@@ -29,7 +29,7 @@ declare_args() {
 default_chrome_public_jinja_variables = [
   "channel=$android_channel",
   "enable_vr=$enable_vr",
-  "include_arcore_manifest_flag=$package_arcore",
+  "include_arcore_manifest_flag=false",
   "notouch_build=$notouch_build",
 ]
 
@@ -117,6 +117,16 @@ template("chrome_public_common_apk_or_module_tmpl") {
 
   target(_target_type, target_name) {
     forward_variables_from(invoker, "*")
+
+    if (_is_trichrome) {
+      min_sdk_version = 28
+    } else if (_is_monochrome) {
+      min_sdk_version = 24
+    } else if (_is_modern) {
+      min_sdk_version = 21
+    } else {
+      min_sdk_version = 19
+    }
 
     resource_blacklist_regex = "[/-]xxxhdpi[/-]"
 
@@ -242,13 +252,10 @@ template("chrome_public_common_apk_or_module_tmpl") {
       deps += [ ":$_unwind_asset" ]
     }
 
-    deps += [ "//chrome/android:chrome_all_java" ]
-
-    if (enable_vr && (_target_type == "android_apk" || !modularize_vr)) {
-      deps += [ "//chrome/android/features/vr:java" ]
-    }
-
-    deps += [ "//chrome/android/features/tab_ui:java" ]
+    deps += [
+      "//chrome/android:chrome_all_java",
+      "//chrome/android/features/tab_ui:java",
+    ]
 
     if (!defined(version_code)) {
       if (_is_trichrome) {
@@ -279,6 +286,11 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     _enable_multidex = is_java_debug || multidex_in_release
   }
   chrome_public_common_apk_or_module_tmpl(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "version_code",
+                             "verify_android_configuration",
+                           ])
     is_trichrome =
         defined(invoker.use_trichrome_library) && invoker.use_trichrome_library
     is_monochrome = !is_trichrome
@@ -340,7 +352,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       }
       alternative_android_sdk_dep = webview_framework_dep
       app_as_shared_lib = true
-      min_sdk_version = 24
       _pak_prefix = "monochrome"
     }
     if (is_trichrome) {
@@ -354,10 +365,11 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       # depend on their respective versions of the shared library APK even
       # though they're functionally the same.
       native_lib_placeholders = [ "libdummy.so" ]
-      if (android_64bit_target_cpu && build_apk_secondary_abi) {
+      if (android_64bit_target_cpu && build_apk_secondary_abi &&
+          (!defined(invoker.is_64_bit_browser) || !invoker.is_64_bit_browser ||
+           invoker.include_32_bit_webview)) {
         secondary_native_lib_placeholders = [ "libdummy.so" ]
       }
-      min_sdk_version = 28
       _pak_prefix = "trichrome_chrome"
     }
 
@@ -381,7 +393,12 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     # Configrations to make android load shared library from APK.
     uncompress_shared_libraries = true
 
-    forward_variables_from(invoker, "*", [ "include_32_bit_webview" ])
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "include_32_bit_webview",
+                             "is_64_bit_browser",
+                           ])
 
     # Android N+ better supports multiple locales (https://crbug.com/780847).
     support_zh_hk = false
@@ -415,22 +432,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       png_to_webp = true
     }
 
-    if ((invoker.target_type == "android_apk" || !modularize_ar) &&
-        package_arcore) {
-      _deps += [
-        "//chrome/browser/android/vr:ar_java",
-        "//third_party/android_deps:com_google_ar_core_java",
-      ]
-
-      # We store this as a separate .so in the APK and only load as needed.
-      if (android_64bit_target_cpu && build_apk_secondary_abi) {
-        secondary_abi_loadable_modules += [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
-      } else if (android_64bit_target_cpu && !build_apk_secondary_abi) {
-        loadable_modules += [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
-      } else {
-        loadable_modules += [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
-      }
-    }
     if (!defined(deps)) {
       deps = []
     }

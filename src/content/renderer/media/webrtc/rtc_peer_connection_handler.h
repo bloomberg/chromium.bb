@@ -26,9 +26,12 @@
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
+#include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/platform/web_rtc_stats_response.h"
+#include "third_party/webrtc/api/stats/rtc_stats.h"
+#include "third_party/webrtc/api/stats/rtc_stats_collector_callback.h"
 
 namespace blink {
 class WebLocalFrame;
@@ -150,8 +153,9 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                                        bool result);
 
   void GetStats(const blink::WebRTCStatsRequest& request) override;
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
-                blink::RTCStatsFilter) override;
+  void GetStats(blink::WebRTCStatsReportCallback callback,
+                const std::vector<webrtc::NonStandardGroupId>&
+                    exposed_group_ids) override;
   webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
   AddTransceiverWithTrack(const blink::WebMediaStreamTrack& web_track,
                           const webrtc::RtpTransceiverInit& init) override;
@@ -182,6 +186,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   // Asynchronously calls native_peer_connection_->getStats on the signaling
   // thread.
+  void GetStandardStatsForTracker(
+      scoped_refptr<webrtc::RTCStatsCollectorCallback> observer);
   void GetStats(webrtc::StatsObserver* observer,
                 webrtc::PeerConnectionInterface::StatsOutputLevel level,
                 rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> selector);
@@ -223,6 +229,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void OnRenegotiationNeeded();
   void OnAddReceiverPlanB(RtpReceiverState receiver_state);
   void OnRemoveReceiverPlanB(uintptr_t receiver_id);
+  void OnModifySctpTransport(blink::WebRTCSctpTransportSnapshot state);
   void OnModifyTransceivers(std::vector<RtpTransceiverState> transceiver_states,
                             bool is_remote_description);
   void OnDataChannel(scoped_refptr<webrtc::DataChannelInterface> channel);
@@ -316,7 +323,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   size_t GetTransceiverIndex(
       const blink::WebRTCRtpTransceiver& web_transceiver);
   std::unique_ptr<RTCRtpTransceiver> CreateOrUpdateTransceiver(
-      RtpTransceiverState transceiver_state);
+      RtpTransceiverState transceiver_state,
+      TransceiverStateUpdateMode update_mode);
 
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
 

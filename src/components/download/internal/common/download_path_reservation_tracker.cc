@@ -252,13 +252,18 @@ PathValidationResult ResolveReservationConflicts(
 PathValidationResult ValidatePathAndResolveConflicts(
     const CreateReservationInfo& info,
     base::FilePath* target_path) {
-  // Check writability of the suggested path. If we can't write to it, default
-  // to the user's Documents directory. We'll prompt them in this case. No
-  // further amendments are made to the filename since the user is going to be
-  // prompted.
+  // Check writability of the suggested path. If we can't write to it, use
+  // the |default_download_path| if it is not empty or |fallback_directory|.
+  // We'll prompt them in this case. No further amendments are made to the
+  // filename since the user is going to be prompted.
   if (!IsPathWritable(info, *target_path)) {
     DVLOG(1) << "Unable to write to path \"" << target_path->value() << "\"";
-    *target_path = info.fallback_directory.Append(target_path->BaseName());
+    if (!info.default_download_path.empty() &&
+        target_path->DirName() != info.default_download_path) {
+      *target_path = info.default_download_path.Append(target_path->BaseName());
+    } else {
+      *target_path = info.fallback_directory.Append(target_path->BaseName());
+    }
     return PathValidationResult::PATH_NOT_WRITABLE;
   }
 

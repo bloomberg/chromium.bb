@@ -38,6 +38,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
       const GpuPreferences& gpu_preferences,
       SharedImageManager* shared_image_manager,
       gles2::ProgramCache* program_cache);
+  ~GpuInProcessThreadService() override;
 
   // CommandBufferTaskExecutor implementation.
   bool ForceVirtualizedGLContexts() const override;
@@ -46,10 +47,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
       override;
   void ScheduleOutOfOrderTask(base::OnceClosure task) override;
   void ScheduleDelayedWork(base::OnceClosure task) override;
+  void PostNonNestableToClient(base::OnceClosure callback) override;
 
  private:
-  ~GpuInProcessThreadService() override;
-
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Scheduler* scheduler_;
 

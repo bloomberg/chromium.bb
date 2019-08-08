@@ -98,6 +98,7 @@
 <translation id="1616111909442424068">ஒயிட்</translation>
 <translation id="1618597272655350600">தற்போதைய நிலையின் முழு விளக்கத்தை அறிவிக்கிறது</translation>
 <translation id="1627222324347828322">கோஸ்ட் ஓயிட்</translation>
+<translation id="1630688379087270943">சாய்வானவற்றைக் குறி:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{அதிகத்திற்கான குறி}other{# அதிகத்திற்கான குறிகள்}}</translation>
 <translation id="1653266918374749391">முந்தைய, 3 ஆம் படிநிலை தலைப்பு</translation>
 <translation id="1657616855184033958">நிகழ்வு வரிசை வடிப்பான்களைக் காட்டு</translation>
@@ -186,13 +187,13 @@
 <translation id="2417569100218200841">உள்ளடக்கத் தகவல்</translation>
 <translation id="2417948780551741035">முடிவுக்குறிப்புகள்</translation>
 <translation id="2421113964388408478">நீக்கும்</translation>
-<translation id="2422937916923936891">மெனு உருப்படி செக் பாக்ஸ்</translation>
+<translation id="2422937916923936891">மெனு ஐட்டம் செக்பாக்ஸ்</translation>
 <translation id="2428534162001909979">கட்டளை மெனுக்கள்</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="242998846562331953">வசனம்</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> என்பதே இப்போது புதிய ChromeVox மாற்றியாகும்.</translation>
 <translation id="2435422727584637732">டோட்ஜ்ர் புளூ</translation>
-<translation id="2450814015951372393">செக் பாக்ஸ்</translation>
+<translation id="2450814015951372393">செக்பாக்ஸ்</translation>
 <translation id="2462626033734746142">ரேடியோ பட்டன் குழு</translation>
 <translation id="2471138580042810658">தலைப்பு 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{உடுக்குறி}other{# உடுக்குறிகள்}}</translation>
@@ -212,6 +213,7 @@
 <translation id="2626530649491650971">கிளிக் செய்யத்தக்கது</translation>
 <translation id="2628764385451019380">முந்தைய சேர்க்கைப் பெட்டி இல்லை.</translation>
 <translation id="2637227747952042642">கணிதம்</translation>
+<translation id="2638785836053527382"><ph name="FILE_NAME" /> கோப்பின் பதிவிறக்கம் மீண்டும் தொடங்கியது</translation>
 <translation id="2639750663247012216">ChromeVox மாற்றி</translation>
 <translation id="2644542693584024604">தவறான வார்த்தைகள்</translation>
 <translation id="2661530546602071611">அறிவிப்பு</translation>
@@ -251,6 +253,7 @@
 <translation id="287383510823843610">டார்க் ஆரஞ்ச்</translation>
 <translation id="2879867157561757640">மூன்று விரல்களைக் கீழே ஸ்வைப் செய்யவும்</translation>
 <translation id="288178314850623291">மற்றதைத் தவிர்த்துவிட்டு, குறிப்பிட்ட வகை உறுப்புகளுக்கு மட்டும் செல்ல, தாவும் கட்டளைகளைப் பயன்படுத்தவும். அடுத்தடுத்த தலைப்புகளுக்குச் செல்ல, தேடல் + H விசைகளை அழுத்தவும். முந்தைய தலைப்புகளுக்குச் செல்ல, தேடல் + Shift + H விசைகளை அழுத்தவும்.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{நிமிடம்}other{நிமிடங்கள்}}</translation>
 <translation id="2894654529758326923">தகவல்</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{இடது பிறை அடைப்புக்குறி}other{# இடது பிறை அடைப்புக்குறிகள்}}</translation>
 <translation id="2911433807131383493">ChromeVox பயிற்சியைத் திற</translation>
@@ -285,6 +288,7 @@
 <translation id="3084806535845658316">தட்டச்சிடும் எதிரொலி இல்லை</translation>
 <translation id="3086746722712840547">குறிப்பு</translation>
 <translation id="308895241372589742">அடுத்த கணிதக் கோவை இல்லை.</translation>
+<translation id="3090227230165225418">'பதிவிறக்க அறிவிப்புகளைத்' தெரிவி</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">அடுத்த லேண்ட்மார்க்</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -319,6 +323,7 @@
 <translation id="3286390186030710347">ஸ்லைடர்</translation>
 <translation id="3299925995433437805">அடுத்ததாக பார்வையிட்ட இணைப்பு இல்லை.</translation>
 <translation id="3300348286427369683">உயர் உரை ஆதரவு. இப்போது உரையில் தாவுவதற்கான கட்டளைகள், பிரெய்ல் கர்சர் ரூட்டிங், தேர்ந்தெடுத்தல் மற்றும் பல அம்சங்கள் உட்பட உயர் உரைப் புலங்களை ChromeVox ஆதரிக்கிறது.</translation>
+<translation id="3304756947457041303">உயர் உரை இண்டிகேஷனைப் பிரத்தியேகமானதாக்கு</translation>
 <translation id="3307886118343381874">அட்டவணையின்  இறுதிக்குச் செல்</translation>
 <translation id="3311969765485641742">விழிப்பூட்டல்களைப் பார்க்க Alt+Shift+A ஐ அழுத்தவும்</translation>
 <translation id="3312997241656799641">அடுத்ததாக பார்வையிட்ட இணைப்பு</translation>
@@ -333,7 +338,7 @@
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{கூட்டல் குறி}other{# கூட்டல் குறிகள்}}</translation>
 <translation id="338583716107319301">பிரிப்பான்</translation>
-<translation id="3389259863310851658">முந்தைய படிவப் புலம்</translation>
+<translation id="3389259863310851658">முந்தைய வடிவப் புலம்</translation>
 <translation id="3390225400784126843">வேறுபட்ட அடுத்த உறுப்பு.</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, மெனு உருப்படி</translation>
 <translation id="3393605254399152980">நீங்கள் தொடுவதைப் பேச்சுவடிவில் கேட்க, ஒரு விரலை இழுக்கவும்</translation>
@@ -405,6 +410,7 @@
 <translation id="3930498801443296724">Pullquote</translation>
 <translation id="3936394396199829062">லாவெண்டர் பிளஷ்</translation>
 <translation id="3941269780691800708">மவுஸை நகர்த்துகையில் கர்சர் காண்பிக்கும் உரையைப் பேசு.</translation>
+<translation id="394953087167197343">எழுத்துப்பிழையைக் குறிக்கும்:</translation>
 <translation id="3962990492275676168">நடப்பு இருப்பிடத்திலிருந்து படிக்கத் தொடங்கு</translation>
 <translation id="3970951409746498040">சாண்டி பிரவுன்</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -435,8 +441,9 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{வலது பிறை அடைப்புக்குறி}other{# வலது பிறை அடைப்புக்குறிகள்}}</translation>
 <translation id="4158704014418536539">எழுத்து உணர்வு கொண்டது.</translation>
 <translation id="4159784952369912983">பர்பிள்</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{வினாடி}other{வினாடிகள்}}</translation>
 <translation id="4161663686871496107">ChromeVox இன் பேச்சுவடிவக் கருத்து தயாராக உள்ளது</translation>
-<translation id="4173994908659439270">அடுத்த திருத்தக்கூடிய உரை புலம் இல்லை.</translation>
+<translation id="4173994908659439270">அடுத்து திருத்தக்கூடிய உரைப் புலம் இல்லை.</translation>
 <translation id="4176463684765177261">முடக்கப்பட்டது</translation>
 <translation id="4187322598335821254">ஒவ்வொரு வரியாகச் செல்ல, மேலே அல்லது கீழே ஸ்வைப் செய்யவும்</translation>
 <translation id="4188530942454211480">முந்தைய வாக்கியம்</translation>
@@ -451,6 +458,7 @@
 <translation id="42164919740161077">காடெட் புளூ</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{சிறுகோடு}other{# சிறுகோடுகள்}}</translation>
 <translation id="421884353938374759">வண்ணத் தேர்வி</translation>
+<translation id="4221071177874897997">தடிமனானவற்றைக் குறி:</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">லைட் ஸ்லேட் கிரே</translation>
 <translation id="4231102694147661229">‘டெவெலப்பர் விருப்பங்களை’ இயக்கு</translation>
@@ -581,7 +589,7 @@
 <translation id="5102981729317424850">கருவிப் பட்டி</translation>
 <translation id="5105050547967751155">rq</translation>
 <translation id="5106547198195128110">இந்தப் புதிய வெளியீட்டில் சில அற்புதமான மாற்றங்களைச் செய்துள்ளோம்; அந்தப் புதிய அம்சங்களை இங்கே பார்க்கவும்:</translation>
-<translation id="5110983769041734144">முந்தைய படிவப் புலம் இல்லை.</translation>
+<translation id="5110983769041734144">முந்தைய வடிவப் புலம் இல்லை.</translation>
 <translation id="5111640677200759579">நெடுவரிசை மேற்தலைப்பு</translation>
 <translation id="5115892389597951922">ChromeVox பதிவு</translation>
 <translation id="5119330972669454698">பர்லி வுட்</translation>
@@ -592,7 +600,7 @@
 <translation id="5158275234811857234">அட்டை</translation>
 <translation id="517143700877085897">, தேர்வுநீக்கப்பட்டது</translation>
 <translation id="5183440668879371625">பிரெய்ல் முந்தைய வரி</translation>
-<translation id="5184944171021383281">அடுத்த படிவப் புலம் இல்லை.</translation>
+<translation id="5184944171021383281">அடுத்த வடிவப் புலம் இல்லை.</translation>
 <translation id="5189244881767082992">வரி</translation>
 <translation id="5203930734796605961">ஏற்கனவே ஒரு கட்டளைக்கு <ph name="KEY" /> ஒதுக்கப்பட்டுள்ளது.</translation>
 <translation id="5205493599117157272"><ph name="TYPE" /> பட்டியல்.</translation>
@@ -613,6 +621,7 @@
 <translation id="5349770431644471053">பின்னிணைப்பு</translation>
 <translation id="536031132345979795">தொடர்ந்து படிக்கும் போது பின்னோக்கிச் செல்வதை தவிர்க்கலாம்</translation>
 <translation id="5368000168321181111">ஆடியோ செய்திகளை முடக்கு</translation>
+<translation id="5368505757342402527"><ph name="FILE_NAME" /> <ph name="PROGRESS" />% பதிவிறக்கப்பட்டுள்ளது. இன்னும் சுமார் <ph name="TIME" /> <ph name="UNITS" /> மீதமுள்ளன.</translation>
 <translation id="5374320867641260420">அடுத்த பட்டன் இல்லை.</translation>
 <translation id="5376407118396657359">ஒவ்வொரு கலத்திற்கும் செல்ல, தேடல்+Ctrl+Alt விசைகளையும் அம்புக்குறி விசைகளையும் அழுத்தவும்.</translation>
 <translation id="5382299583965267720">அடுத்த 1 ஆம் நிலை தலைப்பு இல்லை.</translation>
@@ -646,6 +655,7 @@
 <translation id="5574412348552378458">ChromeVox கற்றல் பயன்முறை</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">உரையைத் திருத்து, மின்னஞ்சல் உள்ளீடு</translation>
+<translation id="5586942249556966598">ஒன்றும் செய்ய வேண்டாம்</translation>
 <translation id="5597170376237141345">அடுத்த செக்பாக்ஸ்</translation>
 <translation id="5597933780944041114">அடுத்த தலைப்பு இல்லை.</translation>
 <translation id="5598905979683743333"><ph name="NAME" />, ரேடியோ பட்டன் தேர்வு நீக்கப்பட்டது</translation>
@@ -702,7 +712,7 @@
 <translation id="5937336320314038555">{COUNT,plural, =1{சமக்குறி}other{# சமக்குறிகள்}}</translation>
 <translation id="5939518447894949180">மீட்டமை</translation>
 <translation id="5948123859135882163">அமைப்பு மற்றும் பொருள்விளக்கத்திற்கு இடையே கணிதக் கோவைகளின் விளக்கத்தை நிலைமாற்றவும்</translation>
-<translation id="5955304353782037793">பயன்பாடு</translation>
+<translation id="5955304353782037793">ஆப்ஸ்</translation>
 <translation id="5956928062748260866">செய்தி</translation>
 <translation id="5963413905009737549">பிரிவு</translation>
 <translation id="5968607524793740041">சூழல் மெனுவைக் காட்டு</translation>
@@ -750,6 +760,7 @@
 <translation id="6348869651006731065">டிம் கிரே</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{பொட்டுக்குறி}other{# பொட்டுக்குறிகள்}}</translation>
 <translation id="6355910664415701303">முந்தைய பட்டியல் உருப்படி இல்லை.</translation>
+<translation id="6360318852623800555">உயர் உரை பண்புக் கூறுகள்</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">முந்தைய தலைப்பு</translation>
 <translation id="6376999910001533545">மரூன்</translation>
@@ -791,6 +802,7 @@
 <translation id="667999046851023355">ஆவணம்</translation>
 <translation id="6688209025607531203">கட்டாயமல்லாத விழிப்பூட்டல்</translation>
 <translation id="6689672606256159458">டார்க் சால்மன்</translation>
+<translation id="669617842401078250"><ph name="FILE_NAME" /> கோப்பின் பதிவிறக்கம் இடைநிறுத்தப்பட்டது</translation>
 <translation id="6696967141280706829">முன்னுரை</translation>
 <translation id="6697092096875747123">முந்தைய சேர்க்கைப் பெட்டி</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{ஆச்சரியக்குறி}other{# ஆச்சரியக்குறிகள்}}</translation>
@@ -874,7 +886,7 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="72393384879519786">தலைப்பு</translation>
 <translation id="7240858705033280249">விவரங்களைக் காட்டு</translation>
 <translation id="7241683698754534149">நீண்ட விளக்கத்தைப் புதிய தாவலில் திறக்கவும்</translation>
-<translation id="7248671827512403053">பயன்பாடு</translation>
+<translation id="7248671827512403053">ஆப்ஸ்</translation>
 <translation id="725969808843520477">அடுத்த ரேடியோ பட்டன்</translation>
 <translation id="7261612856573623172">சாதனத்தின் இயல்பு ‘உரையிலிருந்து பேச்சுக்கான' குரல்</translation>
 <translation id="7269119382257320590">நிறுத்தற்குறி இல்லை</translation>
@@ -924,10 +936,12 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="762020119231868829">தற்போது இயங்கும் எல்லா ஊடக விட்ஜெட்டுகளையும் இடைநிறுத்தும்</translation>
 <translation id="7625690649919402823">அடுத்த அட்டவணை</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), தரம் <ph name="GRADE" /></translation>
+<translation id="763535765081585392">அடிகோடிட்டவற்றைக் குறி:</translation>
 <translation id="7639968568612851608">அடர்ந்த சாம்பல்</translation>
 <translation id="7641134354185483015">முந்தைய 3 ஆம் படிநிலை தலைப்பு இல்லை.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, உரைப் பெட்டி</translation>
 <translation id="7663318257180412551">தலைப்பு 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{மணிநேரம்}other{மணிநேரம்}}</translation>
 <translation id="7674576868851035240">அடுத்த இணைப்பு</translation>
 <translation id="7674768236845044097">mark</translation>
 <translation id="7684431668231950609">உரையைத் திருத்து, URL உள்ளீடு</translation>
@@ -942,6 +956,7 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912"><ph name="FILE_NAME" /> கோப்பின் பதிவிறக்கம் தொடங்கியது</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, கடவுச்சொல் உரைப் பெட்டி</translation>
 <translation id="7776293189010177726">ChromeVox மெனுக்களைத் திறக்கும்</translation>
 <translation id="7800558923657349506">முடிவுரை</translation>
@@ -1066,6 +1081,7 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="8096975275316362544">மின்ட் க்ரீம்</translation>
 <translation id="8098587210054821856">சிலேட் கிரே</translation>
 <translation id="8110647606445335195">ARIA லேண்ட்மார்க்குகள் இல்லை.</translation>
+<translation id="812886159861361726"><ph name="FILE_NAME" /> கோப்பின் பதிவிறக்கம் நிறுத்தப்பட்டது</translation>
 <translation id="8138880386467279117">தொடுதல்</translation>
 <translation id="8153880621934657047">அட்டவணையின் உள்ளே கிடையாது.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{அடிக்கோடு}other{# அடிக்கோடுகள்}}</translation>
@@ -1084,7 +1100,7 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="827422111966801947">இண்டிகோ</translation>
 <translation id="8276439074553447000">முன்பு கவனிக்கப்பட்ட உருப்படிக்குத் தாவு</translation>
 <translation id="8278417001922463147">முந்தைய உறுப்பு இல்லை.</translation>
-<translation id="8283603667300770666">அடுத்தப் படிவப் புலம்</translation>
+<translation id="8283603667300770666">அடுத்த வடிவப் புலம்</translation>
 <translation id="831207808878314375">விளக்கம்</translation>
 <translation id="8313653172105209786">dir</translation>
 <translation id="8316881042119029234">ஓல்டு லேஸ்</translation>
@@ -1135,6 +1151,7 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="8743786158317878347">அட்டவணைகள் போன்ற கட்டமைக்கப்பட்ட உள்ளடக்கத்தை உள்ளிடும்</translation>
 <translation id="8747966237988593539">வரிசைப்படுத்தப்பட்ட பட்டியல்</translation>
 <translation id="8749988712346667988">சில்வர்</translation>
+<translation id="875769700429317857"><ph name="FILE_NAME" /> பதிவிறக்கப்பட்டது</translation>
 <translation id="8759334257841767240">அடுத்த இணைப்பு இல்லை.</translation>
 <translation id="8767968232364267681">அடுத்த 4 ஆம் படிநிலை தலைப்பு</translation>
 <translation id="8770473310765924354">அட்டவணைகள் போன்ற கட்டமைக்கப்பட்ட உள்ளடக்கத்தை வெளியேற்றும்</translation>
@@ -1159,6 +1176,7 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="8943175951035496220">வலப்புறத்தில் கலம் இல்லை.</translation>
 <translation id="8943282376843390568">சுண்ணாம்பு நிறம்</translation>
 <translation id="8946628535652548639"><ph name="TABLECELLROWINDEX" />வரி.<ph name="TABLECELLCOLUMNINDEX" />நெடு.</translation>
+<translation id="8957142051395645063">அறிவி</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">மற</translation>
 <translation id="900114243503212879">கோப்பு</translation>

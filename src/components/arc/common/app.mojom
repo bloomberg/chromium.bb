@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 42
+// Next MinVersion: 43
 
 module arc.mojom;
 
@@ -350,8 +350,8 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 33
-// Deprecated method IDs: 3, 13
+// Next method ID: 34
+// Deprecated method IDs: 2, 3, 13
 interface AppInstance {
   // DEPRECATED: Please use Init@21 instead.
   InitDeprecated@0(AppHost host_ptr);
@@ -392,12 +392,6 @@ interface AppInstance {
   // Sends a request to ARC to launch an intent. The intent is encoded as a URI
   // string. See Intent.toUri().
   [MinVersion=23] LaunchIntent@19(string intent_uri, int64 display_id);
-
-  // Sends a request to ARC to refresh a list of ARC apps.
-  // OnRefreshAppsList is expected in response to this message. However,
-  // response may not be sent if ARC is not ready yet (boot completed event is
-  // not received).
-  RefreshAppList@2();
 
   // Sends a request for the ARC shortcut icon of a given resource id and
   // |pixel_size|.
@@ -461,6 +455,13 @@ interface AppInstance {
   // Sends a request to ARC to uninstall the given package.  Error (if ever
   // happens) is ignored, and uninstall option should appear in the UI.
   [MinVersion=2] UninstallPackage@5(string package_name);
+
+  // Returns Android instance id as it is registered on Google servers. 0 is
+  // reserved for the case when Android instance id could not be determined,
+  // however this should not normally happen once app instance is connected
+  // after ARC provisioning that includes registering Android instance on
+  // Google servers (known as initial Check-in flow).
+  [MinVersion=42] GetAndroidId@33() => (int64 android_id);
 
   // Sends a request to ARC to get app shortcuts for apps in global scope that
   // match a |query|. Limits the results to only return |max_results|.

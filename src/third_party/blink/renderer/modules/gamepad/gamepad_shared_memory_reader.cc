@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/gamepad/gamepad_shared_memory_reader.h"
+
 #include "base/metrics/histogram_macros.h"
+#include "device/gamepad/public/cpp/gamepads.h"
+#include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/web_gamepad_listener.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {

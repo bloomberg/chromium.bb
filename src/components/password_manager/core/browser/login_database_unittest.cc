@@ -897,151 +897,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingRegexp) {
   EXPECT_EQ(0U, result.size());
 }
 
-TEST_F(LoginDatabaseTest,
-       GetLoginsForSameOrganizationName_OnlyWebHTTPFormsAreConsidered) {
-  static constexpr const struct {
-    const PasswordFormData form_data;
-    bool use_federated_login;
-    const char* other_queried_signon_realm;
-    bool expected_matches_itself;
-    bool expected_matches_other_realm;
-  } kTestCases[] = {
-      {{PasswordForm::SCHEME_HTML, "https://example.com/",
-        "https://example.com/origin", "", L"", L"", L"", L"u", L"p", false, 1},
-       false,
-       nullptr,
-       true,
-       true},
-      {{PasswordForm::SCHEME_BASIC, "http://example.com/realm",
-        "http://example.com/", "", L"", L"", L"", L"u", L"p", false, 1},
-       false,
-       nullptr,
-       false,
-       false},
-      {{PasswordForm::SCHEME_OTHER, "ftp://example.com/realm",
-        "ftp://example.com/", "", L"", L"", L"", L"u", L"p", false, 1},
-       false,
-       "http://example.com/realm",
-       false,
-       false},
-      {{PasswordForm::SCHEME_HTML,
-        "federation://example.com/accounts.google.com",
-        "https://example.com/orgin", "", L"", L"", L"", L"u", L"", false, 1},
-       true,
-       "http://example.com/",
-       false,
-       false},
-      {{PasswordForm::SCHEME_HTML, "android://hash@example.com/",
-        "android://hash@example.com/", "", L"", L"", L"", L"u", L"p", false, 1},
-       false,
-       "http://example.com/",
-       false,
-       false},
-  };
-
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(test_case.form_data.signon_realm);
-
-    std::unique_ptr<PasswordForm> form = FillPasswordFormWithData(
-        test_case.form_data, test_case.use_federated_login);
-    ASSERT_EQ(AddChangeForForm(*form), db().AddLogin(*form));
-
-    std::vector<std::unique_ptr<PasswordForm>> same_organization_forms;
-    EXPECT_TRUE(db().GetLoginsForSameOrganizationName(
-        form->signon_realm, &same_organization_forms));
-    EXPECT_EQ(test_case.expected_matches_itself ? 1u : 0u,
-              same_organization_forms.size());
-
-    if (test_case.other_queried_signon_realm) {
-      same_organization_forms.clear();
-      EXPECT_TRUE(db().GetLoginsForSameOrganizationName(
-          test_case.other_queried_signon_realm, &same_organization_forms));
-      EXPECT_EQ(test_case.expected_matches_other_realm ? 1u : 0u,
-                same_organization_forms.size());
-    }
-
-    ASSERT_TRUE(db().RemoveLogin(*form, /*changes=*/nullptr));
-  }
-}
-
-TEST_F(LoginDatabaseTest, GetLoginsForSameOrganizationName_DetailsOfMatching) {
-  const struct {
-    const char* saved_signon_realm;
-    const char* queried_signon_realm;
-    bool expected_matches;
-  } kTestCases[] = {
-      // PSL matches are also same-organization-name matches.
-      {"http://psl.example.com/", "http://example.com/", true},
-      {"http://example.com/", "http://sub.example.com/", true},
-      {"https://a.b.example.co.uk/", "https://c.d.e.example.co.uk/", true},
-
-      // Non-PSL but same-organization-name matches. Also an illustration why it
-      // would be unsafe to offer these credentials for filling.
-      {"https://example.com/", "https://example.co.uk/", true},
-      {"https://example.co.uk/", "https://example.com/", true},
-      {"https://a.example.appspot.com/", "https://b.example.co.uk/", true},
-
-      // Same-organization-name matches are HTTP/HTTPS-agnostic.
-      {"https://example.com/", "http://example.com/", true},
-      {"http://example.com/", "https://example.com/", true},
-
-      {"http://www.foo-bar.com/", "http://sub.foo-bar.com", true},
-      {"http://www.foo_bar.com/", "http://sub.foo_bar.com", true},
-      {"http://www.foo-bar.com/", "http://sub.foo%2Dbar.com", true},
-      {"http://www.foo%21bar.com/", "http://sub.foo!bar.com", true},
-      {"http://a.xn--sztr-7na0i.co.uk/", "http://xn--sztr-7na0i.com/", true},
-      {"http://a.xn--sztr-7na0i.co.uk/", "http://www.sz\xc3\xb3t\xc3\xa1r.com/",
-       true},
-
-      {"http://www.foo+bar.com/", "http://sub.foo+bar.com", true},
-      {"http://www.foooobar.com/", "http://sub.foo+bar.com", false},
-      {"http://www.fobar.com/", "http://sub.foo?bar.com", false},
-      {"http://www.foozbar.com/", "http://sub.foo.bar.com", false},
-      {"http://www.foozbar.com/", "http://sub.foo[a-z]bar.com", false},
-
-      {"https://notexample.com/", "https://example.com/", false},
-      {"https://a.notexample.com/", "https://example.com/", false},
-      {"https://example.com/", "https://notexample.com/", false},
-      {"https://example.com/", "https://example.bar.com/", false},
-      {"https://example.foo.com/", "https://example.com/", false},
-      {"https://example.foo.com/", "https://example.bar.com/", false},
-
-      // URLs without host portions, hosts without registry controlled domains
-      // or hosts consisting of a registry.
-      {"http://localhost/", "http://localhost/", false},
-      {"https://example/", "https://example/", false},
-      {"https://co.uk/", "https://co.uk/", false},
-      {"https://example/", "https://example.com/", false},
-      {"https://a.example/", "https://example.com/", false},
-      {"https://example.com/", "https://example/", false},
-      {"https://127.0.0.1/", "https://127.0.0.1/", false},
-      {"https:/[3ffe:2a00:100:7031::1]/", "https:/[3ffe:2a00:100:7031::1]/",
-       false},
-
-      // Queried |signon-realms| are invalid URIs.
-      {"https://example.com/", "", false},
-      {"https://example.com/", "bad url", false},
-      {"https://example.com/", "https://", false},
-      {"https://example.com/", "http://www.foo;bar.com", false},
-      {"https://example.com/", "example", false},
-  };
-
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(test_case.saved_signon_realm);
-    SCOPED_TRACE(test_case.queried_signon_realm);
-
-    std::unique_ptr<PasswordForm> form = FillPasswordFormWithData(
-        {PasswordForm::SCHEME_HTML, test_case.saved_signon_realm,
-         test_case.saved_signon_realm, "", L"", L"", L"", L"u", L"p", true, 1});
-    std::vector<std::unique_ptr<PasswordForm>> result;
-    ASSERT_EQ(AddChangeForForm(*form), db().AddLogin(*form));
-    EXPECT_TRUE(db().GetLoginsForSameOrganizationName(
-        test_case.queried_signon_realm, &result));
-    EXPECT_EQ(test_case.expected_matches ? 1u : 0u, result.size());
-    ASSERT_TRUE(db().RemoveLogin(*form, /*changes=*/nullptr));
-  }
-}
-
 static bool AddTimestampedLogin(LoginDatabase* db,
                                 std::string url,
                                 const std::string& unique_string,
@@ -1665,58 +1520,6 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
                                       0, 1);
 }
 
-// This test will check that adding a blacklist entry is prevented due to an
-// already existing entry.
-TEST_F(LoginDatabaseTest, AddBlacklistedDuplicates) {
-  PasswordForm password_form;
-  password_form.origin = GURL("http://rsolomakhin.github.io/autofill/");
-  password_form.signon_realm = "http://rsolomakhin.github.io/";
-  password_form.blacklisted_by_user = true;
-  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
-
-  PasswordForm password_form_duplicated;
-  password_form_duplicated.origin =
-      GURL("http://rsolomakhin.github.io/autofill/123");
-  password_form_duplicated.signon_realm = "http://rsolomakhin.github.io/";
-  password_form_duplicated.blacklisted_by_user = true;
-  EXPECT_EQ(PasswordStoreChangeList(), db().AddLogin(password_form_duplicated));
-
-  PasswordForm password_form_example;
-  password_form_example.origin = GURL("http://example.com/");
-  password_form_example.signon_realm = "http://example.com/";
-  password_form_example.blacklisted_by_user = false;
-  EXPECT_EQ(AddChangeForForm(password_form_example),
-            db().AddLogin(password_form_example));
-
-  PasswordForm password_form_example_blacklisted;
-  password_form_example_blacklisted.origin = GURL("http://example.com/1");
-  password_form_example_blacklisted.signon_realm = "http://example.com/";
-  password_form_example_blacklisted.blacklisted_by_user = true;
-  EXPECT_EQ(AddChangeForForm(password_form_example_blacklisted),
-            db().AddLogin(password_form_example_blacklisted));
-
-  PasswordForm password_form_example_blacklisted_duplicated;
-  password_form_example_blacklisted_duplicated.origin =
-      GURL("http://example.com/123");
-  password_form_example_blacklisted_duplicated.signon_realm =
-      "http://example.com/";
-  password_form_example_blacklisted_duplicated.blacklisted_by_user = true;
-  EXPECT_EQ(PasswordStoreChangeList(),
-            db().AddLogin(password_form_example_blacklisted_duplicated));
-
-  std::vector<std::unique_ptr<PasswordForm>> forms;
-  ASSERT_TRUE(db().GetAutofillableLogins(&forms));
-  EXPECT_THAT(forms,
-              UnorderedElementsAre(::testing::Pointee(password_form_example)));
-
-  std::vector<std::unique_ptr<PasswordForm>> blacklisted_forms;
-  ASSERT_TRUE(db().GetBlacklistLogins(&blacklisted_forms));
-  EXPECT_THAT(blacklisted_forms,
-              UnorderedElementsAre(
-                  ::testing::Pointee(password_form),
-                  ::testing::Pointee(password_form_example_blacklisted)));
-}
-
 TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {
   // -- Group of accounts that are reusing password #1.
   //
@@ -1914,8 +1717,8 @@ TEST_F(LoginDatabaseTest, GetAllSyncMetadata) {
       metadata_batch->TakeAllMetadata();
 
   EXPECT_EQ(metadata_records.size(), 2u);
-  EXPECT_EQ(metadata_records[kStorageKey1].sequence_number(), 1);
-  EXPECT_EQ(metadata_records[kStorageKey2].sequence_number(), 2);
+  EXPECT_EQ(metadata_records[kStorageKey1]->sequence_number(), 1);
+  EXPECT_EQ(metadata_records[kStorageKey2]->sequence_number(), 2);
 
   // Now check that a model type state update replaces the old value
   model_type_state.set_initial_sync_done(false);
@@ -1924,6 +1727,38 @@ TEST_F(LoginDatabaseTest, GetAllSyncMetadata) {
   metadata_batch = db().GetAllSyncMetadata();
   ASSERT_THAT(metadata_batch, testing::NotNull());
   EXPECT_FALSE(metadata_batch->GetModelTypeState().initial_sync_done());
+}
+
+TEST_F(LoginDatabaseTest, DeleteAllSyncMetadata) {
+  sync_pb::EntityMetadata metadata;
+  // Storage keys must be integers.
+  const std::string kStorageKey1 = "1";
+  const std::string kStorageKey2 = "2";
+  metadata.set_sequence_number(1);
+
+  EXPECT_TRUE(
+      db().UpdateSyncMetadata(syncer::PASSWORDS, kStorageKey1, metadata));
+
+  sync_pb::ModelTypeState model_type_state;
+  model_type_state.set_initial_sync_done(true);
+
+  EXPECT_TRUE(db().UpdateModelTypeState(syncer::PASSWORDS, model_type_state));
+
+  metadata.set_sequence_number(2);
+  EXPECT_TRUE(
+      db().UpdateSyncMetadata(syncer::PASSWORDS, kStorageKey2, metadata));
+
+  std::unique_ptr<syncer::MetadataBatch> metadata_batch =
+      db().GetAllSyncMetadata();
+  ASSERT_THAT(metadata_batch, testing::NotNull());
+  ASSERT_EQ(metadata_batch->TakeAllMetadata().size(), 2u);
+
+  db().DeleteAllSyncMetadata();
+
+  std::unique_ptr<syncer::MetadataBatch> empty_metadata_batch =
+      db().GetAllSyncMetadata();
+  ASSERT_THAT(empty_metadata_batch, testing::NotNull());
+  EXPECT_EQ(empty_metadata_batch->TakeAllMetadata().size(), 0u);
 }
 
 TEST_F(LoginDatabaseTest, WriteThenDeleteSyncMetadata) {

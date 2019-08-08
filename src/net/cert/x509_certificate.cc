@@ -248,7 +248,7 @@ scoped_refptr<X509Certificate> X509Certificate::CreateFromBytesUnsafeOptions(
   bssl::UniquePtr<CRYPTO_BUFFER> cert_buffer =
       CreateCertBufferFromBytes(data, length);
   if (!cert_buffer)
-    return NULL;
+    return nullptr;
 
   scoped_refptr<X509Certificate> cert =
       CreateFromBufferUnsafeOptions(std::move(cert_buffer), {}, options);

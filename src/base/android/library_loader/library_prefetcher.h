@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include <stdint.h>
+#include <string>
 
 #include "base/android/library_loader/anchor_functions_buildflags.h"
 #include "base/base_export.h"
@@ -50,6 +51,11 @@ class BASE_EXPORT NativeLibraryPrefetcher {
   // Calls madvise() on the native library executable so that residency
   // collection is accurate.
   static void MadviseForResidencyCollection();
+
+  // Returns true for success.
+  static bool GetOrderedCodeInfo(std::string* filename,
+                                 size_t* start_offset,
+                                 size_t* size);
 
  private:
   // Returns the percentage of [start, end] currently resident in

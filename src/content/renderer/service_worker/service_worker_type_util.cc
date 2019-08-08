@@ -68,7 +68,7 @@ void GetServiceWorkerHeaderMapFromWebRequest(
     blink::FetchAPIRequestHeadersMap* headers) {
   DCHECK(headers);
   DCHECK(headers->empty());
-  web_request.VisitHTTPHeaderFields(MakeHeaderVisitor(headers).get());
+  web_request.VisitHttpHeaderFields(MakeHeaderVisitor(headers).get());
 }
 
 blink::mojom::FetchAPIResponsePtr GetFetchAPIResponseFromWebResponse(
@@ -96,7 +96,7 @@ blink::mojom::FetchAPIResponsePtr GetFetchAPIResponseFromWebResponse(
   }
 
   base::flat_map<std::string, std::string> headers;
-  web_response.VisitHTTPHeaderFields(MakeHeaderVisitor(&headers).get());
+  web_response.VisitHttpHeaderFields(MakeHeaderVisitor(&headers).get());
 
   return blink::mojom::FetchAPIResponse::New(
       GetURLList(web_response.UrlList()), web_response.Status(),

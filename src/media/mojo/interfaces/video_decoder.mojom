@@ -53,16 +53,24 @@ interface VideoFrameHandleReleaser {
                     gpu.mojom.SyncToken release_sync_token);
 };
 
+// Identifier to select between multiple underlying VideoDecoder implementations
+// to back a mojo VideoDecoder service.
+[Native]
+enum VideoDecoderImplementation;
+
 // A Mojo equivalent of media::VideoDecoder. In practice, this is used for
 // hardware decode offloading; in this case the client is a <video> tag running
 // in a renderer, and the implementation is running in the GPU process.
 interface VideoDecoder {
   // Returns a list of supported configs. It is expected that Initialize() will
-  // fail for any config that does not match an entry in this list.
+  // fail for any config that does not match an entry in this list.  Note that
+  // this returns a map for all VideoDecoderImplementation types, since it's
+  // much more convenient; we always want all of them.
   //
   // May be called before Construct().
   GetSupportedConfigs() =>
-      (array<SupportedVideoDecoderConfig> supported_configs);
+      (map<VideoDecoderImplementation,
+           array<SupportedVideoDecoderConfig>> supported_configs);
 
   // Initialize the decoder. This must be called before any method other than
   // GetSupportedConfigs().
@@ -85,6 +93,10 @@ interface VideoDecoder {
   // the VideoDecoder can use for GL operations. Implementations that require GL
   // will fail Initialize() if |command_buffer_id| is not provided.
   //
+  // |implementation| selects the underlying VideoDecoder implementation.  Not
+  // all implementations are supported.  Initialize() will fail if
+  // |implementation| is not supported.
+  //
   // TODO(sandersd): Rename to Initialize() if/when
   // media::VideoDecoder::Initialize() is renamed to Configure().
   Construct(associated VideoDecoderClient client,
@@ -92,6 +104,7 @@ interface VideoDecoder {
             VideoFrameHandleReleaser& video_frame_handle_releaser,
             handle<data_pipe_consumer> decoder_buffer_pipe,
             CommandBufferId? command_buffer_id,
+            VideoDecoderImplementation implementation,
             gfx.mojom.ColorSpace target_color_space);
 
   // Configure (or reconfigure) the decoder. This must be called before decoding

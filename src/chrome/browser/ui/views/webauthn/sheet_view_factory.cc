@@ -8,10 +8,12 @@
 #include "chrome/browser/ui/views/webauthn/authenticator_ble_pin_entry_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_client_pin_entry_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
+#include "chrome/browser/ui/views/webauthn/authenticator_select_account_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_transport_selector_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/ble_device_selection_sheet_view.h"
 #include "chrome/browser/ui/webauthn/sheet_models.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 namespace {
 
@@ -22,7 +24,10 @@ class PlaceholderSheetModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
-  gfx::ImageSkia* GetStepIllustration() const override { return nullptr; }
+  const gfx::VectorIcon& GetStepIllustration(
+      ImageColorScheme color_scheme) const override {
+    return gfx::kNoneIcon;
+  }
   base::string16 GetStepTitle() const override { return base::string16(); }
   base::string16 GetStepDescription() const override {
     return base::string16();
@@ -69,6 +74,16 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
           std::make_unique<AuthenticatorAlreadyRegisteredErrorModel>(
               dialog_model));
       break;
+    case Step::kMissingResidentKeys:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          AuthenticatorGenericErrorSheetModel::ForMissingResidentKeysSupport(
+              dialog_model));
+      break;
+    case Step::kMissingUserVerification:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          AuthenticatorGenericErrorSheetModel::
+              ForMissingUserVerificationSupport(dialog_model));
+      break;
     case Step::kErrorInternalUnrecognized:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<AuthenticatorInternalUnrecognizedErrorSheetModel>(
@@ -111,9 +126,10 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<AuthenticatorBleActivateSheetModel>(dialog_model));
       break;
-    case Step::kTouchId:
+    case Step::kTouchIdIncognitoSpeedBump:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
-          std::make_unique<AuthenticatorTouchIdSheetModel>(dialog_model));
+          std::make_unique<AuthenticatorTouchIdIncognitoBumpSheetModel>(
+              dialog_model));
       break;
     case Step::kCableActivate:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
@@ -130,6 +146,35 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
           std::make_unique<AuthenticatorClientPinEntrySheetModel>(
               dialog_model,
               AuthenticatorClientPinEntrySheetModel::Mode::kPinSetup));
+      break;
+    case Step::kClientPinTapAgain:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorClientPinTapAgainSheetModel>(
+              dialog_model));
+      break;
+    case Step::kClientPinErrorSoftBlock:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          AuthenticatorGenericErrorSheetModel::ForClientPinErrorSoftBlock(
+              dialog_model));
+      break;
+    case Step::kClientPinErrorHardBlock:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          AuthenticatorGenericErrorSheetModel::ForClientPinErrorHardBlock(
+              dialog_model));
+      break;
+    case Step::kClientPinErrorAuthenticatorRemoved:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          AuthenticatorGenericErrorSheetModel::
+              ForClientPinErrorAuthenticatorRemoved(dialog_model));
+      break;
+    case Step::kSelectAccount:
+      sheet_view = std::make_unique<AuthenticatorSelectAccountSheetView>(
+          std::make_unique<AuthenticatorSelectAccountSheetModel>(dialog_model));
+      break;
+    case Step::kAttestationPermissionRequest:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AttestationPermissionRequestSheetModel>(
+              dialog_model));
       break;
     case Step::kNotStarted:
     case Step::kClosed:

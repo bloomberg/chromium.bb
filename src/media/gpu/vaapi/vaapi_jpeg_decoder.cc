@@ -13,7 +13,9 @@
 #include <va/va.h>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
+#include "media/base/video_types.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
@@ -22,20 +24,6 @@
 namespace media {
 
 namespace {
-
-constexpr VAImageFormat kImageFormatI420 = {
-    .fourcc = VA_FOURCC_I420,
-    .byte_order = VA_LSB_FIRST,
-    .bits_per_pixel = 12,
-};
-
-constexpr VAImageFormat kImageFormatYUYV = {
-    .fourcc = VA_FOURCC('Y', 'U', 'Y', 'V'),
-    .byte_order = VA_LSB_FIRST,
-    .bits_per_pixel = 16,
-};
-
-constexpr unsigned int kInvalidVaRtFormat = 0u;
 
 static void FillPictureParameters(
     const JpegFrameHeader& frame_header,
@@ -149,109 +137,76 @@ static void FillSliceParameters(
 // VAAPI only supports a subset of JPEG profiles. This function determines
 // whether a given parsed JPEG result is supported or not.
 static bool IsVaapiSupportedJpeg(const JpegParseResult& jpeg) {
-  if (jpeg.frame_header.visible_width < 1 ||
-      jpeg.frame_header.visible_height < 1) {
-    DLOG(ERROR) << "width(" << jpeg.frame_header.visible_width
-                << ") and height(" << jpeg.frame_header.visible_height
-                << ") should be at least 1";
+  // Make sure the JPEG's chroma subsampling format is supported.
+  if (!VaapiWrapper::IsJpegDecodingSupportedForInternalFormat(
+          VaSurfaceFormatForJpeg(jpeg.frame_header))) {
+    DLOG(ERROR) << "The JPEG's subsampling format is unsupported";
     return false;
   }
 
-  // Size 64k*64k is the maximum in the JPEG standard. VAAPI doesn't support
-  // resolutions larger than 16k*16k.
-  constexpr int kMaxDimension = 16384;
-  if (jpeg.frame_header.coded_width > kMaxDimension ||
-      jpeg.frame_header.coded_height > kMaxDimension) {
-    DLOG(ERROR) << "VAAPI doesn't support size("
-                << jpeg.frame_header.coded_width << "*"
-                << jpeg.frame_header.coded_height << ") larger than "
-                << kMaxDimension << "*" << kMaxDimension;
+  // Validate the visible size.
+  if (jpeg.frame_header.visible_width == 0u) {
+    DLOG(ERROR) << "Visible width can't be zero";
+    return false;
+  }
+  if (jpeg.frame_header.visible_height == 0u) {
+    DLOG(ERROR) << "Visible height can't be zero";
     return false;
   }
 
-  if (jpeg.frame_header.num_components != 3) {
-    DLOG(ERROR) << "VAAPI doesn't support num_components("
-                << static_cast<int>(jpeg.frame_header.num_components)
-                << ") != 3";
+  // Validate the coded size.
+  gfx::Size min_jpeg_resolution;
+  if (!VaapiWrapper::GetJpegDecodeMinResolution(&min_jpeg_resolution)) {
+    DLOG(ERROR) << "Could not get the minimum resolution";
     return false;
   }
-
-  if (jpeg.frame_header.components[0].horizontal_sampling_factor <
-          jpeg.frame_header.components[1].horizontal_sampling_factor ||
-      jpeg.frame_header.components[0].horizontal_sampling_factor <
-          jpeg.frame_header.components[2].horizontal_sampling_factor) {
-    DLOG(ERROR) << "VAAPI doesn't supports horizontal sampling factor of Y"
-                << " smaller than Cb and Cr";
+  gfx::Size max_jpeg_resolution;
+  if (!VaapiWrapper::GetJpegDecodeMaxResolution(&max_jpeg_resolution)) {
+    DLOG(ERROR) << "Could not get the maximum resolution";
     return false;
   }
-
-  if (jpeg.frame_header.components[0].vertical_sampling_factor <
-          jpeg.frame_header.components[1].vertical_sampling_factor ||
-      jpeg.frame_header.components[0].vertical_sampling_factor <
-          jpeg.frame_header.components[2].vertical_sampling_factor) {
-    DLOG(ERROR) << "VAAPI doesn't supports vertical sampling factor of Y"
-                << " smaller than Cb and Cr";
+  const int actual_jpeg_coded_width =
+      base::strict_cast<int>(jpeg.frame_header.coded_width);
+  const int actual_jpeg_coded_height =
+      base::strict_cast<int>(jpeg.frame_header.coded_height);
+  if (actual_jpeg_coded_width < min_jpeg_resolution.width() ||
+      actual_jpeg_coded_height < min_jpeg_resolution.height() ||
+      actual_jpeg_coded_width > max_jpeg_resolution.width() ||
+      actual_jpeg_coded_height > max_jpeg_resolution.height()) {
+    DLOG(ERROR) << "VAAPI doesn't support size " << actual_jpeg_coded_width
+                << "x" << actual_jpeg_coded_height << ": not in range "
+                << min_jpeg_resolution.ToString() << " - "
+                << max_jpeg_resolution.ToString();
     return false;
   }
 
   return true;
 }
 
-// Convert the specified surface format to the associated output image format.
-static bool VaSurfaceFormatToImageFormat(unsigned int va_rt_format,
-                                         VAImageFormat* va_image_format) {
-  switch (va_rt_format) {
-    case VA_RT_FORMAT_YUV420:
-      *va_image_format = kImageFormatI420;
-      return true;
-    case VA_RT_FORMAT_YUV422:
-      *va_image_format = kImageFormatYUYV;
-      return true;
-    default:
-      return false;
-  }
-}
+}  // namespace
 
-static unsigned int VaSurfaceFormatForJpeg(
-    const JpegFrameHeader& frame_header) {
-  // The range of sampling factor is [1, 4]. Pack them into integer to make the
-  // matching code simpler. For example, 0x211 means the sampling factor are 2,
-  // 1, 1 for 3 components.
-  unsigned int h = 0, v = 0;
-  for (int i = 0; i < frame_header.num_components; i++) {
-    DCHECK_LE(frame_header.components[i].horizontal_sampling_factor, 4);
-    DCHECK_LE(frame_header.components[i].vertical_sampling_factor, 4);
-    h = h << 4 | frame_header.components[i].horizontal_sampling_factor;
-    v = v << 4 | frame_header.components[i].vertical_sampling_factor;
-  }
+unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header) {
+  if (frame_header.num_components != 3)
+    return kInvalidVaRtFormat;
 
-  switch (frame_header.num_components) {
-    case 1:  // Grey image
-      return VA_RT_FORMAT_YUV400;
+  const uint8_t y_h = frame_header.components[0].horizontal_sampling_factor;
+  const uint8_t y_v = frame_header.components[0].vertical_sampling_factor;
+  const uint8_t u_h = frame_header.components[1].horizontal_sampling_factor;
+  const uint8_t u_v = frame_header.components[1].vertical_sampling_factor;
+  const uint8_t v_h = frame_header.components[2].horizontal_sampling_factor;
+  const uint8_t v_v = frame_header.components[2].vertical_sampling_factor;
 
-    case 3:  // Y Cb Cr color image
-      // See https://en.wikipedia.org/wiki/Chroma_subsampling for the
-      // definition of these numbers.
-      if (h == 0x211 && v == 0x211)
-        return VA_RT_FORMAT_YUV420;
+  if (u_h != 1 || u_v != 1 || v_h != 1 || v_v != 1)
+    return kInvalidVaRtFormat;
 
-      if (h == 0x211 && v == 0x111)
-        return VA_RT_FORMAT_YUV422;
-
-      if (h == 0x111 && v == 0x111)
-        return VA_RT_FORMAT_YUV444;
-
-      if (h == 0x411 && v == 0x111)
-        return VA_RT_FORMAT_YUV411;
-  }
-  VLOGF(1) << "Unsupported sampling factor: num_components="
-           << frame_header.num_components << ", h=" << std::hex << h
-           << ", v=" << v;
-
+  if (y_h == 2 && y_v == 2)
+    return VA_RT_FORMAT_YUV420;
+  else if (y_h == 2 && y_v == 1)
+    return VA_RT_FORMAT_YUV422;
+  else if (y_h == 1 && y_v == 1)
+    return VA_RT_FORMAT_YUV444;
   return kInvalidVaRtFormat;
 }
-
-}  // namespace
 
 VaapiJpegDecoder::VaapiJpegDecoder()
     : va_surface_id_(VA_INVALID_SURFACE), va_rt_format_(kInvalidVaRtFormat) {}
@@ -270,6 +225,7 @@ bool VaapiJpegDecoder::Initialize(const base::RepeatingClosure& error_uma_cb) {
 
 std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::DoDecode(
     base::span<const uint8_t> encoded_image,
+    uint32_t preferred_image_fourcc,
     VaapiJpegDecodeStatus* status) {
   if (!vaapi_wrapper_) {
     VLOGF(1) << "VaapiJpegDecoder has not been initialized";
@@ -376,29 +332,33 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::DoDecode(
     return nullptr;
   }
 
-  // Specify which image format we will request from the VAAPI. As the expected
-  // output format is I420, we will first try this format. If converting to I420
-  // is not supported by the decoder, we will request the image in its original
-  // chroma sampling format.
-  VAImageFormat va_image_format = kImageFormatI420;
-  if (!VaapiWrapper::IsImageFormatSupported(va_image_format) &&
-      !VaSurfaceFormatToImageFormat(va_rt_format_, &va_image_format)) {
-    VLOGF(1) << "Unsupported surface format";
-    *status = VaapiJpegDecodeStatus::kUnsupportedSurfaceFormat;
+  // Get the decode output as a ScopedVAImage.
+  uint32_t image_fourcc;
+  if (!VaapiWrapper::GetJpegDecodeSuitableImageFourCC(
+          va_rt_format_, preferred_image_fourcc, &image_fourcc)) {
+    VLOGF(1) << "Cannot determine the output FOURCC";
+    *status = VaapiJpegDecodeStatus::kCannotGetImage;
     return nullptr;
   }
-
-  auto scoped_image = vaapi_wrapper_->CreateVaImage(
-      va_surface_id_, &va_image_format, coded_size_);
+  VAImageFormat image_format{.fourcc = image_fourcc};
+  auto scoped_image =
+      vaapi_wrapper_->CreateVaImage(va_surface_id_, &image_format, coded_size_);
   if (!scoped_image) {
-    VLOGF(1) << "Cannot get VAImage";
+    VLOGF(1) << "Cannot get VAImage, FOURCC = "
+             << FourccToString(image_format.fourcc);
     *status = VaapiJpegDecodeStatus::kCannotGetImage;
     return nullptr;
   }
 
-  DCHECK_EQ(va_image_format.fourcc, scoped_image->image()->format.fourcc);
   *status = VaapiJpegDecodeStatus::kSuccess;
   return scoped_image;
+}
+
+std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::DoDecode(
+    base::span<const uint8_t> encoded_image,
+    VaapiJpegDecodeStatus* status) {
+  return DoDecode(encoded_image, VA_FOURCC_I420 /* preferred_image_fourcc */,
+                  status);
 }
 
 }  // namespace media

@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/events/text_event_input_type.h"
+#include "third_party/blink/renderer/core/input/fallback_cursor_event_manager.h"
 #include "third_party/blink/renderer/core/input/gesture_manager.h"
 #include "third_party/blink/renderer/core/input/keyboard_event_manager.h"
 #include "third_party/blink/renderer/core/input/mouse_event_manager.h"
@@ -49,6 +50,7 @@
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
@@ -133,7 +135,8 @@ class CORE_EXPORT EventHandler final
 
   void ResizeScrollableAreaDestroyed();
 
-  IntPoint LastKnownMousePositionInRootFrame() const;
+  FloatPoint LastKnownMousePositionInRootFrame() const;
+  FloatPoint LastKnownMouseScreenPosition() const;
 
   IntPoint DragDataTransferLocationForTesting();
 
@@ -173,8 +176,11 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult HandleGestureEvent(const GestureEventWithHitTestResults&);
 
   // Clear the old hover/active state within frames before moving the hover
-  // state to the another frame
-  void UpdateGestureHoverActiveState(const HitTestRequest&, Element*);
+  // state to the another frame. |is_active| specifies whether the active state
+  // is being applied to or removed from the given element. This method should
+  // be initially called on the root document, it will recurse into child
+  // frames as needed.
+  void UpdateCrossFrameHoverActiveState(bool is_active, Element*);
 
   // Hit-test the provided (non-scroll) gesture event, applying touch-adjustment
   // and updating hover/active state across all frames if necessary. This should
@@ -231,6 +237,7 @@ class CORE_EXPORT EventHandler final
   bool HandleAccessKey(const WebKeyboardEvent&);
   WebInputEventResult KeyEvent(const WebKeyboardEvent&);
   void DefaultKeyboardEventHandler(KeyboardEvent*);
+  bool HandleFallbackCursorModeBackEvent();
 
   bool HandleTextInputEvent(const String& text,
                             Event* underlying_event = nullptr,
@@ -282,12 +289,18 @@ class CORE_EXPORT EventHandler final
 
   void AnimateSnapFling(base::TimeTicks monotonic_time);
 
-  void RecomputeMouseHoverState();
+  void RecomputeMouseHoverStateIfNeeded();
+
+  void MarkHoverStateDirty();
+
+  void SetIsFallbackCursorModeOn(bool is_on);
 
  private:
   enum NoCursorChangeType { kNoCursorChange };
 
   class OptionalCursor {
+    STACK_ALLOCATED();
+
    public:
     OptionalCursor(NoCursorChangeType) : is_cursor_change_(false) {}
     OptionalCursor(const Cursor& cursor)
@@ -397,6 +410,13 @@ class CORE_EXPORT EventHandler final
 
   void CaptureMouseEventsToWidget(bool);
 
+  void ReleaseMouseCaptureFromLocalRoot();
+  void ReleaseMouseCaptureFromCurrentFrame();
+
+  MouseEventWithHitTestResults GetMouseEventTarget(
+      const HitTestRequest& request,
+      const WebMouseEvent& mev);
+
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |EventHandler::clear()|.
 
@@ -412,6 +432,10 @@ class CORE_EXPORT EventHandler final
   TaskRunnerTimer<EventHandler> cursor_update_timer_;
 
   Member<Element> capturing_mouse_events_element_;
+  // |capturing_subframe_element_| has similar functionality as
+  // |capturing_mouse_events_element_|. It replaces |capturing_..| when
+  // UnifiedPointerCapture enabled.
+  Member<Element> capturing_subframe_element_;
 
   // Indicates whether the current widget is capturing mouse input.
   // Only used for local frame root EventHandlers.
@@ -435,6 +459,7 @@ class CORE_EXPORT EventHandler final
   Member<KeyboardEventManager> keyboard_event_manager_;
   Member<PointerEventManager> pointer_event_manager_;
   Member<GestureManager> gesture_manager_;
+  Member<FallbackCursorEventManager> fallback_cursor_event_manager_;
 
   double max_mouse_moved_duration_;
 
@@ -482,6 +507,13 @@ class CORE_EXPORT EventHandler final
                            EditableAnchorTextCanStartSelection);
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
                            ReadOnlyInputDoesNotInheritUserSelect);
+
+  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest,
+                           MouseMoveCursorLockOnDiv);
+  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest,
+                           MouseMoveCursorLockOnIFrame);
+  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest, KeyBackAndMouseMove);
+  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest, MouseDownOnEditor);
 
   DISALLOW_COPY_AND_ASSIGN(EventHandler);
 };

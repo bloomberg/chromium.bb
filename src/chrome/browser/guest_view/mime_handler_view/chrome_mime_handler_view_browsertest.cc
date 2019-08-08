@@ -7,10 +7,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -24,6 +26,7 @@
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/find_test_utils.h"
@@ -34,8 +37,10 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/guest_view/mime_handler_view_uma_types.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -52,6 +57,7 @@ using extensions::TestMimeHandlerViewGuest;
 using guest_view::GuestViewManager;
 using guest_view::TestGuestViewManager;
 using guest_view::TestGuestViewManagerFactory;
+using UMAType = extensions::MimeHandlerViewUMATypes::Type;
 
 namespace {
 constexpr char kTestExtensionId[] = "oickdpebdnfbgkcaoklfcdhjniefkcji";
@@ -69,24 +75,19 @@ constexpr char kTestExtensionId[] = "oickdpebdnfbgkcaoklfcdhjniefkcji";
 // MimeHandlerViewGuest starts using cross-process frames (see
 // https://crbug.com/659750).
 
-// A class of tests which were originally designed as WebViewGuest tests which
-// were testing some aspects of BrowserPlugin. Since all GuestViews except for
-// MimeHandlerViewGuest have now moved on to using cross-process frames these
-// tests were modified to using MimeHandlerViewGuest instead. They also could
-// not be moved to extensions/browser/guest_view/mime_handler_view due to chrome
-// layer dependencies.
-class ChromeMimeHandlerViewBrowserPluginTest
-    : public extensions::ExtensionApiTest {
+// Base class for tests below.
+class ChromeMimeHandlerViewTestBase : public extensions::ExtensionApiTest {
  public:
-  ChromeMimeHandlerViewBrowserPluginTest() {
+  ChromeMimeHandlerViewTestBase() {
     GuestViewManager::set_factory_for_testing(&factory_);
   }
 
-  ~ChromeMimeHandlerViewBrowserPluginTest() override {}
+  ~ChromeMimeHandlerViewTestBase() override {}
 
   void SetUpOnMainThread() override {
     extensions::ExtensionApiTest::SetUpOnMainThread();
 
+    host_resolver()->AddRule("*", "127.0.0.1");
     embedded_test_server()->ServeFilesFromDirectory(
         test_data_dir_.AppendASCII("mime_handler_view"));
     ASSERT_TRUE(StartEmbeddedTestServer());
@@ -178,8 +179,54 @@ class ChromeMimeHandlerViewBrowserPluginTest
   content::WebContents* guest_web_contents_;
   content::WebContents* embedder_web_contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeMimeHandlerViewBrowserPluginTest);
+  ChromeMimeHandlerViewTestBase(const ChromeMimeHandlerViewTestBase&) = delete;
+  ChromeMimeHandlerViewTestBase& operator=(
+      const ChromeMimeHandlerViewTestBase&) = delete;
 };
+
+// The parametric version of the test class which runs the test both on
+// BrowserPlugin-based and cross-process-frame-based MimeHandlerView
+// implementation. All current browser tests should eventually be moved to this
+// and then eventually drop the BrowserPlugin dependency once
+// https://crbug.com/659750 is fixed.
+class ChromeMimeHandlerViewCrossProcessTest
+    : public ChromeMimeHandlerViewTestBase,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  ChromeMimeHandlerViewCrossProcessTest() : ChromeMimeHandlerViewTestBase() {}
+  ~ChromeMimeHandlerViewCrossProcessTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* cl) override {
+    ChromeMimeHandlerViewTestBase::SetUpCommandLine(cl);
+    is_cross_process_mode_ = GetParam();
+    // TODO(ekaramad): All these tests started timing out on ChromeOS (https://
+    // crbug.com/949565).
+#if defined(OS_CHROMEOS)
+    is_cross_process_mode_ = false;
+#endif
+    if (is_cross_process_mode_) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kMimeHandlerViewInCrossProcessFrame);
+    }
+  }
+
+  bool is_cross_process_mode() const { return is_cross_process_mode_; }
+
+ private:
+  bool is_cross_process_mode_ = false;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeMimeHandlerViewCrossProcessTest);
+};
+
+// A class of tests which were originally designed as WebViewGuest tests which
+// were testing some aspects of BrowserPlugin. Since all GuestViews except for
+// MimeHandlerViewGuest have now moved on to using cross-process frames these
+// tests were modified to using MimeHandlerViewGuest instead. They also could
+// not be moved to extensions/browser/guest_view/mime_handler_view due to chrome
+// layer dependencies.
+class ChromeMimeHandlerViewBrowserPluginTest
+    : public ChromeMimeHandlerViewTestBase {};
 
 // Helper class to monitor focus on a WebContents with BrowserPlugin (guest).
 class FocusChangeWaiter {
@@ -484,3 +531,55 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginScrollTest,
 
   embedder_frame_observer.WaitForScrollOffset(default_offset);
 }
+
+IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
+                       UMA_SameOriginResource) {
+  auto url = embedded_test_server()->GetURL("a.com", "/testPostMessageUMA.csv");
+  auto page_url = embedded_test_server()->GetURL(
+      "a.com",
+      base::StringPrintf("/test_postmessage_uma.html?%s", url.spec().c_str()));
+  InitializeTestPage(page_url);
+  EXPECT_TRUE(ExecJs(embedder_web_contents(), "sendMessages();"));
+  const std::vector<std::pair<extensions::MimeHandlerViewUMATypes::Type, int>>
+      kTestCases = {{UMAType::kDidCreateMimeHandlerViewContainerBase, 1},
+                    {UMAType::kDidLoadExtension, 1},
+                    {UMAType::kAccessibleInvalid, 1},
+                    {UMAType::kAccessibleSelectAll, 1},
+                    {UMAType::kAccessibleGetSelectedText, 1},
+                    {UMAType::kAccessiblePrint, 2},
+                    {UMAType::kPostMessageToEmbeddedMimeHandlerView, 5}};
+  base::HistogramTester histogram_tester;
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  for (const auto& pair : kTestCases) {
+    histogram_tester.ExpectBucketCount(
+        extensions::MimeHandlerViewUMATypes::kUMAName, pair.first, pair.second);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
+                       UMA_CrossOriginResource) {
+  auto url = embedded_test_server()->GetURL("b.com", "/testPostMessageUMA.csv");
+  auto page_url = embedded_test_server()->GetURL(
+      "a.com",
+      base::StringPrintf("/test_postmessage_uma.html?%s", url.spec().c_str()));
+  InitializeTestPage(page_url);
+  EXPECT_TRUE(ExecJs(embedder_web_contents(), "sendMessages();"));
+  const std::vector<std::pair<extensions::MimeHandlerViewUMATypes::Type, int>>
+      kTestCases = {{UMAType::kDidCreateMimeHandlerViewContainerBase, 1},
+                    {UMAType::kDidLoadExtension, 1},
+                    {UMAType::kInaccessibleInvalid, 1},
+                    {UMAType::kInaccessibleSelectAll, 1},
+                    {UMAType::kInaccessibleGetSelectedText, 1},
+                    {UMAType::kInaccessiblePrint, 2},
+                    {UMAType::kPostMessageToEmbeddedMimeHandlerView, 5}};
+  base::HistogramTester histogram_tester;
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  for (const auto& pair : kTestCases) {
+    histogram_tester.ExpectBucketCount(
+        extensions::MimeHandlerViewUMATypes::kUMAName, pair.first, pair.second);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         ChromeMimeHandlerViewCrossProcessTest,
+                         testing::Bool());

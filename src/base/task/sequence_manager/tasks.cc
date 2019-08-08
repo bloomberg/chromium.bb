@@ -34,7 +34,7 @@ PostedTask::PostedTask(OnceClosure callback,
                        Location location,
                        TimeDelta delay,
                        Nestable nestable,
-                       int task_type)
+                       TaskType task_type)
     : callback(std::move(callback)),
       location(location),
       delay(delay),

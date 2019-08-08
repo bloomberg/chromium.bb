@@ -23,20 +23,12 @@ namespace {
 using StorageEntryVector =
     leveldb_proto::ProtoDatabase<JournalStorageProto>::KeyEntryVector;
 
-// Statistics are logged to UMA with this string as part of histogram name. They
-// can all be found under LevelDB.*.FeedJournalDatabase. Changing this needs to
-// synchronize with histograms.xml, AND will also become incompatible with older
-// browsers still reporting the previous values.
-const char kJournalDatabaseUMAClientName[] = "FeedJournalDatabase";
-
 const char kJournalDatabaseFolder[] = "journal";
 
 const size_t kDatabaseWriteBufferSizeBytes = 64 * 1024;                 // 64KB
 const size_t kDatabaseWriteBufferSizeBytesForLowEndDevice = 32 * 1024;  // 32KB
 
-void ReportLoadEntriesHistograms(bool success, base::TimeTicks start_time) {
-  UMA_HISTOGRAM_BOOLEAN("ContentSuggestions.Feed.JournalStorage.LoadSuccess",
-                        success);
+void ReportLoadTimeHistogram(bool success, base::TimeTicks start_time) {
   base::TimeDelta load_time = base::TimeTicks::Now() - start_time;
   UMA_HISTOGRAM_TIMES("ContentSuggestions.Feed.JournalStorage.LoadTime",
                       load_time);
@@ -44,40 +36,36 @@ void ReportLoadEntriesHistograms(bool success, base::TimeTicks start_time) {
 
 }  // namespace
 
-FeedJournalDatabase::FeedJournalDatabase(const base::FilePath& database_folder)
-    : FeedJournalDatabase(
-          database_folder,
-          leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<
-              JournalStorageProto>(base::CreateSequencedTaskRunnerWithTraits(
+FeedJournalDatabase::FeedJournalDatabase(
+    leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
+    const base::FilePath& database_folder)
+    : FeedJournalDatabase(proto_database_provider->GetDB<JournalStorageProto>(
+          leveldb_proto::ProtoDbType::FEED_JOURNAL_DATABASE,
+          database_folder.AppendASCII(kJournalDatabaseFolder),
+          base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}
 
 FeedJournalDatabase::FeedJournalDatabase(
-    const base::FilePath& database_folder,
     std::unique_ptr<leveldb_proto::ProtoDatabase<JournalStorageProto>>
         storage_database)
-    : database_status_(UNINITIALIZED),
+    : database_status_(InitStatus::kNotInitialized),
       storage_database_(std::move(storage_database)),
       weak_ptr_factory_(this) {
   leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
-  if (base::SysInfo::IsLowEndDevice()) {
-    options.write_buffer_size = kDatabaseWriteBufferSizeBytesForLowEndDevice;
-  } else {
-    options.write_buffer_size = kDatabaseWriteBufferSizeBytes;
-  }
+  options.write_buffer_size = base::SysInfo::IsLowEndDevice()
+                                  ? kDatabaseWriteBufferSizeBytesForLowEndDevice
+                                  : kDatabaseWriteBufferSizeBytes;
 
-  base::FilePath storage_folder =
-      database_folder.AppendASCII(kJournalDatabaseFolder);
   storage_database_->Init(
-      kJournalDatabaseUMAClientName, storage_folder, options,
-      base::BindOnce(&FeedJournalDatabase::OnDatabaseInitialized,
-                     weak_ptr_factory_.GetWeakPtr()));
+      options, base::BindOnce(&FeedJournalDatabase::OnDatabaseInitialized,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 FeedJournalDatabase::~FeedJournalDatabase() = default;
 
 bool FeedJournalDatabase::IsInitialized() const {
-  return INITIALIZED == database_status_;
+  return database_status_ == InitStatus::kOK;
 }
 
 void FeedJournalDatabase::LoadJournal(const std::string& key,
@@ -217,17 +205,9 @@ void FeedJournalDatabase::CommitOperations(
                      std::move(callback)));
 }
 
-void FeedJournalDatabase::OnDatabaseInitialized(bool success) {
-  DCHECK_EQ(database_status_, UNINITIALIZED);
-
-  if (success) {
-    database_status_ = INITIALIZED;
-  } else {
-    database_status_ = INIT_FAILURE;
-    DVLOG(1) << "FeedJournalDatabase init failed.";
-  }
-  UMA_HISTOGRAM_BOOLEAN("ContentSuggestions.Feed.JournalStorage.InitialSuccess",
-                        success);
+void FeedJournalDatabase::OnDatabaseInitialized(InitStatus status) {
+  DCHECK_EQ(database_status_, InitStatus::kNotInitialized);
+  database_status_ = status;
 }
 
 void FeedJournalDatabase::OnGetEntryForLoadJournal(
@@ -235,8 +215,6 @@ void FeedJournalDatabase::OnGetEntryForLoadJournal(
     JournalLoadCallback callback,
     bool success,
     std::unique_ptr<JournalStorageProto> journal) {
-  DVLOG_IF(1, !success) << "FeedJournalDatabase load journal failed.";
-
   std::vector<std::string> results;
   if (journal) {
     for (int i = 0; i < journal->journal_data_size(); ++i) {
@@ -244,7 +222,7 @@ void FeedJournalDatabase::OnGetEntryForLoadJournal(
     }
   }
 
-  ReportLoadEntriesHistograms(success, start_time);
+  ReportLoadTimeHistogram(success, start_time);
 
   std::move(callback).Run(success, std::move(results));
 }
@@ -254,9 +232,7 @@ void FeedJournalDatabase::OnGetEntryForDoesJournalExist(
     CheckExistingCallback callback,
     bool success,
     std::unique_ptr<JournalStorageProto> journal) {
-  DVLOG_IF(1, !success) << "FeedJournalDatabase load journal failed.";
-
-  ReportLoadEntriesHistograms(success, start_time);
+  ReportLoadTimeHistogram(success, start_time);
 
   std::move(callback).Run(success, journal ? true : false);
 }
@@ -266,10 +242,6 @@ void FeedJournalDatabase::OnLoadKeysForLoadAllJournalKeys(
     JournalLoadCallback callback,
     bool success,
     std::unique_ptr<std::vector<std::string>> keys) {
-  DVLOG_IF(1, !success) << "FeedJournalDatabase load journal keys failed.";
-  UMA_HISTOGRAM_BOOLEAN(
-      "ContentSuggestions.Feed.JournalStorage.LoadKeysSuccess", success);
-
   std::vector<std::string> results;
   if (keys) {
     results = std::move(*keys);
@@ -306,10 +278,6 @@ void FeedJournalDatabase::OnGetEntryForCommitJournalMutation(
 void FeedJournalDatabase::OnOperationCommitted(base::TimeTicks start_time,
                                                ConfirmationCallback callback,
                                                bool success) {
-  DVLOG_IF(1, !success) << "FeedJournalDatabase commit failed.";
-  UMA_HISTOGRAM_BOOLEAN(
-      "ContentSuggestions.Feed.JournalStorage.OperationCommitSuccess", success);
-
   base::TimeDelta commit_time = base::TimeTicks::Now() - start_time;
   UMA_HISTOGRAM_TIMES(
       "ContentSuggestions.Feed.JournalStorage.OperationCommitTime",

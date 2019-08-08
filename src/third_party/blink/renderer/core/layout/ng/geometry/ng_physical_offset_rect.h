@@ -43,6 +43,7 @@ struct CORE_EXPORT NGPhysicalOffsetRect {
   void UniteEvenIfEmpty(const NGPhysicalOffsetRect&);
 
   void Expand(const NGPhysicalBoxStrut&);
+  void ExpandEdgesToPixelBoundaries();
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.

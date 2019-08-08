@@ -17,6 +17,7 @@
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
@@ -271,7 +272,7 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
     }
     case ui::VKEY_UP:
     case ui::VKEY_DOWN: {
-      if (actions_view_->has_children()) {
+      if (!actions_view_->children().empty()) {
         return list_view_->HandleVerticalFocusMovement(
             this, event.key_code() == ui::VKEY_UP);
       }
@@ -282,10 +283,6 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
   }
 
   return false;
-}
-
-void SearchResultView::ChildPreferredSizeChanged(views::View* child) {
-  Layout();
 }
 
 void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
@@ -300,7 +297,7 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
     text_bounds.set_width(
         rect.width() - kPreferredIconViewWidth - kTextTrailPadding -
         actions_view_->bounds().width() -
-        (actions_view_->has_children() ? kActionButtonRightMargin : 0));
+        (actions_view_->children().empty() ? 0 : kActionButtonRightMargin));
   } else {
     text_bounds.set_width(rect.width() - kPreferredIconViewWidth -
                           kTextTrailPadding - progress_bar_->bounds().width() -
@@ -523,10 +520,12 @@ void SearchResultView::OnGetContextMenu(
     return;
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
-      std::string(), this, source_type, this,
-      AppListMenuModelAdapter::SEARCH_RESULT, base::OnceClosure());
+      std::string(), GetWidget(), source_type, this,
+      AppListMenuModelAdapter::SEARCH_RESULT, base::OnceClosure(),
+      view_delegate_->GetSearchModel()->tablet_mode());
   context_menu_->Build(std::move(menu));
-  context_menu_->Run(gfx::Rect(point, gfx::Size()), views::MENU_ANCHOR_TOPLEFT,
+  context_menu_->Run(gfx::Rect(point, gfx::Size()),
+                     views::MenuAnchorPosition::kTopLeft,
                      views::MenuRunner::HAS_MNEMONICS);
   source->RequestFocus();
 }
@@ -534,7 +533,8 @@ void SearchResultView::OnGetContextMenu(
 void SearchResultView::ExecuteCommand(int command_id, int event_flags) {
   if (result()) {
     view_delegate_->SearchResultContextMenuItemSelected(
-        result()->id(), command_id, event_flags);
+        result()->id(), command_id, event_flags,
+        ash::mojom::AppListLaunchType::kSearchResult);
   }
 }
 

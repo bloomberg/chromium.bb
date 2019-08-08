@@ -111,7 +111,7 @@ class ChildConnection::IOThreadContext
     process_ = std::move(process);
   }
 
-  void ForceCrashOnIOThread() { child_->Crash(); }
+  void ForceCrashOnIOThread() { child_->CrashHungProcess(); }
 
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   // Usable from the IO thread only.

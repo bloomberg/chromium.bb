@@ -74,7 +74,7 @@ class WebMainRunnerImpl : public WebMainRunner {
     main_loop_->EarlyInitialization();
     main_loop_->MainMessageLoopStart();
     main_loop_->CreateStartupTasks(
-        std::move(params.get_task_scheduler_init_params_callback));
+        std::move(params.get_thread_pool_init_params_callback));
     int result_code = main_loop_->GetResultCode();
     if (result_code > 0)
       return result_code;

@@ -31,7 +31,10 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_CLIENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_CLIENT_H_
 
+#include <memory>
+
 #include "cc/input/layer_selection_bound.h"
+#include "cc/input/overscroll_behavior.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
@@ -48,11 +51,13 @@
 class SkBitmap;
 
 namespace cc {
+class PaintImage;
 struct ViewportLayers;
 }
 
 namespace gfx {
 class Point;
+class Vector2d;
 }
 
 namespace blink {
@@ -68,6 +73,17 @@ struct WebFloatSize;
 class WebWidgetClient {
  public:
   virtual ~WebWidgetClient() = default;
+
+  // Sets an object which the compositor uses to ask blink for mutations on the
+  // compositor thread, in order to modify compositor state directly, avoiding
+  // the need to generate and commit main frames, and avoiding the potentially-
+  // janky main thread. This is used to allow AnimationWorklet to operate in
+  // sync with composited animations running ahead of the main frame state.
+  virtual void SetLayerTreeMutator(std::unique_ptr<cc::LayerTreeMutator>) {}
+
+  // Similar to the |SetLayerTreeMutator|, but used by PaintWorklet.
+  virtual void SetPaintWorkletLayerPainterClient(
+      std::unique_ptr<cc::PaintWorkletLayerPainter>) {}
 
   // Sets the root layer of the tree in the compositor. It may be null to remove
   // the root layer in which case nothing would be shown by the compositor.
@@ -107,13 +123,6 @@ class WebWidgetClient {
   virtual void AutoscrollStart(const WebFloatPoint&) {}
   virtual void AutoscrollFling(const WebFloatSize& velocity) {}
   virtual void AutoscrollEnd() {}
-
-  // Called when the window for this top-level widget should be closed.
-  // WebWidget::Close() should be called asynchronously as a result of this
-  // notification.
-  // TODO(danakj): Move this to WebView::CloseWindowSoon(), so we can call
-  // it when the main frame is remote and there is no top-level widget.
-  virtual void CloseWidgetSoon() {}
 
   // Called to show the widget according to the given policy.
   virtual void Show(WebNavigationPolicy) {}
@@ -155,8 +164,11 @@ class WebWidgetClient {
   virtual void DidOverscroll(const WebFloatSize& overscroll_delta,
                              const WebFloatSize& accumulated_overscroll,
                              const WebFloatPoint& position_in_viewport,
-                             const WebFloatSize& velocity_in_viewport,
-                             const cc::OverscrollBehavior& behavior) {}
+                             const WebFloatSize& velocity_in_viewport) {}
+
+  // Set the browser's behavior when overscroll happens, e.g. whether to glow
+  // or navigate.
+  virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
 
   // Called to update if pointerrawmove events should be sent.
   virtual void HasPointerRawMoveEventHandlers(bool) {}
@@ -219,6 +231,60 @@ class WebWidgetClient {
   // Used to update the active selection bounds. Pass a default-constructed
   // LayerSelection to clear it.
   virtual void RegisterSelection(const cc::LayerSelection&) {}
+
+  // Used to call platform API for FallbackCursorMode.
+  virtual void FallbackCursorModeLockCursor(bool left,
+                                            bool right,
+                                            bool up,
+                                            bool down) {}
+  virtual void FallbackCursorModeSetCursorVisibility(bool visible) {}
+
+  // Informs the compositor if gpu raster will be allowed, or it is blocked
+  // based on heuristics from the content of the page.
+  virtual void SetAllowGpuRasterization(bool) {}
+
+  // Sets the current page scale factor and minimum / maximum limits. Both
+  // limits are initially 1 (no page scale allowed).
+  virtual void SetPageScaleFactorAndLimits(float page_scale_factor,
+                                           float minimum,
+                                           float maximum) {}
+
+  // Starts an animation of the page scale to a target scale factor and scroll
+  // offset.
+  // If use_anchor is true, destination is a point on the screen that will
+  // remain fixed for the duration of the animation.
+  // If use_anchor is false, destination is the final top-left scroll position.
+  virtual void StartPageScaleAnimation(const gfx::Vector2d& destination,
+                                       bool use_anchor,
+                                       float new_page_scale,
+                                       double duration_sec) {}
+
+  // Requests an image decode and will have the |callback| run asynchronously
+  // when it completes. Forces a new main frame to occur that will trigger
+  // pushing the decode through the compositor.
+  virtual void RequestDecode(const cc::PaintImage& image,
+                             base::OnceCallback<void(bool)> callback) {}
+
+  // SwapResult mirrors the values of cc::SwapPromise::DidNotSwapReason, and
+  // should be kept consistent with it. SwapResult additionally adds a success
+  // value (kDidSwap).
+  // These values are written to logs. New enum values can be added, but
+  // existing enums must never be renumbered, deleted or reused.
+  enum SwapResult {
+    kDidSwap = 0,
+    kDidNotSwapSwapFails = 1,
+    kDidNotSwapCommitFails = 2,
+    kDidNotSwapCommitNoUpdate = 3,
+    kDidNotSwapActivationFails = 4,
+    kSwapResultMax,
+  };
+  using ReportTimeCallback =
+      base::OnceCallback<void(SwapResult, base::TimeTicks)>;
+
+  // The |callback| will be fired when the corresponding renderer frame is
+  // submitted (still called "swapped") to the display compositor (either with
+  // DidSwap or DidNotSwap).
+  virtual void NotifySwapTime(ReportTimeCallback callback) {}
 };
 
 }  // namespace blink

@@ -162,6 +162,13 @@ void TestSharedImageInterface::DestroySharedImage(
   shared_images_.erase(mailbox);
 }
 
+gpu::SyncToken TestSharedImageInterface::GenVerifiedSyncToken() {
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
+                            gpu::CommandBufferId(), ++release_id_);
+  sync_token.SetVerifyFlush();
+  return sync_token;
+}
+
 gpu::SyncToken TestSharedImageInterface::GenUnverifiedSyncToken() {
   return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
                         gpu::CommandBufferId(), ++release_id_);

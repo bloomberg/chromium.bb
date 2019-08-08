@@ -57,10 +57,17 @@ const char kAccessibilityAutoclickEventType[] =
 // another event type action, or whether it should stay as the other event type.
 const char kAccessibilityAutoclickRevertToLeftClick[] =
     "settings.a11y.autoclick_revert_to_left_click";
+// Whether Autoclick should stabilize the cursor movement before a click occurs
+// or not.
+const char kAccessibilityAutoclickStabilizePosition[] =
+    "settings.a11y.autoclick_stabilize_position";
 // The default threshold of mouse movement, measured in DIP, that will initiate
 // a new autoclick.
 const char kAccessibilityAutoclickMovementThreshold[] =
     "settings.a11y.autoclick_movement_threshold";
+// The Autoclick menu position on the screen, an mojom::AutoclickMenuPosition.
+const char kAccessibilityAutoclickMenuPosition[] =
+    "settings.a11y.autoclick_menu_position";
 // A boolean pref which determines whether caret highlighting is enabled.
 const char kAccessibilityCaretHighlightEnabled[] =
     "settings.a11y.caret_highlight";
@@ -281,6 +288,12 @@ const char kPowerWaitForInitialUserActivity[] =
 const char kPowerForceNonzeroBrightnessForUserActivity[] =
     "power.force_nonzero_brightness_for_user_activity";
 
+// Boolean controlling whether a shorter suspend delay should be used after the
+// user forces the display off by pressing the power button. Provided to allow
+// policy to control this behavior.
+const char kPowerFastSuspendWhenBacklightsForcedOff[] =
+    "power.fast_suspend_when_backlights_forced_off";
+
 // Boolean controlling whether smart dim model is enabled.
 const char kPowerSmartDimEnabled[] = "power.smart_dim_enabled";
 
@@ -346,6 +359,63 @@ const char kAssistantNumWarmerWelcomeTriggered[] =
 
 // Whether the user is allowed to disconnect and configure VPN connections.
 const char kVpnConfigAllowed[] = "vpn_config_allowed";
+
+// A boolean pref that indicates whether power peak shift is enabled.
+// Ignored unless powerd is configured to honor charging-related prefs.
+const char kPowerPeakShiftEnabled[] = "ash.power.peak_shift_enabled";
+
+// An integer pref that specifies the power peak shift battery threshold in
+// percent.
+// Ignored unless powerd is configured to honor charging-related prefs.
+const char kPowerPeakShiftBatteryThreshold[] =
+    "ash.power.peak_shift_battery_threshold";
+
+// A dictionary pref that specifies the power peak shift day configs.
+// For details see "DevicePowerPeakShiftDayConfig" in policy_templates.json.
+// Ignored unless powerd is configured to honor charging-related prefs.
+const char kPowerPeakShiftDayConfig[] = "ash.power.peak_shift_day_config";
+
+// A boolean pref that indicates whether boot on AC is enabled.
+const char kBootOnAcEnabled[] = "ash.power.boot_on_ac_enabled";
+
+// A boolean pref that indicates whether advanced battery charge mode is
+// enabled.
+// Ignored unless powerd is configured to honor charging-related prefs.
+const char kAdvancedBatteryChargeModeEnabled[] =
+    "ash.power.advanced_battery_charge_mode_enabled";
+
+// A dictionary pref that specifies the advanced battery charge mode day config.
+// For details see "DeviceAdvancedBatteryChargeModeDayConfig" in
+// policy_templates.json.
+// Ignored unless powerd is configured to honor charging-related prefs.
+const char kAdvancedBatteryChargeModeDayConfig[] =
+    "ash.power.advanced_battery_charge_mode_day_config";
+
+// An integer pref that specifies the battery charge mode.
+// For details see "DeviceBatteryChargeMode" in policy_templates.json.
+// Ignored unless powerd is configured to honor charging-related prefs.
+const char kBatteryChargeMode[] = "ash.power.battery_charge_mode";
+
+// An integer pref that specifies the battery charge custom start charging in
+// percent.
+// For details see "DeviceBatteryChargeCustomStartCharging" in
+// policy_templates.json.
+// Ignored unless powerd is configured to honor charging-related prefs.
+const char kBatteryChargeCustomStartCharging[] =
+    "ash.power.battery_charge_custom_start_charging";
+
+// An integer pref that specifies the battery charge custom stop charging in
+// percent.
+// For details see "DeviceBatteryChargeCustomStopCharging" in
+// policy_templates.json.
+// Ignored unless powerd is configured to honor charging-related prefs.
+const char kBatteryChargeCustomStopCharging[] =
+    "ash.power.battery_charge_custom_stop_charging";
+
+// A boolean pref that indicates whether USB power share is enabled.
+// For details see "DeviceUsbPowerShareEnabled" in policy_templates.json.
+// Ignored unless powerd is configured to honor charging-related prefs.
+const char kUsbPowerShareEnabled[] = "ash.power.usb_power_share_enabled";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

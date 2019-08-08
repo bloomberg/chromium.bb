@@ -31,7 +31,6 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/cloud/message_util.h"
@@ -72,7 +71,6 @@
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "components/user_manager/user_manager.h"
 #else
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
@@ -603,9 +601,10 @@ PolicyUIHandler::PolicyUIHandler()
 PolicyUIHandler::~PolicyUIHandler() {
   GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
   GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
-  policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(
-          Profile::FromWebUI(web_ui())->GetOriginalProfile())->registry();
+  policy::SchemaRegistry* registry = Profile::FromWebUI(web_ui())
+                                         ->GetOriginalProfile()
+                                         ->GetPolicySchemaRegistryService()
+                                         ->registry();
   registry->RemoveObserver(this);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -651,6 +650,7 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
 }
 
 void PolicyUIHandler::RegisterMessages() {
+  Profile* profile = Profile::FromWebUI(web_ui());
 #if defined(OS_CHROMEOS)
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -668,7 +668,6 @@ void PolicyUIHandler::RegisterMessages() {
 
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
-  Profile* profile = Profile::FromWebUI(web_ui());
   policy::DeviceLocalAccountPolicyService* local_account_service =
       user_manager->IsLoggedInAsPublicAccount()
           ? connector->GetDeviceLocalAccountPolicyService()
@@ -694,8 +693,7 @@ void PolicyUIHandler::RegisterMessages() {
   }
 #else
   policy::UserCloudPolicyManager* user_cloud_policy_manager =
-      policy::UserCloudPolicyManagerFactory::GetForBrowserContext(
-          web_ui()->GetWebContents()->GetBrowserContext());
+      profile->GetUserCloudPolicyManager();
   if (user_cloud_policy_manager) {
     user_status_provider_ = std::make_unique<UserCloudPolicyStatusProvider>(
         user_cloud_policy_manager->core());
@@ -733,9 +731,10 @@ void PolicyUIHandler::RegisterMessages() {
   extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
       ->AddObserver(this);
 #endif
-  policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(
-          Profile::FromWebUI(web_ui())->GetOriginalProfile())->registry();
+  policy::SchemaRegistry* registry = Profile::FromWebUI(web_ui())
+                                         ->GetOriginalProfile()
+                                         ->GetPolicySchemaRegistryService()
+                                         ->registry();
   registry->AddObserver(this);
 
   web_ui()->RegisterMessageCallback(
@@ -783,9 +782,9 @@ void PolicyUIHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
 base::Value PolicyUIHandler::GetPolicyNames() const {
   base::DictionaryValue names;
   Profile* profile = Profile::FromWebUI(web_ui());
-  policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(
-          profile->GetOriginalProfile())->registry();
+  policy::SchemaRegistry* registry = profile->GetOriginalProfile()
+                                         ->GetPolicySchemaRegistryService()
+                                         ->registry();
   scoped_refptr<policy::SchemaMap> schema_map = registry->schema_map();
 
   // Add Chrome policy names.

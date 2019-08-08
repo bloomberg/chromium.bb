@@ -41,20 +41,19 @@ class CORE_EXPORT LayoutTextFragment : public LayoutText {
  public:
   ~LayoutTextFragment() override;
 
-  // |style| is used for checking |ForceLegacyLayout()|.
-  static LayoutTextFragment* Create(const ComputedStyle& style,
-                                    Node*,
+  static LayoutTextFragment* Create(Node*,
                                     StringImpl*,
                                     int start_offset,
-                                    int length);
-  static LayoutTextFragment* CreateAnonymous(const ComputedStyle& style,
-                                             PseudoElement&,
-                                             StringImpl*);
-  static LayoutTextFragment* CreateAnonymous(const ComputedStyle& style,
-                                             PseudoElement&,
+                                    int length,
+                                    LegacyLayout);
+  static LayoutTextFragment* CreateAnonymous(PseudoElement&,
+                                             StringImpl*,
+                                             LegacyLayout);
+  static LayoutTextFragment* CreateAnonymous(PseudoElement&,
                                              StringImpl*,
                                              unsigned start,
-                                             unsigned length);
+                                             unsigned length,
+                                             LegacyLayout);
 
   Position PositionForCaretOffset(unsigned) const override;
   base::Optional<unsigned> CaretOffsetForPosition(
@@ -104,6 +103,7 @@ class CORE_EXPORT LayoutTextFragment : public LayoutText {
   LayoutText* GetFirstLetterPart() const override;
 
  protected:
+  friend class LayoutObjectFactory;
   LayoutTextFragment(Node*, StringImpl*, int start_offset, int length);
   void WillBeDestroyed() override;
 

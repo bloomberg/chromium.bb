@@ -19,11 +19,11 @@
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/device_info/device_info_sync_service_impl.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/model/model_type_store_service.h"
-#include "ui/base/device_form_factor.h"
 
 // static
 syncer::DeviceInfoSyncService* DeviceInfoSyncServiceFactory::GetForProfile(
@@ -73,6 +73,8 @@ KeyedService* DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
 
   syncer::LocalDeviceInfoProviderImpl::SigninScopedDeviceIdCallback
       signin_scoped_device_id_callback;
+  syncer::LocalDeviceInfoProviderImpl::SendTabToSelfReceivingEnabledCallback
+      send_tab_to_self_receiving_enabled_callback;
   bool local_sync_backend_enabled = false;
 
 // Since the local sync backend is currently only supported on Windows don't
@@ -90,11 +92,15 @@ KeyedService* DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
         base::BindRepeating(&GetSigninScopedDeviceIdForProfile, profile);
   }
 
+  send_tab_to_self_receiving_enabled_callback = base::BindRepeating(
+      &send_tab_to_self::IsReceivingEnabledByUserOnThisDevice,
+      profile->GetPrefs());
+
   auto local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           chrome::GetChannel(), chrome::GetVersionString(),
-          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
-          signin_scoped_device_id_callback);
+          signin_scoped_device_id_callback,
+          send_tab_to_self_receiving_enabled_callback);
   return new syncer::DeviceInfoSyncServiceImpl(
       ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory(),
       std::move(local_device_info_provider));

@@ -77,6 +77,54 @@ bool CompareN32Pixels(void* actual_pixels,
     EXPECT_EQ(height, d);                                  \
   } while (false)
 
+// CreateTracedValue should not crash if there are different numbers of
+// visual_rect are paint_op
+TEST(DisplayItemListTest, TraceEmptyVisualRect) {
+  PaintFlags red_paint;
+  red_paint.setColor(SK_ColorRED);
+  auto list = base::MakeRefCounted<DisplayItemList>();
+
+  gfx::Point offset(8, 9);
+
+  list->StartPaint();
+  list->push<DrawRectOp>(SkRect::MakeEmpty(), red_paint);
+  // The rect is empty to cause rtree generation to skip it.
+  list->EndPaintOfUnpaired(gfx::Rect(offset, gfx::Size(0, 10)));
+  list->StartPaint();
+  list->push<DrawRectOp>(SkRect::MakeXYWH(0, 0, 10, 10), red_paint);
+  // This rect is not empty.
+  list->EndPaintOfUnpaired(gfx::Rect(offset, gfx::Size(10, 10)));
+  list->Finalize();
+
+  // Pass: we don't crash
+  std::unique_ptr<base::Value> root =
+      list->CreateTracedValue(true)->ToBaseValue();
+
+  const base::DictionaryValue* root_dict;
+  ASSERT_TRUE(root->GetAsDictionary(&root_dict));
+  const base::DictionaryValue* params_dict;
+  ASSERT_TRUE(root_dict->GetDictionary("params", &params_dict));
+  const base::ListValue* items;
+  ASSERT_TRUE(params_dict->GetList("items", &items));
+  ASSERT_EQ(2u, items->GetSize());
+
+  const base::DictionaryValue* item_dict;
+  const base::ListValue* visual_rect;
+  std::string name;
+
+  ASSERT_TRUE(items->GetDictionary(0, &item_dict));
+  ASSERT_TRUE(item_dict->GetList("visual_rect", &visual_rect));
+  EXPECT_TRACED_RECT(0, 0, 0, 0, visual_rect);
+  EXPECT_TRUE(item_dict->GetString("name", &name));
+  EXPECT_EQ("DrawRect", name);
+
+  ASSERT_TRUE(items->GetDictionary(1, &item_dict));
+  ASSERT_TRUE(item_dict->GetList("visual_rect", &visual_rect));
+  EXPECT_TRACED_RECT(8, 9, 10, 10, visual_rect);
+  EXPECT_TRUE(item_dict->GetString("name", &name));
+  EXPECT_EQ("DrawRect", name);
+}
+
 TEST(DisplayItemListTest, SingleUnpairedRange) {
   gfx::Rect layer_rect(100, 100);
   PaintFlags blue_flags;

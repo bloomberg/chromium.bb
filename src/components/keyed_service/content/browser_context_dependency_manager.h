@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
+#include "base/macros.h"
 #include "components/keyed_service/core/dependency_manager.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 
@@ -38,7 +39,6 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
   // a key to prevent multiple registrations on the same BrowserContext in
   // tests.
   void RegisterProfilePrefsForServices(
-      content::BrowserContext* context,
       user_prefs::PrefRegistrySyncable* registry);
 
   // Called by each BrowserContext to alert us of its creation. Several
@@ -103,6 +103,8 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
   // CreateBrowserContextServices() or CreateBrowserContextServicesForTest().
   base::CallbackList<void(content::BrowserContext*)>
       will_create_browser_context_services_callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserContextDependencyManager);
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_DEPENDENCY_MANAGER_H_

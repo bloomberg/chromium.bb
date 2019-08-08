@@ -195,18 +195,6 @@ void SendVideoCaptureLogMessage(const std::string& message) {
   MediaStreamManager::SendMessageToNativeLog("video capture: " + message);
 }
 
-MediaStreamType AdjustAudioStreamTypeBasedOnCommandLineSwitches(
-    MediaStreamType stream_type) {
-  if ((stream_type != blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE) &&
-      (stream_type != blink::MEDIA_DISPLAY_AUDIO_CAPTURE))
-    return stream_type;
-  const bool audio_support_flag_for_desktop_share =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableAudioSupportForDesktopShare);
-  return audio_support_flag_for_desktop_share ? stream_type
-                                              : blink::MEDIA_NO_SERVICE;
-}
-
 // Returns MediaStreamDevices for getDisplayMedia() calls.
 // Returns a video device built with DesktopMediaID with fake initializers if
 // |kUseFakeDeviceForMediaStream| is set. Returns a video device with
@@ -261,6 +249,28 @@ MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(bool request_audio) {
                        media::AudioDeviceDescription::kDefaultDeviceId,
                        "Fake audio");
   return devices;
+}
+
+void FinalizeGetMediaDeviceIDForHMAC(
+    blink::MediaDeviceType type,
+    const std::string& salt,
+    const url::Origin& security_origin,
+    const std::string& source_id,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::OnceCallback<void(const base::Optional<std::string>&)> callback,
+    const MediaDeviceEnumeration& enumeration) {
+  DCHECK(type == blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT ||
+         type == blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT);
+  for (const auto& device : enumeration[type]) {
+    if (MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
+            salt, security_origin, source_id, device.device_id)) {
+      task_runner->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), device.device_id));
+      return;
+    }
+  }
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(std::move(callback), base::nullopt));
 }
 
 }  // namespace
@@ -1205,8 +1215,7 @@ void MediaStreamManager::SetUpRequest(const std::string& label) {
     return;  // This can happen if the request has been canceled.
   }
 
-  request->SetAudioType(AdjustAudioStreamTypeBasedOnCommandLineSwitches(
-      request->controls.audio.stream_type));
+  request->SetAudioType(request->controls.audio.stream_type);
   request->SetVideoType(request->controls.video.stream_type);
 
   const bool is_display_capture =
@@ -2123,6 +2132,29 @@ bool MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
 }
 
 // static
+void MediaStreamManager::GetMediaDeviceIDForHMAC(
+    blink::MediaStreamType stream_type,
+    std::string salt,
+    url::Origin security_origin,
+    std::string hmac_device_id,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::OnceCallback<void(const base::Optional<std::string>&)> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(stream_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         stream_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE);
+  MediaStreamManager* msm = g_media_stream_manager_tls_ptr.Pointer()->Get();
+  blink::MediaDeviceType device_type = ConvertToMediaDeviceType(stream_type);
+  MediaDevicesManager::BoolDeviceTypes requested_types;
+  requested_types[device_type] = true;
+  msm->media_devices_manager()->EnumerateDevices(
+      requested_types,
+      base::BindOnce(&FinalizeGetMediaDeviceIDForHMAC, device_type,
+                     std::move(salt), std::move(security_origin),
+                     std::move(hmac_device_id), std::move(task_runner),
+                     std::move(callback)));
+}
+
+// static
 bool MediaStreamManager::IsOriginAllowed(int render_process_id,
                                          const url::Origin& origin) {
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
@@ -2168,13 +2200,6 @@ MediaStreamDevices MediaStreamManager::ConvertToMediaStreamDevices(
                          info.video_facing, info.group_id);
   }
 
-  if (stream_type != blink::MEDIA_DEVICE_VIDEO_CAPTURE)
-    return devices;
-
-  for (auto& device : devices) {
-    device.camera_calibration =
-        video_capture_manager()->GetCameraCalibration(device.id);
-  }
   return devices;
 }
 

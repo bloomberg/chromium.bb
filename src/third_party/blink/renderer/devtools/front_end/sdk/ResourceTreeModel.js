@@ -411,6 +411,15 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
       return {url: response.url, data: null, errors: []};
     return {url: response.url, data: response.data || null, errors: response.errors};
   }
+
+  /**
+   * @return {!Promise<!Array<string>>}
+   */
+  async getInstallabilityErrors() {
+    const response = await this._agent.invoke_getInstallabilityErrors({});
+    return response.errors || [];
+  }
+
   /**
    * @param {!SDK.ExecutionContext} a
    * @param {!SDK.ExecutionContext} b
@@ -457,23 +466,63 @@ SDK.ResourceTreeModel = class extends SDK.SDKModel {
     return SDK.ExecutionContext.comparator(a, b);
   }
 
-  _updateSecurityOrigins() {
+  /**
+   * @return {!SDK.ResourceTreeModel.SecurityOriginData}
+   */
+  _getSecurityOriginData() {
+    /** @type {!Set<string>} */
     const securityOrigins = new Set();
+
     let mainSecurityOrigin = null;
+    let unreachableMainSecurityOrigin = null;
     for (const frame of this._frames.values()) {
       const origin = frame.securityOrigin;
       if (!origin)
         continue;
+
       securityOrigins.add(origin);
-      if (frame.isMainFrame())
+      if (frame.isMainFrame()) {
         mainSecurityOrigin = origin;
+        if (frame.unreachableUrl()) {
+          const unreachableParsed = new Common.ParsedURL(frame.unreachableUrl());
+          unreachableMainSecurityOrigin = unreachableParsed.securityOrigin();
+        }
+      }
     }
-    this._securityOriginManager.updateSecurityOrigins(securityOrigins);
-    this._securityOriginManager.setMainSecurityOrigin(mainSecurityOrigin || '');
+    return {
+      securityOrigins: securityOrigins,
+      mainSecurityOrigin: mainSecurityOrigin,
+      unreachableMainSecurityOrigin: unreachableMainSecurityOrigin
+    };
+  }
+
+  _updateSecurityOrigins() {
+    const data = this._getSecurityOriginData();
+    this._securityOriginManager.setMainSecurityOrigin(
+        data.mainSecurityOrigin || '', data.unreachableMainSecurityOrigin || '');
+    this._securityOriginManager.updateSecurityOrigins(data.securityOrigins);
+  }
+
+  /**
+   * @return {?string}
+   */
+  getMainSecurityOrigin() {
+    const data = this._getSecurityOriginData();
+    return data.mainSecurityOrigin || data.unreachableMainSecurityOrigin;
   }
 };
 
 SDK.SDKModel.register(SDK.ResourceTreeModel, SDK.Target.Capability.DOM, true);
+
+
+/**
+ * @typedef {{
+ *      securityOrigins: !Set<string>,
+ *      mainSecurityOrigin: ?string,
+ *      unreachableMainSecurityOrigin: ?string
+ * }}
+ */
+SDK.ResourceTreeModel.SecurityOriginData;
 
 /** @enum {symbol} */
 SDK.ResourceTreeModel.Events = {
@@ -520,6 +569,7 @@ SDK.ResourceTreeFrame = class {
       this._url = payload.url;
       this._securityOrigin = payload.securityOrigin;
       this._mimeType = payload.mimeType;
+      this._unreachableUrl = payload.unreachableUrl || '';
     }
 
     this._creationStackTrace = creationStackTrace;
@@ -536,6 +586,24 @@ SDK.ResourceTreeFrame = class {
 
     if (this._parentFrame)
       this._parentFrame._childFrames.push(this);
+  }
+
+
+  /**
+   * @param {!Protocol.Page.Frame} framePayload
+   */
+  _navigate(framePayload) {
+    this._loaderId = framePayload.loaderId;
+    this._name = framePayload.name;
+    this._url = framePayload.url;
+    this._securityOrigin = framePayload.securityOrigin;
+    this._mimeType = framePayload.mimeType;
+    this._unreachableUrl = framePayload.unreachableUrl || '';
+    const mainResource = this._resourcesMap[this._url];
+    this._resourcesMap = {};
+    this._removeChildFrames();
+    if (mainResource && mainResource.loaderId === this._loaderId)
+      this.addResource(mainResource);
   }
 
   /**
@@ -571,6 +639,13 @@ SDK.ResourceTreeFrame = class {
    */
   get securityOrigin() {
     return this._securityOrigin;
+  }
+
+  /**
+   * @return {string}
+   */
+  unreachableUrl() {
+    return this._unreachableUrl;
   }
 
   /**
@@ -638,23 +713,6 @@ SDK.ResourceTreeFrame = class {
 
   isTopFrame() {
     return !this._parentFrame && !this._crossTargetParentFrameId;
-  }
-
-  /**
-   * @param {!Protocol.Page.Frame} framePayload
-   */
-  _navigate(framePayload) {
-    this._loaderId = framePayload.loaderId;
-    this._name = framePayload.name;
-    this._url = framePayload.url;
-    this._securityOrigin = framePayload.securityOrigin;
-    this._mimeType = framePayload.mimeType;
-
-    const mainResource = this._resourcesMap[this._url];
-    this._resourcesMap = {};
-    this._removeChildFrames();
-    if (mainResource && mainResource.loaderId === this._loaderId)
-      this.addResource(mainResource);
   }
 
   /**
@@ -848,6 +906,13 @@ SDK.PageDispatcher = class {
    * @param {!Protocol.Page.FrameId} frameId
    */
   frameStoppedLoading(frameId) {
+  }
+
+  /**
+   * @override
+   * @param {!Protocol.Page.FrameId} frameId
+   */
+  frameRequestedNavigation(frameId) {
   }
 
   /**

@@ -83,6 +83,7 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
 
  private:
   class OutputVectorRef;
+  struct AsyncMutationRequest;
 
   using InputMap = HashMap<int, std::unique_ptr<AnimationWorkletInput>>;
 
@@ -135,19 +136,17 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
   // the mutation cycle.
   scoped_refptr<OutputVectorRef> outputs_;
 
-  // Input queued for the next mutation cycle, which will automatically be
-  // triggered at the completion of the current cycle. Only one collection of
-  // inputs can be queued at any point in time. In a typical frame, we expect
-  // one request for the active tree, and one for the pending tree. The active
-  // tree mutation is best effort will be dropped when busy. A pending tree
-  // mutation is queued to ensure initial values are resolved. The pending tree
-  // activation is blocked until the previous request completes preventing the
-  // need to queue multiple requests.
-  std::unique_ptr<AnimationWorkletDispatcherInput> queued_mutator_input_;
-
-  // Active and queued callbacks for the completion of an async mutation cycle.
+  // Active callback for the completion of an async mutation cycle.
   AsyncMutationCompleteCallback on_async_mutation_complete_;
-  AsyncMutationCompleteCallback queued_on_async_mutation_complete_;
+
+  // Queues for pending mutation requests. Each queue can hold a single request.
+  // On completion of a mutation cycle, a fresh mutation cycle is started if
+  // either queue contains a request. The priority queue takes precedence if
+  // both queues contain a request.  The request stored in the replaceable queue
+  // can be updated in a later async mutation call, whereas the priority queue
+  // entry cannot, as each priority request is required to run.
+  std::unique_ptr<AsyncMutationRequest> queued_priority_request;
+  std::unique_ptr<AsyncMutationRequest> queued_replaceable_request;
 
   base::WeakPtrFactory<AnimationWorkletMutatorDispatcherImpl> weak_factory_;
 

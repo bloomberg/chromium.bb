@@ -155,10 +155,6 @@
         <structure type="chrome_scaled_image" name="IDR_ARC_PLAY_STORE_OPTIN_IN_PROGRESS_NOTIFICATION" file="cros/notification_play_store_optin_in_progress.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EASYUNLOCK_ENABLED" file="cros/notification_easyunlock_enabled.png" />
       </if>
-      <if expr="not is_android">
-        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CALCULATOR_ROUND" file="common/calculator_round_24.png" />
-        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TRANSLATION_ROUND" file="common/translate_round_32.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_PLUGINS_FAVICON" file="common/favicon_extensions.png" />
       <structure type="chrome_scaled_image" name="IDR_PRERENDER" file="common/prerender_succeed_icon.png" />
       <if expr="chromeos">
@@ -210,17 +206,35 @@
       <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_25" file="common/profile_avatar_sun_cloud.png" />
       <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_26" file="common/profile_avatar_placeholder.png" />
       <if expr="not is_android and not chromeos">
-        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_27" file="common/origami/avatar_cat.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_28" file="common/origami/avatar_corgi.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_29" file="common/origami/avatar_dragon.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_30" file="common/origami/avatar_elephant.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_31" file="common/origami/avatar_fox.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_32" file="common/origami/avatar_monkey.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_33" file="common/origami/avatar_panda.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_34" file="common/origami/avatar_penguin.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_35" file="common/origami/avatar_pinkbutterfly.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_36" file="common/origami/avatar_rabbit.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_37" file="common/origami/avatar_unicorn.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_27" file="common/modern_avatars/origami/avatar_cat.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_28" file="common/modern_avatars/origami/avatar_corgi.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_29" file="common/modern_avatars/origami/avatar_dragon.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_30" file="common/modern_avatars/origami/avatar_elephant.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_31" file="common/modern_avatars/origami/avatar_fox.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_32" file="common/modern_avatars/origami/avatar_monkey.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_33" file="common/modern_avatars/origami/avatar_panda.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_34" file="common/modern_avatars/origami/avatar_penguin.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_35" file="common/modern_avatars/origami/avatar_pinkbutterfly.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_36" file="common/modern_avatars/origami/avatar_rabbit.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_37" file="common/modern_avatars/origami/avatar_unicorn.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_38" file="common/modern_avatars/illustration/avatar_basketball.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_39" file="common/modern_avatars/illustration/avatar_bike.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_40" file="common/modern_avatars/illustration/avatar_bird.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_41" file="common/modern_avatars/illustration/avatar_cheese.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_42" file="common/modern_avatars/illustration/avatar_football.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_43" file="common/modern_avatars/illustration/avatar_ramen.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_44" file="common/modern_avatars/illustration/avatar_sunglasses.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_45" file="common/modern_avatars/illustration/avatar_sushi.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_46" file="common/modern_avatars/illustration/avatar_tamagotchi.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_47" file="common/modern_avatars/illustration/avatar_vinyl.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_48" file="common/modern_avatars/abstract/avatar_avocado.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_49" file="common/modern_avatars/abstract/avatar_cappuccino.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_50" file="common/modern_avatars/abstract/avatar_icecream.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_51" file="common/modern_avatars/abstract/avatar_icewater.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_52" file="common/modern_avatars/abstract/avatar_melon.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_53" file="common/modern_avatars/abstract/avatar_onigiri.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_54" file="common/modern_avatars/abstract/avatar_pizza.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_55" file="common/modern_avatars/abstract/avatar_sandwich.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE" file="common/profile_avatar_placeholder_large.png" />
       <structure type="chrome_scaled_image" name="IDR_PROFILES_DICE_TURN_ON_SYNC" file="common/turn_on_sync_illustration.png" />
@@ -309,21 +323,6 @@
         <structure type="chrome_scaled_image" name="IDR_WEBSTORE_ICON_16" file="google_chrome/webstore_icon_16.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBSTORE_ICON_24" file="google_chrome/webstore_icon_24.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBSTORE_ICON_32" file="google_chrome/webstore_icon_32.png" />
-      </if>
-      <if expr="is_win or is_macosx or desktop_linux or chromeos">
-        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_BLE" file="common/webauthn/ble.png" />
-        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_BLE_NAME" file="common/webauthn/ble_name.png" />
-        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_BLE_TAP" file="common/webauthn/ble_tap.png" />
-        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_BLE_PIN" file="common/webauthn/ble_pin.png" />
-        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH" file="common/webauthn/error_bt.png" />
-        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_ERROR" file="common/webauthn/error.png" />
-        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_PHONE" file="common/webauthn/phone.png" />
-        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_USB" file="common/webauthn/usb.png" />
-        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_WELCOME" file="common/webauthn/welcome.png" />
-        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_PIN" file="common/webauthn/usb.png" />
-      </if>
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_TOUCHID" file="common/webauthn/touchid.png" />
       </if>
     </structures>
   </release>

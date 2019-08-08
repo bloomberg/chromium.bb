@@ -7,7 +7,6 @@
 #include <gbm.h>
 #include <stdlib.h>
 #include <xf86drm.h>
-
 #include <memory>
 #include <utility>
 
@@ -31,6 +30,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
+#include "ui/ozone/platform/drm/gpu/drm_overlay_manager_gpu.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_message_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
@@ -244,8 +244,8 @@ class OzonePlatformGbm : public OzonePlatform {
     }
 
     display_manager_ = std::make_unique<DrmDisplayHostManager>(
-        adapter, device_manager_.get(), overlay_manager_host.get(),
-        event_factory_ozone_->input_controller());
+        adapter, device_manager_.get(), &host_properties_,
+        overlay_manager_host.get(), event_factory_ozone_->input_controller());
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
 
     if (using_mojo_) {
@@ -278,6 +278,11 @@ class OzonePlatformGbm : public OzonePlatform {
       drm_thread_proxy_->BindThreadIntoMessagingProxy(itmp);
     }
 
+    if (args.viz_display_compositor) {
+      overlay_manager_ =
+          std::make_unique<DrmOverlayManagerGpu>(drm_thread_proxy_.get());
+    }
+
     // If InitializeGPU and InitializeUI are invoked on the same thread, startup
     // sequencing is complicated because tasks are queued on the unbound mojo
     // pipe connecting the UI (the host) to the DRM thread before the DRM thread
@@ -294,6 +299,11 @@ class OzonePlatformGbm : public OzonePlatform {
       AfterSandboxEntry();
       host_drm_device_->BlockingStartDrmDevice();
     }
+  }
+
+  const InitializedHostProperties& GetInitializedHostProperties() override {
+    DCHECK(has_initialized_ui());
+    return host_properties_;
   }
 
   // The DRM thread needs to be started late because we need to wait for the
@@ -347,6 +357,7 @@ class OzonePlatformGbm : public OzonePlatform {
   std::unique_ptr<EventFactoryEvdev> event_factory_ozone_;
   std::unique_ptr<DrmDisplayHostManager> display_manager_;
   std::unique_ptr<DrmOverlayManager> overlay_manager_;
+  InitializedHostProperties host_properties_;
 
 #if BUILDFLAG(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;

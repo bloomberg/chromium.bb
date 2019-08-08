@@ -33,7 +33,6 @@
 #include "base/macros.h"
 #include "cc/paint/node_holder.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
 #include "third_party/blink/renderer/platform/graphics/dash_array.h"
 #include "third_party/blink/renderer/platform/graphics/draw_looper_builder.h"
@@ -268,13 +267,10 @@ class PLATFORM_EXPORT GraphicsContext {
                 const FloatPoint&,
                 const cc::NodeHolder&);
 
+  // TODO(layout-dev): This method is only used by SVGInlineTextBoxPainter, see
+  // if we can change that to use the four parameter version above.
   void DrawText(const Font&,
                 const TextRunPaintInfo&,
-                const FloatPoint&,
-                const PaintFlags&,
-                const cc::NodeHolder&);
-  void DrawText(const Font&,
-                const NGTextFragmentPaintInfo&,
                 const FloatPoint&,
                 const PaintFlags&,
                 const cc::NodeHolder&);
@@ -413,13 +409,6 @@ class PLATFORM_EXPORT GraphicsContext {
   void DrawTextInternal(const Font&,
                         const TextPaintInfo&,
                         const FloatPoint&,
-                        const PaintFlags&,
-                        const cc::NodeHolder&);
-
-  template <typename TextPaintInfo>
-  void DrawTextInternal(const Font&,
-                        const TextPaintInfo&,
-                        const FloatPoint&,
                         const cc::NodeHolder&);
 
   template <typename TextPaintInfo>
@@ -437,6 +426,12 @@ class PLATFORM_EXPORT GraphicsContext {
   // Helpers for drawing a focus ring (drawFocusRing)
   void DrawFocusRingPath(const SkPath&, const Color&, float width);
   void DrawFocusRingRect(const SkRect&, const Color&, float width);
+
+  void DrawFocusRingInternal(const Vector<IntRect>&,
+                             float width,
+                             int offset,
+                             const Color&,
+                             bool is_outset);
 
   // SkCanvas wrappers.
   void ClipRRect(const SkRRect&,
@@ -469,7 +464,8 @@ class PLATFORM_EXPORT GraphicsContext {
                                const Color&);
 
   class DarkModeFlags;
-  bool ShouldApplyDarkModeFilterToImage(Image&);
+  bool ShouldApplyDarkModeFilterToImage(Image& image,
+                                        const FloatRect& src_rect);
   Color ApplyDarkModeFilter(const Color& input) const;
 
   // null indicates painting is contextDisabled. Never delete this object.
@@ -503,7 +499,6 @@ class PLATFORM_EXPORT GraphicsContext {
 
   DarkModeSettings dark_mode_settings_;
   sk_sp<SkColorFilter> dark_mode_filter_;
-  DarkModeImageClassifier dark_mode_image_classifier_;
 
   unsigned printing_ : 1;
   unsigned in_drawing_recorder_ : 1;

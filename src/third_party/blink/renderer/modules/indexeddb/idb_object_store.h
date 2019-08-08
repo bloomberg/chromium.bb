@@ -51,12 +51,6 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBObjectStore* Create(scoped_refptr<IDBObjectStoreMetadata> metadata,
-                                IDBTransaction* transaction) {
-    return MakeGarbageCollected<IDBObjectStore>(std::move(metadata),
-                                                transaction);
-  }
-
   IDBObjectStore(scoped_refptr<IDBObjectStoreMetadata>, IDBTransaction*);
   ~IDBObjectStore() override = default;
 
@@ -86,12 +80,12 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   IDBRequest* getKey(ScriptState*, const ScriptValue& key, ExceptionState&);
   IDBRequest* getAll(ScriptState*,
                      const ScriptValue& range,
-                     unsigned long max_count,
+                     uint32_t max_count,
                      ExceptionState&);
   IDBRequest* getAll(ScriptState*, const ScriptValue& range, ExceptionState&);
   IDBRequest* getAllKeys(ScriptState*,
                          const ScriptValue& range,
-                         unsigned long max_count,
+                         uint32_t max_count,
                          ExceptionState&);
   IDBRequest* getAllKeys(ScriptState*,
                          const ScriptValue& range,

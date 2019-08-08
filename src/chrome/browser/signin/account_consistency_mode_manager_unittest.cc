@@ -25,11 +25,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-#include "base/test/scoped_feature_list.h"
-#include "ui/base/ui_base_features.h"
-#endif
-
 // Check the default account consistency method.
 TEST(AccountConsistencyModeManagerTest, DefaultValue) {
   content::TestBrowserThreadBundle test_thread_bundle;
@@ -312,21 +307,3 @@ TEST(AccountConsistencyModeManagerTest, MirrorChildAccount) {
             AccountConsistencyModeManager::GetMethodForProfile(&profile));
 }
 #endif  // BUILDFLAG(ENABLE_MIRROR)
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-// Checks that the kExperimentalUi enables Dice migration.
-TEST(AccountConsistencyModeManagerTest, ExperimentalUI) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kExperimentalUi);
-
-  content::TestBrowserThreadBundle test_thread_bundle;
-  TestingProfile profile;
-#if defined(OS_CHROMEOS)
-  EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
-            AccountConsistencyModeManager::GetMethodForProfile(&profile));
-#else
-  EXPECT_EQ(signin::AccountConsistencyMethod::kDiceMigration,
-            AccountConsistencyModeManager::GetMethodForProfile(&profile));
-#endif
-}
-#endif

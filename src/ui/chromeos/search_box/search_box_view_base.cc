@@ -403,7 +403,7 @@ void SearchBoxViewBase::NotifyGestureEvent() {
   search_box_->DestroyTouchSelection();
 }
 
-ax::mojom::Role SearchBoxViewBase::GetAccessibleWindowRole() const {
+ax::mojom::Role SearchBoxViewBase::GetAccessibleWindowRole() {
   // Default role of root view is ax::mojom::Role::kWindow which traps ChromeVox
   // focus within the root view. Assign ax::mojom::Role::kGroup here to allow
   // the focus to move from elements in search box to app list view.

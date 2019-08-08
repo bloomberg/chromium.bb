@@ -43,6 +43,8 @@ constexpr int kDefaultDatabaseQuota = -1;
 
 class WebTestDelegate {
  public:
+  virtual ~WebTestDelegate() = default;
+
   // Set and clear the edit command to execute on the next call to
   // WebViewClient::handleCurrentKeyboardEvent().
   virtual void ClearEditCommand() = 0;
@@ -253,9 +255,6 @@ class WebTestDelegate {
   // Forces a text input state update for the client of WebFrameWidget
   // associated with |frame|.
   virtual void ForceTextInputStateUpdate(blink::WebLocalFrame* frame) = 0;
-
- protected:
-  virtual ~WebTestDelegate() {}
 };
 
 }  // namespace test_runner

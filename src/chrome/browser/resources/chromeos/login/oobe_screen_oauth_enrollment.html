@@ -7,7 +7,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="stylesheet" href="gaia_card_parameters.css">
 
-<div id="oauth-enrollment" class="step no-logo hidden" hidden>
+<div id="oauth-enrollment" class="step hidden" hidden>
   <div id="oauth-enroll-step-contents">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <div id="oauth-enroll-step-signin">
@@ -17,7 +17,8 @@
           <webview id="oauth-enroll-auth-view" name="oauth-enroll-auth-view">
           </webview>
         </div>
-        <div slot="bottom-buttons" class="flex layout horizontal center">
+        <div slot="bottom-buttons"
+             class="flex layout horizontal center self-start">
           <oobe-back-button id="oobe-signin-back-button"></oobe-back-button>
         </div>
       </oobe-dialog>
@@ -31,7 +32,7 @@
           <paper-progress slot="progress" indeterminate>
           </paper-progress>
 
-          <div slot="footer" class="flex layout vertical">
+          <div slot="footer" class="flex layout vertical" role="alert">
             <div class="oauth-enroll-step-message">
               <span i18n-content="oauthEnrollWorking"></span>
             </div>

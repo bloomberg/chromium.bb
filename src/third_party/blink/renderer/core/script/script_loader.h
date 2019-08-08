@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/script/script_runner.h"
 #include "third_party/blink/renderer/core/script/script_scheduling_type.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
@@ -55,13 +54,6 @@ class CORE_EXPORT ScriptLoader final
   USING_GARBAGE_COLLECTED_MIXIN(ScriptLoader);
 
  public:
-  static ScriptLoader* Create(ScriptElementBase* element,
-                              bool created_by_parser,
-                              bool is_evaluated) {
-    return MakeGarbageCollected<ScriptLoader>(element, created_by_parser,
-                                              is_evaluated);
-  }
-
   ScriptLoader(ScriptElementBase*, bool created_by_parser, bool is_evaluated);
   ~ScriptLoader() override;
   void Trace(blink::Visitor*) override;
@@ -192,14 +184,14 @@ class CORE_EXPORT ScriptLoader final
   // |prepared_pending_script_|.
   // Later, TakePendingScript() is called, and its caller holds a reference
   // to the PendingScript instead and |prepared_pending_script_| is cleared.
-  TraceWrapperMember<PendingScript> prepared_pending_script_;
+  Member<PendingScript> prepared_pending_script_;
 
   // If the script is controlled by ScriptRunner, then
   // ScriptLoader::pending_script_ holds a reference to the PendingScript and
   // ScriptLoader is its client.
   // Otherwise, HTMLParserScriptRunner or XMLParserScriptRunner holds the
   // reference and |pending_script_| here is null.
-  TraceWrapperMember<PendingScript> pending_script_;
+  Member<PendingScript> pending_script_;
 
   // This is used only to keep the ScriptResource of a classic script alive
   // and thus to keep it on MemoryCache, even after script execution, as long

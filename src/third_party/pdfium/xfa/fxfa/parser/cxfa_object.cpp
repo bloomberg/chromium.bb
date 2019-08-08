@@ -30,15 +30,18 @@ CXFA_Object::CXFA_Object(CXFA_Document* pDocument,
       m_elementNameHash(FX_HashCode_GetAsIfW(m_elementName, false)),
       m_pJSObject(std::move(jsObject)) {}
 
-CXFA_Object::~CXFA_Object() = default;
+CXFA_Object::~CXFA_Object() {
+  if (!GetDocument()->IsBeingDestroyed() && GetDocument()->HasScriptContext())
+    GetDocument()->GetScriptContext()->RemoveJSBindingFromMap(this);
+}
 
 CXFA_Object* CXFA_Object::AsCXFAObject() {
   return this;
 }
 
 WideString CXFA_Object::GetSOMExpression() {
-  CFXJSE_Engine* pScriptContext = m_pDocument->GetScriptContext();
-  return pScriptContext->GetSomExpression(ToNode(this));
+  CXFA_Node* pNode = AsNode();
+  return pNode ? pNode->GetNameExpression() : WideString();
 }
 
 CXFA_List* CXFA_Object::AsList() {

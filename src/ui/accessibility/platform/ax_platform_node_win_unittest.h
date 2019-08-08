@@ -7,6 +7,7 @@
 
 #include "ui/accessibility/platform/ax_platform_node_unittest.h"
 
+#include <memory>
 #include <unordered_set>
 
 #include "ui/base/win/accessibility_misc_utils.h"
@@ -46,6 +47,8 @@ class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
   Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(AXNode* node);
   Microsoft::WRL::ComPtr<IRawElementProviderSimple>
   GetRootIRawElementProviderSimple();
+  Microsoft::WRL::ComPtr<IRawElementProviderSimple>
+  GetIRawElementProviderSimpleFromChildIndex(int child_index);
   Microsoft::WRL::ComPtr<IRawElementProviderFragment>
   GetRootIRawElementProviderFragment();
   Microsoft::WRL::ComPtr<IAccessible> IAccessibleFromNode(AXNode* node);
@@ -56,7 +59,7 @@ class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
       Microsoft::WRL::ComPtr<IAccessible> accessible);
   Microsoft::WRL::ComPtr<IAccessible2_2> ToIAccessible2_2(
       Microsoft::WRL::ComPtr<IAccessible> accessible);
-  void CheckVariantHasName(base::win::ScopedVariant& variant,
+  void CheckVariantHasName(const base::win::ScopedVariant& variant,
                            const wchar_t* expected_name);
   void CheckIUnknownHasName(Microsoft::WRL::ComPtr<IUnknown> unknown,
                             const wchar_t* expected_name);
@@ -65,7 +68,7 @@ class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
   void InitFragmentRoot();
   Microsoft::WRL::ComPtr<IRawElementProviderFragmentRoot> GetFragmentRoot();
 
-  using PatternSet = std::unordered_set<long>;
+  using PatternSet = std::unordered_set<LONG>;
   PatternSet GetSupportedPatternsFromNodeId(int32_t id);
   std::unique_ptr<AXFragmentRootWin> ax_fragment_root_;
 };

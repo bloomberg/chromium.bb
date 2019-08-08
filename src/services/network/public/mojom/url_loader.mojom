@@ -118,19 +118,21 @@ struct URLRequest {
   // Additional HTTP request headers.
   HttpRequestHeaders headers;
 
-  // 'X-Requested-With' header value. Some consumers want to set this header,
-  // but such internal headers must be ignored by CORS checks (which run inside
-  // Network Service), so the value is stored here (rather than in |headers|)
-  // and later populated in the headers after CORS check.
-  // TODO(toyoshim): Remove it once PPAPI is deprecated.
-  string requested_with_header;
-
-  // 'X-Client-Data' header value. See comments for |requested_with_header|
-  // above, too.
-  // TODO(toyoshim): Consider to rename this to have a chrome specific prefix
-  // such as 'Chrome-' instead of 'X-', and to add 'Chrome-' prefixed header
-  // names into the forbidden header name list.
-  string client_data_header;
+  // HTTP request headers that has been internally added. Some consumers want to
+  // set additional HTTP headers, but such internal headers must be ignored by
+  // CORS check (which run inside Network Service), so the values are stored
+  // here (rather than in |headers|) and later merged into the |headers| after
+  // CORS check.
+  //
+  // *Warning*: Adding new headers to this list is strongly discouraged. What
+  // usually you need is to update the fetch spec, and add your custom headers
+  // to the CORS-safelisted header so to pass proper CORS checks. 'Proxy-' or
+  // 'Sec-' prefixes are also available. See cors::IsCORSSafelistedHeader and
+  // cors::IsForbiddenHeader for details.
+  //
+  // You should ask Loading and CORS OWNERS when you need to add your own
+  // headers to the list.
+  HttpRequestHeaders cors_exempt_headers;  // See Note above before using.
 
   // net::URLRequest load flags.
   int32 load_flags;
@@ -172,12 +174,6 @@ struct URLRequest {
 
   // A policy to decide if CORS-preflight fetch should be performed.
   CorsPreflightPolicy cors_preflight_policy;
-
-  // Indicates which frame (or worker context) the request is being loaded into.
-  // -1 corresponds to kInvalidServiceWorkerProviderId.
-  // TODO(jam): remove this from the struct since network service shouldn't know
-  // about this.
-  int32 service_worker_provider_id;
 
   // True if the request originated from a Service Worker, e.g. due to a
   // fetch() in the Service Worker script.
@@ -283,14 +279,12 @@ struct URLRequest {
   // The profile ID of network conditions to throttle the network request.
   mojo_base.mojom.UnguessableToken? throttling_profile_id;
 
-  // Headers that will be added pre and post cache if the network context uses
-  // the custom proxy for this request. The custom proxy is used for requests
-  // that match the custom proxy config, and would otherwise be made direct.
+  // Headers that will be added pre and post cache for http:// requests if the
+  // network context uses the custom proxy for this request. The custom proxy
+  // is used for requests that match the custom proxy config, and would
+  // otherwise be made direct.
   HttpRequestHeaders custom_proxy_pre_cache_headers;
   HttpRequestHeaders custom_proxy_post_cache_headers;
-
-  // Whether to use the alternate proxies set in the custom proxy config.
-  bool custom_proxy_use_alternate_proxy_list;
 
   // See https://fetch.spec.whatwg.org/#concept-request-window
   //
@@ -310,6 +304,11 @@ struct URLRequest {
   // goes through a service worker, the id is
   // ServiceWorkerProviderHost::fetch_request_window_id.
   mojo_base.mojom.UnguessableToken? fetch_window_id;
+
+  // The ID that DevTools uses to track network requests. It is generated in the
+  // renderer process and is only present when DevTools is enabled in the
+  // renderer.
+  string? devtools_request_id;
 };
 
 // URLRequestBody represents body (i.e. upload data) of a HTTP request.
@@ -340,8 +339,8 @@ struct DataElement {
   // For kRawFile
   mojo_base.mojom.File? file;
   // For kBlob
-  // TODO(Richard): Deprecate this once NetworkService is fully shipped.
-  string blob_uuid;
+  // TODO(richard.li): Deprecate this once NetworkService is fully shipped.
+  string? blob_uuid;
   // For kDataPipe
   network.mojom.DataPipeGetter? data_pipe_getter;
   // For kChunkedDataPipe

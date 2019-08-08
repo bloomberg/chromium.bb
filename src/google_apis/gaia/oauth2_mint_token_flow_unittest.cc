@@ -347,7 +347,7 @@ TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallSuccess) {
 TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallFailure) {
   network::ResourceResponseHead head;
   {  // Null delegate should work fine.
-    CreateFlow(NULL, OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE, "");
+    CreateFlow(nullptr, OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE, "");
     flow_->ProcessApiCallFailure(net::ERR_FAILED, &head, nullptr);
   }
 

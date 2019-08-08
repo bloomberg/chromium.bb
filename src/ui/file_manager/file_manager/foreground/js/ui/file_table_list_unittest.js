@@ -107,9 +107,9 @@ function testMultipleSelectionWithKeyboard() {
 
   // Add FileTableList file entries, then draw and focus the table list.
   const entries = [
-      new FakeEntry('entry1-label', VolumeManagerCommon.RootType.CROSTINI),
-      new FakeEntry('entry2-label', VolumeManagerCommon.RootType.CROSTINI),
-      new FakeEntry('entry3-label', VolumeManagerCommon.RootType.CROSTINI),
+    new FakeEntry('entry1-label', VolumeManagerCommon.RootType.CROSTINI),
+    new FakeEntry('entry2-label', VolumeManagerCommon.RootType.CROSTINI),
+    new FakeEntry('entry3-label', VolumeManagerCommon.RootType.CROSTINI),
   ];
   const dataModel = new FileListModel(metadataModel);
   dataModel.splice(0, 0, ...entries);
@@ -238,9 +238,9 @@ function testKeyboardOperations() {
 
   // Add FileTableList file entries, then draw and focus the table list.
   const entries = [
-      new FakeEntry('entry1-label', VolumeManagerCommon.RootType.CROSTINI),
-      new FakeEntry('entry2-label', VolumeManagerCommon.RootType.CROSTINI),
-      new FakeEntry('entry3-label', VolumeManagerCommon.RootType.CROSTINI),
+    new FakeEntry('entry1-label', VolumeManagerCommon.RootType.CROSTINI),
+    new FakeEntry('entry2-label', VolumeManagerCommon.RootType.CROSTINI),
+    new FakeEntry('entry3-label', VolumeManagerCommon.RootType.CROSTINI),
   ];
   const dataModel = new FileListModel(metadataModel);
   dataModel.splice(0, 0, ...entries);

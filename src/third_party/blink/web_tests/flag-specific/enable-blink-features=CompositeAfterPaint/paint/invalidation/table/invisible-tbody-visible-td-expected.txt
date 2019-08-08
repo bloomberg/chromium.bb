@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutTableSection TBODY id='tbody'",
-          "rect": [8, 8, 200, 200],
+          "rect": [9, 9, 198, 198],
           "reason": "background"
         }
       ]

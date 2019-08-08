@@ -64,11 +64,6 @@ class VideoWakeLockMediaPlayer final : public EmptyWebMediaPlayer {
 
 class VideoWakeLockFrameClient : public test::MediaStubLocalFrameClient {
  public:
-  static VideoWakeLockFrameClient* Create(
-      std::unique_ptr<WebMediaPlayer> player) {
-    return MakeGarbageCollected<VideoWakeLockFrameClient>(std::move(player));
-  }
-
   explicit VideoWakeLockFrameClient(std::unique_ptr<WebMediaPlayer> player)
       : test::MediaStubLocalFrameClient(std::move(player)),
         interface_provider_(new service_manager::InterfaceProvider()) {}
@@ -87,7 +82,7 @@ class VideoWakeLockTest : public PageTestBase {
  public:
   void SetUp() override {
     PageTestBase::SetupPageWithClients(
-        nullptr, VideoWakeLockFrameClient::Create(
+        nullptr, MakeGarbageCollected<VideoWakeLockFrameClient>(
                      std::make_unique<VideoWakeLockMediaPlayer>()));
 
     service_manager::InterfaceProvider::TestApi test_api(
@@ -123,16 +118,16 @@ class VideoWakeLockTest : public PageTestBase {
     PictureInPictureController::From(GetDocument())
         .EnterPictureInPicture(Video(), nullptr);
 
-    WaitForEvent::Create(video_.Get(),
-                         event_type_names::kEnterpictureinpicture);
+    MakeGarbageCollected<WaitForEvent>(
+        video_.Get(), event_type_names::kEnterpictureinpicture);
   }
 
   void SimulateLeavePictureInPicture() {
     PictureInPictureController::From(GetDocument())
         .ExitPictureInPicture(Video(), nullptr);
 
-    WaitForEvent::Create(video_.Get(),
-                         event_type_names::kLeavepictureinpicture);
+    MakeGarbageCollected<WaitForEvent>(
+        video_.Get(), event_type_names::kLeavepictureinpicture);
   }
 
  private:

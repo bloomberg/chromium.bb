@@ -16,8 +16,6 @@ class WebRemoteFrameImpl;
 
 class RemoteFrameClientImpl final : public RemoteFrameClient {
  public:
-  static RemoteFrameClientImpl* Create(WebRemoteFrameImpl*);
-
   explicit RemoteFrameClientImpl(WebRemoteFrameImpl*);
 
   void Trace(blink::Visitor*) override;
@@ -39,6 +37,7 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
                 bool should_replace_current_entry,
                 bool is_opener_navigation,
                 bool prevent_sandboxed_download,
+                bool initiator_frame_is_ad,
                 mojom::blink::BlobURLTokenPtr) override;
   unsigned BackForwardLength() override;
   void CheckCompleted() override;

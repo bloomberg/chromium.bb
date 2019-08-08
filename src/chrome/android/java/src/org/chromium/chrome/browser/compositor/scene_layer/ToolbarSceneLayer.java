@@ -94,6 +94,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
                 || forceHideAndroidBrowserControls;
 
         boolean isLocationBarShownInNtp = false;
+        boolean isIncognito = false;
         Tab currentTab = fullscreenManager.getTab();
         if (currentTab != null) {
             boolean isNtp =
@@ -102,10 +103,11 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
                 isLocationBarShownInNtp =
                         ((NewTabPage) currentTab.getNativePage()).isLocationBarShownInNTP();
             }
+            isIncognito = currentTab.isIncognito();
         }
 
-        int textBoxColor = ColorUtils.getTextBoxColorForToolbarBackground(
-                mContext.getResources(), isLocationBarShownInNtp, browserControlsBackgroundColor);
+        int textBoxColor = ColorUtils.getTextBoxColorForToolbarBackground(mContext.getResources(),
+                isLocationBarShownInNtp, browserControlsBackgroundColor, isIncognito);
         int textBoxResourceId = R.drawable.modern_location_bar;
 
         nativeUpdateToolbarLayer(mNativePtr, resourceManager, R.id.control_container,

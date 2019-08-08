@@ -13,7 +13,9 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
+#include "chrome/browser/chromeos/login/quick_unlock/fingerprint_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_prefs.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
@@ -204,6 +206,12 @@ Profile* GetActiveProfile(content::BrowserContext* browser_context) {
   return profile;
 }
 
+AuthToken* GetActiveProfileAuthToken(content::BrowserContext* browser_context) {
+  return chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(
+             GetActiveProfile(browser_context))
+      ->GetAuthToken();
+}
+
 }  // namespace
 
 // quickUnlockPrivate.getAuthToken
@@ -291,6 +299,7 @@ void QuickUnlockPrivateGetAuthTokenFunction::OnAuthSuccess(
   Profile* profile = GetActiveProfile(browser_context());
   QuickUnlockStorage* quick_unlock_storage =
       chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
+  quick_unlock_storage->MarkStrongAuth();
   result->token = quick_unlock_storage->CreateAuthToken(user_context);
   result->lifetime_seconds = AuthToken::kTokenExpirationSeconds;
 
@@ -317,16 +326,15 @@ ExtensionFunction::ResponseAction
 QuickUnlockPrivateSetLockScreenEnabledFunction::Run() {
   auto params =
       quick_unlock_private::SetLockScreenEnabled::Params::Create(*args_);
-  Profile* profile = GetActiveProfile(browser_context());
-  QuickUnlockStorage* quick_unlock_storage =
-      chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
-  if (quick_unlock_storage->GetAuthTokenExpired())
+  AuthToken* auth_token = GetActiveProfileAuthToken(browser_context());
+  if (!auth_token)
     return RespondNow(Error(kAuthTokenExpired));
-  if (params->token != quick_unlock_storage->GetAuthToken())
+  if (params->token != auth_token->Identifier())
     return RespondNow(Error(kAuthTokenInvalid));
 
-  profile->GetPrefs()->SetBoolean(ash::prefs::kEnableAutoScreenLock,
-                                  params->enabled);
+  GetActiveProfile(browser_context())
+      ->GetPrefs()
+      ->SetBoolean(ash::prefs::kEnableAutoScreenLock, params->enabled);
 
   return RespondNow(ArgumentList(
       quick_unlock_private::SetLockScreenEnabled::Results::Create()));
@@ -464,12 +472,10 @@ ExtensionFunction::ResponseAction QuickUnlockPrivateSetModesFunction::Run() {
   if (params_->modes.size() > 1)
     return RespondNow(Error(kMultipleModesNotSupported));
 
-  Profile* profile = GetActiveProfile(browser_context());
-  QuickUnlockStorage* quick_unlock_storage =
-      chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
-  if (quick_unlock_storage->GetAuthTokenExpired())
+  AuthToken* auth_token = GetActiveProfileAuthToken(browser_context());
+  if (!auth_token)
     return RespondNow(Error(kAuthTokenExpired));
-  if (params_->token != quick_unlock_storage->GetAuthToken())
+  if (params_->token != auth_token->Identifier())
     return RespondNow(Error(kAuthTokenInvalid));
 
   // Verify every credential is valid based on policies.

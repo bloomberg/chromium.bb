@@ -5,8 +5,8 @@
 cr.exportPath('management');
 /**
  * @typedef {{
- *    name: string,
- *    permissions: !Array<string>
+ *   name: string,
+ *   permissions: !Array<string>
  * }}
  */
 management.Extension;
@@ -22,11 +22,22 @@ management.ReportingType = {
 
 /**
  * @typedef {{
- *    messageId: string,
- *    reportingType: !management.ReportingType,
+ *   messageId: string,
+ *   reportingType: !management.ReportingType,
  * }}
  */
 management.BrowserReportingResponse;
+
+/**
+ * @typedef {{
+ *   browserManagementNotice: string,
+ *   extensionReportingTitle: string,
+ *   pageSubtitle: string,
+ *   managed: boolean,
+ *   overview: string,
+ * }}
+ */
+management.ManagedDataResponse;
 
 // <if expr="chromeos">
 /**
@@ -38,14 +49,15 @@ management.DeviceReportingType = {
   DEVICE_ACTIVITY: 'device activity',
   STATISTIC: 'device statistics',
   DEVICE: 'device',
-  LOGS: 'logs'
+  LOGS: 'logs',
+  PRINT: 'print'
 };
 
 
 /**
  * @typedef {{
- *    messageId: string,
- *    reportingType: !management.DeviceReportingType,
+ *   messageId: string,
+ *   reportingType: !management.DeviceReportingType,
  * }}
  */
 management.DeviceReportingResponse;
@@ -70,6 +82,9 @@ cr.define('management', function() {
      */
     getDeviceReportingInfo() {}
     // </if>
+
+    /** @return {!Promise<!management.ManagedDataResponse>} */
+    getContextualManagedData() {}
 
     /**
      * @return {!Promise<!Array<!management.BrowserReportingResponse>>} The list
@@ -96,6 +111,11 @@ cr.define('management', function() {
       return cr.sendWithPromise('getDeviceReportingInfo');
     }
     // </if>
+
+    /** @override */
+    getContextualManagedData() {
+      return cr.sendWithPromise('getContextualManagedData');
+    }
 
     /** @override */
     initBrowserReportingInfo() {

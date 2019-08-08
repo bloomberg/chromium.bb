@@ -30,31 +30,37 @@
 #include "hb.hh"
 
 
-template <typename T>
-inline uint32_t Hash (const T &v)
-{
-  /* Knuth's multiplicative method: */
-  return (uint32_t) v * 2654435761u;
-}
-
-
 /*
- * hb_map_t
+ * hb_hashmap_t
  */
 
-struct hb_map_t
+/* TODO if K/V is signed integer, -1 is not a good default.
+ * Don't know how to get to -MAX using bit work. */
+template <typename K, typename V,
+	  K kINVALID = hb_is_pointer (K) ? 0 : (K) -1,
+	  V vINVALID = hb_is_pointer (V) ? 0 : (V) -1>
+struct hb_hashmap_t
 {
-  HB_NO_COPY_ASSIGN (hb_map_t);
-  hb_map_t ()  { init (); }
-  ~hb_map_t () { fini (); }
+  HB_NO_COPY_ASSIGN (hb_hashmap_t);
+  hb_hashmap_t ()  { init (); }
+  ~hb_hashmap_t () { fini (); }
 
+  static_assert (hb_is_integer (K) || hb_is_pointer (K), "");
+  static_assert (hb_is_integer (V) || hb_is_pointer (V), "");
+
+  /* TODO If key type is a pointer, keep hash in item_t and use to:
+   * 1. avoid rehashing when resizing table, and
+   * 2. compare hash before comparing keys, for speed.
+   */
   struct item_t
   {
-    hb_codepoint_t key;
-    hb_codepoint_t value;
+    K key;
+    V value;
 
-    bool is_unused () const    { return key == INVALID; }
-    bool is_tombstone () const { return key != INVALID && value == INVALID; }
+    bool operator== (K o) { return hb_deref_pointer (key) == hb_deref_pointer (o); }
+    bool operator== (const item_t &o) { return *this == o.key; }
+    bool is_unused () const    { return key == kINVALID; }
+    bool is_tombstone () const { return key != kINVALID && value == vINVALID; }
   };
 
   hb_object_header_t header;
@@ -82,12 +88,19 @@ struct hb_map_t
   {
     free (items);
     items = nullptr;
+    population = occupancy = 0;
   }
   void fini ()
   {
-    population = occupancy = 0;
     hb_object_fini (this);
     fini_shallow ();
+  }
+
+  void reset ()
+  {
+    /* TODO Keep array? */
+    fini_shallow ();
+    init_shallow ();
   }
 
   bool in_error () const { return !successful; }
@@ -118,7 +131,7 @@ struct hb_map_t
     /* Insert back old items. */
     if (old_items)
       for (unsigned int i = 0; i < old_size; i++)
-	if (old_items[i].key != INVALID && old_items[i].value != INVALID)
+	if (old_items[i].key != kINVALID && old_items[i].value != vINVALID)
 	  set (old_items[i].key, old_items[i].value);
 
     free (old_items);
@@ -126,14 +139,14 @@ struct hb_map_t
     return true;
   }
 
-  void set (hb_codepoint_t key, hb_codepoint_t value)
+  void set (K key, V value)
   {
     if (unlikely (!successful)) return;
-    if (unlikely (key == INVALID)) return;
+    if (unlikely (key == kINVALID)) return;
     if ((occupancy + occupancy / 2) >= mask && !resize ()) return;
     unsigned int i = bucket_for (key);
 
-    if (value == INVALID && items[i].key != key)
+    if (value == vINVALID && items[i].key != key)
       return; /* Trying to delete non-existent key. */
 
     if (!items[i].is_unused ())
@@ -151,22 +164,22 @@ struct hb_map_t
       population++;
 
   }
-  hb_codepoint_t get (hb_codepoint_t key) const
+  V get (K key) const
   {
-    if (unlikely (!items)) return INVALID;
+    if (unlikely (!items)) return vINVALID;
     unsigned int i = bucket_for (key);
-    return items[i].key == key ? items[i].value : INVALID;
+    return items[i] == key ? items[i].value : vINVALID;
   }
 
-  void del (hb_codepoint_t key) { set (key, INVALID); }
+  void del (K key) { set (key, vINVALID); }
 
-  bool has (hb_codepoint_t key) const
-  { return get (key) != INVALID; }
-
-  hb_codepoint_t operator [] (unsigned int key) const
-  { return get (key); }
-
-  static constexpr hb_codepoint_t INVALID = HB_MAP_VALUE_INVALID;
+  /* Has interface. */
+  static constexpr V SENTINEL = vINVALID;
+  typedef V value_t;
+  value_t operator [] (K k) const { return get (k); }
+  bool has (K k) const { return (*this)[k] != SENTINEL; }
+  /* Projection. */
+  V operator () (K k) const { return get (k); }
 
   void clear ()
   {
@@ -180,20 +193,20 @@ struct hb_map_t
 
   protected:
 
-  unsigned int bucket_for (hb_codepoint_t key) const
+  unsigned int bucket_for (K key) const
   {
-    unsigned int i = Hash (key) % prime;
+    unsigned int i = hb_hash (key) % prime;
     unsigned int step = 0;
-    unsigned int tombstone = INVALID;
+    unsigned int tombstone = (unsigned) -1;
     while (!items[i].is_unused ())
     {
-      if (items[i].key == key)
+      if (items[i] == key)
         return i;
-      if (tombstone == INVALID && items[i].is_tombstone ())
+      if (tombstone == (unsigned) -1 && items[i].is_tombstone ())
         tombstone = i;
       i = (i + ++step) & mask;
     }
-    return tombstone == INVALID ? i : tombstone;
+    return tombstone == (unsigned) -1 ? i : tombstone;
   }
 
   static unsigned int prime_for (unsigned int shift)
@@ -247,6 +260,15 @@ struct hb_map_t
     return prime_mod[shift];
   }
 };
+
+/*
+ * hb_map_t
+ */
+
+struct hb_map_t : hb_hashmap_t<hb_codepoint_t,
+			       hb_codepoint_t,
+			       HB_MAP_VALUE_INVALID,
+			       HB_MAP_VALUE_INVALID> {};
 
 
 #endif /* HB_MAP_HH */

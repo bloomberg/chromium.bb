@@ -4,8 +4,9 @@
 
 (async function() {
   TestRunner.addResult(`Tests that the live line-level heap profile is shown in the text editor.\n`);
+  Common.settingForTest('memoryLiveHeapProfile').set(true);
   await self.runtime.loadModulePromise('perf_ui');
-  await PerfUI.LiveHeapProfile.hasStartedForTest();
+  await Main.Main._instanceForTest.lateInitDonePromiseForTest();
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
 
@@ -17,7 +18,7 @@
   SourcesTestRunner.showScriptSource('allocator.js', frameRevealed);
 
   function decorationAdded(line, type, element) {
-    if (line !== 12 || type !== 'CodeMirror-gutter-memory' || !element.textContent || !element.style.backgroundColor)
+    if (line !== 13 || type !== 'CodeMirror-gutter-memory' || !element.textContent || !element.style.backgroundColor)
       return;
     TestRunner.addResult(`Memory annotation added to line ${line}.`);
     TestRunner.completeTest();

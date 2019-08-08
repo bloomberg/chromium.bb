@@ -56,9 +56,7 @@
 #if defined(USE_CRAS)
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/constants/dbus_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_cras_audio_client.h"
+#include "chromeos/dbus/audio/fake_cras_audio_client.h"
 #include "media/audio/cras/audio_manager_cras.h"
 #endif  // defined(USE_CRAS)
 
@@ -263,20 +261,12 @@ class AudioManagerTest : public ::testing::Test {
   void TearDown() override {
     chromeos::CrasAudioHandler::Shutdown();
     audio_pref_handler_ = nullptr;
-    chromeos::DBusThreadManager::Shutdown();
+    chromeos::CrasAudioClient::Shutdown();
   }
 
   void SetUpCrasAudioHandlerWithTestingNodes(const AudioNodeList& audio_nodes) {
-    if (base::SysInfo::IsRunningOnChromeOS()) {
-      // Ensure a FakeCrasAudioClient is created, even on a real device or VM.
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          chromeos::switches::kDbusStub);
-    }
-
-    chromeos::DBusThreadManager::Initialize();
-    audio_client_ = static_cast<chromeos::FakeCrasAudioClient*>(
-        chromeos::DBusThreadManager::Get()->GetCrasAudioClient());
-    audio_client_->SetAudioNodesForTesting(audio_nodes);
+    chromeos::CrasAudioClient::InitializeFake();
+    chromeos::FakeCrasAudioClient::Get()->SetAudioNodesForTesting(audio_nodes);
     audio_pref_handler_ = new chromeos::AudioDevicesPrefHandlerStub();
     chromeos::CrasAudioHandler::Initialize(audio_pref_handler_);
     cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
@@ -404,7 +394,6 @@ class AudioManagerTest : public ::testing::Test {
 
 #if defined(USE_CRAS)
   chromeos::CrasAudioHandler* cras_audio_handler_ = nullptr;  // Not owned.
-  chromeos::FakeCrasAudioClient* audio_client_ = nullptr;     // Not owned.
   scoped_refptr<chromeos::AudioDevicesPrefHandlerStub> audio_pref_handler_;
 #endif  // defined(USE_CRAS)
 };

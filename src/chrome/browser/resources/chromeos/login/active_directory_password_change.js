@@ -5,6 +5,7 @@
 /**
  * @fileoverview Polymer element for Active Directory password change screen.
  */
+
 /**
  * Possible error states of the screen. Must be in the same order as
  * ActiveDirectoryPasswordChangeErrorState enum values.
@@ -51,7 +52,11 @@ Polymer({
     }
   },
 
-  /** @private */
+  /**
+   * @param {string} username
+   * @return {string}
+   * @private
+   */
   computeWelcomeMessage_: function(username) {
     return loadTimeData.getStringF('adPassChangeMessage', username);
   },

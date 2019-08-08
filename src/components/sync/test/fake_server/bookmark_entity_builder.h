@@ -35,16 +35,21 @@ class BookmarkEntityBuilder {
 
   // Builds and returns a LoopbackServerEntity representing a bookmark. Returns
   // null if the entity could not be built.
-  std::unique_ptr<syncer::LoopbackServerEntity> BuildBookmark(const GURL& url);
+  std::unique_ptr<syncer::LoopbackServerEntity> BuildBookmark(
+      const GURL& url,
+      bool is_legacy = false);
 
   // Builds and returns a LoopbackServerEntity representing a bookmark folder.
   // Returns null if the entity could not be built.
-  std::unique_ptr<syncer::LoopbackServerEntity> BuildFolder();
+  std::unique_ptr<syncer::LoopbackServerEntity> BuildFolder(
+      bool is_legacy = false);
 
  private:
-  // Creates an EntitySpecifics and pre-populates its BookmarkSpecifics with
-  // the entity's title.
-  sync_pb::EntitySpecifics CreateBaseEntitySpecifics() const;
+  // Creates an EntitySpecifics and pre-populates its BookmarkSpecifics with the
+  // entity's title if |is_legacy| is false. Otherwise, it doesn't populate the
+  // title.
+  sync_pb::EntitySpecifics CreateBaseEntitySpecifics(
+      bool is_legacy = false) const;
 
   // Builds the parts of a LoopbackServerEntity common to both normal bookmarks
   // and folders.

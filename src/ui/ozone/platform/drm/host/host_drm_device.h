@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_DRM_HOST_HOST_DRM_DEVICE_H_
 #define UI_OZONE_PLATFORM_DRM_HOST_HOST_DRM_DEVICE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

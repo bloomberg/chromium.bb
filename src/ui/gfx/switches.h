@@ -11,10 +11,6 @@
 
 namespace switches {
 
-#if defined(OS_WIN)
-GFX_SWITCHES_EXPORT extern const char kDisableDirectWriteForUI[];
-#endif
-
 GFX_SWITCHES_EXPORT extern const char kDisableFontSubpixelPositioning[];
 
 GFX_SWITCHES_EXPORT extern const char kHeadless[];

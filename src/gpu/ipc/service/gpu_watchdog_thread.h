@@ -36,8 +36,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
 
   static std::unique_ptr<GpuWatchdogThread> Create(bool start_backgrounded);
 
-  void CheckArmed();
-
   // Must be called after a PowerMonitor has been created. Can be called from
   // any thread.
   void AddPowerObserver();
@@ -113,6 +111,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
 
   GpuWatchdogThread();
 
+  void CheckArmed();
+
   void OnAcknowledge();
   void OnCheck(bool after_suspend);
   void OnCheckTimeout();
@@ -186,6 +186,10 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
   // This is the time the last check was sent.
   base::Time check_time_;
   base::TimeTicks check_timeticks_;
+
+  base::TimeTicks last_reported_progress_timeticks_;
+  base::TimeTicks last_suspend_timeticks_;
+  base::TimeTicks last_resume_timeticks_;
 
 #if defined(USE_X11)
   XDisplay* display_;

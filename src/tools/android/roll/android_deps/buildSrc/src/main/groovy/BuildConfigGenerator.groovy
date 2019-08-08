@@ -24,6 +24,7 @@ class BuildConfigGenerator extends DefaultTask {
     private static final BUILD_GN_GEN_PATTERN = Pattern.compile(
             "${BUILD_GN_TOKEN_START}(.*)${BUILD_GN_TOKEN_END}",
             Pattern.DOTALL)
+    private static final BUILD_GN_GEN_REMINDER = "# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.\n"
     private static final DEPS_TOKEN_START = "# === ANDROID_DEPS Generated Code Start ==="
     private static final DEPS_TOKEN_END = "# === ANDROID_DEPS Generated Code End ==="
     private static final DEPS_GEN_PATTERN = Pattern.compile(
@@ -33,6 +34,14 @@ class BuildConfigGenerator extends DefaultTask {
     // This must be unique, so better be safe and increment the suffix rather than resetting
     // to cr0.
     private static final CIPD_SUFFIX = "cr0"
+
+    // Some libraries are hosted in Chromium's //third_party directory. This is a mapping between
+    // them so they can be used instead of android_deps pulling in its own copy.
+    private static final def EXISTING_LIBS = [
+        'junit_junit': '//third_party/junit:junit',
+        'org_hamcrest_hamcrest_core': '//third_party/hamcrest:hamcrest_core_java',
+    ]
+
 
     /**
      * Directory where the artifacts will be downloaded and where files will be generated.
@@ -54,7 +63,7 @@ class BuildConfigGenerator extends DefaultTask {
         // 2. Import artifacts into the local repository
         def dependencyDirectories = []
         graph.dependencies.values().each { dependency ->
-            if (dependency.exclude) {
+            if (dependency.exclude || EXISTING_LIBS.get(dependency.id) != null) {
                 return
             }
             logger.debug "Processing ${dependency.name}: \n${jsonDump(dependency)}"
@@ -106,20 +115,29 @@ class BuildConfigGenerator extends DefaultTask {
         }
 
         depGraph.dependencies.values().sort(dependencyComparator).each { dependency ->
-            if (dependency.exclude) {
+            if (dependency.exclude || EXISTING_LIBS.get(dependency.id) != null) {
                 return
             }
             def depsStr = ""
             if (!dependency.children.isEmpty()) {
                 dependency.children.each { childDep ->
-                    if (depGraph.dependencies[childDep].exclude) {
+                    def dep = depGraph.dependencies[childDep];
+                    if (dep.exclude) {
                         return
                     }
-                    depsStr += "\":${depGraph.dependencies[childDep].id}_java\","
+                    // Special case: If a child dependency is an existing lib, rather than skipping
+                    // it, replace the child dependency with the existing lib.
+                    def existingLib = EXISTING_LIBS.get(dep.id)
+                    if (existingLib != null) {
+                      depsStr += "\"${existingLib}\","
+                    } else {
+                      depsStr += "\":${dep.id}_java\","
+                    }
                 }
             }
 
             def libPath = "${DOWNLOAD_DIRECTORY_NAME}/${dependency.id}"
+            sb.append(BUILD_GN_GEN_REMINDER)
             if (dependency.extension == 'jar') {
                 sb.append("""\
                 java_prebuilt("${dependency.id}_java") {
@@ -137,7 +155,12 @@ class BuildConfigGenerator extends DefaultTask {
                 throw new IllegalStateException("Dependency type should be JAR or AAR")
             }
 
-            if (!dependency.visible) sb.append("  visibility = [ \":*\" ]\n")
+            if (!dependency.visible) {
+              sb.append("  # To remove visibility constraint, add this dependency to\n")
+              sb.append("  # //tools/android/roll/android_deps/build.gradle.\n")
+              sb.append("  visibility = [ \":*\" ]\n")
+            }
+            if (dependency.testOnly) sb.append("  testonly = true\n")
             if (!depsStr.empty) sb.append("  deps = [${depsStr}]\n")
             addSpecialTreatment(sb, dependency.id)
 
@@ -151,6 +174,15 @@ class BuildConfigGenerator extends DefaultTask {
     }
 
     private static void addSpecialTreatment(StringBuilder sb, String dependencyId) {
+        if (Pattern.matches(".*google.*play_services.*", dependencyId)) {
+	    if (Pattern.matches(".*cast_framework.*", dependencyId)) {
+                sb.append('  # Removing all resources from cast framework as they are unused bloat.\n')
+                sb.append('  strip_resources = true\n')
+	    } else {
+                sb.append('  # Removing drawables from GMS .aars as they are unused bloat.\n')
+                sb.append('  strip_drawables = true\n')
+	    }
+        }
         switch(dependencyId) {
             case 'com_android_support_support_compat':
             case 'com_android_support_support_media_compat':
@@ -174,6 +206,21 @@ class BuildConfigGenerator extends DefaultTask {
                 // a call to SplitCompat.install() into it.
                 sb.append('  split_compat_class_names = [ "com/google/ar/core/InstallActivity" ]\n')
                 break
+            case 'androidx_test_rules':
+                // Target needs Android SDK deps which exist in third_party/android_sdk.
+                sb.append("""\
+                |  deps += [
+                |    "//third_party/android_sdk:android_test_base_java",
+                |    "//third_party/android_sdk:android_test_mock_java",
+                |    "//third_party/android_sdk:android_test_runner_java",
+                |  ]
+                |
+                |""".stripMargin())
+                break
+            case 'net_sf_kxml_kxml2':
+                sb.append('  # Target needs to exclude *xmlpull* files as already included in Android SDK.\n')
+                sb.append('  jar_excluded_patterns = [ "*xmlpull*" ]\n')
+                break
         }
     }
 
@@ -191,7 +238,7 @@ class BuildConfigGenerator extends DefaultTask {
         }
 
         depGraph.dependencies.values().sort(dependencyComparator).each { dependency ->
-            if (dependency.exclude) {
+            if (dependency.exclude || EXISTING_LIBS.get(dependency.id) != null) {
                 return
             }
             def depPath = "${DOWNLOAD_DIRECTORY_NAME}/${dependency.id}"
@@ -241,7 +288,8 @@ class BuildConfigGenerator extends DefaultTask {
                 licenseString = dependency.licenseName
         }
 
-        def licenseFile = dependency.supportsAndroid ? "LICENSE" : "NOT_SHIPPED"
+        def securityCritical = dependency.supportsAndroid && !dependency.testOnly
+        def licenseFile = securityCritical? "LICENSE" : "NOT_SHIPPED"
 
         return """\
         Name: ${dependency.displayName}
@@ -250,8 +298,8 @@ class BuildConfigGenerator extends DefaultTask {
         Version: ${dependency.version}
         License: ${licenseString}
         License File: ${licenseFile}
-        Security Critical: ${dependency.supportsAndroid ? "yes" : "no"}
-
+        Security Critical: ${securityCritical? "yes" : "no"}
+        ${dependency.licenseAndroidCompatible? "License Android Compatible: yes" : ""}
         Description:
         ${dependency.description}
 

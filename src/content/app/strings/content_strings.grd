@@ -627,6 +627,9 @@ below:
       <message name="IDS_AX_IMAGE_ANNOTATION_ADULT" desc="Accessibility message spoken out loud to screen reader users indicating that an image appears to be something like nudity or pornography or other policy violation that is not appropriate for children.">
         Appears to contain adult content. No description available.
       </message>
+      <message name="IDS_AX_IMAGE_ANNOTATION_NO_DESCRIPTION" desc="Accessibility message spoken out loud to screen reader users indicating that the browser was unable to provide a description for an image.">
+        No description available.
+      </message>
       <message name="IDS_AX_IMAGE_ANNOTATION_OCR_CONTEXT" desc="Accessibility message spoken out loud to screen reader users when reading text that was automatically extracted from an image, for an example the word 'stop' could be extracted from a photo of a stop sign. Because automatic text extraction sometimes contains errors it is important that the language used indicates some uncertainty - it may say 'stop' or it appears to say 'stop', not it definitely says 'stop'.">
         Appears to say: <ph name="OCR_TEXT">$1<ex>Stop</ex></ph>
       </message>
@@ -760,6 +763,14 @@ below:
 
       <message name="IDS_AX_MEDIA_OVERFLOW_BUTTON_HELP" desc="Accessibility help description for overflow button.">
         more options
+      </message>
+
+      <message name="IDS_AX_MEDIA_TOUCHLESS_SEEK_ACTION" desc="Accessibility help description for seek action on touchless device using DPAD.">
+        left and right to seek
+      </message>
+
+      <message name="IDS_AX_MEDIA_TOUCHLESS_VOLUME_ACTION" desc="Accessibility help description for volume change action on touchless device using DPAD.">
+        up and down to change volume
       </message>
 
       <message name="IDS_AX_MILLISECOND_FIELD_TEXT" desc="Accessible description of the millisecond field in a date/time control">

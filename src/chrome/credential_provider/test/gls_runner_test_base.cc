@@ -15,8 +15,7 @@ GlsRunnerTestBase::~GlsRunnerTestBase() = default;
 void GlsRunnerTestBase::SetUp() {
   // Make sure not to read random GCPW settings from the machine that is running
   // the tests.
-  ASSERT_NO_FATAL_FAILURE(
-      registry_override_.OverrideRegistry(HKEY_LOCAL_MACHINE));
+  InitializeRegistryOverrideForTesting(&registry_override_);
 }
 
 }  // namespace testing

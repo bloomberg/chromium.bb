@@ -15,7 +15,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/port_util.h"
 #include "net/base/privacy_mode.h"
-#include "net/third_party/quic/platform/api/quic_hostname_utils.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_hostname_utils.h"
 #include "url/gurl.h"
 
 namespace net {

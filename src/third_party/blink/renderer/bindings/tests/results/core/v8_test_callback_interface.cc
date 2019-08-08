@@ -59,6 +59,11 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethod(bindings::V8ValueOrScriptWra
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
+  if (UNLIKELY(ScriptForbiddenScope::IsScriptForbidden())) {
+    ScriptForbiddenScope::ThrowScriptForbiddenException(GetIsolate());
+    return v8::Nothing<void>();
+  }
+
   v8::Local<v8::Function> function;
   if (IsCallbackObjectCallable()) {
     // step 9.1. If value's interface is a single operation callback interface
@@ -161,6 +166,11 @@ v8::Maybe<bool> V8TestCallbackInterface::booleanMethod(bindings::V8ValueOrScript
   // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
+
+  if (UNLIKELY(ScriptForbiddenScope::IsScriptForbidden())) {
+    ScriptForbiddenScope::ThrowScriptForbiddenException(GetIsolate());
+    return v8::Nothing<bool>();
+  }
 
   v8::Local<v8::Function> function;
   if (IsCallbackObjectCallable()) {
@@ -277,6 +287,11 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodBooleanArg(bindings::V8ValueO
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
+  if (UNLIKELY(ScriptForbiddenScope::IsScriptForbidden())) {
+    ScriptForbiddenScope::ThrowScriptForbiddenException(GetIsolate());
+    return v8::Nothing<void>();
+  }
+
   v8::Local<v8::Function> function;
   if (IsCallbackObjectCallable()) {
     // step 9.1. If value's interface is a single operation callback interface
@@ -384,6 +399,11 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodSequenceArg(bindings::V8Value
   // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
+
+  if (UNLIKELY(ScriptForbiddenScope::IsScriptForbidden())) {
+    ScriptForbiddenScope::ThrowScriptForbiddenException(GetIsolate());
+    return v8::Nothing<void>();
+  }
 
   v8::Local<v8::Function> function;
   if (IsCallbackObjectCallable()) {
@@ -493,6 +513,11 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodFloatArg(bindings::V8ValueOrS
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
+  if (UNLIKELY(ScriptForbiddenScope::IsScriptForbidden())) {
+    ScriptForbiddenScope::ThrowScriptForbiddenException(GetIsolate());
+    return v8::Nothing<void>();
+  }
+
   v8::Local<v8::Function> function;
   if (IsCallbackObjectCallable()) {
     // step 9.1. If value's interface is a single operation callback interface
@@ -601,6 +626,11 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(binding
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
+  if (UNLIKELY(ScriptForbiddenScope::IsScriptForbidden())) {
+    ScriptForbiddenScope::ThrowScriptForbiddenException(GetIsolate());
+    return v8::Nothing<void>();
+  }
+
   v8::Local<v8::Function> function;
   if (IsCallbackObjectCallable()) {
     // step 9.1. If value's interface is a single operation callback interface
@@ -708,6 +738,11 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(b
   // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
+
+  if (UNLIKELY(ScriptForbiddenScope::IsScriptForbidden())) {
+    ScriptForbiddenScope::ThrowScriptForbiddenException(GetIsolate());
+    return v8::Nothing<void>();
+  }
 
   v8::Local<v8::Function> function;
   if (IsCallbackObjectCallable()) {
@@ -818,6 +853,11 @@ v8::Maybe<void> V8TestCallbackInterface::callbackWithThisValueVoidMethodStringAr
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
+  if (UNLIKELY(ScriptForbiddenScope::IsScriptForbidden())) {
+    ScriptForbiddenScope::ThrowScriptForbiddenException(GetIsolate());
+    return v8::Nothing<void>();
+  }
+
   v8::Local<v8::Function> function;
   if (IsCallbackObjectCallable()) {
     // step 9.1. If value's interface is a single operation callback interface
@@ -925,6 +965,11 @@ v8::Maybe<void> V8TestCallbackInterface::customVoidMethodTestInterfaceEmptyArg(b
   // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
+
+  if (UNLIKELY(ScriptForbiddenScope::IsScriptForbidden())) {
+    ScriptForbiddenScope::ThrowScriptForbiddenException(GetIsolate());
+    return v8::Nothing<void>();
+  }
 
   v8::Local<v8::Function> function;
   if (IsCallbackObjectCallable()) {

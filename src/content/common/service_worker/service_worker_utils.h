@@ -58,11 +58,6 @@ class ServiceWorkerUtils {
   CONTENT_EXPORT static bool AllOriginsMatchAndCanAccessServiceWorkers(
       const std::vector<GURL>& urls);
 
-  // Returns true if the |provider_id| was assigned by the browser process.
-  static bool IsBrowserAssignedProviderId(int provider_id) {
-    return provider_id < kInvalidServiceWorkerProviderId;
-  }
-
   template <typename T>
   static std::string MojoEnumToString(T mojo_enum) {
     std::ostringstream oss;
@@ -87,6 +82,14 @@ class ServiceWorkerUtils {
 
   CONTENT_EXPORT static const char* FetchResponseSourceToSuffix(
       network::mojom::FetchResponseSource source);
+
+  CONTENT_EXPORT static void SendHttpResponseInfoToClient(
+      const net::HttpResponseInfo* http_info,
+      uint32_t options,
+      base::TimeTicks request_start_time,
+      base::TimeTicks response_start_time,
+      int response_data_size,
+      network::mojom::URLLoaderClientProxy* client_proxy);
 
  private:
   static bool IsPathRestrictionSatisfiedInternal(

@@ -47,6 +47,7 @@ class GLFenceEGL;
 namespace media {
 
 class H264Parser;
+class V4L2StatefulWorkaround;
 
 // This class handles video accelerators directly through a V4L2 device exported
 // by the hardware blocks.
@@ -116,7 +117,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   void ImportBufferForPicture(
       int32_t picture_buffer_id,
       VideoPixelFormat pixel_format,
-      const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handles) override;
+      gfx::GpuMemoryBufferHandle gpu_memory_buffer_handles) override;
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
@@ -193,10 +194,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     GLuint texture_id;
     bool cleared;           // Whether the texture is cleared and safe to render
                             // from. See TextureManager for details.
-    // Input fds of the processor. Exported from the decoder.
-    std::vector<base::ScopedFD> processor_input_fds;
-    // Output fds. Used only when OutputMode is IMPORT.
-    std::vector<base::ScopedFD> output_fds;
+    // Output frame. Used only when OutputMode is IMPORT.
+    scoped_refptr<VideoFrame> output_frame;
   };
 
   //
@@ -248,11 +247,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
 
   // Check |planes| and |dmabuf_fds| are valid in import mode, besides
   // ImportBufferForPicture.
-  void ImportBufferForPictureForImportTask(
-      int32_t picture_buffer_id,
-      VideoPixelFormat pixel_format,
-      std::vector<base::ScopedFD> dmabuf_fds,
-      std::vector<gfx::NativePixmapPlane> planes);
+  void ImportBufferForPictureForImportTask(int32_t picture_buffer_id,
+                                           VideoPixelFormat pixel_format,
+                                           gfx::NativePixmapHandle handle);
 
   // Create an EGLImage for the buffer associated with V4L2 |buffer_index| and
   // for |picture_buffer_id|, backed by dmabuf file descriptors in
@@ -511,6 +508,11 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // For H264 decode, hardware requires that we send it frame-sized chunks.
   // We'll need to parse the stream.
   std::unique_ptr<H264Parser> decoder_h264_parser_;
+
+  // Workaround for V4L2VideoDecodeAccelerator. This is created only if some
+  // workaround is necessary for the V4L2VideoDecodeAccelerator.
+  std::vector<std::unique_ptr<V4L2StatefulWorkaround>> workarounds_;
+
   // Set if the decoder has a pending incomplete frame in an input buffer.
   bool decoder_partial_frame_pending_;
 

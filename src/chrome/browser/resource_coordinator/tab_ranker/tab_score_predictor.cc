@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/native_inference.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
 #include "chrome/grit/browser_resources.h"
@@ -20,6 +21,27 @@
 
 namespace tab_ranker {
 namespace {
+
+using resource_coordinator::GetDiscardCountPenaltyTabRanker;
+using resource_coordinator::GetMRUScorerPenaltyTabRanker;
+using resource_coordinator::GetScorerTypeForTabRanker;
+
+// Maps the |mru_index| to it's reverse rank in (0.0, 1.0).
+// High score means more likely to be reactivated.
+// We use inverse rank because we think that the first several |mru_index| is
+// more significant than the larger ones.
+inline float MruToScore(const float mru_index) {
+  DCHECK_GE(mru_index, 0.0f);
+  return 1.0f / (1.0f + mru_index);
+}
+
+// Maps the |discard_count| to a score in (0.0, 1.0), for which
+// High score means more likely to be reactivated.
+// We use std::exp because we think that the first several |discard_count| is
+// not as significant as the larger ones.
+inline float DiscardCountToScore(const float discard_count) {
+  return std::exp(discard_count);
+}
 
 // Loads the preprocessor config protobuf, which lists each feature, their
 // types, bucket configurations, etc.
@@ -46,13 +68,40 @@ LoadExamplePreprocessorConfig() {
 
 }  // namespace
 
-TabScorePredictor::TabScorePredictor() = default;
+TabScorePredictor::TabScorePredictor()
+    : discard_count_penalty_(GetDiscardCountPenaltyTabRanker()),
+      mru_scorer_penalty_(GetMRUScorerPenaltyTabRanker()),
+      type_(static_cast<ScorerType>(GetScorerTypeForTabRanker())) {}
+
 TabScorePredictor::~TabScorePredictor() = default;
 
 TabRankerResult TabScorePredictor::ScoreTab(const TabFeatures& tab,
                                             float* score) {
   DCHECK(score);
 
+  // No error is expected, but something could conceivably be misconfigured.
+  TabRankerResult result = TabRankerResult::kSuccess;
+
+  if (type_ == kMRUScorer) {
+    result = ScoreTabWithMRUScorer(tab, score);
+  } else if (type_ == kMLScorer) {
+    result = ScoreTabWithMLScorer(tab, score);
+  } else {
+    return TabRankerResult::kUnrecognizableScorer;
+  }
+
+  // Applies DiscardCount adjustment.
+  // The default value of discard_count_penalty_ is 0.0f, which will not change
+  // the score.
+  // The larger the |discard_count_penalty_| is (set from Finch), the quicker
+  // the score increases based on the discard_count.
+  *score *= DiscardCountToScore(tab.discard_count * discard_count_penalty_);
+
+  return result;
+}
+
+TabRankerResult TabScorePredictor::ScoreTabWithMLScorer(const TabFeatures& tab,
+                                                        float* score) {
   // No error is expected, but something could conceivably be misconfigured.
   TabRankerResult result = TabRankerResult::kSuccess;
 
@@ -100,6 +149,12 @@ TabRankerResult TabScorePredictor::ScoreTab(const TabFeatures& tab,
   }
 
   return result;
+}
+
+TabRankerResult TabScorePredictor::ScoreTabWithMRUScorer(const TabFeatures& tab,
+                                                         float* score) {
+  *score = MruToScore(tab.mru_index * mru_scorer_penalty_);
+  return TabRankerResult::kSuccess;
 }
 
 void TabScorePredictor::LazyInitialize() {

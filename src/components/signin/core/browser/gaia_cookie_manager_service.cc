@@ -261,9 +261,11 @@ GaiaCookieManagerService::ExternalCcResultFetcher::GetExternalCcResult() {
   return base::JoinString(results, ",");
 }
 
-void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {
+void GaiaCookieManagerService::ExternalCcResultFetcher::Start(
+    base::OnceClosure callback) {
   DCHECK(!helper_->external_cc_result_fetched_);
   m_external_cc_result_start_time_ = base::Time::Now();
+  callback_ = std::move(callback);
 
   CleanupTransientState();
   results_.clear();
@@ -453,11 +455,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
                                              time_to_check_connections);
 
   helper_->external_cc_result_fetched_ = true;
-  // Since the ExternalCCResultFetcher is only Started in place of calling
-  // StartFetchingMergeSession, we can assume we need to call
-  // StartFetchingMergeSession. If this assumption becomes invalid, a Callback
-  // will need to be passed to Start() and Run() here.
-  helper_->StartFetchingMergeSession();
+  std::move(callback_).Run();
 }
 
 GaiaCookieManagerService::GaiaCookieManagerService(
@@ -644,7 +642,7 @@ void GaiaCookieManagerService::ForceOnCookieChangeProcessing() {
       std::make_unique<net::CanonicalCookie>(
           kGaiaCookieName, std::string(), "." + google_url.host(), "/",
           base::Time(), base::Time(), base::Time(), false, false,
-          net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT));
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT));
   OnCookieChange(*cookie, network::mojom::CookieChangeCause::UNKNOWN_DELETION);
 }
 
@@ -808,7 +806,9 @@ void GaiaCookieManagerService::OnUbertokenFetchComplete(
 
   if (!external_cc_result_fetched_ &&
       !external_cc_result_fetcher_.IsRunning()) {
-    external_cc_result_fetcher_.Start();
+    external_cc_result_fetcher_.Start(
+        base::BindOnce(&GaiaCookieManagerService::StartFetchingMergeSession,
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -1064,6 +1064,15 @@ void GaiaCookieManagerService::StartFetchingAccessTokensForMultilogin() {
   DCHECK_EQ(SET_ACCOUNTS, requests_.front().request_type());
   VLOG(1) << "GaiaCookieManagerService::StartFetchingAccessToken account_id ="
           << base::JoinString(requests_.front().account_ids(), " ");
+
+  if (!external_cc_result_fetched_ &&
+      !external_cc_result_fetcher_.IsRunning()) {
+    external_cc_result_fetcher_.Start(base::BindOnce(
+        &GaiaCookieManagerService::StartFetchingAccessTokensForMultilogin,
+        weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
   token_requests_.clear();
   access_tokens_.clear();
   for (const std::string& account_id : requests_.front().account_ids()) {
@@ -1079,23 +1088,24 @@ void GaiaCookieManagerService::StartFetchingUbertoken() {
       account_id, access_token_, token_service_,
       base::BindOnce(&GaiaCookieManagerService::OnUbertokenFetchComplete,
                      base::Unretained(this)),
-      GetURLLoaderFactory(),
       base::BindRepeating(
-          [](SigninClient* client, GaiaAuthConsumer* consumer,
-             scoped_refptr<network::SharedURLLoaderFactory> url_loader)
-              -> std::unique_ptr<GaiaAuthFetcher> {
+          [](SigninClient* client,
+             scoped_refptr<network::SharedURLLoaderFactory> url_loader,
+             GaiaAuthConsumer* consumer) -> std::unique_ptr<GaiaAuthFetcher> {
             return client->CreateGaiaAuthFetcher(
                 consumer, gaia::GaiaSource::kChrome, url_loader);
           },
-          base::Unretained(signin_client_)));
+          base::Unretained(signin_client_), GetURLLoaderFactory()));
 }
 
 void GaiaCookieManagerService::StartFetchingMultiLogin(
     const std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>& accounts) {
+  DCHECK(external_cc_result_fetched_);
   gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
       this, requests_.front().source(), GetURLLoaderFactory());
 
-  gaia_auth_fetcher_->StartOAuthMultilogin(accounts);
+  gaia_auth_fetcher_->StartOAuthMultilogin(
+      accounts, external_cc_result_fetcher_.GetExternalCcResult());
 }
 
 void GaiaCookieManagerService::StartFetchingMergeSession() {
@@ -1119,7 +1129,15 @@ void GaiaCookieManagerService::StartFetchingLogOut() {
   RecordLogoutRequestState(LogoutRequestState::kStarted);
   gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
       this, requests_.front().source(), GetURLLoaderFactory());
-  gaia_auth_fetcher_->StartLogOut();
+  bool use_continue_url = false;
+#if defined(OS_ANDROID)
+  use_continue_url = base::FeatureList::IsEnabled(signin::kMiceFeature);
+#endif
+  if (use_continue_url) {
+    gaia_auth_fetcher_->StartLogOutWithBlankContinueURL();
+  } else {
+    gaia_auth_fetcher_->StartLogOut();
+  }
 }
 
 void GaiaCookieManagerService::StartFetchingListAccounts() {
@@ -1139,10 +1157,13 @@ void GaiaCookieManagerService::OnSetAccountsFinished(
   HandleNextRequest();
 }
 
-void GaiaCookieManagerService::OnCookieSet(const std::string& cookie_name,
-                                           const std::string& cookie_domain,
-                                           bool success) {
+void GaiaCookieManagerService::OnCookieSet(
+    const std::string& cookie_name,
+    const std::string& cookie_domain,
+    net::CanonicalCookie::CookieInclusionStatus status) {
   cookies_to_set_.erase(std::make_pair(cookie_name, cookie_domain));
+  bool success =
+      (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
   if (!success) {
     VLOG(1) << "Failed to set cookie " << cookie_name
             << " for domain=" << cookie_domain << ".";
@@ -1167,13 +1188,20 @@ void GaiaCookieManagerService::StartSettingCookies(
   for (const net::CanonicalCookie& cookie : cookies) {
     if (cookies_to_set_.find(std::make_pair(cookie.Name(), cookie.Domain())) !=
         cookies_to_set_.end()) {
-      base::OnceCallback<void(bool success)> callback = base::Bind(
-          &GaiaCookieManagerService::OnCookieSet,
-          weak_ptr_factory_.GetWeakPtr(), cookie.Name(), cookie.Domain());
+      base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
+          callback = base::BindOnce(&GaiaCookieManagerService::OnCookieSet,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    cookie.Name(), cookie.Domain());
+      net::CookieOptions options;
+      options.set_include_httponly();
+      // Permit it to set a SameSite cookie if it wants to.
+      options.set_same_site_cookie_context(
+          net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
       cookie_manager->SetCanonicalCookie(
-          cookie, "https", true,
-          mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
-                                                      false));
+          cookie, "https", options,
+          mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+              std::move(callback), net::CanonicalCookie::CookieInclusionStatus::
+                                       EXCLUDE_UNKNOWN_ERROR));
     } else {
       LOG(ERROR) << "Duplicate cookie found: " << cookie.Name() << " "
                  << cookie.Domain();

@@ -12,7 +12,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_FUCHSIA)
-#include <fuchsia/ui/gfx/cpp/fidl.h>
+#include <fuchsia/ui/views/cpp/fidl.h>
 #endif
 
 namespace ui {
@@ -22,6 +22,12 @@ enum class PlatformWindowType {
   kPopup,
   kMenu,
   kTooltip,
+};
+
+enum class PlatformWindowOpacity {
+  kInferOpacity,
+  kOpaqueWindow,
+  kTranslucentWindow,
 };
 
 // Initial properties which are passed to PlatformWindow to be initialized
@@ -43,9 +49,12 @@ struct PlatformWindowInitProperties {
   // Tells PlatformWindow which native widget its parent holds. It is usually
   // used to find a parent from internal list of PlatformWindows.
   gfx::AcceleratedWidget parent_widget = gfx::kNullAcceleratedWidget;
+  // Tells the opacity type of a window. Check the comment in the
+  // Widget::InitProperties::WindowOpacity.
+  PlatformWindowOpacity opacity = PlatformWindowOpacity::kOpaqueWindow;
 
 #if defined(OS_FUCHSIA)
-  fuchsia::ui::gfx::ExportToken view_token;
+  fuchsia::ui::views::ViewToken view_token;
 #endif
 };
 

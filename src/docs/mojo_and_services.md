@@ -64,7 +64,7 @@ module example.mojom;
 
 interface PingResponder {
   // Receives a "Ping" and responds with a random integer.
-  Ping() => (int random);
+  Ping() => (int32 random);
 };
 ```
 
@@ -73,7 +73,7 @@ definition here:
 
 ``` python
 # src/example/public/mojom/BUILD.gn
-import "mojo/public/tools/bindings/mojom.gni"
+import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   sources = [ "ping_responder.mojom" ]
 }
@@ -327,7 +327,7 @@ interface Divider {
 
 ``` python
 # src/chrome/services/math/public/mojom/BUILD.gn
-import "mojo/public/tools/bindings/mojom.gni"
+import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   sources = [

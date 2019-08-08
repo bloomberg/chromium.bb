@@ -7,7 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "components/exo/data_source.h"
 #include "components/exo/data_source_delegate.h"
 #include "components/exo/seat_observer.h"
@@ -67,7 +67,7 @@ class TestDataSourceDelegate : public DataSourceDelegate {
 };
 
 void RunReadingTask() {
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 }
 

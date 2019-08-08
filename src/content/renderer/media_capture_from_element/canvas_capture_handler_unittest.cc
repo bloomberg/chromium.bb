@@ -9,7 +9,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/stream/media_stream_video_capturer_source.h"
 #include "media/base/limits.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,6 +16,7 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -120,7 +120,6 @@ class CanvasCaptureHandlerTest
           video_frame->visible_data(media::VideoFrame::kAPlane);
       EXPECT_EQ(kTestAlphaValue, a_plane[0]);
     }
-    EXPECT_TRUE(video_frame->ColorSpace().IsValid());
   }
 
   blink::WebMediaStreamTrack track_;
@@ -129,13 +128,13 @@ class CanvasCaptureHandlerTest
 
  protected:
   media::VideoCapturerSource* GetVideoCapturerSource(
-      MediaStreamVideoCapturerSource* ms_source) {
-    return ms_source->source_.get();
+      blink::MediaStreamVideoCapturerSource* ms_source) {
+    return ms_source->GetSourceForTesting();
   }
 
   // A ChildProcess is needed to fool the Tracks and Sources believing they are
   // on the right threads. A ScopedTaskEnvironment must be instantiated before
-  // ChildProcess to prevent it from leaking a TaskScheduler.
+  // ChildProcess to prevent it from leaking a ThreadPool.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ChildProcess child_process_;
 
@@ -168,8 +167,8 @@ TEST_P(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
   InSequence s;
   const blink::WebMediaStreamSource& web_media_stream_source = track_.Source();
   EXPECT_FALSE(web_media_stream_source.IsNull());
-  MediaStreamVideoCapturerSource* const ms_source =
-      static_cast<MediaStreamVideoCapturerSource*>(
+  blink::MediaStreamVideoCapturerSource* const ms_source =
+      static_cast<blink::MediaStreamVideoCapturerSource*>(
           web_media_stream_source.GetPlatformSource());
   EXPECT_TRUE(ms_source != nullptr);
   media::VideoCapturerSource* source = GetVideoCapturerSource(ms_source);
@@ -208,8 +207,8 @@ TEST_P(CanvasCaptureHandlerTest, VerifyFrame) {
   const bool width = testing::get<1>(GetParam());
   const bool height = testing::get<1>(GetParam());
   InSequence s;
-  media::VideoCapturerSource* const source =
-      GetVideoCapturerSource(static_cast<MediaStreamVideoCapturerSource*>(
+  media::VideoCapturerSource* const source = GetVideoCapturerSource(
+      static_cast<blink::MediaStreamVideoCapturerSource*>(
           track_.Source().GetPlatformSource()));
   EXPECT_TRUE(source != nullptr);
 
@@ -229,8 +228,8 @@ TEST_P(CanvasCaptureHandlerTest, VerifyFrame) {
 // Checks that needsNewFrame() works as expected.
 TEST_F(CanvasCaptureHandlerTest, CheckNeedsNewFrame) {
   InSequence s;
-  media::VideoCapturerSource* source =
-      GetVideoCapturerSource(static_cast<MediaStreamVideoCapturerSource*>(
+  media::VideoCapturerSource* source = GetVideoCapturerSource(
+      static_cast<blink::MediaStreamVideoCapturerSource*>(
           track_.Source().GetPlatformSource()));
   EXPECT_TRUE(source != nullptr);
   EXPECT_TRUE(canvas_capture_handler_->NeedsNewFrame());

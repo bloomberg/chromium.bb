@@ -13,7 +13,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -25,6 +24,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Android UKM tests.
@@ -46,12 +46,8 @@ public class UkmTest {
      * @param incognito Whether to close an incognito or non-incognito tab.
      */
     protected void closeCurrentTab(final boolean incognito) throws InterruptedException {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().getTabModelSelector().selectModel(incognito);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().getTabModelSelector().selectModel(incognito));
         ChromeTabUtils.closeCurrentTab(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
     }
@@ -73,41 +69,42 @@ public class UkmTest {
         // chrome/browser/metrics/ukm_browsertest.cc.
         Tab normalTab = mActivityTestRule.getActivity().getActivityTab();
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertTrue(UkmUtilsForTest.isEnabled()); });
 
         long originalClientId =
-                ThreadUtils.runOnUiThreadBlocking(() -> { return UkmUtilsForTest.getClientId(); })
+                TestThreadUtils
+                        .runOnUiThreadBlocking(() -> { return UkmUtilsForTest.getClientId(); })
                         .longValue();
         Assert.assertFalse("Non-zero client id: " + originalClientId, originalClientId == 0);
 
         mActivityTestRule.newIncognitoTabFromMenu();
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
 
         // Opening another regular tab mustn't enable UKM.
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
 
         // Opening and closing another Incognito tab mustn't enable UKM.
         mActivityTestRule.newIncognitoTabFromMenu();
         closeIncognitoTab();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
 
         closeRegularTab();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
 
         closeIncognitoTab();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertTrue(UkmUtilsForTest.isEnabled()); });
 
         // Client ID should not have been reset.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("Client id:", originalClientId, UkmUtilsForTest.getClientId());
         });
     }
@@ -128,11 +125,11 @@ public class UkmTest {
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         Tab normalTab = mActivityTestRule.getActivity().getActivityTab();
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
 
         closeIncognitoTab();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertTrue(UkmUtilsForTest.isEnabled()); });
     }
 
@@ -146,18 +143,19 @@ public class UkmTest {
         ChromeTabUtils.closeAllTabs(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertTrue(UkmUtilsForTest.isEnabled()); });
 
         long originalClientId =
-                ThreadUtils.runOnUiThreadBlocking(() -> { return UkmUtilsForTest.getClientId(); })
+                TestThreadUtils
+                        .runOnUiThreadBlocking(() -> { return UkmUtilsForTest.getClientId(); })
                         .longValue();
         Assert.assertFalse("Non-zero client id: " + originalClientId, originalClientId == 0);
 
         // Record some dummy UKM data (adding a Source).
         final long sourceId = 0x54321;
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Write data under a dummy sourceId and verify it is there.
             UkmUtilsForTest.recordSourceWithId(sourceId);
             Assert.assertTrue(UkmUtilsForTest.hasSourceWithId(sourceId));
@@ -165,7 +163,7 @@ public class UkmTest {
         CallbackHelper callbackHelper = new CallbackHelper();
 
         // Clear all browsing history.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             BrowsingDataBridge.getInstance().clearBrowsingData(new OnClearBrowsingDataListener() {
                 @Override
                 public void onBrowsingDataCleared() {
@@ -175,7 +173,7 @@ public class UkmTest {
         });
         callbackHelper.waitForCallback(0);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Verify that UKM is still running.
             Assert.assertTrue(UkmUtilsForTest.isEnabled());
             // The source under sourceId should be removed.

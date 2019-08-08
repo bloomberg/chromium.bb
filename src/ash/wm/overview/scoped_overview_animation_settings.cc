@@ -5,6 +5,7 @@
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 
 #include "ash/metrics/histogram_macros.h"
+#include "ash/wm/overview/overview_constants.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -17,9 +18,6 @@
 namespace ash {
 
 namespace {
-
-// The time duration for transformation animations.
-constexpr base::TimeDelta kTransition = base::TimeDelta::FromMilliseconds(300);
 
 // The time duration for fading out when closing an item.
 constexpr base::TimeDelta kCloseFadeOut =
@@ -54,6 +52,10 @@ constexpr base::TimeDelta kDropTargetFadeIn =
 constexpr base::TimeDelta kOverviewTitleFade =
     base::TimeDelta::FromMilliseconds(167);
 
+// Delay before the show animation of the overview title bar.
+constexpr base::TimeDelta kOverviewTitleFadeInDelay =
+    base::TimeDelta::FromMilliseconds(83);
+
 base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
@@ -77,7 +79,7 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
       return kHomeLauncherTransition;
     case OVERVIEW_ANIMATION_DROP_TARGET_FADE_IN:
       return kDropTargetFadeIn;
-    case OVERVIEW_ANIMATION_SHIELD_FADE:
+    case OVERVIEW_ANIMATION_NO_RECENTS_FADE:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW:
       return kOverviewSelectorTransition;
@@ -148,7 +150,7 @@ ui::AnimationMetricsReporter* GetMetricsReporter(
     case OVERVIEW_ANIMATION_NONE:
     case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW:
     case OVERVIEW_ANIMATION_DROP_TARGET_FADE_IN:
-    case OVERVIEW_ANIMATION_SHIELD_FADE:
+    case OVERVIEW_ANIMATION_NO_RECENTS_FADE:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW:
     case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_IN:
@@ -239,7 +241,7 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       break;
-    case OVERVIEW_ANIMATION_SHIELD_FADE:
+    case OVERVIEW_ANIMATION_NO_RECENTS_FADE:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW:
       animation_settings_->SetTweenType(gfx::Tween::EASE_IN_OUT);
       animation_settings_->SetPreemptionStrategy(
@@ -254,7 +256,7 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       animation_settings_->SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-      animator->SchedulePauseForProperties(kOverviewTitleFade,
+      animator->SchedulePauseForProperties(kOverviewTitleFadeInDelay,
                                            ui::LayerAnimationElement::OPACITY);
       break;
     case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_OUT:

@@ -30,7 +30,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -53,6 +52,7 @@ import org.chromium.chrome.test.util.browser.notifications.MockNotificationManag
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -112,7 +112,7 @@ public class NotificationPlatformBridgeTest {
 
     private double getEngagementScoreBlocking() {
         try {
-            return ThreadUtils.runOnUiThreadBlocking(new Callable<Double>() {
+            return TestThreadUtils.runOnUiThreadBlocking(new Callable<Double>() {
                 @Override
                 public Double call() throws Exception {
                     return SiteEngagementService.getForProfile(Profile.getLastUsedProfile())
@@ -157,8 +157,7 @@ public class NotificationPlatformBridgeTest {
         // showing a dialog.
         runJavaScript("Notification.requestPermission(sendToTest)");
         waitForTitle("denied");
-        Assert.assertEquals(
-                null, PermissionDialogController.getInstance().getCurrentDialogForTesting());
+        Assert.assertFalse(PermissionDialogController.getInstance().isDialogShownForTest());
 
         // Notifications permission should still be denied.
         Assert.assertEquals("\"denied\"", runJavaScript("Notification.permission"));
@@ -260,7 +259,6 @@ public class NotificationPlatformBridgeTest {
      * with a remote input on the action.
      */
     @Test
-    @CommandLineFlags.Add("enable-experimental-web-platform-features")
     @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT_WATCH)
     @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs were only added in KITKAT_WATCH.
     @MediumTest
@@ -291,7 +289,6 @@ public class NotificationPlatformBridgeTest {
      * appropriately.
      */
     @Test
-    @CommandLineFlags.Add("enable-experimental-web-platform-features")
     @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT_WATCH)
     @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs were only added in KITKAT_WATCH.
     @MediumTest
@@ -339,7 +336,6 @@ public class NotificationPlatformBridgeTest {
      * incremented appropriately.
      */
     @Test
-    @CommandLineFlags.Add("enable-experimental-web-platform-features")
     @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT_WATCH)
     @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs added in KITKAT_WATCH.
     @MediumTest
@@ -401,7 +397,6 @@ public class NotificationPlatformBridgeTest {
      */
     @Test
     @TargetApi(Build.VERSION_CODES.KITKAT) // Notification.Action.actionIntent added in Android K.
-    @CommandLineFlags.Add("enable-experimental-web-platform-features")
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testReplyToNotificationWithNoRemoteInput() throws Exception {
@@ -464,12 +459,8 @@ public class NotificationPlatformBridgeTest {
                 ContentSettingValues.ALLOW, mPermissionTestRule.getOrigin());
 
         // Disable notification vibration in preferences.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                PrefServiceBridge.getInstance().setNotificationsVibrateEnabled(false);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> PrefServiceBridge.getInstance().setNotificationsVibrateEnabled(false));
 
         Notification notification = showAndGetNotification("MyNotification", notificationOptions);
 
@@ -518,12 +509,9 @@ public class NotificationPlatformBridgeTest {
                 ContentSettingValues.ALLOW, mPermissionTestRule.getOrigin());
 
         // By default, vibration is enabled in notifications.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertTrue(PrefServiceBridge.getInstance().isNotificationsVibrateEnabled());
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> Assert.assertTrue(
+                                PrefServiceBridge.getInstance().isNotificationsVibrateEnabled()));
 
         Notification notification = showAndGetNotification("MyNotification", "{ vibrate: 42 }");
 

@@ -1545,6 +1545,8 @@ void DevToolsWindow::SetOpenNewWindowForPopups(bool value) {
 void DevToolsWindow::CreateDevToolsBrowser() {
   PrefService* prefs = profile_->GetPrefs();
   if (!prefs->GetDictionary(prefs::kAppWindowPlacement)->HasKey(kDevToolsApp)) {
+    // Ensure there is always a default size so that
+    // BrowserFrame::InitBrowserFrame can retrieve it later.
     DictionaryPrefUpdate update(prefs, prefs::kAppWindowPlacement);
     base::DictionaryValue* wp_prefs = update.Get();
     auto dev_tools_defaults = std::make_unique<base::DictionaryValue>();

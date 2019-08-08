@@ -7,7 +7,7 @@
 
 class AppMenuButton;
 class BrowserActionsContainer;
-class PageActionIconContainerView;
+class OmniboxPageActionIconContainerView;
 
 namespace gfx {
 class Rect;
@@ -25,8 +25,9 @@ class ToolbarButtonProvider {
   // Gets the browser actions container.
   virtual BrowserActionsContainer* GetBrowserActionsContainer() = 0;
 
-  // Gets the page action icon container.
-  virtual PageActionIconContainerView* GetPageActionIconContainerView() = 0;
+  // Gets the omnibox page action icon container.
+  virtual OmniboxPageActionIconContainerView*
+  GetOmniboxPageActionIconContainerView() = 0;
 
   // Gets the app menu button.
   virtual AppMenuButton* GetAppMenuButton() = 0;

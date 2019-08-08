@@ -51,7 +51,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
                           public cc::SnapFlingClient {
  public:
   InputHandlerProxy(cc::InputHandler* input_handler,
-                    InputHandlerProxyClient* client);
+                    InputHandlerProxyClient* client,
+                    bool force_input_to_main_thread);
   ~InputHandlerProxy() override;
 
   InputScrollElasticityController* scroll_elasticity_controller() {
@@ -80,7 +81,15 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   void HandleInputEventWithLatencyInfo(WebScopedInputEvent event,
                                        const LatencyInfo& latency_info,
                                        EventDispositionCallback callback);
-  EventDisposition HandleInputEvent(const blink::WebInputEvent& event);
+  void InjectScrollbarGestureScroll(
+      const blink::WebInputEvent::Type type,
+      const blink::WebFloatPoint& position_in_widget,
+      const cc::InputHandlerPointerResult& pointer_result,
+      const LatencyInfo& latency_info,
+      const base::TimeTicks now);
+  EventDisposition RouteToTypeSpecificHandler(
+      const blink::WebInputEvent& event,
+      const LatencyInfo& latency_info = LatencyInfo());
 
   // cc::InputHandlerClient implementation.
   void WillShutdown() override;
@@ -224,6 +233,17 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   std::unique_ptr<ScrollPredictor> scroll_predictor_;
 
   bool compositor_touch_action_enabled_;
+
+  // This flag can be used to force all input to be forwarded to Blink. It's
+  // used in LayoutTests to preserve existing behavior for non-threaded layout
+  // tests and to allow testing both Blink and CC input handling paths.
+  bool force_input_to_main_thread_;
+
+  // These flags are set for the SkipTouchEventFilter experiment. The
+  // experiment either skips filtering discrete (touch start/end) events to the
+  // main thread, or all events (touch start/end/move).
+  bool skip_touch_filter_discrete_ = false;
+  bool skip_touch_filter_all_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };

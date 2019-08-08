@@ -599,11 +599,11 @@ void CastSocketImpl::DoConnectCallback() {
   connect_callbacks_.clear();
 }
 
-void CastSocketImpl::Close(const net::CompletionCallback& callback) {
+void CastSocketImpl::Close(net::CompletionOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   CloseInternal();
   // Run this callback last.  It may delete the socket.
-  callback.Run(net::OK);
+  std::move(callback).Run(net::OK);
 }
 
 void CastSocketImpl::CloseInternal() {

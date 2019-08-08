@@ -41,6 +41,12 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
   LayoutRect content_box_rect = layout_video_.PhysicalContentBoxRect();
   content_box_rect.MoveBy(paint_offset);
 
+  // Since we may have changed the location of the replaced content, we need to
+  // notify PAC.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+      layout_video_.GetFrameView())
+    layout_video_.GetFrameView()->SetPaintArtifactCompositorNeedsUpdate();
+
   // Video frames are only painted in software for printing or capturing node
   // images via web APIs.
   bool force_software_video_paint =
@@ -51,11 +57,11 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
       RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
   if (paint_with_foreign_layer) {
     if (cc::Layer* layer = layout_video_.MediaElement()->CcLayer()) {
-      layer->SetOffsetToTransformParent(
-          gfx::Vector2dF(snapped_replaced_rect.X(), snapped_replaced_rect.Y()));
       layer->SetBounds(gfx::Size(snapped_replaced_rect.Size()));
       layer->SetIsDrawable(true);
-      RecordForeignLayer(context, DisplayItem::kForeignLayerVideo, layer);
+      layer->SetHitTestable(true);
+      RecordForeignLayer(context, DisplayItem::kForeignLayerVideo, layer,
+                         FloatPoint(snapped_replaced_rect.Location()));
       return;
     }
   }
@@ -67,8 +73,7 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
     // paint nothing.
     DCHECK(paint_info.PaintContainer());
     ImagePainter(layout_video_)
-        .PaintIntoRect(context, replaced_rect, content_box_rect,
-                       paint_info.PaintContainer()->Layer());
+        .PaintIntoRect(context, replaced_rect, content_box_rect);
   } else {
     PaintFlags video_flags = context.FillFlags();
     video_flags.setColor(SK_ColorBLACK);

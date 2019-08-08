@@ -20,7 +20,6 @@
 
 namespace chromeos {
 
-class BaseScreenDelegate;
 class ErrorScreensHistogramHelper;
 class ScreenManager;
 
@@ -34,8 +33,8 @@ class AutoEnrollmentCheckScreen
       public BaseScreen,
       public NetworkPortalDetector::Observer {
  public:
-  AutoEnrollmentCheckScreen(BaseScreenDelegate* base_screen_delegate,
-                            AutoEnrollmentCheckScreenView* view,
+  AutoEnrollmentCheckScreen(AutoEnrollmentCheckScreenView* view,
+                            ErrorScreen* error_screen,
                             const base::RepeatingClosure& exit_callback);
   ~AutoEnrollmentCheckScreen() override;
 
@@ -91,6 +90,10 @@ class AutoEnrollmentCheckScreen
   // Configures the error screen.
   void ShowErrorScreen(NetworkError::ErrorState error_state);
 
+  // Passed as a callback to the error screen when it's shown. Called when the
+  // error screen gets hidden.
+  void OnErrorScreenHidden();
+
   // Asynchronously signals completion. The owner might destroy |this| in
   // response, so no code should be run after the completion of a message loop
   // task, in which this function was called.
@@ -109,6 +112,7 @@ class AutoEnrollmentCheckScreen
   bool ShouldBlockOnServerError() const;
 
   AutoEnrollmentCheckScreenView* view_;
+  ErrorScreen* error_screen_;
   base::RepeatingClosure exit_callback_;
   AutoEnrollmentController* auto_enrollment_controller_;
 

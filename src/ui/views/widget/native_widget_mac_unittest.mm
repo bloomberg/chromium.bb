@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
@@ -155,7 +156,7 @@ class TestWindowNativeWidgetMac : public NativeWidgetMac {
 // which need access to Cocoa APIs.
 class NativeWidgetMacTest : public WidgetTest {
  public:
-  NativeWidgetMacTest() {}
+  NativeWidgetMacTest() = default;
 
   // Make an NSWindow with a close button and a title bar to use as a parent.
   // This NSWindow is backed by a widget that is not exposed to the caller.
@@ -199,7 +200,7 @@ class NativeWidgetMacTest : public WidgetTest {
 
 class WidgetChangeObserver : public TestWidgetObserver {
  public:
-  WidgetChangeObserver(Widget* widget) : TestWidgetObserver(widget) {}
+  explicit WidgetChangeObserver(Widget* widget) : TestWidgetObserver(widget) {}
 
   void WaitForVisibleCounts(int gained, int lost) {
     if (gained_visible_count_ >= gained && lost_visible_count_ >= lost)
@@ -266,8 +267,8 @@ class NativeHostHolder {
 // BubbleDialogDelegateView.
 class SimpleBubbleView : public BubbleDialogDelegateView {
  public:
-  SimpleBubbleView() {}
-  ~SimpleBubbleView() override {}
+  SimpleBubbleView() = default;
+  ~SimpleBubbleView() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimpleBubbleView);
@@ -279,10 +280,8 @@ class CustomTooltipView : public View {
       : tooltip_(tooltip), tooltip_handler_(tooltip_handler) {}
 
   // View:
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override {
-    *tooltip = tooltip_;
-    return true;
+  base::string16 GetTooltipText(const gfx::Point& p) const override {
+    return tooltip_;
   }
 
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override {
@@ -294,6 +293,19 @@ class CustomTooltipView : public View {
   View* tooltip_handler_;  // Weak
 
   DISALLOW_COPY_AND_ASSIGN(CustomTooltipView);
+};
+
+// A Widget subclass that exposes counts to calls made to OnMouseEvent().
+class MouseTrackingWidget : public Widget {
+ public:
+  int GetMouseEventCount(ui::EventType type) { return counts_[type]; }
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    ++counts_[event->type()];
+    Widget::OnMouseEvent(event);
+  }
+
+ private:
+  std::map<int, int> counts_;
 };
 
 // Test visibility states triggered externally.
@@ -456,10 +468,11 @@ TEST_F(NativeWidgetMacTest, DISABLED_OrderFrontAfterMiniaturize) {
 
   // Wait and check that child is really visible.
   // TODO(kirr): remove the fixed delay.
+  base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      FROM_HERE, run_loop.QuitWhenIdleClosure(),
       base::TimeDelta::FromSeconds(2));
-  base::RunLoop().Run();
+  run_loop.Run();
 
   EXPECT_FALSE(widget->IsMinimized());
   EXPECT_TRUE(widget->IsVisible());
@@ -702,11 +715,6 @@ TEST_F(NativeWidgetMacTest, SetCursor) {
   widget->CloseNow();
 }
 
-// This test uses the deprecated NSObject accessibility API - see
-// https://crbug.com/921109.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
 // Tests that an accessibility request from the system makes its way through to
 // a views::Label filling the window.
 TEST_F(NativeWidgetMacTest, AccessibilityIntegration) {
@@ -726,13 +734,13 @@ TEST_F(NativeWidgetMacTest, AccessibilityIntegration) {
 
   id hit = [widget->GetNativeWindow().GetNativeNSWindow()
       accessibilityHitTest:midpoint];
-  id title = [hit accessibilityAttributeValue:NSAccessibilityValueAttribute];
+  ASSERT_TRUE([hit conformsToProtocol:@protocol(NSAccessibility)]);
+  id<NSAccessibility> ax_hit = hit;
+  id title = ax_hit.accessibilityValue;
   EXPECT_NSEQ(title, @"Green");
 
   widget->CloseNow();
 }
-
-#pragma clang diagnostic pop
 
 namespace {
 
@@ -1078,6 +1086,52 @@ TEST_F(NativeWidgetMacTest, TwoWidgetTooltips) {
 
   widget_above->CloseNow();
   widget_below->CloseNow();
+}
+
+// Ensure captured mouse events correctly update dragging state in BaseView.
+// Regression test for https://crbug.com/942452.
+TEST_F(NativeWidgetMacTest, CapturedMouseUpClearsDrag) {
+  MouseTrackingWidget* widget = new MouseTrackingWidget;
+  Widget::InitParams init_params(Widget::InitParams::TYPE_WINDOW);
+  widget->Init(init_params);
+
+  NSWindow* window = widget->GetNativeWindow().GetNativeNSWindow();
+  BridgedContentView* native_view = [window contentView];
+
+  // Note: using native coordinates for consistency.
+  [window setFrame:NSMakeRect(50, 50, 100, 100) display:YES animate:NO];
+  NSEvent* enter_event = cocoa_test_event_utils::EnterEvent({50, 50}, window);
+  NSEvent* exit_event = cocoa_test_event_utils::ExitEvent({200, 200}, window);
+
+  widget->Show();
+  EXPECT_EQ(0, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  [native_view mouseEntered:enter_event];
+  EXPECT_EQ(1, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  [native_view mouseExited:exit_event];
+  EXPECT_EQ(1, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(1, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  // Send a click. Note a click may initiate a drag, so the mouse-up is sent as
+  // a captured event.
+  std::pair<NSEvent*, NSEvent*> click =
+      cocoa_test_event_utils::MouseClickInView(native_view, 1);
+  [native_view mouseDown:click.first];
+  [native_view processCapturedMouseEvent:click.second];
+
+  // After a click, Enter/Exit should still work.
+  [native_view mouseEntered:enter_event];
+  EXPECT_EQ(2, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(1, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  [native_view mouseExited:exit_event];
+  EXPECT_EQ(2, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(2, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  widget->CloseNow();
 }
 
 namespace {
@@ -2224,14 +2278,14 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
     native_host_parent_ = new View();
     widget_->GetContentsView()->AddChildView(native_host_parent_);
 
-    const int kNativeViewCount = 3;
-    for (int i = 0; i < kNativeViewCount; ++i) {
-      std::unique_ptr<NativeHostHolder> holder(new NativeHostHolder());
+    const size_t kNativeViewCount = 3;
+    for (size_t i = 0; i < kNativeViewCount; ++i) {
+      auto holder = std::make_unique<NativeHostHolder>();
       native_host_parent_->AddChildView(holder->host());
       holder->AttachNativeView();
       hosts_.push_back(std::move(holder));
     }
-    EXPECT_EQ(kNativeViewCount, native_host_parent_->child_count());
+    EXPECT_EQ(kNativeViewCount, native_host_parent_->children().size());
     EXPECT_NSEQ([widget_->GetNativeView().GetNativeNSView() subviews],
                 ([GetStartingSubviews() arrayByAddingObjectsFromArray:@[
                   hosts_[0]->view(), hosts_[1]->view(), hosts_[2]->view()

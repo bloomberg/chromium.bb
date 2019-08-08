@@ -175,16 +175,16 @@ class CJX_Object {
 
   Optional<WideString> TryNamespace();
 
-  Optional<int32_t> TryInteger(XFA_Attribute eAttr, bool bUseDefault);
+  Optional<int32_t> TryInteger(XFA_Attribute eAttr, bool bUseDefault) const;
   void SetInteger(XFA_Attribute eAttr, int32_t iValue, bool bNotify);
-  int32_t GetInteger(XFA_Attribute eAttr);
+  int32_t GetInteger(XFA_Attribute eAttr) const;
 
-  Optional<WideString> TryCData(XFA_Attribute eAttr, bool bUseDefault);
+  Optional<WideString> TryCData(XFA_Attribute eAttr, bool bUseDefault) const;
   void SetCData(XFA_Attribute eAttr,
                 const WideString& wsValue,
                 bool bNotify,
                 bool bScriptModify);
-  WideString GetCData(XFA_Attribute eAttr);
+  WideString GetCData(XFA_Attribute eAttr) const;
 
   Optional<XFA_AttributeValue> TryEnum(XFA_Attribute eAttr,
                                        bool bUseDefault) const;
@@ -246,7 +246,7 @@ class CJX_Object {
   XFA_MAPMODULEDATA* GetMapModuleData() const;
   void SetMapModuleValue(void* pKey, void* pValue);
   Optional<void*> GetMapModuleValue(void* pKey) const;
-  Optional<WideString> GetMapModuleString(void* pKey);
+  Optional<WideString> GetMapModuleString(void* pKey) const;
   void SetMapModuleBuffer(void* pKey,
                           void* pValue,
                           int32_t iBytes,

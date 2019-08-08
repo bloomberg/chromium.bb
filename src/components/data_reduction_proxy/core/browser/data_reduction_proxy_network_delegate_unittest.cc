@@ -327,8 +327,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         .WithURLRequestContext(context_.get());
 
     if (proxy_config != BYPASS_PROXY) {
-      builder.WithProxiesForHttp({DataReductionProxyServer(
-          proxy_server, ProxyServer::UNSPECIFIED_TYPE)});
+      builder.WithProxiesForHttp({DataReductionProxyServer(proxy_server)});
     }
 
     test_context_ = builder.Build();
@@ -1699,8 +1698,7 @@ class DataReductionProxyNetworkDelegateClientLoFiTest : public testing::Test {
         DataReductionProxyTestContext::Builder()
             .WithURLRequestContext(context_.get())
             .WithMockClientSocketFactory(mock_socket_factory_.get())
-            .WithProxiesForHttp({DataReductionProxyServer(
-                proxy_server, ProxyServer::UNSPECIFIED_TYPE)})
+            .WithProxiesForHttp({DataReductionProxyServer(proxy_server)})
             .Build();
 
     drp_test_context_->AttachToURLRequestContext(context_storage_.get());
@@ -2001,10 +1999,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RecordNonContentToOtherHost) {
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "\r\n";
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      data_reduction_proxy::features::
-          kDataSaverSiteBreakdownUsingPageLoadMetrics);
   Init(USE_INSECURE_PROXY);
   EnableDataUsageReporting();
   auto test_resource_type_provider =

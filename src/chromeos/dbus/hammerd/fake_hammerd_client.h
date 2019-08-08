@@ -14,7 +14,7 @@
 
 namespace chromeos {
 
-class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeHammerdClient : public HammerdClient {
+class COMPONENT_EXPORT(HAMMERD) FakeHammerdClient : public HammerdClient {
  public:
   FakeHammerdClient();
   ~FakeHammerdClient() override;

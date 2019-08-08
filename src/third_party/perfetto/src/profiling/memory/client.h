@@ -27,29 +27,11 @@
 #include "perfetto/base/unix_socket.h"
 #include "src/profiling/memory/sampler.h"
 #include "src/profiling/memory/shared_ring_buffer.h"
+#include "src/profiling/memory/unhooked_allocator.h"
 #include "src/profiling/memory/wire_protocol.h"
 
 namespace perfetto {
 namespace profiling {
-
-class Client;
-
-// Cache for frees that have been observed. It is infeasible to send every
-// free separately, so we batch and send the whole buffer once it is full.
-class FreePage {
- public:
-  FreePage() { free_page_.num_entries = 0; }
-
-  // Add address to buffer. Flush if necessary.
-  // Can be called from any thread. Must not hold mutex_.
-  bool Add(const uint64_t addr, uint64_t sequence_number, Client* client);
-
- private:
-  // TODO(fmayer): Sort out naming. It's confusing data FreePage has a member
-  // called free_page_ that is of type FreeMetadata.
-  FreeMetadata free_page_;
-  std::timed_mutex mutex_;
-};
 
 const char* GetThreadStackBase();
 
@@ -62,16 +44,32 @@ constexpr uint32_t kClientSockTimeoutMs = 1000;
 //
 // Methods of this class are thread-safe unless otherwise stated, in which case
 // the caller needs to synchronize calls behind a mutex or similar.
+//
+// Implementation warning: this class should not use any heap, as otherwise its
+// destruction would enter the possibly-hooked |free|, which can reference the
+// Client itself. If avoiding the heap is not possible, then look at using
+// UnhookedAllocator.
 class Client {
  public:
-  Client(base::Optional<base::UnixSocketRaw> sock);
-  Client(const std::string& sock_name);
+  // Returns a client that is ready for sampling allocations, using the given
+  // socket (which should already be connected to heapprofd).
+  //
+  // Returns a shared_ptr since that is how the client will ultimately be used,
+  // and to take advantage of std::allocate_shared putting the object & the
+  // control block in one block of memory.
+  static std::shared_ptr<Client> CreateAndHandshake(
+      base::UnixSocketRaw sock,
+      UnhookedAllocator<Client> unhooked_allocator);
+
+  static base::Optional<base::UnixSocketRaw> ConnectToHeapprofd(
+      const std::string& sock_name);
+
   bool RecordMalloc(uint64_t alloc_size,
                     uint64_t total_size,
                     uint64_t alloc_address);
+
+  // Add address to buffer of deallocations. Flushes the buffer if necessary.
   bool RecordFree(uint64_t alloc_address);
-  void Shutdown();
-  bool FlushFrees(FreeMetadata* free_metadata);
 
   // Returns the number of bytes to assign to an allocation with the given
   // |alloc_size|, based on the current sampling rate. A return value of zero
@@ -80,29 +78,36 @@ class Client {
   //
   // Not thread-safe.
   size_t GetSampleSizeLocked(size_t alloc_size) {
-    if (!inited_.load(std::memory_order_acquire))
-      return 0;
     return sampler_.SampleSize(alloc_size);
   }
 
+  // Public for std::allocate_shared. Use CreateAndHandshake() to create
+  // instances instead.
+  Client(base::UnixSocketRaw sock,
+         ClientConfiguration client_config,
+         SharedRingBuffer shmem,
+         Sampler sampler,
+         const char* main_thread_stack_base);
+
   ClientConfiguration client_config_for_testing() { return client_config_; }
-  bool inited() { return inited_; }
+  bool IsConnected();
 
  private:
   const char* GetStackBase();
+  // Flush the contents of free_batch_. Must hold free_batch_lock_.
+  bool FlushFreesLocked();
+  bool SendControlSocketByte();
 
-  // TODO(rsavitski): used to check if the client is completely initialized
-  // after construction. The reads in RecordFree & GetSampleSizeLocked are no
-  // longer necessary (was an optimization to not do redundant work after
-  // shutdown). Turn into a normal bool, or indicate construction failures
-  // differently.
-  std::atomic<bool> inited_{false};
   ClientConfiguration client_config_;
   // sampler_ operations are not thread-safe.
   Sampler sampler_;
   base::UnixSocketRaw sock_;
-  FreePage free_page_;
-  const char* main_thread_stack_base_ = nullptr;
+
+  // Protected by free_batch_lock_.
+  FreeBatch free_batch_;
+  std::timed_mutex free_batch_lock_;
+
+  const char* main_thread_stack_base_{nullptr};
   std::atomic<uint64_t> sequence_number_{0};
   SharedRingBuffer shmem_;
 };

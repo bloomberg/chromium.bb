@@ -444,9 +444,6 @@ class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
 
     user_policy_certs_helper_.SetUpInProcessBrowserTestFixture();
 
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
-
     device_policy()->policy_data().set_public_key_version(1);
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
     proto.mutable_show_user_names()->set_show_user_names(true);

@@ -88,7 +88,6 @@ class OneClickSigninDialogViewTest : public ChromeViewsTestBase,
   bool on_confirmed_callback_called_ = false;
   bool confirmed_ = false;
   int learn_more_click_count_ = 0;
-  int advanced_click_count_ = 0;
 
  private:
   friend class TestOneClickSigninLinksDelegate;
@@ -103,7 +102,6 @@ class OneClickSigninDialogViewTest : public ChromeViewsTestBase,
     void OnLearnMoreLinkClicked(bool is_dialog) override {
       ++test_->learn_more_click_count_;
     }
-    void OnAdvancedLinkClicked() override { ++test_->advanced_click_count_; }
 
    private:
     OneClickSigninDialogViewTest* test_;
@@ -179,7 +177,6 @@ TEST_F(OneClickSigninDialogViewTest, AdvancedLink) {
   EXPECT_TRUE(on_confirmed_callback_called_);
   EXPECT_EQ(true, confirmed_);
   EXPECT_FALSE(OneClickSigninDialogView::IsShowing());
-  EXPECT_EQ(0, advanced_click_count_);
 }
 
 TEST_F(OneClickSigninDialogViewTest, LearnMoreLink) {

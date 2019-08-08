@@ -7,6 +7,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desks_util.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
@@ -319,10 +320,10 @@ TEST_F(LastWindowClosedTest, MultipleDisplays) {
   UpdateDisplay("1024x768,800x600");
   std::unique_ptr<aura::Window> window1 =
       CreateChildWindow(Shell::GetAllRootWindows()[0]->GetChildById(
-          kShellWindowId_DefaultContainer));
+          desks_util::GetActiveDeskContainerId()));
   std::unique_ptr<aura::Window> window2 =
       CreateChildWindow(Shell::GetAllRootWindows()[1]->GetChildById(
-          kShellWindowId_DefaultContainer));
+          desks_util::GetActiveDeskContainerId()));
 
   // Closing the last window shows the dialog.
   window1.reset();

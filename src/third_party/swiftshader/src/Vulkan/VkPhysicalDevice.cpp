@@ -15,6 +15,8 @@
 #include "VkPhysicalDevice.hpp"
 #include "VkConfig.h"
 
+#include "Pipeline/SpirvShader.hpp" // sw::SIMD::Width
+
 #include <cstring>
 
 namespace vk
@@ -37,8 +39,8 @@ const VkPhysicalDeviceFeatures& PhysicalDevice::getFeatures() const
 		false, // sampleRateShading
 		false, // dualSrcBlend
 		false, // logicOp
-		false, // multiDrawIndirect
-		false, // drawIndirectFirstInstance
+		true, // multiDrawIndirect
+		true, // drawIndirectFirstInstance
 		false, // depthClamp
 		false, // depthBiasClamp
 		false, // fillModeNonSolid
@@ -126,6 +128,11 @@ void PhysicalDevice::getFeatures(VkPhysicalDeviceProtectedMemoryFeatures* featur
 	features->protectedMemory = VK_FALSE;
 }
 
+void PhysicalDevice::getFeatures(VkPhysicalDeviceShaderDrawParameterFeatures* features) const
+{
+	features->shaderDrawParameters = VK_FALSE;
+}
+
 VkSampleCountFlags PhysicalDevice::getSampleCounts() const
 {
 	return VK_SAMPLE_COUNT_1_BIT | VK_SAMPLE_COUNT_4_BIT;
@@ -137,15 +144,15 @@ const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const
 
 	static const VkPhysicalDeviceLimits limits =
 	{
-		(1 << vk::MAX_IMAGE_LEVELS_1D), // maxImageDimension1D
-		(1 << vk::MAX_IMAGE_LEVELS_2D), // maxImageDimension2D
-		(1 << vk::MAX_IMAGE_LEVELS_3D), // maxImageDimension3D
-		(1 << vk::MAX_IMAGE_LEVELS_CUBE), // maxImageDimensionCube
-		(1 << vk::MAX_IMAGE_ARRAY_LAYERS), // maxImageArrayLayers
+		1 << (vk::MAX_IMAGE_LEVELS_1D - 1), // maxImageDimension1D
+		1 << (vk::MAX_IMAGE_LEVELS_2D - 1), // maxImageDimension2D
+		1 << (vk::MAX_IMAGE_LEVELS_3D - 1), // maxImageDimension3D
+		1 << (vk::MAX_IMAGE_LEVELS_CUBE - 1), // maxImageDimensionCube
+		vk::MAX_IMAGE_ARRAY_LAYERS, // maxImageArrayLayers
 		65536, // maxTexelBufferElements
 		16384, // maxUniformBufferRange
 		(1ul << 27), // maxStorageBufferRange
-		128, // maxPushConstantsSize
+		vk::MAX_PUSH_CONSTANT_SIZE, // maxPushConstantsSize
 		4096, // maxMemoryAllocationCount
 		4000, // maxSamplerAllocationCount
 		131072, // bufferImageGranularity
@@ -160,9 +167,9 @@ const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const
 		128, // maxPerStageResources
 		96, // maxDescriptorSetSamplers
 		72, // maxDescriptorSetUniformBuffers
-		8, // maxDescriptorSetUniformBuffersDynamic
+		MAX_DESCRIPTOR_SET_UNIFORM_BUFFERS_DYNAMIC, // maxDescriptorSetUniformBuffersDynamic
 		24, // maxDescriptorSetStorageBuffers
-		4, // maxDescriptorSetStorageBuffersDynamic
+		MAX_DESCRIPTOR_SET_STORAGE_BUFFERS_DYNAMIC, // maxDescriptorSetStorageBuffersDynamic
 		96, // maxDescriptorSetSampledImages
 		24, // maxDescriptorSetStorageImages
 		4, // maxDescriptorSetInputAttachments
@@ -303,10 +310,43 @@ void PhysicalDevice::getProperties(VkPhysicalDeviceProtectedMemoryProperties* pr
 
 void PhysicalDevice::getProperties(VkPhysicalDeviceSubgroupProperties* properties) const
 {
-	properties->subgroupSize = 1;
+	properties->subgroupSize = sw::SIMD::Width;
 	properties->supportedStages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
 	properties->supportedOperations = VK_SUBGROUP_FEATURE_BASIC_BIT;
 	properties->quadOperationsInAllStages = VK_FALSE;
+}
+
+void PhysicalDevice::getProperties(const VkExternalMemoryHandleTypeFlagBits* handleType, VkExternalImageFormatProperties* properties) const
+{
+	properties->externalMemoryProperties.compatibleHandleTypes = 0;
+	properties->externalMemoryProperties.exportFromImportedHandleTypes = 0;
+	properties->externalMemoryProperties.externalMemoryFeatures = 0;
+}
+
+void PhysicalDevice::getProperties(VkSamplerYcbcrConversionImageFormatProperties* properties) const
+{
+	properties->combinedImageSamplerDescriptorCount = 0;
+}
+
+void PhysicalDevice::getProperties(const VkPhysicalDeviceExternalBufferInfo* pExternalBufferInfo, VkExternalBufferProperties* pExternalBufferProperties) const
+{
+	pExternalBufferProperties->externalMemoryProperties.compatibleHandleTypes = 0;
+	pExternalBufferProperties->externalMemoryProperties.exportFromImportedHandleTypes = 0;
+	pExternalBufferProperties->externalMemoryProperties.externalMemoryFeatures = 0;
+}
+
+void PhysicalDevice::getProperties(const VkPhysicalDeviceExternalFenceInfo* pExternalFenceInfo, VkExternalFenceProperties* pExternalFenceProperties) const
+{
+	pExternalFenceProperties->compatibleHandleTypes = 0;
+	pExternalFenceProperties->exportFromImportedHandleTypes = 0;
+	pExternalFenceProperties->externalFenceFeatures = 0;
+}
+
+void PhysicalDevice::getProperties(const VkPhysicalDeviceExternalSemaphoreInfo* pExternalSemaphoreInfo, VkExternalSemaphoreProperties* pExternalSemaphoreProperties) const
+{
+	pExternalSemaphoreProperties->compatibleHandleTypes = 0;
+	pExternalSemaphoreProperties->exportFromImportedHandleTypes = 0;
+	pExternalSemaphoreProperties->externalSemaphoreFeatures = 0;
 }
 
 bool PhysicalDevice::hasFeatures(const VkPhysicalDeviceFeatures& requestedFeatures) const
@@ -401,7 +441,11 @@ void PhysicalDevice::getFormatProperties(VkFormat format, VkFormatProperties* pF
 	case VK_FORMAT_EAC_R11G11_UNORM_BLOCK:
 	case VK_FORMAT_EAC_R11G11_SNORM_BLOCK:
 		pFormatProperties->optimalTilingFeatures |=
-			VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT;
+			VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT |
+			VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
+			VK_FORMAT_FEATURE_TRANSFER_DST_BIT |
+			VK_FORMAT_FEATURE_BLIT_SRC_BIT |
+			VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
 		break;
 	default:
 		break;
@@ -607,46 +651,53 @@ void PhysicalDevice::getImageFormatProperties(VkFormat format, VkImageType type,
                                               VkImageUsageFlags usage, VkImageCreateFlags flags,
 	                                          VkImageFormatProperties* pImageFormatProperties) const
 {
-	pImageFormatProperties->maxArrayLayers = 1 << vk::MAX_IMAGE_ARRAY_LAYERS;
+	pImageFormatProperties->sampleCounts = VK_SAMPLE_COUNT_1_BIT;
+	pImageFormatProperties->maxArrayLayers = vk::MAX_IMAGE_ARRAY_LAYERS;
+	pImageFormatProperties->maxExtent.depth = 1;
 
 	switch(type)
 	{
 	case VK_IMAGE_TYPE_1D:
 		pImageFormatProperties->maxMipLevels = vk::MAX_IMAGE_LEVELS_1D;
-		pImageFormatProperties->maxExtent.width = 1 << vk::MAX_IMAGE_LEVELS_1D;
+		pImageFormatProperties->maxExtent.width = 1 << (vk::MAX_IMAGE_LEVELS_1D - 1);
 		pImageFormatProperties->maxExtent.height = 1;
-		pImageFormatProperties->maxExtent.depth = 1;
 		break;
 	case VK_IMAGE_TYPE_2D:
 		if(flags & VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT)
 		{
 			pImageFormatProperties->maxMipLevels = vk::MAX_IMAGE_LEVELS_CUBE;
-			pImageFormatProperties->maxExtent.width = 1 << vk::MAX_IMAGE_LEVELS_CUBE;
-			pImageFormatProperties->maxExtent.height = 1 << vk::MAX_IMAGE_LEVELS_CUBE;
-			pImageFormatProperties->maxExtent.depth = 1;
+			pImageFormatProperties->maxExtent.width = 1 << (vk::MAX_IMAGE_LEVELS_CUBE - 1);
+			pImageFormatProperties->maxExtent.height = 1 << (vk::MAX_IMAGE_LEVELS_CUBE - 1);
 		}
 		else
 		{
 			pImageFormatProperties->maxMipLevels = vk::MAX_IMAGE_LEVELS_2D;
-			pImageFormatProperties->maxExtent.width = 1 << vk::MAX_IMAGE_LEVELS_2D;
-			pImageFormatProperties->maxExtent.height = 1 << vk::MAX_IMAGE_LEVELS_2D;
-			pImageFormatProperties->maxExtent.depth = 1;
+			pImageFormatProperties->maxExtent.width = 1 << (vk::MAX_IMAGE_LEVELS_2D - 1);
+			pImageFormatProperties->maxExtent.height = 1 << (vk::MAX_IMAGE_LEVELS_2D - 1);
+
+			VkFormatProperties props;
+			getFormatProperties(format, &props);
+			auto features = tiling == VK_IMAGE_TILING_LINEAR ? props.linearTilingFeatures : props.optimalTilingFeatures;
+			if (features & (VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))
+			{
+				// Only renderable formats make sense for multisample
+				pImageFormatProperties->sampleCounts = getSampleCounts();
+			}
 		}
 		break;
 	case VK_IMAGE_TYPE_3D:
 		pImageFormatProperties->maxMipLevels = vk::MAX_IMAGE_LEVELS_3D;
-		pImageFormatProperties->maxExtent.width = 1 << vk::MAX_IMAGE_LEVELS_3D;
-		pImageFormatProperties->maxExtent.height = 1 << vk::MAX_IMAGE_LEVELS_3D;
-		pImageFormatProperties->maxExtent.depth = 1 << vk::MAX_IMAGE_LEVELS_3D;
+		pImageFormatProperties->maxExtent.width = 1 << (vk::MAX_IMAGE_LEVELS_3D - 1);
+		pImageFormatProperties->maxExtent.height = 1 << (vk::MAX_IMAGE_LEVELS_3D - 1);
+		pImageFormatProperties->maxExtent.depth = 1 << (vk::MAX_IMAGE_LEVELS_3D - 1);
+		pImageFormatProperties->maxArrayLayers = 1;		// no 3D + layers
 		break;
 	default:
-		UNREACHABLE(type);
+		UNREACHABLE("VkImageType: %d", int(type));
 		break;
 	}
 
 	pImageFormatProperties->maxResourceSize = 1 << 31; // Minimum value for maxResourceSize
-	pImageFormatProperties->sampleCounts = getSampleCounts();
-
 }
 
 uint32_t PhysicalDevice::getQueueFamilyPropertyCount() const

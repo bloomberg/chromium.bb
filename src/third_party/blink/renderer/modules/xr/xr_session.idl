@@ -20,11 +20,12 @@ enum XREnvironmentBlendMode {
     ActiveScriptWrappable,
     SecureContext,
     Exposed=Window,
-    OriginTrialEnabled=WebXR
+    RuntimeEnabled=WebXR
 ] interface XRSession : EventTarget {
   readonly attribute XRSessionMode mode;
   readonly attribute XREnvironmentBlendMode environmentBlendMode;
   readonly attribute XRRenderState renderState;
+  readonly attribute XRSpace viewerSpace;
 
   attribute EventHandler onblur;
   attribute EventHandler onfocus;

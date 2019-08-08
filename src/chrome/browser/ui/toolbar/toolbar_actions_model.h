@@ -140,10 +140,12 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
 
   std::vector<std::unique_ptr<ToolbarActionViewController>> CreateActions(
       Browser* browser,
-      ToolbarActionsBar* bar);
+      ToolbarActionsBar* main_bar,
+      bool in_overflow_menu);
   std::unique_ptr<ToolbarActionViewController> CreateActionForId(
       Browser* browser,
-      ToolbarActionsBar* bar,
+      ToolbarActionsBar* main_bar,
+      bool in_overflow_menu,
       const ActionId& action_id);
 
   const std::vector<ActionId>& action_ids() const {

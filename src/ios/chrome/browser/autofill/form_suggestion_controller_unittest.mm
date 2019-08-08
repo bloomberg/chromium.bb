@@ -202,7 +202,7 @@ class FormSuggestionControllerTest : public PlatformTest {
                                                passwordStore:NULL];
 
     [accessory_mediator_ injectWebState:&test_web_state_];
-    [accessory_mediator_ injectProviders:@[ suggestion_controller_ ]];
+    [accessory_mediator_ injectProvider:suggestion_controller_];
     [accessory_mediator_ injectSuggestionManager:mock_js_suggestion_manager_];
   }
 

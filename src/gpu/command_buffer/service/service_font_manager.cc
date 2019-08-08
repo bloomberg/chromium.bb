@@ -6,6 +6,7 @@
 
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 
@@ -37,6 +38,9 @@ class Deserializer {
       return true;
 
     if (!AlignMemory(size, 16))
+      return false;
+
+    if (size > memory_size_ - bytes_read_)
       return false;
 
     if (!strike_client->readStrikeData(memory_, size))
@@ -99,8 +103,9 @@ class ServiceFontManager::SkiaDiscardableManager
     const bool no_fallback = (type == SkStrikeClient::kGlyphMetrics ||
                               type == SkStrikeClient::kGlyphPath ||
                               type == SkStrikeClient::kGlyphImage);
-    constexpr int kMaxDumps = 10;
-    if (no_fallback && dump_count_ < kMaxDumps) {
+
+    constexpr int kMaxDumps = 5;
+    if (no_fallback && dump_count_ < kMaxDumps && base::RandInt(1, 100) == 1) {
       ++dump_count_;
       base::debug::DumpWithoutCrashing();
     }
@@ -164,6 +169,10 @@ bool ServiceFontManager::Deserialize(
   // All locked handles
   uint32_t num_locked_handles;
   if (!deserializer.Read<uint32_t>(&num_locked_handles))
+    return false;
+
+  // Loosely avoid extremely large (but fake) numbers of locked handles.
+  if (memory_size / sizeof(SkDiscardableHandleId) < num_locked_handles)
     return false;
 
   locked_handles->resize(num_locked_handles);

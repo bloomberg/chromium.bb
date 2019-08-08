@@ -4,9 +4,15 @@
 
 package org.chromium.chrome.browser.autofill_assistant.overlay;
 
-import android.view.View;
+import android.graphics.RectF;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.CompositorViewResizer;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.widget.ScrimView;
+import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
+
+import java.util.List;
 
 /**
  * Coordinator responsible for showing a full or partial overlay on top of the web page currently
@@ -14,16 +20,19 @@ import org.chromium.chrome.browser.ChromeActivity;
  */
 public class AssistantOverlayCoordinator {
     private final ChromeActivity mActivity;
-    private final TouchEventFilterView mTouchEventFilter;
+    private final AssistantOverlayEventFilter mEventFilter;
+    private final AssistantOverlayDrawable mDrawable;
+    private final ScrimView mScrim;
+    private boolean mScrimEnabled;
 
-    public AssistantOverlayCoordinator(
-            ChromeActivity activity, View assistantView, AssistantOverlayModel model) {
+    public AssistantOverlayCoordinator(ChromeActivity activity, AssistantOverlayModel model,
+            CompositorViewResizer viewResizer) {
         mActivity = activity;
-        mTouchEventFilter = assistantView.findViewById(
-                org.chromium.chrome.autofill_assistant.R.id.touch_event_filter);
-
-        mTouchEventFilter.init(
-                mActivity.getFullscreenManager(), mActivity.getCompositorViewHolder());
+        mScrim = mActivity.getScrim();
+        mEventFilter = new AssistantOverlayEventFilter(
+                mActivity, mActivity.getFullscreenManager(), mActivity.getCompositorViewHolder());
+        mDrawable = new AssistantOverlayDrawable(
+                mActivity, mActivity.getFullscreenManager(), viewResizer);
 
         // Listen for changes in the state.
         // TODO(crbug.com/806868): Bind model to view through a ViewBinder instead.
@@ -31,11 +40,15 @@ public class AssistantOverlayCoordinator {
             if (AssistantOverlayModel.STATE == propertyKey) {
                 setState(model.get(AssistantOverlayModel.STATE));
             } else if (AssistantOverlayModel.TOUCHABLE_AREA == propertyKey) {
-                mTouchEventFilter.setTouchableArea(model.get(AssistantOverlayModel.TOUCHABLE_AREA));
+                List<RectF> area = model.get(AssistantOverlayModel.TOUCHABLE_AREA);
+                mEventFilter.setTouchableArea(area);
+                mDrawable.setTransparentArea(area);
             } else if (AssistantOverlayModel.DELEGATE == propertyKey) {
-                mTouchEventFilter.setDelegate(model.get(AssistantOverlayModel.DELEGATE));
+                AssistantOverlayDelegate delegate = model.get(AssistantOverlayModel.DELEGATE);
+                mEventFilter.setDelegate(delegate);
+                mDrawable.setDelegate(delegate);
             } else if (AssistantOverlayModel.WEB_CONTENTS == propertyKey) {
-                mTouchEventFilter.setWebContents(model.get(AssistantOverlayModel.WEB_CONTENTS));
+                mDrawable.setWebContents(model.get(AssistantOverlayModel.WEB_CONTENTS));
             }
         });
     }
@@ -44,26 +57,60 @@ public class AssistantOverlayCoordinator {
      * Destroy this coordinator.
      */
     public void destroy() {
-        if (mActivity.isViewObscuringAllTabs())
-            mActivity.removeViewObscuringAllTabs(mTouchEventFilter);
+        if (mActivity.isViewObscuringAllTabs()) mActivity.removeViewObscuringAllTabs(mScrim);
 
-        // Removes the TouchEventFilter from the ChromeFullscreenManager and GestureListenerManager
-        // listeners.
-        mTouchEventFilter.deInit();
+        setScrimEnabled(false);
+        mEventFilter.destroy();
+        mDrawable.destroy();
     }
 
     /**
      * Set the overlay state.
      */
     private void setState(@AssistantOverlayState int state) {
+        if (state == AssistantOverlayState.PARTIAL && AccessibilityUtil.isAccessibilityEnabled()) {
+            // Touch exploration is fully disabled if there's an overlay in front. In this case, the
+            // overlay must be fully gone and filtering elements for touch exploration must happen
+            // at another level.
+            //
+            // TODO(crbug.com/806868): filter elements available to touch exploration, when it
+            // is enabled.
+            state = AssistantOverlayState.HIDDEN;
+        }
+
+        if (state == AssistantOverlayState.HIDDEN) {
+            setScrimEnabled(false);
+            mEventFilter.reset();
+        } else {
+            setScrimEnabled(true);
+            mDrawable.setPartial(state == AssistantOverlayState.PARTIAL);
+            mEventFilter.setPartial(state == AssistantOverlayState.PARTIAL);
+        }
+
         if (state == AssistantOverlayState.FULL && !mActivity.isViewObscuringAllTabs()) {
-            mActivity.addViewObscuringAllTabs(mTouchEventFilter);
+            mActivity.addViewObscuringAllTabs(mScrim);
         }
 
         if (state != AssistantOverlayState.FULL && mActivity.isViewObscuringAllTabs()) {
-            mActivity.removeViewObscuringAllTabs(mTouchEventFilter);
+            mActivity.removeViewObscuringAllTabs(mScrim);
         }
+    }
 
-        mTouchEventFilter.setState(state);
+    private void setScrimEnabled(boolean enabled) {
+        if (enabled == mScrimEnabled) return;
+
+        if (enabled) {
+            ScrimParams params = new ScrimParams(mActivity.getCompositorViewHolder(),
+                    /* showInFrontOfAnchorView= */ true,
+                    /* affectsStatusBar = */ false,
+                    /* topMargin= */ 0,
+                    /* observer= */ null);
+            params.backgroundDrawable = mDrawable;
+            params.eventFilter = mEventFilter;
+            mScrim.showScrim(params);
+        } else {
+            mScrim.hideScrim(/* fadeOut= */ true);
+        }
+        mScrimEnabled = enabled;
     }
 }

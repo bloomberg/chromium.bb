@@ -79,8 +79,8 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(ScriptState* script_state,
     return nullptr;
 
   if (metadata.type == FileMetadata::kTypeDirectory)
-    return DirectoryEntry::Create(dom_file_system, virtual_path);
-  return FileEntry::Create(dom_file_system, virtual_path);
+    return MakeGarbageCollected<DirectoryEntry>(dom_file_system, virtual_path);
+  return MakeGarbageCollected<FileEntry>(dom_file_system, virtual_path);
 }
 
 }  // namespace blink

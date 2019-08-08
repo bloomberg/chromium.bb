@@ -12,10 +12,10 @@
 #include "ash/root_window_controller.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/pip/pip_test_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/bind_helpers.h"
@@ -40,15 +40,6 @@ gfx::Rect ConvertToScreenForWindow(aura::Window* window,
   gfx::Rect new_bounds = bounds;
   ::wm::ConvertRectToScreen(window->GetRootWindow(), &new_bounds);
   return new_bounds;
-}
-
-void ForceHideShelves() {
-  for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
-    auto* shelf = root_window_controller->shelf();
-    auto* layout_manager = shelf->shelf_layout_manager();
-    shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
-    layout_manager->LayoutShelf();  // Force layout to end animation.
-  }
 }
 
 gfx::Rect ConvertPrimaryToScreen(const gfx::Rect& bounds) {
@@ -95,8 +86,6 @@ class PipPositionerDisplayTest : public AshTestBase,
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    SetTouchKeyboardEnabled(true);
-    Shell::Get()->EnableKeyboard();
 
     const std::string& display_string = std::get<0>(GetParam());
     const std::size_t root_window_index = std::get<1>(GetParam());
@@ -104,16 +93,18 @@ class PipPositionerDisplayTest : public AshTestBase,
     ASSERT_LT(root_window_index, Shell::GetAllRootWindows().size());
     root_window_ = Shell::GetAllRootWindows()[root_window_index];
     scoped_root_.reset(new ScopedRootWindowForNewWindows(root_window_));
+    ForceHideShelvesForTest();
   }
 
   void TearDown() override {
     scoped_root_.reset();
-    SetTouchKeyboardEnabled(false);
     AshTestBase::TearDown();
   }
 
  protected:
   display::Display GetDisplay() { return GetDisplayForWindow(root_window_); }
+
+  aura::Window* root_window() { return root_window_; }
 
   gfx::Rect ConvertToScreen(const gfx::Rect& bounds) {
     return ConvertToScreenForWindow(root_window_, bounds);
@@ -124,7 +115,6 @@ class PipPositionerDisplayTest : public AshTestBase,
     return PipPositioner::AvoidObstacles(display, bounds);
   }
 
-  // TODO dedpue?
   void UpdateWorkArea(const std::string& bounds) {
     UpdateDisplay(bounds);
     for (aura::Window* root : Shell::GetAllRootWindows())
@@ -226,7 +216,7 @@ TEST_P(PipPositionerDisplayTest, PipAdjustPositionForDragClampsToMovementArea) {
 }
 
 TEST_P(PipPositionerDisplayTest, PipRestingPositionWorksIfKeyboardIsDisabled) {
-  Shell::Get()->DisableKeyboard();
+  SetTouchKeyboardEnabled(false);
   auto display = GetDisplay();
 
   // Snap near top edge to top.
@@ -305,7 +295,6 @@ TEST_P(PipPositionerDisplayTest, AvoidObstaclesAvoidsFloatingKeyboard) {
   ASSERT_TRUE(keyboard::WaitUntilShown());
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
   keyboard_window->SetBounds(gfx::Rect(0, 0, 100, 100));
-  ForceHideShelves();  // Showing the keyboard may have shown the shelf.
 
   gfx::Rect area = PipPositioner::GetMovementArea(display);
   gfx::Rect moved_bounds =
@@ -337,6 +326,18 @@ TEST_P(PipPositionerDisplayTest, GetRestingPositionAvoidsKeyboard) {
   EXPECT_EQ(ConvertToScreen(gfx::Rect(8, 192, 100, 100)),
             PipPositioner::GetRestingPosition(
                 display, ConvertToScreen(gfx::Rect(8, 300, 100, 100))));
+}
+
+TEST_P(PipPositionerDisplayTest, AutoHideShownShelfAffectsPip) {
+  auto* shelf = Shelf::ForWindow(root_window());
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  auto shelf_bounds = shelf->GetWindow()->GetBoundsInScreen();
+  // Use a smaller window so it is guaranteed to find a free space to move to.
+  auto pip_bounds = CallAvoidObstacles(
+      GetDisplay(), gfx::Rect(shelf_bounds.CenterPoint(), gfx::Size(1, 1)));
+  EXPECT_FALSE(shelf_bounds.Intersects(pip_bounds));
 }
 
 // TODO: UpdateDisplay() doesn't support different layouts of multiple displays.

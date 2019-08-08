@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/viz/demo/host/demo_host.h"
@@ -41,7 +41,7 @@ class InitBase {
   InitBase(int argc, char** argv) {
     base::CommandLine::Init(argc, argv);
     base::i18n::InitializeICU();
-    base::TaskScheduler::CreateAndStartWithDefaultParams("demo");
+    base::ThreadPool::CreateAndStartWithDefaultParams("demo");
   }
 
   ~InitBase() = default;

@@ -14,14 +14,15 @@
 #include <string>
 
 #include "absl/types/optional.h"
+#include "api/fec_controller.h"
 #include "api/rtp_parameters.h"
 #include "api/transport/network_control.h"
 #include "api/units/data_rate.h"
 #include "api/units/data_size.h"
 #include "api/units/time_delta.h"
-#include "common_types.h"  // NOLINT(build/include)
+#include "api/video/video_codec_type.h"
 #include "test/frame_generator.h"
-#include "test/scenario/quality_info.h"
+#include "test/scenario/performance_stats.h"
 
 namespace webrtc {
 namespace test {
@@ -174,14 +175,15 @@ struct VideoStreamConfig {
     TimeDelta nack_history_time = TimeDelta::ms(1000);
     bool use_flexfec = false;
     bool use_ulpfec = false;
+    FecControllerFactoryInterface* fec_controller_factory = nullptr;
   } stream;
-  struct Renderer {
+  struct Rendering {
     enum Type { kFake } type = kFake;
-  };
-  struct analyzer {
-    bool log_to_file = false;
-    std::function<void(const VideoFrameQualityInfo&)> frame_quality_handler;
-  } analyzer;
+    std::string sync_group;
+  } render;
+  struct Hooks {
+    std::vector<std::function<void(const VideoFramePair&)>> frame_pair_handlers;
+  } hooks;
 };
 
 struct AudioStreamConfig {
@@ -221,51 +223,19 @@ struct AudioStreamConfig {
     ~Stream();
     bool in_bandwidth_estimation = false;
   } stream;
-  struct Render {
+  struct Rendering {
     std::string sync_group;
   } render;
 };
 
-struct NetworkNodeConfig {
-  NetworkNodeConfig();
-  NetworkNodeConfig(const NetworkNodeConfig&);
-  ~NetworkNodeConfig();
-  enum class TrafficMode {
-    kSimulation,
-    kCustom
-  } mode = TrafficMode::kSimulation;
-  struct Simulation {
-    Simulation();
-    Simulation(const Simulation&);
-    ~Simulation();
-    DataRate bandwidth = DataRate::Infinity();
-    TimeDelta delay = TimeDelta::Zero();
-    TimeDelta delay_std_dev = TimeDelta::Zero();
-    double loss_rate = 0;
-    bool codel_active_queue_management = false;
-  } simulation;
+// TODO(srte): Merge this with BuiltInNetworkBehaviorConfig.
+struct NetworkSimulationConfig {
+  DataRate bandwidth = DataRate::Infinity();
+  TimeDelta delay = TimeDelta::Zero();
+  TimeDelta delay_std_dev = TimeDelta::Zero();
+  double loss_rate = 0;
+  bool codel_active_queue_management = false;
   DataSize packet_overhead = DataSize::Zero();
-  TimeDelta update_frequency = TimeDelta::ms(1);
-};
-
-struct CrossTrafficConfig {
-  CrossTrafficConfig();
-  CrossTrafficConfig(const CrossTrafficConfig&);
-  ~CrossTrafficConfig();
-  enum Mode { kRandomWalk, kPulsedPeaks } mode = kRandomWalk;
-  int random_seed = 1;
-  DataRate peak_rate = DataRate::kbps(100);
-  DataSize min_packet_size = DataSize::bytes(200);
-  TimeDelta min_packet_interval = TimeDelta::ms(1);
-  struct RandomWalk {
-    TimeDelta update_interval = TimeDelta::ms(200);
-    double variance = 0.6;
-    double bias = -0.1;
-  } random_walk;
-  struct PulsedPeaks {
-    TimeDelta send_duration = TimeDelta::ms(100);
-    TimeDelta hold_duration = TimeDelta::ms(2000);
-  } pulsed;
 };
 }  // namespace test
 }  // namespace webrtc

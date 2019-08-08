@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/pip/pip_positioner.h"
 #include "base/run_loop.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
@@ -80,8 +81,7 @@ TEST_F(ShelfTooltipManagerTest, DoNotShowForInvalidView) {
   item.type = TYPE_PINNED_APP;
   const int index = model->Add(item);
   // Note: There's no easy way to correlate shelf a model index/id to its view.
-  tooltip_manager_->ShowTooltipWithDelay(
-      shelf_view_->child_at(shelf_view_->child_count() - 1));
+  tooltip_manager_->ShowTooltipWithDelay(shelf_view_->children().back());
   EXPECT_TRUE(IsTimerRunning());
 
   // Removing the view won't stop the timer, but the tooltip shouldn't be shown.
@@ -217,6 +217,18 @@ TEST_F(ShelfTooltipManagerTest, KeyEvents) {
   ASSERT_TRUE(tooltip_manager_->IsVisible());
   generator->PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
   EXPECT_FALSE(tooltip_manager_->IsVisible());
+}
+
+TEST_F(ShelfTooltipManagerTest, ShelfTooltipDoesNotAffectPipWindow) {
+  tooltip_manager_->ShowTooltip(shelf_view_->GetAppListButton());
+  EXPECT_TRUE(tooltip_manager_->IsVisible());
+
+  auto display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  auto tooltip_bounds = GetTooltip()->GetWindowBoundsInScreen();
+  tooltip_bounds.Intersect(PipPositioner::GetMovementArea(display));
+  EXPECT_FALSE(tooltip_bounds.IsEmpty());
+  EXPECT_EQ(tooltip_bounds,
+            PipPositioner::GetRestingPosition(display, tooltip_bounds));
 }
 
 }  // namespace ash

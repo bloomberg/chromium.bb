@@ -3,9 +3,13 @@
 # found in the LICENSE file.
 
 # To create CIPD package run the following command.
-# cipd create --pkg-def cipd_emulator.yaml -tag version:$version
+# cipd create --pkg-def cipd_emulator.yaml
 package: chromium/third_party/android_sdk/public/emulator
 description: emulator Android SDK Emulator library
 root: public/
 data:
   - dir: emulator
+# Some tools inspect their argv0 and don't handle CIPD's symlink structure
+# correctly. Install in copy mode so that they can find the other directories
+# relative to themselves.
+install_mode: copy

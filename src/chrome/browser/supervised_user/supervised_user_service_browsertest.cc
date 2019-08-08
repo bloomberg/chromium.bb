@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, ProfileName) {
   std::string original_name = prefs->GetString(prefs::kProfileName);
 
   SupervisedUserSettingsService* settings =
-      SupervisedUserSettingsServiceFactory::GetForProfile(profile);
+      SupervisedUserSettingsServiceFactory::GetForKey(profile->GetProfileKey());
 
   // Change the name. Both the profile pref and the entry in
   // ProfileAttributesStorage should be updated.

@@ -328,11 +328,6 @@ class NET_EXPORT URLFetcher {
   // failed.
   virtual const ProxyServer& ProxyServerUsed() const = 0;
 
-  // Returns true if the request was delivered through a proxy.  Must only
-  // be called after the OnURLFetchComplete callback has run and the request
-  // has not failed.
-  virtual bool WasFetchedViaProxy() const = 0;
-
   // Returns true if the response body was served from the cache. This includes
   // responses for which revalidation was required.
   virtual bool WasCached() const = 0;

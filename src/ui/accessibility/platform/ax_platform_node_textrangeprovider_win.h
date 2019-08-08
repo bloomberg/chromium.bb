@@ -5,6 +5,7 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_TEXTRANGEPROVIDER_WIN_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_TEXTRANGEPROVIDER_WIN_H_
 
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -42,22 +43,22 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   STDMETHODIMP Clone(ITextRangeProvider** clone) override;
   STDMETHODIMP Compare(ITextRangeProvider* other, BOOL* result) override;
   STDMETHODIMP
-  CompareEndpoints(TextPatternRangeEndpoint endpoint,
+  CompareEndpoints(TextPatternRangeEndpoint this_endpoint,
                    ITextRangeProvider* other,
-                   TextPatternRangeEndpoint targetEndpoint,
+                   TextPatternRangeEndpoint other_endpoint,
                    int* result) override;
   STDMETHODIMP ExpandToEnclosingUnit(TextUnit unit) override;
   STDMETHODIMP
-  FindAttribute(TEXTATTRIBUTEID attributeId,
-                VARIANT val,
-                BOOL backward,
+  FindAttribute(TEXTATTRIBUTEID attribute_id,
+                VARIANT attribute_val,
+                BOOL is_backward,
                 ITextRangeProvider** result) override;
   STDMETHODIMP
   FindText(BSTR string,
            BOOL backwards,
            BOOL ignore_case,
            ITextRangeProvider** result) override;
-  STDMETHODIMP GetAttributeValue(TEXTATTRIBUTEID attributeId,
+  STDMETHODIMP GetAttributeValue(TEXTATTRIBUTEID attribute_id,
                                  VARIANT* value) override;
   STDMETHODIMP
   GetBoundingRectangles(SAFEARRAY** rectangles) override;
@@ -71,9 +72,9 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
                      int count,
                      int* units_moved) override;
   STDMETHODIMP
-  MoveEndpointByRange(TextPatternRangeEndpoint endpoint,
+  MoveEndpointByRange(TextPatternRangeEndpoint this_endpoint,
                       ITextRangeProvider* other,
-                      TextPatternRangeEndpoint targetEndpoint) override;
+                      TextPatternRangeEndpoint other_endpoint) override;
   STDMETHODIMP Select() override;
   STDMETHODIMP AddToSelection() override;
   STDMETHODIMP RemoveFromSelection() override;
@@ -81,17 +82,47 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   STDMETHODIMP GetChildren(SAFEARRAY** children) override;
 
  private:
+  using AXPositionInstance = AXNodePosition::AXPositionInstance;
+  using AXPositionInstanceType = typename AXPositionInstance::element_type;
+  using AXNodeRange = AXRange<AXPositionInstanceType>;
+  using CreateNextPositionFunction =
+      AXPositionInstance (AXPositionInstanceType::*)(AXBoundaryBehavior) const;
+
+  friend class AXPlatformNodeTextRangeProviderTest;
+  friend class AXPlatformNodeTextProviderTest;
   base::string16 GetString();
   ui::AXPlatformNodeWin* owner() const;
+  template <typename AnchorIterator, typename ExpandMatchLambda>
+  HRESULT FindAttributeRange(const TEXTATTRIBUTEID text_attribute_id,
+                             VARIANT attribute_val,
+                             const AnchorIterator first,
+                             const AnchorIterator last,
+                             ExpandMatchLambda expand_match);
 
-  using AXPositionInstance = AXNodePosition::AXPositionInstance;
-  using AXNodeRange = AXRange<AXNodePosition::AXPositionInstance::element_type>;
-  using AXPositionInstancePair =
-      std::tuple<AXPositionInstance, AXPositionInstance>;
+  AXPositionInstance MoveEndpointByCharacter(const AXPositionInstance& endpoint,
+                                             const int count,
+                                             int* units_moved);
+  AXPositionInstance MoveEndpointByWord(const AXPositionInstance& endpoint,
+                                        bool endpoint_is_start,
+                                        const int count,
+                                        int* units_moved);
+  AXPositionInstance MoveEndpointByLine(const AXPositionInstance& endpoint,
+                                        bool endpoint_is_start,
+                                        const int count,
+                                        int* units_moved);
+  AXPositionInstance MoveEndpointByDocument(const AXPositionInstance& endpoint,
+                                            const int count,
+                                            int* units_moved);
 
-  AXNodePosition::AXPositionInstance start_;
-  AXNodePosition::AXPositionInstance end_;
+  AXPositionInstance MoveEndpointByUnitHelper(
+      const AXPositionInstance& endpoint,
+      CreateNextPositionFunction create_next_position,
+      const int count,
+      int* units_moved);
+
   CComPtr<ui::AXPlatformNodeWin> owner_;
+  AXPositionInstance start_;
+  AXPositionInstance end_;
 };
 
 }  // namespace ui

@@ -40,7 +40,7 @@ class QueuedWebMouseWheelEvent : public MouseWheelEventWithLatencyInfo {
 MouseWheelEventQueue::MouseWheelEventQueue(MouseWheelEventQueueClient* client)
     : client_(client),
       send_wheel_events_async_(false),
-      scrolling_device_(blink::kWebGestureDeviceUninitialized) {
+      scrolling_device_(blink::WebGestureDevice::kUninitialized) {
   DCHECK(client);
 }
 
@@ -102,8 +102,8 @@ bool MouseWheelEventQueue::CanGenerateGestureScroll(
     return false;
   }
 
-  if (scrolling_device_ != blink::kWebGestureDeviceUninitialized &&
-      scrolling_device_ != blink::kWebGestureDeviceTouchpad) {
+  if (scrolling_device_ != blink::WebGestureDevice::kUninitialized &&
+      scrolling_device_ != blink::WebGestureDevice::kTouchpad) {
     TRACE_EVENT_INSTANT0("input",
                          "Autoscroll or Touchscreen Scroll In Progress",
                          TRACE_EVENT_SCOPE_THREAD);
@@ -139,7 +139,7 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
     WebGestureEvent scroll_update(
         WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
         event_sent_for_gesture_ack_->event.TimeStamp(),
-        blink::kWebGestureDeviceTouchpad);
+        blink::WebGestureDevice::kTouchpad);
 
     scroll_update.SetPositionInWidget(
         event_sent_for_gesture_ack_->event.PositionInWidget());
@@ -266,7 +266,7 @@ void MouseWheelEventQueue::OnGestureScrollEvent(
   } else if (scrolling_device_ == gesture_event.event.SourceDevice() &&
              gesture_event.event.GetType() ==
                  blink::WebInputEvent::kGestureScrollEnd) {
-    scrolling_device_ = blink::kWebGestureDeviceUninitialized;
+    scrolling_device_ = blink::WebGestureDevice::kUninitialized;
   } else if (gesture_event.event.GetType() ==
              blink::WebInputEvent::kGestureFlingStart) {
     // With browser side fling we shouldn't reset scrolling_device_ on GFS since

@@ -9,6 +9,13 @@ import "mojo/public/mojom/base/string16.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/image/mojo/image.mojom";
 
+// These values match ash::ShelfAutoHideBehavior.
+enum ShelfAutoHideBehavior {
+  SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,  // Always auto-hide.
+  SHELF_AUTO_HIDE_BEHAVIOR_NEVER,   // Never auto-hide.
+  SHELF_AUTO_HIDE_ALWAYS_HIDDEN,    // Always hide.
+};
+
 // The actions that may be performed when a shelf item is selected.
 // These values match ash::ShelfAction.
 enum ShelfAction {
@@ -75,6 +82,17 @@ interface ShelfController {
   UpdateShelfItem(ShelfItem item);
   // Sets the |delegate| for the item with |id|.
   SetShelfItemDelegate(ShelfID id, ShelfItemDelegate delegate);
+  // Returns the auto hide behavior. For testing only.
+  // |display_id| represents the display that contains the shelf. |display_id|
+  // must be valid.
+  GetAutoHideBehaviorForTesting(int64 display_id)
+                                => (ShelfAutoHideBehavior behavior);
+  // Sets the auto hide behavior. For testing only.
+  // |display_id| represents the display that contains the shelf. |display_id|
+  // must be valid.
+  // |behavior| is the new behavior.
+  SetAutoHideBehaviorForTesting(int64 display_id,
+                                ShelfAutoHideBehavior behavior) => ();
 };
 
 // A Shelf observer, used to persist profile settings and cache a ShelfModel.

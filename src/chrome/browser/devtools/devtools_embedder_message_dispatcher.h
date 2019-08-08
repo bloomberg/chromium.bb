@@ -92,6 +92,8 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void RecordEnumeratedHistogram(const std::string& name,
                                            int sample,
                                            int boundary_value) = 0;
+    virtual void RecordPerformanceHistogram(const std::string& name,
+                                            double duration) = 0;
     virtual void SendJsonRequest(const DispatchCallback& callback,
                                  const std::string& browser_id,
                                  const std::string& url) = 0;

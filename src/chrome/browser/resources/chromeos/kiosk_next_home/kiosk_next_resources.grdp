@@ -6,4 +6,5 @@
   <include name="IDR_KIOSK_NEXT_MAIN_HTML" file="chromeos/kiosk_next_home/main.html" type="chrome_html" />
   <include name="IDR_KIOSK_NEXT_API_JS" file="chromeos/kiosk_next_home/api.js" type="BINDATA" />
   <include name="IDR_KIOSK_NEXT_API_IMPL_JS" file="chromeos/kiosk_next_home/api_impl.js" type="BINDATA" />
+  <include name="IDR_KIOSK_NEXT_HOME_MOJOM_JS" file="${root_gen_dir}/chrome/browser/resources/chromeos/kiosk_next_home/mojom_bin.js" type="BINDATA" use_base_dir="false" />
 </grit-part>

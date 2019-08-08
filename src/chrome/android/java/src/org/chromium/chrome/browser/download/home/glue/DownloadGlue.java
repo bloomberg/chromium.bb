@@ -171,6 +171,13 @@ public class DownloadGlue implements DownloadObserver {
         new Handler().post(() -> callback.onShareInfoAvailable(item.id, info));
     }
 
+    /** @see OfflineContentProvider#renameItem(ContentId, String, Callback)*/
+    public void renameItem(
+            OfflineItem item, String name, Callback</*RenameResult*/ Integer> callback) {
+        DownloadManagerService.getDownloadManagerService().renameDownload(
+                item.id, name, callback, item.isOffTheRecord);
+    }
+
     /**
      * There could be some situations where we can't visually represent this download in the UI.
      * This should be handled in native/be more generic, but it's here in the glue for now.

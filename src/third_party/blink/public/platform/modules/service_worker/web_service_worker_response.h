@@ -70,7 +70,7 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
 
   WebVector<WebString> GetHeaderKeys() const;
   WebString GetHeader(const WebString& key) const;
-  void VisitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
+  void VisitHttpHeaderFields(WebHTTPHeaderVisitor*) const;
 
   void SetBlob(const WebString& uuid,
                uint64_t size,

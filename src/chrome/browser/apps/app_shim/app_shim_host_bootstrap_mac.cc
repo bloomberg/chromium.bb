@@ -19,10 +19,31 @@ void AppShimHostBootstrap::CreateForChannel(
   // AppShimHostBootstrap is initially owned by itself until it receives a
   // LaunchApp message or a channel error. In LaunchApp, ownership is
   // transferred to a unique_ptr.
-  (new AppShimHostBootstrap)->ServeChannel(std::move(endpoint));
+  DCHECK(endpoint.platform_handle().is_fd());
+
+  base::ProcessId pid;
+  socklen_t pid_size = sizeof(pid);
+  if (getsockopt(endpoint.platform_handle().GetFD().get(), SOL_LOCAL,
+                 LOCAL_PEERPID, &pid, &pid_size)) {
+    LOG(ERROR) << "Failed to get peer pid for app shim.";
+    return;
+  }
+  (new AppShimHostBootstrap(pid))->ServeChannel(std::move(endpoint));
 }
 
-AppShimHostBootstrap::AppShimHostBootstrap() : host_bootstrap_binding_(this) {}
+// static
+void AppShimHostBootstrap::CreateForChannelAndPeerID(
+    mojo::PlatformChannelEndpoint endpoint,
+    base::ProcessId peer_pid) {
+  // AppShimHostBootstrap is initially owned by itself until it receives a
+  // LaunchApp message or a channel error. In LaunchApp, ownership is
+  // transferred to a unique_ptr.
+  DCHECK(endpoint.platform_handle().is_mach_send());
+  (new AppShimHostBootstrap(peer_pid))->ServeChannel(std::move(endpoint));
+}
+
+AppShimHostBootstrap::AppShimHostBootstrap(base::ProcessId peer_pid)
+    : host_bootstrap_binding_(this), pid_(peer_pid) {}
 
 AppShimHostBootstrap::~AppShimHostBootstrap() {
   DCHECK(!launch_app_callback_);
@@ -31,14 +52,6 @@ AppShimHostBootstrap::~AppShimHostBootstrap() {
 void AppShimHostBootstrap::ServeChannel(
     mojo::PlatformChannelEndpoint endpoint) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  DCHECK(endpoint.platform_handle().is_fd());
-  socklen_t pid_size = sizeof(pid_);
-  if (getsockopt(endpoint.platform_handle().GetFD().get(), SOL_LOCAL,
-                 LOCAL_PEERPID, &pid_, &pid_size)) {
-    LOG(ERROR) << "Failed to get peer pid for app shim.";
-    return;
-  }
 
   mojo::ScopedMessagePipeHandle message_pipe =
       bootstrap_mojo_connection_.Connect(std::move(endpoint));

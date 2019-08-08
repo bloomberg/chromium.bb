@@ -15,7 +15,7 @@ namespace content {
 class BrowserThreadPostTaskBeforeInitBrowserTest : public ContentBrowserTest {
  protected:
   void SetUp() override {
-    // This should fail because the TaskScheduler + TaskExecutor weren't created
+    // This should fail because the ThreadPool + TaskExecutor weren't created
     // yet.
     EXPECT_DCHECK_DEATH(base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
                                                  base::DoNothing()));

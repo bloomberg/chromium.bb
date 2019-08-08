@@ -40,8 +40,8 @@ class CORE_EXPORT FragmentData {
   // AdjustVisualRectForCompositedScrolling().
   // It's location may be different from PaintOffset when there is visual (ink)
   // overflow to the top and/or the left.
-  LayoutRect VisualRect() const { return visual_rect_; }
-  void SetVisualRect(const LayoutRect& rect) { visual_rect_ = rect; }
+  IntRect VisualRect() const { return visual_rect_; }
+  void SetVisualRect(const IntRect& rect) { visual_rect_ = rect; }
 
   // An id for this object that is unique for the lifetime of the WebView.
   UniqueObjectId UniqueId() const {
@@ -57,10 +57,10 @@ class CORE_EXPORT FragmentData {
 
   // Visual rect of the selection on this object, in the same coordinate space
   // as DisplayItemClient::VisualRect().
-  LayoutRect SelectionVisualRect() const {
-    return rare_data_ ? rare_data_->selection_visual_rect : LayoutRect();
+  IntRect SelectionVisualRect() const {
+    return rare_data_ ? rare_data_->selection_visual_rect : IntRect();
   }
-  void SetSelectionVisualRect(const LayoutRect& r) {
+  void SetSelectionVisualRect(const IntRect& r) {
     if (rare_data_ || !r.IsEmpty())
       EnsureRareData().selection_visual_rect = r;
   }
@@ -83,11 +83,11 @@ class CORE_EXPORT FragmentData {
   // Covers the sub-rectangles of the object that need to be re-rastered, in
   // visual rect space (see VisualRect()). It will be cleared after the raster
   // invalidation is issued after paint.
-  LayoutRect PartialInvalidationVisualRect() const {
+  IntRect PartialInvalidationVisualRect() const {
     return rare_data_ ? rare_data_->partial_invalidation_visual_rect
-                      : LayoutRect();
+                      : IntRect();
   }
-  void SetPartialInvalidationVisualRect(const LayoutRect& r) {
+  void SetPartialInvalidationVisualRect(const IntRect& r) {
     if (rare_data_ || !r.IsEmpty())
       EnsureRareData().partial_invalidation_visual_rect = r;
   }
@@ -124,8 +124,15 @@ class CORE_EXPORT FragmentData {
     DCHECK(IsClipPathCacheValid());
     return rare_data_ ? rare_data_->clip_path_path.get() : nullptr;
   }
-  void SetClipPathCache(const base::Optional<IntRect>& bounding_box,
+  void SetClipPathCache(const IntRect& bounding_box,
                         scoped_refptr<const RefCountedPath>);
+  void ClearClipPathCache() {
+    if (rare_data_) {
+      rare_data_->is_clip_path_cache_valid = true;
+      rare_data_->clip_path_bounding_box = base::nullopt;
+      rare_data_->clip_path_path = nullptr;
+    }
+  }
 
   // Holds references to the paint property nodes created by this object.
   const ObjectPaintProperties* PaintProperties() const {
@@ -137,7 +144,7 @@ class CORE_EXPORT FragmentData {
   ObjectPaintProperties& EnsurePaintProperties() {
     EnsureRareData();
     if (!rare_data_->paint_properties)
-      rare_data_->paint_properties = ObjectPaintProperties::Create();
+      rare_data_->paint_properties = std::make_unique<ObjectPaintProperties>();
     return *rare_data_->paint_properties;
   }
   void ClearPaintProperties() {
@@ -241,9 +248,9 @@ class CORE_EXPORT FragmentData {
     // avoid separate data structure for them.
     std::unique_ptr<PaintLayer> layer;
     UniqueObjectId unique_id;
-    LayoutRect selection_visual_rect;
+    IntRect selection_visual_rect;
     LayoutRect partial_invalidation_local_rect;
-    LayoutRect partial_invalidation_visual_rect;
+    IntRect partial_invalidation_visual_rect;
 
     // Fragment specific data.
     LayoutPoint pagination_offset;
@@ -259,7 +266,7 @@ class CORE_EXPORT FragmentData {
 
   RareData& EnsureRareData();
 
-  LayoutRect visual_rect_;
+  IntRect visual_rect_;
   LayoutPoint paint_offset_;
 
   std::unique_ptr<RareData> rare_data_;

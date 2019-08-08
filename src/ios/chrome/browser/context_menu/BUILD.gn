@@ -22,6 +22,7 @@ source_set("eg_tests") {
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public",
+    "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
     "//url",
   ]

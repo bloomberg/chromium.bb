@@ -166,4 +166,31 @@ suite('Multidevice', function() {
 
         return browserProxy.whenCalled('setUpAndroidSms');
       });
+
+  test(
+      'AndroidMessages set up button is disabled when prohibited by policy',
+      function() {
+        // Verify that setup button is disabled when prohibited by policy.
+        multideviceSubpage.pageContentData =
+            Object.assign({}, multideviceSubpage.pageContentData, {
+              messagesState:
+                  settings.MultiDeviceFeatureState.PROHIBITED_BY_POLICY,
+              isAndroidSmsPairingComplete: false,
+            });
+        Polymer.dom.flush();
+
+        let setUpButton =
+            multideviceSubpage.$$('#messagesItem > [slot=feature-controller]');
+        assertTrue(!!setUpButton);
+        assertTrue(setUpButton.tagName.includes('BUTTON'));
+        assertTrue(setUpButton.disabled);
+
+        // Verify that setup button is not disabled when feature is enabled.
+        setAndroidSmsPairingComplete(false);
+        setUpButton =
+            multideviceSubpage.$$('#messagesItem > [slot=feature-controller]');
+        assertTrue(!!setUpButton);
+        assertTrue(setUpButton.tagName.includes('BUTTON'));
+        assertFalse(setUpButton.disabled);
+      });
 });

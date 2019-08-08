@@ -35,12 +35,16 @@ android_apk("system_webview_shell_apk") {
   deps = [
     ":system_webview_shell_apk_resources",
     "//base:base_java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
   ]
 }
 
 android_resources("system_webview_shell_apk_resources") {
   resource_dirs = [ "apk/res" ]
   custom_package = "org.chromium.webview_shell"
+  deps = [
+    "//third_party/android_deps:android_support_v7_appcompat_java",
+  ]
 }
 
 instrumentation_test_apk("system_webview_shell_page_cycler_apk") {
@@ -58,7 +62,6 @@ instrumentation_test_apk("system_webview_shell_page_cycler_apk") {
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
   ]
-  enable_multidex = true
 }
 
 instrumentation_test_apk("system_webview_shell_layout_test_apk") {

@@ -14,6 +14,7 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_writer.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/url_row.h"
 
 namespace resource_coordinator {
 
@@ -21,6 +22,13 @@ namespace {
 
 constexpr char kSiteCharacteristicsDirectoryName[] =
     "Site Characteristics Database";
+
+size_t CountOriginsInURLRows(const history::URLRows& rows) {
+  std::set<url::Origin> origins;
+  for (auto& row : rows)
+    origins.insert(url::Origin::Create(row.url()));
+  return origins.size();
+}
 
 }  // namespace
 
@@ -155,17 +163,28 @@ void LocalSiteCharacteristicsDataStore::OnURLsDeleted(
       data.second->ClearObservationsAndInvalidateReadOperation();
     database_->ClearDatabase();
   } else {
-    std::vector<url::Origin> entries_to_remove;
-    for (auto deleted_row : deletion_info.deleted_rows()) {
-      url::Origin origin = url::Origin::Create(deleted_row.url());
-      auto map_iter = origin_data_map_.find(origin);
-      if (map_iter != origin_data_map_.end())
-        map_iter->second->ClearObservationsAndInvalidateReadOperation();
+    std::vector<url::Origin> origins_to_remove;
 
-      // The database will ignore the entries that don't exist in it.
-      entries_to_remove.emplace_back(origin);
+    DCHECK_EQ(deletion_info.deleted_urls_origin_map().size(),
+              CountOriginsInURLRows(deletion_info.deleted_rows()));
+    for (const auto& it : deletion_info.deleted_urls_origin_map()) {
+      const url::Origin origin = url::Origin::Create(it.first);
+      const int remaining_visits_in_history = it.second.first;
+
+      // If the origin no longer exists in history, clear the site
+      // characteristics from memory and from the database.
+      DCHECK_GE(remaining_visits_in_history, 0);
+      if (remaining_visits_in_history == 0) {
+        auto map_iter = origin_data_map_.find(origin);
+        if (map_iter != origin_data_map_.end())
+          map_iter->second->ClearObservationsAndInvalidateReadOperation();
+
+        origins_to_remove.emplace_back(origin);
+      }
     }
-    database_->RemoveSiteCharacteristicsFromDB(entries_to_remove);
+
+    if (!origins_to_remove.empty())
+      database_->RemoveSiteCharacteristicsFromDB(origins_to_remove);
   }
 }
 

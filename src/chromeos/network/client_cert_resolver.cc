@@ -20,8 +20,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/time/clock.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/certificate_helper.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
@@ -723,7 +722,7 @@ void ClientCertResolver::ConfigureCertificates(
       client_cert::SetEmptyShillProperties(match.cert_config_type,
                                            &shill_properties);
     }
-    DBusThreadManager::Get()->GetShillServiceClient()->SetProperties(
+    ShillServiceClient::Get()->SetProperties(
         dbus::ObjectPath(match.service_path), shill_properties,
         base::DoNothing(), base::BindRepeating(&LogError, match.service_path));
     network_state_handler_->RequestUpdateForNetwork(match.service_path);

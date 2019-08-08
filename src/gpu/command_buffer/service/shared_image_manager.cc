@@ -6,6 +6,7 @@
 
 #include <inttypes.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -14,6 +15,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/trace_util.h"
 
@@ -46,14 +48,14 @@ bool operator<(const std::unique_ptr<SharedImageBacking>& lhs,
 
 class SharedImageManager::AutoLock {
  public:
-  explicit AutoLock(SharedImageManager* manager) {
-    if (manager->is_thread_safe())
-      auto_lock_.emplace(manager->lock_.value());
-  }
+  explicit AutoLock(SharedImageManager* manager)
+      : auto_lock_(manager->is_thread_safe() ? &manager->lock_.value()
+                                             : nullptr) {}
+
   ~AutoLock() = default;
 
  private:
-  base::Optional<base::AutoLock> auto_lock_;
+  base::AutoLockMaybe auto_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLock);
 };
@@ -175,7 +177,8 @@ SharedImageManager::ProduceGLTexturePassthrough(const Mailbox& mailbox,
 
 std::unique_ptr<SharedImageRepresentationSkia> SharedImageManager::ProduceSkia(
     const Mailbox& mailbox,
-    MemoryTypeTracker* tracker) {
+    MemoryTypeTracker* tracker,
+    scoped_refptr<SharedContextState> context_state) {
   CALLED_ON_VALID_THREAD();
 
   AutoLock autolock(this);
@@ -186,9 +189,33 @@ std::unique_ptr<SharedImageRepresentationSkia> SharedImageManager::ProduceSkia(
     return nullptr;
   }
 
-  auto representation = (*found)->ProduceSkia(this, tracker);
+  auto representation = (*found)->ProduceSkia(this, tracker, context_state);
   if (!representation) {
     LOG(ERROR) << "SharedImageManager::ProduceSkia: Trying to produce a "
+                  "Skia representation from an incompatible mailbox.";
+    return nullptr;
+  }
+
+  return representation;
+}
+
+std::unique_ptr<SharedImageRepresentationDawn> SharedImageManager::ProduceDawn(
+    const Mailbox& mailbox,
+    MemoryTypeTracker* tracker,
+    DawnDevice device) {
+  CALLED_ON_VALID_THREAD();
+
+  AutoLock autolock(this);
+  auto found = images_.find(mailbox);
+  if (found == images_.end()) {
+    LOG(ERROR) << "SharedImageManager::ProduceDawn: Trying to Produce a "
+                  "Dawn representation from a non-existent mailbox.";
+    return nullptr;
+  }
+
+  auto representation = (*found)->ProduceDawn(this, tracker, device);
+  if (!representation) {
+    LOG(ERROR) << "SharedImageManager::ProduceDawn: Trying to produce a "
                   "Skia representation from an incompatible mailbox.";
     return nullptr;
   }
@@ -234,7 +261,7 @@ void SharedImageManager::OnMemoryDump(const Mailbox& mailbox,
   }
 
   auto* backing = found->get();
-  size_t estimated_size = backing->estimated_size();
+  size_t estimated_size = backing->EstimatedSizeForMemTracking();
   if (estimated_size == 0)
     return;
 

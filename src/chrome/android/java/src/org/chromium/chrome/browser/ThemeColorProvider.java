@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.ObserverList;
@@ -68,22 +69,61 @@ public abstract class ThemeColorProvider {
         mDarkModeTint = ColorUtils.getThemedToolbarIconTint(context, false);
     }
 
+    /**
+     * @param observer Adds a {@link ThemeColorObserver} that will be notified when the theme color
+     *                 changes. This method does not trigger the observer.
+     */
     public void addThemeColorObserver(ThemeColorObserver observer) {
         mThemeColorObservers.addObserver(observer);
     }
 
+    /**
+     * @param observer Removes the observer so it no longer receives theme color changes.
+     */
     public void removeThemeColorObserver(ThemeColorObserver observer) {
         mThemeColorObservers.removeObserver(observer);
     }
 
+    /**
+     * @param observer Adds a {@link TintObserver} that will be notified when the tint changes. This
+     *                 method does not trigger the observer.
+     */
     public void addTintObserver(TintObserver observer) {
         mTintObservers.addObserver(observer);
     }
 
+    /**
+     * @param observer Removes the observer so it no longer receives tint changes.
+     */
     public void removeTintObserver(TintObserver observer) {
         mTintObservers.removeObserver(observer);
     }
 
+    /**
+     * @return The current theme color of this provider.
+     */
+    @ColorInt
+    public int getThemeColor() {
+        return mPrimaryColor;
+    }
+
+    /**
+     * @return The current tint of this provider.
+     */
+    public ColorStateList getTint() {
+        return useLight() ? mLightModeTint : mDarkModeTint;
+    }
+
+    /**
+     * @return Whether or not this provider is using light tints.
+     */
+    public boolean useLight() {
+        return mUseLightTint != null ? mUseLightTint : false;
+    }
+
+    /**
+     * Clears out the observer lists.
+     */
     public void destroy() {
         mThemeColorObservers.clear();
         mTintObservers.clear();

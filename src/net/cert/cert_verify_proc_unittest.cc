@@ -906,7 +906,7 @@ TEST_P(CertVerifyProcInternalTest, DISABLED_PaypalNullCertParsing) {
           reinterpret_cast<const char*>(paypal_null_der),
           sizeof(paypal_null_der)));
 
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), paypal_null_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), paypal_null_cert.get());
 
   EXPECT_EQ(paypal_null_fingerprint, X509Certificate::CalculateFingerprint256(
                                          paypal_null_cert->cert_buffer()));
@@ -1097,7 +1097,7 @@ TEST_P(CertVerifyProcInternalTest, RejectWeakKeys) {
   // Add the root that signed the intermediates for this test.
   scoped_refptr<X509Certificate> root_cert =
       ImportCertFromFile(certs_dir, "2048-rsa-root.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), root_cert.get());
   ScopedTestRoot scoped_root(root_cert.get());
 
   // Now test each chain.
@@ -1110,12 +1110,12 @@ TEST_P(CertVerifyProcInternalTest, RejectWeakKeys) {
       SCOPED_TRACE(basename);
       scoped_refptr<X509Certificate> ee_cert =
           ImportCertFromFile(certs_dir, basename);
-      ASSERT_NE(static_cast<X509Certificate*>(NULL), ee_cert.get());
+      ASSERT_NE(static_cast<X509Certificate*>(nullptr), ee_cert.get());
 
       basename = *signer_type + "-intermediate.pem";
       scoped_refptr<X509Certificate> intermediate =
           ImportCertFromFile(certs_dir, basename);
-      ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate.get());
+      ASSERT_NE(static_cast<X509Certificate*>(nullptr), intermediate.get());
 
       std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
       intermediates.push_back(bssl::UpRef(intermediate->cert_buffer()));
@@ -1163,15 +1163,15 @@ TEST_P(CertVerifyProcInternalTest, ExtraneousMD5RootCert) {
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "cross-signed-leaf.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), server_cert.get());
 
   scoped_refptr<X509Certificate> extra_cert =
       ImportCertFromFile(certs_dir, "cross-signed-root-md5.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), extra_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), extra_cert.get());
 
   scoped_refptr<X509Certificate> root_cert =
       ImportCertFromFile(certs_dir, "cross-signed-root-sha256.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), root_cert.get());
 
   ScopedTestRoot scoped_root(root_cert.get());
 
@@ -1204,11 +1204,11 @@ TEST_P(CertVerifyProcInternalTest, GoogleDigiNotarTest) {
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "google_diginotar.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), server_cert.get());
 
   scoped_refptr<X509Certificate> intermediate_cert =
       ImportCertFromFile(certs_dir, "diginotar_public_ca_2025.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), intermediate_cert.get());
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
   intermediates.push_back(bssl::UpRef(intermediate_cert->cert_buffer()));
@@ -1767,7 +1767,7 @@ TEST_P(CertVerifyProcInternalTest, WrongKeyPurpose) {
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "invalid_key_usage_cert.der");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), server_cert.get());
 
   int flags = 0;
   CertVerifyResult verify_result;
@@ -1860,17 +1860,17 @@ TEST_P(CertVerifyProcInternalTest, VerifyReturnChainBasic) {
   scoped_refptr<X509Certificate> google_full_chain =
       X509Certificate::CreateFromBuffer(bssl::UpRef(certs[0]->cert_buffer()),
                                         std::move(intermediates));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_full_chain.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), google_full_chain.get());
   ASSERT_EQ(2U, google_full_chain->intermediate_buffers().size());
 
   CertVerifyResult verify_result;
-  EXPECT_EQ(static_cast<X509Certificate*>(NULL),
+  EXPECT_EQ(static_cast<X509Certificate*>(nullptr),
             verify_result.verified_cert.get());
   int error =
       Verify(google_full_chain.get(), "127.0.0.1", 0,
              CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
   EXPECT_THAT(error, IsOk());
-  ASSERT_NE(static_cast<X509Certificate*>(NULL),
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr),
             verify_result.verified_cert.get());
 
   EXPECT_NE(google_full_chain, verify_result.verified_cert);
@@ -2121,8 +2121,10 @@ TEST_P(CertVerifyProcInternalTest, VerifyReturnChainFiltersUnrelatedCerts) {
       ImportCertFromFile(certs_dir, "duplicate_cn_1.pem");
   scoped_refptr<X509Certificate> unrelated_certificate2 =
       ImportCertFromFile(certs_dir, "aia-cert.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), unrelated_certificate.get());
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), unrelated_certificate2.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr),
+            unrelated_certificate.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr),
+            unrelated_certificate2.get());
 
   // Interject unrelated certificates into the list of intermediates.
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
@@ -3263,11 +3265,11 @@ INSTANTIATE_TEST_SUITE_P(VerifyEndEntity,
 // unable to distinguish that this is an intermediate and not a trust anchor, so
 // this intermediate is treated like a trust anchor.
 const WeakDigestTestData kVerifyIncompleteIntermediateTestData[] = {
-    {NULL, "weak_digest_md5_intermediate.pem", "weak_digest_sha1_ee.pem",
+    {nullptr, "weak_digest_md5_intermediate.pem", "weak_digest_sha1_ee.pem",
      /*EXPECT_MD5 |*/ EXPECT_SHA1 | EXPECT_SHA1_LEAF},
-    {NULL, "weak_digest_md4_intermediate.pem", "weak_digest_sha1_ee.pem",
+    {nullptr, "weak_digest_md4_intermediate.pem", "weak_digest_sha1_ee.pem",
      /*EXPECT_MD4 |*/ EXPECT_SHA1 | EXPECT_SHA1_LEAF},
-    {NULL, "weak_digest_md2_intermediate.pem", "weak_digest_sha1_ee.pem",
+    {nullptr, "weak_digest_md2_intermediate.pem", "weak_digest_sha1_ee.pem",
      /*EXPECT_MD2 |*/ EXPECT_SHA1 | EXPECT_SHA1_LEAF},
 };
 
@@ -3282,11 +3284,11 @@ INSTANTIATE_TEST_SUITE_P(
 // this is an intermediate and not a trust anchor, so this intermediate is
 // treated like a trust anchor.
 const WeakDigestTestData kVerifyIncompleteEETestData[] = {
-    {NULL, "weak_digest_sha1_intermediate.pem", "weak_digest_md5_ee.pem",
+    {nullptr, "weak_digest_sha1_intermediate.pem", "weak_digest_md5_ee.pem",
      /*EXPECT_SHA1 |*/ EXPECT_MD5},
-    {NULL, "weak_digest_sha1_intermediate.pem", "weak_digest_md4_ee.pem",
+    {nullptr, "weak_digest_sha1_intermediate.pem", "weak_digest_md4_ee.pem",
      /*EXPECT_SHA1 |*/ EXPECT_MD4},
-    {NULL, "weak_digest_sha1_intermediate.pem", "weak_digest_md2_ee.pem",
+    {nullptr, "weak_digest_sha1_intermediate.pem", "weak_digest_md2_ee.pem",
      /*EXPECT_SHA1 |*/ EXPECT_MD2},
 };
 
@@ -3312,10 +3314,10 @@ INSTANTIATE_TEST_SUITE_P(VerifyMixed,
 // The EE is a trusted certificate. Even though it uses weak hashes, these
 // should not be reported.
 const WeakDigestTestData kVerifyTrustedEETestData[] = {
-    {NULL, NULL, "weak_digest_md5_ee.pem", 0},
-    {NULL, NULL, "weak_digest_md4_ee.pem", 0},
-    {NULL, NULL, "weak_digest_md2_ee.pem", 0},
-    {NULL, NULL, "weak_digest_sha1_ee.pem", 0},
+    {nullptr, nullptr, "weak_digest_md5_ee.pem", 0},
+    {nullptr, nullptr, "weak_digest_md4_ee.pem", 0},
+    {nullptr, nullptr, "weak_digest_md2_ee.pem", 0},
+    {nullptr, nullptr, "weak_digest_sha1_ee.pem", 0},
 };
 
 INSTANTIATE_TEST_SUITE_P(VerifyTrustedEE,

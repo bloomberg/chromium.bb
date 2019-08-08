@@ -1,5 +1,5 @@
 //
-// Copyright 2018 The ANGLE Project Authors. All rights reserved.
+// Copyright 2019 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -7,11 +7,41 @@
 
 #version 450 core
 
+#if IsFloat
+#define Type vec4
+#elif IsInt
+#define Type ivec4
+#elif IsUint
+#define Type uvec4
+#else
+#error "Not all formats are accounted for"
+#endif
+
+#if Attachment0
+#define ATTACHMENT 0
+#elif Attachment1
+#define ATTACHMENT 1
+#elif Attachment2
+#define ATTACHMENT 2
+#elif Attachment3
+#define ATTACHMENT 3
+#elif Attachment4
+#define ATTACHMENT 4
+#elif Attachment5
+#define ATTACHMENT 5
+#elif Attachment6
+#define ATTACHMENT 6
+#elif Attachment7
+#define ATTACHMENT 7
+#else
+#error "Not all attachment index possibilities are accounted for"
+#endif
+
 layout(push_constant) uniform PushConstants {
-    vec4 clearColor;
+    Type clearColor;
 } params;
 
-layout(location = 0) out vec4 colorOut;
+layout(location = ATTACHMENT) out Type colorOut;
 
 void main()
 {

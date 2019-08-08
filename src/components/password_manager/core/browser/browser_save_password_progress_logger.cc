@@ -229,8 +229,7 @@ void BrowserSavePasswordProgressLogger::LogFormData(
   message +=
       GetStringFromID(STRING_FORM_SIGNATURE) + ": " +
       FormSignatureToDebugString(autofill::CalculateFormSignature(form)) + "\n";
-  message +=
-      GetStringFromID(STRING_ORIGIN) + ": " + ScrubURL(form.origin) + "\n";
+  message += GetStringFromID(STRING_ORIGIN) + ": " + ScrubURL(form.url) + "\n";
   message +=
       GetStringFromID(STRING_ACTION) + ": " + ScrubURL(form.action) + "\n";
   if (form.main_frame_origin.GetURL().is_valid())

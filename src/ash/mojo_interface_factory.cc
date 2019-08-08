@@ -24,6 +24,7 @@
 #include "ash/first_run/first_run_helper.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_engine_factory_registry.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/login/login_screen_controller.h"
@@ -80,7 +81,11 @@ void BindAccessibilityFocusRingControllerRequestOnMainThread(
 
 void BindAppListControllerRequestOnMainThread(
     mojom::AppListControllerRequest request) {
-  Shell::Get()->app_list_controller()->BindRequest(std::move(request));
+  // The AppListController is not available in KioskNext sessions.
+  // TODO(michaelpg): Also disable the Chrome AppList client in KioskNext
+  // sessions.
+  if (Shell::Get()->app_list_controller())
+    Shell::Get()->app_list_controller()->BindRequest(std::move(request));
 }
 
 void BindArcCustomTabControllerRequestOnMainThread(
@@ -170,6 +175,11 @@ void BindHighlighterControllerRequestOnMainThread(
 
 void BindImeControllerRequestOnMainThread(mojom::ImeControllerRequest request) {
   Shell::Get()->ime_controller()->BindRequest(std::move(request));
+}
+
+void BindImeEngineFactoryRegistryRequestOnMainThread(
+    ime::mojom::ImeEngineFactoryRegistryRequest request) {
+  Shell::Get()->ime_engine_factory_registry()->BindRequest(std::move(request));
 }
 
 void BindKeyboardControllerRequestOnMainThread(
@@ -339,6 +349,9 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindImeControllerRequestOnMainThread),
+      main_thread_task_runner);
+  registry->AddInterface(
+      base::BindRepeating(&BindImeEngineFactoryRegistryRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindKeyboardControllerRequestOnMainThread),

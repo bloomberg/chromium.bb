@@ -12,7 +12,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/policy/core/common/external_data_manager.h"
+#include "components/policy/core/common/policy_merger.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,6 +48,14 @@ void SetPolicy(PolicyMap* map,
                std::unique_ptr<ExternalDataFetcher> external_data_fetcher) {
   map->Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
            nullptr, std::move(external_data_fetcher));
+}
+
+template <class T>
+std::vector<base::Value> GetListStorage(const std::vector<T> entry) {
+  std::vector<base::Value> result;
+  for (const auto& it : entry)
+    result.emplace_back(base::Value(it));
+  return result;
 }
 
 }  // namespace
@@ -225,7 +235,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
         POLICY_SOURCE_ENTERPRISE_DEFAULT, nullptr,
         CreateExternalDataFetcher("b"));
   b.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+        POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
         std::make_unique<base::Value>(true), nullptr);
   b.Set(kTestPolicyName5, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(std::string()),
@@ -242,7 +252,6 @@ TEST_F(PolicyMapTest, MergeFrom) {
   auto conflicted_policy_1 = a.Get(kTestPolicyName1)->DeepCopy();
   auto conflicted_policy_4 = a.Get(kTestPolicyName4)->DeepCopy();
   auto conflicted_policy_5 = a.Get(kTestPolicyName5)->DeepCopy();
-  auto conflicted_policy_7 = a.Get(kTestPolicyName7)->DeepCopy();
   auto conflicted_policy_8 = b.Get(kTestPolicyName8)->DeepCopy();
 
   a.GetMutable(kTestPolicyName7)->SetBlocked();
@@ -270,7 +279,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
       ->AddConflictingPolicy(*b.Get(kTestPolicyName3));
   // POLICY_SCOPE_MACHINE over POLICY_SCOPE_USER for POLICY_LEVEL_RECOMMENDED.
   c.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+        POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
         std::make_unique<base::Value>(true), nullptr);
   c.GetMutable(kTestPolicyName4)->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
   c.GetMutable(kTestPolicyName4)->AddConflictingPolicy(conflicted_policy_4);
@@ -287,8 +296,6 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.Set(kTestPolicyName7, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         POLICY_SOURCE_ACTIVE_DIRECTORY, std::make_unique<base::Value>(true),
         nullptr);
-  c.GetMutable(kTestPolicyName7)->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
-  c.GetMutable(kTestPolicyName7)->AddConflictingPolicy(conflicted_policy_7);
   c.GetMutable(kTestPolicyName7)->SetBlocked();
 
   c.Set(kTestPolicyName8, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
@@ -299,6 +306,207 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.GetMutable(kTestPolicyName8)->SetBlocked();
 
   EXPECT_TRUE(a.Equals(c));
+}
+
+TEST_F(PolicyMapTest, MergeValues) {
+  std::vector<base::Value> abcd =
+      GetListStorage<std::string>({"a", "b", "c", "d"});
+  std::vector<base::Value> abc = GetListStorage<std::string>({"a", "b", "c"});
+  std::vector<base::Value> ab = GetListStorage<std::string>({"a", "b"});
+  std::vector<base::Value> cd = GetListStorage<std::string>({"c", "d"});
+  std::vector<base::Value> ef = GetListStorage<std::string>({"e", "f"});
+
+  std::vector<base::Value> int12 = GetListStorage<int>({1, 2});
+  std::vector<base::Value> int34 = GetListStorage<int>({3, 4});
+  std::vector<base::Value> int56 = GetListStorage<int>({5, 6});
+  std::vector<base::Value> int1234 = GetListStorage<int>({1, 2, 3, 4});
+
+  base::Value dict_ab(base::Value::Type::DICTIONARY);
+  dict_ab.SetBoolKey("a", true);
+  dict_ab.SetBoolKey("b", false);
+  base::Value dict_c(base::Value::Type::DICTIONARY);
+  dict_c.SetBoolKey("c", false);
+  base::Value dict_d(base::Value::Type::DICTIONARY);
+  dict_d.SetBoolKey("d", false);
+
+  std::vector<base::Value> list_dict_abd;
+  list_dict_abd.emplace_back(dict_ab.Clone());
+  list_dict_abd.emplace_back(dict_d.Clone());
+  std::vector<base::Value> list_dict_c;
+  list_dict_c.emplace_back(dict_c.Clone());
+
+  std::vector<base::Value> list_dict_abcd;
+  list_dict_abcd.emplace_back(dict_ab.Clone());
+  list_dict_abcd.emplace_back(dict_d.Clone());
+  list_dict_abcd.emplace_back(dict_c.Clone());
+
+  // Case 1 - kTestPolicyName1
+  // Enterprise default policies should not be merged with other sources.
+  PolicyMap::Entry platform_user_mandatory(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(abc), nullptr);
+
+  platform_user_mandatory.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_ACTIVE_DIRECTORY,
+      std::make_unique<base::Value>(cd), nullptr));
+
+  platform_user_mandatory.AddConflictingPolicy(
+      PolicyMap::Entry(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                       POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                       std::make_unique<base::Value>(ef), nullptr));
+
+  platform_user_mandatory.AddConflictingPolicy(
+      PolicyMap::Entry(POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
+                       POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                       std::make_unique<base::Value>(ef), nullptr));
+
+  PolicyMap::Entry merged_user_mandatory(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_MERGED,
+      std::make_unique<base::Value>(abcd), nullptr);
+  merged_user_mandatory.AddConflictingPolicy(platform_user_mandatory);
+
+  // Case 2 - kTestPolicyName2
+  // Policies should only be merged with other policies with the same target,
+  // level and scope.
+  PolicyMap::Entry cloud_machine_recommended(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_PRIORITY_CLOUD, std::make_unique<base::Value>(int12),
+      nullptr);
+
+  cloud_machine_recommended.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(int34), nullptr));
+
+  cloud_machine_recommended.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(int56), nullptr));
+
+  PolicyMap::Entry merged_machine_recommended(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE, POLICY_SOURCE_MERGED,
+      std::make_unique<base::Value>(int1234), nullptr);
+  merged_machine_recommended.AddConflictingPolicy(cloud_machine_recommended);
+
+  // Case 3 - kTestPolicyName3
+  // Trivial case with 2 sources.
+  PolicyMap::Entry cloud_machine_mandatory(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_PRIORITY_CLOUD, std::make_unique<base::Value>(ab), nullptr);
+
+  cloud_machine_mandatory.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(cd), nullptr));
+
+  PolicyMap::Entry merged_cloud_machine_mandatory(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_MERGED,
+      std::make_unique<base::Value>(abcd), nullptr);
+  merged_cloud_machine_mandatory.AddConflictingPolicy(cloud_machine_mandatory);
+
+  // Case 4 - kTestPolicyName4
+  // Policies with a single source should stay the same.
+  PolicyMap::Entry ad_machine_mandatory(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_ACTIVE_DIRECTORY, std::make_unique<base::Value>(ef),
+      nullptr);
+
+  // Case 5 - kTestPolicyName5
+  // Policies that are not lists should not be merged.
+  // If such a policy is explicitly in the list of policies to merge, an error
+  // is added to the entry and the policy stays intact.
+  PolicyMap::Entry bad_stuff(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                             POLICY_SOURCE_ACTIVE_DIRECTORY,
+                             std::make_unique<base::Value>("bad stuff"),
+                             nullptr);
+
+  PolicyMap::Entry expected_bad_stuff(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_ACTIVE_DIRECTORY,
+      std::make_unique<base::Value>("bad stuff"), nullptr);
+  expected_bad_stuff.AddError(
+      IDS_POLICY_LIST_MERGING_WRONG_POLICY_TYPE_SPECIFIED);
+
+  // Case 6 - kTestPolicyName6
+  // User cloud policies should not be merged with other sources.
+  PolicyMap::Entry user_not_merged(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                                   POLICY_SOURCE_PLATFORM,
+                                   std::make_unique<base::Value>(ab), nullptr);
+  user_not_merged.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+      std::make_unique<base::Value>(cd), nullptr));
+  user_not_merged.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_PRIORITY_CLOUD,
+      std::make_unique<base::Value>(ef), nullptr));
+
+  // Case 7 - kTestPolicyName7
+  // Lists of dictionaries should not have duplicates.
+  PolicyMap::Entry platform_user_mandatory_dict(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(list_dict_abd), nullptr);
+
+  platform_user_mandatory_dict.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_ACTIVE_DIRECTORY,
+      std::make_unique<base::Value>(list_dict_abd), nullptr));
+
+  platform_user_mandatory_dict.AddConflictingPolicy(
+      PolicyMap::Entry(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                       POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
+                       std::make_unique<base::Value>(list_dict_c), nullptr));
+
+  PolicyMap::Entry merged_user_mandatory_dict(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_MERGED,
+      std::make_unique<base::Value>(list_dict_abcd), nullptr);
+  merged_user_mandatory_dict.AddConflictingPolicy(platform_user_mandatory_dict);
+
+  PolicyMap policy_not_merged;
+  policy_not_merged.Set(kTestPolicyName1, platform_user_mandatory.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName2, cloud_machine_recommended.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName3, cloud_machine_mandatory.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName4, ad_machine_mandatory.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName5, bad_stuff.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName6, user_not_merged.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName7,
+                        platform_user_mandatory_dict.DeepCopy());
+
+  PolicyMap expected_list_merged;
+  expected_list_merged.Set(kTestPolicyName1, merged_user_mandatory.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName2,
+                           merged_machine_recommended.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName3,
+                           merged_cloud_machine_mandatory.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName4, ad_machine_mandatory.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName5, expected_bad_stuff.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName6, user_not_merged.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName7,
+                           merged_user_mandatory_dict.DeepCopy());
+
+  PolicyMap list_merged;
+  list_merged.CopyFrom(policy_not_merged);
+
+  PolicyMap list_merged_wildcard;
+  list_merged_wildcard.CopyFrom(policy_not_merged);
+
+  // Merging with no restrictions specified
+  PolicyListMerger empty_policy_list({});
+  list_merged.MergeValues({&empty_policy_list});
+  EXPECT_TRUE(list_merged.Equals(policy_not_merged));
+
+  PolicyListMerger bad_policy_list({"unknown"});
+  // Merging with wrong restrictions specified
+  list_merged.MergeValues({&bad_policy_list});
+  EXPECT_TRUE(list_merged.Equals(policy_not_merged));
+
+  // Merging lists restrictions specified
+  PolicyListMerger good_policy_list(
+      {kTestPolicyName1, kTestPolicyName2, kTestPolicyName3, kTestPolicyName4,
+       kTestPolicyName5, kTestPolicyName6, kTestPolicyName7});
+  PolicyListMerger wildcard_policy_list({"*"});
+  list_merged.MergeValues({&good_policy_list});
+  EXPECT_TRUE(list_merged.Equals(expected_list_merged));
+
+  PolicyMap expected_list_merged_wildcard;
+  expected_list_merged_wildcard.CopyFrom(expected_list_merged);
+  expected_list_merged_wildcard.Set(kTestPolicyName5, bad_stuff.DeepCopy());
+  list_merged_wildcard.MergeValues({&wildcard_policy_list});
+  EXPECT_TRUE(list_merged_wildcard.Equals(expected_list_merged_wildcard));
 }
 
 TEST_F(PolicyMapTest, GetDifferingKeys) {
@@ -481,4 +689,5 @@ TEST_F(PolicyMapTest, BlockedEntry) {
   }
   EXPECT_TRUE(iterated_values == expected_size);
 }
+
 }  // namespace policy

@@ -236,6 +236,20 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(VideoPixelFormat format,
 }
 
 // static
+scoped_refptr<VideoFrame> VideoFrame::CreateVideoHoleFrame(
+    const base::UnguessableToken& overlay_plane_id,
+    const gfx::Size& natural_size,
+    base::TimeDelta timestamp) {
+  auto layout = VideoFrameLayout::Create(PIXEL_FORMAT_UNKNOWN, natural_size);
+  scoped_refptr<VideoFrame> frame =
+      new VideoFrame(*layout, StorageType::STORAGE_OPAQUE,
+                     gfx::Rect(natural_size), natural_size, timestamp);
+  frame->metadata()->SetUnguessableToken(VideoFrameMetadata::OVERLAY_PLANE_ID,
+                                         overlay_plane_id);
+  return frame;
+}
+
+// static
 scoped_refptr<VideoFrame> VideoFrame::CreateZeroInitializedFrame(
     VideoPixelFormat format,
     const gfx::Size& coded_size,
@@ -387,14 +401,6 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
     uint8_t* u_data,
     uint8_t* v_data,
     base::TimeDelta timestamp) {
-  const StorageType storage = STORAGE_UNOWNED_MEMORY;
-  if (!IsValidConfig(format, storage, coded_size, visible_rect, natural_size)) {
-    DLOG(ERROR) << __func__ << " Invalid config."
-                << ConfigToString(format, storage, coded_size, visible_rect,
-                                  natural_size);
-    return nullptr;
-  }
-
   const size_t height = coded_size.height();
   auto layout = VideoFrameLayout::CreateWithStrides(
       format, coded_size, {y_stride, u_stride, v_stride},
@@ -405,8 +411,36 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
     return nullptr;
   }
 
+  return WrapExternalYuvDataWithLayout(*layout, visible_rect, natural_size,
+                                       y_data, u_data, v_data, timestamp);
+}
+
+// static
+scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvDataWithLayout(
+    const VideoFrameLayout& layout,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    uint8_t* y_data,
+    uint8_t* u_data,
+    uint8_t* v_data,
+    base::TimeDelta timestamp) {
+  const StorageType storage = STORAGE_UNOWNED_MEMORY;
+  const VideoPixelFormat format = layout.format();
+  if (!IsValidConfig(format, storage, layout.coded_size(), visible_rect,
+                     natural_size)) {
+    DLOG(ERROR) << __func__ << " Invalid config."
+                << ConfigToString(format, storage, layout.coded_size(),
+                                  visible_rect, natural_size);
+    return nullptr;
+  }
+  if (!IsYuvPlanar(format)) {
+    DLOG(ERROR) << __func__ << " Format is not YUV. " << format;
+    return nullptr;
+  }
+
+  DCHECK_LE(NumPlanes(format), 3u);
   scoped_refptr<VideoFrame> frame(
-      new VideoFrame(*layout, storage, visible_rect, natural_size, timestamp));
+      new VideoFrame(layout, storage, visible_rect, natural_size, timestamp));
   frame->data_[kYPlane] = y_data;
   frame->data_[kUPlane] = u_data;
   frame->data_[kVPlane] = v_data;

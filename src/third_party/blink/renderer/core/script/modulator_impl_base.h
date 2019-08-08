@@ -6,10 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MODULATOR_IMPL_BASE_H_
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -46,8 +45,8 @@ class ModulatorImplBase : public Modulator {
   bool BuiltInModuleEnabled(blink::layered_api::Module) const override;
   void BuiltInModuleUseCount(blink::layered_api::Module) const override;
 
-  ScriptModuleResolver* GetScriptModuleResolver() override {
-    return script_module_resolver_.Get();
+  ModuleRecordResolver* GetModuleRecordResolver() override {
+    return module_record_resolver_.Get();
   }
   base::SingleThreadTaskRunner* TaskRunner() override {
     return task_runner_.get();
@@ -81,9 +80,9 @@ class ModulatorImplBase : public Modulator {
   void RegisterImportMap(const ImportMap*) final;
   bool IsAcquiringImportMaps() const final { return acquiring_import_maps_; }
   void ClearIsAcquiringImportMaps() final { acquiring_import_maps_ = false; }
-  ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const override;
-  ScriptValue InstantiateModule(ScriptModule) override;
-  Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;
+  ModuleImportMeta HostGetImportMetaProperties(ModuleRecord) const override;
+  ScriptValue InstantiateModule(ModuleRecord) override;
+  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override;
   ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) override;
 
   // Populates |reason| and returns true if the dynamic import is disallowed on
@@ -99,9 +98,9 @@ class ModulatorImplBase : public Modulator {
 
   Member<ScriptState> script_state_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  TraceWrapperMember<ModuleMap> map_;
-  TraceWrapperMember<ModuleTreeLinkerRegistry> tree_linker_registry_;
-  Member<ScriptModuleResolver> script_module_resolver_;
+  Member<ModuleMap> map_;
+  Member<ModuleTreeLinkerRegistry> tree_linker_registry_;
+  Member<ModuleRecordResolver> module_record_resolver_;
   Member<DynamicModuleResolver> dynamic_module_resolver_;
 
   Member<const ImportMap> import_map_;

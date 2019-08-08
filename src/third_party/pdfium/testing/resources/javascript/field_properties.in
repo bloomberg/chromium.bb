@@ -2,7 +2,7 @@
 {{include field.fragment}}
 
 % JS program to exexute
-{{object 11 0}} <<
+{{object 16 0}} <<
   {{streamlen}}
 >>
 stream
@@ -10,9 +10,11 @@ stream
 function testProperties() {
   try {
     var field = this.getField("MyField");
-    var button = this.getField("MyField.Sub_A");
-    var radio = this.getField("MyField.Sub_Z");
-    var check = this.getField("MyField.Sub_B");
+    var text = this.getField("MyField.MyText");
+    var button = this.getField("MyField.MyPushButton");
+    var radio = this.getField("MyField.MyRadio");
+    var list = this.getField("MyField.MyMultiSelect");
+    var check = this.getField("MyField.MyCheckBox");
     app.alert('Testing properties under delay');
     testRWProperty(field, "delay", false, true);
     // TODO(tsepez): try this case, too.
@@ -23,6 +25,7 @@ function testProperties() {
     testPushButtonPropertiesCase(button);
     testRadioButtonPropertiesCase(radio);
     testCheckBoxPropertiesCase(check);
+    testListBoxPropertiesCase(list);
   } catch (e) {
     app.alert("Unexpected error: " + e);
   }
@@ -112,6 +115,14 @@ function testCheckBoxPropertiesCase(field) {
     testROProperty(field, "type", "checkbox");
     testRIProperty(field, "value", "Off");
     testROProperty(field, "valueAsString", "Off");
+  } catch (e) {
+    app.alert("Unexpected error: " + e);
+  }
+}
+
+function testListBoxPropertiesCase(field) {
+  try {
+    testRWProperty(field, "currentValueIndices", 2, 1);
   } catch (e) {
     app.alert("Unexpected error: " + e);
   }

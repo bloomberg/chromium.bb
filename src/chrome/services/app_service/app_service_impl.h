@@ -31,7 +31,9 @@ class AppServiceImpl : public apps::mojom::AppService {
                          apps::mojom::AppType app_type) override;
   void RegisterSubscriber(apps::mojom::SubscriberPtr subscriber,
                           apps::mojom::ConnectOptionsPtr opts) override;
-  void LoadIcon(apps::mojom::IconKeyPtr icon_key,
+  void LoadIcon(apps::mojom::AppType app_type,
+                const std::string& app_id,
+                apps::mojom::IconKeyPtr icon_key,
                 apps::mojom::IconCompression icon_compression,
                 int32_t size_hint_in_dip,
                 bool allow_placeholder_icon,

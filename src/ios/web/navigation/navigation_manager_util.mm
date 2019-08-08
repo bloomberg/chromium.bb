@@ -6,7 +6,6 @@
 
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#include "ios/web/public/features.h"
 #import "ios/web/web_state/navigation_context_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

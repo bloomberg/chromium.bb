@@ -15,22 +15,26 @@ class AssistantPaymentRequestDelegate {
   explicit AssistantPaymentRequestDelegate(UiControllerAndroid* ui_controller);
   ~AssistantPaymentRequestDelegate();
 
-  void OnGetPaymentInformation(
+  void OnContactInfoChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
-      jboolean jsucceed,
-      const base::android::JavaParamRef<jobject>& jcard,
-      const base::android::JavaParamRef<jobject>& jaddress,
       const base::android::JavaParamRef<jstring>& jpayer_name,
       const base::android::JavaParamRef<jstring>& jpayer_phone,
-      const base::android::JavaParamRef<jstring>& jpayer_email,
-      jboolean jis_terms_and_services_accepted);
+      const base::android::JavaParamRef<jstring>& jpayer_email);
 
-  // TODO(crbug.com/806868): Remove this once PR is using the actions carousel
-  // to show its buttons.
-  void OnCancelButtonClicked(
+  void OnShippingAddressChanged(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller);
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jobject>& jaddress);
+
+  void OnCreditCardChanged(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& jcaller,
+                           const base::android::JavaParamRef<jobject>& jcard);
+
+  void OnTermsAndConditionsChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jint state);
 
   base::android::ScopedJavaGlobalRef<jobject> GetJavaObject();
 

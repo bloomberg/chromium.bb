@@ -20,6 +20,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -195,15 +196,18 @@ void DidGetUsageAndQuotaForWebApps(
 
 }  // namespace
 
-class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
+// Helper to asynchronously gather usage and quota information.
+// This class is not thread-safe. Each instance can only be used on the sequence
+// where it was constructed. Instances of this class own and delete themselves.
+class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
  public:
-  UsageAndQuotaHelper(QuotaManager* manager,
-                      const url::Origin& origin,
-                      StorageType type,
-                      bool is_unlimited,
-                      bool is_session_only,
-                      bool is_incognito,
-                      UsageAndQuotaWithBreakdownCallback callback)
+  UsageAndQuotaInfoGatherer(QuotaManager* manager,
+                            const url::Origin& origin,
+                            StorageType type,
+                            bool is_unlimited,
+                            bool is_session_only,
+                            bool is_incognito,
+                            UsageAndQuotaWithBreakdownCallback callback)
       : QuotaTask(manager),
         origin_(origin),
         callback_(std::move(callback)),
@@ -215,24 +219,25 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
 
  protected:
   void Run() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     // Start the async process of gathering the info we need.
     // Gather 4 pieces of info before computing an answer:
     // settings, device_storage_capacity, host_usage, and host_quota.
     base::Closure barrier = base::BarrierClosure(
-        4, base::BindOnce(&UsageAndQuotaHelper::OnBarrierComplete,
+        4, base::BindOnce(&UsageAndQuotaInfoGatherer::OnBarrierComplete,
                           weak_factory_.GetWeakPtr()));
 
     std::string host = net::GetHostOrSpecFromURL(origin_.GetURL());
 
     manager()->GetQuotaSettings(
-        base::BindOnce(&UsageAndQuotaHelper::OnGotSettings,
+        base::BindOnce(&UsageAndQuotaInfoGatherer::OnGotSettings,
                        weak_factory_.GetWeakPtr(), barrier));
     manager()->GetStorageCapacity(
-        base::BindOnce(&UsageAndQuotaHelper::OnGotCapacity,
+        base::BindOnce(&UsageAndQuotaInfoGatherer::OnGotCapacity,
                        weak_factory_.GetWeakPtr(), barrier));
     manager()->GetHostUsageWithBreakdown(
         host, type_,
-        base::BindOnce(&UsageAndQuotaHelper::OnGotHostUsage,
+        base::BindOnce(&UsageAndQuotaInfoGatherer::OnGotHostUsage,
                        weak_factory_.GetWeakPtr(), barrier));
 
     // Determine host_quota differently depending on type.
@@ -244,7 +249,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
                           kSyncableStorageDefaultHostQuota);
     } else if (type_ == StorageType::kPersistent) {
       manager()->GetPersistentHostQuota(
-          host, base::BindOnce(&UsageAndQuotaHelper::SetDesiredHostQuota,
+          host, base::BindOnce(&UsageAndQuotaInfoGatherer::SetDesiredHostQuota,
                                weak_factory_.GetWeakPtr(), barrier));
     } else {
       DCHECK_EQ(StorageType::kTemporary, type_);
@@ -253,6 +258,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
   }
 
   void Aborted() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     weak_factory_.InvalidateWeakPtrs();
     std::move(callback_).Run(
         blink::mojom::QuotaStatusCode::kErrorAbort, /*status*/
@@ -263,6 +269,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
   }
 
   void Completed() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     weak_factory_.InvalidateWeakPtrs();
 
     // Constrain the desired |host_quota| to something that fits.
@@ -288,11 +295,13 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
 
  private:
   QuotaManager* manager() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return static_cast<QuotaManager*>(observer());
   }
 
   void OnGotSettings(const base::Closure& barrier_closure,
                      const QuotaSettings& settings) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     settings_ = settings;
     barrier_closure.Run();
     if (type_ == StorageType::kTemporary && !is_unlimited_) {
@@ -307,6 +316,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
   void OnGotCapacity(const base::Closure& barrier_closure,
                      int64_t total_space,
                      int64_t available_space) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     total_space_ = total_space;
     available_space_ = available_space;
     barrier_closure.Run();
@@ -315,6 +325,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
   void OnGotHostUsage(const base::Closure& barrier_closure,
                       int64_t usage,
                       blink::mojom::UsageBreakdownPtr usage_breakdown) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     host_usage_ = usage;
     host_usage_breakdown_ = std::move(usage_breakdown);
     barrier_closure.Run();
@@ -323,6 +334,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
   void SetDesiredHostQuota(const base::Closure& barrier_closure,
                            blink::mojom::QuotaStatusCode status,
                            int64_t quota) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     desired_host_quota_ = quota;
     barrier_closure.Run();
   }
@@ -341,8 +353,11 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
   int64_t host_usage_ = 0;
   blink::mojom::UsageBreakdownPtr host_usage_breakdown_;
   QuotaSettings settings_;
-  base::WeakPtrFactory<UsageAndQuotaHelper> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(UsageAndQuotaHelper);
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  // Weak pointers are used to support cancelling work.
+  base::WeakPtrFactory<UsageAndQuotaInfoGatherer> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(UsageAndQuotaInfoGatherer);
 };
 
 // Helper to asynchronously gather information needed at the start of an
@@ -529,7 +544,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
         type_(type),
         quota_client_mask_(quota_client_mask),
         error_count_(0),
-        remaining_clients_(-1),
+        remaining_clients_(0),
         skipped_clients_(0),
         is_eviction_(is_eviction),
         callback_(std::move(callback)),
@@ -584,7 +599,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
  private:
   void DidDeleteOriginData(int tracing_id,
                            blink::mojom::QuotaStatusCode status) {
-    DCHECK_GT(remaining_clients_, 0);
+    DCHECK_GT(remaining_clients_, 0U);
     TRACE_EVENT_ASYNC_END0("browsing_data", "QuotaManager::OriginDataDeleter",
                            tracing_id);
 
@@ -603,7 +618,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
   StorageType type_;
   int quota_client_mask_;
   int error_count_;
-  int remaining_clients_;
+  size_t remaining_clients_;
   int skipped_clients_;
   bool is_eviction_;
   StatusCallback callback_;
@@ -624,8 +639,8 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
         type_(type),
         quota_client_mask_(quota_client_mask),
         error_count_(0),
-        remaining_clients_(-1),
-        remaining_deleters_(-1),
+        remaining_clients_(0),
+        remaining_deleters_(0),
         callback_(std::move(callback)),
         weak_factory_(this) {}
 
@@ -664,7 +679,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
 
  private:
   void DidGetOriginsForHost(const std::set<url::Origin>& origins) {
-    DCHECK_GT(remaining_clients_, 0);
+    DCHECK_GT(remaining_clients_, 0U);
 
     for (const auto& origin : origins)
       origins_.insert(origin);
@@ -689,7 +704,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
   }
 
   void DidDeleteOriginData(blink::mojom::QuotaStatusCode status) {
-    DCHECK_GT(remaining_deleters_, 0);
+    DCHECK_GT(remaining_deleters_, 0U);
 
     if (status != blink::mojom::QuotaStatusCode::kOk)
       ++error_count_;
@@ -707,8 +722,8 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
   int quota_client_mask_;
   std::set<url::Origin> origins_;
   int error_count_;
-  int remaining_clients_;
-  int remaining_deleters_;
+  size_t remaining_clients_;
+  size_t remaining_deleters_;
   StatusCallback callback_;
 
   base::WeakPtrFactory<HostDataDeleter> weak_factory_;
@@ -930,7 +945,7 @@ void QuotaManager::GetUsageAndQuotaWithBreakdown(
   bool is_session_only =
       type == StorageType::kTemporary && special_storage_policy_ &&
       special_storage_policy_->IsStorageSessionOnly(origin.GetURL());
-  UsageAndQuotaHelper* helper = new UsageAndQuotaHelper(
+  UsageAndQuotaInfoGatherer* helper = new UsageAndQuotaInfoGatherer(
       this, origin, type, IsStorageUnlimited(origin, type), is_session_only,
       is_incognito_, std::move(callback));
   helper->Start();
@@ -1473,8 +1488,10 @@ void QuotaManager::DidGetStorageCapacityForHistogram(int64_t usage,
                                                      int64_t available_space) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UMA_HISTOGRAM_MBYTES("Quota.GlobalUsageOfTemporaryStorage", usage);
-  UMA_HISTOGRAM_PERCENTAGE("Quota.PercentUsedForTemporaryStorage2",
-                           static_cast<int>((usage * 100) / total_space));
+  if (total_space > 0) {
+    UMA_HISTOGRAM_PERCENTAGE("Quota.PercentUsedForTemporaryStorage2",
+                             static_cast<int>((usage * 100) / total_space));
+  }
 
   GetGlobalUsage(
       StorageType::kPersistent,

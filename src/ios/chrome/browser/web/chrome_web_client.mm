@@ -10,6 +10,8 @@
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/services/patch/patch_service.h"
+#include "components/services/patch/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/unzip_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -24,6 +26,7 @@
 #include "ios/chrome/browser/reading_list/features.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
+#import "ios/chrome/browser/ui/elements/windowed_container_view.h"
 #include "ios/chrome/browser/web/chrome_overlay_manifests.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/public/provider/chrome/browser/browser_url_rewriter_provider.h"
@@ -236,8 +239,19 @@ std::unique_ptr<service_manager::Service> ChromeWebClient::HandleServiceRequest(
     // The Unzip service is used by the component updater.
     return std::make_unique<unzip::UnzipService>(std::move(request));
   }
+  if (service_name == patch::mojom::kServiceName) {
+    // The Patch service is used by the component updater.
+    return std::make_unique<patch::PatchService>(std::move(request));
+  }
 
   return nullptr;
+}
+
+UIView* ChromeWebClient::GetWindowedContainer() {
+  if (!windowed_container_) {
+    windowed_container_ = [[WindowedContainerView alloc] init];
+  }
+  return windowed_container_;
 }
 
 std::string ChromeWebClient::GetProduct() const {

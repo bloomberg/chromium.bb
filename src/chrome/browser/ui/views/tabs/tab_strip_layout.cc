@@ -49,38 +49,36 @@ void CalculateNormalTabWidths(const TabSizeInfo& tab_size_info,
 int CalculateBoundsForPinnedTabs(const TabSizeInfo& tab_size_info,
                                  int num_pinned_tabs,
                                  int num_tabs,
-                                 int start_x,
-                                 std::vector<gfx::Rect>* tabs_bounds) {
-  DCHECK_EQ(static_cast<size_t>(num_tabs), tabs_bounds->size());
-  int next_x = start_x;
+                                 std::vector<gfx::Rect>* tab_bounds) {
+  DCHECK_EQ(static_cast<size_t>(num_tabs), tab_bounds->size());
+  int next_x = 0;
   const int tab_height = tab_size_info.standard_size.height();
   for (int index = 0; index < num_pinned_tabs; ++index) {
-    (*tabs_bounds)[index].SetRect(next_x, 0, tab_size_info.pinned_tab_width,
-                                  tab_height);
+    (*tab_bounds)[index].SetRect(next_x, 0, tab_size_info.pinned_tab_width,
+                                 tab_height);
     next_x += tab_size_info.pinned_tab_width - tab_size_info.tab_overlap;
   }
   return next_x;
 }
 
-std::vector<gfx::Rect> CalculateBounds(const TabSizeInfo& tab_size_info,
-                                       int num_pinned_tabs,
-                                       int num_tabs,
-                                       int active_index,
-                                       int start_x,
-                                       int width,
-                                       int* active_width,
-                                       int* inactive_width) {
+std::vector<gfx::Rect> CalculateTabBounds(const TabSizeInfo& tab_size_info,
+                                          int num_pinned_tabs,
+                                          int num_tabs,
+                                          int active_index,
+                                          int width,
+                                          int* active_width,
+                                          int* inactive_width) {
   DCHECK_NE(0, num_tabs);
 
-  std::vector<gfx::Rect> tabs_bounds(num_tabs);
+  std::vector<gfx::Rect> tab_bounds(num_tabs);
 
   *active_width = *inactive_width = tab_size_info.standard_size.width();
 
   int next_x = CalculateBoundsForPinnedTabs(tab_size_info, num_pinned_tabs,
-                                            num_tabs, start_x, &tabs_bounds);
+                                            num_tabs, &tab_bounds);
   if (num_pinned_tabs == num_tabs)
-    return tabs_bounds;
-  width -= next_x - start_x;
+    return tab_bounds;
+  width -= next_x;
 
   const bool is_active_tab_normal = active_index >= num_pinned_tabs;
   const int num_normal_tabs = num_tabs - num_pinned_tabs;
@@ -111,9 +109,9 @@ std::vector<gfx::Rect> CalculateBounds(const TabSizeInfo& tab_size_info,
       ++width;
       --extra_space;
     }
-    tabs_bounds[i].SetRect(next_x, 0, width, tab_height);
-    next_x += tabs_bounds[i].width() - tab_size_info.tab_overlap;
+    tab_bounds[i].SetRect(next_x, 0, width, tab_height);
+    next_x += tab_bounds[i].width() - tab_size_info.tab_overlap;
   }
 
-  return tabs_bounds;
+  return tab_bounds;
 }

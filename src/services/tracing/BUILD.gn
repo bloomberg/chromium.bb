@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/chromecast_build.gni")
-
 # There should be only one tracing service. It is currently
 # in the browser process. So, only //content/browser should link to this target.
 # Others modules should only need the public targets.
@@ -13,8 +11,6 @@ source_set("lib") {
     "agent_registry.h",
     "coordinator.cc",
     "coordinator.h",
-    "perfetto/chrome_event_bundle_json_exporter.cc",
-    "perfetto/chrome_event_bundle_json_exporter.h",
     "perfetto/consumer_host.cc",
     "perfetto/consumer_host.h",
     "perfetto/json_trace_exporter.cc",
@@ -25,6 +21,8 @@ source_set("lib") {
     "perfetto/perfetto_tracing_coordinator.h",
     "perfetto/producer_host.cc",
     "perfetto/producer_host.h",
+    "perfetto/track_event_json_exporter.cc",
+    "perfetto/track_event_json_exporter.h",
     "recorder.cc",
     "recorder.h",
     "tracing_service.cc",
@@ -45,10 +43,6 @@ source_set("lib") {
   deps = [
     "//third_party/perfetto/protos/perfetto/trace/chrome:minimal_complete_lite",
   ]
-
-  if (is_chromecast) {
-    defines = [ "IS_CHROMECAST" ]
-  }
 }
 
 source_set("manifest") {
@@ -80,6 +74,7 @@ source_set("tests") {
 
   if (is_mac || is_linux || is_android || is_fuchsia) {
     sources += [
+      "public/cpp/perfetto/task_runner_unittest.cc",
       "public/cpp/perfetto/trace_event_data_source_unittest.cc",
       "public/cpp/perfetto/traced_value_proto_writer_unittest.cc",
     ]
@@ -104,13 +99,13 @@ source_set("tests") {
 
   if (is_mac || is_linux || is_android || is_fuchsia) {
     sources += [
-      "perfetto/chrome_event_bundle_json_exporter_unittest.cc",
       "perfetto/consumer_host_unittest.cc",
       "perfetto/json_trace_exporter_unittest.cc",
       "perfetto/perfetto_integration_unittest.cc",
       "perfetto/perfetto_tracing_coordinator_unittest.cc",
       "perfetto/test_utils.cc",
       "perfetto/test_utils.h",
+      "perfetto/track_event_json_exporter_unittest.cc",
     ]
 
     deps += [
@@ -121,9 +116,5 @@ source_set("tests") {
       "//third_party/perfetto/protos/perfetto/trace/interned_data:lite",
       "//third_party/perfetto/protos/perfetto/trace/track_event:lite",
     ]
-  }
-
-  if (is_chromecast) {
-    defines = [ "IS_CHROMECAST" ]
   }
 }

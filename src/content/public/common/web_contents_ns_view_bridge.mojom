@@ -14,10 +14,8 @@ import "url/mojom/url.mojom";
 // another process.
 interface WebContentsNSViewBridge {
   // Set this to be a child NSView of the NSView mapped to by
-  // |parent_ns_view_id|. Set the parent accessibility element to the remote
-  // element specified by |parent_token|. In practice, this NSView will always
-  // be from a views::View.
-  SetParentNSView(uint64 parent_ns_view_id, array<uint8> parent_token);
+  // |parent_ns_view_id|.
+  SetParentNSView(uint64 parent_ns_view_id);
 
   // Clear the parent NSView and related state.
   ResetParentNSView();

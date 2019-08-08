@@ -42,7 +42,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(PaintControllerTest, NestedRecorders) {
   GraphicsContext context(GetPaintController());
-  FakeDisplayItemClient client("client", LayoutRect(100, 100, 200, 200));
+  FakeDisplayItemClient client("client", IntRect(100, 100, 200, 200));
   InitRootChunk();
 
   DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 200, 200));
@@ -54,8 +54,8 @@ TEST_P(PaintControllerTest, NestedRecorders) {
 }
 
 TEST_P(PaintControllerTest, UpdateBasic) {
-  FakeDisplayItemClient first("first", LayoutRect(100, 100, 300, 300));
-  FakeDisplayItemClient second("second", LayoutRect(100, 100, 200, 200));
+  FakeDisplayItemClient first("first", IntRect(100, 100, 300, 300));
+  FakeDisplayItemClient second("second", IntRect(100, 100, 200, 200));
   GraphicsContext context(GetPaintController());
   InitRootChunk();
 
@@ -95,9 +95,9 @@ TEST_P(PaintControllerTest, UpdateBasic) {
 }
 
 TEST_P(PaintControllerTest, UpdateSwapOrder) {
-  FakeDisplayItemClient first("first", LayoutRect(100, 100, 100, 100));
-  FakeDisplayItemClient second("second", LayoutRect(100, 100, 50, 200));
-  FakeDisplayItemClient unaffected("unaffected", LayoutRect(300, 300, 10, 10));
+  FakeDisplayItemClient first("first", IntRect(100, 100, 100, 100));
+  FakeDisplayItemClient second("second", IntRect(100, 100, 50, 200));
+  FakeDisplayItemClient unaffected("unaffected", IntRect(300, 300, 10, 10));
   GraphicsContext context(GetPaintController());
   InitRootChunk();
 
@@ -147,9 +147,9 @@ TEST_P(PaintControllerTest, UpdateSwapOrder) {
 }
 
 TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation) {
-  FakeDisplayItemClient first("first", LayoutRect(100, 100, 100, 100));
-  FakeDisplayItemClient second("second", LayoutRect(100, 100, 50, 200));
-  FakeDisplayItemClient unaffected("unaffected", LayoutRect(300, 300, 10, 10));
+  FakeDisplayItemClient first("first", IntRect(100, 100, 100, 100));
+  FakeDisplayItemClient second("second", IntRect(100, 100, 50, 200));
+  FakeDisplayItemClient unaffected("unaffected", IntRect(300, 300, 10, 10));
   GraphicsContext context(GetPaintController());
   InitRootChunk();
 
@@ -199,9 +199,9 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation) {
 }
 
 TEST_P(PaintControllerTest, UpdateNewItemInMiddle) {
-  FakeDisplayItemClient first("first", LayoutRect(100, 100, 100, 100));
-  FakeDisplayItemClient second("second", LayoutRect(100, 100, 50, 200));
-  FakeDisplayItemClient third("third", LayoutRect(125, 100, 200, 50));
+  FakeDisplayItemClient first("first", IntRect(100, 100, 100, 100));
+  FakeDisplayItemClient second("second", IntRect(100, 100, 50, 200));
+  FakeDisplayItemClient third("third", IntRect(125, 100, 200, 50));
   GraphicsContext context(GetPaintController());
   InitRootChunk();
 
@@ -237,9 +237,9 @@ TEST_P(PaintControllerTest, UpdateNewItemInMiddle) {
 }
 
 TEST_P(PaintControllerTest, UpdateInvalidationWithPhases) {
-  FakeDisplayItemClient first("first", LayoutRect(100, 100, 100, 100));
-  FakeDisplayItemClient second("second", LayoutRect(100, 100, 50, 200));
-  FakeDisplayItemClient third("third", LayoutRect(300, 100, 50, 50));
+  FakeDisplayItemClient first("first", IntRect(100, 100, 100, 100));
+  FakeDisplayItemClient second("second", IntRect(100, 100, 50, 200));
+  FakeDisplayItemClient third("third", IntRect(300, 100, 50, 50));
   GraphicsContext context(GetPaintController());
   InitRootChunk();
 
@@ -290,8 +290,8 @@ TEST_P(PaintControllerTest, UpdateInvalidationWithPhases) {
 }
 
 TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
-  FakeDisplayItemClient first("first", LayoutRect(100, 100, 150, 150));
-  FakeDisplayItemClient second("second", LayoutRect(200, 200, 50, 50));
+  FakeDisplayItemClient first("first", IntRect(100, 100, 150, 150));
+  FakeDisplayItemClient second("second", IntRect(200, 200, 50, 50));
   GraphicsContext context(GetPaintController());
   InitRootChunk();
 
@@ -307,7 +307,7 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
 
   first.Invalidate();
   second.Invalidate();
-  second.SetVisualRect(LayoutRect(150, 250, 100, 100));
+  second.SetVisualRect(IntRect(150, 250, 100, 100));
   DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
   DrawRect(context, first, kForegroundType, FloatRect(100, 100, 150, 150));
   DrawRect(context, second, kBackgroundType, FloatRect(150, 250, 100, 100));
@@ -344,8 +344,8 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
 }
 
 TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
-  FakeDisplayItemClient first("first", LayoutRect(100, 100, 150, 150));
-  FakeDisplayItemClient second("second", LayoutRect(200, 200, 50, 50));
+  FakeDisplayItemClient first("first", IntRect(100, 100, 150, 150));
+  FakeDisplayItemClient second("second", IntRect(200, 200, 50, 50));
   GraphicsContext context(GetPaintController());
   InitRootChunk();
 
@@ -360,7 +360,7 @@ TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
   InitRootChunk();
 
   first.Invalidate();
-  first.SetVisualRect(LayoutRect(150, 150, 100, 100));
+  first.SetVisualRect(IntRect(150, 150, 100, 100));
   second.Invalidate();
   DrawRect(context, first, kBackgroundType, FloatRect(150, 150, 100, 100));
   DrawRect(context, first, kForegroundType, FloatRect(150, 150, 100, 100));
@@ -379,7 +379,7 @@ TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
 
   InitRootChunk();
   first.Invalidate();
-  first.SetVisualRect(LayoutRect(100, 100, 150, 150));
+  first.SetVisualRect(IntRect(100, 100, 150, 150));
   second.Invalidate();
   DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
   DrawRect(context, first, kForegroundType, FloatRect(100, 100, 150, 150));
@@ -450,12 +450,10 @@ TEST_P(PaintControllerTest, CachedDisplayItems) {
 }
 
 TEST_P(PaintControllerTest, UpdateSwapOrderWithChildren) {
-  FakeDisplayItemClient container1("container1",
-                                   LayoutRect(100, 100, 100, 100));
-  FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
-  FakeDisplayItemClient container2("container2",
-                                   LayoutRect(100, 200, 100, 100));
-  FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
+  FakeDisplayItemClient container1("container1", IntRect(100, 100, 100, 100));
+  FakeDisplayItemClient content1("content1", IntRect(100, 100, 50, 200));
+  FakeDisplayItemClient container2("container2", IntRect(100, 200, 100, 100));
+  FakeDisplayItemClient content2("content2", IntRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
   InitRootChunk();
 
@@ -506,12 +504,10 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildren) {
 }
 
 TEST_P(PaintControllerTest, UpdateSwapOrderWithChildrenAndInvalidation) {
-  FakeDisplayItemClient container1("container1",
-                                   LayoutRect(100, 100, 100, 100));
-  FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
-  FakeDisplayItemClient container2("container2",
-                                   LayoutRect(100, 200, 100, 100));
-  FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
+  FakeDisplayItemClient container1("container1", IntRect(100, 100, 100, 100));
+  FakeDisplayItemClient content1("content1", IntRect(100, 100, 50, 200));
+  FakeDisplayItemClient container2("container2", IntRect(100, 200, 100, 100));
+  FakeDisplayItemClient content2("content2", IntRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
   InitRootChunk();
 
@@ -619,12 +615,10 @@ TEST_P(PaintControllerTest, CachedSubsequenceForcePaintChunk) {
 }
 
 TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
-  FakeDisplayItemClient container1("container1",
-                                   LayoutRect(100, 100, 100, 100));
-  FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
-  FakeDisplayItemClient container2("container2",
-                                   LayoutRect(100, 200, 100, 100));
-  FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
+  FakeDisplayItemClient container1("container1", IntRect(100, 100, 100, 100));
+  FakeDisplayItemClient content1("content1", IntRect(100, 100, 50, 200));
+  FakeDisplayItemClient container2("container2", IntRect(100, 200, 100, 100));
+  FakeDisplayItemClient content2("content2", IntRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
   PaintChunk::Id container1_id(container1, kBackgroundType);
@@ -771,11 +765,10 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
 }
 
 TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
-  FakeDisplayItemClient root("root", LayoutRect(0, 0, 300, 300));
-  FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
-  FakeDisplayItemClient container2("container2",
-                                   LayoutRect(100, 200, 100, 100));
-  FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
+  FakeDisplayItemClient root("root", IntRect(0, 0, 300, 300));
+  FakeDisplayItemClient content1("content1", IntRect(100, 100, 50, 200));
+  FakeDisplayItemClient container2("container2", IntRect(100, 200, 100, 100));
+  FakeDisplayItemClient content2("content2", IntRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -929,12 +922,10 @@ TEST_P(PaintControllerTest, CachedSubsequenceContainingFragments) {
 }
 
 TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
-  FakeDisplayItemClient container1("container1",
-                                   LayoutRect(100, 100, 100, 100));
-  FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
-  FakeDisplayItemClient container2("container2",
-                                   LayoutRect(100, 200, 100, 100));
-  FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
+  FakeDisplayItemClient container1("container1", IntRect(100, 100, 100, 100));
+  FakeDisplayItemClient content1("content1", IntRect(100, 100, 50, 200));
+  FakeDisplayItemClient container2("container2", IntRect(100, 200, 100, 100));
+  FakeDisplayItemClient content2("content2", IntRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
   PaintChunk::Id container1_id(container1, kBackgroundType);
@@ -1030,12 +1021,10 @@ TEST_P(PaintControllerTest, OutOfOrderNoCrash) {
 }
 
 TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
-  FakeDisplayItemClient container1("container1",
-                                   LayoutRect(100, 100, 100, 100));
-  FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
-  FakeDisplayItemClient container2("container2",
-                                   LayoutRect(100, 200, 100, 100));
-  FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
+  FakeDisplayItemClient container1("container1", IntRect(100, 100, 100, 100));
+  FakeDisplayItemClient content1("content1", IntRect(100, 100, 50, 200));
+  FakeDisplayItemClient container2("container2", IntRect(100, 200, 100, 100));
+  FakeDisplayItemClient content2("content2", IntRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
   PaintChunk::Id container1_background_id(container1, kBackgroundType);
@@ -1224,8 +1213,8 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
 }
 
 TEST_P(PaintControllerTest, SkipCache) {
-  FakeDisplayItemClient multicol("multicol", LayoutRect(100, 100, 200, 200));
-  FakeDisplayItemClient content("content", LayoutRect(100, 100, 100, 100));
+  FakeDisplayItemClient multicol("multicol", IntRect(100, 100, 200, 200));
+  FakeDisplayItemClient content("content", IntRect(100, 100, 100, 100));
   GraphicsContext context(GetPaintController());
   InitRootChunk();
 
@@ -1484,7 +1473,7 @@ TEST_P(PaintControllerTest, InvalidateAll) {
   EXPECT_TRUE(GetPaintController().GetPaintArtifact().IsEmpty());
   EXPECT_FALSE(GetPaintController().CacheIsAllInvalid());
 
-  FakeDisplayItemClient client("client", LayoutRect(1, 2, 3, 4));
+  FakeDisplayItemClient client("client", IntRect(1, 2, 3, 4));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -1499,10 +1488,10 @@ TEST_P(PaintControllerTest, InvalidateAll) {
 }
 
 TEST_P(PaintControllerTest, InsertValidItemInFront) {
-  FakeDisplayItemClient first("first", LayoutRect(100, 100, 300, 300));
-  FakeDisplayItemClient second("second", LayoutRect(100, 100, 200, 200));
-  FakeDisplayItemClient third("third", LayoutRect(100, 100, 100, 100));
-  FakeDisplayItemClient fourth("fourth", LayoutRect(100, 100, 50, 50));
+  FakeDisplayItemClient first("first", IntRect(100, 100, 300, 300));
+  FakeDisplayItemClient second("second", IntRect(100, 100, 200, 200));
+  FakeDisplayItemClient third("third", IntRect(100, 100, 100, 100));
+  FakeDisplayItemClient fourth("fourth", IntRect(100, 100, 50, 50));
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
@@ -1577,9 +1566,10 @@ TEST_P(PaintControllerTest, InsertValidItemInFront) {
 }
 
 TEST_P(PaintControllerTest, TransientPaintControllerIncompleteCycle) {
-  auto paint_controller = PaintController::Create(PaintController::kTransient);
+  auto paint_controller =
+      std::make_unique<PaintController>(PaintController::kTransient);
   GraphicsContext context(*paint_controller);
-  FakeDisplayItemClient client("client", LayoutRect(100, 100, 50, 50));
+  FakeDisplayItemClient client("client", IntRect(100, 100, 50, 50));
   InitRootChunk(*paint_controller);
   DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 50, 50));
   // The client of a transient paint controller can abort without
@@ -1591,7 +1581,7 @@ TEST_P(PaintControllerTest, AllowDuplicatedIdForUncacheableItem) {
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
     return;
 
-  LayoutRect r(100, 100, 300, 300);
+  IntRect r(100, 100, 300, 300);
   FakeDisplayItemClient cacheable("cacheable", r);
   FakeDisplayItemClient uncacheable("uncacheable", r);
   GraphicsContext context(GetPaintController());
@@ -1630,7 +1620,7 @@ TEST_P(PaintControllerTest, AllowDuplicatedIdForUncacheableItem) {
 #if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
 TEST_P(PaintControllerTest, DuplicatedSubsequences) {
-  FakeDisplayItemClient client("test", LayoutRect(100, 100, 100, 100));
+  FakeDisplayItemClient client("test", IntRect(100, 100, 100, 100));
   GraphicsContext context(GetPaintController());
 
   auto paint_duplicated_subsequences = [&]() {
@@ -1690,13 +1680,13 @@ class PaintControllerUnderInvalidationTest
     GraphicsContext context(GetPaintController());
 
     InitRootChunk();
-    first.SetVisualRect(LayoutRect(100, 100, 300, 300));
+    first.SetVisualRect(IntRect(100, 100, 300, 300));
     DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
     DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     CommitAndFinishCycle();
 
     InitRootChunk();
-    first.SetVisualRect(LayoutRect(200, 200, 300, 300));
+    first.SetVisualRect(IntRect(200, 200, 300, 300));
     DrawRect(context, first, kBackgroundType, FloatRect(200, 200, 300, 300));
     DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     CommitAndFinishCycle();
@@ -1736,7 +1726,7 @@ class PaintControllerUnderInvalidationTest
     InitRootChunk();
     {
       SubsequenceRecorder r(context, first);
-      first.SetVisualRect(LayoutRect(100, 100, 300, 300));
+      first.SetVisualRect(IntRect(100, 100, 300, 300));
       DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
       DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     }
@@ -1747,7 +1737,7 @@ class PaintControllerUnderInvalidationTest
       EXPECT_FALSE(
           SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, first));
       SubsequenceRecorder r(context, first);
-      first.SetVisualRect(LayoutRect(200, 200, 300, 300));
+      first.SetVisualRect(IntRect(200, 200, 300, 300));
       DrawRect(context, first, kBackgroundType, FloatRect(200, 200, 300, 300));
       DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     }

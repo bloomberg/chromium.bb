@@ -24,7 +24,7 @@ namespace android_webview {
 
 namespace {
 // BrowserViewRenderer subclass used for enabling tests to observe
-// OnParentDrawConstraintsUpdated.
+// OnParentDrawDataUpdated.
 class TestBrowserViewRenderer : public BrowserViewRenderer {
  public:
   TestBrowserViewRenderer(
@@ -35,11 +35,10 @@ class TestBrowserViewRenderer : public BrowserViewRenderer {
 
   ~TestBrowserViewRenderer() override {}
 
-  void OnParentDrawConstraintsUpdated(
+  void OnParentDrawDataUpdated(
       CompositorFrameConsumer* compositor_frame_consumer) override {
-    BrowserViewRenderer::OnParentDrawConstraintsUpdated(
-        compositor_frame_consumer);
-    rendering_test_->OnParentDrawConstraintsUpdated();
+    BrowserViewRenderer::OnParentDrawDataUpdated(compositor_frame_consumer);
+    rendering_test_->OnParentDrawDataUpdated();
   }
 
  private:
@@ -140,7 +139,6 @@ void RenderingTest::WillOnDraw() {
 bool RenderingTest::WillDrawOnRT(HardwareRendererDrawParams* params) {
   params->width = window_->surface_size().width();
   params->height = window_->surface_size().height();
-  params->is_layer = false;
   gfx::Transform transform;
   transform.matrix().asColMajorf(params->transform);
   return true;

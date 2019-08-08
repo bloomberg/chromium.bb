@@ -14,7 +14,7 @@
 #include "test/gmock.h"
 #include "test/gtest.h"
 
-#include "api/task_queue/global_task_queue_factory.h"
+#include "api/task_queue/default_task_queue_factory.h"
 #include "api/video_codecs/video_decoder.h"
 #include "call/rtp_stream_receiver_controller.h"
 #include "media/base/fake_video_renderer.h"
@@ -32,8 +32,8 @@
 namespace webrtc {
 namespace {
 
-using testing::_;
-using testing::Invoke;
+using ::testing::_;
+using ::testing::Invoke;
 
 constexpr int kDefaultTimeOutMs = 50;
 
@@ -50,10 +50,9 @@ class MockVideoDecoder : public VideoDecoder {
  public:
   MOCK_METHOD2(InitDecode,
                int32_t(const VideoCodec* config, int32_t number_of_cores));
-  MOCK_METHOD4(Decode,
+  MOCK_METHOD3(Decode,
                int32_t(const EncodedImage& input,
                        bool missing_frames,
-                       const CodecSpecificInfo* codec_specific_info,
                        int64_t render_time_ms));
   MOCK_METHOD1(RegisterDecodeCompleteCallback,
                int32_t(DecodedImageCallback* callback));
@@ -70,10 +69,11 @@ class FrameObjectFake : public video_coding::EncodedFrame {
 
 }  // namespace
 
-class VideoReceiveStreamTest : public testing::Test {
+class VideoReceiveStreamTest : public ::testing::Test {
  public:
   VideoReceiveStreamTest()
       : process_thread_(ProcessThread::Create("TestThread")),
+        task_queue_factory_(CreateDefaultTaskQueueFactory()),
         config_(&mock_transport_),
         call_stats_(Clock::GetRealTimeClock(), process_thread_.get()),
         h264_decoder_factory_(&mock_h264_video_decoder_),
@@ -101,13 +101,14 @@ class VideoReceiveStreamTest : public testing::Test {
     timing_ = new VCMTiming(clock);
 
     video_receive_stream_.reset(new webrtc::internal::VideoReceiveStream(
-        &GlobalTaskQueueFactory(), &rtp_stream_receiver_controller_,
+        task_queue_factory_.get(), &rtp_stream_receiver_controller_,
         kDefaultNumCpuCores, &packet_router_, config_.Copy(),
         process_thread_.get(), &call_stats_, clock, timing_));
   }
 
  protected:
   std::unique_ptr<ProcessThread> process_thread_;
+  const std::unique_ptr<TaskQueueFactory> task_queue_factory_;
   VideoReceiveStream::Config config_;
   CallStats call_stats_;
   MockVideoDecoder mock_h264_video_decoder_;
@@ -141,7 +142,7 @@ TEST_F(VideoReceiveStreamTest, CreateFrameFromH264FmtpSpropAndIdr) {
       }));
   EXPECT_CALL(mock_h264_video_decoder_, RegisterDecodeCompleteCallback(_));
   video_receive_stream_->Start();
-  EXPECT_CALL(mock_h264_video_decoder_, Decode(_, false, _, _));
+  EXPECT_CALL(mock_h264_video_decoder_, Decode(_, false, _));
   RtpPacketReceived parsed_packet;
   ASSERT_TRUE(parsed_packet.Parse(rtppacket.data(), rtppacket.size()));
   rtp_stream_receiver_controller_.OnRtpPacket(parsed_packet);

@@ -1,0 +1,13 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
+
+dictionary GPUShaderModuleDescriptor {
+    DOMString label;
+    // TODO(kainino): should be:
+    //   [AllowShared, FlexibleArrayBufferView] required ArrayBufferView code;
+    // (or BufferSource?)
+    required Uint32Array code;
+};

@@ -36,6 +36,14 @@ cca.bg.INITIAL_ASPECT_RATIO = 1.3333333333;
 cca.bg.TOPBAR_COLOR = '#000000';
 
 /**
+ * Whether the main AppWindow is created. It's used in test to ensure that we
+ * won't connect to the main.html target before the window is created, otherwise
+ * the window might disappear.
+ * @type {boolean}
+ */
+cca.bg.appWindowCreated = false;
+
+/**
  * Creates the window. Note, that only one window at once is supported.
  */
 cca.bg.create = function() {
@@ -73,6 +81,7 @@ cca.bg.create = function() {
         chrome.storage.local.set({maximized: inAppWindow.isMaximized()});
         chrome.storage.local.set({fullscreen: inAppWindow.isFullscreen()});
       });
+      cca.bg.appWindowCreated = true;
     });
   });
 };

@@ -54,7 +54,7 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   NGLogicalSize content_box_size_;
   // This is populated at the top of Layout(), so isn't available in
   // ComputeMinMaxSize() or anything it calls.
-  base::Optional<FlexLayoutAlgorithm> algorithm;
+  base::Optional<FlexLayoutAlgorithm> algorithm_;
 };
 
 }  // namespace blink

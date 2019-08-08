@@ -19,7 +19,11 @@
 
 namespace chrome {
 
-void AddTabAt(Browser* browser, const GURL& url, int idx, bool foreground) {
+void AddTabAt(Browser* browser,
+              const GURL& url,
+              int idx,
+              bool foreground,
+              base::Optional<int> group) {
   // Time new tab page creation time.  We keep track of the timing data in
   // WebContents, but we want to include the time it takes to create the
   // WebContents object too.
@@ -30,16 +34,16 @@ void AddTabAt(Browser* browser, const GURL& url, int idx, bool foreground) {
   params.disposition = foreground ? WindowOpenDisposition::NEW_FOREGROUND_TAB
                                   : WindowOpenDisposition::NEW_BACKGROUND_TAB;
   params.tabstrip_index = idx;
+  params.group = group;
   Navigate(&params);
   CoreTabHelper* core_tab_helper =
       CoreTabHelper::FromWebContents(params.navigated_or_inserted_contents);
   core_tab_helper->set_new_tab_start_time(new_tab_start_time);
 }
 
-content::WebContents* AddSelectedTabWithURL(
-    Browser* browser,
-    const GURL& url,
-    ui::PageTransition transition) {
+content::WebContents* AddSelectedTabWithURL(Browser* browser,
+                                            const GURL& url,
+                                            ui::PageTransition transition) {
   NavigateParams params(browser, url, transition);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
@@ -78,9 +82,8 @@ void CloseWebContents(Browser* browser,
   }
 
   browser->tab_strip_model()->CloseWebContentsAt(
-      index,
-      add_to_history ? TabStripModel::CLOSE_CREATE_HISTORICAL_TAB
-                     : TabStripModel::CLOSE_NONE);
+      index, add_to_history ? TabStripModel::CLOSE_CREATE_HISTORICAL_TAB
+                            : TabStripModel::CLOSE_NONE);
 }
 
 }  // namespace chrome

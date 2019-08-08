@@ -13,6 +13,6 @@ public class MockTab extends Tab {
      * these two fields only.
      */
     public MockTab(int id, boolean incognito) {
-        super(id, Tab.INVALID_TAB_ID, incognito, null, null, null, null, null);
+        super(id, null, incognito, null, null, null, null);
     }
 }

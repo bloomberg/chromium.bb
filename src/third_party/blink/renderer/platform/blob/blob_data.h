@@ -37,6 +37,7 @@
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/data_element.mojom-blink.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
@@ -72,9 +73,15 @@ class PLATFORM_EXPORT BlobData {
   USING_FAST_MALLOC(BlobData);
 
  public:
-  static constexpr long long kToEndOfFile = -1;
+  static constexpr int64_t kToEndOfFile = -1;
+  enum class FileCompositionStatus {
+    SINGLE_UNKNOWN_SIZE_FILE,
+    NO_UNKNOWN_SIZE_FILES
+  };
 
-  static std::unique_ptr<BlobData> Create();
+  explicit BlobData(FileCompositionStatus composition =
+                        FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
+      : file_composition_(composition) {}
 
   // Calling append* on objects returned by createFor___WithUnknownSize will
   // check-fail. The caller can only have an unknown-length file if it is the
@@ -104,18 +111,18 @@ class PLATFORM_EXPORT BlobData {
   void AppendBytes(const void*, size_t length);
   void AppendData(scoped_refptr<RawData>);
   void AppendFile(const String& path,
-                  long long offset,
-                  long long length,
+                  int64_t offset,
+                  int64_t length,
                   double expected_modification_time);
 
   // The given blob must not be a file with unknown size. Please use the
   // File::appendTo instead.
   void AppendBlob(scoped_refptr<BlobDataHandle>,
-                  long long offset,
-                  long long length);
+                  int64_t offset,
+                  int64_t length);
   void AppendFileSystemURL(const KURL&,
-                           long long offset,
-                           long long length,
+                           int64_t offset,
+                           int64_t length,
                            double expected_modification_time);
   void AppendText(const String&, bool normalize_line_endings_to_native);
 
@@ -129,14 +136,6 @@ class PLATFORM_EXPORT BlobData {
   }
 
  private:
-  enum class FileCompositionStatus {
-    SINGLE_UNKNOWN_SIZE_FILE,
-    NO_UNKNOWN_SIZE_FILES
-  };
-
-  explicit BlobData(FileCompositionStatus composition)
-      : file_composition_(composition) {}
-
   void AppendDataInternal(base::span<const char> data,
                           scoped_refptr<RawData> = nullptr);
 
@@ -152,6 +151,8 @@ class PLATFORM_EXPORT BlobData {
 
 class PLATFORM_EXPORT BlobDataHandle
     : public ThreadSafeRefCounted<BlobDataHandle> {
+  USING_FAST_MALLOC(BlobDataHandle);
+
  public:
   // For empty blob construction.
   static scoped_refptr<BlobDataHandle> Create() {
@@ -160,21 +161,22 @@ class PLATFORM_EXPORT BlobDataHandle
 
   // For initial creation.
   static scoped_refptr<BlobDataHandle> Create(std::unique_ptr<BlobData> data,
-                                              long long size) {
+                                              uint64_t size) {
     return base::AdoptRef(new BlobDataHandle(std::move(data), size));
   }
 
   // For deserialization of script values and ipc messages.
   static scoped_refptr<BlobDataHandle> Create(const String& uuid,
                                               const String& type,
-                                              long long size) {
+                                              uint64_t size) {
     return base::AdoptRef(new BlobDataHandle(uuid, type, size));
   }
 
-  static scoped_refptr<BlobDataHandle> Create(const String& uuid,
-                                       const String& type,
-                                       long long size,
-                                       mojom::blink::BlobPtrInfo blob_info) {
+  static scoped_refptr<BlobDataHandle> Create(
+      const String& uuid,
+      const String& type,
+      uint64_t size,
+      mojom::blink::BlobPtrInfo blob_info) {
     if (blob_info.is_valid()) {
       return base::AdoptRef(
           new BlobDataHandle(uuid, type, size, std::move(blob_info)));
@@ -205,16 +207,16 @@ class PLATFORM_EXPORT BlobDataHandle
 
  private:
   BlobDataHandle();
-  BlobDataHandle(std::unique_ptr<BlobData>, long long size);
-  BlobDataHandle(const String& uuid, const String& type, long long size);
+  BlobDataHandle(std::unique_ptr<BlobData>, uint64_t size);
+  BlobDataHandle(const String& uuid, const String& type, uint64_t size);
   BlobDataHandle(const String& uuid,
                  const String& type,
-                 long long size,
+                 uint64_t size,
                  mojom::blink::BlobPtrInfo);
 
   const String uuid_;
   const String type_;
-  const long long size_;
+  const uint64_t size_;
   const bool is_single_unknown_size_file_;
   // This class is supposed to be thread safe. So to be able to use the mojo
   // Blob interface from multiple threads store a InterfacePtrInfo combined with

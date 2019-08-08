@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -15,9 +14,7 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/managed_ui.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
@@ -123,15 +120,10 @@ std::unique_ptr<base::DictionaryValue> ManagedUIHandler::GetDataSourceUpdate()
     const {
   auto update = std::make_unique<base::DictionaryValue>();
 
-  bool link_to_management_page = base::FeatureList::IsEnabled(
-      features::kLinkManagedNoticeToChromeUIManagementURL);
-
   update->SetKey("managedByOrg",
                  base::Value(l10n_util::GetStringFUTF16(
                      IDS_MANAGED_BY_ORG_WITH_HYPERLINK,
-                     base::UTF8ToUTF16(link_to_management_page
-                                           ? chrome::kChromeUIManagementURL
-                                           : chrome::kManagedUiLearnMoreUrl)
+                     base::UTF8ToUTF16(chrome::kChromeUIManagementURL)
 #if defined(OS_CHROMEOS)
                          ,
                      ui::GetChromeOSDeviceName()

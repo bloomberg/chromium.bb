@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAttributeKeys;
 import org.chromium.chrome.browser.tab.TabAttributes;
 import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -236,6 +237,10 @@ public class TabModalPresenter
 
         mDialogContainer = (ViewGroup) dialogContainerStub.inflate();
         mDialogContainer.setVisibility(View.GONE);
+
+        // Make sure clicks are not consumed by content beneath the container view.
+        mDialogContainer.setClickable(true);
+
         mContainerParent = (ViewGroup) mDialogContainer.getParent();
         // The default sibling view is the next view of the dialog container stub in main.xml and
         // should not be removed from its parent.
@@ -346,13 +351,16 @@ public class TabModalPresenter
     private void onTabModalDialogStateChanged(boolean isShowing) {
         TabAttributes.from(mActiveTab).set(TabAttributeKeys.MODAL_DIALOG_SHOWING, isShowing);
 
+        // Make sure to exit fullscreen mode before showing the tab modal dialog view.
+        if (isShowing) mActiveTab.exitFullscreenMode();
+
         // Also need to update browser control state after dismissal to refresh the constraints.
         TabBrowserControlsOffsetHelper offsetHelper = getControlsOffsetHelper();
         if (isShowing && mActiveTab.areRendererInputEventsIgnored()) {
             offsetHelper.showAndroidControls(true);
         } else {
-            mActiveTab.updateBrowserControlsState(
-                    BrowserControlsState.SHOWN, !offsetHelper.isControlsOffsetOverridden());
+            TabBrowserControlsState.update(mActiveTab, BrowserControlsState.SHOWN,
+                    !offsetHelper.isControlsOffsetOverridden());
         }
     }
 

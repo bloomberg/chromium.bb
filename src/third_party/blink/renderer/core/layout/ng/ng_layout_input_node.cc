@@ -34,8 +34,8 @@ void AppendNodeToString(NGLayoutInputNode node,
   for (unsigned i = 0; i < indent; i++)
     indent_builder.Append(" ");
 
-  if (node.IsBlock()) {
-    NGLayoutInputNode first_child = ToNGBlockNode(node).FirstChild();
+  if (auto* block_node = DynamicTo<NGBlockNode>(node)) {
+    NGLayoutInputNode first_child = block_node->FirstChild();
     for (NGLayoutInputNode node_runner = first_child; node_runner;
          node_runner = node_runner.NextSibling()) {
       string_builder->Append(indent_builder.ToString());
@@ -43,14 +43,14 @@ void AppendNodeToString(NGLayoutInputNode node,
     }
   }
 
-  if (node.IsInline()) {
-    const auto& items = ToNGInlineNode(node).ItemsData(false).items;
+  if (auto* inline_node = DynamicTo<NGInlineNode>(node)) {
+    const auto& items = inline_node->ItemsData(false).items;
     for (const NGInlineItem& inline_item : items) {
       string_builder->Append(indent_builder.ToString());
       string_builder->Append(inline_item.ToString());
       string_builder->Append("\n");
     }
-    NGLayoutInputNode next_sibling = ToNGInlineNode(node).NextSibling();
+    NGLayoutInputNode next_sibling = inline_node->NextSibling();
     for (NGLayoutInputNode node_runner = next_sibling; node_runner;
          node_runner = node_runner.NextSibling()) {
       string_builder->Append(indent_builder.ToString());
@@ -66,17 +66,18 @@ scoped_refptr<const NGLayoutResult> NGLayoutInputNode::Layout(
     const NGConstraintSpace& space,
     const NGBreakToken* break_token,
     NGInlineChildLayoutContext* context) {
-  return IsInline() ? ToNGInlineNode(*this).Layout(space, break_token, context)
-                    : ToNGBlockNode(*this).Layout(space, break_token);
+  auto* inline_node = DynamicTo<NGInlineNode>(this);
+  return inline_node ? inline_node->Layout(space, break_token, context)
+                     : To<NGBlockNode>(*this).Layout(space, break_token);
 }
 
 MinMaxSize NGLayoutInputNode::ComputeMinMaxSize(
     WritingMode writing_mode,
     const MinMaxSizeInput& input,
     const NGConstraintSpace* space) {
-  if (IsInline())
-    return ToNGInlineNode(*this).ComputeMinMaxSize(writing_mode, input, space);
-  return ToNGBlockNode(*this).ComputeMinMaxSize(writing_mode, input, space);
+  if (auto* inline_node = DynamicTo<NGInlineNode>(this))
+    return inline_node->ComputeMinMaxSize(writing_mode, input, space);
+  return To<NGBlockNode>(*this).ComputeMinMaxSize(writing_mode, input, space);
 }
 
 void NGLayoutInputNode::IntrinsicSize(
@@ -113,8 +114,9 @@ LayoutUnit NGLayoutInputNode::IntrinsicPaddingBlockEnd() const {
 }
 
 NGLayoutInputNode NGLayoutInputNode::NextSibling() {
-  return IsInline() ? ToNGInlineNode(*this).NextSibling()
-                    : ToNGBlockNode(*this).NextSibling();
+  auto* inline_node = DynamicTo<NGInlineNode>(this);
+  return inline_node ? inline_node->NextSibling()
+                     : To<NGBlockNode>(*this).NextSibling();
 }
 
 NGPhysicalSize NGLayoutInputNode::InitialContainingBlockSize() const {
@@ -125,14 +127,13 @@ NGPhysicalSize NGLayoutInputNode::InitialContainingBlockSize() const {
 }
 
 const NGPaintFragment* NGLayoutInputNode::PaintFragment() const {
-  if (LayoutBlockFlow* block_flow = ToLayoutBlockFlowOrNull(GetLayoutBox()))
-    return block_flow->PaintFragment();
-  return nullptr;
+  return GetLayoutBox()->PaintFragment();
 }
 
 String NGLayoutInputNode::ToString() const {
-  return IsInline() ? ToNGInlineNode(*this).ToString()
-                    : ToNGBlockNode(*this).ToString();
+  auto* inline_node = DynamicTo<NGInlineNode>(this);
+  return inline_node ? inline_node->ToString()
+                     : To<NGBlockNode>(*this).ToString();
 }
 
 #ifndef NDEBUG

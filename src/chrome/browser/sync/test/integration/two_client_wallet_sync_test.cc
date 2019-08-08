@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "chrome/browser/sync/test/integration/autofill_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/wallet_helper.h"
 #include "components/autofill/core/browser/autofill_metadata.h"
@@ -11,7 +12,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/test/fake_server/fake_server_http_post_provider.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,10 +60,12 @@ class TwoClientWalletSyncTest : public UssWalletSwitchToggler, public SyncTest {
   }
   ~TwoClientWalletSyncTest() override {}
 
-  bool TestUsesSelfNotifications() override { return false; }
+  // Needed for AwaitQuiescence().
+  bool TestUsesSelfNotifications() override { return true; }
 
   bool SetupSync() override {
     test_clock_.SetNow(kArbitraryDefaultTime);
+
     // Plug in SyncService into PDM so that it can check we use full sync. We
     // need to do it before starting the sync in SetupSync(). We need to setup
     // the clients before that so we can access their sync service.
@@ -471,83 +474,18 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(kEvenLaterTime, credit_cards[0]->use_date());
 }
 
-IN_PROC_BROWSER_TEST_P(
-    TwoClientWalletSyncTest,
-    UpdateCreditCardMetadataWithChangedBillingAddressId_LocalToRemote) {
-  GetFakeServer()->SetWalletData(
-      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
-                            kLocalBillingAddressId),
-       CreateDefaultSyncPaymentsCustomerData()});
-  ASSERT_TRUE(SetupSync());
-
-  // Grab the current card on the first client.
-  std::vector<CreditCard*> credit_cards = GetServerCreditCards(0);
-  ASSERT_EQ(1U, credit_cards.size());
-  CreditCard card = *credit_cards[0];
-
-  // Update the billing address (replace a local profile by a remote profile).
-  ASSERT_EQ(kLocalBillingAddressId, card.billing_address_id());
-  card.set_billing_address_id(kDifferentBillingAddressId);
-  UpdateServerCardMetadata(0, card);
-  EXPECT_TRUE(AutofillWalletChecker(0, 1).Wait());
-
-  // Make sure both clients have the original billing_address_id (local profile
-  // wins).
-  credit_cards = GetServerCreditCards(1);
-  EXPECT_EQ(1U, credit_cards.size());
-  EXPECT_EQ(kLocalBillingAddressId, credit_cards[0]->billing_address_id());
-
-  credit_cards = GetServerCreditCards(0);
-  EXPECT_EQ(1U, credit_cards.size());
-  EXPECT_EQ(kLocalBillingAddressId, credit_cards[0]->billing_address_id());
-}
-
-IN_PROC_BROWSER_TEST_P(
-    TwoClientWalletSyncTest,
-    UpdateCreditCardMetadataWithChangedBillingAddressId_LocalToRemoteOffline) {
-  GetFakeServer()->SetWalletData(
-      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
-                            kLocalBillingAddressId),
-       CreateDefaultSyncPaymentsCustomerData()});
-  ASSERT_TRUE(SetupSync());
-
-  // Sumulate going offline on both clients.
-  fake_server::FakeServerHttpPostProvider::DisableNetwork();
-
-  // Grab the current card on the first client.
-  std::vector<CreditCard*> credit_cards = GetServerCreditCards(0);
-  ASSERT_EQ(1U, credit_cards.size());
-  CreditCard card = *credit_cards[0];
-
-  // Update the billing address (replace a local profile by a remote profile).
-  ASSERT_EQ(kLocalBillingAddressId, card.billing_address_id());
-  card.set_billing_address_id(kDifferentBillingAddressId);
-  UpdateServerCardMetadata(0, card);
-
-  // Simulate going online again.
-  fake_server::FakeServerHttpPostProvider::EnableNetwork();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
-
-  EXPECT_TRUE(AutofillWalletChecker(0, 1).Wait());
-
-  // Make sure both clients have the original billing_address_id (local profile
-  // wins).
-  credit_cards = GetServerCreditCards(1);
-  EXPECT_EQ(1U, credit_cards.size());
-  EXPECT_EQ(kLocalBillingAddressId, credit_cards[0]->billing_address_id());
-
-  credit_cards = GetServerCreditCards(0);
-  EXPECT_EQ(1U, credit_cards.size());
-  EXPECT_EQ(kLocalBillingAddressId, credit_cards[0]->billing_address_id());
-}
-
+// Flaky. http://crbug.com/917498
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
-                       ServerAddressConvertsToSameLocalAddress) {
+                       DISABLED_ServerAddressConvertsToSameLocalAddress) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
+
+  // On top of expecting convergence on AutofillWalletChecker, expect
+  // convergence on wallet metadata and on autofill profiles.
+  EXPECT_TRUE(AutofillWalletMetadataSizeChecker(0, 1).Wait());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
 
   // Make sure both have has_converted true.
   std::vector<AutofillProfile*> server_addresses = GetServerProfiles(0);
@@ -577,6 +515,9 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
        CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
+  // Wait until sync settles (for the wallet metadata) before we change the
+  // data again.
+  ASSERT_TRUE(AwaitQuiescence());
 
   // Grab the current address on the first client.
   std::vector<AutofillProfile*> server_addresses = GetServerProfiles(0);
@@ -607,22 +548,14 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(0U, GetServerCreditCards(1).size());
 
   // Also check the DB directly that there is no _metadata_.
-  std::map<std::string, AutofillMetadata> cards_metadata_0;
-  GetServerCardsMetadata(0, &cards_metadata_0);
-  EXPECT_EQ(0U, cards_metadata_0.size());
-  std::map<std::string, AutofillMetadata> cards_metadata_1;
-  GetServerCardsMetadata(1, &cards_metadata_1);
-  EXPECT_EQ(0U, cards_metadata_1.size());
+  EXPECT_EQ(0U, GetServerCardsMetadata(0).size());
+  EXPECT_EQ(0U, GetServerCardsMetadata(1).size());
 
-  // Double check that cards data & metadata is intact.
+  // Double check that profiles data & metadata is intact.
   EXPECT_EQ(1U, GetServerProfiles(0).size());
   EXPECT_EQ(1U, GetServerProfiles(1).size());
-  std::map<std::string, AutofillMetadata> addresses_metadata_0;
-  GetServerAddressesMetadata(0, &addresses_metadata_0);
-  EXPECT_EQ(1U, addresses_metadata_0.size());
-  std::map<std::string, AutofillMetadata> addresses_metadata_1;
-  GetServerAddressesMetadata(1, &addresses_metadata_1);
-  EXPECT_EQ(1U, addresses_metadata_1.size());
+  EXPECT_EQ(1U, GetServerAddressesMetadata(0).size());
+  EXPECT_EQ(1U, GetServerAddressesMetadata(1).size());
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
@@ -633,6 +566,9 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
        CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
+  // Wait until sync settles (for the wallet metadata) before we change the
+  // data again.
+  ASSERT_TRUE(AwaitQuiescence());
 
   // Grab the current card on the first client.
   std::vector<CreditCard*> credit_cards = GetServerCreditCards(0);
@@ -664,22 +600,14 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(0U, GetServerProfiles(1).size());
 
   // Also check the DB directly that there is no _metadata_.
-  std::map<std::string, AutofillMetadata> addresses_metadata_0;
-  GetServerAddressesMetadata(0, &addresses_metadata_0);
-  EXPECT_EQ(0U, addresses_metadata_0.size());
-  std::map<std::string, AutofillMetadata> addresses_metadata_1;
-  GetServerAddressesMetadata(1, &addresses_metadata_1);
-  EXPECT_EQ(0U, addresses_metadata_1.size());
+  EXPECT_EQ(0U, GetServerAddressesMetadata(0).size());
+  EXPECT_EQ(0U, GetServerAddressesMetadata(1).size());
 
   // Double check that cards data & metadata is intact.
   EXPECT_EQ(1U, GetServerCreditCards(0).size());
   EXPECT_EQ(1U, GetServerCreditCards(1).size());
-  std::map<std::string, AutofillMetadata> cards_metadata_0;
-  GetServerCardsMetadata(0, &cards_metadata_0);
-  EXPECT_EQ(1U, cards_metadata_0.size());
-  std::map<std::string, AutofillMetadata> cards_metadata_1;
-  GetServerCardsMetadata(1, &cards_metadata_1);
-  EXPECT_EQ(1U, cards_metadata_1.size());
+  EXPECT_EQ(1U, GetServerCardsMetadata(0).size());
+  EXPECT_EQ(1U, GetServerCardsMetadata(1).size());
 }
 
 INSTANTIATE_TEST_SUITE_P(USS,

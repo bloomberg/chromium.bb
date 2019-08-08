@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/cast_browser_process.h"
@@ -19,12 +20,36 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/resource_load_info.mojom.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "url/gurl.h"
 
 namespace chromecast {
+
+namespace {
+
+// IDs start at 1, since 0 is reserved for the root content window.
+size_t next_tab_id = 1;
+
+// Remove the given CastWebContents pointer from the global instance vector.
+void RemoveCastWebContents(CastWebContents* instance) {
+  auto& all_cast_web_contents = CastWebContents::GetAll();
+  auto it = std::find(all_cast_web_contents.begin(),
+                      all_cast_web_contents.end(), instance);
+  if (it != all_cast_web_contents.end()) {
+    all_cast_web_contents.erase(it);
+  }
+}
+
+}  // namespace
+
+// static
+std::vector<CastWebContents*>& CastWebContents::GetAll() {
+  static base::NoDestructor<std::vector<CastWebContents*>> instance;
+  return *instance;
+}
 
 CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
                                          const InitParams& init_params)
@@ -36,6 +61,8 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
       use_cma_renderer_(init_params.use_cma_renderer),
       remote_debugging_server_(
           shell::CastBrowserProcess::GetInstance()->remote_debugging_server()),
+      tab_id_(init_params.is_root_window ? 0 : next_tab_id++),
+      main_frame_loaded_(false),
       closing_(false),
       stopped_(false),
       stop_notified_(false),
@@ -46,6 +73,7 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
   DCHECK(web_contents_);
   DCHECK(web_contents_->GetController().IsInitialNavigation());
   DCHECK(!web_contents_->IsLoading());
+  CastWebContents::GetAll().push_back(this);
   content::WebContentsObserver::Observe(web_contents_);
   if (enabled_for_dev_) {
     LOG(INFO) << "Enabling dev console for CastWebContentsImpl";
@@ -67,6 +95,11 @@ CastWebContentsImpl::~CastWebContentsImpl() {
   for (auto& observer : observer_list_) {
     observer.ResetCastWebContents();
   }
+  RemoveCastWebContents(this);
+}
+
+int CastWebContentsImpl::tab_id() const {
+  return tab_id_;
 }
 
 content::WebContents* CastWebContentsImpl::web_contents() const {
@@ -96,13 +129,8 @@ void CastWebContentsImpl::LoadUrl(const GURL& url) {
     LOG(ERROR) << "Cannot load URL for WebContents while closing";
     return;
   }
-  closing_ = false;
-  stopped_ = false;
-  stop_notified_ = false;
-  last_error_ = net::OK;
-  start_loading_ticks_ = base::TimeTicks::Now();
+  OnPageLoading();
   LOG(INFO) << "Load url: " << url.possibly_invalid_spec();
-  TracePageLoadBegin(url);
   web_contents_->GetController().LoadURL(url, content::Referrer(),
                                          ui::PAGE_TRANSITION_TYPED, "");
   UpdatePageState();
@@ -268,6 +296,29 @@ void CastWebContentsImpl::RenderProcessGone(base::TerminationStatus status) {
   Stop(net::ERR_UNEXPECTED);
 }
 
+void CastWebContentsImpl::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(navigation_handle);
+  if (!web_contents_ || closing_ || stopped_)
+    return;
+  if (!navigation_handle->IsInMainFrame())
+    return;
+  // Main frame has begun navigating/loading.
+  OnPageLoading();
+  start_loading_ticks_ = base::TimeTicks::Now();
+  GURL loading_url;
+  content::NavigationEntry* nav_entry =
+      web_contents()->GetController().GetVisibleEntry();
+  if (nav_entry) {
+    loading_url = nav_entry->GetVirtualURL();
+  }
+  TracePageLoadBegin(loading_url);
+  UpdatePageState();
+  DCHECK_EQ(page_state_, PageState::LOADING);
+  NotifyObservers();
+}
+
 void CastWebContentsImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -280,6 +331,10 @@ void CastWebContentsImpl::DidFinishNavigation(
     return;
   }
 
+  // Return early if we didn't navigate to an error page. Note that even if we
+  // haven't navigated to an error page, there could still be errors in loading
+  // the desired content: e.g. if the server returned HTTP 404, or if there is
+  // an error with the content itself.
   if (!navigation_handle->IsErrorPage())
     return;
 
@@ -297,48 +352,91 @@ void CastWebContentsImpl::DidFinishNavigation(
 
   LOG(ERROR) << "Got error on navigation: url=" << navigation_handle->GetURL()
              << ", error_code=" << error_code
-             << ", description= " << net::ErrorToShortString(error_code);
+             << ", description=" << net::ErrorToShortString(error_code);
 
   Stop(error_code);
   DCHECK_EQ(page_state_, PageState::ERROR);
 }
 
-void CastWebContentsImpl::DidStartLoading() {
+void CastWebContentsImpl::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  UpdatePageState();
-  DCHECK_EQ(page_state_, PageState::LOADING);
-  NotifyObservers();
-}
-
-void CastWebContentsImpl::DidStopLoading() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (page_state_ != PageState::LOADING || !web_contents_ ||
+      render_frame_host != web_contents_->GetMainFrame()) {
+    return;
+  }
+  // The main frame finished loading. Before proceeding, we need to verify that
+  // the loaded page is the one that was requested.
+  TracePageLoadEnd(validated_url);
   int http_status_code = 0;
-  GURL final_url;
   content::NavigationEntry* nav_entry =
       web_contents()->GetController().GetVisibleEntry();
   if (nav_entry) {
     http_status_code = nav_entry->GetHttpStatusCode();
-    final_url = nav_entry->GetVirtualURL();
   }
-  TracePageLoadEnd(final_url);
 
   if (http_status_code != 0 && http_status_code / 100 != 2) {
-    // We successfully loaded an error HTML page.
-    LOG(INFO) << "Failed loading page for: " << final_url
-              << "; http status code: " << http_status_code;
+    // An error HTML page was loaded instead of the content we requested.
+    LOG(ERROR) << "Failed loading page for: " << validated_url
+               << "; http status code: " << http_status_code;
     Stop(net::ERR_FAILED);
     DCHECK_EQ(page_state_, PageState::ERROR);
     return;
   }
-  // Main frame finished loading.
+  // Main frame finished loading properly.
   base::TimeDelta load_time = base::TimeTicks::Now() - start_loading_ticks_;
   LOG(INFO) << "Finished loading page after " << load_time.InMilliseconds()
-            << " ms, url=" << final_url;
-  PageState previous = page_state_;
+            << " ms, url=" << validated_url;
+  OnPageLoaded();
+}
+
+void CastWebContentsImpl::DidFailLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url,
+    int error_code,
+    const base::string16& error_description) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Only report an error if we are the main frame.  See b/8433611.
+  if (render_frame_host->GetParent()) {
+    LOG(ERROR) << "Got error on sub-iframe: url=" << validated_url.spec()
+               << ", error=" << error_code;
+    return;
+  }
+  if (error_code == net::ERR_ABORTED) {
+    // ERR_ABORTED means download was aborted by the app, typically this happens
+    // when flinging URL for direct playback, the initial URLRequest gets
+    // cancelled/aborted and then the same URL is requested via the buffered
+    // data source for media::Pipeline playback.
+    LOG(INFO) << "Load canceled: url=" << validated_url.spec();
+
+    // We consider the page to be fully loaded in this case, since the app has
+    // intentionally entered this state. If the app wanted to stop, it would
+    // have called window.close() instead.
+    OnPageLoaded();
+    return;
+  }
+
+  LOG(ERROR) << "Got error on load: url=" << validated_url.spec()
+             << ", error_code=" << error_code;
+
+  TracePageLoadEnd(validated_url);
+  Stop(error_code);
+  DCHECK_EQ(PageState::ERROR, page_state_);
+}
+
+void CastWebContentsImpl::OnPageLoading() {
+  closing_ = false;
+  stopped_ = false;
+  stop_notified_ = false;
+  main_frame_loaded_ = false;
+  last_error_ = net::OK;
+}
+
+void CastWebContentsImpl::OnPageLoaded() {
+  main_frame_loaded_ = true;
   UpdatePageState();
-  DCHECK((previous == PageState::ERROR && page_state_ == PageState::ERROR) ||
-         page_state_ == PageState::LOADED)
-      << "Page is in unexpected state: " << page_state_;
+  DCHECK(page_state_ == PageState::LOADED);
   NotifyObservers();
 }
 
@@ -349,10 +447,10 @@ void CastWebContentsImpl::UpdatePageState() {
     DCHECK(stopped_);
     page_state_ = PageState::DESTROYED;
   } else if (!stopped_) {
-    if (web_contents_->IsLoading()) {
-      page_state_ = PageState::LOADING;
-    } else {
+    if (main_frame_loaded_) {
       page_state_ = PageState::LOADED;
+    } else {
+      page_state_ = PageState::LOADING;
     }
   } else if (stopped_) {
     if (last_error_ != net::OK) {
@@ -382,33 +480,21 @@ void CastWebContentsImpl::NotifyObservers() {
   notifying_ = false;
 }
 
-void CastWebContentsImpl::DidFailLoad(
+void CastWebContentsImpl::ResourceLoadComplete(
     content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Only report an error if we are the main frame.  See b/8433611.
-  if (render_frame_host->GetParent()) {
-    LOG(ERROR) << "Got error on sub-iframe: url=" << validated_url.spec()
-               << ", error=" << error_code;
+    const content::GlobalRequestID& request_id,
+    const content::mojom::ResourceLoadInfo& resource_load_info) {
+  if (!web_contents_ || render_frame_host != web_contents_->GetMainFrame())
     return;
-  }
-  if (error_code == net::ERR_ABORTED) {
-    // ERR_ABORTED means download was aborted by the app, typically this happens
-    // when flinging URL for direct playback, the initial URLRequest gets
-    // cancelled/aborted and then the same URL is requested via the buffered
-    // data source for media::Pipeline playback.
-    LOG(INFO) << "Load canceled: url=" << validated_url.spec();
+  int net_error = resource_load_info.net_error;
+  if (net_error == net::OK)
     return;
+  LOG(ERROR) << "Resource \"" << resource_load_info.url << "\" failed to load "
+             << " with net_error=" << net_error
+             << ", description=" << net::ErrorToShortString(net_error);
+  for (auto& observer : observer_list_) {
+    observer.ResourceLoadFailed(this);
   }
-
-  LOG(ERROR) << "Got error on load: url=" << validated_url.spec()
-             << ", error_code=" << error_code;
-
-  TracePageLoadEnd(validated_url);
-  Stop(error_code);
-  DCHECK_EQ(PageState::ERROR, page_state_);
 }
 
 void CastWebContentsImpl::InnerWebContentsCreated(
@@ -426,6 +512,7 @@ void CastWebContentsImpl::WebContentsDestroyed() {
   content::WebContentsObserver::Observe(nullptr);
   web_contents_ = nullptr;
   Stop(net::OK);
+  RemoveCastWebContents(this);
   DCHECK_EQ(PageState::DESTROYED, page_state_);
 }
 

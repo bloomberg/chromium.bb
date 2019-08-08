@@ -36,7 +36,6 @@ js_type_check("closure_compile") {
     ":router",
     ":store",
     ":store_client",
-    ":toast_manager",
     ":toolbar",
     ":types",
     ":util",
@@ -86,10 +85,10 @@ js_library("command_manager") {
     ":dialog_focus_manager",
     ":edit_dialog",
     ":store_client",
-    ":toast_manager",
     "//third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior:iron-a11y-keys-behavior-extracted",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
+    "//ui/webui/resources/cr_elements/cr_toast:cr_toast_manager",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js/cr/ui:command",
@@ -210,13 +209,6 @@ js_library("store_client") {
     ":types",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr/ui:store_client",
-  ]
-}
-
-js_library("toast_manager") {
-  deps = [
-    "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
-    "//ui/webui/resources/js:cr",
   ]
 }
 

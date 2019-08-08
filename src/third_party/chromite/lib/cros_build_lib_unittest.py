@@ -1600,6 +1600,16 @@ class CreateTarballTests(cros_test_lib.TempDirTestCase):
     cros_build_lib.CreateTarball(self.target, self.inputDir,
                                  inputs=self.inputsWithDirs)
 
+  def testSuccessWithTooManyFiles(self):
+    """Test a tarfile creation with -T /dev/stdin."""
+    num_inputs = cros_build_lib._THRESHOLD_TO_USE_T_FOR_TAR + 1
+    inputs = ['input%s' % x for x in xrange(num_inputs)]
+    largeInputDir = os.path.join(self.tempdir, 'largeinputs')
+    for i in inputs:
+      osutils.WriteFile(os.path.join(largeInputDir, i), i, makedirs=True)
+    cros_build_lib.CreateTarball(self.target, largeInputDir, inputs=inputs)
+
+
 # Tests for tar failure retry logic.
 
 class FailedCreateTarballTests(cros_test_lib.MockTestCase):

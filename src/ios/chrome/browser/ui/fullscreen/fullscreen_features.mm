@@ -66,5 +66,8 @@ ViewportAdjustmentExperiment GetActiveViewportExperiment() {
              : ViewportAdjustmentExperiment::FRAME;
 }
 
+const base::Feature kLockBottomToolbar{"LockBottomToolbar",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace fullscreen

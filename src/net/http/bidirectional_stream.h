@@ -208,7 +208,8 @@ class NET_EXPORT BidirectionalStream : public BidirectionalStreamImpl::Delegate,
       std::unique_ptr<WebSocketHandshakeStreamBase> stream) override;
   void OnStreamFailed(int status,
                       const NetErrorDetails& net_error_details,
-                      const SSLConfig& used_ssl_config) override;
+                      const SSLConfig& used_ssl_config,
+                      const ProxyInfo& used_proxy_info) override;
   void OnCertificateError(int status,
                           const SSLConfig& used_ssl_config,
                           const SSLInfo& ssl_info) override;

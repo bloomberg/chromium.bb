@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/browser/indexed_db/indexed_db_database.h"
-#include <math.h>
 
+#include <math.h>
 #include <algorithm>
 #include <limits>
 #include <set>
@@ -35,6 +35,7 @@
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/indexed_db/scopes/scope_lock.h"
 #include "content/browser/indexed_db/scopes/scopes_lock_manager.h"
+#include "content/browser/indexed_db/transaction_impl.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_channel.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -269,6 +270,10 @@ class IndexedDBDatabase::OpenRequest
         std::set<int64_t>(object_store_ids.begin(), object_store_ids.end()),
         blink::mojom::IDBTransactionMode::VersionChange,
         new IndexedDBBackingStore::Transaction(db_->backing_store()));
+
+    std::move(pending_->create_transaction_callback)
+        .Run(transaction->AsWeakPtr());
+
     transaction->ScheduleTask(
         base::BindOnce(&IndexedDBDatabase::VersionChangeOperation, db_,
                        pending_->version, pending_->callbacks));
@@ -603,6 +608,11 @@ void IndexedDBDatabase::CreateObjectStore(IndexedDBTransaction* transaction,
   // Store creation is done synchronously, as it may be followed by
   // index creation (also sync) since preemptive OpenCursor/SetIndexKeys
   // may follow.
+
+  // TODO(dmurph): Remove this call once this method is asynchronous (scheduled
+  // on the transaction).
+  transaction->EnsureBackingStoreTransactionBegun();
+
   IndexedDBObjectStoreMetadata object_store_metadata;
   Status s = metadata_coding_->CreateObjectStore(
       transaction->BackingStoreTransaction()->transaction(),
@@ -692,10 +702,14 @@ void IndexedDBDatabase::CreateIndex(IndexedDBTransaction* transaction,
   UMA_HISTOGRAM_BOOLEAN("WebCore.IndexedDB.Schema.Index.MultiEntry",
                         multi_entry);
 
+  // TODO(dmurph): Remove this call once this method is asynchronous (scheduled
+  // on the transaction).
+  transaction->EnsureBackingStoreTransactionBegun();
+
   // Index creation is done synchronously since preemptive
   // OpenCursor/SetIndexKeys may follow.
+  // TODO(dmurph): Make this asynchronous.
   IndexedDBIndexMetadata index_metadata;
-
   Status s = metadata_coding_->CreateIndex(
       transaction->BackingStoreTransaction()->transaction(),
       transaction->database()->id(), object_store_id, index_id, name, key_path,
@@ -742,8 +756,8 @@ Status IndexedDBDatabase::DeleteIndexOperation(
     int64_t object_store_id,
     int64_t index_id,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE1(
-      "IndexedDBDatabase::DeleteIndexOperation", "txn.id", transaction->id());
+  IDB_TRACE1("IndexedDBDatabase::DeleteIndexOperation", "txn.id",
+             transaction->id());
 
   IndexedDBIndexMetadata index_metadata =
       RemoveIndex(object_store_id, index_id);
@@ -790,9 +804,13 @@ void IndexedDBDatabase::RenameIndex(IndexedDBTransaction* transaction,
   if (!ValidateObjectStoreIdAndIndexId(object_store_id, index_id))
     return;
 
+  // TODO(dmurph): Remove this call once this method is asynchronous (scheduled
+  // on the transaction).
+  transaction->EnsureBackingStoreTransactionBegun();
+
   // Index renaming is done synchronously since preemptive
   // OpenCursor/SetIndexKeys may follow.
-
+  // TODO(dmurph): Make this asynchronous.
   IndexedDBIndexMetadata& index_metadata =
       metadata_.object_stores[object_store_id].indexes[index_id];
 
@@ -995,15 +1013,11 @@ Status IndexedDBDatabase::GetOperation(
     key = &backing_store_cursor->key();
   }
 
-  std::unique_ptr<IndexedDBKey> primary_key;
   if (index_id == IndexedDBIndexMetadata::kInvalidId) {
     // Object Store Retrieval Operation
     IndexedDBReturnValue value;
-    s = backing_store_->GetRecord(transaction->BackingStoreTransaction(),
-                                  id(),
-                                  object_store_id,
-                                  *key,
-                                  &value);
+    s = backing_store_->GetRecord(transaction->BackingStoreTransaction(), id(),
+                                  object_store_id, *key, &value);
     if (!s.ok())
       return s;
 
@@ -1028,13 +1042,10 @@ Status IndexedDBDatabase::GetOperation(
   }
 
   // From here we are dealing only with indexes.
+  std::unique_ptr<IndexedDBKey> primary_key;
   s = backing_store_->GetPrimaryKeyViaIndex(
-      transaction->BackingStoreTransaction(),
-      id(),
-      object_store_id,
-      index_id,
-      *key,
-      &primary_key);
+      transaction->BackingStoreTransaction(), id(), object_store_id, index_id,
+      *key, &primary_key);
   if (!s.ok())
     return s;
 
@@ -1050,11 +1061,8 @@ Status IndexedDBDatabase::GetOperation(
 
   // Index Referenced Value Retrieval Operation
   IndexedDBReturnValue value;
-  s = backing_store_->GetRecord(transaction->BackingStoreTransaction(),
-                                id(),
-                                object_store_id,
-                                *primary_key,
-                                &value);
+  s = backing_store_->GetRecord(transaction->BackingStoreTransaction(), id(),
+                                object_store_id, *primary_key, &value);
   if (!s.ok())
     return s;
 
@@ -1336,16 +1344,10 @@ Status IndexedDBDatabase::PutOperation(
   std::vector<std::unique_ptr<IndexWriter>> index_writers;
   base::string16 error_message;
   bool obeys_constraints = false;
-  bool backing_store_success = MakeIndexWriters(transaction,
-                                                backing_store_.get(),
-                                                id(),
-                                                object_store,
-                                                *key,
-                                                key_was_generated,
-                                                params->index_keys,
-                                                &index_writers,
-                                                &error_message,
-                                                &obeys_constraints);
+  bool backing_store_success =
+      MakeIndexWriters(transaction, backing_store_.get(), id(), object_store,
+                       *key, key_was_generated, params->index_keys,
+                       &index_writers, &error_message, &obeys_constraints);
   if (!backing_store_success) {
     params->callbacks->OnError(
         CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
@@ -1414,8 +1416,12 @@ void IndexedDBDatabase::SetIndexKeys(
   DCHECK_EQ(transaction->mode(),
             blink::mojom::IDBTransactionMode::VersionChange);
 
-  // TODO(alecflett): This method could be asynchronous, but we need to
-  // evaluate if it's worth the extra complexity.
+  // TODO(dmurph): Remove this call once this method is asynchronous (scheduled
+  // on the transaction).
+  transaction->EnsureBackingStoreTransactionBegun();
+
+  // TODO(dmurph): This methods should be turned asynchronous, and not rely on
+  // the renderer to have matching calls to OpenCursor and SetIndexedsReady.
   IndexedDBBackingStore::RecordIdentifier record_identifier;
   bool found = false;
   Status s = backing_store_->KeyExistsInObjectStore(
@@ -1439,16 +1445,10 @@ void IndexedDBDatabase::SetIndexKeys(
          metadata_.object_stores.end());
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores[object_store_id];
-  bool backing_store_success = MakeIndexWriters(transaction,
-                                                backing_store_.get(),
-                                                id(),
-                                                object_store_metadata,
-                                                *primary_key,
-                                                false,
-                                                index_keys,
-                                                &index_writers,
-                                                &error_message,
-                                                &obeys_constraints);
+  bool backing_store_success =
+      MakeIndexWriters(transaction, backing_store_.get(), id(),
+                       object_store_metadata, *primary_key, false, index_keys,
+                       &index_writers, &error_message, &obeys_constraints);
   if (!backing_store_success) {
     transaction->Abort(IndexedDBDatabaseError(
         blink::kWebIDBDatabaseExceptionUnknownError,
@@ -1484,6 +1484,8 @@ void IndexedDBDatabase::SetIndexesReady(IndexedDBTransaction* transaction,
 Status IndexedDBDatabase::SetIndexesReadyOperation(
     size_t index_count,
     IndexedDBTransaction* transaction) {
+  // TODO(dmurph): This method should be refactored out for something more
+  // reliable.
   for (size_t i = 0; i < index_count; ++i)
     transaction->DidCompletePreemptiveEvent();
   return Status::OK();
@@ -1535,8 +1537,8 @@ void IndexedDBDatabase::OpenCursor(
 Status IndexedDBDatabase::OpenCursorOperation(
     std::unique_ptr<OpenCursorOperationParams> params,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE1(
-      "IndexedDBDatabase::OpenCursorOperation", "txn.id", transaction->id());
+  IDB_TRACE1("IndexedDBDatabase::OpenCursorOperation", "txn.id",
+             transaction->id());
 
   // The frontend has begun indexing, so this pauses the transaction
   // until the indexing is complete. This can't happen any earlier
@@ -1551,41 +1553,23 @@ Status IndexedDBDatabase::OpenCursorOperation(
     if (params->cursor_type == indexed_db::CURSOR_KEY_ONLY) {
       DCHECK_EQ(params->task_type, blink::mojom::IDBTaskType::Normal);
       backing_store_cursor = backing_store_->OpenObjectStoreKeyCursor(
-          transaction->BackingStoreTransaction(),
-          id(),
-          params->object_store_id,
-          *params->key_range,
-          params->direction,
-          &s);
+          transaction->BackingStoreTransaction(), id(), params->object_store_id,
+          *params->key_range, params->direction, &s);
     } else {
       backing_store_cursor = backing_store_->OpenObjectStoreCursor(
-          transaction->BackingStoreTransaction(),
-          id(),
-          params->object_store_id,
-          *params->key_range,
-          params->direction,
-          &s);
+          transaction->BackingStoreTransaction(), id(), params->object_store_id,
+          *params->key_range, params->direction, &s);
     }
   } else {
     DCHECK_EQ(params->task_type, blink::mojom::IDBTaskType::Normal);
     if (params->cursor_type == indexed_db::CURSOR_KEY_ONLY) {
       backing_store_cursor = backing_store_->OpenIndexKeyCursor(
-          transaction->BackingStoreTransaction(),
-          id(),
-          params->object_store_id,
-          params->index_id,
-          *params->key_range,
-          params->direction,
-          &s);
+          transaction->BackingStoreTransaction(), id(), params->object_store_id,
+          params->index_id, *params->key_range, params->direction, &s);
     } else {
       backing_store_cursor = backing_store_->OpenIndexCursor(
-          transaction->BackingStoreTransaction(),
-          id(),
-          params->object_store_id,
-          params->index_id,
-          *params->key_range,
-          params->direction,
-          &s);
+          transaction->BackingStoreTransaction(), id(), params->object_store_id,
+          params->index_id, *params->key_range, params->direction, &s);
     }
   }
 
@@ -1602,7 +1586,7 @@ Status IndexedDBDatabase::OpenCursorOperation(
 
   std::unique_ptr<IndexedDBCursor> cursor = std::make_unique<IndexedDBCursor>(
       std::move(backing_store_cursor), params->cursor_type, params->task_type,
-      transaction);
+      transaction->AsWeakPtr());
   IndexedDBCursor* cursor_ptr = cursor.get();
   transaction->RegisterOpenCursor(cursor_ptr);
   params->callbacks->OnSuccess(std::move(cursor), cursor_ptr->key(),
@@ -1771,8 +1755,7 @@ Status IndexedDBDatabase::ClearOperation(
 Status IndexedDBDatabase::DeleteObjectStoreOperation(
     int64_t object_store_id,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE1("IndexedDBDatabase::DeleteObjectStoreOperation",
-             "txn.id",
+  IDB_TRACE1("IndexedDBDatabase::DeleteObjectStoreOperation", "txn.id",
              transaction->id());
 
   IndexedDBObjectStoreMetadata object_store_metadata =
@@ -1809,8 +1792,8 @@ Status IndexedDBDatabase::VersionChangeOperation(
     int64_t version,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE1(
-      "IndexedDBDatabase::VersionChangeOperation", "txn.id", transaction->id());
+  IDB_TRACE1("IndexedDBDatabase::VersionChangeOperation", "txn.id",
+             transaction->id());
   int64_t old_version = metadata_.version;
   DCHECK_GT(version, old_version);
 

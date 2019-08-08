@@ -11,11 +11,13 @@
 #include "ash/app_list/app_list_export.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
-#include "ash/app_list/model/app_list_view_state.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
+#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/aura/window_observer.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -30,6 +32,15 @@ class Display;
 namespace ui {
 class AnimationMetricsReporter;
 }  // namespace ui
+
+namespace ash {
+FORWARD_DECLARE_TEST(AppListControllerImplTest,
+                     CheckAppListViewBoundsWhenVKeyboardEnabled);
+FORWARD_DECLARE_TEST(AppListControllerImplTest,
+                     CheckAppListViewBoundsWhenDismissVKeyboard);
+FORWARD_DECLARE_TEST(AppListControllerImplMetricsTest,
+                     PresentationTimeRecordedForDragInTabletMode);
+}
 
 namespace app_list {
 class AppsContainerView;
@@ -53,7 +64,8 @@ constexpr int kAppListBackgroundRadius = 28;
 // and hosts a AppsGridView and passes AppListModel to it for display.
 // TODO(newcomer|weidongg): Organize the cc file to match the order of
 // definitions in this header.
-class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
+class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
+                                    public aura::WindowObserver {
  public:
   class TestApi {
    public:
@@ -137,12 +149,18 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // Dismisses the UI, cleans up and sets the state to CLOSED.
   void Dismiss();
 
-  // Closes opened folder or search result page if they are opened. Returns
-  // whether the action was handled.
-  bool CloseOpenedPage();
+  // Closes opened folder or search result page if they are opened.
+  void CloseOpenedPage();
+
+  // If a folder is open, close it. Returns whether an opened folder was closed.
+  bool HandleCloseOpenFolder();
+
+  // If a search box is open, close it. Returns whether an open search box was
+  // closed.
+  bool HandleCloseOpenSearchBox();
 
   // Performs the 'back' action for the active page.
-  void Back();
+  bool Back();
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -152,7 +170,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   void Layout() override;
 
   // WidgetDelegate:
-  ax::mojom::Role GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
 
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
@@ -170,7 +188,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   bool HandleScroll(const gfx::Vector2d& offset, ui::EventType type);
 
   // Changes the app list state.
-  void SetState(AppListViewState new_state);
+  void SetState(ash::mojom::AppListViewState new_state);
 
   // Starts the close animation.
   void StartCloseAnimation(base::TimeDelta animation_duration);
@@ -231,12 +249,27 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
 
   // Calculates and returns the app list view state after dragging from shelf
   // ends.
-  AppListViewState CalculateStateAfterShelfDrag(
+  ash::mojom::AppListViewState CalculateStateAfterShelfDrag(
       const ui::GestureEvent& gesture_in_screen,
       float launcher_above_shelf_bottom_amount) const;
 
   // Returns a animation metrics reportre for state transition.
   ui::AnimationMetricsReporter* GetStateTransitionMetricsReporter();
+
+  // Called when drag in tablet mode starts/proceeds/ends.
+  void OnHomeLauncherDragStart();
+  void OnHomeLauncherDragInProgress();
+  void OnHomeLauncherDragEnd();
+
+  // WindowObserver overrides:
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
+
+  // Called when state transition animation is completed.
+  void OnStateTransitionAnimationCompleted();
 
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;
@@ -244,7 +277,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
 
   gfx::NativeView parent_window() const { return parent_window_; }
 
-  AppListViewState app_list_state() const { return app_list_state_; }
+  ash::mojom::AppListViewState app_list_state() const {
+    return app_list_state_;
+  }
 
   views::Widget* search_box_widget() const { return search_box_widget_; }
 
@@ -255,8 +290,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   views::View* announcement_view() const { return announcement_view_; }
 
   bool is_fullscreen() const {
-    return app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS ||
-           app_list_state_ == AppListViewState::FULLSCREEN_SEARCH;
+    return app_list_state_ ==
+               ash::mojom::AppListViewState::kFullscreenAllApps ||
+           app_list_state_ == ash::mojom::AppListViewState::kFullscreenSearch;
   }
 
   bool is_tablet_mode() const { return is_tablet_mode_; }
@@ -278,6 +314,13 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   SkColor GetAppListBackgroundShieldColorForTest();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ash::AppListControllerImplTest,
+                           CheckAppListViewBoundsWhenVKeyboardEnabled);
+  FRIEND_TEST_ALL_PREFIXES(ash::AppListControllerImplTest,
+                           CheckAppListViewBoundsWhenDismissVKeyboard);
+  FRIEND_TEST_ALL_PREFIXES(ash::AppListControllerImplMetricsTest,
+                           PresentationTimeRecordedForDragInTabletMode);
+
   // A widget observer that is responsible for keeping the AppListView state up
   // to date on closing.
   // TODO(newcomer): Merge this class into AppListView once the old app list
@@ -308,21 +351,23 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // release position and snap to the next state.
   void EndDrag(const gfx::Point& location);
 
-  // Set child views for FULLSCREEN_ALL_APPS and PEEKING.
-  void SetChildViewsForStateTransition(AppListViewState new_state);
+  // Set child views for |target_state|.
+  void SetChildViewsForStateTransition(
+      ash::mojom::AppListViewState target_state);
 
   // Converts |state| to the fullscreen equivalent.
-  void ConvertAppListStateToFullscreenEquivalent(AppListViewState* state);
+  void ConvertAppListStateToFullscreenEquivalent(
+      ash::mojom::AppListViewState* state);
 
   // Kicks off the proper animation for the state change. If an animation is
   // in progress it will be interrupted.
-  void StartAnimationForState(AppListViewState new_state);
+  void StartAnimationForState(ash::mojom::AppListViewState new_state);
 
   // Records the state transition for UMA.
-  void RecordStateTransitionForUma(AppListViewState new_state);
+  void RecordStateTransitionForUma(ash::mojom::AppListViewState new_state);
 
   // Creates an Accessibility Event if the state transition warrants one.
-  void MaybeCreateAccessibilityEvent(AppListViewState new_state);
+  void MaybeCreateAccessibilityEvent(ash::mojom::AppListViewState new_state);
 
   // Gets the display nearest to the parent window.
   display::Display GetDisplayNearestView() const;
@@ -341,7 +386,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // (ie. PEEKING->PEEKING) then return kMaxAppListStateTransition. If this is
   // modified, histograms will be affected.
   AppListStateTransitionSource GetAppListStateTransitionSource(
-      AppListViewState target_state) const;
+      ash::mojom::AppListViewState target_state) const;
 
   // Overridden from views::WidgetDelegateView:
   views::View* GetInitiallyFocusedView() override;
@@ -362,12 +407,13 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
 
   // Returns preferred y of fullscreen widget bounds in parent window for the
   // specified state.
-  int GetPreferredWidgetYForState(AppListViewState state);
+  int GetPreferredWidgetYForState(ash::mojom::AppListViewState state);
 
   // Returns preferred fullscreen widget bounds in parent window for the
   // specified state. Note that this function should only be called after the
   // widget is initialized.
-  gfx::Rect GetPreferredWidgetBoundsForState(AppListViewState state);
+  gfx::Rect GetPreferredWidgetBoundsForState(
+      ash::mojom::AppListViewState state);
 
   // Updates y position of |app_list_background_shield_| based on the
   // |app_list_state_| and |is_in_drag_|.
@@ -418,7 +464,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // Whether the background blur is enabled.
   const bool is_background_blur_enabled_;
   // The state of the app list, controlled via SetState().
-  AppListViewState app_list_state_ = AppListViewState::PEEKING;
+  ash::mojom::AppListViewState app_list_state_ =
+      ash::mojom::AppListViewState::kPeeking;
 
   // A widget observer that sets the AppListView state when the widget is
   // closed.

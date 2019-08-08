@@ -40,10 +40,12 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -343,10 +345,6 @@ void SystemNetworkContextManager::SetUp(
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     *network_context_request = mojo::MakeRequest(&io_thread_network_context_);
     *network_context_params = CreateNetworkContextParams();
-  } else {
-    // Just use defaults if the network service is enabled, since
-    // CreateNetworkContextParams() can only be called once.
-    *network_context_params = CreateDefaultNetworkContextParams();
   }
   *is_quic_allowed = is_quic_allowed_;
   *http_auth_static_params = CreateHttpAuthStaticParams(local_state_);
@@ -504,7 +502,6 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
 
   registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
-  registry->RegisterBooleanPref(prefs::kPacHttpsUrlStrippingEnabled, true);
 }
 
 void SystemNetworkContextManager::OnNetworkServiceCreated(
@@ -590,6 +587,8 @@ network::mojom::NetworkContextParamsPtr
 SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
   network::mojom::NetworkContextParamsPtr network_context_params =
       network::mojom::NetworkContextParams::New();
+  content::UpdateCorsExemptHeader(network_context_params.get());
+  variations::UpdateCorsExemptHeaderForVariations(network_context_params.get());
 
   network_context_params->enable_brotli =
       base::FeatureList::IsEnabled(features::kBrotliEncoding);
@@ -629,8 +628,6 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
 
   network_context_params->pac_quick_check_enabled =
       local_state_->GetBoolean(prefs::kQuickCheckEnabled);
-  network_context_params->dangerously_allow_pac_access_to_secure_urls =
-      !local_state_->GetBoolean(prefs::kPacHttpsUrlStrippingEnabled);
 
   // Use the SystemNetworkContextManager to populate and update SSL
   // configuration. The SystemNetworkContextManager is owned by the
@@ -723,11 +720,7 @@ SystemNetworkContextManager::CreateNetworkContextParams() {
 
   network_context_params->http_cache_enabled = false;
 
-  // These are needed for PAC scripts that use file or data URLs (Or FTP URLs?).
-  // TODO(crbug.com/839566): remove file support for all cases.
-  network_context_params->enable_data_url_support = true;
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    network_context_params->enable_file_url_support = true;
+  // These are needed for PAC scripts that use FTP URLs.
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   network_context_params->enable_ftp_url_support = true;
 #endif

@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_thread_message_proxy.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"

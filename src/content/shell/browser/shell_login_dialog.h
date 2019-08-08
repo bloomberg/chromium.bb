@@ -35,7 +35,7 @@ namespace content {
 class ShellLoginDialog : public LoginDelegate {
  public:
   static std::unique_ptr<ShellLoginDialog> Create(
-      net::AuthChallengeInfo* auth_info,
+      const net::AuthChallengeInfo& auth_info,
       LoginAuthRequiredCallback auth_required_callback);
 
   explicit ShellLoginDialog(LoginAuthRequiredCallback auth_required_callback);
@@ -49,7 +49,7 @@ class ShellLoginDialog : public LoginDelegate {
   void UserCancelledAuth();
 
  private:
-  void Init(net::AuthChallengeInfo* auth_info);
+  void Init(const net::AuthChallengeInfo& auth_info);
 
   // All the methods that begin with Platform need to be implemented by the
   // platform specific LoginDialog implementation.

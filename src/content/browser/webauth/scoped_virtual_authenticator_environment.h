@@ -16,7 +16,7 @@
 #include "device/fido/fido_discovery_factory.h"
 #include "device/fido/virtual_fido_device.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "third_party/blink/public/platform/modules/webauthn/virtual_authenticator.mojom.h"
+#include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 
 namespace content {
 

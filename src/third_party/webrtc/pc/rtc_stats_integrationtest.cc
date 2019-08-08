@@ -103,7 +103,7 @@ class RTCStatsReportTraceListener {
 RTCStatsReportTraceListener* RTCStatsReportTraceListener::traced_report_ =
     nullptr;
 
-class RTCStatsIntegrationTest : public testing::Test {
+class RTCStatsIntegrationTest : public ::testing::Test {
  public:
   RTCStatsIntegrationTest()
       : network_thread_(new rtc::Thread(&virtual_socket_server_)),
@@ -719,6 +719,7 @@ class RTCStatsReportVerifier {
     // packets_lost is defined as signed, but this should never happen in
     // this test. See RFC 3550.
     verifier.TestMemberIsNonNegative<int32_t>(inbound_stream.packets_lost);
+    verifier.TestMemberIsDefined(inbound_stream.last_packet_received_timestamp);
     if (inbound_stream.media_type.is_defined() &&
         *inbound_stream.media_type == "video") {
       verifier.TestMemberIsUndefined(inbound_stream.jitter);
@@ -740,8 +741,12 @@ class RTCStatsReportVerifier {
     if (inbound_stream.media_type.is_defined() &&
         *inbound_stream.media_type == "video") {
       verifier.TestMemberIsDefined(inbound_stream.frames_decoded);
+      // The integration test is not set up to test screen share; don't require
+      // this to be present.
+      verifier.MarkMemberTested(inbound_stream.content_type, true);
     } else {
       verifier.TestMemberIsUndefined(inbound_stream.frames_decoded);
+      verifier.TestMemberIsUndefined(inbound_stream.content_type);
     }
     return verifier.ExpectAllMembersSuccessfullyTested();
   }
@@ -757,13 +762,24 @@ class RTCStatsReportVerifier {
       verifier.TestMemberIsUndefined(outbound_stream.qp_sum);
     }
     verifier.TestMemberIsNonNegative<uint32_t>(outbound_stream.packets_sent);
+    verifier.TestMemberIsNonNegative<uint64_t>(
+        outbound_stream.retransmitted_packets_sent);
     verifier.TestMemberIsNonNegative<uint64_t>(outbound_stream.bytes_sent);
+    verifier.TestMemberIsNonNegative<uint64_t>(
+        outbound_stream.retransmitted_bytes_sent);
     verifier.TestMemberIsUndefined(outbound_stream.target_bitrate);
     if (outbound_stream.media_type.is_defined() &&
         *outbound_stream.media_type == "video") {
       verifier.TestMemberIsDefined(outbound_stream.frames_encoded);
+      verifier.TestMemberIsNonNegative<double>(
+          outbound_stream.total_encode_time);
+      // The integration test is not set up to test screen share; don't require
+      // this to be present.
+      verifier.MarkMemberTested(outbound_stream.content_type, true);
     } else {
       verifier.TestMemberIsUndefined(outbound_stream.frames_encoded);
+      verifier.TestMemberIsUndefined(outbound_stream.total_encode_time);
+      verifier.TestMemberIsUndefined(outbound_stream.content_type);
     }
     return verifier.ExpectAllMembersSuccessfullyTested();
   }

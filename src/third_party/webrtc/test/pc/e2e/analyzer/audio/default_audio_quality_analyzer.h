@@ -11,24 +11,52 @@
 #ifndef TEST_PC_E2E_ANALYZER_AUDIO_DEFAULT_AUDIO_QUALITY_ANALYZER_H_
 #define TEST_PC_E2E_ANALYZER_AUDIO_DEFAULT_AUDIO_QUALITY_ANALYZER_H_
 
+#include <map>
+#include <string>
+
 #include "absl/strings/string_view.h"
 #include "api/stats_types.h"
-#include "test/pc/e2e/api/audio_quality_analyzer_interface.h"
+#include "api/test/audio_quality_analyzer_interface.h"
+#include "api/test/track_id_stream_label_map.h"
+#include "rtc_base/numerics/samples_stats_counter.h"
 
 namespace webrtc {
-namespace test {
+namespace webrtc_pc_e2e {
 
-class DefaultAudioQualityAnalyzer : public AudioQualityAnalyzerInterface {
+struct AudioStreamStats {
  public:
-  void Start(std::string test_case_name) override;
-  void OnStatsReports(absl::string_view pc_label,
-                      const StatsReports& stats_reports) override;
-
- private:
-  std::string test_case_name_;
+  SamplesStatsCounter expand_rate;
+  SamplesStatsCounter accelerate_rate;
+  SamplesStatsCounter preemptive_rate;
+  SamplesStatsCounter speech_expand_rate;
+  SamplesStatsCounter preferred_buffer_size_ms;
 };
 
-}  // namespace test
+// TODO(bugs.webrtc.org/10430): Migrate to the new GetStats as soon as
+// bugs.webrtc.org/10428 is fixed.
+class DefaultAudioQualityAnalyzer : public AudioQualityAnalyzerInterface {
+ public:
+  void Start(std::string test_case_name,
+             TrackIdStreamLabelMap* analyzer_helper) override;
+  void OnStatsReports(absl::string_view pc_label,
+                      const StatsReports& stats_reports) override;
+  void Stop() override;
+
+ private:
+  const std::string& GetStreamLabelFromStatsReport(
+      const StatsReport* stats_report) const;
+  std::string GetTestCaseName(const std::string& stream_label) const;
+  void ReportResult(const std::string& metric_name,
+                    const std::string& stream_label,
+                    const SamplesStatsCounter& counter,
+                    const std::string& unit) const;
+
+  std::string test_case_name_;
+  TrackIdStreamLabelMap* analyzer_helper_;
+  std::map<std::string, AudioStreamStats> streams_stats_;
+};
+
+}  // namespace webrtc_pc_e2e
 }  // namespace webrtc
 
 #endif  // TEST_PC_E2E_ANALYZER_AUDIO_DEFAULT_AUDIO_QUALITY_ANALYZER_H_

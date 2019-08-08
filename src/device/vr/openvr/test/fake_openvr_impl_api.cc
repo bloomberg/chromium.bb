@@ -407,7 +407,7 @@ void* TestVRClientCore::GetGenericInterface(const char* name_and_version,
   if (strcmp(name_and_version, IVRCompositor_Version) == 0)
     return static_cast<IVRCompositor*>(&g_compositor);
   if (strcmp(name_and_version, device::kChromeOpenVRTestHookAPI) == 0)
-    return static_cast<device::TestHookRegistration*>(&g_test_helper);
+    return static_cast<device::ServiceTestHook*>(&g_test_helper);
 
   *error = VRInitError_Init_InvalidInterface;
   return nullptr;
@@ -428,8 +428,8 @@ void TestVRSystem::GetDXGIOutputInfo(int32_t* adapter_index) {
   *adapter_index = -1;
   Microsoft::WRL::ComPtr<IDXGIFactory1> dxgi_factory;
   Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
-  DCHECK(
-      SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(dxgi_factory.GetAddressOf()))));
+  bool success = SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory)));
+  DCHECK(success);
   for (int i = 0; SUCCEEDED(
            dxgi_factory->EnumAdapters(i, adapter.ReleaseAndGetAddressOf()));
        ++i) {

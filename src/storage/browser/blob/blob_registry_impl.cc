@@ -479,7 +479,14 @@ BlobRegistryImpl::BlobRegistryImpl(
       file_system_context_(std::move(file_system_context)),
       weak_ptr_factory_(this) {}
 
-BlobRegistryImpl::~BlobRegistryImpl() = default;
+BlobRegistryImpl::~BlobRegistryImpl() {
+  // BlobBuilderFromStream needs to be aborted before it can be destroyed, but
+  // don't iterate directly over |blobs_being_streamed_|, as this iteration can
+  // can change the underlying set.
+  auto builders = std::move(blobs_being_streamed_);
+  for (const auto& builder : builders)
+    builder->Abort();
+}
 
 void BlobRegistryImpl::Bind(blink::mojom::BlobRegistryRequest request,
                             std::unique_ptr<Delegate> delegate) {

@@ -196,10 +196,10 @@ class MediaChannel : public sigslot::has_slots<> {
   virtual void SetInterface(NetworkInterface* iface,
                             webrtc::MediaTransportInterface* media_transport);
   // Called when a RTP packet is received.
-  virtual void OnPacketReceived(rtc::CopyOnWriteBuffer* packet,
+  virtual void OnPacketReceived(rtc::CopyOnWriteBuffer packet,
                                 int64_t packet_time_us) = 0;
   // Called when a RTCP packet is received.
-  virtual void OnRtcpReceived(rtc::CopyOnWriteBuffer* packet,
+  virtual void OnRtcpReceived(rtc::CopyOnWriteBuffer packet,
                               int64_t packet_time_us) = 0;
   // Called when the socket's ability to send has changed.
   virtual void OnReadyToSend(bool ready) = 0;
@@ -280,23 +280,37 @@ class MediaChannel : public sigslot::has_slots<> {
       const webrtc::RtpParameters& parameters) = 0;
 
  protected:
-  virtual rtc::DiffServCodePoint PreferredDscp() const;
-
   bool DscpEnabled() const { return enable_dscp_; }
 
-  // This method sets DSCP |value| on both RTP and RTCP channels.
-  int UpdateDscp() {
+  // This is the DSCP value used for both RTP and RTCP channels if DSCP is
+  // enabled. It can be changed at any time via |SetPreferredDscp|.
+  rtc::DiffServCodePoint PreferredDscp() const {
+    rtc::CritScope cs(&network_interface_crit_);
+    return preferred_dscp_;
+  }
+
+  int SetPreferredDscp(rtc::DiffServCodePoint preferred_dscp) {
+    rtc::CritScope cs(&network_interface_crit_);
+    if (preferred_dscp == preferred_dscp_) {
+      return 0;
+    }
+    preferred_dscp_ = preferred_dscp;
+    return UpdateDscp();
+  }
+
+ private:
+  // Apply the preferred DSCP setting to the underlying network interface RTP
+  // and RTCP channels. If DSCP is disabled, then apply the default DSCP value.
+  int UpdateDscp() RTC_EXCLUSIVE_LOCKS_REQUIRED(network_interface_crit_) {
     rtc::DiffServCodePoint value =
-        enable_dscp_ ? PreferredDscp() : rtc::DSCP_DEFAULT;
-    int ret;
-    ret = SetOption(NetworkInterface::ST_RTP, rtc::Socket::OPT_DSCP, value);
+        enable_dscp_ ? preferred_dscp_ : rtc::DSCP_DEFAULT;
+    int ret = SetOption(NetworkInterface::ST_RTP, rtc::Socket::OPT_DSCP, value);
     if (ret == 0) {
       ret = SetOption(NetworkInterface::ST_RTCP, rtc::Socket::OPT_DSCP, value);
     }
     return ret;
   }
 
- private:
   bool DoSendPacket(rtc::CopyOnWriteBuffer* packet,
                     bool rtcp,
                     const rtc::PacketOptions& options) {
@@ -313,7 +327,10 @@ class MediaChannel : public sigslot::has_slots<> {
   // from any MediaEngine threads. This critical section is to protect accessing
   // of network_interface_ object.
   rtc::CriticalSection network_interface_crit_;
-  NetworkInterface* network_interface_ = nullptr;
+  NetworkInterface* network_interface_ RTC_GUARDED_BY(network_interface_crit_) =
+      nullptr;
+  rtc::DiffServCodePoint preferred_dscp_
+      RTC_GUARDED_BY(network_interface_crit_) = rtc::DSCP_DEFAULT;
   webrtc::MediaTransportInterface* media_transport_ = nullptr;
   bool extmap_allow_mixed_ = false;
 };
@@ -370,7 +387,11 @@ struct MediaSenderInfo {
     }
   }
   int64_t bytes_sent = 0;
+  // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-retransmittedbytessent
+  uint64_t retransmitted_bytes_sent = 0;
   int packets_sent = 0;
+  // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-retransmittedpacketssent
+  uint64_t retransmitted_packets_sent = 0;
   int packets_lost = 0;
   float fraction_lost = 0.0f;
   int64_t rtt_ms = 0;
@@ -418,6 +439,10 @@ struct MediaReceiverInfo {
   int packets_rcvd = 0;
   int packets_lost = 0;
   float fraction_lost = 0.0f;
+  // The timestamp at which the last packet was received, i.e. the time of the
+  // local clock when it was received - not the RTP timestamp of that packet.
+  // https://w3c.github.io/webrtc-stats/#dom-rtcinboundrtpstreamstats-lastpacketreceivedtimestamp
+  absl::optional<int64_t> last_packet_received_timestamp_ms;
   std::string codec_name;
   absl::optional<int> codec_payload_type;
   std::vector<SsrcReceiverInfo> local_stats;
@@ -510,6 +535,8 @@ struct VideoSenderInfo : public MediaSenderInfo {
   int avg_encode_ms = 0;
   int encode_usage_percent = 0;
   uint32_t frames_encoded = 0;
+  // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-totalencodetime
+  uint64_t total_encode_time_ms = 0;
   bool has_entered_low_resolution = false;
   absl::optional<uint64_t> qp_sum;
   webrtc::VideoContentType content_type = webrtc::VideoContentType::UNSPECIFIED;

@@ -239,14 +239,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     /**
-     * Header text of the screen.
-     * @type {string}
-     */
-    get header() {
-      return loadTimeData.getString('oauthEnrollScreenTitle');
-    },
-
-    /**
      * Event handler that is invoked just before the frame is shown.
      * @param {Object} data Screen init payload, contains the signin frame
      * URL.
@@ -457,8 +449,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     setAdJoinConfiguration: function(options) {
       this.offlineAdUi_.disabled = false;
-      this.offlineAdUi_.unlockPasswordStep = false;
       this.offlineAdUi_.setJoinConfigurationOptions(options);
+      this.offlineAdUi_.unlockPasswordStep = false;
     },
 
     /**

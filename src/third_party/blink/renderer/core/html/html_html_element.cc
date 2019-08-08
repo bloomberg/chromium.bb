@@ -38,7 +38,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLHtmlElement::HTMLHtmlElement(Document& document)
+HTMLHtmlElement::HTMLHtmlElement(Document& document)
     : HTMLElement(kHTMLTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLHtmlElement)
@@ -54,6 +54,8 @@ void HTMLHtmlElement::InsertedByParser() {
     return;
 
   MaybeSetupApplicationCache();
+  if (!GetDocument().Parser())
+    return;
 
   GetDocument().Parser()->DocumentElementAvailable();
   if (GetDocument().GetFrame()) {

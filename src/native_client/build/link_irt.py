@@ -13,6 +13,8 @@ where to place the text vs data segments, and also requires editting how
 TLS access is done.  Thus, it's more complicated than the usual linking.
 """
 
+from __future__ import print_function
+
 import argparse
 import os
 import re
@@ -187,17 +189,17 @@ class IRTLinker(CommandRunner):
     test_regex += r'|jmpq\s+\*%r(?!11)'
     matched = re.search(test_regex, output)
     if matched:
-      print 'The following instructions may reveal the sandbox base address:'
+      print('The following instructions may reveal the sandbox base address:')
       lines_printed = 0
       lines_printed_limit = 50
       for line in output.splitlines():
         match = re.search(test_regex, line)
         if match and lines_printed < lines_printed_limit:
           lines_printed += 1
-          print line
+          print(line)
       if lines_printed == lines_printed_limit:
-        print '(additional lines not printed)'
-      print 'ran', cmd
+        print('(additional lines not printed)')
+      print('ran', cmd)
       raise Error('IRT sandbox base address hiding lint check failed')
 
     else:

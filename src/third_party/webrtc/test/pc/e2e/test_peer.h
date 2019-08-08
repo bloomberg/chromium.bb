@@ -16,27 +16,26 @@
 
 #include "absl/memory/memory.h"
 #include "api/array_view.h"
+#include "api/test/peerconnection_quality_test_fixture.h"
 #include "media/base/media_engine.h"
 #include "modules/audio_device/include/test_audio_device.h"
 #include "pc/peer_connection_wrapper.h"
 #include "pc/test/mock_peer_connection_observers.h"
 #include "rtc_base/network.h"
+#include "rtc_base/task_queue.h"
 #include "rtc_base/thread.h"
 #include "test/pc/e2e/analyzer/video/video_quality_analyzer_injection_helper.h"
-#include "test/pc/e2e/api/peerconnection_quality_test_fixture.h"
+#include "test/pc/e2e/peer_connection_quality_test_params.h"
 
 namespace webrtc {
-namespace test {
+namespace webrtc_pc_e2e {
 
 // Describes a single participant in the call.
 class TestPeer final : public PeerConnectionWrapper {
  public:
   using PeerConnectionWrapper::PeerConnectionWrapper;
-  using Params = PeerConnectionE2EQualityTestFixture::Params;
   using VideoConfig = PeerConnectionE2EQualityTestFixture::VideoConfig;
   using AudioConfig = PeerConnectionE2EQualityTestFixture::AudioConfig;
-  using InjectableComponents =
-      PeerConnectionE2EQualityTestFixture::InjectableComponents;
 
   // Setups all components, that should be provided to WebRTC
   // PeerConnectionFactory and PeerConnection creation methods,
@@ -55,9 +54,12 @@ class TestPeer final : public PeerConnectionWrapper {
       std::unique_ptr<MockPeerConnectionObserver> observer,
       VideoQualityAnalyzerInjectionHelper* video_analyzer_helper,
       rtc::Thread* signaling_thread,
-      absl::optional<std::string> audio_output_file_name);
+      absl::optional<std::string> audio_output_file_name,
+      double bitrate_multiplier,
+      rtc::TaskQueue* task_queue);
 
   Params* params() const { return params_.get(); }
+  void DetachAecDump() { audio_processing_->DetachAecDump(); }
 
   // Adds provided |candidates| to the owned peer connection.
   bool AddIceCandidates(
@@ -67,12 +69,14 @@ class TestPeer final : public PeerConnectionWrapper {
   TestPeer(rtc::scoped_refptr<PeerConnectionFactoryInterface> pc_factory,
            rtc::scoped_refptr<PeerConnectionInterface> pc,
            std::unique_ptr<MockPeerConnectionObserver> observer,
-           std::unique_ptr<Params> params);
+           std::unique_ptr<Params> params,
+           rtc::scoped_refptr<AudioProcessing> audio_processing);
 
   std::unique_ptr<Params> params_;
+  rtc::scoped_refptr<AudioProcessing> audio_processing_;
 };
 
-}  // namespace test
+}  // namespace webrtc_pc_e2e
 }  // namespace webrtc
 
 #endif  // TEST_PC_E2E_TEST_PEER_H_

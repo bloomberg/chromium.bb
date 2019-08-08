@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <iomanip>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -45,6 +46,10 @@
 #include "src/v8.h"
 #include "src/vm-state-inl.h"
 #include "src/wasm/wasm-engine.h"
+
+#ifdef V8_INTL_SUPPORT
+#include "unicode/locid.h"
+#endif  // V8_INTL_SUPPORT
 
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <unistd.h>  // NOLINT
@@ -413,7 +418,7 @@ class BackgroundCompileThread : public base::Thread {
   BackgroundCompileThread(Isolate* isolate, Local<String> source)
       : base::Thread(GetThreadOptions("BackgroundCompileThread")),
         source_(source),
-        streamed_source_(new DummySourceStream(source, isolate),
+        streamed_source_(base::make_unique<DummySourceStream>(source, isolate),
                          v8::ScriptCompiler::StreamedSource::UTF8),
         task_(v8::ScriptCompiler::StartStreamingScript(isolate,
                                                        &streamed_source_)) {}
@@ -1116,8 +1121,36 @@ void Shell::RealmNavigate(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   Local<Context> context = Local<Context>::New(isolate, data->realms_[index]);
   v8::MaybeLocal<Value> global_object = context->Global();
+
+  // Context::Global doesn't return JSGlobalProxy if DetachGlobal is called in
+  // advance.
+  if (!global_object.IsEmpty()) {
+    HandleScope scope(isolate);
+    if (!Utils::OpenHandle(*global_object.ToLocalChecked())
+             ->IsJSGlobalProxy()) {
+      global_object = v8::MaybeLocal<Value>();
+    }
+  }
+
   DisposeRealm(args, index);
   CreateRealm(args, index, global_object);
+}
+
+// Realm.detachGlobal(i) detaches the global objects of realm i from realm i.
+void Shell::RealmDetachGlobal(const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  PerIsolateData* data = PerIsolateData::Get(isolate);
+  int index = data->RealmIndexOrThrow(args, 0);
+  if (index == -1) return;
+  if (index == 0 || index == data->realm_current_ ||
+      index == data->realm_switch_) {
+    Throw(args.GetIsolate(), "Invalid realm index");
+    return;
+  }
+
+  HandleScope scope(isolate);
+  Local<Context> realm = Local<Context>::New(isolate, data->realms_[index]);
+  realm->DetachGlobal();
 }
 
 // Realm.dispose(i) disposes the reference to the realm i.
@@ -1762,6 +1795,14 @@ Local<ObjectTemplate> Shell::CreateGlobalTemplate(Isolate* isolate) {
       String::NewFromUtf8(isolate, "waitUntilDone", NewStringType::kNormal)
           .ToLocalChecked(),
       FunctionTemplate::New(isolate, WaitUntilDone));
+  // Reliable access to quit functionality. The "quit" method function
+  // installed on the global object can be hidden with the --omit-quit flag
+  // (e.g. on asan bots).
+  test_template->Set(
+      String::NewFromUtf8(isolate, "quit", NewStringType::kNormal)
+          .ToLocalChecked(),
+      FunctionTemplate::New(isolate, Quit));
+
   global_template->Set(
       String::NewFromUtf8(isolate, "version", NewStringType::kNormal)
           .ToLocalChecked(),
@@ -1798,6 +1839,10 @@ Local<ObjectTemplate> Shell::CreateGlobalTemplate(Isolate* isolate) {
       String::NewFromUtf8(isolate, "navigate", NewStringType::kNormal)
           .ToLocalChecked(),
       FunctionTemplate::New(isolate, RealmNavigate));
+  realm_template->Set(
+      String::NewFromUtf8(isolate, "detachGlobal", NewStringType::kNormal)
+          .ToLocalChecked(),
+      FunctionTemplate::New(isolate, RealmDetachGlobal));
   realm_template->Set(
       String::NewFromUtf8(isolate, "dispose", NewStringType::kNormal)
           .ToLocalChecked(),
@@ -1970,16 +2015,6 @@ Local<Context> Shell::CreateEvaluationContext(Isolate* isolate) {
   return handle_scope.Escape(context);
 }
 
-struct CounterAndKey {
-  Counter* counter;
-  const char* key;
-};
-
-
-inline bool operator<(const CounterAndKey& lhs, const CounterAndKey& rhs) {
-  return strcmp(lhs.key, rhs.key) < 0;
-}
-
 void Shell::WriteIgnitionDispatchCountersFile(v8::Isolate* isolate) {
   HandleScope handle_scope(isolate);
   Local<Context> context = Context::New(isolate);
@@ -2093,54 +2128,52 @@ void Shell::OnExit(v8::Isolate* isolate) {
   isolate->Dispose();
 
   if (i::FLAG_dump_counters || i::FLAG_dump_counters_nvp) {
-    const int number_of_counters = static_cast<int>(counter_map_->size());
-    CounterAndKey* counters = new CounterAndKey[number_of_counters];
-    int j = 0;
-    for (auto map_entry : *counter_map_) {
-      counters[j].counter = map_entry.second;
-      counters[j].key = map_entry.first;
-      j++;
-    }
-    std::sort(counters, counters + number_of_counters);
+    std::vector<std::pair<std::string, Counter*>> counters(
+        counter_map_->begin(), counter_map_->end());
+    std::sort(counters.begin(), counters.end());
 
     if (i::FLAG_dump_counters_nvp) {
       // Dump counters as name-value pairs.
-      for (j = 0; j < number_of_counters; j++) {
-        Counter* counter = counters[j].counter;
-        const char* key = counters[j].key;
+      for (auto pair : counters) {
+        std::string key = pair.first;
+        Counter* counter = pair.second;
         if (counter->is_histogram()) {
-          printf("\"c:%s\"=%i\n", key, counter->count());
-          printf("\"t:%s\"=%i\n", key, counter->sample_total());
+          std::cout << "\"c:" << key << "\"=" << counter->count() << "\n";
+          std::cout << "\"t:" << key << "\"=" << counter->sample_total()
+                    << "\n";
         } else {
-          printf("\"%s\"=%i\n", key, counter->count());
+          std::cout << "\"" << key << "\"=" << counter->count() << "\n";
         }
       }
     } else {
       // Dump counters in formatted boxes.
-      printf(
-          "+----------------------------------------------------------------+"
-          "-------------+\n");
-      printf(
-          "| Name                                                           |"
-          " Value       |\n");
-      printf(
-          "+----------------------------------------------------------------+"
-          "-------------+\n");
-      for (j = 0; j < number_of_counters; j++) {
-        Counter* counter = counters[j].counter;
-        const char* key = counters[j].key;
+      constexpr int kNameBoxSize = 64;
+      constexpr int kValueBoxSize = 13;
+      std::cout << "+" << std::string(kNameBoxSize, '-') << "+"
+                << std::string(kValueBoxSize, '-') << "+\n";
+      std::cout << "| Name" << std::string(kNameBoxSize - 5, ' ') << "| Value"
+                << std::string(kValueBoxSize - 6, ' ') << "|\n";
+      std::cout << "+" << std::string(kNameBoxSize, '-') << "+"
+                << std::string(kValueBoxSize, '-') << "+\n";
+      for (auto pair : counters) {
+        std::string key = pair.first;
+        Counter* counter = pair.second;
         if (counter->is_histogram()) {
-          printf("| c:%-60s | %11i |\n", key, counter->count());
-          printf("| t:%-60s | %11i |\n", key, counter->sample_total());
+          std::cout << "| c:" << std::setw(kNameBoxSize - 4) << std::left << key
+                    << " | " << std::setw(kValueBoxSize - 2) << std::right
+                    << counter->count() << " |\n";
+          std::cout << "| t:" << std::setw(kNameBoxSize - 4) << std::left << key
+                    << " | " << std::setw(kValueBoxSize - 2) << std::right
+                    << counter->sample_total() << " |\n";
         } else {
-          printf("| %-62s | %11i |\n", key, counter->count());
+          std::cout << "| " << std::setw(kNameBoxSize - 2) << std::left << key
+                    << " | " << std::setw(kValueBoxSize - 2) << std::right
+                    << counter->count() << " |\n";
         }
       }
-      printf(
-          "+----------------------------------------------------------------+"
-          "-------------+\n");
+      std::cout << "+" << std::string(kNameBoxSize, '-') << "+"
+                << std::string(kValueBoxSize, '-') << "+\n";
     }
-    delete [] counters;
   }
 
   delete counters_file_;
@@ -2246,7 +2279,8 @@ void Shell::ReadBuffer(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Reads a file into a v8 string.
 Local<String> Shell::ReadFile(Isolate* isolate, const char* name) {
   std::unique_ptr<base::OS::MemoryMappedFile> file(
-      base::OS::MemoryMappedFile::open(name));
+      base::OS::MemoryMappedFile::open(
+          name, base::OS::MemoryMappedFile::FileMode::kReadOnly));
   if (!file) return Local<String>();
 
   int size = static_cast<int>(file->size());
@@ -2846,6 +2880,9 @@ bool Shell::SetOptions(int argc, char* argv[]) {
     } else if (strncmp(argv[i], "--icu-data-file=", 16) == 0) {
       options.icu_data_file = argv[i] + 16;
       argv[i] = nullptr;
+    } else if (strncmp(argv[i], "--icu-locale=", 13) == 0) {
+      options.icu_locale = argv[i] + 13;
+      argv[i] = nullptr;
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
     } else if (strncmp(argv[i], "--natives_blob=", 15) == 0) {
       options.natives_blob = argv[i] + 15;
@@ -3274,7 +3311,8 @@ class Deserializer : public ValueDeserializer::Delegate {
     if (clone_id < data_->shared_array_buffer_contents().size()) {
       const SharedArrayBuffer::Contents contents =
           data_->shared_array_buffer_contents().at(clone_id);
-      return SharedArrayBuffer::New(isolate_, contents);
+      return SharedArrayBuffer::New(isolate_, contents.Data(),
+                                    contents.ByteLength());
     }
     return MaybeLocal<SharedArrayBuffer>();
   }
@@ -3347,7 +3385,16 @@ int Shell::Main(int argc, char* argv[]) {
   std::ofstream trace_file;
   v8::base::EnsureConsoleOutput();
   if (!SetOptions(argc, argv)) return 1;
+
   v8::V8::InitializeICUDefaultLocation(argv[0], options.icu_data_file);
+
+#ifdef V8_INTL_SUPPORT
+  if (options.icu_locale != nullptr) {
+    icu::Locale locale(options.icu_locale);
+    UErrorCode error_code = U_ZERO_ERROR;
+    icu::Locale::setDefault(locale, error_code);
+  }
+#endif  // V8_INTL_SUPPORT
 
   v8::platform::InProcessStackDumping in_process_stack_dumping =
       options.disable_in_process_stack_traces
@@ -3424,7 +3471,8 @@ int Shell::Main(int argc, char* argv[]) {
       base::SysInfo::AmountOfVirtualMemory());
 
   Shell::counter_map_ = new CounterMap();
-  if (i::FLAG_dump_counters || i::FLAG_dump_counters_nvp || i::FLAG_gc_stats) {
+  if (i::FLAG_dump_counters || i::FLAG_dump_counters_nvp ||
+      i::TracingFlags::is_gc_stats_enabled()) {
     create_params.counter_lookup_callback = LookupCounter;
     create_params.create_histogram_callback = CreateHistogram;
     create_params.add_histogram_sample_callback = AddHistogramSample;

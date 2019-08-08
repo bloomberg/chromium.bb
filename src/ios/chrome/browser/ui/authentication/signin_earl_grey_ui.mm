@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_cell.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller.h"
+#import "ios/chrome/browser/ui/util/transparent_link_button.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -74,7 +75,9 @@ using chrome_test_util::SettingsDoneButton;
   [self confirmSigninConfirmationDialog];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 }
 
 + (void)selectIdentityWithEmail:(NSString*)userEmail {
@@ -82,6 +85,14 @@ using chrome_test_util::SettingsDoneButton;
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(userEmail)]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
+      performAction:grey_tap()];
+}
+
++ (void)tapSettingsLink {
+  id<GREYMatcher> settingsLinkMatcher =
+      grey_allOf(grey_kindOfClass([TransparentLinkButton class]),
+                 grey_sufficientlyVisible(), nil);
+  [[EarlGrey selectElementWithMatcher:settingsLinkMatcher]
       performAction:grey_tap()];
 }
 

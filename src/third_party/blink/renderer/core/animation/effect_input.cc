@@ -51,8 +51,8 @@
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
@@ -90,9 +90,9 @@ void SetKeyframeValue(Element* element,
   StyleSheetContents* style_sheet_contents = document.ElementSheet().Contents();
   CSSPropertyID css_property =
       AnimationInputHelpers::KeyframeAttributeToCSSProperty(property, document);
-  if (css_property != CSSPropertyInvalid) {
+  if (css_property != CSSPropertyID::kInvalid) {
     MutableCSSPropertyValueSet::SetResult set_result =
-        css_property == CSSPropertyVariable
+        css_property == CSSPropertyID::kVariable
             ? keyframe.SetCSSPropertyValue(
                   AtomicString(property), document.GetPropertyRegistry(), value,
                   document.GetSecureContextMode(), style_sheet_contents)
@@ -102,7 +102,8 @@ void SetKeyframeValue(Element* element,
     if (!set_result.did_parse && execution_context) {
       if (document.GetFrame()) {
         document.GetFrame()->Console().AddMessage(ConsoleMessage::Create(
-            kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
             "Invalid keyframe value for property " + property + ": " + value));
       }
     }
@@ -111,7 +112,7 @@ void SetKeyframeValue(Element* element,
   css_property =
       AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(property,
                                                                       element);
-  if (css_property != CSSPropertyInvalid) {
+  if (css_property != CSSPropertyID::kInvalid) {
     keyframe.SetPresentationAttributeValue(
         CSSProperty::Get(css_property), value, document.GetSecureContextMode(),
         style_sheet_contents);
@@ -190,7 +191,7 @@ bool IsAnimatableKeyframeAttribute(const String& property,
                                    const Document& document) {
   CSSPropertyID css_property =
       AnimationInputHelpers::KeyframeAttributeToCSSProperty(property, document);
-  if (css_property != CSSPropertyInvalid) {
+  if (css_property != CSSPropertyID::kInvalid) {
     return !CSSAnimations::IsAnimationAffectingProperty(
         CSSProperty::Get(css_property));
   }
@@ -198,7 +199,7 @@ bool IsAnimatableKeyframeAttribute(const String& property,
   css_property =
       AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(property,
                                                                       element);
-  if (css_property != CSSPropertyInvalid)
+  if (css_property != CSSPropertyID::kInvalid)
     return true;
 
   return !!AnimationInputHelpers::KeyframeAttributeToSVGAttribute(property,

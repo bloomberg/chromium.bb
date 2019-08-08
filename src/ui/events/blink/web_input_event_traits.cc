@@ -60,14 +60,13 @@ void ApppendEventDetails(const WebMouseWheelEvent& event, std::string* result) {
 void ApppendEventDetails(const WebGestureEvent& event, std::string* result) {
   StringAppendF(result,
                 "{\n Pos: (%f, %f)\n GlobalPos: (%f, %f)\n SourceDevice: %d\n"
-                " RawData: (%f, %f, %f, %f, %d)\n}",
+                " RawData: (%f, %f, %f, %f)\n}",
                 event.PositionInWidget().x, event.PositionInWidget().y,
                 event.PositionInScreen().x, event.PositionInScreen().y,
                 event.SourceDevice(), event.data.scroll_update.delta_x,
                 event.data.scroll_update.delta_y,
                 event.data.scroll_update.velocity_x,
-                event.data.scroll_update.velocity_y,
-                event.data.scroll_update.previous_update_in_sequence_prevented);
+                event.data.scroll_update.velocity_y);
 }
 
 void ApppendTouchPointDetails(const WebTouchPoint& point, std::string* result) {
@@ -255,15 +254,13 @@ uint32_t WebInputEventTraits::GetUniqueTouchEventId(
 LatencyInfo WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
     const WebGestureEvent& event) {
   SourceEventType source_event_type = SourceEventType::UNKNOWN;
-  if (event.SourceDevice() ==
-      blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
+  if (event.SourceDevice() == blink::WebGestureDevice::kTouchpad) {
     source_event_type = SourceEventType::WHEEL;
     if (event.GetType() >= blink::WebInputEvent::kGesturePinchTypeFirst &&
         event.GetType() <= blink::WebInputEvent::kGesturePinchTypeLast) {
       source_event_type = SourceEventType::TOUCHPAD;
     }
-  } else if (event.SourceDevice() ==
-             blink::WebGestureDevice::kWebGestureDeviceTouchscreen) {
+  } else if (event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
     blink::WebGestureEvent::InertialPhaseState inertial_phase_state =
         blink::WebGestureEvent::kUnknownMomentumPhase;
 

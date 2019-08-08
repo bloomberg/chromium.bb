@@ -7,6 +7,7 @@
 #include <drm_fourcc.h>
 #include <gbm.h>
 #include <xf86drmMode.h>
+#include <memory>
 
 #include "base/files/platform_file.h"
 #include "base/logging.h"
@@ -20,19 +21,22 @@
 #include "ui/ozone/common/linux/gbm_device.h"
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
-#include "ui/ozone/platform/wayland/wayland_surface_factory.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 #include "ui/ozone/public/overlay_plane.h"
 #include "ui/ozone/public/ozone_platform.h"
 
 namespace ui {
 
 GbmPixmapWayland::GbmPixmapWayland(WaylandSurfaceFactory* surface_manager,
-                                   WaylandConnectionProxy* connection)
-    : surface_manager_(surface_manager), connection_(connection) {}
+                                   WaylandConnectionProxy* connection,
+                                   gfx::AcceleratedWidget widget)
+    : surface_manager_(surface_manager),
+      connection_(connection),
+      widget_(widget) {}
 
 GbmPixmapWayland::~GbmPixmapWayland() {
   if (gbm_bo_)
-    connection_->DestroyZwpLinuxDmabuf(GetUniqueId());
+    connection_->DestroyZwpLinuxDmabuf(widget_, GetUniqueId());
 }
 
 bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
@@ -62,7 +66,6 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
       flags = GBM_BO_USE_SCANOUT;
       break;
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       flags = GBM_BO_USE_LINEAR;
       break;
     default:
@@ -133,7 +136,7 @@ gfx::NativePixmapHandle GbmPixmapWayland::ExportHandle() {
   gfx::NativePixmapHandle handle;
   gfx::BufferFormat format = GetBufferFormat();
 
-  // TODO(dcastagna): Use gbm_bo_get_num_planes once all the formats we use are
+  // TODO(dcastagna): Use gbm_bo_get_plane_count once all the formats we use are
   // supported by gbm.
   const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
   std::vector<base::ScopedFD> scoped_fds(num_planes);
@@ -146,10 +149,9 @@ gfx::NativePixmapHandle GbmPixmapWayland::ExportHandle() {
   }
 
   for (size_t i = 0; i < num_planes; ++i) {
-    handle.fds.emplace_back(
-        base::FileDescriptor(scoped_fds[i].release(), true /* auto_close */));
     handle.planes.emplace_back(GetDmaBufPitch(i), GetDmaBufOffset(i),
-                               gbm_bo_->GetPlaneSize(i), GetDmaBufModifier(i));
+                               gbm_bo_->GetPlaneSize(i),
+                               std::move(scoped_fds[i]), GetDmaBufModifier(i));
   }
   return handle;
 }

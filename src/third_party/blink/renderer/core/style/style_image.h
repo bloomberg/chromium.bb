@@ -165,13 +165,5 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
                                  const LayoutSize& default_object_size) const;
 };
 
-#define DEFINE_STYLE_IMAGE_TYPE_CASTS(thisType, function)                   \
-  DEFINE_TYPE_CASTS(thisType, StyleImage, styleImage, styleImage->function, \
-                    styleImage.function);                                   \
-  inline thisType* To##thisType(const Member<StyleImage>& styleImage) {     \
-    return To##thisType(styleImage.Get());                                  \
-  }                                                                         \
-  typedef int NeedsSemiColonAfterDefineStyleImageTypeCasts
-
 }  // namespace blink
 #endif

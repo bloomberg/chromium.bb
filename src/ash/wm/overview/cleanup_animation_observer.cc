@@ -4,6 +4,7 @@
 
 #include "ash/wm/overview/cleanup_animation_observer.h"
 
+#include "ash/wm/overview/overview_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
@@ -28,7 +29,7 @@ void CleanupAnimationObserver::OnImplicitAnimationsCompleted() {
   if (!widget_)
     return;
   if (owner_) {
-    owner_->RemoveAndDestroyAnimationObserver(this);
+    owner_->RemoveAndDestroyExitAnimationObserver(this);
     return;
   }
   delete this;

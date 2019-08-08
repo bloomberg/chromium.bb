@@ -330,9 +330,9 @@ Optional<syncer::ModelError> AutocompleteSyncBridge::MergeSyncData(
 
   SyncDifferenceTracker tracker(GetAutofillTable());
   for (const auto& change : entity_data) {
-    DCHECK(change.data().specifics.has_autofill());
+    DCHECK(change->data().specifics.has_autofill());
     RETURN_IF_ERROR(tracker.IncorporateRemoteSpecifics(
-        change.storage_key(), change.data().specifics.autofill()));
+        change->storage_key(), change->data().specifics.autofill()));
   }
 
   RETURN_IF_ERROR(tracker.FlushToLocal(web_data_backend_));
@@ -346,6 +346,7 @@ Optional<syncer::ModelError> AutocompleteSyncBridge::MergeSyncData(
     web_data_backend_->RemoveExpiredFormElements();
   }
 
+  web_data_backend_->CommitChanges();
   web_data_backend_->NotifyThatSyncHasStarted(syncer::AUTOFILL);
   return {};
 }
@@ -356,13 +357,13 @@ Optional<ModelError> AutocompleteSyncBridge::ApplySyncChanges(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   SyncDifferenceTracker tracker(GetAutofillTable());
-  for (const EntityChange& change : entity_changes) {
-    if (change.type() == EntityChange::ACTION_DELETE) {
-      RETURN_IF_ERROR(tracker.IncorporateRemoteDelete(change.storage_key()));
+  for (const std::unique_ptr<EntityChange>& change : entity_changes) {
+    if (change->type() == EntityChange::ACTION_DELETE) {
+      RETURN_IF_ERROR(tracker.IncorporateRemoteDelete(change->storage_key()));
     } else {
-      DCHECK(change.data().specifics.has_autofill());
+      DCHECK(change->data().specifics.has_autofill());
       RETURN_IF_ERROR(tracker.IncorporateRemoteSpecifics(
-          change.storage_key(), change.data().specifics.autofill()));
+          change->storage_key(), change->data().specifics.autofill()));
     }
   }
 
@@ -376,6 +377,8 @@ Optional<ModelError> AutocompleteSyncBridge::ApplySyncChanges(
           autofill::features::kAutocompleteRetentionPolicyEnabled)) {
     web_data_backend_->RemoveExpiredFormElements();
   }
+
+  web_data_backend_->CommitChanges();
   return {};
 }
 
@@ -469,6 +472,11 @@ void AutocompleteSyncBridge::ActOnLocalChanges(
       }
     }
   }
+
+  // We do not need to commit any local changes (written by the processor via
+  // the metadata change list) because the open WebDatabase transaction is
+  // committed by the AutofillWebDataService when the original local write
+  // operation (that triggered this notification to the bridge) finishes.
 
   if (Optional<ModelError> error = metadata_change_list->TakeError())
     change_processor()->ReportError(*error);

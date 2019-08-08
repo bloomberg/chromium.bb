@@ -51,13 +51,6 @@ if (build_with_chromium) {
     if (build_angle_gles1_conform_tests) {
       deps += [ "//src/tests:angle_gles1_conformance_tests" ]
     }
-
-    if (is_win) {
-      deps += [
-        "//third_party/glmark2:glmark2_angle",
-        "//third_party/glmark2:glmark2_wgl",
-      ]
-    }
   }
 }
 
@@ -105,6 +98,37 @@ angle_test("angle_unittests_helper") {
   ]
 }
 
+test_expectations_sources = [
+  "test_expectations/GPUTestConfig.cpp",
+  "test_expectations/GPUTestConfig.h",
+  "test_expectations/GPUTestExpectationsParser.cpp",
+  "test_expectations/GPUTestExpectationsParser.h",
+]
+if (is_mac) {
+  test_expectations_sources_mac = [
+    "test_expectations/GPUTestConfig_mac.mm",
+    "test_expectations/GPUTestConfig_mac.h",
+  ]
+}
+
+config("angle_test_expectations_config") {
+  include_dirs = [ "${angle_root}:angle_common" ]
+}
+
+angle_static_library("angle_test_expectations") {
+  public_configs += [ ":angle_test_expectations_config" ]
+  public_deps = [
+    "${angle_root}:angle_common",
+    "${angle_root}:angle_gpu_info_util",
+    "${angle_root}:angle_util",
+  ]
+  sources = test_expectations_sources
+  if (is_mac) {
+    sources += test_expectations_sources_mac
+    libs = [ "Cocoa.framework" ]
+  }
+}
+
 angle_test("angle_unittests") {
   sources = angle_unittests_sources
 
@@ -115,6 +139,7 @@ angle_test("angle_unittests") {
 
   deps = googletest_deps + [
            "${angle_root}:libANGLE",
+           ":angle_test_expectations",
            "${angle_root}:preprocessor",
            "${angle_root}:translator",
            "${angle_root}:libfeature_support${angle_libs_suffix}",
@@ -151,6 +176,9 @@ if (is_win || is_linux || is_mac || is_android || is_fuchsia) {
     if (use_x11) {
       sources += angle_end2end_tests_x11_sources
     }
+    if (angle_enable_vulkan) {
+      sources += angle_end2end_tests_vulkan_sources
+    }
 
     configs += [
       "${angle_root}:libANGLE_config",
@@ -159,6 +187,7 @@ if (is_win || is_linux || is_mac || is_android || is_fuchsia) {
 
     deps = [
       ":angle_end2end_tests_main",
+      ":angle_test_expectations",
       "${angle_root}:angle_gpu_info_util",
       "${angle_root}:angle_image_util",
       "${angle_root}:angle_util",
@@ -173,6 +202,9 @@ if (is_win || is_linux || is_mac || is_android || is_fuchsia) {
 
     if (is_android) {
       use_native_activity = true
+    }
+    if (angle_enable_vulkan) {
+      deps += [ "${angle_root}:angle_vulkan" ]
     }
   }
 }
@@ -281,6 +313,16 @@ if (is_win || is_linux || is_android || is_mac || is_fuchsia) {
 
     if (is_android) {
       use_native_activity = true
+    }
+
+    if (is_win || is_linux) {
+      data_deps += [ "${angle_root}/third_party/glmark2:glmark2_angle" ]
+    }
+    if (is_win && target_cpu != "arm64") {
+      data_deps += [ "${angle_root}/third_party/glmark2:glmark2_wgl" ]
+    }
+    if (is_linux) {
+      data_deps += [ "${angle_root}/third_party/glmark2:glmark2_glx" ]
     }
   }
 }
@@ -656,30 +698,17 @@ if (build_angle_deqp_tests && !is_fuchsia) {
     }
   }
 
-  config("angle_deqp_gtest_support_config") {
-    include_dirs = [ "third_party/gpu_test_expectations" ]
-  }
-
   angle_source_set("angle_deqp_gtest_support") {
     testonly = true
 
     public_deps = [
       ":angle_deqp_tests_main",
+      ":angle_test_expectations",
       "${angle_root}:angle_common",
       "${angle_root}:angle_util",
     ]
 
-    public_configs += [ ":angle_deqp_gtest_support_config" ]
-
-    sources = deqp_gpu_test_expectations_sources
-    if (is_mac) {
-      sources += deqp_gpu_test_expectations_sources_mac
-      libs = [ "Cocoa.framework" ]
-    }
-
-    if (!is_android) {
-      public_deps += [ "${angle_root}:angle_gpu_info_util" ]
-    }
+    libs = []
   }
 
   api_names = [
@@ -755,10 +784,16 @@ if (build_angle_deqp_tests && !is_fuchsia) {
         "deqp_support/angle_deqp_gtest.cpp",
       ]
 
+      # Use the master lists from the Khronos version for GLES. For EGL the Khronos lists use wildcards.
+      mustpass_dir = "external/openglcts/data/mustpass/gles/aosp_mustpass"
+      if (api_name == "egl") {
+        mustpass_dir = "android/cts"
+      }
+
       data = [
-        "deqp_support/deqp_${api_name}_test_expectations.txt",
-        "$angle_root/third_party/deqp/src/android/cts/master/${api_name}-master.txt",
+        "$angle_root/third_party/deqp/src/$mustpass_dir/master/${api_name}-master.txt",
         "$angle_root/third_party/deqp/src/data/",
+        "deqp_support/deqp_${api_name}_test_expectations.txt",
       ]
 
       if (is_android) {

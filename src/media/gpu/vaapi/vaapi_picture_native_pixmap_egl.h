@@ -38,7 +38,7 @@ class VaapiPictureNativePixmapEgl : public VaapiPictureNativePixmap {
   bool Allocate(gfx::BufferFormat format) override;
   bool ImportGpuMemoryBufferHandle(
       gfx::BufferFormat format,
-      const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) override;
+      gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) override;
 
  private:
   bool Initialize();

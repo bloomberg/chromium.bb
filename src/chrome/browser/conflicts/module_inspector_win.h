@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/task/task_traits.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/conflicts/inspection_results_cache_win.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 #include "chrome/browser/conflicts/module_info_win.h"
@@ -51,6 +52,11 @@ class ModuleInspector : public ModuleDatabaseObserver {
   static constexpr base::Feature kWinOOPInspectModuleFeature = {
       "WinOOPInspectModule", base::FEATURE_DISABLED_BY_DEFAULT};
 
+  // The amount of time before the |inspection_results_cache_| is flushed to
+  // disk while the ModuleDatabase is not idle.
+  static constexpr base::TimeDelta kFlushInspectionResultsTimerTimeout =
+      base::TimeDelta::FromMinutes(5);
+
   using OnModuleInspectedCallback =
       base::Callback<void(const ModuleInfoKey& module_key,
                           ModuleInspectionResult inspection_result)>;
@@ -75,6 +81,12 @@ class ModuleInspector : public ModuleDatabaseObserver {
   void SetConnectorForTesting(service_manager::Connector* connector) {
     test_connector_ = connector;
   }
+
+  static base::FilePath GetInspectionResultsCachePath();
+
+  void SetModuleInspectionResultForTesting(
+      const ModuleInfoKey& module_key,
+      ModuleInspectionResult inspection_result);
 
  private:
   // Ensures the |util_win_ptr_| instance is bound to the UtilWin service. This
@@ -106,6 +118,10 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // for inspection.
   void OnInspectionFinished(const ModuleInfoKey& module_key,
                             ModuleInspectionResult inspection_result);
+
+  // Sends a task on a blocking background sequence to serialize
+  // |inspection_results_cache_|, should it be needed.
+  void MaybeUpdateInspectionResultsCache();
 
   OnModuleInspectedCallback on_module_inspected_callback_;
 
@@ -140,6 +156,14 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // Contains the cached inspection results so that a module is not inspected
   // more than once between restarts.
   InspectionResultsCache inspection_results_cache_;
+
+  // Ensures that newly inspected modules are flushed to the disk after at most
+  // 5 minutes to avoid losing too much of the work done if the browser is
+  // closed before all modules are inspected.
+  base::RetainingOneShotTimer flush_inspection_results_timer_;
+
+  // Indicates if a module was newly inspected and the cache must be updated.
+  bool has_new_inspection_results_;
 
   // The number of time this class will try to restart the UtilWin service if a
   // connection error occurs. This is to prevent the degenerate case where the

@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -28,16 +28,14 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest {
     views::View* view =
         BrowserView::GetBrowserViewForBrowser(browser())
             ->toolbar_button_provider()
-            ->GetPageActionIconContainerView()
+            ->GetOmniboxPageActionIconContainerView()
             ->GetPageActionIconView(PageActionIconType::kManagePasswords);
     DCHECK_EQ(view->GetClassName(), ManagePasswordsIconViews::kClassName);
     return static_cast<ManagePasswordsIconViews*>(view);
   }
 
   base::string16 GetTooltipText() {
-    base::string16 tooltip;
-    GetView()->GetTooltipText(gfx::Point(), &tooltip);
-    return tooltip;
+    return GetView()->GetTooltipText(gfx::Point());
   }
 
   const gfx::ImageSkia& GetImage() {

@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_ENUMERATION_H_
 
 #include "third_party/blink/renderer/core/svg/svg_animated_enumeration_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -48,6 +49,15 @@ class SVGAnimatedEnumeration : public SVGAnimatedEnumerationBase {
         static_cast<unsigned>(initial_value));
   }
 
+  SVGAnimatedEnumeration(SVGElement* context_element,
+                         const QualifiedName& attribute_name,
+                         Enum initial_value)
+      : SVGAnimatedEnumerationBase(
+            context_element,
+            attribute_name,
+            MakeGarbageCollected<SVGEnumeration<Enum>>(initial_value),
+            static_cast<unsigned>(initial_value)) {}
+
   static SVGAnimatedEnumeration<Enum>* Create(
       SVGElement* context_element,
       const QualifiedName& attribute_name,
@@ -56,6 +66,15 @@ class SVGAnimatedEnumeration : public SVGAnimatedEnumerationBase {
         context_element, attribute_name, initial_value,
         static_cast<unsigned>(initial_value->EnumValue()));
   }
+
+  SVGAnimatedEnumeration(SVGElement* context_element,
+                         const QualifiedName& attribute_name,
+                         SVGEnumeration<Enum>* initial_value)
+      : SVGAnimatedEnumerationBase(
+            context_element,
+            attribute_name,
+            initial_value,
+            static_cast<unsigned>(initial_value->EnumValue())) {}
 
   SVGAnimatedEnumeration(SVGElement* context_element,
                          const QualifiedName& attribute_name,

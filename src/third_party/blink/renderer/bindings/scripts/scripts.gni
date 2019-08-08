@@ -92,8 +92,14 @@ template("compute_interfaces_info_individual") {
       visibility = invoker.visibility
     }
 
-    inputs = [ "$bindings_scripts_dir/utilities.py" ] + idl_compiler_files +
-             invoker.sources
+    build_scripts_output_dir =
+        "$root_gen_dir/third_party/blink/renderer/build/scripts"
+    runtime_enabled_features_file =
+        "$build_scripts_output_dir/runtime_enabled_features.pickle"
+    inputs = [
+               "$bindings_scripts_dir/utilities.py",
+               runtime_enabled_features_file,
+             ] + idl_compiler_files + invoker.sources
     outputs = [
       invoker.interfaces_info_file,
       invoker.component_info_file,
@@ -109,9 +115,14 @@ template("compute_interfaces_info_individual") {
       rebase_path(invoker.interfaces_info_file, root_build_dir),
       "--component-info-file",
       rebase_path(invoker.component_info_file, root_build_dir),
+      "--runtime-enabled-features-file",
+      rebase_path(runtime_enabled_features_file, root_build_dir),
     ]
 
-    deps = [ "//third_party/blink/renderer/bindings/scripts:cached_lex_yacc_tables" ] + invoker.deps
+    deps = [
+             "//third_party/blink/renderer/bindings/scripts:cached_lex_yacc_tables",
+             "//third_party/blink/renderer/platform:runtime_enabled_features",
+           ] + invoker.deps
   }
 }
 
@@ -485,8 +496,10 @@ template("generate_origin_trial_features") {
     # should be interfaces_info_core (w/o modules). This is the same issue as
     # above in the idl_compiler template.
     # http://crbug.com/358074
-    deps = invoker.deps +
-           [ "//third_party/blink/renderer/bindings/modules:interfaces_info" ]
+    deps = invoker.deps + [
+             "//third_party/blink/renderer/bindings/modules:interfaces_info",
+             "//third_party/blink/renderer/bindings/modules:modules_core_global_constructors_idls",
+           ]
   }
 }
 

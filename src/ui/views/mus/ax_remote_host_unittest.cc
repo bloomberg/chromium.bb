@@ -112,8 +112,8 @@ class TestView : public View {
   DISALLOW_COPY_AND_ASSIGN(TestView);
 };
 
-AXRemoteHost* CreateRemote(TestAXHostService* service) {
-  std::unique_ptr<AXRemoteHost> remote = std::make_unique<AXRemoteHost>();
+AXRemoteHost* CreateRemote(TestAXHostService* service, AXAuraObjCache* cache_) {
+  std::unique_ptr<AXRemoteHost> remote = std::make_unique<AXRemoteHost>(cache_);
   remote->InitForTesting(service->CreateInterfacePtr());
   remote->FlushForTesting();
   // Install the AXRemoteHost on MusClient so it monitors Widget creation.
@@ -131,11 +131,14 @@ std::unique_ptr<Widget> CreateTestWidget() {
   return widget;
 }
 
-using AXRemoteHostTest = ViewsTestWithDesktopNativeWidget;
+class AXRemoteHostTest : public ViewsTestWithDesktopNativeWidget {
+ public:
+  AXAuraObjCache cache_;
+};
 
 TEST_F(AXRemoteHostTest, CreateRemote) {
   TestAXHostService service(false /*automation_enabled*/);
-  CreateRemote(&service);
+  CreateRemote(&service, &cache_);
 
   // Client registered itself with service.
   EXPECT_EQ(1, service.remote_host_count_);
@@ -143,7 +146,7 @@ TEST_F(AXRemoteHostTest, CreateRemote) {
 
 TEST_F(AXRemoteHostTest, AutomationEnabled) {
   TestAXHostService service(true /*automation_enabled*/);
-  AXRemoteHost* remote = CreateRemote(&service);
+  AXRemoteHost* remote = CreateRemote(&service, &cache_);
   std::unique_ptr<Widget> widget = CreateTestWidget();
   remote->FlushForTesting();
 
@@ -157,8 +160,7 @@ TEST_F(AXRemoteHostTest, AutomationEnabled) {
   // Event was sent with initial hierarchy.
   EXPECT_EQ(TestAXTreeID(), service.last_tree_id_);
   EXPECT_EQ(ax::mojom::Event::kLoadComplete, service.last_event_.event_type);
-  EXPECT_EQ(AXAuraObjCache::GetInstance()->GetID(
-                widget->widget_delegate()->GetContentsView()),
+  EXPECT_EQ(cache_.GetID(widget->widget_delegate()->GetContentsView()),
             service.last_event_.id);
 }
 
@@ -167,7 +169,7 @@ TEST_F(AXRemoteHostTest, AutomationEnabledTwice) {
   // If ChromeVox has ever been open during the user session then the remote app
   // can see automation enabled at startup.
   TestAXHostService service(true /*automation_enabled*/);
-  AXRemoteHost* remote = CreateRemote(&service);
+  AXRemoteHost* remote = CreateRemote(&service, &cache_);
   std::unique_ptr<Widget> widget = CreateTestWidget();
   remote->FlushForTesting();
 
@@ -188,7 +190,7 @@ TEST_F(AXRemoteHostTest, AutomationEnabledTwice) {
 // event before it is attached to a Widget. https://crbug.com/889121
 TEST_F(AXRemoteHostTest, SendEventOnViewWithNoWidget) {
   TestAXHostService service(true /*automation_enabled*/);
-  AXRemoteHost* remote = CreateRemote(&service);
+  AXRemoteHost* remote = CreateRemote(&service, &cache_);
   std::unique_ptr<Widget> widget = CreateTestWidget();
   remote->FlushForTesting();
 
@@ -203,7 +205,7 @@ TEST_F(AXRemoteHostTest, SendEventOnViewWithNoWidget) {
 // https://crbug.com/869608
 TEST_F(AXRemoteHostTest, AsyncWidgetClose) {
   TestAXHostService service(true /*automation_enabled*/);
-  AXRemoteHost* remote = CreateRemote(&service);
+  AXRemoteHost* remote = CreateRemote(&service, &cache_);
   remote->FlushForTesting();
 
   Widget* widget = new Widget();  // Owned by native widget.
@@ -228,7 +230,7 @@ TEST_F(AXRemoteHostTest, AsyncWidgetClose) {
 
 TEST_F(AXRemoteHostTest, CreateWidgetThenEnableAutomation) {
   TestAXHostService service(false /*automation_enabled*/);
-  AXRemoteHost* remote = CreateRemote(&service);
+  AXRemoteHost* remote = CreateRemote(&service, &cache_);
   std::unique_ptr<Widget> widget = CreateTestWidget();
   remote->FlushForTesting();
 
@@ -240,26 +242,25 @@ TEST_F(AXRemoteHostTest, CreateWidgetThenEnableAutomation) {
 
   // Event was sent with initial hierarchy.
   EXPECT_EQ(ax::mojom::Event::kLoadComplete, service.last_event_.event_type);
-  EXPECT_EQ(AXAuraObjCache::GetInstance()->GetID(
-                widget->widget_delegate()->GetContentsView()),
+  EXPECT_EQ(cache_.GetID(widget->widget_delegate()->GetContentsView()),
             service.last_event_.id);
 }
 
 TEST_F(AXRemoteHostTest, PerformAction) {
   TestAXHostService service(true /*automation_enabled*/);
-  AXRemoteHost* remote = CreateRemote(&service);
+  AXRemoteHost* remote = CreateRemote(&service, &cache_);
 
   // Create a view to sense the action.
   TestView view;
   view.SetBounds(0, 0, 100, 100);
   std::unique_ptr<Widget> widget = CreateTestWidget();
   widget->GetRootView()->AddChildView(&view);
-  AXAuraObjCache::GetInstance()->GetOrCreate(&view);
+  cache_.GetOrCreate(&view);
 
   // Request an action on the view.
   ui::AXActionData action;
   action.action = ax::mojom::Action::kScrollDown;
-  action.target_node_id = AXAuraObjCache::GetInstance()->GetID(&view);
+  action.target_node_id = cache_.GetID(&view);
   remote->PerformAction(action);
 
   // View received the action.
@@ -269,7 +270,7 @@ TEST_F(AXRemoteHostTest, PerformAction) {
 
 TEST_F(AXRemoteHostTest, PerformHitTest) {
   TestAXHostService service(true /*automation_enabled*/);
-  AXRemoteHost* remote = CreateRemote(&service);
+  AXRemoteHost* remote = CreateRemote(&service, &cache_);
 
   // Create a view to sense the action.
   TestView view;
@@ -310,7 +311,7 @@ TEST_F(AXRemoteHostTest, ScaleFactor) {
 
   // Create a widget.
   TestAXHostService service(true /*automation_enabled*/);
-  AXRemoteHost* remote = CreateRemote(&service);
+  AXRemoteHost* remote = CreateRemote(&service, &cache_);
   std::unique_ptr<Widget> widget = CreateTestWidget();
   remote->FlushForTesting();
 

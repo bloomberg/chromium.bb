@@ -16,7 +16,7 @@ namespace content {
 // static
 scoped_refptr<BackgroundSyncNetworkObserverAndroid::Observer>
 BackgroundSyncNetworkObserverAndroid::Observer::Create(
-    base::Callback<void(network::mojom::ConnectionType)> callback) {
+    base::RepeatingCallback<void(network::mojom::ConnectionType)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<BackgroundSyncNetworkObserverAndroid::Observer> observer(
       new BackgroundSyncNetworkObserverAndroid::Observer(callback));
@@ -58,7 +58,7 @@ void BackgroundSyncNetworkObserverAndroid::Observer::
 }
 
 BackgroundSyncNetworkObserverAndroid::Observer::Observer(
-    base::Callback<void(network::mojom::ConnectionType)> callback)
+    base::RepeatingCallback<void(network::mojom::ConnectionType)> callback)
     : callback_(callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }

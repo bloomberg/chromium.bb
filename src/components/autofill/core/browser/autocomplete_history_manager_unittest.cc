@@ -164,7 +164,7 @@ class AutocompleteHistoryManagerTest : public testing::Test {
 TEST_F(AutocompleteHistoryManagerTest, CreditCardNumberValue) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.origin = GURL("http://myform.com/form.html");
+  form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
 
   // Valid Visa credit card number pulled from the paypal help site.
@@ -186,7 +186,7 @@ TEST_F(AutocompleteHistoryManagerTest, CreditCardNumberValue) {
 TEST_F(AutocompleteHistoryManagerTest, NonCreditCardNumberValue) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.origin = GURL("http://myform.com/form.html");
+  form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
 
   // Invalid credit card number.
@@ -206,7 +206,7 @@ TEST_F(AutocompleteHistoryManagerTest, NonCreditCardNumberValue) {
 TEST_F(AutocompleteHistoryManagerTest, SSNValue) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.origin = GURL("http://myform.com/form.html");
+  form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
 
   FormFieldData ssn;
@@ -225,7 +225,7 @@ TEST_F(AutocompleteHistoryManagerTest, SSNValue) {
 TEST_F(AutocompleteHistoryManagerTest, SearchField) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.origin = GURL("http://myform.com/form.html");
+  form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
 
   // Search field.
@@ -244,7 +244,7 @@ TEST_F(AutocompleteHistoryManagerTest, SearchField) {
 TEST_F(AutocompleteHistoryManagerTest, AutocompleteFeatureOff) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.origin = GURL("http://myform.com/form.html");
+  form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
 
   // Search field.
@@ -267,7 +267,7 @@ TEST_F(AutocompleteHistoryManagerTest, AutocompleteFeatureOff) {
 TEST_F(AutocompleteHistoryManagerTest, FieldWithAutocompleteOff) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.origin = GURL("http://myform.com/form.html");
+  form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
 
   // Field specifying autocomplete="off".
@@ -290,7 +290,7 @@ TEST_F(AutocompleteHistoryManagerTest, Incognito) {
                               /*is_off_the_record_=*/true);
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.origin = GURL("http://myform.com/form.html");
+  form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
 
   // Search field.
@@ -311,7 +311,7 @@ TEST_F(AutocompleteHistoryManagerTest, Incognito) {
 TEST_F(AutocompleteHistoryManagerTest, NonFocusableField) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.origin = GURL("http://myform.com/form.html");
+  form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
 
   // Unfocusable field.
@@ -333,7 +333,7 @@ TEST_F(AutocompleteHistoryManagerTest, NonFocusableField) {
 TEST_F(AutocompleteHistoryManagerTest, PresentationField) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.origin = GURL("http://myform.com/form.html");
+  form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
 
   // Presentation field.
@@ -397,6 +397,21 @@ TEST_F(AutocompleteHistoryManagerTest,
               RemoveExpiredAutocompleteEntries(autocomplete_manager_.get()))
       .Times(0);
   autocomplete_manager_->Init(web_data_service_, prefs_.get(),
+                              /*is_off_the_record=*/false);
+}
+
+// Tests that the Init function will not crash even if we don't have a DB.
+TEST_F(AutocompleteHistoryManagerTest, Init_NullDB_NoCrash) {
+  // Enable the feature, and set the major version.
+  scoped_features.InitAndEnableFeature(
+      features::kAutocompleteRetentionPolicyEnabled);
+  prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
+                     CHROME_VERSION_MAJOR - 1);
+
+  EXPECT_CALL(*web_data_service_,
+              RemoveExpiredAutocompleteEntries(autocomplete_manager_.get()))
+      .Times(0);
+  autocomplete_manager_->Init(nullptr, prefs_.get(),
                               /*is_off_the_record=*/false);
 }
 
@@ -872,7 +887,7 @@ TEST_F(AutocompleteHistoryManagerTest,
 TEST_F(AutocompleteHistoryManagerTest, NoAutocompleteSuggestionsForTextarea) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.origin = GURL("http://myform.com/form.html");
+  form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
 
   FormFieldData field;

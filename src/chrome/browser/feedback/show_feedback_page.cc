@@ -15,7 +15,6 @@
 #include "extensions/browser/api/feedback_private/feedback_private_api.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/system/sys_info.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #endif
@@ -43,14 +42,6 @@ bool IsFromUserInteraction(FeedbackSource source) {
     default:
       return false;
   }
-}
-
-bool IsBluetoothLoggingAllowedByBoard() {
-  const std::vector<std::string> board =
-      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  const std::string board_name = board[0];
-  return board_name == "eve" || board_name == "nocturne";
 }
 #endif
 }
@@ -92,8 +83,7 @@ void ShowFeedbackPage(Browser* browser,
       base::EndsWith(identity_manager->GetPrimaryAccountInfo().email,
                      kGoogleDotCom, base::CompareCase::INSENSITIVE_ASCII)) {
     flow = feedback_private::FeedbackFlow::FEEDBACK_FLOW_GOOGLEINTERNAL;
-    include_bluetooth_logs =
-        IsFromUserInteraction(source) && IsBluetoothLoggingAllowedByBoard();
+    include_bluetooth_logs = IsFromUserInteraction(source);
   }
 #endif
 

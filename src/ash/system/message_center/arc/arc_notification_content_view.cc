@@ -4,6 +4,7 @@
 
 #include "ash/system/message_center/arc/arc_notification_content_view.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/system/message_center/arc/arc_notification_surface.h"
 #include "ash/system/message_center/arc/arc_notification_view.h"
 // TODO(https://crbug.com/768439): Remove nogncheck when moved to ash.
@@ -198,35 +199,23 @@ class ArcNotificationContentView::SlideHelper {
   }
   virtual ~SlideHelper() = default;
 
-  void Update(base::Optional<bool> slide_in_progress) {
-    if (slide_in_progress.has_value())
-      slide_in_progress_ = slide_in_progress.value();
-
-    const bool has_animation =
-        GetSlideOutLayer()->GetAnimator()->is_animating();
-    const bool has_transform = !GetSlideOutLayer()->transform().IsIdentity();
-    const bool moving = (slide_in_progress_ && has_transform) || has_animation;
-
-    if (moving_ == moving)
+  void Update(bool slide_in_progress) {
+    if (slide_in_progress_ == slide_in_progress)
       return;
-    moving_ = moving;
 
-    if (moving_)
+    slide_in_progress_ = slide_in_progress;
+
+    if (slide_in_progress_)
       owner_->ShowCopiedSurface();
     else
       owner_->HideCopiedSurface();
   }
 
  private:
-  // This is a temporary hack to address https://crbug.com/718965
-  ui::Layer* GetSlideOutLayer() {
-    ui::Layer* layer = owner_->parent()->layer();
-    return layer ? layer : owner_->GetWidget()->GetLayer();
-  }
-
   ArcNotificationContentView* const owner_;
+
+  // True if the view is not at the original position.
   bool slide_in_progress_ = false;
-  bool moving_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SlideHelper);
 };
@@ -357,6 +346,7 @@ void ArcNotificationContentView::UpdateCornerRadius(int top_radius,
 }
 
 void ArcNotificationContentView::OnSlideChanged(bool in_progress) {
+  slide_in_progress_ = in_progress;
   if (slide_helper_)
     slide_helper_->Update(in_progress);
 }
@@ -496,7 +486,7 @@ void ArcNotificationContentView::AttachSurface() {
   slide_helper_.reset(new SlideHelper(this));
 
   // Invokes Update() in case surface is attached during a slide.
-  slide_helper_->Update(base::nullopt);
+  slide_helper_->Update(slide_in_progress_);
 
   // (Re-)create the floating buttons after |surface_| is attached to a widget.
   MaybeCreateFloatingControlButtons();
@@ -514,15 +504,21 @@ void ArcNotificationContentView::ShowCopiedSurface() {
   surface_copy_->root()->SetBounds(size);
   layer()->Add(surface_copy_->root());
 
-  if (!surface_copy_mask_) {
-    surface_copy_mask_ = views::Painter::CreatePaintedLayer(
-        std::make_unique<message_center::NotificationBackgroundPainter>(
-            top_radius_, bottom_radius_));
-    surface_copy_mask_->layer()->SetBounds(size);
-    surface_copy_mask_->layer()->SetFillsBoundsOpaquely(false);
+  if (ash::features::ShouldUseShaderRoundedCorner()) {
+    surface_copy_->root()->SetRoundedCornerRadius(
+        {top_radius_, top_radius_, bottom_radius_, bottom_radius_});
+    surface_copy_->root()->SetIsFastRoundedCorner(true);
+  } else {
+    if (!surface_copy_mask_) {
+      surface_copy_mask_ = views::Painter::CreatePaintedLayer(
+          std::make_unique<message_center::NotificationBackgroundPainter>(
+              top_radius_, bottom_radius_));
+      surface_copy_mask_->layer()->SetBounds(size);
+      surface_copy_mask_->layer()->SetFillsBoundsOpaquely(false);
+    }
+    DCHECK(!surface_copy_mask_->layer()->parent());
+    surface_copy_->root()->SetMaskLayer(surface_copy_mask_->layer());
   }
-  DCHECK(!surface_copy_mask_->layer()->parent());
-  surface_copy_->root()->SetMaskLayer(surface_copy_mask_->layer());
 
   // Changes the opacity instead of setting the visibility, to keep
   // |EventFowarder| working.
@@ -583,7 +579,7 @@ void ArcNotificationContentView::RemovedFromWidget() {
 }
 
 void ArcNotificationContentView::ViewHierarchyChanged(
-    const views::View::ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   views::Widget* widget = GetWidget();
 
   if (!details.is_add) {

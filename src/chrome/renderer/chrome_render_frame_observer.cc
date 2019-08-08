@@ -289,8 +289,7 @@ void ChromeRenderFrameObserver::GetWebApplicationInfo(
         blink::mojom::ConsoleMessageLevel::kWarning,
         "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is "
         "deprecated. Please include <meta name=\"mobile-web-app-capable\" "
-        "content=\"yes\"> - "
-        "http://developers.google.com/chrome/mobile/docs/installtohomescreen");
+        "content=\"yes\">");
     frame->AddMessageToConsole(message);
   }
 

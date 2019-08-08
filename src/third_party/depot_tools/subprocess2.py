@@ -7,12 +7,17 @@
 In theory you shouldn't need anything else in subprocess, or this module failed.
 """
 
-import cStringIO
 import codecs
 import errno
+import io
 import logging
 import os
-import Queue
+
+try:
+  import Queue
+except ImportError:  # For Py3 compatibility
+  import queue as Queue
+
 import subprocess
 import sys
 import time
@@ -20,7 +25,16 @@ import threading
 
 # Cache the string-escape codec to ensure subprocess can find it later.
 # See crbug.com/912292#c2 for context.
-codecs.lookup('string-escape')
+if sys.version_info.major == 2:
+  codecs.lookup('string-escape')
+
+# TODO(crbug.com/953884): Remove this when python3 migration is done.
+try:
+  basestring
+except NameError:
+  # pylint: disable=redefined-builtin
+  basestring = str
+
 
 # Constants forwarded from subprocess.
 PIPE = subprocess.PIPE
@@ -248,7 +262,7 @@ class Popen(subprocess.Popen):
     try:
       with self.popen_lock:
         super(Popen, self).__init__(args, **kwargs)
-    except OSError, e:
+    except OSError as e:
       if e.errno == errno.EAGAIN and sys.platform == 'cygwin':
         # Convert fork() emulation failure into a CygwinRebaseError().
         raise CygwinRebaseError(
@@ -285,7 +299,7 @@ class Popen(subprocess.Popen):
 
     def write_stdin():
       try:
-        stdin_io = cStringIO.StringIO(input)
+        stdin_io = io.BytesIO(input)
         while True:
           data = stdin_io.read(1024)
           if data:

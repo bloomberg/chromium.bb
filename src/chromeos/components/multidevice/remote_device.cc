@@ -23,6 +23,7 @@ RemoteDevice::RemoteDevice() : last_update_time_millis(0L) {}
 RemoteDevice::RemoteDevice(
     const std::string& user_id,
     const std::string& name,
+    const std::string& pii_free_name,
     const std::string& public_key,
     const std::string& persistent_symmetric_key,
     int64_t last_update_time_millis,
@@ -30,6 +31,7 @@ RemoteDevice::RemoteDevice(
     const std::vector<BeaconSeed>& beacon_seeds)
     : user_id(user_id),
       name(name),
+      pii_free_name(pii_free_name),
       public_key(public_key),
       persistent_symmetric_key(persistent_symmetric_key),
       last_update_time_millis(last_update_time_millis),
@@ -46,6 +48,7 @@ std::string RemoteDevice::GetDeviceId() const {
 
 bool RemoteDevice::operator==(const RemoteDevice& other) const {
   return user_id == other.user_id && name == other.name &&
+         pii_free_name == other.pii_free_name &&
          public_key == other.public_key &&
          persistent_symmetric_key == other.persistent_symmetric_key &&
          last_update_time_millis == other.last_update_time_millis &&

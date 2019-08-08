@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/containers/mru_cache.h"
 #include "base/feature_list.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/i18n/base_i18n_switches.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
@@ -25,6 +25,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
+#include "third_party/icu/source/common/unicode/uscript.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkFontMetrics.h"
@@ -814,7 +815,8 @@ void TextRunHarfBuzz::GetClusterAt(size_t pos,
     for (size_t i = 0; i < shape.glyph_count && i < shape.glyph_to_char.size();
          ++i) {
       glyph_to_char_string += base::NumberToString(i) + "->" +
-                              base::UintToString(shape.glyph_to_char[i]) + ", ";
+                              base::NumberToString(shape.glyph_to_char[i]) +
+                              ", ";
     }
     LOG(ERROR) << " TextRunHarfBuzz error, please report at crbug.com/724880:"
                << " range: " << range.ToString()
@@ -1816,7 +1818,8 @@ void RenderTextHarfBuzz::ShapeRuns(
   std::vector<Font> fallback_font_list;
   {
     SCOPED_UMA_HISTOGRAM_LONG_TIMER("RenderTextHarfBuzz.GetFallbackFontsTime");
-    TRACE_EVENT0("ui", "RenderTextHarfBuzz::GetFallbackFonts");
+    TRACE_EVENT1("ui", "RenderTextHarfBuzz::GetFallbackFonts", "script",
+                 TRACE_STR_COPY(uscript_getShortName(font_params.script)));
     fallback_font_list = GetFallbackFonts(primary_font);
 
 #if defined(OS_WIN)

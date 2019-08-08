@@ -7,6 +7,8 @@
 
 // Contains includes and typedefs to allow code to compile under both EarlGrey1
 // and EarlGrey2 (App Process).
+// TODO(crbug.com/917390): Remove this file once all callers have been converted
+// to EG2.
 
 #if defined(CHROME_EARL_GREY_1)
 
@@ -15,11 +17,19 @@
 typedef DescribeToBlock GREYDescribeToBlock;
 typedef MatchesBlock GREYMatchesBlock;
 
+// Provides a no-op implementation of an EG2 API that doesn't exist in EG1. This
+// helper assumes that it is already being called on the main thread and
+// synchronously runs the given |block|.
+void grey_execute_sync_on_main_thread(void (^block)(void));
+
 #elif defined(CHROME_EARL_GREY_2)
 
 #import <AppFramework/Action/GREYActionsShorthand.h>
+#import <AppFramework/Core/GREYElementInteraction.h>
 #import <AppFramework/EarlGreyApp.h>
 #import <AppFramework/Matcher/GREYMatchersShorthand.h>
+#import <AppFramework/Synchronization/GREYSyncAPI.h>
+#import <CommonLib/Error/GREYErrorConstants.h>
 
 #else
 #error Must define either CHROME_EARL_GREY_1 or CHROME_EARL_GREY_2.

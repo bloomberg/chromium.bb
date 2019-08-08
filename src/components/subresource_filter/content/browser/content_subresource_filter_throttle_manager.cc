@@ -28,9 +28,9 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/console_message_level.h"
 #include "net/base/net_errors.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace subresource_filter {
 
@@ -168,7 +168,7 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
         DCHECK(filter->activation_state().activation_level !=
                mojom::ActivationLevel::kDisabled);
         NavigationConsoleLogger::LogMessageOnCommit(
-            navigation_handle, content::CONSOLE_MESSAGE_LEVEL_WARNING,
+            navigation_handle, blink::mojom::ConsoleMessageLevel::kWarning,
             kActivationConsoleMessage);
       }
     }

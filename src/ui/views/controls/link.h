@@ -67,7 +67,6 @@ class VIEWS_EXPORT Link : public Label {
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void OnEnabledChanged() override;
   void OnFocus() override;
   void OnBlur() override;
   void SetFontList(const gfx::FontList& font_list) override;
@@ -104,6 +103,8 @@ class VIEWS_EXPORT Link : public Label {
   // The color when the link is neither pressed nor disabled.
   SkColor requested_enabled_color_;
   bool requested_enabled_color_set_;
+
+  PropertyChangedSubscription enabled_changed_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(Link);
 };

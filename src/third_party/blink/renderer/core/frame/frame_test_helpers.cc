@@ -36,6 +36,7 @@
 #include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -227,7 +228,7 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
   auto* frame = To<WebLocalFrameImpl>(WebLocalFrame::CreateProvisional(
       client, nullptr,
       mojo::MakeRequest(&document_interface_broker).PassMessagePipe(),
-      &old_frame, WebSandboxFlags::kNone, ParsedFeaturePolicy()));
+      &old_frame, FramePolicy()));
   client->Bind(frame, std::move(owned_client));
   std::unique_ptr<TestWebWidgetClient> widget_client;
   // Create a local root, if necessary.
@@ -269,10 +270,9 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
   client = CreateDefaultClientIfNeeded(client, owned_client);
   mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
   auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
-      WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone, client,
-      nullptr, mojo::MakeRequest(&document_interface_broker).PassMessagePipe(),
-      previous_sibling, ParsedFeaturePolicy(), properties,
-      FrameOwnerElementType::kIframe, nullptr));
+      WebTreeScopeType::kDocument, name, FramePolicy(), client, nullptr,
+      mojo::MakeRequest(&document_interface_broker).PassMessagePipe(),
+      previous_sibling, properties, FrameOwnerElementType::kIframe, nullptr));
   client->Bind(frame, std::move(owned_client));
 
   std::unique_ptr<TestWebWidgetClient> owned_widget_client;
@@ -299,8 +299,8 @@ WebRemoteFrameImpl* CreateRemoteChild(
   std::unique_ptr<TestWebRemoteFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
   auto* frame = ToWebRemoteFrameImpl(parent.CreateRemoteChild(
-      WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone,
-      ParsedFeaturePolicy(), FrameOwnerElementType::kIframe, client, nullptr));
+      WebTreeScopeType::kDocument, name, FramePolicy(),
+      FrameOwnerElementType::kIframe, client, nullptr));
   client->Bind(frame, std::move(owned_client));
   if (!security_origin)
     security_origin = SecurityOrigin::CreateUniqueOpaque();
@@ -511,8 +511,7 @@ WebLocalFrame* TestWebFrameClient::CreateChildFrame(
     WebTreeScopeType scope,
     const WebString& name,
     const WebString& fallback_name,
-    WebSandboxFlags sandbox_flags,
-    const ParsedFeaturePolicy& container_policy,
+    const FramePolicy&,
     const WebFrameOwnerProperties& frame_owner_properties,
     FrameOwnerElementType owner_type) {
   return CreateLocalChild(*parent, scope);
@@ -530,7 +529,7 @@ void TestWebFrameClient::DidStopLoading() {
 void TestWebFrameClient::BeginNavigation(
     std::unique_ptr<WebNavigationInfo> info) {
   navigation_callback_.Cancel();
-  if (DocumentLoader::WillLoadUrlAsEmpty(info->url_request.Url()) ||
+  if (DocumentLoader::WillLoadUrlAsEmpty(info->url_request.Url()) &&
       !frame_->HasCommittedFirstRealLoad()) {
     CommitNavigation(std::move(info));
     return;
@@ -638,6 +637,17 @@ void TestWebWidgetClient::SetBackgroundColor(SkColor color) {
   layer_tree_host()->set_background_color(color);
 }
 
+void TestWebWidgetClient::SetAllowGpuRasterization(bool allow) {
+  layer_tree_host()->SetHasGpuRasterizationTrigger(allow);
+}
+
+void TestWebWidgetClient::SetPageScaleFactorAndLimits(float page_scale_factor,
+                                                      float minimum,
+                                                      float maximum) {
+  layer_tree_host()->SetPageScaleFactorAndLimits(page_scale_factor, minimum,
+                                                 maximum);
+}
+
 void TestWebWidgetClient::RegisterViewportLayers(
     const cc::ViewportLayers& layers) {
   layer_tree_host()->RegisterViewportLayers(layers);
@@ -672,7 +682,6 @@ WebView* TestWebViewClient::CreateView(WebLocalFrame* opener,
                                        const WebWindowFeatures&,
                                        const WebString& name,
                                        WebNavigationPolicy,
-                                       bool,
                                        WebSandboxFlags,
                                        const FeaturePolicy::FeatureState&,
                                        const SessionStorageNamespaceId&) {

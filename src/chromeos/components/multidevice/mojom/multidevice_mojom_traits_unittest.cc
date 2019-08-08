@@ -55,6 +55,7 @@ TEST(MultiDeviceMojomStructTraitsTest, RemoteDevice) {
   chromeos::multidevice::RemoteDevice input;
   input.user_id = "userId";
   input.name = "name";
+  input.pii_free_name = "piiFreeName";
   input.public_key = "publicKey";
   input.persistent_symmetric_key = "persistentSymmetricKey";
   input.last_update_time_millis = 3L;
@@ -67,6 +68,7 @@ TEST(MultiDeviceMojomStructTraitsTest, RemoteDevice) {
 
   EXPECT_EQ("userId", output.user_id);
   EXPECT_EQ("name", output.name);
+  EXPECT_EQ("piiFreeName", output.pii_free_name);
   EXPECT_EQ("publicKey", output.public_key);
   EXPECT_EQ("persistentSymmetricKey", output.persistent_symmetric_key);
   EXPECT_EQ(3L, output.last_update_time_millis);

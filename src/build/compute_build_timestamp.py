@@ -28,6 +28,8 @@ Either way, it is guaranteed to be in the past and always in UTC.
 # the symbol server, so rarely changing timestamps can cause conflicts there
 # as well. We only upload symbols for official builds to the symbol server.
 
+from __future__ import print_function
+
 import argparse
 import calendar
 import datetime
@@ -112,7 +114,7 @@ def main():
     now = now - datetime.timedelta(days=1)
   now = datetime.datetime(now.year, now.month, now.day, 5, 0, 0)
   build_date = GetBuildDate(args.build_type, now)
-  print int(calendar.timegm(build_date.utctimetuple()))
+  print(int(calendar.timegm(build_date.utctimetuple())))
   return 0
 
 

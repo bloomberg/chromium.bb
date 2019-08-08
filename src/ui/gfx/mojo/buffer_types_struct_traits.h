@@ -5,6 +5,8 @@
 #ifndef UI_GFX_MOJO_BUFFER_TYPES_STRUCT_TRAITS_H_
 #define UI_GFX_MOJO_BUFFER_TYPES_STRUCT_TRAITS_H_
 
+#include <vector>
+
 #include "build/build_config.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/mojo/buffer_types.mojom.h"
@@ -122,8 +124,6 @@ struct EnumTraits<gfx::mojom::BufferUsage, gfx::BufferUsage> {
         return gfx::mojom::BufferUsage::SCANOUT_VDA_WRITE;
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
         return gfx::mojom::BufferUsage::GPU_READ_CPU_READ_WRITE;
-      case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
-        return gfx::mojom::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT;
     }
     NOTREACHED();
     return gfx::mojom::BufferUsage::LAST;
@@ -151,9 +151,6 @@ struct EnumTraits<gfx::mojom::BufferUsage, gfx::BufferUsage> {
         return true;
       case gfx::mojom::BufferUsage::GPU_READ_CPU_READ_WRITE:
         *out = gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
-        return true;
-      case gfx::mojom::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
-        *out = gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT;
         return true;
     }
     NOTREACHED();
@@ -189,7 +186,7 @@ struct StructTraits<gfx::mojom::GpuMemoryBufferIdDataView,
   }
 };
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(USE_OZONE)
 template <>
 struct StructTraits<gfx::mojom::NativePixmapPlaneDataView,
                     gfx::NativePixmapPlane> {
@@ -205,31 +202,23 @@ struct StructTraits<gfx::mojom::NativePixmapPlaneDataView,
   static uint64_t modifier(const gfx::NativePixmapPlane& plane) {
     return plane.modifier;
   }
+  static mojo::ScopedHandle buffer_handle(gfx::NativePixmapPlane& plane);
   static bool Read(gfx::mojom::NativePixmapPlaneDataView data,
-                   gfx::NativePixmapPlane* out) {
-    out->stride = data.stride();
-    out->offset = data.offset();
-    out->size = data.size();
-    out->modifier = data.modifier();
-    return true;
-  }
+                   gfx::NativePixmapPlane* out);
 };
 
 template <>
 struct StructTraits<gfx::mojom::NativePixmapHandleDataView,
                     gfx::NativePixmapHandle> {
-  static std::vector<mojo::ScopedHandle> fds(
-      const gfx::NativePixmapHandle& pixmap_handle);
-
-  static const std::vector<gfx::NativePixmapPlane>& planes(
-      const gfx::NativePixmapHandle& pixmap_handle) {
+  static std::vector<gfx::NativePixmapPlane>& planes(
+      gfx::NativePixmapHandle& pixmap_handle) {
     return pixmap_handle.planes;
   }
 
   static bool Read(gfx::mojom::NativePixmapHandleDataView data,
                    gfx::NativePixmapHandle* out);
 };
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(USE_OZONE)
 
 template <>
 struct StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,

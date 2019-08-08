@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SUGGESTION_TEXT_SUGGESTION_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SUGGESTION_TEXT_SUGGESTION_CONTROLLER_H_
 
+#include <utility>
 #include "third_party/blink/public/mojom/input/input_host.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -63,9 +64,9 @@ class CORE_EXPORT TextSuggestionController final
       const Vector<TextSuggestionInfo>& text_suggestion_infos,
       const String& misspelled_word);
   void ShowSpellCheckMenu(
-      const std::pair<Node*, DocumentMarker*>& node_spelling_marker_pair);
+      const std::pair<const Text*, DocumentMarker*>& node_spelling_marker_pair);
   void ShowSuggestionMenu(
-      const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
+      const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
           node_suggestion_marker_pairs,
       size_t max_number_of_suggestions);
   void ReplaceActiveSuggestionRange(const String&);

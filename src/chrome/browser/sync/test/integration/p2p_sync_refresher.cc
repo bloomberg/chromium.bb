@@ -7,13 +7,12 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "content/public/browser/notification_service.h"
 
-P2PSyncRefresher::P2PSyncRefresher(
-    Profile* profile,
-    browser_sync::ProfileSyncService* sync_service)
+P2PSyncRefresher::P2PSyncRefresher(Profile* profile,
+                                   syncer::ProfileSyncService* sync_service)
     : profile_(profile), sync_service_(sync_service) {
   sync_service_->AddObserver(this);
 }
@@ -23,7 +22,8 @@ P2PSyncRefresher::~P2PSyncRefresher() {
 }
 
 void P2PSyncRefresher::OnSyncCycleCompleted(syncer::SyncService* sync) {
-  const syncer::SyncCycleSnapshot& snap = sync_service_->GetLastCycleSnapshot();
+  const syncer::SyncCycleSnapshot& snap =
+      sync_service_->GetLastCycleSnapshotForDebugging();
   bool is_notifiable_commit =
       (snap.model_neutral_state().num_successful_commits > 0);
   if (is_notifiable_commit) {

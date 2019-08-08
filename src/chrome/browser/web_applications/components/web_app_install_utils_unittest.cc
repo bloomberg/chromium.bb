@@ -35,6 +35,16 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   manifest.short_name =
       base::NullableString16(base::UTF8ToUTF16(kAppShortName), false);
 
+  {
+    blink::Manifest::FileHandler file_handler;
+    blink::Manifest::FileFilter file;
+    file.accept.push_back(base::UTF8ToUTF16(".png"));
+    file.name = base::UTF8ToUTF16("Images");
+    file_handler.push_back(file);
+    manifest.file_handler =
+        base::Optional<blink::Manifest::FileHandler>(std::move(file_handler));
+  }
+
   UpdateWebAppInfoFromManifest(manifest, &web_app_info,
                                ForInstallableSite::kNo);
   EXPECT_EQ(base::UTF8ToUTF16(kAppShortName), web_app_info.title);
@@ -67,6 +77,14 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   EXPECT_EQ(2u, web_app_info.icons.size());
   EXPECT_EQ(GURL(kAppIcon2), web_app_info.icons[0].url);
   EXPECT_EQ(GURL(kAppIcon3), web_app_info.icons[1].url);
+
+  // Check file handlers were updated
+  EXPECT_TRUE(web_app_info.file_handler.has_value());
+  auto file_handler = web_app_info.file_handler.value();
+  EXPECT_EQ(1u, file_handler.size());
+  EXPECT_EQ(base::UTF8ToUTF16("Images"), file_handler[0].name);
+  EXPECT_EQ(1u, file_handler[0].accept.size());
+  EXPECT_EQ(base::UTF8ToUTF16(".png"), file_handler[0].accept[0]);
 }
 
 // Tests "scope" is only set for installable sites.
@@ -74,6 +92,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestInstallableSite) {
   {
     blink::Manifest manifest;
     manifest.start_url = GURL(kAppUrl);
+    manifest.scope = GURL(kAppUrl).GetWithoutFilename();
     WebApplicationInfo web_app_info;
     UpdateWebAppInfoFromManifest(manifest, &web_app_info,
                                  ForInstallableSite::kUnknown);
@@ -83,6 +102,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestInstallableSite) {
   {
     blink::Manifest manifest;
     manifest.start_url = GURL(kAppUrl);
+    manifest.scope = GURL(kAppUrl).GetWithoutFilename();
     WebApplicationInfo web_app_info;
     UpdateWebAppInfoFromManifest(manifest, &web_app_info,
                                  ForInstallableSite::kNo);
@@ -92,6 +112,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestInstallableSite) {
   {
     blink::Manifest manifest;
     manifest.start_url = GURL(kAppUrl);
+    manifest.scope = GURL(kAppUrl).GetWithoutFilename();
     WebApplicationInfo web_app_info;
     UpdateWebAppInfoFromManifest(manifest, &web_app_info,
                                  ForInstallableSite::kYes);

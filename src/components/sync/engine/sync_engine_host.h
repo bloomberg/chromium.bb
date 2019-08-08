@@ -41,7 +41,6 @@ class SyncEngineHost {
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const std::string& cache_guid,
-      const std::string& session_name,
       const std::string& birthday,
       const std::string& bag_of_chips,
       bool success) = 0;
@@ -85,9 +84,6 @@ class SyncEngineHost {
 
   // Called to perform migration of |types|.
   virtual void OnMigrationNeededForTypes(ModelTypeSet types) = 0;
-
-  // Called when new datatypes are available for registration.
-  virtual void OnExperimentsChanged(const Experiments& experiments) = 0;
 
   // Called when the sync cycle returns there is an user actionable error.
   virtual void OnActionableError(const SyncProtocolError& error) = 0;

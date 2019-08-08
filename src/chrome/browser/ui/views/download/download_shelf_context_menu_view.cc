@@ -25,6 +25,7 @@ void DownloadShelfContextMenuView::Run(
     const gfx::Rect& rect,
     ui::MenuSourceType source_type,
     const base::Closure& on_menu_closed_callback) {
+  using Position = views::MenuAnchorPosition;
   ui::MenuModel* menu_model = GetMenuModel();
   // Run() should not be getting called if the DownloadItem was destroyed.
   DCHECK(menu_model);
@@ -32,15 +33,15 @@ void DownloadShelfContextMenuView::Run(
   menu_runner_.reset(new views::MenuRunner(
       menu_model,
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
-      base::Bind(&DownloadShelfContextMenuView::OnMenuClosed,
-                 base::Unretained(this), on_menu_closed_callback)));
+      base::BindRepeating(&DownloadShelfContextMenuView::OnMenuClosed,
+                          base::Unretained(this), on_menu_closed_callback)));
 
   // The menu's alignment is determined based on the UI layout.
-  views::MenuAnchorPosition position;
+  Position position;
   if (base::i18n::IsRTL())
-    position = views::MENU_ANCHOR_TOPRIGHT;
+    position = Position::kTopRight;
   else
-    position = views::MENU_ANCHOR_TOPLEFT;
+    position = Position::kTopLeft;
 
   menu_runner_->RunMenuAt(parent_widget, NULL, rect, position, source_type);
 }

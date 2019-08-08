@@ -9,7 +9,6 @@
 
 #include "base/process/kill.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -19,7 +18,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -37,7 +35,6 @@ class TestTabLoadTracker : public TabLoadTracker {
   using TabLoadTracker::StopTracking;
   using TabLoadTracker::DidStartLoading;
   using TabLoadTracker::DidReceiveResponse;
-  using TabLoadTracker::DidStopLoading;
   using TabLoadTracker::DidFailLoad;
   using TabLoadTracker::RenderProcessGone;
   using TabLoadTracker::OnPageAlmostIdle;
@@ -104,7 +101,6 @@ class TestWebContentsObserver : public content::WebContentsObserver {
   void DidReceiveResponse() override {
     tracker_->DidReceiveResponse(web_contents());
   }
-  void DidStopLoading() override { tracker_->DidStopLoading(web_contents()); }
   void DidFailLoad(content::RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
                    int error_code,
@@ -142,17 +138,6 @@ class TabLoadTrackerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  // Enables or disables the PAI feature so that the TabLoadTracker can be
-  // tested in both modes.
-  void SetPageAlmostIdleFeatureEnabled(bool enabled) {
-    feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-    if (enabled)
-      feature_list_->InitAndEnableFeature(features::kPageAlmostIdle);
-    else
-      feature_list_->InitAndDisableFeature(features::kPageAlmostIdle);
-    ASSERT_EQ(resource_coordinator::IsPageAlmostIdleSignalEnabled(), enabled);
-  }
-
   void ExpectTabCounts(size_t tabs,
                        size_t unloaded,
                        size_t loading,
@@ -175,7 +160,7 @@ class TabLoadTrackerTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(loaded, tracker().GetLoadedUiTabCount());
   }
 
-  void StateTransitionsTest(bool enable_pai, bool use_non_ui_tabs);
+  void StateTransitionsTest(bool use_non_ui_tabs);
 
   TestTabLoadTracker& tracker() { return tracker_; }
   MockObserver& observer() { return observer_; }
@@ -186,7 +171,6 @@ class TabLoadTrackerTest : public ChromeRenderViewHostTestHarness {
 
  private:
   TestTabLoadTracker tracker_;
-  std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
   MockObserver observer_;
 
   std::unique_ptr<content::WebContents> contents1_;
@@ -229,9 +213,7 @@ TEST_F(TabLoadTrackerTest, DetermineLoadingState) {
   EXPECT_EQ(LoadingState::LOADED, tracker().DetermineLoadingState(contents1()));
 }
 
-void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai,
-                                              bool use_non_ui_tabs) {
-  SetPageAlmostIdleFeatureEnabled(enable_pai);
+void TabLoadTrackerTest::StateTransitionsTest(bool use_non_ui_tabs) {
   tracker().SetAllTabsAreNonUiTabs(use_non_ui_tabs);
 
   auto* tester1 = content::WebContentsTester::For(contents1());
@@ -287,17 +269,15 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai,
               OnLoadingStateChange(contents2(), LoadingState::LOADING,
                                    LoadingState::LOADED));
   tester2->TestSetIsLoading(false);
-  if (enable_pai) {
-    // The state transition should only occur *after* the PAI signal when that
-    // feature is enabled.
-    if (use_non_ui_tabs) {
-      EXPECT_TAB_COUNTS(3, 1, 1, 1);
-      EXPECT_UI_TAB_COUNTS(0, 0, 0, 0);
-    } else {
-      EXPECT_TAB_AND_UI_TAB_COUNTS(3, 1, 1, 1);
-    }
-    tracker().OnPageAlmostIdle(contents2());
+  // The state transition should only occur *after* the PAI signal.
+  if (use_non_ui_tabs) {
+    EXPECT_TAB_COUNTS(3, 1, 1, 1);
+    EXPECT_UI_TAB_COUNTS(0, 0, 0, 0);
+  } else {
+    EXPECT_TAB_AND_UI_TAB_COUNTS(3, 1, 1, 1);
   }
+  tracker().OnPageAlmostIdle(contents2());
+
   if (use_non_ui_tabs) {
     EXPECT_TAB_COUNTS(3, 1, 0, 2);
     EXPECT_UI_TAB_COUNTS(0, 0, 0, 0);
@@ -353,19 +333,11 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai,
 }
 
 TEST_F(TabLoadTrackerTest, StateTransitions) {
-  StateTransitionsTest(false /* enable_pai */, false /* use_non_ui_tabs */);
-}
-
-TEST_F(TabLoadTrackerTest, StateTransitionsPAI) {
-  StateTransitionsTest(true /* enable_pai */, false /* use_non_ui_tabs */);
+  StateTransitionsTest(false /* use_non_ui_tabs */);
 }
 
 TEST_F(TabLoadTrackerTest, StateTransitionsNonUiTabs) {
-  StateTransitionsTest(false /* enable_pai */, true /* use_non_ui_tabs */);
-}
-
-TEST_F(TabLoadTrackerTest, StateTransitionsPAINonUiTabs) {
-  StateTransitionsTest(true /* enable_pai */, true /* use_non_ui_tabs */);
+  StateTransitionsTest(true /* use_non_ui_tabs */);
 }
 
 TEST_F(TabLoadTrackerTest, PrerenderContentsDoesNotChangeUiTabCounts) {
@@ -390,7 +362,7 @@ TEST_F(TabLoadTrackerTest, PrerenderContentsDoesNotChangeUiTabCounts) {
   // Prerender some contents.
   prerender::test_utils::RestorePrerenderMode restore_prerender_mode;
   prerender::PrerenderManager::SetMode(
-      prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
+      prerender::PrerenderManager::DEPRECATED_PRERENDER_MODE_ENABLED);
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForBrowserContext(profile());
   GURL url("http://www.example.com");

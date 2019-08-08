@@ -25,6 +25,8 @@ class FakeGaiaMixin : public InProcessBrowserTestMixin {
   static const char kFakeUserEmail[];
   static const char kFakeUserPassword[];
   static const char kFakeUserGaiaId[];
+  static const char kFakeAuthCode[];
+  static const char kFakeRefreshToken[];
   static const char kEmptyUserServices[];
 
   // FakeGaia is configured to return these cookies for kFakeUserEmail.
@@ -77,6 +79,7 @@ class FakeGaiaMixin : public InProcessBrowserTestMixin {
   void SetUp() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
  private:
   net::EmbeddedTestServer* embedded_test_server_;

@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -25,8 +26,8 @@ class RuleFeatureSetTest : public testing::Test {
 
   void SetUp() override {
     document_ = HTMLDocument::CreateForTest();
-    HTMLHtmlElement* html = HTMLHtmlElement::Create(*document_);
-    html->AppendChild(HTMLBodyElement::Create(*document_));
+    auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document_);
+    html->AppendChild(MakeGarbageCollected<HTMLBodyElement>(*document_));
     document_->AppendChild(html);
 
     document_->body()->SetInnerHTMLFromString("<b><i></i></b>");

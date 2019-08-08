@@ -209,7 +209,7 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
 
     media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
         media_player_id_->render_frame_host->GetRoutingID(),
-        media_player_id_->delegate_id));
+        media_player_id_->delegate_id, false /* triggered_by_user */));
     return false /* paused */;
   }
 
@@ -406,7 +406,7 @@ void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
     // Pause the current video so there is only one video playing at a time.
     media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
         media_player_id_->render_frame_host->GetRoutingID(),
-        media_player_id_->delegate_id));
+        media_player_id_->delegate_id, false /* triggered_by_user */));
   }
 
   if (media_player_id_.has_value()) {

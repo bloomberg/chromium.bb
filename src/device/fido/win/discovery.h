@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/win/authenticator.h"
-#include "device/fido/win/webauthn_api.h"
 
 namespace device {
 
@@ -20,8 +19,7 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticatorDiscovery
     : public FidoDiscoveryBase {
  public:
-  WinWebAuthnApiAuthenticatorDiscovery(WinWebAuthnApi* const win_webauthn_api,
-                                       HWND parent_window);
+  WinWebAuthnApiAuthenticatorDiscovery(HWND parent_window);
   ~WinWebAuthnApiAuthenticatorDiscovery() override;
 
   // FidoDiscoveryBase:
@@ -31,7 +29,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticatorDiscovery
   void AddAuthenticator();
 
   std::unique_ptr<WinWebAuthnApiAuthenticator> authenticator_;
-  WinWebAuthnApi* const win_webauthn_api_;
   const HWND parent_window_;
 
   base::WeakPtrFactory<WinWebAuthnApiAuthenticatorDiscovery> weak_factory_;

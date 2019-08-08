@@ -292,6 +292,8 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
 
         @Override
         public void didAttachInterstitialPage() {
+            // TODO(huayinz): Observe #didAttachInterstitialPage and #didDetachInterstitialPage
+            // in InfoBarContainer.
             InfoBarContainer.get(mTab).setVisibility(View.INVISIBLE);
             mTab.showRenderedPage();
 
@@ -300,9 +302,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
                 observers.next().onDidAttachInterstitialPage(mTab);
             }
             mTab.notifyLoadProgress(mTab.getProgress());
-
-            mTab.updateFullscreenEnabledState();
-
+            TabFullscreenHandler.updateEnabledState(mTab);
             PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
             auditor.notifyCertificateFailure(
                     PolicyAuditor.nativeGetCertificateFailure(mTab.getWebContents()),
@@ -318,9 +318,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
                 observers.next().onDidDetachInterstitialPage(mTab);
             }
             mTab.notifyLoadProgress(mTab.getProgress());
-
-            mTab.updateFullscreenEnabledState();
-
+            TabFullscreenHandler.updateEnabledState(mTab);
             if (!mTab.maybeShowNativePage(mTab.getUrl(), false)) {
                 mTab.showRenderedPage();
             }

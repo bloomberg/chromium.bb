@@ -72,18 +72,21 @@ base::ModuleCache* CallStackProfileBuilder::GetModuleCache() {
 // suspended so must not take any locks, including indirectly through use of
 // heap allocation, LOG, CHECK, or DCHECK.
 void CallStackProfileBuilder::RecordMetadata() {
-  if (!work_id_recorder_)
-    return;
-  unsigned int work_id = work_id_recorder_->RecordWorkId();
-  // A work id of 0 indicates that the message loop has not yet started.
-  if (work_id == 0)
-    return;
-  is_continued_work_ = (last_work_id_ == work_id);
-  last_work_id_ = work_id;
+  if (work_id_recorder_) {
+    unsigned int work_id = work_id_recorder_->RecordWorkId();
+    // A work id of 0 indicates that the message loop has not yet started.
+    if (work_id != 0) {
+      is_continued_work_ = (last_work_id_ == work_id);
+      last_work_id_ = work_id;
+    }
+  }
+
+  if (metadata_recorder_)
+    metadata_item_count_ = metadata_recorder_->GetItems(&metadata_items_);
 }
 
 void CallStackProfileBuilder::OnSampleCompleted(
-    std::vector<base::StackSamplingProfiler::Frame> frames) {
+    std::vector<base::Frame> frames) {
   // Write CallStackProfile::Stack protobuf message.
   CallStackProfile::Stack stack;
 
@@ -134,22 +137,21 @@ void CallStackProfileBuilder::OnSampleCompleted(
   if (is_continued_work_)
     stack_sample_proto->set_continued_work(is_continued_work_);
 
-  // TODO(crbug.com/913570): Update metadata recording to not heap allocate
-  // and move to RecordMetadata().
-  if (metadata_recorder_) {
-    uint64_t item_hash;
-    int64_t item_value;
-    std::tie(item_hash, item_value) = metadata_recorder_->GetHashAndValue();
+  for (size_t i = 0; i < metadata_item_count_; ++i) {
+    const MetadataRecorder::Item recorder_item = metadata_items_[i];
     int next_item_index = call_stack_profile->metadata_name_hash_size();
-    auto result = metadata_hashes_cache_.emplace(item_hash, next_item_index);
+    auto result = metadata_hashes_cache_.emplace(recorder_item.name_hash,
+                                                 next_item_index);
     if (result.second)
-      call_stack_profile->add_metadata_name_hash(item_hash);
-    CallStackProfile::MetadataItem* item = stack_sample_proto->add_metadata();
-    // TODO(crbug.com/913570): Only add metadata items if different than
-    // the value for the previous sample, per
+      call_stack_profile->add_metadata_name_hash(recorder_item.name_hash);
+    CallStackProfile::MetadataItem* profile_item =
+        stack_sample_proto->add_metadata();
+    // TODO(crbug.com/913570): Before uploading real metadata, ensure that we
+    // add metadata items only if the value differs from the value for the
+    // previous sample, per
     // https://cs.chromium.org/chromium/src/third_party/metrics_proto/call_stack_profile.proto?rcl=8811ddb099&l=108-110.
-    item->set_name_hash_index(result.first->second);
-    item->set_value(item_value);
+    profile_item->set_name_hash_index(result.first->second);
+    profile_item->set_value(recorder_item.value);
   }
 }
 
@@ -196,6 +198,13 @@ void CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
     metrics::mojom::CallStackProfileCollectorPtr browser_interface) {
   g_child_call_stack_profile_collector.Get().SetParentProfileCollector(
       std::move(browser_interface));
+}
+
+// static
+MetadataRecorder&
+CallStackProfileBuilder::GetStackSamplingProfilerMetadataRecorder() {
+  static base::NoDestructor<MetadataRecorder> instance;
+  return *instance;
 }
 
 void CallStackProfileBuilder::PassProfilesToMetricsProvider(

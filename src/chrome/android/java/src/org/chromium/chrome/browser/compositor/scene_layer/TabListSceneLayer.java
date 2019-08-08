@@ -60,15 +60,15 @@ public class TabListSceneLayer extends SceneLayer {
 
         Resources res = context.getResources();
         final float dpToPx = res.getDisplayMetrics().density;
+        final int tabListBgColor = getTabListBackgroundColor(context);
 
         LayoutTab[] tabs = layout.getLayoutTabsToRender();
         int tabsCount = tabs != null ? tabs.length : 0;
 
         nativeBeginBuildingFrame(mNativePtr);
 
-        nativeUpdateLayer(mNativePtr, getTabListBackgroundColor(context), viewport.left,
-                viewport.top, viewport.width(), viewport.height(), layerTitleCache,
-                tabContentManager, resourceManager);
+        nativeUpdateLayer(mNativePtr, tabListBgColor, viewport.left, viewport.top, viewport.width(),
+                viewport.height(), layerTitleCache, tabContentManager, resourceManager);
 
         boolean isTabGroupEnabled = FeatureUtilities.isTabGroupsAndroidEnabled();
 
@@ -84,21 +84,24 @@ public class TabListSceneLayer extends SceneLayer {
         boolean isHTSEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
 
+        final float shadowAlpha = ColorUtils.shouldUseLightForegroundOnBackground(tabListBgColor)
+                ? LayoutTab.SHADOW_ALPHA_ON_DARK_BG
+                : LayoutTab.SHADOW_ALPHA_ON_LIGHT_BG;
+
         for (int i = 0; i < tabsCount; i++) {
             LayoutTab t = tabs[i];
             assert t.isVisible() : "LayoutTab in that list should be visible";
             final float decoration = t.getDecorationAlpha();
 
-            float shadowAlpha = decoration / 2;
             int urlBarBackgroundId = R.drawable.modern_location_bar;
-            boolean useLightIcon = t.isIncognito() && !isHTSEnabled;
+            boolean useIncognitoColors = t.isIncognito() && !isHTSEnabled;
 
-            int defaultThemeColor = ColorUtils.getDefaultThemeColor(res, useLightIcon);
+            int defaultThemeColor = ColorUtils.getDefaultThemeColor(res, useIncognitoColors);
 
             // In the modern design, the text box is always drawn opaque in the compositor.
             float textBoxAlpha = 1.f;
 
-            int closeButtonColor = useLightIcon
+            int closeButtonColor = useIncognitoColors
                     ? Color.WHITE
                     : ApiCompatibilityUtils.getColor(res, R.color.light_icon_color);
             float closeButtonSizePx =
@@ -126,8 +129,8 @@ public class TabListSceneLayer extends SceneLayer {
                     Math.min(t.getClippedHeight(), t.getScaledContentHeight()) * dpToPx,
                     t.getTiltXPivotOffset() * dpToPx, t.getTiltYPivotOffset() * dpToPx,
                     t.getTiltX(), t.getTiltY(), t.getAlpha(), t.getBorderAlpha() * decoration,
-                    t.getBorderInnerShadowAlpha() * decoration, decoration, shadowAlpha,
-                    t.getBorderCloseButtonAlpha() * decoration,
+                    t.getBorderInnerShadowAlpha() * decoration, decoration,
+                    shadowAlpha * decoration, t.getBorderCloseButtonAlpha() * decoration,
                     LayoutTab.CLOSE_BUTTON_WIDTH_DP * dpToPx, closeButtonSizePx,
                     t.getStaticToViewBlend(), t.getBorderScale(), t.getSaturation(),
                     t.getBrightness(), t.showToolbar(), defaultThemeColor,

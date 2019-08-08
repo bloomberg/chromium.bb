@@ -235,14 +235,6 @@ interface IDBCallbacks {
   // Database::Get / Cursor::Advance
   SuccessValue(IDBReturnValue? value);
 
-  // Cursor::Continue / Advance
-  SuccessCursorContinue(IDBKey key, IDBKey primary_key, IDBValue? value);
-
-  // Cursor::Prefetch
-  SuccessCursorPrefetch(array<IDBKey> keys,
-                        array<IDBKey> primary_keys,
-                        array<IDBValue> values);
-
   // Database::GetAll
   SuccessArray(array<IDBReturnValue> values);
 
@@ -275,43 +267,47 @@ struct IDBError {
 };
 
 struct IDBCursorValue {
-  IDBKey key;
-  IDBKey primary_key;
-  IDBValue value;
+  array<IDBKey> keys;
+  array<IDBKey> primary_keys;
+  array<IDBValue> values;
 };
 
+// Advance(), CursorContinue(), and Prefetch() can call its return callback in
+// one of 3 ways:
+// * with |error| set and |value| unset, if an error occurs
+// * with |error| unset and |value| set, under normal operation
+// * with |error| unset and |value| unset, under normal operation when the end
+//   of the source being iterated is reached
 interface IDBCursor {
-  // Advance() can call its return callback in one of 3 ways:
-  // * with |error| set and |value| unset, if an error occurs
-  // * with |error| unset and |value| set, under normal operation
-  // * with |error| unset and |value| unset, under normal operation when the end
-  //   of the source being iterated is reached
   Advance(uint32 count) => (IDBError? error, IDBCursorValue? value);
-
-  // CursorContinue() can call its return callback in one of 3 ways:
-  // * with |error| set and |value| unset, if an error occurs
-  // * with |error| unset and |value| set, under normal operation
-  // * with |error| unset and |value| unset, under normal operation when the end
-  //   of the source being iterated is reached
   CursorContinue(IDBKey key, IDBKey primary_key)
     => (IDBError? error, IDBCursorValue? value);
-
-  Prefetch(int32 count, associated IDBCallbacks callbacks);
+  Prefetch(int32 count)
+    => (IDBError? error, IDBCursorValue? value);
   PrefetchReset(int32 used_prefetches, int32 unused_prefetches);
 };
 
-interface IDBDatabase {
-  CreateObjectStore(int64 transaction_id,
-                    int64 object_store_id,
+interface IDBTransaction {
+  CreateObjectStore(int64 object_store_id,
                     mojo_base.mojom.String16 name,
                     IDBKeyPath key_path,
                     bool auto_increment);
-  DeleteObjectStore(int64 transaction_id,
-                    int64 object_store_id);
+  DeleteObjectStore(int64 object_store_id);
+  Put(int64 object_store_id,
+      IDBValue value,
+      IDBKey key,
+      IDBPutMode mode,
+      array<IDBIndexKeys> index_keys,
+      associated IDBCallbacks callbacks);
+  Commit(int64 num_errors_handled);
+};
+
+interface IDBDatabase {
   RenameObjectStore(int64 transaction_id,
                     int64 object_store_id,
                     mojo_base.mojom.String16 new_name);
-  CreateTransaction(int64 transaction_id,
+  CreateTransaction(associated IDBTransaction& transaction_request,
+                    int64 transaction_id,
                     array<int64> object_store_ids,
                     IDBTransactionMode mode);
   Close();
@@ -336,13 +332,6 @@ interface IDBDatabase {
          bool key_only,
          int64 max_count,
          associated IDBCallbacks callbacks);
-  Put(int64 transaction_id,
-      int64 object_store_id,
-      IDBValue value,
-      IDBKey key,
-      IDBPutMode mode,
-      array<IDBIndexKeys> index_keys,
-      associated IDBCallbacks callbacks);
   SetIndexKeys(int64 transaction_id,
                int64 object_store_id,
                IDBKey primary_key,
@@ -391,8 +380,6 @@ interface IDBDatabase {
               int64 index_id,
               mojo_base.mojom.String16 new_name);
   Abort(int64 transaction_id);
-  Commit(int64 transaction_id,
-         int64 num_errors_handled);
 };
 
 interface IDBFactory {
@@ -402,6 +389,7 @@ interface IDBFactory {
        associated IDBDatabaseCallbacks database_callbacks,
        mojo_base.mojom.String16 name,
        int64 version,
+       associated IDBTransaction& version_change_transaction_request,
        int64 transaction_id);
   DeleteDatabase(associated IDBCallbacks callbacks,
                  mojo_base.mojom.String16 name, bool force_close);

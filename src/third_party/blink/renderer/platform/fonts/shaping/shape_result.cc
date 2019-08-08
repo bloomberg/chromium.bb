@@ -375,19 +375,19 @@ void HarfBuzzRunGlyphData::SetGlyphAndPositions(uint16_t new_glyph_id,
   this->advance = new_advance;
   this->offset = new_offset;
   this->safe_to_break_before = new_safe_to_break_before;
-  this->bounds_before_raw_value = std::numeric_limits<int16_t>::max();
-  this->bounds_after_raw_value = std::numeric_limits<int16_t>::max();
+  this->bounds_x_raw_value = std::numeric_limits<int16_t>::max();
+  this->bounds_width_raw_value = std::numeric_limits<int16_t>::max();
 }
 
-void HarfBuzzRunGlyphData::SetGlyphBounds(LayoutUnit bounds_before,
-                                          LayoutUnit bounds_after) {
-  this->bounds_before_raw_value =
-      base::IsValueInRangeForNumericType<int16_t>(bounds_before.RawValue())
-          ? bounds_before.RawValue()
+void HarfBuzzRunGlyphData::SetGlyphBounds(LayoutUnit bounds_x,
+                                          LayoutUnit bounds_width) {
+  this->bounds_x_raw_value =
+      base::IsValueInRangeForNumericType<int16_t>(bounds_x.RawValue())
+          ? bounds_x.RawValue()
           : std::numeric_limits<int16_t>::max();
-  this->bounds_after_raw_value =
-      base::IsValueInRangeForNumericType<int16_t>(bounds_after.RawValue())
-          ? bounds_after.RawValue()
+  this->bounds_width_raw_value =
+      base::IsValueInRangeForNumericType<int16_t>(bounds_width.RawValue())
+          ? bounds_width.RawValue()
           : std::numeric_limits<int16_t>::max();
 }
 
@@ -1134,8 +1134,13 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
 #else
     FloatRect glyph_bounds(bounds_list[i]);
 #endif
-    glyph_data.SetGlyphBounds(LayoutUnit(glyph_bounds.X()),
-                              LayoutUnit(glyph_bounds.MaxX()));
+    if (is_horizontal_run) {
+      glyph_data.SetGlyphBounds(LayoutUnit(glyph_bounds.X()),
+                                LayoutUnit(glyph_bounds.Width()));
+    } else {
+      glyph_data.SetGlyphBounds(LayoutUnit(glyph_bounds.Y()),
+                                LayoutUnit(glyph_bounds.Height()));
+    }
     bounds.Unite<is_horizontal_run>(glyph_data, glyph_bounds);
     bounds.origin += advance;
 
@@ -1272,6 +1277,21 @@ void ShapeResult::UpdateStartIndex() {
   start_index_ = ComputeStartIndex();
 }
 
+namespace {
+
+static inline FloatRect GlyphBounds(const SimpleFontData& font_data,
+                                    const HarfBuzzRunGlyphData& glyph_data) {
+  // Bounds are united which requires a non-zero height. The correct height is
+  // set at the end, so pick a small non-zero number here.
+  float height = 0.1f;
+  return glyph_data.HasValidGlyphBounds()
+             ? FloatRect(glyph_data.GlyphBoundsLogicalX(), 0,
+                         glyph_data.GlyphBoundsLogicalWidth(), height)
+             : font_data.BoundsForGlyph(glyph_data.glyph);
+}
+
+}  // Anonymous namespace
+
 // Returns the left of the glyph bounding box of the left most character.
 float ShapeResult::LineLeftBounds() const {
   DCHECK(!runs_.IsEmpty());
@@ -1285,8 +1305,7 @@ float ShapeResult::LineLeftBounds() const {
   for (const auto& glyph : run.glyph_data_) {
     if (character_index != glyph.character_index)
       break;
-    bounds.Unite(is_horizontal_run, glyph,
-                 font_data.BoundsForGlyph(glyph.glyph));
+    bounds.Unite(is_horizontal_run, glyph, GlyphBounds(font_data, glyph));
     bounds.origin += glyph.advance;
   }
   if (UNLIKELY(!is_horizontal_run))
@@ -1308,8 +1327,7 @@ float ShapeResult::LineRightBounds() const {
     if (character_index != glyph.character_index)
       break;
     bounds.origin -= glyph.advance;
-    bounds.Unite(is_horizontal_run, glyph,
-                 font_data.BoundsForGlyph(glyph.glyph));
+    bounds.Unite(is_horizontal_run, glyph, GlyphBounds(font_data, glyph));
   }
   // If the last character has no ink (e.g., space character), assume the
   // character before will not overflow more than the width of the space.
@@ -1417,11 +1435,12 @@ unsigned ShapeResult::CopyRangeInternal(unsigned run_index,
   if (UNLIKELY(Rtl() && target->runs_.size() != target_run_size_before))
     target->ReorderRtlRuns(target_run_size_before);
 
-  // Compute new glyph bounding box.
-  //
-  // Computing glyph bounding box from Font is one of the most expensive
-  // operations. If |start_offset| or |end_offset| are the start/end of |this|,
-  // use the current |glyph_bounding_box_| for the side.
+  // Compute the new glyph bounding box. We only need accurate (logical) left
+  // and right edges. For the (logical) top and bottom base it on the overall
+  // dimensions of the run which is guaranteed to fully contain the run.
+  // This produces a bounding box that is accurate enough without having to call
+  // out to Skia for glyph metrics and recomputing the bounds which is one of
+  // the most expensive steps in shaping.
   DCHECK(primary_font_.get() == target->primary_font_.get());
   bool know_left_edge = start_offset <= StartIndex();
   bool know_right_edge = end_offset >= EndIndex();
@@ -1572,6 +1591,36 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
   return result;
 }
 
+scoped_refptr<ShapeResult> ShapeResult::CreateForSpaces(const Font* font,
+                                                        TextDirection direction,
+                                                        unsigned start_index,
+                                                        unsigned length,
+                                                        float width) {
+  DCHECK_GT(length, 0u);
+  const SimpleFontData* font_data = font->PrimaryFont();
+  scoped_refptr<ShapeResult> result =
+      ShapeResult::Create(font, length, direction);
+  result->num_glyphs_ = length;
+  DCHECK_EQ(result->num_glyphs_, length);  // no overflow
+  result->has_vertical_offsets_ =
+      font_data->PlatformData().IsVerticalAnyUpright();
+  hb_direction_t hb_direction =
+      IsLtr(direction) ? HB_DIRECTION_LTR : HB_DIRECTION_RTL;
+  scoped_refptr<ShapeResult::RunInfo> run = RunInfo::Create(
+      font_data, hb_direction, CanvasRotationInVertical::kRegular,
+      HB_SCRIPT_COMMON, start_index, length, length);
+  result->width_ = run->width_ = width;
+  for (unsigned i = 0; i < length; i++) {
+    HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
+    glyph_data.SetGlyphAndPositions(font_data->SpaceGlyph(), i, width,
+                                    FloatSize(), true);
+    width = 0;
+  }
+  result->runs_.push_back(std::move(run));
+  result->UpdateStartIndex();
+  return result;
+}
+
 void ShapeResult::ToString(StringBuilder* output) const {
   output->Append("#chars=");
   output->AppendNumber(num_characters_);
@@ -1590,7 +1639,7 @@ void ShapeResult::ToString(StringBuilder* output) const {
     output->Append(", #chars=");
     output->AppendNumber(run.num_characters_);
     output->Append(", dir=");
-    output->AppendNumber(run.direction_);
+    output->AppendNumber(static_cast<uint32_t>(run.direction_));
     output->Append(", glyphs[");
     output->AppendNumber(run.glyph_data_.size());
     output->Append("]{");

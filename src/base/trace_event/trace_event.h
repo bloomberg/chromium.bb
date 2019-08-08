@@ -310,6 +310,21 @@
         INTERNAL_TRACE_EVENT_UID(category_group_enabled), name, h);          \
   }
 
+#define INTERNAL_TRACE_EVENT_ADD_SCOPED_WITH_FLAGS(category_group, name,     \
+                                                   flags, ...)               \
+  INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group);                    \
+  trace_event_internal::ScopedTracer INTERNAL_TRACE_EVENT_UID(tracer);       \
+  if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED()) {                       \
+    base::trace_event::TraceEventHandle h =                                  \
+        trace_event_internal::AddTraceEvent(                                 \
+            TRACE_EVENT_PHASE_COMPLETE,                                      \
+            INTERNAL_TRACE_EVENT_UID(category_group_enabled), name,          \
+            trace_event_internal::kGlobalScope, trace_event_internal::kNoId, \
+            flags, trace_event_internal::kNoId, ##__VA_ARGS__);              \
+    INTERNAL_TRACE_EVENT_UID(tracer).Initialize(                             \
+        INTERNAL_TRACE_EVENT_UID(category_group_enabled), name, h);          \
+  }
+
 #define INTERNAL_TRACE_EVENT_ADD_SCOPED_WITH_FLOW(category_group, name,      \
                                                   bind_id, flow_flags, ...)  \
   INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group);                    \
@@ -442,13 +457,14 @@
 //
 // This implementation is for when location sources are available.
 // TODO(ssid): The program counter of the current task should be added here.
-#define INTERNAL_TRACE_TASK_EXECUTION(run_function, task)                 \
-  TRACE_EVENT2("toplevel", run_function, "src_file",                      \
-               (task).posted_from.file_name(), "src_func",                \
-               (task).posted_from.function_name());                       \
-  TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION INTERNAL_TRACE_EVENT_UID( \
-      task_event)((task).posted_from.file_name());                        \
-  TRACE_HEAP_PROFILER_API_SCOPED_WITH_PROGRAM_COUNTER                     \
+#define INTERNAL_TRACE_TASK_EXECUTION(run_function, task)                      \
+  INTERNAL_TRACE_EVENT_ADD_SCOPED_WITH_FLAGS(                                  \
+      "toplevel", run_function, TRACE_EVENT_FLAG_TYPED_PROTO_ARGS, "src_file", \
+      (task).posted_from.file_name(), "src_func",                              \
+      (task).posted_from.function_name());                                     \
+  TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION INTERNAL_TRACE_EVENT_UID(      \
+      task_event)((task).posted_from.file_name());                             \
+  TRACE_HEAP_PROFILER_API_SCOPED_WITH_PROGRAM_COUNTER                          \
   INTERNAL_TRACE_EVENT_UID(task_pc_event)((task).posted_from.program_counter());
 
 #else
@@ -456,11 +472,13 @@
 // TODO(http://crbug.com760702) remove file name and just pass the program
 // counter to the heap profiler macro.
 // TODO(ssid): The program counter of the current task should be added here.
-#define INTERNAL_TRACE_TASK_EXECUTION(run_function, task)                      \
-  TRACE_EVENT1("toplevel", run_function, "src", (task).posted_from.ToString()) \
-  TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION INTERNAL_TRACE_EVENT_UID(      \
-      task_event)((task).posted_from.file_name());                             \
-  TRACE_HEAP_PROFILER_API_SCOPED_WITH_PROGRAM_COUNTER                          \
+#define INTERNAL_TRACE_TASK_EXECUTION(run_function, task)                 \
+  INTERNAL_TRACE_EVENT_ADD_SCOPED_WITH_FLAGS(                             \
+      "toplevel", run_function, TRACE_EVENT_FLAG_TYPED_PROTO_ARGS, "src", \
+      (task).posted_from.ToString())                                      \
+  TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION INTERNAL_TRACE_EVENT_UID( \
+      task_event)((task).posted_from.file_name());                        \
+  TRACE_HEAP_PROFILER_API_SCOPED_WITH_PROGRAM_COUNTER                     \
   INTERNAL_TRACE_EVENT_UID(task_pc_event)((task).posted_from.program_counter());
 
 #endif

@@ -13,19 +13,18 @@
 #include "base/memory/ptr_util.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
-#include "ui/display/manager/fake_display_delegate.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/system_input_injector.h"
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
-#include "ui/ozone/platform/wayland/wayland_connection.h"
-#include "ui/ozone/platform/wayland/wayland_connection_connector.h"
-#include "ui/ozone/platform/wayland/wayland_input_method_context_factory.h"
-#include "ui/ozone/platform/wayland/wayland_output_manager.h"
-#include "ui/ozone/platform/wayland/wayland_surface_factory.h"
-#include "ui/ozone/platform/wayland/wayland_window.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
+#include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_connection_connector.h"
+#include "ui/ozone/platform/wayland/host/wayland_input_method_context_factory.h"
+#include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
+#include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -114,7 +113,7 @@ class OzonePlatformWayland : public OzonePlatform {
 
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return std::make_unique<display::FakeDisplayDelegate>();
+    return nullptr;
   }
 
   std::unique_ptr<PlatformScreen> CreateScreen() override {
@@ -168,8 +167,10 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   void InitializeGPU(const InitParams& args) override {
-    proxy_.reset(new WaylandConnectionProxy(connection_.get()));
-    surface_factory_.reset(new WaylandSurfaceFactory(proxy_.get()));
+    surface_factory_ = std::make_unique<WaylandSurfaceFactory>();
+    proxy_ = std::make_unique<WaylandConnectionProxy>(connection_.get(),
+                                                      surface_factory_.get());
+    surface_factory_->SetProxy(proxy_.get());
 #if defined(WAYLAND_GBM)
     const base::FilePath drm_node_path = path_finder_.GetDrmRenderNodePath();
     if (drm_node_path.empty()) {

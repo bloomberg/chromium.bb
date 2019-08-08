@@ -10,10 +10,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media_stream_video_sink.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_video_renderer.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -36,7 +36,7 @@ namespace content {
 // video_decoder_unittest.cc?revision=180591&view=markup
 class CONTENT_EXPORT MediaStreamVideoRendererSink
     : public blink::WebMediaStreamVideoRenderer,
-      public MediaStreamVideoSink {
+      public blink::MediaStreamVideoSink {
  public:
   MediaStreamVideoRendererSink(
       const blink::WebMediaStreamTrack& video_track,

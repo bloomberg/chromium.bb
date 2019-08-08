@@ -123,18 +123,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
                  std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
       WARN_UNUSED_RESULT;
 
-  // Retrieves all stored credentials with SCHEME_HTTP that have a realm whose
-  // organization-identifying name -- that is, the first domain name label below
-  // the effective TLD -- matches that of |signon_realm|. Return value indicates
-  // a successful query (but potentially no results).
-  //
-  // For example, the organization-identifying name of "https://foo.example.org"
-  // is `example`, and logins will be returned for "http://bar.example.co.uk",
-  // but not for "http://notexample.com" or "https://example.foo.com".
-  bool GetLoginsForSameOrganizationName(
-      const std::string& signon_realm,
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms);
-
   // Gets all logins created from |begin| onwards (inclusive) and before |end|.
   // You may use a null Time value to do an unbounded search in either
   // direction. |key_to_form_map| must not be null and will be used to return
@@ -183,6 +171,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
 
   // PasswordStoreSync::MetadataStore implementation.
   std::unique_ptr<syncer::MetadataBatch> GetAllSyncMetadata() override;
+  void DeleteAllSyncMetadata() override;
   bool UpdateSyncMetadata(syncer::ModelType model_type,
                           const std::string& storage_key,
                           const sync_pb::EntityMetadata& metadata) override;
@@ -193,10 +182,12 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
       const sync_pb::ModelTypeState& model_type_state) override;
   bool ClearModelTypeState(syncer::ModelType model_type) override;
 
-  // Callers that requires transaction support should call there methods to
-  // begin and commit transactions. They delegate to the transaction support of
-  // the underlying database. Only one transaction may exist at a time.
+  // Callers that requires transaction support should call these methods to
+  // begin, rollback and commit transactions. They delegate to the transaction
+  // support of the underlying database. Only one transaction may exist at a
+  // time.
   bool BeginTransaction();
+  void RollbackTransaction();
   bool CommitTransaction();
 
   StatisticsTable& stats_table() { return stats_table_; }
@@ -332,7 +323,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   std::string get_statement_psl_;
   std::string get_statement_federated_;
   std::string get_statement_psl_federated_;
-  std::string get_same_organization_name_logins_statement_;
   std::string created_statement_;
   std::string synced_statement_;
   std::string blacklisted_statement_;

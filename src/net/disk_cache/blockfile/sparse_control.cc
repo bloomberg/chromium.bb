@@ -196,7 +196,7 @@ namespace disk_cache {
 
 SparseControl::SparseControl(EntryImpl* entry)
     : entry_(entry),
-      child_(NULL),
+      child_(nullptr),
       operation_(kNoOperation),
       pending_(false),
       finished_(false),
@@ -279,8 +279,8 @@ int SparseControl::StartIO(SparseOperation op,
   // Copy the operation parameters.
   operation_ = op;
   offset_ = offset;
-  user_buf_ =
-      buf ? base::MakeRefCounted<net::DrainableIOBuffer>(buf, buf_len) : NULL;
+  user_buf_ = buf ? base::MakeRefCounted<net::DrainableIOBuffer>(buf, buf_len)
+                  : nullptr;
   buf_len_ = buf_len;
   user_callback_ = std::move(callback);
 
@@ -299,7 +299,7 @@ int SparseControl::StartIO(SparseOperation op,
   if (!pending_) {
     // Everything was done synchronously.
     operation_ = kNoOperation;
-    user_buf_ = NULL;
+    user_buf_ = nullptr;
     user_callback_.Reset();
     return result_;
   }
@@ -316,8 +316,8 @@ int SparseControl::GetAvailableRange(int64_t offset, int len, int64_t* start) {
   DCHECK(start);
 
   range_found_ = false;
-  int result =
-      StartIO(kGetRangeOperation, offset, NULL, len, CompletionOnceCallback());
+  int result = StartIO(kGetRangeOperation, offset, nullptr, len,
+                       CompletionOnceCallback());
   if (range_found_) {
     *start = offset_;
     return result;
@@ -515,7 +515,7 @@ void SparseControl::CloseChild() {
                              CompletionOnceCallback(), false);
   if (rv != sizeof(child_data_))
     DLOG(ERROR) << "Failed to save child data";
-  child_ = NULL;
+  child_ = nullptr;
 }
 
 std::string SparseControl::GenerateChildKey() {
@@ -527,7 +527,7 @@ std::string SparseControl::GenerateChildKey() {
 bool SparseControl::KillChildAndContinue(const std::string& key, bool fatal) {
   SetChildBit(false);
   child_->DoomImpl();
-  child_ = NULL;
+  child_ = nullptr;
   if (fatal) {
     result_ = net::ERR_CACHE_READ_FAILURE;
     return false;
@@ -547,7 +547,7 @@ bool SparseControl::ContinueWithoutChild(const std::string& key) {
 
   child_ = entry_->backend_->CreateEntryImpl(key);
   if (!child_) {
-    child_ = NULL;
+    child_ = nullptr;
     result_ = net::ERR_CACHE_READ_FAILURE;
     return false;
   }
@@ -901,7 +901,7 @@ void SparseControl::OnChildIOCompleted(int result) {
 void SparseControl::DoUserCallback() {
   DCHECK(!user_callback_.is_null());
   CompletionOnceCallback cb = std::move(user_callback_);
-  user_buf_ = NULL;
+  user_buf_ = nullptr;
   pending_ = false;
   operation_ = kNoOperation;
   int rv = result_;

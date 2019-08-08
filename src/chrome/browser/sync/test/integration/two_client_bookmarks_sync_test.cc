@@ -22,11 +22,11 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/bookmarks/browser/bookmark_node.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
@@ -1382,10 +1382,9 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
-// This test is flaky, see htpp://crbug.com/908771
 // Merge moderately complex bookmark models.
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
-                       DISABLED_MC_MergeDifferentBMModelsModeratelyComplex) {
+                       MC_MergeDifferentBMModelsModeratelyComplex) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
 
@@ -1419,7 +1418,13 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
     ASSERT_NE(nullptr, AddURL(0, title, url));
     ASSERT_NE(nullptr, AddURL(1, title, url));
   }
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Enable sync on Client 0 and wait until bookmarks are committed.
+  ASSERT_TRUE(GetClient(0)->SetupSync()) << "GetClient(0)->SetupSync() failed.";
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+
+  // Enable sync on Client 1 and wait until all bookmarks are merged.
+  ASSERT_TRUE(GetClient(1)->SetupSync()) << "GetClient(1)->SetupSync() failed.";
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
@@ -1593,12 +1598,14 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::BOOKMARKS));
+  ASSERT_TRUE(
+      GetClient(1)->DisableSyncForType(syncer::UserSelectableType::kBookmarks));
   ASSERT_NE(nullptr, AddFolder(1, kGenericFolderName));
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_FALSE(AllModelsMatch());
 
-  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::BOOKMARKS));
+  ASSERT_TRUE(
+      GetClient(1)->EnableSyncForType(syncer::UserSelectableType::kBookmarks));
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
 }
 
@@ -1646,7 +1653,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
                        MC_DeleteBookmark) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::BOOKMARKS));
+  ASSERT_TRUE(
+      GetClient(1)->DisableSyncForType(syncer::UserSelectableType::kBookmarks));
 
   const GURL bar_url("http://example.com/bar");
   const GURL other_url("http://example.com/other");
@@ -1667,7 +1675,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_FALSE(HasNodeWithURL(0, bar_url));
   ASSERT_TRUE(HasNodeWithURL(0, other_url));
 
-  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::BOOKMARKS));
+  ASSERT_TRUE(
+      GetClient(1)->EnableSyncForType(syncer::UserSelectableType::kBookmarks));
   ASSERT_TRUE(AwaitQuiescence());
 
   ASSERT_FALSE(HasNodeWithURL(0, bar_url));
@@ -1887,7 +1896,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(IsEncryptionComplete(0));
   ASSERT_TRUE(IsEncryptionComplete(1));
-  ASSERT_TRUE(GetSyncService(1)->IsPassphraseRequired());
+  ASSERT_TRUE(GetSyncService(1)->GetUserSettings()->IsPassphraseRequired());
 
   // Client 0 adds bookmarks between the first two and between the second two.
   ASSERT_NE(nullptr, AddURL(0, 1, IndexedURLTitle(3), GURL(IndexedURL(3))));
@@ -2253,11 +2262,13 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   // Disable bookmark syncing on the first client, add another bookmark,
   // re-enable bookmark syncing and see that the second bookmark reaches the
   // second client.
-  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::BOOKMARKS));
+  ASSERT_TRUE(
+      GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kBookmarks));
   const std::string url_title_2 = "another happy little url";
   const GURL url_2("https://example.com/second");
   ASSERT_NE(nullptr, AddURL(0, GetBookmarkBarNode(0), 0, url_title_2, url_2));
-  ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncer::BOOKMARKS));
+  ASSERT_TRUE(
+      GetClient(0)->EnableSyncForType(syncer::UserSelectableType::kBookmarks));
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_EQ(initial_count + 2, CountAllBookmarks(0));
   ASSERT_EQ(initial_count + 2, CountAllBookmarks(1));

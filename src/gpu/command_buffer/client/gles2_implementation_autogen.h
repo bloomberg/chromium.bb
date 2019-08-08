@@ -1083,14 +1083,6 @@ void DiscardFramebufferEXT(GLenum target,
 
 void LoseContextCHROMIUM(GLenum current, GLenum other) override;
 
-void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
-
-void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
-
-void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
-
-void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
-
 void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
                                         GLuint dest_id,
                                         GLint x,
@@ -1347,12 +1339,12 @@ void DestroyGpuFenceCHROMIUM(GLuint gpu_fence_id) override;
 
 void InvalidateReadbackBufferShadowDataCHROMIUM(GLuint buffer_id) override;
 
-void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
-                                             GLenum attachment,
-                                             GLuint texture,
-                                             GLint level,
-                                             GLint baseViewIndex,
-                                             GLsizei numViews) override;
+void FramebufferTextureMultiviewOVR(GLenum target,
+                                    GLenum attachment,
+                                    GLuint texture,
+                                    GLint level,
+                                    GLint baseViewIndex,
+                                    GLsizei numViews) override;
 
 void MaxShaderCompilerThreadsKHR(GLuint count) override;
 

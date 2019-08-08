@@ -55,11 +55,13 @@ void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
 
       frame_info->id = frame->id().id;
 
-      auto* parent_frame = frame->GetParentFrameNode();
+      auto* parent_frame = frame->parent_frame_node();
       frame_info->parent_frame_id = parent_frame ? parent_frame->id().id : 0;
 
-      auto* process = frame->GetProcessNode();
+      auto* process = frame->process_node();
       frame_info->process_id = process ? process->id().id : 0;
+
+      frame_info->url = frame->url().spec();
 
       graph->frames.push_back(std::move(frame_info));
     }
@@ -73,7 +75,7 @@ void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
           resource_coordinator::mojom::WebUIPageInfo::New();
 
       page_info->id = page->id().id;
-      page_info->main_frame_url = page->main_frame_url();
+      page_info->main_frame_url = page->main_frame_url().spec();
 
       auto* main_frame = page->GetMainFrameNode();
       page_info->main_frame_id = main_frame ? main_frame->id().id : 0;

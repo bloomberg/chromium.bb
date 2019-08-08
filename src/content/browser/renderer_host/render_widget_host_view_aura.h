@@ -103,18 +103,18 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void InitAsChild(gfx::NativeView parent_view) override;
   void SetSize(const gfx::Size& size) override;
   void SetBounds(const gfx::Rect& rect) override;
-  gfx::NativeView GetNativeView() const override;
+  gfx::NativeView GetNativeView() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   ui::TextInputClient* GetTextInputClient() override;
-  bool HasFocus() const override;
+  bool HasFocus() override;
   void Show() override;
   void Hide() override;
   bool IsShowing() override;
   void WasUnOccluded() override;
   void WasOccluded() override;
-  gfx::Rect GetViewBounds() const override;
+  gfx::Rect GetViewBounds() override;
   bool IsMouseLocked() override;
-  gfx::Size GetVisibleViewportSize() const override;
+  gfx::Size GetVisibleViewportSize() override;
   void SetInsets(const gfx::Insets& insets) override;
   void FocusedNodeTouched(bool editable) override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
@@ -137,7 +137,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetTooltipText(const base::string16& tooltip_text) override;
   void DisplayTooltipText(const base::string16& tooltip_text) override;
   uint32_t GetCaptureSequenceNumber() const override;
-  bool IsSurfaceAvailableForCopy() const override;
+  bool IsSurfaceAvailableForCopy() override;
   void CopyFromSurface(
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
@@ -204,9 +204,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnSynchronizedDisplayPropertiesChanged() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
-
   void DidNavigate() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
+  bool CanSynchronizeVisualProperties() override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
@@ -246,6 +246,14 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+  // API to notify accessibility whether there is an active composition
+  // from TSF or not.
+  // It notifies the composition range, composition text and whether the
+  // composition has been committed or not.
+  void SetActiveCompositionForAccessibility(
+      const gfx::Range& range,
+      const base::string16& active_composition_text,
+      bool is_composition_committed) override;
 #endif
 
   // Overridden from display::DisplayObserver:
@@ -380,6 +388,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   friend class RenderWidgetHostViewAuraCopyRequestTest;
   friend class TestInputMethodObserver;
 #if defined(OS_WIN)
+  friend class AccessibilityObjectLifetimeWinBrowserTest;
   friend class AccessibilityTreeLinkageWinBrowserTest;
   friend class DirectManipulationBrowserTest;
 #endif
@@ -456,6 +465,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            TakeFallbackContent);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
                            DiscardDelegatedFrames);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
+                           ScrollOOPIFEditableElement);
 
   class WindowObserver;
   friend class WindowObserver;
@@ -574,6 +585,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void WindowTitleChanged();
 
   void InvalidateLocalSurfaceIdOnEviction();
+
+  // Called to process a display metrics change.
+  void ProcessDisplayMetricsChanged();
 
   const bool is_mus_browser_plugin_guest_;
 
@@ -708,6 +722,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       ui::EventPointerType::POINTER_TYPE_UNKNOWN;
 
   bool is_first_navigation_ = true;
+  viz::LocalSurfaceIdAllocation inset_surface_id_allocation_;
+
+  // See OnDisplayMetricsChanged() for details.
+  bool needs_to_update_display_metrics_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 

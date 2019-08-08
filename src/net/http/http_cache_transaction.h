@@ -242,8 +242,8 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
     STATE_GET_BACKEND,
     STATE_GET_BACKEND_COMPLETE,
     STATE_INIT_ENTRY,
-    STATE_OPEN_ENTRY,
-    STATE_OPEN_ENTRY_COMPLETE,
+    STATE_OPEN_OR_CREATE_ENTRY,
+    STATE_OPEN_OR_CREATE_ENTRY_COMPLETE,
     STATE_DOOM_ENTRY,
     STATE_DOOM_ENTRY_COMPLETE,
     STATE_CREATE_ENTRY,
@@ -324,8 +324,8 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   int DoGetBackend();
   int DoGetBackendComplete(int result);
   int DoInitEntry();
-  int DoOpenEntry();
-  int DoOpenEntryComplete(int result);
+  int DoOpenOrCreateEntry();
+  int DoOpenOrCreateEntryComplete(int result);
   int DoDoomEntry();
   int DoDoomEntryComplete(int result);
   int DoCreateEntry();
@@ -431,6 +431,10 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // but may also be modified in other cases.
   bool IsResponseConditionalizable(std::string* etag_value,
                                    std::string* last_modified_value) const;
+
+  // Returns true if |method_| indicates that we should only try to open an
+  // entry and not attempt to create.
+  bool ShouldOpenOnlyMethods() const;
 
   // Returns true if the resource info MemoryEntryDataHints bit flags in
   // |in_memory_info| and the current request & load flags suggest that

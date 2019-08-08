@@ -90,10 +90,15 @@ TestRenderWidgetHost* TestRenderFrameHost::GetRenderWidgetHost() {
       RenderFrameHostImpl::GetRenderWidgetHost());
 }
 
-void TestRenderFrameHost::AddMessageToConsole(ConsoleMessageLevel level,
-                                              const std::string& message) {
+void TestRenderFrameHost::AddMessageToConsole(
+    blink::mojom::ConsoleMessageLevel level,
+    const std::string& message) {
   console_messages_.push_back(message);
   RenderFrameHostImpl::AddMessageToConsole(level, message);
+}
+
+bool TestRenderFrameHost::IsTestRenderFrameHost() const {
+  return true;
 }
 
 void TestRenderFrameHost::InitializeRenderFrameIfNeeded() {
@@ -225,8 +230,8 @@ const std::vector<std::string>& TestRenderFrameHost::GetConsoleMessages() {
 void TestRenderFrameHost::SendNavigate(int nav_entry_id,
                                        bool did_create_new_entry,
                                        const GURL& url) {
-  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, false,
-                             url, ui::PAGE_TRANSITION_LINK, 200,
+  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, url,
+                             ui::PAGE_TRANSITION_LINK, 200,
                              ModificationCallback());
 }
 
@@ -235,16 +240,8 @@ void TestRenderFrameHost::SendNavigateWithTransition(
     bool did_create_new_entry,
     const GURL& url,
     ui::PageTransition transition) {
-  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, false,
-                             url, transition, 200, ModificationCallback());
-}
-
-void TestRenderFrameHost::SendNavigateWithReplacement(int nav_entry_id,
-                                                      bool did_create_new_entry,
-                                                      const GURL& url) {
-  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, true,
-                             url, ui::PAGE_TRANSITION_LINK, 200,
-                             ModificationCallback());
+  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, url,
+                             transition, 200, ModificationCallback());
 }
 
 void TestRenderFrameHost::SendNavigateWithModificationCallback(
@@ -252,14 +249,13 @@ void TestRenderFrameHost::SendNavigateWithModificationCallback(
     bool did_create_new_entry,
     const GURL& url,
     const ModificationCallback& callback) {
-  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, false,
-                             url, ui::PAGE_TRANSITION_LINK, 200, callback);
+  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, url,
+                             ui::PAGE_TRANSITION_LINK, 200, callback);
 }
 
 void TestRenderFrameHost::SendNavigateWithParameters(
     int nav_entry_id,
     bool did_create_new_entry,
-    bool should_replace_entry,
     const GURL& url,
     ui::PageTransition transition,
     int response_code,
@@ -276,9 +272,8 @@ void TestRenderFrameHost::SendNavigateWithParameters(
        url.ReplaceComponents(replacements) ==
            GetLastCommittedURL().ReplaceComponents(replacements));
 
-  auto params = BuildDidCommitParams(nav_entry_id, did_create_new_entry,
-                                     should_replace_entry, url, transition,
-                                     response_code);
+  auto params = BuildDidCommitParams(nav_entry_id, did_create_new_entry, url,
+                                     transition, response_code);
 
   if (!callback.is_null())
     callback.Run(params.get());
@@ -367,6 +362,7 @@ void TestRenderFrameHost::DidEnforceInsecureRequestPolicy(
 
 void TestRenderFrameHost::PrepareForCommit() {
   PrepareForCommitInternal(GURL(), net::IPEndPoint(),
+                           /* was_fetched_via_cache=*/false,
                            /* is_signed_exchange_inner_response=*/false,
                            net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
                            base::nullopt);
@@ -374,10 +370,11 @@ void TestRenderFrameHost::PrepareForCommit() {
 
 void TestRenderFrameHost::PrepareForCommitDeprecatedForNavigationSimulator(
     const net::IPEndPoint& remote_endpoint,
+    bool was_fetched_via_cache,
     bool is_signed_exchange_inner_response,
     net::HttpResponseInfo::ConnectionInfo connection_info,
     base::Optional<net::SSLInfo> ssl_info) {
-  PrepareForCommitInternal(GURL(), remote_endpoint,
+  PrepareForCommitInternal(GURL(), remote_endpoint, was_fetched_via_cache,
                            is_signed_exchange_inner_response, connection_info,
                            ssl_info);
 }
@@ -385,6 +382,7 @@ void TestRenderFrameHost::PrepareForCommitDeprecatedForNavigationSimulator(
 void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
     const GURL& redirect_url) {
   PrepareForCommitInternal(redirect_url, net::IPEndPoint(),
+                           /* was_fetched_via_cache=*/false,
                            /* is_signed_exchange_inner_response=*/false,
                            net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
                            base::nullopt);
@@ -393,6 +391,7 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
 void TestRenderFrameHost::PrepareForCommitInternal(
     const GURL& redirect_url,
     const net::IPEndPoint& remote_endpoint,
+    bool was_fetched_via_cache,
     bool is_signed_exchange_inner_response,
     net::HttpResponseInfo::ConnectionInfo connection_info,
     base::Optional<net::SSLInfo> ssl_info) {
@@ -434,6 +433,7 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   scoped_refptr<network::ResourceResponse> response(
       new network::ResourceResponse);
   response->head.remote_endpoint = remote_endpoint;
+  response->head.was_fetched_via_cache = was_fetched_via_cache;
   response->head.is_signed_exchange_inner_response =
       is_signed_exchange_inner_response;
   response->head.connection_info = connection_info;
@@ -540,6 +540,7 @@ void TestRenderFrameHost::SendCommitNavigation(
     base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token) {
   if (!navigation_request)
@@ -575,7 +576,6 @@ void TestRenderFrameHost::SendCommitFailedNavigation(
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
 TestRenderFrameHost::BuildDidCommitParams(int nav_entry_id,
                                           bool did_create_new_entry,
-                                          bool should_replace_entry,
                                           const GURL& url,
                                           ui::PageTransition transition,
                                           int response_code) {
@@ -586,7 +586,7 @@ TestRenderFrameHost::BuildDidCommitParams(int nav_entry_id,
   params->transition = transition;
   params->should_update_history = true;
   params->did_create_new_entry = did_create_new_entry;
-  params->should_replace_current_entry = should_replace_entry;
+  params->should_replace_current_entry = false;
   params->gesture = NavigationGestureUser;
   params->contents_mime_type = "text/html";
   params->method = "GET";

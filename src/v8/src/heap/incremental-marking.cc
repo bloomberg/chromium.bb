@@ -117,6 +117,30 @@ void IncrementalMarking::RecordWriteIntoCode(Code host, RelocInfo* rinfo,
   }
 }
 
+void IncrementalMarking::RecordWrites(FixedArray array) {
+  int length = array->length();
+  MarkCompactCollector* collector = heap_->mark_compact_collector();
+  MemoryChunk* source_page = MemoryChunk::FromHeapObject(array);
+  if (source_page->ShouldSkipEvacuationSlotRecording<AccessMode::ATOMIC>()) {
+    for (int i = 0; i < length; i++) {
+      Object value = array->get(i);
+      if (value->IsHeapObject()) {
+        BaseRecordWrite(array, HeapObject::cast(value));
+      }
+    }
+  } else {
+    for (int i = 0; i < length; i++) {
+      Object value = array->get(i);
+      if (value->IsHeapObject() &&
+          BaseRecordWrite(array, HeapObject::cast(value))) {
+        collector->RecordSlot(source_page,
+                              HeapObjectSlot(array->RawFieldOfElementAt(i)),
+                              HeapObject::cast(value));
+      }
+    }
+  }
+}
+
 bool IncrementalMarking::WhiteToGreyAndPush(HeapObject obj) {
   if (marking_state()->WhiteToGrey(obj)) {
     marking_worklist()->Push(obj);
@@ -609,22 +633,6 @@ void IncrementalMarking::UpdateMarkingWorklistAfterScavenge() {
   UpdateWeakReferencesAfterScavenge();
 }
 
-namespace {
-template <typename T>
-T ForwardingAddress(T heap_obj) {
-  MapWord map_word = heap_obj->map_word();
-
-  if (map_word.IsForwardingAddress()) {
-    return T::cast(map_word.ToForwardingAddress());
-  } else if (Heap::InFromPage(heap_obj)) {
-    return T();
-  } else {
-    // TODO(ulan): Support minor mark-compactor here.
-    return heap_obj;
-  }
-}
-}  // namespace
-
 void IncrementalMarking::UpdateWeakReferencesAfterScavenge() {
   weak_objects_->weak_references.Update(
       [](std::pair<HeapObject, HeapObjectSlot> slot_in,
@@ -712,12 +720,6 @@ void IncrementalMarking::UpdateMarkedBytesAfterScavenge(
   bytes_marked_ -= Min(bytes_marked_, dead_bytes_in_new_space);
 }
 
-bool IncrementalMarking::IsFixedArrayWithProgressBar(HeapObject obj) {
-  if (!obj->IsFixedArray()) return false;
-  MemoryChunk* chunk = MemoryChunk::FromHeapObject(obj);
-  return chunk->IsFlagSet(MemoryChunk::HAS_PROGRESS_BAR);
-}
-
 int IncrementalMarking::VisitObject(Map map, HeapObject obj) {
   DCHECK(marking_state()->IsGrey(obj) || marking_state()->IsBlack(obj));
   if (!marking_state()->GreyToBlack(obj)) {
@@ -750,11 +752,9 @@ void IncrementalMarking::ProcessBlackAllocatedObject(HeapObject obj) {
 void IncrementalMarking::RevisitObject(HeapObject obj) {
   DCHECK(IsMarking());
   DCHECK(marking_state()->IsBlack(obj));
-  Page* page = Page::FromHeapObject(obj);
-  if (page->owner()->identity() == LO_SPACE ||
-      page->owner()->identity() == NEW_LO_SPACE) {
-    page->ResetProgressBar();
-  }
+  DCHECK_IMPLIES(MemoryChunk::FromHeapObject(obj)->IsFlagSet(
+                     MemoryChunk::HAS_PROGRESS_BAR),
+                 0u == MemoryChunk::FromHeapObject(obj)->ProgressBar());
   Map map = obj->map();
   WhiteToGreyAndPush(map);
   IncrementalMarkingMarkingVisitor visitor(heap()->mark_compact_collector(),
@@ -780,10 +780,19 @@ intptr_t IncrementalMarking::ProcessMarkingWorklist(
   while (bytes_processed < bytes_to_process || completion == FORCE_COMPLETION) {
     HeapObject obj = marking_worklist()->Pop();
     if (obj.is_null()) break;
-    // Left trimming may result in white, grey, or black filler objects on the
-    // marking deque. Ignore these objects.
+    // Left trimming may result in grey or black filler objects on the marking
+    // worklist. Ignore these objects.
     if (obj->IsFiller()) {
-      DCHECK(!marking_state()->IsImpossible(obj));
+      // Due to copying mark bits and the fact that grey and black have their
+      // first bit set, one word fillers are always black.
+      DCHECK_IMPLIES(
+          obj->map() == ReadOnlyRoots(heap()).one_pointer_filler_map(),
+          marking_state()->IsBlack(obj));
+      // Other fillers may be black or grey depending on the color of the object
+      // that was trimmed.
+      DCHECK_IMPLIES(
+          obj->map() != ReadOnlyRoots(heap()).one_pointer_filler_map(),
+          marking_state()->IsBlackOrGrey(obj));
       continue;
     }
     bytes_processed += VisitObject(obj->map(), obj);

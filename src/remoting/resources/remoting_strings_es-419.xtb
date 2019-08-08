@@ -153,6 +153,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="4240294130679914010">Desinstalador del host de Chromoting</translation>
 <translation id="4277463233460010382">Esta computadora está configurada para permitir que uno o más clientes se conecten sin ingresar un PIN.</translation>
 <translation id="4277736576214464567">El código de acceso no es válido. Vuelve a intentarlo.</translation>
+<translation id="4281844954008187215">Condiciones del servicio</translation>
 <translation id="4361728918881830843">Para habilitar conexiones remotas con otra computadora, instala allí Escritorio remoto de Chrome y haz clic en “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="4394049700291259645">Inhabilitar</translation>
 <translation id="4405930547258349619">Biblioteca principal</translation>
@@ -345,6 +346,7 @@ Para habilitar esta funcionalidad, selecciona "<ph name="BUTTON_NAME" />". Se mo
 <translation id="8747048596626351634">La sesión se bloqueó o no pudo iniciarse. Si la computadora remota cuenta con el script ~/.chrome-remote-desktop-session, asegúrate de que este inicia un proceso de ejecución prolongada en primer plano, como un entorno de escritorio o un administrador de ventanas.</translation>
 <translation id="8759753423332885148">Más información</translation>
 <translation id="8791202241915690908">Descarga el instalador del host de Chromoting</translation>
+<translation id="8804164990146287819">Política de Privacidad</translation>
 <translation id="894763922177556086">Buena</translation>
 <translation id="895780780740011433">Para Windows 7 y versiones posteriores</translation>
 <translation id="897805526397249209">Para habilitar conexiones remotas con otra computadora, instala allí Chromoting y haz clic en “<ph name="BUTTON_NAME" />”.</translation>

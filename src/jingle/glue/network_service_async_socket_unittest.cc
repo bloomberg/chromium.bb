@@ -390,9 +390,10 @@ class NetworkServiceAsyncSocketTest : public testing::Test,
     }
 
     std::string ToString() const {
-      return base::StrCat(
-          {"(", base::IntToString(signal), ",", base::IntToString(state), ",",
-           base::IntToString(error), ",", base::IntToString(net_error), ")"});
+      return base::StrCat({"(", base::NumberToString(signal), ",",
+                           base::NumberToString(state), ",",
+                           base::NumberToString(error), ",",
+                           base::NumberToString(net_error), ")"});
     }
 
     Signal signal;

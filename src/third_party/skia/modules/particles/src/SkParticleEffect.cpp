@@ -92,7 +92,7 @@ void SkParticleEffect::update(double now) {
         const int spawnBase = fCount;
 
         for (int i = 0; i < numToSpawn; ++i) {
-            // Mutate our SkRandom so each particle definitely gets a different stable generator
+            // Mutate our SkRandom so each particle definitely gets a different generator
             fRandom.nextU();
             fParticles[fCount].fAge = 0.0f;
             fParticles[fCount].fPose.fPosition = { 0.0f, 0.0f };
@@ -102,7 +102,7 @@ void SkParticleEffect::update(double now) {
             fParticles[fCount].fVelocity.fAngular = 0.0f;
             fParticles[fCount].fColor = { 1.0f, 1.0f, 1.0f, 1.0f };
             fParticles[fCount].fFrame = 0.0f;
-            fParticles[fCount].fRandom = fStableRandoms[fCount] = fRandom;
+            fParticles[fCount].fRandom = fRandom;
             fCount++;
         }
 
@@ -113,10 +113,12 @@ void SkParticleEffect::update(double now) {
             }
         }
 
-        // Now compute particle lifetimes (so the curve can refer to spawn-computed source values)
+        // Now stash copies of the random generators and compute particle lifetimes
+        // (so the curve can refer to spawn-computed source values)
         for (int i = spawnBase; i < fCount; ++i) {
             fParticles[i].fInvLifetime =
                 sk_ieee_float_divide(1.0f, fParams->fLifetime.eval(updateParams, fParticles[i]));
+            fStableRandoms[i] = fParticles[i].fRandom;
         }
     }
 
@@ -139,7 +141,8 @@ void SkParticleEffect::update(double now) {
     for (int i = 0; i < fCount; ++i) {
         fParticles[i].fPose.fPosition += fParticles[i].fVelocity.fLinear * deltaTime;
 
-        SkScalar c, s = SkScalarSinCos(fParticles[i].fVelocity.fAngular * deltaTime, &c);
+        SkScalar s = SkScalarSin(fParticles[i].fVelocity.fAngular * deltaTime),
+                 c = SkScalarCos(fParticles[i].fVelocity.fAngular * deltaTime);
         SkVector oldHeading = fParticles[i].fPose.fHeading;
         fParticles[i].fPose.fHeading = { oldHeading.fX * c - oldHeading.fY * s,
                                          oldHeading.fX * s + oldHeading.fY * c };

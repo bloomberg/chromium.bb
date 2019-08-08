@@ -37,15 +37,11 @@
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
-
-DataTransferItem* DataTransferItem::Create(DataTransfer* data_transfer,
-                                           DataObjectItem* item) {
-  return MakeGarbageCollected<DataTransferItem>(data_transfer, item);
-}
 
 String DataTransferItem::kind() const {
   DEFINE_STATIC_LOCAL(const String, kind_string, ("string"));

@@ -37,20 +37,30 @@ import org.chromium.content_public.browser.LoadUrlParams;
 public class BrowserSessionContentUtils {
     private static final String TAG = "BrowserSession_Utils";
 
-    private static final SparseArray<CustomTabsSessionToken> sTaskIdToSession = new SparseArray<>();
+    private static final SparseArray<ContentHandlerData> sTaskIdToHandlerData = new SparseArray<>();
 
     @Nullable
     private static BrowserSessionContentHandler sActiveContentHandler;
 
-
     @Nullable
     private static Callback<CustomTabsSessionToken> sSessionDisconnectCallback;
 
-    /** Extra that is passed to intent to trigger a certain action within a running activity. */
-    private static final String EXTRA_INTERNAL_ACTION =
-            "org.chromium.chrome.extra.EXTRA_INTERNAL_ACTION";
-    private static final String INTERNAL_ACTION_SHARE =
-            "org.chromium.chrome.action.INTERNAL_ACTION_SHARE";
+    /**
+     * The data associated with the content handler necessary to pass new intents to it.
+     */
+    private static class ContentHandlerData {
+        public final CustomTabsSessionToken session;
+
+        // Content handlers can reside in Activities of different types, so we need to store the
+        // Activity class to be able to route new intents into it.
+        public final Class<? extends Activity> activityClass;
+
+        private ContentHandlerData(CustomTabsSessionToken session,
+                Class<? extends Activity> activityClass) {
+            this.session = session;
+            this.activityClass = activityClass;
+        }
+    }
 
     /**
      * Sets the currently active {@link BrowserSessionContentHandler} in focus.
@@ -61,7 +71,8 @@ public class BrowserSessionContentUtils {
         sActiveContentHandler = contentHandler;
         CustomTabsSessionToken session = sActiveContentHandler.getSession();
         if (session != null) {
-            sTaskIdToSession.append(sActiveContentHandler.getTaskId(), session);
+            sTaskIdToHandlerData.append(sActiveContentHandler.getTaskId(),
+                    new ContentHandlerData(session, sActiveContentHandler.getActivityClass()));
         }
         ensureSessionCleanUpOnDisconnects();
     }
@@ -74,22 +85,26 @@ public class BrowserSessionContentUtils {
             sActiveContentHandler = null;
         } // else this contentHandler has already been replaced.
 
-        // Intentionally not removing from sTaskIdToSession to handle cases when the task is
+        // Intentionally not removing from sTaskIdToHandlerData to handle cases when the task is
         // brought to foreground by a new intent - the CCT might not be able to call
         // setActiveContentHandler in time.
     }
 
     /**
-     * @return whether there is an active content handler with a matching session running in the
-     * same task as the given intent is being launched from.
+     * Returns the class of Activity with a matching session running in the same task as the given
+     * intent is being launched from, or null if no such Activity present.
      */
-    public static boolean canHandleIntentInCurrentTask(Intent intent, Context context) {
-        if (!(context instanceof Activity)) return false;
+    @Nullable
+    public static Class<? extends Activity> getActiveHandlerClassInCurrentTask(Intent intent,
+            Context context) {
+        if (!(context instanceof Activity)) return null;
         int taskId = ((Activity) context).getTaskId();
-        CustomTabsSessionToken sessionInCurrentTask = sTaskIdToSession.get(taskId);
-        return sessionInCurrentTask != null
-            && sessionInCurrentTask.equals(
-                    CustomTabsSessionToken.getSessionTokenFromIntent(intent));
+        ContentHandlerData handlerDataInCurrentTask = sTaskIdToHandlerData.get(taskId);
+        if (handlerDataInCurrentTask == null || !handlerDataInCurrentTask.session.equals(
+                    CustomTabsSessionToken.getSessionTokenFromIntent(intent))) {
+            return null;
+        }
+        return handlerDataInCurrentTask.activityClass;
     }
 
     /**
@@ -105,21 +120,7 @@ public class BrowserSessionContentUtils {
         if (TextUtils.isEmpty(url)) return false;
 
         CustomTabsSessionToken session = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
-        return handleInternalIntent(intent, session) || handleExternalIntent(intent, url, session);
-
-    }
-
-    private static boolean handleInternalIntent(Intent intent,
-            @Nullable CustomTabsSessionToken session) {
-        if (!IntentHandler.wasIntentSenderChrome(intent)) return false;
-        if (!sessionMatchesActiveContent(session)) return false;
-
-        String internalAction = intent.getStringExtra(EXTRA_INTERNAL_ACTION);
-        if (INTERNAL_ACTION_SHARE.equals(internalAction)) {
-            sActiveContentHandler.triggerSharingFlow();
-            return true;
-        }
-        return false;
+        return handleExternalIntent(intent, url, session);
     }
 
     private static boolean handleExternalIntent(Intent intent, String url,
@@ -226,26 +227,15 @@ public class BrowserSessionContentUtils {
         return sActiveContentHandler.updateRemoteViews(remoteViews, clickableIDs, pendingIntent);
     }
 
-    /**
-     * Creates a share intent to be triggered in currently running activity.
-     * @param originalIntent - intent with which the activity was launched.
-     */
-    public static Intent createShareIntent(Context context, Intent originalIntent) {
-        Intent intent = new Intent(originalIntent)
-                .putExtra(EXTRA_INTERNAL_ACTION, INTERNAL_ACTION_SHARE);
-        IntentHandler.addTrustedIntentExtras(intent);
-        return intent;
-    }
-
     private static void ensureSessionCleanUpOnDisconnects() {
         if (sSessionDisconnectCallback != null) return;
         sSessionDisconnectCallback = (session) -> {
             if (session == null) {
                 return;
             }
-            for (int i = 0; i < sTaskIdToSession.size(); i++) {
-                if (session.equals(sTaskIdToSession.valueAt(i))) {
-                    sTaskIdToSession.removeAt(i);
+            for (int i = 0; i < sTaskIdToHandlerData.size(); i++) {
+                if (session.equals(sTaskIdToHandlerData.valueAt(i).session)) {
+                    sTaskIdToHandlerData.removeAt(i);
                 }
             }
         };

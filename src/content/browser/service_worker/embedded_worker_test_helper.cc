@@ -20,7 +20,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/http/http_util.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 
 namespace content {
@@ -131,7 +130,6 @@ class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
     NOTREACHED();
   }
   void SetSchedulerKeepActive(bool keep_active) override { NOTREACHED(); }
-  void ProcessPurgeAndSuspend() override { NOTREACHED(); }
   void SetIsLockedToSite() override { NOTREACHED(); }
   void EnableV8LowMemoryMode() override { NOTREACHED(); }
 
@@ -182,11 +180,9 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
   new_render_process_host_->OverrideRendererInterfaceForTesting(
       std::move(new_renderer_interface_ptr));
 
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    default_network_loader_factory_ =
-        std::make_unique<MockNetworkURLLoaderFactory>();
-    SetNetworkFactory(default_network_loader_factory_.get());
-  }
+  default_network_loader_factory_ =
+      std::make_unique<MockNetworkURLLoaderFactory>();
+  SetNetworkFactory(default_network_loader_factory_.get());
 }
 
 void EmbeddedWorkerTestHelper::SetNetworkFactory(

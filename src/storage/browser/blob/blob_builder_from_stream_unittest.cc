@@ -13,7 +13,7 @@
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -66,7 +66,7 @@ class BlobBuilderFromStreamTestWithDelayedLimits
   void TearDown() override {
     // Make sure we clean up files.
     base::RunLoop().RunUntilIdle();
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -189,7 +189,7 @@ class BlobBuilderFromStreamTest
   }
 };
 
-TEST_P(BlobBuilderFromStreamTest, CallbackCalledOnDeletion) {
+TEST_P(BlobBuilderFromStreamTest, CallbackCalledOnAbortBeforeDeletion) {
   mojo::DataPipe pipe;
 
   base::RunLoop loop;
@@ -204,6 +204,7 @@ TEST_P(BlobBuilderFromStreamTest, CallbackCalledOnDeletion) {
         loop.Quit();
       }));
   builder_ptr = builder.get();
+  builder->Abort();
   builder.reset();
   loop.Run();
 }
@@ -331,7 +332,7 @@ TEST_P(BlobBuilderFromStreamTest, TooLargeForQuota) {
 
   // Make sure we clean up files.
   base::RunLoop().RunUntilIdle();
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0u, context_->memory_controller().memory_usage());

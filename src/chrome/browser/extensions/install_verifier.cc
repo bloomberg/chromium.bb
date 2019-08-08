@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/one_shot_event.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -33,7 +34,6 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_url_handlers.h"
-#include "extensions/common/one_shot_event.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -246,9 +246,8 @@ void InstallVerifier::Init() {
   }
 
   ExtensionSystem::Get(context_)->ready().Post(
-      FROM_HERE,
-      base::Bind(&InstallVerifier::MaybeBootstrapSelf,
-                 weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&InstallVerifier::MaybeBootstrapSelf,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void InstallVerifier::VerifyAllExtensions() {

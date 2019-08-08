@@ -127,22 +127,18 @@ source_set("top500_domains") {
   # This empty public is intentional to remove unnecessary build dependency.
   public = []
 
-  visibility = [ ":top500_domains_header" ]
-
   sources = [
     "$target_gen_dir/top500-domains-inc.cc",
   ]
 
   deps = [
     ":generate_top_domains_for_edit_distance",
+    ":top500_domains_header",
   ]
 }
 
 source_set("top500_domains_header") {
   sources = [
     "top500_domains.h",
-  ]
-  deps = [
-    ":top500_domains",
   ]
 }

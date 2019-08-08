@@ -30,6 +30,7 @@
 <translation id="1929939181775079593">Chromium блокира. Да се стартира ли отново сега?</translation>
 <translation id="1966382378801805537">Chromium не може да определи или зададе браузъра по подразбиране</translation>
 <translation id="2008474315282236005">1 елемент ще се изтрие от това устройство. За да извлечете данните си по-късно, влезте в Chromium като <ph name="USER_EMAIL" />.</translation>
+<translation id="2037988709973327241">Chromium блокира „<ph name="FILE_NAME" />“, тъй като файлът е опасен. Функцията за разширена защита се грижи за безопасността ви.</translation>
 <translation id="2117378023188580026">Администраторът ви моли да рестартирате Chromium, за да се приложи тази актуализация</translation>
 <translation id="2119636228670142020">Всичко за &amp;Chromium OS</translation>
 <translation id="2178765360243863853">Трябва да рестартирате Chromium сега</translation>
@@ -50,6 +51,7 @@
 <translation id="2718390899429598676">За повишаване на сигурността Chromium ще шифрова данните ви.</translation>
 <translation id="2770231113462710648">Промяна на браузъра по подразбиране с/ъс:</translation>
 <translation id="2799223571221894425">Стартиране отново</translation>
+<translation id="2838154144102149890">За да се извърши актуализацията, Chromium трябва да спре работа на този компютър. Това може да доведе до изтриване на незапазените промени на други потребители, които са влезли в профила си на този компютър.</translation>
 <translation id="2847479871509788944">Премахване от Chromium...</translation>
 <translation id="2886012850691518054">По избор: Помогнете ни да подобрим Chromium, като автоматично изпращате на Google статистически данни за използването му и сигнали за сривове.</translation>
 <translation id="2898082584336937987">Инсталирайте Chromium на телефона си. Ще ви изпратим SMS на него: <ph name="PHONE_NUMBER" /></translation>
@@ -61,6 +63,7 @@
 <translation id="3068515742935458733">Помогнете ни да подобрим Chromium, като ни изпращате <ph name="UMA_LINK" /> му и сигнали за сривове</translation>
 <translation id="3103660991484857065">Инсталационната програма не успя да декомпресира архива. Моля, изтеглете отново Chromium.</translation>
 <translation id="3130323860337406239">Chromium използва микрофона ви.</translation>
+<translation id="3154325651427862069">Chromium блокира „<ph name="FILE_NAME" />“, тъй като файлът може да е опасен. Функцията за разширена защита се грижи за безопасността ви.</translation>
 <translation id="3155163173539279776">Рестартиране на Chromium</translation>
 <translation id="3179665906251668410">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chromium</translation>
 <translation id="3190315855212034486">О, не! Chromium претърпя срив. Да се стартира ли отново сега?</translation>
@@ -86,6 +89,7 @@
 <translation id="388648406173476553">Персонализиране и контролиране на Chromium. Трябва да обърнете внимание на нещо – кликнете за подробности.</translation>
 <translation id="3889543394854987837">Кликнете върху името си, за да отворите Chromium и да започнете да сърфирате.</translation>
 <translation id="3898493977366060150">Интелигентен начин за сърфиране в мрежата, създаден от Google</translation>
+<translation id="3931244652999881512">Chromium блокира този файл, тъй като е опасен. Функцията за разширена защита се грижи за безопасността ви.</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS ще се рестартира след един час}other{Chromium OS ще се рестартира след # часа}}</translation>
 <translation id="4036079820698952681">Помогнете за подобряването на Chromium, като подадете сигнал за <ph name="BEGIN_LINK" />текущите настройки<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">В последната версия са налице важни подобрения в сигурността и нови функции.</translation>
@@ -136,6 +140,7 @@
 <translation id="5680901439334282664">Влезте в Chromium</translation>
 <translation id="5698481217667032250">Показване на Chromium на този език</translation>
 <translation id="5712253116097046984">Администраторът ви моли да рестартирате Chromium OS, за да се приложи тази актуализация</translation>
+<translation id="5726979195371243087">Chromium блокира този файл, тъй като може да е опасен. Функцията за разширена защита се грижи за безопасността ви.</translation>
 <translation id="5756484659843248772">Този език служи за показване на ПИ на Chromium OS</translation>
 <translation id="5768914737813585044">Показване на Chromium OS на този език</translation>
 <translation id="5796460469508169315">Chromium е почти готов.</translation>
@@ -179,6 +184,7 @@
 <translation id="6810143991807788455">Помогнете за подобряването на Chromium, като подадете сигнал за текущите настройки</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (копирано в Chromium)</translation>
+<translation id="6868056391275687737">Изпълняват се други копия на Chromium. Затворете ги, за да актуализирате.</translation>
 <translation id="6893813176749746474">Chromium е актуализиран, но не сте го използвали от поне 30 дни.</translation>
 <translation id="6964305034639999644">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chromium</translation>
 <translation id="6970811910055250180">Устройството ви се актуализира...</translation>
@@ -186,7 +192,6 @@
 <translation id="705851970750939768">Актуализиране на Chromium</translation>
 <translation id="7066436765290594559">Chromium OS не можа да синхронизира данните ви. Моля, актуализирайте пропуска си за синхронизиране.</translation>
 <translation id="7067091210845072982">Ако няма полезно описание за дадено изображение, Chromium ще се опита да предостави такова. За да бъдат създадени описания, съответните изображения се изпращат до Google.</translation>
-<translation id="7162152143154757523">Chromium може да предоставя по-интелигентна проверка на правописа, като изпраща до сървърите ни въвежданото от вас в браузъра, позволявайки ви да използвате същата технология за проверка на правописа, както при търсенето с Google.</translation>
 <translation id="7196312274710523067">Chromium не можа да се стартира. Опитайте отново.</translation>
 <translation id="7205698830395646142">Скриване в менюто на Chromium</translation>
 <translation id="7223968959479464213">Диспечер на задачите – Chromium</translation>
@@ -203,6 +208,7 @@
 <ph name="BEGIN_LINK_2" />Научете повече<ph name="END_LINK_2" />
 
 За допълнителни инструкции, моля, проверете електронната си поща на адрес <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7349591376906416160">Системният ви администратор е конфигурирал Chromium да отваря <ph name="ALTERNATIVE_BROWSER_NAME" /> за достъп до <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Рестартиране на Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium се нуждае от разрешение за достъп до камерата ви за този сайт</translation>
@@ -246,6 +252,8 @@
 <translation id="8667808506758191620">Устройството ви <ph name="DEVICE_TYPE" /> е актуално.</translation>
 <translation id="8697124171261953979">То също контролира коя страница се показва при стартиране на Chromium или при търсене от полето за всичко.</translation>
 <translation id="8704119203788522458">Това е вашият Chromium</translation>
+<translation id="8704255848199359374">Използва се същата програма за проверка на правописа като в Google Търсене. Текстът, който въвеждате в браузъра, се изпраща до Google. Винаги можете да промените това поведение от настройките.</translation>
+<translation id="8748383401829947534">Затваряне на всички копия на Chromium.</translation>
 <translation id="8796602469536043152">Chromium се нуждае от разрешение за достъп до камерата и микрофона ви за този сайт</translation>
 <translation id="8803635938069941624">Общи условия на Chromium OS</translation>
 <translation id="8821041990367117597">Chromium не можа да синхронизира данните ви, защото потребителското име и паролата за вход в профила ви не са актуални.</translation>

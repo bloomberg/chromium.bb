@@ -18,6 +18,7 @@ import android.widget.PopupMenu;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 
 import java.util.ArrayList;
 
@@ -118,6 +119,7 @@ public class AppMenuHandler {
     @SuppressLint("ResourceType")
     public boolean showAppMenu(View anchorView, boolean startDragging, boolean showFromBottom) {
         if (!mDelegate.shouldShowAppMenu() || isAppMenuShowing()) return false;
+        TextBubble.dismissBubbles();
         boolean isByPermanentButton = false;
 
         int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();

@@ -18,6 +18,9 @@ endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(LINUX ON)
+elseif(CMAKE_SYSTEM_NAME MATCHES "Android")
+    set(ANDROID ON)
+    set(CMAKE_CXX_FLAGS "-DANDROID_NDK_BUILD")
 elseif(WIN32)
 elseif(APPLE)
 else()
@@ -76,8 +79,9 @@ option (MSAN "Build with memory sanitizer" 0)
 option (ASAN "Build with address sanitizer" 0)
 option (TSAN "Build with thread sanitizer" 0)
 option (UBSAN "Build with undefined behavior sanitizer" 0)
-option (WARNINGS_AS_ERRORS "Treat all warnings as errors" 0)
+option (WARNINGS_AS_ERRORS "Treat all warnings as errors" 1)
 option (DCHECK_ALWAYS_ON "Check validation macros even in release builds" 0)
+option (REACTOR_EMIT_DEBUG_INFO "Emit debug info for JIT functions" 0)
 
 if(ARCH STREQUAL "arm")
     set(DEFAULT_REACTOR_BACKEND "Subzero")
@@ -109,13 +113,26 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Initialize submodules
 ###########################################################
 
-if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/.git)
-    message(WARNING "
-  third_party/googletest submodule missing.
-  Running 'git submodule update --init' to download it:
-    ")
+if (NOT TARGET gtest)
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/.git)
+        message(WARNING "
+      third_party/googletest submodule missing.
+      Running 'git submodule update --init' to download it:
+        ")
 
-    execute_process(COMMAND git submodule update --init)
+        execute_process(COMMAND git submodule update --init)
+    endif()
+endif()
+
+if (NOT TARGET libbacktrace)
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libbacktrace/src/.git)
+        message(WARNING "
+      third_party/libbacktrace/src submodule missing.
+      Running 'git submodule update --init' to download it:
+        ")
+
+        execute_process(COMMAND git submodule update --init)
+    endif()
 endif()
 
 ###########################################################
@@ -189,6 +206,9 @@ else()
     set(LLVM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/llvm-7.0/llvm)
     set(LLVM_CONFIG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/llvm-7.0/configs)
 endif()
+set(LIBBACKTRACE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libbacktrace/src)
+set(LIBBACKTRACE_CONFIG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libbacktrace/config)
+set(LIBBACKTRACE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libbacktrace/src)
 set(SUBZERO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/subzero)
 set(SUBZERO_LLVM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/llvm-subzero)
 set(TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
@@ -221,6 +241,7 @@ else()
     if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
        CLANG_VERSION_STRING VERSION_GREATER_EQUAL 5)
         set_cpp_flag("-Werror=unused-lambda-capture")
+        set_cpp_flag("-Werror=string-conversion")
     endif()
 
     # Remove xor, and, or and friends from the list of keywords, they are used
@@ -276,14 +297,21 @@ else()
         set_cpp_flag("-DDCHECK_ALWAYS_ON")
     endif()
 
+    if(REACTOR_EMIT_DEBUG_INFO)
+        set_cpp_flag("-DENABLE_RR_DEBUG_INFO")
+    endif()
+
     # Disable pedanitc warnings
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
         set_cpp_flag("-Wno-ignored-attributes")  # ignoring attributes on template argument 'X'
         set_cpp_flag("-Wno-attributes")          # 'X' attribute ignored
         set_cpp_flag("-Wno-strict-aliasing")     # dereferencing type-punned pointer will break strict-aliasing rules
+        set_cpp_flag("-Wno-comment")             # multi-line comment
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         set_cpp_flag("-Wno-unneeded-internal-declaration") # function 'X' is not needed and will not be emitted
         set_cpp_flag("-Wno-unused-private-field")          # private field 'offset' is not used - TODO: Consider enabling this once Vulkan is further implemented.
+        set_cpp_flag("-Wno-comment")                       # multi-line comment
+        set_cpp_flag("-Wno-undefined-var-template")        # instantiation of variable 'X' required here, but no definition is available
     endif()
 
     # For distribution it is more important to be slim than super optimized
@@ -684,6 +712,8 @@ elseif(LINUX)
     set(LLVM_INCLUDE_DIR ${LLVM_DIR}/include-linux)
 elseif(APPLE)
     set(LLVM_INCLUDE_DIR ${LLVM_DIR}/include-osx)
+elseif(ANDROID)
+    set(LLVM_INCLUDE_DIR ${LLVM_DIR}/include-android)
 endif()
 
 list(APPEND LLVM_INCLUDE_DIR
@@ -782,6 +812,9 @@ set(LLVM_LIST
     ${LLVM_DIR}/lib/Analysis/ValueLatticeUtils.cpp
     ${LLVM_DIR}/lib/Analysis/ValueTracking.cpp
     ${LLVM_DIR}/lib/Analysis/VectorUtils.cpp
+    ${LLVM_DIR}/lib/AsmParser/LLLexer.cpp
+    ${LLVM_DIR}/lib/AsmParser/LLParser.cpp
+    ${LLVM_DIR}/lib/AsmParser/Parser.cpp
     ${LLVM_DIR}/lib/BinaryFormat/Dwarf.cpp
     ${LLVM_DIR}/lib/BinaryFormat/Magic.cpp
     ${LLVM_DIR}/lib/BinaryFormat/Wasm.cpp
@@ -1737,16 +1770,28 @@ elseif(ARCH STREQUAL "arm")
         ${LLVM_DIR}/lib/Target/ARM/ARMLegalizerInfo.cpp
         ${LLVM_DIR}/lib/Target/ARM/ARMOptimizeBarriersPass.cpp
     )
- endif()
+endif()
+
+if(REACTOR_EMIT_DEBUG_INFO)
+    list(APPEND LLVM_LIST
+        ${LLVM_DIR}/lib/Demangle/ItaniumDemangle.cpp
+    )
+endif(REACTOR_EMIT_DEBUG_INFO)
 
 set(LLVM_INCLUDE_DIR "")
 
 if(WIN32)
     list(APPEND LLVM_INCLUDE_DIR ${LLVM_CONFIG_DIR}/windows/include)
+    list(APPEND LIBBACKTRACE_INCLUDE_DIR ${LIBBACKTRACE_CONFIG_DIR}/windows/include)
 elseif(LINUX)
     list(APPEND LLVM_INCLUDE_DIR ${LLVM_CONFIG_DIR}/linux/include)
+    list(APPEND LIBBACKTRACE_INCLUDE_DIR ${LIBBACKTRACE_CONFIG_DIR}/linux/include)
 elseif(APPLE)
     list(APPEND LLVM_INCLUDE_DIR ${LLVM_CONFIG_DIR}/darwin/include)
+    list(APPEND LIBBACKTRACE_INCLUDE_DIR ${LIBBACKTRACE_CONFIG_DIR}/darwin/include)
+elseif(ANDROID)
+    list(APPEND LLVM_INCLUDE_DIR ${LLVM_CONFIG_DIR}/android/include)
+    list(APPEND LIBBACKTRACE_INCLUDE_DIR ${LIBBACKTRACE_CONFIG_DIR}/android/include)
 endif()
 
 list(APPEND LLVM_INCLUDE_DIR
@@ -1770,11 +1815,23 @@ endif()  # REACTOR_LLVM_VERSION
 set(LLVM_COMPILE_FLAGS)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     list(APPEND LLVM_COMPILE_FLAGS
-        "-Wno-comment"                 # multi-line comment
         "-Wno-noexcept-type"           # mangled name for ‘X’ will change in C++17 because the exception specification is part of a function type
         "-Wno-maybe-uninitialized"     # ‘X’ may be used uninitialized in this function
         "-Wno-unused-but-set-variable" # variable ‘X’ set but not used
     )
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    set(LLVM_DISABLE_WARNINGS
+        "/wd4141" # 'inline': used more than once
+        "/wd4146" # unary minus operator applied to unsigned type, result still unsigned
+        "/wd4244" # 'X': conversion from 'uint64_t' to 'const unsigned int', possible loss of data
+        "/wd4267" # 'X': conversion from 'size_t' to 'unsigned int', possible loss of data
+        "/wd4291" # 'void X new(size_t,unsigned int,unsigned int)': no matching operator delete found; memory will not be freed if initialization throws an exception
+        "/wd4319" # 'X': zero extending 'unsigned int' to 'uint64_t' of greater size
+        "/wd4624" # 'X': destructor was implicitly defined as deleted
+        "/wd4805" # 'X': unsafe mix of type 'unsigned int' and type 'bool' in operation
+        "/wd4996" # 'X': Call to 'Y' with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct.
+    )
+    set(LLVM_COMPILE_FLAGS "/D \"_SCL_SECURE_NO_WARNINGS\" ${LLVM_DISABLE_WARNINGS}")
 endif()
 string (REPLACE ";" " " LLVM_COMPILE_FLAGS "${LLVM_COMPILE_FLAGS}")
 
@@ -1871,6 +1928,7 @@ if(${REACTOR_BACKEND} STREQUAL "Subzero")
     )
 
     set(SUBZERO_REACTOR_LIST
+        ${SOURCE_DIR}/Reactor/Reactor.cpp
         ${SOURCE_DIR}/Reactor/SubzeroReactor.cpp
         ${SOURCE_DIR}/Reactor/Routine.cpp
         ${SOURCE_DIR}/Reactor/Optimizer.cpp
@@ -1922,6 +1980,7 @@ set(COMMON_INCLUDE_DIR
     ${SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${LLVM_INCLUDE_DIR}
+    ${LIBBACKTRACE_INCLUDE_DIR}
 )
 set(OPENGL_INCLUDE_DIR
     ${OPENGL_DIR}
@@ -1962,8 +2021,41 @@ list(REMOVE_ITEM SWIFTSHADER_LIST
     ${SOURCE_DIR}/Common/GrallocAndroid.hpp
 )
 
+if(REACTOR_EMIT_DEBUG_INFO)
+    set(LIBBACKTRACE_LIST
+        ${LIBBACKTRACE_DIR}/atomic.c
+        ${LIBBACKTRACE_DIR}/backtrace.c
+        ${LIBBACKTRACE_DIR}/backtrace.h
+        ${LIBBACKTRACE_DIR}/dwarf.c
+        ${LIBBACKTRACE_DIR}/fileline.c
+        ${LIBBACKTRACE_DIR}/filenames.h
+        ${LIBBACKTRACE_DIR}/internal.h
+        ${LIBBACKTRACE_DIR}/mmap.c
+        ${LIBBACKTRACE_DIR}/mmapio.c
+        ${LIBBACKTRACE_DIR}/posix.c
+        ${LIBBACKTRACE_DIR}/print.c
+        ${LIBBACKTRACE_DIR}/simple.c
+        ${LIBBACKTRACE_DIR}/sort.c
+        ${LIBBACKTRACE_DIR}/state.c
+        ${LIBBACKTRACE_INCLUDE_DIR}/backtrace-supported.h
+        ${LIBBACKTRACE_INCLUDE_DIR}/config.h
+    )
+
+    if(WIN32)
+        list(APPEND LIBBACKTRACE_LIST ${LIBBACKTRACE_DIR}/pecoff.c)
+    elseif(LINUX)
+        list(APPEND LIBBACKTRACE_LIST ${LIBBACKTRACE_DIR}/elf.c)
+    elseif(APPLE)
+        message(FATAL_ERROR "libbacktrace does not support mach-o yet")
+    endif()
+endif(REACTOR_EMIT_DEBUG_INFO)
+
 set(REACTOR_LLVM_LIST
+    ${SOURCE_DIR}/Reactor/Reactor.cpp
     ${SOURCE_DIR}/Reactor/LLVMReactor.cpp
+    ${SOURCE_DIR}/Reactor/LLVMReactor.hpp
+    ${SOURCE_DIR}/Reactor/LLVMReactorDebugInfo.cpp
+    ${SOURCE_DIR}/Reactor/LLVMReactorDebugInfo.hpp
     ${SOURCE_DIR}/Reactor/Nucleus.hpp
     ${SOURCE_DIR}/Reactor/Routine.cpp
     ${SOURCE_DIR}/Reactor/Routine.hpp
@@ -2118,6 +2210,14 @@ elseif(APPLE)
     list(APPEND OPENGL_COMPILER_LIST
         ${OPENGL_COMPILER_DIR}/ossource_posix.cpp
     )
+elseif(ANDROID)
+    list(APPEND SWIFTSHADER_LIST
+        ${SOURCE_DIR}/Main/FrameBufferAndroid.cpp
+        ${SOURCE_DIR}/Main/FrameBufferAndroid.hpp
+    )
+    list(APPEND OPENGL_COMPILER_LIST
+        ${OPENGL_COMPILER_DIR}/ossource_posix.cpp
+    )
 endif()
 
 if(WIN32)
@@ -2153,6 +2253,17 @@ set_target_properties(ReactorLLVM PROPERTIES
 )
 target_link_libraries(ReactorLLVM llvm ${OS_LIBS})
 
+if(REACTOR_EMIT_DEBUG_INFO)
+    add_library(Libbacktrace STATIC ${LIBBACKTRACE_LIST})
+    set_target_properties(Libbacktrace PROPERTIES
+        INCLUDE_DIRECTORIES "${LIBBACKTRACE_INCLUDE_DIR}"
+        POSITION_INDEPENDENT_CODE 1
+        FOLDER "Core"
+    )
+    target_link_libraries(Libbacktrace ${OS_LIBS})
+    target_link_libraries(ReactorLLVM Libbacktrace)
+endif(REACTOR_EMIT_DEBUG_INFO)
+
 if(${REACTOR_BACKEND} STREQUAL "LLVM")
     set(Reactor ReactorLLVM)
 elseif(${REACTOR_BACKEND} STREQUAL "Subzero")
@@ -2183,6 +2294,9 @@ if(BUILD_EGL)
         COMPILE_DEFINITIONS "EGL_EGLEXT_PROTOTYPES; EGLAPI=; NO_SANITIZE_FUNCTION=;"
         PREFIX ""
     )
+    if (ANDROID)
+        set_target_properties(libEGL PROPERTIES SUFFIX "_swiftshader.so")
+    endif ()
     set_shared_library_export_map(libEGL ${SOURCE_DIR}/OpenGL/libEGL)
     target_link_libraries(libEGL ${OS_LIBS})
     add_custom_command(
@@ -2190,8 +2304,8 @@ if(BUILD_EGL)
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:libEGL>/translator
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libEGL> $<TARGET_FILE_DIR:libEGL>/translator/${LIB_PREFIX}EGL_translator${CMAKE_SHARED_LIBRARY_SUFFIX}
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/out/${CMAKE_SYSTEM_NAME}/
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libEGL> ${CMAKE_CURRENT_SOURCE_DIR}/out/${CMAKE_SYSTEM_NAME}/
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libEGL> ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
     )
 endif()
 
@@ -2203,6 +2317,9 @@ if(BUILD_GLESv2)
         COMPILE_DEFINITIONS "GL_GLEXT_PROTOTYPES; GL_API=; GL_APICALL=; GLAPI=; NO_SANITIZE_FUNCTION=;"
         PREFIX ""
     )
+    if (ANDROID)
+        set_target_properties(libGLESv2 PROPERTIES SUFFIX "_swiftshader.so")
+    endif ()
     set_shared_library_export_map(libGLESv2 ${SOURCE_DIR}/OpenGL/libGLESv2)
     target_link_libraries(libGLESv2 SwiftShader ${Reactor} GLCompiler ${OS_LIBS})
     add_custom_command(
@@ -2210,8 +2327,8 @@ if(BUILD_GLESv2)
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:libGLESv2>/translator
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libGLESv2> $<TARGET_FILE_DIR:libGLESv2>/translator/${LIB_PREFIX}GLES_V2_translator${CMAKE_SHARED_LIBRARY_SUFFIX}
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/out/${CMAKE_SYSTEM_NAME}/
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libGLESv2> ${CMAKE_CURRENT_SOURCE_DIR}/out/${CMAKE_SYSTEM_NAME}/
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libGLESv2> ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
     )
 endif()
 
@@ -2223,6 +2340,9 @@ if(BUILD_GLES_CM)
         COMPILE_DEFINITIONS "GL_GLEXT_PROTOTYPES; EGLAPI=; GL_API=; GL_APICALL=; GLAPI=;"
         PREFIX ""
     )
+    if (ANDROID)
+        set_target_properties(libGLES_CM PROPERTIES SUFFIX "_swiftshader.so")
+    endif ()
     set_shared_library_export_map(libGLES_CM ${SOURCE_DIR}/OpenGL/libGLES_CM)
     target_link_libraries(libGLES_CM SwiftShader ${Reactor} GLCompiler ${OS_LIBS})
     add_custom_command(
@@ -2234,11 +2354,13 @@ if(BUILD_GLES_CM)
 endif()
 
 if(BUILD_VULKAN)
-    # This variable is also used by SPIRV-Tools to locate SPIRV-Headers
-    set(SPIRV-Headers_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/SPIRV-Headers")
-    list(APPEND VULKAN_INCLUDE_DIR "${SPIRV-Headers_SOURCE_DIR}/include")
+    if (NOT TARGET SPIRV-Tools)
+        # This variable is also used by SPIRV-Tools to locate SPIRV-Headers
+        set(SPIRV-Headers_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/SPIRV-Headers")
+        list(APPEND VULKAN_INCLUDE_DIR "${SPIRV-Headers_SOURCE_DIR}/include")
 
-    add_subdirectory(third_party/SPIRV-Tools)
+        add_subdirectory(third_party/SPIRV-Tools)
+    endif()
 
     add_library(libvk_swiftshader SHARED ${VULKAN_LIST})
     set_target_properties(libvk_swiftshader PROPERTIES
@@ -2254,12 +2376,12 @@ if(BUILD_VULKAN)
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:libvk_swiftshader>/translator
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libvk_swiftshader> $<TARGET_FILE_DIR:libvk_swiftshader>/translator/${LIB_PREFIX}Vulkan_translator${CMAKE_SHARED_LIBRARY_SUFFIX}
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/out/${CMAKE_SYSTEM_NAME}/
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libvk_swiftshader> ${CMAKE_CURRENT_SOURCE_DIR}/out/${CMAKE_SYSTEM_NAME}/
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libvk_swiftshader> ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
     )
     configure_file(
         "${VULKAN_DIR}/vk_swiftshader_icd.json.tmpl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/out/${CMAKE_SYSTEM_NAME}/vk_swiftshader_icd.json")
+        "${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/vk_swiftshader_icd.json")
 endif()
 
 ###########################################################
@@ -2327,25 +2449,55 @@ if(BUILD_TESTS)
 endif()
 
 if(BUILD_TESTS)
-    set(UNITTESTS_LIST
+    set(GLES_UNITTESTS_LIST
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/GLESUnitTests/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/GLESUnitTests/unittests.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/src/gtest-all.cc
     )
 
-    set(UNITTESTS_INCLUDE_DIR
+    set(GLES_UNITTESTS_INCLUDE_DIR
         ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/include/
         ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googlemock/include/
         ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/
         ${CMAKE_CURRENT_SOURCE_DIR}/include/
     )
 
-    add_executable(unittests ${UNITTESTS_LIST})
-    set_target_properties(unittests PROPERTIES
-        INCLUDE_DIRECTORIES "${UNITTESTS_INCLUDE_DIR}"
+    add_executable(gles-unittests ${GLES_UNITTESTS_LIST})
+    set_target_properties(gles-unittests PROPERTIES
+        INCLUDE_DIRECTORIES "${GLES_UNITTESTS_INCLUDE_DIR}"
         FOLDER "Tests"
         COMPILE_DEFINITIONS "STANDALONE"
     )
 
-    target_link_libraries(unittests libEGL libGLESv2 ${OS_LIBS})
+    target_link_libraries(gles-unittests libEGL libGLESv2 ${OS_LIBS})
+    if(ANDROID)
+        target_link_libraries(gles-unittests -landroid)
+    endif()
+endif()
+
+if(BUILD_TESTS AND BUILD_VULKAN)
+    set(VK_UNITTESTS_LIST
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/VulkanUnitTests/Device.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/VulkanUnitTests/Driver.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/VulkanUnitTests/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/VulkanUnitTests/unittests.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/src/gtest-all.cc
+    )
+
+    set(VK_UNITTESTS_INCLUDE_DIR
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/include/
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googlemock/include/
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/SPIRV-Tools/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/
+    )
+
+    add_executable(vk-unittests ${VK_UNITTESTS_LIST})
+    set_target_properties(vk-unittests PROPERTIES
+        INCLUDE_DIRECTORIES "${VK_UNITTESTS_INCLUDE_DIR}"
+        FOLDER "Tests"
+        COMPILE_DEFINITIONS "STANDALONE"
+    )
+
+    target_link_libraries(vk-unittests ${OS_LIBS} SPIRV-Tools)
 endif()

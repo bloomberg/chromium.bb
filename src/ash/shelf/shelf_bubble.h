@@ -23,7 +23,7 @@ class ASH_EXPORT ShelfBubble : public views::BubbleDialogDelegateView {
               SkColor background_co0lor);
 
   // views::BubbleDialogDelegateView
-  ax::mojom::Role GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
 
   // Returns true if we should close when we get a press down event within our
   // bounds.

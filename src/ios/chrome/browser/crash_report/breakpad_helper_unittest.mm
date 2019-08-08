@@ -19,19 +19,6 @@
 
 namespace {
 
-// Wait for the UTE crash processing. This is needed the first time
-// |breakpad_helper::SetUploadingEnabled| is called.
-void WaitMainThreadFreezeCrashProcessingIfNeeded() {
-  if (!
-      [MainThreadFreezeDetector sharedInstance].canUploadBreakpadCrashReports) {
-    EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-        base::test::ios::kWaitForActionTimeout, ^bool {
-          return [MainThreadFreezeDetector sharedInstance]
-              .canUploadBreakpadCrashReports;
-        }));
-  }
-}
-
 const int kCrashReportCount = 3;
 NSString* const kUploadedInRecoveryMode = @"uploaded_in_recovery_mode";
 
@@ -102,33 +89,22 @@ TEST_F(BreakpadHelperTest, HasReportToUpload) {
 }
 
 TEST_F(BreakpadHelperTest, IsUploadingEnabled) {
-  // Test when crash reporter is disabled.
+  breakpad_helper::SetUserEnabledUploading(true);
+  EXPECT_TRUE(breakpad_helper::UserEnabledUploading());
   breakpad_helper::SetEnabled(false);
-
-  EXPECT_FALSE(breakpad_helper::IsUploadingEnabled());
-
-  breakpad_helper::SetUploadingEnabled(false);
-  WaitMainThreadFreezeCrashProcessingIfNeeded();
-  EXPECT_FALSE(breakpad_helper::IsUploadingEnabled());
-
-  breakpad_helper::SetUploadingEnabled(true);
-  EXPECT_FALSE(breakpad_helper::IsUploadingEnabled());
-
-  // Test when crash reporter is enabled.
+  EXPECT_TRUE(breakpad_helper::UserEnabledUploading());
   [[mock_breakpad_controller_ expect] start:NO];
   breakpad_helper::SetEnabled(true);
-  EXPECT_FALSE(breakpad_helper::IsUploadingEnabled());
-  EXPECT_OCMOCK_VERIFY(mock_breakpad_controller_);
+  EXPECT_TRUE(breakpad_helper::UserEnabledUploading());
 
-  [[mock_breakpad_controller_ expect] setUploadingEnabled:NO];
-  breakpad_helper::SetUploadingEnabled(false);
-  EXPECT_FALSE(breakpad_helper::IsUploadingEnabled());
-  EXPECT_OCMOCK_VERIFY(mock_breakpad_controller_);
-
-  [[mock_breakpad_controller_ expect] setUploadingEnabled:YES];
-  breakpad_helper::SetUploadingEnabled(true);
-  EXPECT_TRUE(breakpad_helper::IsUploadingEnabled());
-  EXPECT_OCMOCK_VERIFY(mock_breakpad_controller_);
+  breakpad_helper::SetUserEnabledUploading(false);
+  EXPECT_FALSE(breakpad_helper::UserEnabledUploading());
+  [[mock_breakpad_controller_ expect] stop];
+  breakpad_helper::SetEnabled(false);
+  EXPECT_FALSE(breakpad_helper::UserEnabledUploading());
+  [[mock_breakpad_controller_ expect] start:NO];
+  breakpad_helper::SetEnabled(true);
+  EXPECT_FALSE(breakpad_helper::UserEnabledUploading());
 }
 
 TEST_F(BreakpadHelperTest, StartUploadingReportsInRecoveryMode) {

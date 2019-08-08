@@ -14,6 +14,7 @@
 
 #if defined(OS_WIN)
 #include "ui/gfx/platform_font_win.h"
+#include "ui/gfx/system_fonts_win.h"
 #endif
 
 namespace gfx {
@@ -23,7 +24,7 @@ using FontTest = testing::Test;
 
 TEST_F(FontTest, LoadArial) {
   Font cf(kTestFontName, 16);
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_MACOSX) || defined(OS_IOS)
   EXPECT_TRUE(cf.GetNativeFont());
 #endif
   EXPECT_EQ(cf.GetStyle(), Font::NORMAL);
@@ -36,7 +37,7 @@ TEST_F(FontTest, LoadArial) {
 TEST_F(FontTest, LoadArialBold) {
   Font cf(kTestFontName, 16);
   Font bold(cf.Derive(0, Font::NORMAL, Font::Weight::BOLD));
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_MACOSX) || defined(OS_IOS)
   EXPECT_TRUE(bold.GetNativeFont());
 #endif
   EXPECT_EQ(bold.GetStyle(), Font::NORMAL);
@@ -116,7 +117,7 @@ TEST_F(FontTest, DeriveFont) {
 #if defined(OS_WIN)
 TEST_F(FontTest, DeriveResizesIfSizeTooSmall) {
   Font cf(kTestFontName, 8);
-  PlatformFontWin::SetGetMinimumFontSizeCallback([] { return 5; });
+  gfx::win::SetGetMinimumFontSizeCallback([] { return 5; });
 
   Font derived_font = cf.Derive(-4, cf.GetStyle(), cf.GetWeight());
   EXPECT_EQ(5, derived_font.GetFontSize());
@@ -124,7 +125,7 @@ TEST_F(FontTest, DeriveResizesIfSizeTooSmall) {
 
 TEST_F(FontTest, DeriveKeepsOriginalSizeIfHeightOk) {
   Font cf(kTestFontName, 8);
-  PlatformFontWin::SetGetMinimumFontSizeCallback([] { return 5; });
+  gfx::win::SetGetMinimumFontSizeCallback([] { return 5; });
 
   Font derived_font = cf.Derive(-2, cf.GetStyle(), cf.GetWeight());
   EXPECT_EQ(6, derived_font.GetFontSize());

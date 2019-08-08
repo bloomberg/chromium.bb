@@ -8,9 +8,11 @@ import("nasm_sources.gni")
 configs_to_delete = [
   # Don't enable sanitizers for build tools. They slow down the overall build.
   "//build/config/sanitizers:default_sanitizer_flags",
+
+  "//build/config/compiler:chromium_code",
 ]
 
-configs_to_add = []
+configs_to_add = [ "//build/config/compiler:no_chromium_code" ]
 if (is_debug) {
   configs_to_delete += [
     # Build with full optimizations even on debug configurations, because some
@@ -32,6 +34,12 @@ if (is_debug) {
     # of highbd_sad4d_sse2.asm on Windows this saved about 15 s.
     configs_to_delete += [ "//build/config/win:default_crt" ]
     configs_to_add += [ "//build/config/win:release_crt" ]
+
+    # Without no_default_deps, an implicit dependency on libc++ is added.
+    # libc++ may have been built referencing the debug CRT, but since we're
+    # explicitly using the release CRT, this would result in undefined symbol
+    # errors when linking, so we need to remove the implicit libc++ dependency.
+    no_default_deps = true
   }
 }
 
@@ -87,10 +95,10 @@ if (current_toolchain == host_toolchain) {
   executable("nasm") {
     sources = nasmlib_sources + nasm_sources
     sources += [
-      "config/config.h",
-      "config/config-mac.h",
       "config/config-linux.h",
-      "config/config-win.h",
+      "config/config-mac.h",
+      "config/config.h",
+      "config/msvc.h",
     ]
 
     configs -= configs_to_delete

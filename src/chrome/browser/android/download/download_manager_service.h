@@ -111,6 +111,14 @@ class DownloadManagerService
                       const JavaParamRef<jstring>& jdownload_guid,
                       bool is_off_the_record);
 
+  // Called to rename a download item that has GUID equal to |id|.
+  void RenameDownload(JNIEnv* env,
+                      const JavaParamRef<jobject>& obj,
+                      const JavaParamRef<jstring>& id,
+                      const JavaParamRef<jstring>& name,
+                      const JavaParamRef<jobject>& callback,
+                      bool is_off_the_record);
+
   // Returns whether or not the given download can be opened by the browser.
   bool IsDownloadOpenableInBrowser(JNIEnv* env,
                                    jobject obj,

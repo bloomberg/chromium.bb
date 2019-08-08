@@ -79,19 +79,6 @@ constexpr SourceOptions kSourceOptions[] = {
   }
 };
 
-enum EmbeddedProfileResult : int {
-  EMBEDDED_PROFILE_ATTEMPT,
-  EMBEDDED_PROFILE_FOUND,
-  EMBEDDED_PROFILE_FALLBACK,
-  EMBEDDED_PROFILE_DROPPED,
-  EMBEDDED_PROFILE_ACTION_MAX
-};
-
-void RecordEmbeddedProfileResult(EmbeddedProfileResult result) {
-  UMA_HISTOGRAM_ENUMERATION("UMA.FileMetricsProvider.EmbeddedProfileResult",
-                            result, EMBEDDED_PROFILE_ACTION_MAX);
-}
-
 void DeleteFileWhenPossible(const base::FilePath& path) {
   // Open (with delete) and then immediately close the file by going out of
   // scope. This is the only cross-platform safe way to delete a file that may
@@ -633,30 +620,13 @@ bool FileMetricsProvider::ProvideIndependentMetricsOnTaskRunner(
     SourceInfo* source,
     SystemProfileProto* system_profile_proto,
     base::HistogramSnapshotManager* snapshot_manager) {
-  RecordEmbeddedProfileResult(EMBEDDED_PROFILE_ATTEMPT);
-  base::Time start_time = base::Time::Now();
   if (PersistentSystemProfile::GetSystemProfile(
           *source->allocator->memory_allocator(), system_profile_proto)) {
     system_profile_proto->mutable_stability()->set_from_previous_run(true);
     RecordHistogramSnapshotsFromSource(snapshot_manager, source);
-    UMA_HISTOGRAM_TIMES("UMA.FileMetricsProvider.EmbeddedProfile.RecordTime",
-                        base::Time::Now() - start_time);
-    RecordEmbeddedProfileResult(EMBEDDED_PROFILE_FOUND);
     return true;
   }
 
-  RecordEmbeddedProfileResult(EMBEDDED_PROFILE_DROPPED);
-
-  // TODO(bcwhite): Remove these once crbug/695880 is resolved.
-  int histogram_count = 0;
-  base::PersistentHistogramAllocator::Iterator histogram_iter(
-      source->allocator.get());
-  while (histogram_iter.GetNext()) {
-    ++histogram_count;
-  }
-  UMA_HISTOGRAM_COUNTS_10000(
-      "UMA.FileMetricsProvider.EmbeddedProfile.DroppedHistogramCount",
-      histogram_count);
   return false;
 }
 
@@ -761,8 +731,10 @@ bool FileMetricsProvider::HasIndependentMetrics() {
 
 void FileMetricsProvider::ProvideIndependentMetrics(
     base::OnceCallback<void(bool)> done_callback,
-    SystemProfileProto* system_profile_proto,
+    ChromeUserMetricsExtension* uma_proto,
     base::HistogramSnapshotManager* snapshot_manager) {
+  SystemProfileProto* system_profile_proto =
+      uma_proto->mutable_system_profile();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (sources_with_profile_.empty()) {
@@ -842,8 +814,6 @@ bool FileMetricsProvider::HasPreviousSessionData() {
     if (source->association == ASSOCIATE_INTERNAL_PROFILE_OR_PREVIOUS_RUN) {
       if (PersistentSystemProfile::HasSystemProfile(
               *source->allocator->memory_allocator())) {
-        RecordEmbeddedProfileResult(EMBEDDED_PROFILE_ATTEMPT);
-        RecordEmbeddedProfileResult(EMBEDDED_PROFILE_FALLBACK);
         sources_with_profile_.splice(sources_with_profile_.end(),
                                      sources_for_previous_run_, temp);
       }

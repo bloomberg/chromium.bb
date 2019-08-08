@@ -387,8 +387,8 @@ suite('SiteList', function() {
         .then(function(contentType) {
           // Flush to be sure list container is populated.
           Polymer.dom.flush();
-          const dotsMenu = testElement.$$('site-list-entry')
-                               .$$('#actionMenuButtonContainer');
+          const dotsMenu =
+              testElement.$$('site-list-entry').$$('#actionMenuButton');
           assertFalse(dotsMenu.hidden);
           testElement.setAttribute('read-only-list', true);
           Polymer.dom.flush();
@@ -733,16 +733,16 @@ suite('SiteList', function() {
           const item = testElement.$$('site-list-entry');
 
           // Assert action button is hidden.
-          const dots = item.$.actionMenuButtonContainer;
+          const dots = item.$.actionMenuButton;
           assertTrue(!!dots);
           assertTrue(dots.hidden);
 
           // Assert reset button is visible.
-          const resetButton = item.$.resetSiteContainer;
+          const resetButton = item.$.resetSite;
           assertTrue(!!resetButton);
           assertFalse(resetButton.hidden);
 
-          resetButton.querySelector('button').click();
+          resetButton.click();
           return browserProxy.whenCalled('resetCategoryPermissionForPattern');
         })
         .then(function(args) {
@@ -921,12 +921,12 @@ suite('SiteList', function() {
           // Validate that embeddingOrigin sites cannot be edited.
           const entries = testElement.root.querySelectorAll('site-list-entry');
           const firstItem = entries[0];
-          assertTrue(firstItem.$.actionMenuButtonContainer.hidden);
-          assertFalse(firstItem.$.resetSiteContainer.hidden);
+          assertTrue(firstItem.$.actionMenuButton.hidden);
+          assertFalse(firstItem.$.resetSite.hidden);
           // Validate that non-embeddingOrigin sites can be edited.
           const secondItem = entries[1];
-          assertFalse(secondItem.$.actionMenuButtonContainer.hidden);
-          assertTrue(secondItem.$.resetSiteContainer.hidden);
+          assertFalse(secondItem.$.actionMenuButton.hidden);
+          assertTrue(secondItem.$.resetSite.hidden);
         });
   });
 

@@ -212,6 +212,7 @@ cr.define('downloads', function() {
       if (e.command.id == 'clear-all-command') {
         this.mojoHandler_.clearAll();
       } else if (e.command.id == 'undo-command') {
+        cr.toastManager.getInstance().hide();
         this.mojoHandler_.undo();
       }
     },
@@ -252,6 +253,7 @@ cr.define('downloads', function() {
      */
     removeItem_: function(index) {
       const removed = this.items_.splice(index, 1);
+      const removedFileName = removed[0].fileName;
       this.updateHideDates_(index, index);
       this.notifySplices('items_', [{
                            index: index,
@@ -260,6 +262,13 @@ cr.define('downloads', function() {
                            type: 'splice',
                            removed: removed,
                          }]);
+      const pieces = loadTimeData.getSubstitutedStringPieces(
+          loadTimeData.getString('toastRemovedFromList'), removedFileName);
+      pieces.forEach(p => {
+        // Make the file name collapsible.
+        p.collapsible = !!p.arg;
+      });
+      cr.toastManager.getInstance().showForStringPieces(pieces, true);
       if (this.restoreFocusAfterRemove_) {
         this.restoreFocusAfterRemove_ = false;
         if (this.items_.length > 0) {
@@ -278,6 +287,12 @@ cr.define('downloads', function() {
     /** @private */
     onRestoreFocusAfterRemove_: function() {
       this.restoreFocusAfterRemove_ = true;
+    },
+
+    /** @private */
+    onUndoClick_: function() {
+      cr.toastManager.getInstance().hide();
+      this.mojoHandler_.undo();
     },
 
     /**

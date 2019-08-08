@@ -62,7 +62,8 @@ ScriptPromise KeyboardLock::lock(ScriptState* state,
                                     kKeyboardLockRequestFailedErrorMsg));
   }
 
-  request_keylock_resolver_ = ScriptPromiseResolver::Create(state);
+  request_keylock_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(state);
   service_->RequestKeyboardLock(
       keycodes,
       WTF::Bind(&KeyboardLock::LockRequestFinished, WrapPersistent(this),

@@ -20,6 +20,7 @@ class WebMediaCapabilitiesClient {
 
   virtual void DecodingInfo(
       const WebMediaDecodingConfiguration&,
+      std::unique_ptr<blink::WebContentDecryptionModuleAccess>,
       std::unique_ptr<WebMediaCapabilitiesDecodingInfoCallbacks>) = 0;
 };
 

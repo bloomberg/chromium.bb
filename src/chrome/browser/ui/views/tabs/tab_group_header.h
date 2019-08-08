@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HEADER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HEADER_H_
 
+#include "base/strings/string16.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -16,7 +17,7 @@ class Canvas;
 // the tab strip flow and positioned left of the leftmost tab in the group.
 class TabGroupHeader : public views::View {
  public:
-  TabGroupHeader();
+  explicit TabGroupHeader(const base::string16& group_title);
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;

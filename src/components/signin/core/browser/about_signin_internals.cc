@@ -10,7 +10,7 @@
 #include <tuple>
 
 #include "base/command_line.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -414,11 +414,6 @@ void AboutSigninInternals::OnErrorChanged() {
   NotifyObservers();
 }
 
-void AboutSigninInternals::OnPrimaryAccountSigninFailed(
-    const GoogleServiceAuthError& error) {
-  NotifyObservers();
-}
-
 void AboutSigninInternals::OnPrimaryAccountSet(
     const CoreAccountInfo& primary_account_info) {
   NotifyObservers();
@@ -585,30 +580,34 @@ AboutSigninInternals::SigninStatus::ToValue(
                   TokenServiceLoadCredentialsStateToLabel(load_tokens_state));
 
   if (identity_manager->HasPrimaryAccount()) {
-    std::string account_id = identity_manager->GetPrimaryAccountId();
+    CoreAccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
     AddSectionEntry(basic_info,
                     SigninStatusFieldToLabel(signin_internals_util::ACCOUNT_ID),
-                    account_id);
-    AddSectionEntry(
-        basic_info, SigninStatusFieldToLabel(signin_internals_util::GAIA_ID),
-        identity_manager
-            ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
-            ->gaia);
+                    account_info.account_id);
+    AddSectionEntry(basic_info,
+                    SigninStatusFieldToLabel(signin_internals_util::GAIA_ID),
+                    account_info.gaia);
     AddSectionEntry(basic_info,
                     SigninStatusFieldToLabel(signin_internals_util::USERNAME),
-                    identity_manager->GetPrimaryAccountInfo().email);
+                    account_info.email);
     if (signin_error_controller->HasError()) {
       const std::string error_account_id =
           signin_error_controller->error_account_id();
-      const std::string error_username =
+      const base::Optional<AccountInfo> error_account_info =
           identity_manager
               ->FindAccountInfoForAccountWithRefreshTokenByAccountId(
-                  error_account_id)
-              ->email;
+                  error_account_id);
       AddSectionEntry(basic_info, "Auth Error",
           signin_error_controller->auth_error().ToString());
       AddSectionEntry(basic_info, "Auth Error Account Id", error_account_id);
-      AddSectionEntry(basic_info, "Auth Error Username", error_username);
+
+      // The error_account_info optional should never be unset when we reach
+      // this line (as we should have a refresh token, even if in an error
+      // state). However, since this is a debug page, make the code resilient
+      // to avoid rendering the page unavailable to debug if a regression is
+      // introduced (and thus making debugging the regression harder).
+      AddSectionEntry(basic_info, "Auth Error Username",
+                      error_account_info ? error_account_info->email : "");
     } else {
       AddSectionEntry(basic_info, "Auth Error", "None");
     }

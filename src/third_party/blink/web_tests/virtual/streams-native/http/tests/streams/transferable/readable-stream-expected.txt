@@ -3,7 +3,7 @@ FAIL sending one chunk through a transferred stream should work promise_test: Un
 FAIL sending ten chunks through a transferred stream should work promise_test: Unhandled rejection with value: object "Error: what is this thing: "null"?"
 FAIL sending ten chunks one at a time should work promise_test: Unhandled rejection with value: object "Error: what is this thing: "null"?"
 FAIL sending ten chunks on demand should work promise_test: Unhandled rejection with value: object "Error: what is this thing: "null"?"
-PASS transferring a stream should relieve backpressure
+FAIL transferring a stream should relieve backpressure assert_array_equals: pull() should have been called lengths differ, expected 1 got 0
 FAIL transferring a stream should add one chunk to the queue size promise_test: Unhandled rejection with value: object "Error: what is this thing: "null"?"
 FAIL the extra queue from transferring is counted in chunks promise_test: Unhandled rejection with value: object "Error: what is this thing: "null"?"
 FAIL cancel should be propagated to the original promise_test: Unhandled rejection with value: object "Error: what is this thing: "null"?"

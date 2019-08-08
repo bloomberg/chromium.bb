@@ -56,7 +56,7 @@ void SVGAnimateTransformElement::ResolveTargetProperty() {
   // is better added to the <animate> element since the <animateTransform>
   // element is deprecated and quirky. (We also reject this case via
   // hasValidAttributeType above.)
-  css_property_id_ = CSSPropertyInvalid;
+  css_property_id_ = CSSPropertyID::kInvalid;
 }
 
 SVGPropertyBase* SVGAnimateTransformElement::CreatePropertyForAnimation(

@@ -18,8 +18,6 @@ source_set("libfuzzer_main") {
     deps += [ "//third_party/libFuzzer:libfuzzer" ]
   } else if (use_afl) {
     deps += [ "//third_party/libFuzzer:afl_driver" ]
-  } else if (use_drfuzz) {
-    sources += [ "drfuzz_main.cc" ]
   } else {
     sources += [ "unittest_main.cc" ]
   }

@@ -51,10 +51,8 @@ void MachineLevelUserCloudPolicyManager::Connect(
   CreateComponentCloudPolicyService(
       dm_protocol::kChromeMachineLevelExtensionCloudPolicyType,
       policy_dir_.Append(kComponentPolicyCache),
-      (local_state->GetBoolean(policy_prefs::kCloudPolicyOverridesMachinePolicy)
-           ? POLICY_SOURCE_PRIORITY_CLOUD
-           : POLICY_SOURCE_CLOUD),
-      client.get(), schema_registry());
+      // Component cloud policies use the same source of Chrome ones.
+      store()->source(), client.get(), schema_registry());
   core()->Connect(std::move(client));
   core()->StartRefreshScheduler();
   core()->TrackRefreshDelayPref(local_state,

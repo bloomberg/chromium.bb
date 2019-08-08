@@ -98,12 +98,6 @@ BrowserAccessibility* BrowserAccessibilityPosition::GetNodeInTree(
   return manager->GetFromID(node_id);
 }
 
-int BrowserAccessibilityPosition::MaxTextOffset() const {
-  if (IsNullPosition())
-    return INVALID_OFFSET;
-  return static_cast<int>(GetInnerText().length());
-}
-
 // On some platforms, most objects are represented in the text of their parents
 // with a special (embedded object) character and not with their actual text
 // contents.

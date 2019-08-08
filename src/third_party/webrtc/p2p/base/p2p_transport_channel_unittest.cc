@@ -10,6 +10,7 @@
 
 #include <list>
 #include <memory>
+#include <utility>
 
 #include "absl/memory/memory.h"
 #include "p2p/base/fake_port_allocator.h"
@@ -24,11 +25,13 @@
 #include "rtc_base/checks.h"
 #include "rtc_base/dscp.h"
 #include "rtc_base/fake_clock.h"
+#include "rtc_base/fake_mdns_responder.h"
 #include "rtc_base/fake_network.h"
 #include "rtc_base/firewall_socket_server.h"
 #include "rtc_base/gunit.h"
 #include "rtc_base/helpers.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/mdns_responder_interface.h"
 #include "rtc_base/nat_server.h"
 #include "rtc_base/nat_socket_factory.h"
 #include "rtc_base/proxy_server.h"
@@ -187,7 +190,7 @@ namespace cricket {
 // and that the result is what we expect.
 // Note that this class is a base class for use by other tests, who will provide
 // specialized test behavior.
-class P2PTransportChannelTestBase : public testing::Test,
+class P2PTransportChannelTestBase : public ::testing::Test,
                                     public rtc::MessageHandler,
                                     public sigslot::has_slots<> {
  public:
@@ -611,7 +614,7 @@ class P2PTransportChannelTestBase : public testing::Test,
     DestroyChannels();
   }
 
-  void TestSendRecv(rtc::FakeClock* clock) {
+  void TestSendRecv(rtc::ThreadProcessingFakeClock* clock) {
     for (int i = 0; i < 10; ++i) {
       const char* data = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
       int len = static_cast<int>(strlen(data));
@@ -3074,7 +3077,7 @@ TEST_F(P2PTransportChannelMultihomedTest, TestRestoreBackupConnection) {
 
 // A collection of tests which tests a single P2PTransportChannel by sending
 // pings.
-class P2PTransportChannelPingTest : public testing::Test,
+class P2PTransportChannelPingTest : public ::testing::Test,
                                     public sigslot::has_slots<> {
  public:
   P2PTransportChannelPingTest()
@@ -3093,10 +3096,11 @@ class P2PTransportChannelPingTest : public testing::Test,
         this, &P2PTransportChannelPingTest::OnChannelStateChanged);
   }
 
-  Connection* WaitForConnectionTo(P2PTransportChannel* ch,
-                                  const std::string& ip,
-                                  int port_num,
-                                  rtc::FakeClock* clock = nullptr) {
+  Connection* WaitForConnectionTo(
+      P2PTransportChannel* ch,
+      const std::string& ip,
+      int port_num,
+      rtc::ThreadProcessingFakeClock* clock = nullptr) {
     if (clock == nullptr) {
       EXPECT_TRUE_WAIT(GetConnectionTo(ch, ip, port_num) != nullptr,
                        kMediumTimeout);
@@ -4615,7 +4619,8 @@ TEST_F(P2PTransportChannelTest,
   ConfigureEndpoints(OPEN, OPEN, kOnlyLocalPorts, kOnlyLocalPorts);
   // ICE parameter will be set up when creating the channels.
   set_remote_ice_parameter_source(FROM_SETICEPARAMETERS);
-  GetEndpoint(0)->network_manager_.CreateMdnsResponder(rtc::Thread::Current());
+  GetEndpoint(0)->network_manager_.set_mdns_responder(
+      absl::make_unique<webrtc::FakeMdnsResponder>(rtc::Thread::Current()));
   GetEndpoint(1)->async_resolver_factory_ = &mock_async_resolver_factory;
   CreateChannels();
   // Pause sending candidates from both endpoints until we find out what port
@@ -4686,7 +4691,8 @@ TEST_F(P2PTransportChannelTest,
   ConfigureEndpoints(OPEN, OPEN, kOnlyLocalPorts, kOnlyLocalPorts);
   // ICE parameter will be set up when creating the channels.
   set_remote_ice_parameter_source(FROM_SETICEPARAMETERS);
-  GetEndpoint(0)->network_manager_.CreateMdnsResponder(rtc::Thread::Current());
+  GetEndpoint(0)->network_manager_.set_mdns_responder(
+      absl::make_unique<webrtc::FakeMdnsResponder>(rtc::Thread::Current()));
   GetEndpoint(1)->async_resolver_factory_ = &mock_async_resolver_factory;
   CreateChannels();
   // Pause sending candidates from both endpoints until we find out what port
@@ -4753,7 +4759,8 @@ TEST_F(P2PTransportChannelTest, CanConnectWithHostCandidateWithMdnsName) {
   ConfigureEndpoints(OPEN, OPEN, kOnlyLocalPorts, kOnlyLocalPorts);
   // ICE parameter will be set up when creating the channels.
   set_remote_ice_parameter_source(FROM_SETICEPARAMETERS);
-  GetEndpoint(0)->network_manager_.CreateMdnsResponder(rtc::Thread::Current());
+  GetEndpoint(0)->network_manager_.set_mdns_responder(
+      absl::make_unique<webrtc::FakeMdnsResponder>(rtc::Thread::Current()));
   GetEndpoint(1)->async_resolver_factory_ = &mock_async_resolver_factory;
   CreateChannels();
   // Pause sending candidates from both endpoints until we find out what port
@@ -4809,7 +4816,8 @@ TEST_F(P2PTransportChannelTest,
                      kOnlyLocalPorts);
   // ICE parameter will be set up when creating the channels.
   set_remote_ice_parameter_source(FROM_SETICEPARAMETERS);
-  GetEndpoint(0)->network_manager_.CreateMdnsResponder(rtc::Thread::Current());
+  GetEndpoint(0)->network_manager_.set_mdns_responder(
+      absl::make_unique<webrtc::FakeMdnsResponder>(rtc::Thread::Current()));
   GetEndpoint(1)->async_resolver_factory_ = &mock_async_resolver_factory;
   CreateChannels();
   // Pause sending candidates from both endpoints until we find out what port
@@ -4884,6 +4892,50 @@ TEST_F(P2PTransportChannelTest,
       FAIL();
     }
   }
+  DestroyChannels();
+}
+
+class MockMdnsResponder : public webrtc::MdnsResponderInterface {
+ public:
+  MOCK_METHOD2(CreateNameForAddress,
+               void(const rtc::IPAddress&, NameCreatedCallback));
+  MOCK_METHOD2(RemoveNameForAddress,
+               void(const rtc::IPAddress&, NameRemovedCallback));
+};
+
+TEST_F(P2PTransportChannelTest,
+       SrflxCandidateCanBeGatheredBeforeMdnsCandidateToCreateConnection) {
+  // ep1 and ep2 will only gather host and srflx candidates with base addresses
+  // kPublicAddrs[0] and kPublicAddrs[1], respectively, and we use a shared
+  // socket in gathering.
+  const auto kOnlyLocalAndStunPorts =
+      cricket::PORTALLOCATOR_DISABLE_RELAY |
+      cricket::PORTALLOCATOR_DISABLE_TCP |
+      cricket::PORTALLOCATOR_ENABLE_SHARED_SOCKET;
+  // ep1 is configured with a NAT so that we do gather a srflx candidate.
+  ConfigureEndpoints(NAT_FULL_CONE, OPEN, kOnlyLocalAndStunPorts,
+                     kOnlyLocalAndStunPorts);
+  // ICE parameter will be set up when creating the channels.
+  set_remote_ice_parameter_source(FROM_SETICEPARAMETERS);
+  // Use a mock mDNS responder, which does not complete the name registration by
+  // ignoring the completion callback.
+  auto mock_mdns_responder = absl::make_unique<MockMdnsResponder>();
+  EXPECT_CALL(*mock_mdns_responder, CreateNameForAddress(_, _))
+      .Times(1)
+      .WillOnce(Return());
+  GetEndpoint(0)->network_manager_.set_mdns_responder(
+      std::move(mock_mdns_responder));
+
+  CreateChannels();
+
+  // We should be able to form a srflx-host connection to ep2.
+  ASSERT_TRUE_WAIT((ep1_ch1()->selected_connection()) != nullptr,
+                   kMediumTimeout);
+  EXPECT_EQ(STUN_PORT_TYPE,
+            ep1_ch1()->selected_connection()->local_candidate().type());
+  EXPECT_EQ(LOCAL_PORT_TYPE,
+            ep1_ch1()->selected_connection()->remote_candidate().type());
+
   DestroyChannels();
 }
 

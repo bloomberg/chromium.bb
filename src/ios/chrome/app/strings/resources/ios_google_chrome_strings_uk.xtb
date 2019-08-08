@@ -8,7 +8,6 @@
 <translation id="1984705450038014246">Синхронізуйте дані Chrome</translation>
 <translation id="2147651015520127414">Chrome підтвердив, що сертифікат цьому веб-сайту надала компанія <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Дані Синхронізації Chrome</translation>
-<translation id="2334084861041072223">Авторське право <ph name="YEAR" /> Google Inc. Усі права захищено.</translation>
 <translation id="2342981853652716282">Увійдіть в обліковий запис у Chrome, щоб мати доступ до своїх закладок, паролів та інших даних на всіх пристроях.</translation>
 <translation id="2347208864470321755">Якщо ввімкнути цю функцію, Chrome пропонуватиме перекласти сторінки, написані іншими мовами, за допомогою Перекладача Google. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Щоб зберегти зображення, торкніться кнопки "Налаштування" та надайте Chrome доступ до ваших фото</translation>
@@ -22,7 +21,6 @@
 <translation id="3282568296779691940">Вхід у Chrome</translation>
 <translation id="3345341804167540816">Використовуйте Chrome на всіх пристроях</translation>
 <translation id="384394811301901750">Зараз Google Chrome не може використовувати камеру</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3980220367029651214">Ви переходите з облікового запису для синхронізації <ph name="USER_EMAIL1" /> у <ph name="USER_EMAIL2" />. Ваші наявні дані Chrome збережені в домені <ph name="DOMAIN" />. Дані буде видалено з цього пристрою, але вони залишаться в обліковому записі <ph name="USER_EMAIL1" />.</translation>
 <translation id="3988789688219830639">Google Chrome не має доступу до ваших фото чи відео. Надайте доступ у меню iOS "Параметри &gt; Конфіденційність &gt; Фото".</translation>
 <translation id="4099578267706723511">Допоможіть покращити Chrome, надсилаючи статистику та звіти про збої в Google.</translation>
@@ -34,6 +32,7 @@
 <translation id="5389212809648216794">Зараз Google Chrome не може використовувати камеру, оскільки її використовує інший додаток</translation>
 <translation id="5639704535586432836">Відкрийте меню "Параметри" &gt; "Приватність" &gt; "Камера" &gt; "Google Chrome" і ввімкніть камеру.</translation>
 <translation id="5642200033778930880">Google Chrome не може використовувати камеру в режимі розділеного екрана</translation>
+<translation id="5690427481109656848">Google LLC</translation>
 <translation id="5854621639439811139">Порада щодо Chrome. Деякі кнопки зараз розташовані внизу екрана, як-от "Назад", "Уперед" і "Пошук".</translation>
 <translation id="6036420186814142909">У Google Chrome є функції, які допомагають керувати інтернет-даними та швидкістю завантаження веб-сторінок.
 <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
@@ -51,6 +50,7 @@
 <translation id="7437998757836447326">Вихід із Chrome</translation>
 <translation id="756809126120519699">Дані Chrome видалено</translation>
 <translation id="7626032353295482388">Вітаємо у Chrome!</translation>
+<translation id="8370517070665726704">Авторське право <ph name="YEAR" /> Google LLC. Усі права захищено.</translation>
 <translation id="840168496893712993">Деякі додатки спричиняють аварійне завершення роботи Chrome. Спробуйте їх видалити.</translation>
 <translation id="8459495907675268833">Вибрані дані видалено з Chrome і синхронізованих пристроїв. У вашому обліковому записі Google на сторінці history.google.com можуть бути додаткові форми історії веб-перегляду, як-от пошукові запити чи активність в інших службах Google.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

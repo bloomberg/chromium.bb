@@ -29,7 +29,7 @@ Polymer({
     /**
      * This flag is used to conditionally show a set of new sign-in UIs to the
      * profiles that have been migrated to be consistent with the web sign-ins.
-     * TODO(scottchen): In the future when all profiles are completely migrated,
+     * TODO(tangltom): In the future when all profiles are completely migrated,
      * this should be removed, and UIs hidden behind it should become default.
      * @private
      */
@@ -44,7 +44,7 @@ Polymer({
     /**
      * This flag is used to conditionally show a set of sync UIs to the
      * profiles that have been migrated to have a unified consent flow.
-     * TODO(scottchen): In the future when all profiles are completely migrated,
+     * TODO(tangltom): In the future when all profiles are completely migrated,
      * this should be removed, and UIs hidden behind it should become default.
      * @private
      */
@@ -71,9 +71,18 @@ Polymer({
 
     /**
      * Dictionary defining page visibility.
-     * @type {!GuestModePageVisibility}
+     * @type {!PageVisibility}
      */
     pageVisibility: Object,
+
+    /**
+     * Authentication token provided by settings-lock-screen.
+     * @private
+     */
+    authToken_: {
+      type: String,
+      value: '',
+    },
 
     /**
      * The currently selected profile icon URL. May be a data URL.
@@ -142,27 +151,26 @@ Polymer({
               settings.routes.SYNC.path,
               loadTimeData.getBoolean('unifiedConsentEnabled') ?
                   '#sync-setup' :
-                  '#sync-status .subpage-arrow button');
+                  '#sync-status .subpage-arrow');
         }
         // <if expr="not chromeos">
         if (settings.routes.MANAGE_PROFILE) {
           map.set(
               settings.routes.MANAGE_PROFILE.path,
               loadTimeData.getBoolean('diceEnabled') ?
-                  '#edit-profile .subpage-arrow button' :
-                  '#picture-subpage-trigger .subpage-arrow button');
+                  '#edit-profile .subpage-arrow' :
+                  '#picture-subpage-trigger .subpage-arrow');
         }
         // </if>
         // <if expr="chromeos">
         if (settings.routes.CHANGE_PICTURE) {
           map.set(
               settings.routes.CHANGE_PICTURE.path,
-              '#picture-subpage-trigger .subpage-arrow button');
+              '#picture-subpage-trigger .subpage-arrow');
         }
         if (settings.routes.LOCK_SCREEN) {
           map.set(
-              settings.routes.LOCK_SCREEN.path,
-              '#lock-screen-subpage-trigger .subpage-arrow button');
+              settings.routes.LOCK_SCREEN.path, '#lock-screen-subpage-trigger');
         }
         if (settings.routes.ACCOUNTS) {
           map.set(
@@ -172,30 +180,16 @@ Polymer({
         if (settings.routes.ACCOUNT_MANAGER) {
           map.set(
               settings.routes.ACCOUNT_MANAGER.path,
-              '#account-manager-subpage-trigger .subpage-arrow button');
+              '#account-manager-subpage-trigger');
         }
         // </if>
         return map;
       },
     },
-
-    /**
-     * True if current user is child user.
-     */
-    isChild_: Boolean,
   },
 
   /** @private {?settings.SyncBrowserProxy} */
   syncBrowserProxy_: null,
-
-  /** @override */
-  created: function() {
-    // <if expr="chromeos">
-    chrome.usersPrivate.getCurrentUser(user => {
-      this.isChild_ = user.isChild;
-    });
-    // </if>
-  },
 
   /** @override */
   attached: function() {

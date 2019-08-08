@@ -5,6 +5,8 @@
 #ifndef ASH_LOGIN_LOGIN_SCREEN_CONTROLLER_H_
 #define ASH_LOGIN_LOGIN_SCREEN_CONTROLLER_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "ash/login/login_screen_controller_observer.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
@@ -136,10 +138,10 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
                                    bool successful) override;
   void SetAvatarForUser(const AccountId& account_id,
                         mojom::UserAvatarPtr avatar) override;
-  void SetAuthEnabledForUser(
+  void EnableAuthForUser(const AccountId& account_id) override;
+  void DisableAuthForUser(
       const AccountId& account_id,
-      bool is_enabled,
-      base::Optional<base::Time> auth_reenabled_time) override;
+      ash::mojom::AuthDisabledDataPtr auth_disabled_data) override;
   void HandleFocusLeavingLockScreenApps(bool reverse) override;
   void SetSystemInfo(bool show_if_hidden,
                      const std::string& os_version_label_text,
@@ -158,7 +160,8 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
       std::vector<mojom::InputMethodItemPtr> keyboard_layouts) override;
   void SetPublicSessionShowFullManagementDisclosure(
       bool is_full_management_disclosure_needed) override;
-  void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps) override;
+  void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps,
+                    SetKioskAppsCallback callback) override;
   void ShowKioskAppError(const std::string& message) override;
   void NotifyOobeDialogState(mojom::OobeDialogState state) override;
   void SetAddUserButtonEnabled(bool enable) override;

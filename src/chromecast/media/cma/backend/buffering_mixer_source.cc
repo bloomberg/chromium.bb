@@ -25,11 +25,10 @@
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/decoder_buffer.h"
 
-#define POST_TASK_TO_CALLER_THREAD(task, ...)                               \
-  shim_task_runner_->PostTask(                                              \
-      FROM_HERE, base::BindOnce(&PostTaskShim, caller_task_runner_,         \
-                                base::BindOnce(&BufferingMixerSource::task, \
-                                               weak_this_, ##__VA_ARGS__)));
+#define POST_TASK_TO_CALLER_THREAD(task, ...) \
+  caller_task_runner_->PostTask(              \
+      FROM_HERE,                              \
+      base::BindOnce(&BufferingMixerSource::task, weak_this_, ##__VA_ARGS__));
 
 namespace chromecast {
 namespace media {
@@ -45,11 +44,6 @@ const int kDefaultAudioReadyForPlaybackThresholdMs = 70;
 // issues with voice calling.
 const int64_t kCommsInputQueueMs = 200;
 const int64_t kCommsStartThresholdMs = 150;
-
-void PostTaskShim(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                  base::OnceClosure task) {
-  task_runner->PostTask(FROM_HERE, std::move(task));
-}
 
 std::string AudioContentTypeToString(media::AudioContentType type) {
   switch (type) {
@@ -185,7 +179,6 @@ BufferingMixerSource::BufferingMixerSource(Delegate* delegate,
       playout_channel_(playout_channel),
       mixer_(StreamMixer::Get()),
       caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      shim_task_runner_(mixer_->shim_task_runner()),
       max_queued_frames_(MaxQueuedFrames(device_id, input_samples_per_second)),
       start_threshold_frames_(
           StartThreshold(device_id, input_samples_per_second)),
@@ -204,6 +197,10 @@ BufferingMixerSource::BufferingMixerSource(Delegate* delegate,
   weak_this_ = weak_factory_.GetWeakPtr();
 
   mixer_->AddInput(this);
+}
+
+BufferingMixerSource::~BufferingMixerSource() {
+  LOG(INFO) << "Destroy " << device_id_ << " (" << this << ")";
 }
 
 void BufferingMixerSource::StartPlaybackAt(int64_t playback_start_timestamp) {
@@ -261,10 +258,6 @@ BufferingMixerSource::GetMixerRenderingDelay() {
   return locked->mixer_rendering_delay_;
 }
 
-BufferingMixerSource::~BufferingMixerSource() {
-  LOG(INFO) << "Destroy " << device_id_ << " (" << this << ")";
-}
-
 int BufferingMixerSource::num_channels() {
   return num_channels_;
 }
@@ -308,6 +301,9 @@ BufferingMixerSource::RenderingDelay BufferingMixerSource::QueueData(
   if (data->end_of_stream()) {
     LOG(INFO) << "End of stream for " << device_id_ << " (" << this << ")";
     locked->state_ = State::kGotEos;
+    if (!locked->started_ && locked->playback_start_timestamp_ != INT64_MIN) {
+      POST_TASK_TO_CALLER_THREAD(PostAudioReadyForPlayback);
+    }
   } else {
     // TODO(almasrymina): this drops 1 more buffer than necessary. What we
     // should do here is only drop if the playback_start_pts_ is not found in
@@ -333,9 +329,6 @@ BufferingMixerSource::RenderingDelay BufferingMixerSource::QueueData(
       locked->queued_frames_ += frames;
       locked->queue_.push_back(std::move(buffer));
 
-      // TODO(almasrymina): this needs to be called outside the lock.
-      // POST_TASK_TO_CALLER_THREAD should also probably DCHECK that the lock
-      // is not held before executing.
       if (!locked->started_ &&
           locked->queued_frames_ >= start_threshold_frames_ &&
           locked->playback_start_timestamp_ != INT64_MIN) {
@@ -399,11 +392,16 @@ void BufferingMixerSource::CheckAndStartPlaybackIfNecessary(
     int64_t playback_absolute_timestamp) {
   auto locked = locked_members_.AssertAcquired();
 
-  DCHECK(locked->state_ == State::kNormalPlayback && !locked->started_);
+  DCHECK(locked->state_ == State::kNormalPlayback ||
+         locked->state_ == State::kGotEos);
+  DCHECK(!locked->started_);
 
-  if (locked->queued_frames_ >= start_threshold_frames_ &&
-      locked->queued_frames_ >=
-          locked->fader_.FramesNeededFromSource(num_frames) &&
+  const bool have_enough_queued_frames =
+      (locked->state_ == State::kGotEos ||
+       (locked->queued_frames_ >= start_threshold_frames_ &&
+        locked->queued_frames_ >=
+            locked->fader_.FramesNeededFromSource(num_frames)));
+  if (have_enough_queued_frames &&
       (locked->playback_start_timestamp_ == INT64_MIN ||
        playback_absolute_timestamp +
                SamplesToMicroseconds(num_frames, input_samples_per_second_) >=
@@ -477,7 +475,8 @@ int BufferingMixerSource::FillAudioPlaybackFrames(
     auto locked = locked_members_.Lock();
 
     // Playback start check.
-    if (locked->state_ == State::kNormalPlayback && !locked->started_) {
+    if (!locked->started_ && (locked->state_ == State::kNormalPlayback ||
+                              locked->state_ == State::kGotEos)) {
       CheckAndStartPlaybackIfNecessary(num_frames, playback_absolute_timestamp);
     }
 

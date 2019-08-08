@@ -381,10 +381,12 @@ bool FileSystemBackend::HasInplaceCopyImplementation(
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
     case storage::kFileSystemTypeDriveFs:
       return true;
+    // TODO(fukino): Support in-place copy for DocumentsProvider.
+    // crbug.com/953603.
+    case storage::kFileSystemTypeArcDocumentsProvider:
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeRestrictedNativeLocal:
     case storage::kFileSystemTypeArcContent:
-    case storage::kFileSystemTypeArcDocumentsProvider:
       return false;
     default:
       NOTREACHED();
@@ -460,10 +462,12 @@ FileSystemBackend::CreateFileStreamWriter(
           url.path(), offset, storage::FileStreamWriter::OPEN_EXISTING_FILE);
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
       return mtp_delegate_->CreateFileStreamWriter(url, offset, context);
+    case storage::kFileSystemTypeArcDocumentsProvider:
+      return arc_documents_provider_delegate_->CreateFileStreamWriter(
+          url, offset, context);
     // Read only file systems.
     case storage::kFileSystemTypeRestrictedNativeLocal:
     case storage::kFileSystemTypeArcContent:
-    case storage::kFileSystemTypeArcDocumentsProvider:
       return std::unique_ptr<storage::FileStreamWriter>();
     default:
       NOTREACHED();

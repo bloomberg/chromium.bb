@@ -25,7 +25,8 @@ suite('ExtensionsActivityLogHistoryItemTest', function() {
       key: 'i18n.getUILanguage',
       count: 1,
       activityType: chrome.activityLogPrivate.ExtensionActivityFilter.API_CALL,
-      countsByUrl: new Map()
+      countsByUrl: new Map(),
+      expanded: false
     };
 
     activityLogHistoryItem = new extensions.ActivityLogHistoryItem();

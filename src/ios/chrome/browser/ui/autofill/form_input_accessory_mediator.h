@@ -66,9 +66,8 @@ class WebStateList;
 // The JS manager for interacting with the underlying form.
 - (void)injectSuggestionManager:(JsSuggestionManager*)JSSuggestionManager;
 
-// The objects that can provide a custom input accessory view while filling
-// forms.
-- (void)injectProviders:(NSArray<id<FormInputSuggestionsProvider>>*)providers;
+// Replaces the object in charge of providing suggestions.
+- (void)injectProvider:(id<FormInputSuggestionsProvider>)provider;
 
 @end
 

@@ -41,8 +41,13 @@ source_set("force_installed_extension") {
 
   deps = [
     ":extension_id",
+  ]
+
+  public_deps = [
     "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
   ]
+
+  all_dependent_configs = [ "//third_party/protobuf:using_proto" ]
 }
 
 source_set("extension_file_logger_lib") {

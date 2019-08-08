@@ -12,6 +12,10 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/focus_cycler.h"
+#include "ash/ime/ime_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_test_util.h"
+#include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
@@ -56,6 +60,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/time/time.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -189,6 +194,17 @@ class ShelfItemSelectionTracker : public ShelfItemDelegate {
   }
   void ExecuteCommand(bool, int64_t, int32_t, int64_t) override {}
   void Close() override {}
+  void GetContextMenuItems(int64_t display_id,
+                           GetContextMenuItemsCallback callback) override {
+    ash::MenuItemList items;
+    ash::mojom::MenuItemPtr item(ash::mojom::MenuItem::New());
+    item->type = ui::MenuModel::TYPE_COMMAND;
+    item->command_id = 0;
+    item->label = base::UTF8ToUTF16("Item");
+    item->enabled = true;
+    items.push_back(std::move(item));
+    std::move(callback).Run(std::move(items));
+  }
 
  private:
   size_t item_selected_count_ = 0;
@@ -273,6 +289,10 @@ class ShelfViewTest : public AshTestBase {
     AshTestBase::SetUp();
     model_ = Shell::Get()->shelf_model();
     shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
+    gfx::NativeWindow window = shelf_view_->shelf_widget()->GetNativeWindow();
+    status_area_ = RootWindowController::ForWindow(window)
+                       ->GetStatusAreaWidget()
+                       ->GetContentsView();
 
     // The bounds should be big enough for 4 buttons + overflow button.
     ASSERT_GE(shelf_view_->width(), 500);
@@ -677,6 +697,8 @@ class ShelfViewTest : public AshTestBase {
 
   ShelfModel* model_ = nullptr;
   ShelfView* shelf_view_ = nullptr;
+  views::View* status_area_ = nullptr;
+
   int id_ = 0;
 
   std::unique_ptr<ShelfViewTestAPI> test_api_;
@@ -1387,9 +1409,8 @@ TEST_F(ShelfViewTest, ButtonTitlesTest) {
   for (int i = 0; i < test_api_->GetButtonCount(); i++) {
     ShelfAppButton* button = test_api_->GetButton(i);
     if (button) {
-      base::string16 tooltip;
-      button->GetTooltipText(gfx::Point(), &tooltip);
-      EXPECT_EQ(tooltip, button->GetAccessibleName())
+      EXPECT_EQ(shelf_view_->GetTitleForView(button),
+                button->GetAccessibleName())
           << "Each button's tooltip text should read the same as its "
           << "accessible name";
     }
@@ -1445,7 +1466,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
   const AppListButton* app_list_button = shelf_view_->GetAppListButton();
 
   // Make sure we're not showing the app list.
-  EXPECT_FALSE(app_list_button->is_showing_app_list())
+  EXPECT_FALSE(app_list_button->IsShowingAppList())
       << "We should not be showing the app list";
 
   // The tooltip shouldn't hide if the mouse is on normal buttons.
@@ -2282,6 +2303,148 @@ TEST_F(ShelfViewTest, AppListButtonDoesShowContextMenu) {
   EXPECT_TRUE(test_api_->CloseMenu());
 }
 
+void ExpectWithinOnePixel(int a, int b) {
+  EXPECT_TRUE(abs(a - b) <= 1) << "Values " << a << " and " << b
+                               << " should have a difference no greater than 1";
+}
+
+TEST_F(ShelfViewTest, IconCenteringTest) {
+  const display::Display display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+  const int screen_width = display.bounds().width();
+  const int screen_center = screen_width / 2;
+
+  // Show the IME panel, to introduce for asymettry with a larger status area.
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
+
+  // At the start, we have exactly one app icon for the browser. That should
+  // be centered on the screen.
+  const ShelfAppButton* button1 = GetButtonByID(model_->items()[2].id);
+  ExpectWithinOnePixel(screen_center,
+                       button1->GetBoundsInScreen().CenterPoint().x());
+  // Also check that the distance between the icon edge and the screen edge is
+  // the same on both sides.
+  ExpectWithinOnePixel(button1->GetBoundsInScreen().x(),
+                       screen_width - button1->GetBoundsInScreen().right());
+
+  const int apps_that_can_easily_fit_at_center_of_screen = 3;
+  std::vector<ShelfAppButton*> app_buttons;
+  // Start with just the browser app button.
+  app_buttons.push_back(GetButtonByID(model_->items()[2].id));
+  int n_buttons = 1;
+
+  // Now repeat the same process by adding apps until they can't fit at the
+  // center of the screen.
+  for (int i = 1; i < apps_that_can_easily_fit_at_center_of_screen; ++i) {
+    // Add a new app and add its button to our list.
+    app_buttons.push_back(GetButtonByID(AddApp()));
+    n_buttons = app_buttons.size();
+    if (n_buttons % 2 == 1) {
+      // Odd number of apps. Check that the middle app is exactly at the center
+      // of the screen.
+      ExpectWithinOnePixel(
+          screen_center,
+          app_buttons[n_buttons / 2]->GetBoundsInScreen().CenterPoint().x());
+    }
+    // Also check that the first icon is at the same distance from the left
+    // screen edge as the last icon is from the right screen edge.
+    ExpectWithinOnePixel(
+        app_buttons[0]->GetBoundsInScreen().x(),
+        screen_width - app_buttons[n_buttons - 1]->GetBoundsInScreen().right());
+  }
+
+  // Now add apps until the overflow button appears.
+  while (!shelf_view_->GetOverflowButton()->visible()) {
+    app_buttons.push_back(GetButtonByID(AddApp()));
+    n_buttons = app_buttons.size();
+  }
+  EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
+  // Now that the apps + overflow button are centered over the available space
+  // on the shelf, check that the the distance between the left app and the
+  // app list button is equal to the distance between the overflow button
+  // and the status area.
+  ExpectWithinOnePixel(
+      app_buttons[0]->GetBoundsInScreen().x() -
+          shelf_view_->GetAppListButton()->GetBoundsInScreen().right(),
+      status_area_->GetBoundsInScreen().x() -
+          shelf_view_->GetOverflowButton()->GetBoundsInScreen().right());
+}
+
+TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {
+  // At the start, the only things visible on the shelf are the app list button
+  // (index 1) and the browser app button (index 2).
+  EXPECT_EQ(1, shelf_view_->first_visible_index());
+  EXPECT_EQ(2, shelf_view_->last_visible_index());
+  // By enabling tablet mode, the back button (index 0) should become visible.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(0, shelf_view_->first_visible_index());
+  EXPECT_EQ(2, shelf_view_->last_visible_index());
+  // And things should return back to the previous state once tablet mode is off
+  // again.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_EQ(1, shelf_view_->first_visible_index());
+  EXPECT_EQ(2, shelf_view_->last_visible_index());
+  // Now let's add some apps until the overflow button shows up, each time
+  // checking the first and last visible indices are what we expect.
+  int last_visible_index = 2;
+  int last_visible_index_before_overflow;
+  ShelfID last_added_item_id;
+  while (true) {
+    last_added_item_id = AddApp();
+    if (shelf_view_->GetOverflowButton()->visible()) {
+      last_visible_index_before_overflow = last_visible_index;
+      break;
+    }
+    last_visible_index++;
+    EXPECT_EQ(1, shelf_view_->first_visible_index());
+    EXPECT_EQ(last_visible_index, shelf_view_->last_visible_index());
+  }
+
+  // The overflow button is now visible. Check that the last visible index is
+  // one less than before, because the overflow button replaces the last visible
+  // app.
+  EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_EQ(last_visible_index_before_overflow - 1,
+            shelf_view_->last_visible_index());
+
+  // Now remove the last item we just added. That should get rid of the
+  // overflow button, and get back to the previous state.
+  RemoveByID(last_added_item_id);
+  EXPECT_EQ(1, shelf_view_->first_visible_index());
+  EXPECT_EQ(last_visible_index_before_overflow,
+            shelf_view_->last_visible_index());
+
+  // Adding another app should let the overflow button appear again.
+  AddApp();
+  EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_EQ(last_visible_index_before_overflow - 1,
+            shelf_view_->last_visible_index());
+  // And now adding more apps shouldn't change the last visible index.
+  const int how_many_more_apps = 5;
+  for (int i = 0; i < how_many_more_apps; ++i) {
+    AddApp();
+    EXPECT_EQ(last_visible_index_before_overflow - 1,
+              shelf_view_->last_visible_index());
+  }
+}
+
+TEST_F(ShelfViewTest, ReplacingDelegateCancelsContextMenu) {
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  ShelfID app_button_id = AddAppShortcut();
+  generator->MoveMouseTo(GetButtonCenter(GetButtonByID(app_button_id)));
+
+  // Right click should open the context menu.
+  generator->PressRightButton();
+  generator->ReleaseRightButton();
+  EXPECT_TRUE(shelf_view_->IsShowingMenu());
+
+  // Replacing the item delegate should close the context menu.
+  model_->SetShelfItemDelegate(app_button_id,
+                               std::make_unique<ShelfItemSelectionTracker>());
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
+}
+
 // Test class that tests both context and application menus.
 class ShelfViewMenuTest : public ShelfViewTest,
                           public testing::WithParamInterface<bool> {
@@ -2331,7 +2494,7 @@ class NotificationIndicatorTest : public ShelfViewTest {
   ~NotificationIndicatorTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures({features::kNotificationIndicator},
+    scoped_feature_list_.InitWithFeatures({::features::kNotificationIndicator},
                                           {});
     ShelfViewTest::SetUp();
   }
@@ -3464,10 +3627,6 @@ class ShelfViewFocusTest : public ShelfViewTest {
     AddAppShortcut();
 
     Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
-    gfx::NativeWindow window = shelf->shelf_widget()->GetNativeWindow();
-    status_area_ = RootWindowController::ForWindow(window)
-                       ->GetStatusAreaWidget()
-                       ->GetContentsView();
 
     // Focus the shelf.
     Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
@@ -3484,8 +3643,10 @@ class ShelfViewFocusTest : public ShelfViewTest {
                        ui::EventFlags::EF_SHIFT_DOWN);
   }
 
- protected:
-  views::View* status_area_ = nullptr;
+  void DoEnter() {
+    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+    generator.PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EventFlags::EF_NONE);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfViewFocusTest);
@@ -3704,6 +3865,27 @@ TEST_F(ShelfViewOverflowFocusTest, BackwardCyclingWithBubbleOpen) {
   EXPECT_TRUE(test_api_->GetViewAt(last_item_on_main_shelf_index_)->HasFocus());
 }
 
+// Tests that the keyboard focus remains on the overflow button when toggling
+// the overflow bubble, so that the bubble can be toggled repeatedly without
+// resetting with keyboard focus back to the first subview of the shelf.
+TEST_F(ShelfViewOverflowFocusTest, ToggleBubbleWithKeyboard) {
+  EXPECT_FALSE(shelf_view_->GetOverflowButton()->HasFocus());
+  // Focus the last item on the main shelf.
+  shelf_view_->shelf_widget()->GetFocusManager()->SetFocusedView(
+      test_api_->GetViewAt(last_item_on_main_shelf_index_));
+  // Focus the overflow button.
+  DoTab();
+  EXPECT_TRUE(shelf_view_->GetOverflowButton()->HasFocus());
+  EXPECT_FALSE(shelf_view_->IsShowingOverflowBubble());
+
+  DoEnter();
+  EXPECT_TRUE(shelf_view_->IsShowingOverflowBubble());
+  DoEnter();
+  EXPECT_FALSE(shelf_view_->IsShowingOverflowBubble());
+  DoEnter();
+  EXPECT_TRUE(shelf_view_->IsShowingOverflowBubble());
+}
+
 // Verifies that focus moves as expected between the shelf and the status area
 // when the overflow bubble is showing.
 TEST_F(ShelfViewOverflowFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
@@ -3758,6 +3940,40 @@ TEST_F(ShelfViewOverflowFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
     DoTab();
   // This should have brought focus to the first element on the shelf.
   EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+}
+
+class KioskNextShelfViewTest : public ShelfViewTest {
+ public:
+  KioskNextShelfViewTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kKioskNextShell);
+  }
+
+  void SetUp() override {
+    set_start_session(false);
+    ShelfViewTest::SetUp();
+    client_ = BindMockKioskNextShellClient();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<MockKioskNextShellClient> client_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskNextShelfViewTest);
+};
+
+TEST_F(KioskNextShelfViewTest, AppButtonHidden) {
+  LogInKioskNextUser(GetSessionControllerClient());
+
+  // The home and back buttons are always visible.
+  EXPECT_TRUE(shelf_view_->GetAppListButton()->visible());
+  EXPECT_TRUE(shelf_view_->GetBackButton()->visible());
+
+  // Adding app items doesn't add them to the visible shelf, and the overflow
+  // button remains hidden.
+  AddApp();
+  AddApp();
+  ASSERT_FALSE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_EQ(1, shelf_view_->last_visible_index());
 }
 
 }  // namespace ash

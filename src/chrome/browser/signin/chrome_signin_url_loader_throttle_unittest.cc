@@ -71,7 +71,7 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
           Invoke([&](ChromeRequestAdapter* adapter, const GURL& redirect_url) {
             EXPECT_EQ(kTestURL, adapter->GetUrl());
             EXPECT_TRUE(adapter->IsMainRequestContext(nullptr /* io_data */));
-            EXPECT_EQ(content::RESOURCE_TYPE_MAIN_FRAME,
+            EXPECT_EQ(content::ResourceType::kMainFrame,
                       adapter->GetResourceType());
             EXPECT_EQ(GURL("https://chrome.com"), adapter->GetReferrerOrigin());
 
@@ -90,7 +90,7 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
   network::ResourceRequest request;
   request.url = kTestURL;
   request.referrer = kTestReferrer;
-  request.resource_type = static_cast<int>(content::RESOURCE_TYPE_MAIN_FRAME);
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.headers.SetHeader("X-Request-1", "Foo");
   bool defer = false;
   throttle->WillStartRequest(&request, &defer);
@@ -107,10 +107,21 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
   // Phase 2: Redirect the request.
 
   const GURL kTestRedirectURL("https://youtube.com/index.html");
+  const void* const kResponseUserDataKey = &kResponseUserDataKey;
+  std::unique_ptr<base::SupportsUserData::Data> response_user_data =
+      std::make_unique<base::SupportsUserData::Data>();
+  base::SupportsUserData::Data* response_user_data_ptr =
+      response_user_data.get();
+
   EXPECT_CALL(*delegate, ProcessResponse(_, _))
       .WillOnce(Invoke([&](ResponseAdapter* adapter, const GURL& redirect_url) {
         EXPECT_EQ(GURL("https://google.com"), adapter->GetOrigin());
         EXPECT_TRUE(adapter->IsMainFrame());
+
+        adapter->SetUserData(kResponseUserDataKey,
+                             std::move(response_user_data));
+        EXPECT_EQ(response_user_data_ptr,
+                  adapter->GetUserData(kResponseUserDataKey));
 
         const net::HttpResponseHeaders* headers = adapter->GetHeaders();
         EXPECT_TRUE(headers->HasHeader("X-Response-1"));
@@ -125,7 +136,7 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
       .WillOnce(
           Invoke([&](ChromeRequestAdapter* adapter, const GURL& redirect_url) {
             EXPECT_TRUE(adapter->IsMainRequestContext(nullptr));
-            EXPECT_EQ(content::RESOURCE_TYPE_MAIN_FRAME,
+            EXPECT_EQ(content::ResourceType::kMainFrame,
                       adapter->GetResourceType());
 
             // Changes to the URL and referrer take effect after the redirect
@@ -184,6 +195,9 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
         EXPECT_EQ(GURL("https://youtube.com"), adapter->GetOrigin());
         EXPECT_TRUE(adapter->IsMainFrame());
 
+        EXPECT_EQ(response_user_data_ptr,
+                  adapter->GetUserData(kResponseUserDataKey));
+
         const net::HttpResponseHeaders* headers = adapter->GetHeaders();
         // This is a new response and so previous headers should not carry over.
         EXPECT_FALSE(headers->HasHeader("X-Response-1"));
@@ -224,12 +238,12 @@ TEST(ChromeSigninURLLoaderThrottleTest, InterceptSubFrame) {
       .Times(2)
       .WillRepeatedly([](ChromeRequestAdapter* adapter,
                          const GURL& redirect_url) {
-        EXPECT_EQ(content::RESOURCE_TYPE_SUB_FRAME, adapter->GetResourceType());
+        EXPECT_EQ(content::ResourceType::kSubFrame, adapter->GetResourceType());
       });
 
   network::ResourceRequest request;
   request.url = GURL("https://google.com");
-  request.resource_type = static_cast<int>(content::RESOURCE_TYPE_SUB_FRAME);
+  request.resource_type = static_cast<int>(content::ResourceType::kSubFrame);
 
   bool defer = false;
   throttle->WillStartRequest(&request, &defer);

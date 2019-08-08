@@ -205,12 +205,12 @@ class WebSocketChannel::ConnectDelegate
                                     fatal);
   }
 
-  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+  int OnAuthRequired(const AuthChallengeInfo& auth_info,
                      scoped_refptr<HttpResponseHeaders> headers,
                      const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials) override {
-    return creator_->OnAuthRequired(std::move(auth_info), std::move(headers),
+    return creator_->OnAuthRequired(auth_info, std::move(headers),
                                     remote_endpoint, std::move(callback),
                                     credentials);
   }
@@ -602,13 +602,13 @@ void WebSocketChannel::OnSSLCertificateError(
 }
 
 int WebSocketChannel::OnAuthRequired(
-    scoped_refptr<AuthChallengeInfo> auth_info,
+    const AuthChallengeInfo& auth_info,
     scoped_refptr<HttpResponseHeaders> response_headers,
     const IPEndPoint& remote_endpoint,
     base::OnceCallback<void(const AuthCredentials*)> callback,
     base::Optional<AuthCredentials>* credentials) {
   return event_interface_->OnAuthRequired(
-      std::move(auth_info), std::move(response_headers), remote_endpoint,
+      auth_info, std::move(response_headers), remote_endpoint,
       std::move(callback), credentials);
 }
 
@@ -888,7 +888,7 @@ ChannelState WebSocketChannel::HandleDataFrame(
     // This call is not redundant when size == 0 because it tells us what
     // the current state is.
     StreamingUtf8Validator::State state = incoming_utf8_validator_.AddBytes(
-        size ? data_buffer->data() : NULL, static_cast<size_t>(size));
+        size ? data_buffer->data() : nullptr, static_cast<size_t>(size));
     if (state == StreamingUtf8Validator::INVALID ||
         (state == StreamingUtf8Validator::VALID_MIDPOINT && final)) {
       FailChannel("Could not decode a text frame as UTF-8.",

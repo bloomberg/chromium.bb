@@ -20,13 +20,14 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -100,6 +101,7 @@ class DemoSetupControllerTest : public testing::Test {
   void SetUp() override {
     SystemSaltGetter::Initialize();
     DBusThreadManager::Initialize();
+    SessionManagerClient::InitializeFake();
     DeviceSettingsService::Initialize();
     TestingBrowserProcess::GetGlobal()
         ->platform_part()
@@ -112,6 +114,7 @@ class DemoSetupControllerTest : public testing::Test {
 
   void TearDown() override {
     EnterpriseEnrollmentHelper::SetEnrollmentHelperMock(nullptr);
+    SessionManagerClient::Shutdown();
     DBusThreadManager::Shutdown();
     SystemSaltGetter::Shutdown();
     DeviceSettingsService::Shutdown();

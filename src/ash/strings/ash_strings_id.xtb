@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Perangkat berfungsi lebih baik jika digunakan bersama</translation>
 <translation id="112308213915226829">Sembunyikan otomatis rak</translation>
 <translation id="1153356358378277386">Perangkat dihubungkan</translation>
+<translation id="1178581264944972037">Jeda</translation>
 <translation id="1195412055398077112">pemindaian berlebih</translation>
 <translation id="119944043368869598">Hapus semua</translation>
 <translation id="123828989343052515">Halaman Kerja Baru</translation>
@@ -26,8 +27,10 @@
 <translation id="1290331692326790741">Sinyal lemah</translation>
 <translation id="1293264513303784526">Perangkat USB-C (port sebelah kiri)</translation>
 <translation id="1294929383540927798">Ubah setelan notifikasi layar kunci</translation>
+<translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Tampilkan setelan Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Selalu tampilkan rak</translation>
+<translation id="1341651618736211726">Luapan</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="1351937230027495976">Ciutkan menu</translation>
 <translation id="1383876407941801731">Telusuri</translation>
@@ -63,7 +66,6 @@
 <translation id="1919743966458266018">Pintasan untuk membuka pengelola tugas telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Klik otomatis</translation>
 <translation id="1928739107511554905">Untuk mendapatkan update, gunakan layar sentuh untuk menyalakan ulang Chromebook dengan keyboard yang disertakan.</translation>
-<translation id="1942830294380034169">Tombol luapan</translation>
 <translation id="1951012854035635156">Asisten</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Setel bahasa Anda</translation>
@@ -84,6 +86,7 @@
 <translation id="225680501294068881">Memindai perangkat...</translation>
 <translation id="2268130516524549846">Bluetooth dinonaktifkan</translation>
 <translation id="2268813581635650749">Keluarkan semua pengguna</translation>
+<translation id="2277103315734023688">Cari Maju</translation>
 <translation id="2292698582925480719">Skala layar</translation>
 <translation id="2302092602801625023">Akun ini dikelola oleh Family Link</translation>
 <translation id="2303600792989757991">Beralih ikhtisar jendela</translation>
@@ -125,7 +128,6 @@
 <translation id="2872961005593481000">Matikan</translation>
 <translation id="2878884018241093801">Tidak ada item baru-baru ini</translation>
 <translation id="2903844815300039659">Terhubung ke <ph name="NAME" />, <ph name="STRENGTH" /></translation>
-<translation id="2911940648265863620">Anda berbagi layar</translation>
 <translation id="2942350706960889382">Kaca Pembesar yang Dipasang ke Dok</translation>
 <translation id="2942516765047364088">Posisi rak</translation>
 <translation id="2946119680249604491">Tambahkan koneksi</translation>
@@ -165,6 +167,7 @@
 <translation id="3371140690572404006">Perangkat USB-C (port depan sebelah kanan)</translation>
 <translation id="3400357268283240774">Setelan tambahan</translation>
 <translation id="3413817803639110246">Belum ada notifikasi</translation>
+<translation id="343571671045587506">Edit pengingat</translation>
 <translation id="3445925074670675829">Perangkat USB-C</translation>
 <translation id="3454224730401036106">Sambungan Anda dialihkan ke jaringan yang lebih aman</translation>
 <translation id="3465223694362104965">Keyboard lain telah tersambung ke perangkat ini sejak terakhir kali Anda login. Pastikan Anda memercayai keyboard ini sebelum menggunakannya.</translation>
@@ -197,16 +200,20 @@
 <translation id="3900355044994618856">Sesi akan berakhir dalam <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Menyambung ke <ph name="NAME" /></translation>
 <translation id="394485226368336402">Setelan audio</translation>
+<translation id="3962859241508114581">Lagu Sebelumnya</translation>
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="3995138139523574647">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="4017989525502048489">Penunjuk laser</translation>
+<translation id="4042660782729322247">Anda membagikan layar Anda</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Nonaktif untuk 1 aplikasi}other{Nonaktif untuk # aplikasi}}</translation>
 <translation id="4072264167173457037">Sinyal sedang</translation>
+<translation id="4112140312785995938">Cari Mundur</translation>
 <translation id="4129129681837227511">Untuk melihat notifikasi di layar kunci, buka kunci untuk mengubah setelan</translation>
 <translation id="4146833061457621061">Putar musik</translation>
 <translation id="4181841719683918333">Bahasa</translation>
 <translation id="4195877955194704651">Tombol klik otomatis</translation>
 <translation id="4217571870635786043">Dikte</translation>
+<translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Tampilkan setelan notifikasi. Notifikasi nonaktif.</translation>
 <translation id="4269883910223712419">Admin perangkat ini memiliki kemampuan untuk:</translation>
 <translation id="4279490309300973883">Mencerminkan</translation>
@@ -224,6 +231,7 @@
 <translation id="4421231901400348175">Berbagi kontrol layar dengan <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Jangan tampilkan lagi</translation>
+<translation id="4477350412780666475">Lagu Berikutnya</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Perangkat tidak tersambung</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Menyambung...</translation>
@@ -231,6 +239,7 @@
 <translation id="4527045527269911712">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> sampai penuh</translation>
 <translation id="4544944664594876241">Pintasan untuk mengunci layar telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai gantinya <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4561267230861221837">3G</translation>
 <translation id="4570957409596482333">Tombol Klik untuk Diucapkan</translation>
 <translation id="4585337515783392668">Hentikan transmisi pada penerima yang tidak dikenal</translation>
 <translation id="4628757576491864469">Perangkat</translation>
@@ -275,6 +284,7 @@
 <translation id="544691375626129091">Semua pengguna yang tersedia telah ditambahkan ke sesi ini.</translation>
 <translation id="5465662442746197494">Butuh bantuan?</translation>
 <translation id="5496819745535887422">Administrator sedang memulihkan perangkat Anda. Semua data akan dihapus jika perangkat dinyalakan ulang.</translation>
+<translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Keluar dari sesi</translation>
 <translation id="5537725057119320332">Cast</translation>
 <translation id="5548285847212963613">Ekstensi "<ph name="EXTENSION_NAME" />" dapat membantu menyambungkan ke jaringan ini.</translation>
@@ -282,6 +292,7 @@
 <translation id="5571066253365925590">Bluetooth diaktifkan</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Tekan Ctrl + Alt + Z untuk menonaktifkan masukan lisan.</translation>
+<translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">Colokan mikrofon</translation>
 <translation id="5669267381087807207">Mengaktifkan</translation>
 <translation id="5673434351075758678">Dari "<ph name="FROM_LOCALE" />" ke "<ph name="TO_LOCALE" />" setelah menyinkronkan setelan Anda.</translation>
@@ -319,6 +330,7 @@
 <translation id="615957422585914272">Tampilkan keyboard di layar</translation>
 <translation id="6164005077879661055">Semua file dan data lokal yang terkait dengan pengguna yang dilindungi akan dihapus secara permanen setelah pengguna yang dilindungi ini dihapus. Situs web yang dikunjungi dan setelan untuk pengguna yang dilindungi ini mungkin tetap dapat dilihat oleh pengelola di <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
+<translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Terkunci ke horizontal</translation>
 <translation id="6259254695169772643">Gunakan stilus untuk memilih</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Mengaktifkan...</translation>
@@ -355,10 +367,10 @@
 <translation id="6700713906295497288">Tombol menu IME</translation>
 <translation id="6713285437468012787">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" telah disandingkan dan kini tersedia bagi semua pengguna. Anda dapat menghapus penyandingan ini menggunakan Setelan.</translation>
 <translation id="6715542151869432661">Perangkat seluler tidak ditemukan.</translation>
-<translation id="671928215901716392">Kunci layar</translation>
 <translation id="6723839937902243910">Daya</translation>
 <translation id="6751826523481687655">Pelacakan performa diaktifkan</translation>
 <translation id="6785414152754474415">Baterai sudah terisi <ph name="PERCENTAGE" />% dan masih mengisi.</translation>
+<translation id="6790428901817661496">Putar</translation>
 <translation id="6803622936009808957">Tidak dapat menggandakan tampilan karena tidak ditemukan resolusi yang didukung. Memasuki desktop yang diperluas sebagai gantinya.</translation>
 <translation id="6820676911989879663">Istirahatlah sebentar</translation>
 <translation id="683971173229319003">Search+L</translation>
@@ -375,6 +387,7 @@
 <translation id="7067196344162293536">Putar otomatis</translation>
 <translation id="7068360136237591149">Buka file</translation>
 <translation id="7076293881109082629">Sedang masuk</translation>
+<translation id="7088960765736518739">Tombol Akses</translation>
 <translation id="7092922358121866860">Tampilkan setelan Cahaya Malam</translation>
 <translation id="7098389117866926363">Perangkat USB-C (port belakang sebelah kiri)</translation>
 <translation id="7131634465328662194">Anda akan logout otomatis.</translation>
@@ -384,7 +397,9 @@
 <translation id="7222902781030499995">Hentikan timer</translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
 <translation id="726276584504105859">Tarik ke sini untuk menggunakan layar terpisah</translation>
+<translation id="7262906531272962081">Buat pengingat</translation>
 <translation id="7303365578352795231">Menjawab di perangkat lain.</translation>
+<translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Keyboard di layar</translation>
 <translation id="735745346212279324">VPN terputus</translation>
 <translation id="7377169924702866686">Caps Lock aktif.</translation>
@@ -489,9 +504,11 @@
 <translation id="8877788021141246043">Setel pengingat</translation>
 <translation id="8878886163241303700">Memperluas layar</translation>
 <translation id="890616557918890486">Ubah sumber</translation>
+<translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Asisten Google tidak berbicara dalam bahasa ini.</translation>
 <translation id="8938800817013097409">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="8940956008527784070">Baterai lemah (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Menggunakan <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Buka kunci perangkat sebagai <ph name="LOGIN_ID" /> untuk melakukan tindakan notifikasi</translation>
 <translation id="8995603266996330174">Dikelola menurut <ph name="DOMAIN" /></translation>
@@ -501,6 +518,7 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon sedang digunakan.</translation>
+<translation id="9084606467167974638">Beralih posisi menu</translation>
 <translation id="9089416786594320554">Metode masukan</translation>
 <translation id="9091626656156419976">Tampilan <ph name="DISPLAY_NAME" /> dihapus</translation>
 <translation id="9151726767154816831">Mulai ulang dan powerwash untuk memperbarui</translation>

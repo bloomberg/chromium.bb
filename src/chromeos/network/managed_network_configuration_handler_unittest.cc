@@ -13,9 +13,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_shill_profile_client.h"
-#include "chromeos/dbus/fake_shill_service_client.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/shill/shill_profile_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/mock_network_state_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -88,7 +88,7 @@ class TestNetworkPolicyObserver : public NetworkPolicyObserver {
 class ManagedNetworkConfigurationHandlerTest : public testing::Test {
  public:
   ManagedNetworkConfigurationHandlerTest() {
-    DBusThreadManager::Initialize();
+    shill_clients::InitializeFakes();
 
     network_state_handler_ = MockNetworkStateHandler::InitializeForTest();
     network_profile_handler_ = std::make_unique<TestNetworkProfileHandler>();
@@ -115,7 +115,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     network_configuration_handler_.reset();
     network_profile_handler_.reset();
     network_state_handler_.reset();
-    DBusThreadManager::Shutdown();
+    shill_clients::Shutdown();
   }
 
   TestNetworkPolicyObserver* policy_observer() { return &policy_observer_; }
@@ -124,14 +124,12 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     return managed_network_configuration_handler_.get();
   }
 
-  FakeShillServiceClient* GetShillServiceClient() {
-    return static_cast<FakeShillServiceClient*>(
-        DBusThreadManager::Get()->GetShillServiceClient());
+  ShillServiceClient::TestInterface* GetShillServiceClient() {
+    return ShillServiceClient::Get()->GetTestInterface();
   }
 
-  FakeShillProfileClient* GetShillProfileClient() {
-    return static_cast<FakeShillProfileClient*>(
-        DBusThreadManager::Get()->GetShillProfileClient());
+  ShillProfileClient::TestInterface* GetShillProfileClient() {
+    return ShillProfileClient::Get()->GetTestInterface();
   }
 
   void InitializeStandardProfiles() {

@@ -112,6 +112,14 @@ class OZONE_EXPORT OzonePlatform {
     bool requires_mojo = false;
   };
 
+  // Properties available in the host process after initialization.
+  struct InitializedHostProperties {
+    // Whether the underlying platform supports deferring compositing of buffers
+    // via overlays. If overlays are not supported the promotion and validation
+    // logic can be skipped.
+    bool supports_overlays = false;
+  };
+
   using StartupCallback = base::OnceCallback<void(OzonePlatform*)>;
 
   // Ensures the OzonePlatform instance without doing any initialization.
@@ -163,8 +171,13 @@ class OZONE_EXPORT OzonePlatform {
                                              gfx::BufferUsage usage) const;
 
   // Returns a struct that contains configuration and requirements for the
-  // current platform implementation.
+  // current platform implementation. This can be called from either host or GPU
+  // process at any time.
   virtual const PlatformProperties& GetPlatformProperties();
+
+  // Returns a struct that contains properties available in the host process
+  // after InitializeForUI() runs.
+  virtual const InitializedHostProperties& GetInitializedHostProperties();
 
   // Returns the message loop type required for OzonePlatform instance that
   // will be initialized for the GPU process.
@@ -191,6 +204,9 @@ class OZONE_EXPORT OzonePlatform {
   // platform implementations to ignore sandboxing and any associated launch
   // ordering issues.
   virtual void AfterSandboxEntry();
+
+ protected:
+  static bool has_initialized_ui();
 
  private:
   virtual void InitializeUI(const InitParams& params) = 0;

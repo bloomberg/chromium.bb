@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "url/origin.h"
 
@@ -30,7 +31,8 @@ class PageResourceDataUse {
   void DidStartResponse(const GURL& response_url,
                         int resource_id,
                         const network::ResourceResponseHead& response_head,
-                        content::ResourceType resource_type);
+                        content::ResourceType resource_type,
+                        content::PreviewsState previews_state);
 
   // Updates received bytes.
   void DidReceiveTransferSizeUpdate(int received_data_length);

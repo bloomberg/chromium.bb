@@ -8,6 +8,8 @@ This file is copied to the build directory as part of toolchain setup and
 is used to set up calls to tools used by the build that need wrappers.
 """
 
+from __future__ import print_function
+
 import os
 import re
 import shutil
@@ -154,7 +156,7 @@ class WinTool(object):
       if (not line.startswith('   Creating library ') and
           not line.startswith('Generating code') and
           not line.startswith('Finished generating code')):
-        print line,
+        print(line)
     result = link.wait()
     if result == 0 and sys.platform == 'win32':
       # Flush the file buffers to try to work around a Windows 10 kernel bug,
@@ -178,7 +180,7 @@ class WinTool(object):
     out, _ = popen.communicate()
     for line in out.splitlines():
       if not line.startswith(' Assembling: '):
-        print line
+        print(line)
     return popen.returncode
 
   def ExecRcWrapper(self, arch, *args):
@@ -207,11 +209,13 @@ class WinTool(object):
     if rc_exe_exit_code == 0:
       # Since tool("rc") can't have deps, add deps on this script and on rc.py
       # and its deps here, so that rc edges become dirty if rc.py changes.
-      print 'Note: including file: ../../build/toolchain/win/tool_wrapper.py'
-      print 'Note: including file: ../../build/toolchain/win/rc/rc.py'
-      print 'Note: including file: ../../build/toolchain/win/rc/linux64/rc.sha1'
-      print 'Note: including file: ../../build/toolchain/win/rc/mac/rc.sha1'
-      print 'Note: including file: ../../build/toolchain/win/rc/win/rc.exe.sha1'
+      print('Note: including file: ../../build/toolchain/win/tool_wrapper.py')
+      print('Note: including file: ../../build/toolchain/win/rc/rc.py')
+      print(
+          'Note: including file: ../../build/toolchain/win/rc/linux64/rc.sha1')
+      print('Note: including file: ../../build/toolchain/win/rc/mac/rc.sha1')
+      print(
+          'Note: including file: ../../build/toolchain/win/rc/win/rc.exe.sha1')
 
     # 2. Run Microsoft rc.exe.
     if sys.platform == 'win32' and rc_exe_exit_code == 0:
@@ -229,7 +233,7 @@ class WinTool(object):
     env = self._GetEnv(arch)
     # TODO(scottmg): This is a temporary hack to get some specific variables
     # through to actions that are set after GN-time. http://crbug.com/333738.
-    for k, v in os.environ.iteritems():
+    for k, v in os.environ.items():
       if k not in env:
         env[k] = v
     args = open(rspfile).read()

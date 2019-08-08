@@ -136,6 +136,7 @@ class ASH_PUBLIC_EXPORT FrameCaptionButtonContainerView
   void SetHoveredAndPressedButtons(
       const views::FrameCaptionButton* to_hover,
       const views::FrameCaptionButton* to_press) override;
+  aura::Window* GetFrameWindow() override;
   bool CanSnap() override;
   void ShowSnapPreview(mojom::SnapDirection snap) override;
   void CommitSnap(mojom::SnapDirection snap) override;

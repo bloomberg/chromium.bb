@@ -700,6 +700,9 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
   parser.add_argument('-u', '--url', dest='sdk_url',
                       help='Use sdk tarball located at this url. Use file:// '
                            'for local files.')
+  parser.add_argument('--self-bootstrap', dest='self_bootstrap', action='store_true',
+                      default=False,
+                      help=('Use previously build sdk for bootstrapping.'))
   parser.add_argument('--sdk-version',
                       help=('Use this sdk version.  For prebuilt, current is %r'
                             ', for bootstrapping it is %r.'
@@ -815,6 +818,10 @@ def main(argv):
   if options.proxy_sim:
     _ReportMissing(osutils.FindMissingBinaries(PROXY_NEEDED_TOOLS))
   missing_image_tools = osutils.FindMissingBinaries(IMAGE_NEEDED_TOOLS)
+
+  # Use latest SDK for bootstrapping if requested.
+  if options.self_bootstrap:
+    bootstrap_latest_version = sdk_latest_version
 
   if (sdk_latest_version == '<unknown>' or
       bootstrap_latest_version == '<unknown>'):
@@ -1039,6 +1046,8 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
       urls = [options.sdk_url]
     elif options.bootstrap:
       urls = GetStage3Urls(sdk_version)
+      if options.self_bootstrap:
+        urls = GetArchStageTarballs(sdk_version)
     else:
       urls = GetArchStageTarballs(sdk_version)
 

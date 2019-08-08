@@ -23,7 +23,7 @@ class MockNavigationHandle : public NavigationHandle {
   ~MockNavigationHandle() override;
 
   // NavigationHandle implementation:
-  int64_t GetNavigationId() const override { return navigation_id_; }
+  int64_t GetNavigationId() override { return navigation_id_; }
   const GURL& GetURL() override { return url_; }
   SiteInstance* GetStartingSiteInstance() override {
     return starting_site_instance_;
@@ -40,7 +40,7 @@ class MockNavigationHandle : public NavigationHandle {
   WebContents* GetWebContents() override { return web_contents_; }
   MOCK_METHOD0(NavigationStart, base::TimeTicks());
   MOCK_METHOD0(NavigationInputStart, base::TimeTicks());
-  MOCK_CONST_METHOD0(WasStartedFromContextMenu, bool());
+  MOCK_METHOD0(WasStartedFromContextMenu, bool());
   MOCK_METHOD0(GetSearchableFormURL, const GURL&());
   MOCK_METHOD0(GetSearchableFormEncoding, const std::string&());
   MOCK_METHOD0(GetReloadType, ReloadType());
@@ -94,6 +94,8 @@ class MockNavigationHandle : public NavigationHandle {
   NavigationData* GetNavigationData() override { return nullptr; }
   MOCK_METHOD1(RegisterSubresourceOverride,
                void(mojom::TransferrableURLLoaderPtr));
+  MOCK_METHOD0(IsSameProcess, bool());
+  MOCK_METHOD0(GetNavigationEntryOffset, int());
 
   void set_url(const GURL& url) { url_ = url; }
   void set_starting_site_instance(SiteInstance* site_instance) {

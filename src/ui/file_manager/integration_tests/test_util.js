@@ -129,11 +129,15 @@ function pending(caller, message, var_args) {
   message = String(message);
   var formattedMessage = message.replace(/%[sdj]/g, function(pattern) {
     var arg = args[index++];
-    switch(pattern) {
-      case '%s': return String(arg);
-      case '%d': return Number(arg);
-      case '%j': return JSON.stringify(arg);
-      default: return pattern;
+    switch (pattern) {
+      case '%s':
+        return String(arg);
+      case '%d':
+        return Number(arg);
+      case '%j':
+        return JSON.stringify(arg);
+      default:
+        return pattern;
     }
   });
   var pendingMarker = Object.create(pending.prototype);
@@ -233,7 +237,24 @@ function waitForAppWindowCount(appId, expectedCount) {
 }
 
 /**
- * Adds the givin entries to the target volume(s).
+ * Get all the browser windows.
+ * @return {Object} Object returned from chrome.windows.getAll().
+ */
+async function getBrowserWindows() {
+  const caller = getCaller();
+  return repeatUntil(async () => {
+    const result = await new Promise(function(fulfill) {
+      chrome.windows.getAll({'populate': true}, fulfill);
+    });
+    if (result.length == 0) {
+      return pending(caller, 'getBrowserWindows ' + result.length);
+    }
+    return result;
+  });
+}
+
+/**
+ * Adds the given entries to the target volume(s).
  * @param {Array<string>} volumeNames Names of target volumes.
  * @param {Array<TestEntryInfo>} entries List of entries to be added.
  * @param {function(boolean)=} opt_callback Callback function to be passed the
@@ -249,7 +270,7 @@ async function addEntries(volumeNames, entries, opt_callback) {
     return sendTestMessage({
       name: 'addEntries',
       volume: volume,
-      entries: entries
+      entries: entries,
     });
   });
   if (!opt_callback) {
@@ -271,7 +292,7 @@ async function addEntries(volumeNames, entries, opt_callback) {
 var EntryType = Object.freeze({
   FILE: 'file',
   DIRECTORY: 'directory',
-  TEAM_DRIVE: 'team_drive',
+  SHARED_DRIVE: 'team_drive',
   COMPUTER: 'Computer'
 });
 
@@ -498,6 +519,17 @@ var ENTRIES = {
     typeText: 'OGG video'
   }),
 
+  webm: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'world.webm',
+    targetPath: 'world.webm',
+    mimeType: 'video/webm',
+    lastModifiedTime: 'Jul 4, 2012, 10:35 AM',
+    nameText: 'world.webm',
+    sizeText: '17 KB',
+    typeText: 'WebM video'
+  }),
+
   video: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'video_long.ogv',
@@ -663,6 +695,17 @@ var ENTRIES = {
     typeText: 'PDF document',
   }),
 
+  imgPdf: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'img.pdf',
+    targetPath: 'imgpdf',
+    mimeType: 'application/pdf',
+    lastModifiedTime: 'Jul 4, 2012, 10:35 AM',
+    nameText: 'imgpdf',
+    sizeText: '1608 bytes',
+    typeText: 'PDF document'
+  }),
+
   pinned: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'text.txt',
@@ -736,7 +779,7 @@ var ENTRIES = {
     mimeType: 'application/x-zip',
     lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
     nameText: 'archive.zip',
-    sizeText: '533 bytes',
+    sizeText: '743 bytes',
     typeText: 'Zip archive'
   }),
 
@@ -808,7 +851,7 @@ var ENTRIES = {
 
   // Team-drive entries.
   teamDriveA: new TestEntryInfo({
-    type: EntryType.TEAM_DRIVE,
+    type: EntryType.SHARED_DRIVE,
     teamDriveName: 'Team Drive A',
     capabilities: {
       canCopy: true,
@@ -867,7 +910,7 @@ var ENTRIES = {
   }),
 
   teamDriveB: new TestEntryInfo({
-    type: EntryType.TEAM_DRIVE,
+    type: EntryType.SHARED_DRIVE,
     teamDriveName: 'Team Drive B',
     capabilities: {
       canCopy: true,
@@ -887,6 +930,23 @@ var ENTRIES = {
     nameText: 'teamDriveBFile.txt',
     sizeText: '51 bytes',
     typeText: 'Plain text',
+    teamDriveName: 'Team Drive B',
+    capabilities: {
+      canCopy: true,
+      canDelete: false,
+      canRename: false,
+      canAddChildren: false,
+      canShare: true,
+    },
+  }),
+
+  teamDriveBDirectory: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: 'teamDriveBDirectory',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'teamDriveBDirectory',
+    sizeText: '--',
+    typeText: 'Folder',
     teamDriveName: 'Team Drive B',
     capabilities: {
       canCopy: true,

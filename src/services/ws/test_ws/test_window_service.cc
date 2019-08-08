@@ -151,8 +151,6 @@ void TestWindowService::OnStart() {
   CHECK(!started_);
   started_ = true;
 
-  registry_.AddInterface(base::BindRepeating(
-      &TestWindowService::BindServiceFactory, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(&TestWindowService::BindTestWs,
                                              base::Unretained(this)));
 
@@ -169,19 +167,18 @@ void TestWindowService::OnBindInterface(
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
-void TestWindowService::CreateService(
-    service_manager::mojom::ServiceRequest request,
+void TestWindowService::CreatePackagedServiceInstance(
     const std::string& name,
-    service_manager::mojom::PIDReceiverPtr pid_receiver) {
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver,
+    CreatePackagedServiceInstanceCallback callback) {
   DCHECK_EQ(name, mojom::kServiceName);
 
-  // Defer CreateService if |aura_test_helper_| is not created.
+  // Defer the operation if |aura_test_helper_| is not created.
   if (!aura_test_helper_) {
     DCHECK(!pending_create_service_);
-
     pending_create_service_ = base::BindOnce(
-        &TestWindowService::CreateService, base::Unretained(this),
-        std::move(request), name, std::move(pid_receiver));
+        &TestWindowService::CreatePackagedServiceInstance,
+        base::Unretained(this), name, std::move(receiver), std::move(callback));
     return;
   }
 
@@ -192,8 +189,8 @@ void TestWindowService::CreateService(
       this, std::move(gpu_interface_provider_),
       aura_test_helper_->focus_client(), /*decrement_client_ids=*/false,
       aura_test_helper_->GetEnv());
-  window_service_->BindServiceRequest(std::move(request));
-  pid_receiver->SetPID(base::GetCurrentProcId());
+  window_service_->BindServiceRequest(std::move(receiver));
+  std::move(callback).Run(base::GetCurrentProcId());
 }
 
 void TestWindowService::OnGpuServiceInitialized() {
@@ -226,11 +223,6 @@ void TestWindowService::Shutdown(
 
   if (callback)
     std::move(callback).Run();
-}
-
-void TestWindowService::BindServiceFactory(
-    service_manager::mojom::ServiceFactoryRequest request) {
-  service_factory_bindings_.AddBinding(this, std::move(request));
 }
 
 void TestWindowService::BindTestWs(test_ws::mojom::TestWsRequest request) {

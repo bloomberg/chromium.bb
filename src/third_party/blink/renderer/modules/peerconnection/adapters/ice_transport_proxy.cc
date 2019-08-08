@@ -22,8 +22,10 @@ IceTransportProxy::IceTransportProxy(
       host_thread_(std::move(host_thread)),
       host_(nullptr, base::OnTaskRunnerDeleter(host_thread_)),
       delegate_(delegate),
-      connection_handle_for_scheduler_(
-          frame.GetFrameScheduler()->OnActiveConnectionCreated()),
+      feature_handle_for_scheduler_(frame.GetFrameScheduler()->RegisterFeature(
+          SchedulingPolicy::Feature::kWebRTC,
+          {SchedulingPolicy::DisableAggressiveThrottling(),
+           SchedulingPolicy::RecordMetricsForBackForwardCache()})),
       weak_ptr_factory_(this) {
   DCHECK(host_thread_);
   DCHECK(delegate_);

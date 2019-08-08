@@ -91,8 +91,8 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
     kWindowOffset = 100,
   };
 
-  MenuRunnerCocoaTest() {}
-  ~MenuRunnerCocoaTest() override {}
+  MenuRunnerCocoaTest() = default;
+  ~MenuRunnerCocoaTest() override = default;
 
   void SetUp() override {
     const int kWindowWidth = 300;
@@ -110,8 +110,8 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
     native_view_subview_count_ =
         [[parent_->GetNativeView().GetNativeNSView() subviews] count];
 
-    base::Closure on_close = base::Bind(&MenuRunnerCocoaTest::MenuCloseCallback,
-                                        base::Unretained(this));
+    base::RepeatingClosure on_close = base::BindRepeating(
+        &MenuRunnerCocoaTest::MenuCloseCallback, base::Unretained(this));
     if (GetParam() == MenuType::NATIVE)
       runner_ = new internal::MenuRunnerImplCocoa(menu_.get(), on_close);
     else
@@ -148,8 +148,8 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
                          base::Unretained(this), std::move(callback)));
     }
 
-    runner_->RunMenuAt(parent_, nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                       MenuRunner::CONTEXT_MENU);
+    runner_->RunMenuAt(parent_, nullptr, gfx::Rect(),
+                       MenuAnchorPosition::kTopLeft, MenuRunner::CONTEXT_MENU);
     MaybeRunAsync();
   }
 
@@ -168,7 +168,7 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
       menu_->set_menu_open_callback(std::move(callback));
     }
 
-    runner_->RunMenuAt(parent_, nullptr, anchor, MENU_ANCHOR_TOPLEFT,
+    runner_->RunMenuAt(parent_, nullptr, anchor, MenuAnchorPosition::kTopLeft,
                        MenuRunner::COMBOBOX);
     MaybeRunAsync();
   }
@@ -296,7 +296,7 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
     QuitAsyncRunLoop();
   }
 
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuRunnerCocoaTest);
 };

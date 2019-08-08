@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
+#include "ash/session/session_observer.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/enterprise/enterprise_domain_observer.h"
@@ -64,10 +65,6 @@ class DateView : public views::Button,
 
   // views::Button:
   gfx::Insets GetInsets() const override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -95,9 +92,13 @@ DateView::DateView(UnifiedSystemTrayController* controller)
   Update();
 
   Shell::Get()->system_tray_model()->clock()->AddObserver(this);
-  TrayPopupUtils::ConfigureTrayPopupButton(this);
 
   SetEnabled(Shell::Get()->system_tray_model()->clock()->IsSettingsAvailable());
+
+  SetInstallFocusRingOnFocus(true);
+  SetFocusForPlatform();
+
+  SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
 }
 
 DateView::~DateView() {
@@ -120,22 +121,6 @@ void DateView::Update() {
 gfx::Insets DateView::GetInsets() const {
   // This padding provides room to render the focus ring around this button.
   return kUnifiedSystemInfoDateViewPadding;
-}
-
-std::unique_ptr<views::InkDrop> DateView::CreateInkDrop() {
-  return TrayPopupUtils::CreateInkDrop(this);
-}
-
-std::unique_ptr<views::InkDropRipple> DateView::CreateInkDropRipple() const {
-  return TrayPopupUtils::CreateInkDropRipple(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      GetInkDropCenterBasedOnLastEvent());
-}
-
-std::unique_ptr<views::InkDropHighlight> DateView::CreateInkDropHighlight()
-    const {
-  return TrayPopupUtils::CreateInkDropHighlight(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this);
 }
 
 void DateView::OnDateFormatChanged() {}
@@ -242,12 +227,6 @@ class ManagedStateView : public views::Button {
  public:
   ~ManagedStateView() override = default;
 
-  // views::Button:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
-
  protected:
   ManagedStateView(views::ButtonListener* listener,
                    int label_id,
@@ -277,31 +256,18 @@ ManagedStateView::ManagedStateView(views::ButtonListener* listener,
       gfx::Size(kUnifiedSystemInfoHeight, kUnifiedSystemInfoHeight));
   AddChildView(image);
 
-  TrayPopupUtils::ConfigureTrayPopupButton(this);
-}
+  SetInstallFocusRingOnFocus(true);
+  SetFocusForPlatform();
 
-std::unique_ptr<views::InkDrop> ManagedStateView::CreateInkDrop() {
-  return TrayPopupUtils::CreateInkDrop(this);
-}
-
-std::unique_ptr<views::InkDropRipple> ManagedStateView::CreateInkDropRipple()
-    const {
-  return TrayPopupUtils::CreateInkDropRipple(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      GetInkDropCenterBasedOnLastEvent());
-}
-
-std::unique_ptr<views::InkDropHighlight>
-ManagedStateView::CreateInkDropHighlight() const {
-  return TrayPopupUtils::CreateInkDropHighlight(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this);
+  SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
 }
 
 // A view that shows whether the device is enterprise managed or not. It updates
 // by observing EnterpriseDomainModel.
 class EnterpriseManagedView : public ManagedStateView,
                               public views::ButtonListener,
-                              public EnterpriseDomainObserver {
+                              public EnterpriseDomainObserver,
+                              public SessionObserver {
  public:
   explicit EnterpriseManagedView(UnifiedSystemTrayController* controller);
   ~EnterpriseManagedView() override;
@@ -311,6 +277,9 @@ class EnterpriseManagedView : public ManagedStateView,
 
   // EnterpriseDomainObserver:
   void OnEnterpriseDomainChanged() override;
+
+  // SessionObserver:
+  void OnLoginStatusChanged(LoginStatus status) override;
 
  private:
   void Update();
@@ -329,11 +298,13 @@ EnterpriseManagedView::EnterpriseManagedView(
   DCHECK(Shell::Get());
   set_id(VIEW_ID_TRAY_ENTERPRISE);
   Shell::Get()->system_tray_model()->enterprise_domain()->AddObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
   Update();
 }
 
 EnterpriseManagedView::~EnterpriseManagedView() {
   Shell::Get()->system_tray_model()->enterprise_domain()->RemoveObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
 void EnterpriseManagedView::ButtonPressed(views::Button* sender,
@@ -345,10 +316,16 @@ void EnterpriseManagedView::OnEnterpriseDomainChanged() {
   Update();
 }
 
+void EnterpriseManagedView::OnLoginStatusChanged(LoginStatus status) {
+  Update();
+}
+
 void EnterpriseManagedView::Update() {
   EnterpriseDomainModel* model =
       Shell::Get()->system_tray_model()->enterprise_domain();
-  SetVisible(model->active_directory_managed() ||
+  SessionController* session_controller = Shell::Get()->session_controller();
+  SetVisible(session_controller->ShouldDisplayManagedUI() ||
+             model->active_directory_managed() ||
              !model->enterprise_display_domain().empty());
 
   if (model->active_directory_managed()) {
@@ -387,14 +364,16 @@ UnifiedSystemInfoView::UnifiedSystemInfoView(
     : enterprise_managed_(new EnterpriseManagedView(controller)),
       supervised_(new SupervisedUserView()) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, kUnifiedMenuItemPadding,
+      views::BoxLayout::kHorizontal, kUnifiedSystemInfoViewPadding,
       kUnifiedSystemInfoSpacing));
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
 
   AddChildView(new DateView(controller));
 
   if (PowerStatus::Get()->IsBatteryPresent()) {
     auto* separator = new views::Separator();
-    separator->SetColor(kUnifiedMenuSecondaryTextColor);
+    separator->SetColor(kUnifiedSystemInfoSeparatorColor);
     separator->SetPreferredHeight(kUnifiedSystemInfoHeight);
     AddChildView(separator);
 

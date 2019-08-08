@@ -128,6 +128,52 @@ TEST(DownloadPrefsTest, AutoOpenCheckIsCaseInsensitive) {
       base::FilePath(FILE_PATH_LITERAL("x.Bar"))));
 }
 
+TEST(DownloadPrefsTest, MissingDefaultPathCorrected) {
+  content::TestBrowserThreadBundle threads_are_required_for_testing_profile;
+  TestingProfile profile;
+  profile.GetPrefs()->SetFilePath(prefs::kDownloadDefaultDirectory,
+                                  base::FilePath());
+  EXPECT_FALSE(profile.GetPrefs()
+                   ->GetFilePath(prefs::kDownloadDefaultDirectory)
+                   .IsAbsolute());
+
+  DownloadPrefs download_prefs(&profile);
+  EXPECT_TRUE(download_prefs.DownloadPath().IsAbsolute())
+      << "Default download directory is " << download_prefs.DownloadPath();
+}
+
+TEST(DownloadPrefsTest, RelativeDefaultPathCorrected) {
+  content::TestBrowserThreadBundle threads_are_required_for_testing_profile;
+  TestingProfile profile;
+
+  profile.GetPrefs()->SetFilePath(prefs::kDownloadDefaultDirectory,
+                                  base::FilePath::FromUTF8Unsafe(".."));
+  EXPECT_FALSE(profile.GetPrefs()
+                   ->GetFilePath(prefs::kDownloadDefaultDirectory)
+                   .IsAbsolute());
+
+  DownloadPrefs download_prefs(&profile);
+  EXPECT_TRUE(download_prefs.DownloadPath().IsAbsolute())
+      << "Default download directory is " << download_prefs.DownloadPath();
+}
+
+TEST(DownloadPrefsTest, DefaultPathChangedToInvalidValue) {
+  content::TestBrowserThreadBundle threads_are_required_for_testing_profile;
+  TestingProfile profile;
+  profile.GetPrefs()->SetFilePath(prefs::kDownloadDefaultDirectory,
+                                  profile.GetPath());
+  EXPECT_TRUE(profile.GetPrefs()
+                  ->GetFilePath(prefs::kDownloadDefaultDirectory)
+                  .IsAbsolute());
+
+  DownloadPrefs download_prefs(&profile);
+  EXPECT_TRUE(download_prefs.DownloadPath().IsAbsolute());
+
+  download_prefs.SetDownloadPath(base::FilePath::FromUTF8Unsafe(".."));
+  EXPECT_EQ(download_prefs.DownloadPath(),
+            download_prefs.GetDefaultDownloadDirectory());
+}
+
 #if defined(OS_CHROMEOS)
 void ExpectValidDownloadDir(Profile* profile,
                             DownloadPrefs* prefs,

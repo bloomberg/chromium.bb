@@ -4,69 +4,51 @@
 
 #include "chrome/browser/performance_manager/graph/graph.h"
 
+#include "base/process/process.h"
+#include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
-namespace {
-
-ProcessNodeImpl* CreateProcessNode(Graph* graph) {
-  return graph->CreateProcessNode(resource_coordinator::CoordinationUnitID(
-      resource_coordinator::CoordinationUnitType::kProcess,
-      resource_coordinator::CoordinationUnitID::RANDOM_ID));
-}
-
-}  // namespace
-
-TEST(GraphTest, DestructionWhileCUSOutstanding) {
-  std::unique_ptr<Graph> graph(new Graph());
-
-  for (size_t i = 0; i < 10; ++i) {
-    ProcessNodeImpl* process = CreateProcessNode(graph.get());
-    EXPECT_NE(nullptr, process);
-
-    process->SetPID(i + 100);
-  }
-
-  EXPECT_NE(nullptr, graph->FindOrCreateSystemNode());
-
-  // This should destroy all the CUs without incident.
-  graph.reset();
-}
 
 TEST(GraphTest, FindOrCreateSystemNode) {
   Graph graph;
 
-  SystemNodeImpl* system_cu = graph.FindOrCreateSystemNode();
+  SystemNodeImpl* system_node = graph.FindOrCreateSystemNode();
 
   // A second request should return the same instance.
-  EXPECT_EQ(system_cu, graph.FindOrCreateSystemNode());
-
-  // Destructing the system CU should be allowed.
-  system_cu->Destruct();
-
-  system_cu = graph.FindOrCreateSystemNode();
-  EXPECT_NE(nullptr, system_cu);
+  EXPECT_EQ(system_node, graph.FindOrCreateSystemNode());
 }
 
 TEST(GraphTest, GetProcessNodeByPid) {
   Graph graph;
 
-  ProcessNodeImpl* process = CreateProcessNode(&graph);
+  TestNodeWrapper<ProcessNodeImpl> process =
+      TestNodeWrapper<ProcessNodeImpl>::Create(&graph);
   EXPECT_EQ(base::kNullProcessId, process->process_id());
+  EXPECT_FALSE(process->process().IsValid());
 
-  static constexpr base::ProcessId kPid = 10;
+  const base::Process self = base::Process::Current();
 
-  EXPECT_EQ(nullptr, graph.GetProcessNodeByPid(kPid));
-  process->SetPID(kPid);
-  EXPECT_EQ(process, graph.GetProcessNodeByPid(kPid));
+  EXPECT_EQ(nullptr, graph.GetProcessNodeByPid(self.Pid()));
+  process->SetProcess(self.Duplicate(), base::Time::Now());
+  EXPECT_TRUE(process->process().IsValid());
+  EXPECT_EQ(self.Pid(), process->process_id());
+  EXPECT_EQ(process.get(), graph.GetProcessNodeByPid(self.Pid()));
 
-  process->Destruct();
+  // Validate that an exited process isn't removed (yet).
+  process->SetProcessExitStatus(0xCAFE);
+  EXPECT_FALSE(process->process().IsValid());
+  EXPECT_EQ(self.Pid(), process->process_id());
+  EXPECT_EQ(process.get(), graph.GetProcessNodeByPid(self.Pid()));
 
-  EXPECT_EQ(nullptr, graph.GetProcessNodeByPid(12));
+  process.reset();
+
+  EXPECT_EQ(nullptr, graph.GetProcessNodeByPid(self.Pid()));
 }
 
 TEST(GraphTest, PIDReuse) {
@@ -75,27 +57,33 @@ TEST(GraphTest, PIDReuse) {
   // PID has been reused for a new process.
   Graph graph;
 
-  static constexpr base::ProcessId kPid = 10;
+  static base::Process self = base::Process::Current();
 
-  ProcessNodeImpl* process1 = CreateProcessNode(&graph);
-  ProcessNodeImpl* process2 = CreateProcessNode(&graph);
+  TestNodeWrapper<ProcessNodeImpl> process1 =
+      TestNodeWrapper<ProcessNodeImpl>::Create(&graph);
+  TestNodeWrapper<ProcessNodeImpl> process2 =
+      TestNodeWrapper<ProcessNodeImpl>::Create(&graph);
 
-  process1->SetPID(kPid);
-  EXPECT_EQ(process1, graph.GetProcessNodeByPid(kPid));
+  process1->SetProcess(self.Duplicate(), base::Time::Now());
+  EXPECT_EQ(process1.get(), graph.GetProcessNodeByPid(self.Pid()));
+
+  // First process exits, but hasn't been deleted yet.
+  process1->SetProcessExitStatus(0xCAFE);
+  EXPECT_EQ(process1.get(), graph.GetProcessNodeByPid(self.Pid()));
 
   // The second registration for the same PID should override the first one.
-  process2->SetPID(kPid);
-  EXPECT_EQ(process2, graph.GetProcessNodeByPid(kPid));
+  process2->SetProcess(self.Duplicate(), base::Time::Now());
+  EXPECT_EQ(process2.get(), graph.GetProcessNodeByPid(self.Pid()));
 
   // The destruction of the first process CU shouldn't clear the PID
   // registration.
-  process1->Destruct();
-  EXPECT_EQ(process2, graph.GetProcessNodeByPid(kPid));
+  process1.reset();
+  EXPECT_EQ(process2.get(), graph.GetProcessNodeByPid(self.Pid()));
 }
 
 TEST(GraphTest, GetAllCUsByType) {
   Graph graph;
-  MockMultiplePagesInSingleProcessGraph cu_graph(&graph);
+  MockMultiplePagesInSingleProcessGraph mock_graph(&graph);
 
   std::vector<ProcessNodeImpl*> processes = graph.GetAllProcessNodes();
   ASSERT_EQ(1u, processes.size());

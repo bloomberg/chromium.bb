@@ -14,18 +14,9 @@ const base::Feature kBypassCorbOnlyForExtensionsAllowlist{
     "BypassCorbOnlyForExtensionsAllowlist", base::FEATURE_ENABLED_BY_DEFAULT};
 const char kBypassCorbAllowlistParamName[] = "BypassCorbExtensionsAllowlist";
 
-// Enables the use of C++-based extension bindings (instead of JS generation).
-const base::Feature kNativeCrxBindings{"NativeCrxBindings",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables new extension updater service.
 const base::Feature kNewExtensionUpdaterService{
     "NewExtensionUpdaterService", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Forces extensions with <all_hosts> to use activeTab-style runtime host
-// permissions.
-const base::Feature kRuntimeHostPermissions{"RuntimeHostPermissions",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Forces requests to go through WebRequestProxyingURLLoaderFactory.
 const base::Feature kForceWebRequestProxyForTest{

@@ -11,6 +11,7 @@
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
@@ -25,6 +26,24 @@ void RunCallback(base::OnceClosure callback, bool processed) {
     return;
 
   std::move(callback).Run();
+}
+
+// Updates the location of |event| to be relative to the display |host| is
+// on. It is assumed at the time this is called the location of the event is
+// relative to |host|.
+void ConvertHostLocationToDisplayLocation(WindowTreeHost* host,
+                                          ui::LocatedEvent* event) {
+  WindowTreeHostMus* host_mus = WindowTreeHostMus::ForWindow(host->window());
+  DCHECK(host_mus);
+  // WindowTreeHostMus's bounds are in screen coordinates, convert to display
+  // relative.
+  gfx::PointF location =
+      gfx::PointF(host_mus->bounds_in_dip().origin() -
+                  host_mus->GetDisplay().bounds().origin().OffsetFromOrigin());
+  // And then add the event location.
+  location += event->root_location_f().OffsetFromOrigin();
+  event->set_root_location_f(location);
+  event->set_location_f(location);
 }
 
 }  // namespace
@@ -46,6 +65,15 @@ ui::EventDispatchDetails EventInjector::Inject(WindowTreeHost* host,
   DCHECK(event);
 
   if (env->mode() == Env::Mode::LOCAL) {
+    if (event->IsLocatedEvent()) {
+      ui::LocatedEvent* located_event = event->AsLocatedEvent();
+      // Transforming the coordinate to the root will apply the screen scale
+      // factor to the event's location and also the screen rotation degree.
+      located_event->UpdateForRootTransform(
+          host->GetRootTransform(),
+          host->GetRootTransformForLocalEventCoordinates());
+    }
+
     ui::EventDispatchDetails details =
         host->event_sink()->OnEventFromSource(event);
     RunCallback(std::move(callback), /*processed=*/true);
@@ -55,18 +83,21 @@ ui::EventDispatchDetails EventInjector::Inject(WindowTreeHost* host,
   has_pending_callback_ |= !callback.is_null();
 
   if (event->IsLocatedEvent()) {
-    // The ui-service expects events coming in to have a location matching the
-    // root location. The non-ui-service code does this by way of
-    // OnEventFromSource() ending up in LocatedEvent::UpdateForRootTransform(),
-    // which reset the root_location to match the location.
+    // The window-service expects events coming in to have a location matching
+    // the root location.
     event->AsLocatedEvent()->set_root_location_f(
         event->AsLocatedEvent()->location_f());
+
+    // Convert the location to be display relative. This is *not* needed in the
+    // classic case as the WindowTreeHost and the display are the same.
+    ConvertHostLocationToDisplayLocation(host, event->AsLocatedEvent());
   }
 
   if (!event_injector_) {
     env->window_tree_client_->connector()->BindInterface(
         ws::mojom::kServiceName, &event_injector_);
   }
+
   event_injector_->InjectEvent(
       host->GetDisplayId(), ui::Event::Clone(*event),
       base::BindOnce(&RunCallback, std::move(callback)));

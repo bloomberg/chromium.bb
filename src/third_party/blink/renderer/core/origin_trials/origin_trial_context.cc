@@ -192,7 +192,7 @@ void OriginTrialContext::AddTokens(const Vector<String>& tokens) {
 }
 
 void OriginTrialContext::InitializePendingFeatures() {
-  if (!enabled_trials_.size())
+  if (!enabled_features_.size())
     return;
   auto* document = DynamicTo<Document>(GetSupplementable());
   if (!document)
@@ -206,24 +206,41 @@ void OriginTrialContext::InitializePendingFeatures() {
   if (!script_state->ContextIsValid())
     return;
   ScriptState::Scope scope(script_state);
-  for (auto enabled_trial : enabled_trials_) {
-    if (installed_trials_.Contains(enabled_trial))
+  for (OriginTrialFeature enabled_feature : enabled_features_) {
+    if (installed_features_.Contains(enabled_feature))
       continue;
-    InstallPendingOriginTrialFeature(enabled_trial, script_state);
-    installed_trials_.insert(enabled_trial);
+    InstallPendingOriginTrialFeature(enabled_feature, script_state);
+    installed_features_.insert(enabled_feature);
   }
 }
 
-void OriginTrialContext::AddFeature(const String& feature) {
-  enabled_trials_.insert(feature);
+void OriginTrialContext::AddFeature(OriginTrialFeature feature) {
+  enabled_features_.insert(feature);
   InitializePendingFeatures();
 }
 
-bool OriginTrialContext::IsTrialEnabled(const String& trial_name) const {
+bool OriginTrialContext::IsFeatureEnabled(OriginTrialFeature feature) const {
   if (!RuntimeEnabledFeatures::OriginTrialsEnabled())
     return false;
 
-  return enabled_trials_.Contains(trial_name);
+  if (enabled_features_.Contains(feature))
+    return true;
+
+  // HTML imports do not have a browsing context, see:
+  //  - Spec: https://w3c.github.io/webcomponents/spec/imports/#terminology
+  //  - Spec issue: https://github.com/w3c/webcomponents/issues/197
+  // For the purposes of origin trials, we consider imported documents to be
+  // part of the master document. Thus, check if the trial is enabled in the
+  // master document and use that result.
+  auto* document = DynamicTo<Document>(GetSupplementable());
+  if (!document || !document->IsHTMLImport())
+    return false;
+
+  const OriginTrialContext* context =
+      OriginTrialContext::From(&document->MasterDocument());
+  if (!context)
+    return false;
+  return context->IsFeatureEnabled(feature);
 }
 
 bool OriginTrialContext::EnableTrialFromToken(const String& token) {
@@ -268,15 +285,21 @@ bool OriginTrialContext::EnableTrialFromToken(const String& token) {
       token_string.AsStringPiece(), origin->ToUrlOrigin(), &trial_name_str,
       base::Time::Now());
   if (token_result == OriginTrialTokenStatus::kSuccess) {
-    valid = true;
     String trial_name =
         String::FromUTF8(trial_name_str.data(), trial_name_str.size());
-    enabled_trials_.insert(trial_name);
-    // Also enable any trials implied by this trial
-    Vector<AtomicString> implied_trials =
-        origin_trials::GetImpliedTrials(trial_name);
-    for (const AtomicString& implied_trial_name : implied_trials) {
-      enabled_trials_.insert(implied_trial_name);
+    if (origin_trials::IsTrialValid(trial_name)) {
+      for (OriginTrialFeature feature :
+           origin_trials::FeaturesForTrial(trial_name)) {
+        if (origin_trials::FeatureEnabledForOS(feature)) {
+          valid = true;
+          enabled_features_.insert(feature);
+          // Also enable any features implied by this feature.
+          for (OriginTrialFeature implied_feature :
+               origin_trials::GetImpliedFeatures(feature)) {
+            enabled_features_.insert(implied_feature);
+          }
+        }
+      }
     }
   }
 

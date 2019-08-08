@@ -149,6 +149,10 @@ class BlinkAXTreeSource
 
   AXImageAnnotator* image_annotator_ = nullptr;
 
+  // Whether we should highlight annotation results visually on the page
+  // for debugging.
+  bool image_annotation_debugging_ = false;
+
   // These are updated when calling |Freeze|.
   bool frozen_ = false;
   blink::WebDocument document_;

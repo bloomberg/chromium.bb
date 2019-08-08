@@ -3,17 +3,15 @@
 // found in the LICENSE file.
 
 #import <CoreGraphics/CoreGraphics.h>
-#import <EarlGrey/EarlGrey.h>
 #import <Foundation/Foundation.h>
 #import <XCTest/XCTest.h>
 
 #include "base/strings/string_number_conversions.h"
-#import "ios/web/public/test/http_server/http_server.h"
-#include "ios/web/public/test/http_server/http_server_util.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
-#import "ios/web/shell/test/earl_grey/shell_matchers_shorthand.h"
 #import "ios/web/shell/test/earl_grey/web_shell_test_case.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -21,11 +19,9 @@
 
 namespace {
 
-// URLs for test pages.
-const char kLongPage1[] =
-    "http://ios/web/shell/test/http_server_files/tall_page.html";
+const char kLongPage1[] = "/ios/testing/data/http_server_files/tall_page.html";
 const char kLongPage2[] =
-    "http://ios/web/shell/test/http_server_files/tall_page.html?2";
+    "/ios/testing/data/http_server_files/tall_page.html?2";
 
 // Test scroll offsets.
 const CGFloat kOffset1 = 20.0f;
@@ -58,7 +54,8 @@ void WaitForOffset(CGFloat y_offset) {
 // be {0, 0} before returning.
 void ScrollLongPageToTop(const GURL& url) {
   // Load the page and swipe down.
-  [ShellEarlGrey loadURL:url];
+  bool success = shell_test_util::LoadUrl(url);
+  GREYAssert(success, @"Page did not complete loading.");
   [[EarlGrey selectElementWithMatcher:web::WebViewScrollView()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
   // Waits for the {0, 0} offset.
@@ -67,28 +64,33 @@ void ScrollLongPageToTop(const GURL& url) {
 
 }  // namespace
 
-using web::test::HttpServer;
-
 // Page state test cases for the web shell.
-@interface PageStateTestCase : WebShellTestCase
+@interface PageStateTestCase : WebShellTestCase {
+  net::EmbeddedTestServer _server;
+}
 @end
 
 @implementation PageStateTestCase
 
+- (void)setUp {
+  [super setUp];
+
+  _server.ServeFilesFromSourceDirectory(base::FilePath(FILE_PATH_LITERAL(".")));
+  GREYAssert(_server.Start(), @"EmbeddedTestServer failed to start.");
+}
+
 // Tests that page scroll position of a page is restored upon returning to the
 // page via the back/forward buttons.
 - (void)testScrollPositionRestoring {
-  web::test::SetUpFileBasedHttpServer();
-
   // Scroll the first page and verify the offset.
-  ScrollLongPageToTop(HttpServer::MakeUrl(kLongPage1));
+  ScrollLongPageToTop(_server.GetURL(kLongPage1));
   [[EarlGrey selectElementWithMatcher:web::WebViewScrollView()]
       performAction:grey_scrollInDirection(kGREYDirectionDown, kOffset1)];
   [[EarlGrey selectElementWithMatcher:web::WebViewScrollView()]
       assertWithMatcher:grey_scrollViewContentOffset(CGPointMake(0, kOffset1))];
 
   // Scroll the second page and verify the offset.
-  ScrollLongPageToTop(HttpServer::MakeUrl(kLongPage2));
+  ScrollLongPageToTop(_server.GetURL(kLongPage2));
   [[EarlGrey selectElementWithMatcher:web::WebViewScrollView()]
       performAction:grey_scrollInDirection(kGREYDirectionDown, kOffset2)];
   [[EarlGrey selectElementWithMatcher:web::WebViewScrollView()]
@@ -109,9 +111,9 @@ using web::test::HttpServer;
 // load.
 - (void)testZeroContentOffsetAfterLoad {
   // Set up the file-based server to load the tall page.
-  const GURL baseURL = web::test::HttpServer::MakeUrl(kLongPage1);
-  web::test::SetUpFileBasedHttpServer();
-  [ShellEarlGrey loadURL:baseURL];
+  const GURL baseURL = _server.GetURL(kLongPage1);
+  bool success = shell_test_util::LoadUrl(baseURL);
+  GREYAssert(success, @"Page did not complete loading.");
 
   // Scroll the page and load again to verify that the new page's scroll offset
   // is reset to {0, 0}.
@@ -124,7 +126,9 @@ using web::test::HttpServer;
     // Add a query parameter so the next load creates another NavigationItem.
     GURL::Replacements replacements;
     replacements.SetQueryStr(base::NumberToString(i));
-    [ShellEarlGrey loadURL:baseURL.ReplaceComponents(replacements)];
+    bool success =
+        shell_test_util::LoadUrl(baseURL.ReplaceComponents(replacements));
+    GREYAssert(success, @"Page did not complete loading.");
     // Wait for the content offset to be set to {0, 0}.
     WaitForOffset(0.0);
   }

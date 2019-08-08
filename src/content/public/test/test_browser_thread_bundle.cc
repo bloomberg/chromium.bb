@@ -31,31 +31,27 @@
 namespace content {
 
 TestBrowserThreadBundle::~TestBrowserThreadBundle() {
-  // To ensure a clean teardown, each thread's message loop must be flushed
-  // just before the thread is destroyed. But stopping a fake thread does not
-  // automatically flush the message loop, so we have to do it manually.
-  // See http://crbug.com/247525 for discussion.
-  base::RunLoop().RunUntilIdle();
-  io_thread_->Stop();
-  base::RunLoop().RunUntilIdle();
-  ui_thread_->Stop();
-  base::RunLoop().RunUntilIdle();
+  // This is required to ensure we run all remaining MessageLoop and
+  // ThreadPool tasks in an atomic step. This is a bit different than
+  // production where the main thread is not flushed after it's done running
+  // but this approach is preferred in unit tests as running more tasks can
+  // merely uncover more issues (e.g. if a bad tasks is posted but never
+  // blocked upon it could make a test flaky whereas by flushing we guarantee
+  // it will blow up).
+  RunUntilIdle();
 
-  // Skip the following steps when RunAllTasksUntilIdle might result in a hang
-  // (ExecutionMode::QUEUED) or for MainThreadType::MOCK_TIME where we haven't
-  // enforced there being no pending tasks.
-  if (main_thread_type() != MainThreadType::MOCK_TIME &&
-      execution_control_mode() != ExecutionMode::QUEUED) {
-    // This is required to ensure we run all remaining MessageLoop and
-    // TaskScheduler tasks in an atomic step. This is a bit different than
-    // production where the main thread is not flushed after it's done running
-    // but this approach is preferred in unit tests as running more tasks can
-    // merely uncover more issues (e.g. if a bad tasks is posted but never
-    // blocked upon it could make a test flaky whereas by flushing we guarantee
-    // it will blow up).
-    RunAllTasksUntilIdle();
-    CHECK(MainThreadIsIdle()) << sequence_manager()->DescribeAllPendingTasks();
+  // When REAL_IO_THREAD, we need to stop the IO thread explicitly and flush
+  // again.
+  if (real_io_thread_) {
+    io_thread_->Stop();
+    RunUntilIdle();
   }
+
+  // The only way this check can fail after RunUntilIdle() is if a test is
+  // running its own base::Thread's. Such tests should make sure to coalesce
+  // independent threads before this point.
+  // TODO(crbug.com/938126): Enable this CHECK once flaky tests have been fixed.
+  // CHECK(MainThreadIsIdle()) << sequence_manager()->DescribeAllPendingTasks();
 
   BrowserTaskExecutor::ResetForTesting();
 

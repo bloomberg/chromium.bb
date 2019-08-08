@@ -1,6 +1,7 @@
 file://ui/accessibility/OWNERS
 
 # For ATK / AuraLinux
+jdiggs@igalia.com
 mrobinson@igalia.com
 
 # TEAM: chromium-accessibility@chromium.org

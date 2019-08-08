@@ -3,14 +3,28 @@
 # found in the LICENSE file.
 
 import ast
-import cStringIO
 import collections
 import logging
+import sys
 import tokenize
 
 import gclient_utils
 
 from third_party import schema
+
+if sys.version_info.major == 2:
+  # We use cStringIO.StringIO because it is equivalent to Py3's io.StringIO.
+  from cStringIO import StringIO
+else:
+  from io import StringIO
+
+
+# TODO(crbug.com/953884): Remove this when python3 migration is done.
+try:
+  basestring
+except NameError:
+  # pylint: disable=redefined-builtin
+  basestring = str
 
 
 class _NodeDict(collections.MutableMapping):
@@ -20,7 +34,7 @@ class _NodeDict(collections.MutableMapping):
     self.tokens = tokens
 
   def __str__(self):
-    return str({k: v[0] for k, v in self.data.iteritems()})
+    return str({k: v[0] for k, v in self.data.items()})
 
   def __repr__(self):
     return self.__str__()
@@ -72,145 +86,146 @@ def _NodeDictSchema(dict_schema):
 
 # See https://github.com/keleshev/schema for docs how to configure schema.
 _GCLIENT_DEPS_SCHEMA = _NodeDictSchema({
-    schema.Optional(basestring): schema.Or(
-        None,
-        basestring,
-        _NodeDictSchema({
-            # Repo and revision to check out under the path
-            # (same as if no dict was used).
-            'url': schema.Or(None, basestring),
+    schema.Optional(basestring):
+        schema.Or(
+            None,
+            basestring,
+            _NodeDictSchema({
+                # Repo and revision to check out under the path
+                # (same as if no dict was used).
+                'url': schema.Or(None, basestring),
 
-            # Optional condition string. The dep will only be processed
-            # if the condition evaluates to True.
-            schema.Optional('condition'): basestring,
-
-            schema.Optional('dep_type', default='git'): basestring,
-        }),
-        # CIPD package.
-        _NodeDictSchema({
-            'packages': [
-                _NodeDictSchema({
-                    'package': basestring,
-
-                    'version': basestring,
-                })
-            ],
-
-            schema.Optional('condition'): basestring,
-
-            schema.Optional('dep_type', default='cipd'): basestring,
-        }),
-    ),
+                # Optional condition string. The dep will only be processed
+                # if the condition evaluates to True.
+                schema.Optional('condition'): basestring,
+                schema.Optional('dep_type', default='git'): basestring,
+            }),
+            # CIPD package.
+            _NodeDictSchema({
+                'packages': [
+                    _NodeDictSchema({
+                        'package': basestring,
+                        'version': basestring,
+                    })
+                ],
+                schema.Optional('condition'): basestring,
+                schema.Optional('dep_type', default='cipd'): basestring,
+            }),
+        ),
 })
 
-_GCLIENT_HOOKS_SCHEMA = [_NodeDictSchema({
-    # Hook action: list of command-line arguments to invoke.
-    'action': [basestring],
+_GCLIENT_HOOKS_SCHEMA = [
+    _NodeDictSchema({
+        # Hook action: list of command-line arguments to invoke.
+        'action': [basestring],
 
-    # Name of the hook. Doesn't affect operation.
-    schema.Optional('name'): basestring,
+        # Name of the hook. Doesn't affect operation.
+        schema.Optional('name'): basestring,
 
-    # Hook pattern (regex). Originally intended to limit some hooks to run
-    # only when files matching the pattern have changed. In practice, with git,
-    # gclient runs all the hooks regardless of this field.
-    schema.Optional('pattern'): basestring,
+        # Hook pattern (regex). Originally intended to limit some hooks to run
+        # only when files matching the pattern have changed. In practice, with
+        # git, gclient runs all the hooks regardless of this field.
+        schema.Optional('pattern'): basestring,
 
-    # Working directory where to execute the hook.
-    schema.Optional('cwd'): basestring,
+        # Working directory where to execute the hook.
+        schema.Optional('cwd'): basestring,
 
-    # Optional condition string. The hook will only be run
-    # if the condition evaluates to True.
-    schema.Optional('condition'): basestring,
-})]
+        # Optional condition string. The hook will only be run
+        # if the condition evaluates to True.
+        schema.Optional('condition'): basestring,
+    })
+]
 
-_GCLIENT_SCHEMA = schema.Schema(_NodeDictSchema({
-    # List of host names from which dependencies are allowed (whitelist).
-    # NOTE: when not present, all hosts are allowed.
-    # NOTE: scoped to current DEPS file, not recursive.
-    schema.Optional('allowed_hosts'): [schema.Optional(basestring)],
+_GCLIENT_SCHEMA = schema.Schema(
+    _NodeDictSchema({
+        # List of host names from which dependencies are allowed (whitelist).
+        # NOTE: when not present, all hosts are allowed.
+        # NOTE: scoped to current DEPS file, not recursive.
+        schema.Optional('allowed_hosts'): [schema.Optional(basestring)],
 
-    # Mapping from paths to repo and revision to check out under that path.
-    # Applying this mapping to the on-disk checkout is the main purpose
-    # of gclient, and also why the config file is called DEPS.
-    #
-    # The following functions are allowed:
-    #
-    #   Var(): allows variable substitution (either from 'vars' dict below,
-    #          or command-line override)
-    schema.Optional('deps'): _GCLIENT_DEPS_SCHEMA,
+        # Mapping from paths to repo and revision to check out under that path.
+        # Applying this mapping to the on-disk checkout is the main purpose
+        # of gclient, and also why the config file is called DEPS.
+        #
+        # The following functions are allowed:
+        #
+        #   Var(): allows variable substitution (either from 'vars' dict below,
+        #          or command-line override)
+        schema.Optional('deps'): _GCLIENT_DEPS_SCHEMA,
 
-    # Similar to 'deps' (see above) - also keyed by OS (e.g. 'linux').
-    # Also see 'target_os'.
-    schema.Optional('deps_os'): _NodeDictSchema({
-        schema.Optional(basestring): _GCLIENT_DEPS_SCHEMA,
-    }),
+        # Similar to 'deps' (see above) - also keyed by OS (e.g. 'linux').
+        # Also see 'target_os'.
+        schema.Optional('deps_os'): _NodeDictSchema({
+            schema.Optional(basestring): _GCLIENT_DEPS_SCHEMA,
+        }),
 
-    # Dependency to get gclient_gn_args* settings from. This allows these values
-    # to be set in a recursedeps file, rather than requiring that they exist in
-    # the top-level solution.
-    schema.Optional('gclient_gn_args_from'): basestring,
+        # Dependency to get gclient_gn_args* settings from. This allows these
+        # values to be set in a recursedeps file, rather than requiring that
+        # they exist in the top-level solution.
+        schema.Optional('gclient_gn_args_from'): basestring,
 
-    # Path to GN args file to write selected variables.
-    schema.Optional('gclient_gn_args_file'): basestring,
+        # Path to GN args file to write selected variables.
+        schema.Optional('gclient_gn_args_file'): basestring,
 
-    # Subset of variables to write to the GN args file (see above).
-    schema.Optional('gclient_gn_args'): [schema.Optional(basestring)],
+        # Subset of variables to write to the GN args file (see above).
+        schema.Optional('gclient_gn_args'): [schema.Optional(basestring)],
 
-    # Hooks executed after gclient sync (unless suppressed), or explicitly
-    # on gclient hooks. See _GCLIENT_HOOKS_SCHEMA for details.
-    # Also see 'pre_deps_hooks'.
-    schema.Optional('hooks'): _GCLIENT_HOOKS_SCHEMA,
+        # Hooks executed after gclient sync (unless suppressed), or explicitly
+        # on gclient hooks. See _GCLIENT_HOOKS_SCHEMA for details.
+        # Also see 'pre_deps_hooks'.
+        schema.Optional('hooks'): _GCLIENT_HOOKS_SCHEMA,
 
-    # Similar to 'hooks', also keyed by OS.
-    schema.Optional('hooks_os'): _NodeDictSchema({
-        schema.Optional(basestring): _GCLIENT_HOOKS_SCHEMA
-    }),
+        # Similar to 'hooks', also keyed by OS.
+        schema.Optional('hooks_os'): _NodeDictSchema({
+            schema.Optional(basestring): _GCLIENT_HOOKS_SCHEMA
+        }),
 
-    # Rules which #includes are allowed in the directory.
-    # Also see 'skip_child_includes' and 'specific_include_rules'.
-    schema.Optional('include_rules'): [schema.Optional(basestring)],
+        # Rules which #includes are allowed in the directory.
+        # Also see 'skip_child_includes' and 'specific_include_rules'.
+        schema.Optional('include_rules'): [schema.Optional(basestring)],
 
-    # Hooks executed before processing DEPS. See 'hooks' for more details.
-    schema.Optional('pre_deps_hooks'): _GCLIENT_HOOKS_SCHEMA,
+        # Hooks executed before processing DEPS. See 'hooks' for more details.
+        schema.Optional('pre_deps_hooks'): _GCLIENT_HOOKS_SCHEMA,
 
-    # Recursion limit for nested DEPS.
-    schema.Optional('recursion'): int,
+        # Recursion limit for nested DEPS.
+        schema.Optional('recursion'): int,
 
-    # Whitelists deps for which recursion should be enabled.
-    schema.Optional('recursedeps'): [
-        schema.Optional(schema.Or(
-            basestring,
-            (basestring, basestring),
-            [basestring, basestring]
-        )),
-    ],
+        # Whitelists deps for which recursion should be enabled.
+        schema.Optional('recursedeps'): [
+            schema.Optional(schema.Or(
+                basestring,
+                (basestring, basestring),
+                [basestring, basestring]
+            )),
+        ],
 
-    # Blacklists directories for checking 'include_rules'.
-    schema.Optional('skip_child_includes'): [schema.Optional(basestring)],
+        # Blacklists directories for checking 'include_rules'.
+        schema.Optional('skip_child_includes'): [schema.Optional(basestring)],
 
-    # Mapping from paths to include rules specific for that path.
-    # See 'include_rules' for more details.
-    schema.Optional('specific_include_rules'): _NodeDictSchema({
-        schema.Optional(basestring): [basestring]
-    }),
+        # Mapping from paths to include rules specific for that path.
+        # See 'include_rules' for more details.
+        schema.Optional('specific_include_rules'): _NodeDictSchema({
+            schema.Optional(basestring): [basestring]
+        }),
 
-    # List of additional OS names to consider when selecting dependencies
-    # from deps_os.
-    schema.Optional('target_os'): [schema.Optional(basestring)],
+        # List of additional OS names to consider when selecting dependencies
+        # from deps_os.
+        schema.Optional('target_os'): [schema.Optional(basestring)],
 
-    # For recursed-upon sub-dependencies, check out their own dependencies
-    # relative to the parent's path, rather than relative to the .gclient file.
-    schema.Optional('use_relative_paths'): bool,
+        # For recursed-upon sub-dependencies, check out their own dependencies
+        # relative to the parent's path, rather than relative to the .gclient
+        # file.
+        schema.Optional('use_relative_paths'): bool,
 
-    # For recursed-upon sub-dependencies, run their hooks relative to the
-    # parent's path instead of relative to the .gclient file.
-    schema.Optional('use_relative_hooks'): bool,
+        # For recursed-upon sub-dependencies, run their hooks relative to the
+        # parent's path instead of relative to the .gclient file.
+        schema.Optional('use_relative_hooks'): bool,
 
-    # Variables that can be referenced using Var() - see 'deps'.
-    schema.Optional('vars'): _NodeDictSchema({
-        schema.Optional(basestring): schema.Or(basestring, bool),
-    }),
-}))
+        # Variables that can be referenced using Var() - see 'deps'.
+        schema.Optional('vars'): _NodeDictSchema({
+            schema.Optional(basestring): schema.Or(basestring, bool),
+        }),
+    }))
 
 
 def _gclient_eval(node_or_string, filename='<unknown>', vars_dict=None):
@@ -246,12 +261,16 @@ def _gclient_eval(node_or_string, filename='<unknown>', vars_dict=None):
             'invalid name %r (file %r, line %s)' % (
                 node.id, filename, getattr(node, 'lineno', '<unknown>')))
       return _allowed_names[node.id]
+    elif not sys.version_info[:2] < (3, 4) and isinstance(
+        node, ast.NameConstant):  # Since Python 3.4
+      return node.value
     elif isinstance(node, ast.Call):
       if not isinstance(node.func, ast.Name) or node.func.id != 'Var':
         raise ValueError(
             'Var is the only allowed function (file %r, line %s)' % (
                 filename, getattr(node, 'lineno', '<unknown>')))
-      if node.keywords or node.starargs or node.kwargs or len(node.args) != 1:
+      if node.keywords or getattr(node, 'starargs', None) or getattr(
+          node, 'kwargs', None) or len(node.args) != 1:
         raise ValueError(
             'Var takes exactly one argument (file %r, line %s)' % (
                 filename, getattr(node, 'lineno', '<unknown>')))
@@ -321,11 +340,19 @@ def Exec(content, filename='<unknown>', vars_override=None, builtin_vars=None):
     _validate_statement(statement, statements)
     statements[statement.targets[0].id] = statement.value
 
+  # The tokenized representation needs to end with a newline token, otherwise
+  # untokenization will trigger an assert later on.
+  # In Python 2.7 on Windows we need to ensure the input ends with a newline
+  # for a newline token to be generated.
+  # In other cases a newline token is always generated during tokenization so
+  # this has no effect.
+  # TODO: Remove this workaround after migrating to Python 3.
+  content += '\n'
   tokens = {
-      token[2]: list(token)
-      for token in tokenize.generate_tokens(
-          cStringIO.StringIO(content).readline)
+      token[2]: list(token) for token in tokenize.generate_tokens(
+          StringIO(content).readline)
   }
+
   local_scope = _NodeDict({}, tokens)
 
   # Process vars first, so we can expand variables in the rest of the DEPS file.
@@ -342,12 +369,9 @@ def Exec(content, filename='<unknown>', vars_override=None, builtin_vars=None):
     vars_dict.update(builtin_vars)
 
   if vars_override:
-    vars_dict.update({
-      k: v
-      for k, v in vars_override.iteritems()
-      if k in vars_dict})
+    vars_dict.update({k: v for k, v in vars_override.items() if k in vars_dict})
 
-  for name, node in statements.iteritems():
+  for name, node in statements.items():
     value = _gclient_eval(node, filename, vars_dict)
     local_scope.SetNode(name, value, node)
 
@@ -371,11 +395,7 @@ def ExecLegacy(content, filename='<unknown>', vars_override=None,
   if builtin_vars:
     vars_dict.update(builtin_vars)
   if vars_override:
-    vars_dict.update({
-        k: v
-        for k, v in vars_override.iteritems()
-        if k in vars_dict
-    })
+    vars_dict.update({k: v for k, v in vars_override.items() if k in vars_dict})
 
   if not vars_dict:
     return local_scope
@@ -384,10 +404,7 @@ def ExecLegacy(content, filename='<unknown>', vars_override=None,
     if isinstance(node, basestring):
       return node.format(**vars_dict)
     elif isinstance(node, dict):
-      return {
-          k.format(**vars_dict): _DeepFormat(v)
-          for k, v in node.iteritems()
-      }
+      return {k.format(**vars_dict): _DeepFormat(v) for k, v in node.items()}
     elif isinstance(node, list):
       return [_DeepFormat(elem) for elem in node]
     elif isinstance(node, tuple):
@@ -614,7 +631,11 @@ def EvaluateCondition(condition, variables, referenced_variables=None):
 
 def RenderDEPSFile(gclient_dict):
   contents = sorted(gclient_dict.tokens.values(), key=lambda token: token[2])
-  return tokenize.untokenize(contents)
+  # The last token is a newline, which we ensure in Exec() for compatibility.
+  # However tests pass in inputs not ending with a newline and expect the same
+  # back, so for backwards compatibility need to remove that newline character.
+  # TODO: Fix tests to expect the newline
+  return tokenize.untokenize(contents)[:-1]
 
 
 def _UpdateAstString(tokens, node, value):
@@ -679,8 +700,7 @@ def AddVar(gclient_dict, var_name, value):
   vars_node.values.insert(0, value_node)
 
   # Update the tokens.
-  var_tokens = list(tokenize.generate_tokens(
-      cStringIO.StringIO(var_content).readline))
+  var_tokens = list(tokenize.generate_tokens(StringIO(var_content).readline))
   var_tokens = {
       token[2]: list(token)
       # Ignore the tokens corresponding to braces and new lines.

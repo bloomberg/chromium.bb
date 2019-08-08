@@ -11,7 +11,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -25,7 +24,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user.h"
 #else  // Non-ChromeOS.
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
@@ -76,11 +74,8 @@ ProfilePolicyConnectorFactory::ProfilePolicyConnectorFactory()
     : BrowserContextKeyedBaseFactory(
         "ProfilePolicyConnector",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(SchemaRegistryServiceFactory::GetInstance());
 #if defined(OS_CHROMEOS)
   DependsOn(UserPolicyManagerFactoryChromeOS::GetInstance());
-#else
-  DependsOn(UserCloudPolicyManagerFactory::GetInstance());
 #endif
 }
 
@@ -106,15 +101,15 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
     bool force_immediate_load) {
   DCHECK(connectors_.find(context) == connectors_.end());
 
+  Profile* const profile = Profile::FromBrowserContext(context);
   const user_manager::User* user = nullptr;
   SchemaRegistry* schema_registry =
-      SchemaRegistryServiceFactory::GetForContext(context)->registry();
+      profile->GetPolicySchemaRegistryService()->registry();
 
   ConfigurationPolicyProvider* policy_provider = nullptr;
   const CloudPolicyStore* policy_store = nullptr;
 
 #if defined(OS_CHROMEOS)
-  Profile* const profile = Profile::FromBrowserContext(context);
   if (!chromeos::ProfileHelper::IsSigninProfile(profile) &&
       !chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
     user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
@@ -136,7 +131,7 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
   }
 #else
   CloudPolicyManager* user_cloud_policy_manager =
-      UserCloudPolicyManagerFactory::GetForBrowserContext(context);
+      profile->GetUserCloudPolicyManager();
   if (user_cloud_policy_manager) {
     policy_provider = user_cloud_policy_manager;
     policy_store = user_cloud_policy_manager->core()->store();

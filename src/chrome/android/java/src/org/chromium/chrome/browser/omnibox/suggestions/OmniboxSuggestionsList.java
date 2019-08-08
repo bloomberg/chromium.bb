@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
@@ -20,6 +21,7 @@ import android.widget.ListView;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.util.ViewUtils;
 
@@ -30,11 +32,10 @@ import java.util.ArrayList;
  */
 @VisibleForTesting
 public class OmniboxSuggestionsList extends ListView {
-    private static final int LIGHT_BG_COLOR = 0xFFFFFFFF;
-    private static final int DARK_BG_COLOR = 0xFF3C4043;
-
     private final int[] mTempPosition = new int[2];
     private final Rect mTempRect = new Rect();
+    private final int mStandardBgColor;
+    private final int mIncognitoBgColor;
 
     private OmniboxSuggestionListEmbedder mEmbedder;
     private View mAnchorView;
@@ -74,8 +75,11 @@ public class OmniboxSuggestionsList extends ListView {
         setFocusable(true);
         setFocusableInTouchMode(true);
 
-        int paddingBottom = context.getResources().getDimensionPixelOffset(
-                R.dimen.omnibox_suggestion_list_padding_bottom);
+        final Resources resources = context.getResources();
+        mStandardBgColor = ColorUtils.getDefaultThemeColor(resources, false);
+        mIncognitoBgColor = ColorUtils.getDefaultThemeColor(resources, true);
+        int paddingBottom =
+                resources.getDimensionPixelOffset(R.dimen.omnibox_suggestion_list_padding_bottom);
         ViewCompat.setPaddingRelative(this, 0, 0, 0, paddingBottom);
     }
 
@@ -143,8 +147,8 @@ public class OmniboxSuggestionsList extends ListView {
     /**
      * Update the suggestion popup background to reflect the current state.
      */
-    void refreshPopupBackground(boolean useDarkBackground) {
-        int color = useDarkBackground ? DARK_BG_COLOR : LIGHT_BG_COLOR;
+    void refreshPopupBackground(boolean isIncognito) {
+        int color = isIncognito ? mIncognitoBgColor : mStandardBgColor;
         if (!isHardwareAccelerated()) {
             // When HW acceleration is disabled, changing mSuggestionList' items somehow erases
             // mOmniboxResultsContainer' background from the area not covered by mSuggestionList.

@@ -13,7 +13,6 @@
 #include "base/single_thread_task_runner.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
-#include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/skia_output_surface.h"
@@ -50,9 +49,7 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
   parent_local_surface_id_allocator_->GenerateId();
 }
 
-TestLayerTreeFrameSink::~TestLayerTreeFrameSink() {
-  DCHECK(copy_requests_.empty());
-}
+TestLayerTreeFrameSink::~TestLayerTreeFrameSink() = default;
 
 void TestLayerTreeFrameSink::SetDisplayColorSpace(
     const gfx::ColorSpace& blending_color_space,
@@ -61,11 +58,6 @@ void TestLayerTreeFrameSink::SetDisplayColorSpace(
   output_color_space_ = output_color_space;
   if (display_)
     display_->SetColorSpace(blending_color_space_, output_color_space_);
-}
-
-void TestLayerTreeFrameSink::RequestCopyOfOutput(
-    std::unique_ptr<CopyOutputRequest> request) {
-  copy_requests_.push_back(std::move(request));
 }
 
 bool TestLayerTreeFrameSink::BindToClient(
@@ -194,22 +186,6 @@ void TestLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame,
 
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 
-  // TODO(vmpstr): In layout tests, we request this call. However, with site
-  // isolation we don't get an activation yet. Previously the call to the
-  // support would delete the request resulting in an empty bitmap being
-  // returned to the caller. However, with recent changes in preparation for
-  // properly capturing pixel dumps from site isolation layout tests, it now
-  // stashes the request in the pending queue and waits for an activation. Since
-  // this never happens, the tests time out instead of failing. It's important
-  // for us to not mark some of these tests as timing out, since we need to
-  // ensure that they don't time out for reasons unrelated to pixel dumps.
-  // https://crbug.com/667551 tracks the progress of fixing this.
-  if (support_->last_activated_surface_id().is_valid()) {
-    for (auto& copy_request : copy_requests_)
-      support_->RequestCopyOfOutput(local_surface_id, std::move(copy_request));
-  }
-  copy_requests_.clear();
-
   if (!display_->has_scheduler()) {
     display_->DrawAndSwap();
     // Post this to get a new stack frame so that we exit this function before
@@ -253,7 +229,7 @@ void TestLayerTreeFrameSink::DidReceiveCompositorFrameAck(
 
 void TestLayerTreeFrameSink::OnBeginFrame(
     const BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+    const PresentationFeedbackMap& feedbacks) {
   for (const auto& pair : feedbacks)
     client_->DidPresentCompositorFrame(pair.first, pair.second);
   external_begin_frame_source_.OnBeginFrame(args);
@@ -292,6 +268,11 @@ void TestLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
 
 void TestLayerTreeFrameSink::SendCompositorFrameAckToClient() {
   client_->DidReceiveCompositorFrameAck();
+}
+
+base::TimeDelta TestLayerTreeFrameSink::GetPreferredFrameIntervalForFrameSinkId(
+    const FrameSinkId& id) {
+  return BeginFrameArgs::MinInterval();
 }
 
 }  // namespace viz

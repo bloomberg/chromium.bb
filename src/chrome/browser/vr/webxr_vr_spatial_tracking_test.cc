@@ -19,4 +19,13 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestOpenVrDisabled,
   WaitOnJavaScriptStep();
   EndTest();
 }
+
+#if BUILDFLAG(ENABLE_VR)
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestSensorless, TestSensorlessRejections) {
+  LoadUrlAndAwaitInitialization(
+      GetFileUrlForHtmlTestFile("test_stationary_reference_space_rejects"));
+  WaitOnJavaScriptStep();
+  EndTest();
+}
+#endif
 }  // namespace vr

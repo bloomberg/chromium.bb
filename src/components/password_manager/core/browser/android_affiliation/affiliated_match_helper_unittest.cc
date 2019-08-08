@@ -42,13 +42,12 @@ class MockAffiliationService : public testing::StrictMock<AffiliationService> {
   MOCK_METHOD2(CancelPrefetch, void(const FacetURI&, const base::Time&));
   MOCK_METHOD1(TrimCacheForFacetURI, void(const FacetURI&));
 
-  void GetAffiliationsAndBranding(
-      const FacetURI& facet_uri,
-      StrategyOnCacheMiss cache_miss_strategy,
-      const ResultCallback& result_callback) override {
+  void GetAffiliationsAndBranding(const FacetURI& facet_uri,
+                                  StrategyOnCacheMiss cache_miss_strategy,
+                                  ResultCallback result_callback) override {
     AffiliatedFacets affiliation =
         OnGetAffiliationsAndBrandingCalled(facet_uri, cache_miss_strategy);
-    result_callback.Run(affiliation, !affiliation.empty());
+    std::move(result_callback).Run(affiliation, !affiliation.empty());
   }
 
   void ExpectCallToGetAffiliationsAndBrandingAndSucceedWithResult(

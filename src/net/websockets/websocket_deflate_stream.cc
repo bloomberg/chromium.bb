@@ -284,7 +284,7 @@ int WebSocketDeflateStream::Inflate(
   frames->swap(frames_passed);
   for (size_t i = 0; i < frames_passed.size(); ++i) {
     std::unique_ptr<WebSocketFrame> frame(std::move(frames_passed[i]));
-    frames_passed[i] = NULL;
+    frames_passed[i] = nullptr;
     DVLOG(3) << "Input frame: opcode=" << frame->header.opcode
              << " final=" << frame->header.final
              << " reserved1=" << frame->header.reserved1

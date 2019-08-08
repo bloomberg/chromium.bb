@@ -13,7 +13,6 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 
 namespace content {
-
 namespace background_fetch {
 
 MarkRegistrationForDeletionTask::MarkRegistrationForDeletionTask(
@@ -160,5 +159,4 @@ std::string MarkRegistrationForDeletionTask::HistogramName() const {
 }
 
 }  // namespace background_fetch
-
 }  // namespace content

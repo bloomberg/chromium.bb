@@ -148,9 +148,6 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
          iter != filesystem_permissions_.end(); ++iter) {
       isolated_context->RemoveReference(iter->first);
     }
-    UMA_HISTOGRAM_COUNTS_1M(
-        "ChildProcessSecurityPolicy.PerChildFilePermissions",
-        file_permissions_.size());
   }
 
   // Grant permission to request and commit URLs with the specified origin.
@@ -182,9 +179,6 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   void GrantPermissionsForFile(const base::FilePath& file, int permissions) {
     base::FilePath stripped = file.StripTrailingSeparators();
     file_permissions_[stripped] |= permissions;
-    UMA_HISTOGRAM_COUNTS_1M(
-        "ChildProcessSecurityPolicy.FilePermissionPathLength",
-        stripped.value().size());
   }
 
   // Grant navigation to a file but not the file:// scheme in general.
@@ -338,20 +332,6 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
 
   BrowsingInstanceId lowest_browsing_instance_id() {
     return lowest_browsing_instance_id_;
-  }
-
-  ChildProcessSecurityPolicyImpl::CheckOriginLockResult CheckOriginLock(
-      const GURL& gurl) {
-    if (origin_lock_.is_empty())
-      return ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK;
-
-    if (origin_lock_ == gurl) {
-      return ChildProcessSecurityPolicyImpl::CheckOriginLockResult::
-          HAS_EQUAL_LOCK;
-    }
-
-    return ChildProcessSecurityPolicyImpl::CheckOriginLockResult::
-        HAS_WRONG_LOCK;
   }
 
   bool has_web_ui_bindings() const {
@@ -541,7 +521,12 @@ void ChildProcessSecurityPolicyImpl::Add(int child_id,
   DCHECK(browser_context);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
-  AddChild(child_id, browser_context);
+  if (security_state_.count(child_id) != 0) {
+    NOTREACHED() << "Add child process at most once.";
+    return;
+  }
+
+  security_state_[child_id] = std::make_unique<SecurityState>(browser_context);
 }
 
 void ChildProcessSecurityPolicyImpl::Remove(int child_id) {
@@ -1264,17 +1249,6 @@ bool ChildProcessSecurityPolicyImpl::CanReadRawCookies(int child_id) {
   return state->second->can_read_raw_cookies();
 }
 
-void ChildProcessSecurityPolicyImpl::AddChild(int child_id,
-                                              BrowserContext* browser_context) {
-  DCHECK(browser_context);
-  if (security_state_.count(child_id) != 0) {
-    NOTREACHED() << "Add child process at most once.";
-    return;
-  }
-
-  security_state_[child_id] = std::make_unique<SecurityState>(browser_context);
-}
-
 bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
     int child_id, const base::FilePath& file, int permissions) {
   auto state = security_state_.find(child_id);
@@ -1312,7 +1286,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
       BrowsingInstanceId browsing_instance_id =
           security_state->lowest_browsing_instance_id();
       expected_process_lock = SiteInstanceImpl::DetermineProcessLockURL(
-          context, IsolationContext(browsing_instance_id, context), url);
+          IsolationContext(browsing_instance_id, context), url);
     }
   }
 
@@ -1348,34 +1322,20 @@ void ChildProcessSecurityPolicyImpl::LockToOrigin(
     int child_id,
     const GURL& gurl) {
   // LockToOrigin should only be called on the UI thread (OTOH, it is okay to
-  // call GetOriginLock or CheckOriginLock from any thread).
+  // call GetOriginLock from any thread).
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if DCHECK_IS_ON()
   // Sanity-check that the |gurl| argument can be used as a lock.
   RenderProcessHost* rph = RenderProcessHostImpl::FromID(child_id);
-  if (rph) {  // |rph| can be null in unittests.
-    DCHECK_EQ(
-        SiteInstanceImpl::DetermineProcessLockURL(
-            BrowserOrResourceContext(rph->GetBrowserContext()), context, gurl),
-        gurl);
-  }
+  if (rph)  // |rph| can be null in unittests.
+    DCHECK_EQ(SiteInstanceImpl::DetermineProcessLockURL(context, gurl), gurl);
 #endif
 
   base::AutoLock lock(lock_);
   auto state = security_state_.find(child_id);
   DCHECK(state != security_state_.end());
   state->second->LockToOrigin(gurl, context.browsing_instance_id());
-}
-
-ChildProcessSecurityPolicyImpl::CheckOriginLockResult
-ChildProcessSecurityPolicyImpl::CheckOriginLock(int child_id,
-                                                const GURL& site_url) {
-  base::AutoLock lock(lock_);
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
-    return ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK;
-  return state->second->CheckOriginLock(site_url);
 }
 
 GURL ChildProcessSecurityPolicyImpl::GetOriginLock(int child_id) {
@@ -1533,6 +1493,15 @@ bool ChildProcessSecurityPolicyImpl::IsIsolatedOrigin(
     const url::Origin& origin) {
   url::Origin unused_result;
   return GetMatchingIsolatedOrigin(isolation_context, origin, &unused_result);
+}
+
+bool ChildProcessSecurityPolicyImpl::IsGloballyIsolatedOriginForTesting(
+    const url::Origin& origin) {
+  BrowserOrResourceContext no_browser_context;
+  BrowsingInstanceId null_browsing_instance_id;
+  IsolationContext isolation_context(null_browsing_instance_id,
+                                     no_browser_context);
+  return IsIsolatedOrigin(isolation_context, origin);
 }
 
 bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(

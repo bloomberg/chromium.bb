@@ -495,9 +495,6 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
   if (!node)
     return nullptr;
 
-  // context keeps reference until we stop making javascript rendering callbacks
-  context.NotifySourceNodeStartedProcessing(node);
-
   return node;
 }
 

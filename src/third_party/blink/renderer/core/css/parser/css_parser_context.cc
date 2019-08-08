@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -251,6 +252,13 @@ void CSSParserContext::ReportLayoutAnimationsViolationIfNeeded(
       continue;
     LayoutAnimationsPolicy::ReportViolation(property, *document_);
   }
+}
+
+bool CSSParserContext::CustomElementsV0Enabled() const {
+  // Support features conservatively.
+  if (!document_)
+    return true;
+  return RuntimeEnabledFeatures::CustomElementsV0Enabled(document_);
 }
 
 void CSSParserContext::Trace(blink::Visitor* visitor) {

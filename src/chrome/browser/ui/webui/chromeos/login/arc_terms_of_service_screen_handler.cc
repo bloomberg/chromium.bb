@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 
 #include "base/command_line.h"
+#include "base/hash/sha1.h"
 #include "base/i18n/timezone.h"
-#include "base/sha1.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
@@ -43,12 +43,6 @@ using ArcPlayTermsOfServiceConsent =
 
 using sync_pb::UserConsentTypes;
 
-namespace {
-
-const char kJsScreenPath[] = "login.ArcTermsOfServiceScreen";
-
-}  // namespace
-
 namespace chromeos {
 
 ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler(
@@ -56,7 +50,7 @@ ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler(
     : BaseScreenHandler(kScreenId, js_calls_container),
       is_child_account_(
           user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
-  set_call_js_prefix(kJsScreenPath);
+  set_user_acted_method_path("login.ArcTermsOfServiceScreen.userActed");
 }
 
 ArcTermsOfServiceScreenHandler::~ArcTermsOfServiceScreenHandler() {
@@ -139,6 +133,7 @@ void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
   builder->Add("arcTextReviewSettings", IDS_ARC_REVIEW_SETTINGS);
   builder->Add("arcTextMetricsManagedEnabled",
                IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_ENABLED);
+  builder->Add("arcTextMetricsDemoApps", IDS_ARC_OOBE_TERMS_DIALOG_DEMO_APPS);
   builder->Add("arcAcceptAndContinueGoogleServiceConfirmation",
                IDS_ARC_OPT_IN_ACCEPT_AND_CONTINUE_GOOGLE_SERVICE_CONFIRMATION);
   builder->Add("arcLearnMoreStatistics",
@@ -282,7 +277,8 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
 
   // Hide the Skip button if the ToS screen can not be skipped during OOBE.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableArcOobeOptinNoSkip)) {
+          chromeos::switches::kEnableArcOobeOptinNoSkip) ||
+      arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile)) {
     CallJS("login.ArcTermsOfServiceScreen.hideSkipButton");
   }
 

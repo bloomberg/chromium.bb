@@ -149,7 +149,6 @@ class PaymentRequestBrowserTestBase
 
   // Will expect that all strings in |expected_strings| are present in output.
   void ExpectBodyContains(const std::vector<std::string>& expected_strings);
-  void ExpectBodyContains(const std::vector<base::string16>& expected_strings);
 
   // Utility functions that will click on Dialog views and wait for the
   // associated action to happen.
@@ -197,8 +196,8 @@ class PaymentRequestBrowserTestBase
   void ClickOnDialogViewAndWait(views::View* view,
                                 PaymentRequestDialogView* dialog_view,
                                 bool wait_for_animation = true);
-  void ClickOnChildInListViewAndWait(int child_index,
-                                     int total_num_children,
+  void ClickOnChildInListViewAndWait(size_t child_index,
+                                     size_t total_num_children,
                                      DialogViewID list_view_id,
                                      bool wait_for_animation = true);
   // Returns profile label values under |parent_view|.

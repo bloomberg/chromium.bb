@@ -1347,7 +1347,7 @@ class RenderFrameHostManagerSpoofingTest : public RenderFrameHostManagerTest {
   // but the spoofing tests synchronize execution using window title changes.
   void ExecuteScript(const ToRenderFrameHost& adapter, const char* script) {
     adapter.render_frame_host()->ExecuteJavaScriptForTests(
-        base::UTF8ToUTF16(script));
+        base::UTF8ToUTF16(script), base::NullCallback());
   }
 };
 
@@ -1614,8 +1614,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // Ensures that a pending navigation's URL  is no longer visible after the
 // speculative RFH is discarded due to a concurrent renderer-initiated
 // navigation.  See https://crbug.com/760342.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       ResetVisibleURLOnCrossProcessNavigationInterrupted) {
+// TODO(https://crbug.com/945194): Disabled due to flaky timeouts.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostManagerTest,
+    DISABLED_ResetVisibleURLOnCrossProcessNavigationInterrupted) {
   const std::string kVictimPath = "/victim.html";
   const std::string kAttackPath = "/attack.html";
   net::test_server::ControllableHttpResponse victim_response(
@@ -5688,6 +5690,104 @@ IN_PROC_BROWSER_TEST_F(
   navigation_manager.WaitForNavigationFinished();
   EXPECT_NE(start_rph, web_contents->GetMainFrame()->GetProcess());
   EXPECT_EQ(speculative_rph, web_contents->GetMainFrame()->GetProcess());
+}
+
+// ContentBrowserClient that skips assigning a site URL for a given URL.
+class DontAssignSiteContentBrowserClient : public TestContentBrowserClient {
+ public:
+  // Any visit to |url_to_skip| will not cause the site to be assigned to the
+  // SiteInstance.
+  explicit DontAssignSiteContentBrowserClient(const GURL& url_to_skip)
+      : url_to_skip_(url_to_skip) {}
+
+  bool ShouldAssignSiteForURL(const GURL& url) override {
+    return url != url_to_skip_;
+  }
+
+ private:
+  GURL url_to_skip_;
+
+  DISALLOW_COPY_AND_ASSIGN(DontAssignSiteContentBrowserClient);
+};
+
+// Ensure that coming back to a NavigationEntry with a previously unassigned
+// SiteInstance (which is now used for another site) properly switches processes
+// and SiteInstances.  See https://crbug.com/945399.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       NavigateWithUnassignedSiteInstance) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Navigate to a URL that does not assign site URLs.
+  GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  DontAssignSiteContentBrowserClient content_browser_client(url1);
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_EQ(url1, web_contents->GetLastCommittedURL());
+  scoped_refptr<SiteInstanceImpl> instance1(
+      web_contents->GetMainFrame()->GetSiteInstance());
+  RenderProcessHost* process1 = instance1->GetProcess();
+  EXPECT_EQ(GURL(), instance1->GetSiteURL());
+
+  // Navigate to foo.com, which uses the previous SiteInstance and sets its site
+  // URL.
+  GURL url2(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  EXPECT_EQ(instance1, web_contents->GetMainFrame()->GetSiteInstance());
+  EXPECT_EQ(GURL("http://foo.com"), instance1->GetSiteURL());
+
+  // Navigate to bar.com, which destroys the previous RenderProcessHost.
+  GURL url3(embedded_test_server()->GetURL("bar.com", "/title1.html"));
+  RenderProcessHostWatcher exit_observer(
+      process1, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  EXPECT_TRUE(NavigateToURL(shell(), url3));
+  exit_observer.Wait();
+  EXPECT_NE(instance1, web_contents->GetMainFrame()->GetSiteInstance());
+
+  // At this point, process1 is deleted, and the first entry is unfortunately
+  // pointing to instance1, which has been locked to url2 and has no process.
+  EXPECT_FALSE(instance1->HasProcess());
+  if (AreAllSitesIsolatedForTesting()) {
+    // In site-per-process, we cannot use foo.com's SiteInstance for a.com.
+    EXPECT_TRUE(instance1->HasWrongProcessForURL(url1));
+  } else {
+    // If neither foo.com nor a.com require dedicated processes, then we can use
+    // the same process.
+    EXPECT_FALSE(instance1->HasWrongProcessForURL(url1));
+  }
+
+  // TODO(creis): Enable the rest of the test when https://crbug.com/793127 is
+  // fixed, since this currently fails with a DCHECK in SiteProcessCountTracker.
+#if 0
+  // Go back to the chrome-native:// URL's entry, which should swap to a new
+  // SiteInstance with an unused site URL.
+  TestNavigationObserver observer(web_contents);
+  web_contents->GetController().GoToOffset(-2);
+  observer.Wait();
+  scoped_refptr<SiteInstanceImpl> new_instance =
+      web_contents->GetMainFrame()->GetSiteInstance();
+  EXPECT_EQ(url1, web_contents->GetLastCommittedURL());
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_NE(instance1, new_instance);
+    EXPECT_EQ(GURL(), new_instance->GetSiteURL());
+  } else {
+    EXPECT_EQ(instance1, new_instance);
+  }
+  EXPECT_TRUE(new_instance->HasProcess());
+
+  // Because url1 does not set a site URL, it should not lock the new process
+  // either, so that it can be used for subsequent navigations.
+  content::RenderProcessHost* new_process = new_instance->GetProcess();
+  auto* policy = ChildProcessSecurityPolicy::GetInstance();
+  EXPECT_TRUE(
+      policy->CanAccessDataForOrigin(new_process->GetID(), url1));
+  EXPECT_TRUE(
+      policy->CanAccessDataForOrigin(new_process->GetID(), url2));
+#endif
+
+  SetBrowserClientForTesting(old_client);
 }
 
 }  // namespace content

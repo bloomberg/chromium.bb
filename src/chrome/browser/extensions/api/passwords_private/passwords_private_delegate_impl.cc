@@ -31,6 +31,10 @@
 #include "chrome/browser/password_manager/password_manager_util_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/password_manager/password_manager_util_mac.h"
+#elif defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #endif
 
 namespace {
@@ -40,6 +44,14 @@ namespace {
 const char kExportInProgress[] = "in-progress";
 // The error message returned to the UI when the user fails to reauthenticate.
 const char kReauthenticationFailed[] = "reauth-failed";
+
+#if defined(OS_CHROMEOS)
+constexpr static base::TimeDelta kShowPasswordAuthTokenLifetime =
+    base::TimeDelta::FromSeconds(
+        PasswordAccessAuthenticator::kAuthValidityPeriodSeconds);
+constexpr static base::TimeDelta kExportPasswordsAuthTokenLifetime =
+    base::TimeDelta::FromSeconds(5);
+#endif
 
 // Map password_manager::ExportProgressStatus to
 // extensions::api::passwords_private::ExportProgressStatus.
@@ -204,6 +216,18 @@ bool PasswordsPrivateDelegateImpl::OsReauthCall(
       web_contents_->GetTopLevelNativeWindow(), purpose);
 #elif defined(OS_MACOSX)
   return password_manager_util_mac::AuthenticateUser(purpose);
+#elif defined(OS_CHROMEOS)
+  chromeos::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile_);
+  const chromeos::quick_unlock::AuthToken* auth_token =
+      quick_unlock_storage->GetAuthToken();
+  if (!auth_token || !auth_token->GetAge())
+    return false;
+  const base::TimeDelta auth_token_lifespan =
+      (purpose == password_manager::ReauthPurpose::EXPORT)
+          ? kExportPasswordsAuthTokenLifetime
+          : kShowPasswordAuthTokenLifetime;
+  return auth_token->GetAge() <= auth_token_lifespan;
 #else
   return true;
 #endif

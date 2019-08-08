@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "base/bind.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 
 namespace ash {

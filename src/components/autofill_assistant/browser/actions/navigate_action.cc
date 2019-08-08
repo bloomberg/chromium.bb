@@ -21,6 +21,11 @@ NavigateAction::~NavigateAction() {}
 
 void NavigateAction::InternalProcessAction(ActionDelegate* delegate,
                                            ProcessActionCallback callback) {
+  // We know to expect navigation to happen, since we're about to cause it. This
+  // allows scripts to put wait_for_navigation just after navigate, if needed,
+  // without having to add an expect_navigation first.
+  delegate->ExpectNavigation();
+
   GURL url(proto_.navigate().url());
   delegate->LoadURL(url);
   UpdateProcessedAction(ACTION_APPLIED);

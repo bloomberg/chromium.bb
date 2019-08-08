@@ -25,7 +25,7 @@ class FlashCommand(command.CliCommand):
 
   This command updates the device with the image
   (ssh://<hostname>:{port}, copies an image to a removable device
-  (usb://<device_path), or copies a xbuddy path to a local
+  (usb://<device_path>), or copies a xbuddy path to a local
   file path with (file://file_path).
 
   For device update, it assumes that device is able to accept ssh

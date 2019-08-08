@@ -188,7 +188,7 @@ void SyncSessionDurationsMetricsRecorder::HandleSyncAndAccountChange() {
     // Sync is enabled, but we have an account issue.
     UpdateSyncAndAccountStatus(FeatureState::ON, FeatureState::OFF);
   } else if (sync_service_->IsSyncFeatureActive() &&
-             sync_service_->GetLastCycleSnapshot().is_initialized()) {
+             sync_service_->HasCompletedSyncCycle()) {
     // Sync is on and running, we must have an account too.
     UpdateSyncAndAccountStatus(FeatureState::ON, FeatureState::ON);
   } else {

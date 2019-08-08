@@ -18,15 +18,27 @@ class AssistantKeyboardCoordinator {
             this::onKeyboardVisibilityChanged;
     private boolean mAllowShowingSoftKeyboard = true;
 
-    AssistantKeyboardCoordinator(ChromeActivity activity) {
+    AssistantKeyboardCoordinator(ChromeActivity activity, AssistantModel model) {
         mActivity = activity;
         mKeyboardDelegate = activity.getWindowAndroid().getKeyboardDelegate();
+
+        model.addObserver((source, propertyKey) -> {
+            if (AssistantModel.VISIBLE == propertyKey) {
+                if (model.get(AssistantModel.VISIBLE)) {
+                    enableListenForKeyboardVisibility(true);
+                } else {
+                    enableListenForKeyboardVisibility(false);
+                }
+            } else if (AssistantModel.ALLOW_SOFT_KEYBOARD == propertyKey) {
+                allowShowingSoftKeyboard(model.get(AssistantModel.ALLOW_SOFT_KEYBOARD));
+            }
+        });
     }
 
     /**
      * Enable or disable the soft keyboard.
      */
-    public void allowShowingSoftKeyboard(boolean allowed) {
+    private void allowShowingSoftKeyboard(boolean allowed) {
         mAllowShowingSoftKeyboard = allowed;
         if (!allowed) {
             mKeyboardDelegate.hideKeyboard(mActivity.getCompositorViewHolder());
@@ -36,7 +48,7 @@ class AssistantKeyboardCoordinator {
     /**
      * Start or stop listening for keyboard visibility changes.
      */
-    public void enableListenForKeyboardVisibility(boolean enabled) {
+    private void enableListenForKeyboardVisibility(boolean enabled) {
         if (enabled) {
             mKeyboardDelegate.addKeyboardVisibilityListener(mKeyboardVisibilityListener);
         } else {

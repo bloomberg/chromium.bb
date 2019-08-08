@@ -35,7 +35,7 @@ class MenuItemViewTestBasic : public MenuTestBase {
     views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_TRUE(submenu->IsShowing());
-    ASSERT_EQ(3, submenu->GetMenuItemCount());
+    ASSERT_EQ(3u, submenu->GetMenuItems().size());
 
     // click an item and pass control to the next step
     views::MenuItemView* item = submenu->GetMenuItemAt(INDEX);
@@ -87,7 +87,7 @@ class MenuItemViewTestInsert : public MenuTestBase {
     views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_TRUE(submenu->IsShowing());
-    ASSERT_EQ(2, submenu->GetMenuItemCount());
+    ASSERT_EQ(2u, submenu->GetMenuItems().size());
 
     inserted_item_ = menu()->AddMenuItemAt(
         INSERT_INDEX, 1000, ASCIIToUTF16("inserted item"), base::string16(),
@@ -108,7 +108,7 @@ class MenuItemViewTestInsert : public MenuTestBase {
     views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_FALSE(submenu->IsShowing());
-    ASSERT_EQ(3, submenu->GetMenuItemCount());
+    ASSERT_EQ(3u, submenu->GetMenuItems().size());
 
     if (SELECT_INDEX == INSERT_INDEX)
       ASSERT_EQ(1000, last_command());
@@ -240,7 +240,7 @@ class MenuItemViewTestRemove : public MenuTestBase {
     views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_TRUE(submenu->IsShowing());
-    ASSERT_EQ(3, submenu->GetMenuItemCount());
+    ASSERT_EQ(3u, submenu->GetMenuItems().size());
 
     // remove
     menu()->RemoveMenuItemAt(REMOVE_INDEX);
@@ -257,7 +257,7 @@ class MenuItemViewTestRemove : public MenuTestBase {
     views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_FALSE(submenu->IsShowing());
-    ASSERT_EQ(2, submenu->GetMenuItemCount());
+    ASSERT_EQ(2u, submenu->GetMenuItems().size());
 
     if (SELECT_INDEX < REMOVE_INDEX)
       ASSERT_EQ(SELECT_INDEX + 1, last_command());
@@ -328,7 +328,7 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuTestBase {
     views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_TRUE(submenu->IsShowing());
-    ASSERT_EQ(2, submenu->GetMenuItemCount());
+    ASSERT_EQ(2u, submenu->GetMenuItems().size());
 
     // remove
     menu()->RemoveMenuItemAt(REMOVE_INDEX);
@@ -343,7 +343,7 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuTestBase {
     views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_FALSE(submenu->IsShowing());
-    ASSERT_EQ(1, submenu->GetMenuItemCount());
+    ASSERT_EQ(1u, submenu->GetMenuItems().size());
 
     Done();
   }

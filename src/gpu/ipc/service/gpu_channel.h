@@ -54,18 +54,19 @@ class SyncPointManager;
 class GPU_IPC_SERVICE_EXPORT GpuChannel : public IPC::Listener,
                                           public IPC::Sender {
  public:
-  // Takes ownership of the renderer process handle.
-  GpuChannel(GpuChannelManager* gpu_channel_manager,
-             Scheduler* scheduler,
-             SyncPointManager* sync_point_manager,
-             scoped_refptr<gl::GLShareGroup> share_group,
-             scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-             scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-             int32_t client_id,
-             uint64_t client_tracing_id,
-             bool is_gpu_host,
-             ImageDecodeAcceleratorWorker* image_decode_accelerator_worker);
   ~GpuChannel() override;
+
+  static std::unique_ptr<GpuChannel> Create(
+      GpuChannelManager* gpu_channel_manager,
+      Scheduler* scheduler,
+      SyncPointManager* sync_point_manager,
+      scoped_refptr<gl::GLShareGroup> share_group,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      int32_t client_id,
+      uint64_t client_tracing_id,
+      bool is_gpu_host,
+      ImageDecodeAcceleratorWorker* image_decode_accelerator_worker);
 
   // Init() sets up the underlying IPC channel.  Use a separate method because
   // we don't want to do that in tests.
@@ -157,7 +158,23 @@ class GPU_IPC_SERVICE_EXPORT GpuChannel : public IPC::Listener,
   const CommandBufferStub* GetOneStub() const;
 #endif
 
+  SharedImageStub* shared_image_stub() const {
+    return shared_image_stub_.get();
+  }
+
  private:
+  // Takes ownership of the renderer process handle.
+  GpuChannel(GpuChannelManager* gpu_channel_manager,
+             Scheduler* scheduler,
+             SyncPointManager* sync_point_manager,
+             scoped_refptr<gl::GLShareGroup> share_group,
+             scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+             scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+             int32_t client_id,
+             uint64_t client_tracing_id,
+             bool is_gpu_host,
+             ImageDecodeAcceleratorWorker* image_decode_accelerator_worker);
+
   bool OnControlMessageReceived(const IPC::Message& msg);
 
   void HandleMessageHelper(const IPC::Message& msg);
@@ -169,6 +186,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannel : public IPC::Listener,
                              gpu::ContextResult* result,
                              gpu::Capabilities* capabilities);
   void OnDestroyCommandBuffer(int32_t route_id);
+  bool CreateSharedImageStub();
 
   std::unique_ptr<IPC::SyncChannel> sync_channel_;  // nullptr in tests.
   IPC::Sender* channel_;  // Same as sync_channel_.get() except in tests.

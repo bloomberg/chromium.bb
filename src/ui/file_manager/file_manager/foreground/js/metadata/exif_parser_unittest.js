@@ -48,14 +48,14 @@ function writeDirectory_(bytes, tag) {
   assertTrue(tag.componentCount > 4);
 
   let byteWriter = new ByteWriter(bytes.buffer, 0);
-  byteWriter.writeScalar(1, 2); // Number of fields.
+  byteWriter.writeScalar(1, 2);  // Number of fields.
 
   byteWriter.writeScalar(tag.id, 2);
   byteWriter.writeScalar(tag.format, 2);
   byteWriter.writeScalar(tag.componentCount, 4);
   byteWriter.forward(tag.id, 4);
 
-  byteWriter.writeScalar(0, 4); // Offset to next IFD.
+  byteWriter.writeScalar(0, 4);  // Offset to next IFD.
 
   byteWriter.resolveOffset(tag.id);
   const string = /** @type {string} */ (tag.value);

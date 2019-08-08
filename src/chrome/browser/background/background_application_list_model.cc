@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/one_shot_event.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background/background_contents_service.h"
@@ -33,7 +34,6 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
-#include "extensions/common/one_shot_event.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/l10n/l10n_util_collator.h"
@@ -159,8 +159,8 @@ BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
                  content::Source<Profile>(profile));
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE,
-      base::Bind(&BackgroundApplicationListModel::OnExtensionSystemReady,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BackgroundApplicationListModel::OnExtensionSystemReady,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BackgroundApplicationListModel::AddObserver(Observer* observer) {

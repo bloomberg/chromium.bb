@@ -122,6 +122,11 @@ void AutocompleteHistoryManager::Init(
   pref_service_ = pref_service;
   is_off_the_record_ = is_off_the_record;
 
+  if (!profile_database_) {
+    // In some tests, there are no dbs.
+    return;
+  }
+
   // No need to run the retention policy in OTR.
   if (!is_off_the_record_ &&
       base::FeatureList::IsEnabled(

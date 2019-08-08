@@ -369,6 +369,12 @@ template("test") {
         deps = []
       }
 
+      if (is_win) {
+        # Initializing CFG data during process creation is a significant
+        # bottleneck for large test binaries, and CFG is not needed for tests,
+        # so disable it. See https://crbug.com/950923 for details.
+        configs -= [ "//build/config/win:cfi_linker" ]
+      }
       testonly = true
       deps += [
         # Give tests the default manifest on Windows (a no-op elsewhere).

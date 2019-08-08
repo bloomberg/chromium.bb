@@ -35,27 +35,6 @@ namespace blink {
 
 namespace {
 
-inline bool ShouldPaintTextFragment(const NGPhysicalTextFragment& text_fragment,
-                                    const ComputedStyle& style) {
-  if (style.Visibility() != EVisibility::kVisible)
-    return false;
-
-  // When painting selection, we want to include a highlight when the
-  // selection spans line breaks. In other cases such as invisible elements
-  // or those with no text that are not line breaks, we can skip painting
-  // wholesale.
-  // TODO(wkorman): Constrain line break painting to appropriate paint phase.
-  // This code path is only called in PaintPhaseForeground whereas we would
-  // expect PaintPhaseSelection. The existing haveSelection logic in paint()
-  // tests for != PaintPhaseTextClip.
-  if (text_fragment.IsLineBreak())
-    return true;
-  if (!text_fragment.Length() || !text_fragment.TextShapeResult())
-    return false;
-
-  return true;
-}
-
 Color SelectionBackgroundColor(const Document& document,
                                const ComputedStyle& style,
                                const NGPhysicalTextFragment& text_fragment,
@@ -154,8 +133,8 @@ void PaintDocumentMarkers(GraphicsContext& context,
   if (markers_to_paint.IsEmpty())
     return;
 
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragmentOrDie(paint_fragment.PhysicalFragment());
+  const auto& text_fragment =
+      To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment());
   DCHECK(text_fragment.GetNode());
   const Text& text = ToTextOrDie(*text_fragment.GetNode());
   for (const DocumentMarker* marker : markers_to_paint) {
@@ -190,8 +169,7 @@ void PaintDocumentMarkers(GraphicsContext& context,
                  ->GetEditor()
                  .MarkedTextMatchesAreHighlighted())
           break;
-        const TextMatchMarker& text_match_marker =
-            ToTextMatchMarkerOrDie(*marker);
+        const auto& text_match_marker = To<TextMatchMarker>(*marker);
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
           const Color color =
               LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(
@@ -216,7 +194,7 @@ void PaintDocumentMarkers(GraphicsContext& context,
       case DocumentMarker::kComposition:
       case DocumentMarker::kActiveSuggestion:
       case DocumentMarker::kSuggestion: {
-        const StyleableMarker& styleable_marker = ToStyleableMarker(*marker);
+        const auto& styleable_marker = To<StyleableMarker>(*marker);
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
           PaintRect(
               context, NGPhysicalOffset(box_origin),
@@ -257,8 +235,8 @@ static void PaintSelection(GraphicsContext& context,
                            Color text_color,
                            const LayoutRect& box_rect,
                            const LayoutSelectionStatus& selection_status) {
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragment(paint_fragment.PhysicalFragment());
+  const auto& text_fragment =
+      To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment());
   const Color color =
       SelectionBackgroundColor(document, style, text_fragment, text_color);
   const NGPhysicalOffsetRect selection_rect =
@@ -285,14 +263,20 @@ void NGTextFragmentPainter::PaintSymbol(const PaintInfo& paint_info,
 void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
                                   const LayoutPoint& paint_offset,
                                   const NodeHolder& node_holder) {
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragment(fragment_.PhysicalFragment());
+  const auto& text_fragment =
+      To<NGPhysicalTextFragment>(fragment_.PhysicalFragment());
   const ComputedStyle& style = fragment_.Style();
-  const Document& document = fragment_.GetLayoutObject()->GetDocument();
 
-  if (!ShouldPaintTextFragment(text_fragment, style))
+  // We can skip painting if the fragment (including selection) is invisible.
+  if (!text_fragment.Length() || fragment_.VisualRect().IsEmpty())
     return;
 
+  if (!text_fragment.TextShapeResult() &&
+      // A line break's selection tint is still visible.
+      !text_fragment.IsLineBreak())
+    return;
+
+  const Document& document = fragment_.GetLayoutObject()->GetDocument();
   bool is_printing = paint_info.IsPrinting();
 
   // Determine whether or not we're selected.
@@ -307,9 +291,14 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
     DCHECK_LE(selection_status->start, selection_status->end);
     have_selection = selection_status->start < selection_status->end;
   }
-  if (!have_selection && paint_info.phase == PaintPhase::kSelection) {
+  if (!have_selection) {
     // When only painting the selection, don't bother to paint if there is none.
-    return;
+    if (paint_info.phase == PaintPhase::kSelection)
+      return;
+
+    // Flow controls (line break, tab, <wbr>) need only selection painting.
+    if (text_fragment.IsFlowControl())
+      return;
   }
 
   // The text clip phase already has a DrawingRecorder. Text clips are initiated
@@ -380,10 +369,6 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
                      selection_style.fill_color, box_rect, *selection_status);
     }
   }
-
-  // Line break needs only selection painting.
-  if (text_fragment.IsLineBreak())
-    return;
 
   const NGLineOrientation orientation = text_fragment.LineOrientation();
   if (orientation != NGLineOrientation::kHorizontal) {

@@ -96,12 +96,17 @@ import pprint
 import re
 import sys
 import time
-import urlparse
+
+try:
+  import urlparse
+except ImportError:  # For Py3 compatibility
+  import urllib.parse as urlparse
 
 import detect_host_arch
 import fix_encoding
 import gclient_eval
 import gclient_scm
+import gclient_paths
 import gclient_utils
 import git_cache
 import metrics
@@ -110,6 +115,14 @@ from third_party.repo.progress import Progress
 import subcommand
 import subprocess2
 import setup_color
+
+
+# TODO(crbug.com/953884): Remove this when python3 migration is done.
+try:
+  basestring
+except NameError:
+  # pylint: disable=redefined-builtin
+  basestring = str
 
 
 # Singleton object to represent an unset cache_dir (as opposed to a disabled
@@ -134,7 +147,7 @@ def ToGNString(value, allow_dicts = True):
         value.replace('\\', '\\\\').replace('"', '\\"').replace('$', '\\$') + \
         '"'
 
-  if isinstance(value, unicode):
+  if sys.version_info.major == 2 and isinstance(value, unicode):
     return ToGNString(value.encode('utf-8'))
 
   if isinstance(value, bool):
@@ -571,7 +584,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     # If a line is in custom_deps, but not in the solution, we want to append
     # this line to the solution.
-    for dep_name, dep_info in self.custom_deps.iteritems():
+    for dep_name, dep_info in self.custom_deps.items():
       if dep_name not in deps:
         deps[dep_name] = {'url': dep_info, 'dep_type': 'git'}
 
@@ -600,7 +613,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   def _deps_to_objects(self, deps, use_relative_paths):
     """Convert a deps dict to a dict of Dependency objects."""
     deps_to_add = []
-    for name, dep_value in deps.iteritems():
+    for name, dep_value in deps.items():
       should_process = self.should_process
       if dep_value is None:
         continue
@@ -708,7 +721,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     self._vars = local_scope.get('vars', {})
     if self.parent:
-      for key, value in self.parent.get_vars().iteritems():
+      for key, value in self.parent.get_vars().items():
         if key in self._vars:
           self._vars[key] = value
     # Since we heavily post-process things, freeze ones which should
@@ -745,7 +758,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       if rel_prefix:
         logging.warning('Updating recursedeps by prepending %s.', rel_prefix)
         rel_deps = {}
-        for depname, options in self.recursedeps.iteritems():
+        for depname, options in self.recursedeps.items():
           rel_deps[
               os.path.normpath(os.path.join(rel_prefix, depname))] = options
         self.recursedeps = rel_deps
@@ -1352,7 +1365,8 @@ solutions = %(solution_list)s
                                                 mirror.exists())
           else:
             mirror_string = 'not used'
-          raise gclient_utils.Error('''
+          raise gclient_utils.Error(
+              '''
 Your .gclient file seems to be broken. The requested URL is different from what
 is actually checked out in %(checkout_path)s.
 
@@ -1368,7 +1382,7 @@ it or fix the checkout.
 '''  % {'checkout_path': os.path.join(self.root_dir, dep.name),
         'expected_url': dep.url,
         'expected_scm': dep.GetScmName(),
-        'mirror_string' : mirror_string,
+        'mirror_string': mirror_string,
         'actual_url': actual_url,
         'actual_scm': dep.GetScmName()})
 
@@ -1459,7 +1473,7 @@ it or fix the checkout.
       if options.verbose:
         print('Looking for %s starting from %s\n' % (
             options.config_filename, os.getcwd()))
-      path = gclient_utils.FindGclientRoot(os.getcwd(), options.config_filename)
+      path = gclient_paths.FindGclientRoot(os.getcwd(), options.config_filename)
       if not path:
         if options.verbose:
           print('Couldn\'t find configuration file.')
@@ -1580,7 +1594,7 @@ it or fix the checkout.
     full_entries = [os.path.join(self.root_dir, e.replace('/', os.path.sep))
                     for e in entries]
 
-    for entry, prev_url in self._ReadEntries().iteritems():
+    for entry, prev_url in self._ReadEntries().items():
       if not prev_url:
         # entry must have been overridden via .gclient custom_deps
         continue
@@ -1654,9 +1668,23 @@ it or fix the checkout.
             (modified_files and not self._options.force)):
           # There are modified files in this entry. Keep warning until
           # removed.
-          print(('\nWARNING: \'%s\' is no longer part of this client.  '
-                 'It is recommended that you manually remove it.\n') %
-                    entry_fixed)
+          self.add_dependency(
+              GitDependency(
+                  parent=self,
+                  name=entry,
+                  url=prev_url,
+                  managed=False,
+                  custom_deps={},
+                  custom_vars={},
+                  custom_hooks=[],
+                  deps_file=None,
+                  should_process=True,
+                  should_recurse=False,
+                  relative=None,
+                  condition=None))
+          print(('\nWARNING: \'%s\' is no longer part of this client.\n'
+                 'It is recommended that you manually remove it or use '
+                 '\'gclient sync -D\' next time.') % entry_fixed)
         else:
           # Delete the entry
           print('\n________ deleting \'%s\' in \'%s\'' % (
@@ -1877,10 +1905,6 @@ class CipdDependency(Dependency):
         should_recurse=False,
         relative=relative,
         condition=condition)
-    if relative:
-      # TODO(jbudorick): Implement relative if necessary.
-      raise gclient_utils.Error(
-          'Relative CIPD dependencies are not currently supported.')
     self._cipd_package = None
     self._cipd_root = cipd_root
     # CIPD wants /-separated paths, even on Windows.
@@ -3074,19 +3098,40 @@ def disable_buffering():
   sys.stdout = gclient_utils.MakeFileAnnotated(sys.stdout)
 
 
-def main(argv):
-  """Doesn't parse the arguments here, just find the right subcommand to
-  execute."""
+def path_contains_tilde():
+  for element in os.environ['PATH'].split(os.pathsep):
+    if element.startswith('~/'):
+      return True
+  return False
+
+
+def can_run_gclient_and_helpers():
   if sys.hexversion < 0x02060000:
     print(
         '\nYour python version %s is unsupported, please upgrade.\n' %
         sys.version.split(' ', 1)[0],
         file=sys.stderr)
-    return 2
+    return False
   if not sys.executable:
     print(
         '\nPython cannot find the location of it\'s own executable.\n',
         file=sys.stderr)
+    return False
+  if path_contains_tilde():
+    print(
+        '\nYour PATH contains a literal "~", which works in some shells ' +
+        'but will break when python tries to run subprocesses. ' +
+        'Replace the "~" with $HOME.\n' +
+        'See https://crbug.com/952865.\n',
+        file=sys.stderr)
+    return False
+  return True
+
+
+def main(argv):
+  """Doesn't parse the arguments here, just find the right subcommand to
+  execute."""
+  if not can_run_gclient_and_helpers():
     return 2
   fix_encoding.fix_encoding()
   disable_buffering()

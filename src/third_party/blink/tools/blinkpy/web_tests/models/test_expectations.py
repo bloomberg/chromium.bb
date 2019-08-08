@@ -117,7 +117,7 @@ class TestExpectationParser(object):
         line_number = 0
         for line in expectations_string.split('\n'):
             line_number += 1
-            test_expectation = TestExpectationLine.tokenize_line(filename, line, line_number)
+            test_expectation = TestExpectationLine.tokenize_line(filename, line, line_number, self._port)
             self._parse_line(test_expectation)
             expectation_lines.append(test_expectation)
 
@@ -326,7 +326,7 @@ class TestExpectationLine(object):
         [('TEXT', 'Failure'), ('IMAGE', 'Failure'), ('IMAGE+TEXT', 'Failure'), ('AUDIO', 'Failure')])
 
     @classmethod
-    def tokenize_line(cls, filename, expectation_string, line_number):
+    def tokenize_line(cls, filename, expectation_string, line_number, port):
         """Tokenizes a line from TestExpectations and returns an unparsed TestExpectationLine instance using the old format.
 
         The new format for a test expectation line is:
@@ -446,6 +446,11 @@ class TestExpectationLine(object):
 
         if 'NeverFixTests' in filename and expectations != ['WONTFIX', 'SKIP']:
             warnings.append('Only WONTFIX expectations are allowed in NeverFixTests')
+
+        if 'SlowTests' in filename and port.is_wpt_test(name):
+            warnings.append(
+                'WPT should not be added to SlowTests; they should be marked as '
+                'slow inside the test (see https://web-platform-tests.org/writing-tests/testharness-api.html#harness-timeout)')
 
         if 'SlowTests' in filename and expectations != ['SLOW']:
             warnings.append('Only SLOW expectations are allowed in SlowTests')
@@ -714,7 +719,7 @@ class TestExpectationsModel(object):
 
     def get_expectations_string(self, test):
         """Returns the expectations for the given test as an uppercase string.
-        If there are no expectations for the test, then "PASS" is returned.
+        If there are no expectations for the test, KeyError is raised.
         """
         if self.get_expectation_line(test).is_extra_skipped_test:
             return 'NOTRUN'

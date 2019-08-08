@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 
+#include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,19 +27,6 @@ namespace blink {
 
 namespace {
 
-class FakeGLES2InterfaceWithImageSupport : public FakeGLES2Interface {
- public:
-  GLuint CreateImageCHROMIUM(ClientBuffer, GLsizei, GLsizei, GLenum) final {
-    return image_id_++;
-  }
-  void DestroyImageCHROMIUM(GLuint image_id) final {
-    EXPECT_LE(image_id, image_id_);
-  }
-
- private:
-  GLuint image_id_ = 3;
-};
-
 class MockCanvasResourceDispatcherClient
     : public CanvasResourceDispatcherClient {
  public:
@@ -46,20 +35,87 @@ class MockCanvasResourceDispatcherClient
   MOCK_METHOD0(BeginFrame, void());
 };
 
+class MockWebGraphisContext3DProviderWrapper
+    : public WebGraphicsContext3DProvider {
+ public:
+  MockWebGraphisContext3DProviderWrapper(cc::ImageDecodeCache* cache = nullptr)
+      : image_decode_cache_(cache ? cache : &stub_image_decode_cache_) {
+    // enable all gpu features.
+    for (unsigned feature = 0; feature < gpu::NUMBER_OF_GPU_FEATURE_TYPES;
+         ++feature) {
+      gpu_feature_info_.status_values[feature] = gpu::kGpuFeatureStatusEnabled;
+    }
+  }
+  ~MockWebGraphisContext3DProviderWrapper() override = default;
+
+  GrContext* GetGrContext() override {
+    return GetTestContextProvider()->GrContext();
+  }
+
+  const gpu::Capabilities& GetCapabilities() const override {
+    return capabilities_;
+  }
+  void SetCapabilities(const gpu::Capabilities& c) { capabilities_ = c; }
+
+  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override {
+    return gpu_feature_info_;
+  }
+
+  viz::GLHelper* GetGLHelper() override { return nullptr; }
+
+  gpu::gles2::GLES2Interface* ContextGL() override {
+    return GetTestContextProvider()->ContextGL();
+  }
+
+  gpu::webgpu::WebGPUInterface* WebGPUInterface() override { return nullptr; }
+
+  scoped_refptr<viz::TestContextProvider> GetTestContextProvider() {
+    if (!test_context_provider_) {
+      test_context_provider_ = viz::TestContextProvider::Create();
+      // Needed for CanvasResourceProviderDirect2DGpuMemoryBuffer.
+      test_context_provider_->UnboundTestContextGL()
+          ->set_support_texture_format_bgra8888(true);
+      test_context_provider_->BindToCurrentThread();
+    }
+    return test_context_provider_;
+  }
+
+  bool BindToCurrentThread() override { return false; }
+  void SetLostContextCallback(base::RepeatingClosure) override {}
+  void SetErrorMessageCallback(
+      base::RepeatingCallback<void(const char*, int32_t id)>) override {}
+  cc::ImageDecodeCache* ImageDecodeCache(
+      SkColorType color_type,
+      sk_sp<SkColorSpace> color_space) override {
+    return image_decode_cache_;
+  }
+  viz::TestSharedImageInterface* SharedImageInterface() override {
+    return GetTestContextProvider()->SharedImageInterface();
+  }
+
+ private:
+  cc::StubDecodeCache stub_image_decode_cache_;
+
+  scoped_refptr<viz::TestContextProvider> test_context_provider_;
+  gpu::Capabilities capabilities_;
+  gpu::GpuFeatureInfo gpu_feature_info_;
+  cc::ImageDecodeCache* image_decode_cache_;
+};
+
 }  // anonymous namespace
 
 class CanvasResourceProviderTest : public Test {
  public:
   void SetUp() override {
     // Install our mock GL context so that it gets served by SharedGpuContext.
-    auto factory = [](FakeGLES2Interface* gl, bool* gpu_compositing_disabled)
+    auto factory = [](bool* gpu_compositing_disabled)
         -> std::unique_ptr<WebGraphicsContext3DProvider> {
       *gpu_compositing_disabled = false;
       // Unretained is safe since TearDown() cleans up the SharedGpuContext.
-      return std::make_unique<FakeWebGraphicsContext3DProvider>(gl);
+      return std::make_unique<MockWebGraphisContext3DProviderWrapper>();
     };
     SharedGpuContext::SetContextProviderFactoryForTesting(
-        WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
+        WTF::BindRepeating(factory));
     context_provider_wrapper_ = SharedGpuContext::ContextProviderWrapper();
   }
 
@@ -76,12 +132,11 @@ class CanvasResourceProviderTest : public Test {
     auto capabilities = context_provider->GetCapabilities();
     capabilities.gpu_memory_buffer_formats.Add(buffer_format);
 
-    static_cast<FakeWebGraphicsContext3DProvider*>(context_provider)
+    static_cast<MockWebGraphisContext3DProviderWrapper*>(context_provider)
         ->SetCapabilities(capabilities);
   }
 
  protected:
-  FakeGLES2InterfaceWithImageSupport gl_;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform_;
 };
@@ -162,6 +217,56 @@ TEST_F(CanvasResourceProviderTest,
             kColorParams.GetOpacityMode());
 
   EXPECT_FALSE(provider->IsSingleBuffered());
+}
+
+TEST_F(CanvasResourceProviderTest, CanvasResourceProviderSharedImage) {
+  const IntSize kSize(10, 10);
+  const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
+                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+  EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
+
+  auto provider = CanvasResourceProvider::Create(
+      kSize, CanvasResourceProvider::kCreateSharedImageForTesting,
+      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+      CanvasResourceProvider::kAllowImageChromiumPresentationMode,
+      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+
+  EXPECT_EQ(provider->Size(), kSize);
+  EXPECT_TRUE(provider->IsValid());
+  EXPECT_TRUE(provider->IsAccelerated());
+  EXPECT_FALSE(provider->IsSingleBuffered());
+  EXPECT_FALSE(provider->SupportsSingleBuffering());
+  EXPECT_EQ(provider->ColorParams().ColorSpace(), kColorParams.ColorSpace());
+  EXPECT_EQ(provider->ColorParams().PixelFormat(), kColorParams.PixelFormat());
+  EXPECT_EQ(provider->ColorParams().GetOpacityMode(),
+            kColorParams.GetOpacityMode());
+
+  // Same resource and sync token if we query again without updating.
+  auto resource = provider->ProduceCanvasResource();
+  auto sync_token = resource->GetSyncToken();
+  ASSERT_TRUE(resource);
+  EXPECT_EQ(resource, provider->ProduceCanvasResource());
+  EXPECT_EQ(sync_token, resource->GetSyncToken());
+
+  // Resource updated after draw.
+  provider->Canvas()->clear(SK_ColorWHITE);
+  auto new_resource = provider->ProduceCanvasResource();
+  EXPECT_NE(resource, new_resource);
+  EXPECT_NE(sync_token, new_resource->GetSyncToken());
+
+  // Resource recycled.
+  viz::TransferableResource transferable_resource;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
+  ASSERT_TRUE(resource->PrepareTransferableResource(
+      &transferable_resource, &release_callback, kUnverifiedSyncToken));
+  auto* resource_ptr = resource.get();
+  resource = nullptr;
+  release_callback->Run(sync_token, false);
+
+  provider->Canvas()->clear(SK_ColorBLACK);
+  auto resource_again = provider->ProduceCanvasResource();
+  EXPECT_EQ(resource_ptr, resource_again);
+  EXPECT_NE(sync_token, resource_again->GetSyncToken());
 }
 
 TEST_F(CanvasResourceProviderTest, CanvasResourceProviderBitmap) {

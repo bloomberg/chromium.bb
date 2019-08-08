@@ -9,7 +9,9 @@
 #include <limits>
 #include <utility>
 
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
+#include "ash/shell.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/image/image.h"
@@ -57,6 +59,14 @@ void ShelfApplicationMenuModel::ExecuteCommand(int command_id,
   DCHECK(IsCommandIdEnabled(command_id));
   // Have the delegate execute its own custom command id for the given item.
   if (delegate_) {
+    if (Shell::Get()->app_list_controller()) {
+      // Record app launch when selecting window to open from disambiguation
+      // menu.
+      Shell::Get()->app_list_controller()->RecordShelfAppLaunched(
+          base::nullopt /* recorded_app_list_view_state */,
+          base::nullopt /* recorded_home_launcher_shown */);
+    }
+
     // The display hosting the menu is irrelevant, windows activate in-place.
     delegate_->ExecuteCommand(false, items_[command_id]->command_id,
                               event_flags, display::kInvalidDisplayId);

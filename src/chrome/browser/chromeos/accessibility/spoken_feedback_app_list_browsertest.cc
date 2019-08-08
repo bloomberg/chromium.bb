@@ -87,7 +87,7 @@ class SpokenFeedbackAppListTest
   void PopulateChips(size_t num) {
     for (size_t i = 0; i < num; i++) {
       search_model->results()->Add(std::make_unique<TestSuggestionChipResult>(
-          base::UTF8ToUTF16("Chip " + base::IntToString(i))));
+          base::UTF8ToUTF16("Chip " + base::NumberToString(i))));
     }
   }
 
@@ -129,6 +129,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, LauncherStateTransition) {
   // Check that Launcher, partial view state is announced.
   EXPECT_EQ("Launcher, partial view", speech_monitor_.GetNextUtterance());
 
+  // Send a key press to enable keyboard traversal
+  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
+
   // Move focus to expand all apps button;
   SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
   EXPECT_EQ("Expand to all apps", speech_monitor_.GetNextUtterance());
@@ -163,6 +166,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
   SendKeyPressWithSearch(ui::VKEY_SPACE);
   while (speech_monitor_.GetNextUtterance() != "Launcher, partial view") {
   }
+
+  // Send a key press to enable keyboard traversal
+  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
 
   // Move focus to expand all apps button.
   SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
@@ -262,6 +268,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
   SendKeyPressWithSearch(ui::VKEY_SPACE);
   while (speech_monitor_.GetNextUtterance() != "Launcher, partial view") {
   }
+
+  // Send a key press to enable keyboard traversal
+  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
 
   // Move focus to expand all apps button.
   SendKeyPressWithSearchAndShift(ui::VKEY_TAB);

@@ -6,7 +6,7 @@
 // https://github.com/WICG/badging/blob/master/explainer.md
 
 [
-    OriginTrialEnabled=Badging,
+    RuntimeEnabled=Badging,
     // TODO(estevenson): Expose the Badge interface to Worker.
     Exposed=Window,
     ImplementedAs=Badge

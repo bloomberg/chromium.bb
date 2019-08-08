@@ -25,6 +25,10 @@ class DisplayLockUtilitiesTest : public PageTestBase {
 };
 
 TEST_F(DisplayLockUtilitiesTest, ActivatableLockedInclusiveAncestors) {
+  // TODO(vmpstr): Implement for layout ng.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <style>
       div {

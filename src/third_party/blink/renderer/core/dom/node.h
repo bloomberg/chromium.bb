@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 // This needs to be here because element.cc also depends on it.
@@ -110,6 +109,17 @@ enum class SlotChangeType {
 };
 
 enum class CloneChildrenFlag { kClone, kSkip };
+
+// Whether or not to force creation of a legacy layout object (i.e. disallow
+// LayoutNG).
+enum class LegacyLayout {
+  // Allow LayoutNG, if nothing else is preventing it (runtime feature disabled,
+  // specific object type not yet implemented, Element says no, etc.)
+  kAuto,
+
+  // Force legacy layout object creation.
+  kForce
+};
 
 // A Node is a base class for all objects in the DOM tree.
 // The spec governing this interface can be found here:
@@ -667,6 +677,8 @@ class CORE_EXPORT Node : public EventTarget {
     bool performing_reattach = false;
     // True if the previous_in_flow member is up-to-date, even if it is nullptr.
     bool use_previous_in_flow = false;
+    // True if we need to force legacy layout objects for the entire subtree.
+    bool force_legacy_layout = false;
 
     AttachContext() {}
   };
@@ -779,7 +791,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   virtual bool WillRespondToMouseMoveEvents();
   virtual bool WillRespondToMouseClickEvents();
-  virtual bool WillRespondToTouchEvents();
 
   enum ShadowTreesTreatment {
     kTreatShadowTreesAsDisconnected,
@@ -847,7 +858,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   StaticNodeList* getDestinationInsertionPoints();
   HTMLSlotElement* AssignedSlot() const;
-  HTMLSlotElement* FinalDestinationSlot() const;
   HTMLSlotElement* assignedSlotForBinding();
 
   bool IsFinishedParsingChildren() const {
@@ -1036,16 +1046,16 @@ class CORE_EXPORT Node : public EventTarget {
 
   NodeRareData& CreateRareData();
 
-  const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
+  const HeapVector<Member<MutationObserverRegistration>>*
   MutationObserverRegistry();
-  const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>*
+  const HeapHashSet<Member<MutationObserverRegistration>>*
   TransientMutationObserverRegistry();
 
   uint32_t node_flags_;
-  TraceWrapperMember<Node> parent_or_shadow_host_node_;
+  Member<Node> parent_or_shadow_host_node_;
   Member<TreeScope> tree_scope_;
-  TraceWrapperMember<Node> previous_;
-  TraceWrapperMember<Node> next_;
+  Member<Node> previous_;
+  Member<Node> next_;
   // When a node has rare data we move the layoutObject into the rare data.
   union DataUnion {
     DataUnion() : node_layout_data_(&NodeRenderingData::SharedEmptyData()) {}

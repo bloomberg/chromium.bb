@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/policy/pre_signin_policy_fetcher.h"
@@ -295,11 +294,6 @@ class ExistingUserController
   // Callback invoked when |oauth2_token_initializer_| has finished.
   void OnOAuth2TokensFetched(bool success, const UserContext& user_context);
 
-  // Callback invoked when |token_handle_util_| finishes token check.
-  void OnTokenHandleChecked(
-      const AccountId&,
-      TokenHandleUtil::TokenHandleStatus token_handle_status);
-
   // Called on completition of a pre-signin policy fetch, which is performed to
   // check if there is a user policy governing migration action.
   void OnPolicyFetchResult(
@@ -321,7 +315,7 @@ class ExistingUserController
 
   // Restart authpolicy daemon in case of Active Directory authentication.
   // Used to prevent data from leaking from one user session into another.
-  // Should be called to cancel AuthPolicyLoginHelper::TryAuthenticateUser call.
+  // Should be called to cancel AuthPolicyHelper::TryAuthenticateUser call.
   void ClearActiveDirectoryState();
 
   // Public session auto-login timer.
@@ -415,8 +409,6 @@ class ExistingUserController
       minimum_version_policy_handler_;
 
   std::unique_ptr<OAuth2TokenInitializer> oauth2_token_initializer_;
-
-  std::unique_ptr<TokenHandleUtil> token_handle_util_;
 
   std::unique_ptr<policy::PreSigninPolicyFetcher> pre_signin_policy_fetcher_;
 

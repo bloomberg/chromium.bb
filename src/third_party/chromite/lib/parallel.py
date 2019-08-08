@@ -74,8 +74,8 @@ def Manager():
   """Create a background process for managing interprocess communication.
 
   This manager wraps multiprocessing.Manager() and ensures that any sockets
-  created during initialization are created in '/tmp' rather than in a custom
-  temp directory. This is needed because TMPDIR might be really long, and
+  created during initialization are created under the /tmp tree rather than in a
+  custom temp directory. This is needed because TMPDIR might be really long, and
   named sockets are limited to 108 characters.
 
   Examples:
@@ -86,7 +86,12 @@ def Manager():
   Returns:
     The return value of multiprocessing.Manager()
   """
-  old_tempdir_value, old_tempdir_env = osutils.SetGlobalTempDir('/tmp')
+  # Use a short directory in /tmp. Do not use /tmp directly to keep these
+  # temperary files together and because certain environments do not like too
+  # many top-level paths in /tmp (see crbug.com/945523).
+  tmp_dir = '/tmp/chromite.parallel'
+  osutils.SafeMakedirs(tmp_dir)
+  old_tempdir_value, old_tempdir_env = osutils.SetGlobalTempDir(tmp_dir)
   try:
     m = HackTimeoutSyncManager()
     # SyncManager doesn't handle KeyboardInterrupt exceptions well; pipes get

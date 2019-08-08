@@ -46,7 +46,7 @@ void NavigationPreloadRequest::OnReceiveRedirect(
   DCHECK(net::HttpResponseHeaders::IsRedirectResponseCode(
       response_head.headers->response_code()));
 
-  CHECK(owner_);
+  DCHECK(owner_);
   response_ = std::make_unique<blink::WebURLResponse>();
   WebURLLoaderImpl::PopulateURLResponse(url_, response_head, response_.get(),
                                         false /* report_security_info */,
@@ -106,7 +106,7 @@ void NavigationPreloadRequest::OnComplete(
     return;
   }
 
-  CHECK(owner_);
+  DCHECK(owner_);
   if (response_) {
     // When the response body from the server is empty, OnComplete() is called
     // without OnStartLoadingResponseBody().
@@ -123,7 +123,7 @@ void NavigationPreloadRequest::OnComplete(
 void NavigationPreloadRequest::MaybeReportResponseToOwner() {
   if (!response_ || !body_.is_valid())
     return;
-  CHECK(owner_);
+  DCHECK(owner_);
   owner_->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
                                       std::move(body_));
 }
@@ -131,7 +131,7 @@ void NavigationPreloadRequest::MaybeReportResponseToOwner() {
 void NavigationPreloadRequest::ReportErrorToOwner(
     const std::string& message,
     const std::string& unsanitized_message) {
-  CHECK(owner_);
+  DCHECK(owner_);
   // This will delete |this|.
   owner_->OnNavigationPreloadError(
       fetch_event_id_, std::make_unique<blink::WebServiceWorkerError>(

@@ -32,9 +32,9 @@
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 #include "third_party/blink/renderer/platform/uuid.h"
-#include "third_party/blink/renderer/platform/wtf/locker.h"
 
 namespace blink {
 
@@ -132,15 +132,15 @@ MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(
     AudioContext& context,
     uint32_t number_of_channels)
     : AudioBasicInspectorNode(context),
-      source_(
-          MediaStreamSource::Create("WebAudio-" + CreateCanonicalUUIDString(),
-                                    MediaStreamSource::kTypeAudio,
-                                    "MediaStreamAudioDestinationNode",
-                                    false,
-                                    MediaStreamSource::kReadyStateLive,
-                                    true)),
+      source_(MakeGarbageCollected<MediaStreamSource>(
+          "WebAudio-" + CreateCanonicalUUIDString(),
+          MediaStreamSource::kTypeAudio,
+          "MediaStreamAudioDestinationNode",
+          false,
+          MediaStreamSource::kReadyStateLive,
+          true)),
       stream_(MediaStream::Create(context.GetExecutionContext(),
-                                  MediaStreamDescriptor::Create(
+                                  MakeGarbageCollected<MediaStreamDescriptor>(
                                       MediaStreamSourceVector({source_.Get()}),
                                       MediaStreamSourceVector()))) {
   MediaStreamCenter::Instance().DidCreateMediaStreamAndTracks(

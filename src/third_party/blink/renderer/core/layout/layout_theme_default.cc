@@ -54,8 +54,7 @@ unsigned LayoutThemeDefault::inactive_selection_foreground_color_ = 0xff323232;
 
 TimeDelta LayoutThemeDefault::caret_blink_interval_;
 
-LayoutThemeDefault::LayoutThemeDefault()
-    : LayoutTheme(nullptr), painter_(*this) {
+LayoutThemeDefault::LayoutThemeDefault() : LayoutTheme(), painter_(*this) {
   caret_blink_interval_ = LayoutTheme::CaretBlinkInterval();
 }
 
@@ -77,12 +76,12 @@ Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id) const {
   static const Color kDefaultButtonGrayColor(0xffdddddd);
   static const Color kDefaultMenuColor(0xfff7f7f7);
 
-  if (css_value_id == CSSValueButtonface) {
+  if (css_value_id == CSSValueID::kButtonface) {
     if (UseMockTheme())
       return Color(0xc0, 0xc0, 0xc0);
     return kDefaultButtonGrayColor;
   }
-  if (css_value_id == CSSValueMenu)
+  if (css_value_id == CSSValueID::kMenu)
     return kDefaultMenuColor;
   return LayoutTheme::SystemColor(css_value_id);
 }

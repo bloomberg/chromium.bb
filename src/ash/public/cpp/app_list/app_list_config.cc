@@ -60,7 +60,7 @@ AppListConfig::AppListConfig()
       shelf_height_(56),
       blur_radius_(30),
       contents_background_color_(SkColorSetRGB(0xF2, 0xF2, 0xF2)),
-      grid_selected_color_(SkColorSetARGB(0x1F, 0xFF, 0xFF, 0xFF)),
+      grid_selected_color_(gfx::kGoogleBlue300),
       card_background_color_(SK_ColorWHITE),
       page_transition_duration_ms_(250),
       overscroll_page_transition_duration_ms_(50),

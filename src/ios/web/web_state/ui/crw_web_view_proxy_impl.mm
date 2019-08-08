@@ -4,7 +4,7 @@
 
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
 
-#import "ios/web/public/web_state/ui/crw_content_view.h"
+#import "ios/web/common/crw_content_view.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 
@@ -168,6 +168,14 @@ UIView* GetFirstResponderSubview(UIView* view) {
 - (void)setContentView:(CRWContentView*)contentView {
   _contentView = contentView;
   [_contentViewScrollViewProxy setScrollView:contentView.scrollView];
+}
+
+- (void)disconnectScrollProxy {
+  [_contentViewScrollViewProxy setScrollView:nil];
+}
+
+- (void)reconnectScrollProxy {
+  [_contentViewScrollViewProxy setScrollView:self.contentView.scrollView];
 }
 
 - (void)addSubview:(UIView*)view {

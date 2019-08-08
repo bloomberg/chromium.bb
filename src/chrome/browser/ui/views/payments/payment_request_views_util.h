@@ -148,6 +148,15 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
     bool emphasize_label,
     base::string16* accessible_content);
 
+// Creates a warning message when address is not valid or an informational
+// message when the user has not selected their shipping address yet. The
+// warning icon is displayed only for warning messages.
+// ---------------------------------------------
+// | Warning icon | Warning message            |
+// ---------------------------------------------
+std::unique_ptr<views::View> CreateWarningView(const base::string16& message,
+                                               bool show_icon);
+
 }  // namespace payments
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_VIEWS_UTIL_H_

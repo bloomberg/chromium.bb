@@ -5,6 +5,7 @@
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 
 #include "base/test/mock_callback.h"
+#include "components/sync/driver/sync_util.h"
 #include "components/version_info/version_string.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,8 +27,9 @@ class LocalDeviceInfoProviderImplTest : public testing::Test {
   void SetUp() override {
     provider_ = std::make_unique<LocalDeviceInfoProviderImpl>(
         version_info::Channel::UNKNOWN,
-        version_info::GetVersionStringWithModifier("UNKNOWN"), false,
-        signin_scoped_device_id_callback_.Get());
+        version_info::GetVersionStringWithModifier("UNKNOWN"),
+        signin_scoped_device_id_callback_.Get(),
+        send_tab_to_self_receiving_enabled_callback_.Get());
   }
 
   void TearDown() override {
@@ -44,6 +46,9 @@ class LocalDeviceInfoProviderImplTest : public testing::Test {
   testing::NiceMock<base::MockCallback<
       LocalDeviceInfoProviderImpl::SigninScopedDeviceIdCallback>>
       signin_scoped_device_id_callback_;
+  testing::NiceMock<base::MockCallback<
+      LocalDeviceInfoProviderImpl::SendTabToSelfReceivingEnabledCallback>>
+      send_tab_to_self_receiving_enabled_callback_;
   std::unique_ptr<LocalDeviceInfoProviderImpl> provider_;
 };
 
@@ -56,7 +61,7 @@ TEST_F(LocalDeviceInfoProviderImplTest, GetLocalDeviceInfo) {
   ASSERT_NE(nullptr, local_device_info);
   EXPECT_EQ(std::string(kLocalDeviceGuid), local_device_info->guid());
   EXPECT_EQ(kLocalDeviceSessionName, local_device_info->client_name());
-  EXPECT_EQ(provider_->GetSyncUserAgent(),
+  EXPECT_EQ(MakeUserAgentForSync(provider_->GetChannel()),
             local_device_info->sync_user_agent());
 
   provider_->Clear();
@@ -74,6 +79,24 @@ TEST_F(LocalDeviceInfoProviderImplTest, GetSigninScopedDeviceId) {
   ASSERT_THAT(provider_->GetLocalDeviceInfo(), NotNull());
   EXPECT_EQ(kSigninScopedDeviceId,
             provider_->GetLocalDeviceInfo()->signin_scoped_device_id());
+}
+
+TEST_F(LocalDeviceInfoProviderImplTest, SendTabToSelfReceivingEnabled) {
+  ON_CALL(send_tab_to_self_receiving_enabled_callback_, Run())
+      .WillByDefault(Return(true));
+
+  InitializeProvider();
+
+  ASSERT_THAT(provider_->GetLocalDeviceInfo(), NotNull());
+  EXPECT_TRUE(
+      provider_->GetLocalDeviceInfo()->send_tab_to_self_receiving_enabled());
+
+  ON_CALL(send_tab_to_self_receiving_enabled_callback_, Run())
+      .WillByDefault(Return(false));
+
+  ASSERT_THAT(provider_->GetLocalDeviceInfo(), NotNull());
+  EXPECT_FALSE(
+      provider_->GetLocalDeviceInfo()->send_tab_to_self_receiving_enabled());
 }
 
 }  // namespace

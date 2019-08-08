@@ -81,7 +81,7 @@ DeviceFactoryMediaToMojoAdapter::ActiveDeviceEntry::operator=(
 
 DeviceFactoryMediaToMojoAdapter::DeviceFactoryMediaToMojoAdapter(
     std::unique_ptr<media::VideoCaptureSystem> capture_system,
-    media::MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
+    media::MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
     scoped_refptr<base::SequencedTaskRunner> jpeg_decoder_task_runner)
     : capture_system_(std::move(capture_system)),
       jpeg_decoder_factory_callback_(std::move(jpeg_decoder_factory_callback)),

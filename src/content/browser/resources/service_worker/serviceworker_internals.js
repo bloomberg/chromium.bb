@@ -56,7 +56,7 @@ cr.define('serviceworker', function() {
                                          }).bind(null, link));
       return false;
     };
-  };
+  }
 
   var commandCallbacks = [];
   function sendCommand(command, args, callback) {
@@ -112,28 +112,28 @@ cr.define('serviceworker', function() {
   function getUnregisteredWorkers(
       stored_registrations, live_registrations, live_versions,
       unregistered_registrations, unregistered_versions) {
-    var registration_id_set = {};
-    var version_id_set = {};
+    var registrationIdSet = {};
+    var versionIdSet = {};
     stored_registrations.forEach(function(registration) {
-      registration_id_set[registration.registration_id] = true;
+      registrationIdSet[registration.registration_id] = true;
     });
     [stored_registrations, live_registrations].forEach(function(registrations) {
       registrations.forEach(function(registration) {
         [registration.active, registration.waiting].forEach(function(version) {
           if (version) {
-            version_id_set[version.version_id] = true;
+            versionIdSet[version.version_id] = true;
           }
         });
       });
     });
     live_registrations.forEach(function(registration) {
-      if (!registration_id_set[registration.registration_id]) {
+      if (!registrationIdSet[registration.registration_id]) {
         registration.unregistered = true;
         unregistered_registrations.push(registration);
       }
     });
     live_versions.forEach(function(version) {
-      if (!version_id_set[version.version_id]) {
+      if (!versionIdSet[version.version_id]) {
         unregistered_versions.push(version);
       }
     });
@@ -143,11 +143,11 @@ cr.define('serviceworker', function() {
   function onPartitionData(
       live_registrations, live_versions, stored_registrations, partition_id,
       partition_path) {
-    var unregistered_registrations = [];
-    var unregistered_versions = [];
+    var unregisteredRegistrations = [];
+    var unregisteredVersions = [];
     getUnregisteredWorkers(
         stored_registrations, live_registrations, live_versions,
-        unregistered_registrations, unregistered_versions);
+        unregisteredRegistrations, unregisteredVersions);
     var template;
     var container = $('serviceworker-list');
     // Existing templates are keyed by partition_id. This allows
@@ -167,15 +167,15 @@ cr.define('serviceworker', function() {
     stored_registrations.forEach(function(registration) {
       [registration.active, registration.waiting].forEach(fillLogFunc);
     });
-    unregistered_registrations.forEach(function(registration) {
+    unregisteredRegistrations.forEach(function(registration) {
       [registration.active, registration.waiting].forEach(fillLogFunc);
     });
-    unregistered_versions.forEach(fillLogFunc);
+    unregisteredVersions.forEach(fillLogFunc);
     jstProcess(
         new JsEvalContext({
           stored_registrations: stored_registrations,
-          unregistered_registrations: unregistered_registrations,
-          unregistered_versions: unregistered_versions,
+          unregistered_registrations: unregisteredRegistrations,
+          unregistered_versions: unregisteredVersions,
           partition_id: partition_id,
           partition_path: partition_path
         }),

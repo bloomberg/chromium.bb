@@ -12,7 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/active_directory_test_helper.h"
+#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/net/nss_context.h"
@@ -21,12 +21,13 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_auth_policy_client.h"
-#include "chromeos/dbus/fake_cryptohome_client.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/user_manager/user.h"
@@ -119,7 +120,7 @@ bool IsSystemSlotAvailable(Profile* profile) {
 }  // namespace
 
 class UserAffiliationBrowserTest
-    : public InProcessBrowserTest,
+    : public chromeos::MixinBasedInProcessBrowserTest,
       public ::testing::WithParamInterface<Params> {
  public:
   UserAffiliationBrowserTest() {
@@ -135,9 +136,9 @@ class UserAffiliationBrowserTest
   }
 
  protected:
-  // InProcessBrowserTest
+  // MixinBasedInProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
+    chromeos::MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
     if (content::IsPreTest()) {
       AffiliationTestHelper::AppendCommandLineSwitchesForLoginManager(
           command_line);
@@ -152,31 +153,19 @@ class UserAffiliationBrowserTest
     }
   }
 
-  // InProcessBrowserTest
   void SetUpInProcessBrowserTestFixture() override {
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-    chromeos::FakeSessionManagerClient* fake_session_manager_client =
-        new chromeos::FakeSessionManagerClient;
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        base::WrapUnique<chromeos::SessionManagerClient>(
-            fake_session_manager_client));
+    chromeos::MixinBasedInProcessBrowserTest::
+        SetUpInProcessBrowserTestFixture();
 
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::make_unique<chromeos::FakeCryptohomeClient>());
-
+    // Initialize clients here so they are available during setup. They will be
+    // shutdown in ChromeBrowserMain.
+    chromeos::SessionManagerClient::InitializeFakeInMemory();
+    chromeos::UpstartClient::InitializeFake();
     chromeos::FakeAuthPolicyClient* fake_auth_policy_client = nullptr;
     if (GetParam().active_directory) {
-      auto fake_auth_policy_client_owned =
-          std::make_unique<chromeos::FakeAuthPolicyClient>();
-      fake_auth_policy_client = fake_auth_policy_client_owned.get();
+      chromeos::AuthPolicyClient::InitializeFake();
+      fake_auth_policy_client = chromeos::FakeAuthPolicyClient::Get();
       fake_auth_policy_client->DisableOperationDelayForTesting();
-      chromeos::DBusThreadManager::GetSetterForTesting()->SetAuthPolicyClient(
-          std::move(fake_auth_policy_client_owned));
-
-      // PrepareLogin requires a message loop, which isn't available yet here.
-      base::MessageLoop message_loop;
-      chromeos::active_directory_test_helper::PrepareLogin(
-          account_id_.GetUserEmail());
     }
 
     DevicePolicyCrosTestHelper test_helper;
@@ -185,12 +174,12 @@ class UserAffiliationBrowserTest
     const std::set<std::string> user_affiliation_ids = {
         GetParam().affiliated ? kAffiliationID : kAnotherAffiliationID};
 
+    auto* session_manager_client = chromeos::FakeSessionManagerClient::Get();
     AffiliationTestHelper affiliation_helper =
         GetParam().active_directory
             ? AffiliationTestHelper::CreateForActiveDirectory(
-                  fake_session_manager_client, fake_auth_policy_client)
-            : AffiliationTestHelper::CreateForCloud(
-                  fake_session_manager_client);
+                  session_manager_client, fake_auth_policy_client)
+            : AffiliationTestHelper::CreateForCloud(session_manager_client);
 
     ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetDeviceAffiliationIDs(
         &test_helper, device_affiliation_ids));
@@ -204,7 +193,8 @@ class UserAffiliationBrowserTest
 
   void CreatedBrowserMainParts(
       content::BrowserMainParts* browser_main_parts) override {
-    InProcessBrowserTest::CreatedBrowserMainParts(browser_main_parts);
+    chromeos::MixinBasedInProcessBrowserTest::CreatedBrowserMainParts(
+        browser_main_parts);
 
     login_ui_visible_waiter_ =
         std::make_unique<content::WindowedNotificationObserver>(
@@ -212,9 +202,8 @@ class UserAffiliationBrowserTest
             content::NotificationService::AllSources());
   }
 
-  // InProcessBrowserTest:
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
+    chromeos::MixinBasedInProcessBrowserTest::SetUpOnMainThread();
     if (content::IsPreTest()) {
       // Wait for the login manager UI to be available before continuing.
       // This is a workaround for chrome crashing when running with DCHECKS when
@@ -224,9 +213,8 @@ class UserAffiliationBrowserTest
     }
   }
 
-  // InProcessBrowserTest:
   void TearDownOnMainThread() override {
-    InProcessBrowserTest::TearDownOnMainThread();
+    chromeos::MixinBasedInProcessBrowserTest::TearDownOnMainThread();
 
     TearDownTestSystemSlot();
   }
@@ -288,6 +276,13 @@ class UserAffiliationBrowserTest
   std::unique_ptr<content::WindowedNotificationObserver>
       login_ui_visible_waiter_;
 
+  chromeos::DeviceStateMixin device_state_{
+      &mixin_host_,
+      GetParam().active_directory
+          ? chromeos::DeviceStateMixin::State::
+                OOBE_COMPLETED_ACTIVE_DIRECTORY_ENROLLED
+          : chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+
   DISALLOW_COPY_AND_ASSIGN(UserAffiliationBrowserTest);
 };
 
@@ -311,7 +306,8 @@ IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, TestAffiliation) {
   ASSERT_NO_FATAL_FAILURE(VerifyAffiliationExpectations());
 }
 
-INSTANTIATE_TEST_SUITE_P(AffiliationCheck,
+// TODO(https://crbug.com/946024): PRE_ test is flakily timing out.
+INSTANTIATE_TEST_SUITE_P(DISABLED_AffiliationCheck,
                          UserAffiliationBrowserTest,
                          //         affiliated            active_directory
                          //              |                         |

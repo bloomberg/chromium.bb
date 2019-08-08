@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
@@ -59,16 +60,28 @@ void CastDialogView::ShowDialogWithToolbarAction(
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   DCHECK(browser_view->toolbar()->browser_actions());
   views::View* action_view = browser_view->toolbar()->cast_button();
-  ShowDialog(action_view, views::BubbleBorder::TOP_RIGHT, controller, browser,
+  ShowDialog(action_view, views::BubbleBorder::TOP_RIGHT, controller,
+             browser->profile(), start_time);
+}
+
+// static
+void CastDialogView::ShowDialogCenteredForBrowserWindow(
+    CastDialogController* controller,
+    Browser* browser,
+    const base::Time& start_time) {
+  ShowDialog(BrowserView::GetBrowserViewForBrowser(browser)->top_container(),
+             views::BubbleBorder::TOP_CENTER, controller, browser->profile(),
              start_time);
 }
 
 // static
-void CastDialogView::ShowDialogTopCentered(CastDialogController* controller,
-                                           Browser* browser,
-                                           const base::Time& start_time) {
-  ShowDialog(BrowserView::GetBrowserViewForBrowser(browser)->top_container(),
-             views::BubbleBorder::TOP_CENTER, controller, browser, start_time);
+void CastDialogView::ShowDialogCentered(const gfx::Rect& bounds,
+                                        CastDialogController* controller,
+                                        Profile* profile,
+                                        const base::Time& start_time) {
+  ShowDialog(/* anchor_view */ nullptr, views::BubbleBorder::TOP_CENTER,
+             controller, profile, start_time);
+  instance_->SetAnchorRect(bounds);
 }
 
 // static
@@ -106,9 +119,8 @@ base::string16 CastDialogView::GetWindowTitle() const {
     case SourceType::kTab:
       return dialog_title_;
     case SourceType::kDesktop:
-      // |dialog_title_| may contain the presentation URL origin which is not
-      // relevant for the desktop source, so we use the default title string.
-      return l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CAST_DIALOG_TITLE);
+      return l10n_util::GetStringUTF16(
+          IDS_MEDIA_ROUTER_DESKTOP_MIRROR_CAST_MODE);
     case SourceType::kLocalFile:
       return l10n_util::GetStringFUTF16(IDS_MEDIA_ROUTER_CAST_LOCAL_MEDIA_TITLE,
                                         local_file_name_.value());
@@ -234,12 +246,12 @@ void CastDialogView::KeepShownForTesting() {
 void CastDialogView::ShowDialog(views::View* anchor_view,
                                 views::BubbleBorder::Arrow anchor_position,
                                 CastDialogController* controller,
-                                Browser* browser,
+                                Profile* profile,
                                 const base::Time& start_time) {
   DCHECK(!instance_);
   DCHECK(!start_time.is_null());
   instance_ = new CastDialogView(anchor_view, anchor_position, controller,
-                                 browser, start_time);
+                                 profile, start_time);
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(instance_);
   widget->Show();
@@ -248,12 +260,12 @@ void CastDialogView::ShowDialog(views::View* anchor_view,
 CastDialogView::CastDialogView(views::View* anchor_view,
                                views::BubbleBorder::Arrow anchor_position,
                                CastDialogController* controller,
-                               Browser* browser,
+                               Profile* profile,
                                const base::Time& start_time)
     : BubbleDialogDelegateView(anchor_view, anchor_position),
       selected_source_(SourceType::kTab),
       controller_(controller),
-      browser_(browser),
+      profile_(profile),
       metrics_(start_time),
       weak_factory_(this) {
   ShowNoSinksView();
@@ -295,7 +307,7 @@ void CastDialogView::ShowNoSinksView() {
     scroll_view_ = nullptr;
     sink_buttons_.clear();
   }
-  no_sinks_view_ = new CastDialogNoSinksView(browser_);
+  no_sinks_view_ = new CastDialogNoSinksView(profile_);
   AddChildView(no_sinks_view_);
 }
 
@@ -337,7 +349,7 @@ void CastDialogView::RestoreSinkListState() {
 
 void CastDialogView::PopulateScrollView(const std::vector<UIMediaSink>& sinks) {
   sink_buttons_.clear();
-  views::View* sink_list_view = new views::View();
+  auto sink_list_view = std::make_unique<views::View>();
   sink_list_view->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   for (size_t i = 0; i < sinks.size(); i++) {
@@ -347,7 +359,7 @@ void CastDialogView::PopulateScrollView(const std::vector<UIMediaSink>& sinks) {
     sink_buttons_.push_back(sink_button);
     sink_list_view->AddChildView(sink_button);
   }
-  scroll_view_->SetContents(sink_list_view);
+  scroll_view_->SetContents(std::move(sink_list_view));
 
   MaybeSizeToContents();
   Layout();
@@ -368,9 +380,9 @@ void CastDialogView::ShowSourcesMenu() {
   sources_menu_runner_ = std::make_unique<views::MenuRunner>(
       sources_menu_model_.get(), views::MenuRunner::COMBOBOX);
   const gfx::Rect& screen_bounds = sources_button_->GetBoundsInScreen();
-  sources_menu_runner_->RunMenuAt(sources_button_->GetWidget(), nullptr,
-                                  screen_bounds, views::MENU_ANCHOR_TOPLEFT,
-                                  ui::MENU_SOURCE_MOUSE);
+  sources_menu_runner_->RunMenuAt(
+      sources_button_->GetWidget(), nullptr, screen_bounds,
+      views::MenuAnchorPosition::kTopLeft, ui::MENU_SOURCE_MOUSE);
 }
 
 void CastDialogView::SelectSource(SourceType source) {

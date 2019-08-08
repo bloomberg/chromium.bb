@@ -340,7 +340,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // (once the data is written to the cache by writers)
 
   struct NET_EXPORT_PRIVATE ActiveEntry {
-    explicit ActiveEntry(disk_cache::Entry* entry);
+    ActiveEntry(disk_cache::Entry* entry, bool opened_in);
     ~ActiveEntry();
     size_t EstimateMemoryUsage() const;
 
@@ -354,6 +354,11 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
     bool TransactionInReaders(Transaction* transaction) const;
 
     disk_cache::Entry* disk_entry = nullptr;
+
+    // Indicates if the disk_entry was opened or not (i.e.: created).
+    // It is set to true when a transaction is added to an entry so that other,
+    // queued, transactions do not mistake it for a newly created entry.
+    bool opened = false;
 
     // Transactions waiting to be added to entry.
     TransactionList add_to_entry_queue;
@@ -440,7 +445,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
   // Creates a new ActiveEntry and starts tracking it. |disk_entry| is the disk
   // cache entry.
-  ActiveEntry* ActivateEntry(disk_cache::Entry* disk_entry);
+  ActiveEntry* ActivateEntry(disk_cache::Entry* disk_entry, bool opened);
 
   // Deletes an ActiveEntry.
   void DeactivateEntry(ActiveEntry* entry);

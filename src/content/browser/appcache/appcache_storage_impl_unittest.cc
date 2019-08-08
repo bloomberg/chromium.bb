@@ -37,6 +37,7 @@
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
@@ -308,14 +309,13 @@ class AppCacheStorageImplTest : public testing::Test {
 
   template <class Method>
   void RunTestOnIOThread(Method method) {
-    test_finished_event_.reset(new base::WaitableEvent(
-        base::WaitableEvent::ResetPolicy::AUTOMATIC,
-        base::WaitableEvent::InitialState::NOT_SIGNALED));
+    base::RunLoop run_loop;
+    test_finished_cb_ = run_loop.QuitClosure();
     io_runner->PostTask(
         FROM_HERE,
         base::BindOnce(&AppCacheStorageImplTest::MethodWrapper<Method>,
                        base::Unretained(this), method));
-    test_finished_event_->Wait();
+    run_loop.Run();
   }
 
   void SetUpTest() {
@@ -354,7 +354,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void TestFinishedUnwound() {
     TearDownTest();
-    test_finished_event_->Signal();
+    std::move(test_finished_cb_).Run();
   }
 
   void PushNextTask(base::OnceClosure task) {
@@ -542,17 +542,45 @@ class AppCacheStorageImplTest : public testing::Test {
     group_ =
         new AppCacheGroup(storage(), kManifestUrl, storage()->NewGroupId());
     cache_ = new AppCache(storage(), storage()->NewCacheId());
-    cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, 1,
-                                              kDefaultEntrySize));
+    cache_->AddEntry(kEntryUrl,
+                     AppCacheEntry(AppCacheEntry::MASTER, 1, kDefaultEntrySize,
+                                   /*padding_size=*/0));
     // Hold a ref to the cache simulate the UpdateJob holding that ref,
     // and hold a ref to the group to simulate the CacheHost holding that ref.
 
-    // Have the quota manager retrun asynchronously for this test.
+    // Have the quota manager return asynchronously for this test.
     mock_quota_manager_proxy_->mock_manager_->async_ = true;
 
     // Conduct the store test.
     storage()->StoreGroupAndNewestCache(group_.get(), cache_.get(), delegate());
-    EXPECT_FALSE(delegate()->stored_group_success_);
+  }
+
+  void StoreNewGroup_PaddingDisabled() {
+    // Store a group and its newest cache. Should complete asynchronously.
+    PushNextTask(base::BindOnce(&AppCacheStorageImplTest::Verify_StoreNewGroup,
+                                base::Unretained(this)));
+
+    // Set up some preconditions. Create a group and newest cache that
+    // appear to be "unstored" and big enough to exceed the 5M limit.
+    const int64_t kTooBig = 10 * 1024 * 1024;  // 10M
+    group_ =
+        new AppCacheGroup(storage(), kManifestUrl, storage()->NewGroupId());
+    cache_ = new AppCache(storage(), storage()->NewCacheId());
+    cache_->AddEntry(kEntryUrl,
+                     AppCacheEntry(AppCacheEntry::EXPLICIT,
+                                   /*response_id=*/1,
+                                   /*response_size=*/kDefaultEntrySize,
+                                   /*padding_size=*/kTooBig));
+    // Hold a ref to the cache to simulate the UpdateJob holding that ref,
+    // and hold a ref to the group to simulate the CacheHost holding that ref.
+
+    // Have the quota manager return asynchronously for this test.
+    mock_quota_manager_proxy_->mock_manager_->async_ = true;
+
+    // Conduct the store test. The records should commit successfully even
+    // though the padding size exceeds the limit since the test disabled the
+    // padding feature flag.
+    storage()->StoreGroupAndNewestCache(group_.get(), cache_.get(), delegate());
   }
 
   void Verify_StoreNewGroup() {
@@ -587,12 +615,14 @@ class AppCacheStorageImplTest : public testing::Test {
     // Setup some preconditions. Create a group and old complete cache
     // that appear to be "stored"
     MakeCacheAndGroup(kManifestUrl, 1, 1, true);
-    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin]);
+    EXPECT_EQ(kDefaultEntrySize + kDefaultEntryPadding,
+              storage()->usage_map_[kOrigin]);
 
     // And a newest unstored complete cache.
     cache2_ = new AppCache(storage(), 2);
-    cache2_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::MASTER, 1,
-                                               kDefaultEntrySize + 100));
+    cache2_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, 1,
+                                               kDefaultEntrySize + 100,
+                                               kDefaultEntryPadding + 1000));
 
     // Conduct the test.
     storage()->StoreGroupAndNewestCache(group_.get(), cache2_.get(),
@@ -616,10 +646,11 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_FALSE(database()->FindCache(1, &cache_record));
 
     // Verify quota bookkeeping
-    EXPECT_EQ(kDefaultEntrySize + 100, storage()->usage_map_[kOrigin]);
+    EXPECT_EQ(kDefaultEntrySize + 100 + kDefaultEntryPadding + 1000,
+              storage()->usage_map_[kOrigin]);
     EXPECT_EQ(1, mock_quota_manager_proxy_->notify_storage_modified_count_);
     EXPECT_EQ(kOrigin, mock_quota_manager_proxy_->last_origin_);
-    EXPECT_EQ(100, mock_quota_manager_proxy_->last_delta_);
+    EXPECT_EQ(100 + 1000, mock_quota_manager_proxy_->last_delta_);
 
     TestFinished();
   }
@@ -634,11 +665,15 @@ class AppCacheStorageImplTest : public testing::Test {
     // Setup some preconditions. Create a group and old complete cache
     // that appear to be "stored"
     MakeCacheAndGroup(kManifestUrl, 1, 1, true);
-    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin]);
+    EXPECT_EQ(kDefaultEntrySize + kDefaultEntryPadding,
+              storage()->usage_map_[kOrigin]);
 
     // Change the cache.
     base::Time now = base::Time::Now();
-    cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::MASTER, 1, 100));
+    cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT,
+                                              /*response_id=*/1,
+                                              /*response_size=*/100,
+                                              /*padding_size=*/10));
     cache_->set_update_time(now);
 
     PushNextTask(base::BindOnce(
@@ -662,6 +697,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_FALSE(cache_record.online_wildcard);
     EXPECT_TRUE(expected_update_time == cache_record.update_time);
     EXPECT_EQ(100 + kDefaultEntrySize, cache_record.cache_size);
+    EXPECT_EQ(10 + kDefaultEntryPadding, cache_record.padding_size);
 
     std::vector<AppCacheDatabase::EntryRecord> entry_records;
     EXPECT_TRUE(database()->FindEntriesForCache(1, &entry_records));
@@ -670,35 +706,62 @@ class AppCacheStorageImplTest : public testing::Test {
       entry_records.erase(entry_records.begin());
     EXPECT_EQ(1, entry_records[0].cache_id);
     EXPECT_EQ(kEntryUrl, entry_records[0].url);
-    EXPECT_EQ(AppCacheEntry::MASTER, entry_records[0].flags);
+    EXPECT_EQ(AppCacheEntry::EXPLICIT, entry_records[0].flags);
     EXPECT_EQ(1, entry_records[0].response_id);
     EXPECT_EQ(100, entry_records[0].response_size);
+    EXPECT_EQ(10, entry_records[0].padding_size);
 
     // Verify quota bookkeeping
-    EXPECT_EQ(100 + kDefaultEntrySize, storage()->usage_map_[kOrigin]);
+    EXPECT_EQ(100 + 10 + kDefaultEntrySize + kDefaultEntryPadding,
+              storage()->usage_map_[kOrigin]);
     EXPECT_EQ(1, mock_quota_manager_proxy_->notify_storage_modified_count_);
     EXPECT_EQ(kOrigin, mock_quota_manager_proxy_->last_origin_);
-    EXPECT_EQ(100, mock_quota_manager_proxy_->last_delta_);
+    EXPECT_EQ(100 + 10, mock_quota_manager_proxy_->last_delta_);
 
     TestFinished();
   }
 
-  // FailStoreGroup  --------------------------------------
+  // FailStoreGroup_SizeTooBig / FailStoreGroup_PaddingTooBig   ----------------
 
-  void FailStoreGroup() {
+  void FailStoreGroup_SizeTooBig() {
     // Store a group and its newest cache. Should complete asynchronously.
     PushNextTask(base::BindOnce(&AppCacheStorageImplTest::Verify_FailStoreGroup,
                                 base::Unretained(this)));
 
-    // Setup some preconditions. Create a group and newest cache that
+    // Set up some preconditions. Create a group and newest cache that
     // appear to be "unstored" and big enough to exceed the 5M limit.
     const int64_t kTooBig = 10 * 1024 * 1024;  // 10M
     group_ =
         new AppCacheGroup(storage(), kManifestUrl, storage()->NewGroupId());
     cache_ = new AppCache(storage(), storage()->NewCacheId());
-    cache_->AddEntry(kManifestUrl,
-                     AppCacheEntry(AppCacheEntry::MANIFEST, 1, kTooBig));
-    // Hold a ref to the cache simulate the UpdateJob holding that ref,
+    cache_->AddEntry(kManifestUrl, AppCacheEntry(AppCacheEntry::MANIFEST,
+                                                 /*response_id=*/1,
+                                                 /*response_size=*/kTooBig,
+                                                 /*padding_size=*/0));
+    // Hold a ref to the cache to simulate the UpdateJob holding that ref,
+    // and hold a ref to the group to simulate the CacheHost holding that ref.
+
+    // Conduct the store test.
+    storage()->StoreGroupAndNewestCache(group_.get(), cache_.get(), delegate());
+    EXPECT_FALSE(delegate()->stored_group_success_);  // Expected to be async.
+  }
+
+  void FailStoreGroup_PaddingTooBig() {
+    // Store a group and its newest cache. Should complete asynchronously.
+    PushNextTask(base::BindOnce(&AppCacheStorageImplTest::Verify_FailStoreGroup,
+                                base::Unretained(this)));
+
+    // Set up some preconditions. Create a group and newest cache that
+    // appear to be "unstored" and big enough to exceed the 5M limit.
+    const int64_t kTooBig = 10 * 1024 * 1024;  // 10M
+    group_ =
+        new AppCacheGroup(storage(), kManifestUrl, storage()->NewGroupId());
+    cache_ = new AppCache(storage(), storage()->NewCacheId());
+    cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT,
+                                              /*response_id=*/1,
+                                              /*response_size=*/1,
+                                              /*padding_size=*/kTooBig));
+    // Hold a ref to the cache to simulate the UpdateJob holding that ref,
     // and hold a ref to the group to simulate the CacheHost holding that ref.
 
     // Conduct the store test.
@@ -733,7 +796,8 @@ class AppCacheStorageImplTest : public testing::Test {
     // Setup some preconditions. Create a group and newest cache that
     // appears to be "stored" and "currently in use".
     MakeCacheAndGroup(kManifestUrl, 1, 1, true);
-    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin]);
+    EXPECT_EQ(kDefaultEntrySize + kDefaultEntryPadding,
+              storage()->usage_map_[kOrigin]);
 
     // Also insert some related records.
     AppCacheDatabase::EntryRecord entry_record;
@@ -789,7 +853,8 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(storage()->usage_map_.empty());
     EXPECT_EQ(1, mock_quota_manager_proxy_->notify_storage_modified_count_);
     EXPECT_EQ(kOrigin, mock_quota_manager_proxy_->last_origin_);
-    EXPECT_EQ(-kDefaultEntrySize, mock_quota_manager_proxy_->last_delta_);
+    EXPECT_EQ(-(kDefaultEntrySize + kDefaultEntryPadding),
+              mock_quota_manager_proxy_->last_delta_);
 
     TestFinished();
   }
@@ -1591,6 +1656,7 @@ class AppCacheStorageImplTest : public testing::Test {
       cache_record.online_wildcard = false;
       cache_record.update_time = kZeroTime;
       cache_record.cache_size = kDefaultEntrySize;
+      cache_record.padding_size = 0;
       EXPECT_TRUE(db.InsertCache(&cache_record));
       AppCacheDatabase::EntryRecord entry_record;
       entry_record.cache_id = 1;
@@ -1598,6 +1664,7 @@ class AppCacheStorageImplTest : public testing::Test {
       entry_record.flags = AppCacheEntry::MANIFEST;
       entry_record.response_id = 1;
       entry_record.response_size = kDefaultEntrySize;
+      entry_record.padding_size = 0;
       EXPECT_TRUE(db.InsertEntry(&entry_record));
     }
 
@@ -1662,7 +1729,7 @@ class AppCacheStorageImplTest : public testing::Test {
       request.url = GetMockUrl("manifest");
       handler_ =
           host2->CreateRequestHandler(AppCacheURLLoaderRequest::Create(request),
-                                      RESOURCE_TYPE_MAIN_FRAME, false);
+                                      ResourceType::kMainFrame, false);
       handler_->MaybeCreateLoader(request, nullptr, base::DoNothing(),
                                   base::DoNothing());
     }
@@ -1732,7 +1799,7 @@ class AppCacheStorageImplTest : public testing::Test {
                          bool add_to_database) {
     AppCacheEntry default_entry(AppCacheEntry::EXPLICIT,
                                 cache_id + kDefaultEntryIdOffset,
-                                kDefaultEntrySize);
+                                kDefaultEntrySize, kDefaultEntryPadding);
     group_ = new AppCacheGroup(storage(), manifest_url, group_id);
     cache_ = new AppCache(storage(), cache_id);
     cache_->AddEntry(kDefaultEntryUrl, default_entry);
@@ -1751,6 +1818,7 @@ class AppCacheStorageImplTest : public testing::Test {
       cache_record.online_wildcard = false;
       cache_record.update_time = kZeroTime;
       cache_record.cache_size = kDefaultEntrySize;
+      cache_record.padding_size = kDefaultEntryPadding;
       EXPECT_TRUE(database()->InsertCache(&cache_record));
       AppCacheDatabase::EntryRecord entry_record;
       entry_record.cache_id = cache_id;
@@ -1758,15 +1826,17 @@ class AppCacheStorageImplTest : public testing::Test {
       entry_record.flags = default_entry.types();
       entry_record.response_id = default_entry.response_id();
       entry_record.response_size = default_entry.response_size();
+      entry_record.padding_size = default_entry.padding_size();
       EXPECT_TRUE(database()->InsertEntry(&entry_record));
 
-      storage()->usage_map_[manifest_origin] = default_entry.response_size();
+      storage()->usage_map_[manifest_origin] =
+          default_entry.response_size() + default_entry.padding_size();
     }
   }
 
   // Data members --------------------------------------------------
 
-  std::unique_ptr<base::WaitableEvent> test_finished_event_;
+  base::OnceClosure test_finished_cb_;
   base::stack<base::OnceClosure> task_stack_;
   std::unique_ptr<AppCacheServiceImpl> service_;
   std::unique_ptr<MockStorageDelegate> delegate_;
@@ -1825,6 +1895,7 @@ class AppCacheStorageImplTest : public testing::Test {
   const GURL kDefaultEntryUrl =
       GURL("http://blah/makecacheandgroup_default_entry");
   const int kDefaultEntrySize = 10;
+  const int kDefaultEntryPadding = 10000;
   const int kDefaultEntryIdOffset = 12345;
 };
 
@@ -1852,6 +1923,12 @@ TEST_F(AppCacheStorageImplTest, StoreNewGroup) {
   RunTestOnIOThread(&AppCacheStorageImplTest::StoreNewGroup);
 }
 
+TEST_F(AppCacheStorageImplTest, StoreNewGroup_PaddingDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kAppCacheIncludePaddingInQuota);
+  RunTestOnIOThread(&AppCacheStorageImplTest::StoreNewGroup_PaddingDisabled);
+}
+
 TEST_F(AppCacheStorageImplTest, StoreExistingGroup) {
   RunTestOnIOThread(&AppCacheStorageImplTest::StoreExistingGroup);
 }
@@ -1860,8 +1937,12 @@ TEST_F(AppCacheStorageImplTest, StoreExistingGroupExistingCache) {
   RunTestOnIOThread(&AppCacheStorageImplTest::StoreExistingGroupExistingCache);
 }
 
-TEST_F(AppCacheStorageImplTest, FailStoreGroup) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::FailStoreGroup);
+TEST_F(AppCacheStorageImplTest, FailStoreGroup_SizeTooBig) {
+  RunTestOnIOThread(&AppCacheStorageImplTest::FailStoreGroup_SizeTooBig);
+}
+
+TEST_F(AppCacheStorageImplTest, FailStoreGroup_PaddingTooBig) {
+  RunTestOnIOThread(&AppCacheStorageImplTest::FailStoreGroup_PaddingTooBig);
 }
 
 TEST_F(AppCacheStorageImplTest, MakeGroupObsolete) {

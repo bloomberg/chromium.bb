@@ -78,7 +78,7 @@ TEST_F(CrossThreadStyleValueTest, PassUnsupportedValueCrossThread) {
   DCHECK(value);
 
   // Use a WebThreadSupportingGC to emulate worklet thread.
-  thread_ = WebThreadSupportingGC::Create(
+  thread_ = std::make_unique<WebThreadSupportingGC>(
       ThreadCreationParams(WebThreadType::kTestThread));
   base::WaitableEvent waitable_event;
   thread_->PostTask(
@@ -109,7 +109,7 @@ TEST_F(CrossThreadStyleValueTest, PassKeywordValueCrossThread) {
   DCHECK(value);
 
   // Use a WebThreadSupportingGC to emulate worklet thread.
-  thread_ = WebThreadSupportingGC::Create(
+  thread_ = std::make_unique<WebThreadSupportingGC>(
       ThreadCreationParams(WebThreadType::kTestThread));
   base::WaitableEvent waitable_event;
   thread_->PostTask(
@@ -140,7 +140,7 @@ TEST_F(CrossThreadStyleValueTest, PassUnitValueCrossThread) {
   DCHECK(value);
 
   // Use a WebThreadSupportingGC to emulate worklet thread.
-  thread_ = WebThreadSupportingGC::Create(
+  thread_ = std::make_unique<WebThreadSupportingGC>(
       ThreadCreationParams(WebThreadType::kTestThread));
   base::WaitableEvent waitable_event;
   thread_->PostTask(FROM_HERE,

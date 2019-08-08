@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var browserTarget = new content.mojom.BrowserTargetPtr;
-Mojo.bindInterface(content.mojom.BrowserTarget.name,
-                   mojo.makeRequest(browserTarget).handle);
+var browserTarget = content.mojom.BrowserTarget.getProxy();
 
 browserTarget.start().then(function() {
   browserTarget.stop();

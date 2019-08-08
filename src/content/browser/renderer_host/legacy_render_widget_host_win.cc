@@ -14,6 +14,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
+#include "content/browser/renderer_host/direct_manipulation_helper_win.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/public/common/content_switches.h"
@@ -24,7 +25,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/view_prop.h"
-#include "ui/base/win/direct_manipulation.h"
 #include "ui/base/win/internal_constants.h"
 #include "ui/base/win/window_event_target.h"
 #include "ui/compositor/compositor.h"
@@ -50,11 +50,14 @@ class CompositorAnimationObserverForDirectManipulation
         compositor_(compositor) {
     DCHECK(compositor_);
     compositor_->AddAnimationObserver(this);
+    DebugLogging("Add AnimationObserverForDirectManipulation.");
   }
 
   ~CompositorAnimationObserverForDirectManipulation() override {
-    if (compositor_)
+    if (compositor_) {
       compositor_->RemoveAnimationObserver(this);
+      DebugLogging("Remove AnimationObserverForDirectManipulation.");
+    }
   }
 
   // ui::CompositorAnimationObserver
@@ -64,6 +67,7 @@ class CompositorAnimationObserverForDirectManipulation
 
   // ui::CompositorAnimationObserver
   void OnCompositingShuttingDown(ui::Compositor* compositor) override {
+    DebugLogging("OnCompositingShuttingDown.");
     compositor->RemoveAnimationObserver(this);
     compositor_ = nullptr;
   }
@@ -138,7 +142,7 @@ void LegacyRenderWidgetHostHWND::SetBounds(const gfx::Rect& bounds) {
                  bounds_in_pixel.width(), bounds_in_pixel.height(),
                  SWP_NOREDRAW);
   if (direct_manipulation_helper_)
-    direct_manipulation_helper_->SetSize(bounds_in_pixel.size());
+    direct_manipulation_helper_->SetSizeInPixels(bounds_in_pixel.size());
 }
 
 void LegacyRenderWidgetHostHWND::OnFinalMessage(HWND hwnd) {
@@ -189,9 +193,8 @@ bool LegacyRenderWidgetHostHWND::Init() {
 
   // Direct Manipulation is enabled on Windows 10+. The CreateInstance function
   // returns NULL if Direct Manipulation is not available.
-  direct_manipulation_helper_ =
-      ui::win::DirectManipulationHelper::CreateInstance(
-          hwnd(), GetWindowEventTarget(GetParent()));
+  direct_manipulation_helper_ = DirectManipulationHelper::CreateInstance(
+      hwnd(), GetWindowEventTarget(GetParent()));
 
   // Disable pen flicks (http://crbug.com/506977)
   base::win::DisableFlicks(hwnd());
@@ -260,7 +263,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
                                          root_uia.Get());
     } else {
       Microsoft::WRL::ComPtr<IAccessible> root_msaa(root);
-      return LresultFromObject(IID_IAccessible, w_param, root_msaa.Detach());
+      return LresultFromObject(IID_IAccessible, w_param, root_msaa.Get());
     }
   }
 
@@ -269,7 +272,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
     Microsoft::WRL::ComPtr<IAccessible> ax_system_caret_accessible =
         ax_system_caret_->GetCaret();
     return LresultFromObject(IID_IAccessible, w_param,
-                             ax_system_caret_accessible.Detach());
+                             ax_system_caret_accessible.Get());
   }
 
   return static_cast<LRESULT>(0L);
@@ -349,7 +352,8 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseLeave(UINT message,
                                                  LPARAM l_param) {
   mouse_tracking_enabled_ = false;
   LRESULT ret = 0;
-  if ((::GetCapture() != GetParent()) && GetWindowEventTarget(GetParent())) {
+  HWND capture_window = ::GetCapture();
+  if ((capture_window != GetParent()) && GetWindowEventTarget(GetParent())) {
     // We should send a WM_MOUSELEAVE to the parent window only if the mouse
     // has moved outside the bounds of the parent.
     POINT cursor_pos;
@@ -359,7 +363,8 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseLeave(UINT message,
     // respond with HTTRANSPARENT to a WM_NCHITTEST message,
     // it may be returned.
     HWND window_from_point = ::WindowFromPoint(cursor_pos);
-    if (window_from_point != hwnd() && window_from_point != GetParent()) {
+    if (window_from_point != GetParent() &&
+        (capture_window || window_from_point != hwnd())) {
       bool msg_handled = false;
       ret = GetWindowEventTarget(GetParent())->HandleMouseMessage(
           message, w_param, l_param, &msg_handled);
@@ -511,12 +516,24 @@ LRESULT LegacyRenderWidgetHostHWND::OnWindowPosChanged(UINT message,
   return 0;
 }
 
+LRESULT LegacyRenderWidgetHostHWND::OnDestroy(UINT message,
+                                              WPARAM w_param,
+                                              LPARAM l_param) {
+  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+    // Signal to UIA that all objects associated with this HWND can be
+    // discarded.
+    UiaReturnRawElementProvider(hwnd(), 0, 0, nullptr);
+  }
+  return 0;
+}
+
 LRESULT LegacyRenderWidgetHostHWND::OnPointerHitTest(UINT message,
                                                      WPARAM w_param,
                                                      LPARAM l_param) {
   if (!direct_manipulation_helper_)
     return 0;
 
+  DebugLogging("Receive DM_POINTERHITTEST.");
   // Update window event target for each DM_POINTERHITTEST.
   if (direct_manipulation_helper_->OnPointerHitTest(
           w_param, GetWindowEventTarget(GetParent()))) {
@@ -524,6 +541,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnPointerHitTest(UINT message,
       // This is reach if Windows send a DM_POINTERHITTEST before the last
       // DM_POINTERHITTEST receive READY status. We never see this but still
       // worth to handle it.
+      DebugLogging("AnimationObserverForDirectManipulation exists.");
       return 0;
     }
 
@@ -542,6 +560,9 @@ void LegacyRenderWidgetHostHWND::PollForNextEvent() {
 
 gfx::NativeViewAccessible
 LegacyRenderWidgetHostHWND::GetOrCreateWindowRootAccessible() {
+  if (!host_)
+    return nullptr;
+
   RenderWidgetHostImpl* rwhi =
       RenderWidgetHostImpl::From(host_->GetRenderWidgetHost());
   if (!rwhi)
@@ -580,6 +601,7 @@ void LegacyRenderWidgetHostHWND::CreateAnimationObserver() {
 }
 
 void LegacyRenderWidgetHostHWND::DestroyAnimationObserver() {
+  DebugLogging("DestroyAnimationObserver.");
   compositor_animation_observer_.reset();
 }
 

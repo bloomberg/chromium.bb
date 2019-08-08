@@ -247,17 +247,17 @@ void BrowserChildProcessHostImpl::Launch(
       std::move(delegate), std::move(cmd_line), terminate_on_shutdown);
 }
 
-const ChildProcessData& BrowserChildProcessHostImpl::GetData() const {
+const ChildProcessData& BrowserChildProcessHostImpl::GetData() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return data_;
 }
 
-ChildProcessHost* BrowserChildProcessHostImpl::GetHost() const {
+ChildProcessHost* BrowserChildProcessHostImpl::GetHost() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return child_process_host_.get();
 }
 
-const base::Process& BrowserChildProcessHostImpl::GetProcess() const {
+const base::Process& BrowserChildProcessHostImpl::GetProcess() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(child_process_.get())
       << "Requesting a child process handle before launching.";
@@ -315,8 +315,8 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
       service_manager::switches::kDisableInProcessStackTraces,
       switches::kDisableBestEffortTasks,
       switches::kDisableLogging,
+      switches::kDisablePerfetto,
       switches::kEnableLogging,
-      switches::kEnablePerfetto,
       switches::kIPCConnectionTimeout,
       switches::kLogFile,
       switches::kLoggingLevel,

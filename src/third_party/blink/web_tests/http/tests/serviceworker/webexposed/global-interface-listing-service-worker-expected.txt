@@ -50,6 +50,7 @@ interface BackgroundFetchUpdateUIEvent : BackgroundFetchEvent
     method constructor
     method updateUI
 interface BarcodeDetector
+    static method getSupportedFormats
     attribute @@toStringTag
     method constructor
     method detect
@@ -1256,6 +1257,9 @@ interface TransformStream
     getter readable
     getter writable
     method constructor
+interface TrustedTypePolicyFactory
+    attribute @@toStringTag
+    method constructor
 interface URL
     attribute @@toStringTag
     getter hash
@@ -1310,6 +1314,7 @@ interface WebGL2ComputeRenderingContext
     attribute ACTIVE_VARIABLES
     attribute ALIASED_LINE_WIDTH_RANGE
     attribute ALIASED_POINT_SIZE_RANGE
+    attribute ALL_BARRIER_BITS
     attribute ALPHA
     attribute ALPHA_BITS
     attribute ALREADY_SIGNALED
@@ -3548,7 +3553,6 @@ interface WorkerNavigator
     getter connection
     getter deviceMemory
     getter hardwareConcurrency
-    getter idle
     getter language
     getter languages
     getter locks

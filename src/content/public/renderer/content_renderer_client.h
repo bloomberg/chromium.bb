@@ -17,7 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
@@ -248,9 +248,8 @@ class CONTENT_EXPORT ContentRendererClient {
                               const blink::WebURLRequest& request);
 
   // See blink::Platform.
-  virtual unsigned long long VisitedLinkHash(const char* canonical_url,
-                                             size_t length);
-  virtual bool IsLinkVisited(unsigned long long link_hash);
+  virtual uint64_t VisitedLinkHash(const char* canonical_url, size_t length);
+  virtual bool IsLinkVisited(uint64_t link_hash);
   virtual blink::WebPrescientNetworking* GetPrescientNetworking();
   virtual bool IsPrerenderingFrame(const RenderFrame* render_frame);
 
@@ -388,10 +387,10 @@ class CONTENT_EXPORT ContentRendererClient {
   // An empty URL is returned if the URL is not overriden.
   virtual GURL OverrideFlashEmbedWithHTML(const GURL& url);
 
-  // Provides parameters for initializing the global task scheduler. Default
+  // Provides parameters for initializing the global thread pool. Default
   // params are used if this returns nullptr.
-  virtual std::unique_ptr<base::TaskScheduler::InitParams>
-  GetTaskSchedulerInitParams();
+  virtual std::unique_ptr<base::ThreadPool::InitParams>
+  GetThreadPoolInitParams();
 
   // Whether the renderer allows idle media players to be automatically
   // suspended after a period of inactivity.
@@ -400,7 +399,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns true to suppress the warning for deprecated TLS versions.
   //
   // This is a workaround for an outdated test server used by Blink tests on
-  // macOS. See https://crbug.com/905831.
+  // macOS. See https://crbug.com/936515.
   virtual bool SuppressLegacyTLSVersionConsoleMessage();
 
   // Asks the embedder to bind |service_request| to its renderer-side service
@@ -408,6 +407,9 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual void CreateRendererService(
       service_manager::mojom::ServiceRequest service_request) {}
 
+  // Allows the embedder to return a (possibly null) URLLoaderThrottleProvider
+  // for a frame or worker. For frames this is called on the main thread, and
+  // for workers it's called on the worker thread.
   virtual std::unique_ptr<URLLoaderThrottleProvider>
   CreateURLLoaderThrottleProvider(URLLoaderThrottleProviderType provider_type);
 

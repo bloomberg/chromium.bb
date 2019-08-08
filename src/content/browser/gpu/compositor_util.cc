@@ -206,6 +206,10 @@ const GpuFeatureData GetGpuFeatureData(
        !features::IsVizDisplayCompositorEnabled(),
        "Viz service display compositor is not enabled by default.", false,
        false},
+      {"viz_hit_test_surface_layer", gpu::kGpuFeatureStatusEnabled,
+       !features::IsVizHitTestingSurfaceLayerEnabled(),
+       "Viz hit-test surface layer version is not enabled by default.", false,
+       false},
       {"skia_renderer", gpu::kGpuFeatureStatusEnabled,
        !features::IsUsingSkiaRenderer(),
        "Skia renderer is not used by default.", false, false},
@@ -268,6 +272,10 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatusImpl(
       }
       if (gpu_feature_data.name == "skia_renderer") {
         if (features::IsUsingSkiaRenderer())
+          status += "_on";
+      }
+      if (gpu_feature_data.name == "viz_hit_test_surface_layer") {
+        if (features::IsVizHitTestingSurfaceLayerEnabled())
           status += "_on";
       }
     }

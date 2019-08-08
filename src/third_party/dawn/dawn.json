@@ -19,8 +19,7 @@
         "values": [
             {"value": 0, "name": "repeat"},
             {"value": 1, "name": "mirrored repeat"},
-            {"value": 2, "name": "clamp to edge"},
-            {"value": 3, "name": "clamp to border color"}
+            {"value": 2, "name": "clamp to edge"}
         ]
     },
     "bind group": {
@@ -32,8 +31,8 @@
         "members": [
             {"name": "binding", "type": "uint32_t"},
             {"name": "buffer", "type": "buffer", "optional": true},
-            {"name": "offset", "type": "uint32_t"},
-            {"name": "size", "type": "uint32_t"},
+            {"name": "offset", "type": "uint64_t"},
+            {"name": "size", "type": "uint64_t"},
             {"name": "sampler", "type": "sampler", "optional": true},
             {"name": "texture view", "type": "texture view", "optional": true}
         ]
@@ -73,7 +72,9 @@
             {"value": 0, "name": "uniform buffer"},
             {"value": 1, "name": "sampler"},
             {"value": 2, "name": "sampled texture"},
-            {"value": 3, "name": "storage buffer"}
+            {"value": 3, "name": "storage buffer"},
+            {"value": 4, "name": "dynamic uniform buffer"},
+            {"value": 5, "name": "dynamic storage buffer"}
         ]
     },
     "blend descriptor": {
@@ -120,31 +121,11 @@
             {"name": "format", "type": "texture format"},
             {"name": "alpha blend", "type": "blend descriptor"},
             {"name": "color blend", "type": "blend descriptor"},
-            {"name": "color write mask", "type": "color write mask"}
+            {"name": "write mask", "type": "color write mask"}
         ]
     },
     "bool": {
         "category": "native"
-    },
-    "border color": {
-        "category": "enum",
-        "values": [
-            {"value": 0, "name": "transparent black"},
-            {"value": 1, "name": "opaque black"},
-            {"value": 2, "name": "opaque white"}
-        ]
-    },
-    "builder error status": {
-        "category": "enum",
-        "values": [
-            {"value": 0, "name": "success"},
-            {"value": 1, "name": "error", "TODO": "cwallez@chromium.org: recoverable errors like GPU OOM"},
-            {"value": 2, "name": "unknown"},
-            {"value": 3, "name": "context lost"}
-        ]
-    },
-    "builder error callback": {
-        "category": "natively defined"
     },
     "buffer": {
         "category": "object",
@@ -152,8 +133,8 @@
             {
                 "name": "set sub data",
                 "args": [
-                    {"name": "start", "type": "uint32_t"},
-                    {"name": "count", "type": "uint32_t"},
+                    {"name": "start", "type": "uint64_t"},
+                    {"name": "count", "type": "uint64_t"},
                     {"name": "data", "type": "uint8_t", "annotation": "const*", "length": "count"}
                 ]
             },
@@ -179,28 +160,12 @@
             }
         ]
     },
-    "buffer builder": {
-        "_comment": "This builder is kept for testing only",
-        "category": "object",
-        "methods": [
-            {
-                "name": "get result",
-                "returns": "buffer"
-            },
-            {
-                "name": "set size",
-                "args": [
-                    {"name": "size", "type": "uint32_t"}
-                ]
-            }
-        ]
-    },
     "buffer copy view": {
         "category": "structure",
         "extensible": true,
         "members": [
             {"name": "buffer", "type": "buffer"},
-            {"name": "offset", "type": "uint32_t"},
+            {"name": "offset", "type": "uint64_t"},
             {"name": "row pitch", "type": "uint32_t"},
             {"name": "image height", "type": "uint32_t"}
         ]
@@ -210,7 +175,7 @@
         "extensible": true,
         "members": [
             {"name": "usage", "type": "buffer usage bit"},
-            {"name": "size", "type": "uint32_t"}
+            {"name": "size", "type": "uint64_t"}
         ]
     },
     "buffer map read callback": {
@@ -293,10 +258,10 @@
                 "name": "copy buffer to buffer",
                 "args": [
                     {"name": "source", "type": "buffer"},
-                    {"name": "source offset", "type": "uint32_t"},
+                    {"name": "source offset", "type": "uint64_t"},
                     {"name": "destination", "type": "buffer"},
-                    {"name": "destination offset", "type": "uint32_t"},
-                    {"name": "size", "type": "uint32_t"}
+                    {"name": "destination offset", "type": "uint64_t"},
+                    {"name": "size", "type": "uint64_t"}
                 ],
                 "TODO": [
                     "Restrictions on the alignment of the copy? Cf Metal on OSX"
@@ -315,6 +280,14 @@
                 "args": [
                     {"name": "source", "type": "texture copy view", "annotation": "const*"},
                     {"name": "destination", "type": "buffer copy view", "annotation": "const*"},
+                    {"name": "copy size", "type": "extent 3D", "annotation": "const*"}
+                ]
+            },
+            {
+                "name": "copy texture to texture",
+                "args": [
+                    {"name": "source", "type": "texture copy view", "annotation": "const*"},
+                    {"name": "destination", "type": "texture copy view", "annotation": "const*"},
                     {"name": "copy size", "type": "extent 3D", "annotation": "const*"}
                 ]
             }
@@ -375,7 +348,9 @@
                 "name": "set bind group",
                 "args": [
                     {"name": "group index", "type": "uint32_t"},
-                    {"name": "group", "type": "bind group"}
+                    {"name": "group", "type": "bind group"},
+                    {"name": "dynamic offset count", "type": "uint32_t"},
+                    {"name": "dynamic offsets", "type": "uint64_t", "annotation": "const*", "length": "dynamic offset count"}
                 ]
             },
             {
@@ -400,8 +375,15 @@
         "extensible": true,
         "members": [
             {"name": "layout", "type": "pipeline layout"},
-            {"name": "module", "type": "shader module"},
-            {"name": "entry point", "type": "char", "annotation": "const*", "length": "strlen"}
+            {"name": "compute stage", "type": "pipeline stage descriptor", "annotation": "const*"}
+        ]
+    },
+    "cull mode": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "none"},
+            {"value": 1, "name": "front"},
+            {"value": 2, "name": "back"}
         ]
     },
     "device": {
@@ -429,16 +411,8 @@
                 ]
             },
             {
-                "name": "create buffer builder for testing",
-                "returns": "buffer builder"
-            },
-            {
                 "name": "create command encoder",
                 "returns": "command encoder"
-            },
-            {
-                "name": "create input state builder",
-                "returns": "input state builder"
             },
             {
                 "name": "create compute pipeline",
@@ -577,12 +551,19 @@
     "filter mode": {
         "category": "enum",
         "values": [
-            {"value": 0, "name":"nearest"},
-            {"value": 1, "name":"linear"}
+            {"value": 0, "name": "nearest"},
+            {"value": 1, "name": "linear"}
         ]
     },
     "float": {
         "category": "native"
+    },
+    "front face": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "CCW"},
+            {"value": 1, "name": "CW"}
+        ]
     },
     "index format": {
         "category": "enum",
@@ -597,7 +578,7 @@
         "members": [
             {"name": "shader location", "type": "uint32_t"},
             {"name": "input slot", "type": "uint32_t"},
-            {"name": "offset", "type": "uint32_t"},
+            {"name": "offset", "type": "uint64_t"},
             {"name": "format", "type": "vertex format"}
         ]
     },
@@ -606,32 +587,19 @@
         "extensible": false,
         "members": [
             {"name": "input slot", "type": "uint32_t"},
-            {"name": "stride", "type": "uint32_t"},
+            {"name": "stride", "type": "uint64_t"},
             {"name": "step mode", "type": "input step mode"}
         ]
     },
-    "input state": {
-        "category": "object"
-    },
-    "input state builder": {
-        "category": "object",
-        "methods": [
-            {
-                "name": "get result",
-                "returns": "input state"
-            },
-            {
-                "name": "set attribute",
-                "args": [
-                    {"name": "attribute", "type": "vertex attribute descriptor", "annotation": "const*"}
-                ]
-            },
-            {
-                "name": "set input",
-                "args": [
-                    {"name": "input", "type": "vertex input descriptor", "annotation": "const*"}
-                ]
-            }
+    "input state descriptor": {
+        "category": "structure",
+        "extensible": true,
+        "members": [
+            {"name": "index format", "type": "index format"},
+            {"name": "num attributes", "type": "uint32_t"},
+            {"name": "attributes", "type": "vertex attribute descriptor", "annotation": "const*", "length": "num attributes"},
+            {"name": "num inputs", "type": "uint32_t"},
+            {"name": "inputs", "type": "vertex input descriptor", "annotation": "const*", "length": "num inputs"}
         ]
     },
     "input step mode": {
@@ -718,6 +686,18 @@
         ]
     },
 
+    "rasterization state descriptor": {
+        "category": "structure",
+        "extensible": true,
+        "members": [
+            {"name": "front face", "type": "front face"},
+            {"name": "cull mode", "type": "cull mode"},
+            {"name": "depth bias", "type": "int32_t"},
+            {"name": "depth bias slope scale", "type": "float"},
+            {"name": "depth bias clamp", "type": "float"}
+        ]
+    },
+
     "render pass color attachment descriptor": {
         "category": "structure",
         "members": [
@@ -776,7 +756,9 @@
                 "name": "set bind group",
                 "args": [
                     {"name": "group index", "type": "uint32_t"},
-                    {"name": "group", "type": "bind group"}
+                    {"name": "group", "type": "bind group"},
+                    {"name": "dynamic offset count", "type": "uint32_t"},
+                    {"name": "dynamic offsets", "type": "uint64_t", "annotation": "const*", "length": "dynamic offset count"}
                 ]
             },
             {
@@ -794,7 +776,7 @@
                     {"name": "index count", "type": "uint32_t"},
                     {"name": "instance count", "type": "uint32_t"},
                     {"name": "first index", "type": "uint32_t"},
-                    {"name": "base vertex", "type": "uint32_t"},
+                    {"name": "base vertex", "type": "int32_t"},
                     {"name": "first instance", "type": "uint32_t"}
                 ]
             },
@@ -841,14 +823,14 @@
                     {"name": "start slot", "type": "uint32_t"},
                     {"name": "count", "type": "uint32_t"},
                     {"name": "buffers", "type": "buffer", "annotation": "const*", "length": "count"},
-                    {"name": "offsets", "type": "uint32_t", "annotation": "const*", "length": "count"}
+                    {"name": "offsets", "type": "uint64_t", "annotation": "const*", "length": "count"}
                 ]
             },
             {
                 "name": "set index buffer",
                 "args": [
                     {"name": "buffer", "type": "buffer"},
-                    {"name": "offset", "type": "uint32_t"}
+                    {"name": "offset", "type": "uint64_t"}
                 ]
             },
             {
@@ -867,9 +849,9 @@
             {"name": "layout", "type": "pipeline layout"},
             {"name": "vertex stage", "type": "pipeline stage descriptor", "annotation": "const*"},
             {"name": "fragment stage", "type": "pipeline stage descriptor", "annotation": "const*"},
-            {"name": "input state", "type": "input state"},
-            {"name": "index format", "type": "index format"},
+            {"name": "input state", "type": "input state descriptor", "annotation": "const*"},
             {"name": "primitive topology", "type": "primitive topology"},
+            {"name": "rasterization state", "type": "rasterization state descriptor", "annotation": "const*"},
             {"name": "sample count", "type": "uint32_t"},
             {"name": "depth stencil state", "type": "depth stencil state descriptor", "annotation": "const*", "optional": true},
             {"name": "color state count", "type": "uint32_t"},
@@ -891,8 +873,7 @@
             {"name": "mipmap filter", "type": "filter mode"},
             {"name": "lod min clamp", "type": "float"},
             {"name": "lod max clamp", "type": "float"},
-            {"name": "compare function", "type": "compare function"},
-            {"name": "border color", "type": "border color"}
+            {"name": "compare function", "type": "compare function"}
         ]
     },
     "shader module": {
@@ -981,15 +962,18 @@
         "category": "object",
         "methods": [
             {
-                "name": "create default texture view",
+                "name": "create default view",
                 "returns": "texture view"
             },
             {
-                "name": "create texture view",
+                "name": "create view",
                 "returns": "texture view",
                 "args": [
                     {"name": "descriptor", "type": "texture view descriptor", "annotation": "const*"}
                 ]
+            },
+            {
+                "name": "destroy"
             }
         ]
     },
@@ -1088,18 +1072,36 @@
     "vertex format": {
         "category": "enum",
         "values": [
-            {"value": 0,  "name": "float r32 g32 b32 a32"},
-            {"value": 1,  "name": "float r32 g32 b32"},
-            {"value": 2,  "name": "float r32 g32"},
-            {"value": 3,  "name": "float r32"},
-            {"value": 4,  "name": "int r32 g32 b32 a32"},
-            {"value": 5,  "name": "int r32 g32 b32"},
-            {"value": 6,  "name": "int r32 g32"},
-            {"value": 7,  "name": "int r32"},
-            {"value": 8,  "name": "ushort r16 g16 b16 a16"},
-            {"value": 9,  "name": "ushort r16 g16"},
-            {"value": 10, "name": "unorm r8 g8 b8 a8"},
-            {"value": 11, "name": "unorm r8 g8"}
+            {"value": 0,  "name": "uChar2"},
+            {"value": 1,  "name": "uChar4"},
+            {"value": 2,  "name": "char2"},
+            {"value": 3,  "name": "char4"},
+            {"value": 4,  "name": "uChar2 norm"},
+            {"value": 5, "name": "uChar4 norm"},
+            {"value": 6, "name": "char2 norm"},
+            {"value": 7, "name": "char4 norm"},
+            {"value": 8, "name": "uShort2"},
+            {"value": 9, "name": "uShort4"},
+            {"value": 10, "name": "short2"},
+            {"value": 11, "name": "short4"},
+            {"value": 12, "name": "uShort2 norm"},
+            {"value": 13, "name": "uShort4 norm"},
+            {"value": 14, "name": "short2 norm"},
+            {"value": 15, "name": "short4 norm"},
+            {"value": 16, "name": "half2"},
+            {"value": 17, "name": "half4"},
+            {"value": 18, "name": "float"},
+            {"value": 19, "name": "float2"},
+            {"value": 20, "name": "float3"},
+            {"value": 21, "name": "float4"},
+            {"value": 22, "name": "uInt"},
+            {"value": 23, "name": "uInt2"},
+            {"value": 24, "name": "uInt3"},
+            {"value": 25, "name": "uInt4"},
+            {"value": 26, "name": "int"},
+            {"value": 27, "name": "int2"},
+            {"value": 28, "name": "int3"},
+            {"value": 29, "name": "int4"}
         ]
     },
     "ObjectType": {
@@ -1118,6 +1120,9 @@
         "category": "native"
     },
     "uint32_t": {
+        "category": "native"
+    },
+    "int32_t": {
         "category": "native"
     },
     "uint64_t": {

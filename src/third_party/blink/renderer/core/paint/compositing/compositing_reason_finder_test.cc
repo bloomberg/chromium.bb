@@ -18,7 +18,7 @@ namespace blink {
 class CompositingReasonFinderTest : public RenderingTest {
  public:
   CompositingReasonFinderTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  private:
   void SetUp() override {
@@ -142,57 +142,6 @@ TEST_F(CompositingReasonFinderTest, OnlyScrollingStickyPositionPromoted) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky-no-scrolling"))
           ->Layer()
           ->GetCompositingState());
-}
-
-TEST_F(CompositingReasonFinderTest, RequiresCompositingForTransformAnimation) {
-  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetSubtreeWillChangeContents(false);
-
-  style->SetHasCurrentTransformAnimation(false);
-  style->SetIsRunningTransformAnimationOnCompositor(false);
-  EXPECT_FALSE(
-      CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-          *style));
-
-  style->SetHasCurrentTransformAnimation(false);
-  style->SetIsRunningTransformAnimationOnCompositor(true);
-  EXPECT_FALSE(
-      CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-          *style));
-
-  style->SetHasCurrentTransformAnimation(true);
-  style->SetIsRunningTransformAnimationOnCompositor(false);
-  EXPECT_TRUE(CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-      *style));
-
-  style->SetHasCurrentTransformAnimation(true);
-  style->SetIsRunningTransformAnimationOnCompositor(true);
-  EXPECT_TRUE(CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-      *style));
-
-  style->SetSubtreeWillChangeContents(true);
-
-  style->SetHasCurrentTransformAnimation(false);
-  style->SetIsRunningTransformAnimationOnCompositor(false);
-  EXPECT_FALSE(
-      CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-          *style));
-
-  style->SetHasCurrentTransformAnimation(false);
-  style->SetIsRunningTransformAnimationOnCompositor(true);
-  EXPECT_TRUE(CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-      *style));
-
-  style->SetHasCurrentTransformAnimation(true);
-  style->SetIsRunningTransformAnimationOnCompositor(false);
-  EXPECT_FALSE(
-      CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-          *style));
-
-  style->SetHasCurrentTransformAnimation(true);
-  style->SetIsRunningTransformAnimationOnCompositor(true);
-  EXPECT_TRUE(CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-      *style));
 }
 
 TEST_F(CompositingReasonFinderTest, CompositingReasonsForAnimation) {

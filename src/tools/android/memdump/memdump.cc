@@ -364,9 +364,9 @@ void AppendAppSharedField(const std::vector<PageCount>& app_shared_pages,
   out->append("[");
   for (std::vector<PageCount>::const_iterator it = app_shared_pages.begin();
        it != app_shared_pages.end(); ++it) {
-    out->append(base::IntToString(it->total_count * kPageSize));
+    out->append(base::NumberToString(it->total_count * kPageSize));
     out->append(":");
-    out->append(base::IntToString(it->unevictable_count * kPageSize));
+    out->append(base::NumberToString(it->unevictable_count * kPageSize));
     if (it + 1 != app_shared_pages.end())
       out->append(",");
   }

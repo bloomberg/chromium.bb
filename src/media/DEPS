@@ -19,6 +19,7 @@ include_rules = [
   "+third_party/libyuv",
   "+third_party/opus",
   "+third_party/skia",
+  "+ui/base/mpris/buildflags",
   "+ui/display",
   "+ui/events",
   "+ui/gfx",
@@ -32,6 +33,12 @@ include_rules = [
 
 specific_include_rules = {
   "audio_manager_unittest.cc": [
+    "+chromeos/dbus"
+  ],
+  "cras_input_unittest.cc": [
+    "+chromeos/dbus"
+  ],
+  "cras_unified_unittest.cc": [
     "+chromeos/dbus"
   ],
   "gpu_memory_buffer_video_frame_pool_unittest.cc": [

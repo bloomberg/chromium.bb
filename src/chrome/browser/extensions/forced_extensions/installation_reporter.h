@@ -23,25 +23,32 @@ class InstallationReporter {
   // Stage of extension installing process. Typically forced extensions from
   // policies should go through all stages in this order, other extensions skip
   // CREATED stage.
+  // Note: enum used for UMA. Do NOT reorder or remove entries. Don't forget to
+  // update enums.xml (name: ExtensionInstallationStage) when adding new
+  // entries.
   enum class Stage {
     // Extension found in ForceInstall policy and added to
     // ExtensionManagement::settings_by_id_.
-    CREATED,
+    CREATED = 0,
 
     // Extension added to PendingExtensionManager.
-    PENDING,
+    PENDING = 1,
 
     // Extension added to ExtensionDownloader.
-    DOWNLOADING,
+    DOWNLOADING = 2,
 
     // Extension archive downloaded and is about to be unpacked/checked/etc.
-    INSTALLING,
+    INSTALLING = 3,
 
     // Extension installation finished (either successfully or not).
-    COMPLETE,
+    COMPLETE = 4,
+
+    // Magic constant used by the histogram macros.
+    // Always update it to the max value.
+    kMaxValue = COMPLETE,
   };
 
-  // Enum used for UMA. Do NOT reorder or remove entry. Don't forget to
+  // Enum used for UMA. Do NOT reorder or remove entries. Don't forget to
   // update enums.xml (name: ExtensionInstallationFailureReason) when adding new
   // entries.
   enum class FailureReason {

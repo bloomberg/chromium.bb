@@ -245,16 +245,14 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, GetRawScriptData) {
     // Wait for the script's arrival.
     get_raw_script_data_waiter->Wait();
     EXPECT_TRUE(script_data);
-    ASSERT_EQ(1u, script_data->ScriptTextChunks().size());
-    ASSERT_EQ(kExpectedBody.size() + 1,
-              script_data->ScriptTextChunks()[0].size());
+    Vector<uint8_t> script_text = script_data->TakeScriptText();
+    Vector<uint8_t> meta_data = script_data->TakeMetaData();
+    ASSERT_EQ(kExpectedBody.size() + 1, script_text.size());
     EXPECT_STREQ(kExpectedBody.data(),
-                 script_data->ScriptTextChunks()[0].data());
-    ASSERT_EQ(1u, script_data->MetaDataChunks().size());
-    ASSERT_EQ(kExpectedMetaData.size() + 1,
-              script_data->MetaDataChunks()[0].size());
+                 reinterpret_cast<const char*>(script_text.data()));
+    ASSERT_EQ(kExpectedMetaData.size() + 1, meta_data.size());
     EXPECT_STREQ(kExpectedMetaData.data(),
-                 script_data->MetaDataChunks()[0].data());
+                 reinterpret_cast<const char*>(meta_data.data()));
     EXPECT_EQ(kScriptInfoEncoding, script_data->Encoding());
     EXPECT_EQ(ToCrossThreadHTTPHeaderMapData(kScriptInfoHeaders),
               *(script_data->TakeHeaders()));
@@ -290,16 +288,14 @@ TEST_F(ServiceWorkerInstalledScriptsManagerTest, GetRawScriptData) {
     // Wait for the script's arrival.
     get_raw_script_data_waiter->Wait();
     EXPECT_TRUE(script_data);
-    ASSERT_EQ(1u, script_data->ScriptTextChunks().size());
-    ASSERT_EQ(kExpectedBody.size() + 1,
-              script_data->ScriptTextChunks()[0].size());
+    Vector<uint8_t> script_text = script_data->TakeScriptText();
+    Vector<uint8_t> meta_data = script_data->TakeMetaData();
+    ASSERT_EQ(kExpectedBody.size() + 1, script_text.size());
     EXPECT_STREQ(kExpectedBody.data(),
-                 script_data->ScriptTextChunks()[0].data());
-    ASSERT_EQ(1u, script_data->MetaDataChunks().size());
-    ASSERT_EQ(kExpectedMetaData.size() + 1,
-              script_data->MetaDataChunks()[0].size());
+                 reinterpret_cast<const char*>(script_text.data()));
+    ASSERT_EQ(kExpectedMetaData.size() + 1, meta_data.size());
     EXPECT_STREQ(kExpectedMetaData.data(),
-                 script_data->MetaDataChunks()[0].data());
+                 reinterpret_cast<const char*>(meta_data.data()));
     EXPECT_EQ(kScriptInfoEncoding, script_data->Encoding());
     EXPECT_EQ(ToCrossThreadHTTPHeaderMapData(kScriptInfoHeaders),
               *(script_data->TakeHeaders()));

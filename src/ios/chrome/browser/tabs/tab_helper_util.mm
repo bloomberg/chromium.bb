@@ -28,11 +28,12 @@
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
 #import "ios/chrome/browser/metrics/ukm_url_recorder.h"
+#import "ios/chrome/browser/network_activity/network_activity_indicator_tab_helper.h"
+#import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #include "ios/chrome/browser/reading_list/features.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
-#import "ios/chrome/browser/search_engines/feature_flags.h"
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -55,7 +56,6 @@
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 #import "ios/chrome/browser/web/java_script_console/java_script_console_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
-#import "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/print_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
@@ -88,10 +88,11 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   FindTabHelper::CreateForWebState(web_state);
   U2FTabHelper::CreateForWebState(web_state);
   StoreKitTabHelper::CreateForWebState(web_state);
-  JavaScriptConsoleTabHelper::CreateForWebState(tab.webState);
+  JavaScriptConsoleTabHelper::CreateForWebState(web_state);
   ITunesUrlsHandlerTabHelper::CreateForWebState(web_state);
   HistoryTabHelper::CreateForWebState(web_state);
   LoadTimingTabHelper::CreateForWebState(web_state);
+  OverscrollActionsTabHelper::CreateForWebState(web_state);
 
   if (base::FeatureList::IsEnabled(kCaptivePortalMetrics)) {
     CaptivePortalMetricsTabHelper::CreateForWebState(web_state);
@@ -122,13 +123,11 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   PasswordTabHelper::CreateForWebState(web_state);
 
   AutofillTabHelper::CreateForWebState(
-      web_state, PasswordTabHelper::FromWebState(web_state)
-                     ->GetPasswordGenerationManager());
+      web_state,
+      PasswordTabHelper::FromWebState(web_state)->GetPasswordManager());
 
   // Depends on favicon::WebFaviconDriver, must be created after it.
-  if (base::FeatureList::IsEnabled(kCustomSearchEngines)) {
     SearchEngineTabHelper::CreateForWebState(web_state);
-  }
 
   FormSuggestionTabHelper::CreateForWebState(web_state, @[
     PasswordTabHelper::FromWebState(web_state)->GetSuggestionProvider(),

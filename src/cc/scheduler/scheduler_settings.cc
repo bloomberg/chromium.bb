@@ -36,6 +36,8 @@ SchedulerSettings::AsValue() const {
                     wait_for_all_pipeline_stages_before_draw);
   state->SetBoolean("enable_surface_synchronization",
                     enable_surface_synchronization);
+  state->SetBoolean("compositor_threaded_scrollbar_scrolling",
+                    compositor_threaded_scrollbar_scrolling);
   return std::move(state);
 }
 

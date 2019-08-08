@@ -56,6 +56,7 @@ class _MockApkHelper(object):
 
   def __init__(self, path, package_name, perms=None):
     self.path = path
+    self.is_bundle = path.endswith('_bundle')
     self.package_name = package_name
     self.perms = perms
     self.abis = [abis.ARM]
@@ -325,6 +326,13 @@ class DeviceUtilsHasRootTest(DeviceUtilsTest):
                         '1\n')):
       self.assertTrue(self.device.HasRoot())
 
+  def testhasRootSpecialAosp_true(self):
+    with self.patch_call(self.call.device.product_name,
+                         return_value='aosp_sailfish'), (
+        self.assertCall(self.call.adb.Shell('getprop service.adb.root'),
+                        '1\n')):
+      self.assertTrue(self.device.HasRoot())
+
   def testHasRoot_false(self):
     with self.patch_call(self.call.device.product_name,
                          return_value='notasailfish'), (
@@ -339,6 +347,12 @@ class DeviceUtilsHasRootTest(DeviceUtilsTest):
                         '\n')):
       self.assertFalse(self.device.HasRoot())
 
+  def testHasRootSpecialAosp_false(self):
+    with self.patch_call(self.call.device.product_name,
+                         return_value='aosp_sailfish'), (
+        self.assertCall(self.call.adb.Shell('getprop service.adb.root'),
+                        '\n')):
+      self.assertFalse(self.device.HasRoot())
 
 class DeviceUtilsEnableRootTest(DeviceUtilsTest):
 
@@ -809,6 +823,11 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
       self.device.Install(DeviceUtilsInstallTest.mock_apk,
           reinstall=True, retries=0, permissions=[], allow_downgrade=True)
 
+  def testInstall_modulesSpecified(self):
+    with self.assertRaises(device_errors.CommandFailedError):
+      self.device.Install(DeviceUtilsInstallTest.mock_apk,
+          modules=['base'])
+
 
 class DeviceUtilsInstallSplitApkTest(DeviceUtilsTest):
 
@@ -890,6 +909,42 @@ class DeviceUtilsInstallSplitApkTest(DeviceUtilsTest):
         self.device.InstallSplitApk(DeviceUtilsInstallSplitApkTest.mock_apk,
             ['split1.apk', 'split2.apk', 'split3.apk'], permissions=[],
             retries=0)
+
+
+class DeviceUtilsInstallBundleTest(DeviceUtilsTest):
+  mock_apk = _MockApkHelper('/fake/test/app_bundle', 'test.package', ['p1'])
+
+  def testInstallBundle_noPriorInstall(self):
+    with self.patch_call(self.call.device.build_version_sdk, return_value=23):
+      with self.assertCalls(
+          (mock.call.devil.utils.cmd_helper.RunCmd(
+              ['/fake/test/app_bundle', 'install', '--device',
+                  self.device.serial]), 0),
+          (self.call.device.GrantPermissions('test.package', ['p1']), [])):
+        self.device.Install(DeviceUtilsInstallBundleTest.mock_apk)
+
+  def testInstallBundle_modulesSpecified(self):
+    with self.patch_call(self.call.device.build_version_sdk, return_value=23):
+      with self.assertCalls(
+          (mock.call.devil.utils.cmd_helper.RunCmd(
+              ['/fake/test/app_bundle', 'install', '--device',
+                  self.device.serial, '-m', 'base']), 0),
+          (self.call.device.GrantPermissions('test.package', ['p1']), [])):
+        self.device.Install(
+            DeviceUtilsInstallBundleTest.mock_apk, modules=['base'])
+
+  def testInstallBundle_permissionsPreM(self):
+    with self.patch_call(self.call.device.build_version_sdk, return_value=20):
+      with self.assertCalls(
+          (mock.call.devil.utils.cmd_helper.RunCmd(
+              ['/fake/test/app_bundle', 'install', '--device',
+                  self.device.serial]), 0)):
+        self.device.Install(DeviceUtilsInstallBundleTest.mock_apk)
+
+  def testInstallBundle_splitApks(self):
+    with self.assertRaises(device_errors.CommandFailedError):
+      self.device.InstallSplitApk(
+          DeviceUtilsInstallBundleTest.mock_apk, ['apk1', 'apk2'])
 
 
 class DeviceUtilsUninstallTest(DeviceUtilsTest):
@@ -2612,16 +2667,53 @@ class DeviceUtilsGetSetEnforce(DeviceUtilsTest):
 class DeviceUtilsGetWebViewUpdateServiceDumpTest(DeviceUtilsTest):
 
   def testGetWebViewUpdateServiceDump_success(self):
+    # Some of the lines of adb shell dumpsys webviewupdate:
+    dumpsys_lines = [
+        'Fallback logic enabled: true',
+        ('Current WebView package (name, version): '
+         '(com.android.chrome, 61.0.3163.98)'),
+        'Minimum WebView version code: 12345',
+        'WebView packages:',
+        ('Valid package com.android.chrome (versionName: '
+         '61.0.3163.98, versionCode: 1, targetSdkVersion: 26) is  '
+         'installed/enabled for all users'),
+        ('Valid package com.google.android.webview (versionName: '
+         '58.0.3029.125, versionCode: 1, targetSdkVersion: 26) is NOT '
+         'installed/enabled for all users'),
+        ('Invalid package com.google.android.apps.chrome (versionName: '
+         '56.0.2924.122, versionCode: 2, targetSdkVersion: 25), reason: SDK '
+         'version too low'),
+        ('com.chrome.canary is NOT installed.'),
+    ]
     with self.patch_call(self.call.device.build_version_sdk,
                          return_value=version_codes.OREO):
-      with self.assertCall(self.call.adb.Shell('dumpsys webviewupdate'),
-                           'Fallback logic enabled: true\n'
-                           'Current WebView package (name, version): '
-                           '(com.google.android.webview, 61.0.3163.98)'):
+      with self.assertCall(
+          self.call.adb.Shell('dumpsys webviewupdate'),
+          '\n'.join(dumpsys_lines)):
         update = self.device.GetWebViewUpdateServiceDump()
-        self.assertEqual(True, update['FallbackLogicEnabled'])
-        self.assertEqual('com.google.android.webview',
+        self.assertTrue(update['FallbackLogicEnabled'])
+        self.assertEqual('com.android.chrome',
                          update['CurrentWebViewPackage'])
+        self.assertEqual(12345, update['MinimumWebViewVersionCode'])
+        # Order isn't really important, and we shouldn't have duplicates, so we
+        # convert to sets.
+        expected = {
+            'com.android.chrome', 'com.google.android.webview',
+            'com.google.android.apps.chrome', 'com.chrome.canary'
+        }
+        self.assertSetEqual(expected, set(update['WebViewPackages'].keys()))
+        self.assertEquals(
+            'is  installed/enabled for all users',
+            update['WebViewPackages']['com.android.chrome'])
+        self.assertEquals(
+            'is NOT installed/enabled for all users',
+            update['WebViewPackages']['com.google.android.webview'])
+        self.assertEquals(
+            'reason: SDK version too low',
+            update['WebViewPackages']['com.google.android.apps.chrome'])
+        self.assertEquals(
+            'is NOT installed.',
+            update['WebViewPackages']['com.chrome.canary'])
 
   def testGetWebViewUpdateServiceDump_missingkey(self):
     with self.patch_call(self.call.device.build_version_sdk,
@@ -2641,15 +2733,75 @@ class DeviceUtilsGetWebViewUpdateServiceDumpTest(DeviceUtilsTest):
 class DeviceUtilsSetWebViewImplementationTest(DeviceUtilsTest):
 
   def testSetWebViewImplementation_success(self):
-    with self.assertCall(self.call.adb.Shell(
-        'cmd webviewupdate set-webview-implementation foo.org'), 'Success'):
-      self.device.SetWebViewImplementation('foo.org')
-
-  def testSetWebViewImplementation_failure(self):
-    with self.assertCall(self.call.adb.Shell(
-        'cmd webviewupdate set-webview-implementation foo.org'), 'Oops!'):
-      with self.assertRaises(device_errors.CommandFailedError):
+    with self.patch_call(
+        self.call.device.GetApplicationPaths, return_value=['/any/path']):
+      with self.assertCall(
+          self.call.adb.Shell(
+              'cmd webviewupdate set-webview-implementation foo.org'),
+          'Success'):
         self.device.SetWebViewImplementation('foo.org')
+
+  def testSetWebViewImplementation_uninstalled(self):
+    with self.patch_call(self.call.device.GetApplicationPaths, return_value=[]):
+      with self.assertRaises(device_errors.CommandFailedError) as cfe:
+        self.device.SetWebViewImplementation('foo.org')
+      self.assertIn('is not installed', cfe.exception.message)
+
+  def _testSetWebViewImplementationHelper(self, mock_dump_sys,
+                                          exception_message_substr):
+    with self.patch_call(
+        self.call.device.GetApplicationPaths, return_value=['/any/path']):
+      with self.assertCall(
+          self.call.adb.Shell(
+              'cmd webviewupdate set-webview-implementation foo.org'), 'Oops!'):
+        with self.patch_call(
+            self.call.device.GetWebViewUpdateServiceDump,
+            return_value=mock_dump_sys):
+          with self.assertRaises(device_errors.CommandFailedError) as cfe:
+            self.device.SetWebViewImplementation('foo.org')
+          self.assertIn(exception_message_substr, cfe.exception.message)
+
+  def testSetWebViewImplementation_notInProviderList(self):
+    mock_dump_sys = {
+        'WebViewPackages': {
+            'some.package': 'any reason',
+            'other.package': 'any reason',
+        }
+    }
+    self._testSetWebViewImplementationHelper(mock_dump_sys, 'provider list')
+
+  def testSetWebViewImplementation_notEnabled(self):
+    mock_dump_sys = {
+        'WebViewPackages': {
+            'foo.org': 'is NOT installed/enabled for all users',
+        }
+    }
+    self._testSetWebViewImplementationHelper(mock_dump_sys, 'is disabled')
+
+  def testSetWebViewImplementation_missingManifestTag(self):
+    mock_dump_sys = {
+        'WebViewPackages': {
+            'foo.org': 'No WebView-library manifest flag',
+        }
+    }
+    self._testSetWebViewImplementationHelper(mock_dump_sys,
+                                             'WebView native library')
+
+  def testSetWebViewImplementation_lowTargetSdkVersion(self):
+    mock_dump_sys = {'WebViewPackages': {'foo.org': 'SDK version too low',}}
+    with self.patch_call(self.call.device.build_version_sdk, return_value=26):
+      self._testSetWebViewImplementationHelper(mock_dump_sys,
+                                               'higher targetSdkVersion')
+
+  def testSetWebViewImplementation_lowVersionCode(self):
+    mock_dump_sys = {
+        'MinimumWebViewVersionCode': 12345,
+        'WebViewPackages': {
+            'foo.org': 'Version code too low',
+        }
+    }
+    self._testSetWebViewImplementationHelper(mock_dump_sys,
+                                             'higher versionCode')
 
 
 class DeviceUtilsSetWebViewFallbackLogicTest(DeviceUtilsTest):

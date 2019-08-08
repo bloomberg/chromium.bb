@@ -143,6 +143,8 @@ if (enable_vr) {
       sources += [
         "windows_mixed_reality/mixed_reality_device.cc",
         "windows_mixed_reality/mixed_reality_device.h",
+        "windows_mixed_reality/mixed_reality_input_helper.cc",
+        "windows_mixed_reality/mixed_reality_input_helper.h",
         "windows_mixed_reality/mixed_reality_renderloop.cc",
         "windows_mixed_reality/mixed_reality_renderloop.h",
         "windows_mixed_reality/mixed_reality_statics.cc",
@@ -251,9 +253,11 @@ if (enable_gvr_services) {
   android_library("java") {
     java_files = java_sources_needing_jni
     deps = [
+      "//third_party/gvr-android-sdk:gvr_common_java",
+    ]
+    classpath_deps = [
       "//base:base_java",
       "//ui/android:ui_java",
     ]
-    classpath_deps = [ "//third_party/gvr-android-sdk:gvr_common_java" ]
   }
 }

@@ -28,19 +28,23 @@ class Serial final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(Serial);
 
  public:
-  static Serial* Create(ExecutionContext& executionContext);
-
   explicit Serial(ExecutionContext&);
 
   // EventTarget
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
+  // ContextLifecycleObserver
+  void ContextDestroyed(ExecutionContext*) override;
+
+  // Web-exposed interfaces
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect)
   ScriptPromise getPorts(ScriptState*);
   ScriptPromise requestPort(ScriptState*, const SerialPortRequestOptions*);
 
+  void GetPort(const base::UnguessableToken& token,
+               device::mojom::blink::SerialPortRequest request);
   void Trace(Visitor*) override;
 
  private:

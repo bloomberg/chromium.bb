@@ -9,7 +9,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # and //ash/public/cpp needs to depend on this for generated code (such as
 # enums and constants).
 mojom("interfaces_internal") {
-  visibility = [ "//ash/public/cpp:*" ]
+  visibility = [
+    "//ash/public/cpp:*",
+    "//ash/public/interfaces:test_interfaces",
+  ]
   disable_variants = true
 
   sources = [
@@ -18,6 +21,7 @@ mojom("interfaces_internal") {
     "accessibility_controller_enums.mojom",
     "accessibility_focus_ring_controller.mojom",
     "app_list.mojom",
+    "app_list_view.mojom",
     "arc_custom_tab.mojom",
     "ash_display_controller.mojom",
     "ash_message_center_controller.mojom",
@@ -110,6 +114,7 @@ mojom("test_interfaces") {
     "time_to_first_present_recorder_test_api.test-mojom",
   ]
   deps = [
+    "//ash/public/interfaces:interfaces_internal",
     "//components/account_id/interfaces",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojo",

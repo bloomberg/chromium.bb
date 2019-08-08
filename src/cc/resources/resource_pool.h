@@ -12,7 +12,6 @@
 #include <memory>
 
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -199,7 +198,10 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
                const base::TimeDelta& expiration_delay,
                bool disallow_non_exact_reuse);
 
+  ResourcePool(const ResourcePool&) = delete;
   ~ResourcePool() override;
+
+  ResourcePool& operator=(const ResourcePool&) = delete;
 
   // Tries to reuse a resource. If none are available, makes a new one.
   InUsePoolResource AcquireResource(const gfx::Size& size,
@@ -407,8 +409,6 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   const base::TickClock* clock_;
 
   base::WeakPtrFactory<ResourcePool> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResourcePool);
 };
 
 }  // namespace cc

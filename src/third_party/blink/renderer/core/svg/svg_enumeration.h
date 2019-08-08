@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/core/svg/properties/svg_property.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -111,7 +112,9 @@ class SVGEnumeration : public SVGEnumerationBase {
       : SVGEnumerationBase(new_value, GetEnumerationMap<Enum>()) {}
   ~SVGEnumeration() override = default;
 
-  SVGEnumerationBase* Clone() const override { return Create(EnumValue()); }
+  SVGEnumerationBase* Clone() const override {
+    return MakeGarbageCollected<SVGEnumeration>(EnumValue());
+  }
 
   Enum EnumValue() const {
     DCHECK_LE(value_, MaxInternalEnumValue());

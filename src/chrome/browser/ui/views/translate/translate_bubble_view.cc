@@ -311,12 +311,9 @@ bool TranslateBubbleView::AcceleratorPressed(
 
 gfx::Size TranslateBubbleView::CalculatePreferredSize() const {
   int width = 0;
-  for (int i = 0; i < child_count(); i++) {
-    const views::View* child = child_at(i);
+  for (const views::View* child : children())
     width = std::max(width, child->GetPreferredSize().width());
-  }
-  int height = GetCurrentView()->GetPreferredSize().height();
-  return gfx::Size(width, height);
+  return gfx::Size(width, GetCurrentView()->GetPreferredSize().height());
 }
 
 void TranslateBubbleView::OnPerformAction(views::Combobox* combobox) {
@@ -362,7 +359,7 @@ void TranslateBubbleView::ShowOptionsMenu(views::Button* source) {
       options_menu_model_.get(), views::MenuRunner::COMBOBOX));
   gfx::Rect screen_bounds = source->GetBoundsInScreen();
   options_menu_runner_->RunMenuAt(source->GetWidget(), nullptr, screen_bounds,
-                                  views::MENU_ANCHOR_TOPRIGHT,
+                                  views::MenuAnchorPosition::kTopRight,
                                   ui::MENU_SOURCE_MOUSE);
 }
 
@@ -547,10 +544,8 @@ void TranslateBubbleView::UpdateChildVisibilities() {
     advanced_always_translate_checkbox_->SetChecked(should_always_translate_);
   if (before_always_translate_checkbox_)
     before_always_translate_checkbox_->SetChecked(should_always_translate_);
-  for (int i = 0; i < child_count(); i++) {
-    views::View* view = child_at(i);
+  for (views::View* view : children())
     view->SetVisible(view == GetCurrentView());
-  }
   if (GetWidget())
     GetWidget()->UpdateWindowTitle();
   // BoxLayout only considers visible children, so ensure any newly visible

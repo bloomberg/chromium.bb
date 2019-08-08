@@ -445,7 +445,7 @@ bool MimeSniffingResourceHandler::MaybeStartInterception() {
   const std::string& mime_type = response_->head.mime_type;
 
   // Allow requests for object/embed tags to be intercepted as streams.
-  if (info->GetResourceType() == content::RESOURCE_TYPE_OBJECT) {
+  if (info->GetResourceType() == content::ResourceType::kObject) {
     DCHECK(info->resource_intercept_policy() !=
            ResourceInterceptPolicy::kAllowAll);
 
@@ -460,16 +460,18 @@ bool MimeSniffingResourceHandler::MaybeStartInterception() {
     return true;
 
   // A policy unequal to ResourceInterceptPolicy::kAllowNone implies
-  // info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME or
-  // info->GetResourceType() == RESOURCE_TYPE_SUB_FRAME.
-  DCHECK(info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME ||
-         info->GetResourceType() == RESOURCE_TYPE_SUB_FRAME);
+  // info->GetResourceType() == ResourceType::kMainFrame or
+  // info->GetResourceType() == ResourceType::kSubFrame.
+  DCHECK(info->GetResourceType() == ResourceType::kMainFrame ||
+         info->GetResourceType() == ResourceType::kSubFrame);
 
   bool must_download = MustDownload();
   if (!must_download) {
     if (blink::IsSupportedMimeType(mime_type))
       return true;
-    if (signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
+    if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
+            info->GetContext()) &&
+        signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
             request()->url(), response_->head)) {
       return true;
     }

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.explore_sites;
 import android.content.Context;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.LinearLayoutManager;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 
@@ -49,10 +48,10 @@ class CategoryCardAdapter extends ForwardingListObservable<Void>
     private final NativePageNavigationDelegate mNavDelegate;
     private final Profile mProfile;
 
-    private LinearLayoutManager mLayoutManager;
+    private StableScrollLayoutManager mLayoutManager;
     private PropertyModel mCategoryModel;
 
-    public CategoryCardAdapter(PropertyModel model, LinearLayoutManager layoutManager,
+    CategoryCardAdapter(PropertyModel model, StableScrollLayoutManager layoutManager,
             RoundedIconGenerator iconGenerator, ContextMenuManager contextMenuManager,
             NativePageNavigationDelegate navDelegate, Profile profile) {
         mCategoryModel = model;
@@ -133,16 +132,8 @@ class CategoryCardAdapter extends ForwardingListObservable<Void>
             }
         }
         if (key == ExploreSitesPage.SCROLL_TO_CATEGORY_KEY) {
-            // NOTE: LinearLayoutManager#scrollToPosition has strange behavior if the scrolling
-            // happens between the time that the adapter has an item and the time that the view has
-            // actually added its children.  In that case, the LinearLayoutManager will only scroll
-            // the requested position /into view/.
-            //
-            // To work around that, we use LinearLayoutManager#scrollToPositionWithOffset, and set
-            // the offset to 0.  This allows us to always scroll the desired view to the top of the
-            // screen.
-            mLayoutManager.scrollToPositionWithOffset(
-                    mCategoryModel.get(ExploreSitesPage.SCROLL_TO_CATEGORY_KEY), 0);
+            mLayoutManager.scrollToPositionAndFocus(
+                    mCategoryModel.get(ExploreSitesPage.SCROLL_TO_CATEGORY_KEY));
         }
     }
 }

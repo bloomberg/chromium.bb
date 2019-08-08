@@ -132,7 +132,7 @@ class VIEWS_EXPORT FlexSpecification {
 
   // Creates a flex specification with a custom flex rule. Note that any copies
   // or mutations of this specification will also inherit the rule.
-  static FlexSpecification ForCustomRule(const FlexRule& rule);
+  static FlexSpecification ForCustomRule(FlexRule rule);
 
   // Creates a flex specification using the specififed minimum size and size
   // bounds rules.
@@ -152,11 +152,11 @@ class VIEWS_EXPORT FlexSpecification {
   int order() const { return order_; }
 
  private:
-  FlexSpecification(const FlexRule& rule, int order, int weight);
+  FlexSpecification(FlexRule rule, int order, int weight);
 
   FlexRule rule_;
-  int order_;
-  int weight_;
+  int order_ = 1;
+  int weight_ = 0;
 };
 
 }  // namespace views

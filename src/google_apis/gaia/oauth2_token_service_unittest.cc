@@ -508,7 +508,7 @@ TEST_F(OAuth2TokenServiceTest, ServiceShutDownBeforeFetchComplete) {
   EXPECT_EQ(0, consumer_.number_of_errors_);
 
   // The destructor should cancel all in-flight fetchers.
-  oauth2_service_.reset(NULL);
+  oauth2_service_.reset(nullptr);
 
   EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(1, consumer_.number_of_errors_);

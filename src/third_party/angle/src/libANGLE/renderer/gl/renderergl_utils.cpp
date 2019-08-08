@@ -1104,7 +1104,7 @@ void GenerateCaps(const FunctionsGL *functions,
 
     if (functions->hasGLExtension("GL_NV_viewport_array2"))
     {
-        extensions->multiview = true;
+        extensions->multiview2 = true;
         // GL_MAX_ARRAY_TEXTURE_LAYERS is guaranteed to be at least 256.
         const int maxLayers = QuerySingleGLInt(functions, GL_MAX_ARRAY_TEXTURE_LAYERS);
         // GL_MAX_VIEWPORTS is guaranteed to be at least 16.
@@ -1130,7 +1130,7 @@ void GenerateCaps(const FunctionsGL *functions,
                                        functions->isAtLeastGLES(gl::Version(3, 0)) ||
                                        functions->hasGLESExtension("GL_EXT_instanced_arrays");
     extensions->instancedArraysEXT = extensions->instancedArraysANGLE;
-    extensions->unpackSubimage = functions->standard == STANDARD_GL_DESKTOP ||
+    extensions->unpackSubimage     = functions->standard == STANDARD_GL_DESKTOP ||
                                  functions->isAtLeastGLES(gl::Version(3, 0)) ||
                                  functions->hasGLESExtension("GL_EXT_unpack_subimage");
     extensions->packSubimage = functions->standard == STANDARD_GL_DESKTOP ||
@@ -1201,7 +1201,7 @@ void GenerateCaps(const FunctionsGL *functions,
         functions->isAtLeastGL(gl::Version(4, 2)) || functions->isAtLeastGLES(gl::Version(3, 2));
 
     extensions->multiviewMultisample =
-        extensions->textureStorageMultisample2DArray && extensions->multiview;
+        extensions->textureStorageMultisample2DArray && extensions->multiview2;
 
     extensions->textureMultisample = functions->isAtLeastGL(gl::Version(3, 2)) ||
                                      functions->hasGLExtension("GL_ARB_texture_multisample");
@@ -1454,7 +1454,11 @@ void GenerateWorkarounds(const FunctionsGL *functions, WorkaroundsGL *workaround
 
     workarounds->dontRelinkProgramsInParallel = IsAndroid() || (IsWindows() && IsIntel(vendor));
 
-    workarounds->disableWorkerContexts = !IsApple();
+    // TODO(jie.a.chen@intel.com): Clean up the bugs.
+    // anglebug.com/3031
+    // crbug.com/922936
+    workarounds->disableWorkerContexts =
+        (IsWindows() && (IsIntel(vendor) || IsAMD(vendor))) || (IsLinux() && IsNvidia(vendor));
 }
 
 void ApplyWorkarounds(const FunctionsGL *functions, gl::Workarounds *workarounds)

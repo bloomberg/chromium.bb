@@ -344,7 +344,7 @@ std::vector<metrics::ExtensionInstallProto> GetInstallsForProfile(
 
 ExtensionsMetricsProvider::ExtensionsMetricsProvider(
     metrics::MetricsStateManager* metrics_state_manager)
-    : metrics_state_manager_(metrics_state_manager), cached_profile_(NULL) {
+    : metrics_state_manager_(metrics_state_manager) {
   DCHECK(metrics_state_manager_);
 }
 
@@ -359,29 +359,6 @@ int ExtensionsMetricsProvider::HashExtension(const std::string& extension_id,
       base::StringPrintf("%u:%s", client_key, extension_id.c_str());
   uint64_t output = CityHash64(message.data(), message.size());
   return output % kExtensionListBuckets;
-}
-
-Profile* ExtensionsMetricsProvider::GetMetricsProfile() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (!profile_manager)
-    return NULL;
-
-  // If there is a cached profile, reuse that.  However, check that it is still
-  // valid first.
-  if (cached_profile_ && profile_manager->IsValidProfile(cached_profile_))
-    return cached_profile_;
-
-  // Find a suitable profile to use, and cache it so that we continue to report
-  // statistics on the same profile.  We would simply use
-  // ProfileManager::GetLastUsedProfile(), except that that has the side effect
-  // of creating a profile if it does not yet exist.
-  cached_profile_ = profile_manager->GetProfileByPath(
-      profile_manager->GetLastUsedProfileDir(profile_manager->user_data_dir()));
-  if (cached_profile_) {
-    // Ensure that the returned profile is not an incognito profile.
-    cached_profile_ = cached_profile_->GetOriginalProfile();
-  }
-  return cached_profile_;
 }
 
 std::unique_ptr<extensions::ExtensionSet>
@@ -458,7 +435,7 @@ void ExtensionsMetricsProvider::ProvideOccupiedBucketMetric(
   // per-profile.  We return the extensions installed in the primary profile.
   // In the future, we might consider reporting data about extensions in all
   // profiles.
-  Profile* profile = GetMetricsProfile();
+  Profile* profile = cached_profile_.GetMetricsProfile();
 
   std::unique_ptr<extensions::ExtensionSet> extensions(
       GetInstalledExtensions(profile));

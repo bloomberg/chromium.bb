@@ -128,13 +128,16 @@ void PowerManagerProviderImpl::AcquireWakeLockOnMainThread() {
     return;
   }
 
-  // Initialize |wake_lock_| if this is the first time we're using it.
+  // Initialize |wake_lock_| if this is the first time we're using it. Assistant
+  // can acquire a wake lock even when it has nothing to show on the display,
+  // this shouldn't wake the display up. Hence, the wake lock acquired is of
+  // type kPreventAppSuspension.
   if (!wake_lock_) {
     device::mojom::WakeLockProviderPtr provider;
     connector_->BindInterface(device::mojom::kServiceName,
                               mojo::MakeRequest(&provider));
     provider->GetWakeLockWithoutContext(
-        device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming,
+        device::mojom::WakeLockType::kPreventAppSuspension,
         device::mojom::WakeLockReason::kOther, kWakeLockReason,
         mojo::MakeRequest(&wake_lock_));
   }

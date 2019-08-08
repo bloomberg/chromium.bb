@@ -12,12 +12,12 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/account_manager_welcome_dialog.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
-#include "chromeos/account_manager/account_manager.h"
-#include "chromeos/account_manager/account_manager_factory.h"
+#include "chromeos/components/account_manager/account_manager_factory.h"
 #include "components/user_manager/user.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -30,6 +30,19 @@ namespace chromeos {
 namespace settings {
 
 namespace {
+
+constexpr char kFamilyLink[] = "Family Link";
+
+std::string GetEnterpriseDomainFromUsername(const std::string& username) {
+  size_t email_separator_pos = username.find('@');
+  bool is_email = email_separator_pos != std::string::npos &&
+                  email_separator_pos < username.length() - 1;
+
+  if (!is_email)
+    return std::string();
+
+  return gaia::ExtractDomainName(username);
+}
 
 AccountManager::AccountKey GetAccountKeyFromJsCallback(
     const base::DictionaryValue* const dictionary) {
@@ -150,7 +163,7 @@ void AccountManagerUIHandler::OnGetAccounts(
         !identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
             maybe_account_info->account_id));
     account.SetString("fullName", maybe_account_info->full_name);
-    account.SetString("email", maybe_account_info->email);
+    account.SetString("email", stored_account.raw_email);
     if (!maybe_account_info->account_image.IsEmpty()) {
       account.SetString("pic",
                         webui::GetBitmapDataUrl(
@@ -174,6 +187,19 @@ void AccountManagerUIHandler::OnGetAccounts(
   // Device account must show up at the top.
   if (!device_account.empty()) {
     device_account.SetBoolean("isDeviceAccount", true);
+
+    // Check if user is managed.
+    const Profile* const profile = Profile::FromWebUI(web_ui());
+    if (profile->IsChild()) {
+      device_account.SetString("organization", kFamilyLink);
+    } else if (policy::ProfilePolicyConnectorFactory::IsProfileManaged(
+                   profile)) {
+      device_account.SetString(
+          "organization",
+          GetEnterpriseDomainFromUsername(
+              identity_manager_->GetPrimaryAccountInfo().email));
+    }
+
     accounts.GetList().insert(accounts.GetList().begin(),
                               std::move(device_account));
   }

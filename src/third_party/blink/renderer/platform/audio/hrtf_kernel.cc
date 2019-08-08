@@ -140,8 +140,8 @@ std::unique_ptr<HRTFKernel> HRTFKernel::CreateInterpolatedKernel(
   std::unique_ptr<FFTFrame> interpolated_frame =
       FFTFrame::CreateInterpolatedFrame(*kernel1->FftFrame(),
                                         *kernel2->FftFrame(), x);
-  return HRTFKernel::Create(std::move(interpolated_frame), frame_delay,
-                            sample_rate1);
+  return std::make_unique<HRTFKernel>(std::move(interpolated_frame),
+                                      frame_delay, sample_rate1);
 }
 
 }  // namespace blink

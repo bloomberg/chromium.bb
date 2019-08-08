@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
+import org.chromium.chrome.R;
+
 import java.util.ArrayList;
 
 /**
@@ -25,6 +27,9 @@ public class CompatibilityTextInputLayout extends TextInputLayout {
 
     public CompatibilityTextInputLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+        setErrorTextAppearance(R.style.TextAppearance_ErrorCaption);
+
         // Disable the hint animation initially to work around a bug in the support library that
         // causes the hint text and text in populated EditText views to overlap when first
         // displayed on M-. See https://crbug.com/740057.
@@ -38,7 +43,7 @@ public class CompatibilityTextInputLayout extends TextInputLayout {
     }
 
     @Override
-    public void onFinishInflate() {
+    protected void onFinishInflate() {
         super.onFinishInflate();
 
         // If there is an EditText descendant, make this serve as the label for it.

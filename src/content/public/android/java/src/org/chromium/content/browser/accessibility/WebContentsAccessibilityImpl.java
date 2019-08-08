@@ -148,8 +148,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     protected WebContentsAccessibilityImpl(WebContents webContents) {
         mWebContents = (WebContentsImpl) webContents;
-        mContext = mWebContents.getContext();
         mView = mWebContents.getViewAndroidDelegate().getContainerView();
+        mContext = mView.getContext();
         mProductVersion = mWebContents.getProductVersion();
         mAccessibilityManager =
                 (AccessibilityManager) mContext.getSystemService(Context.ACCESSIBILITY_SERVICE);

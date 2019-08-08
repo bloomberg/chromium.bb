@@ -31,6 +31,7 @@ namespace arc {
 // - GetFileSize()
 // - GetMimeType()
 // - OpenFileToRead()
+// - OpenFileToWrite()
 // Fake files for those functions can be set up by AddFile().
 //
 // Documents provider based functions are:
@@ -46,6 +47,8 @@ namespace arc {
 //   added with AddDocument().
 // - GetRecentDocuments() returns recent documents in the same order as they
 //   were added with AddRecentDocument().
+// - OpenFileToRead() and OpenFileToWrite() will fail unless AddFile() for the
+//   file to open is called beforehand.
 // - Callbacks are never invoked synchronously.
 // - All member functions must be called on the same thread.
 class FakeFileSystemInstance : public mojom::FileSystemInstance {
@@ -60,7 +63,10 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
     // Content URL of a file.
     std::string url;
 
-    // The content of a file.
+    // The content of a file, which can be read by OpenFileToRead().
+    // When Seekable.NO is specified and OpenFileToWrite() is called, this
+    // |content| will be ignored and bytes written to FD from OpenFileToWrite()
+    // will be read by OpenFileToRead().
     std::string content;
 
     // The MIME type of a file.
@@ -163,6 +169,34 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // Returns how many times GetChildDocuments() was called.
   int get_child_documents_count() const { return get_child_documents_count_; }
 
+  // Returns true if there is a document with the given authority and
+  // document_id.
+  bool DocumentExists(const std::string& authority,
+                      const std::string& document_id);
+
+  // Returns true if there is a document with the given authority,
+  // root's document_id, and file path from the root.
+  bool DocumentExists(const std::string& authority,
+                      const std::string& root_document_id,
+                      const base::FilePath& path);
+
+  // Returns a document with the given authority and document_id.
+  Document GetDocument(const std::string& authority,
+                       const std::string& document_id);
+
+  // Returns a document with the given authority, root's document_id, and file
+  // path from the root.
+  Document GetDocument(const std::string& authority,
+                       const std::string& document_id,
+                       const base::FilePath& path);
+
+  // Returns the content written to the FD returned by OpenFileToWrite().
+  std::string GetFileContent(const std::string& url);
+
+  // Returns the content written to the FD returned by OpenFileToWrite(), up to
+  // |bytes| bytes.
+  std::string GetFileContent(const std::string& url, size_t bytes);
+
   // mojom::FileSystemInstance:
   void AddWatcher(const std::string& authority,
                   const std::string& document_id,
@@ -181,10 +215,33 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
                           const std::string& root_id,
                           GetRecentDocumentsCallback callback) override;
   void GetRoots(GetRootsCallback callback) override;
+  void DeleteDocument(const std::string& authority,
+                      const std::string& document_id,
+                      DeleteDocumentCallback callback) override;
+  void RenameDocument(const std::string& authority,
+                      const std::string& document_id,
+                      const std::string& display_name,
+                      RenameDocumentCallback callback) override;
+  void CreateDocument(const std::string& authority,
+                      const std::string& parent_document_id,
+                      const std::string& mime_type,
+                      const std::string& display_name,
+                      CreateDocumentCallback callback) override;
+  void CopyDocument(const std::string& authority,
+                    const std::string& source_document_id,
+                    const std::string& target_parent_document_id,
+                    CopyDocumentCallback callback) override;
+  void MoveDocument(const std::string& authority,
+                    const std::string& source_document_id,
+                    const std::string& source_parent_document_id,
+                    const std::string& target_parent_document_id,
+                    MoveDocumentCallback callback) override;
   void InitDeprecated(mojom::FileSystemHostPtr host) override;
   void Init(mojom::FileSystemHostPtr host, InitCallback callback) override;
   void OpenFileToRead(const std::string& url,
                       OpenFileToReadCallback callback) override;
+  void OpenFileToWrite(const std::string& url,
+                       OpenFileToWriteCallback callback) override;
   void RemoveWatcher(int64_t watcher_id,
                      RemoveWatcherCallback callback) override;
   void RequestMediaScan(const std::vector<std::string>& paths) override;
@@ -200,6 +257,23 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // documents providers.
   using RootKey = std::pair<std::string, std::string>;
 
+  // Finds a document inside a document with parent_document_id by following
+  // given path components.
+  std::string FindChildDocumentId(const std::string& authority,
+                                  const std::string& parent_document_id,
+                                  const std::vector<std::string>& components);
+
+  // Creates a regular file with the given flags and returns its fd.
+  base::ScopedFD CreateRegularFileDescriptor(const File& file, uint32_t flags);
+
+  // Returns a FD to non-seekable file to read. |content| content will be
+  // returned when reading the FD.
+  base::ScopedFD CreateStreamFileDescriptorToRead(const std::string& content);
+
+  // Returns a FD to non-seekable file to write. Bytes written to the FD can be
+  // read by calling GetFileContent() with the passed |url|.
+  base::ScopedFD CreateStreamFileDescriptorToWrite(const std::string& url);
+
   THREAD_CHECKER(thread_checker_);
 
   base::ScopedTempDir temp_dir_;
@@ -208,6 +282,14 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
 
   // Mapping from a content URL to a file.
   std::map<std::string, File> files_;
+
+  // Mapping from a content URL to a file path of a created regular file.
+  std::map<std::string, base::FilePath> regular_file_paths_;
+
+  // Mapping from a content URL to a read end of a pipe.
+  // The corresponding write end should have been returned from
+  // OpenFileToWrite() on non-seekable file entry.
+  std::map<std::string, base::ScopedFD> pipe_read_ends_;
 
   // Mapping from a document key to a document.
   std::map<DocumentKey, Document> documents_;

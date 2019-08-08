@@ -97,7 +97,7 @@ class FetchRequestData final
   BodyStreamBuffer* Buffer() const { return buffer_; }
   void SetBuffer(BodyStreamBuffer* buffer) { buffer_ = buffer; }
   String MimeType() const { return mime_type_; }
-  void SetMIMEType(const String& type) { mime_type_ = type; }
+  void SetMimeType(const String& type) { mime_type_ = type; }
   String Integrity() const { return integrity_; }
   void SetIntegrity(const String& integrity) { integrity_ = integrity; }
   ResourceLoadPriority Priority() const { return priority_; }
@@ -144,7 +144,7 @@ class FetchRequestData final
   // FIXME: Support m_useURLCredentialsFlag;
   // FIXME: Support m_redirectCount;
   Tainting response_tainting_;
-  TraceWrapperMember<BodyStreamBuffer> buffer_;
+  Member<BodyStreamBuffer> buffer_;
   String mime_type_;
   String integrity_;
   ResourceLoadPriority priority_;

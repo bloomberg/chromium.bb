@@ -41,10 +41,12 @@ group("fuzzers") {
     if (pdf_enable_xfa) {
       deps += [
         ":pdf_bidi_fuzzer_src",
+        ":pdf_cfgas_stringformatter_fuzzer_src",
         ":pdf_cfx_barcode_fuzzer_src",
         ":pdf_codec_jpeg_fuzzer_src",
         ":pdf_css_fuzzer_src",
         ":pdf_fm2js_fuzzer_src",
+        ":pdf_formcalc_context_fuzzer_src",
         ":pdf_formcalc_fuzzer_src",
         ":pdfium_xfa_fuzzer_src",
       ]
@@ -157,6 +159,16 @@ if (pdf_enable_v8) {
       ]
     }
 
+    pdfium_fuzzer("pdf_cfgas_stringformatter_fuzzer_src") {
+      sources = [
+        "pdf_cfgas_stringformatter_fuzzer.cc",
+      ]
+      deps = [
+        "../../xfa/fgas",
+        "../../xfa/fxfa/parser",
+      ]
+    }
+
     pdfium_fuzzer("pdf_cfx_barcode_fuzzer_src") {
       sources = [
         "pdf_cfx_barcode_fuzzer.cc",
@@ -258,6 +270,17 @@ if (pdf_enable_v8) {
       ]
       deps = [
         "../../fxjs",
+      ]
+    }
+
+    pdfium_public_fuzzer("pdf_formcalc_context_fuzzer_src") {
+      sources = [
+        "pdf_formcalc_context_fuzzer.cc",
+      ]
+      deps = [
+        "../../fpdfsdk/fpdfxfa",
+        "../../fxjs",
+        "../../xfa/fxfa",
       ]
     }
 

@@ -6,10 +6,11 @@
 <TextView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/info_box_explanation"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
-    android:drawableTop="@drawable/ic_check_circle_outline_48dp"
-    android:layout_marginTop="@dimen/autofill_assistant_bottombar_vertical_spacing"
+    android:gravity="center"
+    android:padding="@dimen/autofill_assistant_bottombar_vertical_spacing"
+    android:paddingBottom="@dimen/autofill_assistant_info_box_spacing"
     android:drawablePadding="@dimen/autofill_assistant_bottombar_vertical_spacing"
     android:textAppearance="@style/TextAppearance.BlackTitle1"/>

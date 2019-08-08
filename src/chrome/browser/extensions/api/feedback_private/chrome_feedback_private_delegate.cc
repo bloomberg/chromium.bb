@@ -29,8 +29,12 @@
 #include "chrome/browser/chromeos/system_logs/iwlwifi_dump_log_source.h"
 #include "chrome/browser/chromeos/system_logs/single_debug_daemon_log_source.h"
 #include "chrome/browser/chromeos/system_logs/single_log_file_log_source.h"
+#include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/feedback/system_logs/system_logs_source.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace extensions {
@@ -99,10 +103,6 @@ ChromeFeedbackPrivateDelegate::GetStrings(
   SET_STRING("sysinfoPageExpandBtn", IDS_ABOUT_SYS_EXPAND);
   SET_STRING("sysinfoPageCollapseBtn", IDS_ABOUT_SYS_COLLAPSE);
   SET_STRING("sysinfoPageStatusLoading", IDS_FEEDBACK_SYSINFO_PAGE_LOADING);
-  // And the localized strings needed for the SRT Download Prompt.
-  SET_STRING("srtPromptBody", IDS_FEEDBACK_SRT_PROMPT_BODY);
-  SET_STRING("srtPromptAcceptButton", IDS_FEEDBACK_SRT_PROMPT_ACCEPT_BUTTON);
-  SET_STRING("srtPromptDeclineButton", IDS_FEEDBACK_SRT_PROMPT_DECLINE_BUTTON);
 #undef SET_STRING
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
@@ -177,24 +177,43 @@ ChromeFeedbackPrivateDelegate::CreateSingleLogSource(
   }
 }
 
-void ChromeFeedbackPrivateDelegate::FetchAndMergeIwlwifiDumpLogsIfPresent(
-    std::unique_ptr<FeedbackCommon::SystemLogsMap> original_sys_logs,
-    content::BrowserContext* context,
-    system_logs::SysLogsFetcherCallback callback) const {
-  if (!original_sys_logs ||
-      !system_logs::ContainsIwlwifiLogs(original_sys_logs.get())) {
-    VLOG(1) << "WiFi dump logs are not present.";
-    std::move(callback).Run(std::move(original_sys_logs));
-    return;
+void OnFetchedExtraLogs(
+    scoped_refptr<feedback::FeedbackData> feedback_data,
+    FetchExtraLogsCallback callback,
+    std::unique_ptr<system_logs::SystemLogsResponse> response) {
+  using system_logs::kIwlwifiDumpKey;
+  if (response && response->count(kIwlwifiDumpKey)) {
+    feedback_data->AddLog(kIwlwifiDumpKey,
+                          std::move(response->at(kIwlwifiDumpKey)));
   }
+  std::move(callback).Run(feedback_data);
+}
 
-  VLOG(1) << "Fetching WiFi dump logs.";
-  system_logs::SystemLogsFetcher* fetcher =
-      new system_logs::SystemLogsFetcher(true /* scrub_data */);
-  fetcher->AddSource(std::make_unique<system_logs::IwlwifiDumpLogSource>());
-  fetcher->Fetch(base::BindOnce(&system_logs::MergeIwlwifiLogs,
-                                std::move(original_sys_logs),
-                                std::move(callback)));
+void ChromeFeedbackPrivateDelegate::FetchExtraLogs(
+    scoped_refptr<feedback::FeedbackData> feedback_data,
+    FetchExtraLogsCallback callback) const {
+  // Anonymize data.
+  constexpr bool scrub = true;
+
+  if (system_logs::ContainsIwlwifiLogs(feedback_data->sys_info())) {
+    VLOG(1) << "Fetching WiFi dump logs.";
+    system_logs::SystemLogsFetcher* fetcher =
+        new system_logs::SystemLogsFetcher(scrub);
+    fetcher->AddSource(std::make_unique<system_logs::IwlwifiDumpLogSource>());
+    fetcher->Fetch(base::BindOnce(&OnFetchedExtraLogs, feedback_data,
+                                  std::move(callback)));
+  } else {
+    VLOG(1) << "WiFi dump logs are not present.";
+    std::move(callback).Run(feedback_data);
+  }
+}
+
+void ChromeFeedbackPrivateDelegate::UnloadFeedbackExtension(
+    content::BrowserContext* context) const {
+  extensions::ExtensionSystem::Get(context)
+      ->extension_service()
+      ->component_loader()
+      ->Remove(extension_misc::kFeedbackExtensionId);
 }
 #endif  // defined(OS_CHROMEOS)
 

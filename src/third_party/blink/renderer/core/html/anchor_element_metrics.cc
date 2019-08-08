@@ -146,18 +146,30 @@ const int AnchorElementMetrics::kMaxAnchorElementMetricsSize = 40;
 base::Optional<AnchorElementMetrics> AnchorElementMetrics::Create(
     const HTMLAnchorElement* anchor_element) {
   LocalFrame* local_frame = anchor_element->GetDocument().GetFrame();
-  LayoutObject* layout_object = anchor_element->GetLayoutObject();
-  if (!local_frame || !layout_object)
+  if (!local_frame)
     return base::nullopt;
+
+  AnchorElementMetrics anchor_metrics(
+      anchor_element, 0, 0, 0, 0, 0, 0, 0, IsInIFrame(*anchor_element),
+      ContainsImage(*anchor_element), IsSameHost(*anchor_element),
+      IsUrlIncrementedByOne(*anchor_element));
+
+  // Don't record size metrics for subframe document Anchors.
+  if (anchor_element->GetDocument().ParentDocument())
+    return anchor_metrics;
+
+  LayoutObject* layout_object = anchor_element->GetLayoutObject();
+  if (!layout_object)
+    return anchor_metrics;
 
   LocalFrameView* local_frame_view = local_frame->View();
   LocalFrameView* root_frame_view = local_frame->LocalFrameRoot().View();
   if (!local_frame_view || !root_frame_view)
-    return base::nullopt;
+    return anchor_metrics;
 
   IntRect viewport = root_frame_view->LayoutViewport()->VisibleContentRect();
   if (viewport.Size().IsEmpty())
-    return base::nullopt;
+    return anchor_metrics;
 
   // Use the viewport size to normalize anchor element metrics.
   float base_height = static_cast<float>(viewport.Height());
@@ -222,33 +234,55 @@ AnchorElementMetrics::MaybeReportClickedMetricsOnClick(
     return base::nullopt;
   }
 
-  auto anchor_metrics = Create(anchor_element);
-  if (anchor_metrics.has_value()) {
-    anchor_metrics.value().RecordMetricsOnClick();
+  // Create metrics that don't have sizes set. The browser only records
+  // metrics unrelated to sizes.
+  AnchorElementMetrics anchor_metrics(
+      anchor_element, 0, 0, 0, 0, 0, 0, 0, IsInIFrame(*anchor_element),
+      ContainsImage(*anchor_element), IsSameHost(*anchor_element),
+      IsUrlIncrementedByOne(*anchor_element));
 
-    // Send metrics of the anchor element to the browser process.
-    AnchorElementMetricsSender::From(*GetRootDocument(*anchor_element))
-        ->SendClickedAnchorMetricsToBrowser(
-            anchor_metrics.value().CreateMetricsPtr());
-  }
+  anchor_metrics.RecordMetricsOnClick();
+
+  // Send metrics of the anchor element to the browser process.
+  AnchorElementMetricsSender::From(*GetRootDocument(*anchor_element))
+      ->SendClickedAnchorMetricsToBrowser(anchor_metrics.CreateMetricsPtr());
 
   return anchor_metrics;
+}
+
+// static
+void AnchorElementMetrics::NotifyOnLoad(Document& document) {
+  DCHECK(document.GetFrame());
+  if (!base::FeatureList::IsEnabled(features::kNavigationPredictor) ||
+      !document.GetFrame()->IsMainFrame() || !document.View() ||
+      !document.Url().ProtocolIsInHTTPFamily() ||
+      !document.BaseURL().ProtocolIsInHTTPFamily()) {
+    return;
+  }
+
+  AnchorElementMetricsSender* sender =
+      AnchorElementMetricsSender::From(document);
+
+  document.View()->RegisterForLifecycleNotifications(sender);
 }
 
 // static
 void AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(
     Document& document) {
   DCHECK(document.GetFrame());
-  if (!base::FeatureList::IsEnabled(features::kNavigationPredictor) ||
-      document.ParentDocument() || !document.View() ||
-      !document.Url().ProtocolIsInHTTPFamily() ||
-      !document.BaseURL().ProtocolIsInHTTPFamily()) {
-    return;
-  }
+  DCHECK(base::FeatureList::IsEnabled(features::kNavigationPredictor));
+  DCHECK(document.GetFrame()->IsMainFrame());
+  DCHECK(document.View());
+  DCHECK(document.Url().ProtocolIsInHTTPFamily());
+  DCHECK(document.BaseURL().ProtocolIsInHTTPFamily());
 
-  Vector<mojom::blink::AnchorElementMetricsPtr> anchor_elements_metrics;
+  DCHECK_GE(document.Lifecycle().GetState(),
+            DocumentLifecycle::kAfterPerformLayout);
+
   AnchorElementMetricsSender* sender =
       AnchorElementMetricsSender::From(document);
+
+  Vector<mojom::blink::AnchorElementMetricsPtr> anchor_elements_metrics;
   for (const auto& member_element : sender->GetAnchorElements()) {
     const HTMLAnchorElement& anchor_element = *member_element;
 

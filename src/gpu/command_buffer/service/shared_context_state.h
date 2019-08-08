@@ -11,7 +11,9 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/skia_utils.h"
 #include "gpu/command_buffer/service/gl_context_virtual_delegate.h"
 #include "gpu/gpu_gles2_export.h"
@@ -104,6 +106,17 @@ class GPU_GLES2_EXPORT SharedContextState
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  // Observer class which is notified when the context is lost.
+  class ContextLostObserver {
+   public:
+    virtual void OnContextLost() = 0;
+
+   protected:
+    virtual ~ContextLostObserver() {}
+  };
+  void AddContextLostObserver(ContextLostObserver* obs);
+  void RemoveContextLostObserver(ContextLostObserver* obs);
+
  private:
   friend class base::RefCounted<SharedContextState>;
 
@@ -155,6 +168,7 @@ class GPU_GLES2_EXPORT SharedContextState
   bool need_context_state_reset_ = false;
 
   bool context_lost_ = false;
+  base::ObserverList<ContextLostObserver>::Unchecked context_lost_observers_;
 
   base::WeakPtrFactory<SharedContextState> weak_ptr_factory_;
 

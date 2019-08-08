@@ -4,12 +4,15 @@
 
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/common/egl_util.h"
-#include "ui/ozone/platform/wayland/wayland_surface_factory.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 
 namespace ui {
 
@@ -25,9 +28,11 @@ void WaitForFence(EGLDisplay display, EGLSyncKHR fence) {
 
 GbmSurfacelessWayland::GbmSurfacelessWayland(
     WaylandSurfaceFactory* surface_factory,
+    WaylandConnectionProxy* connection,
     gfx::AcceleratedWidget widget)
     : SurfacelessEGL(gfx::Size()),
       surface_factory_(surface_factory),
+      connection_(connection),
       widget_(widget),
       has_implicit_external_sync_(
           HasEGLExtension("EGL_ARM_implicit_external_sync")),
@@ -198,18 +203,23 @@ void GbmSurfacelessWayland::SubmitFrame() {
         submitted_frame_->ScheduleOverlayPlanes(widget_);
 
     if (!schedule_planes_succeeded) {
-      OnSubmission(gfx::SwapResult::SWAP_FAILED, nullptr);
-      OnPresentation(gfx::PresentationFeedback::Failure());
+      last_swap_buffers_result_ = false;
+
+      std::move(submitted_frame_->completion_callback)
+          .Run(gfx::SwapResult::SWAP_FAILED, nullptr);
+      // Notify the caller, the buffer is never presented on a screen.
+      std::move(submitted_frame_->presentation_callback)
+          .Run(gfx::PresentationFeedback::Failure());
+
+      submitted_frame_.reset();
       return;
     }
 
-    auto callback =
-        base::BindOnce(&GbmSurfacelessWayland::OnScheduleBufferSwapDone,
-                       weak_factory_.GetWeakPtr());
-    uint32_t buffer_id = planes_.back().pixmap->GetUniqueId();
-    surface_factory_->ScheduleBufferSwap(widget_, buffer_id,
-                                         submitted_frame_->damage_region_,
-                                         std::move(callback));
+    submitted_frame_->buffer_id = planes_.back().pixmap->GetUniqueId();
+    connection_->ScheduleBufferSwap(widget_, submitted_frame_->buffer_id,
+                                    submitted_frame_->damage_region_);
+
+    planes_.clear();
   }
 }
 
@@ -226,36 +236,30 @@ void GbmSurfacelessWayland::FenceRetired(PendingFrame* frame) {
   SubmitFrame();
 }
 
-void GbmSurfacelessWayland::OnScheduleBufferSwapDone(
-    gfx::SwapResult result,
-    const gfx::PresentationFeedback& feedback) {
-  OnSubmission(result, nullptr);
-  OnPresentation(feedback);
-  planes_.clear();
-}
-
-void GbmSurfacelessWayland::OnSubmission(
-    gfx::SwapResult result,
-    std::unique_ptr<gfx::GpuFence> out_fence) {
-  submitted_frame_->swap_result = result;
-}
-
-void GbmSurfacelessWayland::OnPresentation(
-    const gfx::PresentationFeedback& feedback) {
-  // Explicitly destroy overlays to free resources (e.g., fences) early.
+void GbmSurfacelessWayland::OnSubmission(uint32_t buffer_id,
+                                         const gfx::SwapResult& swap_result) {
   submitted_frame_->overlays.clear();
 
-  gfx::SwapResult result = submitted_frame_->swap_result;
-  std::move(submitted_frame_->completion_callback).Run(result, nullptr);
-  std::move(submitted_frame_->presentation_callback).Run(feedback);
-  submitted_frame_.reset();
+  DCHECK_EQ(submitted_frame_->buffer_id, buffer_id);
+  std::move(submitted_frame_->completion_callback).Run(swap_result, nullptr);
 
-  if (result == gfx::SwapResult::SWAP_FAILED) {
+  pending_presentation_frames_.push_back(std::move(submitted_frame_));
+
+  if (swap_result != gfx::SwapResult::SWAP_ACK) {
     last_swap_buffers_result_ = false;
     return;
   }
 
   SubmitFrame();
+}
+
+void GbmSurfacelessWayland::OnPresentation(
+    uint32_t buffer_id,
+    const gfx::PresentationFeedback& feedback) {
+  auto* frame = pending_presentation_frames_.front().get();
+  DCHECK_EQ(frame->buffer_id, buffer_id);
+  std::move(frame->presentation_callback).Run(feedback);
+  pending_presentation_frames_.erase(pending_presentation_frames_.begin());
 }
 
 }  // namespace ui

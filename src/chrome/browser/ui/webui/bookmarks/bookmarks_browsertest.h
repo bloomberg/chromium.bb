@@ -17,6 +17,9 @@ class BookmarksBrowserTest : public WebUIBrowserTest,
   void SetIncognitoAvailability(int availability);
   void SetCanEditBookmarks(bool canEdit);
 
+  void SetupExtensionAPITest();
+  void SetupExtensionAPIEditDisabledTest();
+
  private:
   void HandleSetIncognitoAvailability(const base::ListValue* args);
   void HandleSetCanEditBookmarks(const base::ListValue* args);

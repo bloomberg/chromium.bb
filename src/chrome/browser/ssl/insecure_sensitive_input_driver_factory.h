@@ -11,7 +11,7 @@
 
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "third_party/blink/public/platform/modules/insecure_input/insecure_input_service.mojom.h"
+#include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
 
 namespace content {
 class WebContents;

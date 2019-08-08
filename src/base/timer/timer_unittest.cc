@@ -189,7 +189,7 @@ class RepeatingTimerTester {
   int counter_;
 
   RunLoop run_loop_;
-  Closure quit_closure_;
+  RepeatingClosure quit_closure_;
   WaitableEvent* const did_run_;
 
   const TimeDelta delay_;

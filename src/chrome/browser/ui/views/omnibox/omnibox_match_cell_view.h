@@ -34,6 +34,10 @@ class OmniboxMatchCellView : public views::View {
   void OnMatchUpdate(const OmniboxResultView* result_view,
                      const AutocompleteMatch& match);
 
+  // Sets the answer image and, if the image is not square, sets the answer size
+  // proportional to the image size to preserve its aspect ratio.
+  void SetImage(const gfx::ImageSkia& image);
+
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   bool CanProcessEventsWithinSubtree() const override;

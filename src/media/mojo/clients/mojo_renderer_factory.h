@@ -20,7 +20,6 @@ class InterfaceProvider;
 
 namespace media {
 
-class GpuVideoAcceleratorFactories;
 class MojoRenderer;
 
 // The default factory class for creating MojoRenderer.
@@ -34,12 +33,10 @@ class MojoRenderer;
 // MediaPlayerRendererClientFactory for examples of small wrappers around MRF.
 class MojoRendererFactory : public RendererFactory {
  public:
-  using GetGpuFactoriesCB = base::Callback<GpuVideoAcceleratorFactories*()>;
   using GetTypeSpecificIdCB = base::Callback<std::string()>;
 
-  MojoRendererFactory(const GetGpuFactoriesCB& get_gpu_factories_cb,
-                      media::mojom::InterfaceFactory* interface_factory);
-
+  explicit MojoRendererFactory(
+      media::mojom::InterfaceFactory* interface_factory);
   ~MojoRendererFactory() final;
 
   std::unique_ptr<Renderer> CreateRenderer(
@@ -57,13 +54,13 @@ class MojoRendererFactory : public RendererFactory {
       VideoRendererSink* video_renderer_sink);
 
   std::unique_ptr<MojoRenderer> CreateMediaPlayerRenderer(
+      mojom::MediaPlayerRendererExtensionRequest renderer_extension_request,
+      mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       VideoRendererSink* video_renderer_sink);
 #endif  // defined (OS_ANDROID)
 
  private:
-  GetGpuFactoriesCB get_gpu_factories_cb_;
-
   // InterfaceFactory or InterfaceProvider used to create or connect to remote
   // renderer.
   media::mojom::InterfaceFactory* interface_factory_ = nullptr;

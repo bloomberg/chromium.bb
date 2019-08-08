@@ -8,7 +8,6 @@
 <translation id="1984705450038014246">Chrome 데이터 동기화</translation>
 <translation id="2147651015520127414">Chrome이 <ph name="ISSUER" />에서 이 웹사이트의 인증서를 발행했음을 확인했습니다.</translation>
 <translation id="2199719347983604670">Chrome 동기화 데이터</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2342981853652716282">Chrome에 로그인하여 모든 기기에서 내 북마크, 비밀번호 등을 사용하세요.</translation>
 <translation id="2347208864470321755">이 기능을 사용하면 Chrome에서 Google 번역을 사용하여 외국어로 작성된 페이지를 번역합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">이미지를 저장하려면 설정을 탭하여 Chrome에 사진 사용 권한을 부여하세요.</translation>
@@ -22,10 +21,9 @@
 <translation id="3282568296779691940">Chrome에 로그인</translation>
 <translation id="3345341804167540816">어디서나 Chrome 사용</translation>
 <translation id="384394811301901750">지금 Chrome에서 카메라를 사용할 수 없습니다.</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3980220367029651214">동기화 계정을 <ph name="USER_EMAIL1" />에서 <ph name="USER_EMAIL2" />(으)로 전환합니다. 기존 Chrome 데이터는 <ph name="DOMAIN" />에서 관리합니다. 이렇게 하면 데이터가 이 기기에서 삭제되지만 <ph name="USER_EMAIL1" />에는 그대로 유지됩니다.</translation>
 <translation id="3988789688219830639">Chrome이 사진 또는 동영상에 액세스할 수 없습니다. 'iOS 설정 &gt; 개인정보 보호 &gt; 사진'에서 액세스를 허용하세요.</translation>
-<translation id="4099578267706723511">사용 통계와 비정상 종료 보고서를 Google로 전송하면 Chrome 개선에 도움이 됩니다.</translation>
+<translation id="4099578267706723511">사용 통계와 비정상 종료 보고서를 Google로 전송하여 Chrome을 개선하는 데 동참하세요.</translation>
 <translation id="415767770115540173">위치 정보를 기반으로 Chrome에서 더 나은 Google 환경을 이용할 수 있습니다.</translation>
 <translation id="424864128008805179">Chrome에서 로그아웃하시겠습니까?</translation>
 <translation id="447252321002412580">Chrome의 기능 및 성능 개선에 참여</translation>
@@ -34,6 +32,7 @@
 <translation id="5389212809648216794">다른 애플리케이션에서 카메라를 사용하고 있으므로 Chrome에서 카메라를 사용할 수 없습니다.</translation>
 <translation id="5639704535586432836">설정 &gt; 개인정보 보호 &gt; 카메라 &gt; Chrome을 열고 카메라를 사용 설정하세요.</translation>
 <translation id="5642200033778930880">Chrome에서는 분할 모드에서 카메라를 사용할 수 없습니다.</translation>
+<translation id="5690427481109656848">Google LLC</translation>
 <translation id="5854621639439811139">Chrome 도움말. 뒤로, 앞으로, 검색과 같은 일부 버튼이 화면 하단으로 이동했습니다.</translation>
 <translation id="6036420186814142909">Chrome에는 사용자가 간편하게 인터넷 데이터 및 웹페이지 로드 시간을 관리할 수 있는 기능이 있습니다.
 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
@@ -51,6 +50,7 @@
 <translation id="7437998757836447326">Chrome에서 로그아웃</translation>
 <translation id="756809126120519699">Chrome 데이터 삭제됨</translation>
 <translation id="7626032353295482388">Chrome에 오신 것을 환영합니다</translation>
+<translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
 <translation id="840168496893712993">일부 부가기능으로 Chrome이 비정상 종료됩니다. 해당 부가기능을 제거하세요.</translation>
 <translation id="8459495907675268833">선택한 데이터가 Chrome 및 동기화된 기기에서 삭제되었습니다. history.google.com에서 검색이나 기타 Google 서비스에서의 활동 등 내 Google 계정에 있는 다른 형식의 탐색 기록을 확인할 수 있습니다.</translation>
 <translation id="8540666473246803645">Chrome</translation>

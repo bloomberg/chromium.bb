@@ -4,548 +4,333 @@
 
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 
-#import <EarlGrey/EarlGrey.h>
-#import <WebKit/WebKit.h>
-
-#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/strings/grit/components_strings.h"
-#include "components/unified_consent/feature.h"
-#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
-#import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
-#import "ios/chrome/browser/ui/payments/payment_request_error_view_controller.h"
-#import "ios/chrome/browser/ui/payments/payment_request_picker_view_controller.h"
-#import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_constants.h"
-#import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/sync/sync_settings_table_view_controller.h"
-#import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
-#import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/web/public/block_types.h"
-#import "ios/web/public/test/earl_grey/web_view_matchers.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/test/ios/ui_image_test_utils.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-id<GREYMatcher> SettingsSwitchIsToggledOn(BOOL isToggledOn) {
-  MatchesBlock matches = ^BOOL(id element) {
-    SettingsSwitchCell* switch_cell =
-        base::mac::ObjCCastStrict<SettingsSwitchCell>(element);
-    UISwitch* switch_view = switch_cell.switchView;
-    return (switch_view.on && isToggledOn) || (!switch_view.on && !isToggledOn);
-  };
-  DescribeToBlock describe = ^void(id<GREYDescription> description) {
-    NSString* name =
-        [NSString stringWithFormat:@"settingsSwitchToggledState(%@)",
-                                   isToggledOn ? @"ON" : @"OFF"];
-    [description appendText:name];
-  };
-  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                              descriptionBlock:describe];
-}
-
-id<GREYMatcher> SettingsSwitchIsEnabled(BOOL isEnabled) {
-  MatchesBlock matches = ^BOOL(id element) {
-    SettingsSwitchCell* switch_cell =
-        base::mac::ObjCCastStrict<SettingsSwitchCell>(element);
-    UISwitch* switch_view = switch_cell.switchView;
-    return (switch_view.enabled && isEnabled) ||
-           (!switch_view.enabled && !isEnabled);
-  };
-  DescribeToBlock describe = ^void(id<GREYDescription> description) {
-    NSString* name =
-        [NSString stringWithFormat:@"settingsSwitchEnabledState(%@)",
-                                   isEnabled ? @"YES" : @"NO"];
-    [description appendText:name];
-  };
-  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                              descriptionBlock:describe];
-}
-
-// Returns the subview of |parentView| corresponding to the
-// ContentSuggestionsViewController. Returns nil if it is not in its subviews.
-UIView* SubviewWithAccessibilityIdentifier(NSString* accessibilityID,
-                                           UIView* parentView) {
-  if (parentView.accessibilityIdentifier == accessibilityID) {
-    return parentView;
-  }
-  for (UIView* view in parentView.subviews) {
-    UIView* resultView =
-        SubviewWithAccessibilityIdentifier(accessibilityID, view);
-    if (resultView)
-      return resultView;
-  }
-  return nil;
-}
-
-}  // namespace
-
-@implementation ChromeMatchers
-
-+ (id<GREYMatcher>)buttonWithAccessibilityLabel:(NSString*)label {
-  return grey_allOf(grey_accessibilityLabel(label),
-                    grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
-}
-
-+ (id<GREYMatcher>)buttonWithAccessibilityLabelId:(int)messageId {
-  return [ChromeMatchers
-      buttonWithAccessibilityLabel:l10n_util::GetNSStringWithFixup(messageId)];
-}
-
-+ (id<GREYMatcher>)imageViewWithImageNamed:(NSString*)imageName {
-  UIImage* expectedImage = [UIImage imageNamed:imageName];
-  MatchesBlock matches = ^BOOL(UIImageView* imageView) {
-    return ui::test::uiimage_utils::UIImagesAreEqual(expectedImage,
-                                                     imageView.image);
-  };
-  NSString* descriptionString =
-      [NSString stringWithFormat:@"Images matching image named %@", imageName];
-  DescribeToBlock describe = ^(id<GREYDescription> description) {
-    [description appendText:descriptionString];
-  };
-  id<GREYMatcher> imageMatcher =
-      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                           descriptionBlock:describe];
-  return imageMatcher;
-}
+#if defined(CHROME_EARL_GREY_2)
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeMatchersAppInterface)
+#endif
 
-+ (id<GREYMatcher>)imageViewWithImage:(int)imageId {
-  UIImage* expectedImage = NativeImage(imageId);
-  MatchesBlock matches = ^BOOL(UIImageView* imageView) {
-    return ui::test::uiimage_utils::UIImagesAreEqual(expectedImage,
-                                                     imageView.image);
-  };
-  NSString* descriptionString =
-      [NSString stringWithFormat:@"Images matching %i", imageId];
-  DescribeToBlock describe = ^(id<GREYDescription> description) {
-    [description appendText:descriptionString];
-  };
-  id<GREYMatcher> imageMatcher =
-      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                           descriptionBlock:describe];
-  return imageMatcher;
-}
-
-+ (id<GREYMatcher>)buttonWithImage:(int)imageId {
-  UIImage* expectedImage = NativeImage(imageId);
-  MatchesBlock matches = ^BOOL(UIButton* button) {
-    return ui::test::uiimage_utils::UIImagesAreEqual(expectedImage,
-                                                     [button currentImage]);
-  };
-  NSString* descriptionString =
-      [NSString stringWithFormat:@"Images matching %i", imageId];
-  DescribeToBlock describe = ^(id<GREYDescription> description) {
-    [description appendText:descriptionString];
-  };
-  id<GREYMatcher> imageMatcher =
-      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                           descriptionBlock:describe];
-  return grey_allOf(grey_accessibilityTrait(UIAccessibilityTraitButton),
-                    imageMatcher, nil);
+namespace chrome_test_util {
+
+id<GREYMatcher> ButtonWithAccessibilityLabel(NSString* label) {
+  return [ChromeMatchersAppInterface buttonWithAccessibilityLabel:label];
+}
+
+id<GREYMatcher> ButtonWithAccessibilityLabelId(int message_id) {
+  return [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:message_id];
+}
+
+id<GREYMatcher> ImageViewWithImageNamed(NSString* imageName) {
+  return [ChromeMatchersAppInterface imageViewWithImageNamed:imageName];
+}
+
+id<GREYMatcher> ImageViewWithImage(int image_id) {
+  return [ChromeMatchersAppInterface imageViewWithImage:image_id];
+}
+
+id<GREYMatcher> ButtonWithImage(int image_id) {
+  return [ChromeMatchersAppInterface buttonWithImage:image_id];
 }
 
-+ (id<GREYMatcher>)staticTextWithAccessibilityLabelId:(int)messageId {
-  return [ChromeMatchers
-      staticTextWithAccessibilityLabel:(l10n_util::GetNSStringWithFixup(
-                                           messageId))];
+id<GREYMatcher> StaticTextWithAccessibilityLabelId(int message_id) {
+  return [ChromeMatchersAppInterface
+      staticTextWithAccessibilityLabelID:message_id];
 }
 
-+ (id<GREYMatcher>)staticTextWithAccessibilityLabel:(NSString*)label {
-  return grey_allOf(grey_accessibilityLabel(label),
-                    grey_accessibilityTrait(UIAccessibilityTraitStaticText),
-                    nil);
+id<GREYMatcher> StaticTextWithAccessibilityLabel(NSString* label) {
+  return [ChromeMatchersAppInterface staticTextWithAccessibilityLabel:label];
 }
 
-+ (id<GREYMatcher>)headerWithAccessibilityLabelId:(int)messageId {
-  return [ChromeMatchers
-      headerWithAccessibilityLabel:(l10n_util::GetNSStringWithFixup(
-                                       messageId))];
+id<GREYMatcher> HeaderWithAccessibilityLabelId(int message_id) {
+  return [ChromeMatchersAppInterface headerWithAccessibilityLabelID:message_id];
 }
 
-+ (id<GREYMatcher>)headerWithAccessibilityLabel:(NSString*)label {
-  return grey_allOf(grey_accessibilityLabel(label),
-                    grey_accessibilityTrait(UIAccessibilityTraitHeader), nil);
+id<GREYMatcher> HeaderWithAccessibilityLabel(NSString* label) {
+  return [ChromeMatchersAppInterface headerWithAccessibilityLabel:label];
 }
 
-+ (id<GREYMatcher>)cancelButton {
-  return [ChromeMatchers buttonWithAccessibilityLabelId:(IDS_CANCEL)];
+id<GREYMatcher> CancelButton() {
+  return [ChromeMatchersAppInterface cancelButton];
 }
 
-+ (id<GREYMatcher>)closeButton {
-  return [ChromeMatchers buttonWithAccessibilityLabelId:(IDS_CLOSE)];
+id<GREYMatcher> CloseButton() {
+  return [ChromeMatchersAppInterface closeButton];
 }
 
-+ (id<GREYMatcher>)forwardButton {
-  return [ChromeMatchers buttonWithAccessibilityLabelId:(IDS_ACCNAME_FORWARD)];
+id<GREYMatcher> ForwardButton() {
+  return [ChromeMatchersAppInterface forwardButton];
 }
 
-+ (id<GREYMatcher>)backButton {
-  return [ChromeMatchers buttonWithAccessibilityLabelId:(IDS_ACCNAME_BACK)];
+id<GREYMatcher> BackButton() {
+  return [ChromeMatchersAppInterface backButton];
 }
 
-+ (id<GREYMatcher>)reloadButton {
-  return
-      [ChromeMatchers buttonWithAccessibilityLabelId:(IDS_IOS_ACCNAME_RELOAD)];
+id<GREYMatcher> ReloadButton() {
+  return [ChromeMatchersAppInterface reloadButton];
 }
 
-+ (id<GREYMatcher>)stopButton {
-  return [ChromeMatchers buttonWithAccessibilityLabelId:(IDS_IOS_ACCNAME_STOP)];
+id<GREYMatcher> StopButton() {
+  return [ChromeMatchersAppInterface stopButton];
 }
 
-+ (id<GREYMatcher>)omnibox {
-  return grey_allOf(grey_kindOfClass([OmniboxTextFieldIOS class]),
-                    grey_userInteractionEnabled(), nil);
+id<GREYMatcher> Omnibox() {
+  return [ChromeMatchersAppInterface omnibox];
 }
 
-+ (id<GREYMatcher>)defocusedLocationView {
-  return grey_kindOfClass([LocationBarSteadyView class]);
+id<GREYMatcher> DefocusedLocationView() {
+  return [ChromeMatchersAppInterface defocusedLocationView];
 }
 
-+ (id<GREYMatcher>)pageSecurityInfoButton {
-  return grey_accessibilityLabel(@"Page Security Info");
+id<GREYMatcher> PageSecurityInfoButton() {
+  return [ChromeMatchersAppInterface pageSecurityInfoButton];
 }
 
-+ (id<GREYMatcher>)pageSecurityInfoIndicator {
-  return grey_accessibilityLabel(@"Page Security Info");
+id<GREYMatcher> PageSecurityInfoIndicator() {
+  return [ChromeMatchersAppInterface pageSecurityInfoIndicator];
 }
 
-+ (id<GREYMatcher>)omniboxText:(std::string)text {
-  GREYElementMatcherBlock* matcher = [GREYElementMatcherBlock
-      matcherWithMatchesBlock:^BOOL(id element) {
-        OmniboxTextFieldIOS* omnibox =
-            base::mac::ObjCCast<OmniboxTextFieldIOS>(element);
-        return [omnibox.text isEqualToString:base::SysUTF8ToNSString(text)];
-      }
-      descriptionBlock:^void(id<GREYDescription> description) {
-        [description
-            appendText:[NSString
-                           stringWithFormat:@"Omnibox contains text \"%@\"",
-                                            base::SysUTF8ToNSString(text)]];
-      }];
-  return matcher;
+id<GREYMatcher> OmniboxText(const std::string& text) {
+  return [ChromeMatchersAppInterface omniboxText:base::SysUTF8ToNSString(text)];
 }
 
-+ (id<GREYMatcher>)omniboxContainingText:(std::string)text {
-  GREYElementMatcherBlock* matcher = [GREYElementMatcherBlock
-      matcherWithMatchesBlock:^BOOL(UITextField* element) {
-        return [element.text containsString:base::SysUTF8ToNSString(text)];
-      }
-      descriptionBlock:^void(id<GREYDescription> description) {
-        [description
-            appendText:[NSString
-                           stringWithFormat:@"Omnibox contains text \"%@\"",
-                                            base::SysUTF8ToNSString(text)]];
-      }];
-  return matcher;
+id<GREYMatcher> OmniboxContainingText(const std::string& text) {
+  return [ChromeMatchersAppInterface
+      omniboxContainingText:base::SysUTF8ToNSString(text)];
 }
 
-+ (id<GREYMatcher>)locationViewContainingText:(std::string)text {
-  GREYElementMatcherBlock* matcher = [GREYElementMatcherBlock
-      matcherWithMatchesBlock:^BOOL(LocationBarSteadyView* element) {
-        return [element.locationLabel.text
-            containsString:base::SysUTF8ToNSString(text)];
-      }
-      descriptionBlock:^void(id<GREYDescription> description) {
-        [description
-            appendText:[NSString
-                           stringWithFormat:
-                               @"LocationBarSteadyView contains text \"%@\"",
-                               base::SysUTF8ToNSString(text)]];
-      }];
-  return matcher;
+id<GREYMatcher> LocationViewContainingText(const std::string& text) {
+  return [ChromeMatchersAppInterface
+      locationViewContainingText:base::SysUTF8ToNSString(text)];
 }
 
-+ (id<GREYMatcher>)toolsMenuButton {
-  return grey_allOf(grey_accessibilityID(kToolbarToolsMenuButtonIdentifier),
-                    grey_sufficientlyVisible(), nil);
+id<GREYMatcher> ToolsMenuButton() {
+  return [ChromeMatchersAppInterface toolsMenuButton];
 }
 
-+ (id<GREYMatcher>)shareButton {
-  return grey_allOf(
-      [ChromeMatchers
-          buttonWithAccessibilityLabelId:(IDS_IOS_TOOLS_MENU_SHARE)],
-      grey_sufficientlyVisible(), nil);
+id<GREYMatcher> ShareButton() {
+  return [ChromeMatchersAppInterface shareButton];
 }
 
-+ (id<GREYMatcher>)tabletTabSwitcherOpenButton {
-  return [ChromeMatchers
-      buttonWithAccessibilityLabelId:(IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER)];
+id<GREYMatcher> TabletTabSwitcherOpenButton() {
+  return [ChromeMatchersAppInterface tabletTabSwitcherOpenButton];
 }
 
-+ (id<GREYMatcher>)showTabsButton {
-  return grey_allOf(grey_accessibilityID(kToolbarStackButtonIdentifier),
-                    grey_sufficientlyVisible(), nil);
+id<GREYMatcher> ShowTabsButton() {
+  return [ChromeMatchersAppInterface showTabsButton];
 }
 
-+ (id<GREYMatcher>)settingsSwitchCell:(NSString*)accessibilityIdentifier
-                          isToggledOn:(BOOL)isToggledOn {
-  return [ChromeMatchers settingsSwitchCell:accessibilityIdentifier
-                                isToggledOn:isToggledOn
-                                  isEnabled:YES];
+id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
+                                   BOOL is_toggled_on) {
+  return [ChromeMatchersAppInterface settingsSwitchCell:accessibility_identifier
+                                            isToggledOn:is_toggled_on];
 }
 
-+ (id<GREYMatcher>)settingsSwitchCell:(NSString*)accessibilityIdentifier
-                          isToggledOn:(BOOL)isToggledOn
-                            isEnabled:(BOOL)isEnabled {
-  return grey_allOf(grey_accessibilityID(accessibilityIdentifier),
-                    SettingsSwitchIsToggledOn(isToggledOn),
-                    SettingsSwitchIsEnabled(isEnabled),
-                    grey_sufficientlyVisible(), nil);
+id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
+                                   BOOL is_toggled_on,
+                                   BOOL is_enabled) {
+  return [ChromeMatchersAppInterface settingsSwitchCell:accessibility_identifier
+                                            isToggledOn:is_toggled_on
+                                              isEnabled:is_enabled];
 }
 
-+ (id<GREYMatcher>)syncSwitchCell:(NSString*)accessibilityLabel
-                      isToggledOn:(BOOL)isToggledOn {
-  return grey_allOf(
-      grey_accessibilityLabel(accessibilityLabel),
-      grey_accessibilityValue(
-          isToggledOn ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-                      : l10n_util::GetNSString(IDS_IOS_SETTING_OFF)),
-      grey_sufficientlyVisible(), nil);
+id<GREYMatcher> SyncSwitchCell(NSString* accessibility_label,
+                               BOOL is_toggled_on) {
+  return [ChromeMatchersAppInterface syncSwitchCell:accessibility_label
+                                        isToggledOn:is_toggled_on];
 }
 
-+ (id<GREYMatcher>)openLinkInNewTabButton {
-  return [ChromeMatchers
-      buttonWithAccessibilityLabelId:(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)];
+id<GREYMatcher> OpenLinkInNewTabButton() {
+  return [ChromeMatchersAppInterface openLinkInNewTabButton];
 }
 
-+ (id<GREYMatcher>)navigationBarDoneButton {
-  return grey_allOf(
-      [ChromeMatchers
-          buttonWithAccessibilityLabelId:(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)],
-      grey_userInteractionEnabled(), nil);
+id<GREYMatcher> NavigationBarDoneButton() {
+  return [ChromeMatchersAppInterface navigationBarDoneButton];
 }
 
-+ (id<GREYMatcher>)bookmarksNavigationBarDoneButton {
-  return grey_accessibilityID(kBookmarkHomeNavigationBarDoneButtonIdentifier);
+id<GREYMatcher> BookmarksNavigationBarDoneButton() {
+  return [ChromeMatchersAppInterface bookmarksNavigationBarDoneButton];
 }
 
-+ (id<GREYMatcher>)accountConsistencySetupSigninButton {
-  return [ChromeMatchers buttonWithAccessibilityLabelId:
-                             (IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SIGNIN_BUTTON)];
+id<GREYMatcher> AccountConsistencySetupSigninButton() {
+  return [ChromeMatchersAppInterface accountConsistencySetupSigninButton];
 }
 
-+ (id<GREYMatcher>)accountConsistencyConfirmationOkButton {
-  int labelID = base::FeatureList::IsEnabled(unified_consent::kUnifiedConsent)
-                    ? IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON
-                    : IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON;
-  return [ChromeMatchers buttonWithAccessibilityLabelId:(labelID)];
+id<GREYMatcher> AccountConsistencyConfirmationOkButton() {
+  return [ChromeMatchersAppInterface accountConsistencyConfirmationOKButton];
 }
 
-+ (id<GREYMatcher>)addAccountButton {
-  return grey_accessibilityID(kSettingsAccountsTableViewAddAccountCellId);
+id<GREYMatcher> AddAccountButton() {
+  return [ChromeMatchersAppInterface addAccountButton];
 }
 
-+ (id<GREYMatcher>)signOutAccountsButton {
-  return grey_accessibilityID(kSettingsAccountsTableViewSignoutCellId);
+id<GREYMatcher> SignOutAccountsButton() {
+  return [ChromeMatchersAppInterface signOutAccountsButton];
 }
 
-+ (id<GREYMatcher>)clearBrowsingDataCell {
-  return [ChromeMatchers
-      buttonWithAccessibilityLabelId:(IDS_IOS_CLEAR_BROWSING_DATA_TITLE)];
+id<GREYMatcher> ClearBrowsingDataCell() {
+  return [ChromeMatchersAppInterface clearBrowsingDataCell];
 }
 
-+ (id<GREYMatcher>)clearBrowsingDataButton {
-  return [ChromeMatchers buttonWithAccessibilityLabelId:(IDS_IOS_CLEAR_BUTTON)];
+id<GREYMatcher> ClearBrowsingDataButton() {
+  return [ChromeMatchersAppInterface clearBrowsingDataButton];
 }
 
-+ (id<GREYMatcher>)clearBrowsingDataCollectionView {
-  return grey_accessibilityID(
-      kClearBrowsingDataCollectionViewAccessibilityIdentifier);
+id<GREYMatcher> ClearBrowsingDataView() {
+  return [ChromeMatchersAppInterface clearBrowsingDataView];
 }
 
-+ (id<GREYMatcher>)confirmClearBrowsingDataButton {
-  return grey_allOf(
-      grey_accessibilityLabel(l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON)),
-      grey_accessibilityTrait(UIAccessibilityTraitButton),
-      grey_not(grey_accessibilityID(kClearBrowsingDataButtonIdentifier)), nil);
+id<GREYMatcher> ConfirmClearBrowsingDataButton() {
+  return [ChromeMatchersAppInterface confirmClearBrowsingDataButton];
 }
 
-+ (id<GREYMatcher>)settingsMenuButton {
-  return grey_accessibilityID(kToolsMenuSettingsId);
+id<GREYMatcher> SettingsMenuButton() {
+  return [ChromeMatchersAppInterface settingsMenuButton];
 }
 
-+ (id<GREYMatcher>)settingsDoneButton {
-  return grey_accessibilityID(kSettingsDoneButtonId);
+id<GREYMatcher> SettingsDoneButton() {
+  return [ChromeMatchersAppInterface settingsDoneButton];
 }
 
-+ (id<GREYMatcher>)toolsMenuView {
-  return grey_accessibilityID(kPopupMenuToolsMenuTableViewId);
+id<GREYMatcher> ToolsMenuView() {
+  return [ChromeMatchersAppInterface toolsMenuView];
 }
 
-+ (id<GREYMatcher>)okButton {
-  return [ChromeMatchers buttonWithAccessibilityLabelId:(IDS_OK)];
+id<GREYMatcher> OKButton() {
+  return [ChromeMatchersAppInterface OKButton];
 }
 
-+ (id<GREYMatcher>)primarySignInButton {
-  return grey_accessibilityID(kSigninPromoPrimaryButtonId);
+id<GREYMatcher> PrimarySignInButton() {
+  return [ChromeMatchersAppInterface primarySignInButton];
 }
 
-+ (id<GREYMatcher>)secondarySignInButton {
-  return grey_accessibilityID(kSigninPromoSecondaryButtonId);
+id<GREYMatcher> SecondarySignInButton() {
+  return [ChromeMatchersAppInterface secondarySignInButton];
 }
 
-+ (id<GREYMatcher>)settingsAccountButton {
-  return grey_accessibilityID(kSettingsAccountCellId);
+id<GREYMatcher> SettingsAccountButton() {
+  return [ChromeMatchersAppInterface settingsAccountButton];
 }
 
-+ (id<GREYMatcher>)settingsAccountsCollectionView {
-  return grey_accessibilityID(kSettingsAccountsTableViewId);
+id<GREYMatcher> SettingsAccountsCollectionView() {
+  return [ChromeMatchersAppInterface settingsAccountsCollectionView];
 }
 
-+ (id<GREYMatcher>)settingsImportDataImportButton {
-  return grey_accessibilityID(kImportDataImportCellId);
+id<GREYMatcher> SettingsImportDataImportButton() {
+  return [ChromeMatchersAppInterface settingsImportDataImportButton];
 }
 
-+ (id<GREYMatcher>)settingsImportDataKeepSeparateButton {
-  return grey_accessibilityID(kImportDataKeepSeparateCellId);
+id<GREYMatcher> SettingsImportDataKeepSeparateButton() {
+  return [ChromeMatchersAppInterface settingsImportDataKeepSeparateButton];
 }
 
-+ (id<GREYMatcher>)settingsSyncManageSyncedDataButton {
-  return grey_accessibilityID(kSettingsSyncId);
+id<GREYMatcher> SettingsSyncManageSyncedDataButton() {
+  return [ChromeMatchersAppInterface settingsSyncManageSyncedDataButton];
 }
 
-+ (id<GREYMatcher>)accountsSyncButton {
-  return grey_allOf(grey_accessibilityID(kSettingsAccountsTableViewSyncCellId),
-                    grey_sufficientlyVisible(), nil);
+id<GREYMatcher> AccountsSyncButton() {
+  return [ChromeMatchersAppInterface accountsSyncButton];
 }
 
-+ (id<GREYMatcher>)contentSettingsButton {
-  return [ChromeMatchers
-      buttonWithAccessibilityLabelId:(IDS_IOS_CONTENT_SETTINGS_TITLE)];
+id<GREYMatcher> ContentSettingsButton() {
+  return [ChromeMatchersAppInterface contentSettingsButton];
 }
 
-+ (id<GREYMatcher>)googleServicesSettingsButton {
-  NSString* syncAndGoogleServicesTitle =
-      l10n_util::GetNSStringWithFixup(IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE);
-  id<GREYMatcher> mainTextLabelMatcher =
-      grey_allOf(grey_accessibilityLabel(syncAndGoogleServicesTitle),
-                 grey_sufficientlyVisible(), nil);
-  return grey_allOf(grey_kindOfClass([UITableViewCell class]),
-                    grey_sufficientlyVisible(),
-                    grey_descendant(mainTextLabelMatcher), nil);
+id<GREYMatcher> GoogleServicesSettingsButton() {
+  return [ChromeMatchersAppInterface googleServicesSettingsButton];
 }
 
-+ (id<GREYMatcher>)settingsMenuBackButton {
-  UINavigationBar* navBar = base::mac::ObjCCastStrict<UINavigationBar>(
-      SubviewWithAccessibilityIdentifier(
-          @"SettingNavigationBar",
-          [[UIApplication sharedApplication] keyWindow]));
-  return grey_allOf(grey_anyOf(grey_accessibilityLabel(navBar.backItem.title),
-                               grey_accessibilityLabel(@"Back"), nil),
-                    grey_kindOfClass([UIButton class]),
-                    grey_ancestor(grey_kindOfClass([UINavigationBar class])),
-                    nil);
+id<GREYMatcher> SettingsMenuBackButton() {
+  return [ChromeMatchersAppInterface settingsMenuBackButton];
 }
 
-+ (id<GREYMatcher>)settingsMenuPrivacyButton {
-  return [ChromeMatchers buttonWithAccessibilityLabelId:
-                             (IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)];
+id<GREYMatcher> SettingsMenuPrivacyButton() {
+  return [ChromeMatchersAppInterface settingsMenuPrivacyButton];
 }
 
-+ (id<GREYMatcher>)settingsMenuPasswordsButton {
-  return [ChromeMatchers buttonWithAccessibilityLabelId:(IDS_IOS_PASSWORDS)];
+id<GREYMatcher> SettingsMenuPasswordsButton() {
+  return [ChromeMatchersAppInterface settingsMenuPasswordsButton];
 }
 
-+ (id<GREYMatcher>)paymentRequestView {
-  return grey_accessibilityID(kPaymentRequestCollectionViewID);
+id<GREYMatcher> PaymentRequestView() {
+  return [ChromeMatchersAppInterface paymentRequestView];
 }
 
-// Returns matcher for the error confirmation view for payment request.
-+ (id<GREYMatcher>)paymentRequestErrorView {
-  return grey_accessibilityID(kPaymentRequestErrorCollectionViewID);
+id<GREYMatcher> PaymentRequestErrorView() {
+  return [ChromeMatchersAppInterface paymentRequestErrorView];
 }
 
-+ (id<GREYMatcher>)voiceSearchButton {
-  return grey_allOf(grey_accessibilityID(kSettingsVoiceSearchCellId),
-                    grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
+id<GREYMatcher> VoiceSearchButton() {
+  return [ChromeMatchersAppInterface voiceSearchButton];
 }
 
-+ (id<GREYMatcher>)settingsCollectionView {
-  return grey_accessibilityID(kSettingsTableViewId);
+id<GREYMatcher> SettingsCollectionView() {
+  return [ChromeMatchersAppInterface settingsCollectionView];
 }
 
-+ (id<GREYMatcher>)clearBrowsingHistoryButton {
-  return grey_accessibilityID(kClearBrowsingHistoryCellAccessibilityIdentifier);
+id<GREYMatcher> ClearBrowsingHistoryButton() {
+  return [ChromeMatchersAppInterface clearBrowsingHistoryButton];
 }
 
-+ (id<GREYMatcher>)clearCookiesButton {
-  return grey_accessibilityID(kClearCookiesCellAccessibilityIdentifier);
+id<GREYMatcher> ClearCookiesButton() {
+  return [ChromeMatchersAppInterface clearCookiesButton];
 }
 
-+ (id<GREYMatcher>)clearCacheButton {
-  return grey_accessibilityID(kClearCacheCellAccessibilityIdentifier);
+id<GREYMatcher> ClearCacheButton() {
+  return [ChromeMatchersAppInterface clearCacheButton];
 }
 
-+ (id<GREYMatcher>)clearSavedPasswordsButton {
-  return grey_accessibilityID(kClearSavedPasswordsCellAccessibilityIdentifier);
+id<GREYMatcher> ClearSavedPasswordsButton() {
+  return [ChromeMatchersAppInterface clearSavedPasswordsButton];
 }
 
-+ (id<GREYMatcher>)contentSuggestionCollectionView {
-  return grey_accessibilityID(
-      [ContentSuggestionsViewController collectionAccessibilityIdentifier]);
+id<GREYMatcher> ContentSuggestionCollectionView() {
+  return [ChromeMatchersAppInterface contentSuggestionCollectionView];
 }
 
-+ (id<GREYMatcher>)warningMessageView {
-  return grey_accessibilityID(kWarningMessageAccessibilityID);
+id<GREYMatcher> WarningMessageView() {
+  return [ChromeMatchersAppInterface warningMessageView];
 }
 
-+ (id<GREYMatcher>)paymentRequestPickerRow {
-  return grey_accessibilityID(kPaymentRequestPickerRowAccessibilityID);
+id<GREYMatcher> PaymentRequestPickerRow() {
+  return [ChromeMatchersAppInterface paymentRequestPickerRow];
 }
 
-+ (id<GREYMatcher>)paymentRequestPickerSearchBar {
-  return grey_accessibilityID(kPaymentRequestPickerSearchBarAccessibilityID);
+id<GREYMatcher> PaymentRequestPickerSearchBar() {
+  return [ChromeMatchersAppInterface paymentRequestPickerSearchBar];
 }
 
-+ (id<GREYMatcher>)bookmarksMenuButton {
-  return grey_accessibilityID(kToolsMenuBookmarksId);
+id<GREYMatcher> BookmarksMenuButton() {
+  return [ChromeMatchersAppInterface bookmarksMenuButton];
 }
 
-+ (id<GREYMatcher>)recentTabsMenuButton {
-  return grey_accessibilityID(kToolsMenuOtherDevicesId);
+id<GREYMatcher> RecentTabsMenuButton() {
+  return [ChromeMatchersAppInterface recentTabsMenuButton];
 }
 
-+ (id<GREYMatcher>)systemSelectionCallout {
-  return grey_kindOfClass(NSClassFromString(@"UICalloutBarButton"));
+id<GREYMatcher> SystemSelectionCallout() {
+  return [ChromeMatchersAppInterface systemSelectionCallout];
 }
 
-+ (id<GREYMatcher>)systemSelectionCalloutCopyButton {
-  return grey_accessibilityLabel(@"Copy");
+id<GREYMatcher> SystemSelectionCalloutCopyButton() {
+  return [ChromeMatchersAppInterface systemSelectionCalloutCopyButton];
 }
 
-+ (id<GREYMatcher>)contextMenuCopyButton {
-  return [ChromeMatchers
-      buttonWithAccessibilityLabelId:(IDS_IOS_CONTENT_CONTEXT_COPY)];
+id<GREYMatcher> ContextMenuCopyButton() {
+  return [ChromeMatchersAppInterface contextMenuCopyButton];
 }
 
-+ (id<GREYMatcher>)NTPOmnibox {
-  return grey_allOf(
-      grey_accessibilityLabel(l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)),
-      grey_minimumVisiblePercent(0.2), nil);
+id<GREYMatcher> NewTabPageOmnibox() {
+  return [ChromeMatchersAppInterface NTPOmnibox];
 }
 
-+ (id<GREYMatcher>)webViewMatcher {
-  return web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
+id<GREYMatcher> WebViewMatcher() {
+  return [ChromeMatchersAppInterface webViewMatcher];
 }
 
-@end
+}  // namespace chrome_test_util

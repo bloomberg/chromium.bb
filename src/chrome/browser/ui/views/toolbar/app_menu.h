@@ -35,13 +35,7 @@ class AppMenu : public views::MenuDelegate,
                 public content::NotificationObserver,
                 public base::SupportsWeakPtr<AppMenu> {
  public:
-  enum RunFlags {
-    NO_FLAGS = 0,
-    // Indicates that the menu was opened for a drag-and-drop operation.
-    FOR_DROP = 1 << 0,
-  };
-
-  AppMenu(Browser* browser, int run_flags, bool alert_reopen_tab_items);
+  AppMenu(Browser* browser, int run_types, bool alert_reopen_tab_items);
   ~AppMenu() override;
 
   void Init(ui::MenuModel* model);
@@ -55,7 +49,9 @@ class AppMenu : public views::MenuDelegate,
   // Whether the menu is currently visible to the user.
   bool IsShowing() const;
 
-  bool for_drop() const { return (run_flags_ & FOR_DROP) != 0; }
+  bool for_drop() const {
+    return (run_types_ & views::MenuRunner::FOR_DROP) != 0;
+  }
 
   views::MenuItemView* root_menu_item() { return root_; }
 
@@ -188,8 +184,8 @@ class AppMenu : public views::MenuDelegate,
 
   content::NotificationRegistrar registrar_;
 
-  // The bit mask of RunFlags.
-  const int run_flags_;
+  // The bit mask of views::MenuRunner::RunTypes.
+  const int run_types_;
 
   // Whether to show items relating to reopening the last-closed tab as alerted.
   const bool alert_reopen_tab_items_;

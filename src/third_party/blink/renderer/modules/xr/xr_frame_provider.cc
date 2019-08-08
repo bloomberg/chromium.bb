@@ -53,7 +53,7 @@ std::unique_ptr<TransformationMatrix> getPoseMatrix(
     return nullptr;
 
   std::unique_ptr<TransformationMatrix> pose_matrix =
-      TransformationMatrix::Create();
+      std::make_unique<TransformationMatrix>();
 
   TransformationMatrix::DecomposedType decomp;
 
@@ -213,6 +213,7 @@ void XRFrameProvider::ScheduleNonImmersiveFrame() {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(!immersive_session_)
       << "Scheduling should be done via the exclusive session if present.";
+  DCHECK(xr_->xrMagicWindowProviderPtr() || !HasARSession());
 
   if (pending_non_immersive_vsync_)
     return;
@@ -227,13 +228,21 @@ void XRFrameProvider::ScheduleNonImmersiveFrame() {
   if (!doc)
     return;
 
+  // This is cleared by either OnNonImmersiveFrameData (GetFrameData callback)
+  // or by OnNonImmersiveVSync (XRFrameProviderRequestCallback's invoke)
+  // Currently the only way for neither of these methods to be called is
+  // if we don't have a MagicWindowProvider and we have an AR Session
+  // which is guaranteed by our above DCheck.
   pending_non_immersive_vsync_ = true;
 
+  // If we have a Magic Window provider, request frame data and flag that
+  // we're waiting for it.  If not, clear any pose data, so that
+  // ProcessScheduledFrame handles it appropriately.
   if (xr_->xrMagicWindowProviderPtr()) {
     xr_->xrMagicWindowProviderPtr()->GetFrameData(WTF::Bind(
         &XRFrameProvider::OnNonImmersiveFrameData, WrapWeakPersistent(this)));
   } else {
-    OnNonImmersiveFrameData(nullptr);
+    frame_pose_ = nullptr;
   }
 
   // TODO(https://crbug.com/839253): Generalize the pass-through images
@@ -333,14 +342,9 @@ void XRFrameProvider::OnNonImmersiveFrameData(
     return;
 
   if (!frame_data) {
-    // Since we don't have any frame data, we will try to request a regular
-    // animation frame to avoid getting stuck.
-    // If we have a MagicWindowProvider this is unexpected, and we should log
-    // for diagnostic purposes.
-    if (xr_->xrMagicWindowProviderPtr()) {
-      DVLOG(1) << __FUNCTION__ << ": NO FRAME DATA!";
-    }
-
+    // Unexpectedly didn't get frame data, and we don't have a timestamp.
+    // Try to request a regular animation frame to avoid getting stuck.
+    DVLOG(1) << __FUNCTION__ << ": NO FRAME DATA!";
     frame_pose_ = nullptr;
     doc->RequestAnimationFrame(
         MakeGarbageCollected<XRFrameProviderRequestCallback>(this));
@@ -411,8 +415,12 @@ void XRFrameProvider::ProcessScheduledFrame(
     }
 #endif
     if (frame_data && (frame_data->left_eye || frame_data->right_eye)) {
-      immersive_session_->UpdateDisplayInfo(frame_data->left_eye,
-                                            frame_data->right_eye);
+      immersive_session_->UpdateEyeParameters(frame_data->left_eye,
+                                              frame_data->right_eye);
+    }
+
+    if (frame_data && frame_data->stage_parameters_updated) {
+      immersive_session_->UpdateStageParameters(frame_data->stage_parameters);
     }
     immersive_session_->OnFrame(high_res_now_ms, std::move(pose_matrix),
                                 buffer_mailbox_holder_, base::nullopt,

@@ -6,10 +6,12 @@ include_rules = [
   "+components/content_settings/core",
   "+components/history/core/browser",
   "+components/keyed_service/core",
+  "+components/language",
   "+components/metrics",
   "+components/network_time",
   "+components/prefs",
   "+components/signin/core/browser",
+  "+components/translate",
   # Use identity_manager.h instead of the below files;
   # see https://groups.google.com/a/chromium.org/d/msg/chromium-dev/dgFLuxqZt1o/iEqkyoQQBwAJ for help and info.
   "-components/signin/core/browser/fake_profile_oauth2_token_service.h",

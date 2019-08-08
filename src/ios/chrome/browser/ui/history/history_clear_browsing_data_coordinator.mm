@@ -7,7 +7,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #include "ios/chrome/browser/ui/history/history_local_commands.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_local_commands.h"
@@ -15,7 +14,9 @@
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller_delegate.h"
-#import "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/web/public/referrer.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -40,7 +41,6 @@
 @synthesize dispatcher = _dispatcher;
 @synthesize historyClearBrowsingDataNavigationController =
     _historyClearBrowsingDataNavigationController;
-@synthesize loader = _loader;
 @synthesize localDispatcher = _localDispatcher;
 @synthesize presentationDelegate = _presentationDelegate;
 
@@ -99,15 +99,12 @@
 
 - (void)openURL:(const GURL&)URL {
   DCHECK(self.historyClearBrowsingDataNavigationController);
-  OpenNewTabCommand* command =
-      [[OpenNewTabCommand alloc] initWithURL:URL
-                                    referrer:web::Referrer()
-                                 inIncognito:NO
-                                inBackground:NO
-                                    appendTo:kLastTab];
+  UrlLoadParams params = UrlLoadParams::InNewTab(URL);
+  params.load_strategy = self.loadStrategy;
   [self stopWithCompletion:^() {
     [self.localDispatcher dismissHistoryWithCompletion:^{
-      [self.loader webPageOrderedOpen:command];
+      UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+          ->Load(params);
       [self.presentationDelegate showActiveRegularTabFromHistory];
     }];
   }];

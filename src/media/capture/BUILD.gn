@@ -167,7 +167,10 @@ jumbo_component("capture_lib") {
       "video/mac/video_capture_device_mac.h",
       "video/mac/video_capture_device_mac.mm",
     ]
-    deps += [ "//third_party/decklink" ]
+    deps += [
+      "//services/video_capture/public/uma",
+      "//third_party/decklink",
+    ]
     libs = [
       "AVFoundation.framework",
       "CoreFoundation.framework",
@@ -262,6 +265,8 @@ jumbo_component("capture_lib") {
       "video/chromeos/display_rotation_observer.h",
       "video/chromeos/pixel_format_utils.cc",
       "video/chromeos/pixel_format_utils.h",
+      "video/chromeos/renderer_facing_cros_image_capture.cc",
+      "video/chromeos/renderer_facing_cros_image_capture.h",
       "video/chromeos/reprocess_manager.cc",
       "video/chromeos/reprocess_manager.h",
       "video/chromeos/request_builder.cc",
@@ -270,6 +275,8 @@ jumbo_component("capture_lib") {
       "video/chromeos/request_manager.h",
       "video/chromeos/stream_buffer_manager.cc",
       "video/chromeos/stream_buffer_manager.h",
+      "video/chromeos/vendor_tag_ops_delegate.cc",
+      "video/chromeos/vendor_tag_ops_delegate.h",
       "video/chromeos/video_capture_device_chromeos_halv3.cc",
       "video/chromeos/video_capture_device_chromeos_halv3.h",
       "video/chromeos/video_capture_device_factory_chromeos.cc",
@@ -278,7 +285,8 @@ jumbo_component("capture_lib") {
     public_deps += [ "//media/capture/video/chromeos/public" ]
     deps += [
       "//build/config/linux/libdrm",
-      "//chromeos/dbus",
+      "//chromeos/dbus/power",
+      "//components/chromeos_camera/common",
       "//media/capture/video/chromeos/mojo:cros_camera",
       "//third_party/libsync",
     ]
@@ -397,13 +405,15 @@ test("capture_unittests") {
       "video/chromeos/local_gpu_memory_buffer_manager.cc",
       "video/chromeos/mock_camera_module.cc",
       "video/chromeos/mock_camera_module.h",
+      "video/chromeos/mock_vendor_tag_ops.cc",
+      "video/chromeos/mock_vendor_tag_ops.h",
       "video/chromeos/mock_video_capture_client.cc",
       "video/chromeos/mock_video_capture_client.h",
       "video/chromeos/request_manager_unittest.cc",
     ]
     deps += [
       "//build/config/linux/libdrm",
-      "//chromeos/dbus:test_support",
+      "//chromeos/dbus/power",
       "//media/capture/video/chromeos/mojo:cros_camera",
       "//media/capture/video/chromeos/public",
       "//mojo/core/embedder",

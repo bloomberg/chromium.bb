@@ -5,6 +5,7 @@
 #ifndef ASH_APP_LIST_VIEWS_TEST_APPS_GRID_VIEW_TEST_API_H_
 #define ASH_APP_LIST_VIEWS_TEST_APPS_GRID_VIEW_TEST_API_H_
 
+#include "ash/app_list/views/apps_grid_view.h"
 #include "base/macros.h"
 
 namespace gfx {
@@ -17,6 +18,7 @@ class View;
 
 namespace app_list {
 
+class AppListItemView;
 class AppsGridView;
 
 namespace test {
@@ -37,6 +39,10 @@ class AppsGridViewTestApi {
   bool HasPendingPageFlip() const;
 
   int TilesPerPage(int page) const;
+
+  int AppsOnPage(int page) const;
+
+  AppListItemView* GetViewAtIndex(GridIndex index) const;
 
   views::View* GetViewAtVisualIndex(int page, int slot) const;
 

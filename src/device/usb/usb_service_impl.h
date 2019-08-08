@@ -36,7 +36,7 @@ typedef struct libusb_context* PlatformUsbContext;
 
 class UsbDeviceImpl;
 
-class UsbServiceImpl :
+class UsbServiceImpl final :
 #if defined(OS_WIN)
     public DeviceMonitorWin::Observer,
 #endif  // OS_WIN

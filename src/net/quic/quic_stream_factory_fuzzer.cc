@@ -23,8 +23,8 @@
 #include "net/socket/socket_tag.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/gtest_util.h"
-#include "net/third_party/quic/test_tools/mock_clock.h"
-#include "net/third_party/quic/test_tools/mock_random.h"
+#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
+#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 namespace net {
@@ -84,7 +84,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::FuzzedDataProvider data_provider(data, size);
 
   FuzzedContextHostResolver host_resolver(HostResolver::Options(), nullptr,
-                                          &data_provider);
+                                          &data_provider,
+                                          true /* enable_caching */);
   FuzzedSocketFactory socket_factory(&data_provider);
 
   // Initialize this on each loop since some options mutate this.

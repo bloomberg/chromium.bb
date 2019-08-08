@@ -34,6 +34,10 @@ class ASH_PUBLIC_EXPORT FrameHeader : public gfx::AnimationDelegate {
 
   ~FrameHeader() override;
 
+  const base::string16& frame_text_override() const {
+    return frame_text_override_;
+  }
+
   // Returns the header's minimum width.
   int GetMinimumHeaderWidth() const;
 

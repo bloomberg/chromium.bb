@@ -219,16 +219,21 @@ bool WebSocketChannelImpl::Connect(
   if (GetBaseFetchContext()->ShouldBlockWebSocketByMixedContentCheck(url))
     return false;
 
-  if (auto* scheduler = execution_context_->GetScheduler())
-    connection_handle_for_scheduler_ = scheduler->OnActiveConnectionCreated();
+  if (auto* scheduler = execution_context_->GetScheduler()) {
+    feature_handle_for_scheduler_ = scheduler->RegisterFeature(
+        SchedulingPolicy::Feature::kWebSocket,
+        {SchedulingPolicy::DisableAggressiveThrottling(),
+         SchedulingPolicy::RecordMetricsForBackForwardCache()});
+  }
 
   if (MixedContentChecker::IsMixedContent(
           execution_context_->GetSecurityOrigin(), url)) {
     String message =
         "Connecting to a non-secure WebSocket server from a secure origin is "
         "deprecated.";
-    execution_context_->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+    execution_context_->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning, message));
   }
 
   url_ = url;
@@ -259,7 +264,12 @@ bool WebSocketChannelImpl::Connect(
       execution_context_->GetTaskRunner(TaskType::kNetworking).get());
 
   if (handshake_throttle_) {
-    handshake_throttle_->ThrottleHandshake(url, this);
+    // The use of WrapWeakPersistent is safe and motivated by the fact that if
+    // the WebSocket is no longer referenced, there's no point in keeping it
+    // alive just to receive the throttling result.
+    handshake_throttle_->ThrottleHandshake(
+        url, WTF::Bind(&WebSocketChannelImpl::OnCompletion,
+                       WrapWeakPersistent(this)));
   } else {
     // Treat no throttle as success.
     throttle_passed_ = true;
@@ -381,8 +391,9 @@ void WebSocketChannelImpl::Fail(const String& reason,
     location = location_at_construction_->Clone();
   }
 
-  execution_context_->AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, level, message, std::move(location)));
+  execution_context_->AddConsoleMessage(
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript, level,
+                             message, std::move(location)));
   // |reason| is only for logging and should not be provided for scripts,
   // hence close reason must be empty in tearDownFailedConnection.
   TearDownFailedConnection();
@@ -396,7 +407,7 @@ void WebSocketChannelImpl::Disconnect() {
         "data", InspectorWebSocketEvent::Data(execution_context_, identifier_));
     probe::DidCloseWebSocket(execution_context_, identifier_);
   }
-  connection_handle_for_scheduler_.reset();
+  feature_handle_for_scheduler_.reset();
   AbortAsyncOperations();
   handshake_throttle_.reset();
   handle_.reset();
@@ -611,7 +622,7 @@ void WebSocketChannelImpl::DidFail(WebSocketHandle* handle,
   NETWORK_DVLOG(1) << this << " DidFail(" << handle << ", " << String(message)
                    << ")";
 
-  connection_handle_for_scheduler_.reset();
+  feature_handle_for_scheduler_.reset();
 
   DCHECK(handle_);
   DCHECK_EQ(handle, handle_.get());
@@ -689,7 +700,7 @@ void WebSocketChannelImpl::DidClose(WebSocketHandle* handle,
   NETWORK_DVLOG(1) << this << " DidClose(" << handle << ", " << was_clean
                    << ", " << code << ", " << String(reason) << ")";
 
-  connection_handle_for_scheduler_.reset();
+  feature_handle_for_scheduler_.reset();
 
   DCHECK(handle_);
   DCHECK_EQ(handle, handle_.get());
@@ -730,11 +741,18 @@ void WebSocketChannelImpl::DidStartClosingHandshake(WebSocketHandle* handle) {
     client_->DidStartClosingHandshake();
 }
 
-void WebSocketChannelImpl::OnSuccess() {
+void WebSocketChannelImpl::OnCompletion(
+    const base::Optional<WebString>& console_message) {
   DCHECK(!throttle_passed_);
   DCHECK(handshake_throttle_);
-  throttle_passed_ = true;
   handshake_throttle_ = nullptr;
+
+  if (console_message) {
+    FailAsError(*console_message);
+    return;
+  }
+
+  throttle_passed_ = true;
   if (connect_info_) {
     // No flow control quota is supplied to the browser until we are ready to
     // receive messages. This fixes crbug.com/786776.
@@ -744,13 +762,6 @@ void WebSocketChannelImpl::OnSuccess() {
                         std::move(connect_info_->extensions));
     connect_info_.reset();
   }
-}
-
-void WebSocketChannelImpl::OnError(const WebString& console_message) {
-  DCHECK(!throttle_passed_);
-  DCHECK(handshake_throttle_);
-  handshake_throttle_ = nullptr;
-  FailAsError(console_message);
 }
 
 void WebSocketChannelImpl::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
@@ -777,7 +788,7 @@ void WebSocketChannelImpl::DidFailLoadingBlob(FileErrorCode error_code) {
 
 void WebSocketChannelImpl::TearDownFailedConnection() {
   // |handle_| and |client_| can be null here.
-  connection_handle_for_scheduler_.reset();
+  feature_handle_for_scheduler_.reset();
   handshake_throttle_.reset();
 
   if (client_)

@@ -16,13 +16,14 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "components/send_tab_to_self/send_tab_to_self_model.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_sync_bridge.h"
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/test_sync_service.h"
+#include "content/public/browser/navigation_entry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -53,6 +54,8 @@ class TestDeviceInfoTracker : public syncer::DeviceInfoTracker {
   void RemoveObserver(Observer* observer) override {}
   int CountActiveDevices() const override { return active_devices_; }
 
+  void ForcePulseForTest() override {}
+
  protected:
   int active_devices_;
 };
@@ -79,9 +82,6 @@ class TestDeviceInfoSyncService : public syncer::DeviceInfoSyncService {
       override {
     return nullptr;
   }
-  void InitLocalCacheGuid(const std::string& cache_guid,
-                          const std::string& session_name) override {}
-  void ClearLocalCacheGuid() override {}
 
  protected:
   TestDeviceInfoTracker tracker_;
@@ -95,44 +95,6 @@ std::unique_ptr<KeyedService> BuildMockDeviceInfoSyncService(
 std::unique_ptr<KeyedService> BuildTestSyncService(
     content::BrowserContext* context) {
   return std::make_unique<syncer::TestSyncService>();
-}
-
-// SendTabToSelfModelMock
-class SendTabToSelfModelMock : public SendTabToSelfModel {
- public:
-  SendTabToSelfModelMock() = default;
-  ~SendTabToSelfModelMock() override = default;
-
-  MOCK_METHOD2(AddEntry,
-               const SendTabToSelfEntry*(const GURL&, const std::string&));
-  MOCK_METHOD1(DeleteEntry, void(const std::string&));
-  MOCK_METHOD1(DismissEntry, void(const std::string&));
-
-  MOCK_CONST_METHOD0(GetAllGuids, std::vector<std::string>());
-  MOCK_METHOD0(DeleteAllEntries, void());
-  MOCK_CONST_METHOD1(GetEntryByGUID, SendTabToSelfEntry*(const std::string&));
-
-  void AddObserver(SendTabToSelfModelObserver* observer) {}
-  void RemoveObserver(SendTabToSelfModelObserver* observer) {}
-};
-
-// Mock a SendTabToSelfSyncService to get SendTabToSelfModelMock
-class SendTabToSelfSyncServiceMock : public SendTabToSelfSyncService {
- public:
-  SendTabToSelfSyncServiceMock() = default;
-  ~SendTabToSelfSyncServiceMock() override = default;
-
-  SendTabToSelfModel* GetSendTabToSelfModel() override {
-    return &send_tab_to_self_model_mock_;
-  }
-
- protected:
-  SendTabToSelfModelMock send_tab_to_self_model_mock_;
-};
-
-std::unique_ptr<KeyedService> BuildTestSendTabToSelfSyncService(
-    content::BrowserContext* context) {
-  return std::make_unique<SendTabToSelfSyncServiceMock>();
 }
 
 class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
@@ -153,30 +115,33 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
 
     incognito_profile_ = profile()->GetOffTheRecordProfile();
     url_ = GURL("https://www.google.com");
+    title_ = base::UTF8ToUTF16(base::StringPiece("Google"));
   }
 
   // Set up all test conditions to let ShouldOfferFeature() return true
   void SetUpAllTrueEnv() {
-    scoped_feature_list_.InitAndEnableFeature(switches::kSyncSendTabToSelf);
+    scoped_feature_list_.InitWithFeatures(
+        {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
     syncer::ModelTypeSet enabled_modeltype(syncer::SEND_TAB_TO_SELF);
     test_sync_service_->SetPreferredDataTypes(enabled_modeltype);
 
     mock_device_sync_service_->SetTrackerActiveDevices(2);
 
     AddTab(browser(), url_);
-    NavigateAndCommitActiveTab(url_);
+    NavigateAndCommitActiveTabWithTitle(browser(), url_, title_);
   }
 
   // Set up a environment in which the feature flag is disabled
   void SetUpFeatureDisabledEnv() {
-    scoped_feature_list_.InitAndDisableFeature(switches::kSyncSendTabToSelf);
+    scoped_feature_list_.InitWithFeatures(
+        {}, {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI});
     syncer::ModelTypeSet enabled_modeltype(syncer::SEND_TAB_TO_SELF);
     test_sync_service_->SetPreferredDataTypes(enabled_modeltype);
 
     mock_device_sync_service_->SetTrackerActiveDevices(2);
 
     AddTab(browser(), url_);
-    NavigateAndCommitActiveTab(url_);
+    NavigateAndCommitActiveTabWithTitle(browser(), url_, title_);
   }
 
  protected:
@@ -185,34 +150,39 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   Profile* incognito_profile_;
   GURL url_;
+  base::string16 title_;
 };
 
-TEST_F(SendTabToSelfUtilTest, IsFlagEnabled_True) {
-  scoped_feature_list_.InitAndEnableFeature(switches::kSyncSendTabToSelf);
+TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled_True) {
+  scoped_feature_list_.InitWithFeatures(
+      {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
 
-  EXPECT_TRUE(IsFlagEnabled());
+  EXPECT_TRUE(IsSendingEnabled());
+  EXPECT_TRUE(IsReceivingEnabled());
 }
 
-TEST_F(SendTabToSelfUtilTest, IsFlagEnabled_False) {
-  scoped_feature_list_.InitAndDisableFeature(switches::kSyncSendTabToSelf);
-  EXPECT_FALSE(IsFlagEnabled());
+TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled_False) {
+  scoped_feature_list_.InitWithFeatures(
+      {}, {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI});
+
+  EXPECT_FALSE(IsSendingEnabled());
+  EXPECT_FALSE(IsReceivingEnabled());
 }
 
-TEST_F(SendTabToSelfUtilTest, IsUserSyncTypeEnabled_True) {
-  syncer::ModelTypeSet enabled_modeltype(syncer::SEND_TAB_TO_SELF);
-  test_sync_service_->SetPreferredDataTypes(enabled_modeltype);
+TEST_F(SendTabToSelfUtilTest, IsReceivingEnabled_True) {
+  scoped_feature_list_.InitWithFeatures({switches::kSyncSendTabToSelf},
+                                        {kSendTabToSelfShowSendingUI});
 
-  EXPECT_TRUE(IsUserSyncTypeEnabled(profile()));
-
-  test_sync_service_->SetPreferredDataTypes(syncer::ModelTypeSet::All());
-
-  EXPECT_TRUE(IsUserSyncTypeEnabled(profile()));
+  EXPECT_FALSE(IsSendingEnabled());
+  EXPECT_TRUE(IsReceivingEnabled());
 }
 
-TEST_F(SendTabToSelfUtilTest, IsUserSyncTypeEnabled_False) {
-  test_sync_service_->SetPreferredDataTypes(syncer::ModelTypeSet());
+TEST_F(SendTabToSelfUtilTest, IsOnlySendingEnabled_False) {
+  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI},
+                                        {switches::kSyncSendTabToSelf});
 
-  EXPECT_FALSE(IsUserSyncTypeEnabled(profile()));
+  EXPECT_FALSE(IsSendingEnabled());
+  EXPECT_FALSE(IsReceivingEnabled());
 }
 
 TEST_F(SendTabToSelfUtilTest, IsSyncingOnMultipleDevices_True) {
@@ -243,59 +213,6 @@ TEST_F(SendTabToSelfUtilTest, NativePage) {
 
 TEST_F(SendTabToSelfUtilTest, IncognitoMode) {
   EXPECT_FALSE(IsContentRequirementsMet(url_, incognito_profile_));
-}
-
-TEST_F(SendTabToSelfUtilTest, ShouldOfferFeature_True) {
-  SetUpAllTrueEnv();
-
-  EXPECT_TRUE(ShouldOfferFeature(browser()));
-}
-
-TEST_F(SendTabToSelfUtilTest, ShouldOfferFeature_IsFlagEnabled_False) {
-  SetUpFeatureDisabledEnv();
-  EXPECT_FALSE(ShouldOfferFeature(browser()));
-}
-
-TEST_F(SendTabToSelfUtilTest, ShouldOfferFeature_IsUserSyncTypeEnabled_False) {
-  SetUpAllTrueEnv();
-  test_sync_service_->SetPreferredDataTypes(syncer::ModelTypeSet());
-
-  EXPECT_FALSE(ShouldOfferFeature(browser()));
-}
-
-TEST_F(SendTabToSelfUtilTest,
-       ShouldOfferFeature_IsSyncingOnMultipleDevices_False) {
-  SetUpAllTrueEnv();
-  mock_device_sync_service_->SetTrackerActiveDevices(0);
-
-  EXPECT_FALSE(ShouldOfferFeature(browser()));
-}
-
-TEST_F(SendTabToSelfUtilTest,
-       ShouldOfferFeature_IsContentRequirementsMet_False) {
-  SetUpAllTrueEnv();
-  url_ = GURL("192.168.0.0");
-  NavigateAndCommitActiveTab(url_);
-
-  EXPECT_FALSE(ShouldOfferFeature(browser()));
-}
-
-TEST_F(SendTabToSelfUtilTest, CreateNewEntry) {
-  SetUpAllTrueEnv();
-  SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
-      profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL url = tab->GetURL();
-  std::string title = base::UTF16ToUTF8(tab->GetTitle());
-  SendTabToSelfModelMock* model_mock = static_cast<SendTabToSelfModelMock*>(
-      SendTabToSelfSyncServiceFactory::GetForProfile(profile())
-          ->GetSendTabToSelfModel());
-
-  EXPECT_CALL(*model_mock, AddEntry(url, title))
-      .WillOnce(testing::Return(nullptr));
-
-  CreateNewEntry(tab, profile());
 }
 
 }  // namespace

@@ -29,6 +29,7 @@
 #include "api/scoped_refptr.h"
 #include "api/test/fake_frame_decryptor.h"
 #include "api/test/fake_frame_encryptor.h"
+#include "api/video/builtin_video_bitrate_allocator_factory.h"
 #include "logging/rtc_event_log/rtc_event_log.h"
 #include "media/base/codec.h"
 #include "media/base/fake_media_engine.h"
@@ -87,13 +88,15 @@ static const int kDefaultTimeout = 10000;  // 10 seconds.
 namespace webrtc {
 
 class RtpSenderReceiverTest
-    : public testing::Test,
-      public testing::WithParamInterface<std::pair<RidList, RidList>>,
+    : public ::testing::Test,
+      public ::testing::WithParamInterface<std::pair<RidList, RidList>>,
       public sigslot::has_slots<> {
  public:
   RtpSenderReceiverTest()
       : network_thread_(rtc::Thread::Current()),
         worker_thread_(rtc::Thread::Current()),
+        video_bitrate_allocator_factory_(
+            webrtc::CreateBuiltinVideoBitrateAllocatorFactory()),
         // Create fake media engine/etc. so we can create channels to use to
         // test RtpSenders/RtpReceivers.
         media_engine_(new cricket::FakeMediaEngine()),
@@ -119,7 +122,7 @@ class RtpSenderReceiverTest
         &fake_call_, cricket::MediaConfig(), rtp_transport_.get(),
         /*media_transport=*/nullptr, rtc::Thread::Current(), cricket::CN_VIDEO,
         srtp_required, webrtc::CryptoOptions(), &ssrc_generator_,
-        cricket::VideoOptions());
+        cricket::VideoOptions(), video_bitrate_allocator_factory_.get());
     voice_channel_->Enable(true);
     video_channel_->Enable(true);
     voice_media_channel_ = media_engine_->GetVoiceChannel(0);
@@ -491,6 +494,17 @@ class RtpSenderReceiverTest
     EXPECT_DOUBLE_EQ(latency_s, delay_ms.value_or(0) / 1000.0);
   }
 
+  // Check that minimum Jitter Buffer delay is propagated to the underlying
+  // |media_channel|.
+  void VerifyRtpReceiverDelayBehaviour(cricket::Delayable* media_channel,
+                                       RtpReceiverInterface* receiver,
+                                       uint32_t ssrc) {
+    receiver->SetJitterBufferMinimumDelay(/*delay_seconds=*/0.5);
+    absl::optional<int> delay_ms =
+        media_channel->GetBaseMinimumPlayoutDelayMs(ssrc);  // In milliseconds.
+    EXPECT_DOUBLE_EQ(0.5, delay_ms.value_or(0) / 1000.0);
+  }
+
  protected:
   rtc::Thread* const network_thread_;
   rtc::Thread* const worker_thread_;
@@ -499,6 +513,8 @@ class RtpSenderReceiverTest
   // the |channel_manager|.
   std::unique_ptr<cricket::DtlsTransportInternal> rtp_dtls_transport_;
   std::unique_ptr<webrtc::RtpTransportInternal> rtp_transport_;
+  std::unique_ptr<webrtc::VideoBitrateAllocatorFactory>
+      video_bitrate_allocator_factory_;
   // |media_engine_| is actually owned by |channel_manager_|.
   cricket::FakeMediaEngine* media_engine_;
   cricket::ChannelManager channel_manager_;
@@ -701,6 +717,20 @@ TEST_F(RtpSenderReceiverTest, RemoteVideoTrackLatency) {
   CreateVideoRtpReceiver();
   VerifyTrackLatencyBehaviour(video_media_channel_, video_track_.get(),
                               video_track_->GetSource(), kVideoSsrc);
+}
+
+TEST_F(RtpSenderReceiverTest, AudioRtpReceiverDelay) {
+  CreateAudioRtpReceiver();
+  VerifyRtpReceiverDelayBehaviour(voice_media_channel_,
+                                  audio_rtp_receiver_.get(), kAudioSsrc);
+  VerifyTrackLatencyBehaviour(voice_media_channel_, audio_track_.get(),
+                              audio_track_->GetSource(), kAudioSsrc);
+}
+
+TEST_F(RtpSenderReceiverTest, VideoRtpReceiverDelay) {
+  CreateVideoRtpReceiver();
+  VerifyRtpReceiverDelayBehaviour(video_media_channel_,
+                                  video_rtp_receiver_.get(), kVideoSsrc);
 }
 
 // Test that the media channel isn't enabled for sending if the audio sender

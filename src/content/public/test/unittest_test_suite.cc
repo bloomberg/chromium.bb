@@ -48,9 +48,9 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
     new_command_line.AppendSwitchNative(iter.first, iter.second);
   *base::CommandLine::ForCurrentProcess() = new_command_line;
 
-  // The TaskScheduler created by the test launcher is never destroyed.
+  // The ThreadPool created by the test launcher is never destroyed.
   // Similarly, the FeatureList created here is never destroyed so it
-  // can safely be accessed by the TaskScheduler.
+  // can safely be accessed by the ThreadPool.
   std::unique_ptr<base::FeatureList> feature_list =
       std::make_unique<base::FeatureList>();
   feature_list->InitializeFromCommandLine(enabled, disabled);

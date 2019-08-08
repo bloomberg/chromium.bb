@@ -58,7 +58,7 @@ class PeerConnectionWrapperForIceTest : public PeerConnectionWrapper {
     const auto& first_content = desc->contents()[0];
     candidate->set_transport_name(first_content.name);
     std::unique_ptr<IceCandidateInterface> jsep_candidate =
-        CreateIceCandidate(first_content.name, 0, *candidate);
+        CreateIceCandidate(first_content.name, -1, *candidate);
     return pc()->AddIceCandidate(jsep_candidate.get());
   }
 
@@ -975,7 +975,7 @@ INSTANTIATE_TEST_SUITE_P(PeerConnectionIceTest,
                          Values(SdpSemantics::kPlanB,
                                 SdpSemantics::kUnifiedPlan));
 
-class PeerConnectionIceConfigTest : public testing::Test {
+class PeerConnectionIceConfigTest : public ::testing::Test {
  protected:
   void SetUp() override {
     pc_factory_ = CreatePeerConnectionFactory(

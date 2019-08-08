@@ -30,7 +30,7 @@ namespace {
 
 // The group used by the buttons.  This name is chosen voluntarily big not to
 // conflict with other groups that could be in the dialog content.
-const int kButtonGroup = 6666;
+constexpr int kButtonGroup = 6666;
 
 // Returns true if the given view should be shown (i.e. exists and is
 // visible).
@@ -264,16 +264,11 @@ DialogDelegate* DialogClientView::GetDialogDelegate() const {
   return GetWidget()->widget_delegate()->AsDialogDelegate();
 }
 
-void DialogClientView::ChildPreferredSizeChanged(View* child) {
-  if (!adding_or_removing_views_ && child == extra_view_)
-    Layout();
-}
-
 void DialogClientView::ChildVisibilityChanged(View* child) {
   // Showing or hiding |extra_view_| can alter which columns have linked sizes.
   if (child == extra_view_)
     UpdateDialogButtons();
-  ChildPreferredSizeChanged(child);
+  InvalidateLayout();
 }
 
 void DialogClientView::OnDialogChanged() {

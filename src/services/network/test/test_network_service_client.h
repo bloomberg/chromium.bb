@@ -20,8 +20,12 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
   explicit TestNetworkServiceClient(mojom::NetworkServiceClientRequest request);
   ~TestNetworkServiceClient() override;
 
-  void DisableUploads();
-  void EnableUploads();
+  void set_upload_files_invalid(bool upload_files_invalid) {
+    upload_files_invalid_ = upload_files_invalid;
+  }
+  void set_ignore_last_upload_file(bool ignore_last_upload_file) {
+    ignore_last_upload_file_ = ignore_last_upload_file;
+  }
 
   // network::mojom::NetworkServiceClient implementation:
   void OnAuthRequired(
@@ -31,7 +35,7 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
       const GURL& url,
       const GURL& site_for_cookies,
       bool first_auth_attempt,
-      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+      const net::AuthChallengeInfo& auth_info,
       int32_t resource_type,
       const base::Optional<ResourceResponseHead>& head,
       mojom::AuthChallengeResponderPtr auth_challenge_responder) override;
@@ -91,7 +95,8 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
 #endif
 
  private:
-  bool enable_uploads_;
+  bool upload_files_invalid_ = false;
+  bool ignore_last_upload_file_ = false;
   mojo::Binding<mojom::NetworkServiceClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkServiceClient);

@@ -49,11 +49,10 @@ class WebIDBDatabaseCallbacks {
   virtual ~WebIDBDatabaseCallbacks() = default;
 
   virtual void OnForcedClose() = 0;
-  virtual void OnVersionChange(long long old_version,
-                               long long new_version) = 0;
+  virtual void OnVersionChange(int64_t old_version, int64_t new_version) = 0;
 
-  virtual void OnAbort(long long transaction_id, const IDBDatabaseError&) = 0;
-  virtual void OnComplete(long long transaction_id) = 0;
+  virtual void OnAbort(int64_t transaction_id, const IDBDatabaseError&) = 0;
+  virtual void OnComplete(int64_t transaction_id) = 0;
   virtual void OnChanges(const ObservationIndexMap&,
                          Vector<Persistent<IDBObservation>> observations,
                          const TransactionMap& transactions) = 0;

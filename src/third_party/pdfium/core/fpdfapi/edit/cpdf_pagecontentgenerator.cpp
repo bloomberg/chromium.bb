@@ -14,7 +14,8 @@
 
 #include "core/fpdfapi/edit/cpdf_pagecontentmanager.h"
 #include "core/fpdfapi/edit/cpdf_stringarchivestream.h"
-#include "core/fpdfapi/font/cpdf_font.h"
+#include "core/fpdfapi/font/cpdf_truetypefont.h"
+#include "core/fpdfapi/font/cpdf_type1font.h"
 #include "core/fpdfapi/page/cpdf_contentmarks.h"
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/page/cpdf_image.h"
@@ -38,9 +39,20 @@
 
 namespace {
 
+std::ostream& WriteFloat(std::ostream& stream, float value) {
+  char buffer[pdfium::skia::kMaximumSkFloatToDecimalLength];
+  unsigned size = pdfium::skia::SkFloatToDecimal(value, buffer);
+  stream.write(buffer, size);
+  return stream;
+}
+
 std::ostream& operator<<(std::ostream& ar, const CFX_Matrix& matrix) {
-  ar << matrix.a << " " << matrix.b << " " << matrix.c << " " << matrix.d << " "
-     << matrix.e << " " << matrix.f;
+  WriteFloat(ar, matrix.a) << " ";
+  WriteFloat(ar, matrix.b) << " ";
+  WriteFloat(ar, matrix.c) << " ";
+  WriteFloat(ar, matrix.d) << " ";
+  WriteFloat(ar, matrix.e) << " ";
+  WriteFloat(ar, matrix.f);
   return ar;
 }
 
@@ -357,19 +369,17 @@ void CPDF_PageContentGenerator::ProcessPath(std::ostringstream* buf,
   const auto& pPoints = pPathObj->path().GetPoints();
   if (pPathObj->path().IsRect()) {
     CFX_PointF diff = pPoints[2].m_Point - pPoints[0].m_Point;
-    *buf << pPoints[0].m_Point.x << " " << pPoints[0].m_Point.y << " " << diff.x
-         << " " << diff.y << " re";
+    WriteFloat(*buf, pPoints[0].m_Point.x) << " ";
+    WriteFloat(*buf, pPoints[0].m_Point.y) << " ";
+    WriteFloat(*buf, diff.x) << " ";
+    WriteFloat(*buf, diff.y) << " re";
   } else {
     for (size_t i = 0; i < pPoints.size(); i++) {
       if (i > 0)
         *buf << " ";
 
-      char buffer[pdfium::skia::kMaximumSkFloatToDecimalLength];
-      unsigned size =
-          pdfium::skia::SkFloatToDecimal(pPoints[i].m_Point.x, buffer);
-      buf->write(buffer, size) << " ";
-      size = pdfium::skia::SkFloatToDecimal(pPoints[i].m_Point.y, buffer);
-      buf->write(buffer, size);
+      WriteFloat(*buf, pPoints[i].m_Point.x) << " ";
+      WriteFloat(*buf, pPoints[i].m_Point.y);
 
       FXPT_TYPE pointType = pPoints[i].m_Type;
       if (pointType == FXPT_TYPE::MoveTo) {
@@ -385,9 +395,11 @@ void CPDF_PageContentGenerator::ProcessPath(std::ostringstream* buf,
           *buf << " h";
           break;
         }
-        *buf << " " << pPoints[i + 1].m_Point.x << " "
-             << pPoints[i + 1].m_Point.y << " " << pPoints[i + 2].m_Point.x
-             << " " << pPoints[i + 2].m_Point.y << " c";
+        *buf << " ";
+        WriteFloat(*buf, pPoints[i + 1].m_Point.x) << " ";
+        WriteFloat(*buf, pPoints[i + 1].m_Point.y) << " ";
+        WriteFloat(*buf, pPoints[i + 2].m_Point.x) << " ";
+        WriteFloat(*buf, pPoints[i + 2].m_Point.y) << " c";
         i += 2;
       }
       if (pPoints[i].m_CloseFigure)
@@ -426,7 +438,7 @@ void CPDF_PageContentGenerator::ProcessGraphics(std::ostringstream* buf,
   }
   float lineWidth = pPageObj->m_GraphState.GetLineWidth();
   if (lineWidth != 1.0f)
-    *buf << lineWidth << " w ";
+    WriteFloat(*buf, lineWidth) << " w ";
   CFX_GraphStateData::LineCap lineCap = pPageObj->m_GraphState.GetLineCap();
   if (lineCap != CFX_GraphStateData::LineCapButt)
     *buf << static_cast<int>(lineCap) << " J ";
@@ -508,17 +520,22 @@ void CPDF_PageContentGenerator::ProcessText(std::ostringstream* buf,
   CPDF_Font* pFont = pTextObj->GetFont();
   if (!pFont)
     pFont = CPDF_Font::GetStockFont(m_pDocument.Get(), "Helvetica");
-  FontData fontD;
-  if (pFont->IsType1Font())
-    fontD.type = "Type1";
-  else if (pFont->IsTrueTypeFont())
-    fontD.type = "TrueType";
-  else if (pFont->IsCIDFont())
-    fontD.type = "Type0";
-  else
+
+  FontData data;
+  CPDF_FontEncoding* pEncoding = nullptr;
+  if (pFont->IsType1Font()) {
+    data.type = "Type1";
+    pEncoding = pFont->AsType1Font()->GetEncoding();
+  } else if (pFont->IsTrueTypeFont()) {
+    data.type = "TrueType";
+    pEncoding = pFont->AsTrueTypeFont()->GetEncoding();
+  } else if (pFont->IsCIDFont()) {
+    data.type = "Type0";
+  } else {
     return;
-  fontD.baseFont = pFont->GetBaseFont();
-  auto it = m_pObjHolder->m_FontsMap.find(fontD);
+  }
+  data.baseFont = pFont->GetBaseFont();
+  auto it = m_pObjHolder->m_FontsMap.find(data);
   ByteString dictName;
   if (it != m_pObjHolder->m_FontsMap.end()) {
     dictName = it->second;
@@ -526,17 +543,21 @@ void CPDF_PageContentGenerator::ProcessText(std::ostringstream* buf,
     CPDF_Object* pIndirectFont = pFont->GetFontDict();
     if (pIndirectFont->IsInline()) {
       // In this case we assume it must be a standard font
-      auto fontDict = pdfium::MakeUnique<CPDF_Dictionary>();
-      fontDict->SetNewFor<CPDF_Name>("Type", "Font");
-      fontDict->SetNewFor<CPDF_Name>("Subtype", fontD.type);
-      fontDict->SetNewFor<CPDF_Name>("BaseFont", fontD.baseFont);
-      pIndirectFont = m_pDocument->AddIndirectObject(std::move(fontDict));
+      auto pFontDict = pdfium::MakeUnique<CPDF_Dictionary>();
+      pFontDict->SetNewFor<CPDF_Name>("Type", "Font");
+      pFontDict->SetNewFor<CPDF_Name>("Subtype", data.type);
+      pFontDict->SetNewFor<CPDF_Name>("BaseFont", data.baseFont);
+      if (pEncoding) {
+        pFontDict->SetFor("Encoding",
+                          pEncoding->Realize(m_pDocument->GetByteStringPool()));
+      }
+      pIndirectFont = m_pDocument->AddIndirectObject(std::move(pFontDict));
     }
     dictName = RealizeResource(pIndirectFont, "Font");
-    m_pObjHolder->m_FontsMap[fontD] = dictName;
+    m_pObjHolder->m_FontsMap[data] = dictName;
   }
-  *buf << "/" << PDF_NameEncode(dictName) << " " << pTextObj->GetFontSize()
-       << " Tf ";
+  *buf << "/" << PDF_NameEncode(dictName) << " ";
+  WriteFloat(*buf, pTextObj->GetFontSize()) << " Tf ";
   ByteString text;
   for (uint32_t charcode : pTextObj->GetCharCodes()) {
     if (charcode != CPDF_Font::kInvalidCharCode)

@@ -75,6 +75,31 @@ ContentPasswordManagerDriverFactory::FromWebContents(
           kContentPasswordManagerDriverFactoryWebContentsUserDataKey));
 }
 
+// static
+void ContentPasswordManagerDriverFactory::BindAutofillDriver(
+    autofill::mojom::PasswordManagerDriverAssociatedRequest request,
+    content::RenderFrameHost* render_frame_host) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  // We try to bind to the driver of this render frame host,
+  // but if driver is not ready for this render frame host for now,
+  // the request will be just dropped, this would cause closing the message pipe
+  // which would raise connection error to peer side.
+  // Peer side could reconnect later when needed.
+  if (!web_contents)
+    return;
+
+  ContentPasswordManagerDriverFactory* factory =
+      ContentPasswordManagerDriverFactory::FromWebContents(web_contents);
+  if (!factory)
+    return;
+
+  ContentPasswordManagerDriver* driver =
+      factory->GetDriverForFrame(render_frame_host);
+  if (driver)
+    driver->BindRequest(std::move(request));
+}
+
 ContentPasswordManagerDriver*
 ContentPasswordManagerDriverFactory::GetDriverForFrame(
     content::RenderFrameHost* render_frame_host) {

@@ -31,7 +31,7 @@ class TtsPlatformImplChromeOs : public content::TtsPlatform {
   void Pause() override {}
   void Resume() override {}
   void WillSpeakUtteranceWithVoice(
-      const content::TtsUtterance* utterance,
+      content::TtsUtterance* utterance,
       const content::VoiceData& voice_data) override {}
 
   // Get the single instance of this class.

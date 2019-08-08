@@ -148,7 +148,7 @@ enum vp8e_enc_control_id {
    * speed at the expense of quality.
    *
    * \note Valid range for VP8: -16..16
-   * \note Valid range for VP9: -8..8
+   * \note Valid range for VP9: -9..9
    *
    * Supported in codecs: VP8, VP9
    */
@@ -933,8 +933,8 @@ VPX_CTRL_USE_TYPE(VP9E_GET_SVC_LAYER_ID, vpx_svc_layer_id_t *)
 
 VPX_CTRL_USE_TYPE(VP8E_SET_MAX_INTRA_BITRATE_PCT, unsigned int)
 #define VPX_CTRL_VP8E_SET_MAX_INTRA_BITRATE_PCT
-VPX_CTRL_USE_TYPE(VP8E_SET_MAX_INTER_BITRATE_PCT, unsigned int)
-#define VPX_CTRL_VP8E_SET_MAX_INTER_BITRATE_PCT
+VPX_CTRL_USE_TYPE(VP9E_SET_MAX_INTER_BITRATE_PCT, unsigned int)
+#define VPX_CTRL_VP9E_SET_MAX_INTER_BITRATE_PCT
 
 VPX_CTRL_USE_TYPE(VP8E_SET_GF_CBR_BOOST_PCT, unsigned int)
 #define VPX_CTRL_VP8E_SET_GF_CBR_BOOST_PCT

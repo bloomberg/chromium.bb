@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/style/clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_value.h"
@@ -75,26 +76,6 @@ TEST(ComputedStyleTest, FocusRingOutset) {
 #else
   EXPECT_EQ(3, style->OutlineOutsetExtent());
 #endif
-}
-
-TEST(ComputedStyleTest, FocusRingCustomizedOutset) {
-  float old_minimum_stroke_width_for_focus_ring =
-      LayoutTheme::GetTheme().MinimumStrokeWidthForFocusRing();
-  bool old_is_focus_ring_outset = LayoutTheme::GetTheme().IsFocusRingOutset();
-  LayoutTheme::GetTheme().SetMinimumStrokeWidthForFocusRing(4.0);
-  LayoutTheme::GetTheme().SetIsFocusRingOutset(true);
-  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetOutlineStyle(EBorderStyle::kSolid);
-  style->SetOutlineStyleIsAuto(static_cast<bool>(OutlineIsAuto::kOn));
-  style->SetEffectiveZoom(4.75);
-#if defined(OS_MACOSX)
-  EXPECT_EQ(4, style->OutlineOutsetExtent());
-#else
-  EXPECT_EQ(5, style->OutlineOutsetExtent());
-#endif
-  LayoutTheme::GetTheme().SetMinimumStrokeWidthForFocusRing(
-      old_minimum_stroke_width_for_focus_ring);
-  LayoutTheme::GetTheme().SetIsFocusRingOutset(old_is_focus_ring_outset);
 }
 
 TEST(ComputedStyleTest, SVGStackingContext) {
@@ -322,12 +303,12 @@ TEST(ComputedStyleTest, CursorList) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> other = ComputedStyle::Create();
 
-  cssvalue::CSSGradientValue* gradient =
-      cssvalue::CSSLinearGradientValue::Create(
-          nullptr, nullptr, nullptr, nullptr, nullptr, cssvalue::kRepeating);
+  auto* gradient = MakeGarbageCollected<cssvalue::CSSLinearGradientValue>(
+      nullptr, nullptr, nullptr, nullptr, nullptr, cssvalue::kRepeating);
 
-  StyleImage* image_value = StyleGeneratedImage::Create(*gradient);
-  StyleImage* other_image_value = StyleGeneratedImage::Create(*gradient);
+  auto* image_value = MakeGarbageCollected<StyleGeneratedImage>(*gradient);
+  auto* other_image_value =
+      MakeGarbageCollected<StyleGeneratedImage>(*gradient);
 
   EXPECT_TRUE(DataEquivalent(image_value, other_image_value));
 
@@ -399,6 +380,49 @@ TEST(ComputedStyleTest, BorderStyle) {
   EXPECT_FALSE(style->BorderSizeEquals(*other));
   style->SetBorderBottomStyle(EBorderStyle::kSolid);
   EXPECT_TRUE(style->BorderSizeEquals(*other));
+}
+
+#define TEST_ANIMATION_FLAG(flag, inherited)                               \
+  do {                                                                     \
+    auto style = ComputedStyle::Create();                                  \
+    auto other = ComputedStyle::Create();                                  \
+    EXPECT_FALSE(style->flag());                                           \
+    EXPECT_FALSE(other->flag());                                           \
+    style->Set##flag(true);                                                \
+    EXPECT_TRUE(style->flag());                                            \
+    EXPECT_EQ(ComputedStyle::Difference::inherited,                        \
+              ComputedStyle::ComputeDifference(style.get(), other.get())); \
+    auto diff = style->VisualInvalidationDiff(*document, *other);          \
+    EXPECT_TRUE(diff.HasDifference());                                     \
+    EXPECT_TRUE(diff.CompositingReasonsChanged());                         \
+  } while (false)
+
+#define TEST_ANIMATION_FLAG_NO_DIFF(flag)                                  \
+  do {                                                                     \
+    auto style = ComputedStyle::Create();                                  \
+    auto other = ComputedStyle::Create();                                  \
+    EXPECT_FALSE(style->flag());                                           \
+    EXPECT_FALSE(other->flag());                                           \
+    style->Set##flag(true);                                                \
+    EXPECT_TRUE(style->flag());                                            \
+    EXPECT_EQ(ComputedStyle::Difference::kEqual,                           \
+              ComputedStyle::ComputeDifference(style.get(), other.get())); \
+    auto diff = style->VisualInvalidationDiff(*document, *other);          \
+    EXPECT_FALSE(diff.HasDifference());                                    \
+    EXPECT_FALSE(diff.CompositingReasonsChanged());                        \
+  } while (false)
+
+TEST(ComputedStyleTest, AnimationFlags) {
+  Persistent<Document> document = Document::CreateForTest();
+  TEST_ANIMATION_FLAG(HasCurrentTransformAnimation, kNonInherited);
+  TEST_ANIMATION_FLAG(HasCurrentOpacityAnimation, kNonInherited);
+  TEST_ANIMATION_FLAG(HasCurrentFilterAnimation, kNonInherited);
+  TEST_ANIMATION_FLAG(HasCurrentBackdropFilterAnimation, kNonInherited);
+  TEST_ANIMATION_FLAG(SubtreeWillChangeContents, kInherited);
+  TEST_ANIMATION_FLAG_NO_DIFF(IsRunningTransformAnimationOnCompositor);
+  TEST_ANIMATION_FLAG_NO_DIFF(IsRunningOpacityAnimationOnCompositor);
+  TEST_ANIMATION_FLAG_NO_DIFF(IsRunningFilterAnimationOnCompositor);
+  TEST_ANIMATION_FLAG_NO_DIFF(IsRunningBackdropFilterAnimationOnCompositor);
 }
 
 }  // namespace blink

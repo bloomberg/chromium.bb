@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="1002439864875515590">Ja šīs politikas vērtībā tiek iestatīta tukša virkne vai politika nav konfigurēta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> lietotāja pierakstīšanās plūsmā netiks rādīta automātiskās pabeigšanas opcija.
+      Ja šīs politikas vērtībā tiek iestatīta virkne ar domēna nosaukumu, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> lietotāja pierakstīšanās plūsmā tiks parādīta automātiskās pabeigšanas opcija, ļaujot lietotājam ievadīt tikai lietotājvārdu bez domēna nosaukuma paplašinājuma.  Lietotājs varēs pārrakstīt šo domēna nosaukuma paplašinājumu.
+      Ja politikas vērtībā nav iestatīts derīgs domēns, politika netiks piemērota.</translation>
 <translation id="101438888985615157">Pagriezt ekrānu par 180 grādiem</translation>
 <translation id="1016912092715201525">Konfigurē noklusējuma pārlūka pārbaudi pārlūkā <ph name="PRODUCT_NAME" /> un neļauj lietotājiem mainīt šo iestatījumu.
 
@@ -51,6 +54,13 @@
 <translation id="1049138910114524876">Tiek konfigurēta lokalizācija, kas piespiedu kārtā tiek izmantota <ph name="PRODUCT_OS_NAME" /> pierakstīšanās ekrānā.
 
       Ja šī politika ir iestatīta, pierakstīšanās ekrāns vienmēr tiks rādīts tajā lokalizācijā, kura atbilst šīs politikas pirmajai vērtībai (politika ir definēta kā pārsūtīšanas saderības saraksts). Ja šī politika nav iestatīta vai tai ir iestatīts tukšs saraksts, pierakstīšanās ekrāns tiks rādīts pēdējā lietotāja sesijas lokalizācijā. Ja šai politikai ir iestatīta vērtība, kas nav derīga lokalizācija, pierakstīšanās ekrāns tiks rādīts atkāpšanās lokalizācijā (pašlaik: en-US).</translation>
+<translation id="1052499923181221200">Šī politika neko neietekmē, ja politikai SamlInSessionPasswordChangeEnabled ir iestatīta vērtība “true”.
+      Ja šīs politikas vērtība ir “true” un tai ir iestatīts, piemēram, skaitlis 14, tas nozīmē, ka SAML lietotājiem tiks paziņots 14 dienas iepriekš par to, ka viņu parolei beidzas derīguma termiņš noteiktā datumā.
+      Tādējādi lietotāji var to nekavējoties novērst, veicot paroles maiņu sesijas laikā un atjauninot savu paroli, pirms tai beidzas derīguma termiņš.
+      Taču šie paziņojumi tiks parādīti tikai tad, ja SAML identitātes nodrošinātājs SAML pieteikšanās plūsmas laikā uz ierīci nosūtīs informāciju par paroles derīguma termiņu.
+      Šīs politikas iestatīšana uz nulli nozīmē, ka lietotāji netiks iepriekš brīdināti — viņi tiks informēti tikai tad, kad paroles derīguma termiņš jau būs beidzies.
+
+      Ja šī politika ir iestatīta, lietotājs nevar to mainīt vai ignorēt.</translation>
 <translation id="1062011392452772310">Iespējot ierīces attālu apstiprināšanu</translation>
 <translation id="1062407476771304334">Aizstāt</translation>
 <translation id="1079801999187584280">Neatļaut izstrādātāju rīku lietošanu</translation>
@@ -76,6 +86,14 @@
       Ja šī politika nav iestatīta, kešatmiņā saglabātos GPO var atkārtoti izmantot ne ilgāk kā 25 stundas.
 
       Ja šai politikai ir iestatīta vērtība “0”, GPO saglabāšana kešatmiņā ir izslēgta. Ņemiet vērā, ka šādi tiek palielināts servera ielādes apjoms, jo GPO tiek atkārtoti lejupielādēti katrai politikas ienesei, pat ja tie nav mainīti.</translation>
+<translation id="1117462881884985156"><ph name="PRODUCT_NAME" /> apies visus šajā sarakstā iekļauto saimniekdatoru starpniekserverus.
+
+          Šī politika ir spēkā tikai tad, ja iestatījumā “Izvēlieties, kādā veidā jānorāda starpniekserveru iestatījumi” ir atlasīti manuālie starpniekserveru iestatījumi vai ja nav norādīta politika <ph name="PROXY_SETTINGS_POLICY_NAME" />.
+
+          Šī politika nav jāiestata, ja ir atlasīts jebkurš cits starpniekserveru politiku iestatīšanas režīms.
+
+          Detalizētus piemērus skatiet vietnē:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">Protokolu apdarinātāji, kas iestatīti, izmantojot šo politiku, netiek lietoti, kad tiek apstrādāti Android nolūki.</translation>
 <translation id="1118093128235245168">Atļaut vietnēm pieprasīt, lai lietotājs piešķirtu piekļuvi pievienotajai USB ierīcei</translation>
 <translation id="1128903365609589950">Konfigurē direktoriju, kuru <ph name="PRODUCT_NAME" /> izmantos kešatmiņā ievietoto failu glabāšanai diskā.
@@ -129,6 +147,7 @@
       Ja šai politikai nav iestatīta vērtība, tiek lietots noklusējuma biežums:
       3 stundas. Minimālais atļautais biežums ir 60 sekundes.</translation>
 <translation id="1204263402976895730">Iespējotie uzņēmuma printeri</translation>
+<translation id="1216919699175573511">Parakstītas HTTP apmaiņas (SXG) atbalsta iespējošana</translation>
 <translation id="1219695476179627719">Šī politika norāda, vai jāveic ierīces atrite uz versiju, ko iestata <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, ja ierīcē jau darbojas vēlāka versija.
 
       Noklusējuma vērtība ir RollbackDisabled.</translation>
@@ -176,7 +195,6 @@
       Saaudzēšanas pieprasījumi dažādiem saimniekdatoriem savienojumos, kuros tiek izmantoti klientu sertifikāti, var radīt drošības un konfidencialitātes problēmas, jo esošais pilnvarojums tiks piemērots visiem pieprasījumiem, pat ja lietotājs tos nebūs tieši atļāvis. Šī politika tiek izmantota īslaicīgi un tiks noņemta kādā no nākamajiem laidieniem. Plašāku informāciju skatiet vietnē https://crbug.com/855690.
 
       Ja šī politika netiks iestatīta, tiks izmantots noklusējuma iestatījums: netiks atļauta nekāda HTTP/2 savienojuma saaudzēšana savienojumos, kuros tiek izmantoti klientu sertifikāti.</translation>
-<translation id="1353966721814789986">Sākumlapas</translation>
 <translation id="1354424209129232709">Maksimums:</translation>
 <translation id="1354452738176731363">Ja šai politikai ir iestatīta vērtība “False”, ierīcē nav pieejama audio izvade, kamēr lietotājs ir pieteicies.
 
@@ -191,6 +209,7 @@
       Ja politika ir iespējota, Google asistents varēs piekļūt ekrāna kontekstam.
       Ja politika ir atspējota, Google asistents nevarēs piekļūt ekrāna kontekstam.
       Ja politika nav iestatīta, lietotāji var izlemt, vai atļaut Google asistentam piekļūt ekrāna kontekstam vai nē</translation>
+<translation id="1376119291123231789">Iespējot uzlabotās akumulatora uzlādes režīmu</translation>
 <translation id="1383493480903114193">Šī politika liek tīkla kodam darboties pārlūka procesā.
 
       Pēc noklusējuma šī politika ir atspējota, un, ja tā tiek iespējota, lietotāju drošība ir apdraudēta, tiklīdz tīkla process tiek iekļauts smilškastē.
@@ -200,7 +219,6 @@
       Ja šī politika nav iestatīta, tīkla kods var nedarboties pārlūka procesā atkarībā no NetworkService eksperimenta izmēģinājuma versijām.</translation>
 <translation id="1384459581748403878">Informācija: <ph name="REFERENCE_URL" /></translation>
 <translation id="1384653327213929024">Ļauj lietotājiem pārvaldīt instalētos sertifikātus.</translation>
-<translation id="1387596372902085462">Vai norādīt, ka Symantec Corporation mantotā PKI infrastruktūra ir uzticama</translation>
 <translation id="1393485621820363363">Iespējoti uzņēmuma ierīču printeri</translation>
 <translation id="1397855852561539316">Noklusējuma meklētājprogrammas ieteikumu URL</translation>
 <translation id="1404043648050567997">Kad lietotāji pāriet uz vietnēm, kas ir atzīmētas kā iespējami ļaunprātīgas, funkcijā Droša pārlūkošana tiek rādīta brīdinājuma lapa. Ja šis iestatījums ir iespējots, lietotāji nevar pāriet no brīdinājuma lapas uz ļaunprātīgo vietni.
@@ -290,16 +308,20 @@
       atspējota. Šādā gadījumā lietotājs nevar iespējot šo funkciju.</translation>
 <translation id="1474273443907024088">Funkcijas TLS False Start atspējošana</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> apies visus šajā sarakstā iekļauto saimniekdatoru starpniekserverus.
-
-          Šī politika ir spēkā tikai tad, ja sadaļā “Izvēlieties, kā norādīt starpniekservera iestatījumus” esat atlasījis manuālos starpniekservera iestatījumus.
-
-          Ja esat atlasījis jebkuru citu starpniekservera politiku iestatīšanas režīmu, atstājiet šo politiku neiestatītu.
-
-          Detalizētus piemērus skatiet šajā vietnē:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Trešās puses programmatūras ievietošanas bloķēšanas iespējošana</translation>
 <translation id="1504431521196476721">Attālinātā apstiprināšana</translation>
+<translation id="1507382822467487898">
+          Konfigurē, kura multivides piekļuves kontroles (MAC — media access control) adrese tiek izmantota, kad doks ir savienots ar ierīci.
+
+          Ja doks ir savienots ar konkrētiem ierīču modeļiem, ierīcei paredzētā doka MAC adrese tiek izmantota, lai pēc noklusējuma identificētu ierīci Ethernet tīklā. Šī politika ļauj administratoram mainīt MAC adreses avotu, kad ierīce ir dokota.
+
+          Ja ir atlasīta politika DeviceDockMacAddress vai politika nav iestatīta, tiek izmantota ierīcei paredzētā doka MAC adrese.
+
+          Ja ir atlasīta politika DeviceNicMacAddress, tiek izmantota ierīces tīkla saskarnes vadāmierīces (NIC — network interface controller) MAC adrese.
+
+          Ja ir atlasīta politika DockNicMacAddress, tiek izmantota doka NIC MAC adrese.
+
+          Šo iestatījumu lietotājs nevar mainīt.</translation>
 <translation id="1507957856411744193">Ja šai politikai ir iestatīta vērtība “True”, <ph name="PRODUCT_NAME" /> izveidos savienojumu ar Cast ierīcēm visās IP adresēs, ne tikai RFC1918/RFC4193 privātajās adresēs.
 
           Ja šai politikai ir iestatīta vērtība “False”, <ph name="PRODUCT_NAME" /> izveidos savienojumu ar Cast ierīcēm tikai RFC1918/RFC4193 privātajās adresēs.
@@ -336,14 +358,15 @@
       Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Pēc noklusējuma lietot <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1599424828227887013">Vietnes izolācijas iespējošana norādītiem sākumpunktiem Android ierīcēs</translation>
-<translation id="1608259529294767544">Šī politika ļauj Google asistentam klausīties balss aktivizēšanas frāzi.
-
-      Ja politika ir iespējota, Google asistents klausīsies balss aktivizēšanas frāzi.
-      Ja politika ir atspējota, Google asistents neklausīsies balss aktivizēšanas frāzi.
-      Ja politika nav iestatīta, lietotāji var izlemt, vai atļaut Google asistentam klausīties balss aktivizēšanas frāzi.
-      </translation>
 <translation id="1608755754295374538">Vietrāži URL, kuriem tiks nodrošināta piekļuve audio tveršanas ierīcēm bez uzvednes parādīšanas.</translation>
 <translation id="1615221548356595305">Atļaut HTTP/2 savienojumu saaudzēšanu šiem saimniekdatoriem, pat ja tiek izmantoti klientu sertifikāti</translation>
+<translation id="1615855314789673708">Nodrošina wilco DTC (diagnostikas un telemetrijas kontrolieris) konfigurāciju.
+
+      Šī politika ļauj nodrošināt wilco DTC konfigurāciju, ko atļauts piemērot, ja konkrētajā ierīcē ir pieejams wilco DTC un politika to atļauj. Konfigurācijas izmērs nedrīkst pārsniegt 1 MB (1 000 000 baitus), un tai ir jābūt JSON kodējumā. Wilco DTC ir atbildīgs par tās apstrādi. Kriptogrāfiskais jaucējkods tiek izmantots, lai pārbaudītu lejupielādes integritāti.
+
+      Konfigurācija tiek lejupielādēta un saglabāta kešatmiņā. Tas tiks lejupielādēts atkārtoti, kad mainīsies URL vai jaucējkods.
+
+      Ja iestatīsiet šo politiku, lietotāji to nevarēs mainīt vai ignorēt.</translation>
 <translation id="1617235075406854669">Iespējot pārlūka un lejupielādes vēstures dzēšanu</translation>
 <translation id="163200210584085447">Šajā sarakstā pieejamajiem šabloniem tiks meklēta atbilstība
       pieprasītā URL drošības avotam. Ja tiks atrasta atbilstība, piekļuve video
@@ -369,6 +392,22 @@
       Brīdinājums: nav ieteicams piešķirt kioska lietotnei <ph name="PRODUCT_OS_NAME" /> versijas kontroli, jo ierīcē var netikt saņemti programmatūras atjauninājumi un kritiski drošības labojumi. <ph name="PRODUCT_OS_NAME" /> versijas kontroles deleģēšana var apdraudēt lietotājus.</translation>
 <translation id="1675002386741412210">Saderīga ar:</translation>
 <translation id="1689963000958717134">Ļauj pārsūtīšanas tīkla konfigurāciju izmantot visiem ierīces <ph name="PRODUCT_OS_NAME" /> lietotājiem. Tīkla konfigurācija ir JSON formatēta virkne, kā tas definēts šeit aprakstītajā atvērtā tīkla konfigurācijas formātā: <ph name="ONC_SPEC_URL" />.</translation>
+<translation id="1704516734140344991">Tiek konfigurēta <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājuma funkcionalitātes pieejamība un darbība.
+
+      Atsevišķus iestatījumus var norādīt JSON rekvizītos.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: ja politikai ir iestatīta vērtība “<ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />”, lietotāji varēs aktivizēt funkcijas Powerwash plūsmu, lai instalētu <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājumu.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: ja politikai ir iestatīta vērtība “<ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />”, lietotāji varēs aktivizēt <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājumu plūsmu, kas saglabā ierīces statusu (tostarp uzņēmuma reģistrāciju), taču tādējādi tiek zaudēti lietotāja dati. Šī atjauninājumu plūsma ir pieejama versijā 68 un jaunākās versijās.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: nosaka, kā ievainojamai <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūrai tiek piemēroti automātiskie <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājumi. Visām plūsmām tiek saglabāts lokālās ierīces statuss.
+        Ja šai politikai ir iestatīta vērtība “1” vai tā nav iestatīta, TPM programmaparatūras atjauninājumi netiks piemēroti.
+        Ja ir iestatīta vērtība “2”, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūra tiks atjaunināta nākamajā palaišanas reizē pēc tam, kad lietotājs būs piekritis atjauninājumam.
+        Ja ir iestatīta vērtība “3”, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūra tiks atjaunināta nākamajā palaišanas reizē.
+        Ja ir iestatīta vērtība “4”, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūra tiks atjaunināta pēc reģistrācijas, pirms lietotājs būs pierakstījies.
+        Šī opcija ir pieejama versijā 74 un jaunākās versijās.
+
+      Ja politika nav iestatīta, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājuma funkcionalitāte nebūs pieejama.</translation>
 <translation id="1708496595873025510">Iestatīt ierobežojumu attiecībā uz variantu sākotnējās vērtības iegūšanu</translation>
 <translation id="1717817358640580294">Ja nav iestatīts, lai Chrome tīrīšanā tiktu meklēta nevēlama programmatūra, tā var nosūtīt pārmeklēšanas metadatus uzņēmumam Google saskaņā ar SafeBrowsingExtendedReportingEnabled iestatīto politiku. Šādā gadījumā Chrome tīrīšana vaicās lietotājam, vai notīrīt nevēlamo programmatūru. Lietotājs var izvēlēties kopīgot tīrīšanas rezultātus ar uzņēmumu Google un tādējādi palīdzēt turpmāk konstatēt nevēlamu programmatūru. Šie rezultāti satur failu metadatus, automātiski instalētus paplašinājumus un reģistra atslēgas, kā aprakstīts Chrome konfidencialitātes tehniskajā dokumentā.
 
@@ -378,7 +417,6 @@
 
       Šī politika ir pieejama tikai Windows instancēs, kas ir savienotas ar <ph name="MS_AD_NAME" /> domēnu, vai Windows 10 Pro vai Enterprise instancēs, kas ir reģistrētas ierīču pārvaldībai.</translation>
 <translation id="172374442286684480">Atļauja visām vietnēm iestatīt lokālus datus</translation>
-<translation id="1734716591049455502">Attālās piekļuves iespēju konfigurēšana</translation>
 <translation id="1736269219679256369">Atļauja turpināt darbu no SSL brīdinājuma lapas</translation>
 <translation id="1745780278307622857">Nosaka, vai pārlūkprogrammā <ph name="PRODUCT_NAME" /> var atļaut lejupielādes bez drošas pārlūkošanas pārbaudēm, ja lejupielāde ir no uzticama avota.
 
@@ -447,8 +485,6 @@
       Ja šī politika nav konfigurēta vai ir iestatīta uz “tls1.2”, pārlūkā <ph name="PRODUCT_NAME" /> vairs netiek veikts šis atkāpšanās process. Ņemiet vērā, ka šādi netiek atspējots vecāku TLS versiju atbalsts, bet tikai tas, vai <ph name="PRODUCT_NAME" /> apies kļūdainos serverus, kuri nevar pareizi saskaņot versijas.
 
       Pretējā gadījumā, ja ir jāuztur saderība ar kļūdainu serveri, šo politiku var iestatīt uz “tls1.1”. Tas ir pagaidu risinājums, un serveris ir steidzami jālabo.</translation>
-<translation id="1864269674877167562">Ja kā šīs politikas vērtība tiek iestatīta tukša virkne vai ja politika nav konfigurēta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> lietotāja pierakstīšanās plūsmā netiks rādīta automātiskās pabeigšanas opcija.
-      Ja kā šīs politikas vērtība tiek iestatīta virkne ar domēna nosaukumu, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> lietotāja pierakstīšanās plūsmā tiks parādīta automātiskās pabeigšanas opcija, ļaujot lietotājam ievadīt tikai lietotājvārdu bez domēna nosaukuma paplašinājuma. Lietotājs varēs pārrakstīt šo domēna nosaukuma paplašinājumu.</translation>
 <translation id="1864382791685519617">Pārlūkā <ph name="PRODUCT_NAME" /> tiek iespējotas tīkla prognozes, un lietotājiem tiek liegta iespēja mainīt šo iestatījumu.
 
       Šī politika kontrolē DNS pirmsielādi, iepriekšēju TCP un SSL savienojuma izveidi un tīmekļa lapu iepriekšēju atveidi.
@@ -517,7 +553,6 @@
       Ja šis iestatījums ir atspējots, funkcija Automātiskā aizpilde nekad nerādīs adrešu informācijas ieteikumus un neaizpildīs šo informāciju, kā arī nesaglabās papildu adrešu informāciju, ko lietotājs var norādīt, pārlūkojot tīmekli.
 
       Ja šis iestatījums ir iespējots vai tā vērtība nav norādīta, lietotājs varēs kontrolēt adrešu informācijas automātisko aizpildi lietotāja saskarnē.</translation>
-<translation id="1960840544413786116">Nosaka, vai atļaut sertifikātus, kurus izsnieguši lokāli uzticamības enkuri un kuriem trūkst paplašinājuma subjectAlternativeName.</translation>
 <translation id="1962273523772270623">Atļaut WebRTC notikumu žurnālu apkopošanu no Google pakalpojumiem</translation>
 <translation id="1964634611280150550">Inkognito režīms atspējots</translation>
 <translation id="1964802606569741174">Šī politika neietekmē Android lietotni YouTube. Ja lietotnē YouTube tiks aktivizēts drošais režīms, nedrīkst atļaut instalēt Android lietotni YouTube.</translation>
@@ -547,15 +582,6 @@
       Atstājot šo politiku neiestatītu, <ph name="PRODUCT_NAME" /> izmanto noklusējuma vērtību (3 stundas).
 
       Ņemiet vērā: ja platformā tiek atbalstīti politikas paziņojumi, tiks iestatīts atsvaidzināšanas aizkaves laiks 24 stundas (ignorējot visas noklusējuma vērtības un šīs politikas vērtību), jo ir paredzēts, ka ar politikas paziņojumiem atsvaidzināšana tiks veikta piespiedu kārtā katru reizi, kad tiks mainīta politika, un biežāka atsvaidzināšana nebūs nepieciešama.</translation>
-<translation id="2024149678078029009">Šī politika kontrolē komandu, kas tiek izmantota, lai atvērtu URL vietrāžus pakalpojumā <ph name="PRODUCT_NAME" />, kad jūs pārslēdzaties no pārlūka Internet Explorer.
-
-      Ja pārlūka Internet Explorer papildinājums “Mantoto pārlūku atbalsts” nav instalēts, šai politikai nav nekādas ietekmes.
-
-      Kad šī politika nav iestatīta, pārlūks Internet Explorer automātiski noteiks pakalpojuma <ph name="PRODUCT_NAME" /> izpildāmo ceļu, kad pakalpojums <ph name="PRODUCT_NAME" /> tiek palaists no pārlūka Internet Explorer.
-
-      Kad šī politika ir iestatīta, tā tiks izmantota, lai uzsāktu pakalpojumu <ph name="PRODUCT_NAME" />, kad pakalpojuma <ph name="PRODUCT_NAME" /> uzsākšana tiek pārslēgta no pārlūka Internet Explorer.
-
-      Šo politiku var iestatīt izpildāmajam faila ceļam vai ${chrome}, lai automātiski noteiktu Chrome instalēšanas atrašanās vietu.</translation>
 <translation id="2024476116966025075">Nepieciešamā domēna nosaukuma konfigurēšana attālās piekļuves klientiem</translation>
 <translation id="2030905906517501646">Noklusējuma meklētājprogrammas atslēgvārds</translation>
 <translation id="203096360153626918">Šī politika neietekmē Android lietotnes. Lietotnes varēs atvērt pilnekrāna režīmā, pat ja šī politika ir iestatīta kā <ph name="FALSE" />.</translation>
@@ -596,7 +622,6 @@
       Ja šai politikai ir iestatīta vērtība “False”, informācija, kas var tikt izmantota lietotāju identificēšanai, netiek apkopota.
 
       Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un ierīce ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="2126178089984117495">Ierobežo drukāšanas režīmu ar PIN kodu. Ja politika nav iestatīta, ierobežojumi netiek ņemti vērā. Ja režīms nav pieejams, šī politika tiek ignorēta.</translation>
 <translation id="2127599828444728326">Paziņojumu atļaušana šajās vietnēs</translation>
 <translation id="2131902621292742709">Aizkave līdz ekrāna aptumšošanai, ja ierīce darbojas ar akumulatora jaudu</translation>
 <translation id="2134437727173969994">Atļaut ekrāna bloķēšanu</translation>
@@ -711,13 +736,6 @@
       Ja iestatāt šo politiku, lietotāji nevar to mainīt vai ignorēt. Tomēr lietotāji joprojām varēs iespējot/atspējot pieejamības ekrāna tastatūru, kuras prioritāte ir lielāka par šīs politikas pārvaldīto virtuālo tastatūru. Informāciju par pieejamības ekrāna tastatūras pārvaldīšanu skatiet politikā |VirtualKeyboardEnabled|.
 
       Ja šī politika nav iestatīta, ekrāna tastatūra sākotnēji ir atspējota, bet lietotājs to var iespējot jebkurā laikā. Heiristiskas kārtulas var arī izmantot, lai norādītu, kad parādīt tastatūru.</translation>
-<translation id="228659285074633994">Tiek norādīts, pēc cik ilga laika kopš lietotāja pēdējās aktivitātes parādīt brīdinājuma dialoglodziņu, ja ierīce darbojas ar maiņstrāvu.
-
-          Ja šai politikai ir iestatīta vērtība, tā norāda, cik ilgu laiku lietotājam ir jābūt dīkstāvē, lai operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiktu parādīts brīdinājuma dialoglodziņš, kurā teikts, ka tiks veikta dīkstāves darbība.
-
-          Ja šīs politikas vērtība nav iestatīta, brīdinājuma dialoglodziņš netiek rādīts.
-
-          Politikas vērtība ir jānorāda milisekundēs. Vērtības tiek summētas, lai iegūtu vērtību, kas ir mazāka par aizkavi līdz dīkstāvei vai vienāda ar to.</translation>
 <translation id="2292084646366244343">Lai labotu pareizrakstības kļūdas, pārlūkā <ph name="PRODUCT_NAME" /> var izmantot Google tīmekļa pakalpojumu. Ja šis iestatījums ir iespējots, šis pakalpojums tiek izmantots vienmēr. Ja šis iestatījums ir atspējots, pakalpojums nekad netiek izmantots.
 
       Pareizrakstības pārbaudi joprojām var veikt, izmantojot lejupielādēto vārdnīcu; šī politika tikai kontrolē tiešsaistes pakalpojuma lietojumu.
@@ -739,14 +757,21 @@
       Ierīcēs, kas tiek pārvaldītas pakalpojumā Active Directory, šī politika atbalsta Active Directory ierīces nosaukuma vai tās apakšvirknes iekļaušanu ierīces <ph name="MACHINE_NAME_VARIABLE" /> nosaukumā. Piemēram, ja ierīces nosaukums ir <ph name="MACHINE_NAME_EXAMPLE" />, vērtība <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> pēc sestās pozīcijas tiktu aizstāta ar četrām rakstzīmēm: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozīciju numurēšana sākas ar nulli.
       </translation>
 <translation id="2294382669900758280">Android lietotnēs atskaņoti videoklipi netiek ņemti vērā, pat ja šī politika ir iestatīta kā <ph name="TRUE" />.</translation>
-<translation id="2298647742290373702">Konfigurēt noklusējuma jaunas cilnes lapu sistēmā <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Norādīt iespējoto spraudņu sarakstu</translation>
 <translation id="2303795211377219696">Funkcijas Automātiskā aizpilde iespējošana kredītkaršu informācijas aizpildīšanai</translation>
 <translation id="2309390639296060546">Noklusējuma ģeogrāfiskās atrašanās vietas iestatījums</translation>
-<translation id="2312134445771258233">Ļauj konfigurēt lapas, kas tiek ielādētas startēšanas brīdī.
-
-      Saraksta vietrāžu URL, kas jāatver startēšanas brīdī, saturs tiek ignorēts, ja vien iestatījumam Darbība startēšanas brīdī tiek atlasīts iestatījums Atvērt URL sarakstu.</translation>
 <translation id="2327252517317514801">Definē domēnus, kuri var piekļūt G Suite pakalpojumiem</translation>
+<translation id="2356878440219553005">Norāda akumulatora uzlādes režīma jaudas pārvaldības politiku.
+
+          Dinamiski kontrolē akumulatora uzlādi, lai samazinātu akumulatora nolietošanos tā noslodzes dēļ un pagarinātu akumulatora darbības ilgumu.
+
+          Ja ir atlasīts pielāgotais akumulatora uzlādes režīms, ir jānorāda DeviceBatteryChargeCustomStartCharging un DeviceBatteryChargeCustomStopCharging vērtības.
+
+          Kad šī politika ir iestatīta, tiek piemērots akumulatora uzlādes režīms, ja ierīce to atbalsta.
+
+          Ja šī politika nav iestatīta un ierīce atbalsta šo politiku, tiek piemērots standarta akumulatora uzlādes režīms un lietotājs to nevar mainīt.
+
+          Piezīme. <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> ignorē šo politiku, ja ir norādīta pirmā vērtība.</translation>
 <translation id="237494535617297575">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts attēlot paziņojumus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultNotificationsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
@@ -784,6 +809,7 @@
 
       Ja šai politikai ir iestatīta vērtība “False”, nulles aizkaves automātisko pieteikšanos (ja tā ir konfigurēta) nevar izlaist.</translation>
 <translation id="2454228136871844693">Optimizēt stabilitātei.</translation>
+<translation id="2463034609187171371">Iespējot DHE šifra komplektus standartā TLS</translation>
 <translation id="2463365186486772703">Lietojumprogrammas lokalizācija</translation>
 <translation id="2466131534462628618">Starpniekservera ignorēšana caurlaides lapas autentificēšanā</translation>
 <translation id="2482676533225429905">Vietējā ziņojumapmaiņa</translation>
@@ -936,12 +962,17 @@
       Ja šis iestatījums ir atspējots, tīmekļa lapās nevar lietot valodu JavaScript un lietotājs nevar mainīt šo iestatījumu.
 
       Ja šis iestatījums ir iespējots vai nav iestatīts, tīmekļa lapās var lietot valodu JavaScript, taču lietotājs var mainīt šo iestatījumu.</translation>
+<translation id="2747157663401642394">Šī politika tiek izmantota, lai konfigurētu <ph name="PRODUCT_NAME" /> paplašinājumu pārvaldības iestatījumus.
+
+          Ar šo politiku tiek regulēti vairāki iestatījumi, tostarp iestatījumi, kas tiek regulēti esošajās ar paplašinājumiem saistītajās politikās. Ja šī politika ir iestatīta, ar to tiek ignorētas jebkādas iestatītās mantotās politikas.
+
+          Izmantojot šo politiku, paplašinājuma ID vai atjauninājuma vietrādis URL tiek kartēts tā konfigurācijā. Izmantojot paplašinājuma ID, konfigurācija tiek piemērota tikai konkrētajam paplašinājumam. Īpašajam ID “<ph name="DEFAULT_SCOPE" />” var iestatīt noklusējuma konfigurāciju, kas tiks lietota visiem paplašinājumiem, kuriem šajā politikā nav iestatīta pielāgota konfigurācija. Izmantojot atjauninājuma vietrādi URL, konfigurācija tiek lietota visiem paplašinājumiem, kuru manifestā ir norādīts konkrētais atjauninājuma vietrādis URL (kā aprakstīts šeit: <ph name="LINK_TO_EXTENSION_DOC1" />).
+
+          Windows datoros, kas nav pievienoti <ph name="MS_AD_NAME" /> domēnam, piespiedu instalēšana attiecas tikai uz lietotnēm un paplašinājumiem, kas norādīti Chrome interneta veikalā.
+
+          Pilnu iespējamo iestatījumu un šīs politikas struktūras aprakstu skatiet tīmekļa vietnē https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">WebRTC izmantoto lokālo UDP portu diapazona ierobežošana</translation>
-<translation id="2755385841634849932">Šī politika kontrolē Android dublēšanas un atjaunošanas pieejamību.
-
-     Ja šī politika nav konfigurēta vai tai ir iestatīta vērtība <ph name="BR_DISABLED" />, Android dublēšana un atjaunošana ir atspējota, un lietotājs to nevar iespējot.
-
-      Ja šai politikai ir iestatīta vērtība <ph name="BR_UNDER_USER_CONTROL" />, lietotājam ir jāizvēlas, vai izmantot Android dublēšanu un atjaunošanu. Ja lietotājs iespējo dublēšanu un atjaunošanu, Android lietotņu dati tiek augšupielādēti Android dublējuma serveros un ar šo serveru starpniecību tiek atjaunoti, kad atkārtoti tiek instalētas saderīgas lietotnes.</translation>
 <translation id="2757054304033424106">Paplašinājumu/lietotņu veidi, kurus var instalēt</translation>
 <translation id="2758084448533744848">Norāda noteikto laika joslu, kas jāizmanto ierīcē. Ja šī politika ir iestatīta, ierīces lietotāji nevar ignorēt norādīto laika joslu. Ja ir norādīta nederīga vērība, politika joprojām ir aktivizēta, izmantojot vērtību “GMT”. Ja ir norādīta tukša virkne, politika tiek ignorēta.
 
@@ -960,6 +991,7 @@
 <translation id="2769952903507981510">Attālās piekļuves saimniekdatoru obligātā domēna nosaukuma konfigurēšana</translation>
 <translation id="2787173078141616821">Sniegt informāciju par Android statusu</translation>
 <translation id="2799297758492717491">Atļauja automātiski atskaņot multivides saturu, ja URL paraugs ir iekļauts baltajā sarakstā</translation>
+<translation id="2801155097555584385">Iestatīt pielāgotu akumulatora uzlādes līmeni (procentos), kurā jāsāk uzlāde</translation>
 <translation id="2801230735743888564">Ļaujiet lietotājiem spēlēt dinozauru spēli, kad ierīce ir bezsaistē.
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, lietotāji nevarēs spēlēt dinozauru spēli, kad ierīce būs bezsaistē. Ja iestatījums ir Patiesa, lietotāji varēs spēlēt dinozauru spēli. Ja politika nav iestatīta, lietotāji nevarēs spēlēt dinozauru spēli reģistrētās Chrome OS ierīcēs, taču varēs spēlēt visos citos gadījumos.</translation>
@@ -1033,6 +1065,7 @@
       Ja atspējosiet šo iestatījumu vai neiestatīsiet nekādu vērtību, drukas priekšskatījumā kā noklusējuma galamērķis tiks izmantots pēdējais lietotais printeris.
 
       Ja iespējosiet šo iestatījumu, drukas priekšskatījumā kā noklusējuma galamērķis tiks izmantots operētājsistēmas noklusējuma printeris.</translation>
+<translation id="285627849510728211">Iestatīt uzlabotas akumulatora uzlādes režīma dienas konfigurāciju</translation>
 <translation id="2856674246949497058">Veikt atriti un paturēt mērķa versiju, ja operētājsistēmas versija ir jaunāka nekā mērķa versija. Vienlaikus atiestatīt rūpnīcas datus ar funkciju Powerwash.</translation>
 <translation id="2872961005593481000">Beidzēt</translation>
 <translation id="2873651257716068683">Tiek ignorēts noklusējuma drukāšanas lapas izmērs. Ja lapas izmērs nav pieejams, šī politika tiek ignorēta.</translation>
@@ -1064,6 +1097,17 @@
       Ja šī politika nav iestatīta, tiek izmantota vērtība <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maksimālais vienlaikus iespējamais savienojumu skaits ar starpniekserveri</translation>
+<translation id="2948463916588961959">Piespiedu kārtā iespējo pareizrakstības pārbaudes valodas. Tiks ignorētas sarakstā iekļautās valodas, kuras nevarēs atpazīt.
+
+      Ja iespējosiet šo politiku, pareizrakstības pārbaude tiks iespējota gan norādītajām valodām, gan tām valodām, kurām lietotājs ir iespējojis pareizrakstības pārbaudi.
+
+      Ja šī politika nav iespējota vai tā tiek atspējota, lietotāja pareizrakstības preferencēs netiks ieviestas izmaiņas.
+
+      Ja politika SpellcheckEnabled ir atspējota, tā nedarbosies.
+
+      Ja valoda ir ietverta gan šajā, gan SpellcheckLanguageBlacklist politikā, prioritāte ir šai politikai un pareizrakstības pārbaudes valoda tiks iespējota.
+
+      Pašreiz atbalstītās valodas: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Ierobežojumi:</translation>
 <translation id="2956777931324644324">Kopš <ph name="PRODUCT_NAME" /> versijas 36 izlaišanas šī politika vairs netiek izmantota.
 
@@ -1076,7 +1120,6 @@
 <translation id="2959898425599642200">Starpniekserveru apiešanas kārtulas</translation>
 <translation id="2960128438010718932">Jauna atjauninājuma pakāpeniskās piemērošanas grafiks</translation>
 <translation id="2960691910306063964">Autentifikācijas bez PIN iespējošana vai atspējošana attālās piekļuves saimniekdatoriem</translation>
-<translation id="2972261849442778817">Jautāt lietotājam, vai viņi vēlas migrēt vai izlaist migrēšanu un neatļaut ARC.</translation>
 <translation id="2976002782221275500">Tiek norādīts laika periods, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā ekrāns tiek aptumšots (ja ierīce darbojas ar akumulatora jaudu).
 
           Ja šai politikai ir iestatīta vērtība, kas ir lielāka par nulli, tā norāda laika periodu, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiek aptumšots ekrāns.
@@ -1110,6 +1153,14 @@
 <translation id="3021562480854470924">Atritei atļauto atskaites punktu skaits</translation>
 <translation id="3023572080620427845">Tāda XML faila URL, kurš satur citā pārlūkprogrammā ielādējamos vietrāžus URL.</translation>
 <translation id="3030000825273123558">Iespējot metrikas ziņošanu</translation>
+<translation id="3033660238345063904">Šeit var norādīt starpniekservera URL.
+
+          Šī politika ir spēkā tikai tad, ja iestatījumā “Izvēlieties, kādā veidā jānorāda starpniekserveru iestatījumi” ir atlasīti manuālie starpniekserveru iestatījumi vai ja nav norādīta politika <ph name="PROXY_SETTINGS_POLICY_NAME" />.
+
+          Šī politika nav jāiestata, ja ir atlasīts jebkurš cits starpniekserveru politiku iestatīšanas režīms.
+
+          Lai skatītu vairāk opciju un detalizētus piemērus, apmeklējiet:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3034580675120919256">Ļauj iestatīt, vai vietnēm ir atļauts izpildīt JavaScript. JavaScript izpilde var tikt atļauta visām vietnēm vai noraidīta visām vietnēm.
 
           Ja šī politika nav iestatīta, tiks lietota politika AllowJavaScript un lietotājs to varēs mainīt.</translation>
@@ -1149,12 +1200,26 @@
 <translation id="3072045631333522102">Ekrānsaudzētājs, kas jāizmanto mazumtirdzniecības režīma pieteikšanās ekrānā</translation>
 <translation id="3072847235228302527">Ierīces lokālā konta pakalpojumu sniegšanas noteikumu iestatīšana</translation>
 <translation id="3077183141551274418">Ciļņu dzīves ciklu iespējošana vai atspējošana</translation>
+<translation id="3079417254871857650">Norāda darbību, kas jāveic, ja lietotāja sākumdirektorijs tika izveidots ar ecryptfs šifrējumu.
+
+      Ja šai politikai ir iestatīta vērtība “DisallowArc”, Android lietotnes tiks atspējotas lietotājam un netiks veikta migrēšana no ecryptfs uz ext4 šifrējumu. Android lietotņu darbība netiks apturēta, ja sākumdirektorijs jau ir šifrēts ar ext4.
+
+      Ja šai politikai ir iestatīta vērtība “Migrate”, sākumdirektoriji, kas ir šifrēti ar ecryptfs, pierakstīšanās laikā tiks automātiski migrēti uz ext4, neprasot lietotāja piekrišanu.
+
+      Ja šai politikai ir iestatīta vērtība “Wipe”, pierakstīšanās laikā tiks dzēsti sākumdirektoriji, kas šifrēti ar ecryptfs, un tiks izveidoti jauni sākumdirektoriji, kas šifrēti ar ext4. Brīdinājums. Šādi tiek noņemti lietotāja lokālie dati.
+
+      Ja šai politikai ir iestatīta vērtība “MinimalMigrate”, pierakstīšanās laikā tiek dzēsti sākumdirektoriji, kas šifrēti ar ecryptfs, un tiek izveidoti jauni sākumdirektoriji, kas šifrēti ar ext4. Taču tiek mēģināts saglabāt pieteikšanās marķierus, lai lietotājam nav jāpierakstās atkārtoti. Brīdinājums. Šādi tiek noņemti lietotāja lokālie dati.
+
+      Ja iestatīsiet šai politikai opciju, kas vairs netiek atbalstīta (“AskUser” vai “AskForEcryptfsArcUsers”), tā tiks apstrādāta tā, it kā būtu atlasīta opcija “Migrate”.
+
+      Šī politika neattiecas uz kioska lietotājiem. Ja šī politika nav iestatīta, ierīce veic darbības tā, it kā būtu iestatīta vērtība “DisallowArc”.</translation>
 <translation id="3086995894968271156">Konfigurējiet Cast uztvērēju operētājsistēmā <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Ļauj iestatīt URL rakstu sarakstu ar vietnēm, kurām ir atļauts attēlot attēlus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas DefaultImagesSetting (ja tā ir iestatīta) vai no lietotāja personiskās konfigurācijas.
 
           Ņemiet vērā, ka iepriekš šī politika kļūdaini tika iespējota operētājsistēmā Android, taču operētājsistēmā Android šī funkcija netiek pilnīgi atbalstīta.</translation>
+<translation id="3091832372132789233">Uzlādēt akumulatoru ierīcēm, kas galvenokārt ir savienotas ar ārēju strāvas avotu.</translation>
 <translation id="3096595567015595053">Iespējoto spraudņu saraksts</translation>
 <translation id="3101501961102569744">Izvēlas, kā jānorāda starpniekservera iestatījumi</translation>
 <translation id="3101709781009526431">Datums un laiks</translation>
@@ -1180,26 +1245,9 @@
           Ja šis iestatījums būs atspējots, pārlūkā <ph name="PRODUCT_NAME" /> tiks izmantoti tikai sistēmas līmenī instalēti vietējās ziņojumapmaiņas saimniekdatori.
 
           Ja šis iestatījums netiks iestatīts, pārlūkā <ph name="PRODUCT_NAME" /> varēs izmantot lietotāja līmeņa vietējās ziņojumapmaiņas saimniekdatorus.</translation>
+<translation id="3177802893484440532">Pieprasīt tiešsaistes OCSP/CRL pārbaudes lokālajiem uzticamības enkuriem</translation>
 <translation id="3185009703220253572">, sākot no <ph name="SINCE_VERSION" /> versijas</translation>
 <translation id="3187220842205194486">Android lietotnes nevar iegūt piekļuvi korporatīvajām atslēgām. Šī politika neietekmē lietotnes.</translation>
-<translation id="3201273385265130876">Ļauj jums norādīt <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekserveru iestatījumus.
-
-          Ja izvēlaties nekad neizmantot starpniekserveri un vienmēr izveidot tiešu savienojumu, visas pārējās opcijas tiek ignorētas.
-
-          Ja izvēlaties izmantot sistēmas starpniekserveru iestatījumus, visas pārējās opcijas tiek ignorētas.
-
-          Ja izvēlaties automātiski noteikt starpniekserveri, visas pārējās opcijas tiek ignorētas.
-
-          Ja izvēlaties fiksētu starpniekservera režīmu, varat norādīt detalizētas opcijas sadaļās “Starpniekservera adrese vai URL” un “Ar komatiem atdalīts starpniekservera apiešanas kārtulu saraksts”. ARC lietotnēm ir pieejams tikai HTTP starpniekserveris ar augstāko prioritāti.
-
-          Ja izvēlaties izmantot .pac starpniekservera skriptu, norādiet skripta vietrādi URL sadaļā “URL uz starpniekservera .pac failu”.
-
-          Detalizētus piemērus skatiet šajā vietnē:
-          <ph name="PROXY_HELP_URL" />.
-
-          Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> un ARC lietotnes ignorē visas ar starpniekserveri saistītās komandrindā norādītās opcijas.
-
-          Ja šīs politikas nav iestatītas, lietotāji var izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="3205825995289802549">Pirmā pārlūka loga maksimizēšana pirmajā palaišanas reizē</translation>
 <translation id="3211426942294667684">Pārlūkprogrammas pierakstīšanās iestatījumi</translation>
 <translation id="3214164532079860003">Šī politika (ja tā ir iespējota) liek importēt sākumlapu no pašreizējā noklusējuma pārlūka.
@@ -1211,6 +1259,7 @@
 <translation id="3220624000494482595">Ja kioska lietotne ir Android lietotne, tā nevarēs kontrolēt <ph name="PRODUCT_OS_NAME" /> versiju, pat ja šī politika ir iestatīta kā <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">URL struktūras, no kurām ir atļauts instalēt paplašinājumus, lietotnes un lietotāja skriptus</translation>
 <translation id="3240609035816615922">Printeru konfigurācijas piekļuves politika</translation>
+<translation id="3240655340884151271">Doka iebūvētā NIC MAC adrese</translation>
 <translation id="3243309373265599239">Tiek norādīts laika periods, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā ekrāns tiek aptumšots, ja ierīce darbojas ar maiņstrāvu.
 
           Ja šai politikai ir iestatīta vērtība, kas ir lielāka par nulli, tā norāda laika periodu, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiek aptumšots ekrāns.
@@ -1232,15 +1281,12 @@
       Ja šis iestatījums ir iespējots vai nav konfigurēts, lietotāji var iespējot mākoņdrukas starpniekserveri, autentifikācijai izmantojot savu Google kontu.
 
       Ja šis iestatījums ir atspējots, lietotāji nevarēs iespējot starpniekserveri un ierīce nevarēs koplietot tai pievienotos printerus ar <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3307746730474515290">Kontrolē, kāda veida lietotnes/paplašinājumus var instalēt, un ierobežo izpildlaika piekļuvi.
+<translation id="3312206664202507568">Iespējo lapu vietnē chrome://password-change, kas ļauj SAML lietotājiem mainīt viņu SAML paroles sesijas laikā, tādējādi nodrošinot, ka SAML parole un ierīces bloķēšanas ekrāna parole tiek sinhronizētas savā starpā.
 
-          Šis iestatījums iekļauj baltajā sarakstā to paplašinājumu/lietotņu veidus, kurus var instalēt pārlūkā <ph name="PRODUCT_NAME" />, kā arī to, ar kuriem saimniekdatoriem tie var mijiedarboties. Vērtība ir virkņu saraksts; atļautās virknes: “extension”, “theme”, “user_script”, “hosted_app”, “legacy_packaged_app”, “platform_app”. Skatiet <ph name="PRODUCT_NAME" /> paplašinājumu dokumentāciju, lai uzzinātu vairāk par šiem veidiem.
+      Šī politika arī iespējo paziņojumus, kas brīdina SAML lietotājus, ka to SAML paroļu derīguma termiņš drīz beigsies, lai lietotāji varētu nekavējoties rīkoties, veicot paroles maiņu sesijas laikā.
+      Taču šie paziņojumi tiks parādīti tikai tad, ja SAML identitātes nodrošinātājs SAML pieteikšanās plūsmas laikā uz ierīci nosūtīs informāciju par paroles derīguma termiņu.
 
-          Ņemiet vērā, ka šī politika ietekmē arī piespiedu kārtā instalētos paplašinājumus un lietotnes, kam tiek piemērota politika “ExtensionInstallForcelist”.
-
-          Ja šis iestatījums ir konfigurēts, netiks instalēti paplašinājumi/lietotnes, kuru veids nav iekļauts sarakstā.
-
-          Ja šis iestatījums nav konfigurēts, netiek piemēroti ierobežojumi pieņemamajam paplašinājumu/lietotņu veidiem.</translation>
+      Ja šī politika ir iestatīta, lietotājs nevar to mainīt vai ignorēt.</translation>
 <translation id="3322771899429619102">Ļauj iestatīt URL šablonu sarakstu, kurā ir norādītas vietnes, kam ir atļauts izmantot atslēgu ģenerēšanu. Ja URL šablons ir iestatīts politikā “KeygenBlockedForUrls”, šie izņēmumi tiek ignorēti.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultKeygenSetting” (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
@@ -1268,6 +1314,17 @@
       Šo politiku var iestatīt tikai kā ieteikumu. Varat izmantot šo politiku, lai virzītu ieteikto lokalizāciju kopu uz augšpusi, bet lietotājiem vienmēr ir atļauts izvēlēties jebkuru lokalizāciju, ko viņu sesijai atbalsta <ph name="PRODUCT_OS_NAME" />.
       </translation>
 <translation id="3381968327636295719">Pēc noklusējuma lieto saimniekdatora pārlūku</translation>
+<translation id="3384115339826100753">Iespējojiet enerģijas maksimuma pārslēgšanas pārvaldības politiku.
+
+          Maksimuma pārslēgšana ir enerģijas taupīšanas politika, kas samazina maiņstrāvas lietojumu tajā diennakts laikā, kad tiek tērēts visvairāk strāvas. Enerģijas maksimuma pārslēgšanas režīmā var iestatīt sākuma un beigu laiku katrai nedēļas dienai. Šajā laikā sistēmas darbināšanai tiks izmantota akumulatora enerģija, pat ja būs pieslēgta maiņstrāva, kamēr vien netiks sasniegts norādītais akumulatora slieksnis. Pēc norādītā beigu laika sistēmas darbināšanai tiks izmantota maiņstrāva, ja tā būs pievienota, bet akumulatora enerģija netiks tērēta. Pēc norādītā uzlādes sākuma laika sistēma atsāks darboties kā parasti, izmantojot maiņstrāvu un uzlādējot akumulatoru.
+
+          Ja šai politikai ir iestatīta vērtība “true” un ir iestatītas politikas DevicePowerPeakShiftBatteryThreshold, DevicePowerPeakShiftDayConfig, ierīcē vienmēr būs iespējota enerģijas maksimuma pārslēgšana (ja ierīcē tā tiks atbalstīta).
+
+          Ja šai politikai ir iestatīta vērtība “false”, enerģijas maksimuma pārslēgšana vienmēr būs atspējota.
+
+          Ja iestatīsiet šo politiku, lietotāji nevarēs to mainīt un ignorēt.
+
+          Ja šī politika nav iestatīta, enerģijas maksimuma pārslēgšana tiks atspējota jau sākotnēji un lietotāji to nevarēs iestatīt.</translation>
 <translation id="3388153794103186066">Ļauj jums iestatīt to vietrāžu URL sarakstu, kas norāda, kurām vietnēm tiks automātiski piešķirta atļauja piekļūt USB ierīcei, izmantojot norādīto pakalpojumu sniedzēja un produkta ID. Lai politika būtu derīga, katrā saraksta vienumā jānorāda gan ierīces, gan vietrāži URL. Katrs vienums ierīcēs var ietvert pakalpojumus sniedzēja ID un produkta ID lauku. Katrs izlaistais ID tiek uzskatīts par aizstājējzīmi, izņemot vienu gadījumu — produkta ID nevar norādīt, ja nav norādīts arī pakalpojumu sniedzēja ID. Pretējā gadījumā politika nebūs derīga un tiks ignorēta.
 
         USB atļauju modelis izmanto pieprasošās vietnes URL (“pieprasošais URL”) un augstākā līmeņa ietvara vietnes URL (“iegultais URL”), lai piešķirtu piekļuvi pieprasošajam URL piekļūt USB ierīcei. Pieprasošais URL var atšķirties no iegultā URL, kad pieprasošā vietne tiek ielādēta ietvarā iframe. Tāpēc laukā “urls” nedrīkst ietvert vairāk par divām URL virknēm, kas atdalītas ar komatu un norāda attiecīgi pieprasošo un iegulto URL. Ja ir norādīts tikai viens URL, piekļuve atbilstošajām USB ierīcēm tiks piešķirta, kad pieprasošās vietnes URL atbildīs šim URL neatkarīgi no iegulšanas statusa. Laukā “urls” ievadītajiem vietrāžiem URL ir jābūt derīgiem vietrāžiem URL, pretējā gadījumā politika tiks ignorēta.
@@ -1299,9 +1356,6 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 
       Eksperimentālais iestatījums tiks noņemts, kad iekļautās pierakstīšanās plūsma pilnībā atbalstīs visas vienotās pierakstīšanās plūsmas.</translation>
 <translation id="3437924696598384725">Atļaut lietotājam pārvaldīt VPN savienojumus</translation>
-<translation id="3449886121729668969">Konfigurē pakalpojuma <ph name="PRODUCT_NAME" /> un ARC lietotņu starpniekservera iestatījumus. Šie starpniekservera iestatījumi būs pieejami arī ARC lietotnēm.
-
-      Šī politika nav vēl gatava lietošanai; nelietojiet to.</translation>
 <translation id="3459509316159669723">Drukāšana</translation>
 <translation id="3460784402832014830">Norāda, kādu vietrādi URL meklētājprogramma izmanto jaunas cilnes lapai.
 
@@ -1315,6 +1369,7 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 
           Ja politika nav iestatīta vai iestatījums ir “False” (aplams), jaudas pārvaldības aizkaves un sesijas ilguma ierobežojuma uzskaite tiek sākta nekavējoties pēc sesijas sākuma.</translation>
 <translation id="3478024346823118645">Notīrīt lietotāja datus izrakstīšanās brīdī</translation>
+<translation id="3480961938508521469">Pilnībā uzlādēt akumulatoru standarta ātrumā.</translation>
 <translation id="348495353354674884">Iespējot virtuālo tastatūru</translation>
 <translation id="3487623755010328395">
         Ja šī politika ir iestatīta, <ph name="PRODUCT_NAME" /> mēģinās reģistrēties un lietot saistīto mākoņa politiku visiem profiliem.
@@ -1343,7 +1398,6 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
 <translation id="350797926066071931">Iespējo Tulkotāju</translation>
-<translation id="3512226956150568738">Ja klienta ierīces modelis jau atbalstīja ARC pirms migrācijas uz ext4, kas bija nepieciešama, lai izpildītu ARC, un ja politika ArcEnabled ir iestatīta kā “true”, šī opcija darbosies kā politikas AskUser vērtība (vērtība 3). Visos citos gadījumos (ja ierīces modelis iepriekš neatbalstīja ARC vai ja politika ArcEnabled ir iestatīta kā “false”), šī vērtība ir ekvivalenta politikas DisallowArc vērtībai (vērtība 0).</translation>
 <translation id="3513655665999652754">Quirks serveris nodrošina aparatūras konfigurācijas failus, piemēram, lai pielāgotu
       ICC attēlojuma profilus monitora kalibrēšanai.
 
@@ -1361,7 +1415,11 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
       Ja politikai ir iestatīta vērtība “DeveloperToolsAllowed” (vērtība “1”), izstrādātāja rīkiem un JavaScript konsolei var piekļūt un tos var izmantot visos gadījumos, tostarp arī paplašinājumos, kas instalēti saskaņā ar uzņēmuma politiku.
       Ja politikai ir iestatīta vērtība “DeveloperToolsDisallowed” (vērtība “2”), izstrādātāja rīkiem nevar piekļūt un vietnes elementus vairs nevar pārbaudīt. Tiek atspējoti visi īsinājumtaustiņi un izvēļņu vai kontekstizvēļņu komandas, ar kuru palīdzību tiek atvērti izstrādātāju rīki vai JavaScript konsole.</translation>
 <translation id="3547954654003013442">Starpniekservera iestatījumi</translation>
+<translation id="3550875587920006460">Šī politika ļauj iestatīt pielāgotu grafiku atjauninājumu pieejamības pārbaudēm. Tā attiecas uz visiem ierīces lietotājiem un saskarnēm. Kad grafiks būs iestatīts, atjauninājumu pieejamība ierīcē tiks pārbaudīta saskaņā ar grafiku. Lai atceltu turpmāk ieplānotas atjauninājumu pieejamības pārbaudes, politika jānoņem.</translation>
 <translation id="355118380775352753">Vietnes, kas atveramas citā pārlūkprogrammā</translation>
+<translation id="3554984410014457319">Atļaut Google asistentam noklausīties balss aktivizēšanas frāzi</translation>
+<translation id="356579196325389849">Lietotāji var konfigurēt Chrome OS laidiena versiju</translation>
+<translation id="3575011234198230041">HTTP autentificēšana</translation>
 <translation id="3577251398714997599">Reklāmu iestatījumi vietnēm, kurās tiek rādītas traucējošas reklāmas</translation>
 <translation id="357917253161699596">Ļauj lietotājiem pārvaldīt lietotāja sertifikātus</translation>
 <translation id="3583230441447348508">Norāda iepriekš konfigurētu tīkla failu kopīgošanas sarakstu.
@@ -1473,6 +1531,16 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
           Ja šī politika netiek iestatīta, ekrāna tastatūra sākotnēji tiek atspējota, taču lietotājs jebkurā laikā var to iespējot.</translation>
 <translation id="382476126209906314">Sīkrīka TalkGadget prefiksa konfigurēšana attālās piekļuves saimniekdatoriem</translation>
 <translation id="3824972131618513497">Kontrolē iestatījumus, kas saistīti ar enerģijas patēriņa pārvaldību un atkārtotu palaišanu.</translation>
+<translation id="3826475866868158882">Iespējoti Google atrašanās vietu pakalpojumi</translation>
+<translation id="3831054243924627613">Šī politika kontrolē Android dublēšanas un atjaunošanas sākotnējo stāvokli.
+
+      Ja šī politika nav konfigurēta vai tai ir iestatīta vērtība “<ph name="BR_DISABLED" />”, Android dublēšana un atjaunošana ir sākotnēji atspējota.
+
+      Ja šai politikai ir iestatīta vērtība “<ph name="BR_ENABLED" />”, Android dublēšana un atjaunošana ir sākotnēji iespējota.
+
+      Ja šai politikai ir iestatīta vērtība “<ph name="BR_UNDER_USER_CONTROL" />”, lietotājam tiek prasīts, vai lietot Android dublēšanu un atjaunošanu. Ja lietotājs iespējo dublēšanu un atjaunošanu, Android lietotņu dati tiek augšupielādēti Android dublējuma serveros un ar šo serveru starpniecību tiek atjaunoti, kad atkārtoti tiek instalētas saderīgas lietotnes.
+
+      Ņemiet vērā, ka šī politika kontrolē Android dublēšanas un atjaunošanas stāvokli tikai sākotnējās iestatīšanas laikā. Pēc tam lietotājs var atvērt Android iestatījumus un ieslēgt/izslēgt Android dublēšanu un atjaunošanu.</translation>
 <translation id="3831376478177535007">Šim iestatījumam esot iespējotam, pārlūkā <ph name="PRODUCT_NAME" /> ir atļauti sertifikāti, kas izdoti ar Symantec Corporation mantotā PKI darbībām, ja tie ir veiksmīgi apstiprināti un saistīti ar atzītu CA sertifikātu.
 
       Ņemiet vērā, ka šī politika ir atkarīga no tā, vai operētājsistēma joprojām atzīst Symantec mantotās infrastruktūras sertifikātus. Ja operētājsistēmas atjauninājuma dēļ ir mainīta šādu sertifikātu apstrādes kārtība operētājsistēmā, šī politika vairs nav spēkā. Turklāt šī politika ir paredzēta kā pagaidu risinājums, lai uzņēmumiem būtu vairāk laika pāriet no Symantec mantotās infrastruktūras sertifikātiem. Šī politika tiks noņemta 2019. gada 1. janvārī vai ap to laiku.
@@ -1485,6 +1553,7 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
           Ja melnā saraksta vērtība ir “*”, visi vietējās ziņojumapmaiņas saimniekdatori ir iekļauti melnajā sarakstā un tiks ielādēti tikai tie vietējās ziņojumapmaiņas saimniekdatori, kas ir iekļauti baltajā sarakstā.
 
           Pēc noklusējuma visi vietējās ziņojumapmaiņas saimniekdatori ir iekļauti baltajā sarakstā, taču, ja saskaņā ar šo politiku visi vietējās ziņojumapmaiņas saimniekdatori ir iekļauti melnajā sarakstā, balto sarakstu var izmantot, lai ignorētu šo politiku.</translation>
+<translation id="3835692988507803626">Piespiedu kārtā atspējo pareizrakstības pārbaudes valodas</translation>
 <translation id="3837424079837455272">Šī politika nosaka, vai operētājsistēmai <ph name="PRODUCT_OS_NAME" /> var pievienot jaunus lietotājus. Šī politika neliedz lietotājiem pierakstīties citos Google kontos operētājsistēmā Android. Ja vēlaties to novērst, konfigurējiet Android politiku <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> kā daļu no politikas <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
 <translation id="384743459174066962">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām nav atļauts atvērt uznirstošos logus.
 
@@ -1530,7 +1599,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Atspējojot šo politiku, SPDY lietošana būs atļauta.
 
       Ja šī politika nav iestatīta, SPDY būs pieejams.</translation>
-<translation id="3890999316834333174">Ātrās atbloķēšanas politikas</translation>
 <translation id="3891357445869647828">Iespējo JavaScript</translation>
 <translation id="3895557476567727016">Konfigurē noklusējuma direktoriju, kurš produktā <ph name="PRODUCT_NAME" /> tiks izmantots failu lejupielādei.
 
@@ -1553,6 +1621,15 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Ja šis iestatījums nav iestatīts vai ir iestatīta vērtība Nepatiesa, lietotāji varēs pārsūtīt failus uz Google disku.</translation>
 <translation id="3915395663995367577">URL uz starpniekservera .pac failu</translation>
+<translation id="3920892052017026701">Iestatīt pielāgotu akumulatora uzlādes līmeni (procentos), kurā jāsāk uzlāde.
+
+          Akumulators sāk uzlādi, kad tā uzlādes līmenis ir samazinājies līdz pielāgotajai uzlādes vērtībai.
+
+          DeviceBatteryChargeCustomStartCharging vērtībai ir jābūt mazākai nekā DeviceBatteryChargeCustomStopCharging vērtībai.
+
+          Šī politika tiek izmantota tikai tad, ja politikai DeviceBatteryChargeMode ir iestatīta vērtība “custom”.
+
+          Ja šī politika nav konfigurēta vai nav iestatīta, tiek piemērots standarta akumulatora uzlādes režīms.</translation>
 <translation id="3925377537407648234">Iestatīt displeja izšķirtspējas un mērogošanas koeficientu</translation>
 <translation id="3939893074578116847">Pārvaldības serverim tiek nosūtītas tīkla paketes tiešsaistes statusa pārraudzībai, lai
       serverī varētu noteikt, vai ierīce ir bezsaistē.
@@ -1581,6 +1658,28 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šai politikai ir iestatīta vērtība Patiesa vai politika nav iestatīta, lietotāji var izpirkt piedāvājumus, izmantojot operētājsistēmas Chrome OS reģistrāciju.
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, lietotāji nevar izpirkt piedāvājumus.</translation>
+<translation id="4008233182078913897">Norāda sarakstu ar lietotnēm un paplašinājumiem, kas tiek instalēti klusajā režīmā 
+          bez lietotāja iejaukšanās un ko lietotājs nevar atinstalēt vai atspējot. 
+          Visas lietotņu/paplašinājumu pieprasītās atļaujas, tostarp visas konkrētās 
+          lietotnes/paplašinājuma turpmāko versiju pieprasītās papildu atļaujas, tiek
+          piešķirtas tieši bez lietotāja iejaukšanās. Turklāt atļaujas tiek piešķirtas
+          paplašinājumu saskarnēm API enterprise.deviceAttributes un
+          enterprise.platformKeys. (Šīs divas saskarnes API nav pieejamas
+          lietotnēm/paplašinājumiem, kas nav instalēti piespiedu kārtā.)
+
+          Šīs politikas prioritāte ir lielāka par iespējami konfliktējošās politikas <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> prioritāti. Ja lietotne vai paplašinājums, kas iepriekš tika instalēts piespiedu kārtā, tiek noņemts no šī saraksta, <ph name="PRODUCT_NAME" /> to automātiski atinstalē.
+
+          Windows instancēs, kas nav pievienotas <ph name="MS_AD_NAME" /> domēnam, piespiedu instalēšana attiecas tikai uz lietotnēm un paplašinājumiem, kas norādīti Chrome interneta veikalā.
+
+          Ņemiet vērā, ka lietotāji var mainīt jebkura paplašinājuma pirmkodu, izmantojot izstrādātāja rīkus (potenciāli padarot paplašinājuma darbību neiespējamu). Ja tas rada problēmas, ir jāiestata politika <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Katrs politikas saraksta vienums ir virkne, kas ietver paplašinājuma ID un pēc vēlēšanās atjaunināšanas URL, kuri atdalīti ar semikolu (<ph name="SEMICOLON" />). Paplašinājuma ID ir 32 burtu virkne, kas ir redzama, piemēram, lapā <ph name="CHROME_EXTENSIONS_LINK" /> izstrādātāja režīmā. Atjaunināšanas vietrādim URL (ja tas ir norādīts) ir jānovirza uz atjauninājuma manifesta XML dokumentu, kā norādīts šeit: <ph name="LINK_TO_EXTENSION_DOC1" />. Pēc noklusējuma tiek izmantots Chrome interneta veikala atjaunināšanas URL (šobrīd: "https://clients2.google.com/service/update2/crx"). Ņemiet vērā, ka šajā politikā iestatītais atjaunināšanas URL tiek izmantots tikai sākotnējai instalācijai; nākamajiem paplašinājuma atjauninājumiem tiek izmantots paplašinājuma manifestā norādītais atjaunināšanas URL. Turklāt ņemiet vērā, ka atjaunināšanas URL tieša norādīšana bija obligāta visās vecākajās <ph name="PRODUCT_NAME" /> versijās līdz pat versijai 67 (ieskaitot).
+
+          Piemēram, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalē paplašinājumu ar ID <ph name="EXTENSION_ID_SAMPLE" />, izmantojot Chrome interneta veikala standarta atjaunināšanas URL. Plašāku informāciju par paplašinājumu mitināšanu skatiet šeit: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Ja šī politika nav iestatīta, neviena lietotne un paplašinājums netiek instalēts automātiski un lietotājs var atinstalēt jebkuru <ph name="PRODUCT_NAME" /> pārlūkā esošu lietotni vai paplašinājumu.
+
+          Ņemiet vērā, ka šī politika neattiecas uz inkognito režīmu.</translation>
 <translation id="4008507541867797979">Ja šai politikai ir iestatīta vērtība “True” vai tā nav konfigurēta, <ph name="PRODUCT_OS_NAME" /> pieteikšanās ekrānā būs redzami esošie lietotāji un būs atļauts vienu izvēlēties.
 
       Ja šai politikai ir iestatīta vērtība “False”, <ph name="PRODUCT_OS_NAME" /> pieteikšanās ekrānā esošie lietotāji būs redzami. Tiks parādīts parastais pierakstīšanās ekrāns (vaicājot lietotāja e-pasta adresi un paroli vai tālruni) vai SAML starpposma ekrāns (ja tas ir iespējots, izmantojot <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> politiku), ja vien nav konfigurēta pārvaldītā sesija. Ja pārvaldītā sesija ir konfigurēta, tiks parādīti tikai pārvaldītās sesijas konti, ļaujot izvēlēties vienu no tiem.
@@ -1592,6 +1691,12 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šis iestatījums nav konfigurēts vai tam ir iestatīta vērtība “false”, <ph name="PRODUCT_OS_NAME" /> ierīcēs tiek automātiski meklēti atjauninājumi.
 
       Brīdinājums: ieteicams iespējot automātiskos atjauninājumus, lai lietotāji saņemtu programmatūras atjauninājumus un kritiskus drošības labojumus. Automātisko atjauninājumu izslēgšana var apdraudēt lietotājus.</translation>
+<translation id="4018000735882846261">Šī politika ļauj Google asistentam klausīties balss aktivizēšanas frāzi.
+
+      Ja politika ir iespējota, Google asistents klausīsies balss aktivizēšanas frāzi.
+      Ja politika ir atspējota, Google asistents neklausīsies balss aktivizēšanas frāzi.
+      Ja politika nav iestatīta, Google asistents neklausīsies balss aktivizēšanas frāzi.
+      </translation>
 <translation id="4020682745012723568">Android lietotnēm nav pieejami uz lietotāja profilu pārsūtītie sīkfaili.</translation>
 <translation id="402759845255257575">Neatļaut nevienai vietnei izpildīt JavaScript</translation>
 <translation id="4027608872760987929">Iespējo noklusējuma meklētājprogrammu</translation>
@@ -1599,13 +1704,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Parasti šī iespēja ir atspējota kā aizsardzība pret pikšķerēšanu. Ja šī politika nav iestatīta, tā tiks atspējota un trešās puses sekundārajam saturam nebūs atļauts atvērt HTTP pamata autentifikācijas dialoglodziņu.</translation>
 <translation id="4056910949759281379">Atspējo SPDY protokolu</translation>
-<translation id="4059515172917655545">Šī politika kontrolē Google atrašanās vietu pakalpojumu pieejamību.
-
-      Ja šī politika nav konfigurēta vai tai ir iestatīta vērtība <ph name="GLS_DISABLED" />, Google atrašanās vietu pakalpojumi ir atspējoti, un lietotājs tos nevar iespējot.
-
-      Ja šai politikai ir iestatīta vērtība <ph name="GLS_UNDER_USER_CONTROL" />, lietotājam ir jāizvēlas, vai izmantot Google atrašanās vietu pakalpojumus. Android lietotnes tos var izmantot, lai nosūtītu vaicājumus par ierīces atrašanās vietu vai lai Google serveriem nosūtītu anonīmus atrašanās vietas datus.
-
-      Ņemiet vērā — ja politikai <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> ir iestatīta vērtība <ph name="BLOCK_GEOLOCATION_SETTING" />, šī politika tiks ignorēta un Google atrašanās vietu pakalpojumi vienmēr būs atspējoti.</translation>
 <translation id="408029843066770167">Atļaut vaicājumus Google laika pakalpojumam</translation>
 <translation id="408076456549153854">Iespējot pierakstīšanos pārlūkprogrammā</translation>
 <translation id="4088589230932595924">Inkognito režīms piespiedu kārtā</translation>
@@ -1622,6 +1720,13 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja šī politika nav iestatīta, tiek izmantots noklusējuma laika periods.
 
           Politikas vērtību nedrīkst norādīt milisekundēs.</translation>
+<translation id="4105884561459127998">Konfigurē SAML pieteikšanās autentifikācijas veidus.
+
+      Ja šī politika nav iestatīta vai tai ir iestatīta vērtība “Default” (vērtība: 0), SAML pieteikšanās veidu, pamatojoties uz citiem faktoriem, nosaka pārlūks. Visbiežāk lietotāja autentifikācijai un kešatmiņā saglabāto lietotāja datu aizsardzībai tiek izmantotas paroles, ko lietotājs ievada manuāli.
+
+      Ja šai politikai ir iestatīta vērtība “ClientCertificate” (vērtība: 1), klienta sertifikāta autentifikācija tiek izmantota jaunajiem lietotājiem, kuri piesakās, izmantojot SAML. Šādiem lietotājiem paroles netiek izmantotas un kešatmiņā saglabātie lokālie dati tiek aizsargāti, izmantojot atbilstošas kriptogrāfiskas atslēgas. Piemēram, šis iestatījums ļauj konfigurēt viedkarti atbilstoši lietotāja autentifikācijas veidam (ņemiet vērā, ka viedkartes starpprogrammatūras lietotnes ir jāinstalē, izmantojot politiku “DeviceLoginScreenExtensions”).
+
+      Šī politika attiecas tikai uz tiem lietotājiem, kuri autentifikācijai izmanto SAML.</translation>
 <translation id="4105989332710272578">Atspējot Certificate Transparency piemērošanu norādītajiem vietrāžiem URL</translation>
 <translation id="4121350739760194865">Novērst lietotņu reklāmu rādīšanu Jaunas cilnes lapā.</translation>
 <translation id="4125606414556046117">Izmantojot šo politiku, varat konfigurēt fona tapetes attēlu, kas tiek rādīts darbvirsmā un lietotāja pieteikšanās ekrāna fonā. Politika tiek iestatīta, norādot URL, no kura <ph name="PRODUCT_OS_NAME" /> var lejupielādēt fona tapetes attēlu un kriptogrāfisku jaucējkodu, kas tiek izmantots lejupielādes integritātes pārbaudei. Attēlam ir jābūt JPEG formātā, un tā lielums nedrīkst pārsniegt 16 MB. URL ir jābūt pieejamam bez autentifikācijas.
@@ -1650,9 +1755,34 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika netiek iestatīta, lietotājs var izvēlēties attēlu, kas tiek rādīts darbvirsmā un pieteikšanās ekrāna fonā.</translation>
 <translation id="412697421478384751">Atļauja lietotājiem iestatīt nedrošus ekrāna bloķēšanas PIN</translation>
 <translation id="4138655880188755661">Laika ierobežojums</translation>
+<translation id="4144164749344898721">Šī politika kontrolē vairākus barošanas pārvaldības iestatījumus neaktivitātes gadījumā.
+
+          Pastāv četri darbību veidi.
+          * Ekrāns tiks aptumšots, ja lietotājs būs neaktīvs tik ilgi, cik nosaka |ScreenDim|.
+          * Ekrāns tiks izslēgts, ja lietotājs būs neaktīvs tik ilgi, cik nosaka |ScreenOff|.
+          * Ja lietotājs būs neaktīvs tik ilgi, cik nosaka |IdleWarning|, tiks parādīts brīdinājuma dialoglodziņš ar paziņojumu, ka neaktivitātes dēļ tūlīt tiks veikta kāda darbība. Brīdinājuma ziņojums tiek parādīts tikai tad, ja neaktivitātes dēļ notiks atteikšanās vai izslēgšana.
+          * |IdleAction| norādītā darbība tiks veikta, ja lietotājs būs neaktīvs tik ilgi, cik nosaka |Idle|.
+
+          Katrai iepriekš norādītajai darbībai aizkave ir jānorāda milisekundēs, un, lai aktivizētu attiecīgo darbību, tai ir jāiestata vērtība, kas lielāka par nulli. Ja aizkaves vērtība ir nulle, <ph name="PRODUCT_OS_NAME" /> neveiks atbilstošo darbību.
+
+          Ja netiks norādītas aizkaves vērtības, tiks izmantotas noklusējuma vērtības.
+
+          Ņemiet vērā, ka |ScreenDim| vērtības vienmēr būs mazākas par |ScreenOff| vai vienādas ar to, savukārt |ScreenOff| un |IdleWarning| vērtība vienmēr būs mazāka par |Idle| vai vienāda ar to.
+
+          |IdleAction| var būt viena no četrām iespējamām darbībām:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Ja |IdleAction| vērtība nav iestatīta, tiek izmantota noklusējuma darbība — darbības apturēšana.
+
+          Ir pieejami arī atsevišķi iestatījumi atkarībā no tā, vai barošanai tiek izmantots maiņstrāvas tīkls vai akumulators.
+          </translation>
 <translation id="4150201353443180367">Displejs</translation>
 <translation id="4157003184375321727">Ziņošana par OS un programmaparatūras versiju</translation>
 <translation id="4157594634940419685">Atļauja piekļūt vietējiem CUPS printeriem</translation>
+<translation id="4160962198980004898">Ierīces MAC adreses avots, kad ierīce ir dokota</translation>
 <translation id="4163705126749612234">Konfigurē nepieciešamos klienta domēnu nosaukumus, kas tiks izmantoti attālās piekļuves klientiem, un lietotāji tos nevarēs mainīt.
 
           Ja šis iestatījums ir iespējots, tikai klienti no norādītajiem domēniem var savienoties ar saimniekdatoru.
@@ -1664,6 +1794,10 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Skatiet arī politiku RemoteAccessHostDomainList.</translation>
 <translation id="4183229833636799228">Spraudņa <ph name="FLASH_PLUGIN_NAME" /> noklusējuma iestatījums</translation>
 <translation id="4192388905594723944">Vietrādis URL attālās piekļuves klienta autentifikācijas pilnvaras apstiprināšanai</translation>
+<translation id="4197038214024763371">Ja šī politika nav iestatīta vai iespējota, lietotājs varēs lietot pareizrakstības pārbaudi.
+
+      Ja šī politika ir atspējota, lietotājs nevarēs lietot pareizrakstības pārbaudi. Ja šī politika ir atspējota, tiks ignorētas arī politikas SpellcheckLanguage un SpellcheckLanguageBlacklist.
+      </translation>
 <translation id="4203389617541558220">Ierobežojiet ierīces darbspējas laiku, plānojot automātiskas atkārtotas palaišanas gadījumus.
 
       Ja šī politika ir iestatīta, tā norāda ierīces darbspējas laiku, pēc kura ir plānota automātiska atkārtota palaišana.
@@ -1714,7 +1848,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Šī politika nav obligāta. Ja tā nav iestatīta, attēla meklēšanas pieprasījums tiks nosūtīts, izmantojot metodi GET.
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
-<translation id="427706009709857238">“Sniegt Google asistentam piekļuvi, lai klausītos balss aktivizēšanas frāzi”</translation>
 <translation id="4285674129118156176">Ļauj nesaistītiem lietotājiem izmantot ARC</translation>
 <translation id="4298509794364745131">Nosaka lietotņu sarakstu, kuras var iespējot kā piezīmju lietotnes <ph name="PRODUCT_OS_NAME" /> bloķēšanas ekrānā.
 
@@ -1726,10 +1859,19 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ņemiet vērā: ja politika satur lietotnes ID, tas nenozīmē, ka lietotājs noteikti var iespējot bloķēšanas ekrānā šo lietotni kā piezīmju lietotni. Piemēram, pārlūkā Chrome 61 ir papildu pieejamo lietotņu ierobežojumi.
 
       Ja politika nav iestatīta, attiecībā uz lietotnēm, kuras lietotājs var iespējot bloķēšanas ekrānā, nav nekādu politikā noteiktu ierobežojumu.</translation>
-<translation id="4309640770189628899">DHE šifra komplektu iespējošana standartā TLS</translation>
+<translation id="4313767483634435271">Ierīcei paredzētā doka MAC adrese</translation>
 <translation id="4322842393287974810">Atļaut kioska lietotnei, kas tiek automātiski palaista ar nulles aizkavi, kontrolēt <ph name="PRODUCT_OS_NAME" /> versiju</translation>
 <translation id="4325690621216251241">Atteikšanās pogas pievienošana sistēmas teknei</translation>
 <translation id="4332177773549877617">Android lietotņu instalēšanas notikumu reģistrēšana</translation>
+<translation id="4335292026668105285">Norāda laika periodu, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā tiek parādīts brīdinājuma dialoglodziņš (ja ierīce pieslēgta maiņstrāvas tīklam).
+
+          Ja šī politika ir iestatīta, tā norāda neaktivitātes laika periodu, pēc kura <ph name="PRODUCT_OS_NAME" /> parāda brīdinājuma dialoglodziņu, paziņojot lietotājam, ka neaktivitātes dēļ tiks veikta kāda darbība.
+
+          Ja šī politika nav iestatīta, brīdinājuma dialoglodziņš netiek rādīts.
+
+          Politikas vērtība ir jānorāda milisekundēs. Vērtībām ir jābūt mazākām par vai vienādām ar neaktivitātes aizkaves vērtību.
+
+          Brīdinājuma ziņojums tiek parādīts tikai tad, ja neaktivitātes dēļ notiks atteikšanās vai izslēgšana.</translation>
 <translation id="4346674324214534449">Ļauj iestatīt, vai bloķēt reklāmu rādīšanu vietnēs, kurās tiek rādītas traucējošas reklāmas.
 
       Ja politikai ir iestatīta vērtība “2”, reklāmu rādīšana tiks bloķēta vietnēs, kurās tiek rādītas traucējošas reklāmas.
@@ -1749,6 +1891,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4360826270668210664">Ja šī politika ir iestatīta, attālās piekļuves saimniekdatorā klientiem, kas autentificējas, tiek prasīts iegūt autentifikācijas pilnvaru no šī vietrāža URL, lai izveidotu savienojumu. Jāizmanto kopā ar politiku RemoteAccessHostTokenValidationUrl.
 
           Pašlaik šī funkcija ir atspējota servera pusē.</translation>
+<translation id="4363057787588706121">Ļaut apvienot sarakstā esošās politikas, kas ir no dažādiem avotiem</translation>
 <translation id="436581050240847513">Ziņot par ierīču tīkla saskarnēm</translation>
 <translation id="4372704773119750918">Neatļaut korporatīvajam lietotājam piedalīties vairākprofilu sesijā (ne kā primārajam, ne sekundārajam lietotājam)</translation>
 <translation id="4377599627073874279">Atļauj visām vietnēm rādīt visus attēlus</translation>
@@ -1783,6 +1926,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Lai gan šī politika ir atbalstīta iepriekš minētajās platformās, ne visas iespējotās funkcijas var būt pieejamas visās platformās. Ne visas novecojušās tīmekļa platformas funkcijas var iespējot atkārtoti. Var iespējot tikai tālāk norādītās funkcijas, un katrai funkcijai ir atšķirīgs derīguma laiks. Virknes taga vispārīgais formāts ir [NovecojušāsFunkcijasNosaukums]_SpēkāLīdz[ggggmmdd]. Ja vēlaties uzzināt vairāk, vietnē https://bit.ly/blinkintents ir minēti iemesli, kādēļ tīmekļa platformas funkcijās ir veiktas izmaiņas.
       </translation>
 <translation id="4442582539341804154">Bloķēšanas iespējošana, ja ierīce pāriet dīkstāvē vai tās darbība tiek apturēta</translation>
+<translation id="4449469846627734399">Iestatīt enerģijas maksimuma pārslēgšanas dienas konfigurāciju</translation>
 <translation id="4449545651113180484">Pagriezt ekrānu pulksteņrādītāju kustības virzienā par 270 grādiem</translation>
 <translation id="445270821089253489">Kontrolē, kādu lietotāja un ierīces informāciju nosūtīt.</translation>
 <translation id="4454820008017317557"><ph name="PRODUCT_NAME" /> rīkjoslas ikonas rādīšana</translation>
@@ -1829,14 +1973,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4534500438517478692">Android ierobežojuma nosaukums:</translation>
 <translation id="4541530620466526913">Ierīces lokālie konti</translation>
 <translation id="4543502256674577024">Ierīces atjaunināšanas iestatījumi</translation>
-<translation id="4544079461524242527">Šī politika tiek izmantota, lai konfigurētu <ph name="PRODUCT_NAME" /> paplašinājumu pārvaldības iestatījumus.
-
-          Ar šo politiku tiek regulēti vairāki iestatījumi, tostarp iestatījumi, kas tiek regulēti esošās ar paplašinājumiem saistītās politikās. Ja šī politika ir iestatīta, ar to tiek ignorētas jebkādas iestatītās mantotās politikas.
-
-          Izmantojot šo politiku, paplašinājuma ID vai atjauninājuma vietrādis URL tiek kartēts tā konfigurācijā. Izmantojot paplašinājuma ID, konfigurācija tiek lietota tikai konkrētajam paplašinājumam. Īpašajam ID “<ph name="DEFAULT_SCOPE" />” var iestatīt noklusējuma konfigurāciju, kas tiks lietota visiem paplašinājumiem, kuriem šajā politikā nav iestatīta pielāgota konfigurācija. Izmantojot atjauninājuma vietrādi URL, konfigurācija tiek lietota visiem paplašinājumiem, kuru manifestā ir norādīts konkrētais atjauninājuma vietrādis URL (kā aprakstīts šeit: <ph name="LINK_TO_EXTENSION_DOC1" />).
-
-          Pilnu iespējamo iestatījumu un šīs politikas struktūras aprakstu skatiet tīmekļa vietnē https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="4554651132977135445">Lietotāju politikas atgriezeniskās cilpas apstrādes režīms</translation>
 <translation id="4554841826517980623">Šī politika nosaka to, vai lietotājam <ph name="PRODUCT_NAME" /> tiek atļauta tīkla failu kopīgošanas funkcijas lietošana ar <ph name="NETBIOS_PROTOCOL" />, lai meklētu tīklā kopīgotos failus.
       Ja šai politikai tiks iestatīta vērtība “True”, kopīgoto failu meklēšanas funkcija tīklā kopīgoto failu meklēšanai izmantos <ph name="NETBIOS_PROTOCOL" /> protokolu.
@@ -1854,17 +1990,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4613508646038788144">Ja politikai ir iestatīta vērtība “False”, trešās puses programmatūra pārlūka Chrome procesos varēs ievietot izpildāmo kodu. Ja politikai nav iestatīta vērtība vai ir iestatīta vērtība “True”, trešās puses programmatūrai tiek liegta izpildāmā koda ievietošana pārlūka Chrome procesos.</translation>
 <translation id="4617338332148204752">Izlaist metataga pārbaudīšanu spraudnī <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfigurē paplašinājumu instalēšanas balto sarakstu</translation>
-<translation id="463224920692183755">Norāda darbību, kas jāveic, ja lietotāja mājas katalogs tika izveidots ar ecryptfs šifrējumu un nepieciešams pāriet uz ext4 šifrējumu.
-
-      Ja šai politikai ir iestatīta vērtība “DisallowArc”, Android lietotnes tiks atspējotas lietotājam un netiks veikta migrēšana no ecryptfs uz ext4 šifrējumu. Android lietotņu darbība netiks apturēta, ja mājas katalogs jau ir šifrēts ar ext4.
-
-      Ja šai politikai ir iestatīta vērtība “Migrate”, tad mājas katalogi, kas ir šifrēti ar ecryptfs, pierakstīšanās laikā tiks automātiski migrēti uz ext4, neprasot lietotāja piekrišanu.
-
-      Ja šai politikai ir iestatīta vērtība “Wipe”, pierakstīšanās laikā tiks dzēsti mājas katalogi, kas šifrēti ar ecryptfs, un tiks izveidoti jauni mājas katalogi, kas šifrēti ar ext4. Brīdinājums! Tas noņem lietotāja vietējos datus.
-
-      Ja šai politikai ir iestatīta vērtība “AskUser”, lietotājiem ar mājas katalogiem, kas šifrēti ar ecryptfs, tiks piedāvāta migrēšana.
-
-      Šī politika neattiecas uz kioska lietotājiem. Ja šī politika netiek iestatīta, ierīce veiks darbības tā, it kā būtu iestatīta vērtība “DisallowArc”.</translation>
 <translation id="4632343302005518762">Atļauja produktam <ph name="PRODUCT_FRAME_NAME" /> apstrādāt sarakstā iekļautos satura veidus</translation>
 <translation id="4632566332417930481">Neatļauj izstrādātāju rīku lietošanu paplašinājumos, kuri ir instalēti saskaņā ar uzņēmuma politiku; atļauj izstrādātāju rīku lietošanu citos gadījumos.</translation>
 <translation id="4633786464238689684">Augšējās rindas taustiņu noklusējuma darbība tiek mainīta, un tie tiek izmantoti kā funkciju taustiņi.
@@ -1936,26 +2061,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4802905909524200151"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājuma darbības konfigurēšana</translation>
 <translation id="4804828344300125154">Vienmēr atkārtoti palaist, lietotājam izrakstoties.</translation>
 <translation id="4807950475297505572">Pēdējie izmantotie lietotāji tiek noņemti, līdz ir pietiekami daudz brīvas vietas.</translation>
-<translation id="4815725774537609998">Šī politika ir novecojusi, tās vietā izmantojiet ProxyMode.
-
-          Ļauj jums norādīt <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekserveru iestatījumus.
-
-          Ja izvēlaties nekad neizmantot starpniekserveri un vienmēr izveidot tiešu savienojumu, visas pārējās opcijas tiek ignorētas.
-
-          Ja izvēlaties izmantot sistēmas starpniekserveru iestatījumus vai automātiski noteikt starpniekserveri, visas pārējās opcijas tiek ignorētas.
-
-          Ja izvēlaties manuālus starpniekservera iestatījumus, varat norādīt detalizētas opcijas sadaļās “Starpniekservera adrese vai URL” un “Ar komatiem atdalīts starpniekservera apiešanas kārtulu saraksts”. ARC lietotnēm ir pieejams tikai HTTP starpniekserveris ar augstāko prioritāti.
-
-          Detalizētus piemērus skatiet šajā vietnē:
-          <ph name="PROXY_HELP_URL" />.
-
-          Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> ignorē visas ar starpniekserveri saistītās komandrindā norādītās opcijas.
-
-          Ja šī politika nav iestatīta, lietotāji var izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="4816674326202173458">Atļaut korporatīvajam lietotājam būt gan primārajam, gan sekundārajam (noklusējuma rīcība attiecībā uz nepārvaldītiem lietotājiem)</translation>
 <translation id="4826326557828204741">Darbība, kas ir jāveic, kad ir aizritējis laiks līdz dīkstāvei un ir zems akumulatora uzlādes līmenis</translation>
 <translation id="4832852360828533362">Ziņošana par lietotāju un ierīci</translation>
 <translation id="4834526953114077364">Pēdējie izmantotie lietotāji, kuri nav pieteikušies pēdējo 3 mēnešu laikā, tiek noņemti, līdz ir pietiekami daudz brīvas vietas.</translation>
+<translation id="4835622243021053389">Iespējot NTLMv2 autentificēšanu.</translation>
 <translation id="4858735034935305895">Atļaut pilnekrāna režīmu</translation>
 <translation id="4861767323695239729">Konfigurēt lietotāja sesijā atļautās ievades metodes</translation>
 <translation id="487460824085252184">Migrē automātiski, nepieprasa lietotāja piekrišanu.</translation>
@@ -1990,17 +2100,47 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4983201894483989687">Atļauj palaist novecojušus spraudņus</translation>
 <translation id="4986560318567565414">Ceļš uz pārlūku Chrome, lai pārslēgtos no cita pārlūka.</translation>
 <translation id="4988291787868618635">Darbība, kas ir jāveic, kad ir aizritējis laiks līdz dīkstāvei</translation>
-<translation id="4995548127349206948">Vai ir iespējota NTLMv2 autentifikācija.</translation>
+<translation id="5034604678285451405">Iestatiet akumulatora sliekšņa procentuālo vērtību enerģijas maksimuma pārslēgšanai.
+
+          Šī politika tiek izmantota tikai tad, ja politikai DevicePowerPeakShiftEnabled ir iestatīta vērtība “true”.
+
+          Ja šī politika nav konfigurēta vai nav iestatīta, enerģijas maksimuma pārslēgšana vienmēr būs atspējota.</translation>
 <translation id="5047604665028708335">Atļaut piekļuvi vietnēm, kas nav iekļautas satura pakotnēs.</translation>
 <translation id="5052081091120171147">Šī politika (ja tā ir iespējota) liek importēt pārlūkošanas vēsturi no pašreizējā noklusējuma pārlūka. Ja šī politika ir iespējota, tā arī maina importēšanas dialoglodziņu.
 
       Ja tā ir atspējota, pārlūkošanas vēsture netiek importēta.
 
       Ja tā nav iestatīta, vai nu lietotājam var tikt vaicāts, vai importēt, vai arī importēšana var notikt automātiski.</translation>
+<translation id="5055312535952606505">Konfigurē pakalpojuma <ph name="PRODUCT_NAME" /> starpniekservera iestatījumus. Šie starpniekservera iestatījumi būs pieejami arī ARC lietotnēm.
+
+          Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> un ARC lietotnes ignorē visas ar starpniekserveri saistītās komandrindā norādītās opcijas.
+
+          Ja šī politika nav iestatīta, lietotāji varēs izvēlēties savus starpniekserveru iestatījumus.
+
+          Ja <ph name="PROXY_SETTINGS_POLICY_NAME" /> politika ir iestatīta, tā ignorēs visas individuālās politikas: <ph name="PROXY_MODE_POLICY_NAME" />, <ph name="PROXY_PAC_URL_POLICY_NAME" />, <ph name="PROXY_SERVER_POLICY_NAME" />, <ph name="PROXY_BYPASS_POLICY_NAME" /> un <ph name="PROXY_SERVER_MODE_POLICY_NAME" />.
+
+          <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> ļauj norādīt <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekservera iestatījumus.
+
+          <ph name="PROXY_PAC_URL_PROXY_SETTINGS_FIELD" /> lauks ir starpniekservera .pac faila URL.
+
+          <ph name="PROXY_SERVER_PROXY_SETTINGS_FIELD" /> lauks ir starpniekservera URL.
+
+          <ph name="PROXY_BYPASS_LIST_PROXY_SETTINGS_FIELD" /> lauks ir to starpniekserveru saraksts, kurus <ph name="PRODUCT_NAME" /> apies.
+
+          <ph name="PROXY_SERVER_MODE_PROXY_SETTINGS_FIELD" /> lauks vairs netiek izmantots, tā vietā tiek izmantots lauks ProxyMode. Tas ļauj norādīt produkta <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekservera iestatījumus.
+
+          Ja izvēlaties vērtību “Direct” kā ProxyMode, starpniekserveris nekad netiks izmantots un visi lauki tiks ignorēti.
+
+          Ja izvēlaties vērtību “System” kā ProxyMode, sistēmas starpniekserveri tiks izmantoti un visi pārējie lauki tiks ignorēti.
+
+          Ja izvēlaties vērtību “auto_detect” kā ProxyMode, visi pārējie lauki tiks ignorēti.
+
+          Ja izvēlaties vērtību “fixed_server” kā ProxyMode, tiks izmantoti lauki ProxyServer un ProxyBypassList.
+
+          Ja izvēlaties vērtību “pac_script” kā ProxyMode, tiks izmantoti lauki ProxyPacUrl un ProxyBypassList.</translation>
 <translation id="5056708224511062314">Ekrāna lupa ir atspējota</translation>
 <translation id="5058573563327660283">Stratēģijas atlase, lai atbrīvotu diska vietu automātiskās tīrīšanas laikā (vairs netiek izmantota)</translation>
 <translation id="5067143124345820993">Pieteikšanās lietotāju baltais saraksts</translation>
-<translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> mākoņa politika ignorē ierīces politiku.</translation>
 <translation id="5075834892754086022">Ja politika ir iestatīta, tiek piemērots konfigurētais minimālais 
           PIN garums. (Absolūtais PIN minimālais garums ir 1; mazākas vērtības
           tiek apstrādātas kā vērtība 1.)
@@ -2047,7 +2187,12 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika ir iestatīta, visus vienumus uzskata par kārtulu, kas līdzinās politikai “<ph name="URL_LIST_POLICY_NAME" />”. Tomēr loģika ir pretēja: atbilstošās kārtulas neatver citu pārlūkprogrammu.
 
       Pretēji politikai “<ph name="URL_LIST_POLICY_NAME" />” kārtulas tiek lietotas abos virzienos: ja pārlūkprogrammas Internet Explorer papildinājums ir iespējots, tas pārvalda arī to, vai pārlūkprogrammai <ph name="IE_PRODUCT_NAME" /> attiecīgie vietrāži URL ir jāatver arī pārlūkprogrammā <ph name="PRODUCT_NAME" />.</translation>
-<translation id="5130288486815037971">RC4 šifra komplektu iespējošana standartā TLS</translation>
+<translation id="5124368997194894978">Iespējot palaišanu ar maiņstrāvas barošanu</translation>
+<translation id="5131211790949066746">Iespējo paplašinājumu instalēšanas sarakstu politiku <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> un <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> apvienošanu.
+
+      Ja iespējosiet šo iestatījumu, vērtības no ierīces platformas politikas, ierīces mākoņa politikas un lietotāja platformas politikas tiks apvienotas vienā sarakstā un izmantotas kā viena politika (tā vietā, lai izmantotu vērtības no viena avota ar visaugstāko prioritāti).
+
+      Ja atspējosiet šo iestatījumu vai atstāsiet to neiestatītu, tiks izmantoti tikai saraksta ieraksti no avota ar visaugstāko prioritāti un visi pārējie avoti tiks rādīti kā konfliktējoši, un tiks ignorēti.</translation>
 <translation id="5141670636904227950">Pieteikšanās ekrānā iespējotā ekrāna lupas noklusējuma veida iestatīšana</translation>
 <translation id="5142301680741828703">Norādītās URL struktūras vienmēr tiek renderētas produktā <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Ļauj noteikt papildu parametrus, kas tiek lietoti, kad spraudnis <ph name="PRODUCT_FRAME_NAME" /> palaiž pārlūkprogrammu <ph name="PRODUCT_NAME" />.
@@ -2059,6 +2204,24 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       intervāls ir 30 sekundes, maksimālais — 24 stundas. Vērtības
       ārpus šī diapazona tiks pieskaņotas diapazonam.</translation>
 <translation id="5163002264923337812">Iepriekšējās pierakstīšanās plūsmas (tīmeklī) iespējošana</translation>
+<translation id="5168529971295111207">Šī politika ir novecojusi, tās vietā lietojiet ProxyMode.
+
+          Ļauj norādīt produkta <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekservera iestatījumus.
+
+          Šī politika atstāj ietekmi tikai tad, ja politika <ph name="PROXY_SETTINGS_POLICY_NAME" /> nav norādīta.
+
+          Ja izvēlaties nekad neizmantot starpniekserveri un vienmēr izveidot tiešu savienojumu, visas pārējās opcijas tiek ignorētas.
+
+          Ja tiek izvēlēts lietot sistēmas starpniekservera iestatījumus vai automātiski atrast starpniekserveri, visas pārējās opcijas tiek ignorētas.
+
+          Ja tiek izvēlēts fiksēta servera starpniekservera režīms, laukos Starpniekservera adrese vai URL un “Komatatdalītu starpniekserveru apiešanas kārtulu saraksts” var norādīt papildu opcijas. ARC lietotnēm ir pieejams tikai HTTP starpniekserveris ar visaugstāko prioritāti.
+
+          Detalizētus piemērus skatiet vietnē:
+          <ph name="PROXY_HELP_URL" />.
+
+          Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> ignorē visas ar starpniekserveri saistītās komandrindā norādītās opcijas.
+
+          Ja šī politika nav iestatīta, lietotāji varēs izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="5182055907976889880">Tiek konfigurēta pakalpojuma Google disks lietošana operētājsistēmā <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5183383917553127163">Ļauj norādīt, kurus paplašinājumus nevar ietvert melnajā sarakstā.
 
@@ -2153,13 +2316,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja politika nav iestatīta vai tā ir iestatīta uz tukšu virkni vai nederīgu portu diapazonu, saskarnei WebRTC ir atļauts izmantot jebkuru pieejamu lokālo UDP portu.</translation>
 <translation id="5290940294294002042">Norāda spraudņu sarakstu, kurus lietotājs var iespējot vai atspējot</translation>
-<translation id="5304269353650269372">Tiek norādīts, pēc cik ilga laika kopš lietotāja pēdējās aktivitātes parādīt brīdinājuma dialoglodziņu, ja ierīce darbojas ar akumulatora jaudu.
-
-          Ja šai politikai ir iestatīta vērtība, tā norāda, cik ilgu laiku lietotājam ir jābūt dīkstāvē, lai operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiktu parādīts brīdinājuma dialoglodziņš, kurā teikts, ka tiks veikta dīkstāves darbība.
-
-          Ja šīs politikas vērtība nav iestatīta, brīdinājuma dialoglodziņš netiek rādīts.
-
-          Politikas vērtība ir jānorāda milisekundēs. Vērtības tiek summētas, lai tās būtu mazākas par aizkavi līdz dīkstāvei vai vienādas ar to.</translation>
+<translation id="5306186200045823863">Norādīt, ka Symantec Corporation mantotā PKI infrastruktūra ir uzticama</translation>
 <translation id="5307432759655324440">Inkognito režīma pieejamība</translation>
 <translation id="5318185076587284965">Pārraides serveru iespējošana attālās piekļuves saimniekdatoram</translation>
 <translation id="5323128137188992869">Atļaujiet ierīcē apraidīt saturu, izmantojot <ph name="PRODUCT_NAME" />.
@@ -2171,6 +2328,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Pretējā gadījumā tai var tikt iestatīta viena no šīm vērtībām: “tls1.2” vai “tls1.3”. Kad tiks iestatīta attiecīgā politikas vērtība, <ph name="PRODUCT_NAME" /> neizmantos tādas SSL/TLS versijas, kuras ir jaunākas par norādīto versiju. Neatpazīta vērtība tiks ignorēta.</translation>
 <translation id="5330684698007383292">Atļauja produktam <ph name="PRODUCT_FRAME_NAME" /> apstrādāt tālāk norādītos satura veidus</translation>
+<translation id="5331746669335642668"><ph name="PRODUCT_NAME" /> mākoņa politika ignorē platformas politiku.</translation>
 <translation id="5365476955714838841">Papildu pārlūkprogrammas komandrindas parametri.</translation>
 <translation id="5365946944967967336">Rīkjoslā parāda pogu Sākums</translation>
 <translation id="5366745336748853475">Ļauj norādīt URL modeļu sarakstu ar vietnēm, kurām klienta sertifikāts tiek automātiski atlasīts pierakstīšanās ekrāna rāmī, kas mitina SAML plūsmu (ja vietne pieprasa sertifikātu). Piemēram, var konfigurēt, lai ierīces sertifikāts tiktu rādīts SAML identitātes nodrošinātājam.
@@ -2244,6 +2402,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="5457065417344056871">Viesa režīma iespējošana pārlūkā</translation>
 <translation id="5457924070961220141">Ļauj konfigurēt noklusējuma HTML renderētāju, ja ir instalēts <ph name="PRODUCT_FRAME_NAME" />.
           Ja šī politika nav iestatīta, pēc noklusējuma renderēšanu ir atļauts veikt saimniekdatora pārlūkam, bet šo vērtību pēc izvēles var ignorēt un likt, lai HTML lapu renderēšanu pēc noklusējuma veiktu <ph name="PRODUCT_FRAME_NAME" /> .</translation>
+<translation id="5458584148602890023">Iespējot enerģijas maksimuma pārslēgšanu</translation>
 <translation id="5464816904705580310">Konfigurē iestatījumus pārvaldītajiem lietotājiem.</translation>
 <translation id="546726650689747237">Aizkave līdz ekrāna aptumšošanai, ja ierīce darbojas ar maiņstrāvu</translation>
 <translation id="5469143988693423708">Lietotājam ir iespējota rīka Crostini darbība</translation>
@@ -2261,6 +2420,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja kārtulas ir pretrunā viena otrai, <ph name="PRODUCT_NAME" /> izmanto visprecīzāko kārtulu.</translation>
 <translation id="5475361623548884387">Iespējo drukāšanu</translation>
 <translation id="547601067149622666">Neatļaut reklāmu rādīšanu vietnēs, kurās tiek rādītas traucējošas reklāmas</translation>
+<translation id="5483065054530244863">Atļaut SHA-1 parakstītus sertifikātus, ko izsnieguši lokāli uzticamības enkuri</translation>
 <translation id="5483777239978559943">Šī politika ir novecojusi. Lūdzu, izmantojiet politiku <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />, lai kontrolētu Flash spraudņa pieejamību, un politiku <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" />, lai kontrolētu, vai izmantot integrēto PDF skatīšanas programmu PDF failu skatīšanai.
 
       Norāda spraudņu sarakstu, kurus lietotājs var iespējot vai atspējot pārlūkā <ph name="PRODUCT_NAME" />.
@@ -2377,6 +2537,17 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja šis iestatījums ir iespējots vai nav konfigurēts, paroles paroļu pārvaldniekā ir redzamas nešifrētā tekstā.</translation>
 <translation id="5620392548325769024">Sveiciena lapas rādīšanas iespējošana pirmajā pārlūka palaišanas reizē pēc operētājsistēmas jaunināšanas</translation>
 <translation id="5630352020869108293">Atjaunot pēdējo sesiju</translation>
+<translation id="5643906875497889108">Kontrolē, kāda veida lietotnes/paplašinājumus var instalēt, un ierobežo izpildlaika piekļuvi.
+
+          Šis iestatījums iekļauj baltajā sarakstā to paplašinājumu/lietotņu veidus, kurus var instalēt šeit: <ph name="PRODUCT_NAME" />, kā arī to, ar kuriem saimniekdatoriem tie var mijiedarboties. Vērtība ir virkņu saraksts; atļautās virknes: “extension”, “theme”, “user_script”, “hosted_app”, “legacy_packaged_app”, “platform_app”. Skatiet <ph name="PRODUCT_NAME" /> paplašinājumu dokumentāciju, lai uzzinātu vairāk par šiem veidiem.
+
+          Ņemiet vērā, ka šī politika ietekmē arī piespiedu kārtā instalētos paplašinājumus un lietotnes, kam tiek piemērota politika ExtensionInstallForcelist.
+
+          Ja šis iestatījums ir konfigurēts, netiks instalēti paplašinājumi/lietotnes, kuru veids nav iekļauts sarakstā.
+
+          Ja šis iestatījums nav konfigurēts, netiek piemēroti ierobežojumi pieņemamajiem paplašinājumu/lietotņu veidiem.
+
+          75. versijā un jaunākajās versijās netiek atbalstīti un tiek izlaisti ar komatu atdalīti paplašinājumu ID. Pārējā politika joprojām tiek piemērota.</translation>
 <translation id="5645779841392247734">Atļauj sīkfailus šajās vietnēs</translation>
 <translation id="5689430183304951538">Noklusējuma drukāšanas lapas izmērs</translation>
 <translation id="5693469654327063861">Atļaut datu migrēšanu</translation>
@@ -2416,6 +2587,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="5765780083710877561">Apraksts:</translation>
 <translation id="5770738360657678870">Izstrādātāju versija (var būt nestabila)</translation>
 <translation id="5774856474228476867">Noklusējuma meklētājprogrammas meklēšanas  URL</translation>
+<translation id="5775235485119094648">Uzlādēt akumulatoru, kamēr tas atrodas fiksētā diapazonā.</translation>
 <translation id="5776485039795852974">Vaicāt ikreiz, kad vietne vēlas rādīt paziņojumus darbvirsmā</translation>
 <translation id="5781412041848781654">Norāda, kura GSSAPI bibliotēka jāizmanto HTTP autentifikācijai. Var iestatīt tikai bibliotēkas nosaukumu vai pilnu ceļu.
 
@@ -2483,6 +2655,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="5893553533827140852">Ja šis iestatījums ir iespējots, Gnubby autentifikācijas pieprasījumiem tiks izmantoti starpniekserveri attālā saimniekdatora tīklā.
 
           Ja šis iestatījums ir atspējots vai nav konfigurēts, Gnubby autentifikācijas pieprasījumiem netiks izmantoti starpniekserveri.</translation>
+<translation id="5897913798715600338">Uzlādēt akumulatoru, izmantojot ātrās uzlādes tehnoloģiju.</translation>
 <translation id="5898486742390981550">Ja ir pieteikušies vairāki lietotāji, Android lietotnes var izmantot tikai primārais lietotājs.</translation>
 <translation id="5900196529149231477">
       Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku “<ph name="ISOLATE_ORIGINS_POLICY_NAME" />”, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikas vērtība.
@@ -2491,12 +2664,20 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja politika nav konfigurēta, pierakstīšanās ekrānam tiks izmantoti platformas noklusējuma vietnes izolācijas iestatījumi.
       </translation>
 <translation id="5901427587865226597">Tikai divpusēja drukāšana</translation>
+<translation id="5903898512448364160">
+      Ja šai politikai ir iestatīta vērtība “true” un ja mākoņa politika ir pretrunā ar platformas politiku, mākoņa politikai ir prioritāte.
+      Ja šai politikai ir iestatīta vērtība “false” vai tā nav konfigurēta, un ja platformas politika ir pretrunā ar mākoņa politiku, platformas politikai ir prioritāte.
+
+      Šī politika ir pieejama tikai kā obligāta ierīces platformas politika, un tā ietekmē tikai mākoņa politikas ar ierīces tvērumu.
+      </translation>
+<translation id="5905473632148429217">Iespējot tiešsaistes OCSP/CRL pārbaudes</translation>
 <translation id="5906199912611534122">Paredzēta, lai iespējotu vai atspējotu tīkla ierobežošanu.
       Tā attiecas uz visiem ierīces lietotājiem un saskarnēm. Ja šī politika
       ir iestatīta, ierobežošana ir spēkā, līdz politika tiek atspējota.
 
       Ja ir iestatīta vērtība “True”, netiek lietots neviens ierobežojums.
       Ja ir iestatīta vērtība “False”, tiek ierobežots ātrums (Kb/s) augšupielādei sistēmā un lejupielādei no tās.</translation>
+<translation id="591088232153082363">Adaptīvās uzlādes akumulators, pamatojoties uz akumulatora lietojuma modeli.</translation>
 <translation id="5921713479449475707">Atļaut automātiski atjaunināt lejupielādes, izmantojot HTTP</translation>
 <translation id="5921888683953999946">Iestatiet lielā kursora pieejamības funkcijas noklusējuma stāvokli pieteikšanās ekrānā.
 
@@ -2515,9 +2696,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja atspējosiet šo iestatījumu vai neiestatīsiet vērtību, filtrs Droša meklēšana pakalpojumā Google meklēšana netiks izmantots piespiedu kārtā.</translation>
 <translation id="5946082169633555022">Beta versija</translation>
+<translation id="5946329690214660966">Iestatīt pielāgotu grafiku, lai pārbaudītu atjauninājumu pieejamību</translation>
 <translation id="5950205771952201658">Ņemot vērā to, ka pastāvīgas atteices atsaukšanas pārbaudes tiešsaistē nenodrošina nevienu efektīvu drošības priekšrocību, tās pēc noklusējuma tiek atspējotas pārlūkā <ph name="PRODUCT_NAME" /> 19 vai jaunākā versijā. Ja šai politikai ir iestatīta vērtība Patiesa, tiek atjaunota iepriekšējā darbība un tiek veiktas OCSP/CRL pārbaudes tiešsaistē.
 
       Ja šī politika nav iestatīta vai tai ir iestatīta vērtība Nepatiesa, pārlūks <ph name="PRODUCT_NAME" /> neveic atsaukšanas pārbaudes tiešsaistē pārlūkā <ph name="PRODUCT_NAME" /> 19 vai jaunākā versijā.</translation>
+<translation id="5961137303188584693">Ierīces iebūvētā NIC MAC adrese</translation>
 <translation id="5966615072639944554">Paplašinājumi, kuriem atļauts izmantot attālinātās apstiprināšanas API.</translation>
 <translation id="5983708779415553259">Noklusējuma darbība vietnēm, kas nav iekļautas nevienā satura pakotnē</translation>
 <translation id="5997543603646547632">Pēc noklusējuma izmantot 24 stundu pulksteni</translation>
@@ -2580,6 +2763,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6034341625190551415">Kontrolē publiskās sesijas un kioska kontu veidus.</translation>
 <translation id="6034603289689965535">Atļauj lapā aizvēršanas laikā rādīt uznirstošos elementus</translation>
 <translation id="6036523166753287175">Ugunsmūra apvada iespējošana no attālās piekļuves saimniekdatora</translation>
+<translation id="605475635122964053">Ierobežo drukāšanas režīmu ar PIN kodu. Ja politika nav iestatīta, ierobežojumi netiek ņemti vērā. Ja režīms nav pieejams, šī politika tiek ignorēta. Ņemiet vērā, ka drukāšanas funkcija ar PIN kodu ir iespējota tikai tādiem printeriem, kuros tiek lietots protokols IPPS, USB vai IPP, izmantojot USB protokolus. </translation>
 <translation id="6070667616071269965">Ierīces pierakstīšanās ekrāna tastatūras izkārtojumi</translation>
 <translation id="6074963268421707432">Neatļauj nevienai vietnei rādīt paziņojumus darbvirsmā</translation>
 <translation id="6074964551275531965">Iestatīt laika periodu atjauninājumu paziņojumiem</translation>
@@ -2587,6 +2771,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šī politika netiek konfigurēta, atvienojamo USB ierīču saraksts ir tukšs.</translation>
 <translation id="6083631234867522991">Windows (Windows klientiem):</translation>
+<translation id="608788685013546076">Iestatīt akumulatora sliekšņa procentuālo vērtību enerģijas maksimuma pārslēgšanai</translation>
 <translation id="6089679180657323464">Kontrolē wilco diagnostikas un telemetrijas vadāmierīces iestatījumus.</translation>
 <translation id="6091233616732024397">Likt lietotājiem pierakstīties, lai lietotu pārlūkprogrammu</translation>
 <translation id="6093156968240188330">Atļaut attālajiem lietotājiem veikt darbības ar privileģētajiem logiem attālās palīdzības sesijās</translation>
@@ -2607,6 +2792,17 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6111936128861357925">Dinozauru spēles atļaušana</translation>
 <translation id="6114416803310251055">novecojis</translation>
 <translation id="6133088669883929098">Atļaut izmantot atslēgu ģenerēšanu visās vietnēs</translation>
+<translation id="6136537398661737682">Šī politika kontrolē Google atrašanās vietu pakalpojumu sākotnējo stāvokli.
+
+      Ja šī politika nav konfigurēta vai tai ir iestatīta vērtība “<ph name="GLS_DISABLED" />”, Google atrašanās vietu pakalpojumi ir sākotnēji atspējoti.
+
+      Ja šai politikai ir iestatīta vērtība “<ph name="GLS_ENABLED" />”, Google atrašanās vietu pakalpojumi ir sākotnēji iespējoti.
+
+      Ja šai politikai ir iestatīta vērtība “<ph name="GLS_UNDER_USER_CONTROL" />”, lietotājam tiek vaicāts, vai izmantot Google atrašanās vietu pakalpojumus. Tādējādi Android lietotnes varēs izmantot šos pakalpojumus vaicājumiem par ierīces atrašanās vietu, kā arī tiks iespējota anonīmu atrašanās vietas datu sūtīšana Google serveriem.
+
+      Ņemiet vērā, ka šī politika kontrolē Google atrašanās vietu pakalpojumu stāvokli tikai sākotnējās iestatīšanas laikā. Lietotājs pēc tam var atvērt Android iestatījumus un ieslēgt/izslēgt Android atrašanās vietu pakalpojumus.
+
+      Ņemiet vērā, ka šī politika tiek ignorēta un Google atrašanās vietu pakalpojumi vienmēr ir atspējoti, ja politikai <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> ir iestatīta vērtība “<ph name="BLOCK_GEOLOCATION_SETTING" />”.</translation>
 <translation id="6141402445226505817">Vienmēr izmantot aptuvenu laika joslas noteikšanu</translation>
 <translation id="6145799962557135888">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts izpildīt JavaScript.
 
@@ -2634,6 +2830,14 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6155936611791017817">Lielā kursora noklusējuma stāvokļa iestatīšana pieteikšanās ekrānā</translation>
 <translation id="6157537876488211233">Ar komatu atdalītu starpniekserveru apiešanas kārtulu saraksts</translation>
 <translation id="6158324314836466367">Uzņēmuma interneta veikala nosaukums (darbība ir pārtraukta)</translation>
+<translation id="6158817306788002298">Šeit varat norādīt starpniekservera .pac faila URL.
+
+          Šī politika ir spēkā tikai tad, ja iestatījumā “Izvēlieties, kādā veidā jānorāda starpniekserveru iestatījumi” ir atlasīti manuālie starpniekserveru iestatījumi vai ja nav norādīta politika <ph name="PROXY_SETTINGS_POLICY_NAME" />.
+
+          Šī politika nav jāiestata, ja ir atlasīts jebkurš cits starpniekserveru politiku iestatīšanas režīms.
+
+          Detalizētus piemērus skatiet vietnē:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="6178075938488052838">Šī politika nosaka, kurš var sākt <ph name="PRODUCT_OS_NAME" /> sesiju. Šī politika neliedz lietotājiem pierakstīties citos Google kontos operētājsistēmā Android. Ja vēlaties to novērst, konfigurējiet Android politiku <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> kā daļu no politikas <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
 <translation id="6181608880636987460">Ļauj iestatīt to vietrāžu URL struktūru sarakstu, kas norāda vietnes, kurās nav atļauts izpildīt spraudni <ph name="FLASH_PLUGIN_NAME" />.
 
@@ -2661,14 +2865,33 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja politika ir atspējota, veidlapu automātiskās aizpildes dati netiek importēti.
 
       Ja politika nav iestatīta, iespējams, lietotājam tiks vaicāts, vai veikt importēšanu, vai arī importēšana tiks veikta automātiski.</translation>
+<translation id="6221175752766085998">Atļaut sertifikātus, kurus izsnieguši lokāli uzticamības enkuri un kuriem nav paplašinājuma subjectAlternativeName</translation>
 <translation id="6224304369267200483">Vietrāži URL/domēni automātiski atļāva tiešu drošības atslēgas apstiprināšanu</translation>
 <translation id="6233173491898450179">Iestata lejupielāžu direktoriju</translation>
 <translation id="6244210204546589761">URL, kas jāatver startēšanas brīdī</translation>
+<translation id="6255387031094435995">Ļauj apvienot atlasītās politikas, ja tās ir no dažādiem avotiem, bet ar vienādiem tvērumiem un līmeni.
+
+        Ja politika ir sarakstā un ja rodas konflikts starp diviem avotiem, ņemot vērā to, ka politikām ir vienādi tvērumi un līmenis, vērtības tiks apvienotas jaunā politiku sarakstā.
+
+        Ja politika ir sarakstā un ja rodas konflikts starp diviem avotiem, bet politikām ir dažādi tvērumi un/vai līmenis, tiks piemērota politika ar augstāko prioritāti.
+
+        Ja politika nav sarakstā un ja rodas konflikts starp diviem avotiem, tvērumiem un/vai līmeni, tiks piemērota politika, kurai ir augstākā prioritāte.</translation>
 <translation id="6258193603492867656">Norāda, vai ģenerētajam Kerberos SPN jāietver nestandarta ports. Ja šis iestatījums ir iespējots un tiek ievadīts nestandarta ports (piem., ports, kas nav 80 vai 443), tas tiks ietverts ģenerētajā Kerberos SPN. Ja šis iestatījums ir atspējots vai nav iestatīts, ģenerētais Kerberos SPN nekādā gadījumā neietvers portu.</translation>
 <translation id="6261643884958898336">Ziņot par iekārtas identifikācijas informāciju</translation>
 <translation id="6281043242780654992">Konfigurējiet vietējās ziņojumapmaiņas politikas. Melnajā sarakstā iekļauto vietējās ziņojumapmaiņas saimniekdatoru darbība netiks atļauta, ja vien tie nebūs iekļauti baltajā sarakstā.</translation>
 <translation id="6282799760374509080">Audio tveršanas ļaušana vai noraidīšana</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6306608379445125648">Piespiedu kārtā atspējo pareizrakstības pārbaudes valodas. Tiks ignorētas sarakstā iekļautās valodas, kuras nevarēs atpazīt.
+
+      Ja iespējosiet šo politiku, pareizrakstības pārbaude norādītajām valodās tiks atspējota. Lietotājs joprojām var iespējot vai atspējot pareizrakstības pārbaudi valodām, kas nav iekļautas sarakstā.
+
+      Ja šī politika nav iespējota vai tā tiek atspējota, lietotāja pareizrakstības preferencēs netiks ieviestas izmaiņas.
+
+      Ja politika SpellcheckEnabled ir atspējota, tā nedarbosies.
+
+      Ja valoda ir ietverta gan šajā, gan SpellcheckLanguage politikā, prioritāte ir SpellcheckLanguage politikai, un pareizrakstības pārbaudes valoda tiks iespējota.
+
+      Pašreiz atbalstītās valodas: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Domēna nosaukuma automātiskās pabeigšanas iespējošana lietotāja pierakstīšanās laikā</translation>
 <translation id="6315673513957120120">Ja lietotāji atver vietnes, kurās ir SSL kļūdas, pārlūkā Chrome tiek parādīta brīdinājuma lapa. Pēc noklusējuma, kā arī tad, ja šai politikai ir iestatīta vērtība Patiesa, lietotājiem ir atļauts no brīdinājuma lapas pāriet uz vietni.
       Ja politikai ir iestatīta vērtība Nepatiesa, lietotājiem tiek liegts no brīdinājuma lapas pāriet uz vietni.</translation>
@@ -2682,7 +2905,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Šī politika nav obligāta. Ja tā nav iestatīta, meklēšanas pieprasījums tiks nosūtīts, izmantojot metodi GET.
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
-<translation id="6367755442345892511">Vai lietotājam ir jābūt iespējai konfigurēt izlaišanas kanālu</translation>
 <translation id="6368011194414932347">Konfigurē sākumlapas URL</translation>
 <translation id="6368403635025849609">Atļauj izmantot JavaScript šajās vietnēs</translation>
 <translation id="6376659517206731212">Var būt obligāta</translation>
@@ -2802,6 +3024,17 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja šī politika nav iestatīta, tiks izmantota vērtība “3”, un lietotājs to varēs mainīt.</translation>
 <translation id="663685822663765995">Ierobežot krāsainās drukāšanas režīmu</translation>
 <translation id="6641981670621198190">Atspējo 3D grafikas API atbalstu</translation>
+<translation id="6646056064606561298">Iespējojiet maiņstrāvas barošanas avota palaišanas pārvaldības politiku.
+
+          Palaišana ar maiņstrāvu nodrošina iespēju sistēmai automātiski veikt palaišanu no IZSLĒGTA/hibernācijas stāvokļa, kad ir pievienota strāvas līnija.
+
+          Ja šai politikai ir iestatīta vērtība “True”, vienmēr būs iespējota palaišana ar maiņstrāvas barošanu, ja ierīce to atbalsta.
+
+          Ja šai politikai ir iestatīta vērtība “False”, palaišana ar maiņstrāvas barošanu vienmēr būs atspējota.
+
+          Ja iestatīsiet šo politiku, lietotāji nevarēs to mainīt un ignorēt.
+
+          Ja šī politika nav iestatīta, palaišana ar maiņstrāvas barošanas avotu ir atspējota un lietotājs to nevar iespējot.</translation>
 <translation id="6647965994887675196">Iestatot vērtību uz “true”, var tikt veidoti un izmantoti uzraudzītie lietotāju konti.
 
           Ja vērtība tiek iestatīta uz “false” vai arī netiek konfigurēta, uzraudzīto lietotāju kontu veidošana un pieteikšanās tiks atspējota. Visi esošie uzraudzītie lietotāju konti tiks slēpti.
@@ -2837,17 +3070,10 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja vēlaties liegt pierakstīšanos citā kontā inkognito režīmā, ieteicams bloķēt režīma lietošanu, izmantojot politiku IncognitoModeAvailability.
 
       Ņemiet vērā, ka lietotāji var piekļūt Google pakalpojumiem neautentificētā statusā, bloķējot to sīkfailus.</translation>
-<translation id="6738326937072482736">Tiek konfigurēta <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājuma funkcionalitātes pieejamība un darbība.
-
-      Atsevišķus iestatījumus var norādīt JSON rekvizītos.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: ja politikai ir iestatīta vērtība <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, lietotāji varēs aktivizēt funkcijas Powerwash plūsmu, lai instalētu <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājumu.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: ja politikai ir iestatīta vērtība <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, lietotāji varēs aktivizēt <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājumu plūsmu, kas saglabā ierīces statusu (tostarp uzņēmuma reģistrāciju), taču tādējādi tiek zaudēti lietotāja dati. Šī atjauninājumu plūsma ir pieejama versijā 68 un jaunākās versijās.
-      Ja politika nav iestatīta, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājuma funkcionalitāte nebūs pieejama.</translation>
 <translation id="6757438632136860443">Ļauj iestatīt to vietrāžu URL rakstu sarakstu, kas norāda vietnes, kurām atļauts izpildīt spraudni <ph name="FLASH_PLUGIN_NAME" />.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas “DefaultPluginsSetting” (ja tā ir iestatīta) vai lietotāja personiskās konfigurācijas.</translation>
+<translation id="6757613329154374267">Dublēšana un atjaunošana iespējota</translation>
 <translation id="6762235610019366960">Pārlūkā <ph name="PRODUCT_NAME" /> atļauj pārvaldīt reklāmas un/vai mācību satura rādīšanu pa visu cilni.
 
       Ja iestatījums nav konfigurēts vai ir iespējots (iestatīta vērtība “True”), produkta informācijas sniegšanai pārlūkā <ph name="PRODUCT_NAME" /> lietotājiem var tikt rādīts saturs pa visu cilni.
@@ -2870,6 +3096,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Virknē var būt mainīgie ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} un ${MACHINE_NAME}, kas pirms saimniekdatora nosaukuma izmantošanas tiks aizstāti ar vērtībām ierīcē. Aizstāšanas rezultātam ir jābūt derīgam saimniekdatora nosaukumam (atbilstoši RFC 1035 3.1. sadaļai).
 
       Ja šī politika nav iestatīta vai vērtība pēc aizstāšanas nav derīgs saimniekdatora nosaukums, DHCP pieprasījumā netiks iestatīts saimniekdatora nosaukums. </translation>
+<translation id="6833988859168635883">Startēšana, sākumlapa un jaunas cilnes lapa</translation>
 <translation id="6835883744948188639">Periodiski rādīt lietotājam uzvedni par ieteicamu atkārtotu palaišanu</translation>
 <translation id="6837480141980366278">Nosaka, vai pārlūkprogrammā <ph name="PRODUCT_NAME" /> izmantot iebūvētu DNS klientu.
 
@@ -2983,7 +3210,19 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Pirms ekrāna aptumšošanas viedās aptumšošanas modelis izvērtē, vai ekrāna aptumšošana ir jāaizkavē. Ja viedās aptumšošanas modelis aizkavē ekrāna aptumšošanu, faktiski tiek paildzināts laiks līdz ekrāna aptumšošanai. Šādā gadījumā ekrāna izslēgšanas, ekrāna bloķēšanas un dīkstāves aizkaves tiek pielāgotas, lai nodrošinātu tādu pašu laiku kopš ekrāna aptumšošanas aizkaves, kā sākotnēji konfigurēts.
       Ja politikai ir iestatīta vērtība “True” vai tā nav iestatīta, viedās aptumšošanas modelis tiek iespējots un var paildzināt laiku līdz ekrāna aptumšošanai. Ja politikai ir iestatīta vērtība “False”, viedās aptumšošanas modelis neietekmē ekrāna aptumšošanu.</translation>
+<translation id="6967394885063085697">Iespējot uzlabotas akumulatora uzlādes režīma enerģijas pārvaldības politiku.
+
+          Uzlabotas akumulatora uzlādes režīms ļauj lietotājam maksimāli uzlabot akumulatora stāvokli. Uzlabotās uzlādes režīmā sistēma izmantos standarta uzlādes algoritmu un citus paņēmienus bezdarbības laikā, lai uzlabotu akumulatora stāvokli. Darba laikā tiek izmantota ātrā uzlāde. Šī ātrā uzlāde ļauj uzlādēt akumulatoru ātrāk; tādēļ akumulators tiek pilnībā uzlādēts daudz īsākā laika posmā. Katru dienu laikam, kad sistēma tiek izmantota visintensīvāk, tiek noteikts sākuma laiks un ilgums.
+
+          Kad šai politikai ir iestatīta vērtība “true” un politika DeviceAdvancedBatteryChargeModeDayConfig ir iestatīta, uzlabotās akumulatora uzlādes režīms vienmēr ir iespējots, ja ierīce to atbalsta.
+
+          Ja šai politikai ir iestatīta vērtība “false”, uzlabotās akumulatora uzlādes režīms vienmēr ir atspējots.
+
+          Ja iestatīsiet šo politiku, lietotāji nevarēs to mainīt vai ignorēt.
+
+          Ja šī politika nav iestatīta, uzlabotās akumulatora uzlādes režīms ir atspējots un lietotājs to nevar iespējot.</translation>
 <translation id="6972540544240464302">Uzdevumu plānotāja konfigurācijas atlasīšana</translation>
+<translation id="6979158407327259162">Google disks</translation>
 <translation id="6994082778848658360">Norāda, kā var izmantot pievienoto drošības elementa aparatūru divfaktoru autentificēšanai, ja tā ir saderīga ar šo funkciju.
 Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošanas poga.
 
@@ -2992,7 +3231,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja ir atlasīts iestatījums “U2F”, integrētais otrais faktors darbojas atbilstoši FIDO U2F specifikācijai.
 
       Ja ir atlasīts iestatījums “U2F_EXTENDED”, integrētais otrais faktors nodrošina U2F funkciju darbību, kā arī vairākus paplašinājumus atsevišķai apstiprināšanai.</translation>
-<translation id="6997592395211691850">Vai lokāliem uzticamības enkuriem ir nepieciešama OCSP/CRL pārbaude</translation>
 <translation id="7003334574344702284">Šī politika (ja tā ir iespējota) liek importēt saglabātās paroles no iepriekšējā noklusējuma pārlūka. Ja šī politika ir iespējota, tā arī maina importēšanas dialoglodziņu.
 
       Ja tā ir atspējota, saglabātās paroles netiek importētas.
@@ -3061,6 +3299,17 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šis iestatījums ir iespējots vai atspējots, lietotāji to nevar mainīt vai ignorēt.
 
       Ja šī politika nav iestatīta, lietotājs var izvēlēties, vai ierīces atbloķēšanai tiek prasīta parole.</translation>
+<translation id="7107148737865880402">Iespējot USB barošanas kopīgošanas pārvaldības politiku.
+
+          Noteiktām ierīcēm ir īpaša USB pieslēgvieta, kas apzīmēta ar zibens vai akumulatora ikonu un ko var izmantot, lai uzlādētu ierīces, piemēram, mobilo tālruni, izmantojot sistēmas akumulatoru. Šī politika ietekmē šīs pieslēgvietas uzlādes darbību, kamēr sistēma atrodas miega un izslēgšanas režīmā. Šī politika neietekmē citas USB pieslēgvietas un uzlādes darbības, kamēr sistēma ir nomodā.
+
+          Kad sistēma ir aktīva, USB pieslēgvieta vienmēr nodrošina jaudu.
+
+          Ja šai politikai ir iestatīta vērtība “true”, miega režīmā barošana tiks piegādāta USB pieslēgvietai, kad ierīce būs savienota ar sienas uzlādes ierīci vai ja akumulatora uzlādes līmenis būs &gt;50 %. Citādi barošana netiek nodrošināta.
+
+          Ja ierīce ir izslēgta un politikai ir iestatīta vērtība “true”, barošana tiks nodrošināta USB pieslēgvietai, kad ierīce būs savienota ar sienas uzlādes ierīci. Citādi barošana netiek nodrošināta.
+
+          Ja šī politika nav iestatīta, tā tiek iespējota un lietotājs to nevar atspējot.</translation>
 <translation id="7115494316187648452">Šī politika tiek izmantota, lai noteiktu, vai <ph name="PRODUCT_NAME" /> process tiek sākts līdz ar pieteikšanos operētājsistēmā un vai tas tiek turpināts, līdz tiek aizvērts pēdējais pārlūka logs, ļaujot fona lietotnēm un pašreizējai pārlūkošanas sesijai un jebkādiem sesijas sīkfailiem palikt aktīviem. Fona process tiek rādīts kā ikona sistēmas teknē, kur to jebkurā brīdī var pārtraukt.
 
       Ja šai politikai ir iestatīta vērtība Patiesa, fona režīms ir iespējots un lietotājs nevar to kontrolēt pārlūka iestatījumos.
@@ -3111,6 +3360,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
           Ja politikai ir iestatīta vērtība “True” vai politika nav iestatīta, ekrāna aktivizēšanas gadījumi tiks veikti barošanas pārvaldībā, ja vien politikas iestatītā vērtība nav “False”.
 
           Ja politikai ir iestatīta vērtība “False”, ekrāna aktivizēšanas gadījumu pieprasīšana tiks pazemināta uz sistēmas aktivizēšanas gadījumu pieprasīšanu.</translation>
+<translation id="7177857088692019405">Ātrā atbloķēšana</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Savienojumu veidi, kuru laikā ir atļauts veikt atjaunināšanu</translation>
 <translation id="7194407337890404814">Noklusējuma meklētājprogrammas nosaukums</translation>
@@ -3175,6 +3425,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7273823081800296768">Ja šis iestatījums ir iespējots vai nav konfigurēts, lietotāji var izvēlēties savienot klientus un saimniekdatorus pārī savienojuma izveides laikā, tādējādi izvairoties no atkārtotas PIN koda ievadīšanas.
 
           Ja šis iestatījums ir atspējots, šī funkcija nebūs pieejama.</translation>
+<translation id="7274077256421167535">Iespējot USB barošanas kopīgošanu</translation>
 <translation id="7275334191706090484">Pārvaldītās grāmatzīmes</translation>
 <translation id="7291084543582732020">Ja šis iestatījums ir iespējots un ja ir izpildītas funkcijai Smart Lock nepieciešamās prasības, lietotājiem ir atļauts izmantot šo funkciju.
 
@@ -3188,6 +3439,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
           Šī politika tiek lietota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="7302043767260300182">Aizkave līdz ekrāna bloķēšanai, ja ierīce darbojas ar maiņstrāvu</translation>
+<translation id="7305262223970835999">Iespējo SAML lietotāju paroles maiņas lapu sesijas laikā.</translation>
 <translation id="7311458740754205918">Ja šai politikai ir iestatīta vērtība “Patiesa” vai tā nav iestatīta, lapā “Jauna cilne” var tikt rādīti satura ieteikumi, pamatojoties uz lietotāja pārlūkošanas vēsturi, interesēm vai atrašanās vietu.
 
       Ja šai politikai ir iestatīta vērtība “Nepatiesa”, lapā “Jauna cilne” netiek rādīti automātiski veidoti satura ieteikumi.</translation>
@@ -3228,9 +3480,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7339315111520512972">Piespiedu tīkla koda politika, lai darbotos pārlūka procesā</translation>
 <translation id="7340034977315324840">Ziņot par ierīces darbības laikiem</translation>
 <translation id="7343497214039883642">Uzņēmuma printeru konfigurācijas fails ierīcēm</translation>
-<translation id="7349338075015720646">Saraksts ar vietnēm, kas tika instalētas neuzraudzīti (bez lietotāja mijiedarbības) un ko lietotājs nevar atinstalēt vai atspējot.
-
-      Katrs politikas saraksta vienums ir objekts ar diviem elementiem: “url” un “launch_container”. Elementam “url” jābūt instalējamās tīmekļa lietotnes vietrādim URL, savukārt elementam “launch_container” — vai nu “window”, vai “tab”, kas nosaka veidu, kādā tīmekļa vietne tiks atvērta pēc tās instalēšanas. Izlaižot elementu “launch_container”, ja pārlūks Chrome uzskatīs, ka tā ir progresīvā tīmekļa lietotne, lietotne tiks palaista loga veidā, citādi — cilnes veidā.</translation>
 <translation id="735902178936442460">Šī politika nosaka, vai sniegt informāciju, kas var tikt izmantota iekārtu identificēšanai, piemēram, iekārtas nosaukums un tīkla adreses.
 
       Ja šī politika nav iestatīta vai tai ir iestatīta vērtība “True”, informācija, kas var tikt izmantota iekārtu identificēšanai, tiek apkopota.
@@ -3249,15 +3498,10 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šī politika nav iestatīta vai tās vērtība ir Nepatiesa, funkcija <ph name="TLS_FALSE_START" /> tiks iespējota. Ja ir iestatīta vērtība Patiesa, funkcija <ph name="TLS_FALSE_START" /> tiks atspējota.</translation>
 <translation id="7433714841194914373">Iespējo dinamisko meklēšanu</translation>
 <translation id="7434202861148928348">Nepieciešamo domēnu nosaukumu konfigurēšana attālās piekļuves klientiem</translation>
-<translation id="7443061725198440541">Ja šī politika nav iestatīta vai iespējota, lietotājs varēs lietot pareizrakstības pārbaudi.
-
-      Ja šī politika ir atspējota, lietotājs nevarēs lietot pareizrakstības pārbaudi. Ja šī politika ir atspējota, tiks ignorēta arī politika SpellcheckLanguage.
-      </translation>
 <translation id="7443616896860707393">Savstarpējās izcelsmes HTTP pamata autentifikācijas uzvednes</translation>
 <translation id="7458437477941640506">Neatritināt uz mērķa versiju, ja operētājsistēmas versija ir jaunāka nekā mērķa versija. Atjauninājumi ir atspējoti.</translation>
 <translation id="7464991223784276288">Atbilstošu vietrāžu URL sīkfailu ierobežošana pašreizējā sesijā</translation>
 <translation id="7469554574977894907">Iespējo meklēšanas ieteikumus</translation>
-<translation id="7474249562477552702">Ar SHA-1 parakstītu sertifikātu, ko izsnieguši lokāli uzticamības enkuri, atļaušana</translation>
 <translation id="7485481791539008776">Noklusējuma printera atlases kārtulas</translation>
 <translation id="7485730741952775732">Ja šī politika ir iestatīta, attālās piekļuves saimniekdators izmanto šo URL, lai apstiprinātu autentifikācijas pilnvaras no attālās piekļuves klientiem un akceptētu savienojumus. Jāizmanto kopā ar politiku RemoteAccessHostTokenUrl.
 
@@ -3270,6 +3514,11 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Šī politika tiek izmantota tikai tad, ja parametram <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_BLACKLIST" />.
       Ja šī politika tiek izmantota, lietotājam ir pieejami visi printeri, izņemot tos, kuru identifikatori atbilst šajā politikā norādītajām vērtībām. Identifikatoriem ir jāatbilst lauku “id” vai “guid” vērtībām failā, kas norādīts politikā <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Iespējojiet parakstītās HTTP apmaiņas (SXG) atbalstu.
+
+          Ja šī politika nav iestatīta vai ir iespējota, Google Chrome pieņems tīmekļa saturu, kas tiek sniegts kā parakstītā HTTP apmaiņa.
+
+          Ja šī politika ir atspējota, parakstītās HTTP apmaiņas saturu nevarēs ielādēt.</translation>
 <translation id="7511361072385293666">Ja politikai ir iestatīta vērtība Patiesa vai tā nav iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> ir atļauts lietot protokolu QUIC.
       Ja politikai ir iestatīta vērtība Nepatiesa, protokolu QUIC nav atļauts lietot.</translation>
 <translation id="7517845714620372896">Norāda ekrāna spilgtuma procentus.
@@ -3316,6 +3565,15 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šīs politikas vērtība ir “0”, tiks izmantots noklusējuma kešatmiņas lielums, taču lietotājs to nevarēs mainīt.
 
       Ja šī politika nav iestatīta, tiks izmantots noklusējuma kešatmiņas lielums, kuru lietotājs varēs ignorēt, izmantojot atzīmi “--disk-cache-size”.</translation>
+<translation id="759389052790680884">Iestatiet pielāgotu akumulatora uzlādes līmeni (procentos), kurā jāpārtrauc uzlāde.
+
+          Akumulatora uzlāde tiek pārtraukta, kad tiek sasniegts pielāgotais akumulatora uzlādes līmenis, kurā ir jāpārtrauc uzlāde.
+
+          DeviceBatteryChargeCustomStartCharging vērtībai ir jābūt mazākai nekā DeviceBatteryChargeCustomStopCharging vērtībai.
+
+          Šī politika tiek izmantota tikai tad, ja politikai DeviceBatteryChargeMode ir iestatīta vērtība “custom”.
+
+          Ja šī politika nav konfigurēta vai nav iestatīta, tiek piemērots standarta akumulatora uzlādes režīms.</translation>
 <translation id="759957074386651883">Drošas pārlūkošanas iestatījumi</translation>
 <translation id="7604169113182304895">Android lietotnēs var tikt brīvi izvēlēts izmantot šo sarakstu. Jūs nevarat likt lietotnēm izmantot šo sarakstu.</translation>
 <translation id="7612157962821894603">Visas sistēmas atzīmes, kas jālieto, startējot pārlūku <ph name="PRODUCT_NAME" /></translation>
@@ -3394,6 +3652,15 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7712109699186360774">Vaicāt katru reizi, kad vietne vēlas piekļūt kamerai un/vai mikrofonam</translation>
 <translation id="7713608076604149344">Lejupielādes ierobežojumi</translation>
 <translation id="7715711044277116530">Aizkaves līdz ekrāna aptumšošanai norādīšana procentos (prezentācijas režīmā)</translation>
+<translation id="7716781462866245042">Iestatīt uzlabotas akumulatora uzlādes režīma dienas konfigurāciju.
+
+          Šī politika tiek izmantota tikai tad, ja politikai DeviceAdvancedBatteryChargeModeEnabled ir iestatīta vērtība “true”.
+
+          Ja šī politika nav konfigurēta vai tā nav iestatīta, uzlabotas akumulatora uzlādes režīms vienmēr ir atspējots.
+
+          Piezīme. <ph name="CHARGE_START_TIME_FIELD_NAME" /> vērtībai vienmēr ir jābūt mazākai nekā <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+
+          Piezīme. Atļautās vērtības laukam <ph name="MINUTE_FIELD_NAME" /> sadaļās <ph name="CHARGE_START_TIME_FIELD_NAME" /> un <ph name="CHARGE_END_TIME_FIELD_NAME" /> ir 0, 15, 30 un 45.</translation>
 <translation id="7717938661004793600">Konfigurējiet <ph name="PRODUCT_OS_NAME" /> pieejamības funkcijas.</translation>
 <translation id="7724994675283793633">Šī politika iespējo protokolu HTTP/0.9 portos, kas nav 80 (HTTP) un 443 (HTTPS).
 
@@ -3416,17 +3683,17 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Atpazītie savienojumu veidu identifikatori ir “ethernet”, “wifi”, “wimax”, “bluetooth” un “cellular”.</translation>
 <translation id="7763614521440615342">Rādīt satura ieteikumus lapā “Jauna cilne”</translation>
 <translation id="7765879851993224640">Atļaujiet izmantot Smart Lock.</translation>
+<translation id="7772346342637974431">Norāda laika periodu, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā tiek parādīts brīdinājuma dialoglodziņš (ja ierīces barošanai tiek izmantots akumulators).
+
+          Ja šī politika ir iestatīta, tā norāda neaktivitātes laika periodu, pēc kura <ph name="PRODUCT_OS_NAME" /> parāda brīdinājuma dialoglodziņu, paziņojot lietotājam, ka neaktivitātes dēļ tiks veikta kāda darbība.
+
+          Ja šī politika nav iestatīta, brīdinājuma dialoglodziņš netiek rādīts.
+
+          Politikas vērtība ir jānorāda milisekundēs. Vērtībām ir jābūt mazākām par vai vienādām ar neaktivitātes aizkaves vērtību.
+
+          Brīdinājuma ziņojums tiek parādīts tikai tad, ja neaktivitātes dēļ notiks atteikšanās vai izslēgšana.</translation>
 <translation id="7774768074957326919">Izmantot sistēmas starpniekservera iestatījumus</translation>
-<translation id="7775831859772431793">Šeit varat norādīt starpniekservera URL.
-
-          Šī politika ir spēkā tikai tad, ja iestatījumā “Izvēlieties, kādā veidā jānorāda starpniekserveru iestatījumi” ir atlasīti manuālie starpniekserveru iestatījumi.
-
-          Šī politika nav jāiestata, ja ir atlasīts jebkurš cits starpniekserveru politiku iestatīšanas režīms.
-
-          Citas iespējas un detalizētus piemērus skatiet šeit:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7777535871204167559">Izmanto ārējās atmiņas ierīces kā tikai lasāmas</translation>
-<translation id="7781069478569868053">Jaunas cilnes lapa</translation>
 <translation id="7788511847830146438">Katram profilam</translation>
 <translation id="780603170519840350">Atspējo Certificate Transparency prasību piemērošanu “subjectPublicKeyInfo” jaucējkodiem.
 
@@ -3454,7 +3721,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
       Neiestatot šo politiku, <ph name="PRODUCT_NAME" /> izmantos noklusējuma vērtību (5000 milisekundes).</translation>
 <translation id="7841880500990419427">Minimālā TLS versija, uz kuru atkāpties</translation>
-<translation id="7842869978353666042">Pakalpojuma Google disks opciju konfigurēšana</translation>
 <translation id="7858404742201086014">Ja šis iestatījums ir iespējots, novecojuši spraudņi tiek lietoti kā parasti spraudņi.
 
       Ja šis iestatījums ir atspējots, novecojuši spraudņi netiek lietoti un lietotājiem netiek vaicāts, vai atļaut tos izpildīt.
@@ -3468,26 +3734,25 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Nosaka paplašinājuma ID, kas jāizmanto kā ekrānsaudzētājs pierakstīšanās ekrānā. Paplašinājumam ir jābūt daļai no AppPack, kas konfigurēts šim domēnam, izmantojot politiku DeviceAppPack.</translation>
 <translation id="7882857838942884046">Atspējojot Google Sync, Android dublēšana un atjaunošana nedarbosies pareizi.</translation>
 <translation id="7882890448959833986">Brīdinājuma par neatbalstītu OS rādīšanas apturēšana</translation>
+<translation id="7895553628261067384">Attālā piekļuve</translation>
 <translation id="7902255855035461275">Šajā sarakstā pieejamajiem šabloniem tiek meklēta atbilstība pieprasītā URL
       drošības avotam. Ja tiek atrasta atbilstība, piekļuve video
       ierakstīšanas ierīcēm tiek nodrošināta bez uzaicinājuma.
 
       PIEZĪME. Līdz 45. versijai šī politika tika atbalstīta tikai kioska režīmā.</translation>
 <translation id="7912255076272890813">Atļauto lietotņu/paplašinājumu veidu konfigurēšana</translation>
-<translation id="7915236031252389808">Šeit varat norādīt starpniekservera .pac faila vietrādi URL.
-
-          Šī politika ir spēkā tikai tad, ja iestatījumā “Izvēlieties, kādā veidā jānorāda starpniekserveru iestatījumi” ir atlasīti manuālie starpniekserveru iestatījumi.
-
-          Šī politika nav jāiestata, ja ir atlasīts jebkurš cits starpniekserveru politiku iestatīšanas režīms.
-
-          Detalizētus piemērus skatiet šeit:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7922358664346625612">Saglabāt pēdējo cilni atvērtu pārlūkā Chrome.</translation>
 <translation id="793134539373873765">Norāda, vai operētājsistēmas atjaunināšanas vērtumiem izmantot P2P. Ja ir iestatīta vērtība “True”, ierīces kopīgos un mēģinās izmantot atjaunināšanas vērtumus LAN tīklā, tādējādi, iespējams, samazinot interneta joslas platuma lietojumu un pārblīvi. Ja LAN tīklā nav pieejams atjaunināšanas vērtums, ierīce izmantos lejupielādi no atjaunināšanas servera. Ja ir iestatīta vērtība “False” vai šis iestatījums nav konfigurēts, P2P netiks lietots.</translation>
 <translation id="7933141401888114454">Iespējot uzraudzīto lietotāju kontu izveidi</translation>
 <translation id="793473937901685727">Iestatīt sertifikātu pieejamību ARC lietotnēm</translation>
+<translation id="7937491150792971922">Apvienot paplašinājumu instalēšanas sarakstu politikas no vairākiem avotiem</translation>
 <translation id="7937766917976512374">Video tveršanas ļaušana vai noraidīšana</translation>
 <translation id="7941975817681987555">Neprognozēt tīkla darbības nevienā tīkla savienojumā</translation>
+<translation id="7952007677054834789">Konfigurē lapas, kas jāielādē startēšanas laikā, noklusējuma mājas lapu un noklusējuma jauno cilnes lapu pārlūkprogrammā <ph name="PRODUCT_NAME" /> un neļauj lietotājiem to mainīt.
+
+      Lietotāja sākumlapas iestatījumi ir pilnībā bloķēti tikai tad, ja sākumlapa ir iestatīta kā jaunas cilnes lapa vai kā URL un ir norādīts sākumlapas URL. Ja nav norādīts sākumlapas URL, lietotājs var iestatīt sākumlapu kā jaunas cilnes lapu, norādot adresi chrome://newtab.
+
+      Politika “URL, kas jāatver startēšanas brīdī” tiek ignorēta, ja vien sadaļā “Darbība startēšanas brīdī” nav atlasīts iestatījums “Atvērt vietrāžu URL sarakstu”.</translation>
 <translation id="7952958573604504839">Šī politika ir novecojusi versijā M48 (tās vietā tiek izmantota politika <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" />) un noņemta no versijas M54.
 
       Pārlūkā <ph name="PRODUCT_NAME" /> tiek iespējota tīkla paredzēšana, un lietotājiem tiek liegta iespēja mainīt šo iestatījumu.
@@ -3631,6 +3896,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="8176035528522326671">Atļaut korporatīvajam lietotājam būt tikai primārajam vairākprofilu lietotājam (noklusējuma rīcība attiecībā uz uzņēmuma pārvaldītiem lietotājiem)</translation>
 <translation id="8214600119442850823">Konfigurē paroļu pārvaldnieku.</translation>
 <translation id="8217516105848565518">Šī politika ir novecojusi. Tās vietā, lūdzu, izmantojiet RemoteAccessHostDomainList.</translation>
+<translation id="8244171102276095471">Standartā TLS iespējot RC4 šifru komplektus</translation>
 <translation id="8244525275280476362">Maksimāla ieneses aizkave pēc politikas atzīšanas par nederīgu</translation>
 <translation id="8256688113167012935">Kontrolējiet konta nosaukumu, kas tiek rādīts <ph name="PRODUCT_OS_NAME" /> pieteikšanās ekrānā attiecīgajam ierīces lokālajam kontam.
 
@@ -3649,26 +3915,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8259592978873597235">Ja šai politikai ir iestatīta vērtība “True” vai ja vērtība nav iestatīta, tiek uzskatīts, ka lietotājs veic kādu darbību video atskaņošanas laikā. Tādējādi tiek novērsta aizkaves laika sasniegšana līdz dīkstāvei, ekrāna aptumšošanai, ekrāna izslēgšanai un ekrāna bloķēšanai, kā arī attiecīgo darbību īstenošana.
 
           Ja šai politikai ir iestatīta vērtība “False”, video atskaņošana nenovērš dīkstāves rašanos.</translation>
-<translation id="8264653492961233132">Norāda sarakstu ar lietotnēm un paplašinājumiem, kas tiek instalēti klusajā režīmā 
-          bez lietotāja iejaukšanās un ko lietotājs nevar atinstalēt vai atspējot. 
-          Visas lietotņu/paplašinājumu pieprasītās atļaujas, tostarp visas konkrētās 
-          lietotnes/paplašinājuma turpmāko versiju pieprasītās papildu atļaujas, tiek            piešķirtas tieši bez lietotāja iejaukšanās.
-          Turklāt atļaujas tiek piešķirtas paplašinājumu saskarnēm API 
-          enterprise.deviceAttributes un enterprise.platformKeys. (Šīs divas saskarnes API nav pieejamas lietotnēm/paplašinājumiem, kas nav instalēti piespiedu kārtā.)
-
-          Šī politika ir prioritāra par iespējami konfliktējošo politiku <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Ja lietotne vai paplašinājums, kas iepriekš tika instalēts piespiedu kārtā, tiek noņemts no šī saraksta, to automātiski atinstalē <ph name="PRODUCT_NAME" />.
-
-          Windows datoros, kas nav pievienoti <ph name="MS_AD_NAME" /> domēnam, piespiedu instalēšana attiecas tikai uz lietotnēm un paplašinājumiem, kas norādīti Chrome interneta veikalā.
-
-          Ņemiet vērā, ka jebkura paplašinājuma pirmkodu lietotāji var mainīt izstrādātāja rīkos (potenciāli atveidojot paplašinājumu kā nefunkcionējošu). Ja tas rada problēmas, ir jāiestata politika <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Katrs politikas saraksta vienums ir virkne, kas ietver paplašinājuma ID un pēc vēlēšanās atjaunināšanas URL, kuri atdalīti ar semikolu (<ph name="SEMICOLON" />). Paplašinājuma ID ir 32 burtu virkne, kas ir, piemēram, redzama lapā <ph name="CHROME_EXTENSIONS_LINK" /> izstrādātāja režīmā. Atjaunināšanas vietrādim URL (ja tas ir norādīts) ir jānovirza uz atjauninājuma manifesta XML dokumentu, kā norādīts šeit: <ph name="LINK_TO_EXTENSION_DOC1" />. Pēc noklusējuma tiek izmantots Chrome interneta veikala atjaunināšanas URL (šobrīd: "https://clients2.google.com/service/update2/crx"). Ņemiet vērā, ka šajā politikā iestatītais atjaunināšanas URL tiek izmantots tikai sākotnējai instalācijai; nākamajiem paplašinājuma atjauninājumiem tiek izmantots paplašinājuma manifestā norādītais atjaunināšanas URL. Ņemiet vērā, ka atjaunināšanas URL tieša norādīšana bija obligāta visās <ph name="PRODUCT_NAME" /> versijās, kas ir vecākas par versiju 67 (ieskaitot).
-
-          Piemēram, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalē lietotni <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> izmantojot Chrome interneta veikala standarta atjaunināšanas URL. Plašāku informāciju par paplašinājumu mitināšanu skatiet šeit: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Ja šī politika nav iestatīta, neviena lietotne un paplašinājums netiek instalēts automātiski un lietotājs var atinstalēt jebkuru <ph name="PRODUCT_NAME" /> pārlūkā esošu lietotni vai paplašinājumu.
-
-          Ņemiet vērā, ka šī politika neattiecas uz inkognito režīmu.</translation>
 <translation id="8274603902181597201">Notīra lietotāja ecryptfs sākumdirektoriju un sāk ar jaunu ext4-encrypted sākumdirektoriju.</translation>
 <translation id="8285435910062771358">Pilnekrāna režīma lupa ir iespējota</translation>
 <translation id="8288199156259560552">Google atrašanās vietas pakalpojuma iespējošana operētājsistēmai Android</translation>
@@ -3691,6 +3937,7 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8312129124898414409">Ļauj iestatīt, vai vietnēs ir atļauts izmantot atslēgu ģenerēšanu. Atslēgu ģenerēšanas izmantošana var tikt atļauta vai noraidīta visām vietnēm.
 
           Ja šī politika nav iestatīta, tiks lietota politika “BlockKeygen” un lietotājs to varēs mainīt.</translation>
+<translation id="8320149248919453401">Akumulatora uzlādes režīms</translation>
 <translation id="8329984337216493753">Šī politika darbojas tikai mazumtirdzniecības režīmā.
 
       Ja politika DeviceIdleLogoutTimeout ir norādīta, tā definē brīdinājuma lodziņa ilgumu ar atpakaļskaitīšanas taimeri, kas tiek rādīts lietotājam pirms atteikšanās izpildes.
@@ -3707,12 +3954,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 
       Ja politikai ir iestatīta vērtība “false”, statistikas dati netiek nosūtīti.
       Ja politikai ir iestatīta vērtība “true” vai tā nav iestatīta, statistikas dati tiek nosūtīti.</translation>
-<translation id="8377433219608936819">
-      Ja šai politikai ir iestatīta vērtība “true” un ja mākoņa politika ir pretrunā ar ierīces politiku, mākoņa politikai ir prioritāte.
-      Ja šai politikai ir iestatīta vērtība “false” vai tā nav konfigurēta un ja ierīces politika ir pretrunā ar mākoņa politiku, ierīces politikai ir prioritāte.
-      Plašāku informāciju par politiku prioritātēm skatiet vietnē https://support.google.com/chrome?p=set_chrome_policies_for_devices.
-
-      Šī politika ir pieejama tikai Windows instancēs, kas ir pievienotas <ph name="MS_AD_NAME" /> domēnam, vai Windows 10 Pro vai Enterprise instancēs, kas ir reģistrētas ierīču pārvaldībai.</translation>
 <translation id="8380490658357556620">Ļauj izmantot pārraides serverus, kad attālie klienti mēģina izveidot savienojumu ar šo ierīci.
 
           Ja šis iestatījums ir iespējots, attālie klienti var izmantot pārraides serverus, lai izveidotu savienojumu ar šo ierīci, ja nav iespējams izveidot tiešu savienojumu (piemēram, ugunsmūra ierobežojumu dēļ).
@@ -3734,7 +3975,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 
       Papildinformāciju par pārlūkprogrammas Internet Explorer politiku “<ph name="IEEM_SITELIST_POLICY" />” skatiet vietnē https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Vienmēr atvērt PDF failus ārēji</translation>
-<translation id="8412312801707973447">Vai tiek veiktas OCSP/CRL pārbaudes tiešsaistē</translation>
 <translation id="8417305981081876834">Bloķēšanas ekrāna PIN maksimālā garuma iestatīšana</translation>
 <translation id="841977920223099909">Paroles aizsardzības brīdinājuma aktivizētājs</translation>
 <translation id="8424255554404582727">Iestatīt ekrāna pagriešanas noklusējumu, kas tiek lietots katrā atkārtotas palaišanas reizē</translation>
@@ -3802,6 +4042,9 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8548832052135586762">Iestata tikai krāsainas drukāšanas, tikai vienkrāsainas vai ierobežojumu bez režīma. Ja politika nav iestatīta, tiek uzskatīts, ka ierobežojuma nav.</translation>
 <translation id="8549772397068118889">Brīdināt, kad tiek apmeklētas satura pakotnēs neiekļautas vietnes.</translation>
 <translation id="8566842294717252664">Interneta veikala ikonas nerādīšana jaunas cilnes lapā un lietotņu palaidējā</translation>
+<translation id="8569734380847633643">
+          Ja politikai ir iestatīta vērtība “false”, <ph name="PRODUCT_OS_NAME" /> atspējos Wi-Fi savienojumu un lietotāji nevarēs to iespējot.
+          Ja politikai ir iestatīta vērtība “true” vai tā nav iestatīta, lietotāji varēs iespējot vai atspējot Wi-Fi savienojumu pēc nepieciešamības.</translation>
 <translation id="857369585509260201">Šī politika ir novecojusi. Tās vietā varat lietot politiku BrowserSignin.
 
       Ja šai politikai ir iestatīta vērtība “true”, lietotājam pirms pārlūka <ph name="PRODUCT_NAME" /> lietošanas ir jāpierakstās, izmantojot savu profilu. Šādā gadījumā politikai BrowserGuestModeEnabled tiek iestatīta noklusējuma vērtība “false”. Ņemiet vērā, ka pēc šīs politikas iespējošanas neparakstītie profili tiek bloķēti un nav pieejami. Plašāku informāciju skatiet palīdzības centra rakstā.
@@ -3859,7 +4102,15 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Ja šī politika nav iestatīta, <ph name="PRODUCT_OS_NAME" /> ierīcēs tiek izmantots noklusējuma periods 345 600 000 milisekundes (četras dienas), savukārt pārlūkā <ph name="PRODUCT_NAME" /> — 604 800 000 milisekundes (viena nedēļa).</translation>
 <translation id="8685024486845674965">Paroles aizsardzības brīdinājums ir aktivizēts, atkārtoti izmantojot paroli</translation>
 <translation id="8693243869659262736">Iebūvētā DNS klienta izmantošana</translation>
+<translation id="8698286761337647563">Cik dienas iepriekš paziņot SAML lietotājiem, ka viņu parolei beigsies derīguma termiņš</translation>
 <translation id="8703488928438047864">Ziņot par paneļa statusu</translation>
+<translation id="8703872185032220081">Iestatiet enerģijas maksimuma pārslēgšanas dienas konfigurāciju.
+
+          Šī politika tiek izmantota tikai tad, ja politikai DevicePowerPeakShiftEnabled ir iestatīta vērtība “true”.
+
+          Ja šī politika nav konfigurēta vai nav iestatīta, enerģijas maksimuma pārslēgšana vienmēr būs atspējota.
+
+          Piezīme. Atļautās vērtības “<ph name="MINUTE_FIELD_NAME" />” laukiem “<ph name="START_TIME_FIELD_NAME" />”, “<ph name="END_TIME_FIELD_NAME" />” un “<ph name="CHARGE_START_TIME_FIELD_NAME" />” ir 0, 15, 30, 45.</translation>
 <translation id="8704831857353097849">Atspējoto spraudņu saraksts</translation>
 <translation id="8711086062295757690">Norāda atslēgvārdu, kas tiek izmantots par saīsni universālajā lodziņā, lai izsauktu meklēšanu ar šo meklētājprogrammu.
 
@@ -3888,6 +4139,7 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Ja šis iestatījums ir iespējots vai nav iestatīts, pārlūkošanas un lejupielādes vēsturi var dzēst.
 
       Ja šis iestatījums ir atspējots, pārlūkošanas un lejupielādes vēsturi nevar dzēst.</translation>
+<translation id="8757552286070680084">Wilco DTC konfigurācija</translation>
 <translation id="8758831693895931466">Obligātas reģistrācijas mākoņa pārvaldības pakalpojumā iespējošana</translation>
 <translation id="8759829385824155666">Atļautie Kerberos šifrēšanas veidi</translation>
 <translation id="8764119899999036911">Norāda, vai Kerberos SPN nosaukums tiek ģenerēts, izmantojot kanonisko DNS nosaukumu vai ievadīto oriģinālo nosaukumu.
@@ -3903,6 +4155,7 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, paroļu aizsardzības pakalpojums novirza lietotājus uz vietni https://myaccounts.google.com, lai nomainītu paroli.
       Šī politika ir pieejama tikai Windows instancēs, kas ir savienotas ar <ph name="MS_AD_NAME" /> domēnu, vai Windows 10 Pro vai Enterprise instancēs, kas ir reģistrētas ierīču pārvaldībai.</translation>
 <translation id="8798099450830957504">Noklusējums</translation>
+<translation id="8800453707696044281">Iestatīt pielāgotu akumulatora uzlādes līmeni (procentos), kurā ir jāpārtrauc uzlāde</translation>
 <translation id="8801680448782904838">Paziņot lietotājam, ka ir ieteicama vai nepieciešama pārlūka atkārtota palaišana vai ierīces restartēšana</translation>
 <translation id="8818173863808665831">Ziņot par ierīces ģeogrāfisko atrašanās vietu.
 
@@ -3910,12 +4163,29 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8818768076343557335">Prognozēt tīkla darbības jebkurā tīklā, kas nav mobilais tīkls.
           (Iestatījums vairs netiek izmantots versijā 50 un tika noņemts versijā 52. Par versiju 52 jaunākās versijās, iestatot vērtību uz 1, tā tiek uztverta kā 0 — “Prognozēt tīkla darbības neatkarīgi no tīkla savienojuma”.)</translation>
 <translation id="8825782996899863372">Paroles aizsardzības brīdinājums ir aktivizēts, atkārtoti izmantojot paroli pikšķerēšanas lapā</translation>
-<translation id="8828766846428537606">Konfigurē produkta <ph name="PRODUCT_NAME" /> noklusējuma sākumlapu un neļauj lietotājiem to mainīt.
-
-      Lietotāja sākumlapas iestatījumi ir pilnībā nobloķēti tikai tad, ja sākumlapa ir iestatīta kā Jaunas cilnes lapa vai kā URL un ir norādīts sākumlapas URL. Ja nav norādīts sākumlapas URL, lietotājs var iestatīt sākumlapu kā Jaunas cilnes lapu, norādot chrome://newtab.</translation>
 <translation id="8833109046074170275">Autentifikācija, izmantojot noklusējuma GAIA plūsmu</translation>
 <translation id="8838303810937202360">Operētājsistēma <ph name="PRODUCT_OS_NAME" /> ievieto kešatmiņā lietotnes un paplašinājumus, ja tie jāinstalē vairākiem lietotājiem vienā ierīcē, lai katram lietotājam nebūtu jāveic atkārtota lejupielāde.
       Ja šī politika nav konfigurēta vai vērtība ir mazāka par 1 MB, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks izmantots noklusējuma kešatmiņas lielums.</translation>
+<translation id="8851325571441692315">Ļauj norādīt produkta <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekservera iestatījumus.
+
+          Šī politika atstāj ietekmi tikai tad, ja <ph name="PROXY_SETTINGS_POLICY_NAME" /> politika nav norādīta.
+
+          Ja izvēlaties nekad neizmantot starpniekserveri un vienmēr izveidot tiešu savienojumu, visas pārējās opcijas tiek ignorētas.
+
+          Ja izvēlaties izmantot sistēmas starpniekservera iestatījumus, visas pārējās opcijas tiek ignorētas.
+
+          Ja izvēlaties automātiski noteikt starpniekserveri, visas pārējās opcijas tiek ignorētas.
+
+          Izvēloties fiksēto starpniekservera režīmu, laukos “Starpniekservera adrese vai URL” un “Komatatdalītu starpniekserveru apiešanas kārtulu saraksts” var norādīt papildu opcijas. ARC lietotnēm ir pieejams tikai HTTP starpniekserveris ar visaugstāko prioritāti.
+
+          Ja tiek izvēlēts izmantot .pac starpniekservera skriptu, laukā “URL uz starpniekservera .pac failu” obligāti jānorāda šī skripta URL.
+
+          Detalizētus piemērus skatiet vietnē:
+          <ph name="PROXY_HELP_URL" />.
+
+          Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> un ARC lietotnes ignorē visas ar starpniekserveri saistītās komandrindā norādītās opcijas.
+
+          Ja šī politika nav iestatīta, lietotāji varēs izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="8858642179038618439">YouTube piespiedu drošības režīms</translation>
 <translation id="8860342862142842017">Certificate Transparency piemērošanas atspējošana “subjectPublicKeyInfo” jaucējtagiem</translation>
 <translation id="8864975621965365890">Aizliedz noraidīšanas uzvedni, kas tiek parādīta, ja vietni renderē spraudnis <ph name="PRODUCT_FRAME_NAME" />.</translation>
@@ -3928,17 +4198,8 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Ja iespējosiet vai atspējosiet šo iestatījumu, lietotāji nevarēs mainīt vai ignorēt šo iestatījumu produktā <ph name="PRODUCT_NAME" />.
 
       Ja šis iestatījums nav iestatīts, lietotājs var izlemt, vai izmantot šo funkciju.</translation>
-<translation id="8870318296973696995">Sākumlapa</translation>
 <translation id="8876188741456358123">Tiek ignorēts noklusējuma divpusējas drukāšanas režīms. Ja režīms nav pieejams, šī politika tiek ignorēta.</translation>
 <translation id="8882006618241293596">Spraudņa <ph name="FLASH_PLUGIN_NAME" /> bloķēšana šajās vietnēs</translation>
-<translation id="890403179930035128">Piespiedu kārtā iespējo pareizrakstības pārbaudes valodas. Tiks ignorētas sarakstā iekļautās valodas, kuras nevarēs atpazīt.
-      Ja iespējosiet šo politiku, pareizrakstības pārbaude tiks iespējota gan norādītajās valodās, gan tajās valodās, kurām lietotājs ir iespējojis pareizrakstības pārbaudi.
-
-      Ja šī politika nav iespējota vai tā tiek atspējota, lietotāja pareizrakstības preferencēs netiks ieviestas izmaiņas.
-
-      Ja politika SpellcheckEnabled ir atspējota, tā nedarbosies.
-
-      Pašreiz atbalstītās valodas: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Iespējot viesa režīmu</translation>
 <translation id="8908294717014659003">Ļauj iestatīt, vai vietnēm ir atļauts iegūt piekļuvi multivides tveršanas ierīcēm. Piekļuve multivides tveršanas ierīcēm var būt atļauta pēc noklusējuma, vai lietotājam var tikt parādīts atbilstošs jautājums katru reizi, kad vietne vēlas iegūt piekļuvi multivides tveršanas ierīcēm.
 
@@ -3974,6 +4235,7 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 
       Plašāku informāciju par drošu vidi skatiet vietnē https://www.w3.org/TR/secure-contexts/.
       </translation>
+<translation id="8939595959513040470">Nodrošiniet lietotājiem ātrā risinājuma būvējumu.</translation>
 <translation id="8942616385591203339">Šī politika nosaka, vai lietotājam pirmajā pierakstīšanās reizē tiek rādīts dialoglodziņš sinhronizācijas atļaušanai. Ja lietotājam nekad nav nepieciešams rādīt dialoglodziņu sinhronizācijas atļaušanai, politikai jāiestata vērtība “False”.
       Ja ir iestatīta vērtība “False”, dialoglodziņš sinhronizācijas atļaušanai netiks rādīts.
       Ja ir iestatīta vērtība “True” vai politika nav iestatīta, dialoglodziņš sinhronizācijas atļaušanai tiks rādīts.</translation>
@@ -4033,6 +4295,10 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 
       Ja šī politika netiek iestatīta, lietotājs varēs izvēlēties savu iemiesojuma attēlu, ko rādīt pieteikšanās ekrānā.</translation>
 <translation id="9035964157729712237">Paplašinājumu ID numuri, kas noņemami no melnā saraksta</translation>
+<translation id="9038058011835642205">Norāda sarakstu ar vietnēm, kuras tiek instalētas neuzraudzīti (bez lietotāja iejaukšanās) un kuras lietotājs nevar atinstalēt vai atspējot.
+
+      Katrs politikas saraksta vienums ir objekts ar obligātu elementu “url” un diviem neobligātiem elementiem “default_launch_container” un “create_desktop_shortcut”. Elementam “url” jābūt instalējamās tīmekļa lietotnes vietrādim URL, elementam “launch_container” — vai nu “window”, vai arī “tab”, lai norādītu, kā pēc instalēšanas jāatver tīmekļa lietotne, savukārt elementam “create_desktop_shortcut” jāiestata vērtība “True”, ja operētājsistēmā Linux vai Windows jāizveido darbvirsmas saīsne. Ja elements “default_launch_container” ir izlaists, lietotne pēc noklusējuma tiks atvērta cilnē. Neatkarīgi no “default_launch_container” vērtības lietotāji varēs mainīt konteineru, kurā lietotne tiks atvērta. Ja elements “create_desktop_shortcuts” ir izlaists, darbvirsmas saīsnes netiks izveidotas.</translation>
+<translation id="9038839118379817310">Iespējot Wi-Fi</translation>
 <translation id="9039822628127365650">Ja šī politika ir iestatīta, tiek norādīts laiks, pēc kura lietotājs tiek automātiski izrakstīts un sesija tiek pārtraukta. Lietotājs tiek informēts par atlikušo laiku, izmantojot sistēmas teknē parādītu taimeri.
 
       Ja šī politika nav iestatīta, sesijas ilgums nav ierobežots.
@@ -4042,6 +4308,11 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Politikas vērtība ir jānorāda milisekundēs. Vērtība ir jānorāda diapazonā no 30 sekundēm līdz 24 stundām.</translation>
 <translation id="9042911395677044526">Ļauj pārsūtīšanas tīkla konfigurāciju izmantot konkrētam lietotājam <ph name="PRODUCT_OS_NAME" /> ierīcē. Tīkla konfigurācija ir JSON formatēta virkne, kā 
 definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">Šī politika kontrolē to, vai ierīci var atjaunināt, izmantojot ātrā risinājuma būvējumu.
+
+      Ja kā politikas vērtība ir iestatīts marķieris, kas novirza uz ātrā risinājuma būvējumu, ierīce tiks atjaunināta, izmantojot attiecīgo ātrā risinājuma būvējumu; izņēmums ir gadījumi, kad atjaunināšanu bloķē cita politika.
+
+      Ja šī politika nav iestatīta vai tās vērtība nenovirza uz ātrā risinājuma būvējumu, ierīce netiks atjaunināta, izmantojot ātrā risinājuma būvējumu. Ja ierīcē jau darbojas ātrā risinājuma būvējums un politika vairs nav iestatīta vai tās vērtība vairs nenovirza uz ātrā risinājuma būvējumu, ierīce tiks atjaunināta, izmantojot parasto būvējumu; izņēmums ir gadījumi, kad atjaunināšanu bloķē cita politika.</translation>
 <translation id="906631898352326790">
       Ja politika ir iespējota, katram komatatdalītā
       sarakstā norādītajam sākumpunktam tiks izpildīts atsevišķs process. Šādi tiks arī izolēti
@@ -4070,31 +4341,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="9094064873808699479">Veikt atriti un paturēt mērķa versiju, ja operētājsistēmas versija ir jaunāka nekā mērķa versija. Mēģiniet pārnest konfigurāciju ierīces līmenī (tostarp tīkla akreditācijas datus) ar atrites palīdzību, ja tas ir iespējams, taču veiciet atriti, pilnībā izmantojot funkciju Powerwash, pat ja datu atjaunošana nav iespējama (jo mērķa versija neatbalsta atjaunošanas datus vai atpakaļ nesavietojamu izmaiņu dēļ).
           Tiek atbalstīts <ph name="PRODUCT_OS_NAME" /> versijā 70 un jaunākās. Senākiem klientiem šī vērtība nozīmē to, ka atrite ir atspējota.</translation>
 <translation id="9096086085182305205">Autentifikācijas serveru baltais saraksts</translation>
-<translation id="9098553063150791878">HTTP autentifikācijas politikas</translation>
-<translation id="9103061223348895346">Šī politika nosaka vairākus iestatījumus barošanas pārvaldībai, kura tiek iespējota pēc tam, kad lietotājs ir kļuvis neaktīvs.
-
-          Pastāv četri darbību veidi.
-          * Ekrāns tiks aptumšots, ja lietotājs būs neaktīvs tik ilgi, cik nosaka |ScreenDim|.
-          * Ekrāns tiks izslēgts, ja lietotājs būs neaktīvs tik ilgi, cik nosaka |ScreenOff|.
-          * Ja lietotājs būs neaktīvs tik ilgi, cik nosaka |IdleWarning|, tiks parādīts brīdinājuma dialogs ar paziņojumu, ka neaktivitātes dēļ tūlīt tiks veikta kāda no darbībām.
-          * |IdleAction| norādītā darbība tiks veikta, ja lietotājs būs neaktīvs tik ilgi, cik nosaka |Idle|.
-
-          Katrai iepriekš norādītajai darbībai atlikšana ir jānorāda milisekundēs, un, lai aktivizētu attiecīgo darbību, tai ir jāiestata vērtība, kas lielāka par nulli. Gadījumā, ja atlikšana ir iestatīta uz nulli, <ph name="PRODUCT_OS_NAME" /> neveiks atbilstošo darbību.
-
-          Neiestatot laiku iepriekš minētajiem atlikšanas iestatījumiem, tiks izmantots noklusējuma laiks.
-
-          Ņemiet vērā, ka |ScreenDim| vērtības vienmēr būs mazākas par |ScreenOff| vai vienādas ar to, savukārt |ScreenOff| un |IdleWarning| vērtība vienmēr būs mazāka par |Idle| vai vienāda ar to.
-
-          |IdleAction| var būt viena no četrām iespējamām darbībām:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Ja |IdleAction| vērtība nav iestatīta, tiek izmantota noklusējuma darbība — apturēšana.
-
-          Ir pieejami arī atsevišķi iestatījumi maiņstrāvas barošanai un akumulatoram.
-          </translation>
 <translation id="9105265795073104888">Android lietotnēm ir pieejama tikai starpniekservera konfigurācijas opciju apakškopa. Android lietotnes šo starpniekserveri var izmantot, ja tas ir nepieciešams. Jūs nevarat likt lietotnēm izmantot starpniekserveri.</translation>
 <translation id="9106865192244721694">WebUSB atļaušana šajās vietnēs</translation>
 <translation id="9112727953998243860">Uzņēmuma printeru konfigurācijas fails</translation>
@@ -4153,13 +4399,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja politika ir iestatīta kā “false”, galvenes un kājenes netiek atlasītas drukāšanas priekšskatījuma dialoglodziņā un lietotājs to nevar mainīt.
 
       Ja politika ir iestatīta kā “true”, galvenes un kājenes tiek atlasītas drukāšanas priekšskatījuma dialoglodziņā un lietotājs nevar to mainīt.</translation>
-<translation id="9210953373038593554">Konfigurē SAML pieteikšanās autentifikācijas veidus.
-
-      Ja šī politika nav iestatīta vai tai ir iestatīta vērtība “Default” (vērtība: 0), SAML pieteikšanās veidu, pamatojoties uz citiem faktoriem, nosaka pārlūkprogramma. Visbiežāk lietotāja autentifikācijai un kešatmiņā saglabāto lietotāja datu aizsardzībai tiek izmantotas paroles, ko lietotājs ievada manuāli.
-
-      Ja šai politikai ir iestatīta vērtība “ClientCertificate” (vērtība: 1), klienta sertifikāta autentifikācija tiek izmantota jaunajiem lietotājiem, kuri piesakās, izmantojot SAML. Šādiem lietotājiem paroles netiek izmantotas un kešatmiņā saglabātie vietējie dati tiek aizsargāti, izmantojot atbilstošas kriptogrāfiskas atslēgas. Piemēram, šis iestatījums ļauj konfigurēt viedkarti atbilstoši lietotāja autentifikācijas veidam (ņemiet vērā, ka viedkartes starpprogrammatūras lietotnes ir jāinstalē, izmantojot politiku DeviceLoginScreenAppInstallList).
-
-      Šī politika attiecas tikai uz tiem lietotājiem, kuri autentifikācijai izmanto SAML.</translation>
 <translation id="9213347477683611358">Konfigurējiet ierīces līmeņa fona tapetes attēlu, kas tiek rādīts pieteikšanās ekrānā, ja ierīcē vēl nav pierakstījies neviens lietotājs. Politika tiek iestatīta, norādot URL, no kura Chrome OS ierīce var lejupielādēt fona tapetes attēlu, un kriptogrāfisku jaucējkodu, kas tiek izmantots lejupielādes integritātes pārbaudei. Attēlam jābūt JPEG formātā, tā lielums nedrīkst pārsniegt 16 MB. Lai piekļūtu vietrādim URL, nedrīkst pieprasīt autentificēšanos. Fona tapetes attēls tiek lejupielādēts un saglabāts kešatmiņā. Tas tiks atkārtoti lejupielādēts, kad tiks mainīts URL vai jaucējkods.
 
       Politika ir jānorāda kā virkne, kurā ietverts URL un jaucējkods JSON formātā, piemēram,
@@ -4174,6 +4413,15 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="9217154963008402249">Pārraudzības tīkla pakešu biežums</translation>
 <translation id="922540222991413931">Konfigurē paplašinājumu, lietotņu un lietotāja skriptu instalēšanas avotus</translation>
 <translation id="924557436754151212">Saglabāto paroļu importēšana no noklusējuma pārlūka pirmajā palaišanas reizē</translation>
+<translation id="926146562923985266">Šī politika kontrolē komandu, kas tiek izmantota, lai atvērtu vietrāžus URL pakalpojumā <ph name="PRODUCT_NAME" />, kad jūs pārslēdzaties no pārlūka Internet Explorer.
+
+      Ja pārlūka Internet Explorer papildinājums “Mantoto pārlūku atbalsts” nav instalēts, šai politikai nav nekādas ietekmes.
+
+      Kad šī politika nav iestatīta, pārlūks Internet Explorer automātiski noteiks pakalpojuma <ph name="PRODUCT_NAME" /> izpildāmo ceļu, kad pakalpojums <ph name="PRODUCT_NAME" /> tiek palaists no pārlūka Internet Explorer.
+
+      Kad šī politika ir iestatīta, tā tiks izmantota, lai uzsāktu pakalpojumu <ph name="PRODUCT_NAME" />, kad pakalpojuma <ph name="PRODUCT_NAME" /> uzsākšana tiek veikta no pārlūka Internet Explorer.
+
+      Šo politiku var iestatīt izpildāmajam faila ceļam vai ${chrome}, lai automātiski noteiktu Chrome instalēšanas atrašanās vietu.</translation>
 <translation id="930930237275114205">Iestatīt <ph name="PRODUCT_FRAME_NAME" /> lietotāja datu direktoriju</translation>
 <translation id="943865157632139008">Ļauj konfigurēt noklusējuma HTML renderētāju, ja <ph name="PRODUCT_FRAME_NAME" /> ir instalēts.
       Atbilstoši noklusējuma iestatījumam renderēšanu izpilda saimniekdatora pārlūks, taču pēc izvēles šo iestatījumu var ignorēt un likt, lai HTML lappuses pēc noklusējuma tiktu renderētas produktā <ph name="PRODUCT_FRAME_NAME" />.</translation>

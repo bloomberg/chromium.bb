@@ -252,22 +252,17 @@ public class ChromeBrowserProvider extends ContentProvider {
     public boolean onCreate() {
         // Work around for broken Android versions that break the Android contract and initialize
         // ContentProviders on non-UI threads.  crbug.com/705442
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .addStartupCompletedObserver(
-                                new BrowserStartupController.StartupCallback() {
-                                    @Override
-                                    public void onSuccess() {
-                                        ensureNativeSideInitialized();
-                                    }
+        PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
+            BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                    .addStartupCompletedObserver(new BrowserStartupController.StartupCallback() {
+                        @Override
+                        public void onSuccess() {
+                            ensureNativeSideInitialized();
+                        }
 
-                                    @Override
-                                    public void onFailure() {
-                                    }
-                                });
-            }
+                        @Override
+                        public void onFailure() {}
+                    });
         });
 
         return true;
@@ -638,20 +633,16 @@ public class ChromeBrowserProvider extends ContentProvider {
         ensureUriMatcherInitialized();
         if (mNativeChromeBrowserProvider != 0) return true;
         synchronized (mLoadNativeLock) {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    if (mNativeChromeBrowserProvider != 0) return;
-                    try {
-                        ChromeBrowserInitializer.getInstance(getContext())
-                                .handleSynchronousStartup();
-                    } catch (ProcessInitException e) {
-                        // Chrome browser runs in the background, so exit silently; but do exit,
-                        // since otherwise the next attempt to use Chrome will find a broken JNI.
-                        System.exit(-1);
-                    }
-                    ensureNativeSideInitialized();
+            PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
+                if (mNativeChromeBrowserProvider != 0) return;
+                try {
+                    ChromeBrowserInitializer.getInstance(getContext()).handleSynchronousStartup();
+                } catch (ProcessInitException e) {
+                    // Chrome browser runs in the background, so exit silently; but do exit,
+                    // since otherwise the next attempt to use Chrome will find a broken JNI.
+                    System.exit(-1);
                 }
+                ensureNativeSideInitialized();
             });
         }
         return true;

@@ -183,7 +183,7 @@ sw{
         MF{"St. Martin"}
         MG{"Madagaska"}
         MH{"Visiwa vya Marshall"}
-        MK{"Macedonia (FYROM)"}
+        MK{"Macedonia"}
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
@@ -305,7 +305,9 @@ sw{
         CG{"Jamhuri ya Kongo"}
         CI{"Ivory Coast"}
         CZ{"Jamhuri ya Cheki"}
+        MK{"Macedonia (FYROM)"}
+        SZ{"SZ"}
         TL{"Timor ya Mashariki"}
     }
-    Version{"2.1.43.65"}
+    Version{"2.1.48.17"}
 }

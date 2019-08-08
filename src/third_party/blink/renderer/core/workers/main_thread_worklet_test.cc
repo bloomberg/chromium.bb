@@ -56,7 +56,7 @@ class MainThreadWorkletTest : public PageTestBase {
 
     // Set up the CSP for Document before starting MainThreadWorklet because
     // MainThreadWorklet inherits the owner Document's CSP.
-    ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+    auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
     csp->DidReceiveHeader(csp_header, kContentSecurityPolicyHeaderTypeEnforce,
                           kContentSecurityPolicyHeaderSourceHTTP);
     document->InitContentSecurityPolicy(csp);

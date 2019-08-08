@@ -6,7 +6,8 @@
 from blinkbuild.name_style_converter import NameStyleConverter
 from core.css.field_alias_expander import FieldAliasExpander
 import json5_generator
-from name_utilities import enum_for_css_property, enum_for_css_property_alias
+from name_utilities import enum_key_for_css_property, id_for_css_property
+from name_utilities import enum_key_for_css_property_alias, id_for_css_property_alias
 
 
 # These values are converted using CSSPrimitiveValue in the setter function,
@@ -64,8 +65,8 @@ class CSSProperties(object):
         # CSSPropertyValueMetadata assumes that there are at most 1024
         # properties + aliases.
         self._alias_offset = 512
-        # 0: CSSPropertyInvalid
-        # 1: CSSPropertyVariable
+        # 0: CSSPropertyID::kInvalid
+        # 1: CSSPropertyID::kVariable
         self._first_enum_value = 2
         self._last_used_enum_value = self._first_enum_value
 
@@ -155,12 +156,14 @@ class CSSProperties(object):
                 "but runtime flags do not currently work for aliases.".format(
                     alias['name'])
             aliased_property = self._properties_by_id[
-                enum_for_css_property(alias['alias_for'])]
+                id_for_css_property(alias['alias_for'])]
             updated_alias = aliased_property.copy()
             updated_alias['name'] = alias['name']
             updated_alias['alias_for'] = alias['alias_for']
             updated_alias['aliased_property'] = aliased_property['name'].to_upper_camel_case()
-            updated_alias['property_id'] = enum_for_css_property_alias(
+            updated_alias['property_id'] = id_for_css_property_alias(
+                alias['name'])
+            updated_alias['enum_key'] = enum_key_for_css_property_alias(
                 alias['name'])
             updated_alias['enum_value'] = aliased_property['enum_value'] + \
                 self._alias_offset
@@ -173,7 +176,8 @@ class CSSProperties(object):
 
         # Basic info.
         name = property_['name']
-        property_['property_id'] = enum_for_css_property(name)
+        property_['property_id'] = id_for_css_property(name)
+        property_['enum_key'] = enum_key_for_css_property(name)
         property_['is_internal'] = name.original.startswith('-internal-')
         method_name = property_['name_for_methods']
         if not method_name:

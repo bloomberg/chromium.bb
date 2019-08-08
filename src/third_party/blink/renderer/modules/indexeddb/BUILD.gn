@@ -85,6 +85,9 @@ blink_modules_sources("indexeddb") {
     "web_idb_factory.h",
     "web_idb_factory_impl.cc",
     "web_idb_factory_impl.h",
+    "web_idb_transaction.h",
+    "web_idb_transaction_impl.cc",
+    "web_idb_transaction_impl.h",
   ]
 
   public_deps = [

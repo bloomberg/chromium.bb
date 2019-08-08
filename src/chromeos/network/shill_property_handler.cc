@@ -15,12 +15,11 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_device_client.h"
-#include "chromeos/dbus/shill_ipconfig_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/dbus/shill_profile_client.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_device_client.h"
+#include "chromeos/dbus/shill/shill_ipconfig_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_profile_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_state.h"
 #include "components/device_event_log/device_event_log.h"
 #include "dbus/object_path.h"
@@ -63,14 +62,12 @@ class ShillPropertyObserver : public ShillPropertyChangedObserver {
       : type_(type), path_(path), handler_(handler) {
     if (type_ == ManagedState::MANAGED_TYPE_NETWORK) {
       DVLOG(2) << "ShillPropertyObserver: Network: " << path;
-      DBusThreadManager::Get()
-          ->GetShillServiceClient()
-          ->AddPropertyChangedObserver(dbus::ObjectPath(path_), this);
+      ShillServiceClient::Get()->AddPropertyChangedObserver(
+          dbus::ObjectPath(path_), this);
     } else if (type_ == ManagedState::MANAGED_TYPE_DEVICE) {
       DVLOG(2) << "ShillPropertyObserver: Device: " << path;
-      DBusThreadManager::Get()
-          ->GetShillDeviceClient()
-          ->AddPropertyChangedObserver(dbus::ObjectPath(path_), this);
+      ShillDeviceClient::Get()->AddPropertyChangedObserver(
+          dbus::ObjectPath(path_), this);
     } else {
       NOTREACHED();
     }
@@ -78,13 +75,11 @@ class ShillPropertyObserver : public ShillPropertyChangedObserver {
 
   ~ShillPropertyObserver() override {
     if (type_ == ManagedState::MANAGED_TYPE_NETWORK) {
-      DBusThreadManager::Get()
-          ->GetShillServiceClient()
-          ->RemovePropertyChangedObserver(dbus::ObjectPath(path_), this);
+      ShillServiceClient::Get()->RemovePropertyChangedObserver(
+          dbus::ObjectPath(path_), this);
     } else if (type_ == ManagedState::MANAGED_TYPE_DEVICE) {
-      DBusThreadManager::Get()
-          ->GetShillDeviceClient()
-          ->RemovePropertyChangedObserver(dbus::ObjectPath(path_), this);
+      ShillDeviceClient::Get()->RemovePropertyChangedObserver(
+          dbus::ObjectPath(path_), this);
     } else {
       NOTREACHED();
     }
@@ -108,12 +103,11 @@ class ShillPropertyObserver : public ShillPropertyChangedObserver {
 // ShillPropertyHandler
 
 ShillPropertyHandler::ShillPropertyHandler(Listener* listener)
-    : listener_(listener),
-      shill_manager_(DBusThreadManager::Get()->GetShillManagerClient()) {}
+    : listener_(listener), shill_manager_(ShillManagerClient::Get()) {}
 
 ShillPropertyHandler::~ShillPropertyHandler() {
   // Delete network service observers.
-  CHECK(shill_manager_ == DBusThreadManager::Get()->GetShillManagerClient());
+  CHECK(shill_manager_ == ShillManagerClient::Get());
   shill_manager_->RemovePropertyChangedObserver(this);
 }
 
@@ -278,12 +272,12 @@ void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,
                  << " For: " << path;
   pending_updates_[type].insert(path);
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
-    DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
+    ShillServiceClient::Get()->GetProperties(
         dbus::ObjectPath(path),
         base::Bind(&ShillPropertyHandler::GetPropertiesCallback, AsWeakPtr(),
                    type, path));
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
-    DBusThreadManager::Get()->GetShillDeviceClient()->GetProperties(
+    ShillDeviceClient::Get()->GetProperties(
         dbus::ObjectPath(path),
         base::Bind(&ShillPropertyHandler::GetPropertiesCallback, AsWeakPtr(),
                    type, path));
@@ -564,7 +558,7 @@ void ShillPropertyHandler::RequestIPConfig(
     NET_LOG(ERROR) << "Invalid IPConfig: " << path;
     return;
   }
-  DBusThreadManager::Get()->GetShillIPConfigClient()->GetProperties(
+  ShillIPConfigClient::Get()->GetProperties(
       dbus::ObjectPath(ip_config_path),
       base::Bind(&ShillPropertyHandler::GetIPConfigCallback, AsWeakPtr(), type,
                  path, ip_config_path));

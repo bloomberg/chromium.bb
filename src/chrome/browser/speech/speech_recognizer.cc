@@ -43,7 +43,9 @@ static const int kInvalidSessionId = -1;
 // SpeechRecognizerDelegate via a weak pointer that is only ever referenced from
 // the UI thread.
 class SpeechRecognizer::EventListener
-    : public base::RefCountedThreadSafe<SpeechRecognizer::EventListener>,
+    : public base::RefCountedThreadSafe<
+          SpeechRecognizer::EventListener,
+          content::BrowserThread::DeleteOnIOThread>,
       public content::SpeechRecognitionEventListener {
  public:
   EventListener(const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
@@ -59,7 +61,9 @@ class SpeechRecognizer::EventListener
   void StopOnIOThread();
 
  private:
-  friend class base::RefCountedThreadSafe<SpeechRecognizer::EventListener>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::IO>;
+  friend class base::DeleteHelper<SpeechRecognizer::EventListener>;
   ~EventListener() override;
 
   void NotifyRecognitionStateChanged(SpeechRecognizerStatus new_state);

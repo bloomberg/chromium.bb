@@ -13,10 +13,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -142,28 +142,25 @@ public class WebsitePermissionsFetcherTest {
     public void testFetcherDoesNotTimeOutWithManyUrls() throws Exception {
         final WebsitePermissionsWaiter waiter = new WebsitePermissionsWaiter();
         // Set lots of permissions values.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                for (String url : PERMISSION_URLS) {
-                    WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
-                            url, url, ContentSettingValues.BLOCK, false);
-                    WebsitePreferenceBridge.nativeSetMidiSettingForOrigin(
-                            url, url, ContentSettingValues.ALLOW, false);
-                    WebsitePreferenceBridge.nativeSetProtectedMediaIdentifierSettingForOrigin(
-                            url, url, ContentSettingValues.BLOCK, false);
-                    WebsitePreferenceBridge.nativeSetNotificationSettingForOrigin(
-                            url, ContentSettingValues.ALLOW, false);
-                    WebsitePreferenceBridge.nativeSetMicrophoneSettingForOrigin(
-                            url, ContentSettingValues.ALLOW, false);
-                    WebsitePreferenceBridge.nativeSetCameraSettingForOrigin(
-                            url, ContentSettingValues.BLOCK, false);
-                }
-
-                // This should not time out. See crbug.com/732907.
-                WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
-                fetcher.fetchAllPreferences(waiter);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            for (String url : PERMISSION_URLS) {
+                WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
+                        url, url, ContentSettingValues.BLOCK, false);
+                WebsitePreferenceBridge.nativeSetMidiSettingForOrigin(
+                        url, url, ContentSettingValues.ALLOW, false);
+                WebsitePreferenceBridge.nativeSetProtectedMediaIdentifierSettingForOrigin(
+                        url, url, ContentSettingValues.BLOCK, false);
+                WebsitePreferenceBridge.nativeSetNotificationSettingForOrigin(
+                        url, ContentSettingValues.ALLOW, false);
+                WebsitePreferenceBridge.nativeSetMicrophoneSettingForOrigin(
+                        url, ContentSettingValues.ALLOW, false);
+                WebsitePreferenceBridge.nativeSetCameraSettingForOrigin(
+                        url, ContentSettingValues.BLOCK, false);
             }
+
+            // This should not time out. See crbug.com/732907.
+            WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
+            fetcher.fetchAllPreferences(waiter);
         });
         waiter.waitForCallback(0, 1, scaleTimeout(1000), TimeUnit.MILLISECONDS);
     }

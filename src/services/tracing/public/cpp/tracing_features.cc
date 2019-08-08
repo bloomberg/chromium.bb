@@ -17,7 +17,7 @@ namespace features {
 // Enables the perfetto tracing backend. For startup tracing, pass the
 // --enable-perfetto flag instead.
 const base::Feature kTracingPerfettoBackend{"TracingPerfettoBackend",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Runs the tracing service as an in-process browser service.
 const base::Feature kTracingServiceInProcess {
@@ -34,9 +34,19 @@ const base::Feature kTracingServiceInProcess {
 namespace tracing {
 
 bool TracingUsesPerfettoBackend() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnablePerfetto) ||
-         base::FeatureList::IsEnabled(features::kTracingPerfettoBackend);
+  // This is checked early at startup, so feature list may not be initialized.
+  // So, for startup tracing cases there is no way to control the backend using
+  // feature list.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePerfetto)) {
+    return false;
+  }
+
+  if (base::FeatureList::GetInstance()) {
+    return base::FeatureList::IsEnabled(features::kTracingPerfettoBackend);
+  }
+
+  return true;
 }
 
 }  // namespace tracing

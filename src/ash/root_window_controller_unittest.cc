@@ -348,6 +348,50 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   EXPECT_EQ("0,0 600x500", lock_screen->GetNativeWindow()->bounds().ToString());
 }
 
+// Tests that the moved windows (except the active one) are put under existing
+// ones.
+TEST_F(RootWindowControllerTest, MoveWindows_UnderExisting) {
+  UpdateDisplay("600x600,300x300");
+
+  display::Screen* screen = display::Screen::GetScreen();
+  const display::Display primary_display = screen->GetPrimaryDisplay();
+  const display::Display secondary_display = GetSecondaryDisplay();
+
+  views::Widget* existing = CreateTestWidget(gfx::Rect(0, 10, 100, 100));
+  ASSERT_EQ(primary_display.id(),
+            screen->GetDisplayNearestWindow(existing->GetNativeWindow()).id());
+
+  views::Widget* moved = CreateTestWidget(gfx::Rect(650, 10, 100, 100));
+  ASSERT_EQ(secondary_display.id(),
+            screen->GetDisplayNearestWindow(moved->GetNativeWindow()).id());
+
+  views::Widget* active = CreateTestWidget(gfx::Rect(650, 10, 100, 100));
+  ASSERT_TRUE(active->IsActive());
+  ASSERT_EQ(secondary_display.id(),
+            screen->GetDisplayNearestWindow(active->GetNativeWindow()).id());
+
+  // Switch to single display.
+  UpdateDisplay("600x500");
+
+  // |active| is still active.
+  ASSERT_TRUE(active->IsActive());
+
+  // |moved| should be put under |existing|.
+  ASSERT_EQ(moved->GetNativeWindow()->parent(),
+            existing->GetNativeWindow()->parent());
+  bool found_existing = false;
+  bool found_moved = false;
+  for (auto* child : moved->GetNativeWindow()->parent()->children()) {
+    if (child == existing->GetNativeWindow())
+      found_existing = true;
+    if (child == moved->GetNativeWindow()) {
+      found_moved = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(found_moved && !found_existing);
+}
+
 TEST_F(RootWindowControllerTest, ModalContainer) {
   UpdateDisplay("600x600");
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
@@ -651,24 +695,20 @@ TEST_F(RootWindowControllerTest, ContextMenuDisappearsInTabletMode) {
   ui::test::EventGenerator generator(controller->GetRootWindow());
   generator.PressRightButton();
   generator.ReleaseRightButton();
-  EXPECT_TRUE(controller->menu_model_);
-  EXPECT_TRUE(controller->menu_runner_);
+  EXPECT_TRUE(controller->root_window_menu_model_adapter_);
 
   // Verify menu closes on entering tablet mode.
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  EXPECT_FALSE(controller->menu_model_);
-  EXPECT_FALSE(controller->menu_runner_);
+  EXPECT_FALSE(controller->root_window_menu_model_adapter_);
 
   // Open context menu.
   generator.PressRightButton();
   generator.ReleaseRightButton();
-  EXPECT_TRUE(controller->menu_model_);
-  EXPECT_TRUE(controller->menu_runner_);
+  EXPECT_TRUE(controller->root_window_menu_model_adapter_);
 
   // Verify menu closes on exiting tablet mode.
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
-  EXPECT_FALSE(controller->menu_model_);
-  EXPECT_FALSE(controller->menu_runner_);
+  EXPECT_FALSE(controller->root_window_menu_model_adapter_);
 }
 
 class VirtualKeyboardRootWindowControllerTest

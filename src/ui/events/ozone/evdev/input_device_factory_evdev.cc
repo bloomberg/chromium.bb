@@ -156,6 +156,12 @@ std::unique_ptr<EventConverterEvdev> OpenInputDevice(
   return CreateConverter(params, std::move(fd), devinfo);
 }
 
+bool IsUncategorizedDevice(const EventConverterEvdev& converter) {
+  return !converter.HasTouchscreen() && !converter.HasKeyboard() &&
+         !converter.HasMouse() && !converter.HasTouchpad() &&
+         !converter.HasGamepad();
+}
+
 }  // namespace
 
 InputDeviceFactoryEvdev::InputDeviceFactoryEvdev(
@@ -391,6 +397,9 @@ void InputDeviceFactoryEvdev::UpdateDirtyFlags(
 
   if (converter->HasGamepad())
     gamepad_list_dirty_ = true;
+
+  if (IsUncategorizedDevice(*converter))
+    uncategorized_list_dirty_ = true;
 }
 
 void InputDeviceFactoryEvdev::NotifyDevicesUpdated() {
@@ -406,6 +415,8 @@ void InputDeviceFactoryEvdev::NotifyDevicesUpdated() {
     NotifyTouchpadDevicesUpdated();
   if (gamepad_list_dirty_)
     NotifyGamepadDevicesUpdated();
+  if (uncategorized_list_dirty_)
+    NotifyUncategorizedDevicesUpdated();
   if (!startup_devices_opened_) {
     dispatcher_->DispatchDeviceListsComplete();
     startup_devices_opened_ = true;
@@ -415,6 +426,7 @@ void InputDeviceFactoryEvdev::NotifyDevicesUpdated() {
   mouse_list_dirty_ = false;
   touchpad_list_dirty_ = false;
   gamepad_list_dirty_ = false;
+  uncategorized_list_dirty_ = false;
 }
 
 void InputDeviceFactoryEvdev::NotifyTouchscreensUpdated() {
@@ -472,6 +484,16 @@ void InputDeviceFactoryEvdev::NotifyGamepadDevicesUpdated() {
   }
 
   dispatcher_->DispatchGamepadDevicesUpdated(gamepads);
+}
+
+void InputDeviceFactoryEvdev::NotifyUncategorizedDevicesUpdated() {
+  std::vector<InputDevice> uncategorized_devices;
+  for (auto it = converters_.begin(); it != converters_.end(); ++it) {
+    if (IsUncategorizedDevice(*(it->second)))
+      uncategorized_devices.push_back(it->second->input_device());
+  }
+
+  dispatcher_->DispatchUncategorizedDevicesUpdated(uncategorized_devices);
 }
 
 void InputDeviceFactoryEvdev::SetIntPropertyForOneType(

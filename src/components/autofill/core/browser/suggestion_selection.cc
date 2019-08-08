@@ -9,7 +9,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/address_i18n.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_profile_comparator.h"
@@ -84,6 +86,22 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
             suggestion_canon, field_contents_canon, type,
             /* is_masked_server_card= */ false, &prefix_matched_suggestion)) {
       matched_profiles->push_back(profile);
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+      // If the field with which the user is interacting is a phone number or
+      // part of a phone number, then display it in the national format
+      // corresponding to the profile's country. For example, (508) 488-0800
+      // will be shown rather than 15084880800, 508 488 0800, or +15084880800
+      // for US phone numbers.
+      if (base::FeatureList::IsEnabled(
+              autofill::features::kAutofillUseImprovedLabelDisambiguation) &&
+          type.group() == PHONE_HOME) {
+        value = base::UTF8ToUTF16(i18n::FormatPhoneNationallyForDisplay(
+            base::UTF16ToUTF8(value), data_util::GetCountryCodeWithFallback(
+                                          *profile, comparator.app_locale())));
+      }
+#endif
+
       suggestions.push_back(Suggestion(value));
       suggestions.back().backend_id = profile->guid();
       suggestions.back().match = prefix_matched_suggestion
@@ -202,6 +220,24 @@ void RemoveProfilesNotUsedSinceTimestamp(
   const size_t num_profiles_supressed = original_size - profiles->size();
   AutofillMetrics::LogNumberOfAddressesSuppressedForDisuse(
       num_profiles_supressed);
+}
+
+void PrepareSuggestions(bool contains_address,
+                        const std::vector<base::string16>& labels,
+                        std::vector<Suggestion>* suggestions) {
+  DCHECK_EQ(suggestions->size(), labels.size());
+
+  for (size_t i = 0; i < labels.size(); ++i) {
+    (*suggestions)[i].additional_label = base::string16(labels[i]);
+    (*suggestions)[i].label = base::string16(labels[i]);
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+    if (base::FeatureList::IsEnabled(
+            autofill::features::kAutofillUseImprovedLabelDisambiguation)) {
+      (*suggestions)[i].icon = "accountBoxIcon";
+    }
+#endif
+  }
 }
 
 }  // namespace suggestion_selection

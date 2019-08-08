@@ -11,7 +11,7 @@
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/views/autofill/view_util.h"
+#include "chrome/browser/ui/views/autofill/payments/payments_view_util.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
@@ -62,8 +62,6 @@ CvcUnmaskViewController::CvcUnmaskViewController(
           content::BrowserContext::GetDefaultStoragePartition(
               web_contents_->GetBrowserContext())
               ->GetURLLoaderFactoryForBrowserProcess(),
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext())
-              ->GetPrefs(),
           IdentityManagerFactory::GetForProfile(
               Profile::FromBrowserContext(web_contents_->GetBrowserContext())
                   ->GetOriginalProfile()),

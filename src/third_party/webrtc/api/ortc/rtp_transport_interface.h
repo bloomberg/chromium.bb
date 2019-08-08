@@ -21,17 +21,11 @@
 
 namespace webrtc {
 
-class RtpTransportAdapter;
-
 struct RtpTransportParameters final {
   RtcpParameters rtcp;
 
-  // Enabled periodic sending of keep-alive packets, that help prevent timeouts
-  // on the network level, such as NAT bindings. See RFC6263 section 4.6.
-  RtpKeepAliveConfig keepalive;
-
   bool operator==(const RtpTransportParameters& o) const {
-    return rtcp == o.rtcp && keepalive == o.keepalive;
+    return rtcp == o.rtcp;
   }
   bool operator!=(const RtpTransportParameters& o) const {
     return !(*this == o);
@@ -77,16 +71,11 @@ class RtpTransportInterface {
   virtual RtpTransportParameters GetParameters() const = 0;
 
  protected:
-  // Only for internal use. Returns a pointer to an internal interface, for use
-  // by the implementation.
-  virtual RtpTransportAdapter* GetInternal() = 0;
-
   // Classes that can use this internal interface.
   friend class OrtcFactory;
   friend class OrtcRtpSenderAdapter;
   friend class OrtcRtpReceiverAdapter;
   friend class RtpTransportControllerAdapter;
-  friend class RtpTransportAdapter;
 };
 
 }  // namespace webrtc

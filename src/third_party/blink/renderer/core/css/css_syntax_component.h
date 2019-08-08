@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -35,6 +36,8 @@ enum class CSSSyntaxType {
 enum class CSSSyntaxRepeat { kNone, kSpaceSeparated, kCommaSeparated };
 
 class CSSSyntaxComponent {
+  DISALLOW_NEW();
+
  public:
   CSSSyntaxComponent(CSSSyntaxType type,
                      const String& string,

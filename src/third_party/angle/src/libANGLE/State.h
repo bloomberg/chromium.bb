@@ -34,6 +34,7 @@ class BufferManager;
 struct Caps;
 class Context;
 class FramebufferManager;
+class MemoryObjectManager;
 class PathManager;
 class ProgramPipelineManager;
 class Query;
@@ -574,7 +575,11 @@ class State : angle::NonCopyable
     const DirtyBits &getDirtyBits() const { return mDirtyBits; }
     void clearDirtyBits() { mDirtyBits.reset(); }
     void clearDirtyBits(const DirtyBits &bitset) { mDirtyBits &= ~bitset; }
-    void setAllDirtyBits() { mDirtyBits.set(); }
+    void setAllDirtyBits()
+    {
+        mDirtyBits.set();
+        mDirtyCurrentValues.set();
+    }
 
     using DirtyObjects = angle::BitSet<DIRTY_OBJECT_MAX>;
     void clearDirtyObjects() { mDirtyObjects.reset(); }
@@ -709,6 +714,7 @@ class State : angle::NonCopyable
     PathManager *mPathManager;
     FramebufferManager *mFramebufferManager;
     ProgramPipelineManager *mProgramPipelineManager;
+    MemoryObjectManager *mMemoryObjectManager;
 
     // Cached values from Context's caps
     GLuint mMaxDrawBuffers;

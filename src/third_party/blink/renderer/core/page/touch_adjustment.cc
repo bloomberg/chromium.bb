@@ -47,8 +47,10 @@ namespace blink {
 namespace touch_adjustment {
 
 const float kZeroTolerance = 1e-6f;
-// The maximum adjustment range (diameters) in dip.
+// The touch adjustment range (diameters) in dip, using same as the value in
+// gesture_configuration_android.cc
 constexpr float kMaxAdjustmentSizeDip = 32.f;
+constexpr float kMinAdjustmentSizeDip = 20.f;
 
 // Class for remembering absolute quads of a target node and what node they
 // represent.
@@ -530,10 +532,13 @@ LayoutSize GetHitTestRectForAdjustment(const LocalFrame& frame,
   const LayoutSize max_size_in_dip(touch_adjustment::kMaxAdjustmentSizeDip,
                                    touch_adjustment::kMaxAdjustmentSizeDip);
 
+  const LayoutSize min_size_in_dip(touch_adjustment::kMinAdjustmentSizeDip,
+                                   touch_adjustment::kMinAdjustmentSizeDip);
   // (when use-zoom-for-dsf enabled) touch_area is in physical pixel scaled,
   // max_size_in_dip should be converted to physical pixel and scale too.
-  return touch_area.ShrunkTo(max_size_in_dip *
-                             (device_scale_factor / page_scale_factor));
+  return touch_area
+      .ShrunkTo(max_size_in_dip * (device_scale_factor / page_scale_factor))
+      .ExpandedTo(min_size_in_dip * (device_scale_factor / page_scale_factor));
 }
 
 }  // namespace blink

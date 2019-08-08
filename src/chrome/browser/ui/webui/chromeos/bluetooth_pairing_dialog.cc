@@ -21,13 +21,14 @@ namespace chromeos {
 
 namespace {
 
-constexpr int kBluetoothPairingDialogHeight = 350;
+constexpr int kBluetoothPairingDialogHeight = 375;
 
 void AddBluetoothStrings(content::WebUIDataSource* html_source) {
   struct {
     const char* name;
     int id;
   } localized_strings[] = {
+      {"bluetoothPairDeviceTitle", IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE},
       {"ok", IDS_OK},
       {"cancel", IDS_CANCEL},
       {"close", IDS_CLOSE},
@@ -68,9 +69,8 @@ BluetoothPairingDialog::BluetoothPairingDialog(
     const base::string16& name_for_display,
     bool paired,
     bool connected)
-    : SystemWebDialogDelegate(
-          GURL(chrome::kChromeUIBluetoothPairingURL),
-          l10n_util::GetStringUTF16(IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE)),
+    : SystemWebDialogDelegate(GURL(chrome::kChromeUIBluetoothPairingURL),
+                              base::string16() /* title */),
       address_(address) {
   device_data_.SetString("address", address);
   device_data_.SetString("name", name_for_display);

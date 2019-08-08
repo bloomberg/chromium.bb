@@ -44,6 +44,10 @@
   white-space: nowrap;
 }
 
+cr-icon-button {
+  --cr-icon-button-color: currentColor;
+}
+
 #header-text {
   font-size: 1.175em;
   line-height: 36px;
@@ -55,10 +59,6 @@
 
 .issue {
   background-color: var(--paper-red-700);
-}
-
-paper-icon-button {
-  display: inline-block;
 }
 
 #main-container {

@@ -99,7 +99,7 @@ NextProto HttpProxyClientSocket::GetProxyNegotiatedProtocol() const {
 }
 
 const HttpResponseInfo* HttpProxyClientSocket::GetConnectResponseInfo() const {
-  return response_.headers.get() ? &response_ : NULL;
+  return response_.headers.get() ? &response_ : nullptr;
 }
 
 int HttpProxyClientSocket::Connect(CompletionOnceCallback callback) {
@@ -376,6 +376,10 @@ int HttpProxyClientSocket::DoSendRequest() {
     HttpRequestHeaders extra_headers;
     if (auth_->HaveAuth())
       auth_->AddAuthorizationHeader(&extra_headers);
+    // AddAuthorizationHeader() might not have added the header even if
+    // HaveAuth().
+    response_.did_use_http_auth =
+        extra_headers.HasHeader(HttpRequestHeaders::kProxyAuthorization);
 
     if (proxy_delegate_) {
       HttpRequestHeaders proxy_delegate_headers;

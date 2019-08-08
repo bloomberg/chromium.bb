@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import argparse
 import collections
 import re
@@ -69,7 +71,7 @@ def PrintDisassembly(objdump, binary, start_address, stop_address,
       next_offset = stop_address
     if any(offset <= off < next_offset for off in erroneous_offsets):
       line += ' ' * (width - len(line)) + ' <<<<'
-    print line
+    print(line)
 
 
 def PrintErrors(args, binary, errors):
@@ -80,14 +82,13 @@ def PrintErrors(args, binary, errors):
 
   for bundle, bundle_errors in sorted(errors_by_bundle.items()):
     for offset, message in bundle_errors:
-      print '%x (%s): %s' % (offset,
-                             GetLocation(args.addr2line, binary, offset),
-                             message)
+      print('%x (%s): %s' % (offset, GetLocation(args.addr2line, binary,
+                                                 offset), message))
     PrintDisassembly(args.objdump, binary,
                      start_address=bundle * BUNDLE_SIZE,
                      stop_address=(bundle + 1) * BUNDLE_SIZE,
                      erroneous_offsets=[offset for offset, _ in bundle_errors])
-    print
+    print()
 
 
 def ParseArgs():
@@ -135,7 +136,7 @@ def main():
         PrintErrors(args, binary, errors)
         errors = []
         retcode = 1
-      print line.rstrip()
+      print(line.rstrip())
 
   if errors:
     PrintErrors(args, binary, errors)

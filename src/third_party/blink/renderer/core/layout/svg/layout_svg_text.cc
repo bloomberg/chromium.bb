@@ -302,6 +302,7 @@ void LayoutSVGText::UpdateLayout() {
 }
 
 void LayoutSVGText::RecalcVisualOverflow() {
+  ClearVisualOverflow();
   LayoutObject::RecalcVisualOverflow();
   AddSelfVisualOverflow(LayoutRect(ObjectBoundingBox()));
   AddVisualEffectOverflow();

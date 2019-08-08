@@ -23,7 +23,8 @@ SignedExchangeURLLoaderFactoryForNonNetworkService::
     : resource_context_(resource_context),
       url_request_context_getter_(url_request_context_getter) {
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
+  DCHECK(
+      signed_exchange_utils::IsSignedExchangeHandlingEnabled(resource_context));
 }
 
 SignedExchangeURLLoaderFactoryForNonNetworkService::

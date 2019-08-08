@@ -168,7 +168,7 @@ Polymer({
       this.unlisten(this.button_, 'keydown', 'onButtonKeydown_');
     }
     this.button_ = /** @type Element */
-        (this.root.querySelector('#toggleButton *:not([hidden]) button'));
+        (this.root.querySelector('#toggleButton *:not([hidden])'));
     this.listen(assert(this.button_), 'keydown', 'onButtonKeydown_');
 
     if (!this.grouped_(siteGroup)) {

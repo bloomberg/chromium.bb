@@ -7,26 +7,17 @@
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace viz {
-namespace {
-
-uint32_t TextureFormat(gfx::BufferFormat format) {
-  return format == gfx::BufferFormat::BGR_565 ? GL_RGB : GL_RGBA;
-}
-
-}  // namespace
 
 GLOutputSurfaceBufferQueueAndroid::GLOutputSurfaceBufferQueueAndroid(
     scoped_refptr<VizProcessContextProvider> context_provider,
     gpu::SurfaceHandle surface_handle,
-    SyntheticBeginFrameSource* synthetic_begin_frame_source,
+    UpdateVSyncParametersCallback update_vsync_callback,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gfx::BufferFormat buffer_format)
     : GLOutputSurfaceBufferQueue(context_provider,
                                  surface_handle,
-                                 synthetic_begin_frame_source,
+                                 std::move(update_vsync_callback),
                                  gpu_memory_buffer_manager,
-                                 GL_TEXTURE_2D,
-                                 TextureFormat(buffer_format),
                                  buffer_format) {}
 
 GLOutputSurfaceBufferQueueAndroid::~GLOutputSurfaceBufferQueueAndroid() =

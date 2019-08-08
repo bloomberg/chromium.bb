@@ -11,7 +11,6 @@
 #include "components/viz/common/quads/selection.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
-#include "content/common/download/mhtml_save_status.h"
 #include "content/common/render_widget_surface_properties.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/resource_type.h"
@@ -33,9 +32,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventAckState,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::RequestContextType,
                           blink::mojom::RequestContextType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(content::ResourceType,
-                          content::RESOURCE_TYPE_LAST_TYPE - 1)
-IPC_ENUM_TRAITS_MAX_VALUE(content::MhtmlSaveStatus,
-                          content::MhtmlSaveStatus::LAST)
+                          content::ResourceType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicySource,
                           blink::kWebContentSecurityPolicySourceLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ContentSecurityPolicyType,
@@ -45,8 +42,8 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
                               blink::WebInputEvent::kTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebImeTextSpan::Type,
                           blink::WebImeTextSpan::Type::kMisspellingSuggestion)
-IPC_ENUM_TRAITS_MAX_VALUE(ws::mojom::ImeTextSpanThickness,
-                          ws::mojom::ImeTextSpanThickness::kThick)
+IPC_ENUM_TRAITS_MAX_VALUE(ui::mojom::ImeTextSpanThickness,
+                          ui::mojom::ImeTextSpanThickness::kThick)
 
 IPC_STRUCT_TRAITS_BEGIN(viz::Selection<gfx::SelectionBound>)
   IPC_STRUCT_TRAITS_MEMBER(start)

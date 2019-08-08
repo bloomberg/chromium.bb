@@ -5,9 +5,18 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.graphics.Bitmap;
+import android.support.annotation.ColorRes;
+import android.text.TextUtils;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
+import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
+import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
+import org.chromium.ui.modelutil.PropertyModel;
+
+import java.util.ArrayList;
 
 /**
  * An infobar that presents the user with several buttons.
@@ -24,9 +33,9 @@ public class ConfirmInfoBar extends InfoBar {
     /** Text shown on the link, e.g. "Learn more". */
     private final String mLinkText;
 
-    protected ConfirmInfoBar(int iconDrawableId, Bitmap iconBitmap, String message,
-            String linkText, String primaryButtonText, String secondaryButtonText) {
-        super(iconDrawableId, iconBitmap, message);
+    protected ConfirmInfoBar(int iconDrawableId, @ColorRes int iconTintId, Bitmap iconBitmap,
+            String message, String linkText, String primaryButtonText, String secondaryButtonText) {
+        super(iconDrawableId, iconTintId, message, iconBitmap);
         mPrimaryButtonText = primaryButtonText;
         mSecondaryButtonText = secondaryButtonText;
         mLinkText = linkText;
@@ -58,6 +67,51 @@ public class ConfirmInfoBar extends InfoBar {
         onButtonClicked(action);
     }
 
+    @Override
+    public boolean supportsTouchlessMode() {
+        // Only allow whitelisted implementations of the confirm infobar.
+        @InfoBarIdentifier
+        int infobarId = getInfoBarIdentifier();
+        return infobarId == InfoBarIdentifier.POPUP_BLOCKED_INFOBAR_DELEGATE_MOBILE
+                || infobarId == InfoBarIdentifier.DANGEROUS_DOWNLOAD_INFOBAR_DELEGATE_ANDROID;
+    }
+
+    @Override
+    public PropertyModel createModel() {
+        PropertyModel model = super.createModel();
+
+        ArrayList<PropertyModel> options = new ArrayList<>();
+        if (!TextUtils.isEmpty(mPrimaryButtonText)) {
+            options.add(
+                    new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
+                            .with(DialogListItemProperties.TEXT, mPrimaryButtonText)
+                            .with(DialogListItemProperties.CLICK_LISTENER,
+                                    (v) -> onButtonClicked(true))
+                            .with(DialogListItemProperties.ICON,
+                                    ApiCompatibilityUtils.getDrawable(getContext().getResources(),
+                                            R.drawable.ic_check_circle))
+                            .build());
+        }
+
+        if (!TextUtils.isEmpty(mSecondaryButtonText)) {
+            options.add(
+                    new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
+                            .with(DialogListItemProperties.TEXT, mSecondaryButtonText)
+                            .with(DialogListItemProperties.CLICK_LISTENER,
+                                    (v) -> onButtonClicked(false))
+                            .with(DialogListItemProperties.ICON,
+                                    ApiCompatibilityUtils.getDrawable(getContext().getResources(),
+                                            R.drawable.ic_cancel_circle))
+                            .build());
+        }
+
+        PropertyModel[] optionModels = new PropertyModel[options.size()];
+        options.toArray(optionModels);
+        model.set(TouchlessDialogProperties.LIST_MODELS, optionModels);
+
+        return model;
+    }
+
     /**
      * Creates and begins the process for showing a ConfirmInfoBar.
      * @param enumeratedIconId ID corresponding to the icon that will be shown for the infobar.
@@ -75,8 +129,8 @@ public class ConfirmInfoBar extends InfoBar {
             String linkText, String buttonOk, String buttonCancel) {
         int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
 
-        ConfirmInfoBar infoBar = new ConfirmInfoBar(drawableId, iconBitmap, message, linkText,
-                buttonOk, buttonCancel);
+        ConfirmInfoBar infoBar = new ConfirmInfoBar(
+                drawableId, 0, iconBitmap, message, linkText, buttonOk, buttonCancel);
 
         return infoBar;
     }

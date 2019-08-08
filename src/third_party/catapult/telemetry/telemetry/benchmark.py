@@ -102,6 +102,8 @@ class Benchmark(command_line.Command):
 
   def Run(self, finder_options):
     """Do not override this method."""
+    finder_options.target_platforms = self.GetSupportedPlatformNames(
+        self.SUPPORTED_PLATFORMS)
     return story_runner.RunBenchmark(self, finder_options)
 
   @property
@@ -196,11 +198,6 @@ class Benchmark(command_line.Command):
       True if the value should be added to the test results, False otherwise.
     """
     return True
-
-  def CustomizeBrowserOptions(self, options):
-    """DEPRECATED! Please use CustomizeOptions() instead.
-       Add browser options that are required by this benchmark.
-    """
 
   def CustomizeOptions(self, finder_options):
     """Add options that are required by this benchmark."""

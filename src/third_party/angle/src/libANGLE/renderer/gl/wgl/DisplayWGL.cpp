@@ -106,7 +106,6 @@ DisplayWGL::DisplayWGL(const egl::DisplayState &state)
       mD3d11Module(nullptr),
       mD3D11DeviceHandle(nullptr),
       mD3D11Device(nullptr),
-      mHasWorkerContexts(true),
       mUseARBShare(true)
 {}
 
@@ -291,13 +290,6 @@ egl::Error DisplayWGL::initializeImpl(egl::Display *display)
     if (requestedDisplayType == EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE && IsIntel(vendor))
     {
         return egl::EglNotInitialized() << "Intel OpenGL ES drivers are not supported.";
-    }
-
-    // Using worker contexts is not currently supported due to bugs in the driver.
-    // http://anglebug.com/3031
-    if (IsAMD(vendor))
-    {
-        mHasWorkerContexts = false;
     }
 
     // Create DXGI swap chains for windows that come from other processes.  Windows is unable to
@@ -567,7 +559,7 @@ bool DisplayWGL::testDeviceLost()
 {
     if (mHasRobustness)
     {
-        return mRenderer->getResetStatus() != GL_NO_ERROR;
+        return mRenderer->getResetStatus() != gl::GraphicsResetStatus::NoError;
     }
 
     return false;
@@ -641,13 +633,7 @@ egl::Error DisplayWGL::initializeD3DDevice()
         return egl::EglNotInitialized() << "Could not create D3D11 device, " << gl::FmtHR(result);
     }
 
-    egl::Error error = registerD3DDevice(mD3D11Device, &mD3D11DeviceHandle);
-    if (error.isError())
-    {
-        return error;
-    }
-
-    return egl::NoError();
+    return registerD3DDevice(mD3D11Device, &mD3D11DeviceHandle);
 }
 
 void DisplayWGL::generateExtensions(egl::DisplayExtensions *outExtensions) const
@@ -709,6 +695,10 @@ egl::Error DisplayWGL::makeCurrent(egl::Surface *drawSurface,
         SurfaceWGL *drawSurfaceWGL = GetImplAs<SurfaceWGL>(drawSurface);
         newDC                      = drawSurfaceWGL->getDC();
     }
+    else
+    {
+        newDC = mDeviceContext;
+    }
 
     HGLRC newContext = currentContext.glrc;
     if (context)
@@ -716,9 +706,15 @@ egl::Error DisplayWGL::makeCurrent(egl::Surface *drawSurface,
         ContextWGL *contextWGL = GetImplAs<ContextWGL>(context);
         newContext             = contextWGL->getContext();
     }
+    else
+    {
+        newContext = 0;
+    }
 
     if (newDC != currentContext.dc || newContext != currentContext.glrc)
     {
+        ASSERT(newDC != 0);
+
         if (!mFunctionsWGL->makeCurrent(newDC, newContext))
         {
             // TODO(geofflang): What error type here?
@@ -991,11 +987,6 @@ WorkerContext *DisplayWGL::createWorkerContext(std::string *infoLog,
                                                HGLRC sharedContext,
                                                const std::vector<int> &workerContextAttribs)
 {
-    if (!mHasWorkerContexts)
-    {
-        *infoLog += "Has no WorkerContext support.";
-        return nullptr;
-    }
     if (!sharedContext)
     {
         *infoLog += "Unable to create the shared context.";

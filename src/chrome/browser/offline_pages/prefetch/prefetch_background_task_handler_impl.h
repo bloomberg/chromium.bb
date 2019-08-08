@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_OFFLINE_PAGES_PREFETCH_PREFETCH_BACKGROUND_TASK_HANDLER_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
@@ -44,7 +45,7 @@ class PrefetchBackgroundTaskHandlerImpl : public PrefetchBackgroundTaskHandler {
 
   // PrefetchBackgroundTaskHandler implementation.
   void CancelBackgroundTask() override;
-  void EnsureTaskScheduled() override;
+  void EnsureTaskScheduled(const std::string& gcm_token) override;
 
   // Backoff control.  These functions directly modify/read prefs.
   void Backoff() override;

@@ -222,6 +222,9 @@ class SimpleBuilder(generic_builders.Builder):
     if config.afdo_generate:
       stage_list += [[afdo_stages.AFDODataGenerateStage, board]]
 
+    if config.orderfile_generate:
+      stage_list += [[artifact_stages.GenerateOrderfileStage, board]]
+
     stage_list += [
         [release_stages.SignerTestStage, board, archive_stage],
         [release_stages.SigningStage, board],
@@ -273,7 +276,6 @@ class SimpleBuilder(generic_builders.Builder):
     if self._run.config.build_type == constants.PALADIN_TYPE:
       self._RunStage(build_stages.RegenPortageCacheStage)
     self._RunStage(test_stages.BinhostTestStage)
-    self._RunStage(test_stages.BranchUtilTestStage)
 
   def RunEarlySyncAndSetupStages(self):
     """Runs through the early sync and board setup stages."""
@@ -292,7 +294,6 @@ class SimpleBuilder(generic_builders.Builder):
   def RunBuildTestStages(self):
     """Runs through the stages to test before building."""
     self._RunStage(test_stages.BinhostTestStage)
-    self._RunStage(test_stages.BranchUtilTestStage)
 
   def RunBuildStages(self):
     """Runs through the stages to perform the build and resulting tests."""

@@ -96,7 +96,7 @@ class AudioServiceImpl : public AudioService,
   // chromeos::CrasAudioHandler::AudioObserver overrides.
   void OnOutputNodeVolumeChanged(uint64_t id, int volume) override;
   void OnInputNodeGainChanged(uint64_t id, int gain) override;
-  void OnOutputMuteChanged(bool mute_on, bool system_adjust) override;
+  void OnOutputMuteChanged(bool mute_on) override;
   void OnInputMuteChanged(bool mute_on) override;
   void OnAudioNodesChanged() override;
   void OnActiveOutputNodeChanged() override;
@@ -129,21 +129,20 @@ class AudioServiceImpl : public AudioService,
 };
 
 AudioServiceImpl::AudioServiceImpl(AudioDeviceIdCalculator* id_calculator)
-    : cras_audio_handler_(NULL),
+    : cras_audio_handler_(chromeos::CrasAudioHandler::Get()),
       id_calculator_(id_calculator),
       weak_ptr_factory_(this) {
   CHECK(id_calculator_);
 
-  if (chromeos::CrasAudioHandler::IsInitialized()) {
-    cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
+  if (cras_audio_handler_)
     cras_audio_handler_->AddAudioObserver(this);
-  }
 }
 
 AudioServiceImpl::~AudioServiceImpl() {
-  if (cras_audio_handler_ && chromeos::CrasAudioHandler::IsInitialized()) {
-    cras_audio_handler_->RemoveAudioObserver(this);
-  }
+  // The CrasAudioHandler global instance may have already been destroyed, so
+  // do not used the cached pointer here.
+  if (chromeos::CrasAudioHandler::Get())
+    chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
 }
 
 void AudioServiceImpl::AddObserver(AudioService::Observer* observer) {
@@ -375,7 +374,7 @@ void AudioServiceImpl::OnOutputNodeVolumeChanged(uint64_t id, int volume) {
   NotifyLevelChanged(id, volume);
 }
 
-void AudioServiceImpl::OnOutputMuteChanged(bool mute_on, bool system_adjust) {
+void AudioServiceImpl::OnOutputMuteChanged(bool mute_on) {
   NotifyMuteChanged(false, mute_on);
 }
 

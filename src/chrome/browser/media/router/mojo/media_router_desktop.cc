@@ -217,8 +217,7 @@ void MediaRouterDesktop::ProvideSinks(
 
 void MediaRouterDesktop::InitializeMediaRouteProviders() {
   InitializeExtensionMediaRouteProviderProxy();
-  if (base::FeatureList::IsEnabled(features::kLocalScreenCasting))
-    InitializeWiredDisplayMediaRouteProvider();
+  InitializeWiredDisplayMediaRouteProvider();
   if (CastMediaRouteProviderEnabled())
     InitializeCastMediaRouteProvider();
   if (DialMediaRouteProviderEnabled())

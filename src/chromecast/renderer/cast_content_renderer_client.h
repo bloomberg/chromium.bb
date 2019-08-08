@@ -68,6 +68,9 @@ class CastContentRendererClient
                       base::OnceClosure closure) override;
   bool IsIdleMediaSuspendEnabled() override;
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
+  std::unique_ptr<content::URLLoaderThrottleProvider>
+  CreateURLLoaderThrottleProvider(
+      content::URLLoaderThrottleProviderType type) override;
 
  protected:
   CastContentRendererClient();

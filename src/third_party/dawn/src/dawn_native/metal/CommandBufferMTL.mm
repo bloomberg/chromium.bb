@@ -20,7 +20,6 @@
 #include "dawn_native/metal/BufferMTL.h"
 #include "dawn_native/metal/ComputePipelineMTL.h"
 #include "dawn_native/metal/DeviceMTL.h"
-#include "dawn_native/metal/InputStateMTL.h"
 #include "dawn_native/metal/PipelineLayoutMTL.h"
 #include "dawn_native/metal/RenderPipelineMTL.h"
 #include "dawn_native/metal/SamplerMTL.h"
@@ -68,7 +67,21 @@ namespace dawn_native { namespace metal {
                 descriptor.colorAttachments[i].level = attachmentInfo.view->GetBaseMipLevel();
                 descriptor.colorAttachments[i].slice = attachmentInfo.view->GetBaseArrayLayer();
 
-                descriptor.colorAttachments[i].storeAction = MTLStoreActionStore;
+                ASSERT(attachmentInfo.storeOp == dawn::StoreOp::Store);
+                // TODO(jiawei.shao@intel.com): emulate MTLStoreActionStoreAndMultisampleResolve on
+                // the platforms that do not support this store action.
+                if (attachmentInfo.resolveTarget.Get() != nullptr) {
+                    descriptor.colorAttachments[i].resolveTexture =
+                        ToBackend(attachmentInfo.resolveTarget->GetTexture())->GetMTLTexture();
+                    descriptor.colorAttachments[i].resolveLevel =
+                        attachmentInfo.resolveTarget->GetBaseMipLevel();
+                    descriptor.colorAttachments[i].resolveSlice =
+                        attachmentInfo.resolveTarget->GetBaseArrayLayer();
+                    descriptor.colorAttachments[i].storeAction =
+                        MTLStoreActionStoreAndMultisampleResolve;
+                } else {
+                    descriptor.colorAttachments[i].storeAction = MTLStoreActionStore;
+                }
             }
 
             if (renderPass->hasDepthStencilAttachment) {
@@ -199,6 +212,12 @@ namespace dawn_native { namespace metal {
                             [compute setTexture:textureView->GetMTLTexture() atIndex:computeIndex];
                         }
                     } break;
+
+                    // TODO(shaobo.yan@intel.com): Implement dynamic buffer offset.
+                    case dawn::BindingType::DynamicUniformBuffer:
+                    case dawn::BindingType::DynamicStorageBuffer:
+                        UNREACHABLE();
+                        break;
                 }
             }
         }
@@ -302,7 +321,7 @@ namespace dawn_native { namespace metal {
                         break;
                     }
 
-                    uint32_t offset = src.offset;
+                    uint64_t offset = src.offset;
 
                     // Doing all the copy except the last image.
                     if (size.depth > 1) {
@@ -414,7 +433,7 @@ namespace dawn_native { namespace metal {
                         break;
                     }
 
-                    uint32_t offset = dst.offset;
+                    uint64_t offset = dst.offset;
 
                     // Doing all the copy except the last image.
                     if (size.depth > 1) {
@@ -468,6 +487,40 @@ namespace dawn_native { namespace metal {
                                destinationOffset:offset
                           destinationBytesPerRow:lastRowDataSize
                         destinationBytesPerImage:lastRowDataSize];
+                } break;
+
+                case Command::CopyTextureToTexture: {
+                    CopyTextureToTextureCmd* copy =
+                        mCommands.NextCommand<CopyTextureToTextureCmd>();
+                    Texture* srcTexture = ToBackend(copy->source.texture.Get());
+                    Texture* dstTexture = ToBackend(copy->destination.texture.Get());
+
+                    MTLOrigin srcOrigin;
+                    srcOrigin.x = copy->source.origin.x;
+                    srcOrigin.y = copy->source.origin.y;
+                    srcOrigin.z = copy->source.origin.z;
+
+                    MTLOrigin dstOrigin;
+                    dstOrigin.x = copy->destination.origin.x;
+                    dstOrigin.y = copy->destination.origin.y;
+                    dstOrigin.z = copy->destination.origin.z;
+
+                    MTLSize size;
+                    size.width = copy->copySize.width;
+                    size.height = copy->copySize.height;
+                    size.depth = copy->copySize.depth;
+
+                    encoders.EnsureBlit(commandBuffer);
+
+                    [encoders.blit copyFromTexture:srcTexture->GetMTLTexture()
+                                       sourceSlice:copy->source.slice
+                                       sourceLevel:copy->source.level
+                                      sourceOrigin:srcOrigin
+                                        sourceSize:size
+                                         toTexture:dstTexture->GetMTLTexture()
+                                  destinationSlice:copy->destination.slice
+                                  destinationLevel:copy->destination.level
+                                 destinationOrigin:dstOrigin];
                 } break;
 
                 default: { UNREACHABLE(); } break;
@@ -585,7 +638,8 @@ namespace dawn_native { namespace metal {
 
                 case Command::DrawIndexed: {
                     DrawIndexedCmd* draw = mCommands.NextCommand<DrawIndexedCmd>();
-                    size_t formatSize = IndexFormatSize(lastPipeline->GetIndexFormat());
+                    size_t formatSize =
+                        IndexFormatSize(lastPipeline->GetInputStateDescriptor()->indexFormat);
 
                     // The index and instance count must be non-zero, otherwise no-op
                     if (draw->indexCount != 0 && draw->instanceCount != 0) {
@@ -667,6 +721,15 @@ namespace dawn_native { namespace metal {
                     rect.width = cmd->width;
                     rect.height = cmd->height;
 
+                    // The scissor rect x + width must be <= render pass width
+                    if ((rect.x + rect.width) > renderPassCmd->width) {
+                        rect.width = renderPassCmd->width - rect.x;
+                    }
+                    // The scissor rect y + height must be <= render pass height
+                    if ((rect.y + rect.height > renderPassCmd->height)) {
+                        rect.height = renderPassCmd->height - rect.y;
+                    }
+
                     [encoder setScissorRect:rect];
                 } break;
 
@@ -694,7 +757,7 @@ namespace dawn_native { namespace metal {
                 case Command::SetVertexBuffers: {
                     SetVertexBuffersCmd* cmd = mCommands.NextCommand<SetVertexBuffersCmd>();
                     auto buffers = mCommands.NextData<Ref<BufferBase>>(cmd->count);
-                    auto offsets = mCommands.NextData<uint32_t>(cmd->count);
+                    auto offsets = mCommands.NextData<uint64_t>(cmd->count);
 
                     std::array<id<MTLBuffer>, kMaxVertexInputs> mtlBuffers;
                     std::array<NSUInteger, kMaxVertexInputs> mtlOffsets;

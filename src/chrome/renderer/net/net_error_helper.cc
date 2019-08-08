@@ -31,6 +31,7 @@
 #include "components/error_page/common/localized_error.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/grit/components_resources.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/security_interstitials/core/common/interfaces/interstitial_commands.mojom.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -77,8 +78,6 @@ using error_page::DnsProbeStatus;
 using error_page::DnsProbeStatusToString;
 using error_page::ErrorPageParams;
 using error_page::LocalizedError;
-using OfflineContentOnNetErrorFeatureState =
-    LocalizedError::OfflineContentOnNetErrorFeatureState;
 
 namespace {
 
@@ -99,31 +98,23 @@ NetErrorHelperCore::FrameType GetFrameType(RenderFrame* render_frame) {
 }
 
 #if defined(OS_ANDROID)
-OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {
-  if (!base::FeatureList::IsEnabled(features::kNewNetErrorPageUI))
-    return OfflineContentOnNetErrorFeatureState::kDisabled;
-  const std::string alternate_ui_name = base::GetFieldTrialParamValueByFeature(
-      features::kNewNetErrorPageUI,
-      features::kNewNetErrorPageUIAlternateParameterName);
-  if (alternate_ui_name ==
-      features::kNewNetErrorPageUIAlternateContentPreview) {
-    return OfflineContentOnNetErrorFeatureState::kEnabledSummary;
-  }
-  return OfflineContentOnNetErrorFeatureState::kEnabledList;
+bool IsOfflineContentOnNetErrorFeatureEnabled() {
+  return offline_pages::IsOfflinePagesEnabled() &&
+         base::FeatureList::IsEnabled(features::kNewNetErrorPageUI);
 }
 #else   // OS_ANDROID
-OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {
-  return OfflineContentOnNetErrorFeatureState::kDisabled;
+bool IsOfflineContentOnNetErrorFeatureEnabled() {
+  return false;
 }
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
 bool IsAutoFetchFeatureEnabled() {
   // This feature is incompatible with OfflineContentOnNetError, so don't allow
-  // both.
-  return GetOfflineContentOnNetErrorFeatureState() ==
-             OfflineContentOnNetErrorFeatureState::kDisabled &&
-         base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage);
+  // both. Disabled for touchless builds.
+  return !IsOfflineContentOnNetErrorFeatureEnabled() &&
+         base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage) &&
+         offline_pages::IsOfflinePagesEnabled();
 }
 #else   // OS_ANDROID
 bool IsAutoFetchFeatureEnabled() {
@@ -384,47 +375,29 @@ chrome::mojom::NetworkEasterEgg* NetErrorHelper::GetRemoteNetworkEasterEgg() {
   return remote_network_easter_egg_.get();
 }
 
-void NetErrorHelper::GenerateLocalizedErrorPage(
+LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
     const error_page::Error& error,
     bool is_failed_post,
     bool can_show_network_diagnostics_dialog,
     std::unique_ptr<ErrorPageParams> params,
-    bool* reload_button_shown,
-    bool* show_cached_copy_button_shown,
-    bool* download_button_shown,
-    OfflineContentOnNetErrorFeatureState* offline_content_feature_state,
-    bool* auto_fetch_allowed,
     std::string* error_html) const {
   error_html->clear();
 
   int resource_id = IDR_NET_ERROR_HTML;
   const base::StringPiece template_html(
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
-  if (template_html.empty()) {
-    NOTREACHED() << "unable to load template.";
-  } else {
-    base::DictionaryValue error_strings;
-    *offline_content_feature_state = GetOfflineContentOnNetErrorFeatureState();
-    LocalizedError::GetStrings(
-        error.reason(), error.domain(), error.url(), is_failed_post,
-        error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
-        ChromeRenderThreadObserver::is_incognito_process(),
-        *offline_content_feature_state, IsAutoFetchFeatureEnabled(),
-        RenderThread::Get()->GetLocale(), std::move(params), &error_strings);
-    *reload_button_shown = error_strings.Get("reloadButton", nullptr);
-    *show_cached_copy_button_shown =
-        error_strings.Get("cacheButton", nullptr);
-    *download_button_shown =
-        error_strings.Get("downloadButton", nullptr);
-    if (!error_strings.Get("suggestedOfflineContentPresentationMode",
-                           nullptr)) {
-      *offline_content_feature_state =
-          OfflineContentOnNetErrorFeatureState::kDisabled;
-    }
-    *auto_fetch_allowed = error_strings.FindKey("attemptAutoFetch") != nullptr;
-    // "t" is the id of the template's root node.
-    *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
-  }
+
+  LocalizedError::PageState page_state = LocalizedError::GetPageState(
+      error.reason(), error.domain(), error.url(), is_failed_post,
+      error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
+      ChromeRenderThreadObserver::is_incognito_process(),
+      IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
+      RenderThread::Get()->GetLocale(), std::move(params));
+  DCHECK(!template_html.empty()) << "unable to load template.";
+  // "t" is the id of the template's root node.
+  *error_html =
+      webui::GetTemplatesHtml(template_html, &page_state.strings, "t");
+  return page_state;
 }
 
 void NetErrorHelper::LoadErrorPage(const std::string& html,
@@ -447,30 +420,29 @@ void NetErrorHelper::EnablePageHelperFunctions() {
       weak_supervised_user_error_controller_delegate_factory_.GetWeakPtr());
 }
 
-void NetErrorHelper::UpdateErrorPage(const error_page::Error& error,
-                                     bool is_failed_post,
-                                     bool can_show_network_diagnostics_dialog) {
-  base::DictionaryValue error_strings;
-  LocalizedError::GetStrings(
+LocalizedError::PageState NetErrorHelper::UpdateErrorPage(
+    const error_page::Error& error,
+    bool is_failed_post,
+    bool can_show_network_diagnostics_dialog) {
+  LocalizedError::PageState page_state = LocalizedError::GetPageState(
       error.reason(), error.domain(), error.url(), is_failed_post,
       error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
-      GetOfflineContentOnNetErrorFeatureState(), IsAutoFetchFeatureEnabled(),
-      RenderThread::Get()->GetLocale(), std::unique_ptr<ErrorPageParams>(),
-      &error_strings);
+      IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
+      RenderThread::Get()->GetLocale(), std::unique_ptr<ErrorPageParams>());
 
   std::string json;
-  JSONWriter::Write(error_strings, &json);
+  JSONWriter::Write(page_state.strings, &json);
 
   std::string js = "if (window.updateForDnsProbe) "
                    "updateForDnsProbe(" + json + ");";
   base::string16 js16;
-  if (!base::UTF8ToUTF16(js.c_str(), js.length(), &js16)) {
+  if (base::UTF8ToUTF16(js.c_str(), js.length(), &js16)) {
+    render_frame()->ExecuteJavaScript(js16);
+  } else {
     NOTREACHED();
-    return;
   }
-
-  render_frame()->ExecuteJavaScript(js16);
+  return page_state;
 }
 
 void NetErrorHelper::InitializeErrorPageEasterEggHighScore(int high_score) {
@@ -513,6 +485,12 @@ void NetErrorHelper::FetchNavigationCorrections(
   correction_fetcher_->SetMethod("POST");
   correction_fetcher_->SetBody(navigation_correction_request_body);
   correction_fetcher_->SetHeader("Content-Type", "application/json");
+
+  // Since the page is trying to fetch cross-origin resources (which would
+  // be protected by CORB in no-cors mode), we need to ask for CORS.  See also
+  // https://crbug.com/932542.
+  correction_fetcher_->SetFetchRequestMode(
+      network::mojom::FetchRequestMode::kCors);
 
   // Prevent CORB from triggering on this request by setting an Origin header.
   correction_fetcher_->SetHeader("Origin", "null");
@@ -583,17 +561,6 @@ void NetErrorHelper::OfflineContentAvailable(
                       offline_content_json, ");"})));
   }
 #endif
-}
-
-void NetErrorHelper::OfflineContentSummaryAvailable(
-    const std::string& offline_content_summary_json) {
-#if defined(OS_ANDROID)
-  if (!offline_content_summary_json.empty()) {
-    render_frame()->ExecuteJavaScript(
-        base::UTF8ToUTF16(base::StrCat({"offlineContentSummaryAvailable(",
-                                        offline_content_summary_json, ");"})));
-  }
-#endif  // defined(OS_ANDROID)
 }
 
 #if defined(OS_ANDROID)

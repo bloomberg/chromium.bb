@@ -173,8 +173,11 @@
       <message desc="Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in." name="IDS_DELETE_CONFIRMATION_MSG">
         Do you really want to remove <ph name="file">$1<ex>IMG_20160520_000000.jpg</ex></ph>?
       </message>
-      <message desc="Label for the button to switch to take photo mode." name="IDS_SWITCH_TAKE_PHOTO_BUTTON">
+      <message desc="Label for spoken feedback to read out switch to take photo mode button." name="IDS_SWITCH_TAKE_PHOTO_BUTTON">
         Switch to take photo
+      </message>
+      <message desc="Label for switch to take photo mode button." name="IDS_LABEL_SWITCH_TAKE_PHOTO_BUTTON">
+        Photo
       </message>
       <message desc="Label for the checkbox to toggle the grid shown on preview." name="IDS_TOGGLE_GRID_BUTTON">
         Grid
@@ -197,6 +200,9 @@
       </message>
       <message desc="Error message shown when failing to take photo." name="IDS_ERROR_MSG_TAKE_PHOTO_FAILED">
         Unable to take photo
+      </message>
+      <message desc="Error message shown when failing to take portrait photo." name="IDS_ERROR_MSG_TAKE_PORTRAIT_PHOTO_FAILED">
+        Unable to take portrait photo
       </message>
       <message desc="Short description of the Camera App." name="IDS_DESCRIPTION">
         Take photos and record videos with your camera.
@@ -240,8 +246,11 @@
       <message desc="Label for grid-type: golden ratio." name="IDS_LABEL_GRID_GOLDEN">
         Golden ratio
       </message>
-      <message desc="Label for the button to switch to record video mode." name="IDS_SWITCH_RECORD_VIDEO_BUTTON">
+      <message desc="Label for spoken feedback to read out switch to record video mode button." name="IDS_SWITCH_RECORD_VIDEO_BUTTON">
         Switch to record video
+      </message>
+      <message desc="Label for switch to record video mode button." name="IDS_LABEL_SWITCH_RECORD_VIDEO_BUTTON">
+        Video
       </message>
       <message desc="Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally." name="IDS_TOGGLE_MIRROR_BUTTON">
         Mirroring
@@ -251,6 +260,18 @@
       </message>
       <message desc="Label for the back button." name="IDS_BACK_BUTTON">
         Go back
+      </message>
+      <message desc="Label for spoken feedback to read out switch to take square photo mode button." name="IDS_SWITCH_TAKE_SQUARE_PHOTO_BUTTON">
+        Switch to take square photo
+      </message>
+      <message desc="Label for switch to take square photo mode button." name="IDS_LABEL_SWITCH_TAKE_SQUARE_PHOTO_BUTTON">
+        Square
+      </message>
+      <message desc="Label for spoken feedback to read out switch to take portrait photo mode button." name="IDS_SWITCH_TAKE_PORTRAIT_PHOTO_BUTTON">
+        Switch to take portrait photo
+      </message>
+      <message desc="Label for switch to take portrait photo mode button." name="IDS_LABEL_SWITCH_TAKE_PORTRAIT_PHOTO_BUTTON">
+        Portrait
       </message>
     </messages>
   </release>

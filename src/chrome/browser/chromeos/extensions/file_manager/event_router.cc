@@ -37,7 +37,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/drivefs/drivefs_host.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -490,10 +490,7 @@ void EventRouter::Shutdown() {
       << "Not all file watchers are "
       << "removed. This can happen when the Files app is open during shutdown.";
   file_watchers_.clear();
-  if (!profile_) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(profile_);
 
   pref_change_registrar_->RemoveAll();
 
@@ -527,10 +524,8 @@ void EventRouter::Shutdown() {
 }
 
 void EventRouter::ObserveEvents() {
-  if (!profile_) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(profile_);
+
   if (!chromeos::LoginState::IsInitialized() ||
       !chromeos::LoginState::Get()->IsUserLoggedIn()) {
     return;
@@ -599,7 +594,7 @@ void EventRouter::ObserveEvents() {
 void EventRouter::AddFileWatch(const base::FilePath& local_path,
                                const base::FilePath& virtual_path,
                                const std::string& extension_id,
-                               const BoolCallback& callback) {
+                               BoolCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
@@ -619,7 +614,7 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
     if (is_on_drive) {
       // For Drive, file watching is done via OnDirectoryChanged().
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(callback, true));
+          FROM_HERE, base::BindOnce(std::move(callback), true));
     } else {
       // For local files, start watching using FileWatcher.
       watcher->WatchLocalFile(
@@ -627,14 +622,14 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
           base::Bind(&EventRouter::HandleFileWatchNotification,
                      weak_factory_.GetWeakPtr(),
                      static_cast<drive::FileChange*>(nullptr)),
-          callback);
+          std::move(callback));
     }
 
     file_watchers_[watch_path] = std::move(watcher);
   } else {
     iter->second->AddExtension(extension_id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, true));
+        FROM_HERE, base::BindOnce(std::move(callback), true));
   }
 }
 
@@ -733,10 +728,8 @@ void EventRouter::OnWatcherManagerNotification(
 }
 
 void EventRouter::OnConnectionChanged(network::mojom::ConnectionType type) {
-  if (!profile_ || !extensions::EventRouter::Get(profile_)) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(profile_);
+  DCHECK(extensions::EventRouter::Get(profile_));
 
   BroadcastEvent(
       profile_, extensions::events::
@@ -750,10 +743,8 @@ void EventRouter::TimezoneChanged(const icu::TimeZone& timezone) {
 }
 
 void EventRouter::OnFileManagerPrefsChanged() {
-  if (!profile_ || !extensions::EventRouter::Get(profile_)) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(profile_);
+  DCHECK(extensions::EventRouter::Get(profile_));
 
   BroadcastEvent(
       profile_, extensions::events::FILE_MANAGER_PRIVATE_ON_PREFERENCES_CHANGED,
@@ -913,10 +904,7 @@ void EventRouter::DispatchDirectoryChangeEventImpl(
     const drive::FileChange* list,
     bool got_error,
     const std::vector<std::string>& extension_ids) {
-  if (!profile_) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(profile_);
   std::unique_ptr<drive::FileChange> changes;
   if (list)
     changes = std::make_unique<drive::FileChange>(*list);  // Copy
@@ -1102,11 +1090,13 @@ void EventRouter::OnFileSystemMountFailed() {
 
 void EventRouter::PopulateCrostiniUnshareEvent(
     file_manager_private::CrostiniEvent& event,
+    const std::string& vm_name,
     const std::string& extension_id,
     const std::string& mount_name,
     const std::string& file_system_name,
     const std::string& full_path) {
   event.event_type = file_manager_private::CROSTINI_EVENT_TYPE_UNSHARE;
+  event.vm_name = vm_name;
   file_manager_private::CrostiniEvent::EntriesType entry;
   entry.additional_properties.SetString(
       "fileSystemRoot",
@@ -1119,7 +1109,8 @@ void EventRouter::PopulateCrostiniUnshareEvent(
   event.entries.emplace_back(std::move(entry));
 }
 
-void EventRouter::OnUnshare(const base::FilePath& path) {
+void EventRouter::OnUnshare(const std::string& vm_name,
+                            const base::FilePath& path) {
   std::string mount_name;
   std::string file_system_name;
   std::string full_path;
@@ -1130,7 +1121,7 @@ void EventRouter::OnUnshare(const base::FilePath& path) {
   for (const auto& extension_id : GetEventListenerExtensionIds(
            profile_, file_manager_private::OnCrostiniChanged::kEventName)) {
     file_manager_private::CrostiniEvent event;
-    PopulateCrostiniUnshareEvent(event, extension_id, mount_name,
+    PopulateCrostiniUnshareEvent(event, vm_name, extension_id, mount_name,
                                  file_system_name, full_path);
     DispatchEventToExtension(
         profile_, extension_id,

@@ -19,8 +19,8 @@
 namespace {
 std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
     gaia::GaiaSource source,
-    GaiaAuthConsumer* consumer,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    GaiaAuthConsumer* consumer) {
   return std::make_unique<GaiaAuthFetcher>(consumer, source,
                                            url_loader_factory);
 }
@@ -41,8 +41,9 @@ UbertokenFetcherImpl::UbertokenFetcherImpl(
                            /*access_token=*/"",
                            token_service,
                            std::move(ubertoken_callback),
-                           url_loader_factory,
-                           base::BindRepeating(CreateGaiaAuthFetcher, source),
+                           base::BindRepeating(CreateGaiaAuthFetcher,
+                                               source,
+                                               url_loader_factory),
                            is_bound_to_channel_id) {}
 
 UbertokenFetcherImpl::UbertokenFetcherImpl(
@@ -50,13 +51,11 @@ UbertokenFetcherImpl::UbertokenFetcherImpl(
     const std::string& access_token,
     OAuth2TokenService* token_service,
     CompletionCallback ubertoken_callback,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     GaiaAuthFetcherFactory factory,
     bool is_bound_to_channel_id)
     : OAuth2TokenService::Consumer("uber_token_fetcher"),
       token_service_(token_service),
       ubertoken_callback_(std::move(ubertoken_callback)),
-      url_loader_factory_(url_loader_factory),
       is_bound_to_channel_id_(is_bound_to_channel_id),
       gaia_auth_fetcher_factory_(factory),
       account_id_(account_id),
@@ -66,7 +65,6 @@ UbertokenFetcherImpl::UbertokenFetcherImpl(
   DCHECK(!account_id.empty());
   DCHECK(token_service);
   DCHECK(!ubertoken_callback_.is_null());
-  DCHECK(url_loader_factory);
 
   if (access_token_.empty()) {
     RequestAccessToken();
@@ -148,8 +146,7 @@ void UbertokenFetcherImpl::RequestAccessToken() {
 }
 
 void UbertokenFetcherImpl::ExchangeTokens() {
-  gaia_auth_fetcher_ =
-      gaia_auth_fetcher_factory_.Run(this, url_loader_factory_);
+  gaia_auth_fetcher_ = gaia_auth_fetcher_factory_.Run(this);
   gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(
       access_token_, is_bound_to_channel_id_);
 }

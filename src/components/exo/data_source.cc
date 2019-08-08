@@ -5,6 +5,7 @@
 #include "components/exo/data_source.h"
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task/post_task.h"
 #include "components/exo/data_source_delegate.h"
@@ -32,13 +33,6 @@ std::vector<uint8_t> ReadDataOnWorkerThread(base::ScopedFD fd) {
       return std::vector<uint8_t>();
     }
   }
-}
-
-void CreatePipe(base::ScopedFD* read_pipe, base::ScopedFD* write_pipe) {
-  int raw_pipe[2];
-  PCHECK(0 == pipe(raw_pipe));
-  read_pipe->reset(raw_pipe[0]);
-  write_pipe->reset(raw_pipe[1]);
 }
 }  // namespace
 
@@ -93,7 +87,7 @@ void DataSource::ReadData(ReadDataCallback callback) {
 
   base::ScopedFD read_fd;
   base::ScopedFD write_fd;
-  CreatePipe(&read_fd, &write_fd);
+  PCHECK(base::CreatePipe(&read_fd, &write_fd));
   delegate_->OnSend(kTextMimeTypeUtf8, std::move(write_fd));
 
   base::PostTaskWithTraitsAndReplyWithResult(

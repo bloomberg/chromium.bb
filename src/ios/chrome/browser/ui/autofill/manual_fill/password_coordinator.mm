@@ -7,6 +7,8 @@
 #include "base/mac/foundation_util.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
+#import "ios/chrome/browser/favicon/favicon_loader.h"
+#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/all_password_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
@@ -56,13 +58,19 @@
 
     auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
         browserState, ServiceAccessType::EXPLICIT_ACCESS);
+    FaviconLoader* faviconLoader =
+        IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
+
     _passwordMediator = [[ManualFillPasswordMediator alloc]
-        initWithPasswordStore:passwordStore];
+        initWithPasswordStore:passwordStore
+                faviconLoader:faviconLoader];
     [_passwordMediator fetchPasswordsForURL:URL];
     _passwordMediator.actionSectionEnabled = YES;
     _passwordMediator.consumer = _passwordViewController;
     _passwordMediator.navigator = self;
     _passwordMediator.contentDelegate = injectionHandler;
+
+    _passwordViewController.imageDataSource = _passwordMediator;
   }
   return self;
 }

@@ -60,45 +60,44 @@ AnimatableValue* CSSAnimatableValueFactory::Create(
   const CSSProperty& css_property = property.GetCSSProperty();
 #if DCHECK_IS_ON()
   // Variables are conditionally interpolable and compositable.
-  if (css_property.PropertyID() != CSSPropertyVariable) {
+  if (css_property.PropertyID() != CSSPropertyID::kVariable) {
     DCHECK(css_property.IsInterpolable());
     DCHECK(css_property.IsCompositableProperty());
   }
 #endif
   switch (css_property.PropertyID()) {
-    case CSSPropertyOpacity:
+    case CSSPropertyID::kOpacity:
       return AnimatableDouble::Create(style.Opacity());
-    case CSSPropertyFilter:
+    case CSSPropertyID::kFilter:
       return AnimatableFilterOperations::Create(style.Filter());
-    case CSSPropertyBackdropFilter:
+    case CSSPropertyID::kBackdropFilter:
       return AnimatableFilterOperations::Create(style.BackdropFilter());
-    case CSSPropertyTransform:
+    case CSSPropertyID::kTransform:
       return AnimatableTransform::Create(style.Transform(),
                                          style.EffectiveZoom());
-    case CSSPropertyTranslate: {
+    case CSSPropertyID::kTranslate: {
       return CreateFromTransformProperties(style.Translate(),
                                            style.EffectiveZoom(), nullptr);
     }
-    case CSSPropertyRotate: {
+    case CSSPropertyID::kRotate: {
       return CreateFromTransformProperties(style.Rotate(),
                                            style.EffectiveZoom(), nullptr);
     }
-    case CSSPropertyScale: {
+    case CSSPropertyID::kScale: {
       return CreateFromTransformProperties(style.Scale(), style.EffectiveZoom(),
                                            nullptr);
     }
-    case CSSPropertyVariable: {
+    case CSSPropertyID::kVariable: {
       if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
         return nullptr;
       }
       const AtomicString& property_name = property.CustomPropertyName();
       const CSSValue* value = style.GetRegisteredVariable(property_name);
-      if (!value || !value->IsPrimitiveValue() ||
-          !ToCSSPrimitiveValue(*value).IsNumber()) {
+      const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
+      if (!primitive_value || !primitive_value->IsNumber())
         return nullptr;
-      }
-      return AnimatableDouble::Create(
-          ToCSSPrimitiveValue(*value).GetFloatValue());
+
+      return AnimatableDouble::Create(primitive_value->GetFloatValue());
     }
     default:
       NOTREACHED();

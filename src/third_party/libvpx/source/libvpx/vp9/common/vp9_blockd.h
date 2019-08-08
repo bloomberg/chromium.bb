@@ -54,7 +54,7 @@ typedef struct {
 // decoder implementation modules critically rely on the defined entry values
 // specified herein. They should be refactored concurrently.
 
-#define NONE -1
+#define NONE (-1)
 #define INTRA_FRAME 0
 #define LAST_FRAME 1
 #define GOLDEN_FRAME 2
@@ -164,6 +164,9 @@ typedef struct macroblockd {
 
   unsigned int max_blocks_wide;
   unsigned int max_blocks_high;
+
+  int mi_row;
+  int mi_col;
 
   const vpx_prob (*partition_probs)[PARTITION_TYPES - 1];
 

@@ -80,7 +80,7 @@ Polymer({
 
     /**
      * Dictionary defining page visibility.
-     * @type {!GuestModePageVisibility}
+     * @type {!PageVisibility}
      */
     pageVisibility: Object,
 
@@ -237,6 +237,7 @@ Polymer({
    * @private
    */
   showManagedHeader_: function() {
-    return !this.inSearchMode_ && !this.showingSubpage_;
+    return !this.inSearchMode_ && !this.showingSubpage_ &&
+        !this.showPages_.about;
   },
 });

@@ -21,10 +21,13 @@
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "gpu/config/gpu_crash_keys.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -110,6 +113,7 @@ std::unique_ptr<GpuWatchdogThread> GpuWatchdogThread::Create(
 }
 
 void GpuWatchdogThread::CheckArmed() {
+  last_reported_progress_timeticks_ = base::TimeTicks::Now();
   // If the watchdog is |awaiting_acknowledge_|, reset this variable to false
   // and post an acknowledge task now. No barrier is needed as
   // |awaiting_acknowledge_| is only ever read from this thread.
@@ -492,14 +496,11 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   base::debug::Alias(&using_high_res_timer);
 #endif
 
-  base::Time current_time = base::Time::Now();
-  base::TimeTicks current_timeticks = base::TimeTicks::Now();
-  base::debug::Alias(&current_time);
-  base::debug::Alias(&current_timeticks);
-
   int32_t awaiting_acknowledge =
       base::subtle::NoBarrier_Load(&awaiting_acknowledge_);
   base::debug::Alias(&awaiting_acknowledge);
+
+  base::TimeTicks before_logging_timeticks = base::TimeTicks::Now();
 
   // Don't log the message to stderr in release builds because the buffer
   // may be full.
@@ -510,6 +511,33 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   if (handler)
     handler(logging::LOG_ERROR, __FILE__, __LINE__, 0, message);
   DLOG(ERROR) << message;
+
+  base::Time current_time = base::Time::Now();
+  base::TimeTicks current_timeticks = base::TimeTicks::Now();
+  base::debug::Alias(&current_time);
+  base::debug::Alias(&current_timeticks);
+
+  int64_t since_last_logging =
+      (current_timeticks - before_logging_timeticks).InSeconds();
+  crash_keys::seconds_since_last_logging.Set(
+      base::NumberToString(since_last_logging));
+  int64_t since_last_progress_report =
+      (current_timeticks - last_reported_progress_timeticks_).InSeconds();
+  crash_keys::seconds_since_last_progress_report.Set(
+      base::NumberToString(since_last_progress_report));
+  int64_t since_last_suspend =
+      (current_timeticks - last_suspend_timeticks_).InSeconds();
+  crash_keys::seconds_since_last_suspend.Set(
+      base::NumberToString(since_last_suspend));
+  int64_t since_last_resume =
+      (current_timeticks - last_resume_timeticks_).InSeconds();
+  crash_keys::seconds_since_last_resume.Set(
+      base::NumberToString(since_last_resume));
+
+  int64_t available_physical_memory =
+      base::SysInfo::AmountOfAvailablePhysicalMemory() >> 20;
+  crash_keys::available_physical_memory_in_mb.Set(
+      base::NumberToString(available_physical_memory));
 
   // Deliberately crash the process to create a crash dump.
   *((volatile int*)0) = 0x1337;
@@ -559,10 +587,12 @@ void GpuWatchdogThread::OnAddPowerObserver() {
 }
 
 void GpuWatchdogThread::OnSuspend() {
+  last_suspend_timeticks_ = base::TimeTicks::Now();
   power_suspend_ref_ = suspension_counter_.Take();
 }
 
 void GpuWatchdogThread::OnResume() {
+  last_resume_timeticks_ = base::TimeTicks::Now();
   power_suspend_ref_.reset();
 }
 

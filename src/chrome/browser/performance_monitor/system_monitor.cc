@@ -7,10 +7,12 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/performance_monitor/system_monitor_metrics_logger.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/performance_monitor/metric_evaluator_helper_win.h"
@@ -32,16 +34,8 @@ SystemMonitor* g_system_metrics_monitor = nullptr;
 constexpr base::TimeDelta kDefaultRefreshInterval =
     base::TimeDelta::FromSeconds(2);
 
-std::unique_ptr<MetricEvaluatorsHelper> CreateMetricEvaluatorsHelper() {
-#if defined(OS_WIN)
-  MetricEvaluatorsHelper* helper = new MetricEvaluatorsHelperWin();
-#elif defined(OS_POSIX)
-  MetricEvaluatorsHelper* helper = new MetricEvaluatorsHelperPosix();
-#else
-#error Unsupported platform
-#endif
-  return base::WrapUnique(helper);
-}
+const base::Feature kSystemMonitorMetricLogger{
+    "SystemMonitorMetricLogger", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace
 
@@ -57,6 +51,11 @@ SystemMonitor::SystemMonitor(
       weak_factory_(this) {
   DCHECK(!g_system_metrics_monitor);
   g_system_metrics_monitor = this;
+
+  if (base::FeatureList::IsEnabled(kSystemMonitorMetricLogger)) {
+    // This has to be created after initializing |g_system_metrics_monitor|.
+    metrics_logger_ = std::make_unique<SystemMonitorMetricsLogger>();
+  }
 }
 
 SystemMonitor::~SystemMonitor() {
@@ -229,6 +228,19 @@ void SystemMonitor::NotifyObservers(SystemMonitor::MetricVector metrics) {
       }
     }
   }
+}
+
+// static
+std::unique_ptr<MetricEvaluatorsHelper>
+SystemMonitor::CreateMetricEvaluatorsHelper() {
+#if defined(OS_WIN)
+  MetricEvaluatorsHelper* helper = new MetricEvaluatorsHelperWin();
+#elif defined(OS_POSIX)
+  MetricEvaluatorsHelper* helper = new MetricEvaluatorsHelperPosix();
+#else
+#error Unsupported platform
+#endif
+  return base::WrapUnique(helper);
 }
 
 SystemMonitor::MetricEvaluator::MetricEvaluator(Type type) : type_(type) {}

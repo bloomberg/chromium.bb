@@ -25,6 +25,7 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -350,15 +351,39 @@ class LockDebugView::DebugDataDispatcherTransformer
         debug_users_[user_index].account_id);
   }
 
+  // Updates |auth_disabled_reason_| with the next enum value in a cyclic
+  // manner.
+  void UpdateAuthDisabledReason() {
+    switch (auth_disabled_reason_) {
+      case mojom::AuthDisabledReason::TIME_LIMIT_OVERRIDE:
+        auth_disabled_reason_ = mojom::AuthDisabledReason::TIME_USAGE_LIMIT;
+        break;
+      case mojom::AuthDisabledReason::TIME_USAGE_LIMIT:
+        auth_disabled_reason_ = mojom::AuthDisabledReason::TIME_WINDOW_LIMIT;
+        break;
+      case mojom::AuthDisabledReason::TIME_WINDOW_LIMIT:
+        auth_disabled_reason_ = mojom::AuthDisabledReason::TIME_LIMIT_OVERRIDE;
+        break;
+    }
+  }
+
   // Toggle the unlock allowed state for the user at |user_index|.
   void ToggleAuthEnabledForUserIndex(size_t user_index) {
     DCHECK(user_index >= 0 && user_index < debug_users_.size());
     UserMetadata& user = debug_users_[user_index];
     user.enable_auth = !user.enable_auth;
-    debug_dispatcher_.SetAuthEnabledForUser(
-        user.account_id, user.enable_auth,
-        base::Time::Now() + base::TimeDelta::FromHours(user_index) +
-            base::TimeDelta::FromHours(8));
+    if (user.enable_auth) {
+      debug_dispatcher_.EnableAuthForUser(user.account_id);
+    } else {
+      debug_dispatcher_.DisableAuthForUser(
+          user.account_id,
+          mojom::AuthDisabledData::New(
+              auth_disabled_reason_,
+              base::Time::Now() + base::TimeDelta::FromHours(user_index) +
+                  base::TimeDelta::FromHours(8),
+              base::TimeDelta::FromMinutes(15)));
+      UpdateAuthDisabledReason();
+    }
   }
 
   // Convert user type to regular user or public account for the user at
@@ -501,6 +526,11 @@ class LockDebugView::DebugDataDispatcherTransformer
 
   // Called when a new user list has been received.
   base::RepeatingClosure on_users_received_;
+
+  // When auth is disabled, this property is used to define the reason, which
+  // customizes the UI accordingly.
+  mojom::AuthDisabledReason auth_disabled_reason_ =
+      mojom::AuthDisabledReason::TIME_LIMIT_OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(DebugDataDispatcherTransformer);
 };
@@ -717,7 +747,7 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
   auto make_scroll = [](views::View* content, int height) -> views::View* {
     views::ScrollView* scroll = views::ScrollView::CreateScrollViewWithBorder();
     scroll->SetPreferredSize(gfx::Size(600, height));
-    scroll->SetContents(content);
+    scroll->SetContents(base::WrapUnique(content));
     scroll->SetBackgroundColor(SK_ColorTRANSPARENT);
     scroll->SetVerticalScrollBar(new views::OverlayScrollBar(false));
     scroll->SetHorizontalScrollBar(new views::OverlayScrollBar(true));

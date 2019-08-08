@@ -73,6 +73,8 @@ group("all") {
       ]
       if (is_linux || is_android) {
         deps += [ "tools/skippy" ]
+        deps += [ "tools/busy_threads" ]
+        deps += [ "tools/dump_ftrace_stats" ]
       }
       if (is_fuzzer) {
         deps += [ ":fuzzers" ]
@@ -124,6 +126,7 @@ test("perfetto_unittests") {
       "src/traced/probes:unittests",
       "src/traced/probes/filesystem:unittests",
       "src/traced/probes/ftrace:unittests",
+      "src/traced/service:unittests",
       "tools/ftrace_proto_gen:unittests",
       "tools/sanitizers_unittests",
     ]
@@ -277,7 +280,9 @@ if (perfetto_build_standalone) {
     deps = [
       "src/ipc:buffered_frame_deserializer_fuzzer",
       "src/profiling/memory:shared_ring_buffer_fuzzer",
+      "src/profiling/memory:shared_ring_buffer_write_fuzzer",
       "src/profiling/memory:unwinding_fuzzer",
+      "src/protozero:protozero_decoder_fuzzer",
       "src/trace_processor:trace_processor_fuzzer",
       "src/traced/probes/ftrace:cpu_reader_fuzzer",
       "test:end_to_end_shared_memory_fuzzer",

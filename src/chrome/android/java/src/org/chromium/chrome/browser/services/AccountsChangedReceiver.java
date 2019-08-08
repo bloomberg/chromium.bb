@@ -11,15 +11,16 @@ import android.content.Intent;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * This receiver is notified when accounts are added, accounts are removed, or
@@ -63,14 +64,11 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
         BrowserParts parts = new EmptyBrowserParts() {
             @Override
             public void finishNativeInitialization() {
-                ThreadUtils.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // TODO(bsazonov): Check whether invalidateAccountSeedStatus is needed here.
-                        IdentityServicesProvider.getAccountTrackerService()
-                                .invalidateAccountSeedStatus(false /* don't refresh right now */);
-                        SigninHelper.get().validateAccountSettings(true);
-                    }
+                PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+                    // TODO(bsazonov): Check whether invalidateAccountSeedStatus is needed here.
+                    IdentityServicesProvider.getAccountTrackerService().invalidateAccountSeedStatus(
+                            false /* don't refresh right now */);
+                    SigninHelper.get().validateAccountSettings(true);
                 });
             }
 

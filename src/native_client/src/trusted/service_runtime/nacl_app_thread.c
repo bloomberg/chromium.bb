@@ -25,6 +25,27 @@
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/osx/mach_thread_map.h"
 
+#if NACL_OSX
+#include <sys/sysctl.h>
+
+static int IsTCSMAvailable() {
+  /* Check availability of TCSM in the kernel */
+  uint32_t current_val = 0;
+  size_t current_val_size = sizeof(current_val);
+  int rv = sysctlbyname("kern.tcsm_available",
+                        &current_val, &current_val_size, NULL, 0);
+  return 0 <= rv && 0 != current_val;
+}
+
+static void EnableTCSM() {
+  /* Opt this thread into TCSM */
+  uint32_t new_val = 1;
+  int rv = sysctlbyname("kern.tcsm_enable",
+                        NULL, NULL, &new_val, sizeof(new_val));
+  DCHECK(0 <= rv);
+}
+#endif
+
 
 void WINAPI NaClAppThreadLauncher(void *state) {
   struct NaClAppThread *natp = (struct NaClAppThread *) state;
@@ -46,6 +67,9 @@ void WINAPI NaClAppThreadLauncher(void *state) {
 #if NACL_WINDOWS
   nacl_thread_ids[thread_idx] = GetCurrentThreadId();
 #elif NACL_OSX
+  if (IsTCSMAvailable()) {
+    EnableTCSM();
+  }
   NaClSetCurrentMachThreadForThreadIndex(thread_idx);
 #endif
 

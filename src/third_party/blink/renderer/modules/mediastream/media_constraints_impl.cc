@@ -418,7 +418,8 @@ static void ParseOldStyleNames(
       // TODO(crbug.com/856176): Remove the kGoogBeamforming and
       // kGoogArrayGeometry special cases.
       context->AddConsoleMessage(ConsoleMessage::Create(
-          kDeprecationMessageSource, mojom::ConsoleMessageLevel::kWarning,
+          mojom::ConsoleMessageSource::kDeprecation,
+          mojom::ConsoleMessageLevel::kWarning,
           "Obsolete constraint named " + String(constraint.name_) +
               " is ignored. Please stop using it."));
     } else if (constraint.name_.Equals(kVideoKind)) {
@@ -441,10 +442,11 @@ static void ParseOldStyleNames(
       if (report_unknown_names) {
         // TODO(hta): UMA stats for unknown constraints passed.
         // https://crbug.com/576613
-        context->AddConsoleMessage(ConsoleMessage::Create(
-            kDeprecationMessageSource, mojom::ConsoleMessageLevel::kWarning,
-            "Unknown constraint named " + String(constraint.name_) +
-                " rejected"));
+        context->AddConsoleMessage(
+            ConsoleMessage::Create(mojom::ConsoleMessageSource::kDeprecation,
+                                   mojom::ConsoleMessageLevel::kWarning,
+                                   "Unknown constraint named " +
+                                       String(constraint.name_) + " rejected"));
         // TODO(crbug.com/856176): Don't throw an error.
         error_state.ThrowConstraintError("Unknown name of constraint detected",
                                          constraint.name_);
@@ -663,11 +665,6 @@ void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
     CopyBooleanConstraint(constraints_in->echoCancellation(), naked_treatment,
                           constraint_buffer.echo_cancellation);
   }
-  if (constraints_in->hasEchoCancellationType()) {
-    CopyStringConstraint(constraints_in->echoCancellationType(),
-                         naked_treatment,
-                         constraint_buffer.echo_cancellation_type);
-  }
   if (constraints_in->hasAutoGainControl()) {
     CopyBooleanConstraint(constraints_in->autoGainControl(), naked_treatment,
                           constraint_buffer.goog_auto_gain_control);
@@ -695,22 +692,6 @@ void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
   if (constraints_in->hasVideoKind()) {
     CopyStringConstraint(constraints_in->videoKind(), naked_treatment,
                          constraint_buffer.video_kind);
-  }
-  if (constraints_in->hasDepthNear()) {
-    CopyDoubleConstraint(constraints_in->depthNear(), naked_treatment,
-                         constraint_buffer.depth_near);
-  }
-  if (constraints_in->hasDepthFar()) {
-    CopyDoubleConstraint(constraints_in->depthFar(), naked_treatment,
-                         constraint_buffer.depth_far);
-  }
-  if (constraints_in->hasFocalLengthX()) {
-    CopyDoubleConstraint(constraints_in->focalLengthX(), naked_treatment,
-                         constraint_buffer.focal_length_x);
-  }
-  if (constraints_in->hasFocalLengthY()) {
-    CopyDoubleConstraint(constraints_in->focalLengthY(), naked_treatment,
-                         constraint_buffer.focal_length_y);
   }
 }
 

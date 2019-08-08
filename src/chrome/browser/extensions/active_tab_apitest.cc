@@ -24,7 +24,6 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/base/filename_util.h"
@@ -41,10 +40,8 @@ namespace extensions {
 namespace {
 
 enum class TestMode {
-  kWithoutAny,
-  kWithRuntimeHostPermissions,
+  kWithBlinkCors,
   kWithOutOfBlinkCors,
-  kWithOutOfBlinkCorsAndRuntimeHostPermissions,
 };
 
 class ExtensionActiveTabTest : public ExtensionApiTest,
@@ -56,10 +53,6 @@ class ExtensionActiveTabTest : public ExtensionApiTest,
   void SetUp() override {
     std::vector<base::Feature> enabled_features;
     std::vector<base::Feature> disabled_features;
-    if (ShouldEnableRuntimeHostPermissions())
-      enabled_features.push_back(extensions_features::kRuntimeHostPermissions);
-    else
-      disabled_features.push_back(extensions_features::kRuntimeHostPermissions);
     if (ShouldEnableOutOfBlinkCors()) {
       enabled_features.push_back(network::features::kOutOfBlinkCors);
       enabled_features.push_back(network::features::kNetworkService);
@@ -77,10 +70,6 @@ class ExtensionActiveTabTest : public ExtensionApiTest,
     // Map all hosts to localhost.
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    ASSERT_EQ(ShouldEnableRuntimeHostPermissions(),
-              base::FeatureList::IsEnabled(
-                  extensions_features::kRuntimeHostPermissions));
-
     ASSERT_EQ(ShouldEnableOutOfBlinkCors(),
               base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors));
     ASSERT_EQ(ShouldEnableOutOfBlinkCors(),
@@ -88,16 +77,9 @@ class ExtensionActiveTabTest : public ExtensionApiTest,
   }
 
  private:
-  bool ShouldEnableRuntimeHostPermissions() const {
-    TestMode mode = GetParam();
-    return mode == TestMode::kWithRuntimeHostPermissions ||
-           mode == TestMode::kWithOutOfBlinkCorsAndRuntimeHostPermissions;
-  }
-
   bool ShouldEnableOutOfBlinkCors() const {
     TestMode mode = GetParam();
-    return mode == TestMode::kWithOutOfBlinkCors ||
-           mode == TestMode::kWithOutOfBlinkCorsAndRuntimeHostPermissions;
+    return mode == TestMode::kWithOutOfBlinkCors;
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -198,20 +180,12 @@ IN_PROC_BROWSER_TEST_P(ExtensionActiveTabTest, ActiveTab) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(WithoutAny,
+INSTANTIATE_TEST_SUITE_P(WithBlinkCors,
                          ExtensionActiveTabTest,
-                         testing::Values(TestMode::kWithoutAny));
-INSTANTIATE_TEST_SUITE_P(
-    WithRuntimeHostPermissions,
-    ExtensionActiveTabTest,
-    testing::Values(TestMode::kWithRuntimeHostPermissions));
-INSTANTIATE_TEST_SUITE_P(WithOutOtBlinkCors,
+                         testing::Values(TestMode::kWithBlinkCors));
+INSTANTIATE_TEST_SUITE_P(WithOutOfBlinkCors,
                          ExtensionActiveTabTest,
                          testing::Values(TestMode::kWithOutOfBlinkCors));
-INSTANTIATE_TEST_SUITE_P(
-    WithAll,
-    ExtensionActiveTabTest,
-    testing::Values(TestMode::kWithOutOfBlinkCorsAndRuntimeHostPermissions));
 
 // Tests the behavior of activeTab and its relation to an extension's ability to
 // xhr file urls and inject scripts in file frames.

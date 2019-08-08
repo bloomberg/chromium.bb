@@ -174,6 +174,9 @@ class LatencyInfo {
   // event's scroll_update_delta and the SCROLL_UPDATE_LAST_EVENT_COMPONENT.
   void CoalesceScrollUpdateWith(const LatencyInfo& other);
 
+  // Scale scroll_update_delta and predicted_scroll_update_delta.
+  LatencyInfo ScaledBy(float scale) const;
+
   const LatencyMap& latency_components() const { return latency_components_; }
 
   const SourceEventType& source_event_type() const {
@@ -194,6 +197,12 @@ class LatencyInfo {
   const std::string& trace_name() const { return trace_name_; }
   void set_scroll_update_delta(float delta) { scroll_update_delta_ = delta; }
   float scroll_update_delta() const { return scroll_update_delta_; }
+  void set_predicted_scroll_update_delta(float delta) {
+    predicted_scroll_update_delta_ = delta;
+  }
+  float predicted_scroll_update_delta() const {
+    return predicted_scroll_update_delta_;
+  }
 
  private:
   void AddLatencyNumberWithTimestampImpl(LatencyComponentType component,
@@ -226,6 +235,7 @@ class LatencyInfo {
   SourceEventType source_event_type_;
 
   float scroll_update_delta_;
+  float predicted_scroll_update_delta_;
 
 #if !defined(OS_IOS)
   friend struct IPC::ParamTraits<ui::LatencyInfo>;

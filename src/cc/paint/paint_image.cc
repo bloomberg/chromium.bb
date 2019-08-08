@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/atomic_sequence_num.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_image_generator.h"
 #include "cc/paint/paint_record.h"
@@ -150,6 +150,13 @@ void PaintImage::CreateSkImage() {
     cached_sk_image_ =
         cached_sk_image_->makeSubset(gfx::RectToSkIRect(subset_rect_));
   }
+}
+
+bool PaintImage::IsEligibleForAcceleratedDecoding() const {
+  if (!CanDecodeFromGenerator())
+    return false;
+  DCHECK(paint_image_generator_);
+  return paint_image_generator_->IsEligibleForAcceleratedDecoding();
 }
 
 SkISize PaintImage::GetSupportedDecodeSize(

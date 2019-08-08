@@ -12,7 +12,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -27,8 +26,8 @@ import java.util.List;
  * {@link TabListCoordinator} as well as the life-cycle of shared component
  * objects.
  */
-public class TabGridSheetCoordinator implements Destroyable {
-    public final static String COMPONENT_NAME = "TabGridSheet";
+public class TabGridSheetCoordinator {
+    final static String COMPONENT_NAME = "TabGridSheet";
     private final Context mContext;
     private final TabListCoordinator mTabGridCoordinator;
     private final TabGridSheetMediator mMediator;
@@ -56,7 +55,6 @@ public class TabGridSheetCoordinator implements Destroyable {
     /**
      * Destroy any members that needs clean up.
      */
-    @Override
     public void destroy() {
         mTabGridCoordinator.destroy();
         mMediator.destroy();
@@ -95,6 +93,7 @@ public class TabGridSheetCoordinator implements Destroyable {
 
             if (mToolbarCoordinator != null) {
                 mToolbarCoordinator.destroy();
+                mToolbarCoordinator = null;
             }
         }
     }

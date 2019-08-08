@@ -289,6 +289,8 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
   }
   DCHECK_EQ(state_, new_state);
   delegated_frame_host_->AttachToCompositor(GetCompositor());
+  has_saved_frame_before_state_transition_ =
+      delegated_frame_host_->HasSavedFrame();
   delegated_frame_host_->WasShown(
       GetRendererLocalSurfaceIdAllocation().local_surface_id(), dfh_size_dip_,
       false /* record_presentation_time */);

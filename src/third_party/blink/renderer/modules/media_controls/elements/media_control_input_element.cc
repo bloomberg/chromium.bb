@@ -55,7 +55,7 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
     return nullptr;
 
   // We don't want the button visible within the overflow menu.
-  button->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+  button->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
 
   overflow_menu_text_ = HTMLSpanElement::Create(GetDocument());
   overflow_menu_text_->setInnerText(button->GetOverflowMenuString(),
@@ -92,8 +92,8 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   // Keeping the element hidden by default. This is setting the style in
   // addition of calling ShouldShowButtonInOverflowMenu() to guarantee that the
   // internal state matches the CSS state.
-  overflow_label_element_->SetInlineStyleProperty(CSSPropertyDisplay,
-                                                  CSSValueNone);
+  overflow_label_element_->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                                  CSSValueID::kNone);
   SetOverflowElementIsWanted(false);
 
   return overflow_label_element_;
@@ -181,10 +181,9 @@ void MediaControlInputElement::UpdateOverflowString() {
 }
 
 MediaControlInputElement::MediaControlInputElement(
-    MediaControlsImpl& media_controls,
-    MediaControlElementType display_type)
+    MediaControlsImpl& media_controls)
     : HTMLInputElement(media_controls.GetDocument(), CreateElementFlags()),
-      MediaControlElementBase(media_controls, display_type, this) {
+      MediaControlElementBase(media_controls, this) {
   CreateUserAgentShadowRoot();
   CreateShadowSubtree();
 }
@@ -201,10 +200,12 @@ void MediaControlInputElement::UpdateShownState() {
     DCHECK(parent);
     DCHECK(IsHTMLLabelElement(parent));
 
-    if (IsWanted() && DoesFit())
-      parent->RemoveInlineStyleProperty(CSSPropertyDisplay);
-    else
-      parent->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    if (IsWanted() && DoesFit()) {
+      parent->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
+    } else {
+      parent->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                     CSSValueID::kNone);
+    }
 
     // Don't update the shown state of the element if we want to hide
     // icons on the overflow menu.
@@ -216,8 +217,8 @@ void MediaControlInputElement::UpdateShownState() {
 }
 
 void MediaControlInputElement::DefaultEventHandler(Event& event) {
-  if (event.type() == event_type_names::kClick ||
-      event.type() == event_type_names::kGesturetap) {
+  if (!IsDisabled() && (event.type() == event_type_names::kClick ||
+                        event.type() == event_type_names::kGesturetap)) {
     MaybeRecordInteracted();
   }
 
@@ -265,8 +266,8 @@ String MediaControlInputElement::GetOverflowMenuSubtitleString() const {
 }
 
 void MediaControlInputElement::RecordCTREvent(CTREvent event) {
-  String histogram_name("Media.Controls.CTR.");
-  histogram_name.append(GetNameForHistograms());
+  String histogram_name =
+      StringView("Media.Controls.CTR.") + GetNameForHistograms();
   EnumerationHistogram ctr_histogram(histogram_name.Ascii().data(),
                                      static_cast<int>(CTREvent::kCount));
   ctr_histogram.Count(static_cast<int>(event));

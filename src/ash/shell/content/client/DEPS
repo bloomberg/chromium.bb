@@ -1,6 +1,7 @@
 include_rules = [
   "+ash/components/shortcut_viewer",
   "+ash/components/tap_visualizer",
+  "+chromeos/dbus/biod",
   "+components/discardable_memory/public/interfaces",
   "+content/public",
   "+content/shell",

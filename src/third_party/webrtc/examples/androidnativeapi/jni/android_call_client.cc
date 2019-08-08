@@ -78,7 +78,7 @@ class SetLocalSessionDescriptionObserver
 
 AndroidCallClient::AndroidCallClient()
     : call_started_(false), pc_observer_(absl::make_unique<PCObserver>(this)) {
-  thread_checker_.DetachFromThread();
+  thread_checker_.Detach();
   CreatePeerConnectionFactory();
 }
 
@@ -162,7 +162,6 @@ void AndroidCallClient::CreatePeerConnectionFactory() {
           webrtc::CreateBuiltinAudioDecoderFactory(),
           absl::make_unique<webrtc::InternalEncoderFactory>(),
           absl::make_unique<webrtc::InternalDecoderFactory>(),
-          webrtc::CreateBuiltinVideoBitrateAllocatorFactory(),
           nullptr /* audio_mixer */, webrtc::AudioProcessingBuilder().Create());
   RTC_LOG(LS_INFO) << "Media engine created: " << media_engine.get();
 

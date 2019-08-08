@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/safe_browsing/features.h"
@@ -131,9 +130,8 @@ class TestChromeContentRendererClient : public ChromeContentRendererClient {
   ~TestChromeContentRendererClient() override {}
   // Since visited_link_slave_ in ChromeContentRenderClient never get initiated,
   // overrides VisitedLinkedHash() function to prevent crashing.
-  unsigned long long VisitedLinkHash(const char* canonical_url,
-                                     size_t length) override {
-    return 0LL;
+  uint64_t VisitedLinkHash(const char* canonical_url, size_t length) override {
+    return 0;
   }
 };
 
@@ -182,10 +180,12 @@ class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
   // Helper for the SubframeRemoval test that posts a message to remove
   // the iframe "frame1" from the document.
   void ScheduleRemoveIframe() {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&PhishingDOMFeatureExtractorTest::RemoveIframe,
-                       weak_factory_.GetWeakPtr()));
+    GetMainFrame()
+        ->GetTaskRunner(blink::TaskType::kInternalTest)
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(&PhishingDOMFeatureExtractorTest::RemoveIframe,
+                           weak_factory_.GetWeakPtr()));
   }
 
  protected:

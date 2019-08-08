@@ -11,6 +11,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -65,7 +66,7 @@ void WebIDBCursorImpl::AdvanceCallback(
     mojom::blink::IDBErrorPtr error,
     mojom::blink::IDBCursorValuePtr cursor_value) {
   if (error) {
-    callbacks->Error(error->error_code, error->error_message);
+    callbacks->Error(error->error_code, std::move(error->error_message));
     callbacks.reset();
     return;
   }
@@ -76,9 +77,18 @@ void WebIDBCursorImpl::AdvanceCallback(
     return;
   }
 
-  callbacks->SuccessCursorContinue(std::move(cursor_value->key),
-                                   std::move(cursor_value->primary_key),
-                                   std::move(cursor_value->value));
+  if (cursor_value->keys.size() != 1u ||
+      cursor_value->primary_keys.size() != 1u ||
+      cursor_value->values.size() != 1u) {
+    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+                     "Invalid response");
+    callbacks.reset();
+    return;
+  }
+
+  callbacks->SuccessCursorContinue(std::move(cursor_value->keys[0]),
+                                   std::move(cursor_value->primary_keys[0]),
+                                   std::move(cursor_value->values[0]));
   callbacks.reset();
 }
 
@@ -105,7 +115,8 @@ void WebIDBCursorImpl::CursorContinue(const IDBKey* key,
 
       callbacks->SetState(weak_factory_.GetWeakPtr(), transaction_id_);
       cursor_->Prefetch(prefetch_amount_,
-                        GetCallbacksProxy(std::move(callbacks)));
+                        WTF::Bind(&WebIDBCursorImpl::PrefetchCallback,
+                                  WTF::Unretained(this), std::move(callbacks)));
 
       // Increase prefetch_amount_ exponentially.
       prefetch_amount_ *= 2;
@@ -133,7 +144,7 @@ void WebIDBCursorImpl::CursorContinueCallback(
     mojom::blink::IDBErrorPtr error,
     mojom::blink::IDBCursorValuePtr value) {
   if (error) {
-    callbacks->Error(error->error_code, error->error_message);
+    callbacks->Error(error->error_code, std::move(error->error_message));
     callbacks.reset();
     return;
   }
@@ -144,9 +155,47 @@ void WebIDBCursorImpl::CursorContinueCallback(
     return;
   }
 
-  callbacks->SuccessCursorContinue(std::move(value->key),
-                                   std::move(value->primary_key),
-                                   std::move(value->value));
+  if (value->keys.size() != 1u || value->primary_keys.size() != 1u ||
+      value->values.size() != 1u) {
+    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+                     "Invalid response");
+    callbacks.reset();
+    return;
+  }
+
+  callbacks->SuccessCursorContinue(std::move(value->keys[0]),
+                                   std::move(value->primary_keys[0]),
+                                   std::move(value->values[0]));
+  callbacks.reset();
+}
+
+void WebIDBCursorImpl::PrefetchCallback(
+    std::unique_ptr<WebIDBCallbacks> callbacks,
+    mojom::blink::IDBErrorPtr error,
+    mojom::blink::IDBCursorValuePtr value) {
+  if (error) {
+    callbacks->Error(error->error_code, std::move(error->error_message));
+    callbacks.reset();
+    return;
+  }
+
+  if (!value) {
+    callbacks->SuccessValue(nullptr);
+    callbacks.reset();
+    return;
+  }
+
+  if (value->keys.size() != value->primary_keys.size() ||
+      value->keys.size() != value->values.size()) {
+    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+                     "Invalid response");
+    callbacks.reset();
+    return;
+  }
+
+  callbacks->SuccessCursorPrefetch(std::move(value->keys),
+                                   std::move(value->primary_keys),
+                                   std::move(value->values));
   callbacks.reset();
 }
 
@@ -181,7 +230,7 @@ void WebIDBCursorImpl::SetPrefetchData(
   pending_onsuccess_callbacks_ = 0;
 }
 
-void WebIDBCursorImpl::CachedAdvance(unsigned long count,
+void WebIDBCursorImpl::CachedAdvance(uint32_t count,
                                      WebIDBCallbacks* callbacks) {
   DCHECK_GE(prefetch_keys_.size(), count);
   DCHECK_EQ(prefetch_primary_keys_.size(), prefetch_keys_.size());

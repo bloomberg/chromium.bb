@@ -36,3 +36,24 @@
 # Trichrome builds don't include a native library list in the main APK; it's
 # picked up from the library APK at runtime.
 -dontwarn org.chromium.base.library_loader.NativeLibraries
+
+# Let proguard know CastMediaOptions in CastOptions is always null, so it can
+# trim unused MediaNotificationService methods. This saves about 170 methods in
+# the dex file. https://crbug.com/855081
+-assumevalues class com.google.android.gms.cast.framework.CastOptions {
+  *** getCastMediaOptions() return null;
+}
+
+# Also, because CastOptions creates a default CastMediaOptions object upon
+# construction, we need to trim out the its builder as well, so we are truly
+# assuming there's no CastMediaOptions instances anywhere. This is to avoid
+# CastMediaOptions to reference resources upon construction.
+-assumevalues class com.google.android.gms.cast.framework.media.CastMediaOptions$Builder {
+  *** build() return null;
+}
+
+-assumenosideeffects class com.google.android.gms.cast.framework.media.CastMediaOptions$Builder {
+  public <init>();
+  public <clinit>();
+  *** build() return null;
+}

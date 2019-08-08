@@ -24,6 +24,14 @@
   text-align: center;
 }
 
+#already-setup-video-container {
+  text-align: center;
+}
+
+#already-setup-video {
+  height: 450px;
+}
+
 #already-setup-img {
   display: block;
   margin: auto;

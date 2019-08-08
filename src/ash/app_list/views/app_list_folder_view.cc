@@ -244,18 +244,18 @@ class TopIconAnimation : public AppListFolderView::Animation,
                                   ? top_item_views_bounds[i]
                                   : folder_view_->folder_item_icon_bounds();
 
-      TopIconAnimationView* icon_view = new TopIconAnimationView(
+      auto icon_view = std::make_unique<TopIconAnimationView>(
           top_item->icon(), base::UTF8ToUTF16(top_item->GetDisplayName()),
           scaled_rect, show_, item_in_folder_icon);
+      auto* icon_view_ptr = icon_view.get();
 
-      icon_view->AddObserver(this);
-      top_icon_views_.push_back(icon_view);
-
+      icon_view_ptr->AddObserver(this);
       // Add the transitional views into child views, and set its bounds to the
       // same location of the item in the folder list view.
-      folder_view_->background_view()->AddChildView(top_icon_views_.back());
-      icon_view->SetBoundsRect(first_page_item_views_bounds[i]);
-      icon_view->TransformView();
+      top_icon_views_.push_back(
+          folder_view_->background_view()->AddChildView(std::move(icon_view)));
+      icon_view_ptr->SetBoundsRect(first_page_item_views_bounds[i]);
+      icon_view_ptr->TransformView();
     }
   }
 
@@ -438,37 +438,32 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
                                      ContentsView* contents_view)
     : container_view_(container_view),
       contents_view_(contents_view),
-      background_view_(new views::View),
-      contents_container_(new views::View),
-      folder_header_view_(new FolderHeaderView(this)),
       view_model_(new views::ViewModel),
-      model_(model),
-      folder_item_(NULL),
-      hide_for_reparent_(false),
-      animation_start_frame_number_(0) {
+      model_(model) {
   // The background's corner radius cannot be changed in the same layer of the
   // contents container using layer animation, so use another layer to perform
   // such changes.
+  background_view_ = AddChildView(std::make_unique<views::View>());
   background_view_->SetPaintToLayer();
   background_view_->layer()->SetFillsBoundsOpaquely(false);
-  AddChildView(background_view_);
   view_model_->Add(background_view_, kIndexBackground);
 
+  contents_container_ = AddChildView(std::make_unique<views::View>());
   contents_container_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
-  AddChildView(contents_container_);
   view_model_->Add(contents_container_, kIndexContentsContainer);
 
-  items_grid_view_ = new AppsGridView(contents_view_, this);
+  items_grid_view_ = contents_container_->AddChildView(
+      std::make_unique<AppsGridView>(contents_view_, this));
   items_grid_view_->SetModel(model);
-  contents_container_->AddChildView(items_grid_view_);
   view_model_->Add(items_grid_view_, kIndexChildItems);
 
-  contents_container_->AddChildView(folder_header_view_);
+  folder_header_view_ = contents_container_->AddChildView(
+      std::make_unique<FolderHeaderView>(this));
   view_model_->Add(folder_header_view_, kIndexFolderHeader);
 
-  page_switcher_ = new PageSwitcher(items_grid_view_->pagination_model(),
-                                    false /* vertical */);
-  contents_container_->AddChildView(page_switcher_);
+  page_switcher_ =
+      contents_container_->AddChildView(std::make_unique<PageSwitcher>(
+          items_grid_view_->pagination_model(), false /* vertical */));
   view_model_->Add(page_switcher_, kIndexPageSwitcher);
 
   model_->AddObserver(this);
@@ -592,7 +587,8 @@ void AppListFolderView::UpdatePreferredBounds() {
   container_bounds.Inset(
       0,
       AppListConfig::instance().search_box_fullscreen_top_padding() +
-          search_box::kSearchBoxPreferredHeight,
+          search_box::kSearchBoxPreferredHeight +
+          SearchBoxView::GetFocusRingSpacing(),
       0, 0);
   preferred_bounds_.AdjustToFit(container_bounds);
 
@@ -656,7 +652,7 @@ void AppListFolderView::UpdateBackgroundMask(int corner_radius,
       views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, corner_radius,
                                                   insets));
   background_mask_->layer()->SetFillsBoundsOpaquely(false);
-  background_mask_->layer()->SetBounds(background_view_->GetContentsBounds());
+  background_mask_->layer()->SetBounds(background_view_->GetLocalBounds());
   background_view_->layer()->SetMaskLayer(background_mask_->layer());
 }
 
@@ -801,11 +797,19 @@ void AppListFolderView::HideViewImmediately() {
 }
 
 void AppListFolderView::CloseFolderPage() {
-  GiveBackFocusToSearchBox();
   if (items_grid_view()->dragging())
     items_grid_view()->EndDrag(true);
+  // When a folder is closed focus |activated_folder_item_view_| but only show
+  // the selection highlight if there is already one showing.
+  const bool should_show_focus_ring_on_hide =
+      items_grid_view()->has_selected_view();
   items_grid_view()->ClearAnySelectedView();
   container_view_->ShowApps(folder_item_);
+  if (should_show_focus_ring_on_hide) {
+    GetActivatedFolderItemView()->RequestFocus();
+  } else {
+    GetActivatedFolderItemView()->SilentlyRequestFocus();
+  }
 }
 
 bool AppListFolderView::IsOEMFolder() const {
@@ -814,6 +818,13 @@ bool AppListFolderView::IsOEMFolder() const {
 
 void AppListFolderView::SetRootLevelDragViewVisible(bool visible) {
   container_view_->apps_grid_view()->SetDragViewVisible(visible);
+}
+
+void AppListFolderView::HandleKeyboardReparent(AppListItemView* reparented_view,
+                                               ui::KeyboardCode key_code) {
+  container_view_->ReparentFolderItemTransit(folder_item_);
+  container_view_->apps_grid_view()->HandleKeyboardReparent(reparented_view,
+                                                            key_code);
 }
 
 void AppListFolderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

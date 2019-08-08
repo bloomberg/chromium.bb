@@ -32,7 +32,7 @@ void ThreadedObjectProxyBase::CountDeprecation(WebFeature feature) {
 }
 
 void ThreadedObjectProxyBase::ReportConsoleMessage(
-    MessageSource source,
+    mojom::ConsoleMessageSource source,
     mojom::ConsoleMessageLevel level,
     const String& message,
     SourceLocation* location) {

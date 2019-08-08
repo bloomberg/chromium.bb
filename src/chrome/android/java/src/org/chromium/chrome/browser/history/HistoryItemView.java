@@ -54,7 +54,8 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
         mEndPadding = context.getResources().getDimensionPixelSize(
                 R.dimen.selectable_list_layout_row_padding);
 
-        mIconColorList = AppCompatResources.getColorStateList(context, R.color.white_mode_tint);
+        mIconColorList =
+                AppCompatResources.getColorStateList(context, R.color.default_icon_color_inverse);
     }
 
     @Override

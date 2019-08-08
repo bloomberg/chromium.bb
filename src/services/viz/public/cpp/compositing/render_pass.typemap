@@ -16,6 +16,9 @@ sources = [
   "//services/viz/public/cpp/compositing/quads_struct_traits.cc",
   "//services/viz/public/cpp/compositing/render_pass_struct_traits.cc",
 ]
+deps = [
+  "//ui/gl",
+]
 type_mappings = [
   "viz.mojom.RenderPass=std::unique_ptr<viz::RenderPass>[move_only,nullable_is_same_type]",
   "viz::mojom::ProtectedVideoState=ui::ProtectedVideoType",

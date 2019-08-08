@@ -121,14 +121,14 @@ HRESULT GetMachineRegString(const base::string16& key_name,
   // string can always be null terminated.  Note that string registry values
   // are not guaranteed to be null terminated.
   DWORD type;
-  ULONG local_length = *length - 1;
+  ULONG local_length = (*length - 1) * sizeof(decltype(value[0]));
   sts = key.ReadValue(name.c_str(), value, &local_length, &type);
   if (type != REG_SZ)
     return HRESULT_FROM_WIN32(ERROR_CANTREAD);
 
   // When using this overload of the ReadValue() method, the returned length
   // is in bytes.  The caller expects the length in characters.
-  local_length /= sizeof(wchar_t);
+  local_length /= sizeof(decltype(value[0]));
 
   if (sts != ERROR_SUCCESS) {
     if (sts == ERROR_MORE_DATA)

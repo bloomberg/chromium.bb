@@ -14,6 +14,7 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 
 class GURL;
 
@@ -25,7 +26,7 @@ class ProtocolUtils {
   // |url|.
   static std::string CreateGetScriptsRequest(
       const GURL& url,
-      const std::map<std::string, std::string>& parameters,
+      const TriggerContext& trigger_context,
       const ClientContextProto& client_context);
 
   // Convert |script_proto| to a script struct and if the script is valid, add
@@ -40,13 +41,14 @@ class ProtocolUtils {
   static std::string CreateInitialScriptActionsRequest(
       const std::string& script_path,
       const GURL& url,
-      const std::map<std::string, std::string>& parameters,
+      const TriggerContext& trigger_context,
       const std::string& global_payload,
       const std::string& script_payload,
       const ClientContextProto& client_context);
 
   // Create request to get next sequence of actions for a script.
   static std::string CreateNextScriptActionsRequest(
+      const TriggerContext& trigger_context,
       const std::string& global_payload,
       const std::string& script_payload,
       const std::vector<ProcessedActionProto>& processed_actions,

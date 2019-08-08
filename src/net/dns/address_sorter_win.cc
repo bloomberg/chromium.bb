@@ -88,7 +88,7 @@ class AddressSorterWin : public AddressSorter {
 
     ~Job() {}
 
-    // Executed asynchronously in TaskScheduler.
+    // Executed asynchronously in ThreadPool.
     void Run() {
       SOCKET sock = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
       if (sock == INVALID_SOCKET)
@@ -96,7 +96,7 @@ class AddressSorterWin : public AddressSorter {
       DWORD result_size = 0;
       int result = WSAIoctl(sock, SIO_ADDRESS_LIST_SORT, input_buffer_.get(),
                             buffer_size_, output_buffer_.get(), buffer_size_,
-                            &result_size, NULL, NULL);
+                            &result_size, nullptr, nullptr);
       if (result == SOCKET_ERROR) {
         LOG(ERROR) << "SIO_ADDRESS_LIST_SORT failed " << WSAGetLastError();
       } else {

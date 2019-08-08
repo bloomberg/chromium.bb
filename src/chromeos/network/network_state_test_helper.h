@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/shill_device_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/dbus/shill_profile_client.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_device_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_profile_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_state_handler.h"
 
 namespace chromeos {
@@ -63,6 +63,10 @@ class NetworkStateTestHelper {
       const std::string& connection_state,
       int signal_strength);
 
+  // Returns the path used for the shared and user profiles.
+  const char* ProfilePathShared();
+  const char* ProfilePathUser();
+
   // Returns the hash used for the user profile.
   const char* UserHash();
 
@@ -78,7 +82,7 @@ class NetworkStateTestHelper {
  private:
   void ConfigureCallback(const dbus::ObjectPath& result);
 
-  bool dbus_thread_manager_initialized_ = false;
+  bool shill_clients_initialized_ = false;
   std::string last_created_service_path_;
 
   ShillManagerClient::TestInterface* manager_test_;

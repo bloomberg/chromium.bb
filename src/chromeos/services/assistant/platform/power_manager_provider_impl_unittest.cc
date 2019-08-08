@@ -7,8 +7,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
@@ -31,14 +30,19 @@ class PowerManagerProviderImplTest : public testing::Test {
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
         wake_lock_provider_(
-            connector_factory_.RegisterInstance(device::mojom::kServiceName)) {
-    fake_power_manager_client_ = new chromeos::FakePowerManagerClient;
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        base::WrapUnique(fake_power_manager_client_));
+            connector_factory_.RegisterInstance(device::mojom::kServiceName)) {}
+  ~PowerManagerProviderImplTest() override = default;
 
+  void SetUp() override {
+    chromeos::PowerManagerClient::InitializeFake();
     power_manager_provider_impl_ = std::make_unique<PowerManagerProviderImpl>(
         connector_factory_.GetDefaultConnector(),
         scoped_task_environment_.GetMainThreadTaskRunner());
+  }
+
+  void TearDown() override {
+    power_manager_provider_impl_.reset();
+    chromeos::PowerManagerClient::Shutdown();
   }
 
  protected:
@@ -108,9 +112,6 @@ class PowerManagerProviderImplTest : public testing::Test {
 
   device::TestWakeLockProvider wake_lock_provider_;
 
-  // Owned by chromeos::DBusThreadManager.
-  chromeos::FakePowerManagerClient* fake_power_manager_client_;
-
   std::unique_ptr<PowerManagerProviderImpl> power_manager_provider_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerManagerProviderImplTest);
@@ -119,29 +120,24 @@ class PowerManagerProviderImplTest : public testing::Test {
 TEST_F(PowerManagerProviderImplTest, CheckAcquireAndReleaseWakeLock) {
   // Acquire wake lock and check wake lock count.
   AcquireWakeLock();
-  EXPECT_EQ(1,
-            GetActiveWakeLocks(
-                device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(1, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
   // Acquire another wake lock, this shouldn't change the overall count.
   AcquireWakeLock();
-  EXPECT_EQ(1,
-            GetActiveWakeLocks(
-                device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(1, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
   // Release wake lock, this shouldn't change the overall count.
   ReleaseWakeLock();
-  EXPECT_EQ(1,
-            GetActiveWakeLocks(
-                device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(1, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
   // Release wake lock, this should finally release the wake lock.
   ReleaseWakeLock();
-  EXPECT_EQ(0,
-            GetActiveWakeLocks(
-                device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(0, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
   // An unbalanced release call shouldn't do anything.
   ReleaseWakeLock();
-  EXPECT_EQ(0,
-            GetActiveWakeLocks(
-                device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming));
+  EXPECT_EQ(0, GetActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventAppSuspension));
 }
 
 TEST_F(PowerManagerProviderImplTest, CheckWakeAlarms) {

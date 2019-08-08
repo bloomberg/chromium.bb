@@ -29,7 +29,7 @@ std::unique_ptr<base::Value> ExecuteJavaScript(web::WebState* web_state,
 // callers should check and act accordingly (scrolling the webview, perhaps).
 // Returns CGRectNull if no element could be found.
 CGRect GetBoundingRectOfElement(web::WebState* web_state,
-                                const web::test::ElementSelector& selector);
+                                ElementSelector* selector);
 
 // Returns whether the element with |element_id| in the passed |web_state| has
 // been tapped using a JavaScript click() event.

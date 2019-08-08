@@ -68,7 +68,7 @@ TEST(NetworkInterfacesTest, GetWifiSSID) {
   // We can't check the result of GetWifiSSID() directly, since the result
   // will differ across machines. Simply exercise the code path and hope that it
   // doesn't crash.
-  EXPECT_NE((const char*)NULL, GetWifiSSID().c_str());
+  EXPECT_NE((const char*)nullptr, GetWifiSSID().c_str());
 }
 
 TEST(NetworkInterfacesTest, GetHostName) {

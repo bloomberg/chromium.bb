@@ -58,12 +58,6 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
                             TimeTicks time_origin,
                             const AtomicString& initiator_type);
   ~PerformanceResourceTiming() override;
-  static PerformanceResourceTiming* Create(const WebResourceTimingInfo& info,
-                                           TimeTicks time_origin,
-                                           const AtomicString& initiator_type) {
-    return MakeGarbageCollected<PerformanceResourceTiming>(info, time_origin,
-                                                           initiator_type);
-  }
 
   AtomicString entryType() const override;
   PerformanceEntryType EntryTypeEnum() const override;

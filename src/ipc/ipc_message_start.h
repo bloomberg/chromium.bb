@@ -34,7 +34,7 @@ enum IPCMessageStart {
   ExtensionMsgStart,
   TextInputClientMsgStart,
   JavaBridgeMsgStart,
-  ShellMsgStart,
+  BlinkTestMsgStart,
   AccessibilityMsgStart,
   PrerenderMsgStart,
   ChromotingMsgStart,

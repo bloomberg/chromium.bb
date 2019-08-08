@@ -15,29 +15,28 @@
 namespace notifications {
 
 // A storage interface which loads a collection of data type T into memory
-// during initialization.
+// during initialization. When updating the data, T will be copied to the actual
+// storage layer since the caller will keep in memory data as well.
 template <typename T>
 class CollectionStore {
  public:
-  using Entries = std::unique_ptr<std::vector<T>>;
+  using Entries = std::vector<std::unique_ptr<T>>;
   using LoadCallback = base::OnceCallback<void(bool, Entries)>;
   using InitCallback = base::OnceCallback<void(bool)>;
   using UpdateCallback = base::OnceCallback<void(bool)>;
 
- protected:
-  // Initializes the database.
-  virtual void Init(InitCallback callback) = 0;
-
   // Initializes the database and loads all entries into memory.
   virtual void InitAndLoad(LoadCallback callback) = 0;
-
-  // Loads one entry into memory.
-  virtual void Load(const std::string& key, LoadCallback callback) = 0;
 
   // Adds an entry to the storage.
   virtual void Add(const std::string& key,
                    const T& entry,
                    UpdateCallback callback) = 0;
+
+  // Updates an entry.
+  virtual void Update(const std::string& key,
+                      const T& entry,
+                      UpdateCallback callback) = 0;
 
   // Deletes an entry from storage.
   virtual void Delete(const std::string& key, UpdateCallback callback) = 0;

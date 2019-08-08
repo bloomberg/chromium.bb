@@ -105,18 +105,20 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
         .WillByDefault(Return(media_thread_.task_runner()));
     EXPECT_CALL(gpu_factories_, GetTaskRunner()).Times(AtLeast(0));
 
-    ON_CALL(gpu_factories_, IsDecoderConfigSupported(_))
+    ON_CALL(gpu_factories_, IsDecoderConfigSupported(_, _))
         .WillByDefault(Return(true));
-    EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_)).Times(AtLeast(0));
+    EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_, _))
+        .Times(AtLeast(0));
 
-    ON_CALL(gpu_factories_, CreateVideoDecoder(_, _))
+    ON_CALL(gpu_factories_, CreateVideoDecoder(_, _, _))
         .WillByDefault(
             [this](media::MediaLog* media_log,
+                   media::VideoDecoderImplementation impl,
                    const media::RequestOverlayInfoCB& request_overlay_info_cb) {
               DCHECK(this->owned_video_decoder_);
               return std::move(this->owned_video_decoder_);
             });
-    EXPECT_CALL(gpu_factories_, CreateVideoDecoder(_, _)).Times(AtLeast(0));
+    EXPECT_CALL(gpu_factories_, CreateVideoDecoder(_, _, _)).Times(AtLeast(0));
   }
 
   ~RTCVideoDecoderAdapterTest() {
@@ -168,9 +170,10 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
   int32_t Decode(uint32_t timestamp) {
     uint8_t buf[] = {0};
     webrtc::EncodedImage input_image(&buf[0], 1, 1);
+    input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
     input_image._completeFrame = true;
     input_image.SetTimestamp(timestamp);
-    return rtc_video_decoder_adapter_->Decode(input_image, false, nullptr, 0);
+    return rtc_video_decoder_adapter_->Decode(input_image, false, 0);
   }
 
   void FinishDecode(uint32_t timestamp) {
@@ -199,7 +202,7 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
                                                      uint32_t timestamp) {
     webrtc::EncodedImage input_image(buf, 1, 1);
     input_image._completeFrame = true;
-    input_image._frameType = webrtc::kVideoFrameKey;
+    input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
     input_image.SetTimestamp(timestamp);
     webrtc::ColorSpace webrtc_color_space;
     webrtc_color_space.set_primaries_from_uint8(1);
@@ -245,7 +248,7 @@ TEST_F(RTCVideoDecoderAdapterTest, Create_UnknownFormat) {
 }
 
 TEST_F(RTCVideoDecoderAdapterTest, Create_UnsupportedFormat) {
-  EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_))
+  EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_, _))
       .WillOnce(Return(false));
   rtc_video_decoder_adapter_ = RTCVideoDecoderAdapter::Create(
       &gpu_factories_, webrtc::SdpVideoFormat(webrtc::CodecTypeToPayloadString(
@@ -343,9 +346,8 @@ TEST_F(RTCVideoDecoderAdapterTest, ReinitializesForHDRColorSpaceInitially) {
       .WillOnce(DoAll(SaveArg<0>(&vda_config_), media::RunCallback<3>(true)));
   webrtc::EncodedImage first_input_image =
       GetEncodedImageWithColorSpace(&buf[0], 0);
-  ASSERT_EQ(
-      rtc_video_decoder_adapter_->Decode(first_input_image, false, nullptr, 0),
-      WEBRTC_VIDEO_CODEC_OK);
+  ASSERT_EQ(rtc_video_decoder_adapter_->Decode(first_input_image, false, 0),
+            WEBRTC_VIDEO_CODEC_OK);
   media_thread_.FlushForTesting();
   EXPECT_TRUE(vda_config_.color_space_info().IsSpecified());
   FinishDecode(0);
@@ -354,9 +356,8 @@ TEST_F(RTCVideoDecoderAdapterTest, ReinitializesForHDRColorSpaceInitially) {
   // Second Decode() with same params should happen normally.
   webrtc::EncodedImage second_input_image =
       GetEncodedImageWithColorSpace(&buf[0], 1);
-  ASSERT_EQ(
-      rtc_video_decoder_adapter_->Decode(second_input_image, false, nullptr, 0),
-      WEBRTC_VIDEO_CODEC_OK);
+  ASSERT_EQ(rtc_video_decoder_adapter_->Decode(second_input_image, false, 0),
+            WEBRTC_VIDEO_CODEC_OK);
   FinishDecode(1);
   media_thread_.FlushForTesting();
 }
@@ -378,7 +379,7 @@ TEST_F(RTCVideoDecoderAdapterTest, HandlesReinitializeFailure) {
   // Set Initialize() to fail.
   EXPECT_CALL(*video_decoder_, Initialize(_, _, _, _, _, _))
       .WillOnce(media::RunCallback<3>(false));
-  ASSERT_EQ(rtc_video_decoder_adapter_->Decode(input_image, false, nullptr, 0),
+  ASSERT_EQ(rtc_video_decoder_adapter_->Decode(input_image, false, 0),
             WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE);
 }
 
@@ -395,7 +396,7 @@ TEST_F(RTCVideoDecoderAdapterTest, HandlesFlushFailure) {
   // Decode() is expected to be called for EOS flush, set to fail.
   EXPECT_CALL(*video_decoder_, Decode(_, _))
       .WillOnce(media::RunCallback<1>(media::DecodeStatus::ABORTED));
-  ASSERT_EQ(rtc_video_decoder_adapter_->Decode(input_image, false, nullptr, 0),
+  ASSERT_EQ(rtc_video_decoder_adapter_->Decode(input_image, false, 0),
             WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE);
 }
 

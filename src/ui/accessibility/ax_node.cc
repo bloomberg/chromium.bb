@@ -86,10 +86,16 @@ int AXNode::GetUnignoredIndexInParent() const {
   return 0;
 }
 
-bool AXNode::IsTextNode() const {
+bool AXNode::IsText() const {
   return data().role == ax::mojom::Role::kStaticText ||
          data().role == ax::mojom::Role::kLineBreak ||
          data().role == ax::mojom::Role::kInlineTextBox;
+}
+
+bool AXNode::IsLineBreak() const {
+  return data().role == ax::mojom::Role::kLineBreak ||
+         (IsText() && parent() &&
+          parent()->data().role == ax::mojom::Role::kLineBreak);
 }
 
 void AXNode::SetData(const AXNodeData& src) {
@@ -183,39 +189,24 @@ base::string16 AXNode::GetInheritedString16Attribute(
   return base::UTF8ToUTF16(GetInheritedStringAttribute(attribute));
 }
 
-const AXLanguageInfo* AXNode::GetLanguageInfo() {
-  if (language_info_)
-    return language_info_.get();
-
-  const auto& lang_attr =
-      GetStringAttribute(ax::mojom::StringAttribute::kLanguage);
-
-  // Promote language attribute to LanguageInfo.
-  if (!lang_attr.empty()) {
-    language_info_.reset(new AXLanguageInfo(this, lang_attr));
-    return language_info_.get();
-  }
-
-  // Try search for language through parent instead.
-  if (!parent())
-    return nullptr;
-
-  const AXLanguageInfo* parent_lang_info = parent()->GetLanguageInfo();
-  if (!parent_lang_info)
-    return nullptr;
-
-  // Cache the results on this node.
-  language_info_.reset(new AXLanguageInfo(parent_lang_info, this));
+AXLanguageInfo* AXNode::GetLanguageInfo() {
   return language_info_.get();
 }
 
+void AXNode::SetLanguageInfo(AXLanguageInfo* lang_info) {
+  language_info_.reset(lang_info);
+}
+
 std::string AXNode::GetLanguage() {
+  // If we have been labelled with language info then rely on that.
   const AXLanguageInfo* lang_info = GetLanguageInfo();
+  if (lang_info && !lang_info->language.empty())
+    return lang_info->language;
 
-  if (lang_info)
-    return lang_info->language();
-
-  return "";
+  // Otherwise fallback to kLanguage attribute.
+  const auto& lang_attr =
+      GetInheritedStringAttribute(ax::mojom::StringAttribute::kLanguage);
+  return lang_attr;
 }
 
 std::ostream& operator<<(std::ostream& stream, const AXNode& node) {
@@ -542,6 +533,33 @@ void AXNode::GetTableCellRowHeaders(std::vector<AXNode*>* row_headers) const {
   IdVectorToNodeVector(row_header_ids, row_headers);
 }
 
+bool AXNode::IsCellOrHeaderOfARIATable() const {
+  if (!IsTableCellOrHeader())
+    return false;
+
+  const AXNode* node = this;
+  while (node && !node->IsTable())
+    node = node->parent();
+  if (!node)
+    return false;
+
+  return node->data().role == ax::mojom::Role::kTable;
+}
+
+bool AXNode::IsCellOrHeaderOfARIAGrid() const {
+  if (!IsTableCellOrHeader())
+    return false;
+
+  const AXNode* node = this;
+  while (node && !node->IsTable())
+    node = node->parent();
+  if (!node)
+    return false;
+
+  return node->data().role == ax::mojom::Role::kGrid ||
+         node->data().role == ax::mojom::Role::kTreeGrid;
+}
+
 AXTableInfo* AXNode::GetAncestorTableInfo() const {
   const AXNode* node = this;
   while (node && !node->IsTable())
@@ -583,6 +601,10 @@ int32_t AXNode::GetPosInSet() {
     return 0;
   }
 
+  // If tree is being updated, return 0.
+  if (tree()->GetTreeUpdateInProgressState())
+    return 0;
+
   // See AXTree::GetPosInSet
   return tree_->GetPosInSet(*this, ordered_set);
 }
@@ -600,6 +622,10 @@ int32_t AXNode::GetSetSize() {
   if (IsItemLike(data().role))
     ordered_set = GetOrderedSet();
   if (!ordered_set)
+    return 0;
+
+  // If tree is being updated, return 0.
+  if (tree()->GetTreeUpdateInProgressState())
     return 0;
 
   // See AXTree::GetSetSize

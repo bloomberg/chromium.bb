@@ -194,7 +194,8 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(
 
   DCHECK(!is_rendering_started_);
 
-  complete_resolver_ = ScriptPromiseResolver::Create(script_state);
+  complete_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   // Allocate the AudioBuffer to hold the rendered result.
   float sample_rate = DestinationHandler().SampleRate();
@@ -228,7 +229,7 @@ ScriptPromise OfflineAudioContext::suspendContext(ScriptState* script_state,
                                                   double when) {
   DCHECK(IsMainThread());
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // If the rendering is finished, reject the promise.
@@ -308,7 +309,7 @@ ScriptPromise OfflineAudioContext::suspendContext(ScriptState* script_state,
 ScriptPromise OfflineAudioContext::resumeContext(ScriptState* script_state) {
   DCHECK(IsMainThread());
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // If the rendering has not started, reject the promise.
@@ -479,6 +480,13 @@ bool OfflineAudioContext::ShouldSuspend() {
 
 bool OfflineAudioContext::HasPendingActivity() const {
   return is_rendering_started_;
+}
+
+double OfflineAudioContext::RenderCapacity() {
+  DCHECK(IsMainThread());
+
+  // Offline contexts don't have a meaningful render capacity. So return 0.
+  return 0.0;
 }
 
 }  // namespace blink

@@ -13,7 +13,7 @@
 #include "base/numerics/math_constants.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
-#include "media/audio/sounds/wav_audio_handler.h"
+#include "media/audio/wav_audio_handler.h"
 #include "media/base/audio_bus.h"
 
 namespace media {

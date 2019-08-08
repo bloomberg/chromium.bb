@@ -88,11 +88,8 @@ TYPED_TEST_P(GLImageNativePixmapToDmabufTest, GLTexture2DToDmabuf) {
       gfx::NumberOfPlanesForBufferFormat(this->delegate_.GetBufferFormat());
   EXPECT_EQ(num_planes, native_pixmap_handle.planes.size());
 
-  std::vector<base::ScopedFD> scoped_fds;
-  for (auto& fd : native_pixmap_handle.fds) {
-    EXPECT_TRUE(fd.auto_close);
-    scoped_fds.emplace_back(fd.fd);
-    EXPECT_TRUE(scoped_fds.back().is_valid());
+  for (auto& plane : native_pixmap_handle.planes) {
+    EXPECT_TRUE(plane.fd.is_valid());
   }
 }
 
@@ -104,7 +101,9 @@ using GLImageTestTypes = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferFormat::RGBX_8888>,
     GLImageNativePixmapTestDelegate<gfx::BufferFormat::RGBA_8888>,
     GLImageNativePixmapTestDelegate<gfx::BufferFormat::BGRX_8888>,
-    GLImageNativePixmapTestDelegate<gfx::BufferFormat::BGRA_8888>>;
+    GLImageNativePixmapTestDelegate<gfx::BufferFormat::BGRA_8888>,
+    GLImageNativePixmapTestDelegate<gfx::BufferFormat::RGBX_1010102>,
+    GLImageNativePixmapTestDelegate<gfx::BufferFormat::BGRX_1010102>>;
 
 #if !defined(MEMORY_SANITIZER)
 // Fails under MSAN: crbug.com/886995

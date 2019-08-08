@@ -5,6 +5,8 @@
 
 """Class capturing a command invocation as data."""
 
+from __future__ import print_function
+
 import inspect
 import glob
 import hashlib
@@ -127,7 +129,7 @@ class Runnable(object):
                    [os.path.basename(f) for f in
                     COMMAND_CODE_FILES + ['once_test.py']])
     if not found_match:
-      print 'Function', self._func.func_name, 'in', sourcefile
+      print('Function', self._func.func_name, 'in', sourcefile)
       raise Exception('Python Runnable objects must be implemented in one of' +
                       ' the following files: ' + str(COMMAND_CODE_FILES))
 

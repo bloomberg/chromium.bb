@@ -60,7 +60,7 @@ void TestPack::RegisterReceiverACM(AudioCodingModule* acm) {
   return;
 }
 
-int32_t TestPack::SendData(FrameType frame_type,
+int32_t TestPack::SendData(AudioFrameType frame_type,
                            uint8_t payload_type,
                            uint32_t timestamp,
                            const uint8_t* payload_data,
@@ -75,7 +75,7 @@ int32_t TestPack::SendData(FrameType frame_type,
   rtp_header.payloadType = payload_type;
   rtp_header.timestamp = timestamp;
 
-  if (frame_type == kEmptyFrame) {
+  if (frame_type == AudioFrameType::kEmptyFrame) {
     // Skip this frame.
     return 0;
   }

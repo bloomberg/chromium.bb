@@ -30,23 +30,32 @@ namespace device {
 // |FidoDeviceDiscovery| are not fully initialized.
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
  public:
-  using WinkCallback = base::OnceClosure;
+  // CancelToken is an opaque value that can be used to cancel submitted
+  // requests.
+  typedef uint32_t CancelToken;
+  // kInvalidCancelToken is a |CancelToken| value that will not be returned as
+  // the result of |DeviceTransact| and thus can be used as a placeholder.
+  static constexpr CancelToken kInvalidCancelToken = 0;
+
   using DeviceCallback =
       base::OnceCallback<void(base::Optional<std::vector<uint8_t>>)>;
 
-  // Internal state machine states. kMsgError represents a state where error
-  // has been received from the connected device because an
-  // unexpected/incorrectly formatted request was sent from the client. Devices
-  // in this state can be recovered by re-sending a well-formed command. On the
-  // other hand, kDeviceError represents a state where error occurred due to
-  // connection failure/unknown reasons and is considered an unrecoverable
-  // error.
+  // Internal state machine states.
   enum class State {
     kInit,
-    kConnected,
+    // kConnecting occurs when the device is performing some initialisation. For
+    // example, HID devices need to allocate a channel ID before sending
+    // requests.
+    kConnecting,
     kBusy,
     kReady,
+    // kMsgError occurs when the the device responds with an error indicating an
+    // invalid command, parameter, or length. This is used within |FidoDevice|
+    // to handle the case of a device rejecting a CTAP2 GetInfo command. It is
+    // otherwise a fatal, terminal state.
     kMsgError,
+    // kDeviceError indicates some error other than those covered by
+    // |kMsgError|. This is a terminal state.
     kDeviceError,
   };
 
@@ -55,10 +64,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   // Pure virtual function defined by each device type, implementing
   // the device communication transaction. The function must not immediately
   // call (i.e. hairpin) |callback|.
-  virtual void DeviceTransact(std::vector<uint8_t> command,
-                              DeviceCallback callback) = 0;
-  virtual void TryWink(WinkCallback callback) = 0;
-  virtual void Cancel() = 0;
+  virtual CancelToken DeviceTransact(std::vector<uint8_t> command,
+                                     DeviceCallback callback) = 0;
+  // Cancel attempts to cancel an enqueued request. If the request is currently
+  // active it will be aborted if possible, which is expected to cause it to
+  // complete with |kCtap2ErrKeepAliveCancel|. If the request is still enqueued
+  // it will be deleted and the callback called with
+  // |kCtap2ErrKeepAliveCancel| immediately. It is possible that a request to
+  // cancel may be unsuccessful and that the request may complete normally.
+  // It is safe to attempt to cancel an operation that has already completed.
+  virtual void Cancel(CancelToken token) = 0;
   virtual std::string GetId() const = 0;
   virtual base::string16 GetDisplayName() const;
   virtual FidoTransportProtocol DeviceTransport() const = 0;
@@ -83,7 +98,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   const base::Optional<AuthenticatorGetInfoResponse>& device_info() const {
     return device_info_;
   }
-  State state() const { return state_; }
+  bool is_in_error_state() const {
+    return state_ == State::kMsgError || state_ == State::kDeviceError;
+  }
+
+  State state_for_testing() const { return state_; }
 
  protected:
   void OnDeviceInfoReceived(base::OnceClosure done,
@@ -93,6 +112,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   State state_ = State::kInit;
   ProtocolVersion supported_protocol_ = ProtocolVersion::kUnknown;
   base::Optional<AuthenticatorGetInfoResponse> device_info_;
+  // next_cancel_token_ is the value of the next |CancelToken| returned by this
+  // device. It starts at one so that zero can be used as an invalid value where
+  // needed.
+  CancelToken next_cancel_token_ = kInvalidCancelToken + 1;
 
   DISALLOW_COPY_AND_ASSIGN(FidoDevice);
 };

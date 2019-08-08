@@ -38,6 +38,13 @@ class ImageElementTimingTest : public RenderingTest {
         .images_notified_;
   }
 
+  const WTF::HashSet<
+      std::pair<const LayoutObject*, const ImageResourceContent*>>&
+  GetBackgroundImagesNotified() {
+    return ImageElementTiming::From(*GetDocument().domWindow())
+        .background_images_notified_;
+  }
+
  private:
   ImageResourceContent* CreateImageForTest(int width, int height) {
     sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
@@ -107,6 +114,31 @@ TEST_F(ImageElementTimingTest, SVGImageRemoved) {
   // |layout_image| should no longer be part of |images_notified| since it will
   // be destroyed.
   EXPECT_TRUE(GetImagesNotified().IsEmpty());
+}
+
+TEST_F(ImageElementTimingTest, BackgroundImageRemoved) {
+  EnableCompositing();
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        background: url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);
+      }
+    </style>
+    <div id="target">/div>
+  )HTML");
+  LayoutObject* object = GetLayoutObjectByElementId("target");
+  ImageResourceContent* content = object->MutableStyle()
+                                      ->AccessBackgroundLayers()
+                                      .GetImage()
+                                      ->CachedImage();
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(GetBackgroundImagesNotified().size(), 1u);
+  EXPECT_TRUE(
+      GetBackgroundImagesNotified().Contains(std::make_pair(object, content)));
+
+  GetDocument().getElementById("target")->remove();
+  EXPECT_TRUE(GetBackgroundImagesNotified().IsEmpty());
 }
 
 }  // namespace blink

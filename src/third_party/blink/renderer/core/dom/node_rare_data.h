@@ -23,7 +23,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_RARE_DATA_H_
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -44,13 +43,11 @@ class NodeMutationObserverData final
 
   NodeMutationObserverData() = default;
 
-  const HeapVector<TraceWrapperMember<MutationObserverRegistration>>&
-  Registry() {
+  const HeapVector<Member<MutationObserverRegistration>>& Registry() {
     return registry_;
   }
 
-  const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>&
-  TransientRegistry() {
+  const HeapHashSet<Member<MutationObserverRegistration>>& TransientRegistry() {
     return transient_registry_;
   }
 
@@ -62,9 +59,8 @@ class NodeMutationObserverData final
   void Trace(Visitor* visitor);
 
  private:
-  HeapVector<TraceWrapperMember<MutationObserverRegistration>> registry_;
-  HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>
-      transient_registry_;
+  HeapVector<Member<MutationObserverRegistration>> registry_;
+  HeapHashSet<Member<MutationObserverRegistration>> transient_registry_;
   DISALLOW_COPY_AND_ASSIGN(NodeMutationObserverData);
 };
 
@@ -196,8 +192,8 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
  private:
   NodeListsNodeData& CreateNodeLists();
 
-  TraceWrapperMember<NodeListsNodeData> node_lists_;
-  TraceWrapperMember<NodeMutationObserverData> mutation_observer_data_;
+  Member<NodeListsNodeData> node_lists_;
+  Member<NodeMutationObserverData> mutation_observer_data_;
   Member<FlatTreeNodeData> flat_tree_node_data_;
 
   unsigned connected_frame_count_ : kConnectedFrameCountBits;

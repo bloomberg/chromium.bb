@@ -19,7 +19,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/format_macros.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -40,7 +40,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/gtest_util.h"
 #include "base/test/launcher/test_launcher_tracer.h"
 #include "base/test/launcher/test_results_tracker.h"
@@ -133,19 +133,19 @@ TestLauncherTracer* GetTestLauncherTracer() {
   return tracer;
 }
 
-// Creates and starts a TaskScheduler with |num_parallel_jobs| dedicated to
+// Creates and starts a ThreadPool with |num_parallel_jobs| dedicated to
 // foreground blocking tasks (corresponds to the traits used to launch and wait
 // for child processes).
-void CreateAndStartTaskScheduler(int num_parallel_jobs) {
-  // These values are taken from TaskScheduler::StartWithDefaultParams(), which
+void CreateAndStartThreadPool(int num_parallel_jobs) {
+  // These values are taken from ThreadPool::StartWithDefaultParams(), which
   // is not used directly to allow a custom number of threads in the foreground
   // pool.
   // TODO(etiennep): Change this to 2 in future CL.
   constexpr int kMaxBackgroundThreads = 3;
   constexpr base::TimeDelta kSuggestedReclaimTime =
       base::TimeDelta::FromSeconds(30);
-  base::TaskScheduler::Create("TestLauncher");
-  base::TaskScheduler::GetInstance()->Start(
+  base::ThreadPool::Create("TestLauncher");
+  base::ThreadPool::GetInstance()->Start(
       {{kMaxBackgroundThreads, kSuggestedReclaimTime},
        {num_parallel_jobs, kSuggestedReclaimTime}});
 }
@@ -325,7 +325,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   // that we can install a different /data.
   new_options.spawn_flags = FDIO_SPAWN_CLONE_STDIO | FDIO_SPAWN_CLONE_JOB;
 
-  const base::FilePath kDataPath("/data");
+  const base::FilePath kDataPath(base::fuchsia::kPersistedDataDirectoryPath);
 
   // Clone all namespace entries from the current process, except /data, which
   // is overridden below.
@@ -367,12 +367,8 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 
   // Bind the new test subdirectory to /data in the child process' namespace.
   new_options.paths_to_transfer.push_back(
-      {kDataPath, base::fuchsia::GetHandleFromFile(
-                      base::File(nested_data_path,
-                                 base::File::FLAG_OPEN | base::File::FLAG_READ |
-                                     base::File::FLAG_DELETE_ON_CLOSE))
-                      .release()});
-
+      {kDataPath,
+       base::fuchsia::OpenDirectory(nested_data_path).TakeChannel().release()});
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_LINUX)
@@ -452,9 +448,8 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     zx_status_t status = job_handle.kill();
     ZX_CHECK(status == ZX_OK, status);
 
-    // The child process' data dir should have been deleted automatically,
-    // thanks to the DELETE_ON_CLOSE flag.
-    DCHECK(!base::DirectoryExists(nested_data_path));
+    // Cleanup the data directory.
+    CHECK(DeleteFile(nested_data_path, true));
 #elif defined(OS_POSIX)
     if (exit_code != 0) {
       // On POSIX, in case the test does not exit cleanly, either due to a crash
@@ -624,8 +619,8 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       parallel_jobs_(parallel_jobs) {}
 
 TestLauncher::~TestLauncher() {
-  if (base::TaskScheduler::GetInstance()) {
-    base::TaskScheduler::GetInstance()->Shutdown();
+  if (base::ThreadPool::GetInstance()) {
+    base::ThreadPool::GetInstance()->Shutdown();
   }
 }
 
@@ -1034,7 +1029,7 @@ bool TestLauncher::Init() {
   fprintf(stdout, "Using %" PRIuS " parallel jobs.\n", parallel_jobs_);
   fflush(stdout);
 
-  CreateAndStartTaskScheduler(static_cast<int>(parallel_jobs_));
+  CreateAndStartThreadPool(static_cast<int>(parallel_jobs_));
 
   std::vector<std::string> positive_file_filter;
   std::vector<std::string> positive_gtest_filter;

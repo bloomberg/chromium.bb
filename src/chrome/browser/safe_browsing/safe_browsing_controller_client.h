@@ -29,6 +29,8 @@ class SafeBrowsingControllerClient
 
   void Proceed() override;
 
+  void GoBack() override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingControllerClient);
 };

@@ -138,6 +138,10 @@ cr.define('print_preview_new', function() {
       this.plugin_.sendKeyEvent(e);
     }
 
+    hideToolbars() {
+      this.plugin_.hideToolbars();
+    }
+
     /**
      * @param {boolean} eventsEnabled Whether pointer events should be captured
      *     by the plugin.
@@ -154,6 +158,11 @@ cr.define('print_preview_new', function() {
     loadPreviewPage(previewUid, pageIndex, index) {
       this.plugin_.loadPreviewPage(
           this.getPreviewUrl_(previewUid, pageIndex), index);
+    }
+
+    /** @param {boolean} darkMode Whether the page is in dark mode. */
+    darkModeChanged(darkMode) {
+      this.plugin_.darkModeChanged(darkMode);
     }
   }
 

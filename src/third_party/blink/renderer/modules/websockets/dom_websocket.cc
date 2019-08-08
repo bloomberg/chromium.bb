@@ -210,7 +210,7 @@ static String EncodeSubprotocolString(const String& protocol) {
   StringBuilder builder;
   for (wtf_size_t i = 0; i < protocol.length(); i++) {
     if (protocol[i] < 0x20 || protocol[i] > 0x7E)
-      builder.Append(String::Format("\\u%04X", protocol[i]));
+      builder.AppendFormat("\\u%04X", protocol[i]);
     else if (protocol[i] == 0x5c)
       builder.Append("\\\\");
     else
@@ -244,7 +244,7 @@ DOMWebSocket::DOMWebSocket(ExecutionContext* context)
       binary_type_(kBinaryTypeBlob),
       subprotocol_(""),
       extensions_(""),
-      event_queue_(EventQueue::Create(this)),
+      event_queue_(MakeGarbageCollected<EventQueue>(this)),
       buffered_amount_update_task_pending_(false),
       was_autoupgraded_to_wss_(false) {}
 
@@ -254,8 +254,9 @@ DOMWebSocket::~DOMWebSocket() {
 
 void DOMWebSocket::LogError(const String& message) {
   if (GetExecutionContext()) {
-    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kError, message));
+    GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kError, message));
   }
 }
 
@@ -614,7 +615,7 @@ void DOMWebSocket::CloseInternal(int code,
     state_ = kClosing;
     channel_->Fail("WebSocket is closed before the connection is established.",
                    mojom::ConsoleMessageLevel::kWarning,
-                   SourceLocation::Create(String(), 0, 0, nullptr));
+                   std::make_unique<SourceLocation>(String(), 0, 0, nullptr));
     return;
   }
   state_ = kClosing;
@@ -746,7 +747,7 @@ void DOMWebSocket::DidReceiveBinaryMessage(
       size_t size = binary_data->size();
       scoped_refptr<RawData> raw_data = RawData::Create();
       binary_data->swap(*raw_data->MutableData());
-      std::unique_ptr<BlobData> blob_data = BlobData::Create();
+      auto blob_data = std::make_unique<BlobData>();
       blob_data->AppendData(std::move(raw_data));
       Blob* blob =
           Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));

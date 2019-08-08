@@ -14,12 +14,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/scoped_observer.h"
 #include "base/strings/string_piece_forward.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
+#include "chrome/browser/conflicts/module_list_component_updater_win.h"
 #include "chrome_elf/third_party_dlls/packed_list_format.h"
-#include "components/component_updater/component_updater_service.h"
 
 class IncompatibleApplicationsUpdater;
 class InstalledApplications;
@@ -31,6 +30,7 @@ namespace base {
 class FilePath;
 class SequencedTaskRunner;
 class TaskRunner;
+class Version;
 }
 
 // This class is responsible for the initialization of the
@@ -46,7 +46,7 @@ class TaskRunner;
 //    executable.
 // 2. |module_list_filter_| is used to determine if a module should be blocked
 //    or allowed. The Module List component is received from the component
-//    update service, which invokes OnModuleListComponentRegister() and
+//    update service, which invokes OnModuleListComponentRegistered() and
 //    LoadModuleList() when appropriate.
 //
 // For the IncompatibleApplicationsWarning feature only:
@@ -58,9 +58,7 @@ class TaskRunner;
 //    blacklisted at the time the browser was launched. Modifications to that
 //    list do not take effect until a restart.
 //
-class ThirdPartyConflictsManager
-    : public ModuleDatabaseObserver,
-      public component_updater::ComponentUpdateService::Observer {
+class ThirdPartyConflictsManager : public ModuleDatabaseObserver {
  public:
   // |module_database_event_source| must outlive this.
   explicit ThirdPartyConflictsManager(
@@ -92,7 +90,8 @@ class ThirdPartyConflictsManager
   // Invoked when the Third Party Module List component is registered with the
   // component update service. Checks if the component is currently installed or
   // if an update is required.
-  void OnModuleListComponentRegistered(base::StringPiece component_id);
+  void OnModuleListComponentRegistered(base::StringPiece component_id,
+                                       const base::Version& component_version);
 
   // Loads the |module_list_filter_| using the Module List at |path|.
   void LoadModuleList(const base::FilePath& path);
@@ -124,9 +123,6 @@ class ThirdPartyConflictsManager
       base::OnceCallback<void(State state)>;
   void ForceInitialization(
       OnInitializationCompleteCallback on_initialization_complete_callback);
-
-  // ComponentUpdateService::Observer:
-  void OnEvent(Events event, const std::string& component_id) override;
 
   // Returns the IncompatibleApplicationsUpdater instance. Returns null if the
   // corresponding feature is disabled (IncompatibleApplicationsWarning).
@@ -171,6 +167,11 @@ class ThirdPartyConflictsManager
   // invoked when ForceInitialization() is called.
   void ForceModuleListComponentUpdate();
 
+  // Callback for when the component update service was not able to download the
+  // module list component. Successful updates will cause the LoadModuleList()
+  // function to be invoked instead.
+  void OnModuleListComponentNotUpdated();
+
   // Modifies the current state and invokes
   // |on_initialization_complete_callback_|.
   void SetTerminalState(State terminal_state);
@@ -204,11 +205,9 @@ class ThirdPartyConflictsManager
   // the ModuleListFilter.
   bool module_list_update_needed_;
 
-  // Observes the component update service when an update to the Module List
-  // component was forced.
-  ScopedObserver<component_updater::ComponentUpdateService,
-                 component_updater::ComponentUpdateService::Observer>
-      component_update_service_observer_;
+  // Responsible for forcing an update to the Module List component on the UI
+  // thread if none is currently installed.
+  ModuleListComponentUpdater::UniquePtr module_list_component_updater_;
 
   // Filters third-party modules against a whitelist and a blacklist. This
   // instance is ref counted because the |module_blacklist_cache_updater_| must
@@ -241,6 +240,8 @@ class ThirdPartyConflictsManager
   // Indicates if the analysis of newly found modules is disabled. Used as a
   // workaround for https://crbug.com/892294.
   bool module_analysis_disabled_ = false;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ThirdPartyConflictsManager> weak_ptr_factory_;
 

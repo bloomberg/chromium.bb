@@ -42,7 +42,7 @@ using base::test::ios::WaitUntilCondition;
 
 - (void)passwordFetcher:(PasswordFetcher*)passwordFetcher
       didFetchPasswords:
-          (std::vector<std::unique_ptr<autofill::PasswordForm>>&)passwords {
+          (std::vector<std::unique_ptr<autofill::PasswordForm>>)passwords {
   _passwords = std::move(passwords);
 }
 

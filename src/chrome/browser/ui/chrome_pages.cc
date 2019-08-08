@@ -47,6 +47,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "extensions/browser/extension_registry.h"
 #else
 #include "chrome/browser/ui/signin_view_controller.h"
@@ -64,6 +65,12 @@ namespace chrome {
 namespace {
 
 const char kHashMark[] = "#";
+
+void FocusWebContents(Browser* browser) {
+  auto* const contents = browser->tab_strip_model()->GetActiveWebContents();
+  if (contents)
+    contents->Focus();
+}
 
 void OpenBookmarkManagerForNode(Browser* browser, int64_t node_id) {
   GURL url = GURL(kChromeUIBookmarksURL)
@@ -275,7 +282,6 @@ bool IsTrustedPopupWindowWithScheme(const Browser* browser,
   return url.SchemeIs(scheme);
 }
 
-
 void ShowSettings(Browser* browser) {
   ShowSettingsSubPage(browser, std::string());
 }
@@ -290,23 +296,35 @@ void ShowSettingsSubPage(Browser* browser, const std::string& sub_page) {
 
 void ShowSettingsSubPageForProfile(Profile* profile,
                                    const std::string& sub_page) {
-  std::string sub_page_path = sub_page;
-
 #if defined(OS_CHROMEOS)
-  base::RecordAction(base::UserMetricsAction("ShowOptions"));
-  SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-      profile, GetSettingsUrl(sub_page_path));
-#else
+  SettingsWindowManager* settings = SettingsWindowManager::GetInstance();
+  if (!base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
+    base::RecordAction(base::UserMetricsAction("ShowOptions"));
+    settings->ShowChromePageForProfile(profile, GetSettingsUrl(sub_page));
+    return;
+  }
+  // TODO(jamescook): When SplitSettings is close to shipping, change this to
+  // a DCHECK that the |sub_page| is not an OS-specific setting.
+  if (chrome::IsOSSettingsSubPage(sub_page)) {
+    settings->ShowOSSettings(profile, sub_page);
+    return;
+  }
+  // Fall through and open browser settings in a tab.
+#endif
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   if (!browser)
     browser = new Browser(Browser::CreateParams(profile, true));
-  ShowSettingsSubPageInTabbedBrowser(browser, sub_page_path);
-#endif
+  ShowSettingsSubPageInTabbedBrowser(browser, sub_page);
 }
 
 void ShowSettingsSubPageInTabbedBrowser(Browser* browser,
                                         const std::string& sub_page) {
   base::RecordAction(UserMetricsAction("ShowOptions"));
+
+  // Since the user may be triggering navigation from another UI element such as
+  // a menu, ensure the web contents (and therefore the settings page that is
+  // about to be shown) is focused. (See crbug/926492 for motivation.)
+  FocusWebContents(browser);
   GURL gurl = GetSettingsUrl(sub_page);
   NavigateParams params(GetSingletonTabNavigateParams(browser, gurl));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
@@ -375,6 +393,15 @@ void ShowSearchEngineSettings(Browser* browser) {
   base::RecordAction(UserMetricsAction("EditSearchEngines"));
   ShowSettingsSubPage(browser, kSearchEnginesSubPage);
 }
+
+#if defined(OS_CHROMEOS)
+void ShowManagementPageForProfile(Profile* profile) {
+  const std::string page_path = "chrome://management";
+  base::RecordAction(base::UserMetricsAction("ShowOptions"));
+  SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
+      profile, GURL(page_path));
+}
+#endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 void ShowBrowserSignin(Browser* browser,

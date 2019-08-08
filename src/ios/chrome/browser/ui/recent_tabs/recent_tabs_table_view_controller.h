@@ -12,12 +12,12 @@
 namespace ios {
 class ChromeBrowserState;
 }
+enum class UrlLoadStrategy;
 class WebStateList;
 
 @protocol ApplicationCommands;
 @protocol RecentTabsTableViewControllerDelegate;
 @protocol RecentTabsPresentationDelegate;
-@protocol UrlLoader;
 @protocol TableViewFaviconDataSource;
 
 @interface RecentTabsTableViewController
@@ -26,8 +26,8 @@ class WebStateList;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The dispatcher used by this ViewController.
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;
-// UrlLoader used by this ViewController.
-@property(nonatomic, weak) id<UrlLoader> loader;
+// Opaque instructions on how to open urls.
+@property(nonatomic) UrlLoadStrategy loadStrategy;
 // Disposition for tabs restored by this object. Defaults to CURRENT_TAB.
 @property(nonatomic, assign) WindowOpenDisposition restoredTabDisposition;
 // RecentTabsTableViewControllerDelegate delegate.

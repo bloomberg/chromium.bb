@@ -1505,14 +1505,12 @@ void V4L2SliceVideoDecodeAccelerator::AssignDmaBufs(
 void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
     int32_t picture_buffer_id,
     VideoPixelFormat pixel_format,
-    const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
+    gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) {
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   std::vector<base::ScopedFD> dmabuf_fds;
 #if defined(USE_OZONE)
-  DCHECK_EQ(gpu_memory_buffer_handle.native_pixmap_handle.fds.size(),
-            gpu_memory_buffer_handle.native_pixmap_handle.planes.size());
   // If the driver does not accept as many fds as we received from the client,
   // we have to check if the additional fds are actually duplicated fds pointing
   // to previous planes; if so, we can close the duplicates and keep only the
@@ -1520,8 +1518,8 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
   // Assume that an fd is a duplicate of a previous plane's fd if offset != 0.
   // Otherwise, if offset == 0, return error as it may be pointing to a new
   // plane.
-  for (auto& fd : gpu_memory_buffer_handle.native_pixmap_handle.fds) {
-    dmabuf_fds.emplace_back(fd.fd);
+  for (auto& plane : gpu_memory_buffer_handle.native_pixmap_handle.planes) {
+    dmabuf_fds.push_back(std::move(plane.fd));
   }
   for (size_t i = dmabuf_fds.size() - 1; i >= output_planes_count_; i--) {
     if (gpu_memory_buffer_handle.native_pixmap_handle.planes[i].offset == 0) {
@@ -2098,7 +2096,7 @@ bool V4L2SliceVideoDecodeAccelerator::OnMemoryDump(
   // OnMemoryDump() must be performed on |decoder_thread_|.
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
-  // VIDIOC_OUTPUT queue's memory usage.
+  // VIDEO_OUTPUT queue's memory usage.
   const size_t input_queue_buffers_count = input_buffer_map_.size();
   size_t input_queue_memory_usage = 0;
   std::string input_queue_buffers_memory_type =
@@ -2107,7 +2105,7 @@ bool V4L2SliceVideoDecodeAccelerator::OnMemoryDump(
     input_queue_memory_usage += input_record.length;
   }
 
-  // VIDIOC_CAPTURE queue's memory usage.
+  // VIDEO_CAPTURE queue's memory usage.
   const size_t output_queue_buffers_count = output_buffer_map_.size();
   size_t output_queue_memory_usage = 0;
   std::string output_queue_buffers_memory_type =

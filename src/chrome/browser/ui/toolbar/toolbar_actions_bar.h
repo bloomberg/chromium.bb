@@ -209,9 +209,8 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   // Hides the actively showing popup, if any.
   void HideActivePopup();
 
-  // Returns the main (i.e., not overflow) controller for the given action.
-  ToolbarActionViewController* GetMainControllerForAction(
-      ToolbarActionViewController* action);
+  // Returns the action for the given |id|, if one exists.
+  ToolbarActionViewController* GetActionForId(const std::string& action_id);
 
   // Add or remove an observer.
   void AddObserver(ToolbarActionsBarObserver* observer);
@@ -298,9 +297,6 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   // |tween_type|.
   void ResizeDelegate(gfx::Tween::Type tween_type);
 
-  // Returns the action for the given |id|, if one exists.
-  ToolbarActionViewController* GetActionForId(const std::string& action_id);
-
   // Returns the current web contents.
   content::WebContents* GetCurrentWebContents();
 
@@ -311,6 +307,10 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
 
   // Shows an extension message bubble, if any should be shown.
   void MaybeShowExtensionBubble();
+
+  // Returns the main bar, which is |main_bar_| if this is in overflow mode, and
+  // |this| otherwise.
+  ToolbarActionsBar* GetMainBar();
 
   // The delegate for this object (in a real build, this is the view).
   ToolbarActionsBarDelegate* delegate_;

@@ -69,7 +69,7 @@ class SVGFilterPrimitiveStandardAttributes : public SVGElement {
  private:
   bool IsFilterEffect() const final { return true; }
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   bool LayoutObjectIsNeeded(const ComputedStyle&) const final;
 
   Member<SVGAnimatedLength> x_;

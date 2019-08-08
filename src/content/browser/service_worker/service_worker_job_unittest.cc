@@ -36,7 +36,6 @@
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -825,9 +824,11 @@ TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
       registration.get(), script_url, blink::mojom::ScriptType::kClassic, 1L,
       helper_->context()->AsWeakPtr());
   base::Optional<blink::ServiceWorkerStatusCode> status;
-  version->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                       CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop;
+  version->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+  run_loop.Run();
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
 
   version->set_fetch_handler_existence(
@@ -1236,21 +1237,19 @@ TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
   first_version->StartUpdate();
   base::RunLoop().RunUntilIdle();
 
-  // S13nServiceWorker: the worker is updated after RequestTermination() is
-  // called from the renderer. Until then, the active version stays active.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    EXPECT_EQ(first_version.get(), registration->active_version());
-    // The new worker is installed but not yet to be activated.
-    scoped_refptr<ServiceWorkerVersion> new_version =
-        registration->waiting_version();
-    EXPECT_EQ(2u, update_helper->attribute_change_log_.size());
-    UpdateJobTestHelper::UpdateJobEmbeddedWorkerInstanceClient* client =
-        update_helper->initial_embedded_worker_instance_client_;
-    RequestTermination(&client->host());
+  // The worker is updated after RequestTermination() is called from the
+  // renderer. Until then, the active version stays active.
+  EXPECT_EQ(first_version.get(), registration->active_version());
+  // The new worker is installed but not yet to be activated.
+  scoped_refptr<ServiceWorkerVersion> new_version =
+      registration->waiting_version();
+  EXPECT_EQ(2u, update_helper->attribute_change_log_.size());
+  UpdateJobTestHelper::UpdateJobEmbeddedWorkerInstanceClient* client =
+      update_helper->initial_embedded_worker_instance_client_;
+  RequestTermination(&client->host());
 
-    TestServiceWorkerObserver observer(helper_->context_wrapper());
-    observer.RunUntilActivated(new_version.get(), runner);
-  }
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilActivated(new_version.get(), runner);
 
   // Pump the loop again. This ensures |update_helper| observes all
   // the status changes, since RunUntilActivated() only ensured
@@ -1367,21 +1366,19 @@ TEST_F(ServiceWorkerJobTest, Update_ScriptUrlChanged) {
   // Run the update job.
   base::RunLoop().RunUntilIdle();
 
-  // S13nServiceWorker: the worker is activated after RequestTermination() is
-  // called from the renderer. Until then, the active version stays active.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    // Still waiting, but the waiting version isn't |version| since another
-    // ServiceWorkerVersion is created during the update job and the job wipes
-    // out the older waiting version.
-    ServiceWorkerVersion* waiting_version = registration->waiting_version();
-    EXPECT_TRUE(registration->active_version());
-    EXPECT_TRUE(waiting_version);
-    EXPECT_NE(version.get(), waiting_version);
+  // The worker is activated after RequestTermination() is called from the
+  // renderer. Until then, the active version stays active.
+  // Still waiting, but the waiting version isn't |version| since another
+  // ServiceWorkerVersion is created during the update job and the job wipes
+  // out the older waiting version.
+  ServiceWorkerVersion* waiting_version = registration->waiting_version();
+  EXPECT_TRUE(registration->active_version());
+  EXPECT_TRUE(waiting_version);
+  EXPECT_NE(version.get(), waiting_version);
 
-    RequestTermination(&initial_client->host());
-    TestServiceWorkerObserver observer(helper_->context_wrapper());
-    observer.RunUntilActivated(waiting_version, runner);
-  }
+  RequestTermination(&initial_client->host());
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilActivated(waiting_version, runner);
 
   // The update job should have created a new version with the new script,
   // and promoted it to the active version.
@@ -1496,8 +1493,7 @@ TEST_F(ServiceWorkerJobTest, RegisterWhileUninstalling) {
 
   // Make the old version eligible for eviction.
   old_version->RemoveControllee(host->client_uuid());
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    RequestTermination(&initial_client->host());
+  RequestTermination(&initial_client->host());
 
   // Wait for activated.
   TestServiceWorkerObserver observer(helper_->context_wrapper());
@@ -1600,8 +1596,7 @@ TEST_F(ServiceWorkerJobTest, RegisterSameScriptMultipleTimesWhileUninstalling) {
   EXPECT_EQ(new_version, registration->waiting_version());
 
   old_version->RemoveControllee(host->client_uuid());
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    RequestTermination(&initial_client->host());
+  RequestTermination(&initial_client->host());
 
   // Wait for activated.
   TestServiceWorkerObserver observer(helper_->context_wrapper());
@@ -1658,8 +1653,7 @@ TEST_F(ServiceWorkerJobTest, RegisterMultipleTimesWhileUninstalling) {
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, second_version->status());
 
   first_version->RemoveControllee(host->client_uuid());
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    RequestTermination(&initial_client->host());
+  RequestTermination(&initial_client->host());
 
   // Wait for activated.
   TestServiceWorkerObserver observer(helper_->context_wrapper());
@@ -1817,12 +1811,10 @@ TEST_F(ServiceWorkerJobTest, ActivateCancelsOnShutdown) {
   first_version->RemoveControllee(host->client_uuid());
   base::RunLoop().RunUntilIdle();
 
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    // S13nServiceWorker: Activating the new version won't happen until
-    // RequestTermination() is called.
-    EXPECT_EQ(first_version.get(), registration->active_version());
-    RequestTermination(&initial_client->host());
-  }
+  // Activating the new version won't happen until
+  // RequestTermination() is called.
+  EXPECT_EQ(first_version.get(), registration->active_version());
+  RequestTermination(&initial_client->host());
 
   TestServiceWorkerObserver observer(helper_->context_wrapper());
   observer.RunUntilStatusChange(new_version.get(),
@@ -1864,10 +1856,11 @@ TEST_F(ServiceWorkerJobTest, AddRegistrationToMatchingProviderHosts) {
   client->UpdateUrls(in_scope, in_scope);
 
   // Make an in-scope reserved client.
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
   base::WeakPtr<ServiceWorkerProviderHost> reserved_client =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
-          {} /* web_contents_getter */);
+          {} /* web_contents_getter */, &provider_info);
   reserved_client->UpdateUrls(in_scope, in_scope);
 
   // Make an out-scope client.

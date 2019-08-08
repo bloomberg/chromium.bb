@@ -315,6 +315,7 @@ bool TestPlugin::PrepareTransferableResource(
         base::BindOnce(&ReleaseSharedMemory, std::move(shared_bitmap_),
                        std::move(registration)));
   }
+  resource->size = gfx::Size(rect_.width, rect_.height);
   content_changed_ = false;
   return true;
 }

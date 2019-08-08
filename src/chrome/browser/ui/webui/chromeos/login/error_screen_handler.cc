@@ -13,18 +13,11 @@
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/strings/grit/ui_strings.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.ErrorMessageScreen";
-
-}  // namespace
-
 namespace chromeos {
 
 ErrorScreenHandler::ErrorScreenHandler(JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container),
-      weak_ptr_factory_(this) {
-  set_call_js_prefix(kJsScreenPath);
+    : BaseScreenHandler(kScreenId, js_calls_container) {
+  set_user_acted_method_path("login.ErrorMessageScreen.userActed");
 }
 
 ErrorScreenHandler::~ErrorScreenHandler() {
@@ -39,14 +32,14 @@ void ErrorScreenHandler::Show() {
   }
   BaseScreenHandler::ShowScreen(kScreenId);
   if (screen_)
-    screen_->OnShow();
+    screen_->DoShow();
   showing_ = true;
 }
 
 void ErrorScreenHandler::Hide() {
   showing_ = false;
   if (screen_)
-    screen_->OnHide();
+    screen_->DoHide();
 }
 
 void ErrorScreenHandler::Bind(ErrorScreen* screen) {
@@ -61,6 +54,32 @@ void ErrorScreenHandler::Unbind() {
 
 void ErrorScreenHandler::ShowOobeScreen(OobeScreen screen) {
   ShowScreen(screen);
+}
+
+void ErrorScreenHandler::SetErrorStateCode(
+    NetworkError::ErrorState error_state) {
+  CallJS("login.ErrorMessageScreen.setErrorState",
+         static_cast<int>(error_state));
+}
+
+void ErrorScreenHandler::SetErrorStateNetwork(const std::string& network_name) {
+  CallJS("login.ErrorMessageScreen.setErrorStateNetwork", network_name);
+}
+
+void ErrorScreenHandler::SetGuestSigninAllowed(bool value) {
+  CallJS("login.ErrorMessageScreen.allowGuestSignin", value);
+}
+
+void ErrorScreenHandler::SetOfflineSigninAllowed(bool value) {
+  CallJS("login.ErrorMessageScreen.allowOfflineLogin", value);
+}
+
+void ErrorScreenHandler::SetShowConnectingIndicator(bool value) {
+  CallJS("login.ErrorMessageScreen.showConnectingIndicator", value);
+}
+
+void ErrorScreenHandler::SetUIState(NetworkError::UIState ui_state) {
+  CallJS("login.ErrorMessageScreen.setUIState", static_cast<int>(ui_state));
 }
 
 void ErrorScreenHandler::RegisterMessages() {

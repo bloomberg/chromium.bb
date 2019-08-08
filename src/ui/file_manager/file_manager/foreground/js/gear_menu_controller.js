@@ -72,7 +72,7 @@ function GearMenuController(
  */
 GearMenuController.prototype.onShowGearMenu_ = function() {
   this.toggleRipple_.activated = true;
-  this.refreshRemainingSpace_(false);  /* Without loading caption. */
+  this.refreshRemainingSpace_(false); /* Without loading caption. */
 
   // Update view of drive-related settings.
   this.commandHandler_.updateAvailability();
@@ -146,17 +146,24 @@ GearMenuController.prototype.refreshRemainingSpace_ = function(
 
   // TODO(mtomasz): Add support for remaining space indication for provided
   // file systems.
+  // TODO(fukino): Add support for remaining space indication for documents
+  // provider roots. crbug.com/953657.
   if (currentVolumeInfo.volumeType == VolumeManagerCommon.VolumeType.PROVIDED ||
       currentVolumeInfo.volumeType ==
           VolumeManagerCommon.VolumeType.MEDIA_VIEW ||
+      currentVolumeInfo.volumeType ==
+          VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER ||
       currentVolumeInfo.volumeType == VolumeManagerCommon.VolumeType.ARCHIVE) {
     this.gearMenu_.setSpaceInfo(null, false);
     return;
   }
 
-  this.gearMenu_.setSpaceInfo(new Promise(fulfill => {
-    chrome.fileManagerPrivate.getSizeStats(currentVolumeInfo.volumeId, fulfill);
-  }), true);
+  this.gearMenu_.setSpaceInfo(
+      new Promise(fulfill => {
+        chrome.fileManagerPrivate.getSizeStats(
+            currentVolumeInfo.volumeId, fulfill);
+      }),
+      true);
 };
 
 /**

@@ -15,6 +15,8 @@
 
 # This test is designed to be easily run from outside of SCons.
 
+from __future__ import print_function
+
 import argparse
 import os
 import re
@@ -35,13 +37,13 @@ def RunTool(tooldir, tool, flags, cwd, fatal_errors=True):
   try:
     toolcmd = os.path.join(tooldir, 'bin', tool)
     cmd = [toolcmd] + flags
-    print 'Running command:', cmd
+    print('Running command:', cmd)
     # shell=True is required to work properly on Windows
     return subprocess.check_output(' '.join(cmd), cwd=cwd, shell=True)
   except subprocess.CalledProcessError, exc:
-    print 'Command failed with status', exc.returncode
-    print 'Output was:'
-    print exc.output
+    print('Command failed with status', exc.returncode)
+    print('Output was:')
+    print(exc.output)
     if fatal_errors:
       sys.exit(1)
 
@@ -49,11 +51,11 @@ def RunTool(tooldir, tool, flags, cwd, fatal_errors=True):
 def GenerateCFile(tempdir, filename, globalvars, functions):
   'Generate a C file defining the specified globals and functions.'
   with open(os.path.join(tempdir, filename), 'w') as f:
-    print >> f, 'extern int global0;'
+    print('extern int global0;', file=f)
     for g in globalvars:
-      print >> f, 'int global%s = 1;' % g
+      print('int global%s = 1;' % g, file=f)
     for func in functions:
-      print >> f, 'int function%s() { return global0; }' % func
+      print('int function%s() { return global0; }' % func, file=f)
 
 
 def CheckExpectedOutput(output, expected):
@@ -70,11 +72,11 @@ def CheckExpectedOutput(output, expected):
   for ex in expected:
     match = re.search(ex, output)
     if not match:
-      print 'Test match failed:'
-      print 'Searching for regex:', ex
+      print('Test match failed:')
+      print('Searching for regex:', ex)
       failures += 1
   if failures:
-    print 'output:\n', output
+    print('output:\n', output)
   return failures
 
 
@@ -88,12 +90,12 @@ def main(argv):
                           'toolchain', 'linux_x86', 'pnacl_newlib_raw'))
   args = parser.parse_args()
 
-  print 'Using cwd:', args.cwd
+  print('Using cwd:', args.cwd)
   if not os.path.isdir(args.cwd):
     os.makedirs(args.cwd)
 
   if not os.path.isdir(args.toolchaindir):
-    print 'Could not find toolchain directory:', args.toolchaindir
+    print('Could not find toolchain directory:', args.toolchaindir)
     sys.exit(1)
 
   GenerateCFile(args.cwd, 'module1.c', range(2), range(2))
@@ -150,7 +152,7 @@ def main(argv):
       output,
       ['define internal i32 @function0', 'define internal i32 @function512'])
 
-  print 'Got %d failures in tool output' % failure_count
+  print('Got %d failures in tool output' % failure_count)
   return failure_count
 
 if __name__ == '__main__':

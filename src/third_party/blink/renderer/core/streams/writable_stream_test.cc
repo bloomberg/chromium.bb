@@ -86,7 +86,8 @@ underlying_sink)JS";
                                         ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(stream);
 
-  MessageChannel* channel = MessageChannel::Create(scope.GetExecutionContext());
+  auto* channel =
+      MakeGarbageCollected<MessageChannel>(scope.GetExecutionContext());
 
   stream->Serialize(script_state, channel->port1(), ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(stream->locked(script_state, ASSERT_NO_EXCEPTION));

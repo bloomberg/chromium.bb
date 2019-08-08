@@ -176,7 +176,7 @@ class StaleHostResolverTest : public testing::Test {
   CreateMockInnerResolverWithDnsClient(
       std::unique_ptr<net::DnsClient> dns_client) {
     std::unique_ptr<net::ContextHostResolver> inner_resolver(
-        net::HostResolver::CreateDefaultResolverImpl(nullptr));
+        net::HostResolver::CreateStandaloneContextResolver(nullptr));
 
     net::ProcTaskParams proc_params(mock_proc_.get(), 1u);
     inner_resolver->SetProcParamsForTesting(proc_params);
@@ -243,13 +243,14 @@ class StaleHostResolverTest : public testing::Test {
     EXPECT_TRUE(stale.is_stale());
   }
 
-  void Resolve() {
+  void Resolve(const base::Optional<StaleHostResolver::ResolveHostParameters>&
+                   optional_parameters) {
     DCHECK(resolver_);
     EXPECT_FALSE(resolve_pending_);
 
-    request_ = resolver_->CreateRequest(net::HostPortPair(kHostname, kPort),
-                                        net::NetLogWithSource(), base::nullopt);
-
+    request_ =
+        resolver_->CreateRequest(net::HostPortPair(kHostname, kPort),
+                                 net::NetLogWithSource(), optional_parameters);
     resolve_pending_ = true;
     resolve_complete_ = false;
     resolve_error_ = net::ERR_UNEXPECTED;
@@ -293,7 +294,7 @@ class StaleHostResolverTest : public testing::Test {
     // returns |kNetworkAddress|.
     while (resolve_error() != net::OK ||
            resolve_addresses()[0].ToStringWithoutPort() != kNetworkAddress) {
-      Resolve();
+      Resolve(base::nullopt);
       WaitForResolve();
     }
   }
@@ -359,7 +360,7 @@ TEST_F(StaleHostResolverTest, Create) {
 TEST_F(StaleHostResolverTest, Network) {
   CreateResolver();
 
-  Resolve();
+  Resolve(base::nullopt);
   WaitForResolve();
 
   EXPECT_TRUE(resolve_complete());
@@ -371,7 +372,7 @@ TEST_F(StaleHostResolverTest, Network) {
 TEST_F(StaleHostResolverTest, Hosts) {
   CreateResolverWithDnsClient(CreateMockDnsClientForHosts());
 
-  Resolve();
+  Resolve(base::nullopt);
   WaitForResolve();
 
   EXPECT_TRUE(resolve_complete());
@@ -384,7 +385,7 @@ TEST_F(StaleHostResolverTest, FreshCache) {
   CreateResolver();
   CreateCacheEntry(kAgeFreshSec, net::OK);
 
-  Resolve();
+  Resolve(base::nullopt);
 
   EXPECT_TRUE(resolve_complete());
   EXPECT_EQ(net::OK, resolve_error());
@@ -405,7 +406,7 @@ TEST_F(StaleHostResolverTest, MAYBE_StaleCache) {
   CreateResolver();
   CreateCacheEntry(kAgeExpiredSec, net::OK);
 
-  Resolve();
+  Resolve(base::nullopt);
   WaitForResolve();
 
   EXPECT_TRUE(resolve_complete());
@@ -421,7 +422,7 @@ TEST_F(StaleHostResolverTest, StaleCache_DestroyedResolver) {
   CreateResolverWithDnsClient(CreateHangingMockDnsClient());
   CreateCacheEntry(kAgeExpiredSec, net::OK);
 
-  Resolve();
+  Resolve(base::nullopt);
   DestroyResolver();
   WaitForResolve();
 
@@ -437,7 +438,7 @@ TEST_F(StaleHostResolverTest, StaleCacheNameNotResolvedEnabled) {
   CreateResolver();
   CreateCacheEntry(kAgeExpiredSec, net::OK);
 
-  Resolve();
+  Resolve(base::nullopt);
   WaitForResolve();
 
   EXPECT_TRUE(resolve_complete());
@@ -454,7 +455,7 @@ TEST_F(StaleHostResolverTest, StaleCacheNameNotResolvedDisabled) {
   CreateResolver();
   CreateCacheEntry(kAgeExpiredSec, net::OK);
 
-  Resolve();
+  Resolve(base::nullopt);
   WaitForResolve();
 
   EXPECT_TRUE(resolve_complete());
@@ -466,7 +467,7 @@ TEST_F(StaleHostResolverTest, NetworkWithStaleCache) {
   CreateResolver();
   CreateCacheEntry(kAgeExpiredSec, net::OK);
 
-  Resolve();
+  Resolve(base::nullopt);
   WaitForResolve();
 
   EXPECT_TRUE(resolve_complete());
@@ -479,7 +480,7 @@ TEST_F(StaleHostResolverTest, CancelWithNoCache) {
   SetStaleDelay(kNoStaleDelaySec);
   CreateResolver();
 
-  Resolve();
+  Resolve(base::nullopt);
 
   Cancel();
 
@@ -494,13 +495,32 @@ TEST_F(StaleHostResolverTest, CancelWithStaleCache) {
   CreateResolver();
   CreateCacheEntry(kAgeExpiredSec, net::OK);
 
-  Resolve();
+  Resolve(base::nullopt);
 
   Cancel();
 
   EXPECT_FALSE(resolve_complete());
 
   // Make sure there's no lingering |OnResolveComplete()| callback waiting.
+  WaitForIdle();
+}
+
+TEST_F(StaleHostResolverTest, ReturnStaleCacheSync) {
+  SetStaleDelay(kLongStaleDelaySec);
+  CreateResolver();
+  CreateCacheEntry(kAgeExpiredSec, net::OK);
+
+  StaleHostResolver::ResolveHostParameters parameters;
+  parameters.cache_usage =
+      StaleHostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
+
+  Resolve(parameters);
+
+  EXPECT_TRUE(resolve_complete());
+  EXPECT_EQ(net::OK, resolve_error());
+  EXPECT_EQ(1u, resolve_addresses().size());
+  EXPECT_EQ(kCacheAddress, resolve_addresses()[0].ToStringWithoutPort());
+
   WaitForIdle();
 }
 
@@ -588,7 +608,7 @@ TEST_F(StaleHostResolverTest, MAYBE_StaleUsability) {
       LookupStale();
 
     AdvanceTickClock(base::TimeDelta::FromMilliseconds(1));
-    Resolve();
+    Resolve(base::nullopt);
     WaitForResolve();
     EXPECT_TRUE(resolve_complete()) << i;
 
@@ -672,7 +692,7 @@ TEST_F(StaleHostResolverTest, CreatedByContext) {
   // Note: Experimental config above sets 0ms stale delay.
   CreateCacheEntry(kAgeExpiredSec, net::OK);
 
-  Resolve();
+  Resolve(base::nullopt);
   EXPECT_FALSE(resolve_complete());
   WaitForResolve();
 

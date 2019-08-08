@@ -21,17 +21,14 @@
 namespace ui {
 class AXFragmentRootWin;
 class AXSystemCaretWin;
-class DirectManipulationHelper;
 class WindowEventTarget;
-namespace win {
-class DirectManipulationHelper;
-}  // namespace win
 }  // namespace ui
 
 namespace content {
-class RenderWidgetHostViewAura;
 
 class DirectManipulationBrowserTest;
+class DirectManipulationHelper;
+class RenderWidgetHostViewAura;
 
 // Reasons for the existence of this class outlined below:-
 // 1. Some screen readers expect every tab / every unique web content container
@@ -100,6 +97,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
     MESSAGE_HANDLER_EX(WM_NCCALCSIZE, OnNCCalcSize)
     MESSAGE_HANDLER_EX(WM_SIZE, OnSize)
     MESSAGE_HANDLER_EX(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
+    MESSAGE_HANDLER_EX(WM_DESTROY, OnDestroy)
     MESSAGE_HANDLER_EX(DM_POINTERHITTEST, OnPointerHitTest)
   END_MSG_MAP()
 
@@ -136,6 +134,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   void OnFinalMessage(HWND hwnd) override;
 
  private:
+  friend class AccessibilityObjectLifetimeWinBrowserTest;
   friend class DirectManipulationBrowserTest;
 
   explicit LegacyRenderWidgetHostHWND(HWND parent);
@@ -165,6 +164,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   LRESULT OnNCCalcSize(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnSize(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnWindowPosChanged(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnDestroy(UINT message, WPARAM w_param, LPARAM l_param);
 
   LRESULT OnPointerHitTest(UINT message, WPARAM w_param, LPARAM l_param);
 
@@ -188,8 +188,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   // This class provides functionality to register the legacy window as a
   // Direct Manipulation consumer. This allows us to support smooth scroll
   // in Chrome on Windows 10.
-  std::unique_ptr<ui::win::DirectManipulationHelper>
-      direct_manipulation_helper_;
+  std::unique_ptr<DirectManipulationHelper> direct_manipulation_helper_;
 
   std::unique_ptr<ui::CompositorAnimationObserver>
       compositor_animation_observer_;

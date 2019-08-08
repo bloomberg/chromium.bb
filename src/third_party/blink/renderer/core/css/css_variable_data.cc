@@ -63,8 +63,6 @@ void CSSVariableData::ConsumeAndUpdateTokens(const CSSParserTokenRange& range) {
     CSSParserToken token = local_range.Consume();
     if (token.HasStringBacking())
       string_builder.Append(token.Value());
-    needs_url_resolution_ |=
-        (token.GetType() == kUrlToken || token.FunctionId() == CSSValueUrl);
     has_font_units_ |= IsFontUnitToken(token);
     has_root_font_units_ |= IsRootFontUnitToken(token);
   }
@@ -83,7 +81,6 @@ CSSVariableData::CSSVariableData(const CSSParserTokenRange& range,
                                  const WTF::TextEncoding& charset)
     : is_animation_tainted_(is_animation_tainted),
       needs_variable_resolution_(needs_variable_resolution),
-      needs_url_resolution_(needs_variable_resolution_),
       has_font_units_(false),
       has_root_font_units_(false),
       absolutized_(false),

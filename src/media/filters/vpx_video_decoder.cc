@@ -42,9 +42,7 @@ static int GetVpxVideoDecoderThreadCount(const VideoDecoderConfig& config) {
   // maximum number of tiles possible for higher resolution streams.
   if (config.codec() == kCodecVP9) {
     const int width = config.coded_size().width();
-    if (width >= 8192)
-      desired_threads = 32;
-    else if (width >= 4096)
+    if (width >= 4096)
       desired_threads = 16;
     else if (width >= 2048)
       desired_threads = 8;
@@ -177,8 +175,6 @@ void VpxVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   if (video_frame) {
     video_frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT,
                                         false);
-    // Safe to call |output_cb_| here even if we're on the offload thread since
-    // it is only set once during Initialize() and never changed.
     output_cb_.Run(video_frame);
   }
 

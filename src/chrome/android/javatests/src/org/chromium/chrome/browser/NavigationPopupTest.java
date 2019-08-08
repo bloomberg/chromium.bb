@@ -19,7 +19,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -27,14 +26,15 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.ExecutionException;
@@ -47,8 +47,7 @@ import java.util.concurrent.ExecutionException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class NavigationPopupTest {
     @Rule
-    public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private static final int INVALID_NAVIGATION_INDEX = -1;
 
@@ -57,7 +56,8 @@ public class NavigationPopupTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> mProfile = Profile.getLastUsedProfile());
+        TestThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> mProfile = Profile.getLastUsedProfile());
     }
 
     // Exists solely to expose protected methods to this test.
@@ -71,9 +71,9 @@ public class NavigationPopupTest {
     // Exists solely to expose protected methods to this test.
     private static class TestNavigationEntry extends NavigationEntry {
         public TestNavigationEntry(int index, String url, String virtualUrl, String originalUrl,
-                String title, Bitmap favicon, int transition) {
+                String title, Bitmap favicon, int transition, long timestamp) {
             super(index, url, virtualUrl, originalUrl, /*referrerUrl=*/null, title, favicon,
-                    transition);
+                    transition, timestamp);
         }
     }
 
@@ -84,9 +84,9 @@ public class NavigationPopupTest {
         public TestNavigationController() {
             mHistory = new TestNavigationHistory();
             mHistory.addEntry(new TestNavigationEntry(
-                    1, "about:blank", null, null, "About Blank", null, 0));
+                    1, "about:blank", null, null, "About Blank", null, 0, 0));
             mHistory.addEntry(new TestNavigationEntry(
-                    5, UrlUtils.encodeHtmlDataUri("<html>1</html>"), null, null, null, null, 0));
+                    5, UrlUtils.encodeHtmlDataUri("<html>1</html>"), null, null, null, null, 0, 0));
         }
 
         @Override
@@ -239,7 +239,7 @@ public class NavigationPopupTest {
             }
         });
 
-        ThreadUtils.runOnUiThreadBlocking(() -> popup.dismiss());
+        TestThreadUtils.runOnUiThreadBlocking(() -> popup.dismiss());
     }
 
     @Test
@@ -249,7 +249,7 @@ public class NavigationPopupTest {
         final TestNavigationController controller = new TestNavigationController();
         final ListPopupWindow popup = showPopup(controller);
 
-        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> popup.performItemClick(1));
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> popup.performItemClick(1));
 
         Assert.assertFalse("Popup did not hide as expected.", popup.isShowing());
         Assert.assertEquals(
@@ -263,7 +263,7 @@ public class NavigationPopupTest {
         final TestNavigationController controller = new TestNavigationController();
         final ListPopupWindow popup = showPopup(controller);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ListView list = popup.getListView();
             View view = list.getAdapter().getView(list.getAdapter().getCount() - 1, null, list);
             TextView text = (TextView) view.findViewById(R.id.entry_title);
@@ -279,7 +279,7 @@ public class NavigationPopupTest {
     @Feature({"Navigation"})
     public void testLongPressBackTriggering() throws ExecutionException {
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getActivity().onKeyDown(KeyEvent.KEYCODE_BACK, event); });
         CriteriaHelper.pollUiThread(
                 () -> mActivityTestRule.getActivity().hasPendingNavigationPopupForTesting());
@@ -294,13 +294,13 @@ public class NavigationPopupTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Navigation"})
     public void testLongPressBackTriggering_Cancellation() throws ExecutionException {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
             mActivityTestRule.getActivity().onKeyDown(KeyEvent.KEYCODE_BACK, event);
         });
         CriteriaHelper.pollUiThread(
                 () -> mActivityTestRule.getActivity().hasPendingNavigationPopupForTesting());
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             KeyEvent event = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
             mActivityTestRule.getActivity().onKeyUp(KeyEvent.KEYCODE_BACK, event);
         });
@@ -308,12 +308,12 @@ public class NavigationPopupTest {
                 () -> !mActivityTestRule.getActivity().hasPendingNavigationPopupForTesting());
 
         // Ensure no navigation popup is showing.
-        Assert.assertNull(ThreadUtils.runOnUiThreadBlocking(
+        Assert.assertNull(TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getNavigationPopupForTesting()));
     }
 
     private ListPopupWindow showPopup(NavigationController controller) throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(() -> {
+        return TestThreadUtils.runOnUiThreadBlocking(() -> {
             NavigationPopup popup = new NavigationPopup(mProfile, mActivityTestRule.getActivity(),
                     controller, NavigationPopup.Type.TABLET_FORWARD);
             popup.show(mActivityTestRule.getActivity()

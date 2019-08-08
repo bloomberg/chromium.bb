@@ -54,137 +54,166 @@ namespace {
 // NOTE: Do not use this list, use computableProperties() instead
 // to respect runtime enabling of CSS properties.
 const CSSPropertyID kComputedPropertyArray[] = {
-    CSSPropertyAnimationDelay, CSSPropertyAnimationDirection,
-    CSSPropertyAnimationDuration, CSSPropertyAnimationFillMode,
-    CSSPropertyAnimationIterationCount, CSSPropertyAnimationName,
-    CSSPropertyAnimationPlayState, CSSPropertyAnimationTimingFunction,
-    CSSPropertyBackgroundAttachment, CSSPropertyBackgroundBlendMode,
-    CSSPropertyBackgroundClip, CSSPropertyBackgroundColor,
-    CSSPropertyBackgroundImage, CSSPropertyBackgroundOrigin,
+    CSSPropertyID::kAnimationDelay, CSSPropertyID::kAnimationDirection,
+    CSSPropertyID::kAnimationDuration, CSSPropertyID::kAnimationFillMode,
+    CSSPropertyID::kAnimationIterationCount, CSSPropertyID::kAnimationName,
+    CSSPropertyID::kAnimationPlayState, CSSPropertyID::kAnimationTimingFunction,
+    CSSPropertyID::kBackgroundAttachment, CSSPropertyID::kBackgroundBlendMode,
+    CSSPropertyID::kBackgroundClip, CSSPropertyID::kBackgroundColor,
+    CSSPropertyID::kBackgroundImage, CSSPropertyID::kBackgroundOrigin,
     // more-specific background-position-x/y are non-standard
-    CSSPropertyBackgroundPosition, CSSPropertyBackgroundRepeat,
-    CSSPropertyBackgroundSize, CSSPropertyBorderBottomColor,
-    CSSPropertyBorderBottomLeftRadius, CSSPropertyBorderBottomRightRadius,
-    CSSPropertyBorderBottomStyle, CSSPropertyBorderBottomWidth,
-    CSSPropertyBorderCollapse, CSSPropertyBorderImageOutset,
-    CSSPropertyBorderImageRepeat, CSSPropertyBorderImageSlice,
-    CSSPropertyBorderImageSource, CSSPropertyBorderImageWidth,
-    CSSPropertyBorderLeftColor, CSSPropertyBorderLeftStyle,
-    CSSPropertyBorderLeftWidth, CSSPropertyBorderRightColor,
-    CSSPropertyBorderRightStyle, CSSPropertyBorderRightWidth,
-    CSSPropertyBorderTopColor, CSSPropertyBorderTopLeftRadius,
-    CSSPropertyBorderTopRightRadius, CSSPropertyBorderTopStyle,
-    CSSPropertyBorderTopWidth, CSSPropertyBottom, CSSPropertyBoxShadow,
-    CSSPropertyBoxSizing, CSSPropertyBreakAfter, CSSPropertyBreakBefore,
-    CSSPropertyBreakInside, CSSPropertyCaptionSide, CSSPropertyClear,
-    CSSPropertyClip, CSSPropertyColor, CSSPropertyContent, CSSPropertyCursor,
-    CSSPropertyDirection, CSSPropertyDisplay, CSSPropertyEmptyCells,
-    CSSPropertyFloat, CSSPropertyFontFamily, CSSPropertyFontKerning,
-    CSSPropertyFontSize, CSSPropertyFontSizeAdjust, CSSPropertyFontStretch,
-    CSSPropertyFontStyle, CSSPropertyFontVariant,
-    CSSPropertyFontVariantLigatures, CSSPropertyFontVariantCaps,
-    CSSPropertyFontVariantNumeric, CSSPropertyFontVariantEastAsian,
-    CSSPropertyFontWeight, CSSPropertyHeight, CSSPropertyImageOrientation,
-    CSSPropertyImageRendering, CSSPropertyIsolation, CSSPropertyJustifyItems,
-    CSSPropertyJustifySelf, CSSPropertyLeft, CSSPropertyLetterSpacing,
-    CSSPropertyLineHeight, CSSPropertyLineHeightStep, CSSPropertyListStyleImage,
-    CSSPropertyListStylePosition, CSSPropertyListStyleType,
-    CSSPropertyMarginBottom, CSSPropertyMarginLeft, CSSPropertyMarginRight,
-    CSSPropertyMarginTop, CSSPropertyMaxHeight, CSSPropertyMaxWidth,
-    CSSPropertyMinHeight, CSSPropertyMinWidth, CSSPropertyMixBlendMode,
-    CSSPropertyObjectFit, CSSPropertyObjectPosition, CSSPropertyOffsetAnchor,
-    CSSPropertyOffsetDistance, CSSPropertyOffsetPath, CSSPropertyOffsetPosition,
-    CSSPropertyOffsetRotate, CSSPropertyOpacity, CSSPropertyOrphans,
-    CSSPropertyOutlineColor, CSSPropertyOutlineOffset, CSSPropertyOutlineStyle,
-    CSSPropertyOutlineWidth, CSSPropertyOverflowAnchor, CSSPropertyOverflowWrap,
-    CSSPropertyOverflowX, CSSPropertyOverflowY, CSSPropertyPaddingBottom,
-    CSSPropertyPaddingLeft, CSSPropertyPaddingRight, CSSPropertyPaddingTop,
-    CSSPropertyPointerEvents, CSSPropertyPosition, CSSPropertyResize,
-    CSSPropertyRight, CSSPropertyScrollBehavior, CSSPropertyScrollCustomization,
-    CSSPropertySpeak, CSSPropertyTableLayout, CSSPropertyTabSize,
-    CSSPropertyTextAlign, CSSPropertyTextAlignLast, CSSPropertyTextDecoration,
-    CSSPropertyTextDecorationLine, CSSPropertyTextDecorationStyle,
-    CSSPropertyTextDecorationColor, CSSPropertyTextDecorationSkipInk,
-    CSSPropertyTextJustify, CSSPropertyTextUnderlinePosition,
-    CSSPropertyTextIndent, CSSPropertyTextRendering, CSSPropertyTextShadow,
-    CSSPropertyTextSizeAdjust, CSSPropertyTextOverflow,
-    CSSPropertyTextTransform, CSSPropertyTop, CSSPropertyTouchAction,
-    CSSPropertyTransitionDelay, CSSPropertyTransitionDuration,
-    CSSPropertyTransitionProperty, CSSPropertyTransitionTimingFunction,
-    CSSPropertyUnicodeBidi, CSSPropertyVerticalAlign, CSSPropertyVisibility,
-    CSSPropertyWhiteSpace, CSSPropertyWidows, CSSPropertyWidth,
-    CSSPropertyWillChange, CSSPropertyWordBreak, CSSPropertyWordSpacing,
-    CSSPropertyZIndex, CSSPropertyZoom,
+    CSSPropertyID::kBackgroundPosition, CSSPropertyID::kBackgroundRepeat,
+    CSSPropertyID::kBackgroundSize, CSSPropertyID::kBorderBottomColor,
+    CSSPropertyID::kBorderBottomLeftRadius,
+    CSSPropertyID::kBorderBottomRightRadius, CSSPropertyID::kBorderBottomStyle,
+    CSSPropertyID::kBorderBottomWidth, CSSPropertyID::kBorderCollapse,
+    CSSPropertyID::kBorderImageOutset, CSSPropertyID::kBorderImageRepeat,
+    CSSPropertyID::kBorderImageSlice, CSSPropertyID::kBorderImageSource,
+    CSSPropertyID::kBorderImageWidth, CSSPropertyID::kBorderLeftColor,
+    CSSPropertyID::kBorderLeftStyle, CSSPropertyID::kBorderLeftWidth,
+    CSSPropertyID::kBorderRightColor, CSSPropertyID::kBorderRightStyle,
+    CSSPropertyID::kBorderRightWidth, CSSPropertyID::kBorderTopColor,
+    CSSPropertyID::kBorderTopLeftRadius, CSSPropertyID::kBorderTopRightRadius,
+    CSSPropertyID::kBorderTopStyle, CSSPropertyID::kBorderTopWidth,
+    CSSPropertyID::kBottom, CSSPropertyID::kBoxShadow,
+    CSSPropertyID::kBoxSizing, CSSPropertyID::kBreakAfter,
+    CSSPropertyID::kBreakBefore, CSSPropertyID::kBreakInside,
+    CSSPropertyID::kCaptionSide, CSSPropertyID::kClear, CSSPropertyID::kClip,
+    CSSPropertyID::kColor, CSSPropertyID::kContent, CSSPropertyID::kCursor,
+    CSSPropertyID::kDirection, CSSPropertyID::kDisplay,
+    CSSPropertyID::kEmptyCells, CSSPropertyID::kFloat,
+    CSSPropertyID::kFontFamily, CSSPropertyID::kFontKerning,
+    CSSPropertyID::kFontSize, CSSPropertyID::kFontSizeAdjust,
+    CSSPropertyID::kFontStretch, CSSPropertyID::kFontStyle,
+    CSSPropertyID::kFontVariant, CSSPropertyID::kFontVariantLigatures,
+    CSSPropertyID::kFontVariantCaps, CSSPropertyID::kFontVariantNumeric,
+    CSSPropertyID::kFontVariantEastAsian, CSSPropertyID::kFontWeight,
+    CSSPropertyID::kHeight, CSSPropertyID::kImageOrientation,
+    CSSPropertyID::kImageRendering, CSSPropertyID::kIsolation,
+    CSSPropertyID::kJustifyItems, CSSPropertyID::kJustifySelf,
+    CSSPropertyID::kLeft, CSSPropertyID::kLetterSpacing,
+    CSSPropertyID::kLineHeight, CSSPropertyID::kLineHeightStep,
+    CSSPropertyID::kListStyleImage, CSSPropertyID::kListStylePosition,
+    CSSPropertyID::kListStyleType, CSSPropertyID::kMarginBottom,
+    CSSPropertyID::kMarginLeft, CSSPropertyID::kMarginRight,
+    CSSPropertyID::kMarginTop, CSSPropertyID::kMaxHeight,
+    CSSPropertyID::kMaxWidth, CSSPropertyID::kMinHeight,
+    CSSPropertyID::kMinWidth, CSSPropertyID::kMixBlendMode,
+    CSSPropertyID::kObjectFit, CSSPropertyID::kObjectPosition,
+    CSSPropertyID::kOffsetAnchor, CSSPropertyID::kOffsetDistance,
+    CSSPropertyID::kOffsetPath, CSSPropertyID::kOffsetPosition,
+    CSSPropertyID::kOffsetRotate, CSSPropertyID::kOpacity,
+    CSSPropertyID::kOrphans, CSSPropertyID::kOutlineColor,
+    CSSPropertyID::kOutlineOffset, CSSPropertyID::kOutlineStyle,
+    CSSPropertyID::kOutlineWidth, CSSPropertyID::kOverflowAnchor,
+    CSSPropertyID::kOverflowWrap, CSSPropertyID::kOverflowX,
+    CSSPropertyID::kOverflowY, CSSPropertyID::kPaddingBottom,
+    CSSPropertyID::kPaddingLeft, CSSPropertyID::kPaddingRight,
+    CSSPropertyID::kPaddingTop, CSSPropertyID::kPointerEvents,
+    CSSPropertyID::kPosition, CSSPropertyID::kResize, CSSPropertyID::kRight,
+    CSSPropertyID::kScrollBehavior, CSSPropertyID::kScrollCustomization,
+    CSSPropertyID::kSpeak, CSSPropertyID::kTableLayout, CSSPropertyID::kTabSize,
+    CSSPropertyID::kTextAlign, CSSPropertyID::kTextAlignLast,
+    CSSPropertyID::kTextDecoration, CSSPropertyID::kTextDecorationLine,
+    CSSPropertyID::kTextDecorationStyle, CSSPropertyID::kTextDecorationColor,
+    CSSPropertyID::kTextDecorationSkipInk, CSSPropertyID::kTextJustify,
+    CSSPropertyID::kTextUnderlinePosition, CSSPropertyID::kTextIndent,
+    CSSPropertyID::kTextRendering, CSSPropertyID::kTextShadow,
+    CSSPropertyID::kTextSizeAdjust, CSSPropertyID::kTextOverflow,
+    CSSPropertyID::kTextTransform, CSSPropertyID::kTop,
+    CSSPropertyID::kTouchAction, CSSPropertyID::kTransitionDelay,
+    CSSPropertyID::kTransitionDuration, CSSPropertyID::kTransitionProperty,
+    CSSPropertyID::kTransitionTimingFunction, CSSPropertyID::kUnicodeBidi,
+    CSSPropertyID::kVerticalAlign, CSSPropertyID::kVisibility,
+    CSSPropertyID::kWhiteSpace, CSSPropertyID::kWidows, CSSPropertyID::kWidth,
+    CSSPropertyID::kWillChange, CSSPropertyID::kWordBreak,
+    CSSPropertyID::kWordSpacing, CSSPropertyID::kZIndex, CSSPropertyID::kZoom,
 
-    CSSPropertyWebkitAppearance, CSSPropertyBackfaceVisibility,
-    CSSPropertyWebkitBorderHorizontalSpacing, CSSPropertyWebkitBorderImage,
-    CSSPropertyWebkitBorderVerticalSpacing, CSSPropertyWebkitBoxAlign,
-    CSSPropertyWebkitBoxDecorationBreak, CSSPropertyWebkitBoxDirection,
-    CSSPropertyWebkitBoxFlex, CSSPropertyWebkitBoxOrdinalGroup,
-    CSSPropertyWebkitBoxOrient, CSSPropertyWebkitBoxPack,
-    CSSPropertyWebkitBoxReflect, CSSPropertyColumnCount, CSSPropertyColumnGap,
-    CSSPropertyColumnRuleColor, CSSPropertyColumnRuleStyle,
-    CSSPropertyColumnRuleWidth, CSSPropertyColumnSpan, CSSPropertyColumnWidth,
-    CSSPropertyBackdropFilter, CSSPropertyAlignContent, CSSPropertyAlignItems,
-    CSSPropertyAlignSelf, CSSPropertyFlexBasis, CSSPropertyFlexGrow,
-    CSSPropertyFlexShrink, CSSPropertyFlexDirection, CSSPropertyFlexWrap,
-    CSSPropertyJustifyContent, CSSPropertyWebkitFontSmoothing,
-    CSSPropertyGridAutoColumns, CSSPropertyGridAutoFlow,
-    CSSPropertyGridAutoRows, CSSPropertyGridColumnEnd,
-    CSSPropertyGridColumnStart, CSSPropertyGridTemplateAreas,
-    CSSPropertyGridTemplateColumns, CSSPropertyGridTemplateRows,
-    CSSPropertyGridRowEnd, CSSPropertyGridRowStart, CSSPropertyRowGap,
-    CSSPropertyWebkitHighlight, CSSPropertyHyphens,
-    CSSPropertyWebkitHyphenateCharacter, CSSPropertyWebkitLineBreak,
-    CSSPropertyWebkitLineClamp, CSSPropertyWebkitLocale,
-    CSSPropertyWebkitMarginBeforeCollapse, CSSPropertyWebkitMarginAfterCollapse,
-    CSSPropertyWebkitMaskBoxImage, CSSPropertyWebkitMaskBoxImageOutset,
-    CSSPropertyWebkitMaskBoxImageRepeat, CSSPropertyWebkitMaskBoxImageSlice,
-    CSSPropertyWebkitMaskBoxImageSource, CSSPropertyWebkitMaskBoxImageWidth,
-    CSSPropertyWebkitMaskClip, CSSPropertyWebkitMaskComposite,
-    CSSPropertyWebkitMaskImage, CSSPropertyWebkitMaskOrigin,
-    CSSPropertyWebkitMaskPosition, CSSPropertyWebkitMaskRepeat,
-    CSSPropertyWebkitMaskSize, CSSPropertyOrder, CSSPropertyPerspective,
-    CSSPropertyPerspectiveOrigin, CSSPropertyWebkitPrintColorAdjust,
-    CSSPropertyWebkitRtlOrdering, CSSPropertyShapeOutside,
-    CSSPropertyShapeImageThreshold, CSSPropertyShapeMargin,
-    CSSPropertyWebkitTapHighlightColor, CSSPropertyWebkitTextCombine,
-    CSSPropertyWebkitTextDecorationsInEffect,
-    CSSPropertyWebkitTextEmphasisColor, CSSPropertyWebkitTextEmphasisPosition,
-    CSSPropertyWebkitTextEmphasisStyle, CSSPropertyWebkitTextFillColor,
-    CSSPropertyWebkitTextOrientation, CSSPropertyWebkitTextSecurity,
-    CSSPropertyWebkitTextStrokeColor, CSSPropertyWebkitTextStrokeWidth,
-    CSSPropertyTransform, CSSPropertyTransformOrigin, CSSPropertyTransformStyle,
-    CSSPropertyWebkitUserDrag, CSSPropertyWebkitUserModify,
-    CSSPropertyUserSelect, CSSPropertyWebkitWritingMode,
-    CSSPropertyWebkitAppRegion, CSSPropertyBufferedRendering,
-    CSSPropertyClipPath, CSSPropertyClipRule, CSSPropertyMask,
-    CSSPropertyFilter, CSSPropertyFloodColor, CSSPropertyFloodOpacity,
-    CSSPropertyLightingColor, CSSPropertyStopColor, CSSPropertyStopOpacity,
-    CSSPropertyColorInterpolation, CSSPropertyColorInterpolationFilters,
-    CSSPropertyColorRendering, CSSPropertyFill, CSSPropertyFillOpacity,
-    CSSPropertyFillRule, CSSPropertyMarkerEnd, CSSPropertyMarkerMid,
-    CSSPropertyMarkerStart, CSSPropertyMaskType, CSSPropertyMaskSourceType,
-    CSSPropertyShapeRendering, CSSPropertyStroke, CSSPropertyStrokeDasharray,
-    CSSPropertyStrokeDashoffset, CSSPropertyStrokeLinecap,
-    CSSPropertyStrokeLinejoin, CSSPropertyStrokeMiterlimit,
-    CSSPropertyStrokeOpacity, CSSPropertyStrokeWidth,
-    CSSPropertyAlignmentBaseline, CSSPropertyBaselineShift,
-    CSSPropertyDominantBaseline, CSSPropertyTextAnchor, CSSPropertyWritingMode,
-    CSSPropertyVectorEffect, CSSPropertyPaintOrder, CSSPropertyD, CSSPropertyCx,
-    CSSPropertyCy, CSSPropertyX, CSSPropertyY, CSSPropertyR, CSSPropertyRx,
-    CSSPropertyRy, CSSPropertyTranslate, CSSPropertyRotate, CSSPropertyScale,
-    CSSPropertyCaretColor, CSSPropertyLineBreak};
+    CSSPropertyID::kWebkitAppearance, CSSPropertyID::kBackfaceVisibility,
+    CSSPropertyID::kWebkitBorderHorizontalSpacing,
+    CSSPropertyID::kWebkitBorderImage,
+    CSSPropertyID::kWebkitBorderVerticalSpacing, CSSPropertyID::kWebkitBoxAlign,
+    CSSPropertyID::kWebkitBoxDecorationBreak,
+    CSSPropertyID::kWebkitBoxDirection, CSSPropertyID::kWebkitBoxFlex,
+    CSSPropertyID::kWebkitBoxOrdinalGroup, CSSPropertyID::kWebkitBoxOrient,
+    CSSPropertyID::kWebkitBoxPack, CSSPropertyID::kWebkitBoxReflect,
+    CSSPropertyID::kColumnCount, CSSPropertyID::kColumnGap,
+    CSSPropertyID::kColumnRuleColor, CSSPropertyID::kColumnRuleStyle,
+    CSSPropertyID::kColumnRuleWidth, CSSPropertyID::kColumnSpan,
+    CSSPropertyID::kColumnWidth, CSSPropertyID::kBackdropFilter,
+    CSSPropertyID::kAlignContent, CSSPropertyID::kAlignItems,
+    CSSPropertyID::kAlignSelf, CSSPropertyID::kFlexBasis,
+    CSSPropertyID::kFlexGrow, CSSPropertyID::kFlexShrink,
+    CSSPropertyID::kFlexDirection, CSSPropertyID::kFlexWrap,
+    CSSPropertyID::kJustifyContent, CSSPropertyID::kWebkitFontSmoothing,
+    CSSPropertyID::kGridAutoColumns, CSSPropertyID::kGridAutoFlow,
+    CSSPropertyID::kGridAutoRows, CSSPropertyID::kGridColumnEnd,
+    CSSPropertyID::kGridColumnStart, CSSPropertyID::kGridTemplateAreas,
+    CSSPropertyID::kGridTemplateColumns, CSSPropertyID::kGridTemplateRows,
+    CSSPropertyID::kGridRowEnd, CSSPropertyID::kGridRowStart,
+    CSSPropertyID::kRowGap, CSSPropertyID::kWebkitHighlight,
+    CSSPropertyID::kHyphens, CSSPropertyID::kWebkitHyphenateCharacter,
+    CSSPropertyID::kWebkitLineBreak, CSSPropertyID::kWebkitLineClamp,
+    CSSPropertyID::kWebkitLocale, CSSPropertyID::kWebkitMarginBeforeCollapse,
+    CSSPropertyID::kWebkitMarginAfterCollapse,
+    CSSPropertyID::kWebkitMaskBoxImage,
+    CSSPropertyID::kWebkitMaskBoxImageOutset,
+    CSSPropertyID::kWebkitMaskBoxImageRepeat,
+    CSSPropertyID::kWebkitMaskBoxImageSlice,
+    CSSPropertyID::kWebkitMaskBoxImageSource,
+    CSSPropertyID::kWebkitMaskBoxImageWidth, CSSPropertyID::kWebkitMaskClip,
+    CSSPropertyID::kWebkitMaskComposite, CSSPropertyID::kWebkitMaskImage,
+    CSSPropertyID::kWebkitMaskOrigin, CSSPropertyID::kWebkitMaskPosition,
+    CSSPropertyID::kWebkitMaskRepeat, CSSPropertyID::kWebkitMaskSize,
+    CSSPropertyID::kOrder, CSSPropertyID::kPerspective,
+    CSSPropertyID::kPerspectiveOrigin, CSSPropertyID::kWebkitPrintColorAdjust,
+    CSSPropertyID::kWebkitRtlOrdering, CSSPropertyID::kShapeOutside,
+    CSSPropertyID::kShapeImageThreshold, CSSPropertyID::kShapeMargin,
+    CSSPropertyID::kWebkitTapHighlightColor, CSSPropertyID::kWebkitTextCombine,
+    CSSPropertyID::kWebkitTextDecorationsInEffect,
+    CSSPropertyID::kWebkitTextEmphasisColor,
+    CSSPropertyID::kWebkitTextEmphasisPosition,
+    CSSPropertyID::kWebkitTextEmphasisStyle,
+    CSSPropertyID::kWebkitTextFillColor, CSSPropertyID::kWebkitTextOrientation,
+    CSSPropertyID::kWebkitTextSecurity, CSSPropertyID::kWebkitTextStrokeColor,
+    CSSPropertyID::kWebkitTextStrokeWidth, CSSPropertyID::kTransform,
+    CSSPropertyID::kTransformOrigin, CSSPropertyID::kTransformStyle,
+    CSSPropertyID::kWebkitUserDrag, CSSPropertyID::kWebkitUserModify,
+    CSSPropertyID::kUserSelect, CSSPropertyID::kWebkitWritingMode,
+    CSSPropertyID::kWebkitAppRegion, CSSPropertyID::kBufferedRendering,
+    CSSPropertyID::kClipPath, CSSPropertyID::kClipRule, CSSPropertyID::kMask,
+    CSSPropertyID::kFilter, CSSPropertyID::kFloodColor,
+    CSSPropertyID::kFloodOpacity, CSSPropertyID::kLightingColor,
+    CSSPropertyID::kStopColor, CSSPropertyID::kStopOpacity,
+    CSSPropertyID::kColorInterpolation,
+    CSSPropertyID::kColorInterpolationFilters, CSSPropertyID::kColorRendering,
+    CSSPropertyID::kFill, CSSPropertyID::kFillOpacity, CSSPropertyID::kFillRule,
+    CSSPropertyID::kMarkerEnd, CSSPropertyID::kMarkerMid,
+    CSSPropertyID::kMarkerStart, CSSPropertyID::kMaskType,
+    CSSPropertyID::kMaskSourceType, CSSPropertyID::kShapeRendering,
+    CSSPropertyID::kStroke, CSSPropertyID::kStrokeDasharray,
+    CSSPropertyID::kStrokeDashoffset, CSSPropertyID::kStrokeLinecap,
+    CSSPropertyID::kStrokeLinejoin, CSSPropertyID::kStrokeMiterlimit,
+    CSSPropertyID::kStrokeOpacity, CSSPropertyID::kStrokeWidth,
+    CSSPropertyID::kAlignmentBaseline, CSSPropertyID::kBaselineShift,
+    CSSPropertyID::kDominantBaseline, CSSPropertyID::kTextAnchor,
+    CSSPropertyID::kWritingMode, CSSPropertyID::kVectorEffect,
+    CSSPropertyID::kPaintOrder, CSSPropertyID::kD, CSSPropertyID::kCx,
+    CSSPropertyID::kCy, CSSPropertyID::kX, CSSPropertyID::kY, CSSPropertyID::kR,
+    CSSPropertyID::kRx, CSSPropertyID::kRy, CSSPropertyID::kTranslate,
+    CSSPropertyID::kRotate, CSSPropertyID::kScale, CSSPropertyID::kCaretColor,
+    CSSPropertyID::kLineBreak};
 
 CSSValueID CssIdentifierForFontSizeKeyword(int keyword_size) {
   DCHECK_NE(keyword_size, 0);
   DCHECK_LE(keyword_size, 8);
-  return static_cast<CSSValueID>(CSSValueXxSmall + keyword_size - 1);
+  return static_cast<CSSValueID>(static_cast<int>(CSSValueID::kXxSmall) +
+                                 keyword_size - 1);
 }
 
 void LogUnimplementedPropertyID(const CSSProperty& property) {
   DEFINE_STATIC_LOCAL(HashSet<CSSPropertyID>, property_id_set, ());
-  if (property.PropertyID() == CSSPropertyVariable)
+  if (property.PropertyID() == CSSPropertyID::kVariable)
     return;
   if (!property_id_set.insert(property.PropertyID()).is_new_entry)
     return;
@@ -245,7 +274,7 @@ CSSComputedStyleDeclaration::GetFontSizeCSSValuePreferringKeyword() const {
   if (!node_)
     return nullptr;
 
-  node_->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  node_->GetDocument().UpdateStyleAndLayout();
 
   const ComputedStyle* style =
       node_->EnsureComputedStyle(pseudo_element_specifier_);
@@ -357,7 +386,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
   const ComputedStyle* style = ComputeComputedStyle();
 
   if (property_class.IsLayoutDependent(style, layout_object)) {
-    document.UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(styled_node);
+    document.UpdateStyleAndLayoutForNode(styled_node);
     styled_node = StyledNode();
     style = ComputeComputedStyle();
     layout_object = StyledLayoutObject();
@@ -378,7 +407,8 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
 String CSSComputedStyleDeclaration::GetPropertyValue(
     CSSPropertyID property_id) const {
   // allow_visited_style_ is true only for access from DevTools.
-  if (!allow_visited_style_ && property_id == CSSPropertyWebkitAppearance) {
+  if (!allow_visited_style_ &&
+      property_id == CSSPropertyID::kWebkitAppearance) {
     UseCounter::Count(
         node_->GetDocument(),
         WebFeature::kGetComputedStyleForWebkitAppearanceExcludeDevTools);
@@ -405,18 +435,18 @@ String CSSComputedStyleDeclaration::item(unsigned i) const {
 bool CSSComputedStyleDeclaration::CssPropertyMatches(
     CSSPropertyID property_id,
     const CSSValue& property_value) const {
-  if (property_id == CSSPropertyFontSize &&
+  if (property_id == CSSPropertyID::kFontSize &&
       (property_value.IsPrimitiveValue() ||
        property_value.IsIdentifierValue()) &&
       node_) {
-    node_->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    node_->GetDocument().UpdateStyleAndLayout();
     const ComputedStyle* style =
         node_->EnsureComputedStyle(pseudo_element_specifier_);
     if (style && style->GetFontDescription().KeywordSize()) {
       CSSValueID size_value = CssIdentifierForFontSizeKeyword(
           style->GetFontDescription().KeywordSize());
-      if (property_value.IsIdentifierValue() &&
-          ToCSSIdentifierValue(property_value).GetValueID() == size_value)
+      auto* identifier_value = DynamicTo<CSSIdentifierValue>(property_value);
+      if (identifier_value && identifier_value->GetValueID() == size_value)
         return true;
     }
   }
@@ -449,9 +479,9 @@ CSSRule* CSSComputedStyleDeclaration::parentRule() const {
 String CSSComputedStyleDeclaration::getPropertyValue(
     const String& property_name) {
   CSSPropertyID property_id = cssPropertyID(property_name);
-  if (!property_id)
+  if (!isValidCSSPropertyID(property_id))
     return String();
-  if (property_id == CSSPropertyVariable) {
+  if (property_id == CSSPropertyID::kVariable) {
     const CSSValue* value = GetPropertyCSSValue(AtomicString(property_name));
     if (value)
       return value->CssText();
@@ -499,7 +529,7 @@ String CSSComputedStyleDeclaration::removeProperty(
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(
     CSSPropertyID property_id) {
-  if (property_id == CSSPropertyWebkitAppearance && node_) {
+  if (property_id == CSSPropertyID::kWebkitAppearance && node_) {
     UseCounter::Count(node_->GetDocument(),
                       WebFeature::kGetComputedStyleWebkitAppearance);
   }

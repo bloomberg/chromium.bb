@@ -67,13 +67,14 @@ constexpr int kMinDataPointsForQuickRun = 3;
 // long enough to collect sufficient tracing data; and, unfortunately, there's
 // nothing we can do about that.
 #define EXPECT_FOR_PERFORMANCE_RUN(expr)             \
-  do {                                               \
+  if (!(expr)) {                                     \
+    const char *_out = #expr;                        \
     if (is_full_performance_run()) {                 \
-      EXPECT_TRUE(expr);                             \
-    } else if (!(expr)) {                            \
-      LOG(WARNING) << "Allowing failure: " << #expr; \
+      LOG(ERROR) << "Failure: " << _out;             \
+    } else {                                         \
+      LOG(WARNING) << "Allowing failure: " << _out;  \
     }                                                \
-  } while (false)
+  }
 
 enum TestFlags {
   kSmallWindow = 1 << 2,      // Window size: 1 = 800x600, 0 = 2000x1000
@@ -168,7 +169,7 @@ class MeanAndError {
              const std::string& modifier,
              const std::string& trace,
              const std::string& unit) {
-    if (num_values_ >= 20) {
+    if (num_values_ > 0) {
       perf_test::PrintResultMeanAndError(measurement,
                                          modifier,
                                          trace,
@@ -176,8 +177,7 @@ class MeanAndError {
                                          unit,
                                          true);
     } else {
-      LOG(ERROR) << "Not enough events (" << num_values_ << ") for "
-                 << measurement << modifier << " " << trace;
+      LOG(ERROR) << "No events for " << measurement << modifier << " " << trace;
     }
   }
 

@@ -100,9 +100,9 @@ base::Optional<ModelError> ConsentSyncBridgeImpl::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
-  for (EntityChange& change : entity_changes) {
-    DCHECK_EQ(EntityChange::ACTION_DELETE, change.type());
-    batch->DeleteData(change.storage_key());
+  for (const std::unique_ptr<EntityChange>& change : entity_changes) {
+    DCHECK_EQ(EntityChange::ACTION_DELETE, change->type());
+    batch->DeleteData(change->storage_key());
   }
 
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));

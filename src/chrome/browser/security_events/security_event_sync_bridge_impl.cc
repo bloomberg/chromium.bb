@@ -106,9 +106,9 @@ SecurityEventSyncBridgeImpl::ApplySyncChanges(
     syncer::EntityChangeList entity_changes) {
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
       store_->CreateWriteBatch();
-  for (syncer::EntityChange& change : entity_changes) {
-    DCHECK_EQ(syncer::EntityChange::ACTION_DELETE, change.type());
-    write_batch->DeleteData(change.storage_key());
+  for (const std::unique_ptr<syncer::EntityChange>& change : entity_changes) {
+    DCHECK_EQ(syncer::EntityChange::ACTION_DELETE, change->type());
+    write_batch->DeleteData(change->storage_key());
   }
 
   write_batch->TakeMetadataChangesFrom(std::move(metadata_change_list));

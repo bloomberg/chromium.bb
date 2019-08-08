@@ -115,6 +115,7 @@ class ContentAutofillDriver : public AutofillDriver,
   }
 
   AutofillManager* autofill_manager() { return autofill_manager_; }
+  AutofillHandler* autofill_handler() { return autofill_handler_.get(); }
   content::RenderFrameHost* render_frame_host() { return render_frame_host_; }
 
   const mojom::AutofillAgentAssociatedPtr& GetAutofillAgent();

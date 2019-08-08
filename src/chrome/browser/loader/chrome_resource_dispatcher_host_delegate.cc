@@ -89,6 +89,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
@@ -163,7 +164,7 @@ void AppendComponentUpdaterThrottles(
   if (!cus)
     return;
   // Check for PNaCl pexe request.
-  if (resource_type == content::RESOURCE_TYPE_OBJECT) {
+  if (resource_type == content::ResourceType::kObject) {
     const net::HttpRequestHeaders& headers = request->extra_request_headers();
     std::string accept_headers;
     if (headers.GetHeader("Accept", &accept_headers)) {
@@ -187,11 +188,11 @@ void AppendComponentUpdaterThrottles(
 offline_pages::ResourceLoadingObserver::ResourceDataType
 ConvertResourceTypeToResourceDataType(content::ResourceType type) {
   switch (type) {
-    case content::RESOURCE_TYPE_STYLESHEET:
+    case content::ResourceType::kStylesheet:
       return offline_pages::ResourceLoadingObserver::ResourceDataType::TEXT_CSS;
-    case content::RESOURCE_TYPE_IMAGE:
+    case content::ResourceType::kImage:
       return offline_pages::ResourceLoadingObserver::ResourceDataType::IMAGE;
-    case content::RESOURCE_TYPE_XHR:
+    case content::ResourceType::kXhr:
       return offline_pages::ResourceLoadingObserver::ResourceDataType::XHR;
     default:
       return offline_pages::ResourceLoadingObserver::ResourceDataType::OTHER;
@@ -375,9 +376,8 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
   // If this isn't a new request, the standard resource throttles have already
   // been added, so no need to add them again.
   if (is_new_request) {
-    AppendStandardResourceThrottles(request,
-                                    resource_context,
-                                    content::RESOURCE_TYPE_MAIN_FRAME,
+    AppendStandardResourceThrottles(request, resource_context,
+                                    content::ResourceType::kMainFrame,
                                     throttles);
 #if defined(OS_ANDROID)
     // On Android, forward text/html downloads to OfflinePages backend.
@@ -434,6 +434,12 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     target_info.extension_id = extension_id;
     target_info.view_id = base::GenerateGUID();
     *payload = target_info.view_id;
+    // Provide the MimeHandlerView code a chance to override the payload. This
+    // is the case where the resource is handled by frame-based MimeHandlerView.
+    uint32_t unused_data_pipe_size;
+    extensions::MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
+        info->GetFrameTreeNodeId(), request->url(), mime_type,
+        target_info.view_id, payload, &unused_data_pipe_size);
     stream_target_info_[request] = target_info;
     return true;
   }
@@ -448,7 +454,7 @@ void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
   ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   auto ix = stream_target_info_.find(request);
   CHECK(ix != stream_target_info_.end());
-  bool embedded = info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME;
+  bool embedded = info->GetResourceType() != content::ResourceType::kMainFrame;
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(

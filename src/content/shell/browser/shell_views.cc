@@ -76,6 +76,12 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   }
   void SetWebContents(WebContents* web_contents, const gfx::Size& size) {
     contents_view_->SetLayoutManager(std::make_unique<views::FillLayout>());
+    // If there was a previous WebView in this Shell it should be removed and
+    // deleted.
+    if (web_view_) {
+      contents_view_->RemoveChildView(web_view_);
+      delete web_view_;
+    }
     web_view_ = new views::WebView(web_contents->GetBrowserContext());
     web_view_->SetWebContents(web_contents);
     web_view_->SetPreferredSize(size);
@@ -266,7 +272,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     return gfx::Size();
   }
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override {
+      const views::ViewHierarchyChangedDetails& details) override {
     if (details.is_add && details.child == this) {
       InitShellWindow();
     }
@@ -306,7 +312,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 
   // Contents view contains the web contents view
   View* contents_view_;
-  views::WebView* web_view_;
+  views::WebView* web_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindowDelegateView);
 };

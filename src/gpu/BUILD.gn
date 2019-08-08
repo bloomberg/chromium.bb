@@ -249,9 +249,16 @@ test("gl_tests") {
     "ipc/client/gpu_context_tests.h",
     "ipc/client/gpu_in_process_context_tests.cc",
     "ipc/client/raster_in_process_context_tests.cc",
-    "ipc/client/webgpu_in_process_context_tests.cc",
     "ipc/service/direct_composition_surface_win_unittest.cc",
   ]
+
+  if (use_dawn) {
+    sources += [
+      "command_buffer/tests/webgpu_fence_unittest.cc",
+      "command_buffer/tests/webgpu_test.cc",
+      "command_buffer/tests/webgpu_test.h",
+    ]
+  }
 
   defines = [ "GL_GLEXT_PROTOTYPES" ]
 
@@ -284,6 +291,10 @@ test("gl_tests") {
     "//ui/gl/init",
   ]
 
+  if (use_dawn) {
+    deps += [ "//third_party/dawn/src/dawn:libdawn" ]
+  }
+
   libs = []
 
   if (is_android) {
@@ -297,6 +308,13 @@ test("gl_tests") {
     deps += [
       "//ui/platform_window",
       "//ui/platform_window:platform_impls",
+    ]
+  }
+
+  if (use_dawn) {
+    deps += [
+      "//third_party/dawn:libdawn_native",
+      "//third_party/dawn/src/dawn:libdawn",
     ]
   }
 }
@@ -415,7 +433,6 @@ test("gpu_unittests") {
     "command_buffer/service/transform_feedback_manager_unittest.cc",
     "command_buffer/service/vertex_array_manager_unittest.cc",
     "command_buffer/service/vertex_attrib_manager_unittest.cc",
-    "command_buffer/service/webgpu_decoder_unittest.cc",
     "config/gpu_blacklist_unittest.cc",
     "config/gpu_control_list_entry_unittest.cc",
     "config/gpu_control_list_testing_arrays_and_structs_autogen.h",
@@ -444,6 +461,10 @@ test("gpu_unittests") {
     "ipc/service/image_decode_accelerator_stub_unittest.cc",
   ]
 
+  if (use_dawn) {
+    sources += [ "command_buffer/service/webgpu_decoder_unittest.cc" ]
+  }
+
   if (is_mac) {
     sources += [
       "ipc/common/gpu_memory_buffer_impl_io_surface_unittest.cc",
@@ -451,7 +472,7 @@ test("gpu_unittests") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || use_ozone) {
     sources += [
       "ipc/common/gpu_memory_buffer_impl_native_pixmap_unittest.cc",
       "ipc/service/gpu_memory_buffer_factory_native_pixmap_unittest.cc",
@@ -565,6 +586,10 @@ test("gpu_perftests") {
     "//ui/gl/init",
   ]
 
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
   data_deps = [
     # Needed for isolate script to execute.
     "//testing:run_perf_test",
@@ -594,6 +619,10 @@ test("command_buffer_perftests") {
     "//ui/gl",
     "//ui/gl/init",
   ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
 
   data_deps = [
     # Needed for isolate script to execute.

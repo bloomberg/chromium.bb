@@ -40,10 +40,6 @@ void BrowserAccessibilityWin::UpdatePlatformAttributes() {
   GetCOM()->UpdateStep3FireEvents(false);
 }
 
-void BrowserAccessibilityWin::OnSubtreeWillBeDeleted() {
-  GetCOM()->FireNativeEvent(EVENT_OBJECT_HIDE);
-}
-
 bool BrowserAccessibilityWin::IsNative() const {
   return true;
 }

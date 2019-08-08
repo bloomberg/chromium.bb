@@ -186,6 +186,16 @@ class UseInfo {
   static UseInfo TaggedPointer() {
     return UseInfo(MachineRepresentation::kTaggedPointer, Truncation::Any());
   }
+  static UseInfo AnyCompressed() {
+    return UseInfo(MachineRepresentation::kCompressed, Truncation::Any());
+  }
+  static UseInfo CompressedSigned() {
+    return UseInfo(MachineRepresentation::kCompressedSigned, Truncation::Any());
+  }
+  static UseInfo CompressedPointer() {
+    return UseInfo(MachineRepresentation::kCompressedPointer,
+                   Truncation::Any());
+  }
 
   // Possibly deoptimizing conversions.
   static UseInfo CheckedHeapObjectAsTaggedPointer(
@@ -230,6 +240,8 @@ class UseInfo {
   }
   static UseInfo CheckedNumberOrOddballAsFloat64(
       IdentifyZeros identify_zeros, const VectorSlotPair& feedback) {
+    // TODO(tebbi): We should use Float64 truncation here, since this exactly
+    // means that we treat Oddballs as Numbers.
     return UseInfo(MachineRepresentation::kFloat64,
                    Truncation::Any(identify_zeros),
                    TypeCheckKind::kNumberOrOddball, feedback);
@@ -273,7 +285,7 @@ class UseInfo {
 // Contains logic related to changing the representation of values for constants
 // and other nodes, as well as lowering Simplified->Machine operators.
 // Eagerly folds any representation changes for constants.
-class RepresentationChanger final {
+class V8_EXPORT_PRIVATE RepresentationChanger final {
  public:
   RepresentationChanger(JSGraph* jsgraph, Isolate* isolate);
 
@@ -322,6 +334,17 @@ class RepresentationChanger final {
                                           UseInfo use_info);
   Node* GetTaggedRepresentationFor(Node* node, MachineRepresentation output_rep,
                                    Type output_type, Truncation truncation);
+  Node* GetCompressedSignedRepresentationFor(Node* node,
+                                             MachineRepresentation output_rep,
+                                             Type output_type, Node* use_node,
+                                             UseInfo use_info);
+  Node* GetCompressedPointerRepresentationFor(Node* node,
+                                              MachineRepresentation output_rep,
+                                              Type output_type, Node* use_node,
+                                              UseInfo use_info);
+  Node* GetCompressedRepresentationFor(Node* node,
+                                       MachineRepresentation output_rep,
+                                       Type output_type, Truncation truncation);
   Node* GetFloat32RepresentationFor(Node* node,
                                     MachineRepresentation output_rep,
                                     Type output_type, Truncation truncation);

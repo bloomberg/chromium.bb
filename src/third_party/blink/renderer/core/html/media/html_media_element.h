@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -67,8 +66,6 @@ class HTMLMediaElementControlsList;
 class HTMLMediaSource;
 class HTMLSourceElement;
 class HTMLTrackElement;
-class IntersectionObserver;
-class IntersectionObserverEntry;
 class KURL;
 class MediaError;
 class MediaStreamDescriptor;
@@ -367,7 +364,6 @@ class CORE_EXPORT HTMLMediaElement
  private:
   // Friend class for testing.
   friend class ContextMenuControllerTest;
-  friend class MediaElementFillingViewportTest;
   friend class VideoWakeLockTest;
   friend class PictureInPictureControllerTest;
 
@@ -379,7 +375,7 @@ class CORE_EXPORT HTMLMediaElement
   bool SupportsFocus() const final;
   bool IsMouseFocusable() const final;
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   void DidNotifySubtreeInsertionsToDocument() override;
   void DidRecalcStyle(const StyleRecalcChange) final;
 
@@ -392,6 +388,9 @@ class CORE_EXPORT HTMLMediaElement
   void ContextDestroyed(ExecutionContext*) override;
 
   virtual void UpdateDisplayState() {}
+  virtual void OnPlay() {}
+  virtual void OnLoadStarted() {}
+  virtual void OnLoadFinished() {}
 
   void SetReadyState(ReadyState);
   void SetNetworkState(WebMediaPlayer::NetworkState);
@@ -427,7 +426,6 @@ class CORE_EXPORT HTMLMediaElement
   bool HasSelectedVideoTrack() final;
   WebMediaPlayer::TrackId GetSelectedVideoTrackId() final;
   bool WasAlwaysMuted() final;
-  void ActivateViewportIntersectionMonitoring(bool) final;
   bool HasNativeControls() final;
   bool IsAudioElement() final;
   WebMediaPlayer::DisplayType DisplayType() const override;
@@ -445,8 +443,6 @@ class CORE_EXPORT HTMLMediaElement
   void ProgressEventTimerFired(TimerBase*);
   void PlaybackProgressTimerFired(TimerBase*);
   void ScheduleTimeupdateEvent(bool periodic_event);
-  void OnViewportIntersectionChanged(
-      const HeapVector<Member<IntersectionObserverEntry>>& entries);
   void StartPlaybackProgressTimer();
   void StartProgressEventTimer();
   void StopPeriodicTimers();
@@ -555,18 +551,15 @@ class CORE_EXPORT HTMLMediaElement
 
   EnumerationHistogram& ShowControlsHistogram() const;
 
-  void OnIntersectionChangedForLazyLoad(
-      const HeapVector<Member<IntersectionObserverEntry>>& entries);
-
   void OnRemovedFromDocumentTimerFired(TimerBase*);
+
+  void DefaultEventHandler(Event&) override;
 
   TaskRunnerTimer<HTMLMediaElement> load_timer_;
   TaskRunnerTimer<HTMLMediaElement> progress_event_timer_;
   TaskRunnerTimer<HTMLMediaElement> playback_progress_timer_;
   TaskRunnerTimer<HTMLMediaElement> audio_tracks_timer_;
   TaskRunnerTimer<HTMLMediaElement> removed_from_document_timer_;
-
-  Member<IntersectionObserver> viewport_intersection_observer_;
 
   Member<TimeRanges> played_time_ranges_;
   Member<EventQueue> async_event_queue_;
@@ -629,12 +622,12 @@ class CORE_EXPORT HTMLMediaElement
 
   // If any portion of an attached HTMLMediaElement (HTMLME) and the MediaSource
   // Extensions (MSE) API is alive (having pending activity or traceable from a
-  // GC root), the whole group is not GC'ed. Here, using TraceWrapperMember,
+  // GC root), the whole group is not GC'ed. Here, using Member,
   // instead of Member, because |media_source_|'s wrapper needs to remain alive
   // at least to successfully dispatch any events enqueued by behavior of the
   // HTMLME+MSE API. It makes |media_source_|'s wrapper remain alive as long as
   // this HTMLMediaElement's wrapper is alive.
-  TraceWrapperMember<HTMLMediaSource> media_source_;
+  Member<HTMLMediaSource> media_source_;
 
   // Stores "official playback position", updated periodically from "current
   // playback position". Official playback position should not change while
@@ -668,15 +661,11 @@ class CORE_EXPORT HTMLMediaElement
   bool tracks_are_ready_ : 1;
   bool processing_preference_change_ : 1;
 
-  // The following is always false unless viewport intersection monitoring is
-  // turned on via ActivateViewportIntersectionMonitoring().
-  bool mostly_filling_viewport_ : 1;
-
   bool was_always_muted_ : 1;
 
-  TraceWrapperMember<AudioTrackList> audio_tracks_;
-  TraceWrapperMember<VideoTrackList> video_tracks_;
-  TraceWrapperMember<TextTrackList> text_tracks_;
+  Member<AudioTrackList> audio_tracks_;
+  Member<VideoTrackList> video_tracks_;
+  Member<TextTrackList> text_tracks_;
   HeapVector<Member<TextTrack>> text_tracks_when_resource_selection_began_;
 
   Member<CueTimeline> cue_timeline_;
@@ -744,6 +733,7 @@ class CORE_EXPORT HTMLMediaElement
   friend class Internals;
   friend class TrackDisplayUpdateScope;
   friend class MediaControlsImplTest;
+  friend class MediaControlsTouchlessImplTest;
   friend class HTMLMediaElementTest;
   friend class HTMLMediaElementEventListenersTest;
   friend class HTMLVideoElement;

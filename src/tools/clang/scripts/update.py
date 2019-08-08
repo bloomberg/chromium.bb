@@ -7,6 +7,8 @@
 
 It is also used by package.py to build the prebuilt clang binaries."""
 
+from __future__ import print_function
+
 import argparse
 import distutils.spawn
 import glob
@@ -20,14 +22,20 @@ import sys
 import tarfile
 import tempfile
 import time
-import urllib2
+
+try:
+  import urllib2 as urllib
+except ImportError: # For Py3 compatibility
+  import urllib.request as urllib
+  import urllib.error as urllib
+
 import zipfile
 
 
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '354873'
+CLANG_REVISION = '357692'
 
 use_head_revision = bool(os.environ.get('LLVM_FORCE_HEAD_REVISION', '0')
                          in ('1', 'YES'))
@@ -82,6 +90,8 @@ LLVM_REPO_URL='https://llvm.org/svn/llvm-project'
 if 'LLVM_REPO_URL' in os.environ:
   LLVM_REPO_URL = os.environ['LLVM_REPO_URL']
 
+BUG_REPORT_URL = ('https://crbug.com and run tools/clang/scripts/upload_crash.py'
+                  ' (only works inside Google) which will upload a report')
 
 
 def DownloadUrl(url, output_file):
@@ -95,7 +105,7 @@ def DownloadUrl(url, output_file):
     try:
       sys.stdout.write('Downloading %s ' % url)
       sys.stdout.flush()
-      response = urllib2.urlopen(url)
+      response = urllib.urlopen(url)
       total_size = int(response.info().getheader('Content-Length').strip())
       bytes_done = 0
       dots_printed = 0
@@ -110,17 +120,17 @@ def DownloadUrl(url, output_file):
         sys.stdout.flush()
         dots_printed = num_dots
       if bytes_done != total_size:
-        raise urllib2.URLError("only got %d of %d bytes" %
-                               (bytes_done, total_size))
-      print ' Done.'
+        raise urllib.URLError("only got %d of %d bytes" %
+                              (bytes_done, total_size))
+      print(' Done.')
       return
-    except urllib2.URLError as e:
+    except urllib.URLError as e:
       sys.stdout.write('\n')
-      print e
-      if num_retries == 0 or isinstance(e, urllib2.HTTPError) and e.code == 404:
+      print(e)
+      if num_retries == 0 or isinstance(e, urllib.HTTPError) and e.code == 404:
         raise e
       num_retries -= 1
-      print 'Retrying in %d s ...' % retry_wait_s
+      print('Retrying in %d s ...' % retry_wait_s)
       time.sleep(retry_wait_s)
       retry_wait_s *= 2
 
@@ -218,10 +228,10 @@ def RunCommand(command, msvc_arch=None, env=None, fail_hard=True):
   # do the single-string transformation there.
   if sys.platform != 'win32':
     command = ' '.join([pipes.quote(c) for c in command])
-  print 'Running', command
+  print('Running', command)
   if subprocess.call(command, env=env, shell=True) == 0:
     return True
-  print 'Failed.'
+  print('Failed.')
   if fail_hard:
     sys.exit(1)
   return False
@@ -229,7 +239,7 @@ def RunCommand(command, msvc_arch=None, env=None, fail_hard=True):
 
 def CopyFile(src, dst):
   """Copy a file from src to dst."""
-  print "Copying %s to %s" % (src, dst)
+  print("Copying %s to %s" % (src, dst))
   shutil.copy(src, dst)
 
 
@@ -243,17 +253,17 @@ def CopyDirectoryContents(src, dst):
 
 def Checkout(name, url, dir):
   """Checkout the SVN module at url into dir. Use name for the log message."""
-  print "Checking out %s r%s into '%s'" % (name, CLANG_REVISION, dir)
+  print("Checking out %s r%s into '%s'" % (name, CLANG_REVISION, dir))
 
   command = ['svn', 'checkout', '--force', url + '@' + CLANG_REVISION, dir]
   if RunCommand(command, fail_hard=False):
     return
 
   if os.path.isdir(dir):
-    print "Removing %s." % (dir)
+    print("Removing %s." % dir)
     RmTree(dir)
 
-  print "Retrying."
+  print("Retrying.")
   RunCommand(command)
 
 
@@ -350,7 +360,7 @@ def AddGnuWinToPath():
   GNUWIN_VERSION = '9'
   GNUWIN_STAMP = os.path.join(gnuwin_dir, 'stamp')
   if ReadStampFile(GNUWIN_STAMP) == GNUWIN_VERSION:
-    print 'GNU Win tools already up to date.'
+    print('GNU Win tools already up to date.')
   else:
     zip_name = 'gnuwin-%s.zip' % GNUWIN_VERSION
     DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, LLVM_BUILD_TOOLS_DIR)
@@ -439,8 +449,8 @@ def VeryifyVersionOfBuiltClangMatchesVERSION():
   version_out = subprocess.check_output([clang, '--version'])
   version_out = re.match(r'clang version ([0-9.]+)', version_out).group(1)
   if version_out != VERSION:
-    print ('unexpected clang version %s (not %s), update VERSION in update.py'
-           % (version_out, VERSION))
+    print('unexpected clang version %s (not %s), update VERSION in update.py'
+          % (version_out, VERSION))
     sys.exit(1)
 
 
@@ -461,10 +471,10 @@ def DownloadAndUnpackClangPackage(platform, runtimes_only=False):
     if runtimes_only:
       path_prefix = 'lib/clang/' + VERSION + '/lib/'
     DownloadAndUnpack(cds_full_url, LLVM_BUILD_DIR, path_prefix)
-  except urllib2.URLError:
-    print 'Failed to download prebuilt clang %s' % cds_file
-    print 'Use --force-local-build if you want to build locally.'
-    print 'Exiting.'
+  except urllib.URLError:
+    print('Failed to download prebuilt clang %s' % cds_file)
+    print('Use --force-local-build if you want to build locally.')
+    print('Exiting.')
     sys.exit(1)
 
 
@@ -500,24 +510,24 @@ def UpdateClang(args):
     return 0
 
   if args.with_android and not os.path.exists(ANDROID_NDK_DIR):
-    print 'Android NDK not found at ' + ANDROID_NDK_DIR
-    print 'The Android NDK is needed to build a Clang whose -fsanitize=address'
-    print 'works on Android. See '
-    print 'https://www.chromium.org/developers/how-tos/android-build-instructions'
-    print 'for how to install the NDK, or pass --without-android.'
+    print('Android NDK not found at ' + ANDROID_NDK_DIR)
+    print('The Android NDK is needed to build a Clang whose -fsanitize=address')
+    print('works on Android. See ')
+    print('https://www.chromium.org/developers/how-tos/android-build-instructions')
+    print('for how to install the NDK, or pass --without-android.')
     return 1
 
   if args.with_fuchsia and not os.path.exists(FUCHSIA_SDK_DIR):
-    print 'Fuchsia SDK not found at ' + FUCHSIA_SDK_DIR
-    print 'The Fuchsia SDK is needed to build libclang_rt for Fuchsia.'
-    print 'Install the Fuchsia SDK by adding fuchsia to the '
-    print 'target_os section in your .gclient and running hooks, '
-    print 'or pass --without-fuchsia.'
-    print 'https://chromium.googlesource.com/chromium/src/+/master/docs/fuchsia_build_instructions.md'
-    print 'for general Fuchsia build instructions.'
+    print('Fuchsia SDK not found at ' + FUCHSIA_SDK_DIR)
+    print('The Fuchsia SDK is needed to build libclang_rt for Fuchsia.')
+    print('Install the Fuchsia SDK by adding fuchsia to the ')
+    print('target_os section in your .gclient and running hooks, ')
+    print('or pass --without-fuchsia.')
+    print('https://chromium.googlesource.com/chromium/src/+/master/docs/fuchsia_build_instructions.md')
+    print('for general Fuchsia build instructions.')
     return 1
 
-  print 'Locally building Clang %s...' % PACKAGE_VERSION
+  print('Locally building Clang %s...' % PACKAGE_VERSION)
 
   AddCMakeToPath(args)
   AddGnuWinToPath()
@@ -539,7 +549,8 @@ def UpdateClang(args):
   targets = 'AArch64;ARM;Mips;PowerPC;SystemZ;WebAssembly;X86'
   base_cmake_args = ['-GNinja',
                      '-DCMAKE_BUILD_TYPE=Release',
-                     '-DLLVM_ENABLE_ASSERTIONS=ON',
+                     '-DLLVM_ENABLE_ASSERTIONS=%s' %
+                         ('OFF' if args.disable_asserts else 'ON'),
                      '-DLLVM_ENABLE_PIC=OFF',
                      '-DLLVM_ENABLE_TERMINFO=OFF',
                      '-DLLVM_TARGETS_TO_BUILD=' + targets,
@@ -550,6 +561,7 @@ def UpdateClang(args):
                      '-DCLANG_ENABLE_ARCMT=OFF',
                      # TODO(crbug.com/929645): Use newer toolchain to host.
                      '-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON',
+                     '-DBUG_REPORT_URL=' + BUG_REPORT_URL,
                      ]
 
   if sys.platform != 'win32':
@@ -557,7 +569,7 @@ def UpdateClang(args):
     base_cmake_args.append('-DLLVM_ENABLE_LIBXML2=FORCE_ON')
 
   if args.bootstrap:
-    print 'Building bootstrap compiler'
+    print('Building bootstrap compiler')
     EnsureDirExists(LLVM_BOOTSTRAP_DIR)
     os.chdir(LLVM_BOOTSTRAP_DIR)
     bootstrap_args = base_cmake_args + [
@@ -565,6 +577,8 @@ def UpdateClang(args):
         '-DCMAKE_INSTALL_PREFIX=' + LLVM_BOOTSTRAP_INSTALL_DIR,
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
+        # Ignore args.disable_asserts for the bootstrap compiler.
+        '-DLLVM_ENABLE_ASSERTIONS=ON',
         ]
     if cc is not None:  bootstrap_args.append('-DCMAKE_C_COMPILER=' + cc)
     if cxx is not None: bootstrap_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
@@ -588,7 +602,7 @@ def UpdateClang(args):
       cc = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang')
       cxx = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang++')
 
-    print 'Building final compiler'
+    print('Building final compiler')
 
   # LLVM uses C++11 starting in llvm 3.5. On Linux, this means libstdc++4.7+ is
   # needed, on OS X it requires libc++. clang only automatically links to libc++
@@ -631,8 +645,8 @@ def UpdateClang(args):
 
   # Build lld and code coverage tools. This is done separately from the rest of
   # the build because these tools require threading support.
-  tools_with_threading = [ 'lld', 'llvm-cov', 'llvm-profdata' ]
-  print 'Building the following tools with threading support: %s' % (
+  tools_with_threading = [ 'dsymutil', 'lld', 'llvm-cov', 'llvm-profdata' ]
+  print('Building the following tools with threading support: %s' %
         str(tools_with_threading))
 
   if os.path.exists(THREADS_ENABLED_BUILD_DIR):
@@ -825,10 +839,8 @@ def UpdateClang(args):
         os.mkdir(os.path.join(build_dir))
       os.chdir(build_dir)
       target_triple = target_arch
-      abi_libs = 'c++abi'
       if target_arch == 'arm':
         target_triple = 'armv7'
-        abi_libs += ';unwind'
       target_triple += '-linux-android' + api_level
       cflags = ['--target=%s' % target_triple,
                 '--sysroot=%s/sysroot' % toolchain_dir,
@@ -841,8 +853,7 @@ def UpdateClang(args):
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_ASM_FLAGS=' + ' '.join(cflags),
-        '-DSANITIZER_CXX_ABI=none',
-        '-DSANITIZER_CXX_ABI_LIBRARY=' + abi_libs,
+        '-DSANITIZER_CXX_ABI=libcxxabi',
         '-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-u__cxa_demangle',
         '-DANDROID=1']
       RmCmakeCache('.')
@@ -926,7 +937,7 @@ def UpdateClang(args):
     RunCommand(['ninja', 'check-all'], msvc_arch='x64')
 
   WriteStampFile(PACKAGE_VERSION)
-  print 'Clang update was successful.'
+  print('Clang update was successful.')
   return 0
 
 
@@ -943,6 +954,8 @@ def main():
   parser = argparse.ArgumentParser(description='Build Clang.')
   parser.add_argument('--bootstrap', action='store_true',
                       help='first build clang with CC, then with itself.')
+  parser.add_argument('--disable-asserts', action='store_true',
+                      help='build with asserts disabled')
   parser.add_argument('--force-local-build', action='store_true',
                       help="don't try to download prebuild binaries")
   parser.add_argument('--gcc-toolchain', help='set the version for which gcc '
@@ -983,10 +996,10 @@ def main():
   args = parser.parse_args()
 
   if args.lto_lld and not args.bootstrap:
-    print '--lto-lld requires --bootstrap'
+    print('--lto-lld requires --bootstrap')
     return 1
   if args.lto_lld and not sys.platform.startswith('linux'):
-    print '--lto-lld is only effective on Linux. Ignoring the option.'
+    print('--lto-lld is only effective on Linux. Ignoring the option.')
     args.lto_lld = False
 
   # Get svn if we're going to use it to check the revision or do a local build.
@@ -995,23 +1008,24 @@ def main():
     AddSvnToPathOnWin()
 
   if args.verify_version and args.verify_version != VERSION:
-    print 'VERSION is %s but --verify-version argument was %s, exiting.' % (
-        VERSION, args.verify_version)
-    print 'clang_version in build/toolchain/toolchain.gni is likely outdated.'
+    print('VERSION is %s but --verify-version argument was %s, exiting.' % (
+        VERSION, args.verify_version))
+    print('clang_version in build/toolchain/toolchain.gni is likely outdated.')
     return 1
 
   # DEVELOPER_DIR needs to be set when Xcode isn't in a standard location
   # and xcode-select wasn't run.  This is needed for running clang and ld
   # for the build done by this script, but it's also needed for running
-  # macOS system svn, so this needs to happen before calling functions using svn.
+  # macOS system svn, so this needs to happen before calling functions using
+  # svn.
   SetMacXcodePath()
 
   global CLANG_REVISION, PACKAGE_VERSION
   if args.print_revision:
     if use_head_revision or args.llvm_force_head_revision:
-      print GetSvnRevision(LLVM_DIR)
+      print(GetSvnRevision(LLVM_DIR))
     else:
-      print PACKAGE_VERSION
+      print(PACKAGE_VERSION)
     return 0
 
   if args.print_clang_version:

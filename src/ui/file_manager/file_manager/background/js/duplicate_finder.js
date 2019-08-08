@@ -19,8 +19,8 @@ importer.DriveDuplicateFinder = function() {
    * An bounded cache of most recently calculated file content hashcodes.
    * @private {!LRUCache<!Promise<string>>}
    */
-  this.hashCache_ = new LRUCache(
-      importer.DriveDuplicateFinder.MAX_CACHED_HASHCODES_);
+  this.hashCache_ =
+      new LRUCache(importer.DriveDuplicateFinder.MAX_CACHED_HASHCODES_);
 };
 
 /**
@@ -70,9 +70,9 @@ importer.DriveDuplicateFinder.prototype.computeHash_ = function(entry) {
           chrome.fileManagerPrivate.computeChecksum(
               entry,
               /**
-              * @param {string|undefined} result The content hash.
-              * @this {importer.DriveDuplicateFinder}
-              */
+               * @param {string|undefined} result The content hash.
+               * @this {importer.DriveDuplicateFinder}
+               */
               result => {
                 const elapsedTime = new Date().getTime() - startTime;
                 // Send the timing to GA only if it is sorta exceptionally long.
@@ -106,8 +106,7 @@ importer.DriveDuplicateFinder.prototype.computeHash_ = function(entry) {
  */
 importer.DriveDuplicateFinder.prototype.findByHash_ = function(hash) {
   return /** @type {!Promise<!Array<string>>} */ (
-      this.getDriveId_()
-          .then(this.searchFilesByHash_.bind(this, hash)));
+      this.getDriveId_().then(this.searchFilesByHash_.bind(this, hash)));
 };
 
 /**
@@ -116,16 +115,16 @@ importer.DriveDuplicateFinder.prototype.findByHash_ = function(hash) {
  */
 importer.DriveDuplicateFinder.prototype.getDriveId_ = function() {
   if (!this.driveIdPromise_) {
-    this.driveIdPromise_ = volumeManagerFactory.getInstance()
-        .then(
-            /**
-             * @param {!VolumeManager} volumeManager
-             * @return {string} ID of the user's Drive volume.
-             */
-            volumeManager => {
-              return volumeManager.getCurrentProfileVolumeInfo(
-                  VolumeManagerCommon.VolumeType.DRIVE).volumeId;
-            });
+    this.driveIdPromise_ = volumeManagerFactory.getInstance().then(
+        /**
+         * @param {!VolumeManager} volumeManager
+         * @return {string} ID of the user's Drive volume.
+         */
+        volumeManager => {
+          return volumeManager
+              .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DRIVE)
+              .volumeId;
+        });
   }
   return this.driveIdPromise_;
 };
@@ -137,19 +136,18 @@ importer.DriveDuplicateFinder.prototype.getDriveId_ = function() {
  * @return {!Promise<!Array<string>>} A list of file URLs.
  * @private
  */
-importer.DriveDuplicateFinder.prototype.searchFilesByHash_ =
-    function(hash, volumeId) {
+importer.DriveDuplicateFinder.prototype.searchFilesByHash_ = function(
+    hash, volumeId) {
   return new Promise(
       /** @this {importer.DriveDuplicateFinder} */
       (resolve, reject) => {
         const startTime = new Date().getTime();
         chrome.fileManagerPrivate.searchFilesByHashes(
-            volumeId,
-            [hash],
+            volumeId, [hash],
             /**
-            * @param {!Object<string, !Array<string>>|undefined} urls
-            * @this {importer.DriveDuplicateFinder}
-            */
+             * @param {!Object<string, !Array<string>>|undefined} urls
+             * @this {importer.DriveDuplicateFinder}
+             */
             urls => {
               const elapsedTime = new Date().getTime() - startTime;
               // Send the timing to GA only if it is sorta exceptionally long.
@@ -199,8 +197,8 @@ importer.DispositionChecker.CheckerFunction;
 /**
  * @type {!importer.DispositionChecker.CheckerFunction}
  */
-importer.DispositionChecker.prototype.getDisposition =
-    function(entry, destination, mode) {
+importer.DispositionChecker.prototype.getDisposition = function(
+    entry, destination, mode) {
   if (destination !== importer.Destination.GOOGLE_DRIVE) {
     return Promise.reject('Unsupported destination: ' + destination);
   }
@@ -211,9 +209,9 @@ importer.DispositionChecker.prototype.getDisposition =
         this.hasHistoryDuplicate_(entry, destination)
             .then(
                 /**
-                * @param {boolean} duplicate
-                * @this {importer.DispositionChecker}
-                */
+                 * @param {boolean} duplicate
+                 * @this {importer.DispositionChecker}
+                 */
                 duplicate => {
                   if (duplicate) {
                     resolve(importer.Disposition.HISTORY_DUPLICATE);
@@ -223,19 +221,17 @@ importer.DispositionChecker.prototype.getDisposition =
                     resolve(importer.Disposition.ORIGINAL);
                     return;
                   }
-                  this.contentMatcher_.isDuplicate(entry)
-                      .then(
-                          /** @param {boolean} duplicate */
-                          duplicate => {
-                            if (duplicate) {
-                              resolve(
-                                  importer.Disposition.CONTENT_DUPLICATE);
-                            } else {
-                              resolve(importer.Disposition.ORIGINAL);
-                            }
-                          });
+                  this.contentMatcher_.isDuplicate(entry).then(
+                      /** @param {boolean} duplicate */
+                      duplicate => {
+                        if (duplicate) {
+                          resolve(importer.Disposition.CONTENT_DUPLICATE);
+                        } else {
+                          resolve(importer.Disposition.ORIGINAL);
+                        }
+                      });
                 });
-            });
+      });
 };
 
 /**
@@ -245,19 +241,20 @@ importer.DispositionChecker.prototype.getDisposition =
  *     for the file.
  * @private
  */
-importer.DispositionChecker.prototype.hasHistoryDuplicate_ =
-    function(entry, destination) {
-  return this.historyLoader_.getHistory()
-      .then(
-          /**
-          * @param {!importer.ImportHistory} history
-          * @return {!Promise}
-          */
-          history => {
-            return Promise.all([
+importer.DispositionChecker.prototype.hasHistoryDuplicate_ = function(
+    entry, destination) {
+  return this.historyLoader_.getHistory().then(
+      /**
+       * @param {!importer.ImportHistory} history
+       * @return {!Promise}
+       */
+      history => {
+        return Promise
+            .all([
               history.wasCopied(entry, destination),
               history.wasImported(entry, destination)
-            ]).then(
+            ])
+            .then(
                 /**
                  * @param {!Array<boolean>} results
                  * @return {boolean}
@@ -265,7 +262,7 @@ importer.DispositionChecker.prototype.hasHistoryDuplicate_ =
                 results => {
                   return results[0] || results[1];
                 });
-          });
+      });
 };
 
 /**

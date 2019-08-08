@@ -19,11 +19,11 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/stream/aec_dump_message_filter.h"
-#include "content/renderer/media/stream/media_stream_audio_processor_options.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "media/webrtc/audio_delay_stats_reporter.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/rtc_base/task_queue.h"
@@ -59,7 +59,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   //
   // Threading note: The constructor assumes it is being run on the main render
   // thread.
-  MediaStreamAudioProcessor(const AudioProcessingProperties& properties,
+  MediaStreamAudioProcessor(const blink::AudioProcessingProperties& properties,
                             WebRtcPlayoutDataSource* playout_data_source);
 
   // Called when the format of the capture data has changed.
@@ -115,7 +115,8 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   // based on |properties|. If the audio signal would not be modified, there is
   // no need to instantiate a MediaStreamAudioProcessor and feed audio through
   // it. Doing so would waste a non-trivial amount of memory and CPU resources.
-  static bool WouldModifyAudio(const AudioProcessingProperties& properties);
+  static bool WouldModifyAudio(
+      const blink::AudioProcessingProperties& properties);
 
  protected:
   ~MediaStreamAudioProcessor() override;
@@ -138,7 +139,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
 
   // Helper to initialize the WebRtc AudioProcessing.
   void InitializeAudioProcessingModule(
-      const AudioProcessingProperties& properties);
+      const blink::AudioProcessingProperties& properties);
 
   // Helper to initialize the capture converter.
   void InitializeCaptureFifo(const media::AudioParameters& input_format);

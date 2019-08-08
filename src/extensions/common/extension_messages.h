@@ -118,11 +118,12 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_Request_Params)
   IPC_STRUCT_MEMBER(bool, user_gesture)
 
   // If this API call is for a service worker, then this is the worker thread
-  // id. Otherwise, this is -1.
+  // id. Otherwise, this is kMainThreadId.
   IPC_STRUCT_MEMBER(int, worker_thread_id)
 
   // If this API call is for a service worker, then this is the service
-  // worker version id. Otherwise, this is -1.
+  // worker version id. Otherwise, this is set to
+  // blink::mojom::kInvalidServiceWorkerVersionId.
   IPC_STRUCT_MEMBER(int64_t, service_worker_version_id)
 IPC_STRUCT_END()
 
@@ -743,6 +744,14 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RequestForIOThread,
                      int /* routing_id */,
                      ExtensionHostMsg_Request_Params)
 
+// A service worker thread sends this message when an extension service worker
+// starts an API request. The browser will always respond with a
+// ExtensionMsg_ResponseWorker. This message is for API requests that run on
+// the IO thread. It is defined here so it's handled by the same message
+// filter as ExtensionHostMsg_RequestForIOThread.
+IPC_MESSAGE_CONTROL1(ExtensionHostMsg_RequestWorkerForIOThread,
+                     ExtensionHostMsg_Request_Params)
+
 // Notify the browser that the given extension added a listener to an event.
 IPC_MESSAGE_CONTROL5(ExtensionHostMsg_AddListener,
                      std::string /* extension_id */,
@@ -1106,6 +1115,7 @@ IPC_STRUCT_TRAITS_BEGIN(ui::AXTreeData)
   IPC_STRUCT_TRAITS_MEMBER(loaded)
   IPC_STRUCT_TRAITS_MEMBER(loading_progress)
   IPC_STRUCT_TRAITS_MEMBER(focus_id)
+  IPC_STRUCT_TRAITS_MEMBER(sel_is_backward)
   IPC_STRUCT_TRAITS_MEMBER(sel_anchor_object_id)
   IPC_STRUCT_TRAITS_MEMBER(sel_anchor_offset)
   IPC_STRUCT_TRAITS_MEMBER(sel_anchor_affinity)

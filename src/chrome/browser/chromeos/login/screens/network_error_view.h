@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
+#include "chrome/browser/chromeos/login/screens/network_error.h"
 
 namespace chromeos {
 
@@ -34,6 +35,24 @@ class NetworkErrorView {
 
   // Switches to |screen|.
   virtual void ShowOobeScreen(OobeScreen screen) = 0;
+
+  // Sets current error state of the screen.
+  virtual void SetErrorStateCode(NetworkError::ErrorState error_state) = 0;
+
+  // Sets current error network state of the screen.
+  virtual void SetErrorStateNetwork(const std::string& network_name) = 0;
+
+  // Is guest signin allowed?
+  virtual void SetGuestSigninAllowed(bool value) = 0;
+
+  // Is offline signin allowed?
+  virtual void SetOfflineSigninAllowed(bool value) = 0;
+
+  // Updates visibility of the label indicating we're reconnecting.
+  virtual void SetShowConnectingIndicator(bool value) = 0;
+
+  // Sets current UI state of the screen.
+  virtual void SetUIState(NetworkError::UIState ui_state) = 0;
 };
 
 }  // namespace chromeos

@@ -31,7 +31,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -45,6 +44,7 @@ import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.KeyUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -130,13 +130,10 @@ public class FindTest {
         KeyCharacterMap keyCharacterMap = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD);
         final KeyEvent[] events = keyCharacterMap.getEvents(query.toCharArray());
         Assert.assertNotNull(events);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < events.length; i++) {
-                    if (!findQueryText.dispatchKeyEventPreIme(events[i])) {
-                        findQueryText.dispatchKeyEvent(events[i]);
-                    }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            for (int i = 0; i < events.length; i++) {
+                if (!findQueryText.dispatchKeyEventPreIme(events[i])) {
+                    findQueryText.dispatchKeyEvent(events[i]);
                 }
             }
         });
@@ -395,18 +392,15 @@ public class FindTest {
         final EditText findQueryText = getFindQueryText();
 
         // Emulate pasting the text into the find query text box
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Setup the clipboard with a selection of stylized text
-                ClipboardManager clipboard =
-                        (ClipboardManager) InstrumentationRegistry.getInstrumentation()
-                                .getTargetContext()
-                                .getSystemService(Context.CLIPBOARD_SERVICE);
-                clipboard.setPrimaryClip(ClipData.newHtmlText("label", "text", "<b>text</b>"));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Setup the clipboard with a selection of stylized text
+            ClipboardManager clipboard =
+                    (ClipboardManager) InstrumentationRegistry.getInstrumentation()
+                            .getTargetContext()
+                            .getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setPrimaryClip(ClipData.newHtmlText("label", "text", "<b>text</b>"));
 
-                findQueryText.onTextContextMenuItem(android.R.id.paste);
-            }
+            findQueryText.onTextContextMenuItem(android.R.id.paste);
         });
 
         // Resulting text in the find query box should be unstyled

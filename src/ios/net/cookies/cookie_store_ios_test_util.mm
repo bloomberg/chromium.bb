@@ -52,9 +52,9 @@ void TestPersistentCookieStore::RunLoadedCallback() {
           base::Time(),  // last accessed
           false,         // secure
           false,         // httponly
-          net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT));
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT));
   cookies.push_back(std::move(bad_canonical_cookie));
-  loaded_callback_.Run(std::move(cookies));
+  std::move(loaded_callback_).Run(std::move(cookies));
 }
 
 bool TestPersistentCookieStore::flushed() {
@@ -64,15 +64,15 @@ bool TestPersistentCookieStore::flushed() {
 #pragma mark -
 #pragma mark Private methods
 
-void TestPersistentCookieStore::Load(const LoadedCallback& loaded_callback,
+void TestPersistentCookieStore::Load(LoadedCallback loaded_callback,
                                      const NetLogWithSource& /* net_log */) {
-  loaded_callback_ = loaded_callback;
+  loaded_callback_ = std::move(loaded_callback);
 }
 
 void TestPersistentCookieStore::LoadCookiesForKey(
     const std::string& key,
-    const LoadedCallback& loaded_callback) {
-  loaded_callback_ = loaded_callback;
+    LoadedCallback loaded_callback) {
+  loaded_callback_ = std::move(loaded_callback);
 }
 
 void TestPersistentCookieStore::AddCookie(const net::CanonicalCookie& cc) {}
@@ -84,7 +84,7 @@ void TestPersistentCookieStore::DeleteCookie(const net::CanonicalCookie& cc) {}
 
 void TestPersistentCookieStore::SetForceKeepSessionState() {}
 
-void TestPersistentCookieStore::SetBeforeFlushCallback(
+void TestPersistentCookieStore::SetBeforeCommitCallback(
     base::RepeatingClosure callback) {}
 
 void TestPersistentCookieStore::Flush(base::OnceClosure callback) {

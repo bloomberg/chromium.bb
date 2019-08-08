@@ -18,8 +18,6 @@
 #include "chromecast/base/path_utils.h"
 #include "chromecast/base/pref_names.h"
 #include "chromecast/base/version.h"
-#include "chromecast/browser/cast_browser_process.h"
-#include "chromecast/browser/cast_content_browser_client.h"
 #include "chromecast/browser/metrics/cast_stability_metrics_provider.h"
 #include "chromecast/public/cast_sys_info.h"
 #include "components/metrics/client_info.h"
@@ -108,8 +106,8 @@ void CastMetricsServiceClient::SetMetricsClientId(
     const std::string& client_id) {
   client_id_ = client_id;
   LOG(INFO) << "Metrics client ID set: " << client_id;
-  shell::CastBrowserProcess::GetInstance()->browser_client()->
-      SetMetricsClientId(client_id);
+  if (delegate_)
+    delegate_->SetMetricsClientId(client_id);
 #if defined(OS_ANDROID)
   DumpstateWriter::AddDumpValue(kClientIdName, client_id);
 #endif
@@ -276,9 +274,11 @@ void CastMetricsServiceClient::EnableMetricsService(bool enabled) {
 }
 
 CastMetricsServiceClient::CastMetricsServiceClient(
+    CastMetricsServiceDelegate* delegate,
     PrefService* pref_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : pref_service_(pref_service),
+    : delegate_(delegate),
+      pref_service_(pref_service),
       client_info_loaded_(false),
 #if defined(OS_LINUX)
       external_metrics_(nullptr),
@@ -340,7 +340,7 @@ void CastMetricsServiceClient::Initialize() {
   SetMetricsClientId(metrics_state_manager_->client_id());
 
   CastStabilityMetricsProvider* stability_provider =
-      new CastStabilityMetricsProvider(metrics_service_.get());
+      new CastStabilityMetricsProvider(metrics_service_.get(), pref_service_);
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<::metrics::MetricsProvider>(stability_provider));
 
@@ -359,8 +359,8 @@ void CastMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<::metrics::NetworkMetricsProvider>(
           content::CreateNetworkConnectionTrackerAsyncGetter()));
-  shell::CastBrowserProcess::GetInstance()->browser_client()->
-      RegisterMetricsProviders(metrics_service_.get());
+  if (delegate_)
+    delegate_->RegisterMetricsProviders(metrics_service_.get());
 
   metrics_service_->InitializeMetricsRecordingState();
 #if !defined(OS_ANDROID)

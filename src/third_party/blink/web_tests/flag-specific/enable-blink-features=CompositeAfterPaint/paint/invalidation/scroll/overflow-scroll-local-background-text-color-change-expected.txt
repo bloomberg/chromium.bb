@@ -8,11 +8,6 @@
     },
     {
       "name": "LayoutBlockFlow DIV id='scroller'",
-      "bounds": [200, 200],
-      "transform": 1
-    },
-    {
-      "name": "LayoutBlockFlow DIV id='scroller'",
       "bounds": [185, 552],
       "backgroundColor": "#0000FF",
       "paintInvalidations": [

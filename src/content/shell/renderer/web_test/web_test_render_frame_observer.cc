@@ -55,22 +55,9 @@ void WebTestRenderFrameObserver::CaptureDump(CaptureDumpCallback callback) {
 
 void WebTestRenderFrameObserver::CompositeWithRaster(
     CompositeWithRasterCallback callback) {
-  blink::WebWidget* widget = render_frame()->GetWebFrame()->FrameWidget();
-  blink::WebView* view = render_frame()->GetWebFrame()->View();
-  if (widget) {
-    widget->UpdateAllLifecyclePhasesAndCompositeForTesting(/*do_raster=*/true);
-
-    // The current PagePopup is composited together with the main frame.
-    // TODO(danakj): This means that an OOPIF's popup, which is attached to a
-    // WebView without a main frame, would have no opportunity to execute this
-    // method call.
-    if (render_frame()->IsMainFrame()) {
-      if (blink::WebPagePopup* popup = view->GetPagePopup()) {
-        popup->UpdateAllLifecyclePhasesAndCompositeForTesting(
-            /*do_raster=*/true);
-      }
-    }
-  }
+  // When the TestFinished() occurred, if the browser is capturing pixels, it
+  // asks each composited RenderFrame to submit a new frame via here.
+  render_frame()->UpdateAllLifecyclePhasesAndCompositeForTesting();
   std::move(callback).Run();
 }
 

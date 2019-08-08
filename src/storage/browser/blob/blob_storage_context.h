@@ -32,7 +32,6 @@ class GURL;
 namespace content {
 class BlobDispatcherHost;
 class BlobDispatcherHostTest;
-class BlobTransportHostTest;
 class ChromeBlobStorageContext;
 class ShareableBlobDataItem;
 }
@@ -164,10 +163,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobStorageContext
  protected:
   friend class content::BlobDispatcherHost;
   friend class content::BlobDispatcherHostTest;
-  friend class content::BlobTransportHostTest;
   friend class content::ChromeBlobStorageContext;
   friend class BlobBuilderFromStream;
-  friend class BlobTransportHost;
   friend class BlobDataHandle;
   friend class BlobDataHandle::BlobDataHandleShared;
   friend class BlobRegistryImplTest;

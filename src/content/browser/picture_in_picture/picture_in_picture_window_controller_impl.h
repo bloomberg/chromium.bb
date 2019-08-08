@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "content/public/browser/media_player_id.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -124,7 +125,7 @@ class PictureInPictureWindowControllerImpl
   // Used to determine the state of the media player and route messages to
   // the corresponding media player with id |media_player_id_|.
   MediaWebContentsObserver* media_web_contents_observer_;
-  base::Optional<WebContentsObserver::MediaPlayerId> media_player_id_;
+  base::Optional<MediaPlayerId> media_player_id_;
 
   viz::SurfaceId surface_id_;
 

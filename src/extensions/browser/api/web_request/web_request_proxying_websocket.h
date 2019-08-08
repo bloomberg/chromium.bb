@@ -86,7 +86,7 @@ class WebRequestProxyingWebSocket
   void OnClosingHandshake() override;
 
   // mojom::AuthenticationHandler method:
-  void OnAuthRequired(const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+  void OnAuthRequired(const net::AuthChallengeInfo& auth_info,
                       const scoped_refptr<net::HttpResponseHeaders>& headers,
                       const net::IPEndPoint& remote_endpoint,
                       OnAuthRequiredCallback callback) override;
@@ -119,9 +119,8 @@ class WebRequestProxyingWebSocket
   void OnHeadersReceivedComplete(int error_code);
   void ContinueToHeadersReceived();
   void OnAuthRequiredComplete(net::NetworkDelegate::AuthRequiredResponse rv);
-  void OnHeadersReceivedCompleteForAuth(
-      scoped_refptr<net::AuthChallengeInfo> auth_info,
-      int rv);
+  void OnHeadersReceivedCompleteForAuth(const net::AuthChallengeInfo& auth_info,
+                                        int rv);
 
   void PauseIncomingMethodCallProcessing();
   void ResumeIncomingMethodCallProcessing();

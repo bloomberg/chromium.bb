@@ -28,7 +28,8 @@
 #define DRM_FORMAT_ABGR8888 FOURCC('A', 'B', '2', '4')
 #define DRM_FORMAT_XRGB8888 FOURCC('X', 'R', '2', '4')
 #define DRM_FORMAT_XBGR8888 FOURCC('X', 'B', '2', '4')
-#define DRM_FORMAT_ABGR2101010 FOURCC('A', 'B', '3', '0')
+#define DRM_FORMAT_XBGR2101010 FOURCC('X', 'B', '3', '0')
+#define DRM_FORMAT_XRGB2101010 FOURCC('X', 'R', '3', '0')
 #define DRM_FORMAT_YVU420 FOURCC('Y', 'V', '1', '2')
 #define DRM_FORMAT_NV12 FOURCC('N', 'V', '1', '2')
 
@@ -51,6 +52,7 @@ unsigned GetInternalFormatFromFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_8888:
       return GL_RGBA;
     case gfx::BufferFormat::RGBX_1010102:
+    case gfx::BufferFormat::BGRX_1010102:
       return GL_RGB10_A2_EXT;
     case gfx::BufferFormat::BGRA_8888:
       return GL_BGRA_EXT;
@@ -59,7 +61,6 @@ unsigned GetInternalFormatFromFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return GL_RGB_YCBCR_420V_CHROMIUM;
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::UYVY_422:
       return GL_NONE;
@@ -88,15 +89,14 @@ EGLint FourCC(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRX_8888:
       return DRM_FORMAT_XRGB8888;
     case gfx::BufferFormat::RGBX_1010102:
-      // We should use here DRM_FORMAT_XBGR2101010 format, but EGL on Intel
-      // doesn't support it for scanout, see https://crbug.com/776093#c14.
-      return DRM_FORMAT_ABGR2101010;
+      return DRM_FORMAT_XBGR2101010;
+    case gfx::BufferFormat::BGRX_1010102:
+      return DRM_FORMAT_XRGB2101010;
     case gfx::BufferFormat::YVU_420:
       return DRM_FORMAT_YVU420;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return DRM_FORMAT_NV12;
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
@@ -121,9 +121,7 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
       return gfx::BufferFormat::BGRA_8888;
     case DRM_FORMAT_XRGB8888:
       return gfx::BufferFormat::BGRX_8888;
-    case DRM_FORMAT_ABGR2101010:
-      // We should support DRM_FORMAT_XBGR2101010 format instead, but EGL on
-      // Intel doesn't support it for scanout, see https://crbug.com/776093#c14.
+    case DRM_FORMAT_XBGR2101010:
       return gfx::BufferFormat::RGBX_1010102;
     case DRM_FORMAT_RGB565:
       return gfx::BufferFormat::BGR_565;
@@ -310,15 +308,8 @@ gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
       return gfx::NativePixmapHandle();
     }
 
-    // scoped_fd.release() transfers ownership to the caller so it will not
-    // call close when going out of scope. base::FileDescriptor never closes
-    // the fd when going out of scope. The auto_close flag is just a hint for
-    // the user. When true it means the user has ownership of it so they are
-    // responsible for closing the fd.
-    handle.fds.emplace_back(
-        base::FileDescriptor(scoped_fd.release(), true /* auto_close */));
     handle.planes.emplace_back(strides[i], offsets[i], 0 /* size opaque */,
-                               modifiers);
+                               std::move(scoped_fd), modifiers);
   }
 
   return handle;

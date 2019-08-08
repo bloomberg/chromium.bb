@@ -9,6 +9,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/views/hover_button.h"
+#include "chrome/browser/ui/views/profiles/badged_profile_photo.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -17,14 +18,12 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
 namespace {
 
 constexpr int kDropDownArrowIconSize = 12;
-constexpr int kPromoAccountImageSize = 40;
 
 }  // namespace
 
@@ -59,12 +58,8 @@ DiceSigninButtonView::DiceSigninButtonView(
                      views::GridLayout::USE_PREF, 0, 0);
 
   DCHECK(!account_icon.IsEmpty());
-  auto account_icon_view = std::make_unique<views::ImageView>();
-  account_icon_view->SetImage(
-      profiles::GetSizedAvatarIcon(account_icon, true, kPromoAccountImageSize,
-                                   kPromoAccountImageSize,
-                                   profiles::SHAPE_CIRCLE)
-          .AsImageSkia());
+  auto account_icon_view = std::make_unique<BadgedProfilePhoto>(
+      BadgedProfilePhoto::BADGE_TYPE_SYNC_OFF, account_icon);
   auto card_title =
       use_account_name_as_title
           ? base::UTF8ToUTF16(account.full_name)

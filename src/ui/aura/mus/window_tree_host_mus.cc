@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/input_method_mus.h"
 #include "ui/aura/mus/mus_types.h"
@@ -141,6 +142,20 @@ void OnPerformWindowMoveDone(
   std::move(callback).Run(success);
 }
 
+void OnDispatchKeyEventComplete(
+    base::OnceCallback<void(ws::mojom::EventResult)> cb,
+    bool result) {
+  std::move(cb).Run(result ? ws::mojom::EventResult::HANDLED
+                           : ws::mojom::EventResult::UNHANDLED);
+}
+
+void OnDispatchKeyEventPostIMEComplete(
+    base::OnceCallback<void(ws::mojom::EventResult)> cb,
+    bool handled,
+    bool stopped_propagation) {
+  OnDispatchKeyEventComplete(std::move(cb), handled);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -151,7 +166,11 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
           std::make_unique<Window>(nullptr,
                                    std::move(init_params.window_port))),
       display_id_(init_params.display_id),
-      delegate_(init_params.window_tree_client) {
+      delegate_(init_params.window_tree_client),
+      show_state_observer_(
+          window(),
+          base::BindRepeating(&WindowTreeHostMus::OnWindowShowStateDidChange,
+                              base::Unretained(this))) {
   gfx::Rect bounds_in_pixels;
   window()->SetProperty(kWindowTreeHostMusKey, this);
   // TODO(sky): find a cleaner way to set this! Revisit this now that
@@ -192,12 +211,12 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
   SetPlatformWindow(std::make_unique<ui::StubWindow>(
       this, use_default_accelerated_widget, bounds_in_pixels));
 
-  if (!init_params.use_classic_ime) {
+  if (!features::IsMojoImfEnabled()) {
     // NOTE: This creates one InputMethodMus per display, despite the
     // call to SetSharedInputMethod() below.
-    input_method_ = std::make_unique<InputMethodMus>(this, this);
-    input_method_->Init(init_params.window_tree_client->connector());
-    SetSharedInputMethod(input_method_.get());
+    input_method_mus_ = std::make_unique<InputMethodMus>(this, this);
+    input_method_mus_->Init(init_params.window_tree_client->connector());
+    SetSharedInputMethod(input_method_mus_.get());
   }
 
   compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
@@ -227,6 +246,22 @@ WindowTreeHostMus* WindowTreeHostMus::ForWindow(aura::Window* window) {
   return root->GetProperty(kWindowTreeHostMusKey);
 }
 
+void WindowTreeHostMus::DispatchKeyEventFromServer(
+    ui::KeyEvent* event,
+    base::OnceCallback<void(ws::mojom::EventResult)> cb) {
+  ui::InputMethod* input_method = GetInputMethod();
+  if (input_method) {
+    ui::AsyncKeyDispatcher* dispatcher = input_method->GetAsyncKeyDispatcher();
+    if (dispatcher) {
+      dispatcher->DispatchKeyEventAsync(
+          event, base::BindOnce(&OnDispatchKeyEventComplete, std::move(cb)));
+      return;
+    }
+  }
+  DispatchKeyEventPostIME(
+      event, base::BindOnce(&OnDispatchKeyEventPostIMEComplete, std::move(cb)));
+}
+
 void WindowTreeHostMus::SetBounds(
     const gfx::Rect& bounds_in_dip,
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
@@ -238,6 +273,8 @@ void WindowTreeHostMus::SetBounds(
   // Compositor).
   // Do not use ConvertRectToPixel, enclosing rects cause problems. In
   // particular, ConvertRectToPixel's result varies based on the location.
+  // This *must* match the conversion used by ClientRoot, otherwise the two will
+  // be out of sync. See // https://crbug.com/952095 for more details.
   const float dsf = ui::GetScaleFactorForNativeView(window());
   const gfx::Rect pixel_bounds(
       gfx::ScaleToFlooredPoint(bounds_in_dip.origin(), dsf),
@@ -262,8 +299,23 @@ void WindowTreeHostMus::SetBounds(
 
 void WindowTreeHostMus::SetBoundsFromServer(
     const gfx::Rect& bounds,
+    ui::WindowShowState state,
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   base::AutoReset<bool> resetter(&is_server_setting_bounds_, true);
+  // When there's a non-default |state|, we want to set that property and then
+  // the bounds, so that by the time client code observes a bounds change the
+  // show state is already updated, and by the time client code observes a state
+  // change the bounds are already updated as well. To do this, we set the state
+  // here, and as the first WindowObserver on |window()|, update the bounds.
+  if (state != ui::SHOW_STATE_DEFAULT &&
+      window()->GetProperty(aura::client::kShowStateKey) != state) {
+    server_bounds_ = &bounds;
+    server_lsia_ = &local_surface_id_allocation;
+    window()->SetProperty(aura::client::kShowStateKey, state);
+    DCHECK(!server_bounds_);
+    DCHECK(!server_lsia_);
+    return;
+  }
   SetBounds(bounds, local_surface_id_allocation);
 }
 
@@ -390,14 +442,59 @@ void WindowTreeHostMus::SetImeVisibility(bool visible,
   WindowPortMus::Get(window())->SetImeVisibility(visible, std::move(state));
 }
 
+bool WindowTreeHostMus::ConnectToImeEngine(
+    ime::mojom::ImeEngineRequest engine_request,
+    ime::mojom::ImeEngineClientPtr client) {
+  delegate_->ConnectToImeEngine(std::move(engine_request), std::move(client));
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WindowTreeHostMus, protected:
+
 void WindowTreeHostMus::SetBoundsInPixels(
     const gfx::Rect& bounds,
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   // As UI code operates in DIPs (as does the window-service APIs), this
-  // function is very seldomly uses, and so converts to DIPs.
+  // function is very seldomly used, and so converts to DIPs.
   SetBounds(
       gfx::ConvertRectToDIP(ui::GetScaleFactorForNativeView(window()), bounds),
       local_surface_id_allocation);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WindowTreeHostMus, private:
+
+void WindowTreeHostMus::OnWindowShowStateDidChange() {
+  if (!server_bounds_)
+    return;
+
+  DCHECK(is_server_setting_bounds_);
+  DCHECK(server_lsia_);
+  SetBounds(*server_bounds_, *server_lsia_);
+  server_bounds_ = nullptr;
+  server_lsia_ = nullptr;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WindowTreeHostMus::WindowShowStateChangeObserver, public:
+
+WindowTreeHostMus::WindowShowStateChangeObserver::WindowShowStateChangeObserver(
+    aura::Window* window,
+    base::RepeatingClosure show_state_changed_callback)
+    : show_state_changed_callback_(show_state_changed_callback) {
+  window->AddObserver(this);
+}
+
+WindowTreeHostMus::WindowShowStateChangeObserver::
+    ~WindowShowStateChangeObserver() = default;
+
+void WindowTreeHostMus::WindowShowStateChangeObserver::OnWindowPropertyChanged(
+    aura::Window* window,
+    const void* key,
+    intptr_t old) {
+  if (key == client::kShowStateKey)
+    show_state_changed_callback_.Run();
 }
 
 }  // namespace aura

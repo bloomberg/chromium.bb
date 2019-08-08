@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
@@ -36,6 +37,14 @@ using syncer::PRIORITY_PREFERENCES;
 namespace sync_preferences {
 
 namespace {
+
+// Enables deleting a pref from Sync if the the user clears it on a client. If
+// this feature is disabled, clearing a pref will cause setting it to the
+// default value instead of deleting it from sync.
+// TODO(crbug.com/943579): This has been introduced in M75 as a safety
+// mechanism, should be removed in M78 if no issues are observed.
+const base::Feature kSyncDeleteClearedPref{"SyncDeleteClearedPrefs",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const sync_pb::PreferenceSpecifics& GetSpecifics(const syncer::SyncData& pref) {
   DCHECK(pref.GetDataType() == syncer::PREFERENCES ||
@@ -160,12 +169,11 @@ void PrefModelAssociator::InitPrefAndAssociate(
   // we'll send the new user controlled value to the syncer.
 }
 
-void PrefModelAssociator::RegisterMergeDataFinishedCallback(
-    const base::Closure& callback) {
-  if (!models_associated_)
-    callback_list_.push_back(callback);
-  else
-    callback.Run();
+void PrefModelAssociator::WaitUntilReadyToSync(base::OnceClosure done) {
+  // Prefs are loaded very early during profile initialization.
+  DCHECK_NE(pref_service_->GetAllPrefStoresInitializationStatus(),
+            PrefService::INITIALIZATION_STATUS_WAITING);
+  std::move(done).Run();
 }
 
 syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
@@ -212,10 +220,6 @@ syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
   if (merge_result.error().IsSet())
     return merge_result;
-
-  for (const auto& callback : callback_list_)
-    callback.Run();
-  callback_list_.clear();
 
   models_associated_ = true;
   pref_service_->OnIsSyncingChanged();
@@ -515,14 +519,23 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
     // take care syncing any new data.
     InitPrefAndAssociate(syncer::SyncData(), name, &changes);
   } else {
-    // We are already syncing this preference, just update it's sync node.
+    // We are already syncing this preference, just update or delete its sync
+    // node.
     syncer::SyncData sync_data;
     if (!CreatePrefSyncData(name, *preference->GetValue(), &sync_data)) {
       LOG(ERROR) << "Failed to update preference.";
       return;
     }
-    changes.push_back(syncer::SyncChange(
-        FROM_HERE, syncer::SyncChange::ACTION_UPDATE, sync_data));
+    if (!base::FeatureList::IsEnabled(kSyncDeleteClearedPref) ||
+        pref_accessor_->GetPreferenceState(type_, name).persisted_value) {
+      // If the pref was updated, update it.
+      changes.push_back(syncer::SyncChange(
+          FROM_HERE, syncer::SyncChange::ACTION_UPDATE, sync_data));
+    } else {
+      // Otherwise, the pref must have been cleared and hence delete it.
+      changes.push_back(syncer::SyncChange(
+          FROM_HERE, syncer::SyncChange::ACTION_DELETE, sync_data));
+    }
   }
 
   syncer::SyncError error =

@@ -148,18 +148,6 @@ class CORE_EXPORT CompositorAnimations {
   static FailureCode CheckCanStartElementOnCompositor(const Element&);
 
   friend class AnimationCompositorAnimationsTest;
-  FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                           CanStartElementOnCompositorTransformCAP);
-  FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                           CanStartElementOnCompositorEffectCAP);
-  FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                           CanStartElementOnCompositorEffect);
-  FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                           CannotStartElementOnCompositorEffectSVG);
-  FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                           CancelIncompatibleCompositorAnimations);
-  FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                           NonAnimatedTransformPropertyChangeGetsUpdated);
 };
 
 }  // namespace blink

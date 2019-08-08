@@ -98,9 +98,10 @@ class POLICY_EXPORT CloudPolicyClient {
     virtual void OnClientError(CloudPolicyClient* client) = 0;
   };
 
-  // If non-empty, |machine_id|, |machine_model| and |brand_code| are passed
-  // to the server verbatim. As these reveal machine identity, they must only
-  // be used where this is appropriate (i.e. device policy, but not user
+  // If non-empty, |machine_id|, |machine_model|, |brand_code|,
+  // |ethernet_mac_address|, |dock_mac_address| and |manufacture_date| are
+  // passed to the server verbatim. As these reveal machine identity, they must
+  // only be used where this is appropriate (i.e. device policy, but not user
   // policy). |service| and |signing_service| are weak pointers and it's the
   // caller's responsibility to keep them valid for the lifetime of
   // CloudPolicyClient. The |signing_service| is used to sign sensitive
@@ -111,6 +112,9 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& machine_id,
       const std::string& machine_model,
       const std::string& brand_code,
+      const std::string& ethernet_mac_address,
+      const std::string& dock_mac_address,
+      const std::string& manufacture_date,
       DeviceManagementService* service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       SigningService* signing_service,
@@ -224,13 +228,13 @@ class POLICY_EXPORT CloudPolicyClient {
   virtual void UploadEnterpriseEnrollmentId(const std::string& enrollment_id,
                                             const StatusCallback& callback);
 
-  // Uploads device/session status to the server. As above, the client must be
-  // in a registered state. If non-null, |device_status| and |session_status|
-  // will be included in the upload status request. The |callback| will be
-  // called when the operation completes.
+  // Uploads status to the server. The client must be in a registered state.
+  // Only non-null statuses will be included in the upload status request. The
+  // |callback| will be called when the operation completes.
   virtual void UploadDeviceStatus(
       const enterprise_management::DeviceStatusReportRequest* device_status,
       const enterprise_management::SessionStatusReportRequest* session_status,
+      const enterprise_management::ChildStatusReportRequest* child_status,
       const StatusCallback& callback);
 
   // Uploads Chrome Desktop report to the server. As above, the client must be
@@ -300,6 +304,11 @@ class POLICY_EXPORT CloudPolicyClient {
   const std::string& machine_id() const { return machine_id_; }
   const std::string& machine_model() const { return machine_model_; }
   const std::string& brand_code() const { return brand_code_; }
+  const std::string& ethernet_mac_address() const {
+    return ethernet_mac_address_;
+  }
+  const std::string& dock_mac_address() const { return dock_mac_address_; }
+  const std::string& manufacture_date() const { return manufacture_date_; }
 
   void set_last_policy_timestamp(const base::Time& timestamp) {
     last_policy_timestamp_ = timestamp;
@@ -499,6 +508,9 @@ class POLICY_EXPORT CloudPolicyClient {
   const std::string machine_id_;
   const std::string machine_model_;
   const std::string brand_code_;
+  const std::string ethernet_mac_address_;
+  const std::string dock_mac_address_;
+  const std::string manufacture_date_;
   PolicyTypeSet types_to_fetch_;
   std::vector<std::string> state_keys_to_upload_;
 
@@ -554,6 +566,17 @@ class POLICY_EXPORT CloudPolicyClient {
 
  private:
   void SetClientId(const std::string& client_id);
+  // Fills in the common fields of a DeviceRegisterRequest for |Register| and
+  // |RegisterWithCertificate|.
+  void CreateDeviceRegisterRequest(
+      enterprise_management::DeviceRegisterRequest::Type registration_type,
+      enterprise_management::DeviceRegisterRequest::Flavor flavor,
+      enterprise_management::DeviceRegisterRequest::Lifetime lifetime,
+      enterprise_management::LicenseType::LicenseTypeEnum license_type,
+      const std::string& client_id,
+      const std::string& requisition,
+      const std::string& current_state_key,
+      enterprise_management::DeviceRegisterRequest* request);
 
   // Used to store a copy of the previously used |dm_token_|. This is used
   // during re-registration, which gets triggered by a failed policy fetch with

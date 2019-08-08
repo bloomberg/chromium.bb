@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
@@ -41,8 +42,23 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   // called.
   static void Shutdown();
 
+  static void NotifyBrowserStartupCompleted();
+
   // Unregister and delete the TaskExecutor after a test.
   static void ResetForTesting();
+
+  // Runs all pending tasks for the given thread. Tasks posted after this method
+  // is called (in particular any task posted from within any of the pending
+  // tasks) will be queued but not run. Conceptually this call will disable all
+  // queues, run any pending tasks, and re-enable all the queues.
+  //
+  // If any of the pending tasks posted a task, these could be run by calling
+  // this method again or running a regular RunLoop. But if that were the case
+  // you should probably rewrite you tests to wait for a specific event instead.
+  //
+  // NOTE: Can only be called from the UI thread.
+  static void RunAllPendingTasksOnThreadForTesting(
+      BrowserThread::ID identifier);
 
   // base::TaskExecutor implementation.
   bool PostDelayedTaskWithTraits(const base::Location& from_here,

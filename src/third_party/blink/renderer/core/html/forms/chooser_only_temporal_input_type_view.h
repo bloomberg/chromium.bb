@@ -42,8 +42,6 @@ class ChooserOnlyTemporalInputTypeView final
   USING_PRE_FINALIZER(ChooserOnlyTemporalInputTypeView, CloseDateTimeChooser);
 
  public:
-  static ChooserOnlyTemporalInputTypeView* Create(HTMLInputElement&,
-                                                  BaseTemporalInputType&);
   ChooserOnlyTemporalInputTypeView(HTMLInputElement&, BaseTemporalInputType&);
   ~ChooserOnlyTemporalInputTypeView() override;
   void Trace(Visitor*) override;

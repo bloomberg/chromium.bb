@@ -70,7 +70,8 @@ class TryFlag(object):
         result = set()
         path = self._flag_expectations_path()
         for line in self._filesystem.read_text_file(path).split('\n'):
-            expectation_line = TestExpectationLine.tokenize_line(path, line, 0)
+            expectation_line = TestExpectationLine.tokenize_line(
+                path, line, 0, self._host.port_factory.get())
             test_name = expectation_line.name
             if test_name:
                 result.add(test_name)

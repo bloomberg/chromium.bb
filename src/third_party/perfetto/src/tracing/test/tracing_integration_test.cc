@@ -80,6 +80,7 @@ class MockConsumer : public Consumer {
   MOCK_METHOD1(OnDetach, void(bool));
   MOCK_METHOD2(OnAttach, void(bool, const TraceConfig&));
   MOCK_METHOD2(OnTraceStats, void(bool, const TraceStats&));
+  MOCK_METHOD1(OnObservableEvents, void(const ObservableEvents&));
 
   // Workaround, gmock doesn't support yet move-only types, passing a pointer.
   void OnTraceData(std::vector<TracePacket> packets, bool has_more) {
@@ -380,6 +381,8 @@ TEST_F(TracingIntegrationTest, WriteIntoFile) {
   protos::Trace tmp_trace;
   ASSERT_TRUE(tmp_trace.ParseFromArray(tmp_buf, static_cast<int>(rsize)));
   size_t num_test_packet = 0;
+  size_t num_clock_snapshot_packet = 0;
+  size_t num_system_info_packet = 0;
   bool saw_trace_stats = false;
   for (int i = 0; i < tmp_trace.packet_size(); i++) {
     const protos::TracePacket& packet = tmp_trace.packet(i);
@@ -389,9 +392,15 @@ TEST_F(TracingIntegrationTest, WriteIntoFile) {
     } else if (packet.has_trace_stats()) {
       saw_trace_stats = true;
       CheckTraceStats(packet);
+    } else if (packet.has_clock_snapshot()) {
+      num_clock_snapshot_packet++;
+    } else if (packet.has_system_info()) {
+      num_system_info_packet++;
     }
   }
   ASSERT_TRUE(saw_trace_stats);
+  ASSERT_GT(num_clock_snapshot_packet, 0u);
+  ASSERT_GT(num_system_info_packet, 0u);
 }
 
 // TODO(primiano): add tests to cover:

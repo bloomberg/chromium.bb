@@ -25,7 +25,6 @@ group("examples") {
   if (is_android) {
     deps += [
       ":AppRTCMobile",
-      ":AppRTCMobile_stubbed_video_io_test_apk",
       ":AppRTCMobile_test_apk",
       ":libwebrtc_unity",
     ]
@@ -33,7 +32,7 @@ group("examples") {
     # TODO(sakal): We include some code from the tests. Remove this dependency
     # and remove this if-clause.
     if (rtc_include_tests) {
-      deps += [ "androidnativeapi:androidnativeapi" ]
+      deps += [ "androidnativeapi" ]
     }
   }
 
@@ -69,7 +68,7 @@ rtc_source_set("read_auth_file") {
     "turnserver/read_auth_file.h",
   ]
   deps = [
-    "../rtc_base:rtc_base",
+    "../rtc_base",
   ]
 }
 
@@ -152,7 +151,7 @@ if (is_android) {
       "../sdk/android:video_api_java",
       "../sdk/android:video_java",
       "androidapp/third_party/autobanh:autobanh_java",
-      "//third_party/android_deps:android_support_annotations_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
     ]
   }
 
@@ -178,51 +177,6 @@ if (is_android) {
       "../sdk/android:video_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/junit",
-    ]
-  }
-
-  group("video_quality_loopback_test") {
-    testonly = true
-
-    deps = [
-      ":AppRTCMobile_stubbed_video_io_test_apk",
-      "../rtc_tools:frame_analyzer_host",
-    ]
-
-    data = [
-      "../build/android/adb_reverse_forwarder.py",
-      "../examples/androidtests/video_quality_loopback_test.py",
-      "../resources/reference_video_640x360_30fps.y4m",
-      "../rtc_tools/compare_videos.py",
-      "../rtc_tools/testing/prebuilt_apprtc.zip",
-      "../rtc_tools/testing/golang/linux/go.tar.gz",
-      "../rtc_tools/testing/build_apprtc.py",
-      "../rtc_tools/testing/utils.py",
-      "../tools_webrtc/video_quality_toolchain/linux/ffmpeg",
-      "${root_out_dir}/frame_analyzer_host",
-    ]
-  }
-
-  rtc_instrumentation_test_apk("AppRTCMobile_stubbed_video_io_test_apk") {
-    apk_name = "AppRTCMobileTestStubbedVideoIO"
-    android_manifest = "androidtests/AndroidManifest.xml"
-
-    java_files = [ "androidtests/src/org/appspot/apprtc/test/CallActivityStubbedInputOutputTest.java" ]
-
-    apk_under_test = ":AppRTCMobile"
-
-    deps = [
-      ":AppRTCMobile_javalib",
-      "../sdk/android:libjingle_peerconnection_java",
-      "//third_party/android_support_test_runner:rules_java",
-      "//third_party/android_support_test_runner:runner_java",
-      "//third_party/espresso:espresso_all_java",
-      "//third_party/hamcrest:hamcrest_java",
-      "//third_party/junit",
-    ]
-
-    data = [
-      "../resources/reference_video_640x360_30fps.y4m",
     ]
   }
 }
@@ -296,8 +250,6 @@ if (is_ios || (is_mac && target_cpu != "x86")) {
       "objc/AppRTCMobile/RTCIceCandidate+JSON.m",
       "objc/AppRTCMobile/RTCIceServer+JSON.h",
       "objc/AppRTCMobile/RTCIceServer+JSON.m",
-      "objc/AppRTCMobile/RTCMediaConstraints+JSON.h",
-      "objc/AppRTCMobile/RTCMediaConstraints+JSON.m",
       "objc/AppRTCMobile/RTCSessionDescription+JSON.h",
       "objc/AppRTCMobile/RTCSessionDescription+JSON.m",
     ]
@@ -306,6 +258,7 @@ if (is_ios || (is_mac && target_cpu != "x86")) {
       ":apprtc_common",
       ":socketrocket",
     ]
+
     if (is_ios) {
       # iOS must use WebRTC.framework which is dynamically linked.
       deps += [
@@ -315,7 +268,10 @@ if (is_ios || (is_mac && target_cpu != "x86")) {
     } else {
       deps += [ "../sdk:mac_framework_objc+link" ]
     }
-    libs = [ "QuartzCore.framework" ]
+    libs = [
+      "CoreMedia.framework",
+      "QuartzCore.framework",
+    ]
   }
 
   if (is_ios) {
@@ -353,6 +309,8 @@ if (is_ios || (is_mac && target_cpu != "x86")) {
         "../sdk:framework_objc+link",
         "../sdk:ios_framework_bundle",
       ]
+
+      libs = [ "AVFoundation.framework" ]
     }
 
     ios_app_bundle("AppRTCMobile") {
@@ -381,7 +339,7 @@ if (is_ios || (is_mac && target_cpu != "x86")) {
       }
 
       if (target_cpu == "x86") {
-        deps += [ "//testing/iossim:iossim" ]
+        deps += [ "//testing/iossim" ]
       }
     }
 
@@ -505,10 +463,10 @@ if (is_ios || (is_mac && target_cpu != "x86")) {
         "../api/video:builtin_video_bitrate_allocator_factory",
         "../logging:rtc_event_log_impl_base",
         "../media:rtc_audio_video",
+        "../modules/audio_processing",
         "../modules/audio_processing:api",
-        "../modules/audio_processing:audio_processing",
         "../pc:libjingle_peerconnection",
-        "../rtc_base:rtc_base",
+        "../rtc_base",
         "../sdk:base_objc",
         "../sdk:default_codec_factory_objc",
         "../sdk:helpers_objc",
@@ -540,7 +498,7 @@ if (is_ios || (is_mac && target_cpu != "x86")) {
       ]
 
       if (target_cpu == "x86") {
-        deps += [ "//testing/iossim:iossim" ]
+        deps += [ "//testing/iossim" ]
       }
     }
   }
@@ -643,7 +601,7 @@ if (is_ios || (is_mac && target_cpu != "x86")) {
         deps = [
           ":AppRTCMobile_lib",
           ":apprtc_signaling",
-          "../rtc_base:rtc_base",
+          "../rtc_base",
           "../sdk:framework_objc+link",
           "../sdk:ios_framework_bundle",
           "//build/config/ios:xctest",
@@ -695,6 +653,7 @@ if (is_linux || is_win) {
       "../rtc_base/third_party/sigslot",
       "../system_wrappers:field_trial",
       "../test:field_trial",
+      "../test:platform_video_capturer",
       "//third_party/abseil-cpp/absl/memory",
       "//third_party/abseil-cpp/absl/types:optional",
     ]
@@ -732,13 +691,13 @@ if (is_linux || is_win) {
       "../api/video_codecs:builtin_video_decoder_factory",
       "../api/video_codecs:builtin_video_encoder_factory",
       "../media:rtc_audio_video",
-      "../modules/audio_device:audio_device",
+      "../modules/audio_device",
+      "../modules/audio_processing",
       "../modules/audio_processing:api",
-      "../modules/audio_processing:audio_processing",
       "../modules/video_capture:video_capture_module",
       "../pc:libjingle_peerconnection",
       "../pc:peerconnection",
-      "../rtc_base:rtc_base",
+      "../rtc_base",
       "../rtc_base:rtc_base_approved",
       "../rtc_base:rtc_json",
       "../test:video_test_common",
@@ -773,7 +732,7 @@ if (is_linux || is_win) {
       "../p2p:p2p_server_utils",
       "../p2p:rtc_p2p",
       "../pc:rtc_pc",
-      "../rtc_base:rtc_base",
+      "../rtc_base",
       "../rtc_base:rtc_base_approved",
     ]
   }
@@ -787,7 +746,7 @@ if (is_linux || is_win) {
       "../p2p:p2p_server_utils",
       "../p2p:rtc_p2p",
       "../pc:rtc_pc",
-      "../rtc_base:rtc_base",
+      "../rtc_base",
       "../rtc_base:rtc_base_approved",
     ]
   }
@@ -800,7 +759,7 @@ if (is_linux || is_win) {
       "../p2p:p2p_server_utils",
       "../p2p:rtc_p2p",
       "../pc:rtc_pc",
-      "../rtc_base:rtc_base",
+      "../rtc_base",
       "../rtc_base:rtc_base_approved",
     ]
   }
@@ -840,19 +799,20 @@ if (is_win || is_android) {
       "../media:rtc_internal_video_codecs",
       "../media:rtc_media",
       "../media:rtc_media_base",
-      "../modules/audio_device:audio_device",
+      "../modules/audio_device",
+      "../modules/audio_processing",
       "../modules/audio_processing:api",
-      "../modules/audio_processing:audio_processing",
       "../modules/video_capture:video_capture_module",
       "../pc:libjingle_peerconnection",
       "../pc:peerconnection",
-      "../rtc_base:rtc_base",
+      "../rtc_base",
+      "../test:platform_video_capturer",
       "../test:video_test_common",
       "//third_party/abseil-cpp/absl/memory",
     ]
     if (is_android) {
       deps += [
-        "../modules/utility:utility",
+        "../modules/utility",
         "../sdk/android:libjingle_peerconnection_jni",
       ]
     }
@@ -868,7 +828,7 @@ if (is_android) {
       "../sdk/android:libjingle_peerconnection_java",
       "../sdk/android:peerconnection_java",
       "../sdk/android:video_java",
-      "//third_party/android_deps:android_support_annotations_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
     ]
   }
 
@@ -884,7 +844,7 @@ if (is_android) {
       "../rtc_base:base_java",
       "../sdk/android:libjingle_peerconnection_java",
       "../sdk/android:libjingle_peerconnection_metrics_default_java",
-      "//third_party/android_deps:android_support_annotations_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
     ]
   }
 }
@@ -899,8 +859,8 @@ if (!build_with_chromium) {
     deps = [
       "../p2p:libstunprober",
       "../p2p:rtc_p2p",
+      "../rtc_base",
       "../rtc_base:checks",
-      "../rtc_base:rtc_base",
       "../rtc_base:rtc_base_approved",
     ]
   }

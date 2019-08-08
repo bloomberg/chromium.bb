@@ -28,7 +28,8 @@ NGBlockChildIterator::NGBlockChildIterator(NGLayoutInputNode first_child,
     }
     return;
   }
-  auto first_node_child = ToNGBlockNode(break_token->InputNode()).FirstChild();
+  auto first_node_child =
+      To<NGBlockNode>(break_token->InputNode()).FirstChild();
   resuming_at_inline_formatting_context_ =
       first_node_child && first_node_child.IsInline();
   child_ = child_break_tokens[0]->InputNode();

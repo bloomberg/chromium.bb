@@ -17,7 +17,7 @@ class CompositorOverlayCandidateValidatorWin;
 class GLOutputSurfaceWin : public GLOutputSurface {
  public:
   GLOutputSurfaceWin(scoped_refptr<VizProcessContextProvider> context_provider,
-                     SyntheticBeginFrameSource* synthetic_begin_frame_source,
+                     UpdateVSyncParametersCallback update_vsync_callback,
                      bool use_overlays);
   ~GLOutputSurfaceWin() override;
 

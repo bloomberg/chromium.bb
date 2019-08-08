@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "v8/include/v8.h"
 
@@ -76,14 +75,10 @@ class TraceWrapperV8Reference {
  protected:
   ALWAYS_INLINE void InternalSet(v8::Isolate* isolate, v8::Local<T> handle) {
     handle_.Reset(isolate, handle);
-    ScriptWrappableMarkingVisitor::WriteBarrier(isolate,
-                                                UnsafeCast<v8::Value>());
     UnifiedHeapMarkingVisitor::WriteBarrier(UnsafeCast<v8::Value>());
   }
 
   ALWAYS_INLINE void WriteBarrier() const {
-    ScriptWrappableMarkingVisitor::WriteBarrier(v8::Isolate::GetCurrent(),
-                                                UnsafeCast<v8::Value>());
     UnifiedHeapMarkingVisitor::WriteBarrier(UnsafeCast<v8::Value>());
   }
 

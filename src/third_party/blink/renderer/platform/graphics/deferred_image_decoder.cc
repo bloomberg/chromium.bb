@@ -34,12 +34,87 @@
 #include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
 #include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
+
+namespace {
+
+// Do not rename entries or reuse numeric values to ensure the histogram is
+// consistent over time.
+enum IncrementalDecodePerImageType {
+  kJpegIncrementalNeeded = 0,
+  kJpegAllDataReceivedInitially = 1,
+  kWebPIncrementalNeeded = 2,
+  kWebPAllDataReceivedInitially = 3,
+  kBoundaryValue
+};
+
+void ReportIncrementalDecodeNeeded(bool all_data_received,
+                                   const String& image_type) {
+  DCHECK(IsMainThread());
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, incremental_decode_needed_histogram,
+                      ("Blink.ImageDecoders.IncrementalDecodeNeeded",
+                       IncrementalDecodePerImageType::kBoundaryValue));
+  if (image_type == "jpg") {
+    incremental_decode_needed_histogram.Count(
+        all_data_received
+            ? IncrementalDecodePerImageType::kJpegAllDataReceivedInitially
+            : IncrementalDecodePerImageType::kJpegIncrementalNeeded);
+  } else if (image_type == "webp") {
+    incremental_decode_needed_histogram.Count(
+        all_data_received
+            ? IncrementalDecodePerImageType::kWebPAllDataReceivedInitially
+            : IncrementalDecodePerImageType::kWebPIncrementalNeeded);
+  }
+}
+
+void RecordByteSizeAndWhetherIncrementalDecode(const String& image_type,
+                                               bool incrementally_decoded,
+                                               size_t bytes) {
+  DCHECK(IsMainThread());
+  // A base::HistogramBase::Sample may not fit the number of bytes of the image.
+  base::HistogramBase::Sample sample_bytes =
+      base::saturated_cast<base::HistogramBase::Sample>(bytes);
+  if (image_type == "jpg") {
+    if (incrementally_decoded) {
+      DEFINE_STATIC_LOCAL(
+          CustomCountHistogram, jpeg_byte_size_incrementally_decoded_histogram,
+          ("Blink.ImageDecoders.IncrementallyDecodedByteSize.Jpeg",
+           125 /* min */, 15000000 /* 15 MB */, 100 /* bucket count */));
+      jpeg_byte_size_incrementally_decoded_histogram.Count(sample_bytes);
+    } else {
+      DEFINE_STATIC_LOCAL(
+          CustomCountHistogram,
+          jpeg_byte_size_initially_fully_decoded_histogram,
+          ("Blink.ImageDecoders.InitiallyFullyDecodedByteSize.Jpeg",
+           125 /* min */, 15000000 /* 15 MB */, 100 /* bucket count */));
+      jpeg_byte_size_initially_fully_decoded_histogram.Count(sample_bytes);
+    }
+  } else {
+    DCHECK_EQ(image_type, "webp");
+    if (incrementally_decoded) {
+      DEFINE_STATIC_LOCAL(
+          CustomCountHistogram, webp_byte_size_incrementally_decoded_histogram,
+          ("Blink.ImageDecoders.IncrementallyDecodedByteSize.WebP",
+           125 /* min */, 15000000 /* 15 MB */, 100 /* bucket count */));
+      webp_byte_size_incrementally_decoded_histogram.Count(sample_bytes);
+    } else {
+      DEFINE_STATIC_LOCAL(
+          CustomCountHistogram,
+          webp_byte_size_initially_fully_decoded_histogram,
+          ("Blink.ImageDecoders.InitiallyFullyDecodedByteSize.WebP",
+           125 /* min */, 15000000 /* 15 MB */, 100 /* bucket count */));
+      webp_byte_size_initially_fully_decoded_histogram.Count(sample_bytes);
+    }
+  }
+}
+
+}  // namespace
 
 struct DeferredFrameData {
   DISALLOW_NEW();
@@ -88,6 +163,7 @@ DeferredImageDecoder::DeferredImageDecoder(
     : metadata_decoder_(std::move(metadata_decoder)),
       repetition_count_(kAnimationNone),
       all_data_received_(false),
+      first_decoding_generator_created_(false),
       can_yuv_decode_(false),
       has_hot_spot_(false),
       image_is_high_bit_depth_(false),
@@ -137,10 +213,30 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
     frames[i].duration = FrameDurationAtIndex(i);
   }
 
+  // Report UMA about whether incremental decoding is done for JPEG/WebP images.
+  const String image_type = FilenameExtension();
+  if (!first_decoding_generator_created_) {
+    DCHECK(!incremental_decode_needed_.has_value());
+    incremental_decode_needed_ = !all_data_received_;
+    if (image_type == "jpg" || image_type == "webp") {
+      ReportIncrementalDecodeNeeded(all_data_received_, image_type);
+    }
+  }
+
   auto generator = DecodingImageGenerator::Create(
       frame_generator_, info, std::move(segment_reader), std::move(frames),
-      complete_frame_content_id_, all_data_received_);
-  generator->SetCanYUVDecode(can_yuv_decode_);
+      complete_frame_content_id_, all_data_received_,
+      !incremental_decode_needed_.value() /* able to do accelerated decoding */,
+      can_yuv_decode_);
+  first_decoding_generator_created_ = true;
+
+  size_t image_byte_size = ByteSize();
+  if (all_data_received_ && (image_type == "jpg" || image_type == "webp")) {
+    DCHECK(incremental_decode_needed_.has_value());
+    DCHECK(image_byte_size);
+    RecordByteSizeAndWhetherIncrementalDecode(
+        image_type, incremental_decode_needed_.value(), image_byte_size);
+  }
 
   return generator;
 }
@@ -255,6 +351,10 @@ ImageOrientation DeferredImageDecoder::OrientationAtIndex(size_t index) const {
   if (index < frame_data_.size())
     return frame_data_[index].orientation_;
   return kDefaultImageOrientation;
+}
+
+size_t DeferredImageDecoder::ByteSize() const {
+  return rw_buffer_ ? rw_buffer_->size() : 0u;
 }
 
 void DeferredImageDecoder::ActivateLazyDecoding() {

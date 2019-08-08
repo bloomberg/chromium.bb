@@ -8,6 +8,7 @@
 <translation id="1664224225747386870">Der er ingen optagelser</translation>
 <translation id="1862930711583847113"><ph name="FILE" /> kan ikke eksporteres</translation>
 <translation id="2036868001356139588">Varighed for timer</translation>
+<translation id="2050339315714019657">Stående</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> er aktiv</translation>
 <translation id="229579744168541441">Eksportér til disk</translation>
 <translation id="2501278716633472235">Gå tilbage</translation>
@@ -20,14 +21,19 @@
 <translation id="3081586908890909590">Skift til videooptagelse</translation>
 <translation id="3183731565330012717">Gittertype</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
+<translation id="3517926952904427380">Det var ikke muligt at tage et billede i stående format</translation>
 <translation id="3569311554794739032">Er du sikker på, at du vil fjerne <ph name="FILE" />?</translation>
+<translation id="3810838688059735925">Video</translation>
 <translation id="4279490309300973883">Spejling</translation>
+<translation id="4329152592498422850">Skift for at tage et kvadratisk billede</translation>
 <translation id="4445542136948522167">Stop med at tage billedet</translation>
+<translation id="4628948037717959914">Billede</translation>
 <translation id="4649291346448517080">Filen kan ikke gemmes</translation>
 <translation id="4890010094662541459">3x3</translation>
 <translation id="5057360777601936059">Dit kamera er ikke tilgængeligt lige nu.
         Tjek, om kameraet er tilsluttet korrekt.</translation>
 <translation id="5152121255775685072">Gå til galleri</translation>
+<translation id="5671277269877808209">Kvadrat</translation>
 <translation id="5869546221129391014">Gitter</translation>
 <translation id="6073451960410192870">Stop optagelse</translation>
 <translation id="6233780560267770709">3 gange 3</translation>
@@ -46,6 +52,7 @@
 <translation id="8145038249676204903">Skift for at tage et billede</translation>
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
+<translation id="8815966864175525708">Skift for at tage et billede i stående format</translation>
 <translation id="8870695351537079478">Det er ikke muligt at starte en optagelse</translation>
 <translation id="9045155556724273246">10 sekunder</translation>
 <translation id="945522503751344254">Send feedback</translation>

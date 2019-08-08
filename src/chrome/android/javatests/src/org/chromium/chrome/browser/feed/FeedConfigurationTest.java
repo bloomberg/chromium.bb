@@ -56,6 +56,8 @@ public class FeedConfigurationTest {
                 FeedConfiguration.getNonCachedPageSize());
         Assert.assertEquals(FeedConfiguration.SESSION_LIFETIME_MS_DEFAULT,
                 FeedConfiguration.getSessionLifetimeMs());
+        Assert.assertEquals(
+                FeedConfiguration.SNIPPETS_ENABLED_DEFAULT, FeedConfiguration.getSnippetsEnabled());
         Assert.assertEquals(FeedConfiguration.TRIGGER_IMMEDIATE_PAGINATION_DEFAULT,
                 FeedConfiguration.getTriggerImmediatePagination());
         Assert.assertEquals(FeedConfiguration.UNDOABLE_ACTIONS_ENABLED_DEFAULT,
@@ -183,6 +185,16 @@ public class FeedConfigurationTest {
     @Feature({"Feed"})
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:snippets_enabled/true"})
+    public void
+    testSnippetsEnabled() {
+        Assert.assertTrue(FeedConfiguration.getSnippetsEnabled());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:trigger_immediate_pagination/true"})
     public void
     testTriggerImmedatePagination() {
@@ -257,6 +269,7 @@ public class FeedConfigurationTest {
                 configuration.getValueOrDefault(ConfigKey.NON_CACHED_PAGE_SIZE, 0));
         Assert.assertEquals(Long.valueOf(FeedConfiguration.SESSION_LIFETIME_MS_DEFAULT),
                 configuration.getValueOrDefault(ConfigKey.SESSION_LIFETIME_MS, 0l));
+        Assert.assertFalse(configuration.getValueOrDefault(ConfigKey.SNIPPETS_ENABLED, true));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION, true));
         Assert.assertFalse(

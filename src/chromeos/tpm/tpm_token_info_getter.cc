@@ -12,7 +12,7 @@
 #include "base/location.h"
 #include "base/task_runner.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 
 namespace {
 

@@ -29,6 +29,7 @@ extern const char kChromeUIAccessibilityHost[];
 extern const char kChromeUIAppIconHost[];
 extern const char kChromeUIAppIconURL[];
 extern const char kChromeUIAppLauncherPageHost[];
+extern const char kChromeUIAppManagementHost[];
 extern const char kChromeUIAppsURL[];
 extern const char kChromeUIAutofillInternalsHost[];
 extern const char kChromeUIBluetoothInternalsHost[];
@@ -124,7 +125,8 @@ extern const char kChromeUIResetPasswordHost[];
 extern const char kChromeUIResetPasswordURL[];
 extern const char kChromeUIRestartHost[];
 extern const char kChromeUIRestartURL[];
-extern const char kChromeUISafetyURL[];
+extern const char kChromeUISafetyPixelbookURL[];
+extern const char kChromeUISafetyPixelSlateURL[];
 extern const char kChromeUISettingsHost[];
 extern const char kChromeUISettingsURL[];
 extern const char kChromeUISignInInternalsHost[];
@@ -160,6 +162,8 @@ extern const char kChromeUIUsbInternalsHost[];
 extern const char kChromeUIUserActionsHost[];
 extern const char kChromeUIVersionHost[];
 extern const char kChromeUIVersionURL[];
+extern const char kChromeUIPasswordChangeHost[];
+extern const char kChromeUIPasswordChangeUrl[];
 extern const char kChromeUIWelcomeHost[];
 extern const char kChromeUIWelcomeURL[];
 extern const char kChromeUIWelcomeWin10Host[];
@@ -186,6 +190,8 @@ extern const char kChromeUIAccountManagerWelcomeURL[];
 extern const char kChromeUIActivationMessageHost[];
 extern const char kChromeUIBluetoothPairingHost[];
 extern const char kChromeUIBluetoothPairingURL[];
+extern const char kChromeUICellularSetupHost[];
+extern const char kChromeUICellularSetupUrl[];
 extern const char kChromeUICertificateManagerDialogURL[];
 extern const char kChromeUICertificateManagerHost[];
 extern const char kChromeUICryptohomeHost[];
@@ -206,6 +212,8 @@ extern const char kChromeUIMultiDeviceSetupUrl[];
 extern const char kChromeUINetworkHost[];
 extern const char kChromeUIOSCreditsHost[];
 extern const char kChromeUIOSCreditsURL[];
+extern const char kChromeUIOSSettingsHost[];
+extern const char kChromeUIOSSettingsURL[];
 extern const char kChromeUIOobeHost[];
 extern const char kChromeUIOobeURL[];
 extern const char kChromeUIPowerHost[];
@@ -285,13 +293,18 @@ extern const char kPasswordManagerSubPage[];
 extern const char kPaymentsSubPage[];
 extern const char kPeopleSubPage[];
 extern const char kPrintingSettingsSubPage[];
+extern const char kPrivacySubPage[];
 extern const char kResetProfileSettingsSubPage[];
 extern const char kSearchEnginesSubPage[];
 extern const char kSignOutSubPage[];
 extern const char kSyncSetupSubPage[];
 extern const char kTriggeredResetProfileSettingsSubPage[];
+
 #if defined(OS_CHROMEOS)
+// Entry points for OS settings sub-pages.
 extern const char kAccessibilitySubPage[];
+extern const char kAndroidAppsDetailsSubPage[];
+extern const char kAssistantSubPage[];
 extern const char kBluetoothSubPage[];
 extern const char kCrostiniSharedUsbDevicesSubPage[];
 extern const char kDateTimeSubPage[];
@@ -302,10 +315,17 @@ extern const char kConnectedDevicesSubPage[];
 extern const char kLockScreenSubPage[];
 extern const char kNetworkDetailSubPage[];
 extern const char kPowerSubPage[];
+extern const char kSmartLockSettingsSubPage[];
 extern const char kSmbSharesPage[];
 extern const char kSmbSharesPageAddDialog[];
+extern const char kStorageSubPage[];
 extern const char kStylusSubPage[];
-#endif
+extern const char kTetherSettingsSubPage[];
+
+// Returns true if the sub-page is one of the above.
+bool IsOSSettingsSubPage(const std::string& sub_page);
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_WIN)
 extern const char kCleanupSubPage[];
 #endif

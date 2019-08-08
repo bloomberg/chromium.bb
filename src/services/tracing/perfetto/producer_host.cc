@@ -15,7 +15,12 @@
 namespace tracing {
 
 ProducerHost::ProducerHost() = default;
-ProducerHost::~ProducerHost() = default;
+
+ProducerHost::~ProducerHost() {
+  // Manually reset to prevent any callbacks from the ProducerEndpoint
+  // when we're in a half-destructed state.
+  producer_endpoint_.reset();
+}
 
 void ProducerHost::Initialize(mojom::ProducerClientPtr producer_client,
                               perfetto::TracingService* service,
@@ -31,15 +36,6 @@ void ProducerHost::Initialize(mojom::ProducerClientPtr producer_client,
       this, 0 /* uid */, name,
       4 * 1024 * 1024 /* shared_memory_size_hint_bytes */);
   DCHECK(producer_endpoint_);
-
-  producer_client_.set_connection_error_handler(
-      base::BindOnce(&ProducerHost::OnConnectionError, base::Unretained(this)));
-}
-
-void ProducerHost::OnConnectionError() {
-  // Manually reset to prevent any callbacks from the ProducerEndpoint
-  // when we're in a half-destructed state.
-  producer_endpoint_.reset();
 }
 
 void ProducerHost::OnConnect() {
@@ -70,7 +66,13 @@ void ProducerHost::StartDataSource(perfetto::DataSourceInstanceID id,
                                    const perfetto::DataSourceConfig& config) {
   // The type traits will send the base fields in the DataSourceConfig and also
   // the ChromeConfig other configs are dropped.
-  producer_client_->StartDataSource(id, config);
+  producer_client_->StartDataSource(
+      id, config,
+      base::BindOnce(
+          [](ProducerHost* producer_host, perfetto::DataSourceInstanceID id) {
+            producer_host->producer_endpoint_->NotifyDataSourceStarted(id);
+          },
+          base::Unretained(this), id));
 }
 
 void ProducerHost::StopDataSource(perfetto::DataSourceInstanceID id) {
@@ -110,10 +112,6 @@ void ProducerHost::CommitData(const perfetto::CommitDataRequest& data_request) {
 void ProducerHost::RegisterDataSource(
     const perfetto::DataSourceDescriptor& registration_info) {
   producer_endpoint_->RegisterDataSource(registration_info);
-}
-
-void ProducerHost::NotifyFlushComplete(uint64_t flush_request_id) {
-  producer_endpoint_->NotifyFlushComplete(flush_request_id);
 }
 
 void ProducerHost::RegisterTraceWriter(uint32_t writer_id,

@@ -7,9 +7,11 @@ package org.chromium.content.browser;
 import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.content_public.browser.ChildProcessImportance;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Ranking of ChildProcessConnections for a particular ChildConnectionAllocator.
@@ -125,7 +127,7 @@ public class ChildProcessRanking implements Iterable<ChildProcessConnection> {
         private int mNextIndex;
 
         public ReverseRankIterator() {
-            mSizeOnConstruction = ChildProcessRanking.this.mSize;
+            mSizeOnConstruction = ChildProcessRanking.this.mRankings.size();
             mNextIndex = mSizeOnConstruction - 1;
         }
 
@@ -138,23 +140,32 @@ public class ChildProcessRanking implements Iterable<ChildProcessConnection> {
         @Override
         public ChildProcessConnection next() {
             modificationCheck();
-            return ChildProcessRanking.this.mRankings[mNextIndex--].connection;
+            return ChildProcessRanking.this.mRankings.get(mNextIndex--).connection;
         }
 
         private void modificationCheck() {
-            assert mSizeOnConstruction == ChildProcessRanking.this.mSize;
+            assert mSizeOnConstruction == ChildProcessRanking.this.mRankings.size();
         }
     }
 
     private static final RankComparator COMPARATOR = new RankComparator();
 
-    // Not the most theoretically efficient data structure, but is good enough
+    // |mMaxSize| can be -1 to indicate there can be arbitrary number of connections.
+    private final int mMaxSize;
+    // ArrayList is not the most theoretically efficient data structure, but is good enough
     // for sizes in production and more memory efficient than linked data structures.
-    private final ConnectionWithRank mRankings[];
-    private int mSize;
+    private final List<ConnectionWithRank> mRankings = new ArrayList<>();
 
+    public ChildProcessRanking() {
+        mMaxSize = -1;
+    }
+
+    /**
+     * Create with a maxSize. Trying to insert more will throw exceptions.
+     */
     public ChildProcessRanking(int maxSize) {
-        mRankings = new ConnectionWithRank[maxSize];
+        assert maxSize > 0;
+        mMaxSize = maxSize;
     }
 
     /**
@@ -170,53 +181,54 @@ public class ChildProcessRanking implements Iterable<ChildProcessConnection> {
             boolean intersectsViewport, @ChildProcessImportance int importance) {
         assert connection != null;
         assert indexOf(connection) == -1;
-        assert mSize < mRankings.length;
-        mRankings[mSize] = new ConnectionWithRank(
-                connection, visible, frameDepth, intersectsViewport, importance);
-        mSize++;
+        if (mMaxSize != -1 && mRankings.size() >= mMaxSize) {
+            throw new RuntimeException(
+                    "mRankings.size:" + mRankings.size() + " mMaxSize:" + mMaxSize);
+        }
+        mRankings.add(new ConnectionWithRank(
+                connection, visible, frameDepth, intersectsViewport, importance));
         sort();
     }
 
     public void removeConnection(ChildProcessConnection connection) {
         assert connection != null;
-        assert mSize > 0;
+        assert mRankings.size() > 0;
         int i = indexOf(connection);
         assert i != -1;
 
         // Null is sorted to the end.
-        mRankings[i] = null;
-        sort();
-        mSize--;
+        mRankings.remove(i);
     }
 
     public void updateConnection(ChildProcessConnection connection, boolean visible,
             long frameDepth, boolean intersectsViewport, @ChildProcessImportance int importance) {
         assert connection != null;
-        assert mSize > 0;
+        assert mRankings.size() > 0;
         int i = indexOf(connection);
         assert i != -1;
 
-        mRankings[i].visible = visible;
-        mRankings[i].frameDepth = frameDepth;
-        mRankings[i].intersectsViewport = intersectsViewport;
-        mRankings[i].importance = importance;
+        ConnectionWithRank rank = mRankings.get(i);
+        rank.visible = visible;
+        rank.frameDepth = frameDepth;
+        rank.intersectsViewport = intersectsViewport;
+        rank.importance = importance;
         sort();
     }
 
     public ChildProcessConnection getLowestRankedConnection() {
-        if (mSize < 1) return null;
-        return mRankings[mSize - 1].connection;
+        if (mRankings.isEmpty()) return null;
+        return mRankings.get(mRankings.size() - 1).connection;
     }
 
     private int indexOf(ChildProcessConnection connection) {
-        for (int i = 0; i < mSize; ++i) {
-            if (mRankings[i].connection == connection) return i;
+        for (int i = 0; i < mRankings.size(); ++i) {
+            if (mRankings.get(i).connection == connection) return i;
         }
         return -1;
     }
 
     private void sort() {
-        // Sort is stable and linear when array is mostly sorted.
-        Arrays.sort(mRankings, 0, mSize, COMPARATOR);
+        // Sort is stable.
+        Collections.sort(mRankings, COMPARATOR);
     }
 }

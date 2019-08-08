@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -63,7 +64,8 @@ HTMLMarqueeElement* HTMLMarqueeElement::Create(Document& document) {
 }
 
 void HTMLMarqueeElement::DidAddUserAgentShadowRoot(ShadowRoot& shadow_root) {
-  auto* style = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
+  auto* style = MakeGarbageCollected<HTMLStyleElement>(GetDocument(),
+                                                       CreateElementFlags());
   style->setTextContent(
       ":host { display: inline-block; overflow: hidden;"
       "text-align: initial; white-space: nowrap; }"
@@ -224,17 +226,17 @@ void HTMLMarqueeElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (attr == html_names::kBgcolorAttr) {
-    AddHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyID::kBackgroundColor, value);
   } else if (attr == html_names::kHeightAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
   } else if (attr == html_names::kHspaceAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
-    AddHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginLeft, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginRight, value);
   } else if (attr == html_names::kVspaceAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
-    AddHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginTop, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginBottom, value);
   } else if (attr == html_names::kWidthAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(attr, value, style);
   }
@@ -252,14 +254,14 @@ StringKeyframeEffectModel* HTMLMarqueeElement::CreateEffectModel(
   StringKeyframeVector keyframes;
   StringKeyframe* keyframe1 = StringKeyframe::Create();
   set_result = keyframe1->SetCSSPropertyValue(
-      CSSPropertyTransform, parameters.transform_begin, secure_context_mode,
-      style_sheet_contents);
+      CSSPropertyID::kTransform, parameters.transform_begin,
+      secure_context_mode, style_sheet_contents);
   DCHECK(set_result.did_parse);
   keyframes.push_back(keyframe1);
 
   StringKeyframe* keyframe2 = StringKeyframe::Create();
   set_result = keyframe2->SetCSSPropertyValue(
-      CSSPropertyTransform, parameters.transform_end, secure_context_mode,
+      CSSPropertyID::kTransform, parameters.transform_end, secure_context_mode,
       style_sheet_contents);
   DCHECK(set_result.did_parse);
   keyframes.push_back(keyframe2);

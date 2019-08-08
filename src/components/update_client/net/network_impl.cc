@@ -116,7 +116,7 @@ void NetworkFetcherImpl::PostRequest(
   simple_url_loader_->SetRetryOptions(
       kMaxRetriesOnNetworkChange,
       network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
-  simple_url_loader_->AttachStringForUpload(post_data, "application/xml");
+  simple_url_loader_->AttachStringForUpload(post_data, "application/json");
   simple_url_loader_->SetOnResponseStartedCallback(base::BindOnce(
       &NetworkFetcherImpl::OnResponseStartedCallback, base::Unretained(this),
       std::move(response_started_callback)));

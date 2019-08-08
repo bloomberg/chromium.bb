@@ -16,7 +16,7 @@ import unittest
 
 from chromite.cbuildbot import builders
 from chromite.config import chromeos_config
-from chromite.config import chromeos_config_test as chromeos_test
+from chromite.config import chromeos_test_config as chromeos_test
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.cbuildbot.builders import generic_builders
@@ -263,8 +263,7 @@ class UnifiedBuildConfigTestCase(object):
     self._boards_dict = chromeos_config.GetBoardTypeToBoardsDict(
         self._ge_build_config)
 
-    chromeos_config.GeneralTemplates(
-        self._site_config, self._fake_ge_build_config)
+    chromeos_config.GeneralTemplates(self._site_config)
     chromeos_test.GeneralTemplates(
         self._site_config, self._fake_ge_build_config)
     chromeos_config.ReleaseBuilders(
@@ -393,7 +392,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
       if config.build_affinity:
         self.assertIn(config.luci_builder,
                       (config_lib.LUCI_BUILDER_INCREMENTAL,
-                       config_lib.LUCI_BUILDER_CQ),
+                       config_lib.LUCI_BUILDER_COMMITQUEUE),
                       'Non affinity luci_builder "%s" on "%s"' %
                       (config.luci_builder, build_name))
 
@@ -1111,10 +1110,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
     for build_name, config in self.site_config.iteritems():
       if config.build_type != constants.CANARY_TYPE:
         continue
-      if self.isReleaseBranch():
-        expected = 12 * 60 * 60
-      else:
-        expected = (7 * 60 + 50) * 60
+      expected = 12 * 60 * 60
 
       self.assertEqual(
           config.build_timeout, expected,

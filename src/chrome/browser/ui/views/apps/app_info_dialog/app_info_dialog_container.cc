@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_container.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -79,10 +78,10 @@ class AppListOverlayBackground : public views::Background {
 // with an accelerator to close on escape.
 class BaseDialogContainer : public views::DialogDelegateView {
  public:
-  BaseDialogContainer(views::View* dialog_body,
+  BaseDialogContainer(std::unique_ptr<views::View> dialog_body,
                       const base::Closure& close_callback)
-      : dialog_body_(dialog_body), close_callback_(close_callback) {
-    AddChildView(dialog_body_);
+      : dialog_body_(AddChildView(std::move(dialog_body))),
+        close_callback_(close_callback) {
     // Since we are using a ClientView instead of a DialogClientView, we need to
     // manually bind the escape key to close the dialog.
     ui::Accelerator escape(ui::VKEY_ESCAPE, ui::EF_NONE);
@@ -96,7 +95,7 @@ class BaseDialogContainer : public views::DialogDelegateView {
  private:
   // Overridden from views::View:
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override {
+      const views::ViewHierarchyChangedDetails& details) override {
     views::DialogDelegateView::ViewHierarchyChanged(details);
     if (details.is_add && details.child == this)
       GetFocusManager()->AdvanceFocus(false);
@@ -134,12 +133,12 @@ class BaseDialogContainer : public views::DialogDelegateView {
 class AppListDialogContainer : public BaseDialogContainer,
                                public views::ButtonListener {
  public:
-  explicit AppListDialogContainer(views::View* dialog_body)
-      : BaseDialogContainer(dialog_body, base::RepeatingClosure()) {
+  explicit AppListDialogContainer(std::unique_ptr<views::View> dialog_body)
+      : BaseDialogContainer(std::move(dialog_body), base::RepeatingClosure()) {
     SetBackground(std::make_unique<AppListOverlayBackground>());
-    close_button_ = views::BubbleFrameView::CreateCloseButton(
-        this, GetNativeTheme()->SystemDarkModeEnabled());
-    AddChildView(close_button_);
+    close_button_ =
+        AddChildView(base::WrapUnique(views::BubbleFrameView::CreateCloseButton(
+            this, GetNativeTheme()->SystemDarkModeEnabled())));
   }
   ~AppListDialogContainer() override {}
 
@@ -216,10 +215,10 @@ class FullSizeBubbleFrameView : public views::BubbleFrameView {
 // A container view for a native dialog, which sizes to the given fixed |size|.
 class NativeDialogContainer : public BaseDialogContainer {
  public:
-  NativeDialogContainer(views::View* dialog_body,
+  NativeDialogContainer(std::unique_ptr<views::View> dialog_body,
                         const gfx::Size& size,
                         const base::Closure& close_callback)
-      : BaseDialogContainer(dialog_body, close_callback) {
+      : BaseDialogContainer(std::move(dialog_body), close_callback) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
     chrome::RecordDialogCreation(chrome::DialogIdentifier::NATIVE_CONTAINER);
     SetPreferredSize(size);
@@ -231,8 +230,8 @@ class NativeDialogContainer : public BaseDialogContainer {
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     FullSizeBubbleFrameView* frame = new FullSizeBubbleFrameView();
-    std::unique_ptr<views::BubbleBorder> border(new views::BubbleBorder(
-        views::BubbleBorder::FLOAT, kShadowType, gfx::kPlaceholderColor));
+    auto border = std::make_unique<views::BubbleBorder>(
+        views::BubbleBorder::FLOAT, kShadowType, gfx::kPlaceholderColor);
     border->set_use_theme_background_color(true);
     frame->SetBubbleBorder(std::move(border));
     return frame;
@@ -244,14 +243,15 @@ class NativeDialogContainer : public BaseDialogContainer {
 }  // namespace
 
 #if BUILDFLAG(ENABLE_APP_LIST)
-views::DialogDelegateView* CreateAppListContainerForView(views::View* view) {
-  return new AppListDialogContainer(view);
+views::DialogDelegateView* CreateAppListContainerForView(
+    std::unique_ptr<views::View> view) {
+  return new AppListDialogContainer(std::move(view));
 }
 #endif  // ENABLE_APP_LIST
 
 views::DialogDelegateView* CreateDialogContainerForView(
-    views::View* view,
+    std::unique_ptr<views::View> view,
     const gfx::Size& size,
     const base::Closure& close_callback) {
-  return new NativeDialogContainer(view, size, close_callback);
+  return new NativeDialogContainer(std::move(view), size, close_callback);
 }

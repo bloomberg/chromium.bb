@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "dbus/object_path.h"
@@ -22,30 +22,26 @@ void FailErrorCallback(const std::string& error_name,
                        const std::string& error_message) {}
 
 const char kUserHash[] = "user_hash";
+const char kProfilePathShared[] = "shared_profile_path";
+const char kProfilePathUser[] = "user_profile_path";
 
 }  // namespace
 
 NetworkStateTestHelper::NetworkStateTestHelper(
     bool use_default_devices_and_services)
     : weak_ptr_factory_(this) {
-  if (!DBusThreadManager::IsInitialized()) {
-    DBusThreadManager::Initialize();
-    dbus_thread_manager_initialized_ = true;
+  if (!ShillManagerClient::Get()) {
+    shill_clients::InitializeFakes();
+    shill_clients_initialized_ = true;
   }
-  DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
+  manager_test_ = ShillManagerClient::Get()->GetTestInterface();
+  profile_test_ = ShillProfileClient::Get()->GetTestInterface();
+  device_test_ = ShillDeviceClient::Get()->GetTestInterface();
+  service_test_ = ShillServiceClient::Get()->GetTestInterface();
 
-  manager_test_ =
-      dbus_thread_manager->GetShillManagerClient()->GetTestInterface();
-  profile_test_ =
-      dbus_thread_manager->GetShillProfileClient()->GetTestInterface();
-  device_test_ =
-      dbus_thread_manager->GetShillDeviceClient()->GetTestInterface();
-  service_test_ =
-      dbus_thread_manager->GetShillServiceClient()->GetTestInterface();
-
-  profile_test_->AddProfile("shared_profile_path",
+  profile_test_->AddProfile(kProfilePathShared,
                             std::string() /* shared profile */);
-  profile_test_->AddProfile("user_profile_path", kUserHash);
+  profile_test_->AddProfile(kProfilePathUser, kUserHash);
   base::RunLoop().RunUntilIdle();
 
   network_state_handler_ = NetworkStateHandler::InitializeForTest();
@@ -56,8 +52,8 @@ NetworkStateTestHelper::NetworkStateTestHelper(
 
 NetworkStateTestHelper::~NetworkStateTestHelper() {
   ShutdownNetworkState();
-  if (dbus_thread_manager_initialized_)
-    DBusThreadManager::Shutdown();
+  if (shill_clients_initialized_)
+    shill_clients::Shutdown();
 }
 
 void NetworkStateTestHelper::ShutdownNetworkState() {
@@ -107,7 +103,7 @@ std::string NetworkStateTestHelper::ConfigureService(
   // |last_created_service_path| will be set before it is returned. In
   // error cases, ConfigureCallback() will not run, resulting in "" being
   // returned from this function.
-  DBusThreadManager::Get()->GetShillManagerClient()->ConfigureService(
+  ShillManagerClient::Get()->ConfigureService(
       *shill_json_dict,
       base::Bind(&NetworkStateTestHelper::ConfigureCallback,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -153,6 +149,14 @@ NetworkStateTestHelper::CreateStandaloneNetworkState(
   network->SetConnectionState(connection_state);
   network->set_signal_strength(signal_strength);
   return network;
+}
+
+const char* NetworkStateTestHelper::ProfilePathShared() {
+  return kProfilePathShared;
+}
+
+const char* NetworkStateTestHelper::ProfilePathUser() {
+  return kProfilePathUser;
 }
 
 const char* NetworkStateTestHelper::UserHash() {

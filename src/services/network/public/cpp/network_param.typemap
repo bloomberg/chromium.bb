@@ -26,14 +26,14 @@ sources = [
 
 deps = [
   "//ipc",
-  "//services/network/public/cpp:cpp_base",
 ]
 
 public_deps = [
   "//net",
+  "//services/network/public/cpp:cpp_base",
 ]
 type_mappings = [
-  "network.mojom.AuthChallengeInfo=scoped_refptr<net::AuthChallengeInfo>[nullable_is_same_type]",
+  "network.mojom.AuthChallengeInfo=net::AuthChallengeInfo",
   "network.mojom.AuthCredentials=net::AuthCredentials",
   "network.mojom.CertVerifyResult=net::CertVerifyResult",
   "network.mojom.CTVerifyResult=net::ct::CTVerifyResult",

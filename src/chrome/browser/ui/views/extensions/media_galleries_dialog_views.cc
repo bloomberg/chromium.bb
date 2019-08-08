@@ -129,7 +129,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
   // Scrollable area for checkboxes.
   const int small_vertical_padding =
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
-  ScrollableView* scroll_container = new ScrollableView();
+  auto scroll_container = std::make_unique<ScrollableView>();
   scroll_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), small_vertical_padding));
   scroll_container->SetBorder(
@@ -160,7 +160,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
     MediaGalleriesDialogController::Entries::const_iterator iter;
     for (iter = entries.begin(); iter != entries.end(); ++iter) {
       int spacing = iter + 1 == entries.end() ? small_vertical_padding : 0;
-      AddOrUpdateGallery(*iter, scroll_container, spacing);
+      AddOrUpdateGallery(*iter, scroll_container.get(), spacing);
     }
   }
 
@@ -168,9 +168,8 @@ void MediaGalleriesDialogViews::InitChildViews() {
 
   // Add the scrollable area to the outer dialog view. It will squeeze against
   // the title/subtitle and buttons to occupy all available space in the dialog.
-  views::ScrollView* scroll_view =
-      views::ScrollView::CreateScrollViewWithBorder();
-  scroll_view->SetContents(scroll_container);
+  auto* scroll_view = views::ScrollView::CreateScrollViewWithBorder();
+  scroll_view->SetContents(std::move(scroll_container));
   layout->StartRowWithPadding(1.0, column_set_id, views::GridLayout::kFixedSize,
                               vertical_padding);
   layout->AddView(scroll_view, 1.0, 1.0, views::GridLayout::FILL,
@@ -311,13 +310,13 @@ void MediaGalleriesDialogViews::ShowContextMenu(const gfx::Point& point,
   context_menu_runner_.reset(new views::MenuRunner(
       controller_->GetContextMenu(id),
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
-      base::Bind(&MediaGalleriesDialogViews::OnMenuClosed,
-                 base::Unretained(this))));
+      base::BindRepeating(&MediaGalleriesDialogViews::OnMenuClosed,
+                          base::Unretained(this))));
 
   context_menu_runner_->RunMenuAt(
       GetWidget(), NULL,
       gfx::Rect(point.x(), point.y(), views::GridLayout::kFixedSize, 0),
-      views::MENU_ANCHOR_TOPLEFT, source_type);
+      views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 bool MediaGalleriesDialogViews::ControllerHasWebContents() const {

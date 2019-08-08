@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
@@ -47,6 +48,7 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/metadata/metadata_types.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_observer.h"
@@ -69,7 +71,7 @@ bool LayerIsAncestor(const ui::Layer* ancestor, const ui::Layer* layer) {
 // Convenience functions for walking a View tree.
 const views::View* FirstView(const views::View* view) {
   const views::View* v = view;
-  while (v->has_children())
+  while (!v->children().empty())
     v = v->child_at(0);
   return v;
 }
@@ -78,11 +80,9 @@ const views::View* NextView(const views::View* view) {
   const views::View* v = view;
   const views::View* parent = v->parent();
   if (!parent)
-    return NULL;
-  int next = parent->GetIndexOf(v) + 1;
-  if (next != parent->child_count())
-    return FirstView(parent->child_at(next));
-  return parent;
+    return nullptr;
+  const auto next = std::next(parent->FindChild(v));
+  return (next == parent->children().cend()) ? parent : FirstView(*next);
 }
 
 // Convenience functions for walking a Layer tree.
@@ -96,7 +96,7 @@ const ui::Layer* FirstLayer(const ui::Layer* layer) {
 const ui::Layer* NextLayer(const ui::Layer* layer) {
   const ui::Layer* parent = layer->parent();
   if (!parent)
-    return NULL;
+    return nullptr;
   const std::vector<ui::Layer*> children = parent->children();
   size_t index;
   for (index = 0; index < children.size(); index++) {
@@ -172,21 +172,24 @@ void ConstructTree(views::View* view, int depth) {
 }
 
 void ScrambleTree(views::View* view) {
-  int count = view->child_count();
-  if (count == 0)
+  if (view->children().empty())
     return;
-  for (int i = 0; i < count; i++) {
-    ScrambleTree(view->child_at(i));
-  }
 
+  for (views::View* child : view->children())
+    ScrambleTree(child);
+
+  size_t count = view->children().size();
   if (count > 1) {
-    int a = base::RandInt(0, count - 1);
-    int b = base::RandInt(0, count - 1);
+    const int max = int{count - 1};
+    int a = base::RandInt(0, max);
+    int b = base::RandInt(0, max);
 
-    views::View* view_a = view->child_at(a);
-    views::View* view_b = view->child_at(b);
-    view->ReorderChildView(view_a, b);
-    view->ReorderChildView(view_b, a);
+    if (a != b) {
+      views::View* view_a = view->child_at(a);
+      views::View* view_b = view->child_at(b);
+      view->ReorderChildView(view_a, b);
+      view->ReorderChildView(view_b, a);
+    }
   }
 
   if (!view->layer() && base::RandDouble() < 0.1)
@@ -200,19 +203,13 @@ void ScrambleTree(views::View* view) {
 
 namespace views {
 
-typedef ViewsTestBase ViewTest;
+using ViewTest = ViewsTestBase;
 
 // A derived class for testing purpose.
 class TestView : public View {
  public:
-  TestView()
-      : View(),
-        did_layout_(false),
-        delete_on_pressed_(false),
-        did_paint_(false),
-        native_theme_(NULL),
-        can_process_events_within_subtree_(true) {}
-  ~TestView() override {}
+  TestView() = default;
+  ~TestView() override = default;
 
   // Reset all test state
   void Reset() {
@@ -271,27 +268,27 @@ class TestView : public View {
   gfx::Rect new_bounds_;
 
   // Layout.
-  bool did_layout_;
+  bool did_layout_ = false;
 
   // MouseEvent.
   int last_mouse_event_type_;
   gfx::Point location_;
   bool received_mouse_enter_;
   bool received_mouse_exit_;
-  bool delete_on_pressed_;
+  bool delete_on_pressed_ = false;
 
   // Painting.
   std::vector<gfx::Rect> scheduled_paint_rects_;
-  bool did_paint_;
+  bool did_paint_ = false;
 
   // Accelerators.
   std::map<ui::Accelerator, int> accelerator_count_map_;
 
   // Native theme.
-  const ui::NativeTheme* native_theme_;
+  const ui::NativeTheme* native_theme_ = nullptr;
 
   // Value to return from CanProcessEventsWithinSubtree().
-  bool can_process_events_within_subtree_;
+  bool can_process_events_within_subtree_ = true;
 
   // Accessibility events
   ax::mojom::Event last_a11y_event_;
@@ -509,7 +506,7 @@ TEST_F(ViewTest, DeleteOnPressed) {
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                          ui::EF_LEFT_MOUSE_BUTTON);
   root->OnMousePressed(pressed);
-  EXPECT_EQ(0, v1->child_count());
+  EXPECT_TRUE(v1->children().empty());
 
   widget->CloseNow();
 }
@@ -1271,8 +1268,8 @@ TEST_F(ViewTest, PaintInPromotedToLayer) {
 // A derived class for testing paint.
 class TestPaintView : public TestView {
  public:
-  TestPaintView() : TestView(), canvas_bounds_(gfx::Rect()) {}
-  ~TestPaintView() override {}
+  TestPaintView() : canvas_bounds_(gfx::Rect()) {}
+  ~TestPaintView() override = default;
 
   void OnPaint(gfx::Canvas* canvas) override {
     did_paint_ = true;
@@ -1405,67 +1402,67 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   gfx::Rect touch_rect(105, 105, 30, 45);
   View* result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(root_view, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Covers |v1| by at least 60%.
   touch_rect.SetRect(15, 15, 100, 100);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v1, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Intersects |v1| but does not cover it by at least 60%. The center
   // of |touch_rect| is within |v1|.
   touch_rect.SetRect(50, 50, 5, 10);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v1, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Intersects |v1| but does not cover it by at least 60%. The center
   // of |touch_rect| is not within |v1|.
   touch_rect.SetRect(95, 96, 21, 22);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(root_view, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Intersects |v1| and |v2|, but only covers |v2| by at least 60%.
   touch_rect.SetRect(95, 10, 300, 120);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v2, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Covers both |v1| and |v2| by at least 60%, but the center point
   // of |touch_rect| is closer to the center point of |v2|.
   touch_rect.SetRect(20, 20, 400, 100);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v2, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Covers both |v1| and |v2| by at least 60%, but the center point
   // of |touch_rect| is closer to the center point of |v1|.
   touch_rect.SetRect(-700, -15, 1050, 110);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v1, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // A mouse click within |v1| will target |v1|.
   touch_rect.SetRect(15, 15, 1, 1);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v1, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Intersects |v3| and |v31| by at least 60% and the center point
   // of |touch_rect| is closer to the center point of |v31|.
   touch_rect.SetRect(0, 200, 110, 100);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v31, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Intersects |v3| and |v31|, but neither by at least 60%. The
   // center point of |touch_rect| lies within |v31|.
   touch_rect.SetRect(80, 280, 15, 15);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v31, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Covers |v3|, |v31|, and |v32| all by at least 60%, and the
   // center point of |touch_rect| is closest to the center point
@@ -1473,7 +1470,7 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   touch_rect.SetRect(0, 200, 200, 100);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v32, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Intersects all of |v3|, |v31|, and |v32|, but only covers
   // |v31| and |v32| by at least 60%. The center point of
@@ -1481,19 +1478,19 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   touch_rect.SetRect(30, 225, 180, 115);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v32, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // A mouse click at the corner of |v3| will target |v3|.
   touch_rect.SetRect(0, 200, 1, 1);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v3, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // A mouse click within |v32| will target |v32|.
   touch_rect.SetRect(112, 211, 1, 1);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v32, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Covers all of |v4|, |v41|, and |v411| by at least 60%.
   // The center point of |touch_rect| is equally close to
@@ -1501,14 +1498,14 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   touch_rect.SetRect(310, 210, 80, 80);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v41, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Intersects all of |v4|, |v41|, and |v411| but only covers
   // |v411| by at least 60%.
   touch_rect.SetRect(370, 275, 7, 5);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v411, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Intersects |v4| and |v41| but covers neither by at least 60%.
   // The center point of |touch_rect| is equally close to the center
@@ -1516,7 +1513,7 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   touch_rect.SetRect(345, 245, 7, 7);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v41, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Intersects all of |v4|, |v41|, and |v411| and covers none of
   // them by at least 60%. The center point of |touch_rect| lies
@@ -1524,7 +1521,7 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   touch_rect.SetRect(368, 272, 4, 6);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v411, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Intersects all of |v4|, |v41|, and |v411| and covers none of
   // them by at least 60%. The center point of |touch_rect| lies
@@ -1532,7 +1529,7 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   touch_rect.SetRect(365, 270, 7, 7);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v41, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Intersects all of |v4|, |v41|, and |v411| and covers none of
   // them by at least 60%. The center point of |touch_rect| lies
@@ -1540,26 +1537,26 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   touch_rect.SetRect(205, 275, 200, 2);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v4, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Intersects all of |v4|, |v41|, and |v411| but only covers
   // |v41| by at least 60%.
   touch_rect.SetRect(310, 210, 61, 66);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v41, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // A mouse click within |v411| will target |v411|.
   touch_rect.SetRect(372, 275, 1, 1);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v411, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // A mouse click within |v41| will target |v41|.
   touch_rect.SetRect(350, 215, 1, 1);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v41, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Covers |v3|, |v4|, and all of their descendants by at
   // least 60%. The center point of |touch_rect| is closest
@@ -1567,7 +1564,7 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   touch_rect.SetRect(0, 200, 400, 100);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v32, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Intersects all of |v2|, |v3|, |v32|, |v4|, |v41|, and |v411|.
   // Covers |v2|, |v32|, |v4|, |v41|, and |v411| by at least 60%.
@@ -1576,7 +1573,7 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   touch_rect.SetRect(110, 15, 375, 450);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(root_view, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Covers all views (except |v5| and |v51|) by at least 60%. The
   // center point of |touch_rect| is equally close to the center
@@ -1587,7 +1584,7 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   touch_rect.SetRect(0, 0, 400, 300);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v32, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Covers |v5| and |v51| by at least 60%, and the center point of
   // the touch is located within both views. Since both views share
@@ -1595,7 +1592,7 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   touch_rect.SetRect(440, 190, 40, 40);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v51, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Covers |v5| and |v51| by at least 60%, but the center point of
   // the touch is not located within either view. Since both views
@@ -1603,47 +1600,47 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   touch_rect.SetRect(455, 187, 60, 60);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v51, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Covers neither |v5| nor |v51| by at least 60%, but the center
   // of the touch is located within |v51|.
   touch_rect.SetRect(450, 197, 10, 10);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v51, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Covers neither |v5| nor |v51| by at least 60% but intersects both.
   // The center point is located outside of both views.
   touch_rect.SetRect(433, 180, 24, 24);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(root_view, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // Only intersects |v5| but does not cover it by at least 60%. The
   // center point of the touch region is located within |v5|.
   touch_rect.SetRect(449, 196, 3, 3);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v5, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // A mouse click within |v5| (but not |v51|) should target |v5|.
   touch_rect.SetRect(462, 199, 1, 1);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v5, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // A mouse click |v5| and |v51| should target the child view.
   touch_rect.SetRect(452, 226, 1, 1);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v51, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // A mouse click on the center of |v5| and |v51| should target
   // the child view.
   touch_rect.SetRect(465, 215, 1, 1);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
   EXPECT_EQ(v51, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   widget->CloseNow();
 }
@@ -1694,24 +1691,24 @@ TEST_F(ViewTest, CanProcessEventsWithinSubtree) {
 
   View* result_view = root_view->GetEventHandlerForRect(rect_in_v_grandchild);
   EXPECT_EQ(v_grandchild, result_view);
-  result_view = NULL;
+  result_view = nullptr;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v_grandchild);
   EXPECT_EQ(v_grandchild, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   result_view = root_view->GetEventHandlerForRect(rect_in_v_child);
   EXPECT_EQ(v_child, result_view);
-  result_view = NULL;
+  result_view = nullptr;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v_child);
   EXPECT_EQ(v_child, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   result_view = root_view->GetEventHandlerForRect(rect_in_v);
   EXPECT_EQ(v, result_view);
-  result_view = NULL;
+  result_view = nullptr;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v);
   EXPECT_EQ(v, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // When |v_grandchild| returns false when CanProcessEventsWithinSubtree()
   // is called, then |v_grandchild| cannot be returned as a target.
@@ -1720,21 +1717,21 @@ TEST_F(ViewTest, CanProcessEventsWithinSubtree) {
 
   result_view = root_view->GetEventHandlerForRect(rect_in_v_grandchild);
   EXPECT_EQ(v_child, result_view);
-  result_view = NULL;
+  result_view = nullptr;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v_grandchild);
   EXPECT_EQ(v_child, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   result_view = root_view->GetEventHandlerForRect(rect_in_v_child);
   EXPECT_EQ(v_child, result_view);
-  result_view = NULL;
+  result_view = nullptr;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v_child);
   EXPECT_EQ(v_child, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   result_view = root_view->GetEventHandlerForRect(rect_in_v);
   EXPECT_EQ(v, result_view);
-  result_view = NULL;
+  result_view = nullptr;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v);
   EXPECT_EQ(v, result_view);
 
@@ -1746,8 +1743,8 @@ TEST_F(ViewTest, CanProcessEventsWithinSubtree) {
 
   result_view = v_grandchild;
   result_view = v_grandchild->GetTooltipHandlerForPoint(gfx::Point(1, 1));
-  EXPECT_EQ(NULL, result_view);
-  result_view = NULL;
+  EXPECT_EQ(nullptr, result_view);
+  result_view = nullptr;
 
   // When |v_child| returns false when CanProcessEventsWithinSubtree()
   // is called, then neither |v_child| nor |v_grandchild| can be returned
@@ -1758,24 +1755,24 @@ TEST_F(ViewTest, CanProcessEventsWithinSubtree) {
 
   result_view = root_view->GetEventHandlerForRect(rect_in_v_grandchild);
   EXPECT_EQ(v, result_view);
-  result_view = NULL;
+  result_view = nullptr;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v_grandchild);
   EXPECT_EQ(v, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   result_view = root_view->GetEventHandlerForRect(rect_in_v_child);
   EXPECT_EQ(v, result_view);
-  result_view = NULL;
+  result_view = nullptr;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v_child);
   EXPECT_EQ(v, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   result_view = root_view->GetEventHandlerForRect(rect_in_v);
   EXPECT_EQ(v, result_view);
-  result_view = NULL;
+  result_view = nullptr;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v);
   EXPECT_EQ(v, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   // When |v| returns false when CanProcessEventsWithinSubtree()
   // is called, then none of |v|, |v_child|, and |v_grandchild| can be returned
@@ -1786,21 +1783,21 @@ TEST_F(ViewTest, CanProcessEventsWithinSubtree) {
 
   result_view = root_view->GetEventHandlerForRect(rect_in_v_grandchild);
   EXPECT_EQ(root_view, result_view);
-  result_view = NULL;
+  result_view = nullptr;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v_grandchild);
   EXPECT_EQ(root_view, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   result_view = root_view->GetEventHandlerForRect(rect_in_v_child);
   EXPECT_EQ(root_view, result_view);
-  result_view = NULL;
+  result_view = nullptr;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v_child);
   EXPECT_EQ(root_view, result_view);
-  result_view = NULL;
+  result_view = nullptr;
 
   result_view = root_view->GetEventHandlerForRect(rect_in_v);
   EXPECT_EQ(root_view, result_view);
-  result_view = NULL;
+  result_view = nullptr;
   result_view = root_view->GetTooltipHandlerForPoint(point_in_v);
   EXPECT_EQ(root_view, result_view);
 
@@ -2412,27 +2409,26 @@ TEST_F(ViewTest, DISABLED_RerouteMouseWheelTest) {
 ////////////////////////////////////////////////////////////////////////////////
 class ToplevelWidgetObserverView : public View {
  public:
-  ToplevelWidgetObserverView() : toplevel_(NULL) {
-  }
-  ~ToplevelWidgetObserverView() override {}
+  ToplevelWidgetObserverView() = default;
+  ~ToplevelWidgetObserverView() override = default;
 
   // View overrides:
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override {
     if (details.is_add) {
-      toplevel_ = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
+      toplevel_ = GetWidget() ? GetWidget()->GetTopLevelWidget() : nullptr;
     } else {
-      toplevel_ = NULL;
+      toplevel_ = nullptr;
     }
   }
   void NativeViewHierarchyChanged() override {
-    toplevel_ = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
+    toplevel_ = GetWidget() ? GetWidget()->GetTopLevelWidget() : nullptr;
   }
 
   Widget* toplevel() { return toplevel_; }
 
  private:
-  Widget* toplevel_;
+  Widget* toplevel_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ToplevelWidgetObserverView);
 };
@@ -2459,7 +2455,7 @@ TEST_F(ViewTest, NativeViewHierarchyChanged) {
 
   ToplevelWidgetObserverView* observer_view =
       new ToplevelWidgetObserverView();
-  EXPECT_EQ(NULL, observer_view->toplevel());
+  EXPECT_EQ(nullptr, observer_view->toplevel());
 
   child->SetContentsView(observer_view);
   EXPECT_EQ(toplevel1.get(), observer_view->toplevel());
@@ -2469,7 +2465,7 @@ TEST_F(ViewTest, NativeViewHierarchyChanged) {
   EXPECT_EQ(toplevel2.get(), observer_view->toplevel());
 
   observer_view->parent()->RemoveChildView(observer_view);
-  EXPECT_EQ(NULL, observer_view->toplevel());
+  EXPECT_EQ(nullptr, observer_view->toplevel());
 
   // Make |observer_view| |child|'s contents view again so that it gets deleted
   // with the widget.
@@ -2482,8 +2478,8 @@ TEST_F(ViewTest, NativeViewHierarchyChanged) {
 
 class TransformPaintView : public TestView {
  public:
-  TransformPaintView() {}
-  ~TransformPaintView() override {}
+  TransformPaintView() = default;
+  ~TransformPaintView() override = default;
 
   void ClearScheduledPaintRect() {
     scheduled_paint_rect_ = gfx::Rect();
@@ -2721,8 +2717,8 @@ TEST_F(ViewTest, TransformVisibleBound) {
 
 class VisibleBoundsView : public View {
  public:
-  VisibleBoundsView() : received_notification_(false) {}
-  ~VisibleBoundsView() override {}
+  VisibleBoundsView() = default;
+  ~VisibleBoundsView() override = default;
 
   bool received_notification() const { return received_notification_; }
   void set_received_notification(bool received) {
@@ -2736,7 +2732,7 @@ class VisibleBoundsView : public View {
   }
   void OnVisibleBoundsChanged() override { received_notification_ = true; }
 
-  bool received_notification_;
+  bool received_notification_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(VisibleBoundsView);
 };
@@ -3162,20 +3158,17 @@ class ObserverView : public View {
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
-  bool has_add_details_;
-  bool has_remove_details_;
+  bool has_add_details_ = false;
+  bool has_remove_details_ = false;
   ViewHierarchyChangedDetails add_details_;
   ViewHierarchyChangedDetails remove_details_;
 
   DISALLOW_COPY_AND_ASSIGN(ObserverView);
 };
 
-ObserverView::ObserverView()
-    : has_add_details_(false),
-      has_remove_details_(false) {
-}
+ObserverView::ObserverView() = default;
 
-ObserverView::~ObserverView() {}
+ObserverView::~ObserverView() = default;
 
 void ObserverView::ResetTestState() {
   has_add_details_ = false;
@@ -3218,13 +3211,13 @@ TEST_F(ViewTest, ViewHierarchyChanged) {
   EXPECT_FALSE(v2->has_remove_details());
   EXPECT_EQ(v2.get(), v2->add_details().parent);
   EXPECT_EQ(v3, v2->add_details().child);
-  EXPECT_EQ(NULL, v2->add_details().move_view);
+  EXPECT_EQ(nullptr, v2->add_details().move_view);
 
   EXPECT_TRUE(v3->has_add_details());
   EXPECT_FALSE(v3->has_remove_details());
   EXPECT_EQ(v2.get(), v3->add_details().parent);
   EXPECT_EQ(v3, v3->add_details().child);
-  EXPECT_EQ(NULL, v3->add_details().move_view);
+  EXPECT_EQ(nullptr, v3->add_details().move_view);
 
   // Reset everything to the initial state.
   v2->ResetTestState();
@@ -3239,19 +3232,19 @@ TEST_F(ViewTest, ViewHierarchyChanged) {
   EXPECT_FALSE(v1.has_remove_details());
   EXPECT_EQ(&v1, v1.add_details().parent);
   EXPECT_EQ(v2.get(), v1.add_details().child);
-  EXPECT_EQ(NULL, v1.add_details().move_view);
+  EXPECT_EQ(nullptr, v1.add_details().move_view);
 
   EXPECT_TRUE(v2->has_add_details());
   EXPECT_FALSE(v2->has_remove_details());
   EXPECT_EQ(&v1, v2->add_details().parent);
   EXPECT_EQ(v2.get(), v2->add_details().child);
-  EXPECT_EQ(NULL, v2->add_details().move_view);
+  EXPECT_EQ(nullptr, v2->add_details().move_view);
 
   EXPECT_TRUE(v3->has_add_details());
   EXPECT_FALSE(v3->has_remove_details());
   EXPECT_EQ(&v1, v3->add_details().parent);
   EXPECT_EQ(v2.get(), v3->add_details().child);
-  EXPECT_EQ(NULL, v3->add_details().move_view);
+  EXPECT_EQ(nullptr, v3->add_details().move_view);
 
   // Reset everything to the initial state.
   v1.ResetTestState();
@@ -3267,19 +3260,19 @@ TEST_F(ViewTest, ViewHierarchyChanged) {
   EXPECT_TRUE(v1.has_remove_details());
   EXPECT_EQ(&v1, v1.remove_details().parent);
   EXPECT_EQ(v2.get(), v1.remove_details().child);
-  EXPECT_EQ(NULL, v1.remove_details().move_view);
+  EXPECT_EQ(nullptr, v1.remove_details().move_view);
 
   EXPECT_FALSE(v2->has_add_details());
   EXPECT_TRUE(v2->has_remove_details());
   EXPECT_EQ(&v1, v2->remove_details().parent);
   EXPECT_EQ(v2.get(), v2->remove_details().child);
-  EXPECT_EQ(NULL, v2->remove_details().move_view);
+  EXPECT_EQ(nullptr, v2->remove_details().move_view);
 
   EXPECT_FALSE(v3->has_add_details());
   EXPECT_TRUE(v3->has_remove_details());
   EXPECT_EQ(&v1, v3->remove_details().parent);
   EXPECT_EQ(v3, v3->remove_details().child);
-  EXPECT_EQ(NULL, v3->remove_details().move_view);
+  EXPECT_EQ(nullptr, v3->remove_details().move_view);
 
   // Verifies notifications when reparenting a view.
   ObserverView* v4 = new ObserverView();
@@ -3353,7 +3346,7 @@ WidgetObserverView::WidgetObserverView() {
   ResetTestState();
 }
 
-WidgetObserverView::~WidgetObserverView() {}
+WidgetObserverView::~WidgetObserverView() = default;
 
 void WidgetObserverView::ResetTestState() {
   added_to_widget_count_ = 0;
@@ -3496,15 +3489,14 @@ TEST_F(ViewTest, RemoveAllChildViews) {
   for (int i = 0; i < 3; ++i)
     foo->AddChildView(new View);
 
-  EXPECT_EQ(3, root.child_count());
-  EXPECT_EQ(1, child1->child_count());
-  EXPECT_EQ(3, foo->child_count());
+  EXPECT_EQ(3u, root.children().size());
+  EXPECT_EQ(1u, child1->children().size());
+  EXPECT_EQ(3u, foo->children().size());
 
   // Now remove all child views from root.
   root.RemoveAllChildViews(true);
 
-  EXPECT_EQ(0, root.child_count());
-  EXPECT_FALSE(root.has_children());
+  EXPECT_TRUE(root.children().empty());
 }
 
 TEST_F(ViewTest, Contains) {
@@ -3515,17 +3507,17 @@ TEST_F(ViewTest, Contains) {
   v1.AddChildView(v2);
   v2->AddChildView(v3);
 
-  EXPECT_FALSE(v1.Contains(NULL));
+  EXPECT_FALSE(v1.Contains(nullptr));
   EXPECT_TRUE(v1.Contains(&v1));
   EXPECT_TRUE(v1.Contains(v2));
   EXPECT_TRUE(v1.Contains(v3));
 
-  EXPECT_FALSE(v2->Contains(NULL));
+  EXPECT_FALSE(v2->Contains(nullptr));
   EXPECT_TRUE(v2->Contains(v2));
   EXPECT_FALSE(v2->Contains(&v1));
   EXPECT_TRUE(v2->Contains(v3));
 
-  EXPECT_FALSE(v3->Contains(NULL));
+  EXPECT_FALSE(v3->Contains(nullptr));
   EXPECT_TRUE(v3->Contains(v3));
   EXPECT_FALSE(v3->Contains(&v1));
   EXPECT_FALSE(v3->Contains(v2));
@@ -3550,19 +3542,19 @@ TEST_F(ViewTest, GetIndexOf) {
   View* foo1 = new View;
   child1->AddChildView(foo1);
 
-  EXPECT_EQ(-1, root.GetIndexOf(NULL));
+  EXPECT_EQ(-1, root.GetIndexOf(nullptr));
   EXPECT_EQ(-1, root.GetIndexOf(&root));
   EXPECT_EQ(0, root.GetIndexOf(child1));
   EXPECT_EQ(1, root.GetIndexOf(child2));
   EXPECT_EQ(-1, root.GetIndexOf(foo1));
 
-  EXPECT_EQ(-1, child1->GetIndexOf(NULL));
+  EXPECT_EQ(-1, child1->GetIndexOf(nullptr));
   EXPECT_EQ(-1, child1->GetIndexOf(&root));
   EXPECT_EQ(-1, child1->GetIndexOf(child1));
   EXPECT_EQ(-1, child1->GetIndexOf(child2));
   EXPECT_EQ(0, child1->GetIndexOf(foo1));
 
-  EXPECT_EQ(-1, child2->GetIndexOf(NULL));
+  EXPECT_EQ(-1, child2->GetIndexOf(nullptr));
   EXPECT_EQ(-1, child2->GetIndexOf(&root));
   EXPECT_EQ(-1, child2->GetIndexOf(child2));
   EXPECT_EQ(-1, child2->GetIndexOf(child1));
@@ -3587,7 +3579,7 @@ TEST_F(ViewTest, ReorderChildren) {
   ASSERT_EQ(2, child->GetIndexOf(foo3));
   ASSERT_EQ(foo2, foo1->GetNextFocusableView());
   ASSERT_EQ(foo3, foo2->GetNextFocusableView());
-  ASSERT_EQ(NULL, foo3->GetNextFocusableView());
+  ASSERT_EQ(nullptr, foo3->GetNextFocusableView());
 
   // Move |foo2| at the end.
   child->ReorderChildView(foo2, -1);
@@ -3596,14 +3588,14 @@ TEST_F(ViewTest, ReorderChildren) {
   ASSERT_EQ(2, child->GetIndexOf(foo2));
   ASSERT_EQ(foo3, foo1->GetNextFocusableView());
   ASSERT_EQ(foo2, foo3->GetNextFocusableView());
-  ASSERT_EQ(NULL, foo2->GetNextFocusableView());
+  ASSERT_EQ(nullptr, foo2->GetNextFocusableView());
 
   // Move |foo1| at the end.
   child->ReorderChildView(foo1, -1);
   ASSERT_EQ(0, child->GetIndexOf(foo3));
   ASSERT_EQ(1, child->GetIndexOf(foo2));
   ASSERT_EQ(2, child->GetIndexOf(foo1));
-  ASSERT_EQ(NULL, foo1->GetNextFocusableView());
+  ASSERT_EQ(nullptr, foo1->GetNextFocusableView());
   ASSERT_EQ(foo2, foo1->GetPreviousFocusableView());
   ASSERT_EQ(foo2, foo3->GetNextFocusableView());
   ASSERT_EQ(foo1, foo2->GetNextFocusableView());
@@ -3613,7 +3605,7 @@ TEST_F(ViewTest, ReorderChildren) {
   ASSERT_EQ(0, child->GetIndexOf(foo2));
   ASSERT_EQ(1, child->GetIndexOf(foo3));
   ASSERT_EQ(2, child->GetIndexOf(foo1));
-  ASSERT_EQ(NULL, foo1->GetNextFocusableView());
+  ASSERT_EQ(nullptr, foo1->GetNextFocusableView());
   ASSERT_EQ(foo3, foo1->GetPreviousFocusableView());
   ASSERT_EQ(foo3, foo2->GetNextFocusableView());
   ASSERT_EQ(foo1, foo3->GetNextFocusableView());
@@ -3653,8 +3645,9 @@ TEST_F(ViewTest, GetViewByID) {
   EXPECT_EQ(&v2, v1.GetViewByID(kV2ID));
   EXPECT_EQ(&v4, v1.GetViewByID(kV4ID));
 
-  EXPECT_EQ(NULL, v1.GetViewByID(kV5ID));  // No V5 exists.
-  EXPECT_EQ(NULL, v2.GetViewByID(kV1ID));  // It can get only from child views.
+  EXPECT_EQ(nullptr, v1.GetViewByID(kV5ID));  // No V5 exists.
+  EXPECT_EQ(nullptr,
+            v2.GetViewByID(kV1ID));  // It can get only from child views.
 
   const int kGroup = 1;
   v3.SetGroup(kGroup);
@@ -3691,10 +3684,10 @@ TEST_F(ViewTest, AddExistingChild) {
   EXPECT_EQ(0, v1.GetIndexOf(&v2));
   EXPECT_EQ(1, v1.GetIndexOf(&v3));
 
-  // Check that calling |AddChildView()| does not change the order.
+  // Check that calling AddChildView() moves to the end.
   v1.AddChildView(&v2);
-  EXPECT_EQ(0, v1.GetIndexOf(&v2));
-  EXPECT_EQ(1, v1.GetIndexOf(&v3));
+  EXPECT_EQ(1, v1.GetIndexOf(&v2));
+  EXPECT_EQ(0, v1.GetIndexOf(&v3));
   v1.AddChildView(&v3);
   EXPECT_EQ(0, v1.GetIndexOf(&v2));
   EXPECT_EQ(1, v1.GetIndexOf(&v3));
@@ -3708,8 +3701,8 @@ TEST_F(ViewTest, AddExistingChild) {
 // status.
 class ActiveWidget : public Widget {
  public:
-  ActiveWidget() {}
-  ~ActiveWidget() override {}
+  ActiveWidget() = default;
+  ~ActiveWidget() override = default;
 
   bool IsActive() const override { return true; }
 
@@ -3777,7 +3770,7 @@ class TestLayerAnimator : public ui::LayerAnimator {
   void SetBounds(const gfx::Rect& bounds) override;
 
  protected:
-  ~TestLayerAnimator() override {}
+  ~TestLayerAnimator() override = default;
 
  private:
   gfx::Rect last_bounds_;
@@ -3797,9 +3790,9 @@ void TestLayerAnimator::SetBounds(const gfx::Rect& bounds) {
 
 class ViewLayerTest : public ViewsTestBase {
  public:
-  ViewLayerTest() : widget_(NULL) {}
+  ViewLayerTest() = default;
 
-  ~ViewLayerTest() override {}
+  ~ViewLayerTest() override = default;
 
   // Returns the Layer used by the RootView.
   ui::Layer* GetRootLayer() {
@@ -3826,7 +3819,7 @@ class ViewLayerTest : public ViewsTestBase {
 
   virtual void SetUpPixelCanvas() {
     scoped_feature_list_.InitAndDisableFeature(
-        features::kEnablePixelCanvasRecording);
+        ::features::kEnablePixelCanvasRecording);
   }
 
  protected:
@@ -3834,10 +3827,72 @@ class ViewLayerTest : public ViewsTestBase {
   void SchedulePaintOnParent(View* view) { view->SchedulePaintOnParent(); }
 
  private:
-  Widget* widget_;
+  Widget* widget_ = nullptr;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+TEST_F(ViewLayerTest, LayerCreationAndDestruction) {
+  View view;
+  EXPECT_EQ(nullptr, view.layer());
+
+  view.SetPaintToLayer();
+  EXPECT_NE(nullptr, view.layer());
+
+  view.DestroyLayer();
+  EXPECT_EQ(nullptr, view.layer());
+}
+
+TEST_F(ViewLayerTest, SetTransformCreatesAndDestroysLayer) {
+  View view;
+  EXPECT_EQ(nullptr, view.layer());
+
+  // Set an arbitrary non-identity transform, which should cause a layer to be
+  // created.
+  gfx::Transform transform;
+  transform.Translate(1.0, 1.0);
+  view.SetTransform(transform);
+  EXPECT_NE(nullptr, view.layer());
+
+  // Set the identity transform, which should destroy the layer.
+  view.SetTransform(gfx::Transform());
+  EXPECT_EQ(nullptr, view.layer());
+}
+
+// Verify that setting an identity transform after SetPaintToLayer() has been
+// called doesn't destroy the layer.
+TEST_F(ViewLayerTest, IdentityTransformDoesntOverrideSetPaintToLayer) {
+  View view;
+  EXPECT_EQ(nullptr, view.layer());
+
+  view.SetPaintToLayer();
+  EXPECT_NE(nullptr, view.layer());
+
+  gfx::Transform transform;
+  transform.Translate(1.0, 1.0);
+  view.SetTransform(transform);
+  EXPECT_NE(nullptr, view.layer());
+
+  view.SetTransform(transform);
+  EXPECT_NE(nullptr, view.layer());
+}
+
+// Verify that calling DestroyLayer() while a non-identity transform is present
+// doesn't destroy the layer.
+TEST_F(ViewLayerTest, DestroyLayerDoesntOverrideTransform) {
+  View view;
+  EXPECT_EQ(nullptr, view.layer());
+
+  view.SetPaintToLayer();
+  EXPECT_NE(nullptr, view.layer());
+
+  gfx::Transform transform;
+  transform.Translate(1.0, 1.0);
+  view.SetTransform(transform);
+  EXPECT_NE(nullptr, view.layer());
+
+  view.DestroyLayer();
+  EXPECT_NE(nullptr, view.layer());
+}
 
 TEST_F(ViewLayerTest, LayerToggling) {
   // Because we lazily create textures the calls to DrawTree are necessary to
@@ -3849,28 +3904,28 @@ TEST_F(ViewLayerTest, LayerToggling) {
   // Create v1, give it a bounds and verify everything is set up correctly.
   View* v1 = new View;
   v1->SetPaintToLayer();
-  EXPECT_TRUE(v1->layer() != NULL);
+  EXPECT_TRUE(v1->layer() != nullptr);
   v1->SetBoundsRect(gfx::Rect(20, 30, 140, 150));
   content_view->AddChildView(v1);
-  ASSERT_TRUE(v1->layer() != NULL);
+  ASSERT_TRUE(v1->layer() != nullptr);
   EXPECT_EQ(root_layer, v1->layer()->parent());
   EXPECT_EQ(gfx::Rect(20, 30, 140, 150), v1->layer()->bounds());
 
   // Create v2 as a child of v1 and do basic assertion testing.
   View* v2 = new View;
   v1->AddChildView(v2);
-  EXPECT_TRUE(v2->layer() == NULL);
+  EXPECT_TRUE(v2->layer() == nullptr);
   v2->SetBoundsRect(gfx::Rect(10, 20, 30, 40));
   v2->SetPaintToLayer();
-  ASSERT_TRUE(v2->layer() != NULL);
+  ASSERT_TRUE(v2->layer() != nullptr);
   EXPECT_EQ(v1->layer(), v2->layer()->parent());
   EXPECT_EQ(gfx::Rect(10, 20, 30, 40), v2->layer()->bounds());
 
   // Turn off v1s layer. v2 should still have a layer but its parent should have
   // changed.
   v1->DestroyLayer();
-  EXPECT_TRUE(v1->layer() == NULL);
-  EXPECT_TRUE(v2->layer() != NULL);
+  EXPECT_TRUE(v1->layer() == nullptr);
+  EXPECT_TRUE(v2->layer() != nullptr);
   EXPECT_EQ(root_layer, v2->layer()->parent());
   ASSERT_EQ(1u, root_layer->children().size());
   EXPECT_EQ(root_layer->children()[0], v2->layer());
@@ -3882,8 +3937,8 @@ TEST_F(ViewLayerTest, LayerToggling) {
   gfx::Transform transform;
   transform.Scale(2.0, 2.0);
   v1->SetTransform(transform);
-  EXPECT_TRUE(v1->layer() != NULL);
-  EXPECT_TRUE(v2->layer() != NULL);
+  EXPECT_TRUE(v1->layer() != nullptr);
+  EXPECT_TRUE(v2->layer() != nullptr);
   EXPECT_EQ(root_layer, v1->layer()->parent());
   EXPECT_EQ(v1->layer(), v2->layer()->parent());
   ASSERT_EQ(1u, root_layer->children().size());
@@ -3906,7 +3961,7 @@ TEST_F(ViewLayerTest, NestedLayerToggling) {
 
   View* v3 = v2->AddChildView(std::make_unique<View>());
   v3->SetPaintToLayer();
-  ASSERT_TRUE(v3->layer() != NULL);
+  ASSERT_TRUE(v3->layer() != nullptr);
 
   // At this point we have v1-v2-v3. v3 has a layer, v1 and v2 don't.
 
@@ -3920,7 +3975,7 @@ TEST_F(ViewLayerTest, LayerAnimator) {
 
   View* v1 = content_view->AddChildView(std::make_unique<View>());
   v1->SetPaintToLayer();
-  EXPECT_TRUE(v1->layer() != NULL);
+  EXPECT_TRUE(v1->layer() != nullptr);
 
   TestLayerAnimator* animator = new TestLayerAnimator();
   v1->layer()->SetAnimator(animator);
@@ -3944,7 +3999,7 @@ TEST_F(ViewLayerTest, BoundsChangeWithLayer) {
   View* v2 = v1->AddChildView(std::make_unique<View>());
   v2->SetBoundsRect(gfx::Rect(10, 11, 40, 50));
   v2->SetPaintToLayer();
-  ASSERT_TRUE(v2->layer() != NULL);
+  ASSERT_TRUE(v2->layer() != nullptr);
   EXPECT_EQ(gfx::Rect(30, 41, 40, 50), v2->layer()->bounds());
 
   v1->SetPosition(gfx::Point(25, 36));
@@ -4098,7 +4153,7 @@ TEST_F(ViewLayerTest, ResetTransformOnLayerAfterAdd) {
   view->SetTransform(transform);
   widget()->SetContentsView(view);
   EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
-  ASSERT_TRUE(view->layer() != NULL);
+  ASSERT_TRUE(view->layer() != nullptr);
   EXPECT_EQ(2.0f, view->layer()->transform().matrix().get(0, 0));
 
   View* parent = view->parent();
@@ -4106,7 +4161,7 @@ TEST_F(ViewLayerTest, ResetTransformOnLayerAfterAdd) {
   parent->AddChildView(view);
 
   EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
-  ASSERT_TRUE(view->layer() != NULL);
+  ASSERT_TRUE(view->layer() != nullptr);
   EXPECT_EQ(2.0f, view->layer()->transform().matrix().get(0, 0));
 }
 
@@ -4168,7 +4223,7 @@ TEST_F(ViewLayerTest, OrphanLayerAfterViewRemove) {
   // Reparent |v2|.
   content_view->AddChildView(v2);
   delete v1;
-  v1 = NULL;
+  v1 = nullptr;
   EXPECT_TRUE(LayerIsAncestor(widget()->GetCompositor()->root_layer(),
                               v2->layer()));
   EXPECT_TRUE(v2->layer()->IsDrawn());
@@ -4176,8 +4231,7 @@ TEST_F(ViewLayerTest, OrphanLayerAfterViewRemove) {
 
 class PaintTrackingView : public View {
  public:
-  PaintTrackingView() : painted_(false) {
-  }
+  PaintTrackingView() = default;
 
   bool painted() const { return painted_; }
   void set_painted(bool value) { painted_ = value; }
@@ -4185,7 +4239,7 @@ class PaintTrackingView : public View {
   void OnPaint(gfx::Canvas* canvas) override { painted_ = true; }
 
  private:
-  bool painted_;
+  bool painted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PaintTrackingView);
 };
@@ -4428,7 +4482,7 @@ TEST_F(ViewLayerTest, RecreateLayerMovesNonViewChildren) {
   View child;
   child.SetPaintToLayer();
   v.AddChildView(&child);
-  ASSERT_TRUE(v.layer() != NULL);
+  ASSERT_TRUE(v.layer() != nullptr);
   ASSERT_EQ(1u, v.layer()->children().size());
   EXPECT_EQ(v.layer()->children()[0], child.layer());
 
@@ -4439,11 +4493,11 @@ TEST_F(ViewLayerTest, RecreateLayerMovesNonViewChildren) {
   std::unique_ptr<ui::Layer> old_layer(v.RecreateLayer());
 
   // All children should be moved from old layer to new layer.
-  ASSERT_TRUE(old_layer.get() != NULL);
+  ASSERT_TRUE(old_layer.get() != nullptr);
   EXPECT_TRUE(old_layer->children().empty());
 
   // And new layer should have the two children.
-  ASSERT_TRUE(v.layer() != NULL);
+  ASSERT_TRUE(v.layer() != nullptr);
   ASSERT_EQ(2u, v.layer()->children().size());
   EXPECT_EQ(v.layer()->children()[0], &layer);
   EXPECT_EQ(v.layer()->children()[1], child.layer());
@@ -4529,13 +4583,13 @@ class PaintLayerView : public View {
 
 class ViewLayerPixelCanvasTest : public ViewLayerTest {
  public:
-  ViewLayerPixelCanvasTest() {}
+  ViewLayerPixelCanvasTest() = default;
 
-  ~ViewLayerPixelCanvasTest() override {}
+  ~ViewLayerPixelCanvasTest() override = default;
 
   void SetUpPixelCanvas() override {
     scoped_feature_list_.InitAndEnableFeature(
-        features::kEnablePixelCanvasRecording);
+        ::features::kEnablePixelCanvasRecording);
   }
 
   // Test if the recording rects are same with and without layer.
@@ -4676,8 +4730,9 @@ TEST_F(ViewTest, OnNativeThemeChanged) {
 
 class TestEventHandler : public ui::EventHandler {
  public:
-  TestEventHandler(TestView* view) : view_(view), had_mouse_event_(false) {}
-  ~TestEventHandler() override {}
+  explicit TestEventHandler(TestView* view)
+      : view_(view), had_mouse_event_(false) {}
+  ~TestEventHandler() override = default;
 
   void OnMouseEvent(ui::MouseEvent* event) override {
     // The |view_| should have received the event first.
@@ -4729,7 +4784,7 @@ TEST_F(ViewTest, ScopedTargetHandlerReceivesEvents) {
 class WidgetWithCustomTheme : public Widget {
  public:
   explicit WidgetWithCustomTheme(ui::NativeTheme* theme) : theme_(theme) {}
-  ~WidgetWithCustomTheme() override {}
+  ~WidgetWithCustomTheme() override = default;
 
   // Widget:
   const ui::NativeTheme* GetNativeTheme() const override { return theme_; }
@@ -4744,7 +4799,7 @@ class WidgetWithCustomTheme : public Widget {
 class ViewThatAddsViewInOnNativeThemeChanged : public View {
  public:
   ViewThatAddsViewInOnNativeThemeChanged() { SetPaintToLayer(); }
-  ~ViewThatAddsViewInOnNativeThemeChanged() override {}
+  ~ViewThatAddsViewInOnNativeThemeChanged() override = default;
 
   bool on_native_theme_changed_called() const {
     return on_native_theme_changed_called_;
@@ -4847,23 +4902,15 @@ class OrderableView : public View {
   // ID used by the children that are stacked above other children.
   static constexpr int VIEW_ID_RAISED = 1000;
 
-  OrderableView() : View() {}
-  ~OrderableView() override {}
+  OrderableView() = default;
+  ~OrderableView() override = default;
 
   View::Views GetChildrenInZOrder() override {
-    View::Views children;
-    // Iterate over regular children and later over the raised children to
-    // create a custom Z-order.
-    for (int i = 0; i < child_count(); ++i) {
-      if (child_at(i)->id() != VIEW_ID_RAISED)
-        children.push_back(child_at(i));
-    }
-    for (int i = 0; i < child_count(); ++i) {
-      if (child_at(i)->id() == VIEW_ID_RAISED)
-        children.push_back(child_at(i));
-    }
-    DCHECK_EQ(child_count(), static_cast<int>(children.size()));
-    return children;
+    View::Views children_in_z_order = children();
+    std::stable_partition(
+        children_in_z_order.begin(), children_in_z_order.end(),
+        [](const View* child) { return child->id() != VIEW_ID_RAISED; });
+    return children_in_z_order;
   }
 
  private:
@@ -4934,25 +4981,44 @@ TEST_F(ViewTest, AttachChildViewWithComplicatedLayers) {
   EXPECT_EQ(layers_after_attached[1], child_view1->layer());
 }
 
+TEST_F(ViewTest, TestEnabledPropertyMetadata) {
+  View test_view;
+  bool enabled_changed = false;
+  auto subscription = test_view.AddEnabledChangedCallback(base::BindRepeating(
+      [](bool* enabled_changed) { *enabled_changed = true; },
+      &enabled_changed));
+  views::metadata::ClassMetaData* view_metadata = View::MetaData();
+  ASSERT_TRUE(view_metadata);
+  views::metadata::MemberMetaDataBase* enabled_property =
+      view_metadata->FindMemberData("Enabled");
+  ASSERT_TRUE(enabled_property);
+  base::string16 false_value = base::ASCIIToUTF16("false");
+  enabled_property->SetValueAsString(&test_view, false_value);
+  EXPECT_TRUE(enabled_changed);
+  EXPECT_FALSE(test_view.GetEnabled());
+  EXPECT_EQ(enabled_property->GetValueAsString(&test_view), false_value);
+}
+
+TEST_F(ViewTest, TestEnabledChangedCallback) {
+  View test_view;
+  bool enabled_changed = false;
+  auto subscription = test_view.AddEnabledChangedCallback(base::BindRepeating(
+      [](bool* enabled_changed) { *enabled_changed = true; },
+      &enabled_changed));
+  test_view.SetEnabled(false);
+  EXPECT_TRUE(enabled_changed);
+  EXPECT_FALSE(test_view.GetEnabled());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Observer tests.
 ////////////////////////////////////////////////////////////////////////////////
 
 class ViewObserverTest : public ViewTest, public ViewObserver {
  public:
-  ViewObserverTest()
-      : child_view_added_times_(0),
-        child_view_removed_times_(0),
-        child_view_added_parent_(nullptr),
-        child_view_added_(nullptr),
-        child_view_removed_(nullptr),
-        child_view_removed_parent_(nullptr),
-        view_visibility_changed_(nullptr),
-        view_enabled_changed_(nullptr),
-        view_bounds_changed_(nullptr),
-        view_reordered_(nullptr) {}
+  ViewObserverTest() = default;
 
-  ~ViewObserverTest() override {}
+  ~ViewObserverTest() override = default;
 
   // ViewObserver:
   void OnChildViewAdded(View* parent, View* child) override {
@@ -4966,12 +5032,9 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
     child_view_removed_parent_ = parent;
   }
 
-  void OnViewVisibilityChanged(View* view) override {
+  void OnViewVisibilityChanged(View* view, View* starting_view) override {
     view_visibility_changed_ = view;
-  }
-
-  void OnViewEnabledChanged(View* view) override {
-    view_enabled_changed_ = view;
+    view_visibility_changed_starting_ = starting_view;
   }
 
   void OnViewBoundsChanged(View* view) override { view_bounds_changed_ = view; }
@@ -4988,7 +5051,6 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
     child_view_removed_ = nullptr;
     child_view_removed_parent_ = nullptr;
     view_visibility_changed_ = nullptr;
-    view_enabled_changed_ = nullptr;
     view_bounds_changed_ = nullptr;
     view_reordered_ = nullptr;
   }
@@ -5012,22 +5074,24 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
   const View* view_visibility_changed() const {
     return view_visibility_changed_;
   }
-  const View* view_enabled_changed() const { return view_enabled_changed_; }
+  const View* view_visibility_changed_starting() const {
+    return view_visibility_changed_starting_;
+  }
   const View* view_bounds_changed() const { return view_bounds_changed_; }
   const View* view_reordered() const { return view_reordered_; }
 
  private:
-  int child_view_added_times_;
-  int child_view_removed_times_;
+  int child_view_added_times_ = 0;
+  int child_view_removed_times_ = 0;
 
-  View* child_view_added_parent_;
-  View* child_view_added_;
-  View* child_view_removed_;
-  View* child_view_removed_parent_;
-  View* view_visibility_changed_;
-  View* view_enabled_changed_;
-  View* view_bounds_changed_;
-  View* view_reordered_;
+  View* child_view_added_parent_ = nullptr;
+  View* child_view_added_ = nullptr;
+  View* child_view_removed_ = nullptr;
+  View* child_view_removed_parent_ = nullptr;
+  View* view_visibility_changed_ = nullptr;
+  View* view_visibility_changed_starting_ = nullptr;
+  View* view_bounds_changed_ = nullptr;
+  View* view_reordered_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ViewObserverTest);
 };
@@ -5064,17 +5128,26 @@ TEST_F(ViewObserverTest, ViewParentChanged) {
 }
 
 TEST_F(ViewObserverTest, ViewVisibilityChanged) {
-  std::unique_ptr<View> view = NewView();
-  view->SetVisible(false);
-  EXPECT_EQ(view.get(), view_visibility_changed());
-  EXPECT_FALSE(view->visible());
-}
+  std::unique_ptr<View> parent(new View);
+  View* view = parent->AddChildView(NewView());
 
-TEST_F(ViewObserverTest, ViewEnabledChanged) {
-  std::unique_ptr<View> view = NewView();
-  view->SetEnabled(false);
-  EXPECT_EQ(view.get(), view_enabled_changed());
-  EXPECT_FALSE(view->enabled());
+  // Ensure setting |view| itself not visible calls the observer.
+  view->SetVisible(false);
+  EXPECT_EQ(view, view_visibility_changed());
+  EXPECT_EQ(view, view_visibility_changed_starting());
+  reset();
+
+  // Ditto for setting it visible.
+  view->SetVisible(true);
+  EXPECT_EQ(view, view_visibility_changed());
+  EXPECT_EQ(view, view_visibility_changed_starting());
+  reset();
+
+  // Ensure setting |parent| not visible also calls the
+  // observer. |view->visible()| should still return true however.
+  parent->SetVisible(false);
+  EXPECT_EQ(view, view_visibility_changed());
+  EXPECT_EQ(parent.get(), view_visibility_changed_starting());
 }
 
 TEST_F(ViewObserverTest, ViewBoundsChanged) {
@@ -5104,8 +5177,7 @@ TEST_F(ViewObserverTest, ChildViewReordered) {
 // notifications from child views.
 class TestParentView : public View {
  public:
-  TestParentView()
-      : received_layer_change_notification_(false), layer_change_count_(0) {}
+  TestParentView() = default;
 
   void Reset() {
     received_layer_change_notification_ = false;
@@ -5127,10 +5199,10 @@ class TestParentView : public View {
  private:
   // Set to true if we receive the OnChildLayerChanged() notification for a
   // child.
-  bool received_layer_change_notification_;
+  bool received_layer_change_notification_ = false;
 
   // Contains the number of OnChildLayerChanged() notifications for a child.
-  int layer_change_count_;
+  int layer_change_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestParentView);
 };

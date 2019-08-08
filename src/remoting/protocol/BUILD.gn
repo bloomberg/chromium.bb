@@ -207,6 +207,7 @@ static_library("protocol") {
     "//remoting/signaling",
     "//third_party/boringssl",
     "//third_party/libyuv",
+    "//ui/events:dom_keycode_converter",
   ]
 
   defines = []

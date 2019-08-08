@@ -66,6 +66,10 @@ using base::UserMetricsAction;
       RecordAction(UserMetricsAction("MobileMenuAddToBookmarks"));
       [self.dispatcher bookmarkPage];
       break;
+    case PopupMenuActionTranslate:
+      base::RecordAction(UserMetricsAction("MobileMenuTranslate"));
+      [self.dispatcher showTranslate];
+      break;
     case PopupMenuActionFindInPage:
       RecordAction(UserMetricsAction("MobileMenuFindInPage"));
       [self.dispatcher showFindInPage];

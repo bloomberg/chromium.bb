@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/js_based_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_handler_non_null.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -104,7 +103,7 @@ class CORE_EXPORT JSEventHandler : public JSBasedEventListener {
                       Event&,
                       v8::Local<v8::Value> js_event) override;
 
-  TraceWrapperMember<V8EventHandlerNonNull> event_handler_;
+  Member<V8EventHandlerNonNull> event_handler_;
   const HandlerType type_;
 };
 

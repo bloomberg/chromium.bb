@@ -23,8 +23,7 @@ class KioskAutolaunchScreen : public BaseScreen,
   enum class Result { COMPLETED, CANCELED };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
-  KioskAutolaunchScreen(BaseScreenDelegate* base_screen_delegate,
-                        KioskAutolaunchScreenView* view,
+  KioskAutolaunchScreen(KioskAutolaunchScreenView* view,
                         const ScreenExitCallback& exit_callback);
   ~KioskAutolaunchScreen() override;
 

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_stream_impl.h"
 
 #include <utility>
-#include "net/third_party/quic/core/quic_error_codes.h"
+#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {

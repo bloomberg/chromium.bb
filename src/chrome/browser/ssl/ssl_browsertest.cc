@@ -127,6 +127,7 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
@@ -193,9 +194,6 @@ using security_interstitials::SecurityInterstitialControllerClient;
 using web_modal::WebContentsModalDialogManager;
 
 namespace {
-
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
 
 const int kLargeVersionId = 0xFFFFFF;
 
@@ -530,11 +528,11 @@ class SSLUITestBase : public InProcessBrowserTest,
         https_server_ocsp_ok_(
             net::SpawnedTestServer::TYPE_HTTPS,
             GetOCSPSSLOptions(net::SpawnedTestServer::SSLOptions::OCSP_OK),
-            base::FilePath(kDocRoot)),
+            GetChromeTestDataDir()),
         https_server_ocsp_revoked_(
             net::SpawnedTestServer::TYPE_HTTPS,
             GetOCSPSSLOptions(net::SpawnedTestServer::SSLOptions::OCSP_REVOKED),
-            base::FilePath(kDocRoot)),
+            GetChromeTestDataDir()),
         wss_server_expired_(net::SpawnedTestServer::TYPE_WSS,
                             SSLOptions(SSLOptions::CERT_EXPIRED),
                             net::GetWebSocketTestDataDirectory()),
@@ -542,21 +540,21 @@ class SSLUITestBase : public InProcessBrowserTest,
                                SSLOptions(SSLOptions::CERT_MISMATCHED_NAME),
                                net::GetWebSocketTestDataDirectory()),
         binding_(this) {
-    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
     https_server_expired_.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-    https_server_expired_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_expired_.AddDefaultHandlers(GetChromeTestDataDir());
 
     https_server_mismatched_.SetSSLConfig(
         net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-    https_server_mismatched_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_mismatched_.AddDefaultHandlers(GetChromeTestDataDir());
 
     https_server_sha1_.SetSSLConfig(net::EmbeddedTestServer::CERT_SHA1_LEAF);
-    https_server_sha1_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_sha1_.AddDefaultHandlers(GetChromeTestDataDir());
 
     https_server_common_name_only_.SetSSLConfig(
         net::EmbeddedTestServer::CERT_COMMON_NAME_ONLY);
-    https_server_common_name_only_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_common_name_only_.AddDefaultHandlers(GetChromeTestDataDir());
 
     // Sometimes favicons load before tests check the authentication
     // state, and sometimes they load after. This is problematic on
@@ -2012,27 +2010,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SymantecEnforcementIsNotDisabled) {
                    ->initial_ssl_config->symantec_enforcement_disabled);
 }
 
-// Enables support for Symantec's Legacy PKI via policy, and then ensures that
-// the SSLConfig is configured to trust the Legacy PKI.
-IN_PROC_BROWSER_TEST_P(SSLUITest, SymantecPrefsCanEnable) {
-  EXPECT_FALSE(last_ssl_config_.symantec_enforcement_disabled);
-  EXPECT_FALSE(CreateDefaultNetworkContextParams()
-                   ->initial_ssl_config->symantec_enforcement_disabled);
-
-  // Enable, and make sure the default network context params reflect the
-  // change.
-  base::RunLoop run_loop;
-  set_ssl_config_updated_callback(run_loop.QuitClosure());
-  ASSERT_NO_FATAL_FAILURE(
-      EnablePolicy(g_browser_process->local_state(),
-                   policy::key::kEnableSymantecLegacyInfrastructure,
-                   prefs::kCertEnableSymantecLegacyInfrastructure));
-  run_loop.Run();
-  EXPECT_TRUE(last_ssl_config_.symantec_enforcement_disabled);
-  EXPECT_TRUE(CreateDefaultNetworkContextParams()
-                  ->initial_ssl_config->symantec_enforcement_disabled);
-}
-
 class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
  public:
   CertificateTransparencySSLUITest()
@@ -2043,7 +2020,7 @@ class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
   void SetUpOnMainThread() override {
     CertVerifierBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
-    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
   }
 
   void SetUp() override {
@@ -2262,9 +2239,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, MarkFileAsNonSecure) {
   ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(browser(), GURL("file:///"));
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::NONE, security_info.security_level);
+  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
 // Ensure that about-protocol origins are marked as neutral when the
@@ -2285,9 +2260,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, MarkAboutAsNonSecure) {
   ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::NONE, security_info.security_level);
+  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
 // Data URLs should always be marked as non-secure.
@@ -2301,9 +2274,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, MarkDataAsNonSecure) {
   ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/plain,hello"));
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
 }
 
 // Ensure that HTTP-protocol origins are marked as Dangerous when the
@@ -2327,9 +2298,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, MarkHTTPAsDangerous) {
   SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
   ASSERT_TRUE(helper);
 
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
 }
 
 // Ensure that blob-protocol origins are marked as neutral when the
@@ -2352,9 +2321,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, MarkBlobAsNonSecure) {
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("blob:chrome://newtab/49a463bb-fac8-476c-97bf-5d7076c3ea1a"));
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::NONE, security_info.security_level);
+  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
 #if defined(USE_NSS_CERTS)
@@ -2458,8 +2425,8 @@ class ClientCertStoreStub : public net::ClientCertStore {
 
   // net::ClientCertStore:
   void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
-                      const ClientCertListCallback& callback) override {
-    callback.Run(std::move(list_));
+                      ClientCertListCallback callback) override {
+    std::move(callback).Run(std::move(list_));
   }
 
  private:
@@ -3959,12 +3926,12 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
 
   SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
   ASSERT_TRUE(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
-            security_info.mixed_content_status);
-  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
-            security_info.content_with_cert_errors_status);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  EXPECT_FALSE(visible_security_state->ran_mixed_content);
+  EXPECT_FALSE(visible_security_state->displayed_mixed_content);
+  EXPECT_FALSE(visible_security_state->ran_content_with_cert_errors);
+  EXPECT_FALSE(visible_security_state->displayed_content_with_cert_errors);
 
   const base::string16 loaded_title = base::ASCIIToUTF16("LOADED");
   const base::string16 failed_title = base::ASCIIToUTF16("FAILED");
@@ -3980,11 +3947,11 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
   EXPECT_EQ(loaded_title, watcher.WaitAndGetTitle());
   CheckAuthenticationBrokenState(tab, CertError::NONE, AuthState::NONE);
 
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
-            security_info.mixed_content_status);
-  EXPECT_EQ(security_state::CONTENT_STATUS_RAN,
-            security_info.content_with_cert_errors_status);
+  visible_security_state = helper->GetVisibleSecurityState();
+  EXPECT_FALSE(visible_security_state->ran_mixed_content);
+  EXPECT_FALSE(visible_security_state->displayed_mixed_content);
+  EXPECT_TRUE(visible_security_state->ran_content_with_cert_errors);
+  EXPECT_FALSE(visible_security_state->displayed_content_with_cert_errors);
 }
 
 // This test checks the behavior of mixed content blocking for the requests
@@ -4182,12 +4149,12 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestUnsafeContentsWithUserException) {
 
   SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
   ASSERT_TRUE(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
-            security_info.mixed_content_status);
-  EXPECT_EQ(security_state::CONTENT_STATUS_DISPLAYED_AND_RAN,
-            security_info.content_with_cert_errors_status);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  EXPECT_FALSE(visible_security_state->ran_mixed_content);
+  EXPECT_FALSE(visible_security_state->displayed_mixed_content);
+  EXPECT_TRUE(visible_security_state->ran_content_with_cert_errors);
+  EXPECT_TRUE(visible_security_state->displayed_content_with_cert_errors);
 
   int img_width;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -4216,11 +4183,11 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestUnsafeContentsWithUserException) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
                                  AuthState::NONE);
 
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
-            security_info.mixed_content_status);
-  EXPECT_EQ(security_state::CONTENT_STATUS_DISPLAYED_AND_RAN,
-            security_info.content_with_cert_errors_status);
+  visible_security_state = helper->GetVisibleSecurityState();
+  EXPECT_FALSE(visible_security_state->ran_mixed_content);
+  EXPECT_FALSE(visible_security_state->displayed_mixed_content);
+  EXPECT_TRUE(visible_security_state->ran_content_with_cert_errors);
+  EXPECT_TRUE(visible_security_state->displayed_content_with_cert_errors);
 }
 
 // Like the test above, but only displaying inactive content (an image).
@@ -4231,14 +4198,13 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestUnsafeImageWithUserException) {
 
   SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
   ASSERT_TRUE(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
-            security_info.mixed_content_status);
-  EXPECT_EQ(security_state::CONTENT_STATUS_DISPLAYED,
-            security_info.content_with_cert_errors_status);
-  EXPECT_EQ(security_state::NONE, security_info.security_level);
-  EXPECT_EQ(0u, security_info.cert_status);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  EXPECT_FALSE(visible_security_state->ran_mixed_content);
+  EXPECT_FALSE(visible_security_state->displayed_mixed_content);
+  EXPECT_FALSE(visible_security_state->ran_content_with_cert_errors);
+  EXPECT_TRUE(visible_security_state->displayed_content_with_cert_errors);
+  EXPECT_EQ(0u, visible_security_state->cert_status);
 
   int img_width;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -5206,7 +5172,7 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
   net::EmbeddedTestServer https_server_example_domain(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_example_domain.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_server_example_domain.Start());
 
   scoped_refptr<net::X509Certificate> cert =
@@ -5263,7 +5229,7 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
   net::EmbeddedTestServer https_server_example_domain(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_example_domain.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_server_example_domain.Start());
 
   scoped_refptr<net::X509Certificate> cert =
@@ -5315,7 +5281,7 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
   net::EmbeddedTestServer https_server_example_domain(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_example_domain.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_server_example_domain.Start());
 
   scoped_refptr<net::X509Certificate> cert =
@@ -5391,7 +5357,7 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
       base::Bind(&HTTPSToHTTPRedirectHandler, &https_server_example_domain));
 
   https_server_example_domain.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
 
   ASSERT_TRUE(https_server_example_domain.Start());
 
@@ -5444,7 +5410,7 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
   net::EmbeddedTestServer https_server_example_domain(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_example_domain.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_server_example_domain.Start());
 
   scoped_refptr<net::X509Certificate> cert =
@@ -5507,7 +5473,7 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
   net::EmbeddedTestServer https_server_example_domain(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_example_domain.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_server_example_domain.Start());
 
   scoped_refptr<net::X509Certificate> cert =
@@ -5568,7 +5534,7 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
   net::EmbeddedTestServer https_server_example_domain(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_example_domain.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_server_example_domain.Start());
 
   scoped_refptr<net::X509Certificate> cert =
@@ -5654,7 +5620,7 @@ IN_PROC_BROWSER_TEST_F(SSLBlockingPageIDNTest,
 
 IN_PROC_BROWSER_TEST_F(CertVerifierBrowserTest, MockCertVerifierSmokeTest) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
 
   mock_cert_verifier()->set_default_result(
@@ -6337,7 +6303,7 @@ class SSLUICaptivePortalListResourceBundleTest
   SSLUICaptivePortalListResourceBundleTest()
       : CertVerifierBrowserTest(),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    https_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 
   void SetUpOnMainThread() override {
@@ -7108,7 +7074,7 @@ class TLSLegacyVersionSSLUITest : public CertVerifierBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     mock_cert_verifier()->set_default_result(net::OK);
 
-    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
     SetShouldNotRequireCTForTesting();
   }
@@ -7236,6 +7202,49 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SimpleURLLoaderCertError) {
                 partition->GetNetworkContext(),
                 https_server_mismatched_.GetURL("/anchor_download_test.png"),
                 frame->GetProcess()->GetID(), frame->GetRoutingID()));
+}
+
+IN_PROC_BROWSER_TEST_P(SSLUITest, NetworkErrorDoesntRevokeExemptions) {
+  ASSERT_TRUE(https_server_expired_.Start());
+  GURL expired_url = https_server_expired_.GetURL("/title1.html");
+  int server_port = expired_url.IntPort();
+
+  // Navigate to the expired cert URL, make sure we get an interstitial.
+  ui_test_utils::NavigateToURL(browser(), expired_url);
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(IsShowingInterstitial(tab));
+
+  // Click through the interstitial.
+  ProceedThroughInterstitial(tab);
+
+  // Shut down the server and navigate again to cause a network error.
+  ASSERT_TRUE(https_server_expired_.ShutdownAndWaitUntilComplete());
+  ui_test_utils::NavigateToURL(browser(), expired_url);
+
+  // Create a new server in the same url (including port), the certificate
+  // should still be invalid.
+  net::EmbeddedTestServer new_https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  new_https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  new_https_server.AddDefaultHandlers(GetChromeTestDataDir());
+  ASSERT_TRUE(new_https_server.Start(server_port));
+
+  ui_test_utils::NavigateToURL(browser(), expired_url);
+
+  // We shouldn't get an interstitial this time.
+  EXPECT_FALSE(IsShowingInterstitial(tab));
+}
+
+// Checks we don't attempt to show an interstitial (or crash) when visiting an
+// SSL error related page in chrome://network-errors. Regression test for
+// crbug.com/953812
+IN_PROC_BROWSER_TEST_P(SSLUITest, NoInterstitialOnNetworkErrorPage) {
+  GURL invalid_cert_url(content::kChromeUINetworkErrorURL);
+  GURL::Replacements replacements;
+  replacements.SetPathStr("-207");
+  invalid_cert_url = invalid_cert_url.ReplaceComponents(replacements);
+  ui_test_utils::NavigateToURL(browser(), invalid_cert_url);
+  EXPECT_FALSE(IsShowingInterstitial(
+      browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
 // This SPKI hash is from a self signed certificate generated using the

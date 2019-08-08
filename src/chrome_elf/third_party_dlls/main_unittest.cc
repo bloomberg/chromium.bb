@@ -11,10 +11,10 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/hash/sha1.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/scoped_native_library.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -261,7 +261,7 @@ TEST_F(ThirdPartyTest, MAYBE_Base) {
   base::CommandLine cmd_line1 = base::CommandLine::FromString(kTestExeFilename);
   cmd_line1.AppendArgNative(GetBlTestFilePath());
   cmd_line1.AppendArgNative(
-      base::IntToString16(main_unittest_exe::kTestOnlyInitialization));
+      base::NumberToString16(main_unittest_exe::kTestOnlyInitialization));
 
   int exit_code = 0;
   LaunchChildAndWait(cmd_line1, &exit_code);
@@ -272,7 +272,7 @@ TEST_F(ThirdPartyTest, MAYBE_Base) {
   base::CommandLine cmd_line2 = base::CommandLine::FromString(kTestExeFilename);
   cmd_line2.AppendArgNative(GetBlTestFilePath());
   cmd_line2.AppendArgNative(
-      base::IntToString16(main_unittest_exe::kTestSingleDllLoad));
+      base::NumberToString16(main_unittest_exe::kTestSingleDllLoad));
   cmd_line2.AppendArgNative(MakePath(GetExeDir(), kTestDllName1));
 
   LaunchChildAndWait(cmd_line2, &exit_code);
@@ -296,7 +296,7 @@ TEST_F(ThirdPartyTest, MAYBE_Base) {
   base::CommandLine cmd_line3 = base::CommandLine::FromString(kTestExeFilename);
   cmd_line3.AppendArgNative(GetBlTestFilePath());
   cmd_line3.AppendArgNative(
-      base::IntToString16(main_unittest_exe::kTestSingleDllLoad));
+      base::NumberToString16(main_unittest_exe::kTestSingleDllLoad));
   cmd_line3.AppendArgNative(MakePath(GetExeDir(), kTestDllName1));
 
   LaunchChildAndWait(cmd_line3, &exit_code);
@@ -316,7 +316,7 @@ TEST_F(ThirdPartyTest, MAYBE_Base) {
   base::CommandLine cmd_line4 = base::CommandLine::FromString(kTestExeFilename);
   cmd_line4.AppendArgNative(GetBlTestFilePath());
   cmd_line4.AppendArgNative(
-      base::IntToString16(main_unittest_exe::kTestSingleDllLoad));
+      base::NumberToString16(main_unittest_exe::kTestSingleDllLoad));
   cmd_line4.AppendArgNative(
       MakePath(GetScopedTempDirValue(), kTestDllName1MixedCase));
 
@@ -335,7 +335,7 @@ TEST_F(ThirdPartyTest, WideCharEncoding) {
   base::CommandLine cmd_line1 = base::CommandLine::FromString(kTestExeFilename);
   cmd_line1.AppendArgNative(GetBlTestFilePath());
   cmd_line1.AppendArgNative(
-      base::IntToString16(main_unittest_exe::kTestSingleDllLoad));
+      base::NumberToString16(main_unittest_exe::kTestSingleDllLoad));
   cmd_line1.AppendArgNative(MakePath(GetScopedTempDirValue(), kChineseUnicode));
 
   int exit_code = 0;
@@ -361,7 +361,7 @@ TEST_F(ThirdPartyTest, WideCharEncoding) {
   base::CommandLine cmd_line2 = base::CommandLine::FromString(kTestExeFilename);
   cmd_line2.AppendArgNative(GetBlTestFilePath());
   cmd_line2.AppendArgNative(
-      base::IntToString16(main_unittest_exe::kTestSingleDllLoad));
+      base::NumberToString16(main_unittest_exe::kTestSingleDllLoad));
   cmd_line2.AppendArgNative(MakePath(GetScopedTempDirValue(), kChineseUnicode));
 
   LaunchChildAndWait(cmd_line2, &exit_code);
@@ -379,7 +379,7 @@ TEST_F(ThirdPartyTest, WideCharEncodingWithExportDir) {
   base::CommandLine cmd_line1 = base::CommandLine::FromString(kTestExeFilename);
   cmd_line1.AppendArgNative(GetBlTestFilePath());
   cmd_line1.AppendArgNative(
-      base::IntToString16(main_unittest_exe::kTestSingleDllLoad));
+      base::NumberToString16(main_unittest_exe::kTestSingleDllLoad));
   cmd_line1.AppendArgNative(MakePath(GetScopedTempDirValue(), kChineseUnicode));
 
   int exit_code = 0;
@@ -410,7 +410,7 @@ TEST_F(ThirdPartyTest, WideCharEncodingWithExportDir) {
   base::CommandLine cmd_line2 = base::CommandLine::FromString(kTestExeFilename);
   cmd_line2.AppendArgNative(GetBlTestFilePath());
   cmd_line2.AppendArgNative(
-      base::IntToString16(main_unittest_exe::kTestSingleDllLoad));
+      base::NumberToString16(main_unittest_exe::kTestSingleDllLoad));
   cmd_line2.AppendArgNative(MakePath(GetScopedTempDirValue(), kChineseUnicode));
 
   LaunchChildAndWait(cmd_line2, &exit_code);
@@ -427,7 +427,7 @@ TEST_F(ThirdPartyTest, WideCharEncodingWithExportDir) {
   base::CommandLine cmd_line3 = base::CommandLine::FromString(kTestExeFilename);
   cmd_line3.AppendArgNative(GetBlTestFilePath());
   cmd_line3.AppendArgNative(
-      base::IntToString16(main_unittest_exe::kTestSingleDllLoad));
+      base::NumberToString16(main_unittest_exe::kTestSingleDllLoad));
   cmd_line3.AppendArgNative(MakePath(GetScopedTempDirValue(), kChineseUnicode));
 
   LaunchChildAndWait(cmd_line3, &exit_code);
@@ -445,7 +445,7 @@ TEST_F(ThirdPartyTest, DeprecatedBlacklistSanityCheck) {
   base::CommandLine cmd_line1 = base::CommandLine::FromString(kTestExeFilename);
   cmd_line1.AppendArgNative(GetBlTestFilePath());
   cmd_line1.AppendArgNative(
-      base::IntToString16(main_unittest_exe::kTestSingleDllLoad));
+      base::NumberToString16(main_unittest_exe::kTestSingleDllLoad));
   cmd_line1.AppendArgNative(
       MakePath(GetScopedTempDirValue(), kOldBlacklistDllName));
 
@@ -524,7 +524,7 @@ TEST_F(ThirdPartyTest, MAYBE_PathCaseSensitive) {
   base::CommandLine cmd_line1 = base::CommandLine::FromString(kTestExeFilename);
   cmd_line1.AppendArgNative(GetBlTestFilePath());
   cmd_line1.AppendArgNative(
-      base::IntToString16(main_unittest_exe::kTestSingleDllLoad));
+      base::NumberToString16(main_unittest_exe::kTestSingleDllLoad));
   cmd_line1.AppendArgNative(
       MakePath(GetScopedTempDirValue(), kTestDllName1MixedCase));
 

@@ -55,37 +55,42 @@
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
-inline SVGSVGElement::SVGSVGElement(Document& doc)
+SVGSVGElement::SVGSVGElement(Document& doc)
     : SVGGraphicsElement(svg_names::kSVGTag, doc),
       SVGFitToViewBox(this),
-      x_(SVGAnimatedLength::Create(this,
-                                   svg_names::kXAttr,
-                                   SVGLengthMode::kWidth,
-                                   SVGLength::Initial::kUnitlessZero,
-                                   CSSPropertyX)),
-      y_(SVGAnimatedLength::Create(this,
-                                   svg_names::kYAttr,
-                                   SVGLengthMode::kHeight,
-                                   SVGLength::Initial::kUnitlessZero,
-                                   CSSPropertyY)),
-      width_(SVGAnimatedLength::Create(this,
-                                       svg_names::kWidthAttr,
-                                       SVGLengthMode::kWidth,
-                                       SVGLength::Initial::kPercent100,
-                                       CSSPropertyWidth)),
-      height_(SVGAnimatedLength::Create(this,
-                                        svg_names::kHeightAttr,
-                                        SVGLengthMode::kHeight,
-                                        SVGLength::Initial::kPercent100,
-                                        CSSPropertyHeight)),
-      time_container_(SMILTimeContainer::Create(*this)),
-      translation_(SVGPoint::Create()),
+      x_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kXAttr,
+          SVGLengthMode::kWidth,
+          SVGLength::Initial::kUnitlessZero,
+          CSSPropertyID::kX)),
+      y_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kYAttr,
+          SVGLengthMode::kHeight,
+          SVGLength::Initial::kUnitlessZero,
+          CSSPropertyID::kY)),
+      width_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kWidthAttr,
+          SVGLengthMode::kWidth,
+          SVGLength::Initial::kPercent100,
+          CSSPropertyID::kWidth)),
+      height_(MakeGarbageCollected<SVGAnimatedLength>(
+          this,
+          svg_names::kHeightAttr,
+          SVGLengthMode::kHeight,
+          SVGLength::Initial::kPercent100,
+          CSSPropertyID::kHeight)),
+      time_container_(MakeGarbageCollected<SMILTimeContainer>(*this)),
+      translation_(MakeGarbageCollected<SVGPoint>()),
       current_scale_(1) {
   AddToPropertyMap(x_);
   AddToPropertyMap(y_);
@@ -131,7 +136,7 @@ class SVGCurrentTranslateTearOff : public SVGPointTearOff {
 };
 
 SVGPointTearOff* SVGSVGElement::currentTranslateFromJavascript() {
-  return SVGCurrentTranslateTearOff::Create(this);
+  return MakeGarbageCollected<SVGCurrentTranslateTearOff>(this);
 }
 
 void SVGSVGElement::SetCurrentTranslate(const FloatPoint& point) {
@@ -373,7 +378,7 @@ StaticNodeList* SVGSVGElement::CollectIntersectionOrEnclosureList(
 StaticNodeList* SVGSVGElement::getIntersectionList(
     SVGRectTearOff* rect,
     SVGElement* reference_element) const {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
   return CollectIntersectionOrEnclosureList(
       rect->Target()->Value(), reference_element, kCheckIntersection);
@@ -382,7 +387,7 @@ StaticNodeList* SVGSVGElement::getIntersectionList(
 StaticNodeList* SVGSVGElement::getEnclosureList(
     SVGRectTearOff* rect,
     SVGElement* reference_element) const {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
   return CollectIntersectionOrEnclosureList(rect->Target()->Value(),
                                             reference_element, kCheckEnclosure);
@@ -391,7 +396,7 @@ StaticNodeList* SVGSVGElement::getEnclosureList(
 bool SVGSVGElement::checkIntersection(SVGElement* element,
                                       SVGRectTearOff* rect) const {
   DCHECK(element);
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
   return CheckIntersectionOrEnclosure(*element, rect->Target()->Value(),
                                       kCheckIntersection);
@@ -400,7 +405,7 @@ bool SVGSVGElement::checkIntersection(SVGElement* element,
 bool SVGSVGElement::checkEnclosure(SVGElement* element,
                                    SVGRectTearOff* rect) const {
   DCHECK(element);
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
   return CheckIntersectionOrEnclosure(*element, rect->Target()->Value(),
                                       kCheckEnclosure);
@@ -428,7 +433,7 @@ SVGPointTearOff* SVGSVGElement::createSVGPoint() {
 }
 
 SVGMatrixTearOff* SVGSVGElement::createSVGMatrix() {
-  return SVGMatrixTearOff::Create(AffineTransform());
+  return MakeGarbageCollected<SVGMatrixTearOff>(AffineTransform());
 }
 
 SVGRectTearOff* SVGSVGElement::createSVGRect() {
@@ -441,7 +446,7 @@ SVGTransformTearOff* SVGSVGElement::createSVGTransform() {
 
 SVGTransformTearOff* SVGSVGElement::createSVGTransformFromMatrix(
     SVGMatrixTearOff* matrix) {
-  return SVGTransformTearOff::Create(matrix);
+  return MakeGarbageCollected<SVGTransformTearOff>(matrix);
 }
 
 AffineTransform SVGSVGElement::LocalCoordinateSpaceTransform(
@@ -500,7 +505,8 @@ void SVGSVGElement::AttachLayoutTree(AttachContext& context) {
     ToLayoutSVGRoot(GetLayoutObject())->IntrinsicSizingInfoChanged();
 }
 
-LayoutObject* SVGSVGElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGSVGElement::CreateLayoutObject(const ComputedStyle&,
+                                                LegacyLayout) {
   if (IsOutermostSVGSVGElement())
     return new LayoutSVGRoot(this);
 
@@ -604,7 +610,7 @@ const SVGPreserveAspectRatio* SVGSVGElement::CurrentPreserveAspectRatio()
   if (!HasValidViewBox() && ShouldSynthesizeViewBox()) {
     // If no (valid) viewBox is specified and we're embedded through SVGImage,
     // then synthesize a pAR with the value 'none'.
-    SVGPreserveAspectRatio* synthesized_par = SVGPreserveAspectRatio::Create();
+    auto* synthesized_par = MakeGarbageCollected<SVGPreserveAspectRatio>();
     synthesized_par->SetAlign(
         SVGPreserveAspectRatio::kSvgPreserveaspectratioNone);
     return synthesized_par;

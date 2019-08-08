@@ -62,22 +62,17 @@ class MODULES_EXPORT AnimationWorkletProxyClient
   static AnimationWorkletProxyClient* From(WorkerClients*);
 
  private:
+  friend class AnimationWorkletProxyClientTest;
   FRIEND_TEST_ALL_PREFIXES(AnimationWorkletProxyClientTest,
                            AnimationWorkletProxyClientConstruction);
   FRIEND_TEST_ALL_PREFIXES(AnimationWorkletProxyClientTest,
                            RegisteredAnimatorNameShouldSyncOnce);
-  FRIEND_TEST_ALL_PREFIXES(AnimationWorkletProxyClientTest, SelectGlobalScope);
 
-  // Separate global scope selectors are used instead of overriding
-  // Worklet::SelectGlobalScope since two different selection mechanisms are
-  // required in order to support statefulness and enforce statelessness
-  // depending on the animators.
-  // The stateless global scope periodically switches in order to enforce
-  // stateless behavior. Prior state is lost on each switch to global scope.
-  AnimationWorkletGlobalScope* SelectStatelessGlobalScope();
-  // The stateful global scope remains fixed to preserve state between mutate
-  // calls.
-  AnimationWorkletGlobalScope* SelectStatefulGlobalScope();
+  // The global scope periodically switches in order to enforce stateless
+  // behavior. For stateless animators, prior state is lost on each switch to
+  // global scope. For stateful animators, prior state is transferred to the new
+  // global scope.
+  AnimationWorkletGlobalScope* SelectGlobalScopeAndUpdateAnimatorsIfNecessary();
 
   const int worklet_id_;
 
@@ -98,7 +93,7 @@ class MODULES_EXPORT AnimationWorkletProxyClient
   enum RunState { kUninitialized, kWorking, kDisposed } state_;
 
   int next_global_scope_switch_countdown_;
-  wtf_size_t current_stateless_global_scope_index_;
+  wtf_size_t current_global_scope_index_;
 };
 
 void MODULES_EXPORT

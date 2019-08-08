@@ -71,15 +71,15 @@ int AcquireExplicitCredentials(SSPILibrary* library,
 
   // Pass the username/password to get the credentials handle.
   SECURITY_STATUS status = library->AcquireCredentialsHandle(
-      NULL,  // pszPrincipal
+      nullptr,                          // pszPrincipal
       const_cast<SEC_WCHAR*>(package),  // pszPackage
-      SECPKG_CRED_OUTBOUND,  // fCredentialUse
-      NULL,  // pvLogonID
-      &identity,  // pAuthData
-      NULL,  // pGetKeyFn (not used)
-      NULL,  // pvGetKeyArgument (not used)
-      cred,  // phCredential
-      &expiry);  // ptsExpiry
+      SECPKG_CRED_OUTBOUND,             // fCredentialUse
+      nullptr,                          // pvLogonID
+      &identity,                        // pAuthData
+      nullptr,                          // pGetKeyFn (not used)
+      nullptr,                          // pvGetKeyArgument (not used)
+      cred,                             // phCredential
+      &expiry);                         // ptsExpiry
 
   return MapAcquireCredentialsStatusToError(status, package);
 }
@@ -93,15 +93,15 @@ int AcquireDefaultCredentials(SSPILibrary* library, const SEC_WCHAR* package,
   // cached credentials for the logged in user, which can be used
   // for a single sign-on.
   SECURITY_STATUS status = library->AcquireCredentialsHandle(
-      NULL,  // pszPrincipal
+      nullptr,                          // pszPrincipal
       const_cast<SEC_WCHAR*>(package),  // pszPackage
-      SECPKG_CRED_OUTBOUND,  // fCredentialUse
-      NULL,  // pvLogonID
-      NULL,  // pAuthData
-      NULL,  // pGetKeyFn (not used)
-      NULL,  // pvGetKeyArgument (not used)
-      cred,  // phCredential
-      &expiry);  // ptsExpiry
+      SECPKG_CRED_OUTBOUND,             // fCredentialUse
+      nullptr,                          // pvLogonID
+      nullptr,                          // pAuthData
+      nullptr,                          // pGetKeyFn (not used)
+      nullptr,                          // pvGetKeyArgument (not used)
+      cred,                             // phCredential
+      &expiry);                         // ptsExpiry
 
   return MapAcquireCredentialsStatusToError(status, package);
 }
@@ -445,7 +445,7 @@ int HttpAuthSSPI::GetNextSecurityToken(const std::string& spn,
   }
   if (!out_buffer.cbBuffer) {
     free(out_buffer.pvBuffer);
-    out_buffer.pvBuffer = NULL;
+    out_buffer.pvBuffer = nullptr;
   }
   *out_token = out_buffer.pvBuffer;
   *out_token_len = out_buffer.cbBuffer;
@@ -473,7 +473,7 @@ int DetermineMaxTokenLength(SSPILibrary* library,
                             ULONG* max_token_length) {
   DCHECK(library);
   DCHECK(max_token_length);
-  PSecPkgInfo pkg_info = NULL;
+  PSecPkgInfo pkg_info = nullptr;
   SECURITY_STATUS status = library->QuerySecurityPackageInfo(
       const_cast<wchar_t *>(package.c_str()), &pkg_info);
   int rv = MapQuerySecurityPackageInfoStatusToError(status);

@@ -9,7 +9,10 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/base/ime/chromeos/ime_keymap.h"
 #include "ui/base/ime/ime_bridge.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace arc {
@@ -45,7 +48,8 @@ ui::TextInputClient* GetTextInputClient() {
   DCHECK(bridge);
   ui::IMEInputContextHandlerInterface* handler =
       bridge->GetInputContextHandler();
-  DCHECK(handler);
+  if (!handler)
+    return nullptr;
   ui::TextInputClient* client = handler->GetInputMethod()->GetTextInputClient();
   DCHECK(client);
   return client;
@@ -84,9 +88,18 @@ void InputConnectionImpl::UpdateTextInputState(
 mojom::TextInputStatePtr InputConnectionImpl::GetTextInputState(
     bool is_input_state_update_requested) const {
   ui::TextInputClient* client = GetTextInputClient();
-  gfx::Range text_range, selection_range;
+  gfx::Range text_range = gfx::Range();
+  gfx::Range selection_range = gfx::Range();
   base::Optional<gfx::Range> composition_text_range = gfx::Range();
   base::string16 text;
+
+  if (!client) {
+    return mojom::TextInputStatePtr(base::in_place, 0, text, text_range,
+                                    selection_range, ui::TEXT_INPUT_TYPE_NONE,
+                                    false, 0, is_input_state_update_requested,
+                                    composition_text_range);
+  }
+
   client->GetTextRange(&text_range);
   client->GetEditableSelectionRange(&selection_range);
   if (!client->GetCompositionTextRange(&composition_text_range.value()))
@@ -153,6 +166,8 @@ void InputConnectionImpl::FinishComposingText() {
   }
 
   ui::TextInputClient* client = GetTextInputClient();
+  if (!client)
+    return;
   gfx::Range selection_range, composition_range;
   client->GetEditableSelectionRange(&selection_range);
   client->GetCompositionTextRange(&composition_range);
@@ -191,6 +206,9 @@ void InputConnectionImpl::SetComposingText(
       new_selection_range ? new_selection_range.value().end() : new_cursor_pos;
 
   ui::TextInputClient* client = GetTextInputClient();
+  if (!client)
+    return;
+
   gfx::Range selection_range;
   client->GetEditableSelectionRange(&selection_range);
   if (text.empty() &&
@@ -221,6 +239,8 @@ void InputConnectionImpl::RequestTextInputState(
 
 void InputConnectionImpl::SetSelection(const gfx::Range& new_selection_range) {
   ui::TextInputClient* client = GetTextInputClient();
+  if (!client)
+    return;
 
   gfx::Range selection_range;
   client->GetEditableSelectionRange(&selection_range);
@@ -232,6 +252,27 @@ void InputConnectionImpl::SetSelection(const gfx::Range& new_selection_range) {
 
   StartStateUpdateTimer();
   client->SetEditableSelectionRange(new_selection_range);
+}
+
+void InputConnectionImpl::SendKeyEvent(mojom::KeyEventDataPtr data_ptr) {
+  chromeos::InputMethodEngine::KeyboardEvent event;
+  if (data_ptr->pressed)
+    event.type = "keydown";
+  else
+    event.type = "keyup";
+
+  ui::KeyboardCode key_code = static_cast<ui::KeyboardCode>(data_ptr->key_code);
+  ui::DomCode dom_code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
+
+  event.key = ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+  event.code = ui::KeyboardCodeToDomKeycode(key_code);
+  event.key_code = data_ptr->key_code;
+  event.alt_key = data_ptr->is_alt_down;
+  event.ctrl_key = data_ptr->is_control_down;
+  event.shift_key = data_ptr->is_shift_down;
+  event.caps_lock = data_ptr->is_capslock_on;
+
+  ime_engine_->SendKeyEvents(input_context_id_, {event});
 }
 
 void InputConnectionImpl::StartStateUpdateTimer() {

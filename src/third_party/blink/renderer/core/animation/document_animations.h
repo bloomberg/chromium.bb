@@ -35,12 +35,15 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class Document;
 
 class DocumentAnimations {
+  STATIC_ONLY(DocumentAnimations);
+
  public:
   static void UpdateAnimationTimingForAnimationFrame(Document&);
   static bool NeedsAnimationTimingUpdate(const Document&);
@@ -53,9 +56,6 @@ class DocumentAnimations {
       Document&,
       DocumentLifecycle::LifecycleState required_lifecycle_state,
       const base::Optional<CompositorElementIdSet>&);
-
- private:
-  DocumentAnimations() = default;
 };
 
 }  // namespace blink

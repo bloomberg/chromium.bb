@@ -21,8 +21,8 @@
 #include "chrome/browser/ui/app_list/search/arc/arc_app_reinstall_app_result.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/common/url_icon_source.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -36,26 +36,6 @@ constexpr char kAppListLatency[] = "Apps.AppListRecommendedResponse.Latency";
 constexpr char kAppListCounts[] = "Apps.AppListRecommendedResponse.Count";
 constexpr char kAppListImpressionsBeforeOpen[] =
     "Apps.AppListRecommendedImpResultCountAfterOpen";
-
-// Fields for working with pref syncable state.
-
-// Overall dictionary to use for all arc app reinstall states.
-constexpr char kAppState[] = "arc_app_reinstall_state";
-
-// field name for install start time, as milliseconds since epoch
-constexpr char kInstallStartTime[] = "install_start_time";
-
-// field name for install time, as milliseconds since epoch
-constexpr char kInstallTime[] = "install_time";
-// field name for install opened time, as milliseconds since epoch
-constexpr char kOpenTime[] = "open_time";
-// field name for uninstalltime, as milliseconds since epoch.
-constexpr char kUninstallTime[] = "uninstall_time";
-
-// field name for latest impressiontime, as milliseconds since epoch.
-constexpr char kImpressionTime[] = "impression_time";
-// Number of impressions.
-constexpr char kImpressionCount[] = "impression_count";
 
 // If uninstalled in this time, do not recommend.
 constexpr base::FeatureParam<int> kUninstallGrace(
@@ -100,7 +80,8 @@ void SetStateInt64(Profile* profile,
                    const std::string& key,
                    const int64_t value) {
   const std::string int64_str = base::NumberToString(value);
-  DictionaryPrefUpdate update(profile->GetPrefs(), kAppState);
+  DictionaryPrefUpdate update(
+      profile->GetPrefs(), app_list::ArcAppReinstallSearchProvider::kAppState);
   base::DictionaryValue* const dictionary = update.Get();
   base::Value* package_item =
       dictionary->FindKeyOfType(package_name, base::Value::Type::DICTIONARY);
@@ -115,7 +96,8 @@ void SetStateInt64(Profile* profile,
 void UpdateStateRemoveKey(Profile* profile,
                           const std::string& package_name,
                           const std::string& key) {
-  DictionaryPrefUpdate update(profile->GetPrefs(), kAppState);
+  DictionaryPrefUpdate update(
+      profile->GetPrefs(), app_list::ArcAppReinstallSearchProvider::kAppState);
   base::DictionaryValue* const dictionary = update.Get();
   base::Value* package_item =
       dictionary->FindKeyOfType(package_name, base::Value::Type::DICTIONARY);
@@ -137,8 +119,8 @@ bool GetStateInt64(Profile* profile,
                    const std::string& package_name,
                    const std::string& key,
                    int64_t* value) {
-  const base::DictionaryValue* dictionary =
-      profile->GetPrefs()->GetDictionary(kAppState);
+  const base::DictionaryValue* dictionary = profile->GetPrefs()->GetDictionary(
+      app_list::ArcAppReinstallSearchProvider::kAppState);
   if (!dictionary)
     return false;
   const base::Value* package_item =
@@ -171,8 +153,8 @@ bool GetStateTime(Profile* profile,
 
 bool GetKnownPackageNames(Profile* profile,
                           std::unordered_set<std::string>* package_names) {
-  const base::DictionaryValue* dictionary =
-      profile->GetPrefs()->GetDictionary(kAppState);
+  const base::DictionaryValue* dictionary = profile->GetPrefs()->GetDictionary(
+      app_list::ArcAppReinstallSearchProvider::kAppState);
   for (const auto& it : dictionary->DictItems()) {
     if (it.second.is_dict()) {
       package_names->insert(it.first);
@@ -195,6 +177,27 @@ std::string LimitIconSizeWithFife(const std::string& icon_url,
 }  // namespace
 
 namespace app_list {
+
+// static
+constexpr char ArcAppReinstallSearchProvider::kInstallTime[];
+
+// static
+constexpr char ArcAppReinstallSearchProvider::kAppState[];
+
+// static
+constexpr char ArcAppReinstallSearchProvider::kImpressionCount[];
+
+// static
+constexpr char ArcAppReinstallSearchProvider::kImpressionTime[];
+
+// static
+constexpr char ArcAppReinstallSearchProvider::kUninstallTime[];
+
+// static
+constexpr char ArcAppReinstallSearchProvider::kOpenTime[];
+
+// static
+constexpr char ArcAppReinstallSearchProvider::kInstallStartTime[];
 
 ArcAppReinstallSearchProvider::ArcAppReinstallSearchProvider(
     Profile* profile,
@@ -465,10 +468,12 @@ void ArcAppReinstallSearchProvider::OnVisibilityChanged(const std::string& id,
   const base::TimeDelta now = base::Time::Now().ToDeltaSinceWindowsEpoch();
   base::TimeDelta latest_impression;
   int64_t impression_count;
+  if (!GetStateInt64(profile_, id, kImpressionCount, &impression_count)) {
+    impression_count = 0;
+  }
   // Get impression count and time. If neither is set, set them.
   // If they're set, update if appropriate.
   if (!GetStateTime(profile_, id, kImpressionTime, &latest_impression) ||
-      !GetStateInt64(profile_, id, kImpressionCount, &impression_count) ||
       impression_count == 0 ||
       (now - latest_impression >
        base::TimeDelta::FromSeconds(kNewImpressionTime.Get()))) {

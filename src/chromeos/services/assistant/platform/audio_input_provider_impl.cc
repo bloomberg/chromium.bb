@@ -4,6 +4,8 @@
 
 #include "chromeos/services/assistant/platform/audio_input_provider_impl.h"
 
+#include "chromeos/services/assistant/public/features.h"
+
 namespace chromeos {
 namespace assistant {
 
@@ -20,7 +22,9 @@ AudioInputImpl& AudioInputProviderImpl::GetAudioInput() {
 }
 
 int64_t AudioInputProviderImpl::GetCurrentAudioTime() {
-  // TODO(xiaohuic): see if we can support real timestamp.
+  if (features::IsAudioEraserEnabled())
+    return base::TimeTicks::Now().since_origin().InMicroseconds();
+
   return 0;
 }
 

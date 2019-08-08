@@ -219,6 +219,7 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   // Asynchronous tasks scheduled within transactions:
   void CreateObjectStoreAbortOperation(int64_t object_store_id);
+
   leveldb::Status DeleteObjectStoreOperation(int64_t object_store_id,
                                              IndexedDBTransaction* transaction);
   void DeleteObjectStoreAbortOperation(

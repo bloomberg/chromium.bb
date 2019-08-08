@@ -20,15 +20,8 @@
  * @struct
  */
 function DialogActionController(
-    dialogType,
-    dialogFooter,
-    directoryModel,
-    metadataModel,
-    volumeManager,
-    fileFilter,
-    namingController,
-    fileSelectionHandler,
-    launchParam) {
+    dialogType, dialogFooter, directoryModel, metadataModel, volumeManager,
+    fileFilter, namingController, fileSelectionHandler, launchParam) {
   /**
    * @type {!DialogType}
    * @const
@@ -109,8 +102,7 @@ function DialogActionController(
 
   dialogFooter.okButton.addEventListener(
       'click', this.processOKAction_.bind(this));
-  dialogFooter.cancelButton.addEventListener(
-      'click', this.onCancelBound_);
+  dialogFooter.cancelButton.addEventListener('click', this.onCancelBound_);
   dialogFooter.newFolderButton.addEventListener(
       'click', this.processNewFolderAction_.bind(this));
   dialogFooter.fileTypeSelector.addEventListener(
@@ -123,8 +115,7 @@ function DialogActionController(
   volumeManager.addEventListener(
       'drive-connection-changed', this.updateOkButton_.bind(this));
 
-  dialogFooter.initFileTypeFilter(
-      this.fileTypes_, launchParam.includeAllFiles);
+  dialogFooter.initFileTypeFilter(this.fileTypes_, launchParam.includeAllFiles);
   this.onFileTypeFilterChanged_();
 
   this.newFolderCommand_ =
@@ -225,7 +216,7 @@ DialogActionController.prototype.processOKAction_ = function() {
   if (this.dialogType_ === DialogType.SELECT_OPEN_MULTI_FILE) {
     const multipleSelection = {
       urls: files,
-      multiple: true
+      multiple: true,
     };
     this.selectFilesAndClose_(multipleSelection);
     return;
@@ -308,16 +299,13 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
     }
     if (selection.multiple) {
       chrome.fileManagerPrivate.selectFiles(
-          selection.urls,
-          this.allowedPaths_ === AllowedPaths.NATIVE_PATH,
+          selection.urls, this.allowedPaths_ === AllowedPaths.NATIVE_PATH,
           onFileSelected);
     } else {
       chrome.fileManagerPrivate.selectFile(
-          selection.urls[0],
-          selection.filterIndex,
+          selection.urls[0], selection.filterIndex,
           this.dialogType_ !== DialogType.SELECT_SAVEAS_FILE /* for opening */,
-          this.allowedPaths_ === AllowedPaths.NATIVE_PATH,
-          onFileSelected);
+          this.allowedPaths_ === AllowedPaths.NATIVE_PATH, onFileSelected);
     }
   };
 
@@ -428,9 +416,10 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
 DialogActionController.prototype.onFileTypeFilterChanged_ = function() {
   this.fileFilter_.removeFilter('fileType');
   const selectedIndex = this.dialogFooter_.selectedFilterIndex;
-  if (selectedIndex > 0) { // Specific filter selected.
-    const regexp = new RegExp('\\.(' +
-        this.fileTypes_[selectedIndex - 1].extensions.join('|') + ')$', 'i');
+  if (selectedIndex > 0) {  // Specific filter selected.
+    const regexp = new RegExp(
+        '\\.(' + this.fileTypes_[selectedIndex - 1].extensions.join('|') + ')$',
+        'i');
     const filter = entry => {
       return entry.isDirectory || regexp.test(entry.name);
     };
@@ -462,8 +451,7 @@ DialogActionController.prototype.onFileSelectionChanged_ = function() {
   // input text box.
   const selection = this.fileSelectionHandler_.selection;
   if (this.dialogType_ === DialogType.SELECT_SAVEAS_FILE &&
-      selection.totalCount === 1 &&
-      selection.entries[0].isFile &&
+      selection.totalCount === 1 && selection.entries[0].isFile &&
       this.dialogFooter_.filenameInput.value !== selection.entries[0].name) {
     this.dialogFooter_.filenameInput.value = selection.entries[0].name;
   }
@@ -510,18 +498,14 @@ DialogActionController.prototype.updateOkButton_ = function() {
   }
 
   if (this.dialogType_ === DialogType.SELECT_OPEN_FILE) {
-    this.dialogFooter_.okButton.disabled =
-        selection.directoryCount !== 0 ||
-        selection.fileCount !== 1 ||
-        !this.fileSelectionHandler_.isAvailable();
+    this.dialogFooter_.okButton.disabled = selection.directoryCount !== 0 ||
+        selection.fileCount !== 1 || !this.fileSelectionHandler_.isAvailable();
     return;
   }
 
   if (this.dialogType_ === DialogType.SELECT_OPEN_MULTI_FILE) {
-    this.dialogFooter_.okButton.disabled =
-        selection.directoryCount !== 0 ||
-        selection.fileCount === 0 ||
-        !this.fileSelectionHandler_.isAvailable();
+    this.dialogFooter_.okButton.disabled = selection.directoryCount !== 0 ||
+        selection.fileCount === 0 || !this.fileSelectionHandler_.isAvailable();
     return;
   }
 

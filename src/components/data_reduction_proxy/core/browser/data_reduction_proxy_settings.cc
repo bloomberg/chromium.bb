@@ -53,45 +53,35 @@ namespace data_reduction_proxy {
 DataReductionProxySettings::DataReductionProxySettings()
     : unreachable_(false),
       deferred_initialization_(false),
-
       prefs_(nullptr),
       config_(nullptr),
       clock_(base::DefaultClock::GetInstance()) {}
 
-DataReductionProxySettings::~DataReductionProxySettings() {
-  spdy_proxy_auth_enabled_.Destroy();
-}
-
-void DataReductionProxySettings::InitPrefMembers() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  spdy_proxy_auth_enabled_.Init(
-      data_reduction_proxy_enabled_pref_name_, GetOriginalProfilePrefs(),
-      base::Bind(&DataReductionProxySettings::OnProxyEnabledPrefChange,
-                 base::Unretained(this)));
-}
+DataReductionProxySettings::~DataReductionProxySettings() = default;
 
 void DataReductionProxySettings::InitDataReductionProxySettings(
-    const std::string& data_reduction_proxy_enabled_pref_name,
     PrefService* prefs,
     DataReductionProxyIOData* io_data,
     std::unique_ptr<DataReductionProxyService> data_reduction_proxy_service) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!data_reduction_proxy_enabled_pref_name.empty());
   DCHECK(prefs);
   DCHECK(io_data);
   DCHECK(io_data->config());
   DCHECK(data_reduction_proxy_service);
-  data_reduction_proxy_enabled_pref_name_ =
-      data_reduction_proxy_enabled_pref_name;
   prefs_ = prefs;
   config_ = io_data->config();
   data_reduction_proxy_service_ = std::move(data_reduction_proxy_service);
   data_reduction_proxy_service_->AddObserver(this);
-  InitPrefMembers();
   RecordDataReductionInit();
 
+  registrar_.Init(prefs_);
+  registrar_.Add(
+      prefs::kDataSaverEnabled,
+      base::BindRepeating(&DataReductionProxySettings::OnProxyEnabledPrefChange,
+                          base::Unretained(this)));
+
 #if defined(OS_ANDROID)
-  if (spdy_proxy_auth_enabled_.GetValue()) {
+  if (IsDataSaverEnabledByUser(prefs_)) {
     data_reduction_proxy_service_->compression_stats()
         ->SetDataUsageReportingEnabled(true);
   }
@@ -122,16 +112,41 @@ void DataReductionProxySettings::SetCallbackToRegisterSyntheticFieldTrial(
   RegisterDataReductionProxyFieldTrial();
 }
 
+// static
+bool DataReductionProxySettings::IsDataSaverEnabledByUser(PrefService* prefs) {
+  if (params::ShouldForceEnableDataReductionProxy())
+    return true;
+
+#if defined(OS_ANDROID)
+  return prefs && prefs->GetBoolean(prefs::kDataSaverEnabled);
+#else
+  return false;
+#endif
+}
+
+// static
+void DataReductionProxySettings::SetDataSaverEnabledForTesting(
+    PrefService* prefs,
+    bool enabled) {
+  // Set the command line so that |IsDataSaverEnabledByUser| returns as expected
+  // on all platforms.
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  if (enabled) {
+    cmd->AppendSwitch(switches::kEnableDataReductionProxy);
+  } else {
+    cmd->RemoveSwitch(switches::kEnableDataReductionProxy);
+  }
+
+  // Set the pref so that all the pref change callbacks run.
+  prefs->SetBoolean(prefs::kDataSaverEnabled, enabled);
+}
+
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
       !params::IsEnabledWithNetworkService()) {
     return false;
   }
-
-  if (spdy_proxy_auth_enabled_.GetPrefName().empty())
-    return false;
-  return spdy_proxy_auth_enabled_.GetValue() ||
-         params::ShouldForceEnableDataReductionProxy();
+  return IsDataSaverEnabledByUser(GetOriginalProfilePrefs());
 }
 
 bool DataReductionProxySettings::CanUseDataReductionProxy(
@@ -141,14 +156,17 @@ bool DataReductionProxySettings::CanUseDataReductionProxy(
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyManaged() {
-  return spdy_proxy_auth_enabled_.IsManaged();
+  const PrefService::Preference* pref =
+      GetOriginalProfilePrefs()->FindPreference(prefs::kDataSaverEnabled);
+  return pref && pref->IsManaged();
 }
 
 void DataReductionProxySettings::SetDataReductionProxyEnabled(bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data_reduction_proxy_service_->compression_stats());
-  if (spdy_proxy_auth_enabled_.GetValue() != enabled) {
-    spdy_proxy_auth_enabled_.SetValue(enabled);
+  if (GetOriginalProfilePrefs()->GetBoolean(prefs::kDataSaverEnabled) !=
+      enabled) {
+    GetOriginalProfilePrefs()->SetBoolean(prefs::kDataSaverEnabled, enabled);
     OnProxyEnabledPrefChange();
 #if defined(OS_ANDROID)
     data_reduction_proxy_service_->compression_stats()
@@ -189,7 +207,7 @@ bool DataReductionProxySettings::IsDataReductionProxyUnreachable() {
   return unreachable_;
 }
 
-PrefService* DataReductionProxySettings::GetOriginalProfilePrefs() {
+PrefService* DataReductionProxySettings::GetOriginalProfilePrefs() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return prefs_;
 }
@@ -206,6 +224,10 @@ void DataReductionProxySettings::OnProxyEnabledPrefChange() {
     RegisterDataReductionProxyFieldTrial();
   }
   MaybeActivateDataReductionProxy(false);
+
+  bool enabled = IsDataReductionProxyEnabled();
+  for (auto& observer : observers_)
+    observer.OnDataSaverEnabledChanged(enabled);
 }
 
 void DataReductionProxySettings::ResetDataReductionStatistics() {
@@ -229,7 +251,9 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
   if (!prefs)
     return;
 
-  if (spdy_proxy_auth_enabled_.GetValue() && at_startup) {
+  bool enabled = IsDataSaverEnabledByUser(prefs);
+
+  if (enabled && at_startup) {
     // Record the number of days since data reduction proxy has been enabled.
     int64_t last_enabled_time =
         prefs->GetInt64(prefs::kDataReductionProxyLastEnabledTime);
@@ -258,7 +282,7 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
     }
   }
 
-  if (spdy_proxy_auth_enabled_.GetValue() &&
+  if (enabled &&
       !prefs->GetBoolean(prefs::kDataReductionProxyWasEnabledBefore)) {
     prefs->SetBoolean(prefs::kDataReductionProxyWasEnabledBefore, true);
     ResetDataReductionStatistics();

@@ -149,7 +149,8 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
       request_context_getter_ = std::move(request_context_getter);
       network_context_impl_ = std::make_unique<network::NetworkContext>(
           content::GetNetworkServiceImpl(), std::move(network_context_request),
-          request_context_getter_->GetURLRequestContext());
+          request_context_getter_->GetURLRequestContext(),
+          /*cors_exempt_header_list=*/std::vector<std::string>());
     }
 
     scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
@@ -170,9 +171,7 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
 
     network_context_params->http_cache_enabled = false;
 
-    // These are needed for PAC scripts that use file, data or FTP URLs.
-    network_context_params->enable_data_url_support = true;
-    network_context_params->enable_file_url_support = true;
+    // These are needed for PAC scripts that use FTP URLs.
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
     network_context_params->enable_ftp_url_support = true;
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)

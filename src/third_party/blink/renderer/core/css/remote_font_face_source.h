@@ -48,7 +48,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
 
   // For UMA reporting
   bool HadBlankText() override { return histograms_.HadBlankText(); }
-  void PaintRequested() { histograms_.FallbackFontPainted(period_); }
+  void PaintRequested() override { histograms_.FallbackFontPainted(period_); }
 
   void Trace(blink::Visitor*) override;
 

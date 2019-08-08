@@ -33,13 +33,13 @@ class ASH_EXPORT ShelfControlButton : public ShelfButton {
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   const char* GetClassName() const override;
 
+  // views::View
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+
   void PaintBackground(gfx::Canvas* canvas, const gfx::Rect& bounds);
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
-  // Calculates the bounds of the control button based on the shelf alignment.
-  gfx::Rect CalculateButtonBounds() const;
-
   Shelf* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfControlButton);

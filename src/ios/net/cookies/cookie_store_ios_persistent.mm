@@ -71,12 +71,12 @@ void CookieStoreIOSPersistent::SetCookieWithOptionsAsync(
 void CookieStoreIOSPersistent::SetCanonicalCookieAsync(
     std::unique_ptr<CanonicalCookie> cookie,
     std::string source_scheme,
-    bool modify_http_only,
+    const net::CookieOptions& options,
     SetCookiesCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   cookie_monster()->SetCanonicalCookieAsync(
-      std::move(cookie), std::move(source_scheme), modify_http_only,
+      std::move(cookie), std::move(source_scheme), options,
       WrapSetCallback(std::move(callback)));
 }
 

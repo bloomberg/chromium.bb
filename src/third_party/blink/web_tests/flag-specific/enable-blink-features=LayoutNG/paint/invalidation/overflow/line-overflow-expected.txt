@@ -44,7 +44,7 @@
         },
         {
           "object": "NGPhysicalTextFragment ' eleifend lacus,'",
-          "rect": [8, 142, 194, 79],
+          "rect": [8, 142, 195, 79],
           "reason": "disappeared"
         },
         {

@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/layers/draw_mode.h"
 #include "cc/layers/layer_collections.h"
@@ -35,7 +34,10 @@ class LayerTreeImpl;
 class CC_EXPORT RenderSurfaceImpl {
  public:
   RenderSurfaceImpl(LayerTreeImpl* layer_tree_impl, uint64_t stable_id);
+  RenderSurfaceImpl(const RenderSurfaceImpl&) = delete;
   virtual ~RenderSurfaceImpl();
+
+  RenderSurfaceImpl& operator=(const RenderSurfaceImpl&) = delete;
 
   // Returns the RenderSurfaceImpl that this render surface contributes to. Root
   // render surface's render_target is itself.
@@ -50,6 +52,13 @@ class CC_EXPORT RenderSurfaceImpl {
     draw_properties_.draw_opacity = opacity;
   }
   float draw_opacity() const { return draw_properties_.draw_opacity; }
+
+  void SetRoundedCornerRRect(const gfx::RRectF& rounded_corner_bounds) {
+    draw_properties_.rounded_corner_bounds = rounded_corner_bounds;
+  }
+  const gfx::RRectF& rounded_corner_bounds() const {
+    return draw_properties_.rounded_corner_bounds;
+  }
 
   SkBlendMode BlendMode() const;
   bool UsesDefaultBlendMode() const;
@@ -218,6 +227,11 @@ class CC_EXPORT RenderSurfaceImpl {
 
     // True if the surface needs to be clipped by clip_rect.
     bool is_clipped : 1;
+
+    // Contains a rounded corner rect to clip this render surface by when
+    // drawing. This rrect is in the target space of the render surface.  The
+    // root render surface will never have this set.
+    gfx::RRectF rounded_corner_bounds;
   };
 
   DrawProperties draw_properties_;
@@ -240,8 +254,6 @@ class CC_EXPORT RenderSurfaceImpl {
   const RenderSurfaceImpl* nearest_occlusion_immune_ancestor_;
 
   std::unique_ptr<DamageTracker> damage_tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderSurfaceImpl);
 };
 
 }  // namespace cc

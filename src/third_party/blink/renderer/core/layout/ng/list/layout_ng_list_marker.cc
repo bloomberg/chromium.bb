@@ -25,10 +25,10 @@ bool LayoutNGListMarker::IsOfType(LayoutObjectType type) const {
 
 bool LayoutNGListMarker::IsListMarkerWrapperForBlockContent(
     const LayoutObject& object) {
-  if (!object.IsAnonymous() || !object.IsLayoutBlockFlow())
+  const auto* block_flow = DynamicTo<LayoutBlockFlow>(object);
+  if (!object.IsAnonymous() || !block_flow)
     return false;
-  const LayoutBlockFlow& block_flow = ToLayoutBlockFlow(object);
-  if (const LayoutObject* child = block_flow.FirstChild()) {
+  if (const LayoutObject* child = block_flow->FirstChild()) {
     return child->IsLayoutNGListMarker() &&
            // The anonymous box should not have other children.
            // e.g., <li>text<div>block</div></li>

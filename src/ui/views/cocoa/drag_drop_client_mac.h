@@ -72,7 +72,7 @@ class VIEWS_EXPORT DragDropClientMac : public views_bridge_mac::DragDropClient {
   BridgedNativeWidgetImpl* bridge_;  // Weak. Owns |this|.
 
   // The closure for the drag and drop's run loop.
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   // Whether |this| is the source of current dragging session.
   bool is_drag_source_ = false;

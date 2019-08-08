@@ -19,6 +19,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
@@ -230,13 +231,24 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
     return gfx::CreateVectorIcon(omnibox::kHttpsInvalidIcon, kIconSize,
                                  gfx::kGoogleRed700);
   }
-  if (icon_str == "keyIcon")
+  if (icon_str == "keyIcon") {
     return gfx::CreateVectorIcon(kKeyIcon, kIconSize, gfx::kChromeIconGrey);
-  if (icon_str == "globeIcon")
+  }
+  if (icon_str == "globeIcon") {
     return gfx::CreateVectorIcon(kGlobeIcon, kIconSize, gfx::kChromeIconGrey);
+  }
   if (icon_str == "google") {
+#if defined(GOOGLE_CHROME_BUILD)
     return gfx::CreateVectorIcon(kGoogleGLogoIcon, kIconSize,
                                  gfx::kPlaceholderColor);
+#else
+    return gfx::ImageSkia();
+#endif
+  }
+
+  if (icon_str == "accountBoxIcon") {
+    return gfx::CreateVectorIcon(kAccountBoxIcon, kIconSize,
+                                 gfx::kChromeIconGrey);
   }
 
   // For other suggestion entries, get icon from PNG files.

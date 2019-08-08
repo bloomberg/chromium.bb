@@ -53,8 +53,8 @@ namespace {
 std::unique_ptr<IDBValue> ConvertReturnValue(
     const mojom::blink::IDBReturnValuePtr& input) {
   if (!input) {
-    return IDBValue::Create(scoped_refptr<SharedBuffer>(),
-                            Vector<WebBlobInfo>());
+    return std::make_unique<IDBValue>(scoped_refptr<SharedBuffer>(),
+                                      Vector<WebBlobInfo>());
   }
 
   std::unique_ptr<IDBValue> output = std::move(input->value);
@@ -63,12 +63,6 @@ std::unique_ptr<IDBValue> ConvertReturnValue(
 }
 
 }  // namespace
-
-// static
-std::unique_ptr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::Create(
-    IDBRequest* request) {
-  return base::WrapUnique(new WebIDBCallbacksImpl(request));
-}
 
 WebIDBCallbacksImpl::WebIDBCallbacksImpl(IDBRequest* request)
     : request_(request) {
@@ -149,8 +143,8 @@ void WebIDBCallbacksImpl::SuccessCursor(
   if (optional_value.has_value()) {
     value = std::move(optional_value.value());
   } else {
-    value =
-        IDBValue::Create(scoped_refptr<SharedBuffer>(), Vector<WebBlobInfo>());
+    value = std::make_unique<IDBValue>(scoped_refptr<SharedBuffer>(),
+                                       Vector<WebBlobInfo>());
   }
   DCHECK(value);
 
@@ -262,8 +256,8 @@ void WebIDBCallbacksImpl::SuccessCursorContinue(
   if (optional_value.has_value()) {
     value = std::move(optional_value.value());
   } else {
-    value =
-        IDBValue::Create(scoped_refptr<SharedBuffer>(), Vector<WebBlobInfo>());
+    value = std::make_unique<IDBValue>(scoped_refptr<SharedBuffer>(),
+                                       Vector<WebBlobInfo>());
   }
   DCHECK(value);
   value->SetIsolate(request_->GetIsolate());

@@ -1,5 +1,5 @@
 diff --git a/source/data/curr/ru.txt b/source/data/curr/ru.txt
-index b3012e91..2df66542 100644
+index 1c42b240..6e808ae3 100644
 --- a/source/data/curr/ru.txt
 +++ b/source/data/curr/ru.txt
 @@ -923,7 +923,7 @@ ru{
@@ -20,7 +20,7 @@ index b3012e91..2df66542 100644
      CurrencyPlurals{
          ADP{
 diff --git a/source/data/curr/uk.txt b/source/data/curr/uk.txt
-index 96e27c18..aaac04e4 100644
+index 08b6c403..c666873e 100644
 --- a/source/data/curr/uk.txt
 +++ b/source/data/curr/uk.txt
 @@ -923,7 +923,7 @@ uk{
@@ -32,19 +32,19 @@ index 96e27c18..aaac04e4 100644
              "українська гривня",
          }
          UAK{
-@@ -1218,7 +1218,6 @@ uk{
+@@ -1124,7 +1124,6 @@ uk{
+     }
      Currencies%variant{
          GEL{"₾"}
-         TRY{"TL"}
 -        UAH{"грн."}
      }
      CurrencyPlurals{
          ADP{
 diff --git a/source/data/locales/ar.txt b/source/data/locales/ar.txt
-index 8b2e0e72..90b3f3a0 100644
+index 4c1d7aaa..46762092 100644
 --- a/source/data/locales/ar.txt
 +++ b/source/data/locales/ar.txt
-@@ -41,8 +41,7 @@ ar{
+@@ -36,8 +36,7 @@ ar{
                  timeSeparator{":"}
              }
          }
@@ -55,33 +55,12 @@ index 8b2e0e72..90b3f3a0 100644
              miscPatterns{
                  approximately{"~{0}"}
 diff --git a/source/data/locales/hi.txt b/source/data/locales/hi.txt
-index c1208be2..e067e8b1 100644
+index eb271d23..efd8246a 100644
 --- a/source/data/locales/hi.txt
 +++ b/source/data/locales/hi.txt
-@@ -420,16 +420,16 @@ hi{
-         }
-         gregorian{
-             AmPmMarkers{
--                "पूर्वाह्न",
--                "अपराह्न",
-+                "am",
-+                "pm",
-             }
-             AmPmMarkersAbbr{
-                 "पूर्वाह्न",
-                 "अपराह्न",
-             }
-             AmPmMarkersNarrow{
--                "पू",
--                "अ",
-+                "am",
-+                "pm",
-             }
-             DateTimePatterns{
-                 "h:mm:ss a zzzz",
-@@ -597,14 +597,14 @@ hi{
+@@ -626,14 +626,14 @@ hi{
                      narrow{
-                         afternoon1{"अपराह्न"}
+                         afternoon1{"दोपहर"}
                          evening1{"शाम"}
 -                        midnight{"मध्यरात्रि"}
 +                        midnight{"m"}
@@ -89,7 +68,7 @@ index c1208be2..e067e8b1 100644
                          night1{"रात"}
                      }
                      wide{
-                         afternoon1{"अपराह्न"}
+                         afternoon1{"दोपहर"}
                          evening1{"शाम"}
 -                        midnight{"मध्यरात्रि"}
 +                        midnight{"midnight"}
@@ -97,10 +76,10 @@ index c1208be2..e067e8b1 100644
                          night1{"रात"}
                      }
 diff --git a/source/data/locales/ta.txt b/source/data/locales/ta.txt
-index 9f14a3c4..144c71b9 100644
+index 8bef6a1d..4860abd3 100644
 --- a/source/data/locales/ta.txt
 +++ b/source/data/locales/ta.txt
-@@ -687,8 +687,8 @@ ta{
+@@ -646,8 +646,8 @@ ta{
                  "பிற்பகல்",
              }
              AmPmMarkersAbbr{
@@ -112,7 +91,7 @@ index 9f14a3c4..144c71b9 100644
              AmPmMarkersNarrow{
                  "மு.ப",
 diff --git a/source/data/misc/likelySubtags.txt b/source/data/misc/likelySubtags.txt
-index 522b7e30..bd9587ff 100644
+index f9d35818..5a8e98eb 100644
 --- a/source/data/misc/likelySubtags.txt
 +++ b/source/data/misc/likelySubtags.txt
 @@ -529,7 +529,6 @@ likelySubtags:table(nofallback){
@@ -131,7 +110,7 @@ index 522b7e30..bd9587ff 100644
      ku_LB{"ku_Arab_LB"}
      kub{"kub_Latn_ZZ"}
      kud{"kud_Latn_ZZ"}
-@@ -1061,6 +1061,7 @@ likelySubtags:table(nofallback){
+@@ -1063,6 +1063,7 @@ likelySubtags:table(nofallback){
      sgs{"sgs_Latn_LT"}
      sgw{"sgw_Ethi_ZZ"}
      sgz{"sgz_Latn_ZZ"}
@@ -139,29 +118,11 @@ index 522b7e30..bd9587ff 100644
      shi{"shi_Tfng_MA"}
      shk{"shk_Latn_ZZ"}
      shn{"shn_Mymr_MM"}
-@@ -1547,7 +1548,7 @@ likelySubtags:table(nofallback){
-     und_NE{"ha_Latn_NE"}
-     und_NI{"es_Latn_NI"}
-     und_NL{"nl_Latn_NL"}
--    und_NO{"nb_Latn_NO"}
-+    und_NO{"no_Latn_NO"}
-     und_NP{"ne_Deva_NP"}
-     und_Narb{"xna_Narb_SA"}
-     und_Nbat{"arc_Nbat_JO"}
-@@ -1598,7 +1599,7 @@ likelySubtags:table(nofallback){
-     und_SD{"ar_Arab_SD"}
-     und_SE{"sv_Latn_SE"}
-     und_SI{"sl_Latn_SI"}
--    und_SJ{"nb_Latn_SJ"}
-+    und_SJ{"no_Latn_SJ"}
-     und_SK{"sk_Latn_SK"}
-     und_SM{"it_Latn_SM"}
-     und_SN{"fr_Latn_SN"}
 diff --git a/source/data/misc/metadata.txt b/source/data/misc/metadata.txt
-index 53e4bf1f..7269863e 100644
+index 239591cd..d40f1e38 100644
 --- a/source/data/misc/metadata.txt
 +++ b/source/data/misc/metadata.txt
-@@ -4581,6 +4581,8 @@ metadata:table(nofallback){
+@@ -4970,6 +4970,8 @@ metadata:table(nofallback){
          "ksb_TZ",
          "ksf_CM",
          "ksh_DE",
@@ -170,38 +131,8 @@ index 53e4bf1f..7269863e 100644
          "ku_TR",
          "kw_GB",
          "ky_KG",
-diff --git a/source/data/misc/supplementalData.txt b/source/data/misc/supplementalData.txt
-index 793b4cd6..5f48e421 100644
---- a/source/data/misc/supplementalData.txt
-+++ b/source/data/misc/supplementalData.txt
-@@ -16917,8 +16917,8 @@ supplementalData:table(nofallback){
-     languageMatching{
-         written{
-             {
--                "no",
-                 "nb",
-+                "no",
-                 "99",
-                 "0",
-             }
-@@ -17416,13 +17416,13 @@ supplementalData:table(nofallback){
-             }
-             {
-                 "nn",
--                "nb",
-+                "no",
-                 "90",
-                 "0",
-             }
-             {
-                 "nn",
--                "no",
-+                "nb",
-                 "90",
-                 "1",
-             }
 diff --git a/source/data/region/af.txt b/source/data/region/af.txt
-index 482eda38..402cd7ca 100644
+index 9b863e99..755d96dc 100644
 --- a/source/data/region/af.txt
 +++ b/source/data/region/af.txt
 @@ -110,7 +110,7 @@ af{
@@ -222,12 +153,7 @@ index 482eda38..402cd7ca 100644
          HM{"Heardeiland en McDonaldeilande"}
          HN{"Honduras"}
          HR{"Kroasië"}
-@@ -183,11 +183,11 @@ af{
-         MF{"Sint Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshalleilande"}
--        MK{"Macedonië"}
-+        MK{"Macedonië (VJRM)"}
+@@ -187,7 +187,7 @@ af{
          ML{"Mali"}
          MM{"Mianmar (Birma)"}
          MN{"Mongolië"}
@@ -255,17 +181,16 @@ index 482eda38..402cd7ca 100644
          UN{"VN"}
          US{"VSA"}
      }
-@@ -307,8 +304,6 @@ af{
+@@ -307,7 +304,6 @@ af{
          CD{"Kongo (DRK)"}
          CG{"Kongo (Republiek die)"}
          CZ{"Tsjeggiese Republiek"}
 -        FK{"Falklandeilande (Malvinas)"}
--        MK{"Macedonië (VJRM)"}
+         MK{"Macedonië (VJRM)"}
      }
-     Version{"2.1.43.65"}
- }
+     Version{"2.1.48.17"}
 diff --git a/source/data/region/am.txt b/source/data/region/am.txt
-index 9e769551..a677e613 100644
+index 4a3e367d..70bf5d37 100644
 --- a/source/data/region/am.txt
 +++ b/source/data/region/am.txt
 @@ -110,7 +110,7 @@ am{
@@ -286,12 +211,7 @@ index 9e769551..a677e613 100644
          HM{"ኽርድ ደሴቶችና ማክዶናልድ ደሴቶች"}
          HN{"ሆንዱራስ"}
          HR{"ክሮኤሽያ"}
-@@ -183,11 +183,11 @@ am{
-         MF{"ሴንት ማርቲን"}
-         MG{"ማዳጋስካር"}
-         MH{"ማርሻል አይላንድ"}
--        MK{"መቄዶንያ"}
-+        MK{"መቄዶንያ (የቀድሞ የዩጎስላቭ መቄዶንያ ሪፐብሊክ)"}
+@@ -187,7 +187,7 @@ am{
          ML{"ማሊ"}
          MM{"ማይናማር(በርማ)"}
          MN{"ሞንጎሊያ"}
@@ -319,17 +239,16 @@ index 9e769551..a677e613 100644
          UN{"የተመ"}
          US{"ዩ ኤስ"}
      }
-@@ -308,8 +305,6 @@ am{
+@@ -308,7 +305,6 @@ am{
          CG{"ኮንጎ (ሪፐብሊክ)"}
          CI{"አይቮሪኮስት"}
          CZ{"ቼክ ሪፑብሊክ"}
 -        FK{"ፎክላንድ ደሴቶች (ኢስላስ ማልቪናስ)"}
--        MK{"መቄዶንያ (የቀድሞ የዩጎስላቭ መቄዶንያ ሪፐብሊክ)"}
+         SZ{"ስዋዚላንድ"}
          TL{"ምስራቅ ቲሞር"}
      }
-     Version{"2.1.43.65"}
 diff --git a/source/data/region/ar.txt b/source/data/region/ar.txt
-index a76101a8..f977fdbe 100644
+index b3efbc2a..f226a60a 100644
 --- a/source/data/region/ar.txt
 +++ b/source/data/region/ar.txt
 @@ -110,7 +110,7 @@ ar{
@@ -350,12 +269,7 @@ index a76101a8..f977fdbe 100644
          HM{"جزيرة هيرد وجزر ماكدونالد"}
          HN{"هندوراس"}
          HR{"كرواتيا"}
-@@ -183,11 +183,11 @@ ar{
-         MF{"سان مارتن"}
-         MG{"مدغشقر"}
-         MH{"جزر مارشال"}
--        MK{"مقدونيا"}
-+        MK{"مقدونيا- جمهورية مقدونيا اليوغسلافية السابقة"}
+@@ -187,7 +187,7 @@ ar{
          ML{"مالي"}
          MM{"ميانمار (بورما)"}
          MN{"منغوليا"}
@@ -373,7 +287,7 @@ index a76101a8..f977fdbe 100644
          PT{"البرتغال"}
          PW{"بالاو"}
          PY{"باراغواي"}
-@@ -297,9 +297,6 @@ ar{
+@@ -298,9 +298,6 @@ ar{
      }
      Countries%short{
          GB{"المملكة المتحدة"}
@@ -383,17 +297,16 @@ index a76101a8..f977fdbe 100644
          UN{"الأمم المتحدة"}
          US{"الولايات المتحدة"}
      }
-@@ -308,8 +305,6 @@ ar{
+@@ -309,7 +306,6 @@ ar{
          CG{"جمهورية الكونغو"}
          CI{"كوت ديفوار"}
          CZ{"جمهورية التشيك"}
 -        FK{"جزر فوكلاند - جزر مالفيناس"}
--        MK{"مقدونيا- جمهورية مقدونيا اليوغسلافية السابقة"}
          TL{"تيمور الشرقية"}
      }
-     Version{"2.1.43.50"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/ar_SA.txt b/source/data/region/ar_SA.txt
-index 074a31c0..66e69c84 100644
+index 8b0b0535..ac60fb57 100644
 --- a/source/data/region/ar_SA.txt
 +++ b/source/data/region/ar_SA.txt
 @@ -5,13 +5,10 @@ ar_SA{
@@ -412,7 +325,7 @@ index 074a31c0..66e69c84 100644
          CZ{"التشيك"}
      }
 diff --git a/source/data/region/as.txt b/source/data/region/as.txt
-index 9c0d93ae..05436cbf 100644
+index ae3d2b45..4a16ce58 100644
 --- a/source/data/region/as.txt
 +++ b/source/data/region/as.txt
 @@ -110,7 +110,7 @@ as{
@@ -433,12 +346,7 @@ index 9c0d93ae..05436cbf 100644
          HM{"হাৰ্ড দ্বীপ আৰু মেকডোনাল্ড দ্বীপপুঞ্জ"}
          HN{"হন্দুৰাছ"}
          HR{"ক্ৰোৱেছিয়া"}
-@@ -183,11 +183,11 @@ as{
-         MF{"ছেইণ্ট মাৰ্টিন"}
-         MG{"মাদাগাস্কাৰ"}
-         MH{"মাৰ্শ্বাল দ্বীপপুঞ্জ"}
--        MK{"মেচিডোনীয়া"}
-+        MK{"মেচিডোনীয়া (FYROM)"}
+@@ -187,7 +187,7 @@ as{
          ML{"মালি"}
          MM{"ম্যানমাৰ (বাৰ্মা)"}
          MN{"মঙ্গোলিয়া"}
@@ -456,7 +364,7 @@ index 9c0d93ae..05436cbf 100644
          PT{"পৰ্তুগাল"}
          PW{"পালাউ"}
          PY{"পাৰাগুৱে"}
-@@ -297,9 +297,6 @@ as{
+@@ -299,9 +299,6 @@ as{
      }
      Countries%short{
          GB{"ইউ. কে."}
@@ -466,17 +374,16 @@ index 9c0d93ae..05436cbf 100644
          US{"মা. যু."}
      }
      Countries%variant{
-@@ -307,8 +304,6 @@ as{
+@@ -309,7 +306,6 @@ as{
          CG{"কঙ্গো (প্রজাতন্ত্র)"}
          CI{"আইভৰী কোষ্ট"}
          CZ{"চেক প্রজাতন্ত্র"}
 -        FK{"ফকলেণ্ড দ্বীপপুঞ্জ (আইলেছ মালভিনাছ)"}
--        MK{"মেচিডোনীয়া (FYROM)"}
+         MK{"মেচিডোনীয়া (FYROM)"}
+         SZ{"স্বাজিলেণ্ড"}
          TL{"পূৱ টিমোৰ"}
-     }
-     Version{"2.1.43.94"}
 diff --git a/source/data/region/ast.txt b/source/data/region/ast.txt
-index e6405483..d51cb894 100644
+index f4f22c71..c788e82e 100644
 --- a/source/data/region/ast.txt
 +++ b/source/data/region/ast.txt
 @@ -109,7 +109,7 @@ ast{
@@ -497,12 +404,7 @@ index e6405483..d51cb894 100644
          HM{"Islles Heard y McDonald"}
          HN{"Hondures"}
          HR{"Croacia"}
-@@ -182,11 +182,11 @@ ast{
-         MF{"Saint Martin"}
-         MG{"Madagascar"}
-         MH{"Islles Marshall"}
--        MK{"Macedonia"}
-+        MK{"Macedonia (ARYDM)"}
+@@ -186,7 +186,7 @@ ast{
          ML{"Malí"}
          MM{"Myanmar (Birmania)"}
          MN{"Mongolia"}
@@ -530,17 +432,16 @@ index e6405483..d51cb894 100644
          US{"EE.XX."}
      }
      Countries%variant{
-@@ -306,8 +303,6 @@ ast{
+@@ -306,7 +303,6 @@ ast{
          CG{"Congu (República del)"}
          CI{"Costa del Marfil"}
          CZ{"República Checa"}
 -        FK{"Islles Malvines (Falkland Islands)"}
--        MK{"Macedonia (ARYDM)"}
+         MK{"Macedonia (ARYDM)"}
          TL{"Timor Este"}
      }
-     Version{"2.1.44.91"}
 diff --git a/source/data/region/az.txt b/source/data/region/az.txt
-index f419865f..c2e2dadf 100644
+index 1cfe490a..e97e5fc1 100644
 --- a/source/data/region/az.txt
 +++ b/source/data/region/az.txt
 @@ -110,7 +110,7 @@ az{
@@ -561,12 +462,7 @@ index f419865f..c2e2dadf 100644
          HM{"Herd və Makdonald adaları"}
          HN{"Honduras"}
          HR{"Xorvatiya"}
-@@ -183,11 +183,11 @@ az{
-         MF{"Sent Martin"}
-         MG{"Madaqaskar"}
-         MH{"Marşal adaları"}
--        MK{"Makedoniya"}
-+        MK{"Makedoniya (KYRM)"}
+@@ -187,7 +187,7 @@ az{
          ML{"Mali"}
          MM{"Myanma"}
          MN{"Monqolustan"}
@@ -584,7 +480,7 @@ index f419865f..c2e2dadf 100644
          PT{"Portuqaliya"}
          PW{"Palau"}
          PY{"Paraqvay"}
-@@ -297,9 +297,6 @@ az{
+@@ -299,9 +299,6 @@ az{
      }
      Countries%short{
          GB{"BK"}
@@ -594,17 +490,16 @@ index f419865f..c2e2dadf 100644
          UN{"BMT"}
          US{"ABŞ"}
      }
-@@ -308,8 +305,6 @@ az{
+@@ -310,7 +307,6 @@ az{
          CG{"Konqo (Respublika)"}
          CI{"Fil Dişi Sahili"}
          CZ{"Çex Respublikası"}
 -        FK{"Folklend adaları (Malvin adaları)"}
--        MK{"Makedoniya (KYRM)"}
+         SZ{"Svazilend"}
          TL{"Doğu Timor"}
      }
-     Version{"2.1.44.53"}
 diff --git a/source/data/region/az_Cyrl.txt b/source/data/region/az_Cyrl.txt
-index 10d232ec..77036b74 100644
+index aa2a8d87..df762c89 100644
 --- a/source/data/region/az_Cyrl.txt
 +++ b/source/data/region/az_Cyrl.txt
 @@ -107,7 +107,7 @@ az_Cyrl{
@@ -625,11 +520,7 @@ index 10d232ec..77036b74 100644
          HM{"Һерд вә Макдоналд адалары"}
          HN{"Һондурас"}
          HR{"Хорватија"}
-@@ -180,10 +180,11 @@ az_Cyrl{
-         MF{"Сент Мартин"}
-         MG{"Мадагаскар"}
-         MH{"Маршал адалары"}
-+        MK{"Македонија (КЈРМ)"}
+@@ -183,7 +183,7 @@ az_Cyrl{
          ML{"Мали"}
          MM{"Мјанма"}
          MN{"Монголустан"}
@@ -638,7 +529,7 @@ index 10d232ec..77036b74 100644
          MP{"Шимали Мариан адалары"}
          MQ{"Мартиник"}
          MR{"Мавританија"}
-@@ -291,16 +292,12 @@ az_Cyrl{
+@@ -291,15 +291,12 @@ az_Cyrl{
      }
      Countries%short{
          GB{"БК"}
@@ -651,12 +542,11 @@ index 10d232ec..77036b74 100644
          CG{"Конго (Республика)"}
          CZ{"Чех Республикасы"}
 -        FK{"Фолкленд адалары (Малвин адалары)"}
--        MK{"Македонија (КЈРМ)"}
+         MK{"Македонија (КЈРМ)"}
      }
-     Version{"2.1.44.53"}
- }
+     Version{"2.1.47.82"}
 diff --git a/source/data/region/be.txt b/source/data/region/be.txt
-index 6a570fdd..3ee9f8ca 100644
+index d317bd4b..afd7ab44 100644
 --- a/source/data/region/be.txt
 +++ b/source/data/region/be.txt
 @@ -110,7 +110,7 @@ be{
@@ -677,12 +567,7 @@ index 6a570fdd..3ee9f8ca 100644
          HM{"Астравы Херд і Макдональд"}
          HN{"Гандурас"}
          HR{"Харватыя"}
-@@ -183,11 +183,11 @@ be{
-         MF{"Сен-Мартэн"}
-         MG{"Мадагаскар"}
-         MH{"Маршалавы астравы"}
--        MK{"Македонія"}
-+        MK{"Македонія (БЮРМ)"}
+@@ -187,7 +187,7 @@ be{
          ML{"Малі"}
          MM{"М’янма (Бірма)"}
          MN{"Манголія"}
@@ -710,17 +595,16 @@ index 6a570fdd..3ee9f8ca 100644
          US{"ЗША"}
      }
      Countries%variant{
-@@ -307,8 +304,6 @@ be{
+@@ -307,7 +304,6 @@ be{
          CG{"Рэспубліка Конга"}
          CI{"Бераг Слановай Косці"}
          CZ{"Чэшская Рэспубліка"}
 -        FK{"Фалклендскія (Мальвінскія) астравы"}
--        MK{"Македонія (БЮРМ)"}
+         SZ{"Каралеўства Свазіленд"}
          TL{"Усходні Тымор"}
      }
-     Version{"2.1.43.65"}
 diff --git a/source/data/region/bg.txt b/source/data/region/bg.txt
-index cf1d4eb9..c2252caa 100644
+index bed72a6b..412d1bbc 100644
 --- a/source/data/region/bg.txt
 +++ b/source/data/region/bg.txt
 @@ -110,7 +110,7 @@ bg{
@@ -741,12 +625,7 @@ index cf1d4eb9..c2252caa 100644
          HM{"острови Хърд и Макдоналд"}
          HN{"Хондурас"}
          HR{"Хърватия"}
-@@ -183,11 +183,11 @@ bg{
-         MF{"Сен Мартен"}
-         MG{"Мадагаскар"}
-         MH{"Маршалови острови"}
--        MK{"Македония"}
-+        MK{"Бивша югославска република Македония"}
+@@ -187,7 +187,7 @@ bg{
          ML{"Мали"}
          MM{"Мианмар (Бирма)"}
          MN{"Монголия"}
@@ -764,7 +643,7 @@ index cf1d4eb9..c2252caa 100644
          PT{"Португалия"}
          PW{"Палау"}
          PY{"Парагвай"}
-@@ -297,17 +297,12 @@ bg{
+@@ -297,16 +297,12 @@ bg{
      }
      Countries%short{
          GB{"Обединеното кралство"}
@@ -778,12 +657,11 @@ index cf1d4eb9..c2252caa 100644
          CG{"Конго (Република)"}
          CZ{"Чешка република"}
 -        FK{"Фолкландски острови (Малвински острови)"}
--        MK{"Бивша югославска република Македония"}
      }
-     Version{"2.1.43.94"}
+     Version{"2.1.48.42"}
  }
 diff --git a/source/data/region/bn.txt b/source/data/region/bn.txt
-index a6376b10..671fd95c 100644
+index 6354b38e..7959ec39 100644
 --- a/source/data/region/bn.txt
 +++ b/source/data/region/bn.txt
 @@ -110,7 +110,7 @@ bn{
@@ -804,12 +682,7 @@ index a6376b10..671fd95c 100644
          HM{"হার্ড এবং ম্যাকডোনাল্ড দ্বীপপুঞ্জ"}
          HN{"হন্ডুরাস"}
          HR{"ক্রোয়েশিয়া"}
-@@ -183,11 +183,11 @@ bn{
-         MF{"সেন্ট মার্টিন"}
-         MG{"মাদাগাস্কার"}
-         MH{"মার্শাল দ্বীপপুঞ্জ"}
--        MK{"ম্যাসাডোনিয়া"}
-+        MK{"ম্যাসিডোনিয়া (FYROM)"}
+@@ -187,7 +187,7 @@ bn{
          ML{"মালি"}
          MM{"মায়ানমার (বার্মা)"}
          MN{"মঙ্গোলিয়া"}
@@ -837,17 +710,16 @@ index a6376b10..671fd95c 100644
          UN{"ইউএন"}
          US{"ইউ এস"}
      }
-@@ -308,8 +305,6 @@ bn{
+@@ -308,7 +305,6 @@ bn{
          CG{"কঙ্গো (প্রজাতন্ত্র)"}
          CI{"আইভরি কোস্ট"}
          CZ{"চেক প্রজাতন্ত্র"}
 -        FK{"ফকল্যান্ড আইল্যান্ড ( ইসল্যাস মাসভেনিস)"}
--        MK{"ম্যাসিডোনিয়া (FYROM)"}
+         MK{"ম্যাসিডোনিয়া (FYROM)"}
+         SZ{"সোয়াজিল্যান্ড"}
          TL{"পূর্ব তিমুর"}
-     }
-     Version{"2.1.44.91"}
 diff --git a/source/data/region/br.txt b/source/data/region/br.txt
-index ccd0c000..8a56f4cb 100644
+index 789eec2d..d91c6f8a 100644
 --- a/source/data/region/br.txt
 +++ b/source/data/region/br.txt
 @@ -110,7 +110,7 @@ br{
@@ -868,12 +740,7 @@ index ccd0c000..8a56f4cb 100644
          HM{"Inizi Heard ha McDonald"}
          HN{"Honduras"}
          HR{"Kroatia"}
-@@ -183,11 +183,11 @@ br{
-         MF{"Saint Martin"}
-         MG{"Madagaskar"}
-         MH{"Inizi Marshall"}
--        MK{"Makedonia"}
-+        MK{"Makedonia (RYKM)"}
+@@ -187,7 +187,7 @@ br{
          ML{"Mali"}
          MM{"Myanmar (Birmania)"}
          MN{"Mongolia"}
@@ -901,17 +768,16 @@ index ccd0c000..8a56f4cb 100644
          US{"SU"}
      }
      Countries%variant{
-@@ -307,8 +304,6 @@ br{
+@@ -307,7 +304,6 @@ br{
          CG{"Kongo (Republik)"}
          CI{"Aod Olifant"}
          CZ{"Republik Tchek"}
 -        FK{"Inizi Falkland (Inizi Maloù)"}
--        MK{"Makedonia (RYKM)"}
+         MK{"Makedonia (RYKM)"}
          TL{"Timor ar Reter"}
      }
-     Version{"2.1.44.91"}
 diff --git a/source/data/region/bs.txt b/source/data/region/bs.txt
-index 52d44aa5..29c500c6 100644
+index c3b3f46a..e2f2c8c4 100644
 --- a/source/data/region/bs.txt
 +++ b/source/data/region/bs.txt
 @@ -110,7 +110,7 @@ bs{
@@ -932,12 +798,7 @@ index 52d44aa5..29c500c6 100644
          HM{"Herd i arhipelag MekDonald"}
          HN{"Honduras"}
          HR{"Hrvatska"}
-@@ -183,11 +183,11 @@ bs{
-         MF{"Sveti Martin"}
-         MG{"Madagaskar"}
-         MH{"Maršalova ostrva"}
--        MK{"Makedonija"}
-+        MK{"Makedonija (BJR)"}
+@@ -187,7 +187,7 @@ bs{
          ML{"Mali"}
          MM{"Mjanmar"}
          MN{"Mongolija"}
@@ -965,17 +826,16 @@ index 52d44aa5..29c500c6 100644
          UN{"UN"}
          US{"SAD"}
      }
-@@ -308,8 +305,6 @@ bs{
+@@ -308,7 +305,6 @@ bs{
          CG{"Republika Kongo"}
          CI{"Obala Bjelokosti"}
          CZ{"Češka Republika"}
 -        FK{"Folklandska (Malvinska) ostrva"}
--        MK{"Makedonija (BJR)"}
+         SZ{"Svazi"}
          TL{"TL"}
      }
-     Version{"2.1.44.88"}
 diff --git a/source/data/region/bs_Cyrl.txt b/source/data/region/bs_Cyrl.txt
-index cbeb209a..dcc2085a 100644
+index 131713ba..75552b34 100644
 --- a/source/data/region/bs_Cyrl.txt
 +++ b/source/data/region/bs_Cyrl.txt
 @@ -110,7 +110,7 @@ bs_Cyrl{
@@ -996,12 +856,7 @@ index cbeb209a..dcc2085a 100644
          HM{"Херд и Мекдоналд Острва"}
          HN{"Хондурас"}
          HR{"Хрватска"}
-@@ -183,11 +183,11 @@ bs_Cyrl{
-         MF{"Свети Мартин"}
-         MG{"Мадагаскар"}
-         MH{"Маршалска Острва"}
--        MK{"Македонија"}
-+        MK{"Македонија (БЈР)"}
+@@ -187,7 +187,7 @@ bs_Cyrl{
          ML{"Мали"}
          MM{"Мјанмар"}
          MN{"Монголија"}
@@ -1019,17 +874,16 @@ index cbeb209a..dcc2085a 100644
          US{"САД"}
      }
      Countries%variant{
-@@ -305,8 +303,6 @@ bs_Cyrl{
+@@ -305,7 +303,6 @@ bs_Cyrl{
          CG{"Република Конго"}
          CI{"Обала Бјелокости"}
          CZ{"Чешка Република"}
 -        FK{"Фокландска (Малвинска) острва"}
--        MK{"Македонија (БЈР)"}
      }
-     Version{"2.1.41.34"}
+     Version{"2.1.49.82"}
  }
 diff --git a/source/data/region/ca.txt b/source/data/region/ca.txt
-index 199894c7..eb7eb76b 100644
+index 9a43604e..9b6340fb 100644
 --- a/source/data/region/ca.txt
 +++ b/source/data/region/ca.txt
 @@ -110,7 +110,7 @@ ca{
@@ -1050,12 +904,7 @@ index 199894c7..eb7eb76b 100644
          HM{"Illa Heard i Illes McDonald"}
          HN{"Hondures"}
          HR{"Croàcia"}
-@@ -183,11 +183,11 @@ ca{
-         MF{"Saint Martin"}
-         MG{"Madagascar"}
-         MH{"Illes Marshall"}
--        MK{"Macedònia"}
-+        MK{"Macedònia (Antiga República Iugoslava de Macedònia)"}
+@@ -187,7 +187,7 @@ ca{
          ML{"Mali"}
          MM{"Myanmar (Birmània)"}
          MN{"Mongòlia"}
@@ -1073,7 +922,7 @@ index 199894c7..eb7eb76b 100644
          PT{"Portugal"}
          PW{"Palau"}
          PY{"Paraguai"}
-@@ -297,9 +297,6 @@ ca{
+@@ -299,9 +299,6 @@ ca{
      }
      Countries%short{
          GB{"RU"}
@@ -1083,20 +932,19 @@ index 199894c7..eb7eb76b 100644
          UN{"ONU"}
          US{"EUA"}
      }
-@@ -307,8 +304,6 @@ ca{
+@@ -309,7 +306,6 @@ ca{
          CD{"Congo (República Democràtica del Congo)"}
          CG{"Congo (República del Congo)"}
          CZ{"República Txeca"}
 -        FK{"Illes Malvines (Illes Falkland)"}
--        MK{"Macedònia (Antiga República Iugoslava de Macedònia)"}
+         SZ{"Swazilàndia"}
      }
-     Version{"2.1.43.65"}
- }
+     Version{"2.1.48.42"}
 diff --git a/source/data/region/ccp.txt b/source/data/region/ccp.txt
-index 34ba6930..77d4c464 100644
+index d939722b..5cf55b1b 100644
 --- a/source/data/region/ccp.txt
 +++ b/source/data/region/ccp.txt
-@@ -108,7 +108,10 @@ ccp{
+@@ -107,7 +107,10 @@ ccp{
          EU{"𑄄𑄃𑄪𑄢𑄮𑄛𑄩𑄠𑄧 𑄄𑄃𑄪𑄚𑄨𑄠𑄧𑄚𑄴"}
          FI{"𑄜𑄨𑄚𑄴𑄣𑄳𑄠𑄚𑄴𑄓𑄴"}
          FJ{"𑄜𑄨𑄎𑄨"}
@@ -1108,7 +956,7 @@ index 34ba6930..77d4c464 100644
          FM{"𑄟𑄭𑄇𑄳𑄢𑄮𑄚𑄬𑄥𑄨𑄠"}
          FO{"𑄜𑄳𑄠𑄢𑄧𑄃𑄮 𑄉𑄭 𑄉𑄭 𑄞𑄨𑄘𑄳𑄠"}
          FR{"𑄜𑄳𑄢𑄚𑄴𑄥𑄴"}
-@@ -134,7 +137,7 @@ ccp{
+@@ -133,7 +136,7 @@ ccp{
          GU{"𑄉𑄪𑄠𑄟𑄴"}
          GW{"𑄉𑄨𑄚𑄨-𑄝𑄨𑄥𑄃𑄪"}
          GY{"𑄉𑄨𑄠𑄚"}
@@ -1117,12 +965,7 @@ index 34ba6930..77d4c464 100644
          HM{
              "𑄦𑄢𑄴𑄓𑄴 𑄉𑄭 𑄉𑄭 𑄞𑄨𑄘𑄳𑄠 𑄃𑄳𑄃 𑄟𑄳𑄠𑄇𑄴𑄓𑄮𑄚𑄴𑄓𑄴 𑄉𑄭 𑄉𑄭 "
              "𑄞𑄨𑄘𑄳𑄠"
-@@ -187,11 +190,11 @@ ccp{
-         MF{"𑄥𑄬𑄚𑄴𑄑𑄴 𑄟𑄢𑄴𑄑𑄨𑄚𑄴"}
-         MG{"𑄟𑄘𑄉𑄌𑄴𑄇𑄢𑄴"}
-         MH{"𑄟𑄢𑄴𑄥𑄣𑄴 𑄉𑄭 𑄉𑄭 𑄞𑄨𑄘𑄳𑄠"}
--        MK{"𑄟𑄳𑄠𑄥𑄓𑄮𑄚𑄨𑄠"}
-+        MK{"𑄟𑄬𑄥𑄨𑄓𑄮𑄚𑄠(FYROM)"}
+@@ -190,7 +193,7 @@ ccp{
          ML{"𑄟𑄣𑄨"}
          MM{"𑄟𑄠𑄚𑄴𑄟𑄢𑄴 (𑄝𑄢𑄴𑄟)"}
          MN{"𑄟𑄧𑄋𑄴𑄉𑄮𑄣𑄨𑄠"}
@@ -1131,7 +974,7 @@ index 34ba6930..77d4c464 100644
          MP{"𑄅𑄪𑄖𑄴𑄖𑄮𑄉𑄎𑄢𑄴 𑄟𑄢𑄨𑄠𑄚 𑄉𑄭 𑄉𑄭 𑄞𑄨𑄘𑄳𑄠"}
          MQ{"𑄟𑄢𑄴𑄑𑄨𑄚𑄨𑄇𑄴"}
          MR{"𑄟𑄧𑄢𑄨𑄖𑄚𑄨𑄠"}
-@@ -226,7 +229,7 @@ ccp{
+@@ -225,7 +228,7 @@ ccp{
          PM{"𑄥𑄬𑄚𑄴𑄑𑄴 𑄛𑄨𑄠𑄬𑄢𑄴 𑄃𑄮 𑄟𑄨𑄢𑄪𑄠𑄬𑄣𑄧𑄚𑄴"}
          PN{"𑄛𑄨𑄇𑄴𑄇𑄬𑄠𑄢𑄴𑄚𑄴 𑄉𑄭 𑄉𑄭 𑄞𑄨𑄘𑄳𑄠"}
          PR{"𑄛𑄪𑄠𑄬𑄢𑄴𑄖𑄮 𑄢𑄨𑄇𑄮"}
@@ -1140,7 +983,7 @@ index 34ba6930..77d4c464 100644
          PT{"𑄛𑄧𑄢𑄴𑄖𑄪𑄉𑄣𑄴"}
          PW{"𑄛𑄣𑄃𑄪"}
          PY{"𑄛𑄳𑄠𑄢𑄉𑄪𑄠𑄬"}
-@@ -304,9 +307,6 @@ ccp{
+@@ -303,9 +306,6 @@ ccp{
      }
      Countries%short{
          GB{"𑄄𑄃𑄪𑄇𑄬"}
@@ -1150,7 +993,7 @@ index 34ba6930..77d4c464 100644
          UN{"𑄃𑄨𑄃𑄪𑄃𑄬𑄚𑄴"}
          US{"𑄃𑄨𑄃𑄪𑄃𑄬𑄌𑄴"}
      }
-@@ -315,11 +315,6 @@ ccp{
+@@ -314,10 +314,6 @@ ccp{
          CG{"𑄇𑄧𑄋𑄴𑄉𑄮 (𑄛𑄳𑄢𑄎𑄖𑄚𑄴𑄖𑄳𑄢𑄧)"}
          CI{"𑄃𑄭𑄞𑄧𑄢𑄨"}
          CZ{"𑄌𑄬𑄇𑄴 𑄛𑄳𑄢𑄎𑄖𑄧𑄚𑄴𑄖𑄳𑄢𑄧"}
@@ -1158,12 +1001,11 @@ index 34ba6930..77d4c464 100644
 -            "𑄜𑄧𑄇𑄴𑄣𑄳𑄠𑄚𑄴𑄓𑄴 𑄃𑄭𑄣𑄳𑄠𑄚𑄴𑄓𑄴 (𑄄𑄥𑄴𑄣𑄳𑄠𑄌𑄴 "
 -            "𑄟𑄥𑄴𑄞𑄬𑄚𑄨𑄌𑄴)"
 -        }
--        MK{"𑄟𑄬𑄥𑄨𑄓𑄮𑄚𑄠(FYROM)"}
+         MK{"𑄟𑄬𑄥𑄨𑄓𑄮𑄚𑄠(FYROM)"}
          TL{"𑄛𑄪𑄉𑄮 𑄖𑄨𑄟𑄪𑄢𑄴"}
      }
-     Version{"2.1.43.50"}
 diff --git a/source/data/region/ce.txt b/source/data/region/ce.txt
-index 64071a94..b6406e51 100644
+index d78dbdf4..b76cb80d 100644
 --- a/source/data/region/ce.txt
 +++ b/source/data/region/ce.txt
 @@ -109,7 +109,7 @@ ce{
@@ -1218,9 +1060,9 @@ index 64071a94..b6406e51 100644
 -        FK{"Фолклендан гӀайренаш (Мальвинаш)"}
          TL{"Тимор-Лесте"}
      }
-     Version{"2.1.41.34"}
+     Version{"2.1.47.82"}
 diff --git a/source/data/region/chr.txt b/source/data/region/chr.txt
-index 5a902b60..b395481e 100644
+index 12f9400c..9b3f36ea 100644
 --- a/source/data/region/chr.txt
 +++ b/source/data/region/chr.txt
 @@ -110,7 +110,7 @@ chr{
@@ -1241,12 +1083,7 @@ index 5a902b60..b395481e 100644
          HM{"ᎲᏗ ᎤᎦᏚᏛᎢ ᎠᎴ ᎺᎩᏓᎾᎵᏗ ᏚᎦᏚᏛᎢ"}
          HN{"ᎭᏂᏚᎳᏍ"}
          HR{"ᎧᎶᎡᏏᎠ"}
-@@ -183,11 +183,11 @@ chr{
-         MF{"ᎤᏓᏅᏘ ᏡᏡ"}
-         MG{"ᎹᏓᎦᏍᎧᎵ"}
-         MH{"ᎹᏌᎵ ᏚᎦᏚᏛᎢ"}
--        MK{"ᎹᏎᏙᏂᏯ"}
-+        MK{"ᎹᏎᏙᏂᏯ (FYROM)"}
+@@ -187,7 +187,7 @@ chr{
          ML{"ᎹᎵ"}
          MM{"ᎹᏯᎹᎵ (ᏇᎵᎹ)"}
          MN{"ᎹᏂᎪᎵᎠ"}
@@ -1264,7 +1101,7 @@ index 5a902b60..b395481e 100644
          PT{"ᏉᏥᎦᎳ"}
          PW{"ᏆᎴᎠᏫ"}
          PY{"ᏆᎳᏇᎢᏯ"}
-@@ -297,9 +297,6 @@ chr{
+@@ -299,9 +299,6 @@ chr{
      }
      Countries%short{
          GB{"UK"}
@@ -1274,17 +1111,16 @@ index 5a902b60..b395481e 100644
          US{"US"}
      }
      Countries%variant{
-@@ -307,8 +304,6 @@ chr{
+@@ -309,7 +306,6 @@ chr{
          CG{"ᎧᏂᎪ (ᏍᎦᏚᎩ)"}
          CI{"ᎤᏁᎬ ᎪᎳ ᎠᎹᏳᎶᏗ"}
          CZ{"ᏤᎩ ᏍᎦᏚᎩ"}
 -        FK{"ᏩᎩ ᏚᎦᏚᏛᎢ (ᎢᏍᎳᏍ ᎹᎸᏫᎾᏍ)"}
--        MK{"ᎹᏎᏙᏂᏯ (FYROM)"}
+         SZ{"ᎠᏂᏍᏩᏏᎢ"}
          TL{"ᏗᎧᎸᎬᎢ ᏘᎼᎵ"}
      }
-     Version{"2.1.43.2"}
 diff --git a/source/data/region/ckb.txt b/source/data/region/ckb.txt
-index 8973ee81..9d3b9701 100644
+index a096a143..1a20111e 100644
 --- a/source/data/region/ckb.txt
 +++ b/source/data/region/ckb.txt
 @@ -222,7 +222,7 @@ ckb{
@@ -1306,8 +1142,66 @@ index 8973ee81..9d3b9701 100644
          US{"ویلایەتە یەکگرتووەکان"}
      }
      Countries%variant{
+diff --git a/source/data/region/cs.txt b/source/data/region/cs.txt
+index 4053ab34..5f0758bb 100644
+--- a/source/data/region/cs.txt
++++ b/source/data/region/cs.txt
+@@ -110,7 +110,7 @@ cs{
+         EZ{"eurozóna"}
+         FI{"Finsko"}
+         FJ{"Fidži"}
+-        FK{"Falklandské ostrovy"}
++        FK{"Falklandské ostrovy (Malvíny)"}
+         FM{"Mikronésie"}
+         FO{"Faerské ostrovy"}
+         FR{"Francie"}
+@@ -133,7 +133,7 @@ cs{
+         GU{"Guam"}
+         GW{"Guinea-Bissau"}
+         GY{"Guyana"}
+-        HK{"Hongkong – ZAO Číny"}
++        HK{"Hongkong"}
+         HM{"Heardův ostrov a McDonaldovy ostrovy"}
+         HN{"Honduras"}
+         HR{"Chorvatsko"}
+@@ -187,7 +187,7 @@ cs{
+         ML{"Mali"}
+         MM{"Myanmar (Barma)"}
+         MN{"Mongolsko"}
+-        MO{"Macao – ZAO Číny"}
++        MO{"Macao"}
+         MP{"Severní Mariany"}
+         MQ{"Martinik"}
+         MR{"Mauritánie"}
+@@ -222,7 +222,7 @@ cs{
+         PM{"Saint-Pierre a Miquelon"}
+         PN{"Pitcairnovy ostrovy"}
+         PR{"Portoriko"}
+-        PS{"Palestinská území"}
++        PS{"Palestina"}
+         PT{"Portugalsko"}
+         PW{"Palau"}
+         PY{"Paraguay"}
+@@ -299,9 +299,6 @@ cs{
+     }
+     Countries%short{
+         GB{"GB"}
+-        HK{"Hongkong"}
+-        MO{"Macao"}
+-        PS{"Palestina"}
+         UN{"OSN"}
+         US{"USA"}
+     }
+@@ -310,7 +307,6 @@ cs{
+         CG{"Kongo (republika)"}
+         CI{"Côte d’Ivoire"}
+         CZ{"Česká republika"}
+-        FK{"Falklandské ostrovy (Malvíny)"}
+     }
+     Version{"2.1.48.44"}
+ }
 diff --git a/source/data/region/cy.txt b/source/data/region/cy.txt
-index b2855cf0..d402417a 100644
+index 6093e0c0..304f0fd2 100644
 --- a/source/data/region/cy.txt
 +++ b/source/data/region/cy.txt
 @@ -110,7 +110,7 @@ cy{
@@ -1328,12 +1222,7 @@ index b2855cf0..d402417a 100644
          HM{"Ynys Heard ac Ynysoedd McDonald"}
          HN{"Honduras"}
          HR{"Croatia"}
-@@ -183,11 +183,11 @@ cy{
-         MF{"Saint Martin"}
-         MG{"Madagascar"}
-         MH{"Ynysoedd Marshall"}
--        MK{"Macedonia"}
-+        MK{"Macedonia (CWIM)"}
+@@ -187,7 +187,7 @@ cy{
          ML{"Mali"}
          MM{"Myanmar (Burma)"}
          MN{"Mongolia"}
@@ -1351,7 +1240,7 @@ index b2855cf0..d402417a 100644
          PT{"Portiwgal"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -297,9 +297,6 @@ cy{
+@@ -299,9 +299,6 @@ cy{
      }
      Countries%short{
          GB{"DU"}
@@ -1361,17 +1250,16 @@ index b2855cf0..d402417a 100644
          UN{"UN"}
          US{"UDA"}
      }
-@@ -308,8 +305,6 @@ cy{
+@@ -310,7 +307,6 @@ cy{
          CG{"Y Congo (Gweriniaeth)"}
          CI{"Arfordir Ifori"}
          CZ{"Gweriniaeth Tsiec"}
 -        FK{"Ynysoedd y Falkland (Ynysoedd y Malfinas)"}
--        MK{"Macedonia (CWIM)"}
+         SZ{"Gwlad Swazi"}
          TL{"Dwyrain Timor"}
      }
-     Version{"2.1.44.91"}
 diff --git a/source/data/region/da.txt b/source/data/region/da.txt
-index 4d6dcdbf..ad97b17b 100644
+index fccd5ba4..00a3017c 100644
 --- a/source/data/region/da.txt
 +++ b/source/data/region/da.txt
 @@ -110,7 +110,7 @@ da{
@@ -1392,12 +1280,7 @@ index 4d6dcdbf..ad97b17b 100644
          HM{"Heard Island og McDonald Islands"}
          HN{"Honduras"}
          HR{"Kroatien"}
-@@ -183,11 +183,11 @@ da{
-         MF{"Saint Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshalløerne"}
--        MK{"Makedonien"}
-+        MK{"Den tidligere jugoslaviske republik Makedonien"}
+@@ -187,7 +187,7 @@ da{
          ML{"Mali"}
          MM{"Myanmar (Burma)"}
          MN{"Mongoliet"}
@@ -1425,17 +1308,16 @@ index 4d6dcdbf..ad97b17b 100644
          UN{"FN"}
          US{"USA"}
      }
-@@ -307,8 +304,6 @@ da{
+@@ -307,7 +304,6 @@ da{
          CD{"Den Demokratiske Republik Congo (DRC)"}
          CG{"Republikken Congo"}
          CZ{"Den Tjekkiske Republik"}
 -        FK{"Falklandsøerne (Islas Malvinas)"}
--        MK{"Den tidligere jugoslaviske republik Makedonien"}
+         SZ{"Swaziland"}
          TL{"Østtimor"}
      }
-     Version{"2.1.43.65"}
 diff --git a/source/data/region/de.txt b/source/data/region/de.txt
-index 961557f8..8b6f8732 100644
+index f8d4af70..f19d0e03 100644
 --- a/source/data/region/de.txt
 +++ b/source/data/region/de.txt
 @@ -110,7 +110,7 @@ de{
@@ -1456,12 +1338,7 @@ index 961557f8..8b6f8732 100644
          HM{"Heard und McDonaldinseln"}
          HN{"Honduras"}
          HR{"Kroatien"}
-@@ -183,11 +183,11 @@ de{
-         MF{"St. Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshallinseln"}
--        MK{"Mazedonien"}
-+        MK{"Mazedonien (EJR)"}
+@@ -187,7 +187,7 @@ de{
          ML{"Mali"}
          MM{"Myanmar"}
          MN{"Mongolei"}
@@ -1489,17 +1366,16 @@ index 961557f8..8b6f8732 100644
          UN{"UN"}
          US{"USA"}
      }
-@@ -308,8 +305,6 @@ de{
+@@ -308,7 +305,6 @@ de{
          CG{"Kongo (Republik)"}
          CI{"Elfenbeinküste"}
          CZ{"Tschechische Republik"}
 -        FK{"Falklandinseln (Malwinen)"}
--        MK{"Mazedonien (EJR)"}
+         SZ{"Eswatini"}
          TL{"Osttimor"}
      }
-     Version{"2.1.44.91"}
 diff --git a/source/data/region/dsb.txt b/source/data/region/dsb.txt
-index e8438f7a..75898a91 100644
+index 5754a8b9..201511e5 100644
 --- a/source/data/region/dsb.txt
 +++ b/source/data/region/dsb.txt
 @@ -108,7 +108,7 @@ dsb{
@@ -1520,12 +1396,7 @@ index e8438f7a..75898a91 100644
          HM{"Heardowa kupa a McDonaldowe kupy"}
          HN{"Honduras"}
          HR{"Chorwatska"}
-@@ -181,11 +181,11 @@ dsb{
-         MF{"St. Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshallowe kupy"}
--        MK{"Makedońska"}
-+        MK{"Makedońska (PRJ)"}
+@@ -185,7 +185,7 @@ dsb{
          ML{"Mali"}
          MM{"Myanmar"}
          MN{"Mongolska"}
@@ -1543,7 +1414,7 @@ index e8438f7a..75898a91 100644
          PT{"Portugalska"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -294,17 +294,12 @@ dsb{
+@@ -294,16 +294,12 @@ dsb{
      }
      Countries%short{
          GB{"UK"}
@@ -1557,12 +1428,11 @@ index e8438f7a..75898a91 100644
          CG{"Kongo (Republika)"}
          CI{"Słonowokósćowy pśibrjog"}
 -        FK{"Falklandske kupy (Malwiny)"}
--        MK{"Makedońska (PRJ)"}
+         MK{"Makedońska (PRJ)"}
          TL{"Pódzajtšny Timor"}
      }
-     Version{"2.1.41.34"}
 diff --git a/source/data/region/dz.txt b/source/data/region/dz.txt
-index 3712cea3..2a2294eb 100644
+index 7eed9ca9..1fc51a1f 100644
 --- a/source/data/region/dz.txt
 +++ b/source/data/region/dz.txt
 @@ -108,7 +108,7 @@ dz{
@@ -1583,12 +1453,7 @@ index 3712cea3..2a2294eb 100644
          HM{"ཧཱརཌ་མཚོ་གླིང་ དང་ མེཀ་ཌོ་ནལཌ྄་གླིང་ཚོམ"}
          HN{"ཧཱན་ཌུ་རཱས྄"}
          HR{"ཀྲོ་ཨེ་ཤ"}
-@@ -181,11 +181,11 @@ dz{
-         MF{"སེནཊ་ མཱར་ཊིན"}
-         MG{"མ་དཱ་གེས་ཀར"}
-         MH{"མར་ཤེལ་གླིང་ཚོམ"}
--        MK{"མ་སེ་ཌོ་ནི་ཡ"}
-+        MK{"མ་སེ་ཌོ་ནི་ཡ་ (ཡུ་གོ་སླཱ་བི་ཡ)"}
+@@ -185,7 +185,7 @@ dz{
          ML{"མཱ་ལི"}
          MM{"མི་ཡཱན་མར་ (བྷར་མ)"}
          MN{"སོག་པོ་ཡུལ"}
@@ -1597,7 +1462,7 @@ index 3712cea3..2a2294eb 100644
          MP{"བྱང་ཕྱོགས་ཀྱི་མ་ར་ཡ་ན་གླིང་ཚོམ"}
          MQ{"མཱར་ཊི་ནིཀ"}
          MR{"མོ་རི་ཊེ་ནི་ཡ"}
-@@ -291,16 +291,10 @@ dz{
+@@ -291,15 +291,10 @@ dz{
          ZW{"ཛིམ་བྷབ་ཝེ"}
          ZZ{"ངོ་མ་ཤེས་པའི་ལུང་ཕྱོགས"}
      }
@@ -1610,12 +1475,11 @@ index 3712cea3..2a2294eb 100644
          CG{"རི་པབ་ལིཀ་ ཨོཕ་ ཀོང་གྷོ"}
          CI{"ཨི་ཝོ་རི་ཀོསཊ"}
 -        FK{"ཕལྐ་ལནྜ་གླིང་ཚོམ (ཨིས་ལཱས་མལ་བི་ཎཱས)"}
--        MK{"མ་སེ་ཌོ་ནི་ཡ་ (ཡུ་གོ་སླཱ་བི་ཡ)"}
+         MK{"མ་སེ་ཌོ་ནི་ཡ་ (ཡུ་གོ་སླཱ་བི་ཡ)"}
          TL{"ཤར་ཕྱོགས་ཏི་་མོར"}
      }
-     Version{"2.1.41.34"}
 diff --git a/source/data/region/ee.txt b/source/data/region/ee.txt
-index 5de9acf4..1258284b 100644
+index 988610d5..15a4b85e 100644
 --- a/source/data/region/ee.txt
 +++ b/source/data/region/ee.txt
 @@ -106,7 +106,7 @@ ee{
@@ -1636,12 +1500,7 @@ index 5de9acf4..1258284b 100644
          HM{"Heard kple Mcdonald ƒudomekpowo nutome"}
          HN{"Hondurasdu"}
          HR{"Kroatsia nutome"}
-@@ -179,11 +179,11 @@ ee{
-         MF{"Saint Martin nutome"}
-         MG{"Madagaska nutome"}
-         MH{"Marshal ƒudomekpowo nutome"}
--        MK{"Makedonia nutome"}
-+        MK{"Makedonia (FYROM) nutome"}
+@@ -183,7 +183,7 @@ ee{
          ML{"Mali nutome"}
          MM{"Myanmar (Burma) nutome"}
          MN{"Mongolia nutome"}
@@ -1650,7 +1509,7 @@ index 5de9acf4..1258284b 100644
          MP{"Dziehe Marina ƒudomekpowo nutome"}
          MQ{"Martiniki nutome"}
          MR{"Mauritania nutome"}
-@@ -286,16 +286,10 @@ ee{
+@@ -286,15 +286,10 @@ ee{
          ZW{"Zimbabwe nutome"}
          ZZ{"nutome manya"}
      }
@@ -1663,12 +1522,11 @@ index 5de9acf4..1258284b 100644
          CG{"Kongo repɔblik nutome"}
          CI{"Ivory Kost nutome"}
 -        FK{"Falkland ƒudomekpowo (Islas Malvinas) nutome"}
--        MK{"Makedonia (FYROM) nutome"}
+         MK{"Makedonia (FYROM) nutome"}
          TL{"Ɣedzeƒe Timɔ nutome"}
      }
-     Version{"2.1.44.88"}
 diff --git a/source/data/region/el.txt b/source/data/region/el.txt
-index e52a1c93..b48a0022 100644
+index fea60953..024d85fa 100644
 --- a/source/data/region/el.txt
 +++ b/source/data/region/el.txt
 @@ -110,7 +110,7 @@ el{
@@ -1689,12 +1547,7 @@ index e52a1c93..b48a0022 100644
          HM{"Νήσοι Χερντ και Μακντόναλντ"}
          HN{"Ονδούρα"}
          HR{"Κροατία"}
-@@ -183,11 +183,11 @@ el{
-         MF{"Άγιος Μαρτίνος (Γαλλικό τμήμα)"}
-         MG{"Μαδαγασκάρη"}
-         MH{"Νήσοι Μάρσαλ"}
--        MK{"Πρώην Γιουγκοσλαβική Δημοκρατία της Μακεδονίας"}
-+        MK{"Πρώην Γιουγκοσλαβική Δημοκρατία της Μακεδονίας (ΠΓΔΜ)"}
+@@ -187,7 +187,7 @@ el{
          ML{"Μάλι"}
          MM{"Μιανμάρ (Βιρμανία)"}
          MN{"Μογγολία"}
@@ -1712,7 +1565,7 @@ index e52a1c93..b48a0022 100644
          PT{"Πορτογαλία"}
          PW{"Παλάου"}
          PY{"Παραγουάη"}
-@@ -297,9 +297,6 @@ el{
+@@ -299,9 +299,6 @@ el{
      }
      Countries%short{
          GB{"ΗΒ"}
@@ -1722,17 +1575,16 @@ index e52a1c93..b48a0022 100644
          UN{"ΟΗΕ"}
          US{"ΗΠΑ"}
      }
-@@ -307,8 +304,6 @@ el{
+@@ -309,7 +306,6 @@ el{
          CD{"Κονγκό (ΛΔΚ)"}
          CG{"Κονγκό (Δημοκρατία)"}
          CZ{"Τσεχική Δημοκρατία"}
 -        FK{"Νήσοι Φόκλαντ (Νήσοι Μαλβίνας)"}
--        MK{"Πρώην Γιουγκοσλαβική Δημοκρατία της Μακεδονίας (ΠΓΔΜ)"}
          TL{"Ανατολικό Τιμόρ"}
      }
-     Version{"2.1.43.65"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/en.txt b/source/data/region/en.txt
-index b3b9e347..d7851d88 100644
+index 307abf18..0c1347ee 100644
 --- a/source/data/region/en.txt
 +++ b/source/data/region/en.txt
 @@ -110,7 +110,7 @@ en{
@@ -1753,17 +1605,12 @@ index b3b9e347..d7851d88 100644
          HM{"Heard & McDonald Islands"}
          HN{"Honduras"}
          HR{"Croatia"}
-@@ -183,11 +183,11 @@ en{
-         MF{"St. Martin"}
-         MG{"Madagascar"}
-         MH{"Marshall Islands"}
--        MK{"Macedonia"}
-+        MK{"Macedonia (FYROM)"}
+@@ -187,7 +187,7 @@ en{
          ML{"Mali"}
          MM{"Myanmar (Burma)"}
          MN{"Mongolia"}
--        MO{"Macau SAR China"}
-+        MO{"Macau"}
+-        MO{"Macao SAR China"}
++        MO{"Macao"}
          MP{"Northern Mariana Islands"}
          MQ{"Martinique"}
          MR{"Mauritania"}
@@ -1782,22 +1629,21 @@ index b3b9e347..d7851d88 100644
          GB{"UK"}
 -        HK{"Hong Kong"}
          MM{"Myanmar"}
--        MO{"Macau"}
+-        MO{"Macao"}
 -        PS{"Palestine"}
          UN{"UN"}
          US{"US"}
      }
-@@ -312,8 +309,6 @@ en{
+@@ -312,7 +309,6 @@ en{
          CG{"Congo (Republic)"}
          CI{"Ivory Coast"}
          CZ{"Czech Republic"}
 -        FK{"Falkland Islands (Islas Malvinas)"}
--        MK{"Macedonia (FYROM)"}
+         SZ{"Swaziland"}
          TL{"East Timor"}
      }
-     Version{"2.1.44.91"}
 diff --git a/source/data/region/es.txt b/source/data/region/es.txt
-index bdbb8296..da4c8bce 100644
+index f8c2e920..83f30f6d 100644
 --- a/source/data/region/es.txt
 +++ b/source/data/region/es.txt
 @@ -110,7 +110,7 @@ es{
@@ -1818,12 +1664,7 @@ index bdbb8296..da4c8bce 100644
          HM{"Islas Heard y McDonald"}
          HN{"Honduras"}
          HR{"Croacia"}
-@@ -183,11 +183,11 @@ es{
-         MF{"San Martín"}
-         MG{"Madagascar"}
-         MH{"Islas Marshall"}
--        MK{"Macedonia"}
-+        MK{"Macedonia (ERYM)"}
+@@ -187,7 +187,7 @@ es{
          ML{"Mali"}
          MM{"Myanmar (Birmania)"}
          MN{"Mongolia"}
@@ -1851,17 +1692,16 @@ index bdbb8296..da4c8bce 100644
          US{"EE. UU."}
      }
      Countries%variant{
-@@ -307,8 +304,6 @@ es{
+@@ -307,7 +304,6 @@ es{
          CG{"Congo (República)"}
          CI{"Costa de Marfil"}
          CZ{"República Checa"}
 -        FK{"Islas Malvinas (Islas Falkland)"}
--        MK{"Macedonia (ERYM)"}
+         SZ{"Suazilandia"}
          TL{"Timor Oriental"}
      }
-     Version{"2.1.44.88"}
 diff --git a/source/data/region/et.txt b/source/data/region/et.txt
-index 69b65213..36c14db7 100644
+index 60faf278..37eaeeb4 100644
 --- a/source/data/region/et.txt
 +++ b/source/data/region/et.txt
 @@ -110,7 +110,7 @@ et{
@@ -1882,12 +1722,7 @@ index 69b65213..36c14db7 100644
          HM{"Heardi ja McDonaldi saared"}
          HN{"Honduras"}
          HR{"Horvaatia"}
-@@ -183,11 +183,11 @@ et{
-         MF{"Saint-Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshalli Saared"}
--        MK{"Makedoonia"}
-+        MK{"Makedoonia Vabariik"}
+@@ -187,7 +187,7 @@ et{
          ML{"Mali"}
          MM{"Myanmar (Birma)"}
          MN{"Mongoolia"}
@@ -1905,7 +1740,7 @@ index 69b65213..36c14db7 100644
          PT{"Portugal"}
          PW{"Belau"}
          PY{"Paraguay"}
-@@ -297,9 +297,6 @@ et{
+@@ -299,9 +299,6 @@ et{
      }
      Countries%short{
          GB{"ÜK"}
@@ -1915,17 +1750,16 @@ index 69b65213..36c14db7 100644
          UN{"ÜRO"}
          US{"USA"}
      }
-@@ -308,8 +305,6 @@ et{
+@@ -310,7 +307,6 @@ et{
          CG{"Kongo-Brazzaville"}
          CI{"Elevandiluurannik"}
          CZ{"Tšehhia"}
 -        FK{"Malviini saared"}
--        MK{"Makedoonia Vabariik"}
+         SZ{"eSwatini"}
          TL{"Timor-Leste"}
      }
-     Version{"2.1.44.91"}
 diff --git a/source/data/region/eu.txt b/source/data/region/eu.txt
-index b9643e77..fdeab3c8 100644
+index 3c48f834..da1cbd0a 100644
 --- a/source/data/region/eu.txt
 +++ b/source/data/region/eu.txt
 @@ -110,7 +110,7 @@ eu{
@@ -1946,12 +1780,7 @@ index b9643e77..fdeab3c8 100644
          HM{"Heard eta McDonald uharteak"}
          HN{"Honduras"}
          HR{"Kroazia"}
-@@ -183,11 +183,11 @@ eu{
-         MF{"San Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshall Uharteak"}
--        MK{"Mazedonia"}
-+        MK{"Mazedoniako Jugoslaviar Errepublika Ohia"}
+@@ -187,7 +187,7 @@ eu{
          ML{"Mali"}
          MM{"Myanmar (Birmania)"}
          MN{"Mongolia"}
@@ -1969,7 +1798,7 @@ index b9643e77..fdeab3c8 100644
          PT{"Portugal"}
          PW{"Palau"}
          PY{"Paraguai"}
-@@ -297,17 +297,12 @@ eu{
+@@ -297,9 +297,6 @@ eu{
      }
      Countries%short{
          GB{"EB"}
@@ -1979,16 +1808,16 @@ index b9643e77..fdeab3c8 100644
          US{"AEB"}
      }
      Countries%variant{
-         CD{"Kongo (DR)"}
+@@ -307,7 +304,6 @@ eu{
          CG{"Kongoko Errepublika"}
+         CI{"CI"}
          CZ{"Txekiar Errepublika"}
 -        FK{"Falklandak (Malvinak)"}
--        MK{"Mazedoniako Jugoslaviar Errepublika Ohia"}
+         TL{"TL"}
      }
-     Version{"2.1.43.65"}
- }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/fa.txt b/source/data/region/fa.txt
-index 625b71b7..d9e9acc3 100644
+index c3f94e6b..cdbdb56b 100644
 --- a/source/data/region/fa.txt
 +++ b/source/data/region/fa.txt
 @@ -110,7 +110,7 @@ fa{
@@ -2009,12 +1838,7 @@ index 625b71b7..d9e9acc3 100644
          HM{"جزیرهٔ هرد و جزایر مک‌دونالد"}
          HN{"هندوراس"}
          HR{"کرواسی"}
-@@ -183,11 +183,11 @@ fa{
-         MF{"سنت مارتین"}
-         MG{"ماداگاسکار"}
-         MH{"جزایر مارشال"}
--        MK{"مقدونیه"}
-+        MK{"مقدونیه (جمهوری سابقاً یوگسلاو)"}
+@@ -187,7 +187,7 @@ fa{
          ML{"مالی"}
          MM{"میانمار (برمه)"}
          MN{"مغولستان"}
@@ -2042,17 +1866,16 @@ index 625b71b7..d9e9acc3 100644
          SA{"عربستان"}
          UN{"سازمان ملل"}
          US{"ایالات متحده"}
-@@ -308,8 +305,6 @@ fa{
+@@ -308,7 +305,6 @@ fa{
          CD{"کنگو (جمهوری دموکراتیک)"}
          CG{"کنگو (جمهوری)"}
          CI{"ساحل‌عاج"}
 -        FK{"جزایر فالکلند (ایسلاس مالویناس)"}
--        MK{"مقدونیه (جمهوری سابقاً یوگسلاو)"}
+         SZ{"سوازیلند"}
          TL{"تیمور شرقی"}
      }
-     Version{"2.1.43.65"}
 diff --git a/source/data/region/fa_AF.txt b/source/data/region/fa_AF.txt
-index dac9711e..6d5c354c 100644
+index 745043e5..5bdb3eca 100644
 --- a/source/data/region/fa_AF.txt
 +++ b/source/data/region/fa_AF.txt
 @@ -39,7 +39,7 @@ fa_AF{
@@ -2075,7 +1898,7 @@ index dac9711e..6d5c354c 100644
          CZ{"جمهوری چک"}
      }
 diff --git a/source/data/region/fi.txt b/source/data/region/fi.txt
-index 27d1869d..4deadd06 100644
+index 2b1270bc..aaeca7d7 100644
 --- a/source/data/region/fi.txt
 +++ b/source/data/region/fi.txt
 @@ -110,7 +110,7 @@ fi{
@@ -2096,12 +1919,7 @@ index 27d1869d..4deadd06 100644
          HM{"Heard ja McDonaldinsaaret"}
          HN{"Honduras"}
          HR{"Kroatia"}
-@@ -183,11 +183,11 @@ fi{
-         MF{"Saint-Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshallinsaaret"}
--        MK{"Makedonia"}
-+        MK{"EJT Makedonia"}
+@@ -187,7 +187,7 @@ fi{
          ML{"Mali"}
          MM{"Myanmar (Burma)"}
          MN{"Mongolia"}
@@ -2129,17 +1947,16 @@ index 27d1869d..4deadd06 100644
          UN{"YK"}
          US{"USA"}
      }
-@@ -308,8 +305,6 @@ fi{
+@@ -308,7 +305,6 @@ fi{
          CG{"Kongo-Brazzaville"}
          CI{"Côte d’Ivoire"}
          CZ{"Tšekin tasavalta"}
 -        FK{"Falklandinsaaret (Malvinassaaret)"}
--        MK{"EJT Makedonia"}
          TL{"Timor-Leste"}
      }
-     Version{"2.1.44.91"}
+     Version{"2.1.48.42"}
 diff --git a/source/data/region/fil.txt b/source/data/region/fil.txt
-index 4072b760..aa386fed 100644
+index 542e52bc..d346ef20 100644
 --- a/source/data/region/fil.txt
 +++ b/source/data/region/fil.txt
 @@ -110,7 +110,7 @@ fil{
@@ -2160,12 +1977,7 @@ index 4072b760..aa386fed 100644
          HM{"Heard & McDonald Islands"}
          HN{"Honduras"}
          HR{"Croatia"}
-@@ -183,11 +183,11 @@ fil{
-         MF{"Saint Martin"}
-         MG{"Madagascar"}
-         MH{"Marshall Islands"}
--        MK{"Macedonia"}
-+        MK{"Macedonia (FYROM)"}
+@@ -187,7 +187,7 @@ fil{
          ML{"Mali"}
          MM{"Myanmar (Burma)"}
          MN{"Mongolia"}
@@ -2183,7 +1995,7 @@ index 4072b760..aa386fed 100644
          PT{"Portugal"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -297,9 +297,6 @@ fil{
+@@ -299,9 +299,6 @@ fil{
      }
      Countries%short{
          GB{"U.K."}
@@ -2193,17 +2005,16 @@ index 4072b760..aa386fed 100644
          UN{"UN"}
          US{"U.S."}
      }
-@@ -308,8 +305,6 @@ fil{
+@@ -310,7 +307,6 @@ fil{
          CG{"Congo (Republika)"}
          CI{"Ivory Coast"}
          CZ{"Czech Republic"}
 -        FK{"Falkland Islands (Islas Malvinas)"}
--        MK{"Macedonia (FYROM)"}
          TL{"East Timor"}
      }
-     Version{"2.1.44.91"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/fo.txt b/source/data/region/fo.txt
-index 1b647bdc..212e6934 100644
+index 69a8aaf0..37402f2c 100644
 --- a/source/data/region/fo.txt
 +++ b/source/data/region/fo.txt
 @@ -110,7 +110,7 @@ fo{
@@ -2224,12 +2035,7 @@ index 1b647bdc..212e6934 100644
          HM{"Heard og McDonaldoyggjar"}
          HN{"Honduras"}
          HR{"Kroatia"}
-@@ -183,11 +183,11 @@ fo{
-         MF{"St-Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshalloyggjar"}
--        MK{"Makedónia"}
-+        MK{"Makedónia (FJM)"}
+@@ -187,7 +187,7 @@ fo{
          ML{"Mali"}
          MM{"Myanmar (Burma)"}
          MN{"Mongolia"}
@@ -2247,7 +2053,7 @@ index 1b647bdc..212e6934 100644
          PT{"Portugal"}
          PW{"Palau"}
          PY{"Paraguai"}
-@@ -297,14 +297,7 @@ fo{
+@@ -297,13 +297,9 @@ fo{
      }
      Countries%short{
          GB{"UK"}
@@ -2256,14 +2062,13 @@ index 1b647bdc..212e6934 100644
 -        PS{"Palestina"}
          US{"USA"}
      }
--    Countries%variant{
+     Countries%variant{
 -        FK{"Falklandsoyggjar (Islas Malvinas)"}
--        MK{"Makedónia (FJM)"}
--    }
-     Version{"2.1.41.34"}
- }
+         MK{"Makedónia (FJM)"}
+     }
+     Version{"2.1.48.9"}
 diff --git a/source/data/region/fr.txt b/source/data/region/fr.txt
-index d5639d89..385f43f2 100644
+index 71a98710..c3e0e4ca 100644
 --- a/source/data/region/fr.txt
 +++ b/source/data/region/fr.txt
 @@ -110,7 +110,7 @@ fr{
@@ -2284,12 +2089,7 @@ index d5639d89..385f43f2 100644
          HM{"Îles Heard et McDonald"}
          HN{"Honduras"}
          HR{"Croatie"}
-@@ -183,11 +183,11 @@ fr{
-         MF{"Saint-Martin"}
-         MG{"Madagascar"}
-         MH{"Îles Marshall"}
--        MK{"Macédoine"}
-+        MK{"Macédoine (ARYM)"}
+@@ -187,7 +187,7 @@ fr{
          ML{"Mali"}
          MM{"Myanmar (Birmanie)"}
          MN{"Mongolie"}
@@ -2307,7 +2107,7 @@ index d5639d89..385f43f2 100644
          PT{"Portugal"}
          PW{"Palaos"}
          PY{"Paraguay"}
-@@ -297,9 +297,6 @@ fr{
+@@ -299,9 +299,6 @@ fr{
      }
      Countries%short{
          GB{"R.-U."}
@@ -2317,17 +2117,16 @@ index d5639d89..385f43f2 100644
          UN{"NU"}
          US{"É.-U."}
      }
-@@ -308,8 +305,6 @@ fr{
+@@ -310,7 +307,6 @@ fr{
          CG{"République du Congo"}
          CI{"​​République de Côte d’Ivoire"}
          CZ{"République tchèque"}
 -        FK{"Îles Falkland"}
--        MK{"Macédoine (ARYM)"}
+         SZ{"Swaziland"}
          TL{"Timor-Oriental"}
      }
-     Version{"2.1.44.91"}
 diff --git a/source/data/region/fr_CA.txt b/source/data/region/fr_CA.txt
-index d6e400b8..a99e5221 100644
+index 89fe8bc2..fb5c413e 100644
 --- a/source/data/region/fr_CA.txt
 +++ b/source/data/region/fr_CA.txt
 @@ -16,7 +16,7 @@ fr_CA{
@@ -2346,9 +2145,9 @@ index d6e400b8..a99e5221 100644
 -        FK{"îles Falkland (Malouines)"}
          TL{"Timor oriental"}
      }
-     Version{"2.1.43.65"}
+     Version{"2.1.47.86"}
 diff --git a/source/data/region/fur.txt b/source/data/region/fur.txt
-index 68fb0088..8ebece66 100644
+index 468ab44b..7e720a36 100644
 --- a/source/data/region/fur.txt
 +++ b/source/data/region/fur.txt
 @@ -105,7 +105,7 @@ fur{
@@ -2369,12 +2168,7 @@ index 68fb0088..8ebece66 100644
          HM{"Isule Heard e Isulis McDonald"}
          HN{"Honduras"}
          HR{"Cravuazie"}
-@@ -178,11 +178,11 @@ fur{
-         MF{"Sant Martin"}
-         MG{"Madagascar"}
-         MH{"Isulis Marshall"}
--        MK{"Macedonie"}
-+        MK{"Macedonie (FYROM)"}
+@@ -182,7 +182,7 @@ fur{
          ML{"Mali"}
          MM{"Birmanie"}
          MN{"Mongolie"}
@@ -2383,7 +2177,7 @@ index 68fb0088..8ebece66 100644
          MP{"Isulis Mariana dal Nord"}
          MQ{"Martiniche"}
          MR{"Mauritanie"}
-@@ -286,15 +286,9 @@ fur{
+@@ -286,14 +286,9 @@ fur{
          ZW{"Zimbabwe"}
          ZZ{"Regjon no cognossude o no valide"}
      }
@@ -2395,12 +2189,11 @@ index 68fb0088..8ebece66 100644
          CD{"Congo (RDC)"}
          CG{"Congo (Republiche)"}
 -        FK{"Isulis Falkland (Isulis Malvinas)"}
--        MK{"Macedonie (FYROM)"}
+         MK{"Macedonie (FYROM)"}
      }
-     Version{"2.1.38.69"}
- }
+     Version{"2.1.47.82"}
 diff --git a/source/data/region/fy.txt b/source/data/region/fy.txt
-index a2f0c267..febe2c6e 100644
+index ea64e55b..ab6fead5 100644
 --- a/source/data/region/fy.txt
 +++ b/source/data/region/fy.txt
 @@ -108,7 +108,7 @@ fy{
@@ -2421,12 +2214,7 @@ index a2f0c267..febe2c6e 100644
          HM{"Heard- en McDonaldeilannen"}
          HN{"Honduras"}
          HR{"Kroatië"}
-@@ -181,11 +181,11 @@ fy{
-         MF{"Saint-Martin"}
-         MG{"Madeiaskar"}
-         MH{"Marshalleilannen"}
--        MK{"Macedonië"}
-+        MK{"Macedonië (FYROM)"}
+@@ -185,7 +185,7 @@ fy{
          ML{"Mali"}
          MM{"Myanmar (Birma)"}
          MN{"Mongolië"}
@@ -2444,7 +2232,7 @@ index a2f0c267..febe2c6e 100644
          PT{"Portugal"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -294,16 +294,11 @@ fy{
+@@ -294,15 +294,11 @@ fy{
      }
      Countries%short{
          GB{"VK"}
@@ -2457,12 +2245,11 @@ index a2f0c267..febe2c6e 100644
          CD{"Congo (DRC)"}
          CG{"Congo (Republyk)"}
 -        FK{"Falklâneilannen (Islas Malvinas)"}
--        MK{"Macedonië (FYROM)"}
+         MK{"Macedonië (FYROM)"}
      }
-     Version{"2.1.41.34"}
- }
+     Version{"2.1.47.82"}
 diff --git a/source/data/region/ga.txt b/source/data/region/ga.txt
-index 4d0cedf7..c947170e 100644
+index a691d0cd..b8cf8e19 100644
 --- a/source/data/region/ga.txt
 +++ b/source/data/region/ga.txt
 @@ -110,7 +110,7 @@ ga{
@@ -2483,12 +2270,7 @@ index 4d0cedf7..c947170e 100644
          HM{"Oileán Heard agus Oileáin McDonald"}
          HN{"Hondúras"}
          HR{"an Chróit"}
-@@ -183,11 +183,11 @@ ga{
-         MF{"Saint-Martin"}
-         MG{"Madagascar"}
-         MH{"Oileáin Marshall"}
--        MK{"an Mhacadóin"}
-+        MK{"an Mhacadóin (PIIM)"}
+@@ -187,7 +187,7 @@ ga{
          ML{"Mailí"}
          MM{"Maenmar (Burma)"}
          MN{"an Mhongóil"}
@@ -2506,7 +2288,7 @@ index 4d0cedf7..c947170e 100644
          PT{"an Phortaingéil"}
          PW{"Oileáin Palau"}
          PY{"Paragua"}
-@@ -297,9 +297,6 @@ ga{
+@@ -299,9 +299,6 @@ ga{
      }
      Countries%short{
          GB{"RA"}
@@ -2516,17 +2298,16 @@ index 4d0cedf7..c947170e 100644
          UN{"NA"}
          US{"SAM"}
      }
-@@ -308,8 +305,6 @@ ga{
+@@ -310,7 +307,6 @@ ga{
          CG{"an Congó (Poblacht)"}
          CI{"Côte d’Ivoire"}
          CZ{"Poblacht na Seice"}
 -        FK{"Oileáin Fháclainne (Islas Malvinas)"}
--        MK{"an Mhacadóin (PIIM)"}
+         SZ{"Ríocht na Suasalainne"}
          TL{"TL"}
      }
-     Version{"2.1.44.91"}
 diff --git a/source/data/region/gd.txt b/source/data/region/gd.txt
-index e3468bfd..4f17e409 100644
+index 6f4de3c4..7fd53e2d 100644
 --- a/source/data/region/gd.txt
 +++ b/source/data/region/gd.txt
 @@ -110,7 +110,7 @@ gd{
@@ -2547,12 +2328,7 @@ index e3468bfd..4f17e409 100644
          HM{"Eilean Heard is MhicDhòmhnaill"}
          HN{"Hondùras"}
          HR{"A’ Chròthais"}
-@@ -183,11 +183,11 @@ gd{
-         MF{"Naomh Màrtainn"}
-         MG{"Madagasgar"}
-         MH{"Eileanan Mharshall"}
--        MK{"A’ Mhasadon"}
-+        MK{"A’ Mhasadon (FYROM)"}
+@@ -187,7 +187,7 @@ gd{
          ML{"Màili"}
          MM{"Miànmar"}
          MN{"Dùthaich nam Mongol"}
@@ -2580,17 +2356,16 @@ index e3468bfd..4f17e409 100644
          US{"SA"}
      }
      Countries%variant{
-@@ -307,8 +304,6 @@ gd{
+@@ -307,7 +304,6 @@ gd{
          CG{"A’ Chongo"}
          CI{"An Costa Ìbhri"}
          CZ{"Poblachd na Seice"}
 -        FK{"Na h-Eileanan Fàclannach (Islas Malvinas)"}
--        MK{"A’ Mhasadon (FYROM)"}
          TL{"Tìomor an Ear"}
      }
-     Version{"2.1.44.91"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/gl.txt b/source/data/region/gl.txt
-index bcf7e484..76bd0724 100644
+index fcf92ba5..5c556c6f 100644
 --- a/source/data/region/gl.txt
 +++ b/source/data/region/gl.txt
 @@ -110,7 +110,7 @@ gl{
@@ -2611,12 +2386,7 @@ index bcf7e484..76bd0724 100644
          HM{"Illa Heard e Illas McDonald"}
          HN{"Honduras"}
          HR{"Croacia"}
-@@ -183,11 +183,11 @@ gl{
-         MF{"Saint Martin"}
-         MG{"Madagascar"}
-         MH{"Illas Marshall"}
--        MK{"Macedonia"}
-+        MK{"Macedonia (ARIM)"}
+@@ -187,7 +187,7 @@ gl{
          ML{"Malí"}
          MM{"Myanmar (Birmania)"}
          MN{"Mongolia"}
@@ -2644,17 +2414,16 @@ index bcf7e484..76bd0724 100644
          UN{"ONU"}
          US{"EUA"}
      }
-@@ -308,8 +305,6 @@ gl{
+@@ -308,7 +305,6 @@ gl{
          CG{"Congo (RC)"}
          CI{"CI"}
          CZ{"República Checa"}
 -        FK{"Illas Malvinas (Falkland)"}
--        MK{"Macedonia (ARIM)"}
+         SZ{"Suacilandia"}
          TL{"TL"}
      }
-     Version{"2.1.43.94"}
 diff --git a/source/data/region/gsw.txt b/source/data/region/gsw.txt
-index bd3ca91f..04c8e145 100644
+index 7d0eba63..4623d8ca 100644
 --- a/source/data/region/gsw.txt
 +++ b/source/data/region/gsw.txt
 @@ -125,7 +125,7 @@ gsw{
@@ -2666,12 +2435,7 @@ index bd3ca91f..04c8e145 100644
          HM{"Höörd- und MäcDonald-Insle"}
          HN{"Honduras"}
          HR{"Kroaazie"}
-@@ -174,11 +174,11 @@ gsw{
-         MF{"St. Martin"}
-         MG{"Madagaschkar"}
-         MH{"Marshallinsle"}
--        MK{"Mazedoonie"}
-+        MK{"Mazedoonie (EJRM)"}
+@@ -178,7 +178,7 @@ gsw{
          ML{"Maali"}
          MM{"Myanmar (Burma)"}
          MN{"Mongolei"}
@@ -2680,7 +2444,7 @@ index bd3ca91f..04c8e145 100644
          MP{"Nördlichi Mariaane"}
          MQ{"Martinigg"}
          MR{"Mauretaanie"}
-@@ -281,12 +281,5 @@ gsw{
+@@ -281,10 +281,6 @@ gsw{
          ZW{"Simbabwe"}
          ZZ{"Unbekannti oder ungültigi Regioon"}
      }
@@ -2688,13 +2452,11 @@ index bd3ca91f..04c8e145 100644
 -        HK{"Hongkong"}
 -        MO{"Macao"}
 -    }
--    Countries%variant{
--        MK{"Mazedoonie (EJRM)"}
--    }
-     Version{"2.1.41.34"}
- }
+     Countries%variant{
+         MK{"Mazedoonie (EJRM)"}
+     }
 diff --git a/source/data/region/gu.txt b/source/data/region/gu.txt
-index 53dfa714..5e2743c7 100644
+index 5f15e0bd..aadf4540 100644
 --- a/source/data/region/gu.txt
 +++ b/source/data/region/gu.txt
 @@ -110,7 +110,7 @@ gu{
@@ -2715,12 +2477,7 @@ index 53dfa714..5e2743c7 100644
          HM{"હર્ડ અને મેકડોનાલ્ડ આઇલેન્ડ્સ"}
          HN{"હોન્ડુરસ"}
          HR{"ક્રોએશિયા"}
-@@ -183,11 +183,11 @@ gu{
-         MF{"સેંટ માર્ટિન"}
-         MG{"મેડાગાસ્કર"}
-         MH{"માર્શલ આઇલેન્ડ્સ"}
--        MK{"મેસેડોનિયા"}
-+        MK{"મેસેડોનિયા (FYROM)"}
+@@ -187,7 +187,7 @@ gu{
          ML{"માલી"}
          MM{"મ્યાંમાર (બર્મા)"}
          MN{"મંગોલિયા"}
@@ -2748,17 +2505,16 @@ index 53dfa714..5e2743c7 100644
          UN{"યૂએન"}
          US{"યુ.એસ."}
      }
-@@ -308,8 +305,6 @@ gu{
+@@ -308,7 +305,6 @@ gu{
          CG{"કોંગો (રિપબ્લિક)"}
          CI{"આઇવરી કોસ્ટ"}
          CZ{"ચેક રિપબ્લિક"}
 -        FK{"ફૉકલેન્ડ આઇલેન્ડ્સ (આઇલાસ માલવિનાસ)"}
--        MK{"મેસેડોનિયા (FYROM)"}
+         SZ{"સ્વાઝીલેન્ડ"}
          TL{"પૂર્વ તિમોર"}
      }
-     Version{"2.1.44.2"}
 diff --git a/source/data/region/he.txt b/source/data/region/he.txt
-index 56a155aa..589e0b51 100644
+index 22ef05d9..24338c70 100644
 --- a/source/data/region/he.txt
 +++ b/source/data/region/he.txt
 @@ -110,7 +110,7 @@ he{
@@ -2779,12 +2535,7 @@ index 56a155aa..589e0b51 100644
          HM{"איי הרד ומקדונלד"}
          HN{"הונדורס"}
          HR{"קרואטיה"}
-@@ -183,11 +183,11 @@ he{
-         MF{"סן מרטן"}
-         MG{"מדגסקר"}
-         MH{"איי מרשל"}
--        MK{"מקדוניה"}
-+        MK{"מקדוניה (הרפובליקה היוגוסלבית לשעבר של מקדוניה)"}
+@@ -187,7 +187,7 @@ he{
          ML{"מאלי"}
          MM{"מיאנמר (בורמה)"}
          MN{"מונגוליה"}
@@ -2802,7 +2553,7 @@ index 56a155aa..589e0b51 100644
          PT{"פורטוגל"}
          PW{"פלאו"}
          PY{"פרגוואי"}
-@@ -297,17 +297,12 @@ he{
+@@ -297,9 +297,6 @@ he{
      }
      Countries%short{
          GB{"בריטניה"}
@@ -2812,16 +2563,16 @@ index 56a155aa..589e0b51 100644
          US{"ארה״ב"}
      }
      Countries%variant{
-         CD{"קונגו (הרפובליקה הדמוקרטית של קונגו)"}
+@@ -307,7 +304,6 @@ he{
          CG{"קונגו (רפובליקה)"}
+         CI{"קוט דיוואר"}
          CZ{"הרפובליקה הצ׳כית"}
 -        FK{"איי פוקלנד (איי מלווינס)"}
--        MK{"מקדוניה (הרפובליקה היוגוסלבית לשעבר של מקדוניה)"}
+         SZ{"סווזילנד"}
          TL{"מזרח טימור"}
      }
-     Version{"2.1.43.94"}
 diff --git a/source/data/region/hi.txt b/source/data/region/hi.txt
-index a075c852..454f8d2d 100644
+index 5e5a31d3..333f108a 100644
 --- a/source/data/region/hi.txt
 +++ b/source/data/region/hi.txt
 @@ -110,7 +110,7 @@ hi{
@@ -2842,12 +2593,7 @@ index a075c852..454f8d2d 100644
          HM{"हर्ड द्वीप और मैकडोनॉल्ड द्वीपसमूह"}
          HN{"होंडूरास"}
          HR{"क्रोएशिया"}
-@@ -183,11 +183,11 @@ hi{
-         MF{"सेंट मार्टिन"}
-         MG{"मेडागास्कर"}
-         MH{"मार्शल द्वीपसमूह"}
--        MK{"मकदूनिया"}
-+        MK{"मकदूनिया (FYROM)"}
+@@ -187,7 +187,7 @@ hi{
          ML{"माली"}
          MM{"म्यांमार (बर्मा)"}
          MN{"मंगोलिया"}
@@ -2875,17 +2621,16 @@ index a075c852..454f8d2d 100644
          UN{"संयुक्त राष्ट्र"}
          US{"अमेरिका"}
      }
-@@ -308,8 +305,6 @@ hi{
+@@ -308,7 +305,6 @@ hi{
          CG{"कांगो (गणराज्य)"}
          CI{"आइवरी कोस्ट"}
          CZ{"चेक गणराज्य"}
 -        FK{"फ़ॉकलैंड द्वीपसमूह (इज़्लास माल्विनास)"}
--        MK{"मकदूनिया (FYROM)"}
+         MK{"मकदूनिया (FYROM)"}
+         SZ{"स्वाज़िलैंड"}
          TL{"पूर्वी तिमोर"}
-     }
-     Version{"2.1.43.50"}
 diff --git a/source/data/region/hr.txt b/source/data/region/hr.txt
-index eeab79ab..d97838d6 100644
+index 70d1c624..0d8862b5 100644
 --- a/source/data/region/hr.txt
 +++ b/source/data/region/hr.txt
 @@ -110,7 +110,7 @@ hr{
@@ -2906,12 +2651,7 @@ index eeab79ab..d97838d6 100644
          HM{"Otoci Heard i McDonald"}
          HN{"Honduras"}
          HR{"Hrvatska"}
-@@ -183,11 +183,11 @@ hr{
-         MF{"Saint Martin"}
-         MG{"Madagaskar"}
-         MH{"Maršalovi Otoci"}
--        MK{"Makedonija"}
-+        MK{"Makedonija (BJRM)"}
+@@ -187,7 +187,7 @@ hr{
          ML{"Mali"}
          MM{"Mjanmar (Burma)"}
          MN{"Mongolija"}
@@ -2929,7 +2669,7 @@ index eeab79ab..d97838d6 100644
          PT{"Portugal"}
          PW{"Palau"}
          PY{"Paragvaj"}
-@@ -297,9 +297,6 @@ hr{
+@@ -299,9 +299,6 @@ hr{
      }
      Countries%short{
          GB{"UK"}
@@ -2939,17 +2679,16 @@ index eeab79ab..d97838d6 100644
          UN{"UN"}
          US{"SAD"}
      }
-@@ -308,8 +305,6 @@ hr{
+@@ -310,7 +307,6 @@ hr{
          CG{"Kongo (RK)"}
          CI{"Bjelokosna Obala"}
          CZ{"Češka Republika"}
 -        FK{"Falklandski otoci (Malvini)"}
--        MK{"Makedonija (BJRM)"}
          TL{"Istočni Timor"}
      }
-     Version{"2.1.43.50"}
+     Version{"2.1.48.42"}
 diff --git a/source/data/region/hsb.txt b/source/data/region/hsb.txt
-index dd7cc7c5..5a18451c 100644
+index 513f20a2..8c7d69c9 100644
 --- a/source/data/region/hsb.txt
 +++ b/source/data/region/hsb.txt
 @@ -108,7 +108,7 @@ hsb{
@@ -2970,12 +2709,7 @@ index dd7cc7c5..5a18451c 100644
          HM{"Heardowa kupa a McDonaldowe kupy"}
          HN{"Honduras"}
          HR{"Chorwatska"}
-@@ -181,11 +181,11 @@ hsb{
-         MF{"St. Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshallowe kupy"}
--        MK{"Makedonska"}
-+        MK{"Makedonska (FYROM)"}
+@@ -185,7 +185,7 @@ hsb{
          ML{"Mali"}
          MM{"Myanmar"}
          MN{"Mongolska"}
@@ -2993,7 +2727,7 @@ index dd7cc7c5..5a18451c 100644
          PT{"Portugalska"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -294,17 +294,12 @@ hsb{
+@@ -294,16 +294,12 @@ hsb{
      }
      Countries%short{
          GB{"UK"}
@@ -3007,12 +2741,11 @@ index dd7cc7c5..5a18451c 100644
          CG{"Kongo (Republika)"}
          CI{"Słonowinowy pobrjóh"}
 -        FK{"Falklandske kupy (Malwiny)"}
--        MK{"Makedonska (FYROM)"}
+         MK{"Makedonska (FYROM)"}
          TL{"Wuchodny Timor"}
      }
-     Version{"2.1.41.34"}
 diff --git a/source/data/region/hu.txt b/source/data/region/hu.txt
-index d6a143e6..567b5cf3 100644
+index ec449737..de217e41 100644
 --- a/source/data/region/hu.txt
 +++ b/source/data/region/hu.txt
 @@ -110,7 +110,7 @@ hu{
@@ -3033,12 +2766,7 @@ index d6a143e6..567b5cf3 100644
          HM{"Heard-sziget és McDonald-szigetek"}
          HN{"Honduras"}
          HR{"Horvátország"}
-@@ -183,11 +183,11 @@ hu{
-         MF{"Saint Martin"}
-         MG{"Madagaszkár"}
-         MH{"Marshall-szigetek"}
--        MK{"Macedónia"}
-+        MK{"Macedónia (MVJK)"}
+@@ -187,7 +187,7 @@ hu{
          ML{"Mali"}
          MM{"Mianmar (Burma)"}
          MN{"Mongólia"}
@@ -3056,7 +2784,7 @@ index d6a143e6..567b5cf3 100644
          PT{"Portugália"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -297,9 +297,6 @@ hu{
+@@ -299,9 +299,6 @@ hu{
      }
      Countries%short{
          GB{"UK"}
@@ -3066,17 +2794,16 @@ index d6a143e6..567b5cf3 100644
          UN{"ENSZ"}
          US{"USA"}
      }
-@@ -307,8 +304,6 @@ hu{
-         CD{"Kongó (KDK)"}
+@@ -310,7 +307,6 @@ hu{
          CG{"Kongó (Köztársaság)"}
+         CI{"CI"}
          CZ{"Cseh Köztársaság"}
 -        FK{"Falkland-szigetek (Malvin-szigetek)"}
--        MK{"Macedónia (MVJK)"}
          TL{"Timor-Leste"}
      }
-     Version{"2.1.43.65"}
+     Version{"2.1.48.42"}
 diff --git a/source/data/region/hy.txt b/source/data/region/hy.txt
-index b895ad36..841b7d62 100644
+index 643ecb81..e5da0b31 100644
 --- a/source/data/region/hy.txt
 +++ b/source/data/region/hy.txt
 @@ -110,7 +110,7 @@ hy{
@@ -3097,12 +2824,7 @@ index b895ad36..841b7d62 100644
          HM{"Հերդ կղզի և ՄակԴոնալդի կղզիներ"}
          HN{"Հոնդուրաս"}
          HR{"Խորվաթիա"}
-@@ -183,11 +183,11 @@ hy{
-         MF{"Սեն Մարտեն"}
-         MG{"Մադագասկար"}
-         MH{"Մարշալյան կղզիներ"}
--        MK{"Մակեդոնիա"}
-+        MK{"Մակեդոնիա (ՄՆՀՀ)"}
+@@ -187,7 +187,7 @@ hy{
          ML{"Մալի"}
          MM{"Մյանմա (Բիրմա)"}
          MN{"Մոնղոլիա"}
@@ -3130,38 +2852,16 @@ index b895ad36..841b7d62 100644
          UN{"ՄԱԿ"}
          US{"ԱՄՆ"}
      }
-@@ -308,8 +305,6 @@ hy{
+@@ -308,7 +305,6 @@ hy{
          CG{"Կոնգո (Կոնգոյի Հանրապետություն)"}
          CI{"Փղոսկրի Ափ"}
          CZ{"Չեխիայի Հանրապետություն"}
 -        FK{"Ֆոլքլենդյան (Մալվինյան) կղզիներ"}
--        MK{"Մակեդոնիա (ՄՆՀՀ)"}
+         SZ{"Սվազիլենդ"}
          TL{"Արևելյան Թիմոր"}
      }
-     Version{"2.1.43.50"}
-diff --git a/source/data/region/ia.txt b/source/data/region/ia.txt
-index bf72fd1f..a12e3ca2 100644
---- a/source/data/region/ia.txt
-+++ b/source/data/region/ia.txt
-@@ -150,7 +150,7 @@ ia{
-         ME{"Montenegro"}
-         MG{"Madagascar"}
-         MH{"Insulas Marshall"}
--        MK{"Macedonia"}
-+        MK{"Macedonia (ARYM)"}
-         ML{"Mali"}
-         MN{"Mongolia"}
-         MP{"Insulas Marianna del Nord"}
-@@ -242,7 +242,6 @@ ia{
-     }
-     Countries%variant{
-         CZ{"Republica Chec"}
--        MK{"Macedonia (ARYM)"}
-     }
-     Version{"2.1.44.15"}
- }
 diff --git a/source/data/region/id.txt b/source/data/region/id.txt
-index 17cd75ea..516264ae 100644
+index 061ff79e..ddc86c54 100644
 --- a/source/data/region/id.txt
 +++ b/source/data/region/id.txt
 @@ -110,7 +110,7 @@ id{
@@ -3182,12 +2882,7 @@ index 17cd75ea..516264ae 100644
          HM{"Pulau Heard dan Kepulauan McDonald"}
          HN{"Honduras"}
          HR{"Kroasia"}
-@@ -183,11 +183,11 @@ id{
-         MF{"Saint Martin"}
-         MG{"Madagaskar"}
-         MH{"Kepulauan Marshall"}
--        MK{"Makedonia"}
-+        MK{"Makedonia (BRY)"}
+@@ -187,7 +187,7 @@ id{
          ML{"Mali"}
          MM{"Myanmar (Burma)"}
          MN{"Mongolia"}
@@ -3205,7 +2900,7 @@ index 17cd75ea..516264ae 100644
          PT{"Portugal"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -297,9 +297,6 @@ id{
+@@ -299,9 +299,6 @@ id{
      }
      Countries%short{
          GB{"UK"}
@@ -3215,17 +2910,16 @@ index 17cd75ea..516264ae 100644
          UN{"PBB"}
          US{"A.S."}
      }
-@@ -307,8 +304,6 @@ id{
-         CD{"Kongo (RDK)"}
+@@ -310,7 +307,6 @@ id{
          CG{"Kongo (Republik)"}
+         CI{"Pantai Gading (Ivory Coast)"}
          CZ{"Republik Ceko"}
 -        FK{"Kepulauan Malvinas (Falkland)"}
--        MK{"Makedonia (BRY)"}
+         SZ{"Swaziland"}
+         TL{"TL"}
      }
-     Version{"2.1.44.20"}
- }
 diff --git a/source/data/region/is.txt b/source/data/region/is.txt
-index e37f61cc..75b90cf0 100644
+index e8ee8507..6f16ccf8 100644
 --- a/source/data/region/is.txt
 +++ b/source/data/region/is.txt
 @@ -110,7 +110,7 @@ is{
@@ -3246,12 +2940,7 @@ index e37f61cc..75b90cf0 100644
          HM{"Heard og McDonaldseyjar"}
          HN{"Hondúras"}
          HR{"Króatía"}
-@@ -183,11 +183,11 @@ is{
-         MF{"St. Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshalleyjar"}
--        MK{"Makedónía"}
-+        MK{"Makedónía (Fyrrverandi lýðveldi Júgóslavíu)"}
+@@ -187,7 +187,7 @@ is{
          ML{"Malí"}
          MM{"Mjanmar (Búrma)"}
          MN{"Mongólía"}
@@ -3269,7 +2958,7 @@ index e37f61cc..75b90cf0 100644
          PT{"Portúgal"}
          PW{"Palá"}
          PY{"Paragvæ"}
-@@ -297,17 +297,12 @@ is{
+@@ -297,16 +297,12 @@ is{
      }
      Countries%short{
          GB{"Bretland"}
@@ -3283,12 +2972,11 @@ index e37f61cc..75b90cf0 100644
          CD{"Kongó (Lýðstjórnarlýðveldið)"}
          CG{"Kongó (Lýðveldið)"}
 -        FK{"Falklandseyjar (Malvinas)"}
--        MK{"Makedónía (Fyrrverandi lýðveldi Júgóslavíu)"}
          TL{"Austur-Tímor"}
      }
-     Version{"2.1.44.91"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/it.txt b/source/data/region/it.txt
-index 76ad84f7..d39f4d70 100644
+index 3dff8f05..62da0610 100644
 --- a/source/data/region/it.txt
 +++ b/source/data/region/it.txt
 @@ -110,7 +110,7 @@ it{
@@ -3309,12 +2997,7 @@ index 76ad84f7..d39f4d70 100644
          HM{"Isole Heard e McDonald"}
          HN{"Honduras"}
          HR{"Croazia"}
-@@ -183,11 +183,11 @@ it{
-         MF{"Saint Martin"}
-         MG{"Madagascar"}
-         MH{"Isole Marshall"}
--        MK{"Repubblica di Macedonia"}
-+        MK{"Ex Repubblica Jugoslava di Macedonia"}
+@@ -187,7 +187,7 @@ it{
          ML{"Mali"}
          MM{"Myanmar (Birmania)"}
          MN{"Mongolia"}
@@ -3332,7 +3015,7 @@ index 76ad84f7..d39f4d70 100644
          PT{"Portogallo"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -297,9 +297,6 @@ it{
+@@ -299,9 +299,6 @@ it{
      }
      Countries%short{
          GB{"UK"}
@@ -3342,17 +3025,16 @@ index 76ad84f7..d39f4d70 100644
          UN{"ONU"}
          US{"USA"}
      }
-@@ -308,8 +305,6 @@ it{
+@@ -310,7 +307,6 @@ it{
          CG{"Congo (Repubblica)"}
          CI{"Côte d’Ivoire"}
          CZ{"Repubblica Ceca"}
 -        FK{"Isole Falkland (Isole Malvine)"}
--        MK{"Ex Repubblica Jugoslava di Macedonia"}
+         SZ{"Regno di eSwatini"}
      }
-     Version{"2.1.44.86"}
- }
+     Version{"2.1.48.42"}
 diff --git a/source/data/region/ja.txt b/source/data/region/ja.txt
-index 71f61984..8178e825 100644
+index 542beebb..1b216552 100644
 --- a/source/data/region/ja.txt
 +++ b/source/data/region/ja.txt
 @@ -110,7 +110,7 @@ ja{
@@ -3373,12 +3055,7 @@ index 71f61984..8178e825 100644
          HM{"ハード島・マクドナルド諸島"}
          HN{"ホンジュラス"}
          HR{"クロアチア"}
-@@ -183,11 +183,11 @@ ja{
-         MF{"サン・マルタン"}
-         MG{"マダガスカル"}
-         MH{"マーシャル諸島"}
--        MK{"マケドニア"}
-+        MK{"マケドニア(旧ユーゴスラビア共和国)"}
+@@ -187,7 +187,7 @@ ja{
          ML{"マリ"}
          MM{"ミャンマー (ビルマ)"}
          MN{"モンゴル"}
@@ -3406,20 +3083,19 @@ index 71f61984..8178e825 100644
          UN{"国連"}
          US{"アメリカ"}
      }
-@@ -308,8 +305,6 @@ ja{
+@@ -308,7 +305,6 @@ ja{
          CG{"コンゴ共和国"}
          CI{"象牙海岸"}
          CZ{"チェコ共和国"}
 -        FK{"フォークランド諸島 (マルビーナス諸島)"}
--        MK{"マケドニア(旧ユーゴスラビア共和国)"}
+         SZ{"スワジランド"}
          TL{"東チモール"}
      }
-     Version{"2.1.44.91"}
 diff --git a/source/data/region/jv.txt b/source/data/region/jv.txt
-index 3d46b00a..2c3f5d77 100644
+index fd96bd33..3409cbe0 100644
 --- a/source/data/region/jv.txt
 +++ b/source/data/region/jv.txt
-@@ -104,7 +104,7 @@ jv{
+@@ -106,7 +106,7 @@ jv{
          EZ{"Zona Éuro"}
          FI{"Finlan"}
          FJ{"Fiji"}
@@ -3428,16 +3104,16 @@ index 3d46b00a..2c3f5d77 100644
          FO{"Kapuloan Faro"}
          FR{"Prancis"}
          GA{"Gabon"}
-@@ -121,7 +121,7 @@ jv{
-         GT{"Guatémala"}
+@@ -126,7 +126,7 @@ jv{
          GU{"Guam"}
+         GW{"Guinea-Bissau"}
          GY{"Guyana"}
 -        HK{"Laladan Administratif Astamiwa Hong Kong"}
 +        HK{"Hong Kong"}
+         HM{"Kapuloan Heard lan McDonald"}
          HN{"Honduras"}
          HR{"Kroasia"}
-         HT{"Haiti"}
-@@ -203,7 +203,7 @@ jv{
+@@ -209,7 +209,7 @@ jv{
          PL{"Polen"}
          PN{"Kapuloan Pitcairn"}
          PR{"Puèrto Riko"}
@@ -3446,7 +3122,7 @@ index 3d46b00a..2c3f5d77 100644
          PT{"Portugal"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -271,15 +271,12 @@ jv{
+@@ -281,15 +281,12 @@ jv{
      }
      Countries%short{
          GB{"KM"}
@@ -3461,9 +3137,9 @@ index 3d46b00a..2c3f5d77 100644
 -        FK{"Kapuloan Falkland (Islas Malvinas)"}
          TL{"Timor Wétan"}
      }
-     Version{"2.1.44.15"}
+     Version{"2.1.48.44"}
 diff --git a/source/data/region/ka.txt b/source/data/region/ka.txt
-index b950e783..eac93a32 100644
+index 880379f3..8282ab62 100644
 --- a/source/data/region/ka.txt
 +++ b/source/data/region/ka.txt
 @@ -110,7 +110,7 @@ ka{
@@ -3484,12 +3160,7 @@ index b950e783..eac93a32 100644
          HM{"ჰერდი და მაკდონალდის კუნძულები"}
          HN{"ჰონდურასი"}
          HR{"ხორვატია"}
-@@ -183,11 +183,11 @@ ka{
-         MF{"სენ-მარტენი"}
-         MG{"მადაგასკარი"}
-         MH{"მარშალის კუნძულები"}
--        MK{"მაკედონია"}
-+        MK{"მაკედონია (ყოფილი იუგოსლავიის რესპუბლიკა მაკედონია)"}
+@@ -187,7 +187,7 @@ ka{
          ML{"მალი"}
          MM{"მიანმარი (ბირმა)"}
          MN{"მონღოლეთი"}
@@ -3517,17 +3188,16 @@ index b950e783..eac93a32 100644
          UN{"გაერო"}
          US{"აშშ"}
      }
-@@ -308,8 +305,6 @@ ka{
+@@ -308,7 +305,6 @@ ka{
          CG{"კონგო (რესპუბლიკა)"}
          CI{"სპილოს ძვლის სანაპირო"}
          CZ{"ჩეხეთის რესპუბლიკა"}
 -        FK{"ფოლკლენდის კუნძულები (მალვინის კუნძულები)"}
--        MK{"მაკედონია (ყოფილი იუგოსლავიის რესპუბლიკა მაკედონია)"}
+         MK{"მაკედონია (ყოფილი იუგოსლავიის რესპუბლიკა მაკედონია)"}
+         SZ{"სვაზილანდი"}
          TL{"აღმოსავლეთ ტიმორი"}
-     }
-     Version{"2.1.43.50"}
 diff --git a/source/data/region/kea.txt b/source/data/region/kea.txt
-index 40f2ac44..fe442743 100644
+index be193242..732a24f2 100644
 --- a/source/data/region/kea.txt
 +++ b/source/data/region/kea.txt
 @@ -108,7 +108,7 @@ kea{
@@ -3548,12 +3218,7 @@ index 40f2ac44..fe442743 100644
          HM{"Ilhas Heard i McDonald"}
          HN{"Onduras"}
          HR{"Kroásia"}
-@@ -181,11 +181,11 @@ kea{
-         MF{"Sãu Martinhu di Fransa"}
-         MG{"Madagaskar"}
-         MH{"Ilhas Marxal"}
--        MK{"Masidónia"}
-+        MK{"Masidónia (FYROM)"}
+@@ -185,7 +185,7 @@ kea{
          ML{"Mali"}
          MM{"Mianmar (Birmánia)"}
          MN{"Mongólia"}
@@ -3571,17 +3236,16 @@ index 40f2ac44..fe442743 100644
          US{"S.U."}
      }
      Countries%variant{
-@@ -303,8 +301,6 @@ kea{
+@@ -303,7 +301,6 @@ kea{
          CG{"Repúblika di Kongu"}
          CI{"Kosta di Marfin (Côte d’Ivoire)"}
          CZ{"Repúblika Txeka"}
 -        FK{"Ilhas Falkland (Ilhas Malvinas)"}
--        MK{"Masidónia (FYROM)"}
+         MK{"Masidónia (FYROM)"}
      }
-     Version{"2.1.43.65"}
- }
+     Version{"2.1.48.9"}
 diff --git a/source/data/region/kk.txt b/source/data/region/kk.txt
-index 0a36b96d..7913992e 100644
+index 8ffac6a9..c2378793 100644
 --- a/source/data/region/kk.txt
 +++ b/source/data/region/kk.txt
 @@ -110,7 +110,7 @@ kk{
@@ -3602,12 +3266,7 @@ index 0a36b96d..7913992e 100644
          HM{"Херд аралы және Макдональд аралдары"}
          HN{"Гондурас"}
          HR{"Хорватия"}
-@@ -183,11 +183,11 @@ kk{
-         MF{"Сен-Мартен"}
-         MG{"Мадагаскар"}
-         MH{"Маршалл аралдары"}
--        MK{"Македония"}
-+        MK{"Македония Республикасы"}
+@@ -187,7 +187,7 @@ kk{
          ML{"Мали"}
          MM{"Мьянма (Бирма)"}
          MN{"Моңғолия"}
@@ -3625,7 +3284,7 @@ index 0a36b96d..7913992e 100644
          PT{"Португалия"}
          PW{"Палау"}
          PY{"Парагвай"}
-@@ -297,9 +297,6 @@ kk{
+@@ -299,9 +299,6 @@ kk{
      }
      Countries%short{
          GB{"Ұлыбритания"}
@@ -3635,17 +3294,16 @@ index 0a36b96d..7913992e 100644
          UN{"БҰҰ"}
          US{"АҚШ"}
      }
-@@ -307,8 +304,6 @@ kk{
+@@ -309,7 +306,6 @@ kk{
          CD{"Конго Демократиялық Республикасы"}
          CG{"Конго Республикасы"}
          CZ{"Чех Республикасы"}
 -        FK{"Фолкленд аралдары (Мальвин аралдары)"}
--        MK{"Македония Республикасы"}
          TL{"Шығыс Тимор"}
      }
-     Version{"2.1.44.88"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/km.txt b/source/data/region/km.txt
-index d532c9cc..2f0ba4fe 100644
+index 6501cc5a..12f4e645 100644
 --- a/source/data/region/km.txt
 +++ b/source/data/region/km.txt
 @@ -110,7 +110,7 @@ km{
@@ -3666,12 +3324,7 @@ index d532c9cc..2f0ba4fe 100644
          HM{"កោះ​ហឺដ និង​ម៉ាក់ដូណាល់"}
          HN{"ហុងឌូរ៉ាស"}
          HR{"ក្រូអាស៊ី"}
-@@ -183,11 +183,11 @@ km{
-         MF{"សាំង​ម៉ាទីន"}
-         MG{"ម៉ាដាហ្គាស្កា"}
-         MH{"កោះ​ម៉ាស់សល"}
--        MK{"ម៉ាសេដ្វាន"}
-+        MK{"ម៉ាសេដ្វាន (អតីត​សាធារណរដ្ឋ​យូហ្គោស្លាវី)"}
+@@ -187,7 +187,7 @@ km{
          ML{"ម៉ាលី"}
          MM{"មីយ៉ាន់ម៉ា (ភូមា)"}
          MN{"ម៉ុងហ្គោលី"}
@@ -3699,17 +3352,16 @@ index d532c9cc..2f0ba4fe 100644
          UN{"អង្គការ"}
          US{"ស.រ.អ"}
      }
-@@ -308,8 +305,6 @@ km{
+@@ -308,7 +305,6 @@ km{
          CG{"កុងហ្គោ (សធារណរដ្ឋ)"}
          CI{"អាយវ៉ូរី ខូសថ៍"}
          CZ{"សាធារណរដ្ឋឆេក"}
 -        FK{"កោះ​ហ្វក់ឡែន (Islas Malvinas)"}
--        MK{"ម៉ាសេដ្វាន (អតីត​សាធារណរដ្ឋ​យូហ្គោស្លាវី)"}
          TL{"ទីម័រ​ខាង​កើត"}
      }
-     Version{"2.1.44.88"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/kn.txt b/source/data/region/kn.txt
-index 7c96cb70..d2ffff07 100644
+index 9f550c1c..3b7355d4 100644
 --- a/source/data/region/kn.txt
 +++ b/source/data/region/kn.txt
 @@ -110,7 +110,7 @@ kn{
@@ -3730,12 +3382,7 @@ index 7c96cb70..d2ffff07 100644
          HM{"ಹರ್ಡ್ ಮತ್ತು ಮ್ಯಾಕ್‌ಡೋನಾಲ್ಡ್ ದ್ವೀಪಗಳು"}
          HN{"ಹೊಂಡುರಾಸ್"}
          HR{"ಕ್ರೊಯೇಷಿಯಾ"}
-@@ -183,11 +183,11 @@ kn{
-         MF{"ಸೇಂಟ್ ಮಾರ್ಟಿನ್"}
-         MG{"ಮಡಗಾಸ್ಕರ್"}
-         MH{"ಮಾರ್ಷಲ್ ದ್ವೀಪಗಳು"}
--        MK{"ಮ್ಯಾಸಿಡೋನಿಯಾ"}
-+        MK{"ಮ್ಯಾಸಿಡೋನಿಯಾ (FYROM)"}
+@@ -187,7 +187,7 @@ kn{
          ML{"ಮಾಲಿ"}
          MM{"ಮಯನ್ಮಾರ್ (ಬರ್ಮಾ)"}
          MN{"ಮಂಗೋಲಿಯಾ"}
@@ -3763,17 +3410,16 @@ index 7c96cb70..d2ffff07 100644
          UN{"ಯುಎನ್"}
          US{"ಯು.ಎಸ್"}
      }
-@@ -308,8 +305,6 @@ kn{
+@@ -308,7 +305,6 @@ kn{
          CG{"ಕಾಂಗೋ (ಗಣರಾಜ್ಯ)"}
          CI{"ಐವರಿ ಕೋಸ್ಟ್"}
          CZ{"ಜೆಕ್ ಗಣರಾಜ್ಯ"}
 -        FK{"ಫಾಕ್‌ಲ್ಯಾಂಡ್ ದ್ವೀಪಗಳು (ಇಸ್ಲಾಸ್ ಮಾಲ್ವಿನಸ್)"}
--        MK{"ಮ್ಯಾಸಿಡೋನಿಯಾ (FYROM)"}
+         MK{"ಮ್ಯಾಸಿಡೋನಿಯಾ (FYROM)"}
+         SZ{"ಸ್ವಾಜಿಲ್ಯಾಂಡ್‌"}
          TL{"ಪೂರ್ವ ಟಿಮೋರ್"}
-     }
-     Version{"2.1.44.88"}
 diff --git a/source/data/region/ko.txt b/source/data/region/ko.txt
-index 88b6428c..f21ffcae 100644
+index 0e059016..dfcd2a66 100644
 --- a/source/data/region/ko.txt
 +++ b/source/data/region/ko.txt
 @@ -110,7 +110,7 @@ ko{
@@ -3794,12 +3440,7 @@ index 88b6428c..f21ffcae 100644
          HM{"허드 맥도널드 제도"}
          HN{"온두라스"}
          HR{"크로아티아"}
-@@ -183,11 +183,11 @@ ko{
-         MF{"생마르탱"}
-         MG{"마다가스카르"}
-         MH{"마셜 제도"}
--        MK{"마케도니아"}
-+        MK{"마케도니아(FYROM)"}
+@@ -187,7 +187,7 @@ ko{
          ML{"말리"}
          MM{"미얀마"}
          MN{"몽골"}
@@ -3817,7 +3458,7 @@ index 88b6428c..f21ffcae 100644
          PT{"포르투갈"}
          PW{"팔라우"}
          PY{"파라과이"}
-@@ -297,9 +297,6 @@ ko{
+@@ -299,9 +299,6 @@ ko{
      }
      Countries%short{
          GB{"영국"}
@@ -3827,17 +3468,16 @@ index 88b6428c..f21ffcae 100644
          UN{"유엔"}
          US{"미국"}
      }
-@@ -308,8 +305,6 @@ ko{
+@@ -310,7 +307,6 @@ ko{
          CG{"콩고 공화국"}
          CI{"아이보리 코스트"}
          CZ{"체코 공화국"}
 -        FK{"포클랜드 제도(말비나스 군도)"}
--        MK{"마케도니아(FYROM)"}
+         SZ{"스와질란드"}
          TL{"티모르레스테"}
      }
-     Version{"2.1.44.91"}
 diff --git a/source/data/region/kok.txt b/source/data/region/kok.txt
-index d28d7c75..7f7ba2e4 100644
+index f2d4bd40..dff02597 100644
 --- a/source/data/region/kok.txt
 +++ b/source/data/region/kok.txt
 @@ -110,7 +110,7 @@ kok{
@@ -3858,12 +3498,7 @@ index d28d7c75..7f7ba2e4 100644
          HM{"हर्ड आयलँड्स ऍंड मॅक्डोनाल्ड आयलँड्स"}
          HN{"हॉनडुरस"}
          HR{"क्रोयेशीया"}
-@@ -183,11 +183,11 @@ kok{
-         MF{"सॅंट मार्टिन"}
-         MG{"माडागास्कर"}
-         MH{"मार्शल आयलँड्स"}
--        MK{"मॅसिडोनिया"}
-+        MK{"मॅसिडोनिया (FYROM)"}
+@@ -187,7 +187,7 @@ kok{
          ML{"माली"}
          MM{"म्यानमार (बर्मा)"}
          MN{"मंगोलिया"}
@@ -3891,17 +3526,16 @@ index d28d7c75..7f7ba2e4 100644
          US{"युएस"}
      }
      Countries%variant{
-@@ -307,8 +304,6 @@ kok{
+@@ -307,7 +304,6 @@ kok{
          CG{"कोंगो (प्रजासत्ताक)"}
          CI{"आयवोरी कोस्ट"}
          CZ{"चेक लोकसत्ताक"}
 -        FK{"फ़ॉकलैंड आइलैंड्स (इलास मालविनास)"}
--        MK{"मॅसिडोनिया (FYROM)"}
          TL{"ईस्ट तिमूर"}
      }
-     Version{"2.1.44.88"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/ksh.txt b/source/data/region/ksh.txt
-index 2e740f30..6fc852c5 100644
+index c78bdcbc..7996b7ef 100644
 --- a/source/data/region/ksh.txt
 +++ b/source/data/region/ksh.txt
 @@ -108,7 +108,7 @@ ksh{
@@ -3913,16 +3547,7 @@ index 2e740f30..6fc852c5 100644
          FM{"Mikroneesije"}
          FO{"de Färrör-Enselle"}
          FR{"Frankrisch"}
-@@ -181,7 +181,7 @@ ksh{
-         MF{"de Zint-Määtes-Ensel"}
-         MG{"Maddajaska"}
-         MH{"de Machschall-Enselle"}
--        MK{"Mazedoonije"}
-+        MK{"de vörmaals ens jugoßlaawesch jewääse Republik Mazedoonije"}
-         ML{"Maali"}
-         MM{"Birma"}
-         MN{"Mongjolei"}
-@@ -294,16 +294,12 @@ ksh{
+@@ -294,15 +294,12 @@ ksh{
      }
      Countries%short{
          GB{"Jruußbrettannije"}
@@ -3935,12 +3560,11 @@ index 2e740f30..6fc852c5 100644
          CG{"de Republik Konggo"}
          CI{"de Älfebeijnköß"}
 -        FK{"de malleviinesche Enselle"}
--        MK{"de vörmaals ens jugoßlaawesch jewääse Republik Mazedoonije"}
+         MK{"de vörmaals ens jugoßlaawesch jewääse Republik Mazedoonije"}
      }
-     Version{"2.1.41.34"}
- }
+     Version{"2.1.47.82"}
 diff --git a/source/data/region/ku.txt b/source/data/region/ku.txt
-index 17430216..5ed848b1 100644
+index f7805373..a9d3576c 100644
 --- a/source/data/region/ku.txt
 +++ b/source/data/region/ku.txt
 @@ -85,7 +85,7 @@ ku{
@@ -3960,12 +3584,7 @@ index 17430216..5ed848b1 100644
          HN{"Hondûras"}
          HR{"Kroatya"}
          HT{"Haîtî"}
-@@ -152,10 +153,11 @@ ku{
-         MF{"MF"}
-         MG{"Madagaskar"}
-         MH{"Giravên Marşal"}
--        MK{"Makedonya"}
-+        MK{"MK"}
+@@ -156,6 +157,7 @@ ku{
          ML{"Malî"}
          MM{"Myanmar (Birmanya)"}
          MN{"Mongolya"}
@@ -3982,7 +3601,7 @@ index 17430216..5ed848b1 100644
          PT{"Portûgal"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -253,17 +255,12 @@ ku{
+@@ -253,16 +255,12 @@ ku{
      }
      Countries%short{
          GB{"KY"}
@@ -3996,12 +3615,11 @@ index 17430216..5ed848b1 100644
          CG{"Kongo (Komar)"}
          CZ{"Komara Çekî"}
 -        FK{"Giravên Falkland"}
--        MK{"MK"}
+         MK{"MK"}
          TL{"Tîmora Rojhilat"}
      }
-     Version{"2.1.44.82"}
 diff --git a/source/data/region/ky.txt b/source/data/region/ky.txt
-index f3585d26..0e6ba0ae 100644
+index 2cb8c526..b44bc44b 100644
 --- a/source/data/region/ky.txt
 +++ b/source/data/region/ky.txt
 @@ -110,7 +110,7 @@ ky{
@@ -4022,12 +3640,7 @@ index f3585d26..0e6ba0ae 100644
          HM{"Херд жана Макдональд аралдары"}
          HN{"Гондурас"}
          HR{"Хорватия"}
-@@ -183,11 +183,11 @@ ky{
-         MF{"Сент-Мартин"}
-         MG{"Мадагаскар"}
-         MH{"Маршалл аралдары"}
--        MK{"Македония"}
-+        MK{"Македония (Мур. Югосл.)"}
+@@ -187,7 +187,7 @@ ky{
          ML{"Мали"}
          MM{"Мьянма (Бирма)"}
          MN{"Монголия"}
@@ -4055,17 +3668,57 @@ index f3585d26..0e6ba0ae 100644
          US{"АКШ"}
      }
      Countries%variant{
-@@ -307,8 +304,6 @@ ky{
+@@ -307,7 +304,6 @@ ky{
          CG{"Конго (Республикасы)"}
          CI{"Пил сөөктүү жээк"}
          CZ{"Чех Республикасы"}
 -        FK{"Фолкленд (Мальвина) аралдары"}
--        MK{"Македония (Мур. Югосл.)"}
+         SZ{"SZ"}
          TL{"Чыгыш Тимор"}
      }
-     Version{"2.1.43.65"}
+diff --git a/source/data/region/lb.txt b/source/data/region/lb.txt
+index 9197e822..997c82d6 100644
+--- a/source/data/region/lb.txt
++++ b/source/data/region/lb.txt
+@@ -131,7 +131,7 @@ lb{
+         GU{"Guam"}
+         GW{"Guinea-Bissau"}
+         GY{"Guyana"}
+-        HK{"Spezialverwaltungszon Hong Kong"}
++        HK{"Hong Kong"}
+         HM{"Heard- a McDonald-Inselen"}
+         HN{"Honduras"}
+         HR{"Kroatien"}
+@@ -185,7 +185,7 @@ lb{
+         ML{"Mali"}
+         MM{"Myanmar"}
+         MN{"Mongolei"}
+-        MO{"Spezialverwaltungszon Macau"}
++        MO{"Macau"}
+         MP{"Nërdlech Marianen"}
+         MQ{"Martinique"}
+         MR{"Mauretanien"}
+@@ -220,7 +220,7 @@ lb{
+         PM{"St. Pierre a Miquelon"}
+         PN{"Pitcairninselen"}
+         PR{"Puerto Rico"}
+-        PS{"Palestinensesch Autonomiegebidder"}
++        PS{"Palestina"}
+         PT{"Portugal"}
+         PW{"Palau"}
+         PY{"Paraguay"}
+@@ -294,9 +294,6 @@ lb{
+     }
+     Countries%short{
+         GB{"GB"}
+-        HK{"Hong Kong"}
+-        MO{"Macau"}
+-        PS{"Palestina"}
+         US{"US"}
+     }
+     Countries%variant{
 diff --git a/source/data/region/lo.txt b/source/data/region/lo.txt
-index 490669ad..25a950d4 100644
+index a9a9358a..0cefde93 100644
 --- a/source/data/region/lo.txt
 +++ b/source/data/region/lo.txt
 @@ -110,7 +110,7 @@ lo{
@@ -4086,12 +3739,7 @@ index 490669ad..25a950d4 100644
          HM{"ໝູ່ເກາະເຮີດ & ແມັກໂດນອລ"}
          HN{"ຮອນດູຣັສ"}
          HR{"ໂຄຣເອເທຍ"}
-@@ -183,11 +183,11 @@ lo{
-         MF{"ເຊນ ມາທິນ"}
-         MG{"ມາດາກາສະກາ"}
-         MH{"ຫມູ່ເກາະມາແຊວ"}
--        MK{"ແມຊິໂດເນຍ"}
-+        MK{"ແມຊິໂດເນຍ (FYROM)"}
+@@ -187,7 +187,7 @@ lo{
          ML{"ມາລີ"}
          MM{"ມຽນມາ (ເບີມາ)"}
          MN{"ມອງໂກເລຍ"}
@@ -4119,17 +3767,123 @@ index 490669ad..25a950d4 100644
          UN{"ຢູເອັນ"}
          US{"ສະຫະລັດຯ"}
      }
-@@ -308,8 +305,6 @@ lo{
+@@ -308,7 +305,6 @@ lo{
          CG{"ສາທາລະນະລັດຄອງໂກ"}
          CI{"ໄອໂວຣີ ໂຄທ"}
          CZ{"ສາທາລະນະລັດເຊັກ"}
 -        FK{"ໝູ່ເກາະຟອກແລນ (ອິສລາສ ມາວິນນາສ)"}
--        MK{"ແມຊິໂດເນຍ (FYROM)"}
+         MK{"ແມຊິໂດເນຍ (FYROM)"}
+         SZ{"ສະ​ວາ​ຊິ​ແລນ"}
          TL{"ທິມໍ ຕາເວັນອອກ"}
+diff --git a/source/data/region/lt.txt b/source/data/region/lt.txt
+index e355a9cf..233fa0f4 100644
+--- a/source/data/region/lt.txt
++++ b/source/data/region/lt.txt
+@@ -110,7 +110,7 @@ lt{
+         EZ{"euro zona"}
+         FI{"Suomija"}
+         FJ{"Fidžis"}
+-        FK{"Folklando Salos"}
++        FK{"Folklando (Malvinų) Salos"}
+         FM{"Mikronezija"}
+         FO{"Farerų Salos"}
+         FR{"Prancūzija"}
+@@ -133,7 +133,7 @@ lt{
+         GU{"Guamas"}
+         GW{"Bisau Gvinėja"}
+         GY{"Gajana"}
+-        HK{"Ypatingasis Administracinis Kinijos Regionas Honkongas"}
++        HK{"Honkongas"}
+         HM{"Herdo ir Makdonaldo Salos"}
+         HN{"Hondūras"}
+         HR{"Kroatija"}
+@@ -187,7 +187,7 @@ lt{
+         ML{"Malis"}
+         MM{"Mianmaras (Birma)"}
+         MN{"Mongolija"}
+-        MO{"Ypatingasis Administracinis Kinijos Regionas Makao"}
++        MO{"Makao"}
+         MP{"Marianos Šiaurinės Salos"}
+         MQ{"Martinika"}
+         MR{"Mauritanija"}
+@@ -222,7 +222,7 @@ lt{
+         PM{"Sen Pjeras ir Mikelonas"}
+         PN{"Pitkerno salos"}
+         PR{"Puerto Rikas"}
+-        PS{"Palestinos teritorija"}
++        PS{"Palestina"}
+         PT{"Portugalija"}
+         PW{"Palau"}
+         PY{"Paragvajus"}
+@@ -299,9 +299,6 @@ lt{
      }
-     Version{"2.1.43.50"}
+     Countries%short{
+         GB{"JK"}
+-        HK{"Honkongas"}
+-        MO{"Makao"}
+-        PS{"Palestina"}
+         UN{"JT"}
+         US{"JAV"}
+     }
+@@ -310,7 +307,6 @@ lt{
+         CG{"Kongo Respublika"}
+         CI{"Dramblio Kaulo Kranto Respublika"}
+         CZ{"Čekijos Respublika"}
+-        FK{"Folklando (Malvinų) Salos"}
+         TL{"TL"}
+     }
+     Version{"2.1.48.42"}
+diff --git a/source/data/region/lv.txt b/source/data/region/lv.txt
+index c4442c1f..e7571696 100644
+--- a/source/data/region/lv.txt
++++ b/source/data/region/lv.txt
+@@ -110,7 +110,7 @@ lv{
+         EZ{"Eirozona"}
+         FI{"Somija"}
+         FJ{"Fidži"}
+-        FK{"Folklenda salas"}
++        FK{"Folklenda (Malvinu) salas"}
+         FM{"Mikronēzija"}
+         FO{"Fēru salas"}
+         FR{"Francija"}
+@@ -133,7 +133,7 @@ lv{
+         GU{"Guama"}
+         GW{"Gvineja-Bisava"}
+         GY{"Gajāna"}
+-        HK{"Ķīnas īpašās pārvaldes apgabals Honkonga"}
++        HK{"Honkonga"}
+         HM{"Hērda sala un Makdonalda salas"}
+         HN{"Hondurasa"}
+         HR{"Horvātija"}
+@@ -187,7 +187,7 @@ lv{
+         ML{"Mali"}
+         MM{"Mjanma (Birma)"}
+         MN{"Mongolija"}
+-        MO{"Ķīnas īpašās pārvaldes apgabals Makao"}
++        MO{"Makao"}
+         MP{"Ziemeļu Marianas salas"}
+         MQ{"Martinika"}
+         MR{"Mauritānija"}
+@@ -299,9 +299,6 @@ lv{
+     }
+     Countries%short{
+         GB{"Apvienotā Karaliste"}
+-        HK{"Honkonga"}
+-        MO{"Makao"}
+-        PS{"Palestīna"}
+         UN{"ANO"}
+         US{"ASV"}
+     }
+@@ -310,7 +307,6 @@ lv{
+         CG{"Kongo (Republika)"}
+         CI{"Ziloņkaula krasts"}
+         CZ{"Čehijas Republika"}
+-        FK{"Folklenda (Malvinu) salas"}
+     }
+     Version{"2.1.48.43"}
+ }
 diff --git a/source/data/region/mk.txt b/source/data/region/mk.txt
-index 9f794d2e..f0f829fe 100644
+index babdeb43..c0a409ed 100644
 --- a/source/data/region/mk.txt
 +++ b/source/data/region/mk.txt
 @@ -110,7 +110,7 @@ mk{
@@ -4150,12 +3904,7 @@ index 9f794d2e..f0f829fe 100644
          HM{"Остров Херд и Острови Мекдоналд"}
          HN{"Хондурас"}
          HR{"Хрватска"}
-@@ -183,11 +183,11 @@ mk{
-         MF{"Сент Мартин"}
-         MG{"Мадагаскар"}
-         MH{"Маршалски Острови"}
--        MK{"Македонија"}
-+        MK{"Република Македонија"}
+@@ -187,7 +187,7 @@ mk{
          ML{"Мали"}
          MM{"Мјанмар (Бурма)"}
          MN{"Монголија"}
@@ -4173,7 +3922,7 @@ index 9f794d2e..f0f829fe 100644
          PT{"Португалија"}
          PW{"Палау"}
          PY{"Парагвај"}
-@@ -297,9 +297,6 @@ mk{
+@@ -299,9 +299,6 @@ mk{
      }
      Countries%short{
          GB{"ОК"}
@@ -4183,17 +3932,16 @@ index 9f794d2e..f0f829fe 100644
          UN{"ОН"}
          US{"САД"}
      }
-@@ -308,8 +305,6 @@ mk{
+@@ -310,7 +307,6 @@ mk{
          CG{"Конго (Република)"}
          CI{"Брег на Слоновата Коска"}
          CZ{"Република Чешка"}
 -        FK{"Фолкландски Острови (Малвински Острови)"}
--        MK{"Република Македонија"}
          TL{"Источен Тимор"}
      }
-     Version{"2.1.43.65"}
+     Version{"2.1.48.27"}
 diff --git a/source/data/region/ml.txt b/source/data/region/ml.txt
-index 5a16561f..ddc39348 100644
+index 88445011..a936c447 100644
 --- a/source/data/region/ml.txt
 +++ b/source/data/region/ml.txt
 @@ -110,7 +110,7 @@ ml{
@@ -4214,12 +3962,7 @@ index 5a16561f..ddc39348 100644
          HM{"ഹിയേർഡും മക്‌ഡൊണാൾഡ് ദ്വീപുകളും"}
          HN{"ഹോണ്ടുറാസ്"}
          HR{"ക്രൊയേഷ്യ"}
-@@ -183,11 +183,11 @@ ml{
-         MF{"സെന്റ് മാർട്ടിൻ"}
-         MG{"മഡഗാസ്കർ"}
-         MH{"മാർഷൽ ദ്വീപുകൾ"}
--        MK{"മാസിഡോണിയ"}
-+        MK{"മാസിഡോണിയ (FYROM)"}
+@@ -187,7 +187,7 @@ ml{
          ML{"മാലി"}
          MM{"മ്യാൻമാർ (ബർമ്മ)"}
          MN{"മംഗോളിയ"}
@@ -4247,17 +3990,16 @@ index 5a16561f..ddc39348 100644
          UN{"യുഎൻ"}
          US{"യു.എസ്"}
      }
-@@ -308,8 +305,6 @@ ml{
+@@ -308,7 +305,6 @@ ml{
          CG{"കോംഗോ (റിപ്പബ്ലിക്ക്)"}
          CI{"ഐവറി കോസ്റ്റ്"}
          CZ{"ചെക്ക് റിപ്പബ്ലിക്ക്"}
 -        FK{"ഫോക്ക്‌ലാൻഡ് ദ്വീപുകൾ (ഐലാസ് മാൽവിനാസ്)"}
--        MK{"മാസിഡോണിയ (FYROM)"}
+         SZ{"സ്വിറ്റ്സർലൻഡ്"}
          TL{"കിഴക്കൻ തിമോർ"}
      }
-     Version{"2.1.43.50"}
 diff --git a/source/data/region/mn.txt b/source/data/region/mn.txt
-index 81e914bf..962a1f09 100644
+index af6488ba..95bff7a2 100644
 --- a/source/data/region/mn.txt
 +++ b/source/data/region/mn.txt
 @@ -110,7 +110,7 @@ mn{
@@ -4278,12 +4020,7 @@ index 81e914bf..962a1f09 100644
          HM{"Херд ба Макдональдийн арлууд"}
          HN{"Гондурас"}
          HR{"Хорват"}
-@@ -183,11 +183,11 @@ mn{
-         MF{"Сент-Мартин"}
-         MG{"Мадагаскар"}
-         MH{"Маршаллын арлууд"}
--        MK{"Македон"}
-+        MK{"Македон (Хуучин ЮБНМУ)"}
+@@ -187,7 +187,7 @@ mn{
          ML{"Мали"}
          MM{"Мьянмар"}
          MN{"Монгол"}
@@ -4311,17 +4048,16 @@ index 81e914bf..962a1f09 100644
          UN{"НҮБ"}
          US{"АНУ"}
      }
-@@ -308,8 +305,6 @@ mn{
+@@ -308,7 +305,6 @@ mn{
          CG{"Конго (Бүгд Найрамдах улс)"}
          CI{"Зааны ясан эрэг"}
          CZ{"Бүгд Найрамдах Чех Улс"}
 -        FK{"Фолклендийн арлууд (Мальвины арлууд)"}
--        MK{"Македон (Хуучин ЮБНМУ)"}
+         MK{"Македон (Хуучин ЮБНМУ)"}
          TL{"Зүүн Тимор"}
      }
-     Version{"2.1.43.94"}
 diff --git a/source/data/region/mr.txt b/source/data/region/mr.txt
-index 7a703b50..78b83ee8 100644
+index 7c52da97..22e508ce 100644
 --- a/source/data/region/mr.txt
 +++ b/source/data/region/mr.txt
 @@ -110,7 +110,7 @@ mr{
@@ -4342,12 +4078,7 @@ index 7a703b50..78b83ee8 100644
          HM{"हर्ड आणि मॅक्डोनाल्ड बेटे"}
          HN{"होंडुरास"}
          HR{"क्रोएशिया"}
-@@ -183,11 +183,11 @@ mr{
-         MF{"सेंट मार्टिन"}
-         MG{"मादागास्कर"}
-         MH{"मार्शल बेटे"}
--        MK{"मॅसेडोनिया"}
-+        MK{"मॅसेडोनिया (FYROM)"}
+@@ -187,7 +187,7 @@ mr{
          ML{"माली"}
          MM{"म्यानमार (बर्मा)"}
          MN{"मंगोलिया"}
@@ -4375,17 +4106,16 @@ index 7a703b50..78b83ee8 100644
          UN{"यूएन"}
          US{"यू.एस."}
      }
-@@ -307,8 +304,6 @@ mr{
+@@ -307,7 +304,6 @@ mr{
          CD{"काँगो (डीआरसी)"}
          CG{"काँगो (प्रजासत्ताक)"}
          CZ{"झेक प्रजासत्ताक"}
 -        FK{"फॉकलंड बेटे (इस्लास मालविनास)"}
--        MK{"मॅसेडोनिया (FYROM)"}
          TL{"पूर्व तिमोर"}
      }
-     Version{"2.1.43.65"}
+     Version{"2.1.48.42"}
 diff --git a/source/data/region/ms.txt b/source/data/region/ms.txt
-index aacb04b2..c9645378 100644
+index d7995916..6d13e5f4 100644
 --- a/source/data/region/ms.txt
 +++ b/source/data/region/ms.txt
 @@ -110,7 +110,7 @@ ms{
@@ -4406,12 +4136,7 @@ index aacb04b2..c9645378 100644
          HM{"Kepulauan Heard & McDonald"}
          HN{"Honduras"}
          HR{"Croatia"}
-@@ -183,11 +183,11 @@ ms{
-         MF{"Saint Martin"}
-         MG{"Madagaskar"}
-         MH{"Kepulauan Marshall"}
--        MK{"Macedonia"}
-+        MK{"Macedonia (FYROM)"}
+@@ -187,7 +187,7 @@ ms{
          ML{"Mali"}
          MM{"Myanmar (Burma)"}
          MN{"Mongolia"}
@@ -4429,7 +4154,7 @@ index aacb04b2..c9645378 100644
          PT{"Portugal"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -297,9 +297,6 @@ ms{
+@@ -299,9 +299,6 @@ ms{
      }
      Countries%short{
          GB{"UK"}
@@ -4439,17 +4164,16 @@ index aacb04b2..c9645378 100644
          UN{"PBB"}
          US{"A.S"}
      }
-@@ -308,8 +305,6 @@ ms{
+@@ -310,7 +307,6 @@ ms{
          CG{"Congo (Republik)"}
          CI{"Ivory Coast"}
          CZ{"Republik Czech"}
 -        FK{"Kepulauan Falkland (Islas Malvinas)"}
--        MK{"Macedonia (FYROM)"}
          TL{"Timor Timur"}
      }
-     Version{"2.1.44.91"}
+     Version{"2.1.49.2"}
 diff --git a/source/data/region/mt.txt b/source/data/region/mt.txt
-index edc23c59..917e797b 100644
+index 887c58a8..9d63d8b7 100644
 --- a/source/data/region/mt.txt
 +++ b/source/data/region/mt.txt
 @@ -106,7 +106,7 @@ mt{
@@ -4473,12 +4197,7 @@ index edc23c59..917e797b 100644
          HM{"il-Gżejjer Heard u l-Gżejjer McDonald"}
          HN{"il-Honduras"}
          HR{"il-Kroazja"}
-@@ -182,14 +179,11 @@ mt{
-         MF{"Saint Martin"}
-         MG{"Madagascar"}
-         MH{"Gżejjer Marshall"}
--        MK{"l-Eks-Repubblika Jugoslava tal-Maċedonia"}
-+        MK{"l-Eks Repubblika Jugoslava tal-Maċedonia"}
+@@ -186,10 +183,7 @@ mt{
          ML{"il-Mali"}
          MM{"il-Myanmar/Burma"}
          MN{"il-Mongolja"}
@@ -4499,7 +4218,7 @@ index edc23c59..917e797b 100644
          PT{"il-Portugall"}
          PW{"Palau"}
          PY{"il-Paragwaj"}
-@@ -297,17 +291,12 @@ mt{
+@@ -297,16 +291,12 @@ mt{
      }
      Countries%short{
          GB{"UK"}
@@ -4513,12 +4232,11 @@ index edc23c59..917e797b 100644
          CG{"ir-Repubblika tal-Kongo"}
          CZ{"Ir-Repubblika Ċeka"}
 -        FK{"Il-Gżejjer Falkland (il-Gżejjer Malvinas)"}
--        MK{"l-Eks Repubblika Jugoslava tal-Maċedonia"}
          TL{"Timor tal-Lvant"}
      }
-     Version{"2.1.43.94"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/my.txt b/source/data/region/my.txt
-index b5187c76..af799aef 100644
+index e5cb3adb..56318a26 100644
 --- a/source/data/region/my.txt
 +++ b/source/data/region/my.txt
 @@ -110,7 +110,7 @@ my{
@@ -4539,12 +4257,7 @@ index b5187c76..af799aef 100644
          HM{"ဟတ်ကျွန်းနှင့်မက်ဒေါနယ်ကျွန်းစု"}
          HN{"ဟွန်ဒူးရပ်စ်"}
          HR{"ခရိုအေးရှား"}
-@@ -183,11 +183,11 @@ my{
-         MF{"စိန့်မာတင်"}
-         MG{"မဒါဂတ်စကား"}
-         MH{"မာရှယ် ကျွန်းစု"}
--        MK{"မက်ဆီဒိုးနီးယား"}
-+        MK{"မက်ဆီဒိုးနီးယား (ယခင် ယူဂိုစလားဗီးယား မက်ဆီဒိုးနီးယားပြည်ထောင်စု)"}
+@@ -187,7 +187,7 @@ my{
          ML{"မာလီ"}
          MM{"မြန်မာ"}
          MN{"မွန်ဂိုးလီးယား"}
@@ -4572,17 +4285,16 @@ index b5187c76..af799aef 100644
          UN{"ကုလသမဂ္ဂ"}
          US{"ယူအက်စ်"}
      }
-@@ -308,8 +305,6 @@ my{
+@@ -308,7 +305,6 @@ my{
          CG{"ကွန်ဂို သမ္မတနိုင်ငံ"}
          CI{"အိုင်ဗရီကို့စ်"}
          CZ{"ချက် ပြည်ထောင်စု"}
 -        FK{"ဖော့ကလန် ကျွန်းစု (အီလားစ် မောလ်ဗီနာစ်)"}
--        MK{"မက်ဆီဒိုးနီးယား (ယခင် ယူဂိုစလားဗီးယား မက်ဆီဒိုးနီးယားပြည်ထောင်စု)"}
      }
-     Version{"2.1.44.88"}
+     Version{"2.1.49.82"}
  }
 diff --git a/source/data/region/mzn.txt b/source/data/region/mzn.txt
-index 6cbd6f8a..6739e969 100644
+index ff561adb..fbd97362 100644
 --- a/source/data/region/mzn.txt
 +++ b/source/data/region/mzn.txt
 @@ -108,7 +108,7 @@ mzn{
@@ -4603,12 +4315,7 @@ index 6cbd6f8a..6739e969 100644
          HM{"هارد و مک‌دونالد جزایر"}
          HN{"هندوراس"}
          HR{"کرواسی"}
-@@ -181,11 +181,11 @@ mzn{
-         MF{"سنت مارتین"}
-         MG{"ماداگاسکار"}
-         MH{"مارشال جزایر"}
--        MK{"مقدونیه"}
-+        MK{"مقدونیه جمهوری"}
+@@ -185,7 +185,7 @@ mzn{
          ML{"مالی"}
          MM{"میانمار"}
          MN{"مغولستون"}
@@ -4626,7 +4333,7 @@ index 6cbd6f8a..6739e969 100644
          PT{"پرتغال"}
          PW{"پالائو"}
          PY{"پاراگوئه"}
-@@ -294,17 +294,12 @@ mzn{
+@@ -294,16 +294,12 @@ mzn{
      }
      Countries%short{
          GB{"بریتانیا"}
@@ -4640,12 +4347,11 @@ index 6cbd6f8a..6739e969 100644
          CG{"کنگو (جمهوری)"}
          CI{"عاج ساحل"}
 -        FK{"فالکلند (مالویناس)"}
--        MK{"مقدونیه جمهوری"}
+         MK{"مقدونیه جمهوری"}
          TL{"شرقی تیمور"}
      }
-     Version{"2.1.41.34"}
 diff --git a/source/data/region/nb.txt b/source/data/region/nb.txt
-index fa7a8703..71bb8c78 100644
+index 8ac64c4d..b54606a9 100644
 --- a/source/data/region/nb.txt
 +++ b/source/data/region/nb.txt
 @@ -110,7 +110,7 @@ nb{
@@ -4666,12 +4372,7 @@ index fa7a8703..71bb8c78 100644
          HM{"Heard- og McDonaldøyene"}
          HN{"Honduras"}
          HR{"Kroatia"}
-@@ -183,11 +183,11 @@ nb{
-         MF{"Saint-Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshalløyene"}
--        MK{"Makedonia"}
-+        MK{"Den tidligere jugoslaviske republikk Makedonia"}
+@@ -187,7 +187,7 @@ nb{
          ML{"Mali"}
          MM{"Myanmar (Burma)"}
          MN{"Mongolia"}
@@ -4689,7 +4390,7 @@ index fa7a8703..71bb8c78 100644
          PT{"Portugal"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -297,17 +297,12 @@ nb{
+@@ -297,9 +297,6 @@ nb{
      }
      Countries%short{
          GB{"Storbritannia"}
@@ -4699,16 +4400,16 @@ index fa7a8703..71bb8c78 100644
          UN{"FN"}
          US{"USA"}
      }
-     Countries%variant{
+@@ -307,7 +304,6 @@ nb{
          CD{"Den demokratiske republikken Kongo"}
          CG{"Republikken Kongo"}
+         CZ{"Den tsjekkiske republikk"}
 -        FK{"Falklandsøyene (Islas Malvinas)"}
--        MK{"Den tidligere jugoslaviske republikk Makedonia"}
+         SZ{"Swaziland"}
      }
-     Version{"2.1.44.2"}
- }
+     Version{"2.1.48.42"}
 diff --git a/source/data/region/ne.txt b/source/data/region/ne.txt
-index f92f8663..ffe39f1b 100644
+index c1ffcb84..355743cd 100644
 --- a/source/data/region/ne.txt
 +++ b/source/data/region/ne.txt
 @@ -110,7 +110,7 @@ ne{
@@ -4729,12 +4430,7 @@ index f92f8663..ffe39f1b 100644
          HM{"हर्ड टापु र म्याकडोनाल्ड टापुहरु"}
          HN{"हन्डुरास"}
          HR{"क्रोएशिया"}
-@@ -183,11 +183,11 @@ ne{
-         MF{"सेन्ट मार्टिन"}
-         MG{"माडागास्कर"}
-         MH{"मार्शल टापुहरु"}
--        MK{"म्यासेडोनिया"}
-+        MK{"म्यासेडोनिया (फाइरम)"}
+@@ -187,7 +187,7 @@ ne{
          ML{"माली"}
          MM{"म्यान्मार (बर्मा)"}
          MN{"मङ्गोलिया"}
@@ -4762,17 +4458,16 @@ index f92f8663..ffe39f1b 100644
          UN{"यूएन"}
          US{"अमेरिका"}
      }
-@@ -307,8 +304,6 @@ ne{
+@@ -307,7 +304,6 @@ ne{
          CG{"कङ्गो (गणतन्त्र)"}
          CI{"आइभोरी कोस्ट"}
          CZ{"चेक गणतन्त्र"}
 -        FK{"फक्ल्याण्ड टापुहरू (इज्लास माल्भिनास)"}
--        MK{"म्यासेडोनिया (फाइरम)"}
+         SZ{"SZ"}
          TL{"पृर्वी टीमोर"}
      }
-     Version{"2.1.43.50"}
 diff --git a/source/data/region/nl.txt b/source/data/region/nl.txt
-index a4d4c0ac..e4ed7d0b 100644
+index 4c4935a6..028a307f 100644
 --- a/source/data/region/nl.txt
 +++ b/source/data/region/nl.txt
 @@ -110,7 +110,7 @@ nl{
@@ -4793,12 +4488,7 @@ index a4d4c0ac..e4ed7d0b 100644
          HM{"Heard en McDonaldeilanden"}
          HN{"Honduras"}
          HR{"Kroatië"}
-@@ -183,11 +183,11 @@ nl{
-         MF{"Saint-Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshalleilanden"}
--        MK{"Macedonië"}
-+        MK{"Macedonië (FYROM)"}
+@@ -187,7 +187,7 @@ nl{
          ML{"Mali"}
          MM{"Myanmar (Birma)"}
          MN{"Mongolië"}
@@ -4816,7 +4506,7 @@ index a4d4c0ac..e4ed7d0b 100644
          PT{"Portugal"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -297,9 +297,6 @@ nl{
+@@ -299,9 +299,6 @@ nl{
      }
      Countries%short{
          GB{"VK"}
@@ -4826,17 +4516,16 @@ index a4d4c0ac..e4ed7d0b 100644
          UN{"VN"}
          US{"VS"}
      }
-@@ -308,8 +305,6 @@ nl{
+@@ -310,7 +307,6 @@ nl{
          CG{"Congo (Republiek)"}
          CI{"Republiek Ivoorkust"}
          CZ{"Tsjechische Republiek"}
 -        FK{"Falklandeilanden (Islas Malvinas)"}
--        MK{"Macedonië (FYROM)"}
+         SZ{"Swaziland"}
          TL{"Democratische Republiek Oost-Timor"}
      }
-     Version{"2.1.45.14"}
 diff --git a/source/data/region/nn.txt b/source/data/region/nn.txt
-index 492798f1..4ccce0d1 100644
+index 09139a10..bbfab679 100644
 --- a/source/data/region/nn.txt
 +++ b/source/data/region/nn.txt
 @@ -109,7 +109,7 @@ nn{
@@ -4857,12 +4546,7 @@ index 492798f1..4ccce0d1 100644
          HM{"Heardøya og McDonaldøyane"}
          HN{"Honduras"}
          HR{"Kroatia"}
-@@ -182,11 +182,11 @@ nn{
-         MF{"Saint Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshalløyane"}
--        MK{"Makedonia"}
-+        MK{"Den tidlegare jugoslaviske republikken Makedonia"}
+@@ -186,7 +186,7 @@ nn{
          ML{"Mali"}
          MM{"Myanmar (Burma)"}
          MN{"Mongolia"}
@@ -4880,7 +4564,7 @@ index 492798f1..4ccce0d1 100644
          PT{"Portugal"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -296,16 +296,11 @@ nn{
+@@ -296,15 +296,11 @@ nn{
      }
      Countries%short{
          GB{"Storbritannia"}
@@ -4893,12 +4577,11 @@ index 492798f1..4ccce0d1 100644
          CD{"Den demokratiske republikken Kongo"}
          CG{"Republikken Kongo"}
 -        FK{"Falklandsøyane (Islas Malvinas)"}
--        MK{"Den tidlegare jugoslaviske republikken Makedonia"}
          TL{"Aust-Timor"}
      }
-     Version{"2.1.43.94"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/or.txt b/source/data/region/or.txt
-index f813e695..51e0ce20 100644
+index 0ade60d2..91f58fd4 100644
 --- a/source/data/region/or.txt
 +++ b/source/data/region/or.txt
 @@ -110,7 +110,7 @@ or{
@@ -4919,12 +4602,7 @@ index f813e695..51e0ce20 100644
          HM{"ହାର୍ଡ୍‌ ଏବଂ ମ୍ୟାକଡୋନାଲ୍ଡ ଦ୍ୱୀପପୁଞ୍ଜ"}
          HN{"ହୋଣ୍ଡୁରାସ୍‌"}
          HR{"କ୍ରୋଏସିଆ"}
-@@ -183,11 +183,11 @@ or{
-         MF{"ସେଣ୍ଟ ମାର୍ଟିନ୍"}
-         MG{"ମାଡାଗାସ୍କର୍"}
-         MH{"ମାର୍ଶାଲ୍ ଦ୍ୱୀପପୁଞ୍ଜ"}
--        MK{"ମାସେଡୋନିଆ"}
-+        MK{"ମାସେଡୋନିଆ (ଏଫ୍‌‌ୱାଇଆର୍‌‌ଓଏମ୍)"}
+@@ -187,7 +187,7 @@ or{
          ML{"ମାଲି"}
          MM{"ମିଆଁମାର"}
          MN{"ମଙ୍ଗୋଲିଆ"}
@@ -4942,7 +4620,7 @@ index f813e695..51e0ce20 100644
          PT{"ପର୍ତ୍ତୁଗାଲ୍"}
          PW{"ପାଲାଉ"}
          PY{"ପାରାଗୁଏ"}
-@@ -297,9 +297,6 @@ or{
+@@ -299,9 +299,6 @@ or{
      }
      Countries%short{
          GB{"ୟୁକେ"}
@@ -4952,17 +4630,16 @@ index f813e695..51e0ce20 100644
          US{"ଯୁକ୍ତରାଷ୍ଟ୍ର"}
      }
      Countries%variant{
-@@ -307,8 +304,6 @@ or{
+@@ -309,7 +306,6 @@ or{
          CG{"କଙ୍ଗୋ (ସାଧାରଣତନ୍ତ୍ର)"}
          CI{"ଆଇଭରୀ କୋଷ୍ଟ"}
          CZ{"ଚେକ୍‌ ସାଧାରଣତନ୍ତ୍ର"}
 -        FK{"ଫକଲ୍ୟାଣ୍ଡ ଦ୍ୱୀପପୁଞ୍ଜ (ଇସଲାସ୍‌ ମାଲଭିନାସ୍‌)"}
--        MK{"ମାସେଡୋନିଆ (ଏଫ୍‌‌ୱାଇଆର୍‌‌ଓଏମ୍)"}
+         SZ{"ସ୍ୱାଜିଲ୍ୟାଣ୍ଡ"}
          TL{"ପୂର୍ବ ତିମୋର୍‌"}
      }
-     Version{"2.1.43.65"}
 diff --git a/source/data/region/pa.txt b/source/data/region/pa.txt
-index 88b9cb5f..65f1f428 100644
+index 1016ac4f..b01c1ac2 100644
 --- a/source/data/region/pa.txt
 +++ b/source/data/region/pa.txt
 @@ -110,7 +110,7 @@ pa{
@@ -4983,12 +4660,7 @@ index 88b9cb5f..65f1f428 100644
          HM{"ਹਰਡ ਤੇ ਮੈਕਡੋਨਾਲਡ ਟਾਪੂ"}
          HN{"ਹੋਂਡੁਰਸ"}
          HR{"ਕਰੋਏਸ਼ੀਆ"}
-@@ -183,11 +183,11 @@ pa{
-         MF{"ਸੇਂਟ ਮਾਰਟਿਨ"}
-         MG{"ਮੈਡਾਗਾਸਕਰ"}
-         MH{"ਮਾਰਸ਼ਲ ਟਾਪੂ"}
--        MK{"ਮੈਕਡੋਨੀਆ"}
-+        MK{"ਮੈਕਡੋਨੀਆ (ਪੂਰਵ ਯੂਗੋਸਲਾਵ ਮੈਕਡੋਨੀਆਈ ਗਣਰਾਜ)"}
+@@ -187,7 +187,7 @@ pa{
          ML{"ਮਾਲੀ"}
          MM{"ਮਿਆਂਮਾਰ (ਬਰਮਾ)"}
          MN{"ਮੰਗੋਲੀਆ"}
@@ -5016,17 +4688,16 @@ index 88b9cb5f..65f1f428 100644
          UN{"ਯੂ.ਐੱਨ."}
          US{"ਯੂ.ਐੱਸ."}
      }
-@@ -308,8 +305,6 @@ pa{
+@@ -308,7 +305,6 @@ pa{
          CG{"ਕਾਂਗੋ ਗਣਰਾਜ"}
          CI{"ਆਇਵਰੀ ਕੋਸਟ"}
          CZ{"ਚੈੱਕ ਗਣਰਾਜ"}
 -        FK{"ਫ਼ਾਕਲੈਂਡ ਟਾਪੂ (ਆਈਲਾਸ ਮਾਲਵਿਨਾਸ)"}
--        MK{"ਮੈਕਡੋਨੀਆ (ਪੂਰਵ ਯੂਗੋਸਲਾਵ ਮੈਕਡੋਨੀਆਈ ਗਣਰਾਜ)"}
+         MK{"ਮੈਕਡੋਨੀਆ (ਪੂਰਵ ਯੂਗੋਸਲਾਵ ਮੈਕਡੋਨੀਆਈ ਗਣਰਾਜ)"}
+         SZ{"ਸਵਾਜ਼ੀਲੈਂਡ"}
          TL{"ਪੂਰਬ ਤਿਮੋਰ"}
-     }
-     Version{"2.1.43.65"}
 diff --git a/source/data/region/pl.txt b/source/data/region/pl.txt
-index 73a382df..a764fa32 100644
+index fbf3850f..cf7de194 100644
 --- a/source/data/region/pl.txt
 +++ b/source/data/region/pl.txt
 @@ -110,7 +110,7 @@ pl{
@@ -5047,12 +4718,7 @@ index 73a382df..a764fa32 100644
          HM{"Wyspy Heard i McDonalda"}
          HN{"Honduras"}
          HR{"Chorwacja"}
-@@ -183,11 +183,11 @@ pl{
-         MF{"Saint-Martin"}
-         MG{"Madagaskar"}
-         MH{"Wyspy Marshalla"}
--        MK{"Macedonia"}
-+        MK{"Była Jugosłowiańska Republika Macedonii"}
+@@ -187,7 +187,7 @@ pl{
          ML{"Mali"}
          MM{"Mjanma (Birma)"}
          MN{"Mongolia"}
@@ -5070,7 +4736,7 @@ index 73a382df..a764fa32 100644
          PT{"Portugalia"}
          PW{"Palau"}
          PY{"Paragwaj"}
-@@ -297,9 +297,6 @@ pl{
+@@ -299,9 +299,6 @@ pl{
      }
      Countries%short{
          GB{"Wlk. Bryt."}
@@ -5080,17 +4746,16 @@ index 73a382df..a764fa32 100644
          UN{"ONZ"}
          US{"USA"}
      }
-@@ -308,8 +305,6 @@ pl{
+@@ -310,7 +307,6 @@ pl{
          CG{"Republika Konga"}
          CI{"Wybrzeże Kości Słoniowej"}
          CZ{"Republika Czeska"}
 -        FK{"Falklandy (Malwiny)"}
--        MK{"Była Jugosłowiańska Republika Macedonii"}
+         SZ{"Suazi"}
          TL{"Timor-Leste"}
      }
-     Version{"2.1.43.50"}
 diff --git a/source/data/region/ps.txt b/source/data/region/ps.txt
-index bd4a572a..d5b5f5db 100644
+index b0d556a2..d62aece4 100644
 --- a/source/data/region/ps.txt
 +++ b/source/data/region/ps.txt
 @@ -110,7 +110,7 @@ ps{
@@ -5111,16 +4776,11 @@ index bd4a572a..d5b5f5db 100644
          HM{"هارډ او ميکډانلډ ټاپوګان"}
          HN{"هانډوراس"}
          HR{"کرواشيا"}
-@@ -183,11 +183,11 @@ ps{
-         MF{"سینټ مارټن"}
-         MG{"مدګاسکار"}
-         MH{"مارشل ټاپوګان"}
--        MK{"مقدونیه"}
-+        MK{"مقدونیه (FYROM)"}
+@@ -187,7 +187,7 @@ ps{
          ML{"مالي"}
          MM{"ميانمار (برما)"}
          MN{"مغولستان"}
--        MO{"مکا سار چین"}
+-        MO{"مکاو سار چین"}
 +        MO{"مکاو"}
          MP{"شمالي ماريانا ټاپوګان"}
          MQ{"مارټینیک"}
@@ -5134,7 +4794,7 @@ index bd4a572a..d5b5f5db 100644
          PT{"پورتګال"}
          PW{"پلاؤ"}
          PY{"پاراګوی"}
-@@ -297,9 +297,6 @@ ps{
+@@ -299,9 +299,6 @@ ps{
      }
      Countries%short{
          GB{"انګلستان"}
@@ -5144,17 +4804,16 @@ index bd4a572a..d5b5f5db 100644
          US{"متحده آيالات"}
      }
      Countries%variant{
-@@ -307,8 +304,6 @@ ps{
+@@ -309,7 +306,6 @@ ps{
          CG{"کانګو (جمهوریه)"}
          CI{"ایوري ساحل"}
          CZ{"جمهوريه چيک"}
 -        FK{"فاکلينډ ټاپوګان (آيزلز مالويناس)"}
--        MK{"مقدونیه (FYROM)"}
+         SZ{"سوازيلېنډ"}
          TL{"ختيځ تيمور"}
      }
-     Version{"2.1.43.94"}
 diff --git a/source/data/region/pt.txt b/source/data/region/pt.txt
-index 0adadb20..a25ce079 100644
+index 5e331af4..f6190b39 100644
 --- a/source/data/region/pt.txt
 +++ b/source/data/region/pt.txt
 @@ -110,7 +110,7 @@ pt{
@@ -5175,16 +4834,11 @@ index 0adadb20..a25ce079 100644
          HM{"Ilhas Heard e McDonald"}
          HN{"Honduras"}
          HR{"Croácia"}
-@@ -183,11 +183,11 @@ pt{
-         MF{"São Martinho"}
-         MG{"Madagascar"}
-         MH{"Ilhas Marshall"}
--        MK{"Macedônia"}
-+        MK{"Macedônia (ARIM)"}
+@@ -187,7 +187,7 @@ pt{
          ML{"Mali"}
          MM{"Mianmar (Birmânia)"}
          MN{"Mongólia"}
--        MO{"RAE de Macau (China)"}
+-        MO{"Macau, RAE da China"}
 +        MO{"Macau"}
          MP{"Ilhas Marianas do Norte"}
          MQ{"Martinica"}
@@ -5198,7 +4852,7 @@ index 0adadb20..a25ce079 100644
          PT{"Portugal"}
          PW{"Palau"}
          PY{"Paraguai"}
-@@ -297,9 +297,6 @@ pt{
+@@ -299,9 +299,6 @@ pt{
      }
      Countries%short{
          GB{"Reino Unido"}
@@ -5208,17 +4862,16 @@ index 0adadb20..a25ce079 100644
          UN{"ONU"}
          US{"EUA"}
      }
-@@ -308,8 +305,6 @@ pt{
+@@ -310,7 +307,6 @@ pt{
          CG{"Congo"}
          CI{"Côte d’Ivoire"}
          CZ{"República Tcheca"}
 -        FK{"Ilhas Falkland (Ilhas Malvinas)"}
--        MK{"Macedônia (ARIM)"}
          TL{"República Democrática de Timor-Leste"}
      }
-     Version{"2.1.43.65"}
+     Version{"2.1.48.42"}
 diff --git a/source/data/region/pt_PT.txt b/source/data/region/pt_PT.txt
-index 6520b450..88049211 100644
+index d9a325d0..04de5b9b 100644
 --- a/source/data/region/pt_PT.txt
 +++ b/source/data/region/pt_PT.txt
 @@ -29,7 +29,7 @@ pt_PT{
@@ -5230,26 +4883,16 @@ index 6520b450..88049211 100644
          FO{"Ilhas Faroé"}
          GG{"Guernesey"}
          GL{"Gronelândia"}
-@@ -46,7 +46,7 @@ pt_PT{
-         MC{"Mónaco"}
-         MD{"Moldávia"}
-         MG{"Madagáscar"}
--        MK{"Macedónia"}
-+        MK{"Macedónia (ARJM)"}
-         MO{"Macau, RAE da China"}
-         MS{"Monserrate"}
-         MU{"Maurícia"}
-@@ -80,8 +80,6 @@ pt_PT{
+@@ -80,7 +80,6 @@ pt_PT{
          CG{"República do Congo"}
          CI{"Costa do Marfim"}
          CZ{"República Checa"}
 -        FK{"Ilhas Falkland (Malvinas)"}
--        MK{"Macedónia (ARJM)"}
      }
-     Version{"2.1.44.9"}
+     Version{"2.1.49.82"}
  }
 diff --git a/source/data/region/ro.txt b/source/data/region/ro.txt
-index 0cd52039..c6c3e647 100644
+index d0cf9f45..5300f61d 100644
 --- a/source/data/region/ro.txt
 +++ b/source/data/region/ro.txt
 @@ -110,7 +110,7 @@ ro{
@@ -5270,16 +4913,11 @@ index 0cd52039..c6c3e647 100644
          HM{"Insula Heard și Insulele McDonald"}
          HN{"Honduras"}
          HR{"Croația"}
-@@ -183,11 +183,11 @@ ro{
-         MF{"Sfântul Martin"}
-         MG{"Madagascar"}
-         MH{"Insulele Marshall"}
--        MK{"Republica Macedonia"}
-+        MK{"Republica Macedonia (FRIM)"}
+@@ -187,7 +187,7 @@ ro{
          ML{"Mali"}
          MM{"Myanmar (Birmania)"}
          MN{"Mongolia"}
--        MO{"R.A.S. Macao a Chinei"}
+-        MO{"R.A.S. Macao, China"}
 +        MO{"Macao"}
          MP{"Insulele Mariane de Nord"}
          MQ{"Martinica"}
@@ -5293,7 +4931,7 @@ index 0cd52039..c6c3e647 100644
          PT{"Portugalia"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -297,9 +297,6 @@ ro{
+@@ -299,9 +299,6 @@ ro{
      }
      Countries%short{
          GB{"Regatul Unit"}
@@ -5303,17 +4941,16 @@ index 0cd52039..c6c3e647 100644
          UN{"ONU"}
          US{"S.U.A."}
      }
-@@ -308,8 +305,6 @@ ro{
+@@ -310,7 +307,6 @@ ro{
          CG{"Congo (Republica)"}
          CI{"Coasta de Fildeș"}
          CZ{"Republica Cehă"}
 -        FK{"Insulele Falkland (Insulele Malvine)"}
--        MK{"Republica Macedonia (FRIM)"}
+         SZ{"Swaziland"}
          TL{"Timorul de Est"}
      }
-     Version{"2.1.43.94"}
 diff --git a/source/data/region/ru.txt b/source/data/region/ru.txt
-index 2e8ab288..883f8204 100644
+index 38d8af21..3178441a 100644
 --- a/source/data/region/ru.txt
 +++ b/source/data/region/ru.txt
 @@ -110,7 +110,7 @@ ru{
@@ -5334,12 +4971,7 @@ index 2e8ab288..883f8204 100644
          HM{"о-ва Херд и Макдональд"}
          HN{"Гондурас"}
          HR{"Хорватия"}
-@@ -183,11 +183,11 @@ ru{
-         MF{"Сен-Мартен"}
-         MG{"Мадагаскар"}
-         MH{"Маршалловы Острова"}
--        MK{"Македония"}
-+        MK{"Македония (БЮРМ)"}
+@@ -187,7 +187,7 @@ ru{
          ML{"Мали"}
          MM{"Мьянма (Бирма)"}
          MN{"Монголия"}
@@ -5357,7 +4989,7 @@ index 2e8ab288..883f8204 100644
          PT{"Португалия"}
          PW{"Палау"}
          PY{"Парагвай"}
-@@ -297,9 +297,6 @@ ru{
+@@ -299,9 +299,6 @@ ru{
      }
      Countries%short{
          GB{"Британия"}
@@ -5367,17 +4999,16 @@ index 2e8ab288..883f8204 100644
          UN{"ООН"}
          US{"США"}
      }
-@@ -307,8 +304,6 @@ ru{
-         CD{"Конго (ДРК)"}
+@@ -310,7 +307,6 @@ ru{
          CG{"Республика Конго"}
+         CI{"Берег Слоновой Кости"}
          CZ{"Чешская Республика"}
 -        FK{"Фолклендские (Мальвинские) о-ва"}
--        MK{"Македония (БЮРМ)"}
+         SZ{"Свазиленд"}
          TL{"Тимор-Лесте"}
      }
-     Version{"2.1.45.15"}
 diff --git a/source/data/region/sd.txt b/source/data/region/sd.txt
-index 61c7fe17..b0323f26 100644
+index a4f44e13..d0e167c3 100644
 --- a/source/data/region/sd.txt
 +++ b/source/data/region/sd.txt
 @@ -110,7 +110,7 @@ sd{
@@ -5389,15 +5020,15 @@ index 61c7fe17..b0323f26 100644
          FM{"مائڪرونيشيا"}
          FO{"فارو ٻيٽ"}
          FR{"فرانس"}
-@@ -183,7 +183,7 @@ sd{
-         MF{"سينٽ مارٽن"}
-         MG{"مداگيسڪر"}
-         MH{"مارشل ڀيٽ"}
--        MK{"ميسي ڊونيا"}
-+        MK{"ميڪدونيا"}
+@@ -187,7 +187,7 @@ sd{
          ML{"مالي"}
          MM{"ميانمار (برما)"}
          MN{"منگوليا"}
+-        MO{"مڪائو SAR چين"}
++        MO{"مڪائو"}
+         MP{"اتر مرينا ٻيٽ"}
+         MQ{"مارتينڪ"}
+         MR{"موريتانيا"}
 @@ -222,7 +222,7 @@ sd{
          PM{"سینٽ پیئر و میڪوئیلون"}
          PN{"پٽڪئرن ٻيٽ"}
@@ -5407,7 +5038,7 @@ index 61c7fe17..b0323f26 100644
          PT{"پرتگال"}
          PW{"پلائو"}
          PY{"پيراگوءِ"}
-@@ -297,9 +297,6 @@ sd{
+@@ -299,9 +299,6 @@ sd{
      }
      Countries%short{
          GB{"برطانيه"}
@@ -5417,17 +5048,16 @@ index 61c7fe17..b0323f26 100644
          US{"يوايس"}
      }
      Countries%variant{
-@@ -307,8 +304,6 @@ sd{
+@@ -309,7 +306,6 @@ sd{
          CG{"ڪانگو (جمهوري)"}
          CI{"آئيوري ڪوسٽ"}
          CZ{"چيڪ جهموريو"}
 -        FK{"فلڪ لينڊ ٻيٽ"}
--        MK{"ميڪدونيا"}
+         MK{"ميڪدونيا"}
+         SZ{"سوازيلينڊ"}
          TL{"اوڀر تيمور"}
-     }
-     Version{"2.1.43.94"}
 diff --git a/source/data/region/se.txt b/source/data/region/se.txt
-index e4758216..ba8e0049 100644
+index 51089809..2d37493a 100644
 --- a/source/data/region/se.txt
 +++ b/source/data/region/se.txt
 @@ -289,9 +289,6 @@ se{
@@ -5439,9 +5069,9 @@ index e4758216..ba8e0049 100644
 -        PS{"Palestina"}
          US{"USA"}
      }
-     Version{"2.1.43.94"}
+     Version{"2.1.48.4"}
 diff --git a/source/data/region/si.txt b/source/data/region/si.txt
-index 32cdef94..5eea08e4 100644
+index 984b9781..c51c00b4 100644
 --- a/source/data/region/si.txt
 +++ b/source/data/region/si.txt
 @@ -110,7 +110,7 @@ si{
@@ -5462,12 +5092,7 @@ index 32cdef94..5eea08e4 100644
          HM{"හර්ඩ් දූපත සහ මැක්ඩොනල්ඩ් දූපත්"}
          HN{"හොන්ඩුරාස්"}
          HR{"ක්‍රොඒෂියාව"}
-@@ -183,11 +183,11 @@ si{
-         MF{"ශාන්ත මාර්ටින්"}
-         MG{"මැඩගස්කරය"}
-         MH{"මාෂල් දූපත්"}
--        MK{"මැසිඩෝනියාව"}
-+        MK{"මැසිඩෝනියාව (FYROM)"}
+@@ -187,7 +187,7 @@ si{
          ML{"මාලි"}
          MM{"මියන්මාරය (බුරුමය)"}
          MN{"මොන්ගෝලියාව"}
@@ -5495,17 +5120,16 @@ index 32cdef94..5eea08e4 100644
          UN{"එක්සත් ජාතීන්"}
          US{"එ.ජ"}
      }
-@@ -308,8 +305,6 @@ si{
+@@ -308,7 +305,6 @@ si{
          CG{"කොංගෝ (ජනරජය)"}
          CI{"අයිවරි කෝස්ට්"}
          CZ{"චෙක් ජනරජය"}
 -        FK{"ෆෝක්ලන්ත දූපත් (අයිලස් මල්වියනාස්)"}
--        MK{"මැසිඩෝනියාව (FYROM)"}
+         MK{"මැසිඩෝනියාව (FYROM)"}
          TL{"නැගෙනහිර ටිමෝරය"}
      }
-     Version{"2.1.43.50"}
 diff --git a/source/data/region/sk.txt b/source/data/region/sk.txt
-index 5c4fe63f..c87a0baa 100644
+index c12282f0..1658d6a9 100644
 --- a/source/data/region/sk.txt
 +++ b/source/data/region/sk.txt
 @@ -110,7 +110,7 @@ sk{
@@ -5526,12 +5150,7 @@ index 5c4fe63f..c87a0baa 100644
          HM{"Heardov ostrov a Macdonaldove ostrovy"}
          HN{"Honduras"}
          HR{"Chorvátsko"}
-@@ -183,11 +183,11 @@ sk{
-         MF{"Svätý Martin (fr.)"}
-         MG{"Madagaskar"}
-         MH{"Marshallove ostrovy"}
--        MK{"Macedónsko"}
-+        MK{"Macedónsko (BJRM)"}
+@@ -187,7 +187,7 @@ sk{
          ML{"Mali"}
          MM{"Mjanmarsko"}
          MN{"Mongolsko"}
@@ -5549,7 +5168,7 @@ index 5c4fe63f..c87a0baa 100644
          PT{"Portugalsko"}
          PW{"Palau"}
          PY{"Paraguaj"}
-@@ -297,16 +297,11 @@ sk{
+@@ -297,15 +297,11 @@ sk{
      }
      Countries%short{
          GB{"UK"}
@@ -5562,12 +5181,11 @@ index 5c4fe63f..c87a0baa 100644
      Countries%variant{
          CZ{"Česká republika"}
 -        FK{"Falklandy (Malvíny)"}
--        MK{"Macedónsko (BJRM)"}
      }
-     Version{"2.1.43.65"}
+     Version{"2.1.48.42"}
  }
 diff --git a/source/data/region/sl.txt b/source/data/region/sl.txt
-index 44af6a11..1f9e4b82 100644
+index 392e5190..0d4587c1 100644
 --- a/source/data/region/sl.txt
 +++ b/source/data/region/sl.txt
 @@ -110,7 +110,7 @@ sl{
@@ -5588,20 +5206,6 @@ index 44af6a11..1f9e4b82 100644
          HM{"Heardov otok in McDonaldovi otoki"}
          HN{"Honduras"}
          HR{"Hrvaška"}
-@@ -183,11 +183,11 @@ sl{
-         MF{"Saint Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshallovi otoki"}
--        MK{"Makedonija"}
-+        MK{"Makedonija (FYROM)"}
-         ML{"Mali"}
-         MM{"Mjanmar (Burma)"}
-         MN{"Mongolija"}
--        MO{"Posebno administrativno območje LR Kitajske Macao"}
-+        MO{"Macao"}
-         MP{"Severni Marianski otoki"}
-         MQ{"Martinik"}
-         MR{"Mavretanija"}
 @@ -222,7 +222,7 @@ sl{
          PM{"Saint Pierre in Miquelon"}
          PN{"Pitcairn"}
@@ -5611,27 +5215,26 @@ index 44af6a11..1f9e4b82 100644
          PT{"Portugalska"}
          PW{"Palau"}
          PY{"Paragvaj"}
-@@ -297,9 +297,6 @@ sl{
+@@ -299,9 +299,6 @@ sl{
      }
      Countries%short{
          GB{"ZK"}
 -        HK{"Hongkong"}
--        MO{"Macao"}
+-        MO{"Posebno administrativno območje LR Kitajske Macao"}
 -        PS{"Palestina"}
          UN{"ZN"}
          US{"ZDA"}
      }
-@@ -308,8 +305,6 @@ sl{
+@@ -310,7 +307,6 @@ sl{
          CG{"Kongo (Republika)"}
          CI{"Côte d’Ivoire"}
          CZ{"Češka republika"}
 -        FK{"Falklandski otoki (Malvini)"}
--        MK{"Makedonija (FYROM)"}
          TL{"Vzhodni Timor"}
      }
-     Version{"2.1.44.91"}
+     Version{"2.1.48.42"}
 diff --git a/source/data/region/smn.txt b/source/data/region/smn.txt
-index cc12beaf..e41a7259 100644
+index 17ff0e15..f8b365de 100644
 --- a/source/data/region/smn.txt
 +++ b/source/data/region/smn.txt
 @@ -73,7 +73,7 @@ smn{
@@ -5652,11 +5255,7 @@ index cc12beaf..e41a7259 100644
          HM{"Heard já McDonaldsuolluuh"}
          HN{"Honduras"}
          HR{"Kroatia"}
-@@ -146,10 +146,11 @@ smn{
-         MF{"St. Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshallsuolluuh"}
-+        MK{"OJT Makedonia"}
+@@ -149,7 +149,7 @@ smn{
          ML{"Mali"}
          MM{"Myanmar (Burma)"}
          MN{"Mongolia"}
@@ -5665,7 +5264,7 @@ index cc12beaf..e41a7259 100644
          MP{"Tave-Marianeh"}
          MQ{"Martinique"}
          MR{"Mauritania"}
-@@ -255,15 +256,11 @@ smn{
+@@ -255,14 +255,11 @@ smn{
      }
      Countries%short{
          GB{"OK"}
@@ -5677,12 +5276,11 @@ index cc12beaf..e41a7259 100644
          CD{"Kongo demokraattisâš täsiväldi"}
          CG{"Kongo täsiväldi"}
 -        FK{"Falklandsuolluuh (Malvinassuolluuh)"}
--        MK{"OJT Makedonia"}
+         MK{"OJT Makedonia"}
      }
-     Version{"2.1.38.69"}
- }
+     Version{"2.1.47.82"}
 diff --git a/source/data/region/so.txt b/source/data/region/so.txt
-index b2c3280a..6dbf167b 100644
+index 4e26c912..067b1184 100644
 --- a/source/data/region/so.txt
 +++ b/source/data/region/so.txt
 @@ -110,7 +110,7 @@ so{
@@ -5703,25 +5301,26 @@ index b2c3280a..6dbf167b 100644
          PT{"Bortugaal"}
          PW{"Balaaw"}
          PY{"Baraguaay"}
-@@ -297,16 +297,12 @@ so{
+@@ -299,9 +299,6 @@ so{
      }
      Countries%short{
-         GB{"GB"}
+         GB{"UK"}
 -        HK{"Hong Kong"}
 -        MO{"Makaaw"}
 -        PS{"Falastiin"}
          US{"US"}
      }
      Countries%variant{
-         CD{"Jamhuuriyadda Dimuqaadiga Kongo"}
+@@ -309,7 +306,6 @@ so{
          CG{"Jamhuuriyadda Kongo"}
+         CI{"Aayforikoost"}
          CZ{"Jamhuuriyadda Jek"}
 -        FK{"Jasiiradaha Fookland"}
+         SZ{"Iswaasilaan"}
          TL{"Timoor Bari"}
      }
-     Version{"2.1.43.94"}
 diff --git a/source/data/region/sq.txt b/source/data/region/sq.txt
-index 3d9033d2..7fb5b9af 100644
+index d30eec72..bd7a0b60 100644
 --- a/source/data/region/sq.txt
 +++ b/source/data/region/sq.txt
 @@ -110,7 +110,7 @@ sq{
@@ -5742,12 +5341,7 @@ index 3d9033d2..7fb5b9af 100644
          HM{"Ishujt Hërd e Mekdonald"}
          HN{"Honduras"}
          HR{"Kroaci"}
-@@ -183,11 +183,11 @@ sq{
-         MF{"Sen-Marten"}
-         MG{"Madagaskar"}
-         MH{"Ishujt Marshall"}
--        MK{"Maqedoni"}
-+        MK{"Maqedoni (IRJM)"}
+@@ -187,7 +187,7 @@ sq{
          ML{"Mali"}
          MM{"Mianmar (Burmë)"}
          MN{"Mongoli"}
@@ -5765,7 +5359,7 @@ index 3d9033d2..7fb5b9af 100644
          PT{"Portugali"}
          PW{"Palau"}
          PY{"Paraguai"}
-@@ -297,9 +297,6 @@ sq{
+@@ -299,9 +299,6 @@ sq{
      }
      Countries%short{
          GB{"MB"}
@@ -5775,17 +5369,16 @@ index 3d9033d2..7fb5b9af 100644
          UN{"OKB"}
          US{"SHBA"}
      }
-@@ -308,8 +305,6 @@ sq{
+@@ -310,7 +307,6 @@ sq{
          CG{"Kongo (Republika)"}
          CI{"Bregu i Fildishtë"}
          CZ{"Republika Çeke"}
 -        FK{"Ishujt Falkland (Malvine)"}
--        MK{"Maqedoni (IRJM)"}
+         SZ{"Suazilend"}
          TL{"Timori Lindor"}
      }
-     Version{"2.1.43.50"}
 diff --git a/source/data/region/sr.txt b/source/data/region/sr.txt
-index bd3c1cc2..f8892e93 100644
+index 7cc38d50..d194c7fe 100644
 --- a/source/data/region/sr.txt
 +++ b/source/data/region/sr.txt
 @@ -110,7 +110,7 @@ sr{
@@ -5806,12 +5399,7 @@ index bd3c1cc2..f8892e93 100644
          HM{"Острво Херд и Мекдоналдова острва"}
          HN{"Хондурас"}
          HR{"Хрватска"}
-@@ -183,11 +183,11 @@ sr{
-         MF{"Свети Мартин (Француска)"}
-         MG{"Мадагаскар"}
-         MH{"Маршалска Острва"}
--        MK{"Македонија"}
-+        MK{"Македонија (БЈРМ)"}
+@@ -187,7 +187,7 @@ sr{
          ML{"Мали"}
          MM{"Мијанмар (Бурма)"}
          MN{"Монголија"}
@@ -5829,7 +5417,7 @@ index bd3c1cc2..f8892e93 100644
          PT{"Португалија"}
          PW{"Палау"}
          PY{"Парагвај"}
-@@ -297,9 +297,6 @@ sr{
+@@ -299,9 +299,6 @@ sr{
      }
      Countries%short{
          GB{"УК"}
@@ -5839,79 +5427,16 @@ index bd3c1cc2..f8892e93 100644
          UN{"УН"}
          US{"САД"}
      }
-@@ -308,8 +305,6 @@ sr{
+@@ -310,7 +307,6 @@ sr{
          CG{"Конго (Република)"}
          CI{"Обала Слоноваче"}
          CZ{"Чешка Република"}
 -        FK{"Фокландска (Малвинска) острва"}
--        MK{"Македонија (БЈРМ)"}
          TL{"Источни Тимор"}
      }
-     Version{"2.1.43.94"}
-diff --git a/source/data/region/sr_Cyrl_BA.txt b/source/data/region/sr_Cyrl_BA.txt
-index ff8b2d68..41beee75 100644
---- a/source/data/region/sr_Cyrl_BA.txt
-+++ b/source/data/region/sr_Cyrl_BA.txt
-@@ -8,6 +8,7 @@ sr_Cyrl_BA{
-         CZ{"Чешка Република"}
-         DE{"Њемачка"}
-         KN{"Свети Китс и Невис"}
-+        MK{"БЈР Македонија"}
-         MO{"САР Макао"}
-         PM{"Свети Пјер и Микелон"}
-         RE{"Реунион"}
-@@ -16,8 +17,5 @@ sr_Cyrl_BA{
-         VG{"Британска Дјевичанска Острва"}
-         VI{"Америчка Дјевичанска Острва"}
-     }
--    Countries%variant{
--        MK{"БЈР Македонија"}
--    }
-     Version{"2.1.44.88"}
- }
-diff --git a/source/data/region/sr_Cyrl_ME.txt b/source/data/region/sr_Cyrl_ME.txt
-index 8278c0c3..1761fdfd 100644
---- a/source/data/region/sr_Cyrl_ME.txt
-+++ b/source/data/region/sr_Cyrl_ME.txt
-@@ -7,6 +7,7 @@ sr_Cyrl_ME{
-         CZ{"Чешка Република"}
-         DE{"Њемачка"}
-         KN{"Свети Китс и Невис"}
-+        MK{"БЈР Македонија"}
-         PM{"Свети Пјер и Микелон"}
-         RE{"Реунион"}
-         UM{"Мања удаљена острва САД"}
-@@ -14,8 +15,5 @@ sr_Cyrl_ME{
-         VG{"Британска Дјевичанска Острва"}
-         VI{"Америчка Дјевичанска Острва"}
-     }
--    Countries%variant{
--        MK{"БЈР Македонија"}
--    }
-     Version{"2.1.44.88"}
- }
-diff --git a/source/data/region/sr_Cyrl_XK.txt b/source/data/region/sr_Cyrl_XK.txt
-index b1e417ab..14724f75 100644
---- a/source/data/region/sr_Cyrl_XK.txt
-+++ b/source/data/region/sr_Cyrl_XK.txt
-@@ -7,14 +7,12 @@ sr_Cyrl_XK{
-         CZ{"Чешка Република"}
-         HK{"САР Хонгконг"}
-         KN{"Свети Китс и Невис"}
-+        MK{"БЈР Македонија"}
-         MO{"САР Макао"}
-         PM{"Свети Пјер и Микелон"}
-         RE{"Реунион"}
-         UM{"Мања удаљена острва САД"}
-         VC{"Свети Винсент и Гренадини"}
-     }
--    Countries%variant{
--        MK{"БЈР Македонија"}
--    }
-     Version{"2.1.38.69"}
- }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/sr_Latn.txt b/source/data/region/sr_Latn.txt
-index c969f7b9..e7ef84e4 100644
+index 6a31152a..285acf3e 100644
 --- a/source/data/region/sr_Latn.txt
 +++ b/source/data/region/sr_Latn.txt
 @@ -111,7 +111,7 @@ sr_Latn{
@@ -5932,12 +5457,7 @@ index c969f7b9..e7ef84e4 100644
          HM{"Ostrvo Herd i Mekdonaldova ostrva"}
          HN{"Honduras"}
          HR{"Hrvatska"}
-@@ -184,11 +184,11 @@ sr_Latn{
-         MF{"Sveti Martin (Francuska)"}
-         MG{"Madagaskar"}
-         MH{"Maršalska Ostrva"}
--        MK{"Makedonija"}
-+        MK{"Makedonija (BJRM)"}
+@@ -188,7 +188,7 @@ sr_Latn{
          ML{"Mali"}
          MM{"Mijanmar (Burma)"}
          MN{"Mongolija"}
@@ -5955,7 +5475,7 @@ index c969f7b9..e7ef84e4 100644
          PT{"Portugalija"}
          PW{"Palau"}
          PY{"Paragvaj"}
-@@ -298,9 +298,6 @@ sr_Latn{
+@@ -300,9 +300,6 @@ sr_Latn{
      }
      Countries%short{
          GB{"UK"}
@@ -5965,90 +5485,18 @@ index c969f7b9..e7ef84e4 100644
          UN{"UN"}
          US{"SAD"}
      }
-@@ -309,8 +306,6 @@ sr_Latn{
+@@ -311,7 +308,6 @@ sr_Latn{
          CG{"Kongo (Republika)"}
          CI{"Obala Slonovače"}
          CZ{"Češka Republika"}
 -        FK{"Foklandska (Malvinska) ostrva"}
--        MK{"Makedonija (BJRM)"}
          TL{"Istočni Timor"}
      }
-     Version{"2.1.44.50"}
-diff --git a/source/data/region/sr_Latn_BA.txt b/source/data/region/sr_Latn_BA.txt
-index c6f81491..6128f557 100644
---- a/source/data/region/sr_Latn_BA.txt
-+++ b/source/data/region/sr_Latn_BA.txt
-@@ -8,6 +8,7 @@ sr_Latn_BA{
-         CZ{"Češka Republika"}
-         DE{"Njemačka"}
-         KN{"Sveti Kits i Nevis"}
-+        MK{"BJR Makedonija"}
-         MO{"SAR Makao"}
-         PM{"Sveti Pjer i Mikelon"}
-         RE{"Reunion"}
-@@ -16,8 +17,5 @@ sr_Latn_BA{
-         VG{"Britanska Djevičanska Ostrva"}
-         VI{"Američka Djevičanska Ostrva"}
-     }
--    Countries%variant{
--        MK{"BJR Makedonija"}
--    }
-     Version{"2.1.44.88"}
- }
-diff --git a/source/data/region/sr_Latn_ME.txt b/source/data/region/sr_Latn_ME.txt
-index e76fc052..bc8ba1de 100644
---- a/source/data/region/sr_Latn_ME.txt
-+++ b/source/data/region/sr_Latn_ME.txt
-@@ -7,6 +7,7 @@ sr_Latn_ME{
-         CZ{"Češka Republika"}
-         DE{"Njemačka"}
-         KN{"Sveti Kits i Nevis"}
-+        MK{"BJR Makedonija"}
-         PM{"Sveti Pjer i Mikelon"}
-         RE{"Reunion"}
-         UM{"Manja udaljena ostrva SAD"}
-@@ -14,8 +15,5 @@ sr_Latn_ME{
-         VG{"Britanska Djevičanska Ostrva"}
-         VI{"Američka Djevičanska Ostrva"}
-     }
--    Countries%variant{
--        MK{"BJR Makedonija"}
--    }
-     Version{"2.1.44.88"}
- }
-diff --git a/source/data/region/sr_Latn_XK.txt b/source/data/region/sr_Latn_XK.txt
-index 0179ee45..ba8b3825 100644
---- a/source/data/region/sr_Latn_XK.txt
-+++ b/source/data/region/sr_Latn_XK.txt
-@@ -7,14 +7,12 @@ sr_Latn_XK{
-         CZ{"Češka Republika"}
-         HK{"SAR Hongkong"}
-         KN{"Sveti Kits i Nevis"}
-+        MK{"BJR Makedonija"}
-         MO{"SAR Makao"}
-         PM{"Sveti Pjer i Mikelon"}
-         RE{"Reunion"}
-         UM{"Manja udaljena ostrva SAD"}
-         VC{"Sveti Vinsent i Grenadini"}
-     }
--    Countries%variant{
--        MK{"BJR Makedonija"}
--    }
-     Version{"2.1.38.69"}
- }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/sv.txt b/source/data/region/sv.txt
-index 3c98577b..b649e14d 100644
+index 9e0c13c2..30afa562 100644
 --- a/source/data/region/sv.txt
 +++ b/source/data/region/sv.txt
-@@ -183,7 +183,7 @@ sv{
-         MF{"Saint-Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshallöarna"}
--        MK{"Makedonien"}
-+        MK{"f.d. jugoslaviska republiken Makedonien"}
-         ML{"Mali"}
-         MM{"Myanmar (Burma)"}
-         MN{"Mongoliet"}
 @@ -222,7 +222,7 @@ sv{
          PM{"S:t Pierre och Miquelon"}
          PN{"Pitcairnöarna"}
@@ -6058,7 +5506,7 @@ index 3c98577b..b649e14d 100644
          PT{"Portugal"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -297,9 +297,6 @@ sv{
+@@ -299,9 +299,6 @@ sv{
      }
      Countries%short{
          GB{"Storbritannien"}
@@ -6068,16 +5516,8 @@ index 3c98577b..b649e14d 100644
          UN{"FN"}
          US{"USA"}
      }
-@@ -307,7 +304,6 @@ sv{
-         CD{"Demokratiska republiken Kongo"}
-         CG{"Republiken Kongo"}
-         CI{"Côte d’Ivoire"}
--        MK{"f.d. jugoslaviska republiken Makedonien"}
-         TL{"Timor-Leste"}
-     }
-     Version{"2.1.43.94"}
 diff --git a/source/data/region/sw.txt b/source/data/region/sw.txt
-index 915c9cac..0c3627a2 100644
+index ee2ad280..a4cc6f65 100644
 --- a/source/data/region/sw.txt
 +++ b/source/data/region/sw.txt
 @@ -110,7 +110,7 @@ sw{
@@ -6098,12 +5538,7 @@ index 915c9cac..0c3627a2 100644
          HM{"Kisiwa cha Heard na Visiwa vya McDonald"}
          HN{"Honduras"}
          HR{"Croatia"}
-@@ -183,11 +183,11 @@ sw{
-         MF{"St. Martin"}
-         MG{"Madagaska"}
-         MH{"Visiwa vya Marshall"}
--        MK{"Macedonia"}
-+        MK{"Macedonia (FYROM)"}
+@@ -187,7 +187,7 @@ sw{
          ML{"Mali"}
          MM{"Myanmar (Burma)"}
          MN{"Mongolia"}
@@ -6131,45 +5566,39 @@ index 915c9cac..0c3627a2 100644
          UN{"Umoja wa Mataifa"}
          US{"US"}
      }
-@@ -308,8 +305,6 @@ sw{
+@@ -308,7 +305,6 @@ sw{
          CG{"Jamhuri ya Kongo"}
          CI{"Ivory Coast"}
          CZ{"Jamhuri ya Cheki"}
 -        FK{"Visiwa vya Falkland (Islas Malvinas)"}
--        MK{"Macedonia (FYROM)"}
+         MK{"Macedonia (FYROM)"}
+         SZ{"SZ"}
          TL{"Timor ya Mashariki"}
-     }
-     Version{"2.1.43.65"}
 diff --git a/source/data/region/sw_KE.txt b/source/data/region/sw_KE.txt
-index c9befc01..d8e9c3c1 100644
+index 28f83594..b5a3da3d 100644
 --- a/source/data/region/sw_KE.txt
 +++ b/source/data/region/sw_KE.txt
-@@ -34,9 +34,9 @@ sw_KE{
-         LV{"Lativia"}
-         MA{"Moroko"}
+@@ -36,7 +36,7 @@ sw_KE{
          MC{"Monako"}
--        MK{"Masedonia"}
-+        MK{"Masedonia (FYROM)"}
+         MK{"Masedonia"}
          MM{"Myama (Burma)"}
 -        MO{"Makau SAR China"}
 +        MO{"Makau"}
          MQ{"Martiniki"}
          MS{"Montserati"}
          MV{"Maldivi"}
-@@ -68,11 +68,5 @@ sw_KE{
+@@ -68,9 +68,6 @@ sw_KE{
          VN{"Vietnamu"}
          YT{"Mayote"}
      }
 -    Countries%short{
 -        MO{"Makau"}
 -    }
--    Countries%variant{
--        MK{"Masedonia (FYROM)"}
--    }
-     Version{"2.1.43.65"}
- }
+     Countries%variant{
+         MK{"Masedonia (FYROM)"}
+     }
 diff --git a/source/data/region/ta.txt b/source/data/region/ta.txt
-index b5ced5b6..bf724b4b 100644
+index 454d0b17..1f263b8c 100644
 --- a/source/data/region/ta.txt
 +++ b/source/data/region/ta.txt
 @@ -110,7 +110,7 @@ ta{
@@ -6190,12 +5619,7 @@ index b5ced5b6..bf724b4b 100644
          HM{"ஹேர்ட் மற்றும் மெக்டொனால்டு தீவுகள்"}
          HN{"ஹோண்டூராஸ்"}
          HR{"குரேஷியா"}
-@@ -183,11 +183,11 @@ ta{
-         MF{"செயின்ட் மார்ட்டீன்"}
-         MG{"மடகாஸ்கர்"}
-         MH{"மார்ஷல் தீவுகள்"}
--        MK{"மாசிடோனியா"}
-+        MK{"மாசிடோனியா (ஃபைரோம்)"}
+@@ -187,7 +187,7 @@ ta{
          ML{"மாலி"}
          MM{"மியான்மார் (பர்மா)"}
          MN{"மங்கோலியா"}
@@ -6223,17 +5647,16 @@ index b5ced5b6..bf724b4b 100644
          UN{"ஐநா"}
          US{"யூஎஸ்"}
      }
-@@ -308,8 +305,6 @@ ta{
+@@ -308,7 +305,6 @@ ta{
          CG{"காங்கோ (குடியரசு)"}
          CI{"ஐவரி கோஸ்ட்"}
          CZ{"செக் குடியரசு"}
 -        FK{"ஃபாக்லாந்து தீவுகள் (இஸ்லாஸ் மால்வினஸ்)"}
--        MK{"மாசிடோனியா (ஃபைரோம்)"}
+         MK{"மாசிடோனியா (ஃபைரோம்)"}
+         SZ{"SZ"}
          TL{"கிழக்கு தைமூர்"}
-     }
-     Version{"2.1.43.50"}
 diff --git a/source/data/region/te.txt b/source/data/region/te.txt
-index 614bdb14..545d4589 100644
+index 53470612..b4761e76 100644
 --- a/source/data/region/te.txt
 +++ b/source/data/region/te.txt
 @@ -110,7 +110,7 @@ te{
@@ -6254,12 +5677,7 @@ index 614bdb14..545d4589 100644
          HM{"హెర్డ్ దీవి మరియు మెక్‌డొనాల్డ్ దీవులు"}
          HN{"హోండురాస్"}
          HR{"క్రొయేషియా"}
-@@ -183,11 +183,11 @@ te{
-         MF{"సెయింట్ మార్టిన్"}
-         MG{"మడగాస్కర్"}
-         MH{"మార్షల్ దీవులు"}
--        MK{"మేసిడోనియా"}
-+        MK{"పూర్వ రిపబ్లిక్ యుగోస్లావ్ మేసిడోనియా"}
+@@ -187,7 +187,7 @@ te{
          ML{"మాలి"}
          MM{"మయన్మార్"}
          MN{"మంగోలియా"}
@@ -6287,17 +5705,16 @@ index 614bdb14..545d4589 100644
          UN{"యు.ఎన్"}
          US{"యు.ఎస్."}
      }
-@@ -308,8 +305,6 @@ te{
+@@ -308,7 +305,6 @@ te{
          CG{"కాంగో (రిపబ్లిక్)"}
          CI{"ఐవరీ కోస్ట్"}
          CZ{"చెక్ రిపబ్లిక్"}
 -        FK{"ఫాక్‌ల్యాండ్ దీవులు (ఇస్లాస్ మాల్వినాస్)"}
--        MK{"పూర్వ రిపబ్లిక్ యుగోస్లావ్ మేసిడోనియా"}
+         MK{"పూర్వ రిపబ్లిక్ యుగోస్లావ్ మేసిడోనియా"}
+         SZ{"SZ"}
          TL{"తూర్పు టిమోర్"}
-     }
-     Version{"2.1.43.50"}
 diff --git a/source/data/region/tg.txt b/source/data/region/tg.txt
-index 77b8465d..577783bc 100644
+index 04497f18..03a62ce1 100644
 --- a/source/data/region/tg.txt
 +++ b/source/data/region/tg.txt
 @@ -93,7 +93,7 @@ tg{
@@ -6309,12 +5726,7 @@ index 77b8465d..577783bc 100644
          HM{"Ҷазираи Ҳерд ва Ҷазираҳои Макдоналд"}
          HN{"Гондурас"}
          HR{"Хорватия"}
-@@ -141,11 +141,11 @@ tg{
-         MF{"Ҷазираи Сент-Мартин"}
-         MG{"Мадагаскар"}
-         MH{"Ҷазираҳои Маршалл"}
--        MK{"Мақдун"}
-+        MK{"Мақдун (ҶСЮМ)"}
+@@ -145,7 +145,7 @@ tg{
          ML{"Мали"}
          MM{"Мянма"}
          MN{"Муғулистон"}
@@ -6323,7 +5735,7 @@ index 77b8465d..577783bc 100644
          MP{"Ҷазираҳои Марианаи Шимолӣ"}
          MQ{"Мартиника"}
          MR{"Мавритания"}
-@@ -251,14 +251,11 @@ tg{
+@@ -251,8 +251,6 @@ tg{
          ZZ{"Минтақаи номаълум"}
      }
      Countries%short{
@@ -6332,14 +5744,8 @@ index 77b8465d..577783bc 100644
          US{"ИМ"}
      }
      Countries%variant{
-         CD{"Конго (ҶДК)"}
-         CG{"Конго"}
--        MK{"Мақдун (ҶСЮМ)"}
-     }
-     Version{"2.1.44.88"}
- }
 diff --git a/source/data/region/th.txt b/source/data/region/th.txt
-index 9cded14b..5c6b52ae 100644
+index 44ff35cb..a7247317 100644
 --- a/source/data/region/th.txt
 +++ b/source/data/region/th.txt
 @@ -110,7 +110,7 @@ th{
@@ -6360,12 +5766,7 @@ index 9cded14b..5c6b52ae 100644
          HM{"เกาะเฮิร์ดและหมู่เกาะแมกดอนัลด์"}
          HN{"ฮอนดูรัส"}
          HR{"โครเอเชีย"}
-@@ -183,11 +183,11 @@ th{
-         MF{"เซนต์มาร์ติน"}
-         MG{"มาดากัสการ์"}
-         MH{"หมู่เกาะมาร์แชลล์"}
--        MK{"มาซิโดเนีย"}
-+        MK{"มาซิโดเนีย (FYROM)"}
+@@ -187,7 +187,7 @@ th{
          ML{"มาลี"}
          MM{"เมียนมาร์ (พม่า)"}
          MN{"มองโกเลีย"}
@@ -6393,25 +5794,19 @@ index 9cded14b..5c6b52ae 100644
          UN{"สหประชาชาติ"}
          US{"สหรัฐฯ"}
      }
-@@ -308,8 +305,6 @@ th{
+@@ -308,7 +305,6 @@ th{
          CG{"คองโก (สาธารณรัฐ)"}
          CI{"ไอวอรี่โคสต์"}
          CZ{"สาธารณรัฐเช็ก"}
 -        FK{"หมู่เกาะฟอล์กแลนด์ (อิสลาส มาลวินาส)"}
--        MK{"มาซิโดเนีย (FYROM)"}
+         SZ{"สวาซิแลนด์"}
          TL{"ติมอร์ตะวันออก"}
      }
-     Version{"2.1.43.89"}
 diff --git a/source/data/region/ti.txt b/source/data/region/ti.txt
-index 0db11916..d23b0d35 100644
+index 80e60af8..fbbe89c4 100644
 --- a/source/data/region/ti.txt
 +++ b/source/data/region/ti.txt
-@@ -150,11 +150,11 @@ ti{
-         MF{"ሴንት ማርቲን"}
-         MG{"ማዳጋስካር"}
-         MH{"ማርሻል አይላንድ"}
--        MK{"ማከዶኒያ"}
-+        MK{"መቄዶኒያ"}
+@@ -154,7 +154,7 @@ ti{
          ML{"ማሊ"}
          MM{"ማያንማር"}
          MN{"ሞንጎሊያ"}
@@ -6429,7 +5824,7 @@ index 0db11916..d23b0d35 100644
          PT{"ፖርቱጋል"}
          PW{"ፓላው"}
          PY{"ፓራጓይ"}
-@@ -261,15 +261,11 @@ ti{
+@@ -261,9 +261,6 @@ ti{
      }
      Countries%short{
          GB{"ዩኬይ"}
@@ -6439,14 +5834,8 @@ index 0db11916..d23b0d35 100644
          US{"ዩኤስ"}
      }
      Countries%variant{
-         CI{"አይቮሪ ኮስት"}
-         CZ{"CZ"}
--        MK{"መቄዶኒያ"}
-     }
-     Version{"2.1.44.88"}
- }
 diff --git a/source/data/region/tk.txt b/source/data/region/tk.txt
-index c116c737..70a07bdb 100644
+index 974209f9..1f78b3d2 100644
 --- a/source/data/region/tk.txt
 +++ b/source/data/region/tk.txt
 @@ -110,7 +110,7 @@ tk{
@@ -6467,12 +5856,7 @@ index c116c737..70a07bdb 100644
          HM{"Herd we Makdonald adalary"}
          HN{"Gonduras"}
          HR{"Horwatiýa"}
-@@ -183,11 +183,11 @@ tk{
-         MF{"Sen-Marten"}
-         MG{"Madagaskar"}
-         MH{"Marşall adalary"}
--        MK{"Makedoniýa"}
-+        MK{"Makedoniýa (ÖÝR)"}
+@@ -187,7 +187,7 @@ tk{
          ML{"Mali"}
          MM{"Mýanma (Burma)"}
          MN{"Mongoliýa"}
@@ -6490,7 +5874,7 @@ index c116c737..70a07bdb 100644
          PT{"Portugaliýa"}
          PW{"Palau"}
          PY{"Paragwaý"}
-@@ -297,9 +297,6 @@ tk{
+@@ -299,9 +299,6 @@ tk{
      }
      Countries%short{
          GB{"Birleşen Patyşalyk"}
@@ -6500,17 +5884,16 @@ index c116c737..70a07bdb 100644
          US{"ABŞ"}
      }
      Countries%variant{
-@@ -307,8 +304,6 @@ tk{
+@@ -309,7 +306,6 @@ tk{
          CG{"Kongo (Respublika)"}
          CI{"Şirmaýy kenar"}
          CZ{"Çeh Respublikasy"}
 -        FK{"Folklend (Malwina) adalary"}
--        MK{"Makedoniýa (ÖÝR)"}
          TL{"Gündogar Timor"}
      }
-     Version{"2.1.43.65"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/to.txt b/source/data/region/to.txt
-index 2ca1c06e..b6b22372 100644
+index 2ef4a9a0..dd032adb 100644
 --- a/source/data/region/to.txt
 +++ b/source/data/region/to.txt
 @@ -132,7 +132,7 @@ to{
@@ -6522,12 +5905,7 @@ index 2ca1c06e..b6b22372 100644
          HM{"ʻOtumotu Heati mo Makitonali"}
          HN{"Honitulasi"}
          HR{"Kuloisia"}
-@@ -182,11 +182,11 @@ to{
-         MF{"Sā Mātini (fakafalanisē)"}
-         MG{"Matakasika"}
-         MH{"ʻOtumotu Māsolo"}
--        MK{"Masetōnia"}
-+        MK{"Masetōnia (FYROM)"}
+@@ -186,7 +186,7 @@ to{
          ML{"Māli"}
          MM{"Mianimā (Pema)"}
          MN{"Mongokōlia"}
@@ -6545,7 +5923,7 @@ index 2ca1c06e..b6b22372 100644
          PT{"Potukali"}
          PW{"Palau"}
          PY{"Palakuai"}
-@@ -296,16 +296,12 @@ to{
+@@ -296,9 +296,6 @@ to{
      }
      Countries%short{
          GB{"Pilitānia"}
@@ -6555,15 +5933,8 @@ index 2ca1c06e..b6b22372 100644
          US{"ʻAmelika"}
      }
      Countries%variant{
-         CD{"Kongo (LTK)"}
-         CG{"Kongo (Lepupelika)"}
-         CZ{"Lepupelika Seki"}
--        MK{"Masetōnia (FYROM)"}
-     }
-     Version{"2.1.44.88"}
- }
 diff --git a/source/data/region/tr.txt b/source/data/region/tr.txt
-index a654672a..ff54f7b0 100644
+index 387a51ba..01d726a2 100644
 --- a/source/data/region/tr.txt
 +++ b/source/data/region/tr.txt
 @@ -110,7 +110,7 @@ tr{
@@ -6584,12 +5955,7 @@ index a654672a..ff54f7b0 100644
          HM{"Heard Adası ve McDonald Adaları"}
          HN{"Honduras"}
          HR{"Hırvatistan"}
-@@ -183,11 +183,11 @@ tr{
-         MF{"Saint Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshall Adaları"}
--        MK{"Makedonya"}
-+        MK{"Makedonya (EYMC)"}
+@@ -187,7 +187,7 @@ tr{
          ML{"Mali"}
          MM{"Myanmar (Burma)"}
          MN{"Moğolistan"}
@@ -6617,17 +5983,16 @@ index a654672a..ff54f7b0 100644
          UN{"BM"}
          US{"ABD"}
      }
-@@ -307,8 +304,6 @@ tr{
+@@ -307,7 +304,6 @@ tr{
          CD{"Kongo Demokratik Cumhuriyeti"}
          CG{"Kongo Cumhuriyeti"}
          CZ{"Çek Cumhuriyeti"}
 -        FK{"Falkland Adaları (Malvinas Adaları)"}
--        MK{"Makedonya (EYMC)"}
+         SZ{"Svaziland"}
          TL{"Doğu Timor"}
      }
-     Version{"2.1.44.91"}
 diff --git a/source/data/region/tt.txt b/source/data/region/tt.txt
-index cb90ef38..a1fa26af 100644
+index dda7bea9..30cd1eec 100644
 --- a/source/data/region/tt.txt
 +++ b/source/data/region/tt.txt
 @@ -92,7 +92,7 @@ tt{
@@ -6639,11 +6004,8 @@ index cb90ef38..a1fa26af 100644
          HM{"Херд утравы һәм Макдональд утраулары"}
          HN{"Гондурас"}
          HR{"Хорватия"}
-@@ -140,9 +140,10 @@ tt{
-         MF{"Сент-Мартин"}
-         MG{"Мадагаскар"}
-         MH{"Маршалл утраулары"}
-+        MK{"Македония (Македония Элекке Югославия Республикасы)"}
+@@ -143,7 +143,7 @@ tt{
+         MK{"Төньяк Македония"}
          ML{"Мали"}
          MN{"Монголия"}
 -        MO{"Макао Махсус Идарәле Төбәге"}
@@ -6651,7 +6013,7 @@ index cb90ef38..a1fa26af 100644
          MP{"Төньяк Мариана утраулары"}
          MQ{"Мартиника"}
          MR{"Мавритания"}
-@@ -244,13 +245,8 @@ tt{
+@@ -245,10 +245,6 @@ tt{
          ZW{"Зимбабве"}
          ZZ{"билгесез төбәк"}
      }
@@ -6661,12 +6023,9 @@ index cb90ef38..a1fa26af 100644
 -    }
      Countries%variant{
          CD{"Конго (КДР)"}
--        MK{"Македония (Македония Элекке Югославия Республикасы)"}
      }
-     Version{"2.1.44.88"}
- }
 diff --git a/source/data/region/ug.txt b/source/data/region/ug.txt
-index e118ae89..1bd89ce1 100644
+index 0a4a3164..7658758d 100644
 --- a/source/data/region/ug.txt
 +++ b/source/data/region/ug.txt
 @@ -108,7 +108,7 @@ ug{
@@ -6687,12 +6046,7 @@ index e118ae89..1bd89ce1 100644
          HM{"ھېرد ئارىلى ۋە ماكدونالد ئاراللىرى"}
          HN{"ھوندۇراس"}
          HR{"كىرودىيە"}
-@@ -181,11 +181,11 @@ ug{
-         MF{"ساينت مارتىن"}
-         MG{"ماداغاسقار"}
-         MH{"مارشال ئاراللىرى"}
--        MK{"ماكېدونىيە"}
-+        MK{"ماكېدونىيە (سابىق يۇگوسلاۋىيە ماكېدونىيە جۇمھۇرىيىتى)"}
+@@ -185,7 +185,7 @@ ug{
          ML{"مالى"}
          MM{"بىرما"}
          MN{"موڭغۇلىيە"}
@@ -6710,26 +6064,8 @@ index e118ae89..1bd89ce1 100644
          PT{"پورتۇگالىيە"}
          PW{"پالائۇ"}
          PY{"پاراگۋاي"}
-@@ -294,17 +294,12 @@ ug{
-     }
-     Countries%short{
-         GB{"ئەنگلىيە"}
--        HK{"شياڭگاڭ"}
--        MO{"ئاۋمېن"}
--        PS{"پەلەستىن"}
-         US{"ئا ق ش"}
-     }
-     Countries%variant{
-         CD{"كونگو (ك د ج)"}
-         CG{"كونگو (جۇمھۇرىيىتى)"}
-         CI{"پىل چىشى قىرغىقى"}
--        FK{"فالكلاند ئاراللىرى (ئىسلاس مالۋىناس)"}
--        MK{"ماكېدونىيە (سابىق يۇگوسلاۋىيە ماكېدونىيە جۇمھۇرىيىتى)"}
-     }
-     Version{"2.1.44.88"}
- }
 diff --git a/source/data/region/uk.txt b/source/data/region/uk.txt
-index 9926ae0e..679b8844 100644
+index 16573c87..015074c5 100644
 --- a/source/data/region/uk.txt
 +++ b/source/data/region/uk.txt
 @@ -110,7 +110,7 @@ uk{
@@ -6750,12 +6086,7 @@ index 9926ae0e..679b8844 100644
          HM{"Острови Герд і Макдоналд"}
          HN{"Гондурас"}
          HR{"Хорватія"}
-@@ -183,11 +183,11 @@ uk{
-         MF{"Сен-Мартен"}
-         MG{"Мадагаскар"}
-         MH{"Маршаллові Острови"}
--        MK{"Македонія"}
-+        MK{"Македонія (КЮРМ)"}
+@@ -187,7 +187,7 @@ uk{
          ML{"Малі"}
          MM{"Мʼянма (Бірма)"}
          MN{"Монголія"}
@@ -6773,7 +6104,7 @@ index 9926ae0e..679b8844 100644
          PT{"Портуґалія"}
          PW{"Палау"}
          PY{"Параґвай"}
-@@ -297,9 +297,6 @@ uk{
+@@ -299,9 +299,6 @@ uk{
      }
      Countries%short{
          GB{"Велика Британія"}
@@ -6783,18 +6114,16 @@ index 9926ae0e..679b8844 100644
          UN{"ООН"}
          US{"США"}
      }
-@@ -308,9 +305,7 @@ uk{
+@@ -310,7 +307,6 @@ uk{
          CG{"Конго (Республіка)"}
          CI{"Берег Слонової Кістки"}
          CZ{"Чеська Республіка"}
 -        FK{"Фолклендські (Мальвінські) Острови"}
          FM{"Федеративні Штати Мікронезії"}
--        MK{"Македонія (КЮРМ)"}
+         SZ{"Свазіленд"}
          TL{"Східний Тимор"}
-     }
-     Version{"2.1.43.65"}
 diff --git a/source/data/region/ur.txt b/source/data/region/ur.txt
-index 8bf3e389..47777748 100644
+index 9e6b3698..c56f724e 100644
 --- a/source/data/region/ur.txt
 +++ b/source/data/region/ur.txt
 @@ -110,7 +110,7 @@ ur{
@@ -6815,12 +6144,7 @@ index 8bf3e389..47777748 100644
          HM{"ہیرڈ جزیرہ و میکڈولینڈ جزائر"}
          HN{"ہونڈاروس"}
          HR{"کروشیا"}
-@@ -183,11 +183,11 @@ ur{
-         MF{"سینٹ مارٹن"}
-         MG{"مڈغاسکر"}
-         MH{"مارشل آئلینڈز"}
--        MK{"مقدونیہ"}
-+        MK{"مقدونیہ (FYROM)"}
+@@ -187,7 +187,7 @@ ur{
          ML{"مالی"}
          MM{"میانمار (برما)"}
          MN{"منگولیا"}
@@ -6838,7 +6162,7 @@ index 8bf3e389..47777748 100644
          PT{"پرتگال"}
          PW{"پلاؤ"}
          PY{"پیراگوئے"}
-@@ -297,9 +297,6 @@ ur{
+@@ -299,9 +299,6 @@ ur{
      }
      Countries%short{
          GB{"یو کے"}
@@ -6848,17 +6172,16 @@ index 8bf3e389..47777748 100644
          UN{"اقوام متحدہ"}
          US{"امریکا"}
      }
-@@ -308,8 +305,6 @@ ur{
+@@ -310,7 +307,6 @@ ur{
          CG{"کانگو (جمہوریہ)"}
          CI{"آئیوری کوسٹ"}
          CZ{"چیک جمہوریہ"}
 -        FK{"فاکلینڈ جزائر (مالویناس)"}
--        MK{"مقدونیہ (FYROM)"}
+         SZ{"سوازی لینڈ"}
          TL{"مشرقی تیمور"}
      }
-     Version{"2.1.44.3"}
 diff --git a/source/data/region/ur_IN.txt b/source/data/region/ur_IN.txt
-index e45176e6..339a744b 100644
+index f41edf63..f2914869 100644
 --- a/source/data/region/ur_IN.txt
 +++ b/source/data/region/ur_IN.txt
 @@ -9,7 +9,7 @@ ur_IN{
@@ -6877,10 +6200,10 @@ index e45176e6..339a744b 100644
 -    Countries%variant{
 -        FK{"جزائر فاکلینڈ (اسلاس مالویناس)"}
 -    }
-     Version{"2.1.43.65"}
+     Version{"2.1.47.71"}
  }
 diff --git a/source/data/region/uz.txt b/source/data/region/uz.txt
-index bd578537..2ce17b4b 100644
+index 60672c0a..e188ba4e 100644
 --- a/source/data/region/uz.txt
 +++ b/source/data/region/uz.txt
 @@ -110,7 +110,7 @@ uz{
@@ -6901,12 +6224,7 @@ index bd578537..2ce17b4b 100644
          HM{"Xerd va Makdonald orollari"}
          HN{"Gonduras"}
          HR{"Xorvatiya"}
-@@ -183,11 +183,11 @@ uz{
-         MF{"Sent-Martin"}
-         MG{"Madagaskar"}
-         MH{"Marshall orollari"}
--        MK{"Makedoniya"}
-+        MK{"Makedoniya (SYRM)"}
+@@ -187,7 +187,7 @@ uz{
          ML{"Mali"}
          MM{"Myanma (Birma)"}
          MN{"Mongoliya"}
@@ -6934,17 +6252,16 @@ index bd578537..2ce17b4b 100644
          UN{"BMT"}
          US{"AQSH"}
      }
-@@ -308,8 +305,6 @@ uz{
+@@ -308,7 +305,6 @@ uz{
          CG{"Kongo (Respublika)"}
          CI{"Fil suyagi qirg‘og‘i"}
          CZ{"Chexiya Respublikasi"}
 -        FK{"Folklend (Malvin) orollari"}
--        MK{"Makedoniya (SYRM)"}
          TL{"Sharqiy Timor"}
      }
-     Version{"2.1.44.88"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/uz_Cyrl.txt b/source/data/region/uz_Cyrl.txt
-index cf4a44ad..61771aa4 100644
+index 6760867f..7fa49624 100644
 --- a/source/data/region/uz_Cyrl.txt
 +++ b/source/data/region/uz_Cyrl.txt
 @@ -109,7 +109,7 @@ uz_Cyrl{
@@ -6965,12 +6282,7 @@ index cf4a44ad..61771aa4 100644
          HM{"Херд ва Макдоналд ороллари"}
          HN{"Гондурас"}
          HR{"Хорватия"}
-@@ -182,11 +182,11 @@ uz_Cyrl{
-         MF{"Сент-Мартин"}
-         MG{"Мадагаскар"}
-         MH{"Маршал ороллари"}
--        MK{"Македония"}
-+        MK{"Македония (МСЮР)"}
+@@ -186,7 +186,7 @@ uz_Cyrl{
          ML{"Мали"}
          MM{"Мьянма (Бирма)"}
          MN{"Монголия"}
@@ -6998,17 +6310,16 @@ index cf4a44ad..61771aa4 100644
          US{"АҚШ"}
      }
      Countries%variant{
-@@ -305,8 +302,6 @@ uz_Cyrl{
+@@ -305,7 +302,6 @@ uz_Cyrl{
          CG{"Конго (Республика)"}
          CI{"Фил Суяги Қирғоғи"}
          CZ{"Чехия Республикаси"}
 -        FK{"Фолкленд (Малвин) ороллари"}
--        MK{"Македония (МСЮР)"}
          TL{"Шарқий Тимор"}
      }
-     Version{"2.1.43.2"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/vai.txt b/source/data/region/vai.txt
-index 58cefaa1..cc0d2b0b 100644
+index c75e5d9d..e7dd0342 100644
 --- a/source/data/region/vai.txt
 +++ b/source/data/region/vai.txt
 @@ -153,6 +153,7 @@ vai{
@@ -7026,10 +6337,10 @@ index 58cefaa1..cc0d2b0b 100644
 -    Countries%short{
 -        MO{"ꕮꗛꖺ"}
 -    }
-     Version{"2.1.39.11"}
+     Version{"2.1.47.82"}
  }
 diff --git a/source/data/region/vi.txt b/source/data/region/vi.txt
-index 73b19c7f..98db874b 100644
+index 6d71b4c2..b77fb646 100644
 --- a/source/data/region/vi.txt
 +++ b/source/data/region/vi.txt
 @@ -110,7 +110,7 @@ vi{
@@ -7050,12 +6361,7 @@ index 73b19c7f..98db874b 100644
          HM{"Quần đảo Heard và McDonald"}
          HN{"Honduras"}
          HR{"Croatia"}
-@@ -183,11 +183,11 @@ vi{
-         MF{"St. Martin"}
-         MG{"Madagascar"}
-         MH{"Quần đảo Marshall"}
--        MK{"Macedonia"}
-+        MK{"Macedonia (FYROM)"}
+@@ -187,7 +187,7 @@ vi{
          ML{"Mali"}
          MM{"Myanmar (Miến Điện)"}
          MN{"Mông Cổ"}
@@ -7073,7 +6379,7 @@ index 73b19c7f..98db874b 100644
          PT{"Bồ Đào Nha"}
          PW{"Palau"}
          PY{"Paraguay"}
-@@ -297,9 +297,6 @@ vi{
+@@ -299,9 +299,6 @@ vi{
      }
      Countries%short{
          GB{"Vương quốc Anh"}
@@ -7083,17 +6389,16 @@ index 73b19c7f..98db874b 100644
          UN{"Liên hiệp quốc"}
          US{"Hoa Kỳ"}
      }
-@@ -308,8 +305,6 @@ vi{
+@@ -310,7 +307,6 @@ vi{
          CG{"Cộng hòa Congo"}
          CI{"Bờ Biển Ngà"}
          CZ{"Cộng hòa Séc"}
 -        FK{"Quần đảo Falkland (Islas Malvinas)"}
--        MK{"Macedonia (FYROM)"}
          TL{"Đông Timor"}
      }
-     Version{"2.1.43.65"}
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/wae.txt b/source/data/region/wae.txt
-index 920db063..4f0d835f 100644
+index 983c8906..de8f729b 100644
 --- a/source/data/region/wae.txt
 +++ b/source/data/region/wae.txt
 @@ -106,7 +106,7 @@ wae{
@@ -7114,12 +6419,7 @@ index 920db063..4f0d835f 100644
          HM{"Heard- und McDonald-Inslä"}
          HN{"Honduras"}
          HR{"Kroatie"}
-@@ -179,11 +179,11 @@ wae{
-         MF{"St. Martin"}
-         MG{"Madagaskar"}
-         MH{"Maršalinslä"}
--        MK{"Mazedonie"}
-+        MK{"Mazedonie (EJR)"}
+@@ -183,7 +183,7 @@ wae{
          ML{"Mali"}
          MM{"Burma"}
          MN{"Mongolei"}
@@ -7128,7 +6428,7 @@ index 920db063..4f0d835f 100644
          MP{"Nördliči Mariane"}
          MQ{"Martinique"}
          MR{"Mauretanie"}
-@@ -287,16 +287,10 @@ wae{
+@@ -287,15 +287,10 @@ wae{
          ZW{"Simbabwe"}
          ZZ{"Unbekannti Regio"}
      }
@@ -7141,12 +6441,11 @@ index 920db063..4f0d835f 100644
          CG{"Kongo (Rebublik)"}
          CI{"Côte d’Ivoire"}
 -        FK{"Falklandinslä (Malwine)"}
--        MK{"Mazedonie (EJR)"}
+         MK{"Mazedonie (EJR)"}
          TL{"Wešttimor"}
      }
-     Version{"2.1.38.69"}
 diff --git a/source/data/region/wo.txt b/source/data/region/wo.txt
-index 4483d58c..fb53867b 100644
+index e62f39cb..237dab43 100644
 --- a/source/data/region/wo.txt
 +++ b/source/data/region/wo.txt
 @@ -92,6 +92,7 @@ wo{
@@ -7157,12 +6456,7 @@ index 4483d58c..fb53867b 100644
          HM{"Duni Hërd ak Duni MakDonald"}
          HN{"Onduraas"}
          HR{"Korowasi"}
-@@ -139,10 +140,11 @@ wo{
-         MF{"Saŋ Marteŋ"}
-         MG{"Madagaskaar"}
-         MH{"Duni Marsaal"}
--        MK{"Maseduwaan"}
-+        MK{"Maseduwaan (Réewum yugoslawi gu yàgg ga)"}
+@@ -143,6 +144,7 @@ wo{
          ML{"Mali"}
          MM{"Miyanmaar"}
          MN{"Mongoli"}
@@ -7170,7 +6464,7 @@ index 4483d58c..fb53867b 100644
          MP{"Duni Mariyaan Noor"}
          MQ{"Martinik"}
          MR{"Mooritani"}
-@@ -246,14 +248,9 @@ wo{
+@@ -246,10 +248,6 @@ wo{
          ZW{"Simbabwe"}
          ZZ{"Gox buñ xamul"}
      }
@@ -7181,12 +6475,122 @@ index 4483d58c..fb53867b 100644
      Countries%variant{
          CD{"Kongo (R K D)"}
          CG{"Réewum Kongo"}
--        MK{"Maseduwaan (Réewum yugoslawi gu yàgg ga)"}
+diff --git a/source/data/region/yue.txt b/source/data/region/yue.txt
+index 301c2611..31f9019b 100644
+--- a/source/data/region/yue.txt
++++ b/source/data/region/yue.txt
+@@ -110,7 +110,7 @@ yue{
+         EZ{"歐元區"}
+         FI{"芬蘭"}
+         FJ{"斐濟"}
+-        FK{"福克蘭群島"}
++        FK{"福克蘭群島 (馬爾維納斯群島)"}
+         FM{"密克羅尼西亞群島"}
+         FO{"法羅群島"}
+         FR{"法國"}
+@@ -133,7 +133,7 @@ yue{
+         GU{"關島"}
+         GW{"幾內亞比索"}
+         GY{"蓋亞那"}
+-        HK{"中華人民共和國香港特別行政區"}
++        HK{"香港"}
+         HM{"赫德島同麥克唐納群島"}
+         HN{"宏都拉斯"}
+         HR{"克羅埃西亞"}
+@@ -187,7 +187,7 @@ yue{
+         ML{"馬利"}
+         MM{"緬甸"}
+         MN{"蒙古"}
+-        MO{"中華人民共和國澳門特別行政區"}
++        MO{"澳門"}
+         MP{"北馬里亞納群島"}
+         MQ{"馬丁尼克島"}
+         MR{"茅利塔尼亞"}
+@@ -222,7 +222,7 @@ yue{
+         PM{"聖皮埃爾同密克隆群島"}
+         PN{"皮特肯群島"}
+         PR{"波多黎各"}
+-        PS{"巴勒斯坦自治區"}
++        PS{"巴勒斯坦"}
+         PT{"葡萄牙"}
+         PW{"帛琉"}
+         PY{"巴拉圭"}
+@@ -298,16 +298,12 @@ yue{
      }
-     Version{"2.1.43.94"}
+     Countries%short{
+         GB{"英國"}
+-        HK{"香港"}
+-        MO{"澳門"}
+-        PS{"巴勒斯坦"}
+         US{"美國"}
+     }
+     Countries%variant{
+         CD{"剛果民主共和國"}
+         CG{"剛果共和國"}
+         CZ{"捷克共和國"}
+-        FK{"福克蘭群島 (馬爾維納斯群島)"}
+     }
+     Version{"2.1.49.82"}
+ }
+diff --git a/source/data/region/yue_Hans.txt b/source/data/region/yue_Hans.txt
+index 413ddaf0..a327dcd6 100644
+--- a/source/data/region/yue_Hans.txt
++++ b/source/data/region/yue_Hans.txt
+@@ -111,7 +111,7 @@ yue_Hans{
+         EZ{"欧元区"}
+         FI{"芬兰"}
+         FJ{"斐济"}
+-        FK{"福克兰群岛"}
++        FK{"福克兰群岛 (马尔维纳斯群岛)"}
+         FM{"密克罗尼西亚群岛"}
+         FO{"法罗群岛"}
+         FR{"法国"}
+@@ -134,7 +134,7 @@ yue_Hans{
+         GU{"关岛"}
+         GW{"几内亚比索"}
+         GY{"盖亚那"}
+-        HK{"中华人民共和国香港特别行政区"}
++        HK{"香港"}
+         HM{"赫德岛同麦克唐纳群岛"}
+         HN{"宏都拉斯"}
+         HR{"克罗埃西亚"}
+@@ -188,7 +188,7 @@ yue_Hans{
+         ML{"马利"}
+         MM{"缅甸"}
+         MN{"蒙古"}
+-        MO{"中华人民共和国澳门特别行政区"}
++        MO{"澳门"}
+         MP{"北马里亚纳群岛"}
+         MQ{"马丁尼克岛"}
+         MR{"茅利塔尼亚"}
+@@ -223,7 +223,7 @@ yue_Hans{
+         PM{"圣皮埃尔同密克隆群岛"}
+         PN{"皮特肯群岛"}
+         PR{"波多黎各"}
+-        PS{"巴勒斯坦自治区"}
++        PS{"巴勒斯坦"}
+         PT{"葡萄牙"}
+         PW{"帛琉"}
+         PY{"巴拉圭"}
+@@ -299,16 +299,12 @@ yue_Hans{
+     }
+     Countries%short{
+         GB{"英国"}
+-        HK{"香港"}
+-        MO{"澳门"}
+-        PS{"巴勒斯坦"}
+         US{"美国"}
+     }
+     Countries%variant{
+         CD{"刚果民主共和国"}
+         CG{"刚果共和国"}
+         CZ{"捷克共和国"}
+-        FK{"福克兰群岛 (马尔维纳斯群岛)"}
+     }
+     Version{"2.1.49.82"}
  }
 diff --git a/source/data/region/zh.txt b/source/data/region/zh.txt
-index 074f3050..a5db96bf 100644
+index e88a52a7..f49ad69a 100644
 --- a/source/data/region/zh.txt
 +++ b/source/data/region/zh.txt
 @@ -110,7 +110,7 @@ zh{
@@ -7207,12 +6611,7 @@ index 074f3050..a5db96bf 100644
          HM{"赫德岛和麦克唐纳群岛"}
          HN{"洪都拉斯"}
          HR{"克罗地亚"}
-@@ -183,11 +183,11 @@ zh{
-         MF{"法属圣马丁"}
-         MG{"马达加斯加"}
-         MH{"马绍尔群岛"}
--        MK{"马其顿"}
-+        MK{"马其顿（前南斯拉夫马其顿共和国）"}
+@@ -187,7 +187,7 @@ zh{
          ML{"马里"}
          MM{"缅甸"}
          MN{"蒙古"}
@@ -7230,7 +6629,7 @@ index 074f3050..a5db96bf 100644
          PT{"葡萄牙"}
          PW{"帕劳"}
          PY{"巴拉圭"}
-@@ -297,9 +297,6 @@ zh{
+@@ -299,9 +299,6 @@ zh{
      }
      Countries%short{
          GB{"英国"}
@@ -7240,217 +6639,16 @@ index 074f3050..a5db96bf 100644
          UN{"联合国"}
          US{"美国"}
      }
-@@ -308,8 +305,6 @@ zh{
+@@ -310,7 +307,6 @@ zh{
          CG{"刚果共和国"}
          CI{"象牙海岸"}
          CZ{"捷克共和国"}
 -        FK{"福克兰群岛（马尔维纳斯群岛）"}
--        MK{"马其顿（前南斯拉夫马其顿共和国）"}
+         TL{"TL"}
      }
-     Version{"2.1.44.76"}
- }
-diff --git a/source/data/region/zu.txt b/source/data/region/zu.txt
-index 6b6e7c90..857a55f4 100644
---- a/source/data/region/zu.txt
-+++ b/source/data/region/zu.txt
-@@ -110,7 +110,7 @@ zu{
-         EZ{"EZ"}
-         FI{"i-Finland"}
-         FJ{"i-Fiji"}
--        FK{"i-Falkland Islands"}
-+        FK{"i-Falkland Islands (Islas Malvinas)"}
-         FM{"i-Micronesia"}
-         FO{"i-Faroe Islands"}
-         FR{"i-France"}
-@@ -133,7 +133,7 @@ zu{
-         GU{"i-Guam"}
-         GW{"i-Guinea-Bissau"}
-         GY{"i-Guyana"}
--        HK{"i-Hong Kong SAR China"}
-+        HK{"i-Hong Kong"}
-         HM{"i-Heard Island ne-McDonald Islands"}
-         HN{"i-Honduras"}
-         HR{"i-Croatia"}
-@@ -183,11 +183,11 @@ zu{
-         MF{"i-Saint Martin"}
-         MG{"i-Madagascar"}
-         MH{"i-Marshall Islands"}
--        MK{"i-Macedonia"}
-+        MK{"i-Macedonia (FYROM)"}
-         ML{"iMali"}
-         MM{"i-Myanmar (Burma)"}
-         MN{"i-Mongolia"}
--        MO{"i-Macau SAR China"}
-+        MO{"i-Macau"}
-         MP{"i-Northern Mariana Islands"}
-         MQ{"i-Martinique"}
-         MR{"i-Mauritania"}
-@@ -222,7 +222,7 @@ zu{
-         PM{"i-Saint Pierre kanye ne-Miquelon"}
-         PN{"i-Pitcairn Islands"}
-         PR{"i-Puerto Rico"}
--        PS{"i-Palestinian Territories"}
-+        PS{"i-Palestine"}
-         PT{"i-Portugal"}
-         PW{"i-Palau"}
-         PY{"i-Paraguay"}
-@@ -297,9 +297,6 @@ zu{
-     }
-     Countries%short{
-         GB{"i-U.K."}
--        HK{"i-Hong Kong"}
--        MO{"i-Macau"}
--        PS{"i-Palestine"}
-         UN{"ifulegi"}
-         US{"i-U.S"}
-     }
-@@ -308,8 +305,6 @@ zu{
-         CG{"i-Congo (Republic)"}
-         CI{"i-Ivory Coast"}
-         CZ{"i-Czech Republic"}
--        FK{"i-Falkland Islands (Islas Malvinas)"}
--        MK{"i-Macedonia (FYROM)"}
-         TL{"i-East Timor"}
-     }
-     Version{"2.1.43.65"}
-diff --git a/source/data/zone/ko.txt b/source/data/zone/ko.txt
-index 063fd1e5..a7a205e4 100644
---- a/source/data/zone/ko.txt
-+++ b/source/data/zone/ko.txt
-@@ -1641,9 +1641,9 @@ ko{
-             ls{"서부 카자흐스탄 시간"}
-         }
-         "meta:Korea"{
--            ld{"대한민국 하계 표준시"}
--            lg{"대한민국 시간"}
--            ls{"대한민국 표준시"}
-+            ld{"한국 하계 표준시"}
-+            lg{"한국 시간"}
-+            ls{"한국 표준시"}
-         }
-         "meta:Kosrae"{
-             ls{"코스라에섬 시간"}
-diff --git a/source/data/region/lt.txt b/source/data/region/lt.txt
-index 02aa1f60..047c201e 100644
---- a/source/data/region/lt.txt
-+++ b/source/data/region/lt.txt
-@@ -110,7 +110,7 @@ lt{
-         EZ{"euro zona"}
-         FI{"Suomija"}
-         FJ{"Fidžis"}
--        FK{"Folklando Salos"}
-+        FK{"Folklando (Malvinų) Salos"}
-         FM{"Mikronezija"}
-         FO{"Farerų Salos"}
-         FR{"Prancūzija"}
-@@ -133,7 +133,7 @@ lt{
-         GU{"Guamas"}
-         GW{"Bisau Gvinėja"}
-         GY{"Gajana"}
--        HK{"Ypatingasis Administracinis Kinijos Regionas Honkongas"}
-+        HK{"Honkongas"}
-         HM{"Herdo ir Makdonaldo Salos"}
-         HN{"Hondūras"}
-         HR{"Kroatija"}
-@@ -183,11 +183,11 @@ lt{
-         MF{"Sen Martenas"}
-         MG{"Madagaskaras"}
-         MH{"Maršalo Salos"}
--        MK{"Makedonija"}
-+        MK{"Makedonijos Respublika"}
-         ML{"Malis"}
-         MM{"Mianmaras (Birma)"}
-         MN{"Mongolija"}
--        MO{"Ypatingasis Administracinis Kinijos Regionas Makao"}
-+        MO{"Makao"}
-         MP{"Marianos Šiaurinės Salos"}
-         MQ{"Martinika"}
-         MR{"Mauritanija"}
-@@ -222,7 +222,7 @@ lt{
-         PM{"Sen Pjeras ir Mikelonas"}
-         PN{"Pitkerno salos"}
-         PR{"Puerto Rikas"}
--        PS{"Palestinos teritorija"}
-+        PS{"Palestina"}
-         PT{"Portugalija"}
-         PW{"Palau"}
-         PY{"Paragvajus"}
-@@ -297,9 +297,6 @@ lt{
-     }
-     Countries%short{
-         GB{"JK"}
--        HK{"Honkongas"}
--        MO{"Makao"}
--        PS{"Palestina"}
-         UN{"JT"}
-         US{"JAV"}
-     }
-@@ -308,8 +305,6 @@ lt{
-         CG{"Kongo Respublika"}
-         CI{"Dramblio Kaulo Kranto Respublika"}
-         CZ{"Čekijos Respublika"}
--        FK{"Folklando (Malvinų) Salos"}
--        MK{"Makedonijos Respublika"}
-     }
-     Version{"2.1.44.91"}
- }
-diff --git a/source/data/region/lv.txt b/source/data/region/lv.txt
-index 2d82c4f3..9215a6a4 100644
---- a/source/data/region/lv.txt
-+++ b/source/data/region/lv.txt
-@@ -110,7 +110,7 @@ lv{
-         EZ{"Eirozona"}
-         FI{"Somija"}
-         FJ{"Fidži"}
--        FK{"Folklenda salas"}
-+        FK{"Folklenda (Malvinu) salas"}
-         FM{"Mikronēzija"}
-         FO{"Fēru salas"}
-         FR{"Francija"}
-@@ -133,7 +133,7 @@ lv{
-         GU{"Guama"}
-         GW{"Gvineja-Bisava"}
-         GY{"Gajāna"}
--        HK{"Ķīnas īpašās pārvaldes apgabals Honkonga"}
-+        HK{"Honkonga"}
-         HM{"Hērda sala un Makdonalda salas"}
-         HN{"Hondurasa"}
-         HR{"Horvātija"}
-@@ -183,11 +183,11 @@ lv{
-         MF{"Senmartēna"}
-         MG{"Madagaskara"}
-         MH{"Māršala salas"}
--        MK{"Maķedonija"}
-+        MK{"bijusī Dienvidslāvijas Maķedonijas Republika"}
-         ML{"Mali"}
-         MM{"Mjanma (Birma)"}
-         MN{"Mongolija"}
--        MO{"Ķīnas īpašās pārvaldes apgabals Makao"}
-+        MO{"Makao"}
-         MP{"Ziemeļu Marianas salas"}
-         MQ{"Martinika"}
-         MR{"Mauritānija"}
-@@ -297,9 +297,6 @@ lv{
-     }
-     Countries%short{
-         GB{"Apvienotā Karaliste"}
--        HK{"Honkonga"}
--        MO{"Makao"}
--        PS{"Palestīna"}
-         UN{"ANO"}
-         US{"ASV"}
-     }
-@@ -308,8 +305,6 @@ lv{
-         CG{"Kongo (Republika)"}
-         CI{"Ziloņkaula krasts"}
-         CZ{"Čehijas Republika"}
--        FK{"Folklenda (Malvinu) salas"}
--        MK{"bijusī Dienvidslāvijas Maķedonijas Republika"}
-     }
-     Version{"2.1.44.91"}
- }
+     Version{"2.1.49.82"}
 diff --git a/source/data/region/zh_Hant.txt b/source/data/region/zh_Hant.txt
-index 8af4f241..24f94fdb 100644
+index b2c18996..880b0246 100644
 --- a/source/data/region/zh_Hant.txt
 +++ b/source/data/region/zh_Hant.txt
 @@ -111,7 +111,7 @@ zh_Hant{
@@ -7471,12 +6669,7 @@ index 8af4f241..24f94fdb 100644
          HM{"赫德島及麥唐納群島"}
          HN{"宏都拉斯"}
          HR{"克羅埃西亞"}
-@@ -184,11 +184,11 @@ zh_Hant{
-         MF{"法屬聖馬丁"}
-         MG{"馬達加斯加"}
-         MH{"馬紹爾群島"}
--        MK{"馬其頓"}
-+        MK{"前南斯拉夫馬其頓共和國"}
+@@ -188,7 +188,7 @@ zh_Hant{
          ML{"馬利"}
          MM{"緬甸"}
          MN{"蒙古"}
@@ -7494,7 +6687,7 @@ index 8af4f241..24f94fdb 100644
          PT{"葡萄牙"}
          PW{"帛琉"}
          PY{"巴拉圭"}
-@@ -298,9 +298,6 @@ zh_Hant{
+@@ -300,9 +300,6 @@ zh_Hant{
      }
      Countries%short{
          GB{"英國"}
@@ -7504,12 +6697,86 @@ index 8af4f241..24f94fdb 100644
          UN{"聯合國"}
          US{"美國"}
      }
-@@ -308,8 +305,6 @@ zh_Hant{
+@@ -310,7 +307,6 @@ zh_Hant{
          CD{"剛果民主共和國"}
          CG{"剛果共和國"}
          CZ{"捷克共和國"}
 -        FK{"福克蘭群島（馬爾維納斯群島）"}
--        MK{"前南斯拉夫馬其頓共和國"}
      }
-     Version{"2.1.44.91"}
+     Version{"2.1.49.82"}
  }
+diff --git a/source/data/region/zu.txt b/source/data/region/zu.txt
+index bb8d090e..b405d301 100644
+--- a/source/data/region/zu.txt
++++ b/source/data/region/zu.txt
+@@ -110,7 +110,7 @@ zu{
+         EZ{"EZ"}
+         FI{"i-Finland"}
+         FJ{"i-Fiji"}
+-        FK{"i-Falkland Islands"}
++        FK{"i-Falkland Islands (Islas Malvinas)"}
+         FM{"i-Micronesia"}
+         FO{"i-Faroe Islands"}
+         FR{"i-France"}
+@@ -133,7 +133,7 @@ zu{
+         GU{"i-Guam"}
+         GW{"i-Guinea-Bissau"}
+         GY{"i-Guyana"}
+-        HK{"i-Hong Kong SAR China"}
++        HK{"i-Hong Kong"}
+         HM{"i-Heard Island ne-McDonald Islands"}
+         HN{"i-Honduras"}
+         HR{"i-Croatia"}
+@@ -187,7 +187,7 @@ zu{
+         ML{"iMali"}
+         MM{"i-Myanmar (Burma)"}
+         MN{"i-Mongolia"}
+-        MO{"i-Macau SAR China"}
++        MO{"i-Macau"}
+         MP{"i-Northern Mariana Islands"}
+         MQ{"i-Martinique"}
+         MR{"i-Mauritania"}
+@@ -222,7 +222,7 @@ zu{
+         PM{"i-Saint Pierre kanye ne-Miquelon"}
+         PN{"i-Pitcairn Islands"}
+         PR{"i-Puerto Rico"}
+-        PS{"i-Palestinian Territories"}
++        PS{"i-Palestine"}
+         PT{"i-Portugal"}
+         PW{"i-Palau"}
+         PY{"i-Paraguay"}
+@@ -299,9 +299,6 @@ zu{
+     }
+     Countries%short{
+         GB{"i-U.K."}
+-        HK{"i-Hong Kong"}
+-        MO{"i-Macau"}
+-        PS{"i-Palestine"}
+         UN{"ifulegi"}
+         US{"i-U.S"}
+     }
+@@ -310,7 +307,6 @@ zu{
+         CG{"i-Congo (Republic)"}
+         CI{"i-Ivory Coast"}
+         CZ{"i-Czech Republic"}
+-        FK{"i-Falkland Islands (Islas Malvinas)"}
+         MK{"i-Macedonia (FYROM)"}
+         SZ{"SZ"}
+         TL{"i-East Timor"}
+diff --git a/source/data/zone/ko.txt b/source/data/zone/ko.txt
+index 015344c3..5fe0bba8 100644
+--- a/source/data/zone/ko.txt
++++ b/source/data/zone/ko.txt
+@@ -1644,9 +1644,9 @@ ko{
+             ls{"서부 카자흐스탄 시간"}
+         }
+         "meta:Korea"{
+-            ld{"대한민국 하계 표준시"}
+-            lg{"대한민국 시간"}
+-            ls{"대한민국 표준시"}
++            ld{"한국 하계 표준시"}
++            lg{"한국 시간"}
++            ls{"한국 표준시"}
+         }
+         "meta:Kosrae"{
+             ls{"코스라에섬 시간"}

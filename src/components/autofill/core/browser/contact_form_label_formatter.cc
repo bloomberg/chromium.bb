@@ -4,33 +4,54 @@
 
 #include "components/autofill/core/browser/contact_form_label_formatter.h"
 
+#include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/label_formatter_utils.h"
+
 namespace autofill {
 
 ContactFormLabelFormatter::ContactFormLabelFormatter(
     const std::string& app_locale,
     ServerFieldType focused_field_type,
-    const std::vector<ServerFieldType>& field_types,
-    const std::set<FieldTypeGroup>& field_type_groups)
-    : LabelFormatter(app_locale, focused_field_type, field_types),
-      field_type_groups_(field_type_groups),
-      filtered_field_type_groups_(field_type_groups) {
-  for (const ServerFieldType& type : field_types) {
-    if (type != focused_field_type) {
-      field_types_for_labels_.push_back(type);
-    }
-  }
-  const FieldTypeGroup group =
-      AutofillType(AutofillType(focused_field_type).GetStorableType()).group();
-  filtered_field_type_groups_.erase(group);
-}
+    uint32_t groups,
+    const std::vector<ServerFieldType>& field_types)
+    : LabelFormatter(app_locale, focused_field_type, groups, field_types) {}
 
 ContactFormLabelFormatter::~ContactFormLabelFormatter() {}
 
-std::vector<base::string16> ContactFormLabelFormatter::GetLabels(
-    const std::vector<AutofillProfile*>& profiles) const {
-  // TODO(crbug.com/936168): Implement GetLabels().
-  std::vector<base::string16> labels;
-  return labels;
+// Note that the order--name, phone, and email--in which parts of the label
+// are possibly added ensures that the label is formatted correctly for
+// |focused_group| and for this kind of formatter.
+base::string16 ContactFormLabelFormatter::GetLabelForProfile(
+    const AutofillProfile& profile,
+    FieldTypeGroup focused_group) const {
+  std::vector<base::string16> label_parts;
+  if (focused_group != NAME) {
+    AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
+  }
+
+  if (focused_group != PHONE_HOME) {
+    AddLabelPartIfNotEmpty(MaybeGetPhone(profile), &label_parts);
+  }
+
+  if (focused_group != EMAIL) {
+    AddLabelPartIfNotEmpty(MaybeGetEmail(profile), &label_parts);
+  }
+
+  return ConstructLabelLine(label_parts);
+}
+
+base::string16 ContactFormLabelFormatter::MaybeGetEmail(
+    const AutofillProfile& profile) const {
+  return data_util::ContainsEmail(groups())
+             ? GetLabelEmail(profile, app_locale())
+             : base::string16();
+}
+
+base::string16 ContactFormLabelFormatter::MaybeGetPhone(
+    const AutofillProfile& profile) const {
+  return data_util::ContainsPhone(groups())
+             ? GetLabelPhone(profile, app_locale())
+             : base::string16();
 }
 
 }  // namespace autofill

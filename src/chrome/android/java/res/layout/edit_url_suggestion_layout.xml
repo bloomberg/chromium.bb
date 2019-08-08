@@ -50,7 +50,7 @@
         android:layout_centerVertical="true"
         android:layout_toStartOf="@id/edit_url_suggestion_icons"
         android:orientation="vertical"
-        android:layout_marginStart="@dimen/omnibox_suggestion_start_offset">
+        android:layout_marginStart="@dimen/omnibox_suggestion_start_offset_without_icon">
 
         <TextView
             android:id="@+id/title_text_view"

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -19,7 +18,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_path_override.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/value_conversions.h"
 #include "build/build_config.h"
@@ -289,11 +287,7 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
   void VerifyDownloadTarget(const DownloadTestCase& test_case,
                             const DownloadTargetInfo* target_info);
 
-  base::FilePath test_download_dir() const {
-    base::FilePath path;
-    CHECK(base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path));
-    return path;
-  }
+  base::FilePath test_download_dir() const { return test_download_dir_; }
 
   const base::FilePath& test_virtual_dir() const {
     return test_virtual_dir_;
@@ -310,10 +304,7 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
  private:
   void SetUpFileTypePolicies();
 
-  // Resets the global cached DefaultDownloadDirectory instance.
-  base::ShadowingAtExitManager at_exit_manager_;
-  base::ScopedPathOverride download_dir_override_{
-      chrome::DIR_DEFAULT_DOWNLOADS};
+  base::FilePath test_download_dir_;
   std::unique_ptr<DownloadPrefs> download_prefs_;
   ::testing::NiceMock<MockDownloadTargetDeterminerDelegate> delegate_;
   NullWebContentsDelegate web_contents_delegate_;
@@ -326,10 +317,14 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
 void DownloadTargetDeterminerTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
   CHECK(profile());
-  download_prefs_.reset(new DownloadPrefs(profile()));
+
+  test_download_dir_ = profile()->GetPath().AppendASCII("TestDownloadDir");
+
+  download_prefs_ = std::make_unique<DownloadPrefs>(profile());
+  download_prefs_->SkipSanitizeDownloadTargetPathForTesting();
+  download_prefs_->SetDownloadPath(test_download_dir());
   web_contents()->SetDelegate(&web_contents_delegate_);
   test_virtual_dir_ = test_download_dir().Append(FILE_PATH_LITERAL("virtual"));
-  download_prefs_->SetDownloadPath(test_download_dir());
   delegate_.SetupDefaults();
   SetUpFileTypePolicies();
 #if defined(OS_ANDROID)
@@ -2383,7 +2378,7 @@ class DownloadTargetDeterminerTestWithPlugin
     : public DownloadTargetDeterminerTest {
  public:
   DownloadTargetDeterminerTestWithPlugin()
-      : old_plugin_service_filter_(NULL) {}
+      : old_plugin_service_filter_(nullptr) {}
 
   void SetUp() override {
     DownloadTargetDeterminerTest::SetUp();
@@ -2434,8 +2429,8 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin, CheckForSecureHandling_PPAPI) {
   {
     ForceRefreshOfPlugins();
     std::vector<content::WebPluginInfo> info;
-    ASSERT_FALSE(plugin_service->GetPluginInfoArray(
-        GURL(), kTestMIMEType, false, &info, NULL));
+    ASSERT_FALSE(plugin_service->GetPluginInfoArray(GURL(), kTestMIMEType,
+                                                    false, &info, nullptr));
     ASSERT_EQ(0u, info.size())
         << "Name: " << info[0].name << ", Path: " << info[0].path.value();
   }
@@ -2503,8 +2498,8 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
   {
     ForceRefreshOfPlugins();
     std::vector<content::WebPluginInfo> info;
-    ASSERT_FALSE(plugin_service->GetPluginInfoArray(
-        GURL(), kTestMIMEType, false, &info, NULL));
+    ASSERT_FALSE(plugin_service->GetPluginInfoArray(GURL(), kTestMIMEType,
+                                                    false, &info, nullptr));
     ASSERT_EQ(0u, info.size())
         << "Name: " << info[0].name << ", Path: " << info[0].path.value();
   }

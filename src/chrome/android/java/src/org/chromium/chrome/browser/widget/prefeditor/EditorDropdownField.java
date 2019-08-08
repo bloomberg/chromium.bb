@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -30,6 +32,7 @@ import java.util.List;
  * Helper class for creating a dropdown view with a label.
  */
 class EditorDropdownField implements EditorFieldView {
+    private final Context mContext;
     private final EditorFieldModel mFieldModel;
     private final View mLayout;
     private final TextView mLabel;
@@ -51,6 +54,7 @@ class EditorDropdownField implements EditorFieldView {
     public EditorDropdownField(Context context, ViewGroup root, final EditorFieldModel fieldModel,
             final Runnable changedCallback, @Nullable EditorObserverForTest observer) {
         assert fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN;
+        mContext = context;
         mFieldModel = fieldModel;
         mObserverForTest = observer;
 
@@ -166,7 +170,15 @@ class EditorDropdownField implements EditorFieldView {
     public void updateDisplayedError(boolean showError) {
         View view = mDropdown.getSelectedView();
         if (view != null && view instanceof TextView) {
-            ((TextView) view).setError(showError ? mFieldModel.getErrorMessage() : null);
+            if (showError) {
+                Drawable drawable = VectorDrawableCompat.create(
+                        mContext.getResources(), R.drawable.ic_error, mContext.getTheme());
+                drawable.setBounds(
+                        0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+                ((TextView) view).setError(mFieldModel.getErrorMessage(), drawable);
+            } else {
+                ((TextView) view).setError(null);
+            }
         }
     }
 

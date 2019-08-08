@@ -414,8 +414,9 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
         ('image.zip', _ImageNameBase(), 'zip'),
         (constants.TEST_IMAGE_TAR, test_basename, 'tar.xz'),
         ('debug.tgz', 'debug-%s' % boardpath, 'tgz'),
-        (hwqual_tarball, '', ''),
-        ('stateful.tgz', '', ''),
+        (hwqual_tarball, None, None),
+        ('stateful.tgz', None, None),
+        ('dlc', None, None),
     )
 
     # The following build artifacts, if present, are always copied.
@@ -450,15 +451,16 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
          constants.IMAGE_TYPE_BASE),
     )
 
-    def _CopyFileToGS(src, dst, suffix):
+    def _CopyFileToGS(src, dst=None, suffix=None):
       """Returns |dst| file name if the copying was successful."""
-      if not dst:
+      if dst is None:
         dst = src
-      elif suffix:
+      elif suffix is not None:
         dst = '%s.%s' % (dst, suffix)
       success = False
       try:
-        ctx.Copy(os.path.join(src_path, src), os.path.join(dst_path, dst))
+        ctx.Copy(os.path.join(src_path, src), os.path.join(dst_path, dst),
+                 recursive=True)
         success = True
       except gs.GSNoSuchKey:
         logging.warning('Skipping %s as it does not exist', src)

@@ -112,7 +112,7 @@ WorkletGlobalScopeProxy* TaskWorklet::CreateGlobalScope() {
   DCHECK_LT(GetNumberOfGlobalScopes(), kMaxTaskWorkletThreads);
   TaskWorkletMessagingProxy* proxy =
       MakeGarbageCollected<TaskWorkletMessagingProxy>(GetExecutionContext());
-  proxy->Initialize(WorkerClients::Create(), ModuleResponsesMap(),
+  proxy->Initialize(MakeGarbageCollected<WorkerClients>(), ModuleResponsesMap(),
                     WorkerBackingThreadStartupData::CreateDefault());
   return proxy;
 }

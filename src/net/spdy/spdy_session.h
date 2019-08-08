@@ -203,6 +203,9 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   // is not created, an error is returned, and ReleaseStream() may not
   // be called.
   //
+  // If |can_send_early| is true, this request is allowed to be sent over
+  // TLS 1.3 0RTT without confirming the handshake.
+  //
   // If OK is returned, must not be called again without
   // ReleaseStream() being called first. If ERR_IO_PENDING is
   // returned, must not be called again without CancelRequest() or
@@ -211,6 +214,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   int StartRequest(SpdyStreamType type,
                    const base::WeakPtr<SpdySession>& session,
                    const GURL& url,
+                   bool can_send_early,
                    RequestPriority priority,
                    const SocketTag& socket_tag,
                    const NetLogWithSource& net_log,
@@ -241,6 +245,17 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
  private:
   friend class SpdySession;
 
+  enum State {
+    STATE_NONE,
+    STATE_WAIT_FOR_CONFIRMATION,
+    STATE_REQUEST_STREAM,
+  };
+
+  void OnIOComplete(int rv);
+  int DoLoop(int rv);
+  int DoWaitForConfirmation();
+  int DoRequestStream(int rv);
+
   // Called by |session_| when the stream attempt has finished
   // successfully.
   void OnRequestCompleteSuccess(const base::WeakPtr<SpdyStream>& stream);
@@ -262,11 +277,13 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   base::WeakPtr<SpdySession> session_;
   base::WeakPtr<SpdyStream> stream_;
   GURL url_;
+  bool can_send_early_;
   RequestPriority priority_;
   SocketTag socket_tag_;
   NetLogWithSource net_log_;
   CompletionOnceCallback callback_;
   MutableNetworkTrafficAnnotationTag traffic_annotation_;
+  State next_state_;
 
   base::WeakPtrFactory<SpdyStreamRequest> weak_ptr_factory_;
 
@@ -381,6 +398,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void EnqueueStreamWrite(const base::WeakPtr<SpdyStream>& stream,
                           spdy::SpdyFrameType frame_type,
                           std::unique_ptr<SpdyBufferProducer> producer);
+
+  // Runs the handshake to completion to confirm the handshake with the server.
+  // If ERR_IO_PENDING is returned, then when the handshake is confirmed,
+  // |callback| will be called.
+  int ConfirmHandshake(CompletionOnceCallback callback);
 
   // Creates and returns a HEADERS frame for |stream_id|.
   std::unique_ptr<spdy::SpdySerializedFrame> CreateHeaders(
@@ -703,6 +725,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // The implementations of the states of the WriteState state machine.
   int DoWrite();
   int DoWriteComplete(int result);
+
+  void NotifyRequestsOfConfirmation(int rv);
 
   // TODO(akalin): Rename the Send* and Write* functions below to
   // Enqueue*.
@@ -1053,6 +1077,13 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // valid HTTP/2 frame.  See
   // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
   const base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame_;
+
+  // The callbacks to notify a request that the handshake has been confirmed.
+  std::vector<CompletionOnceCallback> waiting_for_confirmation_callbacks_;
+
+  // True if there is an ongoing handshake confirmation with outstanding
+  // requests.
+  bool in_confirm_handshake_;
 
   // Limits
   size_t max_concurrent_streams_;

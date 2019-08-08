@@ -227,6 +227,19 @@ void DumpProfilePacket(std::vector<ProfilePacket>& packet_fragments,
     GProfile cur_profile = profile;
     uint64_t pid = p.first;
     for (const ProfilePacket::ProcessHeapSamples* samples : p.second) {
+      if (samples->buffer_overran()) {
+        PERFETTO_ELOG("WARNING: The profile for %" PRIu64
+                      " ended early due to a buffer overrun.",
+                      pid);
+      }
+      if (samples->buffer_corrupted()) {
+        PERFETTO_ELOG("WARNING: The profile for %" PRIu64
+                      " ended early due to a buffer corruption."
+                      " THIS IS ALWAYS A BUG IN HEAPPROFD OR"
+                      " CLIENT MEMORY CORRUPTION.",
+                      pid);
+      }
+
       for (const ProfilePacket::HeapSample& sample : samples->samples()) {
         GSample* gsample = cur_profile.add_sample();
         auto it = callstack_lookup.find(sample.callstack_id());
@@ -278,6 +291,11 @@ int TraceToProfile(std::istream* input, std::ostream* output) {
       rolling_profile_packets.clear();
     }
   });
+
+  if (!rolling_profile_packets.empty()) {
+    *output << "WARNING: Truncated heap dump. Not generating profile."
+            << std::endl;
+  }
 
   *output << "Wrote profiles to " << temp_dir << std::endl;
 

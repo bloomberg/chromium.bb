@@ -57,7 +57,7 @@ class ManifestBrowserTest : public ContentBrowserTest,
   ManifestBrowserTest() : console_error_count_(0) {
     cors_embedded_test_server_.reset(new net::EmbeddedTestServer);
     cors_embedded_test_server_->ServeFilesFromSourceDirectory(
-        "content/test/data");
+        GetTestDataFilePath());
   }
 
   ~ManifestBrowserTest() override {}
@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, 404Manifest) {
 }
 
 // If a page has an empty manifest, requesting the manifest should return the
-// empty manifest. The manifest URL should be non-empty.
+// manifest with default values. The manifest URL should be non-empty.
 IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, EmptyManifest) {
   GURL test_url =
       embedded_test_server()->GetURL("/manifest/empty-manifest.html");
@@ -212,8 +212,9 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, EmptyManifest) {
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
 
   GetManifestAndWait();
-  EXPECT_TRUE(manifest().IsEmpty());
+  EXPECT_FALSE(manifest().IsEmpty());
   EXPECT_FALSE(manifest_url().is_empty());
+  ASSERT_EQ(test_url.GetWithoutFilename(), manifest().scope);
   EXPECT_EQ(0, GetConsoleErrorCount());
   ASSERT_EQ(1u, reported_manifest_urls().size());
   EXPECT_EQ(manifest_url(), reported_manifest_urls()[0]);
@@ -294,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DynamicManifest) {
         ExecuteScript(shell(), "setManifestTo('" + manifest_link + "')"));
 
     GetManifestAndWait();
-    EXPECT_TRUE(manifest().IsEmpty());
+    EXPECT_FALSE(manifest().IsEmpty());
     EXPECT_FALSE(manifest_url().is_empty());
     expected_manifest_urls.push_back(manifest_url());
     EXPECT_EQ(expected_manifest_urls, reported_manifest_urls());
@@ -388,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CorsManifestWithAcessControls) {
 IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, MixedContentManifest) {
   std::unique_ptr<net::EmbeddedTestServer> https_server(
       new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
-  https_server->ServeFilesFromSourceDirectory("content/test/data");
+  https_server->ServeFilesFromSourceDirectory(GetTestDataFilePath());
 
   ASSERT_TRUE(https_server->Start());
 
@@ -421,9 +422,10 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, ParsingErrorsManifest) {
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
 
   GetManifestAndWait();
-  EXPECT_TRUE(manifest().IsEmpty());
+  EXPECT_FALSE(manifest().IsEmpty());
   EXPECT_FALSE(manifest_url().is_empty());
-  EXPECT_EQ(6, GetConsoleErrorCount());
+  ASSERT_EQ(test_url.GetWithoutFilename(), manifest().scope);
+  EXPECT_EQ(7, GetConsoleErrorCount());
   ASSERT_EQ(1u, reported_manifest_urls().size());
   EXPECT_EQ(manifest_url(), reported_manifest_urls()[0]);
   ASSERT_EQ(1u, manifests_reported_when_favicon_url_updated().size());

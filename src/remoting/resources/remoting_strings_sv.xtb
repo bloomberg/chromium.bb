@@ -153,6 +153,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="4240294130679914010">Chromoting Host Uninstaller</translation>
 <translation id="4277463233460010382">Den här datorn är konfigurerad för att tillåta att en eller flera klienter ansluter utan att en pinkod måste anges.</translation>
 <translation id="4277736576214464567">Koden är ogiltig. Försök igen.</translation>
+<translation id="4281844954008187215">Användarvillkor</translation>
 <translation id="4361728918881830843">Om du vill aktivera fjärranslutning till en annan dator installerar du Chrome Remote Desktop på den och klickar på <ph name="BUTTON_NAME" />.</translation>
 <translation id="4394049700291259645">Inaktivera</translation>
 <translation id="4405930547258349619">Huvudbibliotek</translation>
@@ -347,6 +348,7 @@ Du aktiverar funktionen genom att öppna inställningspanelen Säkerhet och sekr
 <translation id="8747048596626351634">Sessionen kraschade eller gick inte att starta. Om ~/.chrome-remote-desktop-session finns på fjärrdatorn kontrollerar du att det som startas med den filen är en process som körs under lång tid i förgrunden, som en skrivbordsmiljö eller fönsterhanterare.</translation>
 <translation id="8759753423332885148">Läs mer.</translation>
 <translation id="8791202241915690908">Ladda ned installationsprogrammet för fjärranslutningsvärden Chromoting</translation>
+<translation id="8804164990146287819">Sekretesspolicy</translation>
 <translation id="894763922177556086">Bra</translation>
 <translation id="895780780740011433">För Windows 7 eller senare</translation>
 <translation id="897805526397249209">Om du vill aktivera fjärranslutningar till en annan dator installerar du Chromoting på datorn och klickar på <ph name="BUTTON_NAME" />.</translation>
