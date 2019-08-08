@@ -290,9 +290,9 @@ window.chrome.embeddedSearch.newTabPage.searchSuggestionSelected;
 window.chrome.embeddedSearch.newTabPage.selectLocalBackgroundImage;
 
 /**
- * @param {string} background_url
+ * No params.
  */
-window.chrome.embeddedSearch.newTabPage.setBackgroundURL;
+window.chrome.embeddedSearch.newTabPage.resetBackgroundInfo;
 
 /**
  * @param {string} background_url

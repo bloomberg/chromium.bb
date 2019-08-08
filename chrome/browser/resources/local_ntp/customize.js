@@ -1751,7 +1751,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   const restoreDefaultInteraction = function() {
     editDialog.close();
     customize.clearAttribution();
-    window.chrome.embeddedSearch.newTabPage.setBackgroundURL('');
+    window.chrome.embeddedSearch.newTabPage.resetBackgroundInfo();
   };
   $(customize.IDS.RESTORE_DEFAULT).onclick = (event) => {
     if (!$(customize.IDS.RESTORE_DEFAULT)
