@@ -12,6 +12,9 @@ from chromite.lib import device
 from chromite.lib import vm
 
 
+# pylint: disable=protected-access
+
+
 class DeviceTester(cros_test_lib.RunCommandTestCase):
   """Test device.Device."""
 
@@ -61,3 +64,9 @@ class DeviceTester(cros_test_lib.RunCommandTestCase):
     self.CreateDevice('localhost', True)
     # Verify a Device is created when an IP is specified.
     self.CreateDevice('190.0.2.130', False)
+
+  def testDryRunError(self):
+    """Verify _DryRunCommand can only be called when dry_run is True."""
+    self._device.dry_run = False
+    self.assertRaises(AssertionError, self._device._DryRunCommand,
+                      cmd=['echo', 'Hello'])
