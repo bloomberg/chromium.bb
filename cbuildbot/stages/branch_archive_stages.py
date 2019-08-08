@@ -104,7 +104,7 @@ class WorkspaceArchiveBase(workspace_stages.WorkspaceStageBase,
     with osutils.TempDir(prefix='dummy') as tempdir:
       artifact_path = os.path.join(
           tempdir,
-          '%s/%s' % (self._current_board, os.path.basename(path)))
+          '%s_%s' % (self._current_board, os.path.basename(path)))
 
       logging.info('Rename: %s -> %s', path, artifact_path)
       shutil.copyfile(path, artifact_path)
@@ -180,7 +180,7 @@ class WorkspaceArchiveBase(workspace_stages.WorkspaceStageBase,
 class FirmwareArchiveStage(WorkspaceArchiveBase):
   """Generates and publishes firmware specific build artifacts.
 
-  This stage publishes <board>/firmware_from_source.tar.bz2 to this
+  This stage publishes <board>_firmware_from_source.tar.bz2 to this
   builds standard build artifacts, and also generates a 'fake' build
   result (called a Dummy result) that looks like it came from a
   traditional style firmware builder for a single board on the
