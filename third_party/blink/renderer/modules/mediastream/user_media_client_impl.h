@@ -11,7 +11,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/web/web_apply_constraints_request.h"
@@ -21,6 +20,10 @@
 #include "third_party/blink/renderer/modules/mediastream/user_media_processor.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace blink {
 
