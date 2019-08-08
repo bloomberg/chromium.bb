@@ -19,6 +19,16 @@
 
 namespace chromeos {
 
+namespace {
+
+const InSessionPasswordChangeManager::Event kIncorrectPasswordEvent =
+    InSessionPasswordChangeManager::Event::CRYPTOHOME_PASSWORD_CHANGE_FAILURE;
+
+const InSessionPasswordChangeManager::PasswordSource kPasswordSource =
+    InSessionPasswordChangeManager::PasswordSource::PASSWORDS_RETYPED;
+
+}  // namespace
+
 ConfirmPasswordChangeHandler::ConfirmPasswordChangeHandler() {
   if (InSessionPasswordChangeManager::IsInitialized()) {
     InSessionPasswordChangeManager::Get()->AddObserver(this);
@@ -33,8 +43,7 @@ ConfirmPasswordChangeHandler::~ConfirmPasswordChangeHandler() {
 
 void ConfirmPasswordChangeHandler::OnEvent(
     InSessionPasswordChangeManager::Event event) {
-  if (event ==
-      InSessionPasswordChangeManager::CRYPTOHOME_PASSWORD_CHANGE_FAILURE) {
+  if (event == kIncorrectPasswordEvent) {
     AllowJavascript();
     FireWebUIListener("incorrect-old-password");
   }
@@ -44,8 +53,8 @@ void ConfirmPasswordChangeHandler::HandleChangePassword(
     const base::ListValue* params) {
   const std::string old_password = params->GetList()[0].GetString();
   const std::string new_password = params->GetList()[1].GetString();
-  InSessionPasswordChangeManager::Get()->ChangePassword(old_password,
-                                                        new_password);
+  InSessionPasswordChangeManager::Get()->ChangePassword(
+      old_password, new_password, kPasswordSource);
 }
 
 void ConfirmPasswordChangeHandler::RegisterMessages() {
