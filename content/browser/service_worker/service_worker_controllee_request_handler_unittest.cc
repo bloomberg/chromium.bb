@@ -105,9 +105,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     version_ = new ServiceWorkerVersion(registration_.get(), script_url_,
                                         blink::mojom::ScriptType::kClassic, 1L,
                                         context()->AsWeakPtr());
-
-    context()->storage()->LazyInitializeForTest(base::DoNothing());
-    base::RunLoop().RunUntilIdle();
+    context()->storage()->LazyInitializeForTest();
 
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheSync(
