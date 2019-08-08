@@ -435,7 +435,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     public void initializeCompositor() {
         super.initializeCompositor();
         getTabModelSelector().onNativeLibraryReady(getTabContentManager());
-        mBottomBarDelegate.addOverlayPanelManagerObserver();
     }
 
     @Override
@@ -784,6 +783,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         });
         mCustomTabIntentHandler = component.resolveIntentHandler();
         mSessionDataHolder = component.getParent().resolveSessionDataHolder();
+        component.resolveCompositorContentInitializer();
 
         if (mIntentDataProvider.isTrustedWebActivity()) {
             component.resolveTrustedWebActivityCoordinator();

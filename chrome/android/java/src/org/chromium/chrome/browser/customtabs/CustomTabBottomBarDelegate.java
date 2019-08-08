@@ -22,8 +22,8 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.OverlayPanelManagerObserver;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
@@ -80,15 +80,19 @@ public class CustomTabBottomBarDelegate implements FullscreenListener {
 
     @Inject
     public CustomTabBottomBarDelegate(ChromeActivity activity,
-            CustomTabIntentDataProvider dataProvider, ChromeFullscreenManager fullscreenManager,
+            CustomTabIntentDataProvider dataProvider,
+            ChromeFullscreenManager fullscreenManager,
             CustomTabNightModeStateController nightModeStateController,
-            SystemNightModeMonitor systemNightModeMonitor) {
+            SystemNightModeMonitor systemNightModeMonitor,
+            CustomTabCompositorContentInitializer compositorContentInitializer) {
         mActivity = activity;
         mDataProvider = dataProvider;
         mFullscreenManager = fullscreenManager;
         mNightModeStateController = nightModeStateController;
         mSystemNightModeMonitor = systemNightModeMonitor;
         fullscreenManager.addListener(this);
+
+        compositorContentInitializer.addCallback(this::addOverlayPanelManagerObserver);
     }
 
     /**
@@ -226,12 +230,8 @@ public class CustomTabBottomBarDelegate implements FullscreenListener {
         return mBottomBarView;
     }
 
-    public void addOverlayPanelManagerObserver() {
-        if (mActivity.getCompositorViewHolder().getLayoutManager() == null) return;
-        OverlayPanelManager manager =
-                mActivity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
-
-        manager.addObserver(new OverlayPanelManagerObserver() {
+    public void addOverlayPanelManagerObserver(LayoutManager layoutDriver) {
+        layoutDriver.getOverlayPanelManager().addObserver(new OverlayPanelManagerObserver() {
             @Override
             public void onOverlayPanelShown() {
                 if (mBottomBarView == null) return;
