@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import mock
 import os
-import stat
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -139,7 +138,7 @@ class CrOSTesterMiscTests(CrOSTesterBase):
     """Verify a run device cmd call."""
     self._tester.remote_cmd = True
     self._tester.files = [self.TempFilePath('crypto_unittests')]
-    osutils.Touch(self._tester.files[0], mode=stat.S_IRWXU)
+    osutils.Touch(self._tester.files[0], mode=0o700)
     self._tester.as_chronos = True
     self._tester.args = ['crypto_unittests',
                          '--test-launcher-print-test-stdio=always']
@@ -351,20 +350,6 @@ class CrOSTesterChromeTest(CrOSTesterBase):
       test_label: The label of the chrome test.
       test_args: A list of arguments of the particular chrome test.
     """
-    def CreateRuntimeFiles(files, build_dir):
-      """Creates files needed for running the chrome test.
-
-      Args:
-        files: List of files to touch.
-        build_dir: The directory where chrome is built.
-      """
-      file_list = files.split('\n')
-      for filename in file_list:
-        # Checks for the test_exe and makes it an executable.
-        mode = stat.S_IRWXU if filename == './%s' % test_exe else None
-        osutils.Touch(os.path.join(build_dir, filename),
-                      makedirs=True, mode=mode)
-
     self._tester.args = [test_exe] + test_args if test_args else [test_exe]
     self._tester.chrome_test = True
     self._tester.build_dir = self.TempFilePath('out_amd64-generic/Release')
@@ -391,12 +376,13 @@ class CrOSTesterChromeTest(CrOSTesterBase):
     # A few files used by the chrome test.
     runtime_deps = [
         './%s' % test_exe,
-        'gen.runtime/%s/%s/%s.runtime_deps'
-        % (label_root, test_exe, test_exe),
-        'test_fonts/Ahem.ttf',
-        'icudtl.dat',
+        'gen.runtime/%s/%s/%s.runtime_deps' % (label_root, test_exe, test_exe),
         '../../third_party/chromite']
-    CreateRuntimeFiles('\n'.join(runtime_deps), self._tester.build_dir)
+    # Creates the test_exe to be an executable.
+    osutils.Touch(os.path.join(self._tester.build_dir, runtime_deps[0]),
+                  mode=0o700)
+    for dep in runtime_deps[1:]:
+      osutils.Touch(os.path.join(self._tester.build_dir, dep), makedirs=True)
     # Mocks the output by providing necessary runtime files.
     self.rc.AddCmdResult(
         partial_mock.InOrder(['gn', 'desc', test_label]),
