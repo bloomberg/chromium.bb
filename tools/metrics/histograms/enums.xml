@@ -43218,6 +43218,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NTPBackgroundCustomizationAvailability">
+  <obsolete>
+    Removed 2019-08.
+  </obsolete>
   <int value="0" label="Background customization available"/>
   <int value="1" label="Background customization feature unavailable"/>
   <int value="2" label="Background customization unavailable due to theme"/>
@@ -43356,6 +43359,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NTPShortcutCustomizationAvailability">
+  <obsolete>
+    Removed 2019-08.
+  </obsolete>
   <int value="0" label="Shortcut customization available"/>
   <int value="1" label="Shortcut customization feature unavailable"/>
   <int value="2"
