@@ -519,7 +519,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     mojom::CommitNavigationParamsPtr commit_params,
     bool browser_initiated,
     const std::string& extra_headers,
-    const FrameNavigationEntry& frame_entry,
+    FrameNavigationEntry* frame_entry,
     NavigationEntryImpl* entry,
     const scoped_refptr<network::ResourceRequestBody>& post_body,
     std::unique_ptr<NavigationUIData> navigation_ui_data) {
@@ -557,11 +557,14 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, std::move(common_params), std::move(navigation_params),
       std::move(commit_params), browser_initiated,
-      false /* from_begin_navigation */, false /* is_for_commit */,
-      &frame_entry, entry, std::move(navigation_ui_data), nullptr, nullptr,
+      false /* from_begin_navigation */, false /* is_for_commit */, frame_entry,
+      entry, std::move(navigation_ui_data), nullptr, nullptr,
       std::move(rfh_restored_from_back_forward_cache)));
-  navigation_request->blob_url_loader_factory_ =
-      frame_entry.blob_url_loader_factory();
+
+  if (frame_entry) {
+    navigation_request->blob_url_loader_factory_ =
+        frame_entry->blob_url_loader_factory();
+  }
 
   if (navigation_request->common_params().url.SchemeIsBlob() &&
       !navigation_request->blob_url_loader_factory_) {
@@ -766,7 +769,6 @@ NavigationRequest::NavigationRequest(
       is_served_from_back_forward_cache_(
           rfh_restored_from_back_forward_cache_ != nullptr) {
   DCHECK(browser_initiated || common_params_->initiator_origin.has_value());
-  DCHECK(!browser_initiated || (entry != nullptr && frame_entry != nullptr));
   DCHECK(!IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationRequest", this,
@@ -1014,6 +1016,16 @@ void NavigationRequest::BeginNavigation() {
         network::URLLoaderCompletionStatus(net::ERR_INVALID_URL),
         true /* skip_throttles */, base::nullopt /* error_page_content*/,
         false /* collapse_frame */);
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
+    // has destroyed the NavigationRequest.
+    return;
+  }
+
+  if (!error_page_html_.empty()) {
+    OnRequestFailedInternal(network::URLLoaderCompletionStatus(net_error_),
+                            true /* skip_throttles  */,
+                            error_page_html_ /* error_page_content */,
+                            false /* collapse_frame */);
     // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
     // has destroyed the NavigationRequest.
     return;
