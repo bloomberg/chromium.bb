@@ -1122,7 +1122,7 @@ bool ChromeClientImpl::RequestPointerLock(LocalFrame* frame) {
   return WebLocalFrameImpl::FromFrame(frame)
       ->LocalRootFrameWidget()
       ->Client()
-      ->RequestPointerLock();
+      ->RequestPointerLock(WebLocalFrameImpl::FromFrame(frame));
 }
 
 void ChromeClientImpl::RequestPointerUnlock(LocalFrame* frame) {
