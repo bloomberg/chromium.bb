@@ -120,6 +120,15 @@ class BLPWTK2_EXPORT WebViewDelegate {
 
 
     // patch section: performance monitor
+    virtual void startPerformanceTiming();
+        // Begin performance timing for a Chromium operation. The behavior is
+        // undefined unless 'stopTiming' is called to end this timed
+        // operation.
+
+    virtual void stopPerformanceTiming();
+        // End performance timing for a Chromium operation. The behavior is
+        // undefined unless there was a corresponding 'startTiming' call that
+        // preceded this call.
 
 
 
