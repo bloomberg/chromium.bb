@@ -1983,7 +1983,6 @@ jumbo_split_static_library("browser") {
     "//components/language/core/browser",
     "//components/language/core/common",
     "//components/leveldb_proto",
-    "//components/leveldb_proto/content:factory",
     "//components/metrics:call_stack_profile_collector",
     "//components/metrics:component_metrics",
     "//components/metrics:demographic_metrics_provider",

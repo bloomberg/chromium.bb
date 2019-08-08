@@ -134,6 +134,8 @@ static_library("test_support") {
     "base/testing_browser_process_platform_part.h",
     "base/testing_profile.cc",
     "base/testing_profile.h",
+    "base/testing_profile_key.cc",
+    "base/testing_profile_key.h",
     "base/testing_profile_manager.cc",
     "base/testing_profile_manager.h",
     "base/tracing.cc",
