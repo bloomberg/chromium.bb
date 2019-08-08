@@ -483,8 +483,10 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
                          const std::string&              hostChannel,
                          const std::vector<std::string>& cmdLineSwitches,
                          bool                            isolated,
-                         const std::string&              profileDir)
-    : d_mainDelegate(false)
+                         const std::string&              profileDir,
+                         std::shared_ptr<LogMessageThrottler> logMessageThrottler)
+    : d_mainDelegate(false),
+    d_logMessageThrottler(std::move(logMessageThrottler))
 {
     ChannelInfo channelInfo;
     std::string currentHostChannel = hostChannel;

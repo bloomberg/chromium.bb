@@ -296,6 +296,12 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidAddContentSecurityPolicies(
       const WebVector<WebContentSecurityPolicy>& policies) {}
 
+  virtual void DidAddMessageToConsoleWithCol(const WebConsoleMessage&,
+                                             const WebString& source_name,
+                                             unsigned source_line,
+                                             unsigned source_column,
+                                             const WebString& stack_trace) {}
+
   // Some frame owner properties have changed for a child frame of this frame.
   // Frame owner properties currently include: scrolling, marginwidth and
   // marginheight.
