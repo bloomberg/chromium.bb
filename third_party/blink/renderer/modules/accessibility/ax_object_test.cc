@@ -332,5 +332,56 @@ TEST_P(AccessibilityLayoutTest, NextOnLine) {
   EXPECT_EQ("b", next->GetNode()->textContent());
 }
 
+TEST_F(AccessibilityTest, AxObjectPreservedWhitespaceIsLineBreakingObjects) {
+  SetBodyInnerHTML(R"HTML(
+    <span style='white-space: pre-line' id="preserved">
+      First Paragraph
+      Second Paragraph
+      Third Paragraph
+    </span>)HTML");
+
+  const AXObject* root = GetAXRootObject();
+  ASSERT_NE(nullptr, root);
+
+  const AXObject* preserved_span = GetAXObjectByElementId("preserved");
+  ASSERT_NE(nullptr, preserved_span);
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, preserved_span->RoleValue());
+  ASSERT_EQ(1, preserved_span->ChildCount());
+  EXPECT_FALSE(preserved_span->IsLineBreakingObject());
+
+  AXObject* preserved_text = preserved_span->FirstChild();
+  ASSERT_NE(nullptr, preserved_text);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, preserved_text->RoleValue());
+  EXPECT_FALSE(preserved_text->IsLineBreakingObject());
+
+  // Expect 7 kInlineTextBox children
+  // 3 lines of text, and 4 newlines
+  preserved_text->LoadInlineTextBoxes();
+  ASSERT_EQ(7, preserved_text->ChildCount());
+  bool all_children_are_inline_text_boxes = true;
+  for (const AXObject* child : preserved_text->Children()) {
+    if (child->RoleValue() != ax::mojom::Role::kInlineTextBox) {
+      all_children_are_inline_text_boxes = false;
+      break;
+    }
+  }
+  ASSERT_TRUE(all_children_are_inline_text_boxes);
+
+  ASSERT_EQ(preserved_text->Children()[0]->ComputedName(), "\n");
+  EXPECT_TRUE(preserved_text->Children()[0]->IsLineBreakingObject());
+  ASSERT_EQ(preserved_text->Children()[1]->ComputedName(), "First Paragraph");
+  EXPECT_FALSE(preserved_text->Children()[1]->IsLineBreakingObject());
+  ASSERT_EQ(preserved_text->Children()[2]->ComputedName(), "\n");
+  EXPECT_TRUE(preserved_text->Children()[2]->IsLineBreakingObject());
+  ASSERT_EQ(preserved_text->Children()[3]->ComputedName(), "Second Paragraph");
+  EXPECT_FALSE(preserved_text->Children()[3]->IsLineBreakingObject());
+  ASSERT_EQ(preserved_text->Children()[4]->ComputedName(), "\n");
+  EXPECT_TRUE(preserved_text->Children()[4]->IsLineBreakingObject());
+  ASSERT_EQ(preserved_text->Children()[5]->ComputedName(), "Third Paragraph");
+  EXPECT_FALSE(preserved_text->Children()[5]->IsLineBreakingObject());
+  ASSERT_EQ(preserved_text->Children()[6]->ComputedName(), "\n");
+  EXPECT_TRUE(preserved_text->Children()[6]->IsLineBreakingObject());
+}
+
 }  // namespace test
 }  // namespace blink
