@@ -6559,12 +6559,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     //  TODO(clamy): Rework the tests to remove this exception.
     is_commit_allowed_to_proceed |= validated_params->url.SchemeIsFile();
 
-    if (!is_commit_allowed_to_proceed) {
-      bad_message::ReceivedBadMessage(
-          GetProcess(),
-          bad_message::RFH_NO_MATCHING_NAVIGATION_REQUEST_ON_COMMIT);
-      return false;
-    }
+    // The renderer should be killed if |is_commit_allowed_to_proceed| is false.
+    // Unfortunately, it has been removed, because it was reached too often,
+    // because of a MHTML bug. This do not happen in M77 anymore.
   }
 
   if (!ValidateDidCommitParams(navigation_request.get(), validated_params,
