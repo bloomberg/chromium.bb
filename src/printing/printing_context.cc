@@ -17,6 +17,14 @@ namespace {
 const float kCloudPrintMarginInch = 0.25;
 }
 
+HWND PrintingContext::Delegate::GetOwnerWnd() {
+  return 0;
+}
+
+void PrintingContext::Delegate::SetOwnerWnd(HWND ownerWnd) {
+
+}
+
 PrintingContext::PrintingContext(Delegate* delegate)
     : delegate_(delegate),
       in_print_job_(false),

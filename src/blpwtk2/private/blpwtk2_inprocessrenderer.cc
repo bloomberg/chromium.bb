@@ -32,8 +32,18 @@
 #include <mojo/public/cpp/bindings/sync_call_restrictions.h>
 #include <third_party/blink/public/platform/web_runtime_features.h>
 #include <third_party/blink/public/platform/scheduler/web_thread_scheduler.h>
+#include <ui/base/win/scoped_ole_initializer.h>
 #include <ui/gfx/win/direct_write.h>
+#include <ui/display/screen.h>
 #include <ui/display/win/dpi.h>
+#include <ui/display/win/screen_win.h>
+
+namespace {
+
+std::unique_ptr<display::win::ScreenWin> g_screen;
+std::unique_ptr<ui::ScopedOleInitializer> g_oleInitializer;
+
+}
 
 namespace blpwtk2 {
 
@@ -161,6 +171,12 @@ void InProcessRenderer::init(
                                               serviceToken, mojoHandle, true),
           std::move(main_thread_scheduler));
 
+      if (!display::Screen::GetScreen()) {
+          g_screen.reset(new display::win::ScreenWin());
+          display::Screen::SetScreenInstance(g_screen.get());
+      }
+
+      g_oleInitializer.reset(new ui::ScopedOleInitializer());
     }
 }
 
@@ -176,6 +192,14 @@ void InProcessRenderer::cleanup()
     }
     else {
         DCHECK(!g_inProcessRendererThread);
+
+        if (g_screen) {
+            display::Screen::SetScreenInstance(nullptr);
+            g_screen.reset();
+        }
+
+        g_oleInitializer.reset();
+
         content::RenderThread::CleanUpInProcessRenderer();
     }
 }
