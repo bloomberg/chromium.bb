@@ -1826,7 +1826,7 @@
       'linux-code-coverage': {
         'mixins': [
           'code-coverage',
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_coverage_gtests',
