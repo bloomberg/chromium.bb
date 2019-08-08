@@ -85,6 +85,8 @@ static_library("device_sync") {
     "cryptauth_scheduler.h",
     "cryptauth_scheduler_impl.cc",
     "cryptauth_scheduler_impl.h",
+    "cryptauth_task_metrics_logger.cc",
+    "cryptauth_task_metrics_logger.h",
     "cryptauth_v2_device_manager.cc",
     "cryptauth_v2_device_manager.h",
     "cryptauth_v2_device_manager_impl.cc",
