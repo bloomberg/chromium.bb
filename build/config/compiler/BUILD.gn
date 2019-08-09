@@ -1107,7 +1107,8 @@ config("compiler_deterministic") {
   }
 
   # Makes builds independent of absolute file path.
-  if (symbol_level != 0 && is_clang && strip_absolute_paths_from_debug_symbols) {
+  if (symbol_level != 0 && is_clang &&
+      strip_absolute_paths_from_debug_symbols) {
     # If debug option is given, clang includes $cwd in debug info by default.
     # For such build, this flag generates reproducible obj files even we use
     # different build directory like "out/feature_a" and "out/feature_b" if
@@ -1514,12 +1515,12 @@ config("default_warnings") {
           # Ignore warnings about MSVC optimization pragmas.
           # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
           "-Wno-ignored-pragma-optimize",
-
-          # TODO(https://crbug.com/989932): Evaluate and possibly enable.
-          "-Wno-implicit-int-float-conversion",
         ]
         if (llvm_force_head_revision) {
           cflags += [
+            # TODO(https://crbug.com/989932): Evaluate and possibly enable.
+            "-Wno-implicit-int-float-conversion",
+
             # TODO(https://crbug.com/992458): Fix and re-enable. When rolling
             # past clang r368446, do *not* move this out of
             # llvm_force_head_revision -- we need to fix all instances before
