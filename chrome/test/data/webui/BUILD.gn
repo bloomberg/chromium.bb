@@ -128,7 +128,7 @@ js2gtest("browser_tests_js_webui") {
       "signin/signin_browsertest.js",
       "user_manager/user_manager_browsertest.js",
       "welcome/a11y_tests.js",
-      "welcome/onboarding_welcome_browsertest.js",
+      "welcome/welcome_browsertest.js",
     ]
   }
 
