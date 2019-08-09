@@ -18,7 +18,7 @@ buildflag_header("buildflags") {
 group("engine_definitions") {
   if (is_internal_chrome_cleaner_build) {
     deps = [
-      "//chrome_cleaner_internal:engine_definitions",
+      "${chrome_cleaner_internal_root}:engine_definitions",
     ]
   } else {
     deps = [
@@ -31,7 +31,7 @@ group("engine_definitions") {
 group("engine_target_factory") {
   if (is_internal_chrome_cleaner_build) {
     deps = [
-      "//chrome_cleaner_internal:engine_target_factory",
+      "${chrome_cleaner_internal_root}:engine_target_factory",
     ]
   } else {
     deps = [
@@ -115,8 +115,8 @@ test("chrome_cleaner_unittests") {
 
   if (is_internal_chrome_cleaner_build) {
     deps += [
-      "//chrome_cleaner_internal:integration_test_sources",
-      "//chrome_cleaner_internal:unittest_sources",
+      "${chrome_cleaner_internal_root}:integration_test_sources",
+      "${chrome_cleaner_internal_root}:unittest_sources",
     ]
   }
 }
