@@ -42,7 +42,7 @@ class BuildIdentifier(object):
 class BuildStore(object):
   """BuildStore class to handle all DB calls."""
 
-  NUM_RESULTS_NO_LIMIT = -1
+  NUM_RESULTS_NO_LIMIT = 1000
 
   def __init__(self, _read_from_bb=True, _write_to_bb=True,
                _write_to_cidb=True, cidb_creds=None, for_service=None):
