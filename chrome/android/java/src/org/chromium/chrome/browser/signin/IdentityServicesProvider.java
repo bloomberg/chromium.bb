@@ -8,12 +8,21 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.OAuth2TokenService;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 
 /**
  * Provides access to sign-in related services that are profile-keyed on the native side. Java
  * equivalent of AccountTrackerServiceFactory and similar classes.
  */
 public final class IdentityServicesProvider {
+    /** Getter for {@link IdentityManager} instance. */
+    public static IdentityManager getIdentityManager() {
+        ThreadUtils.assertOnUiThread();
+        IdentityManager result = nativeGetIdentityManager(Profile.getLastUsedProfile());
+        assert result != null;
+        return result;
+    }
+
     /** Getter for {@link AccountTrackerService} instance. */
     public static AccountTrackerService getAccountTrackerService() {
         ThreadUtils.assertOnUiThread();
@@ -36,6 +45,7 @@ public final class IdentityServicesProvider {
         return result;
     }
 
+    private static native IdentityManager nativeGetIdentityManager(Profile profile);
     private static native AccountTrackerService nativeGetAccountTrackerService(Profile profile);
     private static native OAuth2TokenService nativeGetOAuth2TokenService(Profile profile);
     private static native SigninManager nativeGetSigninManager(Profile profile);
