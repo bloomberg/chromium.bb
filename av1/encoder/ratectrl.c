@@ -1526,32 +1526,21 @@ static void update_alt_ref_frame_stats(AV1_COMP *cpi) {
 static void update_golden_frame_stats(AV1_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
   const GF_GROUP *const gf_group = &cpi->gf_group;
-  const int is_intrnl_arf =
-      cpi->oxcf.pass == 2
-          ? gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE
-          : cpi->refresh_alt2_ref_frame;
 
   // Update the Golden frame usage counts.
-  // NOTE(weitinglin): If we use show_existing_frame for an OVERLAY frame,
-  //                   only the virtual indices for the reference frame will be
-  //                   updated and cpi->refresh_golden_frame will still be zero.
   if (cpi->refresh_golden_frame || rc->is_src_frame_alt_ref) {
-    // We will not use internal overlay frames to replace the golden frame
-    if (!rc->is_src_frame_internal_arf) {
-      // this frame refreshes means next frames don't unless specified by user
-      rc->frames_since_golden = 0;
-    }
+    rc->frames_since_golden = 0;
 
     // If we are not using alt ref in the up and coming group clear the arf
     // active flag. In multi arf group case, if the index is not 0 then
     // we are overlaying a mid group arf so should not reset the flag.
     if (cpi->oxcf.pass == 2) {
-      if (!rc->source_alt_ref_pending && (cpi->gf_group.index == 0))
+      if (!rc->source_alt_ref_pending && (gf_group->index == 0))
         rc->source_alt_ref_active = 0;
     } else if (!rc->source_alt_ref_pending) {
       rc->source_alt_ref_active = 0;
     }
-  } else if (!cpi->refresh_alt_ref_frame && !is_intrnl_arf) {
+  } else if (cpi->common.show_frame) {
     rc->frames_since_golden++;
   }
 }

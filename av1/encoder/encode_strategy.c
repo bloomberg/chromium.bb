@@ -44,7 +44,6 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
   // cpi->rc.is_$Source_Type to make this function as it is in the comment?
 
   cpi->rc.is_src_frame_alt_ref = 0;
-  cpi->rc.is_src_frame_internal_arf = 0;
 
   switch (type) {
     case KF_UPDATE:
@@ -100,7 +99,6 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
       frame_params->refresh_alt_ref_frame = 0;
 
       cpi->rc.is_src_frame_alt_ref = 1;
-      cpi->rc.is_src_frame_internal_arf = 1;
       break;
 
     case INTNL_ARF_UPDATE:
