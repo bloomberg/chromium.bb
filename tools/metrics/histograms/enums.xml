@@ -34096,6 +34096,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2123795624" label="ArcSmartTextSelection:enabled"/>
   <int value="-2122048316"
       label="DisplayPersistenceToggleInPermissionPrompts:enabled"/>
+  <int value="-2119958901" label="WebXRAnchors:disabled"/>
   <int value="-2119827860" label="ash-disable-maximize-mode-window-backdrop"/>
   <int value="-2119530966" label="enable-webrtc-dtls12"/>
   <int value="-2119493239" label="enable-app-info-dialog-mac"/>
@@ -36411,6 +36412,7 @@ from previous Chrome versions.
   <int value="1081546525" label="ash-enable-docked-windows"/>
   <int value="1082054180" label="PersistentWindowBounds:disabled"/>
   <int value="1083201516" label="PersistentWindowBounds:enabled"/>
+  <int value="1084972292" label="WebXRAnchors:enabled"/>
   <int value="1085130793" label="LongPressBackForHistory:disabled"/>
   <int value="1087235172" label="file-manager-enable-new-audio-player"/>
   <int value="1088915385" label="new-password-form-parsing:enabled"/>
