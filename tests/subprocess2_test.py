@@ -30,8 +30,8 @@ from testing_support import auto_stub
 
 # Create aliases for subprocess2 specific tests. They shouldn't be used for
 # regression tests.
-TIMED_OUT = subprocess2.TIMED_OUT
 VOID = subprocess2.VOID
+VOID_INPUT = subprocess2.VOID_INPUT
 PIPE = subprocess2.PIPE
 STDOUT = subprocess2.STDOUT
 
@@ -78,7 +78,7 @@ class DefaultsTest(auto_stub.TestCase):
         results['args'] = args
       @staticmethod
       # pylint: disable=redefined-builtin
-      def communicate(input=None, timeout=None, nag_max=None, nag_timer=None):
+      def communicate(input=None):
         return None, None
     self.mock(subprocess2, 'Popen', fake_Popen)
     return results
@@ -113,7 +113,7 @@ class DefaultsTest(auto_stub.TestCase):
     expected = {
         'args': ['foo'],
         'a':True,
-        'stdin': subprocess2.VOID,
+        'stdin': subprocess2.VOID_INPUT,
         'stdout': subprocess2.PIPE,
     }
     self.assertEquals(expected, results)
@@ -149,7 +149,6 @@ class DefaultsTest(auto_stub.TestCase):
         env['LANGUAGE'] = 'en_US.UTF-8'
         expected['env'] = env
     self.assertEquals(expected, results)
-    self.assertTrue(time.time() >= proc.start)
 
   def test_check_output_defaults(self):
     results = self._fake_communicate()
@@ -159,7 +158,7 @@ class DefaultsTest(auto_stub.TestCase):
     expected = {
         'args': ['foo'],
         'a':True,
-        'stdin': subprocess2.VOID,
+        'stdin': subprocess2.VOID_INPUT,
         'stdout': subprocess2.PIPE,
     }
     self.assertEquals(expected, results)
@@ -334,7 +333,7 @@ class RegressionTest(BaseTestCase):
     p1 = subprocess.Popen(cmd, stderr=subprocess.PIPE, shell=False)
     p2 = subprocess2.Popen(cmd, stderr=subprocess.PIPE, shell=False)
     r1 = p1.communicate()
-    r2 = p2.communicate(timeout=100)
+    r2 = p2.communicate()
     self.assertEquals(r1, r2)
 
 
@@ -370,27 +369,6 @@ class S2Test(BaseTestCase):
     self.assertEquals(stdout, e.stdout)
     self.assertEquals(stderr, e.stderr)
 
-  def test_timeout(self):
-    # timeout doesn't exist in subprocess.
-    def fn(c, e, un):
-      res = subprocess2.communicate(
-          self.exe + ['--sleep_first', '--stdout'],
-          timeout=0.01,
-          stdout=PIPE,
-          shell=False)
-      self._check_res(res, '', None, TIMED_OUT)
-    self._run_test(fn)
-
-  def test_timeout_shell_throws(self):
-    def fn(c, e, un):
-      try:
-        # With shell=True, it needs a string.
-        subprocess2.communicate(' '.join(self.exe), timeout=0.01, shell=True)
-        self.fail()
-      except TypeError:
-        pass
-    self._run_test(fn)
-
   def test_stdin(self):
     def fn(c, e, un):
       stdin = '0123456789'
@@ -422,17 +400,16 @@ class S2Test(BaseTestCase):
     self._run_test(fn)
 
   def test_stdin_void(self):
-    res = subprocess2.communicate(self.exe + ['--read'], stdin=VOID)
+    res = subprocess2.communicate(self.exe + ['--read'], stdin=VOID_INPUT)
     self._check_res(res, None, None, 0)
 
-  def test_stdin_void_stdout_timeout(self):
-    # Make sure a mix of VOID, PIPE and timeout works.
+  def test_stdin_void_stdout(self):
+    # Make sure a mix of VOID and PIPE works.
     def fn(c, e, un):
       res = subprocess2.communicate(
           e + ['--stdout', '--read'],
-          stdin=VOID,
+          stdin=VOID_INPUT,
           stdout=PIPE,
-          timeout=10,
           universal_newlines=un,
           shell=False)
       self._check_res(res, c('A\nBB\nCCC\n'), None, 0)
@@ -467,155 +444,6 @@ class S2Test(BaseTestCase):
           universal_newlines=un)
       self._check_res(res, None, None, 0)
     self._run_test(fn)
-
-  def test_tee_stderr(self):
-    def fn(c, e, un):
-      stderr = []
-      res = subprocess2.communicate(
-          e + ['--stderr'], stderr=stderr.append, universal_newlines=un)
-      self.assertEquals(c('a\nbb\nccc\n'), ''.join(stderr))
-      self._check_res(res, None, None, 0)
-    self._run_test(fn)
-
-  def test_tee_stdout_stderr(self):
-    def fn(c, e, un):
-      stdout = []
-      stderr = []
-      res = subprocess2.communicate(
-          e + ['--stdout', '--stderr'],
-          stdout=stdout.append,
-          stderr=stderr.append,
-          universal_newlines=un)
-      self.assertEquals(c('A\nBB\nCCC\n'), ''.join(stdout))
-      self.assertEquals(c('a\nbb\nccc\n'), ''.join(stderr))
-      self._check_res(res, None, None, 0)
-    self._run_test(fn)
-
-  def test_tee_stdin(self):
-    def fn(c, e, un):
-      # Mix of stdin input and stdout callback.
-      stdout = []
-      stdin = '0123456789'
-      res = subprocess2.communicate(
-          e + ['--stdout', '--read'],
-          stdin=stdin,
-          stdout=stdout.append,
-          universal_newlines=un)
-      self.assertEquals(c('A\nBB\nCCC\n'), ''.join(stdout))
-      self._check_res(res, None, None, 10)
-    self._run_test(fn)
-
-  def test_tee_throw(self):
-    def fn(c, e, un):
-      # Make sure failure still returns stderr completely.
-      stderr = []
-      try:
-        subprocess2.check_output(
-            e + ['--stderr', '--fail'],
-            stderr=stderr.append,
-            universal_newlines=un)
-        self.fail()
-      except subprocess2.CalledProcessError as exception:
-        self._check_exception(exception, '', None, 64)
-        self.assertEquals(c('a\nbb\nccc\n'), ''.join(stderr))
-    self._run_test(fn)
-
-  def test_tee_timeout_stdout_void(self):
-    def fn(c, e, un):
-      stderr = []
-      res = subprocess2.communicate(
-          e + ['--stdout', '--stderr', '--fail'],
-          stdout=VOID,
-          stderr=stderr.append,
-          shell=False,
-          timeout=10,
-          universal_newlines=un)
-      self._check_res(res, None, None, 64)
-      self.assertEquals(c('a\nbb\nccc\n'), ''.join(stderr))
-    self._run_test(fn)
-
-  def test_tee_timeout_stderr_void(self):
-    def fn(c, e, un):
-      stdout = []
-      res = subprocess2.communicate(
-          e + ['--stdout', '--stderr', '--fail'],
-          stdout=stdout.append,
-          stderr=VOID,
-          shell=False,
-          timeout=10,
-          universal_newlines=un)
-      self._check_res(res, None, None, 64)
-      self.assertEquals(c('A\nBB\nCCC\n'), ''.join(stdout))
-    self._run_test(fn)
-
-  def test_tee_timeout_stderr_stdout(self):
-    def fn(c, e, un):
-      stdout = []
-      res = subprocess2.communicate(
-          e + ['--stdout', '--stderr', '--fail'],
-          stdout=stdout.append,
-          stderr=STDOUT,
-          shell=False,
-          timeout=10,
-          universal_newlines=un)
-      self._check_res(res, None, None, 64)
-      # Ordering is random due to buffering.
-      self.assertEquals(
-          set(c('a\nbb\nccc\nA\nBB\nCCC\n').splitlines(True)),
-          set(''.join(stdout).splitlines(True)))
-    self._run_test(fn)
-
-  def test_tee_large(self):
-    stdout = []
-    # Read 128kb. On my workstation it takes >2s. Welcome to 2011.
-    res = subprocess2.communicate(self.exe + ['--large'], stdout=stdout.append)
-    self.assertEquals(128*1024, len(''.join(stdout)))
-    self._check_res(res, None, None, 0)
-
-  def test_tee_large_stdin(self):
-    stdout = []
-    # Write 128kb.
-    stdin = '0123456789abcdef' * (8*1024)
-    res = subprocess2.communicate(
-        self.exe + ['--large', '--read'], stdin=stdin, stdout=stdout.append)
-    self.assertEquals(128*1024, len(''.join(stdout)))
-    # Windows return code is > 8 bits.
-    returncode = len(stdin) if sys.platform == 'win32' else 0
-    self._check_res(res, None, None, returncode)
-
-  def test_tee_cb_throw(self):
-    # Having a callback throwing up should not cause side-effects. It's a bit
-    # hard to measure.
-    class Blow(Exception):
-      pass
-    def blow(_):
-      raise Blow()
-    proc = subprocess2.Popen(self.exe + ['--stdout'], stdout=blow)
-    try:
-      proc.communicate()
-      self.fail()
-    except Blow:
-      self.assertNotEquals(0, proc.returncode)
-
-  def test_nag_timer(self):
-    w = []
-    l = logging.getLogger()
-    class _Filter(logging.Filter):
-      def filter(self, record):
-        if record.levelno == logging.WARNING:
-          w.append(record.getMessage().lstrip())
-        return 0
-    f = _Filter()
-    l.addFilter(f)
-    proc = subprocess2.Popen(
-        self.exe + ['--stdout', '--sleep_first'], stdout=PIPE)
-    res = proc.communicate(nag_timer=3), proc.returncode
-    l.removeFilter(f)
-    self._check_res(res, 'A\nBB\nCCC\n', None, 0)
-    expected = ['No output for 3 seconds from command:', proc.cmd_str,
-                'No output for 6 seconds from command:', proc.cmd_str,
-                'No output for 9 seconds from command:', proc.cmd_str]
-    self.assertEquals(w, expected)
 
 
 def child_main(args):
