@@ -360,6 +360,10 @@ const base::Feature kPepper3DImageChromium {
 #endif
 };
 
+// Whether we should composite a PLSA even if it means losing lcd text.
+const base::Feature kPreferCompositingToLCDText = {
+    "PreferCompositingToLCDText", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables process sharing for sites that do not require a dedicated process
 // by using a default SiteInstance. Default SiteInstances will only be used
 // on platforms that do not use full site isolation.
