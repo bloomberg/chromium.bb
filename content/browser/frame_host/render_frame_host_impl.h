@@ -992,6 +992,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void GetAudioContextManager(
       mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver);
+
   void GetFileSystemManager(
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver);
 
@@ -2162,7 +2163,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // BrowserInterfaceBroker implementation through which this
   // RenderFrameHostImpl exposes document-scoped Mojo services to the currently
   // active document in the corresponding RenderFrame.
-  BrowserInterfaceBrokerImpl<RenderFrameHostImpl> broker_{this};
+  BrowserInterfaceBrokerImpl<RenderFrameHostImpl, RenderFrameHost*> broker_{
+      this};
   mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
       &broker_};
 

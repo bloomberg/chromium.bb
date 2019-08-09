@@ -95,31 +95,18 @@ FileSystemDispatcher::~FileSystemDispatcher() = default;
 
 mojom::blink::FileSystemManager& FileSystemDispatcher::GetFileSystemManager() {
   if (!file_system_manager_) {
-    // TODO(crbug.com/985112): Adding temporary condition until
-    // BrowserInterfaceBroker has worker support.
-    if (GetSupplementable()->IsDocument()) {
-      // See https://bit.ly/2S0zRAS for task types
-      mojo::PendingReceiver<mojom::blink::FileSystemManager> receiver =
-          file_system_manager_.BindNewPipeAndPassReceiver(
-              GetSupplementable()->GetTaskRunner(
-                  blink::TaskType::kMiscPlatformAPI));
-      // Document::GetBrowserInterfaceBrokerProxy() can return null if the frame
-      // is detached.
-      if (GetSupplementable()->GetBrowserInterfaceBrokerProxy()) {
-        GetSupplementable()->GetBrowserInterfaceBrokerProxy()->GetInterface(
-            std::move(receiver));
-      }
-    } else {
-      // See https://bit.ly/2S0zRAS for task types
-      mojom::blink::FileSystemManagerRequest request =
-          file_system_manager_.BindNewPipeAndPassReceiver(
-              GetSupplementable()->GetTaskRunner(
-                  blink::TaskType::kMiscPlatformAPI));
-      GetSupplementable()->GetInterfaceProvider()->GetInterface(
-          std::move(request));
+    // See https://bit.ly/2S0zRAS for task types
+    mojo::PendingReceiver<mojom::blink::FileSystemManager> receiver =
+        file_system_manager_.BindNewPipeAndPassReceiver(
+            GetSupplementable()->GetTaskRunner(
+                blink::TaskType::kMiscPlatformAPI));
+    // Document::GetBrowserInterfaceBrokerProxy() can return null if the frame
+    // is detached.
+    if (GetSupplementable()->GetBrowserInterfaceBrokerProxy()) {
+      GetSupplementable()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+          std::move(receiver));
     }
   }
-
   DCHECK(file_system_manager_);
   return *file_system_manager_.get();
 }
