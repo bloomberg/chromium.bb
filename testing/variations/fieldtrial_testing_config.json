@@ -2449,7 +2449,7 @@
                         "MaxAllocations": "70",
                         "MaxMetadata": "255",
                         "ProcessSamplingBoost2": "10",
-                        "ProcessSamplingProbability": "0.1"
+                        "ProcessSamplingProbability": "0.05"
                     },
                     "enable_features": [
                         "GwpAsanMalloc",
