@@ -782,6 +782,10 @@ void GraphicsLayer::setDefaultLCDBackgroundColor(const Color& color) {
 }
 
 void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer) {
+  if (mask_layer == mask_layer_)
+    return;
+
+  mask_layer_ = mask_layer;
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     CcLayer()->SetMaskLayer(mask_layer_ ? mask_layer_->CcLayer() : nullptr);
 }
