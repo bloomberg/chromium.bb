@@ -506,7 +506,7 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
     SkColor color = Shell::Get()->wallpaper_controller()->GetProminentColor(
-        color_utils::ColorProfile(color_utils::LumaRange::DARK,
+        color_utils::ColorProfile(color_utils::LumaRange::NORMAL,
                                   color_utils::SaturationRange::MUTED));
     if (color == kInvalidWallpaperColor || color == SK_ColorTRANSPARENT)
       color = kDisabledAuthMessageBubbleColor;
