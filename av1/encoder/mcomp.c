@@ -2392,6 +2392,7 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   if (method != NSTEP && rd && var < var_max)
     var = av1_get_mvpred_var(x, &x->best_mv.as_mv, ref_mv, fn_ptr, 1);
 
+  // Use hash-me for intrablock copy
   do {
     if (!intra || !av1_use_hash_me(&cpi->common)) break;
 
@@ -2409,10 +2410,7 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
         int best_hash_cost = INT_MAX;
 
         // for the hashMap
-        hash_table *ref_frame_hash =
-            intra ? &cpi->common.cur_frame->hash_table
-                  : av1_get_ref_frame_hash_map(&cpi->common,
-                                               x->e_mbd.mi[0]->ref_frame[0]);
+        hash_table *ref_frame_hash = &cpi->common.cur_frame->hash_table;
 
         av1_get_block_hash_value(what, what_stride, block_width, &hash_value1,
                                  &hash_value2, is_cur_buf_hbd(&x->e_mbd), x);
