@@ -354,7 +354,7 @@ AwBrowserContext::GetBrowsingDataRemoverDelegate() {
 download::InProgressDownloadManager*
 AwBrowserContext::RetriveInProgressDownloadManager() {
   return new download::InProgressDownloadManager(
-      nullptr, base::FilePath(), nullptr,
+      nullptr, base::FilePath(),
       base::BindRepeating(&IgnoreOriginSecurityCheck),
       base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe), nullptr);
 }

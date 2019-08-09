@@ -27,7 +27,8 @@ namespace {
 // A map for owning InProgressDownloadManagers before DownloadManagerImpl gets
 // created.
 using InProgressManagerMap =
-    std::map<ProfileKey*, std::unique_ptr<download::InProgressDownloadManager>>;
+    std::map<SimpleFactoryKey*,
+             std::unique_ptr<download::InProgressDownloadManager>>;
 
 InProgressManagerMap& GetInProgressManagerMap() {
   static base::NoDestructor<InProgressManagerMap> map;
@@ -54,14 +55,15 @@ void GetDownloadManagerOnProfileCreation(Profile* profile) {
 // static
 download::InProgressDownloadManager*
 DownloadManagerUtils::RetrieveInProgressDownloadManager(Profile* profile) {
-  ProfileKey* key = profile->GetProfileKey();
+  SimpleFactoryKey* key = profile->GetProfileKey();
   GetInProgressDownloadManager(key);
   auto& map = GetInProgressManagerMap();
   return map[key].release();
 }
 
 // static
-void DownloadManagerUtils::InitializeSimpleDownloadManager(ProfileKey* key) {
+void DownloadManagerUtils::InitializeSimpleDownloadManager(
+    SimpleFactoryKey* key) {
 #if defined(OS_ANDROID)
   if (!g_browser_process) {
     GetInProgressDownloadManager(key);
@@ -80,7 +82,7 @@ void DownloadManagerUtils::InitializeSimpleDownloadManager(ProfileKey* key) {
 
 // static
 download::InProgressDownloadManager*
-DownloadManagerUtils::GetInProgressDownloadManager(ProfileKey* key) {
+DownloadManagerUtils::GetInProgressDownloadManager(SimpleFactoryKey* key) {
   auto& map = GetInProgressManagerMap();
   auto it = map.find(key);
   // Create the InProgressDownloadManager if it hasn't been created yet.
@@ -89,7 +91,6 @@ DownloadManagerUtils::GetInProgressDownloadManager(ProfileKey* key) {
     auto in_progress_manager =
         std::make_unique<download::InProgressDownloadManager>(
             nullptr, key->IsOffTheRecord() ? base::FilePath() : key->GetPath(),
-            key->GetProtoDatabaseProvider(),
             base::BindRepeating(&IgnoreOriginSecurityCheck),
             base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe),
             connector);

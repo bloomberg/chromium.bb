@@ -70,7 +70,8 @@ class DownloadDBCacheTest : public testing::Test {
         &db_entries_);
     db_ = db.get();
     auto download_db = std::make_unique<DownloadDBImpl>(
-        DownloadNamespace::NAMESPACE_BROWSER_DOWNLOAD, std::move(db));
+        DownloadNamespace::NAMESPACE_BROWSER_DOWNLOAD,
+        base::FilePath(FILE_PATH_LITERAL("/test/db/fakepath")), std::move(db));
     db_cache_ = std::make_unique<DownloadDBCache>(std::move(download_db));
     db_cache_->SetTimerTaskRunnerForTesting(task_runner_);
   }
@@ -118,7 +119,7 @@ TEST_F(DownloadDBCacheTest, InitializeAndRetrieve) {
   db_cache_->Initialize(
       base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
                      &loaded_entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
 
@@ -140,7 +141,7 @@ TEST_F(DownloadDBCacheTest, AddNewEntry) {
   db_cache_->Initialize(
       base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
                      &loaded_entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
 
@@ -165,7 +166,7 @@ TEST_F(DownloadDBCacheTest, ModifyExistingEntry) {
   db_cache_->Initialize(
       base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
                      &loaded_entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
 
@@ -215,7 +216,7 @@ TEST_F(DownloadDBCacheTest, FilePathChange) {
   db_cache_->Initialize(
       base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
                      &loaded_entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 1u);
   ASSERT_EQ(loaded_entries[0].download_info->in_progress_info->current_path,
@@ -244,7 +245,7 @@ TEST_F(DownloadDBCacheTest, RemoveEntry) {
   db_cache_->Initialize(
       base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
                      &loaded_entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
 
@@ -271,7 +272,7 @@ TEST_F(DownloadDBCacheTest, RemoveWhileModifyExistingEntry) {
   db_cache_->Initialize(
       base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
                      &loaded_entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
   // Let the DBCache to cache the entry first.

@@ -50,7 +50,8 @@ class DownloadDBTest : public testing::Test {
         &db_entries_);
     db_ = db.get();
     download_db_.reset(new DownloadDBImpl(
-        DownloadNamespace::NAMESPACE_BROWSER_DOWNLOAD, std::move(db)));
+        DownloadNamespace::NAMESPACE_BROWSER_DOWNLOAD,
+        base::FilePath(FILE_PATH_LITERAL("/test/db/fakepath")), std::move(db)));
   }
 
   void InitCallback(bool success) { init_success_ = success; }
@@ -98,7 +99,7 @@ TEST_F(DownloadDBTest, InitializeSucceeded) {
 
   download_db_->Initialize(
       base::BindOnce(&DownloadDBTest::InitCallback, base::Unretained(this)));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
 
   ASSERT_TRUE(IsInitialized());
   ASSERT_TRUE(init_success_);
@@ -110,7 +111,7 @@ TEST_F(DownloadDBTest, InitializeFailed) {
 
   download_db_->Initialize(
       base::BindOnce(&DownloadDBTest::InitCallback, base::Unretained(this)));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kError);
+  db_->InitCallback(false);
 
   ASSERT_FALSE(IsInitialized());
   ASSERT_FALSE(init_success_);
@@ -121,7 +122,7 @@ TEST_F(DownloadDBTest, LoadEntries) {
   CreateDatabase();
   download_db_->Initialize(
       base::BindOnce(&DownloadDBTest::InitCallback, base::Unretained(this)));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   ASSERT_TRUE(IsInitialized());
 
   std::vector<DownloadDBEntry> loaded_entries;
@@ -141,7 +142,7 @@ TEST_F(DownloadDBTest, AddEntry) {
   CreateDatabase();
   download_db_->Initialize(
       base::BindOnce(&DownloadDBTest::InitCallback, base::Unretained(this)));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   ASSERT_TRUE(IsInitialized());
 
   DownloadDBEntry entry = CreateDownloadDBEntry();
@@ -172,7 +173,7 @@ TEST_F(DownloadDBTest, ReplaceEntry) {
   CreateDatabase();
   download_db_->Initialize(
       base::BindOnce(&DownloadDBTest::InitCallback, base::Unretained(this)));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   ASSERT_TRUE(IsInitialized());
 
   InProgressInfo in_progress_info;
@@ -209,7 +210,7 @@ TEST_F(DownloadDBTest, Remove) {
   CreateDatabase();
   download_db_->Initialize(
       base::BindOnce(&DownloadDBTest::InitCallback, base::Unretained(this)));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   ASSERT_TRUE(IsInitialized());
 
   download_db_->Remove(first.GetGuid());
@@ -230,7 +231,7 @@ TEST_F(DownloadDBTest, DestroyAndReinitialize) {
   CreateDatabase();
   download_db_->Initialize(
       base::BindOnce(&DownloadDBTest::InitCallback, base::Unretained(this)));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   ASSERT_TRUE(IsInitialized());
 
   std::vector<DownloadDBEntry> loaded_entries;

@@ -20,6 +20,7 @@ namespace {
 
 const int kMaxNumInitializeAttempts = 3;
 
+const char kDatabaseClientName[] = "DownloadDB";
 using ProtoKeyVector = std::vector<std::string>;
 using ProtoEntryVector = std::vector<download_pb::DownloadDBEntry>;
 using ProtoKeyEntryVector =
@@ -45,27 +46,29 @@ void OnUpdateDone(bool success) {
 
 }  // namespace
 
-DownloadDBImpl::DownloadDBImpl(
-    DownloadNamespace download_namespace,
-    const base::FilePath& database_dir,
-    leveldb_proto::ProtoDatabaseProvider* db_provider)
-    : download_namespace_(download_namespace) {
-  DCHECK(!database_dir.empty());
-  db_ = db_provider->GetDB<download_pb::DownloadDBEntry>(
-      leveldb_proto::ProtoDbType::DOWNLOAD_DB, database_dir,
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::ThreadPool(), base::MayBlock(),
-           // USER_VISIBLE because it is required to display chrome://downloads.
-           // https://crbug.com/976223
-           base::TaskPriority::USER_VISIBLE,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
-}
+DownloadDBImpl::DownloadDBImpl(DownloadNamespace download_namespace,
+                               const base::FilePath& database_dir)
+    : DownloadDBImpl(
+          download_namespace,
+          database_dir,
+          leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<
+              download_pb::DownloadDBEntry>(base::CreateSequencedTaskRunner(
+              {base::ThreadPool(), base::MayBlock(),
+               // USER_VISIBLE because it is required to display
+               // chrome://downloads. https://crbug.com/976223
+               base::TaskPriority::USER_VISIBLE,
+               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}
 
 DownloadDBImpl::DownloadDBImpl(
     DownloadNamespace download_namespace,
+    const base::FilePath& database_dir,
     std::unique_ptr<leveldb_proto::ProtoDatabase<download_pb::DownloadDBEntry>>
         db)
-    : db_(std::move(db)), download_namespace_(download_namespace) {}
+    : database_dir_(database_dir),
+      db_(std::move(db)),
+      is_initialized_(false),
+      download_namespace_(download_namespace),
+      num_initialize_attempts_(0) {}
 
 DownloadDBImpl::~DownloadDBImpl() = default;
 
@@ -80,7 +83,7 @@ void DownloadDBImpl::Initialize(DownloadDBCallback callback) {
   leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
   options.reuse_logs = false;
   options.write_buffer_size = 64 << 10;  // 64 KiB
-  db_->Init(options,
+  db_->Init(kDatabaseClientName, database_dir_, options,
             base::BindOnce(&DownloadDBImpl::OnDatabaseInitialized,
                            weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -149,10 +152,8 @@ void DownloadDBImpl::OnAllEntriesLoaded(
   std::move(callback).Run(success, std::move(result));
 }
 
-void DownloadDBImpl::OnDatabaseInitialized(
-    DownloadDBCallback callback,
-    leveldb_proto::Enums::InitStatus status) {
-  bool success = status == leveldb_proto::Enums::InitStatus::kOK;
+void DownloadDBImpl::OnDatabaseInitialized(DownloadDBCallback callback,
+                                           bool success) {
   if (!success) {
     DestroyAndReinitialize(std::move(callback));
     return;

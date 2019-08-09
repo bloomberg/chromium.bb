@@ -18,20 +18,16 @@ namespace download_pb {
 class DownloadDBEntry;
 }
 
-namespace leveldb_proto {
-class ProtoDatabaseProvider;
-}  // namespace leveldb_proto
-
 namespace download {
 
 // A protodb Implementation of DownloadDB.
 class DownloadDBImpl : public DownloadDB {
  public:
   DownloadDBImpl(DownloadNamespace download_namespace,
-                 const base::FilePath& database_dir,
-                 leveldb_proto::ProtoDatabaseProvider* db_provider);
+                 const base::FilePath& database_dir);
   DownloadDBImpl(
       DownloadNamespace download_namespace,
+      const base::FilePath& database_dir,
       std::unique_ptr<
           leveldb_proto::ProtoDatabase<download_pb::DownloadDBEntry>> db);
   ~DownloadDBImpl() override;
@@ -55,8 +51,7 @@ class DownloadDBImpl : public DownloadDB {
   std::string GetEntryKey(const std::string& guid) const;
 
   // Called when database is initialized.
-  void OnDatabaseInitialized(DownloadDBCallback callback,
-                             leveldb_proto::Enums::InitStatus status);
+  void OnDatabaseInitialized(DownloadDBCallback callback, bool success);
 
   // Called when database is destroyed.
   void OnDatabaseDestroyed(DownloadDBCallback callback, bool success);
@@ -70,18 +65,21 @@ class DownloadDBImpl : public DownloadDB {
       bool success,
       std::unique_ptr<std::vector<download_pb::DownloadDBEntry>> entries);
 
+  // Directory to store |db_|.
+  base::FilePath database_dir_;
+
   // Proto db for storing all the entries.
   std::unique_ptr<leveldb_proto::ProtoDatabase<download_pb::DownloadDBEntry>>
       db_;
 
   // Whether the object is initialized.
-  bool is_initialized_ = false;
+  bool is_initialized_;
 
   // Namespace of this db.
   DownloadNamespace download_namespace_;
 
   // Number of initialize attempts.
-  int num_initialize_attempts_ = 0;
+  int num_initialize_attempts_;
 
   base::WeakPtrFactory<DownloadDBImpl> weak_factory_{this};
 
