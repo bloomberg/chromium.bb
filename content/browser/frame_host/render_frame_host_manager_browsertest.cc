@@ -193,6 +193,13 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
+  void DisableBackForwardCache() const {
+    return static_cast<WebContentsImpl*>(shell()->web_contents())
+        ->GetController()
+        .back_forward_cache()
+        .DisableForTesting();
+  }
+
   void StartServer() {
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -3755,6 +3762,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // See https://crbug.com/590035.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, LastCommittedOrigin) {
   StartEmbeddedServer();
+
+  // Disable the back-forward cache so that documents are always deleted when
+  // navigating.
+  DisableBackForwardCache();
+
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
 
