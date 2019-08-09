@@ -1436,6 +1436,23 @@
             ]
         }
     ],
+    "ClickToCall": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ClickToCallUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "ClipboardContentBehavior": [
         {
             "platforms": [
