@@ -21,7 +21,6 @@
 
 #if defined(OS_WIN)
 #include "base/feature_list.h"
-#include "chrome/services/wifi_util_win/public/cpp/manifest.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -39,9 +38,6 @@ GetChromeBuiltinServiceManifests() {
       quarantine::GetQuarantineManifest(),
 #if BUILDFLAG(ENABLE_PRINTING)
       printing::GetPdfCompositorManifest(),
-#endif
-#if defined(OS_WIN)
-      GetWifiUtilWinManifest(),
 #endif
 #if !defined(OS_ANDROID)
       mirroring::GetManifest(),

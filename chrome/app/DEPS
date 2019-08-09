@@ -83,7 +83,6 @@ specific_include_rules = {
   ],
   "builtin_service_manifests\.cc": [
     "+chrome/services/printing/public",
-    "+chrome/services/wifi_util_win/public",
     "+chrome/utility/importer/profile_import_manifest.h",
     "+chromeos/services/cellular_setup",
     "+chromeos/services/ime",
