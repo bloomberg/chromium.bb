@@ -1591,6 +1591,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self updateDialogPresenterActiveState];
   [self updateBroadcastState];
   [_toolbarUIUpdater updateState];
+  [self.infobarContainerCoordinator baseViewDidAppear];
 
   // |viewDidAppear| can be called after |browserState| is destroyed. Since
   // |presentBubblesIfEligible| requires that |self.browserState| is not NULL,
