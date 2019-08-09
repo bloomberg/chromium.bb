@@ -94,7 +94,7 @@ def InstallXcodeBinaries():
   # also ensures that there will be no conflicts of cipd root.
   binaries_root = os.path.join(TOOLCHAIN_ROOT, 'xcode_binaries')
   if not os.path.exists(binaries_root):
-    os.mkdir(binaries_root)
+    os.makedirs(binaries_root)
 
   # 'cipd ensure' is idempotent.
   args = [
