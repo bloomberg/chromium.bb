@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/passwords/password_dialog_controller_impl.h"
+#include "chrome/browser/ui/passwords/credential_manager_dialog_controller_impl.h"
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -19,20 +19,20 @@
 #include "components/sync/driver/sync_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
-PasswordDialogControllerImpl::PasswordDialogControllerImpl(
-    Profile* profle,
+CredentialManagerDialogControllerImpl::CredentialManagerDialogControllerImpl(
+    Profile* profile,
     PasswordsModelDelegate* delegate)
-    : profile_(profle),
+    : profile_(profile),
       delegate_(delegate),
       account_chooser_dialog_(nullptr),
-      autosignin_dialog_(nullptr) {
-}
+      autosignin_dialog_(nullptr) {}
 
-PasswordDialogControllerImpl::~PasswordDialogControllerImpl() {
+CredentialManagerDialogControllerImpl::
+    ~CredentialManagerDialogControllerImpl() {
   ResetDialog();
 }
 
-void PasswordDialogControllerImpl::ShowAccountChooser(
+void CredentialManagerDialogControllerImpl::ShowAccountChooser(
     AccountChooserPrompt* dialog,
     std::vector<std::unique_ptr<autofill::PasswordForm>> locals) {
   DCHECK(!account_chooser_dialog_);
@@ -43,7 +43,7 @@ void PasswordDialogControllerImpl::ShowAccountChooser(
   account_chooser_dialog_->ShowAccountChooser();
 }
 
-void PasswordDialogControllerImpl::ShowAutosigninPrompt(
+void CredentialManagerDialogControllerImpl::ShowAutosigninPrompt(
     AutoSigninFirstRunPrompt* dialog) {
   DCHECK(!account_chooser_dialog_);
   DCHECK(!autosignin_dialog_);
@@ -52,39 +52,46 @@ void PasswordDialogControllerImpl::ShowAutosigninPrompt(
   autosignin_dialog_->ShowAutoSigninPrompt();
 }
 
-const PasswordDialogController::FormsVector&
-PasswordDialogControllerImpl::GetLocalForms() const {
+bool CredentialManagerDialogControllerImpl::IsShowingAccountChooser() const {
+  return !!account_chooser_dialog_;
+}
+
+const CredentialManagerDialogController::FormsVector&
+CredentialManagerDialogControllerImpl::GetLocalForms() const {
   return local_credentials_;
 }
 
-base::string16 PasswordDialogControllerImpl::GetAccoutChooserTitle() const {
+base::string16 CredentialManagerDialogControllerImpl::GetAccoutChooserTitle()
+    const {
   return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE);
 }
 
-bool PasswordDialogControllerImpl::ShouldShowSignInButton() const {
+bool CredentialManagerDialogControllerImpl::ShouldShowSignInButton() const {
   return local_credentials_.size() == 1;
 }
 
-base::string16 PasswordDialogControllerImpl::GetAutoSigninPromoTitle() const {
+base::string16 CredentialManagerDialogControllerImpl::GetAutoSigninPromoTitle()
+    const {
   int message_id = IsSyncingAutosignSetting(profile_)
                        ? IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_MANY_DEVICES
                        : IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_LOCAL_DEVICE;
   return l10n_util::GetStringUTF16(message_id);
 }
 
-base::string16 PasswordDialogControllerImpl::GetAutoSigninText() const {
+base::string16 CredentialManagerDialogControllerImpl::GetAutoSigninText()
+    const {
   return l10n_util::GetStringFUTF16(
       IDS_AUTO_SIGNIN_FIRST_RUN_TEXT,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_TITLE_BRAND));
 }
 
-bool PasswordDialogControllerImpl::ShouldShowFooter() const {
+bool CredentialManagerDialogControllerImpl::ShouldShowFooter() const {
   const syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   return password_bubble_experiment::IsSmartLockUser(sync_service);
 }
 
-void PasswordDialogControllerImpl::OnChooseCredentials(
+void CredentialManagerDialogControllerImpl::OnChooseCredentials(
     const autofill::PasswordForm& password_form,
     password_manager::CredentialType credential_type) {
   if (local_credentials_.size() == 1) {
@@ -98,7 +105,7 @@ void PasswordDialogControllerImpl::OnChooseCredentials(
   delegate_->ChooseCredential(password_form, credential_type);
 }
 
-void PasswordDialogControllerImpl::OnSignInClicked() {
+void CredentialManagerDialogControllerImpl::OnSignInClicked() {
   DCHECK_EQ(1u, local_credentials_.size());
   password_manager::metrics_util::LogAccountChooserUserActionOneAccount(
       password_manager::metrics_util::ACCOUNT_CHOOSER_SIGN_IN);
@@ -108,7 +115,7 @@ void PasswordDialogControllerImpl::OnSignInClicked() {
       password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
-void PasswordDialogControllerImpl::OnAutoSigninOK() {
+void CredentialManagerDialogControllerImpl::OnAutoSigninOK() {
   password_bubble_experiment::RecordAutoSignInPromptFirstRunExperienceWasShown(
       profile_->GetPrefs());
   password_manager::metrics_util::LogAutoSigninPromoUserAction(
@@ -117,7 +124,7 @@ void PasswordDialogControllerImpl::OnAutoSigninOK() {
   OnCloseDialog();
 }
 
-void PasswordDialogControllerImpl::OnAutoSigninTurnOff() {
+void CredentialManagerDialogControllerImpl::OnAutoSigninTurnOff() {
   profile_->GetPrefs()->SetBoolean(
       password_manager::prefs::kCredentialsEnableAutosignin, false);
   password_bubble_experiment::RecordAutoSignInPromptFirstRunExperienceWasShown(
@@ -128,7 +135,7 @@ void PasswordDialogControllerImpl::OnAutoSigninTurnOff() {
   OnCloseDialog();
 }
 
-void PasswordDialogControllerImpl::OnCloseDialog() {
+void CredentialManagerDialogControllerImpl::OnCloseDialog() {
   if (account_chooser_dialog_) {
     if (local_credentials_.size() == 1) {
       password_manager::metrics_util::LogAccountChooserUserActionOneAccount(
@@ -147,7 +154,7 @@ void PasswordDialogControllerImpl::OnCloseDialog() {
   delegate_->OnDialogHidden();
 }
 
-void PasswordDialogControllerImpl::ResetDialog() {
+void CredentialManagerDialogControllerImpl::ResetDialog() {
   if (account_chooser_dialog_) {
     account_chooser_dialog_->ControllerGone();
     account_chooser_dialog_ = nullptr;

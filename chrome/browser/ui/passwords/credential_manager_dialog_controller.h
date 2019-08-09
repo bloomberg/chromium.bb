@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORD_DIALOG_CONTROLLER_H_
-#define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_DIALOG_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_PASSWORDS_CREDENTIAL_MANAGER_DIALOG_CONTROLLER_H_
+#define CHROME_BROWSER_UI_PASSWORDS_CREDENTIAL_MANAGER_DIALOG_CONTROLLER_H_
 
 #include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/passwords/password_base_dialog_controller.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "ui/gfx/range/range.h"
 
@@ -19,7 +20,7 @@ struct PasswordForm;
 
 // An interface used by the password dialog (the account chooser) for setting
 // and retrieving the state.
-class PasswordDialogController {
+class CredentialManagerDialogController : public PasswordBaseDialogController {
  public:
   using FormsVector = std::vector<std::unique_ptr<autofill::PasswordForm>>;
 
@@ -59,8 +60,7 @@ class PasswordDialogController {
   virtual void OnCloseDialog() = 0;
 
  protected:
-  virtual ~PasswordDialogController() = default;
+  ~CredentialManagerDialogController() override = default;
 };
 
-
-#endif  // CHROME_BROWSER_UI_PASSWORDS_PASSWORD_DIALOG_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_PASSWORDS_CREDENTIAL_MANAGER_DIALOG_CONTROLLER_H_

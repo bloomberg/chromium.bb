@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/passwords/password_dialog_controller_impl.h"
+#include "chrome/browser/ui/passwords/credential_manager_dialog_controller_impl.h"
 
 #include <memory>
 #include <utility>
@@ -52,17 +52,16 @@ autofill::PasswordForm GetLocalForm() {
   return form;
 }
 
-class PasswordDialogControllerTest : public testing::Test {
+class CredentialManagerDialogControllerTest : public testing::Test {
  public:
-  PasswordDialogControllerTest()
-      : controller_(&profile_, &ui_controller_mock_) {
-  }
+  CredentialManagerDialogControllerTest()
+      : controller_(&profile_, &ui_controller_mock_) {}
 
   PasswordsModelDelegateMock& ui_controller_mock() {
     return ui_controller_mock_;
   }
 
-  PasswordDialogControllerImpl& controller() { return controller_; }
+  CredentialManagerDialogControllerImpl& controller() { return controller_; }
 
   PrefService* prefs() { return profile_.GetPrefs(); }
 
@@ -70,10 +69,10 @@ class PasswordDialogControllerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   StrictMock<PasswordsModelDelegateMock> ui_controller_mock_;
-  PasswordDialogControllerImpl controller_;
+  CredentialManagerDialogControllerImpl controller_;
 };
 
-TEST_F(PasswordDialogControllerTest, ShowAccountChooser) {
+TEST_F(CredentialManagerDialogControllerTest, ShowAccountChooser) {
   base::HistogramTester histogram_tester;
   StrictMock<MockPasswordPrompt> prompt;
   autofill::PasswordForm local_form = GetLocalForm();
@@ -86,26 +85,27 @@ TEST_F(PasswordDialogControllerTest, ShowAccountChooser) {
 
   EXPECT_CALL(prompt, ShowAccountChooser());
   controller().ShowAccountChooser(&prompt, std::move(locals));
-  EXPECT_THAT(controller().GetLocalForms(), ElementsAre(Pointee(local_form),
-                                                        Pointee(local_form2)));
+  EXPECT_THAT(controller().GetLocalForms(),
+              ElementsAre(Pointee(local_form), Pointee(local_form2)));
   EXPECT_FALSE(controller().ShouldShowSignInButton());
 
   // Close the dialog.
   EXPECT_CALL(prompt, ControllerGone());
-  EXPECT_CALL(ui_controller_mock(), ChooseCredential(
-      local_form,
-      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD));
+  EXPECT_CALL(ui_controller_mock(),
+              ChooseCredential(
+                  local_form,
+                  password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD));
   controller().OnChooseCredentials(
       *local_form_ptr,
       password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.AccountChooserDialogMultipleAccounts",
-       password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN, 1);
+      password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN, 1);
   histogram_tester.ExpectTotalCount(
       "PasswordManager.AccountChooserDialogOneAccount", 0);
 }
 
-TEST_F(PasswordDialogControllerTest, ShowAccountChooserAndSignIn) {
+TEST_F(CredentialManagerDialogControllerTest, ShowAccountChooserAndSignIn) {
   base::HistogramTester histogram_tester;
   StrictMock<MockPasswordPrompt> prompt;
   autofill::PasswordForm local_form = GetLocalForm();
@@ -119,18 +119,19 @@ TEST_F(PasswordDialogControllerTest, ShowAccountChooserAndSignIn) {
 
   // Close the dialog.
   EXPECT_CALL(prompt, ControllerGone());
-  EXPECT_CALL(ui_controller_mock(), ChooseCredential(
-      local_form,
-      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD));
+  EXPECT_CALL(ui_controller_mock(),
+              ChooseCredential(
+                  local_form,
+                  password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD));
   controller().OnSignInClicked();
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.AccountChooserDialogOneAccount",
-       password_manager::metrics_util::ACCOUNT_CHOOSER_SIGN_IN, 1);
+      password_manager::metrics_util::ACCOUNT_CHOOSER_SIGN_IN, 1);
   histogram_tester.ExpectTotalCount(
       "PasswordManager.AccountChooserDialogMultipleAccounts", 0);
 }
 
-TEST_F(PasswordDialogControllerTest, AccountChooserClosed) {
+TEST_F(CredentialManagerDialogControllerTest, AccountChooserClosed) {
   base::HistogramTester histogram_tester;
   StrictMock<MockPasswordPrompt> prompt;
   std::vector<std::unique_ptr<autofill::PasswordForm>> locals;
@@ -142,12 +143,12 @@ TEST_F(PasswordDialogControllerTest, AccountChooserClosed) {
   controller().OnCloseDialog();
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.AccountChooserDialogOneAccount",
-       password_manager::metrics_util::ACCOUNT_CHOOSER_DISMISSED, 1);
+      password_manager::metrics_util::ACCOUNT_CHOOSER_DISMISSED, 1);
   histogram_tester.ExpectTotalCount(
       "PasswordManager.AccountChooserDialogMultipleAccounts", 0);
 }
 
-TEST_F(PasswordDialogControllerTest, AutoSigninPromo) {
+TEST_F(CredentialManagerDialogControllerTest, AutoSigninPromo) {
   base::HistogramTester histogram_tester;
   StrictMock<MockPasswordPrompt> prompt;
   EXPECT_CALL(prompt, ShowAutoSigninPrompt());
@@ -162,10 +163,10 @@ TEST_F(PasswordDialogControllerTest, AutoSigninPromo) {
           prefs()));
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.AutoSigninFirstRunDialog",
-       password_manager::metrics_util::AUTO_SIGNIN_NO_ACTION, 1);
+      password_manager::metrics_util::AUTO_SIGNIN_NO_ACTION, 1);
 }
 
-TEST_F(PasswordDialogControllerTest, AutoSigninPromoOkGotIt) {
+TEST_F(CredentialManagerDialogControllerTest, AutoSigninPromoOkGotIt) {
   base::HistogramTester histogram_tester;
   StrictMock<MockPasswordPrompt> prompt;
   EXPECT_CALL(prompt, ShowAutoSigninPrompt());
@@ -185,10 +186,10 @@ TEST_F(PasswordDialogControllerTest, AutoSigninPromoOkGotIt) {
       password_manager::prefs::kCredentialsEnableAutosignin));
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.AutoSigninFirstRunDialog",
-       password_manager::metrics_util::AUTO_SIGNIN_OK_GOT_IT, 1);
+      password_manager::metrics_util::AUTO_SIGNIN_OK_GOT_IT, 1);
 }
 
-TEST_F(PasswordDialogControllerTest, AutoSigninPromoTurnOff) {
+TEST_F(CredentialManagerDialogControllerTest, AutoSigninPromoTurnOff) {
   base::HistogramTester histogram_tester;
   StrictMock<MockPasswordPrompt> prompt;
   EXPECT_CALL(prompt, ShowAutoSigninPrompt());
@@ -208,7 +209,7 @@ TEST_F(PasswordDialogControllerTest, AutoSigninPromoTurnOff) {
       password_manager::prefs::kCredentialsEnableAutosignin));
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.AutoSigninFirstRunDialog",
-       password_manager::metrics_util::AUTO_SIGNIN_TURN_OFF, 1);
+      password_manager::metrics_util::AUTO_SIGNIN_TURN_OFF, 1);
 }
 
 }  // namespace
