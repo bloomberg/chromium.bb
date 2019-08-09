@@ -103,16 +103,19 @@ customize.IDS = {
   ATTRIBUTIONS: 'custom-bg-attr',
   BACK_CIRCLE: 'bg-sel-back-circle',
   BACKGROUNDS_DEFAULT: 'backgrounds-default',
+  BACKGROUNDS_DEFAULT_ICON: 'backgrounds-default-icon',
   BACKGROUNDS_BUTTON: 'backgrounds-button',
   BACKGROUNDS_IMAGE_MENU: 'backgrounds-image-menu',
   BACKGROUNDS_MENU: 'backgrounds-menu',
   BACKGROUNDS_UPLOAD: 'backgrounds-upload',
+  BACKGROUNDS_UPLOAD_ICON: 'backgrounds-upload-icon',
   CANCEL: 'bg-sel-footer-cancel',
   COLOR_PICKER: 'color-picker',
+  COLOR_PICKER_TILE: 'color-picker-tile',
   COLOR_PICKER_CONTAINER: 'color-picker-container',
   COLOR_PICKER_ICON: 'color-picker-icon',
   COLORS_BUTTON: 'colors-button',
-  COLORS_DEFAULT: 'colors-default',
+  COLORS_DEFAULT_ICON: 'colors-default-icon',
   COLORS_THEME: 'colors-theme',
   COLORS_THEME_NAME: 'colors-theme-name',
   COLORS_THEME_UNINSTALL: 'colors-theme-uninstall',
@@ -166,7 +169,6 @@ customize.CLASSES = {
   COLLECTION_SELECTED: 'bg-selected',  // Highlight selected tile
   COLLECTION_TILE: 'bg-sel-tile',  // Preview tile for background customization
   COLLECTION_TILE_BG: 'bg-sel-tile-bg',
-  COLLECTION_TILE_WRAPPER: 'bg-sel-tile-wrapper',
   COLLECTION_TITLE: 'bg-sel-tile-title',  // Title of a background image
   IMAGE_DIALOG: 'is-img-sel',
   ON_IMAGE_MENU: 'on-img-menu',
@@ -548,24 +550,21 @@ customize.richerPicker_setShortcutOptions = function() {
  */
 customize.createTileWithTitle = function(
     id, imageUrl, name, dataset, onClickInteraction, onKeyInteraction) {
-  const tileBackground = customize.createTileThumbnail(
-      id, imageUrl, dataset, onClickInteraction, onKeyInteraction, true);
-  tileBackground.setAttribute('aria-label', name);
-  tileBackground.title = name;
+  const tile = customize.createTileThumbnail(
+      id, imageUrl, dataset, onClickInteraction, onKeyInteraction);
+  tile.setAttribute('aria-label', name);
+  tile.title = name;
+  customize.fadeInImageTile(tile, imageUrl, null);
 
   const title = document.createElement('div');
   title.classList.add(customize.CLASSES.COLLECTION_TITLE);
   title.textContent = name;
+  tile.appendChild(title);
 
-  const tileWrapper = document.createElement('div');
-  tileWrapper.classList.add(customize.CLASSES.COLLECTION_TILE_WRAPPER);
-  tileWrapper.appendChild(tileBackground);
-  tileWrapper.appendChild(title);
-  // Enable click support for the whole wrapper including title.
-  tileWrapper.onclick = function() {
-    tileWrapper.firstElementChild.click();
-  };
-  return tileWrapper;
+  const tileBackground = document.createElement('div');
+  tileBackground.classList.add(customize.CLASSES.COLLECTION_TILE_BG);
+  tileBackground.appendChild(tile);
+  return tileBackground;
 };
 
 /**
@@ -578,13 +577,14 @@ customize.createTileWithTitle = function(
  */
 customize.createTileWithoutTitle = function(
     id, imageUrl, dataset, onClickInteraction, onKeyInteraction) {
-  const tileBackground = customize.createTileThumbnail(
-      id, imageUrl, dataset, onClickInteraction, onKeyInteraction, true);
+  const tile = customize.createTileThumbnail(
+      id, imageUrl, dataset, onClickInteraction, onKeyInteraction);
+  customize.fadeInImageTile(tile, imageUrl, null);
 
-  const tileWrapper = document.createElement('div');
-  tileWrapper.classList.add(customize.CLASSES.COLLECTION_TILE_WRAPPER);
-  tileWrapper.appendChild(tileBackground);
-  return tileWrapper;
+  const tileBackground = document.createElement('div');
+  tileBackground.classList.add(customize.CLASSES.COLLECTION_TILE_BG);
+  tileBackground.appendChild(tile);
+  return tileBackground;
 };
 
 /**
@@ -594,36 +594,25 @@ customize.createTileWithoutTitle = function(
  * @param {Object} dataset The dataset for the new element.
  * @param {?Function} onClickInteraction Function for onclick interaction.
  * @param {?Function} onKeyInteraction Function for onkeydown interaction.
- * @param {boolean} fadeIn Whether thumbnail images should faded in. Defaults to
- *     false.
  */
 customize.createTileThumbnail = function(
-    id, imageUrl, dataset, onClickInteraction, onKeyInteraction,
-    fadeIn = false) {
+    id, imageUrl, dataset, onClickInteraction, onKeyInteraction) {
   const tile = document.createElement('div');
+  tile.id = id;
   tile.classList.add(customize.CLASSES.COLLECTION_TILE);
   tile.style.backgroundImage = 'url(' + imageUrl + ')';
-  if (fadeIn) {
-    customize.fadeInImageTile(tile, imageUrl, null);
-  }
-
-  const tileBackground = document.createElement('div');
-  tileBackground.id = id;
-  tileBackground.classList.add(customize.CLASSES.COLLECTION_TILE_BG);
-  tileBackground.appendChild(tile);
-
   for (const key in dataset) {
-    tileBackground.dataset[key] = dataset[key];
+    tile.dataset[key] = dataset[key];
   }
-  tileBackground.tabIndex = -1;
+  tile.tabIndex = -1;
 
   // Accessibility support for screen readers.
-  tileBackground.setAttribute('role', 'button');
-  tileBackground.setAttribute('aria-pressed', false);
+  tile.setAttribute('role', 'button');
+  tile.setAttribute('aria-pressed', false);
 
-  tileBackground.onclick = onClickInteraction;
-  tileBackground.onkeydown = onKeyInteraction;
-  return tileBackground;
+  tile.onclick = onClickInteraction;
+  tile.onkeydown = onKeyInteraction;
+  return tile;
 };
 
 /**
@@ -652,8 +641,8 @@ customize.richerPicker_getNextTile = function(deltaX, deltaY, current) {
   const menu = $(customize.IDS.CUSTOMIZATION_MENU);
   const container = customize.richerPicker_selectedSubmenu.menu;
 
-  const tiles = Array.from(container.getElementsByClassName(
-      customize.CLASSES.COLLECTION_TILE_WRAPPER));
+  const tiles = Array.from(
+      container.getElementsByClassName(customize.CLASSES.COLLECTION_TILE_BG));
   let nextIndex = tiles.indexOf(current.parentElement);
   if (deltaX != 0) {
     nextIndex += deltaX;
@@ -669,7 +658,7 @@ customize.richerPicker_getNextTile = function(deltaX, deltaY, current) {
     }
   }
   if (tiles[nextIndex]) {
-    return tiles[nextIndex].firstElementChild;
+    return tiles[nextIndex].children[0];
   }
   return null;
 };
@@ -722,6 +711,10 @@ customize.tileOnKeyDownInteraction = function(event) {
       event.keyCode === customize.KEYCODES.SPACE) {
     event.preventDefault();
     event.stopPropagation();
+    if (tile.onClickOverride) {
+      tile.onClickOverride(event);
+      return;
+    }
     tile.onclick(event);
   } else if (customize.arrowKeys.includes(event.keyCode)) {
     // Handle arrow key navigation.
@@ -839,10 +832,15 @@ customize.showCollectionSelectionDialog = function() {
   }
 
   // Attach event listeners for upload and default tiles
-  $(customize.IDS.BACKGROUNDS_UPLOAD).onkeydown =
+  $(customize.IDS.BACKGROUNDS_UPLOAD_ICON).onkeydown =
       customize.tileOnKeyDownInteraction;
-  $(customize.IDS.BACKGROUNDS_DEFAULT).onkeydown =
+  $(customize.IDS.BACKGROUNDS_DEFAULT_ICON).onkeydown =
       customize.tileOnKeyDownInteraction;
+  $(customize.IDS.BACKGROUNDS_UPLOAD_ICON).onClickOverride =
+      $(customize.IDS.BACKGROUNDS_UPLOAD).onkeydown;
+  $(customize.IDS.BACKGROUNDS_DEFAULT_ICON).onClickOverride =
+      $(customize.IDS.BACKGROUNDS_DEFAULT).onkeydown;
+
   $(customize.IDS.TILES).focus();
 };
 
@@ -889,7 +887,7 @@ customize.richerPicker_applySelectedState = function(option) {
     return;
   }
 
-  option.classList.toggle(customize.CLASSES.SELECTED, true);
+  option.parentElement.classList.toggle(customize.CLASSES.SELECTED, true);
   // Create and append a blue checkmark to the selected option.
   const selectedCircle = document.createElement('div');
   const selectedCheck = document.createElement('div');
@@ -910,7 +908,7 @@ customize.richerPicker_removeSelectedState = function(option) {
     return;
   }
 
-  option.classList.toggle(customize.CLASSES.SELECTED, false);
+  option.parentElement.classList.toggle(customize.CLASSES.SELECTED, false);
   // Remove all blue checkmarks from the selected option (this includes the
   // checkmark and the encompassing circle).
   const select = option.querySelectorAll(
@@ -933,11 +931,11 @@ customize.richerPicker_previewImage = function(tile) {
   // Set preview images at 720p by replacing the params in the url.
   const background = $(customize.IDS.CUSTOM_BG);
   const preview = $(customize.IDS.CUSTOM_BG_PREVIEW);
-  if (tile.id === customize.IDS.BACKGROUNDS_DEFAULT) {
+  if (tile.id === customize.IDS.BACKGROUNDS_DEFAULT_ICON) {
     preview.dataset.hasImage = false;
     preview.style.backgroundImage = '';
     preview.style.backgroundColor = document.body.style.backgroundColor;
-  } else if (tile.id === customize.IDS.BACKGROUNDS_UPLOAD) {
+  } else if (tile.id === customize.IDS.BACKGROUNDS_UPLOAD_ICON) {
     // No previews for uploaded images.
     return;
   } else {
@@ -945,7 +943,7 @@ customize.richerPicker_previewImage = function(tile) {
 
     const re = /w\d+\-h\d+/;
     preview.style.backgroundImage =
-        tile.firstElementChild.style.backgroundImage.replace(re, 'w1280-h720');
+        tile.style.backgroundImage.replace(re, 'w1280-h720');
   }
   background.style.opacity = 0;
   preview.style.opacity = 1;
@@ -1226,7 +1224,7 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
     }
 
     const tileBackground = document.createElement('div');
-    tileBackground.classList.add(customize.CLASSES.COLLECTION_TILE_WRAPPER);
+    tileBackground.classList.add(customize.CLASSES.COLLECTION_TILE_BG);
     tileBackground.appendChild(tile);
     tileContainer.appendChild(tileBackground);
   }
@@ -1275,11 +1273,10 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
  *     loading.
  */
 customize.loadTile = function(tile, imageData, countLoad) {
-  tile.firstElementChild.style.backgroundImage =
+  tile.style.backgroundImage =
       'url(' + imageData[tile.dataset.tileIndex].thumbnailImageUrl + ')';
   customize.fadeInImageTile(
-      tile.firstElementChild,
-      imageData[tile.dataset.tileIndex].thumbnailImageUrl, countLoad);
+      tile, imageData[tile.dataset.tileIndex].thumbnailImageUrl, countLoad);
 };
 
 /**
@@ -1439,12 +1436,12 @@ customize.richerPicker_preselectBackgroundOption = function() {
   if (!themeInfo.customBackgroundConfigured) {
     // Default.
     customize.preselectedOptions.backgroundsMenuTile =
-        $(customize.IDS.BACKGROUNDS_DEFAULT);
+        $(customize.IDS.BACKGROUNDS_DEFAULT_ICON);
   } else if (themeInfo.imageUrl.includes(
                  'chrome-search://local-ntp/background.jpg')) {
     // Local image.
     customize.preselectedOptions.backgroundsMenuTile =
-        $(customize.IDS.BACKGROUNDS_UPLOAD);
+        $(customize.IDS.BACKGROUNDS_UPLOAD_ICON);
   } else if (
       themeInfo.collectionId !== '' &&
       customize.currentCollectionId == themeInfo.collectionId) {
@@ -1945,7 +1942,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
 
   $(customize.IDS.BACKGROUNDS_MENU).onkeydown = function(event) {
     if (customize.arrowKeys.includes(event.keyCode)) {
-      $(customize.IDS.BACKGROUNDS_UPLOAD).focus();
+      $(customize.IDS.BACKGROUNDS_UPLOAD_ICON).focus();
     }
   };
 
@@ -1956,9 +1953,15 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   $(customize.IDS.BACKGROUNDS_UPLOAD).onclick = uploadImageInteraction;
+  $(customize.IDS.BACKGROUNDS_UPLOAD).onkeydown = function(event) {
+    if (event.keyCode === customize.KEYCODES.ENTER ||
+        event.keyCode === customize.KEYCODES.SPACE) {
+      uploadImageInteraction();
+    }
+  };
 
   $(customize.IDS.BACKGROUNDS_DEFAULT).onclick = function(event) {
-    const tile = $(customize.IDS.BACKGROUNDS_DEFAULT);
+    const tile = $(customize.IDS.BACKGROUNDS_DEFAULT_ICON);
     tile.dataset.url = '';
     tile.dataset.attributionLine1 = '';
     tile.dataset.attributionLine2 = '';
@@ -1967,6 +1970,12 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
              .classList.contains(customize.CLASSES.SELECTED)) {
       ntpApiHandle.logEvent(customize.LOG_TYPE.NTP_BACKGROUND_DEFAULT_SELECTED);
       customize.richerPicker_selectBackgroundTile(tile);
+    }
+  };
+  $(customize.IDS.BACKGROUNDS_DEFAULT).onkeydown = function(event) {
+    if (event.keyCode === customize.KEYCODES.ENTER ||
+        event.keyCode === customize.KEYCODES.SPACE) {
+      $(customize.IDS.BACKGROUNDS_DEFAULT).onclick(event);
     }
   };
 
@@ -2217,11 +2226,10 @@ customize.colorPickerTileInteraction = function(event) {
   // If the picker is preselected and the user picks a new color, we need to
   // treat the picker as a new selection and not a preselection.
   if (customize.preselectedOptions.colorsMenuTile ===
-      $(customize.IDS.COLOR_PICKER_CONTAINER)) {
+      $(customize.IDS.COLOR_PICKER_TILE)) {
     customize.preselectedOptions.colorsMenuTile = null;
   }
-  customize.updateColorsMenuTileSelection(
-      $(customize.IDS.COLOR_PICKER_CONTAINER));
+  customize.updateColorsMenuTileSelection($(customize.IDS.COLOR_PICKER_TILE));
   ntpApiHandle.applyAutogeneratedTheme(0, [r, g, b, 255]);
 };
 
@@ -2258,28 +2266,28 @@ customize.loadColorsMenu = function() {
   }
 
   // Configure the default tile.
-  $(customize.IDS.COLORS_DEFAULT).onclick =
+  $(customize.IDS.COLORS_DEFAULT_ICON).onclick =
       customize.defaultThemeTileInteraction;
-  $(customize.IDS.COLORS_DEFAULT).onkeydown =
+  $(customize.IDS.COLORS_DEFAULT_ICON).onkeydown =
       customize.tileOnKeyDownInteraction;
 
   // On arrow keys focus the first element.
   $(customize.IDS.COLORS_MENU).onkeydown = function(event) {
     if (customize.arrowKeys.includes(event.keyCode)) {
       if (configData.chromeColorsCustomColorPicker) {
-        $(customize.IDS.COLOR_PICKER_CONTAINER).focus();
+        $(customize.IDS.COLOR_PICKER_TILE).focus();
       } else {
-        $(customize.IDS.COLORS_DEFAULT).focus();
+        $(customize.IDS.COLORS_DEFAULT_ICON).focus();
       }
     }
   };
 
   // Configure custom color picker.
   if (configData.chromeColorsCustomColorPicker) {
-    $(customize.IDS.COLOR_PICKER_CONTAINER).onclick = function(event) {
+    $(customize.IDS.COLOR_PICKER_TILE).onclick = function(event) {
       $(customize.IDS.COLOR_PICKER).click();
     };
-    $(customize.IDS.COLOR_PICKER_CONTAINER).onkeydown =
+    $(customize.IDS.COLOR_PICKER_TILE).onkeydown =
         customize.tileOnKeyDownInteraction;
     $(customize.IDS.COLOR_PICKER).onchange =
         customize.colorPickerTileInteraction;
@@ -2320,12 +2328,12 @@ customize.colorsMenuPreselectTile = function() {
 
   let tile;
   if (themeInfo.usingDefaultTheme) {
-    tile = $(customize.IDS.COLORS_DEFAULT);
+    tile = $(customize.IDS.COLORS_DEFAULT_ICON);
   } else if (themeInfo.colorId && themeInfo.colorId > 0) {
     // Color from predefined set is selected.
     const tiles = Array.from(
         $(customize.IDS.COLORS_MENU)
-            .getElementsByClassName(customize.CLASSES.COLLECTION_TILE_BG));
+            .getElementsByClassName(customize.CLASSES.COLLECTION_TILE));
     for (let i = 0; i < tiles.length; i++) {
       if (tiles[i].dataset && tiles[i].dataset.id == themeInfo.colorId) {
         tile = tiles[i];
@@ -2336,7 +2344,7 @@ customize.colorsMenuPreselectTile = function() {
       configData.chromeColorsCustomColorPicker && themeInfo.colorDark &&
       themeInfo.colorLight && themeInfo.colorPicked) {
     // Custom color is selected.
-    tile = $(customize.IDS.COLOR_PICKER_CONTAINER);
+    tile = $(customize.IDS.COLOR_PICKER_TILE);
 
     // Update color picker tile colors.
     $(customize.IDS.COLOR_PICKER).value =
