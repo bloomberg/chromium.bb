@@ -213,6 +213,7 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
   }
 
   is_show_called_ = true;
+  journey_logger_.SetTriggerTime();
 
   // A tab can display only one PaymentRequest UI at a time.
   display_handle_ = display_manager_->TryShow(delegate_.get());

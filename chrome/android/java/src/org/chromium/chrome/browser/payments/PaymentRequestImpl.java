@@ -763,6 +763,7 @@ public class PaymentRequestImpl
         }
 
         mIsCurrentPaymentRequestShowing = true;
+        mJourneyLogger.setTriggerTime();
         if (disconnectIfNoPaymentMethodsSupported()) return;
 
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
