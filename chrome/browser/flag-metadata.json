@@ -550,8 +550,8 @@
   },
   {
     "name": "cryptauth-v2-enrollment",
-    "owners": [ "jlklein", "khorimoto", "nohle" ],
-    "expiry_milestone": 76
+    "owners": [ "khorimoto", "nohle" ],
+    "expiry_milestone": 82
   },
   {
     "name": "d3d11-video-decoder",
