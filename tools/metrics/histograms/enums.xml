@@ -55139,12 +55139,24 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Unset"/>
 </enum>
 
+<enum name="SmartLockFindAndConnectToHostResult">
+  <int value="0" label="Found and connected to host"/>
+  <int value="1" label="Canceled, Bluetooth disabled"/>
+  <int value="2" label="Canceled, user entered password"/>
+  <int value="3" label="Connection attempt failure with SecureChannel service"/>
+  <int value="4"
+      label="Timed out (phone is too far, it or its Bluetooth is off, or a
+             connection error occurred)"/>
+</enum>
+
 <enum name="SmartLockGetRemoteStatusResultFailureReason">
-  <int value="0" label="Timed out Bluetooth disabled"/>
-  <int value="1" label="Timed out could not establish authenticated channel"/>
+  <int value="0" label="Canceled, Bluetooth disabled"/>
+  <int value="1"
+      label="(Deprecated) Timed out could not establish authenticated channel"/>
   <int value="2" label="Timed out did not receive remote status update"/>
-  <int value="3" label="User entered password while Bluetooth disabled"/>
-  <int value="4" label="User entered password while connecting"/>
+  <int value="3"
+      label="(Deprecated) User entered password while Bluetooth disabled"/>
+  <int value="4" label="Canceled, user entered password"/>
   <int value="5" label="Authenticated channel dropped"/>
 </enum>
 
