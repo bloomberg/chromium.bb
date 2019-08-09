@@ -30,7 +30,10 @@ js2gtest("interactive_ui_tests_js_webui") {
     ":modulize",
     "//chrome/browser/ui",
   ]
-
+  data = [
+    "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
+    "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
+  ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }
 
@@ -146,6 +149,10 @@ js2gtest("browser_tests_js_webui") {
     ":modulize",
     "//chrome/browser/ui",
     "//skia",
+  ]
+  data = [
+    "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
+    "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }
