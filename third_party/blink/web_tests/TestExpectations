@@ -6566,3 +6566,7 @@ crbug.com/991243 [ Linux ] virtual/not-omt-sw-fetch/external/wpt/workers/semanti
 
 # Sheriff 2019-08-08
 crbug.com/992148 [ Linux ] virtual/disable-blink-gen-property-trees/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
+
+# Expected failure for experimental Scheduling API when running without the
+# BlinkSchedulerDisableAntiStarvationForPriorities feature.
+crbug.com/979017 wpt_internal/scheduler/task_order.html [ Failure ]
