@@ -1,5 +1,5 @@
 # liblouis: Irish Braille Code Grade 1 uncontracted
-# Version: beta2 2019
+# Version: INBAF May 2019 
 # -----------
 #-display-name: Irish uncontracted braille
 #
@@ -40,6 +40,15 @@
 # This table is based on UEB Grade 1 and has a small number of
 # override rules below. Apart from these rules, Irish Grade 1 is the
 # same as UEB Grade 1.
+display & 12346
+display = 123456
+display ( 12356
+display ! 2346
+display ) 23456
+display * 16
+display < 126
+display % 146
+display ? 1456
 
 # Note that the uplow rules need to be placed before AND after the "en-ueb-g1.ctb"
 # include in order for both the lower- and uppercase part to take precedence
@@ -62,8 +71,25 @@ noback uplow \x1E56\x1E57 1234-125 Ṗṗ
 noback uplow \x1E60\x1E61 146 Ṡṡ     
 
 noback uplow \x1E6A\x1E6B 1456 Ṫṫ     
-noback sign \x204A 234 tironian eth 
+begword b\x0027 12-3
+begword b\x2019 12-3
+
+begword d\x0027 145-3
+begword d\x2019 145-3
+begword m\x0027 134-3
+begword m\x2019 134-3
+begword n\x0027 1345-3
+begword n\x2019 1345-3
+begword s\x0027 234-3
+begword s\x2019 234-3
+
+begword n- 1345-36
+begword t- 2345-36
+
+
+
 include en-ueb-g1.ctb
+noback sign \x204A 234 tironian eth 
 
 # repeat uplow rules
 uplow \x00c1\x00e1 12346 Áá

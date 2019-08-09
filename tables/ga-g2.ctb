@@ -31,25 +31,18 @@
 # Maintained by Ronan McGuirk, <ronan.p.mcguirk@gmail.com>
 
 include ga-g1.utb
- contraction b
-contraction c
-contraction d
+ contraction c
 contraction e
 contraction f
 contraction g
 contraction h
 contraction l
-contraction m
-contraction n
 contraction o
 contraction p
 contraction r
-contraction s
-contraction t
 contraction u
 contraction v
 contraction agn
-#contraction ar
 contraction st
 contraction bh
 contraction ch
@@ -77,21 +70,14 @@ contraction dt
 contraction thmar
 contraction brl
 
-contraction B
 contraction C
-contraction D
 contraction E
 contraction F
 contraction G
 contraction H
 contraction L
-contraction M
-contraction N
-contraction O
 contraction P
 contraction R
-contraction S
-contraction T
 contraction U
 contraction V
 contraction BH
