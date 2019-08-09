@@ -73,6 +73,10 @@ const base::Feature kTouchpadOverscrollHistoryNavigation {
 const base::Feature kBlockCredentialedSubresources{
     "BlockCredentialedSubresources", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Verify user activation notification by the browser side state.
+const base::Feature kBrowserVerifiedUserActivation{
+    "BrowserVerifiedUserActivation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether Bundled HTTP Exchanges is enabled.
 // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html
 const base::Feature kBundledHTTPExchanges{"BundledHTTPExchanges",
