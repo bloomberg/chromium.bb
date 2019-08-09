@@ -27,6 +27,7 @@ class ConsoleCapturingChromeClient : public EmptyChromeClient {
                            mojom::ConsoleMessageLevel,
                            const String& message,
                            unsigned line_number,
+                           unsigned column_number,
                            const String& source_id,
                            const String& stack_trace) override {
     messages_.push_back(message);
