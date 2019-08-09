@@ -44754,6 +44754,9 @@ Called by update_net_trust_anchors.py.-->
     Failed to create a server blacklist because it has more than one
     configuration.
   </int>
+  <int value="5" label="Invalid regular expression">
+    There was an invalid RE2 in the regexps field.
+  </int>
 </enum>
 
 <enum name="OptimizationGuideProcessHintsResult">
