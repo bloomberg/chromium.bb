@@ -207,6 +207,7 @@ class WebServiceWorkerContextClient {
   // On-main-thread start up:
   // Creates a WebWorkerFetchContext for subresource fetches on a service
   // worker. This is called on the main thread.
+  // TODO(bashi): Remove. This is no longer used.
   virtual scoped_refptr<blink::WebWorkerFetchContext>
   CreateWorkerFetchContextOnMainThreadLegacy(WebServiceWorkerNetworkProvider*) {
     return nullptr;
