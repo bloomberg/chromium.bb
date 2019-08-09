@@ -7,7 +7,7 @@
 jsTestIsAsync = true;
 var worker = new Worker('./resources/worker-onmessage-noop.js');
 
-description("Tests how putImageData and createImageBitmap would react when the source data is neutered");
+description("Tests how putImageData and createImageBitmap would react when the source data is detached");
 
 var imageWidth = 1;
 var imageHeight = 1;
@@ -33,7 +33,7 @@ shouldBe("newImage.data[1]", "0");
 shouldBe("newImage.data[2]", "0");
 shouldBe("newImage.data[3]", "255");
 
-// transfer the array buffer to the worker so that the source data is now neutered
+// transfer the array buffer to the worker so that the source data is now detached
 worker.postMessage({data: image.data.buffer}, [image.data.buffer]);
 
 len = image.data.byteLength;
