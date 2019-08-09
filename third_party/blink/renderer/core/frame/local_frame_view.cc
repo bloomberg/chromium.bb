@@ -1079,7 +1079,11 @@ void LocalFrameView::UpdateGeometry() {
   bool did_need_layout = NeedsLayout();
 
   PhysicalRect new_frame = layout->ReplacedContentRect();
-  DCHECK(!new_frame.size.HasFraction());
+#if DCHECK_IS_ON()
+  if (new_frame.Width() != LayoutUnit::Max().RawValue() &&
+      new_frame.Height() != LayoutUnit::Max().RawValue())
+    DCHECK(!new_frame.size.HasFraction());
+#endif
   bool bounds_will_change = PhysicalSize(Size()) != new_frame.size;
 
   // If frame bounds are changing mark the view for layout. Also check the
