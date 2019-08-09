@@ -706,9 +706,12 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                                          ax::mojom::Event::kLoadComplete);
   GURL url(
       "data:text/html,"
+      "<audio controls></audio>"
       "<input>"
+      "<input type='email'>"
       "<input type='tel'>"
-      "<input type='url'>");
+      "<input type='url'>"
+      "<meter></meter>");
 
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
@@ -718,7 +721,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   ASSERT_EQ(1u, root->PlatformChildCount());
 
   BrowserAccessibility* body = root->PlatformGetChild(0);
-  ASSERT_EQ(3u, body->PlatformChildCount());
+  ASSERT_EQ(6u, body->PlatformChildCount());
 
   auto TestLocalizedRoleDescription =
       [body](int child_index,
@@ -731,9 +734,12 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       };
 
   // For testing purposes, assume we get en-US localized strings.
-  TestLocalizedRoleDescription(0, base::ASCIIToUTF16(""));
-  TestLocalizedRoleDescription(1, base::ASCIIToUTF16("telephone"));
-  TestLocalizedRoleDescription(2, base::ASCIIToUTF16("url"));
+  TestLocalizedRoleDescription(0, base::ASCIIToUTF16("audio"));
+  TestLocalizedRoleDescription(1, base::ASCIIToUTF16(""));
+  TestLocalizedRoleDescription(2, base::ASCIIToUTF16("email"));
+  TestLocalizedRoleDescription(3, base::ASCIIToUTF16("telephone"));
+  TestLocalizedRoleDescription(4, base::ASCIIToUTF16("url"));
+  TestLocalizedRoleDescription(5, base::ASCIIToUTF16("meter"));
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
