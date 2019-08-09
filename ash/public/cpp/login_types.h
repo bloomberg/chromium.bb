@@ -12,6 +12,7 @@
 #include "base/token.h"
 #include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom-forward.h"
 #include "chromeos/constants/security_token_pin_types.h"
+#include "components/account_id/account_id.h"
 
 namespace ash {
 
@@ -307,6 +308,9 @@ struct ASH_PUBLIC_EXPORT SecurityTokenPinRequest {
   SecurityTokenPinRequest(SecurityTokenPinRequest&&);
   SecurityTokenPinRequest& operator=(SecurityTokenPinRequest&&);
   ~SecurityTokenPinRequest();
+
+  // The user whose authentication triggered this PIN request.
+  AccountId account_id;
 
   // Type of the code requested from the user.
   chromeos::SecurityTokenPinCodeType code_type =

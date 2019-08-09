@@ -45,7 +45,7 @@ void SecurityTokenPinDialogHostAshImpl::ShowSecurityTokenPinDialog(
     bool enable_user_input,
     SecurityTokenPinErrorLabel error_label,
     int attempts_left,
-    const base::Optional<AccountId>& /*authenticating_user_account_id*/,
+    const base::Optional<AccountId>& authenticating_user_account_id,
     SecurityTokenPinEnteredCallback pin_entered_callback,
     SecurityTokenPinDialogClosedCallback pin_dialog_closed_callback) {
   DCHECK(!enable_user_input || attempts_left);
@@ -55,10 +55,18 @@ void SecurityTokenPinDialogHostAshImpl::ShowSecurityTokenPinDialog(
 
   Reset();
 
+  if (!authenticating_user_account_id) {
+    // This class only supports requests associated with user authentication
+    // attempts.
+    std::move(pin_dialog_closed_callback).Run();
+    return;
+  }
+
   pin_entered_callback_ = std::move(pin_entered_callback);
   pin_dialog_closed_callback_ = std::move(pin_dialog_closed_callback);
 
   ash::SecurityTokenPinRequest request;
+  request.account_id = *authenticating_user_account_id;
   request.code_type = code_type;
   request.enable_user_input = enable_user_input;
   request.error_label = error_label;

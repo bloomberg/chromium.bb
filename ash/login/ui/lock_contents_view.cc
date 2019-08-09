@@ -576,13 +576,14 @@ void LockContentsView::ShowParentAccessDialog(bool show) {
 
 void LockContentsView::RequestSecurityTokenPin(
     SecurityTokenPinRequest request) {
-  // TODO(crbug.com/983103): Pick up the user whose authentication triggered
-  // this PIN attempt, based on the account identifier supplied by the
-  // cryptohome.
-  if (primary_big_view_ && primary_big_view_->auth_user())
-    primary_big_view_->auth_user()->RequestSecurityTokenPin(std::move(request));
-  else
+  if (!primary_big_view_ || !primary_big_view_->auth_user() ||
+      primary_big_view_->GetCurrentUser().basic_user_info.account_id !=
+          request.account_id) {
+    // The PIN request is obsolete.
     std::move(request.pin_ui_closed_callback).Run();
+    return;
+  }
+  primary_big_view_->auth_user()->RequestSecurityTokenPin(std::move(request));
 }
 
 void LockContentsView::ClearSecurityTokenPinRequest() {
