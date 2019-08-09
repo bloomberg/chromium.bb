@@ -48137,6 +48137,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Wrong prediction"/>
 </enum>
 
+<enum name="PrefetchRedirect">
+  <int value="0" label="Prefetch request made"/>
+  <int value="1" label="Prefetch request was redirected normally"/>
+  <int value="2"
+      label="Prefetch request was redirected to Signed Exchange handler"/>
+</enum>
+
 <enum name="PrefetchStatus">
   <int value="0" label="undefined"/>
   <int value="1" label="success from cache"/>
