@@ -371,7 +371,7 @@
   {
     "name": "calculate-native-win-occlusion",
     "owners": [ "davidbienvenu", "fdoray" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 81
   },
   {
     "name": "camera-system-web-app",
@@ -3182,7 +3182,7 @@
   {
     "name": "web-contents-occlusion",
     "owners": [ "davidbienvenu" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 81
   },
   {
     "name": "webxr",
