@@ -543,6 +543,7 @@ CrSettingsFingerprintListTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
     '../test_browser_proxy.js',
     'chromeos/fingerprint_browsertest_chromeos.js',
   ]),
@@ -1596,6 +1597,7 @@ CrSettingsDevicePageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '//ui/webui/resources/js/assert.js',
+    '../test_util.js',
     '../fake_chrome_event.js',
     'fake_settings_private.js',
     'chromeos/fake_system_display.js',
@@ -1644,6 +1646,7 @@ CrSettingsBluetoothPageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '//ui/webui/resources/js/assert.js',
     '../fake_chrome_event.js',
+    '../test_util.js',
     'chromeos/fake_bluetooth.js',
     'chromeos/fake_bluetooth_private.js',
     'chromeos/bluetooth_page_tests.js',
@@ -2117,6 +2120,7 @@ CrSettingsMetricsReportingTest.prototype = {
   browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
     '../test_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
     'metrics_reporting_tests.js',
