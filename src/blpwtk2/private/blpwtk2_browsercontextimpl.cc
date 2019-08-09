@@ -529,6 +529,11 @@ void BrowserContextImpl::dumpDiagnostics(DiagnosticInfoType type,
     }
 }
 
+std::string BrowserContextImpl::getGpuInfo()
+{
+    return GetGpuInfo();
+}
+
 
 // patch section: embedder ipc
 void BrowserContextImpl::opaqueMessageToBrowserAsync(const StringRef& msg)

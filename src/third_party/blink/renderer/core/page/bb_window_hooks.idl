@@ -43,4 +43,5 @@
     void toggleOverwriteMode(Document document);
 
     void allowPrint(long value);
+    DOMString getGpuInfo();
 };

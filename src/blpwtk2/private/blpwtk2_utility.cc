@@ -56,9 +56,7 @@ std::string createSourcePermalink(const std::string& revisionIdentifier,
   return g_chromiumGitUrlBase + revisionIdentifier + "/" + filepath;
 }
 
-}  // namespace
-
-void DumpGpuInfo(const std::string& path) {
+std::string getGpuInfo() {
     base::DictionaryValue gpuInfo;
     gpuInfo.Set("featureStatus", content::GetFeatureStatus());
     gpuInfo.Set("problems", content::GetProblems());
@@ -71,6 +69,13 @@ void DumpGpuInfo(const std::string& path) {
     gpuInfo.Set("workarounds", std::move(workarounds_v));
     gpuInfo.Set("memoryBufferInfo", content::GpuInternalsUI::GetGpuMemoryBufferInfo());
     gpuInfo.Set("LogMessage", content::GpuDataManagerImpl::GetInstance()->GetLogMessages());
+    
+    gpuInfo.SetString("gpu_device_string", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().device_string);
+    gpuInfo.SetString("gpu_vendor", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().vendor_string);
+    gpuInfo.SetString("gpu_driver_vendor", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().driver_vendor);
+    gpuInfo.SetString("gpu_driver_date", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().driver_date);
+    gpuInfo.SetBoolean("gpu_active", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().active);
+    gpuInfo.SetBoolean("software_rendering", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().software_rendering);
 
     gpuInfo.SetString("command_line",
         base::CommandLine::ForCurrentProcess()->GetCommandLineString());
@@ -91,10 +96,19 @@ void DumpGpuInfo(const std::string& path) {
         createSourcePermalink(g_gpuListVersion, g_gpuDriverBugList));
     std::string json;
     base::JSONWriter::Write(gpuInfo, &json);
+    return json;
+}
+}  // namespace
 
+void DumpGpuInfo(const std::string& path) {
+    std::string json = getGpuInfo();
     std::ofstream file(path, std::ios::binary);
     file << json;
     file.close();
+}
+
+std::string GetGpuInfo() {
+    return getGpuInfo();
 }
 }  // close namespace blpwtk2
 

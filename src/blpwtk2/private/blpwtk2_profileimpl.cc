@@ -41,6 +41,7 @@
 #include <mojo/public/cpp/bindings/strong_binding.h>
 #include <services/service_manager/public/cpp/connector.h>
 #include <third_party/blink/public/platform/web_cache.h>
+#include <third_party/blink/renderer/core/page/bb_window_hooks.h>
 
 namespace blpwtk2 {
 
@@ -76,6 +77,11 @@ ProfileImpl::ProfileImpl(MainMessagePump *pump,
         pid,
         launchDevToolsServer,
         base::Bind(&ProfileImpl::onBindProcessDone, base::Unretained(this)));
+
+    blink::BBWindowHooks::ProfileHooks hooks;
+    hooks.getGpuInfo = base::BindRepeating(&ProfileImpl::getGpuInfo, base::Unretained(this));
+
+    blink::BBWindowHooks::InstallProfileHooks(hooks);
 }
 
 ProfileImpl::~ProfileImpl()
@@ -413,6 +419,17 @@ void ProfileImpl::dumpDiagnostics(DiagnosticInfoType type,
                                std::string(path.data(), path.size()));
 }
 
+std::string ProfileImpl::getGpuInfo()
+{
+    std::string diagnostics;
+
+    if (d_hostPtr->getGpuInfo(&diagnostics)) {
+        return diagnostics;
+    }
+    else {
+        return "";
+    }
+}
 
 // patch section: embedder ipc
 void ProfileImpl::onBindProcessDone(
