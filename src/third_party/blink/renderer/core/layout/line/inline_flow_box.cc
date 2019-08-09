@@ -509,7 +509,8 @@ void InlineFlowBox::PlaceBoxRangeInInlineDirection(
         if (KnownToHaveNoOverflow())
           max_logical_right = std::max(logical_left, max_logical_right);
         logical_left += flow->MarginLogicalRight();
-      } else {
+      } else if (!curr->GetLineLayoutItem().IsListMarker() ||
+                 LineLayoutListMarker(curr->GetLineLayoutItem()).IsInside()) {
         // The box can have a different writing-mode than the overall line, so
         // this is a bit complicated. Just get all the physical margin and
         // overflow values by hand based off |isHorizontal|.
