@@ -922,11 +922,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-autofill-do-not-upload-save-unsupported-cards",
-    "owners": [ "annelim@google.com", "jsaul@google.com" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "enable-autofill-import-dynamic-forms",
     "owners": [ "hozhng@google.com", "jiahuiguo@google.com" ],
     "expiry_milestone": 79

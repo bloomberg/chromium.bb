@@ -472,12 +472,6 @@ const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[] =
     "If enabled, local cards from unsupported networks will not be offered "
     "local card migration.";
 
-const char kEnableAutofillDoNotUploadSaveUnsupportedCardsName[] =
-    "Prevents upload save on cards from unsupported networks";
-const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[] =
-    "If enabled, cards from unsupported networks will not be offered upload "
-    "save, and will instead be offered local save.";
-
 const char kEnableAutofillImportDynamicFormsName[] =
     "Allow credit card import from dynamic forms after entry";
 const char kEnableAutofillImportDynamicFormsDescription[] =

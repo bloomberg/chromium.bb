@@ -2526,13 +2526,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll | kExpireM77,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamEditableExpirationDate)},
-    {"enable-autofill-do-not-upload-save-unsupported-cards",
-     flag_descriptions::kEnableAutofillDoNotUploadSaveUnsupportedCardsName,
-     flag_descriptions::
-         kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription,
-     kOsAll | kExpireM77,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillDoNotUploadSaveUnsupportedCards)},
     {"enable-autofill-import-dynamic-forms",
      flag_descriptions::kEnableAutofillImportDynamicFormsName,
      flag_descriptions::kEnableAutofillImportDynamicFormsDescription,
