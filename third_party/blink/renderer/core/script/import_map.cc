@@ -446,19 +446,27 @@ base::Optional<KURL> ImportMap::ResolveImportsMatchInternal(
 
 String ImportMap::ToString() const {
   StringBuilder builder;
-  builder.Append("{\n");
+  builder.Append("{");
+  bool is_first_key = true;
   for (const auto& it : imports_) {
-    builder.Append("  \"");
+    if (!is_first_key)
+      builder.Append(",");
+    is_first_key = false;
+    builder.Append("\n  \"");
     builder.Append(it.key);
-    builder.Append("\": [\n");
+    builder.Append("\": [");
+    bool is_first_value = true;
     for (const auto& v : it.value) {
-      builder.Append("    \"");
+      if (!is_first_value)
+        builder.Append(",");
+      is_first_value = false;
+      builder.Append("\n    \"");
       builder.Append(v.GetString());
-      builder.Append("\",\n");
+      builder.Append("\"");
     }
-    builder.Append("  ]\n");
+    builder.Append("\n  ]");
   }
-  builder.Append("}\n");
+  builder.Append("\n}\n");
   return builder.ToString();
 }
 
