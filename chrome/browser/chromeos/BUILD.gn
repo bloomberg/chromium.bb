@@ -1356,6 +1356,8 @@ source_set("chromeos") {
     "login/screens/welcome_screen.h",
     "login/screens/wrong_hwid_screen.cc",
     "login/screens/wrong_hwid_screen.h",
+    "login/security_token_pin_dialog_host_ash_impl.cc",
+    "login/security_token_pin_dialog_host_ash_impl.h",
     "login/session/chrome_session_manager.cc",
     "login/session/chrome_session_manager.h",
     "login/session/user_session_manager.cc",

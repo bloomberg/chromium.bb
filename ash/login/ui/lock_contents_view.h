@@ -22,6 +22,7 @@
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "ash/session/session_observer.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -126,6 +127,8 @@ class ASH_EXPORT LockContentsView
   void FocusNextUser();
   void FocusPreviousUser();
   void ShowParentAccessDialog(bool show);
+  void RequestSecurityTokenPin(SecurityTokenPinRequest request);
+  void ClearSecurityTokenPinRequest();
 
   // views::View:
   void Layout() override;

@@ -39,6 +39,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -564,6 +565,24 @@ void LockContentsView::ShowParentAccessDialog(bool show) {
     primary_big_view_->HideParentAccessView();
 
   Layout();
+}
+
+void LockContentsView::RequestSecurityTokenPin(
+    SecurityTokenPinRequest request) {
+  // TODO(crbug.com/983103): Pick up the user whose authentication triggered
+  // this PIN attempt, based on the account identifier supplied by the
+  // cryptohome.
+  if (primary_big_view_ && primary_big_view_->auth_user())
+    primary_big_view_->auth_user()->RequestSecurityTokenPin(std::move(request));
+  else
+    std::move(request.pin_ui_closed_callback).Run();
+}
+
+void LockContentsView::ClearSecurityTokenPinRequest() {
+  // Note that if the PIN UI used to be shown in a different primary big view,
+  // then it was already closed while switching the view.
+  if (primary_big_view_ && primary_big_view_->auth_user())
+    primary_big_view_->auth_user()->ClearSecurityTokenPinRequest();
 }
 
 void LockContentsView::Layout() {

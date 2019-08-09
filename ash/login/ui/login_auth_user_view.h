@@ -14,6 +14,7 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/session/user_info.h"
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -132,6 +133,13 @@ class ASH_EXPORT LoginAuthUserView
   // Set the parameters needed to render the message that is shown to user when
   // auth method is |AUTH_DISABLED|.
   void SetAuthDisabledMessage(const AuthDisabledData& auth_disabled_data);
+
+  // Called to request the user to enter the PIN of the security token (e.g.,
+  // the smart card).
+  void RequestSecurityTokenPin(SecurityTokenPinRequest request);
+
+  // Called to close the UI previously opened with RequestSecurityTokenPin().
+  void ClearSecurityTokenPinRequest();
 
   const LoginUserInfo& current_user() const;
 

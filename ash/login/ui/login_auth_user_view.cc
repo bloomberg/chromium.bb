@@ -6,6 +6,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/resources/grit/login_resources.h"
@@ -987,6 +988,17 @@ void LoginAuthUserView::SetAuthDisabledMessage(
     const AuthDisabledData& auth_disabled_data) {
   disabled_auth_message_->SetAuthDisabledMessage(auth_disabled_data);
   Layout();
+}
+
+void LoginAuthUserView::RequestSecurityTokenPin(
+    SecurityTokenPinRequest request) {
+  // TODO(crbug.com/964069): Implement the UI.
+  std::move(request.pin_ui_closed_callback).Run();
+}
+
+void LoginAuthUserView::ClearSecurityTokenPinRequest() {
+  // TODO(crbug.com/964069): Implement the UI.
+  NOTIMPLEMENTED();
 }
 
 const LoginUserInfo& LoginAuthUserView::current_user() const {
