@@ -83,13 +83,14 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
     OutputRecord();
     OutputRecord(OutputRecord&&);
     ~OutputRecord();
-    bool at_client;
     size_t num_times_sent_to_client;
     int32_t picture_id;
     GLuint client_texture_id;
     GLuint texture_id;
     std::vector<base::ScopedFD> dmabuf_fds;
     bool cleared;
+
+    bool at_client() const { return num_times_sent_to_client > 0; }
   };
 
   // Decoder state enum.

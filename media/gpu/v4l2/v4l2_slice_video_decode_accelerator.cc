@@ -78,8 +78,7 @@ const uint32_t V4L2SliceVideoDecodeAccelerator::supported_input_fourccs_[] = {
 };
 
 V4L2SliceVideoDecodeAccelerator::OutputRecord::OutputRecord()
-    : at_client(false),
-      num_times_sent_to_client(0),
+    : num_times_sent_to_client(0),
       picture_id(-1),
       texture_id(0),
       cleared(false) {}
@@ -1179,14 +1178,6 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputBuffers() {
   // This will prevent us from reusing old surfaces in case we have some
   // ReusePictureBuffer() pending on ChildThread already. It's ok to ignore
   // them, because we have already dismissed them (in DestroyOutputs()).
-  for (const auto& surface_at_display : surfaces_at_display_) {
-    size_t index = surface_at_display.second->output_record();
-    DCHECK_LT(index, output_buffer_map_.size());
-    OutputRecord& output_record = output_buffer_map_[index];
-    DCHECK(output_record.at_client);
-    output_record.at_client = false;
-    output_record.num_times_sent_to_client = 0;
-  }
   surfaces_at_display_.clear();
   DCHECK_EQ(output_queue_->FreeBuffersCount(), output_buffer_map_.size());
 
@@ -1574,7 +1565,7 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask(
   }
 
   OutputRecord& output_record = output_buffer_map_[it->second->output_record()];
-  if (!output_record.at_client) {
+  if (!output_record.at_client()) {
     VLOGF(1) << "picture_buffer_id not reusable";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
@@ -1583,8 +1574,7 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask(
   --output_record.num_times_sent_to_client;
   // A output buffer might be sent multiple times. We only use the last fence.
   // When the last fence is signaled, all the previous fences must be executed.
-  if (output_record.num_times_sent_to_client == 0) {
-    output_record.at_client = false;
+  if (!output_record.at_client()) {
     // Take ownership of the EGL fence.
     surfaces_awaiting_fence_.push(
         std::make_pair(std::move(egl_fence), std::move(it->second)));
@@ -1850,9 +1840,7 @@ void V4L2SliceVideoDecodeAccelerator::OutputSurface(
   OutputRecord& output_record =
       output_buffer_map_[dec_surface->output_record()];
 
-  if (output_record.num_times_sent_to_client == 0) {
-    DCHECK(!output_record.at_client);
-    output_record.at_client = true;
+  if (!output_record.at_client()) {
     bool inserted =
         surfaces_at_display_
             .insert(std::make_pair(output_record.picture_id, dec_surface))
@@ -1860,7 +1848,6 @@ void V4L2SliceVideoDecodeAccelerator::OutputSurface(
     DCHECK(inserted);
   } else {
     // The surface is already sent to client, and not returned back yet.
-    DCHECK(output_record.at_client);
     DCHECK(surfaces_at_display_.find(output_record.picture_id) !=
            surfaces_at_display_.end());
     CHECK(surfaces_at_display_[output_record.picture_id].get() ==
@@ -2056,7 +2043,7 @@ size_t V4L2SliceVideoDecodeAccelerator::GetNumOfOutputRecordsAtDevice() const {
 size_t V4L2SliceVideoDecodeAccelerator::GetNumOfOutputRecordsAtClient() const {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   return std::count_if(output_buffer_map_.begin(), output_buffer_map_.end(),
-                       [](const auto& r) { return r.at_client; });
+                       [](const auto& r) { return r.at_client(); });
 }
 
 // base::trace_event::MemoryDumpProvider implementation.
