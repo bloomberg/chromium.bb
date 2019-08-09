@@ -1,6 +1,7 @@
 # liblouis: Chinese double spelling Braille.
 #
-#-display-name: Two-cell Chinese braille
+#-index-name:  Mandarin, 2-cell
+#-display-name: Two-cell Mandarin braille
 #
 #+locale:cmn-CN
 #+type:literary

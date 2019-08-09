@@ -3,7 +3,8 @@
 #+dots:8
 #+system:bfu
 
-#-display-name: Unified French 8 dots braille
+#-index-name: French, unified, computer
+#-display-name: Unified French computer braille
 #-author: André-Abush CLAUSE <dev@andreabc.net>
 #-author: Michel Such <michel.such@free.fr>
 #-author: The BRLTTY Team <http://brltty.com/>

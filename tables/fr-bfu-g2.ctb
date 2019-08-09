@@ -4,6 +4,7 @@
 #+grade:2
 #+system:bfu
 
+#-index-name: French, unified, contracted
 #-display-name: Unified French contracted braille
 #-author: The BRLTTY Team <http://brltty.app/>
 #-author: André-Abush CLAUSE <dev@andreabc.net>

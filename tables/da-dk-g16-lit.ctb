@@ -29,7 +29,8 @@
 ### Table Metadata
 
 #-name: Dansk fuldskrift 6-punkt
-#-display-name: Danish 6-dot uncontracted braille
+#-index-name: Danish, uncontracted, 6-dot, forward
+#-display-name: Danish 6-dot uncontracted braille for forward translation
 
 #+locale: da
 #+type: literary

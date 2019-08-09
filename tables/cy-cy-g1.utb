@@ -1,6 +1,7 @@
 # liblouis: Welsh Grade 1 table
 #
 # ------------
+#-index-name: Welsh, uncontracted
 #-display-name: Welsh uncontracted braille
 #
 #+locale:cy

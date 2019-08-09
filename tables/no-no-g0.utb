@@ -1,6 +1,7 @@
 # liblouis: Norwegian literary braille, 6-dot, uncontracted
 #
 #-name: Norsk litterær punktskrift, 6-punkt, fullskrift
+#-index-name: Norwegian, uncontracted, 6-dot
 #-display-name: Norwegian 6-dot uncontracted braille
 #
 #+locale:no

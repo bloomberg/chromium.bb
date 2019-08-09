@@ -22,7 +22,8 @@
 
 ### Table Metadata
 
-#-display-name: Danish 6-dot partially contracted braille
+#-index-name: Danish, partially contracted, 6-dot, forward
+#-display-name: Danish 6-dot partially contracted braille for forward translation
 
 #+locale: da
 #+type: literary

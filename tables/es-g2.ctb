@@ -1,6 +1,7 @@
 # liblouis: Spanish, Grade 2 table
 #
 # -----------
+#-index-name: Spanish, contracted
 #-display-name: Spanish contracted braille
 #
 #+locale:es

@@ -1,6 +1,7 @@
 # liblouis: U.K. English 8 dot Computer braille table
 #
 # -----------
+#-index-name: English, U.K., computer
 #-display-name: U.K. English computer braille
 #
 #+locale:en-GB
