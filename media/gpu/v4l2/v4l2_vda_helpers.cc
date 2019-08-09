@@ -19,23 +19,28 @@ base::Optional<VideoFrameLayout> CreateLayout(uint32_t fourcc,
   // format and now is only used for MT8173 VDA output and its image processor
   // input, we set VideoFrameLayout for image processor's input with format
   // PIXEL_FORMAT_NV12 as NV12's layout is the same as MT21.
-  if (fourcc == V4L2_PIX_FMT_MT21C) {
-    size_t num_planes = 2;
-    return VideoFrameLayout::CreateMultiPlanar(
-        PIXEL_FORMAT_NV12, size,
-        std::vector<VideoFrameLayout::Plane>(num_planes));
-  } else {
-    VideoPixelFormat pixel_format =
-        V4L2Device::V4L2PixFmtToVideoPixelFormat(fourcc);
-    if (pixel_format == PIXEL_FORMAT_UNKNOWN)
-      return base::nullopt;
-    size_t num_planes = VideoFrame::NumPlanes(pixel_format);
-    if (num_planes == 1) {
-      return VideoFrameLayout::Create(pixel_format, size);
-    } else {
+  size_t num_planes;
+  switch (fourcc) {
+    case V4L2_PIX_FMT_MT21C:
+    case V4L2_PIX_FMT_MM21:
+      num_planes = 2;
       return VideoFrameLayout::CreateMultiPlanar(
-          pixel_format, size, std::vector<VideoFrameLayout::Plane>(num_planes));
-    }
+          PIXEL_FORMAT_NV12, size,
+          std::vector<VideoFrameLayout::Plane>(num_planes));
+
+    default:
+      VideoPixelFormat pixel_format =
+          V4L2Device::V4L2PixFmtToVideoPixelFormat(fourcc);
+      if (pixel_format == PIXEL_FORMAT_UNKNOWN)
+        return base::nullopt;
+      num_planes = VideoFrame::NumPlanes(pixel_format);
+      if (num_planes == 1)
+        return VideoFrameLayout::Create(pixel_format, size);
+      else
+        return VideoFrameLayout::CreateMultiPlanar(
+            pixel_format, size,
+            std::vector<VideoFrameLayout::Plane>(num_planes));
+      break;
   }
 }
 }  // namespace
