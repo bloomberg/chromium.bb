@@ -91,6 +91,9 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // The system has entered the power suspension mode.
   bool in_power_suspension_ = false;
 
+  // OnWatchdogTimeout() is called for the first time after power resume.
+  bool is_first_timeout_after_power_resume = false;
+
   // Chrome is running on the background on Android. Gpu is probably very slow
   // or stalled.
   bool is_backgrounded_ = false;

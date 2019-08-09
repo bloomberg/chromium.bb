@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "gpu/config/gpu_crash_keys.h"
 
 namespace gpu {
 
@@ -130,6 +131,7 @@ void GpuWatchdogThreadImplV2::OnResume() {
   in_power_suspension_ = false;
   RestartWatchdogTimeoutTask();
   resume_timeticks_ = base::TimeTicks::Now();
+  is_first_timeout_after_power_resume = true;
 }
 
 // Running on the watchdog thread.
@@ -162,6 +164,8 @@ void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask() {
         FROM_HERE,
         base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
         watchdog_timeout_ * kRestartFactor);
+    last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
+    last_on_watchdog_timeout_time_ = base::Time::Now();
   }
 }
 
@@ -202,6 +206,8 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   if (disarmed || gpu_makes_progress) {
     last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
     last_on_watchdog_timeout_time_ = base::Time::Now();
+    is_first_timeout_after_power_resume = false;
+
     task_runner()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
@@ -252,6 +258,9 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   base::debug::Alias(&time_elapses);
 
   GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogKill);
+
+  crash_keys::gpu_watchdog_kill_after_power_resume.Set(
+      is_first_timeout_after_power_resume ? "1" : "0");
 
   // Deliberately crash the process to create a crash dump.
   *((volatile int*)0) = 0xdeadface;
