@@ -1128,14 +1128,12 @@
   {
     "prefix": "cache-storage-parallel",
     "base": "external/wpt/service-workers",
-    "args": ["--enable-features=CacheStorageParallelOps<CSPO",
-             "--force-fieldtrials=CSPO/G1",
-             "--force-fieldtrial-params=CSPO.G1:max_shared_ops/64"]
+    "args": ["--disable-features=CacheStorageParallelOps"]
   },
   {
     "prefix": "cache-storage-sequence",
     "base": "external/wpt/service-workers",
-    "args": ["--enable-features=CacheStorageSequence"]
+    "args": ["--disable-features=CacheStorageSequence"]
   },
   {
     "prefix": "conditional-appcache-delay",
