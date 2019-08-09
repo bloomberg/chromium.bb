@@ -334,6 +334,8 @@ class DepGraphGenerator(object):
       os.environ['PORTAGE_CONFIGROOT'] = opts['--config-root']
     if '--root' in opts:
       os.environ['ROOT'] = opts['--root']
+    elif self.board:
+      os.environ['ROOT'] = self.sysroot
     if '--accept-properties' in opts:
       os.environ['ACCEPT_PROPERTIES'] = opts['--accept-properties']
 
