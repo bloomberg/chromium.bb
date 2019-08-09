@@ -1520,6 +1520,14 @@ config("default_warnings") {
           cflags += [
             # TODO(https://crbug.com/989932): Evaluate and possibly enable.
             "-Wno-implicit-int-float-conversion",
+
+            # TODO(https://crbug.com/992458): Fix and re-enable. When rolling
+            # past clang r368446, do *not* move this out of
+            # llvm_force_head_revision -- we need to fix all instances before
+            # rolling, else we lose a valuable pre-existing warning that got
+            # smarter on clang trunk. (And having a -Wno-error flag instead of
+            # -Wno-return-stack-address on pinned clang won't fly either.)
+            "-Wno-error=return-stack-address",
           ]
         }
       }
