@@ -24257,8 +24257,8 @@ Called by update_net_error_codes.py.-->
   <int value="2978" label="ToggleEventHandlerDuringParsing"/>
   <int value="2979" label="FragmentDoubleHash"/>
   <int value="2980" label="V8RegExpMatchAllWithNonGlobalRegExp"/>
-  <int value="2981" label="CSSValueOverflowXOverlay"/>
-  <int value="2982" label="CSSValueOverflowYOverlay"/>
+  <int value="2981" label="OBSOLETE_CSSValueOverflowXOverlay"/>
+  <int value="2982" label="OBSOLETE_CSSValueOverflowYOverlay"/>
   <int value="2983" label="ContentIndexAdd"/>
   <int value="2984" label="ContentIndexDelete"/>
   <int value="2985" label="ContentIndexGet"/>
@@ -24271,6 +24271,7 @@ Called by update_net_error_codes.py.-->
   <int value="2992" label="V8SpeechRecognition_Grammars_AttributeSetter"/>
   <int value="2993" label="ContactsManagerSelect"/>
   <int value="2994" label="V8MediaSession_SetPositionState_Method"/>
+  <int value="2995" label="CSSValueOverflowOverlay"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
