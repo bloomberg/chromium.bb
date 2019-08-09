@@ -2401,6 +2401,9 @@ if (!is_android) {
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
         "../browser/ui/views/uninstall_view_browsertest.cc",
       ]
+
+      configs += [ "//build/config/win:delayloads" ]
+
       deps += [
         "//chrome:other_version",
         "//chrome/app:command_ids",
@@ -5591,11 +5594,7 @@ if (!is_android) {
         "runtimeobject.lib",
       ]
 
-      ldflags += [
-        "/DELAYLOAD:api-ms-win-core-winrt-error-l1-1-0.dll",
-        "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll",
-        "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll",
-      ]
+      configs += [ "//build/config/win:delayloads" ]
     }
 
     if (is_mac) {
@@ -6422,13 +6421,10 @@ if (is_win) {
 
     # Don't want the test-specific dependencies to affect load tests.
     # In particular, a few system DLLs cause user32 to be loaded, which is bad.
-    ldflags = [
-      "/DELAYLOAD:advapi32.dll",
-      "/DELAYLOAD:ole32.dll",
-      "/DELAYLOAD:shell32.dll",
-      "/DELAYLOAD:shlwapi.dll",
-      "/DELAYLOAD:user32.dll",
-      "/DELAYLOAD:winmm.dll",
+    # Add delayloads to ensure loader validations occur properly.
+    configs += [
+      "//build/config/win:delayloads",
+      "//build/config/win:delayloads_not_for_child_dll",
     ]
   }
 }
