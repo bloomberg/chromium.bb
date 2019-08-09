@@ -113,6 +113,10 @@ class AshColorProvider {
   // color of the UI element that wants to show inkdrop.
   RippleAttributes GetRippleAttributes(SkColor bg_color) const;
 
+  // Gets the disabled color on |enabled_color|. It can be disabled background,
+  // an disabled icon, etc.
+  SkColor GetDisabledColor(SkColor enabled_color) const;
+
   AshColorMode color_mode() const { return color_mode_; }
 
  private:

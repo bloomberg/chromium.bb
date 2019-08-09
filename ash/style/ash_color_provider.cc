@@ -4,6 +4,8 @@
 
 #include "ash/style/ash_color_provider.h"
 
+#include <math.h>
+
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -19,6 +21,9 @@ namespace {
 // Opacity of the light/dark ink ripple.
 constexpr float kLightInkRippleOpacity = 0.08f;
 constexpr float kDarkInkRippleOpacity = 0.06f;
+
+// The disabled color is always 38% opacity of the enabled color.
+constexpr float kDisabledColorOpacity = 0.38f;
 
 // Gets the color mode value from feature flag "--ash-color-mode".
 AshColorProvider::AshColorMode GetColorModeFromCommandLine() {
@@ -111,6 +116,11 @@ AshColorProvider::RippleAttributes AshColorProvider::GetRippleAttributes(
                             ? kDarkInkRippleOpacity
                             : kLightInkRippleOpacity;
   return RippleAttributes(base_color, opacity, opacity);
+}
+
+SkColor AshColorProvider::GetDisabledColor(SkColor enabled_color) const {
+  return SkColorSetA(enabled_color, std::round(SkColorGetA(enabled_color) *
+                                               kDisabledColorOpacity));
 }
 
 SkColor AshColorProvider::GetShieldLayerColorImpl(
