@@ -102,6 +102,11 @@ class AutocompleteResult {
   static ACMatches::iterator FindTopMatch(const AutocompleteInput& input,
                                           ACMatches* matches);
 
+  // If the top match is a Search Entity, and it was deduplicated with a
+  // non-entity match, split off the non-entity match from the list of
+  // duplicates and promote it to the top.
+  static void DiscourageTopMatchFromBeingSearchEntity(ACMatches* matches);
+
   const GURL& alternate_nav_url() const { return alternate_nav_url_; }
 
   // Clears the matches for this result set.
@@ -123,15 +128,6 @@ class AutocompleteResult {
   static GURL ComputeAlternateNavUrl(const AutocompleteInput& input,
                                      const AutocompleteMatch& match);
 
-  // Sort |matches| by destination, taking into account demotions based on
-  // |page_classification| when resolving ties about which of several
-  // duplicates to keep.  The matches are also deduplicated. Duplicate matches
-  // are stored in the |duplicate_matches| vector of the corresponding
-  // AutocompleteMatch.
-  static void SortAndDedupMatches(
-      metrics::OmniboxEventProto::PageClassification page_classification,
-      ACMatches* matches);
-
   // Prepend missing tail suggestion prefixes in results, if present.
   void InlineTailPrefixes();
 
@@ -145,6 +141,7 @@ class AutocompleteResult {
                            PedalSuggestionsRemainUnique);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
                            TestGroupSuggestionsBySearchVsURL);
+  friend class HistoryURLProviderTest;
 
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
 
@@ -155,6 +152,15 @@ class AutocompleteResult {
 #else
   typedef ACMatches::iterator::difference_type matches_difference_type;
 #endif
+
+  // Sort |matches| by destination, taking into account demotions based on
+  // |page_classification| when resolving ties about which of several
+  // duplicates to keep.  The matches are also deduplicated. Duplicate matches
+  // are stored in the |duplicate_matches| vector of the corresponding
+  // AutocompleteMatch.
+  static void SortAndDedupMatches(
+      metrics::OmniboxEventProto::PageClassification page_classification,
+      ACMatches* matches);
 
   // Examines |first| and |second| and returns the match that is preferred when
   // choosing between candidate duplicates. Note that this may modify the

@@ -1067,6 +1067,10 @@ TEST_F(AutocompleteResultTest, SortAndCullPreferEntities) {
     },
     // This match will be the first result but it won't affect the entity
     // deduping because it has a different URL.
+    //
+    // Also keeping this as the default match allows us to test that Entities
+    // and plain matches are deduplicated when they are not the default match.
+    // See SortAndCullPreferEntitiesButKeepDefaultPlainMatches for details.
     {
       AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED,
       "http://search/?q=bar", 1200, true, "foo", "oo"
@@ -1136,6 +1140,50 @@ TEST_F(AutocompleteResultTest, SortAndCullPreferEntitiesFillIntoEditMustMatch) {
   EXPECT_TRUE(result.match_at(0)->allowed_to_be_default_match);
   EXPECT_EQ(base::ASCIIToUTF16("oo"),
             result.match_at(0)->inline_autocompletion);
+}
+
+TEST_F(AutocompleteResultTest,
+       SortAndCullPreferEntitiesButKeepDefaultPlainMatches) {
+  // clang-format off
+  std::vector<EntityTestData> test_cases = {
+    {
+      AutocompleteMatchType::SEARCH_SUGGEST,
+      "http://search/?q=foo", 1001, true, "foo", ""
+    },
+    {
+      AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
+      "http://search/?q=foo", 1000, false, "foo", ""
+    },
+    {
+      AutocompleteMatchType::SEARCH_SUGGEST,
+      "http://search/?q=foo", 900, true, "foo", "oo"
+    },
+  };
+  // clang-format on
+  ACMatches matches;
+  PopulateEntityTestCases(test_cases, &matches);
+
+  AutocompleteInput input(base::ASCIIToUTF16("f"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  // The first result will be a plain match.
+  EXPECT_EQ(2UL, result.size());
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST, result.match_at(0)->type);
+  EXPECT_EQ(1001, result.match_at(0)->relevance);
+
+  // The second result will be the result of deduping the Suggest Entity with
+  // the third result. It should have still consumed the inline autocomplete
+  // and allowed_to_be_default qualities from the other two.
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
+            result.match_at(1)->type);
+  EXPECT_EQ(1001, result.match_at(1)->relevance);
+  EXPECT_TRUE(result.match_at(1)->allowed_to_be_default_match);
+  EXPECT_EQ(base::ASCIIToUTF16("oo"),
+            result.match_at(1)->inline_autocompletion);
 }
 
 TEST_F(AutocompleteResultTest, SortAndCullPromoteDuplicateSearchURLs) {

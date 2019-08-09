@@ -196,6 +196,8 @@ void AutocompleteResult::SortAndCull(
     std::rotate(matches_.begin(), it, next);
   }
 
+  DiscourageTopMatchFromBeingSearchEntity(&matches_);
+
   size_t max_url_count = 0;
   if (OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() &&
       (max_url_count = OmniboxFieldTrial::GetMaxURLMatches()) != 0)
@@ -413,6 +415,39 @@ ACMatches::iterator AutocompleteResult::FindTopMatch(
     return std::find_if(matches->begin(), matches->end(), [](const auto& m) {
       return m.allowed_to_be_default_match;
     });
+  }
+}
+
+// static
+void AutocompleteResult::DiscourageTopMatchFromBeingSearchEntity(
+    ACMatches* matches) {
+  if (matches->empty())
+    return;
+
+  auto top_match = matches->begin();
+  if (top_match->type != ACMatchType::SEARCH_SUGGEST_ENTITY)
+    return;
+
+  // Search the duplicates for a equivalent non-entity search suggestion.
+  for (auto it = top_match->duplicate_matches.begin();
+       it != top_match->duplicate_matches.end(); ++it) {
+    // Reject any ineligible duplicates.
+    if (it->type == ACMatchType::SEARCH_SUGGEST_ENTITY ||
+        !AutocompleteMatch::IsSearchType(it->type) ||
+        !it->allowed_to_be_default_match) {
+      continue;
+    }
+
+    // Copy the non-entity match, then erase it from the list of duplicates.
+    // We do this first, because the insertion operation invalidates all
+    // iterators, including |top_match|.
+    AutocompleteMatch non_entity_match_copy = *it;
+    top_match->duplicate_matches.erase(it);
+
+    // Promote the non-entity match to the top, then immediately return, since
+    // all our iterators are invalid after the insertion.
+    matches->insert(matches->begin(), std::move(non_entity_match_copy));
+    return;
   }
 }
 
