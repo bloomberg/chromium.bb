@@ -837,37 +837,6 @@ bool V4L2SliceVideoDecodeAccelerator::EnqueueOutputRecord(
   OutputRecord& output_record = output_buffer_map_[index];
   DCHECK_NE(output_record.picture_id, -1);
 
-  if (output_record.egl_fence) {
-    TRACE_EVENT0("media,gpu",
-                 "V4L2SVDA::EnqueueOutputRecord: "
-                 "GLFenceEGL::ClientWaitWithTimeoutNanos");
-
-    // If we have to wait for completion, wait. Note that free_output_buffers_
-    // is a FIFO queue, so we always wait on the buffer that has been in the
-    // queue the longest. Every 100ms we check whether the decoder is shutting
-    // down, or we might get stuck waiting on a fence that will never come:
-    // https://crbug.com/845645
-    while (!IsDestroyPending()) {
-      const EGLTimeKHR wait_ns =
-          base::TimeDelta::FromMilliseconds(100).InNanoseconds();
-      EGLint result =
-          output_record.egl_fence->ClientWaitWithTimeoutNanos(wait_ns);
-      if (result == EGL_CONDITION_SATISFIED_KHR) {
-        break;
-      } else if (result == EGL_FALSE) {
-        // This will cause tearing, but is safe otherwise.
-        DVLOGF(1) << "GLFenceEGL::ClientWaitWithTimeoutNanos failed!";
-        break;
-      }
-      DCHECK_EQ(result, EGL_TIMEOUT_EXPIRED_KHR);
-    }
-
-    if (IsDestroyPending())
-      return false;
-
-    output_record.egl_fence.reset();
-  }
-
   bool ret;
   if (output_mode_ == Config::OutputMode::ALLOCATE)
     ret = std::move(output_buffer).QueueMMap();
@@ -1161,8 +1130,6 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputs(bool dismiss) {
     return true;
 
   for (auto& output_record : output_buffer_map_) {
-    output_record.egl_fence.reset();
-
     picture_buffers_to_dismiss.push_back(output_record.picture_id);
   }
 
@@ -1197,6 +1164,9 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputBuffers() {
 
   // Release all buffers waiting for an import buffer event.
   output_wait_map_.clear();
+
+  // Release all buffers awaiting a fence since we are about to destroy them.
+  surfaces_awaiting_fence_ = {};
 
   // It's ok to do this, client will retain references to textures, but we are
   // not interested in reusing the surfaces anymore.
@@ -1320,7 +1290,6 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
 
   for (size_t i = 0; i < buffers.size(); i++) {
     OutputRecord& output_record = output_buffer_map_[i];
-    DCHECK(!output_record.egl_fence);
     DCHECK_EQ(output_record.picture_id, -1);
     DCHECK(output_record.dmabuf_fds.empty());
     DCHECK_EQ(output_record.cleared, false);
@@ -1431,7 +1400,6 @@ void V4L2SliceVideoDecodeAccelerator::AssignDmaBufs(
   }
 
   OutputRecord& output_record = output_buffer_map_[buffer_index];
-  DCHECK(!output_record.egl_fence);
   DCHECK_EQ(output_wait_map_.count(picture_buffer_id), 1u);
 
   if (output_mode_ == Config::OutputMode::IMPORT) {
@@ -1612,7 +1580,8 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask(
   if (output_record.num_times_sent_to_client == 0) {
     output_record.at_client = false;
     // Take ownership of the EGL fence.
-    output_record.egl_fence = std::move(egl_fence);
+    surfaces_awaiting_fence_.push(
+        std::make_pair(std::move(egl_fence), std::move(it->second)));
 
     surfaces_at_display_.erase(it);
   }
@@ -1908,6 +1877,33 @@ void V4L2SliceVideoDecodeAccelerator::OutputSurface(
   output_record.cleared = true;
 }
 
+void V4L2SliceVideoDecodeAccelerator::CheckGLFences() {
+  DVLOGF(4);
+  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+
+  while (!surfaces_awaiting_fence_.empty() &&
+         surfaces_awaiting_fence_.front().first->HasCompleted()) {
+    // Buffer at the front of the queue goes back to V4L2Queue's free list
+    // and can be reused.
+    surfaces_awaiting_fence_.pop();
+  }
+
+  // If we have no free buffers available, then preemptively schedule a
+  // call to DecodeBufferTask() in a short time, otherwise we may starve out
+  // of buffers because fences will not call back into us once they are
+  // signaled. The delay chosen roughly corresponds to the time a frame is
+  // displayed, which should be optimal in most cases.
+  if (output_queue_->FreeBuffersCount() == 0) {
+    constexpr int64_t kRescheduleDelayMs = 17;
+
+    decoder_thread_.task_runner()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&V4L2SliceVideoDecodeAccelerator::DecodeBufferTask,
+                       base::Unretained(this)),
+        base::TimeDelta::FromMilliseconds(kRescheduleDelayMs));
+  }
+}
+
 scoped_refptr<V4L2DecodeSurface>
 V4L2SliceVideoDecodeAccelerator::CreateSurface() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
@@ -1924,12 +1920,17 @@ V4L2SliceVideoDecodeAccelerator::CreateSurface() {
                     GetNumOfOutputRecordsAtClient(), "at device",
                     GetNumOfOutputRecordsAtDevice());
 
+  // Release some output buffers if their fence has been signaled.
+  CheckGLFences();
+
   if (input_queue_->FreeBuffersCount() == 0 ||
       output_queue_->FreeBuffersCount() == 0)
     return nullptr;
 
   V4L2WritableBufferRef input_buffer = input_queue_->GetFreeBuffer();
   DCHECK(input_buffer.IsValid());
+  // All buffers that are returned to the output free queue have their GL
+  // fence signaled, so we can use them directly.
   V4L2WritableBufferRef output_buffer = output_queue_->GetFreeBuffer();
   DCHECK(output_buffer.IsValid());
 

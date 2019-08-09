@@ -88,7 +88,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
     int32_t picture_id;
     GLuint client_texture_id;
     GLuint texture_id;
-    std::unique_ptr<gl::GLFenceEGL> egl_fence;
     std::vector<base::ScopedFD> dmabuf_fds;
     bool cleared;
   };
@@ -128,6 +127,10 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Below methods are used by accelerator implementations.
   //
   // V4L2DecodeSurfaceHandler implementation.
+
+  // Release surfaces awaiting for their fence to be signaled.
+  void CheckGLFences();
+
   scoped_refptr<V4L2DecodeSurface> CreateSurface() override;
   // SurfaceReady() uses |decoder_display_queue_| to guarantee that decoding
   // of |dec_surface| happens in order.
@@ -429,6 +432,12 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   using V4L2DecodeSurfaceByPictureBufferId =
       std::map<int32_t, scoped_refptr<V4L2DecodeSurface>>;
   V4L2DecodeSurfaceByPictureBufferId surfaces_at_display_;
+
+  // Queue of surfaces that have been returned by the client, but which fence
+  // hasn't been signaled yet.
+  std::queue<std::pair<std::unique_ptr<gl::GLFenceEGL>,
+                       scoped_refptr<V4L2DecodeSurface>>>
+      surfaces_awaiting_fence_;
 
   // Record for decoded pictures that can be sent to PictureReady.
   struct PictureRecord {
