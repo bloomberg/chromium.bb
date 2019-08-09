@@ -9,7 +9,6 @@
 <translation id="1181037720776840403">அகற்று</translation>
 <translation id="1243314992276662751">பதிவேற்று</translation>
 <translation id="1269641567813814718">Win</translation>
-<translation id="1279732219630636100">இங்கே இருந்து உங்கள் மொபைலுக்கு எண்ணை அனுப்ப இரு சாதனங்களிலும் உள்ள அமைப்புகளுக்குச் சென்று <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" />ஐ <ph name="FOLDER_NAME" /> கோப்புறைக்கு நகர்த்தும்.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">பரிந்துரைக்கப்படும் பயன்பாடுகள்</translation>
@@ -158,6 +157,7 @@
 <translation id="6620110761915583480">கோப்பைச் சேமி</translation>
 <translation id="6699343763173986273">ஊடகத்தின் அடுத்த டிராக்</translation>
 <translation id="673773751041746814">நீக்கும்</translation>
+<translation id="6779314412797872738">இங்கே இருந்து உங்கள் Android மொபைலுக்கு எண்ணை அனுப்ப இரு சாதனங்களிலும் உள்ள அமைப்புகளுக்குச் சென்று <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="6786750046913594791">கோப்புறையை மூடு</translation>
 <translation id="6808150112686056157">ஊடகத்தை நிறுத்து</translation>
 <translation id="6845383723252244143">கோப்புறையைத் தேர்ந்தெடு</translation>

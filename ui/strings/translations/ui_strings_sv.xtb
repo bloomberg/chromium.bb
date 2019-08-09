@@ -9,7 +9,6 @@
 <translation id="1181037720776840403">Ta bort</translation>
 <translation id="1243314992276662751">Ladda upp</translation>
 <translation id="1269641567813814718">Win</translation>
-<translation id="1279732219630636100"><ph name="TROUBLESHOOT_LINK" /> i inställningarna för båda enheterna om du vill skicka ett nummer till telefonen härifrån.</translation>
 <translation id="1290982764014248209">Flytta <ph name="DRAGGED_APP" /> till mappen <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">REKOMMENDERADE APPAR</translation>
@@ -158,6 +157,7 @@
 <translation id="6620110761915583480">Spara fil</translation>
 <translation id="6699343763173986273">Nästa spår</translation>
 <translation id="673773751041746814">Borttagning</translation>
+<translation id="6779314412797872738"><ph name="TROUBLESHOOT_LINK" /> i inställningarna för båda enheterna om du vill skicka ett nummer till Android-telefonen härifrån.</translation>
 <translation id="6786750046913594791">Stäng mappen</translation>
 <translation id="6808150112686056157">Stoppa</translation>
 <translation id="6845383723252244143">Välj mapp</translation>

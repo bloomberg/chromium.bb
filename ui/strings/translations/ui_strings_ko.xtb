@@ -9,7 +9,6 @@
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1243314992276662751">업로드</translation>
 <translation id="1269641567813814718">Win</translation>
-<translation id="1279732219630636100">여기에서 휴대전화로 번호를 전송하려면 설정에서 두 기기의 <ph name="TROUBLESHOOT_LINK" />하세요.</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" /> 앱을 <ph name="FOLDER_NAME" /> 폴더로 이동합니다.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">추천 앱</translation>
@@ -158,6 +157,7 @@
 <translation id="6620110761915583480">파일 저장</translation>
 <translation id="6699343763173986273">미디어 다음 트랙</translation>
 <translation id="673773751041746814">삭제</translation>
+<translation id="6779314412797872738">여기에서 Android 휴대전화로 번호를 전송하려면 두 기기 모두의 설정에서 <ph name="TROUBLESHOOT_LINK" />하세요.</translation>
 <translation id="6786750046913594791">폴더 닫기</translation>
 <translation id="6808150112686056157">미디어 중지</translation>
 <translation id="6845383723252244143">폴더 선택</translation>

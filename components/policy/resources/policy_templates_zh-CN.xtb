@@ -2149,7 +2149,7 @@
 <translation id="5142301680741828703">总是通过“<ph name="PRODUCT_FRAME_NAME" />”呈现以下网址格式</translation>
 <translation id="5146261336206349846">如果此政策设为启用，安全浏览功能会实时检查所访问的所有网址。
 
-      如果此政策设为停用或未设置，系统会应用用户的安全浏览检查设置。</translation>
+      如果此政策设为停用或未设置，系统会采用用户的安全浏览检查设置。</translation>
 <translation id="5148753489738115745">可让您指定在 <ph name="PRODUCT_FRAME_NAME" />启动 <ph name="PRODUCT_NAME" />时所使用的其他参数。
 
           如果未设置此政策，系统将会使用默认命令行。</translation>

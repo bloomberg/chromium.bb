@@ -9,7 +9,6 @@
 <translation id="1181037720776840403">Poista</translation>
 <translation id="1243314992276662751">Lähetä</translation>
 <translation id="1269641567813814718">Win</translation>
-<translation id="1279732219630636100">Jos haluat lähettää numeron tältä laitteelta puhelimeesi, <ph name="TROUBLESHOOT_LINK" /> molempien laitteiden asetuksissa.</translation>
 <translation id="1290982764014248209">Siirrä <ph name="DRAGGED_APP" /> kansioon <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">SOVELLUSSUOSITUKSET</translation>
@@ -158,6 +157,7 @@
 <translation id="6620110761915583480">Tallenna tiedosto</translation>
 <translation id="6699343763173986273">Media: seuraava kappale</translation>
 <translation id="673773751041746814">Poisto</translation>
+<translation id="6779314412797872738">Jos haluat lähettää numeron tältä laitteelta Android-puhelimeesi, <ph name="TROUBLESHOOT_LINK" /> molempien laitteiden asetuksista.</translation>
 <translation id="6786750046913594791">Sulje kansio</translation>
 <translation id="6808150112686056157">Media: pysäytä</translation>
 <translation id="6845383723252244143">Valitse kansio</translation>

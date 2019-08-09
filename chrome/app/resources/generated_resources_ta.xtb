@@ -1533,7 +1533,7 @@
 <translation id="3281892622610078515">தனிமைப்படுத்தப்படவுள்ள கோப்புகளும் நிரல்களும்:</translation>
 <translation id="3282568296779691940">Chrome இல் உள்நுழைக</translation>
 <translation id="3285322247471302225">புதிய &amp;தாவல்</translation>
-<translation id="3286654161521615710">Chrome உலாவி மற்றும் <ph name="DEVICE_TYPE" /> தொடக்கியால் பயன்படுத்தப்பட்டது</translation>
+<translation id="3286654161521615710">Chrome உலாவி மற்றும் <ph name="DEVICE_TYPE" /> தொடக்கியால் பயன்படுத்தப்படுகிறது</translation>
 <translation id="3286737518123001369">உங்கள் பாதுகாப்பு விசையில் சேமிக்கப்பட்டுள்ள உள்நுழைவுத் தகவல்களைப் பார்க்கலாம் நீக்கலாம்</translation>
 <translation id="3288047731229977326">டெவெலப்பர் பயன்முறையில் இயங்கிக்கொண்டிருக்கும் நீட்டிப்புகள் உங்கள் கம்ப்யூட்டருக்குத் தீங்கு விளைவிக்கலாம். நீங்கள் டெவெலப்பர் இல்லையென்றால், பாதுகாப்பு காரணமாக டெவெலப்பர் பயன்முறையில் இயங்கிக்கொண்டிருக்கும் இந்த நீட்டிப்புகளை முடக்க வேண்டும்.</translation>
 <translation id="3289856944988573801">புதுப்பிப்புகளைப் பார்க்க, ஈத்தர்நெட் அல்லது வைஃபை ஐப் பயன்படுத்தவும்.</translation>
@@ -2447,7 +2447,7 @@
 <translation id="4647697156028544508">"<ph name="DEVICE_NAME" />" க்கான PIN ஐ உள்ளிடுக:</translation>
 <translation id="4648491805942548247">போதிய அனுமதிகள் இல்லை</translation>
 <translation id="4648499713050786492">பயனரைச் சேர்க்கும் முன், உங்கள் சுயவிவரத்தைத் திறக்கவும்.</translation>
-<translation id="4650591383426000695"><ph name="DEVICE_TYPE" /> சாதனத்திலிருந்து உங்கள் மொபைலின் இணைப்பை நீக்கவும்</translation>
+<translation id="4650591383426000695"><ph name="DEVICE_TYPE" /> சாதனத்திலிருந்து உங்கள் மொபைலின் இணைப்பை நீக்கும்</translation>
 <translation id="4651484272688821107">டெமோ பயன்முறை ஆதாரங்கள் மூலம் ஆன்லைன் காம்பொனெண்ட்டை ஏற்ற முடியவில்லை.</translation>
 <translation id="465878909996028221">HTTP, HTTPS மற்றும் கோப்பு நெறிமுறைகள் மட்டுமே உலாவி திசைதிருப்புதல் செய்யலாம்.</translation>
 <translation id="4659077111144409915">முதன்மைக் கணக்கு</translation>
@@ -2749,7 +2749,7 @@
 <translation id="5115309401544567011"><ph name="DEVICE_TYPE" /> சாதனத்தைச் சார்ஜ் செய்யவும்.</translation>
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">ஆடியோவை இவ்வாறு சே&amp;மி...</translation>
-<translation id="5117139026559873716"><ph name="DEVICE_TYPE" /> சாதனத்திலிருந்து உங்கள் மொபைலின் இணைப்பை நீக்கவும். இனி அவை தானாக இணைக்கப்படாது.</translation>
+<translation id="5117139026559873716"><ph name="DEVICE_TYPE" /> சாதனத்திலிருந்து உங்கள் மொபைலின் இணைப்பை நீக்கும். இனி அவை தானாக இணைக்கப்படாது.</translation>
 <translation id="5117427536932535467">தீம்கள் மற்றும் வால்பேப்பர்கள்</translation>
 <translation id="5117625797180141189"><ph name="DOCUMENT_NAME" /> அச்சிடப்பட்டது</translation>
 <translation id="5117930984404104619">பார்வையிட்ட URLகள் உள்ளிட்ட பிற நீட்டிப்புகளின் செயல்பாட்டைக் கண்காணி</translation>
@@ -2979,7 +2979,7 @@
 <translation id="5463275305984126951"><ph name="LOCATION" /> இன் பொருளடக்கம்</translation>
 <translation id="5463856536939868464">மறைந்த புக்மார்க்குகளைக் கொண்ட மெனு</translation>
 <translation id="5464632865477611176">இப்போது இயக்கு</translation>
-<translation id="5464660706533281090">பிள்ளையால் இந்த அமைப்பை மாற்ற முடியாது.</translation>
+<translation id="5464660706533281090">சிறுவர்களால் இந்த அமைப்பை மாற்ற முடியாது.</translation>
 <translation id="5466374726908360271">“<ph name="SEARCH_TERMS" />” வினவலை ஒட்டி, தேடு</translation>
 <translation id="5471768120198416576">வணக்கம்! நான் தான் உங்கள் உரையைப் பேசும் குரல்</translation>
 <translation id="5473333559083690127">புதிய பின்னை மீண்டும் உள்ளிடவும்</translation>
@@ -4875,6 +4875,7 @@
 <translation id="8256319818471787266">ஸ்பார்க்கி</translation>
 <translation id="8257950718085972371">கேமரா அணுகலைத் தொடர்ந்து தடு</translation>
 <translation id="8259239505248583312">தொடங்குக</translation>
+<translation id="8259556432390118667">ஹெக்ஸ் வண்ண மதிப்பு</translation>
 <translation id="8260126382462817229">மீண்டும் உள்நுழையவும்</translation>
 <translation id="8260864402787962391">சுட்டி</translation>
 <translation id="8261378640211443080">இந்த நீட்டிப்பு <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> இல் பட்டியலிடப்படவில்லை, மேலும் அது உங்களுக்குத் தெரியாமல் சேர்க்கப்பட்டிருக்கலாம்.</translation>
@@ -5416,6 +5417,7 @@
 <translation id="9065203028668620118">திருத்து</translation>
 <translation id="9066773882585798925">படிக்கப்படும் உரையைக் கேட்கலாம்</translation>
 <translation id="9066782832737749352">உரையிலிருந்து பேச்சு</translation>
+<translation id="9068849894565669697">வண்ணத்தைத் தேர்ந்தெடு</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">புளூடூத்</translation>
 <translation id="9074836595010225693">USB மவுஸ் இணைக்கப்பட்டது</translation>

@@ -9,7 +9,6 @@
 <translation id="1181037720776840403">አስወግድ</translation>
 <translation id="1243314992276662751">ስቀል</translation>
 <translation id="1269641567813814718">ማሸነፍ</translation>
-<translation id="1279732219630636100">አንድ ቁጥር ከዚህ ወደ ስልክዎ ለመላክ <ph name="TROUBLESHOOT_LINK" /> በቅንብሮች ውስጥ ሁለቱንም መሣሪያዎች ይፈልጋል።</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" />ን ወደ አቃፊ <ph name="FOLDER_NAME" /> ይውሰዱ።</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">የሚመከሩ መተግበሪያዎች</translation>
@@ -158,6 +157,7 @@
 <translation id="6620110761915583480">ፋይል አስቀምጥ</translation>
 <translation id="6699343763173986273">የሚዲያ ቀጣይ ትራክ</translation>
 <translation id="673773751041746814">ስረዛ</translation>
+<translation id="6779314412797872738">አንድ ቁጥር ከዚህ ወደ የእርስዎ Android ስልክ ለመላክ <ph name="TROUBLESHOOT_LINK" /> በቅንብሮች ውስጥ ሁለቱንም መሣሪያዎች ይፈልጋል።</translation>
 <translation id="6786750046913594791">አቃፊ ዝጋ</translation>
 <translation id="6808150112686056157">ሚዲያ አቁም</translation>
 <translation id="6845383723252244143">አቃፊ ምረጥ</translation>

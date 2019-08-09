@@ -9,7 +9,6 @@
 <translation id="1181037720776840403">Supprimer</translation>
 <translation id="1243314992276662751">Importer</translation>
 <translation id="1269641567813814718">Windows</translation>
-<translation id="1279732219630636100">Pour envoyer un numéro vers votre téléphone, veuillez <ph name="TROUBLESHOOT_LINK" /> pour les deux appareils dans les paramètres.</translation>
 <translation id="1290982764014248209">Déplacer <ph name="DRAGGED_APP" /> vers le dossier <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Échap</translation>
 <translation id="1306549533752902673">APPLICATIONS RECOMMANDÉES</translation>
@@ -158,6 +157,7 @@
 <translation id="6620110761915583480">Enregistrer le fichier</translation>
 <translation id="6699343763173986273">Contenu multimédia : titre suivant</translation>
 <translation id="673773751041746814">Suppression</translation>
+<translation id="6779314412797872738">Pour envoyer un numéro vers votre téléphone Android, veuillez <ph name="TROUBLESHOOT_LINK" /> pour les deux appareils dans les paramètres.</translation>
 <translation id="6786750046913594791">Fermer le dossier</translation>
 <translation id="6808150112686056157">Contenu multimédia : arrêt</translation>
 <translation id="6845383723252244143">Sélectionner un dossier</translation>

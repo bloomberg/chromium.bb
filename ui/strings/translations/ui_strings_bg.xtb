@@ -9,7 +9,6 @@
 <translation id="1181037720776840403">Премахване</translation>
 <translation id="1243314992276662751">Качване</translation>
 <translation id="1269641567813814718">Win</translation>
-<translation id="1279732219630636100">За да изпратите номер оттук до телефона си, <ph name="TROUBLESHOOT_LINK" /> в настройките и на двете устройства.</translation>
 <translation id="1290982764014248209">Преместване на <ph name="DRAGGED_APP" /> в папката <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ПРЕПОРЪЧАНИ ПРИЛОЖЕНИЯ</translation>
@@ -158,6 +157,7 @@
 <translation id="6620110761915583480">Запазване на файл</translation>
 <translation id="6699343763173986273">Мултимедия, следващият запис</translation>
 <translation id="673773751041746814">Изтриване</translation>
+<translation id="6779314412797872738">За да изпратите номер оттук до телефона си с Android, <ph name="TROUBLESHOOT_LINK" /> в настройките и на двете устройства.</translation>
 <translation id="6786750046913594791">Затваряне на папката</translation>
 <translation id="6808150112686056157">Мултимедия, стоп</translation>
 <translation id="6845383723252244143">Избор на папка</translation>

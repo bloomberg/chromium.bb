@@ -9,7 +9,6 @@
 <translation id="1181037720776840403">นำออก</translation>
 <translation id="1243314992276662751">อัปโหลด</translation>
 <translation id="1269641567813814718">Win</translation>
-<translation id="1279732219630636100">หากต้องการส่งหมายเลขจากอุปกรณ์นี้ไปยังโทรศัพท์ ให้<ph name="TROUBLESHOOT_LINK" />ของอุปกรณ์ทั้งสองในการตั้งค่า</translation>
 <translation id="1290982764014248209">ย้าย <ph name="DRAGGED_APP" /> ไปที่โฟลเดอร์ <ph name="FOLDER_NAME" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">แอปแนะนำ</translation>
@@ -158,6 +157,7 @@
 <translation id="6620110761915583480">บันทึกไฟล์</translation>
 <translation id="6699343763173986273">แทร็กถัดไปของสื่อ</translation>
 <translation id="673773751041746814">การลบ</translation>
+<translation id="6779314412797872738">หากต้องการส่งหมายเลขจากอุปกรณ์นี้ไปยังโทรศัพท์ Android ให้<ph name="TROUBLESHOOT_LINK" />ของอุปกรณ์ทั้งสองในการตั้งค่า</translation>
 <translation id="6786750046913594791">ปิดโฟลเดอร์</translation>
 <translation id="6808150112686056157">หยุดสื่อ</translation>
 <translation id="6845383723252244143">เลือกโฟลเดอร์</translation>

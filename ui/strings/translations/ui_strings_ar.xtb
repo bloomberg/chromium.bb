@@ -9,7 +9,6 @@
 <translation id="1181037720776840403">إزالة</translation>
 <translation id="1243314992276662751">تحميل</translation>
 <translation id="1269641567813814718">الفوز</translation>
-<translation id="1279732219630636100">لإرسال رقم من هنا إلى هاتفك، يمكنك <ph name="TROUBLESHOOT_LINK" /> لكلا الجهازين في الإعدادات.</translation>
 <translation id="1290982764014248209">نقل <ph name="DRAGGED_APP" /> إلى مجلد <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">تطبيقات مقترحة</translation>
@@ -158,6 +157,7 @@
 <translation id="6620110761915583480">حفظ الملف</translation>
 <translation id="6699343763173986273">المقطع الصوتي التالي للوسائط</translation>
 <translation id="673773751041746814">حذف</translation>
+<translation id="6779314412797872738">‏لإرسال رقم من هنا إلى هاتف Android، يمكنك <ph name="TROUBLESHOOT_LINK" /> لكلا الجهازين في الإعدادات.</translation>
 <translation id="6786750046913594791">إغلاق المجلد</translation>
 <translation id="6808150112686056157">إيقاف الوسائط</translation>
 <translation id="6845383723252244143">تحديد مجلد</translation>

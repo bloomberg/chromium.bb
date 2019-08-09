@@ -561,7 +561,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{1 page Web à proximité}one{# page Web à proximité}other{# pages Web à proximité}}</translation>
 <translation id="4030383055268325496">&amp;Annuler l'ajout</translation>
 <translation id="4032320456957708163">Votre navigateur est géré par <ph name="ENROLLMENT_DOMAIN" /></translation>
-<translation id="4034375457890803692">Le lien que vous avez ouvert redirige vers un site que vous ne consultez généralement pas. Il s'agit peut-être d'une tentative de tromperie.</translation>
+<translation id="4034375457890803692">Le lien que vous avez ouvert mène à un site que vous ne consultez généralement pas. Il s'agit peut-être d'une tentative de tromperie.</translation>
 <translation id="4058922952496707368">Clé "<ph name="SUBKEY" />" : <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (enveloppe)</translation>
 <translation id="4067947977115446013">Ajouter une adresse valide</translation>

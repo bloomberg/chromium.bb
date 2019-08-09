@@ -1531,7 +1531,7 @@
 <translation id="3281892622610078515">要隔離的檔案和程式：</translation>
 <translation id="3282568296779691940">登入 Chrome</translation>
 <translation id="3285322247471302225">新增分頁(&amp;T)</translation>
-<translation id="3286654161521615710">由 Chrome 瀏覽器和 <ph name="DEVICE_TYPE" /> 啟動器所使用</translation>
+<translation id="3286654161521615710">由 Chrome 瀏覽器和 <ph name="DEVICE_TYPE" /> 啟動器都會使用搜尋引擎</translation>
 <translation id="3286737518123001369">查看並刪除安全金鑰儲存的登入資料</translation>
 <translation id="3288047731229977326">在開發人員模式中執行擴充功能可能會損害你的電腦。如果你不是開發人員，最好在開發人員模式中停用這些擴充功能，以策安全。</translation>
 <translation id="3289856944988573801">如要檢查更新，請使用乙太網路或 Wi-Fi。</translation>
@@ -4868,6 +4868,7 @@
 <translation id="8256319818471787266">小黃</translation>
 <translation id="8257950718085972371">繼續封鎖存取攝影機</translation>
 <translation id="8259239505248583312">開始使用</translation>
+<translation id="8259556432390118667">十六進位顏色值</translation>
 <translation id="8260126382462817229">請嘗試重新登入</translation>
 <translation id="8260864402787962391">滑鼠</translation>
 <translation id="8261378640211443080">這個擴充功能未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> 中，可能在你不知情的情況下加入瀏覽器。</translation>
@@ -5409,6 +5410,7 @@
 <translation id="9065203028668620118">編輯</translation>
 <translation id="9066773882585798925">讓系統朗讀文字內容</translation>
 <translation id="9066782832737749352">文字轉語音</translation>
+<translation id="9068849894565669697">選取顏色</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">藍牙</translation>
 <translation id="9074836595010225693">已連接 USB 滑鼠</translation>

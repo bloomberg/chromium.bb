@@ -78,6 +78,7 @@
 <translation id="1513858653616922153">पासवर्ड मिटाएं</translation>
 <translation id="1516229014686355813">'खोजने के लिए टैप करें' सुविधा चुने हुए शब्‍द और मौजूदा पेज को संदर्भ के रूप में 'Google सर्च' पर भेजती है. आप इसे <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में जाकर बंद कर सकते हैं.</translation>
 <translation id="1521774566618522728">आज सक्रिय है</translation>
+<translation id="1544826120773021464">अपना Google खाता प्रबंधित करने के लिए, "खाता प्रबंधित करें" बटन पर टैप करें</translation>
 <translation id="1549000191223877751">अन्य विंडो में ले जाएं</translation>
 <translation id="1553358976309200471">Chrome अपडेट करें</translation>
 <translation id="1569387923882100876">कनेक्ट किया गया डिवाइस</translation>
@@ -912,7 +913,7 @@
 <translation id="7626032353295482388">Chrome में आपका स्वागत है</translation>
 <translation id="7638584964844754484">गलत 'पासफ़्रेज़'</translation>
 <translation id="7641339528570811325">ब्राउज़िंग डेटा साफ़ करें…</translation>
-<translation id="7648422057306047504">Google क्रेडेंशियल के साथ पासवर्ड सुरक्षित करें</translation>
+<translation id="7648422057306047504">Google क्रेडेंशियल से पासवर्ड सुरक्षित करें</translation>
 <translation id="7649070708921625228">सहायता</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7665369617277396874">खाता जोड़ें</translation>
@@ -991,6 +992,7 @@
 <translation id="8190358571722158785">1 दिन शेष</translation>
 <translation id="8200772114523450471">फिर से शुरू करें</translation>
 <translation id="8209050860603202033">इमेज खोलें</translation>
+<translation id="8218622182176210845">अपना खाता प्रबंधित करें</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> जीबी डाउनलोड किया गया</translation>
 <translation id="8224471946457685718">वाई-फ़ाई चालू हाेने पर अपने लिए लेख डाउनलोड करें</translation>
 <translation id="8232956427053453090">डेटा रखें</translation>
@@ -1094,7 +1096,6 @@
 <translation id="8986494364107987395">इस्तेमाल के आंकड़े और खराबी रिपोर्ट अपने आप Google को भेजें</translation>
 <translation id="8993760627012879038">गुप्त मोड में नया टैब खोलें</translation>
 <translation id="8998729206196772491">आप <ph name="MANAGED_DOMAIN" /> से प्रबंधित खाते में साइन इन कर रहे हैं और उसके एडमिन को अपने Chrome डेटा पर नियंत्रण दे रहे हैं. आपका डेटा इस खाते से स्थायी रूप से जुड़ जाएगा. Chrome से साइन आउट करने से आपका डेटा इस डिवाइस से मिट जाएगा, लेकिन वह आपके Google खाते में बना रहेगा.</translation>
-<translation id="9005637476204108703">अपने खाते प्रबंधित करने के लिए यहां टैप करें</translation>
 <translation id="9019902583201351841">आपके अभिभावकों द्वारा प्रबंधित</translation>
 <translation id="9040142327097499898">सूचनाओं की अनुमति है. इस डिवाइस के लिए स्थान की जानकारी बंद है.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# वीडियो}one{# वीडियो}other{# वीडियो}}</translation>
@@ -1116,7 +1117,6 @@
 <translation id="9155898266292537608">आप किसी शब्द पर बस एक टैप करके भी खोज सकते हैं</translation>
 <translation id="9169594135889675189">समूह में नया टैब जोड़ें</translation>
 <translation id="9188680907066685419">प्रबंधित खाते से प्रस्थान करें</translation>
-<translation id="9190112541605496997">अपने खाते प्रबंधित करने के लिए "खाता प्रबंधित करें" पर टैप करें</translation>
 <translation id="9204836675896933765">1 फ़ाइल बची है</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">इमेज</translation>

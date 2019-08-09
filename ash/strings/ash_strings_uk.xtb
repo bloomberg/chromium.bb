@@ -179,7 +179,7 @@
 <translation id="3573179567135747900">Повернутися до мови "<ph name="FROM_LOCALE" />" (потрібно перезавантажитися)</translation>
 <translation id="3576141592585647168">Змінення часового поясу</translation>
 <translation id="3595596368722241419">Акумулятор заряджено</translation>
-<translation id="3604801046548457007">Робочий стіл "<ph name="DESK_TITILE" />" створено</translation>
+<translation id="3604801046548457007">Створено робочий стіл "<ph name="DESK_TITILE" />"</translation>
 <translation id="3606978283550408104">Брайлівський дисплей під’єднано.</translation>
 <translation id="3621202678540785336">Вхід</translation>
 <translation id="3626281679859535460">Яскравість</translation>
@@ -293,7 +293,7 @@
 <translation id="5496819745535887422">Адміністратор відновлює пристрій до попереднього стану. Після перезапуску всі дані буде видалено.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Завершення сеансу</translation>
-<translation id="5537725057119320332">Акторський склад</translation>
+<translation id="5537725057119320332">Трансляція екрана</translation>
 <translation id="5548285847212963613">За допомогою розширення <ph name="EXTENSION_NAME" /> можна під’єднуватися до цієї мережі.</translation>
 <translation id="554893713779400387">Перемкнути диктування</translation>
 <translation id="5571066253365925590">Bluetooth увімкнено</translation>
