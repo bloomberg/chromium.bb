@@ -39,6 +39,7 @@
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/rd.h"
 #include "av1/encoder/speed_features.h"
+#include "av1/encoder/svc_layercontext.h"
 #include "av1/encoder/tokenize.h"
 #include "av1/encoder/block.h"
 
@@ -163,25 +164,6 @@ enum {
   SS_CFG_LOOKAHEAD = 1,
   SS_CFG_TOTAL = 2
 } UENUM1BYTE(SS_CFG_OFFSET);
-
-typedef struct {
-  int max_q;
-  int min_q;
-  int framerate_factor;
-  int layer_target_bitrate;
-  int scaling_factor_num;
-  int scaling_factor_den;
-  RATE_CONTROL rc;
-} LAYER_CONTEXT;
-
-typedef struct SVC {
-  int external_ref_frame_config;
-  int non_reference_frame;
-  // Layer context used for rate control in one pass temporal CBR mode.
-  LAYER_CONTEXT layer_context[AOM_MAX_LAYERS];
-  int ref_idx[INTER_REFS_PER_FRAME];
-  int refresh[REF_FRAMES];
-} SVC;
 
 #define MAX_LENGTH_TPL_FRAME_STATS (27 + 9)
 

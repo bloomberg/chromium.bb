@@ -357,7 +357,7 @@ static int choose_primary_ref_frame(
 
   const int intra_only = frame_params->frame_type == KEY_FRAME ||
                          frame_params->frame_type == INTRA_ONLY_FRAME;
-  if (intra_only || frame_params->error_resilient_mode ||
+  if (intra_only || frame_params->error_resilient_mode || cpi->use_svc ||
       cpi->ext_use_primary_ref_none) {
     return PRIMARY_REF_NONE;
   }
@@ -1458,6 +1458,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   if (*size > 0) {
     cpi->droppable = is_frame_droppable(cpi);
   }
+
+  if (cpi->use_svc) av1_save_layer_context(cpi);
 
   return AOM_CODEC_OK;
 }
