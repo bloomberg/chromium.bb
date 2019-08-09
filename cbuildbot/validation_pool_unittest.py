@@ -478,29 +478,6 @@ class TestCoreLogic(_Base):
         change_id=1, patch_number=2)
     master_pool.HandleApplySuccess(change)
 
-  def testGetCLStatusURLForExternalPatch(self):
-    """Test GetCLStatusURL for external patches."""
-    master_pool = self.MakePool()
-    change = self.MockPatch(
-        change_id=1, patch_number=2)
-    url = master_pool._GetCLStatusURL(change)
-    self.assertEqual(
-        validation_pool.CL_STATUS_URL_PREFIX +
-        '/chromium-review.googlesource.com/1/2',
-        url)
-
-  def testGetCLStatusURLForInternalPatch(self):
-    """Test GetCLStatusURL for internal patches."""
-    site_params = config_lib.GetSiteParams()
-    master_pool = self.MakePool()
-    change = self.MockPatch(
-        change_id=1, patch_number=2, remote=site_params.INTERNAL_REMOTE)
-    url = master_pool._GetCLStatusURL(change)
-    self.assertEqual(
-        validation_pool.CL_STATUS_URL_PREFIX +
-        '/chrome-internal-review.googlesource.com/1/2',
-        url)
-
   def _setUpSubmit(self):
     pool = self.MakePool(dryrun=False, handlers=True)
     patches = self.GetPatches(3)
