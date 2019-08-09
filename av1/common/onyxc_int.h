@@ -427,13 +427,21 @@ typedef struct AV1Common {
 
   /* We allocate a MB_MODE_INFO struct for each macroblock, together with
      an extra row on top and column on the left to simplify prediction. */
-  int mi_alloc_size;
+  int mi_alloc_size, mi_grid_size;
   MB_MODE_INFO *mi;  /* Corresponds to upper left visible macroblock */
 
+  // The minimum size each allocated mi can correspond to.
+  // For decoder, this is always BLOCK_4X4.
+  // For encoder, this is currently set to BLOCK_4X4 for resolution below 4k,
+  // and BLOCK_8X8 for resolution above 4k
+  BLOCK_SIZE mi_alloc_bsize;
+  int mi_alloc_rows, mi_alloc_cols, mi_alloc_stride;
+
   // Separate mi functions between encoder and decoder.
-  int (*alloc_mi)(struct AV1Common *cm, int mi_size);
+  int (*alloc_mi)(struct AV1Common *cm);
   void (*free_mi)(struct AV1Common *cm);
   void (*setup_mi)(struct AV1Common *cm);
+  void (*set_mb_mi)(struct AV1Common *cm, int height, int width);
 
   // Grid of pointers to 4x4 MB_MODE_INFO structs. Any 4x4 not in the visible
   // area will be NULL.
@@ -1184,6 +1192,29 @@ static INLINE void set_txfm_ctxs(TX_SIZE tx_size, int n4_w, int n4_h, int skip,
 
   set_txfm_ctx(xd->above_txfm_context, bw, n4_w);
   set_txfm_ctx(xd->left_txfm_context, bh, n4_h);
+}
+
+static INLINE int get_mi_grid_idx(const AV1_COMMON *cm, int mi_row,
+                                  int mi_col) {
+  return mi_row * cm->mi_stride + mi_col;
+}
+
+static INLINE int get_alloc_mi_idx(const AV1_COMMON *cm, int mi_row,
+                                   int mi_col) {
+  const int mi_alloc_size_1d = mi_size_wide[cm->mi_alloc_bsize];
+  const int mi_alloc_row = mi_row / mi_alloc_size_1d;
+  const int mi_alloc_col = mi_col / mi_alloc_size_1d;
+
+  return mi_alloc_row * cm->mi_alloc_stride + mi_alloc_col;
+}
+
+static INLINE int get_mi_ext_idx(const AV1_COMMON *cm, int mi_row,
+                                 int mi_col) {
+  const int mi_alloc_size_1d = mi_size_wide[cm->mi_alloc_bsize];
+  const int mi_alloc_row = mi_row / mi_alloc_size_1d;
+  const int mi_alloc_col = mi_col / mi_alloc_size_1d;
+
+  return mi_alloc_row * cm->mi_alloc_cols + mi_alloc_col;
 }
 
 static INLINE void txfm_partition_update(TXFM_CONTEXT *above_ctx,

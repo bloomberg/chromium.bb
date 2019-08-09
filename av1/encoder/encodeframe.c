@@ -1685,10 +1685,13 @@ static void set_fixed_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   const int mi_rows_remaining = tile->mi_row_end - mi_row;
   const int mi_cols_remaining = tile->mi_col_end - mi_col;
   int block_row, block_col;
-  MB_MODE_INFO *const mi_upper_left = cm->mi + mi_row * cm->mi_stride + mi_col;
+  MB_MODE_INFO *const mi_upper_left =
+      cm->mi + get_alloc_mi_idx(cm, mi_row, mi_col);
   int bh = mi_size_high[bsize];
   int bw = mi_size_wide[bsize];
 
+  assert(bsize >= cm->mi_alloc_bsize &&
+         "Attempted to use bsize < cm->mi_alloc_bsize");
   assert((mi_rows_remaining > 0) && (mi_cols_remaining > 0));
 
   // Apply the requested partition size to the SB if it is all "in image"
@@ -1697,9 +1700,10 @@ static void set_fixed_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
     for (block_row = 0; block_row < cm->seq_params.mib_size; block_row += bh) {
       for (block_col = 0; block_col < cm->seq_params.mib_size;
            block_col += bw) {
-        int index = block_row * cm->mi_stride + block_col;
-        mib[index] = mi_upper_left + index;
-        mib[index]->sb_type = bsize;
+        const int grid_index = get_mi_grid_idx(cm, block_row, block_col);
+        const int mi_index = get_alloc_mi_idx(cm, block_row, block_col);
+        mib[grid_index] = mi_upper_left + mi_index;
+        mib[grid_index]->sb_type = bsize;
       }
     }
   } else {
@@ -3670,19 +3674,17 @@ static void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
     const int frame_lf_count =
         av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
     const int mib_size = cm->seq_params.mib_size;
-    const int mi_stide = cm->mi_stride;
-    int mi_index_base = mi_row * mi_stide + mi_col;
 
     // pre-set the delta lf for loop filter. Note that this value is set
     // before mi is assigned for each block in current superblock
     for (int j = 0; j < AOMMIN(mib_size, cm->mi_rows - mi_row); j++) {
       for (int k = 0; k < AOMMIN(mib_size, cm->mi_cols - mi_col); k++) {
-        cm->mi[mi_index_base + k].delta_lf_from_base = delta_lf;
+        const int mi_idx = get_alloc_mi_idx(cm, mi_row + j, mi_col + k);
+        cm->mi[mi_idx].delta_lf_from_base = delta_lf;
         for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
-          cm->mi[mi_index_base + k].delta_lf[lf_id] = delta_lf;
+          cm->mi[mi_idx].delta_lf[lf_id] = delta_lf;
         }
       }
-      mi_index_base += mi_stide;
     }
   }
 }
@@ -4010,8 +4012,7 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
 
     td->mb.cb_coef_buff = av1_get_cb_coeff_buffer(cpi, mi_row, mi_col);
 
-    const int idx_str = cm->mi_stride * mi_row + mi_col;
-    MB_MODE_INFO **mi = cm->mi_grid_base + idx_str;
+    MB_MODE_INFO **mi = cm->mi_grid_base + get_mi_grid_idx(cm, mi_row, mi_col);
     x->source_variance = UINT_MAX;
     x->simple_motion_pred_sse = UINT_MAX;
     const struct segmentation *const seg = &cm->seg;
@@ -4569,7 +4570,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     av1_generate_block_2x2_hash_value(cpi->source, block_hash_values[0],
                                       is_block_same[0], &cpi->td.mb);
     const int max_size = 128, min_size = 4;
-    const int min_alloc_size = block_size_wide[cpi->mi_alloc_bsize];
+    const int min_alloc_size = block_size_wide[cm->mi_alloc_bsize];
     int src_idx = 0;
     for (int size = min_size; size <= max_size; size *= 2, src_idx = !src_idx) {
       const int dst_idx = !src_idx;

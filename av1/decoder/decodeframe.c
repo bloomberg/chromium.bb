@@ -340,11 +340,10 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                         int bh, int x_mis, int y_mis) {
   const int num_planes = av1_num_planes(cm);
 
-  const int offset = mi_row * cm->mi_stride + mi_col;
   const TileInfo *const tile = &xd->tile;
 
-  xd->mi = cm->mi_grid_base + offset;
-  xd->mi[0] = &cm->mi[offset];
+  xd->mi = cm->mi_grid_base + get_mi_grid_idx(cm, mi_row, mi_col);
+  xd->mi[0] = &cm->mi[get_alloc_mi_idx(cm, mi_row, mi_col)];
   // TODO(slavarnway): Generate sb_type based on bwl and bhl, instead of
   // passing bsize from decode_partition().
   xd->mi[0]->sb_type = bsize;
@@ -2153,7 +2152,7 @@ static void resize_context_buffers(AV1_COMMON *cm, int width, int height) {
                            "Failed to allocate context buffers");
       }
     } else {
-      av1_set_mb_mi(cm, width, height);
+      cm->set_mb_mi(cm, width, height);
     }
     av1_init_context_buffers(cm);
     cm->width = width;

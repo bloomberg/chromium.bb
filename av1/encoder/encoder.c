@@ -13,7 +13,6 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "av1/common/enums.h"
 #include "config/aom_config.h"
 #include "config/aom_dsp_rtcd.h"
 #include "config/aom_scale_rtcd.h"
@@ -378,22 +377,64 @@ static void setup_frame(AV1_COMP *cpi) {
   cpi->vaq_refresh = 0;
 }
 
-static void enc_setup_mi(AV1_COMMON *cm) {
-  int mi_rows_sb_aligned = calc_mi_size(cm->mi_rows);
-  memset(cm->mi, 0, cm->mi_stride * mi_rows_sb_aligned * sizeof(*cm->mi));
+static void enc_set_mb_mi(AV1_COMMON *cm, int width, int height) {
+  // Ensure that the decoded width and height are both multiples of
+  // 8 luma pixels (note: this may only be a multiple of 4 chroma pixels if
+  // subsampling is used).
+  // This simplifies the implementation of various experiments,
+  // eg. cdef, which operates on units of 8x8 luma pixels.
+  const int aligned_width = ALIGN_POWER_OF_TWO(width, 3);
+  const int aligned_height = ALIGN_POWER_OF_TWO(height, 3);
 
-  memset(cm->mi_grid_base, 0,
-         cm->mi_stride * mi_rows_sb_aligned * sizeof(*cm->mi_grid_base));
+  cm->mi_cols = aligned_width >> MI_SIZE_LOG2;
+  cm->mi_rows = aligned_height >> MI_SIZE_LOG2;
+  cm->mi_stride = calc_mi_size(cm->mi_cols);
+
+  cm->mb_cols = (cm->mi_cols + 2) >> 2;
+  cm->mb_rows = (cm->mi_rows + 2) >> 2;
+  cm->MBs = cm->mb_rows * cm->mb_cols;
+
+  const int is_4k_or_larger = AOMMIN(width, height) >= 2160;
+
+  cm->mi_alloc_bsize = is_4k_or_larger ? BLOCK_8X8 : BLOCK_4X4;
+  const int mi_alloc_size_1d = mi_size_wide[cm->mi_alloc_bsize];
+  cm->mi_alloc_rows = (cm->mi_rows + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
+  cm->mi_alloc_cols = (cm->mi_cols + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
+  cm->mi_alloc_stride =
+      (cm->mi_stride + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
+
+  assert(mi_size_wide[cm->mi_alloc_bsize] == mi_size_high[cm->mi_alloc_bsize]);
+
+#if CONFIG_LPF_MASK
+  alloc_loop_filter_mask(cm);
+#endif
 }
 
-static int enc_alloc_mi(AV1_COMMON *cm, int mi_size) {
-  cm->mi = aom_calloc(mi_size, sizeof(*cm->mi));
-  if (!cm->mi) return 1;
-  cm->mi_alloc_size = mi_size;
+static void enc_setup_mi(AV1_COMMON *cm) {
+  const int mi_grid_size = cm->mi_stride * calc_mi_size(cm->mi_rows);
+  memset(cm->mi, 0, cm->mi_alloc_size * sizeof(*cm->mi));
 
-  cm->mi_grid_base =
-      (MB_MODE_INFO **)aom_calloc(mi_size, sizeof(MB_MODE_INFO *));
-  if (!cm->mi_grid_base) return 1;
+  memset(cm->mi_grid_base, 0, mi_grid_size * sizeof(*cm->mi_grid_base));
+}
+
+static int enc_alloc_mi(AV1_COMMON *cm) {
+  const int mi_grid_size = cm->mi_stride * calc_mi_size(cm->mi_rows);
+  const int alloc_size_1d = mi_size_wide[cm->mi_alloc_bsize];
+  const int alloc_mi_size =
+      cm->mi_alloc_stride * (calc_mi_size(cm->mi_rows) / alloc_size_1d);
+
+  if (cm->mi_alloc_size < alloc_mi_size || cm->mi_grid_size < mi_grid_size) {
+    cm->free_mi(cm);
+
+    cm->mi = aom_calloc(alloc_mi_size, sizeof(*cm->mi));
+    if (!cm->mi) return 1;
+    cm->mi_alloc_size = alloc_mi_size;
+
+    cm->mi_grid_base =
+        (MB_MODE_INFO **)aom_calloc(mi_grid_size, sizeof(MB_MODE_INFO *));
+    if (!cm->mi_grid_base) return 1;
+    cm->mi_grid_size = mi_grid_size;
+  }
 
   return 0;
 }
@@ -425,23 +466,14 @@ static void dealloc_context_buffers_ext(AV1_COMP *cpi) {
 
 static void alloc_context_buffers_ext(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
-  const int is_4k_or_larger = AOMMIN(cm->width, cm->height) >= 2160;
+  const int new_ext_mi_size = cm->mi_alloc_rows * cm->mi_alloc_cols;
 
-  cpi->mi_alloc_bsize = is_4k_or_larger ? BLOCK_8X8 : BLOCK_4X4;
-  cpi->mi_alloc_size_1d = mi_size_wide[cpi->mi_alloc_bsize];
-  cpi->mi_alloc_rows =
-      (cm->mi_rows + cpi->mi_alloc_size_1d - 1) / cpi->mi_alloc_size_1d;
-  cpi->mi_alloc_cols =
-      (cm->mi_cols + cpi->mi_alloc_size_1d - 1) / cpi->mi_alloc_size_1d;
-
-  assert(mi_size_wide[cpi->mi_alloc_bsize] ==
-         mi_size_high[cpi->mi_alloc_bsize]);
-
-  const int alloc_mi_size = cpi->mi_alloc_rows * cpi->mi_alloc_cols;
-
-  dealloc_context_buffers_ext(cpi);
-  CHECK_MEM_ERROR(cm, cpi->mbmi_ext_base,
-                  aom_calloc(alloc_mi_size, sizeof(*cpi->mbmi_ext_base)));
+  if (new_ext_mi_size > cpi->mi_ext_alloc_size) {
+    dealloc_context_buffers_ext(cpi);
+    CHECK_MEM_ERROR(cm, cpi->mbmi_ext_base,
+                    aom_calloc(new_ext_mi_size, sizeof(*cpi->mbmi_ext_base)));
+    cpi->mi_ext_alloc_size = new_ext_mi_size;
+  }
 }
 
 static void reset_film_grain_chroma_params(aom_film_grain_t *pars) {
@@ -843,7 +875,10 @@ static void alloc_compressor_data(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
 
-  av1_alloc_context_buffers(cm, cm->width, cm->height);
+  if (av1_alloc_context_buffers(cm, cm->width, cm->height)) {
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                       "Failed to allocate context buffers");
+  }
 
   int mi_rows_aligned_to_sb =
       ALIGN_POWER_OF_TWO(cm->mi_rows, cm->seq_params.mib_size_log2);
@@ -942,12 +977,18 @@ static void update_frame_size(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
 
-  av1_set_mb_mi(cm, cm->width, cm->height);
+  // We need to reallocate the context buffers here in case we need more mis.
+  if (av1_alloc_context_buffers(cm, cm->width, cm->height)) {
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                       "Failed to allocate context buffers");
+  }
   av1_init_context_buffers(cm);
+
   av1_init_macroblockd(cm, xd, NULL);
 
-  const int alloc_mi_size = cpi->mi_alloc_rows * cpi->mi_alloc_cols;
-  memset(cpi->mbmi_ext_base, 0, alloc_mi_size * sizeof(*cpi->mbmi_ext_base));
+  const int ext_mi_size = cm->mi_alloc_rows * cm->mi_alloc_cols;
+  alloc_context_buffers_ext(cpi);
+  memset(cpi->mbmi_ext_base, 0, ext_mi_size * sizeof(*cpi->mbmi_ext_base));
   set_tile_info(cpi);
 }
 
@@ -2637,6 +2678,9 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   cm->alloc_mi = enc_alloc_mi;
   cm->free_mi = enc_free_mi;
   cm->setup_mi = enc_setup_mi;
+  cm->set_mb_mi = enc_set_mb_mi;
+
+  cm->mi_alloc_bsize = BLOCK_4X4;
 
   CHECK_MEM_ERROR(cm, cm->fc,
                   (FRAME_CONTEXT *)aom_memalign(32, sizeof(*cm->fc)));

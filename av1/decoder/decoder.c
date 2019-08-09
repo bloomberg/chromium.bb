@@ -45,19 +45,56 @@ static void initialize_dec(void) {
   av1_init_wedge_masks();
 }
 
-static void dec_setup_mi(AV1_COMMON *cm) {
-  cm->mi_grid_base = cm->mi_grid_base;
-  memset(cm->mi_grid_base, 0,
-         cm->mi_stride * cm->mi_rows * sizeof(*cm->mi_grid_base));
+static void dec_set_mb_mi(AV1_COMMON *cm, int width, int height) {
+  // Ensure that the decoded width and height are both multiples of
+  // 8 luma pixels (note: this may only be a multiple of 4 chroma pixels if
+  // subsampling is used).
+  // This simplifies the implementation of various experiments,
+  // eg. cdef, which operates on units of 8x8 luma pixels.
+  const int aligned_width = ALIGN_POWER_OF_TWO(width, 3);
+  const int aligned_height = ALIGN_POWER_OF_TWO(height, 3);
+
+  cm->mi_cols = aligned_width >> MI_SIZE_LOG2;
+  cm->mi_rows = aligned_height >> MI_SIZE_LOG2;
+  cm->mi_stride = calc_mi_size(cm->mi_cols);
+
+  cm->mb_cols = (cm->mi_cols + 2) >> 2;
+  cm->mb_rows = (cm->mi_rows + 2) >> 2;
+  cm->MBs = cm->mb_rows * cm->mb_cols;
+
+  cm->mi_alloc_bsize = BLOCK_4X4;
+  cm->mi_alloc_rows = cm->mi_rows;
+  cm->mi_alloc_cols = cm->mi_cols;
+  cm->mi_alloc_stride = cm->mi_stride;
+
+  assert(mi_size_wide[cm->mi_alloc_bsize] == mi_size_high[cm->mi_alloc_bsize]);
+
+#if CONFIG_LPF_MASK
+  alloc_loop_filter_mask(cm);
+#endif
 }
 
-static int dec_alloc_mi(AV1_COMMON *cm, int mi_size) {
-  cm->mi = aom_calloc(mi_size, sizeof(*cm->mi));
-  if (!cm->mi) return 1;
-  cm->mi_alloc_size = mi_size;
-  cm->mi_grid_base =
-      (MB_MODE_INFO **)aom_calloc(mi_size, sizeof(MB_MODE_INFO *));
-  if (!cm->mi_grid_base) return 1;
+static void dec_setup_mi(AV1_COMMON *cm) {
+  const int mi_grid_size = cm->mi_stride * calc_mi_size(cm->mi_rows);
+  memset(cm->mi_grid_base, 0, mi_grid_size * sizeof(*cm->mi_grid_base));
+}
+
+static int dec_alloc_mi(AV1_COMMON *cm) {
+  const int mi_grid_size = cm->mi_stride * calc_mi_size(cm->mi_rows);
+
+  if (cm->mi_alloc_size < mi_grid_size || cm->mi_grid_size < mi_grid_size) {
+    cm->free_mi(cm);
+
+    cm->mi = aom_calloc(mi_grid_size, sizeof(*cm->mi));
+    if (!cm->mi) return 1;
+    cm->mi_alloc_size = mi_grid_size;
+
+    cm->mi_grid_base =
+        (MB_MODE_INFO **)aom_calloc(mi_grid_size, sizeof(MB_MODE_INFO *));
+    if (!cm->mi_grid_base) return 1;
+    cm->mi_grid_size = mi_grid_size;
+  }
+
   return 0;
 }
 
@@ -113,6 +150,7 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   cm->alloc_mi = dec_alloc_mi;
   cm->free_mi = dec_free_mi;
   cm->setup_mi = dec_setup_mi;
+  cm->set_mb_mi = dec_set_mb_mi;
 
   av1_loop_filter_init(cm);
 

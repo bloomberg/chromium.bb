@@ -1321,11 +1321,8 @@ static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
   const MB_MODE_INFO *const *mbmi =
       *(cm->mi_grid_base + (mi_row * cm->mi_stride + mi_col));
-  const int mi_alloc_size_1d = cpi->mi_alloc_size_1d;
-  const int mi_alloc_row = (mi_row + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
-  const int mi_alloc_col = (mi_col + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
   const MB_MODE_INFO_EXT *const *mbmi_ext =
-      cpi->mbmi_ext_base + (mi_alloc_row * cpi->mi_alloc_cols + mi_alloc_col);
+      cpi->mbmi_ext_base + get_mi_ext_idx(cm, mi_row, mi_col);
   if (is_inter_block(mbmi)) {
 #define FRAME_TO_CHECK 11
     if (cm->current_frame.frame_number == FRAME_TO_CHECK &&
@@ -1511,12 +1508,7 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
   xd->mi = cm->mi_grid_base + (mi_row * cm->mi_stride + mi_col);
-
-  const int mi_alloc_size_1d = cpi->mi_alloc_size_1d;
-  const int mi_alloc_row = (mi_row + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
-  const int mi_alloc_col = (mi_col + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
-  cpi->td.mb.mbmi_ext =
-      cpi->mbmi_ext_base + (mi_alloc_row * cpi->mi_alloc_cols + mi_alloc_col);
+  cpi->td.mb.mbmi_ext = cpi->mbmi_ext_base + get_mi_ext_idx(cm, mi_row, mi_col);
 
   const MB_MODE_INFO *mbmi = xd->mi[0];
   const BLOCK_SIZE bsize = mbmi->sb_type;
