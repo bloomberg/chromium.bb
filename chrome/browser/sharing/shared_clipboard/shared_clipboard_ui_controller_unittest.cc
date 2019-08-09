@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
+#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_ui_controller.h"
 
 #include <memory>
 
@@ -36,8 +36,8 @@ using namespace instance_id;
 
 namespace {
 
-const char kPhoneNumber[] = "073%2087%202525%2078";
-const char kExpectedPhoneNumber[] = "073 87 2525 78";
+const char kText[] = "Text to be copied";
+const char kExpectedText[] = "Text to be copied";
 const char kReceiverGuid[] = "test_receiver_guid";
 const char kReceiverName[] = "test_receiver_name";
 
@@ -66,9 +66,9 @@ class MockSharingService : public SharingService {
                     SharingService::SendMessageCallback callback));
 };
 
-class ClickToCallSharingDialogControllerTest : public testing::Test {
+class SharedClipboardUiControllerTest : public testing::Test {
  public:
-  ClickToCallSharingDialogControllerTest() = default;
+  SharedClipboardUiControllerTest() = default;
 
   void SetUp() override {
     web_contents_ =
@@ -79,10 +79,13 @@ class ClickToCallSharingDialogControllerTest : public testing::Test {
           return std::make_unique<NiceMock<MockSharingService>>(
               std::make_unique<SharingFCMHandler>(nullptr, nullptr));
         }));
-    ClickToCallSharingDialogController::ShowDialog(
-        web_contents_.get(), GURL(base::StrCat({"tel:", kPhoneNumber})), false);
-    click_to_call_sharing_dialog_controller_ =
-        ClickToCallSharingDialogController::GetOrCreateFromWebContents(
+    SharingDeviceInfo sharing_device_info(
+        kReceiverGuid, base::UTF8ToUTF16(kReceiverName),
+        sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
+    SharedClipboardUiController::DeviceSelected(
+        web_contents_.get(), base::UTF8ToUTF16(kText), sharing_device_info);
+    shared_clipboard_sharing_dialog_controller_ =
+        SharedClipboardUiController::GetOrCreateFromWebContents(
             web_contents_.get());
   }
 
@@ -95,7 +98,7 @@ class ClickToCallSharingDialogControllerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   std::unique_ptr<content::WebContents> web_contents_;
-  ClickToCallSharingDialogController* click_to_call_sharing_dialog_controller_ =
+  SharedClipboardUiController* shared_clipboard_sharing_dialog_controller_ =
       nullptr;
 };
 }  // namespace
@@ -108,22 +111,22 @@ MATCHER_P(ProtoEquals, message, "") {
 }
 
 // Check the call to sharing service when a device is chosen.
-TEST_F(ClickToCallSharingDialogControllerTest, OnDeviceChosen) {
+TEST_F(SharedClipboardUiControllerTest, OnDeviceChosen) {
   SharingDeviceInfo sharing_device_info(
       kReceiverGuid, base::UTF8ToUTF16(kReceiverName),
       sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
   chrome_browser_sharing::SharingMessage sharing_message;
-  sharing_message.mutable_click_to_call_message()->set_phone_number(
-      kExpectedPhoneNumber);
+  sharing_message.mutable_shared_clipboard_message()->set_text(kExpectedText);
   EXPECT_CALL(*service(),
               SendMessageToDevice(Eq(kReceiverGuid), Eq(kSharingMessageTTL),
                                   ProtoEquals(sharing_message), _));
-  click_to_call_sharing_dialog_controller_->OnDeviceChosen(sharing_device_info);
+  shared_clipboard_sharing_dialog_controller_->OnDeviceChosen(
+      sharing_device_info);
 }
 
 // Check the call to sharing service to get all synced devices.
-TEST_F(ClickToCallSharingDialogControllerTest, GetSyncedDevices) {
+TEST_F(SharedClipboardUiControllerTest, GetSyncedDevices) {
   EXPECT_CALL(*service(), GetDeviceCandidates(Eq(static_cast<int>(
-                              SharingDeviceCapability::kTelephony))));
-  click_to_call_sharing_dialog_controller_->GetSyncedDevices();
+                              SharingDeviceCapability::kNone))));
+  shared_clipboard_sharing_dialog_controller_->GetSyncedDevices();
 }
