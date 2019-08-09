@@ -67,7 +67,7 @@ const CGFloat kFaviconDimension = 16;
     NSMutableAttributedString* text = [[NSMutableAttributedString alloc]
         initWithString:cell.pageHostLabel.text];
     [text addAttribute:NSForegroundColorAttributeName
-                 value:[[MDCPalette cr_greenPalette] tint700]
+                 value:[UIColor colorNamed:kGreenColor]
                  range:NSMakeRange(0, strlen(url::kHttpsScheme))];
     // We need to set the font to the attributed portion, or the field doesn't
     // asjust with dynamic types.
@@ -147,8 +147,7 @@ const CGFloat kFaviconDimension = 16;
     _pageLockIndicatorView.accessibilityIdentifier =
         kPageInfoLockIndicatorImageViewID;
     _pageLockIndicatorView.contentMode = UIViewContentModeScaleAspectFit;
-    [_pageLockIndicatorView
-        setTintColor:[[MDCPalette cr_greenPalette] tint700]];
+    [_pageLockIndicatorView setTintColor:[UIColor colorNamed:kGreenColor]];
     [self.contentView addSubview:_pageLockIndicatorView];
 
     // Layout

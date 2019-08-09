@@ -103,8 +103,7 @@ const CGFloat kMinWidthRatio = 0.5f;
   _itemLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
 
   SetUILabelScaledFont(_notificationLabel, [MDCTypography body2Font]);
-  _notificationLabel.textColor = [[MDCPalette greenPalette] tint800];
-
+  _notificationLabel.textColor = [UIColor colorNamed:kGreenColor];
   SetUILabelScaledFont(_priceLabel, [MDCTypography body1Font]);
   _priceLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
 }
