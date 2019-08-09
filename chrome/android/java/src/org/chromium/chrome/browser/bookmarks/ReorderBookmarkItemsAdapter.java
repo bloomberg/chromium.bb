@@ -469,7 +469,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
 
     private int getBookmarkItemEndIndex() {
         int endIndex = mElements.size() - 1;
-        if (!mElements.get(endIndex).isEditable()) {
+        if (!mElements.get(endIndex).isMovable()) {
             endIndex--;
         }
         return endIndex;
