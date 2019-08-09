@@ -145,6 +145,9 @@ js2gtest("browser_tests_js_webui") {
   if (enable_print_preview) {
     sources += [ "print_preview/print_preview_ui_browsertest.js" ]
   }
+  if (enable_webui_tab_strip) {
+    sources += [ "tab_strip/tab_strip_browsertest.js" ]
+  }
   deps = [
     ":modulize",
     "//chrome/browser/ui",
