@@ -264,7 +264,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': 'b029d3697ea34b82b4f77d63a45dcc181ff59a65',
+  'spv_tools_revision': '22ce39c8e1ec6da68f60dc7c9ef47069676ba9c2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
