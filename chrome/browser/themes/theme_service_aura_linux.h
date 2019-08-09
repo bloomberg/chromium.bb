@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_THEMES_THEME_SERVICE_AURAX11_H_
-#define CHROME_BROWSER_THEMES_THEME_SERVICE_AURAX11_H_
+#ifndef CHROME_BROWSER_THEMES_THEME_SERVICE_AURA_LINUX_H_
+#define CHROME_BROWSER_THEMES_THEME_SERVICE_AURA_LINUX_H_
 
 #include "base/macros.h"
 #include "chrome/browser/themes/theme_service.h"
 
 // A subclass of ThemeService that manages the CustomThemeSupplier which
-// provides the native X11 theme.
-class ThemeServiceAuraX11 : public ThemeService {
+// provides the native Linux theme.
+class ThemeServiceAuraLinux : public ThemeService {
  public:
-  ThemeServiceAuraX11();
-  ~ThemeServiceAuraX11() override;
+  ThemeServiceAuraLinux();
+  ~ThemeServiceAuraLinux() override;
 
   // Overridden from ThemeService:
   bool ShouldInitWithSystemTheme() const override;
@@ -24,7 +24,7 @@ class ThemeServiceAuraX11 : public ThemeService {
   void FixInconsistentPreferencesIfNeeded() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ThemeServiceAuraX11);
+  DISALLOW_COPY_AND_ASSIGN(ThemeServiceAuraLinux);
 };
 
-#endif  // CHROME_BROWSER_THEMES_THEME_SERVICE_AURAX11_H_
+#endif  // CHROME_BROWSER_THEMES_THEME_SERVICE_AURA_LINUX_H_

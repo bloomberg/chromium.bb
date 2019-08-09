@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/gtk_event_loop.h"
+#include "chrome/browser/ui/libgtkui/gtk_event_loop_x11.h"
 
 #include "ui/gfx/x/x11.h"
 
@@ -17,21 +17,21 @@
 namespace libgtkui {
 
 // static
-GtkEventLoop* GtkEventLoop::GetInstance() {
-  return base::Singleton<GtkEventLoop>::get();
+GtkEventLoopX11* GtkEventLoopX11::GetInstance() {
+  return base::Singleton<GtkEventLoopX11>::get();
 }
 
-GtkEventLoop::GtkEventLoop() {
+GtkEventLoopX11::GtkEventLoopX11() {
   gdk_event_handler_set(DispatchGdkEvent, nullptr, nullptr);
 }
 
-GtkEventLoop::~GtkEventLoop() {
+GtkEventLoopX11::~GtkEventLoopX11() {
   gdk_event_handler_set(reinterpret_cast<GdkEventFunc>(gtk_main_do_event),
                         nullptr, nullptr);
 }
 
 // static
-void GtkEventLoop::DispatchGdkEvent(GdkEvent* gdk_event, gpointer) {
+void GtkEventLoopX11::DispatchGdkEvent(GdkEvent* gdk_event, gpointer) {
   switch (gdk_event->type) {
     case GDK_KEY_PRESS:
     case GDK_KEY_RELEASE:
@@ -45,7 +45,7 @@ void GtkEventLoop::DispatchGdkEvent(GdkEvent* gdk_event, gpointer) {
 }
 
 // static
-void GtkEventLoop::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
+void GtkEventLoopX11::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   // This function translates GdkEventKeys into XKeyEvents and puts them to
   // the X event queue.
   //

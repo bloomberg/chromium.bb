@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/themes/theme_service_aurax11.h"
+#include "chrome/browser/themes/theme_service_aura_linux.h"
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -54,7 +54,7 @@ void SystemThemeX11::StopUsingTheme() {
   pref_service_->SetBoolean(prefs::kUsesSystemTheme, false);
   // Have the former theme notify its observers of change.
   if (linux_ui_)
-    linux_ui_->GetNativeTheme(NULL)->NotifyObservers();
+    linux_ui_->GetNativeTheme(nullptr)->NotifyObservers();
 }
 
 bool SystemThemeX11::GetTint(int id, color_utils::HSL* hsl) const {
@@ -81,33 +81,33 @@ SystemThemeX11::~SystemThemeX11() {}
 
 }  // namespace
 
-ThemeServiceAuraX11::ThemeServiceAuraX11() {}
+ThemeServiceAuraLinux::ThemeServiceAuraLinux() = default;
 
-ThemeServiceAuraX11::~ThemeServiceAuraX11() {}
+ThemeServiceAuraLinux::~ThemeServiceAuraLinux() = default;
 
-bool ThemeServiceAuraX11::ShouldInitWithSystemTheme() const {
+bool ThemeServiceAuraLinux::ShouldInitWithSystemTheme() const {
   return profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
 }
 
-void ThemeServiceAuraX11::UseSystemTheme() {
+void ThemeServiceAuraLinux::UseSystemTheme() {
   SetCustomDefaultTheme(new SystemThemeX11(profile()->GetPrefs()));
 }
 
-bool ThemeServiceAuraX11::IsSystemThemeDistinctFromDefaultTheme() const {
+bool ThemeServiceAuraLinux::IsSystemThemeDistinctFromDefaultTheme() const {
   return true;
 }
 
-bool ThemeServiceAuraX11::UsingDefaultTheme() const {
+bool ThemeServiceAuraLinux::UsingDefaultTheme() const {
   return ThemeService::UsingDefaultTheme() && !UsingSystemTheme();
 }
 
-bool ThemeServiceAuraX11::UsingSystemTheme() const {
+bool ThemeServiceAuraLinux::UsingSystemTheme() const {
   const CustomThemeSupplier* theme_supplier = get_theme_supplier();
   return theme_supplier &&
          theme_supplier->get_theme_type() == CustomThemeSupplier::NATIVE_X11;
 }
 
-void ThemeServiceAuraX11::FixInconsistentPreferencesIfNeeded() {
+void ThemeServiceAuraLinux::FixInconsistentPreferencesIfNeeded() {
   PrefService* prefs = profile()->GetPrefs();
 
   // When using the system theme, the theme ID should match the default. Give
