@@ -189,6 +189,9 @@ class ASH_EXPORT LoginAuthUserView
   // starts the asynchronous authentication process against a security token.
   void AttemptAuthenticateWithChallengeResponse();
 
+  // Aborts the current active security token PIN request, if there's one.
+  void AbortSecurityTokenPinRequest();
+
   AuthMethods auth_methods_ = AUTH_NONE;
   // True if the user's password might be a PIN. PIN is hashed differently from
   // password. The PIN keyboard may not always be visible even when the user
@@ -216,6 +219,9 @@ class ASH_EXPORT LoginAuthUserView
   // |CaptureStateForAnimationPreLayout| and consumed by
   // |ApplyAnimationPostLayout|.
   std::unique_ptr<AnimationState> cached_animation_state_;
+
+  // Parameters of the active security token PIN request, if there's one.
+  base::Optional<SecurityTokenPinRequest> security_token_pin_request_;
 
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>
