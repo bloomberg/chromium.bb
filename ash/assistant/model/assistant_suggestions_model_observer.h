@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_MODEL_ASSISTANT_CACHE_MODEL_OBSERVER_H_
-#define ASH_ASSISTANT_MODEL_ASSISTANT_CACHE_MODEL_OBSERVER_H_
+#ifndef ASH_ASSISTANT_MODEL_ASSISTANT_SUGGESTIONS_MODEL_OBSERVER_H_
+#define ASH_ASSISTANT_MODEL_ASSISTANT_SUGGESTIONS_MODEL_OBSERVER_H_
 
 #include <map>
 
@@ -15,8 +15,8 @@
 namespace ash {
 
 // A checked observer which receives notification of changes to the Assistant
-// cache.
-class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantCacheModelObserver
+// suggestions model.
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModelObserver
     : public base::CheckedObserver {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
@@ -26,9 +26,9 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantCacheModelObserver
       const std::map<int, const AssistantSuggestion*>& conversation_starters) {}
 
  protected:
-  ~AssistantCacheModelObserver() override = default;
+  ~AssistantSuggestionsModelObserver() override = default;
 };
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_MODEL_ASSISTANT_CACHE_MODEL_OBSERVER_H_
+#endif  // ASH_ASSISTANT_MODEL_ASSISTANT_SUGGESTIONS_MODEL_OBSERVER_H_

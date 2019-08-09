@@ -2,26 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/assistant/model/assistant_cache_model.h"
+#include "ash/assistant/model/assistant_suggestions_model.h"
 
-#include "ash/assistant/model/assistant_cache_model_observer.h"
+#include "ash/assistant/model/assistant_suggestions_model_observer.h"
 
 namespace ash {
 
-AssistantCacheModel::AssistantCacheModel() = default;
+AssistantSuggestionsModel::AssistantSuggestionsModel() = default;
 
-AssistantCacheModel::~AssistantCacheModel() = default;
+AssistantSuggestionsModel::~AssistantSuggestionsModel() = default;
 
-void AssistantCacheModel::AddObserver(AssistantCacheModelObserver* observer) {
+void AssistantSuggestionsModel::AddObserver(
+    AssistantSuggestionsModelObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void AssistantCacheModel::RemoveObserver(
-    AssistantCacheModelObserver* observer) {
+void AssistantSuggestionsModel::RemoveObserver(
+    AssistantSuggestionsModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void AssistantCacheModel::SetConversationStarters(
+void AssistantSuggestionsModel::SetConversationStarters(
     std::vector<AssistantSuggestionPtr> conversation_starters) {
   conversation_starters_.clear();
   conversation_starters_.swap(conversation_starters);
@@ -30,7 +31,7 @@ void AssistantCacheModel::SetConversationStarters(
 }
 
 const chromeos::assistant::mojom::AssistantSuggestion*
-AssistantCacheModel::GetConversationStarterById(int id) const {
+AssistantSuggestionsModel::GetConversationStarterById(int id) const {
   // We consider the index of a conversation starter within our backing vector
   // to be its unique id.
   DCHECK_GE(id, 0);
@@ -39,7 +40,7 @@ AssistantCacheModel::GetConversationStarterById(int id) const {
 }
 
 std::map<int, const chromeos::assistant::mojom::AssistantSuggestion*>
-AssistantCacheModel::GetConversationStarters() const {
+AssistantSuggestionsModel::GetConversationStarters() const {
   std::map<int, const AssistantSuggestion*> conversation_starters;
 
   // We use index within our backing vector to represent unique id.
@@ -50,11 +51,11 @@ AssistantCacheModel::GetConversationStarters() const {
   return conversation_starters;
 }
 
-void AssistantCacheModel::NotifyConversationStartersChanged() {
+void AssistantSuggestionsModel::NotifyConversationStartersChanged() {
   const std::map<int, const AssistantSuggestion*> conversation_starters =
       GetConversationStarters();
 
-  for (AssistantCacheModelObserver& observer : observers_)
+  for (AssistantSuggestionsModelObserver& observer : observers_)
     observer.OnConversationStartersChanged(conversation_starters);
 }
 

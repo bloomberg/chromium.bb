@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_MODEL_ASSISTANT_CACHE_MODEL_H_
-#define ASH_ASSISTANT_MODEL_ASSISTANT_CACHE_MODEL_H_
+#ifndef ASH_ASSISTANT_MODEL_ASSISTANT_SUGGESTIONS_MODEL_H_
+#define ASH_ASSISTANT_MODEL_ASSISTANT_SUGGESTIONS_MODEL_H_
 
 #include <map>
 #include <vector>
@@ -15,20 +15,20 @@
 
 namespace ash {
 
-class AssistantCacheModelObserver;
+class AssistantSuggestionsModelObserver;
 
-class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantCacheModel {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModel {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
   using AssistantSuggestionPtr =
       chromeos::assistant::mojom::AssistantSuggestionPtr;
 
-  AssistantCacheModel();
-  ~AssistantCacheModel();
+  AssistantSuggestionsModel();
+  ~AssistantSuggestionsModel();
 
-  // Adds/removes the specified cache model |observer|.
-  void AddObserver(AssistantCacheModelObserver* observer);
-  void RemoveObserver(AssistantCacheModelObserver* observer);
+  // Adds/removes the specified suggestions model |observer|.
+  void AddObserver(AssistantSuggestionsModelObserver* observer);
+  void RemoveObserver(AssistantSuggestionsModelObserver* observer);
 
   // Sets the cache of conversation starters.
   void SetConversationStarters(
@@ -45,11 +45,11 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantCacheModel {
 
   std::vector<AssistantSuggestionPtr> conversation_starters_;
 
-  base::ObserverList<AssistantCacheModelObserver> observers_;
+  base::ObserverList<AssistantSuggestionsModelObserver> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(AssistantCacheModel);
+  DISALLOW_COPY_AND_ASSIGN(AssistantSuggestionsModel);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_MODEL_ASSISTANT_CACHE_MODEL_H_
+#endif  // ASH_ASSISTANT_MODEL_ASSISTANT_SUGGESTIONS_MODEL_H_

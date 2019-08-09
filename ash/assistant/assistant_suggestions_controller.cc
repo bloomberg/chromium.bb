@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/assistant/assistant_cache_controller.h"
+#include "ash/assistant/assistant_suggestions_controller.h"
 
 #include <utility>
 #include <vector>
@@ -60,9 +60,9 @@ constexpr int kMaxNumOfConversationStarters = 3;
 
 }  // namespace
 
-// AssistantCacheController ----------------------------------------------------
+// AssistantSuggestionsController ----------------------------------------------
 
-AssistantCacheController::AssistantCacheController(
+AssistantSuggestionsController::AssistantSuggestionsController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller) {
   UpdateConversationStarters();
@@ -70,30 +70,30 @@ AssistantCacheController::AssistantCacheController(
   VoiceInteractionController::Get()->AddLocalObserver(this);
 }
 
-AssistantCacheController::~AssistantCacheController() {
+AssistantSuggestionsController::~AssistantSuggestionsController() {
   assistant_controller_->RemoveObserver(this);
   VoiceInteractionController::Get()->RemoveLocalObserver(this);
 }
 
-void AssistantCacheController::AddModelObserver(
-    AssistantCacheModelObserver* observer) {
+void AssistantSuggestionsController::AddModelObserver(
+    AssistantSuggestionsModelObserver* observer) {
   model_.AddObserver(observer);
 }
 
-void AssistantCacheController::RemoveModelObserver(
-    AssistantCacheModelObserver* observer) {
+void AssistantSuggestionsController::RemoveModelObserver(
+    AssistantSuggestionsModelObserver* observer) {
   model_.RemoveObserver(observer);
 }
 
-void AssistantCacheController::OnAssistantControllerConstructed() {
+void AssistantSuggestionsController::OnAssistantControllerConstructed() {
   assistant_controller_->ui_controller()->AddModelObserver(this);
 }
 
-void AssistantCacheController::OnAssistantControllerDestroying() {
+void AssistantSuggestionsController::OnAssistantControllerDestroying() {
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
 
-void AssistantCacheController::OnUiVisibilityChanged(
+void AssistantSuggestionsController::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
     base::Optional<AssistantEntryPoint> entry_point,
@@ -104,13 +104,14 @@ void AssistantCacheController::OnUiVisibilityChanged(
     UpdateConversationStarters();
 }
 
-void AssistantCacheController::OnVoiceInteractionContextEnabled(bool enabled) {
+void AssistantSuggestionsController::OnVoiceInteractionContextEnabled(
+    bool enabled) {
   UpdateConversationStarters();
 }
 
 // TODO(dmblack): The conversation starter cache should receive its contents
 // from the server. Hard-coding for the time being.
-void AssistantCacheController::UpdateConversationStarters() {
+void AssistantSuggestionsController::UpdateConversationStarters() {
   if (!base::FeatureList::IsEnabled(kConversationStartersFeature))
     return;
 
