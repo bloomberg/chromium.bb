@@ -172,6 +172,12 @@ class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
  private:
   enum class State {
     kNone,
+    kStart,
+    kGatherPIN,
+    kReady,
+    kEnumerating,
+    kEnrolling,
+    kCancelling,
   };
 
   void RegisterMessages() override;
@@ -185,24 +191,22 @@ class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
   void HandleProvidePIN(const base::ListValue* args);
 
   void HandleEnumerate(const base::ListValue* args);
-  void OnHaveEnrollments(
+  void OnHaveEnumeration(
       device::CtapDeviceResponseCode,
       base::Optional<std::map<std::vector<uint8_t>, std::string>>);
 
   void HandleStartEnrolling(const base::ListValue* args);
-  void OnEnrollmentFinished(device::CtapDeviceResponseCode);
   void OnEnrollingResponse(device::BioEnrollmentSampleStatus, uint8_t);
+  void OnEnrollmentFinished(device::CtapDeviceResponseCode);
 
   void HandleCancel(const base::ListValue* args);
   void OnEnrollCancel(device::CtapDeviceResponseCode);
 
   State state_ = State::kNone;
+  std::string callback_id_;
   base::OnceCallback<void(std::string)> provide_pin_cb_;
-
   std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
   std::unique_ptr<device::BioEnrollmentHandler> bio_;
-
-  std::string callback_id_;
   base::WeakPtrFactory<SecurityKeysBioEnrollmentHandler> weak_factory_{this};
 };
 

@@ -566,10 +566,10 @@ void SecurityKeysBioEnrollmentHandler::HandleStart(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state_, State::kNone);
   DCHECK_EQ(1u, args->GetSize());
-
-  AllowJavascript();
   DCHECK(callback_id_.empty());
 
+  AllowJavascript();
+  state_ = State::kStart;
   callback_id_ = args->GetList()[0].GetString();
   discovery_factory_ = std::make_unique<device::FidoDiscoveryFactory>();
   bio_ = std::make_unique<device::BioEnrollmentHandler>(
@@ -587,15 +587,15 @@ void SecurityKeysBioEnrollmentHandler::HandleStart(
 void SecurityKeysBioEnrollmentHandler::OnReady() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(bio_);
+  DCHECK_EQ(state_, State::kGatherPIN);
   DCHECK(!callback_id_.empty());
-
+  state_ = State::kReady;
   ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
                             base::Value());
 }
 
 void SecurityKeysBioEnrollmentHandler::OnError(device::FidoReturnCode code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   state_ = State::kNone;
 
   int error;
@@ -641,9 +641,9 @@ void SecurityKeysBioEnrollmentHandler::OnGatherPIN(
     base::OnceCallback<void(std::string)> cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback_id_.empty());
-
+  DCHECK(state_ == State::kStart || state_ == State::kGatherPIN);
+  state_ = State::kGatherPIN;
   provide_pin_cb_ = std::move(cb);
-
   ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
                             base::Value(static_cast<int>(retries)));
 }
@@ -652,7 +652,8 @@ void SecurityKeysBioEnrollmentHandler::HandleProvidePIN(
     const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(2u, args->GetSize());
-
+  DCHECK_EQ(state_, State::kGatherPIN);
+  state_ = State::kGatherPIN;
   callback_id_ = args->GetList()[0].GetString();
   std::move(provide_pin_cb_).Run(args->GetList()[1].GetString());
 }
@@ -661,17 +662,20 @@ void SecurityKeysBioEnrollmentHandler::HandleEnumerate(
     const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(1u, args->GetSize());
-
+  DCHECK_EQ(state_, State::kReady);
+  state_ = State::kEnumerating;
   callback_id_ = args->GetList()[0].GetString();
   bio_->EnumerateTemplates(
-      base::BindOnce(&SecurityKeysBioEnrollmentHandler::OnHaveEnrollments,
+      base::BindOnce(&SecurityKeysBioEnrollmentHandler::OnHaveEnumeration,
                      weak_factory_.GetWeakPtr()));
 }
 
-void SecurityKeysBioEnrollmentHandler::OnHaveEnrollments(
+void SecurityKeysBioEnrollmentHandler::OnHaveEnumeration(
     device::CtapDeviceResponseCode code,
     base::Optional<std::map<std::vector<uint8_t>, std::string>> enrollments) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!callback_id_.empty());
+  DCHECK_EQ(state_, State::kEnumerating);
 
   base::Value::ListStorage list;
   if (enrollments) {
@@ -684,6 +688,7 @@ void SecurityKeysBioEnrollmentHandler::OnHaveEnrollments(
     }
   }
 
+  state_ = State::kReady;
   ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
                             base::ListValue(std::move(list)));
 }
@@ -692,7 +697,8 @@ void SecurityKeysBioEnrollmentHandler::HandleStartEnrolling(
     const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(1u, args->GetSize());
-
+  DCHECK_EQ(state_, State::kReady);
+  state_ = State::kEnrolling;
   callback_id_ = args->GetList()[0].GetString();
   bio_->EnrollTemplate(
       base::BindRepeating(
@@ -702,28 +708,32 @@ void SecurityKeysBioEnrollmentHandler::HandleStartEnrolling(
                      weak_factory_.GetWeakPtr()));
 }
 
-void SecurityKeysBioEnrollmentHandler::OnEnrollmentFinished(
-    device::CtapDeviceResponseCode code) {
-  base::DictionaryValue d;
-  d.SetIntKey("code", static_cast<int>(code));
-  d.SetIntKey("remaining", 0);
-  ResolveJavascriptCallback(base::Value(std::move(callback_id_)), std::move(d));
-}
-
 void SecurityKeysBioEnrollmentHandler::OnEnrollingResponse(
     device::BioEnrollmentSampleStatus status,
     uint8_t remaining_samples) {
+  DCHECK_EQ(state_, State::kEnrolling);
   base::DictionaryValue d;
   d.SetIntKey("status", static_cast<int>(status));
   d.SetIntKey("remaining", static_cast<int>(remaining_samples));
   FireWebUIListener("security-keys-bio-enroll-status", std::move(d));
 }
 
+void SecurityKeysBioEnrollmentHandler::OnEnrollmentFinished(
+    device::CtapDeviceResponseCode code) {
+  DCHECK_EQ(state_, State::kEnrolling);
+  DCHECK(!callback_id_.empty());
+  state_ = State::kReady;
+  base::DictionaryValue d;
+  d.SetIntKey("code", static_cast<int>(code));
+  d.SetIntKey("remaining", 0);
+  ResolveJavascriptCallback(base::Value(std::move(callback_id_)), std::move(d));
+}
+
 void SecurityKeysBioEnrollmentHandler::HandleCancel(
     const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(1u, args->GetSize());
-
+  state_ = State::kCancelling;
   callback_id_ = args->GetList()[0].GetString();
   bio_->Cancel(base::BindOnce(&SecurityKeysBioEnrollmentHandler::OnEnrollCancel,
                               weak_factory_.GetWeakPtr()));
@@ -731,6 +741,8 @@ void SecurityKeysBioEnrollmentHandler::HandleCancel(
 
 void SecurityKeysBioEnrollmentHandler::OnEnrollCancel(
     device::CtapDeviceResponseCode) {
+  DCHECK_EQ(state_, State::kCancelling);
+  state_ = State::kReady;
   ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
                             base::Value());
 }
