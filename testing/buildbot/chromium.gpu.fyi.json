@@ -2972,6 +2972,35 @@
       }
     ]
   },
+  "Android FYI 64 Perf (Pixel 2)": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--gtest-benchmark-name=angle_perftests",
+          "-v",
+          "--shard-timeout=600"
+        ],
+        "isolate_name": "angle_perftests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "angle_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "device_os": "Q",
+              "device_os_type": "userdebug",
+              "device_type": "walleye",
+              "os": "Android",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      }
+    ]
+  },
   "Android FYI 64 Vk Release (Pixel 2)": {
     "additional_compile_targets": [
       "angle_apks"
