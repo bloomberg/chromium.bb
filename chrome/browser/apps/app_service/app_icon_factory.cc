@@ -323,8 +323,10 @@ void LoadIconFromFileWithFallback(
 
     case apps::mojom::IconCompression::kUncompressed:
     case apps::mojom::IconCompression::kCompressed: {
-      base::PostTaskWithTraitsAndReplyWithResult(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::PostTaskAndReplyWithResult(
+          FROM_HERE,
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&ReadFileAsCompressedData, path),
           base::BindOnce(&RunCallbackWithFallback, size_hint_in_dip,
                          is_placeholder_icon, icon_effects, icon_compression,
