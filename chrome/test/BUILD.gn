@@ -2460,6 +2460,8 @@ if (!is_android) {
 
     if (enable_supervised_users) {
       sources += [
+        "../browser/supervised_user/logged_in_user_mixin.cc",
+        "../browser/supervised_user/logged_in_user_mixin.h",
         "../browser/supervised_user/supervised_user_navigation_throttle_browsertest.cc",
         "../browser/supervised_user/supervised_user_service_browsertest.cc",
         "../browser/supervised_user/supervised_user_test_base.cc",
