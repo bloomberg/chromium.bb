@@ -182,7 +182,21 @@ class TestSecurityKeysBioEnrollProxy extends TestSecurityKeysBrowserProxy {
   }
 }
 
+function assertShown(allDivs, dialog, expectedID) {
+  assertTrue(allDivs.includes(expectedID));
+
+  const allShown =
+      allDivs.filter(id => dialog.$[id].className == 'iron-selected');
+  assertEquals(allShown.length, 1);
+  assertEquals(allShown[0], expectedID);
+}
+
+
 suite('SecurityKeysResetDialog', function() {
+  const allDivs = [
+    'initial', 'noReset', 'resetFailed', 'reset2', 'resetSuccess',
+    'resetNotAllowed'
+  ];
   let dialog = null;
 
   setup(function() {
@@ -191,19 +205,6 @@ suite('SecurityKeysResetDialog', function() {
     PolymerTest.clearBody();
     dialog = document.createElement('settings-security-keys-reset-dialog');
   });
-
-  function assertShown(expectedID) {
-    const allDivs = [
-      'initial', 'noReset', 'resetFailed', 'reset2', 'resetSuccess',
-      'resetNotAllowed'
-    ];
-    assertTrue(allDivs.includes(expectedID));
-
-    const allShown =
-        allDivs.filter(id => dialog.$[id].className == 'iron-selected');
-    assertEquals(allShown.length, 1);
-    assertEquals(allShown[0], expectedID);
-  }
 
   function assertComplete() {
     assertEquals(dialog.$.button.textContent.trim(), 'OK');
@@ -218,14 +219,14 @@ suite('SecurityKeysResetDialog', function() {
   test('Initialization', async function() {
     document.body.appendChild(dialog);
     await browserProxy.whenCalled('reset');
-    assertShown('initial');
+    assertShown(allDivs, dialog, 'initial');
     assertNotComplete();
   });
 
   test('Cancel', async function() {
     document.body.appendChild(dialog);
     await browserProxy.whenCalled('reset');
-    assertShown('initial');
+    assertShown(allDivs, dialog, 'initial');
     assertNotComplete();
     dialog.$.button.click();
     await browserProxy.whenCalled('close');
@@ -240,7 +241,7 @@ suite('SecurityKeysResetDialog', function() {
     await browserProxy.whenCalled('reset');
     await browserProxy.whenCalled('close');
     assertComplete();
-    assertShown('noReset');
+    assertShown(allDivs, dialog, 'noReset');
   });
 
   test('ImmediateUnknownError', async function() {
@@ -251,7 +252,7 @@ suite('SecurityKeysResetDialog', function() {
     await browserProxy.whenCalled('reset');
     await browserProxy.whenCalled('close');
     assertComplete();
-    assertShown('resetFailed');
+    assertShown(allDivs, dialog, 'resetFailed');
     assertTrue(
         dialog.$.resetFailed.textContent.trim().includes(error.toString()));
   });
@@ -265,11 +266,11 @@ suite('SecurityKeysResetDialog', function() {
     await browserProxy.whenCalled('reset');
     await browserProxy.whenCalled('completeReset');
     assertNotComplete();
-    assertShown('reset2');
+    assertShown(allDivs, dialog, 'reset2');
     promiseResolver.resolve(0 /* success */);
     await browserProxy.whenCalled('close');
     assertComplete();
-    assertShown('resetSuccess');
+    assertShown(allDivs, dialog, 'resetSuccess');
   });
 
   test('UnknownError', async function() {
@@ -282,7 +283,7 @@ suite('SecurityKeysResetDialog', function() {
     await browserProxy.whenCalled('completeReset');
     await browserProxy.whenCalled('close');
     assertComplete();
-    assertShown('resetFailed');
+    assertShown(allDivs, dialog, 'resetFailed');
     assertTrue(
         dialog.$.resetFailed.textContent.trim().includes(error.toString()));
   });
@@ -297,11 +298,15 @@ suite('SecurityKeysResetDialog', function() {
     await browserProxy.whenCalled('completeReset');
     await browserProxy.whenCalled('close');
     assertComplete();
-    assertShown('resetNotAllowed');
+    assertShown(allDivs, dialog, 'resetNotAllowed');
   });
 });
 
 suite('SecurityKeysSetPINDialog', function() {
+  const allDivs = [
+    'initial', 'noPINSupport', 'pinPrompt', 'success', 'error', 'locked',
+    'reinsert'
+  ];
   let dialog = null;
 
   setup(function() {
@@ -310,24 +315,6 @@ suite('SecurityKeysSetPINDialog', function() {
     PolymerTest.clearBody();
     dialog = document.createElement('settings-security-keys-set-pin-dialog');
   });
-
-  function assertShown(expectedID) {
-    const allDivs = [
-      'initial',
-      'noPINSupport',
-      'pinPrompt',
-      'success',
-      'error',
-      'locked',
-      'reinsert',
-    ];
-    assertTrue(allDivs.includes(expectedID));
-
-    const allShown =
-        allDivs.filter(id => dialog.$[id].className == 'iron-selected');
-    assertEquals(allShown.length, 1);
-    assertEquals(allShown[0], expectedID);
-  }
 
   function assertComplete() {
     assertEquals(dialog.$.closeButton.textContent.trim(), 'OK');
@@ -344,7 +331,7 @@ suite('SecurityKeysSetPINDialog', function() {
   test('Initialization', async function() {
     document.body.appendChild(dialog);
     await browserProxy.whenCalled('startSetPIN');
-    assertShown('initial');
+    assertShown(allDivs, dialog, 'initial');
     assertNotComplete();
   });
 
@@ -362,7 +349,7 @@ suite('SecurityKeysSetPINDialog', function() {
       await browserProxy.whenCalled('startSetPIN');
       await browserProxy.whenCalled('close');
       assertComplete();
-      assertShown(testCase[1]);
+      assertShown(allDivs, dialog, testCase[1]);
       if (testCase[1] == 'error') {
         // Unhandled error codes display the numeric code.
         assertTrue(
@@ -382,7 +369,7 @@ suite('SecurityKeysSetPINDialog', function() {
     await browserProxy.whenCalled('startSetPIN');
     await browserProxy.whenCalled('close');
     assertComplete();
-    assertShown('locked');
+    assertShown(allDivs, dialog, 'locked');
   });
 
   function setPINEntry(inputElement, pinValue) {
@@ -424,7 +411,7 @@ suite('SecurityKeysSetPINDialog', function() {
         [0 /* not yet complete */, null /* no current PIN */]);
     await uiReady;
     assertNotComplete();
-    assertShown('pinPrompt');
+    assertShown(allDivs, dialog, 'pinPrompt');
     assertTrue(dialog.$.currentPINEntry.hidden);
 
     await setNewPINEntries('123', '');
@@ -449,7 +436,7 @@ suite('SecurityKeysSetPINDialog', function() {
 
     setPINResolver.resolve([1 /* complete */, 0 /* success */]);
     await browserProxy.whenCalled('close');
-    assertShown('success');
+    assertShown(allDivs, dialog, 'success');
     assertComplete();
   });
 
@@ -474,7 +461,7 @@ suite('SecurityKeysSetPINDialog', function() {
       await browserProxy.whenCalled('setPIN');
       await browserProxy.whenCalled('close');
       assertComplete();
-      assertShown(testCase[1]);
+      assertShown(allDivs, dialog, testCase[1]);
       if (testCase[1] == 'error') {
         // Unhandled error codes display the numeric code.
         assertTrue(
@@ -494,7 +481,7 @@ suite('SecurityKeysSetPINDialog', function() {
         [0 /* not yet complete */, 2 /* two attempts */]);
     await uiReady;
     assertNotComplete();
-    assertShown('pinPrompt');
+    assertShown(allDivs, dialog, 'pinPrompt');
     assertFalse(dialog.$.currentPINEntry.hidden);
 
     setChangePINEntries('123', '', '');
@@ -524,7 +511,7 @@ suite('SecurityKeysSetPINDialog', function() {
     setPINEntry(dialog.$.confirmPIN, '1234');
     dialog.$.pinSubmit.click();
     let {oldPIN, newPIN} = await browserProxy.whenCalled('setPIN');
-    assertShown('pinPrompt');
+    assertShown(allDivs, dialog, 'pinPrompt');
     assertNotComplete();
     assertTrue(dialog.$.pinSubmit.disabled);
     assertEquals(oldPIN, '4321');
@@ -551,12 +538,13 @@ suite('SecurityKeysSetPINDialog', function() {
 
     setPINResolver.resolve([1 /* complete */, 0 /* success */]);
     await browserProxy.whenCalled('close');
-    assertShown('success');
+    assertShown(allDivs, dialog, 'success');
     assertComplete();
   });
 });
 
 suite('SecurityKeysCredentialManagement', function() {
+  const allDivs = ['initial', 'pinPrompt', 'credentials', 'error'];
   let dialog = null;
 
   setup(function() {
@@ -567,26 +555,16 @@ suite('SecurityKeysCredentialManagement', function() {
         'settings-security-keys-credential-management-dialog');
   });
 
-  function assertShown(expectedID) {
-    const allDivs = ['initial', 'pinPrompt', 'credentials', 'error'];
-    assertTrue(allDivs.includes(expectedID));
-
-    const allShown =
-        allDivs.filter(id => dialog.$[id].className == 'iron-selected');
-    assertEquals(allShown.length, 1);
-    assertEquals(allShown[0], expectedID);
-  }
-
   test('Initialization', async function() {
     document.body.appendChild(dialog);
     await browserProxy.whenCalled('startCredentialManagement');
-    assertShown('initial');
+    assertShown(allDivs, dialog, 'initial');
   });
 
   test('Cancel', async function() {
     document.body.appendChild(dialog);
     await browserProxy.whenCalled('startCredentialManagement');
-    assertShown('initial');
+    assertShown(allDivs, dialog, 'initial');
     dialog.$.cancelButton.click();
     await browserProxy.whenCalled('close');
     assertFalse(dialog.$.dialog.open);
@@ -599,13 +577,13 @@ suite('SecurityKeysCredentialManagement', function() {
 
     document.body.appendChild(dialog);
     await browserProxy.whenCalled('startCredentialManagement');
-    assertShown('initial');
+    assertShown(allDivs, dialog, 'initial');
     startResolver.resolve();
 
     const errorString = 'foo bar baz';
     cr.webUIListenerCallback(
         'security-keys-credential-management-finished', errorString);
-    assertShown('error');
+    assertShown(allDivs, dialog, 'error');
     assertTrue(dialog.$.error.textContent.trim().includes(errorString));
   });
 
@@ -623,14 +601,14 @@ suite('SecurityKeysCredentialManagement', function() {
 
     document.body.appendChild(dialog);
     await browserProxy.whenCalled('startCredentialManagement');
-    assertShown('initial');
+    assertShown(allDivs, dialog, 'initial');
 
     // Simulate PIN entry.
     let uiReady = test_util.eventToPromise(
         'credential-management-dialog-ready-for-testing', dialog);
     startCredentialManagementResolver.resolve();
     await uiReady;
-    assertShown('pinPrompt');
+    assertShown(allDivs, dialog, 'pinPrompt');
     dialog.$.pin.value = '0000';
     dialog.$.confirmButton.click();
     const pin = await browserProxy.whenCalled('providePIN');
@@ -663,7 +641,7 @@ suite('SecurityKeysCredentialManagement', function() {
     ];
     enumerateResolver.resolve(credentials);
     await uiReady;
-    assertShown('credentials');
+    assertShown(allDivs, dialog, 'credentials');
     assertEquals(dialog.$.credentialList.items, credentials);
 
     // Select two of the credentials and delete them.
@@ -684,12 +662,13 @@ suite('SecurityKeysCredentialManagement', function() {
         'credential-management-dialog-ready-for-testing', dialog);
     deleteResolver.resolve('foobar' /* localized response message */);
     await uiReady;
-    assertShown('error');
+    assertShown(allDivs, dialog, 'error');
     assertTrue(dialog.$.error.textContent.trim().includes('foobar'));
   });
 });
 
 suite('SecurityKeysBioEnrollment', function() {
+  const allDivs = ['initial', 'pinPrompt', 'enrollments', 'enroll', 'error'];
   let dialog = null;
 
   setup(function() {
@@ -699,27 +678,17 @@ suite('SecurityKeysBioEnrollment', function() {
     dialog = document.createElement('settings-security-keys-bio-enroll-dialog');
   });
 
-  function assertShown(expectedID) {
-    const allDivs = ['initial', 'pinPrompt', 'enrollments', 'enroll', 'error'];
-    assertTrue(allDivs.includes(expectedID));
-
-    const allShown =
-        allDivs.filter(id => dialog.$[id].className == 'iron-selected');
-    assertEquals(allShown.length, 1);
-    assertEquals(allShown[0], expectedID);
-  }
-
   test('Initialization', async function() {
     document.body.appendChild(dialog);
     await browserProxy.whenCalled('startBioEnroll');
-    assertShown('initial');
+    assertShown(allDivs, dialog, 'initial');
     assertFalse(dialog.$.cancelButton.hidden);
   });
 
   test('Cancel', async function() {
     document.body.appendChild(dialog);
     await browserProxy.whenCalled('startBioEnroll');
-    assertShown('initial');
+    assertShown(allDivs, dialog, 'initial');
     dialog.$.cancelButton.click();
     await browserProxy.whenCalled('close');
     assertFalse(dialog.$.dialog.open);
@@ -731,12 +700,12 @@ suite('SecurityKeysBioEnrollment', function() {
 
     document.body.appendChild(dialog);
     await browserProxy.whenCalled('startBioEnroll');
-    assertShown('initial');
+    assertShown(allDivs, dialog, 'initial');
     resolver.resolve();
 
     const errorString = 'foo bar baz';
     cr.webUIListenerCallback('security-keys-bio-enroll-error', errorString);
-    assertShown('error');
+    assertShown(allDivs, dialog, 'error');
     assertTrue(dialog.$.error.textContent.trim().includes(errorString));
   });
 
@@ -751,14 +720,14 @@ suite('SecurityKeysBioEnrollment', function() {
 
     document.body.appendChild(dialog);
     await browserProxy.whenCalled('startBioEnroll');
-    assertShown('initial');
+    assertShown(allDivs, dialog, 'initial');
 
     // Simulate PIN entry.
     let uiReady =
         test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     startResolver.resolve();
     await uiReady;
-    assertShown('pinPrompt');
+    assertShown(allDivs, dialog, 'pinPrompt');
     dialog.$.pin.value = '0000';
     dialog.$.okButton.click();
     const pin = await browserProxy.whenCalled('providePIN');
@@ -785,7 +754,7 @@ suite('SecurityKeysBioEnrollment', function() {
     ];
     enumerateResolver.resolve(enrollments);
     await uiReady;
-    assertShown('enrollments');
+    assertShown(allDivs, dialog, 'enrollments');
     assertEquals(dialog.$.enrollmentList.items, enrollments);
   });
 
@@ -802,14 +771,14 @@ suite('SecurityKeysBioEnrollment', function() {
 
     document.body.appendChild(dialog);
     await browserProxy.whenCalled('startBioEnroll');
-    assertShown('initial');
+    assertShown(allDivs, dialog, 'initial');
 
     // Simulate PIN entry.
     let uiReady =
         test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     startResolver.resolve();
     await uiReady;
-    assertShown('pinPrompt');
+    assertShown(allDivs, dialog, 'pinPrompt');
     dialog.$.pin.value = '0000';
     dialog.$.okButton.click();
     const pin = await browserProxy.whenCalled('providePIN');
@@ -822,7 +791,7 @@ suite('SecurityKeysBioEnrollment', function() {
         test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     enumerateResolver.resolve([]);
     await uiReady;
-    assertShown('enrollments');
+    assertShown(allDivs, dialog, 'enrollments');
     assertEquals(dialog.$.enrollmentList.items.length, 0);
 
     // Simulate add enrollment.
@@ -833,7 +802,7 @@ suite('SecurityKeysBioEnrollment', function() {
     await browserProxy.whenCalled('startEnrolling');
     await uiReady;
 
-    assertShown('enroll');
+    assertShown(allDivs, dialog, 'enroll');
     uiReady =
         test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     cr.webUIListenerCallback(
