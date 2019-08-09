@@ -600,7 +600,7 @@ crbug.com/lpz external/wpt/css/css-will-change/parsing/will-change-invalid.html 
 crbug.com/lpz external/wpt/css/cssom-view/cssom-getBoxQuads-001.html [ Failure ]
 crbug.com/lpz external/wpt/css/cssom-view/elementFromPosition.html [ Failure ]
 crbug.com/lpz external/wpt/css/cssom-view/interfaces.html [ Failure ]
-crbug.com/lpz external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Failure ]
+crbug.com/lpz external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Failure Timeout ]
 crbug.com/lpz external/wpt/css/cssom-view/scrollIntoView-horizontal-tb-writing-mode-and-rtl-direction.html [ Failure ]
 crbug.com/lpz external/wpt/css/cssom-view/scrollIntoView-sideways-lr-writing-mode.html [ Failure ]
 crbug.com/lpz external/wpt/css/cssom-view/scrollIntoView-sideways-rl-writing-mode.html [ Failure ]
