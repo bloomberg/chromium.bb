@@ -61191,6 +61191,7 @@ Full version information for the fingerprint enum values:
   <int value="0" label="Results do not match"/>
   <int value="1" label="Results match"/>
   <int value="2" label="Results changed"/>
+  <int value="3" label="HitTestData outdated"/>
 </enum>
 
 <enum name="VoiceInteractionEventSource">
