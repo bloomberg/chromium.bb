@@ -175,6 +175,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/pref_names_util.h"
 #include "chrome/common/prerender_url_loader_throttle.h"
 #include "chrome/common/prerender_util.h"
 #include "chrome/common/render_messages.h"
@@ -2953,39 +2954,6 @@ content::TtsPlatform* ChromeContentBrowserClient::GetTtsPlatform() {
 #endif
 }
 
-base::Optional<ui::CaptionStyle> GetCaptionStyleFromPrefs(PrefService* prefs) {
-  if (!prefs) {
-    return base::nullopt;
-  }
-
-  ui::CaptionStyle style;
-
-  style.text_size = prefs->GetString(prefs::kAccessibilityCaptionsTextSize);
-  style.font_family = prefs->GetString(prefs::kAccessibilityCaptionsTextFont);
-  if (!prefs->GetString(prefs::kAccessibilityCaptionsTextColor).empty()) {
-    style.text_color = base::StringPrintf(
-        "rgba(%s,%s)",
-        prefs->GetString(prefs::kAccessibilityCaptionsTextColor).c_str(),
-        base::NumberToString(
-            prefs->GetInteger(prefs::kAccessibilityCaptionsTextOpacity) / 100.0)
-            .c_str());
-  }
-
-  if (!prefs->GetString(prefs::kAccessibilityCaptionsBackgroundColor).empty()) {
-    style.background_color = base::StringPrintf(
-        "rgba(%s,%s)",
-        prefs->GetString(prefs::kAccessibilityCaptionsBackgroundColor).c_str(),
-        base::NumberToString(
-            prefs->GetInteger(prefs::kAccessibilityCaptionsBackgroundOpacity) /
-            100.0)
-            .c_str());
-  }
-
-  style.text_shadow = prefs->GetString(prefs::kAccessibilityCaptionsTextShadow);
-
-  return style;
-}
-
 void ChromeContentBrowserClient::OverrideWebkitPrefs(
     RenderViewHost* rvh, WebPreferences* web_prefs) {
   Profile* profile = Profile::FromBrowserContext(
@@ -3336,7 +3304,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   // Apply caption style from preferences if system caption style is undefined.
   if (!style && base::FeatureList::IsEnabled(features::kCaptionSettings)) {
-    style = GetCaptionStyleFromPrefs(prefs);
+    style = pref_names_util::GetCaptionStyleFromPrefs(prefs);
   }
 
   if (style) {
