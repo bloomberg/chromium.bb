@@ -769,11 +769,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void ClearFocusedElement();
 
-  // Returns whether the given URL is allowed to commit in the current process.
-  // This is a more conservative check than RenderProcessHost::FilterURL, since
-  // it will be used to kill processes that commit unauthorized URLs.
-  bool CanCommitURL(const GURL& url);
-
   // Returns the PreviewsState of the last successful navigation
   // that made a network request. The PreviewsState is a bitmask of potentially
   // several Previews optimizations.
@@ -1339,12 +1334,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // relevant.
   void ResetWaitingState();
 
-  // Returns whether the given origin is allowed to commit in the current
-  // RenderFrameHost. The |url| is used to ensure it matches the origin in cases
-  // where it is applicable. This is a more conservative check than
+  // Returns whether the given origin and URL is allowed to commit in the
+  // current RenderFrameHost. The |url| is used to ensure it matches the origin
+  // in cases where it is applicable. This is a more conservative check than
   // RenderProcessHost::FilterURL, since it will be used to kill processes that
   // commit unauthorized origins.
-  bool CanCommitOrigin(const url::Origin& origin, const GURL& url);
+  enum class CanCommitStatus {
+    CAN_COMMIT_ORIGIN_AND_URL,
+    CANNOT_COMMIT_ORIGIN,
+    CANNOT_COMMIT_URL
+  };
+  CanCommitStatus CanCommitOriginAndUrl(const url::Origin& origin,
+                                        const GURL& url);
 
   // Asserts that the given RenderFrameHostImpl is part of the same browser
   // context (and crashes if not), then returns whether the given frame is
