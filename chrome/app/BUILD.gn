@@ -578,10 +578,7 @@ source_set("builtin_service_manifests") {
   }
 
   if (!is_android) {
-    deps += [
-      "//chrome/utility:profile_import_manifest",
-      "//components/mirroring/service:manifest",
-    ]
+    deps += [ "//components/mirroring/service:manifest" ]
   }
 }
 

@@ -26,6 +26,8 @@
 #endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID)
+#include "chrome/common/importer/profile_import.mojom.h"
+#include "chrome/utility/importer/profile_import_impl.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"  // nogncheck
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #endif  // !defined(OS_ANDROID)
@@ -82,6 +84,11 @@ auto RunProxyResolver(
         receiver) {
   return std::make_unique<proxy_resolver::ProxyResolverFactoryImpl>(
       std::move(receiver));
+}
+
+auto RunProfileImporter(
+    mojo::PendingReceiver<chrome::mojom::ProfileImport> receiver) {
+  return std::make_unique<ProfileImportImpl>(std::move(receiver));
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -149,6 +156,10 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
   static base::NoDestructor<mojo::ServiceFactory> factory {
     RunFilePatcher,
     RunUnzipper,
+
+#if !defined(OS_ANDROID)
+    RunProfileImporter,
+#endif
 
 #if defined(OS_WIN)
     RunWindowsUtility,

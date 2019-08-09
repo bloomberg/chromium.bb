@@ -24,7 +24,6 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/utility/importer/profile_import_manifest.h"
 #include "components/mirroring/service/manifest.h"  // nogncheck
 #endif
 
@@ -41,7 +40,6 @@ GetChromeBuiltinServiceManifests() {
 #endif
 #if !defined(OS_ANDROID)
       mirroring::GetManifest(),
-      GetProfileImportManifest(),
 #endif
 #if defined(OS_CHROMEOS)
       ash::GetManifest(),

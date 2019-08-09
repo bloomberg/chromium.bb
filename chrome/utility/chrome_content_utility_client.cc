@@ -32,8 +32,6 @@
 #include "ui/base/buildflags.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/utility/importer/profile_import_impl.h"
-#include "chrome/utility/importer/profile_import_service.h"
 #include "services/network/url_request_context_builder_mojo.h"
 #endif  // !defined(OS_ANDROID)
 
@@ -164,9 +162,6 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
 #endif  // OS_WIN
 
 #if !defined(OS_ANDROID)
-  if (service_name == chrome::mojom::kProfileImportServiceName)
-    return std::make_unique<ProfileImportService>(std::move(request));
-
   if (base::FeatureList::IsEnabled(mirroring::features::kMirroringService) &&
       base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&
       service_name == mirroring::mojom::kServiceName) {
