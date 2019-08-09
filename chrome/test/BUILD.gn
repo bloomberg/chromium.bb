@@ -5158,6 +5158,11 @@ if (!is_android) {
         "//chromeos/services/device_sync",
         "//chromeos/services/device_sync:test_support",
       ]
+    } else {
+      sources += [
+        "../browser/first_run/scoped_relaunch_chrome_browser_override.cc",
+        "../browser/first_run/scoped_relaunch_chrome_browser_override.h",
+      ]
     }
   }
 
