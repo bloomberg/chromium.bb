@@ -997,10 +997,12 @@ void LoginAuthUserView::UpdateForUser(const LoginUserInfo& user) {
   // Abort the security token PIN request associated with the previous user, if
   // there was any.
   AbortSecurityTokenPinRequest();
-
+  const bool user_changed = current_user().basic_user_info.account_id !=
+                            user.basic_user_info.account_id;
   user_view_->UpdateForUser(user, true /*animate*/);
   password_view_->UpdateForUser(user);
-  password_view_->Clear();
+  if (user_changed)
+    password_view_->Clear();
   online_sign_in_message_->SetText(
       base::UTF8ToUTF16(user.basic_user_info.display_name));
 }
