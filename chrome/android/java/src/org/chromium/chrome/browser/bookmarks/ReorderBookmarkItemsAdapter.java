@@ -335,6 +335,11 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     // SyncStateChangedListener implementation.
     @Override
     public void syncStateChanged() {
+        // If mDelegate is null, we will set the top level folders upon its initialization
+        // (see onBookmarkDelegateInitialized method above).
+        if (mDelegate == null) {
+            return;
+        }
         mTopLevelFolders.clear();
         populateTopLevelFoldersList();
     }
