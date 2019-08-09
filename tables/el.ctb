@@ -4,7 +4,8 @@
 #
 # -----------
 #-name: ελληνικό σύστημα μπράιγ
-#-display-name: Greek contracted braille
+#-index-name: Greek
+#-display-name: Greek braille
 #
 #+locale: el
 #+type: literary
