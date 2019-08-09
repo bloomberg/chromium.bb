@@ -205,6 +205,15 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kRotate, CSSPropertyID::kScale, CSSPropertyID::kCaretColor,
     CSSPropertyID::kLineBreak};
 
+
+
+    // patch section: lcd-text background
+
+
+    // patch section: rubberband
+
+
+
 CSSValueID CssIdentifierForFontSizeKeyword(int keyword_size) {
   DCHECK_NE(keyword_size, 0);
   DCHECK_LE(keyword_size, 8);

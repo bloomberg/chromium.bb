@@ -321,6 +321,15 @@ class CORE_EXPORT Element : public ContainerNode {
   void scrollTo(double x, double y);
   virtual void scrollTo(const ScrollToOptions*);
 
+
+
+  // patch section: element-extensions
+
+
+  // patch section: spellcheck
+
+
+
   IntRect BoundsInViewport() const;
   // Returns an intersection rectangle of the bounds rectangle and the visual
   // viewport's rectangle in the visual viewport's coordinate space.
