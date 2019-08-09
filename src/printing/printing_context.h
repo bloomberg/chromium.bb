@@ -36,7 +36,7 @@ class PRINTING_EXPORT PrintingContext {
 
     virtual HWND GetOwnerWnd();
 
-    virtual void SetOwnerWnd(HWND ownerWnd);
+    virtual void SetOwnerWnd(HWND ownerWnd) {}
 
     // Returns application locale.
     virtual std::string GetAppLocale() = 0;
@@ -162,6 +162,13 @@ class PRINTING_EXPORT PrintingContext {
  private:
   DISALLOW_COPY_AND_ASSIGN(PrintingContext);
 };
+
+inline
+HWND PrintingContext::Delegate::GetOwnerWnd() {
+  return 0;
+}
+
+
 
 }  // namespace printing
 
