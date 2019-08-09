@@ -504,6 +504,21 @@
             ]
         }
     ],
+    "AppListAppRanker": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "AppListAppRanker",
+                    "enable_features": [
+                        "EnableAppRanker"
+                    ]
+                }
+            ]
+        }
+    ],
     "AppListLaunchRecorder": [
         {
             "platforms": [
