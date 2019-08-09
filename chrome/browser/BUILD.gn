@@ -546,6 +546,8 @@ jumbo_split_static_library("browser") {
     "hang_monitor/hang_crash_dump.h",
     "hang_monitor/hang_crash_dump_mac.cc",
     "hang_monitor/hang_crash_dump_win.cc",
+    "heavy_ad_intervention/heavy_ad_helper.cc",
+    "heavy_ad_intervention/heavy_ad_helper.h",
     "history/chrome_history_backend_client.cc",
     "history/chrome_history_backend_client.h",
     "history/chrome_history_client.cc",
