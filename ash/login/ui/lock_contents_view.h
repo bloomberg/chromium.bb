@@ -91,6 +91,10 @@ class ASH_EXPORT LockContentsView
     LoginExpandedPublicAccountView* expanded_view() const;
     views::View* main_view() const;
 
+    // Simulates that parent access code validation finished with the result
+    // specified in |access_granted|.
+    void SimulateParentAccessValidationFinished(bool access_granted);
+
    private:
     LockContentsView* const view_;
   };

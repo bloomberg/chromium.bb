@@ -367,6 +367,11 @@ views::View* LockContentsView::TestApi::main_view() const {
   return view_->main_view_;
 }
 
+void LockContentsView::TestApi::SimulateParentAccessValidationFinished(
+    bool access_granted) {
+  view_->OnParentAccessValidationFinished(access_granted);
+}
+
 LockContentsView::UserState::UserState(const LoginUserInfo& user_info)
     : account_id(user_info.basic_user_info.account_id) {
   fingerprint_state = user_info.fingerprint_state;
@@ -559,10 +564,12 @@ void LockContentsView::ShowParentAccessDialog(bool show) {
   if (!primary_big_view_)
     return;
 
-  if (show)
+  if (show) {
     primary_big_view_->ShowParentAccessView();
-  else
+    Shell::Get()->login_screen_controller()->ShowParentAccessButton(false);
+  } else {
     primary_big_view_->HideParentAccessView();
+  }
 
   Layout();
 }
@@ -1838,6 +1845,8 @@ void LockContentsView::OnEasyUnlockIconTapped() {
 
 void LockContentsView::OnParentAccessValidationFinished(bool access_granted) {
   ShowParentAccessDialog(false);
+  Shell::Get()->login_screen_controller()->ShowParentAccessButton(
+      !access_granted);
 }
 
 keyboard::KeyboardUIController* LockContentsView::GetKeyboardControllerForView()
