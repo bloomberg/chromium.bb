@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/payments/cells/accessibility_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -116,7 +117,7 @@ const CGFloat kFaviconDimension = 16;
     _pageTitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     SetUILabelScaledFont(_pageTitleLabel,
                          [[MDCTypography fontLoader] mediumFontOfSize:12]);
-    _pageTitleLabel.textColor = [[MDCPalette greyPalette] tint900];
+    _pageTitleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
     _pageTitleLabel.backgroundColor = [UIColor clearColor];
     _pageTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:_pageTitleLabel];
@@ -125,7 +126,7 @@ const CGFloat kFaviconDimension = 16;
     _pageHostLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     SetUILabelScaledFont(_pageHostLabel,
                          [[MDCTypography fontLoader] regularFontOfSize:12]);
-    _pageHostLabel.textColor = [[MDCPalette greyPalette] tint600];
+    _pageHostLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
     // Truncate host name from the leading side if it is too long. This is
     // according to Eliding Origin Names and Hostnames guideline found here:
     // https://www.chromium.org/Home/chromium-security/enamel#TOC-Presenting-Origins
