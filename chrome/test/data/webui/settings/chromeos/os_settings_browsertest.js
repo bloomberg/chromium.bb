@@ -385,7 +385,8 @@ var OSSettingsInternetPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsInternetPageTest', 'InternetPage', () => {
+// Flaky on linux-chromeos-rel builder. https://crbug.com/992116
+TEST_F('OSSettingsInternetPageTest', 'DISABLED_InternetPage', () => {
   mocha.run();
 });
 
