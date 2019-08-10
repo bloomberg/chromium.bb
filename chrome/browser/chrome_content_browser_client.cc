@@ -404,9 +404,6 @@
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/services/cellular_setup/cellular_setup_service.h"
-#include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
-#include "chromeos/services/cellular_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/network_config/network_config_service.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"
@@ -3884,15 +3881,6 @@ void ChromeContentBrowserClient::RunServiceInstance(
 #endif
 
 #if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kUpdatedCellularActivationUi) &&
-      service_name == chromeos::cellular_setup::mojom::kServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        std::make_unique<chromeos::cellular_setup::CellularSetupService>(
-            std::move(*receiver)));
-    return;
-  }
-
   if (service_name == chromeos::secure_channel::mojom::kServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::secure_channel::SecureChannelService>(

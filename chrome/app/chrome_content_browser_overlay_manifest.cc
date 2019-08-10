@@ -161,7 +161,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             chromeos::network_config::mojom::kNetworkConfigCapability,
             service_manager::Manifest::InterfaceList<
                 chromeos::network_config::mojom::CrosNetworkConfig>())
-        .RequireCapability("cellular_setup", "cellular_setup")
         .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame", "cellular_setup",
             service_manager::Manifest::InterfaceList<
