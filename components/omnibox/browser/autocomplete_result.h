@@ -141,6 +141,8 @@ class AutocompleteResult {
                            PedalSuggestionsRemainUnique);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
                            TestGroupSuggestionsBySearchVsURL);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           DemoteOnDeviceSearchSuggestions);
   friend class HistoryURLProviderTest;
 
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
@@ -213,6 +215,16 @@ class AutocompleteResult {
   // earlier in the range, while non-search types and their submatches
   // are shifted later.
   static void GroupSuggestionsBySearchVsURL(iterator begin, iterator end);
+
+  // If we have SearchProvider search suggestions, demote OnDeviceProvider
+  // search suggestions, since, which in general have lower quality than
+  // SearchProvider search suggestions. The demotion can happen in two ways,
+  // controlled by Finch (1. decrease-relevances or 2. remove-suggestions):
+  // 1. Decrease the on device search suggestion relevances that they will
+  //    always be shown after SearchProvider search suggestions.
+  // 2. Set the relevances of OnDeviceProvider search suggestions to 0, such
+  //    that they will be removed from result list later.
+  void DemoteOnDeviceSearchSuggestions();
 
   ACMatches matches_;
 

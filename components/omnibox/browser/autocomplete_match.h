@@ -383,6 +383,14 @@ struct AutocompleteMatch {
   // shown.
   bool IsVerbatimType() const;
 
+  // Returns whether this match is a search suggestion provided by search
+  // provider.
+  bool IsSearchProviderSearchSuggestion() const;
+
+  // Returns whether this match is a search suggestion provided by on device
+  // providers.
+  bool IsOnDeviceSearchSuggestion() const;
+
   // Returns whether this match or any duplicate of this match can be deleted.
   // This is used to decide whether we should call DeleteMatch().
   bool SupportsDeletion() const;

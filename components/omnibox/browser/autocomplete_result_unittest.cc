@@ -749,6 +749,85 @@ TEST_F(AutocompleteResultTest,
   }
 }
 
+TEST_F(AutocompleteResultTest, DemoteOnDeviceSearchSuggestions) {
+  // clang-format off
+  TestData data[] = {
+      {1, 1, 500,  true},
+      {2, 2, 1100, true},
+      {3, 2, 1000, true},
+      {4, 1, 1300, true},
+      {5, 1, 1200, true},
+  };
+  // clang-format on
+
+  ACMatches matches;
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
+  matches[0].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  matches[1].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  matches[2].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  matches[3].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  matches[4].type = AutocompleteMatchType::SEARCH_SUGGEST;
+
+  // match1, match2 are set as on device head suggestion.
+  matches[1].subtype_identifier = 271;
+  matches[2].subtype_identifier = 271;
+  matches[0].provider->type_ = AutocompleteProvider::TYPE_SEARCH;
+  matches[1].provider->type_ = AutocompleteProvider::TYPE_ON_DEVICE_HEAD;
+
+  AutocompleteInput input(base::ASCIIToUTF16("a"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+
+  // Test setting on device suggestion relevances to 0.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        omnibox::kOnDeviceHeadProvider,
+        {{"DemoteOnDeviceSearchSuggestionsMode", "remove-suggestions"}});
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.DemoteOnDeviceSearchSuggestions();
+    EXPECT_EQ(5UL, result.size());
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(0)->provider->type());
+    EXPECT_EQ(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(1)->provider->type());
+    EXPECT_EQ(0, result.match_at(1)->relevance);
+    EXPECT_EQ(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(2)->provider->type());
+    EXPECT_EQ(0, result.match_at(2)->relevance);
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(3)->provider->type());
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(4)->provider->type());
+  }
+
+  // Test setting on device suggestion relevances lower than search provider
+  // suggestions.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        omnibox::kOnDeviceHeadProvider,
+        {{"DemoteOnDeviceSearchSuggestionsMode", "decrease-relevances"}});
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.DemoteOnDeviceSearchSuggestions();
+    EXPECT_EQ(5UL, result.size());
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(0)->provider->type());
+    EXPECT_EQ(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(1)->provider->type());
+    EXPECT_LT(result.match_at(1)->relevance, result.match_at(0)->relevance);
+    EXPECT_EQ(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(2)->provider->type());
+    EXPECT_LT(result.match_at(2)->relevance, result.match_at(0)->relevance);
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(3)->provider->type());
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(4)->provider->type());
+  }
+}
+
 TEST_F(AutocompleteResultTest, DemoteByTypeButPreserveDefaultMatchScore) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(

@@ -901,6 +901,19 @@ bool AutocompleteMatch::IsVerbatimType() const {
       is_keyword_verbatim_match;
 }
 
+bool AutocompleteMatch::IsSearchProviderSearchSuggestion() const {
+  const bool from_search_provider =
+      (provider && provider->type() == AutocompleteProvider::TYPE_SEARCH);
+  return from_search_provider && type == AutocompleteMatchType::SEARCH_SUGGEST;
+}
+
+bool AutocompleteMatch::IsOnDeviceSearchSuggestion() const {
+  const bool from_on_device_provider =
+      (provider &&
+       provider->type() == AutocompleteProvider::TYPE_ON_DEVICE_HEAD);
+  return from_on_device_provider && subtype_identifier == 271;
+}
+
 bool AutocompleteMatch::SupportsDeletion() const {
   if (deletable)
     return true;
