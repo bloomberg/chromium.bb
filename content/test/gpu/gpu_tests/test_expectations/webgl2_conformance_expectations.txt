@@ -560,7 +560,6 @@ crbug.com/709351 [ linux nvidia ] conformance2/glsl3/vector-dynamic-indexing-swi
 crbug.com/905003 [ linux nvidia ] conformance2/textures/misc/integer-cubemap-specification-order-bug.html [ Failure ]
 crbug.com/680278 [ opengl linux nvidia ] conformance2/rendering/framebuffer-texture-level1.html [ Failure ]
 crbug.com/680282 [ linux nvidia-0xf02 ] conformance2/textures/image/tex-3d-rg8ui-rg_integer-unsigned_byte.html [ Failure ]
-crbug.com/694354 [ linux no-passthrough nvidia ] conformance2/textures/image_bitmap_from_image_data/tex-2d-srgb8-rgb-unsigned_byte.html [ RetryOnFailure ]
 
 # Observed flaky on Swarmed bots. Some of these were directly
 # observed, some not. We can't afford any flakes on the tryservers
