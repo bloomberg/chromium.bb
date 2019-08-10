@@ -1937,23 +1937,8 @@ int ShelfView::CancelDrag(int modified_index) {
 }
 
 void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
-  // Convert the event location from current view to screen, since swiping up on
-  // the shelf can open the fullscreen app list. Updating the bounds of the app
-  // list during dragging is based on screen coordinate space.
-  gfx::Point location_in_screen(event->location());
-  View::ConvertPointToScreen(this, &location_in_screen);
-  event->set_location(location_in_screen);
-  if (shelf_->ProcessGestureEvent(*event))
-    event->StopPropagation();
-  else if (is_overflow_mode()) {
-    // If the event hasn't been processed yet and the overflow shelf is showing,
-    // give the bubble a chance to process the event.
-    if (main_shelf_->overflow_bubble()->bubble_view()->ProcessGestureEvent(
-            *event)) {
-      event->StopPropagation();
-      return;
-    }
-  }
+  if (overflow_mode_ || ShouldHandleGestures(*event))
+    HandleGestureEvent(event);
 }
 
 void ShelfView::OnMouseEvent(ui::MouseEvent* event) {
@@ -2390,6 +2375,38 @@ void ShelfView::SetDragImageBlur(const gfx::Size& size, int blur_radius) {
   drag_image_->layer()->SetRoundedCornerRadius(
       {radius, radius, radius, radius});
   drag_image_->layer()->SetBackgroundBlur(blur_radius);
+}
+
+bool ShelfView::ShouldHandleGestures(const ui::GestureEvent& event) const {
+  if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+    float x_offset = event.details().scroll_x_hint();
+    float y_offset = event.details().scroll_y_hint();
+    if (!shelf_->IsHorizontalAlignment())
+      std::swap(x_offset, y_offset);
+
+    return std::abs(x_offset) < std::abs(y_offset);
+  }
+
+  return true;
+}
+
+void ShelfView::HandleGestureEvent(ui::GestureEvent* event) {
+  // Convert the event location from current view to screen, since swiping up on
+  // the shelf can open the fullscreen app list. Updating the bounds of the app
+  // list during dragging is based on screen coordinate space.
+  gfx::Point location_in_screen(event->location());
+  View::ConvertPointToScreen(this, &location_in_screen);
+  event->set_location(location_in_screen);
+  if (shelf_->ProcessGestureEvent(*event))
+    event->StopPropagation();
+  else if (is_overflow_mode()) {
+    // If the event hasn't been processed yet and the overflow shelf is showing,
+    // give the bubble a chance to process the event.
+    if (main_shelf_->overflow_bubble()->bubble_view()->ProcessGestureEvent(
+            *event)) {
+      event->StopPropagation();
+    }
+  }
 }
 
 }  // namespace ash
