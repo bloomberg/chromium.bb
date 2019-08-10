@@ -79,6 +79,7 @@ None
 
 *** Removed
 - unicodedefs.cti
+- fi-fi.ctb
 
 * Noteworthy changes in release 3.10.0 (2019-06-03)
 This release comes across as quiet, containing just the usual

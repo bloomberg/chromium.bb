@@ -129,8 +129,6 @@ table_files = \
 	fi1.ctb \
 	fi2.ctb \
 	fi-fi-8dot.ctb \
-	fi-fi.ctb \
-	fi.tbl \
 	fi.utb \
 	fr-bfu-comp68.cti \
 	fr-bfu-comp6.utb \
