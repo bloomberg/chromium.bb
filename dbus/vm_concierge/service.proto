@@ -707,3 +707,35 @@ message DnsSettings {
   // List of search domains.
   repeated string search_domains = 2;
 }
+
+enum CpuCgroup {
+  // The CPU cgroup for all Termina VM processes.
+  CPU_CGROUP_TERMINA = 0;
+  // The CPU cgroup for all Plugin VM processes.
+  CPU_CGROUP_PLUGINVM = 1;
+  // The CPU cgroup for all ARCVM processes.
+  CPU_CGROUP_ARCVM = 2;
+}
+
+enum CpuRestrictionState {
+  // The CPU usage is relaxed.
+  CPU_RESTRICTION_FOREGROUND = 0;
+  // The CPU usage is tightly restricted.
+  CPU_RESTRICTION_BACKGROUND = 1;
+}
+
+// Information that must be included with every SetVmCpuRestriction dbus
+// message.
+message SetVmCpuRestrictionRequest {
+  // The CPU cpu cgroup to change.
+  CpuCgroup cpu_cgroup = 1;
+  // The CPU restriction state to apply.
+  CpuRestrictionState cpu_restriction_state = 2;
+}
+
+// Response sent back by vm_concierge after it receives a SetVmCpuRestriction
+// call.
+message SetVmCpuRestrictionResponse {
+  // Did the request succeed?
+  bool success = 1;
+}
