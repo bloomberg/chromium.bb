@@ -1,6 +1,7 @@
 # LibLouis: North American Braille Computer Code
 #
 # -----------
+#-index-name: English, computer, NABCC
 #-display-name: North American Braille Computer Code
 #
 #+locale: en
