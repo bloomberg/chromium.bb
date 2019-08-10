@@ -1087,6 +1087,13 @@
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
     ],
+    'modifications': {
+      'android-pie-x86-fyi-rel': {
+        'swarming': {
+          'shards': 10,
+        },
+      },
+    },
   },
   'network_service_out_of_process_content_shell_test_apk': {
     'remove_from': [
