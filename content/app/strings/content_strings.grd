@@ -280,6 +280,10 @@ below:
       <message name="IDS_AX_ROLE_DESCRIPTION_TERM" desc="Accessibility role description for description term (as in a description list)">
         term
       </message>
+      <!-- https://w3c.github.io/html-aam/#el-details -->
+      <message name="IDS_AX_ROLE_DETAILS" desc="Accessibility role description for details">
+        details
+      </message>
       <message name="IDS_AX_ROLE_DISCLOSURE_TRIANGLE" desc="Accessibility role description for a disclosure triangle, a control shaped like a triangle that expands or collapses to show or hide extra content">
         disclosure triangle
       </message>

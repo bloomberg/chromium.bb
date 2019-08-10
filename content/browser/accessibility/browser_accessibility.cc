@@ -1852,6 +1852,9 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
     case ax::mojom::Role::kAudio:
       return content_client->GetLocalizedString(IDS_AX_ROLE_AUDIO);
 
+    case ax::mojom::Role::kDetails:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DETAILS);
+
     case ax::mojom::Role::kMeter:
       return content_client->GetLocalizedString(IDS_AX_ROLE_METER);
 

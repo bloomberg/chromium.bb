@@ -558,6 +558,9 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
     case ax::mojom::Role::kAudio:
       return base::ASCIIToUTF16("audio");
 
+    case ax::mojom::Role::kDetails:
+      return base::ASCIIToUTF16("details");
+
     case ax::mojom::Role::kMeter:
       return base::ASCIIToUTF16("meter");
 

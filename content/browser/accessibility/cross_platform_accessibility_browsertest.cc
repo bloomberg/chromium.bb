@@ -707,6 +707,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   GURL url(
       "data:text/html,"
       "<audio controls></audio>"
+      "<details></details>"
       "<input>"
       "<input type='email'>"
       "<input type='tel'>"
@@ -718,15 +719,12 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   BrowserAccessibility* root = GetManager()->GetRoot();
   ASSERT_NE(nullptr, root);
-  ASSERT_EQ(1u, root->PlatformChildCount());
-
-  BrowserAccessibility* body = root->PlatformGetChild(0);
-  ASSERT_EQ(6u, body->PlatformChildCount());
+  ASSERT_EQ(7u, root->PlatformChildCount());
 
   auto TestLocalizedRoleDescription =
-      [body](int child_index,
+      [root](int child_index,
              const base::string16& expected_localized_role_description = {}) {
-        BrowserAccessibility* node = body->PlatformGetChild(child_index);
+        BrowserAccessibility* node = root->PlatformGetChild(child_index);
         ASSERT_NE(nullptr, node);
 
         EXPECT_EQ(expected_localized_role_description,
@@ -735,11 +733,12 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   // For testing purposes, assume we get en-US localized strings.
   TestLocalizedRoleDescription(0, base::ASCIIToUTF16("audio"));
-  TestLocalizedRoleDescription(1, base::ASCIIToUTF16(""));
-  TestLocalizedRoleDescription(2, base::ASCIIToUTF16("email"));
-  TestLocalizedRoleDescription(3, base::ASCIIToUTF16("telephone"));
-  TestLocalizedRoleDescription(4, base::ASCIIToUTF16("url"));
-  TestLocalizedRoleDescription(5, base::ASCIIToUTF16("meter"));
+  TestLocalizedRoleDescription(1, base::ASCIIToUTF16("details"));
+  TestLocalizedRoleDescription(2, base::ASCIIToUTF16(""));
+  TestLocalizedRoleDescription(3, base::ASCIIToUTF16("email"));
+  TestLocalizedRoleDescription(4, base::ASCIIToUTF16("telephone"));
+  TestLocalizedRoleDescription(5, base::ASCIIToUTF16("url"));
+  TestLocalizedRoleDescription(6, base::ASCIIToUTF16("meter"));
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
