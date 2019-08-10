@@ -716,24 +716,6 @@ test.customizeMenu.testColors_PreselectDefault = function() {
 };
 
 /**
- * Test 'Done' button enabled/disabled when preselect is present.
- */
-test.customizeMenu.testColors_DoneButtonWithPreselect = function() {
-  test.customizeMenu.mockThemeBackgroundInfo = {usingDefaultTheme: true};
-  init();
-  $(test.customizeMenu.IDS.EDIT_BG).click();
-  $(test.customizeMenu.IDS.COLORS_BUTTON).click();
-
-  assertTrue($(test.customizeMenu.IDS.MENU_DONE).disabled);
-
-  !!$('color_0').click();
-  assertFalse($(test.customizeMenu.IDS.MENU_DONE).disabled);
-
-  $(test.customizeMenu.IDS.COLORS_DEFAULT_ICON).click();
-  assertTrue($(test.customizeMenu.IDS.MENU_DONE).disabled);
-};
-
-/**
  * Test preselect color tile.
  */
 test.customizeMenu.testColors_PreselectColor = function() {
