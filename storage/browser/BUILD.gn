@@ -182,6 +182,7 @@ jumbo_component("browser") {
     "quota/quota_disk_info_helper.h",
     "quota/quota_features.cc",
     "quota/quota_features.h",
+    "quota/quota_limit_type.h",
     "quota/quota_macros.h",
     "quota/quota_manager.cc",
     "quota/quota_manager.h",
