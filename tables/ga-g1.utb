@@ -71,12 +71,14 @@ noback uplow \x1E56\x1E57 1234-125 Ṗṗ
 noback uplow \x1E60\x1E61 146 Ṡṡ     
 
 noback uplow \x1E6A\x1E6B 1456 Ṫṫ     
+
+include en-ueb-g1.ctb
+noback sign \x204A 234 tironian eth 
+begword m\x0027 134-3
 begword b\x0027 12-3
 begword b\x2019 12-3
-
 begword d\x0027 145-3
 begword d\x2019 145-3
-begword m\x0027 134-3
 begword m\x2019 134-3
 begword n\x0027 1345-3
 begword n\x2019 1345-3
@@ -88,10 +90,7 @@ begword t- 2345-36
 
 
 
-include en-ueb-g1.ctb
-noback sign \x204A 234 tironian eth 
-
-# repeat uplow rules
+## repeat uplow rules
 uplow \x00c1\x00e1 12346 Áá
 uplow \x00c9\x00e9 123456 Éé
 uplow \x00cd\x00ed 12356 Íí
