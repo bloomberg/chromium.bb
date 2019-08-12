@@ -272,10 +272,6 @@ int av1_resize_one_pass_cbr(struct AV1_COMP *cpi);
 void av1_rc_set_frame_target(struct AV1_COMP *cpi, int target, int width,
                              int height);
 
-int av1_estimate_q_constant_quality_two_pass(const struct AV1_COMP *cpi,
-                                             int width, int height, int *arf_q,
-                                             int gf_index);
-
 int av1_calc_pframe_target_size_one_pass_vbr(
     const struct AV1_COMP *const cpi, FRAME_UPDATE_TYPE frame_update_type);
 
