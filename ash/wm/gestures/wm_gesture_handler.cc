@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/gestures/overview_gesture_handler.h"
+#include "ash/wm/gestures/wm_gesture_handler.h"
 
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_controller.h"
@@ -14,18 +14,11 @@
 
 namespace ash {
 
-// The threshold before engaging overview with a touchpad three-finger scroll.
-const float OverviewGestureHandler::vertical_threshold_pixels_ = 300;
+WmGestureHandler::WmGestureHandler() = default;
 
-// The threshold before moving selector horizontally when using a touchpad
-// three-finger scroll.
-const float OverviewGestureHandler::horizontal_threshold_pixels_ = 330;
+WmGestureHandler::~WmGestureHandler() = default;
 
-OverviewGestureHandler::OverviewGestureHandler() = default;
-
-OverviewGestureHandler::~OverviewGestureHandler() = default;
-
-bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
+bool WmGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
   if (event.type() == ui::ET_SCROLL_FLING_CANCEL) {
     scroll_data_ = base::make_optional(ScrollData());
     return false;
@@ -65,7 +58,7 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
   return moved;
 }
 
-bool OverviewGestureHandler::EndScroll() {
+bool WmGestureHandler::EndScroll() {
   if (!scroll_data_)
     return false;
 
@@ -82,7 +75,7 @@ bool OverviewGestureHandler::EndScroll() {
     if (std::fabs(scroll_x) < std::fabs(scroll_y))
       return false;
 
-    if (std::fabs(scroll_x) < horizontal_threshold_pixels_)
+    if (std::fabs(scroll_x) < kHorizontalThresholdDp)
       return false;
 
     // This does not invert if the user changes their touchpad settings
@@ -105,7 +98,7 @@ bool OverviewGestureHandler::EndScroll() {
   const bool in_overview = overview_controller->InOverviewSession();
   // Use vertical 3-finger scroll gesture up to enter overview, down to exit.
   if (in_overview) {
-    if (scroll_y < 0 || scroll_y < vertical_threshold_pixels_)
+    if (scroll_y < 0 || scroll_y < kVerticalThresholdDp)
       return false;
 
     base::RecordAction(base::UserMetricsAction("Touchpad_Gesture_Overview"));
@@ -113,7 +106,7 @@ bool OverviewGestureHandler::EndScroll() {
       return true;
     overview_controller->EndOverview();
   } else {
-    if (scroll_y > 0 || scroll_y > -vertical_threshold_pixels_)
+    if (scroll_y > 0 || scroll_y > -kVerticalThresholdDp)
       return false;
 
     base::RecordAction(base::UserMetricsAction("Touchpad_Gesture_Overview"));
@@ -123,20 +116,20 @@ bool OverviewGestureHandler::EndScroll() {
   return true;
 }
 
-bool OverviewGestureHandler::MoveOverviewSelection(int finger_count,
-                                                   float scroll_x,
-                                                   float scroll_y) {
+bool WmGestureHandler::MoveOverviewSelection(int finger_count,
+                                             float scroll_x,
+                                             float scroll_y) {
   if (finger_count != 3)
     return false;
 
   auto* overview_controller = Shell::Get()->overview_controller();
   const bool in_overview = overview_controller->InOverviewSession();
-  // Dominantly vertical scrolls and horizontal scrolls do not move the
+  // Dominantly vertical scrolls and small horizontal scrolls do not move the
   // overview selector.
   if (!in_overview || std::fabs(scroll_x) < std::fabs(scroll_y))
     return false;
 
-  if (std::fabs(scroll_x) < horizontal_threshold_pixels_)
+  if (std::fabs(scroll_x) < kHorizontalThresholdDp)
     return false;
 
   overview_controller->IncrementSelection(/*forward=*/scroll_x > 0);
