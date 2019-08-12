@@ -465,8 +465,6 @@ BrowserView::~BrowserView() {
   // Immersive mode may need to reparent views before they are removed/deleted.
   immersive_mode_controller_.reset();
 
-  browser_->tab_strip_model()->RemoveObserver(this);
-
   extensions::ExtensionCommandsGlobalRegistry* global_registry =
       extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile());
   if (global_registry->registry_for_active_window() ==
