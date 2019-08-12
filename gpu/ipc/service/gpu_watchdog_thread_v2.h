@@ -78,15 +78,23 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   base::TimeDelta watchdog_timeout_;
 
   // The time the gpu watchdog was created
-  base::TimeTicks watchdog_start_time_;
+  base::TimeTicks watchdog_start_timeticks_;
 
   // The time the last OnSuspend and OnResume was called.
-  base::TimeTicks suspend_time_;
-  base::TimeTicks resume_time_;
+  base::TimeTicks suspend_timeticks_;
+  base::TimeTicks resume_timeticks_;
 
   // The time the last OnBackgrounded and OnForegrounded was called.
-  base::TimeTicks backgrounded_time_;
-  base::TimeTicks foregrounded_time_;
+  base::TimeTicks backgrounded_timeticks_;
+  base::TimeTicks foregrounded_timeticks_;
+
+  // Time:      Interpreting the wall-clock time provided by a remote system.
+  // TimeTicks: Tracking the amount of time a task runs. Executing delayed
+  //            tasks at the right time.
+
+  // The time the last OnWatchdogTimeout() was called.
+  base::TimeTicks last_on_watchdog_timeout_timeticks_;
+  base::Time last_on_watchdog_timeout_time_;
 
   // The system has entered the power suspension mode.
   bool in_power_suspension_ = false;
