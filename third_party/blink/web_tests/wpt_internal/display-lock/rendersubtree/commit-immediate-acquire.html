@@ -1,11 +1,12 @@
 <!doctype HTML>
 <html class="reftest-wait">
 <meta charset="utf8">
-<title>Display Locking: acquire rejects after quick commit</title>
+<title>Display Locking: commit, quick acquire</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="acquire-rejects-after-immediate-commit-ref.html">
+<link rel="match" href="commit-immediate-acquire-resolves-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="resources/utils.js"></script>
 
 <style>
 #container {
@@ -33,15 +34,14 @@ function finishTest(status_string) {
 
 function runTest() {
   const container = document.getElementById("container");
-  container.displayLock.acquire({ timeout: Infinity }).then(
-    () => { finishTest("FAIL"); },
-    (e) => { finishTest("PASS " + e.message); });
-
-  const child = document.createElement("div");
-  child.id = "child";
-  container.appendChild(child);
-
-  container.displayLock.commit();
+  setInvisible(container).then(() => {
+    setVisible(container);
+    setInvisible(container).then(() => {
+      setVisible(container).then(() => {
+        finishTest("PASS");
+      });
+    });
+  });
 }
 
 window.onload = runTest;
