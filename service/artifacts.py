@@ -15,6 +15,7 @@ import fnmatch
 import glob
 import json
 import os
+import shutil
 
 from chromite.lib import autotest_util
 from chromite.lib import constants
@@ -143,6 +144,28 @@ def BundleEBuildLogsTarball(chroot, sysroot, archive_dir):
   cros_build_lib.CreateTarball(
       tarball_output, cwd=logs_path, chroot=chroot.path, inputs=tarball_paths)
   return os.path.basename(tarball_output)
+
+
+def BundleChromeOSConfig(chroot, sysroot, archive_dir):
+  """Outputs the ChromeOS Config payload.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot to be used.
+    sysroot (sysroot_lib.Sysroot): Sysroot whose config is being fetched.
+    archive_dir: The directory to drop the config in.
+
+  Returns:
+    The file name of the output config, None if no config found.
+  """
+  config_path = chroot.full_path(sysroot.path,
+                                 'usr/share/chromeos-config/yaml/config.yaml')
+
+  if not os.path.exists(config_path):
+    return None
+
+  config_output = os.path.join(archive_dir, 'config.yaml')
+  shutil.copy(config_path, config_output)
+  return os.path.basename(config_output)
 
 
 def BundleSimpleChromeArtifacts(chroot, sysroot, build_target, output_dir):

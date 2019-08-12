@@ -249,6 +249,54 @@ class BundleEBuildLogsTarballTest(cros_test_lib.TempDirTestCase):
     cros_test_lib.VerifyTarball(tarball_fullpath, tarred_files)
 
 
+class BundleChromeOSConfigTest(cros_test_lib.TempDirTestCase):
+  """BundleChromeOSConfig tests."""
+
+  def testBundleChromeOSConfig(self):
+    """Verifies that the correct ChromeOS config file is bundled."""
+    board = 'samus'
+    # Create chroot object and sysroot object
+    chroot_path = os.path.join(self.tempdir, 'chroot')
+    chroot = chroot_lib.Chroot(path=chroot_path)
+    sysroot_path = os.path.join('build', board)
+    sysroot = sysroot_lib.Sysroot(sysroot_path)
+
+    # Create parent dir for ChromeOS Config output.
+    config_parent_dir = os.path.join(chroot.path, 'build')
+
+    # Names of ChromeOS Config files typically found in a build directory.
+    config_files = ('config.json',
+                    cros_test_lib.Directory('yaml', [
+                        'config.c', 'config.yaml', 'ec_config.c', 'ec_config.h',
+                        'model.yaml', 'private-model.yaml'
+                    ]))
+    config_files_root = os.path.join(config_parent_dir,
+                                     '%s/usr/share/chromeos-config' % board)
+    # Generate a representative set of config files produced by a typical build.
+    cros_test_lib.CreateOnDiskHierarchy(config_files_root, config_files)
+
+    # Write a payload to the config.yaml file.
+    test_config_payload = {
+        'chromeos': {
+            'configs': [{
+                'identity': {
+                    'platform-name': 'Samus'
+                }
+            }]
+        }
+    }
+    with open(os.path.join(config_files_root, 'yaml', 'config.yaml'), 'w') as f:
+      json.dump(test_config_payload, f)
+
+    archive_dir = self.tempdir
+    config_filename = artifacts.BundleChromeOSConfig(chroot, sysroot,
+                                                     archive_dir)
+    self.assertEqual('config.yaml', config_filename)
+
+    with open(os.path.join(archive_dir, config_filename), 'r') as f:
+      self.assertEqual(test_config_payload, json.load(f))
+
+
 class BundleVmFilesTest(cros_test_lib.TempDirTestCase):
   """BundleVmFiles tests."""
 

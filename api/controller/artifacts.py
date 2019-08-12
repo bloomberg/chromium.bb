@@ -311,6 +311,28 @@ def BundleEbuildLogs(input_proto, output_proto, config):
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
+@validate.exists('output_dir')
+@validate.validation_complete
+def BundleChromeOSConfig(input_proto, output_proto, _config):
+  """Output the ChromeOS Config payload for a build target.
+
+  Args:
+    input_proto (BundleRequest): The input proto.
+    output_proto (BundleResponse): The output proto.
+    _config (api_config.ApiConfig): The API call config.
+  """
+  output_dir = input_proto.output_dir
+  sysroot = sysroot_lib.Sysroot(input_proto.sysroot.path)
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+
+  chromeos_config = artifacts.BundleChromeOSConfig(chroot, sysroot, output_dir)
+  if chromeos_config is None:
+    cros_build_lib.Die(
+        'Could not create ChromeOS Config payload. No config found for %s.',
+        sysroot.path)
+  output_proto.artifacts.add().path = os.path.join(output_dir, chromeos_config)
+
+
 @validate.require('output_dir', 'sysroot.build_target.name', 'sysroot.path')
 @validate.exists('output_dir')
 @validate.validation_complete

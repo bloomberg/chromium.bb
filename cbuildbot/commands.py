@@ -3322,6 +3322,22 @@ def BuildEbuildLogsTarball(buildroot, board, archive_dir):
   return artifacts_service.BundleEBuildLogsTarball(chroot, sysroot, archive_dir)
 
 
+def BuildChromeOSConfig(buildroot, board, archive_dir):
+  """Builds the ChromeOS Config JSON payload.
+
+  Args:
+    buildroot: Root directory where the build occurs.
+    board: The board for which ChromeOS Configs payload should be built.
+    archive_dir: The directory to drop the payload in.
+
+  Returns:
+    The file name of the output payload.
+  """
+  sysroot = sysroot_lib.Sysroot(os.path.join('build', board))
+  chroot = chroot_lib.Chroot(path=os.path.join(buildroot, 'chroot'))
+  return artifacts_service.BundleChromeOSConfig(chroot, sysroot, archive_dir)
+
+
 def BuildGceTarball(archive_dir, image_dir, image):
   """Builds a tarball that can be converted into a GCE image.
 
