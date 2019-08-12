@@ -1138,6 +1138,7 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextGmail) {
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyCanShowInterstitial) {
+  // Do not show interstitial if policy not set for password_alert.
   ASSERT_FALSE(
       profile()->GetPrefs()->HasPrefPath(prefs::kSafeBrowsingWhitelistDomains));
   GURL trigger_url = GURL(kPhishingURL);
@@ -1154,12 +1155,11 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyCanShowInterstitial) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
         safe_browsing::kPasswordProtectionForSignedInUsers);
+    service_->SetAccountInfo(kUserName);
     reused_password_type.set_is_account_syncing(false);
-    EXPECT_FALSE(service_->CanShowInterstitial(
-        RequestOutcome::TURNED_OFF_BY_ADMIN,
-        service_->GetPasswordProtectionReusedPasswordAccountType(
-            PasswordType::OTHER_GAIA_PASSWORD, "user@domain.com"),
-        trigger_url));
+    EXPECT_FALSE(
+        service_->CanShowInterstitial(RequestOutcome::TURNED_OFF_BY_ADMIN,
+                                      reused_password_type, trigger_url));
   }
 
   reused_password_type.set_account_type(
@@ -1171,6 +1171,8 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyCanShowInterstitial) {
       ReusedPasswordAccountType::SAVED_PASSWORD);
   EXPECT_FALSE(service_->CanShowInterstitial(
       RequestOutcome::PASSWORD_ALERT_MODE, reused_password_type, trigger_url));
+  // Show interstitial if user is a syncing GSuite user and the policy is set to
+  // password_alert.
   reused_password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
   reused_password_type.set_is_account_syncing(true);
   EXPECT_TRUE(service_->CanShowInterstitial(RequestOutcome::PASSWORD_ALERT_MODE,
@@ -1179,14 +1181,15 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyCanShowInterstitial) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
         safe_browsing::kPasswordProtectionForSignedInUsers);
-
+    service_->SetAccountInfo(kUserName);
     reused_password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
     reused_password_type.set_is_account_syncing(false);
     EXPECT_TRUE(
         service_->CanShowInterstitial(RequestOutcome::PASSWORD_ALERT_MODE,
                                       reused_password_type, trigger_url));
   }
-
+  // Show interstitial if user is a Enterprise user and the policy is set to
+  // password_alert.
   reused_password_type.set_account_type(
       ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
   reused_password_type.set_is_account_syncing(false);

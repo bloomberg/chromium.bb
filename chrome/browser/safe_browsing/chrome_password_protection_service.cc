@@ -1436,9 +1436,9 @@ bool ChromePasswordProtectionService::CanShowInterstitial(
     const GURL& main_frame_url) {
   // If it's not password alert mode, no need to log any metric.
   if (reason != RequestOutcome::PASSWORD_ALERT_MODE ||
-      password_type.account_type() ==
-          ReusedPasswordAccountType::SAVED_PASSWORD ||
-      password_type.account_type() == ReusedPasswordAccountType::UNKNOWN) {
+      (password_type.account_type() != ReusedPasswordAccountType::GSUITE &&
+       password_type.account_type() !=
+           ReusedPasswordAccountType::NON_GAIA_ENTERPRISE)) {
     return false;
   }
 
