@@ -27,6 +27,7 @@
 #include "extensions/grit/extensions_browser_resources.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -274,8 +275,13 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
           ->extension_service()
           ->GetInstalledExtension(extension_id);
   if (extension) {
+    const gfx::Size dip_size = gfx::Size(size_hint_in_dip, size_hint_in_dip);
+    float scale =
+        ui::GetScaleForScaleFactor(apps_util::GetPrimaryDisplayUIScaleFactor());
+    int size_hint_in_px = gfx::ScaleToFlooredSize(dip_size, scale).width();
+
     extensions::ExtensionResource ext_resource =
-        extensions::IconsInfo::GetIconResource(extension, size_hint_in_dip,
+        extensions::IconsInfo::GetIconResource(extension, size_hint_in_px,
                                                ExtensionIconSet::MATCH_BIGGER);
 
     switch (icon_compression) {
