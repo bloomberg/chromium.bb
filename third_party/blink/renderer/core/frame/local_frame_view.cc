@@ -1255,6 +1255,9 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
 
   if (GetFrame().GetDocument() && !IsInPerformLayout())
     MarkViewportConstrainedObjectsForLayout(width_changed, height_changed);
+
+  if (GetPaintTimingDetector().Visualizer())
+    GetPaintTimingDetector().Visualizer()->OnViewportChanged();
 }
 
 void LocalFrameView::MarkViewportConstrainedObjectsForLayout(
