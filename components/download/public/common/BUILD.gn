@@ -40,7 +40,6 @@ component("public") {
     "download_job.h",
     "download_job_factory.h",
     "download_path_reservation_tracker.h",
-    "download_request_handle_interface.h",
     "download_response_handler.h",
     "download_save_info.cc",
     "download_save_info.h",
