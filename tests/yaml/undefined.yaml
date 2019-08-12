@@ -1,5 +1,13 @@
 table: |
   include tables/unicode.dis
+flags: {testmode: backward}
+tests:
+  # verify no dots
+  - - "⠀"
+    - "\\\\0/"
+
+table: |
+  include tables/unicode.dis
   include tables/spaces.uti
 flags: {testmode: backward}
 tests:

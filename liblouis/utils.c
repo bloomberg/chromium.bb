@@ -233,6 +233,7 @@ _lou_unknownDots(widechar dots) {
 		if (dots & dotMapping[mappingPos].key) buffer[k++] = dotMapping[mappingPos].value;
 	}
 
+	if (k == 1) buffer[k++] = '0';
 	buffer[k++] = '/';
 	buffer[k] = 0;
 	return buffer;
