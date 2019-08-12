@@ -80,7 +80,7 @@ KERNEL_WARN_STALE_DAYS = 14
 # at least 4GB of memory.
 #
 # This must be consistent with the definitions in autotest.
-AFDO_DATA_GENERATORS_LLVM = ('chell', 'samus')
+AFDO_DATA_GENERATORS_LLVM = ('chell')
 
 AFDO_ALERT_RECIPIENTS = [
     'chromeos-toolchain-sheriff@grotations.appspotmail.com'
