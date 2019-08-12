@@ -1707,6 +1707,12 @@ const char kSharingDeviceRegistrationDescription[] =
     "Enables device registration with Sharing infrastructure. Required to use "
     "cross-device Sharing features.";
 
+const char kSharingUseDeviceInfoName[] =
+    "Enable Sharing device registration in DeviceInfo";
+const char kSharingUseDeviceInfoDescription[] =
+    "Enables Sharing infrastructure to register devices in DeviceInfo and "
+    "remove sync requirement.";
+
 const char kShelfDenseClamshellName[] =
     "Show a smaller, denser shelf in laptop mode.";
 const char kShelfDenseClamshellDescription[] =

@@ -36088,6 +36088,7 @@ from previous Chrome versions.
   <int value="605150752" label="WebUSB:disabled"/>
   <int value="606288133" label="enable-print-preview-register-promos"/>
   <int value="606512202" label="AutofillCreditCardPopupLayout:enabled"/>
+  <int value="606723570" label="SharingUseDeviceInfo:disabled"/>
   <int value="606834606" label="force-color-profile"/>
   <int value="606969417" label="DiscoverApp:enabled"/>
   <int value="609112512" label="touch-selection-strategy"/>
@@ -36518,6 +36519,7 @@ from previous Chrome versions.
   <int value="1220171692" label="SpeculativeLaunchServiceWorker:enabled"/>
   <int value="1220274247" label="AllowReaderForAccessibility:disabled"/>
   <int value="1220464509" label="enable-first-run-ui-transitions"/>
+  <int value="1221394044" label="SharingUseDeviceInfo:enabled"/>
   <int value="1221559505" label="enable-spelling-feedback-field-trial"/>
   <int value="1222017136" label="WebRtcUseEchoCanceller3:disabled"/>
   <int value="1222032915"

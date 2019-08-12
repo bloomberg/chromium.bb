@@ -1012,6 +1012,9 @@ extern const char kSharedClipboardUIDescription[];
 extern const char kSharingDeviceRegistrationName[];
 extern const char kSharingDeviceRegistrationDescription[];
 
+extern const char kSharingUseDeviceInfoName[];
+extern const char kSharingUseDeviceInfoDescription[];
+
 extern const char kShelfDenseClamshellName[];
 extern const char kShelfDenseClamshellDescription[];
 

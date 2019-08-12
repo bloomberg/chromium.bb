@@ -3685,6 +3685,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSharingDeviceRegistrationDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharingDeviceRegistration)},
 
+    {"sharing-use-device-info", flag_descriptions::kSharingUseDeviceInfoName,
+     flag_descriptions::kSharingUseDeviceInfoDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kSharingUseDeviceInfo)},
+
 #if defined(OS_CHROMEOS)
     {"discover-app", flag_descriptions::kEnableDiscoverAppName,
      flag_descriptions::kEnableDiscoverAppDescription, kOsCrOS,

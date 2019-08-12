@@ -2830,6 +2830,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "sharing-use-device-info",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "shelf-dense-clamshell",
     "owners": [ "manucornet", "mmourgos" ],
     "expiry_milestone": 82
