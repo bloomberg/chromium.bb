@@ -316,8 +316,6 @@ class SDKFetcher(object):
     with self.tarball_cache.Lookup(cache_key) as ref:
       if ref.Exists(lock=True):
         return ref.path
-      else:
-        logging.warning('%s not found.', key)
     return None
 
   def _FinalizePackages(self, version):
@@ -346,7 +344,6 @@ class SDKFetcher(object):
     qemu_bin_path = self._GetTarballCachePath(version, self.QEMU_BIN_PATH)
     seabios_bin_path = self._GetTarballCachePath(version, self.SEABIOS_BIN_PATH)
     if not qemu_bin_path or not seabios_bin_path:
-      logging.warning('Could not create Seabios firmware links.')
       return
 
     # Symlink the directories in seabios/usr/share/* to qemu/usr/share/.
