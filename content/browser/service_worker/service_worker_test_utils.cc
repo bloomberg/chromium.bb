@@ -311,6 +311,30 @@ CreateProviderHostForServiceWorkerContext(
   return host;
 }
 
+scoped_refptr<ServiceWorkerRegistration>
+CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
+                                          const GURL& scope,
+                                          const GURL& script) {
+  ServiceWorkerStorage* storage = context->storage();
+
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = scope;
+  auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
+      options, storage->NewRegistrationId(), context->AsWeakPtr());
+  auto version = base::MakeRefCounted<ServiceWorkerVersion>(
+      registration.get(), script, blink::mojom::ScriptType::kClassic,
+      storage->NewVersionId(), context->AsWeakPtr());
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records = {
+      ServiceWorkerDatabase::ResourceRecord(storage->NewResourceId(), script,
+                                            100)};
+  version->script_cache_map()->SetResources(records);
+  version->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version->SetStatus(ServiceWorkerVersion::INSTALLED);
+  registration->SetWaitingVersion(version);
+  return registration;
+}
+
 ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheSync(
     ServiceWorkerStorage* storage,
     const GURL& script_url,
