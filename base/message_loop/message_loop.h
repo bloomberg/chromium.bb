@@ -25,7 +25,7 @@
 namespace base {
 
 namespace internal {
-class MessageLoopTaskEnvironment;
+class MessageLoopThreadDelegate;
 }  // namespace internal
 
 class MessageLoopImpl;
@@ -175,7 +175,7 @@ class BASE_EXPORT MessageLoop {
   friend class MessageLoopTypedTest;
   friend class ScheduleWorkTest;
   friend class Thread;
-  friend class internal::MessageLoopTaskEnvironment;
+  friend class internal::MessageLoopThreadDelegate;
   friend class sequence_manager::internal::SequenceManagerImpl;
   FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
 

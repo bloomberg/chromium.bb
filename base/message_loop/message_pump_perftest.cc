@@ -102,8 +102,8 @@ class ScheduleWorkTest : public testing::Test {
       std::unique_ptr<MessageLoop> message_loop =
           MessageLoop::CreateUnbound(target_type);
       message_loop_ = message_loop.get();
-      options.task_environment =
-          new internal::MessageLoopTaskEnvironment(std::move(message_loop));
+      options.delegate =
+          new internal::MessageLoopThreadDelegate(std::move(message_loop));
       target_->StartWithOptions(options);
 
       // Without this, it's possible for the scheduling threads to start and run

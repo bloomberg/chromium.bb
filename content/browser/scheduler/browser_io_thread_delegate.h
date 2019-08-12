@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SCHEDULER_BROWSER_IO_TASK_ENVIRONMENT_H_
-#define CONTENT_BROWSER_SCHEDULER_BROWSER_IO_TASK_ENVIRONMENT_H_
+#ifndef CONTENT_BROWSER_SCHEDULER_BROWSER_IO_THREAD_DELEGATE_H_
+#define CONTENT_BROWSER_SCHEDULER_BROWSER_IO_THREAD_DELEGATE_H_
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
@@ -23,19 +23,18 @@ class SequenceManager;
 
 namespace content {
 
-// TaskEnvironment for the IO thread.
-class CONTENT_EXPORT BrowserIOTaskEnvironment
-    : public base::Thread::TaskEnvironment {
+// Delegate for the IO thread.
+class CONTENT_EXPORT BrowserIOThreadDelegate : public base::Thread::Delegate {
  public:
   using Handle = BrowserTaskQueues::Handle;
 
-  static std::unique_ptr<BrowserIOTaskEnvironment> CreateForTesting(
+  static std::unique_ptr<BrowserIOThreadDelegate> CreateForTesting(
       base::sequence_manager::SequenceManager* sequence_manager) {
-    return base::WrapUnique(new BrowserIOTaskEnvironment(sequence_manager));
+    return base::WrapUnique(new BrowserIOThreadDelegate(sequence_manager));
   }
 
-  BrowserIOTaskEnvironment();
-  ~BrowserIOTaskEnvironment() override;
+  BrowserIOThreadDelegate();
+  ~BrowserIOThreadDelegate() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetDefaultTaskRunner() override;
   void BindToCurrentThread(base::TimerSlack timer_slack) override;
@@ -51,7 +50,7 @@ class CONTENT_EXPORT BrowserIOTaskEnvironment
   scoped_refptr<Handle> CreateHandle() { return task_queues_->GetHandle(); }
 
  private:
-  explicit BrowserIOTaskEnvironment(
+  explicit BrowserIOThreadDelegate(
       base::sequence_manager::SequenceManager* sequence_manager);
 
   // Performs the actual initialization of all the members that require a
@@ -69,4 +68,4 @@ class CONTENT_EXPORT BrowserIOTaskEnvironment
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SCHEDULER_BROWSER_IO_TASK_ENVIRONMENT_H_
+#endif  // CONTENT_BROWSER_SCHEDULER_BROWSER_IO_THREAD_DELEGATE_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/scheduler/browser_io_task_environment.h"
+#include "content/browser/scheduler/browser_io_thread_delegate.h"
 
 #include <memory>
 
@@ -16,15 +16,15 @@
 namespace content {
 namespace {
 
-TEST(BrowserIOTaskEnvironmentTest, CanPostTasksToThread) {
+TEST(BrowserIOThreadDelegateTest, CanPostTasksToThread) {
   base::Thread thread("my_thread");
 
-  auto env = std::make_unique<BrowserIOTaskEnvironment>();
-  auto handle = env->CreateHandle();
+  auto delegate = std::make_unique<BrowserIOThreadDelegate>();
+  auto handle = delegate->CreateHandle();
   handle->EnableAllQueues();
 
   base::Thread::Options options;
-  options.task_environment = env.release();
+  options.delegate = delegate.release();
   thread.StartWithOptions(options);
 
   auto runner =
@@ -36,14 +36,14 @@ TEST(BrowserIOTaskEnvironmentTest, CanPostTasksToThread) {
   event.Wait();
 }
 
-TEST(BrowserIOTaskEnvironmentTest, DefaultTaskRunnerIsAllwaysActive) {
+TEST(BrowserIOThreadDelegateTest, DefaultTaskRunnerIsAllwaysActive) {
   base::Thread thread("my_thread");
 
-  auto env = std::make_unique<BrowserIOTaskEnvironment>();
-  auto task_runner = env->GetDefaultTaskRunner();
+  auto delegate = std::make_unique<BrowserIOThreadDelegate>();
+  auto task_runner = delegate->GetDefaultTaskRunner();
 
   base::Thread::Options options;
-  options.task_environment = env.release();
+  options.delegate = delegate.release();
   thread.StartWithOptions(options);
 
   base::WaitableEvent event;
