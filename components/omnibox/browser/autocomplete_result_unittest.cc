@@ -761,6 +761,26 @@ TEST_F(AutocompleteResultTest, DemoteByTypeButPreserveDefaultMatchScore) {
     EXPECT_EQ("http://history-title/",
               result.match_at(3)->destination_url.spec());
   }
+
+  {
+    // Re-sort with a page classification of fake-box and an input that's a URL,
+    // and make sure history-title is once again the default match.
+    AutocompleteInput input(
+        base::ASCIIToUTF16("www.example.com"),
+        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS,
+        TestSchemeClassifier());
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.SortAndCull(input, template_url_service_.get());
+
+    size_t expected_order[] = {1, 0, 2, 3};
+
+    ASSERT_EQ(base::size(expected_order), result.size());
+    for (size_t i = 0; i < base::size(expected_order); ++i) {
+      EXPECT_EQ(data[expected_order[i]].destination_url,
+                result.match_at(i)->destination_url.spec());
+    }
+  }
 }
 
 TEST_F(AutocompleteResultTest, SortAndCullWithMatchDupsAndDemotionsByType) {
