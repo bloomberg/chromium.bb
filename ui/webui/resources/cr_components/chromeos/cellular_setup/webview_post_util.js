@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview  Provides utility methods used by chrome://mobilesetup UI -
- * both mobile_setup.html and mobile_setup_portal.html
+ * @fileoverview Provides utility methods used by the cellular activation flow.
+ * Current: chrome://mobilesetup (mobile_setup.html/mobile_setup_portal.html)
+ * New UI: chrome://cellular-setup (cellular_setup_dialog.html)
  */
-cr.define('mobile.util', function() {
-
+cr.define('webviewPost.util', function() {
   /**
    * The script executed in the webview that is expected to be initialized
    * using POST request. The script parses the POST data (which is provided as
@@ -24,7 +24,7 @@ cr.define('mobile.util', function() {
    *    <code>true</code>.
    * @const {string}
    */
-  var WEBVIEW_REDIRECT_SCRIPT = '(function(form, paymentUrl, postData) {' +
+  const WEBVIEW_REDIRECT_SCRIPT = '(function(form, paymentUrl, postData) {' +
       'function addInputElement(form, name, value) {' +
       '  var input = document.createElement(\'input\');' +
       '  input.type = \'hidden\';' +
@@ -53,55 +53,55 @@ cr.define('mobile.util', function() {
    * @const {string} The ID used for the form element in the initial webiew
    *     HTML.
    */
-  var WEBVIEW_REDIRECT_FORM_ID = 'redirectForm';
+  const WEBVIEW_REDIRECT_FORM_ID = 'redirectForm';
 
   /**
    * @const {string} The initial webview HTML - this will be loaded into the
    *     webview using data URL before executing
    *     <code>WEBVIEW_REDIRECT_SCRIPT</code>.
    */
-  var WEBVIEW_REDIRECT_HTML = '<html><body>' +
+  const WEBVIEW_REDIRECT_HTML = '<html><body>' +
       '<form id="' + WEBVIEW_REDIRECT_FORM_ID + '"></form>' +
       '</body></html>';
 
   /**
    * Handles load commit event in the webview.
    * It runs <code>WEBVIEW_REDIRECT_SCRIPT</code> in the webview.
-   * @param {WebView} webview The targer webview element.
-   * @param {!Object} deviceInfo An object containing POST request information.
+   * @param {!WebView} webview The targer webview element.
+   * @param {string} paymentUrl URL to load.
+   * @param {string} postData Data to pass.
    * @param {string} webviewSrc The intended webview URL - commit events that
    *     do not match this URL will be ignored.
    * @param {!Object} commitEvent The loadcommit event.
    */
   function initializeWebviewRedirectForm(
-      webview, deviceInfo, webviewSrc, commitEvent) {
-    if (!commitEvent.isTopLevel || commitEvent.url != webviewSrc)
+      webview, paymentUrl, postData, webviewSrc, commitEvent) {
+    if (!commitEvent.isTopLevel || commitEvent.url != webviewSrc) {
       return;
+    }
 
     webview.executeScript({
       code: WEBVIEW_REDIRECT_SCRIPT + '(' +
           'document.getElementById(\'' + WEBVIEW_REDIRECT_FORM_ID + '\'),' +
-          ' \'' + escape(deviceInfo.payment_url) + '\',' +
-          ' \'' + escape(deviceInfo.post_data || '') + '\');'
+          ' \'' + escape(paymentUrl) + '\',' +
+          ' \'' + escape(postData || '') + '\');'
     });
   }
 
   /**
-   * Initialized webview using a POST request described in
-   * <code>deviceInfo</code> - the device info will contain the POST request
-   * target URL (as <code>payment_url</code> property) and post data string
-   * (as <code>post_data</code> property).
-   * @param {WebView} webview The webview to be initialized.
-   * @param {!Object} deviceInfo The object containing POST request
-   *     information.
+   * Initialized webview using a POST request described in by
+   * <code>paymentUrl</code> and <code>postData</code>.
+   * @param {!WebView} webview The webview to be initialized.
+   * @param {string} paymentUrl URL to load.
+   * @param {string} postData Data to pass.
    */
-  function postDeviceDataToWebview(webview, deviceInfo) {
-    var webviewSrc = 'data:text/html;charset=utf-8,' +
+  function postDeviceDataToWebview(webview, paymentUrl, postData) {
+    const webviewSrc = 'data:text/html;charset=utf-8,' +
         encodeURIComponent(WEBVIEW_REDIRECT_HTML);
     webview.addEventListener(
         'loadcommit',
         initializeWebviewRedirectForm.bind(
-            this, webview, deviceInfo, webviewSrc));
+            this, webview, paymentUrl, postData, webviewSrc));
     webview.src = webviewSrc;
   }
 
