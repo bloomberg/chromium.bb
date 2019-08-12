@@ -3098,7 +3098,7 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledTaskPolicy",
+                    "name": "Enabled",
                     "enable_features": [
                         "MacAllowBackgroundingProcesses"
                     ]
