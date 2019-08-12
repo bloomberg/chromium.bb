@@ -2672,6 +2672,8 @@ jumbo_split_static_library("ui") {
       "views/extensions/extension_uninstall_dialog_view.cc",
       "views/extensions/extensions_menu_button.cc",
       "views/extensions/extensions_menu_button.h",
+      "views/extensions/extensions_menu_item_view.cc",
+      "views/extensions/extensions_menu_item_view.h",
       "views/extensions/extensions_menu_view.cc",
       "views/extensions/extensions_menu_view.h",
       "views/extensions/extensions_toolbar_button.cc",
