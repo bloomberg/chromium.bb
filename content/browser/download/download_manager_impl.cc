@@ -856,7 +856,6 @@ void DownloadManagerImpl::DownloadUrl(
     DCHECK(params->prefer_cache());
     DCHECK_EQ("POST", params->method());
   }
-
   download::RecordDownloadCountWithSource(
       download::DownloadCountTypes::DOWNLOAD_TRIGGERED_COUNT,
       params->download_source());
@@ -1304,7 +1303,7 @@ void DownloadManagerImpl::BeginDownloadInternal(
         WebContents::FromFrameTreeNodeId, rfh->GetFrameTreeNodeId());
     const GURL& url = params->url();
     const std::string& method = params->method();
-
+    base::Optional<url::Origin> initiator = params->initiator();
     base::OnceCallback<void(bool /* download allowed */)>
         on_can_download_checks_done = base::BindOnce(
             &DownloadManagerImpl::BeginResourceDownloadOnChecksComplete,
@@ -1312,8 +1311,7 @@ void DownloadManagerImpl::BeginDownloadInternal(
             std::move(blob_url_loader_factory), is_new_download, site_url);
     if (delegate_) {
       delegate_->CheckDownloadAllowed(std::move(web_contents_getter), url,
-                                      method,
-                                      base::nullopt /*request_initiator*/,
+                                      method, std::move(initiator),
                                       std::move(on_can_download_checks_done));
       return;
     }
