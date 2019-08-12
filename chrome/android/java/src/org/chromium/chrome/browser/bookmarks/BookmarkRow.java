@@ -91,6 +91,13 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     }
 
     private void updateVisualState() {
+        // This check is needed because it is possible for updateVisualState to be called between
+        // onDelegateInitialized (SelectionDelegate triggers a redraw) and setBookmarkId. View is
+        // not currently bound, so we can skip this for now. updateVisualState will run inside of
+        // setBookmarkId.
+        if (mBookmarkId == null) {
+            return;
+        }
         BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
         // This check is needed because updateVisualState is called when the item has been deleted
         // in the model but not in the adapter. If we hit this if-block, the
