@@ -217,7 +217,6 @@ base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
       "application/gzip",
       "application/x-gzip",
       "application/x-protobuf",
-      "application/x-www-form-urlencoded",
       "application/zip",
       "text/event-stream",
   });
