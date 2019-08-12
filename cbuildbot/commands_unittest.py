@@ -333,6 +333,47 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
     self.assertTrue(isinstance(error, failures_lib.TestFailure))
     self.assertTrue('Suite failed' in error.message)
 
+  def testCreateTest(self):
+    """Test that function call args are mapped correctly to commandline args."""
+    test_plan = '{}'
+    build = 'foo-bar/R1234'
+    board = 'foo-board'
+    model = 'foo-model'
+    pool = 'foo-pool'
+    # An OrderedDict is used to make the keyval order on the command line
+    # deterministic for testing purposes.
+    keyvals = {'key': 'value'}
+    timeout_mins = 10
+
+    task_id = 'foo-task_id'
+
+    create_cmd = [
+        self._SKYLAB_TOOL, 'create-testplan',
+        '-image', build,
+        '-pool', pool,
+        '-board', board,
+        '-model', model,
+        '-timeout-mins', str(timeout_mins),
+        '-keyval', 'key:value',
+        '-service-account-json', constants.CHROMEOS_SERVICE_ACCOUNT,
+        '-plan-file', '/dev/stdin'
+    ]
+
+    self.rc.AddCmdResult(
+        create_cmd, output=self._fakeCreateJson(task_id, 'foo://foo'))
+
+    result = commands.RunSkylabHWTestPlan(
+        test_plan=test_plan, build=build, pool=pool, board=board, model=model,
+        timeout_mins=timeout_mins, keyvals=keyvals)
+    self.assertTrue(isinstance(result, commands.HWTestSuiteResult))
+    self.assertEqual(result.to_raise, None)
+    self.assertEqual(result.json_dump_result, None)
+
+    self.rc.assertCommandCalled(
+        create_cmd, redirect_stdout=True, input=test_plan)
+    self.assertEqual(self.rc.call_count, 1)
+
+
 
 class HWLabCommandsTest(cros_test_lib.RunCommandTestCase,
                         cros_test_lib.OutputTestCase,

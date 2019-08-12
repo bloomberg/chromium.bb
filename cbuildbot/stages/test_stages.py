@@ -735,18 +735,9 @@ class TestPlanStage(generic_stages.BoardSpecificBuilderStage):
     if model.test_suites is None or suite_config.suite in model.test_suites:
       stage_class = None
       if suite_config.async:
-        stage_class = ASyncHWTestStage
+        stage_class = ASyncSkylabHWTestStage
       else:
-        stage_class = HWTestStage
-
-      hwtest_env = config_lib.GetHWTestEnv(builder_run.config,
-                                           model_config=model,
-                                           suite_config=suite_config)
-      if hwtest_env == constants.ENV_SKYLAB:
-        if suite_config.async:
-          stage_class = ASyncSkylabHWTestStage
-        else:
-          stage_class = SkylabHWTestStage
+        stage_class = SkylabHWTestStage
 
       result = stage_class(
           builder_run,

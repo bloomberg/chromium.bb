@@ -380,7 +380,7 @@ class SimpleBuilder(generic_builders.Builder):
                          builder_run=builder_run,
                          suffix='[afdo_generate_min]')
           for suite in builder_run.config.hw_tests:
-            self._RunStage(test_stages.HWTestStage, board, suite,
+            self._RunStage(test_stages.SkylabHWTestStage, board, suite,
                            builder_run=builder_run)
           self._RunStage(afdo_stages.AFDODataGenerateStage, board,
                          builder_run=builder_run)

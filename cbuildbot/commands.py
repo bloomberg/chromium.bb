@@ -1466,6 +1466,89 @@ def RunSkylabHWTestSuite(
     return HWTestSuiteResult(to_raise, None)
 
 
+def RunSkylabHWTestPlan(test_plan=None,
+                        build=None,
+                        pool=None,
+                        board=None,
+                        model=None,
+                        timeout_mins=None,
+                        tags=None,
+                        keyvals=None):
+  """Run a skylab test in the Autotest lab using skylab tool.
+
+  Args:
+    test_plan: A JSONpb string containing a TestPlan object.
+    build: A string full image name.
+    pool: A string pool to run the test on.
+    board: A string board to run the test on.
+    model: A string model to run the test on.
+    timeout_mins: An integer to indicate the test's timeout.
+    tags: A list of strings to tag the task in swarming.
+    keyvals: A list of strings to be passed to the test as job_keyvals.
+  """
+  if not test_plan:
+    raise ValueError('Need to specify test plan.')
+  if not build:
+    raise ValueError('Need to specify build.')
+  if not (board or model):
+    raise ValueError('Need to specify either board or model.')
+
+  args = ['-image', build]
+
+  if pool:
+    args += ['-pool', pool]
+
+  if board:
+    args += ['-board', board]
+
+  if model:
+    args += ['-model', model]
+
+  if timeout_mins:
+    args += ['-timeout-mins', str(timeout_mins)]
+
+  if tags:
+    for tag in tags:
+      args += ['-tag', tag]
+
+  if keyvals is not None:
+    for k, v in keyvals.items():
+      args += ['-keyval', k+':'+v]
+
+  args += ['-service-account-json', constants.CHROMEOS_SERVICE_ACCOUNT]
+
+  args += ['-plan-file', '/dev/stdin']
+
+  skylab_path = _InstallSkylabTool()
+
+  try:
+    result = cros_build_lib.RunCommand(
+        [skylab_path, 'create-testplan'] + args,
+        redirect_stdout=True,
+        input=test_plan)
+    return HWTestSuiteResult(None, None)
+  except cros_build_lib.RunCommandError as e:
+    result = e.result
+    to_raise = failures_lib.TestFailure(
+        '** HWTest failed (code %d) **' % result.returncode)
+    return HWTestSuiteResult(to_raise, None)
+  finally:
+    # This is required to output buildbot annotations, e.g. 'STEP_LINKS'.
+    # output = json.loads(result.output)
+    output = {}
+    # The format of output is:
+    #   {'task_name':'cros_test_platform',
+    #    'task_id': 'XX',
+    #    'task_url': 'YY'}
+    sys.stdout.write('%s \n' % output)
+    sys.stdout.write('######## Output for buildbot annotations ######## \n')
+    sys.stdout.write('%s \n' % str(
+        buildbot_annotations.StepLink('Test run',
+                                      output.get('task_url', ''))))
+    sys.stdout.write('######## END Output for buildbot annotations ######## \n')
+    sys.stdout.flush()
+
+
 # pylint: disable=docstring-missing-args
 def _GetRunSuiteArgs(build,
                      suite,
