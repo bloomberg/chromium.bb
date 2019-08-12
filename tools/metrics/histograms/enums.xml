@@ -31853,6 +31853,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Not started - No refresh token"/>
 </enum>
 
+<enum name="InvalidOriginReason">
+  <int value="0" label="Opaque Origin"/>
+  <int value="1" label="Empty URL"/>
+</enum>
+
 <enum name="IOSDeviceThermalState">
   <int value="0" label="Unknown"/>
   <int value="1" label="Nominal"/>
