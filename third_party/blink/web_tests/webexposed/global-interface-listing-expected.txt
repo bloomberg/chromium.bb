@@ -10866,14 +10866,14 @@ interface XRSession : EventTarget
     attribute @@toStringTag
     getter environmentBlendMode
     getter inputSources
-    getter onblur
     getter onend
-    getter onfocus
     getter oninputsourceschange
     getter onselect
     getter onselectend
     getter onselectstart
+    getter onvisibilitychange
     getter renderState
+    getter visibilityState
     method cancelAnimationFrame
     method constructor
     method end
@@ -10881,13 +10881,12 @@ interface XRSession : EventTarget
     method requestHitTest
     method requestReferenceSpace
     method updateRenderState
-    setter onblur
     setter onend
-    setter onfocus
     setter oninputsourceschange
     setter onselect
     setter onselectend
     setter onselectstart
+    setter onvisibilitychange
 interface XRSessionEvent : Event
     attribute @@toStringTag
     getter session
