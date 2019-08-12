@@ -1662,7 +1662,7 @@ class AppCacheStorageImplTest : public testing::Test {
       handler_ = host2->CreateRequestHandler(
           std::make_unique<AppCacheURLLoaderRequest>(request),
           ResourceType::kMainFrame, false);
-      handler_->MaybeCreateLoader(request, nullptr, nullptr, base::DoNothing(),
+      handler_->MaybeCreateLoader(request, nullptr, base::DoNothing(),
                                   base::DoNothing());
     }
 
