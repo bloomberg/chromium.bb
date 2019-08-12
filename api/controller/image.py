@@ -26,6 +26,9 @@ _DEV_ID = common_pb2.DEV
 _TEST_ID = common_pb2.TEST
 _BASE_VM_ID = common_pb2.BASE_VM
 _TEST_VM_ID = common_pb2.TEST_VM
+_RECOVERY_ID = common_pb2.RECOVERY
+_FACTORY_ID = common_pb2.FACTORY
+_FIRMWARE_ID = common_pb2.FIRMWARE
 
 # Dict to allow easily translating names to enum ids and vice versa.
 _IMAGE_MAPPING = {
@@ -35,6 +38,12 @@ _IMAGE_MAPPING = {
     constants.IMAGE_TYPE_DEV: _DEV_ID,
     _TEST_ID: constants.IMAGE_TYPE_TEST,
     constants.IMAGE_TYPE_TEST: _TEST_ID,
+    _RECOVERY_ID: constants.IMAGE_TYPE_RECOVERY,
+    constants.IMAGE_TYPE_RECOVERY: _RECOVERY_ID,
+    _FACTORY_ID: constants.IMAGE_TYPE_FACTORY,
+    constants.IMAGE_TYPE_FACTORY: _FACTORY_ID,
+    _FIRMWARE_ID: constants.IMAGE_TYPE_FIRMWARE,
+    constants.IMAGE_TYPE_FIRMWARE: _FIRMWARE_ID,
 }
 
 _VM_IMAGE_MAPPING = {
