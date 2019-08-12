@@ -11586,6 +11586,24 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Connect to Linux Clicked"/>
 </enum>
 
+<enum name="CryptAuthApiCallResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Timeout"/>
+  <int value="2" label="Network Request Error: Offline"/>
+  <int value="3" label="Network Request Error: Endpoint Not Found"/>
+  <int value="4" label="Network Request Error: Authentication Error"/>
+  <int value="5" label="Network Request Error: Bad Request"/>
+  <int value="6" label="Network Request Error: Response Malformed"/>
+  <int value="7" label="Network Request Error: Internal Server Error"/>
+  <int value="8" label="Network Request Error: Unknown"/>
+</enum>
+
+<enum name="CryptAuthAsyncTaskResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Timeout"/>
+  <int value="2" label="Error"/>
+</enum>
+
 <enum name="CryptAuthSoftwareFeature">
   <int value="0" label="UNKNOWN_FEATURE"/>
   <int value="1" label="BETTER_TOGETHER_HOST"/>
