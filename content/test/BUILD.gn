@@ -873,6 +873,7 @@ test("content_browsertests") {
     "../browser/browsing_data/same_site_data_remover_impl_browsertest.cc",
     "../browser/child_process_launcher_browsertest.cc",
     "../browser/child_process_security_policy_browsertest.cc",
+    "../browser/content_index/content_index_browsertest.cc",
     "../browser/content_service_browsertest.cc",
     "../browser/cross_site_transfer_browsertest.cc",
     "../browser/database_browsertest.cc",
