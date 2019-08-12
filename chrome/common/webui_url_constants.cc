@@ -338,6 +338,7 @@ const char kChromeUIPrintHost[] = "print";
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 const char kChromeUITabStripHost[] = "tab-strip";
+const char kChromeUITabStripURL[] = "chrome://tab-strip";
 #endif
 
 const char kChromeUIWebRtcLogsHost[] = "webrtc-logs";

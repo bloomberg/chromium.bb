@@ -3907,6 +3907,8 @@ jumbo_split_static_library("ui") {
     deps += [ "//chrome/browser/resources:tab_strip_resources" ]
 
     sources += [
+      "views/frame/webui_tab_strip_container_view.cc",
+      "views/frame/webui_tab_strip_container_view.h",
       "webui/tab_strip/tab_strip_ui.cc",
       "webui/tab_strip/tab_strip_ui.h",
     ]

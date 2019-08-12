@@ -3221,6 +3221,11 @@
     "expiry_milestone": 81
   },
   {
+    "name": "webui-tab-strip",
+    "owners": [ "johntlee", "pbos" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "webxr",
     "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 79

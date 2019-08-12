@@ -299,6 +299,7 @@ extern const char kChromeUIPrintHost[];
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 extern const char kChromeUITabStripHost[];
+extern const char kChromeUITabStripURL[];
 #endif
 
 extern const char kChromeUIWebRtcLogsHost[];

@@ -59,6 +59,12 @@ const base::Feature kTabHoverCardImages{"TabHoverCardImages",
 const base::Feature kTabOutlinesInLowContrastThemes{
     "TabOutlinesInLowContrastThemes", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+// Enables a web-based toolbar. See https://crbug.com/989131
+const base::Feature kWebUITabStrip{"WebUITabStrip",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 constexpr base::Feature kEnableDbusAndX11StatusIcons{
     "EnableDbusAndX11StatusIcons", base::FEATURE_ENABLED_BY_DEFAULT};

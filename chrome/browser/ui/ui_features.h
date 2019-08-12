@@ -10,6 +10,7 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "chrome/common/buildflags.h"
 
 namespace features {
 
@@ -38,6 +39,10 @@ extern const char kTabHoverCardsFeatureParameterName[];
 extern const base::Feature kTabHoverCardImages;
 
 extern const base::Feature kTabOutlinesInLowContrastThemes;
+
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+extern const base::Feature kWebUITabStrip;
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 extern const base::Feature kEnableDbusAndX11StatusIcons;

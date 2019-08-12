@@ -1248,6 +1248,9 @@ extern const char kWebrtcSrtpAesGcmDescription[];
 extern const char kWebrtcStunOriginName[];
 extern const char kWebrtcStunOriginDescription[];
 
+extern const char kWebUITabStripName[];
+extern const char kWebUITabStripDescription[];
+
 extern const char kWebvrName[];
 extern const char kWebvrDescription[];
 
