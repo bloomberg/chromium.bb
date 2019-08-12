@@ -1181,8 +1181,7 @@ GCMStoreImpl::GCMStoreImpl(
     : backend_(new Backend(path,
                            base::ThreadTaskRunnerHandle::Get(),
                            std::move(encryptor))),
-      blocking_task_runner_(blocking_task_runner),
-      weak_ptr_factory_(this) {}
+      blocking_task_runner_(blocking_task_runner) {}
 
 GCMStoreImpl::~GCMStoreImpl() {}
 

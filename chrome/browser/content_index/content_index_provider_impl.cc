@@ -138,9 +138,8 @@ void DidGetAllEntriesAcrossStorageParitions(
 ContentIndexProviderImpl::ContentIndexProviderImpl(Profile* profile)
     : profile_(profile),
       metrics_(ukm::UkmBackgroundRecorderFactory::GetForProfile(profile)),
-      aggregator_(
-          OfflineContentAggregatorFactory::GetForKey(profile->GetProfileKey())),
-      weak_ptr_factory_(this) {
+      aggregator_(OfflineContentAggregatorFactory::GetForKey(
+          profile->GetProfileKey())) {
   aggregator_->RegisterProvider(kProviderNamespace, this);
 }
 

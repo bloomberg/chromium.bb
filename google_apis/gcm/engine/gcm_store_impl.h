@@ -146,7 +146,7 @@ class GCM_EXPORT GCMStoreImpl : public GCMStore {
   scoped_refptr<Backend> backend_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  base::WeakPtrFactory<GCMStoreImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<GCMStoreImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GCMStoreImpl);
 };

@@ -80,7 +80,7 @@ class ContentIndexProviderImpl
   ContentIndexMetrics metrics_;
   offline_items_collection::OfflineContentAggregator* aggregator_;
   base::ObserverList<Observer>::Unchecked observers_;
-  base::WeakPtrFactory<ContentIndexProviderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ContentIndexProviderImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ContentIndexProviderImpl);
 };
