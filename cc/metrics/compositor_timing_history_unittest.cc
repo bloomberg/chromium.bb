@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/scheduler/compositor_timing_history.h"
+#include "cc/metrics/compositor_timing_history.h"
 
 #include "base/test/metrics/histogram_tester.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
@@ -68,8 +68,8 @@ class CompositorTimingHistoryTest : public testing::Test {
     timing_history_.WillDraw();
     AdvanceNowBy(base::TimeDelta::FromMicroseconds(advance_ms));
     timing_history_.DidDraw(true, Now(), composited_animations_count,
-                            main_thread_animations_count,
-                            current_frame_had_raf, next_frame_has_pending_raf);
+                            main_thread_animations_count, current_frame_had_raf,
+                            next_frame_has_pending_raf);
   }
 
   void DrawImplFrame(int advance_ms,

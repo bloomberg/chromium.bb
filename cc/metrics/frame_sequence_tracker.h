@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TREES_FRAME_SEQUENCE_TRACKER_H_
-#define CC_TREES_FRAME_SEQUENCE_TRACKER_H_
+#ifndef CC_METRICS_FRAME_SEQUENCE_TRACKER_H_
+#define CC_METRICS_FRAME_SEQUENCE_TRACKER_H_
 
 #include <stdint.h>
 #include <memory>
@@ -235,4 +235,4 @@ class CC_EXPORT FrameSequenceTracker {
 
 }  // namespace cc
 
-#endif  // CC_TREES_FRAME_SEQUENCE_TRACKER_H_
+#endif  // CC_METRICS_FRAME_SEQUENCE_TRACKER_H_

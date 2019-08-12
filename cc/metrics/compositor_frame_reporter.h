@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SCHEDULER_COMPOSITOR_FRAME_REPORTER_H_
-#define CC_SCHEDULER_COMPOSITOR_FRAME_REPORTER_H_
+#ifndef CC_METRICS_COMPOSITOR_FRAME_REPORTER_H_
+#define CC_METRICS_COMPOSITOR_FRAME_REPORTER_H_
 
 #include <vector>
 
@@ -126,4 +126,4 @@ class CC_EXPORT CompositorFrameReporter {
 };
 }  // namespace cc
 
-#endif  // CC_SCHEDULER_COMPOSITOR_FRAME_REPORTER_H_"
+#endif  // CC_METRICS_COMPOSITOR_FRAME_REPORTER_H_"

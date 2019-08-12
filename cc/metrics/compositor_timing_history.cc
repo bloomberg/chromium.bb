@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/scheduler/compositor_timing_history.h"
+#include "cc/metrics/compositor_timing_history.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,7 +12,7 @@
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
-#include "cc/scheduler/compositor_frame_reporting_controller.h"
+#include "cc/metrics/compositor_frame_reporting_controller.h"
 
 namespace cc {
 
@@ -89,35 +89,170 @@ const double kDrawEstimationPercentile = 90.0;
 // ~90 VSync aligned UMA buckets.
 const int kUMAVSyncBuckets[] = {
     // Powers of two from 0 to 2048 us @ 50% precision
-    1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+    1024,
+    2048,
     // Every 8 Hz from 256 Hz to 128 Hz @ 3-6% precision
-    3906, 4032, 4167, 4310, 4464, 4630, 4808, 5000, 5208, 5435, 5682, 5952,
-    6250, 6579, 6944, 7353,
+    3906,
+    4032,
+    4167,
+    4310,
+    4464,
+    4630,
+    4808,
+    5000,
+    5208,
+    5435,
+    5682,
+    5952,
+    6250,
+    6579,
+    6944,
+    7353,
     // Every 4 Hz from 128 Hz to 64 Hz @ 3-6% precision
-    7813, 8065, 8333, 8621, 8929, 9259, 9615, 10000, 10417, 10870, 11364, 11905,
-    12500, 13158, 13889, 14706,
+    7813,
+    8065,
+    8333,
+    8621,
+    8929,
+    9259,
+    9615,
+    10000,
+    10417,
+    10870,
+    11364,
+    11905,
+    12500,
+    13158,
+    13889,
+    14706,
     // Every 2 Hz from 64 Hz to 32 Hz @ 3-6% precision
-    15625, 16129, 16667, 17241, 17857, 18519, 19231, 20000, 20833, 21739, 22727,
-    23810, 25000, 26316, 27778, 29412,
+    15625,
+    16129,
+    16667,
+    17241,
+    17857,
+    18519,
+    19231,
+    20000,
+    20833,
+    21739,
+    22727,
+    23810,
+    25000,
+    26316,
+    27778,
+    29412,
     // Every 1 Hz from 32 Hz to 1 Hz @ 3-33% precision
-    31250, 32258, 33333, 34483, 35714, 37037, 38462, 40000, 41667, 43478, 45455,
-    47619, 50000, 52632, 55556, 58824, 62500, 66667, 71429, 76923, 83333, 90909,
-    100000, 111111, 125000, 142857, 166667, 200000, 250000, 333333, 500000,
+    31250,
+    32258,
+    33333,
+    34483,
+    35714,
+    37037,
+    38462,
+    40000,
+    41667,
+    43478,
+    45455,
+    47619,
+    50000,
+    52632,
+    55556,
+    58824,
+    62500,
+    66667,
+    71429,
+    76923,
+    83333,
+    90909,
+    100000,
+    111111,
+    125000,
+    142857,
+    166667,
+    200000,
+    250000,
+    333333,
+    500000,
     // Powers of two from 1s to 32s @ 50% precision
-    1000000, 2000000, 4000000, 8000000, 16000000, 32000000,
+    1000000,
+    2000000,
+    4000000,
+    8000000,
+    16000000,
+    32000000,
 };
 
 // ~50 UMA buckets with high precision from ~100 us to 1s.
 const int kUMADurationBuckets[] = {
     // Powers of 2 from 1 us to 64 us @ 50% precision.
-    1, 2, 4, 8, 16, 32, 64,
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
     // 1.25^20, 1.25^21, ..., 1.25^62 @ 20% precision.
-    87, 108, 136, 169, 212, 265, 331, 414, 517, 646, 808, 1010, 1262, 1578,
-    1972, 2465, 3081, 3852, 4815, 6019, 7523, 9404, 11755, 14694, 18367, 22959,
-    28699, 35873, 44842, 56052, 70065, 87581, 109476, 136846, 171057, 213821,
-    267276, 334096, 417619, 522024, 652530, 815663, 1019579,
+    87,
+    108,
+    136,
+    169,
+    212,
+    265,
+    331,
+    414,
+    517,
+    646,
+    808,
+    1010,
+    1262,
+    1578,
+    1972,
+    2465,
+    3081,
+    3852,
+    4815,
+    6019,
+    7523,
+    9404,
+    11755,
+    14694,
+    18367,
+    22959,
+    28699,
+    35873,
+    44842,
+    56052,
+    70065,
+    87581,
+    109476,
+    136846,
+    171057,
+    213821,
+    267276,
+    334096,
+    417619,
+    522024,
+    652530,
+    815663,
+    1019579,
     // Powers of 2 from 2s to 32s @ 50% precision.
-    2000000, 4000000, 8000000, 16000000, 32000000,
+    2000000,
+    4000000,
+    8000000,
+    16000000,
+    32000000,
 };
 
 #define UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(name, sample)              \
@@ -824,13 +959,12 @@ void CompositorTimingHistory::DrawAborted() {
   active_tree_main_frame_time_ = base::TimeTicks();
 }
 
-void CompositorTimingHistory::DidDraw(
-    bool used_new_active_tree,
-    base::TimeTicks impl_frame_time,
-    size_t composited_animations_count,
-    size_t main_thread_animations_count,
-    bool current_frame_had_raf,
-    bool next_frame_has_pending_raf) {
+void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
+                                      base::TimeTicks impl_frame_time,
+                                      size_t composited_animations_count,
+                                      size_t main_thread_animations_count,
+                                      bool current_frame_had_raf,
+                                      bool next_frame_has_pending_raf) {
   DCHECK_NE(base::TimeTicks(), draw_start_time_);
   base::TimeTicks draw_end_time = Now();
   base::TimeDelta draw_duration = draw_end_time - draw_start_time_;

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/scheduler/compositor_frame_reporter.h"
+#include "cc/metrics/compositor_frame_reporter.h"
 
 #include "base/test/metrics/histogram_tester.h"
-#include "cc/scheduler/compositor_frame_reporting_controller.h"
+#include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

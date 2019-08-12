@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SCHEDULER_COMPOSITOR_TIMING_HISTORY_H_
-#define CC_SCHEDULER_COMPOSITOR_TIMING_HISTORY_H_
+#ifndef CC_METRICS_COMPOSITOR_TIMING_HISTORY_H_
+#define CC_METRICS_COMPOSITOR_TIMING_HISTORY_H_
 
 #include <memory>
 
@@ -180,4 +180,4 @@ class CC_EXPORT CompositorTimingHistory {
 
 }  // namespace cc
 
-#endif  // CC_SCHEDULER_COMPOSITOR_TIMING_HISTORY_H_
+#endif  // CC_METRICS_COMPOSITOR_TIMING_HISTORY_H_

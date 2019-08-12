@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/scheduler/compositor_frame_reporting_controller.h"
+#include "cc/metrics/compositor_frame_reporting_controller.h"
 
-#include "cc/scheduler/compositor_frame_reporter.h"
+#include "cc/metrics/compositor_frame_reporter.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 
 namespace cc {

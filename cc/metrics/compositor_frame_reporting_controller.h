@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SCHEDULER_COMPOSITOR_FRAME_REPORTING_CONTROLLER_H_
-#define CC_SCHEDULER_COMPOSITOR_FRAME_REPORTING_CONTROLLER_H_
+#ifndef CC_METRICS_COMPOSITOR_FRAME_REPORTING_CONTROLLER_H_
+#define CC_METRICS_COMPOSITOR_FRAME_REPORTING_CONTROLLER_H_
 
 #include <memory>
 #include <vector>
@@ -12,7 +12,7 @@
 #include "cc/base/base_export.h"
 #include "cc/base/rolling_time_delta_history.h"
 #include "cc/cc_export.h"
-#include "cc/scheduler/compositor_frame_reporter.h"
+#include "cc/metrics/compositor_frame_reporter.h"
 
 namespace cc {
 class RollingTimeDeltaHistory;
@@ -90,4 +90,4 @@ class CC_EXPORT CompositorFrameReportingController {
 };
 }  // namespace cc
 
-#endif  // CC_SCHEDULER_COMPOSITOR_FRAME_REPORTING_CONTROLLER_H_
+#endif  // CC_METRICS_COMPOSITOR_FRAME_REPORTING_CONTROLLER_H_
