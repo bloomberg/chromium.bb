@@ -1424,7 +1424,7 @@
                 {
                     "name": "Enabled16_v1",
                     "params": {
-                        "max_shares_ops": "16"
+                        "max_shared_ops": "16"
                     },
                     "enable_features": [
                         "CacheStorageParallelOps"
