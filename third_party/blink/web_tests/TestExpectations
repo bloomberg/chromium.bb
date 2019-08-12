@@ -6500,3 +6500,6 @@ crbug.com/979017 wpt_internal/scheduler/task_order.html [ Failure ]
 crbug.com/992615 [ Linux ] external/wpt/import-maps/data.sub.tentative.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/generic-sensor/idlharness.https.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.html [ Pass Timeout ]
+
+#Sheriff 2019-08-12
+crbug.com/783154 [ Linux Debug ] virtual/audio-service/media/controls/doubletap-to-jump-backwards.html [ Failure ]
