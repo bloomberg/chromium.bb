@@ -251,10 +251,9 @@ void UserMediaClientImpl::CurrentRequestCompleted() {
   is_processing_request_ = false;
   if (!pending_request_infos_.empty()) {
     frame_->GetTaskRunner(blink::TaskType::kInternalMedia)
-        ->PostTask(
-            FROM_HERE,
-            base::BindOnce(&UserMediaClientImpl::MaybeProcessNextRequestInfo,
-                           weak_factory_.GetWeakPtr()));
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(&UserMediaClientImpl::MaybeProcessNextRequestInfo,
+                             weak_factory_.GetWeakPtr()));
   }
 }
 
