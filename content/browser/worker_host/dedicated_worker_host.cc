@@ -91,26 +91,40 @@ void DedicatedWorkerHost::StartScriptLoad(
   auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
       worker_process_host->GetStoragePartition());
 
-  // Compute network isolation key.
-  RenderFrameHostImpl* ancestor_render_frame_host =
+  // Get nearest ancestor render frame host in order to determine the
+  // top-frame origin to use for the network isolation key.
+  RenderFrameHostImpl* nearest_ancestor_render_frame_host =
       GetAncestorRenderFrameHost();
-  if (!ancestor_render_frame_host) {
+  if (!nearest_ancestor_render_frame_host) {
     client_->OnScriptLoadStartFailed();
     return;
   }
-  // Get the origin of the frame tree's root to use as top-frame origin.
-  // TODO(crbug.com/986167): Resolve issue of potential race condition.
-  url::Origin top_frame_origin(ancestor_render_frame_host->frame_tree_node()
-                                   ->frame_tree()
-                                   ->root()
-                                   ->current_origin());
+
+  // Walk up the RenderFrameHostImpl::GetParent() chain to get to the top
+  // RenderFrameHostImpl, instead of using the frame tree node.
+  // If the root has already navigated to a different render frame host by
+  // the time that we get here, the old root render frame host should still
+  // be around in pending deletion state (i.e. running its unload handler)
+  // and reachable via this walk even though it's no longer the same as
+  // root()->current_frame_host(). The old root render frame host will still
+  // have its old origin in GetLastCommittedOrigin(). See crbug.com/986167
+  RenderFrameHostImpl* top_frame = nullptr;
+  for (RenderFrameHostImpl* frame = nearest_ancestor_render_frame_host; frame;
+       frame = frame->GetParent()) {
+    top_frame = frame;
+  }
+
+  // Compute the network isolation key using the old root's last committed
+  // origin as top-frame origin.
+  url::Origin top_frame_origin(top_frame->GetLastCommittedOrigin());
   url::Origin current_frame_origin(
-      ancestor_render_frame_host->GetLastCommittedOrigin());
+      nearest_ancestor_render_frame_host->GetLastCommittedOrigin());
   network_isolation_key_ =
       net::NetworkIsolationKey(top_frame_origin, current_frame_origin);
 
   // Get a storage domain.
-  SiteInstance* site_instance = ancestor_render_frame_host->GetSiteInstance();
+  SiteInstance* site_instance =
+      nearest_ancestor_render_frame_host->GetSiteInstance();
   if (!site_instance) {
     client_->OnScriptLoadStartFailed();
     return;
