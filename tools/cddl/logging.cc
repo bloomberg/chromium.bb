@@ -15,7 +15,7 @@
 #include <string>
 #include <utility>
 
-const char* Logger::MakePrintable(const std::string data) {
+const char* Logger::MakePrintable(const std::string& data) {
   return data.c_str();
 }
 
