@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_TAB_HELPER_BASE_H_
-#define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_TAB_HELPER_BASE_H_
+#ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_TAB_HELPER_H_
+#define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_TAB_HELPER_H_
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -20,22 +20,19 @@ class WebContents;
 
 namespace web_app {
 
-class WebAppAudioFocusIdMap;
+class WebAppProviderBase;
 
 // Per-tab web app helper. Allows to associate a tab (web page) with a web app
 // (or legacy bookmark app).
-class WebAppTabHelperBase
-    : public content::WebContentsObserver,
-      public content::WebContentsUserData<WebAppTabHelperBase>,
-      AppRegistrarObserver {
+class WebAppTabHelper : public content::WebContentsObserver,
+                        public content::WebContentsUserData<WebAppTabHelper>,
+                        public AppRegistrarObserver {
  public:
-  ~WebAppTabHelperBase() override;
+  using content::WebContentsUserData<WebAppTabHelper>::CreateForWebContents;
+  using content::WebContentsUserData<WebAppTabHelper>::FromWebContents;
 
-  // |audio_focus_id_map| is a weak reference to the current audio focus id map
-  // instance which is owned by WebAppProvider. This is used to ensure that all
-  // web contents associated with a web app shared the same audio focus group
-  // id.
-  void Init(WebAppAudioFocusIdMap* audio_focus_id_map);
+  explicit WebAppTabHelper(content::WebContents* web_contents);
+  ~WebAppTabHelper() override;
 
   const AppId& app_id() const { return app_id_; }
 
@@ -54,29 +51,20 @@ class WebAppTabHelperBase
   // These methods require an app associated with the tab (valid app_id()).
   //
   // Returns true if the app was installed by user, false if default installed.
-  virtual bool IsUserInstalled() const = 0;
+  bool IsUserInstalled() const;
   // For user-installed apps:
   // Returns true if the app was installed through the install button.
   // Returns false if the app was installed through the create shortcut button.
-  virtual bool IsFromInstallButton() const = 0;
-
- protected:
-  // See documentation in WebContentsUserData class comment.
-  explicit WebAppTabHelperBase(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<WebAppTabHelperBase>;
-  WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  // Clone |this| tab helper (preserving a derived type).
-  virtual WebAppTabHelperBase* CloneForWebContents(
-      content::WebContents* web_contents) const = 0;
-
-  // Returns whether the associated web contents belongs to an app window.
-  virtual bool IsInAppWindow() const = 0;
+  bool IsFromInstallButton() const;
 
  private:
-  friend class WebAppAudioFocusBrowserTest;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
-  void SetAudioFocusIdMap(WebAppAudioFocusIdMap* audio_focus_id_map);
+  friend class WebAppAudioFocusBrowserTest;
+  friend class content::WebContentsUserData<WebAppTabHelper>;
+
+  // Returns whether the associated web contents belongs to an app window.
+  bool IsInAppWindow() const;
 
   // AppRegistrarObserver:
   void OnWebAppInstalled(const AppId& installed_app_id) override;
@@ -104,14 +92,12 @@ class WebAppTabHelperBase
   // We store the applied group id locally on the helper for testing.
   base::UnguessableToken audio_focus_group_id_ = base::UnguessableToken::Null();
 
-  // Weak reference to audio focus group id storage.
-  WebAppAudioFocusIdMap* audio_focus_id_map_ = nullptr;
-
+  WebAppProviderBase* provider_ = nullptr;
   ScopedObserver<AppRegistrar, AppRegistrarObserver> observer_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(WebAppTabHelperBase);
+  DISALLOW_COPY_AND_ASSIGN(WebAppTabHelper);
 };
 
 }  // namespace web_app
 
-#endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_TAB_HELPER_BASE_H_
+#endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_TAB_HELPER_H_
