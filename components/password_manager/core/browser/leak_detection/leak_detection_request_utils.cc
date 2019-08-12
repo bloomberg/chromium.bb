@@ -8,6 +8,7 @@
 
 #include "base/containers/span.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_api.pb.h"
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
 
@@ -19,11 +20,6 @@ using google::internal::identity::passwords::leak::check::v1::
 LookupSingleLeakRequest MakeLookupSingleLeakRequest(
     base::StringPiece username,
     base::StringPiece password) {
-  // Hash prefix of username "test".
-  static constexpr char kTestUsernameHashPrefix[] = {65, -92, -91};
-
-  // Username hash prefix length in bits.
-  static constexpr size_t kUsernameHashPrefixLength = 24;
 
   // Encrypted lookup hash of (username: "test", password: "test") credential.
   static constexpr char kTestEncryptedLookupHash[] = {
@@ -35,7 +31,7 @@ LookupSingleLeakRequest MakeLookupSingleLeakRequest(
   // TODO(crbug.com/086298): Implement correct hash computation of username and
   // password.
   request.set_username_hash_prefix(
-      std::string(kTestUsernameHashPrefix, sizeof(kTestUsernameHashPrefix)));
+      BucketizeUsername(CanonicalizeUsername(username)));
   request.set_username_hash_prefix_length(kUsernameHashPrefixLength);
   request.set_encrypted_lookup_hash(
       std::string(kTestEncryptedLookupHash, sizeof(kTestEncryptedLookupHash)));

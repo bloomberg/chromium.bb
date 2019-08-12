@@ -77,6 +77,7 @@ jumbo_source_set("unit_tests") {
     "encryption_utils_unittest.cc",
     "leak_detection_request_factory_impl_unittest.cc",
     "leak_detection_request_unittest.cc",
+    "leak_detection_request_utils_unittest.cc",
   ]
 
   deps = [
