@@ -48877,13 +48877,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="65" label="Generic D-Bus timeout"/>
 </enum>
 
-<enum name="PrinterSetupSource">
-  <int value="0" label="Printer was setup from Print Preview"/>
-  <int value="1" label="Printer was setup from Settings"/>
-  <int value="2" label="Printer was setup by automatic USB configurer"/>
-  <int value="3" label="Printer was setup by arc print service"/>
-</enum>
-
 <enum name="PrintJobResult">
   <int value="0" label="Unknown"/>
   <int value="1" label="Successful Finish"/>

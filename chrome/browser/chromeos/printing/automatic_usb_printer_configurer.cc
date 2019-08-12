@@ -96,8 +96,7 @@ void AutomaticUsbPrinterConfigurer::OnSetupComplete(const Printer& printer,
     LOG(ERROR) << "Unable to autoconfigure usb printer " << printer.id();
     return;
   }
-  installation_manager_->PrinterInstalled(
-      printer, /*is_automatic=*/true, PrinterSetupSource::kAutoUsbConfigurer);
+  installation_manager_->PrinterInstalled(printer, true /* is_automatic */);
   PrinterConfigurer::RecordUsbPrinterSetupSource(
       UsbPrinterSetupSource::kAutoconfigured);
   CompleteConfiguration(printer);
