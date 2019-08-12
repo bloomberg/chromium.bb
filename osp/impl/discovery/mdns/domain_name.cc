@@ -57,7 +57,7 @@ bool DomainName::operator==(const DomainName& other) const {
   if (domain_name_.size() != other.domain_name_.size()) {
     return false;
   }
-  for (int i = 0; i < domain_name_.size(); ++i) {
+  for (size_t i = 0; i < domain_name_.size(); ++i) {
     if (tolower(domain_name_[i]) != tolower(other.domain_name_[i])) {
       return false;
     }

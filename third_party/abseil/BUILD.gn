@@ -14,6 +14,9 @@ if (build_with_chromium) {
 } else {
   config("abseil_config") {
     include_dirs = [ "//third_party/abseil/src" ]
+  }
+
+  config("private_abseil_config") {
     cflags = [
       "-Wno-sign-compare",
       "-Wno-extra-semi",
@@ -84,6 +87,8 @@ if (build_with_chromium) {
     configs -= [ "//build/config:symbol_visibility_hidden" ]
     configs += [ "//build/config:symbol_visibility_default" ]
     configs -= [ "//build:default_include_dirs" ]
+
+    configs += [ ":private_abseil_config" ]
     public_configs = [ ":abseil_config" ]
   }
 }

@@ -283,7 +283,7 @@ TEST(MdnsTxtRecordRdataTest, CopyAndMove) {
 
 TEST(MdnsRecordTest, Construct) {
   MdnsRecord record1;
-  EXPECT_EQ(record1.MaxWireSize(), 11);
+  EXPECT_EQ(record1.MaxWireSize(), UINT64_C(11));
   EXPECT_EQ(record1.name(), DomainName());
   EXPECT_EQ(record1.type(), static_cast<DnsType>(0));
   EXPECT_EQ(record1.record_class(), static_cast<DnsClass>(0));
@@ -299,7 +299,7 @@ TEST(MdnsRecordTest, Construct) {
   EXPECT_EQ(record2.type(), DnsType::kPTR);
   EXPECT_EQ(record2.record_class(), DnsClass::kIN);
   EXPECT_EQ(record2.cache_flush(), true);
-  EXPECT_EQ(record2.ttl(), 120);
+  EXPECT_EQ(record2.ttl(), UINT32_C(120));
   EXPECT_EQ(record2.rdata(),
             Rdata(PtrRecordRdata(DomainName{"testing", "local"})));
 }
@@ -344,7 +344,7 @@ TEST(MdnsRecordTest, CopyAndMove) {
 
 TEST(MdnsQuestionTest, Construct) {
   MdnsQuestion question1;
-  EXPECT_EQ(question1.MaxWireSize(), 5);
+  EXPECT_EQ(question1.MaxWireSize(), UINT64_C(5));
   EXPECT_EQ(question1.name(), DomainName());
   EXPECT_EQ(question1.type(), static_cast<DnsType>(0));
   EXPECT_EQ(question1.record_class(), static_cast<DnsClass>(0));

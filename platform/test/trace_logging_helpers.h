@@ -49,7 +49,7 @@ void ValidateTraceTimestampDiff(const char* name,
                                 Error error) {
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
       end_time - start_time);
-  ASSERT_GE(elapsed.count(), milliseconds);
+  ASSERT_GE(static_cast<uint64_t>(elapsed.count()), milliseconds);
 }
 
 template <Error::Code result>
