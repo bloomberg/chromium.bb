@@ -80,6 +80,11 @@ class NET_EXPORT ProxyServer {
   bool is_trusted_proxy() const { return is_trusted_proxy_; }
 
   const HostPortPair& host_port_pair() const;
+ 
+  // These references to the internal structure are provided to simplify IPC
+  // serialization.
+  Scheme& internalScheme() { return scheme_; }
+  HostPortPair& internalHostPortPair() { return host_port_pair_; }
 
   // Parses from an input with format:
   //   [<scheme>"://"]<server>[":"<port>]

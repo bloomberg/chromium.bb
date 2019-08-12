@@ -148,6 +148,10 @@ bool WebRuntimeFeatures::IsCompositedSelectionUpdateEnabled() {
   return RuntimeEnabledFeatures::CompositedSelectionUpdateEnabled();
 }
 
+void WebRuntimeFeatures::EnableCSS3Text(bool enable) {
+  RuntimeEnabledFeatures::SetCSS3TextEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableCompositorTouchAction(bool enable) {
   RuntimeEnabledFeatures::SetCompositorTouchActionEnabled(enable);
 }

@@ -52,6 +52,18 @@ constexpr intptr_t kIntptrAllBitsSet = intptr_t{-1};
 constexpr uintptr_t kUintptrAllBitsSet =
     static_cast<uintptr_t>(kIntptrAllBitsSet);
 
+// https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+// MSVC++ 12.0  _MSC_VER == 1800 (Visual Studio 2013 version 12.0)
+// MSVC++ 14.0  _MSC_VER == 1900 (Visual Studio 2015 version 14.0)
+#if defined(_MSC_VER) && _MSC_VER >= 1900
+  #define MSVC_2015_PLUS
+  #define constexpr_func constexpr
+#else
+  #pragma warning( disable : 4251)
+  #define constexpr const
+  #define constexpr_func V8_INLINE static
+#endif
+
 // Smi constants for systems where tagged pointer is a 32-bit value.
 template <>
 struct SmiTagging<4> {
@@ -116,8 +128,8 @@ const int kSmiShiftSize = PlatformSmiTagging::kSmiShiftSize;
 const int kSmiValueSize = PlatformSmiTagging::kSmiValueSize;
 const int kSmiMinValue = static_cast<int>(PlatformSmiTagging::kSmiMinValue);
 const int kSmiMaxValue = static_cast<int>(PlatformSmiTagging::kSmiMaxValue);
-constexpr bool SmiValuesAre31Bits() { return kSmiValueSize == 31; }
-constexpr bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
+constexpr_func bool SmiValuesAre31Bits() { return kSmiValueSize == 31; }
+constexpr_func bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
 
 V8_INLINE static constexpr internal::Address IntToSmi(int value) {
   return (static_cast<Address>(value) << (kSmiTagSize + kSmiShiftSize)) |

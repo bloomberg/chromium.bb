@@ -23,6 +23,7 @@
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "media/base/audio_parameters.h"
+#include "content/renderer/loader/resource_loader_bridge.h"
 #include "media/base/supported_types.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -60,11 +61,18 @@ namespace media {
 class KeySystemProperties;
 }
 
+namespace network {
+struct ResourceRequest;
+}
+
 namespace content {
 class BrowserPluginDelegate;
 class RenderFrame;
 class RenderView;
 struct WebPluginInfo;
+struct RequestInfo;
+class ResourceLoaderBridge;
+class ResourceRequestBodyImpl;
 
 // Embedder API for participating in renderer logic.
 class CONTENT_EXPORT ContentRendererClient {
@@ -187,6 +195,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // If it returns NULL the content layer will provide an engine.
   virtual std::unique_ptr<blink::WebSpeechSynthesizer>
   OverrideSpeechSynthesizer(blink::WebSpeechSynthesizerClient* client);
+
+  // Allows the embedder to override the ResourceLoaderBridge used.
+  // If it returns NULL, the content layer will use the default loader.
+  virtual std::unique_ptr<ResourceLoaderBridge> OverrideResourceLoaderBridge(
+      const ResourceRequestInfoProvider& request_info);
 
   // Called on the main-thread immediately after the io thread is
   // created.
