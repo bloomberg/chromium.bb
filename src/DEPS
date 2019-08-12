@@ -2292,7 +2292,7 @@ hooks = [
     'action': [
       'python',
       'src/buildtools/ensure_gn_version.py',
-      Var('gn_version')
+      vars['gn_version']
     ],
   },
   {
@@ -2568,7 +2568,7 @@ hooks = [
   {
     'name': 'apache_win32',
     'pattern': '\\.sha1',
-    'condition': 'checkout_win' and not checkout_blpwtk2',
+    'condition': 'checkout_win' and 'not checkout_blpwtk2',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
