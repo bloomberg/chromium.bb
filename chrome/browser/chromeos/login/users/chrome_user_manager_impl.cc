@@ -58,6 +58,7 @@
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/chromeos/printing/print_servers_provider.h"
 #include "chrome/browser/chromeos/printing/print_servers_provider_factory.h"
+#include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -289,12 +290,11 @@ bool AreRiskyExtensionsForceInstalled(
   return false;
 }
 
-bool AreForcedNetworkCertificatesInstalled() {
-  return !g_browser_process->platform_part()
-              ->browser_policy_connector_chromeos()
-              ->GetDeviceNetworkConfigurationUpdater()
-              ->GetAllAuthorityCertificates()
-              .empty();
+bool PolicyHasWebTrustedAuthorityCertificate(
+    policy::DeviceLocalAccountPolicyBroker* broker) {
+  return policy::UserNetworkConfigurationUpdater::
+      PolicyHasWebTrustedAuthorityCertificate(
+          broker->core()->store()->policy_map());
 }
 
 }  // namespace
@@ -1450,7 +1450,7 @@ bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
   return IsManagedSessionEnabled(broker) &&
          (AreRiskyPoliciesUsed(broker) ||
           AreRiskyExtensionsForceInstalled(broker) ||
-          AreForcedNetworkCertificatesInstalled() ||
+          PolicyHasWebTrustedAuthorityCertificate(broker) ||
           IsProxyUsed(GetLocalState()));
 }
 
