@@ -1979,6 +1979,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"photoDiscardAccessibleText", IDS_SETTINGS_PHOTO_DISCARD_ACCESSIBLE_TEXT},
     {"photoModeAccessibleText", IDS_SETTINGS_PHOTO_MODE_ACCESSIBLE_TEXT},
     {"videoModeAccessibleText", IDS_SETTINGS_VIDEO_MODE_ACCESSIBLE_TEXT},
+    {"wifiConfigurationsCheckboxLabel",
+     IDS_SETTINGS_WIFI_CONFIGURATIONS_CHECKBOX_LABEL},
 #else   // !defined(OS_CHROMEOS)
     {"domainManagedProfile", IDS_SETTINGS_PEOPLE_DOMAIN_MANAGED_PROFILE},
     {"editPerson", IDS_SETTINGS_EDIT_PERSON},
