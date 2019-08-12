@@ -74,15 +74,8 @@ void ChromeAppCacheService::Unbind(int process_id) {
   auto it = process_receivers_.find(process_id);
   if (it != process_receivers_.end()) {
     receivers_.Remove(it->second);
-    DCHECK(process_receivers_.find(process_id) == process_receivers_.end());
+    process_receivers_.erase(it);
   }
-}
-
-void ChromeAppCacheService::UnregisterBackend(
-    AppCacheBackendImpl* backend_impl) {
-  int process_id = backend_impl->process_id();
-  process_receivers_.erase(process_receivers_.find(process_id));
-  AppCacheServiceImpl::UnregisterBackend(backend_impl);
 }
 
 void ChromeAppCacheService::Shutdown() {

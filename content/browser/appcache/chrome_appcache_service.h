@@ -75,9 +75,6 @@ class CONTENT_EXPORT ChromeAppCacheService
   bool CanCreateAppCache(const GURL& manifest_url,
                          const GURL& first_party) override;
 
-  // AppCacheServiceImpl override
-  void UnregisterBackend(AppCacheBackendImpl* backend_impl) override;
-
  protected:
   ~ChromeAppCacheService() override;
 
