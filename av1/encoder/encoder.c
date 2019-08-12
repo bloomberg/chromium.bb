@@ -3087,12 +3087,12 @@ void av1_remove_compressor(AV1_COMP *cpi) {
                  "Bitrate\tAVGPsnr\tGLBPsnr\tAVPsnrP\tGLPsnrP\t"
                  "AOMSSIM\tVPSSIMP\tFASTSIM\tPSNRHVS\t"
                  "WstPsnr\tWstSsim\tWstFast\tWstHVS\t"
-                 "AVPsrnY\tAPsnrCb\tAPsnrCr");
+                 "AVPsrnY\tAPsnrCb\tAPsnrCr\tAPsnr611");
         snprintf(results, sizeof(results),
                  "%7.2f\t%7.3f\t%7.3f\t%7.3f\t%7.3f\t"
                  "%7.3f\t%7.3f\t%7.3f\t%7.3f\t"
                  "%7.3f\t%7.3f\t%7.3f\t%7.3f\t"
-                 "%7.3f\t%7.3f\t%7.3f",
+                 "%7.3f\t%7.3f\t%7.3f\t%7.3f",
                  dr, cpi->psnr.stat[STAT_ALL] / cpi->count, total_psnr,
                  cpi->psnr.stat[STAT_ALL] / cpi->count, total_psnr, total_ssim,
                  total_ssim, cpi->fastssim.stat[STAT_ALL] / cpi->count,
@@ -3100,7 +3100,10 @@ void av1_remove_compressor(AV1_COMP *cpi) {
                  cpi->worst_ssim, cpi->fastssim.worst, cpi->psnrhvs.worst,
                  cpi->psnr.stat[STAT_Y] / cpi->count,
                  cpi->psnr.stat[STAT_U] / cpi->count,
-                 cpi->psnr.stat[STAT_V] / cpi->count);
+                 cpi->psnr.stat[STAT_V] / cpi->count,
+                 (6 * cpi->psnr.stat[STAT_Y] + cpi->psnr.stat[STAT_U] +
+                  cpi->psnr.stat[STAT_V]) /
+                     (cpi->count * 8));
 
         if (cpi->b_calculate_blockiness) {
           SNPRINT(headings, "\t  Block\tWstBlck");
