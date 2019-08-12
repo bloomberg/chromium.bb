@@ -1346,7 +1346,7 @@ static int test_candidate_kf(TWO_PASS *twopass,
 #define FRAMES_TO_CHECK_DECAY 8
 #define KF_MIN_FRAME_BOOST 80.0
 #define KF_MAX_FRAME_BOOST 128.0
-#define MIN_KF_BOOST 300          // Minimum boost for non-static KF interval
+#define MIN_KF_BOOST 600          // Minimum boost for non-static KF interval
 #define MIN_STATIC_KF_BOOST 5400  // Minimum boost for static KF interval
 
 static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
