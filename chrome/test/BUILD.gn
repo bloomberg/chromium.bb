@@ -17,6 +17,7 @@ import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//components/feature_engagement/features.gni")
 import("//components/feed/features.gni")
+import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//components/os_crypt/features.gni")
@@ -5702,12 +5703,16 @@ test("chrome_app_unittests") {
     "//chrome/gpu",
     "//components/crash/core/common",
     "//components/flags_ui:switches",
+    "//components/gwp_asan/buildflags",
     "//components/safe_browsing:buildflags",
     "//components/tracing",
   ]
   if (!is_fuchsia) {
     # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
     deps += [ "//third_party/breakpad:client" ]
+  }
+  if (enable_gwp_asan) {
+    deps += [ "//components/gwp_asan/client" ]
   }
 }
 
