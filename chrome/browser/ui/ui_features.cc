@@ -32,7 +32,7 @@ const base::Feature kScrollableTabStrip{"ScrollableTabStrip",
 // settings set to clear cookies on exit.
 const base::Feature kShowSyncPausedReasonCookiesClearedOnExit{
     "ShowSyncPausedReasonCookiesClearedOnExit",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables grouping tabs together in the tab strip. https://crbug.com/905491
 const base::Feature kTabGroups{"TabGroups", base::FEATURE_DISABLED_BY_DEFAULT};
