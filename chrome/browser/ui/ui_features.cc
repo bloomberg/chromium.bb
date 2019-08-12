@@ -24,6 +24,11 @@ const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
 const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables updated tabstrip animations, required for a scrollable tabstrip.
+// https://crbug.com/958173
+const base::Feature kNewTabstripAnimation{"NewTabstripAnimation",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables tabs to scroll in the tabstrip. https://crbug.com/951078
 const base::Feature kScrollableTabStrip{"ScrollableTabStrip",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

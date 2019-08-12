@@ -1255,6 +1255,10 @@ const char kNewblueName[] = "Newblue";
 const char kNewblueDescription[] =
     "Enables the use of newblue Bluetooth daemon.";
 
+const char kNewTabstripAnimationName[] = "New tabstrip animations";
+const char kNewTabstripAnimationDescription[] =
+    "New implementation of tabstrip animations.";
+
 const char kNewTabLoadingAnimation[] = "New tab-loading animation";
 const char kNewTabLoadingAnimationDescription[] =
     "Enables a new look for the tab-loading animation.";

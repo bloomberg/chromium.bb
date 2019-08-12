@@ -24,6 +24,8 @@ extern const base::Feature kEvDetailsInPageInfo;
 
 extern const base::Feature kExtensionsToolbarMenu;
 
+extern const base::Feature kNewTabstripAnimation;
+
 extern const base::Feature kScrollableTabStrip;
 
 extern const base::Feature kShowSyncPausedReasonCookiesClearedOnExit;
