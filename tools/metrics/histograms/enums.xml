@@ -48349,6 +48349,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="58" label="FINAL_STATUS_BROWSER_SWITCH"/>
   <int value="59" label="FINAL_STATUS_GWS_HOLDBACK"/>
   <int value="60" label="FINAL_STATUS_UNKNOWN"/>
+  <int value="61" label="FINAL_STATUS_NAVIGATION_PREDICTOR_HOLDBACK"/>
 </enum>
 
 <enum name="PrerenderHoverEvent">
