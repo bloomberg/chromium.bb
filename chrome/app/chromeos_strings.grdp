@@ -3374,12 +3374,6 @@
   <message name="IDS_PRINT_JOB_NOTIFICATION_CANCEL_BUTTON" desc="Text on the button for the user to cancel the current print job.">
     Cancel printing
   </message>
-  <message name="IDS_PRINT_JOB_NOTIFICATION_PAUSE_BUTTON" desc="Text on the button for the user to pause the current print job.">
-    Pause printing
-  </message>
-  <message name="IDS_PRINT_JOB_NOTIFICATION_RESUME_BUTTON" desc="Text on the button for the user to resume the current print job.">
-    Resume printing
-  </message>
   <message name="IDS_PRINT_JOB_NOTIFICATION_GET_HELP_BUTTON" desc="Text on the button for the user to get help about the current print job.">
     Get help
   </message>
