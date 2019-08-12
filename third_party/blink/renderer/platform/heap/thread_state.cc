@@ -1675,7 +1675,7 @@ void ThreadState::MarkPhaseVisitNotFullyConstructedObjects() {
 }
 
 void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
-  Visitor* visitor = current_gc_data_.visitor.get();
+  MarkingVisitor* visitor = current_gc_data_.visitor.get();
   {
     // See ProcessHeap::CrossThreadPersistentMutex().
     MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
