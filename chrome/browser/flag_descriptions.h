@@ -2131,6 +2131,9 @@ extern const char kDirectManipulationStylusDescription[];
 extern const char kAnimatedAvatarButtonName[];
 extern const char kAnimatedAvatarButtonDescription[];
 
+extern const char kClickToCallContextMenuForSelectedTextName[];
+extern const char kClickToCallContextMenuForSelectedTextDescription[];
+
 extern const char kClickToCallUIName[];
 extern const char kClickToCallUIDescription[];
 

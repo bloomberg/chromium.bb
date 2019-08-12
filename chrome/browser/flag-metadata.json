@@ -393,6 +393,11 @@
     "owners": [ "dullweber" ],
     "expiry_milestone": 78
   },
+  {
+    "name": "click-to-call-context-menu-selected-text",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 80
+  },
 	{
     "name": "click-to-call-receiver",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
