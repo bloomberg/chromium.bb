@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/pending_task.h"
@@ -30,6 +29,7 @@ class MessageLoopThreadDelegate;
 
 class MessageLoopImpl;
 class MessagePump;
+class TaskObserver;
 
 namespace sequence_manager {
 class TaskQueue;
@@ -122,9 +122,6 @@ class BASE_EXPORT MessageLoop {
 
   // Gets the TaskRunner associated with this message loop.
   scoped_refptr<SingleThreadTaskRunner> task_runner() const;
-
-  // TODO(yutak): Replace all the use sites with base::TaskObserver.
-  using TaskObserver = MessageLoopCurrent::TaskObserver;
 
   // These functions can only be called on the same thread that |this| is
   // running on.
