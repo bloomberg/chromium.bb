@@ -38550,8 +38550,11 @@ Called by update_use_counter_css.py.-->
   <int value="638" label="overflow-inline"/>
   <int value="639" label="overflow-block"/>
   <int value="640" label="forced-color-adjust"/>
-  <int value="641" label="overscroll-behavior-inline"/>
-  <int value="642" label="overscroll-behavior-block"/>
+  <int value="641" label="inherits"/>
+  <int value="642" label="initial-value"/>
+  <int value="643" label="syntax"/>
+  <int value="644" label="overscroll-behavior-inline"/>
+  <int value="645" label="overscroll-behavior-block"/>
 </enum>
 
 <enum name="MappedEditingCommands">
