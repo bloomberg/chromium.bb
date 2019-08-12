@@ -4096,7 +4096,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ProviderOptions(ProviderOptions* ret) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROVIDER_OPTIONS);
   UIA_VALIDATE_CALL_1_ARG(ret);
 
-  *ret = ProviderOptions_ServerSideProvider | ProviderOptions_UseComThreading;
+  *ret = ProviderOptions_ServerSideProvider | ProviderOptions_UseComThreading |
+         ProviderOptions_RefuseNonClientSupport;
   return S_OK;
 }
 
