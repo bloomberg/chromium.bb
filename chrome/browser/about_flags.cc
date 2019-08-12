@@ -2591,6 +2591,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"file-manager-piex-wasm", flag_descriptions::kFileManagerPiexWasmName,
      flag_descriptions::kFileManagerPiexWasmDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableFileManagerPiexWasm)},
+    {"files-ng", flag_descriptions::kFilesNGName,
+     flag_descriptions::kFilesNGDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFilesNG)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_WIN)

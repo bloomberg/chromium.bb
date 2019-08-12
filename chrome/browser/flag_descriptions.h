@@ -1973,6 +1973,9 @@ extern const char kFileManagerPiexWasmDescription[];
 extern const char kFileManagerTouchModeName[];
 extern const char kFileManagerTouchModeDescription[];
 
+extern const char kFilesNGName[];
+extern const char kFilesNGDescription[];
+
 extern const char kFirstRunUiTransitionsName[];
 extern const char kFirstRunUiTransitionsDescription[];
 

@@ -3297,6 +3297,10 @@ const char kFileManagerTouchModeName[] = "Files App. touch mode";
 const char kFileManagerTouchModeDescription[] =
     "Touchscreen-specific interactions of the Files app.";
 
+const char kFilesNGName[] = "Enable Files App. NG.";
+const char kFilesNGDescription[] =
+    "Enable the next generation UI style of the file manager.";
+
 const char kFirstRunUiTransitionsName[] =
     "Animated transitions in the first-run tutorial";
 const char kFirstRunUiTransitionsDescription[] =
