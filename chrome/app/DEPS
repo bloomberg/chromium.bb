@@ -85,7 +85,6 @@ specific_include_rules = {
     "+chromeos/services/network_config",
     "+chromeos/services/secure_channel",
     "+components/mirroring/service",
-    "+components/services/pdf_compositor",
     "+components/services/quarantine",
     "+components/startup_metric_utils/common",
     "+extensions/buildflags",

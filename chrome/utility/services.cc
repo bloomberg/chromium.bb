@@ -15,6 +15,7 @@
 #include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "components/services/unzip/unzipper_impl.h"
+#include "content/public/utility/utility_thread.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
@@ -60,6 +61,11 @@
     (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
 #include "chrome/services/printing/printing_service.h"
 #include "chrome/services/printing/public/mojom/printing_service.mojom.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PRINTING)
+#include "components/services/pdf_compositor/pdf_compositor_impl.h"
+#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -140,6 +146,15 @@ auto RunPrintingService(
 }
 #endif
 
+#if BUILDFLAG(ENABLE_PRINTING)
+auto RunPdfCompositor(
+    mojo::PendingReceiver<printing::mojom::PdfCompositor> receiver) {
+  return std::make_unique<printing::PdfCompositorImpl>(
+      std::move(receiver), true /* initialize_environment */,
+      content::UtilityThread::Get()->GetIOTaskRunner());
+}
+#endif
+
 #if defined(OS_CHROMEOS)
 auto RunImeService(
     mojo::PendingReceiver<chromeos::ime::mojom::ImeService> receiver) {
@@ -201,6 +216,10 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
     (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
     RunPrintingService,
+#endif
+
+#if BUILDFLAG(ENABLE_PRINTING)
+    RunPdfCompositor,
 #endif
 
 #if defined(OS_CHROMEOS)

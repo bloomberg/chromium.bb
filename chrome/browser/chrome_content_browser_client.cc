@@ -567,7 +567,6 @@
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/browser/printing/printing_message_filter.h"
-#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)

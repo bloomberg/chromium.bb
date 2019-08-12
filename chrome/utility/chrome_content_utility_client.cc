@@ -50,12 +50,6 @@
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // defined(OS_CHROMEOS)
 
-#if BUILDFLAG(ENABLE_PRINTING)
-#include "chrome/common/chrome_content_client.h"
-#include "components/services/pdf_compositor/public/cpp/pdf_compositor_service_factory.h"  // nogncheck
-#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"  // nogncheck
-#endif
-
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN)
 #include "chrome/services/printing/pdf_to_emf_converter_factory.h"
 #endif
@@ -147,11 +141,6 @@ std::unique_ptr<service_manager::Service>
 ChromeContentUtilityClient::MaybeCreateMainThreadService(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
-#if BUILDFLAG(ENABLE_PRINTING)
-  if (service_name == printing::mojom::kServiceName)
-    return printing::CreatePdfCompositorService(std::move(request));
-#endif
-
 #if defined(OS_WIN)
   if (service_name == quarantine::mojom::kServiceName &&
       base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine)) {

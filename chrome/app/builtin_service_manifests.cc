@@ -25,17 +25,10 @@
 #include "components/mirroring/service/manifest.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_PRINTING)
-#include "components/services/pdf_compositor/public/cpp/manifest.h"  // nogncheck
-#endif
-
 const std::vector<service_manager::Manifest>&
 GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
       quarantine::GetQuarantineManifest(),
-#if BUILDFLAG(ENABLE_PRINTING)
-      printing::GetPdfCompositorManifest(),
-#endif
 #if !defined(OS_ANDROID)
       mirroring::GetManifest(),
 #endif

@@ -136,7 +136,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("nacl_loader", "browser")
         .RequireCapability("noop", "noop")
         .RequireCapability("patch", "patch_file")
-        .RequireCapability("pdf_compositor", "compositor")
         .RequireCapability("preferences", "pref_client")
         .RequireCapability("preferences", "pref_control")
         .RequireCapability("profile_import", "import")
