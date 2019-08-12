@@ -1138,3 +1138,67 @@ message PendingAppListUpdatesSignal {
   // Number of currently scheduled app list updates for this container.
   uint32 count = 3;
 }
+
+message ApplyAnsiblePlaybookRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Ansible playbook to be applied.
+  string playbook = 4;
+}
+
+message ApplyAnsiblePlaybookResponse {
+  enum Status {
+    UNKNOWN = 0;
+
+    // Application process was successfully started, all further updates will be
+    // sent via the ApplyAnsiblePlaybookProgress signal.
+    STARTED = 1;
+
+    // Failed to start up for a general reason, specific details are given in
+    // failure_reason.
+    FAILED = 2;
+  }
+  Status status = 1;
+
+  // Contains a textual reason for the failure in case of a FAILED status.
+  string failure_reason = 2;
+}
+
+message ApplyAnsiblePlaybookProgressSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  enum Status {
+    UNKNOWN = 0;
+
+    // Application has completed and was successfull. No further signals will be
+    // sent after this one.
+    SUCCEEDED = 1;
+
+    // Application failed to complete, the specific reason will be in
+    // failure_details. No further signals will be sent after this one.
+    FAILED = 2;
+
+    // Ansible playbook is being currently applied.
+    IN_PROGRESS = 3;
+  }
+
+  // Current status of the application progress.
+  Status status = 4;
+
+  // Contains a textual reason for the failure in case of a FAILED status.
+  string failure_details = 5;
+}
