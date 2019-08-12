@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/fake_pepper_plugin_instance.h"
+#include "content/public/test/fake_pepper_plugin_instance.h"
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
@@ -23,9 +23,13 @@ v8::Isolate* FakePepperPluginInstance::GetIsolate() {
   return nullptr;
 }
 
-ppapi::VarTracker* FakePepperPluginInstance::GetVarTracker() { return nullptr; }
+ppapi::VarTracker* FakePepperPluginInstance::GetVarTracker() {
+  return nullptr;
+}
 
-const GURL& FakePepperPluginInstance::GetPluginURL() { return gurl_; }
+const GURL& FakePepperPluginInstance::GetPluginURL() {
+  return gurl_;
+}
 
 base::FilePath FakePepperPluginInstance::GetModulePath() {
   return base::FilePath();
@@ -47,7 +51,9 @@ PP_ExternalPluginResult FakePepperPluginInstance::SwitchToOutOfProcessProxy(
 
 void FakePepperPluginInstance::SetAlwaysOnTop(bool on_top) {}
 
-bool FakePepperPluginInstance::IsFullPagePlugin() { return false; }
+bool FakePepperPluginInstance::IsFullPagePlugin() {
+  return false;
+}
 
 bool FakePepperPluginInstance::FlashSetFullscreen(bool fullscreen,
                                                   bool delay_report) {
@@ -110,5 +116,8 @@ bool FakePepperPluginInstance::CanRedo() {
 void FakePepperPluginInstance::Undo() {}
 
 void FakePepperPluginInstance::Redo() {}
+
+void FakePepperPluginInstance::HandleAccessibilityAction(
+    const PP_PdfAccessibilityActionData& action_data) {}
 
 }  // namespace content
