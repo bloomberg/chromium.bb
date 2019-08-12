@@ -5920,7 +5920,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_PaneControlTypeId;
 
     case ax::mojom::Role::kColorWell:
-      return UIA_DocumentControlTypeId;
+      return UIA_ButtonControlTypeId;
 
     case ax::mojom::Role::kColumn:
       return UIA_PaneControlTypeId;
