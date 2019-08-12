@@ -168,6 +168,9 @@ class CORE_EXPORT PaintTimingDetector
   uint64_t LargestImagePaintSize() const { return largest_image_paint_size_; }
   base::TimeTicks LargestTextPaint() const { return largest_text_paint_time_; }
   uint64_t LargestTextPaintSize() const { return largest_text_paint_size_; }
+
+  void UpdateLargestContentfulPaintCandidate();
+
   void Trace(Visitor* visitor);
 
  private:
