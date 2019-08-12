@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SHARING_SHARING_DIALOG_CONTROLLER_H_
-#define CHROME_BROWSER_SHARING_SHARING_DIALOG_CONTROLLER_H_
+#ifndef CHROME_BROWSER_SHARING_SHARING_UI_CONTROLLER_H_
+#define CHROME_BROWSER_SHARING_SHARING_UI_CONTROLLER_H_
 
 #include <string>
 #include <vector>
@@ -25,7 +25,7 @@ class WebContents;
 }  // namespace content
 
 // The controller for desktop dialog with the list of synced devices and apps.
-class SharingDialogController {
+class SharingUiController {
  public:
   struct App {
     App(const gfx::VectorIcon& icon,
@@ -39,8 +39,8 @@ class SharingDialogController {
     std::string identifier;
   };
 
-  explicit SharingDialogController(content::WebContents* web_contents);
-  virtual ~SharingDialogController() = default;
+  explicit SharingUiController(content::WebContents* web_contents);
+  virtual ~SharingUiController() = default;
 
   // Title of the dialog.
   virtual base::string16 GetTitle() = 0;
@@ -88,4 +88,4 @@ class SharingDialogController {
   content::WebContents* web_contents_ = nullptr;
 };
 
-#endif  // CHROME_BROWSER_SHARING_SHARING_DIALOG_CONTROLLER_H_
+#endif  // CHROME_BROWSER_SHARING_SHARING_UI_CONTROLLER_H_

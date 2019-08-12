@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_SHARING_DIALOG_CONTROLLER_H_
-#define CHROME_BROWSER_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_SHARING_DIALOG_CONTROLLER_H_
+#ifndef CHROME_BROWSER_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_UI_CONTROLLER_H_
+#define CHROME_BROWSER_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_UI_CONTROLLER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sharing/sharing_dialog_controller.h"
 #include "chrome/browser/sharing/sharing_service.h"
+#include "chrome/browser/sharing/sharing_ui_controller.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
@@ -22,11 +22,11 @@ class WebContents;
 
 class SharingDeviceInfo;
 
-class ClickToCallSharingDialogController
-    : public SharingDialogController,
-      public content::WebContentsUserData<ClickToCallSharingDialogController> {
+class ClickToCallUiController
+    : public SharingUiController,
+      public content::WebContentsUserData<ClickToCallUiController> {
  public:
-  static ClickToCallSharingDialogController* GetOrCreateFromWebContents(
+  static ClickToCallUiController* GetOrCreateFromWebContents(
       content::WebContents* web_contents);
   static void ShowDialog(content::WebContents* web_contents,
                          const GURL& url,
@@ -35,9 +35,9 @@ class ClickToCallSharingDialogController
                              const GURL& url,
                              const SharingDeviceInfo& device);
 
-  ~ClickToCallSharingDialogController() override;
+  ~ClickToCallUiController() override;
 
-  // Overridden from SharingDialogController:
+  // Overridden from SharingUiController:
   base::string16 GetTitle() override;
   std::vector<SharingDeviceInfo> GetSyncedDevices() override;
   std::vector<App> GetApps() override;
@@ -49,12 +49,11 @@ class ClickToCallSharingDialogController
   void OnHelpTextClicked();
 
  protected:
-  explicit ClickToCallSharingDialogController(
-      content::WebContents* web_contents);
+  explicit ClickToCallUiController(content::WebContents* web_contents);
   SharingDialog* DoShowDialog(BrowserWindow* window) override;
 
  private:
-  friend class content::WebContentsUserData<ClickToCallSharingDialogController>;
+  friend class content::WebContentsUserData<ClickToCallUiController>;
 
   // Called after a message got sent to a device. Shows a new error dialog if
   // |success| is false and updates the omnibox icon.
@@ -70,12 +69,11 @@ class ClickToCallSharingDialogController
   // TODO(yasmo): Maybe can be moved to the base class.
   int last_dialog_id_ = 0;
 
-  base::WeakPtrFactory<ClickToCallSharingDialogController> weak_ptr_factory_{
-      this};
+  base::WeakPtrFactory<ClickToCallUiController> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
-  DISALLOW_COPY_AND_ASSIGN(ClickToCallSharingDialogController);
+  DISALLOW_COPY_AND_ASSIGN(ClickToCallUiController);
 };
 
-#endif  // CHROME_BROWSER_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_SHARING_DIALOG_CONTROLLER_H_
+#endif  // CHROME_BROWSER_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_UI_CONTROLLER_H_

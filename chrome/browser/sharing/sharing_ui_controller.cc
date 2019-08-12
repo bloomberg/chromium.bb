@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sharing/sharing_dialog_controller.h"
+#include "chrome/browser/sharing/sharing_ui_controller.h"
 
 #include <utility>
 
@@ -10,20 +10,19 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 
-SharingDialogController::App::App(const gfx::VectorIcon& icon,
-                                  base::string16 name,
-                                  std::string identifier)
+SharingUiController::App::App(const gfx::VectorIcon& icon,
+                              base::string16 name,
+                              std::string identifier)
     : icon(icon), name(std::move(name)), identifier(std::move(identifier)) {}
 
-SharingDialogController::App::App(App&& other) = default;
+SharingUiController::App::App(App&& other) = default;
 
-SharingDialogController::App::~App() = default;
+SharingUiController::App::~App() = default;
 
-SharingDialogController::SharingDialogController(
-    content::WebContents* web_contents)
+SharingUiController::SharingUiController(content::WebContents* web_contents)
     : web_contents_(web_contents) {}
 
-void SharingDialogController::ShowNewDialog() {
+void SharingUiController::ShowNewDialog() {
   if (dialog_)
     dialog_->Hide();
 
@@ -40,7 +39,7 @@ void SharingDialogController::ShowNewDialog() {
   UpdateIcon();
 }
 
-void SharingDialogController::UpdateIcon() {
+void SharingUiController::UpdateIcon() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   auto* window = browser ? browser->window() : nullptr;
   if (!window)
@@ -51,7 +50,7 @@ void SharingDialogController::UpdateIcon() {
     icon_container->UpdatePageActionIcon(GetIconType());
 }
 
-void SharingDialogController::OnDialogClosed(SharingDialog* dialog) {
+void SharingUiController::OnDialogClosed(SharingDialog* dialog) {
   // Ignore already replaced dialogs.
   if (dialog != dialog_)
     return;
@@ -60,7 +59,7 @@ void SharingDialogController::OnDialogClosed(SharingDialog* dialog) {
   UpdateIcon();
 }
 
-void SharingDialogController::ShowErrorDialog() {
+void SharingUiController::ShowErrorDialog() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (!browser)
     return;
@@ -69,13 +68,13 @@ void SharingDialogController::ShowErrorDialog() {
     ShowNewDialog();
 }
 
-void SharingDialogController::StartLoading() {
+void SharingUiController::StartLoading() {
   is_loading_ = true;
   send_failed_ = false;
   UpdateIcon();
 }
 
-void SharingDialogController::StopLoading(bool send_failed) {
+void SharingUiController::StopLoading(bool send_failed) {
   is_loading_ = false;
   send_failed_ = send_failed;
   UpdateIcon();
@@ -84,7 +83,7 @@ void SharingDialogController::StopLoading(bool send_failed) {
     ShowErrorDialog();
 }
 
-void SharingDialogController::InvalidateOldDialog() {
+void SharingUiController::InvalidateOldDialog() {
   is_loading_ = false;
   send_failed_ = false;
   ShowNewDialog();

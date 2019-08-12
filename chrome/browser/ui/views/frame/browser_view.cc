@@ -1402,7 +1402,7 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
 
 SharingDialog* BrowserView::ShowClickToCallDialog(
     content::WebContents* web_contents,
-    ClickToCallSharingDialogController* controller) {
+    ClickToCallUiController* controller) {
   auto* dialog_view = new ClickToCallDialogView(
       toolbar_button_provider()->GetAnchorView(), web_contents, controller);
 
