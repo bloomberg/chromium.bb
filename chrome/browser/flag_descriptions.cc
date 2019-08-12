@@ -263,6 +263,11 @@ const char kCloudPrinterHandlerDescription[] =
     "print server, instead of the cloud print interface in the Print "
     "Preview WebUI.";
 
+const char kDecodeLossyWebPImagesToYUVName[] = "YUV Decoding for WebP";
+const char kDecodeLossyWebPImagesToYUVDescription[] =
+    "Decode and render lossy WebP images from YUV instead of RGB. "
+    "You must also have GPU rasterization or OOP rasterization.";
+
 const char kFCMInvalidationsName[] =
     "Enable invalidations delivery via new FCM based protocol";
 const char kFCMInvalidationsDescription[] =

@@ -4324,6 +4324,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpdatedCardUnmaskPromptUi)},
 
+    {"decode-webp-images-to-yuv",
+     flag_descriptions::kDecodeLossyWebPImagesToYUVName,
+     flag_descriptions::kDecodeLossyWebPImagesToYUVDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kDecodeLossyWebPImagesToYUV)},
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

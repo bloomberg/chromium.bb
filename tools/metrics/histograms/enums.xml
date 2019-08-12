@@ -36220,6 +36220,7 @@ from previous Chrome versions.
   <int value="766898398" label="sampling-heap-profiler"/>
   <int value="767543730" label="DoubleTapToZoomInTabletMode:enabled"/>
   <int value="767970385" label="ResamplingScrollEvents:enabled"/>
+  <int value="770680432" label="DecodeLossyWebPImagesToYUV:enabled"/>
   <int value="772272625" label="simplify-https-indicator"/>
   <int value="772348426" label="AffiliationBasedMatching:enabled"/>
   <int value="772360813"
@@ -36549,6 +36550,7 @@ from previous Chrome versions.
   <int value="1258747457"
       label="SyncPseudoUSSHistoryDeleteDirectives:disabled"/>
   <int value="1260186484" label="spurious-power-button-screen-accel"/>
+  <int value="1261379424" label="DecodeLossyWebPImagesToYUV:disabled"/>
   <int value="1261713150" label="ChromeHomeOptOutSnackbar:disabled"/>
   <int value="1262469513" label="GesturePropertiesDBusService:disabled"/>
   <int value="1266156008" label="IdentityDisc:disabled"/>

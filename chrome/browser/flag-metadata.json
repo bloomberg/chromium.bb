@@ -537,6 +537,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "decode-webp-images-to-yuv",
+    "owners": [ "andrescj", "chromeos-gfx@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "delegate-overscroll-swipes",
     "owners": [ "chrome-android-app@chromium.org" ],
     "expiry_milestone": 88

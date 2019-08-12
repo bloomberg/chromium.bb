@@ -171,6 +171,9 @@ extern const char kCloudImportDescription[];
 extern const char kCloudPrinterHandlerName[];
 extern const char kCloudPrinterHandlerDescription[];
 
+extern const char kDecodeLossyWebPImagesToYUVName[];
+extern const char kDecodeLossyWebPImagesToYUVDescription[];
+
 extern const char kDrawVerticallyEdgeToEdgeName[];
 extern const char kDrawVerticallyEdgeToEdgeDescription[];
 
