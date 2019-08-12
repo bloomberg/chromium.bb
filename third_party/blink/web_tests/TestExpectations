@@ -2205,8 +2205,7 @@ crbug.com/983799 [ Win ] http/tests/navigation/redirect-on-back-updates-history-
 crbug.com/983799 [ Win ] virtual/blink-cors/http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
 crbug.com/983789 [ Win7 ] http/tests/cookies/js-set-null.html [ Pass Failure ]
 crbug.com/983788 http/tests/cookies/http-get-cookie-set-in-js.html [ Pass Failure ]
-crbug.com/983788 http/tests/cookies/same-site/popup-cross-site.html [ Pass Timeout ]
-crbug.com/983788 http/tests/cookies/same-site/popup-cross-site-post.html [ Pass Timeout ]
+crbug.com/983788 http/tests/cookies/same-site/popup-cross-site.https.html [ Pass Timeout ]
 crbug.com/984438 external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Failure Pass ]
 crbug.com/982148 [ Win7 ] virtual/blink-cors/external/wpt/referrer-policy/same-origin/http-rp/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Pass Timeout ]
 crbug.com/982148 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/same-origin/http-rp/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Pass Timeout ]
@@ -5293,47 +5292,46 @@ crbug.com/783301 external/wpt/imagecapture/MediaStreamTrack-getCapabilities.html
 crbug.com/827231 [ Win ] external/wpt/cookie-store/document_cookie.tentative.https.html [ Pass Failure Timeout ]
 
 # Failing SameSite cookies tests
-crbug.com/843945 external/wpt/cookies/samesite/form-get-blank-reload.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/form-post-blank-reload.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/window-open-reload.html [ Failure ]
-crbug.com/961745 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/form-get-blank-reload.html?samesite-by-default-cookies.tentative [ Failure ]
-crbug.com/961745 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/form-post-blank-reload.html?samesite-by-default-cookies.tentative [ Failure ]
-crbug.com/961745 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/window-open-reload.html?samesite-by-default-cookies.tentative [ Failure ]
+crbug.com/843945 external/wpt/cookies/samesite/form-get-blank-reload.https.html [ Failure ]
+crbug.com/843945 external/wpt/cookies/samesite/form-post-blank-reload.https.html [ Failure ]
+crbug.com/843945 external/wpt/cookies/samesite/window-open-reload.https.html [ Failure ]
+crbug.com/961745 virtual/legacy-samesite/external/wpt/cookies/samesite/form-get-blank-reload.https.html?legacy-samesite [ Failure ]
+crbug.com/961745 virtual/legacy-samesite/external/wpt/cookies/samesite/form-post-blank-reload.https.html?legacy-samesite [ Failure ]
+crbug.com/961745 virtual/legacy-samesite/external/wpt/cookies/samesite/window-open-reload.https.html?legacy-samesite [ Failure ]
 
-# Tentative SameSite-by-default tests do not apply when SameSiteByDefaultCookies is not enabled.
-crbug.com/961439 external/wpt/cookies/samesite/fetch.html?samesite-by-default-cookies.tentative [ Skip ]
-crbug.com/961439 external/wpt/cookies/samesite/form-get-blank-reload.html?samesite-by-default-cookies.tentative [ Skip ]
-crbug.com/961439 external/wpt/cookies/samesite/form-get-blank.html?samesite-by-default-cookies.tentative [ Skip ]
-crbug.com/961439 external/wpt/cookies/samesite/form-post-blank-reload.html?samesite-by-default-cookies.tentative [ Skip ]
-crbug.com/961439 external/wpt/cookies/samesite/form-post-blank.html?samesite-by-default-cookies.tentative [ Skip ]
-crbug.com/961439 external/wpt/cookies/samesite/iframe-reload.html?samesite-by-default-cookies.tentative [ Skip ]
-crbug.com/961439 external/wpt/cookies/samesite/iframe.html?samesite-by-default-cookies.tentative [ Skip ]
-crbug.com/961439 external/wpt/cookies/samesite/img.html?samesite-by-default-cookies.tentative [ Skip ]
-crbug.com/961439 external/wpt/cookies/samesite/setcookie-lax.html?samesite-by-default-cookies.tentative [ Skip ]
-crbug.com/961439 external/wpt/cookies/samesite/setcookie-navigation.html?samesite-by-default-cookies.tentative [ Skip ]
-crbug.com/961439 external/wpt/cookies/samesite/window-open-reload.html?samesite-by-default-cookies.tentative [ Skip ]
-crbug.com/961439 external/wpt/cookies/samesite/window-open.html?samesite-by-default-cookies.tentative [ Skip ]
+# When SameSiteByDefaultCookies is enabled (which is the case by default since
+# it's one of the experimental-web-platform-features, the Lax-allow-unsafe
+# intervention causes POST tests to fail.
+crbug.com/990439 external/wpt/cookies/samesite/form-post-blank.https.html [ Failure ]
+crbug.com/990439 http/tests/cookies/same-site/popup-cross-site-post.https.html [ Failure ]
 
-# Regular SameSite cookie tests do not apply when SameSiteByDefaultCookies is enabled.
-crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/fetch.html [ Skip ]
-crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/form-get-blank-reload.html [ Skip ]
-crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/form-get-blank.html [ Skip ]
-crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/form-post-blank-reload.html [ Skip ]
-crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/form-post-blank.html [ Skip ]
-crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/iframe-reload.html [ Skip ]
-crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/iframe.html [ Skip ]
-crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/img.html [ Skip ]
-crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/setcookie-lax.html [ Skip ]
-crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/setcookie-navigation.html [ Skip ]
-crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/window-open-reload.html [ Skip ]
-crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/window-open.html [ Skip ]
+# Legacy SameSite cookie tests do not apply when non-legacy behavior is in effect.
+crbug.com/961439 external/wpt/cookies/samesite/fetch.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/form-get-blank-reload.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/form-get-blank.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/form-post-blank-reload.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/form-post-blank.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/iframe-reload.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/iframe.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/img.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/setcookie-lax.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/setcookie-navigation.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/window-open-reload.https.html?legacy-samesite [ Skip ]
+crbug.com/961439 external/wpt/cookies/samesite/window-open.https.html?legacy-samesite [ Skip ]
 
-# When SameSiteByDefaultCookies is enabled, the Lax-allow-unsafe intervention causes POST tests to fail.
-crbug.com/990439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/form-post-blank.html?samesite-by-default-cookies.tentative [ Failure ]
-
-# CookiesWithoutSameSiteMustBeSecure tests do not pass when that feature is not enabled.
-crbug.com/961439 external/wpt/cookies/samesite-none-secure/ [ Failure ]
-crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite-none-secure/ [ Failure ]
+# Non-legacy SameSite cookie tests do not apply when legacy SameSite behavior is in effect.
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/fetch.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/form-get-blank-reload.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/form-get-blank.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/form-post-blank-reload.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/form-post-blank.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/iframe-reload.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/iframe.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/img.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/setcookie-lax.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/setcookie-navigation.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/window-open-reload.https.html [ Skip ]
+crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/window-open.https.html [ Skip ]
 
 # Sheriff failures 2017-11-15
 crbug.com/785179 [ Win7 Debug ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Skip ]
@@ -6290,7 +6288,7 @@ crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/class_object/class_white-space_pre-line_wrapped.html [ Failure ]
 
 crbug.com/905971 virtual/blink-cors/external/wpt/service-workers/service-worker/detached-context.https.html [ Pass Crash ]
-crbug.com/905971 virtual/blink-cors/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
+crbug.com/905971 virtual/blink-cors/http/tests/security/img-redirect-to-crossorigin-credentials.https.html [ Failure ]
 crbug.com/905971 virtual/blink-cors/http/tests/security/script-crossorigin-redirect-credentials.html [ Failure ]
 
 # Sheriff 2019-06-04
@@ -6476,8 +6474,8 @@ crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-video-ratio.html [ Fail
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-with-mask.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-border.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-video.html [ Failure ]
-crbug.com/989365 [ Win7 ] virtual/blink-cors/http/tests/security/img-crossorigin-redirect-credentials.html [ Pass Timeout ]
-crbug.com/989365 [ Win7 ] http/tests/security/img-crossorigin-redirect-credentials.html [ Pass Timeout ]
+crbug.com/989365 [ Win7 ] virtual/blink-cors/http/tests/security/img-crossorigin-redirect-credentials.https.html [ Pass Timeout ]
+crbug.com/989365 [ Win7 ] http/tests/security/img-crossorigin-redirect-credentials.https.html [ Pass Timeout ]
 crbug.com/989014 [ Linux Debug ] external/wpt/cookie-store/serviceworker_cookieStore_subscriptions_eventhandler_attribute.tentative.https.html [ Pass Timeout ]
 crbug.com/989665 [ Win Linux ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Timeout ]
 
