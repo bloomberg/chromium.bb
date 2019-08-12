@@ -88,6 +88,82 @@ class UprevTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     self.assertFalse(changed)
 
 
+class UprevVersionedPackageTest(cros_test_lib.MockTestCase,
+                                api_config.ApiConfigMixin):
+  """UprevVersionedPackage tests."""
+
+  def setUp(self):
+    self.response = packages_pb2.UprevPackagesResponse()
+
+  def _addVersion(self, request, version):
+    """Helper method to add a full version message to the request."""
+    ref = request.versions.add()
+    ref.repository = '/some/path'
+    ref.ref = version
+    ref.revision = 'abc123'
+
+  def testValidateOnly(self):
+    """Sanity check validate only calls are working properly."""
+    service = self.PatchObject(packages_service, 'uprev_versioned_package')
+
+    request = packages_pb2.UprevVersionedPackageRequest()
+    self._addVersion(request, '1.2.3.4')
+    request.package_info.category = 'chromeos-base'
+    request.package_info.package_name = 'chromeos-chrome'
+
+    packages_controller.UprevVersionedPackage(request, self.response,
+                                              self.validate_only_config)
+
+    service.assert_not_called()
+
+  def testNoVersions(self):
+    """Test no versions provided."""
+    request = packages_pb2.UprevVersionedPackageRequest()
+    request.package_info.category = 'chromeos-base'
+    request.package_info.package_name = 'chromeos-chrome'
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      packages_controller.UprevVersionedPackage(request, self.response,
+                                                self.api_config)
+
+  def testNoPackageName(self):
+    """Test no package name provided."""
+    request = packages_pb2.UprevVersionedPackageRequest()
+    self._addVersion(request, '1.2.3.4')
+    request.package_info.category = 'chromeos-base'
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      packages_controller.UprevVersionedPackage(request, self.response,
+                                                self.api_config)
+
+  def testNoCategory(self):
+    """Test no package category provided."""
+    request = packages_pb2.UprevVersionedPackageRequest()
+    self._addVersion(request, '1.2.3.4')
+    request.package_info.package_name = 'chromeos-chrome'
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      packages_controller.UprevVersionedPackage(request, self.response,
+                                                self.api_config)
+
+  def testOutputHandling(self):
+    """Test the modified files are getting correctly added to the output."""
+    result = ['/file/one', '/file/two']
+    self.PatchObject(packages_service, 'uprev_versioned_package',
+                     return_value=result)
+
+    request = packages_pb2.UprevVersionedPackageRequest()
+    self._addVersion(request, '1.2.3.4')
+    request.package_info.category = 'chromeos-base'
+    request.package_info.package_name = 'chromeos-chrome'
+
+    packages_controller.UprevVersionedPackage(request, self.response,
+                                              self.api_config)
+
+    self.assertItemsEqual(
+        result, [ebuild.path for ebuild in self.response.modified_ebuilds])
+
+
 class GetBestVisibleTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
   """GetBestVisible tests."""
 

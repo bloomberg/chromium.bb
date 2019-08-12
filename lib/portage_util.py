@@ -1155,6 +1155,17 @@ class EBuild(object):
         line for line in lines
         if not cls._WORKON_COMMIT_PATTERN.search(line))
 
+  @classmethod
+  def List(cls, package_dir):
+    """Generate the path to each ebuild in |package_dir|.
+
+    Args:
+      package_dir (str): The package directory.
+    """
+    for entry in os.listdir(package_dir):
+      if entry.endswith('.ebuild'):
+        yield os.path.join(package_dir, entry)
+
 
 class PortageDBError(Error):
   """Generic PortageDB error."""

@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=_b('Z6go.chromium.org/chromiumos/infra/proto/go/chromite/api'),
-  serialized_pb=_b('\n\x1b\x63hromite/api/packages.proto\x12\x0c\x63hromite.api\x1a\x1a\x63hromite/api/binhost.proto\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"%\n\x15GetBestVisibleRequest\x12\x0c\n\x04\x61tom\x18\x01 \x01(\t\"G\n\x16GetBestVisibleResponse\x12-\n\x0cpackage_info\x18\x01 \x01(\x0b\x32\x17.chromiumos.PackageInfo\"\xaf\x01\n\x14UprevPackagesRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12.\n\rbuild_targets\x18\x02 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x12/\n\x0coverlay_type\x18\x03 \x01(\x0e\x32\x19.chromite.api.OverlayType\x12\x12\n\noutput_dir\x18\x04 \x01(\t\"\xf3\x01\n\x1cUprevVersionedPackageRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12-\n\x0cpackage_info\x18\x02 \x01(\x0b\x32\x17.chromiumos.PackageInfo\x12\x43\n\x08versions\x18\x03 \x03(\x0b\x32\x31.chromite.api.UprevVersionedPackageRequest.GitRef\x1a;\n\x06GitRef\x12\x12\n\nrepository\x18\x01 \x01(\t\x12\x0b\n\x03ref\x18\x02 \x01(\t\x12\x10\n\x08revision\x18\x03 \x01(\t\"u\n\x15UprevPackagesResponse\x12\x44\n\x10modified_ebuilds\x18\x01 \x03(\x0b\x32*.chromite.api.UprevPackagesResponse.Ebuild\x1a\x16\n\x06\x45\x62uild\x12\x0c\n\x04path\x18\x01 \x01(\t2\xbb\x02\n\x0ePackageService\x12[\n\x0eGetBestVisible\x12#.chromite.api.GetBestVisibleRequest\x1a$.chromite.api.GetBestVisibleResponse\x12P\n\x05Uprev\x12\".chromite.api.UprevPackagesRequest\x1a#.chromite.api.UprevPackagesResponse\x12h\n\x15UprevVersionedPackage\x12*.chromite.api.UprevVersionedPackageRequest\x1a#.chromite.api.UprevPackagesResponse\x1a\x10\xc2\xed\x1a\x0c\n\x08packages\x10\x02\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
+  serialized_pb=_b('\n\x1b\x63hromite/api/packages.proto\x12\x0c\x63hromite.api\x1a\x1a\x63hromite/api/binhost.proto\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"%\n\x15GetBestVisibleRequest\x12\x0c\n\x04\x61tom\x18\x01 \x01(\t\"G\n\x16GetBestVisibleResponse\x12-\n\x0cpackage_info\x18\x01 \x01(\x0b\x32\x17.chromiumos.PackageInfo\"\xaf\x01\n\x14UprevPackagesRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12.\n\rbuild_targets\x18\x02 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x12/\n\x0coverlay_type\x18\x03 \x01(\x0e\x32\x19.chromite.api.OverlayType\x12\x12\n\noutput_dir\x18\x04 \x01(\t\"\xa3\x02\n\x1cUprevVersionedPackageRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12-\n\x0cpackage_info\x18\x02 \x01(\x0b\x32\x17.chromiumos.PackageInfo\x12\x43\n\x08versions\x18\x03 \x03(\x0b\x32\x31.chromite.api.UprevVersionedPackageRequest.GitRef\x12.\n\rbuild_targets\x18\x04 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x1a;\n\x06GitRef\x12\x12\n\nrepository\x18\x01 \x01(\t\x12\x0b\n\x03ref\x18\x02 \x01(\t\x12\x10\n\x08revision\x18\x03 \x01(\t\"u\n\x15UprevPackagesResponse\x12\x44\n\x10modified_ebuilds\x18\x01 \x03(\x0b\x32*.chromite.api.UprevPackagesResponse.Ebuild\x1a\x16\n\x06\x45\x62uild\x12\x0c\n\x04path\x18\x01 \x01(\t2\xbb\x02\n\x0ePackageService\x12[\n\x0eGetBestVisible\x12#.chromite.api.GetBestVisibleRequest\x1a$.chromite.api.GetBestVisibleResponse\x12P\n\x05Uprev\x12\".chromite.api.UprevPackagesRequest\x1a#.chromite.api.UprevPackagesResponse\x12h\n\x15UprevVersionedPackage\x12*.chromite.api.UprevVersionedPackageRequest\x1a#.chromite.api.UprevPackagesResponse\x1a\x10\xc2\xed\x1a\x0c\n\x08packages\x10\x02\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_binhost__pb2.DESCRIPTOR,chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
 
@@ -183,8 +183,8 @@ _UPREVVERSIONEDPACKAGEREQUEST_GITREF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=603,
-  serialized_end=662,
+  serialized_start=651,
+  serialized_end=710,
 )
 
 _UPREVVERSIONEDPACKAGEREQUEST = _descriptor.Descriptor(
@@ -215,6 +215,13 @@ _UPREVVERSIONEDPACKAGEREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='build_targets', full_name='chromite.api.UprevVersionedPackageRequest.build_targets', index=3,
+      number=4, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -228,7 +235,7 @@ _UPREVVERSIONEDPACKAGEREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=419,
-  serialized_end=662,
+  serialized_end=710,
 )
 
 
@@ -258,8 +265,8 @@ _UPREVPACKAGESRESPONSE_EBUILD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=759,
-  serialized_end=781,
+  serialized_start=807,
+  serialized_end=829,
 )
 
 _UPREVPACKAGESRESPONSE = _descriptor.Descriptor(
@@ -288,8 +295,8 @@ _UPREVPACKAGESRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=664,
-  serialized_end=781,
+  serialized_start=712,
+  serialized_end=829,
 )
 
 _GETBESTVISIBLERESPONSE.fields_by_name['package_info'].message_type = chromiumos_dot_common__pb2._PACKAGEINFO
@@ -300,6 +307,7 @@ _UPREVVERSIONEDPACKAGEREQUEST_GITREF.containing_type = _UPREVVERSIONEDPACKAGEREQ
 _UPREVVERSIONEDPACKAGEREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
 _UPREVVERSIONEDPACKAGEREQUEST.fields_by_name['package_info'].message_type = chromiumos_dot_common__pb2._PACKAGEINFO
 _UPREVVERSIONEDPACKAGEREQUEST.fields_by_name['versions'].message_type = _UPREVVERSIONEDPACKAGEREQUEST_GITREF
+_UPREVVERSIONEDPACKAGEREQUEST.fields_by_name['build_targets'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
 _UPREVPACKAGESRESPONSE_EBUILD.containing_type = _UPREVPACKAGESRESPONSE
 _UPREVPACKAGESRESPONSE.fields_by_name['modified_ebuilds'].message_type = _UPREVPACKAGESRESPONSE_EBUILD
 DESCRIPTOR.message_types_by_name['GetBestVisibleRequest'] = _GETBESTVISIBLEREQUEST
@@ -369,8 +377,8 @@ _PACKAGESERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=_b('\302\355\032\014\n\010packages\020\002'),
-  serialized_start=784,
-  serialized_end=1099,
+  serialized_start=832,
+  serialized_end=1147,
   methods=[
   _descriptor.MethodDescriptor(
     name='GetBestVisible',

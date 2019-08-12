@@ -14,6 +14,7 @@ from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import build_target_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib.uprev_lib import GitRef
 from chromite.service import packages
 
 
@@ -46,13 +47,31 @@ def Uprev(input_proto, output_proto, _config):
     output_proto.modified_ebuilds.add().path = path
 
 
+@validate.require('versions')
+@validate.require('package_info.package_name', 'package_info.category')
 @validate.validation_complete
-def UprevVersionedPackage(_input_proto, _output_proto, _config):
+def UprevVersionedPackage(input_proto, output_proto, _config):
   """Uprev a versioned package.
 
   See go/pupr-generator for details about this endpoint.
   """
-  pass
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  build_targets = controller_util.ParseBuildTargets(input_proto.build_targets)
+  package = controller_util.PackageInfoToCPV(input_proto.package_info)
+  refs = []
+  for ref in input_proto.versions:
+    refs.append(GitRef(path=ref.repository, ref=ref.ref, revision=ref.revision))
+
+  try:
+    uprevved = packages.uprev_versioned_package(package, build_targets, refs,
+                                                chroot)
+  except packages.Error as e:
+    # Handle module errors nicely, let everything else bubble up.
+    cros_build_lib.Die(e.message)
+
+  for path in uprevved:
+    output_proto.modified_ebuilds.add().path = path
+
 
 
 @validate.require('atom')

@@ -9,6 +9,8 @@ from __future__ import print_function
 
 from chromite.lib import build_target_util
 from chromite.lib import cros_test_lib
+from chromite.lib import portage_util
+from chromite.lib.chroot_lib import Chroot
 from chromite.service import packages
 
 
@@ -26,6 +28,30 @@ class UprevBuildTargetsTest(cros_test_lib.RunCommandTestCase):
     with self.assertRaises(AssertionError):
       packages.uprev_build_targets([build_target_util.BuildTarget('foo')],
                                    None)
+
+
+class UprevsVersionedPackageTest(cros_test_lib.MockTestCase):
+  """uprevs_versioned_package decorator test."""
+
+  @packages.uprevs_versioned_package('category/package')
+  def uprev_category_package(self, *args, **kwargs):
+    """Registered function for testing."""
+
+  def test_calls_function(self):
+    """Test calling a registered function."""
+    patch = self.PatchObject(self, 'uprev_category_package')
+
+    cpv = portage_util.SplitCPV('category/package', strict=False)
+    packages.uprev_versioned_package(cpv, [], [], Chroot())
+
+    patch.assert_called()
+
+  def test_unregistered_package(self):
+    """Test calling with an unregistered package."""
+    cpv = portage_util.SplitCPV('does-not/exist', strict=False)
+
+    with self.assertRaises(packages.UnknownPackageError):
+      packages.uprev_versioned_package(cpv, [], [], Chroot())
 
 
 class GetBestVisibleTest(cros_test_lib.MockTestCase):

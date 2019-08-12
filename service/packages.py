@@ -7,10 +7,15 @@
 
 from __future__ import print_function
 
+import functools
+
 from chromite.lib import constants
 from chromite.lib import git
 from chromite.lib import portage_util
 from chromite.lib import uprev_lib
+
+# Registered handlers for uprevving versioned packages.
+_UPREV_FUNCS = {}
 
 
 class Error(Exception):
@@ -19,6 +24,27 @@ class Error(Exception):
 
 class UprevError(Error):
   """An error occurred while uprevving packages."""
+
+
+class UnknownPackageError(Error):
+  """Uprev attempted for a package without a registered handler."""
+
+
+def uprevs_versioned_package(package):
+  """Decorator to register package uprev handlers."""
+  assert package
+
+  def register(func):
+    """Registers |func| as a handler for |package|."""
+    _UPREV_FUNCS[package] = func
+
+    @functools.wraps(func)
+    def pass_through(*args, **kwargs):
+      return func(*args, **kwargs)
+
+    return pass_through
+
+  return register
 
 
 def uprev_build_targets(build_targets, overlay_type, chroot=None,
@@ -70,6 +96,52 @@ def uprev_overlays(overlays, build_targets=None, chroot=None, output_dir=None):
                                                 chroot=chroot,
                                                 output_dir=output_dir)
   uprev_manager.uprev()
+
+  return uprev_manager.modified_ebuilds
+
+
+def uprev_versioned_package(package, build_targets, refs, chroot):
+  """Call registered uprev handler function for the package.
+
+  Args:
+    package (portage_util.CPV): The package being uprevved.
+    build_targets (list[build_target_util.BuildTarget]): The build targets to
+        clean on a successful uprev.
+    refs (list[uprev_lib.GitRef]):
+    chroot (chroot_lib.Chroot): The chroot to enter for cleaning.
+
+  Returns:
+    list[str]: The list of modified ebuilds.
+  """
+  assert package
+
+  if package.cp not in _UPREV_FUNCS:
+    raise UnknownPackageError(
+        'Package "%s" does not have a registered handler.' % package.cp)
+
+  return _UPREV_FUNCS[package.cp](build_targets, refs, chroot)
+
+
+@uprevs_versioned_package(constants.CHROME_CP)
+def uprev_chrome(build_targets, refs, chroot):
+  """Uprev chrome and its related packages.
+
+  See: uprev_versioned_package.
+  """
+  # Determine the version from the refs (tags), i.e. the chrome versions are the
+  # tag names.
+  chrome_version = uprev_lib.get_chrome_version_from_refs(refs)
+
+  uprev_manager = uprev_lib.UprevChromeManager(
+      chrome_version, build_targets=build_targets, chroot=chroot)
+  # Start with chrome itself, as we can't do anything else unless chrome
+  # uprevs successfully.
+  if not uprev_manager.uprev(constants.CHROME_CP):
+    return []
+
+  # With a successful chrome rev, also uprev related packages.
+  for package in constants.OTHER_CHROME_PACKAGES:
+    uprev_manager.uprev(package)
 
   return uprev_manager.modified_ebuilds
 

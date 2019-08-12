@@ -7,7 +7,11 @@
 
 from __future__ import print_function
 
+import collections
+import filecmp
+import functools
 import os
+import re
 
 from chromite.cbuildbot import manifest_version
 from chromite.lib import constants
@@ -16,6 +20,251 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
+from chromite.lib.chroot_lib import Chroot
+
+CHROME_VERSION_REGEX = r'\d+\.\d+\.\d+\.\d+'
+
+# The directory relative to the source root housing the chrome packages.
+_CHROME_OVERLAY_DIR = 'src/third_party/chromiumos-overlay'
+_CHROME_OVERLAY_PATH = os.path.join(constants.SOURCE_ROOT, _CHROME_OVERLAY_DIR)
+
+GitRef = collections.namedtuple('GitRef', ['path', 'ref', 'revision'])
+
+
+class Error(Exception):
+  """Base error class for the module."""
+
+
+class NoUnstableEbuildError(Error):
+  """When no unstable ebuild can be found."""
+
+
+class ChromeEBuild(portage_util.EBuild):
+  """Thin sub-class of EBuild that adds a few small helpers."""
+  chrome_version_re = re.compile(r'.*-(%s|9999).*' % CHROME_VERSION_REGEX)
+  chrome_version = ''
+
+  def __init__(self, path):
+    portage_util.EBuild.__init__(self, path)
+    re_match = self.chrome_version_re.match(self.ebuild_path_no_revision)
+    if re_match:
+      self.chrome_version = re_match.group(1)
+
+  def __str__(self):
+    return self.ebuild_path
+
+  @property
+  def is_unstable(self):
+    return not self.is_stable
+
+  @property
+  def atom(self):
+    return '%s-%s' % (self.package, self.version)
+
+
+def get_chrome_version_from_refs(refs):
+  """Get the chrome version to use from the list of provided tags.
+
+  Args:
+    refs (list[GitRef]): The tags to parse for the best chrome version.
+
+  Returns:
+    str: The chrome version to use.
+  """
+  assert refs
+
+  # Each ref (tag) is a chrome version string, e.g. "78.0.3876.1".
+  return best_chrome_version(ref.ref for ref in refs)
+
+
+def best_chrome_version(versions):
+  # Convert each version from a string like "78.0.3876.1" to a list of ints
+  # to compare them, find the most recent (max), and then reconstruct the
+  # version string.
+  assert versions
+
+  version = max([int(part) for part in v.split('.')] for v in versions)
+  return '.'.join(str(part) for part in version)
+
+
+def best_chrome_ebuild(ebuilds):
+  """Determine the best/newest chrome ebuild from a list of ebuilds."""
+  assert ebuilds
+
+  version = best_chrome_version(ebuild.chrome_version for ebuild in ebuilds)
+  candidates = [
+      ebuild for ebuild in ebuilds if ebuild.chrome_version == version
+  ]
+
+  if len(candidates) == 1:
+    # Only one, return it.
+    return candidates[0]
+
+  # Compare revisions to break a tie.
+  best = candidates[0]
+  for candidate in candidates[1:]:
+    if best.current_revision < candidate.current_revision:
+      best = candidate
+
+  return best
+
+
+def find_chrome_ebuilds(package_dir):
+  """Return a tuple of chrome's unstable ebuild and stable ebuilds.
+
+  Args:
+    package_dir: The path to where the package ebuild is stored.
+
+  Returns:
+    Tuple [unstable_ebuild, stable_ebuilds].
+
+  Raises:
+    Exception: if no unstable ebuild exists for Chrome.
+  """
+  stable_ebuilds = []
+  unstable_ebuilds = []
+
+  for ebuild_path in portage_util.EBuild.List(package_dir):
+    ebuild = ChromeEBuild(ebuild_path)
+    if not ebuild.chrome_version:
+      logging.warning('Poorly formatted ebuild found at %s', ebuild_path)
+      continue
+
+    if ebuild.is_unstable:
+      unstable_ebuilds.append(ebuild)
+    else:
+      stable_ebuilds.append(ebuild)
+
+  # Apply some sanity checks.
+  if not unstable_ebuilds:
+    raise NoUnstableEbuildError('Missing 9999 ebuild for %s' % package_dir)
+  if not stable_ebuilds:
+    logging.warning('Missing stable ebuild for %s', package_dir)
+
+  return best_chrome_ebuild(unstable_ebuilds), stable_ebuilds
+
+
+def find_chrome_uprev_candidate(stable_ebuilds):
+  """Find the ebuild to replace.
+
+  Args:
+    stable_ebuilds (list[ChromeEBuild]): All stable ebuilds that were found.
+
+  Returns:
+    EBuild: The ebuild being replaced.
+  """
+  candidates = []
+  # This is an artifact from the old process.
+  chrome_branch_re = re.compile(r'%s.*_rc.*' % CHROME_VERSION_REGEX)
+  for ebuild in stable_ebuilds:
+    if chrome_branch_re.search(ebuild.version):
+      candidates.append(ebuild)
+
+  if not candidates:
+    return None
+
+  return best_chrome_ebuild(candidates)
+
+
+class UprevChromeManager(object):
+  """Class to handle uprevving chrome and its related packages."""
+
+  def __init__(self, version, build_targets=None, overlay_dir=None,
+               chroot=None):
+    self._version = version
+    self._build_targets = build_targets or []
+    self._new_ebuild_files = []
+    self._removed_ebuild_files = []
+    self._overlay_dir = overlay_dir or _CHROME_OVERLAY_PATH
+    self._chroot = chroot
+
+  @property
+  def modified_ebuilds(self):
+    return self._new_ebuild_files + self._removed_ebuild_files
+
+  def uprev(self, package):
+    """Uprev a chrome package."""
+    package_dir = os.path.join(self._overlay_dir, package)
+    package_name = os.path.basename(package)
+
+    # Find the unstable (9999) ebuild and any existing stable ebuilds.
+    unstable_ebuild, stable_ebuilds = find_chrome_ebuilds(package_dir)
+    # Find the best stable candidate to uprev -- the one that will be replaced.
+    candidate = find_chrome_uprev_candidate(stable_ebuilds)
+    new_ebuild = self._mark_as_stable(candidate, unstable_ebuild, package_name,
+                                      package_dir)
+
+    if not new_ebuild:
+      return False
+
+    self._new_ebuild_files.append(new_ebuild.ebuild_path)
+    if candidate and not candidate.IsSticky():
+      osutils.SafeUnlink(candidate.ebuild_path)
+      self._removed_ebuild_files.append(candidate.ebuild_path)
+
+    if self._build_targets:
+      self._clean_stale_package(new_ebuild.atom)
+
+    return True
+
+  def _mark_as_stable(self, stable_candidate, unstable_ebuild, package_name,
+                      package_dir):
+    """Uprevs the chrome ebuild specified by chrome_rev.
+
+    This is the main function that uprevs the chrome_rev from a stable candidate
+    to its new version.
+
+    Args:
+      stable_candidate: ebuild that corresponds to the stable ebuild we are
+        revving from.  If None, builds the a new ebuild given the version
+        and logic for chrome_rev type with revision set to 1.
+      unstable_ebuild: ebuild corresponding to the unstable ebuild for chrome.
+      package_name: package name.
+      package_dir: Path to the chromeos-chrome package dir.
+
+    Returns:
+      Full portage version atom (including rc's, etc) that was revved.
+    """
+
+    def _is_new_ebuild_redundant(uprevved_ebuild, stable_ebuild):
+      """Returns True if the new ebuild is redundant.
+
+      This is True if there if the current stable ebuild is the exact same copy
+      of the new one.
+      """
+      if (stable_ebuild and
+          stable_candidate.chrome_version == uprevved_ebuild.chrome_version):
+        return filecmp.cmp(
+            uprevved_ebuild.ebuild_path,
+            stable_ebuild.ebuild_path,
+            shallow=False)
+      else:
+        return False
+
+    # Case where we have the last stable candidate with same version just rev.
+    if stable_candidate and stable_candidate.chrome_version == self._version:
+      new_ebuild_path = '%s-r%d.ebuild' % (
+          stable_candidate.ebuild_path_no_revision,
+          stable_candidate.current_revision + 1)
+    else:
+      pf = '%s-%s_rc-r1' % (package_name, self._version)
+      new_ebuild_path = os.path.join(package_dir, '%s.ebuild' % pf)
+
+    portage_util.EBuild.MarkAsStable(unstable_ebuild.ebuild_path,
+                                     new_ebuild_path, {})
+    new_ebuild = ChromeEBuild(new_ebuild_path)
+
+    # Determine whether this is ebuild is redundant.
+    if _is_new_ebuild_redundant(new_ebuild, stable_candidate):
+      msg = 'Previous ebuild with same version found and ebuild is redundant.'
+      logging.info(msg)
+      os.unlink(new_ebuild_path)
+      return None
+
+    return new_ebuild
+
+  def _clean_stale_package(self, package):
+    clean_stale_packages([package], self._build_targets, chroot=self._chroot)
 
 
 class UprevOverlayManager(object):
@@ -169,43 +418,56 @@ class UprevOverlayManager(object):
 
   def _clean_stale_packages(self):
     """Cleans up stale package info from a previous build."""
-    if not self.chroot or not self.chroot.exists():
-      return
+    clean_stale_packages(self._new_package_atoms, self.build_targets,
+                         chroot=self.chroot)
 
-    if self._new_package_atoms:
-      logging.info('Cleaning up stale packages %s.', self._new_package_atoms)
 
-    # First unmerge all the packages for a board, then eclean it.
-    # We need these two steps to run in order (unmerge/eclean),
-    # but we can let all the boards run in parallel.
-    def _do_clean_stale_packages(board):
-      if board:
-        suffix = '-' + board
-        runcmd = cros_build_lib.RunCommand
-      else:
-        suffix = ''
-        runcmd = cros_build_lib.SudoRunCommand
+def clean_stale_packages(new_package_atoms, build_targets, chroot=None):
+  """Cleans up stale package info from a previous build."""
+  if new_package_atoms:
+    logging.info('Cleaning up stale packages %s.', new_package_atoms)
 
-      emerge, eclean = 'emerge' + suffix, 'eclean' + suffix
-      if not osutils.FindMissingBinaries([emerge, eclean]):
-        if self._new_package_atoms:
-          # If nothing was found to be unmerged, emerge will exit(1).
-          result = runcmd([emerge, '-q', '--unmerge'] + self._new_package_atoms,
-                          enter_chroot=True,
-                          chroot_args=self.chroot.get_enter_args(),
-                          extra_env={'CLEAN_DELAY': '0'}, error_code_ok=True,
-                          cwd=constants.SOURCE_ROOT)
-          if result.returncode not in (0, 1):
-            raise cros_build_lib.RunCommandError('unexpected error', result)
+  chroot = chroot or Chroot()
 
-        runcmd([eclean, '-d', 'packages'],
-               cwd=constants.SOURCE_ROOT, enter_chroot=True,
-               chroot_args=self.chroot.get_enter_args(), redirect_stdout=True,
-               redirect_stderr=True)
+  if cros_build_lib.IsOutsideChroot() and not chroot.exists():
+    logging.warning('Unable to clean packages. No chroot to enter.')
+    return
 
-    tasks = []
-    for build_target in self.build_targets:
-      tasks.append([build_target.name])
-    tasks.append([None])
+  # First unmerge all the packages for a board, then eclean it.
+  # We need these two steps to run in order (unmerge/eclean),
+  # but we can let all the boards run in parallel.
+  def _do_clean_stale_packages(board):
+    if board:
+      suffix = '-' + board
+      runcmd = cros_build_lib.RunCommand
+    else:
+      suffix = ''
+      runcmd = cros_build_lib.SudoRunCommand
 
-    parallel.RunTasksInProcessPool(_do_clean_stale_packages, tasks)
+    if cros_build_lib.IsOutsideChroot():
+      # Setup runcmd with the chroot arguments once.
+      runcmd = functools.partial(
+          runcmd, enter_chroot=True, chroot_args=chroot.get_enter_args())
+
+    emerge, eclean = 'emerge' + suffix, 'eclean' + suffix
+    if not osutils.FindMissingBinaries([emerge, eclean]):
+      if new_package_atoms:
+        # If nothing was found to be unmerged, emerge will exit(1).
+        result = runcmd(
+            [emerge, '-q', '--unmerge'] + new_package_atoms,
+            extra_env={'CLEAN_DELAY': '0'},
+            error_code_ok=True,
+            cwd=constants.SOURCE_ROOT)
+        if result.returncode not in (0, 1):
+          raise cros_build_lib.RunCommandError('unexpected error', result)
+
+      runcmd([eclean, '-d', 'packages'],
+             cwd=constants.SOURCE_ROOT,
+             capture_output=True)
+
+  tasks = []
+  for build_target in build_targets:
+    tasks.append([build_target.name])
+  tasks.append([None])
+
+  parallel.RunTasksInProcessPool(_do_clean_stale_packages, tasks)
