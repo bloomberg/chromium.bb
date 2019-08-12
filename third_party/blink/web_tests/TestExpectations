@@ -6497,7 +6497,6 @@ crbug.com/991243 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/semanti
 crbug.com/979017 wpt_internal/scheduler/task_order.html [ Failure ]
 
 # Sheriff 2019-08-09
-crbug.com/992531 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Failure ]
 crbug.com/992615 [ Linux ] external/wpt/import-maps/data.sub.tentative.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/generic-sensor/idlharness.https.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.html [ Pass Timeout ]
