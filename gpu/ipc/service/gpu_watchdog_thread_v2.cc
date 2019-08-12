@@ -105,7 +105,7 @@ void GpuWatchdogThreadImplV2::Init() {
   task_runner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
-      watchdog_timeout_);
+      watchdog_timeout_ * kGpuWatchdogInitFactor);
   watchdog_start_time_ = base::TimeTicks::Now();
   GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogStart);
 }

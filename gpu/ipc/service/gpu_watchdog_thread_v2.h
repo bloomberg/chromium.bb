@@ -9,6 +9,14 @@
 
 namespace gpu {
 
+// It takes longer to initialize GPU process in Windows. See
+// https://crbug.com/949839 for details.
+#if defined(OS_WIN)
+constexpr int kGpuWatchdogInitFactor = 2;
+#else
+constexpr int kGpuWatchdogInitFactor = 1;
+#endif
+
 class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
     : public GpuWatchdogThread,
       public base::MessageLoopCurrent::TaskObserver {
