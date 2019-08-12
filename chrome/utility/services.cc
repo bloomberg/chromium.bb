@@ -24,6 +24,9 @@
 #if defined(OS_WIN)
 #include "chrome/services/util_win/public/mojom/util_win.mojom.h"
 #include "chrome/services/util_win/util_win_impl.h"
+#include "components/services/quarantine/public/cpp/quarantine_features_win.h"  // nogncheck
+#include "components/services/quarantine/public/mojom/quarantine.mojom.h"  // nogncheck
+#include "components/services/quarantine/quarantine_impl.h"  // nogncheck
 #endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID)
@@ -84,6 +87,12 @@ auto RunUnzipper(mojo::PendingReceiver<unzip::mojom::Unzipper> receiver) {
 }
 
 #if defined(OS_WIN)
+auto RunQuarantineService(
+    mojo::PendingReceiver<quarantine::mojom::Quarantine> receiver) {
+  DCHECK(base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine));
+  return std::make_unique<quarantine::QuarantineImpl>(std::move(receiver));
+}
+
 auto RunWindowsUtility(mojo::PendingReceiver<chrome::mojom::UtilWin> receiver) {
   return std::make_unique<UtilWinImpl>(std::move(receiver));
 }
@@ -189,6 +198,7 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 #endif
 
 #if defined(OS_WIN)
+    RunQuarantineService,
     RunWindowsUtility,
 #endif  // defined(OS_WIN)
 

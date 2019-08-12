@@ -613,6 +613,14 @@ service_manager::Connector* DownloadManagerImpl::GetServiceManagerConnector() {
   return GetSystemConnector();
 }
 
+download::QuarantineConnectionCallback
+DownloadManagerImpl::GetQuarantineConnectionCallback() {
+  if (!delegate_)
+    return base::NullCallback();
+
+  return delegate_->GetQuarantineConnectionCallback();
+}
+
 void DownloadManagerImpl::StartDownload(
     std::unique_ptr<download::DownloadCreateInfo> info,
     std::unique_ptr<download::InputStream> stream,

@@ -7,7 +7,6 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
-#include "components/services/quarantine/public/cpp/manifest.h"
 #include "extensions/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 
@@ -28,7 +27,6 @@
 const std::vector<service_manager::Manifest>&
 GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
-      quarantine::GetQuarantineManifest(),
 #if !defined(OS_ANDROID)
       mirroring::GetManifest(),
 #endif

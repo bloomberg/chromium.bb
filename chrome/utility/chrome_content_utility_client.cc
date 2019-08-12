@@ -35,12 +35,6 @@
 #include "services/network/url_request_context_builder_mojo.h"
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_WIN)
-#include "components/services/quarantine/public/cpp/quarantine_features_win.h"  // nogncheck
-#include "components/services/quarantine/public/mojom/quarantine.mojom.h"  // nogncheck
-#include "components/services/quarantine/quarantine_service.h"  // nogncheck
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chromeos/assistant/buildflags.h"  // nogncheck
 
@@ -141,13 +135,6 @@ std::unique_ptr<service_manager::Service>
 ChromeContentUtilityClient::MaybeCreateMainThreadService(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
-#if defined(OS_WIN)
-  if (service_name == quarantine::mojom::kServiceName &&
-      base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine)) {
-    return std::make_unique<quarantine::QuarantineService>(std::move(request));
-  }
-#endif  // OS_WIN
-
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(mirroring::features::kMirroringService) &&
       base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&

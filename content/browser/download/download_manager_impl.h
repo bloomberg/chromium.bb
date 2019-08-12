@@ -235,6 +235,8 @@ class CONTENT_EXPORT DownloadManagerImpl
   bool IsOffTheRecord() const override;
   void ReportBytesWasted(download::DownloadItemImpl* download) override;
   service_manager::Connector* GetServiceManagerConnector() override;
+  download::QuarantineConnectionCallback GetQuarantineConnectionCallback()
+      override;
 
   // Drops a download before it is created.
   void DropDownload();
