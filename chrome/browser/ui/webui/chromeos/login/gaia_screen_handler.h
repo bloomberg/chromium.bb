@@ -174,7 +174,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
       const NetworkPortalDetector::CaptivePortalState& state) override;
 
   // WebUI message handlers.
-  void HandleWebviewLoadAborted(const std::string& error_reason_str);
+  void HandleWebviewLoadAborted(int error_code);
   void HandleCompleteAuthentication(
       const std::string& gaia_id,
       const std::string& email,

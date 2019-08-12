@@ -78,6 +78,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "services/network/nss_temp_certs_cache_chromeos.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -673,34 +674,15 @@ void GaiaScreenHandler::HandleAuthExtensionLoaded() {
       std::make_unique<LoginClientCertUsageObserver>();
 }
 
-void GaiaScreenHandler::HandleWebviewLoadAborted(
-    const std::string& error_reason_str) {
-  // TODO(nkostylev): Switch to int code once webview supports that.
-  // http://crbug.com/470483
-  if (error_reason_str == "ERR_ABORTED") {
-    LOG(WARNING) << "Ignoring Gaia webview error: " << error_reason_str;
+void GaiaScreenHandler::HandleWebviewLoadAborted(int error_code) {
+  if (error_code == net::ERR_ABORTED) {
+    LOG(WARNING) << "Ignoring Gaia webview error: "
+                 << net::ErrorToShortString(error_code);
     return;
   }
 
-  // TODO(nkostylev): Switch to int code once webview supports that.
-  // http://crbug.com/470483
-  // Extract some common codes used by SigninScreenHandler for now.
-  if (error_reason_str == "ERR_NAME_NOT_RESOLVED")
-    frame_error_ = net::ERR_NAME_NOT_RESOLVED;
-  else if (error_reason_str == "ERR_INTERNET_DISCONNECTED")
-    frame_error_ = net::ERR_INTERNET_DISCONNECTED;
-  else if (error_reason_str == "ERR_NETWORK_CHANGED")
-    frame_error_ = net::ERR_NETWORK_CHANGED;
-  else if (error_reason_str == "ERR_INTERNET_DISCONNECTED")
-    frame_error_ = net::ERR_INTERNET_DISCONNECTED;
-  else if (error_reason_str == "ERR_PROXY_CONNECTION_FAILED")
-    frame_error_ = net::ERR_PROXY_CONNECTION_FAILED;
-  else if (error_reason_str == "ERR_TUNNEL_CONNECTION_FAILED")
-    frame_error_ = net::ERR_TUNNEL_CONNECTION_FAILED;
-  else
-    frame_error_ = net::ERR_INTERNET_DISCONNECTED;
-
-  LOG(ERROR) << "Gaia webview error: " << error_reason_str;
+  frame_error_ = static_cast<net::Error>(error_code);
+  LOG(ERROR) << "Gaia webview error: " << net::ErrorToShortString(error_code);
   NetworkError::ErrorReason error_reason =
       NetworkError::ERROR_REASON_FRAME_ERROR;
   frame_state_ = FRAME_STATE_ERROR;

@@ -1239,7 +1239,7 @@ Polymer({
    * Invoked when onLoadAbort message received.
    * @param {!CustomEvent<!Object>} e Event with the payload containing
    *     additional information about error event like:
-   *     {string} error Error code such as "ERR_INTERNET_DISCONNECTED".
+   *     {number} error_code Error code such as net::ERR_INTERNET_DISCONNECTED.
    *     {string} src The URL that failed to load.
    * @private
    */
@@ -1336,12 +1336,12 @@ Polymer({
   /**
    * Handler for webview error handling.
    * @param {!Object} data Additional information about error event like:
-   *     {string} error Error code such as "ERR_INTERNET_DISCONNECTED".
+   *     {number} error_code Error code such as net::ERR_INTERNET_DISCONNECTED.
    *     {string} src The URL that failed to load.
    * @private
    */
   onWebviewError_: function(data) {
-    chrome.send('webviewLoadAborted', [data.error]);
+    chrome.send('webviewLoadAborted', [data.error_code]);
   },
 
   /**
