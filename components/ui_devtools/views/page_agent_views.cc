@@ -152,4 +152,8 @@ protocol::Response PageAgentViews::getResourceContent(
     return protocol::Response::Error("Could not read source file");
 }
 
+bool PageAgentViews::devtools_dismiss_override() {
+  return views::BubbleDialogDelegateView::devtools_dismiss_override_;
+}
+
 }  // namespace ui_devtools

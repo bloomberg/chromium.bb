@@ -25,6 +25,9 @@ class PageAgentViews : public PageAgent {
                                         bool* out_base64Encoded) override;
 
  private:
+  friend class PageAgentViewsTest;
+  bool devtools_dismiss_override();
+
   DISALLOW_COPY_AND_ASSIGN(PageAgentViews);
 };
 
