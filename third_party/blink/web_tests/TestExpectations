@@ -6457,6 +6457,10 @@ crbug.com/988432 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCRtpReceiver-ge
 crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure Timeout ]
 crbug.com/988074 [ Linux ] virtual/cors-rfc1918/http/tests/security/cors-rfc1918/addressspace-serviceworker-basic.html [ Pass Failure ]
 
+# Pending enabling navigation feature
+crbug.com/705583 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigate_history_go_back.html [ Skip ]
+crbug.com/705583 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigate_history_go_forward.html [ Skip ]
+
 # Sheriff 2019-07-30
 crbug.com/987115 [ Win Linux ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Crash Pass Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/cssom-view/scrollIntoView-sideways-lr-writing-mode-and-rtl-direction.html [ Failure ]
