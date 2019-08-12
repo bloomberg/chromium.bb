@@ -3013,6 +3013,7 @@ test("unit_tests") {
     "../browser/performance_manager/graph/process_node_impl_unittest.cc",
     "../browser/performance_manager/graph/properties_unittest.cc",
     "../browser/performance_manager/graph/system_node_impl_unittest.cc",
+    "../browser/performance_manager/graph/worker_node_impl_unittest.cc",
     "../browser/performance_manager/mechanisms/working_set_trimmer_win_unittest.cc",
     "../browser/performance_manager/observers/graph_observer_unittest.cc",
     "../browser/performance_manager/observers/isolation_context_metrics_unittest.cc",
