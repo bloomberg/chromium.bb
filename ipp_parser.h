@@ -12,9 +12,9 @@
 #include <utility>
 #include <vector>
 
-#include "libipp/ipp_attribute.h"
-#include "libipp/ipp_base.h"
-#include "libipp/ipp_frame.h"
+#include "ipp_attribute.h"  // NOLINT(build/include)
+#include "ipp_base.h"  // NOLINT(build/include)
+#include "ipp_frame.h"  // NOLINT(build/include)
 
 namespace ipp {
 

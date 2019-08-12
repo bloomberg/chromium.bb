@@ -8,12 +8,12 @@
 #include <string>
 #include <vector>
 
-#include "libipp/ipp_attribute.h"
-#include "libipp/ipp_base.h"
-#include "libipp/ipp_collections.h"
-#include "libipp/ipp_enums.h"
-#include "libipp/ipp_export.h"
-#include "libipp/ipp_package.h"
+#include "ipp_attribute.h"  // NOLINT(build/include)
+#include "ipp_base.h"  // NOLINT(build/include)
+#include "ipp_collections.h"  // NOLINT(build/include)
+#include "ipp_enums.h"  // NOLINT(build/include)
+#include "ipp_export.h"  // NOLINT(build/include)
+#include "ipp_package.h"  // NOLINT(build/include)
 
 // This file contains definition of classes corresponding to supported IPP
 // operations. See ipp.h for more details.

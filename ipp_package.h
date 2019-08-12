@@ -5,8 +5,8 @@
 #ifndef LIBIPP_IPP_PACKAGE_H_
 #define LIBIPP_IPP_PACKAGE_H_
 
-#include "libipp/ipp_enums.h"
-#include "libipp/ipp_export.h"
+#include "ipp_enums.h"  // NOLINT(build/include)
+#include "ipp_export.h"  // NOLINT(build/include)
 
 #include <cstdint>
 #include <map>

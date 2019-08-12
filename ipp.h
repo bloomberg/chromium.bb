@@ -178,17 +178,17 @@
 // from IPP specification (may be casted to uint16_t to get assigned IPP value).
 
 // look here for Attribute class
-#include "libipp/ipp_attribute.h"
+#include "ipp_attribute.h"  // NOLINT(build/include)
 
 // look here for main classes: Client, Server, Request, Response
-#include "libipp/ipp_base.h"
+#include "ipp_base.h"  // NOLINT(build/include)
 
 // these files are generated from IPP schema
-#include "libipp/ipp_collections.h"
-#include "libipp/ipp_enums.h"
-#include "libipp/ipp_operations.h"
+#include "ipp_collections.h"  // NOLINT(build/include)
+#include "ipp_enums.h"  // NOLINT(build/include)
+#include "ipp_operations.h"  // NOLINT(build/include)
 
 // look here for Package, Group and Collection classes
-#include "libipp/ipp_package.h"
+#include "ipp_package.h"  // NOLINT(build/include)
 
 #endif  //  LIBIPP_IPP_H_
