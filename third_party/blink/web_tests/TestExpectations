@@ -6363,7 +6363,6 @@ crbug.com/979323 [ Mac ] media/track/track-cue-rendering-position-auto-rtl.html 
 crbug.com/979336 [ Mac ] fast/dynamic/anonymous-block-orphaned-lines.html [ Pass Failure ]
 
 # Sheriff 2019-06-28
-crbug.com/979565 [ Mac ] virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-fullscreen-video.html [ Pass Failure ]
 crbug.com/979593 [ Linux Win ] external/wpt/service-workers/service-worker/registration-schedule-job.https.html [ Pass Failure ]
 crbug.com/979593 [ Linux Win ] virtual/blink-cors/external/wpt/service-workers/service-worker/registration-schedule-job.https.html [ Pass Failure ]
 crbug.com/979593 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/registration-schedule-job.https.html [ Pass Failure ]
