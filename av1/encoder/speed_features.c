@@ -908,10 +908,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   if (oxcf->pass == 1) sf->optimize_coefficients = NO_TRELLIS_OPT;
 
   // No recode or trellis for 1 pass.
-  if (oxcf->pass == 0) {
-    sf->recode_loop = DISALLOW_RECODE;
-    sf->optimize_coefficients = NO_TRELLIS_OPT;
-  }
+  if (oxcf->pass == 0) sf->recode_loop = DISALLOW_RECODE;
+
   // FIXME: trellis not very efficient for quantization matrices
   if (oxcf->using_qm) sf->optimize_coefficients = NO_TRELLIS_OPT;
 
