@@ -10,6 +10,8 @@
 #include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/command_line.h"
+
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/debug_urls.h"
@@ -30,7 +32,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace content {
-
+int SiteInstance::kNoProcessAffinity = RenderProcessHostImpl::kInvalidId;
 int32_t SiteInstanceImpl::next_site_instance_id_ = 1;
 
 // static
@@ -227,7 +229,20 @@ bool SiteInstanceImpl::HasProcess() {
   return false;
 }
 
-RenderProcessHost* SiteInstanceImpl::GetProcess() {
+RenderProcessHost* SiteInstanceImpl::GetProcess(int affinity) {
+  // blpwtk2: Lookup the RenderProessHost based on the host id (aka. affinity)
+  if (!process_) {
+    BrowserContext* browser_context = browsing_instance_->browser_context();
+
+    if (affinity != SiteInstance::kNoProcessAffinity) {
+      process_ = RenderProcessHost::FromID(affinity);
+      if (process_) {
+        DCHECK(RenderProcessHostImpl::IsSuitableHost(
+            process_, browser_context, GetIsolationContext(), site_, site_));
+      }
+    }
+  }
+
   // TODO(erikkay) It would be nice to ensure that the renderer type had been
   // properly set before we get here.  The default tab creation case winds up
   // with no site set at this point, so it will default to TYPE_NORMAL.  This

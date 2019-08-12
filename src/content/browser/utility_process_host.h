@@ -69,6 +69,9 @@ class CONTENT_EXPORT UtilityProcessHost
       const scoped_refptr<base::SequencedTaskRunner>& client_task_runner);
   ~UtilityProcessHost() override;
 
+  static bool RunUtilityInProcess();
+  static void SetRunUtilityInProcess(bool value);
+
   base::WeakPtr<UtilityProcessHost> AsWeakPtr();
 
   // Makes the process run with a specific sandbox type, or unsandboxed if

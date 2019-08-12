@@ -1,0 +1,413 @@
+# Copyright (C) 2017 Bloomberg L.P. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import("//build/config/chrome_build.gni")
+import("//build/config/win/visual_studio_version.gni")
+import("blpwtk2.gni")
+import("//tools/grit/repack.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
+import("//build/config/win/manifest.gni")
+
+config("blpwtk2_public") {
+  include_dirs = [
+    "$target_gen_dir/blpwtk2/public",
+  ]
+}
+
+config("blpwtk2_shared") {
+  defines = [ "USING_BLPWTK2_SHARED" ]
+}
+
+config("blpwtk2_gen_map") {
+  ldflags = [
+    "/lldmap"
+  ]
+}
+
+windows_manifest("blpwtk2_manifest") {
+  sources = [
+    default_compatibility_manifest,  # Want the normal OS compat list.
+  ]
+}
+
+action("blpwtk2_generate_sources") {
+  script = "//blpwtk2/gen_version.py"
+  _output_blpwtk2_products_h = "$target_gen_dir/$blpwtk2_products_h"
+  _output_version_h = "$target_gen_dir/$version_h"
+  _output_version_cc = "$target_gen_dir/$version_cc"
+
+  outputs = [
+    _output_blpwtk2_products_h,
+    _output_version_h,
+    _output_version_cc,
+  ]
+
+  args = [
+    "--content-shell-version",
+    content_shell_version,
+    "--output-blpwtk2-products",
+    rebase_path(_output_blpwtk2_products_h, root_build_dir),
+    "--output-version-h",
+    rebase_path(_output_version_h, root_build_dir),
+    "--output-version-cc",
+    rebase_path(_output_version_cc, root_build_dir),
+    "--version",
+    bb_version,
+  ]
+}
+
+mojom("interfaces") {
+  sources = [
+    "private/blpwtk2_process.mojom",
+    "private/blpwtk2_webview.mojom",
+  ]
+  
+  deps = []
+
+}
+
+repack("pak") {
+  if (bb_version != "") {
+    output = "${root_out_dir}/blpwtk2.$bb_version.pak"
+  } else {
+    output = "${root_out_dir}/blpwtk2.pak"
+  }
+
+  sources = [
+    "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
+    "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
+    "$root_gen_dir/third_party/blink/public/resources/blink_inspector_resources.pak",
+    "$root_gen_dir/third_party/blink/renderer/modules/media_controls/resources/media_controls_resources_100_percent.pak",
+    "$root_gen_dir/chrome/browser_resources.pak", # needed for chrome services
+  ]
+
+  deps = [
+    "//content/browser/devtools:devtools_resources",
+    "//third_party/blink/public:resources",
+    "//third_party/blink/public:inspector_resources",
+    "//third_party/blink/renderer/modules/media_controls:media_controls_resources",
+    "//chrome/browser:resources", # needed for chrome services
+  ]
+}
+
+shared_library("blpwtk2") {
+  if (bb_version != "") {
+    output_name = "blpwtk2.$bb_version"
+  }
+
+  sources = [
+    "$target_gen_dir/$blpwtk2_products_h",
+    "$target_gen_dir/$version_cc",
+    "$target_gen_dir/$version_h",
+    "private/blpwtk2.rc",
+    "private/blpwtk2_browsercontextimpl.cc",
+    "private/blpwtk2_browsercontextimpl.h",
+    "private/blpwtk2_browsermainparts.cc",
+    "private/blpwtk2_browsermainparts.h",
+    "private/blpwtk2_browsermainrunner.cc",
+    "private/blpwtk2_browsermainrunner.h",
+    "private/blpwtk2_browserthread.cc",
+    "private/blpwtk2_browserthread.h",
+    "private/blpwtk2_channelinfo.cc",
+    "private/blpwtk2_channelinfo.h",
+    "private/blpwtk2_contentbrowserclientimpl.cc",
+    "private/blpwtk2_contentbrowserclientimpl.h",
+    "private/blpwtk2_contentclient.cc",
+    "private/blpwtk2_contentclient.h",
+    "private/blpwtk2_contentmaindelegateimpl.cc",
+    "private/blpwtk2_contentmaindelegateimpl.h",
+    "private/blpwtk2_contentrendererclientimpl.cc",
+    "private/blpwtk2_contentrendererclientimpl.h",
+    "private/blpwtk2_contentutilityclientimpl.cc",
+    "private/blpwtk2_contentutilityclientimpl.h",
+    "private/blpwtk2_desktopstreamsregistry.cc",
+    "private/blpwtk2_desktopstreamsregistry.h",
+    "private/blpwtk2_devtoolsfrontendhostdelegateimpl.cc",
+    "private/blpwtk2_devtoolsfrontendhostdelegateimpl.h",
+    "private/blpwtk2_devtoolsmanagerdelegateimpl.cc",
+    "private/blpwtk2_devtoolsmanagerdelegateimpl.h",
+    "private/blpwtk2_dllmain.cc",
+    "private/blpwtk2_findonpage.cc",
+    "private/blpwtk2_findonpage.h",
+    "private/blpwtk2_inprocessrenderer.cc",
+    "private/blpwtk2_inprocessrenderer.h",
+    "private/blpwtk2_inprocessresourceloaderbridge.cc",
+    "private/blpwtk2_inprocessresourceloaderbridge.h",
+    "private/blpwtk2_mainmessagepump.cc",
+    "private/blpwtk2_mainmessagepump.h",
+    "private/blpwtk2_nativeviewwidget.cc",
+    "private/blpwtk2_nativeviewwidget.h",
+    "private/blpwtk2_nativeviewwidgetdelegate.cc",
+    "private/blpwtk2_nativeviewwidgetdelegate.h",
+    "private/blpwtk2_networkdelegateimpl.cc",
+    "private/blpwtk2_networkdelegateimpl.h",
+    "private/blpwtk2_prefStore.cc",
+    "private/blpwtk2_prefStore.h",
+    "private/blpwtk2_processhostimpl.cc",
+    "private/blpwtk2_processhostimpl.h",
+    "private/blpwtk2_profileimpl.cc",
+    "private/blpwtk2_profileimpl.h",
+    "private/blpwtk2_queuepumpscheduler.cc",
+    "private/blpwtk2_queuepumpscheduler.h",
+    "private/blpwtk2_rendererutil.cc",
+    "private/blpwtk2_rendererutil.h",
+    "private/blpwtk2_renderviewobserverimpl.cc",
+    "private/blpwtk2_renderviewobserverimpl.h",
+    "private/blpwtk2_requestinterceptorimpl.cc",
+    "private/blpwtk2_requestinterceptorimpl.h",
+    "private/blpwtk2_resourcecontextimpl.cc",
+    "private/blpwtk2_resourcecontextimpl.h",
+    "private/blpwtk2_resourcerequestjob.cc",
+    "private/blpwtk2_resourcerequestjob.h",
+    "private/blpwtk2_statics.cc",
+    "private/blpwtk2_statics.h",
+    "private/blpwtk2_timerpumpscheduler.cc",
+    "private/blpwtk2_timerpumpscheduler.h",
+    "private/blpwtk2_toolkitimpl.cc",
+    "private/blpwtk2_toolkitimpl.h",
+    "private/blpwtk2_urlrequestcontextgetterimpl.cc",
+    "private/blpwtk2_urlrequestcontextgetterimpl.h",
+    "private/blpwtk2_utility.cc",
+    "private/blpwtk2_utility.h",
+    "private/blpwtk2_viewsdelegateimpl.cc",
+    "private/blpwtk2_viewsdelegateimpl.h",
+    "private/blpwtk2_webcontentsviewdelegateimpl.cc",
+    "private/blpwtk2_webcontentsviewdelegateimpl.h",
+    "private/blpwtk2_webframeimpl.cc",
+    "private/blpwtk2_webframeimpl.h",
+    "private/blpwtk2_webviewproperties.cc",
+    "private/blpwtk2_webviewproperties.h",
+    "private/blpwtk2_webviewclientdelegate.cc",
+    "private/blpwtk2_webviewclientdelegate.h",
+    "private/blpwtk2_webviewhostimpl.cc",
+    "private/blpwtk2_webviewhostimpl.h",
+    "private/blpwtk2_webviewclient.cc",
+    "private/blpwtk2_webviewclient.h",
+    "private/blpwtk2_webviewclientimpl.cc",
+    "private/blpwtk2_webviewclientimpl.h",
+    "private/blpwtk2_webviewimpl.cc",
+    "private/blpwtk2_webviewimpl.h",
+    "private/blpwtk2_webviewproxy.cc",
+    "private/blpwtk2_webviewproxy.h",
+    "private/blpwtk2_webviewimplclient.cc",
+    "private/blpwtk2_webviewimplclient.h",
+    "public/blpwtk2.h",
+    "public/blpwtk2_blob.cc",
+    "public/blpwtk2_blob.h",
+    "public/blpwtk2_config.h",
+    "public/blpwtk2_contextmenuitem.cc",
+    "public/blpwtk2_contextmenuitem.h",
+    "public/blpwtk2_contextmenuparams.cc",
+    "public/blpwtk2_contextmenuparams.h",
+    "public/blpwtk2_iatpatchfunction.cc",
+    "public/blpwtk2_iatpatchfunction.h",
+    "public/blpwtk2_pdfutil.cc",
+    "public/blpwtk2_pdfutil.h",
+    "public/blpwtk2_profile.cc",
+    "public/blpwtk2_profile.h",
+    "public/blpwtk2_resourcecontext.cc",
+    "public/blpwtk2_resourcecontext.h",
+    "public/blpwtk2_resourceloader.cc",
+    "public/blpwtk2_resourceloader.h",
+    "public/blpwtk2_string.cc",
+    "public/blpwtk2_string.h",
+    "public/blpwtk2_stringref.cc",
+    "public/blpwtk2_stringref.h",
+    "public/blpwtk2_textdirection.cc",
+    "public/blpwtk2_textdirection.h",
+    "public/blpwtk2_threadmode.cc",
+    "public/blpwtk2_threadmode.h",
+    "public/blpwtk2_toolkit.cc",
+    "public/blpwtk2_toolkit.h",
+    "public/blpwtk2_toolkitcreateparams.cc",
+    "public/blpwtk2_toolkitcreateparams.h",
+    "public/blpwtk2_toolkitfactory.cc",
+    "public/blpwtk2_toolkitfactory.h",
+    "public/blpwtk2_webcontentsettingsdelegate.cc",
+    "public/blpwtk2_webcontentsettingsdelegate.h",
+    "public/blpwtk2_webframe.cc",
+    "public/blpwtk2_webframe.h",
+    "public/blpwtk2_webview.cc",
+    "public/blpwtk2_webview.h",
+    "public/blpwtk2_webviewcreateparams.cc",
+    "public/blpwtk2_webviewcreateparams.h",
+    "public/blpwtk2_webviewdelegate.cc",
+    "public/blpwtk2_webviewdelegate.h",
+    "public/blpwtk2_webviewhostobserver.cc",
+    "public/blpwtk2_webviewhostobserver.h",
+
+
+
+    # patch section: embedder ipc
+
+
+    # patch section: gpu
+
+
+
+  ]
+
+  defines = [
+    "BUILDING_BLPWTK2_SHARED",
+    "BLPWTK2_IMPLEMENTATION",
+  ]
+
+  include_dirs = [
+    "public",
+    "private",
+    ".",
+  ]
+
+  public_configs = [
+    ":blpwtk2_public",
+    ":blpwtk2_shared",
+    "//third_party/angle:commit_id_config",
+  ]
+
+  if (bb_generate_map_files) {
+    public_configs += [ ":blpwtk2_gen_map" ]
+  }
+
+  public_deps = [
+    ":blpwtk2_generate_sources",
+    "//v8:v8",
+    "//base/allocator:buildflags",
+  ]
+
+  deps = [
+    ":interfaces",
+    ":pak",
+    ":blpwtk2_manifest",
+    "//base",
+    "//cc",
+    "//chrome/chrome_blpwtk2",
+    "//components/keyed_service/content",
+    "//components/services/pdf_compositor",
+    "//components/services/pdf_compositor/public/interfaces",
+    "//components/spellcheck/browser",
+    "//components/spellcheck/common:common",
+    "//components/user_prefs",
+    "//content",
+    "//content:resources",
+    "//content:sandbox_helper_win",
+    "//content/app/resources",
+    "//ipc",
+    "//net",
+    "//net:extras",
+    "//pdf",
+    "//sandbox",
+    "//skia",
+    "//storage/common",
+    "//services/service_manager",
+    "//third_party/blink/public:blink",
+    "//third_party/blink/public:resources",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/events",
+    "//ui/events/blink",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gfx/ipc",
+    "//ui/gl",
+    "//ui/resources",
+    "//ui/shell_dialogs",
+    "//ui/views",
+    "//ui/wm/public",
+    "//url",
+  ]
+
+  if(!is_component_build) {
+    deps += [
+      "//v8:v8",
+      "//v8:v8_maybe_snapshot",
+    ]
+  }
+
+  libs = [
+    "dwmapi.lib"
+  ]
+
+  ldflags = [
+    "/DELAYLOAD:dwmapi.dll"
+  ]
+  ldflags += [
+    "/ignore:4049",
+    "/ignore:4217",
+  ]
+}
+
+executable("blpwtk2_subprocess") {
+  if (bb_version != "") {
+    output_name = "blpwtk2_subprocess.$bb_version"
+  }
+
+  sources = [
+    "subprocess/main.cc",
+    "subprocess/resources.rc",
+  ]
+
+  configs += [
+    ":blpwtk2_public",
+    "//build/config/win:windowed",
+  ]
+
+  if (bb_generate_map_files) {
+    configs += [ ":blpwtk2_gen_map" ]
+  }
+
+  deps = [
+    ":blpwtk2_generate_sources",
+    ":blpwtk2_manifest",
+    "//content:sandbox_helper_win",
+  ]
+}
+
+executable("blpwtk2_shell") {
+  sources = [
+    "shell/main.cc",
+  ]
+
+  include_dirs = [ "public" ]
+
+  if (is_official_build) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
+
+  deps = [
+    ":blpwtk2",
+    "//base/allocator",
+  ]
+
+}
+
+group("blpwtk2_all") {
+  testonly = true
+
+  deps = [
+    ":blpwtk2_shell",
+    ":blpwtk2_subprocess",
+    "//content/shell:content_shell",
+    "//v8:d8",
+  ]
+}

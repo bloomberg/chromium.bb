@@ -41,6 +41,10 @@
 #include "base/base_paths_fuchsia.h"
 #endif
 
+#if defined(IS_BLPWTK2)
+#include <blpwtk2_products.h>
+#endif
+
 namespace base {
 namespace i18n {
 
@@ -68,7 +72,11 @@ wchar_t g_debug_icu_pf_filename[_MAX_PATH];
 // No need to change the filename in multiple places (gyp files, windows
 // build pkg configurations, etc). 'l' stands for Little Endian.
 // This variable is exported through the header file.
+#if defined(IS_BLPWTK2)
+const char kIcuDataFileName[] = BLPWTK2_ICUDTL_DAT_NAME;
+#else
 const char kIcuDataFileName[] = "icudtl.dat";
+#endif
 #if defined(OS_ANDROID)
 const char kAndroidAssetsIcuDataFileName[] = "assets/icudtl.dat";
 #endif
@@ -246,7 +254,7 @@ bool InitializeICUFromRawMemory(const uint8_t* raw_memory) {
 
 #endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 
-bool InitializeICU() {
+bool InitializeICU(const void **data) {
 #if DCHECK_IS_ON()
   DCHECK(!g_check_called_once || !g_called_once);
   g_called_once = true;
@@ -278,6 +286,10 @@ bool InitializeICU() {
   debug::Alias(&debug_icu_pf_filename);
   CHECK(result);  // TODO(brucedawson): http://crbug.com/445616
 #endif
+
+  if (data) {
+    *data = g_icudtl_mapped_file->data();
+  }
 #endif
 
 // To respond to the timezone change properly, the default timezone

@@ -324,6 +324,7 @@ core_idl_files =
                     "mojo/test/mojo_interface_request_event.idl",
                     "page/page_popup_controller.idl",
                     "page/scrolling/scroll_state.idl",
+                    "page/bb_window_hooks.idl",
                     "resize_observer/resize_observer.idl",
                     "resize_observer/resize_observer_entry.idl",
                     "streams/readable_stream.idl",
