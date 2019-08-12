@@ -37,8 +37,8 @@ class JavaHandlerThreadForTest : public android::JavaHandlerThread {
   explicit JavaHandlerThreadForTest(const char* name)
       : android::JavaHandlerThread(name, base::ThreadPriority::NORMAL) {}
 
-  using android::JavaHandlerThread::task_environment;
-  using android::JavaHandlerThread::TaskEnvironment;
+  using android::JavaHandlerThread::state;
+  using android::JavaHandlerThread::State;
 };
 #endif
 
@@ -195,7 +195,7 @@ class ScheduleWorkTest : public testing::Test {
 #if defined(OS_ANDROID)
     if (java_thread_) {
       return static_cast<sequence_manager::internal::SequenceManagerImpl*>(
-          java_thread_->task_environment()->sequence_manager.get());
+          java_thread_->state()->sequence_manager.get());
     }
 #endif
     return MessageLoopCurrent::Get()->GetCurrentSequenceManagerImpl();

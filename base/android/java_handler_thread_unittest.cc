@@ -20,8 +20,8 @@ class JavaHandlerThreadForTest : public android::JavaHandlerThread {
       base::ThreadPriority priority = base::ThreadPriority::NORMAL)
       : android::JavaHandlerThread(name, priority) {}
 
-  using android::JavaHandlerThread::task_environment;
-  using android::JavaHandlerThread::TaskEnvironment;
+  using android::JavaHandlerThread::state;
+  using android::JavaHandlerThread::State;
 };
 
 class DummyTaskObserver : public MessageLoop::TaskObserver {
@@ -128,7 +128,7 @@ TEST_F(JavaHandlerThreadTest, RunTasksWhileShuttingDownJavaThread) {
 
   sequence_manager::internal::SequenceManagerImpl* sequence_manager =
       static_cast<sequence_manager::internal::SequenceManagerImpl*>(
-          java_thread->task_environment()->sequence_manager.get());
+          java_thread->state()->sequence_manager.get());
 
   java_thread->task_runner()->PostTask(
       FROM_HERE, BindLambdaForTesting([&]() {
