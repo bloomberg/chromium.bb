@@ -10,7 +10,7 @@
 /*.sh  recipes
 
 # vpython and vpython specs
-/vpython*       recipes
+/vpython*
 /gsutil.vpython recipes
 /.vpython       recipes
 
