@@ -606,11 +606,10 @@
             ]
         }
     ],
-    "AudioService": [
+    "AudioProcess": [
         {
             "platforms": [
-                "windows",
-                "mac"
+                "windows"
             ],
             "experiments": [
                 {
@@ -629,7 +628,23 @@
             ]
         }
     ],
-    "AudioServiceSandboxApmLinux": [
+    "AudioProcessSandboxMac": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "AudioProcess_APM",
+                    "enable_features": [
+                        "AudioServiceSandbox",
+                        "WebRtcApmInAudioService"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AudioServiceSandboxLinux": [
         {
             "platforms": [
                 "linux"
