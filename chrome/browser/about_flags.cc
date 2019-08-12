@@ -422,6 +422,12 @@ const FeatureEntry::FeatureParam kForceDark_SimpleCielab[] = {
     {"text_lightness_threshold", "256"},
     {"background_lightness_threshold", "0"}};
 
+const FeatureEntry::FeatureParam kForceDark_SimpleRgb[] = {
+    {"inversion_method", "rgb_based"},
+    {"image_behavior", "none"},
+    {"text_lightness_threshold", "256"},
+    {"background_lightness_threshold", "0"}};
+
 const FeatureEntry::FeatureParam kForceDark_SelectiveImageInversion[] = {
     {"inversion_method", "cielab_based"},
     {"image_behavior", "selective"},
@@ -445,6 +451,8 @@ const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
      base::size(kForceDark_SimpleHsl), nullptr},
     {"with simple CIELAB-based inversion", kForceDark_SimpleCielab,
      base::size(kForceDark_SimpleCielab), nullptr},
+    {"with simple RGB-based inversion", kForceDark_SimpleRgb,
+     base::size(kForceDark_SimpleRgb), nullptr},
     {"with selective image inversion", kForceDark_SelectiveImageInversion,
      base::size(kForceDark_SelectiveImageInversion), nullptr},
     {"with selective inversion of non-image elements",
