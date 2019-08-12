@@ -65,7 +65,7 @@ void *thread_function(void *data) {
     perror("ERROR: parent notification failed");
     return NULL;
   }
-  register volatile pid_t *thread_id_ptr asm(TID_PTR_REGISTER) = thread_id;
+  volatile pid_t *thread_id_ptr asm(TID_PTR_REGISTER) = thread_id;
   while (true)
     asm volatile ("" : : "r" (thread_id_ptr));
   return NULL;
