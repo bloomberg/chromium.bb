@@ -5,4 +5,4 @@
 
 base_dir=$(dirname "$0")
 
-PYTHONDONTWRITEBYTECODE=1 exec $base_dir/vpython "$base_dir/roll_dep_svn.py" "$@"
+PYTHONDONTWRITEBYTECODE=1 exec python "$base_dir/roll_dep_svn.py" "$@"
