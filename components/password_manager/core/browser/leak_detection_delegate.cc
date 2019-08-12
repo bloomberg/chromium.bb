@@ -60,6 +60,10 @@ void LeakDetectionDelegate::OnError(LeakDetectionError error) {
       case LeakDetectionError::kTokenRequestFailure:
         logger.LogMessage(Logger::STRING_LEAK_DETECTION_TOKEN_REQUEST_ERROR);
         break;
+      case LeakDetectionError::kInvalidServerResponse:
+        logger.LogMessage(
+            Logger::STRING_LEAK_DETECTION_INVALID_SERVER_RESPONSE_ERROR);
+        break;
     }
   }
 }
