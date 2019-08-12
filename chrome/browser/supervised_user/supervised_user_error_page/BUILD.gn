@@ -14,8 +14,8 @@ static_library("supervised_user_error_page") {
 
   deps = [
     "//base",
-    "//components/resources",
-    "//components/strings",
+    "//chrome/app:generated_resources",
+    "//chrome/browser:resources_grit",
     "//ui/base",
   ]
 }
@@ -37,8 +37,8 @@ source_set("unit_tests") {
     ":supervised_user_error_page",
     "//base",
     "//base/test:test_support",
-    "//components/resources",
-    "//components/strings",
+    "//chrome/app:generated_resources",
+    "//chrome/browser:resources_grit",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base",

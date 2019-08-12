@@ -4973,6 +4973,9 @@ test("unit_tests") {
       "../browser/supervised_user/supervised_user_url_filter_unittest.cc",
       "../browser/supervised_user/supervised_user_whitelist_service_unittest.cc",
     ]
+    deps += [
+      "//chrome/browser/supervised_user/supervised_user_error_page:unit_tests",
+    ]
   }
   if (safe_browsing_mode == 1 && enable_extensions) {
     sources += [ "../browser/extensions/blacklist_unittest.cc" ]

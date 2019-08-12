@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/supervised_user_error_page/supervised_user_error_page.h"
+#include "chrome/browser/supervised_user/supervised_user_error_page/supervised_user_error_page.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/grit/components_resources.h"
-#include "components/strings/grit/components_strings.h"
+#include "chrome/grit/browser_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"

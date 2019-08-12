@@ -2058,7 +2058,6 @@ jumbo_split_static_library("browser") {
     "//components/subresource_filter/content/browser",
     "//components/subresource_filter/core/browser",
     "//components/suggestions",
-    "//components/supervised_user_error_page",
     "//components/sync",
     "//components/sync_bookmarks",
     "//components/sync_preferences",
@@ -2891,6 +2890,7 @@ jumbo_split_static_library("browser") {
         "supervised_user/child_accounts/child_account_service_android.cc",
         "supervised_user/child_accounts/child_account_service_android.h",
       ]
+      deps += [ "//chrome/browser/supervised_user/supervised_user_error_page" ]
     }
   } else {  # !is_android
     sources += [

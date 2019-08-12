@@ -234,10 +234,19 @@ are declared in tools/grit/grit_rule.gni.
         </if>
       </if>
 
+      <!-- Supervised user error page -->
+      <if expr="chromeos or is_android">
+        <part file="../browser/supervised_user/supervised_user_error_page_strings.grdp" />
+      </if>
+
       <!-- TODO add all of your "string table" messages here.  Remember to
       change nontranslateable parts of the messages into placeholders (using the
       <ph> element).  You can also use the 'grit add' tool to help you identify
       nontranslateable parts and create placeholders for them. -->
+      <message name="IDS_BACK_BUTTON_AUTHENTICATOR_REQUEST_DIALOG" desc="A back button for authenticator request dialog.">
+        Go back
+      </message>
+
       <if expr="is_win">
         <message name="IDS_BACKGROUND_APP_INSTALLED_BALLOON_TITLE" desc="The title of the balloon that is displayed when a background app is installed">
           New background app added
