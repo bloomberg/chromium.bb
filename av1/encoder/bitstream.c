@@ -1031,6 +1031,53 @@ static void write_intra_prediction_modes(AV1_COMP *cpi, const int mi_row,
   write_filter_intra_mode_info(cm, xd, mbmi, w);
 }
 
+static INLINE int16_t mode_context_analyzer(
+    const int16_t *const mode_context, const MV_REFERENCE_FRAME *const rf) {
+  const int8_t ref_frame = av1_ref_frame_type(rf);
+
+  if (rf[1] <= INTRA_FRAME) return mode_context[ref_frame];
+
+  const int16_t newmv_ctx = mode_context[ref_frame] & NEWMV_CTX_MASK;
+  const int16_t refmv_ctx =
+      (mode_context[ref_frame] >> REFMV_OFFSET) & REFMV_CTX_MASK;
+
+  const int16_t comp_ctx = compound_mode_ctx_map[refmv_ctx >> 1][AOMMIN(
+      newmv_ctx, COMP_NEWMV_CTXS - 1)];
+  return comp_ctx;
+}
+
+static INLINE int_mv get_ref_mv_from_stack(int ref_idx,
+                                           const MV_REFERENCE_FRAME *ref_frame,
+                                           int ref_mv_idx,
+                                           const MB_MODE_INFO_EXT *mbmi_ext) {
+  const int8_t ref_frame_type = av1_ref_frame_type(ref_frame);
+  const CANDIDATE_MV *curr_ref_mv_stack =
+      mbmi_ext->ref_mv_stack[ref_frame_type];
+
+  if (ref_frame[1] > INTRA_FRAME) {
+    assert(ref_idx == 0 || ref_idx == 1);
+    return ref_idx ? curr_ref_mv_stack[ref_mv_idx].comp_mv
+                   : curr_ref_mv_stack[ref_mv_idx].this_mv;
+  }
+
+  assert(ref_idx == 0);
+  return ref_mv_idx < mbmi_ext->ref_mv_count[ref_frame_type]
+             ? curr_ref_mv_stack[ref_mv_idx].this_mv
+             : mbmi_ext->global_mvs[ref_frame_type];
+}
+
+static INLINE int_mv get_ref_mv(const MACROBLOCK *x, int ref_idx) {
+  const MACROBLOCKD *xd = &x->e_mbd;
+  const MB_MODE_INFO *mbmi = xd->mi[0];
+  int ref_mv_idx = mbmi->ref_mv_idx;
+  if (mbmi->mode == NEAR_NEWMV || mbmi->mode == NEW_NEARMV) {
+    assert(has_second_ref(mbmi));
+    ref_mv_idx += 1;
+  }
+  return get_ref_mv_from_stack(ref_idx, mbmi->ref_frame, ref_mv_idx,
+                               x->mbmi_ext);
+}
+
 static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
                                 const int mi_col, aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
@@ -1076,8 +1123,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
     write_ref_frames(cm, xd, w);
 
-    mode_ctx =
-        av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
+    mode_ctx = mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
 
     // If segment skip is not enabled code the mode.
     if (!segfeature_active(seg, segment_id, SEG_LVL_SKIP)) {
@@ -1095,17 +1141,17 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     if (mode == NEWMV || mode == NEW_NEWMV) {
       for (ref = 0; ref < 1 + is_compound; ++ref) {
         nmv_context *nmvc = &ec_ctx->nmvc;
-        const int_mv ref_mv = av1_get_ref_mv(x, ref);
+        const int_mv ref_mv = get_ref_mv(x, ref);
         av1_encode_mv(cpi, w, &mbmi->mv[ref].as_mv, &ref_mv.as_mv, nmvc,
                       allow_hp);
       }
     } else if (mode == NEAREST_NEWMV || mode == NEAR_NEWMV) {
       nmv_context *nmvc = &ec_ctx->nmvc;
-      const int_mv ref_mv = av1_get_ref_mv(x, 1);
+      const int_mv ref_mv = get_ref_mv(x, 1);
       av1_encode_mv(cpi, w, &mbmi->mv[1].as_mv, &ref_mv.as_mv, nmvc, allow_hp);
     } else if (mode == NEW_NEARESTMV || mode == NEW_NEARMV) {
       nmv_context *nmvc = &ec_ctx->nmvc;
-      const int_mv ref_mv = av1_get_ref_mv(x, 0);
+      const int_mv ref_mv = get_ref_mv(x, 0);
       av1_encode_mv(cpi, w, &mbmi->mv[0].as_mv, &ref_mv.as_mv, nmvc, allow_hp);
     }
 
@@ -1297,9 +1343,9 @@ static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
       }
 
       const int16_t mode_ctx =
-          is_comp_ref ? 0
-                      : av1_mode_context_analyzer(mbmi_ext->mode_context,
-                                                  mbmi->ref_frame);
+          is_comp_ref
+              ? 0
+              : mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
 
       const int16_t newmv_ctx = mode_ctx & NEWMV_CTX_MASK;
       int16_t zeromv_ctx = -1;
