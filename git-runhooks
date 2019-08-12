@@ -15,9 +15,9 @@ gclient_spec="solutions=[{'name':'src','url':None,'deps_file':'.DEPS.git'}]"
 kernel_name=$(uname -s)
 if [ "${kernel_name:0:5}" = "MINGW" ]; then
   dir="${0%\\*}"
-  ${dir}\\vpython "${dir}\\gclient.py" "runhooks" "--spec=$gclient_spec"
+  cmd "/C ${dir}\\python.bat ${dir}\\gclient.py runhooks --spec=$gclient_spec"
 else
   dir="$(dirname $0)"
-  PYTHONDONTWRITEBYTECODE=1 exec $dir/vpython "$dir/gclient.py" runhooks --spec="$gclient_spec"
+  PYTHONDONTWRITEBYTECODE=1 exec python "$dir/gclient.py" runhooks --spec="$gclient_spec"
 fi
 exit $?
