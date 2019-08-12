@@ -41,9 +41,8 @@ DedicatedWorkerHost::DedicatedWorkerHost(int worker_process_id,
   RegisterMojoInterfaces();
 }
 
-DedicatedWorkerHost::~DedicatedWorkerHost() {}
+DedicatedWorkerHost::~DedicatedWorkerHost() = default;
 
-// service_manager::mojom::InterfaceProvider:
 void DedicatedWorkerHost::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
@@ -68,7 +67,6 @@ void DedicatedWorkerHost::BindBrowserInterfaceBrokerReceiver(
   broker_receiver_.Bind(std::move(receiver));
 }
 
-  // PlzDedicatedWorker:
 void DedicatedWorkerHost::StartScriptLoad(
     const GURL& script_url,
     const url::Origin& request_initiator_origin,
@@ -169,21 +167,6 @@ void DedicatedWorkerHost::RegisterMojoInterfaces() {
       &DedicatedWorkerHost::CreateIdleManager, base::Unretained(this)));
 }
 
-  // Called from WorkerScriptFetchInitiator. Continues starting the dedicated
-  // worker in the renderer process.
-  //
-  // |main_script_load_params| is sent to the renderer process and to be used to
-  // load the dedicated worker main script pre-requested by the browser process.
-  //
-  // |subresource_loader_factories| is sent to the renderer process and is to be
-  // used to request subresources where applicable. For example, this allows the
-  // dedicated worker to load chrome-extension:// URLs which the renderer's
-  // default loader factory can't load.
-  //
-  // NetworkService (PlzWorker):
-  // |controller| contains information about the service worker controller. Once
-  // a ServiceWorker object about the controller is prepared, it is registered
-  // to |controller_service_worker_object_host|.
 void DedicatedWorkerHost::DidStartScriptLoad(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
@@ -319,7 +302,6 @@ void DedicatedWorkerHost::CreateIdleManager(
       ->CreateService(std::move(request));
 }
 
-// May return a nullptr.
 RenderFrameHostImpl* DedicatedWorkerHost::GetAncestorRenderFrameHost() {
   // Use |worker_process_id_| as the ancestor render frame's process ID as the
   // frame surely lives in the same process for dedicated workers.
