@@ -18,7 +18,7 @@ const base::Feature kNetworkErrorLogging{"NetworkErrorLogging",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables the network service.
 const base::Feature kNetworkService{"NetworkService",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Out of Blink CORS
 const base::Feature kOutOfBlinkCors{"OutOfBlinkCors",

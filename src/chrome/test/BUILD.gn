@@ -4205,7 +4205,6 @@ test("unit_tests") {
     allow_circular_includes_from =
         [ "//chrome/browser/web_applications/extensions:unit_tests" ]
     deps += [
-      "//chrome/browser/web_applications:unit_tests",
       "//chrome/browser/web_applications/extensions:unit_tests",
       "//chrome/common/extensions/api",
       "//extensions:extensions_resources",
