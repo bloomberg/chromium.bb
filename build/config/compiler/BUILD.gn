@@ -192,6 +192,9 @@ if (is_win || is_android || is_chromeos) {
   }
 }
 
+assert(!(llvm_force_head_revision && use_goma),
+       "can't use goma with trunk clang")
+
 # default_include_dirs ---------------------------------------------------------
 #
 # This is a separate config so that third_party code (which would not use the
