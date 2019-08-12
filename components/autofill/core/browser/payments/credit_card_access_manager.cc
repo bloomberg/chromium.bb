@@ -296,9 +296,13 @@ CreditCardAccessManager::GetOrCreateFIDOAuthenticator() {
 void CreditCardAccessManager::OnCVCAuthenticationComplete(
     bool did_succeed,
     const CreditCard* card,
-    const base::string16& cvc) {
+    const base::string16& cvc,
+    base::Value creation_options) {
   is_authentication_in_progress_ = false;
   accessor_->OnCreditCardFetched(did_succeed, card, cvc);
+
+  // TODO(crbug/949269): Call CreditCardFIDOAuthenticator::Register() with given
+  // |creation_options|.
 }
 
 #if !defined(OS_IOS)
