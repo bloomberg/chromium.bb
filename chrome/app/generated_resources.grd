@@ -235,7 +235,7 @@ are declared in tools/grit/grit_rule.gni.
       </if>
 
       <!-- Supervised user error page -->
-      <if expr="chromeos or is_android">
+      <if expr="enable_supervised_users">
         <part file="../browser/supervised_user/supervised_user_error_page_strings.grdp" />
       </if>
 
