@@ -1421,7 +1421,6 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
   // Windows occupy vertically centered area with additional vertical insets.
   total_bounds.Inset(GetGridInsets(total_bounds));
 
-  // TODO(sammiequon): Check why scrolling during split view stacks windows.
   // When the dragged item becomes an |ignored_item|, move the other windows
   // accordingly. |window_position| matches the positions of the windows'
   // indexes from |window_list_|. However, if a window turns out to be an
@@ -1441,9 +1440,14 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
       ++i;
       continue;
     }
-    const float ratio = float{height} / window->GetWindow()->bounds().height();
-    const int width = window->GetWindow()->bounds().width() * ratio;
 
+    // Maintains the aspect ratio from the original window. The window's
+    // original height will be shrunk to fit into |height|, minus the margin and
+    // overview header.
+    const float ratio = float{height - kHeaderHeightDp - kOverviewMargin} /
+                        window->GetWindow()->bounds().height();
+    const int width =
+        window->GetWindow()->bounds().width() * ratio + kOverviewMargin;
     const int y =
         height * (window_position % kTabletLayoutRow) + total_bounds.y();
 
