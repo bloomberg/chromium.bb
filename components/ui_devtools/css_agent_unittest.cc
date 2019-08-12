@@ -316,7 +316,7 @@ TEST_F(CSSAgentTest, UpdateOnBoundsChange) {
   EXPECT_EQ(2, GetStyleSheetChangedCount(another_element_stylesheet_id));
 }
 
-TEST_F(CSSAgentTest, GetSource) {
+TEST_F(CSSAgentTest, DISABLED_GetSource) {
   std::string file = "components/test/data/ui_devtools/test_file.cc";
   element()->AddSource(file, 0);
   auto result = GetSourceForElement();
