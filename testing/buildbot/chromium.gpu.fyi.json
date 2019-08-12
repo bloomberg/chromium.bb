@@ -2978,6 +2978,7 @@
         "args": [
           "--gtest-benchmark-name=angle_perftests",
           "-v",
+          "--output-format=histograms",
           "--shard-timeout=600"
         ],
         "isolate_name": "angle_perftests",
