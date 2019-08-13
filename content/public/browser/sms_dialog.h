@@ -23,6 +23,8 @@ class CONTENT_EXPORT SmsDialog {
     kConfirm = 0,
     // User manually dismissed the SMS dialog.
     kCancel = 1,
+    // User manually clicked 'Try again' button after a timeout.
+    kTimeout = 2,
   };
 
   using EventHandler = base::OnceCallback<void(Event)>;
@@ -32,6 +34,7 @@ class CONTENT_EXPORT SmsDialog {
   virtual void Open(RenderFrameHost* host, EventHandler handler) = 0;
   virtual void Close() = 0;
   virtual void SmsReceived() = 0;
+  virtual void SmsTimeout() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SmsDialog);

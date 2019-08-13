@@ -22,6 +22,7 @@ class SmsDialogAndroid : public content::SmsDialog {
   void Open(content::RenderFrameHost*, EventHandler handler) override;
   void Close() override;
   void SmsReceived() override;
+  void SmsTimeout() override;
 
   // Report the user's action through |event_type|.
   void OnEvent(JNIEnv* env, jint event_type);

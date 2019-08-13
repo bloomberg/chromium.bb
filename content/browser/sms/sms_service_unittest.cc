@@ -349,6 +349,18 @@ TEST_F(SmsServiceTest, Timeout) {
             loop.Quit();
           }));
 
+  auto* dialog = new NiceMock<MockSmsDialog>();
+
+  EXPECT_CALL(*service.delegate(), CreateSmsDialog(_))
+      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
+
+  EXPECT_CALL(*dialog, Open(main_rfh(), _))
+      .WillOnce(Invoke([](content::RenderFrameHost*,
+                          content::SmsDialog::EventHandler event_handler) {
+        // Simulates the user pressing "Try again".
+        std::move(event_handler).Run(SmsDialog::Event::kTimeout);
+      }));
+
   loop.Run();
 }
 
@@ -476,7 +488,12 @@ TEST_F(SmsServiceTest, TimeoutClosesDialog) {
 
   // Deliberately avoid calling the on_cancel callback, to simulate the
   // sms being timed out before the user cancels it.
-  EXPECT_CALL(*dialog, Open(main_rfh(), _)).WillOnce(Return());
+  EXPECT_CALL(*dialog, Open(main_rfh(), _))
+      .WillOnce(Invoke([](content::RenderFrameHost*,
+                          content::SmsDialog::EventHandler event_handler) {
+        // Simulates the user pressing "Try again".
+        std::move(event_handler).Run(SmsDialog::Event::kTimeout);
+      }));
 
   EXPECT_CALL(*dialog, Close()).WillOnce(Return());
 
@@ -505,7 +522,12 @@ TEST_F(SmsServiceTest, SecondRequestTimesOutEarlierThanFirstRequest) {
             hdl = std::move(handler);
           }));
 
-  EXPECT_CALL(*dialog2, Open(main_rfh(), _)).Times(1);
+  EXPECT_CALL(*dialog2, Open(main_rfh(), _))
+      .WillOnce(Invoke([](content::RenderFrameHost*,
+                          content::SmsDialog::EventHandler event_handler) {
+        // Simulates the user pressing "Try again".
+        std::move(event_handler).Run(SmsDialog::Event::kTimeout);
+      }));
 
   EXPECT_CALL(*dialog1, SmsReceived()).WillOnce(Invoke([&hdl]() {
     std::move(hdl).Run(SmsDialog::Event::kConfirm);

@@ -117,9 +117,7 @@ void SmsService::OnTimeout() {
   DCHECK(callback_);
   DCHECK(!timer_.IsRunning());
 
-  std::move(callback_).Run(blink::mojom::SmsStatus::kTimeout, base::nullopt);
-
-  Dismiss();
+  prompt_->SmsTimeout();
 }
 
 void SmsService::OnConfirm() {
@@ -144,6 +142,12 @@ void SmsService::OnCancel() {
   Process(SmsStatus::kCancelled, base::nullopt);
 }
 
+void SmsService::OnTryAgain() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  Process(SmsStatus::kTimeout, base::nullopt);
+}
+
 void SmsService::OnEvent(SmsDialog::Event event_type) {
   switch (event_type) {
     case SmsDialog::Event::kConfirm:
@@ -151,6 +155,9 @@ void SmsService::OnEvent(SmsDialog::Event event_type) {
       return;
     case SmsDialog::Event::kCancel:
       OnCancel();
+      return;
+    case SmsDialog::Event::kTimeout:
+      OnTryAgain();
       return;
   }
   DVLOG(1) << "Unsupported event type: " << event_type;

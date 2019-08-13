@@ -39,8 +39,10 @@ public class SmsReceiverDialog {
     private Dialog mDialog;
     private ProgressBar mProgressBar;
     private ImageView mDoneIcon;
+    private ImageView mErrorIcon;
     private TextView mStatus;
-    private Button mConfirmButton;
+    private Button mCancelButton;
+    private Button mConfirmOrTryAgainButton;
     private String mOrigin;
 
     @VisibleForTesting
@@ -68,16 +70,19 @@ public class SmsReceiverDialog {
 
         mDoneIcon = (ImageView) dialogContainer.findViewById(R.id.done_icon);
 
+        mErrorIcon = (ImageView) dialogContainer.findViewById(R.id.error_icon);
+
         mStatus = (TextView) dialogContainer.findViewById(R.id.status);
 
-        Button cancelButton = (Button) dialogContainer.findViewById(R.id.cancel_button);
-        cancelButton.setOnClickListener(v -> {
+        mCancelButton = (Button) dialogContainer.findViewById(R.id.cancel_button);
+        mCancelButton.setOnClickListener(v -> {
             assert mNativeSmsDialogAndroid != 0;
             SmsReceiverDialogJni.get().onEvent(mNativeSmsDialogAndroid, Event.CANCEL);
         });
 
-        mConfirmButton = (Button) dialogContainer.findViewById(R.id.confirm_button);
-        mConfirmButton.setOnClickListener(v -> {
+        mConfirmOrTryAgainButton =
+                (Button) dialogContainer.findViewById(R.id.confirm_or_try_again_button);
+        mConfirmOrTryAgainButton.setOnClickListener(v -> {
             assert mNativeSmsDialogAndroid != 0;
             SmsReceiverDialogJni.get().onEvent(mNativeSmsDialogAndroid, Event.CONFIRM);
         });
@@ -132,7 +137,23 @@ public class SmsReceiverDialog {
         mProgressBar.setVisibility(View.GONE);
         mDoneIcon.setVisibility(View.VISIBLE);
         mStatus.setText(mActivity.getText(R.string.sms_dialog_status_sms_received));
-        mConfirmButton.setEnabled(true);
+        mConfirmOrTryAgainButton.setEnabled(true);
+    }
+
+    @CalledByNative
+    void smsTimeout() {
+        if (DEBUG) Log.d(TAG, "SmsReceiverDialog.smsTimeout()");
+
+        mProgressBar.setVisibility(View.GONE);
+        mErrorIcon.setVisibility(View.VISIBLE);
+        mStatus.setText(mActivity.getText(R.string.sms_dialog_status_timeout));
+        mCancelButton.setVisibility(View.GONE);
+        mConfirmOrTryAgainButton.setText(mActivity.getText(R.string.try_again));
+        mConfirmOrTryAgainButton.setEnabled(true);
+        mConfirmOrTryAgainButton.setOnClickListener(v -> {
+            assert mNativeSmsDialogAndroid != 0;
+            SmsReceiverDialogJni.get().onEvent(mNativeSmsDialogAndroid, Event.TIMEOUT);
+        });
     }
 
     /**

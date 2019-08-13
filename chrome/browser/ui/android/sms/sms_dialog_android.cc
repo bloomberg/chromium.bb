@@ -53,6 +53,10 @@ void SmsDialogAndroid::SmsReceived() {
   Java_SmsReceiverDialog_smsReceived(AttachCurrentThread(), java_dialog_);
 }
 
+void SmsDialogAndroid::SmsTimeout() {
+  Java_SmsReceiverDialog_smsTimeout(AttachCurrentThread(), java_dialog_);
+}
+
 void SmsDialogAndroid::OnEvent(JNIEnv* env, jint event_type) {
   std::move(handler_).Run(static_cast<Event>(event_type));
 }

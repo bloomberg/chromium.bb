@@ -19,6 +19,7 @@ class MockSmsDialog : public SmsDialog {
   MOCK_METHOD2(Open, void(RenderFrameHost*, EventHandler handler));
   MOCK_METHOD0(Close, void());
   MOCK_METHOD0(SmsReceived, void());
+  MOCK_METHOD0(SmsTimeout, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSmsDialog);

@@ -65,6 +65,8 @@ class CONTENT_EXPORT SmsService
   void OnConfirm();
   // Called when the user manually dismisses the dialog.
   void OnCancel();
+  // Callback when the user manually clicks 'Try again' button after a timeout.
+  void OnTryAgain();
 
   // Handles the user's action.
   void OnEvent(SmsDialog::Event event_type);

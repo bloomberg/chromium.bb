@@ -472,6 +472,23 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TimesOut) {
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
       base::WrapUnique(provider));
 
+  StrictMock<MockSmsWebContentsDelegate> delegate;
+  shell()->web_contents()->SetDelegate(&delegate);
+
+  auto* dialog = new StrictMock<MockSmsDialog>();
+
+  EXPECT_CALL(delegate, CreateSmsDialog(_))
+      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
+
+  EXPECT_CALL(*dialog, Open(_, _))
+      .WillOnce(Invoke([](content::RenderFrameHost*,
+                          content::SmsDialog::EventHandler event_handler) {
+        // Simulates the user pressing "Try again".
+        std::move(event_handler).Run(SmsDialog::Event::kTimeout);
+      }));
+
+  EXPECT_CALL(*dialog, Close()).WillOnce(Return());
+
   std::string script = R"(
     (async () => {
       try {
