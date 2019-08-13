@@ -33,6 +33,8 @@ issues]].
 ** Other changes
 - Metadata keys and values are now case insensitive, thanks to Dave
   Mielke.
+- Remove ~unicodedefs.cti~. It was obsolete and not used by any
+  tables, see also #696.
 
 ** Deprecation notice
 None
@@ -50,7 +52,7 @@ None
 - gr-bb.ctb -> grc-international-en.utb
 
 *** Removed
-- None
+- unicodedefs.cti
 
 * Noteworthy changes in release 3.10.0 (2019-06-03)
 This release comes across as quiet, containing just the usual
