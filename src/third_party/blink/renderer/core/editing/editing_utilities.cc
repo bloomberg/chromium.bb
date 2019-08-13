@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/editing/commands/editing_commands_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -1219,6 +1220,89 @@ Node* HighestEnclosingNodeOfType(const Position& p,
   }
 
   return highest;
+}
+
+Node* PreviousRenderedSibling(const Node* node)
+{
+    Node* result = node->previousSibling();
+    while (result && !IsNodeRendered(*result))
+        result = result->previousSibling();
+    return result;
+}
+
+Node* NextRenderedSibling(const Node* node)
+{
+    Node* result = node->nextSibling();
+    while (result && !IsNodeRendered(*result))
+        result = result->nextSibling();
+    return result;
+}
+
+static bool IsWhitespaceNode(const Node* node)
+{
+    if (!node)
+        return false;
+    if (node->IsTextNode())
+        return ToText(node)->ContainsOnlyWhitespaceOrEmpty();
+    return node->HasTagName(html_names::kBrTag);
+}
+
+Node* PreviousRenderedSiblingExcludingWhitespace(const Node* node)
+{
+    Node* result = PreviousRenderedSibling(node);
+    while (IsWhitespaceNode(result))
+        result = PreviousRenderedSibling(result);
+    return result;
+}
+
+Node* NextRenderedSiblingExcludingWhitespace(const Node* node)
+{
+    Node* result = NextRenderedSibling(node);
+    while (IsWhitespaceNode(result))
+        result = NextRenderedSibling(result);
+    return result;
+}
+
+Node* BlockExtentStart(Node* node, const Node* stayWithin)
+{
+    while (true) {
+        if (IsEnclosingBlock(node)) {
+            while (!PreviousRenderedSiblingExcludingWhitespace(node) && node->parentNode() && (!stayWithin || node->parentNode() != stayWithin))
+                node = node->parentNode();
+            break;
+        }
+        else if (node->previousSibling()) {
+            if (IsEnclosingBlock(node->previousSibling()))
+                break;
+            node = node->previousSibling();
+        }
+        else if (node->parentNode() && (!stayWithin || node->parentNode() != stayWithin))
+            node = node->parentNode();
+        else
+            break;
+    }
+    return node;
+}
+
+Node* BlockExtentEnd(Node* node, const Node* stayWithin)
+{
+    while (true) {
+        if (IsEnclosingBlock(node)) {
+            while (!NextRenderedSiblingExcludingWhitespace(node) && node->parentNode() && (!stayWithin || node->parentNode() != stayWithin))
+                node = node->parentNode();
+            break;
+        }
+        else if (node->nextSibling()) {
+            if (IsEnclosingBlock(node->nextSibling()))
+                break;
+            node = node->nextSibling();
+        }
+        else if (node->parentNode() && (!stayWithin || node->parentNode() != stayWithin))
+            node = node->parentNode();
+        else
+            break;
+    }
+    return node;
 }
 
 Element* EnclosingAnchorElement(const Position& p) {
