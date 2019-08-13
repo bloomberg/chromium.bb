@@ -3267,6 +3267,11 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-verti
 crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unset-referrer-policy/http-rp/same-origin/http-http/img-tag/swap-origin-redirect/insecure-protocol.http.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unsafe-url/attr-referrer/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Timeout ]
