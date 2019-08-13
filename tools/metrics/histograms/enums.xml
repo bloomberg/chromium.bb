@@ -8800,6 +8800,13 @@ histogram as enum -->
   <int value="7" label="Cookies, Storage, and Cache"/>
 </enum>
 
+<enum name="ClickToCallDeviceState">
+  <int value="0" label="Screen off, in background"/>
+  <int value="1" label="Screen on, in background"/>
+  <int value="2" label="Screen off, in foreground"/>
+  <int value="3" label="Screen on, in foreground"/>
+</enum>
+
 <enum name="ClientAppId">
   <int value="0" label="Other"/>
   <int value="1" label="Gmail"/>
