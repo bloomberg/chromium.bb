@@ -135,7 +135,7 @@ class CC_EXPORT PictureLayerImpl
   void RemoveAllTilings();
   void AddTilingsForRasterScale();
   void AddLowResolutionTilingIfNeeded();
-  bool ShouldAdjustRasterScale() const;
+  bool ShouldAdjustRasterScale(float last_scale_aspect_ratio) const;
   void RecalculateRasterScales();
   gfx::Vector2dF CalculateRasterTranslation(float raster_scale);
   void CleanUpTilingsOnActiveLayer(
@@ -175,6 +175,7 @@ class CC_EXPORT PictureLayerImpl
   float ideal_source_scale_;
   // Contents scale = device scale * page scale * source scale.
   float ideal_contents_scale_;
+  float scale_aspect_ratio_;
 
   // Raster scales are set from ideal scales. They are scales we choose to
   // raster at. They may not match the ideal scales at times to avoid raster for

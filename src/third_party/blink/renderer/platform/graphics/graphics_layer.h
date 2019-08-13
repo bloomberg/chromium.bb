@@ -84,7 +84,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   USING_FAST_MALLOC(GraphicsLayer);
 
  public:
-  explicit GraphicsLayer(GraphicsLayerClient&);
+  explicit GraphicsLayer(GraphicsLayerClient&, bool use_nearest_neighbor_filter = false);
   ~GraphicsLayer() override;
 
   GraphicsLayerClient& Client() const { return client_; }
@@ -365,6 +365,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   FloatSize VisualRectSubpixelOffset() const;
 
+  bool NearestNeighbor() const final;
+
   GraphicsLayerClient& client_;
 
   // Offset from the owning layoutObject
@@ -383,6 +385,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool has_clip_parent_ : 1;
 
   bool painted_ : 1;
+
+  bool use_nearest_neighbor_filter_ : 1;
 
   GraphicsLayerPaintingPhase painting_phase_;
 
