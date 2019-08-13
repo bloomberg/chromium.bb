@@ -1160,10 +1160,9 @@ class AXPosition {
     } while (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
              *this == *text_position);
 
-    // If the word boundary is in the same subtree, return a position rooted
-    // at the current position. This is necessary because we don't want to
-    // return any position that might be in the shadow DOM if the original
-    // position was not.
+    // If the word boundary is in the same subtree, return a position rooted at
+    // this position's anchor. This is necessary because we don't want to return
+    // a position that might be in the shadow DOM when this position is not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
@@ -1223,10 +1222,9 @@ class AXPosition {
     } while (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
              *this == *text_position);
 
-    // If the word boundary is in the same subtree, return a position rooted
-    // at the current position. This is necessary because we don't want to
-    // return any position that might be in the shadow DOM if the original
-    // position was not.
+    // If the word boundary is in the same subtree, return a position rooted at
+    // this position's anchor. This is necessary because we don't want to return
+    // a position that might be in the shadow DOM when this position is not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
@@ -1291,10 +1289,9 @@ class AXPosition {
     } while (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
              *this == *text_position);
 
-    // If the word boundary is in the same subtree, return a position rooted
-    // at the current position. This is necessary because we don't want to
-    // return any position that might be in the shadow DOM if the original
-    // position was not.
+    // If the word boundary is in the same subtree, return a position rooted at
+    // this position's anchor. This is necessary because we don't want to return
+    // a position that might be in the shadow DOM when this position is not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
@@ -1361,10 +1358,9 @@ class AXPosition {
     } while (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
              *this == *text_position);
 
-    // If the word boundary is in the same subtree, return a position rooted
-    // at the current position. This is necessary because we don't want to
-    // return any position that might be in the shadow DOM if the original
-    // position was not.
+    // If the word boundary is in the same subtree, return a position rooted at
+    // this position's anchor. This is necessary because we don't want to return
+    // a position that might be in the shadow DOM when this position is not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
@@ -1384,6 +1380,7 @@ class AXPosition {
     AXPositionInstance text_position = AsLeafTextPosition();
     if (text_position->IsNullPosition())
       return text_position;
+
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtStartOfLine()) {
       AXPositionInstance clone = Clone();
@@ -1392,25 +1389,32 @@ class AXPosition {
     }
 
     do {
-      text_position = text_position->CreateNextLeafTextPosition();
-      if (text_position->IsNullPosition()) {
-        if (AtEndOfAnchor() &&
-            boundary_behavior == AXBoundaryBehavior::CrossBoundary)
-          return text_position;
+      AXPositionInstance next_position =
+          text_position->CreateNextLeafTextPosition();
+
+      if (next_position->IsNullPosition()) {
+        if (boundary_behavior == AXBoundaryBehavior::CrossBoundary) {
+          if (AtEndOfAnchor())
+            return next_position;
+          // We can't simply return the following position; break and after this
+          // loop we'll try to do some adjustments to the result position.
+          text_position = text_position->CreatePositionAtEndOfAnchor();
+          break;
+        }
         return CreatePositionAtEndOfAnchor();
       }
 
       // Continue searching for the next line start until the next logical text
       // position is reached.
+      text_position = std::move(next_position);
     } while (
         !text_position->AtStartOfLine() ||
         (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
          *this == *text_position));
 
     // If the line boundary is in the same subtree, return a position rooted at
-    // the current position.
-    // This is necessary because we don't want to return any position that might
-    // be in the shadow DOM if the original position was not.
+    // this position's anchor. This is necessary because we don't want to return
+    // a position that might be in the shadow DOM when this position is not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
@@ -1428,6 +1432,9 @@ class AXPosition {
       AXBoundaryBehavior boundary_behavior) const {
     bool was_tree_position = IsTreePosition();
     AXPositionInstance text_position = AsLeafTextPosition();
+    if (text_position->IsNullPosition())
+      return text_position;
+
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtStartOfLine()) {
       AXPositionInstance clone = Clone();
@@ -1436,11 +1443,9 @@ class AXPosition {
     }
 
     do {
-      if (text_position->AtStartOfAnchor()) {
-        text_position = text_position->CreatePreviousLeafTextPosition();
-      } else {
-        text_position = text_position->CreatePositionAtStartOfAnchor();
-      }
+      text_position = text_position->AtStartOfAnchor()
+                          ? text_position->CreatePreviousLeafTextPosition()
+                          : text_position->CreatePositionAtStartOfAnchor();
 
       if (text_position->IsNullPosition()) {
         if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
@@ -1456,9 +1461,8 @@ class AXPosition {
          *this == *text_position));
 
     // If the line boundary is in the same subtree, return a position rooted at
-    // the current position.
-    // This is necessary because we don't want to return any position that might
-    // be in the shadow DOM if the original position was not.
+    // this position's anchor. This is necessary because we don't want to return
+    // a position that might be in the shadow DOM when this position is not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
@@ -1478,6 +1482,9 @@ class AXPosition {
       AXBoundaryBehavior boundary_behavior) const {
     bool was_tree_position = IsTreePosition();
     AXPositionInstance text_position = AsLeafTextPosition();
+    if (text_position->IsNullPosition())
+      return text_position;
+
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtEndOfLine()) {
       AXPositionInstance clone = Clone();
@@ -1492,12 +1499,9 @@ class AXPosition {
     }
 
     do {
-      if (text_position->AtEndOfAnchor()) {
-        text_position = text_position->CreateNextLeafTextPosition()
-                            ->CreatePositionAtEndOfAnchor();
-      } else {
-        text_position = text_position->CreatePositionAtEndOfAnchor();
-      }
+      if (text_position->AtEndOfAnchor())
+        text_position = text_position->CreateNextLeafTextPosition();
+      text_position = text_position->CreatePositionAtEndOfAnchor();
 
       if (text_position->IsNullPosition()) {
         if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
@@ -1513,9 +1517,8 @@ class AXPosition {
          *this == *text_position));
 
     // If the line boundary is in the same subtree, return a position rooted at
-    // the current position. This is necessary because we don't want to return
-    // any position that might be in the shadow DOM if the original position was
-    // not.
+    // this position's anchor. This is necessary because we don't want to return
+    // a position that might be in the shadow DOM when this position is not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
@@ -1537,6 +1540,7 @@ class AXPosition {
     AXPositionInstance text_position = AsLeafTextPosition();
     if (text_position->IsNullPosition())
       return text_position;
+
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtEndOfLine()) {
       AXPositionInstance clone = Clone();
@@ -1551,26 +1555,33 @@ class AXPosition {
     }
 
     do {
-      text_position = text_position->CreatePreviousLeafTextPosition()
-                          ->CreatePositionAtEndOfAnchor();
-      if (text_position->IsNullPosition()) {
-        if (AtStartOfAnchor() &&
-            boundary_behavior == AXBoundaryBehavior::CrossBoundary)
-          return text_position;
+      AXPositionInstance previous_position =
+          text_position->CreatePreviousLeafTextPosition()
+              ->CreatePositionAtEndOfAnchor();
+
+      if (previous_position->IsNullPosition()) {
+        if (boundary_behavior == AXBoundaryBehavior::CrossBoundary) {
+          if (AtStartOfAnchor())
+            return previous_position;
+          // We can't simply return the following position; break and after this
+          // loop we'll try to do some adjustments to the result position.
+          text_position = text_position->CreatePositionAtStartOfAnchor();
+          break;
+        }
         return CreatePositionAtStartOfAnchor();
       }
 
       // Continue searching for the previous line end until the next logical
       // text position is reached.
+      text_position = std::move(previous_position);
     } while (
         !text_position->AtEndOfLine() ||
         (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
          *this == *text_position));
 
     // If the line boundary is in the same subtree, return a position rooted at
-    // the current position. This is necessary because we don't want to return
-    // any position that might be in the shadow DOM if the original position was
-    // not.
+    // this position's anchor. This is necessary because we don't want to return
+    // a position that might be in the shadow DOM when this position is not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
@@ -1670,10 +1681,9 @@ class AXPosition {
         (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
          *this == *text_position));
 
-    // If the boundary is in the same subtree, return a position rooted at the
-    // current position. This is necessary because we don't want to return any
-    // position that might be in the shadow DOM if the original position was
-    // not.
+    // If the boundary is in the same subtree, return a position rooted at this
+    // position's anchor. This is necessary because we don't want to return a
+    // position that might be in the shadow DOM when this position is not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
@@ -1713,17 +1723,16 @@ class AXPosition {
         return text_position;
       }
 
-      // Continue searching for the previous page start until the next
+      // Continue searching for the previous boundary start until the next
       // logical text position is reached.
     } while (
         !at_start_condition.Run(text_position) ||
         (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
          *this == *text_position));
 
-    // If the boundary is in the same subtree, return a position rooted at the
-    // current position. This is necessary because we don't want to return any
-    // position that might be in the shadow DOM if the original position was
-    // not.
+    // If the boundary is in the same subtree, return a position rooted at this
+    // position's anchor. This is necessary because we don't want to return a
+    // position that might be in the shadow DOM when this position is not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
@@ -1777,10 +1786,9 @@ class AXPosition {
         (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
          *this == *text_position));
 
-    // If the boundary is in the same subtree, return a position rooted at the
-    // current position. This is necessary because we don't want to return any
-    // position that might be in the shadow DOM if the original position was
-    // not.
+    // If the boundary is in the same subtree, return a position rooted at this
+    // position's anchor. This is necessary because we don't want to return a
+    // position that might be in the shadow DOM when this position is not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
@@ -1831,10 +1839,9 @@ class AXPosition {
         (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
          *this == *text_position));
 
-    // If the boundary is in the same subtree, return a position rooted at the
-    // current position. This is necessary because we don't want to return any
-    // position that might be in the shadow DOM if the original position was
-    // not.
+    // If the boundary is in the same subtree, return a position rooted at this
+    // position's anchor. This is necessary because we don't want to return a
+    // position that might be in the shadow DOM when this position is not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
