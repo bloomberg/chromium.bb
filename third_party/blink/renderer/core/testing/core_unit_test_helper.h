@@ -89,8 +89,16 @@ class RenderingTestChromeClient : public EmptyChromeClient {
     return layer_tree_->layer_tree_host();
   }
 
+  void SetDeviceEmulationTransform(const TransformationMatrix& t) {
+    device_emulation_transform_ = t;
+  }
+  TransformationMatrix GetDeviceEmulationTransform() const override {
+    return device_emulation_transform_;
+  }
+
  private:
   std::unique_ptr<LayerTreeHostEmbedder> layer_tree_;
+  TransformationMatrix device_emulation_transform_;
 };
 
 class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
