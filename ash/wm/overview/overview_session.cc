@@ -755,9 +755,14 @@ void OverviewSession::OnHighlightedItemClosed(OverviewItem* item) {
   item->CloseWindow();
 }
 
-void OverviewSession::OnDisplayRemoved(const display::Display& display) {
-  // TODO(flackr): Keep window selection active on remaining displays.
+void OverviewSession::OnDisplayAdded(const display::Display& display) {
   EndOverview();
+}
+
+void OverviewSession::OnDisplayRemoved(const display::Display& display) {
+  // Removing a display causes a window activation which will end overview mode
+  // so that |OnDisplayRemoved| is never called.
+  NOTREACHED();
 }
 
 void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
