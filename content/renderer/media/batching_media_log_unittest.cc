@@ -2,33 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <tuple>
-
+#include "content/renderer/media/batching_media_log.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "content/common/view_messages.h"
 #include "content/public/test/mock_render_thread.h"
-#include "content/renderer/media/render_media_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace content {
 
-class RenderMediaLogTest : public testing::Test {
+class BatchingMediaLogTest;
+
+class TestEventHandler : public BatchingMediaLog::EventHandler {
  public:
-  RenderMediaLogTest()
-      : log_(GURL("http://foo.com"),
-             blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
-        task_runner_(new base::TestMockTimeTaskRunner()) {
+  explicit TestEventHandler(BatchingMediaLogTest* test_cls)
+      : test_cls_(test_cls) {}
+  void SendQueuedMediaEvents(std::vector<media::MediaLogEvent> events) override;
+
+ private:
+  BatchingMediaLogTest* test_cls_;
+};
+
+class BatchingMediaLogTest : public testing::Test {
+ public:
+  BatchingMediaLogTest()
+      : task_runner_(new base::TestMockTimeTaskRunner()),
+        log_(GURL("http://foo.com"),
+             task_runner_,
+             std::make_unique<TestEventHandler>(this)) {
     log_.SetTickClockForTesting(&tick_clock_);
-    log_.SetTaskRunnerForTesting(task_runner_);
   }
 
-  ~RenderMediaLogTest() override {
-    task_runner_->ClearPendingTasks();
-  }
+  ~BatchingMediaLogTest() override { task_runner_->ClearPendingTasks(); }
 
   void AddEvent(media::MediaLogEvent::Type type) {
     log_.AddEvent(log_.CreateEvent(type));
@@ -41,32 +49,36 @@ class RenderMediaLogTest : public testing::Test {
     task_runner_->FastForwardBy(delta);
   }
 
-  int message_count() { return render_thread_.sink().message_count(); }
+  int message_count() { return add_events_count_; }
 
   std::vector<media::MediaLogEvent> GetMediaLogEvents() {
-    const IPC::Message* msg = render_thread_.sink().GetFirstMessageMatching(
-        ViewHostMsg_MediaLogEvents::ID);
-    if (!msg) {
-      ADD_FAILURE() << "Did not find ViewHostMsg_MediaLogEvents IPC message";
-      return std::vector<media::MediaLogEvent>();
-    }
-
-    std::tuple<std::vector<media::MediaLogEvent>> events;
-    ViewHostMsg_MediaLogEvents::Read(msg, &events);
-    return std::get<0>(events);
+    std::vector<media::MediaLogEvent> return_events = std::move(events_);
+    return return_events;
   }
 
  private:
+  friend class TestEventHandler;
+  void AddEventsForTesting(std::vector<media::MediaLogEvent> events) {
+    events_.insert(events_.end(), events.begin(), events.end());
+    add_events_count_++;
+  }
+  int add_events_count_ = 0;
+  std::vector<media::MediaLogEvent> events_;
   base::test::ScopedTaskEnvironment task_environment_;
   MockRenderThread render_thread_;
   base::SimpleTestTickClock tick_clock_;
-  RenderMediaLog log_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  BatchingMediaLog log_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderMediaLogTest);
+  DISALLOW_COPY_AND_ASSIGN(BatchingMediaLogTest);
 };
 
-TEST_F(RenderMediaLogTest, ThrottleSendingEvents) {
+void TestEventHandler::SendQueuedMediaEvents(
+    std::vector<media::MediaLogEvent> events) {
+  test_cls_->AddEventsForTesting(events);
+}
+
+TEST_F(BatchingMediaLogTest, ThrottleSendingEvents) {
   AddEvent(media::MediaLogEvent::LOAD);
   EXPECT_EQ(0, message_count());
 
@@ -90,7 +102,7 @@ TEST_F(RenderMediaLogTest, ThrottleSendingEvents) {
   EXPECT_EQ(1, message_count());
 }
 
-TEST_F(RenderMediaLogTest, EventSentWithoutDelayAfterIpcInterval) {
+TEST_F(BatchingMediaLogTest, EventSentWithoutDelayAfterIpcInterval) {
   AddEvent(media::MediaLogEvent::LOAD);
   Advance(base::TimeDelta::FromMilliseconds(1000));
   EXPECT_EQ(1, message_count());
@@ -102,7 +114,7 @@ TEST_F(RenderMediaLogTest, EventSentWithoutDelayAfterIpcInterval) {
   EXPECT_EQ(2, message_count());
 }
 
-TEST_F(RenderMediaLogTest, DurationChanged) {
+TEST_F(BatchingMediaLogTest, DurationChanged) {
   AddEvent(media::MediaLogEvent::LOAD);
   AddEvent(media::MediaLogEvent::SEEK);
 

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_RENDER_MEDIA_LOG_H_
-#define CONTENT_RENDERER_MEDIA_RENDER_MEDIA_LOG_H_
+#ifndef CONTENT_RENDERER_MEDIA_BATCHING_MEDIA_LOG_H_
+#define CONTENT_RENDERER_MEDIA_BATCHING_MEDIA_LOG_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -22,26 +23,27 @@ class TickClock;
 
 namespace content {
 
-// RenderMediaLog is an implementation of MediaLog that forwards events to the
-// browser process, throttling as necessary.
-//
-// It also caches the last error events to support renderer-side reporting to
-// entities like HTMLMediaElement and devtools console.
-//
-// To minimize the number of events sent over the wire, only the latest event
-// added is sent for high frequency events (e.g., BUFFERED_EXTENTS_CHANGED).
+// BatchingMediaLog is an implementation of MediaLog that sends messages
+// grouped together in order to reduce IPC pressure.
+// In order to subclass it, a subclass of the BatchingMediaLog::EventHandler
+// should implement behavior when recieving a group of messages.
 //
 // It must be constructed on the render thread.
-class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
+class CONTENT_EXPORT BatchingMediaLog : public media::MediaLog {
  public:
-  RenderMediaLog(const GURL& security_origin,
-                 scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  ~RenderMediaLog() override;
+  class EventHandler {
+   public:
+    virtual ~EventHandler() = default;
+    virtual void SendQueuedMediaEvents(std::vector<media::MediaLogEvent>) = 0;
+  };
+
+  BatchingMediaLog(const GURL& security_origin,
+                   scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                   std::unique_ptr<EventHandler> impl);
+  ~BatchingMediaLog() override;
 
   // Will reset |last_ipc_send_time_| with the value of NowTicks().
   void SetTickClockForTesting(const base::TickClock* tick_clock);
-  void SetTaskRunnerForTesting(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
  protected:
   // MediaLog implementation.
@@ -58,6 +60,9 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
   const GURL security_origin_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // impl for sending queued events.
+  std::unique_ptr<EventHandler> event_handler_;
 
   // |lock_| protects access to all of the following member variables.  It
   // allows any render process thread to AddEvent(), while preserving their
@@ -86,12 +91,12 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
   // Holds a copy of the most recent PIPELINE_ERROR, if any.
   std::unique_ptr<media::MediaLogEvent> last_pipeline_error_;
 
-  base::WeakPtr<RenderMediaLog> weak_this_;
-  base::WeakPtrFactory<RenderMediaLog> weak_factory_{this};
+  base::WeakPtr<BatchingMediaLog> weak_this_;
+  base::WeakPtrFactory<BatchingMediaLog> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderMediaLog);
+  DISALLOW_COPY_AND_ASSIGN(BatchingMediaLog);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_RENDER_MEDIA_LOG_H_
+#endif  // CONTENT_RENDERER_MEDIA_BATCHING_MEDIA_LOG_H_
