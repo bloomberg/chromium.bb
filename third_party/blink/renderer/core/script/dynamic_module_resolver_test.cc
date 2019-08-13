@@ -92,7 +92,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
     EXPECT_EQ(CaptureEvalErrorFlag::kCapture, capture_error);
 
     ScriptState::Scope scope(script_state_);
-    return ModuleRecord::Evaluate(script_state_, module_script->LocalRecord(),
+    return ModuleRecord::Evaluate(script_state_, module_script->V8Module(),
                                   module_script->SourceURL());
   }
 

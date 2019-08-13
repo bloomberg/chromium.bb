@@ -352,7 +352,7 @@ void ModuleTreeLinker::FetchDescendants(const ModuleScript* module_script) {
   }
 
   // <spec step="2">Let record be module script's record.</spec>
-  v8::Local<v8::Module> record = module_script->LocalRecord();
+  v8::Local<v8::Module> record = module_script->V8Module();
 
   // <spec step="1">If module script's record is null, then asynchronously
   // complete this algorithm with module script and abort these steps.</spec>
@@ -515,7 +515,7 @@ void ModuleTreeLinker::Instantiate() {
 #endif
 
     // <spec step="5.1">Let record be result's record.</spec>
-    v8::Local<v8::Module> record = result_->LocalRecord();
+    v8::Local<v8::Module> record = result_->V8Module();
 
     // <spec step="5.2">Perform record.Instantiate(). ...</spec>
     AdvanceState(State::kInstantiating);
@@ -569,7 +569,7 @@ ScriptValue ModuleTreeLinker::FindFirstParseError(
 
   // <spec step="4">If moduleScript's record is null, then return moduleScript's
   // parse error.</spec>
-  v8::Local<v8::Module> record = module_script->LocalRecord();
+  v8::Local<v8::Module> record = module_script->V8Module();
   if (record.IsEmpty())
     return module_script->CreateParseError();
 

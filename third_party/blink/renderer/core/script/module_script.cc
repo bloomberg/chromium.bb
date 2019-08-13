@@ -33,18 +33,7 @@ ModuleScript::ModuleScript(Modulator* settings_object,
   record_.Set(isolate, record);
 }
 
-// TODO(rikaf):Replace Record() with LocalRecord()
-ModuleRecord ModuleScript::Record() const {
-  if (record_.IsEmpty())
-    return ModuleRecord();
-
-  v8::Isolate* isolate = settings_object_->GetScriptState()->GetIsolate();
-  v8::HandleScope scope(isolate);
-
-  return ModuleRecord(isolate, record_.NewLocal(isolate), SourceURL());
-}
-
-v8::Local<v8::Module> ModuleScript::LocalRecord() const {
+v8::Local<v8::Module> ModuleScript::V8Module() const {
   if (record_.IsEmpty()) {
     return v8::Local<v8::Module>();
   }

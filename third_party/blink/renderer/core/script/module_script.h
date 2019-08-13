@@ -27,8 +27,7 @@ namespace blink {
 // https://html.spec.whatwg.org/C/#module-script
 class CORE_EXPORT ModuleScript : public Script {
  public:
-  ModuleRecord Record() const;
-  v8::Local<v8::Module> LocalRecord() const;
+  v8::Local<v8::Module> V8Module() const;
   bool HasEmptyRecord() const;
 
   // Note: ParseError-related methods should only be used from ModuleTreeLinker

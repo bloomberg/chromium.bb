@@ -143,11 +143,11 @@ TEST_F(ModuleScriptTest, V8CodeCache) {
 
     // Check that the module script is instantiated/evaluated correctly.
     ASSERT_TRUE(ModuleRecord::Instantiate(scope.GetScriptState(),
-                                          module_script->LocalRecord(),
+                                          module_script->V8Module(),
                                           module_script->SourceURL())
                     .IsEmpty());
     ASSERT_TRUE(ModuleRecord::Evaluate(scope.GetScriptState(),
-                                       module_script->LocalRecord(),
+                                       module_script->V8Module(),
                                        module_script->SourceURL())
                     .IsEmpty());
     TestFoo(scope);
@@ -260,7 +260,7 @@ TEST_F(ModuleScriptTest, ValueWrapperSyntheticModuleScript) {
       MakeGarbageCollected<ModuleScriptTestModulator>(scope.GetScriptState());
   ValueWrapperSyntheticModuleScript* module_script =
       CreateValueWrapperSyntheticModuleScript(modulator, local_value);
-  ASSERT_FALSE(module_script->Record().IsNull());
+  ASSERT_FALSE(module_script->V8Module().IsEmpty());
 }
 
 }  // namespace blink

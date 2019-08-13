@@ -109,7 +109,11 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   void SetInstantiateShouldFail(bool b) { instantiate_should_fail_ = b; }
 
   bool HasInstantiated(ModuleScript* module_script) const {
-    return instantiated_records_.Contains(module_script->Record());
+    v8::Isolate* isolate = script_state_->GetIsolate();
+    v8::HandleScope scope(isolate);
+
+    return instantiated_records_.Contains(ModuleRecord(
+        isolate, module_script->V8Module(), module_script->SourceURL()));
   }
 
  private:

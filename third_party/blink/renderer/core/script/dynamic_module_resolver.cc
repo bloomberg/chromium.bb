@@ -109,7 +109,7 @@ void DynamicImportTreeClient::NotifyModuleTreeLoadFinished(
   //
   // Note: We skip invocation of ModuleRecordResolver here. The
   // result of HostResolveImportedModule is guaranteed to be |module_script|.
-  v8::Local<v8::Module> record = module_script->LocalRecord();
+  v8::Local<v8::Module> record = module_script->V8Module();
   DCHECK(!record.IsEmpty());
 
   // <spec

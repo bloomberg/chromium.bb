@@ -130,19 +130,25 @@ TEST_F(ModuleRecordResolverImplTest, RegisterResolveSuccess) {
           Modulator(), scope.GetExecutionContext());
   Modulator()->SetScriptState(scope.GetScriptState());
 
+  v8::Isolate* isolate = scope.GetScriptState()->GetIsolate();
   ModuleScript* referrer_module_script =
       CreateReferrerModuleScript(modulator_, scope);
   resolver->RegisterModuleScript(referrer_module_script);
+  ModuleRecord referrer_module_record =
+      ModuleRecord(isolate, referrer_module_script->V8Module(),
+                   referrer_module_script->SourceURL());
 
   ModuleScript* target_module_script =
       CreateTargetModuleScript(modulator_, scope);
   Modulator()->SetModuleScript(target_module_script);
+  ModuleRecord target_module_record =
+      ModuleRecord(isolate, target_module_script->V8Module(),
+                   target_module_script->SourceURL());
 
-  ModuleRecord resolved =
-      resolver->Resolve("./target.js", referrer_module_script->Record(),
-                        scope.GetExceptionState());
+  ModuleRecord resolved = resolver->Resolve(
+      "./target.js", referrer_module_record, scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(resolved, target_module_script->Record());
+  EXPECT_EQ(resolved, target_module_record);
   EXPECT_EQ(1, modulator_->GetFetchedModuleScriptCalled());
   EXPECT_EQ(modulator_->FetchedUrl(), target_module_script->BaseURL())
       << "Unexpectedly fetched URL: " << modulator_->FetchedUrl().GetString();

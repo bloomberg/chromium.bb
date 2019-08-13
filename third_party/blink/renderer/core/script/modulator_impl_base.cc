@@ -318,7 +318,7 @@ void ModulatorImplBase::ProduceCacheModuleTree(
 
   discovered_set->insert(module_script);
 
-  v8::Local<v8::Module> record = module_script->LocalRecord();
+  v8::Local<v8::Module> record = module_script->V8Module();
   DCHECK(!record.IsEmpty());
 
   module_script->ProduceCache();
@@ -378,7 +378,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
     // <spec step="7">Otherwise:</spec>
 
     // <spec step="7.1">Let record be script's record.</spec>
-    const v8::Local<v8::Module>& record = module_script->LocalRecord();
+    const v8::Local<v8::Module>& record = module_script->V8Module();
     CHECK(!record.IsEmpty());
 
     // <spec step="7.2">Set evaluationStatus to ModuleRecord::Evaluate().
