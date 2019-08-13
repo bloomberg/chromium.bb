@@ -421,8 +421,8 @@ static double calc_frame_boost(AV1_COMP *cpi, const FIRSTPASS_STATS *this_frame,
 #define MIN_ARF_GF_BOOST 240
 #define MIN_DECAY_FACTOR 0.01
 
-static int calc_arf_boost(AV1_COMP *cpi, int offset, int f_frames, int b_frames,
-                          int *f_boost, int *b_boost) {
+static int calc_arf_boost(AV1_COMP *cpi, int offset, int f_frames,
+                          int b_frames) {
   TWO_PASS *const twopass = &cpi->twopass;
   int i;
   double boost_score = 0.0;
@@ -462,7 +462,7 @@ static int calc_arf_boost(AV1_COMP *cpi, int offset, int f_frames, int b_frames,
         calc_frame_boost(cpi, this_frame, this_frame_mv_in_out, GF_MAX_BOOST);
   }
 
-  *f_boost = (int)boost_score;
+  arf_boost = (int)boost_score;
 
   // Reset for backward looking loop.
   boost_score = 0.0;
@@ -499,9 +499,8 @@ static int calc_arf_boost(AV1_COMP *cpi, int offset, int f_frames, int b_frames,
         decay_accumulator *
         calc_frame_boost(cpi, this_frame, this_frame_mv_in_out, GF_MAX_BOOST);
   }
-  *b_boost = (int)boost_score;
+  arf_boost += (int)boost_score;
 
-  arf_boost = (*f_boost + *b_boost);
   if (arf_boost < ((b_frames + f_frames) * 20))
     arf_boost = ((b_frames + f_frames) * 20);
   arf_boost = AOMMAX(arf_boost, MIN_ARF_GF_BOOST);
@@ -787,6 +786,7 @@ static void define_gf_group_pass0(AV1_COMP *cpi,
 }
 
 // Analyse and define a gf/arf group.
+#define MAX_GF_BOOST 5400
 static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
                             const EncodeFrameParams *const frame_params) {
   AV1_COMMON *const cm = &cpi->common;
@@ -820,8 +820,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
   unsigned int allow_alt_ref = is_altref_enabled(cpi);
 
-  int f_boost = 0;
-  int b_boost = 0;
   int flash_detected;
   int64_t gf_group_bits;
   double gf_group_error_left;
@@ -1089,12 +1087,17 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
   // Should we use the alternate reference frame.
   if (use_alt_ref) {
+    const int forward_frames = (rc->frames_to_key - i >= i - 1)
+                                   ? i - 1
+                                   : AOMMAX(0, rc->frames_to_key - i);
+
     // Calculate the boost for alt ref.
-    rc->gfu_boost =
-        calc_arf_boost(cpi, alt_offset, (i - 1), (i - 1), &f_boost, &b_boost);
+    rc->gfu_boost = calc_arf_boost(cpi, alt_offset, forward_frames, (i - 1));
     rc->source_alt_ref_pending = 1;
   } else {
-    rc->gfu_boost = AOMMAX((int)boost_score, MIN_ARF_GF_BOOST);
+    reset_fpf_position(twopass, start_pos);
+    rc->gfu_boost =
+        AOMMIN(MAX_GF_BOOST, calc_arf_boost(cpi, alt_offset, (i - 1), 0));
     rc->source_alt_ref_pending = 0;
   }
 
@@ -1774,7 +1777,8 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
       FILE *fpfile;
       fpfile = fopen("arf.stt", "a");
       ++arf_count;
-      fprintf(fpfile, "%10d %10d %10d %10d %10d\n", current_frame->frame_number,
+      fprintf(fpfile, "%10d %10d %10d %10d %10d\n",
+              cpi->common.current_frame.frame_number,
               rc->frames_till_gf_update_due, rc->kf_boost, arf_count,
               rc->gfu_boost);
 
