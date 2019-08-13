@@ -279,3 +279,10 @@ D. Local Modifications
     https://unicode-org.atlassian.net/browse/ICU-20654
   - upstream PR:
     https://github.com/unicode-org/icu/pull/674
+
+12. Add usePoolBundle option to filters.json
+  - patches/usePool.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20660
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/682
