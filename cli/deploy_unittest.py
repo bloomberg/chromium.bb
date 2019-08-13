@@ -38,8 +38,15 @@ class ChromiumOSDeviceFake(object):
     self.lsb_release = None
     self.cmds = []
     self.work_dir = '/testdir/'
+    self.selinux_available = False
 
   def MountRootfsReadWrite(self):
+    return True
+
+  def IsSELinuxAvailable(self):
+    return self.selinux_available
+
+  def IsSELinuxEnforced(self):
     return True
 
   def RunCommand(self, cmd, **_kwargs):
@@ -306,10 +313,6 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
         deploy, '_GetPackagesByCPV', side_effect=self.FakeGetPackagesByCPV)
     self.emerge = self.PatchObject(deploy, '_Emerge', return_value=None)
     self.unmerge = self.PatchObject(deploy, '_Unmerge', return_value=None)
-    self.has_selinux = self.PatchObject(
-        deploy, '_HasSELinux', return_value=False)
-    self.is_selinux_enforced = self.PatchObject(
-        deploy, '_IsSELinuxEnforced', return_value=True)
     self.PatchObject(deploy, '_GetDLCInfo', return_value=(None, None))
 
   def testDeployEmerge(self):
@@ -364,7 +367,7 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
                'restorecon', '-i', '-f', '-'],
               ['setenforce', '1']]
 
-    self.has_selinux.return_value = True
+    self.device.device.selinux_available = True
     packages = ['some/foo-1.2.3', _BINPKG, 'some/foobar-2.0']
     cpvs = ['some/foo-1.2.3', 'to/bar-1.2.5', 'some/foobar-2.0']
     self.package_scanner.return_value = PackageScannerFake(

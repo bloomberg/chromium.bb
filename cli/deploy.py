@@ -815,28 +815,6 @@ def _Emerge(device, pkg_path, root, extra_args=None):
     logging.notice('%s has been installed.', pkg_name)
 
 
-def _HasSELinux(device):
-  """Check whether the device has SELinux-enabled.
-
-  Args:
-    device: A ChromiumOSDevice object.
-  """
-  try:
-    device.CatFile('/sys/fs/selinux/enforce', max_size=None)
-    return True
-  except remote_access.CatFileError:
-    return False
-
-
-def _IsSELinuxEnforced(device):
-  """Check whether the device has SELinux-enforced.
-
-  Args:
-    device: A ChromiumOSDevice object
-  """
-  return device.CatFile('/sys/fs/selinux/enforce', max_size=None).strip() == '1'
-
-
 def _RestoreSELinuxContext(device, pkgpath, root):
   """Restore SELinux context for files in a given pacakge.
 
@@ -849,7 +827,7 @@ def _RestoreSELinuxContext(device, pkgpath, root):
     pkgpath: path to tarball
     root: Package installation root path.
   """
-  enforced = _IsSELinuxEnforced(device)
+  enforced = device.IsSELinuxEnforced()
   if enforced:
     device.RunCommand(['setenforce', '0'])
   pkgroot = os.path.join(device.work_dir, 'packages')
@@ -961,7 +939,7 @@ def _EmergePackages(pkgs, device, strip, sysroot, root, emerge_args):
   dlc_deployed = False
   for pkg_path in _GetPackagesPaths(pkgs, strip, sysroot):
     _Emerge(device, pkg_path, root, extra_args=emerge_args)
-    if _HasSELinux(device):
+    if device.IsSELinuxAvailable():
       _RestoreSELinuxContext(device, pkg_path, root)
     if _DeployDLCImage(device, pkg_path):
       dlc_deployed = True
@@ -1170,7 +1148,7 @@ def Deploy(device, packages, board=None, emerge=True, update=False, deep=False,
       else:
         func()
 
-      if _HasSELinux(device):
+      if device.IsSELinuxAvailable():
         if sum(x.count('selinux-policy') for x in pkgs):
           logging.warning(
               'Deploying SELinux policy will not take effect until reboot. '

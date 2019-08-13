@@ -306,6 +306,30 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
 
     self.assertEqual(self.rsh_mock.call_count, 2)
 
+  def testSELinux(self):
+    """Tests behavior of IsSELinuxAvailable() and IsSELinuxEnforced()."""
+    with remote_access.RemoteDeviceHandler('1.1.1.1') as device:
+      self.rsh_mock.AddCmdResult(
+          partial_mock.ListRegex('test -f'), returncode=0)
+      self.rsh_mock.AddCmdResult(
+          partial_mock.ListRegex('cat /sys/fs/selinux/enforce'),
+          returncode=0, output='1')
+      self.assertEqual(device.IsSELinuxAvailable(), True)
+      self.assertEqual(device.IsSELinuxEnforced(), True)
+
+      self.rsh_mock.AddCmdResult(
+          partial_mock.ListRegex('test -f'), returncode=0)
+      self.rsh_mock.AddCmdResult(
+          partial_mock.ListRegex('cat /sys/fs/selinux/enforce'),
+          returncode=0, output='0')
+      self.assertEqual(device.IsSELinuxAvailable(), True)
+      self.assertEqual(device.IsSELinuxEnforced(), False)
+
+      self.rsh_mock.AddCmdResult(
+          partial_mock.ListRegex('test -f'), returncode=1)
+      self.assertEqual(device.IsSELinuxAvailable(), False)
+      self.assertEqual(device.IsSELinuxEnforced(), False)
+
 
 class ScpTest(cros_test_lib.MockTempDirTestCase):
   """Tests for RemoteAccess.Scp"""

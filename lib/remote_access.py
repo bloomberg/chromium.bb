@@ -756,6 +756,16 @@ class RemoteDevice(object):
                                       capture_output=True)
     return re.search(r'Speed: \d+000Mb/s', result.output)
 
+  def IsSELinuxAvailable(self):
+    """Check whether the device has SELinux compiled in."""
+    return self.IfFileExists('/sys/fs/selinux/enforce')
+
+  def IsSELinuxEnforced(self):
+    """Check whether the device has SELinux-enforced."""
+    if not self.IsSELinuxAvailable():
+      return False
+    return self.CatFile('/sys/fs/selinux/enforce', max_size=None).strip() == '1'
+
   def RegisterCleanupCmd(self, cmd, **kwargs):
     """Register a cleanup command to be run on the device in Cleanup().
 
@@ -886,6 +896,7 @@ class RemoteDevice(object):
 
   def IfFileExists(self, path, **kwargs):
     """Check if the given path exists on the device."""
+    kwargs.setdefault('error_code_ok', True)
     result = self.RunCommand(['test -f %s' % path], **kwargs)
     return result.returncode == 0
 
