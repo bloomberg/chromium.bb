@@ -367,10 +367,12 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   devtools_params->devtools_worker_token = devtools_worker_token_;
   devtools_params->wait_for_debugger =
       wait_for_debugger_mode_ == WebEmbeddedWorkerStartData::kWaitForDebugger;
-  mojom::blink::DevToolsAgentPtrInfo devtools_agent_ptr_info;
-  devtools_params->agent_request = mojo::MakeRequest(&devtools_agent_ptr_info);
-  mojom::blink::DevToolsAgentHostRequest devtools_agent_host_request =
-      mojo::MakeRequest(&devtools_params->agent_host_ptr_info);
+  mojo::PendingRemote<mojom::blink::DevToolsAgent> devtools_agent_remote;
+  devtools_params->agent_receiver =
+      devtools_agent_remote.InitWithNewPipeAndPassReceiver();
+  mojo::PendingReceiver<mojom::blink::DevToolsAgentHost>
+      devtools_agent_host_receiver =
+          devtools_params->agent_host_remote.InitWithNewPipeAndPassReceiver();
 
   worker_thread_->Start(std::move(global_scope_creation_params),
                         WorkerBackingThreadStartupData::CreateDefault(),
@@ -428,8 +430,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   }
   // We are now ready to inspect worker thread.
   worker_context_client_->WorkerReadyForInspectionOnMainThread(
-      devtools_agent_ptr_info.PassHandle(),
-      devtools_agent_host_request.PassMessagePipe());
+      devtools_agent_remote.PassPipe(),
+      devtools_agent_host_receiver.PassPipe());
 }
 
 std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
