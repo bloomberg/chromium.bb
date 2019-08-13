@@ -6296,9 +6296,6 @@ crbug.com/937546 [ Win7 ] virtual/blink-cors/http/tests/security/xss-DENIED-cros
 crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/null.tentative.html [ Failure ]
 crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/usecredentials.tentative.html [ Failure ]
 
-# Flaky on Linux, failing on macOS
-crbug.com/984926 [ Linux Mac ] http/tests/devtools/elements/highlight/highlight-node-vertical-rl.js [ Pass Failure ]
-
 # Sheriff 2019-06-20
 crbug.com/977153 [ Mac ] fast/forms/validation-bubble-appearance-wrap.html [ Pass Failure ]
 crbug.com/976045 fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
