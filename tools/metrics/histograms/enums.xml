@@ -25956,6 +25956,15 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Failed / credentials rejected"/>
 </enum>
 
+<enum name="GaiaPasswordHashChange">
+  <int value="0" label="Saved on Chrome sign-in (syncing)"/>
+  <int value="1" label="Saved in the content area"/>
+  <int value="2" label="Cleared on Chrome sign-out"/>
+  <int value="3" label="Changed in the content area"/>
+  <int value="4"
+      label="Password hash change event where the account is not syncing"/>
+</enum>
+
 <enum name="GaiaSessionRestoreOutcome">
   <int value="0" label="Undefined"/>
   <int value="1" label="Success"/>
@@ -57792,14 +57801,6 @@ would be helpful to identify which type is being sent.
   <int value="1" label="KEYSTORE_PASSPHRASE"/>
   <int value="2" label="FROZEN_IMPLICIT_PASSPHRASE"/>
   <int value="3" label="CUSTOM_PASSPHRASE"/>
-</enum>
-
-<enum name="SyncPasswordHashChange">
-  <int value="0" label="Saved on Chrome sign-in"/>
-  <int value="1" label="Saved in the content area"/>
-  <int value="2" label="Cleared on Chrome sign-out"/>
-  <int value="3" label="Changed in the content area"/>
-  <int value="4" label="Not sync password hash change event"/>
 </enum>
 
 <enum name="SyncPositioningScheme">
