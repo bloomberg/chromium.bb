@@ -8,36 +8,40 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_registry.h"
-#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
-class WebLocalFrameImpl;
+class LocalFrame;
 
-// Implementation of blink::mojom::Frame
+// Implementation of mojom::blink::Frame
 class CORE_EXPORT FrameImpl final : public GarbageCollectedFinalized<FrameImpl>,
+                                    public Supplement<LocalFrame>,
                                     public mojom::blink::Frame {
- public:
-  // TODO(crbug.com/980151): Construct FrameImpl this way only while we need to
-  // rely in blink::WebSurroundingText to implement GetTextSurroundingSelection,
-  // and remove the dependency once WebSurroundingText is out of the public API.
-  FrameImpl(WebLocalFrameImpl& frame, InterfaceRegistry* interface_registry);
+  USING_GARBAGE_COLLECTED_MIXIN(FrameImpl);
 
-  void BindToReceiver(
+ public:
+  static const char kSupplementName[];
+
+  static void BindToReceiver(
+      LocalFrame* frame,
       mojo::PendingAssociatedReceiver<mojom::blink::Frame> receiver);
+
+  static FrameImpl* From(LocalFrame* frame);
+
+  explicit FrameImpl(
+      LocalFrame& frame,
+      mojo::PendingAssociatedReceiver<mojom::blink::Frame> receiver);
+  ~FrameImpl() override;
 
   void GetTextSurroundingSelection(
       uint32_t max_length,
       GetTextSurroundingSelectionCallback callback) final;
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(frame_); }
-
  private:
-  const Member<WebLocalFrameImpl> frame_;
-
   mojo::AssociatedReceiver<mojom::blink::Frame> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FrameImpl);
