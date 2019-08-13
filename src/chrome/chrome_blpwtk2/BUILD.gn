@@ -1,0 +1,106 @@
+# Copyright (C) 2017 Bloomberg L.P. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import("//chrome/chrome_repack_locales.gni")
+import("//rlz/buildflags/buildflags.gni")
+
+static_library("chrome_blpwtk2") {
+  include_dirs = [
+    ".",
+  ]
+
+  sources = [
+    # required by //blpwtk2:blpwtk2
+    "//chrome/common/chrome_content_client.cc",
+    "//chrome/common/chrome_content_client.h",
+    "//chrome/common/chrome_content_client_constants.cc",
+    "//chrome/common/chrome_content_client_constants.h",
+    "//chrome/common/pref_names.cc",
+    "//chrome/common/pref_names.h",
+    "//chrome/utility/chrome_content_utility_client.cc",
+    "//chrome/utility/chrome_content_utility_client.h",
+    # required by //chrome/common/chrome_content_client.cc
+    "//chrome/common/chrome_switches.cc",
+    "//chrome/common/chrome_switches.h",
+    "//chrome/common/url_constants.h",
+    "//chrome/common/url_constants.cc",
+
+    # required by //chrome/common/common_message_generator.h
+#    "//chrome/common/render_messages.cc",
+#    "//chrome/common/render_messages.h",
+    "//chrome/common/page_load_metrics/page_load_timing.cc",
+    "//chrome/common/page_load_metrics/page_load_timing.h",
+
+    # required for chrome services
+    "//chrome/browser/chrome_service.cc",
+    "//chrome/browser/chrome_service.h",
+  ]
+
+  deps = [
+     "//chrome/app:chrome_service_manifests",
+     "//chrome/services/printing/public/mojom",
+     "//chrome/services/printing:lib",
+     "//chrome/services/printing/public/cpp:manifest",
+     "//chrome/services/util_win/public/mojom",
+     "//chrome/services/util_win:lib",
+     "//components/signin/core/browser:signin_buildflags",
+     "//components/safe_browsing/web_ui:constants",
+     "//components/mirroring/mojom:constants",
+     "//components/mirroring/service:mirroring_service",
+     "//components/services/pdf_compositor/public/cpp:factory",
+     "//components/services/pdf_compositor/public/interfaces",
+     "//content",
+
+     # required by //chrome/common/chrome_content_client.cc
+     "//chrome/browser/metrics/variations:chrome_ui_string_overrider_factory",
+     "//chrome/common:resources",
+     "//chrome/common/importer:interfaces",
+     "//components/services/heap_profiling",
+     "//components/services/patch/public/interfaces",
+     "//components/services/patch:lib",
+     "//components/services/unzip/public/interfaces",
+     "//components/services/unzip:lib",
+     "//rlz/buildflags",
+     "//services/proxy_resolver:lib",
+     "//third_party/adobe/flash:flapper_version_h",
+
+     # required by //chrome/common/pref_names.cc
+     "//chrome/common",
+     "//ipc:param_traits",
+     "//pdf:buildflags",
+
+     # required for chrome services
+     "//content/public/common:service_names",
+
+     # required by many. this target generates the header files that define
+     # macros to check the enablement of specific extensions.  Many
+     # components in the chrome library use these macros to enable extension
+     # specific code.
+     "//extensions/buildflags",
+  ]
+
+  defines = [
+    "BLPWTK2_IMPLEMENTATION",
+  ]
+}
+

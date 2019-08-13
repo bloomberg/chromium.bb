@@ -53,6 +53,11 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
   std::string GetAcceptLangs(BrowserContext* context) override;
+  bool SupportsInProcessRenderer() override;
+  void StartInProcessRendererThread(
+      mojo::OutgoingInvitation* broker_client_invitation,
+      const std::string& service_token) override;
+  void StopInProcessRendererThread() override;
   void ResourceDispatcherHostCreated() override;
   std::string GetDefaultDownloadName() override;
   WebContentsViewDelegate* GetWebContentsViewDelegate(

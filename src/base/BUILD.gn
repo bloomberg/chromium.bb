@@ -33,6 +33,7 @@ import("//build/nocompile.gni")
 import("//build/timestamp.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 if (is_mac) {
   # Used to generate fuzzer corpus :base_mach_port_rendezvous_convert_corpus.
@@ -2190,6 +2191,7 @@ component("i18n") {
   public_deps = [
     "//third_party/ced",
     "//third_party/icu",
+    "//blpwtk2:blpwtk2_generate_sources",
   ]
   deps = [
     ":base",
@@ -2201,12 +2203,20 @@ component("i18n") {
     configs += [ "//build/config/compiler:optimize_max" ]
   }
 
+  if (is_blpwtk2) {
+    defines += [ "IS_BLPWTK2" ]
+  }
+
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   if (is_mac) {
     libs = [ "CoreFoundation.framework" ]
   }
+
+  public_configs = [
+    "//blpwtk2:blpwtk2_public"
+  ]
 }
 
 test("base_perftests") {

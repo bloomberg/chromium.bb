@@ -240,7 +240,8 @@ int HostMain(int argc, char** argv) {
   }
 
   // Required to find the ICU data file, used by some file_util routines.
-  base::i18n::InitializeICU();
+  const void *icu_data;
+  base::i18n::InitializeICU(&icu_data);
 
   remoting::LoadResources("");
 

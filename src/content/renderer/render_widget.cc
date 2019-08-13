@@ -1240,6 +1240,14 @@ void RenderWidget::SetShowFPSCounter(bool show) {
   host->SetDebugState(debug_state);
 }
 
+void RenderWidget::bbHandleInputEvent(const blink::WebInputEvent& event) {
+  ui::LatencyInfo latency_info;
+  bb_OnHandleInputEvent_no_ack_ = true;
+  input_handler_->HandleInputEvent(blink::WebCoalescedInputEvent(event),
+                                   latency_info, {});
+  bb_OnHandleInputEvent_no_ack_ = false;
+}
+
 void RenderWidget::SetShowPaintRects(bool show) {
   cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
   cc::LayerTreeDebugState debug_state = host->GetDebugState();

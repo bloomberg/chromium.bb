@@ -583,6 +583,16 @@ grit("resources") {
   ]
 }
 
+# Needed by blpwtk2
+grit("inspector_resources") {
+  output_dir = "$root_gen_dir/third_party/blink/public/resources"
+  source = "blink_inspector_resources.grd"
+  outputs = [
+    "grit/blink_inspector_resources.h",
+    "blink_inspector_resources.pak",
+  ]
+}
+
 grit("image_resources") {
   output_dir = "$root_gen_dir/third_party/blink/public/resources"
   source = "blink_image_resources.grd"

@@ -68,9 +68,9 @@ class V8_EXPORT StringBuffer {
   static std::unique_ptr<StringBuffer> create(const StringView&);
 };
 
-class V8_EXPORT V8ContextInfo {
+class V8ContextInfo {
  public:
-  V8ContextInfo(v8::Local<v8::Context> context, int contextGroupId,
+  V8_EXPORT V8ContextInfo(v8::Local<v8::Context> context, int contextGroupId,
                 const StringView& humanReadableName)
       : context(context),
         contextGroupId(contextGroupId),
@@ -85,7 +85,7 @@ class V8_EXPORT V8ContextInfo {
   StringView auxData;
   bool hasMemoryOnConsole;
 
-  static int executionContextId(v8::Local<v8::Context> context);
+  V8_EXPORT static int executionContextId(v8::Local<v8::Context> context);
 
   // Disallow copying and allocating this one.
   enum NotNullTagEnum { NotNullLiteral };
@@ -279,7 +279,10 @@ class V8_EXPORT V8Inspector {
   // Connection.
   class V8_EXPORT Channel {
    public:
-    virtual ~Channel() = default;
+    // Destructor
+    // Since this header file does not have a corresponding source file, this
+    // destructor is defined in v8-inspector-impl.cc
+    virtual ~Channel();
     virtual void sendResponse(int callId,
                               std::unique_ptr<StringBuffer> message) = 0;
     virtual void sendNotification(std::unique_ptr<StringBuffer> message) = 0;

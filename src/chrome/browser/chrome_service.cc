@@ -10,8 +10,10 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/common/constants.mojom.h"
+#if 0
 #include "components/spellcheck/spellcheck_buildflags.h"
-#include "components/startup_metric_utils/browser/startup_metric_host_impl.h"
+#endif
+//#include "components/startup_metric_utils/browser/startup_metric_host_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -25,10 +27,13 @@
 #if defined(OS_CHROMEOS)
 #include "services/ws/public/cpp/input_devices/input_device_controller.h"
 #endif
+
+#if 0
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #include "chrome/browser/spellchecker/spell_check_panel_host_impl.h"
+#endif
 #endif
 #endif
 
@@ -42,14 +47,21 @@ class ChromeService::IOThreadContext : public service_manager::Service {
 #if defined(OS_CHROMEOS)
     input_device_controller_.AddInterface(&registry_, ui_task_runner);
 #endif
+
+    // blpwtk2: Remove dependency on StartupMetric
+#if 0
     registry_.AddInterface(base::BindRepeating(
         &startup_metric_utils::StartupMetricHostImpl::Create));
+#endif
+
+#if 0
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     registry_with_source_info_.AddInterface(
         base::BindRepeating(&SpellCheckHostChromeImpl::Create), ui_task_runner);
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
     registry_.AddInterface(
         base::BindRepeating(&SpellCheckPanelHostImpl::Create), ui_task_runner);
+#endif
 #endif
 #endif
   }

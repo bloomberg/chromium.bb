@@ -21,6 +21,8 @@ namespace {
 
 LazyInstance<ThreadLocalPointer<RunLoop::Delegate>>::Leaky tls_delegate =
     LAZY_INSTANCE_INITIALIZER;
+LazyInstance<ThreadLocalPointer<MessagePump::Delegate>>::Leaky tls_pump_delegate =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Runs |closure| immediately if this is called on |task_runner|, otherwise
 // forwards |closure| to it.
@@ -108,6 +110,14 @@ void RunLoop::RegisterDelegateForCurrentThread(Delegate* delegate) {
          "MessageLoop/ScopedTaskEnvironment on a thread that already had one?";
   tls_delegate.Get().Set(delegate);
   delegate->bound_ = true;
+}
+
+
+// static
+void RunLoop::RegisterMessagePumpDelegateForCurrentThread(MessagePump::Delegate* delegate) {
+  DCHECK(!tls_pump_delegate.Get().Get())
+      << "Error: Multiple MessagePump::Delegates registered on the same thread.\n\n";
+  tls_pump_delegate.Get().Set(delegate);
 }
 
 RunLoop::RunLoop(Type type)
@@ -232,6 +242,11 @@ Closure RunLoop::QuitWhenIdleClosure() {
               Bind(&RunLoop::QuitWhenIdle, weak_factory_.GetWeakPtr()));
 }
 
+MessagePump::Delegate* RunLoop::GetPumpDelegate()
+{
+  return tls_pump_delegate.Get().Get();
+}
+
 // static
 bool RunLoop::IsRunningOnCurrentThread() {
   Delegate* delegate = tls_delegate.Get().Get();
@@ -254,6 +269,9 @@ void RunLoop::AddNestingObserverOnCurrentThread(NestingObserver* observer) {
 // static
 void RunLoop::RemoveNestingObserverOnCurrentThread(NestingObserver* observer) {
   Delegate* delegate = tls_delegate.Get().Get();
+  if(!delegate) {
+    return;
+  }
   DCHECK(delegate);
   delegate->nesting_observers_.RemoveObserver(observer);
 }

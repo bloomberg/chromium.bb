@@ -396,6 +396,67 @@ ResultCode InterceptionManager::PatchNtdll(bool hot_patch_needed) {
 #else
 #pragma comment(linker, "/include:_TargetNtMapViewOfSection@44")
 #pragma comment(linker, "/include:_TargetNtUnmapViewOfSection@12")
+
+// The following functions are declared with dllexport but the linker
+// in Visual Studio 2015 excludes them. This is probably due to a linker
+// bug that is triggered when all of the following conditions are met:
+//  1. the module is an executable as opposed to a shared library.
+//  2. the symbols are never referenced from within the module.
+//  3. the build mode is Release.
+//
+// This list is constructed by taking the difference of the output in
+// Dependency walker between the Debug version and the Release version
+// of the executable.
+//
+// Notice that these symbols are only exported if SANDBOX_EXPORTS is
+// defined. In this mode, the parent process patches the child process'
+// ntdll function table. In the original mode (where SANDBOX_EXPORTS is
+// undefined), The child process patches itself and it doesn't need to
+// export out these symbols. In this mode (with no SANDBOX_EXPORTS), the
+// parent process makes an assumption that the memory layout of the child
+// process image is identical to the parent. This can only be true if the
+// same executable is used by the parent and the child. In some cases, we
+// cannot make this assumption and so it becomes necessary to operate with
+// SANDBOX_EXPORTS mode enabled.
+#pragma comment(linker, "/include:_TargetConfigureOPMProtectedOutput@20")
+#pragma comment(linker, "/include:_TargetCreateNamedPipeW@36")
+#pragma comment(linker, "/include:_TargetCreateOPMProtectedOutputs@24")
+#pragma comment(linker, "/include:_TargetCreateProcessA@44")
+#pragma comment(linker, "/include:_TargetCreateProcessW@44")
+#pragma comment(linker, "/include:_TargetCreateThread@28")
+#pragma comment(linker, "/include:_TargetDestroyOPMProtectedOutput@8")
+#pragma comment(linker, "/include:_TargetEnumDisplayDevicesA@20")
+#pragma comment(linker, "/include:_TargetEnumDisplayMonitors@20")
+#pragma comment(linker, "/include:_TargetGdiDllInitialize@12")
+#pragma comment(linker, "/include:_TargetGetCertificate@20")
+#pragma comment(linker, "/include:_TargetGetCertificateByHandle@20")
+#pragma comment(linker, "/include:_TargetGetCertificateSize@16")
+#pragma comment(linker, "/include:_TargetGetCertificateSizeByHandle@16")
+#pragma comment(linker, "/include:_TargetGetMonitorInfoA@12")
+#pragma comment(linker, "/include:_TargetGetMonitorInfoW@12")
+#pragma comment(linker, "/include:_TargetGetOPMInformation@16")
+#pragma comment(linker, "/include:_TargetGetOPMRandomNumber@12")
+#pragma comment(linker, "/include:_TargetGetStockObject@8")
+#pragma comment(linker, "/include:_TargetGetSuggestedOPMProtectedOutputArraySize@12")
+#pragma comment(linker, "/include:_TargetNtCreateEvent@24")
+#pragma comment(linker, "/include:_TargetNtCreateFile@48")
+#pragma comment(linker, "/include:_TargetNtCreateKey@32")
+#pragma comment(linker, "/include:_TargetNtOpenEvent@16")
+#pragma comment(linker, "/include:_TargetNtOpenFile@28")
+#pragma comment(linker, "/include:_TargetNtOpenKey@16")
+#pragma comment(linker, "/include:_TargetNtOpenKeyEx@20")
+#pragma comment(linker, "/include:_TargetNtOpenProcess@20")
+#pragma comment(linker, "/include:_TargetNtOpenProcessToken@16")
+#pragma comment(linker, "/include:_TargetNtOpenProcessTokenEx@20")
+#pragma comment(linker, "/include:_TargetNtOpenThread@20")
+#pragma comment(linker, "/include:_TargetNtOpenThreadToken@20")
+#pragma comment(linker, "/include:_TargetNtOpenThreadTokenEx@24")
+#pragma comment(linker, "/include:_TargetNtQueryAttributesFile@12")
+#pragma comment(linker, "/include:_TargetNtQueryFullAttributesFile@12")
+#pragma comment(linker, "/include:_TargetNtSetInformationFile@24")
+#pragma comment(linker, "/include:_TargetNtSetInformationThread@20")
+#pragma comment(linker, "/include:_TargetRegisterClassW@8")
+#pragma comment(linker, "/include:_TargetSetOPMSigningKeyAndSequenceNumbers@12")
 #endif
 #endif  // defined(SANDBOX_EXPORTS)
     ADD_NT_INTERCEPTION(NtMapViewOfSection, MAP_VIEW_OF_SECTION_ID, 44);

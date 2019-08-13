@@ -17,6 +17,10 @@
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
+namespace blpwtk2 {
+class ForwardingService;
+}
+
 namespace service_manager {
 
 // The primary contract between a Service and the Service Manager, receiving
@@ -139,6 +143,8 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
   void Terminate();
 
  private:
+  friend class blpwtk2::ForwardingService;
+
   base::OnceClosure termination_closure_;
 
 };

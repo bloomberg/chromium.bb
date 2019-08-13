@@ -27,7 +27,8 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     int render_frame_id,
     bool is_main_frame,
-    blink::WebNavigationParams* navigation_params) {
+    blink::WebNavigationParams* navigation_params,
+    LoaderCreator loader_creator) {
   // Use the original navigation url to start with. We'll replay the redirects
   // afterwards and will eventually arrive to the final url.
   GURL url = !commit_params.original_url.is_empty() ? commit_params.original_url
@@ -71,7 +72,13 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
   if (url.SchemeIs(url::kDataScheme))
     navigation_params->response.SetHttpStatusCode(200);
 
-  if (url_loader_client_endpoints) {
+  if(loader_creator) {
+    BodyLoaderRequestInfoProvider request_info(
+        common_params, commit_params, head, url_loader_client_endpoints,
+        task_runner, render_frame_id, resource_load_info);
+    navigation_params->body_loader = loader_creator(request_info);
+  }
+  if (!navigation_params->body_loader && url_loader_client_endpoints) {
     navigation_params->body_loader.reset(new NavigationBodyLoader(
         head, std::move(url_loader_client_endpoints), task_runner,
         render_frame_id, std::move(resource_load_info)));

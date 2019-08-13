@@ -29,6 +29,18 @@
 // We reserve the V8_* prefix for macros defined in V8 public API and
 // assume there are no name conflicts with the embedder's code.
 
+// https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+// MSVC++ 12.0  _MSC_VER == 1800 (Visual Studio 2013 version 12.0)
+// MSVC++ 14.0  _MSC_VER == 1900 (Visual Studio 2015 version 14.0)
+#if defined(_MSC_VER) && _MSC_VER >= 1900
+  #define MSVC_2015_PLUS
+  #define constexpr_func constexpr
+#else
+  #pragma warning( disable : 4251)
+  #define constexpr const
+  #define constexpr_func V8_INLINE static
+#endif
+
 /**
  * The v8 JavaScript engine.
  */
@@ -1004,7 +1016,7 @@ class V8_EXPORT HandleScope {
 class V8_EXPORT EscapableHandleScope : public HandleScope {
  public:
   explicit EscapableHandleScope(Isolate* isolate);
-  V8_INLINE ~EscapableHandleScope() = default;
+  ~EscapableHandleScope();
 
   /**
    * Pushes the value into the previous scope and returns a handle to it.
@@ -1388,6 +1400,7 @@ class V8_EXPORT ScriptCompiler {
     ~CachedData();
     // TODO(marja): Async compilation; add constructors which take a callback
     // which will be called when V8 no longer needs the data.
+
     const uint8_t* data;
     int length;
     bool rejected;
@@ -1396,6 +1409,27 @@ class V8_EXPORT ScriptCompiler {
     // Prevent copying.
     CachedData(const CachedData&) = delete;
     CachedData& operator=(const CachedData&) = delete;
+
+    //- - - - - - - - - - - - 'blpwtk2' Additions - - - - - - - - - - - - - - -
+    //
+    // 'CachedData' pointers are passed across the API in both
+    // 'CreateCodeCache()' and 'Source'.  In order to do this safely in
+    // 'bplus', we need to ensure that the data is created and destroyed in a
+    // single C++ heap.  To do so, we expose 'create' and 'dispose' methods.
+    // When multiple C++ heaps is a concern, these methods should be used over
+    // the public constructor.
+
+    static
+    CachedData *create(const uint8_t *data,
+                       int            length,
+                       BufferPolicy   buffer_policy = BufferNotOwned);
+        // Create a 'CachedData' in V8's C++ heap.
+
+    static
+    void dispose(CachedData *data);
+        // Dispose of the specified 'data' in V8's C++ heap.
+
+    //- - - - - - - - - - - End 'blpwtk2' Additions - - - - - - - - - - - - - -
   };
 
   /**
@@ -1470,7 +1504,7 @@ class V8_EXPORT ScriptCompiler {
      * V8 has parsed the data it received so far.
      */
     virtual size_t GetMoreData(const uint8_t** src) = 0;
-
+  
     /**
      * V8 calls this method to set a 'bookmark' at the current position in
      * the source stream, for the purpose of (maybe) later calling
@@ -2719,7 +2753,7 @@ class V8_EXPORT String : public Name {
      * ExternalStringResource::data() may be cached, otherwise it is not
      * expected to be stable beyond the current top-level task.
      */
-    virtual bool IsCacheable() const { return true; }
+    virtual bool IsCacheable() const;
 
     // Disallow copying and assigning.
     ExternalStringResourceBase(const ExternalStringResourceBase&) = delete;
@@ -2747,12 +2781,12 @@ class V8_EXPORT String : public Name {
      * several times, from different threads, and unlocking should only happen
      * when the balance of Lock() and Unlock() calls is 0.
      */
-    virtual void Lock() const {}
+    virtual void Lock() const;
 
     /**
      * Unlocks the string.
      */
-    virtual void Unlock() const {}
+    virtual void Unlock() const;
 
    private:
     friend class internal::ExternalString;
@@ -2812,7 +2846,7 @@ class V8_EXPORT String : public Name {
     /** The number of Latin-1 characters in the string.*/
     virtual size_t length() const = 0;
    protected:
-    ExternalOneByteStringResource() = default;
+    ExternalOneByteStringResource();
   };
 
   /**
@@ -4361,6 +4395,11 @@ struct OwnedBuffer {
   OwnedBuffer(std::unique_ptr<const uint8_t[]> buffer, size_t size)
       : buffer(std::move(buffer)), size(size) {}
   OwnedBuffer() = default;
+#if !defined(MSVC_2015_PLUS)
+  OwnedBuffer(OwnedBuffer&& src)
+      : buffer(std::move(src.buffer)), size(src.size) {}
+  OwnedBuffer(const OwnedBuffer& src) = delete;
+#endif
 };
 
 // Wrapper around a compiled WebAssembly module, which is potentially shared by
@@ -4396,11 +4435,19 @@ class V8_EXPORT WasmModuleObject : public Object {
    */
   class TransferrableModule final {
    public:
+#if defined(MSVC_2015_PLUS)
     TransferrableModule(TransferrableModule&& src) = default;
+#else
+    TransferrableModule(TransferrableModule&& src);
     TransferrableModule(const TransferrableModule& src) = delete;
+#endif
 
+#if defined(MSVC_2015_PLUS)
     TransferrableModule& operator=(TransferrableModule&& src) = default;
+#else
+    TransferrableModule& operator=(TransferrableModule&& src);
     TransferrableModule& operator=(const TransferrableModule& src) = delete;
+#endif
 
    private:
     typedef std::shared_ptr<internal::wasm::NativeModule> SharedModule;
@@ -4556,12 +4603,21 @@ class V8_EXPORT WasmModuleObjectBuilderStreaming final {
  private:
   WasmModuleObjectBuilderStreaming(const WasmModuleObjectBuilderStreaming&) =
       delete;
+#if defined(MSVC_2015_PLUS)
   WasmModuleObjectBuilderStreaming(WasmModuleObjectBuilderStreaming&&) =
       default;
+#else
+  WasmModuleObjectBuilderStreaming(WasmModuleObjectBuilderStreaming&&);
+#endif
   WasmModuleObjectBuilderStreaming& operator=(
       const WasmModuleObjectBuilderStreaming&) = delete;
+#if defined(MSVC_2015_PLUS)
   WasmModuleObjectBuilderStreaming& operator=(
       WasmModuleObjectBuilderStreaming&&) = default;
+#else
+  WasmModuleObjectBuilderStreaming& operator=(
+      WasmModuleObjectBuilderStreaming&&);
+#endif
   Isolate* isolate_ = nullptr;
 
 #if V8_CC_MSVC
@@ -6206,10 +6262,7 @@ class V8_EXPORT ObjectTemplate : public Template {
       IndexedPropertyQueryCallback query = nullptr,
       IndexedPropertyDeleterCallback deleter = nullptr,
       IndexedPropertyEnumeratorCallback enumerator = nullptr,
-      Local<Value> data = Local<Value>()) {
-    SetHandler(IndexedPropertyHandlerConfiguration(getter, setter, query,
-                                                   deleter, enumerator, data));
-  }
+      Local<Value> data = Local<Value>());
 
   /**
    * Sets an indexed property handler on the object template.
@@ -6430,9 +6483,7 @@ class V8_EXPORT ResourceConstraints {
   }
 
   size_t max_old_space_size() const { return max_old_space_size_; }
-  void set_max_old_space_size(size_t limit_in_mb) {
-    max_old_space_size_ = limit_in_mb;
-  }
+  void set_max_old_space_size(size_t limit_in_mb);
   uint32_t* stack_limit() const { return stack_limit_; }
   // Sets an address beyond which the VM's stack may not grow.
   void set_stack_limit(uint32_t* value) { stack_limit_ = value; }
@@ -7141,7 +7192,7 @@ class V8_EXPORT EmbedderHeapTracer {
     size_t allocated_size = 0;
   };
 
-  virtual ~EmbedderHeapTracer() = default;
+  virtual ~EmbedderHeapTracer();
 
   /**
    * Iterates all TracedGlobal handles created for the v8::Isolate the tracer is
@@ -7218,9 +7269,7 @@ class V8_EXPORT EmbedderHeapTracer {
    * Default implementation will keep all TracedGlobal references as roots.
    */
   virtual bool IsRootForNonTracingGC(
-      const v8::TracedGlobal<v8::Value>& handle) {
-    return true;
-  }
+      const v8::TracedGlobal<v8::Value>& handle);
 
   /*
    * Called by the embedder to immediately perform a full garbage collection.
@@ -7380,7 +7429,7 @@ class V8_EXPORT Isolate {
       isolate->Enter();
     }
 
-    ~Scope() { isolate_->Exit(); }
+    ~Scope();
 
     // Prevent copying of Scope objects.
     Scope(const Scope&) = delete;
@@ -8662,6 +8711,11 @@ class V8_EXPORT V8 {
    */
   static bool InitializeICUDefaultLocation(const char* exec_path,
                                            const char* icu_data_file = nullptr);
+
+  /**
+   * Initialize the ICU library bundled with V8 using the specified icu data.
+  */
+  static bool InitializeICUWithData(const void* icu_data);
 
   /**
    * Initialize the external startup data. The embedder only needs to
@@ -10147,7 +10201,7 @@ ScriptCompiler::Source::Source(Local<String> string,
 
 
 ScriptCompiler::Source::~Source() {
-  delete cached_data;
+  CachedData::dispose(cached_data);
 }
 
 

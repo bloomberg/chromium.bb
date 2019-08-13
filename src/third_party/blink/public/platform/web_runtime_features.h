@@ -69,6 +69,18 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableCompositedSelectionUpdate(bool);
   BLINK_PLATFORM_EXPORT static bool IsCompositedSelectionUpdateEnabled();
 
+  // CSS: Retire runtime flag CSS3TextDecorations
+  // Support for text decoration properties shipped to stable in Chrome 57.
+  // The runtime flag is no longer needed.
+  // https://chromium.googlesource.com/chromium/src/+/919b89256d6e5fcdd1cea927970c556cd1b4c679
+
+  // Remove ability to change CSSGridLayout flag at runtime for testing
+  // This change removes the ability to alter whether CSSGridLayout is
+  // enabled during runtime. This ability is causing crashes on ClusterFuzz
+  // and is only used for testing purposes.
+  // https://chromium.googlesource.com/chromium/src/+/94354e4bc8670a560a273ab24ec6bbf51ff7f622
+  BLINK_PLATFORM_EXPORT static void EnableCSS3Text(bool);
+
   BLINK_PLATFORM_EXPORT static void EnableCompositorTouchAction(bool);
 
   BLINK_PLATFORM_EXPORT static void EnableOriginTrials(bool);

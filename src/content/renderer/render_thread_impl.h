@@ -731,6 +731,8 @@ class CONTENT_EXPORT RenderThreadImpl
   base::TimeTicks init_start_;
   base::TimeTicks init_end_;
 
+  bool exit_process_gracefully_;
+
   base::WeakPtrFactory<RenderThreadImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);

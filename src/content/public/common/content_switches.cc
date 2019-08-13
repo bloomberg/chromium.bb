@@ -330,6 +330,9 @@ const char kDumpBlinkRuntimeCallStats[] = "dump-blink-runtime-call-stats";
 // Enables LCD text.
 const char kEnableLCDText[]                 = "enable-lcd-text";
 
+// Enables CSS3 Text.
+const char kEnableCSS3Text[] = "enable-css3-text";
+
 // Enable the creation of compositing layers when it would prevent LCD text.
 const char kEnablePreferCompositingToLCDText[] =
     "enable-prefer-compositing-to-lcd-text";

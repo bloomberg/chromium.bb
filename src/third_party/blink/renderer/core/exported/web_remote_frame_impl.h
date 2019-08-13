@@ -98,6 +98,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   v8::Local<v8::Object> GlobalProxy() const override;
   WebRect GetCompositingRect() override;
   void RenderFallbackContent() const override;
+  v8::Isolate* ScriptIsolate() const override;
 
   void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
   RemoteFrame* GetFrame() const { return frame_.Get(); }

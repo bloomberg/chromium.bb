@@ -79,7 +79,8 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   int32_t GetId() override;
   int32_t GetBrowsingInstanceId() override;
   bool HasProcess() override;
-  RenderProcessHost* GetProcess() override;
+  RenderProcessHost* GetProcess(
+      int affinity = SiteInstance::kNoProcessAffinity) override;
   BrowserContext* GetBrowserContext() override;
   const GURL& GetSiteURL() override;
   scoped_refptr<SiteInstance> GetRelatedSiteInstance(const GURL& url) override;

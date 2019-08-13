@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/test/test_suite.h"
 #include "mojo/core/embedder/embedder.h"
-#include "v8/include/libplatform/libplatform.h"
+#include "v8/include/v8-default-platform.h"
 #include "v8/include/v8.h"
 
 int main(int argc, char** argv) {

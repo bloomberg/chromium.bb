@@ -230,3 +230,14 @@ template("v8_static_library") {
     configs += invoker.configs
   }
 }
+
+# blpwtk2: This template is identical to 'v8_component' except the target type
+# is changed from 'component' to 'shared_library'
+template("v8_shared_library") {
+  shared_library(target_name) {
+    forward_variables_from(invoker, "*", [ "configs" ])
+    configs += invoker.configs
+    configs -= v8_remove_configs
+    configs += v8_add_configs
+  }
+}

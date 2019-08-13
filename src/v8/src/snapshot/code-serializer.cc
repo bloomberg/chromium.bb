@@ -72,9 +72,9 @@ ScriptCompiler::CachedData* CodeSerializer::Serialize(
     PrintF("[Serializing to %d bytes took %0.3f ms]\n", length, ms);
   }
 
-  ScriptCompiler::CachedData* result =
-      new ScriptCompiler::CachedData(script_data->data(), script_data->length(),
-                                     ScriptCompiler::CachedData::BufferOwned);
+  ScriptCompiler::CachedData* result = new ScriptCompiler::CachedData(
+      script_data->data(), script_data->length(),
+      ScriptCompiler::CachedData::BufferOwned);
   script_data->ReleaseDataOwnership();
   delete script_data;
 

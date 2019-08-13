@@ -63,7 +63,7 @@ class TimeConstants {
 // This class represents a duration of time, internally represented in
 // microseonds.
 
-class V8_BASE_EXPORT TimeDelta final {
+class BLPV8_BASE_EXPORT TimeDelta final {
  public:
   constexpr TimeDelta() : delta_(0) {}
 
@@ -394,7 +394,7 @@ inline Time operator+(const TimeDelta& delta, const Time& time) {
 // Time::Now() may actually decrease or jump).  But note that TimeTicks may
 // "stand still", for example if the computer suspended.
 
-class V8_BASE_EXPORT TimeTicks final
+class BLPV8_BASE_EXPORT TimeTicks final
     : public time_internal::TimeBase<TimeTicks> {
  public:
   constexpr TimeTicks() : TimeBase(0) {}

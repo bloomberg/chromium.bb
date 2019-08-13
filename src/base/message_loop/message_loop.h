@@ -137,6 +137,18 @@ class BASE_EXPORT MessageLoop {
   // TODO(alexclarke): Make this const when MessageLoopImpl goes away.
   bool IsIdleForTesting();
 
+#if defined(OS_WIN)
+  void set_ipc_sync_messages_should_peek(bool ipc_sync_messages_should_peek) {
+    ipc_sync_messages_should_peek_ = ipc_sync_messages_should_peek;
+  }
+
+  bool ipc_sync_messages_should_peek() const {
+    return ipc_sync_messages_should_peek_;
+  }
+#endif  // OS_WIN
+
+  MessageLoopBase* GetMessageLoopBase();
+
   //----------------------------------------------------------------------------
  protected:
   // Returns true if this is the active MessageLoop for the current thread.
@@ -198,6 +210,11 @@ class BASE_EXPORT MessageLoop {
   }
 
   const Type type_;
+
+#if defined(OS_WIN)
+  // Should be set to true if IPC sync messages should PeekMessage periodically.
+  bool ipc_sync_messages_should_peek_ = false;
+#endif
 
   // If set this will be returned by the next call to CreateMessagePump().
   // This is only set if |type_| is TYPE_CUSTOM and |pump_| is null.

@@ -176,8 +176,12 @@ class CONTENT_EXPORT RenderFrameHostManager
   // The delegate pointer must be non-NULL and is not owned by this class. It
   // must outlive this class.
   //
+  // The |render_process_affinity| argument can be
+  // SiteInstance::kNoProcessAffinity, in which case, the default process
+  // affinity will be used.
+  //
   // You must call Init() before using this class.
-  RenderFrameHostManager(FrameTreeNode* frame_tree_node, Delegate* delegate);
+  RenderFrameHostManager(FrameTreeNode* frame_tree_node, Delegate* delegate, int render_process_affinity);
   ~RenderFrameHostManager();
 
   // For arguments, see WebContentsImpl constructor.
@@ -812,6 +816,11 @@ class CONTENT_EXPORT RenderFrameHostManager
   using RFHPendingDeleteList = std::list<std::unique_ptr<RenderFrameHostImpl>>;
   RFHPendingDeleteList pending_delete_hosts_;
 
+  // Render process affinity, or SiteInstance::kNoProcessAffinity if there is
+  // no affinity.
+  int render_process_affinity_;
+
+  // PlzNavigate
   // Stores a speculative RenderFrameHost which is created early in a navigation
   // so a renderer process can be started in parallel, if needed.
   // This is purely a performance optimization and is not required for correct

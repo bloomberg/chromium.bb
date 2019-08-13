@@ -216,6 +216,12 @@ void ResourceBundle::InitSharedInstanceWithPakPath(const base::FilePath& path) {
 }
 
 // static
+void ResourceBundle::InitSharedInstance() {
+  InitSharedInstance(NULL);
+  g_shared_instance_->InitDefaultFontList();
+}
+
+// static
 void ResourceBundle::CleanupSharedInstance() {
   delete g_shared_instance_;
   g_shared_instance_ = NULL;

@@ -13,7 +13,7 @@
 namespace v8 {
 namespace base {
 
-class V8_BASE_EXPORT SysInfo final {
+class BLPV8_BASE_EXPORT SysInfo final {
  public:
   // Returns the number of logical processors/core on the current machine.
   static int NumberOfProcessors();
