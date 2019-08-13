@@ -2209,7 +2209,7 @@
         },
       },
       'Win10 Debug (NVIDIA)': {
-        'browser_config': 'debug_x64',
+        'browser_config': 'debug',
         'os_type': 'win',
         'mixins': [
           'win10_nvidia_quadro_p400_stable',
@@ -2220,7 +2220,7 @@
         },
       },
       'Win10 Release (NVIDIA)': {
-        'browser_config': 'release_x64',
+        'browser_config': 'release',
         'os_type': 'win',
         'mixins': [
           'win10_nvidia_quadro_p400_stable',
