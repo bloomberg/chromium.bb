@@ -2183,9 +2183,7 @@ crbug.com/983788 http/tests/cookies/same-site/popup-cross-site.https.html [ Pass
 crbug.com/984438 external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Failure Pass ]
 crbug.com/982148 [ Win7 ] virtual/blink-cors/external/wpt/referrer-policy/same-origin/http-rp/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Pass Timeout ]
 crbug.com/982148 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/same-origin/http-rp/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Pass Timeout ]
-crbug.com/984467 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
-crbug.com/984467 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
-crbug.com/984467 [ Win7 ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
+crbug.com/984467 virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
 
 ### sheriff 2018-05-28
 
