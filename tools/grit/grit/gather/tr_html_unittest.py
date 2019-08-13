@@ -12,9 +12,9 @@ import sys
 if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
-import types
 import unittest
 
+import six
 from six import StringIO
 
 from grit.gather import tr_html
@@ -369,7 +369,7 @@ bla
     # For manual results inspection only...
     list = []
     for item in html.skeleton_:
-      if isinstance(item, types.StringTypes):
+      if isinstance(item, six.string_types):
         list.append(item)
       else:
         list.append(item.GetMessage().GetPresentableContent())

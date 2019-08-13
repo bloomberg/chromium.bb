@@ -10,8 +10,8 @@ import os.path
 import getopt
 import re
 import sys
-import types
 
+import six
 from six import StringIO
 
 import grit.node.empty
@@ -341,7 +341,7 @@ C preprocessor on the .rc file or manually edit it before using this tool.
         # Messages that contain only placeholders do not need translation.
         is_translateable = False
         for item in msg_obj.GetContent():
-          if isinstance(item, types.StringTypes):
+          if isinstance(item, six.string_types):
             if not _WHITESPACE_ONLY.match(item):
               is_translateable = True
 
@@ -389,7 +389,7 @@ C preprocessor on the .rc file or manually edit it before using this tool.
       # TODO(joi) Allow use of non-TotalRecall flavors of HTML placeholderizing
       msg = tr_html.HtmlToMessage(text, True)
       for item in msg.GetContent():
-        if not isinstance(item, types.StringTypes):
+        if not isinstance(item, six.string_types):
           return msg  # Contained at least one placeholder, so we're done
 
       # HTML placeholderization didn't do anything, so try to find printf or
