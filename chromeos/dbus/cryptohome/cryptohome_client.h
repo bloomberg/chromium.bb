@@ -533,6 +533,16 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
                         const cryptohome::AddKeyRequest& request,
                         DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
+  // Asynchronously calls AddDataRestoreKey method. |callback| is called after
+  // method call, and with reply protobuf.
+  // AddDataRestoreKey generates data_restore_key in OS and adds it to the
+  // given key set. The reply protobuf needs to be extended to
+  // AddDataRestoreKeyReply so that caller gets raw bytes of data_restore_key
+  virtual void AddDataRestoreKey(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::AuthorizationRequest& auth,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
+
   // Asynchronously calls UpdateKeyEx method. |callback| is called after method
   // call, and with reply protobuf. Reply will contain MountReply extension.
   // UpdateKeyEx replaces key used for authorization, without affecting any

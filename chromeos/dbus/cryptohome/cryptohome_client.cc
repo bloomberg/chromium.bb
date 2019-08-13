@@ -855,6 +855,22 @@ class CryptohomeClientImpl : public CryptohomeClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void AddDataRestoreKey(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::AuthorizationRequest& auth,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override {
+    const char* method_name = cryptohome::kCryptohomeAddDataRestoreKey;
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface, method_name);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(id);
+    writer.AppendProtoAsArrayOfBytes(auth);
+
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void UpdateKeyEx(
       const cryptohome::AccountIdentifier& id,
       const cryptohome::AuthorizationRequest& auth,

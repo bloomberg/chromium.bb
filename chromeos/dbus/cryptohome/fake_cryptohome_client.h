@@ -194,6 +194,10 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
                 const cryptohome::AuthorizationRequest& auth,
                 const cryptohome::AddKeyRequest& request,
                 DBusMethodCallback<cryptohome::BaseReply> callback) override;
+  void AddDataRestoreKey(
+      const cryptohome::AccountIdentifier& cryptohome_id,
+      const cryptohome::AuthorizationRequest& auth,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void UpdateKeyEx(const cryptohome::AccountIdentifier& cryptohome_id,
                    const cryptohome::AuthorizationRequest& auth,
                    const cryptohome::UpdateKeyRequest& request,

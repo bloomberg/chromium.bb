@@ -639,6 +639,13 @@ void FakeCryptohomeClient::AddKeyEx(
   ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
+void FakeCryptohomeClient::AddDataRestoreKey(
+    const cryptohome::AccountIdentifier& cryptohome_id,
+    const cryptohome::AuthorizationRequest& auth,
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
+}
+
 void FakeCryptohomeClient::RemoveKeyEx(
     const cryptohome::AccountIdentifier& cryptohome_id,
     const cryptohome::AuthorizationRequest& auth,
