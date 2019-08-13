@@ -2319,12 +2319,13 @@ customize.colorsMenuPreselectTile = function() {
     }
   } else if (
       configData.chromeColorsCustomColorPicker && themeInfo.colorDark &&
-      themeInfo.colorLight) {
+      themeInfo.colorLight && themeInfo.colorPicked) {
     // Custom color is selected.
     tile = $(customize.IDS.COLOR_PICKER_TILE);
 
     // Update color picker tile colors.
-    $(customize.IDS.COLOR_PICKER).value = colorArrayToHex(themeInfo.colorDark);
+    $(customize.IDS.COLOR_PICKER).value =
+        colorArrayToHex(themeInfo.colorPicked);
     $(customize.IDS.COLORS_MENU)
         .style.setProperty(
             '--custom-color-border', colorArrayToHex(themeInfo.colorDark));

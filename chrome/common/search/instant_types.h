@@ -118,6 +118,10 @@ struct ThemeBackgroundInfo {
 
   // The light color for Chrome Colors. Valid only if Chrome Colors is set.
   SkColor color_light;
+
+  // The picked custom color for Chrome Colors. Valid only if Chrome Colors is
+  // set.
+  SkColor color_picked;
 };
 
 struct InstantMostVisitedItem {
