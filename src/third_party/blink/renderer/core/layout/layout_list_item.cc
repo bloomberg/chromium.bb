@@ -165,6 +165,14 @@ LayoutObject* FirstNonMarkerChild(LayoutObject* parent) {
   return result;
 }
 
+static LayoutObject* FirstRenderText(LayoutObject* curr, LayoutObject* stayWithin)
+{
+  while (curr && !curr->IsText()) {
+    curr = curr->NextInPreOrder(stayWithin);
+  }
+  return curr;
+}
+
 void ForceLogicalHeight(LayoutObject& layout_object, const Length& height) {
   DCHECK(layout_object.IsAnonymous());
   if (layout_object.StyleRef().LogicalHeight() == height)
@@ -273,9 +281,21 @@ bool LayoutListItem::UpdateMarkerLocation() {
     }
   }
 
-  if (marker_parent != line_box_parent) {
+  bool fontsAreDifferent = false;
+  LayoutObject* firstNonMarker = FirstNonMarkerChild(line_box_parent);
+  LayoutObject* firstText = FirstRenderText(firstNonMarker, line_box_parent);
+  if (firstText && marker_->Style()->GetFontDescription() != firstText->Style()->GetFontDescription()) {
+    fontsAreDifferent = true;
+  }
+
+  if (marker_parent != line_box_parent || fontsAreDifferent) {
     marker_->Remove();
-    line_box_parent->AddChild(marker_, FirstNonMarkerChild(line_box_parent));
+    if (fontsAreDifferent) {
+      marker_->MutableStyle()->SetFontDescription(firstText->Style()->GetFontDescription());
+      marker_->Style()->GetFont().Update(marker_->Style()->GetFont().GetFontSelector());
+    }
+    line_box_parent->AddChild(marker_, firstNonMarker);
+
     // TODO(rhogan): line_box_parent and marker_parent may be deleted by
     // AddChild, so they are not safe to reference here. Once we have a safe way
     // of referencing them delete marker_parent if it is an empty anonymous
@@ -314,6 +334,26 @@ void LayoutListItem::ComputeVisualOverflow(bool recompute_floats) {
 void LayoutListItem::AddLayoutOverflowFromChildren() {
   LayoutBlockFlow::AddLayoutOverflowFromChildren();
   UpdateOverflow();
+}
+
+LayoutUnit LayoutListItem::AdditionalMarginStart() const {
+  if (!marker_ || marker_->IsInside() || !Parent() || !Parent()->GetNode() ||
+      (!Parent()->GetNode()->HasTagName(html_names::kUlTag) &&
+       !Parent()->GetNode()->HasTagName(html_names::kOlTag)))
+    return LayoutUnit();
+  // blpwtk2: left aligned to the marker of the first list item
+  const LayoutObject* first_sibling = Parent()->SlowFirstChild();
+  DCHECK(first_sibling);
+  if (!first_sibling->IsListItem()) {
+    return LayoutUnit();
+  }
+  const LayoutListItem* first_item = ToLayoutListItem(first_sibling);
+  if (!first_item || !first_item->marker_ || first_item->marker_->IsInside()) {
+    return LayoutUnit();
+  }
+  const LayoutUnit first_item_marker_width =
+      first_item->marker_->MinPreferredLogicalWidth();
+  return marker_->MinPreferredLogicalWidth() - first_item_marker_width;
 }
 
 // Align marker_inline_box in block direction according to line_box_root's
@@ -405,7 +445,7 @@ void LayoutListItem::UpdateOverflow() {
   }
 
   bool adjust_overflow = false;
-  LayoutUnit marker_logical_left;
+  LayoutUnit marker_logical_left = marker_old_logical_left;
   InlineBox* marker_inline_box = marker_->InlineBoxWrapper();
   RootInlineBox& root = marker_inline_box->Root();
   bool hit_self_painting_layer = false;
