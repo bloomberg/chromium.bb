@@ -300,10 +300,8 @@ void FtlSignalStrategy::Core::OnReceiveMessagesStreamClosed(
     // Stream is canceled by calling Disconnect().
     return;
   }
-  if (!status.ok()) {
-    HandleGrpcStatusError(FROM_HERE, status);
-    return;
-  }
+  DCHECK(!status.ok());
+  HandleGrpcStatusError(FROM_HERE, status);
 }
 
 void FtlSignalStrategy::Core::OnMessageReceived(
