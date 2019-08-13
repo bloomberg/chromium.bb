@@ -21,7 +21,6 @@ import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -562,7 +561,6 @@ public class BookmarkReorderTest extends BookmarkTest {
 
     @Test
     @MediumTest
-    @FlakyTest(message = "crbug/993202 This test is flaky on Nexus 5X under Android CFI")
     public void testMoveButtonsGoneWithOneBookmark() throws Exception {
         addFolder(TEST_FOLDER_TITLE);
         forceSyncHeaderState();
