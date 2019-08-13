@@ -111,8 +111,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // WebServiceWorkerContextClient overrides.
   // TODO(bashi): Rename OnMainThread() methods.
   void WorkerReadyForInspectionOnMainThread(
-      mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
-      mojo::ScopedMessagePipeHandle devtools_agent_host_request) override;
+      mojo::ScopedMessagePipeHandle devtools_agent_remote,
+      mojo::ScopedMessagePipeHandle devtools_agent_host_receiver) override;
   void WorkerContextFailedToStartOnMainThread() override;
   void FailedToLoadClassicScript() override;
   void FailedToFetchModuleScript() override;

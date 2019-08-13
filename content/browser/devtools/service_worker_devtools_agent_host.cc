@@ -160,13 +160,13 @@ void ServiceWorkerDevToolsAgentHost::DetachSession(DevToolsSession* session) {
 }
 
 void ServiceWorkerDevToolsAgentHost::WorkerReadyForInspection(
-    blink::mojom::DevToolsAgentPtrInfo agent_ptr_info,
-    blink::mojom::DevToolsAgentHostRequest host_request) {
+    mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
+    mojo::PendingReceiver<blink::mojom::DevToolsAgentHost> host_receiver) {
   DCHECK_EQ(WORKER_NOT_READY, state_);
   state_ = WORKER_READY;
-  GetRendererChannel()->SetRenderer(std::move(agent_ptr_info),
-                                    std::move(host_request), worker_process_id_,
-                                    nullptr);
+  GetRendererChannel()->SetRenderer(std::move(agent_remote),
+                                    std::move(host_receiver),
+                                    worker_process_id_, nullptr);
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetReloadedAfterCrash();
   if (!sessions().empty())

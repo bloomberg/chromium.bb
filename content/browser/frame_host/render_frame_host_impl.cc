@@ -5607,10 +5607,10 @@ void RenderFrameHostImpl::CancelBlockedRequestsForFrame() {
 }
 
 void RenderFrameHostImpl::BindDevToolsAgent(
-    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
-    blink::mojom::DevToolsAgentAssociatedRequest request) {
+    mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver) {
   GetNavigationControl()->BindDevToolsAgent(std::move(host),
-                                            std::move(request));
+                                            std::move(receiver));
 }
 
 bool RenderFrameHostImpl::IsSameSiteInstance(

@@ -801,8 +801,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CancelBlockedRequestsForFrame();
 
   // Binds a DevToolsAgent interface for debugging.
-  void BindDevToolsAgent(blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
-                         blink::mojom::DevToolsAgentAssociatedRequest request);
+  void BindDevToolsAgent(
+      mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
+      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver);
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaRenderFrameHost();

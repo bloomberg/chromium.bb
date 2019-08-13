@@ -90,13 +90,14 @@ bool SharedWorkerDevToolsAgentHost::Matches(SharedWorkerHost* worker_host) {
 }
 
 void SharedWorkerDevToolsAgentHost::WorkerReadyForInspection(
-    blink::mojom::DevToolsAgentPtr agent_ptr,
-    blink::mojom::DevToolsAgentHostRequest agent_host_request) {
+    mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
+    mojo::PendingReceiver<blink::mojom::DevToolsAgentHost>
+        agent_host_receiver) {
   DCHECK_EQ(WORKER_NOT_READY, state_);
   DCHECK(worker_host_);
   state_ = WORKER_READY;
-  GetRendererChannel()->SetRenderer(agent_ptr.PassInterface(),
-                                    std::move(agent_host_request),
+  GetRendererChannel()->SetRenderer(std::move(agent_remote),
+                                    std::move(agent_host_receiver),
                                     worker_host_->worker_process_id(), nullptr);
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetReloadedAfterCrash();

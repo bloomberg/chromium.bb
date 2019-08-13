@@ -4051,9 +4051,9 @@ void RenderFrameImpl::MarkInitiatorAsRequiringSeparateURLLoaderFactory(
 }
 
 void RenderFrameImpl::BindDevToolsAgent(
-    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
-    blink::mojom::DevToolsAgentAssociatedRequest request) {
-  frame_->BindDevToolsAgent(host.PassHandle(), request.PassHandle());
+    mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver) {
+  frame_->BindDevToolsAgent(host.PassHandle(), receiver.PassHandle());
 }
 
 // mojom::HostZoom implementation ----------------------------------------------
