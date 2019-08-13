@@ -2337,16 +2337,16 @@ class PDFExtensionAccessibilityTreeDumpTest
     // the expectation file contains a skip marker.
     // This is used to skip certain tests on certain platforms.
     content::DumpAccessibilityTestHelper test_helper(formatter.get());
-    base::Optional<base::FilePath> expected_file_path =
+    base::FilePath expected_file_path =
         test_helper.GetExpectationFilePath(test_file_path);
-    if (!expected_file_path) {
+    if (expected_file_path.empty()) {
       LOG(INFO) << "No expectation file present, ignoring test on this "
                    "platform.";
       return;
     }
 
     base::Optional<std::vector<std::string>> expected_lines =
-        test_helper.LoadExpectationFile(*expected_file_path);
+        test_helper.LoadExpectationFile(expected_file_path);
     if (!expected_lines) {
       LOG(INFO) << "Skipping this test on this platform.";
       return;
@@ -2378,7 +2378,7 @@ class PDFExtensionAccessibilityTreeDumpTest
 
     // Validate the dump against the expectation file.
     EXPECT_TRUE(test_helper.ValidateAgainstExpectation(
-        test_file_path, *expected_file_path, actual_lines, *expected_lines));
+        test_file_path, expected_file_path, actual_lines, *expected_lines));
   }
 
   void AddDefaultFilters(std::vector<PropertyFilter>* property_filters) {
