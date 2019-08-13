@@ -79,7 +79,8 @@ message VmInfo {
 // Information that must be included with every StartVm dbus message.
 message StartVmRequest {
   // The VM that should be started. This is ignored if starting a termina VM,
-  // which will always use the latest component from imageloader.
+  // which will always use the latest component from imageloader. Also ignored
+  // if |allow_untrusted| is set to false.
   VirtualMachineSpec vm = 1;
 
   // Any additional disks that should be mounted inside the VM.
@@ -114,6 +115,9 @@ message StartVmRequest {
   // launches. In order for the VM to see the virtual TPM, the guest kernel must
   // contain a virtio TPM driver.
   bool software_tpm = 9;
+
+  // Allow untrusted VMs to be started.
+  bool allow_untrusted = 10;
 }
 
 // Information that must be included with every StartPluginVm request.
