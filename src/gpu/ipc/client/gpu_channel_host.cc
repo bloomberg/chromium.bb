@@ -208,8 +208,10 @@ void GpuChannelHost::RemoveRoute(int route_id) {
 
 base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
     const base::SharedMemoryHandle& source_handle) {
-  if (IsLost())
+  if (IsLost()) {
+    LOG(ERROR) << "Failed to send shared memory handle. Channel was lost.";
     return base::SharedMemoryHandle();
+  }
 
   return base::SharedMemory::DuplicateHandle(source_handle);
 }
