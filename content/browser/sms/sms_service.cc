@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "content/browser/sms/sms_metrics.h"
 #include "content/public/browser/sms_dialog.h"
@@ -143,16 +144,27 @@ void SmsService::OnCancel() {
   Process(SmsStatus::kCancelled, base::nullopt);
 }
 
+void SmsService::OnEvent(SmsDialog::Event event_type) {
+  switch (event_type) {
+    case SmsDialog::Event::kConfirm:
+      OnConfirm();
+      return;
+    case SmsDialog::Event::kCancel:
+      OnCancel();
+      return;
+  }
+  DVLOG(1) << "Unsupported event type: " << event_type;
+  NOTREACHED();
+}
+
 void SmsService::Prompt() {
   WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host());
+      WebContents::FromRenderFrameHost(render_frame_host());
   const url::Origin origin = render_frame_host()->GetLastCommittedOrigin();
   prompt_ = web_contents->GetDelegate()->CreateSmsDialog(origin);
   if (prompt_) {
-    prompt_->Open(
-        render_frame_host(),
-        base::BindOnce(&SmsService::OnConfirm, base::Unretained(this)),
-        base::BindOnce(&SmsService::OnCancel, base::Unretained(this)));
+    prompt_->Open(render_frame_host(),
+                  base::BindOnce(&SmsService::OnEvent, base::Unretained(this)));
   }
 }
 

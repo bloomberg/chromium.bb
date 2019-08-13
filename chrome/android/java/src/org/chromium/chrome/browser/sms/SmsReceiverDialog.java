@@ -23,6 +23,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
+import org.chromium.content_public.browser.sms.Event;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -72,13 +73,13 @@ public class SmsReceiverDialog {
         Button cancelButton = (Button) dialogContainer.findViewById(R.id.cancel_button);
         cancelButton.setOnClickListener(v -> {
             assert mNativeSmsDialogAndroid != 0;
-            SmsReceiverDialogJni.get().onCancel(mNativeSmsDialogAndroid);
+            SmsReceiverDialogJni.get().onEvent(mNativeSmsDialogAndroid, Event.CANCEL);
         });
 
         mConfirmButton = (Button) dialogContainer.findViewById(R.id.confirm_button);
         mConfirmButton.setOnClickListener(v -> {
             assert mNativeSmsDialogAndroid != 0;
-            SmsReceiverDialogJni.get().onConfirm(mNativeSmsDialogAndroid);
+            SmsReceiverDialogJni.get().onEvent(mNativeSmsDialogAndroid, Event.CONFIRM);
         });
 
         mDialog = new Dialog(mActivity);
@@ -149,7 +150,6 @@ public class SmsReceiverDialog {
 
     @NativeMethods
     interface Natives {
-        void onCancel(long nativeSmsDialogAndroid);
-        void onConfirm(long nativeSmsDialogAndroid);
+        void onEvent(long nativeSmsDialogAndroid, int eventType);
     }
 }

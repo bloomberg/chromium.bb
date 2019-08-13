@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.sms.Event;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -52,13 +53,17 @@ public class SmsReceiverDialogTest {
 
     private class TestSmsReceiverDialogJni implements SmsReceiverDialog.Natives {
         @Override
-        public void onCancel(long nativeSmsDialogAndroid) {
-            mCancelButtonClickedCallback.notifyCalled();
-        }
-
-        @Override
-        public void onConfirm(long nativeSmsDialogAndroid) {
-            mConfirmButtonClickedCallback.notifyCalled();
+        public void onEvent(long nativeSmsDialogAndroid, int eventType) {
+            switch (eventType) {
+                case Event.CANCEL:
+                    mCancelButtonClickedCallback.notifyCalled();
+                    return;
+                case Event.CONFIRM:
+                    mConfirmButtonClickedCallback.notifyCalled();
+                    return;
+                default:
+                    assert false : "|eventType| is invalid";
+            }
         }
     }
 
