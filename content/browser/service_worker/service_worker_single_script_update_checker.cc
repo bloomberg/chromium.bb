@@ -132,7 +132,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
 
   // This key is used to isolate requests from different contexts in accessing
   // shared network resources like the http cache.
-  resource_request.trusted_network_isolation_key =
+  resource_request.trusted_params = network::ResourceRequest::TrustedParams();
+  resource_request.trusted_params->network_isolation_key =
       net::NetworkIsolationKey(origin, origin);
 
   if (is_main_script_) {
