@@ -1232,14 +1232,6 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   RunFunction(new DownloadsShowDefaultFolderFunction(),
               DownloadItemIdAsArgList(item.get()));
 }
-
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadsDragFunction) {
-  ScopedCancellingItem item(CreateFirstSlowTestDownload());
-  ASSERT_TRUE(item.get());
-
-  RunFunction(new DownloadsDragFunction(), DownloadItemIdAsArgList(item.get()));
-}
 #endif
 
 

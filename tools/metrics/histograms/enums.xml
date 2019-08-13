@@ -19013,7 +19013,7 @@ Called by update_net_error_codes.py.-->
       label="DELETED_EXPERIMENTAL_MEDIAGALLERIES_ASSEMBLEMEDIAFILE"/>
   <int value="150" label="BOOKMARKMANAGERPRIVATE_STARTDRAG"/>
   <int value="151" label="BROWSINGDATA_REMOVEPASSWORDS"/>
-  <int value="152" label="DOWNLOADS_DRAG"/>
+  <int value="152" label="DELETED_DOWNLOADS_DRAG"/>
   <int value="153" label="INPUT_IME_SETCOMPOSITION"/>
   <int value="154" label="METRICSPRIVATE_RECORDUSERACTION"/>
   <int value="155" label="USB_RELEASEINTERFACE"/>
