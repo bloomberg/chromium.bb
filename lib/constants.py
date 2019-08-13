@@ -1062,7 +1062,7 @@ ENV_PASSTHRU = ('CROS_SUDO_KEEP_ALIVE', SHARED_CACHE_ENVVAR,
 
 # List of variables to proxy into the chroot from the host, and to
 # have sudo export if existent. Anytime this list is modified, a new
-# chroot_version_hooks.d upgrade script that symlinks to 45_rewrite_sudoers.d
+# chroot_version_hooks.d upgrade script that symlinks to 153_rewrite_sudoers.d
 # should be created.
 CHROOT_ENVIRONMENT_WHITELIST = (
     'CHROMEOS_OFFICIAL',
