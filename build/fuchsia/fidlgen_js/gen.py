@@ -527,10 +527,11 @@ function %(name)s() {}
     for method in interface.methods:
       method_name = _CompileIdentifier(method.name)
       self.f.write(
-          'const _k%(name)s_%(method_name)s_Ordinal = %(ordinal)s;\n' % {
+          'const _k%(name)s_%(method_name)s_Ordinal = %(ordinal)sn;\n' % {
               'name': name,
               'method_name': method_name,
-              'ordinal': method.ordinal
+              # TODO(https://crbug.com/991300): Use |ordinal| once it is 64-bit.
+              'ordinal': method.generated_ordinal
           })
 
     self.f.write('\n')
