@@ -1707,6 +1707,10 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
         break_anywhere_if_overflow_ = false;
         line_break_type = LineBreakType::kKeepAll;
         break;
+      case EWordBreak::kBbKeepAllIfKorean:
+        break_anywhere_if_overflow_ = false;
+        line_break_type = LineBreakType::kKeepAllIfKorean;
+        break;
     }
     if (UNLIKELY((override_break_anywhere_ && break_anywhere_if_overflow_) ||
                  style.GetLineBreak() == LineBreak::kAnywhere)) {
