@@ -28,10 +28,10 @@ g.test('fullscreen quad', async t => {
     }
   `
   );
-  // TODO: Fix glslang build so '310 es' can be used here. 450 works for now.
   const fragmentModule = t.makeShaderModule(
     'fragment',
-    `#version 450
+    `#version 310 es
+    precision mediump float;
     layout(location = 0) out vec4 fragColor;
     void main() {
       fragColor = vec4(0.0, 1.0, 0.0, 1.0);
