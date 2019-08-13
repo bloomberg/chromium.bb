@@ -7431,6 +7431,7 @@ interface SVGViewElement : SVGElement
     setter zoomAndPan
 interface Scheduler
     attribute @@toStringTag
+    getter currentTaskQueue
     method constructor
     method getTaskQueue
     method postTask
@@ -7816,6 +7817,7 @@ interface TaskQueue
     getter priority
     method constructor
     method postTask
+    method take
 interface Text : CharacterData
     attribute @@toStringTag
     getter assignedSlot
