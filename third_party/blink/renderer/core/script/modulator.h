@@ -178,6 +178,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual void RegisterImportMap(const ImportMap*) = 0;
   virtual bool IsAcquiringImportMaps() const = 0;
   virtual void ClearIsAcquiringImportMaps() = 0;
+  virtual const ImportMap* GetImportMapForTest() const = 0;
 
   // https://html.spec.whatwg.org/C/#hostgetimportmetaproperties
   virtual ModuleImportMeta HostGetImportMetaProperties(ModuleRecord) const = 0;

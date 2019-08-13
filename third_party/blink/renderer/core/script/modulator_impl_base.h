@@ -77,6 +77,7 @@ class ModulatorImplBase : public Modulator {
                           const KURL&,
                           const ReferrerScriptInfo&,
                           ScriptPromiseResolver*) override;
+  const ImportMap* GetImportMapForTest() const final { return import_map_; }
   void RegisterImportMap(const ImportMap*) final;
   bool IsAcquiringImportMaps() const final { return acquiring_import_maps_; }
   void ClearIsAcquiringImportMaps() final { acquiring_import_maps_ = false; }

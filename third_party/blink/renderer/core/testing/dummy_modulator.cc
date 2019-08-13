@@ -138,6 +138,11 @@ void DummyModulator::ClearIsAcquiringImportMaps() {
   NOTREACHED();
 }
 
+const ImportMap* DummyModulator::GetImportMapForTest() const {
+  NOTREACHED();
+  return nullptr;
+}
+
 ModuleImportMeta DummyModulator::HostGetImportMetaProperties(
     ModuleRecord) const {
   NOTREACHED();
