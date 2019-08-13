@@ -15,6 +15,7 @@
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_row.h"
+#include "url/gurl.h"
 
 namespace resource_coordinator {
 
@@ -24,9 +25,9 @@ constexpr char kSiteCharacteristicsDirectoryName[] =
     "Site Characteristics Database";
 
 size_t CountOriginsInURLRows(const history::URLRows& rows) {
-  std::set<url::Origin> origins;
+  std::set<GURL> origins;
   for (auto& row : rows)
-    origins.insert(url::Origin::Create(row.url()));
+    origins.insert(row.url().GetOrigin());
   return origins.size();
 }
 
@@ -164,8 +165,11 @@ void LocalSiteCharacteristicsDataStore::OnURLsDeleted(
   } else {
     std::vector<url::Origin> origins_to_remove;
 
-    DCHECK_EQ(deletion_info.deleted_urls_origin_map().size(),
-              CountOriginsInURLRows(deletion_info.deleted_rows()));
+    // CHECK_EQ instead of DCHECK_EQ to determine if
+    // https://crbug.com/966059 still happens in production.
+    // TODO(sebmarchand): Remove once https://crbug.com/966059 is fixed.
+    CHECK_EQ(deletion_info.deleted_urls_origin_map().size(),
+             CountOriginsInURLRows(deletion_info.deleted_rows()));
     for (const auto& it : deletion_info.deleted_urls_origin_map()) {
       const url::Origin origin = url::Origin::Create(it.first);
       const int remaining_visits_in_history = it.second.first;
