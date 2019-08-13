@@ -1533,6 +1533,10 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     enabled_features.emplace_back(features::kCrostini);
   }
 
+  if (IsFilesNgTest()) {
+    enabled_features.emplace_back(chromeos::features::kFilesNG);
+  }
+
   if (!IsNativeSmbTest()) {
     disabled_features.emplace_back(features::kNativeSmb);
   }
@@ -1748,6 +1752,10 @@ bool FileManagerBrowserTestBase::GetNeedsZipSupport() const {
 }
 
 bool FileManagerBrowserTestBase::GetIsOffline() const {
+  return false;
+}
+
+bool FileManagerBrowserTestBase::GetEnableFilesNg() const {
   return false;
 }
 
