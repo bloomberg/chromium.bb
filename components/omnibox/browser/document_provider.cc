@@ -388,16 +388,10 @@ void DocumentProvider::Start(const AutocompleteInput& input,
 
   input_ = input;
 
-  // Create a request for suggestions, routing completion to
-  base::BindOnce(&DocumentProvider::OnDocumentSuggestionsLoaderAvailable,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::BindOnce(&DocumentProvider::OnURLLoadComplete,
-                     base::Unretained(this) /* own SimpleURLLoader */);
-
   done_ = false;  // Set true in callbacks.
   client_->GetDocumentSuggestionsService(/*create_if_necessary=*/true)
       ->CreateDocumentSuggestionsRequest(
-          input.text(), client_->GetTemplateURLService(),
+          input.text(), client_->IsOffTheRecord(),
           base::BindOnce(
               &DocumentProvider::OnDocumentSuggestionsLoaderAvailable,
               weak_ptr_factory_.GetWeakPtr()),
