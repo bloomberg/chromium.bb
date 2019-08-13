@@ -522,7 +522,6 @@ if (!is_android) {
       "//chrome/browser",
       "//chrome/browser/devtools:test_support",
       "//chrome/browser/profiling_host:profiling_browsertests",
-      "//chrome/browser/web_applications:browser_tests",
       "//chrome/renderer",
       "//chrome/services/removable_storage_writer:lib",
       "//components/autofill/content/browser:risk_proto",

@@ -145,6 +145,10 @@ if (safe_browsing_mode == 1) {
       "//testing/gmock",
     ]
   }
+} else {
+  # safe_browsing_mode ==0
+  source_set("binary_feature_extractor") {
+  }
 }
 
 source_set("safe_browsing") {

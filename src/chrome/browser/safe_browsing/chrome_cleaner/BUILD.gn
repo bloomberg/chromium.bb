@@ -54,7 +54,6 @@ jumbo_static_library("chrome_cleaner") {
   deps = [
     # TODO(crbug.com/920223): Break dependency cycles with //chrome/browser
     ":public",
-    "//chrome/browser/extensions",
     "//chrome/browser/safe_browsing",
     "//chrome/browser/ui",
     "//chrome/common",
@@ -67,6 +66,5 @@ jumbo_static_library("chrome_cleaner") {
     "//components/prefs",
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//content/public/browser",
-    "//extensions/browser",
   ]
 }
