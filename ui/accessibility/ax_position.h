@@ -863,41 +863,29 @@ class AXPosition {
   }
 
   AXPositionInstance CreatePositionAtStartOfDocument() const {
-    if (IsNullPosition())
-      return CreateNullPosition();
-
-    AXPositionInstance iterator = Clone();
-    while (!iterator->IsNullPosition()) {
-      if (IsDocument(iterator->GetRole()) &&
-          iterator->CreateParentPosition()->IsNullPosition()) {
-        return iterator->CreatePositionAtStartOfAnchor();
-      }
-      iterator = iterator->CreateParentPosition();
+    AXPositionInstance position =
+        AsTreePosition()->CreateDocumentAncestorPosition();
+    if (!position->IsNullPosition()) {
+      position = position->CreatePositionAtStartOfAnchor();
+      if (IsTextPosition())
+        position = position->AsTextPosition();
     }
-    return CreateNullPosition();
+    return position;
   }
 
   AXPositionInstance CreatePositionAtEndOfDocument() const {
-    if (IsNullPosition())
-      return CreateNullPosition();
-
-    AXPositionInstance iterator = Clone();
-    while (!iterator->IsNullPosition()) {
-      if (IsDocument(iterator->GetRole()) &&
-          iterator->CreateParentPosition()->IsNullPosition()) {
-        AXPositionInstance tree_position = iterator->AsTreePosition();
-        DCHECK(tree_position);
-        while (tree_position->AnchorChildCount()) {
-          tree_position = tree_position->CreateChildPositionAt(
-              tree_position->AnchorChildCount() - 1);
-        }
-        iterator =
-            tree_position->AsLeafTextPosition()->CreatePositionAtEndOfAnchor();
-        return iterator;
+    AXPositionInstance position =
+        AsTreePosition()->CreateDocumentAncestorPosition();
+    if (!position->IsNullPosition()) {
+      while (position->AnchorChildCount()) {
+        position =
+            position->CreateChildPositionAt(position->AnchorChildCount() - 1);
       }
-      iterator = iterator->CreateParentPosition();
+      position = position->CreatePositionAtEndOfAnchor();
+      if (IsTextPosition())
+        position = position->AsTextPosition();
     }
-    return CreateNullPosition();
+    return position;
   }
 
   AXPositionInstance CreateChildPositionAt(int child_index) const {
@@ -2380,6 +2368,18 @@ class AXPosition {
     }
 
     return false;
+  }
+
+  AXPositionInstance CreateDocumentAncestorPosition() const {
+    AXPositionInstance iterator = Clone();
+    while (!iterator->IsNullPosition()) {
+      if (IsDocument(iterator->GetRole()) &&
+          iterator->CreateParentPosition()->IsNullPosition()) {
+        break;
+      }
+      iterator = iterator->CreateParentPosition();
+    }
+    return iterator;
   }
 
   AXPositionKind kind_;
