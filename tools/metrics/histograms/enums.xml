@@ -57964,6 +57964,7 @@ would be helpful to identify which type is being sent.
   <int value="15" label="Send Tab To Self"/>
   <int value="16" label="Updates"/>
   <int value="17" label="Click To Call"/>
+  <int value="18" label="Shared Clipboard"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus">
