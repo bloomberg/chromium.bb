@@ -5,11 +5,10 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/string_util.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -149,7 +148,7 @@ const CGFloat kVerticalPadding = 16;
     if (cellStyle == CollectionViewCellStyle::kUIKit) {
       [_linkController setLinkColor:UIColorFromRGB(kUIKitFooterLinkColor)];
     } else {
-      [_linkController setLinkColor:[[MDCPalette cr_bluePalette] tint500]];
+      [_linkController setLinkColor:[UIColor colorNamed:kBlueColor]];
     }
     [_linkController addLinkWithRange:range url:URL];
   }
@@ -163,7 +162,7 @@ const CGFloat kVerticalPadding = 16;
   } else {
     self.textLabel.shadowOffset = CGSizeMake(1.f, 0.f);
     self.textLabel.shadowColor = [UIColor whiteColor];
-    self.textLabel.textColor = [[MDCPalette greyPalette] tint900];
+    self.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
     MaybeSetUILabelScaledFont(withFontScaling, self.textLabel,
                               [[MDCTypography fontLoader] mediumFontOfSize:14]);
   }
