@@ -1096,11 +1096,16 @@ const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
 
 const FeatureEntry::FeatureParam kFilteringPredictionEmptyFilterEnabled[] = {
     {"filter", ui::input_prediction::kFilterNameEmpty}};
+const FeatureEntry::FeatureParam kFilteringPredictionOneEuroFilterEnabled[] = {
+    {"filter", ui::input_prediction::kFilterNameOneEuro}};
 
 const FeatureEntry::FeatureVariation kFilteringPredictionFeatureVariations[] = {
     {ui::input_prediction::kFilterNameEmpty,
      kFilteringPredictionEmptyFilterEnabled,
-     base::size(kFilteringPredictionEmptyFilterEnabled), nullptr}};
+     base::size(kFilteringPredictionEmptyFilterEnabled), nullptr},
+    {ui::input_prediction::kFilterNameOneEuro,
+     kFilteringPredictionOneEuroFilterEnabled,
+     base::size(kFilteringPredictionOneEuroFilterEnabled), nullptr}};
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kBottomOfflineIndicatorEnabled[] = {
