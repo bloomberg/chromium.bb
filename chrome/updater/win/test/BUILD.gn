@@ -22,6 +22,11 @@ source_set("test_common") {
     "test_initializer.cc",
     "test_initializer.h",
   ]
+
+  deps = [
+    "//base",
+    "//chrome/updater:common",
+  ]
 }
 
 source_set("test_executables") {
