@@ -11,9 +11,9 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "third_party/blink/public/platform/interface_registry.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_dispatcher_eventhandler.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_dispatcher_eventhandler.h"
 
 namespace blink {
 
