@@ -160,26 +160,6 @@
     </dialog>
 
     <dialog id="customization-menu" class="customize-dialog">
-      <div id="menu-header">
-        <div id="menu-back-circle" tabindex="0" role="button"
-            aria-label="$i18n{backLabel}" title="$i18n{backLabel}">
-          <div id="menu-back"></div>
-        </div>
-        <div id="menu-title">$i18n{customizeMenu}</div>
-        <div id="refresh-daily-wrapper">
-          <div id="refresh-toggle-wrapper" title="$i18n{refreshDaily}">
-            <label class="switch">
-              <input id="refresh-daily-toggle" type="checkbox"
-                  aria-labelledby="refresh-text"></input>
-              <span class="toggle">
-                <div class="knob"></div>
-                <div class="highlight"></div>
-              </span>
-            </label>
-          </div>
-          <div id="refresh-text">$i18n{refreshDaily}</div>
-        </div>
-      </div>
       <div id="menu-nav-panel" role="tablist" aria-label="$i18n{customizeMenu}">
         <button id="backgrounds-button" class="menu-option" tabindex="0"
             role="tab" aria-controls="backgrounds-menu backgrounds-image-menu"
@@ -215,18 +195,40 @@
         </button>
       </div>
       <div id="menu-contents">
+        <div id="menu-header">
+          <div id="menu-back-circle" tabindex="0" role="button"
+              aria-label="$i18n{backLabel}" title="$i18n{backLabel}">
+            <div id="menu-back"></div>
+          </div>
+          <div id="menu-title">$i18n{customizeMenu}</div>
+          <div id="refresh-daily-wrapper">
+            <div id="refresh-toggle-wrapper" title="$i18n{refreshDaily}">
+              <label class="switch">
+                <input id="refresh-daily-toggle" type="checkbox"
+                    aria-labelledby="refresh-text"></input>
+                <span class="toggle">
+                  <div class="knob"></div>
+                  <div class="highlight"></div>
+                </span>
+              </label>
+            </div>
+            <div id="refresh-text">$i18n{refreshDaily}</div>
+          </div>
+        </div>
         <div id="backgrounds-menu" class="menu-panel" tabindex="0"
             role="tabpanel" aria-label="$i18n{backgroundsOption}">
           <div id="backgrounds-upload" class="bg-sel-tile-bg">
             <div id="backgrounds-upload-icon" class="bg-sel-tile" tabindex="-1"
-                aria-label="$i18n{uploadImage}" title="$i18n{uploadImage}">
+                role="button" aria-label="$i18n{uploadImage}"
+                title="$i18n{uploadImage}">
               <div id="backgrounds-upload-arrow"></div>
               <div id="backgrounds-upload-text">$i18n{uploadImage}</div>
             </div>
           </div>
           <div id="backgrounds-default" class="bg-sel-tile-bg">
             <div id="backgrounds-default-icon" class="bg-sel-tile" tabindex="-1"
-                aria-label="$i18n{noBackground}" title="$i18n{noBackground}">
+                role="button" aria-label="$i18n{noBackground}"
+                title="$i18n{noBackground}">
               <div class="mini-page">
                 <div class="mini-header-colorful"></div>
                 <div class="mini-shortcuts"></div>
@@ -241,7 +243,7 @@
             aria-label="$i18n{shortcutsOption}">
           <div id="sh-options">
             <div class="sh-option">
-              <div id="sh-option-cl" class="sh-option-image" tabindex="0"
+              <div id="sh-option-cl" class="sh-option-image" tabindex="-1"
                   role="button" aria-pressed="false"
                   aria-labelledby="sh-option-cl-title"
                   title="$i18n{myShortcuts}">
@@ -259,7 +261,7 @@
               $i18n{shortcutsCurated}
             </div>
             <div class="sh-option">
-              <div id="sh-option-mv" class="sh-option-image" tabindex="0"
+              <div id="sh-option-mv" class="sh-option-image" tabindex="-1"
                   role="button" aria-pressed="false"
                   aria-labelledby="sh-option-mv-title"
                   title="$i18n{mostVisited}">
@@ -285,7 +287,7 @@
             </div>
             <div id="sh-hide-toggle-wrapper" title="$i18n{hideShortcuts}">
               <label class="switch">
-                <input id="sh-hide-toggle" type="checkbox"
+                <input id="sh-hide-toggle" type="checkbox" tabindex="-1"
                     aria-labelledby="sh-hide-title"></input>
                 <span class="toggle">
                   <div class="knob"></div>
@@ -323,7 +325,8 @@
           <div id="colors-default" class="bg-sel-tile-bg"
               aria-label="$i18n{defaultThemeLabel}"
               title="$i18n{defaultThemeLabel}">
-            <div id="colors-default-icon" class="bg-sel-tile" tabindex="-1"></div>
+            <div id="colors-default-icon" class="bg-sel-tile" tabindex="-1">
+            </div>
           </div>
         </div>
       </div>
