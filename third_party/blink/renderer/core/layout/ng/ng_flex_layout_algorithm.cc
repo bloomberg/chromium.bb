@@ -361,7 +361,6 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     cross_axis_offset = border_scrollbar_padding_.inline_start;
   }
   FlexLine* line;
-  LayoutUnit max_main_axis_extent;
   while (
       (line = algorithm_->ComputeNextFlexLine(border_box_size_.inline_size))) {
     line->SetContainerMainInnerSize(
@@ -415,21 +414,15 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     // cross_axis_offset is updated in each iteration of the loop, for passing
     // in to the next iteration.
     line->ComputeLineItemsPosition(main_axis_offset, cross_axis_offset);
-    max_main_axis_extent =
-        std::max(max_main_axis_extent, line->main_axis_extent);
   }
-  LayoutUnit intrinsic_block_content_size =
-      is_column_ ? max_main_axis_extent
-                 : cross_axis_offset - border_scrollbar_padding_.block_start;
-  LayoutUnit intrinsic_block_size =
-      intrinsic_block_content_size + border_scrollbar_padding_.BlockSum();
+
+  LayoutUnit intrinsic_block_size = algorithm_->IntrinsicContentBlockSize() +
+                                    border_scrollbar_padding_.BlockSum();
   LayoutUnit block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Node(), border_padding_, intrinsic_block_size);
 
+  container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
   container_builder_.SetBlockSize(block_size);
-  container_builder_.SetIntrinsicBlockSize(
-      algorithm_->IntrinsicContentBlockSize() +
-      border_scrollbar_padding_.BlockSum());
 
   GiveLinesAndItemsFinalPositionAndSize();
 

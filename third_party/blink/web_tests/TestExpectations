@@ -1884,10 +1884,8 @@ Bug(none) virtual/layout_ng_experimental/fragmentation/scrolling-contents-scroll
 
 ### virtual/layout_ng_experimental/css3/flexbox/
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/auto-height-column-with-border-and-padding.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/auto-height-with-flex.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/box-sizing-min-max-sizes.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/columns-height-set-via-top-bottom.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/content-height-with-scrollbars.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-baseline.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-end.html [ Failure ]
@@ -1905,7 +1903,6 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-flow.html [ Fa
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-order.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flexbox-baseline-margins.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flexbox-baseline.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flexbox-height-with-overflow-auto.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flexbox-overflow-auto.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flexitem.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/inline-flexbox-wrap-vertically-width-calculation.html [ Failure ]
@@ -1918,13 +1915,11 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline-reverse-w
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline-reverse-wrap-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/negative-overflow.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/nested-stretch.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/order-painting.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/overflow-auto-resizes-correctly.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/overflow-keep-scrollpos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/percentage-height-replaced-element.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/position-absolute-child.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/preferred-widths.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/relayout-align-items.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/relpos-with-percentage-top.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/stretch-input-in-column.html [ Failure ]
@@ -1935,7 +1930,6 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/writing-modes.html 
 
 ### virtual/layout_ng_experimental/css3/flexbox/mozilla/
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/mozilla/flexbox-items-as-stacking-contexts-2.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/mozilla/flexbox-sizing-vert-1.xhtml [ Failure ]
 
 ### virtual/layout_ng_experimental/external/wpt/css/css-flexbox/
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/Flexible-order.html [ Failure ]
@@ -1991,14 +1985,12 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-self-flexstart.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-self-stretch.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_direction-column-reverse.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_direction-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-column-reverse-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-column-reverse-wrap.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-column-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-row-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_inline.html [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_justifycontent-center-overflow.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_margin-collapse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_order-box.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_order.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_quirks_body.html [ Failure ]
@@ -2020,7 +2012,6 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/scr
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/scrollbars.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/table-as-item-auto-min-width.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-direction-column-reverse.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-direction-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-inline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-order.html [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
