@@ -910,7 +910,7 @@ int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
     // Unfortunately the encoder interface reflects the old refresh_*_frame
     // flags so we have to replicate the old refresh_frame_flags logic here in
     // order to preserve the behaviour of the flag overrides.
-    int ref_frame_map_idx = get_ref_frame_map_idx(cm, LAST3_FRAME);
+    int ref_frame_map_idx = get_ref_frame_map_idx(cm, LAST_FRAME);
     if (ref_frame_map_idx != INVALID_IDX)
       refresh_mask |= cpi->ext_refresh_last_frame << ref_frame_map_idx;
 

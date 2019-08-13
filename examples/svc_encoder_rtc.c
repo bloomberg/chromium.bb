@@ -30,7 +30,7 @@ static const char *exec_name;
 
 void usage_exit(void) { exit(EXIT_FAILURE); }
 
-static int mode_to_num_layers[4] = { 1, 2, 3, 3 };
+static int mode_to_num_layers[5] = { 1, 2, 3, 3, 2 };
 
 // For rate control encoding stats.
 struct RateControlMetrics {
@@ -238,8 +238,10 @@ static void printout_rate_control_summary(struct RateControlMetrics *rc,
 // Layer pattern configuration.
 static int set_layer_pattern(int layering_mode, int frame_cnt,
                              aom_svc_layer_id_t *layer_id,
-                             aom_svc_ref_frame_config_t *ref_frame_config) {
+                             aom_svc_ref_frame_config_t *ref_frame_config,
+                             int *use_svc_control) {
   int i;
+  *use_svc_control = 1;
   // No spatial layers in this test.
   layer_id->spatial_layer_id = 0;
   // Set the referende map buffer idx for the 7 references:
@@ -327,6 +329,22 @@ static int set_layer_pattern(int layering_mode, int frame_cnt,
         layer_flags |= AOM_EFLAG_NO_REF_LAST;
       }
       break;
+    case 4:
+      // 2-layer with the old update flags, not with the new SVC control.
+      *use_svc_control = 0;
+      //    1    3    5
+      //  0    2    4
+      if (frame_cnt % 2 == 0) {
+        layer_id->temporal_layer_id = 0;
+        // Update LAST on layer 0, reference LAST and GF.
+        layer_flags |= AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF;
+      } else {
+        layer_id->temporal_layer_id = 1;
+        // No updates on layer 1, only reference LAST (TL0).
+        layer_flags |= AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
+                       AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_REF_GF;
+      }
+      break;
     default: assert(0); die("Error: Unsupported temporal layering mode!\n");
   }
   return layer_flags;
@@ -362,6 +380,7 @@ int main(int argc, char **argv) {
   double sum_bitrate = 0.0;
   double sum_bitrate2 = 0.0;
   double framerate = 30.0;
+  int use_svc_control = 1;
   zero(rc.layer_target_bitrate);
   memset(&layer_id, 0, sizeof(aom_svc_layer_id_t));
   memset(&input_ctx, 0, sizeof(input_ctx));
@@ -549,9 +568,11 @@ int main(int argc, char **argv) {
     // Set the reference/update flags, layer_id, and reference_map
     // buffer index.
     flags = set_layer_pattern(layering_mode, frame_cnt, &layer_id,
-                              &ref_frame_config);
+                              &ref_frame_config, &use_svc_control);
     aom_codec_control(&codec, AV1E_SET_SVC_LAYER_ID, &layer_id);
-    aom_codec_control(&codec, AV1E_SET_SVC_REF_FRAME_CONFIG, &ref_frame_config);
+    if (use_svc_control)
+      aom_codec_control(&codec, AV1E_SET_SVC_REF_FRAME_CONFIG,
+                        &ref_frame_config);
 
     frame_avail = read_frame(&input_ctx, &raw);
     if (frame_avail) ++rc.layer_input_frames[layer_id.temporal_layer_id];
