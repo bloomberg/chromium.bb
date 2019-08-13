@@ -38,6 +38,7 @@
 
 
 // patch section: color document marker
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 
 
 
@@ -682,10 +683,27 @@ void InlineTextBoxPainter::PaintDocumentMarker(GraphicsContext& context,
     start = marker_rect.X() - start_point.X();
     width = LayoutUnit(marker_rect.Width());
   }
-  DocumentMarkerPainter::PaintDocumentMarker(
+
+  bool hide_spelling_marker = false;
+
+  if (inline_text_box_.GetLineLayoutItem().GetNode()) {
+    const Element *element = RootEditableElement(*inline_text_box_.GetLineLayoutItem().GetNode());
+    if (element) {
+      AtomicString colorAttr =
+        element->getAttribute(html_names::kBbHideSpellingMarkerAttr);
+
+      if (!colorAttr.IsNull()) {
+        hide_spelling_marker = true;
+      }
+    }
+  }
+
+  if (marker.GetType() != DocumentMarker::kSpelling || !hide_spelling_marker) {
+    DocumentMarkerPainter::PaintDocumentMarker(
       context, PhysicalOffsetToBeNoop(box_origin), style, marker.GetType(),
       PhysicalRect(start, LayoutUnit(), width,
                    inline_text_box_.LogicalHeight()));
+  }
 }
 
 template <InlineTextBoxPainter::PaintOptions options>
