@@ -1866,7 +1866,8 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "DirectCompositionGpuVSync"
+                        "DirectCompositionGpuVSync",
+                        "DirectCompositionPresentationFeedback"
                     ]
                 }
             ]
