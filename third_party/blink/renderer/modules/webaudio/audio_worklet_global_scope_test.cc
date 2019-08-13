@@ -144,8 +144,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
         ModuleRecord::Instantiate(script_state, module, js_url);
     EXPECT_TRUE(exception.IsEmpty());
 
-    ScriptValue value = ModuleRecord(script_state->GetIsolate(), module, js_url)
-                            .Evaluate(script_state);
+    ScriptValue value = ModuleRecord::Evaluate(script_state, module, js_url);
     return value.IsEmpty();
   }
 

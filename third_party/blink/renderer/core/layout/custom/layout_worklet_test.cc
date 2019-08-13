@@ -57,9 +57,7 @@ class LayoutWorkletTest : public PageTestBase {
         ModuleRecord::Instantiate(script_state, module, js_url);
     EXPECT_TRUE(exception.IsEmpty());
 
-    // TODO(rikaf): Replace ModuleRecord with v8::Local<v8::Module>.
-    return ModuleRecord(script_state->GetIsolate(), module, js_url)
-        .Evaluate(script_state);
+    return ModuleRecord::Evaluate(script_state, module, js_url);
   }
 
  private:

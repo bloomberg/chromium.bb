@@ -92,7 +92,9 @@ class CORE_EXPORT ModuleRecord final {
                                  const KURL& source_url);
 
   // Returns exception, if any.
-  ScriptValue Evaluate(ScriptState*) const;
+  static ScriptValue Evaluate(ScriptState*,
+                              v8::Local<v8::Module> record,
+                              const KURL& source_url);
   static void ReportException(ScriptState*, v8::Local<v8::Value> exception);
 
   static Vector<String> ModuleRequests(ScriptState*,
@@ -108,7 +110,7 @@ class CORE_EXPORT ModuleRecord final {
 
   bool IsNull() const { return !module_ || module_->IsEmpty(); }
 
-  v8::Local<v8::Value> V8Namespace(v8::Isolate*);
+  static v8::Local<v8::Value> V8Namespace(v8::Local<v8::Module> record);
 
  private:
   // ModuleScript instances store their record as

@@ -146,8 +146,10 @@ TEST_F(ModuleScriptTest, V8CodeCache) {
                                           module_script->LocalRecord(),
                                           module_script->SourceURL())
                     .IsEmpty());
-    ASSERT_TRUE(
-        module_script->Record().Evaluate(scope.GetScriptState()).IsEmpty());
+    ASSERT_TRUE(ModuleRecord::Evaluate(scope.GetScriptState(),
+                                       module_script->LocalRecord(),
+                                       module_script->SourceURL())
+                    .IsEmpty());
     TestFoo(scope);
 
     Checkpoint checkpoint;

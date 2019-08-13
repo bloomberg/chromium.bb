@@ -378,11 +378,13 @@ ScriptValue ModulatorImplBase::ExecuteModule(
     // <spec step="7">Otherwise:</spec>
 
     // <spec step="7.1">Let record be script's record.</spec>
-    const ModuleRecord& record = module_script->Record();
-    CHECK(!record.IsNull());
+    const v8::Local<v8::Module>& record = module_script->LocalRecord();
+    CHECK(!record.IsEmpty());
 
-    // <spec step="7.2">Set evaluationStatus to record.Evaluate(). ...</spec>
-    error = record.Evaluate(script_state_);
+    // <spec step="7.2">Set evaluationStatus to ModuleRecord::Evaluate().
+    // ...</spec>
+    error = ModuleRecord::Evaluate(script_state_, record,
+                                   module_script->SourceURL());
 
     // <spec step="7.2">... If Evaluate fails to complete as a result of the
     // user agent aborting the running script, then set evaluationStatus to

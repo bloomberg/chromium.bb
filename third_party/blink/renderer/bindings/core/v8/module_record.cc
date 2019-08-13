@@ -125,7 +125,9 @@ ScriptValue ModuleRecord::Instantiate(ScriptState* script_state,
   return ScriptValue();
 }
 
-ScriptValue ModuleRecord::Evaluate(ScriptState* script_state) const {
+ScriptValue ModuleRecord::Evaluate(ScriptState* script_state,
+                                   v8::Local<v8::Module> record,
+                                   const KURL& source_url) {
   v8::Isolate* isolate = script_state->GetIsolate();
 
   // Isolate exceptions that occur when executing the code. These exceptions
@@ -134,13 +136,12 @@ ScriptValue ModuleRecord::Evaluate(ScriptState* script_state) const {
   v8::TryCatch try_catch(isolate);
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  probe::ExecuteScript probe(execution_context, source_url_);
+  probe::ExecuteScript probe(execution_context, source_url);
 
   // TODO(kouhei): We currently don't have a code-path which use return value of
   // EvaluateModule. Stop ignoring result once we have such path.
   v8::Local<v8::Value> result;
-  if (!V8ScriptRunner::EvaluateModule(isolate, execution_context,
-                                      module_->NewLocal(isolate),
+  if (!V8ScriptRunner::EvaluateModule(isolate, execution_context, record,
                                       script_state->GetContext())
            .ToLocal(&result)) {
     DCHECK(try_catch.HasCaught());
@@ -189,10 +190,9 @@ Vector<TextPosition> ModuleRecord::ModuleRequestPositions(
   return ret;
 }
 
-v8::Local<v8::Value> ModuleRecord::V8Namespace(v8::Isolate* isolate) {
-  DCHECK(!IsNull());
-  v8::Local<v8::Module> module = module_->NewLocal(isolate);
-  return module->GetModuleNamespace();
+v8::Local<v8::Value> ModuleRecord::V8Namespace(v8::Local<v8::Module> record) {
+  DCHECK(!record.IsEmpty());
+  return record->GetModuleNamespace();
 }
 
 v8::MaybeLocal<v8::Module> ModuleRecord::ResolveModuleCallback(

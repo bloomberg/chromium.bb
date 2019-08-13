@@ -251,13 +251,13 @@ TEST(ModuleRecordTest, EvaluationErrrorIsRemembered) {
   ASSERT_TRUE(ModuleRecord::Instantiate(scope.GetScriptState(), module_failure,
                                         js_url_f)
                   .IsEmpty());
-  // TODO(rikaf): Replace module_failure_record with module_failure.
-  ModuleRecord module_failure_record =
-      ModuleRecord(scope.GetIsolate(), module_failure, js_url_f);
   ScriptValue evaluation_error =
-      module_failure_record.Evaluate(scope.GetScriptState());
+      ModuleRecord::Evaluate(scope.GetScriptState(), module_failure, js_url_f);
   EXPECT_FALSE(evaluation_error.IsEmpty());
 
+  // TODO(rikaf): Replace module_failure_record with GCed.
+  ModuleRecord module_failure_record =
+      ModuleRecord(scope.GetIsolate(), module_failure, js_url_f);
   resolver->PushModuleRecord(module_failure_record);
 
   const KURL js_url_c("https://example.com/c.js");
@@ -269,10 +269,8 @@ TEST(ModuleRecordTest, EvaluationErrrorIsRemembered) {
   ASSERT_TRUE(
       ModuleRecord::Instantiate(scope.GetScriptState(), module, js_url_c)
           .IsEmpty());
-  // TODO(rikaf): Replace ModuleRecord with v8::Local<v8::Module>.
   ScriptValue evaluation_error2 =
-      ModuleRecord(scope.GetIsolate(), module, js_url_f)
-          .Evaluate(scope.GetScriptState());
+      ModuleRecord::Evaluate(scope.GetScriptState(), module, js_url_f);
   EXPECT_FALSE(evaluation_error2.IsEmpty());
 
   EXPECT_EQ(evaluation_error, evaluation_error2);
@@ -297,10 +295,8 @@ TEST(ModuleRecordTest, Evaluate) {
       ModuleRecord::Instantiate(scope.GetScriptState(), module, js_url);
   ASSERT_TRUE(exception.IsEmpty());
 
-  // TODO(rikaf): Replace module_record with module.
-  ModuleRecord module_record = ModuleRecord(scope.GetIsolate(), module, js_url);
-
-  EXPECT_TRUE(module_record.Evaluate(scope.GetScriptState()).IsEmpty());
+  EXPECT_TRUE(
+      ModuleRecord::Evaluate(scope.GetScriptState(), module, js_url).IsEmpty());
   v8::Local<v8::Value> value = scope.GetFrame()
                                    .GetScriptController()
                                    .ExecuteScriptInMainWorldAndReturnValue(
@@ -309,8 +305,8 @@ TEST(ModuleRecordTest, Evaluate) {
   ASSERT_TRUE(value->IsString());
   EXPECT_EQ("bar", ToCoreString(v8::Local<v8::String>::Cast(value)));
 
-  v8::Local<v8::Object> module_namespace = v8::Local<v8::Object>::Cast(
-      module_record.V8Namespace(scope.GetIsolate()));
+  v8::Local<v8::Object> module_namespace =
+      v8::Local<v8::Object>::Cast(ModuleRecord::V8Namespace(module));
   EXPECT_FALSE(module_namespace.IsEmpty());
   v8::Local<v8::Value> exported_value =
       module_namespace
@@ -334,9 +330,8 @@ TEST(ModuleRecordTest, EvaluateCaptureError) {
       ModuleRecord::Instantiate(scope.GetScriptState(), module, js_url);
   ASSERT_TRUE(exception.IsEmpty());
 
-  // TODO(rikaf): Replace ModuleRecord with v8::Local<v8::Module>.
-  ScriptValue error = ModuleRecord(scope.GetIsolate(), module, js_url)
-                          .Evaluate(scope.GetScriptState());
+  ScriptValue error =
+      ModuleRecord::Evaluate(scope.GetScriptState(), module, js_url);
   ASSERT_FALSE(error.IsEmpty());
   ASSERT_TRUE(error.V8Value()->IsString());
   EXPECT_EQ("bar", ToCoreString(v8::Local<v8::String>::Cast(error.V8Value())));

@@ -93,9 +93,7 @@ class AudioWorkletThreadTest : public PageTestBase {
     ScriptValue exception =
         ModuleRecord::Instantiate(script_state, module, js_url);
     EXPECT_TRUE(exception.IsEmpty());
-    // TODO(rikaf): Replace ModuleRecord with v8::Local<v8::Module>
-    ScriptValue value = ModuleRecord(script_state->GetIsolate(), module, js_url)
-                            .Evaluate(script_state);
+    ScriptValue value = ModuleRecord::Evaluate(script_state, module, js_url);
 
     EXPECT_TRUE(value.IsEmpty());
     wait_event->Signal();
