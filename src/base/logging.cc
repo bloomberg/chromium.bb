@@ -620,7 +620,7 @@ LogMessage::~LogMessage() {
   size_t stack_start = stream_.tellp();
 #if !defined(OFFICIAL_BUILD) && !defined(OS_NACL) && !defined(__UCLIBC__) && \
     !defined(OS_AIX)
-  if (severity_ == LOG_FATAL && !base::debug::BeingDebugged()) {
+  if (severity_ == LOG_FATAL && !base::debug::BeingDebugged() && base::AtExitManager::IsInitialized()) {
     // Include a stack trace on a fatal, unless a debugger is attached.
     base::debug::StackTrace stack_trace;
     stream_ << std::endl;  // Newline to separate from log message.
