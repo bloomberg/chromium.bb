@@ -631,6 +631,29 @@ message StartLxdContainerRequest {
   string drivefs_mount_path = 5;
 }
 
+// OsRelease encapsulates a subset of the os-release info as documented
+// at https://www.freedesktop.org/software/systemd/man/os-release.html.
+message OsRelease {
+  // A pretty operating system name in a format suitable for presentation to the
+  // user. May or may not contain a release code name or OS version of some
+  // kind, as suitable. (e.g. "Debian GNU/Linux 10 (buster)").
+  string pretty_name = 1;
+
+  // A string identifying the operating system, without a version component,
+  // and suitable for presentation to the user (e.g. "Debian GNU/Linux").
+  string name = 2;
+
+  // String identifying OS version possibly including release codename.
+  // (e.g. "10 (buster)").
+  string version = 3;
+
+  // Lower case string (mostly numeric) identifying OS version (e.g. "10").
+  string version_id = 4;
+
+  // Lower case string identifying the operating system (e.g. "debian").
+  string id = 5;
+}
+
 // Response for starting an LXD container.
 message StartLxdContainerResponse {
   enum Status {
@@ -661,6 +684,9 @@ message StartLxdContainerResponse {
 
   // The failure_reason if the container could not be started.
   string failure_reason = 2;
+
+  // OS strings found in the container's /etc/os-release, e.g. "stretch".
+  OsRelease os_release = 3;
 }
 
 // Message used in the signal for when a container is starting.
@@ -694,6 +720,9 @@ message LxdContainerStartingSignal {
 
   // The failure_reason if the container was not successfully started.
   string failure_reason = 5;
+
+  // OS strings found in the container's /etc/os-release, e.g. "stretch".
+  OsRelease os_release = 6;
 }
 
 // Request for getting the primary user for an LXD container.
