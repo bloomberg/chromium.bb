@@ -307,7 +307,8 @@ CreateProviderHostForServiceWorkerContext(
           &provider_info);
 
   host->CompleteStartWorkerPreparation(
-      process_id, mojo::MakeRequest(&provider_info->interface_provider));
+      process_id, mojo::MakeRequest(&provider_info->interface_provider),
+      provider_info->browser_interface_broker.InitWithNewPipeAndPassReceiver());
   output_endpoint->BindForServiceWorker(std::move(provider_info));
   return host;
 }
