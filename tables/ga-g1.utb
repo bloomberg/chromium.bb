@@ -40,15 +40,8 @@
 # This table is based on UEB Grade 1 and has a small number of
 # override rules below. Apart from these rules, Irish Grade 1 is the
 # same as UEB Grade 1.
-display & 12346
-display = 123456
-display ( 12356
-display ! 2346
-display ) 23456
-display * 16
-display < 126
-display % 146
-display ? 1456
+
+include text_nabcc.dis All display opcodes
 
 # Note that the uplow rules need to be placed before AND after the "en-ueb-g1.ctb"
 # include in order for both the lower- and uppercase part to take precedence
