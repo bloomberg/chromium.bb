@@ -1405,7 +1405,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // when the width of the LayoutObject changes as this impacts children with
   // 'width' set to auto.
   virtual void UpdateLayout() = 0;
-  virtual bool UpdateImageLoadingPriorities() { return false; }
 
   void HandleSubtreeModifications();
   virtual void SubtreeDidChange() {}
