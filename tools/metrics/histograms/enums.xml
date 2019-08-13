@@ -61993,6 +61993,14 @@ Full version information for the fingerprint enum values:
   <int value="2" label="WEB_HISTORY_QUERY_TIMED_OUT">Timed out</int>
 </enum>
 
+<enum name="WebMediaPlayerWatchTimeType">
+  <int value="0" label="DefaultRendererFactory"/>
+  <int value="1" label="MojoRendererFactory"/>
+  <int value="2" label="MediaPlayerRendererClientFactory"/>
+  <int value="3" label="CourierRendererFactory"/>
+  <int value="4" label="FlingingRendererClientFactory"/>
+</enum>
+
 <enum name="WebpDecodedFormat">
   <int value="1" label="JPEG"/>
   <int value="2" label="PNG"/>
