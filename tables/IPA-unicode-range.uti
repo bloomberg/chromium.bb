@@ -192,13 +192,13 @@ noback sign \x0300 4-16        # ̀  - grave accent above - low level tone
 noback sign \x030F 4-6-16      # ̏  - double grave accent above - extra low level tone
 noback sign \x030C 4-236       # ̌  - wedge above - rising contour tone
 noback sign \x0302 4-146       # ̂  - circumflex above - falling contour tone
-noback sign \x1DC4 4-24        #  (UTF-16) - macron-acute above - high -rising contour tone
-noback sign \x1DC5 4-35        #  (UTF-16) - grave-macron above - low-rising contour tone
-noback sign \x1DC8 4-256       #  (UTF-16) - grave-acute- grave above - rising-falling contour tone
+noback sign \x1DC4 4-24        # ᷄ (UTF-16) - macron-acute above - high -rising contour tone
+noback sign \x1DC5 4-35        # ᷅ (UTF-16) - grave-macron above - low-rising contour tone
+noback sign \x1DC8 4-256       # ᷈ (UTF-16) - grave-acute- grave above - rising-falling contour tone
 noback sign \x2193 456-2346    # ↓ - down arrow - downstep
-noback sign \xF19D 456-2346    # ↓ - down arrow - downstep
+noback sign \xF19D 456-2346    #  - down arrow - downstep
 noback sign \x2191 456-1246    # ↑ - up arrow - upstep
-noback sign \xF19C 456-1246    # ↑ - up arrow - upstep
+noback sign \xF19C 456-1246    #  - up arrow - upstep
 noback sign \x2197 456-145     # ↗ - upward diagonal arrow - global rise
 noback sign \x2198 456-356     # ↘ - downward diagonal arrow - global fall
 noback sign \x02E5 456-4-14    # ˥ - extra-high (55) tone bar - extra high level tone
