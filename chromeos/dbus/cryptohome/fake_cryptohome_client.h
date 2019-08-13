@@ -206,6 +206,11 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
                    const cryptohome::AuthorizationRequest& auth,
                    const cryptohome::RemoveKeyRequest& request,
                    DBusMethodCallback<cryptohome::BaseReply> callback) override;
+  void MassRemoveKeys(
+      const cryptohome::AccountIdentifier& cryptohome_id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::MassRemoveKeysRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void GetBootAttribute(
       const cryptohome::GetBootAttributeRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) override;

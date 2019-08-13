@@ -30,6 +30,7 @@ class GetKeyDataRequest;
 class GetSupportedKeyPoliciesRequest;
 class GetTpmStatusRequest;
 class LockToSingleUserMountUntilRebootRequest;
+class MassRemoveKeysRequest;
 class MigrateKeyRequest;
 class MigrateToDircryptoRequest;
 class MountGuestRequest;
@@ -561,6 +562,16 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
       const cryptohome::AccountIdentifier& id,
       const cryptohome::AuthorizationRequest& auth,
       const cryptohome::RemoveKeyRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
+
+  // Asynchronously calls MassRemoveKeys method. |callback| is called after
+  // method call, and with reply protobuf.
+  // MassRemoveKeys removes all keys except those whose labels are exempted
+  // in MassRemoveKeysRequest.
+  virtual void MassRemoveKeys(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::MassRemoveKeysRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Asynchronously calls GetBootAttribute method. |callback| is called after
