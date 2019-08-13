@@ -127,7 +127,7 @@ class VisualViewportTest : public testing::Test,
 
   PaintArtifactCompositor* paint_artifact_compositor() {
     LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
-    return frame_view.GetPaintArtifactCompositorForTesting();
+    return frame_view.GetPaintArtifactCompositor();
   }
 
   void ForceFullCompositingUpdate() { UpdateAllLifecyclePhases(); }
@@ -386,8 +386,7 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
                        visual_viewport.VisibleRect().Size());
 
   // Verify the paint property nodes and GeometryMapper cache.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+  {
     UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(2),
               visual_viewport.GetPageScaleNode()->Matrix());
@@ -411,8 +410,7 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
   EXPECT_FLOAT_SIZE_EQ(FloatSize(0, 75), visual_viewport.GetScrollOffset());
 
   // Verify the paint property nodes and GeometryMapper cache.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+  {
     UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(4),
               visual_viewport.GetPageScaleNode()->Matrix());
@@ -476,8 +474,7 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
                        visual_viewport.VisibleRect().Size());
 
   // Verify the paint property nodes and GeometryMapper cache.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+  {
     UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(2),
               visual_viewport.GetPageScaleNode()->Matrix());
@@ -500,8 +497,7 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
   EXPECT_FLOAT_SIZE_EQ(FloatSize(150, 0), visual_viewport.GetScrollOffset());
 
   // Verify the paint property nodes and GeometryMapper cache.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+  {
     UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(4),
               visual_viewport.GetPageScaleNode()->Matrix());
@@ -539,11 +535,8 @@ TEST_P(VisualViewportTest, TestWebViewResizedBeforeAttachment) {
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   EXPECT_FLOAT_SIZE_EQ(IntSize(320, 240),
                        IntSize(visual_viewport.ContainerLayer()->Size()));
-
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_EQ(IntSize(320, 240),
-              visual_viewport.GetScrollNode()->ContainerRect().Size());
-  }
+  EXPECT_EQ(IntSize(320, 240),
+            visual_viewport.GetScrollNode()->ContainerRect().Size());
 }
 
 // Make sure that the visibleRect method acurately reflects the scale and scroll
@@ -863,11 +856,7 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
     EXPECT_EQ(IntSize(320, 240),
               IntSize(visual_viewport.ScrollLayer()->Size()));
   }
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(IntSize(320, 240),
-              visual_viewport.GetScrollNode()->ContentsSize());
-  }
+  EXPECT_EQ(IntSize(320, 240), visual_viewport.GetScrollNode()->ContentsSize());
 
   // Ensure the location and scale were reset.
   EXPECT_EQ(FloatSize(), visual_viewport.GetScrollOffset());
@@ -1712,14 +1701,11 @@ TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
       frame_view.LayoutViewport()->LayerForScrolling()->CcLayer();
 
   EXPECT_EQ(gfx::Size(1500, 2400), scroll_layer->bounds());
-
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_EQ(IntSize(1500, 2400), frame_view.GetLayoutView()
-                                       ->FirstFragment()
-                                       .PaintProperties()
-                                       ->Scroll()
-                                       ->ContentsSize());
-  }
+  EXPECT_EQ(IntSize(1500, 2400), frame_view.GetLayoutView()
+                                     ->FirstFragment()
+                                     .PaintProperties()
+                                     ->Scroll()
+                                     ->ContentsSize());
 }
 
 // Tests that resizing the visual viepwort keeps its bounds within the outer
@@ -2415,9 +2401,6 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
 
 // Ensure we create transform node for overscroll elasticity properly.
 TEST_P(VisualViewportTest, EnsureOverscrollElasticityTransformNode) {
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
-
   InitializeWithAndroidSettings();
   WebView()->MainFrameWidget()->Resize(IntSize(400, 400));
   NavigateTo("about:blank");
@@ -2433,9 +2416,8 @@ TEST_P(VisualViewportTest, EnsureOverscrollElasticityTransformNode) {
 
 // Ensure we create effect node for scrollbar properly.
 TEST_P(VisualViewportTest, EnsureEffectNodeForScrollbars) {
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      // TODO(wangxianzhu): Should this work for CompositeAfterPaint?
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+  // TODO(wangxianzhu): Should this work for CompositeAfterPaint?
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   InitializeWithAndroidSettings();
@@ -2539,12 +2521,9 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
   EXPECT_EQ(gfx::Size(320, 480),
             visual_viewport.ScrollLayer()->CcLayer()->bounds());
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_EQ(IntSize(400, 600),
-              visual_viewport.GetScrollNode()->ContainerRect().Size());
-    EXPECT_EQ(IntSize(320, 480),
-              visual_viewport.GetScrollNode()->ContentsSize());
-  }
+  EXPECT_EQ(IntSize(400, 600),
+            visual_viewport.GetScrollNode()->ContainerRect().Size());
+  EXPECT_EQ(IntSize(320, 480), visual_viewport.GetScrollNode()->ContentsSize());
 
   WebView().MainFrameWidget()->ApplyViewportChanges(
       {gfx::ScrollOffset(1, 1), gfx::Vector2dF(), 2, false, 1,
@@ -2556,12 +2535,9 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
   EXPECT_EQ(gfx::Size(320, 480),
             visual_viewport.ScrollLayer()->CcLayer()->bounds());
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_EQ(IntSize(400, 600),
-              visual_viewport.GetScrollNode()->ContainerRect().Size());
-    EXPECT_EQ(IntSize(320, 480),
-              visual_viewport.GetScrollNode()->ContentsSize());
-  }
+  EXPECT_EQ(IntSize(400, 600),
+            visual_viewport.GetScrollNode()->ContainerRect().Size());
+  EXPECT_EQ(IntSize(320, 480), visual_viewport.GetScrollNode()->ContentsSize());
 }
 
 class VisualViewportScrollIntoViewTest : public VisualViewportSimTest {
@@ -2669,8 +2645,7 @@ TEST_P(VisualViewportTest, DeviceEmulationTransformNode) {
 TEST_P(VisualViewportTest, DirectPinchZoomPropertyUpdate) {
   // TODO(crbug.com/953322): Implement this optimization for
   // CompositeAfterPaint.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   InitializeWithAndroidSettings();
