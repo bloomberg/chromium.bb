@@ -12,6 +12,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -405,6 +406,14 @@ void SplitViewController::SnapWindow(aura::Window* window,
       UpdateSnappedWindowsAndDividerBounds();
     }
   }
+
+  // Disable the bounds change animation for a to-be-snapped window if the
+  // window has an un-identity transform. We'll do transform animation for the
+  // window in OnWindowSnapped() function.
+  std::unique_ptr<ScopedAnimationDisabler> animation_disabler;
+  auto iter = snapping_window_transformed_bounds_map_.find(window);
+  if (iter != snapping_window_transformed_bounds_map_.end())
+    animation_disabler = std::make_unique<ScopedAnimationDisabler>(window);
 
   if (WindowState::Get(window)->GetStateType() ==
       GetStateTypeFromSnapPosition(snap_position)) {
@@ -1207,6 +1216,13 @@ void SplitViewController::StopObserving(SnapPosition snap_position) {
     if (split_view_divider_)
       split_view_divider_->RemoveObservedWindow(window);
     Shell::Get()->shadow_controller()->UpdateShadowForWindow(window);
+
+    // It's possible that when we try to snap an ARC app window, while we are
+    // waiting for its state/bounds to the expected state/bounds, another window
+    // snap request comes in and causing the previous to-be-snapped window to
+    // be un-observed, in this case we should restore the previous to-be-snapped
+    // window's transform if it's unidentity.
+    RestoreTransformIfApplicable(window);
   }
 }
 
@@ -1685,8 +1701,6 @@ gfx::Point SplitViewController::GetEndDragLocationInScreen(
 }
 
 void SplitViewController::RestoreTransformIfApplicable(aura::Window* window) {
-  DCHECK(IsWindowInSplitView(window));
-
   // If the transform of the window has been changed, calculate a good starting
   // transform based on its transformed bounds before to be snapped.
   auto iter = snapping_window_transformed_bounds_map_.find(window);
