@@ -2,10 +2,10 @@
 ++[list]
 ++++[list item]
 ++++++[static] name='• '
-++++++[static] name='Item 1'
+++++++[text] name='Item 1'
 ++++[list item]
 ++++++[static] name='• '
-++++++[static] name='Item 2'
+++++++[text] name='Item 2'
 ++++[list item]
 ++++++[static] name='• '
-++++++[static] name='Item 3'
+++++++[text] name='Item 3'

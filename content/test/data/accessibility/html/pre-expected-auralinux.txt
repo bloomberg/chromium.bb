@@ -1,9 +1,9 @@
 [document web]
 ++[section]
-++++[static] name='This test is to check   pre<newline>formatting.'
+++++[text] name='This test is to check   pre<newline>formatting.'
 ++[section]
-++++[static] name='This test is to check   pre<newline>formatting'
+++++[text] name='This test is to check   pre<newline>formatting'
 ++[section]
-++++[static] name='This test is to check   pre<newline>formatting.'
+++++[text] name='This test is to check   pre<newline>formatting.'
 ++[section]
-++++[static] name='This test is to check pre formatting.'
+++++[text] name='This test is to check pre formatting.'

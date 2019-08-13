@@ -2,16 +2,16 @@
 ++[list]
 ++++[list item]
 ++++++[static] name='• '
-++++++[static] name='First item properly groups itself despite '
-++++++[static] name='bolded'
-++++++[static] name=' text.'
+++++++[text] name='First item properly groups itself despite '
+++++++[text] name='bolded'
+++++++[text] name=' text.'
 ++++[list item]
 ++++++[static] name='• '
-++++++[static] name='This should also be '
-++++++[static] name='seen'
-++++++[static] name=' as a group.'
+++++++[text] name='This should also be '
+++++++[text] name='seen'
+++++++[text] name=' as a group.'
 ++++[list item]
 ++++++[static] name='• '
-++++++[static] name='Some '
-++++++[static] name='more'
-++++++[static] name=' text.'
+++++++[text] name='Some '
+++++++[text] name='more'
+++++++[text] name=' text.'

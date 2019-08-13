@@ -1,5 +1,5 @@
 [document web]
 ++[section]
-++++[static] name='One word is '
-++++[static] name='emphasized'
-++++[static] name='.'
+++++[text] name='One word is '
+++++[text] name='emphasized'
+++++[text] name='.'

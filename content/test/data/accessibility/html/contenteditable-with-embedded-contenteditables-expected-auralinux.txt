@@ -1,10 +1,10 @@
 [document web]
 ++[section] editable multi-line selectable-text
 ++++[paragraph] editable
-++++++[static] name='This is editable.' editable
-++++[static] name='This is not editable.'
-++++[static] name='<newline>'
+++++++[text] name='This is editable.' editable
+++++[text] name='This is not editable.'
+++++[text] name='<newline>'
 ++++[paragraph] editable multi-line selectable-text
-++++++[static] name='But this one is.' editable
+++++++[text] name='But this one is.' editable
 ++++[paragraph] editable
-++++++[static] name='So is this one.' editable
+++++++[text] name='So is this one.' editable

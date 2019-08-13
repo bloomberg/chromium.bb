@@ -1,35 +1,35 @@
 [document web]
 ++[link] name='Empty anchor'
-++++[static] name='Empty anchor'
-++[static] name=' '
+++++[text] name='Empty anchor'
+++[text] name=' '
 ++[link] name='Anchor with content'
-++++[static] name='Anchor with content'
-++[static] name=' '
+++++[text] name='Anchor with content'
+++[text] name=' '
 ++[link] name='Anchor with ID'
-++++[static] name='Anchor with ID'
-++[static] name=' '
+++++[text] name='Anchor with ID'
+++[text] name=' '
 ++[link] name='Empty span'
-++++[static] name='Empty span'
-++[static] name=' '
+++++[text] name='Empty span'
+++[text] name=' '
 ++[link] name='Span with content'
-++++[static] name='Span with content'
-++[static] name=' '
+++++[text] name='Span with content'
+++[text] name=' '
 ++[link] name='Paragraph with content'
-++++[static] name='Paragraph with content'
+++++[text] name='Paragraph with content'
 ++[paragraph]
 ++++[link]
-++++[static] name='After empty anchor'
+++++[text] name='After empty anchor'
 ++[paragraph]
 ++++[link] name='Anchor with content'
-++++++[static] name='Anchor with content'
+++++++[text] name='Anchor with content'
 ++[paragraph]
 ++++[link] name='Anchor with ID'
-++++++[static] name='Anchor with ID'
+++++++[text] name='Anchor with ID'
 ++[paragraph]
 ++++[section]
-++++[static] name='After empty span'
+++++[text] name='After empty span'
 ++[paragraph]
 ++++[section]
-++++++[static] name='Span with content'
+++++++[text] name='Span with content'
 ++[paragraph]
-++++[static] name='Paragraph with content'
+++++[text] name='Paragraph with content'

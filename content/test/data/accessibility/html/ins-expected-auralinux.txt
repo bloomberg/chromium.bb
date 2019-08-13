@@ -1,9 +1,9 @@
 [document web]
 ++[paragraph]
-++++[static] name='My favorite browser is '
+++++[text] name='My favorite browser is '
 ++++[section]
-++++++[static] name='ABC'
-++++[static] name=' '
+++++++[text] name='ABC'
+++++[text] name=' '
 ++++[section]
-++++++[static] name='Chrome'
-++++[static] name='!'
+++++++[text] name='Chrome'
+++++[text] name='!'

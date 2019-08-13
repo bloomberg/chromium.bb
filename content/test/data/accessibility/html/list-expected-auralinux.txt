@@ -2,19 +2,19 @@
 ++[list]
 ++++[list item]
 ++++++[static] name='• '
-++++++[static] name='tic'
+++++++[text] name='tic'
 ++++[list item]
 ++++++[static] name='• '
-++++++[static] name='tac'
+++++++[text] name='tac'
 ++++[list item]
 ++++++[static] name='• '
-++++++[static] name='toe'
+++++++[text] name='toe'
 ++[list]
 ++++[list item]
-++++++[static] name='tic'
-++++[static] name=' '
+++++++[text] name='tic'
+++++[text] name=' '
 ++++[list item]
-++++++[static] name='tac'
-++++[static] name=' '
+++++++[text] name='tac'
+++++[text] name=' '
 ++++[list item]
-++++++[static] name='toe'
+++++++[text] name='toe'

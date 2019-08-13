@@ -2,4 +2,4 @@
 ++[document frame]
 ++++[landmark] name='Page 1'
 ++++++[paragraph]
-++++++++[static] name='Hello, world!'
+++++++++[text] name='Hello, world!'
