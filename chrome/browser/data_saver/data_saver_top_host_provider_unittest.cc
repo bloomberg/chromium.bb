@@ -179,7 +179,15 @@ TEST_F(DataSaverTopHostProviderTest,
   ASSERT_FALSE(DataSaverTopHostProvider::CreateIfAllowed(profile()));
 }
 
-TEST_F(DataSaverTopHostProviderTest, CreateIfAllowedDataSaverUserInfobarSeen) {
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_CreateIfAllowedDataSaverUserInfobarSeen \
+  DISABLED_CreateIfAllowedDataSaverUserInfobarSeen
+#else
+#define MAYBE_CreateIfAllowedDataSaverUserInfobarSeen \
+  CreateIfAllowedDataSaverUserInfobarSeen
+#endif
+TEST_F(DataSaverTopHostProviderTest,
+       MAYBE_CreateIfAllowedDataSaverUserInfobarSeen) {
   SetDataSaverEnabled(true);
 
   // Navigate so infobar is shown.
