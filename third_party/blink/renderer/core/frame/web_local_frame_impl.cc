@@ -2353,7 +2353,7 @@ WebSandboxFlags WebLocalFrameImpl::EffectiveSandboxFlagsForTesting() const {
     auto* local_owner = GetFrame()->DeprecatedLocalOwner();
     if (local_owner &&
         local_owner->OwnerType() == FrameOwnerElementType::kIframe) {
-      flags |= ToHTMLIFrameElement(local_owner)
+      flags |= To<HTMLIFrameElement>(local_owner)
                    ->sandbox_flags_converted_to_feature_policies();
     }
   }

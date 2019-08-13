@@ -363,7 +363,7 @@ void WebFrameSerializerImpl::OpenTagToString(Element* element,
   // is written even if the original document didn't have that attribute
   // (mainly needed for iframes with srcdoc, but with no src attribute).
   if (should_rewrite_frame_src && !did_rewrite_frame_src &&
-      IsHTMLIFrameElement(element)) {
+      IsA<HTMLIFrameElement>(element)) {
     AppendAttribute(result, param->is_html_document,
                     html_names::kSrcAttr.ToString(), rewritten_frame_link);
   }

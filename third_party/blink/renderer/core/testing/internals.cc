@@ -2575,7 +2575,7 @@ void Internals::updateLayoutAndRunPostLayoutTasks(
     document = document_;
   } else if (IsA<Document>(node)) {
     document = To<Document>(node);
-  } else if (auto* iframe = ToHTMLIFrameElementOrNull(*node)) {
+  } else if (auto* iframe = DynamicTo<HTMLIFrameElement>(*node)) {
     document = iframe->contentDocument();
   }
 
