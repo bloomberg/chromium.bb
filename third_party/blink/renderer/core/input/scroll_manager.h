@@ -119,8 +119,6 @@ class CORE_EXPORT ScrollManager
   WebInputEventResult PassScrollGestureEvent(const WebGestureEvent&,
                                              LayoutObject*);
 
-  Node* GetScrollEventTarget();
-
   void ClearGestureScrollState();
 
   void CustomizedScroll(ScrollState&);

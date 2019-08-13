@@ -201,6 +201,7 @@ class CORE_EXPORT EventHandler final
   // Handle the provided scroll gesture event, propagating down to child frames
   // as necessary.
   WebInputEventResult HandleGestureScrollEvent(const WebGestureEvent&);
+  WebInputEventResult HandleGestureScrollEnd(const WebGestureEvent&);
   bool IsScrollbarHandlingGestures() const;
 
   bool BestClickableNodeForHitTestResult(const HitTestLocation& location,
