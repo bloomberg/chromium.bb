@@ -81,8 +81,9 @@ class ModulatorImplBase : public Modulator {
   bool IsAcquiringImportMaps() const final { return acquiring_import_maps_; }
   void ClearIsAcquiringImportMaps() final { acquiring_import_maps_ = false; }
   ModuleImportMeta HostGetImportMetaProperties(ModuleRecord) const override;
-  ScriptValue InstantiateModule(ModuleRecord, const KURL&) override;
-  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override;
+  ScriptValue InstantiateModule(v8::Local<v8::Module>, const KURL&) override;
+  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
+      v8::Local<v8::Module>) override;
   ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) override;
 
   // Populates |reason| and returns true if the dynamic import is disallowed on

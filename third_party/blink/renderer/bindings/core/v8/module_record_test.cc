@@ -86,20 +86,20 @@ void ModuleRecordTestModulator::Trace(blink::Visitor* visitor) {
 TEST(ModuleRecordTest, compileSuccess) {
   V8TestingScope scope;
   const KURL js_url("https://example.com/foo.js");
-  ModuleRecord module = ModuleRecord::Compile(
+  v8::Local<v8::Module> module = ModuleRecord::Compile(
       scope.GetIsolate(), "export const a = 42;", js_url, js_url,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
-  ASSERT_FALSE(module.IsNull());
+  ASSERT_FALSE(module.IsEmpty());
 }
 
 TEST(ModuleRecordTest, compileFail) {
   V8TestingScope scope;
   const KURL js_url("https://example.com/foo.js");
-  ModuleRecord module = ModuleRecord::Compile(
+  v8::Local<v8::Module> module = ModuleRecord::Compile(
       scope.GetIsolate(), "123 = 456", js_url, js_url, ScriptFetchOptions(),
       TextPosition::MinimumPosition(), scope.GetExceptionState());
-  ASSERT_TRUE(module.IsNull());
+  ASSERT_TRUE(module.IsEmpty());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
 }
 
@@ -109,15 +109,19 @@ TEST(ModuleRecordTest, equalAndHash) {
   const KURL js_url_b("https://example.com/b.js");
 
   ModuleRecord module_null;
-  ModuleRecord module_a = ModuleRecord::Compile(
+  v8::Local<v8::Module> local_module_a = ModuleRecord::Compile(
       scope.GetIsolate(), "export const a = 'a';", js_url_a, js_url_a,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
+  ModuleRecord module_a =
+      ModuleRecord(scope.GetIsolate(), local_module_a, js_url_a);
   ASSERT_FALSE(module_a.IsNull());
-  ModuleRecord module_b = ModuleRecord::Compile(
+  v8::Local<v8::Module> local_module_b = ModuleRecord::Compile(
       scope.GetIsolate(), "export const b = 'b';", js_url_b, js_url_b,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
+  ModuleRecord module_b =
+      ModuleRecord(scope.GetIsolate(), local_module_b, js_url_b);
   ASSERT_FALSE(module_b.IsNull());
   Vector<char> module_deleted_buffer(sizeof(ModuleRecord));
   ModuleRecord& module_deleted =
@@ -156,13 +160,13 @@ TEST(ModuleRecordTest, equalAndHash) {
 TEST(ModuleRecordTest, moduleRequests) {
   V8TestingScope scope;
   const KURL js_url("https://example.com/foo.js");
-  ModuleRecord module = ModuleRecord::Compile(
+  v8::Local<v8::Module> module = ModuleRecord::Compile(
       scope.GetIsolate(), "import 'a'; import 'b'; export const c = 'c';",
       js_url, js_url, ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
-  ASSERT_FALSE(module.IsNull());
+  ASSERT_FALSE(module.IsEmpty());
 
-  auto requests = module.ModuleRequests(scope.GetScriptState());
+  auto requests = ModuleRecord::ModuleRequests(scope.GetScriptState(), module);
   EXPECT_THAT(requests, testing::ContainerEq<Vector<String>>({"a", "b"}));
 }
 
@@ -175,12 +179,13 @@ TEST(ModuleRecordTest, instantiateNoDeps) {
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url("https://example.com/foo.js");
-  ModuleRecord module = ModuleRecord::Compile(
+  v8::Local<v8::Module> module = ModuleRecord::Compile(
       scope.GetIsolate(), "export const a = 42;", js_url, js_url,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
-  ASSERT_FALSE(module.IsNull());
-  ScriptValue exception = module.Instantiate(scope.GetScriptState(), js_url);
+  ASSERT_FALSE(module.IsEmpty());
+  ScriptValue exception =
+      ModuleRecord::Instantiate(scope.GetScriptState(), module, js_url);
   ASSERT_TRUE(exception.IsEmpty());
 
   EXPECT_EQ(0u, resolver->ResolveCount());
@@ -195,28 +200,33 @@ TEST(ModuleRecordTest, instantiateWithDeps) {
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url_a("https://example.com/a.js");
-  ModuleRecord module_a = ModuleRecord::Compile(
+  v8::Local<v8::Module> module_a = ModuleRecord::Compile(
       scope.GetIsolate(), "export const a = 'a';", js_url_a, js_url_a,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
-  ASSERT_FALSE(module_a.IsNull());
-  resolver->PushModuleRecord(module_a);
+  ASSERT_FALSE(module_a.IsEmpty());
+  // TODO(rikaf) : Replace ModuleRecord with GCed
+  resolver->PushModuleRecord(
+      ModuleRecord(scope.GetIsolate(), module_a, js_url_a));
 
   const KURL js_url_b("https://example.com/b.js");
-  ModuleRecord module_b = ModuleRecord::Compile(
+  v8::Local<v8::Module> module_b = ModuleRecord::Compile(
       scope.GetIsolate(), "export const b = 'b';", js_url_b, js_url_b,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
-  ASSERT_FALSE(module_b.IsNull());
-  resolver->PushModuleRecord(module_b);
+  ASSERT_FALSE(module_b.IsEmpty());
+  // TODO(rikaf) : Replace ModuleRecord with GCed
+  resolver->PushModuleRecord(
+      ModuleRecord(scope.GetIsolate(), module_b, js_url_b));
 
   const KURL js_url_c("https://example.com/c.js");
-  ModuleRecord module = ModuleRecord::Compile(
+  v8::Local<v8::Module> module = ModuleRecord::Compile(
       scope.GetIsolate(), "import 'a'; import 'b'; export const c = 123;",
       js_url_c, js_url_c, ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
-  ASSERT_FALSE(module.IsNull());
-  ScriptValue exception = module.Instantiate(scope.GetScriptState(), js_url_c);
+  ASSERT_FALSE(module.IsEmpty());
+  ScriptValue exception =
+      ModuleRecord::Instantiate(scope.GetScriptState(), module, js_url_c);
   ASSERT_TRUE(exception.IsEmpty());
 
   ASSERT_EQ(2u, resolver->ResolveCount());
@@ -233,27 +243,36 @@ TEST(ModuleRecordTest, EvaluationErrrorIsRemembered) {
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url_f("https://example.com/failure.js");
-  ModuleRecord module_failure = ModuleRecord::Compile(
+  v8::Local<v8::Module> module_failure = ModuleRecord::Compile(
       scope.GetIsolate(), "nonexistent_function()", js_url_f, js_url_f,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
-  ASSERT_FALSE(module_failure.IsNull());
-  ASSERT_TRUE(
-      module_failure.Instantiate(scope.GetScriptState(), js_url_f).IsEmpty());
+  ASSERT_FALSE(module_failure.IsEmpty());
+  ASSERT_TRUE(ModuleRecord::Instantiate(scope.GetScriptState(), module_failure,
+                                        js_url_f)
+                  .IsEmpty());
+  // TODO(rikaf): Replace module_failure_record with module_failure.
+  ModuleRecord module_failure_record =
+      ModuleRecord(scope.GetIsolate(), module_failure, js_url_f);
   ScriptValue evaluation_error =
-      module_failure.Evaluate(scope.GetScriptState());
+      module_failure_record.Evaluate(scope.GetScriptState());
   EXPECT_FALSE(evaluation_error.IsEmpty());
 
-  resolver->PushModuleRecord(module_failure);
+  resolver->PushModuleRecord(module_failure_record);
 
   const KURL js_url_c("https://example.com/c.js");
-  ModuleRecord module = ModuleRecord::Compile(
+  v8::Local<v8::Module> module = ModuleRecord::Compile(
       scope.GetIsolate(), "import 'failure'; export const c = 123;", js_url_c,
       js_url_c, ScriptFetchOptions(), TextPosition::MinimumPosition(),
       scope.GetExceptionState());
-  ASSERT_FALSE(module.IsNull());
-  ASSERT_TRUE(module.Instantiate(scope.GetScriptState(), js_url_c).IsEmpty());
-  ScriptValue evaluation_error2 = module.Evaluate(scope.GetScriptState());
+  ASSERT_FALSE(module.IsEmpty());
+  ASSERT_TRUE(
+      ModuleRecord::Instantiate(scope.GetScriptState(), module, js_url_c)
+          .IsEmpty());
+  // TODO(rikaf): Replace ModuleRecord with v8::Local<v8::Module>.
+  ScriptValue evaluation_error2 =
+      ModuleRecord(scope.GetIsolate(), module, js_url_f)
+          .Evaluate(scope.GetScriptState());
   EXPECT_FALSE(evaluation_error2.IsEmpty());
 
   EXPECT_EQ(evaluation_error, evaluation_error2);
@@ -269,15 +288,19 @@ TEST(ModuleRecordTest, Evaluate) {
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url("https://example.com/foo.js");
-  ModuleRecord module = ModuleRecord::Compile(
+  v8::Local<v8::Module> module = ModuleRecord::Compile(
       scope.GetIsolate(), "export const a = 42; window.foo = 'bar';", js_url,
       js_url, ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
-  ASSERT_FALSE(module.IsNull());
-  ScriptValue exception = module.Instantiate(scope.GetScriptState(), js_url);
+  ASSERT_FALSE(module.IsEmpty());
+  ScriptValue exception =
+      ModuleRecord::Instantiate(scope.GetScriptState(), module, js_url);
   ASSERT_TRUE(exception.IsEmpty());
 
-  EXPECT_TRUE(module.Evaluate(scope.GetScriptState()).IsEmpty());
+  // TODO(rikaf): Replace module_record with module.
+  ModuleRecord module_record = ModuleRecord(scope.GetIsolate(), module, js_url);
+
+  EXPECT_TRUE(module_record.Evaluate(scope.GetScriptState()).IsEmpty());
   v8::Local<v8::Value> value = scope.GetFrame()
                                    .GetScriptController()
                                    .ExecuteScriptInMainWorldAndReturnValue(
@@ -286,8 +309,8 @@ TEST(ModuleRecordTest, Evaluate) {
   ASSERT_TRUE(value->IsString());
   EXPECT_EQ("bar", ToCoreString(v8::Local<v8::String>::Cast(value)));
 
-  v8::Local<v8::Object> module_namespace =
-      v8::Local<v8::Object>::Cast(module.V8Namespace(scope.GetIsolate()));
+  v8::Local<v8::Object> module_namespace = v8::Local<v8::Object>::Cast(
+      module_record.V8Namespace(scope.GetIsolate()));
   EXPECT_FALSE(module_namespace.IsEmpty());
   v8::Local<v8::Value> exported_value =
       module_namespace
@@ -303,14 +326,17 @@ TEST(ModuleRecordTest, EvaluateCaptureError) {
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url("https://example.com/foo.js");
-  ModuleRecord module = ModuleRecord::Compile(
+  v8::Local<v8::Module> module = ModuleRecord::Compile(
       scope.GetIsolate(), "throw 'bar';", js_url, js_url, ScriptFetchOptions(),
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
-  ASSERT_FALSE(module.IsNull());
-  ScriptValue exception = module.Instantiate(scope.GetScriptState(), js_url);
+  ASSERT_FALSE(module.IsEmpty());
+  ScriptValue exception =
+      ModuleRecord::Instantiate(scope.GetScriptState(), module, js_url);
   ASSERT_TRUE(exception.IsEmpty());
 
-  ScriptValue error = module.Evaluate(scope.GetScriptState());
+  // TODO(rikaf): Replace ModuleRecord with v8::Local<v8::Module>.
+  ScriptValue error = ModuleRecord(scope.GetIsolate(), module, js_url)
+                          .Evaluate(scope.GetScriptState());
   ASSERT_FALSE(error.IsEmpty());
   ASSERT_TRUE(error.V8Value()->IsString());
   EXPECT_EQ("bar", ToCoreString(v8::Local<v8::String>::Cast(error.V8Value())));

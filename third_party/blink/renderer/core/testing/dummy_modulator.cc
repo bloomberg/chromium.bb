@@ -144,13 +144,14 @@ ModuleImportMeta DummyModulator::HostGetImportMetaProperties(
   return ModuleImportMeta(String());
 }
 
-ScriptValue DummyModulator::InstantiateModule(ModuleRecord, const KURL&) {
+ScriptValue DummyModulator::InstantiateModule(v8::Local<v8::Module>,
+                                              const KURL&) {
   NOTREACHED();
   return ScriptValue();
 }
 
 Vector<Modulator::ModuleRequest> DummyModulator::ModuleRequestsFromModuleRecord(
-    ModuleRecord) {
+    v8::Local<v8::Module>) {
   NOTREACHED();
   return Vector<ModuleRequest>();
 }

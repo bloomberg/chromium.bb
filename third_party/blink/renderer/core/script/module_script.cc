@@ -14,14 +14,14 @@
 namespace blink {
 
 ModuleScript::ModuleScript(Modulator* settings_object,
-                           ModuleRecord record,
+                           v8::Local<v8::Module> record,
                            const KURL& source_url,
                            const KURL& base_url,
                            const ScriptFetchOptions& fetch_options)
     : Script(fetch_options, base_url),
       settings_object_(settings_object),
       source_url_(source_url) {
-  if (record.IsNull()) {
+  if (record.IsEmpty()) {
     // We allow empty records for module infra tests which never touch records.
     // This should never happen outside unit tests.
     return;
@@ -30,16 +30,27 @@ ModuleScript::ModuleScript(Modulator* settings_object,
   DCHECK(settings_object);
   v8::Isolate* isolate = settings_object_->GetScriptState()->GetIsolate();
   v8::HandleScope scope(isolate);
-  record_.Set(isolate, record.NewLocal(isolate));
+  record_.Set(isolate, record);
 }
 
+// TODO(rikaf):Replace Record() with LocalRecord()
 ModuleRecord ModuleScript::Record() const {
   if (record_.IsEmpty())
     return ModuleRecord();
 
   v8::Isolate* isolate = settings_object_->GetScriptState()->GetIsolate();
   v8::HandleScope scope(isolate);
+
   return ModuleRecord(isolate, record_.NewLocal(isolate), SourceURL());
+}
+
+v8::Local<v8::Module> ModuleScript::LocalRecord() const {
+  if (record_.IsEmpty()) {
+    return v8::Local<v8::Module>();
+  }
+  v8::Isolate* isolate = settings_object_->GetScriptState()->GetIsolate();
+
+  return record_.NewLocal(isolate);
 }
 
 bool ModuleScript::HasEmptyRecord() const {

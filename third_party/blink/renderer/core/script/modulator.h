@@ -184,7 +184,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   virtual bool HasValidContext() = 0;
 
-  virtual ScriptValue InstantiateModule(ModuleRecord, const KURL&) = 0;
+  virtual ScriptValue InstantiateModule(v8::Local<v8::Module>, const KURL&) = 0;
 
   struct ModuleRequest {
     String specifier;
@@ -192,8 +192,9 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
     ModuleRequest(const String& specifier, const TextPosition& position)
         : specifier(specifier), position(position) {}
   };
+  // TODO(rikaf) : Replace ModuleRecord with v8::Local<v8::Module>
   virtual Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
-      ModuleRecord) = 0;
+      v8::Local<v8::Module>) = 0;
 
   enum class CaptureEvalErrorFlag : bool { kReport, kCapture };
 

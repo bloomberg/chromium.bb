@@ -32,7 +32,8 @@ class ModuleScriptTestModulator final : public DummyModulator {
       : script_state_(script_state) {}
   ~ModuleScriptTestModulator() override = default;
 
-  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override {
+  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
+      v8::Local<v8::Module>) override {
     return Vector<ModuleRequest>();
   }
 
@@ -141,10 +142,10 @@ TEST_F(ModuleScriptTest, V8CodeCache) {
     ASSERT_TRUE(module_script);
 
     // Check that the module script is instantiated/evaluated correctly.
-    ASSERT_TRUE(
-        module_script->Record()
-            .Instantiate(scope.GetScriptState(), module_script->SourceURL())
-            .IsEmpty());
+    ASSERT_TRUE(ModuleRecord::Instantiate(scope.GetScriptState(),
+                                          module_script->LocalRecord(),
+                                          module_script->SourceURL())
+                    .IsEmpty());
     ASSERT_TRUE(
         module_script->Record().Evaluate(scope.GetScriptState()).IsEmpty());
     TestFoo(scope);
