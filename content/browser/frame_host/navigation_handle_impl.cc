@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_service_impl.h"
@@ -490,6 +491,10 @@ void NavigationHandleImpl::OnCommitTimeout() {
                         GetRenderFrameHost()->GetProcess()->IsReady());
   UMA_HISTOGRAM_ENUMERATION("Navigation.CommitTimeout.Scheme",
                             GetScheme(GetURL()));
+  UMA_HISTOGRAM_BOOLEAN("Navigation.CommitTimeout.IsMainFrame",
+                        frame_tree_node()->IsMainFrame());
+  base::UmaHistogramSparse("Navigation.CommitTimeout.ErrorCode",
+                           -GetNetErrorCode());
   render_process_blocked_state_changed_subscription_.reset();
   GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsUnresponsive(
       base::BindRepeating(&NavigationHandleImpl::RestartCommitTimeout,
