@@ -200,7 +200,8 @@ String WebFrameSerializerImpl::PostActionAfterSerializeOpenTag(
   if (!param->is_html_document)
     return result.ToString();
   // Check after processing the open tag of HEAD element
-  if (!param->have_added_charset_declaration && IsHTMLHeadElement(*element)) {
+  if (!param->have_added_charset_declaration &&
+      IsA<HTMLHeadElement>(*element)) {
     param->have_added_charset_declaration = true;
     // Check meta element. WebKit only pre-parse the first 512 bytes of the
     // document. If the whole <HEAD> is larger and meta is the end of head
