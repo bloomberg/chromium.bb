@@ -20,7 +20,6 @@
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
-#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
@@ -175,11 +174,7 @@ base::FilePath HeadlessSurfaceFactory::GetPathForWidget(
 
 std::vector<gl::GLImplementation>
 HeadlessSurfaceFactory::GetAllowedGLImplementations() {
-  return std::vector<gl::GLImplementation> {
-#if BUILDFLAG(ENABLE_SWIFTSHADER)
-    gl::kGLImplementationSwiftShaderGL,
-#endif
-  };
+  return std::vector<gl::GLImplementation>{gl::kGLImplementationSwiftShaderGL};
 }
 
 GLOzone* HeadlessSurfaceFactory::GetGLOzone(

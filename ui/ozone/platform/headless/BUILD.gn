@@ -31,7 +31,6 @@ source_set("headless") {
     "//ui/events/ozone:events_ozone_layout",
     "//ui/events/platform",
     "//ui/gfx/geometry",
-    "//ui/gl:buildflags",
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
     "//ui/platform_window",
