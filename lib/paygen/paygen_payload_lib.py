@@ -18,6 +18,7 @@ from chromite.lib import chroot_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import cros_sdk_lib
 from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.lib import path_util
@@ -951,6 +952,11 @@ def GenerateUpdatePayload(tgt_image, payload, src_image=None, work_dir=None,
     check: If True, it will check the integrity of the generated payload.
     out_metadata_hash_file: The output metadata hash file.
   """
+  chroot_dir = os.path.join(constants.SOURCE_ROOT,
+                            constants.DEFAULT_CHROOT_DIR)
+  if not cros_sdk_lib.MountChroot(chroot=chroot_dir, create=False):
+    raise Error('Need a chroot to generate payloads.')
+
   tgt_image = gspaths.Image(uri=tgt_image)
   src_image = gspaths.Image(uri=src_image) if src_image else None
   payload = gspaths.Payload(tgt_image=tgt_image, src_image=src_image,
