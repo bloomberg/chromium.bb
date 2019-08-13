@@ -568,16 +568,19 @@ void LockScreenMediaControlsView::UpdateActionButtonsVisibility() {
       media_message_center::GetTopVisibleActions(enabled_actions_,
                                                  ignored_actions, kMaxActions);
 
+  bool should_invalidate = false;
   for (auto* view : button_row_->children()) {
     views::Button* action_button = views::Button::AsButton(view);
     bool should_show = base::Contains(
         visible_actions,
         media_message_center::GetActionFromButtonTag(*action_button));
+    should_invalidate |= should_show != action_button->GetVisible();
 
     action_button->SetVisible(should_show);
   }
 
-  PreferredSizeChanged();
+  if (should_invalidate)
+    button_row_->InvalidateLayout();
 }
 
 void LockScreenMediaControlsView::SetIsPlaying(bool playing) {
