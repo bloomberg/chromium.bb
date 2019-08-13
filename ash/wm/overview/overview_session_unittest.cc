@@ -4368,6 +4368,29 @@ TEST_F(SplitViewOverviewSessionTest, NoCrashWhenPressTabKey) {
   EXPECT_TRUE(InOverviewSession());
 }
 
+// Tests closing a snapped window while in overview mode.
+TEST_F(SplitViewOverviewSessionTest, ClosingSplitViewWindow) {
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  ToggleOverview();
+  // Drag |window1| selector item to snap to left.
+  OverviewItem* overview_item1 =
+      GetOverviewItemInGridWithWindow(0, window1.get());
+  DragWindowTo(overview_item1, gfx::PointF(0, 0));
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+
+  // Now close the snapped |window1|. We should remain in overview mode and the
+  // overview focus window should regain focus.
+  window1.reset();
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+  EXPECT_EQ(overview_session()->GetOverviewFocusWindow(),
+            window_util::GetFocusedWindow());
+}
+
 // Test the split view and overview functionalities in clamshell mode. Split
 // view is only active when overview is active in clamshell mode.
 class SplitViewOverviewSessionInClamshellTest

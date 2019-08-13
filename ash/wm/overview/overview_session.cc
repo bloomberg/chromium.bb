@@ -881,7 +881,7 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void OverviewSession::OnShellDestroying() {
-  // Cancel selection will call |Shutodnw()|, which will remove observer.
+  // Cancel selection will call |Shutdown()|, which will remove observer.
   EndOverview();
 }
 
@@ -927,6 +927,11 @@ void OverviewSession::OnSplitViewStateChanged(SplitViewState previous_state,
   // Notify |split_view_drag_indicators_| if split view mode ended.
   if (split_view_drag_indicators_ && state == SplitViewState::kNoSnap)
     split_view_drag_indicators_->OnSplitViewModeEnded();
+
+  // Transfer focus from |window| to |overview_focus_widget_| to match the
+  // behavior of entering overview mode in the beginning.
+  DCHECK(overview_focus_widget_);
+  wm::ActivateWindow(GetOverviewFocusWindow());
 }
 
 void OverviewSession::OnSplitViewDividerPositionChanged() {
