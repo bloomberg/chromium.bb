@@ -1580,6 +1580,7 @@ input:checked + .toggle .highlight {
   background-color: unset;
   border-radius: 50%;
   box-sizing: border-box;
+  cursor: pointer;
   height: var(--tile-size);
   margin-bottom: var(--tile-margin);
   margin-inline-end: var(--tile-margin);

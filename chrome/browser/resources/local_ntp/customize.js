@@ -550,6 +550,8 @@ customize.createTileWithTitle = function(
     id, imageUrl, name, dataset, onClickInteraction, onKeyInteraction) {
   const tile = customize.createTileThumbnail(
       id, imageUrl, dataset, onClickInteraction, onKeyInteraction);
+  tile.setAttribute('aria-label', name);
+  tile.title = name;
   customize.fadeInImageTile(tile, imageUrl, null);
 
   const title = document.createElement('div');
@@ -1203,6 +1205,7 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
         customize.tileOnKeyDownInteraction);
 
     tile.setAttribute('aria-label', collImg[i].attributions[0]);
+    tile.title = collImg[i].attributions[0];
 
     // Load the first |ROWS_TO_PRELOAD| rows of tiles.
     if (i < firstNTile) {
