@@ -11,7 +11,6 @@ const char kCrashHandlerSwitch[] = "crash-handler";
 const char kInstall[] = "install";
 const char kUninstall[] = "uninstall";
 const char kTestSwitch[] = "test";
-const char kInitDoneNotifierSwitch[] = "init-done-notifier";
 
 const char kNoRateLimit[] = "--no-rate-limit";
 
