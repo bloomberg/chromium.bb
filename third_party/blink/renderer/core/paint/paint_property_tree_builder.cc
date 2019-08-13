@@ -101,13 +101,6 @@ PaintPropertyChangeType VisualViewportPaintPropertyTreeBuilder::Update(
   context.absolute_position.scroll = visual_viewport.GetScrollNode();
   context.fixed_position.scroll = visual_viewport.GetScrollNode();
 
-  if (property_changed >= PaintPropertyChangeType::kNodeAddedOrRemoved) {
-    // Force piercing subtree update for the worst case (scroll node added/
-    // removed). Not a big deal for performance because this is rare.
-    full_context.force_subtree_update_reasons |=
-        PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationPiercing;
-  }
-
 #if DCHECK_IS_ON()
   paint_property_tree_printer::UpdateDebugNames(visual_viewport);
 #endif
