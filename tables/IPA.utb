@@ -81,7 +81,7 @@ sign \x0071 12345       # q - lowercase q - voiceless uvular plosive
 sign \x006D 134         # m - lowercase m - voiced bilabial nasal
 sign \x006E 1345        # n - lowercase n - voiced alveolar nasal
 sign \x0072 1235        # r - lowercase r - voiced alveolar trill
-sign \x2C71 235-1236    #  (UTF-16) - right-hook v - labiodental flap
+sign \x2C71 235-1236    # ⱱ (UTF-16) - right-hook v - labiodental flap
 sign \xF25F 235-1236    #  (UTF-16) - right-hook v - labiodental flap
 sign \x03B2 46-12       # β - beta - voiced bilabial fricative (WARNING: greek letter)
 sign \x0066 124         # f - lowercase f - voiceless labiodental fricative
