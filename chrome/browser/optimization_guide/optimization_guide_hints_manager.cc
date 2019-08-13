@@ -22,6 +22,7 @@
 #include "components/optimization_guide/hints_fetcher.h"
 #include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_filter.h"
+#include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
@@ -477,7 +478,8 @@ void OptimizationGuideHintsManager::OnHintLoaded(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Record the result of loading a hint. This is used as a signal for testing.
-  LOCAL_HISTOGRAM_BOOLEAN("OptimizationGuide.LoadedHint.Result", loaded_hint);
+  LOCAL_HISTOGRAM_BOOLEAN(optimization_guide::kLoadedHintLocalHistogramString,
+                          loaded_hint);
 
   // Run the callback now that the hint is loaded. This is used as a signal by
   // tests.
