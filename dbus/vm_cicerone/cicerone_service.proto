@@ -990,6 +990,9 @@ message ExportLxdContainerProgressSignal {
 
   // Size of the files in the input container that have been downloaded.
   uint64 input_bytes_streamed = 11;
+
+  // Number of compressed bytes that have been exported.
+  uint64 bytes_exported = 12;
 }
 
 message ImportLxdContainerRequest {
