@@ -3062,7 +3062,8 @@ LayoutUnit LayoutBox::FillAvailableMeasure(LayoutUnit available_logical_width,
       isOrthogonalElement ? ContainingBlockLogicalWidthForContent()
                           : available_logical_width;
   margin_start = MinimumValueForLength(StyleRef().MarginStart(),
-                                       available_size_for_resolving_margin);
+                                       available_size_for_resolving_margin) +
+                 AdditionalMarginStart();
   margin_end = MinimumValueForLength(StyleRef().MarginEnd(),
                                      available_size_for_resolving_margin);
 
@@ -3289,11 +3290,18 @@ void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,
   DCHECK(!IsTableRow());
   DCHECK(!IsTableSection());
   DCHECK(!IsLayoutTableCol());
+
+  LayoutUnit inlineAdditionalMarginStart =
+      flow_direction == kInlineDirection ?
+      AdditionalMarginStart() :
+      LayoutUnit();
+
   if (flow_direction == kBlockDirection || IsFloating() || IsInline()) {
     // Margins are calculated with respect to the logical width of
     // the containing block (8.3)
     // Inline blocks/tables and floats don't have their margins increased.
-    margin_start = MinimumValueForLength(margin_start_length, container_width);
+    margin_start = MinimumValueForLength(margin_start_length, container_width) +
+                   inlineAdditionalMarginStart;
     margin_end = MinimumValueForLength(margin_end_length, container_width);
     return;
   }
@@ -3309,7 +3317,8 @@ void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,
   }
 
   LayoutUnit margin_start_width =
-      MinimumValueForLength(margin_start_length, container_width);
+      MinimumValueForLength(margin_start_length, container_width) +
+      inlineAdditionalMarginStart;
   LayoutUnit margin_end_width =
       MinimumValueForLength(margin_end_length, container_width);
 
@@ -3379,7 +3388,7 @@ void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,
 
     if (margin_start_length.IsAuto()) {
       margin_end = margin_end_width;
-      margin_start = available_width - child_width - margin_end;
+      margin_start = available_width - child_width - margin_end + inlineAdditionalMarginStart;
       return;
     }
   }
