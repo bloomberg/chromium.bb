@@ -8620,18 +8620,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Dark Theme
       </message>
 
-      <!-- Windows 8 Metro mode. -->
-      <if expr="is_win">
-        <message name="IDS_METRO_FLOW_DESCRIPTION"
-                 desc="Wordy description of what the set-Chrome-as-Metro flow is all about.">
-          Click next to choose your default browser.
-        </message>
-        <message name="IDS_METRO_FLOW_SET_DEFAULT"
-                 desc="The label of the button invoking Windows8 default app settings window.">
-          Next
-        </message>
-      </if>
-
       <!-- Media Galleries. -->
       <if expr="not is_android">
         <message name="IDS_MEDIA_GALLERIES_DIALOG_HEADER" desc="Header for media gallery permissions dialog.">
