@@ -4599,22 +4599,30 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
             WindowStateType::kLeftSnapped);
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  // End overview, test that we'll not auto-snap a window to the right side of
+  // the screen.
+  EXPECT_EQ(WindowState::Get(window4.get())->GetStateType(),
+            WindowStateType::kDefault);
   ToggleOverview();
   EXPECT_EQ(WindowState::Get(window4.get())->GetStateType(),
-            WindowStateType::kRightSnapped);
+            WindowStateType::kDefault);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
   // 5. Test if one window is snapped, the other window are showing in overview,
-  // activating an new window will open in splitview, which ends splitview and
-  // overview.
+  // activating an new window will not auto-snap the new window. Overview and
+  // splitview should be ended.
   ToggleOverview();
   overview_item1 = GetOverviewItemInGridWithWindow(grid_index, window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   std::unique_ptr<aura::Window> window5(CreateWindow(bounds));
+  EXPECT_EQ(WindowState::Get(window5.get())->GetStateType(),
+            WindowStateType::kDefault);
   wm::ActivateWindow(window5.get());
+  EXPECT_EQ(WindowState::Get(window5.get())->GetStateType(),
+            WindowStateType::kDefault);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
@@ -4633,6 +4641,22 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   // Overview bounds will adjust from snapped bounds to fullscreen bounds.
   EXPECT_EQ(GetGridBounds(), overview_bounds);
+
+  // 7. Test if split view mode is active, open the app list will not end
+  // overview and splitview.
+  overview_item3 = GetOverviewItemInGridWithWindow(grid_index, window3.get());
+  DragWindowTo(overview_item3, gfx::PointF(0, 0));
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  // Open app list.
+  AppListControllerImpl* app_list_controller =
+      Shell::Get()->app_list_controller();
+  app_list_controller->ToggleAppList(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window3.get()).id(),
+      app_list::AppListShowSource::kSearchKey, base::TimeTicks());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 }
 
 // Test that if app list is visible when overview is open, overview should

@@ -927,15 +927,6 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
     return;
   }
 
-  // This may be called while SnapWindow is still underway because SnapWindow
-  // will end the overview start animations which will cause the overview focus
-  // window to be activated.
-  aura::Window* overview_focus_window =
-      GetOverviewSession() ? GetOverviewSession()->GetOverviewFocusWindow()
-                           : nullptr;
-  DCHECK(InSplitViewMode() ||
-         (overview_focus_window && overview_focus_window == gained_active));
-
   // If |gained_active| was activated as a side effect of a window disposition
   // change, do nothing. For example, when a snapped window is closed, another
   // window will be activated before OnWindowDestroying() is called. We should
@@ -943,11 +934,25 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
   if (reason == ActivationReason::WINDOW_DISPOSITION_CHANGED)
     return;
 
-  // Only snap window that hasn't been snapped.
-  if (!gained_active || gained_active == left_window_ ||
-      gained_active == right_window_) {
+  // Only windows that are in the MRU list and are not already in split view can
+  // be auto-snapped.
+  if (!gained_active || IsWindowInSplitView(gained_active) ||
+      !base::Contains(
+          Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk),
+          gained_active)) {
     return;
   }
+
+  // We do not auto snap windows in clamshell splitview mode if a new window
+  // is activated when clamshell splitview mode is active. In this case we'll
+  // just end overview mode which will then end splitview mode.
+  // TODO(xdai): Handle this logic in OverivewSession::OnWindowActivating().
+  if (InClamshellSplitViewMode()) {
+    Shell::Get()->overview_controller()->EndOverview();
+    return;
+  }
+
+  DCHECK(InTabletSplitViewMode());
 
   // Do not snap the window if the activation change is caused by dragging a
   // window, or by dragging a tab. Note the two values WindowState::is_dragged()
@@ -959,13 +964,6 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
   // WindowState::is_dragged() will then be true.
   if (WindowState::Get(gained_active)->is_dragged() ||
       window_util::IsDraggingTabs(gained_active)) {
-    return;
-  }
-
-  // Only windows in MRU list can be snapped.
-  if (!base::Contains(
-          Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk),
-          gained_active)) {
     return;
   }
 
@@ -1034,15 +1032,17 @@ void SplitViewController::OnOverviewModeEnding(
     return;
   }
 
-  OverviewGrid* current_grid =
-      overview_session->GetGridWithRootWindow(root_window);
-  if (!current_grid || current_grid->empty()) {
-    // If overview is ended with an empty overview grid, end split view as well
-    // if we're in clamshell splitview mode.
-    if (InClamshellSplitViewMode())
-      EndSplitView();
+  // If we're in clamshell splitview mode, do not auto snap overview window
+  // when overview ends.
+  if (split_view_type_ == SplitViewType::kClamshellType) {
+    EndSplitView();
     return;
   }
+
+  OverviewGrid* current_grid =
+      overview_session->GetGridWithRootWindow(root_window);
+  if (!current_grid || current_grid->empty())
+    return;
 
   // If split view mode is active but only has one snapped window when overview
   // mode is ending, retrieve the first snappable window in the overview window
