@@ -1233,8 +1233,11 @@ ticks_to_timebase_units(const aom_rational64_t *timestamp_ratio, int64_t n) {
 }
 
 static INLINE int frame_is_kf_gf_arf(const AV1_COMP *cpi) {
-  return frame_is_intra_only(&cpi->common) || cpi->refresh_alt_ref_frame ||
-         (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref);
+  const GF_GROUP *const gf_group = &cpi->gf_group;
+  const FRAME_UPDATE_TYPE update_type = gf_group->update_type[gf_group->index];
+
+  return frame_is_intra_only(&cpi->common) || update_type == ARF_UPDATE ||
+         update_type == GF_UPDATE;
 }
 
 // TODO(huisu@google.com, youzhou@microsoft.com): enable hash-me for HBD.
