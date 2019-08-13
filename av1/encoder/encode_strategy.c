@@ -50,7 +50,6 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
       frame_params->refresh_last_frame = 1;
       frame_params->refresh_golden_frame = 1;
       frame_params->refresh_bwd_ref_frame = 1;
-      frame_params->refresh_alt2_ref_frame = 1;
       frame_params->refresh_alt_ref_frame = 1;
       break;
 
@@ -58,7 +57,6 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
       frame_params->refresh_last_frame = 1;
       frame_params->refresh_golden_frame = 0;
       frame_params->refresh_bwd_ref_frame = 0;
-      frame_params->refresh_alt2_ref_frame = 0;
       frame_params->refresh_alt_ref_frame = 0;
       break;
 
@@ -68,7 +66,6 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
       frame_params->refresh_last_frame = 1;
       frame_params->refresh_golden_frame = 1;
       frame_params->refresh_bwd_ref_frame = 0;
-      frame_params->refresh_alt2_ref_frame = 0;
       frame_params->refresh_alt_ref_frame = 0;
       break;
 
@@ -76,7 +73,6 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
       frame_params->refresh_last_frame = 0;
       frame_params->refresh_golden_frame = 1;
       frame_params->refresh_bwd_ref_frame = 0;
-      frame_params->refresh_alt2_ref_frame = 0;
       frame_params->refresh_alt_ref_frame = 0;
 
       cpi->rc.is_src_frame_alt_ref = 1;
@@ -87,7 +83,6 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
       frame_params->refresh_golden_frame = 0;
       // NOTE: BWDREF does not get updated along with ALTREF_FRAME.
       frame_params->refresh_bwd_ref_frame = 0;
-      frame_params->refresh_alt2_ref_frame = 0;
       frame_params->refresh_alt_ref_frame = 1;
       break;
 
@@ -95,7 +90,6 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
       frame_params->refresh_last_frame = 1;
       frame_params->refresh_golden_frame = 0;
       frame_params->refresh_bwd_ref_frame = 0;
-      frame_params->refresh_alt2_ref_frame = 0;
       frame_params->refresh_alt_ref_frame = 0;
 
       cpi->rc.is_src_frame_alt_ref = 1;
@@ -104,13 +98,7 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
     case INTNL_ARF_UPDATE:
       frame_params->refresh_last_frame = 0;
       frame_params->refresh_golden_frame = 0;
-      if (cpi->oxcf.pass != 1) {
-        frame_params->refresh_bwd_ref_frame = 1;
-        frame_params->refresh_alt2_ref_frame = 0;
-      } else {
-        frame_params->refresh_bwd_ref_frame = 0;
-        frame_params->refresh_alt2_ref_frame = 1;
-      }
+      frame_params->refresh_bwd_ref_frame = 1;
       frame_params->refresh_alt_ref_frame = 0;
       break;
 
@@ -123,14 +111,12 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
     frame_params->refresh_golden_frame = cpi->ext_refresh_golden_frame;
     frame_params->refresh_alt_ref_frame = cpi->ext_refresh_alt_ref_frame;
     frame_params->refresh_bwd_ref_frame = cpi->ext_refresh_bwd_ref_frame;
-    frame_params->refresh_alt2_ref_frame = cpi->ext_refresh_alt2_ref_frame;
   }
 
   if (force_refresh_all) {
     frame_params->refresh_last_frame = 1;
     frame_params->refresh_golden_frame = 1;
     frame_params->refresh_bwd_ref_frame = 1;
-    frame_params->refresh_alt2_ref_frame = 1;
     frame_params->refresh_alt_ref_frame = 1;
   }
 }
@@ -164,9 +150,8 @@ static INLINE int is_frame_droppable(const AV1_COMP *const cpi) {
              cpi->ext_refresh_bwd_ref_frame || cpi->ext_refresh_golden_frame ||
              cpi->ext_refresh_last_frame);
   else
-    return !(cpi->refresh_alt_ref_frame || cpi->refresh_alt2_ref_frame ||
-             cpi->refresh_bwd_ref_frame || cpi->refresh_golden_frame ||
-             cpi->refresh_last_frame);
+    return !(cpi->refresh_alt_ref_frame || cpi->refresh_bwd_ref_frame ||
+             cpi->refresh_golden_frame || cpi->refresh_last_frame);
 }
 
 static INLINE void update_frames_till_gf_update(AV1_COMP *cpi) {

@@ -751,7 +751,6 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
     cpi->refresh_last_frame = this_frame_params.refresh_last_frame;
     cpi->refresh_golden_frame = this_frame_params.refresh_golden_frame;
     cpi->refresh_bwd_ref_frame = this_frame_params.refresh_bwd_ref_frame;
-    cpi->refresh_alt2_ref_frame = this_frame_params.refresh_alt2_ref_frame;
     cpi->refresh_alt_ref_frame = this_frame_params.refresh_alt_ref_frame;
 
     gf_group->q_val[gf_index] = av1_rc_pick_q_and_bounds(

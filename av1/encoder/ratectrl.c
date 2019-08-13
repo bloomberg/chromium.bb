@@ -625,7 +625,7 @@ static int calc_active_worst_quality_one_pass_vbr(const AV1_COMP *cpi) {
         curr_frame == 0 ? rc->worst_quality : rc->last_q[KEY_FRAME] * 2;
   } else {
     if (!rc->is_src_frame_alt_ref &&
-        (cpi->refresh_golden_frame || cpi->refresh_alt2_ref_frame ||
+        (cpi->refresh_golden_frame || cpi->refresh_bwd_ref_frame ||
          cpi->refresh_alt_ref_frame)) {
       active_worst_quality = curr_frame == 1 ? rc->last_q[KEY_FRAME] * 5 / 4
                                              : rc->last_q[INTER_FRAME];
@@ -1443,10 +1443,9 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
   const CurrentFrame *const current_frame = &cm->current_frame;
   RATE_CONTROL *const rc = &cpi->rc;
   const GF_GROUP *const gf_group = &cpi->gf_group;
+
   const int is_intrnl_arf =
-      cpi->oxcf.pass == 2
-          ? gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE
-          : cpi->refresh_alt2_ref_frame;
+      gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE;
 
   const int qindex = cm->base_qindex;
 

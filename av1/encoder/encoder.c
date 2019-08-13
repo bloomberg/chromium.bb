@@ -2510,7 +2510,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cpi->refresh_last_frame = 1;
   cpi->refresh_golden_frame = 0;
   cpi->refresh_bwd_ref_frame = 0;
-  cpi->refresh_alt2_ref_frame = 0;
 
   cm->refresh_frame_context = (oxcf->frame_parallel_decoding_mode)
                                   ? REFRESH_FRAME_CONTEXT_DISABLED
@@ -5774,7 +5773,6 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
   cpi->refresh_last_frame = frame_params->refresh_last_frame;
   cpi->refresh_golden_frame = frame_params->refresh_golden_frame;
   cpi->refresh_bwd_ref_frame = frame_params->refresh_bwd_ref_frame;
-  cpi->refresh_alt2_ref_frame = frame_params->refresh_alt2_ref_frame;
   cpi->refresh_alt_ref_frame = frame_params->refresh_alt_ref_frame;
 
   if (current_frame->frame_type == KEY_FRAME && cm->show_frame)

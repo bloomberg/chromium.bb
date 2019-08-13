@@ -820,7 +820,6 @@ typedef struct AV1_COMP {
   int refresh_last_frame;
   int refresh_golden_frame;
   int refresh_bwd_ref_frame;
-  int refresh_alt2_ref_frame;
   int refresh_alt_ref_frame;
 
   // For each type of reference frame, this contains the index of a reference
@@ -1116,7 +1115,6 @@ struct EncodeFrameParams {
   int refresh_last_frame;
   int refresh_golden_frame;
   int refresh_bwd_ref_frame;
-  int refresh_alt2_ref_frame;
   int refresh_alt_ref_frame;
 
   // Speed level to use for this frame: Bigger number means faster.

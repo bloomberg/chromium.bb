@@ -231,8 +231,7 @@ static void set_good_speed_features_framesize_independent(
     const AV1_COMP *const cpi, SPEED_FEATURES *const sf, int speed) {
   const AV1_COMMON *const cm = &cpi->common;
   const int boosted = frame_is_boosted(cpi);
-  const int is_boosted_arf2_bwd_type =
-      boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame;
+  const int is_boosted_arf2_bwd_type = boosted || cpi->refresh_bwd_ref_frame;
 
   // Speed 0 for all speed features that give neutral coding performance change.
   sf->reduce_inter_modes = 1;
