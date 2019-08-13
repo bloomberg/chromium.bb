@@ -440,7 +440,8 @@ ReplaceSelectionCommand::ReplaceSelectionCommand(
       moving_paragraph_(options & kMovingParagraph),
       input_type_(input_type),
       sanitize_fragment_(options & kSanitizeFragment),
-      should_merge_end_(false) {}
+      should_merge_end_(false),
+      insert_nested(options & kInsertNested) {}
 
 static bool HasMatchingQuoteLevel(VisiblePosition end_of_existing_content,
                                   VisiblePosition end_of_inserted_content) {
@@ -1044,10 +1045,12 @@ void ReplaceSelectionCommand::InsertParagraphSeparatorIfNeeds(
     const VisibleSelection& selection,
     const ReplacementFragment& fragment,
     EditingState* editing_state) {
-  const VisiblePosition visible_start = selection.VisibleStart();
+  VisiblePosition visible_start = selection.VisibleStart();
   const VisiblePosition visible_end = selection.VisibleEnd();
 
   const bool selection_end_was_end_of_paragraph = IsEndOfParagraph(visible_end);
+  const bool selection_end_was_end_of_block = IsEndOfBlock(visible_end);
+  const bool selection_end_was_start_of_block = IsStartOfBlock(NextPositionOf(visible_end));
   const bool selection_start_was_start_of_paragraph =
       IsStartOfParagraph(visible_start);
 
@@ -1102,6 +1105,23 @@ void ReplaceSelectionCommand::InsertParagraphSeparatorIfNeeds(
       }
       if (editing_state->IsAborted())
         return;
+    }
+
+    // If the selection included an entire paragraph, then the previous deleteSelection
+    // command would have deleted the end of the paragraph separator.  If we are inserting
+    // in nested mode, then we should add back a paragraph separator.
+    if (insert_nested && selection_start_was_start_of_paragraph && selection_end_was_end_of_paragraph && !selection_end_was_end_of_block &&
+        (selection_end_was_start_of_block || !IsHTMLBRElement(EndingSelection().Start().AnchorNode())) &&
+            // ^ Do not add new line if the selection ends at the end of a textnode whose nextSibling is <br>
+        PreviousPositionOf(visible_end).DeepEquivalent().ComputeContainerNode() != visible_end.DeepEquivalent().ComputeContainerNode()
+            // ^ Do not add new line if the selection is followed by a '\n'
+        ) {
+      InsertParagraphSeparator(editing_state);
+      SetEndingSelection(SelectionForUndoStep::From(
+          SelectionInDOMTree::Builder()
+                             .Collapse(PreviousPositionOf(EndingVisibleSelection().VisibleStart()).DeepEquivalent())
+                             .Build()));
+      visible_start = EndingVisibleSelection().VisibleStart();
     }
   } else {
     DCHECK(selection.IsCaret());
@@ -1280,7 +1300,8 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
   // To avoid that, we move the position forward without changing the visible
   // position so we're still at the same visible location, but outside of
   // preceding tags.
-  insertion_pos = PositionAvoidingPrecedingNodes(insertion_pos);
+  if (!insert_nested)
+    insertion_pos = PositionAvoidingPrecedingNodes(insertion_pos);
 
   // Paste into run of tabs splits the tab span.
   insertion_pos = PositionOutsideTabSpan(insertion_pos);
@@ -1297,7 +1318,7 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
   // We can skip this optimization for fragments not wrapped in one of
   // our style spans and for positions inside list items
   // since insertAsListItems already does the right thing.
-  if (!match_style_ && !EnclosingList(insertion_pos.ComputeContainerNode())) {
+  if (!match_style_ && !EnclosingList(insertion_pos.ComputeContainerNode()) && !insert_nested) {
     auto* text_node = DynamicTo<Text>(insertion_pos.ComputeContainerNode());
     if (text_node && insertion_pos.OffsetInContainerNode() &&
         !insertion_pos.AtLastEditingPositionForNode()) {
