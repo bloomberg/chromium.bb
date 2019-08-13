@@ -350,6 +350,8 @@ class Browser : public TabStripModelObserver,
 
   // State Storage and Retrieval for UI ///////////////////////////////////////
 
+  GURL GetNewTabURL() const;
+
   // Gets the Favicon of the page in the selected tab.
   gfx::Image GetCurrentPageIcon() const;
 

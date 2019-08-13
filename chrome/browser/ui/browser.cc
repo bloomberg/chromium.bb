@@ -159,6 +159,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/ssl_insecure_content.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -654,6 +655,12 @@ bool Browser::is_devtools() const {
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, State Storage and Retrieval for UI:
+
+GURL Browser::GetNewTabURL() const {
+  if (app_controller_)
+    return app_controller_->GetAppLaunchURL();
+  return GURL(chrome::kChromeUINewTabURL);
+}
 
 gfx::Image Browser::GetCurrentPageIcon() const {
   WebContents* web_contents = tab_strip_model_->GetActiveWebContents();
