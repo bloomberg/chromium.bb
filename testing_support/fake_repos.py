@@ -980,7 +980,7 @@ class FakeReposTestBase(trial_dir.TestCase):
 
   def gitrevparse(self, repo):
     """Returns the actual revision for a given repo."""
-    return self.FAKE_REPOS._git_rev_parse(repo)
+    return self.FAKE_REPOS._git_rev_parse(repo).decode('utf-8')
 
 
 def main(argv):

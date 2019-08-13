@@ -79,9 +79,6 @@ class TestCaseUtils(object):
     self.args = self.Args()
     self.relpath = self.String(200)
 
-  def tearDown(self):
-    pass
-
 
 class StdoutCheck(object):
   def setUp(self):
@@ -130,7 +127,6 @@ class SuperMoxTestBase(TestCaseUtils, StdoutCheck, mox.MoxTestBase):
 
   def tearDown(self):
     StdoutCheck.tearDown(self)
-    TestCaseUtils.tearDown(self)
     mox.MoxTestBase.tearDown(self)
 
   def MockList(self, parent, items_to_mock):
