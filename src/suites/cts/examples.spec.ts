@@ -9,12 +9,12 @@ import { GPUTest } from './gpu_test.js';
 // To run these tests in the standalone runner, run `grunt build` or `grunt pre` then open:
 // - http://localhost:8080/?runnow=1&q=cts:examples:
 // To run in WPT, copy/symlink the out-wpt/ directory as the webgpu/ directory in WPT, then open:
-// - http://web-platform.test:8000/webgpu/cts.html?q=cts:examples:
+// - (wpt server url)/webgpu/cts.html?q=cts:examples:
 //
 // Tests here can be run individually or in groups:
-// - http://localhost:8080/?runnow=1&q=cts:examples:basic/async=
-// - http://localhost:8080/?runnow=1&q=cts:examples:basic/
-// - http://localhost:8080/?runnow=1&q=cts:examples:
+// - ?q=cts:examples:basic/async=
+// - ?q=cts:examples:basic/
+// - ?q=cts:examples:
 
 export const g = new TestGroup(GPUTest);
 
