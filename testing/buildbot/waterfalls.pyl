@@ -2643,6 +2643,17 @@
           'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         },
       },
+      'Linux FYI Release (Intel UHD 630)': {
+        'os_type': 'linux',
+        'browser_config': 'release',
+        'mixins': [
+          'linux_intel_uhd_630',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_linux_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
+        },
+      },
       'Linux FYI Release (NVIDIA)': {
         'os_type': 'linux',
         'browser_config': 'release',
