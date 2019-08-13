@@ -3593,6 +3593,8 @@ jumbo_split_static_library("browser") {
       "metrics/perf/heap_collector.h",
       "metrics/perf/metric_collector.cc",
       "metrics/perf/metric_collector.h",
+      "metrics/perf/metric_provider.cc",
+      "metrics/perf/metric_provider.h",
       "metrics/perf/perf_events_collector.cc",
       "metrics/perf/perf_events_collector.h",
       "metrics/perf/perf_output.cc",
