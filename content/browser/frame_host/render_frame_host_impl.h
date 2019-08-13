@@ -77,6 +77,7 @@
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
@@ -753,6 +754,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns remote to renderer side FindInPage associated with this frame.
   const mojo::AssociatedRemote<blink::mojom::FindInPage>& GetFindInPage();
+
+  // Returns associated remote for the blink::mojom::Frame Mojo interface.
+  const mojo::AssociatedRemote<blink::mojom::Frame>& GetAssociatedFrameRemote();
 
   // Resets the loading state. Following this call, the RenderFrameHost will be
   // in a non-loading state.
@@ -1957,6 +1961,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Holder of Mojo connection with FindInPage service in Blink.
   mojo::AssociatedRemote<blink::mojom::FindInPage> find_in_page_;
+
+  // Holder of Mojo connection with the Frame service in Blink.
+  mojo::AssociatedRemote<blink::mojom::Frame> frame_remote_;
 
   // Holds a NavigationRequest when it's about to commit, ie. after
   // OnCrossDocumentCommitProcessed has returned a positive answer for this

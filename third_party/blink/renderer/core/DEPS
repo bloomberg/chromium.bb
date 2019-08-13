@@ -119,5 +119,10 @@ specific_include_rules = {
     ],
     "element_test.cc": [
         "+third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
+    ],
+    # TODO(crbug.com/980151): Include this while WebSurroundingText is not
+    # removed from the public API and implemented in renderer/core.
+    "frame_impl.cc" : [
+        "+third_party/blink/renderer/core/frame/web_local_frame_impl.h",
     ]
 }
