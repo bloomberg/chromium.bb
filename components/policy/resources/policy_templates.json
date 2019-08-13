@@ -14855,6 +14855,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.win:69-'],
+      'future': True,
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
