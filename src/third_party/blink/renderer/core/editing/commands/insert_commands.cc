@@ -107,6 +107,18 @@ bool InsertCommands::ExecuteInsertHTML(LocalFrame& frame,
       frame, CreateFragmentFromMarkup(*frame.GetDocument(), value, ""));
 }
 
+bool InsertCommands::ExecuteInsertHTMLNested(LocalFrame& frame,
+                                    Event*,
+                                    EditorCommandSource,
+                                    const String& value) {
+  DCHECK(frame.GetDocument());
+  ReplaceSelectionCommand::Create(*frame.GetDocument(),
+                                  CreateFragmentFromMarkup(*frame.GetDocument(), value, ""),
+                                  ReplaceSelectionCommand::kInsertNested,
+                                  InputEvent::InputType::kNone)->Apply();
+  return true;
+}
+
 bool InsertCommands::ExecuteInsertImage(LocalFrame& frame,
                                         Event*,
                                         EditorCommandSource,

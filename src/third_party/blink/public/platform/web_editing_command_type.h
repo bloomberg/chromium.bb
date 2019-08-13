@@ -156,6 +156,7 @@ enum class WebEditingCommandType {
 
 
   // patch section: insert HTML nested (140)
+  kInsertHTMLNested = 140,
 
 
   // patch section: indent-block/outdent-block (141,142)
