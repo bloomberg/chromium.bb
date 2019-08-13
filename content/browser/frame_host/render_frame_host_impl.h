@@ -440,6 +440,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // cases, use GetLastCommittedURL instead.
   const GURL& last_successful_url() { return last_successful_url_; }
 
+  // Return the http status code of the last committed navigation.
+  int last_http_status_code() { return last_http_status_code_; }
+
   // Computes site_for_cookies to be used when navigating this frame to
   // |destination|.
   GURL ComputeSiteForCookiesForNavigation(const GURL& destination) const;
@@ -1820,6 +1823,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(clamy): Remove this in favor of GetLastCommittedURL().
   // See https://crbug.com/588314.
   GURL last_successful_url_;
+
+  // The http status code of the last committed navigation.
+  int last_http_status_code_ = 0;
 
   std::map<uint64_t, VisualStateCallback> visual_state_callbacks_;
 

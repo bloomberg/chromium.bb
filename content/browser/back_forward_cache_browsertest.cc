@@ -12,7 +12,9 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
@@ -816,6 +818,58 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfWebGL) {
 
   // The page had an active WebGL context when we navigated away,
   // so it shouldn't have been cached.
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfHttpError) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL error_url(embedded_test_server()->GetURL("a.com", "/page404.html"));
+  GURL url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // Navigate to an error page.
+  EXPECT_TRUE(NavigateToURL(shell(), error_url));
+  EXPECT_EQ(net::HTTP_NOT_FOUND, current_frame_host()->last_http_status_code());
+  RenderFrameDeletedObserver delete_rfh_a(current_frame_host());
+
+  // Navigate away.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // The page did not return 200 (OK), so it shouldn't have been cached.
+  delete_rfh_a.WaitUntilDeleted();
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DoesNotCacheIfPageUnreachable) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL error_url(embedded_test_server()->GetURL("a.com", "/empty.html"));
+  GURL url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      URLLoaderInterceptor::SetupRequestFailForURL(error_url,
+                                                   net::ERR_DNS_TIMED_OUT);
+
+  // Start with a successful navigation to a document.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  EXPECT_EQ(net::HTTP_OK, current_frame_host()->last_http_status_code());
+
+  // Navigate to an error page.
+  NavigationHandleObserver observer(shell()->web_contents(), error_url);
+  EXPECT_FALSE(NavigateToURL(shell(), error_url));
+  EXPECT_TRUE(observer.is_error());
+  EXPECT_EQ(net::ERR_DNS_TIMED_OUT, observer.net_error_code());
+  EXPECT_EQ(
+      GURL(kUnreachableWebDataURL),
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+  EXPECT_EQ(net::OK, current_frame_host()->last_http_status_code());
+
+  RenderFrameDeletedObserver delete_rfh_a(current_frame_host());
+
+  // Navigate away.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // The page had a networking error, so it shouldn't have been cached.
+  delete_rfh_a.WaitUntilDeleted();
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
