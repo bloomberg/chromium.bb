@@ -597,31 +597,24 @@ void AutofillPopupControllerImpl::FireControlsChangedEvent(bool is_show) {
 
   // Retrieve the ax node id associated with the current web contents' element
   // that has a controller relation to the current autofill popup.
-  int32_t node_id = delegate_->GetWebContentsPopupControllerAxId();
+  int32_t node_id = static_cast<AutofillExternalDelegate*>(delegate_.get())
+                        ->GetWebContentsPopupControllerAxId();
 
   // We can only raise controls changed accessibility event when we have a valid
   // ax tree and an ax node associated with the ax tree for the popup
   // controller, and a valid ax unique id for the popup controllee.
-  if (!ax_tree_manager)
-    return;
-  ui::AXPlatformNodeDelegate* ax_platform_node_delegate =
-      ax_tree_manager->GetDelegate(tree_id, node_id);
-  if (!ax_platform_node_delegate)
-    return;
-  ui::AXPlatformNode* target_node =
-      ax_platform_node_delegate->GetFromNodeID(node_id);
-  base::Optional<int32_t> popup_ax_id = view_->GetAxUniqueId();
-  if (!target_node || !popup_ax_id)
+  if (!ax_tree_manager || !ax_tree_manager->GetDelegate(tree_id, node_id) ||
+      !view_->GetAxUniqueId())
     return;
 
-  // All the conditions are valid, raise the accessibility event and set global
-  // popup ax unique id.
   if (is_show)
-    ui::SetActivePopupAxUniqueId(popup_ax_id);
+    ui::SetActivePopupAxUniqueId(view_->GetAxUniqueId());
   else
     ui::ClearActivePopupAxUniqueId();
 
-  target_node->NotifyAccessibilityEvent(ax::mojom::Event::kControlsChanged);
+  ax_tree_manager->GetDelegate(tree_id, node_id)
+      ->GetFromNodeID(node_id)
+      ->NotifyAccessibilityEvent(ax::mojom::Event::kControlsChanged);
 }
 
 }  // namespace autofill

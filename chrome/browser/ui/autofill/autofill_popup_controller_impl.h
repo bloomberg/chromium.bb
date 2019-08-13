@@ -139,11 +139,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   AutofillPopupLayoutModel& LayoutModelForTesting() { return layout_model_; }
 
-  // Raise an accessibility event to indicate the controls relation of the
-  // form control of the popup and popup itself has changed based on the popup's
-  // show or hide action.
-  void FireControlsChangedEvent(bool is_show);
-
  private:
 #if !defined(OS_ANDROID)
   FRIEND_TEST_ALL_PREFIXES(AutofillPopupControllerUnitTest, ElideText);
@@ -160,8 +155,12 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // Hides |view_| unless it is null and then deletes |this|.
   void HideViewAndDie();
 
+  // Raise an accessibility event to indicate the controls relation of the
+  // form control of the popup and popup itself has changed based on the popup's
+  // show or hide action.
+  void FireControlsChangedEvent(bool is_show);
+
   friend class AutofillPopupControllerUnitTest;
-  friend class AutofillPopupControllerAccessibilityUnitTest;
   void SetViewForTesting(AutofillPopupView* view) { view_ = view; }
 
   PopupControllerCommon controller_common_;
