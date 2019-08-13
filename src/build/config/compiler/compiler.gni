@@ -254,11 +254,11 @@ if (symbol_level == -1) {
 # because the is_component_build flag is set to false in various components of
 # the build (like nacl) and we don't want to assert on those.
 # iOS does not support component builds so add an exception for this platform.
-if (build_with_chromium) {
-  assert(symbol_level != 2 || current_toolchain != default_toolchain ||
-             is_component_build || !is_debug || is_ios,
-         "Can't do non-component debug builds at symbol_level=2")
-}
+# if (build_with_chromium) {
+#   assert(symbol_level != 2 || current_toolchain != default_toolchain ||
+#              is_component_build || !is_debug || is_ios,
+#          "Can't do non-component debug builds at symbol_level=2")
+# }
 
 # Assert that the configuration isn't going to hit https://crbug.com/648948.
 # An exception is made when target_os == "chromeos" as we only use the Android
