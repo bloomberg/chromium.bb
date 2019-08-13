@@ -14,6 +14,7 @@
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_ax_context.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
@@ -44,6 +45,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay.h"
+#include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/geometry/double_point.h"
@@ -2510,7 +2512,7 @@ class VisualViewportSimTest : public SimTest {
   }
 };
 
-// Test that we correcty size the visual viewport's scrolling contents layer
+// Test that we correctly size the visual viewport's scrolling contents layer
 // when the layout viewport is smaller.
 TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
   WebView().MainFrameWidget()->Resize(WebSize(400, 600));
@@ -2560,6 +2562,79 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
     EXPECT_EQ(IntSize(320, 480),
               visual_viewport.GetScrollNode()->ContentsSize());
   }
+}
+
+class VisualViewportScrollIntoViewTest : public VisualViewportSimTest {
+ public:
+  VisualViewportScrollIntoViewTest() {}
+
+  void SetUp() override {
+    VisualViewportSimTest::SetUp();
+
+    // Setup a fixed-position element that's outside of an inset visual
+    // viewport.
+    WebView().MainFrameWidget()->Resize(WebSize(400, 600));
+    SimRequest request("https://example.com/test.html", "text/html");
+    LoadURL("https://example.com/test.html");
+    request.Complete(R"HTML(
+              <!DOCTYPE html>
+              <style>
+               #bottom {
+                    position: fixed;
+                    bottom: 0;
+                                width: 100%;
+                                height: 20px;
+                                text-align: center;
+                }
+              </style>
+              <body>
+                 <div id="bottom">Layout bottom</div>
+              </body>
+          )HTML");
+    Compositor().BeginFrame();
+
+    // Shrink the height such that the fixed element is now off screen.
+    WebView().ResizeVisualViewport(IntSize(400, 600 - 100));
+  }
+
+  // Scrolls an element by the given name into view in the |visual_viewport|
+  // using params that optionally apply to a scroll sequence.
+  void ScrollIntoView(const WebString& element_name,
+                      bool is_for_scroll_sequence) {
+    WebDocument web_doc = WebView().MainFrameImpl()->GetDocument();
+    Element* bottom_element = web_doc.GetElementById(element_name);
+    WebScrollIntoViewParams scroll_params(
+        ScrollAlignment::kAlignToEdgeIfNeeded,
+        ScrollAlignment::kAlignToEdgeIfNeeded, kProgrammaticScroll,
+        /*make_visible_in_visual_viewport=*/true, kScrollBehaviorInstant,
+        is_for_scroll_sequence);
+    WebView().GetPage()->GetVisualViewport().ScrollIntoView(
+        bottom_element->BoundingBox(), scroll_params);
+  }
+};
+
+TEST_F(VisualViewportScrollIntoViewTest,
+       ScrollingToFixedWithScrollSequenceAnimationShort) {
+  VisualViewport& visual_viewport = WebView().GetPage()->GetVisualViewport();
+  EXPECT_EQ(0.f, visual_viewport.GetScrollOffset().Height());
+  ScrollIntoView("bottom", true);
+  visual_viewport.GetSmoothScrollSequencer()->RunQueuedAnimations();
+  EXPECT_EQ(100.f, visual_viewport.GetScrollOffset().Height());
+}
+
+TEST_F(VisualViewportScrollIntoViewTest,
+       ScrollingToFixedWithoutScrollSequenceAnimationShort) {
+  VisualViewport& visual_viewport = WebView().GetPage()->GetVisualViewport();
+  EXPECT_EQ(0.f, visual_viewport.GetScrollOffset().Height());
+  ScrollIntoView("bottom", false);
+  EXPECT_EQ(100.f, visual_viewport.GetScrollOffset().Height());
+}
+
+TEST_F(VisualViewportScrollIntoViewTest, ScrollingToFixedFromJavascript) {
+  VisualViewport& visual_viewport = WebView().GetPage()->GetVisualViewport();
+  EXPECT_EQ(0.f, visual_viewport.GetScrollOffset().Height());
+  GetDocument().getElementById("bottom")->scrollIntoView();
+  EXPECT_EQ(100.f, visual_viewport.GetScrollOffset().Height());
 }
 
 TEST_P(VisualViewportTest, DeviceEmulationTransformNode) {
