@@ -23,7 +23,6 @@
 #include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_audio.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/mediastream/media_stream_dispatcher_eventhandler.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -60,8 +59,7 @@ struct UserMediaRequestInfo {
 // Only one MediaStream at a time can be in the process of being created.
 // UserMediaProcessor must be created, called and destroyed on the main
 // render thread. There should be only one UserMediaProcessor per frame.
-class MODULES_EXPORT UserMediaProcessor
-    : public blink::MediaStreamDispatcherEventHandler {
+class MODULES_EXPORT UserMediaProcessor {
  public:
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
       const blink::mojom::blink::MediaDevicesDispatcherHostPtr&()>;
@@ -71,7 +69,7 @@ class MODULES_EXPORT UserMediaProcessor
                          media_stream_device_observer,
                      MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
                      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  ~UserMediaProcessor() override;
+  virtual ~UserMediaProcessor();
 
   // It can be assumed that the output of CurrentRequest() remains the same
   // during the execution of a task on the main thread unless ProcessRequest or
@@ -105,10 +103,9 @@ class MODULES_EXPORT UserMediaProcessor
 
   bool HasActiveSources() const;
 
-  // blink::MediaStreamDispatcherEventHandler implementation.
-  void OnDeviceStopped(const blink::MediaStreamDevice& device) override;
+  void OnDeviceStopped(const blink::MediaStreamDevice& device);
   void OnDeviceChanged(const blink::MediaStreamDevice& old_device,
-                       const blink::MediaStreamDevice& new_device) override;
+                       const blink::MediaStreamDevice& new_device);
 
   void set_media_stream_dispatcher_host_for_testing(
       blink::mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host) {
