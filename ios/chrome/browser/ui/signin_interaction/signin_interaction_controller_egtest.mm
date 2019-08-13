@@ -86,8 +86,10 @@ void RemoveBrowsingData() {
                                  block:^BOOL {
                                    return browsing_data_removed;
                                  }];
-  GREYAssert([condition waitWithTimeout:base::test::ios::kWaitForActionTimeout],
-             @"Browsing data was not removed.");
+  GREYAssert(
+      [condition
+          waitWithTimeout:base::test::ios::kWaitForClearBrowsingDataTimeout],
+      @"Browsing data was not removed.");
 }
 
 }  // namespace
