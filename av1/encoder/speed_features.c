@@ -230,8 +230,10 @@ static void set_rt_speed_feature_framesize_dependent(const AV1_COMP *const cpi,
 static void set_good_speed_features_framesize_independent(
     const AV1_COMP *const cpi, SPEED_FEATURES *const sf, int speed) {
   const AV1_COMMON *const cm = &cpi->common;
+  const GF_GROUP *const gf_group = &cpi->gf_group;
   const int boosted = frame_is_boosted(cpi);
-  const int is_boosted_arf2_bwd_type = boosted || cpi->refresh_bwd_ref_frame;
+  const int is_boosted_arf2_bwd_type =
+      boosted || gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE;
 
   // Speed 0 for all speed features that give neutral coding performance change.
   sf->reduce_inter_modes = 1;
