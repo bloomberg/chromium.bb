@@ -135,8 +135,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, Cookies) {
   GURL http_url = embedded_test_server()->GetURL("/frame_with_load_event.html");
 
   Shell* shell2 = CreateBrowser();
-  NavigateToURL(shell(), http_url);
-  NavigateToURL(shell2, https_url);
+  EXPECT_TRUE(NavigateToURL(shell(), http_url));
+  EXPECT_TRUE(NavigateToURL(shell2, https_url));
 
   WebContentsImpl* web_contents_https =
       static_cast<WebContentsImpl*>(shell2->web_contents());
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, CookiePriority) {
   for (auto test_case : cases) {
     GURL url = embedded_test_server()->GetURL("/set_document_cookie.html?" +
                                               test_case.param);
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     std::vector<net::CanonicalCookie> cookies =
         GetCanonicalCookies(shell()->web_contents()->GetBrowserContext(), url);
 
@@ -263,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, SameSiteCookies) {
                                         a_hostname_and_port + "(" +
                                         a_hostname_and_port + "()," +
                                         b_hostname_and_port + "())");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -380,8 +380,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest,
 
   SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/frame_with_load_event.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/frame_with_load_event.html")));
 
   WebContentsImpl* tab = static_cast<WebContentsImpl*>(shell()->web_contents());
 
