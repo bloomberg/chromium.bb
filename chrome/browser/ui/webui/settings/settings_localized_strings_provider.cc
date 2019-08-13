@@ -689,7 +689,6 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
     {"personalizationPageTitle", IDS_OS_SETTINGS_PERSONALIZATION},
     {"openWallpaperApp", IDS_OS_SETTINGS_OPEN_WALLPAPER_APP},
     {"setWallpaper", IDS_OS_SETTINGS_SET_WALLPAPER},
-    {"osLanguagesPageTitle", IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE},
 #endif
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     {"showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS},
@@ -1530,6 +1529,8 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
     {"removeLanguage", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_REMOVE},
     {"addLanguages", IDS_SETTINGS_LANGUAGES_LANGUAGES_ADD},
 #if defined(OS_CHROMEOS)
+    {"osLanguagesPageTitle", IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE},
+    {"osLanguagesListTitle", IDS_OS_SETTINGS_LANGUAGES_LIST_TITLE},
     {"inputMethodsListTitle", IDS_SETTINGS_LANGUAGES_INPUT_METHODS_LIST_TITLE},
     {"inputMethodEnabled", IDS_SETTINGS_LANGUAGES_INPUT_METHOD_ENABLED},
     {"inputMethodsExpandA11yLabel",
