@@ -509,6 +509,7 @@ if (is_android) {
     ]
 
     sources = [
+      "../browser/engagement/important_sites_util_browsertest.cc",
       "../browser/payments/payment_request_can_make_payment_browsertest.cc",
       "android/browsertests_apk/android_browsertests_jni_onload.cc",
       "base/android/android_browser_test_browsertest_android.cc",
