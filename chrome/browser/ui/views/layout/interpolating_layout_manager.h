@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_LAYOUT_INTERPOLATING_LAYOUT_MANAGER_H_
-#define UI_VIEWS_LAYOUT_INTERPOLATING_LAYOUT_MANAGER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_LAYOUT_INTERPOLATING_LAYOUT_MANAGER_H_
+#define CHROME_BROWSER_UI_VIEWS_LAYOUT_INTERPOLATING_LAYOUT_MANAGER_H_
 
 #include <map>
 #include <memory>
@@ -11,8 +11,6 @@
 
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_manager_base.h"
-
-namespace views {
 
 // Layout which interpolates between multiple embedded LayoutManagerBase
 // layouts.
@@ -47,13 +45,14 @@ namespace views {
 // Note that behavior when interpolation ranges overlap is undefined, but will
 // be guaranteed to at least be the result of mixing two adjacent layouts that
 // fall over the range in a way that is not completely irrational.
-class VIEWS_EXPORT InterpolatingLayoutManager : public LayoutManagerBase {
+class InterpolatingLayoutManager : public views::LayoutManagerBase {
  public:
   InterpolatingLayoutManager();
   ~InterpolatingLayoutManager() override;
 
-  InterpolatingLayoutManager& SetOrientation(LayoutOrientation orientation);
-  LayoutOrientation orientation() const { return orientation_; }
+  InterpolatingLayoutManager& SetOrientation(
+      views::LayoutOrientation orientation);
+  views::LayoutOrientation orientation() const { return orientation_; }
 
   // Adds a layout which starts and finished phasing in at |start_interpolation|
   // and |end_interpolation|, respectively. Currently, having more than one
@@ -63,7 +62,7 @@ class VIEWS_EXPORT InterpolatingLayoutManager : public LayoutManagerBase {
   // a typed raw pointer to the added layout engine.
   template <class T>
   T* AddLayout(std::unique_ptr<T> layout_manager,
-               const Span& interpolation_range = Span()) {
+               const views::Span& interpolation_range = views::Span()) {
     T* const temp = layout_manager.get();
     AddLayoutInternal(std::move(layout_manager), interpolation_range);
     return temp;
@@ -75,20 +74,31 @@ class VIEWS_EXPORT InterpolatingLayoutManager : public LayoutManagerBase {
   void SetDefaultLayout(LayoutManagerBase* default_layout);
 
   // LayoutManagerBase:
-  gfx::Size GetPreferredSize(const View* host) const override;
-  gfx::Size GetMinimumSize(const View* host) const override;
-  int GetPreferredHeightForWidth(const View* host, int width) const override;
+  gfx::Size GetPreferredSize(const views::View* host) const override;
+  gfx::Size GetMinimumSize(const views::View* host) const override;
+  int GetPreferredHeightForWidth(const views::View* host,
+                                 int width) const override;
   void InvalidateLayout() override;
-  void SetChildViewIgnoredByLayout(View* child_view, bool ignored) override;
+  void SetChildViewIgnoredByLayout(views::View* child_view,
+                                   bool ignored) override;
+
+  // Returns a layout that's linearly interpolated between |start| and |target|
+  // by |value|, which should be between 0 and 1. See
+  // gfx::Tween::LinearIntValueBetween() for the exact math involved.
+  static ProposedLayout Interpolate(double value,
+                                    const ProposedLayout& start,
+                                    const ProposedLayout& target);
 
  protected:
   // LayoutManagerBase:
-  void Installed(View* host_view) override;
-  void ViewAdded(View* host_view, View* child_view) override;
-  void ViewRemoved(View* host_view, View* child_view) override;
-  void ViewVisibilitySet(View* host, View* view, bool visible) override;
+  void Installed(views::View* host_view) override;
+  void ViewAdded(views::View* host_view, views::View* child_view) override;
+  void ViewRemoved(views::View* host_view, views::View* child_view) override;
+  void ViewVisibilitySet(views::View* host,
+                         views::View* view,
+                         bool visible) override;
   ProposedLayout CalculateProposedLayout(
-      const SizeBounds& size_bounds) const override;
+      const views::SizeBounds& size_bounds) const override;
 
  private:
   // Describes an interpolation between two layouts as a pointer to each and
@@ -104,12 +114,12 @@ class VIEWS_EXPORT InterpolatingLayoutManager : public LayoutManagerBase {
   };
 
   void AddLayoutInternal(std::unique_ptr<LayoutManagerBase> layout,
-                         const Span& interpolation_range);
+                         const views::Span& interpolation_range);
 
   // Given a set of size bounds and the current layout's orientation, returns
   // a LayoutInterpolation providing the two layouts to interpolate between.
   // If only one layout applies, only |right| is set and |percent| is set to 1.
-  LayoutInterpolation GetInterpolation(const SizeBounds& bounds) const;
+  LayoutInterpolation GetInterpolation(const views::SizeBounds& bounds) const;
 
   // Returns the default layout, or the largest layout if the default has not
   // been set.
@@ -118,15 +128,13 @@ class VIEWS_EXPORT InterpolatingLayoutManager : public LayoutManagerBase {
   // Returns the smallest layout; useful for calculating minimum layout size.
   const LayoutManagerBase* GetSmallestLayout() const;
 
-  LayoutOrientation orientation_ = LayoutOrientation::kHorizontal;
+  views::LayoutOrientation orientation_ = views::LayoutOrientation::kHorizontal;
 
   // Maps from interpolation range to embedded layout.
-  std::map<Span, std::unique_ptr<LayoutManagerBase>> embedded_layouts_;
+  std::map<views::Span, std::unique_ptr<LayoutManagerBase>> embedded_layouts_;
   LayoutManagerBase* default_layout_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(InterpolatingLayoutManager);
 };
 
-}  // namespace views
-
-#endif  // UI_VIEWS_LAYOUT_INTERPOLATING_LAYOUT_MANAGER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_LAYOUT_INTERPOLATING_LAYOUT_MANAGER_H_

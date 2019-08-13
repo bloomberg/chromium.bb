@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/layout/interpolating_layout_manager.h"
+#include "chrome/browser/ui/views/layout/interpolating_layout_manager.h"
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "ui/views/test/test_views.h"
 #include "ui/views/view.h"
 
-namespace views {
+using namespace views;
 
 namespace {
 
@@ -319,5 +319,3 @@ TEST_F(InterpolatingLayoutManagerTest, GetProposedLayout) {
                 expected_other.child_layouts[0].bounds),
             actual.child_layouts[0].bounds);
 }
-
-}  // namespace views

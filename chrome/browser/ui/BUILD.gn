@@ -2775,6 +2775,8 @@ jumbo_split_static_library("ui") {
       "views/infobars/infobar_container_view.h",
       "views/infobars/infobar_view.cc",
       "views/infobars/infobar_view.h",
+      "views/layout/interpolating_layout_manager.cc",
+      "views/layout/interpolating_layout_manager.h",
       "views/load_complete_listener.cc",
       "views/load_complete_listener.h",
       "views/location_bar/content_setting_image_view.cc",

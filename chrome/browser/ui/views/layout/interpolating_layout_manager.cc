@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/layout/interpolating_layout_manager.h"
+#include "chrome/browser/ui/views/layout/interpolating_layout_manager.h"
 
 #include <memory>
 #include <utility>
@@ -10,50 +10,11 @@
 #include "ui/gfx/animation/tween.h"
 #include "ui/views/view.h"
 
-namespace views {
-
-namespace {
-
-using ChildLayout = LayoutManagerBase::ChildLayout;
-using ProposedLayout = LayoutManagerBase::ProposedLayout;
-
-// Returns a layout that's linearly interpolated between |first_layout| and
-// |second_layout| by |percent|. See gfx::Tween::LinearIntValueBetween() for
-// the exact math involved.
-ProposedLayout Interpolate(double value,
-                           const ProposedLayout& start,
-                           const ProposedLayout& target) {
-  ProposedLayout layout;
-  const size_t num_children = start.child_layouts.size();
-  DCHECK_EQ(num_children, target.child_layouts.size());
-
-  // Interpolate the host size.
-  // TODO(dfried): Add direct gfx::Size interpolation to gfx::Tween.
-  const gfx::Size size =
-      gfx::Tween::SizeValueBetween(value, start.host_size, target.host_size);
-  layout.host_size = gfx::Size(size.width(), size.height());
-
-  // Interpolate the child bounds.
-  for (size_t i = 0; i < num_children; ++i) {
-    const ChildLayout& start_child = start.child_layouts[i];
-    const ChildLayout& target_child = target.child_layouts[i];
-    DCHECK_EQ(start_child.child_view, target_child.child_view);
-    layout.child_layouts.emplace_back(
-        ChildLayout{start_child.child_view,
-                    gfx::Tween::RectValueBetween(value, start_child.bounds,
-                                                 target_child.bounds),
-                    start_child.visible && target_child.visible});
-  }
-  return layout;
-}
-
-}  // namespace
-
 InterpolatingLayoutManager::InterpolatingLayoutManager() {}
 InterpolatingLayoutManager::~InterpolatingLayoutManager() = default;
 
 InterpolatingLayoutManager& InterpolatingLayoutManager::SetOrientation(
-    LayoutOrientation orientation) {
+    views::LayoutOrientation orientation) {
   if (orientation_ != orientation) {
     orientation_ = orientation;
     InvalidateLayout();
@@ -63,7 +24,7 @@ InterpolatingLayoutManager& InterpolatingLayoutManager::SetOrientation(
 
 void InterpolatingLayoutManager::AddLayoutInternal(
     std::unique_ptr<LayoutManagerBase> engine,
-    const Span& interpolation_range) {
+    const views::Span& interpolation_range) {
   DCHECK(engine);
 
   SyncStateTo(engine.get());
@@ -73,8 +34,8 @@ void InterpolatingLayoutManager::AddLayoutInternal(
                         << interpolation_range.ToString();
 
 #if DCHECK_IS_ON()
-  // Sanity checking to ensure interpolation ranges do not overlap (we can only
-  // interpolate between two layouts currently).
+  // Sanity checking to ensure interpolation ranges do not overlap (we can
+  // only interpolate between two layouts currently).
   auto next = result.first;
   ++next;
   if (next != embedded_layouts_.end())
@@ -89,14 +50,15 @@ void InterpolatingLayoutManager::AddLayoutInternal(
 
 InterpolatingLayoutManager::LayoutInterpolation
 InterpolatingLayoutManager::GetInterpolation(
-    const SizeBounds& size_bounds) const {
+    const views::SizeBounds& size_bounds) const {
   DCHECK(!embedded_layouts_.empty());
 
   LayoutInterpolation result;
 
   const base::Optional<int> dimension =
-      orientation_ == LayoutOrientation::kHorizontal ? size_bounds.width()
-                                                     : size_bounds.height();
+      orientation_ == views::LayoutOrientation::kHorizontal
+          ? size_bounds.width()
+          : size_bounds.height();
 
   // Find the larger layout that overlaps the target size.
   auto match = dimension ? embedded_layouts_.upper_bound({*dimension, 0})
@@ -108,7 +70,7 @@ InterpolatingLayoutManager::GetInterpolation(
   result.first = (--match)->second.get();
 
   // If the target size falls in an interpolation range, get the other layout.
-  const Span& first_span = match->first;
+  const views::Span& first_span = match->first;
   if (dimension && first_span.end() > *dimension) {
     DCHECK(match != embedded_layouts_.begin())
         << "Primary dimension size " << (dimension ? *dimension : -1)
@@ -122,9 +84,9 @@ InterpolatingLayoutManager::GetInterpolation(
   return result;
 }
 
-LayoutManagerBase::ProposedLayout
+views::LayoutManagerBase::ProposedLayout
 InterpolatingLayoutManager::CalculateProposedLayout(
-    const SizeBounds& size_bounds) const {
+    const views::SizeBounds& size_bounds) const {
   // For interpolating layout we will never call this method except for fully-
   // specified sizes.
   DCHECK(size_bounds.width());
@@ -157,24 +119,27 @@ void InterpolatingLayoutManager::SetDefaultLayout(
   InvalidateLayout();
 }
 
-gfx::Size InterpolatingLayoutManager::GetPreferredSize(const View* host) const {
+gfx::Size InterpolatingLayoutManager::GetPreferredSize(
+    const views::View* host) const {
   DCHECK_EQ(host_view(), host);
   DCHECK(host);
   return GetDefaultLayout()->GetPreferredSize(host);
 }
 
-gfx::Size InterpolatingLayoutManager::GetMinimumSize(const View* host) const {
+gfx::Size InterpolatingLayoutManager::GetMinimumSize(
+    const views::View* host) const {
   DCHECK_EQ(host_view(), host);
   DCHECK(host);
   return GetSmallestLayout()->GetMinimumSize(host);
 }
 
-int InterpolatingLayoutManager::GetPreferredHeightForWidth(const View* host,
-                                                           int width) const {
-  // It is in general not possible to determine what the correct
-  // height-for-width trade-off is while interpolating between two already-
-  // generated layouts because the values tend to rely on the behavior of
-  // individual child views at specific dimensions.
+int InterpolatingLayoutManager::GetPreferredHeightForWidth(
+    const views::View* host,
+    int width) const {
+  // It is in general not possible to determine what the correct height-for-
+  // width trade-off is while interpolating between two already-generated
+  // layouts because the values tend to rely on the behavior of individual child
+  // views at specific dimensions.
   //
   // The two reasonable choices are to use the larger of the two values (with
   // the understanding that the height of the view may "pop" at the edge of the
@@ -203,49 +168,88 @@ void InterpolatingLayoutManager::InvalidateLayout() {
     embedded.second->InvalidateLayout();
 }
 
-void InterpolatingLayoutManager::SetChildViewIgnoredByLayout(View* child_view,
-                                                             bool ignored) {
+void InterpolatingLayoutManager::SetChildViewIgnoredByLayout(
+    views::View* child_view,
+    bool ignored) {
   LayoutManagerBase::SetChildViewIgnoredByLayout(child_view, ignored);
   for (auto& embedded : embedded_layouts_)
     embedded.second->SetChildViewIgnoredByLayout(child_view, ignored);
 }
 
-void InterpolatingLayoutManager::Installed(View* host_view) {
+// static
+views::LayoutManagerBase::ProposedLayout
+InterpolatingLayoutManager::Interpolate(double value,
+                                        const ProposedLayout& start,
+                                        const ProposedLayout& target) {
+  if (value >= 1.0)
+    return target;
+
+  ProposedLayout layout;
+
+  // Interpolate the host size.
+  layout.host_size =
+      gfx::Tween::SizeValueBetween(value, start.host_size, target.host_size);
+
+  // The views may not be listed in the same order and some views might be
+  // omitted from either the |start| or |target| layout.
+  std::map<const views::View*, size_t> start_view_to_index;
+  for (size_t i = 0; i < start.child_layouts.size(); ++i)
+    start_view_to_index.emplace(start.child_layouts[i].child_view, i);
+  for (const ChildLayout& target_child : target.child_layouts) {
+    // Try to match the view from the target with the view from the start.
+    const auto start_match = start_view_to_index.find(target_child.child_view);
+    if (start_match == start_view_to_index.end()) {
+      // If there is no match, make the view present but invisible.
+      layout.child_layouts.push_back({target_child.child_view, false});
+    } else {
+      // Tween the two layouts.
+      const ChildLayout& start_child = start.child_layouts[start_match->second];
+      layout.child_layouts.push_back(
+          {target_child.child_view, start_child.visible && target_child.visible,
+           gfx::Tween::RectValueBetween(value, start_child.bounds,
+                                        target_child.bounds)});
+    }
+  }
+  return layout;
+}
+
+void InterpolatingLayoutManager::Installed(views::View* host_view) {
   LayoutManagerBase::Installed(host_view);
   for (auto& embedded : embedded_layouts_)
     embedded.second->Installed(host_view);
 }
 
-void InterpolatingLayoutManager::ViewAdded(View* host_view, View* child_view) {
+void InterpolatingLayoutManager::ViewAdded(views::View* host_view,
+                                           views::View* child_view) {
   LayoutManagerBase::ViewAdded(host_view, child_view);
   for (auto& embedded : embedded_layouts_)
     embedded.second->ViewAdded(host_view, child_view);
 }
 
-void InterpolatingLayoutManager::ViewRemoved(View* host_view,
-                                             View* child_view) {
+void InterpolatingLayoutManager::ViewRemoved(views::View* host_view,
+                                             views::View* child_view) {
   LayoutManagerBase::ViewRemoved(host_view, child_view);
   for (auto& embedded : embedded_layouts_)
     embedded.second->ViewRemoved(host_view, child_view);
 }
 
-void InterpolatingLayoutManager::ViewVisibilitySet(View* host,
-                                                   View* view,
+void InterpolatingLayoutManager::ViewVisibilitySet(views::View* host,
+                                                   views::View* view,
                                                    bool visible) {
   LayoutManagerBase::ViewVisibilitySet(host, view, visible);
   for (auto& embedded : embedded_layouts_)
     embedded.second->ViewVisibilitySet(host, view, visible);
 }
 
-const LayoutManagerBase* InterpolatingLayoutManager::GetDefaultLayout() const {
+const views::LayoutManagerBase* InterpolatingLayoutManager::GetDefaultLayout()
+    const {
   DCHECK(!embedded_layouts_.empty());
   return default_layout_ ? default_layout_
                          : embedded_layouts_.rbegin()->second.get();
 }
 
-const LayoutManagerBase* InterpolatingLayoutManager::GetSmallestLayout() const {
+const views::LayoutManagerBase* InterpolatingLayoutManager::GetSmallestLayout()
+    const {
   DCHECK(!embedded_layouts_.empty());
   return embedded_layouts_.begin()->second.get();
 }
-
-}  // namespace views
