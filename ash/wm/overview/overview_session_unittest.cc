@@ -1086,29 +1086,6 @@ TEST_F(OverviewSessionTest, LastWindowDestroyed) {
   EXPECT_FALSE(InOverviewSession());
 }
 
-// Regression test for crash when closing the last overview mode window under
-// SingleProcessMash. https://crbug.com/922293.
-TEST_F(OverviewSessionTest, DontRestoreFocusToUnparentedWindow) {
-  const gfx::Rect bounds(400, 400);
-  std::unique_ptr<aura::Window> parent = CreateTestWindow(bounds);
-  std::unique_ptr<aura::Window> child = CreateChildWindow(parent.get(), bounds);
-
-  // Enter overview with a focused child window. This simulates an app window
-  // web contents RenderWidgetHostViewAura.
-  child->Focus();
-  ToggleOverview();
-
-  // Simulate the asynchronous window teardown for used by client widgets.
-  // Hierarchy changes are processed first, so the child is removed from its
-  // parent, then the windows are destroyed.
-  parent->RemoveChild(child.get());
-  parent.reset();
-  child.reset();
-
-  // Overview mode exits without crashing.
-  EXPECT_FALSE(InOverviewSession());
-}
-
 // Tests that entering overview mode restores a window to its original
 // target location.
 TEST_F(OverviewSessionTest, QuickReentryRestoresInitialTransform) {
