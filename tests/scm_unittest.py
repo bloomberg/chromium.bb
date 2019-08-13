@@ -12,100 +12,23 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from third_party import mock
 from testing_support import fake_repos
-from testing_support.super_mox import SuperMoxTestBase
 
 import scm
 import subprocess2
 
 
-# Access to a protected member XXX of a client class
-# pylint: disable=protected-access
-
-
-class BaseTestCase(SuperMoxTestBase):
-  # Like unittest's assertRaises, but checks for Gclient.Error.
-  def assertRaisesError(self, msg, fn, *args, **kwargs):
-    try:
-      fn(*args, **kwargs)
-    except scm.gclient_utils.Error as e:
-      self.assertEquals(e.args[0], msg)
-    else:
-      self.fail('%s not raised' % msg)
-
-
-class BaseSCMTestCase(BaseTestCase):
+class GitWrapperTestCase(unittest.TestCase):
   def setUp(self):
-    BaseTestCase.setUp(self)
-    self.mox.StubOutWithMock(subprocess2, 'Popen')
-    self.mox.StubOutWithMock(subprocess2, 'communicate')
+    super(GitWrapperTestCase, self).setUp()
+    self.root_dir = '/foo/bar'
 
-
-class RootTestCase(BaseSCMTestCase):
-  def testMembersChanged(self):
-    self.mox.ReplayAll()
-    members = [
-        'determine_scm',
-        'ElementTree',
-        'gclient_utils',
-        'GenFakeDiff',
-        'GetCasedPath',
-        'GIT',
-        'glob',
-        'io',
-        'logging',
-        'only_int',
-        'os',
-        'platform',
-        're',
-        'subprocess2',
-        'sys',
-        'tempfile',
-        'time',
-        'ValidateEmail',
-    ]
-    # If this test fails, you should add the relevant test.
-    self.compareMembers(scm, members)
-
-
-class GitWrapperTestCase(BaseSCMTestCase):
-  def testMembersChanged(self):
-    members = [
-        'ApplyEnvVars',
-        'AssertVersion',
-        'Capture',
-        'CaptureStatus',
-        'CleanupDir',
-        'current_version',
-        'FetchUpstreamTuple',
-        'GenerateDiff',
-        'GetBranch',
-        'GetBranchRef',
-        'GetCheckoutRoot',
-        'GetDifferentFiles',
-        'GetEmail',
-        'GetGitDir',
-        'GetOldContents',
-        'GetPatchName',
-        'GetUpstreamBranch',
-        'IsAncestor',
-        'IsDirectoryVersioned',
-        'IsInsideWorkTree',
-        'IsValidRevision',
-        'IsWorkTreeDirty',
-        'RefToRemoteRef',
-        'RemoteRefToRef',
-        'ShortBranchName',
-    ]
-    # If this test fails, you should add the relevant test.
-    self.compareMembers(scm.GIT, members)
-
-  def testGetEmail(self):
-    self.mox.StubOutWithMock(scm.GIT, 'Capture')
-    scm.GIT.Capture(['config', 'user.email'], cwd=self.root_dir
-                    ).AndReturn('mini@me.com')
-    self.mox.ReplayAll()
+  @mock.patch('scm.GIT.Capture')
+  def testGetEmail(self, mockCapture):
+    mockCapture.return_value = 'mini@me.com'
     self.assertEqual(scm.GIT.GetEmail(self.root_dir), 'mini@me.com')
+    mockCapture.assert_called_with(['config', 'user.email'], cwd=self.root_dir)
 
   def testRefToRemoteRef(self):
     remote = 'origin'

@@ -9,8 +9,7 @@ import logging
 import os
 import sys
 import tempfile
-
-from testing_support import auto_stub
+import unittest
 
 import gclient_utils
 
@@ -80,15 +79,15 @@ class TrialDirMixIn(object):
     return self.trial.root_dir
 
 
-class TestCase(auto_stub.TestCase, TrialDirMixIn):
+class TestCase(unittest.TestCase, TrialDirMixIn):
   """Base unittest class that cleans off a trial directory in tearDown()."""
   def setUp(self):
-    auto_stub.TestCase.setUp(self)
+    unittest.TestCase.setUp(self)
     TrialDirMixIn.setUp(self)
 
   def tearDown(self):
     TrialDirMixIn.tearDown(self)
-    auto_stub.TestCase.tearDown(self)
+    unittest.TestCase.tearDown(self)
 
 
 if '-l' in sys.argv:
