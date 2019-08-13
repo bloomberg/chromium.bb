@@ -72,17 +72,16 @@ void ProfileMenuViewBase::ShowBubble(
   if (IsShowing())
     return;
 
-  DCHECK_EQ(browser->profile()->IsIncognitoProfile(),
-            view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO);
-
   ProfileMenuViewBase* bubble;
   if (view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO) {
+    DCHECK(browser->profile()->IsIncognitoProfile());
     bubble = new IncognitoMenuView(anchor_button, browser);
   } else {
+    DCHECK_EQ(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, view_mode);
 #if !defined(OS_CHROMEOS)
-    bubble = new ProfileMenuView(anchor_button, browser, view_mode,
-                                    manage_accounts_params.service_type,
-                                    access_point);
+    bubble =
+        new ProfileMenuView(anchor_button, browser,
+                            manage_accounts_params.service_type, access_point);
 #else
     NOTREACHED();
     return;
