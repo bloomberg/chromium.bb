@@ -1148,6 +1148,13 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   [self.dispatcher showSignin:command baseViewController:self];
 }
 
+#pragma mark - UIAdaptivePresentationControllerDelegate
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  // Call dismissRecentTabs so the Coordinator cleans up any state it needs to.
+  [self.presentationDelegate dismissRecentTabs];
+}
+
 #pragma mark - Accessibility
 
 - (BOOL)accessibilityPerformEscape {
