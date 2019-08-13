@@ -190,7 +190,7 @@ void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
   asked_to_terminate_ = true;
   if (!shadow_page_->WasInitialized()) {
     // This deletes 'this'.
-    worker_context_client_->WorkerContextFailedToStartOnMainThread();
+    worker_context_client_->WorkerContextFailedToStartOnInitiatorThread();
     return;
   }
   if (!worker_thread_) {
@@ -200,7 +200,7 @@ void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
                WebEmbeddedWorkerStartData::kWaitForDebugger ||
            pause_after_download_state_ == kIsPausedAfterDownload);
     // This deletes 'this'.
-    worker_context_client_->WorkerContextFailedToStartOnMainThread();
+    worker_context_client_->WorkerContextFailedToStartOnInitiatorThread();
     return;
   }
   worker_thread_->Terminate();
@@ -252,7 +252,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       CalculateHttpsState(starter_origin.get());
 
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
-      worker_context_client_->CreateWorkerFetchContextOnMainThread();
+      worker_context_client_->CreateWorkerFetchContextOnInitiatorThread();
 
   // Create WorkerSettings. Currently we block all mixed-content requests from
   // a ServiceWorker.
@@ -368,7 +368,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     }
   }
   // We are now ready to inspect worker thread.
-  worker_context_client_->WorkerReadyForInspectionOnMainThread(
+  worker_context_client_->WorkerReadyForInspectionOnInitiatorThread(
       devtools_agent_remote.PassPipe(),
       devtools_agent_host_receiver.PassPipe());
 }
