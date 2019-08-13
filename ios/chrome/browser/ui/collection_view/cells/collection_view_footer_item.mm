@@ -7,6 +7,7 @@
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -145,11 +146,7 @@ const CGFloat kVerticalPadding = 16;
                action:^(const GURL& URL) {
                  [weakSelf.linkDelegate cell:weakSelf didTapLinkURL:URL];
                }];
-    if (cellStyle == CollectionViewCellStyle::kUIKit) {
-      [_linkController setLinkColor:UIColorFromRGB(kUIKitFooterLinkColor)];
-    } else {
-      [_linkController setLinkColor:[UIColor colorNamed:kBlueColor]];
-    }
+    [_linkController setLinkColor:[UIColor colorNamed:kBlueColor]];
     [_linkController addLinkWithRange:range url:URL];
   }
 }
@@ -158,7 +155,7 @@ const CGFloat kVerticalPadding = 16;
        withFontScaling:(BOOL)withFontScaling {
   if (cellStyle == CollectionViewCellStyle::kUIKit) {
     self.textLabel.font = [UIFont systemFontOfSize:kUIKitFooterFontSize];
-    self.textLabel.textColor = UIColorFromRGB(kUIKitFooterTextColor);
+    self.textLabel.textColor = UIColor.cr_secondaryLabelColor;
   } else {
     self.textLabel.shadowOffset = CGSizeMake(1.f, 0.f);
     self.textLabel.shadowColor = [UIColor whiteColor];
