@@ -19,7 +19,7 @@
       "--with_branch_heads",
       "--disable-syntax-validation"
     ],
-    "env_prefixes": {
+    "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
       ]
