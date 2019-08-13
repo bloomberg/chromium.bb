@@ -3291,7 +3291,7 @@
         "args": [
           "context_lost",
           "--show-stdout",
-          "--browser=debug",
+          "--browser=debug_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
@@ -3320,7 +3320,7 @@
         "args": [
           "depth_capture",
           "--show-stdout",
-          "--browser=debug",
+          "--browser=debug_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
@@ -3349,7 +3349,7 @@
         "args": [
           "gpu_process",
           "--show-stdout",
-          "--browser=debug",
+          "--browser=debug_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
@@ -3378,7 +3378,7 @@
         "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
-          "--browser=debug",
+          "--browser=debug_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
@@ -3407,7 +3407,7 @@
         "args": [
           "info_collection",
           "--show-stdout",
-          "--browser=debug",
+          "--browser=debug_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
@@ -3440,7 +3440,7 @@
         "args": [
           "maps",
           "--show-stdout",
-          "--browser=debug",
+          "--browser=debug_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
@@ -3476,7 +3476,7 @@
         "args": [
           "pixel",
           "--show-stdout",
-          "--browser=debug",
+          "--browser=debug_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
@@ -3521,7 +3521,7 @@
         "args": [
           "screenshot_sync",
           "--show-stdout",
-          "--browser=debug",
+          "--browser=debug_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
@@ -3551,7 +3551,7 @@
         "args": [
           "trace_test",
           "--show-stdout",
-          "--browser=debug",
+          "--browser=debug_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
@@ -3580,7 +3580,7 @@
         "args": [
           "webgl_conformance",
           "--show-stdout",
-          "--browser=debug",
+          "--browser=debug_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
@@ -3839,7 +3839,7 @@
         "args": [
           "context_lost",
           "--show-stdout",
-          "--browser=release",
+          "--browser=release_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
@@ -3877,7 +3877,7 @@
         "args": [
           "depth_capture",
           "--show-stdout",
-          "--browser=release",
+          "--browser=release_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
@@ -3915,7 +3915,7 @@
         "args": [
           "gpu_process",
           "--show-stdout",
-          "--browser=release",
+          "--browser=release_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
@@ -3953,7 +3953,7 @@
         "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
-          "--browser=release",
+          "--browser=release_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
@@ -3991,7 +3991,7 @@
         "args": [
           "info_collection",
           "--show-stdout",
-          "--browser=release",
+          "--browser=release_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
@@ -4033,7 +4033,7 @@
         "args": [
           "maps",
           "--show-stdout",
-          "--browser=release",
+          "--browser=release_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
@@ -4078,7 +4078,7 @@
         "args": [
           "pixel",
           "--show-stdout",
-          "--browser=release",
+          "--browser=release_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
@@ -4132,7 +4132,7 @@
         "args": [
           "screenshot_sync",
           "--show-stdout",
-          "--browser=release",
+          "--browser=release_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
@@ -4171,7 +4171,7 @@
         "args": [
           "trace_test",
           "--show-stdout",
-          "--browser=release",
+          "--browser=release_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
@@ -4209,7 +4209,7 @@
         "args": [
           "webgl_conformance",
           "--show-stdout",
-          "--browser=release",
+          "--browser=release_x64",
           "--passthrough",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
