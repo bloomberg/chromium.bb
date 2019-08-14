@@ -67,7 +67,7 @@ class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
 };
 
 // RenderingTestChromeClient ensures that we have a LayerTreeHost which allows
-// testing BlinkGenPropertyTrees and CompositeAfterPaint property tree creation.
+// testing property tree creation.
 class RenderingTestChromeClient : public EmptyChromeClient {
  public:
   void SetUp() {

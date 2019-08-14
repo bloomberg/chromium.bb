@@ -2475,10 +2475,9 @@ static void ForAllGraphicsLayers(GraphicsLayer& layer,
 
 void LocalFrameView::RunPaintLifecyclePhase() {
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::RunPaintLifecyclePhase");
-  // While printing a document, the paint walk is done by the printing
-  // component into a special canvas. There is no point doing a normal paint
-  // step (or animations update for BlinkGenPropertyTrees/CAP) when in this
-  // mode.
+  // While printing a document, the paint walk is done by the printing component
+  // into a special canvas. There is no point doing a normal paint step (or
+  // animations update) when in this mode.
   //
   // RuntimeEnabledFeatures::PrintBrowserEnabled is a mode which runs the
   // browser normally, but renders every page as if it were being printed.
@@ -2785,11 +2784,11 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
 
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       !paint_controller_) {
-    // BlinkGenPropertyTrees just needs a transient PaintController to collect
-    // the foreign layers which doesn't need caching. It also shouldn't affect
-    // caching status of DisplayItemClients because it's FinishCycle() is not
-    // synchronized with other PaintControllers. It may live across frame update
-    // until GraphicsLayersDidChange() is called.
+    // Before CompositeAfterPaint, we need a transient PaintController to
+    // collect the foreign layers, and this doesn't need caching. This shouldn't
+    // affect caching status of DisplayItemClients because FinishCycle() is
+    // not synchronized with other PaintControllers. This may live across frame
+    // updates until GraphicsLayersDidChange() is called.
     paint_controller_ =
         std::make_unique<PaintController>(PaintController::kTransient);
 
@@ -2805,7 +2804,7 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
       CollectViewportLayersForLayerList(context,
                                         frame_->GetPage()->GetVisualViewport());
     }
-    // With BlinkGenPropertyTrees, |PaintRootGraphicsLayer| is the ancestor of
+    // Before CompositeAfterPaint, |PaintRootGraphicsLayer| is the ancestor of
     // all drawable layers (see: PaintLayerCompositor::PaintRootGraphicsLayer)
     // so we do not need to collect scrollbars separately.
     auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer();

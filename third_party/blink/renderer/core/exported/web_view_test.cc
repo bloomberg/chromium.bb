@@ -5725,8 +5725,8 @@ TEST_F(WebViewTest, RootLayerAttachment) {
       WebFrameWidget::LifecycleUpdate::kPrePaint,
       WebWidget::LifecycleUpdateReason::kTest);
 
-  // With BlinkGenPropertyTrees, layers (including the root layer) should not be
-  // attached until the paint lifecycle phase.
+  // Layers (including the root layer) should not be attached until the paint
+  // lifecycle phase.
   auto* layer_tree_view = web_view_helper_.GetLayerTreeView();
   EXPECT_FALSE(layer_tree_view->GetRootLayer());
 
