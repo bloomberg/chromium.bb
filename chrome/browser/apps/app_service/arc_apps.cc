@@ -395,10 +395,12 @@ void ArcApps::OnConnectionReady() {
     return;
   }
   AppConnectionHolder* app_connection_holder = prefs->app_connection_holder();
-  for (auto& pending : pending_load_icon_calls_) {
-    std::move(pending).Run(app_connection_holder);
+  if (app_connection_holder && app_connection_holder->IsConnected()) {
+    for (auto& pending : pending_load_icon_calls_) {
+      std::move(pending).Run(app_connection_holder);
+    }
+    pending_load_icon_calls_.clear();
   }
-  pending_load_icon_calls_.clear();
 }
 
 void ArcApps::OnAppRegistered(const std::string& app_id,
@@ -527,14 +529,12 @@ void ArcApps::LoadIconFromVM(const std::string app_id,
 
       AppConnectionHolder* app_connection_holder =
           prefs->app_connection_holder();
-      if (app_connection_holder) {
-        if (app_connection_holder->IsConnected()) {
-          std::move(pending).Run(app_connection_holder);
-        } else {
-          pending_load_icon_calls_.push_back(std::move(pending));
-        }
-        return;
+      if (app_connection_holder && app_connection_holder->IsConnected()) {
+        std::move(pending).Run(app_connection_holder);
+      } else {
+        pending_load_icon_calls_.push_back(std::move(pending));
       }
+      return;
     }
   }
 
