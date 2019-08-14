@@ -143,7 +143,10 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // by the transaction and not referenced by running scripts.
     virtual leveldb::Status CommitPhaseTwo();
 
-    virtual void Rollback();
+    // This can actually tear down the IndexedDBOriginState in a single-sequence
+    // scopes setup.
+    virtual void RollbackAndMaybeTearDown();
+
     void Reset();
     leveldb::Status PutBlobInfoIfNeeded(
         int64_t database_id,

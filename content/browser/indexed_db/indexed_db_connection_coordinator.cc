@@ -363,6 +363,10 @@ class IndexedDBConnectionCoordinator::DeleteRequest
 
   void DoDelete() {
     Status s;
+    // This is used to check if this class is still alive after the destruction
+    // of the TransactionalLevelDBTransaction, which can synchronously cause the
+    // system to be shut down if the disk is really bad.
+    base::WeakPtr<DeleteRequest> weak_ptr = weak_factory_.GetWeakPtr();
     if (db_->backing_store_) {
       scoped_refptr<TransactionalLevelDBTransaction> txn;
       TransactionalLevelDBDatabase* db = db_->backing_store_->db();
@@ -374,6 +378,9 @@ class IndexedDBConnectionCoordinator::DeleteRequest
       }
       s = db_->backing_store_->DeleteDatabase(db_->metadata_.name, txn.get());
     }
+    if (!weak_ptr)
+      return;
+
     if (!s.ok()) {
       // TODO(jsbell): Consider including sanitized leveldb status message.
       IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,

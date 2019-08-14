@@ -214,8 +214,12 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   state_ = FINISHED;
   should_process_queue_ = false;
 
+  // Save a WeakPtr in case the RollbackAndMaybeTearDown tears the system down.
+  base::WeakPtr<IndexedDBTransaction> weak_ptr = ptr_factory_.GetWeakPtr();
   if (backing_store_transaction_begun_)
-    transaction_->Rollback();
+    transaction_->RollbackAndMaybeTearDown();
+  if (!weak_ptr)
+    return;
 
   // Run the abort tasks, if any.
   while (!abort_task_stack_.empty())
