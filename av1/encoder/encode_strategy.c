@@ -61,9 +61,7 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
       break;
 
     case GF_UPDATE:
-      // TODO(zoeliu): To further investigate whether 'refresh_last_frame' is
-      //               needed.
-      frame_params->refresh_last_frame = 1;
+      frame_params->refresh_last_frame = 0;
       frame_params->refresh_golden_frame = 1;
       frame_params->refresh_bwd_ref_frame = 0;
       frame_params->refresh_alt_ref_frame = 0;
