@@ -25,6 +25,12 @@ tests:
   - ['\x00A0', '\x00A0']
   - ['\x2028', '⠳']
   - ['\x202F', '⠀']
+  - ['ç', '⠖⠉'] # IPA symbol not in IPA-unicode-range.uti.
+  - ['ø', '⠳'] # IPA symbol not in IPA-unicode-range.uti.
+  - ['œ', '⠪'] # IPA symbol not in IPA-unicode-range.uti.
+  - ['ɝ', '⠖⠜⠐⠗'] # IPA symbol not in IPA-unicode-range.uti.
+  - ['θ', '⠨⠹'] # IPA symbol not in IPA-unicode-range.uti.
+  - ['ⱱ', '⠖⠧'] # IPA symbol not in IPA-unicode-range.uti.
   - ["㐄", "⠇⠔⠐"]
   - ["㐮", "⠑⠨⠄"]
   - ["㐵", "⠛⠌⠂"]
