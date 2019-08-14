@@ -1777,6 +1777,10 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
   PermissionRequestManager* permission_request_manager =
       PermissionRequestManager::FromWebContents(web_contents);
   if (permission_request_manager) {
+    // At this point, there will be UI presented, and running a dialog causes an
+    // exit to webpage-initiated fullscreen. http://crbug.com/728276
+    web_contents->ForSecurityDropFullscreen();
+
     permission_request_manager->AddRequest(
         new RegisterProtocolHandlerPermissionRequest(registry, handler, url,
                                                      user_gesture));
