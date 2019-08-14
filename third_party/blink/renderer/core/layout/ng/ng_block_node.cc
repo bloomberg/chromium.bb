@@ -167,11 +167,12 @@ void UpdateLegacyMultiColumnFlowThread(
 
 NGConstraintSpaceBuilder CreateConstraintSpaceBuilderForMinMax(
     NGBlockNode node) {
-  return NGConstraintSpaceBuilder(node.Style().GetWritingMode(),
-                                  node.Style().GetWritingMode(),
-                                  node.CreatesNewFormattingContext())
-      .SetTextDirection(node.Style().Direction())
-      .SetIsIntermediateLayout(true);
+  NGConstraintSpaceBuilder builder(node.Style().GetWritingMode(),
+                                   node.Style().GetWritingMode(),
+                                   node.CreatesNewFormattingContext());
+  builder.SetTextDirection(node.Style().Direction());
+  builder.SetIsIntermediateLayout(true);
+  return builder;
 }
 
 LayoutUnit CalculateAvailableInlineSizeForLegacy(
@@ -548,11 +549,11 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
           .InlineSize();
 
   // Now, redo with infinite space for max_content
-  NGConstraintSpace infinite_constraint_space =
-      CreateConstraintSpaceBuilderForMinMax(*this)
-          .SetAvailableSize({LayoutUnit::Max(), LayoutUnit()})
-          .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
-          .ToConstraintSpace();
+  NGConstraintSpaceBuilder builder =
+      CreateConstraintSpaceBuilderForMinMax(*this);
+  builder.SetAvailableSize({LayoutUnit::Max(), LayoutUnit()});
+  builder.SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()});
+  NGConstraintSpace infinite_constraint_space = builder.ToConstraintSpace();
 
   layout_result = Layout(infinite_constraint_space);
   NGBoxFragment max_fragment(
@@ -983,15 +984,14 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::LayoutAtomicInline(
         {NGBaselineAlgorithmType::kAtomicInline, baseline_type});
   }
 
-  NGConstraintSpace constraint_space =
-      builder.SetIsShrinkToFit(Style().LogicalWidth().IsAuto())
-          .SetAvailableSize(parent_constraint_space.AvailableSize())
-          .SetPercentageResolutionSize(
-              parent_constraint_space.PercentageResolutionSize())
-          .SetReplacedPercentageResolutionSize(
-              parent_constraint_space.ReplacedPercentageResolutionSize())
-          .SetTextDirection(Style().Direction())
-          .ToConstraintSpace();
+  builder.SetIsShrinkToFit(Style().LogicalWidth().IsAuto());
+  builder.SetAvailableSize(parent_constraint_space.AvailableSize());
+  builder.SetPercentageResolutionSize(
+      parent_constraint_space.PercentageResolutionSize());
+  builder.SetReplacedPercentageResolutionSize(
+      parent_constraint_space.ReplacedPercentageResolutionSize());
+  builder.SetTextDirection(Style().Direction());
+  NGConstraintSpace constraint_space = builder.ToConstraintSpace();
   scoped_refptr<const NGLayoutResult> result = Layout(constraint_space);
   // TODO(kojii): Investigate why ClearNeedsLayout() isn't called automatically
   // when it's being laid out.
