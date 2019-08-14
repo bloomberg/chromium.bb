@@ -249,7 +249,7 @@ void LocationBarView::Init() {
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableDomDistiller) &&
-        !browser_->is_type_popup()) {
+        browser_->is_type_normal()) {
       params.types_enabled.push_back(PageActionIconType::kReaderMode);
     }
   }

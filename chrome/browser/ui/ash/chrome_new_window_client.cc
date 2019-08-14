@@ -217,7 +217,7 @@ class ChromeNewWindowClient::TabRestoreHelper
 
 void ChromeNewWindowClient::NewTab() {
   Browser* browser = chrome::FindBrowserWithActiveWindow();
-  if (browser && browser->is_type_tabbed()) {
+  if (browser && browser->is_type_normal()) {
     chrome::NewTab(browser);
     return;
   }
