@@ -241,11 +241,6 @@ crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/pad-gest
 crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
 crbug.com/857490 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Skip ]
 
-# Currently on main thread scrolling path, scrollend gets fired without waiting for scroll/fling snap animation. (The virtual/threaded version of the test passes.)
-crbug.com/907601 fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
-crbug.com/907601 virtual/scroll_customization/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
-crbug.com/907601 external/wpt/dom/events/scrolling/scrollend-event-fired-after-snap.html [ Skip ]
-
 crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
 
 # Display locking, run highlight-display-locked.js only with display locking.
