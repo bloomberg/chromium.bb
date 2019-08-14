@@ -1230,6 +1230,46 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
   viewport->SetScrollOffset(new_offset, kProgrammaticScroll, scroll_behavior);
 }
 
+int Element::bbScrollLeftNoZoomAdjust() const {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (LayoutBox* lb = GetLayoutBox())
+    return lb->ScrollLeft().ToInt();
+  return 0;
+}
+
+int Element::bbScrollTopNoZoomAdjust() const {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (LayoutBox* lb = GetLayoutBox())
+    return lb->ScrollTop().ToInt();
+  return 0;
+}
+
+void Element::setBbScrollLeftNoZoomAdjust(int newLeft) {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (LayoutBox* lb = GetLayoutBox())
+    lb->SetScrollLeft(LayoutUnit(newLeft));
+}
+
+void Element::setBbScrollTopNoZoomAdjust(int newTop) {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (LayoutBox* lb = GetLayoutBox())
+    lb->SetScrollTop(LayoutUnit(newTop));
+}
+
+int Element::bbScrollWidthNoZoomAdjust() const {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (LayoutBox* lb = GetLayoutBox())
+    return lb->ScrollWidth().ToInt();
+  return 0;
+}
+
+int Element::bbScrollHeightNoZoomAdjust() const {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (LayoutBox* lb = GetLayoutBox())
+    return lb->ScrollHeight().ToInt();
+  return 0;
+}
+
 IntRect Element::BoundsInViewport() const {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
 
