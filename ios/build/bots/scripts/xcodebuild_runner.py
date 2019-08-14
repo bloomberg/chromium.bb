@@ -21,6 +21,7 @@ import xcode_log_parser
 
 LOGGER = logging.getLogger(__name__)
 MAXIMUM_TESTS_PER_SHARD_FOR_RERUN = 20
+XTDEVICE_FOLDER = os.path.expanduser('~/Library/Developer/XCTestDevices')
 
 
 class LaunchCommandCreationError(test_runner.TestRunnerError):
@@ -55,13 +56,38 @@ def get_all_tests(app_path, test_cases=None):
   return all_tests
 
 
-def erase_all_simulators():
+def erase_all_simulators(path=None):
   """Erases all simulator devices.
+
+  Args:
+    path: (str) A path with simulators
 
   Fix for DVTCoreSimulatorAdditionsErrorDomain error.
   """
-  LOGGER.info('Erasing all simulators.')
-  subprocess.call(['xcrun', 'simctl', 'erase', 'all'])
+  command = ['xcrun', 'simctl']
+  if path:
+    command += ['--set', path]
+    LOGGER.info('Erasing all simulators from folder %s.' % path)
+  else:
+    LOGGER.info('Erasing all simulators.')
+  subprocess.call(command + ['erase', 'all'])
+
+
+def shutdown_all_simulators(path=None):
+  """Shutdown all simulator devices.
+
+  Args:
+    path: (str) A path with simulators
+
+  Fix for DVTCoreSimulatorAdditionsErrorDomain error.
+  """
+  command = ['xcrun', 'simctl']
+  if path:
+    command += ['--set', path]
+    LOGGER.info('Shutdown all simulators from folder %s.' % path)
+  else:
+    LOGGER.info('Shutdown all simulators.')
+  subprocess.call(command + ['shutdown', 'all'])
 
 
 def terminate_process(proc):
@@ -308,14 +334,16 @@ class LaunchCommand(object):
     shards = self.shards
     running_tests = set(get_all_tests(self.egtests_app.egtests_path,
                                       self.egtests_app.included_tests))
-
     # total number of attempts is self.retries+1
     for attempt in range(self.retries + 1):
       # Erase all simulators per each attempt
       if 'iOS Simulator' in self.destination:
         # kill all running simulators to prevent possible memory leaks
         test_runner.SimulatorTestRunner.kill_simulators()
+        shutdown_all_simulators()
+        shutdown_all_simulators(XTDEVICE_FOLDER)
         erase_all_simulators()
+        erase_all_simulators(XTDEVICE_FOLDER)
       outdir_attempt = os.path.join(self.out_dir, 'attempt_%d' % attempt)
       cmd_list = self.command(self.egtests_app,
                               outdir_attempt,
