@@ -1860,7 +1860,7 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
                                 unsigned int frame_flags) {
   RATE_CONTROL *const rc = &cpi->rc;
   AV1_COMMON *const cm = &cpi->common;
-  FRAME_UPDATE_TYPE frame_update_type;
+  GF_GROUP *const gf_group = &cpi->gf_group;
   int target;
   if (cpi->use_svc) {
     av1_update_temporal_layer_framerate(cpi);
@@ -1873,15 +1873,14 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
     rc->frames_to_key = cpi->oxcf.key_freq;
     rc->kf_boost = DEFAULT_KF_BOOST_RT;
     rc->source_alt_ref_active = 0;
-    frame_update_type = KF_UPDATE;
+    gf_group->update_type[gf_group->index] = KF_UPDATE;
     if (cpi->use_svc && cm->current_frame.frame_number > 0)
       av1_svc_reset_temporal_layers(cpi, 1);
   } else {
     frame_params->frame_type = INTER_FRAME;
-    frame_update_type = LF_UPDATE;
+    gf_group->update_type[gf_group->index] = LF_UPDATE;
   }
   if (rc->frames_till_gf_update_due == 0 && cpi->svc.temporal_layer_id == 0) {
-    GF_GROUP *const gf_group = &cpi->gf_group;
     if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ)
       av1_cyclic_refresh_set_golden_update(cpi);
     else
@@ -1899,27 +1898,26 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
       rc->constrained_gf_group = 0;
     }
     rc->frames_till_gf_update_due = rc->baseline_gf_interval;
-    frame_update_type = GF_UPDATE;
     gf_group->index = 0;
     gf_group->size = rc->baseline_gf_interval;
     gf_group->update_type[0] =
         (frame_params->frame_type == KEY_FRAME) ? KF_UPDATE : GF_UPDATE;
-    for (int i = 1; i < rc->baseline_gf_interval; i++)
-      gf_group->update_type[i] = LF_UPDATE;
   }
   if (cpi->oxcf.rc_mode == AOM_CBR) {
     if (frame_params->frame_type == KEY_FRAME) {
       target = av1_calc_iframe_target_size_one_pass_cbr(cpi);
     } else {
-      target = av1_calc_pframe_target_size_one_pass_cbr(cpi, frame_update_type);
+      target = av1_calc_pframe_target_size_one_pass_cbr(
+          cpi, gf_group->update_type[gf_group->index]);
     }
   } else {
     if (frame_params->frame_type == KEY_FRAME) {
       target = av1_calc_iframe_target_size_one_pass_vbr(cpi);
     } else {
-      target = av1_calc_pframe_target_size_one_pass_vbr(cpi, frame_update_type);
+      target = av1_calc_pframe_target_size_one_pass_vbr(
+          cpi, gf_group->update_type[gf_group->index]);
     }
   }
-  av1_rc_set_frame_target(cpi, target, cpi->common.width, cpi->common.height);
+  av1_rc_set_frame_target(cpi, target, cm->width, cm->height);
   rc->base_frame_target = target;
 }
