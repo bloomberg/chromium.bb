@@ -501,9 +501,11 @@ void IndexedDBConnectionCoordinator::OnConnectionClosed(
     database->ProcessRequestQueueAndMaybeRelease();
 }
 
+// TODO(dmurph): Attach an ID to the connection change events to prevent
+// mis-propogation to the wrong connection request.
 void IndexedDBConnectionCoordinator::OnVersionChangeIgnored() {
-  DCHECK(active_request_);
-  active_request_->OnVersionChangeIgnored();
+  if (active_request_)
+    active_request_->OnVersionChangeIgnored();
 }
 
 void IndexedDBConnectionCoordinator::OnUpgradeTransactionStarted(
