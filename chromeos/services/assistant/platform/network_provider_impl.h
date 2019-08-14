@@ -34,6 +34,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) NetworkProviderImpl
   void OnActiveNetworksChanged(
       std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks)
       override;
+  void OnNetworkStateChanged(
+      chromeos::network_config::mojom::NetworkStatePropertiesPtr network)
+      override{};
   void OnNetworkStateListChanged() override {}
   void OnDeviceStateListChanged() override {}
 
