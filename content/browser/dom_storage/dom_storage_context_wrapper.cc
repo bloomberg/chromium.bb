@@ -408,7 +408,7 @@ void DOMStorageContextWrapper::OpenSessionStorage(
     int process_id,
     const std::string& namespace_id,
     mojo::ReportBadMessageCallback bad_message_callback,
-    blink::mojom::SessionStorageNamespaceRequest request) {
+    mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver) {
   DCHECK(mojo_session_state_);
   // The bad message callback must be called on the same sequenced task runner
   // as the binding set. It cannot be called from our own mojo task runner.
@@ -429,7 +429,7 @@ void DOMStorageContextWrapper::OpenSessionStorage(
       base::BindOnce(&SessionStorageContextMojo::OpenSessionStorage,
                      base::Unretained(mojo_session_state_), process_id,
                      namespace_id, std::move(wrapped_bad_message_callback),
-                     std::move(request)));
+                     std::move(receiver)));
 }
 
 void DOMStorageContextWrapper::SetLocalStorageDatabaseForTesting(

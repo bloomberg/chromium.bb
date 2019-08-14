@@ -102,10 +102,11 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   void OpenLocalStorage(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
-  void OpenSessionStorage(int process_id,
-                          const std::string& namespace_id,
-                          mojo::ReportBadMessageCallback bad_message_callback,
-                          blink::mojom::SessionStorageNamespaceRequest request);
+  void OpenSessionStorage(
+      int process_id,
+      const std::string& namespace_id,
+      mojo::ReportBadMessageCallback bad_message_callback,
+      mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver);
 
   void SetLocalStorageDatabaseForTesting(
       leveldb::mojom::LevelDBDatabaseAssociatedPtr database);

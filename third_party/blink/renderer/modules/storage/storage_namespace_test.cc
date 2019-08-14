@@ -27,7 +27,8 @@ class NoopStoragePartitionService
 
   void OpenSessionStorage(
       const String& namespace_id,
-      mojom::blink::SessionStorageNamespaceRequest request) override {}
+      mojo::PendingReceiver<mojom::blink::SessionStorageNamespace> receiver)
+      override {}
 };
 
 }  // namespace

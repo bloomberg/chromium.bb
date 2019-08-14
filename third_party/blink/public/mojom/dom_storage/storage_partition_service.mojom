@@ -16,5 +16,5 @@ interface StoragePartitionService {
   OpenLocalStorage(url.mojom.Origin origin,
                    pending_receiver<StorageArea> area);
   OpenSessionStorage(string namespace_id,
-                     SessionStorageNamespace& session_namespace);
+                     pending_receiver<SessionStorageNamespace> session_namespace);
 };

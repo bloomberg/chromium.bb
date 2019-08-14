@@ -181,7 +181,8 @@ class CONTENT_EXPORT StoragePartitionImpl
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override;
   void OpenSessionStorage(
       const std::string& namespace_id,
-      blink::mojom::SessionStorageNamespaceRequest request) override;
+      mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver)
+      override;
 
   // network::mojom::NetworkContextClient interface.
   void OnCanSendReportingReports(

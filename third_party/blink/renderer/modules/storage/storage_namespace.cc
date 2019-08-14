@@ -171,9 +171,9 @@ void StorageNamespace::EnsureConnected() {
   DCHECK(IsSessionStorage());
   if (namespace_)
     return;
-  auto request = MakeRequest(&namespace_, controller_->IPCTaskRunner());
   controller_->storage_partition_service()->OpenSessionStorage(
-      namespace_id_, std::move(request));
+      namespace_id_,
+      namespace_.BindNewPipeAndPassReceiver(controller_->IPCTaskRunner()));
 }
 
 }  // namespace blink

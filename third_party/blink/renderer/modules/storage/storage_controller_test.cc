@@ -32,7 +32,8 @@ class MockStoragePartitionService
 
   void OpenSessionStorage(
       const String& namespace_id,
-      mojom::blink::SessionStorageNamespaceRequest request) override {
+      mojo::PendingReceiver<mojom::blink::SessionStorageNamespace> receiver)
+      override {
     session_storage_opens++;
   }
 
