@@ -1209,6 +1209,18 @@ const FeatureEntry::Choice kNotificationSchedulerChoices[] = {
      ""},
 };
 
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam
+    kOmniboxSearchEngineLogoRoundedEdgesVariationConstant[] = {
+        {"rounded_edges", "true"}};
+const FeatureEntry::FeatureVariation
+    kOmniboxSearchEngineLogoFeatureVariations[] = {
+        {"(rounded edges)",
+         kOmniboxSearchEngineLogoRoundedEdgesVariationConstant,
+         base::size(kOmniboxSearchEngineLogoRoundedEdgesVariationConstant),
+         nullptr}};
+#endif  // OS_ANDROID
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -2640,7 +2652,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-search-engine-logo",
      flag_descriptions::kOmniboxSearchEngineLogoName,
      flag_descriptions::kOmniboxSearchEngineLogoDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxSearchEngineLogo)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOmniboxSearchEngineLogo,
+                                    kOmniboxSearchEngineLogoFeatureVariations,
+                                    "OmniboxSearchEngineLogo")},
 #endif  // defined(OS_ANDROID)
 
     {"omnibox-rich-entity-suggestions",
