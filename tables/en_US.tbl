@@ -6,7 +6,6 @@
 #+contraction:full
 #+grade:2
 #+system:ebae
-#+hyphenation:yes
 
 # TODO: Please correct the metadata above. It is not meant to be
 # accurate nor complete. It hasn't been verified by the table
@@ -18,5 +17,4 @@
 # to https://github.com/liblouis/braille-specs.
 
 include en-us-g2.ctb
-include hyph_en_US.dic
 include braille-patterns.cti

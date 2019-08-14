@@ -6,7 +6,8 @@
 #+contraction:full
 #+grade:2
 #+translation:forward
-
+#
+#-has-nocross: yes
 
 #  Copyright (C) 2018 SBS Schweizerische Bibliothek für Blinde, Seh- und Lesebehinderte
 #

@@ -18,6 +18,8 @@
 #+contraction: partial
 #+grade: 1
 #+direction: forward
+#
+#-has-nocross: yes
 # ------------
 #
 #  Copyright (C) 2018 SBS Schweizerische Bibliothek für Blinde, Seh- und Lesebehinderte

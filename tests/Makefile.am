@@ -163,12 +163,6 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/zhcn-g1.yaml			  \
 	braille-specs/zhcn-g2.yaml
 
-# This test hangs when configured without --enable-ucs4
-if HAVE_UCS4
-dist_braille_specs_TESTS +=				  \
-	braille-specs/hu-hu-g1-hyph_harness.yaml
-endif
-
 dist_yaml_TESTS =				\
 	yaml/back_cont_then_punc.yaml		\
 	yaml/begcaps_endcaps.yaml		\
@@ -216,6 +210,12 @@ dist_yaml_TESTS =				\
 	yaml/squash_space.yaml			\
 	yaml/syllable.yaml			\
 	yaml/undefined-dots.yaml
+
+# This test hangs when configured without --enable-ucs4
+if HAVE_UCS4
+dist_yaml_TESTS +=				\
+	yaml/hu-hu-g1-hyph_harness.yaml
+endif
 
 YAML_LOG_COMPILER_SCRIPT = yaml-log-compiler.sh
 TEST_EXTENSIONS = .yaml

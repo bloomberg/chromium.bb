@@ -7,7 +7,6 @@
 #+type:literary
 #+contraction:full
 #+grade:2
-#+hyphenation:yes
 #
 # TODO: Please correct the metadata above. It is not meant to be
 # accurate nor complete. It hasn't been verified by the table
@@ -47,7 +46,6 @@ include hu-backtranslate-correction.dis
 include hu-chardefs.cti
 include hu-exceptionwords.cti
 include hu-hu-g2_exceptions.cti
-include hyph_hu_HU.dic
 include braille-patterns.cti
 #Braille indicators
 numsign 3456
