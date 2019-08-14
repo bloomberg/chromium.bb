@@ -42,7 +42,8 @@ HttpServerProperties::ServerInfo::ServerInfo(ServerInfo&& server_info) =
 HttpServerProperties::ServerInfo::~ServerInfo() = default;
 
 bool HttpServerProperties::ServerInfo::empty() const {
-  return !supports_spdy.has_value() && !alternative_services.has_value();
+  return !supports_spdy.has_value() && !alternative_services.has_value() &&
+         !server_network_stats.has_value();
 }
 
 HttpServerProperties::ServerInfoMap::ServerInfoMap()
@@ -112,7 +113,6 @@ void HttpServerProperties::Clear(base::OnceClosure callback) {
   broken_alternative_services_.Clear();
   canonical_alt_svc_map_.clear();
   last_quic_address_ = IPAddress();
-  server_network_stats_map_.Clear();
   quic_server_info_map_.Clear();
   canonical_server_info_map_.clear();
 
@@ -536,37 +536,41 @@ void HttpServerProperties::SetSupportsQuic(bool used_quic,
 void HttpServerProperties::SetServerNetworkStats(
     const url::SchemeHostPort& server,
     ServerNetworkStats stats) {
-  const ServerNetworkStats* old_stats = GetServerNetworkStats(server);
-  bool changed = !old_stats || *old_stats != stats;
+  auto server_info = server_info_map_.GetOrPut(server);
+  bool changed = !server_info->second.server_network_stats.has_value() ||
+                 server_info->second.server_network_stats.value() != stats;
 
-  // Still need to update the MRU cache, even if the values haven't changed.
-  server_network_stats_map_.Put(server, stats);
-
-  if (changed)
+  if (changed) {
+    server_info->second.server_network_stats = stats;
     MaybeQueueWriteProperties();
+  }
 }
 
 void HttpServerProperties::ClearServerNetworkStats(
     const url::SchemeHostPort& server) {
-  auto it = server_network_stats_map_.Get(server);
-  if (it != server_network_stats_map_.end()) {
-    server_network_stats_map_.Erase(it);
-    MaybeQueueWriteProperties();
+  auto server_info = server_info_map_.Peek(server);
+  // If stats are empty, nothing to do.
+  if (server_info == server_info_map_.end() ||
+      !server_info->second.server_network_stats.has_value()) {
+    return;
   }
+
+  // Otherwise, clear and delete if needed. No need to bring to front of MRU
+  // cache when clearing data.
+  server_info->second.server_network_stats.reset();
+  if (server_info->second.empty())
+    server_info_map_.EraseIfEmpty(server_info);
+  MaybeQueueWriteProperties();
 }
 
 const ServerNetworkStats* HttpServerProperties::GetServerNetworkStats(
     const url::SchemeHostPort& server) {
-  auto it = server_network_stats_map_.Get(server);
-  if (it == server_network_stats_map_.end()) {
+  auto server_info = server_info_map_.Get(server);
+  if (server_info == server_info_map_.end() ||
+      !server_info->second.server_network_stats.has_value()) {
     return nullptr;
   }
-  return &it->second;
-}
-
-const ServerNetworkStatsMap& HttpServerProperties::server_network_stats_map()
-    const {
-  return server_network_stats_map_;
+  return &server_info->second.server_network_stats.value();
 }
 
 void HttpServerProperties::SetQuicServerInfo(
@@ -783,7 +787,6 @@ const std::string* HttpServerProperties::GetCanonicalSuffix(
 
 void HttpServerProperties::OnPrefsLoaded(
     std::unique_ptr<ServerInfoMap> server_info_map,
-    std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map,
     const IPAddress& last_quic_address,
     std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
     std::unique_ptr<BrokenAlternativeServiceList>
@@ -798,7 +801,6 @@ void HttpServerProperties::OnPrefsLoaded(
   // service fields).
   if (server_info_map) {
     OnServerInfoLoaded(std::move(server_info_map));
-    OnServerNetworkStatsLoaded(std::move(server_network_stats_map));
     OnSupportsQuicLoaded(last_quic_address);
     OnQuicServerInfoMapLoaded(std::move(quic_server_info_map));
     if (recently_broken_alternative_services) {
@@ -844,6 +846,8 @@ void HttpServerProperties::OnServerInfoLoaded(
     if (!old_entry->second.alternative_services.has_value()) {
       old_entry->second.alternative_services = it->second.alternative_services;
     }
+    if (!old_entry->second.server_network_stats.has_value())
+      old_entry->second.server_network_stats = it->second.server_network_stats;
   }
 
   // Attempt to find canonical servers. Canonical suffix only apply to HTTPS.
@@ -871,21 +875,6 @@ void HttpServerProperties::OnServerInfoLoaded(
         canonical_alt_svc_map_[canonical_server] = it->first;
         break;
       }
-    }
-  }
-}
-
-void HttpServerProperties::OnServerNetworkStatsLoaded(
-    std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map) {
-  // Add the entries from persisted data.
-  server_network_stats_map_.Swap(*server_network_stats_map);
-
-  // Add the entries from the memory cache.
-  for (auto it = server_network_stats_map->rbegin();
-       it != server_network_stats_map->rend(); ++it) {
-    if (server_network_stats_map_.Get(it->first) ==
-        server_network_stats_map_.end()) {
-      server_network_stats_map_.Put(it->first, it->second);
     }
   }
 }
@@ -961,7 +950,7 @@ void HttpServerProperties::WriteProperties(base::OnceClosure callback) const {
       server_info_map_,
       base::BindRepeating(&HttpServerProperties::GetCanonicalSuffix,
                           base::Unretained(this)),
-      server_network_stats_map_, last_quic_address_, quic_server_info_map_,
+      last_quic_address_, quic_server_info_map_,
       broken_alternative_services_.broken_alternative_service_list(),
       broken_alternative_services_.recently_broken_alternative_services(),
       std::move(callback));

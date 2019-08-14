@@ -82,9 +82,6 @@ struct NET_EXPORT ServerNetworkStats {
 typedef std::vector<AlternativeService> AlternativeServiceVector;
 typedef std::vector<AlternativeServiceInfo> AlternativeServiceInfoVector;
 
-// Store at most 200 MRU ServerNetworkStats in memory and disk.
-const int kMaxServerNetworkStatsEntries = 200;
-
 // Store at most 200 MRU RecentlyBrokenAlternativeServices in memory and disk.
 // This ideally would be with the other constants in HttpServerProperties, but
 // has to go here instead of prevent a circular dependency.
@@ -92,14 +89,6 @@ const int kMaxRecentlyBrokenAlternativeServiceEntries = 200;
 
 // Store at most 5 MRU QUIC servers by default. This is mainly used by cronet.
 const int kDefaultMaxQuicServerEntries = 5;
-
-class ServerNetworkStatsMap
-    : public base::MRUCache<url::SchemeHostPort, ServerNetworkStats> {
- public:
-  ServerNetworkStatsMap()
-      : base::MRUCache<url::SchemeHostPort, ServerNetworkStats>(
-            kMaxServerNetworkStatsEntries) {}
-};
 
 // Max number of quic servers to store is not hardcoded and can be set.
 // Because of this, QuicServerInfoMap will not be a subclass of MRUCache.
@@ -165,8 +154,10 @@ class NET_EXPORT HttpServerProperties
     base::Optional<bool> supports_spdy;
 
     base::Optional<AlternativeServiceInfoVector> alternative_services;
-    // TODO(mmenke):  Add base::Optional<ServerNetworkStats>, and probably other
-    // per-server data as well (Http11ServerHostPortSet, QUIC server info).
+    base::Optional<ServerNetworkStats> server_network_stats;
+
+    // TODO(mmenke):  Add other per-server data as well
+    // (Http11ServerHostPortSet, QUIC server info).
   };
 
   class NET_EXPORT ServerInfoMap
@@ -317,8 +308,6 @@ class NET_EXPORT HttpServerProperties
   const ServerNetworkStats* GetServerNetworkStats(
       const url::SchemeHostPort& server);
 
-  const ServerNetworkStatsMap& server_network_stats_map() const;
-
   // Save QuicServerInfo (in std::string form) for the given |server_id|.
   void SetQuicServerInfo(const quic::QuicServerId& server_id,
                          const std::string& server_info);
@@ -351,10 +340,6 @@ class NET_EXPORT HttpServerProperties
   void OnServerInfoLoadedForTesting(
       std::unique_ptr<ServerInfoMap> server_info_map) {
     OnServerInfoLoaded(std::move(server_info_map));
-  }
-  void OnServerNetworkStatsLoadedForTesting(
-      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map) {
-    OnServerNetworkStatsLoaded(std::move(server_network_stats_map));
   }
   void OnSupportsQuicLoadedForTesting(const IPAddress& last_address) {
     OnSupportsQuicLoaded(last_address);
@@ -429,7 +414,6 @@ class NET_EXPORT HttpServerProperties
 
   void OnPrefsLoaded(
       std::unique_ptr<ServerInfoMap> server_info_map,
-      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map,
       const IPAddress& last_quic_address,
       std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
       std::unique_ptr<BrokenAlternativeServiceList>
@@ -441,8 +425,6 @@ class NET_EXPORT HttpServerProperties
   // loaded from prefs with what has been learned while waiting for prefs to
   // load.
   void OnServerInfoLoaded(std::unique_ptr<ServerInfoMap> server_info_map);
-  void OnServerNetworkStatsLoaded(
-      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map);
   void OnSupportsQuicLoaded(const IPAddress& last_address);
   void OnQuicServerInfoMapLoaded(
       std::unique_ptr<QuicServerInfoMap> quic_server_info_map);
@@ -483,7 +465,6 @@ class NET_EXPORT HttpServerProperties
   BrokenAlternativeServices broken_alternative_services_;
 
   IPAddress last_quic_address_;
-  ServerNetworkStatsMap server_network_stats_map_;
   // Contains a map of servers which could share the same alternate protocol.
   // Map from a Canonical scheme/host/port (host is some postfix of host names)
   // to an actual origin, which has a plausible alternate protocol mapping.

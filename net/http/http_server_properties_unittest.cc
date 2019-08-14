@@ -1349,16 +1349,13 @@ TEST_F(SupportsQuicServerPropertiesTest, SetSupportsQuic) {
   EXPECT_FALSE(impl_.GetSupportsQuic(&address));
 }
 
-typedef HttpServerPropertiesTest ServerNetworkStatsServerPropertiesTest;
-
-TEST_F(ServerNetworkStatsServerPropertiesTest, Set) {
+TEST_F(HttpServerPropertiesTest, LoadServerNetworkStats) {
   url::SchemeHostPort google_server("https", "www.google.com", 443);
 
   // Check by initializing empty ServerNetworkStats.
-  std::unique_ptr<ServerNetworkStatsMap> init_server_network_stats_map =
-      std::make_unique<ServerNetworkStatsMap>();
-  impl_.OnServerNetworkStatsLoadedForTesting(
-      std::move(init_server_network_stats_map));
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> load_server_info_map =
+      std::make_unique<HttpServerProperties::ServerInfoMap>();
+  impl_.OnServerInfoLoadedForTesting(std::move(load_server_info_map));
   const ServerNetworkStats* stats = impl_.GetServerNetworkStats(google_server);
   EXPECT_EQ(nullptr, stats);
 
@@ -1366,19 +1363,20 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, Set) {
   ServerNetworkStats stats_google;
   stats_google.srtt = base::TimeDelta::FromMicroseconds(10);
   stats_google.bandwidth_estimate = quic::QuicBandwidth::FromBitsPerSecond(100);
-  init_server_network_stats_map = std::make_unique<ServerNetworkStatsMap>();
-  init_server_network_stats_map->Put(google_server, stats_google);
-  impl_.OnServerNetworkStatsLoadedForTesting(
-      std::move(init_server_network_stats_map));
+  load_server_info_map =
+      std::make_unique<HttpServerProperties::ServerInfoMap>();
+  load_server_info_map->GetOrPut(google_server)->second.server_network_stats =
+      stats_google;
+  impl_.OnServerInfoLoadedForTesting(std::move(load_server_info_map));
 
   // Verify data for www.google.com:443.
-  ASSERT_EQ(1u, impl_.server_network_stats_map().size());
+  ASSERT_EQ(1u, impl_.server_info_map_for_testing().size());
   EXPECT_EQ(stats_google, *(impl_.GetServerNetworkStats(google_server)));
 
   // Test recency order and overwriting of data.
   //
   // |docs_server| has a ServerNetworkStats, which will be overwritten by
-  // SetServerNetworkStats(), because |server_network_stats_map| has an
+  // OnServerInfoLoadedForTesting(), because |server_network_stats_map| has an
   // entry for |docs_server|.
   url::SchemeHostPort docs_server("https", "docs.google.com", 443);
   ServerNetworkStats stats_docs;
@@ -1387,43 +1385,47 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, Set) {
   // Recency order will be |docs_server| and |google_server|.
   impl_.SetServerNetworkStats(docs_server, stats_docs);
 
-  // Prepare |server_network_stats_map| to be loaded by
-  // SetServerNetworkStats().
-  std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map =
-      std::make_unique<ServerNetworkStatsMap>();
+  // Prepare |server_info_map| to be loaded by OnServerInfoLoadedForTesting().
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map =
+      std::make_unique<HttpServerProperties::ServerInfoMap>();
 
   // Change the values for |docs_server|.
   ServerNetworkStats new_stats_docs;
   new_stats_docs.srtt = base::TimeDelta::FromMicroseconds(25);
   new_stats_docs.bandwidth_estimate =
       quic::QuicBandwidth::FromBitsPerSecond(250);
-  server_network_stats_map->Put(docs_server, new_stats_docs);
+  server_info_map->GetOrPut(docs_server)->second.server_network_stats =
+      new_stats_docs;
   // Add data for mail.google.com:443.
   url::SchemeHostPort mail_server("https", "mail.google.com", 443);
   ServerNetworkStats stats_mail;
   stats_mail.srtt = base::TimeDelta::FromMicroseconds(30);
   stats_mail.bandwidth_estimate = quic::QuicBandwidth::FromBitsPerSecond(300);
-  server_network_stats_map->Put(mail_server, stats_mail);
+  server_info_map->GetOrPut(mail_server)->second.server_network_stats =
+      stats_mail;
 
   // Recency order will be |docs_server|, |google_server| and |mail_server|.
-  impl_.OnServerNetworkStatsLoadedForTesting(
-      std::move(server_network_stats_map));
+  impl_.OnServerInfoLoadedForTesting(std::move(server_info_map));
 
-  const ServerNetworkStatsMap& map = impl_.server_network_stats_map();
+  const HttpServerProperties::ServerInfoMap& map =
+      impl_.server_info_map_for_testing();
   ASSERT_EQ(3u, map.size());
   auto map_it = map.begin();
 
   EXPECT_EQ(map_it->first, docs_server);
-  EXPECT_EQ(new_stats_docs, map_it->second);
+  ASSERT_TRUE(map_it->second.server_network_stats.has_value());
+  EXPECT_EQ(new_stats_docs, *map_it->second.server_network_stats);
   ++map_it;
   EXPECT_EQ(map_it->first, google_server);
-  EXPECT_EQ(stats_google, map_it->second);
+  ASSERT_TRUE(map_it->second.server_network_stats.has_value());
+  EXPECT_EQ(stats_google, *map_it->second.server_network_stats);
   ++map_it;
   EXPECT_EQ(map_it->first, mail_server);
-  EXPECT_EQ(stats_mail, map_it->second);
+  ASSERT_TRUE(map_it->second.server_network_stats.has_value());
+  EXPECT_EQ(stats_mail, *map_it->second.server_network_stats);
 }
 
-TEST_F(ServerNetworkStatsServerPropertiesTest, SetServerNetworkStats) {
+TEST_F(HttpServerPropertiesTest, SetServerNetworkStats) {
   url::SchemeHostPort foo_http_server("http", "foo", 443);
   url::SchemeHostPort foo_https_server("https", "foo", 443);
   EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_http_server));
@@ -1446,7 +1448,7 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, SetServerNetworkStats) {
   EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server));
 }
 
-TEST_F(ServerNetworkStatsServerPropertiesTest, ClearServerNetworkStats) {
+TEST_F(HttpServerPropertiesTest, ClearServerNetworkStats) {
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromMicroseconds(10);
   stats.bandwidth_estimate = quic::QuicBandwidth::FromBitsPerSecond(100);

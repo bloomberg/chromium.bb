@@ -42,7 +42,6 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   // |recently_broken_alternative_services|, which may be null.
   using OnPrefsLoadedCallback = base::OnceCallback<void(
       std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map,
-      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map,
       const IPAddress& last_quic_address,
       std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
       std::unique_ptr<BrokenAlternativeServiceList>
@@ -82,7 +81,6 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   // simpler API.
   void ReadPrefs(
       std::unique_ptr<HttpServerProperties::ServerInfoMap>* server_info_map,
-      std::unique_ptr<ServerNetworkStatsMap>* server_network_stats_map,
       IPAddress* last_quic_address,
       std::unique_ptr<QuicServerInfoMap>* quic_server_info_map,
       std::unique_ptr<BrokenAlternativeServiceList>*
@@ -105,7 +103,6 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   void WriteToPrefs(
       const HttpServerProperties::ServerInfoMap& server_info_map,
       const GetCannonicalSuffix& get_canonical_suffix,
-      const ServerNetworkStatsMap& server_network_stats_map,
       const IPAddress& last_quic_address,
       const QuicServerInfoMap& quic_server_info_map,
       const BrokenAlternativeServiceList& broken_alternative_service_list,
@@ -125,8 +122,7 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,
                            DoNotLoadExpiredAlternativeService);
   void AddServersData(const base::DictionaryValue& server_dict,
-                      HttpServerProperties::ServerInfoMap* server_info_map,
-                      ServerNetworkStatsMap* network_stats_map);
+                      HttpServerProperties::ServerInfoMap* server_info_map);
   // Helper method used for parsing an alternative service from JSON.
   // |dict| is the JSON dictionary to be parsed. It should contain fields
   // corresponding to members of AlternativeService.
@@ -157,9 +153,9 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
 
   void ReadSupportsQuic(const base::DictionaryValue& server_dict,
                         IPAddress* last_quic_address);
-  void AddToNetworkStatsMap(const url::SchemeHostPort& server,
-                            const base::DictionaryValue& server_dict,
-                            ServerNetworkStatsMap* network_stats_map);
+  void ParseNetworkStats(const url::SchemeHostPort& server,
+                         const base::DictionaryValue& server_dict,
+                         HttpServerProperties::ServerInfo* server_info);
   void AddToQuicServerInfoMap(const base::DictionaryValue& server_dict,
                               QuicServerInfoMap* quic_server_info_map);
   void AddToBrokenAlternativeServices(

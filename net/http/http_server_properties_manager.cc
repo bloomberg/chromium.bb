@@ -132,7 +132,6 @@ HttpServerPropertiesManager::~HttpServerPropertiesManager() {
 
 void HttpServerPropertiesManager::ReadPrefs(
     std::unique_ptr<HttpServerProperties::ServerInfoMap>* server_info_map,
-    std::unique_ptr<ServerNetworkStatsMap>* server_network_stats_map,
     IPAddress* last_quic_address,
     std::unique_ptr<QuicServerInfoMap>* quic_server_info_map,
     std::unique_ptr<BrokenAlternativeServiceList>*
@@ -184,7 +183,6 @@ void HttpServerPropertiesManager::ReadPrefs(
   ReadSupportsQuic(*http_server_properties_dict, last_quic_address);
 
   *server_info_map = std::make_unique<HttpServerProperties::ServerInfoMap>();
-  *server_network_stats_map = std::make_unique<ServerNetworkStatsMap>();
   *quic_server_info_map = std::make_unique<QuicServerInfoMap>(
       max_server_configs_stored_in_properties_);
 
@@ -197,8 +195,7 @@ void HttpServerPropertiesManager::ReadPrefs(
       DVLOG(1) << "Malformed http_server_properties for servers dictionary.";
       continue;
     }
-    AddServersData(*servers_dict, server_info_map->get(),
-                   server_network_stats_map->get());
+    AddServersData(*servers_dict, server_info_map->get());
   }
 
   AddToQuicServerInfoMap(*http_server_properties_dict,
@@ -312,8 +309,7 @@ void HttpServerPropertiesManager::AddToBrokenAlternativeServices(
 
 void HttpServerPropertiesManager::AddServersData(
     const base::DictionaryValue& servers_dict,
-    HttpServerProperties::ServerInfoMap* server_info_map,
-    ServerNetworkStatsMap* network_stats_map) {
+    HttpServerProperties::ServerInfoMap* server_info_map) {
   for (base::DictionaryValue::Iterator it(servers_dict); !it.IsAtEnd();
        it.Advance()) {
     // Get server's scheme/host/pair.
@@ -340,7 +336,7 @@ void HttpServerPropertiesManager::AddServersData(
 
     if (ParseAlternativeServiceInfo(spdy_server, *server_pref_dict,
                                     &server_info)) {
-      AddToNetworkStatsMap(spdy_server, *server_pref_dict, network_stats_map);
+      ParseNetworkStats(spdy_server, *server_pref_dict, &server_info);
     }
     if (!server_info.empty())
       server_info_map->Put(spdy_server, std::move(server_info));
@@ -519,11 +515,11 @@ void HttpServerPropertiesManager::ReadSupportsQuic(
   }
 }
 
-void HttpServerPropertiesManager::AddToNetworkStatsMap(
+void HttpServerPropertiesManager::ParseNetworkStats(
     const url::SchemeHostPort& server,
     const base::DictionaryValue& server_pref_dict,
-    ServerNetworkStatsMap* network_stats_map) {
-  DCHECK(network_stats_map->Peek(server) == network_stats_map->end());
+    HttpServerProperties::ServerInfo* server_info) {
+  DCHECK(!server_info->server_network_stats.has_value());
   const base::DictionaryValue* server_network_stats_dict = nullptr;
   if (!server_pref_dict.GetDictionaryWithoutPathExpansion(
           kNetworkStatsKey, &server_network_stats_dict)) {
@@ -540,7 +536,7 @@ void HttpServerPropertiesManager::AddToNetworkStatsMap(
   server_network_stats.srtt = base::TimeDelta::FromMicroseconds(srtt);
   // TODO(rtenneti): When QUIC starts using bandwidth_estimate, then persist
   // bandwidth_estimate.
-  network_stats_map->Put(server, server_network_stats);
+  server_info->server_network_stats = server_network_stats;
 }
 
 void HttpServerPropertiesManager::AddToQuicServerInfoMap(
@@ -587,7 +583,6 @@ void HttpServerPropertiesManager::AddToQuicServerInfoMap(
 void HttpServerPropertiesManager::WriteToPrefs(
     const HttpServerProperties::ServerInfoMap& server_info_map,
     const GetCannonicalSuffix& get_canonical_suffix,
-    const ServerNetworkStatsMap& server_network_stats_map,
     const IPAddress& last_quic_address,
     const QuicServerInfoMap& quic_server_info_map,
     const BrokenAlternativeServiceList& broken_alternative_service_list,
@@ -653,14 +648,16 @@ void HttpServerPropertiesManager::WriteToPrefs(
   }
 
   // Add server network stats to |server_pref_map|.
-  for (auto it = server_network_stats_map.rbegin();
-       it != server_network_stats_map.rend(); ++it) {
+  for (auto it = server_info_map.rbegin(); it != server_info_map.rend(); ++it) {
+    if (!it->second.server_network_stats.has_value())
+      continue;
     const url::SchemeHostPort& server = it->first;
     auto map_it = server_pref_map.Get(server);
     if (map_it == server_pref_map.end())
       map_it = server_pref_map.Put(server, ServerPref());
     map_it->second.server_network_stats_valid = true;
-    map_it->second.server_network_stats = it->second;
+    map_it->second.server_network_stats =
+        it->second.server_network_stats.value();
   }
 
   base::DictionaryValue http_server_properties_dict;
@@ -877,20 +874,19 @@ void HttpServerPropertiesManager::OnHttpServerPropertiesLoaded() {
     return;
 
   std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map;
-  std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map;
   IPAddress last_quic_address;
   std::unique_ptr<QuicServerInfoMap> quic_server_info_map;
   std::unique_ptr<BrokenAlternativeServiceList> broken_alternative_service_list;
   std::unique_ptr<RecentlyBrokenAlternativeServices>
       recently_broken_alternative_services;
 
-  ReadPrefs(&server_info_map, &server_network_stats_map, &last_quic_address,
-            &quic_server_info_map, &broken_alternative_service_list,
+  ReadPrefs(&server_info_map, &last_quic_address, &quic_server_info_map,
+            &broken_alternative_service_list,
             &recently_broken_alternative_services);
 
   std::move(on_prefs_loaded_callback_)
-      .Run(std::move(server_info_map), std::move(server_network_stats_map),
-           last_quic_address, std::move(quic_server_info_map),
+      .Run(std::move(server_info_map), last_quic_address,
+           std::move(quic_server_info_map),
            std::move(broken_alternative_service_list),
            std::move(recently_broken_alternative_services));
 }
