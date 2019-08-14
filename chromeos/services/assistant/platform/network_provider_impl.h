@@ -36,7 +36,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) NetworkProviderImpl
       override;
   void OnNetworkStateChanged(
       chromeos::network_config::mojom::NetworkStatePropertiesPtr network)
-      override{};
+      override {}
   void OnNetworkStateListChanged() override {}
   void OnDeviceStateListChanged() override {}
 
