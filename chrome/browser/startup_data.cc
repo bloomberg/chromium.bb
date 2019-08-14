@@ -7,6 +7,7 @@
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
 #include "chrome/common/channel_info.h"
+#include "components/metrics/field_trials_provider.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/persistent_system_profile.h"
 #include "components/metrics/version_utils.h"
@@ -72,7 +73,13 @@ void StartupData::RecordCoreSystemProfile() {
       chrome_feature_list_creator_->actual_locale(),
       metrics::GetAppPackageName(), &system_profile);
 
-  // TODO(crbug.com/965482): Records other information, such as field trials.
+  // TODO(hanxi): Create SyntheticTrialRegistry and pass it to
+  // |field_trial_provider|.
+  variations::FieldTrialsProvider field_trial_provider(nullptr,
+                                                       base::StringPiece());
+  field_trial_provider.ProvideSystemProfileMetrics(&system_profile);
+
+  // TODO(crbug.com/965482): Records information from other providers.
   metrics::GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
       system_profile, /* complete */ false);
 }
