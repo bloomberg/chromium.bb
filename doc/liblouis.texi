@@ -392,6 +392,13 @@ also recognized.
 @item \zhhhhhhhh
 Full 32-bit value.
 
+Please take a look at the
+@url{https://unicode.org/Public/UNIDATA/,public directory of the
+Unicode Character Database} as well as at the
+@url{https://unicode.org/Public/UNIDATA/NamesList.txt,Unicode names
+list with their code points} to figure out the corresponding Unicode
+code point for a given Unicode character.
+
 @end table
 
 @cindex Dots operand
