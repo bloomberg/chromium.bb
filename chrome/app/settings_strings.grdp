@@ -3315,7 +3315,7 @@
     Do not allow any sites to access serial ports
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE" desc="Label for native file system write permission, which enables sites to save changes to the original files that were selected by the user.">
-    Files on device
+    File editing
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE_ASK" desc="The ask label for native file system write permission in site settings.">
     Ask when a site wants to save your changes directly to files or folders on your device
