@@ -1468,7 +1468,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // The WebFrame created here was already attached to the Page as its
   // main frame, and the WebFrameWidget has been initialized, so we can call
   // WebViewImpl's DidAttachLocalMainFrame().
-  render_view->webview()->DidAttachLocalMainFrame(render_widget);
+  render_view->webview()->DidAttachLocalMainFrame();
 
   render_frame->render_widget_ = render_widget;
   DCHECK(!render_frame->owned_render_widget_);
@@ -6387,7 +6387,7 @@ bool RenderFrameImpl::SwapIn() {
     // its main frame, and the WebFrameWidget was previously initialized when
     // the frame was created, so we can call WebViewImpl's
     // DidAttachLocalMainFrame().
-    render_view_->webview()->DidAttachLocalMainFrame(render_view_->GetWidget());
+    render_view_->webview()->DidAttachLocalMainFrame();
   }
 
   return true;

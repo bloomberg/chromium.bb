@@ -517,7 +517,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
         web_widget_client.layer_tree_view(),
         web_widget_client.animation_host());
     blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
-    web_view->DidAttachLocalMainFrame(&web_widget_client);
+    web_view->DidAttachLocalMainFrame();
   }
 
   // The color should be passed to the compositor.
