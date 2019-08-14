@@ -50,6 +50,7 @@ RasterSource::RasterSource(const RecordingSource* other)
       size_(other->size_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
+      default_lcd_background_color_(other->default_lcd_background_color_),
       recording_scale_factor_(other->recording_scale_factor_) {}
 RasterSource::~RasterSource() = default;
 
@@ -256,6 +257,10 @@ void RasterSource::DidBeginTracing() {
 }
 
 RasterSource::PlaybackSettings::PlaybackSettings() = default;
+
+SkColor RasterSource::DefaultLCDBackgroundColor() const {
+  return default_lcd_background_color_;
+}
 
 RasterSource::PlaybackSettings::PlaybackSettings(const PlaybackSettings&) =
     default;
