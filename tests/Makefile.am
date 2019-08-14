@@ -208,6 +208,7 @@ dist_yaml_TESTS =				\
 	yaml/partialTrans.yaml			\
 	yaml/pass0_typebuf.yaml			\
 	yaml/present_progressive.yaml		\
+	yaml/repword.yaml			\
 	yaml/squash_space.yaml			\
 	yaml/syllable.yaml			\
 	yaml/undefined-dots.yaml

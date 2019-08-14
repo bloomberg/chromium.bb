@@ -45,6 +45,7 @@ EXTRA_DIST =					\
 	noletsignafter.yaml			\
 	pass0_typebuf.yaml			\
 	present_progressive.yaml		\
+	repword.yaml				\
 	squash_space.yaml			\
 	syllable.yaml				\
 	undefined-dots.yaml
