@@ -3404,10 +3404,10 @@ IFACEMETHODIMP AXPlatformNodeWin::get_textAtOffset(
 
   const base::string16& text_str = TextForIAccessibleText();
 
-  *start_offset =
-      FindBoundary(text_str, boundary_type, offset, BACKWARDS_DIRECTION);
-  *end_offset =
-      FindBoundary(text_str, boundary_type, offset, FORWARDS_DIRECTION);
+  *start_offset = FindBoundary(text_str, boundary_type, offset,
+                               AXTextBoundaryDirection::kBackwards);
+  *end_offset = FindBoundary(text_str, boundary_type, offset,
+                             AXTextBoundaryDirection::kForwards);
   return get_text(*start_offset, *end_offset, text);
 }
 
@@ -3431,8 +3431,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_textBeforeOffset(
 
   const base::string16& text_str = TextForIAccessibleText();
 
-  *start_offset =
-      FindBoundary(text_str, boundary_type, offset, BACKWARDS_DIRECTION);
+  *start_offset = FindBoundary(text_str, boundary_type, offset,
+                               AXTextBoundaryDirection::kBackwards);
   *end_offset = offset;
   return get_text(*start_offset, *end_offset, text);
 }
@@ -3458,8 +3458,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_textAfterOffset(
   const base::string16& text_str = TextForIAccessibleText();
 
   *start_offset = offset;
-  *end_offset =
-      FindBoundary(text_str, boundary_type, offset, FORWARDS_DIRECTION);
+  *end_offset = FindBoundary(text_str, boundary_type, offset,
+                             AXTextBoundaryDirection::kForwards);
   return get_text(*start_offset, *end_offset, text);
 }
 
@@ -6837,7 +6837,7 @@ void AXPlatformNodeWin::HandleSpecialTextOffset(LONG* offset) {
 LONG AXPlatformNodeWin::FindBoundary(const base::string16& text,
                                      IA2TextBoundaryType ia2_boundary,
                                      LONG start_offset,
-                                     TextBoundaryDirection direction) {
+                                     AXTextBoundaryDirection direction) {
   HandleSpecialTextOffset(&start_offset);
   AXTextBoundary boundary = FromIA2TextBoundary(ia2_boundary);
   std::vector<int32_t> line_breaks;
