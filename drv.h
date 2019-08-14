@@ -48,11 +48,15 @@ extern "C" {
  * on the namespace of already defined formats, which can be done by using invalid
  * fourcc codes.
  */
-
 #define DRM_FORMAT_NONE				fourcc_code('0', '0', '0', '0')
 #define DRM_FORMAT_YVU420_ANDROID		fourcc_code('9', '9', '9', '7')
 #define DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED	fourcc_code('9', '9', '9', '8')
 #define DRM_FORMAT_FLEX_YCbCr_420_888		fourcc_code('9', '9', '9', '9')
+
+/* This is a 10-bit bayer format for private reprocessing on MediaTek ISP. It's
+ * a private RAW format that other DRM drivers will never support and thus
+ * making it not upstreamable (i.e., defined in official DRM headers). */
+#define DRM_FORMAT_MTISP_SXYZW10		fourcc_code('M', 'B', '1', '0')
 
 // TODO(crbug.com/958181): remove this definition once drm_fourcc.h contains it.
 #ifndef DRM_FORMAT_P010

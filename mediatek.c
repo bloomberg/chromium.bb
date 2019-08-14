@@ -86,6 +86,9 @@ static int mediatek_init(struct driver *drv)
 			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 	drv_modify_combination(drv, DRM_FORMAT_R8, &metadata,
 			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	/* Private formats for private reprocessing in camera */
+	drv_add_combination(drv, DRM_FORMAT_MTISP_SXYZW10, &metadata,
+			    BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_SW_MASK);
 #endif
 
 	return drv_modify_linear_combinations(drv);
@@ -234,8 +237,14 @@ static uint32_t mediatek_resolve_format(struct driver *drv, uint32_t format, uin
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
 #ifdef MTK_MT8183
-		/* Only for MT8183 Camera subsystem requires NV12. */
-		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
+		/* Only MT8183 Camera subsystem offers private reprocessing
+		 * capability. CAMERA_READ indicates the buffer is intended for
+		 * reprocessing and hence given the private format for MTK. */
+		if (use_flags & BO_USE_CAMERA_READ)
+			return DRM_FORMAT_MTISP_SXYZW10;
+		/* For non-reprocessing uses, only MT8183 Camera subsystem
+		 * requires NV12. */
+		else if (use_flags & BO_USE_CAMERA_WRITE)
 			return DRM_FORMAT_NV12;
 #endif
 		/*HACK: See b/28671744 */

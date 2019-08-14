@@ -128,6 +128,7 @@ static const struct planar_layout *layout_from_format(uint32_t format)
 	case DRM_FORMAT_XRGB4444:
 	case DRM_FORMAT_YUYV:
 	case DRM_FORMAT_YVYU:
+	case DRM_FORMAT_MTISP_SXYZW10:
 		return &packed_2bpp_layout;
 
 	case DRM_FORMAT_BGR888:
