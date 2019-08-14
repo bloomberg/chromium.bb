@@ -17757,6 +17757,7 @@ Called by update_net_error_codes.py.-->
   <int value="578" label="CheckURLsInRealTime"/>
   <int value="579" label="CACertificateManagementAllowed"/>
   <int value="580" label="PasswordLeakDetectionEnabled"/>
+  <int value="581" label="LockScreenMediaPlaybackEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
