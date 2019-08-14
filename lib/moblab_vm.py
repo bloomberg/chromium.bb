@@ -553,6 +553,7 @@ def _StartVM(image_path, ssh_port, max_port, tap_dev, tap_mac_addr, is_moblab,
   cmd = [
       './cros_vm', '--start', '--image-path=%s' % image_path,
       '--ssh-port=%d' % ssh_port,
+      '--qemu-m', '32G',
       '--qemu-args', '-net nic,macaddr=%s' % tap_mac_addr,
       '--qemu-args', '-net tap,ifname=%s' % tap_dev
   ]
