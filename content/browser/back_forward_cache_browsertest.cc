@@ -9,6 +9,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -34,11 +35,15 @@ namespace {
 class BackForwardCacheBrowserTest : public ContentBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kUseFakeUIForMediaStream);
     feature_list_.InitAndEnableFeature(features::kBackForwardCache);
+    ContentBrowserTest::SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
+    ContentBrowserTest::SetUpOnMainThread();
   }
 
   WebContentsImpl* web_contents() const {
@@ -716,6 +721,33 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
     TitleWatcher title_watcher(web_contents(), title_when_loaded);
     EXPECT_EQ(title_watcher.WaitAndGetTitle(), title_when_loaded);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DoesNotCacheIfRecordingAudio) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to an empty page.
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // Request for audio recording.
+  EXPECT_EQ("success", EvalJs(current_frame_host(), R"(
+    new Promise(resolve => {
+      navigator.mediaDevices.getUserMedia({audio: true})
+        .then(m => { resolve("success"); })
+        .catch(() => { resolve("error"); });
+    });
+  )"));
+
+  RenderFrameDeletedObserver deleted(current_frame_host());
+
+  // 2) Navigate away.
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // The page was still recording audio when we navigated away, so it shouldn't
+  // have been cached.
+  deleted.WaitUntilDeleted();
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
