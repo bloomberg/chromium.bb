@@ -16,6 +16,9 @@ import hashlib
 import os
 import sys
 
+# Import grit first to get local third_party modules.
+import grit  # pylint: disable=ungrouped-imports,unused-import
+
 import six
 
 from grit.format import data_pack
