@@ -7,6 +7,7 @@
 ; Injected parameters.
 (define network-service-storage-paths-count "NETWORK_SERVICE_STORAGE_PATHS_COUNT")
 (define network-service-storage-path-n "NETWORK_SERVICE_STORAGE_PATH_")
+(define network-service-test-certs-dir "NETWORK_SERVICE_TEST_CERTS_DIR")
 
 ; Allow access to the [0,N) storage location paths.
 (let ((count (string->number (param network-service-storage-paths-count))))
@@ -51,6 +52,8 @@
 (allow file-read* file-write*
   (subpath (param darwin-user-cache-dir))
 )
+(if (param-defined? network-service-test-certs-dir)
+  (allow file-read* (subpath (param network-service-test-certs-dir))))
 
 ; Network socket access.
 (allow network-outbound
