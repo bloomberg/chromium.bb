@@ -253,6 +253,12 @@
 
   [alertController addAction:submit];
 
+  UIAlertAction* cancel =
+      [UIAlertAction actionWithTitle:@"Cancel"
+                               style:UIAlertActionStyleCancel
+                             handler:nil];
+  [alertController addAction:cancel];
+
   [alertController
       addTextFieldWithConfigurationHandler:^(UITextField* textField) {
         textField.placeholder = @"CVC";
