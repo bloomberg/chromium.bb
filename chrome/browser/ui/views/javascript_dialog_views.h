@@ -20,7 +20,7 @@ class MessageBoxView;
 // when the user switches away to a different tab, used for WebContentses that
 // are browser tabs.
 class JavaScriptDialogViews : public JavaScriptDialog,
-                              public views::DialogDelegate {
+                              public views::DialogDelegateView {
  public:
   ~JavaScriptDialogViews() override;
 
@@ -48,15 +48,14 @@ class JavaScriptDialogViews : public JavaScriptDialog,
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
-  void DeleteDelegate() override;
 
   // views::WidgetDelegate:
   bool ShouldShowCloseButton() const override;
-  views::View* GetContentsView() override;
   views::View* GetInitiallyFocusedView() override;
-  views::Widget* GetWidget() override;
-  const views::Widget* GetWidget() const override;
   ui::ModalType GetModalType() const override;
+
+  // views::View:
+  void AddedToWidget() override;
 
  private:
   friend class JavaScriptDialog;

@@ -5,10 +5,14 @@
 #include "chrome/browser/ui/views/javascript_dialog_views.h"
 
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/front_eliding_title_label.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/layout/fill_layout.h"
 
 JavaScriptDialogViews::~JavaScriptDialogViews() = default;
 
@@ -70,16 +74,8 @@ bool JavaScriptDialogViews::Close() {
   return true;
 }
 
-void JavaScriptDialogViews::DeleteDelegate() {
-  delete this;
-}
-
 bool JavaScriptDialogViews::ShouldShowCloseButton() const {
   return false;
-}
-
-views::View* JavaScriptDialogViews::GetContentsView() {
-  return message_box_view_;
 }
 
 views::View* JavaScriptDialogViews::GetInitiallyFocusedView() {
@@ -87,16 +83,15 @@ views::View* JavaScriptDialogViews::GetInitiallyFocusedView() {
   return text_box ? text_box : views::DialogDelegate::GetInitiallyFocusedView();
 }
 
-views::Widget* JavaScriptDialogViews::GetWidget() {
-  return message_box_view_->GetWidget();
-}
-
-const views::Widget* JavaScriptDialogViews::GetWidget() const {
-  return message_box_view_->GetWidget();
-}
-
 ui::ModalType JavaScriptDialogViews::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
+}
+
+void JavaScriptDialogViews::AddedToWidget() {
+  auto* bubble_frame_view = static_cast<views::BubbleFrameView*>(
+      GetWidget()->non_client_view()->frame_view());
+  bubble_frame_view->SetTitleView(
+      CreateFrontElidingTitleLabel(GetWindowTitle()));
 }
 
 JavaScriptDialogViews::JavaScriptDialogViews(
@@ -123,6 +118,9 @@ JavaScriptDialogViews::JavaScriptDialogViews(
   params.default_prompt = default_prompt_text;
   message_box_view_ = new views::MessageBoxView(params);
   DCHECK(message_box_view_);
+
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+  AddChildView(message_box_view_);
 
   constrained_window::ShowWebModalDialogViews(this, parent_web_contents);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::JAVA_SCRIPT);

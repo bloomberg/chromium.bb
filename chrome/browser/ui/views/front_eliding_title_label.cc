@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/permission_bubble/front_eliding_title_label.h"
+#include "chrome/browser/ui/views/front_eliding_title_label.h"
 
 #include "ui/views/accessibility/view_accessibility.h"
 
-std::unique_ptr<views::Label> ConstructFrontElidingTitleLabel(
+std::unique_ptr<views::Label> CreateFrontElidingTitleLabel(
     const base::string16& text) {
   auto label =
       std::make_unique<views::Label>(text, views::style::CONTEXT_DIALOG_TITLE);
