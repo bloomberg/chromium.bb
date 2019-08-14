@@ -1453,13 +1453,11 @@ String HTMLCanvasElement::GetIdFromControl(const Element* element) {
 void HTMLCanvasElement::CreateLayer() {
   DCHECK(!surface_layer_bridge_);
   LocalFrame* frame = GetDocument().GetFrame();
-  WebLayerTreeView* layer_tree_view = nullptr;
   // We do not design transferControlToOffscreen() for frame-less HTML canvas.
   if (frame) {
-    layer_tree_view =
-        frame->GetPage()->GetChromeClient().GetWebLayerTreeView(frame);
     surface_layer_bridge_ = std::make_unique<::blink::SurfaceLayerBridge>(
-        layer_tree_view, this, base::DoNothing());
+        frame->GetPage()->GetChromeClient().GetFrameSinkId(frame), this,
+        base::DoNothing());
     // Creates a placeholder layer first before Surface is created.
     surface_layer_bridge_->CreateSolidColorLayer();
   }

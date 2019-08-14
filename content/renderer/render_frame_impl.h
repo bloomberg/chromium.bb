@@ -117,7 +117,6 @@ namespace blink {
 class WebComputedAXTree;
 class WebContentDecryptionModule;
 class WebElement;
-class WebLayerTreeView;
 class WebLocalFrame;
 class WebMediaStreamDeviceObserver;
 class WebSecurityOrigin;
@@ -678,8 +677,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::MediaInspectorContext* inspector_context,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm,
-      const blink::WebString& sink_id,
-      blink::WebLayerTreeView* layer_tree_view) override;
+      const blink::WebString& sink_id) override;
   std::unique_ptr<blink::WebContentSettingsClient>
   CreateWorkerContentSettingsClient() override;
   scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext()

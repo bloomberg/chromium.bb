@@ -1790,8 +1790,6 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
     StartStopCompositor();
 
   DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
-  layer_tree_view_->SetFrameSinkId(
-      viz::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id_));
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   if (render_thread) {
@@ -3567,6 +3565,10 @@ void RenderWidget::SetBrowserControlsHeight(float top_height,
                                             bool shrink_viewport) {
   layer_tree_view_->layer_tree_host()->SetBrowserControlsHeight(
       top_height, bottom_height, shrink_viewport);
+}
+
+viz::FrameSinkId RenderWidget::GetFrameSinkId() {
+  return viz::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id());
 }
 
 void RenderWidget::NotifySwapAndPresentationTime(

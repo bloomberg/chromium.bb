@@ -920,13 +920,11 @@ bool ChromeClientImpl::ShouldOpenUIElementDuringPageDismissal(
   return false;
 }
 
-WebLayerTreeView* ChromeClientImpl::GetWebLayerTreeView(LocalFrame* frame) {
-  CHECK(frame);
-  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
-  CHECK(web_frame);
-  if (WebFrameWidgetBase* frame_widget = web_frame->LocalRootFrameWidget())
-    return frame_widget->GetLayerTreeView();
-  return nullptr;
+viz::FrameSinkId ChromeClientImpl::GetFrameSinkId(LocalFrame* frame) {
+  WebFrameWidgetBase* widget =
+      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
+  WebWidgetClient* client = widget->Client();
+  return client->GetFrameSinkId();
 }
 
 void ChromeClientImpl::RequestDecode(LocalFrame* frame,

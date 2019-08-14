@@ -736,6 +736,10 @@ void TestWebWidgetClient::SetBrowserControlsHeight(float top_height,
                                               shrink_viewport);
 }
 
+viz::FrameSinkId TestWebWidgetClient::GetFrameSinkId() {
+  return viz::FrameSinkId();
+}
+
 void TestWebViewClient::DestroyChildViews() {
   child_web_views_.clear();
 }
