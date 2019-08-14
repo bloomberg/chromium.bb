@@ -276,11 +276,13 @@ void CupsPrintJobNotification::UpdateNotificationType() {
       notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
       notification_->set_progress(print_job_->printed_page_number() * 100 /
                                   print_job_->total_page_number());
+      notification_->set_never_timeout(/*never_timeout=*/true);
       break;
     case CupsPrintJob::State::STATE_NONE:
     case CupsPrintJob::State::STATE_DOCUMENT_DONE:
     case CupsPrintJob::State::STATE_FAILED:
     case CupsPrintJob::State::STATE_CANCELLED:
+      notification_->set_never_timeout(/*never_timeout=*/false);
       notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
       break;
   }
