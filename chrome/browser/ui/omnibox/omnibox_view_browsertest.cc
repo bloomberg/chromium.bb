@@ -63,6 +63,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -1701,6 +1702,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Paste) {
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EditSearchEngines) {
+#if defined(OS_CHROMEOS)
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(chromeos::features::kSplitSettings);
+#endif
+
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 #if defined(OS_CHROMEOS)
