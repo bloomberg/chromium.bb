@@ -1029,4 +1029,51 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   delete_observer_rfh_a.WaitUntilDeleted();
 }
 
+// Tests the events are fired when going back from the cache.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Events) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    window.testObservedEvents = [];
+    let event_list = [
+      'visibilitychange',
+      'pagehide',
+      'pageshow',
+      'freeze',
+      'resume',
+    ];
+    for (event of event_list) {
+      let event2 = event;
+      document.addEventListener(event,
+                                () => window.testObservedEvents.push(event2));
+    }
+  )"));
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_FALSE(delete_observer_rfh_b.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+
+  // 3) Go back to A. Confirm that expected events are fired.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_FALSE(delete_observer_rfh_b.deleted());
+  EXPECT_EQ(rfh_a, current_frame_host());
+  EXPECT_EQ(
+      ListValueOf("visibilitychange", "freeze", "resume", "visibilitychange"),
+      EvalJs(shell(), "window.testObservedEvents"));
+}
+
 }  // namespace content
