@@ -6454,3 +6454,4 @@ crbug.com/993238 fast/frames/frame-name-reset.html [ Pass Failure ]
 
 # Sheriff 2019-08-14
 crbug.com/993328 [ Mac ] virtual/audio-service/media/video-currentTime.html [ Pass Failure ]
+crbug.com/993669 [ Mac ] virtual/audio-service/media/video-zoom.html [ Pass Failure ]
