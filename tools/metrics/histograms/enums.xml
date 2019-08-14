@@ -36233,6 +36233,7 @@ from previous Chrome versions.
   <int value="724208771" label="TabsInCBD:enabled"/>
   <int value="724427456" label="WebAuthenticationPINSupport:disabled"/>
   <int value="725270017" label="ScrollAnchorSerialization:disabled"/>
+  <int value="725870294" label="RequestUnbufferedDispatch:disabled"/>
   <int value="726764779" label="WebXRGamepadSupport:enabled"/>
   <int value="727270087" label="PromosOnLocalNtp:enabled"/>
   <int value="727571565" label="PasswordForceSaving"/>
@@ -36984,6 +36985,7 @@ from previous Chrome versions.
   <int value="1810311887" label="WebAssemblyThreads:enabled"/>
   <int value="1812368073" label="enable-new-app-list-mixer"/>
   <int value="1814671708" label="disable-password-manager-reauthentication"/>
+  <int value="1816174635" label="RequestUnbufferedDispatch:enabled"/>
   <int value="1816843861" label="ServiceWorkerServicification:enabled"/>
   <int value="1817312143" label="num-raster-threads"/>
   <int value="1818829958" label="IdentityDisc:enabled"/>

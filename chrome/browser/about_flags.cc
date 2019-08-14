@@ -1861,6 +1861,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-bookmark-reorder", flag_descriptions::kReorderBookmarksName,
      flag_descriptions::kReorderBookmarksDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kReorderBookmarks)},
+    {"request-unbuffered-dispatch",
+     flag_descriptions::kRequestUnbufferedDispatchName,
+     flag_descriptions::kRequestUnbufferedDispatchDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kRequestUnbufferedDispatch)},
 #endif  // OS_ANDROID
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeChoiceName,

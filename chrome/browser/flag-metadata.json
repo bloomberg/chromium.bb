@@ -2788,6 +2788,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "request-unbuffered-dispatch",
+    "owners": [ "bokan" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "rewrite-leveldb-on-deletion",
     "owners": [ "dullweber" ],
     "expiry_milestone": 75

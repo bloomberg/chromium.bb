@@ -961,6 +961,9 @@ extern const char kRendererSideResourceSchedulerDescription[];
 extern const char kReorderBookmarksName[];
 extern const char kReorderBookmarksDescription[];
 
+extern const char kRequestUnbufferedDispatchName[];
+extern const char kRequestUnbufferedDispatchDescription[];
+
 extern const char kRequestTabletSiteName[];
 extern const char kRequestTabletSiteDescription[];
 

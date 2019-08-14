@@ -1601,6 +1601,11 @@ const char kReorderBookmarksDescription[] =
     "Allows the user to reorder their bookmarks from their Android device. "
     "The bookmark ordering will be synced across devices.";
 
+const char kRequestUnbufferedDispatchName[] = "Use RequestUnbufferedDispatch";
+const char kRequestUnbufferedDispatchDescription[] =
+    "Calls RequestUnbufferedDispatch in the Android API to disable buffering "
+    "of input by the OS.";
+
 const char kRequestTabletSiteName[] =
     "Request tablet site option in the settings menu";
 const char kRequestTabletSiteDescription[] =
