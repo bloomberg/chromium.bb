@@ -790,7 +790,12 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
         if (canvas2d_bridge_->getLastRecord()) {
           const ComputedStyle* style = GetComputedStyle();
           if (style && style->ImageRendering() != EImageRendering::kPixelated) {
+            context.Canvas()->save();
+            context.Canvas()->translate(r.X(), r.Y());
+            context.Canvas()->scale(r.Width() / Size().Width(),
+                                    r.Height() / Size().Height());
             context.Canvas()->drawPicture(canvas2d_bridge_->getLastRecord());
+            context.Canvas()->restore();
             UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.2DPrintingAsVector", true);
             return;
           }
