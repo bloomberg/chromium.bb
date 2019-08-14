@@ -496,7 +496,6 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
          tempfile.NamedTemporaryFile() as temp_goma_client_json:
       self._run.options.goma_dir = goma_dir
       self._run.options.goma_client_json = temp_goma_client_json.name
-      self._run.options.chromeos_goma_dir = goma_dir
 
       stage = self.ConstructStage()
       chroot_args = stage._SetupGomaIfNecessary()
@@ -520,7 +519,6 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
     with osutils.TempDir() as goma_dir:
       self._run.options.goma_dir = goma_dir
       self._run.options.goma_client_json = 'dummy-goma-client-json-path'
-      self._run.options.chromeos_goma_dir = goma_dir
 
       stage = self.ConstructStage()
       with self.assertRaisesRegexp(ValueError, 'json file is missing'):
@@ -535,7 +533,6 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
     with osutils.TempDir() as goma_dir:
       self._run.options.goma_dir = goma_dir
       stage = self.ConstructStage()
-      self._run.options.chromeos_goma_dir = goma_dir
 
       with self.assertRaisesRegexp(ValueError,
                                    'goma_client_json is not provided'):

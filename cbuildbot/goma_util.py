@@ -69,15 +69,14 @@ class Goma(object):
   }
 
   def __init__(self, goma_dir, goma_client_json, goma_tmp_dir=None,
-               stage_name=None, chromeos_goma_dir=None):
+               stage_name=None):
     """Initializes Goma instance.
 
     This ensures that |self.goma_log_dir| directory exists (if missing,
     creates it).
 
     Args:
-      goma_dir: Path to the Goma client used for simplechrome
-                (outside of chroot).
+      goma_dir: Path to the goma directory (outside of chroot).
       goma_client_json: Path to the service account json file to use goma.
         On bots, this must be specified, otherwise raise a ValueError.
         On local, this is optional, and can be set to None.
@@ -88,9 +87,6 @@ class Goma(object):
       stage_name: optional name of the currently running stage. E.g.
         "build_packages" or "test_simple_chrome_workflow". If this is set
         deps cache is enabled.
-      chromeos_goma_dir: Path to the Goma client used for build package.
-                         path should be represented as outside of chroot.
-                         If None, goma_dir will be used instead.
 
     Raises:
       ValueError if 1) |goma_dir| does not point to a directory, 2)
@@ -118,16 +114,7 @@ class Goma(object):
       raise ValueError(
           'GOMA_TMP_DIR does not point a directory: %s' % (goma_tmp_dir,))
 
-    self.linux_goma_dir = goma_dir
-    self.chromeos_goma_dir = chromeos_goma_dir
-    # If Goma dir for ChromeOS SDK does not set, fallback to use goma_dir.
-    if self.chromeos_goma_dir is None:
-      self.chromeos_goma_dir = goma_dir
-    # Sanity checks of given paths.
-    if not os.path.isdir(self.chromeos_goma_dir):
-      raise ValueError('chromeos_goma_dir does not point a directory: %s' % (
-          self.chromeos_goma_dir,))
-
+    self.goma_dir = goma_dir
     self.goma_client_json = goma_client_json
     if stage_name:
       self.goma_cache = os.path.join(goma_dir, 'goma_cache', stage_name)
@@ -157,7 +144,7 @@ class Goma(object):
     """Extra env vars set to use goma."""
     result = dict(
         Goma._DEFAULT_ENV_VARS,
-        GOMA_DIR=self.linux_goma_dir,
+        GOMA_DIR=self.goma_dir,
         GOMA_TMP_DIR=self.goma_tmp_dir,
         GLOG_log_dir=self.goma_log_dir)
     if self.goma_client_json:
@@ -182,11 +169,11 @@ class Goma(object):
 
     if self.goma_cache:
       result['GOMA_CACHE_DIR'] = os.path.join(
-          goma_dir, os.path.relpath(self.goma_cache, self.chromeos_goma_dir))
+          goma_dir, os.path.relpath(self.goma_cache, self.goma_dir))
     return result
 
   def _RunGomaCtl(self, command):
-    goma_ctl = os.path.join(self.linux_goma_dir, 'goma_ctl.py')
+    goma_ctl = os.path.join(self.goma_dir, 'goma_ctl.py')
     cros_build_lib.RunCommand(
         ['python', goma_ctl, command], extra_env=self.GetExtraEnv())
 

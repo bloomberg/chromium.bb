@@ -328,9 +328,8 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
         goma = goma_util.Goma(
             self._run.options.goma_dir,
             self._run.options.goma_client_json,
-            stage_name=self.StageNamePrefix() if use_goma_deps_cache else None,
-            chromeos_goma_dir=self._run.options.chromeos_goma_dir)
-        extra_args.extend(['--nostart-goma', '--gomadir', goma.linux_goma_dir])
+            stage_name=self.StageNamePrefix() if use_goma_deps_cache else None)
+        extra_args.extend(['--nostart-goma', '--gomadir', goma.goma_dir])
         self._run.attrs.metadata.UpdateWithDict(
             {'goma_tmp_dir_for_simple_chrome': goma.goma_tmp_dir})
       else:
