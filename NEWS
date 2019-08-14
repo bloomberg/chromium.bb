@@ -33,8 +33,9 @@ issues]].
 ** Other changes
 - Metadata keys and values are now case insensitive, thanks to Dave
   Mielke.
-- Remove ~unicodedefs.cti~. It was obsolete and not used by any
-  tables, see also #696.
+- Remove ~unicodedefs.cti~. It was obsolete and never meant to be
+  included by any tables. Instead use the online references as
+  mentioned in the documentation now. See also #696.
 
 ** Deprecation notice
 None
