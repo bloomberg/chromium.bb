@@ -1400,7 +1400,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) override;
-  blink::WebLocalFrameClient::AppCacheType GetAppCacheType() override;
 
   // Updates the state of this frame when asked to commit a navigation.
   void PrepareFrameForCommit(

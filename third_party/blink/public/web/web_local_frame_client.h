@@ -878,14 +878,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // AppCache ------------------------------------------------------------
   virtual void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
-  enum class AppCacheType {
-    kAppCacheForNone = 0,
-    kAppCacheForFrame,
-    kAppCacheForSharedWorker,
-  };
-  virtual WebLocalFrameClient::AppCacheType GetAppCacheType() {
-    return WebLocalFrameClient::AppCacheType::kAppCacheForNone;
-  }
 
   // Evicts the page from the back forward cache due to e.g., JavaScript
   // execution.

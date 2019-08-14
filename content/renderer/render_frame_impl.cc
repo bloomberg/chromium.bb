@@ -4113,10 +4113,6 @@ void RenderFrameImpl::UpdateSubresourceFactory(
   GetLoaderFactoryBundle()->Update(std::move(child_info));
 }
 
-blink::WebLocalFrameClient::AppCacheType RenderFrameImpl::GetAppCacheType() {
-  return blink::WebLocalFrameClient::AppCacheType::kAppCacheForFrame;
-}
-
 void RenderFrameImpl::EvictFromBackForwardCache() {
   GetFrameHost()->EvictFromBackForwardCache();
 }

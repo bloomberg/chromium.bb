@@ -1269,11 +1269,6 @@ void LocalFrameClientImpl::UpdateSubresourceFactory(
   web_frame_->Client()->UpdateSubresourceFactory(std::move(info));
 }
 
-WebLocalFrameClient::AppCacheType LocalFrameClientImpl::GetAppCacheType() {
-  DCHECK(web_frame_->Client());
-  return web_frame_->Client()->GetAppCacheType();
-}
-
 void LocalFrameClientImpl::EvictFromBackForwardCache() {
   DCHECK(web_frame_->Client());
   return web_frame_->Client()->EvictFromBackForwardCache();
