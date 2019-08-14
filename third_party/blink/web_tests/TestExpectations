@@ -6365,7 +6365,6 @@ crbug.com/986477 [ Win ] virtual/samesite-by-default-cookies/external/wpt/cookie
 crbug.com/987269 [ Linux ] virtual/audio-service/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Pass Failure ]
 crbug.com/987269 [ Linux ] virtual/audio-service/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Pass Failure ]
 # Sheriff 2019-07-24
-crbug.com/987108 [ Mac ] fast/forms/select/disabled-select-change-index.html [ Failure ]
 crbug.com/986282 external/wpt/client-hints/accept-ch-lifetime.tentative.https.html [ Pass Failure ]
 crbug.com/987138 [ Linux Win ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
 crbug.com/987138 [ Linux Win ] virtual/audio-service/media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
