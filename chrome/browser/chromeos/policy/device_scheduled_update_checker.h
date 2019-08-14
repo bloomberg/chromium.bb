@@ -160,6 +160,17 @@ class DeviceScheduledUpdateChecker
 
 namespace update_checker_internal {
 
+// The maximum iterations allowed to start an update check timer if the
+// operation fails.
+constexpr int kMaxStartUpdateCheckTimerRetryIterations = 5;
+
+// Time to call |StartUpdateCheckTimer| again in case it failed.
+constexpr base::TimeDelta kStartUpdateCheckTimerRetryTime =
+    base::TimeDelta::FromMinutes(1);
+
+// Used as canonical value for timer delay calculations.
+constexpr base::TimeDelta kInvalidDelay = base::TimeDelta();
+
 // Parses |value| into a |ScheduledUpdateCheckData|. Returns nullopt if there
 // is any error while parsing |value|.
 base::Optional<DeviceScheduledUpdateChecker::ScheduledUpdateCheckData>
@@ -175,14 +186,6 @@ base::TimeDelta GetDiff(const icu::Calendar& a, const icu::Calendar& b);
 // Converts |cur_time| to ICU time in the time zone |tz|.
 std::unique_ptr<icu::Calendar> ConvertUtcToTzIcuTime(base::Time cur_time,
                                                      const icu::TimeZone& tz);
-
-// The maximum iterations allowed to start an update check timer if the
-// operation fails.
-constexpr int kMaxStartUpdateCheckTimerRetryIterations = 5;
-
-// Time to call |StartUpdateCheckTimer| again in case it failed.
-constexpr base::TimeDelta kStartUpdateCheckTimerRetryTime =
-    base::TimeDelta::FromMinutes(1);
 
 }  // namespace update_checker_internal
 

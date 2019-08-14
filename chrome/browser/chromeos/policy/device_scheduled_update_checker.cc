@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/task_executor_with_retries.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -336,6 +337,11 @@ void DeviceScheduledUpdateChecker::TimezoneChanged(
   // Anytime the time zone changes, the update check timer delay should be
   // recalculated and the timer should be started with updated values according
   // to the new time zone.
+  // |scheduled_update_check_data_->next_update_check_time_ticks| also needs to
+  // be reset, as it would be incorrect in the context of a new time zone. For
+  // this purpose, treat it as a new policy and call
+  // |OnScheduledUpdateCheckDataChanged| instead of |MaybeStartUpdateCheckTimer|
+  // directly.
   OnScheduledUpdateCheckDataChanged();
 }
 
@@ -377,7 +383,7 @@ DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTimerDelay(
       update_checker_internal::ConvertUtcToTzIcuTime(cur_time, GetTimeZone());
   if (!cur_cal) {
     LOG(ERROR) << "Failed to get current ICU time";
-    return base::TimeDelta();
+    return update_checker_internal::kInvalidDelay;
   }
 
   auto update_check_time = base::WrapUnique(cur_cal->clone());
@@ -388,7 +394,7 @@ DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTimerDelay(
   if (!SetTimeBasedOnPolicy(scheduled_update_check_data_.value(),
                             update_check_time.get())) {
     LOG(ERROR) << "Failed to set time based on policy";
-    return base::TimeDelta();
+    return update_checker_internal::kInvalidDelay;
   }
 
   // If the time has already passed it means that the update check needs to be
@@ -406,13 +412,13 @@ DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTimerDelay(
     if (!AdvanceTimeBasedOnPolicy(scheduled_update_check_data_.value(),
                                   update_check_time.get())) {
       LOG(ERROR) << "Failed to advance time";
-      return base::TimeDelta();
+      return update_checker_internal::kInvalidDelay;
     }
 
     if (!SetTimeBasedOnPolicy(scheduled_update_check_data_.value(),
                               update_check_time.get())) {
       LOG(ERROR) << "Failed to set time based on policy";
-      return base::TimeDelta();
+      return update_checker_internal::kInvalidDelay;
     }
   }
   DCHECK(!IsCalGreaterThanEqual(*cur_cal, *update_check_time));
@@ -438,20 +444,25 @@ void DeviceScheduledUpdateChecker::StartUpdateCheckTimer(
   const base::TimeTicks cur_ticks = GetTicksSinceBoot();
   const base::Time cur_time = GetCurrentTime();
 
-  // Calculate the next update check time. In case there is an error while
-  // calculating, due to concurrent DST or Time Zone changes, then reschedule
-  // this function and try to schedule the update check again. There should
-  // only be one outstanding task to start the timer. If there is a failure the
-  // wake lock is released and acquired again when this task runs.
-  base::TimeDelta delay = CalculateNextUpdateCheckTimerDelay(cur_time);
-  if (delay <= base::TimeDelta()) {
-    LOG(ERROR) << "Failed to calculate next update check time";
-    MaybeStartUpdateCheckTimer(std::move(scoped_wake_lock),
-                               true /* is_retry */);
-    return;
+  // If this is a retry then |cur_ticks| could be >=
+  // |next_update_check_time_ticks| i.e. the next timer schedule has already
+  // passed, recalculate it. Else respect the calculated time.
+  if (cur_ticks >= scheduled_update_check_data_->next_update_check_time_ticks) {
+    // Calculate the next update check time. In case there is an error while
+    // calculating, due to concurrent DST or Time Zone changes, then reschedule
+    // this function and try to schedule the update check again. There should
+    // only be one outstanding task to start the timer. If there is a failure
+    // the wake lock is released and acquired again when this task runs.
+    base::TimeDelta delay = CalculateNextUpdateCheckTimerDelay(cur_time);
+    if (delay <= update_checker_internal::kInvalidDelay) {
+      LOG(ERROR) << "Failed to calculate next update check time";
+      MaybeStartUpdateCheckTimer(std::move(scoped_wake_lock),
+                                 true /* is_retry */);
+      return;
+    }
+    scheduled_update_check_data_->next_update_check_time_ticks =
+        cur_ticks + delay;
   }
-  scheduled_update_check_data_->next_update_check_time_ticks =
-      cur_ticks + delay;
 
   // |update_check_timer_| will be destroyed as part of this object and is
   // guaranteed to not run callbacks after its destruction. Therefore, it's
