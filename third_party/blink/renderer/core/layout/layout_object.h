@@ -261,7 +261,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool HasNonZeroEffectiveOpacity() const;
 
  protected:
-  void EnsureIdForTesting() { fragment_.EnsureIdForTesting(); }
+  void EnsureIdForTesting() { fragment_.EnsureId(); }
 
  private:
   // DisplayItemClient methods.
@@ -2284,6 +2284,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 #endif
 
     FragmentData& FirstFragment() { return layout_object_.fragment_; }
+
+    void EnsureId() { layout_object_.fragment_.EnsureId(); }
 
    protected:
     friend class LayoutBoxModelObject;

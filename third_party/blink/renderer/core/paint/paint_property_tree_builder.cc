@@ -3172,9 +3172,9 @@ bool PaintPropertyTreeBuilder::UpdateFragments() {
        NeedsStickyTranslation(object_) ||
        NeedsTransform(object_, context_.direct_compositing_reasons) ||
        // Note: It is important to use MayNeedClipPathClip() instead of
-       // NeedsClipPathClip() which requires the clip path cache to be resolved,
-       // but the clip path cache invalidation must delayed until the paint
-       // offset and border box has been computed.
+       // NeedsClipPathClip() which requires the clip path cache to be
+       // resolved, but the clip path cache invalidation must delayed until
+       // the paint offset and border box has been computed.
        MayNeedClipPathClip(object_) ||
        NeedsEffect(object_, context_.direct_compositing_reasons) ||
        NeedsTransformForNonRootSVG(object_) ||

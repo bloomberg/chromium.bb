@@ -14952,11 +14952,11 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest, CommitWithDirtyPaintWorklets) {
 
   // Set up a result to have been 'painted'.
   ASSERT_EQ(root->GetPaintWorkletRecordMap().size(), 1u);
-  scoped_refptr<PaintWorkletInput> input =
+  scoped_refptr<const PaintWorkletInput> input =
       root->GetPaintWorkletRecordMap().begin()->first;
   int worklet_id = input->WorkletId();
 
-  PaintWorkletJob painted_job(worklet_id, input);
+  PaintWorkletJob painted_job(worklet_id, input, {});
   sk_sp<PaintRecord> record = sk_make_sp<PaintRecord>();
   painted_job.SetOutput(record);
 
@@ -14968,7 +14968,8 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest, CommitWithDirtyPaintWorklets) {
   // Finally, 'paint' the content. This should unlock tile preparation and
   // update the PictureLayerImpl's map.
   std::move(painter->TakeDoneCallback()).Run(std::move(painted_job_map));
-  EXPECT_EQ(root->GetPaintWorkletRecordMap().find(input)->second, record);
+  EXPECT_EQ(root->GetPaintWorkletRecordMap().find(input)->second.second,
+            record);
   EXPECT_TRUE(did_prepare_tiles_);
 }
 
@@ -15059,11 +15060,11 @@ TEST_F(ForceActivateAfterPaintWorkletPaintLayerTreeHostImplTest,
 
   // Set up a result to have been 'painted'.
   ASSERT_EQ(root->GetPaintWorkletRecordMap().size(), 1u);
-  scoped_refptr<PaintWorkletInput> input =
+  scoped_refptr<const PaintWorkletInput> input =
       root->GetPaintWorkletRecordMap().begin()->first;
   int worklet_id = input->WorkletId();
 
-  PaintWorkletJob painted_job(worklet_id, input);
+  PaintWorkletJob painted_job(worklet_id, input, {});
   sk_sp<PaintRecord> record = sk_make_sp<PaintRecord>();
   painted_job.SetOutput(record);
 
@@ -15077,7 +15078,8 @@ TEST_F(ForceActivateAfterPaintWorkletPaintLayerTreeHostImplTest,
   // updated, but since the tree was force activated there should be no tile
   // preparation.
   std::move(painter->TakeDoneCallback()).Run(std::move(painted_job_map));
-  EXPECT_EQ(root->GetPaintWorkletRecordMap().find(input)->second, record);
+  EXPECT_EQ(root->GetPaintWorkletRecordMap().find(input)->second.second,
+            record);
   EXPECT_FALSE(did_prepare_tiles_);
 }
 
