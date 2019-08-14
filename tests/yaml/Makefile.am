@@ -5,6 +5,7 @@ EXTRA_DIST =					\
 	capitalization.yaml			\
 	capsnocont.yaml				\
 	capsword_for_back.yaml			\
+	case-sensitivity.yaml			\
 	compbrlAtCursor_with_equals.yaml	\
 	computer_braille.yaml			\
 	broken_equals_operand.yaml		\

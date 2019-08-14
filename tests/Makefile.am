@@ -171,6 +171,7 @@ dist_yaml_TESTS =				\
 	yaml/capitalization.yaml		\
 	yaml/capsnocont.yaml			\
 	yaml/capsword_for_back.yaml		\
+	yaml/case-sensitivity.yaml		\
 	yaml/compbrlAtCursor_with_equals.yaml	\
 	yaml/computer_braille.yaml		\
 	yaml/emphasis-full.yaml			\
