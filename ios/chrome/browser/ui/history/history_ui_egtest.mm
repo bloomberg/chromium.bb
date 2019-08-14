@@ -405,7 +405,7 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 }
 
 // Tests that the VC can be dismissed by swiping down.
-- (void)testSwipeDownDismiss {
+- (void)DISABLED_testSwipeDownDismiss {
   if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
   }
@@ -429,7 +429,7 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 }
 
 // Tests that the VC can be dismissed by swiping down while its searching.
-- (void)testSwipeDownDismissWhileSearching {
+- (void)DISABLED_testSwipeDownDismissWhileSearching {
   if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
   }

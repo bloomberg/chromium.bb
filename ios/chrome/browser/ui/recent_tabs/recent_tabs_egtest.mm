@@ -243,7 +243,7 @@ id<GREYMatcher> TitleOfTestPage() {
 }
 
 // Tests that the VC can be dismissed by swiping down.
-- (void)testSwipeDownDismiss {
+- (void)DISABLED_testSwipeDownDismiss {
   if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
   }
