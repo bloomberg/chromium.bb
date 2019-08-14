@@ -2524,10 +2524,9 @@ static bool rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
       (partition_horz_allowed || partition_vert_allowed) && bsize >= BLOCK_8X8;
 
   if (try_prune_rect) {
-    av1_simple_motion_search_prune_part(
-        cpi, x, pc_tree, mi_row, mi_col, bsize, &partition_none_allowed,
-        &partition_horz_allowed, &partition_vert_allowed, &do_square_split,
-        &do_rectangular_split, &prune_horz, &prune_vert);
+    av1_simple_motion_search_prune_rect(
+        cpi, x, pc_tree, mi_row, mi_col, bsize, &partition_horz_allowed,
+        &partition_vert_allowed, &prune_horz, &prune_vert);
   }
 
   // Max and min square partition levels are defined as the partition nodes that

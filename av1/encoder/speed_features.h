@@ -630,6 +630,10 @@ typedef struct SPEED_FEATURES {
   // TRANSLATION and AFFINE(based on number of warp neighbors)
   int prune_warp_using_wmtype;
 
+  // The aggresiveness of pruning with simple_motion_search.
+  // Currently 0 is the lowest, and 2 the highest.
+  int simple_motion_search_prune_agg;
+
   // Perform simple_motion_search on each possible subblock and use it to prune
   // PARTITION_HORZ and PARTITION_VERT.
   int simple_motion_search_prune_rect;

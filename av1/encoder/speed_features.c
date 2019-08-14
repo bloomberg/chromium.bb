@@ -421,6 +421,7 @@ static void set_good_speed_features_framesize_independent(
     //     FLAG_SKIP_COMP_BESTINTRA | FLAG_SKIP_INTRA_LOWVAR |
     //     FLAG_EARLY_TERMINATE;
     // sf->use_transform_domain_distortion = 2;
+    sf->simple_motion_search_prune_agg = 2;
   }
 
   if (speed >= 6) {
@@ -821,6 +822,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   for (i = 0; i < PARTITION_BLOCK_SIZES; ++i) {
     sf->ml_partition_search_breakout_thresh[i] = -1;  // -1 means not enabled.
   }
+  sf->simple_motion_search_prune_agg = 0;
   sf->simple_motion_search_split = 0;
   sf->simple_motion_search_prune_rect = 0;
   sf->simple_motion_search_early_term_none = 0;
