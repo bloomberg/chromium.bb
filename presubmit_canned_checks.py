@@ -1394,7 +1394,7 @@ def CheckChangedLUCIConfigs(input_api, output_api):
     return [output_api.PresubmitError(
         'Config set request to luci-config failed', long_text=str(e))]
   if not config_sets:
-    return [output_api.PresubmitWarning('No config_sets were returned')]
+    return [output_api.PresubmitPromptWarning('No config_sets were returned')]
   loc_pref = '%s/+/%s/' % (remote_host_url, remote_branch)
   logging.debug('Derived location prefix: %s', loc_pref)
   dir_to_config_set = {
@@ -1403,6 +1403,21 @@ def CheckChangedLUCIConfigs(input_api, output_api):
     if cs['location'].startswith(loc_pref) or
     ('%s/' % cs['location']) == loc_pref
   }
+  if not dir_to_config_set:
+    warning_long_text_lines = [
+        'No config_set found for %s.' % loc_pref,
+        'Found the following:',
+    ]
+    for loc in sorted(cs['location'] for cs in config_sets):
+      warning_long_text_lines.append('  %s' % loc)
+    warning_long_text_lines.append('')
+    warning_long_text_lines.append(
+        'If the requested location is internal,'
+        ' the requester may not have access.')
+
+    return [output_api.PresubmitPromptWarning(
+        warning_long_text_lines[0],
+        long_text='\n'.join(warning_long_text_lines))]
   cs_to_files = collections.defaultdict(list)
   for f in input_api.AffectedFiles(include_deletes=False):
     # windows
