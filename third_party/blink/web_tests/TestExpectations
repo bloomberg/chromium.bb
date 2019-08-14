@@ -248,14 +248,6 @@ crbug.com/907601 external/wpt/dom/events/scrolling/scrollend-event-fired-after-s
 
 crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
 
-# Display locking, run highlight-display-locked.js only with display locking.
-crbug.com/882663 http/tests/devtools/elements/highlight/highlight-display-locked.js [ Skip ]
-crbug.com/882663 http/tests/devtools/elements/highlight [ Skip ]
-
-# Display locking, run css-get-platform-fonts-display-locked.js only with display locking.
-crbug.com/882663 inspector-protocol/css/css-get-platform-fonts-display-locked.js [ Skip ]
-crbug.com/882663 inspector-protocol/css [ Skip ]
-
 # Display locking failures
 crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
 # Skip some tests for rendersubtree
