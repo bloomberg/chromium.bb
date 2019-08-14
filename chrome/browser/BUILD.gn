@@ -2001,7 +2001,6 @@ jumbo_split_static_library("browser") {
     "//components/metrics:ui",
     "//components/metrics_services_manager",
     "//components/mirroring/browser",
-    "//components/mirroring/mojom:constants",
     "//components/mirroring/mojom:host",
     "//components/mirroring/mojom:service",
     "//components/mirroring/service:mirroring_service",
