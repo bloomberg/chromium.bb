@@ -300,7 +300,6 @@ class CORE_EXPORT LocalFrameView final
   const ObjectSet& BackgroundAttachmentFixedObjects() const {
     return background_attachment_fixed_objects_;
   }
-  bool HasBackgroundAttachmentFixedDescendants(const LayoutObject&) const;
   void InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
       const LayoutObject& scrolled_object);
 
@@ -626,18 +625,6 @@ class CORE_EXPORT LocalFrameView final
   // Only for CompositeAfterPaint.
   std::unique_ptr<JSONObject> CompositedLayersAsJSON(LayerTreeFlags);
 
-  // Recursively update frame tree. Each frame has its only
-  // scroll on main reason. Given the following frame tree
-  // .. A...
-  // ../.\..
-  // .B...C.
-  // .|.....
-  // .D.....
-  // If B has fixed background-attachment but other frames
-  // don't, both A and C should scroll on cc. Frame D should
-  // scrolled on main thread as its ancestor B.
-  void UpdateSubFrameScrollOnMainReason(const Frame&,
-                                        MainThreadScrollingReasons);
   String MainThreadScrollingReasonsAsText();
   // Main thread scrolling reasons including reasons from ancestors.
   MainThreadScrollingReasons GetMainThreadScrollingReasons() const;
