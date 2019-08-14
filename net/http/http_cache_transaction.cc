@@ -196,8 +196,6 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
 
 HttpCache::Transaction::~Transaction() {
   TRACE_EVENT0("io", "HttpCacheTransaction::~Transaction");
-  RecordHistograms();
-
   // We may have to issue another IO, but we should never invoke the callback_
   // after this point.
   callback_.Reset();
@@ -631,6 +629,8 @@ size_t HttpCache::Transaction::EstimateMemoryUsage() const {
 }
 
 void HttpCache::Transaction::WriterAboutToBeRemovedFromEntry(int result) {
+  RecordHistograms();
+
   // Since the transaction can no longer access the network transaction, save
   // all network related info now.
   if (moved_network_transaction_to_writers_ &&
@@ -3128,6 +3128,11 @@ void HttpCache::Transaction::DoneWithEntry(bool entry_is_complete) {
   if (!entry_)
     return;
 
+  // For a writer, histograms will be recorded in
+  // WriterAboutToBeRemovedFromEntry.
+  if (!InWriters())
+    RecordHistograms();
+
   cache_->DoneWithEntry(entry_, this, entry_is_complete, partial_ != nullptr);
   entry_ = nullptr;
   mode_ = NONE;  // switch to 'pass through' mode
@@ -3226,11 +3231,8 @@ int HttpCache::Transaction::DoRestartPartialRequest() {
 
   // WRITE + Doom + STATE_INIT_ENTRY == STATE_CREATE_ENTRY (without an attempt
   // to Doom the entry again).
-  ResetPartialState(!range_requested_);
-
-  // Change mode to WRITE after ResetPartialState as that may have changed the
-  // mode to NONE.
   mode_ = WRITE;
+  ResetPartialState(!range_requested_);
   TransitionToState(STATE_CREATE_ENTRY);
   return OK;
 }
