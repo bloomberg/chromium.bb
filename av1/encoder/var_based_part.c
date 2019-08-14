@@ -496,6 +496,28 @@ void av1_set_variance_partition_thresholds(AV1_COMP *cpi, int q,
   }
 }
 
+static void chroma_check(AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
+                         unsigned int y_sad, int is_key_frame) {
+  int i;
+  MACROBLOCKD *xd = &x->e_mbd;
+
+  if (is_key_frame) return;
+
+  for (i = 1; i <= 2; ++i) {
+    unsigned int uv_sad = UINT_MAX;
+    struct macroblock_plane *p = &x->plane[i];
+    struct macroblockd_plane *pd = &xd->plane[i];
+    const BLOCK_SIZE bs =
+        get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
+
+    if (bs != BLOCK_INVALID)
+      uv_sad = cpi->fn_ptr[bs].sdf(p->src.buf, p->src.stride, pd->dst.buf,
+                                   pd->dst.stride);
+
+    x->color_sensitivity[i - 1] = uv_sad > (y_sad / 6);
+  }
+}
+
 // This function chooses partitioning based on the variance between source and
 // reconstructed last, where variance is computed for down-sampled inputs.
 // TODO(kyslov): lot of things. Bring back noise estimation, brush up partition
@@ -533,6 +555,9 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
          cm->seq_params.sb_size == BLOCK_128X128);
   const int is_small_sb = (cm->seq_params.sb_size == BLOCK_64X64);
   const int num_64x64_blocks = is_small_sb ? 1 : 4;
+
+  unsigned int y_sad = UINT_MAX;
+  BLOCK_SIZE bsize = is_small_sb ? BLOCK_64X64 : BLOCK_128X128;
 
   // Ref frame used in partitioning.
   MV_REFERENCE_FRAME ref_frame_partition = LAST_FRAME;
@@ -589,17 +614,16 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
     if (cpi->sf.estimate_motion_for_var_based_partition) {
       if (xd->mb_to_right_edge >= 0 && xd->mb_to_bottom_edge >= 0) {
         const MV dummy_mv = { 0, 0 };
-        av1_int_pro_motion_estimation(cpi, x, cm->seq_params.sb_size, mi_row,
-                                      mi_col, &dummy_mv);
+        y_sad = av1_int_pro_motion_estimation(cpi, x, cm->seq_params.sb_size,
+                                              mi_row, mi_col, &dummy_mv);
       }
     }
+    if (y_sad == UINT_MAX) {
+      y_sad = cpi->fn_ptr[bsize].sdf(
+          x->plane[0].src.buf, x->plane[0].src.stride, xd->plane[0].pre[0].buf,
+          xd->plane[0].pre[0].stride);
+    }
 
-// TODO(kyslov): bring the small SAD functionality back
-#if 0
-    y_sad = cpi->fn_ptr[bsize].sdf(x->plane[0].src.buf, x->plane[0].src.stride,
-                                   xd->plane[0].pre[0].buf,
-                                   xd->plane[0].pre[0].stride);
-#endif
     x->pred_mv[LAST_FRAME] = mi->mv[0].as_mv;
 
     set_ref_ptrs(cm, xd, mi->ref_frame[0], mi->ref_frame[1]);
@@ -856,6 +880,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
     set_low_temp_var_flag(cpi, x, xd, vt, thresholds, ref_frame_partition,
                           mi_col, mi_row);
   }
+  chroma_check(cpi, x, bsize, y_sad, is_key_frame);
 
   if (vt2) aom_free(vt2);
   if (vt) aom_free(vt);

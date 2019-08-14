@@ -4055,6 +4055,8 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
     }
 
     x->mb_rd_record.num = x->mb_rd_record.index_start = 0;
+    x->color_sensitivity[0] = 0;
+    x->color_sensitivity[1] = 0;
 
     if (!use_nonrd_mode) {
       av1_zero(x->txb_rd_record_8X8);
