@@ -106,12 +106,12 @@ class DisplayPanel extends HTMLElement {
                 }
                 75% {
                   max-height: calc(192px + 28px);
-                  max-width: 400px;
+                  width: 400px;
                   opacity: 0;
                 }
                 100% {
                   max-height: calc(192px + 28px);
-                  max-width: 400px;
+                  width: 400px;
                   opacity: 1;
                 }
               }
@@ -135,6 +135,7 @@ class DisplayPanel extends HTMLElement {
               }
               .expanded {
                 animation: setcollapse 200ms forwards;
+                width: 400px;
               }
               .collapsed {
                 animation: setexpand 200ms forwards;
