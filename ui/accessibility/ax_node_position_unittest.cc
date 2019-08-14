@@ -56,7 +56,7 @@ class AXPositionTest : public testing::Test {
                                   AXNodeData& page_2_text_data,
                                   AXNodeData& page_3_data,
                                   AXNodeData& page_3_text_data) {
-    AXNodePosition::SetTreeForTesting(nullptr);
+    AXNodePosition::SetTree(nullptr);
 
     root_data.id = 1;
     root_data.role = ax::mojom::Role::kDocument;
@@ -139,7 +139,7 @@ class AXPositionTest : public testing::Test {
     tree_data.tree_id = AXTreeID::CreateNewAXTreeID();
     update.tree_data = tree_data;
     std::unique_ptr<AXTree> tree = std::make_unique<AXTree>(update);
-    AXNodePosition::SetTreeForTesting(tree.get());
+    AXNodePosition::SetTree(tree.get());
     return tree;
   }
 
@@ -315,11 +315,11 @@ void AXPositionTest::SetUp() {
   AXTreeUpdate update;
   serializer.SerializeChanges(src_tree.root(), &update);
   ASSERT_TRUE(tree_.Unserialize(update));
-  AXNodePosition::SetTreeForTesting(&tree_);
+  AXNodePosition::SetTree(&tree_);
 }
 
 void AXPositionTest::TearDown() {
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 }
 
 }  // namespace
@@ -518,7 +518,7 @@ TEST_F(AXPositionTest, GetMaxTextOffsetFromLineBreak) {
 }
 
 TEST_F(AXPositionTest, GetMaxTextOffsetUpdate) {
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
   AXNodeData root_data;
   root_data.id = 1;
@@ -930,7 +930,7 @@ TEST_F(AXPositionTest, ParagraphEdgesWithPreservedNewLine) {
   // ++++++5 kStaticText
   // ++++++++6 kInlineTextBox "\n" isLineBreakingObject
   // ++++++++7 kInlineTextBox "more text"
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
   AXNodeData root_data;
   root_data.id = 1;
@@ -1082,7 +1082,7 @@ TEST_F(AXPositionTest,
   // ++++10 kGenericContainer isLineBreakingObject
   // ++++++11 kStaticText
   // ++++++++12 kInlineTextBox "\n" isLineBreakingObject
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
   AXNodeData root_data;
   root_data.id = 1;
@@ -1939,7 +1939,7 @@ TEST_F(AXPositionTest, CreatePositionAtFormatBoundaryWithTextPosition) {
   // This test updates the tree structure to test a specific edge case -
   // CreatePositionAtFormatBoundary when text lies at the beginning and end
   // of the AX tree.
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
   AXNodeData root_data;
   root_data.id = 1;
@@ -1959,6 +1959,7 @@ TEST_F(AXPositionTest, CreatePositionAtFormatBoundaryWithTextPosition) {
 
   std::unique_ptr<AXTree> new_tree =
       CreateAXTree({root_data, text_data, more_text_data});
+  AXNodePosition::SetTree(new_tree.get());
 
   // Test CreatePreviousFormatStartPosition at the start of the document.
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
@@ -1984,17 +1985,18 @@ TEST_F(AXPositionTest, CreatePositionAtFormatBoundaryWithTextPosition) {
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(more_text_data.id, test_position->anchor_id());
   EXPECT_EQ(9, test_position->text_offset());
+  AXNodePosition::SetTree(&tree_);
 }
 
 TEST_F(AXPositionTest, CreatePositionAtPageBoundaryWithTextPosition) {
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
   AXNodeData root_data, page_1_data, page_1_text_data, page_2_data,
       page_2_text_data, page_3_data, page_3_text_data;
   std::unique_ptr<AXTree> new_tree(CreateMultipageDocument(
       root_data, page_1_data, page_1_text_data, page_2_data, page_2_text_data,
       page_3_data, page_3_text_data));
-  AXNodePosition::SetTreeForTesting(new_tree.get());
+  AXNodePosition::SetTree(new_tree.get());
 
   // Test CreateNextPageStartPosition at the start of the document.
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
@@ -2107,17 +2109,18 @@ TEST_F(AXPositionTest, CreatePositionAtPageBoundaryWithTextPosition) {
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, null_position);
   EXPECT_TRUE(null_position->IsNullPosition());
+  AXNodePosition::SetTree(&tree_);
 }
 
 TEST_F(AXPositionTest, CreatePositionAtPageBoundaryWithTreePosition) {
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
   AXNodeData root_data, page_1_data, page_1_text_data, page_2_data,
       page_2_text_data, page_3_data, page_3_text_data;
   std::unique_ptr<AXTree> new_tree(CreateMultipageDocument(
       root_data, page_1_data, page_1_text_data, page_2_data, page_2_text_data,
       page_3_data, page_3_text_data));
-  AXNodePosition::SetTreeForTesting(new_tree.get());
+  AXNodePosition::SetTree(new_tree.get());
 
   // Test CreateNextPageStartPosition at the start of the document.
   TestPositionType tree_position = AXNodePosition::CreateTreePosition(
@@ -2229,6 +2232,7 @@ TEST_F(AXPositionTest, CreatePositionAtPageBoundaryWithTreePosition) {
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, null_position);
   EXPECT_TRUE(null_position->IsNullPosition());
+  AXNodePosition::SetTree(&tree_);
 }
 
 TEST_F(AXPositionTest, CreatePagePositionWithNullPosition) {
@@ -3665,7 +3669,7 @@ TEST_F(AXPositionTest, OperatorsLessThanAndGreaterThan) {
 TEST_F(AXPositionTest, CreateNextAnchorPosition) {
   // This test updates the tree structure to test a specific edge case -
   // CreateNextAnchorPosition on an empty text field.
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(nullptr);
 
   AXNodeData root_data;
   root_data.id = 1;
@@ -3695,6 +3699,7 @@ TEST_F(AXPositionTest, CreateNextAnchorPosition) {
 
   std::unique_ptr<AXTree> new_tree = CreateAXTree(
       {root_data, text_data, text_field_data, empty_text_data, more_text_data});
+  AXNodePosition::SetTree(new_tree.get());
 
   // Test that CreateNextAnchorPosition will successfully navigate past the
   // empty text field.
@@ -3720,7 +3725,7 @@ TEST_F(AXPositionTest, CreateLinePositionsMultipleAnchorsInSingleLine) {
   // ++++++++6 kInlineTextBox "inside" kPreviousOnLineId=3 kNextOnLineId=8
   // ++++7 kStaticText
   // ++++++8 kInlineTextBox "after" kPreviousOnLineId=6
-  AXNodePosition::SetTreeForTesting(nullptr);
+  AXNodePosition::SetTree(&tree_);
 
   AXNodeData root;
   AXNodeData inline_box1;
