@@ -1094,6 +1094,7 @@ if (!is_android) {
       "../browser/ui/passwords/google_password_manager_navigation_throttle_browsertest.cc",
       "../browser/ui/tabs/pinned_tab_service_browsertest.cc",
       "../browser/ui/views/tabs/tab_hover_card_bubble_view_browsertest.cc",
+      "../browser/ui/views/tabs/tab_strip_browsertest.cc",
       "../browser/wake_lock/wake_lock_browsertest.cc",
 
       # If this list is used on Android in the future, these browser / speech/*
