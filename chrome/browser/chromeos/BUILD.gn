@@ -1734,6 +1734,8 @@ source_set("chromeos") {
     "policy/remote_commands/user_commands_factory_chromeos.h",
     "policy/rsu/lookup_key_uploader.cc",
     "policy/rsu/lookup_key_uploader.h",
+    "policy/scoped_wake_lock.cc",
+    "policy/scoped_wake_lock.h",
     "policy/secondary_google_account_signin_policy_handler.cc",
     "policy/secondary_google_account_signin_policy_handler.h",
     "policy/server_backed_device_state.cc",
