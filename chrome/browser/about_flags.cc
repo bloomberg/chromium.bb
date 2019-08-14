@@ -1555,7 +1555,7 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS | kExpireM77,
      FEATURE_VALUE_TYPE(chromeos::features::kUseMessagesGoogleComDomain)},
     {"use_messages_staging_url", flag_descriptions::kUseMessagesStagingUrlName,
-     flag_descriptions::kUseMessagesStagingUrlDescription, kOsCrOS | kExpireM77,
+     flag_descriptions::kUseMessagesStagingUrlDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kUseMessagesStagingUrl)},
     {"disable-cancel-all-touches",
      flag_descriptions::kDisableCancelAllTouchesName,

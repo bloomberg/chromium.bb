@@ -3168,8 +3168,9 @@
   },
   {
     "name": "use_messages_staging_url",
-    "owners": [ "azeemarshad", "khorimoto" ],
-    "expiry_milestone": 76
+    "owners": [ "azeemarshad", "khorimoto", "jonmann" ],
+    // This flag is required for QA and dogfood testing.
+    "expiry_milestone": -1
   },
   {
     "name": "use-multilogin-endpoint",
