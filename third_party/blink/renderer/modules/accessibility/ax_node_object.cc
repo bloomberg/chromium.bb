@@ -381,7 +381,7 @@ static bool IsRequiredOwnedElement(AXObject* parent,
   if (current_role == ax::mojom::Role::kListItem)
     return IsListElement(parent_node);
   if (current_role == ax::mojom::Role::kListMarker)
-    return IsHTMLLIElement(*parent_node);
+    return IsA<HTMLLIElement>(*parent_node);
   if (current_role == ax::mojom::Role::kMenuItemCheckBox ||
       current_role == ax::mojom::Role::kMenuItem ||
       current_role == ax::mojom::Role::kMenuItemRadio)
