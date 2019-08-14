@@ -951,11 +951,6 @@ html[dir=rtl] .menu-option {
   }
 }
 
-#backgrounds-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus,
-#backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus {
-  outline: none;
-}
-
 .using-mouse-nav .bg-sel-tile:focus {
   outline: none;
 }
