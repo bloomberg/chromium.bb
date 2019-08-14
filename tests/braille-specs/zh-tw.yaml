@@ -15,14 +15,16 @@ display: unicode.dis
 table:
   locale: cmn-TW
   __assert-match: zh_TW.tbl # zh-tw.ctb
-flags: {testmode: forward}
+flags: {testmode: bothDirections}
 tests:
   - ['\x0009', '\t']
   - ['\x000A', '⣀']
   - ['\x000C', '⡘⠇']
-  - ['\x000D', '⠀']
   - ['\x0020', '⠀']
   - ['\x00A0', '\x00A0']
+flags: {testmode: forward}
+tests:
+  - ['\x000D', '⠀']
   - ['\x2028', '⠳']
   - ['\x202F', '⠀']
   - ['ç', '⠖⠉'] # IPA symbol not in IPA-unicode-range.uti.
