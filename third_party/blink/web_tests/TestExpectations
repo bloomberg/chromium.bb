@@ -6448,6 +6448,9 @@ crbug.com/992615 [ Linux ] external/wpt/import-maps/data.sub.tentative.html [ Pa
 crbug.com/856601 [ Linux ] external/wpt/generic-sensor/idlharness.https.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.html [ Pass Timeout ]
 
+# Sheriff 2019-08-14
+crbug.com/993671 [ Win ] virtual/audio-service/http/tests/media/video-frame-size-change.html [ Pass Failure ]
+
 #Sheriff 2019-08-12
 crbug.com/783154 [ Linux Debug ] virtual/audio-service/media/controls/doubletap-to-jump-backwards.html [ Failure ]
 crbug.com/993238 fast/frames/frame-name-reset.html [ Pass Failure ]
