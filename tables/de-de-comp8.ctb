@@ -296,6 +296,7 @@ sign \x25fe 3678  # black square
 sign \x2022 35		# •
 sign \x2014 36		# —
 sign \x2013 36		# –
+sign \x2019 6           # '
 sign \x201e 1268	# „
 sign \x201c 138		# “
 sign \x201a 3678	# ‚
