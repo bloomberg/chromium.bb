@@ -416,3 +416,35 @@ def BundleOrderfileGenerationArtifacts(input_proto, output_proto, _config):
 
   for file_name in results:
     output_proto.artifacts.add().path = file_name
+
+
+@validate.exists('output_dir')
+def ExportCpeReport(input_proto, output_proto, config):
+  """Export a CPE report.
+
+  Args:
+    input_proto (BundleRequest): The input proto.
+    output_proto (BundleResponse): The output proto.
+    config (api_config.ApiConfig): The API call config.
+  """
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  output_dir = input_proto.output_dir
+
+  if input_proto.build_target.name:
+    # Legacy handling - use the default sysroot path for the build target.
+    build_target = controller_util.ParseBuildTarget(input_proto.build_target)
+    sysroot = sysroot_lib.Sysroot(build_target.root)
+  elif input_proto.sysroot.path:
+    sysroot = sysroot_lib.Sysroot(input_proto.sysroot.path)
+  else:
+    # TODO(saklein): Switch to validate decorators once legacy handling can be
+    #   cleaned up.
+    cros_build_lib.Die('sysroot.path is required.')
+
+  if config.validate_only:
+    return controller.RETURN_CODE_VALID_INPUT
+
+  cpe_result = artifacts.GenerateCpeReport(chroot, sysroot, output_dir)
+
+  output_proto.artifacts.add().path = cpe_result.report
+  output_proto.artifacts.add().path = cpe_result.warnings

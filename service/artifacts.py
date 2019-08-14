@@ -34,11 +34,17 @@ ARCHIVE_PACKAGES = 'packages'
 ARCHIVE_SERVER_PACKAGES = 'server_packages'
 ARCHIVE_TEST_SUITES = 'test_suites'
 
+CPE_WARNINGS_FILE_TEMPLATE = 'cpe-warnings-chromeos-%s.txt'
+CPE_RESULT_FILE_TEMPLATE = 'cpe-chromeos-%s.txt'
+
 TAST_BUNDLE_NAME = 'tast_bundles.tar.bz2'
 TAST_COMPRESSOR = cros_build_lib.COMP_BZIP2
 
+CpeResult = collections.namedtuple('CpeResult', ['report', 'warnings'])
+
 PinnedGuestImage = collections.namedtuple('PinnedGuestImage',
                                           ['filename', 'uri'])
+
 
 class Error(Exception):
   """Base module error."""
@@ -517,3 +523,46 @@ def FetchPinnedGuestImages(chroot, sysroot):
       pins.append(PinnedGuestImage(filename=filename, uri=uri))
 
   return pins
+
+
+def GenerateCpeReport(chroot, sysroot, output_dir):
+  """Generate CPE export.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot where the command is being run.
+    sysroot (sysroot_lib.Sysroot): The sysroot whose dependencies are being
+        reported.
+    output_dir (str): The path where the output files should be written.
+
+  Returns:
+    CpeResult: The CPE result instance with the full paths to the report and
+      warnings files.
+  """
+  # Build the command and its args.
+  cmd = [
+      'cros_extract_deps', '--sysroot', sysroot.path, '--format', 'cpe',
+      'virtual/target-os'
+  ]
+
+  logging.info('Beginning CPE Export.')
+  result = cros_build_lib.RunCommand(
+      cmd,
+      capture_output=True,
+      enter_chroot=True,
+      chroot_args=chroot.get_enter_args())
+  logging.info('CPE Export Complete.')
+
+  # Write out the report and warnings the export produced.
+  # We'll assume the basename for the board name to match how these were built
+  # out in the old system.
+  # TODO(saklein): Can we remove the board name from the report file names?
+  build_target = os.path.basename(sysroot.path)
+  report_path = os.path.join(output_dir,
+                             CPE_RESULT_FILE_TEMPLATE % build_target)
+  warnings_path = os.path.join(output_dir,
+                               CPE_WARNINGS_FILE_TEMPLATE % build_target)
+
+  osutils.WriteFile(report_path, result.output)
+  osutils.WriteFile(warnings_path, result.error)
+
+  return CpeResult(report=report_path, warnings=warnings_path)

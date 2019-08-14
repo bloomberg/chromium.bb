@@ -762,3 +762,45 @@ class BundleOrderfileGenerationArtifactsTestCase(
 
     self.assertTrue(response.artifacts)
     self.assertItemsEqual(expected_files, [a.path for a in response.artifacts])
+
+
+class ExportCpeReportTest(cros_test_lib.MockTempDirTestCase,
+                          api_config.ApiConfigMixin):
+  """ExportCpeReport tests."""
+
+  def setUp(self):
+    self.response = artifacts_pb2.BundleResponse()
+
+  def testValidateOnly(self):
+    """Sanity check validate only calls don't execute."""
+    patch = self.PatchObject(artifacts_svc, 'GenerateCpeReport')
+
+    request = artifacts_pb2.BundleRequest()
+    request.build_target.name = 'board'
+    request.output_dir = self.tempdir
+
+    artifacts.ExportCpeReport(request, self.response, self.validate_only_config)
+
+    patch.assert_not_called()
+
+  def testNoBuildTarget(self):
+    request = artifacts_pb2.BundleRequest()
+    request.output_dir = self.tempdir
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.ExportCpeReport(request, self.response, self.api_config)
+
+  def testSuccess(self):
+    """Test success case."""
+    expected = artifacts_svc.CpeResult(
+        report='/output/report.json', warnings='/output/warnings.json')
+    self.PatchObject(artifacts_svc, 'GenerateCpeReport', return_value=expected)
+
+    request = artifacts_pb2.BundleRequest()
+    request.build_target.name = 'board'
+    request.output_dir = self.tempdir
+
+    artifacts.ExportCpeReport(request, self.response, self.api_config)
+
+    for artifact in self.response.artifacts:
+      self.assertIn(artifact.path, [expected.report, expected.warnings])

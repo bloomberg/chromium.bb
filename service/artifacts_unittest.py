@@ -536,3 +536,38 @@ class GeneratePayloadsTest(cros_test_lib.MockTempDirTestCase):
              mock.call(partial_mock.HasString('full_dev_part_ROOT.bin'),
                        partial_mock.HasString('full_dev_part_ROOT.bin.gz'))]
     compress_file_mock.assert_has_calls(calls)
+
+
+class GenerateCpeExportTest(cros_test_lib.RunCommandTempDirTestCase):
+  """GenerateCpeExport tests."""
+
+  def setUp(self):
+    self.sysroot = sysroot_lib.Sysroot('/build/board')
+    self.chroot = chroot_lib.Chroot(self.tempdir)
+
+    self.chroot_tempdir = osutils.TempDir(base_dir=self.tempdir)
+    self.PatchObject(self.chroot, 'tempdir', return_value=self.chroot_tempdir)
+
+    self.output_dir = os.path.join(self.tempdir, 'output_dir')
+    osutils.SafeMakedirs(self.output_dir)
+
+    result_file = artifacts.CPE_RESULT_FILE_TEMPLATE % 'board'
+    self.result_file = os.path.join(self.output_dir, result_file)
+
+    warnings_file = artifacts.CPE_WARNINGS_FILE_TEMPLATE % 'board'
+    self.warnings_file = os.path.join(self.output_dir, warnings_file)
+
+  def testSuccess(self):
+    """Test success handling."""
+    # Set up warning output and the file the command would be making.
+    report = 'Report.'
+    warnings = 'Warnings.'
+    self.rc.SetDefaultCmdResult(returncode=0, output=report, error=warnings)
+
+    result = artifacts.GenerateCpeReport(self.chroot, self.sysroot,
+                                         self.output_dir)
+
+    self.assertEqual(self.result_file, result.report)
+    self.assertEqual(self.warnings_file, result.warnings)
+    self.assertFileContents(self.result_file, report)
+    self.assertFileContents(self.warnings_file, warnings)
