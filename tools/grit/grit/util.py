@@ -15,6 +15,7 @@ import sys
 import tempfile
 from xml.sax import saxutils
 
+import six
 from six import StringIO
 from six.moves import html_entities as entities
 
@@ -329,7 +330,7 @@ def ParseGrdForUnittest(body, base_dir=None, predetermined_ids_file=None,
     base_dir: The base_dir attribute of the <grit> tag.
   '''
   from grit import grd_reader
-  if isinstance(body, unicode):
+  if isinstance(body, six.text_type):
     body = body.encode('utf-8')
   if base_dir is None:
     base_dir = PathFromRoot('.')
