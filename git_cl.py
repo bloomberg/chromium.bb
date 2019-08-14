@@ -2652,14 +2652,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
   def CMDUploadChange(self, options, git_diff_args, custom_cl_base, change):
     """Upload the current branch to Gerrit."""
-    if options.squash and options.no_squash:
-      DieWithError('Can only use one of --squash or --no-squash')
-
-    if not options.squash and not options.no_squash:
+    if options.squash is None:
       # Load default for user, repo, squash=true, in this order.
       options.squash = settings.GetSquashGerritUploads()
-    elif options.no_squash:
-      options.squash = False
 
     remote, remote_branch = self.GetRemoteBranch()
     branch = GetTargetRef(remote, remote_branch, options.target_branch)
@@ -4740,7 +4735,7 @@ def CMDupload(parser, args):
                          'Default: remote branch head, or master')
   parser.add_option('--squash', action='store_true',
                     help='Squash multiple commits into one')
-  parser.add_option('--no-squash', action='store_true',
+  parser.add_option('--no-squash', action='store_false', dest='squash',
                     help='Don\'t squash multiple commits into one')
   parser.add_option('--topic', default=None,
                     help='Topic to specify when uploading')
