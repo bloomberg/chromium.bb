@@ -873,7 +873,7 @@ class NativeWinEventWaiter {
 // Tests ----------------------------------------------------------------------
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestBusyAccessibilityTree) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // The initial accessible returned should have state STATE_SYSTEM_BUSY while
   // the accessibility tree is being requested from the renderer.
@@ -1081,7 +1081,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, FocusEventOnPageLoad) {
   GURL html_data_url(
       "data:text/html," +
       net::EscapeQueryParamValue(R"HTML(<p> Hello</ p>)HTML", false));
-  NavigateToURL(shell(), html_data_url);
+  EXPECT_TRUE(NavigateToURL(shell(), html_data_url));
   WaitForAccessibilityFocusChange();
   waiter.WaitForNotification();
 
@@ -3403,8 +3403,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, HasHWNDAfterNavigation) {
                                          ax::mojom::Event::kLoadComplete);
 
   // Navigate to a new page.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(
-                             "/accessibility/html/article.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                         "/accessibility/html/article.html")));
 
   // At this point the root of the accessibility tree shouldn't have an HWND
   // because we never gave a parent window to the RWHVA.
@@ -3427,8 +3427,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kLoadComplete);
-  NavigateToURL(shell(), embedded_test_server()->GetURL(
-                             "/accessibility/html/table-spans.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("/accessibility/html/table-spans.html")));
   waiter.WaitForNotification();
 
   Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
