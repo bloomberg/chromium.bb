@@ -1632,7 +1632,6 @@ test("ash_unittests") {
     "app_menu/notification_menu_controller_unittest.cc",
     "app_menu/notification_menu_view_unittest.cc",
     "app_menu/notification_overflow_view_unittest.cc",
-    "assistant/assistant_controller_unittest.cc",
     "assistant/assistant_notification_controller_unittest.cc",
     "assistant/assistant_prefs_controller_unittest.cc",
     "assistant/assistant_screen_context_controller_unittest.cc",
@@ -1978,6 +1977,7 @@ test("ash_unittests") {
     # TODO(https://crbug.com/644355): Remove Shill dependencies.
     "//chromeos/network:test_support",
     "//chromeos/services/assistant:test_support",
+    "//chromeos/services/assistant/public/mojom",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/services/network_config/public/cpp:test_support",
@@ -2269,6 +2269,7 @@ static_library("test_support") {
 
   public_deps = [
     "//ash",
+    "//chromeos/services/assistant/public/mojom",
     "//dbus",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",

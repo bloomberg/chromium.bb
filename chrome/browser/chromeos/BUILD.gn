@@ -34,6 +34,7 @@ source_set("chromeos") {
     "//chromeos/dbus:seneschal_proto",
     "//chromeos/dbus:vm_applications_apps_proto",
     "//chromeos/dbus/power:power_manager_proto",
+    "//chromeos/services/assistant/public/mojom",
     "//chromeos/strings",
     "//components/policy/proto",
     "//components/signin/core/browser",
