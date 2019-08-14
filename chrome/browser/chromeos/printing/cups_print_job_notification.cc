@@ -33,6 +33,34 @@ namespace {
 const char kCupsPrintJobNotificationId[] =
     "chrome://settings/printing/cups-print-job-notification";
 
+base::string16 GetNotificationTitleForError(
+    const base::WeakPtr<CupsPrintJob>& print_job) {
+  DCHECK_EQ(CupsPrintJob::State::STATE_ERROR, print_job->state());
+
+  switch (print_job->error_code()) {
+    case CupsPrintJob::ErrorCode::PAPER_JAM:
+      return l10n_util::GetStringFUTF16(
+          IDS_PRINT_JOB_PAPER_JAM_NOTIFICATION_TITLE,
+          base::UTF8ToUTF16(print_job->document_title()));
+    case CupsPrintJob::ErrorCode::OUT_OF_INK:
+      return l10n_util::GetStringFUTF16(
+          IDS_PRINT_JOB_OUT_OF_INK_NOTIFICATION_TITLE,
+          base::UTF8ToUTF16(print_job->document_title()));
+    case CupsPrintJob::ErrorCode::OUT_OF_PAPER:
+      return l10n_util::GetStringFUTF16(
+          IDS_PRINT_JOB_OUT_OF_PAPER_NOTIFICATION_TITLE,
+          base::UTF8ToUTF16(print_job->document_title()));
+    case CupsPrintJob::ErrorCode::DOOR_OPEN:
+      return l10n_util::GetStringFUTF16(
+          IDS_PRINT_JOB_DOOR_OPEN_NOTIFICATION_TITLE,
+          base::UTF8ToUTF16(print_job->document_title()));
+    default:
+      return l10n_util::GetStringFUTF16(
+          IDS_PRINT_JOB_ERROR_NOTIFICATION_TITLE,
+          base::UTF8ToUTF16(print_job->document_title()));
+  }
+}
+
 }  // namespace
 
 CupsPrintJobNotification::CupsPrintJobNotification(
@@ -182,6 +210,9 @@ void CupsPrintJobNotification::UpdateNotificationTitle() {
           IDS_PRINT_JOB_ERROR_NOTIFICATION_TITLE,
           base::UTF8ToUTF16(print_job_->document_title()));
       break;
+    case CupsPrintJob::State::STATE_ERROR:
+      title = GetNotificationTitleForError(print_job_);
+      break;
     default:
       break;
   }
@@ -206,6 +237,7 @@ void CupsPrintJobNotification::UpdateNotificationIcon() {
       break;
     case CupsPrintJob::State::STATE_CANCELLED:
     case CupsPrintJob::State::STATE_FAILED:
+    case CupsPrintJob::State::STATE_ERROR:
       notification_->set_accent_color(ash::kSystemNotificationColorWarning);
       notification_->set_vector_small_image(kNotificationPrintingWarningIcon);
       break;
@@ -240,6 +272,7 @@ void CupsPrintJobNotification::UpdateNotificationType() {
     case CupsPrintJob::State::STATE_PAGE_DONE:
     case CupsPrintJob::State::STATE_SUSPENDED:
     case CupsPrintJob::State::STATE_RESUMED:
+    case CupsPrintJob::State::STATE_ERROR:
       notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
       notification_->set_progress(print_job_->printed_page_number() * 100 /
                                   print_job_->total_page_number());
@@ -276,6 +309,7 @@ CupsPrintJobNotification::GetButtonCommands() const {
     case CupsPrintJob::State::STATE_PAGE_DONE:
     case CupsPrintJob::State::STATE_RESUMED:
     case CupsPrintJob::State::STATE_SUSPENDED:
+    case CupsPrintJob::State::STATE_ERROR:
       commands.push_back(ButtonCommand::CANCEL_PRINTING);
       break;
     case CupsPrintJob::State::STATE_FAILED:

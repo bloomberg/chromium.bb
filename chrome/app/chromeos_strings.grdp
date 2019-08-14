@@ -3189,13 +3189,25 @@
     Print
   </message>
   <message name="IDS_PRINT_JOB_PRINTING_NOTIFICATION_TITLE" desc="Title of the printing-in-progress notification.">
-    Now printing <ph name="DOCUMENT_NAME">$1<ex>document.pdf</ex></ph>
+    Printing
   </message>
   <message name="IDS_PRINT_JOB_DONE_NOTIFICATION_TITLE" desc="Title of the successful printing notification.">
-    Successfully printed <ph name="DOCUMENT_NAME">$1<ex>document.pdf</ex></ph>
+    Printing complete
   </message>
   <message name="IDS_PRINT_JOB_ERROR_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
-    Error printing <ph name="DOCUMENT_NAME">$1<ex>document.pdf</ex></ph>
+    Couldn't print. Check printer and try again.
+  </message>
+  <message name="IDS_PRINT_JOB_PAPER_JAM_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Paper is jammed
+  </message>
+  <message name="IDS_PRINT_JOB_OUT_OF_INK_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Out of ink
+  </message>
+  <message name="IDS_PRINT_JOB_OUT_OF_PAPER_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Out of paper
+  </message>
+  <message name="IDS_PRINT_JOB_DOOR_OPEN_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Printer door open
   </message>
   <message name="IDS_PRINT_JOB_NOTIFICATION_MESSAGE" desc="Message of the print job notification.">
     <ph name="PAGE_NUMBER">$1<ex>5</ex></ph> pages to <ph name="PRINTER_NAME">$2<ex>printer</ex></ph>
