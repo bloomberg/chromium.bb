@@ -228,7 +228,8 @@ class BuildConfigGenerator extends DefaultTask {
     private static void addSpecialTreatment(StringBuilder sb, String dependencyId) {
         if (isPlayServicesTarget(dependencyId)) {
             if (Pattern.matches(".*cast_framework.*", dependencyId)) {
-                sb.append('  # Cannot get rid of cast framework resources: crbug.com/985139.\n')
+                sb.append('  # Removing all resources from cast framework as they are unused bloat.\n')
+                sb.append('  strip_resources = true\n')
             } else {
                 sb.append('  # Removing drawables from GMS .aars as they are unused bloat.\n')
                 sb.append('  strip_drawables = true\n')
