@@ -40,11 +40,12 @@ class IndexWriter {
                        const blink::IndexedDBKey& primary_key,
                        base::string16* error_message) const WARN_UNUSED_RESULT;
 
-  void WriteIndexKeys(const IndexedDBBackingStore::RecordIdentifier& record,
-                      IndexedDBBackingStore* store,
-                      IndexedDBBackingStore::Transaction* transaction,
-                      int64_t database_id,
-                      int64_t object_store_id) const;
+  leveldb::Status WriteIndexKeys(
+      const IndexedDBBackingStore::RecordIdentifier& record,
+      IndexedDBBackingStore* store,
+      IndexedDBBackingStore::Transaction* transaction,
+      int64_t database_id,
+      int64_t object_store_id) const;
 
   ~IndexWriter();
 

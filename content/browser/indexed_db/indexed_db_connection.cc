@@ -152,7 +152,10 @@ void IndexedDBConnection::FinishAllTransactions(
       IDB_TRACE1("IndexedDBDatabase::Commit", "transaction.id",
                  transaction->id());
       transaction->ForcePendingCommit();
-    } else {
+    }
+    // If a transaction has blobs, then it can still pending after the call to
+    // ForcePendingCommit while it waits on blobs to be written or deleted.
+    if (transaction->state() != IndexedDBTransaction::FINISHED) {
       IDB_TRACE1("IndexedDBDatabase::Abort(error)", "transaction.id",
                  transaction->id());
       transaction->Abort(error);

@@ -200,7 +200,6 @@ void IndexedDBTransaction::ForcePendingCommit() {
 
 void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   DCHECK(!processing_event_queue_);
-  DCHECK(!is_commit_pending_);
 
   if (state_ == FINISHED)
     return;
