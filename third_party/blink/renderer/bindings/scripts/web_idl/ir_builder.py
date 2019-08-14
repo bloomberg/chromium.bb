@@ -263,9 +263,14 @@ class _IRBuilder(object):
             debug_info=self._build_debug_info(node))
 
     def _build_enumeration(self, node):
+        child_nodes = list(node.GetChildren())
+        extended_attributes = self._take_extended_attributes(child_nodes)
+        assert all(child.GetClass() == 'EnumItem' for child in child_nodes)
+        values = [child.GetName() for child in child_nodes]
         return Enumeration.IR(
             identifier=Identifier(node.GetName()),
-            values=[child.GetName() for child in node.GetChildren()],
+            values=values,
+            extended_attributes=extended_attributes,
             component=self._component,
             debug_info=self._build_debug_info(node))
 
