@@ -2676,12 +2676,12 @@ INSTANTIATE_TEST_SUITE_P(NonOverlay,
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Not able to paint non-overlay scrollbars through ThemeEngine on Android or
 // Mac.
-#define MAYBE_ThemeEngineScrollbarThumb DISABLED_ThemeEngineScrollbarThumb
+#define MAYBE_ThemeEnginePaint DISABLED_ThemeEnginePaint
 #else
-#define MAYBE_ThemeEngineScrollbarThumb ThemeEngineScrollbarThumb
+#define MAYBE_ThemeEnginePaint ThemeEnginePaint
 #endif
 
-TEST_P(ScrollbarColorSchemeTest, MAYBE_ThemeEngineScrollbarThumb) {
+TEST_P(ScrollbarColorSchemeTest, MAYBE_ThemeEnginePaint) {
   ScopedTestingPlatformSupport<ScrollbarTestingPlatformSupport> platform;
   ScopedCSSColorSchemeForTest css_feature_scope(true);
 
@@ -2720,6 +2720,8 @@ TEST_P(ScrollbarColorSchemeTest, MAYBE_ThemeEngineScrollbarThumb) {
   EXPECT_EQ(WebColorScheme::kDark,
             theme_engine->GetPaintedPartColorScheme(
                 WebThemeEngine::kPartScrollbarVerticalThumb));
+  EXPECT_EQ(WebColorScheme::kDark, theme_engine->GetPaintedPartColorScheme(
+                                       WebThemeEngine::kPartScrollbarCorner));
 }
 
 }  // namespace
