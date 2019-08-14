@@ -92,6 +92,7 @@ class CPVToPackageInfoTest(cros_test_lib.TestCase):
   """CPVToPackageInfo tests."""
 
   def testAllFields(self):
+    """Test handling when all fields present."""
     pi = common_pb2.PackageInfo()
     cpv = portage_util.SplitCPV('cat/pkg-2.0.0', strict=False)
 
@@ -101,6 +102,7 @@ class CPVToPackageInfoTest(cros_test_lib.TestCase):
     self.assertEqual('2.0.0', pi.version)
 
   def testNoVersion(self):
+    """Test handling when no version given."""
     pi = common_pb2.PackageInfo()
     cpv = portage_util.SplitCPV('cat/pkg', strict=False)
 
@@ -110,6 +112,7 @@ class CPVToPackageInfoTest(cros_test_lib.TestCase):
     self.assertEqual('', pi.version)
 
   def testPackageOnly(self):
+    """Test handling when only given the package name."""
     pi = common_pb2.PackageInfo()
     cpv = portage_util.SplitCPV('pkg', strict=False)
 

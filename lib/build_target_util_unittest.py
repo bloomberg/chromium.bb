@@ -42,5 +42,6 @@ class BuildTargetTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(self.sysroot, target.root)
 
   def testDefaultRoot(self):
+    """Test the default sysroot path."""
     target = BuildTarget('board')
     self.assertEqual('/build/board', target.root)

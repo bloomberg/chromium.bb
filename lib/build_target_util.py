@@ -58,6 +58,7 @@ class BuildTarget(object):
   def name(self):
     return self._name
 
+
 def GetDefaultSysrootPath(target_name):
   if target_name:
     return os.path.join('/build', target_name)
