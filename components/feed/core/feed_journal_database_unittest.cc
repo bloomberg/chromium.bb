@@ -64,8 +64,7 @@ class FeedJournalDatabaseTest : public testing::Test {
         std::make_unique<FakeDB<JournalStorageProto>>(&journal_db_storage_);
 
     task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE});
+        {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 
     journal_db_ = storage_db.get();
     feed_db_ = std::make_unique<FeedJournalDatabase>(std::move(storage_db),

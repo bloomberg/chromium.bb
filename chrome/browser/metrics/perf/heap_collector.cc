@@ -418,7 +418,7 @@ void HeapCollector::ParseAndSaveProfile(
   auto task_runner = base::SequencedTaskRunnerHandle::Get();
   base::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&HeapCollector::ParseProfileOnThreadPool, task_runner,
                      weak_factory_.GetWeakPtr(), std::move(parser),

@@ -98,7 +98,7 @@ class BrowserWithTestWindowTest : public testing::Test {
                     args)...),
             base::trait_helpers::GetEnum<Browser::Type, Browser::TYPE_TABBED>(
                 args...),
-            base::trait_helpers::HasTrait<HostedApp, ArgTypes...>()) {}
+            base::trait_helpers::HasTrait<HostedApp>(args...)) {}
 
   ~BrowserWithTestWindowTest() override;
 

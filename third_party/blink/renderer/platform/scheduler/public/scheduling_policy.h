@@ -36,11 +36,11 @@ struct PLATFORM_EXPORT SchedulingPolicy {
                                                     ArgTypes...>::value>>
   constexpr SchedulingPolicy(ArgTypes... args)
       : disable_aggressive_throttling(
-            base::trait_helpers::HasTrait<DisableAggressiveThrottling,
-                                          ArgTypes...>()),
+            base::trait_helpers::HasTrait<DisableAggressiveThrottling>(
+                args...)),
         disable_back_forward_cache(
-            base::trait_helpers::HasTrait<RecordMetricsForBackForwardCache,
-                                          ArgTypes...>()) {}
+            base::trait_helpers::HasTrait<RecordMetricsForBackForwardCache>(
+                args...)) {}
 
   SchedulingPolicy() {}
 

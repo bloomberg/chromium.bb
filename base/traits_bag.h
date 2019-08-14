@@ -47,8 +47,7 @@
 //                 trait_helpers::AreValidTraits<ValidTraits,
 //                                               ArgTypes...>::value>>
 //   constexpr void DoSomethingAwesome(ArgTypes... args)
-//      : enable_feature_x(
-//            trait_helpers::HasTrait<EnableFeatureX, ArgTypes...>()),
+//      : enable_feature_x(trait_helpers::HasTrait<EnableFeatureX>(args...)),
 //        color(trait_helpers::GetEnum<Color, EnumTraitA::BLUE>(args...)) {}
 
 namespace base {
@@ -247,7 +246,7 @@ static constexpr Optional<Enum> GetOptionalEnum(Args... args) {
 
 // Helper to make checking for the presence of a trait more readable.
 template <typename Trait, typename... Args>
-static constexpr bool HasTrait() {
+static constexpr bool HasTrait(Args... args) {
   static_assert(
       count({std::is_constructible<Trait, Args>::value...}, true) <= 1,
       "The traits bag contains multiple traits of the same type.");

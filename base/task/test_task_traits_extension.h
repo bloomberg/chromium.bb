@@ -34,8 +34,7 @@ class TestTaskTraitsExtension {
       : enum_trait_(
             trait_helpers::GetEnum<TestExtensionEnumTrait,
                                    TestExtensionEnumTrait::kA>(args...)),
-        bool_trait_(
-            trait_helpers::HasTrait<TestExtensionBoolTrait, ArgTypes...>()) {}
+        bool_trait_(trait_helpers::HasTrait<TestExtensionBoolTrait>(args...)) {}
 
   constexpr TaskTraitsExtensionStorage Serialize() const {
     return {kExtensionId, {{static_cast<uint8_t>(enum_trait_), bool_trait_}}};
