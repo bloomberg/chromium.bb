@@ -140,6 +140,8 @@ static INLINE void update_keyframe_counters(AV1_COMP *cpi) {
 }
 
 static INLINE int is_frame_droppable(const AV1_COMP *const cpi) {
+  // Droppable frame is only used by external refresh flags. VoD setting won't
+  // trigger its use case.
   if (cpi->svc.external_ref_frame_config)
     return cpi->svc.non_reference_frame;
   else if (cpi->ext_refresh_frame_flags_pending)
@@ -148,8 +150,7 @@ static INLINE int is_frame_droppable(const AV1_COMP *const cpi) {
              cpi->ext_refresh_bwd_ref_frame || cpi->ext_refresh_golden_frame ||
              cpi->ext_refresh_last_frame);
   else
-    return !(cpi->refresh_alt_ref_frame || cpi->refresh_bwd_ref_frame ||
-             cpi->refresh_golden_frame || cpi->refresh_last_frame);
+    return 0;
 }
 
 static INLINE void update_frames_till_gf_update(AV1_COMP *cpi) {
