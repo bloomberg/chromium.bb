@@ -398,6 +398,11 @@
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 80
   },
+  {
+    "name": "click-to-call-open-dialer-directly",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 81
+  },
 	{
     "name": "click-to-call-receiver",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],

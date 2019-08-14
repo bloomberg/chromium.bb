@@ -3652,6 +3652,11 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
+    {"click-to-call-open-dialer-directly",
+     flag_descriptions::kClickToCallOpenDialerDirectlyName,
+     flag_descriptions::kClickToCallOpenDialerDirectlyDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kClickToCallOpenDialerDirectly)},
+
     {"click-to-call-receiver", flag_descriptions::kClickToCallReceiverName,
      flag_descriptions::kClickToCallReceiverDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(kClickToCallReceiver)},

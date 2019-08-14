@@ -2255,6 +2255,12 @@ const char kClearOldBrowsingDataDescription[] =
     "Enables clearing of browsing data which is older than a given time "
     "period.";
 
+const char kClickToCallOpenDialerDirectlyName[] =
+    "Open the dialer directly for Click to Call";
+const char kClickToCallOpenDialerDirectlyDescription[] =
+    "Enables opening the dialer directly instead of displaying a notification. "
+    "Only available on Android P- and when the screen is on and unlocked.";
+
 const char kClickToCallReceiverName[] =
     "Enable receiver device to handle click to call feature";
 const char kClickToCallReceiverDescription[] =
