@@ -1,24 +1,28 @@
-<!doctype HTML>
+<!doctype html>
 <html class="reftest-wait">
 <meta charset="utf8">
-<title>Display Locking: acquire, then add containment</title>
+<title>Display Locking: acquire, containment got overridden</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="acquire-on-added-containment-ref.html">
+<link rel="match" href="pass-containment-style-layout-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 #container {
   width: 150px;
   height: 150px;
+  background: lightblue;
 }
-.contained {
-  contain: style layout;
+#child {
+  width: 50px;
+  height: 50px;
+  background: lightgreen;
 }
 </style>
 
 <div id="log"></div>
-<div id="container">foo</div>
+<div id="container" style="contain: style layout;"><div id="child"></div></div>
 
 <script>
 function finishTest(status_string) {
@@ -29,10 +33,8 @@ function finishTest(status_string) {
 
 function runTest() {
   const container = document.getElementById("container");
-  container.displayLock.acquire({ timeout: Infinity }).then(
-    () => { finishTest("PASS"); },
-    (e) => { finishTest("FAIL " + e.message); });
-  container.classList = "contained";
+  setInvisible(container).then(
+    () => { finishTest("PASS, contain: " + getComputedStyle(container).contain ); });
 }
 
 window.onload = runTest;
