@@ -155,17 +155,8 @@ void CrostiniExportImportNotification::SetStatusCancelled() {
 
   status_ = Status::CANCELLED;
 
-  notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
-  notification_->set_accent_color(ash::kSystemNotificationColorNormal);
-  notification_->set_title(l10n_util::GetStringUTF16(
-      type_ == ExportImportType::EXPORT
-          ? IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_CANCELLED
-          : IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_CANCELLED));
-  notification_->set_message({});
-  notification_->set_buttons({});
-  notification_->set_never_timeout(false);
-
-  ForceRedisplay();
+  NotificationDisplayService::GetForProfile(profile_)->Close(
+      NotificationHandler::Type::TRANSIENT, notification_->id());
 }
 
 void CrostiniExportImportNotification::SetStatusFailed() {
