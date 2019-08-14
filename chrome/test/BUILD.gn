@@ -45,10 +45,6 @@ if (is_android) {
   include_js_tests = !(is_asan || is_msan || is_tsan)
 }
 
-if (is_chromeos) {
-  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
-}
-
 # This target exists to reference other test executables to bring these files
 # into the build.
 group("test") {
