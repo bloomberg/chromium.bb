@@ -678,11 +678,6 @@ const char kDragToPinTabsDescription[] =
     "Allows users to drag tabs between pinned and unpinned tabs to modify the "
     "pinned state of the tab.";
 
-const char kEnableBlinkGenPropertyTreesName[] = "Enable BlinkGenPropertyTrees";
-const char kEnableBlinkGenPropertyTreesDescription[] =
-    "Enable a new compositing mode where Blink generates the compositor "
-    "property trees.";
-
 const char kEnableCSSBackdropFilterName[] = "Enable backdrop-filter";
 const char kEnableCSSBackdropFilterDescription[] =
     "Enable a new CSS property called backdrop-filter.";

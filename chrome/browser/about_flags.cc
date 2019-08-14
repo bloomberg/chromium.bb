@@ -3232,11 +3232,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBuiltInModuleAllDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBuiltInModuleAll)},
 
-    {"enable-blink-gen-property-trees",
-     flag_descriptions::kEnableBlinkGenPropertyTreesName,
-     flag_descriptions::kEnableBlinkGenPropertyTreesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kBlinkGenPropertyTrees)},
-
     {"enable-backdrop-filter", flag_descriptions::kEnableCSSBackdropFilterName,
      flag_descriptions::kEnableCSSBackdropFilterDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kCSSBackdropFilter)},

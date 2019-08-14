@@ -962,11 +962,6 @@
     "expiry_milestone": 86
   },
   {
-    "name": "enable-blink-gen-property-trees",
-    "owners": [ "paint-dev@chromium.org" ],
-    "expiry_milestone": 74
-  },
-  {
     "name": "enable-bookmark-reorder",
     "owners": ["jhimawan@google.com", "twellington" ],
     "expiry_milestone": 80

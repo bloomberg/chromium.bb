@@ -235,11 +235,6 @@ void SetIndividualRuntimeFeatures(
     WebRuntimeFeatures::EnableScrollAnchorSerialization(true);
 
   WebRuntimeFeatures::EnableFeatureFromString(
-      "BlinkGenPropertyTrees",
-      base::FeatureList::IsEnabled(blink::features::kBlinkGenPropertyTrees) ||
-          enable_experimental_web_platform_features);
-
-  WebRuntimeFeatures::EnableFeatureFromString(
       "CSSBackdropFilter",
       base::FeatureList::IsEnabled(blink::features::kCSSBackdropFilter) ||
           enable_experimental_web_platform_features);
