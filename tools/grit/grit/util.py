@@ -253,16 +253,16 @@ def UnescapeHtml(text, replace_nbsp=True):
   def Replace(match):
     groups = match.groupdict()
     if groups['hex']:
-      return unichr(int(groups['hex'], 16))
+      return six.unichr(int(groups['hex'], 16))
     elif groups['decimal']:
-      return unichr(int(groups['decimal'], 10))
+      return six.unichr(int(groups['decimal'], 10))
     else:
       name = groups['named']
       if name == 'nbsp' and not replace_nbsp:
         return match.group()  # Don't replace &nbsp;
       assert name != None
       if name in entities.name2codepoint.keys():
-        return unichr(entities.name2codepoint[name])
+        return six.unichr(entities.name2codepoint[name])
       else:
         return match.group()  # Unknown HTML character entity - don't replace
 
