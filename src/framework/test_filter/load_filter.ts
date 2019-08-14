@@ -32,7 +32,7 @@ export async function loadFilter(
   const i3sub = filter.substring(i2 + 1).search(endOfTestName);
   if (i3sub === -1) {
     // - cts:buffers/mapWriteAsync:
-    // - cts:buffers/mapWriteAsync:ba
+    // - cts:buffers/mapWriteAsync:b
     const testPrefix = filter.substring(i2 + 1);
     return new FilterByTestMatch({ suite, path }, testPrefix).iterate(loader);
   }
