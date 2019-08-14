@@ -183,6 +183,7 @@ dist_yaml_TESTS =				\
 	yaml/emphasis-no-context.yaml		\
 	yaml/example_test.yaml			\
 	yaml/foo.yaml				\
+	yaml/hyphenation.yaml			\
 	yaml/hyphenation_nocross_harness.yaml	\
 	yaml/inpos_outpos.yaml			\
 	yaml/input-length.yaml			\

@@ -1359,7 +1359,7 @@ lou_translatePrehyphenated(const char *tableList, const widechar *inbufx, int *i
 }
 
 static int
-hyphenate(const widechar *word, int wordSize, char *hyphens,
+hyphenateWord(const widechar *word, int wordSize, char *hyphens,
 		const TranslationTableHeader *table) {
 	widechar *prepWord;
 	int i, k, limit;
@@ -1486,7 +1486,7 @@ syllableBreak(const TranslationTableHeader *table, int pos, const InString *inpu
 	 * example: "hello" wordstart=0, wordEnd=4. */
 	wordSize = wordEnd - wordStart + 1;
 	hyphens = (char *)calloc(wordSize + 1, sizeof(char));
-	if (!hyphenate(&input->chars[wordStart], wordSize, hyphens, table)) {
+	if (!hyphenateWord(&input->chars[wordStart], wordSize, hyphens, table)) {
 		free(hyphens);
 		return 0;
 	}
@@ -3680,71 +3680,113 @@ failure:
 	return 1;
 } /* first pass translation completed */
 
+static int
+isHyphen(const TranslationTableHeader *table, widechar c) {
+	TranslationTableRule *rule;
+	TranslationTableOffset offset = findCharOrDots(c, 0, table)->otherRules;
+	while (offset) {
+		rule = (TranslationTableRule *)&table->ruleArea[offset];
+		if (rule->opcode == CTO_Hyphen) return 1;
+		offset = rule->dotsnext;
+	}
+	return 0;
+}
+
+/**
+ * Hyphenate an input string which can either be text (mode = 0) or braille (mode = 1). If
+ * the input is braille, back-translation will be performed with `tableList'. The input
+ * string can contain any character (even space), but only break points within words
+ * (between letters) are considered. If the string can not be broken before the character
+ * at index k, the value of `hyphens[k]' is '0'. If it can be broken by inserting a hyphen
+ * at the break point, the value is '1'. If it can be broken without adding a hyphen, the
+ * value is '2'.
+ */
 int EXPORT_CALL
 lou_hyphenate(const char *tableList, const widechar *inbuf, int inlen, char *hyphens,
 		int mode) {
 #define HYPHSTRING 100
 	const TranslationTableHeader *table;
-	widechar workingBuffer[HYPHSTRING];
-	int k, kk;
+	widechar textBuffer[HYPHSTRING];
+	char *textHyphens;
+	int *inputPos;
+	int k;
+	int textLen;
 	int wordStart;
-	int wordEnd;
 	table = lou_getTable(tableList);
 	if (table == NULL || inbuf == NULL || hyphens == NULL ||
 			table->hyphenStatesArray == 0 || inlen >= HYPHSTRING)
 		return 0;
 	if (mode != 0) {
-		k = inlen;
-		kk = HYPHSTRING;
-		if (!lou_backTranslate(tableList, inbuf, &k, &workingBuffer[0], &kk, NULL, NULL,
-					NULL, NULL, NULL, 0))
+		int brailleLen = inlen;
+		textLen = HYPHSTRING;
+		inputPos = malloc(textLen * sizeof(int));
+		if (!lou_backTranslate(tableList, inbuf, &brailleLen, textBuffer, &textLen, NULL,
+					NULL, NULL, inputPos, NULL, 0)) {
+			free(inputPos);
 			return 0;
-	} else {
-		memcpy(&workingBuffer[0], inbuf, CHARSIZE * inlen);
-		kk = inlen;
-	}
-	for (wordStart = 0; wordStart < kk; wordStart++)
-		if (((findCharOrDots(workingBuffer[wordStart], 0, table))->attributes &
-					CTC_Letter))
-			break;
-	if (wordStart == kk) return 0;
-	for (wordEnd = kk - 1; wordEnd >= 0; wordEnd--)
-		if (((findCharOrDots(workingBuffer[wordEnd], 0, table))->attributes & CTC_Letter))
-			break;
-	for (k = wordStart; k <= wordEnd; k++) {
-		TranslationTableCharacter *c = findCharOrDots(workingBuffer[k], 0, table);
-		if (!(c->attributes & CTC_Letter)) return 0;
-	}
-	if (!hyphenate(&workingBuffer[wordStart], wordEnd - wordStart + 1,
-				&hyphens[wordStart], table))
-		return 0;
-	for (k = 0; k <= wordStart; k++) hyphens[k] = '0';
-	if (mode != 0) {
-		widechar workingBuffer2[HYPHSTRING];
-		int outputPos[HYPHSTRING];
-		char hyphens2[HYPHSTRING];
-		kk = wordEnd - wordStart + 1;
-		k = HYPHSTRING;
-		if (!lou_translate(tableList, &workingBuffer[wordStart], &kk, &workingBuffer2[0],
-					&k, NULL, NULL, &outputPos[0], NULL, NULL, 0))
-			return 0;
-		for (kk = 0; kk < k; kk++) {
-			int hyphPos = outputPos[kk];
-			if (hyphPos > k || hyphPos < 0) break;
-			if (hyphens[wordStart + kk] & 1)
-				hyphens2[hyphPos] = '1';
-			else
-				hyphens2[hyphPos] = '0';
 		}
-		for (kk = wordStart; kk < wordStart + k; kk++)
-			if (hyphens2[kk] == '0') hyphens[kk] = hyphens2[kk];
+		textHyphens = malloc((textLen + 1) * sizeof(char));
+	} else {
+		memcpy(textBuffer, inbuf, CHARSIZE * inlen);
+		textLen = inlen;
+		textHyphens = hyphens;
 	}
-	for (k = 0; k < inlen; k++)
-		if (hyphens[k] & 1)
-			hyphens[k] = '1';
+
+	// initialize hyphens array
+	for (k = 0; k < textLen; k++) textHyphens[k] = '0';
+	textHyphens[k] = 0;
+
+	// for every word part
+	for (wordStart = 0;;) {
+		int wordEnd;
+		// find start of word
+		for (; wordStart < textLen; wordStart++)
+			if ((findCharOrDots(textBuffer[wordStart], 0, table))->attributes &
+					CTC_Letter)
+				break;
+		if (wordStart == textLen) break;
+		// find end of word
+		for (wordEnd = wordStart + 1; wordEnd < textLen; wordEnd++)
+			if (!((findCharOrDots(textBuffer[wordEnd], 0, table))->attributes &
+						CTC_Letter))
+				break;
+		// hyphenate
+		if (!hyphenateWord(&textBuffer[wordStart], wordEnd - wordStart,
+					&textHyphens[wordStart], table))
+			return 0;
+		// normalize to '0', '1' or '2'
+		if (wordStart >= 2 && isHyphen(table, textBuffer[wordStart - 1]) &&
+				((findCharOrDots(textBuffer[wordStart - 2], 0, table))->attributes &
+						CTC_Letter))
+			textHyphens[wordStart] = '2';
 		else
-			hyphens[k] = '0';
-	hyphens[inlen] = 0;
+			textHyphens[wordStart] = '0';
+		for (k = wordStart + 1; k < wordEnd; k++)
+			if (textHyphens[k] & 1)
+				textHyphens[k] = '1';
+			else
+				textHyphens[k] = '0';
+		if (wordEnd == textLen) break;
+		textHyphens[wordEnd] = '0';  // because hyphenateWord sets it to 0
+		wordStart = wordEnd + 1;
+	}
+
+	// map hyphen positions if the input was braille
+	if (mode != 0) {
+		for (k = 0; k < inlen; k++) hyphens[k] = '0';
+		hyphens[k] = 0;
+		int prevPos = -1;
+		for (k = 0; k < textLen; k++) {
+			int braillePos = inputPos[k];
+			if (braillePos > inlen || braillePos < 0) break;
+			if (braillePos > prevPos) {
+				hyphens[braillePos] = textHyphens[k];
+				prevPos = braillePos;
+			}
+		}
+		free(textHyphens);
+		free(inputPos);
+	}
 	return 1;
 }
 
