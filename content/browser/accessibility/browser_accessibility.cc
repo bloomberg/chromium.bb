@@ -41,6 +41,35 @@ BrowserAccessibility::~BrowserAccessibility() {}
 
 namespace {
 
+const BrowserAccessibility* GetTextContainerForPlainTextField(
+    const BrowserAccessibility& text_field) {
+  DCHECK(text_field.IsPlainTextField());
+  DCHECK(text_field.InternalChildCount() == 1);
+  // Text fields wrap their static text and inline text boxes in generic
+  // containers, and some, like input type=search, wrap the wrapper as well.
+  // Structure is like this:
+  // Text field
+  // -- Generic container
+  // ---- Generic container  (optional, only occurs in some controls)
+  // ------ Static text   <-- (optional, does not exist if field is empty)
+  // -------- Inline text box children (can be multiple)
+  // This method will return the lowest generic container.
+  const BrowserAccessibility* child = text_field.InternalGetFirstChild();
+  DCHECK_EQ(child->GetRole(), ax::mojom::Role::kGenericContainer);
+  DCHECK(child->InternalChildCount() <= 1);
+  if (child->InternalChildCount() == 1) {
+    const BrowserAccessibility* grand_child = child->InternalGetFirstChild();
+    if (grand_child->GetRole() == ax::mojom::Role::kGenericContainer) {
+      DCHECK_EQ(grand_child->InternalGetFirstChild()->GetRole(),
+                ax::mojom::Role::kStaticText);
+      return grand_child;
+    }
+    DCHECK_EQ(child->InternalGetFirstChild()->GetRole(),
+              ax::mojom::Role::kStaticText);
+  }
+  return child;
+}
+
 int GetBoundaryTextOffsetInsideBaseAnchor(
     ui::AXTextBoundaryDirection direction,
     const BrowserAccessibilityPosition::AXPositionInstance& base,
@@ -551,8 +580,9 @@ gfx::Rect BrowserAccessibility::GetRootFrameHypertextRangeBoundsRect(
   // holds all the text.
   // TODO(nektar): This is fragile! Replace with code that flattens tree.
   if (IsPlainTextField() && InternalChildCount() == 1) {
-    return InternalGetFirstChild()->GetRootFrameHypertextRangeBoundsRect(
-        start, len, clipping_behavior, offscreen_result);
+    return GetTextContainerForPlainTextField(*this)
+        ->GetRootFrameHypertextRangeBoundsRect(start, len, clipping_behavior,
+                                               offscreen_result);
   }
 
   if (GetRole() != ax::mojom::Role::kStaticText) {
@@ -729,9 +759,8 @@ gfx::Rect BrowserAccessibility::GetInnerTextRangeBoundsRectInSubtree(
         coordinate_system, clipping_behavior, offscreen_result);
   }
 
-  const uint32_t internal_child_count = InternalChildCount();
-  if (IsPlainTextField() && internal_child_count == 1) {
-    return InternalGetFirstChild()->RelativeToAbsoluteBounds(
+  if (IsPlainTextField() && InternalChildCount() == 1) {
+    return GetTextContainerForPlainTextField(*this)->RelativeToAbsoluteBounds(
         GetInlineTextRect(start_offset, end_offset, GetInnerText().length()),
         coordinate_system, clipping_behavior, offscreen_result);
   }

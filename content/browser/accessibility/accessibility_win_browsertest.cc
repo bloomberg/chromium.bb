@@ -67,6 +67,8 @@ class AccessibilityWinBrowserTest : public AccessibilityBrowserTest {
   void SetUpInputField(Microsoft::WRL::ComPtr<IAccessibleText>* input_text);
   void SetUpScrollableInputField(
       Microsoft::WRL::ComPtr<IAccessibleText>* input_text);
+  void SetUpScrollableInputTypeSearchField(
+      Microsoft::WRL::ComPtr<IAccessibleText>* input_text);
   void SetUpSingleCharInputField(
       Microsoft::WRL::ComPtr<IAccessibleText>* input_text);
   void SetUpSingleCharInputFieldWithPlaceholder(
@@ -167,6 +169,24 @@ void AccessibilityWinBrowserTest::SetUpScrollableInputField(
           <html>
           <body>
             <input type="text" style="width: 150px;" value=")HTML") +
+      net::EscapeForHTML(InputContentsString()) + std::string(R"HTML(">
+          </body>
+          </html>)HTML"));
+
+  SetUpInputFieldHelper(input_text);
+}
+
+// Loads a page with  an input text field and places sample text in it that
+// overflows its width. Also, places the caret before the last character.
+void AccessibilityWinBrowserTest::SetUpScrollableInputTypeSearchField(
+    Microsoft::WRL::ComPtr<IAccessibleText>* input_text) {
+  ASSERT_NE(nullptr, input_text);
+  LoadInitialAccessibilityTreeFromHtml(
+      std::string(
+          R"HTML(<!DOCTYPE html>
+          <html>
+          <body>
+            <input type="search" style="width: 150px;" value=")HTML") +
       net::EscapeForHTML(InputContentsString()) + std::string(R"HTML(">
           </body>
           </html>)HTML"));
@@ -1857,6 +1877,82 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
     EXPECT_EQ(prev_y, y);
     EXPECT_EQ(7, width);
     EXPECT_EQ(prev_height, height);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestCharacterExtentsInScrollableInputTypeSearchField) {
+  Microsoft::WRL::ComPtr<IAccessibleText> input_text;
+  SetUpScrollableInputTypeSearchField(&input_text);
+
+  int contents_string_length = int{InputContentsString().size()};
+  constexpr LONG visible_characters_start = 21;
+  LONG n_characters;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_nCharacters(&n_characters));
+  ASSERT_EQ(contents_string_length, n_characters);
+  LONG caret_offset;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_caretOffset(&caret_offset));
+  ASSERT_EQ(contents_string_length - 1, caret_offset);
+
+  LONG x, y, width, height;
+  LONG previous_x, previous_y, previous_height;
+  for (int coordinate = IA2_COORDTYPE_SCREEN_RELATIVE;
+       coordinate <= IA2_COORDTYPE_PARENT_RELATIVE; ++coordinate) {
+    auto coordinate_type = static_cast<IA2CoordinateType>(coordinate);
+
+    EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
+        0, coordinate_type, &x, &y, &width, &height));
+    EXPECT_GT(0, x + width) << "at offset 0";
+    EXPECT_LT(0, y) << "at offset 0";
+    EXPECT_LT(1, width) << "at offset 0";
+    EXPECT_LT(1, height) << "at offset 0";
+
+    for (LONG offset = 1; offset < (visible_characters_start - 1); ++offset) {
+      previous_x = x;
+      previous_y = y;
+      previous_height = height;
+
+      EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
+          offset, coordinate_type, &x, &y, &width, &height));
+      EXPECT_LT(previous_x, x) << "at offset " << offset;
+      EXPECT_EQ(previous_y, y) << "at offset " << offset;
+      EXPECT_LT(1, width) << "at offset " << offset;
+      EXPECT_EQ(previous_height, height) << "at offset " << offset;
+    }
+
+    // Test that non offscreen characters have increasing x coordinates and a
+    // width that is greater than 1px.
+    EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
+        visible_characters_start, coordinate_type, &x, &y, &width, &height));
+    EXPECT_LT(previous_x, x) << "at offset " << visible_characters_start;
+    EXPECT_EQ(previous_y, y) << "at offset " << visible_characters_start;
+    EXPECT_LT(1, width) << "at offset " << visible_characters_start;
+    EXPECT_EQ(previous_height, height)
+        << "at offset " << visible_characters_start;
+
+    // Exclude the dot at the end of the text field, because it has a width of
+    // one anyway.
+    for (LONG offset = visible_characters_start + 1;
+         offset < (n_characters - 1); ++offset) {
+      previous_x = x;
+      previous_y = y;
+      previous_height = height;
+
+      EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
+          offset, coordinate_type, &x, &y, &width, &height));
+      EXPECT_LT(previous_x, x) << "at offset " << offset;
+      EXPECT_EQ(previous_y, y) << "at offset " << offset;
+      EXPECT_LT(1, width) << "at offset " << offset;
+      EXPECT_EQ(previous_height, height) << "at offset " << offset;
+    }
+    // Past end of text.
+    EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
+        n_characters, coordinate_type, &x, &y, &width, &height));
+    EXPECT_LT(previous_x, x) << "at final offset " << n_characters;
+    EXPECT_EQ(previous_y, y) << "at final offset " << n_characters;
+    // Last character width past end should be 1, the width of a caret.
+    EXPECT_EQ(1, width) << "at final offset " << n_characters;
+    EXPECT_EQ(previous_height, height) << "at final offset " << n_characters;
   }
 }
 
