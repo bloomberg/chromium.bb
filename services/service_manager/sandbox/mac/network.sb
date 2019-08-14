@@ -43,8 +43,8 @@
 ; Certificate databases.
 (allow file-read*
   (path "/Library/Preferences/com.apple.security.plist")
-  (path "/System/Library/Keychains/SystemTrustSettings.plist")
   (subpath "/Library/Keychains")
+  (subpath "/System/Library/Keychains")
   (subpath "/System/Library/Security")
   (subpath "/private/var/db/mds")
   (subpath (user-homedir-path "/Library/Keychains"))
