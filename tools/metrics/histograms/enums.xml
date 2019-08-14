@@ -35852,6 +35852,7 @@ from previous Chrome versions.
   <int value="181150000" label="CrosVmCupsProxy:enabled"/>
   <int value="183208826" label="TabGroups:enabled"/>
   <int value="185991204" label="enable-webrtc-srtp-encrypted-headers"/>
+  <int value="186463628" label="DnsOverHttps:disabled"/>
   <int value="188610022" label="NewMessageListView:enabled"/>
   <int value="189728101" label="FasterLocationReload:disabled"/>
   <int value="189777537" label="DisableInitialMostVisitedFadeIn:enabled"/>
@@ -37161,6 +37162,7 @@ from previous Chrome versions.
   <int value="2037756154" label="enable-impl-side-painting"/>
   <int value="2039276757" label="EnableOverviewRoundedCorners:enabled"/>
   <int value="2040316611" label="IPH_ReopenTab:enabled"/>
+  <int value="2043141918" label="DnsOverHttps:enabled"/>
   <int value="2043321329" label="OfflinePagesPrefetchingUI:disabled"/>
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
   <int value="2047981703" label="IntentPicker:enabled"/>

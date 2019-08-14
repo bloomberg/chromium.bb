@@ -684,6 +684,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "dns-over-https",
+    "owners": [ "dalyk", "doh-core@google.com" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "document-passive-event-listeners",
     "owners": [ "nzolghadr, input-dev" ],
     "expiry_milestone": 76

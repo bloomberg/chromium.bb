@@ -4360,6 +4360,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDecodeLossyWebPImagesToYUVName,
      flag_descriptions::kDecodeLossyWebPImagesToYUVDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kDecodeLossyWebPImagesToYUV)},
+
+    {"dns-over-https", flag_descriptions::kDnsOverHttpsName,
+     flag_descriptions::kDnsOverHttpsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kDnsOverHttps)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -4424,6 +4429,12 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
     return true;
   }
 #endif  // OS_WIN
+
+  // TODO(crbug.com/988078): Make the DoH entry visible for non-enterprise
+  // users.
+  if (!strcmp("dns-over-https", entry.internal_name)) {
+    return true;
+  }
 
   return false;
 }

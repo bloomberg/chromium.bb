@@ -102,6 +102,12 @@ const char kAutomaticPasswordGenerationDescription[] =
     "Allow Chrome to offer to generate passwords when it detects account "
     "creation pages.";
 
+const char kDnsOverHttpsName[] = "Secure DNS lookups";
+const char kDnsOverHttpsDescription[] =
+    "Enables DNS over HTTPS. When this feature is enabled, your browser may "
+    "try to use a secure HTTPS connection to look up the addresses of websites "
+    "and other web resources.";
+
 const char kDrawVerticallyEdgeToEdgeName[] =
     "Draw contents vertically from edge to edge.";
 const char kDrawVerticallyEdgeToEdgeDescription[] =
