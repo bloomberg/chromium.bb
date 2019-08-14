@@ -1478,11 +1478,19 @@ def GetOverlayEBuilds(overlay, use_all, packages, allow_blacklisted=False,
   return ebuilds
 
 
-def RegenCache(overlay):
+def RegenCache(overlay, commit_changes=True, chroot=None):
   """Regenerate the cache of the specified overlay.
 
   Args:
     overlay: The tree to regenerate the cache for.
+    commit_changes (bool): Whether to commit the changes.
+    chroot (chroot_lib.Chroot): Optionally specify a chroot to enter.
+
+  Returns:
+    str|None: The overlay when there are outstanding changes, or None when
+        there were no updates or all updates were committed. This is meant to
+        be a simple, parallel_lib friendly means of identifying which overlays
+        have been changed.
   """
   repo_name = GetOverlayName(overlay)
   if not repo_name:
@@ -1494,14 +1502,23 @@ def RegenCache(overlay):
   if layout.get('cache-format') != 'md5-dict':
     return
 
+  chroot_args = None
+  if chroot:
+    chroot_args = chroot.get_enter_args()
+
   # Regen for the whole repo.
   cros_build_lib.RunCommand(['egencache', '--update', '--repo', repo_name,
                              '--jobs', str(multiprocessing.cpu_count())],
-                            cwd=overlay, enter_chroot=True)
+                            cwd=overlay, enter_chroot=True,
+                            chroot_args=chroot_args)
   # If there was nothing new generated, then let's just bail.
   result = git.RunGit(overlay, ['status', '-s', 'metadata/'])
   if not result.output:
     return
+
+  if not commit_changes:
+    return overlay
+
   # Explicitly add any new files to the index.
   git.RunGit(overlay, ['add', 'metadata/'])
   # Explicitly tell git to also include rm-ed files.

@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import mock
+
 from chromite.api import api_config
 from chromite.api.controller import binhost
 from chromite.api.gen.chromite.api import binhost_pb2
@@ -121,7 +123,7 @@ class RegenBuildCacheTest(cros_test_lib.MockTestCase,
     input_proto.overlay_type = binhost_pb2.OVERLAYTYPE_BOTH
 
     binhost.RegenBuildCache(input_proto, self.response, self.api_config)
-    regen_cache.assert_called_once_with('both')
+    regen_cache.assert_called_once_with(mock.ANY, 'both')
 
   def testRequiresOverlayType(self):
     """RegenBuildCache dies if overlay_type not specified."""

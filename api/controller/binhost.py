@@ -146,15 +146,20 @@ def SetBinhost(input_proto, output_proto, _config):
 @validate.require('overlay_type')
 @validate.is_in('overlay_type', _OVERLAY_TYPE_TO_NAME)
 @validate.validation_complete
-def RegenBuildCache(input_proto, _output_proto, _config):
+def RegenBuildCache(input_proto, output_proto, _config):
   """Regenerate the Build Cache for a build target.
 
   See BinhostService documentation in api/proto/binhost.proto.
 
   Args:
     input_proto (RegenBuildCacheRequest): The input proto.
-    _output_proto (RegenBuildCacheResponse): The output proto.
+    output_proto (RegenBuildCacheResponse): The output proto.
     _config (api_config.ApiConfig): The API call config.
   """
+  chroot = controller_util.ParseChroot(input_proto.chroot)
   overlay_type = input_proto.overlay_type
-  binhost.RegenBuildCache(_OVERLAY_TYPE_TO_NAME[overlay_type])
+  overlays = binhost.RegenBuildCache(chroot,
+                                     _OVERLAY_TYPE_TO_NAME[overlay_type])
+
+  for overlay in overlays:
+    output_proto.modified_overlays.add().path = overlay

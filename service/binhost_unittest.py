@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import mock
 import os
 
 from chromite.lib import binpkg
@@ -244,6 +245,7 @@ CPV: package/prebuilt
         actual.packages,
         [{'CPV': 'package/prebuilt', 'PATH': 'target/package/prebuilt.tbz2'}])
 
+
 class RegenBuildCacheTest(cros_test_lib.MockTempDirTestCase):
   """Unittests for RegenBuildCache."""
 
@@ -256,6 +258,6 @@ class RegenBuildCacheTest(cros_test_lib.MockTempDirTestCase):
         portage_util, 'FindOverlays', return_value=overlays_found)
     run_tasks = self.PatchObject(parallel, 'RunTasksInProcessPool')
 
-    binhost.RegenBuildCache(None)
+    binhost.RegenBuildCache(chroot_lib.Chroot, None)
     find_overlays.assert_called_once_with(None)
-    run_tasks.assert_called_once_with(portage_util.RegenCache, [overlays_found])
+    run_tasks.assert_called_once_with(mock.ANY, [overlays_found])

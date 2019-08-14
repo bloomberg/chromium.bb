@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import functools
 import os
 
 from chromite.lib import binpkg
@@ -199,15 +200,25 @@ def SetBinhost(target, key, uri, private=True):
   return conf_path
 
 
-def RegenBuildCache(overlay_type):
+def RegenBuildCache(chroot, overlay_type):
   """Regenerate the Build Cache for the given target.
 
   Args:
+    chroot (chroot_lib): The chroot where the regen command will be run.
     overlay_type: one of "private", "public", or "both".
+
+  Returns:
+    list[str]: The overlays with updated caches.
   """
   overlays = portage_util.FindOverlays(overlay_type)
+
+  task = functools.partial(
+      portage_util.RegenCache, commit_changes=False, chroot=chroot)
   task_inputs = [[o] for o in overlays if os.path.isdir(o)]
-  parallel.RunTasksInProcessPool(portage_util.RegenCache, task_inputs)
+  results = parallel.RunTasksInProcessPool(task, task_inputs)
+
+  # Filter out all of the unchanged-overlay results.
+  return [overlay_dir for overlay_dir in results if overlay_dir]
 
 
 def GetPrebuiltAclArgs(build_target):
