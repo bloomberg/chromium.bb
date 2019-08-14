@@ -286,3 +286,8 @@ D. Local Modifications
     https://unicode-org.atlassian.net/browse/ICU-20660
   - upstream PR:
     https://github.com/unicode-org/icu/pull/682
+
+13. Allow ICUPKG to generating dat with missing dependencies.
+  - patches/icupkg.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20774
