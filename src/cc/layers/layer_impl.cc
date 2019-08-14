@@ -59,6 +59,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       may_contain_video_(false),
       masks_to_bounds_(false),
       contents_opaque_(false),
+      contents_opaque_for_lcd_text_(false),
       use_parent_backface_visibility_(false),
       should_check_backface_visibility_(false),
       draws_content_(false),
@@ -700,6 +701,13 @@ void LayerImpl::SetContentsOpaque(bool opaque) {
   contents_opaque_ = opaque;
 }
 
+void LayerImpl::SetContentsOpaqueForLCDText(bool opaque) {
+  if (contents_opaque_for_lcd_text_ == opaque)
+    return;
+
+  contents_opaque_for_lcd_text_ = opaque;
+}
+
 float LayerImpl::Opacity() const {
   if (const EffectNode* node = GetEffectTree().Node(effect_tree_index()))
     return node->opacity;
@@ -887,11 +895,12 @@ gfx::Transform LayerImpl::ScreenSpaceTransform() const {
 }
 
 bool LayerImpl::CanUseLCDText() const {
+
   if (layer_tree_impl()->settings().layers_always_allowed_lcd_text)
     return true;
   if (!layer_tree_impl()->settings().can_use_lcd_text)
     return false;
-  if (!contents_opaque())
+  if (!contents_opaque() && !contents_opaque_for_lcd_text())
     return false;
 
   if (GetEffectTree().Node(effect_tree_index())->screen_space_opacity != 1.f)

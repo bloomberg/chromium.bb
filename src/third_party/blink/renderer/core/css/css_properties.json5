@@ -1738,6 +1738,17 @@
       typedom_types: ["Keyword"],
     },
     {
+      name: "-bb-lcd-background-color",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      inherited: true,
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/platform/graphics/color.h"],
+      default_value: "Color()",
+      type_name: "Color",
+      style_builder_custom_functions: ["initial", "inherit", "value"],
+    },
+    {
       name: "flood-opacity",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
