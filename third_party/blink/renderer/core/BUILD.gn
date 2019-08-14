@@ -1322,6 +1322,7 @@ jumbo_source_set("unit_tests") {
     "layout/geometry/physical_rect_test.cc",
     "layout/geometry/physical_size_test.cc",
     "layout/grid_test.cc",
+    "layout/hit_testing_test.cc",
     "layout/layout_block_test.cc",
     "layout/layout_box_model_object_test.cc",
     "layout/layout_box_test.cc",
