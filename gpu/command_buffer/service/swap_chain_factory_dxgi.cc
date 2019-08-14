@@ -232,6 +232,8 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
       DLOG(ERROR) << "GLImageDXGISwapChain::BindTexImage failed";
       return false;
     }
+    // Flush device context through ANGLE otherwise present could be deferred.
+    api->glFlushFn();
     return true;
   }
 
