@@ -24302,6 +24302,10 @@ Called by update_net_error_codes.py.-->
   <int value="2995" label="CSSValueOverflowOverlay"/>
   <int value="2996" label="RequestedFileSystemTemporary"/>
   <int value="2997" label="RequestedFileSystemPersistent"/>
+  <int value="2998"
+      label="ElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop"/>
+  <int value="2999"
+      label="ElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
