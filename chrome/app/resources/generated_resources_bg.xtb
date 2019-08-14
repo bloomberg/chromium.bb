@@ -1378,6 +1378,7 @@
 <translation id="3017079585324758401">Фон</translation>
 <translation id="3020183492814296499">Клавишни комбинации</translation>
 <translation id="3020990233660977256">Сериен номер: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Моля, използвайте захранващ адаптер с USB Type-C или такъв от производителя на вашия Chromebook.</translation>
 <translation id="3021066826692793094">Пеперуда</translation>
 <translation id="3021426244864538700">Има достъп до данните на този сайт</translation>
 <translation id="3021678814754966447">&amp;Преглед на изходния код на рамката</translation>
@@ -1551,6 +1552,7 @@
 <translation id="3308134619352333507">Скриване на бутона</translation>
 <translation id="3308852433423051161">Google Асистент се зарежда...</translation>
 <translation id="3312424061798279731">Активирани езици</translation>
+<translation id="3313473463670097216">За да заредите този Chromebook, използвайте батерия от производителя му.</translation>
 <translation id="3313590242757056087">За да зададете уебсайтовете, които контролираният потребител може да преглежда, можете да конфигурирате ограничения
     и настройки на адрес <ph name="MANAGEMENT_URL" />.
     Ако не промените стандартните настройки, <ph name="USER_DISPLAY_NAME" />
@@ -2329,7 +2331,6 @@
 <translation id="4459169140545916303">Активно преди <ph name="DEVICE_LAST_ACTIVATED_TIME" /> дни</translation>
 <translation id="4462159676511157176">Специално зададени сървъри за имена</translation>
 <translation id="4469477701382819144">Блокиране за сайтовете, на които се показват натрапчиви или подвеждащи реклами</translation>
-<translation id="4469943624506685059">За да избегнете проблеми със зареждането или ефективността, използвайте захранващ адаптер с USB Type-C или такъв от производителя на вашия Chromebook.</translation>
 <translation id="4470957202018033307">Предпочитания за външно хранилище</translation>
 <translation id="447252321002412580">Помощ за подобряването на функциите и ефективността на Chrome</translation>
 <translation id="4474155171896946103">Запазване на отметки към всички раздели…</translation>
@@ -2805,7 +2806,6 @@
 <translation id="5213891612754844763">Показване на настройките за прокси сървъра</translation>
 <translation id="5215502535566372932">Изберете държава</translation>
 <translation id="521582610500777512">Снимката бе отхвърлена</translation>
-<translation id="5217313969810784338">За да заредите батерията, използвайте такава от производителя на вашия Chromebook.</translation>
 <translation id="5222676887888702881">Изход</translation>
 <translation id="52232769093306234">Пакетирането не бе успешно.</translation>
 <translation id="5225324770654022472">Показване на прекия път към приложенията</translation>

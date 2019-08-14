@@ -1378,6 +1378,7 @@
 <translation id="3017079585324758401">Imagen de fondo</translation>
 <translation id="3020183492814296499">Combinación de teclas</translation>
 <translation id="3020990233660977256">Número de serie: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Usa un adaptador de alimentación con conexión USB tipo C o un adaptador de la misma marca que tu Chromebook.</translation>
 <translation id="3021066826692793094">Mariposa</translation>
 <translation id="3021426244864538700">Acceso a los datos de este sitio</translation>
 <translation id="3021678814754966447">&amp;Ver fuente del marco</translation>
@@ -1551,6 +1552,7 @@
 <translation id="3308134619352333507">Ocultar botón</translation>
 <translation id="3308852433423051161">Cargando el Asistente de Google…</translation>
 <translation id="3312424061798279731">Idiomas habilitados</translation>
+<translation id="3313473463670097216">Para cargar esta Chromebook, usa una batería de la misma marca.</translation>
 <translation id="3313590242757056087">Para definir los sitios web que puede ver el usuario supervisado, puedes configurar restricciones
     y parámetros de configuración en <ph name="MANAGEMENT_URL" />.
     Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" />
@@ -2327,7 +2329,6 @@
 <translation id="4459169140545916303">Activo hace <ph name="DEVICE_LAST_ACTIVATED_TIME" /> días</translation>
 <translation id="4462159676511157176">Servidores de nombres personalizados</translation>
 <translation id="4469477701382819144">Bloqueados en sitios que muestran anuncios intrusivos o engañosos</translation>
-<translation id="4469943624506685059">Para evitar problemas de carga o rendimiento, usa un adaptador de alimentación con conexión USB tipo C o el del fabricante de tu Chromebook.</translation>
 <translation id="4470957202018033307">Preferencias de almacenamiento externo</translation>
 <translation id="447252321002412580">Ayudar a mejorar las funciones y el rendimiento de Chrome</translation>
 <translation id="4474155171896946103">Agregar a favoritos todas las pestañas...</translation>
@@ -2803,7 +2804,6 @@
 <translation id="5213891612754844763">Mostrar la configuración de proxy</translation>
 <translation id="5215502535566372932">Selecciona un país</translation>
 <translation id="521582610500777512">Se descartó la foto.</translation>
-<translation id="5217313969810784338">Para cargar la Chromebook, usa una batería del fabricante.</translation>
 <translation id="5222676887888702881">Salir</translation>
 <translation id="52232769093306234">No se pudo realizar el empaquetamiento.</translation>
 <translation id="5225324770654022472">Mostrar acceso directo a las aplicaciones</translation>

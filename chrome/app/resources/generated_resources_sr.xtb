@@ -1377,6 +1377,7 @@
 <translation id="3017079585324758401">Позадина</translation>
 <translation id="3020183492814296499">Пречице</translation>
 <translation id="3020990233660977256">Серијски број: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Користите USB адаптер типа C или адаптер истог бренда као Chromebook.</translation>
 <translation id="3021066826692793094">Лептир</translation>
 <translation id="3021426244864538700">Приступ подацима овог сајта</translation>
 <translation id="3021678814754966447">&amp;Прикажи извор оквира</translation>
@@ -1550,6 +1551,7 @@
 <translation id="3308134619352333507">Сакриј дугме</translation>
 <translation id="3308852433423051161">Google помоћник се учитава...</translation>
 <translation id="3312424061798279731">Омогућени језици</translation>
+<translation id="3313473463670097216">Да бисте напунили овај Chromebook, користите батерију истог произвођача.</translation>
 <translation id="3313590242757056087">Да бисте подесили које веб-сајтове може да прегледа корисник под надзором, можете да конфигуришете ограничења
     и подешавања тако што ћете посетити <ph name="MANAGEMENT_URL" />.
     Ако не промените подразумевана подешавања, <ph name="USER_DISPLAY_NAME" />
@@ -2326,7 +2328,6 @@
 <translation id="4459169140545916303">Последња активност: пре <ph name="DEVICE_LAST_ACTIVATED_TIME" /> дан/а</translation>
 <translation id="4462159676511157176">Прилагођени сервери назива</translation>
 <translation id="4469477701382819144">Блокирано на сајтовима који приказују огласе који ометају активности или обмањујуће огласе</translation>
-<translation id="4469943624506685059">Да бисте избегли проблеме са пуњењем и учинком, користите USB адаптер типа C или адаптер произвођача Chromebook-а.</translation>
 <translation id="4470957202018033307">Подешавања спољне меморије</translation>
 <translation id="447252321002412580">Помозите нам да побољшамо Chrome-ове функције и учинак</translation>
 <translation id="4474155171896946103">Обележи све картице...</translation>
@@ -2802,7 +2803,6 @@
 <translation id="5213891612754844763">Прикажи подешавања проксија</translation>
 <translation id="5215502535566372932">Изаберите земљу</translation>
 <translation id="521582610500777512">Слика је одбачена</translation>
-<translation id="5217313969810784338">Да бисте напунили Chromebook, користите батерију његовог произвођача.</translation>
 <translation id="5222676887888702881">Одјави ме</translation>
 <translation id="52232769093306234">Паковање није успело.</translation>
 <translation id="5225324770654022472">Прикажи пречицу за апликације</translation>

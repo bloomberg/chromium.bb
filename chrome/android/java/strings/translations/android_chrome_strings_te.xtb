@@ -296,7 +296,7 @@
 <translation id="3166827708714933426">ట్యాబ్ మరియు విండో షార్ట్‌కట్‌లు</translation>
 <translation id="3181954750937456830">సురక్షిత బ్రౌజింగ్ (ప్రమాదకరమైన సైట్‌ల నుండి మిమ్మల్ని, మీ పరికరాన్ని రక్షిస్తుంది)</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android సెట్టింగ్‌లు<ph name="END_LINK" />లో Chrome కోసం అనుమతులను ఆన్ చేయండి.</translation>
-<translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> నిల్వ డేటా</translation>
+<translation id="3198916472715691905">నిల్వ చేసిన డేటా <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3205824638308738187">దాదాపు పూర్తయింది!</translation>
 <translation id="3207960819495026254">బుక్‌మార్క్ చేయబడింది</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> తొలగించబడింది</translation>
@@ -410,7 +410,7 @@
 <translation id="4084712963632273211"><ph name="PUBLISHER_ORIGIN" /> నుండి – <ph name="BEGIN_DEEMPHASIZED" />Google బట్వాడా చేస్తోంది<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB డౌన్‌లోడ్ చేయబడింది</translation>
 <translation id="4095146165863963773">యాప్‌ డేటాను తొలగించాలా?</translation>
-<translation id="4099578267706723511">Googleకు వినియోగ గణాంకాలు, క్రాష్ నివేదికలను పంపడం ద్వారా Chromeను మెరుగుపరచడంలో సహాయపడండి.</translation>
+<translation id="4099578267706723511">వినియోగ గణాంకాలు, క్రాష్ నివేదికలను Googleకు పంపి, తద్వారా Chromeను మెరుగుపరచడంలో సహాయపడండి.</translation>
 <translation id="410351446219883937">స్వీయ ప్లే</translation>
 <translation id="4116038641877404294">పేజీలను ఆఫ్‌లైన్‌లో ఉపయోగించడం కోసం వాటిని డౌన్‌లోడ్ చేసుకోండి</translation>
 <translation id="4135200667068010335">ట్యాబ్‌ను షేర్ చేయాల్సిన పరికరాల జాబితా మూసివేయబడింది.</translation>
@@ -548,7 +548,7 @@
 <translation id="5039804452771397117">అనుమతించు</translation>
 <translation id="5040262127954254034">గోప్యత</translation>
 <translation id="5048398596102334565">మోషన్ సెన్సార్‌లను యాక్సెస్ చేయడానికి సైట్‌లను అనుమతించండి (సిఫార్సు చేస్తున్నాము)</translation>
-<translation id="5063480226653192405">ఉపయోగం</translation>
+<translation id="5063480226653192405">నిల్వ వినియోగం</translation>
 <translation id="5073204694187207510">పూర్తి స్క్రీన్ గ్రిడ్‌‌ను దాచిపెట్టు</translation>
 <translation id="5082793167783849073">పేజీలను సమూహంగా వర్గీకరించడం ద్వారా వేగంగా సరిపోల్చండి. ప్రారంభించడానికి, లింక్‌ను తాకి &amp; అలాగే నొక్కి ఉంచండి.</translation>
 <translation id="5087580092889165836">కార్డ్‌ను జోడించు</translation>

@@ -1381,6 +1381,7 @@
 <translation id="3017079585324758401">Pozadina</translation>
 <translation id="3020183492814296499">Prečaci</translation>
 <translation id="3020990233660977256">Serijski broj: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Upotrebljavajte pretvarač napona s USB-om vrste C ili onaj iste robne marke kao i vaš Chromebook.</translation>
 <translation id="3021066826692793094">Leptir</translation>
 <translation id="3021426244864538700">Pristupanje podacima ove web-lokacije</translation>
 <translation id="3021678814754966447">&amp;Pogledaj izvor okvira</translation>
@@ -1554,6 +1555,7 @@
 <translation id="3308134619352333507">Gumb za skrivanje</translation>
 <translation id="3308852433423051161">Učitavanje Google asistenta...</translation>
 <translation id="3312424061798279731">Omogućeni jezici</translation>
+<translation id="3313473463670097216">Za punjenje Chromebooka upotrijebite bateriju iste robne marke.</translation>
 <translation id="3313590242757056087">Da biste odredili koje web-lokacije nadzirani korisnik može gledati, možete
     konfigurirati ograničenja i postavke tako što ćete posjetiti <ph name="MANAGEMENT_URL" />.
     Ako ne promijenite zadane postavke, <ph name="USER_DISPLAY_NAME" />
@@ -2330,7 +2332,6 @@
 <translation id="4459169140545916303">Aktivan prije <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dana</translation>
 <translation id="4462159676511157176">Prilagođeni poslužitelji naziva</translation>
 <translation id="4469477701382819144">Blokirano na web-lokacijama koje prikazuju ometajuće ili obmanjujuće oglase</translation>
-<translation id="4469943624506685059">Da biste izbjegli poteškoće s punjenjem ili izvedbom, upotrebljavajte pretvarač napona s USB-om vrste C ili onaj proizvođača vašeg Chromebooka.</translation>
 <translation id="4470957202018033307">Postavke vanjske pohrane</translation>
 <translation id="447252321002412580">Pomozite poboljšati Chromeove značajke i izvedbu</translation>
 <translation id="4474155171896946103">Označi sve kartice...</translation>
@@ -2806,7 +2807,6 @@
 <translation id="5213891612754844763">Prikaži postavke proxyja</translation>
 <translation id="5215502535566372932">Odaberite zemlju</translation>
 <translation id="521582610500777512">Fotografija je odbačena</translation>
-<translation id="5217313969810784338">Za punjenje upotrijebite bateriju proizvođača Chromebooka.</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="52232769093306234">Pakiranje nije uspjelo.</translation>
 <translation id="5225324770654022472">Prikaži prečac za aplikacije</translation>

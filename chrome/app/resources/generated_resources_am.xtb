@@ -1380,6 +1380,7 @@
 <translation id="3017079585324758401">ጀርባ</translation>
 <translation id="3020183492814296499">አቋራጮች</translation>
 <translation id="3020990233660977256">መለያ ቁጥር፦ <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">እባክዎ USB Type-C ኃይል አስማሚን ወይም ልክ እንደ የእርስዎ Chromebook ከሆነ ተመሳሳይ ታዋቂ ምርት የተገኘ ኃይል አስማሚን ይጠቀሙ።</translation>
 <translation id="3021066826692793094">ቢራቢሮ</translation>
 <translation id="3021426244864538700">የዚህ ጣቢያ ውሂብን መድረስ</translation>
 <translation id="3021678814754966447">የፍሬም መነሻ &amp;አሳይ</translation>
@@ -1553,6 +1554,7 @@
 <translation id="3308134619352333507">አዘራር ደብቅ</translation>
 <translation id="3308852433423051161">የGoogle ረዳትን በመጫን ላይ...</translation>
 <translation id="3312424061798279731">የነቁ ቋንቋዎች</translation>
+<translation id="3313473463670097216">ይህን Chromebook ኃይል ለመሙላት፣ ከተመሳሳይ ታዋቂ ምርት የመጣ ባትሪን ይጠቀሙ።</translation>
 <translation id="3313590242757056087">ክትትል የሚደረግበት ተጠቃሚ የትኛዎቹን ድር ጣቢያዎች መመልከት እንደሚችል ለማዋቀር <ph name="MANAGEMENT_URL" />ን
     በመጎብኘት ገደቦችን እና ቅንብሮችን ማዋቀር ይችላሉ።
     ነባሪ ቅንብሮቹን ካልቀየሩ <ph name="USER_DISPLAY_NAME" /> በድሩ ላይ
@@ -2327,7 +2329,6 @@
 <translation id="4459169140545916303">ገባሪ ከ<ph name="DEVICE_LAST_ACTIVATED_TIME" /> ቀናት በፊት</translation>
 <translation id="4462159676511157176">የብጁ ስም አገልጋዮች</translation>
 <translation id="4469477701382819144">ረባሽ ወይም አሳሳች ማስታወቂያዎችን በሚያሳዩ ጣቢያዎች ላይ የታገደ</translation>
-<translation id="4469943624506685059">ኃይል መሙላትን እና የአፈጻጸም ችግሮችን ለማስቀረት፣ USB Type-C ኃይል አስማሚ ወይም የእርስዎን Chromebook በሠራው የቀረበን ኃይል አስማሚ ይጠቀሙ።</translation>
 <translation id="4470957202018033307">የውጫዊ ማከማቻ ምርጫዎች</translation>
 <translation id="447252321002412580">የChrome ባህሪያት እና አፈጻጸም እንዲሻሻል ያግዙ</translation>
 <translation id="4474155171896946103">ለሁሉም ትሮች ዕልባት አብጅ...</translation>
@@ -2803,7 +2804,6 @@
 <translation id="5213891612754844763">የተኪ ቅንብሮችን አሳይ</translation>
 <translation id="5215502535566372932">አገር ይምረጡ</translation>
 <translation id="521582610500777512">ፎቶ ተጥሏል</translation>
-<translation id="5217313969810784338">ኃይል ለመሙላት በእርስዎ Chromebook ሠሪ የቀረበውን ባትሪ ይጠቀሙ።</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
 <translation id="52232769093306234">መጠቅለል አልተሳካም።</translation>
 <translation id="5225324770654022472">የመተግበሪያዎች አቋራጮችን አሳይ</translation>

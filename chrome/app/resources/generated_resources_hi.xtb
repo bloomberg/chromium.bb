@@ -99,7 +99,7 @@
 <translation id="1134009406053225289">गुप्त विंडो में खोलें</translation>
 <translation id="1136712381129578788">सुरक्षा कुंजी लॉक कर दी गई है क्योंकि गलत पिन कई बार डाला गया है. सुरक्षा कुंजी को अनलॉक करने के लिए, इसे हटाएं और फिर से लगाएं.</translation>
 <translation id="1137673463384776352"><ph name="APP" /> में लिंक खोलें</translation>
-<translation id="1140351953533677694">अपने ब्लूटूथ और Serial डिवाइस ऐक्सेस करें</translation>
+<translation id="1140351953533677694">अपने ब्लूटूथ और Serial डिवाइस एक्सेस करें</translation>
 <translation id="1140610710803014750">अपने सभी डिवाइस पर अपने बुकमार्क पाने के लिए साइन इन करें और सिंक चालू करें.</translation>
 <translation id="1140746652461896221">किसी भी पेज पर आपकी देखी गई सामग्री पर रोक लगाएं</translation>
 <translation id="1143142264369994168">प्रमाणपत्र हस्ताक्षरकर्ता</translation>
@@ -137,7 +137,7 @@
 <translation id="1187722533808055681">इस्तेमाल नहीं किए जा रहे प्रोसेसर को जगाना</translation>
 <translation id="1188807932851744811">लॉग अपलोड नहीं किया गया.</translation>
 <translation id="1189418886587279221">अपने डिवाइस को उपयोग करने में आसान बनाने के लिए सुलभता सुविधाएं चालू करें.</translation>
-<translation id="11901918071949011">{NUM_FILES,plural, =1{अपने कंप्‍यूटर पर संग्रहित कोई फ़ाइल ऐक्‍सेस करें}one{अपने कंप्‍यूटर पर संग्रहित # फ़ाइलें ऐक्‍सेस करें}other{अपने कंप्‍यूटर पर संग्रहित # फ़ाइलें ऐक्‍सेस करें}}</translation>
+<translation id="11901918071949011">{NUM_FILES,plural, =1{अपने कंप्‍यूटर पर स्टोर की गई कोई फ़ाइल एक्सेस करें}one{अपने कंप्‍यूटर पर स्टोर की गई # फ़ाइलें एक्सेस करें}other{अपने कंप्‍यूटर पर स्टोर की गई # फ़ाइलें एक्सेस करें}}</translation>
 <translation id="1190660338026981543"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ने आपके <ph name="DEVICE_TYPE" /> का नाम एंटरप्राइज़ प्रबंधन के लिए दर्ज कर लिया है.</translation>
 <translation id="119092896208640858">ब्राउजिंग डेटा को सिर्फ़ इस डिवाइस से साफ़ करने और अपने 'Google खाते' में रखने के लिए, <ph name="BEGIN_LINK" />साइन आउट करें<ph name="END_LINK" />.</translation>
 <translation id="1193273168751563528">प्रबंधित सत्र में जाएं</translation>
@@ -280,7 +280,7 @@
 <translation id="1410197035576869800">ऐप्लिकेशन आइकॉन</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> को अपना कैमरा ऐक्सेस करते रहने दें</translation>
 <translation id="1414648216875402825">आप <ph name="PRODUCT_NAME" /> के ऐसे अस्थिर वर्शन में अपडेट कर रहे हैं जिसकी सुविधाओं पर काम चल रहा है. क्रैश और अप्रत्याशित बग उत्पन्न होंगे. कृपया सावधानी से आगे बढ़ें.</translation>
-<translation id="1415708812149920388">क्लिपबोर्ड की सामग्री पढ़ने का ऐक्सेस देने से मना किया गया</translation>
+<translation id="1415708812149920388">क्लिपबोर्ड की सामग्री पढ़ने का एक्सेस देने से मना किया गया</translation>
 <translation id="1415990189994829608">इस प्रकार के सत्र में <ph name="EXTENSION_NAME" /> (एक्‍सटेंशन आईडी "<ph name="EXTENSION_ID" />") की अनुमति नहीं है.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420834118113404499">मीडिया लाइसेंस</translation>
@@ -411,7 +411,7 @@
 <translation id="1595492813686795610">Linux अपग्रेड हो रहा है</translation>
 <translation id="1596286373007273895">कास्ट करने के लिए उपलब्ध जगह</translation>
 <translation id="1598233202702788831">आपके व्‍यवस्‍थापक के द्वारा अपडेट अक्षम किए गए हैं</translation>
-<translation id="1600857548979126453">पेज डीबगर बैकएंड को ऐक्सेस करें</translation>
+<translation id="1600857548979126453">पेज डीबगर बैकएंड को एक्सेस करें</translation>
 <translation id="1601560923496285236">लागू करें</translation>
 <translation id="1603914832182249871">(गुप्त)</translation>
 <translation id="1607139524282324606">प्रविष्टि हटाएं</translation>
@@ -1113,7 +1113,7 @@
 <translation id="2633764681656412085">FIDO</translation>
 <translation id="2635094637295383009">Twitter</translation>
 <translation id="2635276683026132559">हस्ताक्षर</translation>
-<translation id="2636625531157955190">Chrome, इमेज को ऐक्सेस नहीं कर पा रहा.</translation>
+<translation id="2636625531157955190">Chrome, इमेज को एक्सेस नहीं कर पा रहा.</translation>
 <translation id="2637400434494156704">गलत पिन. आप एक बार और कोशिश कर सकते हैं.</translation>
 <translation id="2638087589890736295">सिंक शुरू करने के लिए पासफ़्रेज़ ज़रूरी है</translation>
 <translation id="2642111877055905627">सॉकर बॉल</translation>
@@ -1381,6 +1381,7 @@
 <translation id="3017079585324758401">बैकग्राउंड</translation>
 <translation id="3020183492814296499">शॉर्टकट</translation>
 <translation id="3020990233660977256">क्रम संख्या: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">यूएसबी टाइप-सी पावर अडैप्टर या उसी ब्रैंड का अडैप्टर इस्तेमाल करें जिस ब्रैंड का Chromebook है.</translation>
 <translation id="3021066826692793094">तितली</translation>
 <translation id="3021426244864538700">इस साइट के डेटा को ऐक्सेस किया जा रहा है</translation>
 <translation id="3021678814754966447">फ़्रेम का स्रोत &amp;देखें</translation>
@@ -1527,7 +1528,7 @@
 <translation id="3275778913554317645">विंडो के रूप में खोलें</translation>
 <translation id="3278001907972365362">आपके Google खाता (खातों) पर ध्यान देना होगा</translation>
 <translation id="3279230909244266691">इस प्रोसेस में कुछ मिनट लग सकते हैं. वर्चुअल मशीन को शुरू किया जा रहा है.</translation>
-<translation id="3280237271814976245">इस रूप में सेव करें</translation>
+<translation id="3280237271814976245">इस रूप में सेव करें...</translation>
 <translation id="3280243678470289153">Chrome में बने रहें</translation>
 <translation id="3281892622610078515">क्वारंटाइन की जाने वाली फ़ाइलें और प्रोग्राम:</translation>
 <translation id="3282568296779691940">Chrome में साइन इन करें</translation>
@@ -1554,6 +1555,7 @@
 <translation id="3308134619352333507">छिपाएं बटन</translation>
 <translation id="3308852433423051161">Google Assistant को लोड किया जा रहा है...</translation>
 <translation id="3312424061798279731">सक्षम भाषाएं</translation>
+<translation id="3313473463670097216">यह Chromebook चार्ज करने के लिए इसी के ब्रैंड की बैटरी इस्तेमाल करें.</translation>
 <translation id="3313590242757056087">'निगरानी में रखा गया उपयोगकर्ता' किन वेबसाइटों को देख सकता है यह तय करने के लिए, आप
     <ph name="MANAGEMENT_URL" /> पर जाकर प्रतिबंध और सेटिंग को कॉन्फ़िगर कर सकते हैं.
     अगर आप डिफ़ॉल्ट सेटिंग नहीं बदलते हैं तो, <ph name="USER_DISPLAY_NAME" />
@@ -1631,7 +1633,7 @@
 <translation id="3435738964857648380">सुरक्षा</translation>
 <translation id="3435896845095436175">चालू करें</translation>
 <translation id="3438633801274389918">निंजा</translation>
-<translation id="3439153939049640737"><ph name="HOST" /> को कभी भी अपना माइक्रोफ़ोन ऐक्सेस करने दें</translation>
+<translation id="3439153939049640737"><ph name="HOST" /> को कभी भी अपना माइक्रोफ़ोन एक्सेस करने दें</translation>
 <translation id="3439970425423980614">PDF को 'झलक' में खोल रहे हैं</translation>
 <translation id="3440663250074896476"><ph name="BOOKMARK_NAME" /> के लिए और कार्रवाइयां</translation>
 <translation id="3440761377721825626">जब कोई साइट आपका कंप्यूटर ऐक्सेस करने के लिए किसी प्लग इन का इस्तेमाल करना चाहे, तो इसके लिए पूछें</translation>
@@ -2329,7 +2331,6 @@
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> दिन पहले चालू था</translation>
 <translation id="4462159676511157176">कस्टम नाम सर्वर</translation>
 <translation id="4469477701382819144">उन साइटों पर ब्लॉक है जिन पर तंग करने वाले या गुमराह करने वाले विज्ञापन दिखाई देते हैं</translation>
-<translation id="4469943624506685059">चार्ज होने या प्रदर्शन से जुड़ी समस्याओं से बचने के लिए, यूएसबी टाइप-सी पावर अडैप्टर या Chromebook के लिए खास तौर पर बनाए गए अडैप्टर का इस्तेमाल करें.</translation>
 <translation id="4470957202018033307">बाहरी मेमोरी प्राथमिकताएं</translation>
 <translation id="447252321002412580">Chrome के फ़ीचर और परफ़ॉर्मेंस को बेहतर बनाने में सहायता करें</translation>
 <translation id="4474155171896946103">सभी टैब बुकमार्क करें...</translation>
@@ -2591,7 +2592,7 @@
 <translation id="4876895919560854374">स्क्रीन लॉक करना और अनलॉक करना</translation>
 <translation id="4877276003880815204">एलिमेंट जाँचें</translation>
 <translation id="4879491255372875719">अपने आप (डिफ़ॉल्ट)</translation>
-<translation id="4880328057631981605">ऐक्सेस पॉइंट नाम</translation>
+<translation id="4880328057631981605">एक्सेस पॉइंट नाम</translation>
 <translation id="4880827082731008257">खोज इतिहास</translation>
 <translation id="4881695831933465202">खोलें</translation>
 <translation id="4882312758060467256">इस साइट का ऐक्सेस है</translation>
@@ -2660,7 +2661,7 @@
 <translation id="4973325300212422370">{NUM_TABS,plural, =1{साइट म्यूट करें}one{साइटें म्यूट करें}other{साइटें म्यूट करें}}</translation>
 <translation id="4974733135013075877">बाहर निकलें और चाइल्‍ड लॉक करें</translation>
 <translation id="4976795213394241669">{0,plural, =0{अभी अपडेट करें}=1{1 सेकंड में अपडेट करें}one{# सेकंड में अपडेट करें}other{# सेकंड में अपडेट करें}}</translation>
-<translation id="4977942889532008999">ऐक्सेस के लिए दोबारा पूछें</translation>
+<translation id="4977942889532008999">एक्सेस के लिए दोबारा पूछें</translation>
 <translation id="4980805016576257426">इस एक्सटेंशन में मैलवेयर है.</translation>
 <translation id="4981449534399733132">अपने सभी सिंक किए हुए डिवाइस और अपने 'Google खाते' से ब्राउज़िंग डेटा साफ़ करने के लिए, <ph name="BEGIN_LINK" />साइन इन करें<ph name="END_LINK" />.</translation>
 <translation id="4988526792673242964">पेज</translation>
@@ -2782,7 +2783,7 @@
 <translation id="5171045022955879922">URL खोजें या टाइप करें</translation>
 <translation id="5171343362375269016">स्वैप की गई मेमोरी</translation>
 <translation id="5175379009094579629">डिवाइस का नाम गलत है. फिर से कोशिश करने के लिए सही डिवाइस नाम डालें.</translation>
-<translation id="5177479852722101802">कैमरा और माइक्रोफ़ोन के ऐक्सेस को ब्लॉक करना जारी रखें</translation>
+<translation id="5177479852722101802">कैमरा और माइक्रोफ़ोन के एक्सेस को ब्लॉक करना जारी रखें</translation>
 <translation id="5177549709747445269">आप मोबाइल डेटा का उपयोग कर रहे हैं</translation>
 <translation id="5178667623289523808">पिछला ढूंढें</translation>
 <translation id="5179127818058486126">{NUM_TABS,plural, =1{टैब अनम्‍यूट करें}one{टैब अनम्‍यूट करें}other{टैब अनम्‍यूट करें}}</translation>
@@ -2805,7 +2806,6 @@
 <translation id="5213891612754844763">प्रॉक्सी सेटिंग दिखाएं</translation>
 <translation id="5215502535566372932">देश चुनें</translation>
 <translation id="521582610500777512">फ़ोटो को छोड़ दिया गया था</translation>
-<translation id="5217313969810784338">चार्ज करने के लिए, वह बैटरी इस्तेमाल करें जो खास तौर पर Chromebook के लिए बनाई गई है.</translation>
 <translation id="5222676887888702881">साइन आउट करें</translation>
 <translation id="52232769093306234">पैक नहीं किया जा सका.</translation>
 <translation id="5225324770654022472">ऐप्स  शॉर्टकट दिखाएं</translation>
@@ -2890,7 +2890,7 @@
 <translation id="5331425616433531170">"<ph name="CHROME_EXTENSION_NAME" />" युग्मित करना चाहता है</translation>
 <translation id="5331975486040154427">USB-C डिवाइस (बायां पिछला पोर्ट)</translation>
 <translation id="5334142896108694079">स्क्रिप्ट कैश</translation>
-<translation id="5336126339807372270">किसी भी साइट को यूएसबी डिवाइस ऐक्सेस न करने दें</translation>
+<translation id="5336126339807372270">किसी भी साइट को यूएसबी डिवाइस एक्सेस न करने दें</translation>
 <translation id="5336688142483283574">इस पेज को भी आपके इतिहास और <ph name="SEARCH_ENGINE" /> की गतिविधि से हटा दिया जाएगा.</translation>
 <translation id="5337771866151525739">किसी तृतीय पक्ष द्वारा इंस्टॉल किया गया.</translation>
 <translation id="5338503421962489998">स्थानीय मेमोरी</translation>
@@ -2916,7 +2916,7 @@
 <translation id="5376169624176189338">वापस जाने के लिए क्लिक करें, इतिहास देखने के लिए दबाकर रखें</translation>
 <translation id="5376931455988532197">फ़ाइल बहुत बड़ी है</translation>
 <translation id="537813040452600081">साइन आउट करने के बाद, आपके देखे गए पेज ब्राउज़र इतिहास में दिखाई नहीं देंगे और वे कंप्यूटर पर कुकी जैसे दूसरे चिह्न नहीं छोड़ेंगे. आपकी डाउनलोड की गई फ़ाइलें और आपके बनाए गए बुकमार्क संरक्षित नहीं किए जाएंगे.</translation>
-<translation id="5379140238605961210">माइक्रोफ़ोन का ऐक्सेस ब्लॉक करना जारी रखें</translation>
+<translation id="5379140238605961210">माइक्रोफ़ोन का एक्सेस ब्लॉक करना जारी रखें</translation>
 <translation id="5382591305415226340">समर्थित लिंक प्रबंधित करें</translation>
 <translation id="5383377866517186886">Mac सिस्टम प्राथमिकताओं में कैमरा बंद किया गया है</translation>
 <translation id="5384883051496921101">यह साइट गुप्त मोड से बाहर के ऐप्लिकेशन के साथ जानकारी शेयर करने वाली है.</translation>
@@ -2936,7 +2936,7 @@
 <translation id="5417312524372586921">ब्राउज़र थीम</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">लेख और इमेज का पैनापन तय करता है</translation>
-<translation id="5422221874247253874">ऐक्सेस पॉइंट</translation>
+<translation id="5422221874247253874">एक्सेस पॉइंट</translation>
 <translation id="5422781158178868512">क्षमा करें, आपके बाह्य मेमोरी डिवाइस की पहचान नहीं हो सकी.</translation>
 <translation id="5423829801105537712">वर्तनी जांचने वाली बुनियादी सुविधा</translation>
 <translation id="5423849171846380976">सक्रिय हुआ</translation>
@@ -2983,7 +2983,7 @@
 <translation id="5471768120198416576">नमस्ते! मैं आपकी लिखाई को बोली में बदलने वाली आवाज़ हूं.</translation>
 <translation id="5473333559083690127">नया पिन फिर से डालें</translation>
 <translation id="5481941284378890518">आस-पास के प्रिंटर जोड़ें</translation>
-<translation id="5483785310822538350">फ़ाइल और डिवाइस के ऐक्सेस रद्द करें</translation>
+<translation id="5483785310822538350">फ़ाइल और डिवाइस के एक्सेस रद्द करें</translation>
 <translation id="5485080380723335835">आपके <ph name="DEVICE_TYPE" /> को सुरक्षा के लिए लॉक किया गया है. जारी रखने के लिए मैन्युअल रूप से अपना पासवर्ड डालें.</translation>
 <translation id="5485102783864353244">ऐप्लिकेशन जोड़ें</translation>
 <translation id="5485754497697573575">सभी टैब पुनर्स्थापित करें</translation>
@@ -3348,7 +3348,7 @@
 <translation id="6016551720757758985">पिछले वर्शन पर वापस लौटने के साथ ही पावरवॉश की पुष्‍टि करें</translation>
 <translation id="6016972670657536680">भाषा और कीबोर्ड बटन चुनें. इस समय चुनी गई भाषा <ph name="LANGUAGE" /> है.</translation>
 <translation id="6017514345406065928">हरा</translation>
-<translation id="6020431688553761150">इस संसाधन को ऐक्सेस करने के लिए सर्वर ने आपको अनुमति नहीं दी.</translation>
+<translation id="6020431688553761150">इस संसाधन को एक्सेस करने के लिए सर्वर ने आपको अनुमति नहीं दी.</translation>
 <translation id="6022526133015258832">पूरी स्‍क्रीन खोलें</translation>
 <translation id="6022659036123304283">Chrome को अपने मुताबिक बनाएं</translation>
 <translation id="6022705094403139349">अपनी 'सुरक्षा चाबी' जोड़ने के लिए तैयार हैं?</translation>
@@ -3547,7 +3547,7 @@
 <translation id="630065524203833229">&amp;बाहर निकलें</translation>
 <translation id="6305607932814307878">वैश्विक नीति:</translation>
 <translation id="6307990684951724544">सिस्‍टम व्‍यस्‍त है</translation>
-<translation id="6308937455967653460">इस रूप में लिंक सेव करें...</translation>
+<translation id="6308937455967653460">लिंक को इस रूप में सेव करें...</translation>
 <translation id="6309510305002439352">माइक्रोफ़ोन बंद किया गया</translation>
 <translation id="6311220991371174222">Chrome शुरू नहीं हो पा रहा है क्योंकि आपकी प्रोफ़ाइल खोलते समय कुछ गलत हो गया. Chrome को फिर से शुरू करने की कोशिश करें.</translation>
 <translation id="6312403991423642364">अज्ञात नेटवर्क गड़बड़ी</translation>
@@ -4552,7 +4552,7 @@
     अपने डिवाइस पर कस्टम कोड इंस्टॉल करके उसका परीक्षण करने के लिए आप अपने Chrome OS डिवाइस पर डीबग करने के फ़ीचर चालू कर सकते हैं.  इससे आप ये काम कर सकेंगे:<ph name="BR" />
     <ph name="BEGIN_LIST" />
       <ph name="LIST_ITEM" />रूट की पुष्टि हटाएं ताकि आप OS फ़ाइलों में बदलाव कर सकें
-      <ph name="LIST_ITEM" />सामान्य परीक्षण की का इस्तेमाल करके डिवाइस का SSH ऐक्सेस चालू करें ताकि आप डिवाइस को ऐक्सेस करने के लिए <ph name="BEGIN_CODE" />'cros flash'<ph name="END_CODE" /> जैसे टूल का इस्तेमाल कर सकें
+      <ph name="LIST_ITEM" />सामान्य परीक्षण की का इस्तेमाल करके डिवाइस का SSH एक्सेस चालू करें ताकि आप डिवाइस को एक्सेस करने के लिए <ph name="BEGIN_CODE" />'cros flash'<ph name="END_CODE" /> जैसे टूल का इस्तेमाल कर सकें
       <ph name="LIST_ITEM" />USB से बूट करना चालू करें ताकि आप किसी USB डिस्क से एक OS इमेज इंस्टॉल कर सकें
       <ph name="LIST_ITEM" />डेव और सिस्टम रूट लॉगिन पासवर्ड, इन दोनों को किसी कस्टम मान पर सेट करें ताकि आप डिवाइस में मैन्युअल तरीके से SSH कर सकें
     <ph name="END_LIST" />
@@ -4564,7 +4564,7 @@
     https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-features
     <ph name="BR" />
     <ph name="BR" />
-    <ph name="BEGIN_BOLD" />नोट:<ph name="END_BOLD" />  इस प्रक्रिया के दौरान सिस्टम फिर चालू होगा.</translation>
+    <ph name="BEGIN_BOLD" />नोट:<ph name="END_BOLD" /> इस प्रक्रिया के दौरान सिस्टम फिर चालू होगा.</translation>
 <translation id="7829298379596169484">ऑडियो इनपुट ऐक्सेस हो रहा है</translation>
 <translation id="7830594666202422257">Linux से कनेक्ट करें</translation>
 <translation id="7831491651892296503">नेटवर्क कॉन्फ़िगर करने में गड़बड़ी</translation>
@@ -4606,7 +4606,7 @@
 <translation id="7887334752153342268">डुप्लीकेट</translation>
 <translation id="7887864092952184874">ब्लूटूथ माउस युग्मित किया गया</translation>
 <translation id="7889565820482017512">डिसप्ले का आकार</translation>
-<translation id="7893008570150657497">आपके कंप्यूटर के फ़ोटो, संगीत, और दूसरे मीडिया को ऐक्सेस करने दें</translation>
+<translation id="7893008570150657497">आपके कंप्यूटर के फ़ोटो, संगीत, और दूसरे मीडिया को एक्सेस करने दें</translation>
 <translation id="7893153962594818789">इस <ph name="DEVICE_TYPE" /> पर ब्लूटूथ बंद है. अपना पासवर्ड डालें और ब्लूटूथ चालू करें.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (सामान्य)</translation>
 <translation id="7897900149154324287">भविष्य में, अपने निकाले जाने योग्य डिवाइस को अनप्लग करने से पहले उसे Files ऐप्लिकेशन से निकालना न भूलें, नहीं तो, आपका डेटा खो सकता है.</translation>
@@ -4749,7 +4749,7 @@
     <ph name="BEGIN_PARAGRAPH3" />आप सेटिंग में जाकर इस सेवा को बंद कर सकते हैं.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="8074127646604999664">हाल ही में बंद की गई साइटों को डेटा भेजने और पाने की प्रकिया पूरी करने दें</translation>
 <translation id="8076492880354921740">टैब</translation>
-<translation id="8076835018653442223">आपके एडमिन ने आपके डिवाइस की स्थानीय फ़ाइलों का ऐक्सेस बंद कर दिया है</translation>
+<translation id="8076835018653442223">आपके एडमिन ने आपके डिवाइस की स्थानीय फ़ाइलों का एक्सेस बंद कर दिया है</translation>
 <translation id="808089508890593134">Google</translation>
 <translation id="8084114998886531721">सहेजा गया पासवर्ड</translation>
 <translation id="8086015605808120405"><ph name="PRINTER_NAME" /> कॉन्फ़िगर किया जा रहा है ...</translation>
@@ -5104,7 +5104,7 @@
 <translation id="8645354835496065562">सेंसर का ऐक्सेस जारी रहने दें</translation>
 <translation id="8647834505253004544">मान्य वेब पता नहीं है</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> या <ph name="RE_SCAN_LINK" /></translation>
-<translation id="8650543407998814195">हालांकि अब आप अपनी पुरानी प्रोफ़ाइल ऐक्सेस नहीं कर सकते हैं, लेकिन फिर भी आप उसे हटा सकते हैं.</translation>
+<translation id="8650543407998814195">हालांकि अब आप अपनी पुरानी प्रोफ़ाइल एक्सेस नहीं कर सकते हैं, लेकिन फिर भी आप उसे हटा सकते हैं.</translation>
 <translation id="8651585100578802546">इस पेज को ज़बरदस्ती फिर से लोड करें</translation>
 <translation id="8652400352452647993">पैक एक्‍सटेंशन गड़बड़ी</translation>
 <translation id="8654151524613148204">फ़ाइल आपके कंप्‍यूटर द्वारा संभाले जाने के लिए बहुत बड़ी है. क्षमा करें.</translation>

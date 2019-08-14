@@ -1381,6 +1381,7 @@
 <translation id="3017079585324758401">พื้นหลัง</translation>
 <translation id="3020183492814296499">ทางลัด</translation>
 <translation id="3020990233660977256">หมายเลขซีเรียล: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">โปรดใช้อะแดปเตอร์ USB Type-C หรืออะแดปเตอร์ยี่ห้อเดียวกันกับ Chromebook</translation>
 <translation id="3021066826692793094">ผีเสื้อ</translation>
 <translation id="3021426244864538700">กำลังเข้าถึงข้อมูลของเว็บไซต์นี้</translation>
 <translation id="3021678814754966447">&amp;ดูแหล่งที่มาของเฟรม</translation>
@@ -1554,6 +1555,7 @@
 <translation id="3308134619352333507">ซ่อนปุ่ม</translation>
 <translation id="3308852433423051161">กำลังโหลด Google Assistant...</translation>
 <translation id="3312424061798279731">ภาษาที่เปิดใช้</translation>
+<translation id="3313473463670097216">หากต้องการชาร์จ Chromebook นี้ ให้ใช้แบตเตอรี่จากยี่ห้อเดียวกัน</translation>
 <translation id="3313590242757056087">ในการตั้งค่าว่าผู้ใช้ภายใต้การดูแลสามารถดูเว็บไซต์ใดได้บ้าง คุณสามารถกำหนดค่าข้อจำกัด
     และการตั้งค่าโดยไปที่ <ph name="MANAGEMENT_URL" />
     หากคุณไม่ได้เปลี่ยนการตั้งค่าเริ่มต้น <ph name="USER_DISPLAY_NAME" />
@@ -2330,7 +2332,6 @@
 <translation id="4459169140545916303">ใช้งานเมื่อ <ph name="DEVICE_LAST_ACTIVATED_TIME" /> วันที่ผ่านมา</translation>
 <translation id="4462159676511157176">เซิร์ฟเวอร์ชื่อที่กำหนดเอง</translation>
 <translation id="4469477701382819144">บล็อกในเว็บไซต์ที่แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด</translation>
-<translation id="4469943624506685059">โปรดใช้อะแดปเตอร์ USB Type-C หรืออะแดปเตอร์จากผู้ผลิต Chromebook เพื่อหลีกเลี่ยงปัญหาเรื่องการชาร์จและประสิทธิภาพ</translation>
 <translation id="4470957202018033307">ค่ากำหนดพื้นที่เก็บข้อมูลภายนอก</translation>
 <translation id="447252321002412580">ช่วยปรับปรุงฟีเจอร์และประสิทธิภาพของ Chrome</translation>
 <translation id="4474155171896946103">บุ๊กมาร์กแท็บทั้งหมด...</translation>
@@ -2806,7 +2807,6 @@
 <translation id="5213891612754844763">แสดงการตั้งค่าพร็อกซี</translation>
 <translation id="5215502535566372932">เลือกประเทศ</translation>
 <translation id="521582610500777512">รูปภาพถูกยกเลิกแล้ว</translation>
-<translation id="5217313969810784338">หากต้องการชาร์จ ให้ใช้แบตเตอรี่จากผู้ผลิต Chromebook</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="52232769093306234">การบรรจุล้มเหลว</translation>
 <translation id="5225324770654022472">แสดงทางลัดแอป</translation>

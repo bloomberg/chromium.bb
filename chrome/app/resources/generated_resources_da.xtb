@@ -1379,6 +1379,7 @@
 <translation id="3017079585324758401">Baggrund</translation>
 <translation id="3020183492814296499">Genveje</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Brug en USB-C-strømadapter eller en adapter fra samme brand som din Chromebook.</translation>
 <translation id="3021066826692793094">Sommerfugl</translation>
 <translation id="3021426244864538700">Adgang til dette websites data</translation>
 <translation id="3021678814754966447">&amp;Vis rammens kilde</translation>
@@ -1552,6 +1553,7 @@
 <translation id="3308134619352333507">Skjul knap</translation>
 <translation id="3308852433423051161">Indlæser Google Assistent...</translation>
 <translation id="3312424061798279731">Aktiverede sprog</translation>
+<translation id="3313473463670097216">Brug et batteri fra samme brand som denne Chromebook for at oplade enheden.</translation>
 <translation id="3313590242757056087">Du kan angive, hvilke websites den administrerede bruger skal kunne se, ved at konfigurere begrænsninger
     og indstillinger på <ph name="MANAGEMENT_URL" />.
     Hvis du ikke ændrer standardindstillingerne, kan <ph name="USER_DISPLAY_NAME" />
@@ -2328,7 +2330,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4459169140545916303">Aktiv for <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dage siden</translation>
 <translation id="4462159676511157176">Tilpassede navneservere</translation>
 <translation id="4469477701382819144">Blokeret på websites, der viser påtrængende eller vildledende annoncer</translation>
-<translation id="4469943624506685059">Brug en USB-C-strømadapter eller en adapter fra producenten af din Chromebook for at undgå problemer med opladningen og effektiviteten.</translation>
 <translation id="4470957202018033307">Præferencer for ekstern lagerplads</translation>
 <translation id="447252321002412580">Vær med til at forbedre Chromes funktioner og ydeevne</translation>
 <translation id="4474155171896946103">Tilføj alle faner som bogmærker...</translation>
@@ -2804,7 +2805,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5213891612754844763">Vis proxyindstillinger</translation>
 <translation id="5215502535566372932">Vælg et land</translation>
 <translation id="521582610500777512">Billede blev kasseret</translation>
-<translation id="5217313969810784338">Brug et batteri fra producenten af din Chromebook for at oplade.</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="52232769093306234">Pakning mislykkedes.</translation>
 <translation id="5225324770654022472">Vis genvejen for apps</translation>

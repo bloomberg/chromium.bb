@@ -1381,6 +1381,7 @@
 <translation id="3017079585324758401">Achtergrond</translation>
 <translation id="3020183492814296499">Snelkoppelingen</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Gebruik een geschikte voedingsadapter van USB Type-C of een adapter van de fabrikant van je Chromebook.</translation>
 <translation id="3021066826692793094">Vlinder</translation>
 <translation id="3021426244864538700">De gegevens van deze site openen</translation>
 <translation id="3021678814754966447">&amp;Framebron weergeven</translation>
@@ -1554,6 +1555,7 @@
 <translation id="3308134619352333507">Knop verbergen</translation>
 <translation id="3308852433423051161">Google Assistent laden...</translation>
 <translation id="3312424061798279731">Ingeschakelde talen</translation>
+<translation id="3313473463670097216">Gebruik een batterij van hetzelfde merk om deze Chromebook op te laden.</translation>
 <translation id="3313590242757056087">Als je wilt instellen welke websites de gebruiker met beperkte rechten kan weergeven, kun je beperkingen en instellingen
     configureren op <ph name="MANAGEMENT_URL" />.
     Als je de standaardinstellingen niet wilt wijzigen, kan <ph name="USER_DISPLAY_NAME" />
@@ -2330,7 +2332,6 @@
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> dagen geleden actief</translation>
 <translation id="4462159676511157176">Aangepaste naamservers</translation>
 <translation id="4469477701382819144">Geblokkeerd op sites die opdringerige of misleidende advertenties weergeven</translation>
-<translation id="4469943624506685059">Gebruik een geschikte voedingsadapter van USB Type-C of een adapter van de fabrikant van je Chromebook om problemen met het opladen en de werking te voorkomen.</translation>
 <translation id="4470957202018033307">Voorkeuren voor externe opslag</translation>
 <translation id="447252321002412580">Help de functies en prestaties van Chrome verbeteren</translation>
 <translation id="4474155171896946103">Bladwijzer toevoegen aan alle tabbladen...</translation>
@@ -2806,7 +2807,6 @@
 <translation id="5213891612754844763">Proxyinstellingen weergeven</translation>
 <translation id="5215502535566372932">Land selecteren</translation>
 <translation id="521582610500777512">Foto is geannuleerd</translation>
-<translation id="5217313969810784338">Gebruik voor het opladen een batterij van de maker van je Chromebook.</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
 <translation id="52232769093306234">Inpakken mislukt.</translation>
 <translation id="5225324770654022472">Snelle link voor apps weergeven</translation>

@@ -1380,6 +1380,7 @@
 <translation id="3017079585324758401">ব্যাকগ্রাউন্ড</translation>
 <translation id="3020183492814296499">শর্টকাট</translation>
 <translation id="3020990233660977256">ক্রমিক সংখ্যা: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">একটি USB টাইপ-সি পাওয়ার অ্যাডাপ্টার ব্যবহার করুন অথবা আপনার কাছে যে ব্র্যান্ডের Chromebook আছে সেই ব্র্যান্ডের অ্যাডাপ্টার ব্যবহার করুন।</translation>
 <translation id="3021066826692793094">প্রজাপতি</translation>
 <translation id="3021426244864538700">এই সাইটের ডেটা অ্যাক্সেস করতে পারে</translation>
 <translation id="3021678814754966447">ফ্রেম উৎস &amp;দেখুন</translation>
@@ -1553,6 +1554,7 @@
 <translation id="3308134619352333507">বোতাম লুকান</translation>
 <translation id="3308852433423051161">Google অ্যাসিস্ট্যান্ট লোড হচ্ছে...</translation>
 <translation id="3312424061798279731">সক্ষম করা ভাষাগুলি</translation>
+<translation id="3313473463670097216">এই Chromebook চার্জ করতে এটি যে ব্র্যান্ডের সেই ব্র্যান্ডের ব্যাটারি ব্যবহার করুন।</translation>
 <translation id="3313590242757056087">তত্ত্বাবধানে থাকা ব্যবহারকারী কোন ওয়েবসাইটগুলি দেখতে পাবেন তা সেট করতে, আপনি <ph name="MANAGEMENT_URL" />-এ গিয়ে বিধিনিষেধ এবং সেটিংস কনফিগার করতে পারেন৷ আপনি যদি ডিফল্ট সেটিংস পরিবর্তন না করেন, তাহলে <ph name="USER_DISPLAY_NAME" /> ওয়েবে সমস্ত সাইটে ব্রাউজ করতে পারবেন৷</translation>
 <translation id="3313622045786997898">সার্টিফিকেট স্বাক্ষর মান</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> লুকান</translation>
@@ -2325,7 +2327,6 @@
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> দিন আগে ব্যবহার করা হয়েছে</translation>
 <translation id="4462159676511157176">কাস্টম নাম সার্ভার</translation>
 <translation id="4469477701382819144">সাইটে থাকা ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন ব্লক করা হয়েছে</translation>
-<translation id="4469943624506685059">চার্জ করা ও পারফর্ম্যান্স সংক্রান্ত সমস্যা এড়াতে ইউএসবি টাইপ-সি পাওয়ার অ্যাডাপ্টার বা Chromebook-এর প্রস্তুতকারকের অ্যাডাপ্টার ব্যবহার করুন।</translation>
 <translation id="4470957202018033307">এক্সটারনাল স্টোরেজের ব্যাপারে অভিরুচি</translation>
 <translation id="447252321002412580">Chrome-এর বৈশিষ্ট্য এবং পারফরম্যান্স আরও ভালো করতে সাহায্য করুন</translation>
 <translation id="4474155171896946103">সব কটি ট্যাব বুকমার্ক করুন...</translation>
@@ -2801,7 +2802,6 @@
 <translation id="5213891612754844763">প্রক্সি সেটিংস দেখুন</translation>
 <translation id="5215502535566372932">দেশ বেছে নিন</translation>
 <translation id="521582610500777512">ফটো বাতিল হয়েছে</translation>
-<translation id="5217313969810784338">চার্জ করতে আপনার Chromebook-এর প্রস্তুতকারকের ব্যাটারি ব্যবহার করুন।</translation>
 <translation id="5222676887888702881">সাইন-আউট করুন</translation>
 <translation id="52232769093306234">প্যাকিং করা যায়নি।</translation>
 <translation id="5225324770654022472">অ্যাপ্লিকেশানগুলির শর্টকাট দেখান</translation>

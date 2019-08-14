@@ -1377,6 +1377,7 @@
 <translation id="3017079585324758401">બૅકગ્રાઉન્ડ</translation>
 <translation id="3020183492814296499">શૉર્ટકટ</translation>
 <translation id="3020990233660977256">સીરિયલ નંબર: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">કૃપા કરીને USB પ્રકાર-C પાવર અડૅપ્ટરનો અથવા તમારી Chromebook જેવી બ્રાંડ તરફથી આપવામાં આવેલા અડૅપ્ટરનો ઉપયોગ કરો.</translation>
 <translation id="3021066826692793094">પતંગિયું</translation>
 <translation id="3021426244864538700">આ સાઇટનો ડેટા ઍક્સેસ કરવા વિશે</translation>
 <translation id="3021678814754966447">ફ્રેમ સ્રોત &amp;જુઓ</translation>
@@ -1550,6 +1551,7 @@
 <translation id="3308134619352333507">બટન છુપાવો</translation>
 <translation id="3308852433423051161">Google સહાયક લોડ કરી રહ્યાં છીએ...</translation>
 <translation id="3312424061798279731">સક્ષમ કરેલ ભાષાઓ</translation>
+<translation id="3313473463670097216">આ Chromebookને ચાર્જ કરવા માટે, તેના જેવી બ્રાંડની બૅટરીનો ઉપયોગ કરો.</translation>
 <translation id="3313590242757056087">નિરીક્ષણ કરેલા વપરાશકર્તા કઈ વેબસાઇટ જોઈ શકે છે તે સેટ કરવા માટે, તમે પ્રતિબંધો અને
     સેટિંગને <ph name="MANAGEMENT_URL" />ની મુલાકાત લઈને ગોઠવી શકો છો.
     જો તમે ડિફોલ્ટ સેટિંગ બદલતા નથી, તો <ph name="USER_DISPLAY_NAME" />
@@ -2326,7 +2328,6 @@
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> દિવસ પહેલાં સક્રિય</translation>
 <translation id="4462159676511157176">કસ્ટમ નામ સર્વર્સ</translation>
 <translation id="4469477701382819144">ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવતી સાઇટ પર બ્લૉક કરેલ છે</translation>
-<translation id="4469943624506685059">ચાર્જિંગ અથવા કાર્યપ્રદર્શનની સમસ્યાઓ ટાળવા માટે, USB પ્રકાર-C પાવર અડૅપ્ટરનો અથવા તમારી Chromebookના નિર્માતાએ આપેલા અડૅપ્ટરનો ઉપયોગ કરો.</translation>
 <translation id="4470957202018033307">બાહ્ય સ્ટોરેજ માટેની પસંદગીઓ</translation>
 <translation id="447252321002412580">Chromeની સુવિધાઓ અને પ્રદર્શનને સુધારવામાં સહાય કરો</translation>
 <translation id="4474155171896946103">બધા ટૅબ્સ બુકમાર્ક  કરો...</translation>
@@ -2802,7 +2803,6 @@
 <translation id="5213891612754844763">પ્રૉક્સી સેટિંગ બતાવો</translation>
 <translation id="5215502535566372932">દેશ પસંદ કરો</translation>
 <translation id="521582610500777512">ફોટો નિકાળવામાં આવ્યો હતો</translation>
-<translation id="5217313969810784338">ચાર્જ કરવા માટે, તમારી Chromebookના નિર્માતાએ આપેલી બૅટરીનો ઉપયોગ કરો.</translation>
 <translation id="5222676887888702881">સાઇન આઉટ</translation>
 <translation id="52232769093306234">પૅકિંગ નિષ્ફળ થયું.</translation>
 <translation id="5225324770654022472">ઍપ્લિકેશનો શોર્ટકટ બતાવો</translation>

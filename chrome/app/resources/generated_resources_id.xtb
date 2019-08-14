@@ -1381,6 +1381,7 @@
 <translation id="3017079585324758401">Latar belakang</translation>
 <translation id="3020183492814296499">Pintasan</translation>
 <translation id="3020990233660977256">Nomor Seri: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Gunakan adaptor daya USB Type-C atau adaptor dari merek yang sama dengan Chromebook.</translation>
 <translation id="3021066826692793094">Kupu-kupu</translation>
 <translation id="3021426244864538700">Mengakses data situs ini</translation>
 <translation id="3021678814754966447">&amp;Lihat Sumber Bingkai</translation>
@@ -1552,6 +1553,7 @@
 <translation id="3308134619352333507">Sembunyikan Tombol</translation>
 <translation id="3308852433423051161">Memuat Asisten Google...</translation>
 <translation id="3312424061798279731">Bahasa yang diaktifkan</translation>
+<translation id="3313473463670097216">Untuk mengisi daya Chromebook ini, gunakan baterai dari merek yang sama.</translation>
 <translation id="3313590242757056087">Untuk menyetel situs web yang dapat dilihat pengguna yang dilindungi, Anda dapat mengonfigurasi batasan
     dan setelan dengan mengunjungi <ph name="MANAGEMENT_URL" />.
     Jika Anda tidak mengubah setelan default, <ph name="USER_DISPLAY_NAME" />
@@ -2328,7 +2330,6 @@
 <translation id="4459169140545916303">Aktif <ph name="DEVICE_LAST_ACTIVATED_TIME" /> hari lalu</translation>
 <translation id="4462159676511157176">Server nama khusus</translation>
 <translation id="4469477701382819144">Diblokir di situs yang menampilkan iklan yang mengganggu atau menyesatkan</translation>
-<translation id="4469943624506685059">Untuk menghindari masalah pengisian daya atau performa, gunakan adaptor daya USB Type-C atau adaptor dari produsen Chromebook.</translation>
 <translation id="4470957202018033307">Preferensi penyimpanan eksternal</translation>
 <translation id="447252321002412580">Bantu sempurnakan fitur dan performa Chrome</translation>
 <translation id="4474155171896946103">Bookmark semua tab...</translation>
@@ -2804,7 +2805,6 @@
 <translation id="5213891612754844763">Tampilkan setelan proxy</translation>
 <translation id="5215502535566372932">Pilih negara</translation>
 <translation id="521582610500777512">Foto dibuang</translation>
-<translation id="5217313969810784338">Untuk mengisi daya, gunakan baterai dari produsen Chromebook Anda.</translation>
 <translation id="5222676887888702881">Logout</translation>
 <translation id="52232769093306234">Pengemasan gagal.</translation>
 <translation id="5225324770654022472">Tampilkan pintasan aplikasi</translation>

@@ -1380,6 +1380,7 @@
 <translation id="3017079585324758401">నేపథ్యం</translation>
 <translation id="3020183492814296499">షార్ట్‌కట్‌లు</translation>
 <translation id="3020990233660977256">క్రమ సంఖ్య: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">దయచేసి USB రకం-C పవర్ అడాప్టర్‌ను లేదా మీ Chromebook లాంటి అదే బ్రాండ్ నుండి అడాప్టర్‌ను ఉపయోగించండి.</translation>
 <translation id="3021066826692793094">సీతాకోకచిలుక</translation>
 <translation id="3021426244864538700">ఈ సైట్ డేటాను యాక్సెస్ చేయగలిగేవి</translation>
 <translation id="3021678814754966447">ఫ్రేమ్ మూలాన్ని &amp;వీక్షించండి</translation>
@@ -1553,6 +1554,7 @@
 <translation id="3308134619352333507">బటన్‌ను దాచు</translation>
 <translation id="3308852433423051161">Google సహాయకం లోడ్ అవుతోంది...</translation>
 <translation id="3312424061798279731">ప్రారంభించబడిన భాషలు</translation>
+<translation id="3313473463670097216">ఈ Chromebookను ఛార్జ్ చేయడానికి, అదే బ్రాండ్ బ్యాటరీని ఉపయోగించండి.</translation>
 <translation id="3313590242757056087">పర్యవేక్షించబడే వినియోగదారు వీక్షించగల వెబ్‌సైట్‌లను సెట్ చేయడానికి, మీరు <ph name="MANAGEMENT_URL" />ను సందర్శించి
     పరిమితులు మరియు సెట్టింగ్‌లను కాన్ఫిగర్ చేయవచ్చు.
     మీరు డిఫాల్ట్ సెట్టింగ్‌లను మార్చకుంటే, <ph name="USER_DISPLAY_NAME" />
@@ -2329,7 +2331,6 @@
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> రోజుల క్రితం యాక్టివ్‌గా ఉంది</translation>
 <translation id="4462159676511157176">అనుకూల పేరు సర్వర్‌లు</translation>
 <translation id="4469477701382819144">అనుచితమైన లేదా తప్పుదారి పట్టించే ప్రకటనలను చూపించే సైట్‌లలో బ్లాక్ చేయబడింది</translation>
-<translation id="4469943624506685059">ఛార్జింగ్ లేదా పనితీరు సమస్యలను నివారించడానికి, USB రకం-C పవర్ అడాప్టర్‌ను లేదా మీ Chromebook రూపకర్త తయారు చేసిన అడాప్టర్‌ను ఉపయోగించండి.</translation>
 <translation id="4470957202018033307">బాహ్య నిల్వ ప్రాధాన్యతలు</translation>
 <translation id="447252321002412580">Chrome ఫీచర్‌లు మరియు పనితీరును మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="4474155171896946103">అన్ని టాబ్‌లను బుక్‌మార్క్ చేయి...</translation>
@@ -2709,7 +2710,7 @@
 <translation id="5057110919553308744">మీరు ఎక్స్‌టెన్షన్ క్లిక్ చేసినప్పుడు</translation>
 <translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{ఈ ఫోల్డర్‌లో ఒక బుక్‌మార్క్ ఉంది. మీరు దీనిని ఖచ్చితంగా తొలగించాలనుకుంటున్నారా?}other{ఈ ఫోల్డర్‌లో # బుక్‌మార్క్‌లు ఉన్నాయి. మీరు దీనిని ఖచ్చితంగా తొలగించాలనుకుంటున్నారా?}}</translation>
 <translation id="5062930723426326933">సైన్-ఇన్ విఫలమైంది, దయచేసి ఇంటర్నెట్‌కు కనెక్ట్ చేసి మళ్లీ ప్రయత్నించండి.</translation>
-<translation id="5063480226653192405">ఉపయోగం</translation>
+<translation id="5063480226653192405">నిల్వ వినియోగం</translation>
 <translation id="5065775832226780415">Smart Lock</translation>
 <translation id="5067399438976153555">ఎల్లప్పుడూ ఆన్ చేయి</translation>
 <translation id="5067867186035333991"><ph name="HOST" /> మీ మైక్రోఫోన్‌ను యాక్సెస్ చేయాలనుకుంటే నాకు తెలియజేయి</translation>
@@ -2805,7 +2806,6 @@
 <translation id="5213891612754844763">ప్రాక్సీ సెట్టింగ్‌లను చూపు</translation>
 <translation id="5215502535566372932">దేశాన్ని ఎంచుకోండి</translation>
 <translation id="521582610500777512">ఫోటో విస్మరించబడింది</translation>
-<translation id="5217313969810784338">ఛార్జ్ చేయడానికి, మీ Chromebook రూపకర్త తయారు చేసిన బ్యాటరీని ఉపయోగించండి.</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
 <translation id="52232769093306234">ప్యాకింగ్ విఫలమైంది.</translation>
 <translation id="5225324770654022472">యాప్‌ల షార్ట్‌కట్‌ను చూపండి</translation>

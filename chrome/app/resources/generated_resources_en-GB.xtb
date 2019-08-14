@@ -1380,6 +1380,7 @@
 <translation id="3017079585324758401">Background</translation>
 <translation id="3020183492814296499">Shortcuts</translation>
 <translation id="3020990233660977256">Serial Number: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Please use a USB Type-C power adaptor or an adaptor from the same brand as your Chromebook.</translation>
 <translation id="3021066826692793094">Butterfly</translation>
 <translation id="3021426244864538700">Accessing this site's data</translation>
 <translation id="3021678814754966447">&amp;View Frame Source</translation>
@@ -1553,6 +1554,7 @@
 <translation id="3308134619352333507">Hide Button</translation>
 <translation id="3308852433423051161">Loading Google Assistant...</translation>
 <translation id="3312424061798279731">Enabled languages</translation>
+<translation id="3313473463670097216">To charge this Chromebook, use a battery from the same brand.</translation>
 <translation id="3313590242757056087">To set which websites the supervised user can view, you can configure restrictions
     and settings by visiting <ph name="MANAGEMENT_URL" />.
     If you do not change the default settings, <ph name="USER_DISPLAY_NAME" />
@@ -2329,7 +2331,6 @@
 <translation id="4459169140545916303">Active <ph name="DEVICE_LAST_ACTIVATED_TIME" /> days ago</translation>
 <translation id="4462159676511157176">Custom name servers</translation>
 <translation id="4469477701382819144">Blocked on sites that show intrusive or misleading ads</translation>
-<translation id="4469943624506685059">To avoid charging or performance issues, use a USB Type-C power adaptor or an adaptor by the maker of your Chromebook.</translation>
 <translation id="4470957202018033307">External storage preferences</translation>
 <translation id="447252321002412580">Help improve Chrome's features and performance</translation>
 <translation id="4474155171896946103">Bookmark all tabs...</translation>
@@ -2805,7 +2806,6 @@
 <translation id="5213891612754844763">Show proxy settings</translation>
 <translation id="5215502535566372932">Select country</translation>
 <translation id="521582610500777512">Photo was discarded</translation>
-<translation id="5217313969810784338">To charge, use a battery by the maker of your Chromebook.</translation>
 <translation id="5222676887888702881">Sign out</translation>
 <translation id="52232769093306234">Packing failed.</translation>
 <translation id="5225324770654022472">Show apps shortcut</translation>

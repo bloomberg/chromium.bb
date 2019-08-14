@@ -34,7 +34,7 @@
 <translation id="1131264053432022307">आपकी कॉपी की हुई इमेज</translation>
 <translation id="1150979032973867961">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके कंप्यूटर के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="1151972924205500581">पासवर्ड आवश्यक</translation>
-<translation id="1152921474424827756"><ph name="URL" /> की <ph name="BEGIN_LINK" />सहेजी गई (कैश) कॉपी<ph name="END_LINK" /> ऐक्सेस करें</translation>
+<translation id="1152921474424827756"><ph name="URL" /> की <ph name="BEGIN_LINK" />सहेजी गई (कैश) कॉपी<ph name="END_LINK" /> एक्सेस करें</translation>
 <translation id="1156303062776767266">आप स्थानीय या शेयर की गई फ़ाइल देख रहे हैं</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ने अनपेक्षित रूप से कनेक्शन बंद कर दिया है.</translation>
 <translation id="1161325031994447685">वाई-फ़ाई से फिर से कनेक्ट करें</translation>
@@ -130,7 +130,7 @@
 <translation id="1569487616857761740">खत्म होने की तारीख डालें</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">इस वेबपेज को दिखाने के दौरान कुछ गड़बड़ी हुई है.</translation>
-<translation id="1592005682883173041">स्थानीय डेटा ऐक्सेस</translation>
+<translation id="1592005682883173041">स्थानीय डेटा एक्सेस</translation>
 <translation id="1594030484168838125">चुनें</translation>
 <translation id="161042844686301425">स्यान</translation>
 <translation id="1620510694547887537">कैमरा</translation>

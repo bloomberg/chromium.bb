@@ -1381,6 +1381,7 @@
 <translation id="3017079585324758401">Фон</translation>
 <translation id="3020183492814296499">Ярлики</translation>
 <translation id="3020990233660977256">Серійний номер: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Використовуйте адаптер живлення USB Type-C або адаптер від того ж виробника, що й Chromebook.</translation>
 <translation id="3021066826692793094">Метелик</translation>
 <translation id="3021426244864538700">Мають доступ до даних цього сайту</translation>
 <translation id="3021678814754966447">&amp;Переглянути джерело фрейму</translation>
@@ -1554,6 +1555,7 @@
 <translation id="3308134619352333507">Кнопка "Сховати"</translation>
 <translation id="3308852433423051161">Завантажується Google Асистент…</translation>
 <translation id="3312424061798279731">Активні мови</translation>
+<translation id="3313473463670097216">Щоб заряджати цей комп'ютер Chromebook, використовуйте акумулятор того ж виробника.</translation>
 <translation id="3313590242757056087">Щоб налаштувати веб-сайти, які може переглядати контрольований користувач, можна встановити обмеження
     та налаштування, перейшовши на сторінку <ph name="MANAGEMENT_URL" />.
     Якщо ви не зміните налаштування за умовчанням, користувач <ph name="USER_DISPLAY_NAME" />
@@ -2330,7 +2332,6 @@
 <translation id="4459169140545916303">У мережі <ph name="DEVICE_LAST_ACTIVATED_TIME" /> дн. тому</translation>
 <translation id="4462159676511157176">Імена серверів – персоналізовано</translation>
 <translation id="4469477701382819144">Заблоковано на сайтах, які показують нав’язливі чи оманливі оголошення</translation>
-<translation id="4469943624506685059">Щоб уникнути проблем із заряджанням чи продуктивністю, використовуйте адаптер живлення USB Type-C або адаптер від виробника Chromebook.</translation>
 <translation id="4470957202018033307">Параметри зовнішньої пам'яті</translation>
 <translation id="447252321002412580">Допоможіть покращити функції й ефективність Chrome</translation>
 <translation id="4474155171896946103">Позначити закладками всі вкладки...</translation>
@@ -2806,7 +2807,6 @@
 <translation id="5213891612754844763">Показати налаштування проксі</translation>
 <translation id="5215502535566372932">Вибрати країну</translation>
 <translation id="521582610500777512">Фотографію відхилено</translation>
-<translation id="5217313969810784338">Для заряджання користуйтесь акумулятором від виробника Chromebook.</translation>
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="52232769093306234">Помилка пакування.</translation>
 <translation id="5225324770654022472">Показувати ярлики додатків</translation>

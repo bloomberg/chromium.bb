@@ -1380,6 +1380,7 @@
 <translation id="3017079585324758401">الخلفية</translation>
 <translation id="3020183492814296499">الاختصارات</translation>
 <translation id="3020990233660977256">الرقم التسلسلي: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">‏يُرجى استخدام محوِّل طاقة USB من نوع C أو محوِّل من علامة جهاز Chromebook التجارية نفسها.</translation>
 <translation id="3021066826692793094">فراشة</translation>
 <translation id="3021426244864538700">الوصول إلى بيانات موقع الويب هذا</translation>
 <translation id="3021678814754966447">عرض م&amp;صدر الإطار</translation>
@@ -1553,6 +1554,7 @@
 <translation id="3308134619352333507">الزر "إخفاء"</translation>
 <translation id="3308852433423051161">‏جارٍ تحميل مساعد Google...</translation>
 <translation id="3312424061798279731">اللغات التي تم تمكينها</translation>
+<translation id="3313473463670097216">‏لشحن جهاز Chromebook هذا، استخدم بطارية من العلامة التجارية نفسها.</translation>
 <translation id="3313590242757056087">لتعيين مواقع الويب التي يُمكن للمستخدم الذي يخضع للإشراف عرضها، يُمكنك تهيئة القيود والإعدادات عن طريق الانتقال إلى<ph name="MANAGEMENT_URL" />.
     وفي حالة عدم تغيير الإعدادات التلقائية، <ph name="USER_DISPLAY_NAME" />
     يُمكنك تصفح جميع المواقع على الويب.</translation>
@@ -2325,7 +2327,6 @@
 <translation id="4459169140545916303">نشط قبل <ph name="DEVICE_LAST_ACTIVATED_TIME" /> يوم</translation>
 <translation id="4462159676511157176">خوادم أسماء مخصصة</translation>
 <translation id="4469477701382819144">تم حظر الإعلانات على المواقع الإلكترونية التي تعرض إعلانات مضلِّلة أو غير مرغوب فيها</translation>
-<translation id="4469943624506685059">‏لتجنب مشاكل الشحن أو الأداء، يمكنك استخدام محوِّل طاقة USB من نوع C أو محوِّل طاقة من مصنع جهاز Chromebook.</translation>
 <translation id="4470957202018033307">الإعدادات المفضلة لمساحة التخزين الخارجية</translation>
 <translation id="447252321002412580">‏المساعدة في تحسين ميزات Chrome وأدائه</translation>
 <translation id="4474155171896946103">وضع إشارات على كل علامات التبويب...</translation>
@@ -2801,7 +2802,6 @@
 <translation id="5213891612754844763">عرض إعدادات الخادم الوكيل</translation>
 <translation id="5215502535566372932">اختيار البلد</translation>
 <translation id="521582610500777512">تم تجاهل الصورة</translation>
-<translation id="5217313969810784338">‏للشحن، يمكنك استخدام بطارية من مصنع جهاز Chromebook.</translation>
 <translation id="5222676887888702881">تسجيل الخروج</translation>
 <translation id="52232769093306234">تعذرت التعبئة.</translation>
 <translation id="5225324770654022472">إظهار اختصار التطبيقات</translation>

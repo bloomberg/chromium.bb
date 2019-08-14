@@ -1381,6 +1381,7 @@
 <translation id="3017079585324758401">背景</translation>
 <translation id="3020183492814296499">ショートカット</translation>
 <translation id="3020990233660977256">シリアル番号: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">USB Type-C の電源アダプター、またはお使いの Chromebook の純正アダプターを使用してください。</translation>
 <translation id="3021066826692793094">蝶</translation>
 <translation id="3021426244864538700">このサイトのデータにアクセスしています</translation>
 <translation id="3021678814754966447">フレームのソースを表示(&amp;V)</translation>
@@ -1554,6 +1555,7 @@
 <translation id="3308134619352333507">ボタンを非表示にする</translation>
 <translation id="3308852433423051161">Google アシスタントを読み込んでいます...</translation>
 <translation id="3312424061798279731">有効な言語</translation>
+<translation id="3313473463670097216">この Chromebook を充電するには、純正のバッテリーを使用してください。</translation>
 <translation id="3313590242757056087">監視対象ユーザーがどのウェブサイトを閲覧できるかを設定するには、
     管理者が <ph name="MANAGEMENT_URL" /> で制限と設定を指定します。
     管理者がデフォルト設定を変更しない場合は、<ph name="USER_DISPLAY_NAME" /> さんは
@@ -2330,7 +2332,6 @@
 <translation id="4459169140545916303">最終同期: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> 日前</translation>
 <translation id="4462159676511157176">カスタム ネーム サーバー</translation>
 <translation id="4469477701382819144">煩わしい広告や誤解を招く広告が表示されるサイトでブロックされています</translation>
-<translation id="4469943624506685059">充電やパフォーマンスに関する問題を回避するには、USB Type-C の電源アダプターまたは Chromebook の製造元が提供する純正アダプターを使用してください。</translation>
 <translation id="4470957202018033307">外部ストレージの設定</translation>
 <translation id="447252321002412580">Chrome の機能と動作の改善に協力する</translation>
 <translation id="4474155171896946103">すべてのタブをブックマークに追加...</translation>
@@ -2806,7 +2807,6 @@
 <translation id="5213891612754844763">プロキシ設定を表示</translation>
 <translation id="5215502535566372932">国を選択</translation>
 <translation id="521582610500777512">写真を破棄しました</translation>
-<translation id="5217313969810784338">充電するには、Chromebook の製造元が提供する純正バッテリーを使用してください。</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="52232769093306234">圧縮できませんでした。</translation>
 <translation id="5225324770654022472">アプリのショートカットを表示</translation>

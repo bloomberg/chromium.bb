@@ -1377,6 +1377,7 @@
 <translation id="3017079585324758401">Bakgrunn</translation>
 <translation id="3020183492814296499">Snarveier</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Bruk en USB-C-strømadapter eller en strømadapter av samme merke som Chromebooken.</translation>
 <translation id="3021066826692793094">Sommerfugl</translation>
 <translation id="3021426244864538700">Leser dataene på dette nettstedet</translation>
 <translation id="3021678814754966447">&amp;Vis rammekilde</translation>
@@ -1550,6 +1551,7 @@
 <translation id="3308134619352333507">Skjul knappen</translation>
 <translation id="3308852433423051161">Laster inn Google-assistenten …</translation>
 <translation id="3312424061798279731">Språk som er slått på</translation>
+<translation id="3313473463670097216">For å lade denne Chromebooken, bruk et batteri av samme merke.</translation>
 <translation id="3313590242757056087">For å angi hvilke nettsteder den administrerte brukeren kan bruke, kan du konfigurere begrensninger og innstillinger ved å gå til <ph name="MANAGEMENT_URL" />.
     Hvis du ikke endrer standardinnstillingene, kan <ph name="USER_DISPLAY_NAME" />
     surfe på hele nettet.</translation>
@@ -2323,7 +2325,6 @@
 <translation id="4459169140545916303">Aktiv for <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dager siden</translation>
 <translation id="4462159676511157176">Egendefinerte navnetjenere</translation>
 <translation id="4469477701382819144">Blokkert på nettsteder som viser forstyrrende eller villedende annonser</translation>
-<translation id="4469943624506685059">For å unngå problemer med lading og ytelse, bruk en USB-C-strømadapter eller en strømadapter fra produsenten av Chromebooken.</translation>
 <translation id="4470957202018033307">Innstillinger for ekstern lagring</translation>
 <translation id="447252321002412580">Hjelp til med å forbedre funksjonene og ytelsen til Chrome</translation>
 <translation id="4474155171896946103">Bokmerk alle fanene</translation>
@@ -2799,7 +2800,6 @@
 <translation id="5213891612754844763">Vis innstillingene for proxy-tjener</translation>
 <translation id="5215502535566372932">Velg land</translation>
 <translation id="521582610500777512">Bildet er forkastet</translation>
-<translation id="5217313969810784338">For å lade, bruk et batteri fra produsenten av Chromebooken.</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="52232769093306234">Pakkingen mislyktes.</translation>
 <translation id="5225324770654022472">Vis appsnarveien</translation>

@@ -1379,6 +1379,7 @@
 <translation id="3017079585324758401">Sfondo</translation>
 <translation id="3020183492814296499">Scorciatoie</translation>
 <translation id="3020990233660977256">Numero di serie: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Usa un alimentatore USB Type-C o un alimentatore della stessa marca del Chromebook.</translation>
 <translation id="3021066826692793094">Farfalla</translation>
 <translation id="3021426244864538700">Con accesso ai dati di questo sito</translation>
 <translation id="3021678814754966447">&amp;Visualizza sorgente frame</translation>
@@ -1552,6 +1553,7 @@
 <translation id="3308134619352333507">Nascondi pulsante</translation>
 <translation id="3308852433423051161">Caricamento dell'Assistente Google...</translation>
 <translation id="3312424061798279731">Lingue attive</translation>
+<translation id="3313473463670097216">Per ricaricare questo Chromebook devi usare una batteria della stessa marca.</translation>
 <translation id="3313590242757056087">Per impostare i siti web che l'utente supervisionato può visualizzare, puoi configurare limitazioni e impostazioni visitando il sito all'indirizzo <ph name="MANAGEMENT_URL" />.
 Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> può visitare tutti i siti sul Web.</translation>
 <translation id="3313622045786997898">Valore firma certificato</translation>
@@ -2326,7 +2328,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4459169140545916303">Attivo <ph name="DEVICE_LAST_ACTIVATED_TIME" /> giorni fa</translation>
 <translation id="4462159676511157176">Assegna nomi personalizzati a server</translation>
 <translation id="4469477701382819144">Bloccati sui siti che mostrano annunci invasivi o fuorvianti</translation>
-<translation id="4469943624506685059">Per evitare problemi di ricarica o prestazioni, usa un alimentatore USB Type-C o un alimentatore dello stesso produttore del Chromebook.</translation>
 <translation id="4470957202018033307">Preferenze dello spazio di archiviazione esterno</translation>
 <translation id="447252321002412580">Contribuisci a migliorare le funzioni e le prestazioni di Chrome</translation>
 <translation id="4474155171896946103">Aggiungi tutte le schede ai Preferiti...</translation>
@@ -2802,7 +2803,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5213891612754844763">Mostra impostazioni proxy</translation>
 <translation id="5215502535566372932">Seleziona il paese</translation>
 <translation id="521582610500777512">La foto è stata eliminata</translation>
-<translation id="5217313969810784338">Per ricaricare, usa una batteria dello stesso produttore del Chromebook.</translation>
 <translation id="5222676887888702881">Esci</translation>
 <translation id="52232769093306234">Compressione non riuscita.</translation>
 <translation id="5225324770654022472">Mostra scorciatoia app</translation>

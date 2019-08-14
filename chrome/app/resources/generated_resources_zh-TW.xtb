@@ -1380,6 +1380,7 @@
 <translation id="3017079585324758401">背景</translation>
 <translation id="3020183492814296499">快速鍵</translation>
 <translation id="3020990233660977256">序號：<ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">請使用 USB Type-C 電源變壓器，或與 Chromebook 相同品牌的變壓器。</translation>
 <translation id="3021066826692793094">蝴蝶</translation>
 <translation id="3021426244864538700">正在存取這個網站的資料</translation>
 <translation id="3021678814754966447">檢視頁框原始碼(&amp;V)</translation>
@@ -1553,6 +1554,7 @@
 <translation id="3308134619352333507">隱藏按鈕</translation>
 <translation id="3308852433423051161">正在載入 Google 助理…</translation>
 <translation id="3312424061798279731">已啟用的語言</translation>
+<translation id="3313473463670097216">如要為這部 Chromebook 充電，請使用相同品牌的電池。</translation>
 <translation id="3313590242757056087">如要設定受監管的使用者可瀏覽哪些網站，你可以前往 <ph name="MANAGEMENT_URL" /> 
     修改限制與設定。
     如果你並未變更預設設定，那麼 <ph name="USER_DISPLAY_NAME" />
@@ -2328,7 +2330,6 @@
 <translation id="4459169140545916303">上次使用時間：<ph name="DEVICE_LAST_ACTIVATED_TIME" /> 天前</translation>
 <translation id="4462159676511157176">自訂名稱伺服器</translation>
 <translation id="4469477701382819144">已封鎖干擾性或誤導性的網站廣告</translation>
-<translation id="4469943624506685059">為避免發生充電或效能的問題，請使用 USB Type-C 電源變壓器或 Chromebook 製造商提供的變壓器。</translation>
 <translation id="4470957202018033307">外部儲存空間偏好設定</translation>
 <translation id="447252321002412580">協助改善 Chrome 的功能與效能</translation>
 <translation id="4474155171896946103">將所有分頁加入書籤...</translation>
@@ -2804,7 +2805,6 @@
 <translation id="5213891612754844763">顯示 Proxy 設定</translation>
 <translation id="5215502535566372932">選取國家/地區</translation>
 <translation id="521582610500777512">已捨棄相片</translation>
-<translation id="5217313969810784338">請使用 Chromebook 製造商提供的電池充電。</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="52232769093306234">封裝失敗。</translation>
 <translation id="5225324770654022472">顯示應用程式捷徑</translation>

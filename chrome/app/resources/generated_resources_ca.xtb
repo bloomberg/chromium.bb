@@ -1379,6 +1379,7 @@
 <translation id="3017079585324758401">Fons</translation>
 <translation id="3020183492814296499">Dreceres</translation>
 <translation id="3020990233660977256">Número de sèrie: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Utilitza un adaptador de corrent USB tipus C o un adaptador de la mateixa marca que el dispositiu Chromebook.</translation>
 <translation id="3021066826692793094">Papallona</translation>
 <translation id="3021426244864538700">S'està accedint a les dades d'aquest lloc web</translation>
 <translation id="3021678814754966447">&amp;Visualitza l'origen del marc</translation>
@@ -1550,6 +1551,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3308134619352333507">Amaga el botó</translation>
 <translation id="3308852433423051161">S'està carregant l'Assistent de Google...</translation>
 <translation id="3312424061798279731">Idiomes activats</translation>
+<translation id="3313473463670097216">Per carregar aquest Chromebook, utilitza una bateria de la mateixa marca.</translation>
 <translation id="3313590242757056087">Per definir els llocs web que l'usuari supervisat pot veure, podeu configurar restriccions i opcions a la pàgina <ph name="MANAGEMENT_URL" />.
     Si no canvieu la configuració predeterminada, <ph name="USER_DISPLAY_NAME" />
     podrà navegar per tots els llocs del web.</translation>
@@ -2325,7 +2327,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4459169140545916303">Actiu fa <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dies</translation>
 <translation id="4462159676511157176">Servidors de noms personalitzats</translation>
 <translation id="4469477701382819144">Anuncis bloquejats als llocs web que mostren publicitat intrusiva o enganyosa</translation>
-<translation id="4469943624506685059">Per evitar problemes de càrrega o de rendiment, fes servir un adaptador de corrent USB tipus C o un adaptador del fabricant del dispositiu Chromebook.</translation>
 <translation id="4470957202018033307">Preferències de l'emmagatzematge extern</translation>
 <translation id="447252321002412580">Ajuda a millorar les funcions i el rendiment de Chrome</translation>
 <translation id="4474155171896946103">Afegeix totes les pestanyes a les adreces d'interès...</translation>
@@ -2801,7 +2802,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="5213891612754844763">Mostra la configuració del servidor intermediari</translation>
 <translation id="5215502535566372932">Selecciona un país</translation>
 <translation id="521582610500777512">La foto s'ha descartat.</translation>
-<translation id="5217313969810784338">Per carregar el dispositiu, fes servir una bateria del fabricant del dispositiu Chromebook.</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="52232769093306234">S'ha produït un error en l'empaquetat.</translation>
 <translation id="5225324770654022472">Mostra la drecera d'aplicacions 

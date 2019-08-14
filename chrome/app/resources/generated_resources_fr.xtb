@@ -1381,6 +1381,7 @@
 <translation id="3017079585324758401">Arrière-plan</translation>
 <translation id="3020183492814296499">Raccourcis</translation>
 <translation id="3020990233660977256">Numéro de série : <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Veuillez utiliser un adaptateur secteur USB Type-C ou un adaptateur de la même marque que votre Chromebook.</translation>
 <translation id="3021066826692793094">Papillon</translation>
 <translation id="3021426244864538700">Accéder aux données de ce site</translation>
 <translation id="3021678814754966447">&amp;Afficher le code source du cadre</translation>
@@ -1554,6 +1555,7 @@
 <translation id="3308134619352333507">Masquer le bouton</translation>
 <translation id="3308852433423051161">Chargement de l'Assistant Google…</translation>
 <translation id="3312424061798279731">Langues activées</translation>
+<translation id="3313473463670097216">Pour recharger ce Chromebook, utilisez une batterie de la même marque.</translation>
 <translation id="3313590242757056087">Pour définir les sites Web que l'utilisateur supervisé peut consulter, vous pouvez configurer des restrictions
     et des paramètres sur le site <ph name="MANAGEMENT_URL" />.
     Si vous conservez les paramètres par défaut, <ph name="USER_DISPLAY_NAME" />
@@ -2330,7 +2332,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4459169140545916303">Actif il y a <ph name="DEVICE_LAST_ACTIVATED_TIME" /> jours</translation>
 <translation id="4462159676511157176">Serveurs de noms personnalisés</translation>
 <translation id="4469477701382819144">Bloqué sur les sites qui affichent des annonces intrusives ou trompeuses</translation>
-<translation id="4469943624506685059">Pour éviter tout problème de recharge ou de performance, utilisez un adaptateur secteur USB Type-C ou un adaptateur du fabricant de votre Chromebook.</translation>
 <translation id="4470957202018033307">Préférences de l'espace de stockage externe</translation>
 <translation id="447252321002412580">Contribuer à l'amélioration des fonctionnalités et des performances de Chrome</translation>
 <translation id="4474155171896946103">Ajouter tous les onglets aux favoris...</translation>
@@ -2806,7 +2807,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5213891612754844763">Afficher les paramètres de proxy</translation>
 <translation id="5215502535566372932">Sélectionnez un pays</translation>
 <translation id="521582610500777512">La photo a été supprimée.</translation>
-<translation id="5217313969810784338">Pour recharger votre Chromebook, utilisez une batterie fournie par son fabricant.</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
 <translation id="52232769093306234">Échec de la compression.</translation>
 <translation id="5225324770654022472">Afficher le raccourci des applications</translation>

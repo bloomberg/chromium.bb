@@ -668,7 +668,7 @@
 <translation id="1969654639948595766">Nhật ký văn bản WebRTC (<ph name="WEBRTC_TEXT_LOG_COUNT" />)</translation>
 <translation id="1970368523891847084">Đã chuyển sang chế độ video</translation>
 <translation id="197228003527531594">Trang này được phép xem tất cả các tệp trong một thư mục trên thiết bị của bạn.</translation>
-<translation id="197288927597451399">Giữ</translation>
+<translation id="197288927597451399">Giữ lại</translation>
 <translation id="1974043046396539880">Điểm Phân phối CRL</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
 <translation id="1974821797477522211">Kết nối mạng</translation>
@@ -1381,6 +1381,7 @@
 <translation id="3017079585324758401">Nền</translation>
 <translation id="3020183492814296499">Phím tắt</translation>
 <translation id="3020990233660977256">Số Sê-ri: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Vui lòng sử dụng bộ chuyển đổi điện USB Type-C hoặc bộ chuyển đổi có cùng thương hiệu với Chromebook.</translation>
 <translation id="3021066826692793094">Bướm</translation>
 <translation id="3021426244864538700">Truy cập vào dữ liệu của trang web này</translation>
 <translation id="3021678814754966447">&amp;Xem Nguồn Khung</translation>
@@ -1554,6 +1555,7 @@
 <translation id="3308134619352333507">Nút ẩn</translation>
 <translation id="3308852433423051161">Đang tải Trợ lý Google...</translation>
 <translation id="3312424061798279731">Ngôn ngữ đã bật</translation>
+<translation id="3313473463670097216">Để sạc pin cho Chromebook này, hãy dùng pin có cùng thương hiệu.</translation>
 <translation id="3313590242757056087">Để đặt các trang web mà người dùng bị giám sát có thể xem, bạn có thể định cấu hình
     các giới hạn và cài đặt bằng cách truy cập <ph name="MANAGEMENT_URL" />.
     Nếu bạn không thay đổi cài đặt mặc định, <ph name="USER_DISPLAY_NAME" />
@@ -2330,7 +2332,6 @@
 <translation id="4459169140545916303">Hoạt động <ph name="DEVICE_LAST_ACTIVATED_TIME" /> ngày trước</translation>
 <translation id="4462159676511157176">Máy chủ có tên tùy chỉnh</translation>
 <translation id="4469477701382819144">Đã chặn trên những trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
-<translation id="4469943624506685059">Để tránh gặp phải các vấn đề về hiệu suất hoặc sạc pin, hãy dùng bộ chuyển đổi điện USB Type-C hoặc bộ chuyển đổi của nhà sản xuất Chromebook.</translation>
 <translation id="4470957202018033307">Tùy chọn bộ nhớ bên ngoài</translation>
 <translation id="447252321002412580">Giúp cải thiện hiệu suất cũng như các tính năng của Chrome</translation>
 <translation id="4474155171896946103">Đánh dấu tất cả các tab...</translation>
@@ -2806,7 +2807,6 @@
 <translation id="5213891612754844763">Hiển thị cài đặt proxy</translation>
 <translation id="5215502535566372932">Chọn quốc gia</translation>
 <translation id="521582610500777512">Đã hủy ảnh</translation>
-<translation id="5217313969810784338">Hãy dùng pin của nhà sản xuất Chromebook để sạc.</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
 <translation id="52232769093306234">Không đóng gói được.</translation>
 <translation id="5225324770654022472">Hiển thị lối tắt cho ứng dụng</translation>

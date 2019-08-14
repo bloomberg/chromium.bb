@@ -1382,6 +1382,7 @@
 <translation id="3017079585324758401">Háttér</translation>
 <translation id="3020183492814296499">Billentyűparancsok</translation>
 <translation id="3020990233660977256">Sorozatszám: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">C típusú USB-tápcsatlakozót vagy a Chromebookkal megegyező márkájú adaptert használjon.</translation>
 <translation id="3021066826692793094">Pillangó</translation>
 <translation id="3021426244864538700">Ezek a bővítmények hozzáférnek a jelenlegi webhely adataihoz</translation>
 <translation id="3021678814754966447">&amp;Keret forrásának megtekintése</translation>
@@ -1555,6 +1556,7 @@
 <translation id="3308134619352333507">Elrejtés gomb</translation>
 <translation id="3308852433423051161">A Google Segéd betöltése…</translation>
 <translation id="3312424061798279731">Engedélyezett nyelvek</translation>
+<translation id="3313473463670097216">A Chromebook töltéséhez ugyanolyan márkájú akkumulátort használjon.</translation>
 <translation id="3313590242757056087">Annak megadásához, hogy a felügyelt felhasználó mely webhelyeket nézheti meg,
     korlátozásokat és beállításokat adhat meg itt: <ph name="MANAGEMENT_URL" />.
     Ha nem módosítja az alapértelmezett beállításokat, akkor <ph name="USER_DISPLAY_NAME" />
@@ -2330,7 +2332,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> napja volt aktív</translation>
 <translation id="4462159676511157176">Egyéni névszerverek</translation>
 <translation id="4469477701382819144">Letiltva a tolakodó vagy félrevezető hirdetéseket megjelenítő webhelyeken</translation>
-<translation id="4469943624506685059">A töltési és teljesítménybeli problémák elkerülése érdekében C típusú USB tápcsatlakozót vagy a Chromebook gyártójától származó adaptert használjon.</translation>
 <translation id="4470957202018033307">Külső tárhely beállításai</translation>
 <translation id="447252321002412580">Segítség a Chrome funkcióinak és teljesítményének javítása érdekében</translation>
 <translation id="4474155171896946103">Összes lap hozzáadása a könyvjelzőkhöz...</translation>
@@ -2806,7 +2807,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5213891612754844763">Proxybeállítások megjelenítése</translation>
 <translation id="5215502535566372932">Ország kiválasztása</translation>
 <translation id="521582610500777512">A fotót elvetették</translation>
-<translation id="5217313969810784338">A töltéshez a Chromebook gyártójától származó akkumulátort használja.</translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>
 <translation id="52232769093306234">Sikertelen csomagolás.</translation>
 <translation id="5225324770654022472">Alkalmazások parancsikon megjelenítése</translation>

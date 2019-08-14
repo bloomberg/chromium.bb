@@ -1379,6 +1379,7 @@
 <translation id="3017079585324758401">Pozadie</translation>
 <translation id="3020183492814296499">Skratky</translation>
 <translation id="3020990233660977256">Sériové číslo: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Použite nabíjačku s pripojením USB typu C alebo nabíjačku značky vášho Chromebooku.</translation>
 <translation id="3021066826692793094">Motýľ</translation>
 <translation id="3021426244864538700">Rozšírenia s prístupom k údajom tohto webu</translation>
 <translation id="3021678814754966447">&amp;Zobraziť zdrojový kód rámca</translation>
@@ -1552,6 +1553,7 @@
 <translation id="3308134619352333507">Skryť tlačidlo</translation>
 <translation id="3308852433423051161">Načítava sa Asistent Google…</translation>
 <translation id="3312424061798279731">Povolené jazyky</translation>
+<translation id="3313473463670097216">Ak chcete tento Chromebook nabiť, použite batériu rovnakej značky.</translation>
 <translation id="3313590242757056087">Ak chcete nastaviť, ktoré stránky môže kontrolovaný používateľ zobraziť, môžete na stránke <ph name="MANAGEMENT_URL" /> nakonfigurovať
     obmedzenia a nastavenia.
     Ak nezmeníte predvolené nastavenia, používateľ <ph name="USER_DISPLAY_NAME" />
@@ -2328,7 +2330,6 @@
 <translation id="4459169140545916303">Aktívne pred <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dňami</translation>
 <translation id="4462159676511157176">Vlastné menné servery</translation>
 <translation id="4469477701382819144">Blokované na weboch, ktoré zobrazujú obťažujúce alebo zavádzajúce reklamy</translation>
-<translation id="4469943624506685059">Ak chcete zabrániť problémom s nabíjaním a výkonnosťou, používajte nabíjačku od výrobcu vášho Chromebooku alebo s pripojením USB typu C.</translation>
 <translation id="4470957202018033307">Predvoľby externých úložísk</translation>
 <translation id="447252321002412580">Pomáhať s vylepšovaním funkcií a výkonu Chromu</translation>
 <translation id="4474155171896946103">Všetky karty uložiť ako záložky...</translation>
@@ -2804,7 +2805,6 @@
 <translation id="5213891612754844763">Zobraziť nastavenia proxy servera</translation>
 <translation id="5215502535566372932">Vyberte krajinu</translation>
 <translation id="521582610500777512">Fotka bola zahodená</translation>
-<translation id="5217313969810784338">Chromebook nabíjajte iba pomocou batérie od jeho výrobcu.</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
 <translation id="52232769093306234">Nepodarilo sa zbaliť.</translation>
 <translation id="5225324770654022472">Zobrazovať odkaz aplikácií</translation>

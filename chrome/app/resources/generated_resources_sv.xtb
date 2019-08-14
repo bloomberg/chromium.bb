@@ -1380,6 +1380,7 @@
 <translation id="3017079585324758401">Bakgrund</translation>
 <translation id="3020183492814296499">Genvägar</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Använd en USB Type-C-nätadapter eller en adapter av samma märke som Chromebook-enheten.</translation>
 <translation id="3021066826692793094">Fjäril</translation>
 <translation id="3021426244864538700">Har åtkomst till den här webbplatsens data</translation>
 <translation id="3021678814754966447">&amp;Visa ramkälla</translation>
@@ -1553,6 +1554,7 @@
 <translation id="3308134619352333507">Dölj knapp</translation>
 <translation id="3308852433423051161">Google Assistent läses in …</translation>
 <translation id="3312424061798279731">Aktiverade språk</translation>
+<translation id="3313473463670097216">Använd ett batteri av samma märke som Chromebook-enheten vid laddningen.</translation>
 <translation id="3313590242757056087">Om du vill ange vilka webbplatser som den kontrollerade användaren får besöka, kan du ange begränsningar
     och inställningar genom att besöka <ph name="MANAGEMENT_URL" />.
     Om du inte ändrar standardinställningarna kan <ph name="USER_DISPLAY_NAME" />
@@ -2329,7 +2331,6 @@
 <translation id="4459169140545916303">Aktiv för <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dagar sedan</translation>
 <translation id="4462159676511157176">Anpassade namnservrar</translation>
 <translation id="4469477701382819144">Blockeras på webbplatser där påträngande eller vilseledande annonser visas</translation>
-<translation id="4469943624506685059">Undvik laddnings- eller prestandaproblem genom att använda en USB Type-C-nätadapter eller en adapter från Chromebook-enhetens tillverkare.</translation>
 <translation id="4470957202018033307">Inställningar för extern lagring</translation>
 <translation id="447252321002412580">Bidra till att förbättra Chromes funktioner och prestanda</translation>
 <translation id="4474155171896946103">Skapa bokmärken för alla flikar ...</translation>
@@ -2805,7 +2806,6 @@
 <translation id="5213891612754844763">Visa proxyinställningar</translation>
 <translation id="5215502535566372932">Välj land</translation>
 <translation id="521582610500777512">Bilden togs bort</translation>
-<translation id="5217313969810784338">Använd ett batteri från Chromebook-enhetens tillverkare vid laddningen.</translation>
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="52232769093306234">Komprimeringen misslyckades.</translation>
 <translation id="5225324770654022472">Visa genväg för appar</translation>

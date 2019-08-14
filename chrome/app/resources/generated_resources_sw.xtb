@@ -1377,6 +1377,7 @@
 <translation id="3017079585324758401">Mandhari ya nyuma</translation>
 <translation id="3020183492814296499">Njia za mkato</translation>
 <translation id="3020990233660977256">Nambari ya Kufuatilia: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Tafadhali tumia adapta ya nishati ya USB Aina ya C au adapta kutoka kwa mtengenezaji wa Chromebook yako.</translation>
 <translation id="3021066826692793094">Kipepeo</translation>
 <translation id="3021426244864538700">Kufikia data ya tovuti hii</translation>
 <translation id="3021678814754966447">&amp;Ona Asili ya Fremu</translation>
@@ -1550,6 +1551,7 @@
 <translation id="3308134619352333507">Ficha Kitufe</translation>
 <translation id="3308852433423051161">Inapakia programu ya Mratibu wa Google...</translation>
 <translation id="3312424061798279731">Lugha zinazotumika</translation>
+<translation id="3313473463670097216">Ili uchaji Chromebook hii, tumia betri kutoka kwa mtengenezaji wa Chromebook.</translation>
 <translation id="3313590242757056087">Ili kubainisha tovuti ambayo mtumiaji anayesimamiwa anaweza kutazama, unaweza kusanidi vikwazo na mipangilio kwa kutembelea <ph name="MANAGEMENT_URL" />. Iwapo hutabadilisha mipangilio hii ya msingi, <ph name="USER_DISPLAY_NAME" /> anaweza kuvinjari tovuti zote kwenye mtandao.</translation>
 <translation id="3313622045786997898">Thamani ya Sahihi ya Cheti</translation>
 <translation id="3315158641124845231">Ficha <ph name="PRODUCT_NAME" /></translation>
@@ -2321,7 +2323,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4459169140545916303">Ilitumika siku <ph name="DEVICE_LAST_ACTIVATED_TIME" /> zilizopita</translation>
 <translation id="4462159676511157176">Seva za jina maalum</translation>
 <translation id="4469477701382819144">Yamezuiwa kwenye tovuti zinazoonyesha matangazo yanayopotosha au yanayokatiza huduma</translation>
-<translation id="4469943624506685059">Ili kuzuia matatizo ya kuchaji na utendaji, tumia adapta ya nishati ya USB Aina ya C au adapta ya mtengenezaji wa Chromebook yako.</translation>
 <translation id="4470957202018033307">Mapendeleo ya hifadhi ya nje</translation>
 <translation id="447252321002412580">Tusaidie tuboreshe utendaji na vipengele vya Chrome</translation>
 <translation id="4474155171896946103">Alamisha vichupo vyote...</translation>
@@ -2797,7 +2798,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5213891612754844763">Onyesha mipangilio ya seva mbadala</translation>
 <translation id="5215502535566372932">Chagua nchi</translation>
 <translation id="521582610500777512">Picha ilitupwa</translation>
-<translation id="5217313969810784338">Ili uchaji, tumia betri ya mtengenezaji wa Chromebook yako.</translation>
 <translation id="5222676887888702881">Ondoka</translation>
 <translation id="52232769093306234">Imeshindwa kupakia faili.</translation>
 <translation id="5225324770654022472">Onyesha mkato wa programu</translation>

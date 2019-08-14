@@ -1381,6 +1381,7 @@
 <translation id="3017079585324758401">Background</translation>
 <translation id="3020183492814296499">Mga Shortcut</translation>
 <translation id="3020990233660977256">Serial Number: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Gumamit ng USB Type-C na power adapter o adapter mula sa parehong brand ng iyong Chromebook.</translation>
 <translation id="3021066826692793094">Paruparo</translation>
 <translation id="3021426244864538700">Nakaka-access sa data ng site na ito</translation>
 <translation id="3021678814754966447">&amp;Tingnan ang Pinagmulan ng Frame</translation>
@@ -1554,6 +1555,7 @@
 <translation id="3308134619352333507">Itago ang Button</translation>
 <translation id="3308852433423051161">Nilo-load ang Google Assistant...</translation>
 <translation id="3312424061798279731">Mga naka-enable na wika</translation>
+<translation id="3313473463670097216">Para i-charge ang Chromebook na ito, gumamit ng baterya mula sa parehong brand.</translation>
 <translation id="3313590242757056087">Upang itakda kung aling mga website ang maaring tingnan ng pinangangasiwaang user, maisasaayos mo ang mga paghihigpit
     at setting sa pamamagitan ng pagbisita sa <ph name="MANAGEMENT_URL" />.
     Kung hindi mo babaguhin ang mga default na setting, maba-browse ni <ph name="USER_DISPLAY_NAME" />
@@ -2330,7 +2332,6 @@
 <translation id="4459169140545916303">Aktibo <ph name="DEVICE_LAST_ACTIVATED_TIME" /> (na) araw ang nakalipas</translation>
 <translation id="4462159676511157176">Custom na mga server ng pangalan</translation>
 <translation id="4469477701382819144">Naka-block sa mga site na nagpapakita ng mga nakakasagabal at nakakapanlinlang na ad</translation>
-<translation id="4469943624506685059">Para maiwasan ang mga isyu sa pag-charge o performance, gumamit ng power adapter na USB Type-C o adapter ng gumawa ng iyong Chromebook.</translation>
 <translation id="4470957202018033307">Mga kagustuhan sa external na storage</translation>
 <translation id="447252321002412580">Tumulong sa pagpapahusay sa mga feature at performance ng Chrome</translation>
 <translation id="4474155171896946103">I-bookmark ang lahat ng tab...</translation>
@@ -2806,7 +2807,6 @@
 <translation id="5213891612754844763">Ipakita ang mga setting ng proxy</translation>
 <translation id="5215502535566372932">Pumili ng bansa</translation>
 <translation id="521582610500777512">Na-discard ang larawan</translation>
-<translation id="5217313969810784338">Para mag-charge, gumamit ng baterya mula sa gumawa ng iyong Chromebook.</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
 <translation id="52232769093306234">Hindi nagtagumpay ang pag-pack.</translation>
 <translation id="5225324770654022472">Ipakita ang shortcut ng mga app</translation>

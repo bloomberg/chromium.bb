@@ -1382,6 +1382,7 @@
 <translation id="3017079585324758401">Latar belakang</translation>
 <translation id="3020183492814296499">Pintasan</translation>
 <translation id="3020990233660977256">Nombor Siri: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Sila gunakan penyesuai kuasa USB Type-C atau penyesuai daripada jenama yang sama seperti Chromebook anda.</translation>
 <translation id="3021066826692793094">Rama-rama</translation>
 <translation id="3021426244864538700">Mengakses data tapak ini</translation>
 <translation id="3021678814754966447">&amp;Lihat Sumber Bingkai</translation>
@@ -1555,6 +1556,7 @@
 <translation id="3308134619352333507">Sembunyikan Butang</translation>
 <translation id="3308852433423051161">Memuatkan Google Assistant...</translation>
 <translation id="3312424061798279731">Bahasa yang didayakan</translation>
+<translation id="3313473463670097216">Untuk mengecas Chromebook ini, gunakan bateri daripada jenama yang sama.</translation>
 <translation id="3313590242757056087">Untuk menetapkan tapak web yang boleh dilihat oleh pengguna diselia,
     anda boleh mengkonfigurasi sekatan dan tetapan dengan melawati <ph name="MANAGEMENT_URL" />.
     Jika anda tidak mengubah tetapan lalai, <ph name="USER_DISPLAY_NAME" />
@@ -2331,7 +2333,6 @@
 <translation id="4459169140545916303">Aktif <ph name="DEVICE_LAST_ACTIVATED_TIME" /> hari lalu</translation>
 <translation id="4462159676511157176">Nama pelayan tersuai</translation>
 <translation id="4469477701382819144">Disekat di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan</translation>
-<translation id="4469943624506685059">Untuk mengelakkan isu pengecasan dan prestasi, gunakan penyesuai kuasa USB Jenis-C atau penyesuai yang dibuat oleh pengilang Chromebook anda.</translation>
 <translation id="4470957202018033307">Pilihan storan luar</translation>
 <translation id="447252321002412580">Bantu meningkatkan ciri dan prestasi Chrome</translation>
 <translation id="4474155171896946103">Tanda halaman semua tab...</translation>
@@ -2807,7 +2808,6 @@
 <translation id="5213891612754844763">Tunjukkan tetapan proksi</translation>
 <translation id="5215502535566372932">Pilih negara</translation>
 <translation id="521582610500777512">Foto telah dibuang</translation>
-<translation id="5217313969810784338">Untuk mengecas, gunakan bateri yang dibuat oleh pengilang Chromebook anda.</translation>
 <translation id="5222676887888702881">Log keluar</translation>
 <translation id="52232769093306234">Gagal membungkus.</translation>
 <translation id="5225324770654022472">Paparkan pintasan apl</translation>

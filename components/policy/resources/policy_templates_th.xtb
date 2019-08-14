@@ -2088,7 +2088,7 @@
 
           นโยบายนี้เป็นที่ยอมรับเฉพาะในกรณีที่นโยบาย "DefaultSearchProviderEnabled 'ถูกเปิดใช้งาน</translation>
 <translation id="489803897780524242">พารามิเตอร์ที่ควบคุมตำแหน่งข้อความค้นหาสำหรับผู้ให้บริการค้นหาในค่าเริ่มต้น</translation>
-<translation id="4899708173828500852">เปิดใช้งาน Safe Browsing</translation>
+<translation id="4899708173828500852">เปิดใช้ Google Safe Browsing</translation>
 <translation id="4899802251198446659">ให้คุณควบคุมว่าวิดีโอจะเล่นโดยอัตโนมัติ (ผู้ใช้ไม่ต้องให้คำยินยอม) พร้อมด้วยเนื้อหาเสียงได้หรือไม่ใน <ph name="PRODUCT_NAME" />
 
       หากตั้งค่านโยบายเป็น True <ph name="PRODUCT_NAME" /> จะเล่นสื่อโดยอัตโนมัติได้

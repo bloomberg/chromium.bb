@@ -1380,6 +1380,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3017079585324758401">Pozadí</translation>
 <translation id="3020183492814296499">Zkratky</translation>
 <translation id="3020990233660977256">Sériové číslo: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Použijte napájecí adaptér USB Type-C nebo adaptér stejné značky, jako je váš Chromebook.</translation>
 <translation id="3021066826692793094">Motýl</translation>
 <translation id="3021426244864538700">Přístup k datům tohoto webu</translation>
 <translation id="3021678814754966447">Zobrazit zdrojo&amp;vý kód rámce</translation>
@@ -1553,6 +1554,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3308134619352333507">Skrýt tlačítko</translation>
 <translation id="3308852433423051161">Načítání Asistenta Google...</translation>
 <translation id="3312424061798279731">Povolené jazyky</translation>
+<translation id="3313473463670097216">K nabíjení tohoto Chromebooku použijte baterii stejné značky.</translation>
 <translation id="3313590242757056087">Na adrese <ph name="MANAGEMENT_URL" /> můžete nakonfigurovat, které weby si dozorovaný uživatel může zobrazit.
 Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /> bude moci prohlížet všechny weby na internetu.</translation>
 <translation id="3313622045786997898">Hodnota podpisu certifikátu</translation>
@@ -2326,7 +2328,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4459169140545916303">Aktivní před <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dny</translation>
 <translation id="4462159676511157176">Vlastní názvové servery</translation>
 <translation id="4469477701382819144">Blokováno na webech, které zobrazují rušivé nebo zavádějící reklamy</translation>
-<translation id="4469943624506685059">Chcete-li předejít problémům s nabíjením a výkonem, používejte síťový adaptér USB Type-C nebo adaptér od výrobce Chromebooku.</translation>
 <translation id="4470957202018033307">Předvolby externího úložiště</translation>
 <translation id="447252321002412580">Pomoci s vylepšováním funkcí a výkonu prohlížeče Chrome</translation>
 <translation id="4474155171896946103">Přidat do záložek všechny karty...</translation>
@@ -2802,7 +2803,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5213891612754844763">Zobrazit nastavení proxy serveru</translation>
 <translation id="5215502535566372932">Vyberte zemi</translation>
 <translation id="521582610500777512">Fotografie byla zahozena</translation>
-<translation id="5217313969810784338">K nabíjení použijte baterii od výrobce Chromebooku.</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
 <translation id="52232769093306234">Zabalení se nezdařilo.</translation>
 <translation id="5225324770654022472">Zobrazit zástupce aplikací</translation>

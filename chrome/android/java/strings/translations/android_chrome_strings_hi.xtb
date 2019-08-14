@@ -89,7 +89,7 @@
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 चयनित आइटम निकालें}one{# चयनित आइटम निकालें}other{# चयनित आइटम निकालें}}</translation>
 <translation id="164269334534774161">आप <ph name="CREATION_TIME" /> से इस पेज की ऑफ़लाइन कॉपी देख रहे हैं</translation>
 <translation id="1644574205037202324">इतिहास</translation>
-<translation id="1647391597548383849">अपना कैमरा ऐक्सेस करें</translation>
+<translation id="1647391597548383849">अपना कैमरा एक्सेस करें</translation>
 <translation id="1660204651932907780">साइटों को आवाज़ चलाने दें (सुझाया गया)</translation>
 <translation id="1670399744444387456">मूलभूत</translation>
 <translation id="1671236975893690980">डाउनलोड लंबित…</translation>
@@ -199,7 +199,7 @@
 <translation id="2426805022920575512">दूसरा खाता चुनें</translation>
 <translation id="2433507940547922241">प्रकटन</translation>
 <translation id="2434158240863470628">डाउनलोड हो गया <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
-<translation id="2440823041667407902">जगह की जानकारी का ऐक्‍सेस दें</translation>
+<translation id="2440823041667407902">जगह की जानकारी का एक्‍सेस दें</translation>
 <translation id="2450083983707403292">क्या आप <ph name="FILE_NAME" /> को डाउनलोड करना फिर से शुरू करना चाहते हैं?</translation>
 <translation id="2482878487686419369">सूचनाएं</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> प्रबंधित करता है</translation>
@@ -1123,7 +1123,7 @@
 <translation id="926205370408745186">'डिजिटल वेलबीइंग' से अपनी Chrome गतिविधि हटाएं</translation>
 <translation id="932327136139879170">होम बटन</translation>
 <translation id="938850635132480979">गड़बड़ी: <ph name="ERROR_CODE" /></translation>
-<translation id="945632385593298557">अपना माइक्रोफ़ोन ऐक्सेस करें</translation>
+<translation id="945632385593298557">अपना माइक्रोफ़ोन एक्सेस करें</translation>
 <translation id="951339005376969845">मौजूदा डेटा मिटाएं. आप <ph name="FROM_ACCOUNT" /> पर वापस जाकर उसे वापस ला सकते हैं.</translation>
 <translation id="95817756606698420">चीन में खोज करने के लिए Chrome, <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> का इस्तेमाल कर सकता है. आप इसे <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में बदल सकते हैं.</translation>
 <translation id="959682366969460160">व्‍यवस्‍थित हों</translation>

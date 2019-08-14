@@ -1381,6 +1381,7 @@
 <translation id="3017079585324758401">Fonas</translation>
 <translation id="3020183492814296499">Spartieji klavišai</translation>
 <translation id="3020990233660977256">Serijos numeris: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Naudokite „Type-C“ USB maitinimo adapterį arba to paties prekės ženklo kaip „Chromebook“ adapterį.</translation>
 <translation id="3021066826692793094">Drugelis</translation>
 <translation id="3021426244864538700">Prieiga prie šios svetainės duomenų</translation>
 <translation id="3021678814754966447">&amp;Žiūrėti rėmelio šaltinį</translation>
@@ -1554,6 +1555,7 @@
 <translation id="3308134619352333507">Paslėpti mygtuką</translation>
 <translation id="3308852433423051161">Įkeliamas „Google“ padėjėjas...</translation>
 <translation id="3312424061798279731">Įgalintos kalbos</translation>
+<translation id="3313473463670097216">„Chromebook“ įkrauti naudokite to paties prekės ženklo akumuliatorių.</translation>
 <translation id="3313590242757056087">Jei norite nustatyti, kurias svetaines galės matyti prižiūrimas naudotojas, galite konfigūruoti apribojimus
     ir nustatymus apsilankę adresu <ph name="MANAGEMENT_URL" />.
     Jei nepakeisite numatytųjų nustatymų, <ph name="USER_DISPLAY_NAME" />
@@ -2330,7 +2332,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4459169140545916303">Aktyvus prieš <ph name="DEVICE_LAST_ACTIVATED_TIME" /> d.</translation>
 <translation id="4462159676511157176">Tinkintų pavadinimų serveriai</translation>
 <translation id="4469477701382819144">Blokuojama svetainėse, kuriose rodomi nepageidaujami arba klaidinantys skelbimai</translation>
-<translation id="4469943624506685059">Jei norite išvengti įkrovimo ar veikimo problemų, naudokite „Type-C“ USB maitinimo adapterį arba adapterį, pagamintą jūsų „Chromebook“ gamintojo.</translation>
 <translation id="4470957202018033307">Išorinės saugyklos nuostatos</translation>
 <translation id="447252321002412580">Padėti tobulinti „Chrome“ funkcijas ir našumą</translation>
 <translation id="4474155171896946103">Pažymėti visus skirtukus...</translation>
@@ -2806,7 +2807,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5213891612754844763">Rodyti tarpinio serverio nustatymus</translation>
 <translation id="5215502535566372932">Pasirinkite šalį</translation>
 <translation id="521582610500777512">Nuotrauka buvo atmesta</translation>
-<translation id="5217313969810784338">Įrenginiui įkrauti naudokite „Chromebook“ gamintojo pagamintą akumuliatorių.</translation>
 <translation id="5222676887888702881">Atsijungti</translation>
 <translation id="52232769093306234">Nepavyko supakuoti.</translation>
 <translation id="5225324770654022472">Rodyti spartųjį programų klavišą</translation>

@@ -1378,6 +1378,7 @@
 <translation id="3017079585324758401">רקע</translation>
 <translation id="3020183492814296499">קיצורים</translation>
 <translation id="3020990233660977256">מספר סידורי: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">‏יש להשתמש במתאם מתח מסוג USB-C או במתאם מאותו מותג של ה-Chromebook.</translation>
 <translation id="3021066826692793094">פרפר</translation>
 <translation id="3021426244864538700">גישה לנתוני האתר הזה</translation>
 <translation id="3021678814754966447">&amp;הצג את מקור המסגרת</translation>
@@ -1551,6 +1552,7 @@
 <translation id="3308134619352333507">לחצן 'הסתר'</translation>
 <translation id="3308852433423051161">‏טוען את Google Assistant...</translation>
 <translation id="3312424061798279731">שפות זמינות</translation>
+<translation id="3313473463670097216">‏כדי לטעון את ה-Chromebook הזה יש להשתמש בסוללה מאותו מותג.</translation>
 <translation id="3313590242757056087">כדי להגדיר אילו אתרים המשתמש בפיקוח יכול להציג, ניתן להגדיר הגבלות
     והגדרות על ידי ביקור ב-<ph name="MANAGEMENT_URL" />.
     אם לא תשנה את הגדרות ברירת המחדל, <ph name="USER_DISPLAY_NAME" />
@@ -2327,7 +2329,6 @@
 <translation id="4459169140545916303">שימוש אחרון: לפני <ph name="DEVICE_LAST_ACTIVATED_TIME" /> ימים</translation>
 <translation id="4462159676511157176">שרתי שמות מותאמים אישית</translation>
 <translation id="4469477701382819144">חסומות באתרים שמוצגות בהם מודעות מפריעות או מטעות</translation>
-<translation id="4469943624506685059">‏כדי להימנע מבעיות בטעינה או בביצועים, יש להשתמש במתאם מתח מסוג USB-C או במתאם מתח של יצרן ה-Chromebook שלך.</translation>
 <translation id="4470957202018033307">העדפות אחסון חיצוני</translation>
 <translation id="447252321002412580">‏עזרה בשיפור התכונות והביצועים של Chrome</translation>
 <translation id="4474155171896946103">צור סימניה לכל הכרטיסיות...</translation>
@@ -2803,7 +2804,6 @@
 <translation id="5213891612754844763">‏הצג את ההגדרות של שרת ה-proxy</translation>
 <translation id="5215502535566372932">יש לבחור מדינה</translation>
 <translation id="521582610500777512">התצלום נמחק</translation>
-<translation id="5217313969810784338">‏כדי לטעון, יש להשתמש בסוללה של יצרן ה-Chromebook שלך.</translation>
 <translation id="5222676887888702881">יציאה</translation>
 <translation id="52232769093306234">האריזה נכשלה.</translation>
 <translation id="5225324770654022472">הצג קיצורי יישומים</translation>

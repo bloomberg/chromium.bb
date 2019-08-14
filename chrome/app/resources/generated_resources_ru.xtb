@@ -1381,6 +1381,7 @@
 <translation id="3017079585324758401">Фон</translation>
 <translation id="3020183492814296499">Ярлыки</translation>
 <translation id="3020990233660977256">Серийный номер: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">Используйте адаптер питания USB Type-C или тот, который был выпущен производителем вашего устройства Chromebook.</translation>
 <translation id="3021066826692793094">Бабочка</translation>
 <translation id="3021426244864538700">Есть доступ к данным этого сайта</translation>
 <translation id="3021678814754966447">Просмотр кода фрейма</translation>
@@ -1554,6 +1555,7 @@
 <translation id="3308134619352333507">Скрыть кнопку</translation>
 <translation id="3308852433423051161">Загрузка Google Ассистента…</translation>
 <translation id="3312424061798279731">Добавленные языки</translation>
+<translation id="3313473463670097216">Чтобы зарядить Chromebook, используйте батарею от производителя устройства.</translation>
 <translation id="3313590242757056087">Указать список сайтов, которые может посещать контролируемый пользователь, а также задать настройки и
     ограничения можно на странице <ph name="MANAGEMENT_URL" />.
     Если не изменить настройки по умолчанию, пользователь <ph name="USER_DISPLAY_NAME" />
@@ -2330,7 +2332,6 @@
 <translation id="4459169140545916303">Последние действия: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> дн. назад</translation>
 <translation id="4462159676511157176">Другие серверы имен</translation>
 <translation id="4469477701382819144">Объявления заблокированы на сайтах, которые показывают навязчивую или вводящую в заблуждение рекламу.</translation>
-<translation id="4469943624506685059">Чтобы исключить сбои при зарядке и во время работы, используйте адаптер питания от производителя Chromebook или адаптер USB Type-C.</translation>
 <translation id="4470957202018033307">Настройки внешних накопителей</translation>
 <translation id="447252321002412580">Помогать повышать производительность Chrome и улучшать функции</translation>
 <translation id="4474155171896946103">Добавить все вкладки в закладки…</translation>
@@ -2806,7 +2807,6 @@
 <translation id="5213891612754844763">Показать настройки прокси-сервера</translation>
 <translation id="5215502535566372932">Выберите страну</translation>
 <translation id="521582610500777512">Фотография удалена.</translation>
-<translation id="5217313969810784338">Для зарядки используйте аккумулятор от производителя Chromebook.</translation>
 <translation id="5222676887888702881">Выйти</translation>
 <translation id="52232769093306234">Не удалось выполнить сжатие.</translation>
 <translation id="5225324770654022472">Показывать кнопку "Сервисы"</translation>

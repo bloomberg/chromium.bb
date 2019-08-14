@@ -1380,6 +1380,7 @@
 <translation id="3017079585324758401">बॅकग्राउंड</translation>
 <translation id="3020183492814296499">शॉर्टकट</translation>
 <translation id="3020990233660977256">सिरिअल नंबर: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">कृपया USB केबल पॉवर अडॅप्टर वापरा किंवा तुमच्या Chromebook ब्रँडचाच अडॅप्टर वापरा.</translation>
 <translation id="3021066826692793094">फुलपाखरू</translation>
 <translation id="3021426244864538700">या साइटचा डेटा ॲक्सेस करत आहे</translation>
 <translation id="3021678814754966447">फ्रेम स्रोत &amp;पहा</translation>
@@ -1553,6 +1554,7 @@
 <translation id="3308134619352333507">बटण लपवा</translation>
 <translation id="3308852433423051161">Google साहाय्यक लोड करत आहे...</translation>
 <translation id="3312424061798279731">सक्षम केलेल्या भाषा</translation>
+<translation id="3313473463670097216">हे Chromebook चार्ज करण्यासाठी, त्याच ब्रँडची बॅटरी वापरा.</translation>
 <translation id="3313590242757056087">पर्यवेक्षित वापरकर्ता कोणत्या वेबसाइट पाहू शकतो हे सेट करण्यासाठी, तुम्ही
     <ph name="MANAGEMENT_URL" /> ला भेट देऊन प्रतिबंध आणि सेटिंग्ज कॉन्फिगर करू शकता.
     तुम्ही डीफॉल्ट सेटिंग्ज बदलत नसल्यास, 
@@ -2329,7 +2331,6 @@
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> दिवसांपूर्वी ॲक्टिव्ह होते</translation>
 <translation id="4462159676511157176">कस्टम नाव सर्व्हर</translation>
 <translation id="4469477701382819144">अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवणाऱ्या साइटवर ब्लॉक केले</translation>
-<translation id="4469943624506685059">चार्जिंग किंवा परफॉर्मन्स समस्या टाळण्यासाठी, USB केबल पॉवर अडॅप्टर किंवा तुमच्या Chromebook निर्मात्यांने बनवलेला अडॅप्टर वापरा.</translation>
 <translation id="4470957202018033307">बाह्य स्टोरेज प्राधान्ये</translation>
 <translation id="447252321002412580">Chrome ची वैशिष्ट्ये आणि परफॉर्मन्स सुधारण्यात मदत करा</translation>
 <translation id="4474155171896946103">सर्व टॅब बुकमार्क करा...</translation>
@@ -2805,7 +2806,6 @@
 <translation id="5213891612754844763">प्रॉक्सी सेटिग्ज दर्शवा</translation>
 <translation id="5215502535566372932">देश निवडा</translation>
 <translation id="521582610500777512">फोटो टाकून दिला</translation>
-<translation id="5217313969810784338">चार्ज करण्यासाठी, तुमच्या Chromebook च्या निर्मात्याने बनवलेली बॅटरी वापरा.</translation>
 <translation id="5222676887888702881">साइन आउट करा</translation>
 <translation id="52232769093306234">पॅकिंग अयशस्वी झाले.</translation>
 <translation id="5225324770654022472">अ‍ॅप्स शॉर्टकट दर्शवा</translation>

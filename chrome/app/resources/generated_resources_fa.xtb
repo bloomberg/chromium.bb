@@ -1377,6 +1377,7 @@
 <translation id="3017079585324758401">پس‌زمینه</translation>
 <translation id="3020183492814296499">میان‌برها</translation>
 <translation id="3020990233660977256">شمارهٔ سریال: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021039405808358694">‏لطفاً از آداپتور برق USB نوع C یا از آداپتوری با همان نمانام Chromebook استفاده کنید.</translation>
 <translation id="3021066826692793094">پروانه</translation>
 <translation id="3021426244864538700">درحال دسترسی به داده‌های این سایت</translation>
 <translation id="3021678814754966447">&amp;نمای منبع قاب</translation>
@@ -1550,6 +1551,7 @@
 <translation id="3308134619352333507">دکمه پنهان کردن</translation>
 <translation id="3308852433423051161">‏درحال بارگیری «دستیار Google»…</translation>
 <translation id="3312424061798279731">زبان‌های فعال</translation>
+<translation id="3313473463670097216">‏برای شارژ کردن این Chromebook، از باتری با همان نمانام استفاده کنید.</translation>
 <translation id="3313590242757056087">برای تنظیم این که کاربر نظارت‌شده مجاز به مشاهده چه وب‌سایت‌هایی باشد، می‌توانید
     با بازدید از <ph name="MANAGEMENT_URL" /> محدودیت‌ها و تنظیمات را پیکربندی کنید.
     چنانچه تنظیمات پیش‌فرض را تغییر ندهید، <ph name="USER_DISPLAY_NAME" />
@@ -2326,7 +2328,6 @@
 <translation id="4459169140545916303">آخرین فعالیت: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> روز قبل</translation>
 <translation id="4462159676511157176">سرورهای نام سفارشی</translation>
 <translation id="4469477701382819144">در سایت‌هایی که آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهند مسدود شود</translation>
-<translation id="4469943624506685059">‏برای جلوگیری از بروز مشکلات مربوط به شارژ کردن یا عملکرد دستگاه، از آداپتور برق USB نوع C یا آداپتوری استفاده کنید که توسط سازنده Chromebook ارائه شده است.</translation>
 <translation id="4470957202018033307">تنظیمات برگزیده فضای ذخیره‌سازی خارجی</translation>
 <translation id="447252321002412580">‏کمک به بهبود ویژگی‌ها و عملکرد Chrome</translation>
 <translation id="4474155171896946103">نشانک‌گذاری همه برگه‌ها...</translation>
@@ -2802,7 +2803,6 @@
 <translation id="5213891612754844763">نمایش تنظیمات پروکسی</translation>
 <translation id="5215502535566372932">کشور را انتخاب کنید</translation>
 <translation id="521582610500777512">عکس صرف‌ نظر شد</translation>
-<translation id="5217313969810784338">‏برای شارژ کردن از باتری‌ای استفاده کنید که توسط سازنده Chromebook ارائه شده است.</translation>
 <translation id="5222676887888702881">خروج از سیستم</translation>
 <translation id="52232769093306234">بسته‌بندی نشد.</translation>
 <translation id="5225324770654022472">نمایش میان‌بر برنامه‌ها</translation>
