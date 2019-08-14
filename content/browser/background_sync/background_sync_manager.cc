@@ -1982,8 +1982,6 @@ void BackgroundSyncManager::EventCompleteImpl(
     return;
   }
 
-  UpdateNumFiringRegistrationsBy(registration_info->sync_type, -1);
-
   BackgroundSyncRegistration* registration =
       LookupActiveRegistration(*registration_info);
   if (!registration) {
@@ -2027,6 +2025,8 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
     base::OnceClosure callback,
     base::TimeDelta delay) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  UpdateNumFiringRegistrationsBy(registration_info->sync_type, -1);
 
   BackgroundSyncRegistration* registration =
       LookupActiveRegistration(*registration_info);
