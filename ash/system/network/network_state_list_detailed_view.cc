@@ -317,7 +317,8 @@ void NetworkStateListDetailedView::ShowSettings() {
                                   : UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED);
   CloseBubble();  // Deletes |this|.
   Shell::Get()->system_tray_model()->client()->ShowNetworkSettings(
-      std::string());
+      model_->default_network() ? model_->default_network()->guid
+                                : std::string());
 }
 
 void NetworkStateListDetailedView::UpdateHeaderButtons() {
