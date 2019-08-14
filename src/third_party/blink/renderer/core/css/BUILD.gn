@@ -435,6 +435,7 @@ blink_core_sources("css") {
 
 
     # patch section: lcd-text background
+    "properties/longhands/bb_lcd_background_color_custom.cc",
 
 
     # patch section: suppress-needs-compositing-input-update

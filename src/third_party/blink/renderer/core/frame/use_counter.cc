@@ -1244,6 +1244,8 @@ int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
 
 
     // patch section: lcd-text background (returns 640)
+    case CSSPropertyBbLcdBackgroundColor:
+      return 640;
 
 
     // patch section: suppress-needs-compositing-input-update (returns 641)
