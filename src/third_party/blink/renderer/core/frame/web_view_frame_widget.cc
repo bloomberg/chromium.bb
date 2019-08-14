@@ -159,6 +159,10 @@ bool WebViewFrameWidget::IsAcceleratedCompositingActive() const {
   return web_view_->IsAcceleratedCompositingActive();
 }
 
+void WebViewFrameWidget::DidChangeWindowRect() {
+  return web_view_->DidChangeWindowRect();
+}
+
 WebURL WebViewFrameWidget::GetURLForDebugTrace() {
   return web_view_->GetURLForDebugTrace();
 }
