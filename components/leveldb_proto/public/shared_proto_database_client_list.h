@@ -41,6 +41,7 @@ enum class ProtoDbType {
   STRIKE_DATABASE = 19,
   HINT_CACHE_STORE = 20,
   DOWNLOAD_DB = 21,
+  VIDEO_DECODE_STATS_DB = 22,
 
   LAST,
 };

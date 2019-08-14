@@ -69,6 +69,8 @@ std::string SharedProtoDatabaseClientList::ProtoDbTypeToString(
       return "PreviewsHintCacheStore";
     case ProtoDbType::DOWNLOAD_DB:
       return "DownloadDB";
+    case ProtoDbType::VIDEO_DECODE_STATS_DB:
+      return "VideoDecodeStatsDB";
     case ProtoDbType::LAST:
       NOTREACHED();
       return std::string();
