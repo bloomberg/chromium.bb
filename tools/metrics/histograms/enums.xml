@@ -34397,7 +34397,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1837329460" label="NewEncodeCpuLoadEstimator:enabled"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
   <int value="-1835608319" label="EnableHeuristicPalmDetectionFilter:disabled"/>
-  <int value="-1835123381" label="TemporaryUnexpireFlagsM77:enabled"/>
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
   <int value="-1832575380" label="show-saved-copy"/>
   <int value="-1832221649" label="disable-out-of-process-pac"/>
@@ -35166,6 +35165,7 @@ from previous Chrome versions.
   <int value="-795600188" label="disable-async-dns"/>
   <int value="-793921836" label="ShowAllDialogsWithViewsToolkit:disabled"/>
   <int value="-793383355" label="StrictOriginIsolation:enabled"/>
+  <int value="-792785226" label="TemporaryUnexpireFlagsM78:disabled"/>
   <int value="-792079435" label="EnableAppsGridGapFeature:disabled"/>
   <int value="-790036192" label="overscroll-start-threshold"/>
   <int value="-788074946"
@@ -36299,6 +36299,7 @@ from previous Chrome versions.
   <int value="820650704" label="disable-ntp-popular-sites"/>
   <int value="821192723" label="show-fps-counter"/>
   <int value="824961931" label="use-simple-cache-backend"/>
+  <int value="828092263" label="TemporaryUnexpireFlagsM78:enabled"/>
   <int value="832142463" label="WebAssemblyStreaming:enabled"/>
   <int value="834033186" label="enable-data-reduction-proxy-dev"/>
   <int value="834326277" label="enable-answers-in-suggest"/>
@@ -36389,7 +36390,6 @@ from previous Chrome versions.
   <int value="976079108" label="TouchpadOverscrollHistoryNavigation:disabled"/>
   <int value="976278412" label="google-password-manager:enabled"/>
   <int value="977968353" label="WebUITabStrip:disabled"/>
-  <int value="978659723" label="TemporaryUnexpireFlagsM77:disabled"/>
   <int value="979445973" label="OmniboxSpareRenderer:enabled"/>
   <int value="980396200" label="enable-new-korean-ime"/>
   <int value="981818901" label="AppBanners:enabled"/>

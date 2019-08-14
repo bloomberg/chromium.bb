@@ -1995,9 +1995,9 @@ const char kTrySupportedChannelLayoutsDescription[] =
     "to do stereo to surround expansion if supported. May expose third party "
     "driver bugs, use with caution.";
 
-const char kUnexpireFlagsM77Name[] = "Temporarily unexpire M77 flags.";
-const char kUnexpireFlagsM77Description[] =
-    "Temporarily unexpire flags that are expired as of M77. These flags will "
+const char kUnexpireFlagsM78Name[] = "Temporarily unexpire M78 flags.";
+const char kUnexpireFlagsM78Description[] =
+    "Temporarily unexpire flags that are expired as of M78. These flags will "
     "be removed soon.";
 
 const char kUnifiedConsentName[] = "Unified Consent";
