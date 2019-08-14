@@ -169,13 +169,12 @@ void GetAllCallback::Complete(bool success) {
     std::move(callback_).Run();
 }
 
-MockLevelDBObserver::MockLevelDBObserver() : binding_(this) {}
+MockLevelDBObserver::MockLevelDBObserver() = default;
 MockLevelDBObserver::~MockLevelDBObserver() = default;
 
-blink::mojom::StorageAreaObserverAssociatedPtrInfo MockLevelDBObserver::Bind() {
-  blink::mojom::StorageAreaObserverAssociatedPtrInfo ptr_info;
-  binding_.Bind(mojo::MakeRequest(&ptr_info));
-  return ptr_info;
+mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver>
+MockLevelDBObserver::Bind() {
+  return receiver_.BindNewEndpointAndPassRemote();
 }
 
 }  // namespace test

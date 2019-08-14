@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/common/dom_storage/dom_storage_types.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 namespace content {
@@ -49,19 +50,17 @@ std::unique_ptr<SessionStorageAreaImpl> SessionStorageAreaImpl::Clone(
 }
 
 void SessionStorageAreaImpl::NotifyObserversAllDeleted() {
-  observers_.ForAllPtrs([](blink::mojom::StorageAreaObserver* observer) {
+  for (auto& observer : observers_) {
     // Renderer process expects |source| to always be two newline separated
     // strings.
     observer->AllDeleted("\n");
-  });
+  };
 }
 
 // blink::mojom::StorageArea:
 void SessionStorageAreaImpl::AddObserver(
-    blink::mojom::StorageAreaObserverAssociatedPtrInfo observer) {
-  blink::mojom::StorageAreaObserverAssociatedPtr observer_ptr;
-  observer_ptr.Bind(std::move(observer));
-  observers_.AddPtr(std::move(observer_ptr));
+    mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver> observer) {
+  observers_.Add(std::move(observer));
 }
 
 void SessionStorageAreaImpl::Put(

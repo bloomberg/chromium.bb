@@ -14,9 +14,9 @@
 #include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "url/origin.h"
 
 namespace content {
@@ -73,7 +73,8 @@ class CONTENT_EXPORT SessionStorageAreaImpl : public blink::mojom::StorageArea {
 
   // blink::mojom::StorageArea:
   void AddObserver(
-      blink::mojom::StorageAreaObserverAssociatedPtrInfo observer) override;
+      mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver> observer)
+      override;
   void Put(const std::vector<uint8_t>& key,
            const std::vector<uint8_t>& value,
            const base::Optional<std::vector<uint8_t>>& client_old_value,
@@ -103,7 +104,7 @@ class CONTENT_EXPORT SessionStorageAreaImpl : public blink::mojom::StorageArea {
   scoped_refptr<SessionStorageDataMap> shared_data_map_;
   RegisterNewAreaMap register_new_map_callback_;
 
-  mojo::AssociatedInterfacePtrSet<blink::mojom::StorageAreaObserver> observers_;
+  mojo::AssociatedRemoteSet<blink::mojom::StorageAreaObserver> observers_;
   mojo::AssociatedReceiver<blink::mojom::StorageArea> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionStorageAreaImpl);

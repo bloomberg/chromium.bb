@@ -20,10 +20,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/barrier_builder.h"
 #include "content/test/fake_leveldb_database.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -124,7 +122,7 @@ class StorageAreaImplTest : public testing::Test,
     bool should_send_old_value;
   };
 
-  StorageAreaImplTest() : db_(&mock_data_), observer_binding_(this) {
+  StorageAreaImplTest() : db_(&mock_data_) {
     auto request = mojo::MakeRequest(&level_db_database_ptr_);
     db_.Bind(std::move(request));
 
@@ -138,9 +136,8 @@ class StorageAreaImplTest : public testing::Test,
     set_mock_data("123", "baddata");
 
     storage_area_->Bind(storage_area_remote_.BindNewPipeAndPassReceiver());
-    blink::mojom::StorageAreaObserverAssociatedPtrInfo ptr_info;
-    observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
-    storage_area_remote_->AddObserver(std::move(ptr_info));
+    storage_area_remote_->AddObserver(
+        observer_receiver_.BindNewEndpointAndPassRemote());
   }
 
   ~StorageAreaImplTest() override {}
@@ -307,7 +304,8 @@ class StorageAreaImplTest : public testing::Test,
   MockDelegate delegate_;
   std::unique_ptr<StorageAreaImpl> storage_area_;
   mojo::Remote<blink::mojom::StorageArea> storage_area_remote_;
-  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> observer_binding_;
+  mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver>
+      observer_receiver_{this};
   std::vector<Observation> observations_;
   bool should_record_send_old_value_observations_ = false;
 };

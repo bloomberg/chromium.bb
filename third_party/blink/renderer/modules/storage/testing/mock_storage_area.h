@@ -31,7 +31,8 @@ class MockStorageArea : public mojom::blink::StorageArea {
 
   // StorageArea implementation:
   void AddObserver(
-      mojom::blink::StorageAreaObserverAssociatedPtrInfo observer) override;
+      mojo::PendingAssociatedRemote<mojom::blink::StorageAreaObserver> observer)
+      override;
 
   void Put(const Vector<uint8_t>& key,
            const Vector<uint8_t>& value,

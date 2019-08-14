@@ -222,26 +222,13 @@ void StorageAreaImpl::SetCacheModeForTesting(CacheMode cache_mode) {
   SetCacheMode(cache_mode);
 }
 
-mojo::InterfacePtrSetElementId StorageAreaImpl::AddObserver(
-    blink::mojom::StorageAreaObserverAssociatedPtr observer) {
-  if (cache_mode_ == CacheMode::KEYS_AND_VALUES)
-    observer->ShouldSendOldValueOnMutations(false);
-  return observers_.AddPtr(std::move(observer));
-}
-
-bool StorageAreaImpl::HasObserver(mojo::InterfacePtrSetElementId id) {
-  return observers_.HasPtr(id);
-}
-
-blink::mojom::StorageAreaObserverAssociatedPtr StorageAreaImpl::RemoveObserver(
-    mojo::InterfacePtrSetElementId id) {
-  return observers_.RemovePtr(id);
-}
-
 void StorageAreaImpl::AddObserver(
-    blink::mojom::StorageAreaObserverAssociatedPtrInfo observer) {
-  AddObserver(
-      blink::mojom::StorageAreaObserverAssociatedPtr(std::move(observer)));
+    mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver> observer) {
+  mojo::AssociatedRemote<blink::mojom::StorageAreaObserver> observer_remote(
+      std::move(observer));
+  if (cache_mode_ == CacheMode::KEYS_AND_VALUES)
+    observer_remote->ShouldSendOldValueOnMutations(false);
+  observers_.Add(std::move(observer_remote));
 }
 
 void StorageAreaImpl::Put(
@@ -344,16 +331,12 @@ void StorageAreaImpl::Put(
   memory_used_ += new_item_memory - old_item_memory;
   if (!old_value) {
     // We added a new key/value pair.
-    observers_.ForAllPtrs(
-        [&key, &value, &source](blink::mojom::StorageAreaObserver* observer) {
-          observer->KeyAdded(key, value, source);
-        });
+    for (auto& observer : observers_)
+      observer->KeyAdded(key, value, source);
   } else {
     // We changed the value for an existing key.
-    observers_.ForAllPtrs([&key, &value, &source, &old_value](
-                              blink::mojom::StorageAreaObserver* observer) {
+    for (auto& observer : observers_)
       observer->KeyChanged(key, value, old_value.value(), source);
-    });
   }
   std::move(callback).Run(true);
 }
@@ -423,10 +406,8 @@ void StorageAreaImpl::Delete(
       commit_batch_->changed_keys.insert(key);
   }
 
-  observers_.ForAllPtrs(
-      [&key, &source, &old_value](blink::mojom::StorageAreaObserver* observer) {
-        observer->KeyDeleted(key, old_value, source);
-      });
+  for (auto& observer : observers_)
+    observer->KeyDeleted(key, old_value, source);
   std::move(callback).Run(true);
 }
 
@@ -466,9 +447,8 @@ void StorageAreaImpl::DeleteAll(const std::string& source,
 
   storage_used_ = 0;
   memory_used_ = 0;
-  observers_.ForAllPtrs([&source](blink::mojom::StorageAreaObserver* observer) {
+  for (auto& observer : observers_)
     observer->AllDeleted(source);
-  });
   std::move(callback).Run(true);
 }
 
@@ -539,10 +519,8 @@ void StorageAreaImpl::SetCacheMode(CacheMode cache_mode) {
   }
   cache_mode_ = cache_mode;
   bool should_send_values = cache_mode == CacheMode::KEYS_ONLY_WHEN_POSSIBLE;
-  observers_.ForAllPtrs(
-      [should_send_values](blink::mojom::StorageAreaObserver* observer) {
-        observer->ShouldSendOldValueOnMutations(should_send_values);
-      });
+  for (auto& observer : observers_)
+    observer->ShouldSendOldValueOnMutations(should_send_values);
 
   // If the |keys_only_map_| is loaded and desired state needs values, no point
   // keeping around the map since the next change would require reload. On the

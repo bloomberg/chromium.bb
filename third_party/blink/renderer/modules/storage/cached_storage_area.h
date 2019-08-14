@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_CACHED_STORAGE_AREA_H_
 
 #include "base/trace_event/memory_dump_provider.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -187,7 +187,7 @@ class MODULES_EXPORT CachedStorageArea
   mojo::AssociatedRemote<mojom::blink::StorageArea>
       mojo_area_associated_remote_;
   mojom::blink::StorageArea* mojo_area_;
-  mojo::AssociatedBinding<mojom::blink::StorageAreaObserver> binding_;
+  mojo::AssociatedReceiver<mojom::blink::StorageAreaObserver> receiver_{this};
 
   Persistent<HeapHashMap<WeakMember<Source>, String>> areas_;
 

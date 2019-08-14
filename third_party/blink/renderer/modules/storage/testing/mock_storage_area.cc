@@ -27,7 +27,7 @@ MockStorageArea::GetAssociatedInterfaceRemote() {
 }
 
 void MockStorageArea::AddObserver(
-    mojom::blink::StorageAreaObserverAssociatedPtrInfo observer) {
+    mojo::PendingAssociatedRemote<mojom::blink::StorageAreaObserver> observer) {
   ++observer_count_;
 }
 

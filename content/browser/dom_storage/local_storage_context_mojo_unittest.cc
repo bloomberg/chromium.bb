@@ -28,8 +28,8 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/fake_leveldb_database.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "services/file/public/mojom/constants.mojom.h"
@@ -65,12 +65,10 @@ class TestLevelDBObserver : public blink::mojom::StorageAreaObserver {
     std::string source;
   };
 
-  TestLevelDBObserver() : binding_(this) {}
+  TestLevelDBObserver() = default;
 
-  blink::mojom::StorageAreaObserverAssociatedPtrInfo Bind() {
-    blink::mojom::StorageAreaObserverAssociatedPtrInfo ptr_info;
-    binding_.Bind(mojo::MakeRequest(&ptr_info));
-    return ptr_info;
+  mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver> Bind() {
+    return receiver_.BindNewEndpointAndPassRemote();
   }
 
   const std::vector<Observation>& observations() { return observations_; }
@@ -102,7 +100,7 @@ class TestLevelDBObserver : public blink::mojom::StorageAreaObserver {
   void ShouldSendOldValueOnMutations(bool value) override {}
 
   std::vector<Observation> observations_;
-  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> binding_;
+  mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> receiver_{this};
 };
 
 }  // namespace

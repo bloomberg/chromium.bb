@@ -396,11 +396,9 @@ TEST_F(SessionStorageNamespaceImplMojoTest, RemoveOriginData) {
 
   // Create an observer to make sure the deletion is observed.
   testing::StrictMock<test::MockLevelDBObserver> mock_observer;
-  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> observer_binding(
+  mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> observer_receiver(
       &mock_observer);
-  blink::mojom::StorageAreaObserverAssociatedPtrInfo observer_ptr_info;
-  observer_binding.Bind(mojo::MakeRequest(&observer_ptr_info));
-  leveldb_1->AddObserver(std::move(observer_ptr_info));
+  leveldb_1->AddObserver(observer_receiver.BindNewEndpointAndPassRemote());
   leveldb_1.FlushForTesting();
 
   base::RunLoop loop;

@@ -17,9 +17,10 @@
 #include "base/time/time.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 
 namespace base {
@@ -177,16 +178,10 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
   // SetCacheMode().
   void SetCacheModeForTesting(CacheMode cache_mode);
 
-  // Returns a pointer ID for use with HasObserver and RemoveObserver.
-  mojo::InterfacePtrSetElementId AddObserver(
-      blink::mojom::StorageAreaObserverAssociatedPtr observer);
-  bool HasObserver(mojo::InterfacePtrSetElementId id);
-  blink::mojom::StorageAreaObserverAssociatedPtr RemoveObserver(
-      mojo::InterfacePtrSetElementId id);
-
   // blink::mojom::StorageArea:
   void AddObserver(
-      blink::mojom::StorageAreaObserverAssociatedPtrInfo observer) override;
+      mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver> observer)
+      override;
   void Put(const std::vector<uint8_t>& key,
            const std::vector<uint8_t>& value,
            const base::Optional<std::vector<uint8_t>>& client_old_value,
@@ -321,7 +316,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
 
   std::vector<uint8_t> prefix_;
   mojo::ReceiverSet<blink::mojom::StorageArea> receivers_;
-  mojo::AssociatedInterfacePtrSet<blink::mojom::StorageAreaObserver> observers_;
+  mojo::AssociatedRemoteSet<blink::mojom::StorageAreaObserver> observers_;
   Delegate* delegate_;
   leveldb::mojom::LevelDBDatabase* database_;
 

@@ -25,6 +25,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_leveldb_database.h"
 #include "content/test/gmock_util.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -303,11 +304,9 @@ TEST_F(SessionStorageAreaImplTest, NotifyAllDeleted) {
       ss_leveldb1.BindNewEndpointAndPassDedicatedReceiverForTesting());
 
   testing::StrictMock<test::MockLevelDBObserver> mock_observer;
-  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> observer_binding(
+  mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> observer_receiver(
       &mock_observer);
-  blink::mojom::StorageAreaObserverAssociatedPtrInfo observer_ptr_info;
-  observer_binding.Bind(mojo::MakeRequest(&observer_ptr_info));
-  ss_leveldb1->AddObserver(std::move(observer_ptr_info));
+  ss_leveldb1->AddObserver(observer_receiver.BindNewEndpointAndPassRemote());
   ss_leveldb1.FlushForTesting();
 
   base::RunLoop loop;
@@ -358,11 +357,9 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
   // any changes (see SessionStorageAreaImpl class comment about when observers
   // are called).
   testing::StrictMock<test::MockLevelDBObserver> mock_observer;
-  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> observer_binding(
+  mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> observer_receiver(
       &mock_observer);
-  blink::mojom::StorageAreaObserverAssociatedPtrInfo observer_ptr_info;
-  observer_binding.Bind(mojo::MakeRequest(&observer_ptr_info));
-  ss_leveldb1->AddObserver(std::move(observer_ptr_info));
+  ss_leveldb1->AddObserver(observer_receiver.BindNewEndpointAndPassRemote());
 
   // The |DeleteAll| call will fork the maps, and the observer should see a
   // DeleteAll.
