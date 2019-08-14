@@ -17,6 +17,8 @@
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/ng_custom_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
@@ -88,6 +90,8 @@ NOINLINE void DetermineAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
       CreateAlgorithmAndRun<NGColumnLayoutAlgorithm>(params, callback);
     else
       CreateAlgorithmAndRun<NGPageLayoutAlgorithm>(params, callback);
+  } else if (box.IsLayoutNGCustom()) {
+    CreateAlgorithmAndRun<NGCustomLayoutAlgorithm>(params, callback);
   } else {
     CreateAlgorithmAndRun<NGBlockLayoutAlgorithm>(params, callback);
   }
@@ -257,8 +261,10 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
                                  To<NGBlockBreakToken>(break_token));
 
   // Try to perform "simplified" layout.
+  // TODO(crbug.com/992953): Add a simplified layout pass for custom layout.
   if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout &&
-      block_flow && !GetFlowThread(block_flow)) {
+      block_flow && !GetFlowThread(block_flow) &&
+      !block_flow->IsLayoutNGCustom()) {
     // A child may have changed size while performing "simplified" layout (it
     // may have gained or removed scrollbars, changing its size). In these
     // cases "simplified" layout will return a null layout-result, indicating
@@ -963,6 +969,11 @@ bool NGBlockNode::IsRestrictedBlockSizeTableCell() const {
   const LayoutTableCell* cell = ToLayoutTableCell(GetLayoutBox());
   return !cell->StyleRef().LogicalHeight().IsAuto() ||
          !cell->Table()->StyleRef().LogicalHeight().IsAuto();
+}
+
+bool NGBlockNode::IsCustomLayoutLoaded() const {
+  DCHECK(box_->IsLayoutNGCustom());
+  return To<LayoutNGCustom>(box_)->IsLoaded();
 }
 
 scoped_refptr<const NGLayoutResult> NGBlockNode::LayoutAtomicInline(
