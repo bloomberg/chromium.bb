@@ -6460,3 +6460,6 @@ crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.html [ Pa
 #Sheriff 2019-08-12
 crbug.com/783154 [ Linux Debug ] virtual/audio-service/media/controls/doubletap-to-jump-backwards.html [ Failure ]
 crbug.com/993238 fast/frames/frame-name-reset.html [ Pass Failure ]
+
+# Sheriff 2019-08-14
+crbug.com/993328 [ Mac ] virtual/audio-service/media/video-currentTime.html [ Pass Failure ]
