@@ -1935,8 +1935,10 @@ IFACEMETHODIMP AXPlatformNodeWin::SetScrollPercent(double horizontal_percent,
   const double x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
   const double y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
   const double y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
-  const int x = gfx::ToRoundedInt(horizontal_percent * (x_max - x_min) + x_min);
-  const int y = gfx::ToRoundedInt(vertical_percent * (y_max - y_min) + y_min);
+  const int x =
+      gfx::ToRoundedInt(horizontal_percent / 100.0 * (x_max - x_min) + x_min);
+  const int y =
+      gfx::ToRoundedInt(vertical_percent / 100.0 * (y_max - y_min) + y_min);
   const gfx::Point scroll_to(x, y);
 
   AXActionData action_data;
