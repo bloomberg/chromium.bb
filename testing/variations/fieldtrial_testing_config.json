@@ -1246,6 +1246,25 @@
             ]
         }
     ],
+    "BlinkSchedulerDisableAntiStarvationForPriorities": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "BlinkSchedulerDisableAntiStarvationForPriorities"
+                    ]
+                }
+            ]
+        }
+    ],
     "BlinkSchedulerHighPriorityInputOnCompositorThread": [
         {
             "platforms": [
