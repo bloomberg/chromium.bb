@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/platform/x11/x11_event_source_libevent.h"
+#include "ui/events/platform/x11/x11_event_source_default.h"
 
 #include <memory>
 
@@ -147,20 +147,20 @@ std::unique_ptr<ui::Event> TranslateXEventToEvent(const XEvent& xev) {
 
 }  // namespace
 
-X11EventSourceLibevent::X11EventSourceLibevent(XDisplay* display)
+X11EventSourceDefault::X11EventSourceDefault(XDisplay* display)
     : event_source_(this, display), watcher_controller_(FROM_HERE) {
   AddEventWatcher();
 }
 
-X11EventSourceLibevent::~X11EventSourceLibevent() {}
+X11EventSourceDefault::~X11EventSourceDefault() {}
 
 // static
-X11EventSourceLibevent* X11EventSourceLibevent::GetInstance() {
-  return static_cast<X11EventSourceLibevent*>(
+X11EventSourceDefault* X11EventSourceDefault::GetInstance() {
+  return static_cast<X11EventSourceDefault*>(
       PlatformEventSource::GetInstance());
 }
 
-void X11EventSourceLibevent::AddXEventDispatcher(XEventDispatcher* dispatcher) {
+void X11EventSourceDefault::AddXEventDispatcher(XEventDispatcher* dispatcher) {
   dispatchers_xevent_.AddObserver(dispatcher);
   PlatformEventDispatcher* event_dispatcher =
       dispatcher->GetPlatformEventDispatcher();
@@ -168,7 +168,7 @@ void X11EventSourceLibevent::AddXEventDispatcher(XEventDispatcher* dispatcher) {
     AddPlatformEventDispatcher(event_dispatcher);
 }
 
-void X11EventSourceLibevent::RemoveXEventDispatcher(
+void X11EventSourceDefault::RemoveXEventDispatcher(
     XEventDispatcher* dispatcher) {
   dispatchers_xevent_.RemoveObserver(dispatcher);
   PlatformEventDispatcher* event_dispatcher =
@@ -177,7 +177,7 @@ void X11EventSourceLibevent::RemoveXEventDispatcher(
     RemovePlatformEventDispatcher(event_dispatcher);
 }
 
-void X11EventSourceLibevent::ProcessXEvent(XEvent* xevent) {
+void X11EventSourceDefault::ProcessXEvent(XEvent* xevent) {
   std::unique_ptr<ui::Event> translated_event = TranslateXEventToEvent(*xevent);
   if (translated_event) {
 #if defined(OS_CHROMEOS)
@@ -194,7 +194,7 @@ void X11EventSourceLibevent::ProcessXEvent(XEvent* xevent) {
   }
 }
 
-void X11EventSourceLibevent::AddEventWatcher() {
+void X11EventSourceDefault::AddEventWatcher() {
   if (initialized_)
     return;
   if (!base::MessageLoopCurrent::Get())
@@ -202,13 +202,12 @@ void X11EventSourceLibevent::AddEventWatcher() {
 
   int fd = ConnectionNumber(event_source_.display());
   base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
-      fd, true, base::MessagePumpLibevent::WATCH_READ, &watcher_controller_,
-      this);
+      fd, true, base::MessagePumpForUI::WATCH_READ, &watcher_controller_, this);
   initialized_ = true;
 }
 
-void X11EventSourceLibevent::DispatchPlatformEvent(const PlatformEvent& event,
-                                                   XEvent* xevent) {
+void X11EventSourceDefault::DispatchPlatformEvent(const PlatformEvent& event,
+                                                  XEvent* xevent) {
   // First, tell the XEventDispatchers, which can have
   // PlatformEventDispatcher, an ui::Event is going to be sent next.
   // It must make a promise to handle next translated |event| sent by
@@ -226,27 +225,27 @@ void X11EventSourceLibevent::DispatchPlatformEvent(const PlatformEvent& event,
     dispatcher.PlatformEventDispatchFinished();
 }
 
-void X11EventSourceLibevent::DispatchXEventToXEventDispatchers(XEvent* xevent) {
+void X11EventSourceDefault::DispatchXEventToXEventDispatchers(XEvent* xevent) {
   for (XEventDispatcher& dispatcher : dispatchers_xevent_) {
     if (dispatcher.DispatchXEvent(xevent))
       break;
   }
 }
 
-void X11EventSourceLibevent::StopCurrentEventStream() {
+void X11EventSourceDefault::StopCurrentEventStream() {
   event_source_.StopCurrentEventStream();
 }
 
-void X11EventSourceLibevent::OnDispatcherListChanged() {
+void X11EventSourceDefault::OnDispatcherListChanged() {
   AddEventWatcher();
   event_source_.OnDispatcherListChanged();
 }
 
-void X11EventSourceLibevent::OnFileCanReadWithoutBlocking(int fd) {
+void X11EventSourceDefault::OnFileCanReadWithoutBlocking(int fd) {
   event_source_.DispatchXEvents();
 }
 
-void X11EventSourceLibevent::OnFileCanWriteWithoutBlocking(int fd) {
+void X11EventSourceDefault::OnFileCanWriteWithoutBlocking(int fd) {
   NOTREACHED();
 }
 
