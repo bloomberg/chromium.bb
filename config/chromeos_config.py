@@ -3975,7 +3975,6 @@ def ApplyCustomOverrides(site_config):
 
       'flapjack-release': {
           'sign_types': ['recovery', 'factory'],
-          'useflags': config_lib.append_useflags(['kiosk_next']),
       },
 
       'jacuzzi-release': {
