@@ -37,6 +37,7 @@ DownloadDBEntry CreateDownloadDBEntry() {
   download_info.guid = base::GenerateGUID();
   static int id = 0;
   download_info.id = ++id;
+  download_info.in_progress_info->hash = "abc";
   entry.download_info = download_info;
   return entry;
 }
@@ -53,6 +54,7 @@ void CleanUpInProgressEntry(DownloadDBEntry* entry) {
   entry->download_info->in_progress_info->state = DownloadItem::INTERRUPTED;
   entry->download_info->in_progress_info->interrupt_reason =
       DOWNLOAD_INTERRUPT_REASON_CRASH;
+  entry->download_info->in_progress_info->hash = std::string();
 }
 
 }  // namespace
