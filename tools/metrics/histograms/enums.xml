@@ -19762,8 +19762,8 @@ Called by update_net_error_codes.py.-->
   <int value="871" label="DELETED_FILESYSTEM_UNOBSERVEENTRY"/>
   <int value="872" label="DELETED_FILESYSTEM_GETOBSERVEDENTRIES"/>
   <int value="873" label="BROWSINGDATA_REMOVESERVICEWORKERS"/>
-  <int value="874" label="USBPRIVATE_GETDEVICES"/>
-  <int value="875" label="USBPRIVATE_GETDEVICEINFO"/>
+  <int value="874" label="DELETED_USBPRIVATE_GETDEVICES"/>
+  <int value="875" label="DELETED_USBPRIVATE_GETDEVICEINFO"/>
   <int value="876" label="DELETED_EASYUNLOCKPRIVATE_UPDATESCREENLOCKSTATE"/>
   <int value="877" label="CAST_CHANNEL_GETLOGS"/>
   <int value="878" label="DELETED_EASYUNLOCKPRIVATE_SETPERMITACCESS"/>
