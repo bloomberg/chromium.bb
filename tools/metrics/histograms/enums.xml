@@ -59591,7 +59591,7 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Ethernet"/>
   <int value="2" label="Wifi"/>
   <int value="3" label="WiMAX (Deprecated)"/>
-  <int value="4" label="Bluetooth"/>
+  <int value="4" label="Bluetooth (Deprecated)"/>
   <int value="5" label="Cellular"/>
   <int value="6" label="Tethered (Ethernet)"/>
   <int value="7" label="Tethered (Wifi)"/>
