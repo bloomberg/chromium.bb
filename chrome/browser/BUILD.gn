@@ -844,6 +844,8 @@ jumbo_split_static_library("browser") {
     "net/dns_probe_service.h",
     "net/dns_probe_service_factory.cc",
     "net/dns_probe_service_factory.h",
+    "net/dns_util.cc",
+    "net/dns_util.h",
     "net/file_downloader.cc",
     "net/file_downloader.h",
     "net/net_error_diagnostics_dialog.h",
