@@ -101,7 +101,7 @@ static aom_codec_err_t decoder_init(aom_codec_ctx_t *ctx,
     priv->flushed = 0;
 
     // TODO(tdaede): this should not be exposed to the API
-    priv->cfg.allow_lowbitdepth = CONFIG_LOWBITDEPTH;
+    priv->cfg.allow_lowbitdepth = !FORCE_HIGHBITDEPTH_DECODING;
     if (ctx->config.dec) {
       priv->cfg = *ctx->config.dec;
       ctx->config.dec = &priv->cfg;

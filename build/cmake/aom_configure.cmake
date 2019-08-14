@@ -24,6 +24,12 @@ include("${AOM_ROOT}/build/cmake/compiler_flags.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_tests.cmake")
 include("${AOM_ROOT}/build/cmake/util.cmake")
 
+if(CONFIG_LOWBITDEPTH)
+  message(WARNING "CONFIG_LOWBITDEPTH has been removed, \
+    enabling FORCE_HIGHBITDEPTH_DECODING")
+  set(FORCE_HIGHBITDEPTH_DECODING 1 CACHE NUMBER "${cmake_cmdline_helpstring}")
+endif()
+
 # Generate the user config settings.
 list(APPEND aom_build_vars ${AOM_CONFIG_VARS} ${AOM_OPTION_VARS})
 foreach(cache_var ${aom_build_vars})

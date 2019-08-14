@@ -242,7 +242,7 @@ class ExternalFrameBufferMD5Test
     expected_md5[32] = '\0';
 
     ::libaom_test::MD5 md5_res;
-#if !CONFIG_LOWBITDEPTH
+#if FORCE_HIGHBITDEPTH_DECODING
     const aom_img_fmt_t shifted_fmt =
         (aom_img_fmt)(img.fmt & ~AOM_IMG_FMT_HIGHBITDEPTH);
     if (img.bit_depth == 8 && shifted_fmt != img.fmt) {
@@ -256,7 +256,7 @@ class ExternalFrameBufferMD5Test
     } else {
 #endif
       md5_res.Add(&img);
-#if !CONFIG_LOWBITDEPTH
+#if FORCE_HIGHBITDEPTH_DECODING
     }
 #endif
     const char *const actual_md5 = md5_res.Get();
@@ -430,7 +430,7 @@ TEST_P(ExternalFrameBufferMD5Test, ExtFBMD5Match) {
   OpenMD5File(md5_filename);
 
   // Set decode config.
-  cfg.allow_lowbitdepth = CONFIG_LOWBITDEPTH;
+  cfg.allow_lowbitdepth = !FORCE_HIGHBITDEPTH_DECODING;
   set_cfg(cfg);
 
   // Decode frame, and check the md5 matching.
