@@ -744,10 +744,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   hash_password_manager.set_prefs(profile->GetPrefs());
   EXPECT_FALSE(hash_password_manager.HasPasswordHash(
       "username@domain.com", /*is_gaia_password=*/false));
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       hash_password_manager.HasPasswordHash(user_manager::kStubUserEmail,
                                             /*is_gaia_password=*/true));
-  EXPECT_EQ(1u, profile->GetPrefs()
+  EXPECT_EQ(0u, profile->GetPrefs()
                     ->GetList(password_manager::prefs::kPasswordHashDataList)
                     ->GetList()
                     .size());

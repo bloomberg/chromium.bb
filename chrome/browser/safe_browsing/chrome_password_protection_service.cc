@@ -1418,9 +1418,7 @@ void ChromePasswordProtectionService::OnWarningTriggerChanged() {
       PasswordStoreFactory::GetForProfile(profile_,
                                           ServiceAccessType::EXPLICIT_ACCESS);
 
-  // TODO(bdea): Clear all non-gmail passwords.
-  if (!IsPrimaryAccountGmail())
-    password_store->ClearGaiaPasswordHash(GetAccountInfo().email);
+  password_store->ClearAllNonGmailPasswordHash();
   password_store->ClearAllEnterprisePasswordHash();
 }
 
