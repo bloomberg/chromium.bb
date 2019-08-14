@@ -17,8 +17,9 @@
 #include "base/time/time.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 
 namespace base {
@@ -109,7 +110,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
   // to check.
   void InitializeAsEmpty();
 
-  void Bind(blink::mojom::StorageAreaRequest request);
+  void Bind(mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
 
   // Forks, or copies, all data in this prefix to another prefix.
   // Note: this object (the parent) must stay alive until the forked area
@@ -319,7 +320,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
                          const KeysOnlyMap& key_only_map);
 
   std::vector<uint8_t> prefix_;
-  mojo::BindingSet<blink::mojom::StorageArea> bindings_;
+  mojo::ReceiverSet<blink::mojom::StorageArea> receivers_;
   mojo::AssociatedInterfacePtrSet<blink::mojom::StorageAreaObserver> observers_;
   Delegate* delegate_;
   leveldb::mojom::LevelDBDatabase* database_;

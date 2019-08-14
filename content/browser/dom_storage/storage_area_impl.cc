@@ -83,7 +83,7 @@ StorageAreaImpl::StorageAreaImpl(leveldb::mojom::LevelDBDatabase* database,
                          base::TimeDelta::FromHours(1)),
       commit_rate_limiter_(options.max_commits_per_hour,
                            base::TimeDelta::FromHours(1)) {
-  bindings_.set_connection_error_handler(base::BindRepeating(
+  receivers_.set_disconnect_handler(base::BindRepeating(
       &StorageAreaImpl::OnConnectionError, weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -100,8 +100,9 @@ void StorageAreaImpl::InitializeAsEmpty() {
               std::vector<leveldb::mojom::KeyValuePtr>());
 }
 
-void StorageAreaImpl::Bind(blink::mojom::StorageAreaRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void StorageAreaImpl::Bind(
+    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
+  receivers_.Add(this, std::move(receiver));
   // If the number of bindings is more than 1, then the |client_old_value| sent
   // by the clients need not be valid due to races on updates from multiple
   // clients. So, cache the values in the service. Setting cache mode back to
@@ -109,7 +110,7 @@ void StorageAreaImpl::Bind(blink::mojom::StorageAreaRequest request) {
   // inconsistency due to the async notifications of mutations to the client
   // reaching late.
   if (cache_mode_ == CacheMode::KEYS_ONLY_WHEN_POSSIBLE &&
-      bindings_.size() > 1) {
+      receivers_.size() > 1) {
     SetCacheMode(CacheMode::KEYS_AND_VALUES);
   }
 }
@@ -314,7 +315,7 @@ void StorageAreaImpl::Put(
   // shrinking changes to pre-existing maps that are over budget.
   if (new_item_size > old_item_size && new_storage_used > max_size_) {
     if (map_state_ == MapState::LOADED_KEYS_ONLY) {
-      bindings_.ReportBadMessage(
+      receivers_.ReportBadMessage(
           "The quota in browser cannot exceed when there is only one "
           "renderer.");
     } else {
@@ -551,7 +552,7 @@ void StorageAreaImpl::SetCacheMode(CacheMode cache_mode) {
 }
 
 void StorageAreaImpl::OnConnectionError() {
-  if (!bindings_.empty())
+  if (!receivers_.empty())
     return;
   // If any tasks are waiting for load to complete, delay calling the
   // no_bindings_callback_ until all those tasks have completed.
@@ -713,7 +714,7 @@ void StorageAreaImpl::OnLoadComplete() {
 
   // We might need to call the no_bindings_callback_ here if bindings became
   // empty while waiting for load to complete.
-  if (bindings_.empty())
+  if (receivers_.empty())
     delegate_->OnNoBindings();
 }
 

@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
 
@@ -171,7 +172,8 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // origin. Before connection, it checks to make sure the |process_id| given to
   // the |Bind| method can access the given origin.
   void OpenArea(const url::Origin& origin,
-                blink::mojom::StorageAreaAssociatedRequest database) override;
+                mojo::PendingAssociatedReceiver<blink::mojom::StorageArea>
+                    receiver) override;
 
   // Simply calls the |add_namespace_callback_| callback with this namespace's
   // data.

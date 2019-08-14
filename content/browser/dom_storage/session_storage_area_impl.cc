@@ -22,23 +22,22 @@ SessionStorageAreaImpl::SessionStorageAreaImpl(
     : namespace_entry_(namespace_entry),
       origin_(std::move(origin)),
       shared_data_map_(std::move(data_map)),
-      register_new_map_callback_(std::move(register_new_map_callback)),
-      binding_(this) {}
+      register_new_map_callback_(std::move(register_new_map_callback)) {}
 
 SessionStorageAreaImpl::~SessionStorageAreaImpl() {
-  if (binding_.is_bound())
+  if (receiver_.is_bound())
     shared_data_map_->RemoveBindingReference();
 }
 
 void SessionStorageAreaImpl::Bind(
-    blink::mojom::StorageAreaAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<blink::mojom::StorageArea> receiver) {
   if (IsBound()) {
-    binding_.Unbind();
+    receiver_.reset();
   } else {
     shared_data_map_->AddBindingReference();
   }
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(base::BindOnce(
       &SessionStorageAreaImpl::OnConnectionError, base::Unretained(this)));
 }
 
@@ -123,11 +122,11 @@ void SessionStorageAreaImpl::GetAll(
 // Note: this can be called after invalidation of the |namespace_entry_|.
 void SessionStorageAreaImpl::OnConnectionError() {
   shared_data_map_->RemoveBindingReference();
-  // Make sure we totally unbind the binding - this doesn't seem to happen
+  // Make sure we totally unbind the receiver - this doesn't seem to happen
   // automatically on connection error. The bound status is used in the
   // destructor to know if |RemoveBindingReference| was already called.
-  if (binding_.is_bound())
-    binding_.Unbind();
+  if (receiver_.is_bound())
+    receiver_.reset();
 }
 
 void SessionStorageAreaImpl::CreateNewMap(

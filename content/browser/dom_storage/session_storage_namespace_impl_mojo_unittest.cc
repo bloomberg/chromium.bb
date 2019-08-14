@@ -20,7 +20,7 @@
 #include "content/test/fake_leveldb_database.h"
 #include "content/test/gmock_util.h"
 #include "mojo/core/embedder/embedder.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -197,8 +197,9 @@ TEST_F(SessionStorageNamespaceImplMojoTest, MetadataLoad) {
   blink::mojom::SessionStorageNamespacePtr ss_namespace;
   namespace_impl->Bind(mojo::MakeRequest(&ss_namespace), kTestProcessIdOrigin1);
 
-  blink::mojom::StorageAreaAssociatedPtr leveldb_1;
-  ss_namespace->OpenArea(test_origin1_, mojo::MakeRequest(&leveldb_1));
+  mojo::AssociatedRemote<blink::mojom::StorageArea> leveldb_1;
+  ss_namespace->OpenArea(test_origin1_,
+                         leveldb_1.BindNewEndpointAndPassReceiver());
 
   std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSync(leveldb_1.get(), &data));
@@ -228,8 +229,9 @@ TEST_F(SessionStorageNamespaceImplMojoTest, MetadataLoadWithMapOperations) {
   blink::mojom::SessionStorageNamespacePtr ss_namespace;
   namespace_impl->Bind(mojo::MakeRequest(&ss_namespace), kTestProcessIdOrigin1);
 
-  blink::mojom::StorageAreaAssociatedPtr leveldb_1;
-  ss_namespace->OpenArea(test_origin1_, mojo::MakeRequest(&leveldb_1));
+  mojo::AssociatedRemote<blink::mojom::StorageArea> leveldb_1;
+  ss_namespace->OpenArea(test_origin1_,
+                         leveldb_1.BindNewEndpointAndPassReceiver());
 
   EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(1);
   test::PutSync(leveldb_1.get(), StdStringToUint8Vector("key2"),
@@ -275,8 +277,9 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneBeforeBind) {
   blink::mojom::SessionStorageNamespacePtr ss_namespace2;
   namespace_impl2->Bind(mojo::MakeRequest(&ss_namespace2),
                         kTestProcessIdOrigin1);
-  blink::mojom::StorageAreaAssociatedPtr leveldb_2;
-  ss_namespace2->OpenArea(test_origin1_, mojo::MakeRequest(&leveldb_2));
+  mojo::AssociatedRemote<blink::mojom::StorageArea> leveldb_2;
+  ss_namespace2->OpenArea(test_origin1_,
+                          leveldb_2.BindNewEndpointAndPassReceiver());
 
   // Do a put in the cloned namespace.
   EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(2);
@@ -333,10 +336,12 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneAfterBind) {
   blink::mojom::SessionStorageNamespacePtr ss_namespace2;
   namespace_impl2->Bind(mojo::MakeRequest(&ss_namespace2),
                         kTestProcessIdAllOrigins);
-  blink::mojom::StorageAreaAssociatedPtr leveldb_n2_o1;
-  blink::mojom::StorageAreaAssociatedPtr leveldb_n2_o2;
-  ss_namespace2->OpenArea(test_origin1_, mojo::MakeRequest(&leveldb_n2_o1));
-  ss_namespace2->OpenArea(test_origin2_, mojo::MakeRequest(&leveldb_n2_o2));
+  mojo::AssociatedRemote<blink::mojom::StorageArea> leveldb_n2_o1;
+  mojo::AssociatedRemote<blink::mojom::StorageArea> leveldb_n2_o2;
+  ss_namespace2->OpenArea(test_origin1_,
+                          leveldb_n2_o1.BindNewEndpointAndPassReceiver());
+  ss_namespace2->OpenArea(test_origin2_,
+                          leveldb_n2_o2.BindNewEndpointAndPassReceiver());
 
   // Finally do the clone.
   ss_namespace1->Clone(test_namespace_id2_);
@@ -384,8 +389,9 @@ TEST_F(SessionStorageNamespaceImplMojoTest, RemoveOriginData) {
   blink::mojom::SessionStorageNamespacePtr ss_namespace;
   namespace_impl->Bind(mojo::MakeRequest(&ss_namespace), kTestProcessIdOrigin1);
 
-  blink::mojom::StorageAreaAssociatedPtr leveldb_1;
-  ss_namespace->OpenArea(test_origin1_, mojo::MakeRequest(&leveldb_1));
+  mojo::AssociatedRemote<blink::mojom::StorageArea> leveldb_1;
+  ss_namespace->OpenArea(test_origin1_,
+                         leveldb_1.BindNewEndpointAndPassReceiver());
   ss_namespace.FlushForTesting();
 
   // Create an observer to make sure the deletion is observed.
@@ -453,8 +459,9 @@ TEST_F(SessionStorageNamespaceImplMojoTest, ProcessLockedToOtherOrigin) {
 
   blink::mojom::SessionStorageNamespacePtr ss_namespace;
   namespace_impl->Bind(mojo::MakeRequest(&ss_namespace), kTestProcessIdOrigin1);
-  blink::mojom::StorageAreaAssociatedPtr leveldb_1;
-  ss_namespace->OpenArea(test_origin3_, mojo::MakeRequest(&leveldb_1));
+  mojo::AssociatedRemote<blink::mojom::StorageArea> leveldb_1;
+  ss_namespace->OpenArea(test_origin3_,
+                         leveldb_1.BindNewEndpointAndPassReceiver());
   ss_namespace.FlushForTesting();
   EXPECT_TRUE(bad_message_called_);
 
@@ -479,8 +486,9 @@ TEST_F(SessionStorageNamespaceImplMojoTest, PurgeUnused) {
   blink::mojom::SessionStorageNamespacePtr ss_namespace;
   namespace_impl->Bind(mojo::MakeRequest(&ss_namespace), kTestProcessIdOrigin1);
 
-  blink::mojom::StorageAreaAssociatedPtr leveldb_1;
-  ss_namespace->OpenArea(test_origin1_, mojo::MakeRequest(&leveldb_1));
+  mojo::AssociatedRemote<blink::mojom::StorageArea> leveldb_1;
+  ss_namespace->OpenArea(test_origin1_,
+                         leveldb_1.BindNewEndpointAndPassReceiver());
   EXPECT_TRUE(namespace_impl->HasAreaForOrigin(test_origin1_));
 
   EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
@@ -510,8 +518,9 @@ TEST_F(SessionStorageNamespaceImplMojoTest, NamespaceBindingPerOrigin) {
   blink::mojom::SessionStorageNamespacePtr ss_namespace_o1;
   namespace_impl->Bind(mojo::MakeRequest(&ss_namespace_o1),
                        kTestProcessIdOrigin1);
-  blink::mojom::StorageAreaAssociatedPtr leveldb_1;
-  ss_namespace_o1->OpenArea(test_origin1_, mojo::MakeRequest(&leveldb_1));
+  mojo::AssociatedRemote<blink::mojom::StorageArea> leveldb_1;
+  ss_namespace_o1->OpenArea(test_origin1_,
+                            leveldb_1.BindNewEndpointAndPassReceiver());
   ss_namespace_o1.FlushForTesting();
   EXPECT_FALSE(bad_message_called_);
 
@@ -522,8 +531,9 @@ TEST_F(SessionStorageNamespaceImplMojoTest, NamespaceBindingPerOrigin) {
   blink::mojom::SessionStorageNamespacePtr ss_namespace_o2;
   namespace_impl->Bind(mojo::MakeRequest(&ss_namespace_o2),
                        kTestProcessIdOrigin3);
-  blink::mojom::StorageAreaAssociatedPtr leveldb_2;
-  ss_namespace_o2->OpenArea(test_origin3_, mojo::MakeRequest(&leveldb_2));
+  mojo::AssociatedRemote<blink::mojom::StorageArea> leveldb_2;
+  ss_namespace_o2->OpenArea(test_origin3_,
+                            leveldb_2.BindNewEndpointAndPassReceiver());
   ss_namespace_o2.FlushForTesting();
   EXPECT_FALSE(bad_message_called_);
 
@@ -552,8 +562,9 @@ TEST_F(SessionStorageNamespaceImplMojoTest, ReopenClonedAreaAfterPurge) {
   blink::mojom::SessionStorageNamespacePtr ss_namespace;
   namespace_impl->Bind(mojo::MakeRequest(&ss_namespace), kTestProcessIdOrigin1);
 
-  blink::mojom::StorageAreaAssociatedPtr leveldb_1;
-  ss_namespace->OpenArea(test_origin1_, mojo::MakeRequest(&leveldb_1));
+  mojo::AssociatedRemote<blink::mojom::StorageArea> leveldb_1;
+  ss_namespace->OpenArea(test_origin1_,
+                         leveldb_1.BindNewEndpointAndPassReceiver());
 
   // Save the data map, as if we did a clone:
   data_maps_[data_map->map_data()->MapNumberAsBytes()] = data_map;
@@ -562,7 +573,8 @@ TEST_F(SessionStorageNamespaceImplMojoTest, ReopenClonedAreaAfterPurge) {
   namespace_impl->PurgeUnboundAreas();
   EXPECT_FALSE(namespace_impl->HasAreaForOrigin(test_origin1_));
 
-  ss_namespace->OpenArea(test_origin1_, mojo::MakeRequest(&leveldb_1));
+  ss_namespace->OpenArea(test_origin1_,
+                         leveldb_1.BindNewEndpointAndPassReceiver());
   ss_namespace.FlushForTesting();
 
   EXPECT_EQ(namespace_impl->origin_areas_[test_origin1_]->data_map(), data_map);

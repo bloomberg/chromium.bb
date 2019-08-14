@@ -70,7 +70,7 @@ void UnpackSource(const String& source,
 // static
 scoped_refptr<CachedStorageArea> CachedStorageArea::CreateForLocalStorage(
     scoped_refptr<const SecurityOrigin> origin,
-    mojo::InterfacePtr<mojom::blink::StorageArea> area,
+    mojo::PendingRemote<mojom::blink::StorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
     InspectorEventListener* listener) {
   return base::AdoptRef(new CachedStorageArea(
@@ -80,7 +80,7 @@ scoped_refptr<CachedStorageArea> CachedStorageArea::CreateForLocalStorage(
 // static
 scoped_refptr<CachedStorageArea> CachedStorageArea::CreateForSessionStorage(
     scoped_refptr<const SecurityOrigin> origin,
-    mojo::AssociatedInterfacePtr<mojom::blink::StorageArea> area,
+    mojo::PendingAssociatedRemote<mojom::blink::StorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
     InspectorEventListener* listener) {
   return base::AdoptRef(new CachedStorageArea(
@@ -228,13 +228,13 @@ String CachedStorageArea::RegisterSource(Source* source) {
 // LocalStorage constructor.
 CachedStorageArea::CachedStorageArea(
     scoped_refptr<const SecurityOrigin> origin,
-    mojo::InterfacePtr<mojom::blink::StorageArea> area,
+    mojo::PendingRemote<mojom::blink::StorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
     InspectorEventListener* listener)
     : origin_(std::move(origin)),
       inspector_event_listener_(listener),
-      mojo_area_(area.get()),
-      mojo_area_ptr_(std::move(area)),
+      mojo_area_remote_(std::move(area), ipc_runner),
+      mojo_area_(mojo_area_remote_.get()),
       binding_(this),
       areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()) {
   mojom::blink::StorageAreaObserverAssociatedPtrInfo ptr_info;
@@ -249,13 +249,13 @@ CachedStorageArea::CachedStorageArea(
 // SessionStorage constructor.
 CachedStorageArea::CachedStorageArea(
     scoped_refptr<const SecurityOrigin> origin,
-    mojo::AssociatedInterfacePtr<mojom::blink::StorageArea> area,
+    mojo::PendingAssociatedRemote<mojom::blink::StorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
     InspectorEventListener* listener)
     : origin_(std::move(origin)),
       inspector_event_listener_(listener),
-      mojo_area_(area.get()),
-      mojo_area_associated_ptr_(std::move(area)),
+      mojo_area_associated_remote_(std::move(area), ipc_runner),
+      mojo_area_(mojo_area_associated_remote_.get()),
       binding_(this),
       areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()) {
   mojom::blink::StorageAreaObserverAssociatedPtrInfo ptr_info;
@@ -521,7 +521,7 @@ CachedStorageArea::FormatOption CachedStorageArea::GetValueFormat() const {
 }
 
 bool CachedStorageArea::IsSessionStorage() const {
-  return mojo_area_associated_ptr_.is_bound();
+  return mojo_area_associated_remote_.is_bound();
 }
 
 void CachedStorageArea::EnqueueStorageEvent(const String& key,

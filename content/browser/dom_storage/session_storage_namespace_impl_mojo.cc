@@ -169,7 +169,7 @@ void SessionStorageNamespaceImplMojo::RemoveOriginData(
 
 void SessionStorageNamespaceImplMojo::OpenArea(
     const url::Origin& origin,
-    blink::mojom::StorageAreaAssociatedRequest database) {
+    mojo::PendingAssociatedReceiver<blink::mojom::StorageArea> receiver) {
   DCHECK(IsPopulated());
   DCHECK(!bindings_.empty());
   int process_id = bindings_.dispatch_context();
@@ -215,7 +215,7 @@ void SessionStorageNamespaceImplMojo::OpenArea(
                              register_new_map_callback_)))
              .first;
   }
-  it->second->Bind(std::move(database));
+  it->second->Bind(std::move(receiver));
 }
 
 void SessionStorageNamespaceImplMojo::Clone(

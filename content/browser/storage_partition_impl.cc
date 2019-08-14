@@ -1195,7 +1195,7 @@ void StoragePartitionImpl::SetProtoDatabaseProvider(
 
 void StoragePartitionImpl::OpenLocalStorage(
     const url::Origin& origin,
-    blink::mojom::StorageAreaRequest request) {
+    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
   DCHECK(initialized_);
   int process_id = bindings_.dispatch_context();
   // TODO(943887): Replace HasSecurityState() call with something that can
@@ -1211,7 +1211,7 @@ void StoragePartitionImpl::OpenLocalStorage(
     bindings_.ReportBadMessage("Access denied for localStorage request");
     return;
   }
-  dom_storage_context_->OpenLocalStorage(origin, std::move(request));
+  dom_storage_context_->OpenLocalStorage(origin, std::move(receiver));
 }
 
 void StoragePartitionImpl::OpenSessionStorage(

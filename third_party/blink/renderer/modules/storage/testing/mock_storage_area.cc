@@ -11,18 +11,19 @@ namespace blink {
 MockStorageArea::MockStorageArea() = default;
 MockStorageArea::~MockStorageArea() = default;
 
-mojom::blink::StorageAreaPtr MockStorageArea::GetInterfacePtr() {
-  mojom::blink::StorageAreaPtr result;
-  bindings_.AddBinding(this, MakeRequest(&result));
+mojo::PendingRemote<mojom::blink::StorageArea>
+MockStorageArea::GetInterfaceRemote() {
+  mojo::PendingRemote<mojom::blink::StorageArea> result;
+  receivers_.Add(this, result.InitWithNewPipeAndPassReceiver());
   return result;
 }
 
-mojom::blink::StorageAreaAssociatedPtr
-MockStorageArea::GetAssociatedInterfacePtr() {
-  mojom::blink::StorageAreaAssociatedPtr result;
-  associated_bindings_.AddBinding(
-      this, MakeRequestAssociatedWithDedicatedPipe(&result));
-  return result;
+mojo::PendingAssociatedRemote<mojom::blink::StorageArea>
+MockStorageArea::GetAssociatedInterfaceRemote() {
+  mojo::AssociatedRemote<mojom::blink::StorageArea> result;
+  associated_receivers_.Add(
+      this, result.BindNewEndpointAndPassDedicatedReceiverForTesting());
+  return result.Unbind();
 }
 
 void MockStorageArea::AddObserver(
