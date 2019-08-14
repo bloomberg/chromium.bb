@@ -12,6 +12,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 
 namespace content {
 namespace {
@@ -476,15 +477,16 @@ void StorageAreaImpl::Get(const std::vector<uint8_t>& key,
 }
 
 void StorageAreaImpl::GetAll(
-    blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo complete_callback,
+    mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
+        complete_callback,
     GetAllCallback callback) {
   // If the map is keys-only and empty, then no loading is necessary.
   if (IsMapLoadedAndEmpty()) {
     std::move(callback).Run(true, std::vector<blink::mojom::KeyValuePtr>());
     if (complete_callback.is_valid()) {
-      blink::mojom::StorageAreaGetAllCallbackAssociatedPtr complete_ptr;
-      complete_ptr.Bind(std::move(complete_callback));
-      complete_ptr->Complete(true);
+      mojo::AssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
+          complete_remote(std::move(complete_callback));
+      complete_remote->Complete(true);
     }
     return;
   }
@@ -506,9 +508,9 @@ void StorageAreaImpl::GetAll(
   }
   std::move(callback).Run(true, std::move(all));
   if (complete_callback.is_valid()) {
-    blink::mojom::StorageAreaGetAllCallbackAssociatedPtr complete_ptr;
-    complete_ptr.Bind(std::move(complete_callback));
-    complete_ptr->Complete(true);
+    mojo::AssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
+        complete_remote(std::move(complete_callback));
+    complete_remote->Complete(true);
   }
 }
 

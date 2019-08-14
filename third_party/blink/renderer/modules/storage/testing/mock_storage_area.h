@@ -6,11 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_TESTING_MOCK_STORAGE_AREA_H_
 
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom-blink.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -49,8 +47,8 @@ class MockStorageArea : public mojom::blink::StorageArea {
 
   void Get(const Vector<uint8_t>& key, GetCallback callback) override;
 
-  void GetAll(mojom::blink::StorageAreaGetAllCallbackAssociatedPtrInfo
-                  complete_callback,
+  void GetAll(mojo::PendingAssociatedRemote<
+                  mojom::blink::StorageAreaGetAllCallback> complete_callback,
               GetAllCallback callback) override;
 
   // Methods and members for use by test fixtures.

@@ -110,7 +110,8 @@ void SessionStorageAreaImpl::Get(const std::vector<uint8_t>& key,
 }
 
 void SessionStorageAreaImpl::GetAll(
-    blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo complete_callback,
+    mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
+        complete_callback,
     GetAllCallback callback) {
   DCHECK(IsBound());
   DCHECK_NE(0, shared_data_map_->map_data()->ReferenceCount());

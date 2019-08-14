@@ -87,8 +87,8 @@ class CONTENT_EXPORT SessionStorageAreaImpl : public blink::mojom::StorageArea {
   void DeleteAll(const std::string& source,
                  DeleteAllCallback callback) override;
   void Get(const std::vector<uint8_t>& key, GetCallback callback) override;
-  void GetAll(blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo
-                  complete_callback,
+  void GetAll(mojo::PendingAssociatedRemote<
+                  blink::mojom::StorageAreaGetAllCallback> complete_callback,
               GetAllCallback callback) override;
 
  private:

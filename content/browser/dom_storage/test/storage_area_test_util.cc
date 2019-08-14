@@ -8,8 +8,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 
 namespace content {
 namespace test {
@@ -136,26 +136,25 @@ MakeGetAllCallback(bool* success_out,
 }
 
 // static
-blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo
+mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
 GetAllCallback::CreateAndBind(bool* result, base::OnceClosure callback) {
-  blink::mojom::StorageAreaGetAllCallbackAssociatedPtr ptr;
-  auto request = mojo::MakeRequest(&ptr);
-  mojo::MakeStrongAssociatedBinding(
+  mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
+      pending_remote;
+  mojo::MakeSelfOwnedAssociatedReceiver(
       base::WrapUnique(new GetAllCallback(result, std::move(callback))),
-      std::move(request));
-  return ptr.PassInterface();
+      pending_remote.InitWithNewEndpointAndPassReceiver());
+  return pending_remote;
 }
 
 // static
-blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo
+mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
 GetAllCallback::CreateAndBindOnDedicatedPipe(bool* result,
                                              base::OnceClosure callback) {
-  blink::mojom::StorageAreaGetAllCallbackAssociatedPtr ptr;
-  auto request = mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr);
-  mojo::MakeStrongAssociatedBinding(
+  mojo::AssociatedRemote<blink::mojom::StorageAreaGetAllCallback> remote;
+  mojo::MakeSelfOwnedAssociatedReceiver(
       base::WrapUnique(new GetAllCallback(result, std::move(callback))),
-      std::move(request));
-  return ptr.PassInterface();
+      remote.BindNewEndpointAndPassDedicatedReceiverForTesting());
+  return remote.Unbind();
 }
 
 GetAllCallback::GetAllCallback(bool* result, base::OnceClosure callback)

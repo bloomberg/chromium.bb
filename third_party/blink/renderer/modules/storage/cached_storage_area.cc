@@ -11,7 +11,7 @@
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -31,14 +31,14 @@ enum class StorageFormat : uint8_t { UTF16 = 0, Latin1 = 1 };
 
 class GetAllCallback : public mojom::blink::StorageAreaGetAllCallback {
  public:
-  static mojom::blink::StorageAreaGetAllCallbackAssociatedPtrInfo CreateAndBind(
-      base::OnceCallback<void(bool)> callback) {
-    mojom::blink::StorageAreaGetAllCallbackAssociatedPtrInfo ptr_info;
-    auto request = mojo::MakeRequest(&ptr_info);
-    mojo::MakeStrongAssociatedBinding(
+  static mojo::PendingAssociatedRemote<mojom::blink::StorageAreaGetAllCallback>
+  CreateAndBind(base::OnceCallback<void(bool)> callback) {
+    mojo::PendingAssociatedRemote<mojom::blink::StorageAreaGetAllCallback>
+        pending_remote;
+    mojo::MakeSelfOwnedAssociatedReceiver(
         base::WrapUnique(new GetAllCallback(std::move(callback))),
-        std::move(request));
-    return ptr_info;
+        pending_remote.InitWithNewEndpointAndPassReceiver());
+    return pending_remote;
   }
 
  private:

@@ -69,11 +69,10 @@ MakeGetAllCallback(bool* success_out,
 // When the call is complete, the |callback| will be called.
 class GetAllCallback : public blink::mojom::StorageAreaGetAllCallback {
  public:
-  static blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo CreateAndBind(
-      bool* result,
-      base::OnceClosure callback);
+  static mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
+  CreateAndBind(bool* result, base::OnceClosure callback);
 
-  static blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo
+  static mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
   CreateAndBindOnDedicatedPipe(bool* result, base::OnceClosure callback);
 
   ~GetAllCallback() override;
