@@ -31,7 +31,7 @@
 * ../../tables/de-g2.ctb                        German fully contracted braille
 * ../../tables/dra.tbl                          Dravidian computer braille
 * ../../tables/el.tbl                           Greek braille
-* ../../tables/gr-bb.ctb                        Ancient Greek braille
+  ../../tables/grc-international-en.utb         Greek international braille as used by the English-speaking
 * ../../tables/fa-ir-comp8.ctb                  Persian computer braille
 * ../../tables/fa-ir-g1.utb                     Persian braille
   ../../tables/en-ueb-g1.ctb                    English (UEB) uncontracted braille
@@ -137,5 +137,5 @@
 * ../../tables/zh_HK.tbl                        Cantonese braille
   ../../tables/zh_TW.tbl                        Taiwanese braille
   ../../tables/zhcn-g1.ctb                      Mainland Chinese braille with tone
-  ../../tables/zhcn-g2.ctb                      Two-cell Chinese Braille
+  ../../tables/zhcn-g2.ctb                      Two-cell Chinese braille
 

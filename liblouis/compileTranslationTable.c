@@ -1141,14 +1141,17 @@ parseChars(FileInfo *nested, CharsString *result, CharsString *token) {
 					ch = QUOTESUB;
 					break;
 				case 'X':
+					compileWarning(nested, "\\Xhhhh (with a capital 'X') is deprecated.");
 				case 'x':
 					if (token->length - in > 4) {
 						ch = hexValue(nested, &token->chars[in + 1], 4);
 						in += 4;
 					}
 					break;
-				case 'y':
 				case 'Y':
+					compileWarning(
+							nested, "\\Yhhhhh (with a capital 'Y') is deprecated.");
+				case 'y':
 					if (CHARSIZE == 2) {
 					not32:
 						compileError(nested,
@@ -1160,8 +1163,10 @@ parseChars(FileInfo *nested, CharsString *result, CharsString *token) {
 						in += 5;
 					}
 					break;
-				case 'z':
 				case 'Z':
+					compileWarning(
+							nested, "\\Zhhhhhhhh (with a capital 'Z') is deprecated.");
+				case 'z':
 					if (CHARSIZE == 2) goto not32;
 					if (token->length - in > 8) {
 						ch = hexValue(nested, &token->chars[in + 1], 8);
@@ -4085,15 +4090,6 @@ cleanup:
 }
 
 static ChainEntry *lastTrans = NULL;
-char *EXPORT_CALL
-_lou_getLastTableList(void) {
-	static char scratchBuf[MAXSTRING];
-	if (lastTrans == NULL) return NULL;
-	strncpy(scratchBuf, lastTrans->tableList, lastTrans->tableListLength);
-	scratchBuf[lastTrans->tableListLength] = 0;
-	return scratchBuf;
-}
-
 /* Return the emphasis classes declared in tableList. */
 char const **EXPORT_CALL
 lou_getEmphClasses(const char *tableList) {

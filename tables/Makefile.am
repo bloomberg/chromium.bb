@@ -143,7 +143,10 @@ table_files = \
 	gez.tbl \
 	gon.ctb \
 	gon.tbl \
-	gr-bb.ctb \
+	grc-international-en.utb \
+	grc-international-common.uti \
+	grc-international-composed.uti \
+	grc-international-decomposed.uti \
 	gr-pl-comp8.uti \
 	gu-in-g1.utb \
 	gujarati.cti \

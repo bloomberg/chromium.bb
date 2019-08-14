@@ -119,6 +119,9 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/fr-bfu-g2_harness.yaml		  \
 	braille-specs/ga-g1_harness.yaml		  \
 	braille-specs/ga-g2_harness.yaml		  \
+	braille-specs/grc-international-common.yaml	  \
+	braille-specs/grc-international-composed.yaml	  \
+	braille-specs/grc-international-decomposed.yaml	  \
 	braille-specs/hi_harness.yaml			  \
 	braille-specs/hr-8dots_harness.yaml		  \
 	braille-specs/hu-hu-comp8_backward.yaml		  \
@@ -145,6 +148,7 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/no_typeform_harness.yaml		  \
 	braille-specs/pl-pl-comp8_harness.yaml		  \
 	braille-specs/Pl-Pl-g1_backward.yaml		  \
+	braille-specs/Pl-Pl-g1_harness.yaml		  \
 	braille-specs/sk-g1_harness.yaml		  \
 	braille-specs/sl-g1.yaml			  \
 	braille-specs/spaces.yaml			  \
@@ -173,8 +177,10 @@ dist_yaml_TESTS =				\
 	yaml/emphasis-no-context.yaml		\
 	yaml/example_test.yaml			\
 	yaml/foo.yaml				\
+	yaml/hyphenation.yaml			\
 	yaml/hyphenation_nocross_harness.yaml	\
 	yaml/inpos_outpos.yaml			\
+	yaml/input-length.yaml			\
 	yaml/issue-238.yaml			\
 	yaml/issue-332.yaml			\
 	yaml/issue-35.yaml			\
@@ -198,12 +204,12 @@ dist_yaml_TESTS =				\
 	yaml/multipass-vs-match.yaml		\
 	yaml/new_emph.yaml			\
 	yaml/noletsignafter.yaml		\
-	yaml/noUndefinedDots.yaml		\
 	yaml/partialTrans.yaml			\
 	yaml/pass0_typebuf.yaml			\
 	yaml/present_progressive.yaml		\
 	yaml/squash_space.yaml			\
-	yaml/syllable.yaml
+	yaml/syllable.yaml			\
+	yaml/undefined-dots.yaml
 
 # This test hangs when configured without --enable-ucs4
 if HAVE_UCS4

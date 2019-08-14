@@ -14,13 +14,26 @@ issues]].
   Frees.
 - Never convert to lowercase if capsletter is not defined. Thanks to
   Bert Frees.
+- Fix position mapping for back-translation when noUndefinedDots mode
+  is active. Thanks to Dave Mielke.
+- Fix bug where a translation would hang on words that match both a
+  ~nocont~ and a ~repeated~ rule. Thanks to Dave Mielke.
 
 ** Braille table improvements
 - Fix an issue with ordinal numbers inside caps passages in Dutch
   braille. Thanks to Bert Frees.
 - Improved back-translation for Mongolian thanks to Angaragerdene.
+- Fixes to Polish grade 1 and Polish computer braille thanks to Łukasz
+  Golonka.
+- Improvements to Ancient Greek braille, which has been renamed "Greek
+  international braille". A version with composed accents is made
+  available as a .uti table. Thanks to Dave Mielke and Μαρια
+  Γεωργακαράκου (Maria Georgakarakou).
 
 ** Other changes
+- Metadata keys and values are now case insensitive, thanks to Dave
+  Mielke.
+
 ** Deprecation notice
 None
 
@@ -29,10 +42,12 @@ None
 
 ** New, renamed or removed tables
 *** New
-- None
+- grc-international-common.uti
+- grc-international-composed.uti
+- grc-international-decomposed.uti
 
 *** Renamed
-- None
+- gr-bb.ctb -> grc-international-en.utb
 
 *** Removed
 - None

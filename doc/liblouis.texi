@@ -2054,9 +2054,9 @@ A metadata field must be defined on its own line, starting with
 #+<key>: <value>
 @end example
 
-where @samp{<key>} and @samp{<value>} are sequences of
-one or more characters @code{0} to @code{9}, @code{a} to @code{z},
-@code{A} tot @code{Z}, @code{-} and @code{_}. The colon that separates
+where @samp{<key>} and @samp{<value>} are sequences of one or more
+characters @code{a} to @code{z}, @code{A} to @code{Z}, @code{0} to
+@code{9}, @code{.}, @code{-}, and @code{_}. The colon that separates
 the key and value may have zero or more spaces or tabs on either side.
 
 A value is optional. In case of no value the colon must be omitted as
@@ -2617,6 +2617,8 @@ This indicates that the tests are for backward translation
 This indicates that the tests are for both forward and backward translation.
 @item hyphenate
 This indicates that the tests are for hyphenation
+@item hyphenateBraille
+This indicates that the tests are for hyphenation and the input is braille
 @end table
 
 If no flags are defined forward translation is assumed.

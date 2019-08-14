@@ -401,7 +401,7 @@ lou_findTables(const char *query);
  * of the returned string is the responsibility of the caller.
  */
 LIBLOUIS_API
-const char *EXPORT_CALL
+char *EXPORT_CALL
 lou_getTableInfo(const char *table, const char *key);
 
 /**
@@ -415,7 +415,7 @@ lou_getTableInfo(const char *table, const char *key);
  * strings is the responsibility of the caller.
  */
 LIBLOUIS_API
-const char **EXPORT_CALL
+char **EXPORT_CALL
 lou_listTables(void);
 
 /* ====================== END OF BETA API ====================== */
