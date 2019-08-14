@@ -141,11 +141,9 @@ void RunCallbackWithCompressedDataFromExtension(
   // compressed icons (i.e. PNG-formatted data), not uncompressed
   // (i.e. a gfx::ImageSkia).
 
-  const gfx::Size dip_size = gfx::Size(size_hint_in_dip, size_hint_in_dip);
-  float scale =
-      ui::GetScaleForScaleFactor(apps_util::GetPrimaryDisplayUIScaleFactor());
-  int size_hint_in_px = gfx::ScaleToFlooredSize(dip_size, scale).width();
-
+  constexpr bool quantize_to_supported_scale_factor = true;
+  int size_hint_in_px = apps_util::ConvertDipToPx(
+      size_hint_in_dip, quantize_to_supported_scale_factor);
   extensions::ExtensionResource ext_resource =
       extensions::IconsInfo::GetIconResource(extension, size_hint_in_px,
                                              ExtensionIconSet::MATCH_BIGGER);
