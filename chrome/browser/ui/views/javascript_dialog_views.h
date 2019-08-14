@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_JAVASCRIPT_DIALOGS_JAVASCRIPT_DIALOG_VIEWS_H_
-#define CHROME_BROWSER_UI_JAVASCRIPT_DIALOGS_JAVASCRIPT_DIALOG_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_JAVASCRIPT_DIALOG_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_JAVASCRIPT_DIALOG_VIEWS_H_
 
 #include <memory>
 
@@ -59,6 +59,8 @@ class JavaScriptDialogViews : public JavaScriptDialog,
   ui::ModalType GetModalType() const override;
 
  private:
+  friend class JavaScriptDialog;
+
   JavaScriptDialogViews(
       content::WebContents* parent_web_contents,
       content::WebContents* alerting_web_contents,
@@ -84,4 +86,4 @@ class JavaScriptDialogViews : public JavaScriptDialog,
   DISALLOW_COPY_AND_ASSIGN(JavaScriptDialogViews);
 };
 
-#endif  // CHROME_BROWSER_UI_JAVASCRIPT_DIALOGS_JAVASCRIPT_DIALOG_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_JAVASCRIPT_DIALOG_VIEWS_H_

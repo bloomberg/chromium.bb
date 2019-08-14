@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_views.h"
+#include "chrome/browser/ui/views/javascript_dialog_views.h"
 
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 
 JavaScriptDialogViews::~JavaScriptDialogViews() = default;
 
 // static
-base::WeakPtr<JavaScriptDialogViews> JavaScriptDialogViews::Create(
+base::WeakPtr<JavaScriptDialog> JavaScriptDialog::CreateNewDialog(
     content::WebContents* parent_web_contents,
     content::WebContents* alerting_web_contents,
     const base::string16& title,
