@@ -4082,6 +4082,7 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Get upload details RPC failed"/>
   <int value="6" label="All cards are unsupported"/>
   <int value="7" label="Single local card"/>
+  <int value="8" label="User used unsupported local card"/>
 </enum>
 
 <enum name="AutofillLocalCardMigrationDialogOffer">
