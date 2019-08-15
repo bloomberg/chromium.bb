@@ -33,6 +33,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "net/base/auth.h"
+#include "net/base/cache_metrics.h"
 #include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
@@ -1855,7 +1856,8 @@ int HttpCache::Transaction::DoUpdateCachedResponse() {
     response_.vary_data = new_vary_data;
   }
 
-  if (response_.headers->HasHeaderValue("cache-control", "no-store")) {
+  if (response_.headers->HasHeaderValue("cache-control", "no-store") ||
+      ShouldDisableMediaCaching(response_.headers.get())) {
     if (!entry_->doomed) {
       int ret = cache_->DoomEntry(cache_key_, nullptr);
       DCHECK_EQ(OK, ret);
@@ -3063,7 +3065,8 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(bool truncated) {
   // blocking page is shown.  An alternative would be to reverse-map the cert
   // status to a net error and replay the net error.
   if ((response_.headers->HasHeaderValue("cache-control", "no-store")) ||
-      IsCertStatusError(response_.ssl_info.cert_status)) {
+      IsCertStatusError(response_.ssl_info.cert_status) ||
+      ShouldDisableMediaCaching(response_.headers.get())) {
     bool stopped = StopCachingImpl(false);
     DCHECK(stopped);
     if (net_log_.IsCapturing())
@@ -3522,6 +3525,34 @@ void HttpCache::Transaction::TransitionToState(State state) {
   DCHECK(in_do_loop_);
   DCHECK_EQ(STATE_UNSET, next_state_) << "Next state is " << state;
   next_state_ = state;
+}
+
+bool HttpCache::Transaction::ShouldDisableMediaCaching(
+    const HttpResponseHeaders* headers) const {
+  bool disable_caching = false;
+  if (base::FeatureList::IsEnabled(features::kTurnOffStreamingMediaCaching)) {
+    // If the acquired content is 'large' and not already cached, and we have
+    // a MIME type of audio or video, then disable the cache for this response.
+    // We based our initial definition of 'large' on the disk cache maximum
+    // block size of 16K, which we observed captures the majority of responses
+    // from various MSE implementations.
+    static constexpr int kMaxContentSize = 4096 * 4;
+    std::string mime_type;
+    if (headers->GetContentLength() > kMaxContentSize &&
+        headers->response_code() != 304 && headers->GetMimeType(&mime_type) &&
+        (base::StartsWith(mime_type, "video",
+                          base::CompareCase::INSENSITIVE_ASCII) ||
+         base::StartsWith(mime_type, "audio",
+                          base::CompareCase::INSENSITIVE_ASCII))) {
+      disable_caching = true;
+      MediaCacheStatusResponseHistogram(
+          MediaResponseCacheType::kMediaResponseTransactionCacheDisabled);
+    } else {
+      MediaCacheStatusResponseHistogram(
+          MediaResponseCacheType::kMediaResponseTransactionCacheEnabled);
+    }
+  }
+  return disable_caching;
 }
 
 }  // namespace net

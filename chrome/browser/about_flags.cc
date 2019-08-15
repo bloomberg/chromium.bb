@@ -4231,6 +4231,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniWebUIInstaller)},
 #endif  // OS_CHROMEOS
 
+    {"turn-off-streaming-media-caching",
+     flag_descriptions::kTurnOffStreamingMediaCachingName,
+     flag_descriptions::kTurnOffStreamingMediaCachingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kTurnOffStreamingMediaCaching)},
+
     {"enable-autofill-save-card-show-no-thanks",
      flag_descriptions::kEnableAutofillSaveCardShowNoThanksName,
      flag_descriptions::kEnableAutofillSaveCardShowNoThanksDescription,

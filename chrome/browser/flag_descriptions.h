@@ -1179,6 +1179,9 @@ extern const char kTreatUnsafeDownloadsAsActiveDescription[];
 extern const char kTrySupportedChannelLayoutsName[];
 extern const char kTrySupportedChannelLayoutsDescription[];
 
+extern const char kTurnOffStreamingMediaCachingName[];
+extern const char kTurnOffStreamingMediaCachingDescription[];
+
 extern const char kUnexpireFlagsM78Name[];
 extern const char kUnexpireFlagsM78Description[];
 

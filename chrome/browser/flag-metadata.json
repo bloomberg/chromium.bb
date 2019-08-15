@@ -3097,6 +3097,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "turn-off-streaming-media-caching",
+    "owners": [ "shawnpi@microsoft.com" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "ui-disable-partial-swap",
     "owners": [ "//components/viz/OWNERS" ],
     // This flag is used for in-the-field debugging of rendering issues,
