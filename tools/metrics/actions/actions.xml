@@ -17373,6 +17373,11 @@ should be able to be added at any place in this file.
   <description>Release Notes app was launched.</description>
 </action>
 
+<action name="ReleaseNotes.SuggestionChipLaunched">
+  <owner>yulunwu@chromium.org</owner>
+  <description>Release Notes was launched from suggestion chip.</description>
+</action>
+
 <action name="Reload">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
