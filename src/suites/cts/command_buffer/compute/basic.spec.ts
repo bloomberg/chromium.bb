@@ -3,9 +3,10 @@ Basic command buffer compute tests.
 `;
 
 import { TestGroup } from '../../../../framework/index.js';
-import { GPUShaderTest } from '../../gpu_shader_test.js';
+import GLSL from '../../../../tools/glsl.macro.js';
+import { GPUTest } from '../../gpu_test.js';
 
-export const g = new TestGroup(GPUShaderTest);
+export const g = new TestGroup(GPUTest);
 
 g.test('memcpy', async t => {
   const data = new Uint32Array([0x01020304]);
@@ -33,21 +34,23 @@ g.test('memcpy', async t => {
     layout: bgl,
   });
 
-  const module = t.makeShaderModule(
-    'compute',
-    `#version 310 es
-    layout(std140, set = 0, binding = 0) buffer Src {
-      int value;
-    } src;
-    layout(std140, set = 0, binding = 1) buffer Dst {
-      int value;
-    } dst;
+  const module = t.device.createShaderModule({
+    code: GLSL(
+      'compute',
+      `#version 310 es
+        layout(std140, set = 0, binding = 0) buffer Src {
+          int value;
+        } src;
+        layout(std140, set = 0, binding = 1) buffer Dst {
+          int value;
+        } dst;
 
-    void main() {
-      dst.value = src.value;
-    }
-  `
-  );
+        void main() {
+          dst.value = src.value;
+        }
+      `
+    ),
+  });
   const pl = t.device.createPipelineLayout({ bindGroupLayouts: [bgl] });
   const pipeline = t.device.createComputePipeline({
     computeStage: { module, entryPoint: 'main' },
