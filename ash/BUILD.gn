@@ -568,6 +568,8 @@ component("ash") {
     "shelf/overflow_button.h",
     "shelf/scroll_arrow_view.cc",
     "shelf/scroll_arrow_view.h",
+    "shelf/scrollable_shelf_view.cc",
+    "shelf/scrollable_shelf_view.h",
     "shelf/shelf.cc",
     "shelf/shelf_app_button.cc",
     "shelf/shelf_app_button.h",

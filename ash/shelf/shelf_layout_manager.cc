@@ -1177,13 +1177,32 @@ void ShelfLayoutManager::CalculateTargetBounds(
 
   // This needs to happen after calling UpdateTargetBoundsForGesture(), because
   // that can change the size of the shelf.
-  target_bounds->shelf_bounds_in_shelf = SelectValueForShelfAlignment(
-      gfx::Rect(0, 0, shelf_width - status_size.width(),
-                target_bounds->shelf_bounds.height()),
-      gfx::Rect(0, 0, target_bounds->shelf_bounds.width(),
-                shelf_height - status_size.height()),
-      gfx::Rect(0, 0, target_bounds->shelf_bounds.width(),
-                shelf_height - status_size.height()));
+  if (chromeos::switches::ShouldShowScrollableShelf()) {
+    target_bounds->shelf_bounds_in_shelf = SelectValueForShelfAlignment(
+        gfx::Rect(target_bounds->nav_bounds_in_shelf.right(), 0,
+                  shelf_width - status_size.width() -
+                      target_bounds->nav_bounds_in_shelf.width() -
+                      ShelfConstants::home_button_edge_spacing(),
+                  target_bounds->shelf_bounds.height()),
+        gfx::Rect(0, target_bounds->nav_bounds_in_shelf.height(),
+                  target_bounds->shelf_bounds.width(),
+                  shelf_height - status_size.height() -
+                      target_bounds->nav_bounds_in_shelf.height() -
+                      ShelfConstants::home_button_edge_spacing()),
+        gfx::Rect(0, target_bounds->nav_bounds_in_shelf.height(),
+                  target_bounds->shelf_bounds.width(),
+                  shelf_height - status_size.height() -
+                      target_bounds->nav_bounds_in_shelf.height() -
+                      ShelfConstants::home_button_edge_spacing()));
+  } else {
+    target_bounds->shelf_bounds_in_shelf = SelectValueForShelfAlignment(
+        gfx::Rect(0, 0, shelf_width - status_size.width(),
+                  target_bounds->shelf_bounds.height()),
+        gfx::Rect(0, 0, target_bounds->shelf_bounds.width(),
+                  shelf_height - status_size.height()),
+        gfx::Rect(0, 0, target_bounds->shelf_bounds.width(),
+                  shelf_height - status_size.height()));
+  }
 }
 
 void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea(
