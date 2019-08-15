@@ -631,7 +631,7 @@ class Node(object):
       # The length of the uncompressed data is also appended to the start,
       # truncated to 6 bytes, little-endian. size_bytes is 8 bytes,
       # need to truncate further to 6.
-      formatter = '%ds %dx %ds' % (6, 2, len(size_bytes) - 8)
+      formatter = b'%ds %dx %ds' % (6, 2, len(size_bytes) - 8)
       return (constants.BROTLI_CONST +
              b''.join(struct.unpack(formatter, size_bytes)) +
              data)
