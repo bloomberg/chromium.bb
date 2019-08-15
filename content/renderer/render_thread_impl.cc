@@ -1886,8 +1886,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     // Set it to be our thread's task runner instead.
     params.compositor_task_runner = main_thread_compositor_task_runner_;
   }
-  params.enable_surface_synchronization =
-      features::IsSurfaceSynchronizationEnabled();
+  params.enable_surface_synchronization = true;
   params.local_surface_id_provider =
       std::make_unique<RendererLocalSurfaceIdProvider>();
   if (features::IsVizHitTestingDrawQuadEnabled()) {
