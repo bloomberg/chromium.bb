@@ -290,6 +290,10 @@ const char* LoggingEventToBackgroundUserActionName(NTPLoggingEventType event) {
       return "NTPRicherPicker.Backgrounds.UploadConfirmed";
     case NTP_BACKGROUND_IMAGE_RESET:
       return "NTPRicherPicker.Backgrounds.BackgroundReset";
+    case NTP_BACKGROUND_REFRESH_TOGGLE_CLICKED:
+      return "NTPRicherPicker.Backgrounds.RefreshToggleClicked";
+    case NTP_BACKGROUND_DAILY_REFRESH_ENABLED:
+      return "NTPRicherPicker.Backgrounds.DailyRefreshEnabled";
     default:
       NOTREACHED();
       return nullptr;
@@ -532,6 +536,8 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
     case NTP_BACKGROUND_UPLOAD_CANCEL:
     case NTP_BACKGROUND_UPLOAD_DONE:
     case NTP_BACKGROUND_IMAGE_RESET:
+    case NTP_BACKGROUND_REFRESH_TOGGLE_CLICKED:
+    case NTP_BACKGROUND_DAILY_REFRESH_ENABLED:
       RecordAction(LoggingEventToBackgroundUserActionName(event));
       break;
     case NTP_CUSTOMIZATION_MENU_OPENED:

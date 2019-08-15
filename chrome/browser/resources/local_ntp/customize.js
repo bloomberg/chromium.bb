@@ -64,6 +64,8 @@ customize.LOG_TYPE = {
   NTP_CUSTOMIZE_SHORTCUT_MOST_VISITED_CLICKED: 79,
   // The visibility toggle in the shortcuts submenu was clicked.
   NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED: 80,
+  // The 'refresh daily' toggle was licked in the richer picker.
+  NTP_BACKGROUND_REFRESH_TOGGLE_CLICKED: 81,
 };
 
 /**
@@ -2082,6 +2084,8 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
 
   const refreshToggle = $(customize.IDS.REFRESH_TOGGLE);
   refreshToggle.onchange = function(event) {
+    ntpApiHandle.logEvent(
+        customize.LOG_TYPE.NTP_BACKGROUND_REFRESH_TOGGLE_CLICKED);
     customize.richerPicker_toggleRefreshDaily(refreshToggle.checked);
   };
   refreshToggle.onkeydown = function(event) {

@@ -1165,8 +1165,12 @@ void NewTabPageBindings::SetCustomBackgroundInfo(
   search_box->SetCustomBackgroundInfo(
       GURL(background_url), attribution_line_1, attribution_line_2,
       GURL(attribution_action_url), collection_id);
-  // Captures saving the background by double-clicking, or clicking 'Done'.
-  if (background_url.empty()) {
+  // Captures different events that occur when a background selection is made
+  // and 'Done' is clicked on the dialog.
+  if (!collection_id.empty()) {
+    search_box->LogEvent(
+        NTPLoggingEventType::NTP_BACKGROUND_DAILY_REFRESH_ENABLED);
+  } else if (background_url.empty()) {
     search_box->LogEvent(
         NTPLoggingEventType::NTP_CUSTOMIZE_RESTORE_BACKGROUND_CLICKED);
     search_box->LogEvent(NTPLoggingEventType::NTP_BACKGROUND_IMAGE_RESET);
