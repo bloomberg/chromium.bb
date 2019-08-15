@@ -67,16 +67,6 @@
     for (CWVAutofillSuggestion* suggestion in suggestions) {
       [alertController addAction:[self actionForSuggestion:suggestion]];
     }
-    UIAlertAction* clearAction = [UIAlertAction
-        actionWithTitle:@"Clear"
-                  style:UIAlertActionStyleDefault
-                handler:^(UIAlertAction* _Nonnull action) {
-                  [autofillController clearFormWithName:formName
-                                        fieldIdentifier:fieldIdentifier
-                                                frameID:frameID
-                                      completionHandler:nil];
-                }];
-    [alertController addAction:clearAction];
 
     [UIApplication.sharedApplication.keyWindow.rootViewController
         presentViewController:alertController
@@ -285,8 +275,9 @@
   return [UIAlertAction actionWithTitle:title
                                   style:UIAlertActionStyleDefault
                                 handler:^(UIAlertAction* _Nonnull action) {
-                                  [_autofillController fillSuggestion:suggestion
-                                                    completionHandler:nil];
+                                  [_autofillController
+                                       acceptSuggestion:suggestion
+                                      completionHandler:nil];
                                   [UIApplication.sharedApplication.keyWindow
                                       endEditing:YES];
                                 }];
