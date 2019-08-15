@@ -10,11 +10,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "components/policy/core/common/features.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_merger.h"
@@ -230,12 +232,16 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   PolicyListMerger policy_list_merger(std::move(policy_lists_to_merge));
   PolicyDictionaryMerger policy_dictionary_merger(
       std::move(policy_dictionaries_to_merge));
-  PolicyGroupMerger policy_group_merger;
 
-  for (auto it = bundle.begin(); it != bundle.end(); ++it) {
-    it->second->MergeValues(
-        {&policy_list_merger, &policy_dictionary_merger, &policy_group_merger});
-  }
+  std::vector<PolicyMerger*> mergers{&policy_list_merger,
+                                     &policy_dictionary_merger};
+
+  PolicyGroupMerger policy_group_merger;
+  if (base::FeatureList::IsEnabled(features::kPolicyAtomicGroup))
+    mergers.push_back(&policy_group_merger);
+
+  for (auto it = bundle.begin(); it != bundle.end(); ++it)
+    it->second->MergeValues(mergers);
 
   // Swap first, so that observers that call GetPolicies() see the current
   // values.

@@ -1564,6 +1564,12 @@ const char kPerMethodCanMakePaymentQuotaDescription[] =
     "Allow calling canMakePayment() for different payment methods, as long as "
     "method-specific parameters remain unchanged.";
 
+const char kPolicyAtomicGroupsEnabledName[] = "Policy Atomic Groups Enabled";
+const char kPolicyAtomicGroupsEnabledDescription[] =
+    "Enables the concept of policy atomic groups that makes policies of an "
+    "atomic group that do not share the highest priority source from that group"
+    "ignored.";
+
 const char kPreviewsAllowedName[] = "Previews Allowed";
 const char kPreviewsAllowedDescription[] =
     "Allows previews to be shown subject to specific preview types being "

@@ -4007,6 +4007,24 @@
             ]
         }
     ],
+    "PolicyAtomicGroup": [
+        {
+            "platforms": [
+                "windows",
+                "chromeos",
+                "mac",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PolicyAtomicGroup"
+                    ]
+                }
+            ]
+        }
+    ],
     "Precache": [
         {
             "platforms": [

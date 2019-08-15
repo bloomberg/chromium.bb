@@ -2782,6 +2782,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "policy-atomic-group-enabled",
+    "owners": [ "ydago" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "postscript-printing",
     "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76
