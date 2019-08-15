@@ -92,7 +92,7 @@ def BuildRepackageFileList(src_dir):
   return result
 
 
-def BuildFileList(override_dir):
+def BuildFileList(override_dir, include_arm):
   result = []
 
   # Subset of VS corresponding roughly to VC.
@@ -144,12 +144,15 @@ def BuildFileList(override_dir):
         ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'VC/bin/amd64'),
         ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'win_sdk/bin/x64'),
         ('VC/redist/MSVC/14.*.*/debug_nonredist/x64/Microsoft.VC*.DebugCRT', 'sys64'),
+    ]
+    if include_arm:
+      paths += [
         ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'sysarm64'),
         ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'VC/bin/amd64_arm64'),
         ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'VC/bin/arm64'),
         ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'win_sdk/bin/arm64'),
         ('VC/redist/MSVC/14.*.*/debug_nonredist/arm64/Microsoft.VC*.DebugCRT', 'sysarm64'),
-    ]
+      ]
   else:
     raise ValueError('VS_VERSION %s' % VS_VERSION)
 
@@ -238,8 +241,16 @@ def BuildFileList(override_dir):
       # Needed to let debug binaries run.
       'ucrtbased.dll',
   ]
+  cpu_pairs = [
+    ('x86', 'sys32'),
+    ('x64', 'sys64'),
+  ]
+  if include_arm:
+    cpu_pairs += [
+      ('arm64', 'sysarm64'),
+    ]
   for system_crt_file in system_crt_files:
-    for cpu_pair in [('x86', 'sys32'), ('x64', 'sys64'), ('arm64', 'sysarm64')]:
+    for cpu_pair in cpu_pairs:
       target_cpu, dest_dir = cpu_pair
       src_path = os.path.join(sdk_path, 'bin', WIN_VERSION, target_cpu, 'ucrt')
       result.append((os.path.join(src_path, system_crt_file),
@@ -247,12 +258,16 @@ def BuildFileList(override_dir):
 
   # Generically drop all arm stuff that we don't need, and
   # drop .msi files because we don't need installers, and drop windows.winmd
-  # because it is unneeded and is different on every machine.
-  return [(f, t) for f, t in result if 'arm\\' not in f.lower() and
-                                       not f.lower().endswith('.msi') and
-                                       not f.lower().endswith('.msm') and
-                                       not f.lower().endswith('windows.winmd')]
-
+  # because it is unneeded and is different on every machine and drop
+  # samples since those are not used by any tools.
+  def is_skippable(f):
+    return ('arm\\' in f.lower() or
+            (not include_arm and 'arm64\\' in f.lower()) or
+            'samples\\' in f.lower() or
+            f.lower().endswith(('.msi',
+                                '.msm',
+                                'windows.winmd')))
+  return [(f, t) for f, t in result if not is_skippable(f)]
 
 def GenerateSetEnvCmd(target_dir):
   """Generate a batch file that gyp expects to exist to set up the compiler
@@ -395,7 +410,7 @@ def GenerateSetEnvCmd(target_dir):
               f)
 
 
-def AddEnvSetup(files):
+def AddEnvSetup(files, include_arm):
   """We need to generate this file in the same way that the "from pieces"
   script does, so pull that in here."""
   tempdir = tempfile.mkdtemp()
@@ -407,8 +422,9 @@ def AddEnvSetup(files):
                 'win_sdk\\bin\\SetEnv.x86.json'))
   files.append((os.path.join(tempdir, 'win_sdk', 'bin', 'SetEnv.x64.json'),
                 'win_sdk\\bin\\SetEnv.x64.json'))
-  files.append((os.path.join(tempdir, 'win_sdk', 'bin', 'SetEnv.arm64.json'),
-                'win_sdk\\bin\\SetEnv.arm64.json'))
+  if include_arm:
+    files.append((os.path.join(tempdir, 'win_sdk', 'bin', 'SetEnv.arm64.json'),
+                  'win_sdk\\bin\\SetEnv.arm64.json'))
   vs_version_file = os.path.join(tempdir, 'VS_VERSION')
   with open(vs_version_file, 'wb') as version:
     print(VS_VERSION, file=version)
@@ -444,6 +460,9 @@ def main():
   parser.add_option('-d', '--dryrun', action='store_true', dest='dryrun',
                     default=False,
                     help='scan for file existence and prints statistics')
+  parser.add_option('--noarm', action='store_false', dest='arm',
+                    default=True,
+                    help='Avoids arm parts of the SDK')
   parser.add_option('--override', action='store', type='string',
                     dest='override_dir', default=None,
                     help='Specify alternate bin/include/lib directory')
@@ -481,9 +500,9 @@ def main():
       VC_TOOLS = 'VC'
 
     print('Building file list for VS %s Windows %s...' % (VS_VERSION, WIN_VERSION))
-    files = BuildFileList(options.override_dir)
+    files = BuildFileList(options.override_dir, options.arm)
 
-    AddEnvSetup(files)
+    AddEnvSetup(files, options.arm)
 
   if False:
     for f in files:
