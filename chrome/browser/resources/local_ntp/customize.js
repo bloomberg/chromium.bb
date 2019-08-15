@@ -1000,10 +1000,10 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
   customize.selectedOptions.background = tile;
   customize.selectedOptions.backgroundData = {
     id: tile.id,
-    url: tile.dataset.url,
-    attr1: tile.dataset.attributionLine1,
-    attr2: tile.dataset.attributionLine2,
-    attrUrl: tile.dataset.attributionActionUrl,
+    url: tile.dataset.url || '',
+    attr1: tile.dataset.attributionLine1 || '',
+    attr2: tile.dataset.attributionLine2 || '',
+    attrUrl: tile.dataset.attributionActionUrl || '',
     collectionId: '',
   };
   customize.richerPicker_applySelectedState(tile);
@@ -1058,8 +1058,10 @@ customize.richerPicker_toggleShortcutHide = function(areHidden) {
  * @param {boolean} toggledOn True if the toggle has been enabled.
  */
 customize.richerPicker_toggleRefreshDaily = function(toggledOn) {
-  $(customize.IDS.MENU_DONE).disabled = !toggledOn;
+  $(customize.IDS.REFRESH_TOGGLE).checked = toggledOn;
   if (!toggledOn) {
+    customize.richerPicker_selectBackgroundTile(
+        $(customize.IDS.BACKGROUNDS_DEFAULT));
     return;
   }
 
@@ -1237,23 +1239,28 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
     });
   }
 
+  customize.currentCollectionId = collImg[0].collectionId;
+  $(customize.IDS.REFRESH_TOGGLE).checked = false;
   // If an image tile was previously selected re-select it now.
   if (customize.selectedOptions.backgroundData) {
     const selected = $(customize.selectedOptions.backgroundData.id);
     if (selected) {
       customize.richerPicker_selectBackgroundTile(selected);
+    } else if (
+        customize.selectedOptions.backgroundData.collectionId ===
+        customize.currentCollectionId) {
+      $(customize.IDS.REFRESH_TOGGLE).checked = true;
     }
   } else {
     customize.richerPicker_preselectBackgroundOption();
   }
+  $(customize.IDS.REFRESH_DAILY_WRAPPER).hidden = false;
 
   if (configData.richerPicker) {
     $(customize.IDS.BACKGROUNDS_IMAGE_MENU).focus();
   } else {
     $(customize.IDS.TILES).focus();
   }
-  customize.currentCollectionId = collImg[0].collectionId;
-  $(customize.IDS.REFRESH_DAILY_WRAPPER).hidden = false;
 };
 
 /**
@@ -1434,6 +1441,11 @@ customize.richerPicker_preselectBackgroundOption = function() {
     // Local image.
     customize.preselectedOptions.backgroundsMenuTile =
         $(customize.IDS.BACKGROUNDS_UPLOAD_ICON);
+  } else if (
+      themeInfo.collectionId !== '' &&
+      customize.currentCollectionId == themeInfo.collectionId) {
+    // Daily refresh.
+    $(customize.IDS.REFRESH_TOGGLE).checked = true;
   } else if (!customize.selectedOptions.backgroundData) {
     // Image tile. Only if another background hasn't already been selected.
     customize.preselectedOptions.backgroundsMenuTile =
