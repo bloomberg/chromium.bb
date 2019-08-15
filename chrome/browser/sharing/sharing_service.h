@@ -38,7 +38,6 @@ class LocalDeviceInfoProvider;
 class SyncService;
 }  // namespace syncer
 
-class SharingDeviceInfo;
 class SharingFCMHandler;
 class SharingFCMSender;
 class SharingMessageHandler;
@@ -84,7 +83,7 @@ class SharingService : public KeyedService,
   // Returns a list of DeviceInfo that is available to receive messages.
   // All returned devices has the specified |required_capabilities| defined in
   // SharingDeviceCapability enum.
-  virtual std::vector<SharingDeviceInfo> GetDeviceCandidates(
+  virtual std::vector<std::unique_ptr<syncer::DeviceInfo>> GetDeviceCandidates(
       int required_capabilities) const;
 
   // Sends a message to the device specified by GUID.
