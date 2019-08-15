@@ -26,7 +26,7 @@ NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(
                       params.fragment_geometry.padding),
       border_scrollbar_padding_(border_padding_ +
                                 params.fragment_geometry.scrollbar),
-      is_column_(Style().IsColumnFlexDirection()) {
+      is_column_(Style().ResolvedIsColumnFlexDirection()) {
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
@@ -40,7 +40,7 @@ bool NGFlexLayoutAlgorithm::MainAxisIsInlineAxis(
 
 LayoutUnit NGFlexLayoutAlgorithm::MainAxisContentExtent(
     LayoutUnit sum_hypothetical_main_size) {
-  if (Style().IsColumnFlexDirection()) {
+  if (Style().ResolvedIsColumnFlexDirection()) {
     return ComputeBlockSizeForFragment(
                ConstraintSpace(), Node(), border_padding_,
                sum_hypothetical_main_size + (border_padding_).BlockSum()) -

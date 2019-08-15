@@ -186,7 +186,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     //
     // Due to this we can't use cached |NGLayoutResult::IntrinsicBlockSize|
     // value, as the following |block_size| calculation would be incorrect.
-    if (node.IsFlexibleBox() && style.IsColumnFlexDirection() &&
+    if (node.IsFlexibleBox() && style.ResolvedIsColumnFlexDirection() &&
         layout_result.PhysicalFragment().DependsOnPercentageBlockSize()) {
       if (new_space.PercentageResolutionBlockSize() !=
           old_space.PercentageResolutionBlockSize())

@@ -334,8 +334,9 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
   sum_justify_adjustments += initial_position;
   LayoutUnit max_descent;  // Used when align-items: baseline.
   LayoutUnit max_child_cross_axis_extent;
-  bool should_flip_main_axis = !algorithm->StyleRef().IsColumnFlexDirection() &&
-                               !algorithm->IsLeftToRightFlow();
+  bool should_flip_main_axis =
+      !algorithm->StyleRef().ResolvedIsColumnFlexDirection() &&
+      !algorithm->IsLeftToRightFlow();
   for (size_t i = 0; i < line_items.size(); ++i) {
     FlexItem& flex_item = line_items[i];
 
@@ -448,17 +449,17 @@ bool FlexLayoutAlgorithm::IsHorizontalFlow() const {
 }
 
 bool FlexLayoutAlgorithm::IsColumnFlow() const {
-  return StyleRef().IsColumnFlexDirection();
+  return StyleRef().ResolvedIsColumnFlexDirection();
 }
 
 bool FlexLayoutAlgorithm::IsHorizontalFlow(const ComputedStyle& style) {
   if (style.IsHorizontalWritingMode())
-    return !style.IsColumnFlexDirection();
-  return style.IsColumnFlexDirection();
+    return !style.ResolvedIsColumnFlexDirection();
+  return style.ResolvedIsColumnFlexDirection();
 }
 
 bool FlexLayoutAlgorithm::IsLeftToRightFlow() const {
-  if (style_->IsColumnFlexDirection()) {
+  if (style_->ResolvedIsColumnFlexDirection()) {
     return blink::IsHorizontalWritingMode(style_->GetWritingMode()) ||
            IsFlippedLinesWritingMode(style_->GetWritingMode());
   }
@@ -558,7 +559,7 @@ TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode() const {
 TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode(
     const ComputedStyle& style) {
   WritingMode mode = style.GetWritingMode();
-  if (!style.IsColumnFlexDirection()) {
+  if (!style.ResolvedIsColumnFlexDirection()) {
     static_assert(
         static_cast<TransformedWritingMode>(WritingMode::kHorizontalTb) ==
                 TransformedWritingMode::kTopToBottomWritingMode &&
