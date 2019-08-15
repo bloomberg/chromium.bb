@@ -693,7 +693,10 @@ void av1_temporal_filter_plane_c(uint8_t *frame1, unsigned int stride,
       }
       diff_sse /= WINDOW_SIZE;
 
-      double w = exp(-diff_sse / (2 * beta * h * h));
+      double scaled_diff = -diff_sse / (2 * beta * h * h);
+      // clamp the value to avoid underflow in exp()
+      if (scaled_diff < -15) scaled_diff = -15;
+      double w = exp(scaled_diff);
       const int weight = (int)(w * SCALE);
 
       count[k] += weight;
@@ -736,7 +739,10 @@ void av1_highbd_temporal_filter_plane_c(
       }
       diff_sse /= WINDOW_SIZE;
 
-      double w = exp(-diff_sse / (2 * beta * h * h));
+      double scaled_diff = -diff_sse / (2 * beta * h * h);
+      // clamp the value to avoid underflow in exp()
+      if (scaled_diff < -20) scaled_diff = -20;
+      double w = exp(scaled_diff);
       const int weight = (int)(w * SCALE);
 
       count[k] += weight;
