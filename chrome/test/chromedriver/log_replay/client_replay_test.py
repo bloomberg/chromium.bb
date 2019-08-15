@@ -201,9 +201,6 @@ class ChromeDriverClientReplayTest(unittest.TestCase):
   def testIFrameWithExtensionsSource(self):
     self.runTest(self.GetFunctionName())
 
-  def testSendingTabKeyMovesToNextInputElement(self):
-    self.runTest(self.GetFunctionName())
-
   def testUnexpectedAlertBehaviour(self):
     self.runTest(self.GetFunctionName())
 

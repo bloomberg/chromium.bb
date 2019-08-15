@@ -142,14 +142,14 @@ _COMMANDS = {
     "GetTimeouts": (Method.GET, "/session/:sessionId/timeouts"),
     "GetTitle": (Method.GET, "/session/:sessionId/title"),
     "GetUrl": (Method.GET, "/session/:sessionId/url"),
-    "GetWindow": (Method.GET, "/session/:sessionId/window_handle"),
+    "GetWindow": command_executor.Command.GET_CURRENT_WINDOW_HANDLE,
     "GetWindowPosition":
     (Method.GET, "/session/:sessionId/window/:windowHandle/position"),
     "GetWindowRect":
     (Method.GET, "/session/:sessionId/window/rect"),
     "GetWindowSize":
     (Method.GET, "/session/:sessionId/window/:windowHandle/size"),
-    "GetWindows": (Method.GET, "/session/:sessionId/window_handles"),
+    "GetWindows": command_executor.Command.GET_WINDOW_HANDLES,
     "GoBack": (Method.POST, "/session/:sessionId/back"),
     "GoForward": (Method.POST, "/session/:sessionId/forward"),
     "HeapSnapshot": (Method.GET, "/session/:sessionId/chromium/heap_snapshot"),
