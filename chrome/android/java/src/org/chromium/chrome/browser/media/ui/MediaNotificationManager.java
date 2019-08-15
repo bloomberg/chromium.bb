@@ -908,7 +908,8 @@ public class MediaNotificationManager {
     }
 
     @NonNull
-    private MediaMetadataCompat createMetadata() {
+    @VisibleForTesting
+    MediaMetadataCompat createMetadata() {
         // Can't return null as {@link MediaSessionCompat#setMetadata()} will crash in some versions
         // of the Android compat library.
         MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
@@ -930,6 +931,10 @@ public class MediaNotificationManager {
         if (mMediaNotificationInfo.mediaSessionImage != null) {
             metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART,
                                       mMediaNotificationInfo.mediaSessionImage);
+        }
+        if (mMediaNotificationInfo.mediaPosition != null) {
+            metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION,
+                    mMediaNotificationInfo.mediaPosition.getDuration());
         }
 
         return metadataBuilder.build();
@@ -1044,17 +1049,27 @@ public class MediaNotificationManager {
 
         mMediaSession.setMetadata(createMetadata());
 
+        mMediaSession.setPlaybackState(createPlaybackState());
+    }
+
+    @VisibleForTesting
+    PlaybackStateCompat createPlaybackState() {
         PlaybackStateCompat.Builder playbackStateBuilder =
                 new PlaybackStateCompat.Builder().setActions(computeMediaSessionActions());
-        if (mMediaNotificationInfo.isPaused) {
-            playbackStateBuilder.setState(PlaybackStateCompat.STATE_PAUSED,
-                    PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
+
+        int state = mMediaNotificationInfo.isPaused ? PlaybackStateCompat.STATE_PAUSED
+                                                    : PlaybackStateCompat.STATE_PLAYING;
+
+        if (mMediaNotificationInfo.mediaPosition != null) {
+            playbackStateBuilder.setState(state, mMediaNotificationInfo.mediaPosition.getPosition(),
+                    mMediaNotificationInfo.mediaPosition.getPlaybackRate(),
+                    mMediaNotificationInfo.mediaPosition.getLastUpdatedTime());
         } else {
-            // If notification only supports stop, still pretend
-            playbackStateBuilder.setState(PlaybackStateCompat.STATE_PLAYING,
-                    PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
+            playbackStateBuilder.setState(
+                    state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
         }
-        mMediaSession.setPlaybackState(playbackStateBuilder.build());
+
+        return playbackStateBuilder.build();
     }
 
     private long computeMediaSessionActions() {
