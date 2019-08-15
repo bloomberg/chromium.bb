@@ -844,6 +844,7 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
   DVLOGF(4) << "free_input_buffers: " << free_input_buffers_.size()
             << "input_queue: " << encoder_input_queue_.size();
 
+  bool do_streamon = false;
   // Enqueue all the inputs we can.
   const int old_inputs_queued = input_buffer_queued_count_;
   while (!encoder_input_queue_.empty() && !free_input_buffers_.empty()) {
@@ -881,20 +882,17 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
     // Queue state changed; signal interrupt.
     if (!device_->SetDevicePollInterrupt())
       return;
-    // Start VIDIOC_STREAMON if we haven't yet.
-    if (!input_streamon_) {
-      __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-      IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
-      input_streamon_ = true;
-    }
+    // Shall call VIDIOC_STREAMON if we haven't yet.
+    do_streamon = !input_streamon_;
   }
 
-  if (!input_streamon_) {
+  if (!input_streamon_ && !do_streamon) {
     // We don't have to enqueue any buffers in the output queue until we enqueue
     // buffers in the input queue. This enables to call S_FMT in Encode() on
     // the first frame.
     return;
   }
+
   // Enqueue all the outputs we can.
   const int old_outputs_queued = output_buffer_queued_count_;
   while (!free_output_buffers_.empty() && !encoder_output_queue_.empty()) {
@@ -906,12 +904,25 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
     // Queue state changed; signal interrupt.
     if (!device_->SetDevicePollInterrupt())
       return;
-    // Start VIDIOC_STREAMON if we haven't yet.
-    if (!output_streamon_) {
-      __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-      IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
-      output_streamon_ = true;
-    }
+  }
+
+  // STREAMON in CAPTURE queue first and then OUTPUT queue.
+  // This is a workaround of a tegra driver bug that STREAMON in CAPTURE queue
+  // will never return (i.e. blocks |encoder_thread_| forever) if the STREAMON
+  // in CAPTURE queue is called after STREAMON in OUTPUT queue.
+  // Once nyan_kitty, which uses tegra driver, reaches EOL, crrev.com/c/1753982
+  // should be reverted.
+  if (do_streamon) {
+    DCHECK(!output_streamon_ && !input_streamon_);
+    // When VIDIOC_STREAMON can be executed in OUTPUT queue, it is fine to call
+    // STREAMON in CAPTURE queue.
+    __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+    IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
+    output_streamon_ = true;
+
+    type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+    IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
+    input_streamon_ = true;
   }
 }
 
