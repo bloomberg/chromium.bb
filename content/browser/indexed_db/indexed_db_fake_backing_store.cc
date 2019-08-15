@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"

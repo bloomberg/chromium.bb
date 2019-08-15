@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/indexed_db_connection.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"

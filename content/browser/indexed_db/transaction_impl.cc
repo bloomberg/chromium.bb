@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/transaction_impl.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
