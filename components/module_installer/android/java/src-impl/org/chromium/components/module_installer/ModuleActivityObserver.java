@@ -9,8 +9,10 @@ import android.app.Activity;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 
 import java.util.HashSet;
+import java.util.List;
 
 /** Observer for activities so that DFMs can be lazily installed on-demand. */
 public class ModuleActivityObserver implements ApplicationStatus.ActivityStateListener {
@@ -27,24 +29,39 @@ public class ModuleActivityObserver implements ApplicationStatus.ActivityStateLi
     }
 
     /** Makes activities aware of a DFM install and prepare them to be able to use new modules. */
-    public static void onModuleInstalled() {
+    public void onModuleInstalled() {
         ThreadUtils.assertOnUiThread();
 
         sActivityIds.clear();
 
-        for (Activity activity : ApplicationStatus.getRunningActivities()) {
-            if (ApplicationStatus.getStateForActivity(activity) == ActivityState.RESUMED) {
+        for (Activity activity : getRunningActivities()) {
+            if (getStateForActivity(activity) == ActivityState.RESUMED) {
                 splitCompatActivity(activity);
             }
         }
     }
 
     /** Split Compats activities that have not yet been split compatted. */
-    private static void splitCompatActivity(Activity activity) {
+    private void splitCompatActivity(Activity activity) {
         Integer key = activity.hashCode();
         if (!sActivityIds.contains(key)) {
             sActivityIds.add(key);
-            ModuleInstallerImpl.getInstance().initActivity(activity);
+            getModuleInstaller().initActivity(activity);
         }
+    }
+
+    @VisibleForTesting
+    public ModuleInstaller getModuleInstaller() {
+        return ModuleInstallerImpl.getInstance();
+    }
+
+    @VisibleForTesting
+    public List<Activity> getRunningActivities() {
+        return ApplicationStatus.getRunningActivities();
+    }
+
+    @VisibleForTesting
+    public int getStateForActivity(Activity activity) {
+        return ApplicationStatus.getStateForActivity(activity);
     }
 }

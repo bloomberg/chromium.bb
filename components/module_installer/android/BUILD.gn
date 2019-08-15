@@ -85,6 +85,15 @@ android_library("module_installer_test_java") {
   jacoco_never_instrument = true
 }
 
+junit_binary("module_installer_junit_tests") {
+  java_files = [ "junit/src/org/chromium/components/module_installer/ModuleActivityObserverTest.java" ]
+  deps = [
+    ":module_installer_impl_java",
+    "//base:base_java",
+    "//base:base_junit_test_support",
+  ]
+}
+
 java_library("module_interface_java") {
   supports_android = true
   java_files = [ "java/src-common/org/chromium/components/module_installer/ModuleInterface.java" ]
