@@ -9,25 +9,19 @@ from __future__ import unicode_literals
 import io
 import os
 import sys
+import time
+import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from testing_support.super_mox import SuperMoxTestBase
 from testing_support import trial_dir
+from third_party import mock
 
 import gclient_utils
 import subprocess2
 
 
-class GclientUtilBase(SuperMoxTestBase):
-  def setUp(self):
-    super(GclientUtilBase, self).setUp()
-    gclient_utils.sys.stdout.flush = lambda: None
-    self.mox.StubOutWithMock(subprocess2, 'Popen')
-    self.mox.StubOutWithMock(subprocess2, 'communicate')
-
-
-class CheckCallAndFilterTestCase(GclientUtilBase):
+class CheckCallAndFilterTestCase(unittest.TestCase):
   class ProcessIdMock(object):
     def __init__(self, test_string, return_code=0):
       self.stdout = io.BytesIO(test_string.encode('utf-8'))
@@ -37,23 +31,21 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
     def wait(self):
       return self.return_code
 
-  def testCheckCallAndFilter(self):
+  def setUp(self):
+    super(CheckCallAndFilterTestCase, self).setUp()
+    mock.patch('sys.stdout', io.StringIO()).start()
+    mock.patch('sys.stdout.flush', lambda: None).start()
+    self.addCleanup(mock.patch.stopall)
+
+  @mock.patch('subprocess2.Popen')
+  def testCheckCallAndFilter(self, mockPopen):
     cwd = 'bleh'
     args = ['boo', 'foo', 'bar']
     test_string = 'ahah\naccb\nallo\naddb\n✔'
 
-    # pylint: disable=no-member
-    subprocess2.Popen(
-        args,
-        cwd=cwd,
-        stdout=subprocess2.PIPE,
-        stderr=subprocess2.STDOUT,
-        bufsize=0).AndReturn(self.ProcessIdMock(test_string))
+    mockPopen.return_value = self.ProcessIdMock(test_string)
 
-    os.getcwd()
-    self.mox.ReplayAll()
     line_list = []
-
     result = gclient_utils.CheckCallAndFilter(
         args, cwd=cwd, show_header=True, always_show_header=True,
         filter_fn=line_list.append)
@@ -67,29 +59,21 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
         'addb',
         '✔'])
 
-  def testCheckCallAndFilter_RetryOnce(self):
+    mockPopen.assert_called_with(
+        args, cwd=cwd, stdout=subprocess2.PIPE, stderr=subprocess2.STDOUT,
+        bufsize=0)
+
+  @mock.patch('time.sleep')
+  @mock.patch('subprocess2.Popen')
+  def testCheckCallAndFilter_RetryOnce(self, mockPopen, mockTime):
     cwd = 'bleh'
     args = ['boo', 'foo', 'bar']
     test_string = 'ahah\naccb\nallo\naddb\n✔'
 
-    # pylint: disable=no-member
-    subprocess2.Popen(
-        args,
-        cwd=cwd,
-        stdout=subprocess2.PIPE,
-        stderr=subprocess2.STDOUT,
-        bufsize=0).AndReturn(self.ProcessIdMock(test_string, 1))
-
-    os.getcwd()
-
-    # pylint: disable=no-member
-    subprocess2.Popen(
-        args,
-        cwd=cwd,
-        stdout=subprocess2.PIPE,
-        stderr=subprocess2.STDOUT,
-        bufsize=0).AndReturn(self.ProcessIdMock(test_string, 0))
-    self.mox.ReplayAll()
+    mockPopen.side_effect = [
+        self.ProcessIdMock(test_string, 1),
+        self.ProcessIdMock(test_string, 0),
+    ]
 
     line_list = []
     result = gclient_utils.CheckCallAndFilter(
@@ -113,12 +97,26 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
         '✔',
     ])
 
-    self.checkstdout(
+    mockTime.assert_called_with(gclient_utils.RETRY_INITIAL_SLEEP)
+
+    self.assertEqual(
+        mockPopen.mock_calls,
+        [
+            mock.call(
+                args, cwd=cwd, stdout=subprocess2.PIPE,
+                stderr=subprocess2.STDOUT, bufsize=0),
+            mock.call(
+                args, cwd=cwd, stdout=subprocess2.PIPE,
+                stderr=subprocess2.STDOUT, bufsize=0),
+        ])
+
+    self.assertEqual(
+        sys.stdout.getvalue(),
         'WARNING: subprocess \'"boo" "foo" "bar"\' in bleh failed; will retry '
         'after a short nap...\n')
 
 
-class SplitUrlRevisionTestCase(GclientUtilBase):
+class SplitUrlRevisionTestCase(unittest.TestCase):
   def testSSHUrl(self):
     url = "ssh://test@example.com/test.git"
     rev = "ac345e52dc"
