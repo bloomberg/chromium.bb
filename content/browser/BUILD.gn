@@ -241,6 +241,7 @@ jumbo_source_set("browser") {
 
   public_deps = [
     ":accessibility_buildflags",
+    "//base/util/memory_pressure",
     "//base/util/type_safety",
     "//ipc",
     "//media/mojo/mojom:remoting",
