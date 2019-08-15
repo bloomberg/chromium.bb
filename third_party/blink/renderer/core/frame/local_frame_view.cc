@@ -4284,10 +4284,7 @@ bool LocalFrameView::MapToVisualRectInTopFrameSpace(PhysicalRect& rect) {
 
   PhysicalRect viewport_intersection_rect(
       GetFrame().RemoteViewportIntersection());
-  rect.Intersect(viewport_intersection_rect);
-  if (rect.IsEmpty())
-    return false;
-  return true;
+  return rect.InclusiveIntersect(viewport_intersection_rect);
 }
 
 void LocalFrameView::ApplyTransformForTopFrameSpace(
