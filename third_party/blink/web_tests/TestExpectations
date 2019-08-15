@@ -2913,9 +2913,6 @@ crbug.com/591500 [ Win10 ] virtual/layout_ng_experimental/printing/ellipsis-prin
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 
-# Win7 does not support the needed DirectWrite APIs for font fallback
-crbug.com/459056 [ Win7 ] fast/text/font-fallback-win.html [ Failure ]
-
 crbug.com/525296 fast/css/font-load-while-styleresolver-missing.html [ Crash Failure Pass ]
 
 crbug.com/538717 [ Win ] http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass Timeout ]

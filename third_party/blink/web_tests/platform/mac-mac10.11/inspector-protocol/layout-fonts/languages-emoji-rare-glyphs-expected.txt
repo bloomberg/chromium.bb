@@ -42,7 +42,7 @@
 
 ܐܬܘܪܝܐ
 #syriac:
-"Times" : 6
+"Noto Sans Syriac Eastern" : 6
 
 ⇦⇧⇨⇩￩￪￫￬⟀
 #text_presentation_arrows_maths:
