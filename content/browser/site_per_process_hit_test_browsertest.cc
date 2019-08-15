@@ -5492,12 +5492,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, PopupMenuTest) {
 // its out-of-process iframe. This verifies that screen positioning information
 // is propagating down the frame tree correctly.
 #if defined(OS_ANDROID)
-// Surface-based hit testing and coordinate translation is not yet avaiable on
-// Android.
+// On Android the reported menu coordinates are relative to the OOPIF, and its
+// screen position is computed later, so this test isn't relevant.
 #define MAYBE_NestedPopupMenuTest DISABLED_NestedPopupMenuTest
 #else
-// Times out frequently. https://crbug.com/599730.
-#define MAYBE_NestedPopupMenuTest DISABLED_NestedPopupMenuTest
+#define MAYBE_NestedPopupMenuTest NestedPopupMenuTest
 #endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        MAYBE_NestedPopupMenuTest) {
