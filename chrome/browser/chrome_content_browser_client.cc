@@ -400,8 +400,6 @@
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"
-#include "chromeos/services/secure_channel/secure_channel_service.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
@@ -3862,13 +3860,6 @@ void ChromeContentBrowserClient::RunServiceInstance(
 #endif
 
 #if defined(OS_CHROMEOS)
-  if (service_name == chromeos::secure_channel::mojom::kServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        std::make_unique<chromeos::secure_channel::SecureChannelService>(
-            std::move(*receiver)));
-    return;
-  }
-
   auto service = ash_service_registry::HandleServiceRequest(
       service_name, std::move(*receiver));
   if (service)

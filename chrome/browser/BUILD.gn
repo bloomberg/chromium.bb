@@ -3661,7 +3661,6 @@ jumbo_split_static_library("browser") {
       "//chromeos/services/multidevice_setup/public/mojom",
       "//chromeos/services/network_config",
       "//chromeos/services/network_config/public/mojom",
-      "//chromeos/services/secure_channel",
       "//chromeos/services/secure_channel/public/mojom",
       "//chromeos/strings",
       "//components/services/font:lib",
