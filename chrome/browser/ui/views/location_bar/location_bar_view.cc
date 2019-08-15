@@ -683,6 +683,12 @@ void LocationBarView::Update(const WebContents* contents) {
   else
     omnibox_view_->Update();
 
+  if (omnibox_page_action_icon_container_view_->GetPageActionIconView(
+          PageActionIconType::kSendTabToSelf))
+    omnibox_page_action_icon_container_view_
+        ->GetPageActionIconView(PageActionIconType::kSendTabToSelf)
+        ->SetVisible(false);
+
   OnChanged();  // NOTE: Calls Layout().
 }
 
