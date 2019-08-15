@@ -28,7 +28,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from third_party import mock
 from testing_support import fake_repos
-from testing_support.super_mox import TestCaseUtils
+from testing_support import test_case_utils
 
 import gclient_scm
 import git_cache
@@ -73,7 +73,7 @@ class BasicTests(unittest.TestCase):
     self.assertEqual(mockCapture.mock_calls, expected_calls)
 
 
-class BaseGitWrapperTestCase(unittest.TestCase, TestCaseUtils):
+class BaseGitWrapperTestCase(unittest.TestCase, test_case_utils.TestCaseUtils):
   """This class doesn't use pymox."""
   class OptionsObject(object):
     def __init__(self, verbose=False, revision=None):
@@ -199,7 +199,7 @@ from :3
 
   def setUp(self):
     unittest.TestCase.setUp(self)
-    TestCaseUtils.setUp(self)
+    test_case_utils.TestCaseUtils.setUp(self)
     self.url = 'git://foo'
     # The .git suffix allows gclient_scm to recognize the dir as a git repo
     # when cloning it locally
