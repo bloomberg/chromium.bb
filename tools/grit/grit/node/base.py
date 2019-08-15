@@ -226,7 +226,7 @@ class Node(object):
 
       mandatt_option_found = False
       for mandatt in mandatt_list:
-        assert mandatt not in self.DefaultAttributes().keys()
+        assert mandatt not in self.DefaultAttributes()
         if mandatt in self.attrs:
           if not mandatt_option_found:
             mandatt_option_found = True

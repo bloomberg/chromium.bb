@@ -84,7 +84,7 @@ def GetDistribution():
     string
   """
   distribution = DIST_DEFAULT
-  if DIST_ENV_VAR in os.environ.keys():
+  if DIST_ENV_VAR in os.environ:
     distribution = os.environ[DIST_ENV_VAR]
     if len(distribution) > 1 and distribution[0] == '_':
       distribution = distribution[1:].lower()

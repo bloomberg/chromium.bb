@@ -276,7 +276,7 @@ def UnescapeHtml(text, replace_nbsp=True):
       if name == 'nbsp' and not replace_nbsp:
         return match.group()  # Don't replace &nbsp;
       assert name != None
-      if name in entities.name2codepoint.keys():
+      if name in entities.name2codepoint:
         return six.unichr(entities.name2codepoint[name])
       else:
         return match.group()  # Unknown HTML character entity - don't replace
@@ -573,7 +573,7 @@ class Substituter(object):
       A regular expression object.
     '''
     if self.dirty_:
-      components = ['\[%s\]' % (k,) for k in self.substitutions_.keys()]
+      components = ['\[%s\]' % (k,) for k in self.substitutions_]
       self.exp = re.compile("(%s)" % ('|'.join(components),))
       self.dirty_ = False
     return self.exp
