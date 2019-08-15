@@ -166,8 +166,11 @@ assistant_client::AudioOutput* AudioOutputProviderImpl::CreateAudioOutput(
     assistant_client::OutputStreamType type,
     const assistant_client::OutputStreamFormat& stream_format) {
   mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory;
-  client_->RequestAudioStreamFactory(
-      stream_factory.InitWithNewPipeAndPassReceiver());
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AudioOutputProviderImpl::BindStreamFactory,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     stream_factory.InitWithNewPipeAndPassReceiver()));
   // Owned by one arbitrary thread inside libassistant. It will be destroyed
   // once assistant_client::AudioOutput::Delegate::OnStopped() is called.
   return new AudioOutputImpl(std::move(stream_factory), main_task_runner_,
@@ -202,6 +205,11 @@ assistant_client::VolumeControl& AudioOutputProviderImpl::GetVolumeControl() {
 void AudioOutputProviderImpl::RegisterAudioEmittingStateCallback(
     AudioEmittingStateCallback callback) {
   // TODO(muyuanli): implement.
+}
+
+void AudioOutputProviderImpl::BindStreamFactory(
+    mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) {
+  client_->RequestAudioStreamFactory(std::move(receiver));
 }
 
 }  // namespace assistant
