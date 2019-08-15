@@ -89,7 +89,7 @@ void CleanupBrowserMetricsDataFiles() {
   if (base::IsDirectoryEmpty(browser_metrics_upload_dir))
     return;
   // Delete accumulated metrics files due to http://crbug/992946
-  base::PostTask(
+  base::PostTaskWithTraits(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
