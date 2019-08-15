@@ -46,7 +46,9 @@ following changes which are not merged to upstream:
   was in the jchuff.obj and jcphuff.obj resulting in an added 65k in
   .rdata in chrome.dll and chrome_child.dll.  Declaring extern const
   in the header instead of static const and moving the definition to
-  a new .c file fixes this so only one copy is referenced.
+  a new .c file fixes this so only one copy is referenced. Also added
+  extern wrappers around usage in asm files. The jpeg_nbits_table.inc
+  file was also deleted.
 * Arm NEON patches to improve performance and maintainability. These changes
   are tracked by the following Chromium issue: https://crbug.com/922430
   - Add memory alignment size check in jmemmgr.c
