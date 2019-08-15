@@ -76,10 +76,6 @@ android_resources("java_resources") {
 }
 
 android_library("java") {
-  # Add this flag to prevent build hooks to be included in this module
-  # as it's already included in the base module
-  no_build_hooks = true
-
   java_files = [
     "java/src/org/chromium/chrome/browser/tasks/TasksSurfaceCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_groups/TabGroupUtils.java",
@@ -140,7 +136,10 @@ android_library("java") {
     "//chrome/android:chrome_strings_grd",
     "//chrome/android:ui_locale_string_resources",
     "//chrome/android/features/start_surface/internal:java",
+    "//chrome/android/public/profiles:java",
     "//chrome/app:java_strings_grd",
+    "//chrome/lib/lifecycle/public/android:java",
+    "//chrome/lib/util/public/android:java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/feature_engagement:feature_engagement_java",
     "//components/policy/android:policy_java",
