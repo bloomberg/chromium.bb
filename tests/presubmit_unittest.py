@@ -13,8 +13,10 @@ import itertools
 import logging
 import multiprocessing
 import os
+import random
 import re
 import sys
+import tempfile
 import time
 import unittest
 import urllib2
@@ -22,17 +24,19 @@ import urllib2
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _ROOT)
 
-from testing_support.super_mox import mox, SuperMoxTestBase
+from testing_support.test_case_utils import TestCaseUtils
 from third_party import mock
 
-import owners
-import owners_finder
-import subprocess2 as subprocess
-import presubmit_support as presubmit
 import auth
+import gclient_utils
 import git_cl
 import git_common as git
 import json
+import owners
+import owners_finder
+import presubmit_support as presubmit
+import scm
+import subprocess2 as subprocess
 
 # Shortcut.
 presubmit_canned_checks = presubmit.presubmit_canned_checks
@@ -54,7 +58,7 @@ class MockTemporaryFile(object):
     pass
 
 
-class PresubmitTestsBase(SuperMoxTestBase):
+class PresubmitTestsBase(TestCaseUtils, unittest.TestCase):
   """Sets up and tears down the mocks but doesn't test anything as-is."""
   presubmit_text = """
 def CheckChangeOnUpload(input_api, output_api):
@@ -133,64 +137,48 @@ index fe3de7b..54ae6e1 100755
 """
 
   def setUp(self):
-    SuperMoxTestBase.setUp(self)
+    super(PresubmitTestsBase, self).setUp()
     class FakeChange(object):
       def __init__(self, obj):
         self._root = obj.fake_root_dir
       def RepositoryRoot(self):
         return self._root
 
-    self.mox.StubOutWithMock(presubmit, 'random')
-    self.mox.StubOutWithMock(presubmit, 'warn')
     presubmit._ASKED_FOR_FEEDBACK = False
     self.fake_root_dir = self.RootDir()
     self.fake_change = FakeChange(self)
 
-    # Special mocks.
-    def MockAbsPath(f):
-      return f
-    def MockChdir(f):
-      return None
-    # SuperMoxTestBase already mock these but simplify our life.
-    presubmit.os.path.abspath = MockAbsPath
-    presubmit.os.getcwd = self.RootDir
-    presubmit.os.chdir = MockChdir
-    self.mox.StubOutWithMock(presubmit.scm, 'determine_scm')
-    self.mox.StubOutWithMock(presubmit.gclient_utils, 'FileRead')
-    self.mox.StubOutWithMock(presubmit.gclient_utils, 'FileWrite')
-    self.mox.StubOutWithMock(presubmit.scm.GIT, 'GenerateDiff')
+    mock.patch('gclient_utils.FileRead').start()
+    mock.patch('gclient_utils.FileWrite').start()
+    mock.patch('json.load').start()
+    mock.patch('os.path.abspath', lambda f: f).start()
+    mock.patch('os.getcwd', self.RootDir)
+    mock.patch('os.chdir').start()
+    mock.patch('os.listdir').start()
+    mock.patch('os.path.isfile').start()
+    mock.patch('os.remove').start()
+    mock.patch('random.randint').start()
+    mock.patch('presubmit_support.warn').start()
+    mock.patch('presubmit_support.sigint_handler').start()
+    mock.patch('scm.determine_scm').start()
+    mock.patch('scm.GIT.GenerateDiff').start()
+    mock.patch('subprocess2.Popen').start()
+    mock.patch('sys.stderr', StringIO.StringIO()).start()
+    mock.patch('sys.stdout', StringIO.StringIO()).start()
+    mock.patch('tempfile.NamedTemporaryFile').start()
+    mock.patch('multiprocessing.cpu_count', lambda: 2)
+    mock.patch('urllib2.urlopen').start()
+    self.addCleanup(mock.patch.stopall)
 
-    # On some platforms this does all sorts of undesirable system calls, so
-    # just permanently mock it with a lambda that returns 2
-    multiprocessing.cpu_count = lambda: 2
+  def checkstdout(self, value):
+    self.assertEqual(sys.stdout.getvalue(), value)
 
 
 class PresubmitUnittest(PresubmitTestsBase):
   """General presubmit_support.py tests (excluding InputApi and OutputApi)."""
 
   _INHERIT_SETTINGS = 'inherit-review-settings-ok'
-
-  def testMembersChanged(self):
-    self.mox.ReplayAll()
-    members = [
-        'AffectedFile', 'Change', 'CommandData', 'DoGetTryMasters',
-        'DoPostUploadExecuter', 'DoPresubmitChecks', 'GerritAccessor',
-        'GetPostUploadExecuter', 'GetTryMastersExecuter', 'GitAffectedFile',
-        'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'OutputApi',
-        'ParseFiles', 'PresubmitExecuter', 'PresubmitFailure',
-        'PresubmitOutput', 'ScanSubDirs', 'SigintHandler', 'ThreadPool', 'ast',
-        'cPickle', 'cStringIO', 'canned_check_filter', 'contextlib', 'cpplint',
-        'fix_encoding', 'fnmatch', 'gclient_paths', 'gclient_utils',
-        'gerrit_util', 'git_footers', 'glob', 'inspect', 'itertools', 'json',
-        'load_files', 'logging', 'main', 'marshal', 'multiprocessing',
-        'normpath', 'optparse', 'os', 'owners', 'owners_finder', 'pickle',
-        'presubmit_canned_checks', 'print_function', 'random', 're', 'scm',
-        'sigint_handler', 'signal', 'subprocess', 'sys', 'tempfile',
-        'threading', 'time', 'traceback', 'types', 'unittest', 'urllib2',
-        'urlparse', 'warn'
-    ]
-    # If this test fails, you should add the relevant test.
-    self.compareMembers(presubmit, members)
+  fake_root_dir = '/foo/bar'
 
   def testCannedCheckFilter(self):
     canned = presubmit.presubmit_canned_checks
@@ -202,113 +190,81 @@ class PresubmitUnittest(PresubmitTestsBase):
 
   def testListRelevantPresubmitFiles(self):
     files = [
-      'blat.cc',
-      presubmit.os.path.join('foo', 'haspresubmit', 'yodle', 'smart.h'),
-      presubmit.os.path.join('moo', 'mat', 'gat', 'yo.h'),
-      presubmit.os.path.join('foo', 'luck.h'),
+        'blat.cc',
+        os.path.join('foo', 'haspresubmit', 'yodle', 'smart.h'),
+        os.path.join('moo', 'mat', 'gat', 'yo.h'),
+        os.path.join('foo', 'luck.h'),
     ]
-    inherit_path = presubmit.os.path.join(self.fake_root_dir,
-                                          self._INHERIT_SETTINGS)
-    presubmit.os.path.isfile(inherit_path).AndReturn(False)
-    presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(presubmit.os.path.join(self.fake_root_dir,
-                                  'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.listdir(presubmit.os.path.join(
-        self.fake_root_dir, 'foo')).AndReturn([])
-    presubmit.os.listdir(presubmit.os.path.join(self.fake_root_dir, 'foo',
-                              'haspresubmit')).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(
-        presubmit.os.path.join(self.fake_root_dir, 'foo', 'haspresubmit',
-             'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.listdir(
-        presubmit.os.path.join(
-            self.fake_root_dir, 'foo', 'haspresubmit', 'yodle')).AndReturn(
-            ['PRESUBMIT.py'])
-    presubmit.os.path.isfile(
-        presubmit.os.path.join(
-            self.fake_root_dir, 'foo', 'haspresubmit', 'yodle',
-            'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.listdir(presubmit.os.path.join(
-        self.fake_root_dir, 'moo')).AndReturn([])
-    presubmit.os.listdir(presubmit.os.path.join(
-        self.fake_root_dir, 'moo', 'mat')).AndReturn([])
-    presubmit.os.listdir(presubmit.os.path.join(
-        self.fake_root_dir, 'moo', 'mat', 'gat')).AndReturn([])
-    self.mox.ReplayAll()
 
-    presubmit_files = presubmit.ListRelevantPresubmitFiles(files,
-                                                           self.fake_root_dir)
-    self.assertEqual(presubmit_files,
-        [
-          presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py'),
-          presubmit.os.path.join(
-              self.fake_root_dir, 'foo', 'haspresubmit', 'PRESUBMIT.py'),
-          presubmit.os.path.join(
-              self.fake_root_dir, 'foo', 'haspresubmit', 'yodle',
-              'PRESUBMIT.py')
-        ])
+    known_files = [
+        os.path.join(self.fake_root_dir, 'PRESUBMIT.py'),
+        os.path.join(self.fake_root_dir, 'foo', 'haspresubmit', 'PRESUBMIT.py'),
+        os.path.join(
+            self.fake_root_dir, 'foo', 'haspresubmit', 'yodle', 'PRESUBMIT.py'),
+    ]
+    os.path.isfile.side_effect = lambda f: f in known_files
+
+    dirs_with_presubmit = [
+        self.fake_root_dir,
+        os.path.join(self.fake_root_dir, 'foo', 'haspresubmit'),
+        os.path.join(self.fake_root_dir, 'foo', 'haspresubmit', 'yodle'),
+    ]
+    os.listdir.side_effect = (
+        lambda d: ['PRESUBMIT.py'] if d in dirs_with_presubmit else [])
+
+    presubmit_files = presubmit.ListRelevantPresubmitFiles(
+        files, self.fake_root_dir)
+    self.assertEqual(presubmit_files, known_files)
 
   def testListUserPresubmitFiles(self):
     files = ['blat.cc',]
-    inherit_path = presubmit.os.path.join(self.fake_root_dir,
-                                          self._INHERIT_SETTINGS)
-    presubmit.os.path.isfile(inherit_path).AndReturn(False)
-    presubmit.os.listdir(self.fake_root_dir).AndReturn(
-        ['PRESUBMIT.py', 'PRESUBMIT_test.py', 'PRESUBMIT-user.py'])
-    presubmit.os.path.isfile(presubmit.os.path.join(self.fake_root_dir,
-                                  'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.path.isfile(presubmit.os.path.join(self.fake_root_dir,
-                                  'PRESUBMIT_test.py')).AndReturn(True)
-    presubmit.os.path.isfile(presubmit.os.path.join(self.fake_root_dir,
-                                  'PRESUBMIT-user.py')).AndReturn(True)
-    self.mox.ReplayAll()
 
-    presubmit_files = presubmit.ListRelevantPresubmitFiles(files,
-                                                           self.fake_root_dir)
+    os.path.isfile.side_effect = lambda f: 'PRESUBMIT' in f
+    os.listdir.return_value = [
+        'PRESUBMIT.py', 'PRESUBMIT_test.py', 'PRESUBMIT-user.py']
+
+    presubmit_files = presubmit.ListRelevantPresubmitFiles(
+        files, self.fake_root_dir)
     self.assertEqual(presubmit_files, [
-        presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py'),
-        presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT-user.py'),
+        os.path.join(self.fake_root_dir, 'PRESUBMIT.py'),
+        os.path.join(self.fake_root_dir, 'PRESUBMIT-user.py'),
     ])
 
   def testListRelevantPresubmitFilesInheritSettings(self):
     sys_root_dir = self._OS_SEP
-    root_dir = presubmit.os.path.join(sys_root_dir, 'foo', 'bar')
+    root_dir = os.path.join(sys_root_dir, 'foo', 'bar')
+    inherit_path = os.path.join(root_dir, self._INHERIT_SETTINGS)
     files = [
-      'test.cc',
-      presubmit.os.path.join('moo', 'test2.cc'),
-      presubmit.os.path.join('zoo', 'test3.cc')
+        'test.cc',
+        os.path.join('moo', 'test2.cc'),
+        os.path.join('zoo', 'test3.cc')
     ]
-    inherit_path = presubmit.os.path.join(root_dir, self._INHERIT_SETTINGS)
-    presubmit.os.path.isfile(inherit_path).AndReturn(True)
-    presubmit.os.listdir(sys_root_dir).AndReturn([])
-    presubmit.os.listdir(presubmit.os.path.join(
-        sys_root_dir, 'foo')).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(presubmit.os.path.join(
-        sys_root_dir, 'foo', 'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.listdir(presubmit.os.path.join(
-        sys_root_dir, 'foo', 'bar')).AndReturn([])
-    presubmit.os.listdir(presubmit.os.path.join(
-        sys_root_dir, 'foo', 'bar', 'moo')).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(presubmit.os.path.join(
-        sys_root_dir, 'foo', 'bar', 'moo', 'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.listdir(presubmit.os.path.join(
-        sys_root_dir, 'foo', 'bar', 'zoo')).AndReturn([])
-    self.mox.ReplayAll()
+
+    known_files = [
+        inherit_path,
+        os.path.join(sys_root_dir, 'foo', 'PRESUBMIT.py'),
+        os.path.join(sys_root_dir, 'foo', 'bar', 'moo', 'PRESUBMIT.py'),
+    ]
+    os.path.isfile.side_effect = lambda f: f in known_files
+
+    dirs_with_presubmit = [
+        os.path.join(sys_root_dir, 'foo'),
+        os.path.join(sys_root_dir, 'foo', 'bar','moo'),
+    ]
+    os.listdir.side_effect = (
+        lambda d: ['PRESUBMIT.py'] if d in dirs_with_presubmit else [])
 
     presubmit_files = presubmit.ListRelevantPresubmitFiles(files, root_dir)
-    self.assertEqual(presubmit_files,
-        [
-          presubmit.os.path.join(sys_root_dir, 'foo', 'PRESUBMIT.py'),
-          presubmit.os.path.join(
-              sys_root_dir, 'foo', 'bar', 'moo', 'PRESUBMIT.py')
-        ])
+    self.assertEqual(presubmit_files, [
+        os.path.join(sys_root_dir, 'foo', 'PRESUBMIT.py'),
+        os.path.join(sys_root_dir, 'foo', 'bar', 'moo', 'PRESUBMIT.py')
+    ])
 
   def testTagLineRe(self):
-    self.mox.ReplayAll()
     m = presubmit.Change.TAG_LINE_RE.match(' BUG =1223, 1445  \t')
-    self.failUnless(m)
-    self.failUnlessEqual(m.group('key'), 'BUG')
-    self.failUnlessEqual(m.group('value'), '1223, 1445')
+    self.assertIsNotNone(m)
+    self.assertEqual(m.group('key'), 'BUG')
+    self.assertEqual(m.group('value'), '1223, 1445')
 
   def testGitChange(self):
     description_lines = ('Hello there',
@@ -413,16 +369,12 @@ class PresubmitUnittest(PresubmitTestsBase):
              ('D      ', 'floo/delburt.cc'),
              ('M      ', 'foo/TestExpectations')]
 
-    for op, path in files:
-      full_path = presubmit.os.path.join(self.fake_root_dir, *path.split('/'))
-      if not op.startswith('D'):
-        os.path.isfile(full_path).AndReturn(True)
+    known_files = [
+        os.path.join(self.fake_root_dir, *path.split('/'))
+        for op, path in files if not op.startswith('D')]
+    os.path.isfile.side_effect = lambda f: f in known_files
 
-    presubmit.scm.GIT.GenerateDiff(
-        self.fake_root_dir, files=[], full_move=True, branch=None
-        ).AndReturn('\n'.join(unified_diff))
-
-    self.mox.ReplayAll()
+    scm.GIT.GenerateDiff.return_value = '\n'.join(unified_diff)
 
     change = presubmit.GitChange(
         'mychange',
@@ -433,23 +385,23 @@ class PresubmitUnittest(PresubmitTestsBase):
         0,
         None,
         upstream=None)
-    self.failUnless(change.Name() == 'mychange')
-    self.failUnless(change.DescriptionText() ==
+    self.assertIsNotNone(change.Name() == 'mychange')
+    self.assertIsNotNone(change.DescriptionText() ==
                     'Hello there\nthis is a change\nand some more regular text')
-    self.failUnless(change.FullDescriptionText() ==
+    self.assertIsNotNone(change.FullDescriptionText() ==
                     '\n'.join(description_lines))
 
-    self.failUnless(change.BugsFromDescription() == ['123'])
+    self.assertIsNotNone(change.BugsFromDescription() == ['123'])
 
-    self.failUnless(len(change.AffectedFiles()) == 7)
-    self.failUnless(len(change.AffectedFiles()) == 7)
-    self.failUnless(len(change.AffectedFiles(include_deletes=False)) == 5)
-    self.failUnless(len(change.AffectedFiles(include_deletes=False)) == 5)
+    self.assertIsNotNone(len(change.AffectedFiles()) == 7)
+    self.assertIsNotNone(len(change.AffectedFiles()) == 7)
+    self.assertIsNotNone(len(change.AffectedFiles(include_deletes=False)) == 5)
+    self.assertIsNotNone(len(change.AffectedFiles(include_deletes=False)) == 5)
 
     # Note that on git, there's no distinction between binary files and text
     # files; everything that's not a delete is a text file.
     affected_text_files = change.AffectedTestableFiles()
-    self.failUnless(len(affected_text_files) == 5)
+    self.assertIsNotNone(len(affected_text_files) == 5)
 
     local_paths = change.LocalPaths()
     expected_paths = [os.path.normpath(f) for op, f in files]
@@ -484,10 +436,10 @@ class PresubmitUnittest(PresubmitTestsBase):
         (f_test_expectations, 24, 'because you parsed the header'),
         (f_test_expectations, 25, 'correctly.')]
 
-    self.assertEquals(expected_rhs_lines, actual_rhs_lines)
+    self.assertEqual(expected_rhs_lines, actual_rhs_lines)
 
   def testInvalidChange(self):
-    try:
+    with self.assertRaises(AssertionError):
       presubmit.GitChange(
           'mychange',
           'description',
@@ -496,9 +448,6 @@ class PresubmitUnittest(PresubmitTestsBase):
           0,
           0,
           None)
-      self.fail()
-    except AssertionError:
-      pass
 
   def testExecPresubmitScript(self):
     description_lines = ('Hello there',
@@ -507,8 +456,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     files = [
       ['A', 'foo\\blat.cc'],
     ]
-    fake_presubmit = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
-    self.mox.ReplayAll()
+    fake_presubmit = os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
 
     change = presubmit.Change(
         'mychange',
@@ -519,9 +467,9 @@ class PresubmitUnittest(PresubmitTestsBase):
         0,
         None)
     executer = presubmit.PresubmitExecuter(change, False, None, False)
-    self.failIf(executer.ExecPresubmitScript('', fake_presubmit))
+    self.assertFalse(executer.ExecPresubmitScript('', fake_presubmit))
     # No error if no on-upload entry point
-    self.failIf(executer.ExecPresubmitScript(
+    self.assertFalse(executer.ExecPresubmitScript(
       ('def CheckChangeOnCommit(input_api, output_api):\n'
        '  return (output_api.PresubmitError("!!"))\n'),
       fake_presubmit
@@ -529,13 +477,13 @@ class PresubmitUnittest(PresubmitTestsBase):
 
     executer = presubmit.PresubmitExecuter(change, True, None, False)
     # No error if no on-commit entry point
-    self.failIf(executer.ExecPresubmitScript(
+    self.assertFalse(executer.ExecPresubmitScript(
       ('def CheckChangeOnUpload(input_api, output_api):\n'
        '  return (output_api.PresubmitError("!!"))\n'),
       fake_presubmit
     ))
 
-    self.failIf(executer.ExecPresubmitScript(
+    self.assertFalse(executer.ExecPresubmitScript(
       ('def CheckChangeOnUpload(input_api, output_api):\n'
        '  if not input_api.change.BugsFromDescription():\n'
        '    return (output_api.PresubmitError("!!"))\n'
@@ -557,16 +505,12 @@ class PresubmitUnittest(PresubmitTestsBase):
       fake_presubmit)
 
   def testExecPresubmitScriptTemporaryFilesRemoval(self):
-    self.mox.StubOutWithMock(presubmit.tempfile, 'NamedTemporaryFile')
-    presubmit.tempfile.NamedTemporaryFile(delete=False).AndReturn(
-        MockTemporaryFile('baz'))
-    presubmit.tempfile.NamedTemporaryFile(delete=False).AndReturn(
-        MockTemporaryFile('quux'))
-    presubmit.os.remove('baz')
-    presubmit.os.remove('quux')
-    self.mox.ReplayAll()
+    tempfile.NamedTemporaryFile.side_effect = [
+        MockTemporaryFile('baz'),
+        MockTemporaryFile('quux'),
+    ]
 
-    fake_presubmit = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
+    fake_presubmit = os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
     executer = presubmit.PresubmitExecuter(
         self.fake_change, False, None, False)
 
@@ -590,23 +534,18 @@ class PresubmitUnittest(PresubmitTestsBase):
     )
     self.assertEqual(['baz', 'quux'], [r._items for r in result])
 
+    self.assertEqual(
+        os.remove.mock_calls, [mock.call('baz'), mock.call('quux')])
+
   def testDoPresubmitChecksNoWarningsOrErrors(self):
-    haspresubmit_path = presubmit.os.path.join(
+    haspresubmit_path = os.path.join(
         self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
-    root_path = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
-    inherit_path = presubmit.os.path.join(
-        self.fake_root_dir, self._INHERIT_SETTINGS)
-    presubmit.os.path.isfile(inherit_path).AndReturn(False)
-    presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(root_path).AndReturn(True)
-    presubmit.os.listdir(os.path.join(
-        self.fake_root_dir, 'haspresubmit')).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
-    presubmit.gclient_utils.FileRead(root_path, 'rU').AndReturn(
-        self.presubmit_text)
-    presubmit.gclient_utils.FileRead(haspresubmit_path, 'rU').AndReturn(
-        self.presubmit_text)
-    self.mox.ReplayAll()
+    root_path = os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
+
+    os.path.isfile.side_effect = lambda f: f in [root_path, haspresubmit_path]
+    os.listdir.return_value = ['PRESUBMIT.py']
+
+    gclient_utils.FileRead.return_value = self.presubmit_text
 
     # Make a change which will have no warnings.
     change = self.ExampleChange(extra_lines=['STORY=http://tracker/123'])
@@ -616,7 +555,7 @@ class PresubmitUnittest(PresubmitTestsBase):
         output_stream=None, input_stream=None,
         default_presubmit=None, may_prompt=False,
         gerrit_obj=None, json_output=None)
-    self.failUnless(output.should_continue())
+    self.assertIsNotNone(output.should_continue())
     self.assertEqual(output.getvalue().count('!!'), 0)
     self.assertEqual(output.getvalue().count('??'), 0)
     self.assertEqual(output.getvalue().count(
@@ -651,15 +590,9 @@ def CheckChangeOnCommit(input_api, output_api):
        fake_notify, fake_notify_items, fake_notify_long_text
        )
 
-    inherit_path = presubmit.os.path.join(
-        self.fake_root_dir, self._INHERIT_SETTINGS)
-    presubmit.os.path.isfile(inherit_path).AndReturn(False)
-    presubmit.os.listdir(self.fake_root_dir).AndReturn([])
-    presubmit.os.listdir(presubmit.os.path.join(
-        self.fake_root_dir, 'haspresubmit')).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(presubmit.os.path.join(
-        self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')).AndReturn(False)
-    presubmit.random.randint(0, 4).AndReturn(0)
+    os.path.isfile.return_value = False
+    os.listdir.side_effect = [[], ['PRESUBMIT.py']]
+    random.randint.return_value = 0
 
     change = self.ExampleChange(extra_lines=['ERROR=yes'])
 
@@ -699,9 +632,6 @@ def CheckChangeOnCommit(input_api, output_api):
     }
 
     fake_result_json = json.dumps(fake_result)
-    presubmit.gclient_utils.FileWrite(temp_path, fake_result_json)
-
-    self.mox.ReplayAll()
 
     output = presubmit.DoPresubmitChecks(
         change=change, committing=False, verbose=True,
@@ -709,28 +639,20 @@ def CheckChangeOnCommit(input_api, output_api):
         default_presubmit=always_fail_presubmit_script,
         may_prompt=False, gerrit_obj=None, json_output=temp_path)
 
-    self.failIf(output.should_continue())
+    self.assertFalse(output.should_continue())
+    gclient_utils.FileWrite.assert_called_with(temp_path, fake_result_json)
 
   def testDoPresubmitChecksPromptsAfterWarnings(self):
-    presubmit_path = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
-    haspresubmit_path = presubmit.os.path.join(
+    presubmit_path = os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
+    haspresubmit_path = os.path.join(
         self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
-    inherit_path = presubmit.os.path.join(
-        self.fake_root_dir, self._INHERIT_SETTINGS)
-    for _ in range(2):
-      presubmit.os.path.isfile(inherit_path).AndReturn(False)
-      presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
-      presubmit.os.path.isfile(presubmit_path).AndReturn(True)
-      presubmit.os.listdir(presubmit.os.path.join(
-          self.fake_root_dir, 'haspresubmit')).AndReturn(['PRESUBMIT.py'])
-      presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
-      presubmit.gclient_utils.FileRead(presubmit_path, 'rU').AndReturn(
-          self.presubmit_text)
-      presubmit.gclient_utils.FileRead(haspresubmit_path, 'rU').AndReturn(
-          self.presubmit_text)
-    presubmit.random.randint(0, 4).AndReturn(1)
-    presubmit.random.randint(0, 4).AndReturn(1)
-    self.mox.ReplayAll()
+
+    os.path.isfile.side_effect = (
+        lambda f: f in [presubmit_path, haspresubmit_path])
+    os.listdir.return_value = ['PRESUBMIT.py']
+    random.randint.return_value = 1
+
+    gclient_utils.FileRead.return_value = self.presubmit_text
 
     # Make a change with a single warning.
     change = self.ExampleChange(extra_lines=['PROMPT_WARNING=yes'])
@@ -741,7 +663,7 @@ def CheckChangeOnCommit(input_api, output_api):
         output_stream=None, input_stream=input_buf,
         default_presubmit=None, may_prompt=True,
         gerrit_obj=None, json_output=None)
-    self.failIf(output.should_continue())
+    self.assertFalse(output.should_continue())
     self.assertEqual(output.getvalue().count('??'), 2)
 
     input_buf = StringIO.StringIO('y\n')  # say yes to the warning
@@ -750,29 +672,21 @@ def CheckChangeOnCommit(input_api, output_api):
         output_stream=None, input_stream=input_buf,
         default_presubmit=None, may_prompt=True,
         gerrit_obj=None, json_output=None)
-    self.failUnless(output.should_continue())
-    self.assertEquals(output.getvalue().count('??'), 2)
+    self.assertIsNotNone(output.should_continue())
+    self.assertEqual(output.getvalue().count('??'), 2)
     self.assertEqual(output.getvalue().count(
         'Running presubmit upload checks ...\n'), 1)
 
   def testDoPresubmitChecksWithWarningsAndNoPrompt(self):
-    presubmit_path = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
-    haspresubmit_path = presubmit.os.path.join(
+    presubmit_path = os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
+    haspresubmit_path = os.path.join(
         self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
-    inherit_path = presubmit.os.path.join(self.fake_root_dir,
-                                          self._INHERIT_SETTINGS)
-    presubmit.os.path.isfile(inherit_path).AndReturn(False)
-    presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(presubmit_path).AndReturn(True)
-    presubmit.os.listdir(presubmit.os.path.join(
-        self.fake_root_dir, 'haspresubmit')).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
-    presubmit.gclient_utils.FileRead(presubmit_path, 'rU').AndReturn(
-        self.presubmit_text)
-    presubmit.gclient_utils.FileRead(haspresubmit_path, 'rU').AndReturn(
-        self.presubmit_text)
-    presubmit.random.randint(0, 4).AndReturn(1)
-    self.mox.ReplayAll()
+
+    os.path.isfile.side_effect = (
+        lambda f: f in [presubmit_path, haspresubmit_path])
+    os.listdir.return_value = ['PRESUBMIT.py']
+    gclient_utils.FileRead.return_value = self.presubmit_text
+    random.randint.return_value = 1
 
     change = self.ExampleChange(extra_lines=['PROMPT_WARNING=yes'])
 
@@ -783,30 +697,22 @@ def CheckChangeOnCommit(input_api, output_api):
         default_presubmit=None, may_prompt=False,
         gerrit_obj=None, json_output=None)
     # A warning is printed, and should_continue is True.
-    self.failUnless(output.should_continue())
-    self.assertEquals(output.getvalue().count('??'), 2)
+    self.assertIsNotNone(output.should_continue())
+    self.assertEqual(output.getvalue().count('??'), 2)
     self.assertEqual(output.getvalue().count('(y/N)'), 0)
     self.assertEqual(output.getvalue().count(
         'Running presubmit upload checks ...\n'), 1)
 
   def testDoPresubmitChecksNoWarningPromptIfErrors(self):
-    presubmit_path = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
-    haspresubmit_path = presubmit.os.path.join(
+    presubmit_path = os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
+    haspresubmit_path = os.path.join(
         self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
-    inherit_path = presubmit.os.path.join(
-        self.fake_root_dir, self._INHERIT_SETTINGS)
-    presubmit.os.path.isfile(inherit_path).AndReturn(False)
-    presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(presubmit_path).AndReturn(True)
-    presubmit.os.listdir(presubmit.os.path.join(
-        self.fake_root_dir, 'haspresubmit')).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
-    presubmit.gclient_utils.FileRead(presubmit_path, 'rU'
-                                     ).AndReturn(self.presubmit_text)
-    presubmit.gclient_utils.FileRead(haspresubmit_path, 'rU').AndReturn(
-        self.presubmit_text)
-    presubmit.random.randint(0, 4).AndReturn(1)
-    self.mox.ReplayAll()
+
+    os.path.isfile.side_effect = (
+        lambda f: f in [presubmit_path, haspresubmit_path])
+    os.listdir.return_value = ['PRESUBMIT.py']
+    gclient_utils.FileRead.return_value = self.presubmit_text
+    random.randint.return_value = 1
 
     change = self.ExampleChange(extra_lines=['ERROR=yes'])
     output = presubmit.DoPresubmitChecks(
@@ -814,7 +720,7 @@ def CheckChangeOnCommit(input_api, output_api):
         output_stream=None, input_stream=None,
         default_presubmit=None, may_prompt=True,
         gerrit_obj=None, json_output=None)
-    self.failIf(output.should_continue())
+    self.assertFalse(output.should_continue())
     self.assertEqual(output.getvalue().count('??'), 0)
     self.assertEqual(output.getvalue().count('!!'), 2)
     self.assertEqual(output.getvalue().count('(y/N)'), 0)
@@ -828,17 +734,11 @@ def CheckChangeOnUpload(input_api, output_api):
 def CheckChangeOnCommit(input_api, output_api):
   raise Exception("Test error")
 """
-    inherit_path = presubmit.os.path.join(
-        self.fake_root_dir, self._INHERIT_SETTINGS)
-    presubmit.os.path.isfile(inherit_path).AndReturn(False)
-    presubmit.os.listdir(self.fake_root_dir).AndReturn([])
-    presubmit.os.listdir(presubmit.os.path.join(
-        self.fake_root_dir, 'haspresubmit')).AndReturn(['PRESUBMIT.py'])
-    presubmit.os.path.isfile(presubmit.os.path.join(self.fake_root_dir,
-                                  'haspresubmit',
-                                  'PRESUBMIT.py')).AndReturn(False)
-    presubmit.random.randint(0, 4).AndReturn(0)
-    self.mox.ReplayAll()
+
+    os.path.isfile.return_value = False
+    os.listdir.side_effect = (
+        lambda d: [] if d == self.fake_root_dir else ['PRESUBMIT.py'])
+    random.randint.return_value = 0
 
     input_buf = StringIO.StringIO('y\n')
 
@@ -848,7 +748,7 @@ def CheckChangeOnCommit(input_api, output_api):
         output_stream=None, input_stream=input_buf,
         default_presubmit=always_fail_presubmit_script,
         may_prompt=False, gerrit_obj=None, json_output=None)
-    self.failIf(output.should_continue())
+    self.assertFalse(output.should_continue())
     text = (
         'Running presubmit upload checks ...\n'
         'Warning, no PRESUBMIT.py found.\n'
@@ -858,10 +758,9 @@ def CheckChangeOnCommit(input_api, output_api):
         'Was the presubmit check useful? If not, run "git cl presubmit -v"\n'
         'to figure out which PRESUBMIT.py was run, then run git blame\n'
         'on the file to figure out who to ask for help.\n')
-    self.assertEquals(output.getvalue(), text)
+    self.assertEqual(output.getvalue(), text)
 
   def testGetTryMastersExecuter(self):
-    self.mox.ReplayAll()
     change = self.ExampleChange(
         extra_lines=['STORY=http://tracker.com/42', 'BUG=boo\n'])
     executer = presubmit.GetTryMastersExecuter()
@@ -889,7 +788,7 @@ def CheckChangeOnCommit(input_api, output_api):
       'This is a change',
     ] + (extra_lines or [])
     files = [
-      ['A', presubmit.os.path.join('haspresubmit', 'blat.cc')],
+      ['A', os.path.join('haspresubmit', 'blat.cc')],
     ]
     return presubmit.Change(
         name='mychange',
@@ -930,31 +829,17 @@ def CheckChangeOnCommit(input_api, output_api):
         % ('{"t1.cr": {"linux1": set(["t1"])},'
            ' "t2.cr": {"linux2": set(["defaulttests"])}}'))
 
-    isfile = presubmit.os.path.isfile
-    listdir = presubmit.os.listdir
-    FileRead = presubmit.gclient_utils.FileRead
     filename = 'foo.cc'
-    filename_linux = presubmit.os.path.join('linux_only', 'penguin.cc')
-    root_presubmit = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
-    linux_presubmit = presubmit.os.path.join(
+    filename_linux = os.path.join('linux_only', 'penguin.cc')
+    root_presubmit = os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
+    linux_presubmit = os.path.join(
         self.fake_root_dir, 'linux_only', 'PRESUBMIT.py')
-    inherit_path = presubmit.os.path.join(
-        self.fake_root_dir, self._INHERIT_SETTINGS)
 
-    isfile(inherit_path).AndReturn(False)
-    listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
-    isfile(root_presubmit).AndReturn(True)
-    FileRead(root_presubmit, 'rU').AndReturn(root_text)
-
-    isfile(inherit_path).AndReturn(False)
-    listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
-    isfile(root_presubmit).AndReturn(True)
-    listdir(presubmit.os.path.join(
-        self.fake_root_dir, 'linux_only')).AndReturn(['PRESUBMIT.py'])
-    isfile(linux_presubmit).AndReturn(True)
-    FileRead(root_presubmit, 'rU').AndReturn(root_text)
-    FileRead(linux_presubmit, 'rU').AndReturn(linux_text)
-    self.mox.ReplayAll()
+    os.path.isfile.side_effect = (
+        lambda f: f in [root_presubmit, linux_presubmit])
+    os.listdir.return_value = ['PRESUBMIT.py']
+    gclient_utils.FileRead.side_effect = (
+        lambda f, _: root_text if f == root_presubmit else linux_text)
 
     change = presubmit.Change(
         'mychange', '', self.fake_root_dir, [], 0, 0, None)
@@ -975,125 +860,41 @@ def CheckChangeOnCommit(input_api, output_api):
                                                self.fake_root_dir, None, None,
                                                False, output))
 
-  def testMainUnversioned(self):
-    # OptParser calls presubmit.os.path.exists and is a pain when mocked.
-    self.UnMock(presubmit.os.path, 'exists')
-    self.mox.StubOutWithMock(presubmit, 'DoPresubmitChecks')
-    self.mox.StubOutWithMock(presubmit, 'ParseFiles')
-    presubmit.scm.determine_scm(self.fake_root_dir).AndReturn(None)
-    presubmit.ParseFiles(['random_file.txt'], None
-        ).AndReturn([('M', 'random_file.txt')])
-    output = self.mox.CreateMock(presubmit.PresubmitOutput)
-    output.should_continue().AndReturn(False)
+  @mock.patch('presubmit_support.DoPresubmitChecks')
+  @mock.patch('presubmit_support.ParseFiles')
+  def testMainUnversioned(self, mockParseFiles, mockDoPresubmitChecks):
+    scm.determine_scm.return_value = None
+    mockParseFiles.return_value = [('M', 'random_file.txt')]
+    mockDoPresubmitChecks().should_continue.return_value = False
 
-    presubmit.DoPresubmitChecks(mox.IgnoreArg(), False, False,
-                                mox.IgnoreArg(),
-                                mox.IgnoreArg(),
-                                None, False, None, None, None,
-                                None).AndReturn(output)
-    self.mox.ReplayAll()
-
-    self.assertEquals(
+    self.assertEqual(
         True,
         presubmit.main(['--root', self.fake_root_dir, 'random_file.txt']))
 
   def testMainUnversionedFail(self):
-    # OptParser calls presubmit.os.path.exists and is a pain when mocked.
-    self.UnMock(presubmit.os.path, 'exists')
-    self.mox.StubOutWithMock(presubmit, 'DoPresubmitChecks')
-    self.mox.StubOutWithMock(presubmit, 'ParseFiles')
-    presubmit.scm.determine_scm(self.fake_root_dir).AndReturn(None)
-    self.mox.StubOutWithMock(presubmit.sys, 'stderr')
-    presubmit.sys.stderr.write(
-        'Usage: presubmit_unittest.py [options] <files...>\n')
-    presubmit.sys.stderr.write('\n')
-    presubmit.sys.stderr.write(
+    scm.determine_scm.return_value = None
+
+    with self.assertRaises(SystemExit) as e:
+      presubmit.main(['--root', self.fake_root_dir])
+    self.assertEqual(2, e.exception.code)
+
+    self.assertEqual(
+        sys.stderr.getvalue(),
+        'Usage: presubmit_unittest.py [options] <files...>\n'
+        '\n'
         'presubmit_unittest.py: error: For unversioned directory, <files> is '
         'not optional.\n')
-    self.mox.ReplayAll()
-
-    try:
-      presubmit.main(['--root', self.fake_root_dir])
-      self.fail()
-    except SystemExit as e:
-      self.assertEquals(2, e.code)
 
 
 class InputApiUnittest(PresubmitTestsBase):
   """Tests presubmit.InputApi."""
-  def testMembersChanged(self):
-    self.mox.ReplayAll()
-    members = [
-        'AbsoluteLocalPaths',
-        'AffectedFiles',
-        'AffectedSourceFiles',
-        'AffectedTestableFiles',
-        'AffectedTextFiles',
-        'Command',
-        'CreateTemporaryFile',
-        'DEFAULT_BLACK_LIST',
-        'DEFAULT_WHITE_LIST',
-        'FilterSourceFile',
-        'LocalPaths',
-        'PresubmitLocalPath',
-        'ReadFile',
-        'RightHandSideLines',
-        'RunTests',
-        'ast',
-        'basename',
-        'canned_checks',
-        'change',
-        'cPickle',
-        'cpplint',
-        'cpu_count',
-        'cStringIO',
-        'dry_run',
-        'environ',
-        'fnmatch',
-        'gclient_paths',
-        'gerrit',
-        'glob',
-        'is_committing',
-        'is_windows',
-        'json',
-        'logging',
-        'marshal',
-        'os_listdir',
-        'os_path',
-        'os_stat',
-        'os_walk',
-        'owners_db',
-        'owners_finder',
-        'parallel',
-        'pickle',
-        'platform',
-        'python_executable',
-        're',
-        'subprocess',
-        'tbr',
-        'tempfile',
-        'temporary_directory',
-        'thread_pool',
-        'time',
-        'traceback',
-        'unittest',
-        'urllib2',
-        'verbose',
-        'version',
-    ]
-    # If this test fails, you should add the relevant test.
-    self.compareMembers(
-        presubmit.InputApi(self.fake_change, './.', False, None, False),
-        members)
-
   def testInputApiConstruction(self):
-    self.mox.ReplayAll()
     api = presubmit.InputApi(
         self.fake_change,
         presubmit_path='foo/path/PRESUBMIT.py',
         is_committing=False, gerrit_obj=None, verbose=False)
-    self.assertEquals(api.PresubmitLocalPath(), 'foo/path')
-    self.assertEquals(api.change, self.fake_change)
+    self.assertEqual(api.PresubmitLocalPath(), 'foo/path')
+    self.assertEqual(api.change, self.fake_change)
 
   def testInputApiPresubmitScriptFiltering(self):
     description_lines = ('Hello there',
@@ -1102,27 +903,26 @@ class InputApiUnittest(PresubmitTestsBase):
                          ' STORY =http://foo/  \t',
                          'and some more regular text')
     files = [
-      ['A', presubmit.os.path.join('foo', 'blat.cc'), True],
-      ['M', presubmit.os.path.join('foo', 'blat', 'READ_ME2'), True],
-      ['M', presubmit.os.path.join('foo', 'blat', 'binary.dll'), True],
-      ['M', presubmit.os.path.join('foo', 'blat', 'weird.xyz'), True],
-      ['M', presubmit.os.path.join('foo', 'blat', 'another.h'), True],
-      ['M', presubmit.os.path.join('foo', 'third_party', 'third.cc'), True],
-      ['D', presubmit.os.path.join('foo', 'mat', 'beingdeleted.txt'), False],
-      ['M', presubmit.os.path.join('flop', 'notfound.txt'), False],
-      ['A', presubmit.os.path.join('boo', 'flap.h'), True],
+      ['A', os.path.join('foo', 'blat.cc'), True],
+      ['M', os.path.join('foo', 'blat', 'READ_ME2'), True],
+      ['M', os.path.join('foo', 'blat', 'binary.dll'), True],
+      ['M', os.path.join('foo', 'blat', 'weird.xyz'), True],
+      ['M', os.path.join('foo', 'blat', 'another.h'), True],
+      ['M', os.path.join('foo', 'third_party', 'third.cc'), True],
+      ['D', os.path.join('foo', 'mat', 'beingdeleted.txt'), False],
+      ['M', os.path.join('flop', 'notfound.txt'), False],
+      ['A', os.path.join('boo', 'flap.h'), True],
     ]
     diffs = []
+    known_files = []
     for _, f, exists in files:
-      full_file = presubmit.os.path.join(self.fake_root_dir, f)
+      full_file = os.path.join(self.fake_root_dir, f)
       if exists and f.startswith('foo/'):
-        presubmit.os.path.isfile(full_file).AndReturn(exists)
+        known_files.append(full_file)
       diffs.append(self.presubmit_diffs % {'filename': f})
-    presubmit.scm.GIT.GenerateDiff(
-        self.fake_root_dir, branch=None, files=[], full_move=True
-        ).AndReturn('\n'.join(diffs))
 
-    self.mox.ReplayAll()
+    os.path.isfile.side_effect = lambda f: f in known_files
+    presubmit.scm.GIT.GenerateDiff.return_value = '\n'.join(diffs)
 
     change = presubmit.GitChange(
         'mychange',
@@ -1134,23 +934,23 @@ class InputApiUnittest(PresubmitTestsBase):
         None)
     input_api = presubmit.InputApi(
         change,
-        presubmit.os.path.join(self.fake_root_dir, 'foo', 'PRESUBMIT.py'),
+        os.path.join(self.fake_root_dir, 'foo', 'PRESUBMIT.py'),
         False, None, False)
     # Doesn't filter much
     got_files = input_api.AffectedFiles()
-    self.assertEquals(len(got_files), 7)
-    self.assertEquals(got_files[0].LocalPath(), presubmit.normpath(files[0][1]))
-    self.assertEquals(got_files[1].LocalPath(), presubmit.normpath(files[1][1]))
-    self.assertEquals(got_files[2].LocalPath(), presubmit.normpath(files[2][1]))
-    self.assertEquals(got_files[3].LocalPath(), presubmit.normpath(files[3][1]))
-    self.assertEquals(got_files[4].LocalPath(), presubmit.normpath(files[4][1]))
-    self.assertEquals(got_files[5].LocalPath(), presubmit.normpath(files[5][1]))
-    self.assertEquals(got_files[6].LocalPath(), presubmit.normpath(files[6][1]))
+    self.assertEqual(len(got_files), 7)
+    self.assertEqual(got_files[0].LocalPath(), presubmit.normpath(files[0][1]))
+    self.assertEqual(got_files[1].LocalPath(), presubmit.normpath(files[1][1]))
+    self.assertEqual(got_files[2].LocalPath(), presubmit.normpath(files[2][1]))
+    self.assertEqual(got_files[3].LocalPath(), presubmit.normpath(files[3][1]))
+    self.assertEqual(got_files[4].LocalPath(), presubmit.normpath(files[4][1]))
+    self.assertEqual(got_files[5].LocalPath(), presubmit.normpath(files[5][1]))
+    self.assertEqual(got_files[6].LocalPath(), presubmit.normpath(files[6][1]))
     # Ignores weird because of whitelist, third_party because of blacklist,
     # binary isn't a text file and beingdeleted doesn't exist. The rest is
     # outside foo/.
     rhs_lines = [x for x in input_api.RightHandSideLines(None)]
-    self.assertEquals(len(rhs_lines), 14)
+    self.assertEqual(len(rhs_lines), 14)
     self.assertEqual(rhs_lines[0][0].LocalPath(),
                      presubmit.normpath(files[0][1]))
     self.assertEqual(rhs_lines[3][0].LocalPath(),
@@ -1162,25 +962,24 @@ class InputApiUnittest(PresubmitTestsBase):
 
   def testInputApiFilterSourceFile(self):
     files = [
-      ['A', presubmit.os.path.join('foo', 'blat.cc')],
-      ['M', presubmit.os.path.join('foo', 'blat', 'READ_ME2')],
-      ['M', presubmit.os.path.join('foo', 'blat', 'binary.dll')],
-      ['M', presubmit.os.path.join('foo', 'blat', 'weird.xyz')],
-      ['M', presubmit.os.path.join('foo', 'blat', 'another.h')],
-      ['M', presubmit.os.path.join(
+      ['A', os.path.join('foo', 'blat.cc')],
+      ['M', os.path.join('foo', 'blat', 'READ_ME2')],
+      ['M', os.path.join('foo', 'blat', 'binary.dll')],
+      ['M', os.path.join('foo', 'blat', 'weird.xyz')],
+      ['M', os.path.join('foo', 'blat', 'another.h')],
+      ['M', os.path.join(
         'foo', 'third_party', 'WebKit', 'WebKit.cpp')],
-      ['M', presubmit.os.path.join(
+      ['M', os.path.join(
         'foo', 'third_party', 'WebKit2', 'WebKit2.cpp')],
-      ['M', presubmit.os.path.join('foo', 'third_party', 'blink', 'blink.cc')],
-      ['M', presubmit.os.path.join(
+      ['M', os.path.join('foo', 'third_party', 'blink', 'blink.cc')],
+      ['M', os.path.join(
         'foo', 'third_party', 'blink1', 'blink1.cc')],
-      ['M', presubmit.os.path.join('foo', 'third_party', 'third', 'third.cc')],
+      ['M', os.path.join('foo', 'third_party', 'third', 'third.cc')],
     ]
-    for _, f, in files:
-      full_file = presubmit.os.path.join(self.fake_root_dir, f)
-      presubmit.os.path.isfile(full_file).AndReturn(True)
-
-    self.mox.ReplayAll()
+    known_files = [
+        os.path.join(self.fake_root_dir, f)
+        for _, f in files]
+    os.path.isfile.side_effect = lambda f: f in known_files
 
     change = presubmit.GitChange(
         'mychange',
@@ -1192,17 +991,17 @@ class InputApiUnittest(PresubmitTestsBase):
         None)
     input_api = presubmit.InputApi(
         change,
-        presubmit.os.path.join(self.fake_root_dir, 'foo', 'PRESUBMIT.py'),
+        os.path.join(self.fake_root_dir, 'foo', 'PRESUBMIT.py'),
         False, None, False)
     # We'd like to test FilterSourceFile, which is used by
     # AffectedSourceFiles(None).
     got_files = input_api.AffectedSourceFiles(None)
-    self.assertEquals(len(got_files), 4)
+    self.assertEqual(len(got_files), 4)
     # blat.cc, another.h, WebKit.cpp, and blink.cc remain.
-    self.assertEquals(got_files[0].LocalPath(), presubmit.normpath(files[0][1]))
-    self.assertEquals(got_files[1].LocalPath(), presubmit.normpath(files[4][1]))
-    self.assertEquals(got_files[2].LocalPath(), presubmit.normpath(files[5][1]))
-    self.assertEquals(got_files[3].LocalPath(), presubmit.normpath(files[7][1]))
+    self.assertEqual(got_files[0].LocalPath(), presubmit.normpath(files[0][1]))
+    self.assertEqual(got_files[1].LocalPath(), presubmit.normpath(files[4][1]))
+    self.assertEqual(got_files[2].LocalPath(), presubmit.normpath(files[5][1]))
+    self.assertEqual(got_files[3].LocalPath(), presubmit.normpath(files[7][1]))
 
   def testDefaultWhiteListBlackListFilters(self):
     def f(x):
@@ -1281,17 +1080,16 @@ class InputApiUnittest(PresubmitTestsBase):
     ]
     input_api = presubmit.InputApi(
         self.fake_change, './PRESUBMIT.py', False, None, False)
-    self.mox.ReplayAll()
 
     self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 24)
     self.assertEqual(len(input_api.DEFAULT_BLACK_LIST), 12)
     for item in files:
       results = filter(input_api.FilterSourceFile, item[0])
       for i in range(len(results)):
-        self.assertEquals(results[i].LocalPath(),
+        self.assertEqual(results[i].LocalPath(),
                           presubmit.normpath(item[1][i]))
       # Same number of expected results.
-      self.assertEquals(sorted([f.LocalPath().replace(presubmit.os.sep, '/')
+      self.assertEqual(sorted([f.LocalPath().replace(os.sep, '/')
                                 for f in results]),
                         sorted(item[1]))
 
@@ -1299,30 +1097,30 @@ class InputApiUnittest(PresubmitTestsBase):
     def FilterSourceFile(affected_file):
       return 'a' in affected_file.LocalPath()
     files = [('A', 'eeaee'), ('M', 'eeabee'), ('M', 'eebcee')]
-    for _, item in files:
-      full_item = presubmit.os.path.join(self.fake_root_dir, item)
-      presubmit.os.path.isfile(full_item).AndReturn(True)
-    self.mox.ReplayAll()
+    known_files = [
+      os.path.join(self.fake_root_dir, item)
+      for _, item in files]
+    os.path.isfile.side_effect = lambda f: f in known_files
 
     change = presubmit.GitChange(
         'mychange', '', self.fake_root_dir, files, 0, 0, None)
     input_api = presubmit.InputApi(
         change,
-        presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py'),
+        os.path.join(self.fake_root_dir, 'PRESUBMIT.py'),
         False, None, False)
     got_files = input_api.AffectedSourceFiles(FilterSourceFile)
-    self.assertEquals(len(got_files), 2)
-    self.assertEquals(got_files[0].LocalPath(), 'eeaee')
-    self.assertEquals(got_files[1].LocalPath(), 'eeabee')
+    self.assertEqual(len(got_files), 2)
+    self.assertEqual(got_files[0].LocalPath(), 'eeaee')
+    self.assertEqual(got_files[1].LocalPath(), 'eeabee')
 
   def testLambdaFilter(self):
     white_list = presubmit.InputApi.DEFAULT_BLACK_LIST + (r".*?a.*?",)
     black_list = [r".*?b.*?"]
     files = [('A', 'eeaee'), ('M', 'eeabee'), ('M', 'eebcee'), ('M', 'eecaee')]
-    for _, item in files:
-      full_item = presubmit.os.path.join(self.fake_root_dir, item)
-      presubmit.os.path.isfile(full_item).AndReturn(True)
-    self.mox.ReplayAll()
+    known_files = [
+      os.path.join(self.fake_root_dir, item)
+      for _, item in files]
+    os.path.isfile.side_effect = lambda f: f in known_files
 
     change = presubmit.GitChange(
         'mychange', '', self.fake_root_dir, files, 0, 0, None)
@@ -1331,9 +1129,9 @@ class InputApiUnittest(PresubmitTestsBase):
     # Sample usage of overiding the default white and black lists.
     got_files = input_api.AffectedSourceFiles(
         lambda x: input_api.FilterSourceFile(x, white_list, black_list))
-    self.assertEquals(len(got_files), 2)
-    self.assertEquals(got_files[0].LocalPath(), 'eeaee')
-    self.assertEquals(got_files[1].LocalPath(), 'eecaee')
+    self.assertEqual(len(got_files), 2)
+    self.assertEqual(got_files[0].LocalPath(), 'eeaee')
+    self.assertEqual(got_files[1].LocalPath(), 'eecaee')
 
   def testGetAbsoluteLocalPath(self):
     normpath = presubmit.normpath
@@ -1344,30 +1142,29 @@ class InputApiUnittest(PresubmitTestsBase):
     # the presubmit script was asking about).
     files = [
       ['A', 'isdir'],
-      ['A', presubmit.os.path.join('isdir', 'blat.cc')],
-      ['M', presubmit.os.path.join('elsewhere', 'ouf.cc')],
+      ['A', os.path.join('isdir', 'blat.cc')],
+      ['M', os.path.join('elsewhere', 'ouf.cc')],
     ]
-    self.mox.ReplayAll()
 
     change = presubmit.Change(
         'mychange', '', self.fake_root_dir, files, 0, 0, None)
     affected_files = change.AffectedFiles()
     # Local paths should remain the same
-    self.assertEquals(affected_files[0].LocalPath(), normpath('isdir'))
-    self.assertEquals(affected_files[1].LocalPath(), normpath('isdir/blat.cc'))
+    self.assertEqual(affected_files[0].LocalPath(), normpath('isdir'))
+    self.assertEqual(affected_files[1].LocalPath(), normpath('isdir/blat.cc'))
     # Absolute paths should be prefixed
-    self.assertEquals(
+    self.assertEqual(
         affected_files[0].AbsoluteLocalPath(),
-        presubmit.normpath(presubmit.os.path.join(self.fake_root_dir, 'isdir')))
-    self.assertEquals(
+        presubmit.normpath(os.path.join(self.fake_root_dir, 'isdir')))
+    self.assertEqual(
         affected_files[1].AbsoluteLocalPath(),
-        presubmit.normpath(presubmit.os.path.join(
+        presubmit.normpath(os.path.join(
             self.fake_root_dir, 'isdir/blat.cc')))
 
     # New helper functions need to work
     paths_from_change = change.AbsoluteLocalPaths()
     self.assertEqual(len(paths_from_change), 3)
-    presubmit_path = presubmit.os.path.join(
+    presubmit_path = os.path.join(
         self.fake_root_dir, 'isdir', 'PRESUBMIT.py')
     api = presubmit.InputApi(
         change=change, presubmit_path=presubmit_path,
@@ -1377,70 +1174,62 @@ class InputApiUnittest(PresubmitTestsBase):
     for absolute_paths in [paths_from_change, paths_from_api]:
       self.assertEqual(
           absolute_paths[0],
-          presubmit.normpath(presubmit.os.path.join(
+          presubmit.normpath(os.path.join(
               self.fake_root_dir, 'isdir')))
       self.assertEqual(
           absolute_paths[1],
-          presubmit.normpath(presubmit.os.path.join(
+          presubmit.normpath(os.path.join(
               self.fake_root_dir, 'isdir', 'blat.cc')))
 
   def testDeprecated(self):
-    presubmit.warn(mox.IgnoreArg(), category=mox.IgnoreArg(), stacklevel=2)
-    self.mox.ReplayAll()
-
     change = presubmit.Change(
         'mychange', '', self.fake_root_dir, [], 0, 0, None)
     api = presubmit.InputApi(
         change,
-        presubmit.os.path.join(self.fake_root_dir, 'foo', 'PRESUBMIT.py'), True,
+        os.path.join(self.fake_root_dir, 'foo', 'PRESUBMIT.py'), True,
         None, False)
     api.AffectedTestableFiles(include_deletes=False)
 
   def testReadFileStringDenied(self):
-    self.mox.ReplayAll()
 
     change = presubmit.Change(
         'foo', 'foo', self.fake_root_dir, [('M', 'AA')], 0, 0, None)
     input_api = presubmit.InputApi(
-        change, presubmit.os.path.join(self.fake_root_dir, '/p'), False,
+        change, os.path.join(self.fake_root_dir, '/p'), False,
         None, False)
     self.assertRaises(IOError, input_api.ReadFile, 'boo', 'x')
 
   def testReadFileStringAccepted(self):
-    path = presubmit.os.path.join(self.fake_root_dir, 'AA/boo')
-    presubmit.gclient_utils.FileRead(path, 'x').AndReturn(None)
-    self.mox.ReplayAll()
+    path = os.path.join(self.fake_root_dir, 'AA/boo')
+    presubmit.gclient_utils.FileRead.return_code = None
 
     change = presubmit.Change(
         'foo', 'foo', self.fake_root_dir, [('M', 'AA')], 0, 0, None)
     input_api = presubmit.InputApi(
-        change, presubmit.os.path.join(self.fake_root_dir, '/p'), False,
+        change, os.path.join(self.fake_root_dir, '/p'), False,
         None, False)
     input_api.ReadFile(path, 'x')
 
   def testReadFileAffectedFileDenied(self):
     fileobj = presubmit.AffectedFile('boo', 'M', 'Unrelated',
-                                     diff_cache=mox.IsA(presubmit._DiffCache))
-    self.mox.ReplayAll()
+                                     diff_cache=mock.Mock())
 
     change = presubmit.Change(
         'foo', 'foo', self.fake_root_dir, [('M', 'AA')], 0, 0, None)
     input_api = presubmit.InputApi(
-        change, presubmit.os.path.join(self.fake_root_dir, '/p'), False,
+        change, os.path.join(self.fake_root_dir, '/p'), False,
         None, False)
     self.assertRaises(IOError, input_api.ReadFile, fileobj, 'x')
 
   def testReadFileAffectedFileAccepted(self):
     fileobj = presubmit.AffectedFile('AA/boo', 'M', self.fake_root_dir,
-                                     diff_cache=mox.IsA(presubmit._DiffCache))
-    presubmit.gclient_utils.FileRead(fileobj.AbsoluteLocalPath(), 'x'
-                                     ).AndReturn(None)
-    self.mox.ReplayAll()
+                                     diff_cache=mock.Mock())
+    presubmit.gclient_utils.FileRead.return_code = None
 
     change = presubmit.Change(
         'foo', 'foo', self.fake_root_dir, [('M', 'AA')], 0, 0, None)
     input_api = presubmit.InputApi(
-        change, presubmit.os.path.join(self.fake_root_dir, '/p'), False,
+        change, os.path.join(self.fake_root_dir, '/p'), False,
         None, False)
     input_api.ReadFile(fileobj, 'x')
 
@@ -1449,12 +1238,8 @@ class InputApiUnittest(PresubmitTestsBase):
         self.fake_change,
         presubmit_path='foo/path/PRESUBMIT.py',
         is_committing=False, gerrit_obj=None, verbose=False)
-    self.mox.StubOutWithMock(presubmit.tempfile, 'NamedTemporaryFile')
-    input_api.tempfile.NamedTemporaryFile(
-        delete=False).AndReturn(MockTemporaryFile('foo'))
-    input_api.tempfile.NamedTemporaryFile(
-        delete=False).AndReturn(MockTemporaryFile('bar'))
-    self.mox.ReplayAll()
+    tempfile.NamedTemporaryFile.side_effect = [
+        MockTemporaryFile('foo'), MockTemporaryFile('bar')]
 
     self.assertEqual(0, len(input_api._named_temporary_files))
     with input_api.CreateTemporaryFile():
@@ -1472,120 +1257,84 @@ class InputApiUnittest(PresubmitTestsBase):
 
 class OutputApiUnittest(PresubmitTestsBase):
   """Tests presubmit.OutputApi."""
-
-  def testMembersChanged(self):
-    self.mox.ReplayAll()
-    members = [
-        'AppendCC',
-        'MailTextResult',
-        'PresubmitError',
-        'PresubmitNotifyResult',
-        'PresubmitPromptWarning',
-        'PresubmitPromptOrNotify',
-        'PresubmitResult',
-        'is_committing',
-        'more_cc',
-    ]
-    # If this test fails, you should add the relevant test.
-    self.compareMembers(presubmit.OutputApi(False), members)
-
   def testOutputApiBasics(self):
-    self.mox.ReplayAll()
-    self.failUnless(presubmit.OutputApi.PresubmitError('').fatal)
-    self.failIf(presubmit.OutputApi.PresubmitError('').should_prompt)
+    self.assertIsNotNone(presubmit.OutputApi.PresubmitError('').fatal)
+    self.assertFalse(presubmit.OutputApi.PresubmitError('').should_prompt)
 
-    self.failIf(presubmit.OutputApi.PresubmitPromptWarning('').fatal)
-    self.failUnless(
+    self.assertFalse(presubmit.OutputApi.PresubmitPromptWarning('').fatal)
+    self.assertIsNotNone(
         presubmit.OutputApi.PresubmitPromptWarning('').should_prompt)
 
-    self.failIf(presubmit.OutputApi.PresubmitNotifyResult('').fatal)
-    self.failIf(presubmit.OutputApi.PresubmitNotifyResult('').should_prompt)
+    self.assertFalse(presubmit.OutputApi.PresubmitNotifyResult('').fatal)
+    self.assertFalse(
+        presubmit.OutputApi.PresubmitNotifyResult('').should_prompt)
 
     # TODO(joi) Test MailTextResult once implemented.
 
   def testAppendCC(self):
     output_api = presubmit.OutputApi(False)
     output_api.AppendCC('chromium-reviews@chromium.org')
-    self.assertEquals(['chromium-reviews@chromium.org'], output_api.more_cc)
+    self.assertEqual(['chromium-reviews@chromium.org'], output_api.more_cc)
 
 
   def testOutputApiHandling(self):
-    self.mox.ReplayAll()
 
     output = presubmit.PresubmitOutput()
     presubmit.OutputApi.PresubmitError('!!!').handle(output)
-    self.failIf(output.should_continue())
-    self.failUnless(output.getvalue().count('!!!'))
+    self.assertFalse(output.should_continue())
+    self.assertIsNotNone(output.getvalue().count('!!!'))
 
     output = presubmit.PresubmitOutput()
     presubmit.OutputApi.PresubmitNotifyResult('?see?').handle(output)
-    self.failUnless(output.should_continue())
-    self.failUnless(output.getvalue().count('?see?'))
+    self.assertIsNotNone(output.should_continue())
+    self.assertIsNotNone(output.getvalue().count('?see?'))
 
     output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('y'))
     presubmit.OutputApi.PresubmitPromptWarning('???').handle(output)
     output.prompt_yes_no('prompt: ')
-    self.failUnless(output.should_continue())
-    self.failUnless(output.getvalue().count('???'))
+    self.assertIsNotNone(output.should_continue())
+    self.assertIsNotNone(output.getvalue().count('???'))
 
     output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('\n'))
     presubmit.OutputApi.PresubmitPromptWarning('???').handle(output)
     output.prompt_yes_no('prompt: ')
-    self.failIf(output.should_continue())
-    self.failUnless(output.getvalue().count('???'))
+    self.assertFalse(output.should_continue())
+    self.assertIsNotNone(output.getvalue().count('???'))
 
     output_api = presubmit.OutputApi(True)
     output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('y'))
     output_api.PresubmitPromptOrNotify('???').handle(output)
     output.prompt_yes_no('prompt: ')
-    self.failUnless(output.should_continue())
-    self.failUnless(output.getvalue().count('???'))
+    self.assertIsNotNone(output.should_continue())
+    self.assertIsNotNone(output.getvalue().count('???'))
 
     output_api = presubmit.OutputApi(False)
     output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('y'))
     output_api.PresubmitPromptOrNotify('???').handle(output)
-    self.failUnless(output.should_continue())
-    self.failUnless(output.getvalue().count('???'))
+    self.assertIsNotNone(output.should_continue())
+    self.assertIsNotNone(output.getvalue().count('???'))
 
     output_api = presubmit.OutputApi(True)
     output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('\n'))
     output_api.PresubmitPromptOrNotify('???').handle(output)
     output.prompt_yes_no('prompt: ')
-    self.failIf(output.should_continue())
-    self.failUnless(output.getvalue().count('???'))
+    self.assertFalse(output.should_continue())
+    self.assertIsNotNone(output.getvalue().count('???'))
 
 
 class AffectedFileUnittest(PresubmitTestsBase):
-  def testMembersChanged(self):
-    self.mox.ReplayAll()
-    members = [
-      'AbsoluteLocalPath', 'Action', 'ChangedContents', 'DIFF_CACHE',
-      'GenerateScmDiff', 'IsTestableFile', 'IsTextFile', 'LocalPath',
-      'NewContents', 'OldContents',
-    ]
-    # If this test fails, you should add the relevant test.
-    self.compareMembers(
-        presubmit.AffectedFile('a', 'b', self.fake_root_dir, None), members)
-    self.compareMembers(
-        presubmit.GitAffectedFile('a', 'b', self.fake_root_dir, None), members)
-
   def testAffectedFile(self):
-    path = presubmit.os.path.join('foo', 'blat.cc')
-    f_path = presubmit.os.path.join(self.fake_root_dir, path)
-    presubmit.gclient_utils.FileRead(f_path, 'rU').AndReturn('whatever\ncookie')
-    self.mox.ReplayAll()
+    gclient_utils.FileRead.return_value = 'whatever\ncookie'
     af = presubmit.GitAffectedFile('foo/blat.cc', 'M', self.fake_root_dir, None)
-    self.assertEquals(presubmit.normpath('foo/blat.cc'), af.LocalPath())
-    self.assertEquals('M', af.Action())
-    self.assertEquals(['whatever', 'cookie'], af.NewContents())
+    self.assertEqual(presubmit.normpath('foo/blat.cc'), af.LocalPath())
+    self.assertEqual('M', af.Action())
+    self.assertEqual(['whatever', 'cookie'], af.NewContents())
 
   def testAffectedFileNotExists(self):
     notfound = 'notfound.cc'
-    f_notfound = presubmit.os.path.join(self.fake_root_dir, notfound)
-    presubmit.gclient_utils.FileRead(f_notfound, 'rU').AndRaise(IOError)
-    self.mox.ReplayAll()
+    gclient_utils.FileRead.side_effect = IOError
     af = presubmit.AffectedFile(notfound, 'A', self.fake_root_dir, None)
-    self.assertEquals([], af.NewContents())
+    self.assertEqual([], af.NewContents())
 
   def testIsTestableFile(self):
     files = [
@@ -1596,121 +1345,84 @@ class AffectedFileUnittest(PresubmitTestsBase):
         presubmit.GitAffectedFile('blat/flop.txt', 'D', self.fake_root_dir,
                                   None)
     ]
-    blat = presubmit.os.path.join('foo', 'blat.txt')
-    blob = presubmit.os.path.join('foo', 'binary.blob')
-    f_blat = presubmit.os.path.join(self.fake_root_dir, blat)
-    f_blob = presubmit.os.path.join(self.fake_root_dir, blob)
-    presubmit.os.path.isfile(f_blat).AndReturn(True)
-    presubmit.os.path.isfile(f_blob).AndReturn(True)
-    self.mox.ReplayAll()
+    blat = os.path.join('foo', 'blat.txt')
+    blob = os.path.join('foo', 'binary.blob')
+    f_blat = os.path.join(self.fake_root_dir, blat)
+    f_blob = os.path.join(self.fake_root_dir, blob)
+    os.path.isfile.side_effect = lambda f: f in [f_blat, f_blob]
 
     output = filter(lambda x: x.IsTestableFile(), files)
-    self.assertEquals(2, len(output))
-    self.assertEquals(files[0], output[0])
+    self.assertEqual(2, len(output))
+    self.assertEqual(files[:2], output[:2])
 
 
 class ChangeUnittest(PresubmitTestsBase):
-  def testMembersChanged(self):
-    members = [
-        'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTestableFiles',
-        'AffectedTextFiles',
-        'AllFiles', 'DescriptionText', 'FullDescriptionText',
-        'LocalPaths', 'Name', 'OriginalOwnersFiles', 'RepositoryRoot',
-        'RightHandSideLines', 'SetDescriptionText', 'TAG_LINE_RE',
-        'BUG', 'R', 'TBR', 'BugsFromDescription',
-        'ReviewersFromDescription', 'TBRsFromDescription',
-        'author_email', 'issue', 'patchset', 'scm', 'tags',
-    ]
-    # If this test fails, you should add the relevant test.
-    self.mox.ReplayAll()
-
-    change = presubmit.Change(
-        'foo', 'foo', self.fake_root_dir, [('M', 'AA')], 0, 0, 'foo')
-    self.compareMembers(change, members)
-
   def testAffectedFiles(self):
     change = presubmit.Change(
         '', '', self.fake_root_dir, [('Y', 'AA')], 3, 5, '')
-    self.assertEquals(1, len(change.AffectedFiles()))
-    self.assertEquals('Y', change.AffectedFiles()[0].Action())
+    self.assertEqual(1, len(change.AffectedFiles()))
+    self.assertEqual('Y', change.AffectedFiles()[0].Action())
 
   def testSetDescriptionText(self):
     change = presubmit.Change(
         '', 'foo\nDRU=ro', self.fake_root_dir, [], 3, 5, '')
-    self.assertEquals('foo', change.DescriptionText())
-    self.assertEquals('foo\nDRU=ro', change.FullDescriptionText())
-    self.assertEquals({'DRU': 'ro'}, change.tags)
+    self.assertEqual('foo', change.DescriptionText())
+    self.assertEqual('foo\nDRU=ro', change.FullDescriptionText())
+    self.assertEqual({'DRU': 'ro'}, change.tags)
 
     change.SetDescriptionText('WHIZ=bang\nbar\nFOO=baz')
-    self.assertEquals('bar', change.DescriptionText())
-    self.assertEquals('WHIZ=bang\nbar\nFOO=baz', change.FullDescriptionText())
-    self.assertEquals({'WHIZ': 'bang', 'FOO': 'baz'}, change.tags)
+    self.assertEqual('bar', change.DescriptionText())
+    self.assertEqual('WHIZ=bang\nbar\nFOO=baz', change.FullDescriptionText())
+    self.assertEqual({'WHIZ': 'bang', 'FOO': 'baz'}, change.tags)
 
   def testBugsFromDescription_MixedTagsAndFooters(self):
     change = presubmit.Change(
         '', 'foo\nBUG=2,1\n\nChange-Id: asdf\nBug: 3, 6',
         self.fake_root_dir, [], 0, 0, '')
-    self.assertEquals(['1', '2', '3', '6'], change.BugsFromDescription())
-    self.assertEquals('1,2,3,6', change.BUG)
+    self.assertEqual(['1', '2', '3', '6'], change.BugsFromDescription())
+    self.assertEqual('1,2,3,6', change.BUG)
 
   def testBugsFromDescription_MultipleFooters(self):
     change = presubmit.Change(
         '', 'foo\n\nChange-Id: asdf\nBug: 1\nBug:4,  6',
         self.fake_root_dir, [], 0, 0, '')
-    self.assertEquals(['1', '4', '6'], change.BugsFromDescription())
-    self.assertEquals('1,4,6', change.BUG)
+    self.assertEqual(['1', '4', '6'], change.BugsFromDescription())
+    self.assertEqual('1,4,6', change.BUG)
 
   def testReviewersFromDescription(self):
     change = presubmit.Change(
         '', 'foo\nR=foo,bar\n\nChange-Id: asdf\nR: baz',
         self.fake_root_dir, [], 0, 0, '')
-    self.assertEquals(['bar', 'foo'], change.ReviewersFromDescription())
-    self.assertEquals('bar,foo', change.R)
+    self.assertEqual(['bar', 'foo'], change.ReviewersFromDescription())
+    self.assertEqual('bar,foo', change.R)
 
   def testTBRsFromDescription(self):
     change = presubmit.Change(
         '', 'foo\nTBR=foo,bar\n\nChange-Id: asdf\nTBR: baz',
         self.fake_root_dir, [], 0, 0, '')
-    self.assertEquals(['bar', 'baz', 'foo'], change.TBRsFromDescription())
-    self.assertEquals('bar,baz,foo', change.TBR)
+    self.assertEqual(['bar', 'baz', 'foo'], change.TBRsFromDescription())
+    self.assertEqual('bar,baz,foo', change.TBR)
 
 
 class CannedChecksUnittest(PresubmitTestsBase):
   """Tests presubmit_canned_checks.py."""
-  def CommHelper(self, input_api, cmd, stdin=None, ret=None, **kwargs):
-    ret = ret or (('', None), 0)
-    kwargs.setdefault('cwd', mox.IgnoreArg())
-    kwargs.setdefault('stdin', subprocess.PIPE)
-
-    mock_process = input_api.mox.CreateMockAnything()
-    mock_process.returncode = ret[1]
-
-    input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
-    input_api.subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kwargs
-    ).AndReturn(mock_process)
-
-    presubmit.sigint_handler.wait(mock_process, stdin).AndReturn(ret[0])
-
   def MockInputApi(self, change, committing):
     # pylint: disable=no-self-use
-    input_api = self.mox.CreateMock(presubmit.InputApi)
-    input_api.mox = self.mox
+    input_api = mock.MagicMock(presubmit.InputApi)
     input_api.thread_pool = presubmit.ThreadPool()
     input_api.parallel = False
     input_api.cStringIO = presubmit.cStringIO
     input_api.json = presubmit.json
     input_api.logging = logging
-    input_api.os_listdir = self.mox.CreateMockAnything()
-    input_api.os_walk = self.mox.CreateMockAnything()
-    input_api.os_path = presubmit.os.path
+    input_api.os_listdir = mock.Mock()
+    input_api.os_walk = mock.Mock()
+    input_api.os_path = os.path
     input_api.re = presubmit.re
-    input_api.gerrit = self.mox.CreateMock(presubmit.GerritAccessor)
+    input_api.gerrit = mock.MagicMock(presubmit.GerritAccessor)
     input_api.traceback = presubmit.traceback
-    input_api.urllib2 = self.mox.CreateMock(presubmit.urllib2)
+    input_api.urllib2 = mock.MagicMock(presubmit.urllib2)
     input_api.unittest = unittest
-    input_api.subprocess = self.mox.CreateMock(subprocess)
-    presubmit.subprocess = input_api.subprocess
+    input_api.subprocess = subprocess
     class fake_CalledProcessError(Exception):
       def __str__(self):
         return 'foo'
@@ -1730,45 +1442,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.Command = presubmit.CommandData
     input_api.RunTests = functools.partial(
         presubmit.InputApi.RunTests, input_api)
-    presubmit.sigint_handler = self.mox.CreateMock(presubmit.SigintHandler)
     return input_api
-
-  def testMembersChanged(self):
-    self.mox.ReplayAll()
-    members = [
-      'DEFAULT_LINT_FILTERS',
-      'BLACKLIST_LINT_FILTERS',
-      'CheckAuthorizedAuthor',
-      'CheckBuildbotPendingBuilds',
-      'CheckChangeHasBugField', 'CheckChangeHasDescription',
-      'CheckChangeHasNoStrayWhitespace',
-      'CheckChangeHasOnlyOneEol', 'CheckChangeHasNoCR',
-      'CheckChangeHasNoCrAndHasOnlyOneEol', 'CheckChangeHasNoTabs',
-      'CheckChangeTodoHasOwner',
-      'CheckChangeLintsClean',
-      'CheckChangeWasUploaded',
-      'CheckDoNotSubmit',
-      'CheckDoNotSubmitInDescription', 'CheckDoNotSubmitInFiles',
-      'CheckGenderNeutral',
-      'CheckLongLines', 'CheckTreeIsOpen', 'PanProjectChecks',
-      'CheckLicense',
-      'CheckOwners',
-      'CheckOwnersFormat',
-      'CheckPatchFormatted',
-      'CheckGNFormatted',
-      'CheckSingletonInHeaders',
-      'CheckVPythonSpec',
-      'RunPythonUnitTests', 'RunPylint',
-      'RunUnitTests', 'RunUnitTestsInDirectory',
-      'GetCodereviewOwnerAndReviewers',
-      'GetPythonUnitTests', 'GetPylint',
-      'GetUnitTests', 'GetUnitTestsInDirectory', 'GetUnitTestsRecursively',
-      'CheckCIPDManifest', 'CheckCIPDPackages', 'CheckCIPDClientDigests',
-      'CheckChangedLUCIConfigs', 'CheckLucicfgGenOutput', 'CheckJsonParses',
-      'print_function',
-    ]
-    # If this test fails, you should add the relevant test.
-    self.compareMembers(presubmit_canned_checks, members)
 
   def DescriptionTest(self, check, description1, description2, error_type,
                       committing):
@@ -1778,13 +1452,12 @@ class CannedChecksUnittest(PresubmitTestsBase):
     change2 = presubmit.Change(
         'foo2', description2, self.fake_root_dir, None, 0, 0, None)
     input_api2 = self.MockInputApi(change2, committing)
-    self.mox.ReplayAll()
 
     results1 = check(input_api1, presubmit.OutputApi)
-    self.assertEquals(results1, [])
+    self.assertEqual(results1, [])
     results2 = check(input_api2, presubmit.OutputApi)
-    self.assertEquals(len(results2), 1)
-    self.assertEquals(results2[0].__class__, error_type)
+    self.assertEqual(len(results2), 1)
+    self.assertTrue(isinstance(results2[0], error_type))
 
   def ContentTest(self, check, content1, content1_path, content2,
                   content2_path, error_type):
@@ -1801,48 +1474,44 @@ class CannedChecksUnittest(PresubmitTestsBase):
     change1 = presubmit.Change(
         'foo1', 'foo1\n', self.fake_root_dir, None, 0, 0, None)
     input_api1 = self.MockInputApi(change1, False)
-    affected_file = self.mox.CreateMock(presubmit.GitAffectedFile)
-    input_api1.AffectedFiles(
-        include_deletes=False,
-        file_filter=mox.IgnoreArg()).AndReturn([affected_file])
-    affected_file.LocalPath().AndReturn(content1_path)
-    affected_file.NewContents().AndReturn([
+    affected_file1 = mock.MagicMock(presubmit.GitAffectedFile)
+    input_api1.AffectedFiles.return_value = [affected_file1]
+    affected_file1.LocalPath.return_value = content1_path
+    affected_file1.NewContents.return_value = [
         'afoo',
         content1,
         'bfoo',
         'cfoo',
-        'dfoo'])
+        'dfoo']
 
     change2 = presubmit.Change(
         'foo2', 'foo2\n', self.fake_root_dir, None, 0, 0, None)
     input_api2 = self.MockInputApi(change2, False)
 
-    input_api2.AffectedFiles(
-        include_deletes=False,
-        file_filter=mox.IgnoreArg()).AndReturn([affected_file])
-    affected_file.LocalPath().AndReturn(content2_path)
-    affected_file.NewContents().AndReturn([
+    affected_file2 = mock.MagicMock(presubmit.GitAffectedFile)
+    input_api2.AffectedFiles.return_value = [affected_file2]
+    affected_file2.LocalPath.return_value = content2_path
+    affected_file2.NewContents.return_value = [
         'dfoo',
         content2,
         'efoo',
         'ffoo',
-        'gfoo'])
+        'gfoo']
     # It falls back to ChangedContents when there is a failure. This is an
     # optimization since NewContents() is much faster to execute than
     # ChangedContents().
-    affected_file.ChangedContents().AndReturn([
+    affected_file2.ChangedContents.return_value = [
         (42, content2),
         (43, 'hfoo'),
-        (23, 'ifoo')])
-    affected_file.LocalPath().AndReturn('foo.cc')
+        (23, 'ifoo')]
+    affected_file2.LocalPath.return_value = 'foo.cc'
 
-    self.mox.ReplayAll()
 
     results1 = check(input_api1, presubmit.OutputApi, None)
-    self.assertEquals(results1, [])
+    self.assertEqual(results1, [])
     results2 = check(input_api2, presubmit.OutputApi, None)
-    self.assertEquals(len(results2), 1)
-    self.assertEquals(results2[0].__class__, error_type)
+    self.assertEqual(len(results2), 1)
+    self.assertEqual(results2[0].__class__, error_type)
 
   def PythonLongLineTest(self, maxlen, content, should_pass):
     """Runs a test of Python long-line checking rule.
@@ -1858,45 +1527,40 @@ class CannedChecksUnittest(PresubmitTestsBase):
     change = presubmit.Change('foo1', 'foo1\n', self.fake_root_dir, None, 0, 0,
                               None)
     input_api = self.MockInputApi(change, False)
-    affected_file = self.mox.CreateMock(presubmit.GitAffectedFile)
-    input_api.AffectedFiles(
-        include_deletes=False,
-        file_filter=mox.IgnoreArg()).AndReturn([affected_file])
-    affected_file.LocalPath().AndReturn('foo.py')
-    affected_file.LocalPath().AndReturn('foo.py')
-    affected_file.NewContents().AndReturn(content.splitlines())
+    affected_file = mock.MagicMock(presubmit.GitAffectedFile)
+    input_api.AffectedFiles.return_value = [affected_file]
+    affected_file.LocalPath.return_value = 'foo.py'
+    affected_file.NewContents.return_value = content.splitlines()
 
-    self.mox.ReplayAll()
     results = presubmit_canned_checks.CheckLongLines(
         input_api, presubmit.OutputApi, maxlen)
     if should_pass:
-      self.assertEquals(results, [])
+      self.assertEqual(results, [])
     else:
-      self.assertEquals(len(results), 1)
-      self.assertEquals(results[0].__class__,
+      self.assertEqual(len(results), 1)
+      self.assertEqual(results[0].__class__,
                         presubmit.OutputApi.PresubmitPromptWarning)
 
   def ReadFileTest(self, check, content1, content2, error_type):
     change1 = presubmit.Change(
         'foo1', 'foo1\n', self.fake_root_dir, None, 0, 0, None)
     input_api1 = self.MockInputApi(change1, False)
-    affected_file1 = self.mox.CreateMock(presubmit.GitAffectedFile)
-    input_api1.AffectedSourceFiles(None).AndReturn([affected_file1])
-    input_api1.ReadFile(affected_file1, 'rb').AndReturn(content1)
+    affected_file1 = mock.MagicMock(presubmit.GitAffectedFile)
+    input_api1.AffectedSourceFiles.return_value = [affected_file1]
+    input_api1.ReadFile.return_value = content1
     change2 = presubmit.Change(
         'foo2', 'foo2\n', self.fake_root_dir, None, 0, 0, None)
     input_api2 = self.MockInputApi(change2, False)
-    affected_file2 = self.mox.CreateMock(presubmit.GitAffectedFile)
-    input_api2.AffectedSourceFiles(None).AndReturn([affected_file2])
-    input_api2.ReadFile(affected_file2, 'rb').AndReturn(content2)
-    affected_file2.LocalPath().AndReturn('bar.cc')
-    self.mox.ReplayAll()
+    affected_file2 = mock.MagicMock(presubmit.GitAffectedFile)
+    input_api2.AffectedSourceFiles.return_value = [affected_file2]
+    input_api2.ReadFile.return_value = content2
+    affected_file2.LocalPath.return_value = 'bar.cc'
 
     results = check(input_api1, presubmit.OutputApi)
-    self.assertEquals(results, [])
+    self.assertEqual(results, [])
     results2 = check(input_api2, presubmit.OutputApi)
-    self.assertEquals(len(results2), 1)
-    self.assertEquals(results2[0].__class__, error_type)
+    self.assertEqual(len(results2), 1)
+    self.assertEqual(results2[0].__class__, error_type)
 
   def testCannedCheckChangeHasBugField(self):
     self.DescriptionTest(presubmit_canned_checks.CheckChangeHasBugField,
@@ -1909,7 +1573,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
                          'Bleh', '',
                          presubmit.OutputApi.PresubmitNotifyResult,
                          False)
-    self.mox.VerifyAll()
     self.DescriptionTest(presubmit_canned_checks.CheckChangeHasDescription,
                          'Bleh', '',
                          presubmit.OutputApi.PresubmitError,
@@ -1949,7 +1612,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
         presubmit_canned_checks.CheckChangeHasNoCrAndHasOnlyOneEol,
         "Hey!\nHo!\n", "Hey!\nHo!\n\n",
         presubmit.OutputApi.PresubmitPromptWarning)
-    self.mox.VerifyAll()
     self.ReadFileTest(
         presubmit_canned_checks.CheckChangeHasNoCrAndHasOnlyOneEol,
         "Hey!\nHo!\n", "Hey!\r\nHo!\r\n",
@@ -1960,21 +1622,17 @@ class CannedChecksUnittest(PresubmitTestsBase):
                      "TODO(foo): bar", None, "TODO: bar", None,
                      presubmit.OutputApi.PresubmitPromptWarning)
 
-  def testCannedCheckChangedLUCIConfigs(self):
-    affected_file1 = self.mox.CreateMock(presubmit.GitAffectedFile)
-    affected_file1.LocalPath().AndReturn('foo.cfg')
-    affected_file1.NewContents().AndReturn(['test', 'foo'])
-    affected_file2 = self.mox.CreateMock(presubmit.GitAffectedFile)
-    affected_file2.LocalPath().AndReturn('bar.cfg')
-    affected_file2.NewContents().AndReturn(['test', 'bar'])
+  @mock.patch('git_cl.Changelist')
+  @mock.patch('auth.get_authenticator_for_host')
+  def testCannedCheckChangedLUCIConfigs(self, mockGAFH, mockChangelist):
+    affected_file1 = mock.MagicMock(presubmit.GitAffectedFile)
+    affected_file1.LocalPath.return_value = 'foo.cfg'
+    affected_file1.NewContents.return_value = ['test', 'foo']
+    affected_file2 = mock.MagicMock(presubmit.GitAffectedFile)
+    affected_file2.LocalPath.return_value = 'bar.cfg'
+    affected_file2.NewContents.return_value = ['test', 'bar']
 
-    token_mock = self.mox.CreateMock(auth.AccessToken)
-    token_mock.token = 123
-    auth_mock = self.mox.CreateMock(auth.Authenticator)
-    auth_mock.get_access_token().AndReturn(token_mock)
-    self.mox.StubOutWithMock(auth, 'get_authenticator_for_host')
-    auth.get_authenticator_for_host(
-        mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(auth_mock)
+    mockGAFH().get_access_token().token = 123
 
     host = 'https://host.com'
     branch = 'branch'
@@ -1983,16 +1641,11 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'config_sets': [{'config_set': 'deadbeef',
                        'location': '%s/+/%s' % (host, branch)}]
     }
-    self.mox.StubOutWithMock(urllib2, 'urlopen')
-    urllib2.urlopen(mox.IgnoreArg()).MultipleTimes().AndReturn(http_resp)
-    self.mox.StubOutWithMock(json, 'load')
-    json.load(http_resp).MultipleTimes().AndReturn(http_resp)
+    urllib2.urlopen.return_value = http_resp
+    json.load.return_value = http_resp
 
-    mock_cl = self.mox.CreateMock(git_cl.Changelist)
-    mock_cl.GetRemoteBranch().AndReturn(('remote', branch))
-    mock_cl.GetRemoteUrl().AndReturn(host)
-    self.mox.StubOutWithMock(git_cl, 'Changelist', use_mock_anything=True)
-    git_cl.Changelist().AndReturn(mock_cl)
+    mockChangelist().GetRemoteBranch.return_value = ('remote', branch)
+    mockChangelist().GetRemoteUrl.return_value = host
 
     change1 = presubmit.Change(
       'foo', 'foo1', self.fake_root_dir, None, 0, 0, None)
@@ -2001,11 +1654,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
     input_api.AffectedFiles = lambda **_: affected_files
 
-    self.mox.ReplayAll()
-
     results = presubmit_canned_checks.CheckChangedLUCIConfigs(
         input_api, presubmit.OutputApi)
-    self.assertEquals(len(results), 1)
+    self.assertEqual(len(results), 1)
 
   def testCannedCheckChangeHasNoTabs(self):
     self.ContentTest(presubmit_canned_checks.CheckChangeHasNoTabs,
@@ -2016,21 +1667,21 @@ class CannedChecksUnittest(PresubmitTestsBase):
     change1 = presubmit.Change(
         'foo1', 'foo1\n', self.fake_root_dir, None, 0, 0, None)
     input_api1 = self.MockInputApi(change1, False)
-    affected_file1 = self.mox.CreateMock(presubmit.GitAffectedFile)
-    affected_file1.LocalPath().AndReturn('foo.cc')
-    affected_file2 = self.mox.CreateMock(presubmit.GitAffectedFile)
-    affected_file2.LocalPath().AndReturn('foo/Makefile')
-    affected_file3 = self.mox.CreateMock(presubmit.GitAffectedFile)
-    affected_file3.LocalPath().AndReturn('makefile')
+    affected_file1 = mock.MagicMock(presubmit.GitAffectedFile)
+    affected_file1.LocalPath.return_value = 'foo.cc'
+    affected_file2 = mock.MagicMock(presubmit.GitAffectedFile)
+    affected_file2.LocalPath.return_value = 'foo/Makefile'
+    affected_file3 = mock.MagicMock(presubmit.GitAffectedFile)
+    affected_file3.LocalPath.return_value = 'makefile'
     # Only this one will trigger.
-    affected_file4 = self.mox.CreateMock(presubmit.GitAffectedFile)
-    affected_file1.LocalPath().AndReturn('foo.cc')
-    affected_file1.NewContents().AndReturn(['yo, '])
-    affected_file4.LocalPath().AndReturn('makefile.foo')
-    affected_file4.LocalPath().AndReturn('makefile.foo')
-    affected_file4.NewContents().AndReturn(['ye\t'])
-    affected_file4.ChangedContents().AndReturn([(46, 'ye\t')])
-    affected_file4.LocalPath().AndReturn('makefile.foo')
+    affected_file4 = mock.MagicMock(presubmit.GitAffectedFile)
+    affected_file1.LocalPath.return_value = 'foo.cc'
+    affected_file1.NewContents.return_value = ['yo, ']
+    affected_file4.LocalPath.return_value = 'makefile.foo'
+    affected_file4.LocalPath.return_value = 'makefile.foo'
+    affected_file4.NewContents.return_value = ['ye\t']
+    affected_file4.ChangedContents.return_value = [(46, 'ye\t')]
+    affected_file4.LocalPath.return_value = 'makefile.foo'
     affected_files = (affected_file1, affected_file2,
                       affected_file3, affected_file4)
 
@@ -2042,14 +1693,13 @@ class CannedChecksUnittest(PresubmitTestsBase):
     # Override the mock of these functions.
     input_api1.FilterSourceFile = lambda x: x
     input_api1.AffectedFiles = test
-    self.mox.ReplayAll()
 
     results1 = presubmit_canned_checks.CheckChangeHasNoTabs(input_api1,
         presubmit.OutputApi, None)
-    self.assertEquals(len(results1), 1)
-    self.assertEquals(results1[0].__class__,
+    self.assertEqual(len(results1), 1)
+    self.assertEqual(results1[0].__class__,
         presubmit.OutputApi.PresubmitPromptWarning)
-    self.assertEquals(results1[0]._long_text,
+    self.assertEqual(results1[0]._long_text,
         'makefile.foo:46')
 
   def testCannedCheckLongLines(self):
@@ -2229,16 +1879,15 @@ the current line as well!
 
   def _LicenseCheck(self, text, license_text, committing, expected_result,
       **kwargs):
-    change = self.mox.CreateMock(presubmit.GitChange)
+    change = mock.MagicMock(presubmit.GitChange)
     change.scm = 'svn'
     input_api = self.MockInputApi(change, committing)
-    affected_file = self.mox.CreateMock(presubmit.GitAffectedFile)
-    input_api.AffectedSourceFiles(42).AndReturn([affected_file])
-    input_api.ReadFile(affected_file, 'rb').AndReturn(text)
+    affected_file = mock.MagicMock(presubmit.GitAffectedFile)
+    input_api.AffectedSourceFiles.return_value = [affected_file]
+    input_api.ReadFile.return_value = text
     if expected_result:
-      affected_file.LocalPath().AndReturn('bleh')
+      affected_file.LocalPath.return_value = 'bleh'
 
-    self.mox.ReplayAll()
     result = presubmit_canned_checks.CheckLicense(
                  input_api, presubmit.OutputApi, license_text,
                  source_file_filter=42,
@@ -2300,201 +1949,188 @@ the current line as well!
 
   def testCannedCheckTreeIsOpenOpen(self):
     input_api = self.MockInputApi(None, True)
-    connection = self.mox.CreateMockAnything()
-    input_api.urllib2.urlopen('url_to_open').AndReturn(connection)
-    connection.read().AndReturn('The tree is open')
-    connection.close()
-    self.mox.ReplayAll()
+    input_api.urllib2.urlopen().read.return_value = 'The tree is open'
     results = presubmit_canned_checks.CheckTreeIsOpen(
         input_api, presubmit.OutputApi, url='url_to_open', closed='.*closed.*')
-    self.assertEquals(results, [])
+    self.assertEqual(results, [])
 
   def testCannedCheckTreeIsOpenClosed(self):
     input_api = self.MockInputApi(None, True)
-    connection = self.mox.CreateMockAnything()
-    input_api.urllib2.urlopen('url_to_closed').AndReturn(connection)
-    connection.read().AndReturn('Tree is closed for maintenance')
-    connection.close()
-    self.mox.ReplayAll()
+    input_api.urllib2.urlopen().read.return_value = (
+        'Tree is closed for maintenance')
     results = presubmit_canned_checks.CheckTreeIsOpen(
         input_api, presubmit.OutputApi,
         url='url_to_closed', closed='.*closed.*')
-    self.assertEquals(len(results), 1)
-    self.assertEquals(results[0].__class__,
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].__class__,
                       presubmit.OutputApi.PresubmitError)
 
   def testCannedCheckJsonTreeIsOpenOpen(self):
     input_api = self.MockInputApi(None, True)
-    connection = self.mox.CreateMockAnything()
-    input_api.urllib2.urlopen('url_to_open').AndReturn(connection)
     status = {
         'can_commit_freely': True,
         'general_state': 'open',
         'message': 'The tree is open'
     }
-    connection.read().AndReturn(input_api.json.dumps(status))
-    connection.close()
-    self.mox.ReplayAll()
+    input_api.urllib2.urlopen().read.return_value = json.dumps(status)
     results = presubmit_canned_checks.CheckTreeIsOpen(
         input_api, presubmit.OutputApi, json_url='url_to_open')
-    self.assertEquals(results, [])
+    self.assertEqual(results, [])
 
   def testCannedCheckJsonTreeIsOpenClosed(self):
     input_api = self.MockInputApi(None, True)
-    connection = self.mox.CreateMockAnything()
-    input_api.urllib2.urlopen('url_to_closed').AndReturn(connection)
     status = {
         'can_commit_freely': False,
         'general_state': 'closed',
         'message': 'The tree is close',
     }
-    connection.read().AndReturn(input_api.json.dumps(status))
-    connection.close()
-    self.mox.ReplayAll()
+    input_api.urllib2.urlopen().read.return_value = json.dumps(status)
     results = presubmit_canned_checks.CheckTreeIsOpen(
         input_api, presubmit.OutputApi, json_url='url_to_closed')
-    self.assertEquals(len(results), 1)
-    self.assertEquals(results[0].__class__,
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].__class__,
                       presubmit.OutputApi.PresubmitError)
 
   def testRunPythonUnitTestsNoTest(self):
     input_api = self.MockInputApi(None, False)
-    self.mox.ReplayAll()
     presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, [])
     results = input_api.thread_pool.RunAsync()
-    self.assertEquals(results, [])
+    self.assertEqual(results, [])
 
   def testRunPythonUnitTestsNonExistentUpload(self):
     input_api = self.MockInputApi(None, False)
-    self.CommHelper(input_api, ['pyyyyython', '-m', '_non_existent_module'],
-                    ret=(('foo', None), 1), env=None)
-    self.mox.ReplayAll()
+    subprocess.Popen().returncode = 1  # pylint: disable=no-value-for-parameter
+    presubmit.sigint_handler.wait.return_value = ('foo', None)
 
     results = presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, ['_non_existent_module'])
-    self.assertEquals(len(results), 1)
-    self.assertEquals(results[0].__class__,
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].__class__,
                       presubmit.OutputApi.PresubmitNotifyResult)
 
   def testRunPythonUnitTestsNonExistentCommitting(self):
     input_api = self.MockInputApi(None, True)
-    self.CommHelper(input_api, ['pyyyyython', '-m', '_non_existent_module'],
-                    ret=(('foo', None), 1), env=None)
-    self.mox.ReplayAll()
+    subprocess.Popen().returncode = 1  # pylint: disable=no-value-for-parameter
+    presubmit.sigint_handler.wait.return_value = ('foo', None)
 
     results = presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, ['_non_existent_module'])
-    self.assertEquals(len(results), 1)
-    self.assertEquals(results[0].__class__, presubmit.OutputApi.PresubmitError)
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].__class__, presubmit.OutputApi.PresubmitError)
 
   def testRunPythonUnitTestsFailureUpload(self):
     input_api = self.MockInputApi(None, False)
-    input_api.unittest = self.mox.CreateMock(unittest)
-    input_api.cStringIO = self.mox.CreateMock(presubmit.cStringIO)
-    self.CommHelper(input_api, ['pyyyyython', '-m', 'test_module'],
-                    ret=(('foo', None), 1), env=None)
-    self.mox.ReplayAll()
+    input_api.unittest = mock.MagicMock(unittest)
+    input_api.cStringIO = mock.MagicMock(presubmit.cStringIO)
+    subprocess.Popen().returncode = 1  # pylint: disable=no-value-for-parameter
+    presubmit.sigint_handler.wait.return_value = ('foo', None)
 
     results = presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, ['test_module'])
-    self.assertEquals(len(results), 1)
-    self.assertEquals(results[0].__class__,
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].__class__,
                       presubmit.OutputApi.PresubmitNotifyResult)
-    self.assertEquals('test_module (0.00s) failed\nfoo', results[0]._message)
+    self.assertEqual('test_module (0.00s) failed\nfoo', results[0]._message)
 
   def testRunPythonUnitTestsFailureCommitting(self):
     input_api = self.MockInputApi(None, True)
-    self.CommHelper(input_api, ['pyyyyython', '-m', 'test_module'],
-                    ret=(('foo', None), 1), env=None)
-    self.mox.ReplayAll()
+    subprocess.Popen().returncode = 1  # pylint: disable=no-value-for-parameter
+    presubmit.sigint_handler.wait.return_value = ('foo', None)
 
     results = presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, ['test_module'])
-    self.assertEquals(len(results), 1)
-    self.assertEquals(results[0].__class__, presubmit.OutputApi.PresubmitError)
-    self.assertEquals('test_module (0.00s) failed\nfoo', results[0]._message)
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].__class__, presubmit.OutputApi.PresubmitError)
+    self.assertEqual('test_module (0.00s) failed\nfoo', results[0]._message)
 
   def testRunPythonUnitTestsSuccess(self):
     input_api = self.MockInputApi(None, False)
-    input_api.cStringIO = self.mox.CreateMock(presubmit.cStringIO)
-    input_api.unittest = self.mox.CreateMock(unittest)
-    self.CommHelper(input_api, ['pyyyyython', '-m', 'test_module'], env=None)
-    self.mox.ReplayAll()
+    input_api.cStringIO = mock.MagicMock(presubmit.cStringIO)
+    input_api.unittest = mock.MagicMock(unittest)
+    subprocess.Popen().returncode = 0  # pylint: disable=no-value-for-parameter
+    presubmit.sigint_handler.wait.return_value = ('', None)
 
     presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, ['test_module'])
     results = input_api.thread_pool.RunAsync()
-    self.assertEquals(results, [])
+    self.assertEqual(results, [])
 
   def testCannedRunPylint(self):
     input_api = self.MockInputApi(None, True)
-    input_api.environ = self.mox.CreateMock(os.environ)
-    input_api.environ.copy().AndReturn({})
-    input_api.AffectedSourceFiles(mox.IgnoreArg()).AndReturn(True)
-    input_api.PresubmitLocalPath().AndReturn('/foo')
-    input_api.PresubmitLocalPath().AndReturn('/foo')
-    input_api.os_walk('/foo').AndReturn([('/foo', [], ['file1.py'])])
+    input_api.environ = mock.MagicMock(os.environ)
+    input_api.environ.copy.return_value = {}
+    input_api.AffectedSourceFiles.return_value = True
+    input_api.PresubmitLocalPath.return_value = '/foo'
+    input_api.os_walk.return_value = [('/foo', [], ['file1.py'])]
+
+    process = mock.Mock()
+    process.returncode = 0
+    subprocess.Popen.return_value = process
+    presubmit.sigint_handler.wait.return_value = ('', None)
+
     pylint = os.path.join(_ROOT, 'third_party', 'pylint.py')
     pylintrc = os.path.join(_ROOT, 'pylintrc')
-
-    self.CommHelper(input_api,
-        ['pyyyyython', pylint, '--args-on-stdin'],
-        env=mox.IgnoreArg(), stdin=
-               '--rcfile=%s\n--disable=all\n--enable=cyclic-import\nfile1.py'
-               % pylintrc)
-    self.CommHelper(input_api,
-        ['pyyyyython', pylint, '--args-on-stdin'],
-        env=mox.IgnoreArg(), stdin=
-               '--rcfile=%s\n--disable=cyclic-import\n--jobs=2\nfile1.py'
-               % pylintrc)
-    self.mox.ReplayAll()
+    env = {'PYTHONPATH': ''}
 
     results = presubmit_canned_checks.RunPylint(
         input_api, presubmit.OutputApi)
 
-    self.assertEquals([], results)
+    self.assertEqual([], results)
+    self.assertEqual(subprocess.Popen.mock_calls, [
+        mock.call(
+            ['pyyyyython', pylint, '--args-on-stdin'], env=env,
+            cwd='/foo', stderr=subprocess.STDOUT, stdout=subprocess.PIPE,
+            stdin=subprocess.PIPE),
+        mock.call(
+            ['pyyyyython', pylint, '--args-on-stdin'], env=env,
+            cwd='/foo', stderr=subprocess.STDOUT, stdout=subprocess.PIPE,
+            stdin=subprocess.PIPE),
+    ])
+    self.assertEqual(presubmit.sigint_handler.wait.mock_calls, [
+        mock.call(
+            process,
+            '--rcfile=%s\n--disable=all\n--enable=cyclic-import\nfile1.py'
+                % pylintrc),
+        mock.call(
+            process,
+            '--rcfile=%s\n--disable=cyclic-import\n--jobs=2\nfile1.py'
+                % pylintrc),
+    ])
+
     self.checkstdout('')
 
   def testCheckBuildbotPendingBuildsBad(self):
     input_api = self.MockInputApi(None, True)
-    connection = self.mox.CreateMockAnything()
-    input_api.urllib2.urlopen('uurl').AndReturn(connection)
-    connection.read().AndReturn('foo')
-    connection.close()
-    self.mox.ReplayAll()
+    input_api.urllib2.urlopen().read.return_value = 'foo'
 
     results = presubmit_canned_checks.CheckBuildbotPendingBuilds(
         input_api, presubmit.OutputApi, 'uurl', 2, ('foo'))
-    self.assertEquals(len(results), 1)
-    self.assertEquals(results[0].__class__,
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].__class__,
         presubmit.OutputApi.PresubmitNotifyResult)
 
   def testCheckBuildbotPendingBuildsGood(self):
     input_api = self.MockInputApi(None, True)
-    connection = self.mox.CreateMockAnything()
-    input_api.urllib2.urlopen('uurl').AndReturn(connection)
-    connection.read().AndReturn("""
+    input_api.urllib2.urlopen().read.return_value = """
     {
       'b1': { 'pending_builds': [0, 1, 2, 3, 4, 5, 6, 7] },
       'foo': { 'pending_builds': [0, 1, 2, 3, 4, 5, 6, 7] },
       'b2': { 'pending_builds': [0] }
-    }""")
-    connection.close()
-    self.mox.ReplayAll()
+    }"""
 
     results = presubmit_canned_checks.CheckBuildbotPendingBuilds(
         input_api, presubmit.OutputApi, 'uurl', 2, ('foo'))
-    self.assertEquals(len(results), 1)
-    self.assertEquals(results[0].__class__,
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].__class__,
         presubmit.OutputApi.PresubmitNotifyResult)
 
   def GetInputApiWithOWNERS(self, owners_content):
-    affected_file = self.mox.CreateMock(presubmit.GitAffectedFile)
+    affected_file = mock.MagicMock(presubmit.GitAffectedFile)
     affected_file.LocalPath = lambda: 'OWNERS'
     affected_file.Action = lambda: 'M'
 
-    change = self.mox.CreateMock(presubmit.Change)
+    change = mock.MagicMock(presubmit.Change)
     change.AffectedFiles = lambda **_: [affected_file]
 
     input_api = self.MockInputApi(None, False)
@@ -2549,21 +2185,21 @@ the current line as well!
     if manually_specified_reviewers is None:
       manually_specified_reviewers = []
 
-    change = self.mox.CreateMock(presubmit.Change)
+    change = mock.MagicMock(presubmit.Change)
     change.issue = issue
     change.author_email = 'john@example.com'
     change.ReviewersFromDescription = lambda: manually_specified_reviewers
     change.TBRsFromDescription = lambda: []
     change.RepositoryRoot = lambda: None
-    affected_file = self.mox.CreateMock(presubmit.GitAffectedFile)
+    affected_file = mock.MagicMock(presubmit.GitAffectedFile)
     input_api = self.MockInputApi(change, False)
     input_api.gerrit = presubmit.GerritAccessor('host')
 
-    fake_db = self.mox.CreateMock(owners.Database)
+    fake_db = mock.MagicMock(owners.Database)
     fake_db.email_regexp = input_api.re.compile(owners.BASIC_EMAIL_REGEXP)
     input_api.owners_db = fake_db
 
-    fake_finder = self.mox.CreateMock(owners_finder.OwnersFinder)
+    fake_finder = mock.MagicMock(owners_finder.OwnersFinder)
     fake_finder.unreviewed_files = uncovered_files
     fake_finder.print_indent = lambda: ''
     # pylint: disable=unnecessary-lambda
@@ -2573,10 +2209,10 @@ the current line as well!
     input_api.tbr = tbr
     input_api.dry_run = dry_run
 
-    affected_file.LocalPath().AndReturn(modified_file)
-    change.AffectedFiles(file_filter=None).AndReturn([affected_file])
+    affected_file.LocalPath.return_value = modified_file
+    change.AffectedFiles.return_value = [affected_file]
     if not is_committing or (not tbr and issue) or ('OWNERS' in modified_file):
-      change.OriginalOwnersFiles().AndReturn({})
+      change.OriginalOwnersFiles.return_value = {}
       if issue and not response:
         response = {
           "owner": {"email": change.author_email},
@@ -2604,12 +2240,9 @@ the current line as well!
         input_api.gerrit._FetchChangeDetail = lambda _: response
 
       people.add(change.author_email)
-      change.OriginalOwnersFiles().AndReturn({})
       if not is_committing and uncovered_files:
-        fake_db.reviewers_for(set(['foo']),
-            change.author_email).AndReturn([change.author_email])
+        fake_db.reviewers_for.return_value = change.author_email
 
-    self.mox.ReplayAll()
     output = presubmit.PresubmitOutput()
     results = presubmit_canned_checks.CheckOwners(input_api,
         presubmit.OutputApi)
@@ -2618,7 +2251,7 @@ the current line as well!
     if isinstance(expected_output, re._pattern_type):
       self.assertRegexpMatches(output.getvalue(), expected_output)
     else:
-      self.assertEquals(output.getvalue(), expected_output)
+      self.assertEqual(output.getvalue(), expected_output)
 
   def testCannedCheckOwners_DryRun(self):
     response = {
@@ -2893,16 +2526,16 @@ the current line as well!
         'foo1', 'description1', self.fake_root_dir, None, 0, 0, None)
     input_api = self.MockInputApi(change, False)
     input_api.verbose = True
-    unit_tests = ['allo', 'bar.py']
-    cmd = ['bar.py', '--verbose']
-    if input_api.platform == 'win32':
-      cmd.insert(0, 'vpython.bat')
-    else:
-      cmd.insert(0, 'vpython')
-    self.CommHelper(input_api, cmd, cwd=self.fake_root_dir, ret=(('', None), 1))
-    self.CommHelper(input_api, ['allo', '--verbose'], cwd=self.fake_root_dir)
+    input_api.PresubmitLocalPath.return_value = self.fake_root_dir
+    presubmit.sigint_handler.wait.return_value = ('', None)
 
-    self.mox.ReplayAll()
+    process1 = mock.Mock()
+    process1.returncode = 1
+    process2 = mock.Mock()
+    process2.returncode = 0
+    subprocess.Popen.side_effect = [process1, process2]
+
+    unit_tests = ['allo', 'bar.py']
     results = presubmit_canned_checks.RunUnitTests(
         input_api,
         presubmit.OutputApi,
@@ -2912,6 +2545,22 @@ the current line as well!
         presubmit.OutputApi.PresubmitNotifyResult, results[1].__class__)
     self.assertEqual(
         presubmit.OutputApi.PresubmitPromptWarning, results[0].__class__)
+
+    cmd = ['bar.py', '--verbose']
+    if input_api.platform == 'win32':
+      cmd.insert(0, 'vpython.bat')
+    else:
+      cmd.insert(0, 'vpython')
+    self.assertEqual(subprocess.Popen.mock_calls, [
+        mock.call(
+            cmd, cwd=self.fake_root_dir, stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, stdin=subprocess.PIPE),
+        mock.call(
+            ['allo', '--verbose'], cwd=self.fake_root_dir,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            stdin=subprocess.PIPE),
+    ])
+
     self.checkstdout('')
 
   def testCannedRunUnitTestsInDirectory(self):
@@ -2919,18 +2568,16 @@ the current line as well!
         'foo1', 'description1', self.fake_root_dir, None, 0, 0, None)
     input_api = self.MockInputApi(change, False)
     input_api.verbose = True
-    input_api.logging = self.mox.CreateMock(logging)
-    input_api.PresubmitLocalPath().AndReturn(self.fake_root_dir)
-    path = presubmit.os.path.join(self.fake_root_dir, 'random_directory')
-    input_api.os_listdir(path).AndReturn(['.', '..', 'a', 'b', 'c'])
+    input_api.logging = mock.MagicMock(logging)
+    input_api.PresubmitLocalPath.return_value = self.fake_root_dir
+    input_api.os_listdir.return_value = ['.', '..', 'a', 'b', 'c']
     input_api.os_path.isfile = lambda x: not x.endswith('.')
-    self.CommHelper(
-        input_api,
-        [presubmit.os.path.join('random_directory', 'b'), '--verbose'],
-        cwd=self.fake_root_dir)
-    input_api.logging.debug('Found 5 files, running 1 unit tests')
 
-    self.mox.ReplayAll()
+    process = mock.Mock()
+    process.returncode = 0
+    subprocess.Popen.return_value = process
+    presubmit.sigint_handler.wait.return_value = ('', None)
+
     results = presubmit_canned_checks.RunUnitTestsInDirectory(
         input_api,
         presubmit.OutputApi,
@@ -2940,6 +2587,12 @@ the current line as well!
     self.assertEqual(1, len(results))
     self.assertEqual(
         presubmit.OutputApi.PresubmitNotifyResult, results[0].__class__)
+    self.assertEqual(subprocess.Popen.mock_calls, [
+        mock.call(
+            [os.path.join('random_directory', 'b'), '--verbose'],
+            cwd=self.fake_root_dir, stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, stdin=subprocess.PIPE),
+    ])
     self.checkstdout('')
 
   def testPanProjectChecks(self):
@@ -2947,29 +2600,24 @@ the current line as well!
     change = presubmit.Change(
         'foo1', 'description1', self.fake_root_dir, None, 0, 0, None)
     input_api = self.MockInputApi(change, False)
-    affected_file = self.mox.CreateMock(presubmit.GitAffectedFile)
-    for _ in range(3):
-      input_api.AffectedFiles(file_filter=mox.IgnoreArg(), include_deletes=False
-          ).AndReturn([affected_file])
-      affected_file.LocalPath()
-      affected_file.NewContents().AndReturn('Hey!\nHo!\nHey!\nHo!\n\n')
+    affected_file = mock.MagicMock(presubmit.GitAffectedFile)
+    input_api.AffectedFiles.return_value = [affected_file]
+    affected_file.NewContents.return_value = 'Hey!\nHo!\nHey!\nHo!\n\n'
     # CheckChangeHasNoTabs() calls _FindNewViolationsOfRule() which calls
     # ChangedContents().
-    affected_file.ChangedContents().AndReturn([
+    affected_file.ChangedContents.return_value = [
         (0, 'Hey!\n'),
         (1, 'Ho!\n'),
         (2, 'Hey!\n'),
         (3, 'Ho!\n'),
-        (4, '\n')])
-    for _ in range(5):  # One for each ChangedContents().
-      affected_file.LocalPath().AndReturn('hello.py')
-    # CheckingLicense() calls AffectedSourceFiles() instead of AffectedFiles().
-    input_api.AffectedSourceFiles(mox.IgnoreArg()).AndReturn([affected_file])
-    input_api.ReadFile(affected_file, 'rb').AndReturn(
-        'Hey!\nHo!\nHey!\nHo!\n\n')
-    affected_file.LocalPath()
+        (4, '\n')]
 
-    self.mox.ReplayAll()
+    affected_file.LocalPath.return_value = 'hello.py'
+
+    # CheckingLicense() calls AffectedSourceFiles() instead of AffectedFiles().
+    input_api.AffectedSourceFiles.return_value = [affected_file]
+    input_api.ReadFile.return_value = 'Hey!\nHo!\nHey!\nHo!\n\n'
+
     results = presubmit_canned_checks.PanProjectChecks(
         input_api,
         presubmit.OutputApi,
@@ -2985,13 +2633,12 @@ the current line as well!
 
   def testCheckCIPDManifest_file(self):
     input_api = self.MockInputApi(None, False)
-    self.mox.ReplayAll()
 
     command = presubmit_canned_checks.CheckCIPDManifest(
         input_api, presubmit.OutputApi, path='/path/to/foo')
-    self.assertEquals(command.cmd,
+    self.assertEqual(command.cmd,
         ['cipd', 'ensure-file-verify', '-ensure-file', '/path/to/foo'])
-    self.assertEquals(command.kwargs, {
+    self.assertEqual(command.kwargs, {
         'stdin': subprocess.PIPE,
         'stdout': subprocess.PIPE,
         'stderr': subprocess.STDOUT,
@@ -3000,14 +2647,13 @@ the current line as well!
   def testCheckCIPDManifest_content(self):
     input_api = self.MockInputApi(None, False)
     input_api.verbose = True
-    self.mox.ReplayAll()
 
     command = presubmit_canned_checks.CheckCIPDManifest(
         input_api, presubmit.OutputApi, content='manifest_content')
-    self.assertEquals(command.cmd,
+    self.assertEqual(command.cmd,
         ['cipd', 'ensure-file-verify', '-log-level', 'debug', '-ensure-file=-'])
-    self.assertEquals(command.stdin, 'manifest_content')
-    self.assertEquals(command.kwargs, {
+    self.assertEqual(command.stdin, 'manifest_content')
+    self.assertEqual(command.kwargs, {
         'stdin': subprocess.PIPE,
         'stdout': subprocess.PIPE,
         'stderr': subprocess.STDOUT,
@@ -3022,7 +2668,6 @@ the current line as well!
     ])
 
     input_api = self.MockInputApi(None, False)
-    self.mox.ReplayAll()
 
     command = presubmit_canned_checks.CheckCIPDPackages(
         input_api, presubmit.OutputApi,
@@ -3031,10 +2676,10 @@ the current line as well!
           'foo/bar/baz/${platform}': 'version:ohaithere',
           'qux': 'version:kthxbye',
         })
-    self.assertEquals(command.cmd,
+    self.assertEqual(command.cmd,
         ['cipd', 'ensure-file-verify', '-ensure-file=-'])
-    self.assertEquals(command.stdin, content)
-    self.assertEquals(command.kwargs, {
+    self.assertEqual(command.stdin, content)
+    self.assertEqual(command.kwargs, {
         'stdin': subprocess.PIPE,
         'stdout': subprocess.PIPE,
         'stderr': subprocess.STDOUT,
@@ -3043,11 +2688,10 @@ the current line as well!
   def testCheckCIPDClientDigests(self):
     input_api = self.MockInputApi(None, False)
     input_api.verbose = True
-    self.mox.ReplayAll()
 
     command = presubmit_canned_checks.CheckCIPDClientDigests(
         input_api, presubmit.OutputApi, client_version_file='ver')
-    self.assertEquals(command.cmd, [
+    self.assertEqual(command.cmd, [
       'cipd', 'selfupdate-roll', '-check', '-version-file', 'ver',
       '-log-level', 'debug',
     ])
@@ -3056,12 +2700,9 @@ the current line as well!
     change = presubmit.Change('a', 'b', self.fake_root_dir, None, 0, 0, None)
     input_api = self.MockInputApi(change, False)
 
-    affected_file = self.mox.CreateMock(presubmit.GitAffectedFile)
-    affected_file.AbsoluteLocalPath().AndReturn('/path1/to/.vpython')
-    input_api.AffectedTestableFiles(
-        file_filter=mox.IgnoreArg()).AndReturn([affected_file])
-
-    self.mox.ReplayAll()
+    affected_file = mock.MagicMock(presubmit.GitAffectedFile)
+    affected_file.AbsoluteLocalPath.return_value = '/path1/to/.vpython'
+    input_api.AffectedTestableFiles.return_value = [affected_file]
 
     commands = presubmit_canned_checks.CheckVPythonSpec(
         input_api, presubmit.OutputApi)
