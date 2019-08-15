@@ -3241,6 +3241,9 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-verti
 # Flaky because of timestamps in error messages.
 crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Pass Failure ]
 
+# Random string in the error message
+crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Linux ] external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
