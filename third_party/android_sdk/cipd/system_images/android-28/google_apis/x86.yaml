@@ -4,6 +4,6 @@
 
 package: chromium/third_party/android_sdk/public/system-images/android-28/google_apis/x86
 description: system_images;android-28;google_apis;x86
-root: ../../../public/
+root: ../../../../public/
 data:
   - dir: system-images/android-28/google_apis/x86
