@@ -132,6 +132,11 @@ static int construct_multi_layer_gf_structure(
   assert(next_height >= MIN_PYRAMID_LVL);
   set_multi_layer_params(cpi, gf_group, 0, gf_interval, &frame_index, 0,
                          next_height, use_altref + 1);
+
+  // The end frame will be Overlay frame for an ARF GOP; otherwise set it to
+  // be GF, for consistency, which will be updated in the next GOP.
+  gf_group->update_type[frame_index] = use_altref ? OVERLAY_UPDATE : GF_UPDATE;
+  gf_group->arf_src_offset[frame_index] = 0;
   return frame_index;
 }
 

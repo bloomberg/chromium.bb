@@ -199,29 +199,6 @@ static INLINE FRAME_UPDATE_TYPE get_frame_update_type(const AV1_COMP *cpi) {
   return gf_group->update_type[gf_group->index];
 }
 
-// Note: the parameters related to OVERLAY_UPDATE will be taken care of in
-// av1_get_second_pass_params().
-static void check_show_existing_frame(AV1_COMP *const cpi,
-                                      EncodeFrameParams *const frame_params) {
-  const GF_GROUP *const gf_group = &cpi->gf_group;
-  assert(gf_group->index <= gf_group->size);
-  (void)gf_group;
-  AV1_COMMON *const cm = &cpi->common;
-  if (cm->show_existing_frame == 1) {
-    frame_params->show_existing_frame = 0;
-  } else {
-    const FRAME_UPDATE_TYPE frame_update_type = get_frame_update_type(cpi);
-    if (frame_update_type == INTNL_OVERLAY_UPDATE) {
-      frame_params->show_existing_frame = 1;
-      frame_params->existing_fb_idx_to_show =
-          get_ref_frame_map_idx(cm, BWDREF_FRAME);
-
-    } else {
-      frame_params->show_existing_frame = 0;
-    }
-  }
-}
-
 static void set_ext_overrides(AV1_COMP *const cpi,
                               EncodeFrameParams *const frame_params) {
   // Overrides the defaults with the externally supplied values with
@@ -1158,6 +1135,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         int flush) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   AV1_COMMON *const cm = &cpi->common;
+  GF_GROUP *gf_group = &cpi->gf_group;
 
   EncodeFrameInput frame_input;
   EncodeFrameParams frame_params;
@@ -1171,7 +1149,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     cpi->oxcf.gf_max_pyr_height = USE_ALTREF_FOR_ONE_PASS;
 
   if (oxcf->pass == 0 || oxcf->pass == 2) {
-    check_show_existing_frame(cpi, &frame_params);
+    frame_params.show_existing_frame =
+        gf_group->update_type[gf_group->index] == INTNL_OVERLAY_UPDATE;
     frame_params.show_existing_frame &= allow_show_existing(cpi, *frame_flags);
   } else {
     frame_params.show_existing_frame = 0;
@@ -1322,6 +1301,11 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
     frame_params.refresh_frame_flags = av1_get_refresh_frame_flags(
         cpi, &frame_params, frame_update_type, &cpi->ref_buffer_stack);
+
+    frame_params.existing_fb_idx_to_show =
+        frame_params.show_existing_frame
+            ? get_ref_frame_map_idx(cm, BWDREF_FRAME)
+            : INVALID_IDX;
   }
 
   // The way frame_params->remapped_ref_idx is setup is a placeholder.

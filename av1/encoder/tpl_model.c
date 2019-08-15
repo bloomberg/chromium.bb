@@ -635,11 +635,6 @@ static void init_gop_frames_for_tpl(
   for (gf_index = cur_frame_idx; gf_index <= gop_length; ++gf_index) {
     TplDepFrame *tpl_frame = &cpi->tpl_frame[gf_index];
     FRAME_UPDATE_TYPE frame_update_type = gf_group->update_type[gf_index];
-    if (gf_index == gf_group->size) {
-      frame_update_type = INTNL_OVERLAY_UPDATE;
-      gf_group->update_type[gf_index] = frame_update_type;
-      gf_group->q_val[gf_index] = gf_group->q_val[1];
-    }
 
     frame_params.show_frame = frame_update_type != ARF_UPDATE &&
                               frame_update_type != INTNL_ARF_UPDATE;
@@ -768,14 +763,11 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
     // Backward propagation from tpl_group_frames to 1.
     for (int frame_idx = cpi->tpl_gf_group_frames - 1;
          frame_idx >= gf_group->index; --frame_idx) {
-      int is_process = 1;
+      if (gf_group->update_type[frame_idx] == INTNL_OVERLAY_UPDATE ||
+          gf_group->update_type[frame_idx] == OVERLAY_UPDATE)
+        continue;
 
-      if (frame_idx == gf_group->size) is_process = 0;
-      if (frame_idx < gf_group->size)
-        if (gf_group->update_type[frame_idx] == INTNL_OVERLAY_UPDATE)
-          is_process = 0;
-
-      if (is_process) mc_flow_dispenser(cpi, frame_idx);
+      mc_flow_dispenser(cpi, frame_idx);
     }
   }
 
