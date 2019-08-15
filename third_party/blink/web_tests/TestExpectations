@@ -6455,6 +6455,7 @@ crbug.com/856601 [ Linux ] external/wpt/generic-sensor/idlharness.https.window.h
 crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.html [ Pass Timeout ]
 
 # Sheriff 2019-08-14
+crbug.com/993671 [ Win ] http/tests/media/video-frame-size-change.html [ Pass Failure ]
 crbug.com/993671 [ Win ] virtual/audio-service/http/tests/media/video-frame-size-change.html [ Pass Failure ]
 
 #Sheriff 2019-08-12
