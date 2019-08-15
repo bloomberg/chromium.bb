@@ -247,11 +247,14 @@ class Node(object):
     return ''.join([c for c in self.mixed_content
                     if isinstance(c, six.string_types)])
 
-  def __unicode__(self):
+  def __str__(self):
     '''Returns this node and all nodes below it as an XML document in a Unicode
     string.'''
     header = u'<?xml version="1.0" encoding="UTF-8"?>\n'
     return header + self.FormatXml()
+
+  # Some Python 2 glue.
+  __unicode__ = __str__
 
   def FormatXml(self, indent = u'', one_line = False):
     '''Returns this node and all nodes below it as an XML
