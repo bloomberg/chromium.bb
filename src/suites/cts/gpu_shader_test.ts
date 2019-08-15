@@ -1,8 +1,8 @@
 import { GPUTest } from './gpu_test.js';
 
-type glslang = typeof import('@webgpu/glslang-web');
-type Glslang = import('@webgpu/glslang-web').Glslang;
-type ShaderStage = import('@webgpu/glslang-web').ShaderStage;
+type glslang = typeof import('@webgpu/glslang');
+type Glslang = import('@webgpu/glslang').Glslang;
+type ShaderStage = import('@webgpu/glslang').ShaderStage;
 
 let glslangInstance: Glslang = undefined!;
 

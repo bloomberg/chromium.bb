@@ -43,7 +43,7 @@ module.exports = function(grunt) {
     copy: {
       'glslang': {
         files: [
-          { expand: true, cwd: 'node_modules/@webgpu/glslang-web/dist', src: 'glslang.{js,wasm}', dest: 'out/' },
+          { expand: true, cwd: 'node_modules/@webgpu/glslang/web', src: 'glslang.{js,wasm}', dest: 'out/' },
         ],
       },
       'out-wpt': {
