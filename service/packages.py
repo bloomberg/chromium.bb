@@ -8,9 +8,12 @@
 from __future__ import print_function
 
 import functools
+import os
 
 from chromite.lib import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import git
+from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import uprev_lib
 
@@ -120,6 +123,24 @@ def uprev_versioned_package(package, build_targets, refs, chroot):
         'Package "%s" does not have a registered handler.' % package.cp)
 
   return _UPREV_FUNCS[package.cp](build_targets, refs, chroot)
+
+
+# TODO(evanhernandez): Remove this. Only a quick hack for testing.
+@uprevs_versioned_package('sample/sample')
+def uprev_sample(*_args, **_kwargs):
+  """Mimics an uprev by changing files in sandbox repos.
+
+  See: uprev_versioned_package.
+  """
+  paths = [
+      os.path.join(constants.SOURCE_ROOT, 'infra/dummies', repo, 'sample.txt')
+      for repo in ('general-sandbox', 'merge-sandbox')
+  ]
+
+  for path in paths:
+    osutils.WriteFile(path, cros_build_lib.GetRandomString())
+
+  return paths
 
 
 @uprevs_versioned_package(constants.CHROME_CP)
