@@ -2553,22 +2553,15 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
   SurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
-// TODO(https://crbug.com/948372): tests are flaky on ChromeOS and often
-// timeout.
-#if defined(OS_CHROMEOS)
-#define MAYBE_NestedSurfaceHitTestTest DISABLED_NestedSurfaceHitTestTest
-#else
-#define MAYBE_NestedSurfaceHitTestTest NestedSurfaceHitTestTest
-#endif
 // Test that mouse events are being routed to the correct RenderWidgetHostView
 // when there are nested out-of-process iframes.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       MAYBE_NestedSurfaceHitTestTest) {
+                       NestedSurfaceHitTestTest) {
   NestedSurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       MAYBE_NestedSurfaceHitTestTest) {
+                       NestedSurfaceHitTestTest) {
   NestedSurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
@@ -6074,7 +6067,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
-                       MAYBE_NestedSurfaceHitTestTest) {
+                       NestedSurfaceHitTestTest) {
   NestedSurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
