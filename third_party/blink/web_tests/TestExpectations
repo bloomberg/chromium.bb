@@ -2300,9 +2300,6 @@ crbug.com/389648 crbug.com/517123 crbug.com/410145 fast/text-autosizing/table-in
 
 crbug.com/876732 [ Win ] fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Failure Pass ]
 
-# This test needs the mock nfc service to be ready for wpt tests.
-crbug.com/520391 external/wpt/web-nfc/NFCReader-manual.https.html [ Skip ]
-
 # These tests only pass with --enable-threaded-compositing.
 crbug.com/770028 external/wpt/dom/events/document-level-wheel-event-listener-passive-by-default-manual.html [ Skip ]
 crbug.com/770028 external/wpt/dom/events/document-level-touchmove-event-listener-passive-by-default.html [ Skip ]
