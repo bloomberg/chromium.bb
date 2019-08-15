@@ -272,6 +272,10 @@ def _CreateParser():
                     api=constants.REEXEC_API_GOMA,
                     help='Specify a directory containing goma. When this is '
                          'set, GOMA is used to build Chrome.')
+  parser.add_option('--chromeos_goma_dir', type='path',
+                    api=constants.REEXEC_API_CHROMEOS_GOMA_DIR,
+                    help='Specify a directory containing goma for '
+                         'build package.')
   parser.add_option('--goma_client_json', type='path',
                     api=constants.REEXEC_API_GOMA,
                     help='Specify a service-account-goma-client.json path. '
