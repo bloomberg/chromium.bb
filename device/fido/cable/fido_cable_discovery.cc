@@ -12,8 +12,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
-#include "base/strings/stringprintf.h"
+#include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -23,6 +24,8 @@
 #include "device/fido/cable/fido_cable_device.h"
 #include "device/fido/cable/fido_cable_handshake_handler.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "third_party/boringssl/src/include/openssl/digest.h"
+#include "third_party/boringssl/src/include/openssl/hkdf.h"
 
 namespace device {
 
@@ -124,6 +127,44 @@ bool CableDiscoveryData::operator==(const CableDiscoveryData& other) const {
   return version == other.version && client_eid == other.client_eid &&
          authenticator_eid == other.authenticator_eid &&
          session_pre_key == other.session_pre_key;
+}
+
+// static
+int64_t CableDiscoveryData::CurrentTimeTick() {
+  // The ticks are currently 256ms.
+  return base::TimeTicks::Now().since_origin().InMilliseconds() >> 8;
+}
+
+// static
+void CableDiscoveryData::DeriveQRKeyMaterial(
+    base::span<uint8_t, kCableQRSecretSize> out_qr_secret,
+    base::span<uint8_t, kCableEphemeralIdSize> out_authenticator_eid,
+    base::span<uint8_t, kCableSessionPreKeySize> out_session_key,
+    base::span<const uint8_t, 32> qr_generator_key,
+    const int64_t tick) {
+  union {
+    int64_t i;
+    uint8_t bytes[8];
+  } current_tick;
+  current_tick.i = tick;
+
+  bool ok = HKDF(out_qr_secret.data(), out_qr_secret.size(), EVP_sha256(),
+                 qr_generator_key.data(), qr_generator_key.size(),
+                 /*salt=*/nullptr, 0, current_tick.bytes, sizeof(current_tick));
+  DCHECK(ok);
+  static const char kAuthenticatorEIDInfo[] = "caBLE QR to EID";
+  ok = HKDF(out_authenticator_eid.data(), out_authenticator_eid.size(),
+            EVP_sha256(), out_qr_secret.data(), out_qr_secret.size(),
+            /*salt=*/nullptr, 0,
+            reinterpret_cast<const uint8_t*>(kAuthenticatorEIDInfo),
+            sizeof(kAuthenticatorEIDInfo) - 1);
+  DCHECK(ok);
+  static const char kSessionKeyInfo[] = "caBLE QR to session pre-key";
+  ok = HKDF(out_session_key.data(), out_session_key.size(), EVP_sha256(),
+            out_qr_secret.data(), out_qr_secret.size(), /*salt=*/nullptr, 0,
+            reinterpret_cast<const uint8_t*>(kSessionKeyInfo),
+            sizeof(kSessionKeyInfo) - 1);
+  DCHECK(ok);
 }
 
 // FidoCableDiscovery ---------------------------------------------------------
