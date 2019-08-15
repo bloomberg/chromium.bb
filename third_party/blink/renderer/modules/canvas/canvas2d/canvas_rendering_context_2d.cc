@@ -1125,10 +1125,6 @@ void CanvasRenderingContext2D::DisableAcceleration() {
   canvas()->DisableAcceleration();
 }
 
-void CanvasRenderingContext2D::DidInvokeGPUReadbackInCurrentFrame() {
-  canvas()->DidInvokeGPUReadbackInCurrentFrame();
-}
-
 bool CanvasRenderingContext2D::IsCanvas2DBufferValid() const {
   if (IsPaintable()) {
     return canvas()->GetCanvas2DLayerBridge()->IsValid();

@@ -233,10 +233,6 @@
       status: "experimental",
     },
     {
-      name: "Canvas2dFixedRenderingMode",
-      status: "test",
-    },
-    {
       name: "Canvas2dImageChromium",
     },
     {
