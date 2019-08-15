@@ -2039,8 +2039,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
           &RenderProcessHostImpl::CreateBroadcastChannelProvider,
           base::Unretained(this)));
 
-  AddUIThreadInterface(registry.get(),
-                       base::BindRepeating(&ClipboardHostImpl::Create));
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&ClipboardHostImpl::CreateForRequest));
 
   AddUIThreadInterface(
       registry.get(),
