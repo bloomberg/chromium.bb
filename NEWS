@@ -29,6 +29,8 @@ issues]].
   international braille". A version with composed accents is made
   available as a .uti table. Thanks to Dave Mielke and Μαρια
   Γεωργακαράκου (Maria Georgakarakou).
+- Improvements and fixes to Spanish contracted braille. Details in
+  #741. Thanks to Juan Pablo Bello.
 
 ** Other changes
 - Metadata keys and values are now case insensitive, thanks to Dave
