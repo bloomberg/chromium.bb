@@ -337,10 +337,6 @@ const base::Feature kPassiveDocumentWheelEventListeners{
 const base::Feature kPassiveEventListenersDueToFling{
     "PassiveEventListenersDueToFling", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether PaymentRequest exposes hasEnrolledInstrument API.
-const base::Feature kPaymentRequestHasEnrolledInstrument = {
-    "PaymentRequestHasEnrolledInstrument", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Whether ExecutionContext is paused (and workers) on background freeze.
 const base::Feature kPauseExecutionContextOnBackgroundFreeze = {
     "PauseExecutionContextOnBackgroundFreeze",

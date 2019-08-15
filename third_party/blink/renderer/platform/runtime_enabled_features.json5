@@ -1198,10 +1198,6 @@
       status: "experimental",
     },
     {
-      name: "PaymentRequestHasEnrolledInstrument",
-      status: "stable",
-    },
-    {
       name: "PaymentRequestMerchantValidationEvent",
       status: "experimental",
     },
