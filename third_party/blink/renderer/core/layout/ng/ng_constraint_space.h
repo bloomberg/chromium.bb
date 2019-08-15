@@ -328,6 +328,12 @@ class CORE_EXPORT NGConstraintSpace final {
     return BlockFragmentationType() != kFragmentNone;
   }
 
+  // Return true if there's an ancestor multicol container with balanced
+  // columns.
+  bool IsInsideBalancedColumns() const {
+    return HasRareData() && rare_data_->is_inside_balanced_columns;
+  }
+
   // Returns if this node is a table cell child, and which table layout phase
   // is occurring.
   NGTableCellChildLayoutPhase TableCellChildLayoutPhase() const {
@@ -532,7 +538,8 @@ class CORE_EXPORT NGConstraintSpace final {
     explicit RareData(const NGBfcOffset bfc_offset)
         : bfc_offset(bfc_offset),
           block_direction_fragmentation_type(
-              static_cast<unsigned>(kFragmentNone)) {}
+              static_cast<unsigned>(kFragmentNone)),
+          is_inside_balanced_columns(false) {}
     RareData(const RareData&) = default;
     ~RareData() = default;
 
@@ -550,6 +557,7 @@ class CORE_EXPORT NGConstraintSpace final {
     LayoutUnit fragmentainer_space_at_bfc_start = kIndefiniteSize;
 
     unsigned block_direction_fragmentation_type : 2;
+    unsigned is_inside_balanced_columns : 1;
 
     bool MaySkipLayout(const RareData& other) const {
       return margin_strut == other.margin_strut &&
@@ -558,7 +566,8 @@ class CORE_EXPORT NGConstraintSpace final {
              fragmentainer_space_at_bfc_start ==
                  other.fragmentainer_space_at_bfc_start &&
              block_direction_fragmentation_type ==
-                 other.block_direction_fragmentation_type;
+                 other.block_direction_fragmentation_type &&
+             is_inside_balanced_columns == other.is_inside_balanced_columns;
     }
 
     // Must be kept in sync with members checked within |MaySkipLayout|.
@@ -567,7 +576,8 @@ class CORE_EXPORT NGConstraintSpace final {
              forced_bfc_block_offset == base::nullopt &&
              fragmentainer_block_size == kIndefiniteSize &&
              fragmentainer_space_at_bfc_start == kIndefiniteSize &&
-             block_direction_fragmentation_type == kFragmentNone;
+             block_direction_fragmentation_type == kFragmentNone &&
+             !is_inside_balanced_columns;
     }
   };
 

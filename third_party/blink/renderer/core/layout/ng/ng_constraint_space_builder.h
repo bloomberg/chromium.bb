@@ -32,6 +32,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     // Propagate the intermediate layout bit to the child constraint space.
     space_.bitfields_.is_intermediate_layout =
         parent_space.IsIntermediateLayout();
+    if (parent_space.IsInsideBalancedColumns())
+      space_.EnsureRareData()->is_inside_balanced_columns = true;
   }
 
   // The setters on this builder are in the writing mode of parent_writing_mode.
@@ -159,6 +161,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       space_.EnsureRareData()->block_direction_fragmentation_type =
           fragmentation_type;
     }
+  }
+
+  void SetIsInsideBalancedColumns() {
+    space_.EnsureRareData()->is_inside_balanced_columns = true;
   }
 
   void SetSeparateLeadingFragmentainerMargins(bool b) {
