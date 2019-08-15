@@ -183,6 +183,8 @@ _COMMANDS = {
     "SendCommand": (Method.POST, "/session/:sessionId/chromium/send_command"),
     "SendCommandAndGetResult":
     (Method.POST, "/session/:sessionId/chromium/send_command_and_get_result"),
+    "SendCommandFromWebSocket":
+    (Method.POST, "session/:sessionId/chromium/send_command_from_websocket"),
     "SetAlertPrompt": (Method.POST, "/session/:sessionId/alert_text"),
     "SetGeolocation": (Method.POST, "/session/:sessionId/location"),
     "SetImplicitWait":
