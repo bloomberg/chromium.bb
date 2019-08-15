@@ -43,35 +43,8 @@ void av1_free_state_buffers(struct AV1Common *cm);
 int av1_get_MBs(int width, int height);
 
 #if CONFIG_LPF_MASK
-static INLINE int alloc_loop_filter_mask(AV1_COMMON *cm) {
-  aom_free(cm->lf.lfm);
-  cm->lf.lfm = NULL;
-
-  // Each lfm holds bit masks for all the 4x4 blocks in a max
-  // 64x64 (128x128 for ext_partitions) region.  The stride
-  // and rows are rounded up / truncated to a multiple of 16
-  // (32 for ext_partition).
-  cm->lf.lfm_stride = (cm->mi_cols + (MI_SIZE_64X64 - 1)) >> MIN_MIB_SIZE_LOG2;
-  cm->lf.lfm_num = ((cm->mi_rows + (MI_SIZE_64X64 - 1)) >> MIN_MIB_SIZE_LOG2) *
-                   cm->lf.lfm_stride;
-  cm->lf.lfm =
-      (LoopFilterMask *)aom_calloc(cm->lf.lfm_num, sizeof(*cm->lf.lfm));
-  if (!cm->lf.lfm) return 1;
-
-  unsigned int i;
-  for (i = 0; i < cm->lf.lfm_num; ++i) av1_zero(cm->lf.lfm[i]);
-
-  return 0;
-}
-
-static INLINE void free_loop_filter_mask(AV1_COMMON *cm) {
-  if (cm->lf.lfm == NULL) return;
-
-  aom_free(cm->lf.lfm);
-  cm->lf.lfm = NULL;
-  cm->lf.lfm_num = 0;
-  cm->lf.lfm_stride = 0;
-}
+int av1_alloc_loop_filter_mask(struct AV1Common *cm);
+void av1_free_loop_filter_mask(struct AV1Common *cm);
 #endif
 
 #ifdef __cplusplus

@@ -406,7 +406,7 @@ static void enc_set_mb_mi(AV1_COMMON *cm, int width, int height) {
   assert(mi_size_wide[cm->mi_alloc_bsize] == mi_size_high[cm->mi_alloc_bsize]);
 
 #if CONFIG_LPF_MASK
-  alloc_loop_filter_mask(cm);
+  av1_alloc_loop_filter_mask(cm);
 #endif
 }
 
