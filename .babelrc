@@ -5,15 +5,6 @@
     "@babel/plugin-syntax-dynamic-import",
     "macros",
     [
-      "module-resolver",
-      {
-        "root": ["./src"],
-        "alias": {
-          "@webgpu/shaderc": "./src/shaderc.js"
-        }
-      }
-    ],
-    [
       "add-header-comment",
       {
         "header": ["AUTO-GENERATED - DO NOT EDIT. Source: https://github.com/gpuweb/cts"]
