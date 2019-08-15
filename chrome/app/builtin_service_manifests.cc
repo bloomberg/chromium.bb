@@ -12,7 +12,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/manifest.h"
-#include "chromeos/services/network_config/public/cpp/manifest.h"
 #include "chromeos/services/secure_channel/public/cpp/manifest.h"
 #endif
 
@@ -25,7 +24,6 @@ GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
 #if defined(OS_CHROMEOS)
       ash::GetManifest(),
-      chromeos::network_config::GetManifest(),
       chromeos::secure_channel::GetManifest(),
 #endif
   }};

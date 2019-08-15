@@ -7,6 +7,7 @@
 #include <memory>
 #include <set>
 
+#include "ash/public/cpp/network_config_service.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/active_network_icon.h"
 #include "base/logging.h"
@@ -40,10 +41,9 @@ class NetworkIconTest : public testing::Test {
 
   void SetUp() override {
     SetUpDefaultNetworkState();
-    network_state_model_ = std::make_unique<TrayNetworkStateModel>(
-        network_config_helper_.connector());
-    active_network_icon_ = std::make_unique<ActiveNetworkIcon>(
-        network_config_helper_.connector(), network_state_model_.get());
+    network_state_model_ = std::make_unique<TrayNetworkStateModel>();
+    active_network_icon_ =
+        std::make_unique<ActiveNetworkIcon>(network_state_model_.get());
   }
 
   void TearDown() override {

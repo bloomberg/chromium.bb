@@ -1110,7 +1110,7 @@ void Shell::Init(
   // |system_tray_model_| should be available before
   // |system_notification_controller_| is initialized and Shelf is created by
   // WindowTreeHostManager::InitHosts.
-  system_tray_model_ = std::make_unique<SystemTrayModel>(connector_);
+  system_tray_model_ = std::make_unique<SystemTrayModel>();
   system_notification_controller_ =
       std::make_unique<SystemNotificationController>();
 

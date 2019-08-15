@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/network_config_service.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/tray_network_state_model.h"
@@ -16,7 +17,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -41,10 +41,9 @@ class ActiveNetworkIconTest : public testing::Test {
   ~ActiveNetworkIconTest() override = default;
 
   void SetUp() override {
-    network_state_model_ = std::make_unique<TrayNetworkStateModel>(
-        network_config_helper_.connector());
-    active_network_icon_ = std::make_unique<ActiveNetworkIcon>(
-        network_config_helper_.connector(), network_state_model_.get());
+    network_state_model_ = std::make_unique<TrayNetworkStateModel>();
+    active_network_icon_ =
+        std::make_unique<ActiveNetworkIcon>(network_state_model_.get());
   }
 
   void TearDown() override { active_network_icon_.reset(); }

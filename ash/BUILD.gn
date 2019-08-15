@@ -1559,7 +1559,6 @@ static_library("ash_shell_lib_with_content") {
     "//chromeos/dbus/shill",
     "//chromeos/network",
     "//chromeos/services/network_config",
-    "//chromeos/services/network_config/public/cpp:manifest",
     "//chromeos/services/network_config/public/mojom",
     "//chromeos/system",
     "//components/discardable_memory/public/mojom",
@@ -1986,7 +1985,6 @@ test("ash_unittests") {
     "//chromeos/services/assistant/public/mojom",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/mojom",
-    "//chromeos/services/network_config/public/cpp:test_support",
     "//chromeos/services/network_config/public/mojom",
     "//chromeos/system",
     "//components/account_id",
@@ -2278,6 +2276,7 @@ static_library("test_support") {
   public_deps = [
     "//ash",
     "//chromeos/services/assistant/public/mojom",
+    "//chromeos/services/network_config/public/cpp:test_support",
     "//dbus",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",

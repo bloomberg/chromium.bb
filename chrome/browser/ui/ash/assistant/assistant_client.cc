@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
+#include "ash/public/cpp/network_config_service.h"
 #include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
@@ -21,7 +22,6 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
@@ -225,8 +225,7 @@ void AssistantClient::RequestMediaControllerManager(
 void AssistantClient::RequestNetworkConfig(
     mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
         receiver) {
-  content::GetSystemConnector()->Connect(
-      chromeos::network_config::mojom::kServiceName, std::move(receiver));
+  ash::GetNetworkConfigService(std::move(receiver));
 }
 
 void AssistantClient::OnExtendedAccountInfoUpdated(const AccountInfo& info) {

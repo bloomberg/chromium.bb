@@ -1239,6 +1239,12 @@ bool NetworkTypeCanBeDisabled(mojom::NetworkType type) {
 
 }  // namespace
 
+CrosNetworkConfig::CrosNetworkConfig()
+    : CrosNetworkConfig(
+          NetworkHandler::Get()->network_state_handler(),
+          NetworkHandler::Get()->network_device_handler(),
+          NetworkHandler::Get()->managed_network_configuration_handler()) {}
+
 CrosNetworkConfig::CrosNetworkConfig(
     NetworkStateHandler* network_state_handler,
     NetworkDeviceHandler* network_device_handler,
