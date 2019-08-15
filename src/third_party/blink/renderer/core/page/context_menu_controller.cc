@@ -507,17 +507,18 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
 
 static void ExposeInt(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, int value)
 {
-  obj->Set(v8::String::NewFromUtf8(isolate, name), v8::Integer::New(isolate, value));
+  obj->Set(v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Integer::New(isolate, value));
 }
 
 static void ExposeBool(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, bool value)
 {
-  obj->Set(v8::String::NewFromUtf8(isolate, name), v8::Boolean::New(isolate, value));
+  obj->Set(v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Boolean::New(isolate, value));
 }
 
 static void ExposeString(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, const std::string& value)
 {
-  obj->Set(v8::String::NewFromUtf8(isolate, name), v8::String::NewFromUtf8(isolate, value.data(), v8::String::kNormalString, value.length()));
+  obj->Set(v8::String::NewFromUtf8(isolate, name).ToLocalChecked(),
+           v8::String::NewFromUtf8(isolate, value.data(), v8::NewStringType::kNormal, value.length()).ToLocalChecked());
 }
 
 static void ExposeStringVector(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, const blink::WebVector<blink::WebString>& value)
@@ -525,9 +526,9 @@ static void ExposeStringVector(v8::Isolate* isolate, const v8::Handle<v8::Object
   v8::Handle<v8::Array> array = v8::Array::New(isolate);
   for (unsigned i = 0; i < value.size(); ++i) {
     std::string item = value[i].Utf8();
-    array->Set(i, v8::String::NewFromUtf8(isolate, item.data(), v8::String::kNormalString, item.length()));
+    array->Set(i, v8::String::NewFromUtf8(isolate, item.data(), v8::NewStringType::kNormal, item.length()).ToLocalChecked());
   }
-  obj->Set(v8::String::NewFromUtf8(isolate, name), array);
+  obj->Set(v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), array);
 }
 
 static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult, const WebContextMenuData& data)
