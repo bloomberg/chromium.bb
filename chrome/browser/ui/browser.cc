@@ -206,6 +206,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/profiling.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/common/window_container_type.mojom-shared.h"
 #include "extensions/browser/extension_prefs.h"
@@ -1580,6 +1581,10 @@ bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
   if (entry) {
     const GURL& url = entry->GetURL();
     const GURL& virtual_url = entry->GetVirtualURL();
+
+    if (virtual_url.SchemeIs(content::kViewSourceScheme))
+      return false;
+
     if ((url.SchemeIs(content::kChromeUIScheme) &&
          url.host_piece() == chrome::kChromeUINewTabHost) ||
         (virtual_url.SchemeIs(content::kChromeUIScheme) &&
