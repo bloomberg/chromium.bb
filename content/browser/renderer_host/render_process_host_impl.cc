@@ -2015,13 +2015,13 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
-          &BackgroundSyncContextImpl::CreateOneShotSyncService,
+          &BackgroundSyncContextImpl::CreateOneShotSyncServiceForRequest,
           base::Unretained(
               storage_partition_impl_->GetBackgroundSyncContext())));
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
-          &BackgroundSyncContextImpl::CreatePeriodicSyncService,
+          &BackgroundSyncContextImpl::CreatePeriodicSyncServiceForRequest,
           base::Unretained(
               storage_partition_impl_->GetBackgroundSyncContext())));
   AddUIThreadInterface(
