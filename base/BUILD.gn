@@ -1259,7 +1259,6 @@ jumbo_component("base") {
   ]
 
   deps = [
-    ":clang_coverage_buildflags",
     "//base/allocator",
     "//base/allocator:buildflags",
     "//base/third_party/dynamic_annotations",
@@ -1271,6 +1270,7 @@ jumbo_component("base") {
     ":base_static",
     ":build_date",
     ":cfi_buildflags",
+    ":clang_coverage_buildflags",
     ":debugging_buildflags",
     ":iterator_buildflags",
     ":logging_buildflags",
