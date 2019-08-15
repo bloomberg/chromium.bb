@@ -39,7 +39,6 @@ public class SharedClipboardMessageHandler {
      */
     @CalledByNative
     private static void showNotification(String deviceName) {
-        // TODO(mvanouwerkerk): Set the correct small icon for the notification.
         Context context = ContextUtils.getApplicationContext();
         PendingIntentProvider contentIntent = PendingIntentProvider.getBroadcast(context,
                 /*requestCode=*/0, new Intent(context, TapReceiver.class),
@@ -53,6 +52,6 @@ public class SharedClipboardMessageHandler {
                 NotificationConstants.GROUP_SHARED_CLIPBOARD,
                 NotificationConstants.NOTIFICATION_ID_SHARED_CLIPBOARD, contentIntent,
                 notificationTitle, resources.getString(R.string.shared_clipboard_notification_text),
-                R.drawable.ic_phone_googblue_36dp);
+                R.drawable.ic_devices_16dp);
     }
 }
