@@ -620,6 +620,11 @@ void V4L2VideoEncodeAccelerator::EncodeTask(scoped_refptr<VideoFrame> frame,
     return;
   }
 
+  // If a video frame to be encoded is fed, then call VIDIOC_REQBUFS if it has
+  // not been called yet.
+  if (frame && input_buffer_map_.empty() && !CreateInputBuffers())
+    return;
+
   if (image_processor_) {
     image_processor_input_queue_.emplace(std::move(frame), force_keyframe);
     InputImageProcessorTask();
@@ -642,7 +647,7 @@ bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
     VLOGF(2) << "Call S_FMT with a new size=" << new_frame_size.ToString()
              << ", the previous size ="
              << device_input_layout_->coded_size().ToString();
-    if (input_streamon_ || output_streamon_) {
+    if (!input_buffer_map_.empty()) {
       VLOGF(1) << "Input frame size is changed during encoding";
       NOTIFY_ERROR(kInvalidArgumentError);
       return false;
@@ -685,7 +690,7 @@ bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
              << device_input_layout_->coded_size().ToString()
              << " (the size requested to client="
              << input_allocated_size_.ToString();
-    if (input_streamon_ || output_streamon_) {
+    if (!input_buffer_map_.empty()) {
       VLOGF(1) << "Input frame size is changed during encoding";
       NOTIFY_ERROR(kInvalidArgumentError);
       return false;
@@ -764,10 +769,6 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBufferTask(
   Enqueue();
 
   if (encoder_state_ == kInitialized) {
-    // Finish setting up our OUTPUT queue.  See: Initialize().
-    // VIDIOC_REQBUFS on OUTPUT queue.
-    if (!CreateInputBuffers())
-      return;
     if (!StartDevicePoll())
       return;
     encoder_state_ = kEncoding;
