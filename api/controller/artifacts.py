@@ -322,9 +322,18 @@ def BundleChromeOSConfig(input_proto, output_proto, _config):
     _config (api_config.ApiConfig): The API call config.
   """
   output_dir = input_proto.output_dir
-  sysroot = sysroot_lib.Sysroot(input_proto.sysroot.path)
+  sysroot_path = input_proto.sysroot.path
   chroot = controller_util.ParseChroot(input_proto.chroot)
 
+  # TODO(mmortensen) Cleanup legacy handling after it has been switched over.
+  target = input_proto.build_target.name
+  if target:
+    # Legacy handling.
+    build_root = constants.SOURCE_ROOT
+    chroot = chroot_lib.Chroot(path=os.path.join(build_root, 'chroot'))
+    sysroot_path = os.path.join('/build', target)
+
+  sysroot = sysroot_lib.Sysroot(sysroot_path)
   chromeos_config = artifacts.BundleChromeOSConfig(chroot, sysroot, output_dir)
   if chromeos_config is None:
     cros_build_lib.Die(

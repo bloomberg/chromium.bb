@@ -407,6 +407,54 @@ class BundleEbuildLogsTest(BundleTestCase):
       artifacts.BundleEbuildLogs(self.request, self.response, self.api_config)
 
 
+class BundleChromeOSConfigTest(BundleTestCase):
+  """Unittests for BundleChromeOSConfig"""
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(artifacts_svc, 'BundleChromeOSConfig')
+    artifacts.BundleChromeOSConfig(self.input_proto, self.output_proto,
+                                   self.validate_only_config)
+    patch.assert_not_called()
+
+  def testBundleChromeOSConfigCallWithSysroot(self):
+    """Call with a request that sets sysroot."""
+    bundle_chromeos_config = self.PatchObject(
+        artifacts_svc, 'BundleChromeOSConfig', return_value='config.yaml')
+    artifacts.BundleChromeOSConfig(self.request, self.output_proto,
+                                   self.api_config)
+    self.assertEqual(
+        [artifact.path for artifact in self.output_proto.artifacts],
+        [os.path.join(self.output_dir, 'config.yaml')])
+
+    sysroot = sysroot_lib.Sysroot(self.sysroot_path)
+    self.assertEqual(bundle_chromeos_config.call_args_list,
+                     [mock.call(mock.ANY, sysroot, self.output_dir)])
+
+  def testBundleChromeOSConfigCallWithBuildTarget(self):
+    """Call with a request that sets build_target."""
+    bundle_chromeos_config = self.PatchObject(
+        artifacts_svc, 'BundleChromeOSConfig', return_value='config.yaml')
+    artifacts.BundleChromeOSConfig(self.input_proto, self.output_proto,
+                                   self.api_config)
+
+    self.assertEqual(
+        [artifact.path for artifact in self.output_proto.artifacts],
+        [os.path.join(self.output_dir, 'config.yaml')])
+
+    sysroot = sysroot_lib.Sysroot(self.sysroot_path)
+    self.assertEqual(bundle_chromeos_config.call_args_list,
+                     [mock.call(mock.ANY, sysroot, self.output_dir)])
+
+  def testBundleChromeOSConfigNoConfigFound(self):
+    """An error is raised if the config payload isn't found."""
+    self.PatchObject(artifacts_svc, 'BundleChromeOSConfig', return_value=None)
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleChromeOSConfig(self.request, self.output_proto,
+                                     self.api_config)
+
+
 class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase,
                                    api_config.ApiConfigMixin):
   """Unittests for BundleTestUpdatePayloads."""
