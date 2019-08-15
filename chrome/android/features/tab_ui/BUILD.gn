@@ -149,6 +149,7 @@ android_library("java") {
     "//content/public/android:content_java_resources",
     "//third_party/android_deps:android_arch_lifecycle_common_java",
     "//third_party/android_deps:android_arch_lifecycle_runtime_java",
+    "//third_party/android_deps:android_arch_lifecycle_viewmodel_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",
