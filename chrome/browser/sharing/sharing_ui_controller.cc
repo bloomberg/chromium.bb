@@ -6,9 +6,29 @@
 
 #include <utility>
 
+#include "chrome/browser/sharing/sharing_constants.h"
+#include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
+#include "chrome/browser/sharing/sharing_service.h"
+#include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "ui/gfx/vector_icon_types.h"
+
+namespace {
+
+BrowserWindow* GetWindowFromWebContents(content::WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  return browser ? browser->window() : nullptr;
+}
+
+content::WebContents* GetCurrentWebContents(
+    content::WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  return browser ? browser->tab_strip_model()->GetActiveWebContents() : nullptr;
+}
+
+}  // namespace
 
 SharingUiController::App::App(const gfx::VectorIcon* vector_icon,
                               const gfx::Image& image,
@@ -24,7 +44,11 @@ SharingUiController::App::App(App&& other) = default;
 SharingUiController::App::~App() = default;
 
 SharingUiController::SharingUiController(content::WebContents* web_contents)
-    : web_contents_(web_contents) {}
+    : web_contents_(web_contents),
+      sharing_service_(SharingServiceFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext())) {}
+
+SharingUiController::~SharingUiController() = default;
 
 void SharingUiController::ShowNewDialog() {
   if (dialog_)
@@ -34,8 +58,7 @@ void SharingUiController::ShowNewDialog() {
   // might be async.
   dialog_ = nullptr;
 
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  auto* window = browser ? browser->window() : nullptr;
+  BrowserWindow* window = GetWindowFromWebContents(web_contents_);
   if (!window)
     return;
 
@@ -43,9 +66,12 @@ void SharingUiController::ShowNewDialog() {
   UpdateIcon();
 }
 
+std::vector<SharingDeviceInfo> SharingUiController::GetSyncedDevices() {
+  return sharing_service_->GetDeviceCandidates(GetRequiredDeviceCapabilities());
+}
+
 void SharingUiController::UpdateIcon() {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  auto* window = browser ? browser->window() : nullptr;
+  BrowserWindow* window = GetWindowFromWebContents(web_contents_);
   if (!window)
     return;
 
@@ -63,31 +89,34 @@ void SharingUiController::OnDialogClosed(SharingDialog* dialog) {
   UpdateIcon();
 }
 
-void SharingUiController::ShowErrorDialog() {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  if (!browser)
-    return;
-
-  if (web_contents_ == browser->tab_strip_model()->GetActiveWebContents())
-    ShowNewDialog();
-}
-
-void SharingUiController::StartLoading() {
+void SharingUiController::SendMessageToDevice(
+    const SharingDeviceInfo& device,
+    chrome_browser_sharing::SharingMessage sharing_message) {
+  last_dialog_id_++;
   is_loading_ = true;
   send_failed_ = false;
   UpdateIcon();
+
+  sharing_service_->SendMessageToDevice(
+      device.guid(), kSharingMessageTTL, std::move(sharing_message),
+      base::Bind(&SharingUiController::OnMessageSentToDevice,
+                 weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
 }
 
-void SharingUiController::StopLoading(bool send_failed) {
+void SharingUiController::OnMessageSentToDevice(int dialog_id, bool success) {
+  if (dialog_id != last_dialog_id_)
+    return;
+
   is_loading_ = false;
-  send_failed_ = send_failed;
+  send_failed_ = !success;
   UpdateIcon();
 
-  if (send_failed)
-    ShowErrorDialog();
+  if (send_failed_ && web_contents_ == GetCurrentWebContents(web_contents_))
+    ShowNewDialog();
 }
 
 void SharingUiController::InvalidateOldDialog() {
+  last_dialog_id_++;
   is_loading_ = false;
   send_failed_ = false;
   ShowNewDialog();

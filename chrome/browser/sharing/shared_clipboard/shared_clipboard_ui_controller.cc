@@ -6,27 +6,14 @@
 
 #include <utility>
 
-#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
-#include "chrome/browser/sharing/sharing_service.h"
-#include "chrome/browser/sharing/sharing_service_factory.h"
-#include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
-#include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/common/url_constants.h"
 #include "components/sync_device_info/device_info.h"
-#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "url/url_util.h"
 
 using App = SharingUiController::App;
 
@@ -40,9 +27,7 @@ SharedClipboardUiController::GetOrCreateFromWebContents(
 
 SharedClipboardUiController::SharedClipboardUiController(
     content::WebContents* web_contents)
-    : SharingUiController(web_contents),
-      sharing_service_(SharingServiceFactory::GetForBrowserContext(
-          web_contents->GetBrowserContext())) {}
+    : SharingUiController(web_contents) {}
 
 SharedClipboardUiController::~SharedClipboardUiController() = default;
 
@@ -58,9 +43,12 @@ base::string16 SharedClipboardUiController::GetTitle() {
   return base::string16();
 }
 
-std::vector<SharingDeviceInfo> SharedClipboardUiController::GetSyncedDevices() {
-  return sharing_service_->GetDeviceCandidates(
-      static_cast<int>(SharingDeviceCapability::kSharedClipboard));
+PageActionIconType SharedClipboardUiController::GetIconType() {
+  return PageActionIconType::kSendTabToSelf;
+}
+
+int SharedClipboardUiController::GetRequiredDeviceCapabilities() {
+  return static_cast<int>(SharingDeviceCapability::kSharedClipboard);
 }
 
 // No need for apps for shared clipboard feature
@@ -76,21 +64,11 @@ SharingDialog* SharedClipboardUiController::DoShowDialog(
 
 void SharedClipboardUiController::OnDeviceChosen(
     const SharingDeviceInfo& device) {
-  StartLoading();
-
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_shared_clipboard_message()->set_text(
       base::UTF16ToUTF8(text_));
 
-  sharing_service_->SendMessageToDevice(
-      device.guid(), kSharingMessageTTL, std::move(sharing_message),
-      base::Bind(&SharedClipboardUiController::OnMessageSentToDevice,
-                 weak_ptr_factory_.GetWeakPtr(), 0));
-}
-
-void SharedClipboardUiController::OnMessageSentToDevice(int dialog_id,
-                                                        bool success) {
-  // Do nothing
+  SendMessageToDevice(device, std::move(sharing_message));
 }
 
 void SharedClipboardUiController::OnAppChosen(const App& app) {
@@ -99,10 +77,6 @@ void SharedClipboardUiController::OnAppChosen(const App& app) {
 
 void SharedClipboardUiController::OnHelpTextClicked() {
   // No help text
-}
-
-PageActionIconType SharedClipboardUiController::GetIconType() {
-  return PageActionIconType::kSendTabToSelf;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SharedClipboardUiController)
