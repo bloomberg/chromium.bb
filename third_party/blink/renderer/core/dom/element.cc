@@ -3824,6 +3824,7 @@ bool Element::IsMouseFocusable() const {
 void Element::ActivateDisplayLockIfNeeded() {
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
     return;
+  const_cast<Element*>(this)->UpdateDistributionForFlatTreeTraversal();
 
   HeapVector<std::pair<Member<Element>, Member<Element>>> activatable_targets;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
@@ -3859,6 +3860,7 @@ bool Element::DisplayLockPreventsActivation() const {
   if (GetDocument().ActivationBlockingDisplayLockCount() == 0)
     return false;
 
+  const_cast<Element*>(this)->UpdateDistributionForFlatTreeTraversal();
   // TODO(vmpstr): Similar to Document::EnsurePaintLocationDataValidForNode(),
   // this iterates up to the ancestor hierarchy looking for locked display
   // locks. This is inefficient, particularly since it's unlikely that this will
