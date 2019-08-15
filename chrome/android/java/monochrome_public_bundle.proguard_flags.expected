@@ -696,4 +696,3 @@
 -keepclassmembers class * {
     @com.google.vr.dynamite.client.UsedByReflection *;
 }
-
