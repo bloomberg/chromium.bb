@@ -2255,6 +2255,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lakitu-st',
       'lasilla-ground',
       'littlejoe',
+      'mistral',
       'monroe',
       'nami',
       'nocturne',
@@ -2324,7 +2325,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Paladin configs that exist and should stay as experimental until further
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
-      'mistral', # crbug.com/994217
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'grunt', # crbug.com/984614
   ])
