@@ -4007,6 +4007,7 @@ test("unit_tests") {
       "../browser/component_updater/metadata_table_chromeos_unittest.cc",
       "../browser/google/google_brand_code_map_chromeos_unittest.cc",
       "../browser/media/webrtc/desktop_media_list_ash_unittest.cc",
+      "../browser/metrics/perf/heap_collector_unittest.cc",
       "../browser/metrics/perf/metric_collector_unittest.cc",
       "../browser/metrics/perf/metric_provider_unittest.cc",
       "../browser/metrics/perf/perf_events_collector_unittest.cc",
@@ -4044,9 +4045,6 @@ test("unit_tests") {
       "//ash/strings",
       "//chrome/browser/resources/chromeos/zip_archiver/cpp:ziparchiver_unittests",
     ]
-    if (use_new_tcmalloc) {
-      sources += [ "../browser/metrics/perf/heap_collector_unittest.cc" ]
-    }
   }
 
   if (use_x11 || use_ozone) {
