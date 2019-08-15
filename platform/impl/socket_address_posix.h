@@ -34,6 +34,11 @@ class SocketAddressPosix {
   IPAddress::Version version() const { return version_; }
 
  private:
+  // The way the sockaddr_* family works in POSIX is pretty unintuitive. The
+  // sockaddr_in and sockaddr_in6 structs can be reinterpreted as type
+  // sockaddr, however they don't have a common parent--the types are unrelated.
+  // Our solution for this is to wrap sockaddr_in* in a union, so that our code
+  // can be simplified since most platform APIs just take a sockaddr.
   union SocketAddressIn {
     struct sockaddr_in v4;
     struct sockaddr_in6 v6;

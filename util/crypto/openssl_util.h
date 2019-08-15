@@ -5,10 +5,12 @@
 #ifndef UTIL_CRYPTO_OPENSSL_UTIL_H_
 #define UTIL_CRYPTO_OPENSSL_UTIL_H_
 
+#include <openssl/ssl.h>
 #include <stddef.h>
 
 #include <cstring>
 
+#include "platform/base/error.h"
 #include "platform/base/location.h"
 #include "platform/base/macros.h"
 
@@ -27,6 +29,8 @@ void EnsureOpenSSLCleanup();
 // are send to VLOG(1), on a release build they are disregarded. In most
 // cases you should pass CURRENT_LOCATION as the |location|.
 void ClearOpenSSLERRStack(const Location& location);
+
+Error GetSSLError(const SSL* ssl, int return_code);
 
 // Place an instance of this class on the call stack to automatically clear
 // the OpenSSL error stack on function exit.

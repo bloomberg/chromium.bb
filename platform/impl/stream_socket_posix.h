@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,13 +10,18 @@
 #include <string>
 
 #include "absl/types/optional.h"
+#include "platform/base/error.h"
 #include "platform/base/ip_address.h"
 #include "platform/impl/socket_address_posix.h"
+#include "platform/impl/stream_socket.h"
 
 namespace openscreen {
 namespace platform {
+struct FileDescriptor {
+  int fd;
+};
 
-class StreamSocketPosix {
+class StreamSocketPosix : public StreamSocket {
  public:
   explicit StreamSocketPosix(const IPEndpoint& local_endpoint);
   StreamSocketPosix(SocketAddressPosix address, int file_descriptor);
@@ -25,30 +30,21 @@ class StreamSocketPosix {
   // descriptor.
   StreamSocketPosix(const StreamSocketPosix& other) = delete;
   StreamSocketPosix& operator=(const StreamSocketPosix& other) = delete;
-  ~StreamSocketPosix();
+  virtual ~StreamSocketPosix();
 
-  // Used by passive/server sockets to accept connection requests
-  // from a client. If no socket is available, this method returns nullptr.
-  // To get more information, the client may call last_error().
-  std::unique_ptr<StreamSocketPosix> Accept();
+  // StreamSocket overrides.
+  ErrorOr<std::unique_ptr<StreamSocket>> Accept() override;
+  Error Bind() override;
+  Error Close() override;
+  Error Connect(const IPEndpoint& remote_endpoint) override;
+  Error Listen() override;
+  Error Listen(int max_backlog_size) override;
 
-  // Bind to the address given in the constructor.
-  Error Bind();
-
-  // Closes the socket.
-  Error Close();
-
-  // Connects the socket to a specified remote address.
-  Error Connect(const IPEndpoint& peer_endpoint);
-
-  // Marks the socket as passive, to receive incoming connections.
-  Error Listen();
-  Error Listen(int max_backlog_size);
-
- protected:
-  const SocketAddressPosix& address() const { return address_; }
-  int file_descriptor() const { return file_descriptor_.load(); }
-  Error last_error() const { return last_error_code_.load(); }
+  // StreamSocket getter overrides.
+  FileDescriptor file_descriptor() const override;
+  absl::optional<IPEndpoint> remote_address() const override;
+  SocketState state() const override;
+  IPAddress::Version version() const override;
 
  private:
   // StreamSocketPosix is lazy initialized on first usage. For simplicitly,
@@ -58,14 +54,19 @@ class StreamSocketPosix {
   Error Initialize();
 
   Error CloseOnError(Error::Code error_code);
-  bool IsOpen();
   Error ReportSocketClosedError();
 
-  const SocketAddressPosix address_;
-  std::atomic_int file_descriptor_;
+  std::atomic_int file_descriptor_ = {-1};
 
-  // last_error_code_ is an Error::Code due to atomic's type requirements.
-  std::atomic<Error::Code> last_error_code_;
+  // last_error_code_ is an Error::Code instead of an Error so it meets
+  // atomic's (trivially) copyable and moveable requirements.
+  std::atomic<Error::Code> last_error_code_ = {Error::Code::kNone};
+  const SocketAddressPosix local_address_;
+  absl::optional<IPEndpoint> remote_address_;
+
+  bool is_bound_ = false;
+  bool is_initialized_ = false;
+  SocketState state_ = SocketState::kNotConnected;
 };
 
 }  // namespace platform

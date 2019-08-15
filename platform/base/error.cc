@@ -116,6 +116,8 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: JsonParseError";
     case Error::Code::kJsonWriteError:
       return os << "Failure: JsonWriteError";
+    case Error::Code::kFatalSSLError:
+      return os << "Failure: kFatalSSLError";
     case Error::Code::kFileLoadFailure:
       return os << "Failure: FileLoadFailure";
     case Error::Code::kErrCertsMissing:

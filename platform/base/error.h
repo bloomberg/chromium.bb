@@ -77,6 +77,8 @@ class Error {
     kJsonWriteError,
 
     // OpenSSL errors.
+    // A non-recoverable SSL library error has occurred.
+    kFatalSSLError,
     kFileLoadFailure,
 
     // Cast certificate errors.
