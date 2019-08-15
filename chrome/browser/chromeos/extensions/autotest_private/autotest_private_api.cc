@@ -75,7 +75,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/metrics/arc_metrics_constants.h"

@@ -21,10 +21,10 @@
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/service_process_host.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "services/audio/public/mojom/constants.mojom.h"
@@ -198,9 +198,12 @@ void AssistantClient::RequestAudioStreamFactory(
 void AssistantClient::RequestAudioDecoderFactory(
     mojo::PendingReceiver<
         chromeos::assistant::mojom::AssistantAudioDecoderFactory> receiver) {
-  content::GetSystemConnector()->Connect(
-      chromeos::assistant::mojom::kAudioDecoderServiceName,
-      std::move(receiver));
+  content::ServiceProcessHost::Launch(
+      std::move(receiver),
+      content::ServiceProcessHost::Options()
+          .WithSandboxType(service_manager::SANDBOX_TYPE_UTILITY)
+          .WithDisplayName("Assistant Audio Decoder Service")
+          .Pass());
 }
 
 void AssistantClient::RequestIdentityAccessor(

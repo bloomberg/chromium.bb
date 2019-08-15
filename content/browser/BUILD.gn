@@ -2555,13 +2555,6 @@ jumbo_source_set("browser") {
     ]
   }
 
-  if (enable_cros_libassistant) {
-    deps += [
-      "//chromeos/services/assistant/public/cpp:audio_decoder_manifest",
-      "//chromeos/services/assistant/public/mojom",
-    ]
-  }
-
   if (use_aura) {
     deps += [
       "//ui/aura",

@@ -7,12 +7,10 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/platform/audio_stream_handler.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "libassistant/shared/public/platform_audio_buffer.h"
 #include "media/audio/audio_device_description.h"
 
