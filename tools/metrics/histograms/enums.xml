@@ -37978,7 +37978,7 @@ from previous Chrome versions.
 </enum>
 
 <enum name="MappedCSSProperties">
-<!-- Generated from third_party/blink/renderer/core/frame/use_counter_helper.cc.
+<!-- Generated from third_party/blink/public/mojom/use_counter/css_property_id.mojom.
 Called by update_use_counter_css.py.-->
 
   <int value="1" label="Total Pages Measured"/>
