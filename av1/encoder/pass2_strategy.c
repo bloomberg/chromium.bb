@@ -121,13 +121,6 @@ static void subtract_stats(FIRSTPASS_STATS *section,
   section->duration -= frame->duration;
 }
 
-// Calculate the linear size relative to a baseline of 1080P
-#define BASE_SIZE 2073600.0  // 1920x1080
-static double get_linear_size_factor(const AV1_COMP *cpi) {
-  const double this_area = cpi->initial_width * cpi->initial_height;
-  return pow(this_area / BASE_SIZE, 0.5);
-}
-
 // This function returns the maximum target rate per frame.
 static int frame_max_bits(const RATE_CONTROL *rc,
                           const AV1EncoderConfig *oxcf) {
@@ -157,7 +150,7 @@ static double calc_correction_factor(double err_per_mb, double err_divisor,
   return fclamp(pow(error_term, power_term), 0.05, 5.0);
 }
 
-#define ERR_DIVISOR 100.0
+#define ERR_DIVISOR 96.0
 #define FACTOR_PT_LOW 0.70
 #define FACTOR_PT_HIGH 0.90
 
@@ -165,8 +158,8 @@ static double calc_correction_factor(double err_per_mb, double err_divisor,
 // calculation of a correction_factor.
 static int find_qindex_by_rate_with_correction(
     AV1_COMP *cpi, int desired_bits_per_mb, aom_bit_depth_t bit_depth,
-    FRAME_TYPE frame_type, double error_per_mb, double ediv_size_correction,
-    double group_weight_factor, int best_qindex, int worst_qindex) {
+    FRAME_TYPE frame_type, double error_per_mb, double group_weight_factor,
+    int best_qindex, int worst_qindex) {
   assert(best_qindex <= worst_qindex);
   int low = best_qindex;
   int high = worst_qindex;
@@ -185,8 +178,8 @@ static int find_qindex_by_rate_with_correction(
   while (low < high) {
     const int mid = (low + high) >> 1;
     const double mid_factor =
-        calc_correction_factor(error_per_mb, ERR_DIVISOR - ediv_size_correction,
-                               FACTOR_PT_LOW, FACTOR_PT_HIGH, mid, bit_depth);
+        calc_correction_factor(error_per_mb, ERR_DIVISOR, FACTOR_PT_LOW,
+                               FACTOR_PT_HIGH, mid, bit_depth);
     const int mid_bits_per_mb = av1_rc_bits_per_mb(
         frame_type, mid, mid_factor * group_weight_factor, bit_depth);
     if (mid_bits_per_mb > desired_bits_per_mb) {
@@ -197,9 +190,8 @@ static int find_qindex_by_rate_with_correction(
   }
 #if CONFIG_DEBUG
   assert(low == high);
-  const double low_factor =
-      calc_correction_factor(error_per_mb, ERR_DIVISOR - ediv_size_correction,
-                             FACTOR_PT_LOW, FACTOR_PT_HIGH, low, bit_depth);
+  const double low_factor = calc_correction_factor(
+      error_per_mb, ERR_DIVISOR, FACTOR_PT_LOW, FACTOR_PT_HIGH, low, bit_depth);
   const int low_bits_per_mb = av1_rc_bits_per_mb(
       frame_type, low, low_factor * group_weight_factor, bit_depth);
   assert(low_bits_per_mb <= desired_bits_per_mb || low == worst_qindex);
@@ -228,23 +220,12 @@ static int get_twopass_worst_quality(AV1_COMP *cpi, const double section_err,
         (int)((uint64_t)section_target_bandwidth << BPER_MB_NORMBITS) /
         active_mbs;
 
-    // Larger image formats are expected to be a little harder to code
-    // relatively given the same prediction error score. This in part at
-    // least relates to the increased size and hence coding overheads of
-    // motion vectors. Some account of this is made through adjustment of
-    // the error divisor.
-    double ediv_size_correction =
-        AOMMAX(0.2, AOMMIN(5.0, get_linear_size_factor(cpi)));
-    if (ediv_size_correction < 1.0)
-      ediv_size_correction = -(1.0 / ediv_size_correction);
-    ediv_size_correction *= 4.0;
-
     // Try and pick a max Q that will be high enough to encode the
     // content at the given rate.
     int q = find_qindex_by_rate_with_correction(
         cpi, target_norm_bits_per_mb, cpi->common.seq_params.bit_depth,
-        INTER_FRAME, av_err_per_mb, ediv_size_correction, group_weight_factor,
-        rc->best_quality, rc->worst_quality);
+        INTER_FRAME, av_err_per_mb, group_weight_factor, rc->best_quality,
+        rc->worst_quality);
 
     // Restriction on active max q for constrained quality mode.
     if (cpi->oxcf.rc_mode == AOM_CQ) q = AOMMAX(q, oxcf->cq_level);
