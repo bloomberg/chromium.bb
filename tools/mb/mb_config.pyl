@@ -277,8 +277,8 @@
       'linux-chromium-tests-staging-builder': 'release_bot',
       'linux-code-coverage': 'clang_code_coverage',
       'linux-password-manager-captured-sites-rel': 'release_bot',
-      'Mac deterministic': 'release_bot_mac_strip_minimal_symbols',
-      'Mac deterministic (dbg)': 'debug_bot',
+      'Mac deterministic': 'release_bot_mac_strip_minimal_symbols_deterministic',
+      'Mac deterministic (dbg)': 'debug_bot_deterministic',
       'mac-autofill-captured-sites-rel': 'release_bot',
 
       'android-mojo-webview-rel': 'android_release_bot_minimal_symbols_arm64',
@@ -1411,6 +1411,10 @@
       'debug_bot',
     ],
 
+    'debug_bot_deterministic': [
+      'debug_bot', 'mac_deterministic_build',
+    ],
+
     'debug_bot_local_build': [
       'debug_bot_local_build',
     ],
@@ -1774,6 +1778,10 @@
 
     'release_bot_mac_strip_minimal_symbols': [
       'release_bot', 'mac_strip', 'minimal_symbols',
+    ],
+
+    'release_bot_mac_strip_minimal_symbols_deterministic': [
+      'release_bot', 'mac_strip', 'minimal_symbols', 'mac_deterministic_build'
     ],
 
     'release_bot_v8_debug': [
@@ -2207,6 +2215,10 @@
 
     'lsan': {
       'gn_args': 'is_lsan=true',
+    },
+
+    'mac_deterministic_build': {
+      'gn_args': 'mac_deterministic_build=true',
     },
 
     'mac_strip': {
