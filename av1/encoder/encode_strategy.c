@@ -470,41 +470,22 @@ static void adjust_frame_rate(AV1_COMP *cpi,
 // If this is an alt-ref, returns the offset of the source frame used
 // as the arf midpoint. Otherwise, returns 0.
 static int get_arf_src_index(AV1_COMP *cpi) {
-  RATE_CONTROL *const rc = &cpi->rc;
   int arf_src_index = 0;
   if (cpi->oxcf.pass != 1) {
     const GF_GROUP *const gf_group = &cpi->gf_group;
-    if (get_frame_update_type(cpi) == ARF_UPDATE) {
-      assert(is_altref_enabled(cpi));
-      arf_src_index = gf_group->arf_src_offset[gf_group->index];
-    }
-  } else if (rc->source_alt_ref_pending) {
-    arf_src_index = rc->frames_till_gf_update_due;
+    arf_src_index = gf_group->arf_src_offset[gf_group->index];
   }
-  return arf_src_index;
-}
 
-// If this is an internal alt-ref, returns the offset of the source frame used
-// as the internal arf midpoint. Otherwise, returns 0.
-static int get_internal_arf_src_index(AV1_COMP *cpi) {
-  int internal_arf_src_index = 0;
-  if (cpi->oxcf.pass != 1) {
-    const GF_GROUP *const gf_group = &cpi->gf_group;
-    if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE) {
-      assert(is_altref_enabled(cpi) && cpi->internal_altref_allowed);
-      internal_arf_src_index = gf_group->arf_src_offset[gf_group->index];
-    }
-  }
-  return internal_arf_src_index;
+  return arf_src_index;
 }
 
 // Called if this frame is an ARF or ARF2. Also handles forward-keyframes
 // For an ARF set arf2=0, for ARF2 set arf2=1
 // temporal_filtered is set to 1 if we temporally filter the ARF frame, so that
 // the correct post-filter buffer can be used.
-static struct lookahead_entry *setup_arf_or_arf2(
-    AV1_COMP *const cpi, const int arf_src_index, const int arf2,
-    int *temporal_filtered, EncodeFrameParams *const frame_params) {
+static struct lookahead_entry *setup_arf_frame(
+    AV1_COMP *const cpi, const int arf_src_index, int *code_arf,
+    EncodeFrameParams *const frame_params) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
 #if !CONFIG_REALTIME_ONLY
@@ -512,7 +493,7 @@ static struct lookahead_entry *setup_arf_or_arf2(
 #endif
 
   assert(arf_src_index <= rc->frames_to_key);
-  *temporal_filtered = 0;
+  *code_arf = 0;
 
   struct lookahead_entry *source =
       av1_lookahead_peek(cpi->lookahead, arf_src_index);
@@ -522,7 +503,7 @@ static struct lookahead_entry *setup_arf_or_arf2(
     cpi->alt_ref_source = source;
 
     // When arf_src_index == rc->frames_to_key, it indicates a fwd_kf
-    if (!arf2 && arf_src_index == rc->frames_to_key) {
+    if (arf_src_index == rc->frames_to_key) {
       // Skip temporal filtering and mark as intra_only if we have a fwd_kf
       cpi->no_show_kf = 1;
     } else {
@@ -531,7 +512,7 @@ static struct lookahead_entry *setup_arf_or_arf2(
         // Produce the filtered ARF frame.
         av1_temporal_filter(cpi, arf_src_index);
         aom_extend_frame_borders(&cpi->alt_ref_buffer, av1_num_planes(cm));
-        *temporal_filtered = 1;
+        *code_arf = 1;
       }
 #endif
     }
@@ -564,12 +545,12 @@ static int is_forced_keyframe_pending(struct lookahead_ctx *lookahead,
 // temporal_filtered, flush, and frame_update_type are outputs.
 // Return the frame source, or NULL if we couldn't find one
 static struct lookahead_entry *choose_frame_source(
-    AV1_COMP *const cpi, int *const temporal_filtered, int *const flush,
-    struct lookahead_entry **last_source, FRAME_UPDATE_TYPE *frame_update_type,
+    AV1_COMP *const cpi, int *const code_arf, int *const flush,
+    struct lookahead_entry **last_source,
     EncodeFrameParams *const frame_params) {
   AV1_COMMON *const cm = &cpi->common;
   struct lookahead_entry *source = NULL;
-  *temporal_filtered = 0;
+  *code_arf = 0;
 
   // Should we encode an alt-ref frame.
   int arf_src_index = get_arf_src_index(cpi);
@@ -579,25 +560,8 @@ static struct lookahead_entry *choose_frame_source(
     *flush = 1;
   }
 
-  if (arf_src_index) {
-    source = setup_arf_or_arf2(cpi, arf_src_index, 0, temporal_filtered,
-                               frame_params);
-    *frame_update_type = ARF_UPDATE;
-  }
-
-  // Should we encode an internal Alt-ref frame (mutually exclusive to ARF)
-  arf_src_index = get_internal_arf_src_index(cpi);
-  if (arf_src_index &&
-      is_forced_keyframe_pending(cpi->lookahead, arf_src_index)) {
-    arf_src_index = 0;
-    *flush = 1;
-  }
-
-  if (arf_src_index) {
-    source = setup_arf_or_arf2(cpi, arf_src_index, 1, temporal_filtered,
-                               frame_params);
-    *frame_update_type = INTNL_ARF_UPDATE;
-  }
+  if (arf_src_index)
+    source = setup_arf_frame(cpi, arf_src_index, code_arf, frame_params);
 
   if (!source) {
     // Get last frame source.
@@ -607,14 +571,10 @@ static struct lookahead_entry *choose_frame_source(
     // Read in the source frame.
     source = av1_lookahead_pop(cpi->lookahead, *flush);
     if (source == NULL) return NULL;
-    *frame_update_type = LF_UPDATE;  // Default update type
     frame_params->show_frame = 1;
 
     // Check to see if the frame should be encoded as an arf overlay.
-    if (cpi->alt_ref_source == source) {
-      *frame_update_type = OVERLAY_UPDATE;
-      cpi->alt_ref_source = NULL;
-    }
+    if (cpi->alt_ref_source == source) cpi->alt_ref_source = NULL;
   }
   return source;
 }
@@ -1217,21 +1177,15 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     frame_params.show_existing_frame = 0;
   }
 
-  int temporal_filtered = 0;
+  int code_arf = 0;
   struct lookahead_entry *source = NULL;
   struct lookahead_entry *last_source = NULL;
-  FRAME_UPDATE_TYPE frame_update_type;
+  FRAME_UPDATE_TYPE frame_update_type = get_frame_update_type(cpi);
   if (frame_params.show_existing_frame) {
     source = av1_lookahead_pop(cpi->lookahead, flush);
-    frame_update_type = LF_UPDATE;
   } else {
-    source = choose_frame_source(cpi, &temporal_filtered, &flush, &last_source,
-                                 &frame_update_type, &frame_params);
-  }
-
-  // In pass 0 and 2, we get the frame_update_type from gf_group
-  if (oxcf->pass != 1) {
-    frame_update_type = get_frame_update_type(cpi);
+    source = choose_frame_source(cpi, &code_arf, &flush, &last_source,
+                                 &frame_params);
   }
 
   if (source == NULL) {  // If no source was found, we can't encode a frame.
@@ -1244,7 +1198,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     return -1;
   }
 
-  frame_input.source = temporal_filtered ? &cpi->alt_ref_buffer : &source->img;
+  frame_input.source = code_arf ? &cpi->alt_ref_buffer : &source->img;
   frame_input.last_source = last_source != NULL ? &last_source->img : NULL;
   frame_input.ts_duration = source->ts_end - source->ts_start;
 
@@ -1407,7 +1361,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
 #if TEMPORAL_FILTER_KEY_FRAME
   if (denoise_and_encode(cpi, dest, &frame_input, &frame_params, &frame_results,
-                         &temporal_filtered) != AOM_CODEC_OK) {
+                         &code_arf) != AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
   }
 #else   // !TEMPORAL_FILTER_KEY_FRAME
