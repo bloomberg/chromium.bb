@@ -18744,7 +18744,7 @@ Called by update_net_error_codes.py.-->
   <int value="343"
       label="DELETED_TYPES_PRIVATE_CHROME_DIRECT_SETTING_ON_CHANGE"/>
   <int value="344" label="WEB_VIEW_INTERNAL_ON_MESSAGE"/>
-  <int value="345" label="EXTENSION_VIEW_INTERNAL_ON_LOAD_COMMIT"/>
+  <int value="345" label="DELETED_EXTENSION_VIEW_INTERNAL_ON_LOAD_COMMIT"/>
   <int value="346" label="RUNTIME_ON_REQUEST"/>
   <int value="347" label="RUNTIME_ON_REQUEST_EXTERNAL"/>
   <int value="348" label="CHROME_WEB_VIEW_INTERNAL_ON_CONTEXT_MENU_SHOW"/>
@@ -19848,7 +19848,7 @@ Called by update_net_error_codes.py.-->
   <int value="951" label="FILESYSTEMPROVIDER_GET"/>
   <int value="952" label="FILEMANAGERPRIVATE_SEARCHFILESBYHASHES"/>
   <int value="953" label="DELETED_EASYUNLOCKPRIVATE_SHOWERRORBUBBLE"/>
-  <int value="954" label="EXTENSIONVIEWINTERNAL_NAVIGATE"/>
+  <int value="954" label="DELETED_EXTENSIONVIEWINTERNAL_NAVIGATE"/>
   <int value="955" label="NETWORKING_CONFIG_SETNETWORKFILTER"/>
   <int value="956" label="NETWORKING_CONFIG_FINISHAUTHENTICATION"/>
   <int value="957" label="PLATFORMKEYSINTERNAL_SELECTCLIENTCERTIFICATES"/>
@@ -19953,8 +19953,8 @@ Called by update_net_error_codes.py.-->
   <int value="1052" label="WEBCAMPRIVATE_CLOSEWEBCAM"/>
   <int value="1053" label="SERIAL_SETBREAK"/>
   <int value="1054" label="SERIAL_CLEARBREAK"/>
-  <int value="1055" label="EXTENSIONVIEWINTERNAL_LOADSRC"/>
-  <int value="1056" label="EXTENSIONVIEWINTERNAL_PARSESRC"/>
+  <int value="1055" label="DELETED_EXTENSIONVIEWINTERNAL_LOADSRC"/>
+  <int value="1056" label="DELETED_EXTENSIONVIEWINTERNAL_PARSESRC"/>
   <int value="1057" label="HID_GETUSERSELECTEDDEVICES"/>
   <int value="1058"
       label="FILESYSTEMPROVIDERINTERNAL_GETACTIONSREQUESTEDSUCCESS"/>
@@ -20291,6 +20291,7 @@ Called by update_net_error_codes.py.-->
   <int value="1373" label="LOGINSCREENSTORAGE_RETRIEVECREDENTIALS"/>
   <int value="1374" label="AUTOTESTPRIVATE_GETARCAPPWINDOWSTATE"/>
   <int value="1375" label="AUTOTESTPRIVATE_GETARCAPPWINDOWINFO"/>
+  <int value="1376" label="AUTOTESTPRIVATE_GETALLINSTALLEDAPPS"/>
 </enum>
 
 <enum name="ExtensionIconState">
