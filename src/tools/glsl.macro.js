@@ -36,5 +36,13 @@ module.exports = createMacro(({ references, state, babel }) => {
     const codeAsArray = Array.from(code, w => t.numericLiteral(w));
     const newPath = t.newExpression(t.identifier('Uint32Array'), [t.arrayExpression(codeAsArray)]);
     path.context.parentPath.replaceWith(newPath);
+
+    let glslMacroText = path.hub.file.code
+      .substring(path.parent.start, path.parent.end)
+      .trim()
+      .split('\n')
+      .map(x => (x ? ' ' + x : x))
+      .join('\n *');
+    path.context.parentPath.addComment('leading', glslMacroText + '\n ');
   }
 });
