@@ -2372,13 +2372,12 @@ TEST_F(ThrottlingURLLoaderTest, MultipleRestartsOfMultipleTypes) {
                             std::move(modified_headers));
   }));
 
-  // Have two of the three throttles restart whe processing
+  // Have two of the three throttles restart when processing
   // BeforeWillProcessResponse(), using
-  // different load flags (2 and 8), but both with URL resets.
-  throttles[0]->set_before_will_process_response_callback(base::BindRepeating(
-      [](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
-        delegate->RestartWithURLResetAndFlags(2);
-      }));
+  // different load flags (2 and 8), and one with URL resets.
+  throttles[0]->set_before_will_process_response_callback(
+      base::BindRepeating([](blink::URLLoaderThrottle::Delegate* delegate,
+                             bool* defer) { delegate->RestartWithFlags(2); }));
   throttles[2]->set_before_will_process_response_callback(base::BindRepeating(
       [](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         delegate->RestartWithURLResetAndFlags(8);
@@ -2535,6 +2534,7 @@ TEST_F(ThrottlingURLLoaderTest, MultipleDeferThenRestartsOfMultipleTypes) {
       },
       run_loop3.QuitClosure()));
 
+  // Restart throttles with different load flags, one with an URL reset.
   int next_load_flag = 1;
   bool with_url_reset = true;
   for (auto* throttle : throttles) {
