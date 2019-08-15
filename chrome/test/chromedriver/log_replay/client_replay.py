@@ -282,11 +282,12 @@ def _GetAnyElementIds(payload):
   Returns:
     list of ID strings, in order, in this payload
   """
+  element_tag="element-6066-11e4-a52e-4f735466cecf"
   if isinstance(payload, dict):
-    if "ELEMENT" in payload:
-      return [payload["ELEMENT"]]
+    if element_tag in payload:
+      return [payload[element_tag]]
   elif isinstance(payload, list):
-    elements = [item["ELEMENT"] for item in payload if "ELEMENT" in item]
+    elements = [item[element_tag] for item in payload if element_tag in item]
     windows = [item for item in payload if "CDwindow" in item]
     if not elements and not windows:
       return None
