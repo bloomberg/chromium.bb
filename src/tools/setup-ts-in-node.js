@@ -15,3 +15,7 @@ Module._resolveFilename = (request, parentModule, isMain) => {
   }
   return resolveFilename.call(this, request, parentModule, isMain);
 };
+
+process.on('unhandledRejection', ex => {
+  throw ex;
+});
