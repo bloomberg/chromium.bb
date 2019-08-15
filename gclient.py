@@ -1980,7 +1980,7 @@ class CipdDependency(Dependency):
       ])
       for p in sorted(
           self._cipd_root.packages(self._cipd_subdir),
-          cmp=lambda x, y: cmp(x.name, y.name)):
+          key=lambda x: x.name):
         s.extend([
             '      {',
             '        "package": "%s",' % escape_cipd_var(p.name),

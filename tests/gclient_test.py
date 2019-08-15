@@ -8,13 +8,17 @@
 See gclient_smoketest.py for integration tests.
 """
 
-import Queue
 import copy
 import logging
 import ntpath
 import os
 import sys
 import unittest
+
+if sys.version_info.major == 2:
+  import Queue
+else:
+  import queue as Queue
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -51,7 +55,7 @@ class SCMMock(object):
     self.url = parsed_url
 
   def RunCommand(self, command, options, args, file_list):
-    self.unit_test.assertEquals('None', command)
+    self.unit_test.assertEqual('None', command)
     self.unit_test.processed.put((self.name, self.url))
 
   # pylint: disable=no-self-use
@@ -77,7 +81,7 @@ class GclientTest(trial_dir.TestCase):
     sys.stdout = gclient.gclient_utils.MakeFileAnnotated(sys.stdout)
 
   def tearDown(self):
-    self.assertEquals([], self._get_processed())
+    self.assertEqual([], self._get_processed())
     gclient.gclient_scm.GitWrapper = self._old_createscm
     sys.stdout = self._old_sys_stdout
     os.chdir(self.previous_dir)
@@ -142,10 +146,10 @@ class GclientTest(trial_dir.TestCase):
       self.assertTrue(
           actual.index(('bar', 'svn://example.com/bar')) <
           actual.index(('bar/empty', 'svn://example.com/bar_empty')))
-      self.assertEquals(first_3, sorted(actual[0:3]))
+      self.assertEqual(first_3, sorted(actual[0:3]))
     else:
-      self.assertEquals(first_3, actual[0:3])
-    self.assertEquals(
+      self.assertEqual(first_3, actual[0:3])
+    self.assertEqual(
         [
           ('foo/dir1', 'svn://example.com/dir1'),
           ('foo/dir1/dir2', 'svn://example.com/dir1/dir2'),
@@ -155,10 +159,10 @@ class GclientTest(trial_dir.TestCase):
         ],
         actual[3:])
 
-    self.assertEquals(3, len(obj.dependencies))
-    self.assertEquals('foo', obj.dependencies[0].name)
-    self.assertEquals('bar', obj.dependencies[1].name)
-    self.assertEquals('bar/empty', obj.dependencies[2].name)
+    self.assertEqual(3, len(obj.dependencies))
+    self.assertEqual('foo', obj.dependencies[0].name)
+    self.assertEqual('bar', obj.dependencies[1].name)
+    self.assertEqual('bar/empty', obj.dependencies[2].name)
     self._check_requirements(
         obj.dependencies[0],
         {
@@ -189,8 +193,8 @@ class GclientTest(trial_dir.TestCase):
     for dependency in solution.dependencies:
       e = expected.pop(dependency.name)
       a = sorted(dependency.requirements)
-      self.assertEquals(e, a, (dependency.name, e, a))
-    self.assertEquals({}, expected)
+      self.assertEqual(e, a, (dependency.name, e, a))
+    self.assertEqual({}, expected)
 
   def _get_processed(self):
     """Retrieves the item in the order they were processed."""
@@ -235,7 +239,7 @@ class GclientTest(trial_dir.TestCase):
         relative=False,
         condition=None,
         print_outbuf=True)
-    self.assertEquals('proto://host/path@revision', d.url)
+    self.assertEqual('proto://host/path@revision', d.url)
 
   def testStr(self):
     parser = gclient.OptionParser()
@@ -296,7 +300,7 @@ class GclientTest(trial_dir.TestCase):
     # pylint: disable=protected-access
     obj.dependencies[0]._file_list.append('foo')
     str_obj = str(obj)
-    self.assertEquals(322, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
+    self.assertEqual(322, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
 
   def testHooks(self):
     hooks = [{'pattern':'.', 'action':['cmd1', 'arg1', 'arg2']}]
@@ -607,13 +611,13 @@ class GclientTest(trial_dir.TestCase):
     obj.RunOnDeps('None', args)
     self.assertEqual(['zippy'], sorted(obj.enforced_os))
     all_hooks = obj.GetHooks(options)
-    self.assertEquals(
+    self.assertEqual(
         [('.', 'svn://example.com/'),],
         sorted(self._get_processed()))
-    self.assertEquals([h.action for h in all_hooks],
+    self.assertEqual([h.action for h in all_hooks],
                       [('python', 'do_a'),
                        ('python', 'do_b')])
-    self.assertEquals([h.condition for h in all_hooks],
+    self.assertEqual([h.condition for h in all_hooks],
                       [None, 'checkout_blorp'])
 
   def testOverride(self):
@@ -700,7 +704,7 @@ class GclientTest(trial_dir.TestCase):
     with self.assertRaises(gclient_utils.Error):
       obj.RunOnDeps('None', [])
     self.assertEqual(['unix'], sorted(obj.enforced_os))
-    self.assertEquals(
+    self.assertEqual(
         [
           ('foo', 'svn://example.com/foo'),
           ],
@@ -755,7 +759,7 @@ class GclientTest(trial_dir.TestCase):
     options, _ = gclient.OptionParser().parse_args([])
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', [])
-    self.assertEquals(
+    self.assertEqual(
         [
           ('bar', 'svn://example.com/bar'),
           ('baz', 'svn://example.com/baz'),
@@ -795,7 +799,7 @@ class GclientTest(trial_dir.TestCase):
     options, _ = gclient.OptionParser().parse_args([])
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', [])
-    self.assertEquals(
+    self.assertEqual(
         [
           ('foo', 'svn://example.com/foo'),
           ('foo/bar', 'svn://example.com/bar'),
@@ -832,7 +836,7 @@ class GclientTest(trial_dir.TestCase):
     options, _ = gclient.OptionParser().parse_args([])
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', [])
-    self.assertEquals(
+    self.assertEqual(
         [
           ('foo', 'svn://example.com/foo'),
           ('foo/bar', 'svn://example.com/bar'),
@@ -871,7 +875,7 @@ class GclientTest(trial_dir.TestCase):
     options, _ = gclient.OptionParser().parse_args([])
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', [])
-    self.assertEquals(
+    self.assertEqual(
         [
           ('foo', 'svn://example.com/foo'),
           ('foo/third_party/bar', 'svn://example.com/bar'),
@@ -907,7 +911,7 @@ class GclientTest(trial_dir.TestCase):
     options, _ = gclient.OptionParser().parse_args([])
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', [])
-    self.assertEquals(
+    self.assertEqual(
         [
           ('foo', 'svn://example.com/foo'),
           ('bar', 'svn://example.com/bar'),
@@ -943,7 +947,7 @@ class GclientTest(trial_dir.TestCase):
     options, _ = gclient.OptionParser().parse_args([])
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', [])
-    self.assertEquals(
+    self.assertEqual(
         [
           ('foo', 'svn://example.com/foo'),
           ('bar', 'svn://example.com/bar'),
@@ -968,7 +972,7 @@ class GclientTest(trial_dir.TestCase):
     options, _ = gclient.OptionParser().parse_args([])
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', [])
-    self.assertEquals(
+    self.assertEqual(
         [
           ('foo', 'svn://example.com/foo'),
           ('bar', 'svn://example.com/bar'),
@@ -1004,16 +1008,16 @@ class GclientTest(trial_dir.TestCase):
     options.validate_syntax = True
     obj = gclient.GClient.LoadCurrentConfig(options)
 
-    self.assertEquals(1, len(obj.dependencies))
+    self.assertEqual(1, len(obj.dependencies))
     sol = obj.dependencies[0]
     sol._condition = 'some_condition'
 
     sol.ParseDepsFile()
-    self.assertEquals(1, len(sol.dependencies))
+    self.assertEqual(1, len(sol.dependencies))
     dep = sol.dependencies[0]
 
     self.assertIsInstance(dep, gclient.CipdDependency)
-    self.assertEquals(
+    self.assertEqual(
         'https://chrome-infra-packages.appspot.com/lemur@version:1234',
         dep.url)
 
@@ -1035,8 +1039,8 @@ class GclientTest(trial_dir.TestCase):
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', [])
     dep = obj.dependencies[0]
-    self.assertEquals([], dep.findDepsFromNotAllowedHosts())
-    self.assertEquals(frozenset(), dep.allowed_hosts)
+    self.assertEqual([], dep.findDepsFromNotAllowedHosts())
+    self.assertEqual(frozenset(), dep.allowed_hosts)
     self._get_processed()
 
   def testDepsFromNotAllowedHostsOK(self):
@@ -1058,8 +1062,8 @@ class GclientTest(trial_dir.TestCase):
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', [])
     dep = obj.dependencies[0]
-    self.assertEquals([], dep.findDepsFromNotAllowedHosts())
-    self.assertEquals(frozenset(['example.com']), dep.allowed_hosts)
+    self.assertEqual([], dep.findDepsFromNotAllowedHosts())
+    self.assertEqual(frozenset(['example.com']), dep.allowed_hosts)
     self._get_processed()
 
   def testDepsFromNotAllowedHostsBad(self):
@@ -1081,8 +1085,8 @@ class GclientTest(trial_dir.TestCase):
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', [])
     dep = obj.dependencies[0]
-    self.assertEquals(frozenset(['other.com']), dep.allowed_hosts)
-    self.assertEquals([dep.dependencies[0]], dep.findDepsFromNotAllowedHosts())
+    self.assertEqual(frozenset(['other.com']), dep.allowed_hosts)
+    self.assertEqual([dep.dependencies[0]], dep.findDepsFromNotAllowedHosts())
     self._get_processed()
 
   def testDepsParseFailureWithEmptyAllowedHosts(self):
@@ -1162,16 +1166,16 @@ class GclientTest(trial_dir.TestCase):
     options.validate_syntax = True
     obj = gclient.GClient.LoadCurrentConfig(options)
 
-    self.assertEquals(1, len(obj.dependencies))
+    self.assertEqual(1, len(obj.dependencies))
     sol = obj.dependencies[0]
     sol._condition = 'some_condition'
 
     sol.ParseDepsFile()
-    self.assertEquals(1, len(sol.dependencies))
+    self.assertEqual(1, len(sol.dependencies))
     dep = sol.dependencies[0]
 
     self.assertIsInstance(dep, gclient.CipdDependency)
-    self.assertEquals(
+    self.assertEqual(
         'https://chrome-infra-packages.appspot.com/lemur@version:1234',
         dep.url)
 
@@ -1204,16 +1208,16 @@ class GclientTest(trial_dir.TestCase):
     options.validate_syntax = True
     obj = gclient.GClient.LoadCurrentConfig(options)
 
-    self.assertEquals(1, len(obj.dependencies))
+    self.assertEqual(1, len(obj.dependencies))
     sol = obj.dependencies[0]
     sol._condition = 'some_condition'
 
     sol.ParseDepsFile()
-    self.assertEquals(1, len(sol.dependencies))
+    self.assertEqual(1, len(sol.dependencies))
     dep = sol.dependencies[0]
 
     self.assertIsInstance(dep, gclient.GitDependency)
-    self.assertEquals('https://example.com/bar', dep.url)
+    self.assertEqual('https://example.com/bar', dep.url)
 
   def testSameDirAllowMultipleCipdDeps(self):
     """Verifies gclient allow multiple cipd deps under same directory."""
@@ -1266,8 +1270,8 @@ class GclientTest(trial_dir.TestCase):
       [])
     dep0 = obj.dependencies[0].dependencies[0]
     dep1 = obj.dependencies[0].dependencies[1]
-    self.assertEquals('https://example.com/foo_package@foo_version', dep0.url)
-    self.assertEquals('https://example.com/bar_package@bar_version', dep1.url)
+    self.assertEqual('https://example.com/foo_package@foo_version', dep0.url)
+    self.assertEqual('https://example.com/bar_package@bar_version', dep1.url)
 
   def _testPosixpathImpl(self):
     parser = gclient.OptionParser()
@@ -1287,7 +1291,7 @@ class GclientTest(trial_dir.TestCase):
         should_process=True,
         relative=False,
         condition=None)
-    self.assertEquals(cipd_dep._cipd_subdir, 'src/foo/bar/baz')
+    self.assertEqual(cipd_dep._cipd_subdir, 'src/foo/bar/baz')
 
   def testPosixpathCipdSubdir(self):
     self._testPosixpathImpl()

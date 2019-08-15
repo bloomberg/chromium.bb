@@ -165,6 +165,9 @@ class PrintableObject(object):
 
 
 def FileRead(filename, mode='rU'):
+  # On Python 3 newlines are converted to '\n' by default and 'U' is deprecated.
+  if mode == 'rU' and sys.version_info.major == 3:
+    mode = 'r'
   with open(filename, mode=mode) as f:
     # codecs.open() has different behavior than open() on python 2.6 so use
     # open() and decode manually.

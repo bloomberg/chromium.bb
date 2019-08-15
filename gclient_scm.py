@@ -318,7 +318,7 @@ class GitWrapper(SCMWrapper):
       files = self._Capture(
           ['-c', 'core.quotePath=false', 'ls-files']).splitlines()
       file_list.extend(
-          [os.path.join(self.checkout_path, f.decode()) for f in files])
+          [os.path.join(self.checkout_path, f) for f in files])
 
   def _DisableHooks(self):
     hook_dir = os.path.join(self.checkout_path, '.git', 'hooks')

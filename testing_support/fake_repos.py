@@ -46,7 +46,7 @@ def read_tree(tree_root):
     for f in [join(root, f) for f in files if not f.startswith('.')]:
       filepath = f[len(tree_root) + 1:].replace(os.sep, '/')
       assert len(filepath), f
-      tree[filepath] = open(join(root, f), 'rU').read()
+      tree[filepath] = gclient_utils.FileRead(join(root, f))
   return tree
 
 
@@ -931,7 +931,7 @@ class FakeReposTestBase(trial_dir.TestCase):
 
   def checkString(self, expected, result, msg=None):
     """Prints the diffs to ease debugging."""
-    self.assertEquals(expected.splitlines(), result.splitlines(), msg)
+    self.assertEqual(expected.splitlines(), result.splitlines(), msg)
     if expected != result:
       # Strip the begining
       while expected and result and expected[0] == result[0]:
@@ -940,13 +940,13 @@ class FakeReposTestBase(trial_dir.TestCase):
       # The exception trace makes it hard to read so dump it too.
       if '\n' in result:
         print(result)
-    self.assertEquals(expected, result, msg)
+    self.assertEqual(expected, result, msg)
 
   def check(self, expected, results):
     """Checks stdout, stderr, returncode."""
     self.checkString(expected[0], results[0])
     self.checkString(expected[1], results[1])
-    self.assertEquals(expected[2], results[2])
+    self.assertEqual(expected[2], results[2])
 
   def assertTree(self, tree, tree_root=None):
     """Diff the checkout tree with a dict."""
@@ -958,7 +958,7 @@ class FakeReposTestBase(trial_dir.TestCase):
       logging.error('Actual %s\n%s' % (tree_root, pprint.pformat(actual)))
       logging.error('Expected\n%s' % pprint.pformat(tree))
       logging.error('Diff\n%s' % pprint.pformat(diff))
-    self.assertEquals(diff, {})
+    self.assertEqual(diff, {})
 
   def mangle_git_tree(self, *args):
     """Creates a 'virtual directory snapshot' to compare with the actual result
