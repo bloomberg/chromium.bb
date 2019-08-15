@@ -388,3 +388,9 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_aggressive_connection_aliveness,
           false)
+
+// If true, QuicStreamSequencer will not take in new data if the stream is
+// reset.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_no_stream_data_after_reset,
+          false)
