@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "v8/include/v8-inspector.h"
 
@@ -55,17 +54,6 @@ std::unique_ptr<protocol::DOM::Rect> LegacyBuildRectForPhysicalRect(
       .setWidth(rect.Width())
       .setHeight(rect.Height())
       .build();
-}
-
-Document* GetEmbeddedDocument(PaintLayer* layer) {
-  // Documents are embedded on their own PaintLayer via a LayoutEmbeddedContent.
-  if (layer->GetLayoutObject().IsLayoutEmbeddedContent()) {
-    FrameView* frame_view =
-        ToLayoutEmbeddedContent(layer->GetLayoutObject()).ChildFrameView();
-    if (auto* local_frame_view = DynamicTo<LocalFrameView>(frame_view))
-      return local_frame_view->GetFrame().GetDocument();
-  }
-  return nullptr;
 }
 
 }  // namespace
@@ -142,11 +130,8 @@ Response LegacyDOMSnapshotAgent::GetSnapshot(
     css_property_filter_->emplace_back(entry, property_id);
   }
 
-  if (include_paint_order.fromMaybe(false)) {
-    paint_order_map_ = std::make_unique<PaintOrderMap>();
-    next_paint_order_index_ = 0;
-    TraversePaintLayerTree(document);
-  }
+  if (include_paint_order.fromMaybe(false))
+    paint_order_map_ = InspectorDOMSnapshotAgent::BuildPaintLayerTree(document);
 
   // Actual traversal.
   VisitNode(document, include_event_listeners.fromMaybe(false),
@@ -485,39 +470,6 @@ int LegacyDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
                                      .build());
   computed_styles_map_->insert(std::move(style), index);
   return index;
-}
-
-void LegacyDOMSnapshotAgent::TraversePaintLayerTree(Document* document) {
-  // Update layout tree before traversal of document so that we inspect a
-  // current and consistent state of all trees.
-  document->UpdateStyleAndLayoutTree();
-
-  PaintLayer* root_layer = document->GetLayoutView()->Layer();
-  // LayoutView requires a PaintLayer.
-  DCHECK(root_layer);
-
-  VisitPaintLayer(root_layer);
-}
-
-void LegacyDOMSnapshotAgent::VisitPaintLayer(PaintLayer* layer) {
-  DCHECK(!paint_order_map_->Contains(layer));
-
-  paint_order_map_->Set(layer, next_paint_order_index_);
-  next_paint_order_index_++;
-
-  // If there is an embedded document, integrate it into the painting order.
-  Document* embedded_document = GetEmbeddedDocument(layer);
-  if (embedded_document)
-    TraversePaintLayerTree(embedded_document);
-
-  // If there's an embedded document, there shouldn't be any children.
-  DCHECK(!embedded_document || !layer->FirstChild());
-
-  if (!embedded_document) {
-    PaintLayerPaintOrderIterator iterator(*layer, kAllChildren);
-    while (PaintLayer* child_layer = iterator.Next())
-      VisitPaintLayer(child_layer);
-  }
 }
 
 }  // namespace blink

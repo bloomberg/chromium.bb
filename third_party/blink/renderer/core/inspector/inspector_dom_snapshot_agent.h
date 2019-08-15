@@ -54,6 +54,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
           computed_styles) override;
   protocol::Response captureSnapshot(
       std::unique_ptr<protocol::Array<String>> computed_styles,
+      protocol::Maybe<bool> include_paint_order,
       protocol::Maybe<bool> include_dom_rects,
       std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>*
           documents,
@@ -76,6 +77,9 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   static PhysicalRect TextFragmentRectInDocument(
       const LayoutObject* layout_object,
       const LayoutText::TextBoxInfo& text_box);
+
+  using PaintOrderMap = WTF::HashMap<PaintLayer*, int>;
+  static std::unique_ptr<PaintOrderMap> BuildPaintLayerTree(Document*);
 
  private:
   // Unconditionally enables the agent, even if |enabled_.Get()==true|.
@@ -101,8 +105,10 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
 
   void GetOriginUrl(String*, const Node*);
 
+  static void TraversePaintLayerTree(Document*, PaintOrderMap* paint_order_map);
+  static void VisitPaintLayer(PaintLayer*, PaintOrderMap* paint_order_map);
+
   using CSSPropertyFilter = Vector<std::pair<String, CSSPropertyID>>;
-  using PaintOrderMap = WTF::HashMap<PaintLayer*, int>;
   using OriginUrlMap = WTF::HashMap<DOMNodeId, String>;
 
   // State of current snapshot.
@@ -123,6 +129,8 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   // duplicate entries in |computed_styles_|.
   bool include_snapshot_dom_rects_ = false;
   std::unique_ptr<CSSPropertyFilter> css_property_filter_;
+  // Maps a PaintLayer to its paint order index.
+  std::unique_ptr<PaintOrderMap> paint_order_map_;
   // Maps a backend node id to the url of the script (if any) that generates
   // the corresponding node.
   std::unique_ptr<OriginUrlMap> origin_url_map_;

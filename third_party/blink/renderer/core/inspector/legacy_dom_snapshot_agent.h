@@ -76,10 +76,6 @@ class CORE_EXPORT LegacyDOMSnapshotAgent {
   // styles in |style_filter_|.
   int GetStyleIndexForNode(Node*);
 
-  // Traverses the PaintLayer tree in paint order to fill |paint_order_map_|.
-  void TraversePaintLayerTree(Document*);
-  void VisitPaintLayer(PaintLayer*);
-
   struct VectorStringHashTraits;
   using ComputedStylesMap = WTF::HashMap<Vector<String>,
                                          int,
@@ -101,7 +97,6 @@ class CORE_EXPORT LegacyDOMSnapshotAgent {
   std::unique_ptr<CSSPropertyFilter> css_property_filter_;
   // Maps a PaintLayer to its paint order index.
   std::unique_ptr<PaintOrderMap> paint_order_map_;
-  int next_paint_order_index_ = 0;
   // Maps a backend node id to the url of the script (if any) that generates
   // the corresponding node.
   OriginUrlMap* origin_url_map_;

@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "v8/include/v8-inspector.h"
 
@@ -59,6 +60,17 @@ std::unique_ptr<protocol::Array<double>> BuildRectForLayout(const int x,
                                                             const int height) {
   return std::make_unique<std::vector<double>, std::initializer_list<double>>(
       {x, y, width, height});
+}
+
+Document* GetEmbeddedDocument(PaintLayer* layer) {
+  // Documents are embedded on their own PaintLayer via a LayoutEmbeddedContent.
+  if (layer->GetLayoutObject().IsLayoutEmbeddedContent()) {
+    FrameView* frame_view =
+        ToLayoutEmbeddedContent(layer->GetLayoutObject()).ChildFrameView();
+    if (auto* local_frame_view = DynamicTo<LocalFrameView>(frame_view))
+      return local_frame_view->GetFrame().GetDocument();
+  }
+  return nullptr;
 }
 
 std::unique_ptr<protocol::DOMSnapshot::RareStringData> StringData() {
@@ -209,10 +221,15 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
 
 protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
     std::unique_ptr<protocol::Array<String>> computed_styles,
+    protocol::Maybe<bool> include_paint_order,
     protocol::Maybe<bool> include_dom_rects,
     std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>*
         documents,
     std::unique_ptr<protocol::Array<String>>* strings) {
+  Document* main_document = inspected_frames_->Root()->GetDocument();
+  if (!main_document)
+    return Response::Error("Document is not available");
+
   strings_ = std::make_unique<protocol::Array<String>>();
   documents_ = std::make_unique<
       protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>();
@@ -225,6 +242,11 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
       continue;
     css_property_filter_->emplace_back(std::move(entry),
                                        std::move(property_id));
+  }
+
+  if (include_paint_order.fromMaybe(false)) {
+    paint_order_map_ =
+        InspectorDOMSnapshotAgent::BuildPaintLayerTree(main_document);
   }
 
   include_snapshot_dom_rects_ = include_dom_rects.fromMaybe(false);
@@ -242,6 +264,7 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
   *documents = std::move(documents_);
   *strings = std::move(strings_);
   css_property_filter_.reset();
+  paint_order_map_.reset();
   string_table_.clear();
   document_order_map_.clear();
   documents_.reset();
@@ -290,7 +313,9 @@ void InspectorDOMSnapshotAgent::VisitDocument(Document* document) {
   // current and consistent state of all trees. No need to do this if paint
   // order was calculated, since layout trees were already updated during
   // TraversePaintLayerTree().
-  document->UpdateStyleAndLayoutTree();
+  if (!paint_order_map_)
+    document->UpdateStyleAndLayoutTree();
+
   DocumentType* doc_type = document->doctype();
 
   document_ =
@@ -350,6 +375,10 @@ void InspectorDOMSnapshotAgent::VisitDocument(Document* document) {
     document_->setScrollOffsetY(offset.Height());
   }
 
+  if (paint_order_map_) {
+    document_->getLayout()->setPaintOrders(
+        std::make_unique<protocol::Array<int>>());
+  }
   if (include_snapshot_dom_rects_) {
     document_->getLayout()->setOffsetRects(
         std::make_unique<protocol::Array<protocol::Array<double>>>());
@@ -595,6 +624,13 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
   if (layout_object->Style() && layout_object->Style()->IsStackingContext())
     SetRare(layout_tree_snapshot->getStackingContexts(), layout_index);
 
+  if (paint_order_map_) {
+    PaintLayer* paint_layer = layout_object->EnclosingLayer();
+    DCHECK(paint_order_map_->Contains(paint_layer));
+    int paint_order = paint_order_map_->at(paint_layer);
+    layout_tree_snapshot->getPaintOrders(nullptr)->emplace_back(paint_order);
+  }
+
   String text = layout_object->IsText() ? ToLayoutText(layout_object)->GetText()
                                         : String();
   layout_tree_snapshot->getText()->emplace_back(AddString(text));
@@ -629,6 +665,50 @@ InspectorDOMSnapshotAgent::BuildStylesForNode(Node* node) {
     result->emplace_back(AddString(value));
   }
   return result;
+}
+
+// static
+std::unique_ptr<InspectorDOMSnapshotAgent::PaintOrderMap>
+InspectorDOMSnapshotAgent::BuildPaintLayerTree(Document* document) {
+  auto result = std::make_unique<PaintOrderMap>();
+  TraversePaintLayerTree(document, result.get());
+  return result;
+}
+
+// static
+void InspectorDOMSnapshotAgent::TraversePaintLayerTree(
+    Document* document,
+    PaintOrderMap* paint_order_map) {
+  // Update layout tree before traversal of document so that we inspect a
+  // current and consistent state of all trees.
+  document->UpdateStyleAndLayoutTree();
+
+  PaintLayer* root_layer = document->GetLayoutView()->Layer();
+  // LayoutView requires a PaintLayer.
+  DCHECK(root_layer);
+
+  VisitPaintLayer(root_layer, paint_order_map);
+}
+
+// static
+void InspectorDOMSnapshotAgent::VisitPaintLayer(
+    PaintLayer* layer,
+    PaintOrderMap* paint_order_map) {
+  DCHECK(!paint_order_map->Contains(layer));
+
+  paint_order_map->Set(layer, paint_order_map->size());
+
+  Document* embedded_document = GetEmbeddedDocument(layer);
+  // If there's an embedded document, there shouldn't be any children.
+  DCHECK(!embedded_document || !layer->FirstChild());
+  if (embedded_document) {
+    TraversePaintLayerTree(embedded_document, paint_order_map);
+    return;
+  }
+
+  PaintLayerPaintOrderIterator iterator(*layer, kAllChildren);
+  while (PaintLayer* child_layer = iterator.Next())
+    VisitPaintLayer(child_layer, paint_order_map);
 }
 
 void InspectorDOMSnapshotAgent::Trace(blink::Visitor* visitor) {
