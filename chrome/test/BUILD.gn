@@ -1688,6 +1688,7 @@ if (!is_android) {
         "../browser/extensions/isolated_app_browsertest.cc",
         "../browser/extensions/lazy_background_page_apitest.cc",
         "../browser/extensions/lazy_background_page_test_util.h",
+        "../browser/extensions/manifest_v3_browsertest.cc",
         "../browser/extensions/mutation_observers_apitest.cc",
         "../browser/extensions/native_bindings_apitest.cc",
         "../browser/extensions/navigation_observer_browsertest.cc",
