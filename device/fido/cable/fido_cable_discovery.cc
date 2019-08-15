@@ -35,7 +35,7 @@ namespace {
 // with the EID as its UUID.
 std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
     uint8_t version_number,
-    base::span<const uint8_t, kEphemeralIdSize> client_eid) {
+    base::span<const uint8_t, kCableEphemeralIdSize> client_eid) {
   auto advertisement_data = std::make_unique<BluetoothAdvertisement::Data>(
       BluetoothAdvertisement::AdvertisementType::ADVERTISEMENT_TYPE_BROADCAST);
 
@@ -57,7 +57,7 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
   static constexpr uint8_t kCableFlags = 0x20;
 
   static constexpr uint8_t kCableGoogleManufacturerDataLength =
-      3u + kEphemeralIdSize;
+      3u + kCableEphemeralIdSize;
   std::array<uint8_t, 4> kCableGoogleManufacturerDataHeader = {
       kCableGoogleManufacturerDataLength, kCableGoogleManufacturerDataType,
       kCableFlags, version_number};
@@ -104,9 +104,9 @@ CableDiscoveryData::CableDiscoveryData() = default;
 
 CableDiscoveryData::CableDiscoveryData(
     uint8_t version,
-    const EidArray& client_eid,
-    const EidArray& authenticator_eid,
-    const SessionPreKeyArray& session_pre_key)
+    const CableEidArray& client_eid,
+    const CableEidArray& authenticator_eid,
+    const CableSessionPreKeyArray& session_pre_key)
     : version(version),
       client_eid(client_eid),
       authenticator_eid(authenticator_eid),
@@ -151,7 +151,7 @@ FidoCableDiscovery::~FidoCableDiscovery() {
 std::unique_ptr<FidoCableHandshakeHandler>
 FidoCableDiscovery::CreateHandshakeHandler(
     FidoCableDevice* device,
-    base::span<const uint8_t, kSessionPreKeySize> session_pre_key,
+    base::span<const uint8_t, kCableSessionPreKeySize> session_pre_key,
     base::span<const uint8_t, 8> nonce) {
   return std::make_unique<FidoCableHandshakeHandler>(device, nonce,
                                                      session_pre_key);
@@ -260,7 +260,7 @@ void FidoCableDiscovery::StopAdvertisements(base::OnceClosure callback) {
 }
 
 void FidoCableDiscovery::OnAdvertisementRegistered(
-    const EidArray& client_eid,
+    const CableEidArray& client_eid,
     scoped_refptr<BluetoothAdvertisement> advertisement) {
   FIDO_LOG(DEBUG) << "Advertisement registered.";
   advertisements_.emplace(client_eid, std::move(advertisement));
@@ -317,7 +317,7 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
 
 void FidoCableDiscovery::ConductEncryptionHandshake(
     std::unique_ptr<FidoCableDevice> cable_device,
-    base::span<const uint8_t, kSessionPreKeySize> session_pre_key,
+    base::span<const uint8_t, kCableSessionPreKeySize> session_pre_key,
     base::span<const uint8_t, 8> nonce) {
   auto handshake_handler =
       CreateHandshakeHandler(cable_device.get(), session_pre_key, nonce);
@@ -376,7 +376,7 @@ FidoCableDiscovery::GetCableDiscoveryDataFromServiceData(
   if (service_data->empty() || !(service_data->at(0) >> 5 & 1u))
     return nullptr;
 
-  EidArray received_authenticator_eid;
+  CableEidArray received_authenticator_eid;
   bool extract_success = fido_parsing_utils::ExtractArray(
       *service_data, 2, &received_authenticator_eid);
   if (!extract_success)

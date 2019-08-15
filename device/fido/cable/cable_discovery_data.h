@@ -12,11 +12,11 @@
 
 namespace device {
 
-constexpr size_t kEphemeralIdSize = 16;
-constexpr size_t kSessionPreKeySize = 32;
+constexpr size_t kCableEphemeralIdSize = 16;
+constexpr size_t kCableSessionPreKeySize = 32;
 
-using EidArray = std::array<uint8_t, kEphemeralIdSize>;
-using SessionPreKeyArray = std::array<uint8_t, kSessionPreKeySize>;
+using CableEidArray = std::array<uint8_t, kCableEphemeralIdSize>;
+using CableSessionPreKeyArray = std::array<uint8_t, kCableSessionPreKeySize>;
 
 // Encapsulates information required to discover Cable device per single
 // credential. When multiple credentials are enrolled to a single account
@@ -27,9 +27,9 @@ using SessionPreKeyArray = std::array<uint8_t, kSessionPreKeySize>;
 // See: https://crbug.com/837088
 struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
   CableDiscoveryData(uint8_t version,
-                     const EidArray& client_eid,
-                     const EidArray& authenticator_eid,
-                     const SessionPreKeyArray& session_pre_key);
+                     const CableEidArray& client_eid,
+                     const CableEidArray& authenticator_eid,
+                     const CableSessionPreKeyArray& session_pre_key);
   CableDiscoveryData();
   CableDiscoveryData(const CableDiscoveryData& data);
   CableDiscoveryData& operator=(const CableDiscoveryData& other);
@@ -37,9 +37,9 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
   ~CableDiscoveryData();
 
   uint8_t version;
-  EidArray client_eid;
-  EidArray authenticator_eid;
-  SessionPreKeyArray session_pre_key;
+  CableEidArray client_eid;
+  CableEidArray authenticator_eid;
+  CableSessionPreKeyArray session_pre_key;
 };
 
 }  // namespace device
