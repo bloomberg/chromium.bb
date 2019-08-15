@@ -32,6 +32,7 @@ class GCMDriver;
 }  // namespace gcm
 
 namespace syncer {
+class DeviceInfo;
 class DeviceInfoTracker;
 class LocalDeviceInfoProvider;
 class SyncService;
@@ -75,6 +76,10 @@ class SharingService : public KeyedService,
       syncer::LocalDeviceInfoProvider* local_device_info_provider,
       syncer::SyncService* sync_service);
   ~SharingService() override;
+
+  // Returns the device matching |guid|, or nullptr if no match was found.
+  std::unique_ptr<syncer::DeviceInfo> GetDeviceByGuid(
+      const std::string& guid) const;
 
   // Returns a list of DeviceInfo that is available to receive messages.
   // All returned devices has the specified |required_capabilities| defined in
@@ -158,7 +163,7 @@ class SharingService : public KeyedService,
 
 #if defined(OS_ANDROID)
   ClickToCallMessageHandler click_to_call_message_handler_;
-  SharedClipboardMessageHandler shared_clipboard_message_handler_;
+  SharedClipboardMessageHandler shared_clipboard_message_handler_{this};
 #endif  // defined(OS_ANDROID)
 
   base::WeakPtrFactory<SharingService> weak_ptr_factory_{this};

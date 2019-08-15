@@ -113,6 +113,14 @@ SharingService::~SharingService() {
     sync_service_->RemoveObserver(this);
 }
 
+std::unique_ptr<syncer::DeviceInfo> SharingService::GetDeviceByGuid(
+    const std::string& guid) const {
+  if (!IsSyncEnabled())
+    return nullptr;
+
+  return device_info_tracker_->GetDeviceInfo(guid);
+}
+
 std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
     int required_capabilities) const {
   if (!IsSyncEnabled())
