@@ -563,7 +563,7 @@ def InlineToFile(input_filename, output_filename, grd_node):
   """
   inlined_data = InlineToString(input_filename, grd_node)
   with open(output_filename, 'wb') as out_file:
-    out_file.writelines(inlined_data)
+    out_file.write(inlined_data)
 
 
 def GetResourceFilenames(filename,
