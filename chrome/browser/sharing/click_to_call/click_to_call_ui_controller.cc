@@ -86,8 +86,8 @@ std::vector<App> ClickToCallUiController::GetApps() {
       shell_integration::GetApplicationNameForProtocol(phone_url_);
 
   if (!app_name.empty()) {
-    apps.emplace_back(vector_icons::kOpenInNewIcon, std::move(app_name),
-                      std::string());
+    apps.emplace_back(&vector_icons::kOpenInNewIcon, gfx::Image(),
+                      std::move(app_name), std::string());
   }
   return apps;
 }

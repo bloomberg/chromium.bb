@@ -10,10 +10,14 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 
-SharingUiController::App::App(const gfx::VectorIcon& icon,
+SharingUiController::App::App(const gfx::VectorIcon* vector_icon,
+                              const gfx::Image& image,
                               base::string16 name,
                               std::string identifier)
-    : icon(icon), name(std::move(name)), identifier(std::move(identifier)) {}
+    : vector_icon(vector_icon),
+      image(image),
+      name(std::move(name)),
+      identifier(std::move(identifier)) {}
 
 SharingUiController::App::App(App&& other) = default;
 

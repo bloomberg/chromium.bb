@@ -102,10 +102,10 @@ class ClickToCallDialogViewTest : public ChromeViewsTestBase {
 
   std::vector<ClickToCallUiController::App> SetUpApps() {
     std::vector<ClickToCallUiController::App> apps;
-    apps.emplace_back(vector_icons::kOpenInNewIcon, base::UTF8ToUTF16("app_1"),
-                      std::string());
-    apps.emplace_back(vector_icons::kOpenInNewIcon, base::UTF8ToUTF16("app_2"),
-                      std::string());
+    apps.emplace_back(&vector_icons::kOpenInNewIcon, gfx::Image(),
+                      base::UTF8ToUTF16("app_1"), std::string());
+    apps.emplace_back(&vector_icons::kOpenInNewIcon, gfx::Image(),
+                      base::UTF8ToUTF16("app_2"), std::string());
     return apps;
   }
 
@@ -155,7 +155,7 @@ TEST_F(ClickToCallDialogViewTest, DevicePressed) {
 }
 
 TEST_F(ClickToCallDialogViewTest, AppPressed) {
-  ClickToCallUiController::App app(vector_icons::kOpenInNewIcon,
+  ClickToCallUiController::App app(&vector_icons::kOpenInNewIcon, gfx::Image(),
                                    base::UTF8ToUTF16("app_1"), std::string());
   EXPECT_CALL(*controller_.get(), GetSyncedDevices())
       .WillOnce(Return(ByMove(std::move(devices_))));

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
+#include "ui/gfx/image/image.h"
 
 class BrowserWindow;
 class SharingDeviceInfo;
@@ -28,13 +29,15 @@ class WebContents;
 class SharingUiController {
  public:
   struct App {
-    App(const gfx::VectorIcon& icon,
+    App(const gfx::VectorIcon* vector_icon,
+        const gfx::Image& image,
         base::string16 name,
         std::string identifier);
     App(App&& other);
     ~App();
 
-    const gfx::VectorIcon& icon;
+    const gfx::VectorIcon* vector_icon = nullptr;
+    gfx::Image image;
     base::string16 name;
     std::string identifier;
   };

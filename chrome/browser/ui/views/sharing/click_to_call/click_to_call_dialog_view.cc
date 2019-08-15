@@ -33,30 +33,38 @@ constexpr int kPrimaryIconBorderWidth = 8;
 constexpr int kEmptyImageHeight = 88;
 constexpr int kEmptyImageTopPadding = 16;
 
-SkColor GetColorfromTheme() {
+SkColor GetColorFromTheme() {
   const ui::NativeTheme* native_theme =
       ui::NativeTheme::GetInstanceForNativeUi();
   return native_theme->GetSystemColor(
       ui::NativeTheme::kColorId_DefaultIconColor);
 }
 
-std::unique_ptr<views::ImageView> CreateIconView(const gfx::VectorIcon& icon) {
+std::unique_ptr<views::ImageView> CreateIconView(const gfx::ImageSkia& icon) {
   auto icon_view = std::make_unique<views::ImageView>();
-  icon_view->SetImage(
-      gfx::CreateVectorIcon(icon, kPrimaryIconSize, GetColorfromTheme()));
+  icon_view->SetImage(icon);
   icon_view->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
   return icon_view;
 }
 
+std::unique_ptr<views::ImageView> CreateVectorIconView(
+    const gfx::VectorIcon& vector_icon) {
+  return CreateIconView(gfx::CreateVectorIcon(vector_icon, kPrimaryIconSize,
+                                              GetColorFromTheme()));
+}
+
 std::unique_ptr<views::ImageView> CreateDeviceIcon(
     const sync_pb::SyncEnums::DeviceType device_type) {
-  const gfx::VectorIcon* vector_icon;
-  if (device_type == sync_pb::SyncEnums::TYPE_TABLET)
-    vector_icon = &kTabletIcon;
-  else
-    vector_icon = &kHardwareSmartphoneIcon;
-  return CreateIconView(*vector_icon);
+  return CreateVectorIconView(device_type == sync_pb::SyncEnums::TYPE_TABLET
+                                  ? kTabletIcon
+                                  : kHardwareSmartphoneIcon);
+}
+
+std::unique_ptr<views::ImageView> CreateAppIcon(
+    const ClickToCallUiController::App& app) {
+  return app.vector_icon ? CreateVectorIconView(*app.vector_icon)
+                         : CreateIconView(app.image.AsImageSkia());
 }
 
 std::unique_ptr<views::StyledLabel> CreateHelpText(
@@ -184,7 +192,7 @@ void ClickToCallDialogView::InitListView() {
   LogClickToCallAppsToShow(kSharingClickToCallUiDialog, apps_.size());
   for (const auto& app : apps_) {
     auto dialog_button =
-        std::make_unique<HoverButton>(this, CreateIconView(app.icon), app.name,
+        std::make_unique<HoverButton>(this, CreateAppIcon(app), app.name,
                                       /* subtitle= */ base::string16());
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
