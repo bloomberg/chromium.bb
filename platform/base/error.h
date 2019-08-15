@@ -53,8 +53,12 @@ class Error {
     kConnectionFailed,
 
     kSocketOptionSettingFailure,
+    kSocketAcceptFailure,
     kSocketBindFailure,
     kSocketClosedFailure,
+    kSocketConnectFailure,
+    kSocketInvalidState,
+    kSocketListenFailure,
     kSocketReadFailure,
     kSocketSendFailure,
 
@@ -128,6 +132,7 @@ class Error {
   Error& operator=(const Error& other);
   Error& operator=(Error&& other);
   bool operator==(const Error& other) const;
+  bool operator!=(const Error& other) const;
   bool ok() const { return code_ == Code::kNone; }
 
   Code code() const { return code_; }

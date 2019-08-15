@@ -84,6 +84,10 @@ source_set("platform") {
         "impl/scoped_pipe.h",
         "impl/scoped_wake_lock_posix.cc",
         "impl/scoped_wake_lock_posix.h",
+        "impl/socket_address_posix.cc",
+        "impl/socket_address_posix.h",
+        "impl/stream_socket_posix.cc",
+        "impl/stream_socket_posix.h",
         "impl/udp_socket_posix.cc",
         "impl/udp_socket_posix.h",
       ]
@@ -164,6 +168,7 @@ source_set("platform_unittests") {
       sources += [
         "impl/network_waiter_posix_unittest.cc",
         "impl/scoped_pipe_unittest.cc",
+        "impl/socket_address_posix_unittest.cc",
       ]
     }
   }

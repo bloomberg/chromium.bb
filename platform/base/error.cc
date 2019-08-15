@@ -30,6 +30,10 @@ bool Error::operator==(const Error& other) const {
   return code_ == other.code_ && message_ == other.message_;
 }
 
+bool Error::operator!=(const Error& other) const {
+  return !(*this == other);
+}
+
 std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
   switch (code) {
     case Error::Code::kNone:
@@ -76,10 +80,18 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: ConnectionFailed";
     case Error::Code::kSocketOptionSettingFailure:
       return os << "Failure: SocketOptionSettingFailure";
+    case Error::Code::kSocketAcceptFailure:
+      return os << "Failure: SocketAcceptFailure";
     case Error::Code::kSocketBindFailure:
       return os << "Failure: SocketBindFailure";
     case Error::Code::kSocketClosedFailure:
       return os << "Failure: SocketClosedFailure";
+    case Error::Code::kSocketConnectFailure:
+      return os << "Failure: SocketConnectFailure";
+    case Error::Code::kSocketInvalidState:
+      return os << "Failure: SocketInvalidState";
+    case Error::Code::kSocketListenFailure:
+      return os << "Failure: SocketListenFailure";
     case Error::Code::kSocketReadFailure:
       return os << "Failure: SocketReadFailure";
     case Error::Code::kSocketSendFailure:
