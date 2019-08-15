@@ -28,11 +28,11 @@ class SharedClipboardUiController
  public:
   static SharedClipboardUiController* GetOrCreateFromWebContents(
       content::WebContents* web_contents);
-  static void DeviceSelected(content::WebContents* web_contents,
-                             const base::string16 text,
-                             const SharingDeviceInfo& device);
 
   ~SharedClipboardUiController() override;
+
+  void OnDeviceSelected(const base::string16& text,
+                        const SharingDeviceInfo& device);
 
   // Overridden from SharingUiController:
   base::string16 GetTitle() override;

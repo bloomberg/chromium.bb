@@ -38,16 +38,6 @@ SharedClipboardUiController::GetOrCreateFromWebContents(
   return SharedClipboardUiController::FromWebContents(web_contents);
 }
 
-// static
-void SharedClipboardUiController::DeviceSelected(
-    content::WebContents* web_contents,
-    const base::string16 text,
-    const SharingDeviceInfo& device) {
-  auto* controller = GetOrCreateFromWebContents(web_contents);
-  controller->text_ = text;
-  controller->OnDeviceChosen(device);
-}
-
 SharedClipboardUiController::SharedClipboardUiController(
     content::WebContents* web_contents)
     : SharingUiController(web_contents),
@@ -56,15 +46,21 @@ SharedClipboardUiController::SharedClipboardUiController(
 
 SharedClipboardUiController::~SharedClipboardUiController() = default;
 
+void SharedClipboardUiController::OnDeviceSelected(
+    const base::string16& text,
+    const SharingDeviceInfo& device) {
+  text_ = text;
+  OnDeviceChosen(device);
+}
+
 base::string16 SharedClipboardUiController::GetTitle() {
   // There is no left click dialog - so no title
   return base::string16();
 }
 
 std::vector<SharingDeviceInfo> SharedClipboardUiController::GetSyncedDevices() {
-  // TODO(yasmo): change it to kSharedClipboard when cl 1745473 is submitted.
   return sharing_service_->GetDeviceCandidates(
-      static_cast<int>(SharingDeviceCapability::kNone));
+      static_cast<int>(SharingDeviceCapability::kSharedClipboard));
 }
 
 // No need for apps for shared clipboard feature

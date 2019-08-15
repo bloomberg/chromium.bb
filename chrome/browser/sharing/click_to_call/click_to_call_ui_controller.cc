@@ -50,17 +50,6 @@ void ClickToCallUiController::ShowDialog(content::WebContents* web_contents,
   controller->InvalidateOldDialog();
 }
 
-// static
-void ClickToCallUiController::DeviceSelected(content::WebContents* web_contents,
-                                             const GURL& url,
-                                             const SharingDeviceInfo& device) {
-  auto* controller = GetOrCreateFromWebContents(web_contents);
-  // Invalidate old dialog results.
-  controller->last_dialog_id_++;
-  controller->phone_url_ = url;
-  controller->OnDeviceChosen(device);
-}
-
 ClickToCallUiController::ClickToCallUiController(
     content::WebContents* web_contents)
     : SharingUiController(web_contents),
@@ -68,6 +57,15 @@ ClickToCallUiController::ClickToCallUiController(
           web_contents->GetBrowserContext())) {}
 
 ClickToCallUiController::~ClickToCallUiController() = default;
+
+void ClickToCallUiController::OnDeviceSelected(
+    const GURL& url,
+    const SharingDeviceInfo& device) {
+  // Invalidate old dialog results.
+  last_dialog_id_++;
+  phone_url_ = url;
+  OnDeviceChosen(device);
+}
 
 base::string16 ClickToCallUiController::GetTitle() {
   return l10n_util::GetStringUTF16(

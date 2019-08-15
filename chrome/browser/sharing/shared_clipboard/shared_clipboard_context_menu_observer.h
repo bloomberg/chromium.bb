@@ -21,8 +21,7 @@ class ImageSkia;
 }
 
 class RenderViewContextMenuProxy;
-
-class SharingService;
+class SharedClipboardUiController;
 
 class SharedClipboardContextMenuObserver
     : public RenderViewContextMenuObserver {
@@ -67,7 +66,7 @@ class SharedClipboardContextMenuObserver
 
   RenderViewContextMenuProxy* proxy_ = nullptr;
 
-  SharingService* sharing_service_ = nullptr;
+  SharedClipboardUiController* controller_ = nullptr;
 
   SubMenuDelegate sub_menu_delegate_{this};
 

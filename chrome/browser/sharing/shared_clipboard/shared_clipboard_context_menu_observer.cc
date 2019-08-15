@@ -13,8 +13,6 @@
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_ui_controller.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
-#include "chrome/browser/sharing/sharing_service.h"
-#include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -51,8 +49,8 @@ void SharedClipboardContextMenuObserver::SubMenuDelegate::ExecuteCommand(
 SharedClipboardContextMenuObserver::SharedClipboardContextMenuObserver(
     RenderViewContextMenuProxy* proxy)
     : proxy_(proxy),
-      sharing_service_(SharingServiceFactory::GetForBrowserContext(
-          proxy_->GetBrowserContext())) {}
+      controller_(SharedClipboardUiController::GetOrCreateFromWebContents(
+          proxy_->GetWebContents())) {}
 
 SharedClipboardContextMenuObserver::~SharedClipboardContextMenuObserver() =
     default;
@@ -60,8 +58,7 @@ SharedClipboardContextMenuObserver::~SharedClipboardContextMenuObserver() =
 void SharedClipboardContextMenuObserver::InitMenu(
     const content::ContextMenuParams& params) {
   text_ = params.selection_text;
-  devices_ = sharing_service_->GetDeviceCandidates(
-      static_cast<int>(SharingDeviceCapability::kNone));
+  devices_ = controller_->GetSyncedDevices();
   // TODO(yasmo): add logging
 
   if (devices_.empty())
@@ -143,8 +140,7 @@ void SharedClipboardContextMenuObserver::SendSharedClipboardMessage(
 
   // TODO(yasmo): Add logging
 
-  SharedClipboardUiController::DeviceSelected(proxy_->GetWebContents(), text_,
-                                              devices_[chosen_device_index]);
+  controller_->OnDeviceSelected(text_, devices_[chosen_device_index]);
 }
 
 gfx::ImageSkia SharedClipboardContextMenuObserver::GetContextMenuIcon() const {

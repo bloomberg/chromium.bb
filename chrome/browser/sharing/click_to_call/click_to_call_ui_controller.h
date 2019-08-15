@@ -31,11 +31,10 @@ class ClickToCallUiController
   static void ShowDialog(content::WebContents* web_contents,
                          const GURL& url,
                          bool hide_default_handler);
-  static void DeviceSelected(content::WebContents* web_contents,
-                             const GURL& url,
-                             const SharingDeviceInfo& device);
 
   ~ClickToCallUiController() override;
+
+  void OnDeviceSelected(const GURL& url, const SharingDeviceInfo& device);
 
   // Overridden from SharingUiController:
   base::string16 GetTitle() override;

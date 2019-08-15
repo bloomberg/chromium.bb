@@ -12,8 +12,6 @@
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
-#include "chrome/browser/sharing/sharing_service.h"
-#include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -46,16 +44,15 @@ void ClickToCallContextMenuObserver::SubMenuDelegate::ExecuteCommand(
 ClickToCallContextMenuObserver::ClickToCallContextMenuObserver(
     RenderViewContextMenuProxy* proxy)
     : proxy_(proxy),
-      sharing_service_(SharingServiceFactory::GetForBrowserContext(
-          proxy_->GetBrowserContext())) {}
+      controller_(ClickToCallUiController::GetOrCreateFromWebContents(
+          proxy_->GetWebContents())) {}
 
 ClickToCallContextMenuObserver::~ClickToCallContextMenuObserver() = default;
 
 void ClickToCallContextMenuObserver::InitMenu(
     const content::ContextMenuParams& params) {
   url_ = params.link_url;
-  devices_ = sharing_service_->GetDeviceCandidates(
-      static_cast<int>(SharingDeviceCapability::kTelephony));
+  devices_ = controller_->GetSyncedDevices();
   LogClickToCallDevicesToShow(kSharingClickToCallUiContextMenu,
                               devices_.size());
   if (devices_.empty())
@@ -138,6 +135,5 @@ void ClickToCallContextMenuObserver::SendClickToCallMessage(
   LogClickToCallSelectedDeviceIndex(kSharingClickToCallUiContextMenu,
                                     chosen_device_index);
 
-  ClickToCallUiController::DeviceSelected(proxy_->GetWebContents(), url_,
-                                          devices_[chosen_device_index]);
+  controller_->OnDeviceSelected(url_, devices_[chosen_device_index]);
 }
