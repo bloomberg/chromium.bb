@@ -8407,6 +8407,11 @@ void Document::ColorSchemeChanged() {
   MediaQueryAffectingValueChanged();
 }
 
+bool Document::InForcedColorsMode() const {
+  return RuntimeEnabledFeatures::ForcedColorsEnabled() &&
+         GetSettings()->GetForcedColors() != ForcedColors::kNone;
+}
+
 void Document::CountUse(mojom::WebFeature feature) const {
   if (DocumentLoader* loader = Loader()) {
     loader->CountUse(feature);
