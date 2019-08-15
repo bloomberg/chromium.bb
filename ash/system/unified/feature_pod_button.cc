@@ -239,8 +239,8 @@ void FeaturePodLabelButton::OnEnabledChanged() {
       AshColorProvider::Get()->DeprecatedGetContentLayerColor(
           ContentLayerType::kTextPrimary, kUnifiedMenuTextColor);
   const SkColor secondary_text_color =
-      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-          ContentLayerType::kTextSecondary, kUnifiedMenuSecondaryTextColor);
+      AshColorProvider::Get()->GetContentLayerColor(
+          ContentLayerType::kTextSecondary, AshColorMode::kDark);
   label_->SetEnabledColor(
       GetEnabled()
           ? primary_text_color
