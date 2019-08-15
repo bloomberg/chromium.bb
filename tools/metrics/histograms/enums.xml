@@ -4554,6 +4554,7 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="ImmediateDarkeningThresholdExceeded"/>
   <int value="3" label="BrightneningThresholdExceeded"/>
   <int value="4" label="DarkeningThresholdExceeded"/>
+  <int value="5" label="UpdateAfterLidReopen"/>
 </enum>
 
 <enum name="AutoScreenBrightnessBrightnessMonitorStatus">
@@ -4587,6 +4588,7 @@ Unknown properties are collapsed to zero. -->
   <int value="7" label="MinimalAlsChange"/>
   <int value="8" label="MissingPersonalCurve"/>
   <int value="9" label="WaitingForTrainedPersonalCurve"/>
+  <int value="10" label="WaitingForReopenAls"/>
 </enum>
 
 <enum name="AutoScreenBrightnessParameterError">
