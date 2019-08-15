@@ -22,11 +22,11 @@ extern "C" {
 typedef struct {
   RATE_CONTROL rc;
   int framerate_factor;
-  int layer_target_bitrate;
+  int64_t layer_target_bitrate;
   int scaling_factor_num;
   int scaling_factor_den;
-  int target_bandwidth;
-  int spatial_layer_target_bandwidth;
+  int64_t target_bandwidth;
+  int64_t spatial_layer_target_bandwidth;
   double framerate;
   int avg_frame_size;
   int max_q;
@@ -63,7 +63,7 @@ void av1_init_layer_context(struct AV1_COMP *const cpi);
 
 // Update the layer context from a change_config() call.
 void av1_update_layer_context_change_config(struct AV1_COMP *const cpi,
-                                            const int target_bandwidth);
+                                            const int64_t target_bandwidth);
 
 // Prior to encoding the frame, update framerate-related quantities
 // for the current temporal layer.

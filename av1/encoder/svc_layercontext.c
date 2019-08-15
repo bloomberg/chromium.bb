@@ -78,11 +78,11 @@ void av1_init_layer_context(AV1_COMP *const cpi) {
 
 // Update the layer context from a change_config() call.
 void av1_update_layer_context_change_config(AV1_COMP *const cpi,
-                                            const int target_bandwidth) {
+                                            const int64_t target_bandwidth) {
   const RATE_CONTROL *const rc = &cpi->rc;
   SVC *const svc = &cpi->svc;
   int layer = 0;
-  int spatial_layer_target = 0;
+  int64_t spatial_layer_target = 0;
   float bitrate_alloc = 1.0;
 
   for (int sl = 0; sl < svc->number_spatial_layers; ++sl) {
@@ -139,7 +139,7 @@ void av1_update_temporal_layer_framerate(AV1_COMP *const cpi) {
     LAYER_CONTEXT *const lcprev = &svc->layer_context[prev_layer];
     const double prev_layer_framerate =
         cpi->framerate / lcprev->framerate_factor;
-    const int prev_layer_target_bandwidth = lcprev->layer_target_bitrate;
+    const int64_t prev_layer_target_bandwidth = lcprev->layer_target_bitrate;
     lc->avg_frame_size =
         (int)((lc->target_bandwidth - prev_layer_target_bandwidth) /
               (lc->framerate - prev_layer_framerate));
