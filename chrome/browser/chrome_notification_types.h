@@ -90,10 +90,6 @@ enum NotificationType {
 
   // Tabs --------------------------------------------------------------------
 
-  // Sent when a tab is added to a WebContentsDelegate. The source is the
-  // WebContentsDelegate and the details is the added WebContents.
-  NOTIFICATION_TAB_ADDED,
-
   // This notification is sent after a tab has been appended to the tab_strip.
   // The source is a Source<WebContents> of the tab being added. There
   // are no details.

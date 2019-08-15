@@ -714,13 +714,6 @@ void Navigate(NavigateParams* params) {
     }
   }
 
-  if (params->disposition != WindowOpenDisposition::CURRENT_TAB) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_TAB_ADDED,
-        content::Source<content::WebContentsDelegate>(params->browser),
-        content::Details<WebContents>(contents_to_navigate_or_insert));
-  }
-
   params->navigated_or_inserted_contents = contents_to_navigate_or_insert;
 }
 
