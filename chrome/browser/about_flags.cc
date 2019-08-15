@@ -1133,6 +1133,7 @@ const FeatureEntry::FeatureVariation
 
 const FeatureEntry::FeatureParam kLazyFrameLoadingAutomatic[] = {
     {"automatic-lazy-load-frames-enabled", "true"},
+    {"restrict-lazy-load-frames-to-data-saver-only", "false"},
 };
 
 const FeatureEntry::FeatureVariation kLazyFrameLoadingVariations[] = {
@@ -1143,6 +1144,7 @@ const FeatureEntry::FeatureVariation kLazyFrameLoadingVariations[] = {
 
 const FeatureEntry::FeatureParam kLazyImageLoadingAutomatic[] = {
     {"automatic-lazy-load-images-enabled", "true"},
+    {"restrict-lazy-load-images-to-data-saver-only", "false"},
 };
 
 const FeatureEntry::FeatureVariation kLazyImageLoadingVariations[] = {

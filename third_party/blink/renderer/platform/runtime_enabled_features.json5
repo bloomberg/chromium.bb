@@ -842,14 +842,14 @@
     },
     {
       name: "LazyFrameLoading",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "LazyFrameVisibleLoadTimeMetrics",
     },
     {
       name: "LazyImageLoading",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "LazyImageLoadingMetadataFetch",
