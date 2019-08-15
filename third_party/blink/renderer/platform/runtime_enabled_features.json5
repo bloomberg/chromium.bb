@@ -351,6 +351,7 @@
       // CSS min(), max() and clamp()
       // https://drafts.csswg.org/css-values-4/#comp-func
       name: "CSSComparisonFunctions",
+      status: "test",
     },
     {
       name: "CSSFocusVisible",
