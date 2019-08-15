@@ -253,7 +253,7 @@ CORE_EXPORT LayoutUnit ComputeInlineSizeForFragment(
 // Same as ComputeInlineSizeForFragment, but uses height instead of width.
 CORE_EXPORT LayoutUnit
 ComputeBlockSizeForFragment(const NGConstraintSpace&,
-                            const NGBlockNode&,
+                            const ComputedStyle&,
                             const NGBoxStrut& border_padding,
                             LayoutUnit content_size);
 

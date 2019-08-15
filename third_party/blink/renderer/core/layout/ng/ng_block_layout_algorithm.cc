@@ -656,7 +656,7 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
 
   // Recompute the block-axis size now that we know our content size.
   border_box_size.block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Node(), border_padding_, intrinsic_block_size_);
+      ConstraintSpace(), Style(), border_padding_, intrinsic_block_size_);
   container_builder_.SetBlockSize(border_box_size.block_size);
 
   // If our BFC block-offset is still unknown, we check:
@@ -1844,7 +1844,7 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   LayoutUnit consumed_block_size =
       BreakToken() ? BreakToken()->ConsumedBlockSize() : LayoutUnit();
   LayoutUnit block_size =
-      ComputeBlockSizeForFragment(ConstraintSpace(), Node(), border_padding_,
+      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), border_padding_,
                                   consumed_block_size + intrinsic_block_size_);
 
   block_size -= consumed_block_size;
@@ -2196,15 +2196,17 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   builder.SetPercentageResolutionSize(child_percentage_size_);
   builder.SetReplacedPercentageResolutionSize(replaced_child_percentage_size_);
 
-  if (Node().IsTableCell()) {
-    // If we have a fixed block-size we are in the "layout" phase.
-    builder.SetTableCellChildLayoutPhase(
-        ConstraintSpace().IsFixedBlockSize()
-            ? NGTableCellChildLayoutPhase::kLayout
-            : NGTableCellChildLayoutPhase::kMeasure);
+  if (ConstraintSpace().IsTableCell()) {
+    // If we have a fixed block-size we are in the "layout" mode.
+    NGTableCellChildLayoutMode mode;
+    if (ConstraintSpace().IsFixedBlockSize())
+      mode = NGTableCellChildLayoutMode::kLayout;
+    else if (ConstraintSpace().IsRestrictedBlockSizeTableCell())
+      mode = NGTableCellChildLayoutMode::kMeasureRestricted;
+    else
+      mode = NGTableCellChildLayoutMode::kMeasure;
 
-    if (Node().IsRestrictedBlockSizeTableCell())
-      builder.SetIsInRestrictedBlockSizeTableCell();
+    builder.SetTableCellChildLayoutMode(mode);
   }
 
   if (NGBaseline::ShouldPropagateBaselines(child))

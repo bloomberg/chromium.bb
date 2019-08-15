@@ -103,12 +103,10 @@ void NGLayoutInputNode::IntrinsicSize(
 }
 
 LayoutUnit NGLayoutInputNode::IntrinsicPaddingBlockStart() const {
-  DCHECK(IsTableCell());
   return LayoutUnit(ToLayoutTableCell(box_)->IntrinsicPaddingBefore());
 }
 
 LayoutUnit NGLayoutInputNode::IntrinsicPaddingBlockEnd() const {
-  DCHECK(IsTableCell());
   return LayoutUnit(ToLayoutTableCell(box_)->IntrinsicPaddingAfter());
 }
 

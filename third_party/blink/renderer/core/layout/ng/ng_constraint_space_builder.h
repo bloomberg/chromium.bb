@@ -168,7 +168,19 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   void SetSeparateLeadingFragmentainerMargins(bool b) {
-    space_.bitfields_.has_separate_leading_fragmentainer_margins = b;
+#if DCHECK_IS_ON()
+    DCHECK(!has_separate_leading_fragmentainer_margins_set_);
+    has_separate_leading_fragmentainer_margins_set_ = true;
+#endif
+    if (b)
+      space_.EnsureRareData()->has_separate_leading_fragmentainer_margins = b;
+  }
+
+  void SetIsTableCell(bool b) { space_.bitfields_.is_table_cell = b; }
+
+  void SetIsRestrictedBlockSizeTableCell(bool b) {
+    DCHECK(space_.bitfields_.is_table_cell);
+    space_.bitfields_.is_restricted_block_size_table_cell = b;
   }
 
   void SetIsAnonymous(bool b) { space_.bitfields_.is_anonymous = b; }
@@ -237,14 +249,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       space_.EnsureRareData()->clearance_offset = clearance_offset;
   }
 
-  void SetTableCellChildLayoutPhase(
-      NGTableCellChildLayoutPhase table_cell_child_layout_phase) {
-    space_.bitfields_.table_cell_child_layout_phase =
-        static_cast<unsigned>(table_cell_child_layout_phase);
-  }
-
-  void SetIsInRestrictedBlockSizeTableCell() {
-    space_.bitfields_.is_in_restricted_block_size_table_cell = true;
+  void SetTableCellChildLayoutMode(
+      NGTableCellChildLayoutMode table_cell_child_layout_mode) {
+    space_.bitfields_.table_cell_child_layout_mode =
+        static_cast<unsigned>(table_cell_child_layout_mode);
   }
 
   void SetExclusionSpace(const NGExclusionSpace& exclusion_space) {
@@ -299,6 +307,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_fragmentainer_block_size_set_ = false;
   bool is_fragmentainer_space_at_bfc_start_set_ = false;
   bool is_block_direction_fragmentation_type_set_ = false;
+  bool has_separate_leading_fragmentainer_margins_set_ = false;
   bool is_margin_strut_set_ = false;
   bool is_optimistic_bfc_block_offset_set_ = false;
   bool is_forced_bfc_block_offset_set_ = false;

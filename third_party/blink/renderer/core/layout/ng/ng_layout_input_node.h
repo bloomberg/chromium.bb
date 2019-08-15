@@ -111,7 +111,6 @@ class CORE_EXPORT NGLayoutInputNode {
     DCHECK(IsListMarker());
     return ToLayoutNGListMarker(box_)->NeedsOccupyWholeLine();
   }
-  bool IsTableCell() const { return IsBlock() && box_->IsTableCell(); }
   bool IsFieldsetContainer() const {
     return IsBlock() && box_->IsLayoutNGFieldset();
   }
