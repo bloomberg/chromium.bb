@@ -287,7 +287,7 @@ $ make
 $ ./tools/lou_translate tables/en-ueb-g2.ctb
 #+END_SRC
 
-Run a few translations, end the program and marvel at the output
+Run a few translations, end the program and marvel at the output of
 AddressSanitizer. At the time of this writing it complained pretty
 hard:
 
