@@ -27,6 +27,7 @@
     "@webgpu/glslang": "^0.0.6",
     "@webgpu/types": "0.0.8",
     "babel-plugin-add-header-comment": "^1.0.3",
+    "babel-plugin-macros": "^2.6.1",
     "babel-plugin-module-resolver": "^3.2.0",
     "clang-format": "^1.2.4",
     "fast-glob": "^3.0.0",
