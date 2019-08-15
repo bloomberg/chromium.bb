@@ -480,13 +480,18 @@ TEST_F(ThrottlingURLLoaderTest, ModifyHeaderInResumeBeforeStart) {
          const network::ResourceRequest& url_request) {
         EXPECT_EQ("X-Test-Header-1: Foo\r\n\r\n",
                   url_request.headers.ToString());
+        EXPECT_EQ("X-Test-Header-2: Bar\r\n\r\n",
+                  url_request.cors_exempt_headers.ToString());
         quit_closure.Run();
       },
       run_loop.QuitClosure()));
 
   net::HttpRequestHeaders modified_headers;
+  net::HttpRequestHeaders modified_cors_exempt_headers;
   modified_headers.SetHeader("X-Test-Header-1", "Foo");
-  throttle_->delegate()->UpdateDeferredRequestHeaders(modified_headers);
+  modified_cors_exempt_headers.SetHeader("X-Test-Header-2", "Bar");
+  throttle_->delegate()->UpdateDeferredRequestHeaders(
+      modified_headers, modified_cors_exempt_headers);
   throttle_->delegate()->Resume();
 
   run_loop.Run();
@@ -669,8 +674,11 @@ TEST_F(ThrottlingURLLoaderTest, ModifyHeaderInResumeBeforeRedirect) {
   run_loop1.Run();
 
   net::HttpRequestHeaders modified_headers;
+  net::HttpRequestHeaders modified_cors_exempt_headers;
   modified_headers.SetHeader("X-Test-Header-1", "Foo");
-  throttle_->delegate()->UpdateDeferredRequestHeaders(modified_headers);
+  modified_cors_exempt_headers.SetHeader("X-Test-Header-2", "Bar");
+  throttle_->delegate()->UpdateDeferredRequestHeaders(
+      modified_headers, modified_cors_exempt_headers);
   throttle_->delegate()->Resume();
 
   loader_->FollowRedirect({}, {});
@@ -678,8 +686,10 @@ TEST_F(ThrottlingURLLoaderTest, ModifyHeaderInResumeBeforeRedirect) {
   base::RunLoop run_loop2;
   run_loop2.RunUntilIdle();
 
-  EXPECT_EQ("X-Test-Header-1: Foo\r\n\r\n",
-            factory_.headers_modified_on_redirect().ToString());
+  EXPECT_EQ(
+      "X-Test-Header-1: Foo\r\n"
+      "X-Test-Header-2: Bar\r\n\r\n",
+      factory_.headers_modified_on_redirect().ToString());
 }
 
 TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {
