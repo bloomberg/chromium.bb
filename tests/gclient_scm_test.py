@@ -7,7 +7,6 @@
 
 # pylint: disable=E1103
 
-# Import before super_mox to keep valid references.
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
 

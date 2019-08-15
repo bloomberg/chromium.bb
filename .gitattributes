@@ -37,7 +37,6 @@
 # TODO: There are some really junky dependencies in here that we should probably
 # move to vpython/cipd.
 /third_party/**                     recipes
-/third_party/pymox/**              -recipes
 
 /win_toolchain/** recipes
 

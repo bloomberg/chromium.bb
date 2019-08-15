@@ -1,7 +1,0 @@
-python_version: "2.7"
-# Used by:
-#   testing_support/super_mox.py
-wheel: <
-  name: "infra/python/wheels/mox-py2_py3"
-  version: "version:0.5.3"
->
