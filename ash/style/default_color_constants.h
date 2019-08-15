@@ -27,6 +27,12 @@ constexpr SkColor kSeparatorOnDarkBackgroundColor =
     SkColorSetA(SK_ColorWHITE, 0x23);  // 14%
 
 constexpr SkColor kNotificationBackgroundColor = SK_ColorWHITE;
+
+constexpr SkColor kUnifiedMenuTextColor = gfx::kGoogleGrey100;
+constexpr SkColor kUnifiedMenuSecondaryTextColor =
+    SkColorSetA(gfx::kGoogleGrey200, 0xa3);  // 64%
+constexpr SkColor kUnifiedMenuTextColorDisabled = gfx::kGoogleGrey700;
+
 //----------------------------------End----------------------------------------
 
 #endif  // ASH_STYLE_DEFAULT_COLOR_CONSTANTS_H_

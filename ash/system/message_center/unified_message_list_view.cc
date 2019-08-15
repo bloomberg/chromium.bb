@@ -89,13 +89,12 @@ class UnifiedMessageListView::MessageViewContainer
   // at the top or the bottom.
   void UpdateBorder(bool is_top, bool is_bottom) {
     message_view_->SetBorder(
-        is_bottom
-            ? views::NullBorder()
-            : views::CreateSolidSidedBorder(
-                  0, 0, kUnifiedNotificationSeparatorThickness, 0,
-                  AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-                      AshColorProvider::ControlsLayerType::kSeparator,
-                      kSeparatorOnLightBackgroundColor)));
+        is_bottom ? views::NullBorder()
+                  : views::CreateSolidSidedBorder(
+                        0, 0, kUnifiedNotificationSeparatorThickness, 0,
+                        AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+                            AshColorProvider::ContentLayerType::kSeparator,
+                            kSeparatorOnLightBackgroundColor)));
     const int top_radius = is_top ? kUnifiedTrayCornerRadius : 0;
     const int bottom_radius = is_bottom ? kUnifiedTrayCornerRadius : 0;
     message_view_->UpdateCornerRadius(top_radius, bottom_radius);
