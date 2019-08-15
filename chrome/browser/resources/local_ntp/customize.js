@@ -608,6 +608,7 @@ customize.createTileThumbnail = function(
 
   // Accessibility support for screen readers.
   tile.setAttribute('role', 'button');
+  tile.setAttribute('aria-pressed', false);
 
   tile.onclick = onClickInteraction;
   tile.onkeydown = onKeyInteraction;
@@ -2252,8 +2253,8 @@ customize.loadColorsMenu = function() {
         customize.tileOnKeyDownInteraction);
     const label = configData.translatedStrings.colorLabelPrefix + ' ' +
         colorArrayToHex(colorsColl[i].color);
-    tile.setAttribute('aria-label', label);
-    tile.setAttribute('title', label);
+    tile.firstElementChild.setAttribute('aria-label', label);
+    tile.firstElementChild.setAttribute('title', label);
 
     $(customize.IDS.COLORS_MENU).appendChild(tile);
   }
