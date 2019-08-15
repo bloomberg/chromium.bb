@@ -2570,18 +2570,15 @@ void PDFiumEngine::CalculateVisiblePages() {
   // screen coordinates.
   form_highlights_.clear();
 
-  int most_visible_page = visible_pages_.empty() ? -1 : visible_pages_.front();
-  // Check if the next page is more visible than the first one.
-  if (most_visible_page != -1 && !pages_.empty() &&
-      most_visible_page < static_cast<int>(pages_.size()) - 1) {
-    pp::Rect rc_first =
-        visible_rect.Intersect(GetPageScreenRect(most_visible_page));
-    pp::Rect rc_next =
-        visible_rect.Intersect(GetPageScreenRect(most_visible_page + 1));
-    if (rc_next.height() > rc_first.height())
-      most_visible_page++;
+  std::vector<draw_utils::IndexedPage> visible_pages_rects;
+  visible_pages_rects.reserve(visible_pages_.size());
+  for (int visible_page_index : visible_pages_) {
+    visible_pages_rects.push_back(
+        {visible_page_index, pages_[visible_page_index]->rect()});
   }
 
+  int most_visible_page =
+      draw_utils::GetMostVisiblePage(visible_pages_rects, GetVisibleRect());
   SetCurrentPage(most_visible_page);
 }
 
