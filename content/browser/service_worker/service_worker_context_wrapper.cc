@@ -49,16 +49,6 @@ namespace content {
 
 namespace {
 
-void RunOrPostTask(const base::Location& location,
-                   BrowserThread::ID thread_id,
-                   base::OnceClosure task) {
-  if (BrowserThread::CurrentlyOn(thread_id)) {
-    std::move(task).Run();
-    return;
-  }
-  base::PostTask(location, {thread_id}, std::move(task));
-}
-
 // Value used to set the timeout when starting a long running ServiceWorker. See
 // ServiceWorkerContextWrapper::StartServiceWorkerAndDispatchLongRunningMessage.
 const int kActiveWorkerTimeoutDays = 999;
@@ -192,7 +182,7 @@ void RunOnceClosure(scoped_refptr<ServiceWorkerContextWrapper> ref_holder,
 void ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
     const base::Location& location,
     base::OnceClosure task) {
-  RunOrPostTask(location, GetCoreThreadId(), std::move(task));
+  RunOrPostTaskOnThread(location, GetCoreThreadId(), std::move(task));
 }
 
 // static
@@ -1551,7 +1541,7 @@ void ServiceWorkerContextWrapper::FindRegistrationForScopeOnCoreThread(
 
 void ServiceWorkerContextWrapper::ShutdownOnCoreThread() {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
-  RunOrPostTask(
+  RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::IO,
       base::BindOnce(&ServiceWorkerContextWrapper::InitializeResourceContext,
                      this, nullptr));
