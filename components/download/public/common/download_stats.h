@@ -267,8 +267,7 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadInterrupted(
     int64_t total,
     bool is_parallelizable,
     bool is_parallel_download_enabled,
-    DownloadSource download_source,
-    bool post_content_length_mismatch);
+    DownloadSource download_source);
 
 // Record that a download has been classified as malicious.
 COMPONENTS_DOWNLOAD_EXPORT void RecordMaliciousDownloadClassified(
