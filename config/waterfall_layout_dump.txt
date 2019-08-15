@@ -286,6 +286,7 @@
   firmware-kip-5216.227.B-firmwarebranch
   firmware-kitty-5771.61.B-firmwarebranch
   firmware-lulu-6301.136.B-firmwarebranch
+  firmware-mistral-12422.B-firmwarebranch
   firmware-monroe-4921.B-firmwarebranch
   firmware-nami-10775.108.B-firmwarebranch
   firmware-nami-10775.B-firmwarebranch
@@ -1615,6 +1616,7 @@
   firmware-kip-5216.227.B-firmwarebranch-tryjob
   firmware-kitty-5771.61.B-firmwarebranch-tryjob
   firmware-lulu-6301.136.B-firmwarebranch-tryjob
+  firmware-mistral-12422.B-firmwarebranch-tryjob
   firmware-monroe-4921.B-firmwarebranch-tryjob
   firmware-nami-10775.108.B-firmwarebranch-tryjob
   firmware-nami-10775.B-firmwarebranch-tryjob

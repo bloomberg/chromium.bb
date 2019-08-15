@@ -3382,14 +3382,15 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
       (INACTIVE, 'firmware-nami-10775.B', ['nami']),
       (INACTIVE, 'firmware-nocturne-10984.B', ['nocturne']),
       (INACTIVE, 'firmware-servo-11011.B', ['oak']),
-      (ACTIVE, 'firmware-grunt-11031.B', ['grunt']),
+      (INACTIVE, 'firmware-grunt-11031.B', ['grunt']),
+      (INACTIVE, 'firmware-nami-10775.108.B', ['nami']),
       (ACTIVE, 'firmware-rammus-11275.B', ['rammus']),
       (ACTIVE, 'firmware-octopus-11297.B', ['octopus']),
       (ACTIVE, 'firmware-octopus-11297.83.B', ['octopus']),
       (ACTIVE, 'firmware-kalista-11343.B', ['kalista']),
       (ACTIVE, 'firmware-atlas-11827.B', ['atlas']),
-      (ACTIVE, 'firmware-nami-10775.108.B', ['nami']),
       (ACTIVE, 'firmware-sarien-12200.B', ['sarien']),
+      (ACTIVE, 'firmware-mistral-12422.B', ['mistral']),
   ]
 
   for interval, branch, boards in firmware_branch_builders:
