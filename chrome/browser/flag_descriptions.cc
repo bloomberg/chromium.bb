@@ -912,12 +912,6 @@ const char kEnableWebAuthenticationCableSupportDescription[] =
     "Enable the cloud-assisted pairingless BLE protocol for use with "
     "the Web Authentication API.";
 
-const char kEnableWebAuthenticationPINSupportName[] =
-    "Web Authentication PIN support";
-const char kEnableWebAuthenticationPINSupportDescription[] =
-    "Enable the use of PINs with the Web Authentication API and compatible "
-    "security keys.";
-
 const char kEnableWasmBaselineName[] = "WebAssembly baseline compiler";
 const char kEnableWasmBaselineDescription[] =
     "Enables WebAssembly baseline compilation and tier up.";

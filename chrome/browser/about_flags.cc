@@ -3078,13 +3078,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop, FEATURE_VALUE_TYPE(features::kWebAuthCable)},
 #endif  // !defined(OS_ANDROID)
 
-#if !defined(OS_ANDROID)
-    {"enable-web-authentication-pin-support",
-     flag_descriptions::kEnableWebAuthenticationPINSupportName,
-     flag_descriptions::kEnableWebAuthenticationPINSupportDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(device::kWebAuthPINSupport)},
-#endif  // !defined(OS_ANDROID)
-
     {"enable-viz-display-compositor",
      flag_descriptions::kVizDisplayCompositorName,
      flag_descriptions::kVizDisplayCompositorDescription, kOsAndroid | kOsCrOS,
