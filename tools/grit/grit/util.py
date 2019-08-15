@@ -221,7 +221,22 @@ def WrapOutputStream(stream, encoding = 'utf-8'):
 
 def ChangeStdoutEncoding(encoding = 'utf-8'):
   '''Changes STDOUT to print characters using the specified encoding.'''
-  sys.stdout = WrapOutputStream(sys.stdout, encoding)
+  # If we're unittesting, don't reconfigure.
+  if isinstance(sys.stdout, StringIO):
+    return
+
+  if sys.version_info.major < 3:
+    # Python 2 has binary streams by default, so reconfigure directly.
+    sys.stdout = WrapOutputStream(sys.stdout, encoding)
+    sys.stderr = WrapOutputStream(sys.stderr, encoding)
+  elif sys.version_info < (3, 7):
+    # Python 3 has text streams by default, so we have to detach them first.
+    sys.stdout = WrapOutputStream(sys.stdout.detach(), encoding)
+    sys.stderr = WrapOutputStream(sys.stderr.detach(), encoding)
+  else:
+    # Python 3.7+ provides an API for this specifically.
+    sys.stdout.reconfigure(encoding=encoding)
+    sys.stderr.reconfigure(encoding=encoding)
 
 
 def EscapeHtml(text, escape_quotes = False):
