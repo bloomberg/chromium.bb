@@ -1376,7 +1376,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3017079585324758401">Hintergrund</translation>
 <translation id="3020183492814296499">Tastenkombinationen</translation>
 <translation id="3020990233660977256">Seriennummer: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021039405808358694">Verwenden Sie bitte ein USB-Typ-C-Netzteil oder ein Netzteil, das von der gleichen Marke wie Ihr Chromebook ist.</translation>
+<translation id="3021039405808358694">Bitte ein USB-Typ-C-Netzteil oder ein Netzteil von der gleichen Marke wie das Chromebook verwenden.</translation>
 <translation id="3021066826692793094">Schmetterling</translation>
 <translation id="3021426244864538700">Zugriff auf die Daten dieser Website</translation>
 <translation id="3021678814754966447">Frame-Quelltext &amp;anzeigen</translation>
@@ -1550,7 +1550,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3308134619352333507">Schaltfläche ausblenden</translation>
 <translation id="3308852433423051161">Google Assistant wird geladen...</translation>
 <translation id="3312424061798279731">Aktivierte Sprachen</translation>
-<translation id="3313473463670097216">Nutzen Sie zum Laden dieses Chromebooks einen Akku derselben Marke.</translation>
+<translation id="3313473463670097216">Bitte zum Laden dieses Chromebooks einen Akku derselben Marke nutzen.</translation>
 <translation id="3313590242757056087">Zum Auswählen der Websites, die der betreute Nutzer besuchen kann,
     können Sie unter <ph name="MANAGEMENT_URL" /> Beschränkungen und Einstellungen festlegen.
     Wenn Sie die Standardeinstellungen nicht ändern, kann <ph name="USER_DISPLAY_NAME" />
