@@ -2069,11 +2069,6 @@ void Browser::OnTabInsertedAt(WebContents* contents, int index) {
 
   SessionTabHelper::FromWebContents(contents)->SetWindowID(session_id());
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_PARENTED,
-      content::Source<content::WebContents>(contents),
-      content::NotificationService::NoDetails());
-
   SyncHistoryWithTabs(index);
 
   // Make sure the loading state is updated correctly, otherwise the throbber
@@ -2112,10 +2107,7 @@ void Browser::OnTabClosing(WebContents* contents) {
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
     session_service->TabClosing(contents);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_CLOSING,
-      content::Source<NavigationController>(&contents->GetController()),
-      content::NotificationService::NoDetails());
+
   SearchTabHelper::FromWebContents(contents)->OnTabClosing();
 }
 
