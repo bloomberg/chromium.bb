@@ -369,7 +369,8 @@ public class MediaNotificationManager {
         @VisibleForTesting
         void stopListenerService() {
             // Call stopForeground to guarantee  Android unset the foreground bit.
-            stopForeground(true /* removeNotification */);
+            ForegroundServiceUtils.getInstance().stopForeground(
+                    this, Service.STOP_FOREGROUND_REMOVE);
             stopSelf();
         }
 
@@ -893,7 +894,8 @@ public class MediaNotificationManager {
             mMediaSession = null;
         }
         if (mService != null) {
-            mService.stopForeground(true /* removeNotification */);
+            ForegroundServiceUtils.getInstance().stopForeground(
+                    mService, Service.STOP_FOREGROUND_REMOVE);
             mService.stopSelf();
         }
         mMediaNotificationInfo = null;
@@ -940,7 +942,8 @@ public class MediaNotificationManager {
         if (mMediaNotificationInfo == null) {
             if (serviceStarting) {
                 finishStartingForegroundService(mService);
-                mService.stopForeground(true /* removeNotification */);
+                ForegroundServiceUtils.getInstance().stopForeground(
+                        mService, Service.STOP_FOREGROUND_REMOVE);
             }
             return;
         }
@@ -964,8 +967,8 @@ public class MediaNotificationManager {
         // While the service is in foreground, the associated notification can't be swipped away.
         // Moving it back to background allows the user to remove the notification.
         if (mMediaNotificationInfo.supportsSwipeAway() && mMediaNotificationInfo.isPaused) {
-            mService.stopForeground(false /* removeNotification */);
-
+            ForegroundServiceUtils.getInstance().stopForeground(
+                    mService, Service.STOP_FOREGROUND_DETACH);
             NotificationManagerProxy manager = new NotificationManagerProxyImpl(getContext());
             manager.notify(notification);
         } else if (!foregroundedService) {
