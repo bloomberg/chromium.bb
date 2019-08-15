@@ -3224,7 +3224,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'betty-pi-arc',
       'bob',
       'caroline',
-      'caroline-arcnext',
       'chell',
       'coral',
       'cyan',
@@ -3242,6 +3241,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
+      'caroline-arcnext',
   ])
 
   _chrome_pfq_skylab_boards = frozenset([
