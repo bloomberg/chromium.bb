@@ -127,7 +127,7 @@ LayoutBox::LayoutBox(ContainerNode* node)
       max_preferred_logical_width_(-1),
       inline_box_wrapper_(nullptr) {
   SetIsBox();
-  if (blink::IsHTMLLegendElement(node))
+  if (blink::IsA<HTMLLegendElement>(node))
     SetIsHTMLLegendElement();
 }
 

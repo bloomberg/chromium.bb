@@ -591,7 +591,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsA<HTMLLabelElement>(*GetNode()))
     return ax::mojom::Role::kLabelText;
 
-  if (IsHTMLLegendElement(*GetNode()))
+  if (IsA<HTMLLegendElement>(*GetNode()))
     return ax::mojom::Role::kLegend;
 
   if (IsHTMLRubyElement(*GetNode()))
