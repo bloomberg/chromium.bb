@@ -244,10 +244,10 @@ def GetBinaryInfoFromHeaderInfo(header_info):
 
 
 def CreateSymbolDir(options, output_dir, relative_hash_dir):
-  """Create the directory to store breakpad symbols in. On Android, we also
-     create a symlink in case the hash in the binary is missing."""
+  """Create the directory to store breakpad symbols in. On Android/Linux, we
+     also create a symlink in case the hash in the binary is missing."""
   mkdir_p(output_dir)
-  if options.platform == 'android':
+  if options.platform == 'android' or options.platform == "linux2":
     try:
       os.symlink(relative_hash_dir, os.path.join(os.path.dirname(output_dir),
                  '000000000000000000000000000000000'))
