@@ -64,6 +64,10 @@ void WebRuntimeFeatures::EnableFeatureFromString(const std::string& name,
   RuntimeEnabledFeatures::SetFeatureEnabledFromString(name, enable);
 }
 
+void WebRuntimeFeatures::EnableFractionalScrollOffsets(bool enable) {
+  RuntimeEnabledFeatures::SetFractionalScrollOffsetsEnabled(enable);
+}
+
 bool WebRuntimeFeatures::IsFractionalScrollOffsetsEnabled() {
   return RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled();
 }

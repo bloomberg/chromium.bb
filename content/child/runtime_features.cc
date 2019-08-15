@@ -478,6 +478,9 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableUpdateHoverAtBeginFrame(
       base::FeatureList::IsEnabled(features::kUpdateHoverAtBeginFrame));
 
+  WebRuntimeFeatures::EnableFractionalScrollOffsets(
+      base::FeatureList::IsEnabled(features::kFractionalScrollOffsets));
+
   // TODO(yashard): Remove |enable_experimental_web_platform_features| flag
   // since the feature should have been enabled when it is set to experimental
   WebRuntimeFeatures::EnableJankTrackingSweepLine(
