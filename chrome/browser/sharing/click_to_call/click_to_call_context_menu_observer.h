@@ -66,8 +66,6 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
 
   GURL url_;
 
-  std::vector<SharingDeviceInfo> devices_;
-
   std::unique_ptr<ui::SimpleMenuModel> sub_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ClickToCallContextMenuObserver);

@@ -123,5 +123,5 @@ TEST_F(ClickToCallUiControllerTest, OnDeviceChosen) {
 TEST_F(ClickToCallUiControllerTest, GetSyncedDevices) {
   EXPECT_CALL(*service(), GetDeviceCandidates(Eq(static_cast<int>(
                               SharingDeviceCapability::kTelephony))));
-  controller_->GetSyncedDevices();
+  controller_->UpdateAndShowDialog();
 }

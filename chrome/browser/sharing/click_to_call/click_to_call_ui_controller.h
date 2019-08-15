@@ -40,7 +40,6 @@ class ClickToCallUiController
   base::string16 GetTitle() override;
   PageActionIconType GetIconType() override;
   int GetRequiredDeviceCapabilities() override;
-  std::vector<App> GetApps() override;
   void OnDeviceChosen(const SharingDeviceInfo& device) override;
   void OnAppChosen(const App& app) override;
 
@@ -52,6 +51,7 @@ class ClickToCallUiController
 
   // Overridden from SharingUiController:
   SharingDialog* DoShowDialog(BrowserWindow* window) override;
+  void DoUpdateApps(UpdateAppsCallback callback) override;
 
  private:
   friend class content::WebContentsUserData<ClickToCallUiController>;

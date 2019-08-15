@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
@@ -52,8 +53,8 @@ int SharedClipboardUiController::GetRequiredDeviceCapabilities() {
 }
 
 // No need for apps for shared clipboard feature
-std::vector<App> SharedClipboardUiController::GetApps() {
-  return std::vector<App>();
+void SharedClipboardUiController::DoUpdateApps(UpdateAppsCallback callback) {
+  std::move(callback).Run(std::vector<App>());
 }
 
 // No left click dialog

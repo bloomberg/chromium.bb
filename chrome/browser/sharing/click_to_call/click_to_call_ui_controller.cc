@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
@@ -40,7 +41,7 @@ void ClickToCallUiController::ShowDialog(content::WebContents* web_contents,
   auto* controller = GetOrCreateFromWebContents(web_contents);
   controller->phone_url_ = url;
   controller->hide_default_handler_ = hide_default_handler;
-  controller->InvalidateOldDialog();
+  controller->UpdateAndShowDialog();
 }
 
 ClickToCallUiController::ClickToCallUiController(
@@ -69,10 +70,12 @@ int ClickToCallUiController::GetRequiredDeviceCapabilities() {
   return static_cast<int>(SharingDeviceCapability::kTelephony);
 }
 
-std::vector<App> ClickToCallUiController::GetApps() {
+void ClickToCallUiController::DoUpdateApps(UpdateAppsCallback callback) {
   std::vector<App> apps;
-  if (hide_default_handler_)
-    return apps;
+  if (hide_default_handler_) {
+    std::move(callback).Run(std::move(apps));
+    return;
+  }
 
   base::string16 app_name =
       shell_integration::GetApplicationNameForProtocol(phone_url_);
@@ -81,7 +84,7 @@ std::vector<App> ClickToCallUiController::GetApps() {
     apps.emplace_back(&vector_icons::kOpenInNewIcon, gfx::Image(),
                       std::move(app_name), std::string());
   }
-  return apps;
+  std::move(callback).Run(std::move(apps));
 }
 
 void ClickToCallUiController::OnDeviceChosen(const SharingDeviceInfo& device) {

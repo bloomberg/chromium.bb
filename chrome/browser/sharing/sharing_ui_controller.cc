@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
@@ -50,24 +49,23 @@ SharingUiController::SharingUiController(content::WebContents* web_contents)
 
 SharingUiController::~SharingUiController() = default;
 
-void SharingUiController::ShowNewDialog() {
+void SharingUiController::CloseDialog() {
   if (dialog_)
     dialog_->Hide();
 
   // Treat the dialog as closed as the process of closing the native widget
   // might be async.
   dialog_ = nullptr;
+}
 
+void SharingUiController::ShowNewDialog() {
+  CloseDialog();
   BrowserWindow* window = GetWindowFromWebContents(web_contents_);
   if (!window)
     return;
 
   dialog_ = DoShowDialog(window);
   UpdateIcon();
-}
-
-std::vector<SharingDeviceInfo> SharingUiController::GetSyncedDevices() {
-  return sharing_service_->GetDeviceCandidates(GetRequiredDeviceCapabilities());
 }
 
 void SharingUiController::UpdateIcon() {
@@ -115,9 +113,28 @@ void SharingUiController::OnMessageSentToDevice(int dialog_id, bool success) {
     ShowNewDialog();
 }
 
-void SharingUiController::InvalidateOldDialog() {
+void SharingUiController::UpdateAndShowDialog() {
   last_dialog_id_++;
   is_loading_ = false;
   send_failed_ = false;
+
+  CloseDialog();
+  UpdateIcon();
+  DoUpdateApps(base::BindOnce(&SharingUiController::OnAppsReceived,
+                              weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
+}
+
+void SharingUiController::UpdateDevices() {
+  devices_ =
+      sharing_service_->GetDeviceCandidates(GetRequiredDeviceCapabilities());
+}
+
+void SharingUiController::OnAppsReceived(int dialog_id, std::vector<App> apps) {
+  if (dialog_id != last_dialog_id_)
+    return;
+
+  apps_ = std::move(apps);
+  UpdateDevices();
+
   ShowNewDialog();
 }

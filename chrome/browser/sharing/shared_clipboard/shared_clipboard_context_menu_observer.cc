@@ -58,26 +58,27 @@ SharedClipboardContextMenuObserver::~SharedClipboardContextMenuObserver() =
 void SharedClipboardContextMenuObserver::InitMenu(
     const content::ContextMenuParams& params) {
   text_ = params.selection_text;
-  devices_ = controller_->GetSyncedDevices();
+  controller_->UpdateDevices();
+  const std::vector<SharingDeviceInfo>& devices = controller_->devices();
   // TODO(yasmo): add logging
 
-  if (devices_.empty())
+  if (devices.empty())
     return;
 
   proxy_->AddSeparator();
-  if (devices_.size() == 1) {
+  if (devices.size() == 1) {
 #if defined(OS_MACOSX)
     proxy_->AddMenuItem(
         IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
             IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-            devices_[0].human_readable_name()));
+            devices[0].human_readable_name()));
 #else
     proxy_->AddMenuItemWithIcon(
         IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
             IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-            devices_[0].human_readable_name()),
+            devices[0].human_readable_name()),
         GetContextMenuIcon());
 #endif
   } else {
@@ -100,7 +101,7 @@ void SharedClipboardContextMenuObserver::BuildSubMenu() {
   sub_menu_model_ = std::make_unique<ui::SimpleMenuModel>(&sub_menu_delegate_);
 
   int command_id = kSubMenuFirstDeviceCommandId;
-  for (const auto& device : devices_) {
+  for (const auto& device : controller_->devices()) {
     if (command_id > kSubMenuLastDeviceCommandId)
       break;
     sub_menu_model_->AddItem(command_id++, device.human_readable_name());
@@ -108,10 +109,11 @@ void SharedClipboardContextMenuObserver::BuildSubMenu() {
 }
 
 bool SharedClipboardContextMenuObserver::IsCommandIdSupported(int command_id) {
-  if (devices_.empty())
+  size_t device_count = controller_->devices().size();
+  if (device_count == 0)
     return false;
 
-  if (devices_.size() == 1) {
+  if (device_count == 1) {
     return command_id ==
            IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE;
   } else {
@@ -128,19 +130,20 @@ bool SharedClipboardContextMenuObserver::IsCommandIdEnabled(int command_id) {
 void SharedClipboardContextMenuObserver::ExecuteCommand(int command_id) {
   if (command_id ==
       IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE) {
-    DCHECK(devices_.size() == 1);
+    DCHECK(controller_->devices().size() == 1);
     SendSharedClipboardMessage(0);
   }
 }
 
 void SharedClipboardContextMenuObserver::SendSharedClipboardMessage(
     int chosen_device_index) {
-  if (chosen_device_index >= static_cast<int>(devices_.size()))
+  const std::vector<SharingDeviceInfo>& devices = controller_->devices();
+  if (chosen_device_index >= static_cast<int>(devices.size()))
     return;
 
   // TODO(yasmo): Add logging
 
-  controller_->OnDeviceSelected(text_, devices_[chosen_device_index]);
+  controller_->OnDeviceSelected(text_, devices[chosen_device_index]);
 }
 
 gfx::ImageSkia SharedClipboardContextMenuObserver::GetContextMenuIcon() const {

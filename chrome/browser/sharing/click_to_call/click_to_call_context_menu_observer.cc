@@ -52,26 +52,26 @@ ClickToCallContextMenuObserver::~ClickToCallContextMenuObserver() = default;
 void ClickToCallContextMenuObserver::InitMenu(
     const content::ContextMenuParams& params) {
   url_ = params.link_url;
-  devices_ = controller_->GetSyncedDevices();
-  LogClickToCallDevicesToShow(kSharingClickToCallUiContextMenu,
-                              devices_.size());
-  if (devices_.empty())
+  controller_->UpdateDevices();
+  const std::vector<SharingDeviceInfo>& devices = controller_->devices();
+  LogClickToCallDevicesToShow(kSharingClickToCallUiContextMenu, devices.size());
+  if (devices.empty())
     return;
 
   proxy_->AddSeparator();
-  if (devices_.size() == 1) {
+  if (devices.size() == 1) {
 #if defined(OS_MACOSX)
     proxy_->AddMenuItem(
         IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
             IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
-            devices_[0].human_readable_name()));
+            devices[0].human_readable_name()));
 #else
     proxy_->AddMenuItemWithIcon(
         IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
             IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
-            devices_[0].human_readable_name()),
+            devices[0].human_readable_name()),
         vector_icons::kCallIcon);
 #endif
   } else {
@@ -95,7 +95,7 @@ void ClickToCallContextMenuObserver::BuildSubMenu() {
   sub_menu_model_ = std::make_unique<ui::SimpleMenuModel>(&sub_menu_delegate_);
 
   int command_id = kSubMenuFirstDeviceCommandId;
-  for (const auto& device : devices_) {
+  for (const auto& device : controller_->devices()) {
     if (command_id > kSubMenuLastDeviceCommandId)
       break;
     sub_menu_model_->AddItem(command_id++, device.human_readable_name());
@@ -103,10 +103,11 @@ void ClickToCallContextMenuObserver::BuildSubMenu() {
 }
 
 bool ClickToCallContextMenuObserver::IsCommandIdSupported(int command_id) {
-  if (devices_.empty())
+  size_t device_count = controller_->devices().size();
+  if (device_count == 0)
     return false;
 
-  if (devices_.size() == 1) {
+  if (device_count == 1) {
     return command_id ==
            IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE;
   } else {
@@ -122,18 +123,19 @@ bool ClickToCallContextMenuObserver::IsCommandIdEnabled(int command_id) {
 
 void ClickToCallContextMenuObserver::ExecuteCommand(int command_id) {
   if (command_id == IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE) {
-    DCHECK(devices_.size() == 1);
+    DCHECK(controller_->devices().size() == 1);
     SendClickToCallMessage(0);
   }
 }
 
 void ClickToCallContextMenuObserver::SendClickToCallMessage(
     int chosen_device_index) {
-  if (chosen_device_index >= static_cast<int>(devices_.size()))
+  const std::vector<SharingDeviceInfo>& devices = controller_->devices();
+  if (chosen_device_index >= static_cast<int>(devices.size()))
     return;
 
   LogClickToCallSelectedDeviceIndex(kSharingClickToCallUiContextMenu,
                                     chosen_device_index);
 
-  controller_->OnDeviceSelected(url_, devices_[chosen_device_index]);
+  controller_->OnDeviceSelected(url_, devices[chosen_device_index]);
 }

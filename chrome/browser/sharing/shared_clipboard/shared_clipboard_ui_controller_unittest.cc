@@ -125,5 +125,5 @@ TEST_F(SharedClipboardUiControllerTest, OnDeviceChosen) {
 TEST_F(SharedClipboardUiControllerTest, GetSyncedDevices) {
   EXPECT_CALL(*service(), GetDeviceCandidates(Eq(static_cast<int>(
                               SharingDeviceCapability::kSharedClipboard))));
-  controller_->GetSyncedDevices();
+  controller_->UpdateAndShowDialog();
 }
