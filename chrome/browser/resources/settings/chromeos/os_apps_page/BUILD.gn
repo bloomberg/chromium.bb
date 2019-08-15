@@ -6,13 +6,15 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
-    ":app_management_page",
+    ":os_apps_page",
   ]
 }
 
-js_library("app_management_page") {
+js_library("os_apps_page") {
   deps = [
-    "..:open_window_proxy",
+    "../../:route",
+    "../../settings_page:settings_animated_pages",
   ]
+
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
