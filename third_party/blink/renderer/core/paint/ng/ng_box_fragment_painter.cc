@@ -962,8 +962,8 @@ bool NGBoxFragmentPainter::ShouldPaint(
     return paint_state.LocalRectIntersectsCullRect(
         paint_fragment_->InkOverflow());
   }
-  const NGPhysicalFragment& fragment = PhysicalFragment();
-  if (fragment.IsBox() && !fragment.IsInlineBox()) {
+  const NGPhysicalBoxFragment& fragment = PhysicalFragment();
+  if (!fragment.IsInlineBox()) {
     return paint_state.LocalRectIntersectsCullRect(
         ToLayoutBox(fragment.GetLayoutObject())
             ->PhysicalSelfVisualOverflowRect());
