@@ -254,16 +254,16 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
   }
 
   bool allow_service_worker = false;
-  if (ServiceWorkerContextWrapper::GetCoreThreadId() == BrowserThread::IO) {
-    allow_service_worker =
-        GetContentClient()->browser()->AllowServiceWorkerOnIO(
-            registration->scope(), provider_host_->site_for_cookies(), GURL(),
-            resource_context_, provider_host_->web_contents_getter());
-  } else {
+  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
     allow_service_worker =
         GetContentClient()->browser()->AllowServiceWorkerOnUI(
             registration->scope(), provider_host_->site_for_cookies(), GURL(),
             browser_context_, provider_host_->web_contents_getter());
+  } else {
+    allow_service_worker =
+        GetContentClient()->browser()->AllowServiceWorkerOnIO(
+            registration->scope(), provider_host_->site_for_cookies(), GURL(),
+            resource_context_, provider_host_->web_contents_getter());
   }
 
   if (!allow_service_worker) {
