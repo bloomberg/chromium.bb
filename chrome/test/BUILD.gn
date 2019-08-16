@@ -3741,6 +3741,7 @@ test("unit_tests") {
       "../browser/ui/omnibox/chrome_omnibox_navigation_observer_unittest.cc",
       "../browser/ui/omnibox/clipboard_utils_unittest.cc",
       "../browser/ui/page_info/permission_menu_model_unittest.cc",
+      "../browser/ui/passwords/credential_leak_dialog_controller_impl_unittest.cc",
       "../browser/ui/passwords/credential_manager_dialog_controller_impl_unittest.cc",
       "../browser/ui/passwords/manage_passwords_bubble_model_unittest.cc",
       "../browser/ui/recently_audible_helper_unittest.cc",
