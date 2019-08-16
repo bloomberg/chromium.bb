@@ -2292,12 +2292,19 @@ customize.colorsMenuOnThemeChange = function() {
         'https://chrome.google.com/webstore/detail/' + themeInfo.themeId;
     $(customize.IDS.COLORS_THEME_UNINSTALL).onclick =
         ntpApiHandle.useDefaultTheme;
+
+    // Clear the previous selection, if any.
+    if (customize.selectedOptions.color) {
+      customize.richerPicker_removeSelectedState(
+          customize.selectedOptions.color);
+      customize.selectedOptions.color = null;
+    }
   } else {
     $(customize.IDS.COLORS_THEME).classList.remove(customize.CLASSES.VISIBLE);
-  }
 
-  // Select the tile corresponding to the current theme/color.
-  customize.colorsMenuPreselectTile();
+    // Select the tile corresponding to the current theme/color.
+    customize.colorsMenuPreselectTile();
+  }
 };
 
 /**
