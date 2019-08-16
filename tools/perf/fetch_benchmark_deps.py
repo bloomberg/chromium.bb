@@ -12,13 +12,12 @@ import os
 import sys
 import logging
 
-from core import benchmark_finders
 from core import path_util
-
 path_util.AddPyUtilsToPath()
-from py_utils import cloud_storage
 
 from chrome_telemetry_build import chromium_config
+from core import benchmark_finders  # pylint: disable=ungrouped-imports
+from py_utils import cloud_storage
 
 
 def _FetchDependenciesIfNeeded(story_set):
