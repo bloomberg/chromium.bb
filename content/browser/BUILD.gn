@@ -1960,10 +1960,15 @@ jumbo_source_set("browser") {
   }
 
   if (is_linux) {
+    sources += [
+      "font_service.cc",
+      "font_service.h",
+    ]
+
+    public_deps += [ "//components/services/font/public/mojom" ]
+
     deps += [
       "//components/services/font:lib",
-      "//components/services/font/public/cpp:manifest",
-      "//components/services/font/public/mojom",
       "//services/service_manager/zygote",
     ]
   }
