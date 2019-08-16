@@ -5470,6 +5470,10 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
   if (!current_navigation_url.SchemeIsHTTPOrHTTPS())
     return content::PREVIEWS_OFF;
 
+  // Check if initial state specifies no previews should be considered.
+  if (initial_state == content::PREVIEWS_OFF)
+    return initial_state;
+
   // Do not allow previews on POST navigations since the primary opt-out
   // mechanism is to reload the page. Because POST navigations are not
   // idempotent, we do not want to show a preview on a POST navigation where
