@@ -130,7 +130,7 @@ void SharedWorkerHost::SetNetworkFactoryForTesting(
 }
 
 void SharedWorkerHost::Start(
-    blink::mojom::SharedWorkerFactoryPtr factory,
+    mojo::PendingRemote<blink::mojom::SharedWorkerFactory> factory,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
@@ -210,7 +210,7 @@ void SharedWorkerHost::Start(
   }
 
   // Send the CreateSharedWorker message.
-  factory_ = std::move(factory);
+  factory_.Bind(std::move(factory));
   factory_->CreateSharedWorker(
       std::move(info), GetContentClient()->browser()->GetUserAgent(),
       pause_on_start, devtools_worker_token, std::move(renderer_preferences),

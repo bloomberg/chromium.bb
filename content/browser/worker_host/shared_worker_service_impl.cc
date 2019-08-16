@@ -319,7 +319,7 @@ void SharedWorkerServiceImpl::StartWorker(
 
   // Get the factory used to instantiate the new shared worker instance in
   // the target process.
-  blink::mojom::SharedWorkerFactoryPtr factory;
+  mojo::PendingRemote<blink::mojom::SharedWorkerFactory> factory;
   BindInterface(worker_process_host, &factory);
 
   host->Start(std::move(factory), std::move(main_script_load_params),
