@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/android/image_reader_gl_owner.h"
+#include "gpu/ipc/common/android/image_reader_gl_owner.h"
 
 #include <android/native_window_jni.h>
 #include <jni.h>
@@ -25,7 +25,7 @@
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_make_current.h"
 
-namespace media {
+namespace gpu {
 
 namespace {
 bool IsSurfaceControl(TextureOwner::Mode mode) {
@@ -76,7 +76,7 @@ class ImageReaderGLOwner::ScopedHardwareBufferImpl
 };
 
 ImageReaderGLOwner::ImageReaderGLOwner(
-    std::unique_ptr<gpu::gles2::AbstractTexture> texture,
+    std::unique_ptr<gles2::AbstractTexture> texture,
     Mode mode)
     : TextureOwner(false /* binds_texture_on_image_update */,
                    std::move(texture)),
@@ -117,7 +117,7 @@ ImageReaderGLOwner::ImageReaderGLOwner(
   if (return_code != AMEDIA_OK) {
     LOG(ERROR) << " Image reader creation failed.";
     if (return_code == AMEDIA_ERROR_INVALID_PARAMETER)
-      LOG(ERROR) << "Either reader is NULL, or one or more of width, height, "
+      LOG(ERROR) << "Either reader is null, or one or more of width, height, "
                     "format, maxImages arguments is not supported";
     else
       LOG(ERROR) << "unknown error";
@@ -152,7 +152,7 @@ ImageReaderGLOwner::~ImageReaderGLOwner() {
   DCHECK_EQ(image_refs_.size(), 0u);
 }
 
-void ImageReaderGLOwner::OnTextureDestroyed(gpu::gles2::AbstractTexture*) {
+void ImageReaderGLOwner::OnTextureDestroyed(gles2::AbstractTexture*) {
   // The AbstractTexture is being destroyed.  This can happen if, for example,
   // the video decoder's gl context is lost.  Remember that the platform texture
   // might not be gone; it's possible for the gl decoder (and AbstractTexture)
@@ -165,7 +165,7 @@ void ImageReaderGLOwner::OnTextureDestroyed(gpu::gles2::AbstractTexture*) {
   DCHECK(image_reader_);
 
   // Now we can stop listening to new images.
-  loader_.AImageReader_setImageListener(image_reader_, NULL);
+  loader_.AImageReader_setImageListener(image_reader_, nullptr);
 
   // Delete all images before closing the associated image reader.
   for (auto& image_ref : image_refs_)
@@ -183,6 +183,7 @@ void ImageReaderGLOwner::OnTextureDestroyed(gpu::gles2::AbstractTexture*) {
 
 void ImageReaderGLOwner::SetFrameAvailableCallback(
     const base::RepeatingClosure& frame_available_cb) {
+  DCHECK(!frame_available_cb_);
   frame_available_cb_ = std::move(frame_available_cb);
 }
 
@@ -241,7 +242,7 @@ void ImageReaderGLOwner::UpdateTexImage() {
   // just return if error occurs.
   switch (return_code) {
     case AMEDIA_ERROR_INVALID_PARAMETER:
-      LOG(ERROR) << " Image is NULL";
+      LOG(ERROR) << " Image is null";
       base::UmaHistogramSparse("Media.AImageReaderGLOwner.AcquireImageResult",
                                return_code);
       return;
@@ -397,7 +398,7 @@ ImageReaderGLOwner::ScopedCurrentImageRef::~ScopedCurrentImageRef() {
   // If there is no |image_reader_|, we are in tear down so no fence is
   // required.
   if (image_bound_ && texture_owner_->image_reader_)
-    release_fence = gpu::CreateEglFenceAndExportFd();
+    release_fence = CreateEglFenceAndExportFd();
   else
     release_fence = std::move(ready_fence_);
   texture_owner_->ReleaseRefOnImage(image_, std::move(release_fence));
@@ -413,15 +414,15 @@ void ImageReaderGLOwner::ScopedCurrentImageRef::EnsureBound() {
     return;
 
   // Insert an EGL fence and make server wait for image to be available.
-  if (!gpu::InsertEglFenceAndWait(GetReadyFence()))
+  if (!InsertEglFenceAndWait(GetReadyFence()))
     return;
 
   // Create EGL image from the AImage and bind it to the texture.
-  if (!gpu::CreateAndBindEglImage(image_, texture_owner_->GetTextureId(),
-                                  &texture_owner_->loader_))
+  if (!CreateAndBindEglImage(image_, texture_owner_->GetTextureId(),
+                             &texture_owner_->loader_))
     return;
 
   image_bound_ = true;
 }
 
-}  // namespace media
+}  // namespace gpu

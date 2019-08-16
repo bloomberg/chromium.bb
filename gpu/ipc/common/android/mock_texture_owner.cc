@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/android/mock_texture_owner.h"
+#include "gpu/ipc/common/android/mock_texture_owner.h"
 
-#include "media/gpu/android/mock_abstract_texture.h"
+#include "gpu/ipc/common/android/mock_abstract_texture.h"
 
-namespace media {
+namespace gpu {
 
 using testing::Invoke;
 using testing::Return;
@@ -33,4 +33,4 @@ MockTextureOwner::~MockTextureOwner() {
   ClearAbstractTexture();
 }
 
-}  // namespace media
+}  // namespace gpu

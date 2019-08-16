@@ -128,7 +128,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   // Finishes initialization.
   void StartLazyInit();
   void OnVideoFrameFactoryInitialized(
-      scoped_refptr<TextureOwner> texture_owner);
+      scoped_refptr<gpu::TextureOwner> texture_owner);
 
   // Resets |waiting_for_key_| to false, indicating that MediaCodec might now
   // accept buffers.

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_ANDROID_IMAGE_READER_GL_OWNER_H_
-#define MEDIA_GPU_ANDROID_IMAGE_READER_GL_OWNER_H_
+#ifndef GPU_IPC_COMMON_ANDROID_IMAGE_READER_GL_OWNER_H_
+#define GPU_IPC_COMMON_ANDROID_IMAGE_READER_GL_OWNER_H_
 
 #include <memory>
 
 #include "base/android/android_image_reader_compat.h"
 #include "base/containers/flat_map.h"
-#include "media/gpu/android/texture_owner.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 #include "ui/gl/gl_fence_egl.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
 
@@ -19,7 +19,7 @@ class ScopedHardwareBufferFenceSync;
 }  // namespace android
 }  // namespace base
 
-namespace media {
+namespace gpu {
 
 // This class wraps the AImageReader usage and is used to create a GL texture
 // using the current platform GL context and returns a new ImageReaderGLOwner
@@ -27,7 +27,7 @@ namespace media {
 // decoded media frames. Media frames can update the attached surface handle
 // with image data and this class helps to create an eglImage using that image
 // data present in the surface.
-class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
+class GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
  public:
   gl::GLContext* GetContext() const override;
   gl::GLSurface* GetSurface() const override;
@@ -45,7 +45,7 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
   int32_t max_images_for_testing() const { return max_images_; }
 
  protected:
-  void OnTextureDestroyed(gpu::gles2::AbstractTexture*) override;
+  void OnTextureDestroyed(gles2::AbstractTexture*) override;
 
  private:
   friend class TextureOwner;
@@ -74,7 +74,7 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
     DISALLOW_COPY_AND_ASSIGN(ScopedCurrentImageRef);
   };
 
-  ImageReaderGLOwner(std::unique_ptr<gpu::gles2::AbstractTexture> texture,
+  ImageReaderGLOwner(std::unique_ptr<gles2::AbstractTexture> texture,
                      Mode secure_mode);
   ~ImageReaderGLOwner() override;
 
@@ -130,6 +130,6 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
   DISALLOW_COPY_AND_ASSIGN(ImageReaderGLOwner);
 };
 
-}  // namespace media
+}  // namespace gpu
 
-#endif  // MEDIA_GPU_ANDROID_IMAGE_READER_GL_OWNER_H_
+#endif  // GPU_IPC_COMMON_ANDROID_IMAGE_READER_GL_OWNER_H_

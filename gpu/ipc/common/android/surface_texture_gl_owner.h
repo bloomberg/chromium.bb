@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_ANDROID_SURFACE_TEXTURE_GL_OWNER_H_
-#define MEDIA_GPU_ANDROID_SURFACE_TEXTURE_GL_OWNER_H_
+#ifndef GPU_IPC_COMMON_ANDROID_SURFACE_TEXTURE_GL_OWNER_H_
+#define GPU_IPC_COMMON_ANDROID_SURFACE_TEXTURE_GL_OWNER_H_
 
-#include "media/gpu/android/texture_owner.h"
-
-#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "media/gpu/media_gpu_export.h"
+#include "gpu/gpu_export.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 #include "ui/gl/android/surface_texture.h"
 
 namespace base {
@@ -18,7 +16,7 @@ class ScopedHardwareBufferFenceSync;
 }  // namespace android
 }  // namespace base
 
-namespace media {
+namespace gpu {
 
 // This class wraps the Surface Texture usage. It is used to create a surface
 // texture attached to a new texture of the current platform GL context. The
@@ -26,7 +24,7 @@ namespace media {
 // frames. Media frames can update the attached surface handle with image data.
 // This class helps to update the attached texture using that image data
 // present in the surface.
-class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
+class GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
  public:
   gl::GLContext* GetContext() const override;
   gl::GLSurface* GetSurface() const override;
@@ -41,23 +39,27 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
   GetAHardwareBuffer() override;
 
  protected:
-  void OnTextureDestroyed(gpu::gles2::AbstractTexture*) override;
+  void OnTextureDestroyed(gles2::AbstractTexture*) override;
 
  private:
   friend class TextureOwner;
 
-  SurfaceTextureGLOwner(std::unique_ptr<gpu::gles2::AbstractTexture> texture);
+  SurfaceTextureGLOwner(std::unique_ptr<gles2::AbstractTexture> texture);
   ~SurfaceTextureGLOwner() override;
 
   scoped_refptr<gl::SurfaceTexture> surface_texture_;
+
   // The context and surface that were used to create |surface_texture_|.
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
+
+  // To ensure that SetFrameAvailableCallback() is called only once.
+  bool is_frame_available_callback_set_ = false;
 
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(SurfaceTextureGLOwner);
 };
 
-}  // namespace media
+}  // namespace gpu
 
-#endif  // MEDIA_GPU_ANDROID_SURFACE_TEXTURE_GL_OWNER_H_
+#endif  // GPU_IPC_COMMON_ANDROID_SURFACE_TEXTURE_GL_OWNER_H_

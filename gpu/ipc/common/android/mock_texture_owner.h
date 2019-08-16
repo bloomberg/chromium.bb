@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_ANDROID_MOCK_TEXTURE_OWNER_H_
-#define MEDIA_GPU_ANDROID_MOCK_TEXTURE_OWNER_H_
+#ifndef GPU_IPC_COMMON_ANDROID_MOCK_TEXTURE_OWNER_H_
+#define GPU_IPC_COMMON_ANDROID_MOCK_TEXTURE_OWNER_H_
 
 #include <memory>
 
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
-#include "media/gpu/android/texture_owner.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_bindings.h"
@@ -17,7 +17,7 @@
 
 using testing::NiceMock;
 
-namespace media {
+namespace gpu {
 
 // This is a mock with a small amount of fake functionality too.
 class MockTextureOwner : public TextureOwner {
@@ -53,6 +53,6 @@ class MockTextureOwner : public TextureOwner {
   ~MockTextureOwner();
 };
 
-}  // namespace media
+}  // namespace gpu
 
-#endif  // MEDIA_GPU_ANDROID_MOCK_TEXTURE_OWNER_H_
+#endif  // GPU_IPC_COMMON_ANDROID_MOCK_TEXTURE_OWNER_H_

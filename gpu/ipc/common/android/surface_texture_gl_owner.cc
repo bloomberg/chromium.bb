@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/android/surface_texture_gl_owner.h"
+#include "gpu/ipc/common/android/surface_texture_gl_owner.h"
 
 #include <memory>
 
@@ -17,10 +17,10 @@
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_make_current.h"
 
-namespace media {
+namespace gpu {
 
 SurfaceTextureGLOwner::SurfaceTextureGLOwner(
-    std::unique_ptr<gpu::gles2::AbstractTexture> texture)
+    std::unique_ptr<gles2::AbstractTexture> texture)
     : TextureOwner(true /*binds_texture_on_update */, std::move(texture)),
       surface_texture_(gl::SurfaceTexture::Create(GetTextureId())),
       context_(gl::GLContext::GetCurrent()),
@@ -37,7 +37,7 @@ SurfaceTextureGLOwner::~SurfaceTextureGLOwner() {
   ClearAbstractTexture();
 }
 
-void SurfaceTextureGLOwner::OnTextureDestroyed(gpu::gles2::AbstractTexture*) {
+void SurfaceTextureGLOwner::OnTextureDestroyed(gles2::AbstractTexture*) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Make sure that the SurfaceTexture isn't using the GL objects.
@@ -46,8 +46,11 @@ void SurfaceTextureGLOwner::OnTextureDestroyed(gpu::gles2::AbstractTexture*) {
 
 void SurfaceTextureGLOwner::SetFrameAvailableCallback(
     const base::RepeatingClosure& frame_available_cb) {
+  DCHECK(!is_frame_available_callback_set_);
+
   // Setting the callback to be run from any thread since |frame_available_cb|
   // is thread safe.
+  is_frame_available_callback_set_ = true;
   surface_texture_->SetFrameAvailableCallbackOnAnyThread(frame_available_cb);
 }
 
@@ -98,4 +101,4 @@ SurfaceTextureGLOwner::GetAHardwareBuffer() {
   return nullptr;
 }
 
-}  // namespace media
+}  // namespace gpu

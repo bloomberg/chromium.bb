@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/android/texture_owner.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 
 #include <stdint.h>
 #include <memory>
@@ -11,16 +11,16 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
+#include "gpu/ipc/common/android/image_reader_gl_owner.h"
+#include "gpu/ipc/common/android/mock_abstract_texture.h"
 #include "media/base/media_switches.h"
-#include "media/gpu/android/image_reader_gl_owner.h"
-#include "media/gpu/android/mock_abstract_texture.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 
-namespace media {
+namespace gpu {
 
 class ImageReaderGLOwnerTest : public testing::Test {
  public:
@@ -202,4 +202,4 @@ TEST_F(ImageReaderGLOwnerInsecureSurfaceControlTest, MaxImageExpectation) {
             3);
 }
 
-}  // namespace media
+}  // namespace gpu

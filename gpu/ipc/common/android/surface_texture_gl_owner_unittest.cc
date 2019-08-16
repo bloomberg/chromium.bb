@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/android/surface_texture_gl_owner.h"
+#include "gpu/ipc/common/android/surface_texture_gl_owner.h"
 
 #include <stdint.h>
 
@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/test/scoped_task_environment.h"
-#include "media/gpu/android/mock_abstract_texture.h"
+#include "gpu/ipc/common/android/mock_abstract_texture.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_bindings.h"
@@ -21,11 +21,11 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 
+using testing::_;
 using testing::Invoke;
 using testing::NiceMock;
-using testing::_;
 
-namespace media {
+namespace gpu {
 
 class SurfaceTextureGLOwnerTest : public testing::Test {
  public:
@@ -125,4 +125,4 @@ TEST_F(SurfaceTextureGLOwnerTest, DestructionWorksWithWrongContext) {
   new_surface = nullptr;
 }
 
-}  // namespace media
+}  // namespace gpu

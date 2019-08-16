@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_ANDROID_TEXTURE_OWNER_H_
-#define MEDIA_GPU_ANDROID_TEXTURE_OWNER_H_
+#ifndef GPU_IPC_COMMON_ANDROID_TEXTURE_OWNER_H_
+#define GPU_IPC_COMMON_ANDROID_TEXTURE_OWNER_H_
 
 #include <android/hardware_buffer.h>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/single_thread_task_runner.h"
-#include "media/gpu/media_gpu_export.h"
+#include "gpu/gpu_export.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -29,9 +29,6 @@ class TextureBase;
 namespace gles2 {
 class AbstractTexture;
 }  // namespace gles2
-}  // namespace gpu
-
-namespace media {
 
 // A Texture wrapper interface that creates and maintains ownership of the
 // attached GL or Vulkan texture. The texture is destroyed with the object.
@@ -40,7 +37,7 @@ namespace media {
 // be called on any thread. It's safe to keep and drop refptrs to it on any
 // thread; it will be automatically destructed on the thread it was constructed
 // on.
-class MEDIA_GPU_EXPORT TextureOwner
+class GPU_EXPORT TextureOwner
     : public base::RefCountedDeleteOnSequence<TextureOwner> {
  public:
   // Creates a GL texture using the current platform GL context and returns a
@@ -57,12 +54,12 @@ class MEDIA_GPU_EXPORT TextureOwner
     kSurfaceTextureInsecure
   };
   static scoped_refptr<TextureOwner> Create(
-      std::unique_ptr<gpu::gles2::AbstractTexture> texture,
+      std::unique_ptr<gles2::AbstractTexture> texture,
       Mode mode);
 
   // Create a texture that's appropriate for a TextureOwner.
-  static std::unique_ptr<gpu::gles2::AbstractTexture> CreateTexture(
-      scoped_refptr<gpu::SharedContextState> context_state);
+  static std::unique_ptr<gles2::AbstractTexture> CreateTexture(
+      scoped_refptr<SharedContextState> context_state);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
     return task_runner_;
@@ -70,7 +67,7 @@ class MEDIA_GPU_EXPORT TextureOwner
 
   // Returns the GL texture id that the TextureOwner is attached to.
   GLuint GetTextureId() const;
-  gpu::TextureBase* GetTextureBase() const;
+  TextureBase* GetTextureBase() const;
   virtual gl::GLContext* GetContext() const = 0;
   virtual gl::GLSurface* GetSurface() const = 0;
 
@@ -95,22 +92,23 @@ class MEDIA_GPU_EXPORT TextureOwner
   virtual std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() = 0;
 
+  // Set the callback function to run when a new frame is available.
+  // |frame_available_cb| is thread safe and can be called on any thread. This
+  // method should be called only once, i.e., once a callback is provided, it
+  // should not be changed.
+  virtual void SetFrameAvailableCallback(
+      const base::RepeatingClosure& frame_available_cb) = 0;
+
   bool binds_texture_on_update() const { return binds_texture_on_update_; }
 
  protected:
   friend class base::RefCountedDeleteOnSequence<TextureOwner>;
   friend class base::DeleteHelper<TextureOwner>;
-  friend class CodecBufferWaitCoordinator;
 
   // |texture| is the texture that we'll own.
   TextureOwner(bool binds_texture_on_update,
-               std::unique_ptr<gpu::gles2::AbstractTexture> texture);
+               std::unique_ptr<gles2::AbstractTexture> texture);
   virtual ~TextureOwner();
-
-  // Set the callback function to run when a new frame is available.
-  // |frame_available_cb| is thread safe and can be called on any thread.
-  virtual void SetFrameAvailableCallback(
-      const base::RepeatingClosure& frame_available_cb) = 0;
 
   // Drop |texture_| immediately.  Will call OnTextureDestroyed immediately if
   // it hasn't been called before (e.g., due to lost context).
@@ -121,21 +119,21 @@ class MEDIA_GPU_EXPORT TextureOwner
 
   // Called when |texture_| signals that the platform texture will be destroyed.
   // See AbstractTexture::SetCleanupCallback.
-  virtual void OnTextureDestroyed(gpu::gles2::AbstractTexture*) = 0;
+  virtual void OnTextureDestroyed(gles2::AbstractTexture*) = 0;
 
-  gpu::gles2::AbstractTexture* texture() const { return texture_.get(); }
+  gles2::AbstractTexture* texture() const { return texture_.get(); }
 
  private:
   // Set to true if the updating the image for this owner will automatically
   // bind it to the texture target.
   const bool binds_texture_on_update_;
 
-  std::unique_ptr<gpu::gles2::AbstractTexture> texture_;
+  std::unique_ptr<gles2::AbstractTexture> texture_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureOwner);
 };
 
-}  // namespace media
+}  // namespace gpu
 
-#endif  // MEDIA_GPU_ANDROID_TEXTURE_OWNER_H_
+#endif  // GPU_IPC_COMMON_ANDROID_TEXTURE_OWNER_H_

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_ANDROID_MOCK_ABSTRACT_TEXTURE_H_
-#define MEDIA_GPU_ANDROID_MOCK_ABSTRACT_TEXTURE_H_
+#ifndef GPU_IPC_COMMON_ANDROID_MOCK_ABSTRACT_TEXTURE_H_
+#define GPU_IPC_COMMON_ANDROID_MOCK_ABSTRACT_TEXTURE_H_
 
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace media {
+namespace gpu {
 
 // SupportsWeakPtr so it's easy to tell when it has been destroyed.
 class MockAbstractTexture
@@ -40,6 +40,6 @@ class MockAbstractTexture
   CleanupCallback cleanup_callback_;
 };
 
-}  // namespace media
+}  // namespace gpu
 
-#endif  // MEDIA_GPU_ANDROID_MOCK_ABSTRACT_TEXTURE_H_
+#endif  // GPU_IPC_COMMON_ANDROID_MOCK_ABSTRACT_TEXTURE_H_

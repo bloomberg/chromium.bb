@@ -431,7 +431,7 @@ void MediaCodecVideoDecoder::StartLazyInit() {
 }
 
 void MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized(
-    scoped_refptr<TextureOwner> texture_owner) {
+    scoped_refptr<gpu::TextureOwner> texture_owner) {
   DVLOG(2) << __func__;
   TRACE_EVENT0("media",
                "MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized");
