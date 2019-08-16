@@ -916,18 +916,22 @@ class CSSMathExpressionNodeParser {
       return nullptr;
 
     CSSMathExpressionVariadicOperation::Operands operands;
+    bool last_token_is_comma = false;
     while (!tokens.AtEnd()) {
       tokens.ConsumeWhitespace();
       CSSMathExpressionNode* operand = ParseValueExpression(tokens, depth);
       if (!operand)
         return nullptr;
 
+      last_token_is_comma = false;
       operands.push_back(operand);
+
       if (!css_property_parser_helpers::ConsumeCommaIncludingWhitespace(tokens))
         break;
+      last_token_is_comma = true;
     }
 
-    if (operands.IsEmpty() || !tokens.AtEnd())
+    if (operands.IsEmpty() || !tokens.AtEnd() || last_token_is_comma)
       return nullptr;
 
     return CSSMathExpressionVariadicOperation::Create(std::move(operands), op);
