@@ -21,6 +21,7 @@ export async function crawl(suite: string): Promise<TestSuiteListingEntry[]> {
   }
 
   const specFiles = await fg(specDir + '/**/*' + specSuffix, { onlyFiles: true });
+  specFiles.sort();
 
   const groups: TestSuiteListingEntry[] = [];
   for (const file of specFiles) {
