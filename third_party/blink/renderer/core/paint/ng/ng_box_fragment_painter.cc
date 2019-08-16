@@ -379,19 +379,22 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
 }
 
 void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
+  DCHECK(!box_fragment_.ChildrenInline());
+  DCHECK(!box_fragment_.GetLayoutObject()->ChildrenInline());
+  PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
   for (const NGLink& child : box_fragment_.Children()) {
-    const NGPhysicalFragment& fragment = *child;
-    if (fragment.HasSelfPaintingLayer() || fragment.IsFloating())
+    const NGPhysicalFragment& child_fragment = *child;
+    if (child_fragment.HasSelfPaintingLayer() || child_fragment.IsFloating())
       continue;
 
-    if (fragment.Type() == NGPhysicalFragment::kFragmentBox) {
+    if (child_fragment.Type() == NGPhysicalFragment::kFragmentBox) {
       // TODO(kojii): We could skip going through |LayoutObject| when we know
       // children are always laid out by NG. See
       // |FragmentRequiresLegacyFallback|.
-      fragment.GetLayoutObject()->Paint(paint_info);
+      child_fragment.GetLayoutObject()->Paint(paint_info_for_descendants);
     } else {
-      DCHECK(fragment.Type() == NGPhysicalFragment::kFragmentRenderedLegend)
-          << fragment;
+      DCHECK_EQ(child_fragment.Type(),
+                NGPhysicalFragment::kFragmentRenderedLegend);
     }
   }
 }
