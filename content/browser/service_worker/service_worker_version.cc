@@ -1784,9 +1784,7 @@ void ServiceWorkerVersion::PingWorker() {
 void ServiceWorkerVersion::OnPingTimeout() {
   DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
          running_status() == EmbeddedWorkerStatus::RUNNING);
-  // TODO(falken): Change the error code to
-  // blink::ServiceWorkerStatusCode::kErrorTimeout.
-  embedded_worker_->AddMessageToConsole(
+  MaybeReportConsoleMessageToInternals(
       blink::mojom::ConsoleMessageLevel::kVerbose, kNotRespondingErrorMesage);
   embedded_worker_->StopIfNotAttachedToDevTools();
 }
@@ -2133,6 +2131,16 @@ bool ServiceWorkerVersion::ShouldRequireForegroundPriority(
 
 void ServiceWorkerVersion::UpdateForegroundPriority() {
   embedded_worker_->UpdateForegroundPriority();
+}
+
+void ServiceWorkerVersion::MaybeReportConsoleMessageToInternals(
+    blink::mojom::ConsoleMessageLevel message_level,
+    const std::string& message) {
+  // When the internals UI page is opened, the page listens to
+  // OnReportConsoleMessage().
+  OnReportConsoleMessage(blink::mojom::ConsoleMessageSource::kOther,
+                         message_level, base::UTF8ToUTF16(message), -1,
+                         script_url_);
 }
 
 void ServiceWorkerVersion::InitializeGlobalScope() {

@@ -519,6 +519,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // whether the service worker should be kept at foreground priority.
   void UpdateForegroundPriority();
 
+  // Adds a message to service worker internals UI page if the internal page is
+  // opened. Use this method only for events which can't be logged on the
+  // worker's DevTools console, e.g., the worker is not responding. For regular
+  // events use EmbeddedWorkerInstance's AddMessageToConsole().
+  void MaybeReportConsoleMessageToInternals(
+      blink::mojom::ConsoleMessageLevel message_level,
+      const std::string& message);
+
   // TODO(crbug.com/951571): Remove once the bug is debugged.
   const base::debug::StackTrace& redundant_state_callstack() const {
     return redundant_state_callstack_;
