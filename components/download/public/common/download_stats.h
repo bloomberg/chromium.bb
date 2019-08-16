@@ -269,10 +269,6 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadInterrupted(
     bool is_parallel_download_enabled,
     DownloadSource download_source);
 
-// Record that a download has been classified as malicious.
-COMPONENTS_DOWNLOAD_EXPORT void RecordMaliciousDownloadClassified(
-    DownloadDangerType danger_type);
-
 // Record a dangerous download accept event.
 COMPONENTS_DOWNLOAD_EXPORT void RecordDangerousDownloadAccept(
     DownloadDangerType danger_type,
