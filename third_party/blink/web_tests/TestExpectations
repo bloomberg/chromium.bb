@@ -1645,6 +1645,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-forced
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-padding.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-single-empty-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-single-tall-line.html [ Failure ]
+crbug.com/994172 virtual/layout_ng_experimental/fast/multicol/nested-with-spanner-inside-margins-crash.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-tall-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/avoid-column-break-inside.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/balance2.html [ Failure ]
