@@ -17,6 +17,7 @@ namespace openscreen {
 // code and an optional message.
 class Error {
  public:
+  // TODO(issue/65): Group/rename OSP-specific errors
   enum class Code : int8_t {
     // No error occurred.
     kNone = 0,
@@ -42,11 +43,8 @@ class Error {
     kUnknownRequestId,
 
     kAddressInUse,
-    kAlreadyListening,
     kDomainNameTooLong,
     kDomainNameLabelTooLong,
-
-    kGenericPlatformError,
 
     kIOFailure,
     kInitializationFailure,
@@ -62,10 +60,6 @@ class Error {
 
     kMdnsRegisterFailure,
 
-    kNoItemFound,
-    kNotImplemented,
-    kNotRunning,
-
     kParseError,
     kUnknownMessageType,
 
@@ -78,7 +72,7 @@ class Error {
     kJsonParseError,
     kJsonWriteError,
 
-    // OpenSSL errors
+    // OpenSSL errors.
     kFileLoadFailure,
 
     // Cast certificate errors.
@@ -108,7 +102,18 @@ class Error {
     // The pathlen constraint of the root certificate was exceeded.
     kErrCertsPathlen,
 
+    // Generic errors.
+    kUnknownError,
+    kNotImplemented,
     kInsufficientBuffer,
+    kParameterInvalid,
+    kParameterOutOfRange,
+    kParameterNullPointer,
+    kIndexOutOfBounds,
+    kItemAlreadyExists,
+    kItemNotFound,
+    kOperationInvalid,
+    kOperationCancelled,
   };
 
   Error();

@@ -60,14 +60,10 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: UnknownRequestId";
     case Error::Code::kAddressInUse:
       return os << "Failure: AddressInUse";
-    case Error::Code::kAlreadyListening:
-      return os << "Failure: AlreadyListening";
     case Error::Code::kDomainNameTooLong:
       return os << "Failure: DomainNameTooLong";
     case Error::Code::kDomainNameLabelTooLong:
       return os << "Failure: DomainNameLabelTooLong";
-    case Error::Code::kGenericPlatformError:
-      return os << "Failure: GenericPlatformError";
     case Error::Code::kIOFailure:
       return os << "Failure: IOFailure";
     case Error::Code::kInitializationFailure:
@@ -90,12 +86,6 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: SocketSendFailure";
     case Error::Code::kMdnsRegisterFailure:
       return os << "Failure: MdnsRegisterFailure";
-    case Error::Code::kNoItemFound:
-      return os << "Failure: NoItemFound";
-    case Error::Code::kNotImplemented:
-      return os << "Failure: NotImplemented";
-    case Error::Code::kNotRunning:
-      return os << "Failure: NotRunning";
     case Error::Code::kParseError:
       return os << "Failure: ParseError";
     case Error::Code::kUnknownMessageType:
@@ -132,8 +122,28 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: ErrCertsRevoked";
     case Error::Code::kErrCertsPathlen:
       return os << "Failure: ErrCertsPathlen";
+    case Error::Code::kUnknownError:
+      return os << "Failure: UnknownError";
+    case Error::Code::kNotImplemented:
+      return os << "Failure: NotImplemented";
     case Error::Code::kInsufficientBuffer:
       return os << "Failure: InsufficientBuffer";
+    case Error::Code::kParameterInvalid:
+      return os << "Failure: ParameterInvalid";
+    case Error::Code::kParameterOutOfRange:
+      return os << "Failure: ParameterOutOfRange";
+    case Error::Code::kParameterNullPointer:
+      return os << "Failure: ParameterNullPointer";
+    case Error::Code::kIndexOutOfBounds:
+      return os << "Failure: IndexOutOfBounds";
+    case Error::Code::kItemAlreadyExists:
+      return os << "Failure: ItemAlreadyExists";
+    case Error::Code::kItemNotFound:
+      return os << "Failure: ItemNotFound";
+    case Error::Code::kOperationInvalid:
+      return os << "Failure: OperationInvalid";
+    case Error::Code::kOperationCancelled:
+      return os << "Failure: OperationCancelled";
   }
 
   // Unused 'return' to get around failure on GCC.

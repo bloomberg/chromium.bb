@@ -199,7 +199,7 @@ ErrorOr<size_t> ConnectionManager::OnStreamMessage(
 
       Connection* connection = GetConnection(message.connection_id);
       if (!connection) {
-        return Error::Code::kNoItemFound;
+        return Error::Code::kItemNotFound;
       }
 
       switch (message.message.which) {

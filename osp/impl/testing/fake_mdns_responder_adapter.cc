@@ -210,13 +210,13 @@ Error FakeMdnsResponderAdapter::RegisterInterface(
     const platform::IPSubnet& interface_address,
     platform::UdpSocket* socket) {
   if (!running_)
-    return Error::Code::kNotRunning;
+    return Error::Code::kOperationInvalid;
 
   if (std::find_if(registered_interfaces_.begin(), registered_interfaces_.end(),
                    [&socket](const RegisteredInterface& interface) {
                      return interface.socket == socket;
                    }) != registered_interfaces_.end()) {
-    return Error::Code::kNoItemFound;
+    return Error::Code::kItemNotFound;
   }
   registered_interfaces_.push_back({interface_info, interface_address, socket});
   return Error::None();
@@ -230,7 +230,7 @@ Error FakeMdnsResponderAdapter::DeregisterInterface(
                      return interface.socket == socket;
                    });
   if (it == registered_interfaces_.end())
-    return Error::Code::kNoItemFound;
+    return Error::Code::kItemNotFound;
 
   registered_interfaces_.erase(it);
   return Error::None();

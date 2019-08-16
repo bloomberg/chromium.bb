@@ -119,7 +119,8 @@ TEST(NetworkReaderTest, UnwatchReadableSucceeds) {
   MockCallbacks callbacks;
 
   auto callback = callbacks.GetReadCallback();
-  EXPECT_EQ(network_waiter.CancelRead(socket.get()), Error::Code::kNotRunning);
+  EXPECT_EQ(network_waiter.CancelRead(socket.get()),
+            Error::Code::kOperationInvalid);
   EXPECT_FALSE(network_waiter.IsMappedRead(socket.get()));
 
   EXPECT_EQ(network_waiter.ReadRepeatedly(socket.get(), callback).code(),
@@ -128,7 +129,8 @@ TEST(NetworkReaderTest, UnwatchReadableSucceeds) {
   EXPECT_EQ(network_waiter.CancelRead(socket.get()), Error::Code::kNone);
   EXPECT_FALSE(network_waiter.IsMappedRead(socket.get()));
 
-  EXPECT_EQ(network_waiter.CancelRead(socket.get()), Error::Code::kNotRunning);
+  EXPECT_EQ(network_waiter.CancelRead(socket.get()),
+            Error::Code::kOperationInvalid);
 
   // Set deletion callback because otherwise the destructor tries to call a
   // callback on the deleted object when it goes out of scope.
@@ -151,7 +153,7 @@ TEST(NetworkReaderTest, WaitBubblesUpWaitForEventsErrors) {
   auto result = network_waiter.WaitTesting(timeout);
   EXPECT_EQ(result.code(), response_code);
 
-  response_code = Error::Code::kAlreadyListening;
+  response_code = Error::Code::kOperationInvalid;
   EXPECT_CALL(*mock_waiter_ptr, AwaitSocketsReadable(_, timeout))
       .WillOnce(Return(ByMove(std::move(response_code))));
   result = network_waiter.WaitTesting(timeout);
@@ -247,9 +249,8 @@ TEST(NetworkReaderTest, WaitFailsIfReadingSocketFails) {
       .WillOnce(Return(ByMove(std::vector<UdpSocket*>{&socket})));
   EXPECT_CALL(callbacks, ReadCallbackInternal()).Times(0);
   EXPECT_CALL(socket, ReceiveMessage())
-      .WillOnce(Return(ByMove(Error::Code::kGenericPlatformError)));
-  EXPECT_EQ(network_waiter.WaitTesting(timeout),
-            Error::Code::kGenericPlatformError);
+      .WillOnce(Return(ByMove(Error::Code::kUnknownError)));
+  EXPECT_EQ(network_waiter.WaitTesting(timeout), Error::Code::kUnknownError);
 
   // Set deletion callback because otherwise the destructor tries to call a
   // callback on the deleted object when it goes out of scope.

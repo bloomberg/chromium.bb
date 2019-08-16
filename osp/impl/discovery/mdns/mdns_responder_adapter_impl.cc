@@ -286,7 +286,7 @@ Error MdnsResponderAdapterImpl::DeregisterInterface(
                "MdnsResponderAdapterImpl::DeregisterInterface");
   const auto info_it = responder_interface_info_.find(socket);
   if (info_it == responder_interface_info_.end())
-    return Error::Code::kNoItemFound;
+    return Error::Code::kItemNotFound;
 
   const auto it = std::find(platform_storage_.sockets.begin(),
                             platform_storage_.sockets.end(), socket);

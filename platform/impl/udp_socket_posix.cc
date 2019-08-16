@@ -165,7 +165,7 @@ Error UdpSocketPosix::Bind() {
   }
 
   OSP_NOTREACHED();
-  return Error::Code::kGenericPlatformError;
+  return Error::Code::kUnknownError;
 }
 
 Error UdpSocketPosix::SetMulticastOutboundInterface(
@@ -196,7 +196,7 @@ Error UdpSocketPosix::SetMulticastOutboundInterface(
   }
 
   OSP_NOTREACHED();
-  return Error::Code::kGenericPlatformError;
+  return Error::Code::kUnknownError;
 }
 
 Error UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
@@ -253,7 +253,7 @@ Error UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
   }
 
   OSP_NOTREACHED();
-  return Error::Code::kGenericPlatformError;
+  return Error::Code::kUnknownError;
 }
 
 namespace {
@@ -368,7 +368,7 @@ ErrorOr<UdpPacket> UdpSocketPosix::ReceiveMessage() {
   }
   UdpPacket packet(bytes_available);
   packet.set_socket(this);
-  Error result = Error::Code::kGenericPlatformError;
+  Error result = Error::Code::kUnknownError;
   switch (local_endpoint_.address.version()) {
     case UdpSocket::Version::kV4: {
       result = ReceiveMessageInternal<sockaddr_in, in_pktinfo>(fd_, &packet);
