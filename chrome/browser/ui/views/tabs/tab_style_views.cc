@@ -429,8 +429,7 @@ TabStyle::TabColors GM2TabStyle::CalculateColors() const {
       color_utils::BlendForMinContrast(title_color, generated_pressed_color)
           .color;
 
-  return {bg_color,
-          title_color,
+  return {title_color,
           generated_icon_color,
           generated_hovered_icon_color,
           generated_pressed_icon_color,

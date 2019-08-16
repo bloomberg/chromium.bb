@@ -1019,7 +1019,6 @@ void Tab::UpdateTabIconNeedsAttentionBlocked() {
 void Tab::UpdateForegroundColors() {
   TabStyle::TabColors colors = tab_style_->CalculateColors();
 
-  icon_->SetBackgroundColor(colors.background_color);
   title_->SetEnabledColor(colors.title_color);
 
   close_button_->SetIconColors(

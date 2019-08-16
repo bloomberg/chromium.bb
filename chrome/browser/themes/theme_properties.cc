@@ -54,14 +54,12 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
       return gfx::kGoogleGrey900;
     case ThemeProperties::COLOR_BOOKMARK_TEXT:
     case ThemeProperties::COLOR_TAB_TEXT:
-    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_ACTIVE:
     case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
       return gfx::kGoogleGrey100;
     case ThemeProperties::COLOR_NTP_TEXT:
       return gfx::kGoogleGrey200;
     case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
     case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
-    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_INACTIVE:
     case ThemeProperties::COLOR_TAB_ALERT_AUDIO:
     case ThemeProperties::COLOR_TAB_ALERT_CAPTURING:
     case ThemeProperties::COLOR_TAB_PIP_PLAYING:
@@ -246,8 +244,6 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
       return gfx::kPlaceholderColor;
 
     // Properties not stored in theme pack.
-    case COLOR_TAB_CLOSE_BUTTON_ACTIVE:
-    case COLOR_TAB_CLOSE_BUTTON_INACTIVE:
     case COLOR_TAB_ALERT_AUDIO:
       return gfx::kChromeIconGrey;
     case COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER:
