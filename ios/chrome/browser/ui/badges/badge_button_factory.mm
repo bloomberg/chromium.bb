@@ -89,7 +89,6 @@
   UIImage* image = [[UIImage imageNamed:imageName]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [button setImage:image forState:UIControlStateNormal];
-  button.translatesAutoresizingMaskIntoConstraints = NO;
   button.imageView.contentMode = UIViewContentModeScaleAspectFit;
   [NSLayoutConstraint
       activateConstraints:@[ [button.widthAnchor
