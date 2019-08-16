@@ -516,7 +516,6 @@ public class BookmarkManager
 
     @Override
     public void openBookmark(BookmarkId bookmark, int launchLocation) {
-        mSelectionDelegate.clearSelection();
         if (BookmarkUtils.openBookmark(
                     mBookmarkModel, mActivity, bookmark, launchLocation)) {
             BookmarkUtils.finishActivityOnPhone(mActivity);
