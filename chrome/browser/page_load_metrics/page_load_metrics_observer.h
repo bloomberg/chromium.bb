@@ -546,6 +546,13 @@ class PageLoadMetricsObserver {
                               const net::CanonicalCookie& cookie,
                               bool blocked_by_policy) {}
 
+  // Called when a DOM storage is accessed via Window.localStorage or
+  // Window.sessionStorage.
+  virtual void OnDomStorageAccessed(const GURL& url,
+                                    const GURL& first_party_url,
+                                    bool local,
+                                    bool blocked_by_policy) {}
+
   // Called when the event corresponding to |event_key| occurs in this page
   // load.
   virtual void OnEventOccurred(const void* const event_key) {}
