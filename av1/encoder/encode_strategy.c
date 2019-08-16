@@ -446,13 +446,9 @@ static void adjust_frame_rate(AV1_COMP *cpi,
 
 // If this is an alt-ref, returns the offset of the source frame used
 // as the arf midpoint. Otherwise, returns 0.
-static int get_arf_src_index(AV1_COMP *cpi) {
+static int get_arf_src_index(GF_GROUP *gf_group, int pass) {
   int arf_src_index = 0;
-  if (cpi->oxcf.pass != 1) {
-    const GF_GROUP *const gf_group = &cpi->gf_group;
-    arf_src_index = gf_group->arf_src_offset[gf_group->index];
-  }
-
+  if (pass != 1) arf_src_index = gf_group->arf_src_offset[gf_group->index];
   return arf_src_index;
 }
 
@@ -530,7 +526,7 @@ static struct lookahead_entry *choose_frame_source(
   *code_arf = 0;
 
   // Should we encode an alt-ref frame.
-  int arf_src_index = get_arf_src_index(cpi);
+  int arf_src_index = get_arf_src_index(&cpi->gf_group, cpi->oxcf.pass);
   if (arf_src_index &&
       is_forced_keyframe_pending(cpi->lookahead, arf_src_index)) {
     arf_src_index = 0;
