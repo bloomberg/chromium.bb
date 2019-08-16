@@ -6450,6 +6450,7 @@ crbug.com/993238 fast/frames/frame-name-reset.html [ Pass Failure ]
 
 #Sherrif 2019-08-16
 crbug.com/994692 [ Linux Win ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
+crbug.com/994746 animations/events/play-state-initially-paused-start-event.html [ Pass Timeout ]
 
 # Video flakily not being being rendered on Mac
 crbug.com/979298 [ Mac ] media/controls/captions-menu-always-visible.html [ Pass Failure ]
