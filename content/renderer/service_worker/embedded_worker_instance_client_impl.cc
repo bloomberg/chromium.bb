@@ -77,7 +77,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       std::move(params->preference_watcher_request),
       std::move(params->subresource_loader_factories),
       std::move(params->subresource_loader_updater),
-      initiator_thread_task_runner_);
+      params->script_url_to_skip_throttling, initiator_thread_task_runner_);
   // Record UMA to indicate StartWorker is received on renderer.
   StartWorkerHistogramEnum metric =
       params->is_installed ? StartWorkerHistogramEnum::RECEIVED_ON_INSTALLED

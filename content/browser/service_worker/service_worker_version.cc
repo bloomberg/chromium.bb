@@ -1608,6 +1608,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->user_agent = GetContentClient()->browser()->GetUserAgent();
   params->is_installed = IsInstalled(status_);
   params->pause_after_download = pause_after_download();
+  params->script_url_to_skip_throttling = updated_script_url_;
 
   if (IsInstalled(status())) {
     DCHECK(!params->pause_after_download);
@@ -2076,10 +2077,12 @@ void ServiceWorkerVersion::NotifyControlleeRemoved(const std::string& uuid) {
   }
 }
 
-void ServiceWorkerVersion::set_compared_script_info_map(
+void ServiceWorkerVersion::PrepareForUpdate(
     std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
-        compared_script_info_map) {
+        compared_script_info_map,
+    const GURL& updated_script_url) {
   compared_script_info_map_ = std::move(compared_script_info_map);
+  updated_script_url_ = updated_script_url;
 }
 
 const std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>&

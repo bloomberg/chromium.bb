@@ -498,9 +498,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void IncrementPendingUpdateHintCount();
   void DecrementPendingUpdateHintCount();
 
-  void set_compared_script_info_map(
+  // ServiceWorkerImportedScriptUpdateCheck:
+  // Called on versions created for an update check. Called if the check
+  // determined an update exists before starting the worker for an install
+  // event.
+  void PrepareForUpdate(
       std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
-          compared_script_info_map);
+          compared_script_info_map,
+      const GURL& updated_script_url);
   const std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>&
   compared_script_info_map() const;
   ServiceWorkerUpdateChecker::ComparedScriptInfo TakeComparedScriptInfo(
@@ -949,6 +954,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // when ServiceWorkerImportedScriptUpdateCheck is enabled.
   std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
       compared_script_info_map_;
+
+  // ServiceWorkerImportedScriptUpdateCheck:
+  // If this version was created for an update check that found an update,
+  // |updated_script_url_| is the URL of the script for which a byte-for-byte
+  // change was found. Otherwise, it's the empty GURL.
+  GURL updated_script_url_;
 
   // This holds a mojo interface pointer info to this instance until
   // InitializeGlobalScope() is called.
