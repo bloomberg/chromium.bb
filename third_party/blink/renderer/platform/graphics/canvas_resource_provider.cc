@@ -479,22 +479,18 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
       bool is_origin_top_left,
       bool is_overlay_candidate,
-      bool maybe_single_buffered,
-      bool is_accelerated)
+      bool maybe_single_buffered)
       : CanvasResourceProvider(
             kSharedImage,
             size,
             filter_quality,
-            // TODO(khushalsagar): The software path seems to be assuming N32
-            // somewhere in the later pipeline but for offscreen canvas only.
-            CanvasColorParams(color_params, is_accelerated /* force_rgba */),
+            CanvasColorParams(color_params, true /* force_rgba */),
             std::move(context_provider_wrapper),
             std::move(resource_dispatcher)),
         msaa_sample_count_(msaa_sample_count),
         is_origin_top_left_(is_origin_top_left),
         is_overlay_candidate_(is_overlay_candidate),
-        maybe_single_buffered_(maybe_single_buffered),
-        is_accelerated_(is_accelerated) {
+        maybe_single_buffered_(maybe_single_buffered) {
     resource_ = NewOrRecycledResource();
     if (resource_)
       EnsureWriteAccess();
@@ -503,14 +499,12 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   ~CanvasResourceProviderSharedImage() override {}
 
   bool IsValid() const final { return GetSkSurface() && !IsGpuContextLost(); }
-  bool IsAccelerated() const final { return is_accelerated_; }
+  bool IsAccelerated() const final { return true; }
   bool SupportsDirectCompositing() const override { return true; }
   bool SupportsSingleBuffering() const override {
     return maybe_single_buffered_;
   }
   GLuint GetBackingTextureHandleForOverwrite() override {
-    DCHECK(is_accelerated_);
-
     if (IsGpuContextLost())
       return 0u;
 
@@ -528,13 +522,10 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     return CanvasResourceSharedImage::Create(
         Size(), ContextProviderWrapper(), CreateWeakPtr(), FilterQuality(),
         ColorParams(), is_overlay_candidate_, is_origin_top_left_,
-        allow_concurrent_read_write_access, is_accelerated_);
+        allow_concurrent_read_write_access);
   }
 
   void NotifyTexParamsModified(const CanvasResource* resource) override {
-    if (!is_accelerated_)
-      return;
-
     if (resource_.get() == resource) {
       DCHECK(!current_resource_has_write_access_);
       // Note that the call below is guarenteed to not issue any GPU work for
@@ -578,12 +569,6 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     if (!IsValid())
       return nullptr;
 
-    // We don't need to EndWriteAccess here since that's required to make the
-    // rendering results visible on the GpuMemoryBuffer while we return cpu
-    // memory, rendererd to by skia, here.
-    if (!is_accelerated_)
-      return SnapshotInternal();
-
     if (!cached_snapshot_) {
       EndWriteAccess();
       cached_snapshot_ = resource_->Bitmap();
@@ -608,10 +593,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     // token for these writes.
     cached_snapshot_.reset();
 
-    // We don't need to do copy-on-write for the resource here since writes to
-    // the GMB are deferred until it needs to be dispatched to the display
-    // compositor via ProduceCanvasResource.
-    if (is_accelerated_ && DoCopyOnWrite()) {
+    if (DoCopyOnWrite()) {
       DCHECK(!current_resource_has_write_access_)
           << "Write access must be released before sharing the resource";
 
@@ -644,16 +626,14 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   }
 
   bool DoCopyOnWrite() {
-    // If the canvas is single buffered, concurrent read/writes to the resource
-    // are allowed. Note that we ignore the resource lost case as well since
-    // that only indicates that we did not get a sync token for read/write
-    // synchronization which is not a requirement for single buffered canvas.
-    if (IsSingleBuffered())
-      return false;
-
     // If the resource was lost, we can not use it for writes again.
     if (resource()->is_lost())
       return true;
+
+    // If the canvas is single buffered, concurrent read/writes to the resource
+    // are allowed.
+    if (IsSingleBuffered())
+      return false;
 
     // We have the only ref to the resource which implies there are no active
     // readers.
@@ -663,8 +643,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     // Its possible to have deferred work in skia which uses this resource. Try
     // flushing once to see if that releases the read refs. We can avoid a copy
     // by queuing this work before writing to this resource.
-    if (is_accelerated_)
-      surface_->flush();
+    surface_->flush();
 
     return !resource_->HasOneRef();
   }
@@ -674,19 +653,11 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     if (IsGpuContextLost())
       return nullptr;
 
-    if (is_accelerated_) {
-      return SkSurface::MakeFromBackendTexture(
-          GetGrContext(), CreateGrTextureForResource(), GetGrSurfaceOrigin(),
-          msaa_sample_count_, ColorParams().GetSkColorType(),
-          ColorParams().GetSkColorSpaceForSkSurfaces(),
-          ColorParams().GetSkSurfaceProps());
-    }
-
-    // For software raster path, we render into cpu memory managed internally
-    // by SkSurface and copy the rendered results to the GMB before dispatching
-    // it to the display compositor.
-    return SkSurface::MakeRaster(resource_->CreateSkImageInfo(),
-                                 ColorParams().GetSkSurfaceProps());
+    return SkSurface::MakeFromBackendTexture(
+        GetGrContext(), CreateGrTextureForResource(), GetGrSurfaceOrigin(),
+        msaa_sample_count_, ColorParams().GetSkColorType(),
+        ColorParams().GetSkColorSpaceForSkSurfaces(),
+        ColorParams().GetSkSurfaceProps());
   }
 
   GrSurfaceOrigin GetGrSurfaceOrigin() const {
@@ -695,8 +666,6 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   }
 
   GrBackendTexture CreateGrTextureForResource() const {
-    DCHECK(is_accelerated_);
-
     GrGLTextureInfo texture_info = {};
     texture_info.fID = resource()->GetTextureIdForWriteAccess();
     texture_info.fTarget = resource_->TextureTarget();
@@ -706,8 +675,6 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   }
 
   void FlushGrContext() {
-    DCHECK(is_accelerated_);
-
     // The resource may have been imported and used in skia. Make sure any
     // operations using this resource are flushed to the underlying context.
     // Note that its not sufficient to flush the SkSurface here since it will
@@ -729,15 +696,9 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     if (current_resource_has_write_access_ || IsGpuContextLost())
       return;
 
-    if (is_accelerated_) {
-      auto texture_id = resource()->GetTextureIdForWriteAccess();
-      ContextGL()->BeginSharedImageAccessDirectCHROMIUM(
-          texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
-    }
-
-    // For the non-accelerated path, we don't need a texture for writes since
-    // its on the CPU, but we set this bit to know whether the GMB needs to be
-    // updated.
+    auto texture_id = resource()->GetTextureIdForWriteAccess();
+    ContextGL()->BeginSharedImageAccessDirectCHROMIUM(
+        texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
     current_resource_has_write_access_ = true;
   }
 
@@ -747,18 +708,10 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     if (!current_resource_has_write_access_ || IsGpuContextLost())
       return;
 
-    if (is_accelerated_) {
-      // Issue any skia work using this resource before releasing write access.
-      FlushGrContext();
-      auto texture_id = resource()->GetTextureIdForWriteAccess();
-      ContextGL()->EndSharedImageAccessDirectCHROMIUM(texture_id);
-    } else {
-      if (DoCopyOnWrite())
-        resource_ = NewOrRecycledResource();
-      resource()->CopyRenderingResultsToGpuMemoryBuffer(
-          surface_->makeImageSnapshot());
-    }
-
+    // Issue any skia work using this resource before releasing write access.
+    FlushGrContext();
+    auto texture_id = resource()->GetTextureIdForWriteAccess();
+    ContextGL()->EndSharedImageAccessDirectCHROMIUM(texture_id);
     current_resource_has_write_access_ = false;
   }
 
@@ -773,7 +726,6 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   const bool is_origin_top_left_;
   const bool is_overlay_candidate_;
   const bool maybe_single_buffered_;
-  const bool is_accelerated_;
   bool current_resource_has_write_access_ = false;
   scoped_refptr<CanvasResource> resource_;
   scoped_refptr<StaticBitmapImage> cached_snapshot_;
@@ -858,7 +810,8 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
   });
 
   static const Vector<CanvasResourceType> kSoftwareCompositedFallbackList({
-      CanvasResourceType::kSharedImage,
+      // TODO(khushalsagar): Use shared image once it supports software raster
+      // with GMBs.
       CanvasResourceType::kBitmapGpuMemoryBuffer,
       CanvasResourceType::kSharedBitmap,
       // Fallback to no direct compositing support
@@ -878,7 +831,7 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
   });
   DCHECK(std::equal(kAcceleratedCompositedFallbackList.begin() + 3,
                     kAcceleratedCompositedFallbackList.end(),
-                    kSoftwareCompositedFallbackList.begin() + 1,
+                    kSoftwareCompositedFallbackList.begin(),
                     kSoftwareCompositedFallbackList.end()));
 
   static const Vector<CanvasResourceType> kAcceleratedDirect2DFallbackList({
@@ -938,9 +891,6 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
     case CanvasResourceProvider::ResourceUsage::
         kAcceleratedDirect3DResourceUsage:
       return kAcceleratedDirect3DFallbackList;
-    case CanvasResourceProvider::ResourceUsage::
-        kSoftwareCompositedDirect2DResourceUsage:
-      return kSoftwareCompositedFallbackList;
   }
   NOTREACHED();
 }
@@ -1073,17 +1023,12 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
             resource_dispatcher);
         break;
       case CanvasResourceType::kSharedImage: {
-        DCHECK_NE(usage, ResourceUsage::kSoftwareResourceUsage);
-
         const bool usage_wants_single_buffered =
             usage == ResourceUsage::kAcceleratedDirect2DResourceUsage ||
-            usage == ResourceUsage::kAcceleratedDirect3DResourceUsage ||
-            usage == ResourceUsage::kSoftwareCompositedDirect2DResourceUsage;
+            usage == ResourceUsage::kAcceleratedDirect3DResourceUsage;
         const bool usage_wants_overlays =
             usage_wants_single_buffered ||
-            usage == ResourceUsage::kAcceleratedCompositedResourceUsage ||
-            usage == ResourceUsage::kSoftwareCompositedResourceUsage;
-
+            usage == ResourceUsage::kAcceleratedCompositedResourceUsage;
         // texture_storage_image is required to create shared images supporting
         // scanout usage.
         const bool can_use_overlays =
@@ -1091,33 +1036,15 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
             context_provider_wrapper->ContextProvider()
                 ->GetCapabilities()
                 .texture_storage_image;
-        const bool can_use_gmbs =
-            is_gpu_memory_buffer_image_allowed &&
-            Platform::Current()->GetGpuMemoryBufferManager();
 
         const bool is_overlay_candidate =
             usage_wants_overlays && can_use_overlays;
-        const bool is_accelerated =
-            usage == ResourceUsage::kAcceleratedResourceUsage ||
-            usage == ResourceUsage::kAcceleratedCompositedResourceUsage ||
-            usage == ResourceUsage::kAcceleratedDirect2DResourceUsage;
-
-        // If the rendering will be in software and we don't have GMB support,
-        // fallback to bitmap provider type.
-        if (!is_accelerated && !can_use_gmbs)
-          continue;
-
-        // TODO(khushalsagar) Single buffering requires concurrent
-        // read/write access to the resource which is sub-optimal for software
-        // raster since that would require concurrent access to the resource on
-        // the CPU and GPU. Check if we should disable it in software mode.
         const bool maybe_single_buffered =
-            usage_wants_single_buffered && can_use_gmbs;
-
+            usage_wants_single_buffered && can_use_overlays;
         provider = std::make_unique<CanvasResourceProviderSharedImage>(
             size, msaa_sample_count, filter_quality, color_params,
             context_provider_wrapper, resource_dispatcher, is_origin_top_left,
-            is_overlay_candidate, maybe_single_buffered, is_accelerated);
+            is_overlay_candidate, maybe_single_buffered);
       } break;
     }
     if (!provider->IsValid())
@@ -1156,7 +1083,7 @@ CanvasResourceProvider::CreateForTesting(
       return std::make_unique<CanvasResourceProviderSharedImage>(
           size, msaa_sample_count, kLow_SkFilterQuality, color_params,
           context_provider_wrapper, resource_dispatcher, is_origin_top_left,
-          false, false, true);
+          false, false);
     case CanvasResourceProvider::kTextureGpuMemoryBuffer:
       return std::make_unique<CanvasResourceProviderTextureGpuMemoryBuffer>(
           size, msaa_sample_count, kLow_SkFilterQuality, color_params,

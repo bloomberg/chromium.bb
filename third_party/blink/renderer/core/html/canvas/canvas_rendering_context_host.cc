@@ -141,13 +141,8 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
                 kAcceleratedCompositedResourceUsage;
           }
         } else {
-          if (LowLatencyEnabled()) {
-            usage = CanvasResourceProvider::ResourceUsage::
-                kSoftwareCompositedDirect2DResourceUsage;
-          } else {
-            usage = CanvasResourceProvider::ResourceUsage::
-                kSoftwareCompositedResourceUsage;
-          }
+          usage = CanvasResourceProvider::ResourceUsage::
+              kSoftwareCompositedResourceUsage;
         }
 
         const CanvasResourceProvider::PresentationMode presentation_mode =
