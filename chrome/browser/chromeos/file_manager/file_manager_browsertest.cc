@@ -513,7 +513,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("toolbarDeleteEntry"),
                       // TODO(lucmult): Figure out why this Arc test is failing
                       // with MyFiles.
-                      TestCase("toolbarRefreshButtonWithSelection").EnableArc(),
+                      TestCase("toolbarRefreshButtonWithSelection")
+                          .EnableArc()
+                          .DisableMyFilesVolume(),
                       TestCase("toolbarRefreshButtonHiddenInRecents")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
@@ -604,11 +606,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirContextMenuUsbs"),
         TestCase("dirContextMenuFsp"),
         // TODO(lucmult): Fix ARC tests with MyFilesVolume.
-        TestCase("dirContextMenuDocumentsProvider").EnableDocumentsProvider(),
+        TestCase("dirContextMenuDocumentsProvider")
+            .EnableDocumentsProvider()
+            .DisableMyFilesVolume(),
         TestCase("dirContextMenuUsbDcim"),
         TestCase("dirContextMenuMtp"),
         // TODO(lucmult): Fix ARC tests with MyFilesVolume.
-        TestCase("dirContextMenuMediaView").EnableArc(),
+        TestCase("dirContextMenuMediaView").EnableArc().DisableMyFilesVolume(),
         TestCase("dirContextMenuMyDrive"),
         TestCase("dirContextMenuSharedDrive"),
         TestCase("dirContextMenuSharedWithMe"),
