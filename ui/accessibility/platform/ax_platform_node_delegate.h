@@ -230,6 +230,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   virtual const AXUniqueId& GetUniqueId() const = 0;
 
+  // Finds the previous or next offset from the provided offset, that matches
+  // the provided boundary type.
+  //
   // This method finds text boundaries in the text used for platform text APIs.
   // Implementations may use side-channel data such as line or word indices to
   // produce appropriate results. It may optionally return no value, indicating
