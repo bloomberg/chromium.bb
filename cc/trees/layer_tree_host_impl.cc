@@ -3793,6 +3793,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   // in input_handler_proxy instead.
   touch_scrolling_ = type == InputHandler::TOUCHSCREEN;
   wheel_scrolling_ = type == InputHandler::WHEEL;
+  middle_click_autoscrolling_ = type == InputHandler::AUTOSCROLL;
   scroll_state->set_is_direct_manipulation(touch_scrolling_);
   // Invoke |DistributeScrollDelta| even with zero delta and velocity to ensure
   // scroll customization callbacks are invoked.
@@ -4524,6 +4525,11 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
 
       if (!scroll_node->scrollable)
         continue;
+
+      if (middle_click_autoscrolling_) {
+        current_scroll_chain.push_front(scroll_node);
+        break;
+      }
 
       if (CanConsumeDelta(*scroll_node, *scroll_state))
         current_scroll_chain.push_front(scroll_node);

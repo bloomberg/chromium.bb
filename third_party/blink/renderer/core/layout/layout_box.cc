@@ -1039,11 +1039,14 @@ PhysicalOffset LayoutBox::CalculateAutoscrollDirection(
   return PhysicalOffset::FromFloatSizeRound(point - point_in_root_frame);
 }
 
-LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object) {
+LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object,
+                                         bool is_middle_click_autoscroll) {
   while (layout_object && !(layout_object->IsBox() &&
                             ToLayoutBox(layout_object)->CanAutoscroll())) {
-    // Do not start autoscroll when the node is inside a fixed-position element.
-    if (layout_object->IsBox() && ToLayoutBox(layout_object)->HasLayer() &&
+    // Do not start selection-based autoscroll when the node is inside a
+    // fixed-position element.
+    if (!is_middle_click_autoscroll && layout_object->IsBox() &&
+        ToLayoutBox(layout_object)->HasLayer() &&
         ToLayoutBox(layout_object)->Layer()->FixedToViewport()) {
       return nullptr;
     }

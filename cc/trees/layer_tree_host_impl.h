@@ -1062,6 +1062,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   bool did_lock_scrolling_layer_ = false;
   bool touch_scrolling_ = false;
   bool wheel_scrolling_ = false;
+  bool middle_click_autoscrolling_ = false;
   bool scroll_affects_scroll_handler_ = false;
   ElementId scroll_element_id_mouse_currently_over_;
   ElementId scroll_element_id_mouse_currently_captured_;
