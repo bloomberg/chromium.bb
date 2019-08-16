@@ -73,7 +73,7 @@ public class DownloadCollectionBridge {
      * @param filePath File path of the download.
      * @return True if the download needs to be published, or false otherwise.
      */
-    public boolean needToPublishDownload(final String filePath) {
+    protected boolean needToPublishDownload(final String filePath) {
         return false;
     }
 
@@ -116,12 +116,10 @@ public class DownloadCollectionBridge {
     }
 
     /**
-     * Gets the content URI of the download that has the given file name.
-     * @param pendingUri name of the file.
-     * @return Uri of the download with the given display name.
+     * @return whether a download with the file name exists.
      */
-    public Uri getDownloadUriForFileName(final String fileName) {
-        return null;
+    protected boolean checkFileNameExists(final String fileName) {
+        return false;
     }
 
     /**
@@ -253,8 +251,7 @@ public class DownloadCollectionBridge {
      */
     @CalledByNative
     private static boolean fileNameExists(final String fileName) {
-        Uri uri = getDownloadCollectionBridge().getDownloadUriForFileName(fileName);
-        return uri != null;
+        return getDownloadCollectionBridge().checkFileNameExists(fileName);
     }
 
     /**
