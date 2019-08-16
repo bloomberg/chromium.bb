@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_LOAD_TIMING_INFO_MOJOM_TRAITS_H_
-#define CONTENT_PUBLIC_COMMON_LOAD_TIMING_INFO_MOJOM_TRAITS_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_LOAD_TIMING_INFO_MOJOM_TRAITS_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_LOAD_TIMING_INFO_MOJOM_TRAITS_H_
 
-#include "content/public/common/load_timing_info.mojom.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/load_timing_info.h"
+#include "services/network/public/mojom/load_timing_info.mojom.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<content::mojom::LoadTimingInfoConnectTimingDataView,
+struct StructTraits<network::mojom::LoadTimingInfoConnectTimingDataView,
                     net::LoadTimingInfo::ConnectTiming> {
   static base::TimeTicks dns_start(
       const net::LoadTimingInfo::ConnectTiming& obj) {
@@ -44,12 +44,12 @@ struct StructTraits<content::mojom::LoadTimingInfoConnectTimingDataView,
     return obj.ssl_end;
   }
 
-  static bool Read(content::mojom::LoadTimingInfoConnectTimingDataView obj,
+  static bool Read(network::mojom::LoadTimingInfoConnectTimingDataView obj,
                    net::LoadTimingInfo::ConnectTiming* output);
 };
 
 template <>
-struct StructTraits<content::mojom::LoadTimingInfoDataView,
+struct StructTraits<network::mojom::LoadTimingInfoDataView,
                     net::LoadTimingInfo> {
   static bool socket_reused(const net::LoadTimingInfo& obj) {
     return obj.socket_reused;
@@ -104,10 +104,10 @@ struct StructTraits<content::mojom::LoadTimingInfoDataView,
     return obj.push_end;
   }
 
-  static bool Read(content::mojom::LoadTimingInfoDataView obj,
+  static bool Read(network::mojom::LoadTimingInfoDataView obj,
                    net::LoadTimingInfo* output);
 };
 
 }  // namespace mojo
 
-#endif  // CONTENT_PUBLIC_COMMON_LOAD_TIMING_INFO_MOJOM_TRAITS_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_LOAD_TIMING_INFO_MOJOM_TRAITS_H_

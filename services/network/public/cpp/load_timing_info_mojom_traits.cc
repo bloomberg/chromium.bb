@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/load_timing_info_mojom_traits.h"
+#include "services/network/public/cpp/load_timing_info_mojom_traits.h"
 
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 
 namespace mojo {
 
 // static
-bool StructTraits<content::mojom::LoadTimingInfoConnectTimingDataView,
+bool StructTraits<network::mojom::LoadTimingInfoConnectTimingDataView,
                   net::LoadTimingInfo::ConnectTiming>::
-    Read(content::mojom::LoadTimingInfoConnectTimingDataView data,
+    Read(network::mojom::LoadTimingInfoConnectTimingDataView data,
          net::LoadTimingInfo::ConnectTiming* out) {
   return data.ReadDnsStart(&out->dns_start) && data.ReadDnsEnd(&out->dns_end) &&
          data.ReadConnectStart(&out->connect_start) &&
@@ -20,8 +20,8 @@ bool StructTraits<content::mojom::LoadTimingInfoConnectTimingDataView,
 }
 
 // static
-bool StructTraits<content::mojom::LoadTimingInfoDataView, net::LoadTimingInfo>::
-    Read(content::mojom::LoadTimingInfoDataView data,
+bool StructTraits<network::mojom::LoadTimingInfoDataView, net::LoadTimingInfo>::
+    Read(network::mojom::LoadTimingInfoDataView data,
          net::LoadTimingInfo* out) {
   out->socket_reused = data.socket_reused();
   out->socket_log_id = data.socket_log_id();
