@@ -2321,7 +2321,8 @@ monochrome_or_trichrome_public_bundle_tmpl("monochrome_public_bundle") {
 
   # Having //clank present causes different flags because of how play services
   # is wired up.
-  if (!enable_chrome_android_internal) {
+  # The channel is required because manifest entries vary based on channel.
+  if (!enable_chrome_android_internal && android_channel == "stable") {
     verify_android_configuration = true
   }
 }
