@@ -3636,6 +3636,7 @@ jumbo_split_static_library("ui") {
       deps += [
         "//chrome/services/app_service/public/cpp:app_update",
         "//chrome/services/app_service/public/cpp:icon_loader",
+        "//components/services/app_service/public/cpp:app_file_handling",
       ]
     }
   }

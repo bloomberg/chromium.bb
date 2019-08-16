@@ -3520,6 +3520,7 @@ jumbo_split_static_library("browser") {
       "//components/image_fetcher/core",
       "//components/keep_alive_registry",
       "//components/ntp_snippets",
+      "//components/services/app_service/public/cpp:app_file_handling",
       "//components/vector_icons",
       "//components/web_modal",
       "//components/zoom",
