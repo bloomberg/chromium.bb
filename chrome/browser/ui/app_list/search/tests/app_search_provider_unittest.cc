@@ -889,6 +889,54 @@ TEST_P(AppSearchProviderWithExtensionInstallType, InstallInternallyRanking) {
             RunQuery(kRankingAppQuery));
 }
 
+TEST_P(AppSearchProviderWithExtensionInstallType, OemResultsOnFirstBoot) {
+  // Disable the pre-installed high-priority extensions. This test simulates
+  // a brand new profile being added to a device, and should not include these.
+  service_->UninstallExtension(
+      kHostedAppId, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
+  service_->UninstallExtension(
+      kPackagedApp1Id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
+  service_->UninstallExtension(
+      kPackagedApp2Id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
+
+  base::RunLoop().RunUntilIdle();
+
+  // OEM-installed apps should only appear as the first app results
+  // if the profile is running for the first time on a device.
+  profile_->SetIsNewProfile(true);
+  ASSERT_TRUE(profile()->IsNewProfile());
+
+  extensions::ExtensionPrefs* const prefs =
+      extensions::ExtensionPrefs::Get(profile());
+  ASSERT_TRUE(prefs);
+  const char* kOemAppNames[] = {"OemExtension1", "OemExtension2",
+                                "OemExtension3", "OemExtension4",
+                                "OemExtension5"};
+
+  for (auto* app_id : kOemAppNames) {
+    const std::string internal_app_id = crx_file::id_util::GenerateId(app_id);
+
+    AddExtension(internal_app_id, app_id,
+                 extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
+                 extensions::Extension::WAS_INSTALLED_BY_OEM);
+
+    service_->EnableExtension(internal_app_id);
+
+    EXPECT_TRUE(prefs->WasInstalledByOem(internal_app_id));
+  }
+
+  // Allow OEM app install to finish.
+  base::RunLoop().RunUntilIdle();
+  CreateSearch();
+
+  std::vector<std::string> results = base::SplitString(
+      RunQuery(""), ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  for (auto* app : kOemAppNames) {
+    EXPECT_TRUE(base::Contains(results, app));
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(
     ,
     AppSearchProviderWithExtensionInstallType,
