@@ -3243,6 +3243,9 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-display/display-flow-root-list-item-001.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-display/display-flow-root-list-item-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-display/display-flow-root-list-item-001.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/html/cross-origin-opener-policy/popup-same-site-unsafe-allow-outgoing.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.13 ] wpt_internal/display-lock/rendersubtree/activation/selection.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
