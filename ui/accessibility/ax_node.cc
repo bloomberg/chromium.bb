@@ -764,7 +764,7 @@ AXNode* AXNode::ComputeLastUnignoredChildRecursive() const {
   if (children().size() == 0)
     return nullptr;
 
-  for (size_t i = children().size() - 1; i >= 0; --i) {
+  for (int i = static_cast<int>(children().size()) - 1; i >= 0; --i) {
     AXNode* child = children_[i];
     if (!child->data().HasState(ax::mojom::State::kIgnored))
       return child;
