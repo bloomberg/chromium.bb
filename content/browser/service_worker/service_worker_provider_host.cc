@@ -252,7 +252,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 
   if (context_)
     context_->UnregisterProviderHostByClientID(client_uuid_);
@@ -560,7 +560,7 @@ void ServiceWorkerProviderHost::RemoveServiceWorkerRegistrationObjectHost(
 
 void ServiceWorkerProviderHost::RemoveServiceWorkerObjectHost(
     int64_t version_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   DCHECK(base::Contains(service_worker_object_hosts_, version_id));
   service_worker_object_hosts_.erase(version_id);
 }
@@ -648,7 +648,7 @@ void ServiceWorkerProviderHost::ClaimedByRegistration(
 
 void ServiceWorkerProviderHost::OnBeginNavigationCommit(int render_process_id,
                                                         int render_frame_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, type_);
 
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
@@ -1242,13 +1242,13 @@ bool ServiceWorkerProviderHost::IsValidGetRegistrationForReadyMessage(
 void ServiceWorkerProviderHost::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   DCHECK(IsProviderForServiceWorker());
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&GetInterfaceImpl, interface_name,
-                                std::move(interface_pipe),
-                                running_hosted_version_->script_origin(),
-                                render_process_id_));
+  RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
+                        base::BindOnce(&GetInterfaceImpl, interface_name,
+                                       std::move(interface_pipe),
+                                       running_hosted_version_->script_origin(),
+                                       render_process_id_));
 }
 
 blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
