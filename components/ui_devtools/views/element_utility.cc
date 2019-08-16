@@ -50,14 +50,4 @@ void AppendLayerPropertiesMatchedStyle(
   }
 }
 
-bool ParseColorFromFrontend(const std::string& input, std::string* output) {
-  std::string value;
-  base::TrimWhitespaceASCII(input, base::TRIM_ALL, &value);
-  SkColor color;
-  if (!extensions::image_util::ParseCssColorString(value, &color))
-    return false;
-  *output = base::NumberToString(color);
-  return true;
-}
-
 }  // namespace ui_devtools
