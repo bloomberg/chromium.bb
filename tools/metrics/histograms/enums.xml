@@ -19185,7 +19185,7 @@ Called by update_net_error_codes.py.-->
   <int value="302" label="MANAGEMENT_LAUNCHAPP"/>
   <int value="303" label="INPUT_IME_CLEARCOMPOSITION"/>
   <int value="304" label="ALARMS_GETALL"/>
-  <int value="305" label="DIAL_DISCOVERNOW"/>
+  <int value="305" label="DELETED_DIAL_DISCOVERNOW"/>
   <int value="306" label="TYPES_CHROMESETTING_SET"/>
   <int value="307" label="BROWSERACTION_SETICON"/>
   <int value="308" label="ACCESSIBILITY_PRIVATE_SETACCESSIBILITYENABLED"/>
@@ -20069,7 +20069,7 @@ Called by update_net_error_codes.py.-->
   <int value="1155" label="QUICKUNLOCKPRIVATE_GETCREDENTIALREQUIREMENTS"/>
   <int value="1156" label="CLIPBOARD_SETIMAGEDATA"/>
   <int value="1157" label="NETWORKINGPRIVATE_GETGLOBALPOLICY"/>
-  <int value="1158" label="DIAL_FETCHDEVICEDESCRIPTION"/>
+  <int value="1158" label="DELETED_DIAL_FETCHDEVICEDESCRIPTION"/>
   <int value="1159" label="SYSTEM_DISPLAY_STARTCUSTOMTOUCHCALIBRATION"/>
   <int value="1160" label="AUDIO_GETMUTE"/>
   <int value="1161" label="AUDIO_SETMUTE"/>
