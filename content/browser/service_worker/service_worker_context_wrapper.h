@@ -114,8 +114,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   }
 
   // Temporary for crbug.com/824858. The thread the context core lives on.
-  static bool IsServiceWorkerOnUIEnabled();
-  static BrowserThread::ID GetCoreThreadId();
+  static BrowserThread::ID GetCoreThreadId() { return BrowserThread::IO; }
   static bool OnCoreThread();
 
   // ServiceWorkerContextCoreObserver implementation:

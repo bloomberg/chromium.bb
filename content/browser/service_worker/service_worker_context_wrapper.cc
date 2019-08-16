@@ -327,17 +327,6 @@ ResourceContext* ServiceWorkerContextWrapper::resource_context() {
   return resource_context_;
 }
 
-// static
-bool ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled() {
-  return base::FeatureList::IsEnabled(features::kServiceWorkerOnUI);
-}
-
-// static
-BrowserThread::ID ServiceWorkerContextWrapper::GetCoreThreadId() {
-  return IsServiceWorkerOnUIEnabled() ? BrowserThread::UI : BrowserThread::IO;
-}
-
-// static
 bool ServiceWorkerContextWrapper::OnCoreThread() {
   return BrowserThread::CurrentlyOn(GetCoreThreadId());
 }
