@@ -450,6 +450,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
 
   // Now delete |url_1| from the history service and ensure we save the model to
   // disk.
+  base::DeleteFile(model_path, false);
   EXPECT_FALSE(base::PathExists(model_path));
   history_service()->AddPage(GURL(url_1), base::Time::Now(),
                              history::VisitSource::SOURCE_BROWSED);
