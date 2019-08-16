@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory_impl.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory_impl.h"
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -22,19 +22,17 @@ using ::testing::StrictMock;
 
 constexpr char kTestAccount[] = "user@gmail.com";
 
-class LeakDetectionRequestFactoryImplTest : public testing::Test {
+class LeakDetectionCheckFactoryImplTest : public testing::Test {
  public:
-  LeakDetectionRequestFactoryImplTest() = default;
-  ~LeakDetectionRequestFactoryImplTest() override = default;
+  LeakDetectionCheckFactoryImplTest() = default;
+  ~LeakDetectionCheckFactoryImplTest() override = default;
 
   signin::IdentityTestEnvironment& identity_env() { return identity_test_env_; }
   MockLeakDetectionDelegateInterface& delegate() { return delegate_; }
   const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory() {
     return url_loader_factory_;
   }
-  LeakDetectionRequestFactoryImpl& request_factory() {
-    return request_factory_;
-  }
+  LeakDetectionCheckFactoryImpl& request_factory() { return request_factory_; }
 
  private:
   base::test::ScopedTaskEnvironment task_env_;
@@ -42,12 +40,12 @@ class LeakDetectionRequestFactoryImplTest : public testing::Test {
   StrictMock<MockLeakDetectionDelegateInterface> delegate_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_ =
       base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
-  LeakDetectionRequestFactoryImpl request_factory_;
+  LeakDetectionCheckFactoryImpl request_factory_;
 };
 
 }  // namespace
 
-TEST_F(LeakDetectionRequestFactoryImplTest, DisabledFeature) {
+TEST_F(LeakDetectionCheckFactoryImplTest, DisabledFeature) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(features::kLeakDetection);
 
@@ -55,7 +53,7 @@ TEST_F(LeakDetectionRequestFactoryImplTest, DisabledFeature) {
       &delegate(), identity_env().identity_manager(), url_loader_factory()));
 }
 
-TEST_F(LeakDetectionRequestFactoryImplTest, SignedOut) {
+TEST_F(LeakDetectionCheckFactoryImplTest, SignedOut) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kLeakDetection);
 
@@ -64,7 +62,7 @@ TEST_F(LeakDetectionRequestFactoryImplTest, SignedOut) {
       &delegate(), identity_env().identity_manager(), url_loader_factory()));
 }
 
-TEST_F(LeakDetectionRequestFactoryImplTest, SignedIn) {
+TEST_F(LeakDetectionCheckFactoryImplTest, SignedIn) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kLeakDetection);
 
@@ -75,7 +73,7 @@ TEST_F(LeakDetectionRequestFactoryImplTest, SignedIn) {
       &delegate(), identity_env().identity_manager(), url_loader_factory()));
 }
 
-TEST_F(LeakDetectionRequestFactoryImplTest, SignedInAndSyncing) {
+TEST_F(LeakDetectionCheckFactoryImplTest, SignedInAndSyncing) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kLeakDetection);
 

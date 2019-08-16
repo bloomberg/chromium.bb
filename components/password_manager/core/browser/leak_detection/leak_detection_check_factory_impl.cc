@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory_impl.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory_impl.h"
 
 #include <utility>
 
@@ -13,11 +13,11 @@
 
 namespace password_manager {
 
-LeakDetectionRequestFactoryImpl::LeakDetectionRequestFactoryImpl() = default;
-LeakDetectionRequestFactoryImpl::~LeakDetectionRequestFactoryImpl() = default;
+LeakDetectionCheckFactoryImpl::LeakDetectionCheckFactoryImpl() = default;
+LeakDetectionCheckFactoryImpl::~LeakDetectionCheckFactoryImpl() = default;
 
 std::unique_ptr<LeakDetectionCheck>
-LeakDetectionRequestFactoryImpl::TryCreateLeakCheck(
+LeakDetectionCheckFactoryImpl::TryCreateLeakCheck(
     LeakDetectionDelegateInterface* delegate,
     signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) const {
