@@ -709,7 +709,7 @@ TEST_F(AppSearchProviderTest, CrostiniTerminal) {
   EXPECT_EQ("", RunQuery("linux"));
 
   // This both allows Crostini UI and enables Crostini.
-  crostini::CrostiniTestHelper crostini_test_helper(profile());
+  crostini::CrostiniTestHelper crostini_test_helper(testing_profile());
   crostini_test_helper.ReInitializeAppServiceIntegration();
   CreateSearch();
   EXPECT_EQ("Terminal,Hosted App", RunQuery("te"));
@@ -721,7 +721,7 @@ TEST_F(AppSearchProviderTest, CrostiniTerminal) {
 
   // If Crostini UI is allowed but disabled (i.e. not installed), a match score
   // of 0.8 is required before surfacing search results.
-  crostini::CrostiniTestHelper::DisableCrostini(profile());
+  crostini::CrostiniTestHelper::DisableCrostini(testing_profile());
   CreateSearch();
   EXPECT_EQ("Hosted App", RunQuery("te"));
   EXPECT_EQ("Terminal", RunQuery("ter"));
@@ -736,7 +736,7 @@ TEST_F(AppSearchProviderTest, CrostiniTerminal) {
 
 TEST_F(AppSearchProviderTest, CrostiniApp) {
   // This both allows Crostini UI and enables Crostini.
-  crostini::CrostiniTestHelper crostini_test_helper(profile());
+  crostini::CrostiniTestHelper crostini_test_helper(testing_profile());
   crostini_test_helper.ReInitializeAppServiceIntegration();
   CreateSearch();
 

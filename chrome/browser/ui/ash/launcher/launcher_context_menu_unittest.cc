@@ -140,7 +140,7 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
 
   ArcAppTest& arc_test() { return arc_test_; }
 
-  Profile* profile() { return &profile_; }
+  TestingProfile* profile() { return &profile_; }
 
   ChromeLauncherController* controller() { return launcher_controller_.get(); }
 
