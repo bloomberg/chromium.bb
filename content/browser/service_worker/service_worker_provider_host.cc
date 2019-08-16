@@ -568,11 +568,19 @@ void ServiceWorkerProviderHost::RemoveServiceWorkerObjectHost(
 bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope,
                                                    const GURL& script_url) {
   DCHECK(IsContextAlive());
-  return GetContentClient()->browser()->AllowServiceWorkerOnIO(
-      scope, site_for_cookies(), script_url,
-      context_->wrapper()->resource_context(),
-      base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
-                          render_process_id_, frame_id()));
+  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    return GetContentClient()->browser()->AllowServiceWorkerOnUI(
+        scope, site_for_cookies(), script_url,
+        context_->wrapper()->browser_context(),
+        base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
+                            render_process_id_, frame_id()));
+  } else {
+    return GetContentClient()->browser()->AllowServiceWorkerOnIO(
+        scope, site_for_cookies(), script_url,
+        context_->wrapper()->resource_context(),
+        base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
+                            render_process_id_, frame_id()));
+  }
 }
 
 void ServiceWorkerProviderHost::NotifyControllerLost() {
