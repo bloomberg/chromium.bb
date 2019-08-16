@@ -102,9 +102,8 @@ var tests = [
     var mockSizer = new MockSizer();
     var mockWindow = new MockWindow(100, 100, mockSizer);
     var mockCallback = new MockViewportChangedCallback();
-    var viewport = new ViewportImpl(
-        mockWindow, mockSizer, mockCallback.callback, function() {},
-        function() {}, function() {}, 0, 1, 0);
+    var viewport =
+        createDefaultViewport(mockWindow, mockSizer, mockCallback.callback);
 
     // Test setting the zoom without the document dimensions set. The sizer
     // shouldn't change size.
@@ -178,9 +177,8 @@ var tests = [
 
   function testGetMostVisiblePage() {
     var mockWindow = new MockWindow(100, 100);
-    var viewport = new ViewportImpl(
-        mockWindow, new MockSizer(), function() {}, function() {},
-        function() {}, function() {}, 0, 1, 0);
+    var viewport =
+        createDefaultViewport(mockWindow, new MockSizer(), function() {});
 
     var documentDimensions = new MockDocumentDimensions(100, 100);
     documentDimensions.addPage(50, 100);
@@ -235,9 +233,8 @@ var tests = [
 
   function testGetMostVisiblePageForTwoUpView() {
     var mockWindow = new MockWindow(400, 500);
-    var viewport = new ViewportImpl(
-        mockWindow, new MockSizer(), function() {}, function() {},
-        function() {}, function() {}, 0, 1, 0);
+    var viewport =
+        createDefaultViewport(mockWindow, new MockSizer(), function() {});
 
     var documentDimensions = new MockDocumentDimensions(100, 100);
 
@@ -276,9 +273,8 @@ var tests = [
     var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
-    var viewport = new ViewportImpl(
-        mockWindow, mockSizer, mockCallback.callback, function() {},
-        function() {}, function() {}, 0, 1, 0);
+    var viewport =
+        createDefaultViewport(mockWindow, mockSizer, mockCallback.callback);
     var documentDimensions = new MockDocumentDimensions();
 
     function assertZoomed(expectedMockWidth, expectedMockHeight, expectedZoom) {
@@ -353,9 +349,8 @@ var tests = [
     var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
-    var viewport = new ViewportImpl(
-        mockWindow, mockSizer, mockCallback.callback, function() {},
-        function() {}, function() {}, 0, 1, 0);
+    var viewport =
+        createDefaultViewport(mockWindow, mockSizer, mockCallback.callback);
     var documentDimensions = new MockDocumentDimensions();
 
     function assertZoomed(expectedMockWidth, expectedMockHeight, expectedZoom) {
@@ -456,9 +451,8 @@ var tests = [
     var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
-    var viewport = new ViewportImpl(
-        mockWindow, mockSizer, mockCallback.callback, function() {},
-        function() {}, function() {}, 0, 1, 0);
+    var viewport =
+        createDefaultViewport(mockWindow, mockSizer, mockCallback.callback);
     var documentDimensions = new MockDocumentDimensions();
 
     function assertZoomed(expectedMockWidth, expectedMockHeight, expectedZoom) {
@@ -559,9 +553,8 @@ var tests = [
     var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
-    var viewport = new ViewportImpl(
-        mockWindow, mockSizer, mockCallback.callback, function() {},
-        function() {}, function() {}, 0, 1, 0);
+    var viewport =
+        createDefaultViewport(mockWindow, mockSizer, mockCallback.callback);
     var documentDimensions = new MockDocumentDimensions();
 
     documentDimensions.addPage(100, 100);
@@ -602,9 +595,8 @@ var tests = [
     var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
-    var viewport = new ViewportImpl(
-        mockWindow, mockSizer, mockCallback.callback, function() {},
-        function() {}, function() {}, 0, 1, 0);
+    var viewport =
+        createDefaultViewport(mockWindow, mockSizer, mockCallback.callback);
     var documentDimensions = new MockDocumentDimensions();
 
     documentDimensions.addPage(100, 100);
@@ -645,9 +637,8 @@ var tests = [
     var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
-    var viewport = new ViewportImpl(
-        mockWindow, mockSizer, mockCallback.callback, function() {},
-        function() {}, function() {}, 0, 1, 0);
+    var viewport =
+        createDefaultViewport(mockWindow, mockSizer, mockCallback.callback);
     var documentDimensions = new MockDocumentDimensions();
 
     documentDimensions.addPage(100, 100);
@@ -687,9 +678,8 @@ var tests = [
     var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
-    var viewport = new ViewportImpl(
-        mockWindow, mockSizer, mockCallback.callback, function() {},
-        function() {}, function() {}, 0, 1, 0);
+    var viewport =
+        createDefaultViewport(mockWindow, mockSizer, mockCallback.callback);
     var documentDimensions = new MockDocumentDimensions();
 
     documentDimensions.addPage(100, 100);
@@ -741,9 +731,8 @@ var tests = [
     var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
-    var viewport = new ViewportImpl(
-        mockWindow, mockSizer, mockCallback.callback, function() {},
-        function() {}, function() {}, 0, 1, 0);
+    var viewport =
+        createDefaultViewport(mockWindow, mockSizer, mockCallback.callback);
     var documentDimensions = new MockDocumentDimensions();
 
     documentDimensions.addPage(200, 200);
@@ -796,9 +785,8 @@ var tests = [
     var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
-    var viewport = new ViewportImpl(
-        mockWindow, mockSizer, mockCallback.callback, function() {},
-        function() {}, function() {}, 0, 1, 0);
+    var viewport =
+        createDefaultViewport(mockWindow, mockSizer, mockCallback.callback);
     var documentDimensions = new MockDocumentDimensions();
 
     documentDimensions.addPage(200, 200);
@@ -845,9 +833,8 @@ var tests = [
     var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
-    var viewport = new ViewportImpl(
-        mockWindow, mockSizer, mockCallback.callback, function() {},
-        function() {}, function() {}, 0, 1, 0);
+    var viewport =
+        createDefaultViewport(mockWindow, mockSizer, mockCallback.callback);
     var documentDimensions = new MockDocumentDimensions();
     documentDimensions.addPage(100, 100);
     documentDimensions.addPage(200, 200);
