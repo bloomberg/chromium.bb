@@ -627,6 +627,7 @@ typedef struct ThreadData {
   int intrabc_used;
   int deltaq_used;
   FRAME_CONTEXT *tctx;
+  MB_MODE_INFO_EXT *mbmi_ext;
 } ThreadData;
 
 struct EncWorkerData;
@@ -744,7 +745,7 @@ typedef struct AV1_COMP {
   QUANTS quants;
   ThreadData td;
   FRAME_COUNTS counts;
-  MB_MODE_INFO_EXT *mbmi_ext_base;
+  MB_MODE_INFO_EXT_FRAME *mbmi_ext_frame_base;
   CB_COEFF_BUFFER *coeff_buffer_base;
   Dequants dequants;
   AV1_COMMON common;
@@ -1365,7 +1366,7 @@ static INLINE void set_mode_info_offsets(const AV1_COMP *const cpi,
   xd->mi = cm->mi_grid_base + grid_idx;
   xd->mi[0] = cm->mi + mi_idx;
 
-  x->mbmi_ext = cpi->mbmi_ext_base + ext_idx;
+  x->mbmi_ext_frame = cpi->mbmi_ext_frame_base + ext_idx;
 }
 
 // Check to see if the given partition size is allowed for a specified number

@@ -577,6 +577,25 @@ static int use_pb_simple_motion_pred_sse(const AV1_COMP *const cpi) {
   return 0 && !frame_is_intra_only(&cpi->common);
 }
 
+// This function will copy the winner reference mode information from block
+// level (x->mbmi_ext) to frame level (cpi->mbmi_ext_frame_base). This frame
+// level buffer (cpi->mbmi_ext_frame_base) will be used during bitstream
+// preparation.
+static INLINE void copy_winner_ref_mode_from_mbmi_ext(MACROBLOCK *const x) {
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *mbmi = xd->mi[0];
+  uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+  memcpy(x->mbmi_ext_frame->ref_mv_stack,
+         x->mbmi_ext->ref_mv_stack[ref_frame_type],
+         sizeof(x->mbmi_ext->ref_mv_stack[MAX_REF_MV_STACK_SIZE]));
+  memcpy(x->mbmi_ext_frame->weight, x->mbmi_ext->weight[ref_frame_type],
+         sizeof(x->mbmi_ext->weight[MAX_REF_MV_STACK_SIZE]));
+  x->mbmi_ext_frame->mode_context = x->mbmi_ext->mode_context[ref_frame_type];
+  x->mbmi_ext_frame->ref_mv_count = x->mbmi_ext->ref_mv_count[ref_frame_type];
+  memcpy(x->mbmi_ext_frame->global_mvs, x->mbmi_ext->global_mvs,
+         sizeof(x->mbmi_ext->global_mvs));
+}
+
 static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
                           MACROBLOCK *const x, int mi_row, int mi_col,
                           RD_STATS *rd_cost, PARTITION_TYPE partition,
@@ -1441,6 +1460,7 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
   if (!dry_run) {
     x->mbmi_ext->cb_offset = x->cb_offset;
+    x->mbmi_ext_frame->cb_offset = x->cb_offset;
     assert(x->cb_offset <
            (1 << num_pels_log2_lookup[cpi->common.seq_params.sb_size]));
   }
@@ -1522,7 +1542,8 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       update_stats(&cpi->common, td, mi_row, mi_col);
     }
   }
-
+  // TODO(Ravi/Remya): Move this copy function to a better logical place
+  copy_winner_ref_mode_from_mbmi_ext(x);
   x->rdmult = origin_mult;
 }
 
@@ -3912,6 +3933,7 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
   const int mib_size = cm->seq_params.mib_size;
   const int mib_size_log2 = cm->seq_params.mib_size_log2;
   const int sb_row = (mi_row - tile_info->mi_row_start) >> mib_size_log2;
+  int sb_mi_size = av1_get_sb_mi_size(cm);
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, encode_sb_time);
@@ -3933,6 +3955,7 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
   // Code each SB in the row
   for (int mi_col = tile_info->mi_col_start, sb_col_in_tile = 0;
        mi_col < tile_info->mi_col_end; mi_col += mib_size, sb_col_in_tile++) {
+    memset(x->mbmi_ext, 0, sb_mi_size * sizeof(*x->mbmi_ext));
     (*(cpi->row_mt_sync_read_ptr))(&tile_data->row_mt_sync, sb_row,
                                    sb_col_in_tile);
     if (tile_data->allow_update_cdf && (cpi->row_mt == 1) &&

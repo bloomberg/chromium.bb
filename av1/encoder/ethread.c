@@ -377,6 +377,7 @@ static int enc_worker_hook(void *arg1, void *unused) {
 static void create_enc_workers(AV1_COMP *cpi, int num_workers) {
   AV1_COMMON *const cm = &cpi->common;
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
+  int sb_mi_size = av1_get_sb_mi_size(cm);
 
   CHECK_MEM_ERROR(cm, cpi->workers,
                   aom_malloc(num_workers * sizeof(*cpi->workers)));
@@ -466,6 +467,10 @@ static void create_enc_workers(AV1_COMP *cpi, int num_workers) {
             aom_memalign(32, 2 * MAX_MB_PLANE * MAX_SB_SQUARE *
                                  sizeof(*thread_data->td->tmp_obmc_bufs[j])));
       }
+
+      CHECK_MEM_ERROR(
+          cm, thread_data->td->mbmi_ext,
+          aom_calloc(sb_mi_size, sizeof(*thread_data->td->mbmi_ext)));
 
       // Create threads
       if (!winterface->reset(worker))
@@ -567,6 +572,7 @@ static void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
         }
       }
       thread_data->td->mb.mask_buf = thread_data->td->mask_buf;
+      thread_data->td->mb.mbmi_ext = thread_data->td->mbmi_ext;
     }
     if (thread_data->td->counts != &cpi->counts) {
       memcpy(thread_data->td->counts, &cpi->counts, sizeof(cpi->counts));

@@ -999,7 +999,6 @@ void setup_mi(AV1_COMP *const cpi, YV12_BUFFER_CONFIG *src) {
 
   xd->mi = cm->mi_grid_base;
   xd->mi[0] = cm->mi;
-  x->mbmi_ext = cpi->mbmi_ext_base;
 }
 
 // Apply temporal filtering to key frames and encode the filtered frame.
@@ -1046,7 +1045,8 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     setup_mi(cpi, frame_input->source);
     av1_init_macroblockd(cm, xd, NULL);
     const int ext_mi_size = cm->mi_alloc_rows * cm->mi_alloc_cols;
-    memset(cpi->mbmi_ext_base, 0, ext_mi_size * sizeof(*cpi->mbmi_ext_base));
+    memset(cpi->mbmi_ext_frame_base, 0,
+           ext_mi_size * sizeof(*cpi->mbmi_ext_frame_base));
 
     av1_set_speed_features_framesize_independent(cpi, oxcf->speed);
     av1_set_speed_features_framesize_dependent(cpi, oxcf->speed);

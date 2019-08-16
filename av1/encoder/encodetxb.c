@@ -640,9 +640,9 @@ static void write_coeffs_txb_wrap(const AV1_COMMON *cm, MACROBLOCK *x,
   MACROBLOCKD *xd = &x->e_mbd;
   const CB_COEFF_BUFFER *cb_coef_buff = x->cb_coef_buff;
   const int txb_offset =
-      x->mbmi_ext->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
+      x->mbmi_ext_frame->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
   const tran_low_t *tcoeff_txb =
-      cb_coef_buff->tcoeff[plane] + x->mbmi_ext->cb_offset;
+      cb_coef_buff->tcoeff[plane] + x->mbmi_ext_frame->cb_offset;
   const uint16_t *eob_txb = cb_coef_buff->eobs[plane] + txb_offset;
   const uint8_t *txb_skip_ctx_txb =
       cb_coef_buff->txb_skip_ctx[plane] + txb_offset;
@@ -2042,7 +2042,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 
   CB_COEFF_BUFFER *cb_coef_buff = x->cb_coef_buff;
   const int txb_offset =
-      x->mbmi_ext->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
+      x->mbmi_ext_frame->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
   uint16_t *eob_txb = cb_coef_buff->eobs[plane] + txb_offset;
   uint8_t *txb_skip_ctx_txb = cb_coef_buff->txb_skip_ctx[plane] + txb_offset;
   txb_skip_ctx_txb[block] = txb_ctx.txb_skip_ctx;
@@ -2053,7 +2053,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     return;
   }
 
-  tran_low_t *tcoeff_txb = cb_coef_buff->tcoeff[plane] + x->mbmi_ext->cb_offset;
+  tran_low_t *tcoeff_txb =
+      cb_coef_buff->tcoeff[plane] + x->mbmi_ext_frame->cb_offset;
   tran_low_t *tcoeff = BLOCK_OFFSET(tcoeff_txb, block);
   const int segment_id = mbmi->segment_id;
   const int seg_eob = av1_get_tx_eob(&cpi->common.seg, segment_id, tx_size);

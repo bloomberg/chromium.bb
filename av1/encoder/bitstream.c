@@ -96,17 +96,16 @@ static void write_inter_mode(aom_writer *w, PREDICTION_MODE mode,
 }
 
 static void write_drl_idx(FRAME_CONTEXT *ec_ctx, const MB_MODE_INFO *mbmi,
-                          const MB_MODE_INFO_EXT *mbmi_ext, aom_writer *w) {
-  uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-
+                          const MB_MODE_INFO_EXT_FRAME *mbmi_ext_frame,
+                          aom_writer *w) {
   assert(mbmi->ref_mv_idx < 3);
 
   const int new_mv = mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV;
   if (new_mv) {
     int idx;
     for (idx = 0; idx < 2; ++idx) {
-      if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
-        uint8_t drl_ctx = av1_drl_ctx(mbmi_ext->weight[ref_frame_type], idx);
+      if (mbmi_ext_frame->ref_mv_count > idx + 1) {
+        uint8_t drl_ctx = av1_drl_ctx(mbmi_ext_frame->weight, idx);
 
         aom_write_symbol(w, mbmi->ref_mv_idx != idx, ec_ctx->drl_cdf[drl_ctx],
                          2);
@@ -120,8 +119,8 @@ static void write_drl_idx(FRAME_CONTEXT *ec_ctx, const MB_MODE_INFO *mbmi,
     int idx;
     // TODO(jingning): Temporary solution to compensate the NEARESTMV offset.
     for (idx = 1; idx < 3; ++idx) {
-      if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
-        uint8_t drl_ctx = av1_drl_ctx(mbmi_ext->weight[ref_frame_type], idx);
+      if (mbmi_ext_frame->ref_mv_count > idx + 1) {
+        uint8_t drl_ctx = av1_drl_ctx(mbmi_ext_frame->weight, idx);
         aom_write_symbol(w, mbmi->ref_mv_idx != (idx - 1),
                          ec_ctx->drl_cdf[drl_ctx], 2);
         if (mbmi->ref_mv_idx == (idx - 1)) return;
@@ -369,9 +368,9 @@ static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
   if (tx_size == plane_tx_size || plane) {
     const CB_COEFF_BUFFER *cb_coef_buff = x->cb_coef_buff;
     const int txb_offset =
-        x->mbmi_ext->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
+        x->mbmi_ext_frame->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
     const tran_low_t *tcoeff_txb =
-        cb_coef_buff->tcoeff[plane] + x->mbmi_ext->cb_offset;
+        cb_coef_buff->tcoeff[plane] + x->mbmi_ext_frame->cb_offset;
     const uint16_t *eob_txb = cb_coef_buff->eobs[plane] + txb_offset;
     const uint8_t *txb_skip_ctx_txb =
         cb_coef_buff->txb_skip_ctx[plane] + txb_offset;
@@ -1032,27 +1031,22 @@ static void write_intra_prediction_modes(AV1_COMP *cpi, const int mi_row,
 }
 
 static INLINE int16_t mode_context_analyzer(
-    const int16_t *const mode_context, const MV_REFERENCE_FRAME *const rf) {
-  const int8_t ref_frame = av1_ref_frame_type(rf);
+    const int16_t mode_context, const MV_REFERENCE_FRAME *const rf) {
+  if (rf[1] <= INTRA_FRAME) return mode_context;
 
-  if (rf[1] <= INTRA_FRAME) return mode_context[ref_frame];
-
-  const int16_t newmv_ctx = mode_context[ref_frame] & NEWMV_CTX_MASK;
-  const int16_t refmv_ctx =
-      (mode_context[ref_frame] >> REFMV_OFFSET) & REFMV_CTX_MASK;
+  const int16_t newmv_ctx = mode_context & NEWMV_CTX_MASK;
+  const int16_t refmv_ctx = (mode_context >> REFMV_OFFSET) & REFMV_CTX_MASK;
 
   const int16_t comp_ctx = compound_mode_ctx_map[refmv_ctx >> 1][AOMMIN(
       newmv_ctx, COMP_NEWMV_CTXS - 1)];
   return comp_ctx;
 }
 
-static INLINE int_mv get_ref_mv_from_stack(int ref_idx,
-                                           const MV_REFERENCE_FRAME *ref_frame,
-                                           int ref_mv_idx,
-                                           const MB_MODE_INFO_EXT *mbmi_ext) {
+static INLINE int_mv get_ref_mv_from_stack(
+    int ref_idx, const MV_REFERENCE_FRAME *ref_frame, int ref_mv_idx,
+    const MB_MODE_INFO_EXT_FRAME *mbmi_ext_frame) {
   const int8_t ref_frame_type = av1_ref_frame_type(ref_frame);
-  const CANDIDATE_MV *curr_ref_mv_stack =
-      mbmi_ext->ref_mv_stack[ref_frame_type];
+  const CANDIDATE_MV *curr_ref_mv_stack = mbmi_ext_frame->ref_mv_stack;
 
   if (ref_frame[1] > INTRA_FRAME) {
     assert(ref_idx == 0 || ref_idx == 1);
@@ -1061,9 +1055,9 @@ static INLINE int_mv get_ref_mv_from_stack(int ref_idx,
   }
 
   assert(ref_idx == 0);
-  return ref_mv_idx < mbmi_ext->ref_mv_count[ref_frame_type]
+  return ref_mv_idx < mbmi_ext_frame->ref_mv_count
              ? curr_ref_mv_stack[ref_mv_idx].this_mv
-             : mbmi_ext->global_mvs[ref_frame_type];
+             : mbmi_ext_frame->global_mvs[ref_frame_type];
 }
 
 static INLINE int_mv get_ref_mv(const MACROBLOCK *x, int ref_idx) {
@@ -1075,7 +1069,7 @@ static INLINE int_mv get_ref_mv(const MACROBLOCK *x, int ref_idx) {
     ref_mv_idx += 1;
   }
   return get_ref_mv_from_stack(ref_idx, mbmi->ref_frame, ref_mv_idx,
-                               x->mbmi_ext);
+                               x->mbmi_ext_frame);
 }
 
 static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
@@ -1087,7 +1081,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   const struct segmentation *const seg = &cm->seg;
   struct segmentation_probs *const segp = &ec_ctx->seg;
   const MB_MODE_INFO *const mbmi = xd->mi[0];
-  const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
+  const MB_MODE_INFO_EXT_FRAME *const mbmi_ext_frame = x->mbmi_ext_frame;
   const PREDICTION_MODE mode = mbmi->mode;
   const int segment_id = mbmi->segment_id;
   const BLOCK_SIZE bsize = mbmi->sb_type;
@@ -1123,7 +1117,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
     write_ref_frames(cm, xd, w);
 
-    mode_ctx = mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
+    mode_ctx =
+        mode_context_analyzer(mbmi_ext_frame->mode_context, mbmi->ref_frame);
 
     // If segment skip is not enabled code the mode.
     if (!segfeature_active(seg, segment_id, SEG_LVL_SKIP)) {
@@ -1133,7 +1128,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         write_inter_mode(w, mode, ec_ctx, mode_ctx);
 
       if (mode == NEWMV || mode == NEW_NEWMV || have_nearmv_in_inter_mode(mode))
-        write_drl_idx(ec_ctx, mbmi, mbmi_ext, w);
+        write_drl_idx(ec_ctx, mbmi, mbmi_ext_frame, w);
       else
         assert(mbmi->ref_mv_idx == 0);
     }
@@ -1235,7 +1230,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 }
 
 static void write_intrabc_info(MACROBLOCKD *xd,
-                               const MB_MODE_INFO_EXT *mbmi_ext,
+                               const MB_MODE_INFO_EXT_FRAME *mbmi_ext_frame,
                                aom_writer *w) {
   const MB_MODE_INFO *const mbmi = xd->mi[0];
   int use_intrabc = is_intrabc_block(mbmi);
@@ -1245,13 +1240,13 @@ static void write_intrabc_info(MACROBLOCKD *xd,
     assert(mbmi->mode == DC_PRED);
     assert(mbmi->uv_mode == UV_DC_PRED);
     assert(mbmi->motion_mode == SIMPLE_TRANSLATION);
-    int_mv dv_ref = mbmi_ext->ref_mv_stack[INTRA_FRAME][0].this_mv;
+    int_mv dv_ref = mbmi_ext_frame->ref_mv_stack[0].this_mv;
     av1_encode_dv(w, &mbmi->mv[0].as_mv, &dv_ref.as_mv, &ec_ctx->ndvc);
   }
 }
 
 static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
-                              const MB_MODE_INFO_EXT *mbmi_ext,
+                              const MB_MODE_INFO_EXT_FRAME *mbmi_ext_frame,
                               const int mi_row, const int mi_col,
                               aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
@@ -1273,7 +1268,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
   write_delta_q_params(cpi, mi_row, mi_col, skip, w);
 
   if (av1_allow_intrabc(cm)) {
-    write_intrabc_info(xd, mbmi_ext, w);
+    write_intrabc_info(xd, mbmi_ext_frame, w);
     if (is_intrabc_block(mbmi)) return;
   }
 
@@ -1319,10 +1314,10 @@ static int rd_token_stats_mismatch(RD_STATS *rd_stats, TOKEN_STATS *token_stats,
 #if ENC_MISMATCH_DEBUG
 static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
-  const MB_MODE_INFO *const *mbmi =
+  const MB_MODE_INFO *const mbmi =
       *(cm->mi_grid_base + (mi_row * cm->mi_stride + mi_col));
-  const MB_MODE_INFO_EXT *const *mbmi_ext =
-      cpi->mbmi_ext_base + get_mi_ext_idx(cm, mi_row, mi_col);
+  const MB_MODE_INFO_EXT_FRAME *const mbmi_ext_frame_base =
+      cpi->mbmi_ext_frame_base + get_mi_ext_idx(cm, mi_row, mi_col);
   if (is_inter_block(mbmi)) {
 #define FRAME_TO_CHECK 11
     if (cm->current_frame.frame_number == FRAME_TO_CHECK &&
@@ -1340,9 +1335,9 @@ static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
       }
 
       const int16_t mode_ctx =
-          is_comp_ref
-              ? 0
-              : mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
+          is_comp_ref ? 0
+                      : mode_context_analyzer(mbmi_ext_frame->mode_context,
+                                              mbmi->ref_frame);
 
       const int16_t newmv_ctx = mode_ctx & NEWMV_CTX_MASK;
       int16_t zeromv_ctx = -1;
@@ -1376,7 +1371,7 @@ static void write_mbmi_b(AV1_COMP *cpi, aom_writer *w, int mi_row, int mi_col) {
   MB_MODE_INFO *m = xd->mi[0];
 
   if (frame_is_intra_only(cm)) {
-    write_mb_modes_kf(cpi, xd, cpi->td.mb.mbmi_ext, mi_row, mi_col, w);
+    write_mb_modes_kf(cpi, xd, cpi->td.mb.mbmi_ext_frame, mi_row, mi_col, w);
   } else {
     // has_subpel_mv_component needs the ref frame buffers set up to look
     // up if they are scaled. has_subpel_mv_component is in turn needed by
@@ -1508,7 +1503,8 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
   xd->mi = cm->mi_grid_base + (mi_row * cm->mi_stride + mi_col);
-  cpi->td.mb.mbmi_ext = cpi->mbmi_ext_base + get_mi_ext_idx(cm, mi_row, mi_col);
+  cpi->td.mb.mbmi_ext_frame =
+      cpi->mbmi_ext_frame_base + get_mi_ext_idx(cm, mi_row, mi_col);
 
   const MB_MODE_INFO *mbmi = xd->mi[0];
   const BLOCK_SIZE bsize = mbmi->sb_type;
