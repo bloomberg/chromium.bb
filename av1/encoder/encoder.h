@@ -1152,6 +1152,8 @@ int av1_copy_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd);
 
 int av1_set_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd);
 
+int av1_set_size_literal(AV1_COMP *cpi, int width, int height);
+
 void av1_set_frame_size(AV1_COMP *cpi, int width, int height);
 
 int av1_update_entropy(AV1_COMP *cpi, int update);

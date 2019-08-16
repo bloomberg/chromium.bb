@@ -765,6 +765,8 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
     aom_free(cpi->level_info[i]);
   }
+
+  if (cpi->use_svc) av1_free_svc_cyclic_refresh(cpi);
 }
 
 static void save_coding_context(AV1_COMP *cpi) {
@@ -4070,7 +4072,7 @@ static void check_initial_width(AV1_COMP *cpi, int use_highbitdepth,
 }
 
 // Returns 1 if the assigned width or height was <= 0.
-static int set_size_literal(AV1_COMP *cpi, int width, int height) {
+int av1_set_size_literal(AV1_COMP *cpi, int width, int height) {
   AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   check_initial_width(cpi, cm->seq_params.use_highbitdepth,
@@ -4104,7 +4106,7 @@ void av1_set_frame_size(AV1_COMP *cpi, int width, int height) {
 
   if (width != cm->width || height != cm->height) {
     // There has been a change in the encoded frame size
-    set_size_literal(cpi, width, height);
+    av1_set_size_literal(cpi, width, height);
     set_mv_search_params(cpi);
     // Recalculate 'all_lossless' in case super-resolution was (un)selected.
     cm->all_lossless = cm->coded_lossless && !av1_superres_scaled(cm);
@@ -4415,6 +4417,12 @@ static size_params_type calculate_next_size_params(AV1_COMP *cpi) {
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
   size_params_type rsz = { oxcf->width, oxcf->height, SCALE_NUMERATOR };
   int resize_denom = SCALE_NUMERATOR;
+  if (oxcf->pass == 0 && cpi->use_svc &&
+      cpi->svc.spatial_layer_id < cpi->svc.number_spatial_layers - 1) {
+    rsz.resize_width = cpi->common.width;
+    rsz.resize_height = cpi->common.height;
+    return rsz;
+  }
   if (oxcf->pass == 1) return rsz;
   if (cpi->resize_pending_width && cpi->resize_pending_height) {
     rsz.resize_width = cpi->resize_pending_width;
@@ -6282,6 +6290,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   aom_bitstream_queue_set_frame_write(cm->current_frame.frame_number * 2 +
                                       cm->show_frame);
 #endif
+  if (cpi->use_svc && cm->number_spatial_layers > 1) {
+    av1_one_pass_cbr_svc_start_layer(cpi);
+  }
 
   // Indicates whether or not to use an adaptive quantize b rather than
   // the traditional version

@@ -393,6 +393,12 @@ static void adjust_frame_rate(AV1_COMP *cpi,
   // Clear down mmx registers
   aom_clear_system_state();
 
+  if (cpi->use_svc && cpi->svc.spatial_layer_id > 0) {
+    cpi->framerate = cpi->svc.base_framerate;
+    av1_rc_update_framerate(cpi, cpi->common.width, cpi->common.height);
+    return;
+  }
+
   if (source->ts_start == cpi->first_time_stamp_ever) {
     this_duration = source->ts_end - source->ts_start;
     step = 1;
