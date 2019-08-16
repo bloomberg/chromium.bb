@@ -75,7 +75,7 @@ if (is_android || is_chromeos) {
   if (android_sdk_release == "o_mr1") {
     default_android_sdk_root = "//third_party/android_sdk/public"
     default_android_sdk_version = 27
-    default_android_sdk_build_tools_version = "27.0.3"
+    default_android_sdk_build_tools_version = "29.0.2"
     default_android_sdk_tools_version_suffix = "-26.0.0-dev"
     public_android_sdk = true
   }
@@ -83,7 +83,7 @@ if (is_android || is_chromeos) {
   if (android_sdk_release == "p") {
     default_android_sdk_root = "//third_party/android_sdk/public"
     default_android_sdk_version = 28
-    default_android_sdk_build_tools_version = "27.0.3"
+    default_android_sdk_build_tools_version = "29.0.2"
     default_android_sdk_tools_version_suffix = "-26.0.0-dev"
     public_android_sdk = true
   }
