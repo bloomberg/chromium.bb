@@ -90,9 +90,9 @@ void MaybeCreateLoaderOnCoreThread(
   ServiceWorkerContextCore* context_core =
       handle_core->context_wrapper()->context();
   ResourceContext* resource_context =
-      ServiceWorkerContextWrapper::GetCoreThreadId() == BrowserThread::IO
-          ? handle_core->context_wrapper()->resource_context()
-          : nullptr;
+      ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()
+          ? nullptr
+          : handle_core->context_wrapper()->resource_context();
   if (!context_core || (!resource_context && !browser_context)) {
     LoaderCallbackWrapperOnCoreThread(handle_core, std::move(interceptor_on_ui),
                                       std::move(loader_callback),
@@ -201,7 +201,7 @@ void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
 
   bool initialize_provider_only = false;
   LoaderCallback original_callback;
-  if (ServiceWorkerContextWrapper::GetCoreThreadId() == BrowserThread::IO &&
+  if (!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled() &&
       !handle_->context_wrapper()->HasRegistrationForOrigin(
           tentative_resource_request.url.GetOrigin())) {
     // We have no registrations, so it's safe to continue the request now
