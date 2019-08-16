@@ -559,13 +559,10 @@ static int calculate_boost_bits(int frame_count, int boost,
 }
 
 static void allocate_gf_group_bits(
-    AV1_COMP *cpi, int64_t gf_group_bits, int gf_arf_bits,
+    GF_GROUP *gf_group, RATE_CONTROL *const rc, int64_t gf_group_bits,
+    int gf_arf_bits, int max_bits,
     const EncodeFrameParams *const frame_params) {
-  RATE_CONTROL *const rc = &cpi->rc;
-  TWO_PASS *const twopass = &cpi->twopass;
-  GF_GROUP *const gf_group = &cpi->gf_group;
   const int key_frame = (frame_params->frame_type == KEY_FRAME);
-  const int max_bits = frame_max_bits(&cpi->rc, &cpi->oxcf);
   int64_t total_group_bits = gf_group_bits;
 
   // For key frames the frame target rate is already set and it
@@ -577,10 +574,6 @@ static void allocate_gf_group_bits(
       gf_group->bit_allocation[frame_index] = 0;
     else
       gf_group->bit_allocation[frame_index] = gf_arf_bits;
-
-    // Step over the golden frame / overlay frame
-    FIRSTPASS_STATS frame_stats;
-    if (EOF == input_stats(twopass, &frame_stats)) return;
   }
 
   // Deduct the boost bits for arf (or gf if it is not a key frame)
@@ -1124,7 +1117,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   av1_gop_setup_structure(cpi, frame_params);
 
   // Allocate bits to each of the frames in the GF group.
-  allocate_gf_group_bits(cpi, gf_group_bits, gf_arf_bits, frame_params);
+  allocate_gf_group_bits(&cpi->gf_group, rc, gf_group_bits, gf_arf_bits,
+                         frame_max_bits(rc, oxcf), frame_params);
 
   // Reset the file position.
   reset_fpf_position(twopass, start_pos);
