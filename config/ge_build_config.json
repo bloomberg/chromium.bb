@@ -2119,6 +2119,12 @@
       "models": [
         {
           "board_name": "kukui",
+          "name": "kodama",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "kukui",
           "name": "krane",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
