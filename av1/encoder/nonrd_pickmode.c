@@ -499,13 +499,14 @@ static void model_rd_with_curvfit(const AV1_COMP *const cpi,
 }
 
 static TX_SIZE calculate_tx_size(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
-                                 MACROBLOCKD *const xd, unsigned int var,
+                                 MACROBLOCK *const x, unsigned int var,
                                  unsigned int sse) {
+  MACROBLOCKD *const xd = &x->e_mbd;
   TX_SIZE tx_size;
-  if (cpi->common.tx_mode == TX_MODE_SELECT) {
+  if (x->tx_mode == TX_MODE_SELECT) {
     if (sse > (var << 2))
       tx_size = AOMMIN(max_txsize_lookup[bsize],
-                       tx_mode_to_biggest_tx_size[cpi->common.tx_mode]);
+                       tx_mode_to_biggest_tx_size[x->tx_mode]);
     else
       tx_size = TX_8X8;
 
@@ -516,7 +517,7 @@ static TX_SIZE calculate_tx_size(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
       tx_size = TX_16X16;
   } else {
     tx_size = AOMMIN(max_txsize_lookup[bsize],
-                     tx_mode_to_biggest_tx_size[cpi->common.tx_mode]);
+                     tx_mode_to_biggest_tx_size[x->tx_mode]);
   }
   if (bsize > BLOCK_32X32) tx_size = TX_16X16;
   return AOMMIN(tx_size, TX_16X16);
@@ -623,7 +624,7 @@ static void model_skip_for_sb_y_large(AV1_COMP *cpi, BLOCK_SIZE bsize,
   ac_thr *= ac_thr_factor(cpi->oxcf.speed, cpi->common.width,
                           cpi->common.height, abs(sum) >> (bw + bh));
 
-  tx_size = calculate_tx_size(cpi, bsize, xd, var, sse);
+  tx_size = calculate_tx_size(cpi, bsize, x, var, sse);
   // The code below for setting skip flag assumes tranform size of at least 8x8,
   // so force this lower limit on transform.
   if (tx_size < TX_8X8) tx_size = TX_8X8;
@@ -703,7 +704,7 @@ static void model_rd_for_sb_y(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
   unsigned int var = cpi->fn_ptr[bsize].vf(p->src.buf, p->src.stride,
                                            pd->dst.buf, pd->dst.stride, &sse);
-  xd->mi[0]->tx_size = calculate_tx_size(cpi, bsize, xd, var, sse);
+  xd->mi[0]->tx_size = calculate_tx_size(cpi, bsize, x, var, sse);
 
   if (cpi->sf.use_modeled_non_rd_cost) {
     const int bwide = block_size_wide[bsize];
@@ -1322,7 +1323,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     init_mbmi(mi, this_mode, ref_frame, NONE_FRAME, cm);
 
     mi->tx_size = AOMMIN(AOMMIN(max_txsize_lookup[bsize],
-                                tx_mode_to_biggest_tx_size[cm->tx_mode]),
+                                tx_mode_to_biggest_tx_size[x->tx_mode]),
                          TX_16X16);
     memset(mi->inter_tx_size, mi->tx_size, sizeof(mi->inter_tx_size));
     memset(mi->txk_type, DCT_DCT, sizeof(mi->txk_type[0]) * TXK_TYPE_BUF_LEN);
@@ -1624,7 +1625,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     PRED_BUFFER *const best_pred = best_pickmode.best_pred;
     TX_SIZE intra_tx_size =
         AOMMIN(AOMMIN(max_txsize_lookup[bsize],
-                      tx_mode_to_biggest_tx_size[cpi->common.tx_mode]),
+                      tx_mode_to_biggest_tx_size[x->tx_mode]),
                TX_16X16);
 
     if (reuse_inter_pred && best_pred != NULL) {

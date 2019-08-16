@@ -3500,10 +3500,10 @@ static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
   }
 }
 
-static int tx_size_cost(const AV1_COMMON *const cm, const MACROBLOCK *const x,
-                        BLOCK_SIZE bsize, TX_SIZE tx_size) {
+static int tx_size_cost(const MACROBLOCK *const x, BLOCK_SIZE bsize,
+                        TX_SIZE tx_size) {
   assert(bsize == x->e_mbd.mi[0]->sb_type);
-  if (cm->tx_mode != TX_MODE_SELECT || !block_signals_txsize(bsize)) return 0;
+  if (x->tx_mode != TX_MODE_SELECT || !block_signals_txsize(bsize)) return 0;
 
   const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize);
   const int depth = tx_size_to_depth(tx_size, bsize);
@@ -3516,7 +3516,6 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
                         RD_STATS *rd_stats, int64_t ref_best_rd, BLOCK_SIZE bs,
                         TX_SIZE tx_size, FAST_TX_SEARCH_MODE ftxs_mode,
                         int skip_trellis) {
-  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   int64_t rd = INT64_MAX;
@@ -3524,11 +3523,11 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   int s0, s1;
   const int is_inter = is_inter_block(mbmi);
   const int tx_select =
-      cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(mbmi->sb_type);
+      x->tx_mode == TX_MODE_SELECT && block_signals_txsize(mbmi->sb_type);
   int ctx = txfm_partition_context(
       xd->above_txfm_context, xd->left_txfm_context, mbmi->sb_type, tx_size);
-  const int r_tx_size = is_inter ? x->txfm_partition_cost[ctx][0]
-                                 : tx_size_cost(cm, x, bs, tx_size);
+  const int r_tx_size =
+      is_inter ? x->txfm_partition_cost[ctx][0] : tx_size_cost(x, bs, tx_size);
 
   assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed_bsize(bs)));
 
@@ -3610,10 +3609,9 @@ static int64_t estimate_yrd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bs,
 static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
                                    RD_STATS *rd_stats, int64_t ref_best_rd,
                                    BLOCK_SIZE bs) {
-  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  mbmi->tx_size = tx_size_from_tx_mode(bs, cm->tx_mode);
+  mbmi->tx_size = tx_size_from_tx_mode(bs, x->tx_mode);
   const int skip_ctx = av1_get_skip_context(xd);
   int s0, s1;
 
@@ -3646,8 +3644,9 @@ static INLINE int bsize_to_num_blk(BLOCK_SIZE bsize) {
 }
 
 static int get_search_init_depth(int mi_width, int mi_height, int is_inter,
-                                 const SPEED_FEATURES *sf) {
-  if (sf->tx_size_search_method == USE_LARGESTALL) return MAX_VARTX_DEPTH;
+                                 const SPEED_FEATURES *sf,
+                                 int tx_size_search_method) {
+  if (tx_size_search_method == USE_LARGESTALL) return MAX_VARTX_DEPTH;
 
   if (sf->tx_size_search_lgr_block) {
     if (mi_width > mi_size_wide[BLOCK_64X64] ||
@@ -3669,20 +3668,20 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
                                         int64_t ref_best_rd, BLOCK_SIZE bs) {
   av1_invalid_rd_stats(rd_stats);
 
-  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const TX_SIZE max_rect_tx_size = max_txsize_rect_lookup[bs];
-  const int tx_select = cm->tx_mode == TX_MODE_SELECT;
+  const int tx_select = x->tx_mode == TX_MODE_SELECT;
   int start_tx;
   int depth, init_depth;
 
   if (tx_select) {
     start_tx = max_rect_tx_size;
     init_depth = get_search_init_depth(mi_size_wide[bs], mi_size_high[bs],
-                                       is_inter_block(mbmi), &cpi->sf);
+                                       is_inter_block(mbmi), &cpi->sf,
+                                       x->tx_size_search_method);
   } else {
-    const TX_SIZE chosen_tx_size = tx_size_from_tx_mode(bs, cm->tx_mode);
+    const TX_SIZE chosen_tx_size = tx_size_from_tx_mode(bs, x->tx_mode);
     start_tx = chosen_tx_size;
     init_depth = MAX_TX_DEPTH;
   }
@@ -3968,7 +3967,7 @@ static void super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   if (xd->lossless[xd->mi[0]->segment_id]) {
     choose_smallest_tx_size(cpi, x, rd_stats, ref_best_rd, bs);
-  } else if (cpi->sf.tx_size_search_method == USE_LARGESTALL) {
+  } else if (x->tx_size_search_method == USE_LARGESTALL) {
     choose_largest_tx_size(cpi, x, rd_stats, ref_best_rd, bs);
   } else {
     choose_tx_size_type_from_rd(cpi, x, rd_stats, ref_best_rd, bs);
@@ -4108,7 +4107,7 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   RD_STATS this_rd_stats;
   int row, col;
   int64_t temp_sse, this_rd;
-  TX_SIZE tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode);
+  TX_SIZE tx_size = tx_size_from_tx_mode(bsize, x->tx_mode);
   const int stepr = tx_size_high_unit[tx_size];
   const int stepc = tx_size_wide_unit[tx_size];
   const int max_blocks_wide = max_block_wide(xd, bsize, 0);
@@ -4236,8 +4235,7 @@ static void palette_rd_y(const AV1_COMP *const cpi, MACROBLOCK *x,
   int this_rate = tokenonly_rd_stats.rate + palette_mode_cost;
   int64_t this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
   if (!xd->lossless[mbmi->segment_id] && block_signals_txsize(mbmi->sb_type)) {
-    tokenonly_rd_stats.rate -=
-        tx_size_cost(&cpi->common, x, bsize, mbmi->tx_size);
+    tokenonly_rd_stats.rate -= tx_size_cost(x, bsize, mbmi->tx_size);
   }
   if (this_rd < *best_rd) {
     *best_rd = this_rd;
@@ -4689,7 +4687,7 @@ static void intra_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
     // tokenonly rate, but for intra blocks, tx_size is always coded
     // (prediction granularity), so we account for it in the full rate,
     // not the tokenonly rate.
-    this_rate_tokenonly -= tx_size_cost(&cpi->common, x, bsize, mbmi->tx_size);
+    this_rate_tokenonly -= tx_size_cost(x, bsize, mbmi->tx_size);
   }
   const int this_rate =
       rd_stats.rate +
@@ -4757,6 +4755,9 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   x->coeff_opt_dist_threshold =
       get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
                               cpi->sf.enable_winner_mode_for_coeff_opt, 0);
+  // Set the transform size search method for mode evaluation
+  set_tx_size_search_method(cpi, x, cpi->sf.enable_winner_mode_for_tx_size_srch,
+                            0);
 
   MB_MODE_INFO best_mbmi = *mbmi;
   /* Y Search for intra prediction mode */
@@ -4800,8 +4801,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       // tokenonly rate, but for intra blocks, tx_size is always coded
       // (prediction granularity), so we account for it in the full rate,
       // not the tokenonly rate.
-      this_rate_tokenonly -=
-          tx_size_cost(&cpi->common, x, bsize, mbmi->tx_size);
+      this_rate_tokenonly -= tx_size_cost(x, bsize, mbmi->tx_size);
     }
     this_rate =
         this_rd_stats.rate +
@@ -4838,15 +4838,20 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   // If previous searches use only the default tx type/no R-D optimization of
   // quantized coeffs, do an extra search for the best tx type/better R-D
   // optimization of quantized coeffs
+  // TODO(any) : Refactor the winner mode evaluation check control code
   if ((cpi->sf.tx_type_search.fast_intra_tx_type_search &&
        !cpi->oxcf.use_intra_default_tx_only) ||
       (cpi->sf.enable_winner_mode_for_coeff_opt &&
        (cpi->optimize_seg_arr[mbmi->segment_id] != NO_TRELLIS_OPT &&
-        cpi->optimize_seg_arr[mbmi->segment_id] != FINAL_PASS_TRELLIS_OPT))) {
+        cpi->optimize_seg_arr[mbmi->segment_id] != FINAL_PASS_TRELLIS_OPT)) ||
+      cpi->sf.enable_winner_mode_for_tx_size_srch) {
     // Get the threshold for R-D optimization of coefficients for winner mode
     x->coeff_opt_dist_threshold =
         get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
                                 cpi->sf.enable_winner_mode_for_coeff_opt, 1);
+    // Set the transform size search method for winner mode processing
+    set_tx_size_search_method(cpi, x,
+                              cpi->sf.enable_winner_mode_for_tx_size_srch, 1);
     *mbmi = best_mbmi;
     x->use_default_intra_tx_type = 0;
     intra_block_yrd(cpi, x, bsize, bmode_costs, &best_rd, rate, rate_tokenonly,
@@ -5310,7 +5315,7 @@ static int64_t select_tx_size_and_type(const AV1_COMP *cpi, MACROBLOCK *x,
   // will use more complex search given that the transform partitions have
   // already been decided.
 
-  const int fast_tx_search = cpi->sf.tx_size_search_method > USE_FULL_RD;
+  const int fast_tx_search = x->tx_size_search_method > USE_FULL_RD;
   int64_t rd_thresh = ref_best_rd;
   if (fast_tx_search && rd_thresh < INT64_MAX) {
     if (INT64_MAX - rd_thresh > (rd_thresh >> 3)) rd_thresh += (rd_thresh >> 3);
@@ -5336,8 +5341,8 @@ static int64_t select_tx_size_and_type(const AV1_COMP *cpi, MACROBLOCK *x,
   const int skip_ctx = av1_get_skip_context(xd);
   const int s0 = x->skip_cost[skip_ctx][0];
   const int s1 = x->skip_cost[skip_ctx][1];
-  const int init_depth =
-      get_search_init_depth(mi_width, mi_height, 1, &cpi->sf);
+  const int init_depth = get_search_init_depth(mi_width, mi_height, 1, &cpi->sf,
+                                               x->tx_size_search_method);
   const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
   const int bh = tx_size_high_unit[max_tx_size];
   const int bw = tx_size_wide_unit[max_tx_size];
@@ -5512,8 +5517,8 @@ static int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, 0);
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
-    const int init_depth =
-        get_search_init_depth(mi_width, mi_height, 1, &cpi->sf);
+    const int init_depth = get_search_init_depth(
+        mi_width, mi_height, 1, &cpi->sf, x->tx_size_search_method);
     int idx, idy;
     int block = 0;
     int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
@@ -8933,7 +8938,7 @@ static int txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
 
   // cost and distortion
   av1_subtract_plane(x, bsize, 0);
-  if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
+  if (x->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
     pick_tx_size_type_yrd(cpi, x, rd_stats_y, bsize, mi_row, mi_col, rd_thresh);
 #if CONFIG_COLLECT_RD_STATS == 2
     PrintPredictionUnitStats(cpi, tile_data, x, rd_stats_y, bsize);
@@ -11002,6 +11007,8 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
   // decision
   x->coeff_opt_dist_threshold =
       get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold, 0, 0);
+  // Set the transform size search method for mode evaluation
+  set_tx_size_search_method(cpi, x, 0, 0);
 
   if (intra_yrd < best_rd) {
     // Only store reconstructed luma when there's chroma RDO. When there's no
@@ -11219,7 +11226,7 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
 
     // Set up tx_size related variables for skip-specific loop filtering.
     search_state->best_mbmode.tx_size =
-        block_signals_txsize(bsize) ? tx_size_from_tx_mode(bsize, cm->tx_mode)
+        block_signals_txsize(bsize) ? tx_size_from_tx_mode(bsize, x->tx_mode)
                                     : max_txsize_rect_lookup[bsize];
     memset(search_state->best_mbmode.inter_tx_size,
            search_state->best_mbmode.tx_size,
@@ -11276,6 +11283,7 @@ static void sf_refine_fast_tx_type_search(
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const int num_planes = av1_num_planes(cm);
 
+  // TODO(any) : Refactor the winner mode evaluation check control code
   if (xd->lossless[mbmi->segment_id] == 0 && best_mode_index >= 0 &&
       ((sf->tx_type_search.fast_inter_tx_type_search &&
         !cpi->oxcf.use_inter_dct_only && is_inter_mode(best_mbmode->mode)) ||
@@ -11284,7 +11292,8 @@ static void sf_refine_fast_tx_type_search(
         !is_inter_mode(best_mbmode->mode)) ||
        (cpi->sf.enable_winner_mode_for_coeff_opt &&
         (cpi->optimize_seg_arr[mbmi->segment_id] != NO_TRELLIS_OPT &&
-         cpi->optimize_seg_arr[mbmi->segment_id] != FINAL_PASS_TRELLIS_OPT)))) {
+         cpi->optimize_seg_arr[mbmi->segment_id] != FINAL_PASS_TRELLIS_OPT)) ||
+       cpi->sf.enable_winner_mode_for_tx_size_srch)) {
     int skip_blk = 0;
     RD_STATS rd_stats_y, rd_stats_uv;
     const int skip_ctx = av1_get_skip_context(xd);
@@ -11296,6 +11305,9 @@ static void sf_refine_fast_tx_type_search(
     x->coeff_opt_dist_threshold =
         get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
                                 cpi->sf.enable_winner_mode_for_coeff_opt, 1);
+    // Set the transform size search method for winner mode processing
+    set_tx_size_search_method(cpi, x,
+                              cpi->sf.enable_winner_mode_for_tx_size_srch, 1);
 
     *mbmi = *best_mbmode;
 
@@ -11315,7 +11327,7 @@ static void sf_refine_fast_tx_type_search(
         av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
 
       av1_subtract_plane(x, bsize, 0);
-      if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
+      if (x->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
         pick_tx_size_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col,
                               INT64_MAX);
         assert(rd_stats_y.rate != INT_MAX);
@@ -11700,6 +11712,9 @@ static void set_params_rd_pick_inter_mode(
   x->coeff_opt_dist_threshold =
       get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
                               cpi->sf.enable_winner_mode_for_coeff_opt, 0);
+  // Set the transform size search method for mode evaluation
+  set_tx_size_search_method(cpi, x, cpi->sf.enable_winner_mode_for_tx_size_srch,
+                            0);
 
   if (cpi->sf.skip_repeat_interpolation_filter_search) {
     x->interp_filter_stats_idx[0] = 0;
@@ -12310,7 +12325,7 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
     // tokenonly rate, but for intra blocks, tx_size is always coded
     // (prediction granularity), so we account for it in the full rate,
     // not the tokenonly rate.
-    rd_stats_y->rate -= tx_size_cost(cm, x, bsize, mbmi->tx_size);
+    rd_stats_y->rate -= tx_size_cost(x, bsize, mbmi->tx_size);
   }
   if (num_planes > 1 && !x->skip_chroma_rd) {
     const int uv_mode_cost =
@@ -13158,6 +13173,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   // Get the threshold for R-D optimization of coefficients for mode evaluation
   x->coeff_opt_dist_threshold =
       get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold, 0, 0);
+  // Set the transform size search method for winner mode processing
+  set_tx_size_search_method(cpi, x, 0, 0);
 
   // Only try palette mode when the best mode so far is an intra mode.
   const int try_palette =

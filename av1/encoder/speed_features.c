@@ -342,7 +342,6 @@ static void set_good_speed_features_framesize_independent(
 
   if (speed >= 3) {
     sf->reduce_inter_modes = boosted ? 1 : 2;
-    sf->tx_size_search_method = boosted ? USE_FULL_RD : USE_LARGESTALL;
     sf->less_rectangular_check_level = 2;
     // adaptive_motion_search breaks encoder multi-thread tests.
     // The values in x->pred_mv[] differ for single and multi-thread cases.
@@ -368,7 +367,12 @@ static void set_good_speed_features_framesize_independent(
         !frame_is_intra_only(&cpi->common) || (cpi->rc.frames_to_key != 1);
     // TODO(any): Experiment on the dependency of this speed feature with
     // use_intra_txb_hash, use_inter_txb_hash and use_mb_rd_hash speed features
+    // TODO(any): Refactor the code related to following winner mode speed
+    // features
     sf->enable_winner_mode_for_coeff_opt = 1;
+    // TODO(any): Experiment with this speed feature by enabling for key frames
+    sf->enable_winner_mode_for_tx_size_srch =
+        frame_is_intra_only(&cpi->common) ? 0 : 1;
     sf->reduce_wiener_window_size = is_boosted_arf2_bwd_type ? 0 : 1;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
   }
@@ -859,6 +863,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->disable_wedge_interintra_search = 0;
   sf->perform_coeff_opt = 0;
   sf->enable_winner_mode_for_coeff_opt = 0;
+  sf->enable_winner_mode_for_tx_size_srch = 0;
   sf->prune_comp_type_by_model_rd = 0;
   sf->disable_smooth_intra = 0;
   sf->perform_best_rd_based_gating_for_chroma = 0;

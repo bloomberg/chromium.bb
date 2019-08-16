@@ -762,6 +762,7 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
   // coefficients for mode decision
   x->coeff_opt_dist_threshold =
       get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold, 0, 0);
+  set_tx_size_search_method(cpi, x, 0, 1);
 
   // Save rdmult before it might be changed, so it can be restored later.
   const int orig_rdmult = x->rdmult;
@@ -4200,17 +4201,6 @@ static void init_encode_frame_mb_context(AV1_COMP *cpi) {
                          cm->seq_params.subsampling_y, num_planes);
 }
 
-static TX_MODE select_tx_mode(const AV1_COMP *cpi) {
-  if (cpi->common.coded_lossless) return ONLY_4X4;
-  if (cpi->sf.tx_size_search_method == USE_LARGESTALL)
-    return TX_MODE_LARGEST;
-  else if (cpi->sf.tx_size_search_method == USE_FULL_RD ||
-           cpi->sf.tx_size_search_method == USE_FAST_RD)
-    return TX_MODE_SELECT;
-  else
-    return cpi->common.tx_mode;
-}
-
 void av1_alloc_tile_data(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const int tile_cols = cm->tile_cols;
@@ -4695,7 +4685,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   cm->coded_lossless = is_coded_lossless(cm, xd);
   cm->all_lossless = cm->coded_lossless && !av1_superres_scaled(cm);
 
-  cm->tx_mode = select_tx_mode(cpi);
+  cm->tx_mode = select_tx_mode(cpi, cpi->sf.tx_size_search_method);
 
   // Fix delta q resolution for the moment
   cm->delta_q_info.delta_q_res = 0;

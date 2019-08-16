@@ -673,6 +673,10 @@ typedef struct SPEED_FEATURES {
   // of quantized coeffs
   int enable_winner_mode_for_coeff_opt;
 
+  // Flag used to control the winner mode processing for transform size
+  // search method
+  int enable_winner_mode_for_tx_size_srch;
+
   // Flag used to control the speed of the eob selection in trellis.
   int trellis_eob_fast;
 

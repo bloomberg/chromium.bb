@@ -443,6 +443,11 @@ struct macroblock {
   // Strong color activity detection. Used in REALTIME coding mode to enhance
   // the visual quality at the boundary of moving color objects.
   uint8_t color_sensitivity[2];
+
+  // Used to control the tx size search evaluation for mode processing
+  // (normal/winner mode)
+  int tx_size_search_method;
+  TX_MODE tx_mode;
 };
 
 static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
