@@ -335,6 +335,7 @@ class QuicAllowedPolicyDynamicTest : public QuicTestBase {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
+    QuicTestBase::SetUpInProcessBrowserTestFixture();
     // Set the overriden policy provider for the first Profile (profile_1_).
     EXPECT_CALL(policy_for_profile_1_, IsInitializationComplete(testing::_))
         .WillRepeatedly(testing::Return(true));
