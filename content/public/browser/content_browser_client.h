@@ -1174,13 +1174,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to intercept URLLoaderFactory interfaces used for
   // navigation or being brokered on behalf of a renderer fetching subresources.
   //
-  // |frame| could be nullptr when the caller is creating URLLoaderFactory
-  // for a service worker.
+  // |frame| is nullptr for kServiceWorkerSubResource. For kNavigation type,
+  // it's the RenderFrameHost the navigation might commit in. ELse it's the
+  // initiating frame.
   //
   // |render_process_id| is the id of a render process host in which the
   // URLLoaderFactory will be used.
-  //
-  // |is_navigation| is true when it's a request used for navigation.
   //
   // |request_initiator| indicates which origin will be the initiator of
   // requests that will use the URLLoaderFactory (see also
@@ -1202,14 +1201,18 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |bypass_redirect_checks| will be set to true when the embedder will be
   // handling redirect security checks.
   //
-  // Always called on the UI thread and only when the Network Service is
-  // enabled.
+  // Always called on the UI thread.
+  enum class URLLoaderFactoryType {
+    kNavigation,
+    kDownload,
+    kDocumentSubResource,
+    kServiceWorkerSubResource,
+  };
   virtual bool WillCreateURLLoaderFactory(
       BrowserContext* browser_context,
       RenderFrameHost* frame,
       int render_process_id,
-      bool is_navigation,
-      bool is_download,
+      URLLoaderFactoryType type,
       const url::Origin& request_initiator,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
