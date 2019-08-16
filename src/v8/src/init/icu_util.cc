@@ -101,6 +101,13 @@ bool InitializeICU(const char* icu_data_file) {
 #endif
 }
 
+bool InitializeICUWithData(const void* icu_data) {
+  g_icu_data_ptr = reinterpret_cast<char*>(const_cast<void*>(icu_data));
+  UErrorCode err = U_ZERO_ERROR;
+  udata_setCommonData(icu_data, &err);
+  return err == U_ZERO_ERROR;
+}
+
 #undef ICU_UTIL_DATA_FILE
 #undef ICU_UTIL_DATA_STATIC
 

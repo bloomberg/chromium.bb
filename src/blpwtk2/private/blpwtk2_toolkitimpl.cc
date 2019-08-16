@@ -397,7 +397,7 @@ void ToolkitImpl::startMessageLoop(const sandbox::SandboxInterfaceInfo& sandboxI
     // main thread), we also need to use MessagePumpForUI since the browser
     // owns the created windows and they pretty much rely entirely on window
     // messages for synchronization.
-    base::MessageLoop::InitMessagePumpForUIFactory(&messagePumpForUIFactory);
+    base::MessagePump::OverrideMessagePumpForUIFactory(&messagePumpForUIFactory);
 
     if (Statics::isRendererMainThreadMode()) {
         // If the renderer is to run in the application thread, we create a
@@ -706,7 +706,7 @@ void ToolkitImpl::addOriginToTrustworthyList(const StringRef& originString)
 {
     DCHECK(Statics::isInApplicationMainThread());
     DCHECK(Statics::isRendererMainThreadMode());
-    blink::WebSecurityPolicy::AddOriginTrustworthyWhiteList(toWebString(originString));
+    blink::WebSecurityPolicy::AddOriginToTrustworthySafelist(toWebString(originString));
 }
 
 void ToolkitImpl::setWebViewHostObserver(WebViewHostObserver* observer)

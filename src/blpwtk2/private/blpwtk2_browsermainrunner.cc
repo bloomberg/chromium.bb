@@ -31,7 +31,7 @@
 #include <base/message_loop/message_loop.h>
 #include <base/message_loop/message_loop_current.h>
 #include <base/strings/string_number_conversions.h>
-#include <base/task/task_scheduler/task_scheduler.h>
+#include <base/task/thread_pool/thread_pool.h>
 #include <chrome/browser/printing/print_job_manager.h>
 #include <content/browser/scheduler/browser_task_executor.h>
 #include <content/public/browser/browser_main_runner.h>
@@ -58,7 +58,7 @@ BrowserMainRunner::BrowserMainRunner(
 
     d_mainParams.sandbox_info = &d_sandboxInfo;
     content::BrowserTaskExecutor::Create();
-    base::TaskScheduler::Create("Browser");
+    base::ThreadPoolInstance::Create("Browser");
     d_impl = content::BrowserMainRunner::Create();
     int rc = d_impl->Initialize(d_mainParams);
     DCHECK(-1 == rc);  // it returns -1 for success!!
@@ -67,7 +67,7 @@ BrowserMainRunner::BrowserMainRunner(
 
     display::Screen::SetScreenInstance(views::CreateDesktopScreen());
     d_viewsDelegate.reset(new ViewsDelegateImpl());
-    content::StartBrowserTaskScheduler();
+    content::StartBrowserThreadPool();
 }
 
 BrowserMainRunner::~BrowserMainRunner()
