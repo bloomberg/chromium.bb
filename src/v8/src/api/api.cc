@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "src/api/api-inl.h"
-
+#include "include/v8-default-platform.h"
 #include "include/v8-profiler.h"
 #include "include/v8-testing.h"
 #include "include/v8-util.h"
@@ -54,6 +54,7 @@
 #include "src/init/v8.h"
 #include "src/json/json-parser.h"
 #include "src/json/json-stringifier.h"
+#include "src/libplatform/default-platform.h"
 #include "src/logging/counters.h"
 #include "src/numbers/conversions-inl.h"
 #include "src/objects/api-callbacks.h"
@@ -241,6 +242,10 @@ namespace v8 {
   return maybe_local.FromMaybe(Local<T>());
 
 #define RETURN_ESCAPED(value) return handle_scope.Escape(value);
+
+// blpwtk2: Prevent the linker from stripping out these symbols from the
+// shared library export table in Release builds.
+#pragma comment(linker, "/include:?CreateTraceBufferRingBuffer@TraceBuffer@tracing@platform@v8@@SAPAV1234@IPAVTraceWriter@234@@Z")
 
 namespace {
 
@@ -506,6 +511,23 @@ static inline bool IsExecutionTerminatingCheck(i::Isolate* isolate) {
   }
   return false;
 }
+namespace platform {
+
+std::unique_ptr<v8::Platform> NewDefaultPlatform(
+    int thread_pool_size, IdleTaskSupport idle_task_support,
+    InProcessStackDumping in_process_stack_dumping,
+    std::unique_ptr<v8::TracingController> tracing_controller) {
+  return NewDefaultPlatformImpl(thread_pool_size, idle_task_support,
+                                in_process_stack_dumping,
+                                std::move(tracing_controller));
+}
+
+bool PumpMessageLoop(v8::Platform* platform, v8::Isolate* isolate,
+                     MessageLoopBehavior behavior) {
+  return PumpMessageLoopImpl(platform, isolate, behavior);
+}
+
+}  // namespace platform
 
 void V8::SetNativesDataBlob(StartupData* natives_blob) {
   i::V8::SetNativesBlob(natives_blob);
@@ -983,6 +1005,18 @@ void ResourceConstraints::ConfigureDefaults(uint64_t physical_memory,
         i::Min(i::kMaximalCodeRangeSize / i::MB,
                static_cast<size_t>((virtual_memory_limit >> 3) / i::MB)));
   }
+}
+
+void ResourceConstraints::set_max_old_space_size(size_t limit_in_mb) {
+  max_old_space_size_ = limit_in_mb;
+}
+
+void ObjectTemplate::SetIndexedPropertyHandler(
+    IndexedPropertyGetterCallback getter, IndexedPropertySetterCallback setter,
+    IndexedPropertyQueryCallback query, IndexedPropertyDeleterCallback deleter,
+    IndexedPropertyEnumeratorCallback enumerator, Local<Value> data) {
+  SetHandler(IndexedPropertyHandlerConfiguration(getter, setter, query, deleter,
+                                                 enumerator, data));
 }
 
 void SetResourceConstraints(i::Isolate* isolate,
@@ -2005,6 +2039,8 @@ void ObjectTemplate::SetImmutableProto() {
   Utils::OpenHandle(this)->set_immutable_proto(true);
 }
 
+EscapableHandleScope::~EscapableHandleScope() = default;
+
 // --- S c r i p t s ---
 
 // Internally, UnboundScript is a SharedFunctionInfo, and Script is a
@@ -2022,6 +2058,23 @@ ScriptCompiler::CachedData::~CachedData() {
     delete[] data;
   }
 }
+
+//- - - - - - - - - - - - - - 'blpwtk2' Additions - - - - - - - - - - - - - - -
+
+ScriptCompiler::CachedData *
+ScriptCompiler::CachedData::create(const uint8_t *data,
+                                   int            length,
+                                   BufferPolicy   buffer_policy)
+{
+  return new ScriptCompiler::CachedData(data, length, buffer_policy);
+}
+
+void ScriptCompiler::CachedData::dispose(CachedData *data)
+{
+  delete data;
+}
+
+//- - - - - - - - - - - - - End 'blpwtk2' Additions - - - - - - - - - - - - - -
 
 bool ScriptCompiler::ExternalSourceStream::SetBookmark() { return false; }
 
@@ -5241,6 +5294,13 @@ bool v8::String::IsExternalOneByte() const {
   return i::StringShape(*str).IsExternalOneByte();
 }
 
+bool v8::String::ExternalStringResourceBase::IsCacheable() const {
+  return true;
+}
+
+void v8::String::ExternalStringResourceBase::Lock() const {}
+void v8::String::ExternalStringResourceBase::Unlock() const {}
+
 void v8::String::VerifyExternalStringResource(
     v8::String::ExternalStringResource* value) const {
   i::DisallowHeapAllocation no_allocation;
@@ -5287,6 +5347,8 @@ void v8::String::VerifyExternalStringResourceBase(
   CHECK_EQ(expected, value);
   CHECK_EQ(expectedEncoding, encoding);
 }
+
+String::ExternalOneByteStringResource::ExternalOneByteStringResource() = default;
 
 String::ExternalStringResource* String::GetExternalStringResourceSlow() const {
   i::DisallowHeapAllocation no_allocation;
@@ -5602,6 +5664,10 @@ bool v8::V8::InitializeICU(const char* icu_data_file) {
 bool v8::V8::InitializeICUDefaultLocation(const char* exec_path,
                                           const char* icu_data_file) {
   return i::InitializeICUDefaultLocation(exec_path, icu_data_file);
+}
+
+bool v8::V8::InitializeICUWithData(const void* icu_data) {
+  return i::InitializeICUWithData(icu_data);
 }
 
 void v8::V8::InitializeExternalStartupData(const char* directory_path) {
@@ -7907,6 +7973,10 @@ void Isolate::SetPrepareStackTraceCallback(PrepareStackTraceCallback callback) {
   isolate->SetPrepareStackTraceCallback(callback);
 }
 
+Isolate::Scope::~Scope() {
+  isolate_->Exit();
+}
+
 Isolate::DisallowJavascriptExecutionScope::DisallowJavascriptExecutionScope(
     Isolate* isolate,
     Isolate::DisallowJavascriptExecutionScope::OnFailure on_failure)
@@ -9677,10 +9747,15 @@ const CpuProfileNode* CpuProfileNode::GetParent() const {
   return reinterpret_cast<const CpuProfileNode*>(parent);
 }
 
+// SHEZ: Comment-out CpuProfileDepot stuff from the public interface
+// SHEZ: because exporting std::vector doesn't work when building V8
+// SHEZ: as a separate DLL.
+#if 0
 const std::vector<CpuProfileDeoptInfo>& CpuProfileNode::GetDeoptInfos() const {
   const i::ProfileNode* node = reinterpret_cast<const i::ProfileNode*>(this);
   return node->deopt_infos();
 }
+#endif
 
 void CpuProfile::Delete() {
   i::CpuProfile* profile = reinterpret_cast<i::CpuProfile*>(this);
@@ -9925,6 +10000,16 @@ int HeapGraphNode::GetChildrenCount() const {
   return ToInternal(this)->children_count();
 }
 
+OutputStream::WriteResult OutputStream::WriteHeapStatsChunk(HeapStatsUpdate* data, int count) {
+    return kAbort;
+}
+
+OutputStream::~OutputStream() = default;
+
+int OutputStream::GetChunkSize() {
+  return 1024;
+}
+
 const HeapGraphEdge* HeapGraphNode::GetChild(int index) const {
   return reinterpret_cast<const HeapGraphEdge*>(ToInternal(this)->child(index));
 }
@@ -10126,6 +10211,8 @@ void EmbedderHeapTracer::TracePrologue(TraceFlags flags) {
 #endif
 }
 
+EmbedderHeapTracer::~EmbedderHeapTracer() = default;
+
 void EmbedderHeapTracer::FinalizeTracing() {
   if (isolate_) {
     i::Isolate* isolate = reinterpret_cast<i::Isolate*>(isolate_);
@@ -10134,6 +10221,11 @@ void EmbedderHeapTracer::FinalizeTracing() {
           i::GarbageCollectionReason::kExternalFinalize);
     }
   }
+}
+
+bool EmbedderHeapTracer::IsRootForNonTracingGC(
+    const v8::TracedGlobal<v8::Value>& handle) {
+  return true;
 }
 
 void EmbedderHeapTracer::GarbageCollectionForTesting(

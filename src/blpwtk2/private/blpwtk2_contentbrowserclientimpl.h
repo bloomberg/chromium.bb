@@ -65,7 +65,7 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
     // Notifies that a render process will be created. This is called
     // before the content layer adds its own BrowserMessageFilters, so
     // that the embedder's IPC filters have priority.
-    content::BrowserMainParts* CreateBrowserMainParts(
+    std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
         const content::MainFunctionParams& parameters) override;
         // A non-nullptr return value is needed because
         // BrowserMainLoop::PreShutdown() assumes a non-nullptr
@@ -129,10 +129,10 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
     base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
             base::StringPiece name) override;
 
-    void RegisterIOThreadServiceHandlers(
-        content::ServiceManagerConnection* connection) override;
-
-    void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
+    void RunServiceInstanceOnIOThread(
+        const service_manager::Identity& identity,
+        mojo::PendingReceiver<service_manager::mojom::Service>* receiver)
+        override;
 
     // Returns the user agent.  Content may cache this value.
     std::string GetUserAgent() const override;

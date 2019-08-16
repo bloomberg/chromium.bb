@@ -48,8 +48,6 @@
 #include <net/proxy_resolution/proxy_config_service.h>
 #include <net/proxy_resolution/proxy_config_service_fixed.h>
 #include <net/proxy_resolution/proxy_resolution_service.h>
-#include <net/ssl/channel_id_service.h>
-#include <net/ssl/default_channel_id_store.h>
 #include <net/ssl/ssl_config_service_defaults.h>
 #include <net/url_request/data_protocol_handler.h>
 #include <net/url_request/file_protocol_handler.h>
@@ -202,12 +200,12 @@ void URLRequestContextGetterImpl::initialize()
     builder.set_proxy_resolution_service(std::move(d_proxyService));
     builder.set_network_delegate(std::unique_ptr<NetworkDelegateImpl>(new NetworkDelegateImpl()));
     builder.SetCookieStore(std::unique_ptr<net::CookieMonster>(
-            new net::CookieMonster(d_cookieStore.get(), 0, nullptr)));
+            new net::CookieMonster(d_cookieStore, nullptr)));
     builder.set_accept_language("en-us,en");
     builder.set_user_agent(base::EmptyString());
 
     std::unique_ptr<net::HostResolver> hostResolver
-        = net::HostResolver::CreateDefaultResolver(0);
+        = net::HostResolver::CreateStandaloneResolver(0);
 
     if (cmdline.HasSwitch(network::switches::kHostResolverRules)) {
         std::unique_ptr<net::MappedHostResolver> mappedHostResolver(
