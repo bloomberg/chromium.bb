@@ -158,7 +158,7 @@ void testV8AppendElement(blpwtk2::WebView* webView)
         "document.body.appendChild(div);\n";
 
     v8::Context::Scope contextScope(ctxt);
-    v8::ScriptCompiler::Source compilerSource(v8::String::NewFromUtf8(isolate, SCRIPT));
+    v8::ScriptCompiler::Source compilerSource(v8::String::NewFromUtf8(isolate, SCRIPT).ToLocalChecked());
     v8::Local<v8::Script> script = v8::ScriptCompiler::Compile(ctxt, &compilerSource).ToLocalChecked();
     assert(!script.IsEmpty());  // this should never fail to compile
 
@@ -1407,7 +1407,7 @@ public:
                     break;
                 }
 
-                assert(fstream.gcount() <= sizeof(buffer));
+                assert((std::size_t) fstream.gcount() <= sizeof(buffer));
                 context->addResponseData(buffer, (int)fstream.gcount());
             }
         }

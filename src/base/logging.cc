@@ -844,7 +844,7 @@ LogMessage::~LogMessage() {
 #else
     // The Android system may truncate the string if it's too long.
     
-    (priority, kAndroidLogTag, str_newline.c_str());
+    __android_log_write(priority, kAndroidLogTag, str_newline.c_str());
 #endif
 #elif defined(OS_FUCHSIA)
     fx_log_severity_t severity = FX_LOG_INFO;
@@ -874,16 +874,10 @@ LogMessage::~LogMessage() {
 #endif  // OS_FUCHSIA
   }
 
-  if ((g_logging_destination & LOG_TO_STDERR) != 0 ||
-      severity_ >= kAlwaysPrintErrorLevel) {
+  if (!wtk2_handled && ((g_logging_destination & LOG_TO_STDERR) != 0 ||
+      severity_ >= kAlwaysPrintErrorLevel)) {
     // Write logs with destination LOG_TO_STDERR to stderr. Also output to
     // stderr for logs above a certain log level to better detect and diagnose
-#endif  // OS_ANDROID
-    ignore_result(fwrite(str_newline.data(), str_newline.size(), 1, stderr));
-    fflush(stderr);
-  } else if (!wtk2_handled && severity_ >= kAlwaysPrintErrorLevel) {
-    // When we're only outputting to a log file, above a certain log level, we
-    // should still output to stderr so that we can better detect and diagnose
     // problems with unit tests, especially on the buildbots.
     ignore_result(fwrite(str_newline.data(), str_newline.size(), 1, stderr));
     fflush(stderr);

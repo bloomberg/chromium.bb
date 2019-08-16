@@ -27,6 +27,19 @@
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
+namespace {
+constexpr size_t kDataPipeCapacity = 4096;
+
+static MojoCreateDataPipeOptions DataPipeOptions() {
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = kDataPipeCapacity;
+  return options;
+}
+}  // namespace
+
 namespace content {
 ResourceRequestInfoProvider::ResourceRequestInfoProvider() = default;
 ResourceRequestInfoProvider::~ResourceRequestInfoProvider() = default;
@@ -70,7 +83,8 @@ int ResourceRequestInfoProvider::routingId() const {
   return routingId_;
 }
 
-int ResourceRequestInfoProvider::appCacheHostId() const {
+base::Optional<base::UnguessableToken>
+ResourceRequestInfoProvider::appCacheHostId() const {
   return appCacheHostId_;
 }
 
@@ -139,13 +153,12 @@ BodyLoaderReceiver::~BodyLoaderReceiver() = default;
 void BodyLoaderReceiver::OnReceivedResponse(
     const network::ResourceResponseInfo& info) {}
 
-void BodyLoaderReceiver::OnReceivedData(
-    std::unique_ptr<RequestPeer::ReceivedData> data) {
-  if(!IsClientValid()) {
+void BodyLoaderReceiver::OnReceivedData(const char* data,
+                                        std::size_t data_length) {
+  if (!IsClientValid()) {
     return;
   }
-  client_->BodyDataReceived(
-      base::span<const char>(data->payload(), data->length()));
+  client_->BodyDataReceived(base::span<const char>(data, data_length));
 }
 
 void BodyLoaderReceiver::OnCompletedRequest(
@@ -195,9 +208,14 @@ void RequestPeerReceiver::OnReceivedResponse(
   peer_->OnReceivedResponse(info);
 }
 
-void RequestPeerReceiver::OnReceivedData(
-    std::unique_ptr<RequestPeer::ReceivedData> data) {
-  peer_->OnReceivedData(std::move(data));
+void RequestPeerReceiver::OnReceivedData(const char* data,
+                                        std::size_t data_length) {
+  mojo::DataPipe data_pipe(DataPipeOptions());
+  peer_->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
+  uint32_t len = data_length;
+  MojoResult result = data_pipe.producer_handle->WriteData(data, &len, MOJO_WRITE_DATA_FLAG_NONE);
+  DCHECK(result == MOJO_RESULT_OK);
+  data_pipe.producer_handle.reset();
 }
 
 void RequestPeerReceiver::OnCompletedRequest(

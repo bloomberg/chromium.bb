@@ -405,8 +405,8 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion() {
 #if defined(OS_WIN)
   base::OnceClosure task = base::BindOnce([]() {
     auto kind = GpuProcessHost::HasInProcess()
-                    ? GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED
-                    : GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED_NO_GL;
+                    ? GPU_PROCESS_KIND_SANDBOXED
+                    : GPU_PROCESS_KIND_UNSANDBOXED_NO_GL;
     GpuProcessHost* host = GpuProcessHost::Get(kind, true /* force_create */);
     if (!host)
       return;

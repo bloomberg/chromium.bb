@@ -50,11 +50,11 @@
 #include "chrome/app/chrome_content_gpu_overlay_manifest.h"
 #include "chrome/app/chrome_content_renderer_overlay_manifest.h"
 #include "chrome/app/chrome_content_utility_overlay_manifest.h"
-#include "chrome/app/chrome_packaged_service_manifests.h"
 #include "chrome/app/chrome_renderer_manifest.h"
 #include <chrome/browser/chrome_service.h>
 #include <chrome/common/constants.mojom.h>
 #include <chrome/grit/browser_resources.h>
+#include "mojo/public/cpp/bindings/remote.h"
 #include <services/service_manager/public/cpp/connector.h>
 #include <ui/base/resource/resource_bundle.h>
 
@@ -104,10 +104,11 @@ ContentBrowserClientImpl::~ContentBrowserClientImpl()
 {
 }
 
-content::BrowserMainParts* ContentBrowserClientImpl::CreateBrowserMainParts(
+std::unique_ptr<content::BrowserMainParts>
+ContentBrowserClientImpl::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters)
 {
-    BrowserMainParts *main_parts = new BrowserMainParts;
+    auto main_parts = std::make_unique<BrowserMainParts>();
     main_parts->AddParts(ChromeService::GetInstance()->CreateExtraParts());
     return main_parts;
 }
@@ -125,16 +126,16 @@ void ContentBrowserClientImpl::RenderProcessWillLaunch(
 
     // Start a new instance of chrome_renderer service for the "to be"
     // launched renderer process.  This is a requirement for chrome services
-    service_manager::mojom::ServicePtr service;
-    *service_request = mojo::MakeRequest(&service);
-    service_manager::mojom::PIDReceiverPtr pid_receiver;
+    mojo::PendingRemote<service_manager::mojom::Service> service;
+    *service_request = service.InitWithNewPipeAndPassReceiver();
     service_manager::Identity renderer_identity = host->GetChildIdentity();
+    mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
     ChromeService::GetInstance()->connector()->RegisterServiceInstance(
         service_manager::Identity(chrome::mojom::kRendererServiceName,
                                   renderer_identity.instance_group(),
                                   renderer_identity.instance_id(),
                                   renderer_identity.globally_unique_id()),
-        std::move(service), mojo::MakeRequest(&pid_receiver));
+        std::move(service), metadata.BindNewPipeAndPassReceiver());
 }
 
 void ContentBrowserClientImpl::OverrideWebkitPrefs(
@@ -229,10 +230,6 @@ base::Optional<service_manager::Manifest> ContentBrowserClientImpl::GetServiceMa
     return GetChromeContentBrowserOverlayManifest();
   } else if (name == content::mojom::kGpuServiceName) {
     return GetChromeContentGpuOverlayManifest();
-  } else if (name == content::mojom::kPackagedServicesServiceName) {
-    service_manager::Manifest overlay;
-    overlay.packaged_services = GetChromePackagedServiceManifests();
-    return overlay;
   } else if (name == content::mojom::kRendererServiceName) {
     return GetChromeContentRendererOverlayManifest();
   } else if (name == content::mojom::kUtilityServiceName) {
@@ -242,16 +239,15 @@ base::Optional<service_manager::Manifest> ContentBrowserClientImpl::GetServiceMa
   return base::nullopt;
 }
 
-void ContentBrowserClientImpl::RegisterIOThreadServiceHandlers(
-    content::ServiceManagerConnection* connection) {
+void ContentBrowserClientImpl::RunServiceInstanceOnIOThread(
+    const service_manager::Identity& identity,
+    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
   // needed for chrome services
-  connection->AddServiceRequestHandler(
-      chrome::mojom::kServiceName,
-      ChromeService::GetInstance()->CreateChromeServiceRequestHandler());
-}
-
-void ContentBrowserClientImpl::RegisterOutOfProcessServices(OutOfProcessServiceMap* services)
-{
+  if (identity.name() == chrome::mojom::kServiceName) {
+    ChromeService::GetInstance()->CreateChromeServiceRequestHandler().Run(
+        std::move(*receiver));
+    return;
+  }
 }
 
 std::string ContentBrowserClientImpl::GetUserAgent() const

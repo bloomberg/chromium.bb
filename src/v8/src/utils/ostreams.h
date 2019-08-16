@@ -31,6 +31,17 @@ class V8_EXPORT_PRIVATE OFStreamBase : public std::streambuf {
   std::streamsize xsputn(const char* s, std::streamsize n) override;
 };
 
+// blpwtk2: Suppress the "exporting derived class but not the base class"
+// compiler warning.  If the compiler treats all warnings as errors, this
+// prevents the OFStream from every being exported out a shared library.
+// Instead, we always make sure we use the same compiler + STL implementation
+// for building v8 and the component that calls OFStream.
+
+#ifdef V8_OS_WIN
+#pragma warning( push )
+#pragma warning( disable : 4275)
+#endif
+
 // Output buffer and stream writing into debugger's command window.
 class V8_EXPORT_PRIVATE DbgStreamBuf : public std::streambuf {
  public:
@@ -87,6 +98,10 @@ class StdoutStream : public OFStream {
  public:
   StdoutStream() : OFStream(stdout) {}
 };
+#endif
+
+#ifdef V8_OS_WIN
+#pragma warning( pop )
 #endif
 
 // Wrappers to disambiguate uint16_t and uc16.

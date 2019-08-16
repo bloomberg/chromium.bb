@@ -44,14 +44,6 @@
 
 namespace blpwtk2 {
 
-class ReceivedDataImpl : public content::RequestPeer::ReceivedData {
- public:
-  std::vector<char> d_data;
-
-  const char* payload() override { return d_data.data(); }
-  int length() override { return d_data.size(); }
-};
-
 class InProcessResourceLoaderBridge::InProcessURLRequest : public URLRequest {
  public:
   InProcessURLRequest(
@@ -64,9 +56,16 @@ class InProcessResourceLoaderBridge::InProcessURLRequest : public URLRequest {
         d_reportRawHeaders(request_info_provider.reportRawHeaders()),
         d_hasUserGesture(request_info_provider.hasUserGesture()),
         d_routingId(request_info_provider.routingId()),
-        d_appCacheHostId(request_info_provider.appCacheHostId()),
         d_priority(request_info_provider.priority()),
         d_requestBody(request_info_provider.requestBody()) {
+    auto optional_host_id = request_info_provider.appCacheHostId();
+    static std::string empty_host_id{};
+    if(optional_host_id.has_value()) {
+      const base::UnguessableToken& token = optional_host_id.value();
+      d_appCacheHostId = String(token.ToString());
+    } else {
+      d_appCacheHostId = String(empty_host_id);
+    }
     d_requestHeaders.MergeFrom(request_info_provider.requestHeaders());
   }
 
@@ -139,7 +138,7 @@ class InProcessResourceLoaderBridge::InProcessURLRequest : public URLRequest {
 
   int requesterID() const override { return d_routingId; }
 
-  int appCacheHostID() const override { return d_appCacheHostId; }
+  AppCacheHostID appCacheHostID() const override { return d_appCacheHostId; }
 
   // see ConvertWebKitPriorityToNetPriority() in web_url_loader_impl.cc:
   Priority priority() const override {
@@ -168,7 +167,7 @@ class InProcessResourceLoaderBridge::InProcessURLRequest : public URLRequest {
   bool d_reportRawHeaders;
   bool d_hasUserGesture;
   int d_routingId;
-  int d_appCacheHostId;
+  AppCacheHostID d_appCacheHostId;
   net::RequestPriority d_priority;
 
   scoped_refptr<network::ResourceRequestBody> d_requestBody;
@@ -359,9 +358,7 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::addResponseData(
   // headers, so we need to check again.
   if (!d_peer)
     return;
-  std::unique_ptr<ReceivedDataImpl> copiedData(new ReceivedDataImpl());
-  copiedData->d_data.assign(buffer, buffer + length);
-  d_peer->OnReceivedData(std::move(copiedData));
+  d_peer->OnReceivedData(buffer, length);
 }
 
 void InProcessResourceLoaderBridge::InProcessResourceContext::failed() {

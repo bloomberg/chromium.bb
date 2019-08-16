@@ -3829,6 +3829,11 @@ if (current_toolchain == v8_generator_toolchain) {
       ":v8_libbase",
       "//build/win:default_exe_manifest",
     ]
+    if(is_blpwtk2) {
+      # To avoid exporting inline functions that involves unnecessary extra
+      # dependencies that may cause static build failures
+      cflags = ["/Zc:dllexportInlines-"]
+    }
   }
 }
 

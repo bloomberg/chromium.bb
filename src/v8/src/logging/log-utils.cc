@@ -28,7 +28,7 @@ FILE* Log::CreateOutputHandle(const char* file_name) {
   } else if (strcmp(file_name, kLogToTemporaryFile) == 0) {
     return base::OS::OpenTemporaryFile();
   } else {
-    return base::OS::FOpen(file_name, base::OS::LogFileOpenMode);
+    return base::OS::FOpen(file_name, base::OS::GetLogFileOpenMode());
   }
 }
 

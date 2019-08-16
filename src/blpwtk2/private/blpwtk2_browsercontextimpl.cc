@@ -123,7 +123,7 @@ BrowserContextImpl::BrowserContextImpl(const std::string& dataDir)
     dependencyManager->CreateBrowserContextServices(this);
 
     // Register our preference registry to the dependency manager.
-    dependencyManager->RegisterProfilePrefsForServices(this, d_prefRegistry.get());
+    dependencyManager->RegisterProfilePrefsForServices(d_prefRegistry.get());
 
     // Initialize the browser context.  During this initialization, the
     // context will ask the dependency manager to register profile

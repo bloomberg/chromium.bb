@@ -232,7 +232,7 @@ bool SiteInstanceImpl::HasProcess() {
 RenderProcessHost* SiteInstanceImpl::GetProcess(int affinity) {
   // blpwtk2: Lookup the RenderProessHost based on the host id (aka. affinity)
   if (!process_) {
-    BrowserContext* browser_context = browsing_instance_->browser_context();
+    BrowserContext* browser_context = browsing_instance_->GetBrowserContext();
 
     if (affinity != SiteInstance::kNoProcessAffinity) {
       process_ = RenderProcessHost::FromID(affinity);
