@@ -60,7 +60,7 @@
 #include "components/services/pdf_compositor/public/cpp/manifest.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/services/printing/public/cpp/manifest.h"
 #endif
 

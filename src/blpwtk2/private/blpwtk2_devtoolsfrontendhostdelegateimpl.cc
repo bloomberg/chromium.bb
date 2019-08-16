@@ -203,7 +203,8 @@ void DevToolsFrontendHostDelegateImpl::HandleMessageFromDevToolsFrontend(
     }
     else if (method == "loadCompleted") {
         web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-            base::ASCIIToUTF16("DevToolsAPI.setUseSoftMenu(true);"));
+            base::ASCIIToUTF16("DevToolsAPI.setUseSoftMenu(true);"),
+            base::NullCallback());
     }
     else if (method == "loadNetworkResource" && params->GetSize() == 3) {
         // TODO(pfeldman): handle some of the embedder messages in content.
@@ -259,7 +260,8 @@ void DevToolsFrontendHostDelegateImpl::HandleMessageFromDevToolsFrontend(
     }
     else if (method == "requestFileSystems") {
         web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-            base::ASCIIToUTF16("DevToolsAPI.fileSystemsLoaded([]);"));
+            base::ASCIIToUTF16("DevToolsAPI.fileSystemsLoaded([]);"),
+            base::NullCallback());
     }
     else {
         return;
@@ -280,7 +282,7 @@ void DevToolsFrontendHostDelegateImpl::DispatchProtocolMessage(
         base::EscapeJSONString(message, true, &param);
         std::string code = "DevToolsAPI.dispatchMessage(" + param + ");";
         base::string16 javascript = base::UTF8ToUTF16(code);
-        web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(javascript);
+        web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(javascript, base::NullCallback());
         return;
     }
 
@@ -292,7 +294,7 @@ void DevToolsFrontendHostDelegateImpl::DispatchProtocolMessage(
         std::string code = "DevToolsAPI.dispatchMessageChunk(" + param + "," +
             std::to_string(pos ? 0 : total_size) + ");";
         base::string16 javascript = base::UTF8ToUTF16(code);
-        web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(javascript);
+        web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(javascript, base::NullCallback());
     }
 }
 
@@ -351,7 +353,7 @@ void DevToolsFrontendHostDelegateImpl::CallClientFunction(
     }
     javascript.append(");");
     web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-        base::UTF8ToUTF16(javascript));
+        base::UTF8ToUTF16(javascript), base::NullCallback());
 }
 
 void DevToolsFrontendHostDelegateImpl::SendMessageAck(

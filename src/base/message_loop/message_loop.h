@@ -147,7 +147,7 @@ class BASE_EXPORT MessageLoop {
   }
 #endif  // OS_WIN
 
-  MessageLoopBase* GetMessageLoopBase();
+  sequence_manager::internal::SequenceManagerImpl* GetMessageLoopBase();
 
   //----------------------------------------------------------------------------
  protected:

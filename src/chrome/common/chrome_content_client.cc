@@ -655,6 +655,7 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
   // so there is no danger of manipulation or eavesdropping on communication
   // with them by third parties.
   schemes->secure_schemes.push_back(extensions::kExtensionScheme);
+#endif
   // chrome-native: is a scheme used for placeholder navigations that allow
   // UIs to be drawn with platform native widgets instead of HTML.  These pages
   // should be treated as empty documents that can commit synchronously.
