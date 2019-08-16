@@ -6448,6 +6448,9 @@ crbug.com/993671 [ Win ] virtual/audio-service/http/tests/media/video-frame-size
 crbug.com/783154 [ Linux Debug ] virtual/audio-service/media/controls/doubletap-to-jump-backwards.html [ Failure ]
 crbug.com/993238 fast/frames/frame-name-reset.html [ Pass Failure ]
 
+#Sherrif 2019-08-16
+crbug.com/994692 [ Linux Win ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
+
 # Video flakily not being being rendered on Mac
 crbug.com/979298 [ Mac ] media/controls/captions-menu-always-visible.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] media/controls/overflow-menu-always-visible.html [ Pass Failure ]
