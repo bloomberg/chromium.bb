@@ -1407,7 +1407,7 @@ public:
                     break;
                 }
 
-                assert(fstream.gcount() <= sizeof(buffer));
+                assert((std::size_t) fstream.gcount() <= sizeof(buffer));
                 context->addResponseData(buffer, (int)fstream.gcount());
             }
         }
