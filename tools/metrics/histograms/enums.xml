@@ -49659,6 +49659,38 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="SPDY 4.0"/>
 </enum>
 
+<enum name="ProtoDatabaseInitState">
+  <summary>
+    Track the failure and success states of proto database migration.
+  </summary>
+  <int value="0" label="Shared DB init attempted"/>
+  <int value="1" label="Failed: unique DB corruption"/>
+  <int value="2" label="Failed: missing provider"/>
+  <int value="3" label="Failed: open for both unqiue and shared"/>
+  <int value="4" label="Failed: Shared DB client is missing"/>
+  <int value="5" label="Success: Unique DB, no shared db present"/>
+  <int value="6" label="Failed: Shared DB failed to open"/>
+  <int value="7" label="Success: Shared DB no unique db present"/>
+  <int value="8" label="Failed: Unique DB open failed"/>
+  <int value="9" label="Migration to shared attempted"/>
+  <int value="10" label="Migration to unique attempted"/>
+  <int value="11" label="Success: opened migrated shared DB"/>
+  <int value="12" label="Success: failed to delete old data"/>
+  <int value="13" label="Success: failed to migrate, using unique"/>
+  <int value="14" label="Success: failed to migrate, using shared"/>
+  <int value="15" label="Success: migrated to shared, deletion failed"/>
+  <int value="16" label="Success: migrated to unique, deletion failed"/>
+  <int value="17" label="Success: migrated to shared"/>
+  <int value="18" label="Success: migrated to unique"/>
+  <int value="19" label="Legacy init called"/>
+  <int value="20" label="Shared metadata db open failed"/>
+  <int value="21" label="Shared metadata write failed"/>
+  <int value="22" label="Shared db corruption for client"/>
+  <int value="23" label="Shared db client created"/>
+  <int value="24" label="Shared leveldb failed to open"/>
+  <int value="25" label="Shared leveldb does not exist"/>
+</enum>
+
 <enum name="ProvisionalLoadEvent">
   <int value="0" label="Stopped no error">
     This should represent the provisional load being stopped by the user, but
