@@ -4176,7 +4176,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 #if !defined(OS_ANDROID)
   // The default (no-op) implementation of InstalledAppProvider. On Android, the
   // real implementation is provided in Java.
-  registry_->AddInterface(base::Bind(&InstalledAppProviderImplDefault::Create));
+  registry_->AddInterface(
+      base::Bind(&InstalledAppProviderImplDefault::CreateForRequest));
 #endif  // !defined(OS_ANDROID)
 
   PermissionControllerImpl* permission_controller =
