@@ -3035,7 +3035,7 @@ LayoutUnit LayoutBox::ComputeIntrinsicLogicalWidthUsing(
     LayoutUnit available_logical_width,
     LayoutUnit border_and_padding) const {
   if (logical_width_length.IsFillAvailable()) {
-    if (!IsHTMLMarqueeElement(GetNode())) {
+    if (!IsA<HTMLMarqueeElement>(GetNode())) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kCSSFillAvailableLogicalWidth);
     }
@@ -3582,7 +3582,7 @@ LayoutUnit LayoutBox::ComputeIntrinsicLogicalContentHeightUsing(
     return intrinsic_content_height;
   }
   if (logical_height_length.IsFillAvailable()) {
-    if (!IsHTMLMarqueeElement(GetNode())) {
+    if (!IsA<HTMLMarqueeElement>(GetNode())) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kCSSFillAvailableLogicalHeight);
     }

@@ -558,7 +558,7 @@ bool EndsOfNodeAreVisuallyDistinctPositions(const Node* node) {
 
   // A Marquee elements are moving so we should assume their ends are always
   // visibily distinct.
-  if (IsHTMLMarqueeElement(*node))
+  if (IsA<HTMLMarqueeElement>(*node))
     return true;
 
   // There is a VisiblePosition inside an empty inline-block container.
