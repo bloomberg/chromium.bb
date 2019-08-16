@@ -218,6 +218,7 @@ void DummyBindPasswordManagerDriver(
     content::RenderFrameHost* render_frame_host) {}
 
 void PassMojoCookieManagerToAwCookieManager(
+    CookieManager* cookie_manager,
     const network::mojom::NetworkContextPtr& network_context) {
   // Get the CookieManager from the NetworkContext.
   network::mojom::CookieManagerPtrInfo cookie_manager_info;
@@ -225,8 +226,7 @@ void PassMojoCookieManagerToAwCookieManager(
 
   // Pass the CookieManagerPtrInfo to android_webview::CookieManager, so it can
   // implement its APIs with this mojo CookieManager.
-  CookieManager::GetInstance()->SetMojoCookieManager(
-      std::move(cookie_manager_info));
+  cookie_manager->SetMojoCookieManager(std::move(cookie_manager_info));
 }
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
@@ -360,7 +360,8 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
 
   // Pass a CookieManager to the code supporting AwCookieManager.java (i.e., the
   // Cookies APIs).
-  PassMojoCookieManagerToAwCookieManager(network_context);
+  PassMojoCookieManagerToAwCookieManager(aw_context->GetCookieManager(),
+                                         network_context);
 
   return network_context;
 }
