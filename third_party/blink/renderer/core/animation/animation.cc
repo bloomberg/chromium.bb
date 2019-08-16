@@ -1323,21 +1323,24 @@ bool Animation::IsEventDispatchAllowed() const {
   return Paused() || start_time_;
 }
 
-base::Optional<double> Animation::TimeToEffectChange() {
+base::Optional<AnimationTimeDelta> Animation::TimeToEffectChange() {
   DCHECK(!outdated_);
   if (!start_time_ || hold_time_)
     return base::nullopt;
 
-  if (!content_)
-    return -CurrentTimeInternal() / playback_rate_;
+  if (!content_) {
+    return AnimationTimeDelta::FromSecondsD(-CurrentTimeInternal() /
+                                            playback_rate_);
+  }
+
   double result = playback_rate_ > 0
                       ? content_->TimeToForwardsEffectChange() / playback_rate_
                       : content_->TimeToReverseEffectChange() / -playback_rate_;
 
   return !HasActiveAnimationsOnCompositor() &&
                  content_->GetPhase() == Timing::kPhaseActive
-             ? 0
-             : result;
+             ? AnimationTimeDelta()
+             : AnimationTimeDelta::FromSecondsD(result);
 }
 
 void Animation::cancel() {

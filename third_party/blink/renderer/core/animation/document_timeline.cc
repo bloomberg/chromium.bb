@@ -187,7 +187,7 @@ void DocumentTimeline::ServiceAnimations(TimingUpdateReason reason) {
 void DocumentTimeline::ScheduleNextService() {
   DCHECK_EQ(outdated_animation_count_, 0U);
 
-  base::Optional<double> time_to_next_effect;
+  base::Optional<AnimationTimeDelta> time_to_next_effect;
   for (const auto& animation : animations_needing_update_) {
     time_to_next_effect =
         time_to_next_effect
@@ -197,7 +197,7 @@ void DocumentTimeline::ScheduleNextService() {
 
   if (!time_to_next_effect)
     return;
-  double next_effect_delay = time_to_next_effect.value();
+  double next_effect_delay = time_to_next_effect.value().InSecondsF();
   if (next_effect_delay < kMinimumDelay) {
     timing_->ServiceOnNextFrame();
   } else {

@@ -885,23 +885,26 @@ TEST_F(AnimationAnimationTestNoCompositing, AnimationsReturnTimeToNextEffect) {
 
   // Next effect change at end of start delay.
   SimulateFrame(0);
-  EXPECT_EQ(1, animation->TimeToEffectChange());
+  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(1),
+            animation->TimeToEffectChange());
 
   // Next effect change at end of start delay.
   SimulateFrame(500);
-  EXPECT_EQ(0.5, animation->TimeToEffectChange());
+  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(0.5),
+            animation->TimeToEffectChange());
 
   // Start of active phase.
   SimulateFrame(1000);
-  EXPECT_EQ(0, animation->TimeToEffectChange());
+  EXPECT_EQ(AnimationTimeDelta(), animation->TimeToEffectChange());
 
   // Still in active phase.
   SimulateFrame(1500);
-  EXPECT_EQ(0, animation->TimeToEffectChange());
+  EXPECT_EQ(AnimationTimeDelta(), animation->TimeToEffectChange());
 
   // Start of the after phase. Next effect change at end of after phase.
   SimulateFrame(2000);
-  EXPECT_EQ(1, animation->TimeToEffectChange());
+  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(1),
+            animation->TimeToEffectChange());
 
   // Still in effect if fillmode = forward|both.
   SimulateFrame(3000);
@@ -910,12 +913,14 @@ TEST_F(AnimationAnimationTestNoCompositing, AnimationsReturnTimeToNextEffect) {
   // Reset to start of animation. Next effect at the end of the start delay.
   animation->setCurrentTime(0, false);
   SimulateFrame(3000);
-  EXPECT_EQ(1, animation->TimeToEffectChange());
+  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(1),
+            animation->TimeToEffectChange());
 
   // Start delay is scaled by playback rate.
   animation->setPlaybackRate(2);
   SimulateFrame(3000);
-  EXPECT_EQ(0.5, animation->TimeToEffectChange());
+  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(0.5),
+            animation->TimeToEffectChange());
 
   // Effectively a paused animation.
   animation->setPlaybackRate(0);
@@ -927,17 +932,19 @@ TEST_F(AnimationAnimationTestNoCompositing, AnimationsReturnTimeToNextEffect) {
   animation->setPlaybackRate(-1);
   animation->Update(kTimingUpdateOnDemand);
   SimulateFrame(3000);
-  EXPECT_EQ(1, animation->TimeToEffectChange());
+  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(1),
+            animation->TimeToEffectChange());
 
   // End delay is scaled by playback rate.
   animation->setPlaybackRate(-2);
   animation->Update(kTimingUpdateOnDemand);
   SimulateFrame(3000);
-  EXPECT_EQ(0.5, animation->TimeToEffectChange());
+  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(0.5),
+            animation->TimeToEffectChange());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, TimeToNextEffectWhenPaused) {
-  EXPECT_EQ(0, animation->TimeToEffectChange());
+  EXPECT_EQ(AnimationTimeDelta(), animation->TimeToEffectChange());
   animation->pause();
   EXPECT_TRUE(animation->pending());
   EXPECT_EQ("paused", animation->playState());
@@ -949,7 +956,7 @@ TEST_F(AnimationAnimationTestNoCompositing, TimeToNextEffectWhenPaused) {
 
 TEST_F(AnimationAnimationTestNoCompositing,
        TimeToNextEffectWhenCancelledBeforeStart) {
-  EXPECT_EQ(0, animation->TimeToEffectChange());
+  EXPECT_EQ(AnimationTimeDelta(), animation->TimeToEffectChange());
   animation->setCurrentTime(-8000, false);
   animation->setPlaybackRate(2);
   EXPECT_EQ("running", animation->playState());
@@ -964,7 +971,7 @@ TEST_F(AnimationAnimationTestNoCompositing,
 
 TEST_F(AnimationAnimationTestNoCompositing,
        TimeToNextEffectWhenCancelledBeforeStartReverse) {
-  EXPECT_EQ(0, animation->TimeToEffectChange());
+  EXPECT_EQ(AnimationTimeDelta(), animation->TimeToEffectChange());
   animation->setCurrentTime(9000, false);
   animation->setPlaybackRate(-3);
   EXPECT_EQ("running", animation->playState());
@@ -977,7 +984,7 @@ TEST_F(AnimationAnimationTestNoCompositing,
 
 TEST_F(AnimationAnimationTestNoCompositing,
        TimeToNextEffectSimpleCancelledBeforeStart) {
-  EXPECT_EQ(0, animation->TimeToEffectChange());
+  EXPECT_EQ(AnimationTimeDelta(), animation->TimeToEffectChange());
   EXPECT_EQ("running", animation->playState());
   animation->cancel();
   EXPECT_EQ("idle", animation->playState());
