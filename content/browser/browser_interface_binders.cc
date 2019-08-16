@@ -65,7 +65,7 @@ void PopulateBinderMap(DedicatedWorkerHost* host,
 
 // Shared workers
 url::Origin GetContextForHost(SharedWorkerHost* host) {
-  return url::Origin::Create(host->instance()->url());
+  return url::Origin::Create(host->instance().url());
 }
 
 void PopulateSharedWorkerBinders(SharedWorkerHost* host,

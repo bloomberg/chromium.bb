@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -64,12 +65,12 @@ class SharedWorkerHostTest : public testing::Test {
     blink::mojom::SharedWorkerCreationContextType creation_context_type =
         blink::mojom::SharedWorkerCreationContextType::kSecure;
 
-    auto instance = std::make_unique<SharedWorkerInstance>(
-        url, name, origin, content_security_policy,
-        content_security_policy_type, creation_address_space,
-        creation_context_type);
+    SharedWorkerInstance instance(url, name, origin, content_security_policy,
+                                  content_security_policy_type,
+                                  creation_address_space,
+                                  creation_context_type);
     auto host = std::make_unique<SharedWorkerHost>(
-        &service_, std::move(instance), mock_render_process_host_.GetID());
+        &service_, instance, mock_render_process_host_.GetID());
     auto weak_host = host->AsWeakPtr();
     service_.worker_hosts_.insert(std::move(host));
     return weak_host;
@@ -157,8 +158,8 @@ TEST_F(SharedWorkerHostTest, Normal) {
   blink::mojom::SharedWorkerHostPtr worker_host;
   blink::mojom::SharedWorkerRequest worker_request;
   EXPECT_TRUE(factory_impl.CheckReceivedCreateSharedWorker(
-      host->instance()->url(), host->instance()->name(),
-      host->instance()->content_security_policy_type(), &worker_host,
+      host->instance().url(), host->instance().name(),
+      host->instance().content_security_policy_type(), &worker_host,
       &worker_request));
   {
     MockSharedWorker worker(std::move(worker_request));
@@ -265,8 +266,8 @@ TEST_F(SharedWorkerHostTest, TerminateAfterStarting) {
     blink::mojom::SharedWorkerHostPtr worker_host;
     blink::mojom::SharedWorkerRequest worker_request;
     EXPECT_TRUE(factory_impl.CheckReceivedCreateSharedWorker(
-        host->instance()->url(), host->instance()->name(),
-        host->instance()->content_security_policy_type(), &worker_host,
+        host->instance().url(), host->instance().name(),
+        host->instance().content_security_policy_type(), &worker_host,
         &worker_request));
     MockSharedWorker worker(std::move(worker_request));
 
@@ -307,8 +308,8 @@ TEST_F(SharedWorkerHostTest, OnContextClosed) {
     blink::mojom::SharedWorkerHostPtr worker_host;
     blink::mojom::SharedWorkerRequest worker_request;
     EXPECT_TRUE(factory_impl.CheckReceivedCreateSharedWorker(
-        host->instance()->url(), host->instance()->name(),
-        host->instance()->content_security_policy_type(), &worker_host,
+        host->instance().url(), host->instance().name(),
+        host->instance().content_security_policy_type(), &worker_host,
         &worker_request));
     MockSharedWorker worker(std::move(worker_request));
 
