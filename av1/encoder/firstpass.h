@@ -30,7 +30,7 @@ extern "C" {
 
 #define VLOW_MOTION_THRESHOLD 950
 
-#define MAX_ARF_LAYERS 6
+#define MAX_ARF_LAYERS 5
 
 typedef struct {
   // Frame number in display order, if stats are for a single frame.
@@ -125,6 +125,8 @@ typedef struct {
   // mechanism is in place.
   int layer_depth[MAX_STATIC_GF_GROUP_LENGTH];
   int arf_boost[MAX_STATIC_GF_GROUP_LENGTH];
+  int max_layer_depth;
+  int max_layer_depth_allowed;
   // This is currently only populated for AOM_Q mode
   unsigned char q_val[MAX_STATIC_GF_GROUP_LENGTH];
   int bit_allocation[MAX_STATIC_GF_GROUP_LENGTH];

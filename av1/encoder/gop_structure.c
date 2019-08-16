@@ -36,7 +36,8 @@ static void set_multi_layer_params(AV1_COMP *cpi, GF_GROUP *const gf_group,
 
   // Either we are at the last level of the pyramid, or we don't have enough
   // frames between 'l' and 'r' to create one more level.
-  if (level == MIN_PYRAMID_LVL || num_frames_to_process < 3) {
+  if (layer_depth > gf_group->max_layer_depth_allowed ||
+      num_frames_to_process < 3) {
     // Leaf nodes.
     while (++start < end) {
       gf_group->update_type[*frame_ind] = LF_UPDATE;
@@ -47,6 +48,8 @@ static void set_multi_layer_params(AV1_COMP *cpi, GF_GROUP *const gf_group,
       gf_group->pyramid_level[*frame_ind] = MIN_PYRAMID_LVL;
       gf_group->layer_depth[*frame_ind] = MAX_ARF_LAYERS;
       gf_group->arf_boost[*frame_ind] = NORMAL_BOOST;
+      gf_group->max_layer_depth =
+          AOMMAX(gf_group->max_layer_depth, layer_depth);
       ++gf_group->pyramid_lvl_nodes[MIN_PYRAMID_LVL];
       ++(*frame_ind);
     }
@@ -110,10 +113,11 @@ static int construct_multi_layer_gf_structure(
   gf_group->pyramid_level[frame_index] = MIN_PYRAMID_LVL;
   gf_group->layer_depth[frame_index] =
       first_frame_update_type == OVERLAY_UPDATE ? MAX_ARF_LAYERS + 1 : 0;
+  gf_group->max_layer_depth = 0;
   ++frame_index;
 
   // ALTREF.
-  const int use_altref = (gf_group->pyramid_height > 0);
+  const int use_altref = gf_group->max_layer_depth_allowed > 0;
   if (use_altref) {
     gf_group->update_type[frame_index] = ARF_UPDATE;
     gf_group->arf_src_offset[frame_index] = gf_interval - 1;
@@ -123,6 +127,7 @@ static int construct_multi_layer_gf_structure(
     gf_group->pyramid_level[frame_index] = gf_group->pyramid_height;
     gf_group->layer_depth[frame_index] = 1;
     gf_group->arf_boost[frame_index] = cpi->rc.gfu_boost;
+    gf_group->max_layer_depth = 1;
     ++frame_index;
   }
 

@@ -736,6 +736,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   TWO_PASS *const twopass = &cpi->twopass;
   FIRSTPASS_STATS next_frame;
   const FIRSTPASS_STATS *const start_pos = twopass->stats_in;
+  GF_GROUP *gf_group = &cpi->gf_group;
   int i;
 
   double boost_score = 0.0;
@@ -1035,11 +1036,13 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     rc->gfu_boost =
         av1_calc_arf_boost(cpi, alt_offset, forward_frames, (i - 1));
     rc->source_alt_ref_pending = 1;
+    gf_group->max_layer_depth_allowed = cpi->oxcf.gf_max_pyr_height;
   } else {
     reset_fpf_position(twopass, start_pos);
     rc->gfu_boost =
         AOMMIN(MAX_GF_BOOST, av1_calc_arf_boost(cpi, alt_offset, (i - 1), 0));
     rc->source_alt_ref_pending = 0;
+    gf_group->max_layer_depth_allowed = 0;
   }
 
   // Set the interval until the next gf.

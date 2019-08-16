@@ -825,10 +825,8 @@ static int rc_pick_q_and_bounds_one_pass_cbr(const AV1_COMP *cpi, int width,
   return q;
 }
 
-static int gf_group_pyramid_level(const AV1_COMP *cpi, int gf_index) {
-  const GF_GROUP *gf_group = &cpi->gf_group;
-  int this_height = gf_group->pyramid_level[gf_index];
-  return this_height;
+static int gf_group_pyramid_level(const GF_GROUP *gf_group, int gf_index) {
+  return gf_group->layer_depth[gf_index];
 }
 
 static int get_active_cq_level(const RATE_CONTROL *rc,
@@ -1296,10 +1294,11 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
       } else if (is_intrl_arf_boost) {
         assert(rc->arf_q >= 0);  // Ensure it is set to a valid value.
         active_best_quality = rc->arf_q;
-        int this_height = gf_group_pyramid_level(cpi, gf_index);
-        while (this_height < gf_group->pyramid_height) {
-          active_best_quality = (active_best_quality + cq_level + 1) / 2;
-          ++this_height;
+        int this_height = gf_group_pyramid_level(gf_group, gf_index);
+        while (this_height > 1) {
+          active_best_quality =
+              (active_best_quality + active_worst_quality + 1) / 2;
+          --this_height;
         }
       }
     } else if (oxcf->rc_mode == AOM_Q) {
@@ -1317,10 +1316,11 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
           assert(rc->arf_q >= 0);  // Ensure it is set to a valid value.
           assert(is_intrl_arf_boost);
           active_best_quality = rc->arf_q;
-          int this_height = gf_group_pyramid_level(cpi, gf_index);
-          while (this_height < gf_group->pyramid_height) {
-            active_best_quality = (active_best_quality + cq_level + 1) / 2;
-            ++this_height;
+          int this_height = gf_group_pyramid_level(gf_group, gf_index);
+          while (this_height > 1) {
+            active_best_quality =
+                (active_best_quality + active_worst_quality + 1) / 2;
+            --this_height;
           }
         }
       }
@@ -1331,11 +1331,11 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
 
       active_best_quality = min_boost - (int)(boost * rc->arf_boost_factor);
       if (is_intrl_arf_boost) {
-        int this_height = gf_group_pyramid_level(cpi, gf_index);
-        while (this_height < gf_group->pyramid_height) {
+        int this_height = gf_group_pyramid_level(gf_group, gf_index);
+        while (this_height > 1) {
           active_best_quality =
               (active_best_quality + active_worst_quality + 1) / 2;
-          ++this_height;
+          --this_height;
         }
       }
     }
