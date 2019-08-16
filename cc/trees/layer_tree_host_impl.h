@@ -403,9 +403,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                               ElementListType list_type,
                               float maximum_scale,
                               float starting_scale) override;
-  void OnCustomPropertyMutated(ElementId element_id,
-                               const std::string& custom_property_name,
-                               float custom_property_value) override;
+  void OnCustomPropertyMutated(
+      ElementId element_id,
+      const std::string& custom_property_name,
+      PaintWorkletInput::PropertyValue custom_property_value) override;
 
   void ScrollOffsetAnimationFinished() override;
   gfx::ScrollOffset GetScrollOffsetForAnimation(

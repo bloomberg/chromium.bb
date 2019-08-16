@@ -594,13 +594,13 @@ PaintWorkletJobMap LayerTreeHostImpl::GatherDirtyPaintWorklets(
       for (const auto& element : input->GetPropertyKeys()) {
         // We should not have multiple property ids with the same name.
         DCHECK(!animated_property_values.contains(element.first));
-        base::Optional<float> animated_property_value =
+        const PaintWorkletInput::PropertyValue& animated_property_value =
             paint_worklet_tracker_.GetPropertyAnimationValue(element);
         // No value indicates that the input property was not mutated by CC
         // animation.
-        if (animated_property_value) {
+        if (animated_property_value.has_value()) {
           animated_property_values.emplace(element.first,
-                                           animated_property_value.value());
+                                           animated_property_value);
         }
       }
 
@@ -5906,9 +5906,9 @@ void LayerTreeHostImpl::SetElementFilterMutated(
 void LayerTreeHostImpl::OnCustomPropertyMutated(
     ElementId element_id,
     const std::string& custom_property_name,
-    float custom_property_value) {
+    PaintWorkletInput::PropertyValue custom_property_value) {
   paint_worklet_tracker_.OnCustomPropertyMutated(
-      element_id, custom_property_name, custom_property_value);
+      element_id, custom_property_name, std::move(custom_property_value));
 }
 
 void LayerTreeHostImpl::SetElementBackdropFilterMutated(
