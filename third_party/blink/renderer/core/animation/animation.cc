@@ -1286,7 +1286,7 @@ bool Animation::Update(TimingUpdateReason reason) {
     }
   }
   DCHECK(!outdated_);
-  return !finished_ || std::isfinite(TimeToEffectChange());
+  return !finished_ || TimeToEffectChange();
 }
 
 void Animation::QueueFinishedEvent() {
@@ -1323,10 +1323,10 @@ bool Animation::IsEventDispatchAllowed() const {
   return Paused() || start_time_;
 }
 
-double Animation::TimeToEffectChange() {
+base::Optional<double> Animation::TimeToEffectChange() {
   DCHECK(!outdated_);
   if (!start_time_ || hold_time_)
-    return std::numeric_limits<double>::infinity();
+    return base::nullopt;
 
   if (!content_)
     return -CurrentTimeInternal() / playback_rate_;
