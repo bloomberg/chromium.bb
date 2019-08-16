@@ -76,9 +76,8 @@ class TabStyle {
 
   // Colors for various parts of the tab derived by TabStyle.
   struct TabColors {
-    SkColor title_color;
-    SkColor button_foreground_color;
-    SkColor button_background_color;
+    SkColor foreground_color;
+    SkColor background_color;
   };
 
   virtual ~TabStyle();

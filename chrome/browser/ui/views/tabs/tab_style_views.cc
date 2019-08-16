@@ -387,23 +387,10 @@ TabStyle::TabColors GM2TabStyle::CalculateColors() const {
       GetTabBackgroundColor(TAB_ACTIVE), GetTabBackgroundColor(TAB_INACTIVE),
       expected_opacity);
 
-  const SkColor title_color = tab_->controller()->GetTabForegroundColor(
+  const SkColor foreground_color = tab_->controller()->GetTabForegroundColor(
       expected_opacity > 0.5f ? TAB_ACTIVE : TAB_INACTIVE, background_color);
 
-  // These ratios are calculated from the default Chrome theme colors.
-  // Active/inactive are the contrast ratios of the close X against the tab
-  // background.
-  constexpr float kMinimumActiveContrastRatio = 6.05f;
-  constexpr float kMinimumInactiveContrastRatio = 4.61f;
-
-  const SkColor button_foreground_color =
-      color_utils::BlendForMinContrast(
-          background_color, background_color, title_color,
-          tab_->IsActive() ? kMinimumActiveContrastRatio
-                           : kMinimumInactiveContrastRatio)
-          .color;
-
-  return {title_color, button_foreground_color, background_color};
+  return {foreground_color, background_color};
 }
 
 void GM2TabStyle::PaintTab(gfx::Canvas* canvas, const SkPath& clip) const {
