@@ -618,11 +618,13 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
   bool needs_end_layer = false;
   if (!box_decoration_data.IsPaintingScrollingBackground()) {
     if (box_fragment_.HasSelfPaintingLayer() && layout_box.IsTableCell() &&
-        ToLayoutTableCell(layout_box).Table()->ShouldCollapseBorders()) {
+        ToInterface<LayoutNGTableCellInterface>(layout_box)
+            .TableInterface()
+            ->ShouldCollapseBorders()) {
       // We have to clip here because the background would paint on top of the
       // collapsed table borders otherwise, since this is a self-painting layer.
       PhysicalRect clip_rect = paint_rect;
-      clip_rect.Expand(ToLayoutTableCell(layout_box).BorderInsets());
+      clip_rect.Expand(layout_box.BorderInsets());
       state_saver.Save();
       paint_info.context.Clip(PixelSnappedIntRect(clip_rect));
     } else if (BleedAvoidanceIsClipping(

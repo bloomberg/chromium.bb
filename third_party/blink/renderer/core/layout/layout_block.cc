@@ -1468,7 +1468,8 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
     min_logical_width = LayoutUnit();
 
   if (IsTableCell()) {
-    Length table_cell_width = ToLayoutTableCell(this)->StyleOrColLogicalWidth();
+    Length table_cell_width =
+        ToInterface<LayoutNGTableCellInterface>(this)->StyleOrColLogicalWidth();
     if (table_cell_width.IsFixed() && table_cell_width.Value() > 0)
       max_logical_width = std::max(min_logical_width,
                                    AdjustContentBoxLogicalWidthForBoxSizing(

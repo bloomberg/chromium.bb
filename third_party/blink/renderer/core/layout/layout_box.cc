@@ -3710,12 +3710,16 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPercentageResolution(
         // of their parent cell's height are considered to have an auto
         // height if they have overflow set to visible or hidden or if
         // they are replaced elements, and a 0px height if they have not.
-        LayoutTableCell* cell = ToLayoutTableCell(cb);
+        const LayoutNGTableCellInterface* cell =
+            ToInterface<LayoutNGTableCellInterface>(cb);
         if (StyleRef().OverflowY() != EOverflow::kVisible &&
             StyleRef().OverflowY() != EOverflow::kHidden &&
             !ShouldBeConsideredAsReplaced() &&
-            (!cell->StyleRef().LogicalHeight().IsAuto() ||
-             !cell->Table()->StyleRef().LogicalHeight().IsAuto()))
+            (!cb->StyleRef().LogicalHeight().IsAuto() || !cell->TableInterface()
+                                                              ->ToLayoutObject()
+                                                              ->StyleRef()
+                                                              .LogicalHeight()
+                                                              .IsAuto()))
           return LayoutUnit();
         return LayoutUnit(-1);
       }
@@ -5887,9 +5891,9 @@ static void MarkBoxForRelayoutAfterSplit(LayoutBox* box) {
     // Because we may have added some sections with already computed column
     // structures, we need to sync the table structure with them now. This
     // avoids crashes when adding new cells to the table.
-    ToLayoutTable(box)->ForceSectionsRecalc();
+    ToInterface<LayoutNGTableInterface>(box)->ForceSectionsRecalc();
   } else if (box->IsTableSection()) {
-    ToLayoutTableSection(box)->SetNeedsCellRecalc();
+    ToInterface<LayoutNGTableSectionInterface>(box)->SetNeedsCellRecalc();
   }
 
   box->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
