@@ -65,10 +65,6 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
     case ThemeProperties::COLOR_TAB_PIP_PLAYING:
     case ThemeProperties::COLOR_TAB_ALERT_RECORDING:
       return gfx::kGoogleGrey400;
-    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER:
-      return gfx::kGoogleGrey700;
-    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED:
-      return gfx::kGoogleGrey600;
     case ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
       return SkColorSetRGB(0x28, 0x28, 0x28);
     case ThemeProperties::COLOR_NTP_LINK:
@@ -246,10 +242,6 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     // Properties not stored in theme pack.
     case COLOR_TAB_ALERT_AUDIO:
       return gfx::kChromeIconGrey;
-    case COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER:
-      return gfx::kGoogleGrey200;
-    case COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED:
-      return gfx::kGoogleGrey300;
     case COLOR_TAB_ALERT_RECORDING:
       return gfx::kGoogleRed600;
     case COLOR_TAB_ALERT_CAPTURING:

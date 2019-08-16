@@ -713,7 +713,7 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
   // color.
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
   if (!theme_provider)
-    return button_color_;
+    return button_foreground_color_;
 
   switch (state) {
     case TabAlertState::AUDIO_PLAYING:
@@ -733,10 +733,10 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
     case TabAlertState::SERIAL_CONNECTED:
     case TabAlertState::NONE:
     case TabAlertState::VR_PRESENTING_IN_HEADSET:
-      return button_color_;
+      return button_foreground_color_;
     default:
       NOTREACHED();
-      return button_color_;
+      return button_foreground_color_;
   }
 }
 
@@ -1021,13 +1021,11 @@ void Tab::UpdateForegroundColors() {
 
   title_->SetEnabledColor(colors.title_color);
 
-  close_button_->SetIconColors(
-      colors.button_icon_idle_color, colors.button_icon_hovered_color,
-      colors.button_icon_hovered_color, colors.button_background_hovered_color,
-      colors.button_background_pressed_color);
+  close_button_->SetIconColors(colors.button_foreground_color,
+                               colors.button_background_color);
 
-  if (button_color_ != colors.button_icon_idle_color) {
-    button_color_ = colors.button_icon_idle_color;
+  if (button_foreground_color_ != colors.button_foreground_color) {
+    button_foreground_color_ = colors.button_foreground_color;
     alert_indicator_->OnParentTabButtonColorChanged();
   }
 
