@@ -128,6 +128,16 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase,
     self.assertFalse(output_msg.failed_packages)
 
 
+class CrosSigningTestTest(cros_test_lib.RunCommandTestCase,
+                          api_config.ApiConfigMixin):
+  """CrosSigningTest tests."""
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    test_controller.CrosSigningTest(None, None, self.validate_only_config)
+    self.assertFalse(self.rc.call_count)
+
+
 class VmTestTest(cros_test_lib.RunCommandTestCase, api_config.ApiConfigMixin):
   """Test the VmTest endpoint."""
 

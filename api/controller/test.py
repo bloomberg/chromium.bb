@@ -174,3 +174,13 @@ def MoblabVmTest(input_proto, _output_proto, _config):
     cache_dir = test.PrepareMoblabVmImageCache(vms, builder, cache_payload_dirs)
     test.RunMoblabVmTest(chroot, vms, builder, cache_dir, results_dir)
     test.ValidateMoblabVmTest(results_dir)
+
+
+@validate.validation_complete
+def CrosSigningTest(_input_proto, _output_proto, _config):
+  """Run the cros-signing unit tests."""
+  test_runner = os.path.join(constants.SOURCE_ROOT, 'cros-signing', 'signer',
+                             'run_tests.py')
+  result = cros_build_lib.RunCommand([test_runner], error_code_ok=True)
+
+  return result.returncode
