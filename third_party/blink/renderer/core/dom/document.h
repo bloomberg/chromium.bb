@@ -1583,6 +1583,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // applied to this document.
   void BindContentSecurityPolicy();
 
+  bool HasPendingJavaScriptUrlsForTest() {
+    return !pending_javascript_urls_.IsEmpty();
+  }
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 
