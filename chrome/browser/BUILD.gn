@@ -265,6 +265,8 @@ jumbo_split_static_library("browser") {
     "chrome_browser_application_mac.mm",
     "chrome_browser_field_trials.cc",
     "chrome_browser_field_trials.h",
+    "chrome_browser_interface_binders.cc",
+    "chrome_browser_interface_binders.h",
     "chrome_browser_main.cc",
     "chrome_browser_main.h",
     "chrome_browser_main_android.cc",

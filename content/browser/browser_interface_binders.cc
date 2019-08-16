@@ -30,6 +30,7 @@ void PopulateBinderMapWithContext(
     service_manager::BinderMapWithContext<RenderFrameHost*>* map) {
   map->Add<blink::mojom::BackgroundFetchService>(
       base::BindRepeating(&BackgroundFetchServiceImpl::CreateForFrame));
+  GetContentClient()->browser()->RegisterBrowserInterfaceBindersForFrame(map);
 }
 
 void PopulateBinderMap(RenderFrameHostImpl* host,

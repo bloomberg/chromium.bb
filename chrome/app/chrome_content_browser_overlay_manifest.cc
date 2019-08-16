@@ -192,7 +192,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 extensions::mime_handler::BeforeUnloadControl,
                 extensions::mime_handler::MimeHandlerService,
 #endif
-                image_annotation::mojom::Annotator,
                 media::mojom::MediaEngagementScoreDetailsProvider,
                 media_router::mojom::MediaRouter,
                 page_load_metrics::mojom::PageLoadMetrics,

@@ -48,6 +48,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom-forward.h"
+#include "services/service_manager/public/cpp/binder_map.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/manifest.h"
@@ -917,6 +918,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void ExposeInterfacesToMediaService(
       service_manager::BinderRegistry* registry,
       RenderFrameHost* render_frame_host) {}
+
+  // Allows to register browser interfaces exposed through the RenderFrameHost.
+  // This mechanism will replace interface registries and binders used for
+  // handling InterfaceProvider's GetInterface() calls (see crbug.com/718652).
+  virtual void RegisterBrowserInterfaceBindersForFrame(
+      service_manager::BinderMapWithContext<RenderFrameHost*>* map) {}
 
   // Content was unable to bind a request for this interface, so the embedder
   // should try.
