@@ -248,6 +248,7 @@ const char kFlagPermissionSecureWrite[] = "permission-secure-write";
 // Bluetooth GATT Characteristic errors.
 const char kErrorFailed[] = "org.bluez.Error.Failed";
 const char kErrorInProgress[] = "org.bluez.Error.InProgress";
+const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
 const char kErrorInvalidValueLength[] = "org.bluez.Error.InvalidValueLength";
 const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
 const char kErrorNotConnected[] = "org.bluez.Error.NotConnected";
