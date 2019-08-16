@@ -39,6 +39,7 @@ namespace blink {
 FlexItem::FlexItem(LayoutBox* box,
                    LayoutUnit flex_base_content_size,
                    MinMaxSize min_max_sizes,
+                   base::Optional<MinMaxSize> min_max_cross_axis_sizes,
                    LayoutUnit main_axis_border_padding,
                    LayoutUnit main_axis_margin)
     : algorithm(nullptr),
@@ -46,6 +47,7 @@ FlexItem::FlexItem(LayoutBox* box,
       box(box),
       flex_base_content_size(flex_base_content_size),
       min_max_sizes(min_max_sizes),
+      min_max_cross_sizes(min_max_cross_axis_sizes),
       hypothetical_main_content_size(
           min_max_sizes.ClampSizeToMinAndMax(flex_base_content_size)),
       main_axis_border_padding(main_axis_border_padding),
@@ -142,9 +144,6 @@ void FlexItem::UpdateAutoMarginsInMainAxis(LayoutUnit auto_margin_offset) {
 }
 
 void FlexItem::ComputeStretchedSize() {
-  // TODO(dgrogan): Pass resolved cross-axis MinMaxSize to FlexItem
-  // constructor. Then use cross_axis_min_max.ClampSizeToMinAndMax instead of
-  // relying on legacy in this method.
   DCHECK_EQ(Alignment(), ItemPosition::kStretch);
   if (MainAxisIsInlineAxis() && box->StyleRef().LogicalHeight().IsAuto()) {
     LayoutUnit stretched_logical_height =
@@ -154,16 +153,16 @@ void FlexItem::ComputeStretchedSize() {
         stretched_logical_height, box->IntrinsicContentLogicalHeight());
   } else if (!MainAxisIsInlineAxis() &&
              box->StyleRef().LogicalWidth().IsAuto()) {
-    // This doesn't work in NG because CrossAxisContentExtent() isn't yet
-    // implemented there.
-    if (box->Parent()->IsLayoutNGFlexibleBox())
-      return;
     LayoutUnit child_width =
         (Line()->cross_axis_extent - CrossAxisMarginExtent())
             .ClampNegativeToZero();
-    LayoutFlexibleBox* flexbox = ToLayoutFlexibleBox(box->Parent());
-    cross_axis_size = box->ConstrainLogicalWidthByMinMax(
-        child_width, flexbox->CrossAxisContentExtent(), flexbox);
+    if (LayoutFlexibleBox* flexbox = ToLayoutFlexibleBoxOrNull(box->Parent())) {
+      cross_axis_size = box->ConstrainLogicalWidthByMinMax(
+          child_width, flexbox->CrossAxisContentExtent(), flexbox);
+    } else {
+      DCHECK(box->Parent()->IsLayoutNGFlexibleBox());
+      cross_axis_size = min_max_cross_sizes->ClampSizeToMinAndMax(child_width);
+    }
   }
 }
 
