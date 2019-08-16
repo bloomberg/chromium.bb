@@ -723,7 +723,7 @@ const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
 // names ending in ".local" and resolve them using mDNS.
 // http://crbug.com/878465
 const base::Feature kWebRtcHideLocalIpsWithMdns{
-    "WebRtcHideLocalIpsWithMdns", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebRtcHideLocalIpsWithMdns", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the WebUSB API is enabled:
 // https://wicg.github.io/webusb
