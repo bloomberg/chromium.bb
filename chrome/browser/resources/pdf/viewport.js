@@ -954,6 +954,20 @@ class ViewportImpl {
   }
 
   /**
+   * Go to the next page.
+   */
+  goToNextPage() {
+    this.goToPage(this.getMostVisiblePage() + 1);
+  }
+
+  /**
+   * Go to the previous page.
+   */
+  goToPreviousPage() {
+    this.goToPage(this.getMostVisiblePage() - 1);
+  }
+
+  /**
    * Go to the given page index.
    *
    * @param {number} page the index of the page to go to. zero-based.

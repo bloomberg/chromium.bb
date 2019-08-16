@@ -555,6 +555,92 @@ var tests = [
     chrome.test.succeed();
   },
 
+  function testGoToNextPage() {
+    var mockWindow = new MockWindow(100, 100);
+    var mockSizer = new MockSizer();
+    var mockCallback = new MockViewportChangedCallback();
+    var viewport = new ViewportImpl(
+        mockWindow, mockSizer, mockCallback.callback, function() {},
+        function() {}, function() {}, 0, 1, 0);
+    var documentDimensions = new MockDocumentDimensions();
+
+    documentDimensions.addPage(100, 100);
+    documentDimensions.addPage(200, 200);
+    documentDimensions.addPage(100, 400);
+    viewport.setDocumentDimensions(documentDimensions);
+    viewport.setZoom(1);
+
+    // Start at the first page.
+    viewport.goToPage(0);
+    chrome.test.assertEq(0, viewport.position.y);
+
+    // Go from first page to second.
+    mockCallback.reset();
+    viewport.goToNextPage();
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(0, viewport.position.x);
+    chrome.test.assertEq(100, viewport.position.y);
+
+    // Go from second page to third at 0.5x zoom.
+    viewport.setZoom(0.5);
+    mockCallback.reset();
+    viewport.goToNextPage();
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(0, viewport.position.x);
+    chrome.test.assertEq(150, viewport.position.y);
+
+    // Try to go to page after third.
+    mockCallback.reset();
+    viewport.goToNextPage();
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(0, viewport.position.x);
+    chrome.test.assertEq(150, viewport.position.y);
+    chrome.test.succeed();
+  },
+
+  function testGoToPreviousPage() {
+    var mockWindow = new MockWindow(100, 100);
+    var mockSizer = new MockSizer();
+    var mockCallback = new MockViewportChangedCallback();
+    var viewport = new ViewportImpl(
+        mockWindow, mockSizer, mockCallback.callback, function() {},
+        function() {}, function() {}, 0, 1, 0);
+    var documentDimensions = new MockDocumentDimensions();
+
+    documentDimensions.addPage(100, 100);
+    documentDimensions.addPage(200, 200);
+    documentDimensions.addPage(100, 400);
+    viewport.setDocumentDimensions(documentDimensions);
+    viewport.setZoom(1);
+
+    // Start at the third page.
+    viewport.goToPage(2);
+    chrome.test.assertEq(300, viewport.position.y);
+
+    // Go from third page to second.
+    mockCallback.reset();
+    viewport.goToPreviousPage();
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(0, viewport.position.x);
+    chrome.test.assertEq(100, viewport.position.y);
+
+    // Go from second page to first at 0.5x zoom.
+    viewport.setZoom(0.5);
+    mockCallback.reset();
+    viewport.goToPreviousPage();
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(0, viewport.position.x);
+    chrome.test.assertEq(0, viewport.position.y);
+
+    // Try going to page before first.
+    mockCallback.reset();
+    viewport.goToPreviousPage();
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(0, viewport.position.x);
+    chrome.test.assertEq(0, viewport.position.y);
+    chrome.test.succeed();
+  },
+
   function testGoToPage() {
     var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();
