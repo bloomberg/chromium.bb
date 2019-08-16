@@ -796,6 +796,12 @@ void RenderThreadImpl::Init() {
   registry->AddInterface(base::BindRepeating(CreateResourceUsageReporter,
                                              weak_factory_.GetWeakPtr()),
                          base::ThreadTaskRunnerHandle::Get());
+  // TODO(bashi): Use the IO task runner to start service worker on the IO
+  // thread.
+  registry->AddInterface(
+      base::BindRepeating(&EmbeddedWorkerInstanceClientImpl::Create,
+                          GetWebMainThreadScheduler()->DefaultTaskRunner()),
+      GetWebMainThreadScheduler()->DefaultTaskRunner());
 
   GetServiceManagerConnection()->AddConnectionFilter(
       std::make_unique<SimpleConnectionFilter>(std::move(registry)));
@@ -2087,13 +2093,6 @@ void RenderThreadImpl::CreateFrameProxy(
       routing_id, render_view_routing_id,
       RenderFrameImpl::ResolveOpener(opener_routing_id), parent_routing_id,
       replicated_state, devtools_frame_token);
-}
-
-void RenderThreadImpl::SetUpEmbeddedWorkerChannelForServiceWorker(
-    blink::mojom::EmbeddedWorkerInstanceClientRequest client_request) {
-  EmbeddedWorkerInstanceClientImpl::Create(
-      std::move(client_request),
-      GetWebMainThreadScheduler()->DefaultTaskRunner());
 }
 
 void RenderThreadImpl::OnNetworkConnectionChanged(
