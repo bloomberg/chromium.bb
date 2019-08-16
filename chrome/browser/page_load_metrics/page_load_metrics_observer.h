@@ -293,7 +293,7 @@ class PageLoadMetricsObserver {
   // Gets/Sets the delegate. The delegate must outlive the observer and is
   // normally set when the observer is first registered for the page load. The
   // delegate can only be set once.
-  PageLoadMetricsObserverDelegate* GetDelegate() const;
+  const PageLoadMetricsObserverDelegate& GetDelegate() const;
   void SetDelegate(PageLoadMetricsObserverDelegate*);
 
   // The page load started, with the given navigation handle.
