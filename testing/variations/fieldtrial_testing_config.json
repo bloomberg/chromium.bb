@@ -5118,6 +5118,21 @@
             ]
         }
     ],
+    "ServiceManagerForBackgroundPrefetch": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ServiceManagerForBackgroundPrefetch"
+                    ]
+                }
+            ]
+        }
+    ],
     "ServiceWorkerAggressiveCodeCache": [
         {
             "platforms": [
