@@ -1030,10 +1030,6 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   Client()->SetRootLayer(root_layer_);
 }
 
-WebLayerTreeView* WebFrameWidgetImpl::GetLayerTreeView() const {
-  return layer_tree_view_;
-}
-
 cc::AnimationHost* WebFrameWidgetImpl::AnimationHost() const {
   return animation_host_;
 }
