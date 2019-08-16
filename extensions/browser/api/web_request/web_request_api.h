@@ -190,7 +190,8 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
       content::BrowserContext* browser_context,
       content::RenderFrameHost* frame,
       int render_process_id,
-      content::ContentBrowserClient::URLLoaderFactoryType type,
+      bool is_navigation,
+      bool is_download,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client);
 

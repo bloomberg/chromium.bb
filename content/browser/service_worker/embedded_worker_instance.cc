@@ -987,8 +987,8 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(RenderProcessHost* rph,
   // See if the default factory needs to be tweaked by the embedder.
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       rph->GetBrowserContext(), nullptr /* frame_host */, rph->GetID(),
-      ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerSubResource,
-      origin, &default_factory_receiver, &default_header_client,
+      false /* is_navigation */, false /* is_download */, origin,
+      &default_factory_receiver, &default_header_client,
       &bypass_redirect_checks);
   devtools_instrumentation::WillCreateURLLoaderFactoryForServiceWorker(
       rph, routing_id, &default_factory_receiver);

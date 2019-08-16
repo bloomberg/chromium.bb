@@ -94,8 +94,6 @@ using extension_web_request_api_helpers::ExtraInfoSpec;
 namespace activity_log = activity_log_web_request_constants;
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
-using URLLoaderFactoryType =
-    content::ContentBrowserClient::URLLoaderFactoryType;
 
 namespace extensions {
 
@@ -653,7 +651,8 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
     int render_process_id,
-    URLLoaderFactoryType type,
+    bool is_navigation,
+    bool is_download,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -686,7 +685,6 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
   *factory_receiver = mojo::MakeRequest(&target_factory_info);
 
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data;
-  const bool is_navigation = (type == URLLoaderFactoryType::kNavigation);
   if (is_navigation) {
     DCHECK(frame);
     int tab_id;
@@ -709,11 +707,13 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
           ExtensionsBrowserClient::Get()->GetOriginalContext(browser_context) ==
               browser_context_));
   WebRequestProxyingURLLoaderFactory::StartProxying(
-      browser_context, is_navigation ? -1 : render_process_id,
-      type == URLLoaderFactoryType::kDownload, request_id_generator_,
-      std::move(navigation_ui_data), std::move(proxied_receiver),
-      std::move(target_factory_info), std::move(header_client_request),
-      proxies_.get());
+      browser_context,
+      // Match the behavior of the WebRequestInfo constructor
+      // which takes a net::URLRequest*.
+      is_navigation ? -1 : render_process_id, is_download,
+      request_id_generator_, std::move(navigation_ui_data),
+      std::move(proxied_receiver), std::move(target_factory_info),
+      std::move(header_client_request), proxies_.get());
   return true;
 }
 

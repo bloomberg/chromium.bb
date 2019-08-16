@@ -927,7 +927,8 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
     int render_process_id,
-    URLLoaderFactoryType type,
+    bool is_navigation,
+    bool is_download,
     const url::Origin& request_initiator,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
@@ -937,8 +938,7 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
   auto proxied_receiver = std::move(*factory_receiver);
   network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
   *factory_receiver = mojo::MakeRequest(&target_factory_info);
-  int process_id =
-      type == URLLoaderFactoryType::kNavigation ? 0 : render_process_id;
+  int process_id = is_navigation ? 0 : render_process_id;
 
   // Android WebView has one non off-the-record browser context.
   base::PostTask(FROM_HERE, {content::BrowserThread::IO},
