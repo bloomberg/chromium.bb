@@ -497,4 +497,72 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
   }
 }
 
+TEST_F(SearchResultRankerTest, ZeroStateGroupModelDisabledWithFlag) {
+  DisableAllFeatures();
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  // TODO(959679): Update the types used in this test once zero-state-related
+  // search providers have been implemented.
+
+  AppLaunchData app_launch_data_a;
+  app_launch_data_a.id = "A";
+  app_launch_data_a.ranking_item_type = RankingItemType::kFile;
+  app_launch_data_a.query = "";
+
+  for (int i = 0; i < 10; ++i) {
+    ranker->Train(app_launch_data_a);
+  }
+  ranker->FetchRankings(base::string16());
+
+  // A and B should be ranked first because their group score should be higher.
+  auto results =
+      MakeSearchResults({"A", "B", "C", "D"},
+                        {ResultType::kLauncher, ResultType::kLauncher,
+                         ResultType::kOmnibox, ResultType::kOmnibox},
+                        {0.1f, 0.2f, 0.5f, 0.6f});
+  ranker->Rank(&results);
+
+  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("D"), HasId("C"),
+                                              HasId("B"), HasId("A"))));
+}
+
+TEST_F(SearchResultRankerTest, ZeroStateGroupModelImprovesScores) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "1.0"},
+                       {"paired_coeff", "0.0"},
+                       {"default_group_score", "0.1"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  // TODO(959679): Update the types used in this test once zero-state-related
+  // search providers have been implemented.
+
+  AppLaunchData app_launch_data_a;
+  app_launch_data_a.id = "A";
+  app_launch_data_a.ranking_item_type = RankingItemType::kFile;
+  app_launch_data_a.query = "";
+
+  for (int i = 0; i < 10; ++i) {
+    ranker->Train(app_launch_data_a);
+  }
+  ranker->FetchRankings(base::string16());
+
+  // A and B should be ranked first because their group score should be higher.
+  auto results =
+      MakeSearchResults({"A", "B", "C", "D"},
+                        {ResultType::kLauncher, ResultType::kLauncher,
+                         ResultType::kOmnibox, ResultType::kOmnibox},
+                        {0.1f, 0.2f, 0.5f, 0.6f});
+  ranker->Rank(&results);
+
+  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("B"), HasId("A"),
+                                              HasId("D"), HasId("C"))));
+}
+
 }  // namespace app_list
