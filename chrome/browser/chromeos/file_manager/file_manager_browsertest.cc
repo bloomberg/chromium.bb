@@ -287,9 +287,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayWithoutVolumes")
             .DontMountVolumes()
             .EnableMyFilesVolume(),
-        // TODO(lucmult): Fix this test with MyFilesVolume flag.
         TestCase("fileDisplayWithoutVolumesThenMountDownloads")
-            .DisableMyFilesVolume()
+            .EnableMyFilesVolume()
             .DontMountVolumes(),
         TestCase("fileDisplayWithoutVolumesThenMountDrive")
             .DontMountVolumes()
