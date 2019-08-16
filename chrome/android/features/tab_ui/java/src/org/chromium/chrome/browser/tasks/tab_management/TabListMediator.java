@@ -977,10 +977,9 @@ class TabListMediator {
     }
 
     int indexOfSelected() {
-        if (mNextTabId != Tab.INVALID_TAB_ID) {
-            return getIndexOfTab(
-                    TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), mNextTabId),
-                    !mActionsOnAllRelatedTabs);
+        Tab nextTab = TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), mNextTabId);
+        if (nextTab != null) {
+            return getIndexOfTab(nextTab, !mActionsOnAllRelatedTabs);
         }
 
         return mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index();
