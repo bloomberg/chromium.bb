@@ -1412,8 +1412,7 @@ def PushBranch(branch, git_repo, dryrun=False,
   SyncPushBranch(git_repo, remote_ref.remote, local_ref.ref)
 
   try:
-    GitPush(git_repo, branch, remote_ref, skip=dryrun, print_cmd=True,
-            logging_level=logging.DEBUG)
+    GitPush(git_repo, branch, remote_ref, skip=dryrun)
   except cros_build_lib.RunCommandError:
     raise
 
