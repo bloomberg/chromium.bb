@@ -94,6 +94,11 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
     builder.SetIsRestrictedBlockSizeTableCell(
         !cell.StyleRef().LogicalHeight().IsAuto() ||
         !cell.Table()->StyleRef().LogicalHeight().IsAuto());
+    builder.SetTableCellBorders({cell.BorderStart(), cell.BorderEnd(),
+                                 cell.BorderBefore(), cell.BorderAfter()});
+    builder.SetTableCellIntrinsicPadding(
+        {LayoutUnit(), LayoutUnit(), LayoutUnit(cell.IntrinsicPaddingBefore()),
+         LayoutUnit(cell.IntrinsicPaddingAfter())});
   }
 
   builder.SetAvailableSize(available_size);

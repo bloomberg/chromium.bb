@@ -159,9 +159,6 @@ class CORE_EXPORT NGLayoutInputNode {
                      base::Optional<LayoutUnit>* computed_block_size,
                      LogicalSize* aspect_ratio) const;
 
-  LayoutUnit IntrinsicPaddingBlockStart() const;
-  LayoutUnit IntrinsicPaddingBlockEnd() const;
-
   // Returns the next sibling.
   NGLayoutInputNode NextSibling();
 

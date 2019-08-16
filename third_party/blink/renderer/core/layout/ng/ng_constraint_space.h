@@ -236,6 +236,17 @@ class CORE_EXPORT NGConstraintSpace final {
     return LayoutUnit();
   }
 
+  // Return the borders which should be used for a table-cell.
+  NGBoxStrut TableCellBorders() const {
+    return HasRareData() ? rare_data_->table_cell_borders : NGBoxStrut();
+  }
+
+  // Return the "intrinsic" padding for a table-cell.
+  NGBoxStrut TableCellIntrinsicPadding() const {
+    return HasRareData() ? rare_data_->table_cell_intrinsic_padding
+                         : NGBoxStrut();
+  }
+
   LayoutUnit FragmentainerBlockSize() const {
     return HasRareData() ? rare_data_->fragmentainer_block_size
                          : kIndefiniteSize;
@@ -561,6 +572,9 @@ class CORE_EXPORT NGConstraintSpace final {
     base::Optional<LayoutUnit> forced_bfc_block_offset;
     LayoutUnit clearance_offset = LayoutUnit::Min();
 
+    NGBoxStrut table_cell_borders;
+    NGBoxStrut table_cell_intrinsic_padding;
+
     LayoutUnit fragmentainer_block_size = kIndefiniteSize;
     LayoutUnit fragmentainer_space_at_bfc_start = kIndefiniteSize;
 
@@ -571,6 +585,9 @@ class CORE_EXPORT NGConstraintSpace final {
     bool MaySkipLayout(const RareData& other) const {
       return margin_strut == other.margin_strut &&
              forced_bfc_block_offset == other.forced_bfc_block_offset &&
+             table_cell_borders == other.table_cell_borders &&
+             table_cell_intrinsic_padding ==
+                 other.table_cell_intrinsic_padding &&
              fragmentainer_block_size == other.fragmentainer_block_size &&
              fragmentainer_space_at_bfc_start ==
                  other.fragmentainer_space_at_bfc_start &&
@@ -585,6 +602,8 @@ class CORE_EXPORT NGConstraintSpace final {
     bool IsInitialForMaySkipLayout() const {
       return margin_strut == NGMarginStrut() &&
              forced_bfc_block_offset == base::nullopt &&
+             table_cell_borders == NGBoxStrut() &&
+             table_cell_intrinsic_padding == NGBoxStrut() &&
              fragmentainer_block_size == kIndefiniteSize &&
              fragmentainer_space_at_bfc_start == kIndefiniteSize &&
              block_direction_fragmentation_type == kFragmentNone &&

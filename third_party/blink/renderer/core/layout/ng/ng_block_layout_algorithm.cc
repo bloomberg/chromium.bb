@@ -390,8 +390,10 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
 
   // All of the above calculations with border_scrollbar_padding_ shouldn't
   // include the table cell's intrinsic padding. We can now add this.
-  border_scrollbar_padding_ +=
-      ComputeIntrinsicPadding(ConstraintSpace(), Node());
+  if (ConstraintSpace().IsTableCell()) {
+    border_scrollbar_padding_ += ComputeIntrinsicPadding(
+        ConstraintSpace(), Style(), container_builder_.Scrollbar());
+  }
 
   if (ConstraintSpace().HasBlockFragmentation())
     container_builder_.SetHasBlockFragmentation();
