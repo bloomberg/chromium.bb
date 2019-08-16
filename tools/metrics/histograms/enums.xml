@@ -7565,29 +7565,29 @@ histogram as enum -->
 </enum>
 
 <enum name="ChromeColorsInfo">
-  <int value="0" label="OTHER"/>
-  <int value="1" label="Elephant"/>
-  <int value="2" label="Light grey"/>
-  <int value="3" label="Midnight"/>
+  <int value="0" label="Other"/>
+  <int value="1" label="Warm grey"/>
+  <int value="2" label="Cool grey"/>
+  <int value="3" label="Midnight blue"/>
   <int value="4" label="Black"/>
-  <int value="5" label="Beige/White"/>
-  <int value="6" label="Yellow/White"/>
-  <int value="7" label="Green/White"/>
-  <int value="8" label="Light Teal/White"/>
-  <int value="9" label="Light Purple/White"/>
-  <int value="10" label="Pink/White"/>
+  <int value="5" label="Beige and white"/>
+  <int value="6" label="Yellow and white"/>
+  <int value="7" label="Green and white"/>
+  <int value="8" label="Light teal and white"/>
+  <int value="9" label="Light purple and white"/>
+  <int value="10" label="Pink and white"/>
   <int value="11" label="Beige"/>
   <int value="12" label="Orange"/>
-  <int value="13" label="Light Green"/>
-  <int value="14" label="Light Teal"/>
-  <int value="15" label="Light Blue"/>
+  <int value="13" label="Light green"/>
+  <int value="14" label="Light teal"/>
+  <int value="15" label="Light blue"/>
   <int value="16" label="Pink"/>
-  <int value="17" label="Dark Pink/Red"/>
-  <int value="18" label="Dark Red/Orange"/>
-  <int value="19" label="Dark Green"/>
-  <int value="20" label="Dark Teal"/>
-  <int value="21" label="Dark Blue"/>
-  <int value="22" label="Dark Purple"/>
+  <int value="17" label="Dark pink and red"/>
+  <int value="18" label="Dark red and orange"/>
+  <int value="19" label="Dark green"/>
+  <int value="20" label="Dark teal"/>
+  <int value="21" label="Dark blue"/>
+  <int value="22" label="Dark purple"/>
 </enum>
 
 <enum name="ChromeColorsRevertReason">

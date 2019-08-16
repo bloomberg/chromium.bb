@@ -2238,10 +2238,8 @@ customize.loadColorsMenu = function() {
     const tile = customize.createTileWithoutTitle(
         id, imageUrl, dataset, customize.colorTileInteraction,
         customize.tileOnKeyDownInteraction);
-    const label = configData.translatedStrings.colorLabelPrefix + ' ' +
-        colorArrayToHex(colorsColl[i].color);
-    tile.firstElementChild.setAttribute('aria-label', label);
-    tile.firstElementChild.setAttribute('title', label);
+    tile.firstElementChild.setAttribute('aria-label', colorsColl[i].label);
+    tile.firstElementChild.setAttribute('title', colorsColl[i].label);
 
     $(customize.IDS.COLORS_MENU).appendChild(tile);
   }
