@@ -14,10 +14,9 @@ class RenderFrameHost;
 // the given |render_frame_host|. The factory will only create loaders for
 // requests with the same scheme as |scheme|. This is needed because there is
 // more than one scheme used for WebUI, and not all have WebUI bindings.
-void CreateWebUIURLLoaderBinding(
+network::mojom::URLLoaderFactoryPtr CreateWebUIURLLoaderBinding(
     RenderFrameHost* render_frame_host,
-    const std::string& scheme,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver);
+    const std::string& scheme);
 
 }  // namespace content
 
