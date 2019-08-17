@@ -5931,9 +5931,6 @@ crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-rad
 # which is still in flux.
 crbug.com/924670 external/wpt/webxr/webxr-supported-by-feature-policy.html [ Failure ]
 
-crbug.com/961015 [ Mac ] external/wpt/webxr/xrSession_requestAnimationFrame_callback_calls.https.html [ Timeout ]
-crbug.com/961015 [ Mac ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Timeout ]
-
 # Sheriff 2019-02-01, 2019-02-19
 # These are crashy on Win10, and seem to leave processes lying around, causing the swarming
 # task to hang.
