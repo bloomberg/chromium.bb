@@ -533,10 +533,6 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
 
 void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
   is_being_dragged_ = (item == this);
-  // Disable shadow for the dragged overview item during dragging.
-  if (is_being_dragged_)
-    UpdateRoundedCornersAndShadow();
-
   caption_container_view_->SetHeaderVisibility(
       is_being_dragged_
           ? CaptionContainerView::HeaderVisibility::kInvisible
@@ -544,23 +540,14 @@ void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
 }
 
 void OverviewItem::OnSelectorItemDragEnded(bool snap) {
-  if (is_being_dragged_) {
-    is_being_dragged_ = false;
-    // Do nothing further with the dragged overview item if it is being
-    // snapped.
-    if (snap)
-      return;
-    // Re-show shadow for the dragged overview item after drag ends.
-    UpdateRoundedCornersAndShadow();
-  }
-
-  // Update the header.
   if (snap) {
-    caption_container_view_->HideCloseInstantlyAndThenShowItSlowly();
+    if (!is_being_dragged_)
+      caption_container_view_->HideCloseInstantlyAndThenShowItSlowly();
   } else {
     caption_container_view_->SetHeaderVisibility(
         CaptionContainerView::HeaderVisibility::kVisible);
   }
+  is_being_dragged_ = false;
 }
 
 ScopedOverviewTransformWindow::GridWindowFillMode
@@ -710,11 +697,10 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
       /*update_clip=*/should_show_rounded_corners);
 
   // In addition, the shadow should be hidden if
-  // 1) this overview item is being dragged or
-  // 2) this overview item is the drop target window or
-  // 3) this overview item is in animation.
+  // 1) this overview item is the drop target window or
+  // 2) this overview item is in animation.
   const bool should_show_shadow =
-      should_show_rounded_corners && !is_being_dragged_ &&
+      should_show_rounded_corners &&
       !overview_grid_->IsDropTargetWindow(GetWindow()) &&
       !transform_window_.GetOverviewWindow()
            ->layer()
