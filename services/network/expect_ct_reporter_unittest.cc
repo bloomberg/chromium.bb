@@ -51,6 +51,7 @@ class TestCertificateReportSender : public net::ReportSender {
             const base::Callback<void()>& success_callback,
             const base::Callback<void(const GURL&, int, int)>& error_callback)
       override {
+    sent_report_count_++;
     latest_report_uri_ = report_uri;
     serialized_report.CopyToString(&latest_serialized_report_);
     content_type.CopyToString(&latest_content_type_);
@@ -59,6 +60,8 @@ class TestCertificateReportSender : public net::ReportSender {
       report_callback_.Run();
     }
   }
+
+  int sent_report_count() const { return sent_report_count_; }
 
   const GURL& latest_report_uri() const { return latest_report_uri_; }
 
@@ -85,6 +88,7 @@ class TestCertificateReportSender : public net::ReportSender {
   }
 
  private:
+  int sent_report_count_ = 0;
   GURL latest_report_uri_;
   std::string latest_content_type_;
   std::string latest_serialized_report_;
@@ -428,15 +432,14 @@ class ExpectCTReporterTest : public ::testing::Test {
     // Send a report to the url with good CORS headers. The test will fail
     // if the previous OnExpectCTFailed() call unexpectedly resulted in a
     // report, as WaitForReport() would see the previous report to /report1
-    // instead of the expected report to /report2.
-    // TODO(mattm): Is that really true? Couldn't the second report overwrite
-    // the first, since TestCertificateReportSender only stores the latest
-    // report?
+    // instead of the expected report to /report2, or sent_report_count() will
+    // be 2.
     reporter->OnExpectCTFailed(
         host_port, successful_report_uri, base::Time(), ssl_info.cert.get(),
         ssl_info.unverified_cert.get(), ssl_info.signed_certificate_timestamps);
     sender->WaitForReport(successful_report_uri);
     EXPECT_EQ(successful_report_uri, sender->latest_report_uri());
+    EXPECT_EQ(1, sender->sent_report_count());
   }
 
  private:
@@ -497,6 +500,7 @@ TEST_F(ExpectCTReporterTest, FeatureDisabled) {
         ssl_info.unverified_cert.get(), ssl_info.signed_certificate_timestamps);
     sender->WaitForReport(report_uri);
     EXPECT_EQ(report_uri, sender->latest_report_uri());
+    EXPECT_EQ(1, sender->sent_report_count());
   }
 }
 
