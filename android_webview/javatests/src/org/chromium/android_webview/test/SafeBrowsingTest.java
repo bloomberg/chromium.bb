@@ -568,6 +568,31 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    public void testSafeBrowsingWhitelistHardcodedWebUiPageBackToSafety() throws Throwable {
+        mContentsClient.setSafeBrowsingAction(SafeBrowsingAction.BACK_TO_SAFETY);
+
+        loadGreenPage();
+        OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
+        int errorCount = errorHelper.getCallCount();
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), WEB_UI_MALWARE_URL);
+        errorHelper.waitForCallback(errorCount);
+        Assert.assertEquals(
+                ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE, errorHelper.getError().errorCode);
+        Assert.assertEquals("Network error is for the malicious page", WEB_UI_MALWARE_URL,
+                errorHelper.getRequest().url);
+
+        assertGreenPageShowing();
+
+        // Check onSafeBrowsingHit arguments
+        Assert.assertEquals(WEB_UI_MALWARE_URL, mContentsClient.getLastRequest().url);
+        Assert.assertEquals(AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_MALWARE,
+                mContentsClient.getLastThreatType());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testCallbackCalledOnSafeBrowsingBadWhitelistRule() throws Throwable {
         verifyWhiteListRule("http://www.google.com", false);
     }
@@ -861,9 +886,9 @@ public class SafeBrowsingTest {
 
         loadGreenPage();
         final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
-        mActivityTestRule.loadUrlAsync(mAwContents, responseUrl);
         OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
         int errorCount = errorHelper.getCallCount();
+        mActivityTestRule.loadUrlAsync(mAwContents, responseUrl);
         errorHelper.waitForCallback(errorCount);
         Assert.assertEquals(
                 ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE, errorHelper.getError().errorCode);
