@@ -176,7 +176,7 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddResourcePath("util.js", IDR_APP_MANAGEMENT_UTIL_JS);
 
   source->SetDefaultResource(IDR_APP_MANAGEMENT_INDEX_HTML);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   return source;
 }
