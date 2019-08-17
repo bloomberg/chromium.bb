@@ -388,6 +388,10 @@ test("components_unittests") {
     deps += [ "//components/dbus/menu:unit_tests" ]
   }
 
+  if (enable_plugins) {
+    deps += [ "//components/pdf/renderer:unit_tests" ]
+  }
+
   # No components should depend on Chrome.
   assert_no_deps = [ "//chrome/*" ]
 
