@@ -12,7 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
@@ -20,13 +20,23 @@
 namespace content {
 
 // static
-void SharedWorkerConnectorImpl::Create(
+void SharedWorkerConnectorImpl::CreateForRequest(
     int client_process_id,
     int frame_id,
     blink::mojom::SharedWorkerConnectorRequest request) {
-  mojo::MakeStrongBinding(base::WrapUnique(new SharedWorkerConnectorImpl(
-                              client_process_id, frame_id)),
-                          std::move(request));
+  // Implicit conversion to
+  // mojo::PendingReceiver<blink::mojom::SharedWorkerConnector>.
+  Create(client_process_id, frame_id, std::move(request));
+}
+
+// static
+void SharedWorkerConnectorImpl::Create(
+    int client_process_id,
+    int frame_id,
+    mojo::PendingReceiver<blink::mojom::SharedWorkerConnector> receiver) {
+  mojo::MakeSelfOwnedReceiver(base::WrapUnique(new SharedWorkerConnectorImpl(
+                                  client_process_id, frame_id)),
+                              std::move(receiver));
 }
 
 SharedWorkerConnectorImpl::SharedWorkerConnectorImpl(int client_process_id,

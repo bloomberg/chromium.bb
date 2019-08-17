@@ -72,7 +72,7 @@ SharedWorkerClientHolder::SharedWorkerClientHolder(Document& document)
       task_runner_(document.GetTaskRunner(blink::TaskType::kDOMManipulation)) {
   DCHECK(IsMainThread());
   document.GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&connector_, task_runner_));
+      connector_.BindNewPipeAndPassReceiver(task_runner_));
 }
 
 void SharedWorkerClientHolder::Connect(

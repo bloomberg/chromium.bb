@@ -35,6 +35,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_client.mojom-blink.h"
@@ -84,7 +85,7 @@ class CORE_EXPORT SharedWorkerClientHolder final
   void Trace(Visitor* visitor) override;
 
  private:
-  mojom::blink::SharedWorkerConnectorPtr connector_;
+  mojo::Remote<mojom::blink::SharedWorkerConnector> connector_;
   mojo::UniqueReceiverSet<mojom::blink::SharedWorkerClient> client_receivers_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

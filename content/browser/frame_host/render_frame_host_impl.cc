@@ -4240,8 +4240,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       &RenderFrameHostImpl::CreateDedicatedWorkerHostFactory,
       base::Unretained(this)));
 
-  registry_->AddInterface(base::Bind(&SharedWorkerConnectorImpl::Create,
-                                     process_->GetID(), routing_id_));
+  registry_->AddInterface(
+      base::BindRepeating(&SharedWorkerConnectorImpl::CreateForRequest,
+                          process_->GetID(), routing_id_));
 
   registry_->AddInterface(base::BindRepeating(&device::GamepadMonitor::Create));
 
