@@ -4354,8 +4354,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       GetProcess()->GetStoragePartition()->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
 
-  registry_->AddInterface(base::BindRepeating(&ContactsManagerImpl::Create,
-                                              base::Unretained(this)));
+  registry_->AddInterface(base::BindRepeating(
+      &ContactsManagerImpl::CreateForRequest, base::Unretained(this)));
 
   registry_->AddInterface(
       base::BindRepeating(&FileChooserImpl::Create, base::Unretained(this)));
