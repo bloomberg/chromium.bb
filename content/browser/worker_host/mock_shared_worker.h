@@ -117,7 +117,7 @@ class MockSharedWorkerClient : public blink::mojom::SharedWorkerClient {
   MockSharedWorkerClient();
   ~MockSharedWorkerClient() override;
 
-  void Bind(blink::mojom::SharedWorkerClientRequest request);
+  void Bind(mojo::PendingReceiver<blink::mojom::SharedWorkerClient> receiver);
   void Close();
   bool CheckReceivedOnCreated();
   bool CheckReceivedOnConnected(
@@ -135,7 +135,7 @@ class MockSharedWorkerClient : public blink::mojom::SharedWorkerClient {
   void OnScriptLoadFailed() override;
   void OnFeatureUsed(blink::mojom::WebFeature feature) override;
 
-  mojo::Binding<blink::mojom::SharedWorkerClient> binding_;
+  mojo::Receiver<blink::mojom::SharedWorkerClient> receiver_{this};
   bool on_created_received_ = false;
   bool on_connected_received_ = false;
   std::set<blink::mojom::WebFeature> on_connected_features_;

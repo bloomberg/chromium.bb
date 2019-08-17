@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
@@ -36,14 +37,16 @@ void SharedWorkerConnectorImpl::Connect(
     blink::mojom::SharedWorkerInfoPtr info,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
-    blink::mojom::SharedWorkerClientPtr client,
+    mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     mojo::ScopedMessagePipeHandle message_port,
     blink::mojom::BlobURLTokenPtr blob_url_token) {
   RenderProcessHost* host = RenderProcessHost::FromID(client_process_id_);
   // The render process was already terminated.
   if (!host) {
-    client->OnScriptLoadFailed();
+    mojo::Remote<blink::mojom::SharedWorkerClient> remote_client(
+        std::move(client));
+    remote_client->OnScriptLoadFailed();
     return;
   }
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;

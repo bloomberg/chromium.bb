@@ -26,8 +26,6 @@
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -54,8 +52,8 @@ void ConnectToSharedWorker(blink::mojom::SharedWorkerConnectorPtr connector,
   mojo::MessagePipe message_pipe;
   *local_port = MessagePortChannel(std::move(message_pipe.handle0));
 
-  blink::mojom::SharedWorkerClientPtr client_proxy;
-  client->Bind(mojo::MakeRequest(&client_proxy));
+  mojo::PendingRemote<blink::mojom::SharedWorkerClient> client_proxy;
+  client->Bind(client_proxy.InitWithNewPipeAndPassReceiver());
 
   connector->Connect(std::move(info),
                      blink::mojom::FetchClientSettingsObject::New(),

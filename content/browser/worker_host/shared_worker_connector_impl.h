@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WORKER_HOST_SHARED_WORKER_CONNECTOR_IMPL_H_
 
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom.h"
 
 namespace content {
@@ -27,7 +28,7 @@ class CONTENT_EXPORT SharedWorkerConnectorImpl
       blink::mojom::SharedWorkerInfoPtr info,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
-      blink::mojom::SharedWorkerClientPtr client,
+      mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
       mojo::ScopedMessagePipeHandle message_port,
       blink::mojom::BlobURLTokenPtr blob_url_token) override;

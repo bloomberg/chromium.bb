@@ -126,17 +126,17 @@ MockSharedWorkerFactory::CreateParams::CreateParams() = default;
 
 MockSharedWorkerFactory::CreateParams::~CreateParams() = default;
 
-MockSharedWorkerClient::MockSharedWorkerClient() : binding_(this) {}
+MockSharedWorkerClient::MockSharedWorkerClient() = default;
 
 MockSharedWorkerClient::~MockSharedWorkerClient() = default;
 
 void MockSharedWorkerClient::Bind(
-    blink::mojom::SharedWorkerClientRequest request) {
-  binding_.Bind(std::move(request));
+    mojo::PendingReceiver<blink::mojom::SharedWorkerClient> receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 void MockSharedWorkerClient::Close() {
-  binding_.Close();
+  receiver_.reset();
 }
 
 bool MockSharedWorkerClient::CheckReceivedOnCreated() {
