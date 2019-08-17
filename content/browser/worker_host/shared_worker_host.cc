@@ -26,6 +26,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_isolation_key.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
@@ -169,9 +170,10 @@ void SharedWorkerHost::Start(
       std::move(watcher_ptr));
 
   // Set up content settings interface.
-  blink::mojom::WorkerContentSettingsProxyPtr content_settings;
+  mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
+      content_settings;
   content_settings_ = std::make_unique<SharedWorkerContentSettingsProxyImpl>(
-      instance_.url(), this, mojo::MakeRequest(&content_settings));
+      instance_.url(), this, content_settings.InitWithNewPipeAndPassReceiver());
 
   // Set up host interface.
   blink::mojom::SharedWorkerHostPtr host;
