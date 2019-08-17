@@ -1233,7 +1233,7 @@ void WebViewImpl::Close() {
   // being detached (and in particular while its unload handlers run).
   {
     if (does_composite_)
-      GetPage()->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
+      GetPage()->WillCloseAnimationHost(nullptr);
 
     animation_host_ = nullptr;
     layer_tree_view_ = nullptr;
@@ -3352,8 +3352,7 @@ void WebViewImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
   layer_tree_view_ = layer_tree_view;
   animation_host_ = animation_host;
 
-  AsView().page->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_,
-                                          nullptr);
+  AsView().page->AnimationHostInitialized(*animation_host_, nullptr);
 }
 
 void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {

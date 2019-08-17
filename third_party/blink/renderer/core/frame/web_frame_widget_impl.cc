@@ -159,8 +159,7 @@ void WebFrameWidgetImpl::Trace(blink::Visitor* visitor) {
 
 void WebFrameWidgetImpl::Close() {
   if (layer_tree_view_) {
-    GetPage()->WillCloseLayerTreeView(*layer_tree_view_,
-                                      LocalRootImpl()->GetFrame()->View());
+    GetPage()->WillCloseAnimationHost(LocalRootImpl()->GetFrame()->View());
   }
 
   WebFrameWidgetBase::Close();
@@ -982,7 +981,7 @@ void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
   layer_tree_view_ = layer_tree_view;
   animation_host_ = animation_host;
 
-  GetPage()->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_,
+  GetPage()->AnimationHostInitialized(*animation_host_,
                                       LocalRootImpl()->GetFrame()->View());
 }
 
