@@ -158,9 +158,7 @@ void WebFrameWidgetImpl::Trace(blink::Visitor* visitor) {
 // WebWidget ------------------------------------------------------------------
 
 void WebFrameWidgetImpl::Close() {
-  if (layer_tree_view_) {
-    GetPage()->WillCloseAnimationHost(LocalRootImpl()->GetFrame()->View());
-  }
+  GetPage()->WillCloseAnimationHost(LocalRootImpl()->GetFrame()->View());
 
   WebFrameWidgetBase::Close();
 
@@ -217,21 +215,16 @@ void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
       LocalRootImpl()->GetFrame()->GetDocument()->EnqueueResizeEvent();
     }
 
-    // TODO(danakj): |layer_tree_view_| is used as a proxy to tell if we're
-    // using compositing, and we should just set that explicitly... or read it
-    // from the WebView.
-    if (layer_tree_view_) {
-      // Pass the limits even though this is for subframes, as the limits will
-      // be needed in setting the raster scale. We set this value when setting
-      // up the compositor, but need to update it when the limits of the
-      // WebViewImpl have changed.
-      // TODO(wjmaclean): This is updating when the size of the *child frame*
-      // have changed which are completely independent of the WebView, and in an
-      // OOPIF where the main frame is remote, are these limits even useful?
-      Client()->SetPageScaleStateAndLimits(
-          1.f, false /* is_pinch_gesture_active */,
-          View()->MinimumPageScaleFactor(), View()->MaximumPageScaleFactor());
-    }
+    // Pass the limits even though this is for subframes, as the limits will
+    // be needed in setting the raster scale. We set this value when setting
+    // up the compositor, but need to update it when the limits of the
+    // WebViewImpl have changed.
+    // TODO(wjmaclean): This is updating when the size of the *child frame*
+    // have changed which are completely independent of the WebView, and in an
+    // OOPIF where the main frame is remote, are these limits even useful?
+    Client()->SetPageScaleStateAndLimits(
+        1.f, false /* is_pinch_gesture_active */,
+        View()->MinimumPageScaleFactor(), View()->MaximumPageScaleFactor());
   }
 }
 
