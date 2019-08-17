@@ -5936,9 +5936,6 @@ crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-rad
 # which is still in flux.
 crbug.com/924670 external/wpt/webxr/webxr-supported-by-feature-policy.html [ Failure ]
 
-# Chrome does not enforce that apps need to ask for non-default reference spaces before using them.
-crbug.com/985095 external/wpt/webxr/xrSession_requestReferenceSpace_features.https.html [ Failure ]
-
 crbug.com/961015 [ Mac ] external/wpt/webxr/xrSession_requestAnimationFrame_callback_calls.https.html [ Timeout ]
 crbug.com/961015 [ Mac ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Timeout ]
 
