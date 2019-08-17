@@ -12832,7 +12832,7 @@ Called by update_net_error_codes.py.-->
 
 <enum name="DCLayerResult">
   <int value="0" label="Success"/>
-  <int value="1" label="Failed unsupported quad"/>
+  <int value="1" label="Failed unsupported quad (not recorded)"/>
   <int value="2" label="Failed quad blend mode"/>
   <int value="3" label="Failed texture not candidate"/>
   <int value="4" label="Failed occluded"/>
@@ -12840,7 +12840,7 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Failed transparent"/>
   <int value="7" label="Failed non-root renderpass"/>
   <int value="8" label="Failed too many overlays"/>
-  <int value="9" label="Failed no hw overlay support"/>
+  <int value="9" label="Failed no hw overlay support (deprecated)"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">
