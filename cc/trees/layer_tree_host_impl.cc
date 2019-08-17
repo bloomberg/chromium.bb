@@ -1058,7 +1058,6 @@ DrawMode LayerTreeHostImpl::GetDrawMode() const {
 }
 
 static void AppendQuadsToFillScreen(
-    const gfx::Rect& root_scroll_layer_rect,
     viz::RenderPass* target_render_pass,
     const RenderSurfaceImpl* root_render_surface,
     SkColor screen_background_color,
@@ -1348,12 +1347,20 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 #endif
   bool has_transparent_background =
       SkColorGetA(active_tree_->background_color()) != SK_AlphaOPAQUE;
-  if (!has_transparent_background) {
+  auto* root_render_surface = active_tree_->RootRenderSurface();
+  if (root_render_surface && !has_transparent_background) {
     frame->render_passes.back()->has_transparent_background = false;
-    AppendQuadsToFillScreen(
-        active_tree_->RootScrollLayerDeviceViewportBounds(),
-        frame->render_passes.back().get(), active_tree_->RootRenderSurface(),
-        active_tree_->background_color(), unoccluded_screen_space_region);
+
+    // If any tiles are missing, then fill behind the entire root render
+    // surface.  This is a workaround for this edge case, instead of tracking
+    // individual tiles that are missing.
+    Region fill_region = unoccluded_screen_space_region;
+    if (num_missing_tiles > 0)
+      fill_region = root_render_surface->content_rect();
+
+    AppendQuadsToFillScreen(frame->render_passes.back().get(),
+                            root_render_surface,
+                            active_tree_->background_color(), fill_region);
   }
 
   RemoveRenderPasses(frame);
