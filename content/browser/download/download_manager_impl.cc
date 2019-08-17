@@ -1103,6 +1103,10 @@ void DownloadManagerImpl::GetAllDownloads(
     download::SimpleDownloadManager::DownloadVector* downloads) {
   for (const auto& it : downloads_)
     downloads->push_back(it.second.get());
+}
+
+void DownloadManagerImpl::GetUninitializedActiveDownloadsIfAny(
+    download::SimpleDownloadManager::DownloadVector* downloads) {
   for (const auto& it : in_progress_downloads_)
     downloads->push_back(it.get());
 }
