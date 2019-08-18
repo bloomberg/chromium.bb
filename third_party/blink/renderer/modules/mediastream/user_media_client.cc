@@ -35,7 +35,6 @@
 #include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
-#include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 
 namespace blink {

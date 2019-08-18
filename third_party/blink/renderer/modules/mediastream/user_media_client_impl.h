@@ -14,7 +14,6 @@
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/web/web_apply_constraints_request.h"
-#include "third_party/blink/public/web/web_user_media_client.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_processor.h"
@@ -33,7 +32,7 @@ class LocalFrame;
 // UserMediaClientImpl handles requests coming from the Blink MediaDevices
 // object. This includes getUserMedia and enumerateDevices. It must be created,
 // called and destroyed on the render thread.
-class MODULES_EXPORT UserMediaClientImpl : public blink::WebUserMediaClient {
+class MODULES_EXPORT UserMediaClientImpl {
  public:
   // TODO(guidou): Make all constructors private and replace with Create methods
   // that return a std::unique_ptr. This class is intended for instantiation on
@@ -44,16 +43,13 @@ class MODULES_EXPORT UserMediaClientImpl : public blink::WebUserMediaClient {
   UserMediaClientImpl(LocalFrame* frame,
                       std::unique_ptr<UserMediaProcessor> user_media_processor,
                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  ~UserMediaClientImpl() override;
+  virtual ~UserMediaClientImpl();
 
-  // blink::WebUserMediaClient implementation
-  void RequestUserMedia(const blink::WebUserMediaRequest& web_request) override;
-  void CancelUserMediaRequest(
-      const blink::WebUserMediaRequest& web_request) override;
-  void ApplyConstraints(
-      const blink::WebApplyConstraintsRequest& web_request) override;
-  void StopTrack(const blink::WebMediaStreamTrack& web_track) override;
-  void ContextDestroyed() override;
+  void RequestUserMedia(const blink::WebUserMediaRequest& web_request);
+  void CancelUserMediaRequest(const blink::WebUserMediaRequest& web_request);
+  void ApplyConstraints(const blink::WebApplyConstraintsRequest& web_request);
+  void StopTrack(const blink::WebMediaStreamTrack& web_track);
+  void ContextDestroyed();
 
   bool IsCapturing();
 

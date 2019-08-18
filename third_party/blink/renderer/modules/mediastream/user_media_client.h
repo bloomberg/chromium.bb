@@ -35,7 +35,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/web/web_user_media_client.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -59,7 +59,7 @@ class MODULES_EXPORT UserMediaClient {
   void ContextDestroyed();
 
  private:
-  std::unique_ptr<WebUserMediaClient> client_;
+  std::unique_ptr<UserMediaClientImpl> client_;
 };
 
 MODULES_EXPORT void ProvideUserMediaTo(LocalFrame&,
