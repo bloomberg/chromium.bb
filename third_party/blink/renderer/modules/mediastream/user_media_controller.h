@@ -29,7 +29,7 @@
 
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
 
 namespace blink {
 
@@ -46,10 +46,10 @@ class UserMediaController final
  public:
   static const char kSupplementName[];
 
-  UserMediaController(LocalFrame&, std::unique_ptr<UserMediaClient>);
+  UserMediaController(LocalFrame&, std::unique_ptr<UserMediaClientImpl>);
   void Trace(blink::Visitor*) override;
 
-  UserMediaClient* Client() const { return client_.get(); }
+  UserMediaClientImpl* Client() const { return client_.get(); }
 
   void RequestUserMedia(UserMediaRequest*);
   void CancelUserMediaRequest(UserMediaRequest*);
@@ -65,7 +65,7 @@ class UserMediaController final
   }
 
  private:
-  std::unique_ptr<UserMediaClient> client_;
+  std::unique_ptr<UserMediaClientImpl> client_;
   bool has_requested_user_media_ = false;
 };
 
@@ -76,21 +76,24 @@ inline void UserMediaController::RequestUserMedia(UserMediaRequest* request) {
 
 inline void UserMediaController::CancelUserMediaRequest(
     UserMediaRequest* request) {
-  client_->CancelUserMediaRequest(request);
+  client_->CancelUserMediaRequest(WebUserMediaRequest(request));
 }
 
 inline void UserMediaController::ApplyConstraints(
     ApplyConstraintsRequest* request) {
-  client_->ApplyConstraints(request);
+  client_->ApplyConstraints(WebApplyConstraintsRequest(request));
 }
 
 inline void UserMediaController::StopTrack(MediaStreamComponent* track) {
-  client_->StopTrack(track);
+  client_->StopTrack(WebMediaStreamTrack(track));
 }
 
 inline bool UserMediaController::HasRequestedUserMedia() {
   return has_requested_user_media_;
 }
+
+MODULES_EXPORT void ProvideUserMediaTo(LocalFrame&,
+                                       std::unique_ptr<UserMediaClientImpl>);
 
 }  // namespace blink
 

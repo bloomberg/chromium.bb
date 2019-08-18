@@ -60,7 +60,7 @@
 #include "third_party/blink/renderer/modules/launch/web_launch_service_impl.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_manager.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
-#include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
@@ -181,7 +181,9 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   DCHECK(client);
   ProvidePushMessagingClientTo(
       frame, MakeGarbageCollected<PushMessagingClient>(frame));
-  ProvideUserMediaTo(frame, std::make_unique<UserMediaClient>(frame));
+  ProvideUserMediaTo(
+      frame, std::make_unique<UserMediaClientImpl>(
+                 &frame, frame.GetTaskRunner(TaskType::kInternalMedia)));
   ProvideLocalFileSystemTo(frame, std::make_unique<LocalFileSystemClient>());
 
   ScreenOrientationControllerImpl::ProvideTo(frame);
