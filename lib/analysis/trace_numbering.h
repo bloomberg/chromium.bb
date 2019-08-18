@@ -19,6 +19,7 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <glog/logging.h>
 
 #include "absl/container/flat_hash_map.h"
 #include "lib/quic_trace.pb.h"
@@ -72,6 +73,8 @@ class NumberingWithoutRetransmissions {
     case ENCRYPTION_0RTT:
     case ENCRYPTION_1RTT:
       return &offsets_1rtt_;
+    default:
+      LOG(FATAL) << "Unknown encryption level.";
     }
   }
 

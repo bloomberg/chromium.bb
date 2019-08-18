@@ -86,6 +86,8 @@ absl::flat_hash_set<uint64_t>* ProcessedTrace::getPacketsAcked(const EncryptionL
   case ENCRYPTION_0RTT:
   case ENCRYPTION_1RTT:
     return &packets_acked_1rtt_;
+  default:
+    LOG(FATAL) << "Unknown encryption level.";
   }
 }
 
@@ -98,6 +100,8 @@ absl::flat_hash_set<uint64_t>* ProcessedTrace::getPacketsLost(const EncryptionLe
   case ENCRYPTION_0RTT:
   case ENCRYPTION_1RTT:
     return &packets_lost_1rtt_;
+  default:
+    LOG(FATAL) << "Unknown encryption level.";
   }
 }
 
