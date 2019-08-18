@@ -32,16 +32,18 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/web/web_apply_constraints_request.h"
-#include "third_party/blink/public/web/web_local_frame_client.h"
-#include "third_party/blink/public/web/web_user_media_client.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 
 namespace blink {
 
-UserMediaClient::UserMediaClient(WebUserMediaClient* client)
-    : client_(client) {}
+UserMediaClient::UserMediaClient(LocalFrame& frame)
+    : client_(std::make_unique<UserMediaClientImpl>(
+          &frame,
+          frame.GetTaskRunner(TaskType::kInternalMedia))) {}
 
 void UserMediaClient::RequestUserMedia(UserMediaRequest* request) {
   if (client_) {

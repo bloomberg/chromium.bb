@@ -99,18 +99,6 @@ UserMediaClientImpl::Request::MoveUserMediaRequest() {
   return std::move(user_media_request_);
 }
 
-std::unique_ptr<WebUserMediaClient> CreateWebUserMediaClient(
-    WebLocalFrame* web_frame,
-    std::unique_ptr<WebMediaStreamDeviceObserver> media_stream_device_observer,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(web_frame);
-  auto* local_frame =
-      static_cast<LocalFrame*>(WebLocalFrame::ToCoreFrame(*web_frame));
-  return std::make_unique<UserMediaClientImpl>(
-      local_frame, std::move(media_stream_device_observer),
-      std::move(task_runner));
-}
-
 UserMediaClientImpl::UserMediaClientImpl(
     LocalFrame* frame,
     std::unique_ptr<UserMediaProcessor> user_media_processor,
@@ -132,14 +120,11 @@ UserMediaClientImpl::UserMediaClientImpl(
 // |user_media_processor_|.
 UserMediaClientImpl::UserMediaClientImpl(
     LocalFrame* frame,
-    std::unique_ptr<blink::WebMediaStreamDeviceObserver>
-        media_stream_device_observer,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : UserMediaClientImpl(
           frame,
           std::make_unique<UserMediaProcessor>(
               frame,
-              std::move(media_stream_device_observer),
               WTF::BindRepeating(
                   &UserMediaClientImpl::GetMediaDevicesDispatcher,
                   WTF::Unretained(this)),

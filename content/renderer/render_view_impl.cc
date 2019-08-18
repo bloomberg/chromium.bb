@@ -2195,7 +2195,7 @@ void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
     return;
 
   blink::WebMediaStreamDeviceObserver* media_stream_device_observer =
-      main_render_frame_->GetMediaStreamDeviceObserver();
+      main_render_frame_->MediaStreamDeviceObserver();
   if (!media_stream_device_observer)
     return;
 

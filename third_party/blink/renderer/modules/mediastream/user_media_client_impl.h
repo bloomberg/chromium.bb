@@ -29,7 +29,6 @@ namespace blink {
 
 class ApplyConstraintsProcessor;
 class LocalFrame;
-class WebMediaStreamDeviceObserver;
 
 // UserMediaClientImpl handles requests coming from the Blink MediaDevices
 // object. This includes getUserMedia and enumerateDevices. It must be created,
@@ -41,17 +40,11 @@ class MODULES_EXPORT UserMediaClientImpl : public blink::WebUserMediaClient {
   // the free store. https://crbug.com/764293
   // |frame| and its respective RenderFrame must outlive this instance.
   UserMediaClientImpl(LocalFrame* frame,
-                      std::unique_ptr<blink::WebMediaStreamDeviceObserver>
-                          media_stream_device_observer,
                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   UserMediaClientImpl(LocalFrame* frame,
                       std::unique_ptr<UserMediaProcessor> user_media_processor,
                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~UserMediaClientImpl() override;
-
-  blink::WebMediaStreamDeviceObserver* GetMediaStreamDeviceObserver() override {
-    return user_media_processor_->media_stream_device_observer();
-  }
 
   // blink::WebUserMediaClient implementation
   void RequestUserMedia(const blink::WebUserMediaRequest& web_request) override;

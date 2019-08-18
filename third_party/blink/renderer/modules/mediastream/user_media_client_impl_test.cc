@@ -315,13 +315,15 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
       RequestState* state)
       : UserMediaProcessor(
             nullptr,
-            std::move(media_stream_device_observer),
             base::BindRepeating(
                 &UserMediaProcessorUnderTest::media_devices_dispatcher,
                 base::Unretained(this)),
             blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
+        media_stream_device_observer_(std::move(media_stream_device_observer)),
         media_devices_dispatcher_(std::move(media_devices_dispatcher)),
-        state_(state) {}
+        state_(state) {
+    SetMediaStreamDeviceObserverForTesting(media_stream_device_observer_.get());
+  }
 
   const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
   media_devices_dispatcher() const {
@@ -429,6 +431,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
         .Run(source, blink::mojom::blink::MediaStreamRequestResult::OK, "");
   }
 
+  std::unique_ptr<WebMediaStreamDeviceObserver> media_stream_device_observer_;
   blink::mojom::blink::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
   MockMediaStreamVideoCapturerSource* video_source_ = nullptr;
   MockLocalMediaStreamAudioSource* local_audio_source_ = nullptr;
@@ -478,14 +481,14 @@ class UserMediaClientImplTest : public ::testing::Test {
 
   void SetUp() override {
     // Create our test object.
-    msd_observer_ = new blink::WebMediaStreamDeviceObserver(nullptr);
+    auto* msd_observer = new blink::WebMediaStreamDeviceObserver(nullptr);
 
     blink::mojom::blink::MediaDevicesDispatcherHostPtr
         user_media_processor_host_proxy;
     binding_user_media_processor_.Bind(
         mojo::MakeRequest(&user_media_processor_host_proxy));
     user_media_processor_ = new UserMediaProcessorUnderTest(
-        base::WrapUnique(msd_observer_),
+        base::WrapUnique(msd_observer),
         std::move(user_media_processor_host_proxy), &state_);
     blink::mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host =
         mock_dispatcher_host_.CreateInterfacePtrAndBind();
@@ -640,8 +643,6 @@ class UserMediaClientImplTest : public ::testing::Test {
  protected:
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport>
       testing_platform_;
-  blink::WebMediaStreamDeviceObserver* msd_observer_ =
-      nullptr;  // Owned by |used_media_processor_|.
   MockMojoMediaStreamDispatcherHost mock_dispatcher_host_;
   MockMediaDevicesDispatcherHost media_devices_dispatcher_;
   mojo::Binding<blink::mojom::blink::MediaDevicesDispatcherHost>
