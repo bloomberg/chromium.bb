@@ -1102,12 +1102,6 @@ bool RenderViewImpl::SupportsMultipleWindowsForWidget() {
   return webkit_preferences_.supports_multiple_windows;
 }
 
-void RenderViewImpl::DidHandleGestureEventForWidget(
-    const WebGestureEvent& event) {
-  for (auto& observer : observers_)
-    observer.DidHandleGestureEvent(event);
-}
-
 bool RenderViewImpl::ShouldAckSyntheticInputImmediately() {
   // TODO(bokan): The RequestPresentation API appears not to function in VR. As
   // a short term workaround for https://crbug.com/940063, ACK input
