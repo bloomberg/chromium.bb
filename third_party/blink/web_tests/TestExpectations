@@ -2019,12 +2019,13 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ord
 # Fieldset in NG
 #
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Failure ]
-crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-painting-order.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-painting-order.html [ Failure Crash ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-percentage-block-size.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-transform-translatez.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-vertical.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-align.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-auto-margins.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-formatting-context.html [ Crash ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins-2.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-display-rendering.html [ Failure ]
