@@ -38,7 +38,7 @@ public abstract class SingleTabActivity extends ChromeActivity {
 
     @Override
     protected TabModelSelector createTabModelSelector() {
-        return new SingleTabModelSelector(this, this, false, false);
+        return new SingleTabModelSelector(this, this, false);
     }
 
     @Override

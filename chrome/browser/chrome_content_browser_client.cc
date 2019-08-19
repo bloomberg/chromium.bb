@@ -414,7 +414,6 @@
 #include "chrome/browser/android/service_tab_launcher.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
-#include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/browser/offline_pages/android/offline_page_auto_fetcher.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
@@ -2943,17 +2942,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
                       blocked_params.features())) {
     return false;
   }
-
-#if defined(OS_ANDROID)
-  auto* single_tab_mode_helper =
-      SingleTabModeTabHelper::FromWebContents(web_contents);
-  if (single_tab_mode_helper &&
-      single_tab_mode_helper->block_all_new_windows()) {
-    TabModelList::HandlePopupNavigation(&nav_params);
-    return false;
-  }
-#endif
-
   return true;
 }
 

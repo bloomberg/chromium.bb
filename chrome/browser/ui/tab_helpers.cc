@@ -102,7 +102,6 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_tab_helper.h"
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
-#include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/banners/app_banner_manager_android.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
@@ -287,7 +286,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   }
 
   SearchGeolocationDisclosureTabHelper::CreateForWebContents(web_contents);
-  SingleTabModeTabHelper::CreateForWebContents(web_contents);
   ViewAndroidHelper::CreateForWebContents(web_contents);
 #else
   banners::AppBannerManagerDesktop::CreateForWebContents(web_contents);

@@ -12,10 +12,10 @@ import org.chromium.chrome.browser.tab.Tab;
  * Simple TabModelSelector that assumes that only a single TabModel exists at a time.
  */
 public class SingleTabModelSelector extends TabModelSelectorBase {
-    public SingleTabModelSelector(Activity activity, TabCreatorManager tabCreatorManager,
-            boolean incognito, boolean blockNewWindows) {
+    public SingleTabModelSelector(
+            Activity activity, TabCreatorManager tabCreatorManager, boolean incognito) {
         super(tabCreatorManager);
-        initialize(incognito, new SingleTabModel(activity, incognito, blockNewWindows));
+        initialize(incognito, new SingleTabModel(activity, incognito));
 
         TabModelObserver tabModelObserver = new EmptyTabModelObserver() {
             @Override

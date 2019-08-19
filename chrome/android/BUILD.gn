@@ -2641,7 +2641,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/tab/TabState.java",
     "java/src/org/chromium/chrome/browser/tab/TabWebContentsDelegateAndroid.java",
     "java/src/org/chromium/chrome/browser/tab/TrustedCdn.java",
-    "java/src/org/chromium/chrome/browser/tabmodel/SingleTabModel.java",
     "java/src/org/chromium/chrome/browser/tabmodel/TabModelJniBridge.java",
     "java/src/org/chromium/chrome/browser/tabmodel/TabModelObserverJniBridge.java",
     "java/src/org/chromium/chrome/browser/toolbar/LocationBarModel.java",

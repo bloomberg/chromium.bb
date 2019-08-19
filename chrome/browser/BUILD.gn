@@ -2682,8 +2682,6 @@ jumbo_split_static_library("browser") {
       "android/webapps/add_to_homescreen_data_fetcher.h",
       "android/webapps/add_to_homescreen_manager.cc",
       "android/webapps/add_to_homescreen_manager.h",
-      "android/webapps/single_tab_mode_tab_helper.cc",
-      "android/webapps/single_tab_mode_tab_helper.h",
       "android/webapps/webapk_ukm_recorder.cc",
       "android/webapps/webapk_ukm_recorder.h",
       "android/webapps/webapp_registry.cc",

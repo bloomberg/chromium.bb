@@ -24,12 +24,10 @@ public class SingleTabModel implements TabModel {
 
     private Tab mTab;
     private boolean mIsIncognito;
-    private boolean mBlockNewWindows;
 
-    SingleTabModel(Activity activity, boolean incognito, boolean blockNewWindows) {
+    SingleTabModel(Activity activity, boolean incognito) {
         mActivity = activity;
         mIsIncognito = incognito;
-        mBlockNewWindows = blockNewWindows;
     }
 
     /**
@@ -41,7 +39,6 @@ public class SingleTabModel implements TabModel {
         mTab = tab;
         if (tab != null) {
             assert mTab.isIncognito() == mIsIncognito;
-            if (mBlockNewWindows) nativePermanentlyBlockAllNewWindows(mTab);
 
             for (TabModelObserver observer : mObservers) {
                 observer.didAddTab(tab, TabLaunchType.FROM_LINK);
@@ -109,18 +106,9 @@ public class SingleTabModel implements TabModel {
         return closeTab(tab, animate, uponExit, canUndo);
     }
 
-    /**
-     * In webapps, calls finish on the activity, but keeps it in recents. In Document mode,
-     * finishes and removes from recents. We use mBlockNewWindows flag to distinguish the user
-     * of this model.
-     */
     private void closeTabAndFinish() {
         setTab(null);
-        if (mBlockNewWindows) {
-            mActivity.finish();
-        } else {
-            ApiCompatibilityUtils.finishAndRemoveTask(mActivity);
-        }
+        ApiCompatibilityUtils.finishAndRemoveTask(mActivity);
     }
 
     @Override
@@ -220,8 +208,6 @@ public class SingleTabModel implements TabModel {
     public void removeObserver(TabModelObserver observer) {
         mObservers.removeObserver(observer);
     }
-
-    private static native void nativePermanentlyBlockAllNewWindows(Tab nativeTabAndroid);
 
     @Override
     public void openMostRecentlyClosedTab() {}
