@@ -1218,6 +1218,26 @@ void Widget::OnNativeWidgetPaint(const ui::PaintContext& context) {
   GetRootView()->PaintFromPaintRoot(context);
 }
 
+bool Widget::OnNCHitTest(int* result, const gfx::Point& point) {
+  return widget_delegate_->OnNCHitTest(result, point);
+}
+
+bool Widget::OnNCDragBegin(int hit_test_code) {
+  return widget_delegate_->OnNCDragBegin(hit_test_code);
+}
+
+void Widget::OnNCDragMove() {
+  return widget_delegate_->OnNCDragMove();
+}
+
+void Widget::OnNCDragEnd() {
+  return widget_delegate_->OnNCDragEnd();
+}
+
+void Widget::OnNCDoubleClick() {
+  return widget_delegate_->OnNCDoubleClick();
+}
+
 int Widget::GetNonClientComponent(const gfx::Point& point) {
   int component = non_client_view_ ?
       non_client_view_->NonClientHitTest(point) :
