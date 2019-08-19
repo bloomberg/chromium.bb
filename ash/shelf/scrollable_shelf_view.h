@@ -57,8 +57,7 @@ class ASH_EXPORT ScrollableShelfView : public views::View,
   // Returns the maximum scroll distance.
   int CalculateScrollUpperBound() const;
 
-  // Returns the clamped scroll offset after scrolling by the distance of
-  // |scroll|.
+  // Returns the clamped scroll offset.
   float CalculateClampedScrollOffset(float scroll) const;
 
   // Creates the animation for scrolling shelf by |scroll_distance|.
@@ -103,11 +102,21 @@ class ASH_EXPORT ScrollableShelfView : public views::View,
   // consumed.
   bool ProcessGestureEvent(const ui::GestureEvent& event);
 
-  // Scrolls the view. |animating| indicates whether animation is needed for
-  // scrolling. |x_offset| or |y_offset| has to be float. Otherwise the slow
-  // gesture drag is neglected
+  // Scrolls the view by distance of |x_offset| or |y_offset|. |animating|
+  // indicates whether the animation displays. |x_offset| or |y_offset| has to
+  // be float. Otherwise the slow gesture drag is neglected.
   void ScrollByXOffset(float x_offset, bool animating);
   void ScrollByYOffset(float y_offset, bool animating);
+
+  // Scrolls the view to the target offset. After scrolling, |scroll_offset_| is
+  // |x_dst_offset| or |y_dst_offset|. |animating| indicates whether the
+  // animation shows.
+  void ScrollToXOffset(float x_target_offset, bool animating);
+  void ScrollToYOffset(float y_target_offset, bool animating);
+
+  // Calculates the distance of scrolling to show a new page of shelf icons.
+  // |forward| indicates whether the next page or previous page is shown.
+  float CalculatePageScrollingOffset(bool forward) const;
 
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 

@@ -111,11 +111,8 @@ int ScrollableShelfView::CalculateScrollUpperBound() const {
 }
 
 float ScrollableShelfView::CalculateClampedScrollOffset(float scroll) const {
-  const float old_scroll = GetShelf()->IsHorizontalAlignment()
-                               ? scroll_offset_.x()
-                               : scroll_offset_.y();
   const float scroll_upper_bound = CalculateScrollUpperBound();
-  scroll = std::min(scroll_upper_bound, std::max(0.f, old_scroll + scroll));
+  scroll = std::min(scroll_upper_bound, std::max(0.f, scroll));
   return scroll;
 }
 
@@ -312,19 +309,7 @@ void ScrollableShelfView::ButtonPressed(views::Button* sender,
   views::View* sender_view = sender;
   DCHECK((sender_view == left_arrow_) || (sender_view == right_arrow_));
 
-  // Implement the arrow button handler in the same way with the gesture
-  // scrolling. The key is to calculate the suitable scroll distance.
-  int offset = space_for_icons_ - kArrowButtonGroupWidth -
-               ShelfConstants::button_size() - kAppIconEndPadding;
-  if (layout_strategy_ == kShowRightArrowButton)
-    offset -= (kArrowButtonGroupWidth - kAppIconEndPadding);
-  DCHECK_GT(offset, 0);
-
-  // If |forward| is true, scroll the scrollable shelf view rightward.
-  const bool forward = sender_view == right_arrow_;
-  if (!forward)
-    offset = -offset;
-
+  float offset = CalculatePageScrollingOffset(sender_view == right_arrow_);
   if (GetShelf()->IsHorizontalAlignment())
     ScrollByXOffset(offset, true);
   else
@@ -445,23 +430,49 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
 }
 
 void ScrollableShelfView::ScrollByXOffset(float x_offset, bool animating) {
+  ScrollToXOffset(scroll_offset_.x() + x_offset, animating);
+}
+
+void ScrollableShelfView::ScrollByYOffset(float y_offset, bool animating) {
+  ScrollToYOffset(scroll_offset_.y() + y_offset, animating);
+}
+
+void ScrollableShelfView::ScrollToXOffset(float x_target_offset,
+                                          bool animating) {
+  x_target_offset = CalculateClampedScrollOffset(x_target_offset);
   const float old_x = scroll_offset_.x();
-  const float x = CalculateClampedScrollOffset(x_offset);
-  scroll_offset_.set_x(x);
+  scroll_offset_.set_x(x_target_offset);
   Layout();
-  const float diff = x - old_x;
+  const float diff = x_target_offset - old_x;
+
   if (animating)
     StartShelfScrollAnimation(diff);
 }
 
-void ScrollableShelfView::ScrollByYOffset(float y_offset, bool animating) {
+void ScrollableShelfView::ScrollToYOffset(float y_target_offset,
+                                          bool animating) {
+  y_target_offset = CalculateClampedScrollOffset(y_target_offset);
   const int old_y = scroll_offset_.y();
-  const int y = CalculateClampedScrollOffset(y_offset);
-  scroll_offset_.set_y(y);
+  scroll_offset_.set_y(y_target_offset);
   Layout();
-  const float diff = y - old_y;
+  const float diff = y_target_offset - old_y;
   if (animating)
     StartShelfScrollAnimation(diff);
+}
+
+float ScrollableShelfView::CalculatePageScrollingOffset(bool forward) const {
+  // Implement the arrow button handler in the same way with the gesture
+  // scrolling. The key is to calculate the suitable scroll distance.
+  float offset = space_for_icons_ - kArrowButtonGroupWidth -
+                 ShelfConstants::button_size() - kAppIconEndPadding;
+  if (layout_strategy_ == kShowRightArrowButton)
+    offset -= (kArrowButtonGroupWidth - kAppIconEndPadding);
+  DCHECK_GT(offset, 0);
+
+  if (!forward)
+    offset = -offset;
+
+  return offset;
 }
 
 }  // namespace ash
