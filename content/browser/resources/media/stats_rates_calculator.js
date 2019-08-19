@@ -265,6 +265,26 @@ class RateCalculator {
   }
 }
 
+// Looks up codec and payload type from a codecId reference, constructing an
+// informative string about which codec is used.
+class CodecCalculator {
+  getCalculatedMetricName() {
+    return '[codec]';
+  }
+
+  calculate(id, previousReport, currentReport) {
+    const targetStats = currentReport.get(id);
+    const codecStats = currentReport.get(targetStats.codecId);
+    if (!codecStats) {
+      return undefined;
+    }
+    // If mimeType is 'video/VP8' then codec is 'VP8'.
+    const codec =
+        codecStats.mimeType.substr(codecStats.mimeType.indexOf('/') + 1);
+    return codec + ' (payloadType: ' + codecStats.payloadType + ')';
+  }
+}
+
 // Calculates "RMS" audio level, which is the average audio level between the
 // previous and current report, in the interval [0,1]. Calculated per:
 // https://w3c.github.io/webrtc-stats/#dom-rtcinboundrtpstreamstats-totalaudioenergy
@@ -358,6 +378,7 @@ class StatsRatesCalculator {
               'totalEncodeTime', 'framesEncoded',
               CalculatorModifier.kMillisecondsFromSeconds),
           qpSum: new RateCalculator('qpSum', 'framesEncoded'),
+          codecId: new CodecCalculator(),
         },
       },
       {
@@ -370,6 +391,7 @@ class StatsRatesCalculator {
               'totalDecodeTime', 'framesDecoded',
               CalculatorModifier.kMillisecondsFromSeconds),
           qpSum: new RateCalculator('qpSum', 'framesDecoded'),
+          codecId: new CodecCalculator(),
         },
       },
       {
