@@ -147,8 +147,6 @@ public class NoTouchActivity extends SingleTabActivity {
 
         ((TouchlessTabCreator) getTabCreator(false))
                 .setTabModel(getTabModelSelector().getModel(false));
-        ((TouchlessTabCreator) getTabCreator(true))
-                .setTabModel(getTabModelSelector().getModel(true));
 
         super.initializeState();
 
