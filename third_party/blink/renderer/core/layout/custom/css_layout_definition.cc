@@ -91,10 +91,9 @@ bool CSSLayoutDefinition::Instance::Layout(
   // TODO(ikilpatrick): Fill in layout edges.
   ScriptValue edges(script_state, v8::Undefined(isolate));
 
-  // TODO(crbug.com/992950): Pass constraint data through a constraint space.
   CustomLayoutConstraints* constraints =
       MakeGarbageCollected<CustomLayoutConstraints>(
-          border_box_size, nullptr /* constraint_data */, isolate);
+          border_box_size, space.CustomLayoutData(), isolate);
 
   // TODO(ikilpatrick): Instead of creating a new style_map each time here,
   // store on LayoutCustom, and update when the style changes.
@@ -129,12 +128,12 @@ bool CSSLayoutDefinition::Instance::Layout(
 
   // Run the work queue until exhaustion.
   while (!custom_layout_scope->Queue()->IsEmpty()) {
+    for (auto& task : *custom_layout_scope->Queue())
+      task.Run(space, node.Style());
+    custom_layout_scope->Queue()->clear();
     {
       v8::MicrotasksScope microtasks_scope(isolate, microtask_queue,
                                            v8::MicrotasksScope::kRunMicrotasks);
-      for (auto& task : *custom_layout_scope->Queue())
-        task.Run(space, node.Style());
-      custom_layout_scope->Queue()->clear();
     }
   }
 

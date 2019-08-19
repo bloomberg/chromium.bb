@@ -21,7 +21,10 @@ CustomLayoutFragment::CustomLayoutFragment(
       layout_result_(std::move(layout_result)),
       inline_size_(size.inline_size.ToDouble()),
       block_size_(size.block_size.ToDouble()) {
-  // TODO(crbug.com/992950): Pass constraint data through layout result.
+  // Immediately store the result data, so that it remains immutable between
+  // layout calls to the child.
+  if (SerializedScriptValue* data = layout_result_->CustomLayoutData())
+    layout_worklet_world_v8_data_.Set(isolate, data->Deserialize(isolate));
 }
 
 const NGLayoutResult& CustomLayoutFragment::GetLayoutResult() const {

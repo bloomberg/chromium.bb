@@ -97,6 +97,8 @@ void CustomLayoutWorkTask::Run(const NGConstraintSpace& parent_space,
   builder.SetIsShrinkToFit(node.Style().LogicalWidth().IsAuto());
   builder.SetIsFixedInlineSize(is_fixed_inline_size);
   builder.SetIsFixedBlockSize(is_fixed_block_size);
+  if (node.IsLayoutNGCustom())
+    builder.SetCustomLayoutData(std::move(constraint_data_));
   auto space = builder.ToConstraintSpace();
   auto result = To<NGBlockNode>(node).Layout(space, nullptr /* break_token */);
 
