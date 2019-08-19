@@ -27,6 +27,7 @@ UTILS_METRICS_LOG_ENVVAR = 'BUILD_API_METRICS_LOG'
 OP_START_TIMER = 'start-timer'
 OP_STOP_TIMER = 'stop-timer'
 OP_NAMED_EVENT = 'event'
+VALID_OPS = (OP_START_TIMER, OP_STOP_TIMER, OP_NAMED_EVENT)
 
 # MetricEvent store a start or a stop to a timer. Timers are keyed
 # with a unique value to make matching the bookends easier.
@@ -137,10 +138,11 @@ def collect_metrics(functor):
       return functor(*args, **kwargs)
     else:
       # Let's manage the lifetime of a logfile for consumption within functor.
-      with tempfile.NamedTemporaryFile() as temp_file:
+      tmp_prefix = 'build-metrics-'
+      with tempfile.NamedTemporaryFile(prefix=tmp_prefix) as temp_file:
         os.environ[UTILS_METRICS_LOG_ENVVAR] = temp_file.name
-        logging.debug('Setting up metrics collection (%s=%s).',
-                      UTILS_METRICS_LOG_ENVVAR, temp_file.name)
+        logging.info('Setting up metrics collection (%s=%s).',
+                     UTILS_METRICS_LOG_ENVVAR, temp_file.name)
         try:
           return functor(*args, **kwargs)
         finally:
