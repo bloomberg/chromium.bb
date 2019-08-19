@@ -131,6 +131,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
 
   bool network_accessed() const { return network_accessed_; }
 
+  static const char* ResultToString(Result result);
+
  private:
   class WrappedIOBuffer;
 
