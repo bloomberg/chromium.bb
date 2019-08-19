@@ -520,4 +520,17 @@ const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
 const char kErrorInvalidLength[] = "org.bluez.Error.InvalidLength";
 }  // namespace bluetooth_advertising_manager
 
+namespace bluetooth_debug {
+const char kBluetoothDebugInterface[] = "org.chromium.Bluetooth.Debug";
+
+// Methods.
+const char kSetLevels[] = "SetLevels";
+
+// Properties.
+const char kDispatcherLevelProperty[] = "DispatcherLevel";
+const char kNewblueLevelProperty[] = "NewblueLevel";
+const char kBluezLevelProperty[] = "BluezLevel";
+const char kKernelLevelProperty[] = "KernelLevel";
+}  // namespace bluetooth_debug
+
 #endif  // SYSTEM_API_DBUS_BLUETOOTH_DBUS_CONSTANTS_H_
