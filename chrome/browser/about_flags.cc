@@ -3526,6 +3526,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHappinessTrackingSurveysForDesktopDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktop)},
+
+    {"happiness-tracking-surveys-for-desktop-demo",
+     flag_descriptions::kHappinessTrackingSurveysForDesktopDemoName,
+     flag_descriptions::kHappinessTrackingSurveysForDesktopDemoDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktopDemo)},
 #endif  // !defined(OS_ANDROID)
 
     {"enable-service-worker-imported-script-update-check",

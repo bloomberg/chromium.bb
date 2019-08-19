@@ -2780,6 +2780,11 @@ const char kHappinessTrackingSurveysForDesktopName[] =
 const char kHappinessTrackingSurveysForDesktopDescription[] =
     "Enable showing Happiness Tracking Surveys to users on Desktop";
 
+const char kHappinessTrackingSurveysForDesktopDemoName[] =
+    "Happiness Tracking Surveys Demo";
+const char kHappinessTrackingSurveysForDesktopDemoDescription[] =
+    "Enable showing Happiness Tracking Surveys Demo to users on Desktop";
+
 const char kIntentPickerName[] = "Intent picker";
 const char kIntentPickerDescription[] =
     "When going to a site that has URL managable by a PWA, show the intent"

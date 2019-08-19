@@ -320,7 +320,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   if (base::FeatureList::IsEnabled(
-          features::kHappinessTrackingSurveysForDesktop)) {
+          features::kHappinessTrackingSurveysForDesktop) ||
+      base::FeatureList::IsEnabled(
+          features::kHappinessTrackingSurveysForDesktopDemo)) {
     HatsHelper::CreateForWebContents(web_contents);
   }
 #endif

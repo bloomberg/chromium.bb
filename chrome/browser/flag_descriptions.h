@@ -1639,6 +1639,9 @@ extern const char kEnterpriseReportingInBrowserDescription[];
 extern const char kHappinessTrackingSurveysForDesktopName[];
 extern const char kHappinessTrackingSurveysForDesktopDescription[];
 
+extern const char kHappinessTrackingSurveysForDesktopDemoName[];
+extern const char kHappinessTrackingSurveysForDesktopDemoDescription[];
+
 extern const char kIntentPickerName[];
 extern const char kIntentPickerDescription[];
 
