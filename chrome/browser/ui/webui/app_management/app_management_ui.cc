@@ -217,5 +217,5 @@ void AppManagementUI::CreatePageHandler(
   DCHECK(page);
 
   page_handler_ = std::make_unique<AppManagementPageHandler>(
-      std::move(request), std::move(page), web_ui());
+      std::move(request), std::move(page), Profile::FromWebUI(web_ui()));
 }
