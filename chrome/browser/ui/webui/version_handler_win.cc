@@ -19,7 +19,7 @@ void VersionHandlerWindows::HandleRequestVersionInfo(
     const base::ListValue* args) {
   // Start the asynchronous load of the versions.
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&version_utils::win::GetFullWindowsVersion),
       base::BindOnce(&VersionHandlerWindows::OnVersion,
                      weak_factory_.GetWeakPtr()));
