@@ -358,7 +358,7 @@ public class WebApkUpdateManagerUnitTest {
         if (manifestData == null) return null;
 
         final String kPackageName = "org.random.webapk";
-        return WebApkInfo.create(getWebApkId(kPackageName), "", manifestData.scopeUrl,
+        return WebApkInfo.create("", manifestData.scopeUrl,
                 new WebApkInfo.Icon(manifestData.primaryIcon),
                 new WebApkInfo.Icon(manifestData.badgeIcon), null, manifestData.name,
                 manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
