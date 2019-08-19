@@ -373,9 +373,7 @@ class CrostiniManager : public KeyedService,
   using RestartId = int;
   static const RestartId kUninitializedRestartId = -1;
   // Runs all the steps required to restart the given crostini vm and container.
-  // The optional |observer| tracks progress. If provided, it must be alive
-  // until the restart completes (i.e. when |callback| is called) or the restart
-  // is aborted via |AbortRestartCrostini|.
+  // The optional |observer| tracks progress.
   RestartId RestartCrostini(std::string vm_name,
                             std::string container_name,
                             CrostiniResultCallback callback,

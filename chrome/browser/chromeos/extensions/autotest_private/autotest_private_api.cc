@@ -44,7 +44,6 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
-#include "chrome/browser/chromeos/crostini/crostini_installer.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -1186,8 +1185,7 @@ AutotestPrivateRunCrostiniInstallerFunction::Run() {
   // start terminal app on completion.  After starting the installer,
   // we call RestartCrostini and we will be put in the pending restarters
   // queue and be notified on success/otherwise of installation.
-  CrostiniInstallerView::Show(
-      profile, crostini::CrostiniInstaller::GetForProfile(profile));
+  CrostiniInstallerView::Show(profile);
   CrostiniInstallerView::GetActiveViewForTesting()->Accept();
   crostini::CrostiniManager::GetForProfile(profile)->RestartCrostini(
       crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
