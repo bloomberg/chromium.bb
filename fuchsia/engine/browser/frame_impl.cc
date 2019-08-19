@@ -266,8 +266,8 @@ void FrameImpl::ExecuteJavaScriptInternal(std::vector<std::string> origins,
           }
 
           fuchsia::web::Frame_ExecuteJavaScript_Response response;
-          response.result =
-              cr_fuchsia::MemBufferFromString(std::move(result_json));
+          response.result = cr_fuchsia::MemBufferFromString(
+              std::move(result_json), "cr-execute-js-response");
           result.set_response(std::move(response));
           callback(std::move(result));
         },
@@ -372,7 +372,7 @@ void FrameImpl::AddBeforeLoadJavaScript(
 
   // Create a read-only VMO from |script|.
   fuchsia::mem::Buffer script_buffer =
-      cr_fuchsia::MemBufferFromString16(script_utf16);
+      cr_fuchsia::MemBufferFromString16(script_utf16, "cr-before-load-js");
 
   // Wrap the VMO into a read-only shared-memory container that Mojo can work
   // with.
