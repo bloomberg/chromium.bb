@@ -1253,6 +1253,8 @@ void ChromeContentBrowserClient::PostAfterStartupTask(
     base::OnceClosure task) {
   AfterStartupTaskUtils::PostTask(from_here, task_runner, std::move(task));
 
+  InitNetworkContextsParentDirectory();
+
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   safe_browsing_service_ = g_browser_process->safe_browsing_service();
 }
@@ -4383,6 +4385,30 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 #endif
 }
 
+void ChromeContentBrowserClient::InitNetworkContextsParentDirectory() {
+  base::FilePath user_data_dir;
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  DCHECK(!user_data_dir.empty());
+  network_contexts_parent_directory_.push_back(user_data_dir);
+
+  base::FilePath cache_dir;
+  chrome::GetUserCacheDirectory(user_data_dir, &cache_dir);
+  DCHECK(!cache_dir.empty());
+  // On some platforms, the cache is a child of the user_data_dir so only
+  // return the one path.
+  if (!user_data_dir.IsParent(cache_dir))
+    network_contexts_parent_directory_.push_back(cache_dir);
+
+  // If the cache location has been overridden by a switch or preference,
+  // include that as well.
+  if (auto* local_state = g_browser_process->local_state()) {
+    base::FilePath pref_cache_dir =
+        local_state->GetFilePath(prefs::kDiskCacheDir);
+    if (!pref_cache_dir.empty() && !user_data_dir.IsParent(cache_dir))
+      network_contexts_parent_directory_.push_back(pref_cache_dir);
+  }
+}
+
 void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
     base::CommandLine* to_command_line,
     const base::CommandLine& from_command_line,
@@ -4903,20 +4929,8 @@ ChromeContentBrowserClient::CreateNetworkContext(
 
 std::vector<base::FilePath>
 ChromeContentBrowserClient::GetNetworkContextsParentDirectory() {
-  base::FilePath user_data_dir;
-  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  DCHECK(!user_data_dir.empty());
-
-  base::FilePath cache_dir;
-  chrome::GetUserCacheDirectory(user_data_dir, &cache_dir);
-  DCHECK(!cache_dir.empty());
-
-  // On some platforms, the cache is a child of the user_data_dir so only
-  // return the one path.
-  if (user_data_dir.IsParent(cache_dir))
-    return {user_data_dir};
-
-  return {user_data_dir, cache_dir};
+  DCHECK(!network_contexts_parent_directory_.empty());
+  return network_contexts_parent_directory_;
 }
 
 bool ChromeContentBrowserClient::AllowRenderingMhtmlOverHttp(
