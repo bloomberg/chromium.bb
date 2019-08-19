@@ -14,7 +14,7 @@ from __future__ import absolute_import
 import json
 import os
 
-from chromite.scripts.parallel_emerge_old import DepGraphGenerator
+from chromite.lib.depgraph import DepGraphGenerator
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib

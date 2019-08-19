@@ -19,12 +19,12 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import depgraph
 from chromite.lib import osutils
 from chromite.lib import operation
 from chromite.lib import portage_util
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import merge_package_status as mps
-from chromite.scripts import parallel_emerge_old as parallel_emerge
 
 
 oper = operation.Operation('cros_portage_upgrade')
@@ -1338,7 +1338,7 @@ class Upgrader(object):
         emerge_args.append(pinfo.package)
     argv = self._GenParallelEmergeArgv(emerge_args)
 
-    deps = parallel_emerge.DepGraphGenerator()
+    deps = depgraph.DepGraphGenerator()
     deps.Initialize(argv)
 
     try:
