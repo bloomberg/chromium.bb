@@ -102,16 +102,6 @@ const base::Feature kCanvas2DImageChromium {
 #endif
 };
 
-// Enables the compositing of fixed position content that is opaque and can
-// preserve LCD text.
-const base::Feature kCompositeOpaqueFixedPosition{
-    "CompositeOpaqueFixedPosition", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the compositing of scrolling content that supports painting the
-// background with the foreground, such that LCD text will still be enabled.
-const base::Feature kCompositeOpaqueScrollers{"CompositeOpaqueScrollers",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, event.movement is calculated in blink instead of in browser.
 const base::Feature kConsolidatedMovementXY{"ConsolidatedMovementXY",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
