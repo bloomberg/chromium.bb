@@ -442,6 +442,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   }
 
   request.SetRequestContext(mojom::RequestContextType::HYPERLINK);
+  request.SetHasUserGesture(LocalFrame::HasTransientUserActivation(frame));
   const AtomicString& target = getAttribute(kTargetAttr);
   FrameLoadRequest frame_request(&GetDocument(), request);
   frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
