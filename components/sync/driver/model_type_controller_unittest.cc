@@ -192,9 +192,10 @@ class ModelTypeControllerTest : public testing::Test {
   }
 
   void RegisterWithBackend(bool expect_downloaded) {
-    base::MockCallback<base::RepeatingCallback<void(bool)>> callback;
-    EXPECT_CALL(callback, Run(expect_downloaded));
-    controller_.RegisterWithBackend(callback.Get(), &configurer_);
+    auto result = expect_downloaded
+                      ? DataTypeController::TYPE_ALREADY_DOWNLOADED
+                      : DataTypeController::TYPE_NOT_YET_DOWNLOADED;
+    EXPECT_EQ(result, controller_.RegisterWithBackend(&configurer_));
     // ModelTypeProcessorProxy does posting of tasks.
     base::RunLoop().RunUntilIdle();
   }
