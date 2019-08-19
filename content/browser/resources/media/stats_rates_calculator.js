@@ -311,6 +311,23 @@ class TargetEncodedByteRateCalculator {
   }
 }
 
+// Calculates "metricA - metricB", only looking at the current report.
+class DifferenceCalculator {
+  constructor(metricA, metricB) {
+    this.metricA = metricA;
+    this.metricB = metricB;
+  }
+
+  getCalculatedMetricName() {
+    return '[' + this.metricA + '-' + this.metricB + ']';
+  }
+
+  calculate(id, previousReport, currentReport) {
+    const currentStats = currentReport.get(id);
+    return currentStats[this.metricA] - currentStats[this.metricB];
+  }
+}
+
 // Keeps track of previous and current stats report and calculates all
 // calculated metrics.
 class StatsRatesCalculator {
@@ -343,7 +360,10 @@ class StatsRatesCalculator {
         type: 'track',
         metricCalculators: {
           framesSent: new RateCalculator('framesSent', 'timestamp'),
-          framesReceived: new RateCalculator('framesReceived', 'timestamp'),
+          framesReceived: [
+            new RateCalculator('framesReceived', 'timestamp'),
+            new DifferenceCalculator('framesReceived', 'framesDecoded'),
+          ],
           // TODO(https://crbug.com/994186): totalAudioEnergy for sending tracks
           // (but not receiving tracks) was moved to "media-source" in M77; add
           // AudioLevelRmsCalculator there too!
@@ -416,13 +436,18 @@ class StatsRatesCalculator {
       this.currentReport.getByType(statsCalculator.type).forEach(stats => {
         Object.keys(statsCalculator.metricCalculators)
             .forEach(originalMetric => {
-              const metricCalculator =
+              let metricCalculators =
                   statsCalculator.metricCalculators[originalMetric];
-              this.currentReport.addCalculatedMetric(
-                  stats.id, originalMetric,
-                  metricCalculator.getCalculatedMetricName(),
-                  metricCalculator.calculate(
-                      stats.id, this.previousReport, this.currentReport));
+              if (!Array.isArray(metricCalculators)) {
+                metricCalculators = [metricCalculators];
+              }
+              metricCalculators.forEach(metricCalculator => {
+                this.currentReport.addCalculatedMetric(
+                    stats.id, originalMetric,
+                    metricCalculator.getCalculatedMetricName(),
+                    metricCalculator.calculate(
+                        stats.id, this.previousReport, this.currentReport));
+              });
             });
       });
     });
