@@ -3482,9 +3482,9 @@ TEST_F(NetworkContextTest, PreconnectOne) {
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
-  network_context->PreconnectSockets(
-      1, test_server.base_url(), net::LOAD_NORMAL,
-      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
+  network_context->PreconnectSockets(1, test_server.base_url(),
+                                     /*allow_credentials=*/true,
+                                     net::NetworkIsolationKey());
   connection_listener.WaitForAcceptedConnections(1u);
 }
 
@@ -3498,8 +3498,8 @@ TEST_F(NetworkContextTest, PreconnectHSTS) {
   ASSERT_TRUE(test_server.Start());
 
   const GURL server_http_url = GetHttpUrlFromHttps(test_server.base_url());
-  network_context->PreconnectSockets(1, server_http_url, net::LOAD_NORMAL,
-                                     true /* privacy_mode_enabled */,
+  network_context->PreconnectSockets(1, server_http_url,
+                                     /*allow_credentials=*/false,
                                      net::NetworkIsolationKey());
   connection_listener.WaitForAcceptedConnections(1u);
 
@@ -3512,8 +3512,8 @@ TEST_F(NetworkContextTest, PreconnectHSTS) {
       base::Time::Now() + base::TimeDelta::FromSeconds(1000);
   network_context->url_request_context()->transport_security_state()->AddHSTS(
       server_http_url.host(), expiry, false);
-  network_context->PreconnectSockets(1, server_http_url, net::LOAD_NORMAL,
-                                     true /* privacy_mode_enabled */,
+  network_context->PreconnectSockets(1, server_http_url,
+                                     /*allow_credentials=*/false,
                                      net::NetworkIsolationKey());
   connection_listener.WaitForAcceptedConnections(1u);
 
@@ -3533,9 +3533,9 @@ TEST_F(NetworkContextTest, PreconnectZero) {
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
-  network_context->PreconnectSockets(
-      0, test_server.base_url(), net::LOAD_NORMAL,
-      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
+  network_context->PreconnectSockets(0, test_server.base_url(),
+                                     /*allow_credentials=*/true,
+                                     net::NetworkIsolationKey());
   base::RunLoop().RunUntilIdle();
 
   int num_sockets =
@@ -3555,9 +3555,9 @@ TEST_F(NetworkContextTest, PreconnectTwo) {
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
-  network_context->PreconnectSockets(
-      2, test_server.base_url(), net::LOAD_NORMAL,
-      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
+  network_context->PreconnectSockets(2, test_server.base_url(),
+                                     /*allow_credentials=*/true,
+                                     net::NetworkIsolationKey());
   connection_listener.WaitForAcceptedConnections(2u);
 
   int num_sockets =
@@ -3574,9 +3574,9 @@ TEST_F(NetworkContextTest, PreconnectFour) {
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
-  network_context->PreconnectSockets(
-      4, test_server.base_url(), net::LOAD_NORMAL,
-      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
+  network_context->PreconnectSockets(4, test_server.base_url(),
+                                     /*allow_credentials=*/true,
+                                     net::NetworkIsolationKey());
 
   connection_listener.WaitForAcceptedConnections(4u);
 
@@ -3598,9 +3598,9 @@ TEST_F(NetworkContextTest, PreconnectMax) {
       GetSocketPoolInfo(network_context.get(), "max_sockets_per_group");
   EXPECT_GT(76, max_num_sockets);
 
-  network_context->PreconnectSockets(
-      76, test_server.base_url(), net::LOAD_NORMAL,
-      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
+  network_context->PreconnectSockets(76, test_server.base_url(),
+                                     /*allow_credentials=*/true,
+                                     net::NetworkIsolationKey());
 
   // Wait until |max_num_sockets| have been connected.
   connection_listener.WaitForAcceptedConnections(max_num_sockets);
@@ -3635,11 +3635,9 @@ TEST_F(NetworkContextTest, PreconnectNetworkIsolationKey) {
   const net::NetworkIsolationKey kKey1(kOriginFoo, kOriginFoo);
   const net::NetworkIsolationKey kKey2(kOriginBar, kOriginBar);
   network_context->PreconnectSockets(1, test_server.base_url(),
-                                     net::LOAD_NORMAL,
-                                     true /* privacy_mode_enabled */, kKey1);
+                                     /*allow_credentials=*/false, kKey1);
   network_context->PreconnectSockets(2, test_server.base_url(),
-                                     net::LOAD_NORMAL,
-                                     true /* privacy_mode_enabled */, kKey2);
+                                     /*allow_credentials=*/false, kKey2);
   connection_listener.WaitForAcceptedConnections(3u);
 
   net::ClientSocketPool::GroupId group_id1(
