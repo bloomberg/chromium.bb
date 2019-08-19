@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+const CalculatorModifier = Object.freeze({
+  kNone: Object.freeze({postfix: '', multiplier: 1}),
+  kMillisecondsFromSeconds:
+      Object.freeze({postfix: '_in_ms', multiplier: 1000}),
+});
+
 class Metric {
   constructor(name, value) {
     this.name = name;
@@ -72,6 +78,10 @@ class CalculatedStats {
   }
 }
 
+// Contains the metrics of an RTCStatsReport, as well as calculated metrics
+// associated with metrics from the original report. Convertible to and from the
+// "internal reports" format used by webrtc_internals.js to pass stats from C++
+// to JavaScript.
 class StatsReport {
   constructor() {
     // Represents an RTCStatsReport. It is a Map RTCStats.id -> RTCStats.
@@ -195,186 +205,39 @@ class StatsReport {
   }
 }
 
-class StatsRatesCalculator {
-  constructor() {
-    this.previousReport = null;
-    this.currentReport = null;
+// Calculates the rate "delta accumulative / delta samples" and returns it. If
+// a rate cannot be calculated, such as the metric is missing in the current
+// or previous report, undefined is returned.
+class RateCalculator {
+  constructor(
+      accumulativeMetric, samplesMetric, modifier = CalculatorModifier.kNone) {
+    this.accumulativeMetric = accumulativeMetric;
+    this.samplesMetric = samplesMetric;
+    this.modifier = modifier;
   }
 
-  addStatsReport(report) {
-    this.previousReport = this.currentReport;
-    this.currentReport = report;
-    this.updateCalculatedMetrics_();
+  getCalculatedMetricName() {
+    if (this.samplesMetric == 'timestamp') {
+      return '[' + this.accumulativeMetric + '/s]';
+    }
+    return '[' + this.accumulativeMetric + '/' + this.samplesMetric +
+        this.modifier.postfix + ']';
   }
 
-  // Updates all "calculated metrics", which are metrics derived from standard
-  // values, such as converting total counters (e.g. bytesSent) to rates (e.g.
-  // bytesSent/s).
-  updateCalculatedMetrics_() {
-    const calculatedMetrics = [
-      {
-        type: 'data-channel',
-        condition: null,
-        names: [
-          ['messagesSent', 'timestamp'],
-          ['messagesReceived', 'timestamp'],
-          ['bytesSent', 'timestamp'],
-          ['bytesReceived', 'timestamp'],
-        ],
-      },
-      {
-        type: 'track',
-        condition: null,
-        names: [
-          ['framesSent', 'timestamp'],
-          ['framesReceived', 'timestamp'],
-          [
-            'totalAudioEnergy',
-            'totalSamplesDuration',
-            '[Audio_Level_in_RMS]',
-            (value) => {
-              // Calculated according to:
-              // https://w3c.github.io/webrtc-stats/#dom-rtcaudiohandlerstats-totalaudioenergy
-              return Math.sqrt(value);
-            },
-          ],
-          [
-            'jitterBufferDelay',
-            'jitterBufferEmittedCount',
-            '[jitterBufferDelay/jitterBufferEmittedCount_in_ms]',
-            (value) => {
-              return value * 1000;  // s -> ms
-            },
-          ],
-        ],
-      },
-      {
-        type: 'outbound-rtp',
-        condition: null,
-        names: [
-          ['bytesSent', 'timestamp'],
-          ['packetsSent', 'timestamp'],
-          [
-            'totalPacketSendDelay',
-            'packetsSent',
-            '[totalPacketSendDelay/packetsSent_in_ms]',
-            (value) => {
-              return value * 1000;  // s -> ms
-            },
-          ],
-          ['framesEncoded', 'timestamp'],
-          [
-            'totalEncodedBytesTarget', 'framesEncoded',
-            '[targetEncodedBytes/s]',
-            (value, currentStats, previousStats) => {
-              if (!previousStats) {
-                return 0;
-              }
-              const deltaTime =
-                  currentStats.timestamp - previousStats.timestamp;
-              const deltaFrames =
-                  currentStats.framesEncoded - previousStats.framesEncoded;
-              const encodedFrameRate = deltaFrames / deltaTime;
-              return value * encodedFrameRate;
-            }
-          ],
-          [
-            'totalEncodeTime', 'framesEncoded',
-            '[totalEncodeTime/framesEncoded_in_ms]',
-            (value) => {
-              return value * 1000;  // s -> ms
-            }
-          ],
-          ['qpSum', 'framesEncoded'],
-        ],
-      },
-      {
-        type: 'inbound-rtp',
-        condition: null,
-        names: [
-          ['bytesReceived', 'timestamp'],
-          ['packetsReceived', 'timestamp'],
-          ['framesDecoded', 'timestamp'],
-          [
-            'totalDecodeTime', 'framesDecoded',
-            '[totalDecodeTime/framesDecoded_in_ms]',
-            (value) => {
-              return value * 1000;  // s -> ms
-            }
-          ],
-          ['qpSum', 'framesDecoded'],
-        ],
-      },
-      {
-        type: 'transport',
-        condition: null,
-        names: [
-          ['bytesSent', 'timestamp'], ['bytesReceived', 'timestamp'],
-          // TODO(https://crbug.com/webrtc/10568): Add packetsSent and
-          // packetsReceived once implemented.
-        ],
-      },
-      {
-        type: 'candidate-pair',
-        condition: null,
-        names: [
-          ['bytesSent', 'timestamp'],
-          ['bytesReceived', 'timestamp'],
-          // TODO(https://crbug.com/webrtc/10569): Add packetsSent and
-          // packetsReceived once implemented.
-          ['requestsSent', 'timestamp'],
-          ['requestsReceived', 'timestamp'],
-          ['responsesSent', 'timestamp'],
-          ['responsesReceived', 'timestamp'],
-          ['consentRequestsSent', 'timestamp'],
-          ['consentRequestsReceived', 'timestamp'],
-          [
-            'totalRoundTripTime',
-            'responsesReceived',
-            '[totalRoundTripTime/responsesReceived_in_ms]',
-            (value) => {
-              return value * 1000;  // s -> ms
-            },
-          ],
-        ],
-      },
-    ];
-    calculatedMetrics.forEach(calculatedMetric => {
-      calculatedMetric.names.forEach(
-          ([accumulativeMetric, samplesMetric, resultName, transformation]) => {
-            this.currentReport.getByType(calculatedMetric.type)
-                .forEach(stats => {
-                  if (!calculatedMetric.condition ||
-                      calculatedMetric.condition(stats)) {
-                    if (!resultName) {
-                      resultName = (samplesMetric == 'timestamp') ?
-                          '[' + accumulativeMetric + '/s]' :
-                          '[' + accumulativeMetric + '/' + samplesMetric + ']';
-                    }
-                    let result = this.calculateAccumulativeMetricOverSamples_(
-                        stats.id, accumulativeMetric, samplesMetric);
-                    if (result && transformation) {
-                      const previousStats = this.previousReport.get(stats.id);
-                      result = transformation(result, stats, previousStats);
-                    }
-                    this.currentReport.addCalculatedMetric(
-                        stats.id, accumulativeMetric, resultName, result);
-                  }
-                });
-          });
-    });
+  calculate(id, previousReport, currentReport) {
+    return RateCalculator.calculateRate(
+               id, previousReport, currentReport, this.accumulativeMetric,
+               this.samplesMetric) *
+        this.modifier.multiplier;
   }
 
-  // Calculates the rate "delta accumulative / delta samples" and returns it. If
-  // a rate cannot be calculated, such as the metric is missing in the current
-  // or previous report, undefined is returned.
-  calculateAccumulativeMetricOverSamples_(
-      id, accumulativeMetric, samplesMetric) {
-    if (!this.previousReport || !this.currentReport) {
+  static calculateRate(
+      id, previousReport, currentReport, accumulativeMetric, samplesMetric) {
+    if (!previousReport || !currentReport) {
       return undefined;
     }
-    const previousStats = this.previousReport.get(id);
-    const currentStats = this.currentReport.get(id);
+    const previousStats = previousReport.get(id);
+    const currentStats = currentReport.get(id);
     if (!previousStats || !currentStats) {
       return undefined;
     }
@@ -399,5 +262,169 @@ class StatsRatesCalculator {
     const deltaValue = currentValue - previousValue;
     const deltaSamples = currentSamples - previousSamples;
     return deltaValue / deltaSamples;
+  }
+}
+
+// Calculates "RMS" audio level, which is the average audio level between the
+// previous and current report, in the interval [0,1]. Calculated per:
+// https://w3c.github.io/webrtc-stats/#dom-rtcinboundrtpstreamstats-totalaudioenergy
+class AudioLevelRmsCalculator {
+  getCalculatedMetricName() {
+    return '[Audio_Level_in_RMS]';
+  }
+
+  calculate(id, previousReport, currentReport) {
+    const averageAudioLevelSquared = RateCalculator.calculateRate(
+        id, previousReport, currentReport, 'totalAudioEnergy',
+        'totalSamplesDuration');
+    return Math.sqrt(averageAudioLevelSquared);
+  }
+}
+
+// Calculates the average encoded frame target, based on the average encoded
+// bytes target per frame and the average encode frame rate.
+// TODO(https://crbug.com/994574): Replace this class with
+// RateCalculator('totalEncodedBytesTarget', 'timestamp'), assuming it yields
+// the same result.
+class TargetEncodedByteRateCalculator {
+  getCalculatedMetricName() {
+    return '[targetEncodedBytes/s]';
+  }
+
+  calculate(id, previousReport, currentReport) {
+    if (!previousReport) {
+      return 0;
+    }
+    const previousStats = previousReport.get(id);
+    const currentStats = currentReport.get(id);
+    if (!previousStats || !currentStats) {
+      return 0;
+    }
+    const averageEncodedFrameTarget = RateCalculator.calculateRate(
+        id, previousReport, currentReport, 'totalEncodedBytesTarget',
+        'framesEncoded');
+    const deltaTime = currentStats.timestamp - previousStats.timestamp;
+    const deltaFrames =
+        currentStats.framesEncoded - previousStats.framesEncoded;
+    const encodedFrameRate = deltaFrames / deltaTime;
+    return averageEncodedFrameTarget * encodedFrameRate;
+  }
+}
+
+// Keeps track of previous and current stats report and calculates all
+// calculated metrics.
+class StatsRatesCalculator {
+  constructor() {
+    this.previousReport = null;
+    this.currentReport = null;
+  }
+
+  addStatsReport(report) {
+    this.previousReport = this.currentReport;
+    this.currentReport = report;
+    this.updateCalculatedMetrics_();
+  }
+
+  // Updates all "calculated metrics", which are metrics derived from standard
+  // values, such as converting total counters (e.g. bytesSent) to rates (e.g.
+  // bytesSent/s).
+  updateCalculatedMetrics_() {
+    const statsCalculators = [
+      {
+        type: 'data-channel',
+        metricCalculators: {
+          messagesSent: new RateCalculator('messagesSent', 'timestamp'),
+          messagesReceived: new RateCalculator('messagesReceived', 'timestamp'),
+          bytesSent: new RateCalculator('bytesSent', 'timestamp'),
+          bytesReceived: new RateCalculator('bytesReceived', 'timestamp'),
+        },
+      },
+      {
+        type: 'track',
+        metricCalculators: {
+          framesSent: new RateCalculator('framesSent', 'timestamp'),
+          framesReceived: new RateCalculator('framesReceived', 'timestamp'),
+          // TODO(https://crbug.com/994186): totalAudioEnergy for sending tracks
+          // (but not receiving tracks) was moved to "media-source" in M77; add
+          // AudioLevelRmsCalculator there too!
+          totalAudioEnergy: new AudioLevelRmsCalculator(),
+          jitterBufferDelay: new RateCalculator(
+              'jitterBufferDelay', 'jitterBufferEmittedCount',
+              CalculatorModifier.kMillisecondsFromSeconds),
+        },
+      },
+      {
+        type: 'outbound-rtp',
+        metricCalculators: {
+          bytesSent: new RateCalculator('bytesSent', 'timestamp'),
+          packetsSent: new RateCalculator('packetsSent', 'timestamp'),
+          totalPacketSendDelay: new RateCalculator(
+              'totalPacketSendDelay', 'packetsSent',
+              CalculatorModifier.kMillisecondsFromSeconds),
+          framesEncoded: new RateCalculator('framesEncoded', 'timestamp'),
+          totalEncodedBytesTarget: new TargetEncodedByteRateCalculator(),
+          totalEncodeTime: new RateCalculator(
+              'totalEncodeTime', 'framesEncoded',
+              CalculatorModifier.kMillisecondsFromSeconds),
+          qpSum: new RateCalculator('qpSum', 'framesEncoded'),
+        },
+      },
+      {
+        type: 'inbound-rtp',
+        metricCalculators: {
+          bytesReceived: new RateCalculator('bytesReceived', 'timestamp'),
+          packetsReceived: new RateCalculator('packetsReceived', 'timestamp'),
+          framesDecoded: new RateCalculator('framesDecoded', 'timestamp'),
+          totalDecodeTime: new RateCalculator(
+              'totalDecodeTime', 'framesDecoded',
+              CalculatorModifier.kMillisecondsFromSeconds),
+          qpSum: new RateCalculator('qpSum', 'framesDecoded'),
+        },
+      },
+      {
+        type: 'transport',
+        metricCalculators: {
+          bytesSent: new RateCalculator('bytesSent', 'timestamp'),
+          bytesReceived: new RateCalculator('bytesReceived', 'timestamp'),
+          // TODO(https://crbug.com/webrtc/10568): Add packetsSent and
+          // packetsReceived once implemented.
+        },
+      },
+      {
+        type: 'candidate-pair',
+        metricCalculators: {
+          bytesSent: new RateCalculator('bytesSent', 'timestamp'),
+          bytesReceived: new RateCalculator('bytesReceived', 'timestamp'),
+          // TODO(https://crbug.com/webrtc/10569): Add packetsSent and
+          // packetsReceived once implemented.
+          requestsSent: new RateCalculator('requestsSent', 'timestamp'),
+          requestsReceived: new RateCalculator('requestsReceived', 'timestamp'),
+          responsesSent: new RateCalculator('responsesSent', 'timestamp'),
+          responsesReceived:
+              new RateCalculator('responsesReceived', 'timestamp'),
+          consentRequestsSent:
+              new RateCalculator('consentRequestsSent', 'timestamp'),
+          consentRequestsReceived:
+              new RateCalculator('consentRequestsReceived', 'timestamp'),
+          totalRoundTripTime: new RateCalculator(
+              'totalRoundTripTime', 'responsesReceived',
+              CalculatorModifier.kMillisecondsFromSeconds),
+        },
+      },
+    ];
+    statsCalculators.forEach(statsCalculator => {
+      this.currentReport.getByType(statsCalculator.type).forEach(stats => {
+        Object.keys(statsCalculator.metricCalculators)
+            .forEach(originalMetric => {
+              const metricCalculator =
+                  statsCalculator.metricCalculators[originalMetric];
+              this.currentReport.addCalculatedMetric(
+                  stats.id, originalMetric,
+                  metricCalculator.getCalculatedMetricName(),
+                  metricCalculator.calculate(
+                      stats.id, this.previousReport, this.currentReport));
+            });
+      });
+    });
   }
 }
