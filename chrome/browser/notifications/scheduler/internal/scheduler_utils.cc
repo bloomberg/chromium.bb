@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
@@ -16,11 +17,12 @@
 
 namespace notifications {
 namespace {
-using FirstAndLastIters = std::pair<std::deque<Impression>::const_iterator,
-                                    std::deque<Impression>::const_iterator>;
+using FirstAndLastIters =
+    std::pair<base::circular_deque<Impression>::const_iterator,
+              base::circular_deque<Impression>::const_iterator>;
 
 base::Optional<FirstAndLastIters> FindFirstAndLastNotificationShownToday(
-    const std::deque<Impression>& impressions,
+    const base::circular_deque<Impression>& impressions,
     const base::Time& now,
     const base::Time& beginning_of_today) {
   if (impressions.empty() || impressions.cbegin()->create_time > now ||

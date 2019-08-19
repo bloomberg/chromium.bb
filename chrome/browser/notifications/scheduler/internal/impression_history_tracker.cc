@@ -202,20 +202,18 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
   base::circular_deque<Impression*> dismisses;
   base::Time now = clock_->Now();
 
+  // Prune out expired impression.
+  while (!client_state->impressions.empty() &&
+         now - client_state->impressions.front().create_time >
+             config_.impression_expiration) {
+    impression_map_.erase(client_state->impressions.front().guid);
+    client_state->impressions.pop_front();
+    SetNeedsUpdate(client_state->type, true);
+  }
+
   for (auto it = client_state->impressions.begin();
-       it != client_state->impressions.end();) {
+       it != client_state->impressions.end(); ++it) {
     auto* impression = &*it;
-
-    // Prune out expired impression.
-    if (now - impression->create_time > config_.impression_expiration) {
-      impression_map_.erase(impression->guid);
-      client_state->impressions.erase(it++);
-      SetNeedsUpdate(client_state->type, true);
-      continue;
-    } else {
-      ++it;
-    }
-
     switch (impression->feedback) {
       case UserFeedback::kDismiss:
         dismisses.emplace_back(impression);
