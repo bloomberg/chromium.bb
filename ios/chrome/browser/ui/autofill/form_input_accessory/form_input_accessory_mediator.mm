@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
+#import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 
 #include "base/ios/block_types.h"
 #include "base/mac/foundation_util.h"
@@ -14,14 +14,14 @@
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
-#import "ios/chrome/browser/autofill/form_input_accessory_consumer.h"
-#import "ios/chrome/browser/autofill/form_input_accessory_view.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
 #import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
+#import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_consumer.h"
+#import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_view.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -425,8 +425,8 @@
 }
 
 // Updates the accessory mediator with the passed web state, its JS suggestion
-// manager and the registered provider. If NULL is passed it will instead clear
-// those properties in the mediator.
+// manager and the registered provider. If nullptr is passed it will instead
+// clear those properties in the mediator.
 - (void)updateWithNewWebState:(web::WebState*)webState {
   [self detachFromWebState];
   if (webState) {
@@ -449,7 +449,7 @@
     }
     _formInputAccessoryHandler.JSSuggestionManager = self.JSSuggestionManager;
   } else {
-    self.webState = NULL;
+    self.webState = nullptr;
     self.JSSuggestionManager = nil;
     self.provider = nil;
   }

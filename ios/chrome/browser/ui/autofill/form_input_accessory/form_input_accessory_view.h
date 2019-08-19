@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_H_
-#define IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_FORM_INPUT_ACCESSORY_FORM_INPUT_ACCESSORY_VIEW_H_
+#define IOS_CHROME_BROWSER_UI_AUTOFILL_FORM_INPUT_ACCESSORY_FORM_INPUT_ACCESSORY_VIEW_H_
 
 #import <UIKit/UIKit.h>
 
@@ -20,7 +20,7 @@
 // Subview of the accessory view for web forms. Shows a custom view with form
 // navigation controls above the keyboard. Enables input clicks by way of the
 // playInputClick method.
-@interface FormInputAccessoryView : UIView<UIInputViewAudioFeedback>
+@interface FormInputAccessoryView : UIView <UIInputViewAudioFeedback>
 
 // The previous button if the view was set up with a navigation delegate. Nil
 // otherwise.
@@ -45,4 +45,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_FORM_INPUT_ACCESSORY_FORM_INPUT_ACCESSORY_VIEW_H_

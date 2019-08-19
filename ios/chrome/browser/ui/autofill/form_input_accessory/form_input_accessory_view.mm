@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/autofill/form_input_accessory_view.h"
+#import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_view.h"
 
 #import <QuartzCore/QuartzCore.h>
 
@@ -175,44 +175,43 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
   if (base::i18n::IsRTL()) {
     gradientView.transform = CGAffineTransformMakeRotation(M_PI);
   }
-    [self insertSubview:gradientView belowSubview:trailingView];
+  [self insertSubview:gradientView belowSubview:trailingView];
 
-    UIView* topGrayLine = [[UIView alloc] init];
-    topGrayLine.backgroundColor = UIColor.cr_systemGray2Color;
-    topGrayLine.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:topGrayLine];
+  UIView* topGrayLine = [[UIView alloc] init];
+  topGrayLine.backgroundColor = UIColor.cr_systemGray2Color;
+  topGrayLine.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:topGrayLine];
 
-    UIView* bottomGrayLine = [[UIView alloc] init];
-    bottomGrayLine.backgroundColor = UIColor.cr_systemGray2Color;
-    bottomGrayLine.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:bottomGrayLine];
+  UIView* bottomGrayLine = [[UIView alloc] init];
+  bottomGrayLine.backgroundColor = UIColor.cr_systemGray2Color;
+  bottomGrayLine.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:bottomGrayLine];
 
-    [NSLayoutConstraint activateConstraints:@[
-      [topGrayLine.topAnchor constraintEqualToAnchor:self.topAnchor],
-      [topGrayLine.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-      [topGrayLine.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-      [topGrayLine.heightAnchor
-          constraintEqualToConstant:ManualFillSeparatorHeight],
+  [NSLayoutConstraint activateConstraints:@[
+    [topGrayLine.topAnchor constraintEqualToAnchor:self.topAnchor],
+    [topGrayLine.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [topGrayLine.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    [topGrayLine.heightAnchor
+        constraintEqualToConstant:ManualFillSeparatorHeight],
 
-      [bottomGrayLine.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-      [bottomGrayLine.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-      [bottomGrayLine.trailingAnchor
-          constraintEqualToAnchor:self.trailingAnchor],
-      [bottomGrayLine.heightAnchor
-          constraintEqualToConstant:ManualFillSeparatorHeight],
+    [bottomGrayLine.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+    [bottomGrayLine.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [bottomGrayLine.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    [bottomGrayLine.heightAnchor
+        constraintEqualToConstant:ManualFillSeparatorHeight],
 
-      [gradientView.topAnchor constraintEqualToAnchor:trailingView.topAnchor],
-      [gradientView.bottomAnchor
-          constraintEqualToAnchor:trailingView.bottomAnchor],
-      [gradientView.widthAnchor
-          constraintEqualToConstant:ManualFillGradientWidth],
-      [gradientView.trailingAnchor
-          constraintEqualToAnchor:trailingView.leadingAnchor
-                         constant:ManualFillGradientMargin],
+    [gradientView.topAnchor constraintEqualToAnchor:trailingView.topAnchor],
+    [gradientView.bottomAnchor
+        constraintEqualToAnchor:trailingView.bottomAnchor],
+    [gradientView.widthAnchor
+        constraintEqualToConstant:ManualFillGradientWidth],
+    [gradientView.trailingAnchor
+        constraintEqualToAnchor:trailingView.leadingAnchor
+                       constant:ManualFillGradientMargin],
 
-      [leadingViewContainer.trailingAnchor
-          constraintEqualToAnchor:trailingView.leadingAnchor],
-    ]];
+    [leadingViewContainer.trailingAnchor
+        constraintEqualToAnchor:trailingView.leadingAnchor],
+  ]];
 }
 
 UIImage* ButtonImage(NSString* name) {
@@ -222,47 +221,47 @@ UIImage* ButtonImage(NSString* name) {
 
 // Returns a view that shows navigation buttons.
 - (UIView*)viewForNavigationButtons {
-    UIButton* previousButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [previousButton setImage:[UIImage imageNamed:@"mf_arrow_up"]
-                    forState:UIControlStateNormal];
-    [previousButton addTarget:self
-                       action:@selector(previousButtonTapped)
-             forControlEvents:UIControlEventTouchUpInside];
-    previousButton.enabled = NO;
-    NSString* previousButtonAccessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_AUTOFILL_ACCNAME_PREVIOUS_FIELD);
-    [previousButton setAccessibilityLabel:previousButtonAccessibilityLabel];
+  UIButton* previousButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  [previousButton setImage:[UIImage imageNamed:@"mf_arrow_up"]
+                  forState:UIControlStateNormal];
+  [previousButton addTarget:self
+                     action:@selector(previousButtonTapped)
+           forControlEvents:UIControlEventTouchUpInside];
+  previousButton.enabled = NO;
+  NSString* previousButtonAccessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_AUTOFILL_ACCNAME_PREVIOUS_FIELD);
+  [previousButton setAccessibilityLabel:previousButtonAccessibilityLabel];
 
-    UIButton* nextButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [nextButton setImage:[UIImage imageNamed:@"mf_arrow_down"]
-                forState:UIControlStateNormal];
-    [nextButton addTarget:self
-                   action:@selector(nextButtonTapped)
-         forControlEvents:UIControlEventTouchUpInside];
-    nextButton.enabled = NO;
-    NSString* nextButtonAccessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_AUTOFILL_ACCNAME_NEXT_FIELD);
-    [nextButton setAccessibilityLabel:nextButtonAccessibilityLabel];
+  UIButton* nextButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  [nextButton setImage:[UIImage imageNamed:@"mf_arrow_down"]
+              forState:UIControlStateNormal];
+  [nextButton addTarget:self
+                 action:@selector(nextButtonTapped)
+       forControlEvents:UIControlEventTouchUpInside];
+  nextButton.enabled = NO;
+  NSString* nextButtonAccessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_AUTOFILL_ACCNAME_NEXT_FIELD);
+  [nextButton setAccessibilityLabel:nextButtonAccessibilityLabel];
 
-    UIButton* closeButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    NSString* title = l10n_util::GetNSString(IDS_IOS_AUTOFILL_INPUT_BAR_DONE);
-    [closeButton setTitle:title forState:UIControlStateNormal];
-    [closeButton addTarget:self
-                    action:@selector(closeButtonTapped)
-          forControlEvents:UIControlEventTouchUpInside];
-    closeButton.contentEdgeInsets = UIEdgeInsetsMake(
-        0, ManualFillCloseButtonLeftInset, 0, ManualFillCloseButtonRightInset);
-    NSString* closeButtonAccessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_AUTOFILL_ACCNAME_HIDE_KEYBOARD);
-    [closeButton setAccessibilityLabel:closeButtonAccessibilityLabel];
+  UIButton* closeButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  NSString* title = l10n_util::GetNSString(IDS_IOS_AUTOFILL_INPUT_BAR_DONE);
+  [closeButton setTitle:title forState:UIControlStateNormal];
+  [closeButton addTarget:self
+                  action:@selector(closeButtonTapped)
+        forControlEvents:UIControlEventTouchUpInside];
+  closeButton.contentEdgeInsets = UIEdgeInsetsMake(
+      0, ManualFillCloseButtonLeftInset, 0, ManualFillCloseButtonRightInset);
+  NSString* closeButtonAccessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_AUTOFILL_ACCNAME_HIDE_KEYBOARD);
+  [closeButton setAccessibilityLabel:closeButtonAccessibilityLabel];
 
-    self.nextButton = nextButton;
-    self.previousButton = previousButton;
+  self.nextButton = nextButton;
+  self.previousButton = previousButton;
 
-    UIStackView* navigationView = [[UIStackView alloc]
-        initWithArrangedSubviews:@[ previousButton, nextButton, closeButton ]];
-    navigationView.spacing = ManualFillNavigationItemSpacing;
-    return navigationView;
+  UIStackView* navigationView = [[UIStackView alloc]
+      initWithArrangedSubviews:@[ previousButton, nextButton, closeButton ]];
+  navigationView.spacing = ManualFillNavigationItemSpacing;
+  return navigationView;
 }
 
 @end

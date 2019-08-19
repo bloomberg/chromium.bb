@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_FORM_INPUT_ACCESSORY_FORM_INPUT_ACCESSORY_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_AUTOFILL_FORM_INPUT_ACCESSORY_FORM_INPUT_ACCESSORY_VIEW_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/autofill/form_input_accessory_consumer.h"
+#import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_consumer.h"
 
 namespace autofill {
 extern CGFloat const kInputAccessoryHeight;
@@ -21,7 +21,7 @@ extern CGFloat const kInputAccessoryHeight;
 // accessory view elements. Defaults in paused state and needs to be started by
 // calling |continueCustomKeyboardView|.
 @interface FormInputAccessoryViewController
-    : NSObject<FormInputAccessoryConsumer>
+    : NSObject <FormInputAccessoryConsumer>
 
 // Presents a view above the keyboard.
 - (void)presentView:(UIView*)view;
@@ -52,4 +52,4 @@ extern CGFloat const kInputAccessoryHeight;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_FORM_INPUT_ACCESSORY_FORM_INPUT_ACCESSORY_VIEW_CONTROLLER_H_
