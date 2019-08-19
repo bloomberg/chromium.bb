@@ -17,6 +17,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
@@ -214,6 +215,10 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config,
                                                 bool* result,
                                                 base::WaitableEvent* done) {
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
+
+  // Signal the event when leaving the method.
+  base::ScopedClosureRunner signal_event(
+      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(done)));
   *result = false;
 
   output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
@@ -224,7 +229,6 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config,
 
   if (!SetFormats(config.input_format, config.output_profile)) {
     VLOGF(1) << "Failed setting up formats";
-    done->Signal();
     return;
   }
 
@@ -240,30 +244,22 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config,
             VideoFrame::NumPlanes(config.input_format)));
     if (!input_layout) {
       VLOGF(1) << "Invalid image processor input layout";
-      done->Signal();
       return;
     }
 
     if (!CreateImageProcessor(*input_layout, *device_input_layout_,
                               visible_size_)) {
       VLOGF(1) << "Failed to create image processor";
-      done->Signal();
       return;
     }
   }
 
-  if (!InitInputMemoryType(config)) {
-    done->Signal();
+  if (!InitInputMemoryType(config))
     return;
-  }
-  if (!InitControls(config)) {
-    done->Signal();
+  if (!InitControls(config))
     return;
-  }
-  if (!CreateOutputBuffers()) {
-    done->Signal();
+  if (!CreateOutputBuffers())
     return;
-  }
 
   encoder_state_ = kInitialized;
   RequestEncodingParametersChangeTask(
@@ -279,7 +275,6 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config,
 
   // Finish initialization.
   *result = true;
-  done->Signal();
 }
 
 bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
