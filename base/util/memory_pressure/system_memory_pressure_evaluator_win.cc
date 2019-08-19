@@ -1,17 +1,18 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/memory_pressure_monitor_win.h"
+#include "base/util/memory_pressure/system_memory_pressure_evaluator_win.h"
 
 #include <windows.h>
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/util/memory_pressure/multi_source_memory_pressure_monitor.h"
 
-namespace base {
+namespace util {
 namespace win {
 
 namespace {
@@ -24,75 +25,74 @@ static const DWORDLONG kMBBytes = 1024 * 1024;
 // memory pressure monitor. The values were determined experimentally to ensure
 // sufficient responsiveness of the memory pressure subsystem, and minimal
 // overhead.
-const int MemoryPressureMonitor::kModeratePressureCooldownMs = 10000;
+const int SystemMemoryPressureEvaluator::kModeratePressureCooldownMs = 10000;
 
 // TODO(chrisha): Explore the following constants further with an experiment.
 
 // A system is considered 'high memory' if it has more than 1.5GB of system
 // memory available for use by the memory manager (not reserved for hardware
 // and drivers). This is a fuzzy version of the ~2GB discussed below.
-const int MemoryPressureMonitor::kLargeMemoryThresholdMb = 1536;
+const int SystemMemoryPressureEvaluator::kLargeMemoryThresholdMb = 1536;
 
 // These are the default thresholds used for systems with < ~2GB of physical
 // memory. Such systems have been observed to always maintain ~100MB of
 // available memory, paging until that is the case. To try to avoid paging a
 // threshold slightly above this is chosen. The moderate threshold is slightly
 // less grounded in reality and chosen as 2.5x critical.
-const int MemoryPressureMonitor::kSmallMemoryDefaultModerateThresholdMb = 500;
-const int MemoryPressureMonitor::kSmallMemoryDefaultCriticalThresholdMb = 200;
+const int
+    SystemMemoryPressureEvaluator::kSmallMemoryDefaultModerateThresholdMb = 500;
+const int
+    SystemMemoryPressureEvaluator::kSmallMemoryDefaultCriticalThresholdMb = 200;
 
 // These are the default thresholds used for systems with >= ~2GB of physical
 // memory. Such systems have been observed to always maintain ~300MB of
 // available memory, paging until that is the case.
-const int MemoryPressureMonitor::kLargeMemoryDefaultModerateThresholdMb = 1000;
-const int MemoryPressureMonitor::kLargeMemoryDefaultCriticalThresholdMb = 400;
+const int
+    SystemMemoryPressureEvaluator::kLargeMemoryDefaultModerateThresholdMb =
+        1000;
+const int
+    SystemMemoryPressureEvaluator::kLargeMemoryDefaultCriticalThresholdMb = 400;
 
-MemoryPressureMonitor::MemoryPressureMonitor()
+SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
+    std::unique_ptr<MemoryPressureVoter> voter)
     : moderate_threshold_mb_(0),
       critical_threshold_mb_(0),
-      current_memory_pressure_level_(
-          MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
       moderate_pressure_repeat_count_(0),
-      dispatch_callback_(
-          base::BindRepeating(&MemoryPressureListener::NotifyMemoryPressure)),
+      voter_(std::move(voter)),
+      current_vote_(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
       weak_ptr_factory_(this) {
   InferThresholds();
   StartObserving();
 }
 
-MemoryPressureMonitor::MemoryPressureMonitor(int moderate_threshold_mb,
-                                             int critical_threshold_mb)
+SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
+    int moderate_threshold_mb,
+    int critical_threshold_mb,
+    std::unique_ptr<MemoryPressureVoter> voter)
     : moderate_threshold_mb_(moderate_threshold_mb),
       critical_threshold_mb_(critical_threshold_mb),
-      current_memory_pressure_level_(
-          MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
       moderate_pressure_repeat_count_(0),
-      dispatch_callback_(
-          base::BindRepeating(&MemoryPressureListener::NotifyMemoryPressure)),
+      voter_(std::move(voter)),
+      current_vote_(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
       weak_ptr_factory_(this) {
   DCHECK_GE(moderate_threshold_mb_, critical_threshold_mb_);
   DCHECK_LE(0, critical_threshold_mb_);
   StartObserving();
 }
 
-MemoryPressureMonitor::~MemoryPressureMonitor() {
+SystemMemoryPressureEvaluator::~SystemMemoryPressureEvaluator() {
   StopObserving();
 }
 
-void MemoryPressureMonitor::CheckMemoryPressureSoon() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void SystemMemoryPressureEvaluator::CheckMemoryPressureSoon() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&MemoryPressureMonitor::CheckMemoryPressure,
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, BindOnce(&SystemMemoryPressureEvaluator::CheckMemoryPressure,
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
-MemoryPressureListener::MemoryPressureLevel
-MemoryPressureMonitor::GetCurrentPressureLevel() const {
-  return current_memory_pressure_level_;
-}
-
-void MemoryPressureMonitor::InferThresholds() {
+void SystemMemoryPressureEvaluator::InferThresholds() {
   // Default to a 'high' memory situation, which uses more conservative
   // thresholds.
   bool high_memory = true;
@@ -112,40 +112,39 @@ void MemoryPressureMonitor::InferThresholds() {
   }
 }
 
-void MemoryPressureMonitor::StartObserving() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void SystemMemoryPressureEvaluator::StartObserving() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   timer_.Start(
       FROM_HERE, base::MemoryPressureMonitor::kUMAMemoryPressureLevelPeriod,
-      BindRepeating(
-          &MemoryPressureMonitor::CheckMemoryPressureAndRecordStatistics,
-          weak_ptr_factory_.GetWeakPtr()));
+      BindRepeating(&SystemMemoryPressureEvaluator::CheckMemoryPressure,
+                    weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MemoryPressureMonitor::StopObserving() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void SystemMemoryPressureEvaluator::StopObserving() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If StartObserving failed, StopObserving will still get called.
   timer_.Stop();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void MemoryPressureMonitor::CheckMemoryPressure() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void SystemMemoryPressureEvaluator::CheckMemoryPressure() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Get the previous pressure level and update the current one.
-  MemoryPressureLevel old_pressure = current_memory_pressure_level_;
-  current_memory_pressure_level_ = CalculateCurrentPressureLevel();
+  MemoryPressureLevel old_vote = current_vote_;
+  current_vote_ = CalculateCurrentPressureLevel();
 
   // |notify| will be set to true if MemoryPressureListeners need to be
   // notified of a memory pressure level state change.
   bool notify = false;
-  switch (current_memory_pressure_level_) {
-    case MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+  switch (current_vote_) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
       break;
 
-    case MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
-      if (old_pressure != current_memory_pressure_level_) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      if (old_vote != current_vote_) {
         // This is a new transition to moderate pressure so notify.
         moderate_pressure_repeat_count_ = 0;
         notify = true;
@@ -157,42 +156,27 @@ void MemoryPressureMonitor::CheckMemoryPressure() {
             base::MemoryPressureMonitor::kUMAMemoryPressureLevelPeriod
                 .InMilliseconds();
         if (++moderate_pressure_repeat_count_ ==
-                kModeratePressureCooldownCycles) {
+            kModeratePressureCooldownCycles) {
           moderate_pressure_repeat_count_ = 0;
           notify = true;
         }
       }
       break;
 
-    case MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       // Always notify of critical pressure levels.
       notify = true;
       break;
   }
 
-  if (!notify)
-    return;
-
-  // Emit a notification of the current memory pressure level. This can only
-  // happen for moderate and critical pressure levels.
-  DCHECK_NE(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
-            current_memory_pressure_level_);
-  dispatch_callback_.Run(current_memory_pressure_level_);
+  voter_->SetVote(current_vote_, notify);
 }
 
-void MemoryPressureMonitor::CheckMemoryPressureAndRecordStatistics() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  CheckMemoryPressure();
-
-  RecordMemoryPressure(current_memory_pressure_level_, 1);
-}
-
-MemoryPressureListener::MemoryPressureLevel
-MemoryPressureMonitor::CalculateCurrentPressureLevel() {
+base::MemoryPressureListener::MemoryPressureLevel
+SystemMemoryPressureEvaluator::CalculateCurrentPressureLevel() {
   MEMORYSTATUSEX mem_status = {};
   if (!GetSystemMemoryStatus(&mem_status))
-    return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+    return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
 
   // How much system memory is actively available for use right now, in MBs.
   int phys_free = static_cast<int>(mem_status.ullAvailPhys / kMBBytes);
@@ -207,17 +191,17 @@ MemoryPressureMonitor::CalculateCurrentPressureLevel() {
 
   // Determine if the physical memory is under critical memory pressure.
   if (phys_free <= critical_threshold_mb_)
-    return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
+    return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
 
   // Determine if the physical memory is under moderate memory pressure.
   if (phys_free <= moderate_threshold_mb_)
-    return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
+    return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
 
   // No memory pressure was detected.
-  return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+  return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
 }
 
-bool MemoryPressureMonitor::GetSystemMemoryStatus(
+bool SystemMemoryPressureEvaluator::GetSystemMemoryStatus(
     MEMORYSTATUSEX* mem_status) {
   DCHECK(mem_status != nullptr);
   mem_status->dwLength = sizeof(*mem_status);
@@ -226,10 +210,5 @@ bool MemoryPressureMonitor::GetSystemMemoryStatus(
   return true;
 }
 
-void MemoryPressureMonitor::SetDispatchCallback(
-    const DispatchCallback& callback) {
-  dispatch_callback_ = callback;
-}
-
 }  // namespace win
-}  // namespace base
+}  // namespace util

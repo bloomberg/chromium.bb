@@ -1,28 +1,32 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MEMORY_MEMORY_PRESSURE_MONITOR_WIN_H_
-#define BASE_MEMORY_MEMORY_PRESSURE_MONITOR_WIN_H_
+#ifndef BASE_UTIL_MEMORY_PRESSURE_SYSTEM_MEMORY_PRESSURE_EVALUATOR_WIN_H_
+#define BASE_UTIL_MEMORY_PRESSURE_SYSTEM_MEMORY_PRESSURE_EVALUATOR_WIN_H_
 
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "base/timer/timer.h"
+#include "base/util/memory_pressure/memory_pressure_voter.h"
+#include "base/util/memory_pressure/system_memory_pressure_evaluator.h"
 
 // To not pull in windows.h.
 typedef struct _MEMORYSTATUSEX MEMORYSTATUSEX;
 
-namespace base {
+namespace util {
 namespace win {
 
-// Windows memory pressure monitor. Because there is no OS provided signal this
-// polls at a low frequency (once per second), and applies internal hysteresis.
-class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
+// Windows memory pressure voter. Because there is no OS provided signal this
+// polls at a low frequency, and applies internal hysteresis.
+class SystemMemoryPressureEvaluator
+    : public util::SystemMemoryPressureEvaluator {
  public:
+  using MemoryPressureLevel = base::MemoryPressureListener::MemoryPressureLevel;
+
   // Constants governing the polling and hysteresis behaviour of the observer.
   // The time which should pass between 2 successive moderate memory pressure
   // signals, in milliseconds.
@@ -40,23 +44,23 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
   static const int kLargeMemoryDefaultModerateThresholdMb;
   static const int kLargeMemoryDefaultCriticalThresholdMb;
 
-  // Default constructor. Will choose thresholds automatically basd on the
+  // Default constructor. Will choose thresholds automatically based on the
   // actual amount of system memory.
-  MemoryPressureMonitor();
+  explicit SystemMemoryPressureEvaluator(
+      std::unique_ptr<MemoryPressureVoter> voter);
 
   // Constructor with explicit memory thresholds. These represent the amount of
   // free memory below which the applicable memory pressure state engages.
-  MemoryPressureMonitor(int moderate_threshold_mb, int critical_threshold_mb);
+  // For testing purposes.
+  SystemMemoryPressureEvaluator(int moderate_threshold_mb,
+                                int critical_threshold_mb,
+                                std::unique_ptr<MemoryPressureVoter> voter);
 
-  ~MemoryPressureMonitor() override;
+  ~SystemMemoryPressureEvaluator() override;
 
   // Schedules a memory pressure check to run soon. This must be called on the
-  // same thread where the monitor was instantiated.
+  // same sequence where the monitor was instantiated.
   void CheckMemoryPressureSoon();
-
-  // Get the current memory pressure level. This can be called from any thread.
-  MemoryPressureLevel GetCurrentPressureLevel() const override;
-  void SetDispatchCallback(const DispatchCallback& callback) override;
 
   // Returns the moderate pressure level free memory threshold, in MB.
   int moderate_threshold_mb() const { return moderate_threshold_mb_; }
@@ -83,22 +87,17 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
   // Checks memory pressure, storing the current level, applying any hysteresis
   // and emitting memory pressure level change signals as necessary. This
   // function is called periodically while the monitor is observing memory
-  // pressure. This is split out from CheckMemoryPressureAndRecordStatistics so
-  // that it may be called by CheckMemoryPressureSoon and not invoke UMA
-  // logging. Must be called from the same thread on which the monitor was
+  // pressure. Must be called from the same thread on which the monitor was
   // instantiated.
   void CheckMemoryPressure();
-
-  // Wrapper to CheckMemoryPressure that also records the observed memory
-  // pressure level via an UMA enumeration. This is the function that is called
-  // periodically by the timer. Must be called from the same thread on which the
-  // monitor was instantiated.
-  void CheckMemoryPressureAndRecordStatistics();
 
   // Calculates the current instantaneous memory pressure level. This does not
   // use any hysteresis and simply returns the result at the current moment. Can
   // be called on any thread.
   MemoryPressureLevel CalculateCurrentPressureLevel();
+
+  // Gets the most recently cast vote.
+  MemoryPressureLevel current_vote_for_testing() const { return current_vote_; }
 
   // Gets system memory status. This is virtual as a unittesting hook. Returns
   // true if the system call succeeds, false otherwise. Can be called on any
@@ -114,28 +113,29 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
   // A periodic timer to check for memory pressure changes.
   base::RepeatingTimer timer_;
 
-  // The current memory pressure.
-  MemoryPressureLevel current_memory_pressure_level_;
-
   // To slow down the amount of moderate pressure event calls, this gets used to
-  // count the number of events since the last event occured. This is used by
+  // count the number of events since the last event occurred. This is used by
   // |CheckMemoryPressure| to apply hysteresis on the raw results of
   // |CalculateCurrentPressureLevel|.
   int moderate_pressure_repeat_count_;
 
-  // Ensures that this object is used from a single thread.
-  base::ThreadChecker thread_checker_;
+  // In charge of forwarding votes from here to the
+  // MemoryPressureVoteAggregator.
+  std::unique_ptr<MemoryPressureVoter> voter_;
 
-  DispatchCallback dispatch_callback_;
+  MemoryPressureLevel current_vote_;
+
+  // Ensures that this object is used from a single sequence.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Weak pointer factory to ourself used for scheduling calls to
   // CheckMemoryPressure/CheckMemoryPressureAndRecordStatistics via |timer_|.
-  base::WeakPtrFactory<MemoryPressureMonitor> weak_ptr_factory_;
+  base::WeakPtrFactory<SystemMemoryPressureEvaluator> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(MemoryPressureMonitor);
+  DISALLOW_COPY_AND_ASSIGN(SystemMemoryPressureEvaluator);
 };
 
 }  // namespace win
-}  // namespace base
+}  // namespace util
 
-#endif  // BASE_MEMORY_MEMORY_PRESSURE_MONITOR_WIN_H_
+#endif  // BASE_UTIL_MEMORY_PRESSURE_SYSTEM_MEMORY_PRESSURE_EVALUATOR_WIN_H_
