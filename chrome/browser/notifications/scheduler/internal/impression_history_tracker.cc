@@ -15,11 +15,6 @@
 namespace notifications {
 namespace {
 
-// Comparator used to sort notification entries based on creation time.
-bool CreateTimeCompare(const Impression& lhs, const Impression& rhs) {
-  return lhs.create_time < rhs.create_time;
-}
-
 std::string ToDatabaseKey(SchedulerClientType type) {
   switch (type) {
     case SchedulerClientType::kTest1:
@@ -151,16 +146,25 @@ void ImpressionHistoryTrackerImpl::OnStoreInitialized(
 
   initialized_ = true;
 
-  // Load the data to memory, and sort the impression list.
+  // Load the data to memory, and prune expired impressions.
+  auto now = clock_->Now();
   for (auto it = entries.begin(); it != entries.end(); ++it) {
     auto& entry = (*it);
     auto type = entry->type;
-    std::sort(entry->impressions.begin(), entry->impressions.end(),
-              &CreateTimeCompare);
+    ClientState::Impressions impressions;
     for (auto& impression : entry->impressions) {
-      impression_map_.emplace(impression.guid, &impression);
+      bool expired =
+          now - impression.create_time > config_.impression_expiration;
+      if (expired) {
+        SetNeedsUpdate(type, true);
+      } else {
+        impressions.emplace_back(impression);
+        impression_map_.emplace(impression.guid, &impressions.back());
+      }
     }
+    entry->impressions.swap(impressions);
     client_states_.emplace(type, std::move(*it));
+    MaybeUpdateDb(type);
   }
 
   SyncRegisteredClients();
@@ -200,17 +204,6 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
     ClientState* client_state) {
   DCHECK(client_state);
   base::circular_deque<Impression*> dismisses;
-  base::Time now = clock_->Now();
-
-  // Prune out expired impression.
-  while (!client_state->impressions.empty() &&
-         now - client_state->impressions.front().create_time >
-             config_.impression_expiration) {
-    impression_map_.erase(client_state->impressions.front().guid);
-    client_state->impressions.pop_front();
-    SetNeedsUpdate(client_state->type, true);
-  }
-
   for (auto it = client_state->impressions.begin();
        it != client_state->impressions.end(); ++it) {
     auto* impression = &*it;
