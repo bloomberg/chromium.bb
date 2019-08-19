@@ -1857,6 +1857,21 @@
             ]
         }
     ],
+    "DirectActions": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "DirectActions",
+                    "enable_features": [
+                        "DirectActions"
+                    ]
+                }
+            ]
+        }
+    ],
     "DirectCompositionGpuVSync": [
         {
             "platforms": [
