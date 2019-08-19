@@ -22,6 +22,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -177,7 +178,7 @@ class CONTENT_EXPORT SharedWorkerHost
 
   void AdvanceTo(Phase phase);
 
-  mojo::Binding<blink::mojom::SharedWorkerHost> binding_;
+  mojo::Receiver<blink::mojom::SharedWorkerHost> receiver_{this};
 
   // |service_| owns |this|.
   SharedWorkerServiceImpl* service_;

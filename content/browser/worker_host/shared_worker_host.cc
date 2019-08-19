@@ -79,8 +79,7 @@ class SharedWorkerHost::ScopedDevToolsHandle {
 SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
                                    const SharedWorkerInstance& instance,
                                    int worker_process_id)
-    : binding_(this),
-      service_(service),
+    : service_(service),
       instance_(instance),
       worker_process_id_(worker_process_id),
       next_connection_request_id_(1),
@@ -175,10 +174,6 @@ void SharedWorkerHost::Start(
   content_settings_ = std::make_unique<SharedWorkerContentSettingsProxyImpl>(
       instance_.url(), this, content_settings.InitWithNewPipeAndPassReceiver());
 
-  // Set up host interface.
-  blink::mojom::SharedWorkerHostPtr host;
-  binding_.Bind(mojo::MakeRequest(&host));
-
   // Set up interface provider interface.
   service_manager::mojom::InterfaceProviderPtr interface_provider;
   interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
@@ -223,7 +218,7 @@ void SharedWorkerHost::Start(
           : base::nullopt,
       std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller),
-      std::move(host), std::move(worker_request_),
+      receiver_.BindNewPipeAndPassRemote(), std::move(worker_request_),
       std::move(interface_provider), std::move(browser_interface_broker));
 
   // |service_worker_remote_object| is an associated interface ptr, so calls

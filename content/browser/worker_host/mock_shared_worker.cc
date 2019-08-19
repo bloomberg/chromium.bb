@@ -72,7 +72,7 @@ bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
     const std::string& expected_name,
     blink::mojom::ContentSecurityPolicyType
         expected_content_security_policy_type,
-    blink::mojom::SharedWorkerHostPtr* host,
+    mojo::Remote<blink::mojom::SharedWorkerHost>* host,
     blink::mojom::SharedWorkerRequest* request) {
   std::unique_ptr<CreateParams> create_params = std::move(create_params_);
   if (!create_params)
@@ -86,7 +86,7 @@ bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
     return false;
   if (!create_params->interface_provider)
     return false;
-  *host = std::move(create_params->host);
+  host->Bind(std::move(create_params->host));
   *request = std::move(create_params->request);
   return true;
 }
@@ -107,7 +107,7 @@ void MockSharedWorkerFactory::CreateSharedWorker(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
-    blink::mojom::SharedWorkerHostPtr host,
+    mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
     blink::mojom::SharedWorkerRequest request,
     service_manager::mojom::InterfaceProviderPtr interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>

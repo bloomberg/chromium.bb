@@ -25,6 +25,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/not_implemented_network_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/network/public/cpp/features.h"
@@ -159,7 +160,7 @@ TEST_F(SharedWorkerHostTest, Normal) {
   base::RunLoop().RunUntilIdle();
 
   // The factory should have gotten the CreateSharedWorker message.
-  blink::mojom::SharedWorkerHostPtr worker_host;
+  mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
   blink::mojom::SharedWorkerRequest worker_request;
   EXPECT_TRUE(factory_impl.CheckReceivedCreateSharedWorker(
       host->instance().url(), host->instance().name(),
@@ -271,7 +272,7 @@ TEST_F(SharedWorkerHostTest, TerminateAfterStarting) {
   base::RunLoop().RunUntilIdle();
 
   {
-    blink::mojom::SharedWorkerHostPtr worker_host;
+    mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
     blink::mojom::SharedWorkerRequest worker_request;
     EXPECT_TRUE(factory_impl.CheckReceivedCreateSharedWorker(
         host->instance().url(), host->instance().name(),
@@ -315,7 +316,7 @@ TEST_F(SharedWorkerHostTest, OnContextClosed) {
   base::RunLoop().RunUntilIdle();
 
   {
-    blink::mojom::SharedWorkerHostPtr worker_host;
+    mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
     blink::mojom::SharedWorkerRequest worker_request;
     EXPECT_TRUE(factory_impl.CheckReceivedCreateSharedWorker(
         host->instance().url(), host->instance().name(),

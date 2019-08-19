@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
@@ -67,7 +68,7 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
       const std::string& expected_name,
       blink::mojom::ContentSecurityPolicyType
           expected_content_security_policy_type,
-      blink::mojom::SharedWorkerHostPtr* host,
+      mojo::Remote<blink::mojom::SharedWorkerHost>* host,
       blink::mojom::SharedWorkerRequest* request);
 
  private:
@@ -88,7 +89,7 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
-      blink::mojom::SharedWorkerHostPtr host,
+      mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
       blink::mojom::SharedWorkerRequest request,
       service_manager::mojom::InterfaceProviderPtr interface_provider,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
@@ -101,7 +102,7 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
     bool pause_on_start;
     mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
         content_settings;
-    blink::mojom::SharedWorkerHostPtr host;
+    mojo::PendingRemote<blink::mojom::SharedWorkerHost> host;
     blink::mojom::SharedWorkerRequest request;
     service_manager::mojom::InterfaceProviderPtr interface_provider;
   };

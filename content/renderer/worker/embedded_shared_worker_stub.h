@@ -14,6 +14,7 @@
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
@@ -72,7 +73,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factory_bundle_info,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
-      blink::mojom::SharedWorkerHostPtr host,
+      mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
       blink::mojom::SharedWorkerRequest request,
       service_manager::mojom::InterfaceProviderPtr interface_provider,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
@@ -102,7 +103,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   void Terminate() override;
 
   mojo::Binding<blink::mojom::SharedWorker> binding_;
-  blink::mojom::SharedWorkerHostPtr host_;
+  mojo::Remote<blink::mojom::SharedWorkerHost> host_;
   bool running_ = false;
   GURL url_;
   blink::mojom::RendererPreferences renderer_preferences_;
