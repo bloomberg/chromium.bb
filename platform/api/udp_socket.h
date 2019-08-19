@@ -139,6 +139,17 @@ class UdpSocket {
   // the duration of this socket's lifetime.
   UdpSocket(TaskRunner* task_runner, Client* client);
 
+  // Methods to take care of posting UdpSocket::Client callbacks for client_ to
+  // task_runner_.
+  void OnError(Error error);
+  void OnSendError(Error error);
+  void OnRead(ErrorOr<UdpPacket> read_data);
+
+ private:
+  // This callback allows other objects to observe the socket's destructor and
+  // act when it is called.
+  std::function<void(UdpSocket*)> deletion_callback_;
+
   // Client to use for callbacks.
   // NOTE: client_ can be nullptr if the user does not want any callbacks (for
   // example, in the send-only case).
@@ -146,11 +157,6 @@ class UdpSocket {
 
   // Task runner to use for queuing client_ callbacks.
   TaskRunner* const task_runner_;
-
- private:
-  // This callback allows other objects to observe the socket's destructor and
-  // act when it is called.
-  std::function<void(UdpSocket*)> deletion_callback_;
 
   OSP_DISALLOW_COPY_AND_ASSIGN(UdpSocket);
 };
