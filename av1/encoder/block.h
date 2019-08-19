@@ -84,8 +84,8 @@ typedef struct {
 
 typedef struct {
   // TODO(angiebird): Reduce the buffer size according to sb_type
-  CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
-  uint16_t weight[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
+  CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][USABLE_REF_MV_STACK_SIZE];
+  uint16_t weight[MODE_CTX_REF_FRAMES][USABLE_REF_MV_STACK_SIZE];
   int_mv global_mvs[REF_FRAMES];
   // TODO(Ravi/Remya): Check if this variable is still needed at block level
   int cb_offset;
@@ -96,8 +96,8 @@ typedef struct {
 // Structure to store winner reference mode information at frame level. This
 // frame level information will be used during bitstream preparation stage.
 typedef struct {
-  CANDIDATE_MV ref_mv_stack[MAX_REF_MV_STACK_SIZE];
-  uint16_t weight[MAX_REF_MV_STACK_SIZE];
+  CANDIDATE_MV ref_mv_stack[USABLE_REF_MV_STACK_SIZE];
+  uint16_t weight[USABLE_REF_MV_STACK_SIZE];
   // TODO(Ravi/Remya): Reduce the buffer size of global_mvs
   int_mv global_mvs[REF_FRAMES];
   int cb_offset;
