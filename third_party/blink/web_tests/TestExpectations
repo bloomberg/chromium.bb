@@ -6493,3 +6493,5 @@ crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/overflow-menu-alwa
 crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/volumechange-muted-attribute.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/video-persistence.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/video-zoom.html [ Pass Failure ]
+
+crbug.com/986019 virtual/threaded/animations/play-state.html [ Pass Failure ]
