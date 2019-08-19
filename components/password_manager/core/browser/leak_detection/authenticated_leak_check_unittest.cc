@@ -86,7 +86,7 @@ class AuthenticatedLeakCheckTest : public testing::Test {
   }
   ~AuthenticatedLeakCheckTest() override = default;
 
-  base::test::ScopedTaskEnvironment& task_env() { return task_env_; }
+  base::test::TaskEnvironment& task_env() { return task_env_; }
   signin::IdentityTestEnvironment& identity_env() { return identity_test_env_; }
   MockLeakDetectionDelegateInterface& delegate() { return delegate_; }
   MockLeakDetectionRequestFactory* request_factory() {
@@ -100,7 +100,7 @@ class AuthenticatedLeakCheckTest : public testing::Test {
   PayloadAndCallback ImitateNetworkRequest();
 
  private:
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   signin::IdentityTestEnvironment identity_test_env_;
   StrictMock<MockLeakDetectionDelegateInterface> delegate_;
   MockLeakDetectionRequestFactory* request_factory_;

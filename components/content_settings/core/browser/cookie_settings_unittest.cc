@@ -93,7 +93,7 @@ class CookieSettingsTest : public testing::Test {
 
   // There must be a valid ThreadTaskRunnerHandle in HostContentSettingsMap's
   // scope.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
   scoped_refptr<HostContentSettingsMap> settings_map_;

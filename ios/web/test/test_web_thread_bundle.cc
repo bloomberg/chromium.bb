@@ -13,8 +13,8 @@
 namespace web {
 
 TestWebThreadBundle::TestWebThreadBundle(int options)
-    : base::test::ScopedTaskEnvironment(
-          options == IO_MAINLOOP ? MainThreadType::IO : MainThreadType::UI) {
+    : base::test::TaskEnvironment(options == IO_MAINLOOP ? MainThreadType::IO
+                                                         : MainThreadType::UI) {
   Init(options);
 }
 

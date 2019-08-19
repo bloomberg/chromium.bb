@@ -41,7 +41,7 @@ namespace web {
 
 class TestWebThread;
 
-class TestWebThreadBundle : public base::test::ScopedTaskEnvironment {
+class TestWebThreadBundle : public base::test::TaskEnvironment {
  public:
   // Used to specify the type of MessageLoop that backs the UI thread, and
   // which of the named WebThreads should be backed by a real

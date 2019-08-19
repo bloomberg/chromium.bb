@@ -26,7 +26,7 @@ std::vector<int> StringToArray(const std::string& s) {
 }  // namespace
 
 TEST(LeakDetectionRequestUtils, PrepareSingleLeakRequestData) {
-  base::test::ScopedTaskEnvironment task_env;
+  base::test::TaskEnvironment task_env;
   base::MockCallback<SingleLeakRequestDataCallback> callback;
 
   PrepareSingleLeakRequestData("jonsnow", "1234", callback.Get());
@@ -41,7 +41,7 @@ TEST(LeakDetectionRequestUtils, PrepareSingleLeakRequestData) {
 }
 
 TEST(LeakDetectionRequestUtils, AnalyzeResponseResult_NoLeak) {
-  base::test::ScopedTaskEnvironment task_env;
+  base::test::TaskEnvironment task_env;
 
   constexpr char kUsernamePasswordHash[] = "abcdefg";
   auto response = std::make_unique<SingleLookupResponse>();
@@ -68,7 +68,7 @@ TEST(LeakDetectionRequestUtils, AnalyzeResponseResult_NoLeak) {
 }
 
 TEST(LeakDetectionRequestUtils, AnalyzeResponseResult_Leak) {
-  base::test::ScopedTaskEnvironment task_env;
+  base::test::TaskEnvironment task_env;
 
   constexpr char kUsernamePasswordHash[] = "abcdefg";
   auto response = std::make_unique<SingleLookupResponse>();

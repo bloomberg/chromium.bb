@@ -92,12 +92,12 @@ class HintsFetcherTest : public testing::Test {
 
  private:
   void RunUntilIdle() {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 
   bool hints_fetched_ = false;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<HintsFetcher> hints_fetcher_;
 

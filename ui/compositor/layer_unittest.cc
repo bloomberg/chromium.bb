@@ -141,8 +141,7 @@ class DrawFadedStringLayerDelegate : public LayerDelegate {
 class LayerWithRealCompositorTest : public testing::TestWithParam<bool> {
  public:
   LayerWithRealCompositorTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
     gfx::FontList::SetDefaultFontDescription("Segoe UI, 15px");
   }
   ~LayerWithRealCompositorTest() override {}
@@ -285,7 +284,7 @@ class LayerWithRealCompositorTest : public testing::TestWithParam<bool> {
     std::unique_ptr<base::RunLoop> run_loop_;
   };
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestContextFactories> context_factories_;
   std::unique_ptr<TestCompositorHost> compositor_host_;
 
@@ -515,8 +514,7 @@ TEST_P(LayerWithRealCompositorTest, Hierarchy) {
 class LayerWithDelegateTest : public testing::Test {
  public:
   LayerWithDelegateTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~LayerWithDelegateTest() override {}
 
   // Overridden from testing::Test:
@@ -582,7 +580,7 @@ class LayerWithDelegateTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestContextFactories> context_factories_;
   std::unique_ptr<TestCompositorHost> compositor_host_;
 

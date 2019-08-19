@@ -169,7 +169,7 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NiceMock<base::MockCallback<base::RepeatingClosure>> schedule_save_closure_;
   BookmarkUndoService bookmark_undo_service_;
   NiceMock<favicon::MockFaviconService> favicon_service_;

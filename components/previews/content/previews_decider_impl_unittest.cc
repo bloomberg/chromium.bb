@@ -396,7 +396,7 @@ class PreviewsDeciderImplTest
       : field_trial_list_(nullptr),
         previews_decider_impl_(nullptr),
         optimization_guide_service_(
-            scoped_task_environment_.GetMainThreadTaskRunner()) {
+            task_environment_.GetMainThreadTaskRunner()) {
     clock_.SetNow(base::Time::Now());
 
     network_quality_tracker_.ReportEffectiveConnectionTypeForTesting(
@@ -438,7 +438,7 @@ class PreviewsDeciderImplTest
         std::move(previews_decider_impl), std::make_unique<TestOptOutStore>(),
         std::make_unique<TestPreviewsOptimizationGuide>(
             &optimization_guide_service_,
-            scoped_task_environment_.GetMainThreadTaskRunner(),
+            task_environment_.GetMainThreadTaskRunner(),
             base::CreateSequencedTaskRunner({base::ThreadPool(),
                                              base::MayBlock(),
                                              base::TaskPriority::BEST_EFFORT}),
@@ -451,7 +451,7 @@ class PreviewsDeciderImplTest
 
   void InitializeUIService() {
     InitializeUIServiceWithoutWaitingForBlackList();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -480,7 +480,7 @@ class PreviewsDeciderImplTest
   base::SimpleTestClock clock_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::FieldTrialList field_trial_list_;
   TestPreviewsDeciderImpl* previews_decider_impl_;
   optimization_guide::OptimizationGuideService optimization_guide_service_;
