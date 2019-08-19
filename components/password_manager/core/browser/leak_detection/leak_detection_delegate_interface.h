@@ -41,9 +41,10 @@ class LeakDetectionDelegateInterface {
   // |leak| is true iff the checked credential was leaked.
   // |url| and |username| are taken from Start() for presentation in the UI.
   // Pass parameters by value because the caller can be destroyed here.
-  virtual void OnLeakDetectionDone(bool leaked,
+  virtual void OnLeakDetectionDone(bool is_leaked,
                                    GURL url,
-                                   base::string16 username) = 0;
+                                   base::string16 username,
+                                   base::string16 password) = 0;
 
   virtual void OnError(LeakDetectionError error) = 0;
 };

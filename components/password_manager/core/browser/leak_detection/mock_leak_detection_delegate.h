@@ -17,7 +17,8 @@ class MockLeakDetectionDelegateInterface
   ~MockLeakDetectionDelegateInterface() override;
 
   // LeakDetectionDelegateInterface:
-  MOCK_METHOD3(OnLeakDetectionDone, void(bool, GURL, base::string16));
+  MOCK_METHOD4(OnLeakDetectionDone,
+               void(bool, GURL, base::string16, base::string16));
   MOCK_METHOD1(OnError, void(LeakDetectionError));
 };
 

@@ -227,7 +227,8 @@ TEST_F(AuthenticatedLeakCheckTest, ParseResponse_NoLeak) {
           key_server)));
 
   EXPECT_CALL(delegate(), OnLeakDetectionDone(false, GURL(kExampleCom),
-                                              base::ASCIIToUTF16(kUsername)));
+                                              base::ASCIIToUTF16(kUsername),
+                                              base::ASCIIToUTF16(kPassword)));
   std::move(payload_and_callback.callback).Run(std::move(response));
   task_env().RunUntilIdle();
 }
@@ -247,7 +248,8 @@ TEST_F(AuthenticatedLeakCheckTest, ParseResponse_Leak) {
           ScryptHashUsernameAndPassword(kUsername, kPassword), key_server)));
 
   EXPECT_CALL(delegate(), OnLeakDetectionDone(true, GURL(kExampleCom),
-                                              base::ASCIIToUTF16(kUsername)));
+                                              base::ASCIIToUTF16(kUsername),
+                                              base::ASCIIToUTF16(kPassword)));
   std::move(payload_and_callback.callback).Run(std::move(response));
   task_env().RunUntilIdle();
 }

@@ -43,9 +43,10 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
 
  private:
   // LeakDetectionDelegateInterface:
-  void OnLeakDetectionDone(bool leaked,
+  void OnLeakDetectionDone(bool is_leaked,
                            GURL url,
-                           base::string16 username) override;
+                           base::string16 username,
+                           base::string16 password) override;
   void OnError(LeakDetectionError error) override;
 
   PasswordManagerClient* client_;
