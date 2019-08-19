@@ -57,16 +57,12 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       NotificationStore notification_store,
       std::unique_ptr<IconStore> icon_store,
       const std::vector<SchedulerClientType>& clients,
-      const SchedulerConfig& config,
-      EncodeIconsCallback encode_icons_callback,
-      DecodeIconsCallback decode_icons_callback)
+      const SchedulerConfig& config)
       : notification_store_(std::move(notification_store)),
         icon_store_(std::move(icon_store)),
         clients_(clients.begin(), clients.end()),
         delegate_(nullptr),
-        config_(config),
-        encode_icons_callback_(std::move(encode_icons_callback)),
-        decode_icons_callback_(std::move(decode_icons_callback)) {}
+        config_(config) {}
 
  private:
   void Init(Delegate* delegate, InitCallback callback) override {
@@ -244,28 +240,11 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     }
   }
 
-  void OnIconEncoded(SchedulerClientType type,
-                     std::string guid,
-                     std::string encoded_data) {
-    IconEntry icon_entry;
-    auto icon_uuid = base::GenerateGUID();
-    icon_entry.uuid = icon_uuid;
-    icon_entry.data = std::move(encoded_data);
-    icon_store_->Add(
-        std::move(icon_entry),
-        base::BindOnce(&ScheduledNotificationManagerImpl::OnIconAdded,
-                       weak_ptr_factory_.GetWeakPtr(), type, std::move(guid),
-                       std::move(icon_uuid)));
-  }
-
   void OnIconAdded(SchedulerClientType type,
                    std::string guid,
                    std::string icon_uuid,
                    bool success) {
-    auto* entry = FindNotificationEntry(type, std::move(guid));
-    // TODO(hesen): Error handling.
-    if (!entry || !success)
-      return;
+    NOTIMPLEMENTED();
   }
 
   void OnNotificationDeleted(bool success) { NOTIMPLEMENTED(); }
@@ -305,8 +284,6 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
            std::map<std::string, std::unique_ptr<NotificationEntry>>>
       notifications_;
   const SchedulerConfig& config_;
-  EncodeIconsCallback encode_icons_callback_;
-  DecodeIconsCallback decode_icons_callback_;
   base::WeakPtrFactory<ScheduledNotificationManagerImpl> weak_ptr_factory_{
       this};
   DISALLOW_COPY_AND_ASSIGN(ScheduledNotificationManagerImpl);
@@ -319,12 +296,9 @@ ScheduledNotificationManager::Create(
     std::unique_ptr<CollectionStore<NotificationEntry>> notification_store,
     std::unique_ptr<IconStore> icon_store,
     const std::vector<SchedulerClientType>& clients,
-    const SchedulerConfig& config,
-    EncodeIconsCallback encode_icons_callback,
-    DecodeIconsCallback decode_icons_callback) {
+    const SchedulerConfig& config) {
   return std::make_unique<ScheduledNotificationManagerImpl>(
-      std::move(notification_store), std::move(icon_store), clients, config,
-      std::move(encode_icons_callback), std::move(decode_icons_callback));
+      std::move(notification_store), std::move(icon_store), clients, config);
 }
 
 ScheduledNotificationManager::ScheduledNotificationManager() = default;
