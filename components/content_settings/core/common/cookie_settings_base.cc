@@ -67,7 +67,8 @@ bool CookieSettingsBase::IsCookieAccessAllowed(
     const GURL& url,
     const GURL& first_party_url) const {
   DCHECK(!base::FeatureList::IsEnabled(kImprovedCookieControls) ||
-         !first_party_url.is_empty() || url.is_empty());
+         !first_party_url.is_empty() || url.is_empty())
+      << url;
   ContentSetting setting;
   GetCookieSetting(url, first_party_url, nullptr, &setting);
   return IsAllowed(setting);
