@@ -4,6 +4,7 @@
 
 #include "components/sync_bookmarks/bookmark_model_type_processor.h"
 
+#include <map>
 #include <utility>
 
 #include "base/bind.h"
@@ -31,6 +32,7 @@
 #include "components/sync_bookmarks/bookmark_remote_updates_handler.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
 #include "components/undo/bookmark_undo_utils.h"
+#include "ui/base/models/tree_node_iterator.h"
 
 namespace sync_bookmarks {
 
@@ -139,6 +141,24 @@ std::string ComputeServerDefinedUniqueTagForDebugging(
     return "synced_bookmarks";
   }
   return "";
+}
+
+// Returns a map from id to node for all nodes in |model|.
+std::map<int64_t, const bookmarks::BookmarkNode*> BuildIdToBookmarkNodeMap(
+    const bookmarks::BookmarkModel* model) {
+  std::map<int64_t, const bookmarks::BookmarkNode*> id_to_bookmark_node_map;
+
+  // The TreeNodeIterator used below doesn't include the node itself, and hence
+  // add the root node separately.
+  id_to_bookmark_node_map[model->root_node()->id()] = model->root_node();
+
+  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
+      model->root_node());
+  while (iterator.has_next()) {
+    const bookmarks::BookmarkNode* node = iterator.Next();
+    id_to_bookmark_node_map[node->id()] = node;
+  }
+  return id_to_bookmark_node_map;
 }
 
 }  // namespace
@@ -324,15 +344,14 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
   if (model_metadata.model_type_state().initial_sync_done() &&
       SyncedBookmarkTracker::BookmarkModelMatchesMetadata(model,
                                                           model_metadata)) {
+    std::map<int64_t, const bookmarks::BookmarkNode*> id_to_bookmark_node_map =
+        BuildIdToBookmarkNodeMap(bookmark_model_);
     std::vector<NodeMetadataPair> nodes_metadata;
     for (sync_pb::BookmarkMetadata& bookmark_metadata :
          *model_metadata.mutable_bookmarks_metadata()) {
-      // TODO(crbug.com/516866): Replace with a more efficient way to retrieve
-      // all nodes and store in a map keyed by id instead of doing a lookup for
-      // every id.
       const bookmarks::BookmarkNode* node = nullptr;
       if (!bookmark_metadata.metadata().is_deleted()) {
-        node = GetBookmarkNodeByID(bookmark_model_, bookmark_metadata.id());
+        node = id_to_bookmark_node_map[bookmark_metadata.id()];
         DCHECK(node);
       }
       auto metadata = std::make_unique<sync_pb::EntityMetadata>();
