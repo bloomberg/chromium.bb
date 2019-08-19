@@ -1072,6 +1072,7 @@ void av1_tpl_rdmult_setup_sb(AV1_COMP *cpi, MACROBLOCK *const x,
   if (!is_frame_tpl_eligible(cpi)) return;
   if (tpl_idx >= MAX_LAG_BUFFERS) return;
   if (cpi->oxcf.superres_mode != SUPERRES_NONE) return;
+  if (cpi->oxcf.aq_mode != NO_AQ) return;
 
   const int bsize_base = BLOCK_16X16;
   const int num_mi_w = mi_size_wide[bsize_base];

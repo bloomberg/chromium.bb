@@ -23,7 +23,7 @@ typedef struct {
 } FwdKfTestParam;
 
 const FwdKfTestParam kTestParams[] = {
-  { 4, 37.0 },  { 6, 36.0 },  { 8, 35.0 },
+  { 4, 37.0 },  { 6, 35.9 },  { 8, 35.0 },
   { 12, 34.2 }, { 16, 34.0 }, { 18, 33.7 }
 };
 

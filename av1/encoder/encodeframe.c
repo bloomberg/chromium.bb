@@ -272,6 +272,7 @@ static int get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   if (!is_frame_tpl_eligible((AV1_COMP *)cpi)) return deltaq_rdmult;
   if (tpl_idx >= MAX_LAG_BUFFERS) return deltaq_rdmult;
   if (cpi->oxcf.superres_mode != SUPERRES_NONE) return deltaq_rdmult;
+  if (cpi->oxcf.aq_mode != NO_AQ) return deltaq_rdmult;
 
   const int bsize_base = BLOCK_16X16;
   const int num_mi_w = mi_size_wide[bsize_base];
