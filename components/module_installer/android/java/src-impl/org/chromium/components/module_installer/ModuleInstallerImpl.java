@@ -21,6 +21,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.components.crash.CrashKeyIndex;
 import org.chromium.components.crash.CrashKeys;
+import org.chromium.components.module_installer.observers.ModuleActivityObserver;
 
 import java.util.Arrays;
 import java.util.HashMap;

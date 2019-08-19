@@ -2,25 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.module_installer;
+package org.chromium.components.module_installer.observers;
 
 import android.app.Activity;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 
 import java.util.HashSet;
-import java.util.List;
 
-/** Observer for activities so that DFMs can be lazily installed on-demand. */
+/**
+ *  Observer for activities so that DFMs can be lazily installed on-demand.
+ *  Note that ActivityIds are managed globally and therefore any changes to it are to be made
+ *  using a single thread (in this case, the UI thread).
+ */
 public class ModuleActivityObserver implements ApplicationStatus.ActivityStateListener {
-    /** Tracks activities that have been splitcompatted. */
     private static HashSet<Integer> sActivityIds = new HashSet<Integer>();
+    private final ObserverStrategy mStrategy;
+
+    public ModuleActivityObserver() {
+        this(new ObserverStrategyImpl());
+    }
+
+    public ModuleActivityObserver(ObserverStrategy strategy) {
+        mStrategy = strategy;
+    }
 
     @Override
     public void onActivityStateChange(Activity activity, @ActivityState int newState) {
+        ThreadUtils.assertOnUiThread();
+
         if (newState == ActivityState.CREATED || newState == ActivityState.RESUMED) {
             splitCompatActivity(activity);
         } else if (newState == ActivityState.DESTROYED) {
@@ -34,8 +46,8 @@ public class ModuleActivityObserver implements ApplicationStatus.ActivityStateLi
 
         sActivityIds.clear();
 
-        for (Activity activity : getRunningActivities()) {
-            if (getStateForActivity(activity) == ActivityState.RESUMED) {
+        for (Activity activity : mStrategy.getRunningActivities()) {
+            if (mStrategy.getStateForActivity(activity) == ActivityState.RESUMED) {
                 splitCompatActivity(activity);
             }
         }
@@ -46,22 +58,7 @@ public class ModuleActivityObserver implements ApplicationStatus.ActivityStateLi
         Integer key = activity.hashCode();
         if (!sActivityIds.contains(key)) {
             sActivityIds.add(key);
-            getModuleInstaller().initActivity(activity);
+            mStrategy.getModuleInstaller().initActivity(activity);
         }
-    }
-
-    @VisibleForTesting
-    public ModuleInstaller getModuleInstaller() {
-        return ModuleInstallerImpl.getInstance();
-    }
-
-    @VisibleForTesting
-    public List<Activity> getRunningActivities() {
-        return ApplicationStatus.getRunningActivities();
-    }
-
-    @VisibleForTesting
-    public int getStateForActivity(Activity activity) {
-        return ApplicationStatus.getStateForActivity(activity);
     }
 }

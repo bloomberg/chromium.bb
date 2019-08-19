@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.module_installer;
+package org.chromium.components.module_installer.observers;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -22,6 +21,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.components.module_installer.ModuleInstaller;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,20 +33,24 @@ import java.util.List;
 public class ModuleActivityObserverTest {
     @Mock
     private ModuleInstaller mModuleInstallerMock;
+
     @Mock
     private Activity mActivityMock;
+
+    @Mock
+    private ObserverStrategy mStrategy;
 
     private ModuleActivityObserver mObserver;
 
     @Before
-    public void beforeTests() {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mObserver = spy(new ModuleActivityObserver());
+        mObserver = new ModuleActivityObserver(mStrategy);
 
-        doReturn(mModuleInstallerMock).when(mObserver).getModuleInstaller();
-        doReturn(new ArrayList<>()).when(mObserver).getRunningActivities();
-        doReturn(ActivityState.CREATED).when(mObserver).getStateForActivity(any(Activity.class));
+        doReturn(mModuleInstallerMock).when(mStrategy).getModuleInstaller();
+        doReturn(new ArrayList<>()).when(mStrategy).getRunningActivities();
+        doReturn(ActivityState.CREATED).when(mStrategy).getStateForActivity(any(Activity.class));
     }
 
     @Test
@@ -121,10 +125,7 @@ public class ModuleActivityObserverTest {
         // Arrange.
         @ActivityState
         Integer newState = ActivityState.RESUMED;
-
-        ModuleInstaller newModuleInstallerMock = mock(ModuleInstaller.class);
-        ModuleActivityObserver newObserver = spy(new ModuleActivityObserver());
-        doReturn(newModuleInstallerMock).when(newObserver).getModuleInstaller();
+        ModuleActivityObserver newObserver = new ModuleActivityObserver(mStrategy);
 
         // Act.
         mObserver.onActivityStateChange(mActivityMock, newState);
@@ -132,7 +133,6 @@ public class ModuleActivityObserverTest {
 
         // Assert.
         verify(mModuleInstallerMock, times(1)).initActivity(mActivityMock);
-        verify(newModuleInstallerMock, never()).initActivity(mActivityMock);
     }
 
     @Test
@@ -147,11 +147,11 @@ public class ModuleActivityObserverTest {
         activitiesList.add(activityMock2);
         activitiesList.add(activityMock3);
 
-        doReturn(activitiesList).when(mObserver).getRunningActivities();
+        doReturn(activitiesList).when(mStrategy).getRunningActivities();
 
-        doReturn(ActivityState.RESUMED).when(mObserver).getStateForActivity(activityMock1);
-        doReturn(ActivityState.PAUSED).when(mObserver).getStateForActivity(activityMock2);
-        doReturn(ActivityState.DESTROYED).when(mObserver).getStateForActivity(activityMock3);
+        doReturn(ActivityState.RESUMED).when(mStrategy).getStateForActivity(activityMock1);
+        doReturn(ActivityState.PAUSED).when(mStrategy).getStateForActivity(activityMock2);
+        doReturn(ActivityState.DESTROYED).when(mStrategy).getStateForActivity(activityMock3);
 
         // Act.
         mObserver.onModuleInstalled();
