@@ -379,7 +379,6 @@ AppCacheServiceImpl::AppCacheServiceImpl(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       appcache_policy_(nullptr),
-      quota_client_(nullptr),
       quota_manager_proxy_(quota_manager_proxy),
       request_context_(nullptr),
       force_keep_session_state_(false),
@@ -388,8 +387,9 @@ AppCacheServiceImpl::AppCacheServiceImpl(
     // The operator new is used here because this AppCacheQuotaClient instance
     // deletes itself after both the QuotaManager and the AppCacheService are
     // destroyed.
-    quota_client_ = new AppCacheQuotaClient(AsWeakPtr());
-    quota_manager_proxy_->RegisterClient(quota_client_);
+    auto* quota_client = new AppCacheQuotaClient(AsWeakPtr());
+    quota_manager_proxy_->RegisterClient(quota_client);
+    quota_client_ = quota_client->AsWeakPtr();
   }
 }
 
@@ -401,14 +401,15 @@ AppCacheServiceImpl::~AppCacheServiceImpl() {
   for (auto& helper : pending_helpers_)
     helper.first->Cancel();
   pending_helpers_.clear();
-  if (quota_client_) {
+  if (quota_manager_proxy_.get()) {
     if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      quota_client_->NotifyAppCacheDestroyed();
+      if (quota_client_)
+        quota_client_->NotifyAppCacheDestroyed();
     } else {
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheDestroyed,
-                         base::Unretained(quota_client_)));
+                         quota_client_));
     }
   }
 
