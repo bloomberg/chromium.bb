@@ -3881,7 +3881,7 @@
             ],
             "experiments": [
                 {
-                    "name": "AndroidExperiments",
+                    "name": "Enabled",
                     "enable_features": [
                         "OmniboxGroupSuggestionsBySearchVsUrl"
                     ]
