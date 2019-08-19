@@ -226,12 +226,24 @@ void AuthenticatedLeakCheck::DoLeakRequest(
 
 void AuthenticatedLeakCheck::OnLookupSingleLeakResponse(
     std::unique_ptr<SingleLookupResponse> response) {
+  request_.reset();
   if (!response) {
     delegate_->OnError(LeakDetectionError::kInvalidServerResponse);
     return;
   }
 
-  delegate_->OnLeakDetectionDone(ParseLookupSingleLeakResponse(*response), url_,
+  DVLOG(0) << "Leak check: number of matching encrypted prefixes="
+           << response->encrypted_leak_match_prefixes.size();
+
+  AnalyzeResponseResult(
+      std::move(response), encryption_key_,
+      base::BindOnce(&AuthenticatedLeakCheck::OnAnalazeSingleLeakResponse,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AuthenticatedLeakCheck::OnAnalazeSingleLeakResponse(bool is_leaked) {
+  DVLOG(0) << "Leak check result=" << is_leaked;
+  delegate_->OnLeakDetectionDone(is_leaked, std::move(url_),
                                  base::UTF8ToUTF16(username_));
 }
 

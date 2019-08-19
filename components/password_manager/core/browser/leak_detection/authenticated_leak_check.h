@@ -79,6 +79,10 @@ class AuthenticatedLeakCheck : public LeakDetectionCheck {
   void OnLookupSingleLeakResponse(
       std::unique_ptr<SingleLookupResponse> response);
 
+  // Called when the network response is analazyed on the background thread. The
+  // method is called on the main thread.
+  void OnAnalazeSingleLeakResponse(bool is_leaked);
+
   // Delegate for the instance. Should outlive |this|.
   LeakDetectionDelegateInterface* const delegate_;
   // Helper class to asynchronously prepare the data for the request.

@@ -39,8 +39,8 @@ void LeakDetectionDelegate::StartLeakCheck(const autofill::PasswordForm& form) {
 }
 
 void LeakDetectionDelegate::OnLeakDetectionDone(bool leaked,
-                                                const GURL& url,
-                                                base::StringPiece16 username) {
+                                                GURL url,
+                                                base::string16 username) {
   leak_check_.reset();
   if (password_manager_util::IsLoggingActive(client_)) {
     BrowserSavePasswordProgressLogger logger(client_->GetLogManager());

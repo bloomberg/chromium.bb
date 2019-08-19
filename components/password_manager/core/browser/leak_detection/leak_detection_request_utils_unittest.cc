@@ -7,7 +7,6 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
-#include "components/password_manager/core/browser/leak_detection/leak_detection_api.pb.h"
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
 #include "crypto/sha2.h"
 #include "testing/gmock/include/gmock/gmock.h"
