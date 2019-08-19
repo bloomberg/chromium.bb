@@ -384,7 +384,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
 
 }  // namespace
 
-class LayeredNetworkDelegateTest : public TestWithScopedTaskEnvironment {
+class LayeredNetworkDelegateTest : public TestWithTaskEnvironment {
  public:
   LayeredNetworkDelegateTest() {
     std::unique_ptr<TestNetworkDelegateImpl> test_network_delegate(

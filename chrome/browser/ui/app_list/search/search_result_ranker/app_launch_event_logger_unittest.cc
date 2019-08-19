@@ -72,7 +72,7 @@ class AppLaunchEventLoggerTest : public testing::Test {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
 };
 
@@ -90,7 +90,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodePWA) {
                                                        nullptr);
   app_launch_event_logger_.OnGridClicked(kPhotosPWAApp);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(1ul, entries.size());
@@ -131,7 +131,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeChrome) {
                                                        nullptr);
   app_launch_event_logger_.OnGridClicked(kGmailChromeApp);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(1ul, entries.size());
@@ -158,7 +158,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeArc) {
                                                        packages.get());
   app_launch_event_logger_.OnGridClicked(kMapsArcApp);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(1ul, entries.size());
@@ -209,7 +209,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckMultipleClicks) {
   app_launch_event_logger_.OnGridClicked(kCalculatorArcApp);
   app_launch_event_logger_.OnGridClicked(kPhotosPWAApp);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(6ul, entries.size());
@@ -311,7 +311,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSuggestionChip) {
   app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(kPhotosPWAApp, 3,
                                                               2);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(1ul, entries.size());
@@ -335,7 +335,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSearchBox) {
   app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(kPhotosPWAApp, 3,
                                                               4);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(1ul, entries.size());
