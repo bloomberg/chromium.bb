@@ -735,6 +735,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;
   bool HandleWheelEvent(const blink::WebMouseWheelEvent& event) override;
   bool PreHandleGestureEvent(const blink::WebGestureEvent& event) override;
+  bool ShouldSetKeyboardFocusOnMouseDown() override;
+  bool ShouldSetLogicalFocusOnMouseDown() override;
   BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() override;
   BrowserAccessibilityManager* GetOrCreateRootBrowserAccessibilityManager()
       override;
