@@ -51,6 +51,9 @@ const char kPage1Path[] = "/title1.html";
 const char kPage2Path[] = "/title2.html";
 const char kPage3Path[] = "/websql.html";
 const char kDynamicTitlePath[] = "/dynamic_title.html";
+const char kPopupPath[] = "/popup_parent.html";
+const char kPopupRedirectPath[] = "/popup_child.html";
+const char kPopupMultiplePath[] = "/popup_multiple.html";
 const char kPage1Title[] = "title 1";
 const char kPage2Title[] = "title 2";
 const char kPage3Title[] = "websql not available";
@@ -1615,4 +1618,101 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest, ExtraHeaders) {
               testing::Contains(testing::Key("X-ExtraHeaders")));
   EXPECT_THAT(iter->second.headers,
               testing::Contains(testing::Key("X-2ExtraHeaders")));
+}
+
+class TestPopupListener : public fuchsia::web::PopupFrameCreationListener {
+ public:
+  TestPopupListener() = default;
+  ~TestPopupListener() override = default;
+
+  void GetAndAckNextPopup(fuchsia::web::FramePtr* frame,
+                          fuchsia::web::PopupFrameCreationInfo* creation_info) {
+    if (!frame_) {
+      base::RunLoop run_loop;
+      received_popup_callback_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+
+    *frame = frame_.Bind();
+    *creation_info = std::move(creation_info_);
+
+    popup_ack_callback_();
+    popup_ack_callback_ = {};
+  }
+
+ private:
+  void OnPopupFrameCreated(fidl::InterfaceHandle<fuchsia::web::Frame> frame,
+                           fuchsia::web::PopupFrameCreationInfo creation_info,
+                           OnPopupFrameCreatedCallback callback) override {
+    creation_info_ = std::move(creation_info);
+    frame_ = std::move(frame);
+
+    popup_ack_callback_ = std::move(callback);
+
+    if (received_popup_callback_)
+      std::move(received_popup_callback_).Run();
+  }
+
+  fidl::InterfaceHandle<fuchsia::web::Frame> frame_;
+  fuchsia::web::PopupFrameCreationInfo creation_info_;
+  base::OnceClosure received_popup_callback_;
+  OnPopupFrameCreatedCallback popup_ack_callback_;
+};
+
+IN_PROC_BROWSER_TEST_F(FrameImplTest, PopupWindow) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL popup_url(embedded_test_server()->GetURL(kPopupPath));
+  GURL popup_child_url(embedded_test_server()->GetURL(kPopupRedirectPath));
+  GURL title1_url(embedded_test_server()->GetURL(kPage1Path));
+  fuchsia::web::FramePtr frame = CreateFrame();
+
+  TestPopupListener popup_listener;
+  fidl::Binding<fuchsia::web::PopupFrameCreationListener>
+      popup_listener_binding(&popup_listener);
+  frame->SetPopupFrameCreationListener(popup_listener_binding.NewBinding());
+
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(controller.get(), {},
+                                                   popup_url.spec()));
+
+  // Verify the popup's initial URL, "popup_child.html".
+  fuchsia::web::FramePtr popup_frame;
+  fuchsia::web::PopupFrameCreationInfo popup_info;
+  popup_listener.GetAndAckNextPopup(&popup_frame, &popup_info);
+  EXPECT_EQ(popup_info.initial_url(), popup_child_url);
+
+  // Verify that the popup eventually redirects to "title1.html".
+  cr_fuchsia::TestNavigationListener popup_nav_listener;
+  fidl::Binding<fuchsia::web::NavigationEventListener>
+      popup_nav_listener_binding(&popup_nav_listener);
+  popup_frame->SetNavigationEventListener(
+      popup_nav_listener_binding.NewBinding());
+  popup_nav_listener.RunUntilUrlAndTitleEquals(title1_url, kPage1Title);
+}
+
+IN_PROC_BROWSER_TEST_F(FrameImplTest, MultiplePopups) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL popup_url(embedded_test_server()->GetURL(kPopupMultiplePath));
+  GURL title1_url(embedded_test_server()->GetURL(kPage1Path));
+  GURL title2_url(embedded_test_server()->GetURL(kPage2Path));
+  fuchsia::web::FramePtr frame = CreateFrame();
+
+  TestPopupListener popup_listener;
+  fidl::Binding<fuchsia::web::PopupFrameCreationListener>
+      popup_listener_binding(&popup_listener);
+  frame->SetPopupFrameCreationListener(popup_listener_binding.NewBinding());
+
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(controller.get(), {},
+                                                   popup_url.spec()));
+
+  fuchsia::web::FramePtr popup_frame;
+  fuchsia::web::PopupFrameCreationInfo popup_info;
+  popup_listener.GetAndAckNextPopup(&popup_frame, &popup_info);
+  EXPECT_EQ(popup_info.initial_url(), title1_url);
+
+  popup_listener.GetAndAckNextPopup(&popup_frame, &popup_info);
+  EXPECT_EQ(popup_info.initial_url(), title2_url);
 }
