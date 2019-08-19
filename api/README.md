@@ -74,3 +74,8 @@ module in this package. The functions in this package should all operate as one
 would expect a controller to operate in an MVC application - translating the
 request into the internal representation that's passed along to the relevant
 service(s), then translates their output to a specified response format.
+
+### contrib/
+
+This directory contains scripts that may not be 100% supported yet.
+See `contrib/README.md` for information about the scripts.
