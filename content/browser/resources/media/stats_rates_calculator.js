@@ -347,6 +347,12 @@ class StatsRatesCalculator {
         },
       },
       {
+        type: 'media-source',
+        metricCalculators: {
+          totalAudioEnergy: new AudioLevelRmsCalculator(),
+        },
+      },
+      {
         type: 'track',
         metricCalculators: {
           framesSent: new RateCalculator('framesSent', 'timestamp'),
@@ -354,9 +360,6 @@ class StatsRatesCalculator {
             new RateCalculator('framesReceived', 'timestamp'),
             new DifferenceCalculator('framesReceived', 'framesDecoded'),
           ],
-          // TODO(https://crbug.com/994186): totalAudioEnergy for sending tracks
-          // (but not receiving tracks) was moved to "media-source" in M77; add
-          // AudioLevelRmsCalculator there too!
           totalAudioEnergy: new AudioLevelRmsCalculator(),
           jitterBufferDelay: new RateCalculator(
               'jitterBufferDelay', 'jitterBufferEmittedCount',
