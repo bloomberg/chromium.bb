@@ -236,7 +236,8 @@ void ServiceWorkerRegistrationObjectHost::DelayUpdate(
     return;
   }
 
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::IO},
+  base::PostDelayedTask(FROM_HERE,
+                        {ServiceWorkerContextWrapper::GetCoreThreadId()},
                         base::BindOnce(std::move(update_function),
                                        blink::ServiceWorkerStatusCode::kOk),
                         delay);
