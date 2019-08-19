@@ -300,12 +300,9 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
               return r1->display_index() < r2->display_index();
             });
   for (auto* result : policy_tiles_results) {
-    if (result->display_index() >= display_results.size() - 1) {
+    if (result->display_index() > display_results.size() - 1) {
       display_results.emplace_back(result);
     } else {
-      // TODO(newcomer): Remove this check once we determine the root cause for
-      // https://crbug.com/992344.
-      CHECK_GT(result->display_index(), -1);
       display_results.emplace(display_results.begin() + result->display_index(),
                               result);
     }
