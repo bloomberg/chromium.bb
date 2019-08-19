@@ -386,11 +386,15 @@ void ServiceWorkerSingleScriptUpdateChecker::OnComplete(
       case ServiceWorkerUpdatedScriptLoader::WriterState::kWriting:
         DCHECK_EQ(header_writer_state_,
                   ServiceWorkerUpdatedScriptLoader::WriterState::kCompleted);
+        // Still reading the body from the network. Update checking will
+        // complete when all the body is read or any difference is found.
         return;
       case ServiceWorkerUpdatedScriptLoader::WriterState::kCompleted:
         DCHECK_EQ(header_writer_state_,
                   ServiceWorkerUpdatedScriptLoader::WriterState::kCompleted);
-        Succeed(Result::kIdentical);
+        // Pass empty data to notify |cache_writer_| that comparison is
+        // finished.
+        CompareData(/*pending_buffer=*/nullptr, /*bytes_available=*/0);
         return;
     }
   }
