@@ -85,6 +85,7 @@ class CORE_EXPORT PrintContext
   // Return to screen mode.
   virtual void EndPrintMode();
 
+  void UseDefaultMediaSelector();
   // The following static methods are used by web tests:
 
   // Returns -1 if page isn't found.
@@ -128,6 +129,9 @@ class CORE_EXPORT PrintContext
 
   // True when printing layout needs to be applied.
   bool use_printing_layout_;
+
+  // True when media selector is to be applied
+  bool use_media_selector_ = true;
 
   HeapHashMap<String, Member<Element>> linked_destinations_;
   bool linked_destinations_valid_;
