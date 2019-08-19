@@ -137,6 +137,14 @@ class ASH_EXPORT ScrollableShelfView : public views::View,
   // whether it is scrolling horizontally for left/right shelf.
   bool cross_main_axis_scrolling_ = false;
 
+  // Gesture states are preserved when the gesture scrolling along the main axis
+  // (that is, whether it is scrolling horizontally for bottom shelf, or whether
+  // it is scrolling horizontally for left/right shelf) gets started. They help
+  // to handle the gesture fling event.
+  gfx::Vector2dF scroll_offset_before_main_axis_scrolling_;
+  LayoutStrategy layout_strategy_before_main_axis_scrolling_ =
+      kNotShowArrowButtons;
+
   DISALLOW_COPY_AND_ASSIGN(ScrollableShelfView);
 };
 

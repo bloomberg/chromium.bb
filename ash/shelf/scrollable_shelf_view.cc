@@ -33,6 +33,10 @@ constexpr int kArrowButtonSize = 20;
 constexpr int kArrowButtonGroupWidth =
     kArrowButtonSize + kArrowButtonEndPadding + kDistanceToArrowButton;
 
+// The gesture fling event with the velocity smaller than the threshold will be
+// neglected.
+constexpr int kFlingVelocityThreshold = 1000;
+
 // Sum of the shelf button size and the gap between shelf buttons.
 int GetUnit() {
   return ShelfConstants::button_size() + ShelfConstants::button_spacing();
@@ -362,8 +366,19 @@ bool ScrollableShelfView::ShouldHandleGestures(const ui::GestureEvent& event) {
   // ShelfView.
   bool should_handle_gestures = !cross_main_axis_scrolling_;
 
-  if (event.type() == ui::ET_GESTURE_END)
+  if (should_handle_gestures && event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+    scroll_offset_before_main_axis_scrolling_ = scroll_offset_;
+    layout_strategy_before_main_axis_scrolling_ = layout_strategy_;
+  }
+
+  if (event.type() == ui::ET_GESTURE_END) {
     cross_main_axis_scrolling_ = false;
+
+    if (should_handle_gestures) {
+      scroll_offset_before_main_axis_scrolling_ = gfx::Vector2dF();
+      layout_strategy_before_main_axis_scrolling_ = kNotShowArrowButtons;
+    }
+  }
 
   return should_handle_gestures;
 }
@@ -416,6 +431,32 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
       ScrollByXOffset(offset, /*animate=*/true);
     else
       ScrollByYOffset(offset, /*animate=*/true);
+    return true;
+  }
+
+  if (event.type() == ui::ET_SCROLL_FLING_START) {
+    const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
+
+    int scroll_velocity = is_horizontal_alignment
+                              ? event.details().velocity_x()
+                              : event.details().velocity_y();
+    if (abs(scroll_velocity) < kFlingVelocityThreshold)
+      return false;
+
+    layout_strategy_ = layout_strategy_before_main_axis_scrolling_;
+
+    float page_scrolling_offset =
+        CalculatePageScrollingOffset(scroll_velocity < 0);
+    if (is_horizontal_alignment) {
+      ScrollToXOffset(
+          scroll_offset_before_main_axis_scrolling_.x() + page_scrolling_offset,
+          true);
+    } else {
+      ScrollToYOffset(
+          scroll_offset_before_main_axis_scrolling_.y() + page_scrolling_offset,
+          true);
+    }
+
     return true;
   }
 
