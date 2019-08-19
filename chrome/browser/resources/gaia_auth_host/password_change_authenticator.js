@@ -15,54 +15,6 @@ cr.define('cr.samlPasswordChange', function() {
   const BLANK_PAGE_URL = 'about:blank';
 
   /**
-   * @param {string?} str A string that should be a valid URL.
-   * @return {URL?} A valid URL object, or null.
-   */
-  function safeParseUrl_(str) {
-    try {
-      return new URL(str);
-    } catch (error) {
-      console.error('Invalid url: ' + str);
-      return null;
-    }
-  }
-
-  /**
-   * @param {Object} details The web-request details.
-   * @return {boolean} True if we detect that a password change was successful.
-   */
-  function detectPasswordChangeSuccess(details) {
-    const url = safeParseUrl_(details.url);
-    if (!url) {
-      return false;
-    }
-
-    // These heuristics work for the following SAML IdPs:
-    // ADFS:
-    if (url.pathname.match(/\/updatepassword\/?$/)) {
-      return url.searchParams.get('status') == '0';
-    }
-    // Azure:
-    if (url.pathname.endsWith('/ChangePassword.aspx')) {
-      return url.searchParams.get('ReturnCode') == '0';
-    }
-    // Okta:
-    if (url.pathname.match(/\/internal_login\/password\/?$/)) {
-      // TODO(https://crbug.com/930109): This assumes all Okta password change
-      // attempts succeed. To check properly, we need to inspect the response.
-      return details.method == 'POST';
-    }
-    // Ping:
-    if (url.pathname.includes('/password/chg/')) {
-      // TODO(https://crbug.com/930109): This assumes all Ping password change
-      // attempts succeed. To check properly, we need to inspect the response.
-      return details.method == 'POST';
-    }
-
-    return false;
-  }
-
-  /**
    * Initializes the authenticator component.
    */
   class Authenticator extends cr.EventTarget {
@@ -115,9 +67,8 @@ cr.define('cr.samlPasswordChange', function() {
           this.samlHandler_, 'authPageLoaded',
           this.onAuthPageLoaded_.bind(this));
 
-      this.webviewEventManager_.addWebRequestEventListener(
-          this.webview_.request.onCompleted, this.onCompleted_.bind(this),
-          {urls: ['http://*/*', 'https://*/*'], types: ['main_frame']});
+      this.webviewEventManager_.addEventListener(
+          this.webview_, 'contentload', this.onContentLoad_.bind(this));
     }
 
     /**
@@ -200,19 +151,17 @@ cr.define('cr.samlPasswordChange', function() {
     }
 
     /**
-     * Invoked when a new document loading completes.
-     * @param {Object} details The web-request details.
+     * Invoked when a new document is loaded.
      * @private
      */
-    onCompleted_(details) {
-      if (passwordChangeSuccessDetected(details)) {
+    onContentLoad_(e) {
+      const currentUrl = this.webview_.src;
+      // TODO(rsorokin): Implement more robust check.
+      if (currentUrl.lastIndexOf('status=0') != -1) {
         this.completeAuth_();
       }
     }
   }
 
-  return {
-    Authenticator: Authenticator,
-    detectPasswordChangeSuccess: detectPasswordChangeSuccess,
-  };
+  return {Authenticator: Authenticator};
 });
