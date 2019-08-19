@@ -1142,8 +1142,10 @@ void ShelfLayoutManager::CalculateTargetBounds(
   gfx::Point nav_origin =
       gfx::Point(ShelfConstants::home_button_edge_spacing(),
                  ShelfConstants::home_button_edge_spacing());
-  target_bounds->nav_bounds_in_shelf =
-      gfx::Rect(nav_origin, shelf_widget_->navigation_widget()->GetIdealSize());
+  const gfx::Size nav_size = shelf_widget_->navigation_widget()->GetIdealSize();
+  if (shelf_->IsHorizontalAlignment() && base::i18n::IsRTL())
+    nav_origin.set_x(shelf_width - nav_size.width() - nav_origin.x());
+  target_bounds->nav_bounds_in_shelf = gfx::Rect(nav_origin, nav_size);
 
   gfx::Point hotseat_origin;
   int hotseat_width;

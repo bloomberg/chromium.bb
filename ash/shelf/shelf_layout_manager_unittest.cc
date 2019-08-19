@@ -56,6 +56,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -3056,6 +3057,34 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfHiddenForSinglePipWindow) {
   // Expect the shelf to be hidden.
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+}
+
+// Verifies that shelf components are placed properly in right-to-left UI.
+TEST_F(ShelfLayoutManagerTest, RtlPlacement) {
+  // Helper function to check that the given widget is placed symmetrically
+  // between LTR and RTL.
+  auto check_mirrored_placement = [](views::Widget* widget) {
+    base::i18n::SetICUDefaultLocale("en");
+    EXPECT_FALSE(base::i18n::IsRTL());
+    GetShelfLayoutManager()->LayoutShelf();
+    const int ltr_left_position =
+        widget->GetNativeWindow()->GetBoundsInScreen().x();
+
+    base::i18n::SetICUDefaultLocale("ar");
+    EXPECT_TRUE(base::i18n::IsRTL());
+    GetShelfLayoutManager()->LayoutShelf();
+    const int rtl_right_position =
+        widget->GetNativeWindow()->GetBoundsInScreen().right();
+
+    EXPECT_EQ(
+        GetShelfWidget()->GetWindowBoundsInScreen().width() - ltr_left_position,
+        rtl_right_position);
+  };
+
+  ShelfWidget* shelf_widget = GetPrimaryShelf()->shelf_widget();
+  check_mirrored_placement(shelf_widget->navigation_widget());
+  check_mirrored_placement(shelf_widget->status_area_widget());
+  check_mirrored_placement(shelf_widget);
 }
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {
