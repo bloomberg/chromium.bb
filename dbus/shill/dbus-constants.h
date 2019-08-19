@@ -333,7 +333,6 @@ const char kMonitorPropertyChanged[] = "PropertyChanged";
 // Flimflam type options.
 const char kTypeEthernet[] = "ethernet";
 const char kTypeWifi[] = "wifi";
-const char kTypeWimax[] = "wimax";
 const char kTypeBluetooth[] = "bluetooth";
 const char kTypeCellular[] = "cellular";
 const char kTypeVPN[] = "vpn";
