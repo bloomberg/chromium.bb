@@ -211,6 +211,8 @@ shared_library("blpwtk2") {
     "private/blpwtk2_webviewproxy.h",
     "private/blpwtk2_webviewimplclient.cc",
     "private/blpwtk2_webviewimplclient.h",
+    "private/blpwtk2_gpudataloggerimpl.cc",
+    "private/blpwtk2_gpudataloggerimpl.h",
     "public/blpwtk2.h",
     "public/blpwtk2_blob.cc",
     "public/blpwtk2_blob.h",
@@ -262,6 +264,8 @@ shared_library("blpwtk2") {
 
 
     # patch section: gpu
+    "public/blpwtk2_gpudatalogger.cc",
+    "public/blpwtk2_gpudatalogger.h",
 
 
 
