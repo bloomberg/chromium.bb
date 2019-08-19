@@ -57,7 +57,7 @@ TestResultPart GenerateTestResultPart(TestResultPart::Type type,
 }
 
 // Mock TestLauncher to mock CreateAndStartThreadPool,
-// unit test will provide a ScopedTaskEnvironment.
+// unit test will provide a TaskEnvironment.
 class MockTestLauncher : public TestLauncher {
  public:
   MockTestLauncher(TestLauncherDelegate* launcher_delegate,
@@ -105,8 +105,7 @@ class TestLauncherTest : public testing::Test {
   TestLauncherTest()
       : command_line(new CommandLine(CommandLine::NO_PROGRAM)),
         test_launcher(&delegate, 10),
-        scoped_task_environment(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+        task_environment(base::test::TaskEnvironment::MainThreadType::IO) {}
 
   // Adds tests to be returned by the delegate.
   void AddMockedTests(std::string test_case_name,
@@ -146,7 +145,7 @@ class TestLauncherTest : public testing::Test {
   std::unique_ptr<CommandLine> command_line;
   MockTestLauncher test_launcher;
   MockTestLauncherDelegate delegate;
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   ScopedTempDir dir;
 
  private:
@@ -624,7 +623,7 @@ class UnitTestLauncherDelegateTester : public testing::Test {
   ScopedTempDir dir;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 };
 
 // Validate delegate produces correct command line.
@@ -711,9 +710,9 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   // If path or test location changes, the following expectation
   // will need to change accordingly.
   std::string file_name = "../../base/test/launcher/test_launcher_unittest.cc";
-  ValidateTestLocation(val, "MockUnitTests.DISABLED_PassTest", file_name, 670);
-  ValidateTestLocation(val, "MockUnitTests.DISABLED_FailTest", file_name, 674);
-  ValidateTestLocation(val, "MockUnitTests.DISABLED_CrashTest", file_name, 678);
+  ValidateTestLocation(val, "MockUnitTests.DISABLED_PassTest", file_name, 669);
+  ValidateTestLocation(val, "MockUnitTests.DISABLED_FailTest", file_name, 673);
+  ValidateTestLocation(val, "MockUnitTests.DISABLED_CrashTest", file_name, 677);
 
   val = root->FindListKey("per_iteration_data");
   ASSERT_TRUE(val);
