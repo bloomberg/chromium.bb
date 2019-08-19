@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
@@ -142,6 +141,12 @@ public class NoTouchActivity extends SingleTabActivity {
         // we need to clear it due to inactivity, we should do it before calling
         // super#initializeState.
         if (launchNtpDueToInactivity) resetSavedInstanceState();
+
+        ((TouchlessTabCreator) getTabCreator(false))
+                .setTabModel(getTabModelSelector().getModel(false));
+        ((TouchlessTabCreator) getTabCreator(true))
+                .setTabModel(getTabModelSelector().getModel(true));
+
         super.initializeState();
 
         // By this point if we were going to restore a URL from savedInstanceState we would already
@@ -280,7 +285,7 @@ public class NoTouchActivity extends SingleTabActivity {
     }
 
     @Override
-    protected TabDelegate createTabDelegate(boolean incognito) {
-        return new TouchlessTabDelegate(incognito);
+    protected TabCreator createTabCreator(boolean incognito) {
+        return new TouchlessTabCreator(this, getWindowAndroid(), incognito);
     }
 }
