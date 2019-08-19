@@ -130,7 +130,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     notification_store_->Delete(
         guid,
         base::BindOnce(&ScheduledNotificationManagerImpl::OnNotificationDeleted,
-                       weak_ptr_factory_.GetWeakPtr(), entry->icons_uuid));
+                       weak_ptr_factory_.GetWeakPtr()));
 
     if (delegate_)
       delegate_->DisplayNotification(std::move(entry));
@@ -176,7 +176,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
           entry.guid,
           base::BindOnce(
               &ScheduledNotificationManagerImpl::OnNotificationDeleted,
-              weak_ptr_factory_.GetWeakPtr(), entry.icons_uuid));
+              weak_ptr_factory_.GetWeakPtr()));
     }
     notifications_.erase(type);
   }
@@ -213,7 +213,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
             entry->guid,
             base::BindOnce(
                 &ScheduledNotificationManagerImpl::OnNotificationDeleted,
-                weak_ptr_factory_.GetWeakPtr(), entry->icons_uuid));
+                weak_ptr_factory_.GetWeakPtr()));
       } else if (clients_.count(entry->type)) {
         notifications_[entry->type].emplace(entry->guid, std::move(*it));
       }
@@ -242,16 +242,6 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
         notifications_.erase(type);
       return;
     }
-
-    // TODO(hesen): Address only first icon for now. Handle all icons situation
-    // in following CLs.
-    if (entry->notification_data.icons.empty())
-      return;
-
-    encode_icons_callback_.Run(
-        std::move(entry->notification_data.icons.front()),
-        base::BindOnce(&ScheduledNotificationManagerImpl::OnIconEncoded,
-                       weak_ptr_factory_.GetWeakPtr(), type, std::move(guid)));
   }
 
   void OnIconEncoded(SchedulerClientType type,
@@ -276,21 +266,9 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     // TODO(hesen): Error handling.
     if (!entry || !success)
       return;
-    entry->icons_uuid.emplace_back(std::move(icon_uuid));
   }
 
-  void OnNotificationDeleted(const std::vector<std::string>& icon_uuids,
-                             bool success) {
-    // TODO(hesen): Error handling.
-    if (!success)
-      return;
-    for (const auto& icon_uuid : icon_uuids) {
-      icon_store_->Delete(
-          std::move(icon_uuid),
-          base::BindOnce(&ScheduledNotificationManagerImpl::OnIconDeleted,
-                         weak_ptr_factory_.GetWeakPtr()));
-    }
-  }
+  void OnNotificationDeleted(bool success) { NOTIMPLEMENTED(); }
 
   void OnIconDeleted(bool success) { NOTIMPLEMENTED(); }
 
