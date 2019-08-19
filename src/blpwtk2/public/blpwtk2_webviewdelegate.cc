@@ -55,6 +55,10 @@ void WebViewDelegate::findState(WebView* source,
                                 int activeMatchOrdinal,
                                 bool finalUpdate) {}
 
+void WebViewDelegate::startPerformanceTiming() {}
+
+void WebViewDelegate::stopPerformanceTiming() {}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et

@@ -1030,7 +1030,8 @@ RenderViewImpl* RenderViewImpl::Create(
       params->visual_properties.display_mode,
       /*is_frozen=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
       params->hidden, params->never_visible,
-      /*widget_request=*/nullptr);
+      /*widget_request=*/nullptr,
+      params->view_id);
 
   if (g_create_render_view_impl) {
     render_view = g_create_render_view_impl(compositor_deps, *params);
