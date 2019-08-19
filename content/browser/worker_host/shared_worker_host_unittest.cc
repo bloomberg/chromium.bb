@@ -161,13 +161,13 @@ TEST_F(SharedWorkerHostTest, Normal) {
 
   // The factory should have gotten the CreateSharedWorker message.
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
-  blink::mojom::SharedWorkerRequest worker_request;
+  mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver;
   EXPECT_TRUE(factory_impl.CheckReceivedCreateSharedWorker(
       host->instance().url(), host->instance().name(),
       host->instance().content_security_policy_type(), &worker_host,
-      &worker_request));
+      &worker_receiver));
   {
-    MockSharedWorker worker(std::move(worker_request));
+    MockSharedWorker worker(std::move(worker_receiver));
     base::RunLoop().RunUntilIdle();
 
     // The worker and client should have gotten initial messages.
@@ -273,12 +273,12 @@ TEST_F(SharedWorkerHostTest, TerminateAfterStarting) {
 
   {
     mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
-    blink::mojom::SharedWorkerRequest worker_request;
+    mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver;
     EXPECT_TRUE(factory_impl.CheckReceivedCreateSharedWorker(
         host->instance().url(), host->instance().name(),
         host->instance().content_security_policy_type(), &worker_host,
-        &worker_request));
-    MockSharedWorker worker(std::move(worker_request));
+        &worker_receiver));
+    MockSharedWorker worker(std::move(worker_receiver));
 
     // Terminate after starting.
     host->TerminateWorker();
@@ -317,12 +317,12 @@ TEST_F(SharedWorkerHostTest, OnContextClosed) {
 
   {
     mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
-    blink::mojom::SharedWorkerRequest worker_request;
+    mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver;
     EXPECT_TRUE(factory_impl.CheckReceivedCreateSharedWorker(
         host->instance().url(), host->instance().name(),
         host->instance().content_security_policy_type(), &worker_host,
-        &worker_request));
-    MockSharedWorker worker(std::move(worker_request));
+        &worker_receiver));
+    MockSharedWorker worker(std::move(worker_receiver));
 
     // Simulate the worker calling OnContextClosed().
     worker_host->OnContextClosed();

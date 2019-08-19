@@ -84,10 +84,10 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
       worker_process_id_(worker_process_id),
       next_connection_request_id_(1),
       interface_provider_binding_(this) {
-  // Set up the worker interface request. This is needed first in either
+  // Set up the worker pending receiver. This is needed first in either
   // AddClient() or Start(). AddClient() can sometimes be called before Start()
   // when two clients call new SharedWorker() at around the same time.
-  worker_request_ = mojo::MakeRequest(&worker_);
+  worker_receiver_ = worker_.BindNewPipeAndPassReceiver();
 
   // Keep the renderer process alive that will be hosting the shared worker.
   auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
@@ -218,7 +218,7 @@ void SharedWorkerHost::Start(
           : base::nullopt,
       std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller),
-      receiver_.BindNewPipeAndPassRemote(), std::move(worker_request_),
+      receiver_.BindNewPipeAndPassRemote(), std::move(worker_receiver_),
       std::move(interface_provider), std::move(browser_interface_broker));
 
   // |service_worker_remote_object| is an associated interface ptr, so calls
@@ -236,7 +236,7 @@ void SharedWorkerHost::Start(
   }
 
   // Monitor the lifetime of the worker.
-  worker_.set_connection_error_handler(base::BindOnce(
+  worker_.set_disconnect_handler(base::BindOnce(
       &SharedWorkerHost::OnWorkerConnectionLost, weak_factory_.GetWeakPtr()));
 }
 

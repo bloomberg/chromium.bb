@@ -36,7 +36,8 @@ namespace content {
 
 class MockSharedWorker : public blink::mojom::SharedWorker {
  public:
-  explicit MockSharedWorker(blink::mojom::SharedWorkerRequest request);
+  explicit MockSharedWorker(
+      mojo::PendingReceiver<blink::mojom::SharedWorker> receiver);
   ~MockSharedWorker() override;
 
   bool CheckReceivedConnect(int* connection_request_id,
@@ -50,7 +51,7 @@ class MockSharedWorker : public blink::mojom::SharedWorker {
                mojo::ScopedMessagePipeHandle port) override;
   void Terminate() override;
 
-  mojo::Binding<blink::mojom::SharedWorker> binding_;
+  mojo::Receiver<blink::mojom::SharedWorker> receiver_;
   std::queue<std::pair<int, blink::MessagePortChannel>> connect_received_;
   bool terminate_received_ = false;
 
@@ -69,7 +70,7 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
       blink::mojom::ContentSecurityPolicyType
           expected_content_security_policy_type,
       mojo::Remote<blink::mojom::SharedWorkerHost>* host,
-      blink::mojom::SharedWorkerRequest* request);
+      mojo::PendingReceiver<blink::mojom::SharedWorker>* receiver);
 
  private:
   // blink::mojom::SharedWorkerFactory methods:
@@ -90,7 +91,7 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
           subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
-      blink::mojom::SharedWorkerRequest request,
+      mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
       service_manager::mojom::InterfaceProviderPtr interface_provider,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker) override;
@@ -103,7 +104,7 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
     mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
         content_settings;
     mojo::PendingRemote<blink::mojom::SharedWorkerHost> host;
-    blink::mojom::SharedWorkerRequest request;
+    mojo::PendingReceiver<blink::mojom::SharedWorker> receiver;
     service_manager::mojom::InterfaceProviderPtr interface_provider;
   };
 

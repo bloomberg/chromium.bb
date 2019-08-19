@@ -12,8 +12,9 @@
 #include "base/unguessable_token.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "ipc/ipc_listener.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -74,7 +75,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
           subresource_loader_factory_bundle_info,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
-      blink::mojom::SharedWorkerRequest request,
+      mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
       service_manager::mojom::InterfaceProviderPtr interface_provider,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker);
@@ -102,7 +103,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
                mojo::ScopedMessagePipeHandle port) override;
   void Terminate() override;
 
-  mojo::Binding<blink::mojom::SharedWorker> binding_;
+  mojo::Receiver<blink::mojom::SharedWorker> receiver_;
   mojo::Remote<blink::mojom::SharedWorkerHost> host_;
   bool running_ = false;
   GURL url_;

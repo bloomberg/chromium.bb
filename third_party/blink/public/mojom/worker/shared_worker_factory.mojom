@@ -66,7 +66,7 @@ interface SharedWorkerFactory {
       ControllerServiceWorkerInfo? controller_info,
 
       pending_remote<SharedWorkerHost> host,
-      SharedWorker& shared_worker,
+      pending_receiver<SharedWorker> shared_worker,
 
       // TODO(crbug.com/990845): remove when no longer used.
       service_manager.mojom.InterfaceProvider interface_provider,

@@ -22,8 +22,9 @@ bool CheckEquality(const T& expected, const T& actual) {
 
 }  // namespace
 
-MockSharedWorker::MockSharedWorker(blink::mojom::SharedWorkerRequest request)
-    : binding_(this, std::move(request)) {}
+MockSharedWorker::MockSharedWorker(
+    mojo::PendingReceiver<blink::mojom::SharedWorker> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 MockSharedWorker::~MockSharedWorker() = default;
 
@@ -73,7 +74,7 @@ bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
     blink::mojom::ContentSecurityPolicyType
         expected_content_security_policy_type,
     mojo::Remote<blink::mojom::SharedWorkerHost>* host,
-    blink::mojom::SharedWorkerRequest* request) {
+    mojo::PendingReceiver<blink::mojom::SharedWorker>* receiver) {
   std::unique_ptr<CreateParams> create_params = std::move(create_params_);
   if (!create_params)
     return false;
@@ -87,7 +88,7 @@ bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
   if (!create_params->interface_provider)
     return false;
   host->Bind(std::move(create_params->host));
-  *request = std::move(create_params->request);
+  *receiver = std::move(create_params->receiver);
   return true;
 }
 
@@ -108,7 +109,7 @@ void MockSharedWorkerFactory::CreateSharedWorker(
         subresource_loader_factories,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
-    blink::mojom::SharedWorkerRequest request,
+    mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
     service_manager::mojom::InterfaceProviderPtr interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker) {
@@ -118,7 +119,7 @@ void MockSharedWorkerFactory::CreateSharedWorker(
   create_params_->pause_on_start = pause_on_start;
   create_params_->content_settings = std::move(content_settings);
   create_params_->host = std::move(host);
-  create_params_->request = std::move(request);
+  create_params_->receiver = std::move(receiver);
   create_params_->interface_provider = std::move(interface_provider);
 }
 
