@@ -203,7 +203,7 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
         content::RenderProcessHost* render_process_host)
 {
     ProcessHostImpl::registerMojoInterfaces(registry);
-}            
+}
 
 void ContentBrowserClientImpl::StartInProcessRendererThread(
     mojo::OutgoingInvitation* broker_client_invitation,
@@ -220,7 +220,15 @@ mojo::OutgoingInvitation* ContentBrowserClientImpl::GetClientInvitation() const
 std::vector<service_manager::Manifest>
 ContentBrowserClientImpl::GetExtraServiceManifests()
 {
-    return std::vector<service_manager::Manifest>{};
+    // needed for chrome services
+    return std::vector<service_manager::Manifest>{
+        service_manager::ManifestBuilder()
+            .WithServiceName(chrome::mojom::kRendererServiceName)
+            .ExposeCapability("browser",
+                              service_manager::Manifest::InterfaceList<
+                                  spellcheck::mojom::SpellChecker>())
+            .RequireCapability(chrome::mojom::kServiceName, "renderer")
+            .Build()};
 }
 
 base::Optional<service_manager::Manifest> ContentBrowserClientImpl::GetServiceManifestOverlay(
