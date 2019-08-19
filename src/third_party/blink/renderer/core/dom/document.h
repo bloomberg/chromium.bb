@@ -950,6 +950,14 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void SetFindInPageRoot(Element* find_in_page_root);
 
+  // Bloomberg-specific extensions
+  String bbHeaderText() const { return bb_header_text_; }
+  void setBbHeaderText(const String& value) { bb_header_text_ = value; }
+  String bbFooterText() const { return bb_footer_text_; }
+  void setBbFooterText(const String& value) { bb_footer_text_ = value; }
+  bool bbPrintPageNumbers() const { return bb_print_page_numbers_; }
+  void setBbPrintPageNumbers(bool value) { bb_print_page_numbers_ = value; }
+
   // The cookieURL is used to query the cookie database for this document's
   // cookies. For example, if the cookie URL is http://example.com, we'll
   // use the non-Secure cookies for example.com when computing
@@ -1885,6 +1893,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   std::unique_ptr<TransformSource> transform_source_;
 
+  // Bloomberg-specific extensions
+  String bb_header_text_;
+  String bb_footer_text_;
+
   String xml_encoding_;
   String xml_version_;
   unsigned xml_standalone_ : 2;
@@ -1906,6 +1918,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Vector<AnnotatedRegionValue> annotated_regions_;
   bool has_annotated_regions_;
   bool annotated_regions_dirty_;
+  bool bb_print_page_numbers_{true};
 
   std::unique_ptr<SelectorQueryCache> selector_query_cache_;
 
