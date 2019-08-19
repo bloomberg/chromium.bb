@@ -174,7 +174,7 @@ const CGFloat kFlashDuration = 0.5;
 }
 
 - (NSString*)caption {
-  return nil;
+  return @"";
 }
 
 #pragma mark - private methods

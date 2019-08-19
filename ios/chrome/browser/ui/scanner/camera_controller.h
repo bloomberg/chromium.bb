@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_QR_SCANNER_CAMERA_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_QR_SCANNER_CAMERA_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_SCANNER_CAMERA_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_SCANNER_CAMERA_CONTROLLER_H_
 
 #import <AVFoundation/AVFoundation.h>
 #import <UIKit/UIKit.h>
 
 #include "base/ios/block_types.h"
 
-namespace qr_scanner {
+namespace scanner {
 
 // Values to distinguish between different camera states to display the correct
 // view controller or system alert.
@@ -38,7 +38,7 @@ enum CameraState {
   CAMERA_NOT_LOADED,
 };
 
-}  // namespace qr_scanner
+}  // namespace scanner
 
 @protocol CameraControllerDelegate
 
@@ -46,7 +46,7 @@ enum CameraState {
 // preview.
 - (void)captureSessionIsConnected;
 // Called on the main queue when the camera state changes.
-- (void)cameraStateChanged:(qr_scanner::CameraState)state;
+- (void)cameraStateChanged:(scanner::CameraState)state;
 // Called on the main queue when the torch state changes.
 - (void)torchStateChanged:(BOOL)torchIsOn;
 // Called on the main queue when the torch availability changes.
@@ -109,4 +109,4 @@ enum CameraState {
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_QR_SCANNER_CAMERA_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_SCANNER_CAMERA_CONTROLLER_H_

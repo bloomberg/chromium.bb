@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/qr_scanner/qr_scanner_transitioning_delegate.h"
+#import "ios/chrome/browser/ui/scanner/scanner_transitioning_delegate.h"
 
 #include "base/ios/block_types.h"
 
@@ -15,28 +15,28 @@ namespace {
 // The default animation duration.
 const NSTimeInterval kDefaultDuration = 0.25;
 
-enum QRScannerTransition { PRESENT, DISMISS };
+enum ScannerTransition { PRESENT, DISMISS };
 
 }  // namespace
 
-// Animates the QR Scanner transition. If initialized with the |PRESENT|
-// transition, positions the QR Scanner view below its presenting view
+// Animates the Scanner transition. If initialized with the |PRESENT|
+// transition, positions the Scanner view below its presenting view
 // controller's view in the container view and animates the presenting view to
 // slide up. If initialized with the |DISMISS| transition, positions the
-// presenting view controller's view above the QR Scanner view in the container
+// presenting view controller's view above the Scanner view in the container
 // view and animates the presenting view to slide down.
-@interface QRScannerTransitionAnimator
-    : NSObject<UIViewControllerAnimatedTransitioning> {
-  QRScannerTransition _transition;
+@interface ScannerTransitionAnimator
+    : NSObject <UIViewControllerAnimatedTransitioning> {
+  ScannerTransition _transition;
 }
 
-- (instancetype)initWithTransition:(QRScannerTransition)transition;
+- (instancetype)initWithTransition:(ScannerTransition)transition;
 
 @end
 
-@implementation QRScannerTransitionAnimator
+@implementation ScannerTransitionAnimator
 
-- (instancetype)initWithTransition:(QRScannerTransition)transition {
+- (instancetype)initWithTransition:(ScannerTransition)transition {
   self = [super init];
   if (self) {
     _transition = transition;
@@ -108,18 +108,18 @@ enum QRScannerTransition { PRESENT, DISMISS };
 
 @end
 
-@implementation QRScannerTransitioningDelegate
+@implementation ScannerTransitioningDelegate
 
 - (id<UIViewControllerAnimatedTransitioning>)
-animationControllerForPresentedController:(UIViewController*)presented
-                     presentingController:(UIViewController*)presenting
-                         sourceController:(UIViewController*)source {
-  return [[QRScannerTransitionAnimator alloc] initWithTransition:PRESENT];
+    animationControllerForPresentedController:(UIViewController*)presented
+                         presentingController:(UIViewController*)presenting
+                             sourceController:(UIViewController*)source {
+  return [[ScannerTransitionAnimator alloc] initWithTransition:PRESENT];
 }
 
 - (id<UIViewControllerAnimatedTransitioning>)
-animationControllerForDismissedController:(UIViewController*)dismissed {
-  return [[QRScannerTransitionAnimator alloc] initWithTransition:DISMISS];
+    animationControllerForDismissedController:(UIViewController*)dismissed {
+  return [[ScannerTransitionAnimator alloc] initWithTransition:DISMISS];
 }
 
 @end

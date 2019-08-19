@@ -105,7 +105,7 @@ const CGFloat kViewportBorderShadowRadius = 10.0;
   [_viewportBorder setMask:[self viewportBorderMaskWithFrameSize:frameSize]];
 }
 
-#pragma mark Private
+#pragma mark - Private
 
 // Creates a square mask for the overlay to keep the viewport transparent.
 - (CAShapeLayer*)viewportMaskWithFrameSize:(CGSize)frameSize {

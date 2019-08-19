@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/qr_scanner/camera_controller.h"
+#import "ios/chrome/browser/ui/scanner/camera_controller.h"
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -13,7 +13,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface CameraController ()<AVCaptureMetadataOutputObjectsDelegate> {
+@interface CameraController () <AVCaptureMetadataOutputObjectsDelegate> {
   // The queue for dispatching calls to |_captureSession|.
   dispatch_queue_t _sessionQueue;
 }
@@ -23,7 +23,7 @@
 @property(nonatomic, readwrite, weak) id<CameraControllerDelegate> delegate;
 // The current state of the camera. The state is set to CAMERA_NOT_LOADED before
 // the camera is first loaded, and afterwards it is never CAMERA_NOT_LOADED.
-@property(nonatomic, readwrite, assign) qr_scanner::CameraState cameraState;
+@property(nonatomic, readwrite, assign) scanner::CameraState cameraState;
 // Redeclaration of |torchActive| to make the setter private.
 @property(nonatomic, readwrite, assign, getter=isTorchActive) BOOL torchActive;
 // The current availability of the torch.
@@ -59,7 +59,7 @@
 
 @implementation CameraController
 
-#pragma mark lifecycle
+#pragma mark - Lifecycle
 
 + (instancetype)cameraControllerWithDelegate:
     (id<CameraControllerDelegate>)delegate {
@@ -72,7 +72,7 @@
   self = [super init];
   if (self) {
     DCHECK(delegate);
-    _cameraState = qr_scanner::CAMERA_NOT_LOADED;
+    _cameraState = scanner::CAMERA_NOT_LOADED;
     _delegate = delegate;
     std::string queueName =
         base::StringPrintf("%s.chrome.ios.QRScannerCaptureSessionQueue",
@@ -90,7 +90,7 @@
   [self stopReceivingNotifications];
 }
 
-#pragma mark public methods
+#pragma mark - Public methods
 
 - (AVAuthorizationStatus)getAuthorizationStatus {
   return [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
@@ -105,8 +105,7 @@
       requestAccessForMediaType:AVMediaTypeVideo
               completionHandler:^void(BOOL granted) {
                 if (!granted) {
-                  [weakSelf
-                      setCameraState:qr_scanner::CAMERA_PERMISSION_DENIED];
+                  [weakSelf setCameraState:scanner::CAMERA_PERMISSION_DENIED];
                 } else {
                   [weakSelf loadCaptureSession:previewLayer];
                 }
@@ -186,15 +185,15 @@
   });
 }
 
-#pragma mark private methods
+#pragma mark - Private methods
 
 - (BOOL)isCameraAvailable {
-  return [self cameraState] == qr_scanner::CAMERA_AVAILABLE;
+  return [self cameraState] == scanner::CAMERA_AVAILABLE;
 }
 
 - (void)loadCaptureSession:(AVCaptureVideoPreviewLayer*)previewLayer {
   DCHECK(previewLayer);
-  DCHECK([self cameraState] == qr_scanner::CAMERA_NOT_LOADED);
+  DCHECK([self cameraState] == scanner::CAMERA_NOT_LOADED);
   DCHECK([self getAuthorizationStatus] == AVAuthorizationStatusAuthorized);
   __weak CameraController* weakSelf = self;
   dispatch_async(_sessionQueue, ^{
@@ -213,7 +212,7 @@
                                  position:AVCaptureDevicePositionBack];
   videoCaptureDevices = [discoverySession devices];
   if ([videoCaptureDevices count] == 0) {
-    [self setCameraState:qr_scanner::CAMERA_UNAVAILABLE];
+    [self setCameraState:scanner::CAMERA_UNAVAILABLE];
     return;
   }
 
@@ -225,7 +224,7 @@
 
   // Allow only the back camera.
   if (cameraIndex == NSNotFound) {
-    [self setCameraState:qr_scanner::CAMERA_UNAVAILABLE];
+    [self setCameraState:scanner::CAMERA_UNAVAILABLE];
     return;
   }
   AVCaptureDevice* camera = videoCaptureDevices[cameraIndex];
@@ -235,13 +234,13 @@
   AVCaptureDeviceInput* videoInput =
       [AVCaptureDeviceInput deviceInputWithDevice:camera error:&error];
   if (error || !videoInput) {
-    [self setCameraState:qr_scanner::CAMERA_UNAVAILABLE];
+    [self setCameraState:scanner::CAMERA_UNAVAILABLE];
     return;
   }
 
   AVCaptureSession* session = [[AVCaptureSession alloc] init];
   if (![session canAddInput:videoInput]) {
-    [self setCameraState:qr_scanner::CAMERA_UNAVAILABLE];
+    [self setCameraState:scanner::CAMERA_UNAVAILABLE];
     return;
   }
   [session addInput:videoInput];
@@ -252,7 +251,7 @@
   [metadataOutput setMetadataObjectsDelegate:self
                                        queue:dispatch_get_main_queue()];
   if (![session canAddOutput:metadataOutput]) {
-    [self setCameraState:qr_scanner::CAMERA_UNAVAILABLE];
+    [self setCameraState:scanner::CAMERA_UNAVAILABLE];
     return;
   }
   [session addOutput:metadataOutput];
@@ -260,14 +259,14 @@
 
   // Require QR code recognition to be available.
   if (![availableCodeTypes containsObject:AVMetadataObjectTypeQRCode]) {
-    [self setCameraState:qr_scanner::CAMERA_UNAVAILABLE];
+    [self setCameraState:scanner::CAMERA_UNAVAILABLE];
     return;
   }
   [metadataOutput setMetadataObjectTypes:availableCodeTypes];
   _metadataOutput = metadataOutput;
 
   _captureSession = session;
-  [self setCameraState:qr_scanner::CAMERA_AVAILABLE];
+  [self setCameraState:scanner::CAMERA_AVAILABLE];
   // Setup torchAvailable.
   [self setTorchAvailable:[camera hasTorch] &&
                           [camera isTorchModeSupported:AVCaptureTorchModeOn] &&
@@ -365,12 +364,12 @@
   }
 }
 
-#pragma mark notification handlers
+#pragma mark - Notification Handlers
 
 - (void)handleAVCaptureSessionRuntimeError:(NSNotification*)notification {
   __weak CameraController* weakSelf = self;
   dispatch_async(_sessionQueue, ^{
-    [weakSelf setCameraState:qr_scanner::CAMERA_UNAVAILABLE];
+    [weakSelf setCameraState:scanner::CAMERA_UNAVAILABLE];
   });
 }
 
@@ -386,15 +385,14 @@
         // is backgrounded and foregrounded.
         break;
       case AVCaptureSessionInterruptionReasonVideoDeviceInUseByAnotherClient:
-        [weakSelf
-            setCameraState:qr_scanner::CAMERA_IN_USE_BY_ANOTHER_APPLICATION];
+        [weakSelf setCameraState:scanner::CAMERA_IN_USE_BY_ANOTHER_APPLICATION];
         break;
       case AVCaptureSessionInterruptionReasonVideoDeviceNotAvailableWithMultipleForegroundApps:
-        [weakSelf setCameraState:qr_scanner::MULTIPLE_FOREGROUND_APPS];
+        [weakSelf setCameraState:scanner::MULTIPLE_FOREGROUND_APPS];
         break;
       case AVCaptureSessionInterruptionReasonVideoDeviceNotAvailableDueToSystemPressure:
-        [weakSelf setCameraState:qr_scanner::
-                                     CAMERA_UNAVAILABLE_DUE_TO_SYSTEM_PRESSURE];
+        [weakSelf
+            setCameraState:scanner::CAMERA_UNAVAILABLE_DUE_TO_SYSTEM_PRESSURE];
         break;
       case AVCaptureSessionInterruptionReasonAudioDeviceInUseByAnotherClient:
         NOTREACHED();
@@ -408,7 +406,7 @@
   dispatch_async(_sessionQueue, ^{
     CameraController* strongSelf = weakSelf;
     if (strongSelf && [strongSelf.captureSession isRunning]) {
-      [strongSelf setCameraState:qr_scanner::CAMERA_AVAILABLE];
+      [strongSelf setCameraState:scanner::CAMERA_AVAILABLE];
     }
   });
 }
@@ -416,7 +414,7 @@
 - (void)handleAVCaptureDeviceWasDisconnected:(NSNotification*)notification {
   __weak CameraController* weakSelf = self;
   dispatch_async(_sessionQueue, ^{
-    [weakSelf setCameraState:qr_scanner::CAMERA_UNAVAILABLE];
+    [weakSelf setCameraState:scanner::CAMERA_UNAVAILABLE];
   });
 }
 
@@ -433,9 +431,9 @@
   }
 }
 
-#pragma mark property implementation
+#pragma mark - Property Implementation
 
-- (void)setCameraState:(qr_scanner::CameraState)state {
+- (void)setCameraState:(scanner::CameraState)state {
   if (state == _cameraState) {
     return;
   }
@@ -468,7 +466,7 @@
   });
 }
 
-#pragma mark AVCaptureMetadataOutputObjectsDelegate
+#pragma mark - AVCaptureMetadataOutputObjectsDelegate
 
 - (void)captureOutput:(AVCaptureOutput*)captureOutput
     didOutputMetadataObjects:(NSArray*)metadataObjects

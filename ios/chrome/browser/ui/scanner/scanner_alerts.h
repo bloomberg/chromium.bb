@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_QR_SCANNER_QR_SCANNER_ALERTS_H_
-#define IOS_CHROME_BROWSER_UI_QR_SCANNER_QR_SCANNER_ALERTS_H_
+#ifndef IOS_CHROME_BROWSER_UI_SCANNER_SCANNER_ALERTS_H_
+#define IOS_CHROME_BROWSER_UI_SCANNER_SCANNER_ALERTS_H_
 
-#include "ios/chrome/browser/ui/qr_scanner/camera_controller.h"
+#include "ios/chrome/browser/ui/scanner/camera_controller.h"
 
-@class UIAlertAction;
-@class UIAlertController;
+#import <UIKit/UIKit.h>
 
-namespace qr_scanner {
+namespace scanner {
 
 // Block type that takes a UIAlertAction. Blocks of this type will be called
 // when the Cancel button of a UIAlertView is pressed.
@@ -22,6 +21,6 @@ typedef void (^CancelAlertAction)(UIAlertAction* alertAction);
 UIAlertController* DialogForCameraState(CameraState state,
                                         CancelAlertAction cancelBlock);
 
-}  // namespace qr_scanner
+}  // namespace scanner
 
-#endif  // IOS_CHROME_BROWSER_UI_QR_SCANNER_QR_SCANNER_ALERTS_H_
+#endif  // IOS_CHROME_BROWSER_UI_SCANNER_SCANNER_ALERTS_H_

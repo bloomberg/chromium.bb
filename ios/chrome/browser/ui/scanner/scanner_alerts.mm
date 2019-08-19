@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/qr_scanner/qr_scanner_alerts.h"
-
-#import <UIKit/UIKit.h>
+#import "ios/chrome/browser/ui/scanner/scanner_alerts.h"
 
 #include "base/logging.h"
 #include "components/version_info/version_info.h"
@@ -20,9 +18,9 @@
 namespace {
 
 // Returns a "Cancel" UIAlertAction for the given |block|.
-UIAlertAction* CancelAction(qr_scanner::CancelAlertAction block) {
+UIAlertAction* CancelAction(scanner::CancelAlertAction block) {
   NSString* cancelButtonTitle =
-      l10n_util::GetNSString(IDS_IOS_QR_SCANNER_ALERT_CANCEL);
+      l10n_util::GetNSString(IDS_IOS_SCANNER_ALERT_CANCEL);
   return [UIAlertAction actionWithTitle:cancelButtonTitle
                                   style:UIAlertActionStyleCancel
                                 handler:block];
@@ -34,7 +32,7 @@ UIAlertAction* CancelAction(qr_scanner::CancelAlertAction block) {
 UIAlertController* AlertWithCancelButton(
     NSString* title,
     NSString* body,
-    qr_scanner::CancelAlertAction cancelBlock) {
+    scanner::CancelAlertAction cancelBlock) {
   UIAlertController* dialog =
       [UIAlertController alertControllerWithTitle:title
                                           message:body
@@ -54,25 +52,25 @@ UIAlertController* AlertWithCancelButton(
 // Returns a UIAlertController to be displayed when the camera state is
 // CAMERA_PERMISSION_DENIED.
 UIAlertController* CameraPermissionDeniedDialog(
-    qr_scanner::CancelAlertAction cancelBlock) {
+    scanner::CancelAlertAction cancelBlock) {
   NSURL* settingsURL = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
 
   if (![[UIApplication sharedApplication] canOpenURL:settingsURL]) {
     // Display a dialog instructing the user how to change the settings.
-    NSString* dialogTitle = l10n_util::GetNSString(
-        IDS_IOS_QR_SCANNER_CAMERA_PERMISSIONS_HELP_TITLE);
-    NSString* dialogBody = l10n_util::GetNSString(
-        IDS_IOS_QR_SCANNER_CAMERA_PERMISSIONS_HELP_DETAIL);
+    NSString* dialogTitle =
+        l10n_util::GetNSString(IDS_IOS_SCANNER_CAMERA_PERMISSIONS_HELP_TITLE);
+    NSString* dialogBody =
+        l10n_util::GetNSString(IDS_IOS_SCANNER_CAMERA_PERMISSIONS_HELP_DETAIL);
     return AlertWithCancelButton(dialogTitle, dialogBody, cancelBlock);
   }
 
   // Display a dialog with a link to the Settings app.
   NSString* dialogTitle = l10n_util::GetNSString(
-      IDS_IOS_QR_SCANNER_CAMERA_PERMISSIONS_HELP_TITLE_GO_TO_SETTINGS);
+      IDS_IOS_SCANNER_CAMERA_PERMISSIONS_HELP_TITLE_GO_TO_SETTINGS);
   NSString* dialogBody = l10n_util::GetNSString(
-      IDS_IOS_QR_SCANNER_CAMERA_PERMISSIONS_HELP_DETAIL_GO_TO_SETTINGS);
+      IDS_IOS_SCANNER_CAMERA_PERMISSIONS_HELP_DETAIL_GO_TO_SETTINGS);
   NSString* settingsButton = l10n_util::GetNSString(
-      IDS_IOS_QR_SCANNER_CAMERA_PERMISSIONS_HELP_GO_TO_SETTINGS);
+      IDS_IOS_SCANNER_CAMERA_PERMISSIONS_HELP_GO_TO_SETTINGS);
 
   UIAlertController* dialog =
       AlertWithCancelButton(dialogTitle, dialogBody, cancelBlock);
@@ -94,44 +92,44 @@ UIAlertController* CameraPermissionDeniedDialog(
 
 }  // namespace
 
-namespace qr_scanner {
+namespace scanner {
 
 UIAlertController* DialogForCameraState(
     CameraState state,
-    qr_scanner::CancelAlertAction cancelBlock) {
+    scanner::CancelAlertAction cancelBlock) {
   NSString* dialogTitle = nil;
   NSString* dialogBody = nil;
   switch (state) {
-    case qr_scanner::CAMERA_AVAILABLE:
-    case qr_scanner::CAMERA_NOT_LOADED:
+    case scanner::CAMERA_AVAILABLE:
+    case scanner::CAMERA_NOT_LOADED:
       NOTREACHED();
       return nil;
 
-    case qr_scanner::CAMERA_IN_USE_BY_ANOTHER_APPLICATION:
+    case scanner::CAMERA_IN_USE_BY_ANOTHER_APPLICATION:
       dialogTitle =
-          l10n_util::GetNSString(IDS_IOS_QR_SCANNER_CAMERA_IN_USE_ALERT_TITLE);
+          l10n_util::GetNSString(IDS_IOS_SCANNER_CAMERA_IN_USE_ALERT_TITLE);
       dialogBody =
-          l10n_util::GetNSString(IDS_IOS_QR_SCANNER_CAMERA_IN_USE_ALERT_DETAIL);
+          l10n_util::GetNSString(IDS_IOS_SCANNER_CAMERA_IN_USE_ALERT_DETAIL);
       return AlertWithCancelButton(dialogTitle, dialogBody, cancelBlock);
 
-    case qr_scanner::MULTIPLE_FOREGROUND_APPS:
+    case scanner::MULTIPLE_FOREGROUND_APPS:
       dialogTitle = l10n_util::GetNSString(
-          IDS_IOS_QR_SCANNER_MULTIPLE_FOREGROUND_APPS_ALERT_TITLE);
+          IDS_IOS_SCANNER_MULTIPLE_FOREGROUND_APPS_ALERT_TITLE);
       dialogBody = l10n_util::GetNSString(
-          IDS_IOS_QR_SCANNER_MULTIPLE_FOREGROUND_APPS_ALERT_DETAIL);
+          IDS_IOS_SCANNER_MULTIPLE_FOREGROUND_APPS_ALERT_DETAIL);
       return AlertWithCancelButton(dialogTitle, dialogBody, cancelBlock);
 
-    case qr_scanner::CAMERA_PERMISSION_DENIED:
+    case scanner::CAMERA_PERMISSION_DENIED:
       return CameraPermissionDeniedDialog(cancelBlock);
 
-    case qr_scanner::CAMERA_UNAVAILABLE_DUE_TO_SYSTEM_PRESSURE:
-    case qr_scanner::CAMERA_UNAVAILABLE:
+    case scanner::CAMERA_UNAVAILABLE_DUE_TO_SYSTEM_PRESSURE:
+    case scanner::CAMERA_UNAVAILABLE:
       dialogTitle = l10n_util::GetNSString(
-          IDS_IOS_QR_SCANNER_CAMERA_UNAVAILABLE_ALERT_TITLE);
+          IDS_IOS_SCANNER_CAMERA_UNAVAILABLE_ALERT_TITLE);
       dialogBody = l10n_util::GetNSString(
-          IDS_IOS_QR_SCANNER_CAMERA_UNAVAILABLE_ALERT_DETAIL);
+          IDS_IOS_SCANNER_CAMERA_UNAVAILABLE_ALERT_DETAIL);
       return AlertWithCancelButton(dialogTitle, dialogBody, cancelBlock);
   }
 }
 
-}  // namespace qr_scanner
+}  // namespace scanner
