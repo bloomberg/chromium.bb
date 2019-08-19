@@ -579,7 +579,6 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
     "//chrome/browser/ntp_snippets/ntp_snippets_metrics.h",
     "//chrome/browser/profiles/profile_metrics.h",
     "//chrome/browser/translate/android/translate_utils.h",
-    "//chrome/browser/ui/android/device_dialog/bluetooth_scanning_prompt_android.h",
     "//chrome/browser/ui/android/infobars/infobar_android.h",
   ]
 }
