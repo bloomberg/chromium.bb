@@ -211,7 +211,8 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 - (void)dismissInfobarBanner:(id)sender
                     animated:(BOOL)animated
-                  completion:(void (^)())completion {
+                  completion:(void (^)())completion
+               userInitiated:(BOOL)userInitiated {
   DCHECK(self.baseViewController);
   // Make sure the banner is completely presented before trying to dismiss it.
   [self.bannerTransitionDriver completePresentationTransitionIfRunning];
@@ -219,6 +220,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   if (self.baseViewController.presentedViewController &&
       self.baseViewController.presentedViewController ==
           self.bannerViewController) {
+    [self infobarBannerWillBeDismissed:userInitiated];
     [self.baseViewController
         dismissViewControllerAnimated:animated
                            completion:^{
@@ -350,6 +352,10 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   NOTREACHED() << "Subclass must implement.";
 }
 
+- (void)infobarBannerWillBeDismissed:(BOOL)userInitiated {
+  NOTREACHED() << "Subclass must implement.";
+}
+
 - (void)infobarWasDismissed {
   NOTREACHED() << "Subclass must implement.";
 }
@@ -411,6 +417,16 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
     presentingViewController.accessibilityElements =
         @[ presentingViewController.view ];
   }
+}
+
+// Helper method for non-user initiated InfobarBanner dismissals.
+- (void)dismissInfobarBanner:(id)sender
+                    animated:(BOOL)animated
+                  completion:(void (^)())completion {
+  [self dismissInfobarBanner:sender
+                    animated:animated
+                  completion:completion
+               userInitiated:NO];
 }
 
 @end
