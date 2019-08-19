@@ -319,9 +319,9 @@ class SkylabHWTestStage(HWTestStage):
     if config_lib.IsPFQType(build_type) and self._board_name not in blacklist:
       pool = constants.HWTEST_QUOTA_POOL
 
-    # Retain wukong paladins on cq pool, until it is able
+    # Retain all moblab boards on cq pool, until it is able
     # to migrate to Skylab. See crbug.com/949217
-    if (self._board_name in ('wukong',) and
+    if ('moblab' in self._board_name and
         config_lib.IsCQType(self._run.config.build_type)):
       pool = constants.HWTEST_PALADIN_POOL
 
