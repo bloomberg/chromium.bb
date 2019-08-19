@@ -51,6 +51,21 @@ struct Service {
   std::vector<std::string> txt;
 };
 
+class DemoSocketClient : public platform::UdpSocket::Client {
+  void OnError(platform::UdpSocket* socket, Error error) override {
+    OSP_UNIMPLEMENTED();
+  }
+
+  void OnSendError(platform::UdpSocket* socket, Error error) override {
+    OSP_UNIMPLEMENTED();
+  }
+
+  void OnRead(platform::UdpSocket* socket,
+              ErrorOr<platform::UdpPacket> packet) override {
+    OSP_UNIMPLEMENTED();
+  }
+};
+
 using ServiceMap =
     std::map<mdns::DomainName, Service, mdns::DomainNameComparator>;
 ServiceMap* g_services = nullptr;
@@ -99,10 +114,13 @@ void SignalThings() {
 }
 
 std::vector<platform::UdpSocketUniquePtr> SetUpMulticastSockets(
-    const std::vector<platform::NetworkInterfaceIndex>& index_list) {
+    platform::TaskRunner* task_runner,
+    const std::vector<platform::NetworkInterfaceIndex>& index_list,
+    platform::UdpSocket::Client* client) {
   std::vector<platform::UdpSocketUniquePtr> sockets;
   for (const auto ifindex : index_list) {
-    auto create_result = platform::UdpSocket::Create(IPEndpoint{{}, 5353});
+    auto create_result =
+        platform::UdpSocket::Create(task_runner, client, IPEndpoint{{}, 5353});
     if (!create_result) {
       OSP_LOG_ERROR << "failed to create IPv4 socket for interface " << ifindex
                     << ": " << create_result.error().message();
@@ -266,7 +284,8 @@ void BrowseDemo(platform::NetworkRunner* network_runner,
       index_list.push_back(interface.info.index);
   }
 
-  auto sockets = SetUpMulticastSockets(index_list);
+  DemoSocketClient client;
+  auto sockets = SetUpMulticastSockets(network_runner, index_list, &client);
   // The code below assumes the elements in |sockets| is in exact 1:1
   // correspondence with the elements in |index_list|. Crash the demo if any
   // sockets are missing (i.e., failed to be set up).

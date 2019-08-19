@@ -173,6 +173,22 @@ std::unique_ptr<QuicConnection> FakeClientQuicConnectionFactory::Connect(
   return bridge_->Connect(endpoint, connection_delegate);
 }
 
+void FakeClientQuicConnectionFactory::OnError(platform::UdpSocket* socket,
+                                              Error error) {
+  OSP_UNIMPLEMENTED();
+}
+
+void FakeClientQuicConnectionFactory::OnSendError(platform::UdpSocket* socket,
+                                                  Error error) {
+  OSP_UNIMPLEMENTED();
+}
+
+void FakeClientQuicConnectionFactory::OnRead(
+    platform::UdpSocket* socket,
+    ErrorOr<platform::UdpPacket> packet) {
+  OSP_UNIMPLEMENTED();
+}
+
 FakeServerQuicConnectionFactory::FakeServerQuicConnectionFactory(
     FakeQuicConnectionFactoryBridge* bridge)
     : bridge_(bridge) {}
@@ -201,6 +217,22 @@ std::unique_ptr<QuicConnection> FakeServerQuicConnectionFactory::Connect(
     QuicConnection::Delegate* connection_delegate) {
   OSP_DCHECK(false) << "don't call Connect() from QuicServer side";
   return nullptr;
+}
+
+void FakeServerQuicConnectionFactory::OnError(platform::UdpSocket* socket,
+                                              Error error) {
+  OSP_UNIMPLEMENTED();
+}
+
+void FakeServerQuicConnectionFactory::OnSendError(platform::UdpSocket* socket,
+                                                  Error error) {
+  OSP_UNIMPLEMENTED();
+}
+
+void FakeServerQuicConnectionFactory::OnRead(
+    platform::UdpSocket* socket,
+    ErrorOr<platform::UdpPacket> packet) {
+  OSP_UNIMPLEMENTED();
 }
 
 }  // namespace openscreen

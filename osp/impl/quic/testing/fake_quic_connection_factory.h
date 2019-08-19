@@ -57,6 +57,12 @@ class FakeClientQuicConnectionFactory final : public QuicConnectionFactory {
   void OnRead(platform::UdpPacket data,
               platform::NetworkRunner* network_runner) override;
 
+  // UdpSocket::Client overrides.
+  void OnError(platform::UdpSocket* socket, Error error) override;
+  void OnSendError(platform::UdpSocket* socket, Error error) override;
+  void OnRead(platform::UdpSocket* socket,
+              ErrorOr<platform::UdpPacket> packet) override;
+
   // QuicConnectionFactory overrides.
   void SetServerDelegate(ServerDelegate* delegate,
                          const std::vector<IPEndpoint>& endpoints) override;
@@ -82,6 +88,12 @@ class FakeServerQuicConnectionFactory final : public QuicConnectionFactory {
   // UdpReadCallback overrides.
   void OnRead(platform::UdpPacket data,
               platform::NetworkRunner* network_runner) override;
+
+  // UdpSocket::Client overrides.
+  void OnError(platform::UdpSocket* socket, Error error) override;
+  void OnSendError(platform::UdpSocket* socket, Error error) override;
+  void OnRead(platform::UdpSocket* socket,
+              ErrorOr<platform::UdpPacket> packet) override;
 
   // QuicConnectionFactory overrides.
   void SetServerDelegate(ServerDelegate* delegate,

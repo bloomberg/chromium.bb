@@ -52,12 +52,13 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
   };
   // clang-format on
 
-  MockUdpSocket socket(openscreen::IPAddress::Version::kV4);
+  std::unique_ptr<openscreen::platform::MockUdpSocket> socket_info =
+      MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV4);
   MockNetworkRunner runner;
   MockMdnsReceiverDelegate delegate;
-  MdnsReceiver receiver(&socket, &runner, &delegate);
+  MdnsReceiver receiver(socket_info.get(), &runner, &delegate);
 
-  EXPECT_CALL(runner, ReadRepeatedly(&socket, _))
+  EXPECT_CALL(runner, ReadRepeatedly(socket_info.get(), _))
       .WillOnce(Return(Error::Code::kNone));
   receiver.Start();
 
@@ -78,7 +79,8 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
   EXPECT_CALL(delegate, OnQueryReceived(message, packet.source())).Times(1);
   receiver.OnRead(std::move(packet), &runner);
 
-  EXPECT_CALL(runner, CancelRead(&socket)).WillOnce(Return(Error::Code::kNone));
+  EXPECT_CALL(runner, CancelRead(socket_info.get()))
+      .WillOnce(Return(Error::Code::kNone));
   receiver.Stop();
 }
 
@@ -108,12 +110,13 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
   };
   // clang-format on
 
-  MockUdpSocket socket(openscreen::IPAddress::Version::kV6);
+  std::unique_ptr<openscreen::platform::MockUdpSocket> socket_info =
+      MockUdpSocket::CreateDefault(openscreen::IPAddress::Version::kV6);
   MockNetworkRunner runner;
   MockMdnsReceiverDelegate delegate;
-  MdnsReceiver receiver(&socket, &runner, &delegate);
+  MdnsReceiver receiver(socket_info.get(), &runner, &delegate);
 
-  EXPECT_CALL(runner, ReadRepeatedly(&socket, _))
+  EXPECT_CALL(runner, ReadRepeatedly(socket_info.get(), _))
       .WillOnce(Return(Error::Code::kNone));
   receiver.Start();
 
@@ -135,7 +138,8 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
   EXPECT_CALL(delegate, OnResponseReceived(message, packet.source())).Times(1);
   receiver.OnRead(std::move(packet), &runner);
 
-  EXPECT_CALL(runner, CancelRead(&socket)).WillOnce(Return(Error::Code::kNone));
+  EXPECT_CALL(runner, CancelRead(socket_info.get()))
+      .WillOnce(Return(Error::Code::kNone));
   receiver.Stop();
 }
 

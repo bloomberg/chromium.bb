@@ -25,7 +25,8 @@ FakeQuicBridge::FakeQuicBridge(platform::FakeNetworkRunner* network_runner,
 
   auto fake_client_factory =
       std::make_unique<FakeClientQuicConnectionFactory>(fake_bridge.get());
-  client_socket_ = std::make_unique<platform::MockUdpSocket>();
+  client_socket_ = std::make_unique<platform::MockUdpSocket>(
+      network_runner_, fake_client_factory.get());
   network_runner_->ReadRepeatedly(client_socket_.get(),
                                   fake_client_factory.get());
 
@@ -37,7 +38,8 @@ FakeQuicBridge::FakeQuicBridge(platform::FakeNetworkRunner* network_runner,
 
   auto fake_server_factory =
       std::make_unique<FakeServerQuicConnectionFactory>(fake_bridge.get());
-  server_socket_ = std::make_unique<platform::MockUdpSocket>();
+  server_socket_ = std::make_unique<platform::MockUdpSocket>(
+      network_runner_, fake_server_factory.get());
   network_runner_->ReadRepeatedly(server_socket_.get(),
                                   fake_server_factory.get());
   ServerConfig config;

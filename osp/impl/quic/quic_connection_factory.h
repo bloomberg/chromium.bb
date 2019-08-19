@@ -17,7 +17,8 @@ namespace openscreen {
 
 // This interface provides a way to make new QUIC connections to endpoints.  It
 // also provides a way to receive incoming QUIC connections (as a server).
-class QuicConnectionFactory : public platform::UdpReadCallback {
+class QuicConnectionFactory : public platform::UdpReadCallback,
+                              public platform::UdpSocket::Client {
  public:
   class ServerDelegate {
    public:

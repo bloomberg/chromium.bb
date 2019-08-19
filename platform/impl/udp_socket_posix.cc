@@ -50,8 +50,11 @@ ErrorOr<int> CreateNonBlockingUdpSocket(int domain) {
 
 }  // namespace
 
-UdpSocketPosix::UdpSocketPosix(int fd, const IPEndpoint& local_endpoint)
-    : fd_(fd), local_endpoint_(local_endpoint) {
+UdpSocketPosix::UdpSocketPosix(TaskRunner* task_runner,
+                               Client* client,
+                               int fd,
+                               const IPEndpoint& local_endpoint)
+    : UdpSocket(task_runner, client), fd_(fd), local_endpoint_(local_endpoint) {
   OSP_DCHECK(local_endpoint_.address.IsV4() || local_endpoint_.address.IsV6());
 }
 
@@ -60,7 +63,9 @@ UdpSocketPosix::~UdpSocketPosix() {
 }
 
 // static
-ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(const IPEndpoint& endpoint) {
+ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(TaskRunner* task_runner,
+                                              Client* client,
+                                              const IPEndpoint& endpoint) {
   int domain;
   switch (endpoint.address.version()) {
     case Version::kV4:
@@ -74,8 +79,8 @@ ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(const IPEndpoint& endpoint) {
   if (!fd) {
     return fd.error();
   }
-  return UdpSocketUniquePtr(
-      static_cast<UdpSocket*>(new UdpSocketPosix(fd.value(), endpoint)));
+  return UdpSocketUniquePtr(static_cast<UdpSocket*>(
+      new UdpSocketPosix(task_runner, client, fd.value(), endpoint)));
 }
 
 bool UdpSocketPosix::IsIPv4() const {

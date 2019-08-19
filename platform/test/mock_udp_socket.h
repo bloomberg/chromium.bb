@@ -10,15 +10,34 @@
 
 #include "gmock/gmock.h"
 #include "platform/api/logging.h"
+#include "platform/api/time.h"
 #include "platform/api/udp_socket.h"
+#include "platform/test/fake_clock.h"
+#include "platform/test/fake_task_runner.h"
 
 namespace openscreen {
 namespace platform {
 
 class MockUdpSocket : public UdpSocket {
  public:
-  explicit MockUdpSocket(Version version = Version::kV4);
-  ~MockUdpSocket() override = default;
+  class MockClient : public UdpSocket::Client {
+   public:
+    MOCK_METHOD2(OnError, void(UdpSocket*, Error));
+    MOCK_METHOD2(OnSendError, void(UdpSocket*, Error));
+    MOCK_METHOD2(OnReadInternal, void(UdpSocket*, const ErrorOr<UdpPacket>&));
+
+    void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet) override {
+      OnReadInternal(socket, packet);
+    }
+  };
+
+  static std::unique_ptr<MockUdpSocket> CreateDefault(
+      Version version = Version::kV4);
+
+  MockUdpSocket(TaskRunner* task_runner,
+                Client* client,
+                Version version = Version::kV4);
+  ~MockUdpSocket() override;
 
   bool IsIPv4() const override;
   bool IsIPv6() const override;
@@ -34,6 +53,9 @@ class MockUdpSocket : public UdpSocket {
 
  private:
   Version version_;
+  std::unique_ptr<FakeTaskRunner> task_runner_;
+  std::unique_ptr<UdpSocket::Client> client_;
+  std::unique_ptr<FakeClock> clock_;
 };
 
 }  // namespace platform

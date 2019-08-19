@@ -32,7 +32,7 @@ class NetworkRunner;
 // event loop.
 // TODO(btolsch): This may be renamed and/or split up once QUIC code lands and
 // this use case is more concrete.
-class InternalServices {
+class InternalServices : platform::UdpSocket::Client {
  public:
   static std::unique_ptr<ServiceListener> CreateListener(
       const MdnsServiceListenerConfig& config,
@@ -42,6 +42,12 @@ class InternalServices {
       const ServicePublisher::Config& config,
       ServicePublisher::Observer* observer,
       platform::NetworkRunner* network_runner);
+
+  // UdpSocket::Client overrides.
+  void OnError(platform::UdpSocket* socket, Error error) override;
+  void OnSendError(platform::UdpSocket* socket, Error error) override;
+  void OnRead(platform::UdpSocket* socket,
+              ErrorOr<platform::UdpPacket> packet) override;
 
  private:
   class InternalPlatformLinkage final : public MdnsPlatformService {
@@ -63,7 +69,7 @@ class InternalServices {
   // The NetworkRunner should live for the duration of this InternalService
   // object's lifetime.
   explicit InternalServices(platform::NetworkRunner* network_runner);
-  ~InternalServices();
+  ~InternalServices() override;
 
   void RegisterMdnsSocket(platform::UdpSocket* socket);
   void DeregisterMdnsSocket(platform::UdpSocket* socket);

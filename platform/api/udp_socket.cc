@@ -4,10 +4,14 @@
 
 #include "platform/api/udp_socket.h"
 
+#include "platform/api/task_runner.h"
+
 namespace openscreen {
 namespace platform {
 
-UdpSocket::UdpSocket() {
+UdpSocket::UdpSocket(TaskRunner* task_runner, Client* client)
+    : client_(client), task_runner_(task_runner) {
+  OSP_CHECK(task_runner_);
   deletion_callback_ = [](UdpSocket* socket) {};
 }
 

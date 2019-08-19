@@ -88,7 +88,8 @@ void QuicConnectionFactoryImpl::SetServerDelegate(
     // create/bind errors occur. Maybe return an Error immediately, and undo
     // partial progress (i.e. "unwatch" all the sockets and call
     // sockets_.clear() to close the sockets)?
-    auto create_result = platform::UdpSocket::Create(endpoint);
+    auto create_result =
+        platform::UdpSocket::Create(network_runner_, this, endpoint);
     if (!create_result) {
       OSP_LOG_ERROR << "failed to create socket (for " << endpoint
                     << "): " << create_result.error().message();
@@ -150,7 +151,8 @@ void QuicConnectionFactoryImpl::OnRead(
 std::unique_ptr<QuicConnection> QuicConnectionFactoryImpl::Connect(
     const IPEndpoint& endpoint,
     QuicConnection::Delegate* connection_delegate) {
-  auto create_result = platform::UdpSocket::Create(endpoint);
+  auto create_result =
+      platform::UdpSocket::Create(network_runner_, this, endpoint);
   if (!create_result) {
     OSP_LOG_ERROR << "failed to create socket: "
                   << create_result.error().message();
@@ -208,6 +210,21 @@ void QuicConnectionFactoryImpl::OnConnectionClosed(QuicConnection* connection) {
     OSP_DCHECK(socket_it != sockets_.end());
     sockets_.erase(socket_it);
   }
+}
+
+void QuicConnectionFactoryImpl::OnError(platform::UdpSocket* socket,
+                                        Error error) {
+  OSP_UNIMPLEMENTED();
+}
+
+void QuicConnectionFactoryImpl::OnSendError(platform::UdpSocket* socket,
+                                            Error error) {
+  OSP_UNIMPLEMENTED();
+}
+
+void QuicConnectionFactoryImpl::OnRead(platform::UdpSocket* socket,
+                                       ErrorOr<platform::UdpPacket> packet) {
+  OSP_UNIMPLEMENTED();
 }
 
 }  // namespace openscreen

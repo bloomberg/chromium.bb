@@ -12,7 +12,12 @@ namespace platform {
 
 struct UdpSocketPosix : public UdpSocket {
  public:
-  UdpSocketPosix(int fd, const IPEndpoint& local_endpoint);
+  // Creates a new UdpSocketPosix. The provided client and task_runner must
+  // exist for the duration of this socket's lifetime.
+  UdpSocketPosix(TaskRunner* task_runner,
+                 Client* client,
+                 int fd,
+                 const IPEndpoint& local_endpoint);
   ~UdpSocketPosix() final;
 
   // Implementations of UdpSocket methods.
